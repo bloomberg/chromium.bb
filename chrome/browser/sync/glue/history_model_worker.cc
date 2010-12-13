@@ -8,7 +8,6 @@
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "base/waitable_event.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/history/history.h"
 
 using base::WaitableEvent;

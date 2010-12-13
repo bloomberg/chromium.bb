@@ -4,12 +4,14 @@
 
 #include "chrome/browser/remoting/remoting_resources_source.h"
 
+#include <algorithm>
+#include <string>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/jstemplate_builder.h"

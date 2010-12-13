@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/policy/device_management_backend_mock.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"

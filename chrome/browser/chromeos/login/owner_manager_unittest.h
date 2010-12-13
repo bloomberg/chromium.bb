@@ -8,11 +8,11 @@
 #include "chrome/browser/chromeos/login/owner_manager.h"
 
 #include <string>
+#include <vector>
 
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"

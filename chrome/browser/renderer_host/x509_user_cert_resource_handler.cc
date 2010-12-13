@@ -5,7 +5,6 @@
 #include "chrome/browser/renderer_host/x509_user_cert_resource_handler.h"
 
 #include "base/string_util.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/download_types.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"

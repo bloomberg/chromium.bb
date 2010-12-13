@@ -1,4 +1,4 @@
 include_rules = [
-  "+chrome/browser/history",
+  "+chrome/browser",
   "+chrome/third_party/hunspell/google",
 ]

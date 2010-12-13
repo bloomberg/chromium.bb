@@ -7,8 +7,9 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/task.h"
-#include "chrome/browser/browser_thread.h"
+#include "base/thread.h"
 #include "chrome/browser/device_orientation/orientation.h"
 #include "chrome/browser/device_orientation/provider_impl.h"
 
@@ -150,6 +151,7 @@ void ProviderImpl::ScheduleDoPoll() {
 }
 
 namespace {
+
 bool IsElementSignificantlyDifferent(bool can_provide_element1,
                                      bool can_provide_element2,
                                      double element1,
@@ -163,7 +165,7 @@ bool IsElementSignificantlyDifferent(bool can_provide_element1,
     return true;
   return false;
 }
-} // namespace
+}  // namespace
 
 // Returns true if two orientations are considered different enough that
 // observers should be notified of the new orientation.

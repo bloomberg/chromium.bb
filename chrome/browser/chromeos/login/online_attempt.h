@@ -11,11 +11,11 @@
 
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 
+class CancelableTask;
 class GaiaAuthFetcher;
 class Profile;
 

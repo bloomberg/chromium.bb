@@ -6,14 +6,11 @@
 #define CHROME_BROWSER_IMPORTER_IMPORTER_BRIDGE_H_
 #pragma once
 
-#include "build/build_config.h"
-
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/importer/importer_data_types.h"
 // TODO: remove this, see friend declaration in ImporterBridge.
 #include "chrome/browser/importer/toolbar_importer.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/browser_thread.h"
+#include "base/message_loop.h"
 #include "chrome/browser/geolocation/win7_location_provider_win.h"
 #include "chrome/browser/geolocation/win7_location_api_win.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -49,10 +49,10 @@ class MockWin7LocationApi : public Win7LocationApi {
   }
 
  private:
-   MockWin7LocationApi() : Win7LocationApi(NULL, NULL, NULL) {
+  MockWin7LocationApi() : Win7LocationApi(NULL, NULL, NULL) {
     ON_CALL(*this, GetPosition(_))
         .WillByDefault(Invoke(this,
-        &MockWin7LocationApi::GetPositionValid));
+                              &MockWin7LocationApi::GetPositionValid));
     ON_CALL(*this, SetHighAccuracy(true))
         .WillByDefault(Return(true));
     ON_CALL(*this, SetHighAccuracy(false))

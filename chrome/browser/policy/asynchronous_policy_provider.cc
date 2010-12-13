@@ -4,7 +4,6 @@
 
 #include "chrome/browser/policy/asynchronous_policy_provider.h"
 
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/policy/asynchronous_policy_loader.h"
 
 namespace policy {

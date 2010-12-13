@@ -11,7 +11,6 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/platform_thread.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/pref_value_store.h"

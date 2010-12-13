@@ -6,7 +6,6 @@
 
 #include "base/message_loop.h"
 #include "base/task.h"
-#include "chrome/browser/browser_thread.h"
 
 namespace policy {
 

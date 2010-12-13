@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 
 #include <algorithm>
+#include <functional>
 #include <map>
 #include <utility>
 
@@ -20,7 +21,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/keyboard_library.h"
 #include "chrome/browser/chromeos/language_preferences.h"

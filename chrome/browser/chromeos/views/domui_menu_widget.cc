@@ -4,10 +4,11 @@
 
 #include "chrome/browser/chromeos/views/domui_menu_widget.h"
 
+#include <algorithm>
+
 #include "base/stringprintf.h"
 #include "base/singleton.h"
 #include "base/task.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/views/menu_locator.h"
 #include "chrome/browser/chromeos/views/native_menu_domui.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
@@ -210,7 +211,7 @@ gboolean MapToFocus(GtkWidget* widget, GdkEvent* event, gpointer data) {
 
 void DOMUIMenuWidget::EnableScroll(bool enable) {
   ExecuteJavascript(StringPrintf(
-      L"enableScroll(%ls)", enable ? L"true" : L"false" ));
+      L"enableScroll(%ls)", enable ? L"true" : L"false"));
 }
 
 void DOMUIMenuWidget::EnableInput(bool select_item) {

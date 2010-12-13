@@ -5,12 +5,12 @@
 #include "chrome/browser/extensions/extension_dom_ui.h"
 
 #include <set>
+#include <vector>
 
 #include "net/base/file_stream.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extension_bookmark_manager_api.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"

@@ -18,10 +18,10 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
-#include "base/utf_string_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/win_util.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/common/chrome_paths.h"
@@ -94,7 +94,7 @@ std::wstring RandomWords(int count) {
 // Return a random URL-looking string.
 GURL ConstructRandomURL() {
   return GURL(std::wstring(L"http://") + RandomChars(3) + L".com/" +
-      RandomChars(RandomInt(5,20)));
+      RandomChars(RandomInt(5, 20)));
 }
 
 // Return a random page title-looking string.

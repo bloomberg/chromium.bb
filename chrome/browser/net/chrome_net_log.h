@@ -12,7 +12,7 @@
 #include "base/lock.h"
 #include "base/observer_list.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/browser_thread.h"
+#include "base/time.h"
 #include "net/base/net_log.h"
 
 class LoadTimingObserver;

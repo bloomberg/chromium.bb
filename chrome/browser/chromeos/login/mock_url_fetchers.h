@@ -6,8 +6,9 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_MOCK_URL_FETCHERS_H_
 #pragma once
 
+#include <string>
+
 #include "base/message_loop.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"

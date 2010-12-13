@@ -5,7 +5,6 @@
 #include "chrome/test/ui/ui_test.h"
 
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/sync/signin_manager.h"

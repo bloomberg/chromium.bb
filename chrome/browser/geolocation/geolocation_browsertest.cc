@@ -7,7 +7,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_settings_state.h"
@@ -34,7 +33,7 @@
 // load and wait one single frame here by calling a javascript function.
 class IFrameLoader : public NotificationObserver {
  public:
-   IFrameLoader(Browser* browser, int iframe_id, const GURL& url)
+  IFrameLoader(Browser* browser, int iframe_id, const GURL& url)
       : navigation_completed_(false),
         javascript_completed_(false) {
     NavigationController* controller =
