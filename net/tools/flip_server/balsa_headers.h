@@ -392,12 +392,12 @@ class BalsaHeaders {
   };
 
   typedef std::vector<base::StringPiece> HeaderTokenList;
-  friend bool net::ParseHTTPFirstLine(const char* begin,
-                                       const char* end,
-                                       bool is_request,
-                                       size_t max_request_uri_length,
-                                       BalsaHeaders* headers,
-                                       BalsaFrameEnums::ErrorCode* error_code);
+  friend bool ParseHTTPFirstLine(const char* begin,
+                                 const char* end,
+                                 bool is_request,
+                                 size_t max_request_uri_length,
+                                 BalsaHeaders* headers,
+                                 BalsaFrameEnums::ErrorCode* error_code);
 
  protected:
   typedef std::vector<HeaderLineDescription> HeaderLines;
