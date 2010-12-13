@@ -80,6 +80,7 @@ IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {
 }
 
 void IndexedDBDispatcherHost::OnChannelClosing() {
+  BrowserMessageFilter::OnChannelClosing();
   BrowserThread::DeleteSoon(
         BrowserThread::WEBKIT, FROM_HERE, database_dispatcher_host_.release());
   BrowserThread::DeleteSoon(
@@ -315,6 +316,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateObjectStore(
   if (!idb_database || !idb_transaction)
     return;
 
+  *ec = 0;
   WebIDBObjectStore* object_store = idb_database->createObjectStore(
       params.name, params.key_path, params.auto_increment,
       *idb_transaction, *ec);
@@ -335,6 +337,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteObjectStore(
   if (!idb_database || !idb_transaction)
     return;
 
+  *ec = 0;
   idb_database->deleteObjectStore(name, *idb_transaction, *ec);
 }
 
@@ -349,6 +352,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnSetVersion(
   if (!idb_database)
     return;
 
+  *ec = 0;
   idb_database->setVersion(
       version,
       new IndexedDBCallbacks<WebIDBTransaction>(parent_, response_id),
@@ -373,6 +377,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnTransaction(
     object_stores.append(*it);
   }
 
+  *ec = 0;
   WebIDBTransaction* transaction = database->transaction(
       object_stores, mode, timeout, *ec);
   DCHECK(!transaction != !*ec);
@@ -460,6 +465,7 @@ void IndexedDBDispatcherHost::IndexDispatcherHost::OnOpenObjectCursor(
   if (!idb_transaction || !idb_index)
     return;
 
+  *ec = 0;
   scoped_ptr<WebIDBCallbacks> callbacks(
       new IndexedDBCallbacks<WebIDBCursor>(parent_, params.response_id));
   idb_index->openObjectCursor(
@@ -480,6 +486,7 @@ void IndexedDBDispatcherHost::IndexDispatcherHost::OnOpenKeyCursor(
   if (!idb_transaction || !idb_index)
     return;
 
+  *ec = 0;
   scoped_ptr<WebIDBCallbacks> callbacks(
       new IndexedDBCallbacks<WebIDBCursor>(parent_, params.response_id));
   idb_index->openKeyCursor(
@@ -503,6 +510,7 @@ void IndexedDBDispatcherHost::IndexDispatcherHost::OnGetObject(
   if (!idb_transaction || !idb_index)
     return;
 
+  *ec = 0;
   scoped_ptr<WebIDBCallbacks> callbacks(
       new IndexedDBCallbacks<WebSerializedScriptValue>(parent_, response_id));
   idb_index->getObject(key, callbacks.release(), *idb_transaction, *ec);
@@ -523,6 +531,7 @@ void IndexedDBDispatcherHost::IndexDispatcherHost::OnGetKey(
   if (!idb_transaction || !idb_index)
     return;
 
+  *ec = 0;
   scoped_ptr<WebIDBCallbacks> callbacks(
       new IndexedDBCallbacks<WebIDBKey>(parent_, response_id));
   idb_index->getKey(key, callbacks.release(), *idb_transaction, *ec);
@@ -613,6 +622,7 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnGet(
   if (!idb_transaction || !idb_object_store)
     return;
 
+  *ec = 0;
   scoped_ptr<WebIDBCallbacks> callbacks(
       new IndexedDBCallbacks<WebSerializedScriptValue>(parent_, response_id));
   idb_object_store->get(key, callbacks.release(), *idb_transaction, *ec);
@@ -630,6 +640,7 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnPut(
   if (!idb_transaction || !idb_object_store)
     return;
 
+  *ec = 0;
   scoped_ptr<WebIDBCallbacks> callbacks(
       new IndexedDBCallbacks<WebIDBKey>(parent_, params.response_id));
   idb_object_store->put(params.serialized_value, params.key, params.add_only,
@@ -651,6 +662,7 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnDelete(
   if (!idb_transaction || !idb_object_store)
     return;
 
+  *ec = 0;
   scoped_ptr<WebIDBCallbacks> callbacks(
       new IndexedDBCallbacks<void>(parent_, response_id));
   idb_object_store->deleteFunction(
@@ -670,6 +682,7 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnCreateIndex(
   if (!idb_object_store || !idb_transaction)
     return;
 
+  *ec = 0;
   WebIDBIndex* index = idb_object_store->createIndex(
       params.name, params.key_path, params.unique, *idb_transaction, *ec);
   *index_id = *ec ? 0 : parent_->Add(index);
@@ -685,6 +698,7 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnIndex(
   if (!idb_object_store)
     return;
 
+  *ec = 0;
   WebIDBIndex* index = idb_object_store->index(name, *ec);
   *idb_index_id = parent_->Add(index);
 }
@@ -703,6 +717,7 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnDeleteIndex(
   if (!idb_object_store || !idb_transaction)
     return;
 
+  *ec = 0;
   idb_object_store->deleteIndex(name, *idb_transaction, *ec);
 }
 
@@ -719,6 +734,7 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnOpenCursor(
   if (!idb_transaction || !idb_object_store)
     return;
 
+  *ec = 0;
   scoped_ptr<WebIDBCallbacks> callbacks(
       new IndexedDBCallbacks<WebIDBCursor>(parent_, params.response_id));
   idb_object_store->openCursor(
@@ -817,6 +833,7 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnUpdate(
   if (!idb_cursor)
     return;
 
+  *ec = 0;
   idb_cursor->update(
       value, new IndexedDBCallbacks<void>(parent_, response_id), *ec);
 }
@@ -832,6 +849,7 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnContinue(
   if (!idb_cursor)
     return;
 
+  *ec = 0;
   idb_cursor->continueFunction(
       key, new IndexedDBCallbacks<WebIDBCursor>(parent_, response_id), *ec);
 }
@@ -846,6 +864,7 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnDelete(
   if (!idb_cursor)
     return;
 
+  *ec = 0;
   // TODO(jorlow): This should be delete.
   idb_cursor->remove(new IndexedDBCallbacks<void>(parent_, response_id), *ec);
 }
@@ -925,6 +944,7 @@ void IndexedDBDispatcherHost::TransactionDispatcherHost::OnObjectStore(
   if (!idb_transaction)
     return;
 
+  *ec = 0;
   WebIDBObjectStore* object_store = idb_transaction->objectStore(name, *ec);
   *object_store_id = object_store ? parent_->Add(object_store) : 0;
 }
