@@ -17,7 +17,6 @@
 #include "base/string16.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/css_colors.h"
-#include "chrome/common/indexed_db_param_traits.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/view_types.h"
@@ -101,12 +100,6 @@ struct ViewHostMsg_DidPrintPage_Params;
 struct ViewHostMsg_Audio_CreateStream_Params;
 struct ViewHostMsg_ShowPopup_Params;
 struct ViewHostMsg_ScriptedPrint_Params;
-struct ViewHostMsg_IDBFactoryOpen_Params;
-struct ViewHostMsg_IDBDatabaseCreateObjectStore_Params;
-struct ViewHostMsg_IDBIndexOpenCursor_Params;
-struct ViewHostMsg_IDBObjectStoreCreateIndex_Params;
-struct ViewHostMsg_IDBObjectStoreOpenCursor_Params;
-struct ViewHostMsg_IDBObjectStorePut_Params;
 struct ViewMsg_ExecuteCode_Params;
 struct ViewHostMsg_CreateWorker_Params;
 struct ViewHostMsg_ShowNotification_Params;

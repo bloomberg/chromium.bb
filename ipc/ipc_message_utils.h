@@ -63,6 +63,7 @@ enum IPCMessageStart {
   MimeRegistryMsgStart,
   DatabaseMsgStart,
   DOMStorageMsgStart,
+  IndexedDBMsgStart,
 };
 
 class DictionaryValue;

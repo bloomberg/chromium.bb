@@ -25,7 +25,6 @@
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/host_zoom_map.h"
-#include "chrome/browser/in_process_webkit/indexed_db_dispatcher_host.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -246,8 +245,6 @@ ResourceMessageFilter::ResourceMessageFilter(
       media_request_context_(profile->GetRequestContextForMedia()),
       extensions_request_context_(profile->GetRequestContextForExtensions()),
       render_widget_helper_(render_widget_helper),
-      ALLOW_THIS_IN_INITIALIZER_LIST(indexed_db_dispatcher_host_(
-          new IndexedDBDispatcherHost(this, profile))),
       notification_prefs_(
           profile->GetDesktopNotificationService()->prefs_cache()),
       host_zoom_map_(profile->GetHostZoomMap()),
@@ -274,9 +271,6 @@ ResourceMessageFilter::ResourceMessageFilter(
 ResourceMessageFilter::~ResourceMessageFilter() {
   // This function should be called on the IO thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  // Tell the Indexed DB dispatcher host to stop sending messages via us.
-  indexed_db_dispatcher_host_->Shutdown();
 
   // Let interested observers know we are being deleted.
   NotificationService::current()->Notify(
@@ -305,7 +299,6 @@ void ResourceMessageFilter::OnChannelConnected(int32 peer_pid) {
   set_handle(peer_handle);
 
   WorkerService::GetInstance()->Initialize(resource_dispatcher_host_);
-  indexed_db_dispatcher_host_->Init(id(), handle());
 }
 
 void ResourceMessageFilter::OnChannelError() {
@@ -330,10 +323,9 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
   bool msg_is_ok = true;
   bool handled =
       resource_dispatcher_host_->OnMessageReceived(msg, this, &msg_is_ok) ||
-      indexed_db_dispatcher_host_->OnMessageReceived(msg) ||
       mp_dispatcher->OnMessageReceived(
           msg, this, next_route_id_callback(), &msg_is_ok) ||
-      geolocation_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ;
+      geolocation_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok);
 
   if (!handled) {
     DCHECK(msg_is_ok);  // It should have been marked handled if it wasn't OK.

@@ -36,7 +36,6 @@ class ChromeURLRequestContext;
 struct FontDescriptor;
 class GeolocationDispatcherHostOld;
 class HostZoomMap;
-class IndexedDBDispatcherHost;
 class NotificationsPrefsCache;
 class PpapiPluginProcessHost;
 class Profile;
@@ -429,9 +428,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   scoped_refptr<URLRequestContextGetter> extensions_request_context_;
 
   scoped_refptr<RenderWidgetHelper> render_widget_helper_;
-
-  // Handles Indexed Database related messages.
-  scoped_refptr<IndexedDBDispatcherHost> indexed_db_dispatcher_host_;
 
   // A cache of notifications preferences which is used to handle
   // Desktop Notifications permission messages.

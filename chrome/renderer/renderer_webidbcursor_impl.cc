@@ -4,9 +4,7 @@
 
 #include "chrome/renderer/renderer_webidbcursor_impl.h"
 
-#include "chrome/common/indexed_db_key.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/serialized_script_value.h"
+#include "chrome/common/indexed_db_messages.h"
 #include "chrome/renderer/indexed_db_dispatcher.h"
 #include "chrome/renderer/render_thread.h"
 
@@ -20,21 +18,21 @@ RendererWebIDBCursorImpl::RendererWebIDBCursorImpl(int32 idb_cursor_id)
 }
 
 RendererWebIDBCursorImpl::~RendererWebIDBCursorImpl() {
-  RenderThread::current()->Send(new ViewHostMsg_IDBCursorDestroyed(
+  RenderThread::current()->Send(new IndexedDBHostMsg_CursorDestroyed(
       idb_cursor_id_));
 }
 
 unsigned short RendererWebIDBCursorImpl::direction() const {
   int direction;
   RenderThread::current()->Send(
-      new ViewHostMsg_IDBCursorDirection(idb_cursor_id_, &direction));
+      new IndexedDBHostMsg_CursorDirection(idb_cursor_id_, &direction));
   return direction;
 }
 
 WebIDBKey RendererWebIDBCursorImpl::key() const {
   IndexedDBKey key;
   RenderThread::current()->Send(
-      new ViewHostMsg_IDBCursorKey(idb_cursor_id_, &key));
+      new IndexedDBHostMsg_CursorKey(idb_cursor_id_, &key));
   return key;
 }
 
@@ -44,8 +42,8 @@ void RendererWebIDBCursorImpl::value(
   SerializedScriptValue scriptValue;
   IndexedDBKey key;
   RenderThread::current()->Send(
-      new ViewHostMsg_IDBCursorValue(idb_cursor_id_, &scriptValue,
-                                     &key));
+      new IndexedDBHostMsg_CursorValue(idb_cursor_id_, &scriptValue,
+                                       &key));
   // Only one or the other type should have been "returned" to us.
   DCHECK(scriptValue.is_null() != (key.type() == WebIDBKey::InvalidType));
   webScriptValue = scriptValue;

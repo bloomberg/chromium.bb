@@ -23,21 +23,21 @@ IndexedDBTransactionCallbacks::IndexedDBTransactionCallbacks(
 IndexedDBTransactionCallbacks::~IndexedDBTransactionCallbacks() {}
 
 void IndexedDBCallbacksBase::onError(const WebKit::WebIDBDatabaseError& error) {
-  dispatcher_host_->Send(new ViewMsg_IDBCallbacksError(
+  dispatcher_host_->Send(new IndexedDBMsg_CallbacksError(
       response_id_, error.code(), error.message()));
 }
 
 void IndexedDBTransactionCallbacks::onAbort() {
   dispatcher_host_->Send(
-      new ViewMsg_IDBTransactionCallbacksAbort(transaction_id_));
+      new IndexedDBMsg_TransactionCallbacksAbort(transaction_id_));
 }
 
 void IndexedDBTransactionCallbacks::onComplete() {
   dispatcher_host_->Send(
-      new ViewMsg_IDBTransactionCallbacksComplete(transaction_id_));
+      new IndexedDBMsg_TransactionCallbacksComplete(transaction_id_));
 }
 
 void IndexedDBTransactionCallbacks::onTimeout() {
   dispatcher_host_->Send(
-      new ViewMsg_IDBTransactionCallbacksTimeout(transaction_id_));
+      new IndexedDBMsg_TransactionCallbacksTimeout(transaction_id_));
 }

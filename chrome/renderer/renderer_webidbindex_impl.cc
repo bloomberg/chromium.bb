@@ -4,11 +4,12 @@
 
 #include "chrome/renderer/renderer_webidbindex_impl.h"
 
-#include "chrome/common/indexed_db_key.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/indexed_db_messages.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/indexed_db_dispatcher.h"
 #include "chrome/renderer/renderer_webidbtransaction_impl.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 
 using WebKit::WebExceptionCode;
 using WebKit::WebDOMStringList;
@@ -22,35 +23,35 @@ RendererWebIDBIndexImpl::RendererWebIDBIndexImpl(int32 idb_index_id)
 RendererWebIDBIndexImpl::~RendererWebIDBIndexImpl() {
   // TODO(jorlow): Is it possible for this to be destroyed but still have
   //               pending callbacks?  If so, fix!
-  RenderThread::current()->Send(new ViewHostMsg_IDBIndexDestroyed(
+  RenderThread::current()->Send(new IndexedDBHostMsg_IndexDestroyed(
       idb_index_id_));
 }
 
 WebString RendererWebIDBIndexImpl::name() const {
   string16 result;
   RenderThread::current()->Send(
-      new ViewHostMsg_IDBIndexName(idb_index_id_, &result));
+      new IndexedDBHostMsg_IndexName(idb_index_id_, &result));
   return result;
 }
 
 WebString RendererWebIDBIndexImpl::storeName() const {
   string16 result;
   RenderThread::current()->Send(
-      new ViewHostMsg_IDBIndexStoreName(idb_index_id_, &result));
+      new IndexedDBHostMsg_IndexStoreName(idb_index_id_, &result));
   return result;
 }
 
 WebString RendererWebIDBIndexImpl::keyPath() const {
   NullableString16 result;
   RenderThread::current()->Send(
-      new ViewHostMsg_IDBIndexKeyPath(idb_index_id_, &result));
+      new IndexedDBHostMsg_IndexKeyPath(idb_index_id_, &result));
   return result;
 }
 
 bool RendererWebIDBIndexImpl::unique() const {
   bool result;
   RenderThread::current()->Send(
-      new ViewHostMsg_IDBIndexUnique(idb_index_id_, &result));
+      new IndexedDBHostMsg_IndexUnique(idb_index_id_, &result));
   return result;
 }
 

@@ -9,9 +9,7 @@
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/in_process_webkit/indexed_db_dispatcher_host.h"
-#include "chrome/common/indexed_db_key.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/serialized_script_value.h"
+#include "chrome/common/indexed_db_messages.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBCallbacks.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBCursor.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabaseError.h"
@@ -22,16 +20,16 @@
 // which (overloaded) onSuccess method we expect to be called.
 template <class Type> struct WebIDBToMsgHelper { };
 template <> struct WebIDBToMsgHelper<WebKit::WebIDBDatabase> {
-  typedef ViewMsg_IDBCallbacksSuccessIDBDatabase MsgType;
+  typedef IndexedDBMsg_CallbacksSuccessIDBDatabase MsgType;
 };
 template <> struct WebIDBToMsgHelper<WebKit::WebIDBIndex> {
-  typedef ViewMsg_IDBCallbacksSuccessIDBIndex MsgType;
+  typedef IndexedDBMsg_CallbacksSuccessIDBIndex MsgType;
 };
 template <> struct WebIDBToMsgHelper<WebKit::WebIDBObjectStore> {
-  typedef ViewMsg_IDBCallbacksSuccessIDBObjectStore MsgType;
+  typedef IndexedDBMsg_CallbacksSuccessIDBObjectStore MsgType;
 };
 template <> struct WebIDBToMsgHelper<WebKit::WebIDBTransaction> {
-  typedef ViewMsg_IDBCallbacksSuccessIDBTransaction MsgType;
+  typedef IndexedDBMsg_CallbacksSuccessIDBTransaction MsgType;
 };
 
 // The code the following two classes share.
@@ -90,11 +88,12 @@ class IndexedDBCallbacks<WebKit::WebIDBCursor>
   virtual void onSuccess(WebKit::WebIDBCursor* idb_object) {
     int32 object_id = dispatcher_host()->Add(idb_object);
     dispatcher_host()->Send(
-        new ViewMsg_IDBCallbacksSuccessIDBCursor(response_id(), object_id));
+        new IndexedDBMsg_CallbacksSuccessIDBCursor(response_id(), object_id));
   }
 
   virtual void onSuccess() {
-    dispatcher_host()->Send(new ViewMsg_IDBCallbacksSuccessNull(response_id()));
+    dispatcher_host()->Send(new IndexedDBMsg_CallbacksSuccessNull(
+        response_id()));
   }
 
  private:
@@ -114,7 +113,7 @@ class IndexedDBCallbacks<WebKit::WebIDBKey>
 
   virtual void onSuccess(const WebKit::WebIDBKey& value) {
     dispatcher_host()->Send(
-        new ViewMsg_IDBCallbacksSuccessIndexedDBKey(
+        new IndexedDBMsg_CallbacksSuccessIndexedDBKey(
             response_id(), IndexedDBKey(value)));
   }
 
@@ -135,7 +134,7 @@ class IndexedDBCallbacks<WebKit::WebSerializedScriptValue>
 
   virtual void onSuccess(const WebKit::WebSerializedScriptValue& value) {
     dispatcher_host()->Send(
-        new ViewMsg_IDBCallbacksSuccessSerializedScriptValue(
+        new IndexedDBMsg_CallbacksSuccessSerializedScriptValue(
             response_id(), SerializedScriptValue(value)));
   }
 
@@ -153,7 +152,7 @@ class IndexedDBCallbacks<void> : public IndexedDBCallbacksBase {
 
   virtual void onSuccess() {
     dispatcher_host()->Send(
-        new ViewMsg_IDBCallbacksSuccessNull(response_id()));
+        new IndexedDBMsg_CallbacksSuccessNull(response_id()));
   }
 
  private:

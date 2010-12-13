@@ -85,6 +85,8 @@
           'common/gpu_video_common.h',
           'common/indexed_db_key.cc',
           'common/indexed_db_key.h',
+          'common/indexed_db_messages.cc',
+          'common/indexed_db_messages.h',
           'common/indexed_db_param_traits.cc',
           'common/indexed_db_param_traits.h',
           'common/logging_chrome.cc',

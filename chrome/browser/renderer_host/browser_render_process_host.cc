@@ -40,6 +40,7 @@
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/in_process_webkit/dom_storage_message_filter.h"
+#include "chrome/browser/in_process_webkit/indexed_db_dispatcher_host.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/mime_registry_message_filter.h"
 #include "chrome/browser/platform_util.h"
@@ -398,6 +399,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
   channel_->AddFilter(
       new AppCacheDispatcherHost(profile()->GetRequestContext(), id()));
   channel_->AddFilter(new DOMStorageMessageFilter(id(), profile()));
+  channel_->AddFilter(new IndexedDBDispatcherHost(id(), profile()));
   channel_->AddFilter(new PepperFileMessageFilter(id(), profile()));
   channel_->AddFilter(new speech_input::SpeechInputDispatcherHost(id()));
   channel_->AddFilter(
