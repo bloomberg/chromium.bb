@@ -89,7 +89,7 @@ class MediaPlayer : public NotificationObserver,
                const NotificationDetails& details);
 
   // Getter for the singleton.
-  static MediaPlayer* Get();
+  static MediaPlayer* GetInstance();
 
  private:
   friend struct DefaultSingletonTraits<MediaPlayer>;

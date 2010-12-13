@@ -24,7 +24,7 @@ class AudioHandler;
 
 class SystemKeyEventListener : public WmMessageListener::Observer {
  public:
-  static SystemKeyEventListener* instance();
+  static SystemKeyEventListener* GetInstance();
 
   // WmMessageListener::Observer:
   virtual void ProcessWmMessage(const WmIpc::Message& message,

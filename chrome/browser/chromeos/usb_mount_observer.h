@@ -32,7 +32,7 @@ class USBMountObserver : public chromeos::MountLibrary::Observer,
     std::string mount_path;
   };
 
-  static USBMountObserver* Get();
+  static USBMountObserver* GetInstance();
 
   void Observe(NotificationType type,
                const NotificationSource& source,

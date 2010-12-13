@@ -17,7 +17,7 @@ using base::Time;
 using base::TimeDelta;
 
 // static
-NetworkStateNotifier* NetworkStateNotifier::Get() {
+NetworkStateNotifier* NetworkStateNotifier::GetInstance() {
   return Singleton<NetworkStateNotifier>::get();
 }
 
@@ -27,7 +27,7 @@ TimeDelta NetworkStateNotifier::GetOfflineDuration() {
   // TODO(oshima): make this instance method so that
   // we can mock this for ui_tests.
   // http://crbug.com/4825 .
-  return base::Time::Now() - Get()->offline_start_time_;
+  return base::Time::Now() - GetInstance()->offline_start_time_;
 }
 
 NetworkStateNotifier::NetworkStateNotifier()

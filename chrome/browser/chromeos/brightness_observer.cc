@@ -10,8 +10,8 @@
 namespace chromeos {
 
 void BrightnessObserver::BrightnessChanged(int level) {
-  BrightnessBubble::instance()->ShowBubble(level);
-  VolumeBubble::instance()->HideBubble();
+  BrightnessBubble::GetInstance()->ShowBubble(level);
+  VolumeBubble::GetInstance()->HideBubble();
 }
 
 }  // namespace chromeos

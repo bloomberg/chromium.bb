@@ -9,9 +9,12 @@
 #include <string>
 #include <vector>
 
-#include "base/singleton.h"
 #include "chrome/browser/chromeos/login/owner_key_utils.h"
 #include "chrome/browser/chromeos/login/owner_manager.h"
+
+namespace base {
+template <typename T> struct DefaultLazyInstanceTraits;
+}
 
 namespace chromeos {
 
@@ -69,7 +72,7 @@ class OwnershipService {
   OwnershipService();
 
  private:
-  friend struct DefaultSingletonTraits<OwnershipService>;
+  friend struct base::DefaultLazyInstanceTraits<OwnershipService>;
   friend class OwnershipServiceTest;
 
   scoped_refptr<OwnerManager> manager_;

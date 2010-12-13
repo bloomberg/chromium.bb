@@ -192,7 +192,7 @@ void ExistingUserController::Init() {
 
   EnableTooltipsIfNeeded(controllers_);
 
-  WmMessageListener::instance()->AddObserver(this);
+  WmMessageListener::GetInstance()->AddObserver(this);
 
   LoginUtils::Get()->PrewarmAuthentication();
   if (CrosLibrary::Get()->EnsureLoaded())
@@ -240,7 +240,7 @@ ExistingUserController::~ExistingUserController() {
   if (background_window_)
     background_window_->Close();
 
-  WmMessageListener::instance()->RemoveObserver(this);
+  WmMessageListener::GetInstance()->RemoveObserver(this);
 
   STLDeleteElements(&controllers_);
 }

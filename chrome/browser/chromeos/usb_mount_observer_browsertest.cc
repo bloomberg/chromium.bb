@@ -42,7 +42,7 @@ IN_PROC_BROWSER_TEST_F(USBMountObserverBrowserTest, PopupOnEvent) {
   // Doing this so we have a valid profile
   ui_test_utils::NavigateToURL(browser(),
                                GURL(chrome::kChromeUIDownloadsURL));
-  chromeos::USBMountObserver* observe = chromeos::USBMountObserver::Get();
+  chromeos::USBMountObserver* observe = chromeos::USBMountObserver::GetInstance();
   observe->set_profile(browser()->profile());
   scoped_ptr<chromeos::MockMountLibrary> lib(new chromeos::MockMountLibrary());
   lib->AddObserver(observe);

@@ -69,7 +69,7 @@ IN_PROC_BROWSER_TEST_F(MediaPlayerBrowserTest, Popup) {
   ui_test_utils::NavigateToURL(browser(),
                                GURL("chrome://downloads"));
 
-  MediaPlayer* player = MediaPlayer::Get();
+  MediaPlayer* player = MediaPlayer::GetInstance();
   // Check that its not currently visible
   ASSERT_FALSE(IsPlayerVisible());
 
@@ -85,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(MediaPlayerBrowserTest, PopupPlaylist) {
                                GURL("chrome://downloads"));
 
 
-  MediaPlayer* player = MediaPlayer::Get();
+  MediaPlayer* player = MediaPlayer::GetInstance();
 
   player->EnqueueMediaURL(GetMusicTestURL(), NULL);
 

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/cros_settings.h"
 
-#include "base/singleton.h"
+#include "base/lazy_instance.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros_settings_provider.h"
@@ -13,9 +13,12 @@
 
 namespace chromeos {
 
+static base::LazyInstance<CrosSettings> g_cros_settings(
+    base::LINKER_INITIALIZED);
+
 CrosSettings* CrosSettings::Get() {
   // TODO(xiyaun): Use real stuff when underlying libcros is ready.
-  return Singleton<CrosSettings>::get();
+  return g_cros_settings.Pointer();
 }
 
 bool CrosSettings::IsCrosSettings(const std::string& path) {

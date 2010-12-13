@@ -17,7 +17,7 @@ class PulseAudioMixer;
 
 class AudioHandler {
  public:
-  static AudioHandler* instance();
+  static AudioHandler* GetInstance();
 
   // Get volume level in our internal 0-100% range, 0 being pure silence.
   // Volume may go above 100% if another process changes PulseAudio's volume.

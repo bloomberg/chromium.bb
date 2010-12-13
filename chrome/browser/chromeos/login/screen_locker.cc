@@ -709,7 +709,7 @@ void ScreenLocker::Init() {
 
   // Create the SystemKeyEventListener so it can listen for system keyboard
   // messages regardless of focus while screen locked.
-  SystemKeyEventListener::instance();
+  SystemKeyEventListener::GetInstance();
 }
 
 void ScreenLocker::OnLoginFailure(const LoginFailure& error) {

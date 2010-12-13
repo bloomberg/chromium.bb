@@ -131,7 +131,7 @@ class WidgetGtk::DropObserver : public MessageLoopForUI::Observer {
  public:
   DropObserver() {}
 
-  static DropObserver* Get() {
+  static DropObserver* GetInstance() {
     return Singleton<DropObserver>::get();
   }
 
@@ -253,7 +253,7 @@ WidgetGtk::WidgetGtk(Type type)
     installed_message_loop_observer = true;
     MessageLoopForUI* loop = MessageLoopForUI::current();
     if (loop)
-      loop->AddObserver(DropObserver::Get());
+      loop->AddObserver(DropObserver::GetInstance());
   }
 
   if (type_ != TYPE_CHILD)

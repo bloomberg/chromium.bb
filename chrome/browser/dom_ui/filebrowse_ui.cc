@@ -622,7 +622,7 @@ void FilebrowseHandler::PlayMediaFile(const ListValue* args) {
 
   Browser* browser = Browser::GetBrowserForController(
       &tab_contents_->controller(), NULL);
-  MediaPlayer* mediaplayer = MediaPlayer::Get();
+  MediaPlayer* mediaplayer = MediaPlayer::GetInstance();
   mediaplayer->ForcePlayMediaURL(gurl, browser);
 #endif
 }
@@ -634,7 +634,7 @@ void FilebrowseHandler::EnqueueMediaFile(const ListValue* args) {
 
   Browser* browser = Browser::GetBrowserForController(
       &tab_contents_->controller(), NULL);
-  MediaPlayer* mediaplayer = MediaPlayer::Get();
+  MediaPlayer* mediaplayer = MediaPlayer::GetInstance();
   mediaplayer->EnqueueMediaURL(gurl, browser);
 #endif
 }

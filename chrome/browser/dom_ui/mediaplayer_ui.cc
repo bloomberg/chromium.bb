@@ -220,7 +220,7 @@ DOMMessageHandler* MediaplayerHandler::Attach(DOMUI* dom_ui) {
 }
 
 void MediaplayerHandler::Init(bool is_playlist, TabContents* contents) {
-  MediaPlayer* player = MediaPlayer::Get();
+  MediaPlayer* player = MediaPlayer::GetInstance();
   if (!is_playlist) {
     player->SetNewHandler(this, contents);
   } else {
@@ -258,7 +258,7 @@ void MediaplayerHandler::PlaybackMediaFile(const GURL& url) {
   current_playlist_.clear();
   current_playlist_.push_back(MediaplayerHandler::MediaUrl(url));
   FirePlaylistChanged(url.spec(), true, 0);
-  MediaPlayer::Get()->NotifyPlaylistChanged();
+  MediaPlayer::GetInstance()->NotifyPlaylistChanged();
 }
 
 const MediaplayerHandler::UrlVector& MediaplayerHandler::GetCurrentPlaylist() {
@@ -270,13 +270,13 @@ int MediaplayerHandler::GetCurrentPlaylistOffset() {
 }
 
 void MediaplayerHandler::HandleToggleFullscreen(const ListValue* args) {
-  MediaPlayer::Get()->ToggleFullscreen();
+  MediaPlayer::GetInstance()->ToggleFullscreen();
 }
 
 void MediaplayerHandler::HandleSetCurrentPlaylistOffset(const ListValue* args) {
   int id;
   CHECK(ExtractIntegerValue(args, &id));
-  MediaPlayer::Get()->SetPlaylistOffset(id);
+  MediaPlayer::GetInstance()->SetPlaylistOffset(id);
 }
 
 void MediaplayerHandler::FirePlaylistChanged(const std::string& path,
@@ -306,12 +306,12 @@ void MediaplayerHandler::SetCurrentPlaylist(
 void MediaplayerHandler::EnqueueMediaFile(const GURL& url) {
   current_playlist_.push_back(MediaplayerHandler::MediaUrl(url));
   FirePlaylistChanged(url.spec(), false, current_offset_);
-  MediaPlayer::Get()->NotifyPlaylistChanged();
+  MediaPlayer::GetInstance()->NotifyPlaylistChanged();
 }
 
 void MediaplayerHandler::HandleCurrentOffsetChanged(const ListValue* args) {
   CHECK(ExtractIntegerValue(args, &current_offset_));
-  MediaPlayer::Get()->NotifyPlaylistChanged();
+  MediaPlayer::GetInstance()->NotifyPlaylistChanged();
 }
 
 void MediaplayerHandler::HandlePlaybackError(const ListValue* args) {
@@ -335,11 +335,11 @@ void MediaplayerHandler::HandleGetCurrentPlaylist(const ListValue* args) {
 }
 
 void MediaplayerHandler::HandleTogglePlaylist(const ListValue* args) {
-  MediaPlayer::Get()->TogglePlaylistWindowVisible();
+  MediaPlayer::GetInstance()->TogglePlaylistWindowVisible();
 }
 
 void MediaplayerHandler::HandleShowPlaylist(const ListValue* args) {
-  MediaPlayer::Get()->ShowPlaylistWindow();
+  MediaPlayer::GetInstance()->ShowPlaylistWindow();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -356,7 +356,7 @@ MediaPlayer::~MediaPlayer() {
 }
 
 // static
-MediaPlayer* MediaPlayer::Get() {
+MediaPlayer* MediaPlayer::GetInstance() {
   return Singleton<MediaPlayer>::get();
 }
 

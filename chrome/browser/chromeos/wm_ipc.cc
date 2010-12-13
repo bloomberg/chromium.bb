@@ -10,9 +10,9 @@ extern "C" {
 }
 
 #include "app/x11_util.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
-#include "base/singleton.h"
 
 namespace chromeos {
 
@@ -59,12 +59,11 @@ bool SetIntProperty(XID xid, Atom xatom, const std::vector<int>& values) {
 
 }  // namespace
 
+static base::LazyInstance<WmIpc> g_wm_ipc(base::LINKER_INITIALIZED);
+
 // static
 WmIpc* WmIpc::instance() {
-  static WmIpc* instance = NULL;
-  if (!instance)
-    instance = Singleton<WmIpc>::get();
-  return instance;
+  return g_wm_ipc.Pointer();
 }
 
 bool WmIpc::SetWindowType(GtkWidget* widget,

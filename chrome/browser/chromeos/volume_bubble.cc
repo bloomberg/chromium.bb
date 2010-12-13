@@ -21,7 +21,7 @@ VolumeBubble::VolumeBubble()
 }
 
 // static
-VolumeBubble* VolumeBubble::instance() {
+VolumeBubble* VolumeBubble::GetInstance() {
   return Singleton<VolumeBubble>::get();
 }
 

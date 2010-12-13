@@ -397,7 +397,8 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
     // because the page load can happen in parallel to this UI thread
     // and IO thread may access the NetworkStateNotifier.
     chromeos::CrosLibrary::Get()->GetNetworkLibrary()
-        ->AddNetworkManagerObserver(chromeos::NetworkStateNotifier::Get());
+        ->AddNetworkManagerObserver(
+            chromeos::NetworkStateNotifier::GetInstance());
   }
 #endif
 
@@ -419,14 +420,14 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
 #if defined(OS_CHROMEOS)
   // Create the WmMessageListener so that it can listen for messages regardless
   // of what window has focus.
-  chromeos::WmMessageListener::instance();
+  chromeos::WmMessageListener::GetInstance();
 
   // Create the SystemKeyEventListener so it can listen for system keyboard
   // messages regardless of focus.
-  chromeos::SystemKeyEventListener::instance();
+  chromeos::SystemKeyEventListener::GetInstance();
 
   // Create the WmOverviewController so it can register with the listener.
-  chromeos::WmOverviewController::instance();
+  chromeos::WmOverviewController::GetInstance();
 
   // Install the GView request interceptor that will redirect requests
   // of compatible documents (PDF, etc) to the GView document viewer.
@@ -439,7 +440,8 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
     // and have the constructor take care of everything else.
     chromeos::MountLibrary* lib =
         chromeos::CrosLibrary::Get()->GetMountLibrary();
-    chromeos::USBMountObserver* observe = chromeos::USBMountObserver::Get();
+    chromeos::USBMountObserver* observe =
+        chromeos::USBMountObserver::GetInstance();
     lib->AddObserver(observe);
     observe->ScanForDevices(lib);
     // Connect the chromeos notifications

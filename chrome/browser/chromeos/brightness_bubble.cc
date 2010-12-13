@@ -21,7 +21,7 @@ BrightnessBubble::BrightnessBubble()
 }
 
 // static
-BrightnessBubble* BrightnessBubble::instance() {
+BrightnessBubble* BrightnessBubble::GetInstance() {
   return Singleton<BrightnessBubble>::get();
 }
 

@@ -25,7 +25,7 @@ const int kPopupWidth = 250;
 const int kPopupHeight = 300;
 
 // static
-USBMountObserver* USBMountObserver::Get() {
+USBMountObserver* USBMountObserver::GetInstance() {
   return Singleton<USBMountObserver>::get();
 }
 

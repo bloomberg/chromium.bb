@@ -36,7 +36,7 @@ class MachBroker : public base::ProcessMetrics::PortProvider,
                    public NotificationObserver {
  public:
   // Returns the global MachBroker.
-  static MachBroker* instance();
+  static MachBroker* GetInstance();
 
   // Performs any necessary setup that cannot happen in the constructor.
   // Clients MUST call this method before fork()ing any children.

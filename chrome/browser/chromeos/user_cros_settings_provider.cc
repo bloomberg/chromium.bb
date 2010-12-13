@@ -157,7 +157,7 @@ bool GetUserWhitelist(ListValue* user_list) {
 class UserCrosSettingsTrust : public SignedSettingsHelper::Callback,
                               public NotificationObserver {
  public:
-  static UserCrosSettingsTrust* GetSharedInstance() {
+  static UserCrosSettingsTrust* GetInstance() {
     return Singleton<UserCrosSettingsTrust>::get();
   }
 
@@ -432,7 +432,7 @@ namespace chromeos {
 
 UserCrosSettingsProvider::UserCrosSettingsProvider() {
   // Trigger prefetching of settings.
-  UserCrosSettingsTrust::GetSharedInstance();
+  UserCrosSettingsTrust::GetInstance();
 }
 
 // static
@@ -446,36 +446,36 @@ void UserCrosSettingsProvider::RegisterPrefs(PrefService* local_state) {
 }
 
 bool UserCrosSettingsProvider::RequestTrustedAllowGuest(Task* callback) {
-  return UserCrosSettingsTrust::GetSharedInstance()->RequestTrustedEntity(
+  return UserCrosSettingsTrust::GetInstance()->RequestTrustedEntity(
       kAccountsPrefAllowGuest, callback);
 }
 
 bool UserCrosSettingsProvider::RequestTrustedAllowNewUser(Task* callback) {
-  return UserCrosSettingsTrust::GetSharedInstance()->RequestTrustedEntity(
+  return UserCrosSettingsTrust::GetInstance()->RequestTrustedEntity(
       kAccountsPrefAllowNewUser, callback);
 }
 
 bool UserCrosSettingsProvider::RequestTrustedShowUsersOnSignin(Task* callback) {
-  return UserCrosSettingsTrust::GetSharedInstance()->RequestTrustedEntity(
+  return UserCrosSettingsTrust::GetInstance()->RequestTrustedEntity(
       kAccountsPrefShowUserNamesOnSignIn, callback);
 }
 
 bool UserCrosSettingsProvider::RequestTrustedOwner(Task* callback) {
-  return UserCrosSettingsTrust::GetSharedInstance()->RequestTrustedEntity(
+  return UserCrosSettingsTrust::GetInstance()->RequestTrustedEntity(
       kDeviceOwner, callback);
 }
 
 // static
 bool UserCrosSettingsProvider::cached_allow_guest() {
   // Trigger prefetching if singleton object still does not exist.
-  UserCrosSettingsTrust::GetSharedInstance();
+  UserCrosSettingsTrust::GetInstance();
   return g_browser_process->local_state()->GetBoolean(kAccountsPrefAllowGuest);
 }
 
 // static
 bool UserCrosSettingsProvider::cached_allow_new_user() {
   // Trigger prefetching if singleton object still does not exist.
-  UserCrosSettingsTrust::GetSharedInstance();
+  UserCrosSettingsTrust::GetInstance();
   return g_browser_process->local_state()->GetBoolean(
     kAccountsPrefAllowNewUser);
 }
@@ -483,7 +483,7 @@ bool UserCrosSettingsProvider::cached_allow_new_user() {
 // static
 bool UserCrosSettingsProvider::cached_show_users_on_signin() {
   // Trigger prefetching if singleton object still does not exist.
-  UserCrosSettingsTrust::GetSharedInstance();
+  UserCrosSettingsTrust::GetInstance();
   return g_browser_process->local_state()->GetBoolean(
       kAccountsPrefShowUserNamesOnSignIn);
 }
@@ -506,7 +506,7 @@ const ListValue* UserCrosSettingsProvider::cached_whitelist() {
 // static
 std::string UserCrosSettingsProvider::cached_owner() {
   // Trigger prefetching if singleton object still does not exist.
-  UserCrosSettingsTrust::GetSharedInstance();
+  UserCrosSettingsTrust::GetInstance();
   if (!g_browser_process || !g_browser_process->local_state())
     return std::string();
   return g_browser_process->local_state()->GetString(kDeviceOwner);
@@ -529,7 +529,7 @@ bool UserCrosSettingsProvider::IsEmailInCachedWhitelist(
 
 void UserCrosSettingsProvider::DoSet(const std::string& path,
                                      Value* in_value) {
-  UserCrosSettingsTrust::GetSharedInstance()->Set(path, in_value);
+  UserCrosSettingsTrust::GetInstance()->Set(path, in_value);
 }
 
 bool UserCrosSettingsProvider::Get(const std::string& path,
@@ -555,7 +555,7 @@ bool UserCrosSettingsProvider::HandlesSetting(const std::string& path) {
 
 void UserCrosSettingsProvider::WhitelistUser(const std::string& email) {
   SignedSettingsHelper::Get()->StartWhitelistOp(
-      email, true, UserCrosSettingsTrust::GetSharedInstance());
+      email, true, UserCrosSettingsTrust::GetInstance());
   PrefService* prefs = g_browser_process->local_state();
   ListValue* cached_whitelist = prefs->GetMutableList(kAccountsPrefUsers);
   cached_whitelist->Append(Value::CreateStringValue(email));
@@ -564,7 +564,7 @@ void UserCrosSettingsProvider::WhitelistUser(const std::string& email) {
 
 void UserCrosSettingsProvider::UnwhitelistUser(const std::string& email) {
   SignedSettingsHelper::Get()->StartWhitelistOp(
-      email, false, UserCrosSettingsTrust::GetSharedInstance());
+      email, false, UserCrosSettingsTrust::GetInstance());
 
   PrefService* prefs = g_browser_process->local_state();
   ListValue* cached_whitelist = prefs->GetMutableList(kAccountsPrefUsers);

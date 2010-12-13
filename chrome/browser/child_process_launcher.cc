@@ -173,7 +173,7 @@ class ChildProcessLauncher::Context
       // notification will be processed by the MachBroker after the call to
       // AddPlaceholderForPid(), enabling proper cleanup.
       {  // begin scope for AutoLock
-        MachBroker* broker = MachBroker::instance();
+        MachBroker* broker = MachBroker::GetInstance();
         AutoLock lock(broker->GetLock());
 
         // This call to |PrepareForFork()| will start the MachBroker listener

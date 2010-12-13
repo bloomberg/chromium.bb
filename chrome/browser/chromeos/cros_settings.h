@@ -16,6 +16,10 @@
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/common/notification_observer.h"
 
+namespace base {
+template <typename T> struct DefaultLazyInstanceTraits;
+}
+
 class Value;
 
 namespace chromeos {
@@ -80,7 +84,7 @@ class CrosSettings : public NonThreadSafe {
   CrosSettings();
   ~CrosSettings();
   CrosSettingsProvider* GetProvider(const std::string& path) const;
-  friend struct DefaultSingletonTraits<CrosSettings>;
+  friend struct base::DefaultLazyInstanceTraits<CrosSettings>;
 
   DISALLOW_COPY_AND_ASSIGN(CrosSettings);
 };

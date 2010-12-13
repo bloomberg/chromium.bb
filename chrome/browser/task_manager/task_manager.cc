@@ -627,7 +627,7 @@ void TaskManagerModel::AddResource(TaskManager::Resource* resource) {
         base::ProcessMetrics::CreateProcessMetrics(process);
 #else
         base::ProcessMetrics::CreateProcessMetrics(process,
-                                                   MachBroker::instance());
+                                                   MachBroker::GetInstance());
 #endif
 
     metrics_map_[process] = pm;

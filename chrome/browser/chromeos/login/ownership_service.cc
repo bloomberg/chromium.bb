@@ -6,13 +6,17 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/lazy_instance.h"
 #include "chrome/browser/browser_thread.h"
 
 namespace chromeos {
 
+static base::LazyInstance<OwnershipService> g_ownership_service(
+    base::LINKER_INITIALIZED);
+
 //  static
 OwnershipService* OwnershipService::GetSharedInstance() {
-  return Singleton<OwnershipService>::get();
+  return g_ownership_service.Pointer();
 }
 
 OwnershipService::OwnershipService()

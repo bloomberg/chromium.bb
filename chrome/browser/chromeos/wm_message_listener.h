@@ -31,7 +31,7 @@ class WmMessageListener : public MessageLoopForUI::Observer {
                                   GdkWindow* window) = 0;
   };
 
-  static WmMessageListener* instance();
+  static WmMessageListener* GetInstance();
 
   void AddObserver(Observer* observer) {
     observers_.AddObserver(observer);

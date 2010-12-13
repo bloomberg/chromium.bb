@@ -48,7 +48,7 @@ class NetworkStateDetails {
 class NetworkStateNotifier : public NetworkLibrary::NetworkManagerObserver {
  public:
   // Returns the singleton instance of the network state notifier;
-  static NetworkStateNotifier* Get();
+  static NetworkStateNotifier* GetInstance();
 
   // The duration of being in offline. The value is undefined when
   // when network is connected.
@@ -56,7 +56,7 @@ class NetworkStateNotifier : public NetworkLibrary::NetworkManagerObserver {
 
   // Returns true if the network is connected.
   static bool is_connected() {
-    return Get()->state_ == NetworkStateDetails::CONNECTED;
+    return GetInstance()->state_ == NetworkStateDetails::CONNECTED;
   }
 
   // NetworkLibrary::NetworkManagerObserver implementation.

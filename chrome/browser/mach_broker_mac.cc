@@ -121,7 +121,7 @@ class MachListenerThreadDelegate : public PlatformThread::Delegate {
 };
 
 // Returns the global MachBroker.
-MachBroker* MachBroker::instance() {
+MachBroker* MachBroker::GetInstance() {
   return Singleton<MachBroker, LeakySingletonTraits<MachBroker> >::get();
 }
 

@@ -16,7 +16,7 @@ namespace chromeos {
 // Singleton class controlling brightness bubble.
 class BrightnessBubble : public SettingLevelBubble {
  public:
-  static BrightnessBubble* instance();
+  static BrightnessBubble* GetInstance();
 
  private:
   friend struct DefaultSingletonTraits<BrightnessBubble>;

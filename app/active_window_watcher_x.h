@@ -26,6 +26,8 @@ class ActiveWindowWatcherX {
     virtual ~Observer() {}
   };
 
+  static ActiveWindowWatcherX* GetInstance();
+
   static void AddObserver(Observer* observer);
   static void RemoveObserver(Observer* observer);
 
@@ -34,8 +36,6 @@ class ActiveWindowWatcherX {
 
   ActiveWindowWatcherX();
   ~ActiveWindowWatcherX();
-
-  static ActiveWindowWatcherX* GetInstance();
 
   void Init();
 

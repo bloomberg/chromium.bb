@@ -88,7 +88,7 @@ void OpenItem(const FilePath& full_path) {
       ext == ".mp3" ||
       ext == ".mkv" ||
       ext == ".ogg") {
-    MediaPlayer* mediaplayer = MediaPlayer::Get();
+    MediaPlayer* mediaplayer = MediaPlayer::GetInstance();
     std::string url = "file://";
     url += full_path.value();
     GURL gurl(url);

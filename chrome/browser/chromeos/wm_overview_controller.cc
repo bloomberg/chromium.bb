@@ -453,7 +453,7 @@ void BrowserListener::RenumberSnapshots(int start_index) {
 // WmOverviewController methods
 
 // static
-WmOverviewController* WmOverviewController::instance() {
+WmOverviewController* WmOverviewController::GetInstance() {
   static WmOverviewController* instance = NULL;
   if (!instance) {
     instance = Singleton<WmOverviewController>::get();
@@ -483,11 +483,11 @@ WmOverviewController::WmOverviewController()
   }
 
   BrowserList::AddObserver(this);
-  WmMessageListener::instance()->AddObserver(this);
+  WmMessageListener::GetInstance()->AddObserver(this);
 }
 
 WmOverviewController::~WmOverviewController() {
-  WmMessageListener::instance()->RemoveObserver(this);
+  WmMessageListener::GetInstance()->RemoveObserver(this);
   BrowserList::RemoveObserver(this);
   listeners_.clear();
 }

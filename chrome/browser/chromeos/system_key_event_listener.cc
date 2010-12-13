@@ -21,13 +21,13 @@ const double kStepPercentage = 4.0;
 }  // namespace
 
 // static
-SystemKeyEventListener* SystemKeyEventListener::instance() {
+SystemKeyEventListener* SystemKeyEventListener::GetInstance() {
   return Singleton<SystemKeyEventListener>::get();
 }
 
 SystemKeyEventListener::SystemKeyEventListener()
-    : audio_handler_(AudioHandler::instance()) {
-  WmMessageListener::instance()->AddObserver(this);
+    : audio_handler_(AudioHandler::GetInstance()) {
+  WmMessageListener::GetInstance()->AddObserver(this);
 
   key_volume_mute_ = XKeysymToKeycode(GDK_DISPLAY(), XF86XK_AudioMute);
   key_volume_down_ = XKeysymToKeycode(GDK_DISPLAY(), XF86XK_AudioLowerVolume);
@@ -49,7 +49,7 @@ SystemKeyEventListener::SystemKeyEventListener()
 }
 
 SystemKeyEventListener::~SystemKeyEventListener() {
-  WmMessageListener::instance()->RemoveObserver(this);
+  WmMessageListener::GetInstance()->RemoveObserver(this);
   gdk_window_remove_filter(NULL, GdkEventFilter, this);
 }
 
@@ -131,19 +131,19 @@ void SystemKeyEventListener::OnVolumeMute() {
   // Always muting (and not toggling) as per final decision on
   // http://crosbug.com/3751
   audio_handler_->SetMute(true);
-  VolumeBubble::instance()->ShowBubble(0);
-  BrightnessBubble::instance()->HideBubble();
+  VolumeBubble::GetInstance()->ShowBubble(0);
+  BrightnessBubble::GetInstance()->HideBubble();
 }
 
 void SystemKeyEventListener::OnVolumeDown() {
   if (audio_handler_->IsMute()) {
-    VolumeBubble::instance()->ShowBubble(0);
+    VolumeBubble::GetInstance()->ShowBubble(0);
   } else {
     audio_handler_->AdjustVolumeByPercent(-kStepPercentage);
-    VolumeBubble::instance()->ShowBubble(
+    VolumeBubble::GetInstance()->ShowBubble(
         audio_handler_->GetVolumePercent());
   }
-  BrightnessBubble::instance()->HideBubble();
+  BrightnessBubble::GetInstance()->HideBubble();
 }
 
 void SystemKeyEventListener::OnVolumeUp() {
@@ -151,9 +151,9 @@ void SystemKeyEventListener::OnVolumeUp() {
     audio_handler_->SetMute(false);
   else
     audio_handler_->AdjustVolumeByPercent(kStepPercentage);
-  VolumeBubble::instance()->ShowBubble(
+  VolumeBubble::GetInstance()->ShowBubble(
       audio_handler_->GetVolumePercent());
-  BrightnessBubble::instance()->HideBubble();
+  BrightnessBubble::GetInstance()->HideBubble();
 }
 
 }  // namespace chromeos

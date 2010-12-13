@@ -7,7 +7,7 @@
 namespace chromeos {
 
 // static
-WmMessageListener* WmMessageListener::instance() {
+WmMessageListener* WmMessageListener::GetInstance() {
   static WmMessageListener* instance = NULL;
   if (!instance) {
     instance = Singleton<WmMessageListener>::get();

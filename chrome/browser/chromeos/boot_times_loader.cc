@@ -9,10 +9,10 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
-#include "base/singleton.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -62,6 +62,9 @@ static const FilePath::CharType kLoginTimes[] = FPL("login-times-sent");
 // Name of file collecting logout times.
 static const char kLogoutTimes[] = "logout-times-sent";
 
+static base::LazyInstance<BootTimesLoader> g_boot_times_loader(
+    base::LINKER_INITIALIZED);
+
 BootTimesLoader::BootTimesLoader()
     : backend_(new Backend()),
       have_registered_(false) {
@@ -71,7 +74,7 @@ BootTimesLoader::BootTimesLoader()
 
 // static
 BootTimesLoader* BootTimesLoader::Get() {
-  return Singleton<BootTimesLoader>::get();
+  return g_boot_times_loader.Pointer();
 }
 
 BootTimesLoader::Handle BootTimesLoader::GetBootTimes(
@@ -373,7 +376,7 @@ void BootTimesLoader::Observe(
     // Only log for first tab to render.  Make sure this is only done once.
     // If the network isn't connected we'll get a second LOAD_START once it is
     // and the page is reloaded.
-    if (NetworkStateNotifier::Get()->is_connected()) {
+    if (NetworkStateNotifier::GetInstance()->is_connected()) {
       // Post difference between first tab and login success time.
       AddLoginTimeMarker("LoginDone", true);
       RecordCurrentStats(kChromeFirstRender);

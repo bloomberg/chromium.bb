@@ -16,7 +16,7 @@ namespace chromeos {
 // Singleton class controlling volume bubble.
 class VolumeBubble : public SettingLevelBubble {
  public:
-  static VolumeBubble* instance();
+  static VolumeBubble* GetInstance();
 
  private:
   friend struct DefaultSingletonTraits<VolumeBubble>;

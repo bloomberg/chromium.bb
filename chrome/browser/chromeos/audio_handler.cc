@@ -170,7 +170,7 @@ double AudioHandler::PercentToVolumeDb(double volume_percent) {
 }
 
 // static
-AudioHandler* AudioHandler::instance() {
+AudioHandler* AudioHandler::GetInstance() {
   return Singleton<AudioHandler>::get();
 }
 

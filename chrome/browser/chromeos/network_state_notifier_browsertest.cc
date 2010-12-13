@@ -36,7 +36,7 @@ class NetworkStateNotifierTest : public CrosInProcessBrowserTest,
         .Times(1)
         .WillRepeatedly((Return(true)))
         .RetiresOnSaturation();
-    NetworkStateNotifier::Get();
+    NetworkStateNotifier::GetInstance();
   }
 
   // NotificationObserver overrides.
@@ -69,7 +69,7 @@ IN_PROC_BROWSER_TEST_F(NetworkStateNotifierTest, TestConnected) {
       .Times(1)
       .WillRepeatedly((Return(true)))
       .RetiresOnSaturation();
-  NetworkStateNotifier* notifier = NetworkStateNotifier::Get();
+  NetworkStateNotifier* notifier = NetworkStateNotifier::GetInstance();
   notifier->OnNetworkManagerChanged(mock_network_library_);
   WaitForNotification();
   EXPECT_EQ(chromeos::NetworkStateDetails::CONNECTED, state_);
@@ -87,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(NetworkStateNotifierTest, TestConnecting) {
       .Times(1)
       .WillOnce((Return(true)))
       .RetiresOnSaturation();
-  NetworkStateNotifier* notifier = NetworkStateNotifier::Get();
+  NetworkStateNotifier* notifier = NetworkStateNotifier::GetInstance();
   notifier->OnNetworkManagerChanged(mock_network_library_);
   WaitForNotification();
   EXPECT_EQ(chromeos::NetworkStateDetails::CONNECTING, state_);
@@ -105,7 +105,7 @@ IN_PROC_BROWSER_TEST_F(NetworkStateNotifierTest, TestDisconnected) {
       .Times(1)
       .WillOnce((Return(false)))
       .RetiresOnSaturation();
-  NetworkStateNotifier* notifier = NetworkStateNotifier::Get();
+  NetworkStateNotifier* notifier = NetworkStateNotifier::GetInstance();
   notifier->OnNetworkManagerChanged(mock_network_library_);
   WaitForNotification();
   EXPECT_EQ(chromeos::NetworkStateDetails::DISCONNECTED, state_);
