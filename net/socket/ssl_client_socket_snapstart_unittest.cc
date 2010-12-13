@@ -121,7 +121,7 @@ class SSLClientSocketSnapStartTest : public PlatformTest {
     // The listening socket is installed as the child's fd 3.
     mapping.push_back(std::make_pair(listener, 3));
     base::LaunchApp(args, mapping, false /* don't wait */, &child_);
-    HANDLE_EINTR(close(listener));
+    ASSERT_EQ(0, HANDLE_EINTR(close(listener)));
   }
 
   // LoadDefaultCert returns the DER encoded default certificate.
