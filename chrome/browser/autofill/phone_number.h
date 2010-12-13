@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/string16.h"
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/autofill/form_group.h"
 
 // A form group that stores phone number information.
@@ -48,8 +49,7 @@ class PhoneNumber : public FormGroup {
   explicit PhoneNumber(const PhoneNumber& phone_number);
 
  private:
-  // For test.
-  friend class PhoneNumberTest;
+  FRIEND_TEST_ALL_PREFIXES(PhoneNumberTest, Matcher);
 
   void operator=(const PhoneNumber& phone_number);
 

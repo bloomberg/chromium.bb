@@ -7,33 +7,8 @@
 #include "chrome/browser/autofill/phone_number.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class PhoneNumberTest : public testing::Test {
- public:
-  PhoneNumberTest() {}
-
-  void set_whole_number(PhoneNumber* phone_number,
-                        const string16& whole_number) {
-    phone_number->set_whole_number(whole_number);
-  }
-
-  bool IsNumber(PhoneNumber* phone_number, const string16& text) const {
-    return phone_number->IsNumber(text);
-  }
-
-  bool IsCityCode(PhoneNumber* phone_number, const string16& text) const {
-    return phone_number->IsCityCode(text);
-  }
-
-  bool IsCountryCode(PhoneNumber* phone_number, const string16& text) const {
-    return phone_number->IsCountryCode(text);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PhoneNumberTest);
-};
-
 // Tests the phone number parser.
-TEST_F(PhoneNumberTest, Parser) {
+TEST(PhoneNumberTest, Parser) {
   string16 number;
   string16 city_code;
   string16 country_code;
@@ -119,28 +94,28 @@ TEST_F(PhoneNumberTest, Parser) {
   EXPECT_EQ(ASCIIToUTF16("01"), country_code);
 }
 
-TEST_F(PhoneNumberTest, Matcher) {
+TEST(PhoneNumberTest, Matcher) {
   string16 phone(ASCIIToUTF16("121231234567"));
   HomePhoneNumber phone_number;
-  set_whole_number(&phone_number, phone);
+  phone_number.set_whole_number(phone);
   // Phone number is now country_code == 12, city_code = 123, number = 1234567.
   char test_number[] = "1234567890";
   for (int i = arraysize(test_number) - 1; i >= 0; --i) {
     test_number[i] = 0;  // Cut the string.
     if (i > 7) {
-      EXPECT_FALSE(IsNumber(&phone_number, ASCIIToUTF16(test_number)));
+      EXPECT_FALSE(phone_number.IsNumber(ASCIIToUTF16(test_number)));
     } else {
-      EXPECT_TRUE(IsNumber(&phone_number, ASCIIToUTF16(test_number)));
+      EXPECT_TRUE(phone_number.IsNumber(ASCIIToUTF16(test_number)));
     }
     if (i > 3) {
-      EXPECT_FALSE(IsCityCode(&phone_number, ASCIIToUTF16(test_number)));
+      EXPECT_FALSE(phone_number.IsCityCode(ASCIIToUTF16(test_number)));
     } else {
-      EXPECT_TRUE(IsCityCode(&phone_number, ASCIIToUTF16(test_number)));
+      EXPECT_TRUE(phone_number.IsCityCode(ASCIIToUTF16(test_number)));
     }
     if (i > 2) {
-      EXPECT_FALSE(IsCountryCode(&phone_number, ASCIIToUTF16(test_number)));
+      EXPECT_FALSE(phone_number.IsCountryCode(ASCIIToUTF16(test_number)));
     } else {
-      EXPECT_TRUE(IsCountryCode(&phone_number, ASCIIToUTF16(test_number)));
+      EXPECT_TRUE(phone_number.IsCountryCode(ASCIIToUTF16(test_number)));
     }
   }
 }
