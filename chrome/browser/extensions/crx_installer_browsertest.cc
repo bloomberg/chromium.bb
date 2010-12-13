@@ -10,6 +10,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/ui_test_utils.h"
 
+class SkBitmap;
+
 namespace {
 
 class MockInstallUI : public ExtensionInstallUI {
@@ -25,11 +27,11 @@ class MockInstallUI : public ExtensionInstallUI {
     confirmation_requested_ = true;
     delegate->InstallUIProceed();
   }
-  void OnInstallSuccess(const Extension* extension) {
+  void OnInstallSuccess(const Extension* extension, SkBitmap* icon) {
     MessageLoopForUI::current()->Quit();
   }
   void OnInstallFailure(const std::string& error) {
-    ADD_FAILURE() << "insall failed";
+    ADD_FAILURE() << "install failed";
     MessageLoopForUI::current()->Quit();
   }
 

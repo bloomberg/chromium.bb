@@ -68,7 +68,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
   virtual void ConfirmUninstall(Delegate* delegate, const Extension* extension);
 
   // Installation was successful. This is declared virtual for testing.
-  virtual void OnInstallSuccess(const Extension* extension);
+  virtual void OnInstallSuccess(const Extension* extension, SkBitmap* icon);
 
   // Installation failed. This is declared virtual for testing.
   virtual void OnInstallFailure(const std::string& error);
@@ -88,6 +88,10 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
       const Extension* new_theme, Profile* profile);
 
  private:
+  // Sets the icon that will be used in any UI. If |icon| is NULL, or contains
+  // an empty bitmap, then a default icon will be used instead.
+  void SetIcon(SkBitmap* icon);
+
   // Starts the process of showing a confirmation UI, which is split into two.
   // 1) Set off a 'load icon' task.
   // 2) Handle the load icon response and show the UI (OnImageLoaded).

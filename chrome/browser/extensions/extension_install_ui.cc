@@ -122,7 +122,11 @@ void ExtensionInstallUI::ConfirmUninstall(Delegate* delegate,
   ShowConfirmation(UNINSTALL_PROMPT);
 }
 
-void ExtensionInstallUI::OnInstallSuccess(const Extension* extension) {
+void ExtensionInstallUI::OnInstallSuccess(const Extension* extension,
+                                          SkBitmap* icon) {
+  extension_ = extension;
+  SetIcon(icon);
+
   if (extension->is_theme()) {
     ShowThemeInfoBar(previous_theme_id_, previous_use_system_theme_,
                      extension, profile_);
@@ -181,8 +185,7 @@ void ExtensionInstallUI::OnInstallFailure(const std::string& error) {
       UTF8ToUTF16(error));
 }
 
-void ExtensionInstallUI::OnImageLoaded(
-    SkBitmap* image, ExtensionResource resource, int index) {
+void ExtensionInstallUI::SetIcon(SkBitmap* image) {
   if (image)
     icon_ = *image;
   else
@@ -196,6 +199,11 @@ void ExtensionInstallUI::OnImageLoaded(
           IDR_EXTENSION_DEFAULT_ICON);
     }
   }
+}
+
+void ExtensionInstallUI::OnImageLoaded(
+    SkBitmap* image, ExtensionResource resource, int index) {
+  SetIcon(image);
 
   switch (prompt_type_) {
     case INSTALL_PROMPT: {

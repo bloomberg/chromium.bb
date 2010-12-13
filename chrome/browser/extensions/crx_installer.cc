@@ -282,7 +282,7 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
     return;
   }
 
-  if (client_ || extension_->GetFullLaunchURL().is_valid()) {
+  if (client_) {
     Extension::DecodeIcon(extension_.get(), Extension::EXTENSION_ICON_LARGE,
                           &install_icon_);
   }
@@ -430,7 +430,7 @@ void CrxInstaller::ReportSuccessFromUIThread() {
 
   // If there is a client, tell the client about installation.
   if (client_)
-    client_->OnInstallSuccess(extension_.get());
+    client_->OnInstallSuccess(extension_.get(), install_icon_.get());
 
   // Tell the frontend about the installation and hand off ownership of
   // extension_ to it.
