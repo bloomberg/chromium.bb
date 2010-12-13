@@ -113,6 +113,10 @@ ACTION_P(SetMemory, obj) {
   memcpy(arg0, &obj, sizeof(obj));
 }
 
+ACTION_P2(SetMemoryAtOffset, offset, obj) {
+  memcpy(static_cast<char*>(arg0) + offset, &obj, sizeof(obj));
+}
+
 // Used to help set the transfer buffer result to SizedResult of a single value.
 template <typename T>
 class SizedResultHelper {
@@ -141,6 +145,13 @@ struct FourFloats {
   float z;
   float w;
 };
+
+#pragma pack(push, 1)
+// Struct that holds 7 characters.
+struct Str7 {
+  char str[7];
+};
+#pragma pack(pop)
 
 // Test fixture for CommandBufferHelper test.
 class GLES2ImplementationTest : public testing::Test {
@@ -258,6 +269,44 @@ TEST_F(GLES2ImplementationTest, ShaderSource) {
   };
   gl_->ShaderSource(kShaderId, 2, strings, NULL);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, GetShaderSource) {
+  const uint32 kBucketId = 1;  // This id is hardcoded into GLES2Implemenation
+  const GLuint kShaderId = 456;
+  const Str7 kString = {"foobar"};
+  const char kBad = 0x12;
+  struct Cmds {
+    cmd::SetBucketSize set_bucket_size1;
+    GetShaderSource get_shader_source;
+    cmd::GetBucketSize get_bucket_size;
+    cmd::GetBucketData get_bucket_data;
+    cmd::SetToken set_token1;
+    cmd::SetBucketSize set_bucket_size2;
+  };
+  int32 token = 1;
+  uint32 offset = GLES2Implementation::kStartingOffset;
+  Cmds expected;
+  expected.set_bucket_size1.Init(kBucketId, 0);
+  expected.get_shader_source.Init(kShaderId, kBucketId);
+  expected.get_bucket_size.Init(kBucketId, kTransferBufferId, 0);
+  expected.get_bucket_data.Init(
+      kBucketId, 0, sizeof(kString), kTransferBufferId, offset);
+  expected.set_token1.Init(token++);
+  expected.set_bucket_size2.Init(kBucketId, 0);
+  char buf[sizeof(kString) + 1];
+  memset(buf, kBad, sizeof(buf));
+
+  EXPECT_CALL(*command_buffer_, OnFlush(_))
+      .WillOnce(SetMemory(uint32(sizeof(kString))))
+      .WillOnce(SetMemoryAtOffset(offset, kString))
+      .RetiresOnSaturation();
+
+  GLsizei length = 0;
+  gl_->GetShaderSource(kShaderId, sizeof(buf), &length, buf);
+  EXPECT_EQ(sizeof(kString) - 1, static_cast<size_t>(length));
+  EXPECT_STREQ(kString.str, buf);
+  EXPECT_EQ(buf[sizeof(kString)], kBad);
 }
 
 #if defined(GLES2_SUPPORT_CLIENT_SIDE_BUFFERS)

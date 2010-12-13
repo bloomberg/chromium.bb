@@ -4324,7 +4324,7 @@ void GLES2DecoderImpl::DoGetShaderiv(
   }
   switch (pname) {
     case GL_SHADER_SOURCE_LENGTH:
-      *params = info->source().size();
+      *params = info->source().size() + 1;
       return;
     case GL_COMPILE_STATUS:
       *params = info->IsValid();
