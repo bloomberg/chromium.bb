@@ -24,7 +24,7 @@ def CheckFileSize(target, source, env):
     raise Exception("File %s larger than expected: expected upto %i but got %i"
                     % (source[0].abspath, expected_max, actual_size))
 
-if env.Bit('nacl_glibc'):
+if not env.Bit('nacl_static_link'):
   # Check the (unstripped) executable size.  The main purpose of this
   # is to check that we have not acquired any 64k-page-size padding,
   # which would bump the size above 64k.

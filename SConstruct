@@ -193,6 +193,12 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'nacl_pic', default=False,
     desc="generate position indepent code for (P)NaCl modules")
 
+  BitFromArgument(env, 'nacl_static_link', default=not env.Bit('nacl_glibc'),
+    desc="Whether to use static linking instead of dynamic linking "
+      "for building NaCl executables during tests. "
+      "For nacl-newlib, the default is 1 (static linking). "
+      "For nacl-glibc, the default is 0 (dynamic linking).")
+
   # Defaults on when --verbose is specified.
   # --verbose sets 'brief_comstr' to False, so this looks a little strange
   BitFromArgument(env, 'target_stats', default=not GetOption('brief_comstr'),
@@ -317,6 +323,9 @@ pre_base_env = Environment(
     COVERAGE_GENHTML = '../third_party/lcov/bin/genhtml',
     **kwargs
 )
+
+DeclareBit('nacl_glibc', 'Use nacl-glibc for building untrusted code')
+pre_base_env.SetBitFromOption('nacl_glibc', False)
 
 # This function should be called ASAP after the environment is created, but
 # after ExpandArguments.
@@ -832,9 +841,6 @@ def InstallPlugin(target, source, env):
   command = env.subst(' '.join(INSTALL_COMMAND + ['MODE=INSTALL', sb] + deps))
   return os.system(command)
 
-DeclareBit('nacl_glibc', 'Use nacl-glibc for building untrusted code')
-pre_base_env.SetBitFromOption('nacl_glibc', False)
-
 # In prebuild mode we ignore the dependencies so that stuff does
 # NOT get build again
 # Optionally ignore the build process.
@@ -1081,7 +1087,7 @@ def CommandSelLdrTestNacl(env, name, command,
     sel_ldr_flags += ['-Q']
 
   if env.Bit('nacl_glibc'):
-    if not glibc_static:
+    if not glibc_static and not env.Bit('nacl_static_link'):
       command = ['${NACL_SDK_LIB}/runnable-ld.so',
                  '--library-path', '${NACL_SDK_LIB}'] + command
     # Enable file access.
@@ -1825,6 +1831,12 @@ nacl_env = pre_base_env.Clone(
       ['__STDC_FORMAT_MACROS', '1'],
       ],
 )
+if nacl_env.Bit('nacl_glibc') and nacl_env.Bit('nacl_static_link'):
+  # The "-lc" is necessary because libgcc_eh depends on libc but for
+  # some reason nacl-gcc is not linking with "--start-group/--end-group".
+  nacl_env.Append(LINKFLAGS=['-static',
+                             '-T', 'ldscripts/elf_nacl.x.static',
+                             '-lc'])
 
 if nacl_env.Bit('bitcode'):
   target_root = nacl_env.subst('${TARGET_ROOT}') + '-pnacl'

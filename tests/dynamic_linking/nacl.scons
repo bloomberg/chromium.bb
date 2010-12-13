@@ -14,4 +14,8 @@ dlopen_test = env.CommandSelLdrTestNacl(
     'dlopen_test.out',
     command=[env.File('dlopen_test.nexe')])
 
-env.AddNodeToTestSuite(dlopen_test, ['small_tests'], 'run_dlopen_test')
+# This particular test does not work with static linking, although
+# dlopen() can work with a statically-linked main executable in
+# general.
+if not env.Bit('nacl_static_link'):
+  env.AddNodeToTestSuite(dlopen_test, ['small_tests'], 'run_dlopen_test')

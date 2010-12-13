@@ -67,7 +67,11 @@ node = env.CommandSelLdrTestNacl(
     command=[env.File('main_thread_pthread_exit_test.nexe')],
     size='small',
     )
-env.AddNodeToTestSuite(node, TEST_SUITES, 'run_main_thread_pthread_exit_test')
+# This test fails with nacl-glibc when statically linked.
+# This is a bug in upstream glibc:
+# see http://sourceware.org/bugzilla/show_bug.cgi?id=12310
+if not (env.Bit('nacl_glibc') and env.Bit('nacl_static_link')):
+  env.AddNodeToTestSuite(node, TEST_SUITES, 'run_main_thread_pthread_exit_test')
 
 env.ComponentProgram('cond_wait_test.nexe',
                      'cond_wait_test.cc',
