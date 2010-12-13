@@ -84,9 +84,8 @@ RenderWidgetHostView* TabContentsViewViews::CreateViewForWidget(
 
   // If we were showing sad tab, remove it now.
   if (sad_tab_ != NULL) {
-    RemoveChildView(sad_tab_);
-    AddChildView(new views::View());
-    sad_tab_ = NULL;
+    RemoveChildView(sad_tab_.get());
+    sad_tab_.reset();
   }
 
   RenderWidgetHostViewViews* view =
@@ -132,6 +131,13 @@ void TabContentsViewViews::SetPageTitle(const std::wstring& title) {
 }
 
 void TabContentsViewViews::OnTabCrashed() {
+  if (sad_tab_ != NULL)
+    return;
+
+  sad_tab_.reset(new SadTabView(tab_contents()));
+  RemoveAllChildViews(true);
+  AddChildView(sad_tab_.get());
+  Layout();
 }
 
 void TabContentsViewViews::SizeContents(const gfx::Size& size) {
