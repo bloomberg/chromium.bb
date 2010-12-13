@@ -282,15 +282,11 @@ class Upgrade {
 // thread to fetch on).
 class FirstRunBrowserProcess : public BrowserProcessImpl {
  public:
-  explicit FirstRunBrowserProcess(const CommandLine& command_line)
-      : BrowserProcessImpl(command_line) {
-  }
-  virtual ~FirstRunBrowserProcess() { }
+  explicit FirstRunBrowserProcess(const CommandLine& command_line);
+  virtual ~FirstRunBrowserProcess();
 
-  virtual GoogleURLTracker* google_url_tracker() { return NULL; }
-  virtual IntranetRedirectDetector* intranet_redirect_detector() {
-    return NULL;
-  }
+  virtual GoogleURLTracker* google_url_tracker();
+  virtual IntranetRedirectDetector* intranet_redirect_detector();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FirstRunBrowserProcess);

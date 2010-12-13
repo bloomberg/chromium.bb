@@ -472,6 +472,20 @@ void Upgrade::RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
 }
 #endif  // (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
 
+FirstRunBrowserProcess::FirstRunBrowserProcess(const CommandLine& command_line)
+    : BrowserProcessImpl(command_line) {
+}
+
+FirstRunBrowserProcess::~FirstRunBrowserProcess() {}
+
+GoogleURLTracker* FirstRunBrowserProcess::google_url_tracker() {
+  return NULL;
+}
+
+IntranetRedirectDetector* FirstRunBrowserProcess::intranet_redirect_detector() {
+  return NULL;
+}
+
 FirstRunImportObserver::FirstRunImportObserver()
     : loop_running_(false), import_result_(ResultCodes::NORMAL_EXIT) {
 }
