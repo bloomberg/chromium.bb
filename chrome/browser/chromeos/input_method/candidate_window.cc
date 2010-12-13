@@ -403,10 +403,18 @@ class CandidateWindowView : public views::View {
   // Returns 0 if no candidate is present.
   int GetHorizontalOffset();
 
-  const gfx::Rect& cursor_location() const { return cursor_location_; }
   void set_cursor_location(const gfx::Rect& cursor_location) {
     cursor_location_ = cursor_location;
   }
+
+  const gfx::Rect& cursor_location() const { return cursor_location_; }
+
+ protected:
+  // Override View::VisibilityChanged()
+  virtual void VisibilityChanged(View* starting_from, bool is_visible);
+
+  // Override View::VisibleBoundsInRootChanged()
+  virtual void VisibleBoundsInRootChanged();
 
  private:
   // Initializes the candidate views if needed.
@@ -733,6 +741,8 @@ CandidateWindowView::CandidateWindowView(
       previous_shortcut_column_width_(0),
       previous_candidate_column_width_(0),
       previous_annotation_column_width_(0) {
+
+  SetNotifyWhenVisibleBoundsInRootChanges(true);
 }
 
 void CandidateWindowView::Init() {
@@ -789,9 +799,12 @@ void CandidateWindowView::ShowAuxiliaryText() {
       lookup_table_.orientation == InputMethodLookupTable::kHorizontal ?
       header_area_contents_.get() :
       footer_area_contents_.get());
-  // Put contents to the target display area.
-  target_area->RemoveAllChildViews(false);  // Don't delete child views.
-  target_area->AddChildView(target_contents);
+
+  if (!target_area->HasChildView(target_contents)) {
+    // If contents not in display area, put it in.
+    target_area->RemoveAllChildViews(false);  // Don't delete child views.
+    target_area->AddChildView(target_contents);
+  }
 }
 
 void CandidateWindowView::UpdateAuxiliaryText(const std::string& utf8_text) {
@@ -1164,6 +1177,20 @@ int CandidateWindowView::GetHorizontalOffset() {
   return 0;
 }
 
+void CandidateWindowView::VisibilityChanged(View* starting_from,
+                                            bool is_visible) {
+  if (is_visible) {
+    // If the visibility of candidate window is changed,
+    // we should move the frame to the right position.
+    MoveParentFrame();
+  }
+}
+
+void CandidateWindowView::VisibleBoundsInRootChanged() {
+  // If the bounds(size) of candidate window is changed,
+  // we should move the frame to the right position.
+  MoveParentFrame();
+}
 
 bool CandidateWindowController::Impl::Init() {
   // Initialize the input method UI status connection.
@@ -1232,7 +1259,7 @@ void CandidateWindowController::Impl::OnHideAuxiliaryText(
       static_cast<CandidateWindowController::Impl*>(input_method_library);
 
   controller->candidate_window_->HideAuxiliaryText();
-  controller->candidate_window_->ResizeAndMoveParentFrame();
+  controller->candidate_window_->ResizeParentFrame();
 }
 
 void CandidateWindowController::Impl::OnHideLookupTable(
@@ -1283,7 +1310,7 @@ void CandidateWindowController::Impl::OnUpdateAuxiliaryText(
   }
   controller->candidate_window_->UpdateAuxiliaryText(utf8_text);
   controller->candidate_window_->ShowAuxiliaryText();
-  controller->candidate_window_->ResizeAndMoveParentFrame();
+  controller->candidate_window_->ResizeParentFrame();
 }
 
 void CandidateWindowController::Impl::OnUpdateLookupTable(
@@ -1299,11 +1326,8 @@ void CandidateWindowController::Impl::OnUpdateLookupTable(
   }
 
   controller->candidate_window_->UpdateCandidates(lookup_table);
+  controller->candidate_window_->ResizeParentFrame();
   controller->frame_->Show();
-  // We should move the candidate window after controller->frame_->Show(),
-  // as GetHorizontalOffset() returns a valid value only after the Show()
-  // method is called.
-  controller->candidate_window_->ResizeAndMoveParentFrame();
 }
 
 void CandidateWindowController::Impl::OnCandidateCommitted(int index,
