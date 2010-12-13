@@ -588,13 +588,13 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
         switch (load_type) {
           case NavigationState::LINK_LOAD_NORMAL:
             PLT_HISTOGRAM(base::FieldTrial::MakeName(
-                "PLT.BeginToFinish_LinkLoadNormal_SpdyTrial", "SpdyImpact"),
+                "PLT.BeginToFinish_LinkLoadNormal", "SpdyImpact"),
                 begin_to_finish_all_loads);
             PLT_HISTOGRAM(base::FieldTrial::MakeName(
-                "PLT.StartToFinish_LinkLoadNormal_SpdyTrial", "SpdyImpact"),
+                "PLT.StartToFinish_LinkLoadNormal", "SpdyImpact"),
                 start_to_finish_all_loads);
             PLT_HISTOGRAM(base::FieldTrial::MakeName(
-                "PLT.StartToCommit_LinkLoadNormal_SpdyTrial", "SpdyImpact"),
+                "PLT.StartToCommit_LinkLoadNormal", "SpdyImpact"),
                 start_to_commit);
             break;
           case NavigationState::NORMAL_LOAD:
@@ -671,24 +671,24 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
     switch (load_type) {
       case NavigationState::LINK_LOAD_NORMAL:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_LinkLoadNormal.spdy.", "SpdyCwnd"),
+            "PLT.BeginToFinish_LinkLoadNormal", "SpdyCwnd"),
             begin_to_finish_all_loads);
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.StartToFinish_LinkLoadNormal.spdy.", "SpdyCwnd"),
+            "PLT.StartToFinish_LinkLoadNormal", "SpdyCwnd"),
             start_to_finish_all_loads);
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.StartToCommit_LinkLoadNormal.spdy.", "SpdyCwnd"),
+            "PLT.StartToCommit_LinkLoadNormal", "SpdyCwnd"),
             start_to_commit);
         break;
       case NavigationState::NORMAL_LOAD:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_NormalLoad.spdy.", "SpdyCwnd"),
+            "PLT.BeginToFinish_NormalLoad", "SpdyCwnd"),
             begin_to_finish_all_loads);
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.StartToFinish_NormalLoad.spdy.", "SpdyCwnd"),
+            "PLT.StartToFinish_NormalLoad", "SpdyCwnd"),
             start_to_finish_all_loads);
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.StartToCommit_NormalLoad.spdy.", "SpdyCwnd"),
+            "PLT.StartToCommit_NormalLoad", "SpdyCwnd"),
             start_to_commit);
         break;
       default:
