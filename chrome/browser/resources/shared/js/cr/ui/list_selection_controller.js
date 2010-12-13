@@ -137,7 +137,8 @@ cr.define('cr.ui', function() {
           if (sm.multiple)
             sm.unselectAll();
       } else {
-        if (sm.multiple && (cr.isMac ? e.metaKey : e.ctrlKey)) {
+        if (sm.multiple && (cr.isMac ? e.metaKey :
+                                       (e.ctrlKey && !e.shiftKey))) {
           // Selection is handled at mouseUp on windows/linux, mouseDown on mac.
           if (cr.isMac? isDown : !isDown) {
             // toggle the current one and make it anchor index
