@@ -276,7 +276,7 @@ function handleWindowResize() {
 
   var oldLayoutMode = layoutMode;
   var b = useSmallGrid();
-  layoutMode = b ? LayoutMode.SMALL : LayoutMode.NORMAL
+  layoutMode = b ? LayoutMode.SMALL : LayoutMode.NORMAL;
 
   if (layoutMode != oldLayoutMode){
     mostVisited.useSmallGrid = b;
@@ -421,6 +421,10 @@ function layoutSections() {
       expandedSectionHeight = expandedSection.scrollingHeight;
       document.body.style.height = '';
     }
+  } else {
+    // We only set the document height when a section is expanded. If
+    // all sections are minimized, then get rid of the previous height.
+    document.body.style.height = '';
   }
 
   // Now position all the elements.

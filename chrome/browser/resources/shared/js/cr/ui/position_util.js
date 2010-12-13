@@ -57,14 +57,26 @@ cr.define('cr.ui', function() {
    */
   function positionPopupAroundRect(anchorRect, popupElement, type) {
     var popupRect = popupElement.getBoundingClientRect();
-    var popupContainer;
-    var cs = popupElement.ownerDocument.defaultView.
-        getComputedStyle(popupElement);
-    if (cs.position == 'fixed')
-      popupContainer = popupElement.ownerDocument.body;
-    else
-      popupContainer = popupElement.offsetParent;
-    var availRect = popupContainer.getBoundingClientRect();
+    var availRect;
+    var ownerDoc = popupElement.ownerDocument;
+    var cs = ownerDoc.defaultView.getComputedStyle(popupElement);
+    var docElement = ownerDoc.documentElement;
+
+    if (cs.position == 'fixed') {
+      // For 'fixed' positioned popups, the available rectangle should be based
+      // on the viewport rather than the document.
+      availRect = {
+        height: docElement.clientHeight,
+        width: docElement.clientWidth,
+        top: 0,
+        bottom: docElement.clientHeight,
+        left: 0,
+        right: docElement.clientWidth
+      };
+    } else {
+      availRect = popupElement.offsetParent.getBoundingClientRect();
+    }
+
     var rtl = cs.direction == 'rtl';
 
     // Flip BEFORE, AFTER based on RTL.
