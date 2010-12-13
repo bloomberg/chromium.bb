@@ -1571,7 +1571,6 @@
                   'action_name': 'dump_symbols',
                   'inputs': [
                     '<(DEPTH)/build/linux/dump_app_syms',
-                    '<(DEPTH)/build/linux/dump_signature.py',
                     '<(PRODUCT_DIR)/dump_syms',
                     '<(PRODUCT_DIR)/chrome',
                   ],
