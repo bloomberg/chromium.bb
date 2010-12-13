@@ -31,6 +31,8 @@
     'cookies',
     'crash_reporter',
     'databases',
+    # crbug.com/66714
+    '-databases.DatabasesTest.testIncognitoDBPersistentAcrossTabs',
     # Reloading after kill doesn't load the page, crbug.com/64708.
     '-databases.DatabasesTest.testModificationsPersistAfterRendererCrash',
     'downloads',
