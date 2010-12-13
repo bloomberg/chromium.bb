@@ -7686,15 +7686,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SAFE_BROWSING_MALWARE_DESCRIPTION5" desc="SafeBrowsing Malware HTML description, detailed information, click button to span.">
         We have already notified <ph name="HOST_NAME">&lt;strong&gt;$1<ex>evil.com</ex>&lt;/strong&gt;</ph> that we found malware on the site. For more about the problems found on <ph name="HOST_NAME2">$2<ex>www.malware.com</ex></ph>, visit the Google <ph name="DIAGNOSTIC_PAGE">$3<ex>diagnostic page</ex></ph>.
       </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_TOGGLE_BUTTON" desc="SafeBrowsing Malware, show more information button">
-        <ph name="CONTENT">$1</ph>
-      </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_MORE_INFO_BUTTON" desc="SafeBrowsing Malware, show more information button">
-        More information
-      </message>
-      <message name="IDS_SAFE_BROWSING_MALWARE_LESS_INFO_BUTTON" desc="SafeBrowsing Malware, show less information button">
-        Less information
-      </message>
       <message name="IDS_SAFE_BROWSING_MALWARE_BACK_BUTTON" desc="SafeBrowsing Malware, back button">
         Go back
       </message>

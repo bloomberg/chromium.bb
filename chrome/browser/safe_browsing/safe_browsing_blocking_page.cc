@@ -303,10 +303,6 @@ void SafeBrowsingBlockingPage::PopulateMalwareStringDictionary(
 
   strings->SetString("back_button",
       l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_BACK_BUTTON));
-  strings->SetString("more_info_button",
-      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_MORE_INFO_BUTTON));
-  strings->SetString("less_info_button",
-      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_LESS_INFO_BUTTON));
   strings->SetString("proceed_link",
       l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_PROCEED_LINK));
   strings->SetString("textdirection", base::i18n::IsRTL() ? "rtl" : "ltr");
