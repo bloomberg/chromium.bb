@@ -433,10 +433,22 @@ int AutocompleteEditViewGtk::TextWidth() {
                                   &start, &first_char_bounds);
   gtk_text_view_get_iter_location(GTK_TEXT_VIEW(text_view_),
                                   &end, &last_char_bounds);
-  return ((last_char_bounds.x > first_char_bounds.x) ?
-          (last_char_bounds.x + last_char_bounds.width - first_char_bounds.x) :
-          (first_char_bounds.x - last_char_bounds.x + last_char_bounds.width)) +
-      horizontal_border_size;
+
+  gint first_char_start = first_char_bounds.x;
+  gint first_char_end = first_char_start + first_char_bounds.width;
+  gint last_char_start = last_char_bounds.x;
+  gint last_char_end = last_char_start + last_char_bounds.width;
+
+  // bounds width could be negative for RTL text.
+  if (first_char_start > first_char_end)
+    std::swap(first_char_start, first_char_end);
+  if (last_char_start > last_char_end)
+    std::swap(last_char_start, last_char_end);
+
+  gint text_width = first_char_start < last_char_start ?
+      last_char_end - first_char_start : first_char_end - last_char_start;
+
+  return text_width + horizontal_border_size;
 }
 
 int AutocompleteEditViewGtk::WidthOfTextAfterCursor() {
@@ -848,12 +860,17 @@ void AutocompleteEditViewGtk::SetBaseColor() {
 }
 
 void AutocompleteEditViewGtk::UpdateInstantViewColors() {
-#if !defined(TOOLKIT_VIEWS)
   SkColor selection_text, selection_bg;
   GdkColor faded_text, normal_bg;
 
-  if (theme_provider_->UseGtkTheme()) {
-    GtkStyle* style = gtk_rc_get_style(text_view_);
+#if defined(TOOLKIT_VIEWS)
+  bool use_gtk = false;
+#else
+  bool use_gtk = theme_provider_->UseGtkTheme();
+#endif
+
+  if (use_gtk) {
+    GtkStyle* style = gtk_rc_get_style(instant_view_);
 
     faded_text = gtk_util::AverageColors(
         style->text[GTK_STATE_NORMAL], style->base[GTK_STATE_NORMAL]);
@@ -863,12 +880,23 @@ void AutocompleteEditViewGtk::UpdateInstantViewColors() {
     selection_bg = gfx::GdkColorToSkColor(style->base[GTK_STATE_SELECTED]);
   } else {
     gdk_color_parse(kTextBaseColor, &faded_text);
-    normal_bg = LocationBarViewGtk::kBackgroundColor;
 
+#if defined(TOOLKIT_VIEWS)
+    normal_bg = gfx::SkColorToGdkColor(
+        LocationBarView::GetColor(ToolbarModel::NONE,
+                                  LocationBarView::BACKGROUND));
+    selection_text = LocationBarView::GetColor(
+        ToolbarModel::NONE, LocationBarView::SELECTED_TEXT);
+
+    GtkStyle* style = gtk_rc_get_style(instant_view_);
+    selection_bg = gfx::GdkColorToSkColor(style->base[GTK_STATE_SELECTED]);
+#else
+    normal_bg = LocationBarViewGtk::kBackgroundColor;
     selection_text =
         theme_provider_->get_active_selection_fg_color();
     selection_bg =
         theme_provider_->get_active_selection_bg_color();
+#endif
   }
 
   double alpha = instant_animation_->is_animating() ?
@@ -892,9 +920,6 @@ void AutocompleteEditViewGtk::UpdateInstantViewColors() {
     // is NORMAL, and the background is transparent.
     gtk_widget_modify_fg(instant_view_, GTK_STATE_NORMAL, &text);
   }
-#else  // defined(TOOLKIT_VIEWS)
-  // We don't worry about views because it doesn't use the instant view.
-#endif
 }
 
 void AutocompleteEditViewGtk::HandleBeginUserAction(GtkTextBuffer* sender) {
@@ -1172,39 +1197,45 @@ void AutocompleteEditViewGtk::HandleViewMoveCursor(
   GtkTextIter sel_start, sel_end;
   gboolean has_selection =
       gtk_text_buffer_get_selection_bounds(text_buffer_, &sel_start, &sel_end);
+  bool handled = false;
 
-  bool handled = true;
+  if (step == GTK_MOVEMENT_VISUAL_POSITIONS && !extend_selection &&
+      (count == 1 || count == -1)) {
+    gint cursor_pos;
+    g_object_get(G_OBJECT(text_buffer_), "cursor-position", &cursor_pos, NULL);
 
-  // We want the GtkEntry behavior when you move the cursor while you have a
-  // selection.  GtkTextView just drops the selection and moves the cursor, but
-  // instead we want to move the cursor to the appropiate end of the selection.
-  if (step == GTK_MOVEMENT_VISUAL_POSITIONS && !extend_selection) {
-    if ((count == 1 || count == -1) && has_selection) {
+    // We need to take the content direction into account when handling cursor
+    // movement, because the behavior of Left and Right key will be inverted if
+    // the direction is RTL. Although we should check the direction around the
+    // input caret, it's much simpler and good enough to check whole content's
+    // direction.
+    PangoDirection content_dir = GetContentDirection();
+    gint count_towards_end = content_dir == PANGO_DIRECTION_RTL ? -1 : 1;
+
+    // We want the GtkEntry behavior when you move the cursor while you have a
+    // selection.  GtkTextView just drops the selection and moves the cursor,
+    // but instead we want to move the cursor to the appropiate end of the
+    // selection.
+    if (has_selection) {
       // We have a selection and start / end are in ascending order.
-      // Cursor placement will remove the selection, so we need inform |model_|
-      // about this change by calling On{Before|After}PossibleChange() methods.
+      // Cursor placement will remove the selection, so we need inform
+      // |model_| about this change by
+      // calling On{Before|After}PossibleChange() methods.
       OnBeforePossibleChange();
-      gtk_text_buffer_place_cursor(text_buffer_,
-                                   count == 1 ? &sel_end : &sel_start);
+      gtk_text_buffer_place_cursor(
+          text_buffer_, count == count_towards_end ? &sel_end : &sel_start);
       OnAfterPossibleChange();
-    } else if (count == 1 && !has_selection) {
-      gint cursor_pos;
-      g_object_get(G_OBJECT(text_buffer_), "cursor-position", &cursor_pos,
-                   NULL);
-      if (cursor_pos == GetTextLength())
-        controller_->OnCommitSuggestedText(GetText());
-      else
-        handled = false;
-    } else {
-      handled = false;
+      handled = true;
+    } else if (count == count_towards_end && cursor_pos == GetTextLength()) {
+      handled = controller_->OnCommitSuggestedText(GetText());
     }
   } else if (step == GTK_MOVEMENT_PAGES) {  // Page up and down.
     // Multiply by count for the direction (if we move too much that's ok).
     model_->OnUpOrDownKeyPressed(model_->result().size() * count);
+    handled = true;
   } else if (step == GTK_MOVEMENT_DISPLAY_LINES) {  // Arrow up and down.
     model_->OnUpOrDownKeyPressed(count);
-  } else {
-    handled = false;
+    handled = true;
   }
 
   if (!handled) {
@@ -1470,9 +1501,6 @@ void AutocompleteEditViewGtk::HandleViewMoveFocus(GtkWidget* widget,
       handled = true;
     }
   } else {
-    // TODO(estade): this only works for linux/gtk; linux/views doesn't use
-    // |instant_view_| so its visibility is not an indicator of whether we
-    // have a suggestion.
     if (GTK_WIDGET_VISIBLE(instant_view_)) {
       controller_->OnCommitSuggestedText(GetText());
       handled = true;

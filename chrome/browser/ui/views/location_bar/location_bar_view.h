@@ -42,7 +42,6 @@ class PageActionWithBadgeView;
 class Profile;
 class SelectedKeywordView;
 class StarView;
-class SuggestedTextView;
 class TabContents;
 class TabContentsWrapper;
 class TemplateURLModel;
@@ -51,6 +50,10 @@ namespace views {
 class HorizontalPainter;
 class Label;
 };
+
+#if defined(OS_WIN)
+class SuggestedTextView;
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -154,8 +157,10 @@ class LocationBarView : public LocationBar,
   // appears, not where the icons are shown).
   gfx::Point GetLocationEntryOrigin() const;
 
+#if defined(OS_WIN)
   // Invoked from SuggestedTextView when the suggested text should be committed.
   void OnCommitSuggestedText();
+#endif
 
   // Sizing functions
   virtual gfx::Size GetPreferredSize();
@@ -309,13 +314,13 @@ class LocationBarView : public LocationBar,
 #if defined(OS_WIN)
   // Helper for the Mouse event handlers that does all the real work.
   void OnMouseEvent(const views::MouseEvent& event, UINT msg);
+
+  // Returns true if the suggest text is valid.
+  bool HasValidSuggestText();
 #endif
 
   // Helper to show the first run info bubble.
   void ShowFirstRunBubbleInternal(FirstRun::BubbleType bubble_type);
-
-  // Returns true if the suggest text is valid.
-  bool HasValidSuggestText();
 
   // Current profile. Not owned by us.
   Profile* profile_;
@@ -370,9 +375,11 @@ class LocationBarView : public LocationBar,
   // Shown if the user has selected a keyword.
   SelectedKeywordView* selected_keyword_view_;
 
+#if defined(OS_WIN)
   // View responsible for showing suggested text. This is NULL when there is no
   // suggested text.
   SuggestedTextView* suggested_text_view_;
+#endif
 
   // Shown if the selected url has a corresponding keyword.
   KeywordHintView* keyword_hint_view_;

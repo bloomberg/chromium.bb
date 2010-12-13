@@ -27,7 +27,6 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/location_bar/suggested_text_view.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/location_bar/ev_bubble_view.h"
@@ -46,6 +45,7 @@
 #include "views/drag_utils.h"
 
 #if defined(OS_WIN)
+#include "chrome/browser/ui/views/location_bar/suggested_text_view.h"
 #include "chrome/browser/views/first_run_bubble.h"
 #endif
 
@@ -103,7 +103,9 @@ LocationBarView::LocationBarView(Profile* profile,
       ev_bubble_view_(NULL),
       location_entry_view_(NULL),
       selected_keyword_view_(NULL),
+#if defined(OS_WIN)
       suggested_text_view_(NULL),
+#endif
       keyword_hint_view_(NULL),
       star_view_(NULL),
       mode_(mode),
@@ -408,12 +410,14 @@ gfx::Point LocationBarView::GetLocationEntryOrigin() const {
   return origin;
 }
 
+#if defined(OS_WIN)
 void LocationBarView::OnCommitSuggestedText() {
   InstantController* instant = delegate_->GetInstant();
   DCHECK(instant);
   DCHECK(suggested_text_view_);
   OnCommitSuggestedText(location_entry_->GetText());
 }
+#endif
 
 gfx::Size LocationBarView::GetPreferredSize() {
   return gfx::Size(0, GetThemeProvider()->GetBitmapNamed(mode_ == POPUP ?
@@ -613,6 +617,7 @@ void LocationBarView::Layout() {
     }
   }
 
+#if defined(OS_WIN)
   // Layout out the suggested text view right aligned to the location
   // entry. Only show the suggested text if we can fit the text from one
   // character before the end of the selection to the end of the text and the
@@ -642,6 +647,7 @@ void LocationBarView::Layout() {
                                       location_bounds.height());
     }
   }
+#endif
 
   location_entry_view_->SetBounds(location_bounds);
 }
@@ -775,13 +781,19 @@ void LocationBarView::OnAutocompleteWillAccept() {
 
 bool LocationBarView::OnCommitSuggestedText(const std::wstring& typed_text) {
   InstantController* instant = delegate_->GetInstant();
-  if (!instant || !HasValidSuggestText()) {
+  if (!instant)
     return false;
-  }
+
+#if defined(OS_WIN)
+  if(!HasValidSuggestText())
+    return false;
   location_entry_->model()->FinalizeInstantQuery(
       typed_text,
       suggested_text_view_->GetText());
   return true;
+#else
+  return location_entry_->CommitInstantSuggestion();
+#endif
 }
 
 void LocationBarView::OnSetSuggestedSearchText(const string16& suggested_text) {
@@ -868,8 +880,12 @@ void LocationBarView::OnChanged() {
 }
 
 void LocationBarView::OnSelectionBoundsChanged() {
+#if defined(OS_WIN)
   if (suggested_text_view_)
     suggested_text_view_->StopAnimation();
+#else
+  NOTREACHED();
+#endif
 }
 
 void LocationBarView::OnInputInProgress(bool in_progress) {
@@ -1046,10 +1062,12 @@ std::string LocationBarView::GetClassName() const {
 
 bool LocationBarView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
   if (views::FocusManager::IsTabTraversalKeyEvent(e)) {
+#if defined(OS_WIN)
     if (HasValidSuggestText()) {
       // Return true so that the edit sees the tab and commits the suggestion.
       return true;
     }
+#endif
     InstantController* instant = delegate_->GetInstant();
     if (instant && instant->IsCurrent()) {
       // Tab while showing instant commits instant immediately.
@@ -1127,6 +1145,7 @@ void LocationBarView::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
 }
 
 void LocationBarView::SetSuggestedText(const string16& input) {
+#if defined(OS_WIN)
   // Don't show the suggested text if inline autocomplete is prevented.
   string16 text = location_entry_->model()->UseVerbatimInstant() ?
       string16() : input;
@@ -1153,6 +1172,9 @@ void LocationBarView::SetSuggestedText(const string16& input) {
 
   Layout();
   SchedulePaint();
+#else
+  location_entry_->SetInstantSuggestion(UTF16ToUTF8(input));
+#endif
 }
 
 std::wstring LocationBarView::GetInputString() const {
@@ -1245,7 +1267,9 @@ void LocationBarView::OnTemplateURLModelChanged() {
   ShowFirstRunBubble(bubble_type_);
 }
 
+#if defined(OS_WIN)
 bool LocationBarView::HasValidSuggestText() {
   return suggested_text_view_ && !suggested_text_view_->size().IsEmpty() &&
       !suggested_text_view_->GetText().empty();
 }
+#endif
