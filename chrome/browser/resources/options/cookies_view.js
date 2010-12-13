@@ -32,6 +32,7 @@ cr.define('options', function() {
       options.CookiesTree.decorate(cookiesTree);
       cookiesTree.addEventListener('change',
           this.handleCookieTreeChange_.bind(this));
+      cookiesTree.addEventListener('keydown', this.handleKeyDown_);
 
       $('cookiesSearchBox').addEventListener('keydown',
           this.handleQueryEditKeyDown_.bind(this));
@@ -229,6 +230,23 @@ cr.define('options', function() {
       if (!this.initalized_ && this.visible) {
         this.initalized_ = true;
         this.searchCookie();
+      }
+    },
+
+    /**
+     * Handler for keydown event.
+     * @private
+     * @param {Event} e KeyDown event.
+     */
+    handleKeyDown_: function(e) {
+      // If 'Remove' button is enabled and key is 'Delete' key on all platforms
+      // or 'Backspace' on Mac.
+      if (!$('remove-cookie').disabled &&
+          (e.keyIdentifier == 'U+007F' ||
+            (cr.isMac && e.keyIdentifier == 'U+0008'))) {
+        e.preventDefault();
+        e.stopPropagation();
+        cr.dispatchSimpleEvent($('remove-cookie'), 'click');
       }
     }
   };
