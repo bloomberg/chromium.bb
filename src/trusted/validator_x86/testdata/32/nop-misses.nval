@@ -1,0 +1,8 @@
+VALIDATOR: 6: Undefined instruction
+VALIDATOR: 12: Undefined instruction
+VALIDATOR: 16: Undefined instruction
+VALIDATOR: 2e: Bad prefix usage
+VALIDATOR: 2e: Illegal instruction
+VALIDATOR: 4e: Bad prefix usage
+VALIDATOR: 4e: Illegal instruction
+D: ***MODULE <hex_text> IS UNSAFE***

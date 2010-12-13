@@ -400,6 +400,20 @@ void ConsumeSIB(struct NCDecoderState* mstate) {
   }
 }
 
+static void SetInstLength(struct NCDecoderState* mstate,
+                          ssize_t inst_length) {
+  /* Truncate length to size allowed by field length. */
+  if (inst_length <= 0xff) {
+    /* Value fits, update value. */
+    mstate->inst.length = (uint8_t)(inst_length & 0xff);
+  } else {
+    /* Too big! Truncate value to limit allowed in field length. */
+    mstate->inst.length = 0xff;
+    fprintf(stdout, "Unexpected instruction length\n");
+    ErrorInternal(mstate->vstate);
+  }
+}
+
 void ConsumeID(struct NCDecoderState* mstate) {
   uint8_t old_length = mstate->length;
   if (mstate->inst.immtype == IMM_UNKNOWN) {
@@ -416,11 +430,7 @@ void ConsumeID(struct NCDecoderState* mstate) {
     ReadBytes(mstate, kImmTypeToSize[mstate->inst.immtype]);
   }
   ReadBytes(mstate, mstate->inst.dispbytes);
-  mstate->inst.length = mstate->length;
-  if ((ssize_t)mstate->inst.length != mstate->length) {
-    printf("Unexpected instruction length\n");
-    ErrorInternal(mstate->vstate);
-  }
+  SetInstLength(mstate, mstate->length);
   DEBUG( printf("ID: consume %d bytes\n",
                 (mstate->length - old_length)) );
 }
@@ -508,6 +518,53 @@ static void IncrementDecodeBuffer(struct NCDecoderState** mstate) {
   *mstate = mnextstate;
 }
 
+static void ConsumePredefinedNop(struct NCDecoderState* mstate) {
+  /* Do maximal match of possible nops. */
+  uint8_t* nextbyte = mstate->mpc;
+  struct OpInfo* matching_opinfo = NULL;
+  ssize_t matching_length = 0;
+  NCNopTrieNode* next = (NCNopTrieNode*) (kNcNopTrieNode + 0);
+  uint8_t byte = *nextbyte;
+  while (NULL != next) {
+    if (byte == next->matching_byte) {
+      DEBUG(printf("NOP match byte: 0x%02x\n", (int) byte));
+      byte = *(++nextbyte);
+      if (NULL != next->matching_opinfo) {
+        DEBUG(printf("NOP matched rule!\n"));
+        matching_opinfo = next->matching_opinfo;
+        matching_length = nextbyte - mstate->mpc;
+      }
+      next = next->success;
+    } else {
+      next = next->fail;
+    }
+  }
+  if (NULL == matching_opinfo) {
+    DEBUG(printf("NOP match failed!\n"));
+  } else {
+    DEBUG(printf("NOP match succeeds! Using last matched rule.\n"));
+    InitDecoder(mstate);
+    mstate->nextbyte = nextbyte;
+    mstate->opinfo = matching_opinfo;
+    SetInstLength(mstate, matching_length);
+  }
+}
+
+/* If we didn't find a good instruction, try to consume one of the
+ * predefined NOP's.
+ */
+static void MaybeConsumePredefinedNop(struct NCDecoderState* mstate) {
+  switch (mstate->opinfo->insttype) {
+    case NACLi_UNDEFINED:
+    case NACLi_INVALID:
+    case NACLi_ILLEGAL:
+      ConsumePredefinedNop(mstate);
+      break;
+    default:
+      break;
+  }
+}
+
 /* All of the actions needed to read one additional instruction into mstate.
  * Returns the vpc of the next,next instruction.
  */
@@ -522,6 +579,7 @@ static NaClPcAddress ConsumeNextInstruction(struct NCDecoderState* mstate) {
   ConsumeSIB(mstate);
   ConsumeID(mstate);
   MaybeGet3ByteOpInfo(mstate);
+  MaybeConsumePredefinedNop(mstate);
   /* now scrutinize this instruction */
   newpc = mstate->vpc + mstate->inst.length + mstate->overflow;
   DEBUG( printf("new pc = %"NACL_PRIxNaClPcAddress"\n", newpc) );

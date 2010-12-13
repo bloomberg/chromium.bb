@@ -116,6 +116,7 @@ static const char* DisFmt(const struct NCDecoderState *mstate) {
   if (mstate->opinfo->insttype == NACLi_FCMOV) {
     return kDisasmX87Op[opbyte[0]-0xd8][mstate->inst.mrm];
   }
+  if (mstate->opinfo->insttype == NACLi_NOP) return "nop";
   if (*opbyte != kTwoByteOpcodeByte1) return kDisasm1ByteOp[opbyte[0]];
   if (opbyte[1] == 0x0f) return kDisasm0F0FOp[opbyte[mstate->inst.length - 1]];
   if (opbyte[1] == 0x38) return kDisasm0F38Op[opbyte[2]];

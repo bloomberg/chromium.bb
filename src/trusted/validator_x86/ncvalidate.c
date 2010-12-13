@@ -600,12 +600,14 @@ void ValidateInst(const struct NCDecoderState *mstate) {
     BadInstructionError(mstate, "Bad prefix usage");
     Stats_BadPrefix(mstate->vstate);
   } while (0);
-  if ((size_t) (mstate->inst.length - mstate->inst.prefixbytes)
-      > kMaxValidInstLength) {
+  if ((mstate->opinfo->insttype != NACLi_NOP) &&
+      ((size_t) (mstate->inst.length - mstate->inst.prefixbytes)
+       > kMaxValidInstLength)) {
     BadInstructionError(mstate, "Instruction too long");
     Stats_BadInstLength(mstate->vstate);
   }
   switch (mstate->opinfo->insttype) {
+    case NACLi_NOP:
     case NACLi_386:
     case NACLi_386L:
     case NACLi_386R:

@@ -1037,514 +1037,592 @@ static void Buildx87Tables() {
   }
 }
 
+/* The root of all matching nop trie nodes. These
+ * nodes are specific encodings that the decoder
+ * will recognize as a NOP, if the corresponding
+ * sequence of bytes occur.
+ */
+static NCNopTrieNode* nc_nop_root = NULL;
+
+static struct OpInfo nc_nop_info = { NACLi_NOP , 0 , IMM_NONE , 0 };
+
+/* Simple (fast hack) routine to extract a byte value from a character string.
+ */
+static int NCExtractByte(const char* sequence, int index) {
+  char buffer[3];
+  int i;
+  for (i = 0; i < 2; ++i) {
+    char ch = sequence[index + i];
+    if ('\0' == ch) {
+      fatal(aprintf(
+              "Odd number of characters in opcode sequence: '%s'\n",
+              sequence));
+    }
+    buffer[i] = ch;
+  }
+  buffer[2] = '\0';
+  return strtoul(buffer, NULL, 16);
+}
+
+/* Define the given sequence of (hex) bytes as a nop. */
+static void NCDefNop(const char* sequence) {
+  NCNopTrieNode** next = &nc_nop_root;
+  NCNopTrieNode* last = NULL;
+  int i = 0;
+  while (sequence[i]) {
+    int byte = NCExtractByte(sequence, i);
+    if (*next == NULL) {
+      /* Create node and advance. */
+      *next = (NCNopTrieNode*) malloc(sizeof(NCNopTrieNode));
+      (*next)->matching_byte = byte;
+      (*next)->matching_opinfo = NULL;
+      (*next)->success = NULL;
+      (*next)->fail = NULL;
+    }
+    if (byte == (*next)->matching_byte) {
+      last = *next;
+      next = &((*next)->success);
+      i += 2;
+    } else {
+      /* try next possible match */
+      next = &((*next)->fail);
+    }
+  }
+  /* Next points to matching node, add NOP. */
+  last->matching_opinfo = &nc_nop_info;
+}
+
+/* Define set of explicitly defined nop byte sequences. */
+static void NCDefNops() {
+  NCDefNop("660f1f440000");
+  NCDefNop("660f1f840000000000");
+  NCDefNop("662e0f1f840000000000");
+  NCDefNop("66662e0f1f840000000000");
+  NCDefNop("6666662e0f1f840000000000");
+  NCDefNop("666666662e0f1f840000000000");
+  NCDefNop("66666666662e0f1f840000000000");
+  NCDefNop("6666666666662e0f1f840000000000");
+}
+
 static void BuildMetaTables() {
-  InitializeGlobalTables();
+   InitializeGlobalTables();
 
-  /* now add the real contents */
-  /* Eight opcode groups with a regular pattern... */
-  ALUOperandVariants00_05(0x00, NACLi_386L, "add");
-  ALUOperandVariants00_05(0x08, NACLi_386L, "or");
-  ALUOperandVariants00_05(0x10, NACLi_386L, "adc");
-  ALUOperandVariants00_05(0x18, NACLi_386L, "sbb");
-  ALUOperandVariants00_05(0x20, NACLi_386L, "and");
-  ALUOperandVariants00_05(0x28, NACLi_386L, "sub");
-  ALUOperandVariants00_05(0x30, NACLi_386L, "xor");
-  ALUOperandVariants00_05(0x38, NACLi_386, "cmp");
+   NCDefNops();
+
+   if (NULL == nc_nop_root) {
+     /* Create dummy node so that it is non-empty. */
+     nc_nop_root = (NCNopTrieNode*) malloc(sizeof(NCNopTrieNode));
+     nc_nop_root->matching_byte = 0;
+     nc_nop_root->matching_opinfo = NULL;
+     nc_nop_root->success = NULL;
+     nc_nop_root->fail = NULL;
+   }
+
+   /* now add the real contents */
+   /* Eight opcode groups with a regular pattern... */
+   ALUOperandVariants00_05(0x00, NACLi_386L, "add");
+   ALUOperandVariants00_05(0x08, NACLi_386L, "or");
+   ALUOperandVariants00_05(0x10, NACLi_386L, "adc");
+   ALUOperandVariants00_05(0x18, NACLi_386L, "sbb");
+   ALUOperandVariants00_05(0x20, NACLi_386L, "and");
+   ALUOperandVariants00_05(0x28, NACLi_386L, "sub");
+   ALUOperandVariants00_05(0x30, NACLi_386L, "xor");
+   ALUOperandVariants00_05(0x38, NACLi_386, "cmp");
 
 
-  /* Fill in gaps between 00 and 0x40 */
-  EncodeModedOp(0x06, 0, IMM_NONE, NACLi_ILLEGAL, "push %es", X86_32);
-  EncodeModedOp(0x16, 0, IMM_NONE, NACLi_ILLEGAL, "push %ss", X86_32);
-  EncodeOp(0x26, 0, IMM_NONE, NACLi_ILLEGAL, "[seg %es]");
-  EncodePrefixName(0x26, "kPrefixSEGES");
-  EncodeOp(0x36, 0, IMM_NONE, NACLi_ILLEGAL, "[seg %ss]");
-  EncodePrefixName(0x36, "kPrefixSEGSS");
-  EncodeModedOp(0x07, 0, IMM_NONE, NACLi_ILLEGAL, "pop %es", X86_32);
-  EncodeModedOp(0x17, 0, IMM_NONE, NACLi_ILLEGAL, "pop %ss", X86_32);
-  EncodeModedOp(0x27, 0, IMM_NONE, NACLi_ILLEGAL, "daa", X86_32);
-  EncodeModedOp(0x37, 0, IMM_NONE, NACLi_ILLEGAL, "aaa",
-                     X86_32);  /* deprecated */
-  EncodeModedOp(0x0e, 0, IMM_NONE, NACLi_ILLEGAL, "push %cs", X86_32);
-  EncodeModedOp(0x1e, 0, IMM_NONE, NACLi_ILLEGAL, "push %ds", X86_32);
-  EncodeOp(0x2e, 0, IMM_NONE, NACLi_ILLEGAL, "[seg %cs]");
-  EncodePrefixName(0x2e, "kPrefixSEGCS");
-  EncodeOp(0x3e, 0, IMM_NONE, NACLi_ILLEGAL, "[seg %ds]");
-  EncodePrefixName(0x3e, "kPrefixSEGDS");
+   /* Fill in gaps between 00 and 0x40 */
+   EncodeModedOp(0x06, 0, IMM_NONE, NACLi_ILLEGAL, "push %es", X86_32);
+   EncodeModedOp(0x16, 0, IMM_NONE, NACLi_ILLEGAL, "push %ss", X86_32);
+   EncodeOp(0x26, 0, IMM_NONE, NACLi_ILLEGAL, "[seg %es]");
+   EncodePrefixName(0x26, "kPrefixSEGES");
+   EncodeOp(0x36, 0, IMM_NONE, NACLi_ILLEGAL, "[seg %ss]");
+   EncodePrefixName(0x36, "kPrefixSEGSS");
+   EncodeModedOp(0x07, 0, IMM_NONE, NACLi_ILLEGAL, "pop %es", X86_32);
+   EncodeModedOp(0x17, 0, IMM_NONE, NACLi_ILLEGAL, "pop %ss", X86_32);
+   EncodeModedOp(0x27, 0, IMM_NONE, NACLi_ILLEGAL, "daa", X86_32);
+   EncodeModedOp(0x37, 0, IMM_NONE, NACLi_ILLEGAL, "aaa",
+                      X86_32);  /* deprecated */
+   EncodeModedOp(0x0e, 0, IMM_NONE, NACLi_ILLEGAL, "push %cs", X86_32);
+   EncodeModedOp(0x1e, 0, IMM_NONE, NACLi_ILLEGAL, "push %ds", X86_32);
+   EncodeOp(0x2e, 0, IMM_NONE, NACLi_ILLEGAL, "[seg %cs]");
+   EncodePrefixName(0x2e, "kPrefixSEGCS");
+   EncodeOp(0x3e, 0, IMM_NONE, NACLi_ILLEGAL, "[seg %ds]");
+   EncodePrefixName(0x3e, "kPrefixSEGDS");
 
-  /* 0x0f is an escape to two-byte instructions, below... */
-  EncodeOp(0x0f, 0, IMM_NONE, NACLi_UNDEFINED, "[two-byte opcode]");
-  EncodeModedOp(0x1f, 0, IMM_NONE, NACLi_ILLEGAL, "pop %ds", X86_32);
-  EncodeOp(0x2f, 0, IMM_NONE, NACLi_ILLEGAL, "das");
-  EncodeOp(0x3f, 0, IMM_NONE, NACLi_ILLEGAL, "aas");  /* deprecated */
+   /* 0x0f is an escape to two-byte instructions, below... */
+   EncodeOp(0x0f, 0, IMM_NONE, NACLi_UNDEFINED, "[two-byte opcode]");
+   EncodeModedOp(0x1f, 0, IMM_NONE, NACLi_ILLEGAL, "pop %ds", X86_32);
+   EncodeOp(0x2f, 0, IMM_NONE, NACLi_ILLEGAL, "das");
+   EncodeOp(0x3f, 0, IMM_NONE, NACLi_ILLEGAL, "aas");  /* deprecated */
 
-  /* another easy pattern, 0x40-0x5f */
-  /* inc and dec are deprecated in x86-64; NaCl discourages their use. */
-  OneRegVariants00_07(0x40, NACLi_386L, "inc", FALSE);
-  OneRegVariants00_07(0x48, NACLi_386L, "dec", FALSE);
-  OneRegVariants00_07(0x50, NACLi_386, "push", TRUE);
-  OneRegVariants00_07(0x58, NACLi_386, "pop", TRUE);
+   /* another easy pattern, 0x40-0x5f */
+   /* inc and dec are deprecated in x86-64; NaCl discourages their use. */
+   OneRegVariants00_07(0x40, NACLi_386L, "inc", FALSE);
+   OneRegVariants00_07(0x48, NACLi_386L, "dec", FALSE);
+   OneRegVariants00_07(0x50, NACLi_386, "push", TRUE);
+   OneRegVariants00_07(0x58, NACLi_386, "pop", TRUE);
 
-  /* 0x60-0x6f */
- /* also PUSHAD */
-  EncodeModedOp(0x60, 0, IMM_NONE, NACLi_ILLEGAL, "pusha", X86_32);
-  /* 0x61 - also POPAD */
-  EncodeModedOp(0x61, 0, IMM_NONE, NACLi_ILLEGAL, "popa", X86_32);
-  /* 0x62 - deprecated */
-  EncodeModedOp(0x62, 1, IMM_NONE, NACLi_ILLEGAL, "bound $Gv, $Ma", X86_32);
-  /* system */
-  EncodeModedOp(0x63, 1, IMM_NONE, NACLi_SYSTEM, "arpl $Ew, $Gw", X86_32);
-  EncodeModedOp(0x63, 1, IMM_NONE, NACLi_SYSTEM,"movsxd $Gv, $Ev", X86_64);
-  EncodeOp(0x64, 0, IMM_NONE, NACLi_ILLEGAL, "[seg fs]");
-  EncodePrefixName(0x64, "kPrefixSEGFS");
-  EncodeOp(0x65, 0, IMM_NONE, NACLi_ILLEGAL, "[seg gs]");
-  EncodePrefixName(0x65, "kPrefixSEGGS");
-  EncodeOp(0x66, 0, IMM_NONE, NACLi_ILLEGAL, "[data16]");
-  EncodePrefixName(0x66, "kPrefixDATA16");
-  EncodeOp(0x67, 0, IMM_NONE, NACLi_ILLEGAL, "[addr size]");
-  EncodePrefixName(0x67, "kPrefixADDR16");
-  EncodeOp(0x68, 0, IMM_DATAV, NACLi_386, "push $Iz");
-  SetOpDefaultSize64(0x68);
-  EncodeOp(0x69, 1, IMM_DATAV, NACLi_386, "imul $Gv, $Ev, $Iz");
-  EncodeOp(0x6a, 0, IMM_FIXED1, NACLi_386, "push $Ib");
-  SetOpDefaultSize64(0x6a);
-  EncodeOp(0x6b, 1, IMM_FIXED1, NACLi_386, "imul $Gv, $Ev, $Ib");
-  EncodeOp(0x6c, 0, IMM_NONE, NACLi_ILLEGAL, "insb $Y, $D");
-  EncodeOp(0x6d, 0, IMM_NONE, NACLi_ILLEGAL, "insw/d $Y, $D");
-  EncodeOp(0x6e, 0, IMM_NONE, NACLi_ILLEGAL, "outsb $D, $X");
-  EncodeOp(0x6f, 0, IMM_NONE, NACLi_ILLEGAL, "outsw/d $D, $X");
+   /* 0x60-0x6f */
+  /* also PUSHAD */
+   EncodeModedOp(0x60, 0, IMM_NONE, NACLi_ILLEGAL, "pusha", X86_32);
+   /* 0x61 - also POPAD */
+   EncodeModedOp(0x61, 0, IMM_NONE, NACLi_ILLEGAL, "popa", X86_32);
+   /* 0x62 - deprecated */
+   EncodeModedOp(0x62, 1, IMM_NONE, NACLi_ILLEGAL, "bound $Gv, $Ma", X86_32);
+   /* system */
+   EncodeModedOp(0x63, 1, IMM_NONE, NACLi_SYSTEM, "arpl $Ew, $Gw", X86_32);
+   EncodeModedOp(0x63, 1, IMM_NONE, NACLi_SYSTEM,"movsxd $Gv, $Ev", X86_64);
+   EncodeOp(0x64, 0, IMM_NONE, NACLi_ILLEGAL, "[seg fs]");
+   EncodePrefixName(0x64, "kPrefixSEGFS");
+   EncodeOp(0x65, 0, IMM_NONE, NACLi_ILLEGAL, "[seg gs]");
+   EncodePrefixName(0x65, "kPrefixSEGGS");
+   EncodeOp(0x66, 0, IMM_NONE, NACLi_ILLEGAL, "[data16]");
+   EncodePrefixName(0x66, "kPrefixDATA16");
+   EncodeOp(0x67, 0, IMM_NONE, NACLi_ILLEGAL, "[addr size]");
+   EncodePrefixName(0x67, "kPrefixADDR16");
+   EncodeOp(0x68, 0, IMM_DATAV, NACLi_386, "push $Iz");
+   SetOpDefaultSize64(0x68);
+   EncodeOp(0x69, 1, IMM_DATAV, NACLi_386, "imul $Gv, $Ev, $Iz");
+   EncodeOp(0x6a, 0, IMM_FIXED1, NACLi_386, "push $Ib");
+   SetOpDefaultSize64(0x6a);
+   EncodeOp(0x6b, 1, IMM_FIXED1, NACLi_386, "imul $Gv, $Ev, $Ib");
+   EncodeOp(0x6c, 0, IMM_NONE, NACLi_ILLEGAL, "insb $Y, $D");
+   EncodeOp(0x6d, 0, IMM_NONE, NACLi_ILLEGAL, "insw/d $Y, $D");
+   EncodeOp(0x6e, 0, IMM_NONE, NACLi_ILLEGAL, "outsb $D, $X");
+   EncodeOp(0x6f, 0, IMM_NONE, NACLi_ILLEGAL, "outsw/d $D, $X");
 
-  /* 0x70-0x77: jumps */
-  EncodeOp(0x70, 0, IMM_FIXED1, NACLi_JMP8, "jo $Jb");
-  SetOpForceSize64(0x70);
-  EncodeOp(0x71, 0, IMM_FIXED1, NACLi_JMP8, "jno $Jb");
-  SetOpForceSize64(0x71);
-  EncodeOp(0x72, 0, IMM_FIXED1, NACLi_JMP8, "jb $Jb");
-  SetOpForceSize64(0x72);
-  EncodeOp(0x73, 0, IMM_FIXED1, NACLi_JMP8, "jnb $Jb");
-  SetOpForceSize64(0x73);
-  EncodeOp(0x74, 0, IMM_FIXED1, NACLi_JMP8, "jz $Jb");
-  SetOpForceSize64(0x74);
-  EncodeOp(0x75, 0, IMM_FIXED1, NACLi_JMP8, "jnz $Jb");
-  SetOpForceSize64(0x75);
-  EncodeOp(0x76, 0, IMM_FIXED1, NACLi_JMP8, "jbe $Jb");
-  SetOpForceSize64(0x76);
-  EncodeOp(0x77, 0, IMM_FIXED1, NACLi_JMP8, "jnbe $Jb");
-  SetOpForceSize64(0x77);
-  EncodeOp(0x78, 0, IMM_FIXED1, NACLi_JMP8, "js $Jb");
-  SetOpForceSize64(0x78);
-  EncodeOp(0x79, 0, IMM_FIXED1, NACLi_JMP8, "jns $Jb");
-  SetOpForceSize64(0x79);
-  EncodeOp(0x7a, 0, IMM_FIXED1, NACLi_JMP8, "jp $Jb");
-  SetOpForceSize64(0x7a);
-  EncodeOp(0x7b, 0, IMM_FIXED1, NACLi_JMP8, "jnp $Jb");
-  SetOpForceSize64(0x7b);
-  EncodeOp(0x7c, 0, IMM_FIXED1, NACLi_JMP8, "jl $Jb");
-  SetOpForceSize64(0x7c);
-  EncodeOp(0x7d, 0, IMM_FIXED1, NACLi_JMP8, "jge $Jb");
-  SetOpForceSize64(0x7d);
-  EncodeOp(0x7e, 0, IMM_FIXED1, NACLi_JMP8, "jle $Jb");
-  SetOpForceSize64(0x7e);
-  EncodeOp(0x7f, 0, IMM_FIXED1, NACLi_JMP8, "jg $Jb");
-  SetOpForceSize64(0x7f);
+   /* 0x70-0x77: jumps */
+   EncodeOp(0x70, 0, IMM_FIXED1, NACLi_JMP8, "jo $Jb");
+   SetOpForceSize64(0x70);
+   EncodeOp(0x71, 0, IMM_FIXED1, NACLi_JMP8, "jno $Jb");
+   SetOpForceSize64(0x71);
+   EncodeOp(0x72, 0, IMM_FIXED1, NACLi_JMP8, "jb $Jb");
+   SetOpForceSize64(0x72);
+   EncodeOp(0x73, 0, IMM_FIXED1, NACLi_JMP8, "jnb $Jb");
+   SetOpForceSize64(0x73);
+   EncodeOp(0x74, 0, IMM_FIXED1, NACLi_JMP8, "jz $Jb");
+   SetOpForceSize64(0x74);
+   EncodeOp(0x75, 0, IMM_FIXED1, NACLi_JMP8, "jnz $Jb");
+   SetOpForceSize64(0x75);
+   EncodeOp(0x76, 0, IMM_FIXED1, NACLi_JMP8, "jbe $Jb");
+   SetOpForceSize64(0x76);
+   EncodeOp(0x77, 0, IMM_FIXED1, NACLi_JMP8, "jnbe $Jb");
+   SetOpForceSize64(0x77);
+   EncodeOp(0x78, 0, IMM_FIXED1, NACLi_JMP8, "js $Jb");
+   SetOpForceSize64(0x78);
+   EncodeOp(0x79, 0, IMM_FIXED1, NACLi_JMP8, "jns $Jb");
+   SetOpForceSize64(0x79);
+   EncodeOp(0x7a, 0, IMM_FIXED1, NACLi_JMP8, "jp $Jb");
+   SetOpForceSize64(0x7a);
+   EncodeOp(0x7b, 0, IMM_FIXED1, NACLi_JMP8, "jnp $Jb");
+   SetOpForceSize64(0x7b);
+   EncodeOp(0x7c, 0, IMM_FIXED1, NACLi_JMP8, "jl $Jb");
+   SetOpForceSize64(0x7c);
+   EncodeOp(0x7d, 0, IMM_FIXED1, NACLi_JMP8, "jge $Jb");
+   SetOpForceSize64(0x7d);
+   EncodeOp(0x7e, 0, IMM_FIXED1, NACLi_JMP8, "jle $Jb");
+   SetOpForceSize64(0x7e);
+   EncodeOp(0x7f, 0, IMM_FIXED1, NACLi_JMP8, "jg $Jb");
+   SetOpForceSize64(0x7f);
 
-  /* 0x80-0x8f: Gpr1, test, xchg, mov, lea, mov, pop */
-  EncodeOp(0x80, 1, IMM_FIXED1, NACLi_OPINMRM, "$group1 $Eb, $Ib");
-  SetOpOpInMRM(0x80, GROUP1);
-  EncodeOp(0x81, 1, IMM_DATAV, NACLi_OPINMRM, "$group1 $Ev, $Iz");
-  SetOpOpInMRM(0x81, GROUP1);
+   /* 0x80-0x8f: Gpr1, test, xchg, mov, lea, mov, pop */
+   EncodeOp(0x80, 1, IMM_FIXED1, NACLi_OPINMRM, "$group1 $Eb, $Ib");
+   SetOpOpInMRM(0x80, GROUP1);
+   EncodeOp(0x81, 1, IMM_DATAV, NACLi_OPINMRM, "$group1 $Ev, $Iz");
+   SetOpOpInMRM(0x81, GROUP1);
 
-  /* The AMD manual shows 0x82 as a synonym for 0x80,
-   * however these are all illegal in 64-bit mode so we omit them here
-   * too.
-   */
-  EncodeModedOp(0x82, 1, IMM_FIXED1, NACLi_ILLEGAL, "undef", X86_32);
+   /* The AMD manual shows 0x82 as a synonym for 0x80,
+    * however these are all illegal in 64-bit mode so we omit them here
+    * too.
+    */
+   EncodeModedOp(0x82, 1, IMM_FIXED1, NACLi_ILLEGAL, "undef", X86_32);
 
-  /* table disagrees with objdump on 0x83? */
-  EncodeOp(0x83, 1, IMM_FIXED1, NACLi_OPINMRM, "$group1 $Ev, $Ib");
-  SetOpOpInMRM(0x83, GROUP1);
-  EncodeOp(0x84, 1, IMM_NONE, NACLi_386, "test $E, $G");
-  EncodeOp(0x85, 1, IMM_NONE, NACLi_386, "test $E, $G");
-  EncodeOp(0x86, 1, IMM_NONE, NACLi_386L, "xchg $E, $G");
-  EncodeOp(0x87, 1, IMM_NONE, NACLi_386L, "xchg $E, $G");
-  EncodeOp(0x88, 1, IMM_NONE, NACLi_386, "mov $Eb, $Gb");
-  EncodeOp(0x89, 1, IMM_NONE, NACLi_386, "mov $Ev, $Gv");
-  EncodeOp(0x8a, 1, IMM_NONE, NACLi_386, "mov $Gb, $Eb");
-  EncodeOp(0x8b, 1, IMM_NONE, NACLi_386, "mov $Gv, $Ev");
-  EncodeOp(0x8c, 1, IMM_NONE, NACLi_ILLEGAL, "mov $E, $S");
-  EncodeOp(0x8d, 1, IMM_NONE, NACLi_386, "lea $G, $M");
-  EncodeOp(0x8e, 1, IMM_NONE, NACLi_ILLEGAL, "mov $S, $E");
-  EncodeOp(0x8f, 1, IMM_NONE, NACLi_OPINMRM, "$group1a $Ev");
-  SetOpOpInMRM(0x8f, GROUP1A);
-  SetOpDefaultSize64(0x8f);
+   /* table disagrees with objdump on 0x83? */
+   EncodeOp(0x83, 1, IMM_FIXED1, NACLi_OPINMRM, "$group1 $Ev, $Ib");
+   SetOpOpInMRM(0x83, GROUP1);
+   EncodeOp(0x84, 1, IMM_NONE, NACLi_386, "test $E, $G");
+   EncodeOp(0x85, 1, IMM_NONE, NACLi_386, "test $E, $G");
+   EncodeOp(0x86, 1, IMM_NONE, NACLi_386L, "xchg $E, $G");
+   EncodeOp(0x87, 1, IMM_NONE, NACLi_386L, "xchg $E, $G");
+   EncodeOp(0x88, 1, IMM_NONE, NACLi_386, "mov $Eb, $Gb");
+   EncodeOp(0x89, 1, IMM_NONE, NACLi_386, "mov $Ev, $Gv");
+   EncodeOp(0x8a, 1, IMM_NONE, NACLi_386, "mov $Gb, $Eb");
+   EncodeOp(0x8b, 1, IMM_NONE, NACLi_386, "mov $Gv, $Ev");
+   EncodeOp(0x8c, 1, IMM_NONE, NACLi_ILLEGAL, "mov $E, $S");
+   EncodeOp(0x8d, 1, IMM_NONE, NACLi_386, "lea $G, $M");
+   EncodeOp(0x8e, 1, IMM_NONE, NACLi_ILLEGAL, "mov $S, $E");
+   EncodeOp(0x8f, 1, IMM_NONE, NACLi_OPINMRM, "$group1a $Ev");
+   SetOpOpInMRM(0x8f, GROUP1A);
+   SetOpDefaultSize64(0x8f);
 
-  /* 0x90-0x9f */
-  /* TODO(karl, encode 64 mode with rXX/xn based on REX.b) */
-  EncodeOp(0x90, 0, IMM_NONE, NACLi_386R, "nop");
-  EncodeOpRegs(0x91, 0, IMM_NONE, NACLi_386L, "xchg %eax, %ecx");
-  EncodeOpRegs(0x92, 0, IMM_NONE, NACLi_386L, "xchg %eax, %edx");
-  EncodeOpRegs(0x93, 0, IMM_NONE, NACLi_386L, "xchg %eax, %ebx");
-  EncodeOpRegs(0x94, 0, IMM_NONE, NACLi_386L, "xchg %eax, %esp");
-  EncodeOpRegs(0x95, 0, IMM_NONE, NACLi_386L, "xchg %eax, %ebp");
-  EncodeOpRegs(0x96, 0, IMM_NONE, NACLi_386L, "xchg %eax, %esi");
-  EncodeOpRegs(0x97, 0, IMM_NONE, NACLi_386L, "xchg %eax, %edi");
-  EncodeOp(0x98, 0, IMM_NONE, NACLi_386, "cbw");  /* cwde cdqe */
-  EncodeOp(0x99, 0, IMM_NONE, NACLi_386, "cwd");  /* cdq cqo */
-  EncodeModedOp(0x9a, 0, IMM_FARPTR, NACLi_ILLEGAL, "lcall $A", X86_32);
-  EncodeOp(0x9b, 0, IMM_NONE, NACLi_X87, "wait");
-  EncodeOp(0x9c, 0, IMM_NONE, NACLi_ILLEGAL, "pushf $F");
-  SetOpDefaultSize64(0x9c);
-  EncodeOp(0x9d, 0, IMM_NONE, NACLi_ILLEGAL, "popf $F");
-  SetOpDefaultSize64(0x9d);
-  EncodeOp(0x9e, 0, IMM_NONE, NACLi_386, "sahf");
-  EncodeOp(0x9f, 0, IMM_NONE, NACLi_386, "lahf");
+   /* 0x90-0x9f */
+   /* TODO(karl, encode 64 mode with rXX/xn based on REX.b) */
+   EncodeOp(0x90, 0, IMM_NONE, NACLi_386R, "nop");
+   EncodeOpRegs(0x91, 0, IMM_NONE, NACLi_386L, "xchg %eax, %ecx");
+   EncodeOpRegs(0x92, 0, IMM_NONE, NACLi_386L, "xchg %eax, %edx");
+   EncodeOpRegs(0x93, 0, IMM_NONE, NACLi_386L, "xchg %eax, %ebx");
+   EncodeOpRegs(0x94, 0, IMM_NONE, NACLi_386L, "xchg %eax, %esp");
+   EncodeOpRegs(0x95, 0, IMM_NONE, NACLi_386L, "xchg %eax, %ebp");
+   EncodeOpRegs(0x96, 0, IMM_NONE, NACLi_386L, "xchg %eax, %esi");
+   EncodeOpRegs(0x97, 0, IMM_NONE, NACLi_386L, "xchg %eax, %edi");
+   EncodeOp(0x98, 0, IMM_NONE, NACLi_386, "cbw");  /* cwde cdqe */
+   EncodeOp(0x99, 0, IMM_NONE, NACLi_386, "cwd");  /* cdq cqo */
+   EncodeModedOp(0x9a, 0, IMM_FARPTR, NACLi_ILLEGAL, "lcall $A", X86_32);
+   EncodeOp(0x9b, 0, IMM_NONE, NACLi_X87, "wait");
+   EncodeOp(0x9c, 0, IMM_NONE, NACLi_ILLEGAL, "pushf $F");
+   SetOpDefaultSize64(0x9c);
+   EncodeOp(0x9d, 0, IMM_NONE, NACLi_ILLEGAL, "popf $F");
+   SetOpDefaultSize64(0x9d);
+   EncodeOp(0x9e, 0, IMM_NONE, NACLi_386, "sahf");
+   EncodeOp(0x9f, 0, IMM_NONE, NACLi_386, "lahf");
 
-  /* 0xa0-0xaf */
-  EncodeOp(0xa0, 0, IMM_ADDRV, NACLi_386, "mov %al, $O");
-  EncodeOpRegs(0xa1, 0, IMM_ADDRV, NACLi_386, "mov %eax, $O");
-  EncodeOp(0xa2, 0, IMM_ADDRV, NACLi_386, "mov $O, %al");
-  EncodeOpRegs(0xa3, 0, IMM_ADDRV, NACLi_386, "mov $O, %eax");
-  EncodeOp(0xa4, 0, IMM_NONE, NACLi_386R, "movsb $X, $Y");
-  EncodeOp(0xa5, 0, IMM_NONE, NACLi_386R, "movsw  $X, $Y");
-  EncodeOp(0xa6, 0, IMM_NONE, NACLi_386RE, "cmpsb $X, $Y");
-  EncodeOp(0xa7, 0, IMM_NONE, NACLi_386RE, "cmpsw $X, $Y");
-  EncodeOp(0xa8, 0, IMM_FIXED1, NACLi_386, "test %al, $I");
-  EncodeOpRegs(0xa9, 0, IMM_DATAV, NACLi_386, "test %eax, $I");
-  EncodeOp(0xaa, 0, IMM_NONE, NACLi_386R, "stosb $Y, %al");
-  EncodeOpRegs(0xab, 0, IMM_NONE, NACLi_386R, "stosw $Y, $eax");
-  /* ISE reviewers suggested omitting lods and scas */
-  EncodeOp(0xac, 0, IMM_NONE, NACLi_ILLEGAL, "lodsb %al, $X");
-  EncodeOpRegs(0xad, 0, IMM_NONE, NACLi_ILLEGAL, "lodsw %eax, $X");
-  EncodeOp(0xae, 0, IMM_NONE, NACLi_386RE, "scasb %al, $X");
-  EncodeOpRegs(0xaf, 0, IMM_NONE, NACLi_386RE, "scasw %eax, $X");
+   /* 0xa0-0xaf */
+   EncodeOp(0xa0, 0, IMM_ADDRV, NACLi_386, "mov %al, $O");
+   EncodeOpRegs(0xa1, 0, IMM_ADDRV, NACLi_386, "mov %eax, $O");
+   EncodeOp(0xa2, 0, IMM_ADDRV, NACLi_386, "mov $O, %al");
+   EncodeOpRegs(0xa3, 0, IMM_ADDRV, NACLi_386, "mov $O, %eax");
+   EncodeOp(0xa4, 0, IMM_NONE, NACLi_386R, "movsb $X, $Y");
+   EncodeOp(0xa5, 0, IMM_NONE, NACLi_386R, "movsw  $X, $Y");
+   EncodeOp(0xa6, 0, IMM_NONE, NACLi_386RE, "cmpsb $X, $Y");
+   EncodeOp(0xa7, 0, IMM_NONE, NACLi_386RE, "cmpsw $X, $Y");
+   EncodeOp(0xa8, 0, IMM_FIXED1, NACLi_386, "test %al, $I");
+   EncodeOpRegs(0xa9, 0, IMM_DATAV, NACLi_386, "test %eax, $I");
+   EncodeOp(0xaa, 0, IMM_NONE, NACLi_386R, "stosb $Y, %al");
+   EncodeOpRegs(0xab, 0, IMM_NONE, NACLi_386R, "stosw $Y, $eax");
+   /* ISE reviewers suggested omitting lods and scas */
+   EncodeOp(0xac, 0, IMM_NONE, NACLi_ILLEGAL, "lodsb %al, $X");
+   EncodeOpRegs(0xad, 0, IMM_NONE, NACLi_ILLEGAL, "lodsw %eax, $X");
+   EncodeOp(0xae, 0, IMM_NONE, NACLi_386RE, "scasb %al, $X");
+   EncodeOpRegs(0xaf, 0, IMM_NONE, NACLi_386RE, "scasw %eax, $X");
 
-  /* 0xb0-0xbf */
-  TODO(karl, "add mode64 versions");
-  TODO(karl,
-       "form is rXX/xn or xl/rnl or xh/rnl based on REX.b when in mode64");
-  EncodeModedOp(0xb0, 0, IMM_FIXED1, NACLi_386, "mov %al, $Ib", X86_32);
-  EncodeModedOp(0xb1, 0, IMM_FIXED1, NACLi_386, "mov %cl, $Ib", X86_32);
-  EncodeModedOp(0xb2, 0, IMM_FIXED1, NACLi_386, "mov %dl, $Ib", X86_32);
-  EncodeModedOp(0xb3, 0, IMM_FIXED1, NACLi_386, "mov %bl, $Ib", X86_32);
-  EncodeModedOp(0xb4, 0, IMM_FIXED1, NACLi_386, "mov %ah, $Ib", X86_32);
-  EncodeModedOp(0xb5, 0, IMM_FIXED1, NACLi_386, "mov %ch, $Ib", X86_32);
-  EncodeModedOp(0xb6, 0, IMM_FIXED1, NACLi_386, "mov %dh, $Ib", X86_32);
-  EncodeModedOp(0xb7, 0, IMM_FIXED1, NACLi_386, "mov %bh, $Ib", X86_32);
+   /* 0xb0-0xbf */
+   TODO(karl, "add mode64 versions");
+   TODO(karl,
+        "form is rXX/xn or xl/rnl or xh/rnl based on REX.b when in mode64");
+   EncodeModedOp(0xb0, 0, IMM_FIXED1, NACLi_386, "mov %al, $Ib", X86_32);
+   EncodeModedOp(0xb1, 0, IMM_FIXED1, NACLi_386, "mov %cl, $Ib", X86_32);
+   EncodeModedOp(0xb2, 0, IMM_FIXED1, NACLi_386, "mov %dl, $Ib", X86_32);
+   EncodeModedOp(0xb3, 0, IMM_FIXED1, NACLi_386, "mov %bl, $Ib", X86_32);
+   EncodeModedOp(0xb4, 0, IMM_FIXED1, NACLi_386, "mov %ah, $Ib", X86_32);
+   EncodeModedOp(0xb5, 0, IMM_FIXED1, NACLi_386, "mov %ch, $Ib", X86_32);
+   EncodeModedOp(0xb6, 0, IMM_FIXED1, NACLi_386, "mov %dh, $Ib", X86_32);
+   EncodeModedOp(0xb7, 0, IMM_FIXED1, NACLi_386, "mov %bh, $Ib", X86_32);
 
-  EncodeOp(0xb8, 0, IMM_MOV_DATAV, NACLi_386, "mov %eax, $Iv");
-  EncodeOp(0xb9, 0, IMM_MOV_DATAV, NACLi_386, "mov %ecx, $Iv");
-  EncodeOp(0xba, 0, IMM_MOV_DATAV, NACLi_386, "mov %edx, $Iv");
-  EncodeOp(0xbb, 0, IMM_MOV_DATAV, NACLi_386, "mov %ebx, $Iv");
-  EncodeOp(0xbc, 0, IMM_MOV_DATAV, NACLi_386, "mov %esp, $Iv");
-  EncodeOp(0xbd, 0, IMM_MOV_DATAV, NACLi_386, "mov %ebp, $Iv");
-  EncodeOp(0xbe, 0, IMM_MOV_DATAV, NACLi_386, "mov %esi, $Iv");
-  EncodeOp(0xbf, 0, IMM_MOV_DATAV, NACLi_386, "mov %edi, $Iv");
+   EncodeOp(0xb8, 0, IMM_MOV_DATAV, NACLi_386, "mov %eax, $Iv");
+   EncodeOp(0xb9, 0, IMM_MOV_DATAV, NACLi_386, "mov %ecx, $Iv");
+   EncodeOp(0xba, 0, IMM_MOV_DATAV, NACLi_386, "mov %edx, $Iv");
+   EncodeOp(0xbb, 0, IMM_MOV_DATAV, NACLi_386, "mov %ebx, $Iv");
+   EncodeOp(0xbc, 0, IMM_MOV_DATAV, NACLi_386, "mov %esp, $Iv");
+   EncodeOp(0xbd, 0, IMM_MOV_DATAV, NACLi_386, "mov %ebp, $Iv");
+   EncodeOp(0xbe, 0, IMM_MOV_DATAV, NACLi_386, "mov %esi, $Iv");
+   EncodeOp(0xbf, 0, IMM_MOV_DATAV, NACLi_386, "mov %edi, $Iv");
 
-  /* 0xc0-0xcf */
-  EncodeOp(0xc0, 1, IMM_FIXED1, NACLi_OPINMRM, "$group2 $Eb, $Ib");
-  SetOpOpInMRM(0xc0, GROUP2);
-  EncodeOp(0xc1, 1, IMM_FIXED1, NACLi_OPINMRM, "$group2 $Ev, $Ib");
-  SetOpOpInMRM(0xc1, GROUP2);
-  EncodeOp(0xc2, 0, IMM_FIXED2, NACLi_RETURN, "ret $Iw");
-  SetOpForceSize64(0xc2);
-  EncodeOp(0xc3, 0, IMM_NONE, NACLi_RETURN, "ret");
-  SetOpForceSize64(0xc3);
-  EncodeModedOp(0xc4, 1, IMM_NONE, NACLi_ILLEGAL, "les $G, $M", X86_32);
-  EncodeModedOp(0xc5, 1, IMM_NONE, NACLi_ILLEGAL, "lds $G, $M", X86_32);
-  EncodeOp(0xc6, 1, IMM_FIXED1, NACLi_OPINMRM, "$group11 $Eb, $Ib");
-  SetOpOpInMRM(0xc6, GROUP11);
-  EncodeOp(0xc7, 1, IMM_DATAV, NACLi_OPINMRM, "$group11 $Ev, $Iz");
-  SetOpOpInMRM(0xc7, GROUP11);
-  EncodeOp(0xc8, 0, IMM_FIXED3, NACLi_ILLEGAL, "enter $I, $I");
-  EncodeOp(0xc9, 0, IMM_NONE, NACLi_386, "leave");
-  SetOpDefaultSize64(0xc9);
-  EncodeOp(0xca, 0, IMM_FIXED2, NACLi_RETURN, "ret (far)");
-  EncodeOp(0xcb, 0, IMM_NONE, NACLi_RETURN, "ret (far)");
-  EncodeOp(0xcc, 0, IMM_NONE, NACLi_ILLEGAL, "int3");
-  EncodeOp(0xcd, 0, IMM_FIXED1, NACLi_ILLEGAL, "int $Iv");
-  EncodeModedOp(0xce, 0, IMM_NONE, NACLi_ILLEGAL, "into", X86_32);
-  EncodeOp(0xcf, 0, IMM_NONE, NACLi_SYSTEM, "iret");
-  /* 0xd0-0xdf */
-  EncodeOp(0xd0, 1, IMM_NONE, NACLi_OPINMRM, "$group2 $Eb, 1");
-  SetOpOpInMRM(0xd0, GROUP2);
-  EncodeOp(0xd1, 1, IMM_NONE, NACLi_OPINMRM, "$group2 $Ev, 1");
-  SetOpOpInMRM(0xd1, GROUP2);
-  EncodeOp(0xd2, 1, IMM_NONE, NACLi_OPINMRM, "$group2 $Eb, %cl");
-  SetOpOpInMRM(0xd2, GROUP2);
-  EncodeOp(0xd3, 1, IMM_NONE, NACLi_OPINMRM, "$group2 $Ev, %cl");
-  SetOpOpInMRM(0xd3, GROUP2);
+   /* 0xc0-0xcf */
+   EncodeOp(0xc0, 1, IMM_FIXED1, NACLi_OPINMRM, "$group2 $Eb, $Ib");
+   SetOpOpInMRM(0xc0, GROUP2);
+   EncodeOp(0xc1, 1, IMM_FIXED1, NACLi_OPINMRM, "$group2 $Ev, $Ib");
+   SetOpOpInMRM(0xc1, GROUP2);
+   EncodeOp(0xc2, 0, IMM_FIXED2, NACLi_RETURN, "ret $Iw");
+   SetOpForceSize64(0xc2);
+   EncodeOp(0xc3, 0, IMM_NONE, NACLi_RETURN, "ret");
+   SetOpForceSize64(0xc3);
+   EncodeModedOp(0xc4, 1, IMM_NONE, NACLi_ILLEGAL, "les $G, $M", X86_32);
+   EncodeModedOp(0xc5, 1, IMM_NONE, NACLi_ILLEGAL, "lds $G, $M", X86_32);
+   EncodeOp(0xc6, 1, IMM_FIXED1, NACLi_OPINMRM, "$group11 $Eb, $Ib");
+   SetOpOpInMRM(0xc6, GROUP11);
+   EncodeOp(0xc7, 1, IMM_DATAV, NACLi_OPINMRM, "$group11 $Ev, $Iz");
+   SetOpOpInMRM(0xc7, GROUP11);
+   EncodeOp(0xc8, 0, IMM_FIXED3, NACLi_ILLEGAL, "enter $I, $I");
+   EncodeOp(0xc9, 0, IMM_NONE, NACLi_386, "leave");
+   SetOpDefaultSize64(0xc9);
+   EncodeOp(0xca, 0, IMM_FIXED2, NACLi_RETURN, "ret (far)");
+   EncodeOp(0xcb, 0, IMM_NONE, NACLi_RETURN, "ret (far)");
+   EncodeOp(0xcc, 0, IMM_NONE, NACLi_ILLEGAL, "int3");
+   EncodeOp(0xcd, 0, IMM_FIXED1, NACLi_ILLEGAL, "int $Iv");
+   EncodeModedOp(0xce, 0, IMM_NONE, NACLi_ILLEGAL, "into", X86_32);
+   EncodeOp(0xcf, 0, IMM_NONE, NACLi_SYSTEM, "iret");
+   /* 0xd0-0xdf */
+   EncodeOp(0xd0, 1, IMM_NONE, NACLi_OPINMRM, "$group2 $Eb, 1");
+   SetOpOpInMRM(0xd0, GROUP2);
+   EncodeOp(0xd1, 1, IMM_NONE, NACLi_OPINMRM, "$group2 $Ev, 1");
+   SetOpOpInMRM(0xd1, GROUP2);
+   EncodeOp(0xd2, 1, IMM_NONE, NACLi_OPINMRM, "$group2 $Eb, %cl");
+   SetOpOpInMRM(0xd2, GROUP2);
+   EncodeOp(0xd3, 1, IMM_NONE, NACLi_OPINMRM, "$group2 $Ev, %cl");
+   SetOpOpInMRM(0xd3, GROUP2);
 
-  /* ISE reviewers suggested omision of AAM, AAD */
-  /* 0xd4-0xd5 - deprecated */
-  EncodeModedOp(0xd4, 0, IMM_FIXED1, NACLi_ILLEGAL, "aam", X86_32);
-  EncodeModedOp(0xd5, 0, IMM_FIXED1, NACLi_ILLEGAL, "aad", X86_32);
-  TODO(karl,
-       "Intel manual (see comments above) has a blank entry"
-       "for opcode 0xd6, which states that blank entries in"
-       "the tables correspond to reserved (undefined) values"
-       "Should we treat this accordingly?")
-  EncodeOp(0xd6, 0, IMM_NONE, NACLi_ILLEGAL, "salc");
+   /* ISE reviewers suggested omision of AAM, AAD */
+   /* 0xd4-0xd5 - deprecated */
+   EncodeModedOp(0xd4, 0, IMM_FIXED1, NACLi_ILLEGAL, "aam", X86_32);
+   EncodeModedOp(0xd5, 0, IMM_FIXED1, NACLi_ILLEGAL, "aad", X86_32);
+   TODO(karl,
+        "Intel manual (see comments above) has a blank entry"
+        "for opcode 0xd6, which states that blank entries in"
+        "the tables correspond to reserved (undefined) values"
+        "Should we treat this accordingly?")
+   EncodeOp(0xd6, 0, IMM_NONE, NACLi_ILLEGAL, "salc");
 
-  /* ISE reviewers suggested this omision */
-  EncodeOp(0xd7, 0, IMM_NONE, NACLi_ILLEGAL, "xlat");
-  EncodeOp(0xd8, 1, IMM_NONE, NACLi_X87, "x87");
-  EncodeOp(0xd9, 1, IMM_NONE, NACLi_X87, "x87");
-  EncodeOp(0xda, 1, IMM_NONE, NACLi_X87, "x87");
-  EncodeOp(0xdb, 1, IMM_NONE, NACLi_X87, "x87");
-  EncodeOp(0xdc, 1, IMM_NONE, NACLi_X87, "x87");
-  EncodeOp(0xdd, 1, IMM_NONE, NACLi_X87, "x87");
-  EncodeOp(0xde, 1, IMM_NONE, NACLi_X87, "x87");
-  EncodeOp(0xdf, 1, IMM_NONE, NACLi_X87, "x87");
+   /* ISE reviewers suggested this omision */
+   EncodeOp(0xd7, 0, IMM_NONE, NACLi_ILLEGAL, "xlat");
+   EncodeOp(0xd8, 1, IMM_NONE, NACLi_X87, "x87");
+   EncodeOp(0xd9, 1, IMM_NONE, NACLi_X87, "x87");
+   EncodeOp(0xda, 1, IMM_NONE, NACLi_X87, "x87");
+   EncodeOp(0xdb, 1, IMM_NONE, NACLi_X87, "x87");
+   EncodeOp(0xdc, 1, IMM_NONE, NACLi_X87, "x87");
+   EncodeOp(0xdd, 1, IMM_NONE, NACLi_X87, "x87");
+   EncodeOp(0xde, 1, IMM_NONE, NACLi_X87, "x87");
+   EncodeOp(0xdf, 1, IMM_NONE, NACLi_X87, "x87");
 
-  /* 0xe0-0xef */
-  /* ISE reviewers suggested making loopne, loope, loop, jcxz illegal */
-  /* There are faster alternatives on modern x86 implementations. */
-  EncodeOp(0xe0, 0, IMM_FIXED1, NACLi_ILLEGAL, "loopne $Jb");
-  SetOpForceSize64(0xe0);
-  EncodeOp(0xe1, 0, IMM_FIXED1, NACLi_ILLEGAL, "loope $Jb");
-  SetOpForceSize64(0xe1);
-  EncodeOp(0xe2, 0, IMM_FIXED1, NACLi_ILLEGAL, "loop $Jb");
-  SetOpForceSize64(0xe2);
-  EncodeOp(0xe3, 0, IMM_FIXED1, NACLi_ILLEGAL, "jcxz $Jb");
-  SetOpForceSize64(0xe3);
+   /* 0xe0-0xef */
+   /* ISE reviewers suggested making loopne, loope, loop, jcxz illegal */
+   /* There are faster alternatives on modern x86 implementations. */
+   EncodeOp(0xe0, 0, IMM_FIXED1, NACLi_ILLEGAL, "loopne $Jb");
+   SetOpForceSize64(0xe0);
+   EncodeOp(0xe1, 0, IMM_FIXED1, NACLi_ILLEGAL, "loope $Jb");
+   SetOpForceSize64(0xe1);
+   EncodeOp(0xe2, 0, IMM_FIXED1, NACLi_ILLEGAL, "loop $Jb");
+   SetOpForceSize64(0xe2);
+   EncodeOp(0xe3, 0, IMM_FIXED1, NACLi_ILLEGAL, "jcxz $Jb");
+   SetOpForceSize64(0xe3);
 
-  /* I/O instructions */
-  EncodeOp(0xe4, 0, IMM_FIXED1, NACLi_ILLEGAL, "in %al, $I");
-  EncodeOp(0xe5, 0, IMM_FIXED1, NACLi_ILLEGAL, "in %eax, $I");
-  EncodeOp(0xe6, 0, IMM_FIXED1, NACLi_ILLEGAL, "out %al, $I");
-  EncodeOp(0xe7, 0, IMM_FIXED1, NACLi_ILLEGAL, "out %eax, $I");
-  EncodeOp(0xe8, 0, IMM_DATAV, NACLi_JMPZ, "call $Jz");
-  SetOpForceSize64(0xe8);
-  EncodeOp(0xe9, 0, IMM_DATAV, NACLi_JMPZ, "jmp $Jz");
-  SetOpForceSize64(0xe9);
-  EncodeModedOp(0xea, 0, IMM_FARPTR, NACLi_ILLEGAL, "ljmp $A", X86_32);
-  EncodeOp(0xeb, 0, IMM_FIXED1, NACLi_JMP8, "jmp $Jb");
-  SetOpForceSize64(0xeb);
-  EncodeOp(0xec, 0, IMM_NONE, NACLi_ILLEGAL, "in %al, %dx");
-  EncodeOp(0xed, 0, IMM_NONE, NACLi_ILLEGAL, "in %eax, %dx");
-  EncodeOp(0xee, 0, IMM_NONE, NACLi_ILLEGAL, "out %dx, %al");
-  EncodeOp(0xef, 0, IMM_NONE, NACLi_ILLEGAL, "out %dx, %eax");
+   /* I/O instructions */
+   EncodeOp(0xe4, 0, IMM_FIXED1, NACLi_ILLEGAL, "in %al, $I");
+   EncodeOp(0xe5, 0, IMM_FIXED1, NACLi_ILLEGAL, "in %eax, $I");
+   EncodeOp(0xe6, 0, IMM_FIXED1, NACLi_ILLEGAL, "out %al, $I");
+   EncodeOp(0xe7, 0, IMM_FIXED1, NACLi_ILLEGAL, "out %eax, $I");
+   EncodeOp(0xe8, 0, IMM_DATAV, NACLi_JMPZ, "call $Jz");
+   SetOpForceSize64(0xe8);
+   EncodeOp(0xe9, 0, IMM_DATAV, NACLi_JMPZ, "jmp $Jz");
+   SetOpForceSize64(0xe9);
+   EncodeModedOp(0xea, 0, IMM_FARPTR, NACLi_ILLEGAL, "ljmp $A", X86_32);
+   EncodeOp(0xeb, 0, IMM_FIXED1, NACLi_JMP8, "jmp $Jb");
+   SetOpForceSize64(0xeb);
+   EncodeOp(0xec, 0, IMM_NONE, NACLi_ILLEGAL, "in %al, %dx");
+   EncodeOp(0xed, 0, IMM_NONE, NACLi_ILLEGAL, "in %eax, %dx");
+   EncodeOp(0xee, 0, IMM_NONE, NACLi_ILLEGAL, "out %dx, %al");
+   EncodeOp(0xef, 0, IMM_NONE, NACLi_ILLEGAL, "out %dx, %eax");
 
-  /* 0xf0-0xff */
-  EncodeOp(0xf0, 0, IMM_NONE, NACLi_ILLEGAL, "[lock]");
-  EncodePrefixName(0xf0, "kPrefixLOCK");
-  EncodeOp(0xf1, 0, IMM_NONE, NACLi_ILLEGAL, "int1");
-  TODO(karl,
-       "Intel manual (see comments above) has a blank entry"
-       "for opcode 0xf2, which states that blank entries in"
-       "the tables correspond to reserved (undefined) values"
-       "Should we treat this accordingly?")
-  EncodeOp(0xf2, 0, IMM_NONE, NACLi_ILLEGAL, "[repne]");
-  EncodePrefixName(0xf2, "kPrefixREPNE");
-  EncodeOp(0xf3, 0, IMM_NONE, NACLi_ILLEGAL, "[rep]");
-  EncodePrefixName(0xf3, "kPrefixREP");
+   /* 0xf0-0xff */
+   EncodeOp(0xf0, 0, IMM_NONE, NACLi_ILLEGAL, "[lock]");
+   EncodePrefixName(0xf0, "kPrefixLOCK");
+   EncodeOp(0xf1, 0, IMM_NONE, NACLi_ILLEGAL, "int1");
+   TODO(karl,
+        "Intel manual (see comments above) has a blank entry"
+        "for opcode 0xf2, which states that blank entries in"
+        "the tables correspond to reserved (undefined) values"
+        "Should we treat this accordingly?")
+   EncodeOp(0xf2, 0, IMM_NONE, NACLi_ILLEGAL, "[repne]");
+   EncodePrefixName(0xf2, "kPrefixREPNE");
+   EncodeOp(0xf3, 0, IMM_NONE, NACLi_ILLEGAL, "[rep]");
+   EncodePrefixName(0xf3, "kPrefixREP");
 
-  /* NaCl uses the hlt instruction for bytes that should never be */
-  /* executed. hlt causes immediate termination of the module. */
-  EncodeOp(0xf4, 0, IMM_NONE, NACLi_386, "hlt");
-  EncodeOp(0xf5, 0, IMM_NONE, NACLi_386, "cmc");
+   /* NaCl uses the hlt instruction for bytes that should never be */
+   /* executed. hlt causes immediate termination of the module. */
+   EncodeOp(0xf4, 0, IMM_NONE, NACLi_386, "hlt");
+   EncodeOp(0xf5, 0, IMM_NONE, NACLi_386, "cmc");
 
-  /* Note: /0 and /1 also have an immediate */
-  EncodeOp(0xf6, 1, IMM_GROUP3_F6, NACLi_OPINMRM, "$group3 $Eb");
-  SetOpOpInMRM(0xf6, GROUP3);
-  EncodeOp(0xf7, 1, IMM_GROUP3_F7, NACLi_OPINMRM, "$group3 $Ev");
-  SetOpOpInMRM(0xf7, GROUP3);
-  EncodeOp(0xf8, 0, IMM_NONE, NACLi_386, "clc");
-  EncodeOp(0xf9, 0, IMM_NONE, NACLi_386, "stc");
-  EncodeOp(0xfa, 0, IMM_NONE, NACLi_SYSTEM, "cli");
-  EncodeOp(0xfb, 0, IMM_NONE, NACLi_SYSTEM, "sti");
+   /* Note: /0 and /1 also have an immediate */
+   EncodeOp(0xf6, 1, IMM_GROUP3_F6, NACLi_OPINMRM, "$group3 $Eb");
+   SetOpOpInMRM(0xf6, GROUP3);
+   EncodeOp(0xf7, 1, IMM_GROUP3_F7, NACLi_OPINMRM, "$group3 $Ev");
+   SetOpOpInMRM(0xf7, GROUP3);
+   EncodeOp(0xf8, 0, IMM_NONE, NACLi_386, "clc");
+   EncodeOp(0xf9, 0, IMM_NONE, NACLi_386, "stc");
+   EncodeOp(0xfa, 0, IMM_NONE, NACLi_SYSTEM, "cli");
+   EncodeOp(0xfb, 0, IMM_NONE, NACLi_SYSTEM, "sti");
 
-  /* cld and std are generated by gcc, used for mem move operations */
-  EncodeOp(0xfc, 0, IMM_NONE, NACLi_386, "cld");
-  EncodeOp(0xfd, 0, IMM_NONE, NACLi_386, "std");
-  EncodeOp(0xfe, 1, IMM_NONE, NACLi_OPINMRM, "$group4 $Eb");
-  SetOpOpInMRM(0xfe, GROUP4);
+   /* cld and std are generated by gcc, used for mem move operations */
+   EncodeOp(0xfc, 0, IMM_NONE, NACLi_386, "cld");
+   EncodeOp(0xfd, 0, IMM_NONE, NACLi_386, "std");
+   EncodeOp(0xfe, 1, IMM_NONE, NACLi_OPINMRM, "$group4 $Eb");
+   SetOpOpInMRM(0xfe, GROUP4);
 
-  /* Note: /3 and /5 are $Mp rather than $Ev */
-  EncodeOp(0xff, 1, IMM_NONE, NACLi_OPINMRM, "$group5 $Ev");
-  SetOpOpInMRM(0xff, GROUP5);
+   /* Note: /3 and /5 are $Mp rather than $Ev */
+   EncodeOp(0xff, 1, IMM_NONE, NACLi_OPINMRM, "$group5 $Ev");
+   SetOpOpInMRM(0xff, GROUP5);
 
-  /* Opcodes encoded in the modrm field */
-  /* Anything not done explicitly is marked illegal */
-  /* group1 */
-  EncodeModRMOp(GROUP1, 0, NACLi_386L, "add");
-  EncodeModRMOp(GROUP1, 1, NACLi_386L, "or");
-  EncodeModRMOp(GROUP1, 2, NACLi_386L, "adc");
-  EncodeModRMOp(GROUP1, 3, NACLi_386L, "sbb");
-  EncodeModRMOp(GROUP1, 4, NACLi_386L, "and");
-  EncodeModRMOp(GROUP1, 5, NACLi_386L, "sub");
-  EncodeModRMOp(GROUP1, 6, NACLi_386L, "xor");
-  EncodeModRMOp(GROUP1, 7, NACLi_386, "cmp");
+   /* Opcodes encoded in the modrm field */
+   /* Anything not done explicitly is marked illegal */
+   /* group1 */
+   EncodeModRMOp(GROUP1, 0, NACLi_386L, "add");
+   EncodeModRMOp(GROUP1, 1, NACLi_386L, "or");
+   EncodeModRMOp(GROUP1, 2, NACLi_386L, "adc");
+   EncodeModRMOp(GROUP1, 3, NACLi_386L, "sbb");
+   EncodeModRMOp(GROUP1, 4, NACLi_386L, "and");
+   EncodeModRMOp(GROUP1, 5, NACLi_386L, "sub");
+   EncodeModRMOp(GROUP1, 6, NACLi_386L, "xor");
+   EncodeModRMOp(GROUP1, 7, NACLi_386, "cmp");
 
-  /* group1a */
-  EncodeModRMOp(GROUP1A, 0, NACLi_386, "pop $Ev");
+   /* group1a */
+   EncodeModRMOp(GROUP1A, 0, NACLi_386, "pop $Ev");
 
-  /* all other group1a opcodes are illegal */
-  /* group2 */
-  EncodeModRMOp(GROUP2, 0, NACLi_386, "rol");
-  EncodeModRMOp(GROUP2, 1, NACLi_386, "ror");
-  EncodeModRMOp(GROUP2, 2, NACLi_386, "rcl");
-  EncodeModRMOp(GROUP2, 3, NACLi_386, "rcr");
-  EncodeModRMOp(GROUP2, 4, NACLi_386, "shl");  /* sal */
-  EncodeModRMOp(GROUP2, 5, NACLi_386, "shr");  /* sar */
+   /* all other group1a opcodes are illegal */
+   /* group2 */
+   EncodeModRMOp(GROUP2, 0, NACLi_386, "rol");
+   EncodeModRMOp(GROUP2, 1, NACLi_386, "ror");
+   EncodeModRMOp(GROUP2, 2, NACLi_386, "rcl");
+   EncodeModRMOp(GROUP2, 3, NACLi_386, "rcr");
+   EncodeModRMOp(GROUP2, 4, NACLi_386, "shl");  /* sal */
+   EncodeModRMOp(GROUP2, 5, NACLi_386, "shr");  /* sar */
 
-  /* note 2, 6 is illegal according to Intel, shl according to AMD  */
-  EncodeModRMOp(GROUP2, 7, NACLi_386, "sar");
+   /* note 2, 6 is illegal according to Intel, shl according to AMD  */
+   EncodeModRMOp(GROUP2, 7, NACLi_386, "sar");
 
-  /* group3 */
-  EncodeModRMOp(GROUP3, 0, NACLi_386, "test $I");
+   /* group3 */
+   EncodeModRMOp(GROUP3, 0, NACLi_386, "test $I");
 
-  /* this is such a weird case ... just put a special case in ncdecode.c */
-  /* note 3, 1 is handled by a special case in the decoder */
-  /* SetModRMOpImmType(3, 0, IMM_FIXED1); */
-  EncodeModRMOp(GROUP3, 2, NACLi_386L, "not");
-  EncodeModRMOp(GROUP3, 3, NACLi_386L, "neg");
-  EncodeModRMOpRegs(GROUP3, 4, NACLi_386, "mul %eax");
-  EncodeModRMOpRegs(GROUP3, 5, NACLi_386, "imul %eax");
-  EncodeModRMOpRegs(GROUP3, 6, NACLi_386, "div %eax");
-  EncodeModRMOpRegs(GROUP3, 7, NACLi_386, "idiv %eax");
+   /* this is such a weird case ... just put a special case in ncdecode.c */
+   /* note 3, 1 is handled by a special case in the decoder */
+   /* SetModRMOpImmType(3, 0, IMM_FIXED1); */
+   EncodeModRMOp(GROUP3, 2, NACLi_386L, "not");
+   EncodeModRMOp(GROUP3, 3, NACLi_386L, "neg");
+   EncodeModRMOpRegs(GROUP3, 4, NACLi_386, "mul %eax");
+   EncodeModRMOpRegs(GROUP3, 5, NACLi_386, "imul %eax");
+   EncodeModRMOpRegs(GROUP3, 6, NACLi_386, "div %eax");
+   EncodeModRMOpRegs(GROUP3, 7, NACLi_386, "idiv %eax");
 
-  /* group4 */
-  EncodeModRMOp(GROUP4, 0, NACLi_386L, "inc");
-  EncodeModRMOp(GROUP4, 1, NACLi_386L, "dec");
+   /* group4 */
+   EncodeModRMOp(GROUP4, 0, NACLi_386L, "inc");
+   EncodeModRMOp(GROUP4, 1, NACLi_386L, "dec");
 
-  /* group5 */
-  EncodeModRMOp(GROUP5, 0, NACLi_386L, "inc");
-  EncodeModRMOp(GROUP5, 1, NACLi_386L, "dec");
-  EncodeModRMOp(GROUP5, 2, NACLi_INDIRECT, "call *");  /* call indirect */
-  SetModRMOpForceSize64(GROUP5, 2);
-  EncodeModRMOp(GROUP5, 3, NACLi_ILLEGAL, "lcall *");  /* far call */
-  EncodeModRMOp(GROUP5, 4, NACLi_INDIRECT, "jmp *");   /* jump indirect */
-  SetModRMOpForceSize64(GROUP5, 4);
-  EncodeModRMOp(GROUP5, 5, NACLi_ILLEGAL, "ljmp *");   /* far jmp */
-  EncodeModRMOp(GROUP5, 6, NACLi_386, "push");
-  SetModRMOpDefaultSize64(GROUP5, 6);
+   /* group5 */
+   EncodeModRMOp(GROUP5, 0, NACLi_386L, "inc");
+   EncodeModRMOp(GROUP5, 1, NACLi_386L, "dec");
+   EncodeModRMOp(GROUP5, 2, NACLi_INDIRECT, "call *");  /* call indirect */
+   SetModRMOpForceSize64(GROUP5, 2);
+   EncodeModRMOp(GROUP5, 3, NACLi_ILLEGAL, "lcall *");  /* far call */
+   EncodeModRMOp(GROUP5, 4, NACLi_INDIRECT, "jmp *");   /* jump indirect */
+   SetModRMOpForceSize64(GROUP5, 4);
+   EncodeModRMOp(GROUP5, 5, NACLi_ILLEGAL, "ljmp *");   /* far jmp */
+   EncodeModRMOp(GROUP5, 6, NACLi_386, "push");
+   SetModRMOpDefaultSize64(GROUP5, 6);
 
-  /* group6 */
-  EncodeModRMOp(GROUP6, 0, NACLi_SYSTEM, "sldt");
-  EncodeModRMOp(GROUP6, 1, NACLi_SYSTEM, "str");
-  EncodeModRMOp(GROUP6, 2, NACLi_SYSTEM, "lldt");
-  EncodeModRMOp(GROUP6, 3, NACLi_SYSTEM, "ltr");
-  EncodeModRMOp(GROUP6, 4, NACLi_SYSTEM, "verr");
-  EncodeModRMOp(GROUP6, 5, NACLi_SYSTEM, "verw");
+   /* group6 */
+   EncodeModRMOp(GROUP6, 0, NACLi_SYSTEM, "sldt");
+   EncodeModRMOp(GROUP6, 1, NACLi_SYSTEM, "str");
+   EncodeModRMOp(GROUP6, 2, NACLi_SYSTEM, "lldt");
+   EncodeModRMOp(GROUP6, 3, NACLi_SYSTEM, "ltr");
+   EncodeModRMOp(GROUP6, 4, NACLi_SYSTEM, "verr");
+   EncodeModRMOp(GROUP6, 5, NACLi_SYSTEM, "verw");
 
-  /* group7 */
-  EncodeModRMOp(GROUP7, 0, NACLi_SYSTEM, "sgdt");
-  EncodeModRMOp(GROUP7, 1, NACLi_SYSTEM, "sidt"); /* monitor mwait */
-  EncodeModRMOp(GROUP7, 2, NACLi_SYSTEM, "lgdt");
-  EncodeModRMOp(GROUP7, 3, NACLi_SYSTEM, "lidt");
-  EncodeModRMOp(GROUP7, 4, NACLi_SYSTEM, "smsw");
-  EncodeModRMOp(GROUP7, 6, NACLi_SYSTEM, "lmsw");
-  EncodeModRMOp(GROUP7, 7, NACLi_SYSTEM, "invlpg"); /* swapgs rdtscp */
+   /* group7 */
+   EncodeModRMOp(GROUP7, 0, NACLi_SYSTEM, "sgdt");
+   EncodeModRMOp(GROUP7, 1, NACLi_SYSTEM, "sidt"); /* monitor mwait */
+   EncodeModRMOp(GROUP7, 2, NACLi_SYSTEM, "lgdt");
+   EncodeModRMOp(GROUP7, 3, NACLi_SYSTEM, "lidt");
+   EncodeModRMOp(GROUP7, 4, NACLi_SYSTEM, "smsw");
+   EncodeModRMOp(GROUP7, 6, NACLi_SYSTEM, "lmsw");
+   EncodeModRMOp(GROUP7, 7, NACLi_SYSTEM, "invlpg"); /* swapgs rdtscp */
 
-  /* group8 */
-  /* ISE reviewers suggested omitting bt* */
-  EncodeModRMOp(GROUP8, 4, NACLi_ILLEGAL, "bt");   /* deprecated */
-  EncodeModRMOp(GROUP8, 5, NACLi_ILLEGAL, "bts");  /* deprecated */
-  EncodeModRMOp(GROUP8, 6, NACLi_ILLEGAL, "btr");  /* deprecated */
-  EncodeModRMOp(GROUP8, 7, NACLi_ILLEGAL, "btc");  /* deprecated */
+   /* group8 */
+   /* ISE reviewers suggested omitting bt* */
+   EncodeModRMOp(GROUP8, 4, NACLi_ILLEGAL, "bt");   /* deprecated */
+   EncodeModRMOp(GROUP8, 5, NACLi_ILLEGAL, "bts");  /* deprecated */
+   EncodeModRMOp(GROUP8, 6, NACLi_ILLEGAL, "btr");  /* deprecated */
+   EncodeModRMOp(GROUP8, 7, NACLi_ILLEGAL, "btc");  /* deprecated */
 
-  /* group9 */
-  /* If the effective operand size is 16 or 32 bits, cmpxchg8b is used. */
-  /* If the size is 64 bits, cmpxchg16b is used, (64-bit mode only)     */
-  /* These instructions do support the LOCK prefix */
-  EncodeModRMOp(GROUP9, 1, NACLi_CMPXCHG8B, "cmpxchg8b");
+   /* group9 */
+   /* If the effective operand size is 16 or 32 bits, cmpxchg8b is used. */
+   /* If the size is 64 bits, cmpxchg16b is used, (64-bit mode only)     */
+   /* These instructions do support the LOCK prefix */
+   EncodeModRMOp(GROUP9, 1, NACLi_CMPXCHG8B, "cmpxchg8b");
 
-  /* group10 - all illegal */
-  /* group11 */
-  EncodeModRMOp(GROUP11, 0, NACLi_386, "mov");
+   /* group10 - all illegal */
+   /* group11 */
+   EncodeModRMOp(GROUP11, 0, NACLi_386, "mov");
 
-  /* group12 */
-  EncodeModRMOp(GROUP12, 2, NACLi_MMXSSE2, "psrlw");
-  EncodeModRMOp(GROUP12, 4, NACLi_MMXSSE2, "psraw");
-  EncodeModRMOp(GROUP12, 6, NACLi_MMXSSE2, "psllw");
+   /* group12 */
+   EncodeModRMOp(GROUP12, 2, NACLi_MMXSSE2, "psrlw");
+   EncodeModRMOp(GROUP12, 4, NACLi_MMXSSE2, "psraw");
+   EncodeModRMOp(GROUP12, 6, NACLi_MMXSSE2, "psllw");
 
-  /* group13 */
-  EncodeModRMOp(GROUP13, 2, NACLi_MMXSSE2, "psrld");
-  EncodeModRMOp(GROUP13, 4, NACLi_MMXSSE2, "psrad");
-  EncodeModRMOp(GROUP13, 6, NACLi_MMXSSE2, "pslld");
+   /* group13 */
+   EncodeModRMOp(GROUP13, 2, NACLi_MMXSSE2, "psrld");
+   EncodeModRMOp(GROUP13, 4, NACLi_MMXSSE2, "psrad");
+   EncodeModRMOp(GROUP13, 6, NACLi_MMXSSE2, "pslld");
 
-  /* group14 */
-  EncodeModRMOp(GROUP14, 2, NACLi_MMXSSE2, "psrlq");
-  EncodeModRMOp(GROUP14, 3, NACLi_SSE2x, "psrldq");
-  EncodeModRMOp(GROUP14, 6, NACLi_MMXSSE2, "psllq");
-  EncodeModRMOp(GROUP14, 7, NACLi_SSE2x, "pslldq");
+   /* group14 */
+   EncodeModRMOp(GROUP14, 2, NACLi_MMXSSE2, "psrlq");
+   EncodeModRMOp(GROUP14, 3, NACLi_SSE2x, "psrldq");
+   EncodeModRMOp(GROUP14, 6, NACLi_MMXSSE2, "psllq");
+   EncodeModRMOp(GROUP14, 7, NACLi_SSE2x, "pslldq");
 
-  /* group15 */
-  EncodeModRMOp(GROUP15, 0, NACLi_ILLEGAL, "fxsave");
-  EncodeModRMOp(GROUP15, 1, NACLi_ILLEGAL, "fxrstor");
-  EncodeModRMOp(GROUP15, 2, NACLi_ILLEGAL, "ldmxcsr");  /* SSE */
-  EncodeModRMOp(GROUP15, 3, NACLi_ILLEGAL, "stmxcsr");
-  EncodeModRMOp(GROUP15, 4, NACLi_ILLEGAL, "invalid");
-  EncodeModRMOp(GROUP15, 5, NACLi_SSE2, "lfence");
-  EncodeModRMOp(GROUP15, 6, NACLi_SSE2, "mfence");
-  EncodeModRMOp(GROUP15, 7, NACLi_SFENCE_CLFLUSH, "sfence/clflush");
+   /* group15 */
+   EncodeModRMOp(GROUP15, 0, NACLi_ILLEGAL, "fxsave");
+   EncodeModRMOp(GROUP15, 1, NACLi_ILLEGAL, "fxrstor");
+   EncodeModRMOp(GROUP15, 2, NACLi_ILLEGAL, "ldmxcsr");  /* SSE */
+   EncodeModRMOp(GROUP15, 3, NACLi_ILLEGAL, "stmxcsr");
+   EncodeModRMOp(GROUP15, 4, NACLi_ILLEGAL, "invalid");
+   EncodeModRMOp(GROUP15, 5, NACLi_SSE2, "lfence");
+   EncodeModRMOp(GROUP15, 6, NACLi_SSE2, "mfence");
+   EncodeModRMOp(GROUP15, 7, NACLi_SFENCE_CLFLUSH, "sfence/clflush");
 
-  /* group16 - SSE prefetch instructions */
-  EncodeModRMOp(GROUP16, 0, NACLi_SSE, "prefetch NTA");
-  EncodeModRMOp(GROUP16, 1, NACLi_SSE, "prefetch T0");
-  EncodeModRMOp(GROUP16, 2, NACLi_SSE, "prefetch T1");
-  EncodeModRMOp(GROUP16, 3, NACLi_SSE, "prefetch T1");
-  EncodeModRMOp(GROUP16, 4, NACLi_ILLEGAL, "NOP (prefetch)");
-  EncodeModRMOp(GROUP16, 5, NACLi_ILLEGAL, "NOP (prefetch)");
-  EncodeModRMOp(GROUP16, 6, NACLi_ILLEGAL, "NOP (prefetch)");
-  EncodeModRMOp(GROUP16, 7, NACLi_ILLEGAL, "NOP (prefetch)");
+   /* group16 - SSE prefetch instructions */
+   EncodeModRMOp(GROUP16, 0, NACLi_SSE, "prefetch NTA");
+   EncodeModRMOp(GROUP16, 1, NACLi_SSE, "prefetch T0");
+   EncodeModRMOp(GROUP16, 2, NACLi_SSE, "prefetch T1");
+   EncodeModRMOp(GROUP16, 3, NACLi_SSE, "prefetch T1");
+   EncodeModRMOp(GROUP16, 4, NACLi_ILLEGAL, "NOP (prefetch)");
+   EncodeModRMOp(GROUP16, 5, NACLi_ILLEGAL, "NOP (prefetch)");
+   EncodeModRMOp(GROUP16, 6, NACLi_ILLEGAL, "NOP (prefetch)");
+   EncodeModRMOp(GROUP16, 7, NACLi_ILLEGAL, "NOP (prefetch)");
 
-  /* groupp: prefetch - requires longmode or 3DNow! */
-  /* It may be the case that these can also be enabled by CPUID_ECX_PRE; */
-  /* This enabling is not supported by the validator at this time. */
-  EncodeModRMOp(GROUPP, 0, NACLi_3DNOW, "prefetch exclusive");
-  EncodeModRMOp(GROUPP, 1, NACLi_3DNOW, "prefetch modified");
-  EncodeModRMOp(GROUPP, 2, NACLi_ILLEGAL, "[prefetch reserved]");
-  EncodeModRMOp(GROUPP, 3, NACLi_ILLEGAL, "prefetch modified");
-  EncodeModRMOp(GROUPP, 4, NACLi_ILLEGAL, "[prefetch reserved]");
-  EncodeModRMOp(GROUPP, 5, NACLi_ILLEGAL, "[prefetch reserved]");
-  EncodeModRMOp(GROUPP, 6, NACLi_ILLEGAL, "[prefetch reserved]");
-  EncodeModRMOp(GROUPP, 7, NACLi_ILLEGAL, "[prefetch reserved]");
+   /* groupp: prefetch - requires longmode or 3DNow! */
+   /* It may be the case that these can also be enabled by CPUID_ECX_PRE; */
+   /* This enabling is not supported by the validator at this time. */
+   EncodeModRMOp(GROUPP, 0, NACLi_3DNOW, "prefetch exclusive");
+   EncodeModRMOp(GROUPP, 1, NACLi_3DNOW, "prefetch modified");
+   EncodeModRMOp(GROUPP, 2, NACLi_ILLEGAL, "[prefetch reserved]");
+   EncodeModRMOp(GROUPP, 3, NACLi_ILLEGAL, "prefetch modified");
+   EncodeModRMOp(GROUPP, 4, NACLi_ILLEGAL, "[prefetch reserved]");
+   EncodeModRMOp(GROUPP, 5, NACLi_ILLEGAL, "[prefetch reserved]");
+   EncodeModRMOp(GROUPP, 6, NACLi_ILLEGAL, "[prefetch reserved]");
+   EncodeModRMOp(GROUPP, 7, NACLi_ILLEGAL, "[prefetch reserved]");
 
-  /* encode opbyte 2; first byte is 0x0f */
-  /* holes are undefined instructions    */
-  /* This code used to allow the data16 (0x16) prefix to be used with */
-  /* any two-byte opcode, until it caused a bug. Now all allowed      */
-  /* prefixes need to be added explicitly.                            */
-  /* See http://code.google.com/p/nativeclient/issues/detail?id=50    */
-  /* Note: /0 and /1 have $Mw/Rv instead of $Ew */
-  EncodeOp0F(0x00, 1, IMM_NONE, NACLi_OPINMRM, "$group6 $Ew");
-  SetOp0FOpInMRM(0x0, GROUP6);
+   /* encode opbyte 2; first byte is 0x0f */
+   /* holes are undefined instructions    */
+   /* This code used to allow the data16 (0x16) prefix to be used with */
+   /* any two-byte opcode, until it caused a bug. Now all allowed      */
+   /* prefixes need to be added explicitly.                            */
+   /* See http://code.google.com/p/nativeclient/issues/detail?id=50    */
+   /* Note: /0 and /1 have $Mw/Rv instead of $Ew */
+   EncodeOp0F(0x00, 1, IMM_NONE, NACLi_OPINMRM, "$group6 $Ew");
+   SetOp0FOpInMRM(0x0, GROUP6);
 
-  /* Group7 is all privileged/system instructions */
-  EncodeOp0F(0x01, 1, IMM_NONE, NACLi_OPINMRM, "$group7");
-  SetOp0FOpInMRM(0x01, GROUP7);
-  EncodeOp0F(0x02, 1, IMM_NONE, NACLi_SYSTEM, "lar $G, $E");
-  EncodeOp0F(0x03, 1, IMM_NONE, NACLi_ILLEGAL, "lsl $Gv, $Ew");
+   /* Group7 is all privileged/system instructions */
+   EncodeOp0F(0x01, 1, IMM_NONE, NACLi_OPINMRM, "$group7");
+   SetOp0FOpInMRM(0x01, GROUP7);
+   EncodeOp0F(0x02, 1, IMM_NONE, NACLi_SYSTEM, "lar $G, $E");
+   EncodeOp0F(0x03, 1, IMM_NONE, NACLi_ILLEGAL, "lsl $Gv, $Ew");
 
-  /* Intel table states that this only applies in 64-bit mode. */
-  EncodeModedOp0F(0x05, 0, IMM_NONE, NACLi_SYSCALL, "syscall", X86_64);
-  EncodeOp0F(0x06, 0, IMM_NONE, NACLi_SYSTEM, "clts");
+   /* Intel table states that this only applies in 64-bit mode. */
+   EncodeModedOp0F(0x05, 0, IMM_NONE, NACLi_SYSCALL, "syscall", X86_64);
+   EncodeOp0F(0x06, 0, IMM_NONE, NACLi_SYSTEM, "clts");
 
-  /* Intel table states that this only applies in 64-bit mode. */
-  EncodeModedOp0F(0x07, 0, IMM_NONE, NACLi_ILLEGAL, "sysret", X86_64);
-  EncodeOp0F(0x08, 0, IMM_NONE, NACLi_SYSTEM, "invd");
-  EncodeOp0F(0x09, 0, IMM_NONE, NACLi_SYSTEM, "wbinvd");
-  EncodeOp0F(0x0b, 0, IMM_NONE, NACLi_ILLEGAL, "ud2");
+   /* Intel table states that this only applies in 64-bit mode. */
+   EncodeModedOp0F(0x07, 0, IMM_NONE, NACLi_ILLEGAL, "sysret", X86_64);
+   EncodeOp0F(0x08, 0, IMM_NONE, NACLi_SYSTEM, "invd");
+   EncodeOp0F(0x09, 0, IMM_NONE, NACLi_SYSTEM, "wbinvd");
+   EncodeOp0F(0x0b, 0, IMM_NONE, NACLi_ILLEGAL, "ud2");
 
-  TODO(karl, "Intel table states that 0x0d is a 'NOP Ev'");
-  EncodeOp0F(0x0d, 1, IMM_NONE, NACLi_OPINMRM, "$groupP (prefetch)");
-  SetOp0FOpInMRM(0x0d, GROUPP);
+   TODO(karl, "Intel table states that 0x0d is a 'NOP Ev'");
+   EncodeOp0F(0x0d, 1, IMM_NONE, NACLi_OPINMRM, "$groupP (prefetch)");
+   SetOp0FOpInMRM(0x0d, GROUPP);
 
-  TODO(karl, "Intel table states that this is undefined");
-  EncodeOp0F(0x0e, 0, IMM_NONE, NACLi_3DNOW, "femms");
+   TODO(karl, "Intel table states that this is undefined");
+   EncodeOp0F(0x0e, 0, IMM_NONE, NACLi_3DNOW, "femms");
 
-  /* 3DNow instruction encodings use a MODRM byte and a 1-byte  */
-  /* immediate which defines the opcode.                        */
-  TODO(karl, "Intel table states that this is undefined");
-  EncodeOp0F(0x0f, 1, IMM_FIXED1, NACLi_3DNOW, "3DNow");
+   /* 3DNow instruction encodings use a MODRM byte and a 1-byte  */
+   /* immediate which defines the opcode.                        */
+   TODO(karl, "Intel table states that this is undefined");
+   EncodeOp0F(0x0f, 1, IMM_FIXED1, NACLi_3DNOW, "3DNow");
 
-  /* 0x10-17 appear below with the other newer opcodes ... */
-  EncodeOp0F(0x18, 1, IMM_NONE, NACLi_OPINMRM, "$group16");
-  SetOp0FOpInMRM(0x18, GROUP16);
+   /* 0x10-17 appear below with the other newer opcodes ... */
+   EncodeOp0F(0x18, 1, IMM_NONE, NACLi_OPINMRM, "$group16");
+   SetOp0FOpInMRM(0x18, GROUP16);
 
-  /* this nop takes an MRM byte */
-  EncodeOp0F(0x1f, 1, IMM_NONE, NACLi_386, "nop");
+   /* this nop takes an MRM byte */
+   EncodeOp0F(0x1f, 1, IMM_NONE, NACLi_386, "nop");
   EncodeOp0F(0x20, 1, IMM_NONE, NACLi_SYSTEM, "mov $C, $R");
   EncodeOp0F(0x21, 1, IMM_NONE, NACLi_SYSTEM, "mov $D, $R");
   EncodeOp0F(0x22, 1, IMM_NONE, NACLi_SYSTEM, "mov $R, $C");
@@ -2485,9 +2563,56 @@ static void PrintPrefixTable(FILE* f) {
   fprintf(f, "\n};\n\n");
 }
 
+static int NCNopTrieSize(NCNopTrieNode* node) {
+  if (NULL == node) {
+    return 0;
+  } else {
+    return 1 + NCNopTrieSize(node->success) + NCNopTrieSize(node->fail);
+  }
+}
+
+static void PrintNopTrieNode(FILE* f, NCNopTrieNode* node, int index) {
+  if (NULL == node) return;
+  fprintf(f, "  /* %5d */ { 0x%02x, %s, ", index,
+          (int) node->matching_byte,
+          ((NULL == node->matching_opinfo)
+           ? "NULL" : "(struct OpInfo*)(&kNopInst)"));
+  if (NULL == node->success) {
+    fprintf(f, "NULL");
+  } else {
+    fprintf(f, "(NCNopTrieNode*) (kNcNopTrieNode + %d)", index + 1);
+  }
+  fprintf(f, ", ");
+  if (NULL == node->fail) {
+    fprintf(f, "NULL");
+  } else {
+    fprintf(f, "(NCNopTrieNode*) (kNcNopTrieNode + %d)",
+            index + 1 + NCNopTrieSize(node->success));
+  }
+  fprintf(f, "},\n");
+  PrintNopTrieNode(f, node->success, index + 1);
+  PrintNopTrieNode(f, node->fail, index + 1 + NCNopTrieSize(node->success));
+}
+
+static void PrintNopTables(FILE* f) {
+  if (NULL != nc_nop_root) {
+    fprintf(f,
+            "static const struct OpInfo kNopInst = { %s, %d, %d, %d };\n\n",
+            NaClInstTypeString(nc_nop_info.insttype),
+            nc_nop_info.hasmrmbyte,
+            nc_nop_info.immtype,
+            nc_nop_info.opinmrm);
+  }
+  fprintf(f, "static const NCNopTrieNode kNcNopTrieNode[] = {\n");
+  PrintNopTrieNode(f, nc_nop_root, 0);
+  fprintf(f, "};\n\n");
+}
+
 /* Print out the contents of the tables needed by ncdecode.c */
 static void PrintDecodeTables(FILE* f) {
   int group, nnn;
+
+  PrintNopTables(f);
 
   fprintf(f, "static const struct OpInfo kDecodeModRMOp[kNaClMRMGroupsRange]");
   fprintf(f, "[kModRMOpcodeGroupSize] = {\n");

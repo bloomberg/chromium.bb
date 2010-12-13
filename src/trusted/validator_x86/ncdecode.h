@@ -72,6 +72,7 @@ typedef enum {
   NACLi_ILLEGAL,      /* not allowed in NaCl */                       /* Both */
   NACLi_INVALID,      /* not valid on any known x86 */                /* Both */
   NACLi_SYSTEM,       /* ring-0 instruction, not allowed in NaCl */   /* Both */
+  NACLi_NOP,          /* Predefined nop instruction sequence. */      /* 32 */
   NACLi_386,          /* an allowed instruction on all i386 implementations */
                                                                       /* Both */
                       /* subset of i386 that allows LOCK prefix. NOTE:
@@ -127,13 +128,14 @@ typedef enum {
   /* NOTE: This enum must be kept consistent with kNaClInstTypeRange   */
   /* (defined below). */
 } NaClInstType;
-#define kNaClInstTypeRange 45
+#define kNaClInstTypeRange 46
 #ifdef NEEDSNACLINSTTYPESTRING
 static const char *kNaClInstTypeString[kNaClInstTypeRange] = {
   "NACLi_UNDEFINED",
   "NACLi_ILLEGAL",
   "NACLi_INVALID",
   "NACLi_SYSTEM",
+  "NACLi_NOP",
   "NACLi_386",
   "NACLi_386L",
   "NACLi_386R",
@@ -261,6 +263,7 @@ typedef enum {
   DECODE_OPS_FORCE_64
 } DecodeOpsKind;
 
+/* Models information on an x86-32 bit instruction. */
 struct OpInfo {
   NaClInstType insttype;
   uint8_t hasmrmbyte;   /* 1 if this inst has an mrm byte, else 0 */
@@ -268,6 +271,19 @@ struct OpInfo {
   uint8_t opinmrm;      /* set to 1..8 if you must find opcode in MRM byte */
 };
 
+/* Models a node in a trie of NOP instructions. */
+typedef struct NCNopTrieNode {
+  /* The matching byte for the trie node. */
+  uint8_t matching_byte;
+  /* The matching modeled nop, if byte matched. */
+  struct OpInfo* matching_opinfo;
+  /* Node to match remaining bytes. */
+  struct NCNopTrieNode* success;
+  /* Node to match remaining bytes. */
+  struct NCNopTrieNode* fail;
+} NCNopTrieNode;
+
+/* Models a matched x86-32 bit instruction. */
 struct InstInfo {
   NaClPcAddress vaddr;
   uint8_t *maddr;
