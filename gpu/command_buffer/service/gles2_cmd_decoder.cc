@@ -850,9 +850,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   // Gets the program info for the given program. Returns NULL if none exists.
   ProgramManager::ProgramInfo* GetProgramInfo(GLuint client_id) {
-    ProgramManager::ProgramInfo* info =
-        program_manager()->GetProgramInfo(client_id);
-    return (info && !info->IsDeleted()) ? info : NULL;
+    return program_manager()->GetProgramInfo(client_id);
   }
 
   // Gets the program info for the given program. If it's not a program
@@ -874,11 +872,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   }
 
 
-  // Deletes the program info for the given program.
-  void RemoveProgramInfo(GLuint client_id) {
-    program_manager()->RemoveProgramInfo(client_id);
-  }
-
   // Creates a ShaderInfo for the given shader.
   void CreateShaderInfo(GLuint client_id,
                         GLuint service_id,
@@ -888,9 +881,7 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   // Gets the shader info for the given shader. Returns NULL if none exists.
   ShaderManager::ShaderInfo* GetShaderInfo(GLuint client_id) {
-    ShaderManager::ShaderInfo* info =
-        shader_manager()->GetShaderInfo(client_id);
-    return (info && !info->IsDeleted()) ? info : NULL;
+    return shader_manager()->GetShaderInfo(client_id);
   }
 
   // Gets the shader info for the given shader. If it's not a shader generates a
@@ -910,11 +901,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
       }
     }
     return info;
-  }
-
-  // Deletes the shader info for the given shader.
-  void RemoveShaderInfo(GLuint client_id) {
-    shader_manager()->RemoveShaderInfo(client_id);
   }
 
   // Creates a buffer info for the given buffer.
@@ -2474,6 +2460,11 @@ void GLES2DecoderImpl::Destroy() {
     group_->set_have_context(have_context);
 
   if (have_context) {
+    if (current_program_) {
+      program_manager()->UnuseProgram(shader_manager(), current_program_);
+      current_program_ = NULL;
+    }
+
     if (attrib_0_buffer_id_) {
       glDeleteBuffersARB(1, &attrib_0_buffer_id_);
     }
@@ -3157,8 +3148,10 @@ error::Error GLES2DecoderImpl::HandleDeleteShader(
   if (client_id) {
     ShaderManager::ShaderInfo* info = GetShaderInfo(client_id);
     if (info) {
-      glDeleteShader(info->service_id());
-      RemoveShaderInfo(client_id);
+      if (!info->IsDeleted()) {
+        glDeleteShader(info->service_id());
+        shader_manager()->MarkAsDeleted(info);
+      }
     } else {
       SetGLError(GL_INVALID_VALUE, "glDeleteShader: unknown shader");
     }
@@ -3172,8 +3165,10 @@ error::Error GLES2DecoderImpl::HandleDeleteProgram(
   if (client_id) {
     ProgramManager::ProgramInfo* info = GetProgramInfo(client_id);
     if (info) {
-      glDeleteProgram(info->service_id());
-      RemoveProgramInfo(client_id);
+      if (!info->IsDeleted()) {
+        glDeleteProgram(info->service_id());
+        program_manager()->MarkAsDeleted(shader_manager(), info);
+      }
     } else {
       SetGLError(GL_INVALID_VALUE, "glDeleteProgram: unknown program");
     }
@@ -3695,13 +3690,13 @@ void GLES2DecoderImpl::DoTexParameteriv(
 }
 
 bool GLES2DecoderImpl::CheckCurrentProgram(const char* function_name) {
-  if (!current_program_ || current_program_->IsDeleted()) {
+  if (!current_program_) {
       // The program does not exist.
       SetGLError(GL_INVALID_OPERATION,
                  (std::string(function_name) + ": no program in use").c_str());
       return false;
   }
-  if (!current_program_->IsValid()) {
+  if (!current_program_->InUse()) {
     SetGLError(GL_INVALID_OPERATION,
                (std::string(function_name) + ": program not linked").c_str());
     return false;
@@ -3834,7 +3829,13 @@ void GLES2DecoderImpl::DoUseProgram(GLuint program) {
     }
     service_id = info->service_id();
   }
+  if (current_program_) {
+    program_manager()->UnuseProgram(shader_manager(), current_program_);
+  }
   current_program_ = info;
+  if (current_program_) {
+    program_manager()->UseProgram(current_program_);
+  }
   glUseProgram(service_id);
 }
 
@@ -3881,7 +3882,6 @@ void GLES2DecoderImpl::ClearRealGLErrors() {
 
 bool GLES2DecoderImpl::SetBlackTextureForNonRenderableTextures() {
   DCHECK(current_program_);
-  DCHECK(!current_program_->IsDeleted());
   // Only check if there are some unrenderable textures.
   if (!texture_manager()->HaveUnrenderableTextures()) {
     return false;
@@ -3918,7 +3918,6 @@ bool GLES2DecoderImpl::SetBlackTextureForNonRenderableTextures() {
 
 void GLES2DecoderImpl::RestoreStateForNonRenderableTextures() {
   DCHECK(current_program_);
-  DCHECK(!current_program_->IsDeleted());
   const ProgramManager::ProgramInfo::SamplerIndices& sampler_indices =
      current_program_->sampler_indices();
   for (size_t ii = 0; ii < sampler_indices.size(); ++ii) {
@@ -3954,7 +3953,7 @@ bool GLES2DecoderImpl::IsDrawValid(GLuint max_vertex_accessed) {
   // it could never be invalid since glUseProgram would have failed. While
   // glLinkProgram could later mark the program as invalid the previous
   // valid program will still function if it is still the current program.
-  if (!current_program_ || current_program_->IsDeleted()) {
+  if (!current_program_) {
     // The program does not exist.
     // But GL says no ERROR.
     return false;
@@ -4418,7 +4417,7 @@ void GLES2DecoderImpl::DoAttachShader(
   if (!shader_info) {
     return;
   }
-  if (!program_info->AttachShader(shader_info)) {
+  if (!program_info->AttachShader(shader_manager(), shader_info)) {
     SetGLError(GL_INVALID_OPERATION,
                "glAttachShader: can not attach more than"
                " one shader of the same type.");
@@ -4439,8 +4438,8 @@ void GLES2DecoderImpl::DoDetachShader(
   if (!shader_info) {
     return;
   }
-  program_info->DetachShader(shader_info);
   glDetachShader(program_info->service_id(), shader_info->service_id());
+  program_info->DetachShader(shader_manager(), shader_info);
 }
 
 void GLES2DecoderImpl::DoValidateProgram(GLuint program_client_id) {

@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "base/ref_counted.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/shader_translator.h"
@@ -31,7 +32,8 @@ class ShaderManager {
     typedef ShaderTranslator::VariableInfo VariableInfo;
 
     explicit ShaderInfo(GLuint service_id, GLenum shader_type)
-        : service_id_(service_id),
+        : use_count_(0),
+          service_id_(service_id),
           shader_type_(shader_type),
           valid_(false) {
     }
@@ -71,6 +73,11 @@ class ShaderManager {
       return service_id_ == 0;
     }
 
+    bool InUse() const {
+      DCHECK_GE(use_count_, 0);
+      return use_count_ != 0;
+    }
+
    private:
     typedef ShaderTranslator::VariableMap VariableMap;
 
@@ -78,9 +85,21 @@ class ShaderManager {
     friend class ShaderManager;
     ~ShaderInfo() { }
 
+    void IncUseCount() {
+      ++use_count_;
+    }
+
+    void DecUseCount() {
+      --use_count_;
+      DCHECK_GE(use_count_, 0);
+    }
+
     void MarkAsDeleted() {
+      DCHECK_NE(service_id_, 0u);
       service_id_ = 0;
     }
+
+    int use_count_;
 
     // The shader this ShaderInfo is tracking.
     GLuint service_id_;
@@ -116,16 +135,24 @@ class ShaderManager {
   // exists.
   ShaderInfo* GetShaderInfo(GLuint client_id);
 
-  // Deletes the shader info for the given shader.
-  void RemoveShaderInfo(GLuint client_id);
-
   // Gets a client id for a given service id.
   bool GetClientId(GLuint service_id, GLuint* client_id) const;
+
+  void MarkAsDeleted(ShaderInfo* info);
+
+  // Mark a shader as used
+  void UseShader(ShaderInfo* info);
+
+  // Unmark a shader as used. If it has been deleted and is not used
+  // then we free the info.
+  void UnuseShader(ShaderInfo* info);
 
  private:
   // Info for each shader by service side shader Id.
   typedef std::map<GLuint, ShaderInfo::Ref> ShaderInfoMap;
   ShaderInfoMap shader_infos_;
+
+  void RemoveShaderInfoIfUnused(ShaderInfo* info);
 
   DISALLOW_COPY_AND_ASSIGN(ShaderManager);
 };

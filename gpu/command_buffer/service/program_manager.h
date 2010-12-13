@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "base/ref_counted.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/shader_manager.h"
@@ -130,8 +131,8 @@ class ProgramManager {
       return valid_;
     }
 
-    bool AttachShader(ShaderManager::ShaderInfo* info);
-    void DetachShader(ShaderManager::ShaderInfo* info);
+    bool AttachShader(ShaderManager* manager, ShaderManager::ShaderInfo* info);
+    void DetachShader(ShaderManager* manager, ShaderManager::ShaderInfo* info);
 
     bool CanLink() const;
 
@@ -143,13 +144,28 @@ class ProgramManager {
       log_info_ = str;
     }
 
+    bool InUse() const {
+      DCHECK_GE(use_count_, 0);
+      return use_count_ != 0;
+    }
+
    private:
     friend class base::RefCounted<ProgramInfo>;
     friend class ProgramManager;
 
     ~ProgramInfo();
 
+    void IncUseCount() {
+      ++use_count_;
+    }
+
+    void DecUseCount() {
+      --use_count_;
+      DCHECK_GE(use_count_, 0);
+    }
+
     void MarkAsDeleted() {
+      DCHECK_NE(service_id_, 0u);
       service_id_ = 0;
     }
 
@@ -159,6 +175,10 @@ class ProgramManager {
     void GetCorrectedVariableInfo(
         bool use_uniforms, const std::string& name, std::string* corrected_name,
         GLsizei* size, GLenum* type) const;
+
+    void DetachShaders(ShaderManager* manager);
+
+    int use_count_;
 
     GLsizei max_attrib_name_length_;
 
@@ -204,11 +224,17 @@ class ProgramManager {
   // Gets a program info
   ProgramInfo* GetProgramInfo(GLuint client_id);
 
-  // Deletes the program info for the given program.
-  void RemoveProgramInfo(GLuint client_id);
-
   // Gets a client id for a given service id.
   bool GetClientId(GLuint service_id, GLuint* client_id) const;
+
+  // Marks a program as deleted. If it is not used the info will be deleted.
+  void MarkAsDeleted(ShaderManager* shader_manager, ProgramInfo* info);
+
+  // Marks a program as used.
+  void UseProgram(ProgramInfo* info);
+
+  // Makes a program as unused. If deleted the program info will be removed.
+  void UnuseProgram(ShaderManager* shader_manager, ProgramInfo* info);
 
   // Returns true if prefix is invalid for gl.
   static bool IsInvalidPrefix(const char* name, size_t length);
@@ -218,6 +244,9 @@ class ProgramManager {
   // TODO(gman): Choose a faster container.
   typedef std::map<GLuint, ProgramInfo::Ref> ProgramInfoMap;
   ProgramInfoMap program_infos_;
+
+  void RemoveProgramInfoIfUnused(
+      ShaderManager* shader_manager, ProgramInfo* info);
 
   DISALLOW_COPY_AND_ASSIGN(ProgramManager);
 };

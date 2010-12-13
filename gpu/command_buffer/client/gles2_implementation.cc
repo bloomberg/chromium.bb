@@ -59,6 +59,34 @@ class NonSharedIdHandler : public IdHandlerInterface {
   IdAllocator id_allocator_;
 };
 
+// An id handler for non-shared ids that are never reused.
+class NonSharedNonReusedIdHandler : public IdHandlerInterface {
+ public:
+  NonSharedNonReusedIdHandler() : last_id_(0) { }
+  virtual ~NonSharedNonReusedIdHandler() { }
+
+  // Overridden from IdHandlerInterface.
+  virtual void MakeIds(GLuint id_offset, GLsizei n, GLuint* ids) {
+    for (GLsizei ii = 0; ii < n; ++ii) {
+      ids[ii] = ++last_id_ + id_offset;
+    }
+  }
+
+  // Overridden from IdHandlerInterface.
+  virtual void FreeIds(GLsizei /* n */, const GLuint* /* ids */) {
+    // Ids are never freed.
+  }
+
+  // Overridden from IdHandlerInterface.
+  virtual bool MarkAsUsedForBind(GLuint /* id */) {
+    // This is only used for Shaders and Programs which have no bind.
+    return false;
+  }
+
+ private:
+  GLuint last_id_;
+};
+
 // An id handler for shared ids.
 class SharedIdHandler : public IdHandlerInterface {
  public:
@@ -439,7 +467,7 @@ GLES2Implementation::GLES2Implementation(
     buffer_id_handler_.reset(new NonSharedIdHandler());
     framebuffer_id_handler_.reset(new NonSharedIdHandler());
     renderbuffer_id_handler_.reset(new NonSharedIdHandler());
-    program_and_shader_id_handler_.reset(new NonSharedIdHandler());
+    program_and_shader_id_handler_.reset(new NonSharedNonReusedIdHandler());
     texture_id_handler_.reset(new NonSharedIdHandler());
   }
 

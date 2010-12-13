@@ -68,14 +68,6 @@ ShaderManager::ShaderInfo* ShaderManager::GetShaderInfo(GLuint client_id) {
   return it != shader_infos_.end() ? it->second : NULL;
 }
 
-void ShaderManager::RemoveShaderInfo(GLuint client_id) {
-  ShaderInfoMap::iterator it = shader_infos_.find(client_id);
-  if (it != shader_infos_.end()) {
-    it->second->MarkAsDeleted();
-    shader_infos_.erase(it);
-  }
-}
-
 bool ShaderManager::GetClientId(GLuint service_id, GLuint* client_id) const {
   // This doesn't need to be fast. It's only used during slow queries.
   for (ShaderInfoMap::const_iterator it = shader_infos_.begin();
@@ -86,6 +78,37 @@ bool ShaderManager::GetClientId(GLuint service_id, GLuint* client_id) const {
     }
   }
   return false;
+}
+
+void ShaderManager::RemoveShaderInfoIfUnused(ShaderManager::ShaderInfo* info) {
+  DCHECK(info);
+  if (info->IsDeleted() && !info->InUse()) {
+    for (ShaderInfoMap::iterator it = shader_infos_.begin();
+         it != shader_infos_.end(); ++it) {
+      if (it->second->service_id() == info->service_id()) {
+        shader_infos_.erase(it);
+        return;
+      }
+    }
+    NOTREACHED();
+  }
+}
+
+void ShaderManager::MarkAsDeleted(ShaderManager::ShaderInfo* info) {
+  DCHECK(info);
+  info->MarkAsDeleted();
+  RemoveShaderInfoIfUnused(info);
+}
+
+void ShaderManager::UseShader(ShaderManager::ShaderInfo* info) {
+  DCHECK(info);
+  info->IncUseCount();
+}
+
+void ShaderManager::UnuseShader(ShaderManager::ShaderInfo* info) {
+  DCHECK(info);
+  info->DecUseCount();
+  RemoveShaderInfoIfUnused(info);
 }
 
 }  // namespace gles2

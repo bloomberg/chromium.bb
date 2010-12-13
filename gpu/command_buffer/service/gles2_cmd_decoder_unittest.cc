@@ -172,14 +172,14 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysDeletedBufferFails) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest,
-       DrawArraysDeletedProgramSucceedsWithoutGLCall) {
-  SetupVertexBuffer();
-  DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+TEST_F(GLES2DecoderWithShaderTest, DrawArraysDeletedProgramSucceeds) {
+  SetupTexture();
+  AddExpectationsForSimulatedAttrib0(kNumVertices, 0);
   DoDeleteProgram(client_program_id_, kServiceProgramId);
 
   EXPECT_CALL(*gl_, DrawArrays(_, _, _))
-      .Times(0);
+      .Times(1)
+      .RetiresOnSaturation();
   DrawArrays cmd;
   cmd.Init(GL_TRIANGLES, 0, kNumVertices);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -330,14 +330,14 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsDeletedBufferFails) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderWithShaderTest, DrawElementsDeletedProgramSucceedsNoGLCall) {
-  SetupVertexBuffer();
+TEST_F(GLES2DecoderWithShaderTest, DrawElementsDeletedProgramSucceeds) {
+  SetupTexture();
   SetupIndexBuffer();
-  DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+  AddExpectationsForSimulatedAttrib0(kMaxValidIndex + 1, 0);
   DoDeleteProgram(client_program_id_, kServiceProgramId);
 
   EXPECT_CALL(*gl_, DrawElements(_, _, _, _))
-      .Times(0);
+      .Times(1);
   DrawElements cmd;
   cmd.Init(GL_TRIANGLES, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
            kValidIndexRangeStart * 2);

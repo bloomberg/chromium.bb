@@ -60,13 +60,25 @@ void GLES2DecoderTestBase::SpecializedSetup<CopyTexImage2D, 0>(
 };
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<CopyTexSubImage2D, 0>(
-    bool valid) {
+void GLES2DecoderTestBase::SpecializedSetup<CopyTexSubImage2D, 0>(bool valid) {
   if (valid) {
     DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
     DoTexImage2D(
         GL_TEXTURE_2D, 2, GL_RGBA, 16, 16, 0, GL_RGBA, GL_UNSIGNED_BYTE,
         0, 0);
+  }
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<DetachShader, 0>(bool valid) {
+  if (valid) {
+    EXPECT_CALL(*gl_,
+                AttachShader(kServiceProgramId, kServiceShaderId))
+        .Times(1)
+        .RetiresOnSaturation();
+    AttachShader attach_cmd;
+    attach_cmd.Init(client_program_id_, client_shader_id_);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(attach_cmd));
   }
 };
 

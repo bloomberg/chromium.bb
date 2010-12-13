@@ -44,7 +44,8 @@ bool ProgramManager::IsInvalidPrefix(const char* name, size_t length) {
 }
 
 ProgramManager::ProgramInfo::ProgramInfo(GLuint service_id)
-    : max_attrib_name_length_(0),
+    : use_count_(0),
+      max_attrib_name_length_(0),
       max_uniform_name_length_(0),
       service_id_(service_id),
       valid_(false) {
@@ -356,18 +357,35 @@ void ProgramManager::ProgramInfo::GetProgramiv(GLenum pname, GLint* params) {
 }
 
 bool ProgramManager::ProgramInfo::AttachShader(
+    ShaderManager* shader_manager,
     ShaderManager::ShaderInfo* info) {
+  DCHECK(shader_manager);
+  DCHECK(info);
   int index = ShaderTypeToIndex(info->shader_type());
   if (attached_shaders_[index] != NULL) {
     return false;
   }
   attached_shaders_[index] = ShaderManager::ShaderInfo::Ref(info);
+  shader_manager->UseShader(info);
   return true;
 }
 
 void ProgramManager::ProgramInfo::DetachShader(
+    ShaderManager* shader_manager,
     ShaderManager::ShaderInfo* info) {
+  DCHECK(shader_manager);
+  DCHECK(info);
   attached_shaders_[ShaderTypeToIndex(info->shader_type())] = NULL;
+  shader_manager->UnuseShader(info);
+}
+
+void ProgramManager::ProgramInfo::DetachShaders(ShaderManager* shader_manager) {
+  DCHECK(shader_manager);
+  for (int ii = 0; ii < kMaxAttachedShaders; ++ii) {
+    if (attached_shaders_[ii]) {
+      DetachShader(shader_manager, attached_shaders_[ii]);
+    }
+  }
 }
 
 bool ProgramManager::ProgramInfo::CanLink() const {
@@ -413,14 +431,6 @@ ProgramManager::ProgramInfo* ProgramManager::GetProgramInfo(GLuint client_id) {
   return it != program_infos_.end() ? it->second : NULL;
 }
 
-void ProgramManager::RemoveProgramInfo(GLuint client_id) {
-  ProgramInfoMap::iterator it = program_infos_.find(client_id);
-  if (it != program_infos_.end()) {
-    it->second->MarkAsDeleted();
-    program_infos_.erase(it);
-  }
-}
-
 bool ProgramManager::GetClientId(GLuint service_id, GLuint* client_id) const {
   // This doesn't need to be fast. It's only used during slow queries.
   for (ProgramInfoMap::const_iterator it = program_infos_.begin();
@@ -431,6 +441,46 @@ bool ProgramManager::GetClientId(GLuint service_id, GLuint* client_id) const {
     }
   }
   return false;
+}
+
+void ProgramManager::RemoveProgramInfoIfUnused(
+    ShaderManager* shader_manager, ProgramInfo* info) {
+  DCHECK(shader_manager);
+  DCHECK(info);
+  if (info->IsDeleted() && !info->InUse()) {
+    info->DetachShaders(shader_manager);
+    for (ProgramInfoMap::iterator it = program_infos_.begin();
+         it != program_infos_.end(); ++it) {
+      if (it->second->service_id() == info->service_id()) {
+        program_infos_.erase(it);
+        return;
+      }
+    }
+    NOTREACHED();
+  }
+}
+
+void ProgramManager::MarkAsDeleted(
+    ShaderManager* shader_manager,
+    ProgramManager::ProgramInfo* info) {
+  DCHECK(shader_manager);
+  DCHECK(info);
+  info->MarkAsDeleted();
+  RemoveProgramInfoIfUnused(shader_manager, info);
+}
+
+void ProgramManager::UseProgram(ProgramManager::ProgramInfo* info) {
+  DCHECK(info);
+  info->IncUseCount();
+}
+
+void ProgramManager::UnuseProgram(
+    ShaderManager* shader_manager,
+    ProgramManager::ProgramInfo* info) {
+  DCHECK(shader_manager);
+  DCHECK(info);
+  info->DecUseCount();
+  RemoveProgramInfoIfUnused(shader_manager, info);
 }
 
 }  // namespace gles2
