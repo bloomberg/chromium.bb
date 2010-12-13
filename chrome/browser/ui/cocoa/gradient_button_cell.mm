@@ -28,6 +28,7 @@
                     innerPath:(NSBezierPath**)returnInnerPath
                      clipPath:(NSBezierPath**)returnClipPath;
 
+- (void)updateTrackingAreas;
 
 @end
 
@@ -320,21 +321,16 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
   if (showOnly) {
     if (trackingArea_.get()) {
       [self setShowsBorderOnlyWhileMouseInside:NO];
-      [[self controlView] removeTrackingArea:trackingArea_];
     }
-    trackingArea_.reset([[NSTrackingArea alloc]
-                          initWithRect:[[self controlView]
-                                         bounds]
-                               options:(NSTrackingMouseEnteredAndExited |
-                                        NSTrackingActiveInActiveApp)
-                                 owner:self
-                            userInfo:nil]);
-    [[self controlView] addTrackingArea:trackingArea_];
+    [self updateTrackingAreas];
   } else {
     if (trackingArea_) {
       [[self controlView] removeTrackingArea:trackingArea_];
       trackingArea_.reset(nil);
-      isMouseInside_ = NO;
+      if (isMouseInside_) {
+        isMouseInside_ = NO;
+        [[self controlView] setNeedsDisplay:YES];
+      }
     }
   }
 }
@@ -714,6 +710,42 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
                     innerPath:NULL
                      clipPath:&boundingPath];
   return boundingPath;
+}
+
+- (void)resetCursorRect:(NSRect)cellFrame inView:(NSView*)controlView {
+  [super resetCursorRect:cellFrame inView:controlView];
+  if (trackingArea_)
+    [self updateTrackingAreas];
+}
+
+- (void)updateTrackingAreas {
+  BOOL mouseInView = NO;
+  NSView* controlView = [self controlView];
+  NSWindow* window = [controlView window];
+  NSRect bounds = [controlView bounds];
+  if (window) {
+    NSPoint mousePoint = [window mouseLocationOutsideOfEventStream];
+    mousePoint = [controlView convertPointFromBase:mousePoint];
+    mouseInView = [controlView mouse:mousePoint inRect:bounds];
+  }
+
+  if (trackingArea_.get())
+    [controlView removeTrackingArea:trackingArea_];
+
+  NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited |
+                                  NSTrackingActiveInActiveApp;
+  if (mouseInView)
+    options |= NSTrackingAssumeInside;
+
+  trackingArea_.reset([[NSTrackingArea alloc]
+                        initWithRect:bounds
+                             options:options
+                               owner:self
+                            userInfo:nil]);
+  if (isMouseInside_ != mouseInView) {
+    isMouseInside_ = mouseInView;
+    [controlView setNeedsDisplay:YES];
+  }
 }
 
 @end
