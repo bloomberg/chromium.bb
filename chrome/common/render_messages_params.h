@@ -1018,7 +1018,6 @@ struct ParamTraits<ViewHostMsg_ScriptedPrint_Params> {
 };
 
 template <>
-template<>
 struct ParamTraits<ViewMsg_ExecuteCode_Params> {
   typedef ViewMsg_ExecuteCode_Params param_type;
   static void Write(Message* m, const param_type& p);
