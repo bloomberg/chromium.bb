@@ -6,6 +6,7 @@
 #define PPAPI_C_DEV_PPB_FILE_IO_DEV_H_
 
 #include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
@@ -36,6 +37,7 @@ typedef enum {
   // exists, then the FileIO::Open call will fail.
   PP_FILEOPENFLAG_EXCLUSIVE = 1 << 4
 } PP_FileOpenFlags_Dev;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FileOpenFlags_Dev, 4);
 
 #define PPB_FILEIO_DEV_INTERFACE "PPB_FileIO(Dev);0.2"
 

@@ -22,6 +22,7 @@ struct PP_Rect {
   struct PP_Point point;
   struct PP_Size size;
 };
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_Rect, 16);
 
 PP_INLINE struct PP_Rect PP_MakeRectFromXYWH(int32_t x, int32_t y,
                                              int32_t w, int32_t h) {

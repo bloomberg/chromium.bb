@@ -7,6 +7,7 @@
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
@@ -17,12 +18,14 @@ typedef enum {
   PP_PRINTORIENTATION_ROTATED_180    = 2,
   PP_PRINTORIENTATION_ROTATED_90_CCW = 3
 } PP_PrintOrientation_Dev;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_PrintOrientation_Dev, 4);
 
 typedef enum {
   PP_PRINTOUTPUTFORMAT_RASTER     = 0,
   PP_PRINTOUTPUTFORMAT_PDF        = 1,
   PP_PRINTOUTPUTFORMAT_POSTSCRIPT = 2
 } PP_PrintOutputFormat_Dev;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_PrintOutputFormat_Dev, 4);
 
 struct PP_PrintSettings_Dev {
   // This is the size of the printable area in points (1/72 of an inch)
@@ -32,6 +35,7 @@ struct PP_PrintSettings_Dev {
   PP_Bool grayscale;
   PP_PrintOutputFormat_Dev format;
 };
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_PrintSettings_Dev, 32);
 
 // Specifies a contiguous range of page numbers to be printed.
 // The page numbers use a zero-based index.
@@ -39,6 +43,7 @@ struct PP_PrintPageNumberRange_Dev {
   uint32_t first_page_number;
   uint32_t last_page_number;
 };
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_PrintPageNumberRange_Dev, 8);
 
 // Interface for the plugin to implement printing.
 #define PPP_PRINTING_DEV_INTERFACE "PPP_Printing(Dev);0.2"

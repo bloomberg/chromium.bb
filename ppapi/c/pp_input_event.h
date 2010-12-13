@@ -24,6 +24,7 @@ typedef enum {
   PP_INPUTEVENT_MOUSEBUTTON_MIDDLE = 1,
   PP_INPUTEVENT_MOUSEBUTTON_RIGHT  = 2
 } PP_InputEvent_MouseButton;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_MouseButton, 4);
 
 typedef enum {
   PP_INPUTEVENT_TYPE_UNDEFINED  = -1,
@@ -38,6 +39,7 @@ typedef enum {
   PP_INPUTEVENT_TYPE_KEYUP      = 8,
   PP_INPUTEVENT_TYPE_CHAR       = 9
 } PP_InputEvent_Type;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_Type, 4);
 
 typedef enum {
   PP_INPUTEVENT_MODIFIER_SHIFTKEY         = 1 << 0,
@@ -52,6 +54,7 @@ typedef enum {
   PP_INPUTEVENT_MODIFIER_CAPSLOCKKEY      = 1 << 9,
   PP_INPUTEVENT_MODIFIER_NUMLOCKKEY       = 1 << 10
 } PP_InputEvent_Modifier;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_InputEvent_Modifier, 4);
 
 /**
  * An event representing a key up or down event.
@@ -78,6 +81,7 @@ struct PP_InputEvent_Key {
    */
   uint32_t key_code;
 };
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Key, 8);
 
 /**
  * An event representing a typed character.
@@ -111,6 +115,7 @@ struct PP_InputEvent_Character {
    */
   char text[5];
 };
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Character, 12);
 
 /** Represents a mouse event for everything other than the mouse wheel. */
 struct PP_InputEvent_Mouse {
@@ -137,6 +142,7 @@ struct PP_InputEvent_Mouse {
   /** TODO(brettw) figure out exactly what this means. */
   int32_t click_count;
 };
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Mouse, 20);
 
 struct PP_InputEvent_Wheel {
   /** A combination of the EVENT_MODIFIER flags. */
@@ -149,6 +155,7 @@ struct PP_InputEvent_Wheel {
 
   PP_Bool scroll_by_page;
 };
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_InputEvent_Wheel, 24);
 
 struct PP_InputEvent {
   /** Identifies the type of the event. */

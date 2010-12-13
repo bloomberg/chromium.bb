@@ -20,6 +20,7 @@ struct PP_Point {
   int32_t x;
   int32_t y;
 };
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_Point, 8);
 
 PP_INLINE struct PP_Point PP_MakePoint(int32_t x, int32_t y) {
   struct PP_Point ret;

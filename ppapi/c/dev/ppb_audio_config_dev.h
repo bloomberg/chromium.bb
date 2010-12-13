@@ -6,6 +6,7 @@
 #define PPAPI_C_DEV_PPB_AUDIO_CONFIG_DEV_H_
 
 #include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
@@ -22,6 +23,7 @@ typedef enum {
   PP_AUDIOSAMPLERATE_44100 = 44100,
   PP_AUDIOSAMPLERATE_48000 = 48000
 } PP_AudioSampleRate_Dev;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_AudioSampleRate_Dev, 4);
 
 /**
  * Audio configuration. This base configuration interface supports only stereo

@@ -7,6 +7,7 @@
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_resource.h"
 
 struct PP_CompletionCallback;
@@ -16,6 +17,7 @@ typedef enum {
   PP_FILECHOOSERMODE_OPENMULTIPLE
   // TODO(darin): Should there be a way to choose a directory?
 } PP_FileChooserMode_Dev;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FileChooserMode_Dev, 4);
 
 struct PP_FileChooserOptions_Dev {
   PP_FileChooserMode_Dev mode;

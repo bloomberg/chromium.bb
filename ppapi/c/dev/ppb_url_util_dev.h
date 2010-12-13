@@ -7,10 +7,11 @@
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_URLUTIL_DEV_INTERFACE "PPB_UrlUtil(Dev);0.2"
+#define PPB_URLUTIL_DEV_INTERFACE "PPB_UrlUtil(Dev);0.3"
 
 // A component specifies the range of the part of the URL. The begin specifies
 // the index into the string of the first character of that component. The len
@@ -32,6 +33,7 @@ struct PP_UrlComponent_Dev {
   int32_t begin;
   int32_t len;
 };
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_UrlComponent_Dev, 8);
 
 struct PP_UrlComponents_Dev {
   struct PP_UrlComponent_Dev scheme;
@@ -43,6 +45,7 @@ struct PP_UrlComponents_Dev {
   struct PP_UrlComponent_Dev query;
   struct PP_UrlComponent_Dev ref;
 };
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_UrlComponents_Dev, 64);
 
 // URL encoding: URLs are supplied to this interface as NULL-terminated 8-bit
 // strings. You can pass non-ASCII characters which will be interpreted as

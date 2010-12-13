@@ -5,6 +5,8 @@
 #ifndef PPAPI_C_DEV_PP_CURSORTYPE_DEV_H_
 #define PPAPI_C_DEV_PP_CURSORTYPE_DEV_H_
 
+#include "ppapi/c/pp_macros.h"
+
 enum PP_CursorType_Dev {
   PP_CURSORTYPE_POINTER = 0,
   PP_CURSORTYPE_CROSS = 1,
@@ -49,5 +51,6 @@ enum PP_CursorType_Dev {
   PP_CURSORTYPE_ZOOMOUT = 40,
   PP_CURSORTYPE_CUSTOM = 41
 };
+PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_CursorType_Dev, 4);
 
 #endif  // PPAPI_C_DEV_PP_CURSORTYPE_DEV_H_

@@ -20,6 +20,7 @@ struct PP_Size {
   int32_t width;
   int32_t height;
 };
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_Size, 8);
 
 PP_INLINE struct PP_Size PP_MakeSize(int32_t w, int32_t h) {
   struct PP_Size ret;

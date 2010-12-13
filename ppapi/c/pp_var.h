@@ -26,7 +26,6 @@ typedef enum {
   PP_VARTYPE_STRING,
   PP_VARTYPE_OBJECT
 } PP_VarType;
-
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_VarType, 4);
 
 /**
@@ -43,6 +42,13 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_VarType, 4);
  */
 struct PP_Var {
   PP_VarType type;
+
+  /** Ensures @a value is aligned on an 8-byte boundary relative to the
+   *  start of the struct. Some compilers align doubles on 8-byte boundaries
+   *  for 32-bit x86, and some align on 4-byte boundaries.
+   */
+  int32_t padding;
+
   union {
     PP_Bool as_bool;
     int32_t as_int;
@@ -56,31 +62,32 @@ struct PP_Var {
     int64_t as_id;
   } value;
 };
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_Var, 16);
 
 PP_INLINE struct PP_Var PP_MakeUndefined() {
-  struct PP_Var result = { PP_VARTYPE_UNDEFINED, {PP_FALSE} };
+  struct PP_Var result = { PP_VARTYPE_UNDEFINED, 0, {PP_FALSE} };
   return result;
 }
 
 PP_INLINE struct PP_Var PP_MakeNull() {
-  struct PP_Var result = { PP_VARTYPE_NULL, {PP_FALSE} };
+  struct PP_Var result = { PP_VARTYPE_NULL, 0, {PP_FALSE} };
   return result;
 }
 
 PP_INLINE struct PP_Var PP_MakeBool(PP_Bool value) {
-  struct PP_Var result = { PP_VARTYPE_BOOL, {PP_FALSE} };
+  struct PP_Var result = { PP_VARTYPE_BOOL, 0, {PP_FALSE} };
   result.value.as_bool = value;
   return result;
 }
 
 PP_INLINE struct PP_Var PP_MakeInt32(int32_t value) {
-  struct PP_Var result = { PP_VARTYPE_INT32, {PP_FALSE} };
+  struct PP_Var result = { PP_VARTYPE_INT32, 0, {PP_FALSE} };
   result.value.as_int = value;
   return result;
 }
 
 PP_INLINE struct PP_Var PP_MakeDouble(double value) {
-  struct PP_Var result = { PP_VARTYPE_DOUBLE, {PP_FALSE} };
+  struct PP_Var result = { PP_VARTYPE_DOUBLE, 0, {PP_FALSE} };
   result.value.as_double = value;
   return result;
 }

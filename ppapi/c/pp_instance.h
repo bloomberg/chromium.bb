@@ -13,6 +13,7 @@
  * @{
  */
 
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
 
 /** A PP_Instance uniquely identifies one plugin instance, which is one time
@@ -24,6 +25,7 @@
  * indicate a "NULL handle."
  */
 typedef int64_t PP_Instance;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Instance, 8);
 
 /**
  * @}

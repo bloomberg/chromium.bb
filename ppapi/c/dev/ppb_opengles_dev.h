@@ -9,27 +9,42 @@
 #ifndef PPAPI_C_DEV_PPB_OPENGLES_DEV_H_
 #define PPAPI_C_DEV_PPB_OPENGLES_DEV_H_
 
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/GLES2/khrplatform.h"
 
 #define PPB_OPENGLES_DEV_INTERFACE "PPB_OpenGLES(Dev);2.0"
 
 typedef unsigned int GLenum;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(GLenum, 4);
 typedef void GLvoid;
 typedef khronos_intptr_t GLintptr;
 typedef int GLsizei;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(GLsizei, 4);
 typedef khronos_ssize_t GLsizeiptr;
 typedef int GLint;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(GLint, 4);
 typedef unsigned char GLboolean;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(GLboolean, 1);
 typedef unsigned int GLuint;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(GLuint, 4);
 typedef unsigned int GLbitfield;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(GLbitfield, 4);
 typedef short GLshort;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(GLshort, 2);
 typedef float GLfloat;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(GLfloat, 4);
 typedef float GLclampf;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(GLclampf, 4);
 typedef signed char GLbyte;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(GLbyte, 1);
 typedef unsigned char GLubyte;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(GLubyte, 1);
 typedef int GLfixed;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(GLfixed, 4);
 typedef unsigned short GLushort;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(GLushort, 2);
 typedef int GLclampx;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(GLclampx, 4);
 
 struct PPB_OpenGLES_Dev {
   void (*ActiveTexture)(GLenum texture);

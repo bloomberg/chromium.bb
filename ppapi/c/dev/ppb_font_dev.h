@@ -6,12 +6,13 @@
 #define PPAPI_C_DEV_PPB_FONT_DEV_H_
 
 #include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_FONT_DEV_INTERFACE "PPB_Font(Dev);0.2"
+#define PPB_FONT_DEV_INTERFACE "PPB_Font(Dev);0.4"
 
 struct PP_Point;
 struct PP_Rect;
@@ -27,6 +28,7 @@ typedef enum {
   PP_FONTFAMILY_SANSSERIF = 2,
   PP_FONTFAMILY_MONOSPACE = 3
 } PP_FontFamily_Dev;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FontFamily_Dev, 4);
 
 typedef enum {
   PP_FONTWEIGHT_100 = 0,
@@ -41,6 +43,7 @@ typedef enum {
   PP_FONTWEIGHT_NORMAL = PP_FONTWEIGHT_400,
   PP_FONTWEIGHT_BOLD = PP_FONTWEIGHT_700
 } PP_FontWeight_Dev;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FontWeight_Dev, 4);
 
 struct PP_FontDescription_Dev {
   // Font face name as a string. This can also be a Null var, in which case the
@@ -62,9 +65,17 @@ struct PP_FontDescription_Dev {
   // Adjustment to apply to letter and word spacing, respectively. Initialize
   // to 0 to get normal spacing. Negative values bring letters/words closer
   // together, positive values separate them.
-  int letter_spacing;
-  int word_spacing;
+  int32_t letter_spacing;
+  int32_t word_spacing;
+
+  // Ensure that this struct is 48-bytes wide by padding the end.  In some
+  // compilers, PP_Var is 8-byte aligned, so those compilers align this struct
+  // on 8-byte boundaries as well and pad it to 16 bytes even without this
+  // padding attribute.  This padding makes its size consistent across
+  // compilers.
+  int32_t padding;
 };
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_FontDescription_Dev, 48);
 
 struct PP_FontMetrics_Dev {
   int32_t height;
@@ -73,6 +84,7 @@ struct PP_FontMetrics_Dev {
   int32_t line_spacing;
   int32_t x_height;
 };
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_FontMetrics_Dev, 20);
 
 struct PP_TextRun_Dev {
   // This var must either be a string or a null var (which will be treated as
@@ -86,6 +98,7 @@ struct PP_TextRun_Dev {
   // content
   PP_Bool override_direction;
 };
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_TextRun_Dev, 24);
 
 struct PPB_Font_Dev {
   // Returns a font which best matches the given description. The return value

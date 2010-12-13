@@ -6,6 +6,7 @@
 #define PPAPI_C_PPB_URL_REQUEST_INFO_H_
 
 #include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
@@ -32,8 +33,9 @@ typedef enum {
   // Boolean (default = PP_FALSE).
   PP_URLREQUESTPROPERTY_RECORDUPLOADPROGRESS
 } PP_URLRequestProperty;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_URLRequestProperty, 4);
 
-#define PPB_URLREQUESTINFO_INTERFACE "PPB_URLRequestInfo;1"
+#define PPB_URLREQUESTINFO_INTERFACE "PPB_URLRequestInfo;1.1"
 
 struct PPB_URLRequestInfo {
   // Create a new URLRequestInfo object.  Returns 0 if the module is invalid.

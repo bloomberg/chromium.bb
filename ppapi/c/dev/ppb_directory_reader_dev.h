@@ -5,8 +5,9 @@
 #ifndef PPAPI_C_DEV_PPB_DIRECTORY_READER_DEV_H_
 #define PPAPI_C_DEV_PPB_DIRECTORY_READER_DEV_H_
 
-#include "ppapi/c/pp_bool.h"
 #include "ppapi/c/dev/pp_file_info_dev.h"
+#include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 
@@ -15,9 +16,17 @@ struct PP_CompletionCallback;
 struct PP_DirectoryEntry_Dev {
   PP_Resource file_ref;
   PP_FileType_Dev file_type;
-};
 
-#define PPB_DIRECTORYREADER_DEV_INTERFACE "PPB_DirectoryReader(Dev);0.2"
+  /** Ensure that this struct is 16-bytes wide by padding the end.  Because
+   *  PP_Resource is an 8-byte type, some compilers align this struct on 8-byte
+   *  boundaries and pad it to 16 bytes even without @a padding.  This makes its
+   *  size consistent across compilers.
+   */
+  int32_t padding;
+};
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_DirectoryEntry_Dev, 16);
+
+#define PPB_DIRECTORYREADER_DEV_INTERFACE "PPB_DirectoryReader(Dev);0.3"
 
 struct PPB_DirectoryReader_Dev {
   // Creates a DirectoryReader for the given directory.  Upon success, the

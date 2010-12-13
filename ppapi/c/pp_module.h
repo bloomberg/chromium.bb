@@ -13,6 +13,7 @@
  * @{
  */
 
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
 
 /**
@@ -21,6 +22,7 @@
  * 0, so a plugin can initialize it to 0 to indicate a "NULL handle."
  */
 typedef int64_t PP_Module;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Module, 8);
 
 /**
  * @}

@@ -5,6 +5,7 @@
 #ifndef PPAPI_C_PP_RESOURCE_H_
 #define PPAPI_C_PP_RESOURCE_H_
 
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
 
 /**
@@ -30,6 +31,7 @@
  * resource to indicate failure.
  */
 typedef int64_t PP_Resource;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Resource, 8);
 
 /**
  * @}

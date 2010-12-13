@@ -1,4 +1,3 @@
-
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -6,6 +5,9 @@
 // This test simply includes all the C++ headers to ensure they compile with a
 // C++ compiler.  If it compiles, it passes.
 //
+#ifndef PPAPI_TESTS_ALL_CPP_INCLUDES_H_
+#define PPAPI_TESTS_ALL_CPP_INCLUDES_H_
+
 #include "ppapi/cpp/common.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/core.h"
@@ -50,4 +52,6 @@
 #include "ppapi/cpp/url_request_info.h"
 #include "ppapi/cpp/url_response_info.h"
 #include "ppapi/cpp/var.h"
+
+#endif  // PPAPI_TESTS_ALL_CPP_INCLUDES_H_
 

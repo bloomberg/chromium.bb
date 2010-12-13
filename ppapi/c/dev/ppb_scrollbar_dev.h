@@ -7,6 +7,7 @@
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
@@ -18,6 +19,7 @@ typedef enum {
   PP_SCROLLBY_PAGE = 2,
   PP_SCROLLBY_DOCUMENT = 3
 } PP_ScrollBy_Dev;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_ScrollBy_Dev, 4);
 
 #define PPB_SCROLLBAR_DEV_INTERFACE "PPB_Scrollbar(Dev);0.2"
 

@@ -25,7 +25,6 @@ typedef enum {
   PP_FALSE = 0,
   PP_TRUE = 1
 } PP_Bool;
-
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Bool, 4);
 
 /**

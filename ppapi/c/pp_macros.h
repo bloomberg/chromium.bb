@@ -53,7 +53,7 @@
    SIZE is the expected size in bytes.
  */
 #define PP_COMPILE_ASSERT_SIZE_IN_BYTES_IMPL(NAME, CTYPENAME, SIZE) \
-struct _dummy_struct_for_##NAME { \
+struct PP_Dummy_Struct_For_##NAME { \
 char _COMPILE_ASSERT_FAILED_The_type_named_ \
 ## NAME ## _is_not_ ## SIZE ## \
 _bytes_wide[(sizeof(CTYPENAME) == SIZE) ? 1 : -1]; }
@@ -75,6 +75,15 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES_IMPL(NAME, NAME, SIZE)
  */
 #define PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(NAME, SIZE) \
 PP_COMPILE_ASSERT_SIZE_IN_BYTES_IMPL(NAME, struct NAME, SIZE)
+
+/* PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES is for typenames that contain 'enum'
+   in C.  That is, enum names that are not typedefs.
+   E.g.:
+   enum Bar { A = 0, B = 1 };
+   PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(Foo, 4);
+ */
+#define PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(NAME, SIZE) \
+PP_COMPILE_ASSERT_SIZE_IN_BYTES_IMPL(NAME, enum NAME, SIZE)
 
 /**
  * @}

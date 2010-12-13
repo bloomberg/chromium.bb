@@ -7,6 +7,7 @@
 
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
@@ -39,6 +40,7 @@ enum PP_VideoKey_Dev {
   PP_VIDEOKEY_H264FEATURE_CABAC,
   PP_VIDEOKEY_H264FEATURE_WEIGHTEDPREDICTION
 };
+PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_VideoKey_Dev, 4);
 
 enum PP_VideoDecoderEvent_Dev {
   PP_VIDEODECODEREVENT_NONE = 0,
@@ -49,6 +51,7 @@ enum PP_VideoDecoderEvent_Dev {
   // Signaling new cropping rectangle
   PP_VIDEODECODEREVENT_NEWCROP
 };
+PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_VideoDecoderEvent_Dev, 4);
 
 enum PP_VideoDecodeError_Dev {
   PP_VIDEODECODEERROR_NONE = 0,
@@ -58,6 +61,7 @@ enum PP_VideoDecodeError_Dev {
   PP_VIDEODECODEERROR_BADINPUT,
   PP_VIDEODECODEERROR_HARDWARE
 };
+PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_VideoDecodeError_Dev, 4);
 
 enum PP_VideoCodecId_Dev {
   PP_VIDEODECODECID_NONE = 0,
@@ -66,12 +70,14 @@ enum PP_VideoCodecId_Dev {
   PP_VIDEODECODECID_MPEG2,
   PP_VIDEODECODECID_VP8
 };
+PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_VideoCodecId_Dev, 4);
 
 enum PP_VideoOperation_Dev {
   PP_VIDEOOPERATION_NONE = 0,
   PP_VIDEOOPERATION_DECODE,
   PP_VIDEOOPERATION_ENCODE
 };
+PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_VideoOperation_Dev, 4);
 
 enum PP_VideoCodecProfile_Dev {
   PP_VIDEOCODECPROFILE_NONE = 0,
@@ -94,6 +100,7 @@ enum PP_VideoCodecProfile_Dev {
   PP_VIDEOCODECPROFILE_MPEG2_SPATIAL,
   PP_VIDEOCODECPROFILE_MPEG2_HIGH
 };
+PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_VideoCodecProfile_Dev, 4);
 
 enum PP_VideoCodecLevel_Dev {
   PP_VIDEOCODECLEVEL_NONE = 0,
@@ -128,12 +135,14 @@ enum PP_VideoCodecLevel_Dev {
   PP_VIDEOCODECLEVEL_MPEG2_HIGH1440,
   PP_VIDEOCODECLEVEL_MPEG2_HIGH
 };
+PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_VideoCodecLevel_Dev, 4);
 
 enum PP_VideoPayloadFormat_Dev {
   PP_VIDEOPAYLOADFORMAT_NONE = 0,
   PP_VIDEOPAYLOADFORMAT_BYTESTREAM,
   PP_VIDEOPAYLOADFORMAT_RTPPAYLOAD
 };
+PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_VideoPayloadFormat_Dev, 4);
 
 enum PP_VideoFrameColorType_Dev {
   PP_VIDEOFRAMECOLORTYPE_NONE = 0,
@@ -145,6 +154,7 @@ enum PP_VideoFrameColorType_Dev {
   PP_VIDEOFRAMECOLORTYPE_YUV422PLANAR,
   PP_VIDEOFRAMECOLORTYPE_YUV444PLANAR
 };
+PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_VideoFrameColorType_Dev, 4);
 
 enum PP_VideoFrameSurfaceType_Dev {
   PP_VIDEOFRAMESURFACETYPE_NONE = 0,
@@ -152,6 +162,7 @@ enum PP_VideoFrameSurfaceType_Dev {
   PP_VIDEOFRAMESURFACETYPE_GLTEXTURE,
   PP_VIDEOFRAMESURFACETYPE_PIXMAP
 };
+PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_VideoFrameSurfaceType_Dev, 4);
 
 enum PP_VideoFrameInfoFlag_Dev {
   PP_VIDEOFRAMEINFOFLAG_NONE = 0,
@@ -164,6 +175,7 @@ enum PP_VideoFrameInfoFlag_Dev {
   // Indicate the decoded frame has data corruption. Used by browser.
   PP_VIDEOFRAMEINFOFLAG_DATACORRUPT = 1 << 3
 };
+PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_VideoFrameInfoFlag_Dev, 4);
 
 enum PP_VideoFrameBufferConst_Dev {
   // YUV formats
@@ -178,8 +190,10 @@ enum PP_VideoFrameBufferConst_Dev {
 
   PP_VIDEOFRAMEBUFFER_MAXNUMBERPLANES = 4
 };
+PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_VideoFrameBufferConst_Dev, 4);
 
 typedef int64_t PP_VideoDecodeData_Dev;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_VideoDecodeData_Dev, 8);
 
 // Array of key/value pairs describing video configuration.
 // It could include any keys from PP_VideoKey. Its last element shall be
@@ -195,34 +209,48 @@ typedef int64_t PP_VideoDecodeData_Dev;
 // };
 typedef int32_t* PP_VideoConfig_Dev;
 typedef int32_t PP_VideoConfigElement_Dev;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_VideoConfigElement_Dev, 4);
 
 // The data structure for compressed data buffer.
 struct PP_VideoCompressedDataBuffer_Dev {
   // The buffer is created through PPB_Buffer API.
   // TODO(wjia): would uint8_t* be good, too?
   PP_Resource buffer;
+
   // number of bytes with real data in the buffer.
   int32_t filled_size;
 
-  // Time stamp of the frame in microsecond.
-  uint64_t time_stamp_us;
-
   // Bit mask of PP_VideoFrameInfoFlag.
   uint32_t flags;
+
+  // Time stamp of the frame in microsecond.
+  uint64_t time_stamp_us;
 };
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_VideoCompressedDataBuffer_Dev, 24);
 
 struct PP_VideoFrameBuffer_Dev {
   union {
     struct {
-      int32_t planes;
       struct {
         int32_t width;
         int32_t height;
         int32_t stride;
 
+        // Padding to ensure the PP_Resource is 8-byte aligned relative to the
+        // start of the struct.  This helps ensure PP_VideoFrameBuffer_Dev has
+        // consistent size and alignment across compilers.
+        int32_t padding;
+
         // TODO(wjia): uint8* would be better for some cases.
         PP_Resource buffer;
       } data_plane[PP_VIDEOFRAMEBUFFER_MAXNUMBERPLANES];
+
+      int32_t planes;
+
+      // This padding makes sure the sys_mem struct's size is a multiple of 8
+      // bytes, ensuring that handle is always 8-byte aligned relative to the
+      // start of the PP_VideoFrameBuffer_Dev struct.
+      int32_t padding;
     } sys_mem;
 
     // Handle for pixmap, gl texture, etc.
@@ -232,23 +260,40 @@ struct PP_VideoFrameBuffer_Dev {
   // Storage for decoder to save some private data. It could be useful when
   // plugin returns frame buffer to decoder.
   void* private_handle;
+
+  // In some 32-bit platforms (NaCl and Win32), this struct is 8-byte aligned
+  // due to the PP_Resource above.  That causes the compiler to pad it an extra
+  // 4 bytes on the end.  In other 32-bit platforms, there is no such pad.  This
+  // padding ensures that the size is consistent on 32-bit platforms (and it
+  // is still consistent on 64-bit platforms, just bigger than it would be
+  // without the padding).
+  int32_t padding;
 };
 
 struct PP_VideoUncompressedDataBuffer_Dev {
   PP_VideoConfig_Dev format;
-  struct PP_VideoFrameBuffer_Dev buffer;
+
+  // Bit mask of PP_VideoFrameInfoFlag.
+  uint32_t flags;
 
   // Time stamp of the frame in microsecond.
   uint64_t time_stamp_us;
 
-  // Bit mask of PP_VideoFrameInfoFlag.
-  uint32_t flags;
+  struct PP_VideoFrameBuffer_Dev buffer;
 
   // Output from decoder, indicating the decoded frame has error pixels. This
   // could be resulted from corrupted input bit stream and error concealment
   // in decoding.  PP_TRUE indicates error.
   // TODO(wjia): add more info about error pixels, such as error MB map, etc.
   PP_Bool error;
+
+  // In some 32-bit platforms (NaCl and Win32), this struct is 8-byte aligned
+  // due to the uint64_t and buffer above.  That causes the compiler to pad it
+  // an extra 4 bytes on the end.  In other 32-bit platforms, there is no such
+  // pad.  This padding ensures that the size is consistent on 32-bit platforms
+  // (and it is still consistent on 64-bit platforms, just bigger than it would
+  // be without the padding).
+  int32_t padding;
 };
 
 // Plugin callback for decoder to deliver decoded frame buffers.

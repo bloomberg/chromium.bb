@@ -10,7 +10,7 @@
 # - Verifies that all source code is in ppapi.gyp
 # - Verifies that all sources in ppapi.gyp really do exist
 # - Generates tests/test_c_includes.c
-# - Generates tests/test_cc_includes.cc
+# - Generates tests/test_cpp_includes.cc
 # These tests are checked in to SVN.
 # TODO(dmichael):  Make this script execute as a gyp action, move the include
 #                  tests to some 'generated' area, and remove them from version
@@ -29,7 +29,7 @@ SOURCE_FILE_RE = re.compile('.+\.(cc|c|h)$')
 # not check whether source files under these directories are in the gyp file.
 # TODO(dmichael): Put examples back in the build.
 # TODO(brettw): Put proxy in the build when it's ready.
-IGNORE_RE = re.compile('^(examples|GLES2|proxy).*')
+IGNORE_RE = re.compile('^(examples|GLES2|proxy|tests\/clang).*')
 
 GYP_TARGETS_KEY = 'targets'
 GYP_SOURCES_KEY = 'sources'
@@ -92,8 +92,7 @@ def WriteLines(filename, lines):
 
 
 COPYRIGHT_STRING_C = \
-"""
-/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+"""/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  *
@@ -103,8 +102,7 @@ COPYRIGHT_STRING_C = \
 """
 
 COPYRIGHT_STRING_CC = \
-"""
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+"""// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -127,26 +125,35 @@ def GetSourcesForTarget(target_name, gyp_file_data):
   return []
 
 
-# Generate test_c_includes.c, which is a test to ensure that all the headers in
-# ppapi/c can be compiled with a C compiler.
+# Generate all_c_includes.h, which includes all C headers.  This is part of
+# tests/test_c_sizes.c, which includes all C API files to ensure that all
+# the headers in ppapi/c can be compiled with a C compiler, and also asserts
+# (with compile-time assertions) that all structs and enums are a particular
+# size.
 def GenerateCIncludeTest(gyp_file_data):
   c_sources = GetSourcesForTarget('ppapi_c', gyp_file_data)
   lines = [COPYRIGHT_STRING_C]
+  lines.append('#ifndef PPAPI_TESTS_ALL_C_INCLUDES_H_\n')
+  lines.append('#define PPAPI_TESTS_ALL_C_INCLUDES_H_\n\n')
   for source in c_sources:
     lines.append('#include "ppapi/' + source + '"\n')
-  WriteLines('tests/test_c_includes.c', lines)
+  lines.append('\n#endif  /* PPAPI_TESTS_ALL_C_INCLUDES_H_ */\n')
+  WriteLines('tests/all_c_includes.h', lines)
 
 
-# Generate test_cc_includes.cc, which is a test to ensure that all the headers
-# in ppapi/cpp can be compiled with a C++ compiler.
+# Generate all_cpp_includes.h, which is used by test_cpp_includes.cc to ensure
+# that all the headers in ppapi/cpp can be compiled with a C++ compiler.
 def GenerateCCIncludeTest(gyp_file_data):
   cc_sources = GetSourcesForTarget('ppapi_cpp_objects', gyp_file_data)
   header_re = re.compile('.+\.h$')
   lines = [COPYRIGHT_STRING_CC]
+  lines.append('#ifndef PPAPI_TESTS_ALL_CPP_INCLUDES_H_\n')
+  lines.append('#define PPAPI_TESTS_ALL_CPP_INCLUDES_H_\n\n')
   for source in cc_sources:
     if header_re.match(source):
       lines.append('#include "ppapi/' + source + '"\n')
-  WriteLines('tests/test_cc_includes.cc', lines)
+  lines.append('\n#endif  // PPAPI_TESTS_ALL_CPP_INCLUDES_H_\n')
+  WriteLines('tests/all_cpp_includes.h', lines)
 
 
 def main():

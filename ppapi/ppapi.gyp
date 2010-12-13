@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
 {
   'variables': {
     'chromium_code': 1,  # Use higher warning level.
@@ -423,12 +422,16 @@
         'tests/testing_instance.h',
 
         # Test cases.
+        'tests/all_c_includes.h',
+        'tests/all_cpp_includes.h',
+        'tests/arch_dependent_sizes_32.h',
+        'tests/arch_dependent_sizes_64.h',
         'tests/test_buffer.cc',
         'tests/test_buffer.h',
         'tests/test_c_includes.c',
-        'tests/test_cc_includes.cc',
         'tests/test_char_set.cc',
         'tests/test_char_set.h',
+        'tests/test_cpp_includes.cc',
         'tests/test_directory_reader.cc',
         'tests/test_directory_reader.h',
         'tests/test_file_io.cc',
@@ -443,6 +446,7 @@
         'tests/test_paint_aggregator.h',
         'tests/test_scrollbar.cc',
         'tests/test_scrollbar.h',
+        'tests/test_struct_sizes.c',
         'tests/test_transport.cc',
         'tests/test_transport.h',
         'tests/test_url_loader.cc',

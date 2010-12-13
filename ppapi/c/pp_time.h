@@ -13,12 +13,15 @@
  * @{
  */
 
+#include "ppapi/c/pp_macros.h"
+
 /**
  * PP_Time represents the "wall clock time" according to the browser and is
  * defined as the number of seconds since the Epoch (00:00:00 UTC, January 1,
  * 1970).
  */
 typedef double PP_Time;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Time, 8);
 
 /**
  * Represents time ticks which is measured in seconds and is used for indicating
@@ -30,6 +33,7 @@ typedef double PP_Time;
  * epoch, so the most you can do is compare two values.
  */
 typedef double PP_TimeTicks;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_TimeTicks, 8);
 
 /**
  * @}

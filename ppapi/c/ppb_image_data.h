@@ -6,6 +6,7 @@
 #define PPAPI_C_PPB_IMAGE_DATA_H_
 
 #include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_size.h"
@@ -15,6 +16,7 @@ typedef enum {
   PP_IMAGEDATAFORMAT_BGRA_PREMUL,
   PP_IMAGEDATAFORMAT_RGBA_PREMUL
 } PP_ImageDataFormat;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_ImageDataFormat, 4);
 
 struct PP_ImageDataDesc {
   PP_ImageDataFormat format;
@@ -26,6 +28,7 @@ struct PP_ImageDataDesc {
   // may be padding at the end of the lines.
   int32_t stride;
 };
+PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_ImageDataDesc, 16);
 
 #define PPB_IMAGEDATA_INTERFACE "PPB_ImageData;0.2"
 

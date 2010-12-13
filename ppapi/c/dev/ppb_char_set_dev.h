@@ -5,11 +5,12 @@
 #ifndef PPAPI_C_DEV_PPB_CHAR_SET_DEV_H_
 #define PPAPI_C_DEV_PPB_CHAR_SET_DEV_H_
 
+#include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_CHAR_SET_DEV_INTERFACE "PPB_CharSet(Dev);0.2"
+#define PPB_CHAR_SET_DEV_INTERFACE "PPB_CharSet(Dev);0.3"
 
 // Specifies the error behavior for the character set conversion functions.
 // This will affect two cases: where the input is not encoded correctly, and
@@ -31,6 +32,7 @@ enum PP_CharSet_ConversionError {
   // many languages this will be the representation of the '?' character.
   PP_CHARSET_CONVERSIONERROR_SUBSTITUTE
 };
+PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(PP_CharSet_ConversionError, 4);
 
 struct PPB_CharSet_Dev {
   // Converts the UTF-16 string pointed to in |*utf16| to an 8-bit string in the
