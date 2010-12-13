@@ -28,6 +28,22 @@
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 
+namespace {
+// Copied from third_party/WebKit/WebCore/page/EventHandler.cpp
+//
+// Match key code of composition keydown event on windows.
+// IE sends VK_PROCESSKEY which has value 229;
+//
+// Please refer to following documents for detals:
+// - Virtual-Key Codes
+//   http://msdn.microsoft.com/en-us/library/ms645540(VS.85).aspx
+// - How the IME System Works
+//   http://msdn.microsoft.com/en-us/library/cc194848.aspx
+// - ImmGetVirtualKey Function
+//   http://msdn.microsoft.com/en-us/library/dd318570(VS.85).aspx
+const int kCompositionEventKeyCode = 229;
+}  // namespace
+
 GtkIMContextWrapper::GtkIMContextWrapper(RenderWidgetHostViewGtk* host_view)
     : host_view_(host_view),
       context_(gtk_im_multicontext_new()),
@@ -317,20 +333,6 @@ bool GtkIMContextWrapper::NeedCommitByForwardingCharEvent() {
 
 void GtkIMContextWrapper::ProcessFilteredKeyPressEvent(
     NativeWebKeyboardEvent* wke) {
-  // Copied from third_party/WebKit/WebCore/page/EventHandler.cpp
-  //
-  // Match key code of composition keydown event on windows.
-  // IE sends VK_PROCESSKEY which has value 229;
-  //
-  // Please refer to following documents for detals:
-  // - Virtual-Key Codes
-  //   http://msdn.microsoft.com/en-us/library/ms645540(VS.85).aspx
-  // - How the IME System Works
-  //   http://msdn.microsoft.com/en-us/library/cc194848.aspx
-  // - ImmGetVirtualKey Function
-  //   http://msdn.microsoft.com/en-us/library/dd318570(VS.85).aspx
-  const int kCompositionEventKeyCode = 229;
-
   // If IME has filtered this event, then replace virtual key code with
   // VK_PROCESSKEY. See comment in ProcessKeyEvent() for details.
   // It's only required for keydown events.
@@ -450,8 +452,12 @@ void GtkIMContextWrapper::HandleCommit(const string16& text) {
   // It's possible that commit signal is fired without a key event, for
   // example when user input via a voice or handwriting recognition software.
   // In this case, the text must be committed directly.
-  if (!is_in_key_event_handler_ && host_view_->GetRenderWidgetHost())
+  if (!is_in_key_event_handler_ && host_view_->GetRenderWidgetHost()) {
+    // Workaround http://crbug.com/45478 by sending fake key down/up events.
+    SendFakeCompositionKeyEvent(WebKit::WebInputEvent::RawKeyDown);
     host_view_->GetRenderWidgetHost()->ImeConfirmComposition(text);
+    SendFakeCompositionKeyEvent(WebKit::WebInputEvent::KeyUp);
+  }
 }
 
 void GtkIMContextWrapper::HandlePreeditStart() {
@@ -490,9 +496,12 @@ void GtkIMContextWrapper::HandlePreeditChanged(const gchar* text,
   // Otherwise, we need send it here if it's been changed.
   if (!is_in_key_event_handler_ && is_composing_text_ &&
       host_view_->GetRenderWidgetHost()) {
+    // Workaround http://crbug.com/45478 by sending fake key down/up events.
+    SendFakeCompositionKeyEvent(WebKit::WebInputEvent::RawKeyDown);
     host_view_->GetRenderWidgetHost()->ImeSetComposition(
         preedit_text_, preedit_underlines_, preedit_selection_start_,
         preedit_selection_end_);
+    SendFakeCompositionKeyEvent(WebKit::WebInputEvent::KeyUp);
   }
 }
 
@@ -527,6 +536,15 @@ void GtkIMContextWrapper::HandleHostViewRealize(GtkWidget* widget) {
 void GtkIMContextWrapper::HandleHostViewUnrealize() {
   gtk_im_context_set_client_window(context_, NULL);
   gtk_im_context_set_client_window(context_simple_, NULL);
+}
+
+void GtkIMContextWrapper::SendFakeCompositionKeyEvent(
+    WebKit::WebInputEvent::Type type) {
+  NativeWebKeyboardEvent fake_event;
+  fake_event.windowsKeyCode = kCompositionEventKeyCode;
+  fake_event.skip_in_browser = true;
+  fake_event.type = type;
+  host_view_->ForwardKeyboardEvent(fake_event);
 }
 
 void GtkIMContextWrapper::HandleCommitThunk(

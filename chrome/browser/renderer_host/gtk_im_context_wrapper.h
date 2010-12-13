@@ -14,6 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCompositionUnderline.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextInputType.h"
 
 namespace gfx {
@@ -99,6 +100,10 @@ class GtkIMContextWrapper {
   // Real code of "unrealize" signal handler, used for unsetting im context's
   // client window.
   void HandleHostViewUnrealize();
+
+  // Sends a fake composition key event with specified event type. A composition
+  // key event is a key event with special key code 229.
+  void SendFakeCompositionKeyEvent(WebKit::WebInputEvent::Type type);
 
   // Signal handlers of GtkIMContext object.
   static void HandleCommitThunk(GtkIMContext* context, gchar* text,
