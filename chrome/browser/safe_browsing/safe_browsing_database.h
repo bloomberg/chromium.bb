@@ -24,6 +24,18 @@ namespace base {
 class BloomFilter;
 class GURL;
 class MessageLoop;
+class SafeBrowsingDatabase;
+
+// Factory for creating SafeBrowsingDatabase. Tests implement this factory
+// to create fake Databases for testing.
+class SafeBrowsingDatabaseFactory {
+ public:
+  SafeBrowsingDatabaseFactory() { }
+  virtual ~SafeBrowsingDatabaseFactory() { }
+  virtual SafeBrowsingDatabase* CreateSafeBrowsingDatabase() = 0;
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingDatabaseFactory);
+};
 
 // Encapsulates the database that stores information about phishing
 // and malware sites.  There is one on-disk database for all profiles,
@@ -34,7 +46,15 @@ class MessageLoop;
 class SafeBrowsingDatabase {
  public:
   // Factory method for obtaining a SafeBrowsingDatabase implementation.
+  // It is not thread safe.
   static SafeBrowsingDatabase* Create();
+
+  // Makes the passed |factory| the factory used to instantiate
+  // a SafeBrowsingDatabase. This is used for tests.
+  static void RegisterFactory(SafeBrowsingDatabaseFactory* factory) {
+    factory_ = factory;
+  }
+
   virtual ~SafeBrowsingDatabase();
 
   // Initializes the database with the given filename.
@@ -112,6 +132,12 @@ class SafeBrowsingDatabase {
   };
 
   static void RecordFailure(FailureType failure_type);
+
+ private:
+  // The factory used to instantiate a SafeBrowsingDatabase object.
+  // Useful for tests, so they can provide their own implementation of
+  // SafeBrowsingDatabase.
+  static SafeBrowsingDatabaseFactory* factory_;
 };
 
 class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {

@@ -433,14 +433,16 @@ void SafeBrowsingService::OnIOInitialize(
       cmdline->GetSwitchValueASCII(switches::kSbMacKeyURLPrefix) :
       kSbDefaultMacKeyURLPrefix;
 
-  protocol_manager_ = new SafeBrowsingProtocolManager(this,
-                                                      client_name,
-                                                      client_key,
-                                                      wrapped_key,
-                                                      request_context_getter,
-                                                      info_url_prefix,
-                                                      mackey_url_prefix,
-                                                      disable_auto_update);
+  DCHECK(!protocol_manager_);
+  protocol_manager_ =
+      SafeBrowsingProtocolManager::Create(this,
+                                          client_name,
+                                          client_key,
+                                          wrapped_key,
+                                          request_context_getter,
+                                          info_url_prefix,
+                                          mackey_url_prefix,
+                                          disable_auto_update);
 
   protocol_manager_->Initialize();
 }

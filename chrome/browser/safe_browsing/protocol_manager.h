@@ -42,6 +42,25 @@ struct hash<const URLFetcher*> {
 }
 #endif
 
+class SafeBrowsingProtocolManager;
+// Interface of a factory to create ProtocolManager.  Useful for tests.
+class SBProtocolManagerFactory {
+ public:
+  SBProtocolManagerFactory() {}
+  virtual ~SBProtocolManagerFactory() {}
+  virtual SafeBrowsingProtocolManager* CreateProtocolManager(
+      SafeBrowsingService* sb_service,
+      const std::string& client_name,
+      const std::string& client_key,
+      const std::string& wrapped_key,
+      URLRequestContextGetter* request_context_getter,
+      const std::string& info_url_prefix,
+      const std::string& mackey_url_prefix,
+      bool disable_auto_update) = 0;
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SBProtocolManagerFactory);
+};
+
 class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestBackOffTimes);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestChunkStrings);
@@ -58,23 +77,28 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
   friend class SafeBrowsingServiceTest;
 
  public:
-  // Constructs a SafeBrowsingProtocolManager for |sb_service| that issues
-  // network requests using |request_context_getter|. When |disable_auto_update|
-  // is true, protocol manager won't schedule next update until
-  // ForceScheduleNextUpdate is called.
-  SafeBrowsingProtocolManager(SafeBrowsingService* sb_service,
-                              const std::string& client_name,
-                              const std::string& client_key,
-                              const std::string& wrapped_key,
-                              URLRequestContextGetter* request_context_getter,
-                              const std::string& http_url_prefix,
-                              const std::string& https_url_prefix,
-                              bool disable_auto_update);
   virtual ~SafeBrowsingProtocolManager();
+
+  // Makes the passed |factory| the factory used to instantiate
+  // a SafeBrowsingService. Useful for tests.
+  static void RegisterFactory(SBProtocolManagerFactory* factory) {
+    factory_ = factory;
+  }
+
+  // Create an instance of the safe browsing service.
+  static SafeBrowsingProtocolManager* Create(
+      SafeBrowsingService* sb_service,
+      const std::string& client_name,
+      const std::string& client_key,
+      const std::string& wrapped_key,
+      URLRequestContextGetter* request_context_getter,
+      const std::string& info_url_prefix,
+      const std::string& mackey_url_prefix,
+      bool disable_auto_update);
 
   // Sets up the update schedule and internal state for making periodic requests
   // of the SafeBrowsing service.
-  void Initialize();
+  virtual void Initialize();
 
   // URLFetcher::Delegate interface.
   virtual void OnURLFetchComplete(const URLFetcher* source,
@@ -86,13 +110,11 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
 
   // API used by the SafeBrowsingService for issuing queries. When the results
   // are available, SafeBrowsingService::HandleGetHashResults is called.
-  void GetFullHash(SafeBrowsingService::SafeBrowsingCheck* check,
-                   const std::vector<SBPrefix>& prefixes);
+  virtual void GetFullHash(SafeBrowsingService::SafeBrowsingCheck* check,
+                           const std::vector<SBPrefix>& prefixes);
 
   // Forces the start of next update after |next_update_msec| in msec.
   void ForceScheduleNextUpdate(int next_update_msec);
-
-  bool is_initial_request() const { return initial_request_; }
 
   // Scheduled update callback.
   void GetNextUpdate();
@@ -107,9 +129,6 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
   // Called after the chunks that were parsed were inserted in the database.
   void OnChunkInserted();
 
-  // The last time we received an update.
-  base::Time last_update() const { return last_update_; }
-
   // For UMA users we report to Google when a SafeBrowsing interstitial is shown
   // to the user.  We assume that the threat type is either URL_MALWARE or
   // URL_PHISHING.
@@ -123,6 +142,11 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
   // malware reports. |report| is the serialized report.
   void ReportMalwareDetails(const std::string& report);
 
+  bool is_initial_request() const { return initial_request_; }
+
+  // The last time we received an update.
+  base::Time last_update() const { return last_update_; }
+
   // Setter for additional_query_. To make sure the additional_query_ won't
   // be changed in the middle of an update, caller (e.g.: SafeBrowsingService)
   // should call this after callbacks triggered in UpdateFinished() or before
@@ -134,7 +158,22 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
     return additional_query_;
   }
 
+ protected:
+  // Constructs a SafeBrowsingProtocolManager for |sb_service| that issues
+  // network requests using |request_context_getter|. When |disable_auto_update|
+  // is true, protocol manager won't schedule next update until
+  // ForceScheduleNextUpdate is called.
+  SafeBrowsingProtocolManager(SafeBrowsingService* sb_service,
+                              const std::string& client_name,
+                              const std::string& client_key,
+                              const std::string& wrapped_key,
+                              URLRequestContextGetter* request_context_getter,
+                              const std::string& http_url_prefix,
+                              const std::string& https_url_prefix,
+                              bool disable_auto_update);
  private:
+  friend class SBProtocolManagerFactoryImpl;
+
   // Internal API for fetching information from the SafeBrowsing servers. The
   // GetHash requests are higher priority since they can block user requests
   // so are handled separately.
@@ -230,6 +269,10 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
   void UpdateResponseTimeout();
 
  private:
+  // The factory that controls the creation of SafeBrowsingProtocolManager.
+  // This is used by tests.
+  static SBProtocolManagerFactory* factory_;
+
   // Main SafeBrowsing interface object.
   SafeBrowsingService* sb_service_;
 

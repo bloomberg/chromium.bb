@@ -37,8 +37,52 @@ static const int kSbMaxUpdateWaitSec = 10;
 // Maximum back off multiplier.
 static const int kSbMaxBackOff = 8;
 
+// The default SBProtocolManagerFactory.
+class SBProtocolManagerFactoryImpl : public SBProtocolManagerFactory {
+ public:
+  SBProtocolManagerFactoryImpl() { }
+  virtual ~SBProtocolManagerFactoryImpl() { }
+  virtual SafeBrowsingProtocolManager* CreateProtocolManager(
+      SafeBrowsingService* sb_service,
+      const std::string& client_name,
+      const std::string& client_key,
+      const std::string& wrapped_key,
+      URLRequestContextGetter* request_context_getter,
+      const std::string& info_url_prefix,
+      const std::string& mackey_url_prefix,
+      bool disable_auto_update) {
+    return new SafeBrowsingProtocolManager(
+        sb_service, client_name, client_key, wrapped_key,
+        request_context_getter, info_url_prefix, mackey_url_prefix,
+        disable_auto_update);
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SBProtocolManagerFactoryImpl);
+};
 
 // SafeBrowsingProtocolManager implementation ----------------------------------
+
+// static
+SBProtocolManagerFactory* SafeBrowsingProtocolManager::factory_ = NULL;
+
+// static
+SafeBrowsingProtocolManager* SafeBrowsingProtocolManager::Create(
+    SafeBrowsingService* sb_service,
+    const std::string& client_name,
+    const std::string& client_key,
+    const std::string& wrapped_key,
+    URLRequestContextGetter* request_context_getter,
+    const std::string& info_url_prefix,
+    const std::string& mackey_url_prefix,
+    bool disable_auto_update) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!factory_)
+    factory_ = new SBProtocolManagerFactoryImpl();
+  return factory_->CreateProtocolManager(sb_service, client_name, client_key,
+                                         wrapped_key, request_context_getter,
+                                         info_url_prefix, mackey_url_prefix,
+                                         disable_auto_update);
+}
 
 SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
     SafeBrowsingService* sb_service,
@@ -206,11 +250,11 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
     } else {
       HandleGetHashError(Time::Now());
       if (status.status() == URLRequestStatus::FAILED) {
-          VLOG(1) << "SafeBrowsing GetHash request for: " << source->url()
-                  << " failed with os error: " << status.os_error();
+        VLOG(1) << "SafeBrowsing GetHash request for: " << source->url()
+                << " failed with os error: " << status.os_error();
       } else {
-          VLOG(1) << "SafeBrowsing GetHash request for: " << source->url()
-                  << " failed with error: " << response_code;
+        VLOG(1) << "SafeBrowsing GetHash request for: " << source->url()
+                << " failed with error: " << response_code;
       }
     }
 

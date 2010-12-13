@@ -135,14 +135,33 @@ bool SBAddFullHashPrefixLess(const SBAddFullHash& a, const SBAddFullHash& b) {
 
 }  // namespace
 
-// Factory method.
+// The default SafeBrowsingDatabaseFactory.
+class SafeBrowsingDatabaseFactoryImpl : public SafeBrowsingDatabaseFactory {
+ public:
+  virtual SafeBrowsingDatabase* CreateSafeBrowsingDatabase() {
+    return new SafeBrowsingDatabaseNew(new SafeBrowsingStoreFile);
+  }
+
+  SafeBrowsingDatabaseFactoryImpl() { }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingDatabaseFactoryImpl);
+};
+
+// static
+SafeBrowsingDatabaseFactory* SafeBrowsingDatabase::factory_ = NULL;
+
+// Factory method, non-thread safe. Caller has to make sure this s called
+// on SafeBrowsing Thread.
 // TODO(shess): Milestone-7 is converting from SQLite-based
 // SafeBrowsingDatabaseBloom to the new file format with
 // SafeBrowsingDatabaseNew.  Once that conversion is too far along to
 // consider reversing, circle back and lift SafeBrowsingDatabaseNew up
 // to SafeBrowsingDatabase and get rid of the abstract class.
 SafeBrowsingDatabase* SafeBrowsingDatabase::Create() {
-  return new SafeBrowsingDatabaseNew(new SafeBrowsingStoreFile);
+  if (!factory_)
+    factory_ = new SafeBrowsingDatabaseFactoryImpl();
+  return factory_->CreateSafeBrowsingDatabase();
 }
 
 SafeBrowsingDatabase::~SafeBrowsingDatabase() {
