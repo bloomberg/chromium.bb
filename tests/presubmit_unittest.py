@@ -1137,6 +1137,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'CheckDoNotSubmit',
       'CheckDoNotSubmitInDescription', 'CheckDoNotSubmitInFiles',
       'CheckLongLines', 'CheckTreeIsOpen', 'RunPythonUnitTests',
+      'RunPylint',
       'CheckBuildbotPendingBuilds', 'CheckRietveldTryJobExecution',
     ]
     # If this test fails, you should add the relevant test.

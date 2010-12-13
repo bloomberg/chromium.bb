@@ -450,6 +450,36 @@ def RunPythonUnitTests(input_api, output_api, unit_tests):
   return []
 
 
+def RunPylint(input_api, output_api, source_file_filter=None):
+  """Run pylint on python files."""
+  import warnings
+  # On certain pylint/python version combination, running pylint throws a lot of
+  # warning messages.
+  warnings.filterwarnings('ignore', category=DeprecationWarning)
+  try:
+    if not source_file_filter:
+      source_file_filter = lambda f: f.LocalPath().endswith('.py')
+    files = [f.LocalPath()
+            for f in input_api.AffectedSourceFiles(source_file_filter)]
+    try:
+      from pylint import lint
+      if lint.Run(sorted(files)):
+        return [output_api.PresubmitPromptWarning('Fix pylint errors first.')]
+      return []
+    except ImportError:
+      if input_api.platform == 'win32':
+        return [output_api.PresubmitNotifyResult(
+          'Warning: Can\'t run pylint because it is not installed. Please '
+          'install manually\n'
+          'Cannot do static analysis of python files.')]
+      return [output_api.PresubmitError(
+          'Please install pylint with "sudo apt-get install python-setuptools; '
+          'sudo easy_install pylint"\n'
+          'Cannot do static analysis of python files.')]
+  finally:
+    warnings.filterwarnings('default', category=DeprecationWarning)
+
+
 def CheckRietveldTryJobExecution(input_api, output_api, host_url, platforms,
                                  owner):
   if not input_api.is_committing:

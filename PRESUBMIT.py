@@ -19,26 +19,40 @@ UNIT_TESTS = [
   'tests.watchlists_unittest',
 ]
 
-def CheckChangeOnUpload(input_api, output_api):
+def CommonChecks(input_api, output_api):
   output = []
-  output.extend(input_api.canned_checks.RunPythonUnitTests(input_api,
-                                                           output_api,
-                                                           UNIT_TESTS))
+  output.extend(input_api.canned_checks.RunPythonUnitTests(
+      input_api,
+      output_api,
+      UNIT_TESTS))
   output.extend(WasGitClUploadHookModified(input_api, output_api))
-  output.extend(RunPylint(input_api, output_api))
+
+  def filter_python_sources(affected_file):
+    filepath = affected_file.LocalPath()
+    return ((filepath.endswith('.py') and
+             filepath != 'cpplint.py' and
+             not filepath.startswith('tests')) or
+            filepath == 'git-try')
+
+  output.extend(input_api.canned_checks.RunPylint(
+      input_api,
+      output_api,
+      source_file_filter=filter_python_sources))
   return output
+
+
+def CheckChangeOnUpload(input_api, output_api):
+  return CommonChecks(input_api, output_api)
 
 
 def CheckChangeOnCommit(input_api, output_api):
   output = []
-  output.extend(input_api.canned_checks.RunPythonUnitTests(input_api,
-                                                           output_api,
-                                                           UNIT_TESTS))
-  output.extend(input_api.canned_checks.CheckDoNotSubmit(input_api,
-                                                         output_api))
-  output.extend(WasGitClUploadHookModified(input_api, output_api))
-  output.extend(RunPylint(input_api, output_api))
+  output.extend(CommonChecks(input_api, output_api))
+  output.extend(input_api.canned_checks.CheckDoNotSubmit(
+      input_api,
+      output_api))
   return output
+
 
 def WasGitClUploadHookModified(input_api, output_api):
   for affected_file in input_api.AffectedSourceFiles(None):
@@ -48,27 +62,3 @@ def WasGitClUploadHookModified(input_api, output_api):
           'Don\'t forget to fix git-cl to download the newest version of '
           'git-cl-upload-hook')]
   return []
-
-def RunPylint(input_api, output_api):
-  import glob
-  files = glob.glob('*.py')
-  # It's a python script
-  files.append('git-try')
-  # It uses non-standard pylint exceptions that makes pylint always fail.
-  files.remove('cpplint.py')
-  try:
-    proc = input_api.subprocess.Popen(['pylint'] + sorted(files))
-    proc.communicate()
-    if proc.returncode:
-      return [output_api.PresubmitError('Fix pylint errors first.')]
-    return []
-  except OSError:
-    if input_api.platform == 'win32':
-      return [output_api.PresubmitNotifyResult(
-        'Warning: Can\'t run pylint because it is not installed. Please '
-        'install manually\n'
-        'Cannot do static analysis of python files.')]
-    return [output_api.PresubmitError(
-        'Please install pylint with "sudo apt-get install python-setuptools; '
-        'sudo easy_install pylint"\n'
-        'Cannot do static analysis of python files.')]
