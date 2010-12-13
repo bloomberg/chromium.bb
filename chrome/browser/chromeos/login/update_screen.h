@@ -41,10 +41,6 @@ class UpdateScreen: public DefaultViewScreen<chromeos::UpdateView>,
   // UPDATE_STATUS_REPORTING_ERROR_EVENT.
   virtual void ExitUpdate(bool forced);
 
-  // Maximal curtain time get/set, in seconds.
-  int maximal_curtain_time() const { return maximal_curtain_time_; }
-  void SetMaximalCurtainTime(int seconds);
-
   // Reboot check delay get/set, in seconds.
   int reboot_check_delay() const { return reboot_check_delay_; }
   void SetRebootCheckDelay(int seconds);
@@ -59,11 +55,7 @@ class UpdateScreen: public DefaultViewScreen<chromeos::UpdateView>,
 
  private:
   // Timer notification handlers.
-  void OnMaximalCurtainTimeElapsed();
   void OnWaitForRebootTimeElapsed();
-
-  // Timer for the interval while curtain view is shown.
-  base::OneShotTimer<UpdateScreen> maximal_curtain_time_timer_;
 
   // Timer for the interval to wait for the reboot.
   // If reboot didn't happen - ask user to reboot manually.
@@ -71,10 +63,6 @@ class UpdateScreen: public DefaultViewScreen<chromeos::UpdateView>,
 
   // True if in the process of checking for update.
   bool checking_for_update_;
-
-  // Maximal time (secs) the curtain view is shown. Updating progress is shown
-  // to the user when this time elapsed.
-  int maximal_curtain_time_;
 
   // Time in seconds after which we decide that the device has not rebooted
   // automatically. If reboot didn't happen during this interval, ask user to

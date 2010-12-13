@@ -41,7 +41,6 @@ UpdateScreen::UpdateScreen(WizardScreenDelegate* delegate)
                                               kUpdateScreenWidth,
                                               kUpdateScreenHeight),
       checking_for_update_(true),
-      maximal_curtain_time_(0),
       reboot_check_delay_(0),
       is_downloading_update_(false),
       is_all_updates_critical_(false) {
@@ -134,17 +133,6 @@ void UpdateScreen::StartUpdate() {
   view()->Reset();
   view()->set_controller(this);
   is_downloading_update_ = false;
-
-  // Start the maximal curtain time timer.
-  if (maximal_curtain_time_ > 0) {
-    maximal_curtain_time_timer_.Start(
-        base::TimeDelta::FromSeconds(maximal_curtain_time_),
-        this,
-        &UpdateScreen::OnMaximalCurtainTimeElapsed);
-  } else {
-    view()->ShowCurtain(false);
-  }
-
   view()->SetProgress(kBeforeUpdateCheckProgress);
 
   if (!CrosLibrary::Get()->EnsureLoaded()) {
@@ -166,7 +154,6 @@ void UpdateScreen::CancelUpdate() {
 }
 
 void UpdateScreen::ExitUpdate(bool forced) {
-  maximal_curtain_time_timer_.Stop();
   ScreenObserver* observer = delegate()->GetObserver(this);
 
   if (!CrosLibrary::Get()->EnsureLoaded()) {
@@ -204,20 +191,9 @@ void UpdateScreen::ExitUpdate(bool forced) {
   }
 }
 
-void UpdateScreen::OnMaximalCurtainTimeElapsed() {
-  view()->ShowCurtain(false);
-}
-
 void UpdateScreen::OnWaitForRebootTimeElapsed() {
   LOG(ERROR) << "Unable to reboot - asking user for a manual reboot.";
   view()->ShowManualRebootInfo();
-}
-
-void UpdateScreen::SetMaximalCurtainTime(int seconds) {
-  if (seconds <= 0)
-    maximal_curtain_time_timer_.Stop();
-  DCHECK(!maximal_curtain_time_timer_.IsRunning());
-  maximal_curtain_time_ = seconds;
 }
 
 void UpdateScreen::SetRebootCheckDelay(int seconds) {

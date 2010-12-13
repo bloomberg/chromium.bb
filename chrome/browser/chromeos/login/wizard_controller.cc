@@ -71,9 +71,6 @@ const char kStartupCustomizationManifestPath[] =
 const char kOobeCompleteFlagFilePath[] =
     "/home/chronos/.oobe_completed";
 
-// Upadate window will be behind the curtain at most |kMaximalCurtainTimeSec|.
-const int kMaximalCurtainTimeSec = 15;
-
 // Time in seconds that we wait for the device to reboot.
 // If reboot didn't happen, ask user to reboot device manually.
 const int kWaitForRebootTimeSec = 3;
@@ -364,7 +361,6 @@ chromeos::AccountScreen* WizardController::GetAccountScreen() {
 chromeos::UpdateScreen* WizardController::GetUpdateScreen() {
   if (!update_screen_.get()) {
     update_screen_.reset(new chromeos::UpdateScreen(this));
-    update_screen_->SetMaximalCurtainTime(kMaximalCurtainTimeSec);
     update_screen_->SetRebootCheckDelay(kWaitForRebootTimeSec);
   }
   return update_screen_.get();
