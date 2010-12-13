@@ -7,29 +7,30 @@ cr.define('options', function() {
   var OptionsPage = options.OptionsPage;
 
   /////////////////////////////////////////////////////////////////////////////
-  // PasswordsExceptions class:
+  // PasswordManager class:
 
   /**
    * Encapsulated handling of password and exceptions page.
    * @constructor
    */
-  function PasswordsExceptions() {
+  function PasswordManager() {
     this.activeNavTab = null;
-    OptionsPage.call(this, 'passwordsExceptions',
-                     templateData.savedPasswordsExceptionsTitle,
-                     'passwordsExceptionsPage');
+    OptionsPage.call(this,
+                     'passwordManager',
+                     templateData.savedPasswordsTitle,
+                     'passwordManager');
   }
 
-  cr.addSingletonGetter(PasswordsExceptions);
+  cr.addSingletonGetter(PasswordManager);
 
-  PasswordsExceptions.prototype = {
+  PasswordManager.prototype = {
     __proto__: OptionsPage.prototype,
 
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 
-      options.passwordsExceptions.PasswordsListArea.decorate($('passwordsArea'));
-      options.passwordsExceptions.PasswordExceptionsListArea.decorate(
+      options.passwordManager.PasswordsListArea.decorate($('passwordsArea'));
+      options.passwordManager.PasswordExceptionsListArea.decorate(
           $('passwordExceptionsArea'));
 
       $('password-exceptions-nav-tab').onclick = function() {
@@ -54,7 +55,7 @@ cr.define('options', function() {
 
   };
 
-  PasswordsExceptions.load = function() {
+  PasswordManager.load = function() {
     chrome.send('loadLists');
   };
 
@@ -62,7 +63,7 @@ cr.define('options', function() {
    * Call to remove a saved password.
    * @param rowIndex indicating the row to remove.
    */
-  PasswordsExceptions.removeSavedPassword = function(rowIndex) {
+  PasswordManager.removeSavedPassword = function(rowIndex) {
       chrome.send('removeSavedPassword', [String(rowIndex)]);
   };
 
@@ -70,7 +71,7 @@ cr.define('options', function() {
    * Call to remove a password exception.
    * @param rowIndex indicating the row to remove.
    */
-  PasswordsExceptions.removePasswordException = function(rowIndex) {
+  PasswordManager.removePasswordException = function(rowIndex) {
       chrome.send('removePasswordException', [String(rowIndex)]);
   };
 
@@ -79,7 +80,7 @@ cr.define('options', function() {
    * Call to remove all saved passwords.
    * @param tab contentType of the tab currently on.
    */
-  PasswordsExceptions.removeAllPasswords = function() {
+  PasswordManager.removeAllPasswords = function() {
     chrome.send('removeAllSavedPasswords');
   };
 
@@ -87,29 +88,29 @@ cr.define('options', function() {
    * Call to remove all saved passwords.
    * @param tab contentType of the tab currently on.
    */
-  PasswordsExceptions.removeAllPasswordExceptions = function() {
+  PasswordManager.removeAllPasswordExceptions = function() {
     chrome.send('removeAllPasswordExceptions');
   };
 
-  PasswordsExceptions.showSelectedPassword = function(index) {
+  PasswordManager.showSelectedPassword = function(index) {
     chrome.send('showSelectedPassword', [String(index)]);
   };
 
-  PasswordsExceptions.setSavedPasswordsList = function(entries) {
-    PasswordsExceptions.getInstance().setSavedPasswordsList_(entries);
+  PasswordManager.setSavedPasswordsList = function(entries) {
+    PasswordManager.getInstance().setSavedPasswordsList_(entries);
   };
 
-  PasswordsExceptions.setPasswordExceptionsList = function(entries) {
-    PasswordsExceptions.getInstance().setPasswordExceptionsList_(entries);
+  PasswordManager.setPasswordExceptionsList = function(entries) {
+    PasswordManager.getInstance().setPasswordExceptionsList_(entries);
   };
 
-  PasswordsExceptions.selectedPasswordCallback = function(password) {
+  PasswordManager.selectedPasswordCallback = function(password) {
     passwordsArea.displayReturnedPassword(password);
   };
 
   // Export
   return {
-    PasswordsExceptions: PasswordsExceptions
+    PasswordManager: PasswordManager
   };
 
 });

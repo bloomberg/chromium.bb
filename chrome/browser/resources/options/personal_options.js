@@ -44,11 +44,11 @@ cr.define('options', function() {
         chrome.send('openPrivacyDashboardTabAndActivate');
       };
       $('manage-passwords').onclick = function(event) {
-        PasswordsExceptions.load();
-        OptionsPage.showPageByName('passwordsExceptions');
+        PasswordManager.load();
+        OptionsPage.showPageByName('passwordManager');
         OptionsPage.showTab($('passwords-nav-tab'));
         chrome.send('coreOptionsUserMetricsAction',
-            ['Options_ShowPasswordsExceptions']);
+            ['Options_ShowPasswordManager']);
       };
       $('autofill-settings').onclick = function(event) {
         OptionsPage.showPageByName('autoFillOptions');

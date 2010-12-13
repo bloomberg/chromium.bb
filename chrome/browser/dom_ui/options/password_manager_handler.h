@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOM_UI_OPTIONS_PASSWORDS_EXCEPTIONS_HANDLER_H_
-#define CHROME_BROWSER_DOM_UI_OPTIONS_PASSWORDS_EXCEPTIONS_HANDLER_H_
+#ifndef CHROME_BROWSER_DOM_UI_OPTIONS_PASSWORD_MANAGER_HANDLER_H_
+#define CHROME_BROWSER_DOM_UI_OPTIONS_PASSWORD_MANAGER_HANDLER_H_
 
 #include <string>
 #include <vector>
@@ -11,10 +11,10 @@
 #include "chrome/browser/dom_ui/options/options_ui.h"
 #include "chrome/browser/password_manager/password_store.h"
 
-class PasswordsExceptionsHandler : public OptionsPageUIHandler {
+class PasswordManagerHandler : public OptionsPageUIHandler {
  public:
-  PasswordsExceptionsHandler();
-  virtual ~PasswordsExceptionsHandler();
+  PasswordManagerHandler();
+  virtual ~PasswordManagerHandler();
 
   // OptionsUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
@@ -56,7 +56,7 @@ class PasswordsExceptionsHandler : public OptionsPageUIHandler {
   // A short class to mediate requests to the password store.
   class ListPopulater : public PasswordStoreConsumer {
    public:
-    explicit ListPopulater(PasswordsExceptionsHandler* page)
+    explicit ListPopulater(PasswordManagerHandler* page)
         : page_(page),
           pending_login_query_(0) {
     }
@@ -69,14 +69,14 @@ class PasswordsExceptionsHandler : public OptionsPageUIHandler {
         int handle, const std::vector<webkit_glue::PasswordForm*>& result) = 0;
 
    protected:
-    PasswordsExceptionsHandler* page_;
+    PasswordManagerHandler* page_;
     int pending_login_query_;
   };
 
   // A short class to mediate requests to the password store for passwordlist.
   class PasswordListPopulater : public ListPopulater {
    public:
-    explicit PasswordListPopulater(PasswordsExceptionsHandler* page)
+    explicit PasswordListPopulater(PasswordManagerHandler* page)
       : ListPopulater(page) {
     }
 
@@ -92,7 +92,7 @@ class PasswordsExceptionsHandler : public OptionsPageUIHandler {
   class PasswordExceptionListPopulater : public ListPopulater {
    public:
     explicit PasswordExceptionListPopulater(
-        PasswordsExceptionsHandler* page) : ListPopulater(page) {
+        PasswordManagerHandler* page) : ListPopulater(page) {
     }
 
     // Send a query to the password store to populate a passwordException list.
@@ -113,7 +113,7 @@ class PasswordsExceptionsHandler : public OptionsPageUIHandler {
   // User's pref
   std::string languages_;
 
-  DISALLOW_COPY_AND_ASSIGN(PasswordsExceptionsHandler);
+  DISALLOW_COPY_AND_ASSIGN(PasswordManagerHandler);
 };
 
-#endif  // CHROME_BROWSER_DOM_UI_OPTIONS_PASSWORDS_EXCEPTIONS_HANDLER_H_
+#endif  // CHROME_BROWSER_DOM_UI_OPTIONS_PASSWORD_MANAGER_HANDLER_H_

@@ -29,7 +29,7 @@
 #include "chrome/browser/dom_ui/options/core_options_handler.h"
 #include "chrome/browser/dom_ui/options/font_settings_handler.h"
 #include "chrome/browser/dom_ui/options/import_data_handler.h"
-#include "chrome/browser/dom_ui/options/passwords_exceptions_handler.h"
+#include "chrome/browser/dom_ui/options/password_manager_handler.h"
 #include "chrome/browser/dom_ui/options/personal_options_handler.h"
 #include "chrome/browser/dom_ui/options/search_engine_manager_handler.h"
 #include "chrome/browser/dom_ui/options/startup_page_manager_handler.h"
@@ -151,7 +151,7 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
   AddOptionsPageUIHandler(localized_strings, new ContentSettingsHandler());
   AddOptionsPageUIHandler(localized_strings, new CookiesViewHandler());
   AddOptionsPageUIHandler(localized_strings, new FontSettingsHandler());
-  AddOptionsPageUIHandler(localized_strings, new PasswordsExceptionsHandler());
+  AddOptionsPageUIHandler(localized_strings, new PasswordManagerHandler());
   AddOptionsPageUIHandler(localized_strings, new PersonalOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new SearchEngineManagerHandler());
   AddOptionsPageUIHandler(localized_strings, new StartupPageManagerHandler());

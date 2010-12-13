@@ -17,7 +17,7 @@ var FontSettings = options.FontSettings;
 var ImportDataOverlay = options.ImportDataOverlay;
 var InstantConfirmOverlay = options.InstantConfirmOverlay;
 var OptionsPage = options.OptionsPage;
-var PasswordsExceptions = options.PasswordsExceptions;
+var PasswordManager = options.PasswordManager;
 var PersonalOptions = options.PersonalOptions;
 var Preferences = options.Preferences;
 var ProxyOptions = options.ProxyOptions;
@@ -58,7 +58,7 @@ function load() {
   OptionsPage.register(PersonalOptions.getInstance());
   OptionsPage.registerSubPage(AutoFillOptions.getInstance(),
                               PersonalOptions.getInstance());
-  OptionsPage.registerSubPage(PasswordsExceptions.getInstance(),
+  OptionsPage.registerSubPage(PasswordManager.getInstance(),
                               PersonalOptions.getInstance());
   if (cr.isChromeOS) {
     OptionsPage.register(SystemOptions.getInstance());

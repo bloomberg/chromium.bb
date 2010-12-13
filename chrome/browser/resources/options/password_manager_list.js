@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('options.passwordsExceptions', function() {
+cr.define('options.passwordManager', function() {
 
   const List = cr.ui.List;
   const ListItem = cr.ui.ListItem;
@@ -160,12 +160,12 @@ cr.define('options.passwordsExceptions', function() {
      */
     removeSelectedRow: function() {
       var selectedIndex = this.selectionModel.selectedIndex;
-      PasswordsExceptions.removeSavedPassword(selectedIndex);
+      PasswordManager.removeSavedPassword(selectedIndex);
     },
 
     showSelectedPassword: function() {
       var selectedIndex = this.selectionModel.selectedIndex;
-      PasswordsExceptions.showSelectedPassword(selectedIndex);
+      PasswordManager.showSelectedPassword(selectedIndex);
     },
 
     /**
@@ -224,7 +224,7 @@ cr.define('options.passwordsExceptions', function() {
      */
     removeSelectedRow: function() {
       var selectedIndex = this.selectionModel.selectedIndex;
-      PasswordsExceptions.removePasswordException(selectedIndex);
+      PasswordManager.removePasswordException(selectedIndex);
     },
 
     /**
@@ -284,7 +284,7 @@ cr.define('options.passwordsExceptions', function() {
             localStrings.getString('passwordsRemoveAllWarning'),
             localStrings.getString('yesButtonLabel'),
             localStrings.getString('noButtonLabel'),
-            function() { PasswordsExceptions.removeAllPasswords(); });
+            function() { PasswordManager.removeAllPasswords(); });
       };
 
       showHidePassword.onclick = function(event) {
@@ -362,7 +362,7 @@ cr.define('options.passwordsExceptions', function() {
       };
 
       removeAll.onclick = function(event) {
-        PasswordsExceptions.removeAllPasswordExceptions();
+        PasswordManager.removeAllPasswordExceptions();
       };
 
       this.updateButtonSensitivity();
