@@ -41,11 +41,14 @@ AutoFillField::AutoFillField(const webkit_glue::FormField& field,
 AutoFillField::~AutoFillField() {}
 
 void AutoFillField::set_heuristic_type(const AutoFillFieldType& type) {
-  DCHECK(type >= 0 && type < MAX_VALID_FIELD_TYPE);
-  if (type >= 0 && type < MAX_VALID_FIELD_TYPE)
+  if (type >= 0 && type < MAX_VALID_FIELD_TYPE) {
     heuristic_type_ = type;
-  else
+  } else {
+    NOTREACHED();
+    // This case should not be reachable; but since this has potential
+    // implications on data uploaded to the server, better safe than sorry.
     heuristic_type_ = UNKNOWN_TYPE;
+  }
 }
 
 AutoFillFieldType AutoFillField::type() const {
