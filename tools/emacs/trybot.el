@@ -85,17 +85,46 @@
 
   (compilation-mode))
 
+(defun trybot-get-new-buffer ()
+  "Get a new clean buffer for trybot output."
+  ; Use trybot-buffer-name if available; otherwise, "*trybot*".
+  (let ((buffer-name (if (boundp 'trybot-buffer-name)
+                         trybot-buffer-name
+                       "*trybot*")))
+    (let ((old (get-buffer buffer-name)))
+      (when old (kill-buffer old)))
+    (get-buffer-create buffer-name)))
+
+(defun trybot-fetch (type-hint url)
+  "Fetch a URL and postprocess it as trybot output."
+
+  (let ((on-fetch-completion
+         (lambda (process state)
+           (switch-to-buffer (process-buffer process))
+           (when (equal state "finished\n")
+             (trybot-fixup (process-get process 'type-hint)))))
+        (command (concat "curl -s " url
+                         (when (eq type-hint 'mac)
+                           ; Pipe it through the output shortener.
+                           (concat " | " (get-chrome-root)
+                                   "build/sanitize-mac-build-log.sed")))))
+
+    ; Start up the subprocess.
+    (let* ((coding-system-for-read 'utf-8-dos)
+           (buffer (trybot-get-new-buffer))
+           (process (start-process-shell-command "curl" buffer command)))
+      ; Attach the type hint to the process so we can get it back when
+      ; the process completes.
+      (process-put process 'type-hint type-hint)
+      (set-process-query-on-exit-flag process nil)
+      (set-process-sentinel process on-fetch-completion))))
+
 (defun trybot-test (type-hint filename)
   "Load the given test data filename and do the trybot parse on it."
 
-  (switch-to-buffer (get-buffer-create "*trybot-test*"))
-  (let ((inhibit-read-only t)
-        (coding-system-for-read 'utf-8-dos))
-    (erase-buffer)
-    (insert-file-contents
-       (concat (get-chrome-root) "tools/emacs/" filename))
-
-    (trybot-fixup type-hint)))
+  (let ((trybot-buffer-name "*trybot-test*")
+        (url (concat "file://" (get-chrome-root) "tools/emacs/" filename)))
+    (trybot-fetch type-hint url)))
 
 (defun trybot-test-win ()
   "Load the Windows test data and do the trybot parse on it."
@@ -122,18 +151,11 @@
 
   ;; TODO: fixup URL to append /text if necessary.
 
-  ;; Extract the body out of the URL.
-  ; TODO: delete HTTP headers somehow.
-  (let ((inhibit-read-only t)
-        (coding-system-for-read 'utf-8-dos)
-        (type-hint (cond ((string-match "/win/" url) 'win)
+  (let ((type-hint (cond ((string-match "/win/" url) 'win)
                          ((string-match "/mac/" url) 'mac)
                          ; Match /linux, /linux_view, etc.
                          ((string-match "/linux" url) 'linux)
                          (t 'unknown))))
-    (switch-to-buffer (get-buffer-create "*trybot*"))
-    (buffer-swap-text (url-retrieve-synchronously url))
-
-    (trybot-fixup type-hint)))
+    (trybot-fetch type-hint url)))
 
 (provide 'trybot)
