@@ -147,18 +147,7 @@ void AutoFillProfile::SetInfo(const AutoFillType& type, const string16& value) {
 }
 
 FormGroup* AutoFillProfile::Clone() const {
-  AutoFillProfile* profile = new AutoFillProfile();
-  profile->label_ = label_;
-  profile->guid_ = guid();
-
-  FormGroupMap::const_iterator iter;
-  for (iter = personal_info_.begin(); iter != personal_info_.end(); ++iter) {
-    if (profile->personal_info_.count(iter->first))
-      delete profile->personal_info_[iter->first];
-    profile->personal_info_[iter->first] = iter->second->Clone();
-  }
-
-  return profile;
+  return new AutoFillProfile(*this);
 }
 
 const string16 AutoFillProfile::Label() const {
