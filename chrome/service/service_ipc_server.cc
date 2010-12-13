@@ -15,7 +15,7 @@ ServiceIPCServer::ServiceIPCServer(const std::string& channel_name)
 
 bool ServiceIPCServer::Init() {
 #ifdef IPC_MESSAGE_LOG_ENABLED
-  IPC::Logging::current()->SetIPCSender(this);
+  IPC::Logging::GetInstance()->SetIPCSender(this);
 #endif
   sync_message_filter_ =
       new IPC::SyncMessageFilter(g_service_process->shutdown_event());
@@ -34,7 +34,7 @@ void ServiceIPCServer::CreateChannel() {
 
 ServiceIPCServer::~ServiceIPCServer() {
 #ifdef IPC_MESSAGE_LOG_ENABLED
-  IPC::Logging::current()->SetIPCSender(NULL);
+  IPC::Logging::GetInstance()->SetIPCSender(NULL);
 #endif
 
   channel_->RemoveFilter(sync_message_filter_.get());

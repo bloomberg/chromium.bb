@@ -47,7 +47,7 @@ void ChildThread::Init() {
       ChildProcess::current()->io_message_loop(), true,
       ChildProcess::current()->GetShutDownEvent()));
 #ifdef IPC_MESSAGE_LOG_ENABLED
-  IPC::Logging::current()->SetIPCSender(this);
+  IPC::Logging::GetInstance()->SetIPCSender(this);
 #endif
 
   resource_dispatcher_.reset(new ResourceDispatcher(this));
@@ -66,7 +66,7 @@ void ChildThread::Init() {
 
 ChildThread::~ChildThread() {
 #ifdef IPC_MESSAGE_LOG_ENABLED
-  IPC::Logging::current()->SetIPCSender(NULL);
+  IPC::Logging::GetInstance()->SetIPCSender(NULL);
 #endif
 
   channel_->RemoveFilter(sync_message_filter_.get());
@@ -180,9 +180,9 @@ void ChildThread::OnShutdown() {
 #if defined(IPC_MESSAGE_LOG_ENABLED)
 void ChildThread::OnSetIPCLoggingEnabled(bool enable) {
   if (enable)
-    IPC::Logging::current()->Enable();
+    IPC::Logging::GetInstance()->Enable();
   else
-    IPC::Logging::current()->Disable();
+    IPC::Logging::GetInstance()->Disable();
 }
 #endif  //  IPC_MESSAGE_LOG_ENABLED
 

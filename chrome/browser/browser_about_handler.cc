@@ -764,14 +764,14 @@ void DxDiagNodeToHTML(std::string* output, const DxDiagNode& node) {
 }
 
 std::string AboutGpu() {
-  const GPUInfo& gpu_info = GpuProcessHostUIShim::Get()->gpu_info();
+  const GPUInfo& gpu_info = GpuProcessHostUIShim::GetInstance()->gpu_info();
 
   std::string html;
 
   html.append("<html><head><title>About GPU</title></head>\n");
 
   if (gpu_info.progress() != GPUInfo::kComplete) {
-    GpuProcessHostUIShim::Get()->CollectGraphicsInfoAsynchronously();
+    GpuProcessHostUIShim::GetInstance()->CollectGraphicsInfoAsynchronously();
 
     // If it's not fully initialized yet, set a timeout to reload the page.
     html.append("<body onload=\"setTimeout('window.location.reload(true)',");
@@ -1166,11 +1166,11 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
 
   // Handle URLs to wreck the gpu process.
   if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutGpuCrashURL)) {
-    GpuProcessHostUIShim::Get()->SendAboutGpuCrash();
+    GpuProcessHostUIShim::GetInstance()->SendAboutGpuCrash();
     return true;
   }
   if (LowerCaseEqualsASCII(url->spec(), chrome::kAboutGpuHangURL)) {
-    GpuProcessHostUIShim::Get()->SendAboutGpuHang();
+    GpuProcessHostUIShim::GetInstance()->SendAboutGpuHang();
     return true;
   }
 

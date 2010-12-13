@@ -27,7 +27,7 @@
 class CertStore : public NotificationObserver {
  public:
   // Returns the singleton instance of the CertStore.
-  static CertStore* GetSharedInstance();
+  static CertStore* GetInstance();
 
   // Stores the specified cert and returns the id associated with it.  The cert
   // is associated to the specified RenderProcessHost.

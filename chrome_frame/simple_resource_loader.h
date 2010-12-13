@@ -21,7 +21,7 @@
 class SimpleResourceLoader {
  public:
 
-  static SimpleResourceLoader* instance();
+  static SimpleResourceLoader* GetInstance();
 
   // Returns the language tag for the active language.
   static std::wstring GetLanguage();

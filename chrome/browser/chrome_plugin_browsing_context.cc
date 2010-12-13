@@ -9,7 +9,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/common/notification_service.h"
 
-CPBrowsingContextManager* CPBrowsingContextManager::Instance() {
+CPBrowsingContextManager* CPBrowsingContextManager::GetInstance() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return Singleton<CPBrowsingContextManager>::get();
 }

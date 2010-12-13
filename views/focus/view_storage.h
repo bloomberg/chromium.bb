@@ -24,7 +24,7 @@ class ViewStorage {
  public:
   // Returns the global ViewStorage instance.
   // It is guaranted to be non NULL.
-  static ViewStorage* GetSharedInstance();
+  static ViewStorage* GetInstance();
 
   // Returns a unique storage id that can be used to store/retrieve views.
   int CreateStorageID();

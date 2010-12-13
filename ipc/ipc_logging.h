@@ -46,7 +46,7 @@ class Logging {
   void SetConsumer(Consumer* consumer);
 
   ~Logging();
-  static Logging* current();
+  static Logging* GetInstance();
 
   // Enable and Disable are NOT cross-process; they only affect the
   // current thread/process.  If you want to modify the value for all

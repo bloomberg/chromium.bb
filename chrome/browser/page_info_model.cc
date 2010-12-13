@@ -59,7 +59,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
   int status_with_warnings_removed = ssl.cert_status() & ~cert_warnings;
 
   if (ssl.cert_id() &&
-      CertStore::GetSharedInstance()->RetrieveCert(ssl.cert_id(), &cert) &&
+      CertStore::GetInstance()->RetrieveCert(ssl.cert_id(), &cert) &&
       !net::IsCertStatusError(status_with_warnings_removed)) {
     // No error found so far, check cert_status warnings.
     int cert_status = ssl.cert_status();

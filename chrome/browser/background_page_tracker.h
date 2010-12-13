@@ -27,7 +27,7 @@ class BackgroundPageTracker : public NotificationObserver {
   static void RegisterPrefs(PrefService* prefs);
 
   // Convenience routine which gets the singleton object.
-  static BackgroundPageTracker* GetSingleton();
+  static BackgroundPageTracker* GetInstance();
 
   // Returns the number of background apps/extensions currently loaded.
   int GetBackgroundPageCount();

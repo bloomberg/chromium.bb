@@ -13,15 +13,20 @@
 
 namespace appcache {
 
+// static
+AppCacheInterceptor* AppCacheInterceptor::GetInstance() {
+  return Singleton<AppCacheInterceptor>::get();
+}
+
 void AppCacheInterceptor::SetHandler(
     net::URLRequest* request, AppCacheRequestHandler* handler) {
-  request->SetUserData(instance(), handler);  // request takes ownership
+  request->SetUserData(GetInstance(), handler);  // request takes ownership
 }
 
 AppCacheRequestHandler* AppCacheInterceptor::GetHandler(
     net::URLRequest* request) {
   return reinterpret_cast<AppCacheRequestHandler*>(
-      request->GetUserData(instance()));
+      request->GetUserData(GetInstance()));
 }
 
 void AppCacheInterceptor::SetExtraRequestInfo(

@@ -253,7 +253,7 @@ END_MSG_MAP()
 
   void SetResourceModule() {
     DCHECK(NULL == prev_resource_instance_);
-    SimpleResourceLoader* loader_instance = SimpleResourceLoader::instance();
+    SimpleResourceLoader* loader_instance = SimpleResourceLoader::GetInstance();
     DCHECK(loader_instance);
     HMODULE res_dll = loader_instance->GetResourceModuleHandle();
     _AtlBaseModule.SetResourceInstance(res_dll);

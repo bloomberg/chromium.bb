@@ -432,7 +432,7 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
   // of compatible documents (PDF, etc) to the GView document viewer.
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   if (parsed_command_line.HasSwitch(switches::kEnableGView)) {
-    chromeos::GViewRequestInterceptor::GetGViewRequestInterceptor();
+    chromeos::GViewRequestInterceptor::GetInstance();
   }
   if (process_startup) {
     // TODO(dhg): Try to make this just USBMountObserver::Get()->set_profile

@@ -37,7 +37,7 @@ class TopLevelWindowMapping {
  public:
   typedef std::vector<HWND> WindowList;
 
-  static TopLevelWindowMapping* instance() {
+  static TopLevelWindowMapping* GetInstance() {
     return Singleton<TopLevelWindowMapping>::get();
   }
 
@@ -83,7 +83,7 @@ LRESULT CALLBACK TopWindowProc(int code, WPARAM wparam, LPARAM lparam) {
     case WM_MOVE:
     case WM_MOVING: {
       TopLevelWindowMapping::WindowList cf_instances =
-          TopLevelWindowMapping::instance()->GetInstances(message_hwnd);
+          TopLevelWindowMapping::GetInstance()->GetInstances(message_hwnd);
       TopLevelWindowMapping::WindowList::iterator
           iter(cf_instances.begin()), end(cf_instances.end());
       for (;iter != end; ++iter) {
@@ -646,7 +646,7 @@ HRESULT ChromeFrameActivex::InstallTopLevelHook(IOleClientSite* client_site) {
   HWND top_window = ::GetAncestor(parent_wnd, GA_ROOT);
   chrome_wndproc_hook_ = InstallLocalWindowHook(top_window);
   if (chrome_wndproc_hook_)
-    TopLevelWindowMapping::instance()->AddMapping(top_window, m_hWnd);
+    TopLevelWindowMapping::GetInstance()->AddMapping(top_window, m_hWnd);
 
   return chrome_wndproc_hook_ ? S_OK : E_FAIL;
 }

@@ -209,7 +209,7 @@ void RemotingSetupFlow::OnIssueAuthTokenSuccess(const std::string& service,
   // If we have already connected to the service process then submit the tokens
   // to it to register the host.
   process_control_ =
-      ServiceProcessControlManager::instance()->GetProcessControl(profile_);
+      ServiceProcessControlManager::GetInstance()->GetProcessControl(profile_);
 
   if (process_control_->is_connected()) {
     // TODO(hclam): Need to figure out what to do when the service process is

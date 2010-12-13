@@ -65,7 +65,7 @@ void PluginService::InitGlobalInstance(Profile* profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // We first group the plugins and then figure out which groups to disable.
-  PluginUpdater::GetPluginUpdater()->DisablePluginGroupsFromPrefs(profile);
+  PluginUpdater::GetInstance()->DisablePluginGroupsFromPrefs(profile);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableOutdatedPlugins)) {

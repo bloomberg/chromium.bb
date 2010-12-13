@@ -348,7 +348,7 @@ void PluginProcessHost::OpenChannelToPlugin(Client* client) {
 void PluginProcessHost::OnGetCookies(uint32 request_context,
                                      const GURL& url,
                                      std::string* cookies) {
-  URLRequestContext* context = CPBrowsingContextManager::Instance()->
+  URLRequestContext* context = CPBrowsingContextManager::GetInstance()->
         ToURLRequestContext(request_context);
   // TODO(mpcomplete): remove fallback case when Gears support is prevalent.
   if (!context)
@@ -398,7 +398,8 @@ void PluginProcessHost::OnResolveProxyCompleted(IPC::Message* reply_msg,
 URLRequestContext* PluginProcessHost::GetRequestContext(
     uint32 request_id,
     const ViewHostMsg_Resource_Request& request_data) {
-  return CPBrowsingContextManager::Instance()->ToURLRequestContext(request_id);
+  return CPBrowsingContextManager::GetInstance()->ToURLRequestContext(
+      request_id);
 }
 
 void PluginProcessHost::RequestPluginChannel(Client* client) {

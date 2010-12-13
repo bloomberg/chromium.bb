@@ -376,7 +376,7 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
 
   // By default, assume that we don't have certificate information to show.
   scoped_refptr<net::X509Certificate> cert;
-  CertStore::GetSharedInstance()->RetrieveCert(certID_, &cert);
+  CertStore::GetInstance()->RetrieveCert(certID_, &cert);
 
   // Don't bother showing certificates if there isn't one. Gears runs
   // with no OS root certificate.

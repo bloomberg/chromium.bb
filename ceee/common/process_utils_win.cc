@@ -130,6 +130,11 @@ ProcessCompatibilityCheck::ProcessCompatibilityCheck()
   StandardInitialize();
 }
 
+// static
+ProcessCompatibilityCheck* ProcessCompatibilityCheck::GetInstance() {
+  return Singleton<ProcessCompatibilityCheck>::get();
+}
+
 void ProcessCompatibilityCheck::StandardInitialize() {
   HRESULT hr = S_OK;
 
@@ -199,8 +204,7 @@ HRESULT ProcessCompatibilityCheck::IsCompatible(HWND process_window,
 
 HRESULT ProcessCompatibilityCheck::IsCompatible(DWORD process_id,
                                                 bool* is_compatible) {
-  ProcessCompatibilityCheck* instance
-      = Singleton<ProcessCompatibilityCheck>::get();
+  ProcessCompatibilityCheck* instance = GetInstance();
 
   DCHECK(instance != NULL);
   DCHECK(is_compatible != NULL);
@@ -306,7 +310,7 @@ void ProcessCompatibilityCheck::PatchState(
     CloseHandleFuncType close_handle_func,
     IsWOW64ProcessFuncType is_wow64_process_func) {
   PatchState(open_process_func, close_handle_func, is_wow64_process_func);
-  Singleton<ProcessCompatibilityCheck>::get()->KnownStateInitialize(
+  GetInstance()->KnownStateInitialize(
       system_type, current_process_wow64,
       check_integrity, current_process_integrity);
 }
@@ -324,7 +328,7 @@ void ProcessCompatibilityCheck::PatchState(
 
 void ProcessCompatibilityCheck::ResetState() {
   PatchState(OpenProcess, CloseHandle, IsWow64Process);
-  Singleton<ProcessCompatibilityCheck>::get()->StandardInitialize();
+  GetInstance()->StandardInitialize();
 }
 
 }  // namespace com

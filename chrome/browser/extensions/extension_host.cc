@@ -66,7 +66,7 @@ bool ExtensionHost::enable_dom_automation_ = false;
 // ExtensionHosts, to avoid blocking the UI.
 class ExtensionHost::ProcessCreationQueue {
  public:
-  static ProcessCreationQueue* get() {
+  static ProcessCreationQueue* GetInstance() {
     return Singleton<ProcessCreationQueue>::get();
   }
 
@@ -155,7 +155,7 @@ ExtensionHost::~ExtensionHost() {
       NotificationType::EXTENSION_HOST_DESTROYED,
       Source<Profile>(profile_),
       Details<ExtensionHost>(this));
-  ProcessCreationQueue::get()->Remove(this);
+  ProcessCreationQueue::GetInstance()->Remove(this);
   render_view_host_->Shutdown();  // deletes render_view_host
 }
 
@@ -197,7 +197,7 @@ void ExtensionHost::CreateRenderViewSoon(RenderWidgetHostView* host_view) {
     // to defer.
     CreateRenderViewNow();
   } else {
-    ProcessCreationQueue::get()->CreateSoon(this);
+    ProcessCreationQueue::GetInstance()->CreateSoon(this);
   }
 }
 

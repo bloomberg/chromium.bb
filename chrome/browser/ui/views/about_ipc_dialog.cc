@@ -203,12 +203,12 @@ AboutIPCDialog::AboutIPCDialog()
       table_(NULL),
       tracking_(false) {
   SetupControls();
-  IPC::Logging::current()->SetConsumer(this);
+  IPC::Logging::GetInstance()->SetConsumer(this);
 }
 
 AboutIPCDialog::~AboutIPCDialog() {
   active_dialog = NULL;
-  IPC::Logging::current()->SetConsumer(NULL);
+  IPC::Logging::GetInstance()->SetConsumer(NULL);
 }
 
 // static

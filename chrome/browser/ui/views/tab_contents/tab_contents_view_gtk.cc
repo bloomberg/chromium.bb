@@ -106,7 +106,7 @@ TabContentsViewGtk::TabContentsViewGtk(TabContents* tab_contents)
       ignore_next_char_event_(false) {
   drag_source_.reset(new TabContentsDragSource(this));
   last_focused_view_storage_id_ =
-      views::ViewStorage::GetSharedInstance()->CreateStorageID();
+      views::ViewStorage::GetInstance()->CreateStorageID();
 }
 
 TabContentsViewGtk::~TabContentsViewGtk() {
@@ -114,7 +114,7 @@ TabContentsViewGtk::~TabContentsViewGtk() {
   //
   // It is possible the view went away before us, so we only do this if the
   // view is registered.
-  views::ViewStorage* view_storage = views::ViewStorage::GetSharedInstance();
+  views::ViewStorage* view_storage = views::ViewStorage::GetInstance();
   if (view_storage->RetrieveView(last_focused_view_storage_id_) != NULL)
     view_storage->RemoveView(last_focused_view_storage_id_);
 
@@ -277,7 +277,7 @@ void TabContentsViewGtk::SetInitialFocus() {
 }
 
 void TabContentsViewGtk::StoreFocus() {
-  views::ViewStorage* view_storage = views::ViewStorage::GetSharedInstance();
+  views::ViewStorage* view_storage = views::ViewStorage::GetInstance();
 
   if (view_storage->RetrieveView(last_focused_view_storage_id_) != NULL)
     view_storage->RemoveView(last_focused_view_storage_id_);
@@ -294,7 +294,7 @@ void TabContentsViewGtk::StoreFocus() {
 }
 
 void TabContentsViewGtk::RestoreFocus() {
-  views::ViewStorage* view_storage = views::ViewStorage::GetSharedInstance();
+  views::ViewStorage* view_storage = views::ViewStorage::GetInstance();
   views::View* last_focused_view =
       view_storage->RetrieveView(last_focused_view_storage_id_);
   if (!last_focused_view) {

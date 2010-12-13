@@ -425,7 +425,7 @@ void BrowserView::SetShowState(int state) {
 BrowserView::BrowserView(Browser* browser)
     : views::ClientView(NULL, NULL),
       last_focused_view_storage_id_(
-          views::ViewStorage::GetSharedInstance()->CreateStorageID()),
+          views::ViewStorage::GetInstance()->CreateStorageID()),
       frame_(NULL),
       browser_(browser),
       active_bookmark_bar_(NULL),
@@ -983,7 +983,7 @@ void BrowserView::RotatePaneFocus(bool forwards) {
 }
 
 void BrowserView::SaveFocusedView() {
-  views::ViewStorage* view_storage = views::ViewStorage::GetSharedInstance();
+  views::ViewStorage* view_storage = views::ViewStorage::GetInstance();
   if (view_storage->RetrieveView(last_focused_view_storage_id_))
     view_storage->RemoveView(last_focused_view_storage_id_);
   views::View* focused_view = GetRootView()->GetFocusedView();

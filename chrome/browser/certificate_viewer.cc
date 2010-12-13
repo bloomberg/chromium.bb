@@ -8,7 +8,7 @@
 
 void ShowCertificateViewerByID(gfx::NativeWindow parent, int cert_id) {
   scoped_refptr<net::X509Certificate> cert;
-  CertStore::GetSharedInstance()->RetrieveCert(cert_id, &cert);
+  CertStore::GetInstance()->RetrieveCert(cert_id, &cert);
   if (!cert.get()) {
     // The certificate was not found. Could be that the renderer crashed before
     // we displayed the page info.

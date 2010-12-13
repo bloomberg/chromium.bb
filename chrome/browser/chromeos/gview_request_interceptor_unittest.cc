@@ -51,7 +51,7 @@ class GViewRequestInterceptorTest : public testing::Test {
   virtual void SetUp() {
     net::URLRequest::RegisterProtocolFactory("http",
                                         &GViewRequestInterceptorTest::Factory);
-    interceptor_ = GViewRequestInterceptor::GetGViewRequestInterceptor();
+    interceptor_ = GViewRequestInterceptor::GetInstance();
     ASSERT_TRUE(PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path_));
   }
 

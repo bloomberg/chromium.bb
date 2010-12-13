@@ -940,7 +940,8 @@ void BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
 
 void BrowserRenderProcessHost::OnChannelConnected(int32 peer_pid) {
 #if defined(IPC_MESSAGE_LOG_ENABLED)
-  Send(new ViewMsg_SetIPCLoggingEnabled(IPC::Logging::current()->Enabled()));
+  Send(new ViewMsg_SetIPCLoggingEnabled(
+      IPC::Logging::GetInstance()->Enabled()));
 #endif
 }
 

@@ -61,7 +61,7 @@ namespace {
 class MemoryUsageCache {
  public:
   // Retrieves the Singleton.
-  static MemoryUsageCache* Get() {
+  static MemoryUsageCache* GetInstance() {
     return Singleton<MemoryUsageCache>::get();
   }
 
@@ -499,7 +499,7 @@ static size_t memoryUsageMBGeneric() {
 
 static size_t getMemoryUsageMB(bool bypass_cache) {
   size_t current_mem_usage = 0;
-  MemoryUsageCache* mem_usage_cache_singleton = MemoryUsageCache::Get();
+  MemoryUsageCache* mem_usage_cache_singleton = MemoryUsageCache::GetInstance();
   if (!bypass_cache &&
       mem_usage_cache_singleton->IsCachedValueValid(&current_mem_usage))
     return current_mem_usage;

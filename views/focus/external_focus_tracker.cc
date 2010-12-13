@@ -16,7 +16,7 @@ ExternalFocusTracker::ExternalFocusTracker(View* parent_view,
       parent_view_(parent_view) {
   DCHECK(focus_manager);
   DCHECK(parent_view);
-  view_storage_ = ViewStorage::GetSharedInstance();
+  view_storage_ = ViewStorage::GetInstance();
   last_focused_view_storage_id_ = view_storage_->CreateStorageID();
   // Store the view which is focused when we're created.
   StartTracking();

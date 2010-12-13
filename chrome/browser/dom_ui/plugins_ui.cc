@@ -214,7 +214,7 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
     return;
   bool enable = enable_str == "true";
 
-  PluginUpdater* plugin_updater = PluginUpdater::GetPluginUpdater();
+  PluginUpdater* plugin_updater = PluginUpdater::GetInstance();
   if (is_group_str == "true") {
     string16 group_name;
     if (!args->GetString(0, &group_name))
@@ -262,7 +262,7 @@ void PluginsDOMHandler::Observe(NotificationType type,
 
 void PluginsDOMHandler::LoadPluginsOnFileThread(ListWrapper* wrapper,
                                                 Task* task) {
-  wrapper->list = PluginUpdater::GetPluginUpdater()->GetPluginGroupsData();
+  wrapper->list = PluginUpdater::GetInstance()->GetPluginGroupsData();
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, task);
   BrowserThread::PostTask(
       BrowserThread::UI,

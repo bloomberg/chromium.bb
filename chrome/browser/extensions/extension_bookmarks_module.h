@@ -21,7 +21,7 @@
 // the extension system.
 class ExtensionBookmarkEventRouter : public BookmarkModelObserver {
  public:
-  static ExtensionBookmarkEventRouter* GetSingleton();
+  static ExtensionBookmarkEventRouter* GetInstance();
   virtual ~ExtensionBookmarkEventRouter();
 
   // Call this for each model to observe.  Safe to call multiple times per

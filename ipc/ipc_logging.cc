@@ -66,7 +66,7 @@ Logging::Logging()
 Logging::~Logging() {
 }
 
-Logging* Logging::current() {
+Logging* Logging::GetInstance() {
   return Singleton<Logging>::get();
 }
 

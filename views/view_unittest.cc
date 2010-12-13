@@ -616,7 +616,7 @@ TEST_F(ViewTest, DISABLED_Painting) {
 */
 
 TEST_F(ViewTest, RemoveNotification) {
-  views::ViewStorage* vs = views::ViewStorage::GetSharedInstance();
+  views::ViewStorage* vs = views::ViewStorage::GetInstance();
   views::Widget* window = CreateWidget();
   views::RootView* root_view = window->GetRootView();
 

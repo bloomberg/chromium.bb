@@ -51,6 +51,8 @@ HRESULT IsCurrentProcessUacElevated(bool* running_as_admin);
 // with implementation.
 class ProcessCompatibilityCheck {
  public:
+  static ProcessCompatibilityCheck* GetInstance();
+
   // Is the process associated with the given window compatible with the
   // current process. If the call returns an error code, the value of
   // *is_compatible is undefined.

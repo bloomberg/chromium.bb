@@ -41,7 +41,7 @@ TabContentsViewWin::TabContentsViewWin(TabContents* tab_contents)
       close_tab_after_drag_ends_(false),
       sad_tab_(NULL) {
   last_focused_view_storage_id_ =
-      views::ViewStorage::GetSharedInstance()->CreateStorageID();
+      views::ViewStorage::GetInstance()->CreateStorageID();
 }
 
 TabContentsViewWin::~TabContentsViewWin() {
@@ -49,7 +49,7 @@ TabContentsViewWin::~TabContentsViewWin() {
   //
   // It is possible the view went away before us, so we only do this if the
   // view is registered.
-  views::ViewStorage* view_storage = views::ViewStorage::GetSharedInstance();
+  views::ViewStorage* view_storage = views::ViewStorage::GetInstance();
   if (view_storage->RetrieveView(last_focused_view_storage_id_) != NULL)
     view_storage->RemoveView(last_focused_view_storage_id_);
 }
@@ -213,7 +213,7 @@ void TabContentsViewWin::SetInitialFocus() {
 }
 
 void TabContentsViewWin::StoreFocus() {
-  views::ViewStorage* view_storage = views::ViewStorage::GetSharedInstance();
+  views::ViewStorage* view_storage = views::ViewStorage::GetInstance();
 
   if (view_storage->RetrieveView(last_focused_view_storage_id_) != NULL)
     view_storage->RemoveView(last_focused_view_storage_id_);
@@ -243,7 +243,7 @@ void TabContentsViewWin::StoreFocus() {
 }
 
 void TabContentsViewWin::RestoreFocus() {
-  views::ViewStorage* view_storage = views::ViewStorage::GetSharedInstance();
+  views::ViewStorage* view_storage = views::ViewStorage::GetInstance();
   views::View* last_focused_view =
       view_storage->RetrieveView(last_focused_view_storage_id_);
 

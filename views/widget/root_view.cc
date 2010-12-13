@@ -296,7 +296,7 @@ void RootView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
     if (focus_manager)
       focus_manager->ViewRemoved(parent, child);
 
-    ViewStorage::GetSharedInstance()->ViewRemoved(parent, child);
+    ViewStorage::GetInstance()->ViewRemoved(parent, child);
   }
 }
 

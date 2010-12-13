@@ -75,8 +75,7 @@ ExecutorsManager* ExecutorsManager::GetInstance() {
 }
 
 bool ExecutorsManager::IsKnownWindow(HWND window) {
-  return Singleton<ExecutorsManager, ExecutorsManager::SingletonTraits>::get()->
-      IsKnownWindowImpl(window);
+  return GetInstance()->IsKnownWindowImpl(window);
 }
 
 bool ExecutorsManager::IsKnownWindowImpl(HWND window) {
@@ -86,8 +85,7 @@ bool ExecutorsManager::IsKnownWindowImpl(HWND window) {
 }
 
 HWND ExecutorsManager::FindTabChild(HWND window) {
-  return Singleton<ExecutorsManager, ExecutorsManager::SingletonTraits>::get()->
-      FindTabChildImpl(window);
+  return GetInstance()->FindTabChildImpl(window);
 }
 
 HWND ExecutorsManager::FindTabChildImpl(HWND window) {

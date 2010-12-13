@@ -75,7 +75,7 @@ bool MetadataRequestHandler::ReadRawData(net::IOBuffer* buf, int buf_size,
     return false;
   }
   if (!parsed) {
-    MetadataParserManager* manager = MetadataParserManager::Get();
+    MetadataParserManager* manager = MetadataParserManager::GetInstance();
     scoped_ptr<MetadataParser> parser(manager->GetParserForFile(path));
     if (parser != NULL) {
       result_ = "{\n";

@@ -1094,7 +1094,7 @@ void ResourceMessageFilter::OnCheckNotificationPermission(
 void ResourceMessageFilter::OnGetCPBrowsingContext(uint32* context) {
   // Always allocate a new context when a plugin requests one, since it needs to
   // be unique for that plugin instance.
-  *context = CPBrowsingContextManager::Instance()->Allocate(
+  *context = CPBrowsingContextManager::GetInstance()->Allocate(
       request_context_->GetURLRequestContext());
 }
 

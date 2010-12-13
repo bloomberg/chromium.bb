@@ -75,7 +75,7 @@ ExtensionFunction* NewExtensionFunction() {
 // create instances of them.
 class FactoryRegistry {
  public:
-  static FactoryRegistry* instance();
+  static FactoryRegistry* GetInstance();
   FactoryRegistry() { ResetFunctions(); }
 
   // Resets all functions to their default values.
@@ -102,7 +102,7 @@ class FactoryRegistry {
   FactoryMap factories_;
 };
 
-FactoryRegistry* FactoryRegistry::instance() {
+FactoryRegistry* FactoryRegistry::GetInstance() {
   return Singleton<FactoryRegistry>::get();
 }
 
@@ -325,16 +325,16 @@ ExtensionFunction* FactoryRegistry::NewFunction(const std::string& name) {
 
 void ExtensionFunctionDispatcher::GetAllFunctionNames(
     std::vector<std::string>* names) {
-  FactoryRegistry::instance()->GetAllNames(names);
+  FactoryRegistry::GetInstance()->GetAllNames(names);
 }
 
 bool ExtensionFunctionDispatcher::OverrideFunction(
     const std::string& name, ExtensionFunctionFactory factory) {
-  return FactoryRegistry::instance()->OverrideFunction(name, factory);
+  return FactoryRegistry::GetInstance()->OverrideFunction(name, factory);
 }
 
 void ExtensionFunctionDispatcher::ResetFunctions() {
-  FactoryRegistry::instance()->ResetFunctions();
+  FactoryRegistry::GetInstance()->ResetFunctions();
 }
 
 ExtensionFunctionDispatcher* ExtensionFunctionDispatcher::Create(
@@ -444,7 +444,7 @@ Browser* ExtensionFunctionDispatcher::GetCurrentBrowser(
 void ExtensionFunctionDispatcher::HandleRequest(
     const ViewHostMsg_DomMessage_Params& params) {
   scoped_refptr<ExtensionFunction> function(
-      FactoryRegistry::instance()->NewFunction(params.name));
+      FactoryRegistry::GetInstance()->NewFunction(params.name));
   function->set_dispatcher_peer(peer_);
   function->set_profile(profile_);
   function->set_extension_id(extension_id());

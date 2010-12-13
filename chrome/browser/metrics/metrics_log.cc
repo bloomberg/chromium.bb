@@ -300,10 +300,12 @@ void MetricsLog::RecordEnvironment(
 
   {
     OPEN_ELEMENT_FOR_SCOPE("gpu");
-    WriteIntAttribute("vendorid",
-                      GpuProcessHostUIShim::Get()->gpu_info().vendor_id());
-    WriteIntAttribute("deviceid",
-                      GpuProcessHostUIShim::Get()->gpu_info().device_id());
+    WriteIntAttribute(
+        "vendorid",
+        GpuProcessHostUIShim::GetInstance()->gpu_info().vendor_id());
+    WriteIntAttribute(
+        "deviceid",
+        GpuProcessHostUIShim::GetInstance()->gpu_info().device_id());
   }
 
   {

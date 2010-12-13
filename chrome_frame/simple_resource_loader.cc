@@ -116,7 +116,7 @@ SimpleResourceLoader::~SimpleResourceLoader() {
 }
 
 // static
-SimpleResourceLoader* SimpleResourceLoader::instance() {
+SimpleResourceLoader* SimpleResourceLoader::GetInstance() {
   return Singleton<SimpleResourceLoader>::get();
 }
 
@@ -240,12 +240,12 @@ std::wstring SimpleResourceLoader::GetLocalizedResource(int message_id) {
 
 // static
 std::wstring SimpleResourceLoader::GetLanguage() {
-  return SimpleResourceLoader::instance()->language_;
+  return SimpleResourceLoader::GetInstance()->language_;
 }
 
 // static
 std::wstring SimpleResourceLoader::Get(int message_id) {
-  SimpleResourceLoader* loader = SimpleResourceLoader::instance();
+  SimpleResourceLoader* loader = SimpleResourceLoader::GetInstance();
   return loader->GetLocalizedResource(message_id);
 }
 

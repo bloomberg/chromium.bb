@@ -78,7 +78,7 @@ void ChannelProxy::Context::CreateChannel(const IPC::ChannelHandle& handle,
 
 bool ChannelProxy::Context::TryFilters(const Message& message) {
 #ifdef IPC_MESSAGE_LOG_ENABLED
-  Logging* logger = Logging::current();
+  Logging* logger = Logging::GetInstance();
   if (logger->Enabled())
     logger->OnPreDispatchMessage(message);
 #endif
@@ -240,7 +240,7 @@ void ChannelProxy::Context::OnDispatchMessage(const Message& message) {
   OnDispatchConnected();
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
-  Logging* logger = Logging::current();
+  Logging* logger = Logging::GetInstance();
   if (message.type() == IPC_LOGGING_ID) {
     logger->OnReceivedLoggingMessage(message);
     return;
@@ -340,7 +340,7 @@ void ChannelProxy::Close() {
 
 bool ChannelProxy::Send(Message* message) {
 #ifdef IPC_MESSAGE_LOG_ENABLED
-  Logging::current()->OnSendMessage(message, context_->channel_id());
+  Logging::GetInstance()->OnSendMessage(message, context_->channel_id());
 #endif
 
   context_->ipc_message_loop()->PostTask(FROM_HERE,

@@ -657,7 +657,7 @@ void BrowserProcessImpl::CreateLocalState() {
   // in the plugin blacklist.
   local_state_->RegisterListPref(prefs::kPluginsPluginsBlacklist);
   pref_change_registrar_.Add(prefs::kPluginsPluginsBlacklist,
-                             PluginUpdater::GetPluginUpdater());
+                             PluginUpdater::GetInstance());
 
   // Initialize and set up notifications for the printing enabled
   // preference.
@@ -764,9 +764,9 @@ DISABLE_RUNNABLE_METHOD_REFCOUNT(BrowserProcessImpl);
 void BrowserProcessImpl::SetIPCLoggingEnabled(bool enable) {
   // First enable myself.
   if (enable)
-    IPC::Logging::current()->Enable();
+    IPC::Logging::GetInstance()->Enable();
   else
-    IPC::Logging::current()->Disable();
+    IPC::Logging::GetInstance()->Disable();
 
   // Now tell subprocesses.  Messages to ChildProcess-derived
   // processes must be done on the IO thread.

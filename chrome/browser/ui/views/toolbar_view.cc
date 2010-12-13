@@ -355,7 +355,7 @@ cleanup:
   destroyed_flag_ = NULL;
 
   // Stop showing the background app badge also.
-  BackgroundPageTracker::GetSingleton()->AcknowledgeBackgroundPages();
+  BackgroundPageTracker::GetInstance()->AcknowledgeBackgroundPages();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -633,13 +633,13 @@ bool ToolbarView::IsUpgradeRecommended() {
 }
 
 bool ToolbarView::ShouldShowBackgroundPageBadge() {
-  return BackgroundPageTracker::GetSingleton()->
+  return BackgroundPageTracker::GetInstance()->
       GetUnacknowledgedBackgroundPageCount() > 0;
 }
 
 bool ToolbarView::ShouldShowIncompatibilityWarning() {
 #if defined(OS_WIN)
-  EnumerateModulesModel* loaded_modules = EnumerateModulesModel::GetSingleton();
+  EnumerateModulesModel* loaded_modules = EnumerateModulesModel::GetInstance();
   return loaded_modules->confirmed_bad_modules_detected() > 0;
 #else
   return false;
@@ -761,7 +761,7 @@ SkBitmap ToolbarView::GetBackgroundPageBadge() {
   ThemeProvider* tp = GetThemeProvider();
   SkBitmap* badge = tp->GetBitmapNamed(IDR_BACKGROUND_BADGE);
   string16 badge_text = base::FormatNumber(
-      BackgroundPageTracker::GetSingleton()->GetBackgroundPageCount());
+      BackgroundPageTracker::GetInstance()->GetBackgroundPageCount());
   return badge_util::DrawBadgeIconOverlay(
       *badge,
       kBadgeTextFontSize,

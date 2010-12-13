@@ -52,7 +52,7 @@ class RouteOnUIThreadTask : public Task {
 
  private:
   void Run() {
-    GpuProcessHostUIShim::Get()->OnMessageReceived(msg_);
+    GpuProcessHostUIShim::GetInstance()->OnMessageReceived(msg_);
   }
   IPC::Message msg_;
 };

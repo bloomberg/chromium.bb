@@ -34,7 +34,7 @@ GpuProcessHostUIShim::~GpuProcessHostUIShim() {
 }
 
 // static
-GpuProcessHostUIShim* GpuProcessHostUIShim::Get() {
+GpuProcessHostUIShim* GpuProcessHostUIShim::GetInstance() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return Singleton<GpuProcessHostUIShim>::get();
 }

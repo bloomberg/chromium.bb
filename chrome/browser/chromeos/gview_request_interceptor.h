@@ -32,7 +32,7 @@ class GViewRequestInterceptor : public net::URLRequest::Interceptor {
   virtual net::URLRequestJob* MaybeInterceptResponse(net::URLRequest* request);
 
   // Singleton accessor.
-  static net::URLRequest::Interceptor* GetGViewRequestInterceptor();
+  static net::URLRequest::Interceptor* GetInstance();
 
  private:
   friend struct DefaultSingletonTraits<GViewRequestInterceptor>;

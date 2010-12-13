@@ -88,7 +88,7 @@ ToolbarModel::SecurityLevel ToolbarModel::GetSecurityLevel() const {
         return SECURITY_WARNING;
       }
       if ((ssl.cert_status() & net::CERT_STATUS_IS_EV) &&
-          CertStore::GetSharedInstance()->RetrieveCert(ssl.cert_id(), NULL))
+          CertStore::GetInstance()->RetrieveCert(ssl.cert_id(), NULL))
         return EV_SECURE;
       return SECURE;
 
@@ -115,7 +115,7 @@ std::wstring ToolbarModel::GetEVCertName() const {
   scoped_refptr<net::X509Certificate> cert;
   // Note: Navigation controller and active entry are guaranteed non-NULL or
   // the security level would be NONE.
-  CertStore::GetSharedInstance()->RetrieveCert(
+  CertStore::GetInstance()->RetrieveCert(
       GetNavigationController()->GetActiveEntry()->ssl().cert_id(), &cert);
   return SSLManager::GetEVCertName(*cert);
 }

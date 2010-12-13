@@ -75,7 +75,7 @@ void BookmarksFunction::Observe(NotificationType type,
 }
 
 // static
-ExtensionBookmarkEventRouter* ExtensionBookmarkEventRouter::GetSingleton() {
+ExtensionBookmarkEventRouter* ExtensionBookmarkEventRouter::GetInstance() {
   return Singleton<ExtensionBookmarkEventRouter>::get();
 }
 

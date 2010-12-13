@@ -1598,8 +1598,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // TODO(hclam): Need to check for cloud print proxy too.
   if (parsed_command_line.HasSwitch(switches::kEnableRemoting)) {
     if (user_prefs->GetBoolean(prefs::kRemotingHasSetupCompleted)) {
-      ServiceProcessControl* control = ServiceProcessControlManager::instance()
-          ->GetProcessControl(profile);
+      ServiceProcessControl* control =
+          ServiceProcessControlManager::GetInstance()->GetProcessControl(
+              profile);
        control->Launch(NULL, NULL);
     }
   }

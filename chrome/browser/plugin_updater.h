@@ -45,7 +45,7 @@ class PluginUpdater : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  static PluginUpdater* GetPluginUpdater();
+  static PluginUpdater* GetInstance();
 
  private:
   PluginUpdater();

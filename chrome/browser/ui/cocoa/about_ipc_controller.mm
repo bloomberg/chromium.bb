@@ -102,7 +102,7 @@ AboutIPCController* gSharedController = nil;
     gSharedController = nil;
   if (g_browser_process)
     g_browser_process->SetIPCLoggingEnabled(false);  // just in case...
-  IPC::Logging::current()->SetConsumer(NULL);
+  IPC::Logging::GetInstance()->SetConsumer(NULL);
   [super dealloc];
 }
 
@@ -113,7 +113,7 @@ AboutIPCController* gSharedController = nil;
 
   // We are now able to display information, so let'er rip.
   bridge_.reset(new AboutIPCBridge(self));
-  IPC::Logging::current()->SetConsumer(bridge_.get());
+  IPC::Logging::GetInstance()->SetConsumer(bridge_.get());
 }
 
 // Delegate callback.  Closing the window means there is no more need
@@ -123,14 +123,15 @@ AboutIPCController* gSharedController = nil;
 }
 
 - (void)updateVisibleRunState {
-  if (IPC::Logging::current()->Enabled())
+  if (IPC::Logging::GetInstance()->Enabled())
     [startStopButton_ setTitle:@"Stop"];
   else
     [startStopButton_ setTitle:@"Start"];
 }
 
 - (IBAction)startStop:(id)sender {
-  g_browser_process->SetIPCLoggingEnabled(!IPC::Logging::current()->Enabled());
+  g_browser_process->SetIPCLoggingEnabled(
+      !IPC::Logging::GetInstance()->Enabled());
   [self updateVisibleRunState];
 }
 

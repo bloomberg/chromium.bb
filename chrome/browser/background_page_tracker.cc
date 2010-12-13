@@ -42,7 +42,7 @@ void BackgroundPageTracker::RegisterPrefs(PrefService* prefs) {
 }
 
 // static
-BackgroundPageTracker* BackgroundPageTracker::GetSingleton() {
+BackgroundPageTracker* BackgroundPageTracker::GetInstance() {
   return Singleton<BackgroundPageTracker>::get();
 }
 

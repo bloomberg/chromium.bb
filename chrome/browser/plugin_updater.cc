@@ -292,14 +292,14 @@ void PluginUpdater::NotifyPluginStatusChanged() {
 }
 
 void PluginUpdater::OnNotifyPluginStatusChanged() {
-  GetPluginUpdater()->notify_pending_ = false;
+  GetInstance()->notify_pending_ = false;
   NotificationService::current()->Notify(
       NotificationType::PLUGIN_ENABLE_STATUS_CHANGED,
-      Source<PluginUpdater>(GetPluginUpdater()),
+      Source<PluginUpdater>(GetInstance()),
       NotificationService::NoDetails());
 }
 
 /*static*/
-PluginUpdater* PluginUpdater::GetPluginUpdater() {
+PluginUpdater* PluginUpdater::GetInstance() {
   return Singleton<PluginUpdater>::get();
 }

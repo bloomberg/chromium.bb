@@ -62,7 +62,7 @@ const float kMenuBadgeFontSize = 12.0;
 namespace {
 SkBitmap GetBackgroundPageIcon() {
   string16 pages = base::FormatNumber(
-      BackgroundPageTracker::GetSingleton()->GetBackgroundPageCount());
+      BackgroundPageTracker::GetInstance()->GetBackgroundPageCount());
   return badge_util::DrawBadgeIconOverlay(
       *ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_BACKGROUND_MENU),
       kMenuBadgeFontSize,
@@ -261,7 +261,7 @@ string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
 #endif
     case IDC_VIEW_BACKGROUND_PAGES: {
       string16 num_background_pages = base::FormatNumber(
-          BackgroundPageTracker::GetSingleton()->GetBackgroundPageCount());
+          BackgroundPageTracker::GetInstance()->GetBackgroundPageCount());
       return l10n_util::GetStringFUTF16(IDS_VIEW_BACKGROUND_PAGES,
                                         num_background_pages);
     }
@@ -306,13 +306,13 @@ bool WrenchMenuModel::IsCommandIdVisible(int command_id) const {
   } else if (command_id == IDC_VIEW_INCOMPATIBILITIES) {
 #if defined(OS_WIN)
     EnumerateModulesModel* loaded_modules =
-        EnumerateModulesModel::GetSingleton();
+        EnumerateModulesModel::GetInstance();
     return loaded_modules->confirmed_bad_modules_detected() > 0;
 #else
     return false;
 #endif
   } else if (command_id == IDC_VIEW_BACKGROUND_PAGES) {
-    BackgroundPageTracker* tracker = BackgroundPageTracker::GetSingleton();
+    BackgroundPageTracker* tracker = BackgroundPageTracker::GetInstance();
     return tracker->GetBackgroundPageCount() > 0;
   }
   return true;
@@ -351,7 +351,7 @@ void WrenchMenuModel::Observe(NotificationType type,
                               const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::BACKGROUND_PAGE_TRACKER_CHANGED: {
-      int num_pages = BackgroundPageTracker::GetSingleton()->
+      int num_pages = BackgroundPageTracker::GetInstance()->
           GetUnacknowledgedBackgroundPageCount();
       if (num_pages > 0) {
         SetIcon(GetIndexOfCommandId(IDC_VIEW_BACKGROUND_PAGES),
@@ -466,7 +466,7 @@ void WrenchMenuModel::Build() {
         IDS_ABOUT, product_name));
   }
   string16 num_background_pages = base::FormatNumber(
-      BackgroundPageTracker::GetSingleton()->GetBackgroundPageCount());
+      BackgroundPageTracker::GetInstance()->GetBackgroundPageCount());
   AddItem(IDC_VIEW_BACKGROUND_PAGES, l10n_util::GetStringFUTF16(
       IDS_VIEW_BACKGROUND_PAGES, num_background_pages));
   AddItem(IDC_UPGRADE_DIALOG, l10n_util::GetStringFUTF16(
@@ -484,7 +484,7 @@ void WrenchMenuModel::Build() {
 
   // Add an icon to the View Background Pages item if there are unacknowledged
   // pages.
-  if (BackgroundPageTracker::GetSingleton()->
+  if (BackgroundPageTracker::GetInstance()->
       GetUnacknowledgedBackgroundPageCount() > 0) {
     SetIcon(GetIndexOfCommandId(IDC_VIEW_BACKGROUND_PAGES),
             GetBackgroundPageIcon());

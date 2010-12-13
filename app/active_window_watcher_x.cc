@@ -11,13 +11,18 @@
 static Atom kNetActiveWindowAtom = None;
 
 // static
+ActiveWindowWatcherX* ActiveWindowWatcherX::GetInstance() {
+  return Singleton<ActiveWindowWatcherX>::get();
+}
+
+// static
 void ActiveWindowWatcherX::AddObserver(Observer* observer) {
-  Singleton<ActiveWindowWatcherX>::get()->observers_.AddObserver(observer);
+  GetInstance()->observers_.AddObserver(observer);
 }
 
 // static
 void ActiveWindowWatcherX::RemoveObserver(Observer* observer) {
-  Singleton<ActiveWindowWatcherX>::get()->observers_.RemoveObserver(observer);
+  GetInstance()->observers_.RemoveObserver(observer);
 }
 
 ActiveWindowWatcherX::ActiveWindowWatcherX() {

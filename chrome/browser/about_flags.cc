@@ -305,7 +305,7 @@ class FlagsState {
   void reset();
 
   // Returns the singleton instance of this class
-  static FlagsState* instance() {
+  static FlagsState* GetInstance() {
     return Singleton<FlagsState>::get();
   }
 
@@ -467,7 +467,7 @@ Value* CreateChoiceData(const Experiment& experiment,
 }  // namespace
 
 void ConvertFlagsToSwitches(PrefService* prefs, CommandLine* command_line) {
-  FlagsState::instance()->ConvertFlagsToSwitches(prefs, command_line);
+  FlagsState::GetInstance()->ConvertFlagsToSwitches(prefs, command_line);
 }
 
 ListValue* GetFlagsExperimentsData(PrefService* prefs) {
@@ -504,17 +504,17 @@ ListValue* GetFlagsExperimentsData(PrefService* prefs) {
 }
 
 bool IsRestartNeededToCommitChanges() {
-  return FlagsState::instance()->IsRestartNeededToCommitChanges();
+  return FlagsState::GetInstance()->IsRestartNeededToCommitChanges();
 }
 
 void SetExperimentEnabled(
     PrefService* prefs, const std::string& internal_name, bool enable) {
-  FlagsState::instance()->SetExperimentEnabled(prefs, internal_name, enable);
+  FlagsState::GetInstance()->SetExperimentEnabled(prefs, internal_name, enable);
 }
 
 void RemoveFlagsSwitches(
     std::map<std::string, CommandLine::StringType>* switch_list) {
-  FlagsState::instance()->RemoveFlagsSwitches(switch_list);
+  FlagsState::GetInstance()->RemoveFlagsSwitches(switch_list);
 }
 
 int GetCurrentPlatform() {
@@ -683,7 +683,7 @@ namespace testing {
 const char kMultiSeparator[] = "@";
 
 void ClearState() {
-  FlagsState::instance()->reset();
+  FlagsState::GetInstance()->reset();
 }
 
 void SetExperiments(const Experiment* e, size_t count) {

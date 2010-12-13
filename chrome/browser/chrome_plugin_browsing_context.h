@@ -23,7 +23,7 @@ class URLRequestContext;
 // Note: This class should be used on the IO thread only.
 class CPBrowsingContextManager : public NotificationObserver {
  public:
-  static CPBrowsingContextManager* Instance();
+  static CPBrowsingContextManager* GetInstance();
 
   // Note: don't call these directly - use Instance() above.  They are public
   // so Singleton can access them.

@@ -939,7 +939,7 @@ bool Channel::ChannelImpl::Send(Message* message) {
            << " (" << output_queue_.size() << " in queue)";
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
-  Logging::current()->OnSendMessage(message, "");
+  Logging::GetInstance()->OnSendMessage(message, "");
 #endif
 
   output_queue_.push(message);

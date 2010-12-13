@@ -109,7 +109,7 @@ class PluginRequestInterceptor
       return NULL;
 
     CPBrowsingContext context =
-        CPBrowsingContextManager::Instance()->Lookup(request->context());
+        CPBrowsingContextManager::GetInstance()->Lookup(request->context());
     scoped_ptr<ScopableCPRequest> cprequest(
         new ScopableCPRequest(request->url().spec().c_str(),
                               request->method().c_str(),
@@ -156,7 +156,7 @@ class PluginRequestHandler : public PluginHelper,
       : PluginHelper(plugin), cprequest_(cprequest), user_buffer_(NULL) {
     cprequest_->data = this;  // see FromCPRequest().
 
-    URLRequestContext* context = CPBrowsingContextManager::Instance()->
+    URLRequestContext* context = CPBrowsingContextManager::GetInstance()->
         ToURLRequestContext(cprequest_->context);
     // TODO(mpcomplete): remove fallback case when Gears support is prevalent.
     if (!context)
@@ -386,7 +386,7 @@ void STDCALL CPB_SetKeepProcessAlive(CPID id, CPBool keep_alive) {
 CPError STDCALL CPB_GetCookies(CPID id, CPBrowsingContext bcontext,
                                const char* url, char** cookies) {
   CHECK(ChromePluginLib::IsPluginThread());
-  URLRequestContext* context = CPBrowsingContextManager::Instance()->
+  URLRequestContext* context = CPBrowsingContextManager::GetInstance()->
       ToURLRequestContext(bcontext);
   // TODO(mpcomplete): remove fallback case when Gears support is prevalent.
   if (!context) {

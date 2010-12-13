@@ -81,7 +81,7 @@ net::URLRequestJob* GViewRequestInterceptor::MaybeInterceptResponse(
 }
 
 net::URLRequest::Interceptor*
-GViewRequestInterceptor::GetGViewRequestInterceptor() {
+GViewRequestInterceptor::GetInstance() {
   return Singleton<GViewRequestInterceptor>::get();
 }
 

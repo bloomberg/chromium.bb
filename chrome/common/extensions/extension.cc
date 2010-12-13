@@ -133,7 +133,7 @@ const size_t kNumNonPermissionFunctionNames =
 // A singleton object containing global data needed by the extension objects.
 class ExtensionConfig {
  public:
-  static ExtensionConfig* GetSingleton() {
+  static ExtensionConfig* GetInstance() {
     return Singleton<ExtensionConfig>::get();
   }
 
@@ -288,7 +288,7 @@ GURL Extension::GalleryUpdateUrl(bool secure) {
 
 // static
 int Extension::GetPermissionMessageId(const std::string& permission) {
-  return ExtensionConfig::GetSingleton()->GetPermissionMessageId(permission);
+  return ExtensionConfig::GetInstance()->GetPermissionMessageId(permission);
 }
 
 std::vector<string16> Extension::GetPermissionMessages() const {
@@ -1975,7 +1975,7 @@ static std::string SizeToString(const gfx::Size& max_size) {
 void Extension::SetScriptingWhitelist(
     const std::vector<std::string>& whitelist) {
   ScriptingWhitelist* current_whitelist =
-      ExtensionConfig::GetSingleton()->whitelist();
+      ExtensionConfig::GetInstance()->whitelist();
   current_whitelist->clear();
   for (ScriptingWhitelist::const_iterator it = whitelist.begin();
        it != whitelist.end(); ++it) {
@@ -2221,7 +2221,7 @@ bool Extension::CanExecuteScriptEverywhere() const {
     return true;
 
   ScriptingWhitelist* whitelist =
-      ExtensionConfig::GetSingleton()->whitelist();
+      ExtensionConfig::GetInstance()->whitelist();
 
   for (ScriptingWhitelist::const_iterator it = whitelist->begin();
        it != whitelist->end(); ++it) {

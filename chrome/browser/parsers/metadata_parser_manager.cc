@@ -15,12 +15,11 @@
 static const int kAmountToRead = 256;
 
 // Gets the singleton
-MetadataParserManager* MetadataParserManager::Get() {
-    // Uses the LeakySingletonTrait because cleanup is optional.
-    return
-        Singleton<MetadataParserManager,
-        LeakySingletonTraits<MetadataParserManager> >::get();
-  }
+MetadataParserManager* MetadataParserManager::GetInstance() {
+  // Uses the LeakySingletonTrait because cleanup is optional.
+  return Singleton<MetadataParserManager,
+                   LeakySingletonTraits<MetadataParserManager> >::get();
+}
 
 bool MetadataParserManager::RegisterParserFactory(
     MetadataParserFactory* parser) {

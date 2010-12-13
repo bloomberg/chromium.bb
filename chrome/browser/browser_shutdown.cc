@@ -121,7 +121,7 @@ void Shutdown() {
         NewRunnableFunction(&ChromePluginLib::UnloadAllPlugins));
 
   // Shutdown all IPC channels to service processes.
-  ServiceProcessControlManager::instance()->Shutdown();
+  ServiceProcessControlManager::GetInstance()->Shutdown();
 
   // WARNING: During logoff/shutdown (WM_ENDSESSION) we may not have enough
   // time to get here. If you have something that *must* happen on end session,

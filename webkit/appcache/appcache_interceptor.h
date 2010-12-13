@@ -22,7 +22,7 @@ class AppCacheInterceptor : public net::URLRequest::Interceptor {
   // Registers a singleton instance with the net library.
   // Should be called early in the IO thread prior to initiating requests.
   static void EnsureRegistered() {
-    CHECK(instance());
+    CHECK(GetInstance());
   }
 
   // Must be called to make a request eligible for retrieval from an appcache.
@@ -38,6 +38,8 @@ class AppCacheInterceptor : public net::URLRequest::Interceptor {
                                    int64* cache_id,
                                    GURL* manifest_url);
 
+  static AppCacheInterceptor* GetInstance();
+
  protected:
   // Overridde from net::URLRequest::Interceptor:
   virtual net::URLRequestJob* MaybeIntercept(net::URLRequest* request);
@@ -47,10 +49,6 @@ class AppCacheInterceptor : public net::URLRequest::Interceptor {
 
  private:
   friend struct DefaultSingletonTraits<AppCacheInterceptor>;
-
-  static AppCacheInterceptor* instance()  {
-    return Singleton<AppCacheInterceptor>::get();
-  }
 
   AppCacheInterceptor();
   virtual ~AppCacheInterceptor();

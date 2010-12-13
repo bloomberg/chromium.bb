@@ -253,7 +253,7 @@ int SSLErrorInfo::GetErrorsForCertStatus(int cert_id,
     if (cert_status & kErrorFlags[i]) {
       count++;
       if (!cert.get()) {
-        bool r = CertStore::GetSharedInstance()->RetrieveCert(cert_id, &cert);
+        bool r = CertStore::GetInstance()->RetrieveCert(cert_id, &cert);
         DCHECK(r);
       }
       if (errors)

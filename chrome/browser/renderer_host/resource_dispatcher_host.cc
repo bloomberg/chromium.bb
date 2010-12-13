@@ -1161,8 +1161,8 @@ bool ResourceDispatcherHost::CompleteResponseStarted(net::URLRequest* request) {
 
   if (request->ssl_info().cert) {
     int cert_id =
-        CertStore::GetSharedInstance()->StoreCert(request->ssl_info().cert,
-                                                  info->child_id());
+        CertStore::GetInstance()->StoreCert(request->ssl_info().cert,
+                                            info->child_id());
     response->response_head.security_info =
         SSLManager::SerializeSecurityInfo(
             cert_id, request->ssl_info().cert_status,
@@ -1500,7 +1500,7 @@ void ResourceDispatcherHost::OnResponseCompleted(net::URLRequest* request) {
   std::string security_info;
   const net::SSLInfo& ssl_info = request->ssl_info();
   if (ssl_info.cert != NULL) {
-    int cert_id = CertStore::GetSharedInstance()->StoreCert(ssl_info.cert,
+    int cert_id = CertStore::GetInstance()->StoreCert(ssl_info.cert,
                                                             info->child_id());
     security_info = SSLManager::SerializeSecurityInfo(
         cert_id, ssl_info.cert_status, ssl_info.security_bits,
@@ -1595,8 +1595,8 @@ net::URLRequest* ResourceDispatcherHost::GetURLRequest(
 
 static int GetCertID(net::URLRequest* request, int child_id) {
   if (request->ssl_info().cert) {
-    return CertStore::GetSharedInstance()->StoreCert(request->ssl_info().cert,
-                                                     child_id);
+    return CertStore::GetInstance()->StoreCert(request->ssl_info().cert,
+                                               child_id);
   }
   // If there is no SSL info attached to this request, we must either be a non
   // secure request, or the request has been canceled or failed (before the SSL

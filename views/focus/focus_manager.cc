@@ -71,7 +71,7 @@ FocusManager::FocusManager(Widget* widget)
       focus_change_reason_(kReasonDirectFocusChange) {
   DCHECK(widget_);
   stored_focused_view_storage_id_ =
-      ViewStorage::GetSharedInstance()->CreateStorageID();
+      ViewStorage::GetInstance()->CreateStorageID();
 }
 
 FocusManager::~FocusManager() {
@@ -332,7 +332,7 @@ void FocusManager::ClearFocus() {
 }
 
 void FocusManager::StoreFocusedView() {
-  ViewStorage* view_storage = ViewStorage::GetSharedInstance();
+  ViewStorage* view_storage = ViewStorage::GetInstance();
   if (!view_storage) {
     // This should never happen but bug 981648 seems to indicate it could.
     NOTREACHED();
@@ -365,7 +365,7 @@ void FocusManager::StoreFocusedView() {
 }
 
 void FocusManager::RestoreFocusedView() {
-  ViewStorage* view_storage = ViewStorage::GetSharedInstance();
+  ViewStorage* view_storage = ViewStorage::GetInstance();
   if (!view_storage) {
     // This should never happen but bug 981648 seems to indicate it could.
     NOTREACHED();
@@ -399,7 +399,7 @@ void FocusManager::RestoreFocusedView() {
 }
 
 void FocusManager::ClearStoredFocusedView() {
-  ViewStorage* view_storage = ViewStorage::GetSharedInstance();
+  ViewStorage* view_storage = ViewStorage::GetInstance();
   if (!view_storage) {
     // This should never happen but bug 981648 seems to indicate it could.
     NOTREACHED();

@@ -198,6 +198,11 @@ class RegistryControlledDomainService {
   static size_t GetRegistryLength(const std::wstring& host,
                                   bool allow_unknown_registries);
 
+  // Returns the singleton instance, after attempting to initialize it.
+  // NOTE that if the effective-TLD data resource can't be found, the instance
+  // will be initialized and continue operation with simple default TLD data.
+  static RegistryControlledDomainService* GetInstance();
+
  protected:
   // The entire protected API is only for unit testing.  I mean it.  Don't make
   // me come over there!
@@ -220,11 +225,6 @@ class RegistryControlledDomainService {
  private:
   // To allow construction of the internal singleton instance.
   friend struct DefaultSingletonTraits<RegistryControlledDomainService>;
-
-  // Returns the singleton instance, after attempting to initialize it.
-  // NOTE that if the effective-TLD data resource can't be found, the instance
-  // will be initialized and continue operation with simple default TLD data.
-  static RegistryControlledDomainService* GetInstance();
 
   // Internal workings of the static public methods.  See above.
   static std::string GetDomainAndRegistryImpl(const std::string& host);

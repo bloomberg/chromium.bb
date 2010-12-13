@@ -24,7 +24,7 @@ struct MatchSecond {
 };
 
 //  static
-CertStore* CertStore::GetSharedInstance() {
+CertStore* CertStore::GetInstance() {
   return Singleton<CertStore>::get();
 }
 

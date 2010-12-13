@@ -42,6 +42,6 @@ void ServiceProcessControlManager::Shutdown() {
 }
 
 // static
-ServiceProcessControlManager* ServiceProcessControlManager::instance() {
+ServiceProcessControlManager* ServiceProcessControlManager::GetInstance() {
   return Singleton<ServiceProcessControlManager>::get();
 }

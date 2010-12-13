@@ -73,7 +73,7 @@ class HtmlDialogBrowserTest : public InProcessBrowserTest {
    public:
     WindowChangedObserver() {}
 
-    static WindowChangedObserver* Get() {
+    static WindowChangedObserver* GetInstance() {
       return Singleton<WindowChangedObserver>::get();
     }
 
@@ -95,7 +95,7 @@ class HtmlDialogBrowserTest : public InProcessBrowserTest {
    public:
     WindowChangedObserver() {}
 
-    static WindowChangedObserver* Get() {
+    static WindowChangedObserver* GetInstance() {
       return Singleton<WindowChangedObserver>::get();
     }
 
@@ -136,7 +136,8 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
   html_view->InitDialog();
   html_view->window()->Show();
 
-  MessageLoopForUI::current()->AddObserver(WindowChangedObserver::Get());
+  MessageLoopForUI::current()->AddObserver(
+      WindowChangedObserver::GetInstance());
 
   gfx::Rect bounds;
   html_view->GetWidget()->GetBounds(&bounds, false);
@@ -202,5 +203,6 @@ IN_PROC_BROWSER_TEST_F(HtmlDialogBrowserTest, MAYBE_SizeWindow) {
   EXPECT_LT(0, actual_bounds.width());
   EXPECT_LT(0, actual_bounds.height());
 
-  MessageLoopForUI::current()->RemoveObserver(WindowChangedObserver::Get());
+  MessageLoopForUI::current()->RemoveObserver(
+      WindowChangedObserver::GetInstance());
 }

@@ -12,7 +12,7 @@
 namespace views {
 
 // static
-ViewStorage* ViewStorage::GetSharedInstance() {
+ViewStorage* ViewStorage::GetInstance() {
   return Singleton<ViewStorage>::get();
 }
 

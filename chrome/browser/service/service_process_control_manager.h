@@ -32,7 +32,7 @@ class ServiceProcessControlManager {
   void Shutdown();
 
   // Return the instance of ServiceProcessControlManager.
-  static ServiceProcessControlManager* instance();
+  static ServiceProcessControlManager* GetInstance();
 
  private:
   ServiceProcessControlList process_control_list_;

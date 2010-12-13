@@ -23,13 +23,13 @@ class ServiceProcessControlBrowserTest
     base::CloseProcessHandle(service_process_handle_);
     service_process_handle_ = base::kNullProcessHandle;
     // Delete all instances of ServiceProcessControl.
-    ServiceProcessControlManager::instance()->Shutdown();
+    ServiceProcessControlManager::GetInstance()->Shutdown();
   }
 
  protected:
   void LaunchServiceProcessControl() {
     ServiceProcessControl* process =
-        ServiceProcessControlManager::instance()->GetProcessControl(
+        ServiceProcessControlManager::GetInstance()->GetProcessControl(
             browser()->profile());
     process_ = process;
 
@@ -55,7 +55,7 @@ class ServiceProcessControlBrowserTest
   void Disconnect() {
     // This will delete all instances of ServiceProcessControl and close the IPC
     // connections.
-    ServiceProcessControlManager::instance()->Shutdown();
+    ServiceProcessControlManager::GetInstance()->Shutdown();
     process_ = NULL;
   }
 
@@ -140,7 +140,7 @@ static void DecrementUntilZero(int* count) {
 // get invoked.
 IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MultipleLaunchTasks) {
   ServiceProcessControl* process =
-      ServiceProcessControlManager::instance()->GetProcessControl(
+      ServiceProcessControlManager::GetInstance()->GetProcessControl(
           browser()->profile());
   int launch_count = 5;
   for (int i = 0; i < launch_count; i++) {
@@ -159,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, MultipleLaunchTasks) {
 // Make sure using the same task for success and failure tasks works.
 IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, SameLaunchTask) {
   ServiceProcessControl* process =
-      ServiceProcessControlManager::instance()->GetProcessControl(
+      ServiceProcessControlManager::GetInstance()->GetProcessControl(
           browser()->profile());
   int launch_count = 5;
   for (int i = 0; i < launch_count; i++) {

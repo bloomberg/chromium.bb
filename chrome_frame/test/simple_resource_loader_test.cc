@@ -57,7 +57,7 @@ TEST(SimpleResourceLoaderTest, LoadLocaleDll) {
 }
 
 TEST(SimpleResourceLoaderTest, InstanceTest) {
-  SimpleResourceLoader* loader = SimpleResourceLoader::instance();
+  SimpleResourceLoader* loader = SimpleResourceLoader::GetInstance();
 
   ASSERT_TRUE(NULL != loader);
   ASSERT_TRUE(NULL != loader->GetResourceModuleHandle());

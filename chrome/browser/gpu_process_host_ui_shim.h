@@ -23,7 +23,7 @@ class GpuProcessHostUIShim : public IPC::Channel::Sender,
                              public NonThreadSafe {
  public:
   // Getter for the singleton. This will return NULL on failure.
-  static GpuProcessHostUIShim* Get();
+  static GpuProcessHostUIShim* GetInstance();
 
   int32 GetNextRoutingId();
 

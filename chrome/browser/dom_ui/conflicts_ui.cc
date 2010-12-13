@@ -142,11 +142,11 @@ void ConflictsDOMHandler::HandleRequestModuleList(const ListValue* args) {
   // This request is handled asynchronously. See Observe for when we reply back.
   registrar_.Add(this, NotificationType::MODULE_LIST_ENUMERATED,
                  NotificationService::AllSources());
-  EnumerateModulesModel::GetSingleton()->ScanNow();
+  EnumerateModulesModel::GetInstance()->ScanNow();
 }
 
 void ConflictsDOMHandler::SendModuleList() {
-  EnumerateModulesModel* loaded_modules = EnumerateModulesModel::GetSingleton();
+  EnumerateModulesModel* loaded_modules = EnumerateModulesModel::GetInstance();
   ListValue* list = loaded_modules->GetModuleList();
   DictionaryValue results;
   results.Set("moduleList", list);

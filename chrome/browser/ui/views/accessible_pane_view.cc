@@ -107,7 +107,7 @@ void AccessiblePaneView::LocationBarSelectAll() {
 }
 
 void AccessiblePaneView::RestoreLastFocusedView() {
-  views::ViewStorage* view_storage = views::ViewStorage::GetSharedInstance();
+  views::ViewStorage* view_storage = views::ViewStorage::GetInstance();
   views::View* last_focused_view =
       view_storage->RetrieveView(last_focused_view_storage_id_);
   if (last_focused_view) {

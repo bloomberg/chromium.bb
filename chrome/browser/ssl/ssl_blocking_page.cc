@@ -103,7 +103,7 @@ std::string SSLBlockingPage::GetHTMLContents() {
 
 void SSLBlockingPage::UpdateEntry(NavigationEntry* entry) {
   const net::SSLInfo& ssl_info = handler_->ssl_info();
-  int cert_id = CertStore::GetSharedInstance()->StoreCert(
+  int cert_id = CertStore::GetInstance()->StoreCert(
       ssl_info.cert, tab()->render_view_host()->process()->id());
 
   entry->ssl().set_security_style(SECURITY_STYLE_AUTHENTICATION_BROKEN);

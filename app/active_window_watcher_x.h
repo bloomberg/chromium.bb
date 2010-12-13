@@ -35,6 +35,8 @@ class ActiveWindowWatcherX {
   ActiveWindowWatcherX();
   ~ActiveWindowWatcherX();
 
+  static ActiveWindowWatcherX* GetInstance();
+
   void Init();
 
   // Sends a notification out through the NotificationService that the active

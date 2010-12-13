@@ -156,7 +156,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
 #error "Not implemented for this platform"
 #endif
     if (using_gpu_) {
-      const GPUInfo& info = GpuProcessHostUIShim::Get()->gpu_info();
+      const GPUInfo& info = GpuProcessHostUIShim::GetInstance()->gpu_info();
       if (info.progress() != GPUInfo::kComplete) {
         LOG(ERROR) << "Could not get gpu info";
         return false;

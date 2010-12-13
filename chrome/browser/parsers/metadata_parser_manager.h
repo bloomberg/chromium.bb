@@ -22,7 +22,7 @@ class MetadataParserManager {
   ~MetadataParserManager();
 
   // Gets the singleton
-  static MetadataParserManager* Get();
+  static MetadataParserManager* GetInstance();
 
   // Adds a new Parser to the manager, when requests come in for a parser
   // the manager will loop through the list of parsers, and query each.
