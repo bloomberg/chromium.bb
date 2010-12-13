@@ -14,6 +14,10 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/util_constants.h"
 
+namespace installer_util {
+class MasterPreferences;
+}
+
 class ChromeFrameDistribution : public BrowserDistribution {
  public:
   virtual std::wstring GetAppGuid();
@@ -52,15 +56,22 @@ class ChromeFrameDistribution : public BrowserDistribution {
   virtual void UpdateDiffInstallStatus(bool system_install,
       bool incremental_install, installer_util::InstallStatus install_status);
 
-  virtual FilePath::StringType GetKeyFile();
+  virtual std::vector<FilePath> GetKeyFiles();
+
+  virtual std::vector<FilePath> GetComDllList();
+
+  virtual void AppendUninstallCommandLineFlags(CommandLine* cmd_line);
 
  protected:
   friend class BrowserDistribution;
 
   // Disallow construction from non-friends.
-  ChromeFrameDistribution() {
-    type_ = BrowserDistribution::CHROME_FRAME;
-  }
+  explicit ChromeFrameDistribution(
+      const installer_util::MasterPreferences& prefs);
+
+  // Determines whether this Chrome Frame distribution is being used to work
+  // with CEEE bits as well.
+  bool ceee_;
 };
 
 #endif  // CHROME_INSTALLER_UTIL_CHROME_FRAME_DISTRIBUTION_H_

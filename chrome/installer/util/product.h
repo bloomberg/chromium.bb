@@ -14,6 +14,10 @@
 
 class CommandLine;
 
+namespace installer_util {
+class MasterPreferences;
+}
+
 namespace installer {
 
 class Product;
@@ -24,7 +28,7 @@ typedef std::vector<scoped_refptr<Package> > Packages;
 typedef std::vector<scoped_refptr<const Product> > Products;
 
 const Product* FindProduct(const Products& products,
-                           BrowserDistribution::DistributionType type);
+                           BrowserDistribution::Type type);
 
 // Calls WriteInstallerResult for each Product object.
 void WriteInstallerResult(const Products& products,
@@ -134,7 +138,8 @@ class ProductPackageMapping {
 
   const Products& products() const;
 
-  bool AddDistribution(BrowserDistribution::DistributionType type);
+  bool AddDistribution(BrowserDistribution::Type type,
+                       const installer_util::MasterPreferences& prefs);
   bool AddDistribution(BrowserDistribution* distribution);
 
  protected:

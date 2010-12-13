@@ -16,6 +16,7 @@
 #include "base/win/registry.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -83,52 +84,23 @@ void AppendUninstallCommandLineFlags(CommandLine* uninstall_cmd,
 
   uninstall_cmd->AppendSwitch(installer_util::switches::kUninstall);
 
-  const installer_util::MasterPreferences& prefs =
-      InstallUtil::GetMasterPreferencesForCurrentProcess();
-
-  bool cf_switch_added = false;
-
-  if (prefs.is_multi_install()) {
-    uninstall_cmd->AppendSwitch(installer_util::switches::kMultiInstall);
-    switch (product.distribution()->GetType()) {
-      case BrowserDistribution::CHROME_BROWSER:
-        uninstall_cmd->AppendSwitch(installer_util::switches::kChrome);
-        break;
-      case BrowserDistribution::CHROME_FRAME:
-        uninstall_cmd->AppendSwitch(installer_util::switches::kChromeFrame);
-        cf_switch_added = true;
-        break;
-      case BrowserDistribution::CEEE:
-        uninstall_cmd->AppendSwitch(installer_util::switches::kCeee);
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-  }
-
-  if (product.distribution()->GetType() == BrowserDistribution::CHROME_FRAME) {
-    DCHECK(prefs.install_chrome_frame());
-    uninstall_cmd->AppendSwitch(installer_util::switches::kDeleteProfile);
-    if (!cf_switch_added) {
-      uninstall_cmd->AppendSwitch(installer_util::switches::kChromeFrame);
-    }
-  }
-
-  if (InstallUtil::IsChromeSxSProcess())
-    uninstall_cmd->AppendSwitch(installer_util::switches::kChromeSxS);
-
+  // Append the product-specific uninstall flags.
+  product.distribution()->AppendUninstallCommandLineFlags(uninstall_cmd);
   if (product.IsMsi())
     uninstall_cmd->AppendSwitch(installer_util::switches::kMsi);
+  if (product.system_level())
+    uninstall_cmd->AppendSwitch(installer_util::switches::kSystemLevel);
 
-  // Propagate the verbose logging switch to uninstalls too.
+  // Propagate switches obtained from preferences as well.
+  const installer_util::MasterPreferences& prefs =
+      installer_util::MasterPreferences::ForCurrentProcess();
+  if (prefs.is_multi_install()) {
+    uninstall_cmd->AppendSwitch(installer_util::switches::kMultiInstall);
+  }
   bool value = false;
   if (prefs.GetBool(installer_util::master_preferences::kVerboseLogging,
                     &value) && value)
     uninstall_cmd->AppendSwitch(installer_util::switches::kVerboseLogging);
-
-  if (product.system_level())
-    uninstall_cmd->AppendSwitch(installer_util::switches::kSystemLevel);
 }
 
 // This method adds work items to create (or update) Chrome uninstall entry in
@@ -292,7 +264,7 @@ bool CreateOrUpdateChromeShortcuts(const FilePath& setup_path,
   // TODO(tommi): Change this function to use WorkItemList.
 #ifndef NDEBUG
   const installer_util::MasterPreferences& prefs =
-      InstallUtil::GetMasterPreferencesForCurrentProcess();
+      installer_util::MasterPreferences::ForCurrentProcess();
   DCHECK(prefs.install_chrome());
 #endif
 
@@ -513,10 +485,7 @@ bool DoPostInstallTasks(const FilePath& setup_path,
     }
   }
 
-  if (FindProduct(products, BrowserDistribution::CHROME_FRAME) ||
-      FindProduct(products, BrowserDistribution::CEEE)) {
-    // TODO(robershield): move the "which DLLs should be registered" policy
-    // into the installer.
+  if (FindProduct(products, BrowserDistribution::CHROME_FRAME)) {
     if (!RegisterComDlls(package, current_version, new_version)) {
       LOG(ERROR) << "RegisterComDlls failed.  Aborting.";
       return false;
@@ -850,4 +819,3 @@ bool RegisterComDllList(const FilePath& dll_folder, bool system_level,
 }
 
 }  // namespace installer
-

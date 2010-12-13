@@ -51,4 +51,9 @@ std::vector<GURL> MasterPreferences::GetFirstRunTabs() const {
   return std::vector<GURL>();
 }
 
+// static
+const MasterPreferences& MasterPreferences::ForCurrentProcess() {
+  static MasterPreferences prefs(*CommandLine::ForCurrentProcess());
+  return prefs;
+}
 }

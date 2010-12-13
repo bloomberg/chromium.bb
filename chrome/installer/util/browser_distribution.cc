@@ -48,22 +48,27 @@ bool IsCeeeBrokerProcess() {
                                           installer_util::kCeeeBrokerExe);
 }
 
-BrowserDistribution::DistributionType GetCurrentDistributionType() {
-  static BrowserDistribution::DistributionType type =
+BrowserDistribution::Type GetCurrentDistributionType() {
+  static BrowserDistribution::Type type =
       (InstallUtil::IsChromeFrameProcess() || IsChromeFrameModule()) ?
           BrowserDistribution::CHROME_FRAME :
-          (IsCeeeBrokerProcess() ? BrowserDistribution::CEEE :
-                                   BrowserDistribution::CHROME_BROWSER);
+          BrowserDistribution::CHROME_BROWSER;
   return type;
 }
 
 }  // end namespace
 
+BrowserDistribution::BrowserDistribution(
+    const installer_util::MasterPreferences& prefs)
+    : type_(BrowserDistribution::CHROME_BROWSER) {
+}
+
 template<class DistributionClass>
 BrowserDistribution* BrowserDistribution::GetOrCreateBrowserDistribution(
+    const installer_util::MasterPreferences& prefs,
     BrowserDistribution** dist) {
   if (!*dist) {
-    DistributionClass* temp = new DistributionClass();
+    DistributionClass* temp = new DistributionClass(prefs);
     if (base::subtle::NoBarrier_CompareAndSwap(
             reinterpret_cast<base::subtle::AtomicWord*>(dist), NULL,
             reinterpret_cast<base::subtle::AtomicWord>(temp)) != NULL)
@@ -74,35 +79,33 @@ BrowserDistribution* BrowserDistribution::GetOrCreateBrowserDistribution(
 }
 
 BrowserDistribution* BrowserDistribution::GetDistribution() {
-  return GetSpecificDistribution(GetCurrentDistributionType());
+  const installer_util::MasterPreferences& prefs =
+      installer_util::MasterPreferences::ForCurrentProcess();
+  return GetSpecificDistribution(GetCurrentDistributionType(), prefs);
 }
 
 // static
 BrowserDistribution* BrowserDistribution::GetSpecificDistribution(
-    BrowserDistribution::DistributionType type) {
+    BrowserDistribution::Type type,
+    const installer_util::MasterPreferences& prefs) {
   BrowserDistribution* dist = NULL;
 
-  // TODO(tommi): initialize g_ceee_distribution when appropriate.  Right now
-  // we treat CEEE as Chrome Frame.
-
-  if (type == CHROME_FRAME || type == CEEE) {
-    // TODO(robertshield): Make one of these for Google Chrome vs
-    // non Google Chrome builds?
+  if (type == CHROME_FRAME) {
     dist = GetOrCreateBrowserDistribution<ChromeFrameDistribution>(
-        &g_chrome_frame_distribution);
+        prefs, &g_chrome_frame_distribution);
   } else {
     DCHECK_EQ(CHROME_BROWSER, type);
 #if defined(GOOGLE_CHROME_BUILD)
-      if (InstallUtil::IsChromeSxSProcess()) {
-        dist = GetOrCreateBrowserDistribution<GoogleChromeSxSDistribution>(
-            &g_browser_distribution);
-      } else {
-        dist = GetOrCreateBrowserDistribution<GoogleChromeDistribution>(
-            &g_browser_distribution);
-      }
+    if (InstallUtil::IsChromeSxSProcess()) {
+      dist = GetOrCreateBrowserDistribution<GoogleChromeSxSDistribution>(
+          prefs, &g_browser_distribution);
+    } else {
+      dist = GetOrCreateBrowserDistribution<GoogleChromeDistribution>(
+          prefs, &g_browser_distribution);
+    }
 #else
-      dist = GetOrCreateBrowserDistribution<BrowserDistribution>(
-          &g_browser_distribution);
+    dist = GetOrCreateBrowserDistribution<BrowserDistribution>(
+        prefs, &g_browser_distribution);
 #endif
   }
 
@@ -224,6 +227,18 @@ void BrowserDistribution::InactiveUserToastExperiment(int flavor,
     const installer::Product& installation) {
 }
 
-FilePath::StringType BrowserDistribution::GetKeyFile() {
-  return installer_util::kChromeDll;
+std::vector<FilePath> BrowserDistribution::GetKeyFiles() {
+  std::vector<FilePath> key_files;
+  key_files.push_back(FilePath(installer_util::kChromeDll));
+  return key_files;
+}
+
+std::vector<FilePath> BrowserDistribution::GetComDllList() {
+  return std::vector<FilePath>();
+}
+
+void BrowserDistribution::AppendUninstallCommandLineFlags(
+    CommandLine* cmd_line) {
+  DCHECK(cmd_line);
+  cmd_line->AppendSwitch(installer_util::switches::kChrome);
 }

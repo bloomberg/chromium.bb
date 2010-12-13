@@ -100,12 +100,6 @@ class InstallUtil {
   static bool DeleteRegistryValue(HKEY reg_root, const std::wstring& key_path,
                                   const std::wstring& value_name);
 
-  // Returns a static preference object that has been initialized with the
-  // CommandLine object for the current process.
-  // NOTE: Must not be called before CommandLine::Init() is called!
-  static const installer_util::MasterPreferences&
-      GetMasterPreferencesForCurrentProcess();
-
  private:
   DISALLOW_COPY_AND_ASSIGN(InstallUtil);
 };

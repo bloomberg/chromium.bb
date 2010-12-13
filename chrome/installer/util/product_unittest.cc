@@ -8,6 +8,7 @@
 #include "base/scoped_handle.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/product.h"
 
 using base::win::RegKey;
@@ -16,6 +17,7 @@ using installer::Package;
 using installer::Product;
 using installer::ProductPackageMapping;
 using installer::Version;
+using installer_util::MasterPreferences;
 
 void TestWithTempDir::SetUp() {
   // Name a subdirectory of the user temp directory.
@@ -76,9 +78,11 @@ class ProductTest : public TestWithTempDirAndDeleteTempOverrideKeys {
 TEST_F(ProductTest, ProductInstallBasic) {
   // TODO(tommi): We should mock this and use our mocked distribution.
   const bool system_level = true;
+  const installer_util::MasterPreferences& prefs =
+      installer_util::MasterPreferences::ForCurrentProcess();
   BrowserDistribution* distribution =
       BrowserDistribution::GetSpecificDistribution(
-          BrowserDistribution::CHROME_BROWSER);
+          BrowserDistribution::CHROME_BROWSER, prefs);
   scoped_refptr<Package> package(new Package(test_dir_.path()));
   scoped_refptr<Product> product(new Product(distribution, system_level,
                                              package.get()));
@@ -156,9 +160,14 @@ TEST_F(ProductTest, LaunchChrome) {
 // the Chrome (not Chrome Frame) installation path.
 class FakeChromeFrameDistribution : public ChromeFrameDistribution {
  public:
+  explicit FakeChromeFrameDistribution(
+      const installer_util::MasterPreferences& prefs)
+          : ChromeFrameDistribution(prefs) {}
   virtual std::wstring GetInstallSubDir() {
+    const MasterPreferences& prefs =
+        installer_util::MasterPreferences::ForCurrentProcess();
     return BrowserDistribution::GetSpecificDistribution(
-        BrowserDistribution::CHROME_BROWSER)->GetInstallSubDir();
+        BrowserDistribution::CHROME_BROWSER, prefs)->GetInstallSubDir();
   }
 };
 
@@ -169,8 +178,12 @@ TEST_F(ProductTest, ProductInstallsBasic) {
   EXPECT_EQ(0U, installs.packages().size());
   EXPECT_EQ(0U, installs.products().size());
 
-  installs.AddDistribution(BrowserDistribution::CHROME_BROWSER);
-  FakeChromeFrameDistribution fake_chrome_frame;
+  // TODO(robertshield): Include test that use mock master preferences.
+  const MasterPreferences& prefs =
+      installer_util::MasterPreferences::ForCurrentProcess();
+
+  installs.AddDistribution(BrowserDistribution::CHROME_BROWSER, prefs);
+  FakeChromeFrameDistribution fake_chrome_frame(prefs);
   installs.AddDistribution(&fake_chrome_frame);
   EXPECT_EQ(2U, installs.products().size());
   // Since our fake Chrome Frame distribution class is reporting the same

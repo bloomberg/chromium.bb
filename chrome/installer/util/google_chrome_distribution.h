@@ -9,6 +9,8 @@
 #define CHROME_INSTALLER_UTIL_GOOGLE_CHROME_DISTRIBUTION_H_
 #pragma once
 
+#include <string>
+
 #include "base/gtest_prod_util.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/util_constants.h"
@@ -83,7 +85,8 @@ class GoogleChromeDistribution : public BrowserDistribution {
   void set_product_guid(std::wstring guid) { product_guid_ = guid; }
 
   // Disallow construction from others.
-  GoogleChromeDistribution();
+  explicit GoogleChromeDistribution(
+      const installer_util::MasterPreferences& prefs);
 
  private:
   friend class BrowserDistribution;

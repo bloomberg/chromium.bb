@@ -35,7 +35,7 @@
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/wmi.h"
 
-#include "installer_util_strings.h"
+#include "installer_util_strings.h"  // NOLINT
 
 #pragma comment(lib, "wtsapi32.lib")
 
@@ -252,8 +252,9 @@ bool RelaunchSetupAsConsoleUser(const std::string& flag) {
 
 }  // namespace
 
-GoogleChromeDistribution::GoogleChromeDistribution()
-    : product_guid_(kChromeGuid) {
+GoogleChromeDistribution::GoogleChromeDistribution(
+    const installer_util::MasterPreferences& prefs)
+        : BrowserDistribution(prefs), product_guid_(kChromeGuid) {
 }
 
 // The functions below are not used by the 64-bit Windows binary -

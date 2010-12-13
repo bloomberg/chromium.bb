@@ -24,21 +24,21 @@ using installer_util::MasterPreferences;
 namespace {
 class ProductIsOfType {
  public:
-  explicit ProductIsOfType(BrowserDistribution::DistributionType type)
+  explicit ProductIsOfType(BrowserDistribution::Type type)
       : type_(type) { }
   bool operator()(
       const scoped_refptr<const installer::Product>& pi) const {
     return pi->distribution()->GetType() == type_;
   }
  private:
-  BrowserDistribution::DistributionType type_;
+  BrowserDistribution::Type type_;
 };  // class ProductIsOfType
 }  // end namespace
 
 namespace installer {
 
 const Product* FindProduct(const Products& products,
-    BrowserDistribution::DistributionType type) {
+    BrowserDistribution::Type type) {
   Products::const_iterator i =
       std::find_if(products.begin(), products.end(), ProductIsOfType(type));
   return i == products.end() ? NULL : *i;
@@ -129,7 +129,7 @@ bool Product::IsMsi() const {
     msi_ = NOT_MSI;  // Covers failure cases below.
 
     const MasterPreferences& prefs =
-        InstallUtil::GetMasterPreferencesForCurrentProcess();
+        installer_util::MasterPreferences::ForCurrentProcess();
 
     bool is_msi = false;
     prefs.GetBool(installer_util::master_preferences::kMsi, &is_msi);
@@ -251,9 +251,10 @@ bool ProductPackageMapping::AddDistribution(BrowserDistribution* distribution) {
 }
 
 bool ProductPackageMapping::AddDistribution(
-    BrowserDistribution::DistributionType type) {
+    BrowserDistribution::Type type,
+    const installer_util::MasterPreferences& prefs) {
   BrowserDistribution* distribution =
-      BrowserDistribution::GetSpecificDistribution(type);
+      BrowserDistribution::GetSpecificDistribution(type, prefs);
   if (!distribution) {
     NOTREACHED();
     return false;

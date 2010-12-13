@@ -14,7 +14,9 @@
 
 #include "base/logging.h"
 
-GoogleChromeDistribution::GoogleChromeDistribution() {
+GoogleChromeDistribution::GoogleChromeDistribution(
+    const installer_util::MasterPreferences& prefs)
+        : BrowserDistribution(prefs) {
 }
 
 void GoogleChromeDistribution::DoPostUninstallOperations(

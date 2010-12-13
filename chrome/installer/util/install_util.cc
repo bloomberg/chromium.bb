@@ -31,11 +31,6 @@
 using base::win::RegKey;
 using installer_util::MasterPreferences;
 
-const MasterPreferences& InstallUtil::GetMasterPreferencesForCurrentProcess() {
-  static MasterPreferences prefs(*CommandLine::ForCurrentProcess());
-  return prefs;
-}
-
 bool InstallUtil::ExecuteExeAsAdmin(const CommandLine& cmd, DWORD* exit_code) {
   FilePath::StringType program(cmd.GetProgram().value());
   DCHECK(!program.empty());
@@ -125,7 +120,8 @@ bool InstallUtil::IsPerUserInstall(const wchar_t* const exe_path) {
 }
 
 bool InstallUtil::IsChromeFrameProcess() {
-  const MasterPreferences& prefs = GetMasterPreferencesForCurrentProcess();
+  const MasterPreferences& prefs =
+      installer_util::MasterPreferences::ForCurrentProcess();
   return prefs.install_chrome_frame();
 }
 

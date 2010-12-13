@@ -9,6 +9,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
@@ -19,25 +20,30 @@
 #include <windows.h>  // NOLINT
 #endif
 
+class CommandLine;
+
 namespace installer {
 class Product;
+}
+namespace installer_util {
+class MasterPreferences;
 }
 
 class BrowserDistribution {
  public:
   virtual ~BrowserDistribution() {}
 
-  enum DistributionType {
+  enum Type {
     CHROME_BROWSER,
     CHROME_FRAME,
-    CEEE,
   };
 
   static BrowserDistribution* GetDistribution();
 
-  static BrowserDistribution* GetSpecificDistribution(DistributionType type);
+  static BrowserDistribution* GetSpecificDistribution(
+      Type type, const installer_util::MasterPreferences& prefs);
 
-  DistributionType GetType() const { return type_; }
+  Type GetType() const { return type_; }
 
   static int GetInstallReturnCode(installer_util::InstallStatus install_status);
 
@@ -109,18 +115,27 @@ class BrowserDistribution {
   // an uninstallation, the uninstaller will check if any one of a potential
   // set of key files is in use and if they are, abort the delete operation.
   // Only if none of the key files are in use, can the folder be deleted.
-  // Note that this function does not return a full path to the key file,
-  // only a file name.
-  virtual FilePath::StringType GetKeyFile();
+  // Note that this function does not return a full path to the key file(s),
+  // only (a) file name(s).
+  virtual std::vector<FilePath> GetKeyFiles();
+
+  // Returns the list of Com Dlls that this product cares about having
+  // registered and unregistered. The list may be empty.
+  virtual std::vector<FilePath> GetComDllList();
+
+  // Given a command line, appends the set of uninstall flags the uninstaller
+  // for this distribution will require.
+  virtual void AppendUninstallCommandLineFlags(CommandLine* cmd_line);
 
  protected:
-  BrowserDistribution() : type_(CHROME_BROWSER) {}
+  explicit BrowserDistribution(const installer_util::MasterPreferences& prefs);
 
   template<class DistributionClass>
   static BrowserDistribution* GetOrCreateBrowserDistribution(
+      const installer_util::MasterPreferences& prefs,
       BrowserDistribution** dist);
 
-  DistributionType type_;
+  Type type_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserDistribution);

@@ -126,10 +126,16 @@ void Package::RemoveOldVersionDirectories(
       if (version.get() && latest_version.IsHigherThan(version.get())) {
         FilePath remove_dir(path_.Append(find_file_data.cFileName));
         std::vector<FilePath> key_files;
+
         Products::const_iterator it = products_.begin();
         for (; it != products_.end(); ++it) {
           BrowserDistribution* dist = it->get()->distribution();
-          key_files.push_back(remove_dir.Append(dist->GetKeyFile()));
+          std::vector<FilePath> dist_key_files(dist->GetKeyFiles());
+          std::vector<FilePath>::const_iterator key_file_iter(
+              dist_key_files.begin());
+          for (; key_file_iter != dist_key_files.end(); ++key_file_iter) {
+            key_files.push_back(remove_dir.Append(*key_file_iter));
+          }
         }
 
         VLOG(1) << "Deleting directory: " << remove_dir.value();

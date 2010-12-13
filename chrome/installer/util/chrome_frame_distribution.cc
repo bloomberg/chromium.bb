@@ -12,14 +12,22 @@
 #include <string>
 
 #include "base/string_util.h"
-#include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "chrome/installer/util/l10n_string_util.h"
+#include "chrome/installer/util/master_preferences.h"
 
 #include "installer_util_strings.h"  // NOLINT
 
 namespace {
 const wchar_t kChromeFrameGuid[] = L"{8BA986DA-5100-405E-AA35-86F34A02ACBF}";
+}
+
+ChromeFrameDistribution::ChromeFrameDistribution(
+    const installer_util::MasterPreferences& prefs)
+        : BrowserDistribution(prefs) {
+  type_ = BrowserDistribution::CHROME_FRAME;
+  ceee_ = prefs.install_ceee();
 }
 
 std::wstring ChromeFrameDistribution::GetAppGuid() {
@@ -78,7 +86,6 @@ std::wstring ChromeFrameDistribution::GetStatsServerURL() {
   return L"https://clients4.google.com/firefox/metrics/collect";
 }
 
-
 std::wstring ChromeFrameDistribution::GetUninstallLinkName() {
   return L"Uninstall Chrome Frame";
 }
@@ -106,7 +113,32 @@ void ChromeFrameDistribution::UpdateDiffInstallStatus(bool system_install,
       kChromeFrameGuid);
 }
 
-FilePath::StringType ChromeFrameDistribution::GetKeyFile() {
-  // TODO(tommi): Implement this for CEEE too.
-  return installer_util::kChromeFrameDll;
+std::vector<FilePath> ChromeFrameDistribution::GetKeyFiles() {
+  std::vector<FilePath> key_files;
+  key_files.push_back(FilePath(installer_util::kChromeFrameDll));
+  if (ceee_) {
+    key_files.push_back(FilePath(installer_util::kCeeeIeDll));
+    key_files.push_back(FilePath(installer_util::kCeeeBrokerExe));
+  }
+  return key_files;
+}
+
+std::vector<FilePath> ChromeFrameDistribution::GetComDllList() {
+  std::vector<FilePath> dll_list;
+  dll_list.push_back(FilePath(installer_util::kChromeFrameDll));
+  if (ceee_) {
+    dll_list.push_back(FilePath(installer_util::kCeeeInstallHelperDll));
+    dll_list.push_back(FilePath(installer_util::kCeeeIeDll));
+  }
+  return dll_list;
+}
+
+void ChromeFrameDistribution::AppendUninstallCommandLineFlags(
+    CommandLine* cmd_line) {
+  DCHECK(cmd_line);
+  cmd_line->AppendSwitch(installer_util::switches::kDeleteProfile);
+  cmd_line->AppendSwitch(installer_util::switches::kChromeFrame);
+  if (ceee_) {
+    cmd_line->AppendSwitch(installer_util::switches::kCeee);
+  }
 }

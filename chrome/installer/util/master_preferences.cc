@@ -7,12 +7,12 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/singleton.h"
 #include "base/string_util.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
 #include "googleurl/src/gurl.h"
-
 
 namespace {
 
@@ -74,9 +74,45 @@ DictionaryValue* ParseDistributionPreferences(
 
 namespace installer_util {
 
+MasterPreferences::MasterPreferences() : distribution_(NULL),
+                                         preferences_read_from_file_(false),
+                                         ceee_(false),
+                                         chrome_(true),
+                                         chrome_frame_(false),
+                                         multi_install_(false) {
+  InitializeFromCommandLine(*CommandLine::ForCurrentProcess());
+}
+
 MasterPreferences::MasterPreferences(const CommandLine& cmd_line)
+    : distribution_(NULL),
+      preferences_read_from_file_(false),
+      ceee_(false),
+      chrome_(true),
+      chrome_frame_(false),
+      multi_install_(false) {
+  InitializeFromCommandLine(cmd_line);
+}
+
+MasterPreferences::MasterPreferences(const FilePath& prefs_path)
     : distribution_(NULL), preferences_read_from_file_(false), ceee_(false),
       chrome_(true), chrome_frame_(false), multi_install_(false) {
+  master_dictionary_.reset(ParseDistributionPreferences(prefs_path));
+
+  if (!master_dictionary_.get()) {
+    master_dictionary_.reset(new DictionaryValue());
+  } else {
+    preferences_read_from_file_ = true;
+    // Cache a pointer to the distribution dictionary.
+    master_dictionary_->GetDictionary(kDistroDict, &distribution_);
+  }
+
+  InitializeProductFlags();
+}
+
+MasterPreferences::~MasterPreferences() {
+}
+
+void MasterPreferences::InitializeFromCommandLine(const CommandLine& cmd_line) {
 #if defined(OS_WIN)
   if (cmd_line.HasSwitch(installer_util::switches::kInstallerData)) {
     FilePath prefs_path(cmd_line.GetSwitchValuePath(
@@ -150,25 +186,6 @@ MasterPreferences::MasterPreferences(const CommandLine& cmd_line)
 #endif
 }
 
-MasterPreferences::MasterPreferences(const FilePath& prefs_path)
-    : distribution_(NULL), preferences_read_from_file_(false), ceee_(false),
-      chrome_(true), chrome_frame_(false), multi_install_(false) {
-  master_dictionary_.reset(ParseDistributionPreferences(prefs_path));
-
-  if (!master_dictionary_.get()) {
-    master_dictionary_.reset(new DictionaryValue());
-  } else {
-    preferences_read_from_file_ = true;
-    // Cache a pointer to the distribution dictionary.
-    master_dictionary_->GetDictionary(kDistroDict, &distribution_);
-  }
-
-  InitializeProductFlags();
-}
-
-MasterPreferences::~MasterPreferences() {
-}
-
 void MasterPreferences::InitializeProductFlags() {
   // Make sure we start out with the correct defaults.
   multi_install_ = false;
@@ -235,4 +252,8 @@ bool MasterPreferences::GetExtensionsBlock(DictionaryValue** extensions) const {
       master_preferences::kExtensionsBlock, extensions);
 }
 
+// static
+const MasterPreferences& MasterPreferences::ForCurrentProcess() {
+  return *Singleton<MasterPreferences>::get();
+}
 }  // installer_util

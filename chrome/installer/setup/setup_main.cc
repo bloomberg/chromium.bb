@@ -42,7 +42,7 @@
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 
-#include "installer_util_strings.h"
+#include "installer_util_strings.h"  // NOLINT
 
 using installer::Product;
 using installer::ProductPackageMapping;
@@ -282,7 +282,7 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
 
   FilePath unpack_path(temp_path.Append(installer::kInstallSourceDir));
   bool incremental_install = false;
-  if (UnPackArchive(archive, installation,temp_path, unpack_path,
+  if (UnPackArchive(archive, installation, temp_path, unpack_path,
                     incremental_install)) {
     install_status = installer_util::UNCOMPRESSION_FAILED;
     WriteInstallerResult(products, install_status,
@@ -696,17 +696,12 @@ void PopulateInstallations(const MasterPreferences& prefs,
   DCHECK(installations);
   if (prefs.install_chrome()) {
     VLOG(1) << "Install distribution: Chrome";
-    installations->AddDistribution(BrowserDistribution::CHROME_BROWSER);
+    installations->AddDistribution(BrowserDistribution::CHROME_BROWSER, prefs);
   }
 
   if (prefs.install_chrome_frame()) {
     VLOG(1) << "Install distribution: Chrome Frame";
-    installations->AddDistribution(BrowserDistribution::CHROME_FRAME);
-  }
-
-  if (prefs.install_ceee()) {
-    VLOG(1) << "Install distribution: CEEE";
-    installations->AddDistribution(BrowserDistribution::CHROME_FRAME);
+    installations->AddDistribution(BrowserDistribution::CHROME_FRAME, prefs);
   }
 }
 
@@ -719,7 +714,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   CommandLine::Init(0, NULL);
 
   const MasterPreferences& prefs =
-      InstallUtil::GetMasterPreferencesForCurrentProcess();
+      installer_util::MasterPreferences::ForCurrentProcess();
   installer::InitInstallerLogging(prefs);
 
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();

@@ -218,13 +218,10 @@ enum DeleteResult {
 };
 
 FilePath GetLocalStateFolder(const Product& product) {
-  // chrome_frame will be true for CHROME_FRAME and CEEE.
-  bool chrome_frame = (product.distribution()->GetType() !=
-                       BrowserDistribution::CHROME_BROWSER);
   // Obtain the location of the user profile data. Chrome Frame needs to
   // build this path manually since it doesn't use the Chrome default dir.
   FilePath local_state_folder;
-  if (chrome_frame) {
+  if (product.distribution()->GetType() == BrowserDistribution::CHROME_FRAME) {
     chrome::GetChromeFrameUserDataDirectory(&local_state_folder);
   } else {
     chrome::GetDefaultUserDataDirectory(&local_state_folder);

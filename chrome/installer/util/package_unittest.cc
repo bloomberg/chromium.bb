@@ -6,6 +6,7 @@
 #include "base/scoped_handle.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/package.h"
 #include "chrome/installer/util/product.h"
 #include "chrome/installer/util/product_unittest.h"
@@ -86,15 +87,18 @@ TEST_F(PackageTest, Basic) {
 TEST_F(PackageTest, WithProduct) {
   TempRegKeyOverride::DeleteAllTempKeys();
 
+  const installer_util::MasterPreferences& prefs =
+      installer_util::MasterPreferences::ForCurrentProcess();
+
   // TODO(tommi): We should mock this and use our mocked distribution.
   const bool system_level = true;
   BrowserDistribution* distribution =
       BrowserDistribution::GetSpecificDistribution(
-          BrowserDistribution::CHROME_BROWSER);
+          BrowserDistribution::CHROME_BROWSER, prefs);
   scoped_refptr<Package> package(new Package(test_dir_.path()));
   scoped_refptr<Product> product(new Product(distribution,
-                                                           system_level,
-                                                           package.get()));
+                                             system_level,
+                                             package.get()));
   EXPECT_EQ(1U, package->products().size());
   EXPECT_EQ(system_level, package->system_level());
 

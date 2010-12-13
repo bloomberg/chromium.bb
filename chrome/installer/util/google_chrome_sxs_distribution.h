@@ -11,6 +11,9 @@
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/util_constants.h"
 
+namespace installer_util {
+class MasterPreferences;
+}
 
 // GoogleChromeSxSDistribution encapsulates properties of Google Chrome Sxs
 // distribution which can co-exist with other Google Chrome distributions.
@@ -29,11 +32,13 @@ class GoogleChromeSxSDistribution : public GoogleChromeDistribution {
   virtual bool GetChromeChannel(std::wstring* channel);
   // returns the channel name for GoogleChromeSxSDistribution
   static std::wstring ChannelName();
+  virtual void AppendUninstallCommandLineFlags(CommandLine* cmd_line);
  private:
   friend class BrowserDistribution;
 
   // Disallow construction from non-friends.
-  GoogleChromeSxSDistribution();
+  explicit GoogleChromeSxSDistribution(
+      const installer_util::MasterPreferences& prefs);
 };
 
 #endif  // CHROME_INSTALLER_UTIL_GOOGLE_CHROME_SXS_DISTRIBUTION_H_
