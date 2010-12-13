@@ -183,6 +183,9 @@ deps = {
 
   "src/third_party/yasm/source/patched-yasm":
     "/trunk/deps/third_party/yasm/patched-yasm@50870",
+
+  "src/third_party/libjpeg_turbo":
+    "/trunk/deps/third_party/libjpeg_turbo@66929",
 }
 
 
@@ -226,6 +229,10 @@ deps_os = {
 
     "src/rlz":
       (Var("googlecode_url") % "rlz") + "/trunk@31",
+
+    # Dependencies used by libjpeg-turbo
+    "src/third_party/yasm/binaries":
+      "/trunk/deps/third_party/yasm/binaries@66803",
   },
   "mac": {
     "src/chrome/tools/test/reference_build/chrome_mac":
