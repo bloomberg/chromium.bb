@@ -58,10 +58,12 @@ const char kPreviewHeaderValue[] = "preview";
 // instant after it has loaded.
 class InstantLoader::FrameLoadObserver : public NotificationObserver {
  public:
-  FrameLoadObserver(TabContents* tab_contents,
+  FrameLoadObserver(InstantLoader* loader,
+                    TabContents* tab_contents,
                     const string16& text,
                     bool verbatim)
-      : tab_contents_(tab_contents),
+      : loader_(loader),
+        tab_contents_(tab_contents),
         text_(text),
         verbatim_(verbatim),
         unique_id_(tab_contents_->controller().pending_entry()->unique_id()) {
@@ -88,6 +90,7 @@ class InstantLoader::FrameLoadObserver : public NotificationObserver {
             active_entry->unique_id() != unique_id_) {
           return;
         }
+        loader_->SendBoundsToPage(true);
         tab_contents_->render_view_host()->DetermineIfPageSupportsInstant(
             text_, verbatim_);
         break;
@@ -99,6 +102,8 @@ class InstantLoader::FrameLoadObserver : public NotificationObserver {
   }
 
  private:
+  InstantLoader* loader_;
+
   // The TabContents we're listening for changes on.
   TabContents* tab_contents_;
 
@@ -386,13 +391,10 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
         page_id != source->controller().GetActiveEntry()->page_id())
       return;
 
-    if (result) {
-      gfx::Rect bounds = loader_->GetOmniboxBoundsInTermsOfPreview();
-      loader_->last_omnibox_bounds_ = loader_->omnibox_bounds_;
+    if (result)
       loader_->PageFinishedLoading();
-    } else {
+    else
       loader_->PageDoesntSupportInstant(user_typed_before_load_);
-    }
   }
 
  private:
@@ -560,8 +562,10 @@ void InstantLoader::Update(TabContentsWrapper* tab_contents,
       preview_contents_->controller().LoadURL(
           instant_url, GURL(), transition_type);
       frame_load_observer_.reset(
-          new FrameLoadObserver(preview_contents()->tab_contents(),
-                                user_text_, verbatim));
+          new FrameLoadObserver(this,
+                                preview_contents()->tab_contents(),
+                                user_text_,
+                                verbatim));
     }
   } else {
     DCHECK(template_url_id_ == 0);
@@ -717,6 +721,10 @@ void InstantLoader::Observe(NotificationType type,
 
 void InstantLoader::PageFinishedLoading() {
   frame_load_observer_.reset();
+
+  // Send the bounds of the omnibox down now.
+  SendBoundsToPage(false);
+
   // Wait for the user input before showing, this way the page should be up to
   // date by the time we show it.
 }
@@ -750,12 +758,16 @@ void InstantLoader::PageDoesntSupportInstant(bool needs_reload) {
 }
 
 void InstantLoader::ProcessBoundsChange() {
+  SendBoundsToPage(false);
+}
+
+void InstantLoader::SendBoundsToPage(bool force_if_waiting) {
   if (last_omnibox_bounds_ == omnibox_bounds_)
     return;
 
-  last_omnibox_bounds_ = omnibox_bounds_;
   if (preview_contents_.get() && is_showing_instant() &&
-      !is_waiting_for_load()) {
+      (force_if_waiting || !is_waiting_for_load())) {
+    last_omnibox_bounds_ = omnibox_bounds_;
     preview_contents_->render_view_host()->SearchBoxResize(
         GetOmniboxBoundsInTermsOfPreview());
   }

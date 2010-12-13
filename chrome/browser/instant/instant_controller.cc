@@ -189,8 +189,10 @@ void InstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
   if (omnibox_bounds_ == bounds)
     return;
 
+  // Always track the omnibox bounds. That way if Update is later invoked the
+  // bounds are in sync.
+  omnibox_bounds_ = bounds;
   if (loader_manager_.get()) {
-    omnibox_bounds_ = bounds;
     if (loader_manager_->current_loader())
       loader_manager_->current_loader()->SetOmniboxBounds(bounds);
     if (loader_manager_->pending_loader())

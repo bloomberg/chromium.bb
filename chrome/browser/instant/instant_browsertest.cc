@@ -83,8 +83,8 @@ class InstantTest : public InProcessBrowserTest {
     EXPECT_TRUE(browser()->instant()->IsShowingInstant());
     EXPECT_FALSE(browser()->instant()->is_active());
 
-    // When the page loads, the initial searchBox values are set and no events
-    // have been called.
+    // When the page loads, the initial searchBox values are set and only a
+    // resize will have been sent.
     EXPECT_NO_FATAL_FAILURE(CheckBoolValueFromJavascript(
         true, "window.chrome.sv", preview_));
     EXPECT_NO_FATAL_FAILURE(CheckIntValueFromJavascript(
@@ -94,7 +94,7 @@ class InstantTest : public InProcessBrowserTest {
     EXPECT_NO_FATAL_FAILURE(CheckIntValueFromJavascript(
         0, "window.onchangecalls", preview_));
     EXPECT_NO_FATAL_FAILURE(CheckIntValueFromJavascript(
-        0, "window.onresizecalls", preview_));
+        1, "window.onresizecalls", preview_));
     EXPECT_NO_FATAL_FAILURE(CheckStringValueFromJavascript(
         "a", "window.chrome.searchBox.value", preview_));
     EXPECT_NO_FATAL_FAILURE(CheckBoolValueFromJavascript(
@@ -242,6 +242,29 @@ IN_PROC_BROWSER_TEST_F(InstantTest,
   ui_test_utils::WaitForNotification(NotificationType::TAB_CLOSED);
   EXPECT_FALSE(browser()->instant()->IsShowingInstant());
   EXPECT_FALSE(browser()->instant()->is_active());
+}
+
+// Verifies the page was told a non-zero height.
+// TODO: when we nuke the old api and fix 66104, this test should load
+// search.html.
+IN_PROC_BROWSER_TEST_F(InstantTest, ValidHeight) {
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("old_api.html"));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"a"));
+  // The preview should be active.
+  ASSERT_TRUE(browser()->instant()->is_active());
+  // And the height should be valid.
+  TabContents* tab = browser()->instant()->GetPreviewContents()->tab_contents();
+  ASSERT_NO_FATAL_FAILURE(
+      CheckBoolValueFromJavascript(true, "window.validHeight", tab));
+
+  // Check that searchbox height was also set.
+  std::wstring script =
+      L"window.domAutomationController.send(window.chrome.searchBox.height)";
+  int height;
+  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractInt(
+                  tab->render_view_host(), std::wstring(), script, &height));
+  EXPECT_GT(height, 0);
 }
 
 // Verify that the onsubmit event is dispatched upon pressing enter.

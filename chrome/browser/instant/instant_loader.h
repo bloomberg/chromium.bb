@@ -127,8 +127,13 @@ class InstantLoader : public NotificationObserver {
   // the page needs to be reloaded.
   void PageDoesntSupportInstant(bool needs_reload);
 
-  // Invoked from the timer to update the bounds of the omnibox.
+  // Invokes |SetBoundsToPage(false)|. This is called from the timer.
   void ProcessBoundsChange();
+
+  // Notifes the page of the omnibox bounds. If |force_if_loading| is true the
+  // bounds are sent down even if we're waiting on the load, otherwise if we're
+  // waiting on the load and |force_if_loading| is false this does nothing.
+  void SendBoundsToPage(bool force_if_loading);
 
   // Creates and sets the preview TabContentsWrapper.
   void CreatePreviewContents(TabContentsWrapper* tab_contents);
