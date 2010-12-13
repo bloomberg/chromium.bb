@@ -29,7 +29,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/database_messages.h"
 #include "chrome/common/db_message_filter.h"
-#include "chrome/common/dom_storage_common.h"
+#include "chrome/common/dom_storage_messages.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
@@ -391,7 +391,7 @@ bool RenderThread::Send(IPC::Message* msg) {
         case ViewHostMsg_GetCookies::ID:
         case ViewHostMsg_GetRawCookies::ID:
         case ViewHostMsg_CookiesEnabled::ID:
-        case ViewHostMsg_DOMStorageSetItem::ID:
+        case DOMStorageHostMsg_SetItem::ID:
         case ViewHostMsg_SyncLoad::ID:
         case DatabaseHostMsg_Allow::ID:
           may_show_cookie_prompt = true;
@@ -578,12 +578,12 @@ void RenderThread::OnExtensionSetHostPermissions(
 }
 
 void RenderThread::OnDOMStorageEvent(
-    const ViewMsg_DOMStorageEvent_Params& params) {
+    const DOMStorageMsg_Event_Params& params) {
   if (!dom_storage_event_dispatcher_.get())
     dom_storage_event_dispatcher_.reset(WebStorageEventDispatcher::create());
-  dom_storage_event_dispatcher_->dispatchStorageEvent(params.key_,
-      params.old_value_, params.new_value_, params.origin_, params.url_,
-      params.storage_type_ == DOM_STORAGE_LOCAL);
+  dom_storage_event_dispatcher_->dispatchStorageEvent(params.key,
+      params.old_value, params.new_value, params.origin, params.url,
+      params.storage_type == DOM_STORAGE_LOCAL);
 }
 
 void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
@@ -637,7 +637,7 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
                         OnExtensionSetAPIPermissions)
     IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetHostPermissions,
                         OnExtensionSetHostPermissions)
-    IPC_MESSAGE_HANDLER(ViewMsg_DOMStorageEvent,
+    IPC_MESSAGE_HANDLER(DOMStorageMsg_Event,
                         OnDOMStorageEvent)
 #if defined(IPC_MESSAGE_LOG_ENABLED)
     IPC_MESSAGE_HANDLER(ViewMsg_SetIPCLoggingEnabled,

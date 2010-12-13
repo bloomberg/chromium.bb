@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/in_process_webkit/dom_storage_dispatcher_host.h"
+#include "chrome/browser/in_process_webkit/dom_storage_message_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// TODO(jorlow): Write once dom_storage_dispatcher_host is more than just a
-//               stub.
+// TODO(jorlow): Write me

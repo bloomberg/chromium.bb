@@ -1213,7 +1213,7 @@
         'browser/importer/safari_importer_unittest.mm',
         'browser/importer/toolbar_importer_unittest.cc',
         'browser/instant/instant_loader_manager_unittest.cc',
-        'browser/in_process_webkit/dom_storage_dispatcher_host_unittest.cc',
+        'browser/in_process_webkit/dom_storage_message_filter_unittest.cc',
         'browser/in_process_webkit/webkit_context_unittest.cc',
         'browser/in_process_webkit/webkit_thread_unittest.cc',
         'browser/instant/promo_counter_unittest.cc',

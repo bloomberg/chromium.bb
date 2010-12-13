@@ -23,6 +23,7 @@
 #include "base/string16.h"
 #include "base/task.h"
 #include "build/build_config.h"
+#include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/net/resolve_proxy_msg_helper.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/common/content_settings.h"
@@ -32,7 +33,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 
 class ChromeURLRequestContext;
-class DOMStorageDispatcherHost;
 struct FontDescriptor;
 class GeolocationDispatcherHostOld;
 class HostZoomMap;
@@ -430,9 +430,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   scoped_refptr<RenderWidgetHelper> render_widget_helper_;
 
-  // Handles DOM Storage related messages.
-  scoped_refptr<DOMStorageDispatcherHost> dom_storage_dispatcher_host_;
-
   // Handles Indexed Database related messages.
   scoped_refptr<IndexedDBDispatcherHost> indexed_db_dispatcher_host_;
 
@@ -458,6 +455,8 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   // Used to handle geolocation-related messages.
   scoped_refptr<GeolocationDispatcherHostOld> geolocation_dispatcher_host_;
+
+  scoped_refptr<WebKitContext> webkit_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceMessageFilter);
 };

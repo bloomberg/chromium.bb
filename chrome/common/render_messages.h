@@ -17,7 +17,6 @@
 #include "base/string16.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/css_colors.h"
-#include "chrome/common/dom_storage_common.h"
 #include "chrome/common/indexed_db_param_traits.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/translate_errors.h"
@@ -25,7 +24,6 @@
 #include "chrome/common/webkit_param_traits.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_platform_file.h"                     // ifdefed typedef.
-#include "third_party/WebKit/WebKit/chromium/public/WebStorageArea.h"
 #include "webkit/appcache/appcache_interfaces.h"  // enum appcache::Status
 #include "webkit/fileapi/file_system_types.h"  // enum fileapi::FileSystemType
 #include "webkit/glue/plugins/pepper_dir_contents.h"
@@ -103,7 +101,6 @@ struct ViewHostMsg_DidPrintPage_Params;
 struct ViewHostMsg_Audio_CreateStream_Params;
 struct ViewHostMsg_ShowPopup_Params;
 struct ViewHostMsg_ScriptedPrint_Params;
-struct ViewMsg_DOMStorageEvent_Params;
 struct ViewHostMsg_IDBFactoryOpen_Params;
 struct ViewHostMsg_IDBDatabaseCreateObjectStore_Params;
 struct ViewHostMsg_IDBIndexOpenCursor_Params;
@@ -478,73 +475,6 @@ struct ParamTraits<EditCommand> {
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
-};
-
-// Traits for DOMStorageType enum.
-template <>
-struct ParamTraits<DOMStorageType> {
-  typedef DOMStorageType param_type;
-  static void Write(Message* m, const param_type& p) {
-    m->WriteInt(p);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    int type;
-    if (!m->ReadInt(iter, &type))
-      return false;
-    *p = static_cast<param_type>(type);
-    return true;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    std::string control;
-    switch (p) {
-      case DOM_STORAGE_LOCAL:
-        control = "DOM_STORAGE_LOCAL";
-        break;
-      case DOM_STORAGE_SESSION:
-        control = "DOM_STORAGE_SESSION";
-        break;
-      default:
-        NOTIMPLEMENTED();
-        control = "UNKNOWN";
-        break;
-    }
-    LogParam(control, l);
-  }
-};
-
-// Traits for WebKit::WebStorageArea::Result enum.
-template <>
-struct ParamTraits<WebKit::WebStorageArea::Result> {
-  typedef WebKit::WebStorageArea::Result param_type;
-  static void Write(Message* m, const param_type& p) {
-    m->WriteInt(p);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    int type;
-    if (!m->ReadInt(iter, &type))
-      return false;
-    *p = static_cast<param_type>(type);
-    return true;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    std::string control;
-    switch (p) {
-      case WebKit::WebStorageArea::ResultOK:
-        control = "WebKit::WebStorageArea::ResultOK";
-        break;
-      case WebKit::WebStorageArea::ResultBlockedByQuota:
-        control = "WebKit::WebStorageArea::ResultBlockedByQuota";
-        break;
-      case WebKit::WebStorageArea::ResultBlockedByPolicy:
-        control = "WebKit::WebStorageArea::ResultBlockedByPolicy";
-        break;
-      default:
-        NOTIMPLEMENTED();
-        control = "UNKNOWN";
-        break;
-    }
-    LogParam(control, l);
-  }
 };
 
 // Traits for WebCookie

@@ -16,7 +16,6 @@
 #include "base/shared_memory.h"
 #include "base/time.h"
 #include "base/values.h"
-#include "chrome/common/dom_storage_common.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_extent.h"
 #include "chrome/common/extensions/url_pattern.h"
@@ -635,30 +634,6 @@ struct ViewHostMsg_ScriptedPrint_Params {
   bool use_overlays;
 };
 
-// Signals a storage event.
-struct ViewMsg_DOMStorageEvent_Params {
-  ViewMsg_DOMStorageEvent_Params();
-  ~ViewMsg_DOMStorageEvent_Params();
-
-  // The key that generated the storage event.  Null if clear() was called.
-  NullableString16 key_;
-
-  // The old value of this key.  Null on clear() or if it didn't have a value.
-  NullableString16 old_value_;
-
-  // The new value of this key.  Null on removeItem() or clear().
-  NullableString16 new_value_;
-
-  // The origin this is associated with.
-  string16 origin_;
-
-  // The URL of the page that caused the storage event.
-  GURL url_;
-
-  // The storage type of this event.
-  DOMStorageType storage_type_;
-};
-
 // Used to open an indexed database.
 struct ViewHostMsg_IDBFactoryOpen_Params {
   ViewHostMsg_IDBFactoryOpen_Params();
@@ -1185,14 +1160,6 @@ struct ParamTraits<ViewHostMsg_ShowPopup_Params> {
 template <>
 struct ParamTraits<ViewHostMsg_ScriptedPrint_Params> {
   typedef ViewHostMsg_ScriptedPrint_Params param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<ViewMsg_DOMStorageEvent_Params> {
-  typedef ViewMsg_DOMStorageEvent_Params param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

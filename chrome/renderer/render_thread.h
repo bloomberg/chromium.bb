@@ -43,7 +43,7 @@ class WebDatabaseObserverImpl;
 
 struct ContentSettings;
 struct RendererPreferences;
-struct ViewMsg_DOMStorageEvent_Params;
+struct DOMStorageMsg_Event_Params;
 struct ViewMsg_ExtensionsUpdated_Params;
 struct ViewMsg_New_Params;
 struct WebPreferences;
@@ -271,7 +271,7 @@ class RenderThread : public RenderThreadBase,
       const ViewMsg_ExtensionsUpdated_Params& params);
   void OnPageActionsUpdated(const std::string& extension_id,
       const std::vector<std::string>& page_actions);
-  void OnDOMStorageEvent(const ViewMsg_DOMStorageEvent_Params& params);
+  void OnDOMStorageEvent(const DOMStorageMsg_Event_Params& params);
   void OnExtensionSetAPIPermissions(
       const std::string& extension_id,
       const std::set<std::string>& permissions);

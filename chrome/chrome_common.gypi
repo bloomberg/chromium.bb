@@ -55,6 +55,8 @@
           'common/devtools_messages.cc',
           'common/devtools_messages.h',
           'common/devtools_messages_internal.h',
+          'common/dom_storage_messages.cc',
+          'common/dom_storage_messages.h',
           'common/dx_diag_node.cc',
           'common/dx_diag_node.h',
           'common/file_system/webfilesystem_callback_dispatcher.cc',

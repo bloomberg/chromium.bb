@@ -6,7 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "chrome/browser/in_process_webkit/dom_storage_dispatcher_host.h"
+#include "chrome/browser/in_process_webkit/dom_storage_message_filter.h"
 #include "chrome/browser/in_process_webkit/indexed_db_key_utility_client.h"
 #include "chrome/common/indexed_db_key.h"
 #include "chrome/common/serialized_script_value.h"
@@ -131,8 +131,8 @@ void BrowserWebKitClientImpl::dispatchStorageEvent(
   if (!is_local_storage)
     return;
 
-  DOMStorageDispatcherHost::DispatchStorageEvent(key, old_value, new_value,
-                                                 origin, url, is_local_storage);
+  DOMStorageMessageFilter::DispatchStorageEvent(key, old_value, new_value,
+                                                origin, url, is_local_storage);
 }
 
 WebKit::WebSharedWorkerRepository*

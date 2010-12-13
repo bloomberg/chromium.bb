@@ -72,9 +72,9 @@ DOMStorageContext::DOMStorageContext(WebKitContext* webkit_context)
 }
 
 DOMStorageContext::~DOMStorageContext() {
-  // This should not go away until all DOM Storage Dispatcher hosts have gone
+  // This should not go away until all DOM Storage message filters have gone
   // away.  And they remove themselves from this list.
-  DCHECK(dispatcher_host_set_.empty());
+  DCHECK(message_filter_set_.empty());
 
   for (StorageNamespaceMap::iterator iter(storage_namespace_map_.begin());
        iter != storage_namespace_map_.end(); ++iter) {
@@ -157,26 +157,26 @@ DOMStorageNamespace* DOMStorageContext::GetStorageNamespace(
   return CreateSessionStorage(id);
 }
 
-void DOMStorageContext::RegisterDispatcherHost(
-    DOMStorageDispatcherHost* dispatcher_host) {
+void DOMStorageContext::RegisterMessageFilter(
+    DOMStorageMessageFilter* message_filter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(dispatcher_host_set_.find(dispatcher_host) ==
-         dispatcher_host_set_.end());
-  dispatcher_host_set_.insert(dispatcher_host);
+  DCHECK(message_filter_set_.find(message_filter) ==
+         message_filter_set_.end());
+  message_filter_set_.insert(message_filter);
 }
 
-void DOMStorageContext::UnregisterDispatcherHost(
-    DOMStorageDispatcherHost* dispatcher_host) {
+void DOMStorageContext::UnregisterMessageFilter(
+    DOMStorageMessageFilter* message_filter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(dispatcher_host_set_.find(dispatcher_host) !=
-         dispatcher_host_set_.end());
-  dispatcher_host_set_.erase(dispatcher_host);
+  DCHECK(message_filter_set_.find(message_filter) !=
+         message_filter_set_.end());
+  message_filter_set_.erase(message_filter);
 }
 
-const DOMStorageContext::DispatcherHostSet*
-DOMStorageContext::GetDispatcherHostSet() const {
+const DOMStorageContext::MessageFilterSet*
+DOMStorageContext::GetMessageFilterSet() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return &dispatcher_host_set_;
+  return &message_filter_set_;
 }
 
 void DOMStorageContext::PurgeMemory() {

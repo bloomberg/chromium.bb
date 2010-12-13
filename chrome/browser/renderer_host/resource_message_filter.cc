@@ -25,7 +25,6 @@
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/host_zoom_map.h"
-#include "chrome/browser/in_process_webkit/dom_storage_dispatcher_host.h"
 #include "chrome/browser/in_process_webkit/indexed_db_dispatcher_host.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
@@ -247,8 +246,6 @@ ResourceMessageFilter::ResourceMessageFilter(
       media_request_context_(profile->GetRequestContextForMedia()),
       extensions_request_context_(profile->GetRequestContextForExtensions()),
       render_widget_helper_(render_widget_helper),
-      ALLOW_THIS_IN_INITIALIZER_LIST(dom_storage_dispatcher_host_(
-          new DOMStorageDispatcherHost(this, profile->GetWebKitContext()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(indexed_db_dispatcher_host_(
           new IndexedDBDispatcherHost(this, profile))),
       notification_prefs_(
@@ -259,11 +256,11 @@ ResourceMessageFilter::ResourceMessageFilter(
           render_widget_helper, &RenderWidgetHelper::GetNextRoutingID)),
       ALLOW_THIS_IN_INITIALIZER_LIST(geolocation_dispatcher_host_(
           GeolocationDispatcherHostOld::New(
-              this->id(), profile->GetGeolocationPermissionContext()))) {
+              this->id(), profile->GetGeolocationPermissionContext()))),
+      webkit_context_(profile->GetWebKitContext()) {
   request_context_ = profile_->GetRequestContext();
   DCHECK(request_context_);
   DCHECK(media_request_context_);
-  DCHECK(dom_storage_dispatcher_host_.get());
 
   render_widget_helper_->Init(id(), resource_dispatcher_host_);
 #if defined(OS_CHROMEOS)
@@ -277,9 +274,6 @@ ResourceMessageFilter::ResourceMessageFilter(
 ResourceMessageFilter::~ResourceMessageFilter() {
   // This function should be called on the IO thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  // Tell the DOM Storage dispatcher host to stop sending messages via us.
-  dom_storage_dispatcher_host_->Shutdown();
 
   // Tell the Indexed DB dispatcher host to stop sending messages via us.
   indexed_db_dispatcher_host_->Shutdown();
@@ -311,7 +305,6 @@ void ResourceMessageFilter::OnChannelConnected(int32 peer_pid) {
   set_handle(peer_handle);
 
   WorkerService::GetInstance()->Initialize(resource_dispatcher_host_);
-  dom_storage_dispatcher_host_->Init(id(), handle());
   indexed_db_dispatcher_host_->Init(id(), handle());
 }
 
@@ -337,7 +330,6 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
   bool msg_is_ok = true;
   bool handled =
       resource_dispatcher_host_->OnMessageReceived(msg, this, &msg_is_ok) ||
-      dom_storage_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
       indexed_db_dispatcher_host_->OnMessageReceived(msg) ||
       mp_dispatcher->OnMessageReceived(
           msg, this, next_route_id_callback(), &msg_is_ok) ||
@@ -564,8 +556,9 @@ URLRequestContext* ResourceMessageFilter::GetRequestContext(
 void ResourceMessageFilter::OnMsgCreateWindow(
     const ViewHostMsg_CreateWindow_Params& params,
     int* route_id, int64* cloned_session_storage_namespace_id) {
-  *cloned_session_storage_namespace_id = dom_storage_dispatcher_host_->
-      CloneSessionStorage(params.session_storage_namespace_id);
+  *cloned_session_storage_namespace_id =
+      webkit_context_->dom_storage_context()->CloneSessionStorage(
+          params.session_storage_namespace_id);
   render_widget_helper_->CreateNewWindow(params.opener_id,
                                          params.user_gesture,
                                          params.window_container_type,

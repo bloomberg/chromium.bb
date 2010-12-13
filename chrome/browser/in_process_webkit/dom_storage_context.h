@@ -14,15 +14,15 @@
 #include "base/time.h"
 
 class DOMStorageArea;
-class DOMStorageDispatcherHost;
+class DOMStorageMessageFilter;
 class DOMStorageNamespace;
 class WebKitContext;
 
 // This is owned by WebKitContext and is all the dom storage information that's
-// shared by all the ResourceMessageFilter/DOMStorageDispatcherHosts that share
-// the same profile.  The specifics of responsibilities are fairly well
-// documented here and in StorageNamespace and StorageArea.  Everything is only
-// to be accessed on the WebKit thread unless noted otherwise.
+// shared by all the DOMStorageMessageFilters that share the same profile.  The
+// specifics of responsibilities are fairly well documented here and in
+// StorageNamespace and StorageArea.  Everything is only to be accessed on the
+// WebKit thread unless noted otherwise.
 //
 // NOTE: Virtual methods facilitate mocking functions for testing.
 class DOMStorageContext {
@@ -54,12 +54,12 @@ class DOMStorageContext {
   // namespace if it hasn't been already.
   DOMStorageNamespace* GetStorageNamespace(int64 id, bool allocation_allowed);
 
-  // Sometimes an event from one DOM storage dispatcher host requires
+  // Sometimes an event from one DOM storage message filter requires
   // communication to all of them.
-  typedef std::set<DOMStorageDispatcherHost*> DispatcherHostSet;
-  void RegisterDispatcherHost(DOMStorageDispatcherHost* dispatcher_host);
-  void UnregisterDispatcherHost(DOMStorageDispatcherHost* dispatcher_host);
-  const DispatcherHostSet* GetDispatcherHostSet() const;
+  typedef std::set<DOMStorageMessageFilter*> MessageFilterSet;
+  void RegisterMessageFilter(DOMStorageMessageFilter* message_filter);
+  void UnregisterMessageFilter(DOMStorageMessageFilter* MessageFilter);
+  const MessageFilterSet* GetMessageFilterSet() const;
 
   // Tells storage namespaces to purge any memory they do not need.
   virtual void PurgeMemory();
@@ -133,9 +133,9 @@ class DOMStorageContext {
   // make it point directly to the dom storage path.
   FilePath data_path_;
 
-  // All the DOMStorageDispatcherHosts that are attached to us. ONLY USE ON THE
+  // All the DOMStorageMessageFilters that are attached to us. ONLY USE ON THE
   // IO THREAD!
-  DispatcherHostSet dispatcher_host_set_;
+  MessageFilterSet message_filter_set_;
 
   // Maps ids to StorageAreas.  We do NOT own these objects.  StorageNamespace
   // (which does own them) will notify us when we should remove the entries.

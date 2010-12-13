@@ -902,10 +902,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_NotifyRenderViewType,
 IPC_MESSAGE_ROUTED1(ViewMsg_ExecuteCode,
                     ViewMsg_ExecuteCode_Params)
 
-// Storage events are broadcast to renderer processes.
-IPC_MESSAGE_CONTROL1(ViewMsg_DOMStorageEvent,
-                     ViewMsg_DOMStorageEvent_Params)
-
 // IDBCallback message handlers.
 IPC_MESSAGE_CONTROL1(ViewMsg_IDBCallbacksSuccessNull,
                      int32 /* response_id */)
@@ -2356,51 +2352,6 @@ IPC_MESSAGE_CONTROL3(ViewHostMsg_DidGenerateCacheableMetadata,
                      GURL /* url */,
                      double /* expected_response_time */,
                      std::vector<char> /* data */)
-
-// Get the storage area id for a particular origin within a namespace.
-IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_DOMStorageStorageAreaId,
-                            int64 /* namespace_id */,
-                            string16 /* origin */,
-                            int64 /* storage_area_id */)
-
-// Get the length of a storage area.
-IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_DOMStorageLength,
-                            int64 /* storage_area_id */,
-                            unsigned /* length */)
-
-// Get a the ith key within a storage area.
-IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_DOMStorageKey,
-                            int64 /* storage_area_id */,
-                            unsigned /* index */,
-                            NullableString16 /* key */)
-
-// Get a value based on a key from a storage area.
-IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_DOMStorageGetItem,
-                            int64 /* storage_area_id */,
-                            string16 /* key */,
-                            NullableString16 /* value */)
-
-// Set a value that's associated with a key in a storage area.
-IPC_SYNC_MESSAGE_ROUTED4_2(ViewHostMsg_DOMStorageSetItem,
-                           int64 /* storage_area_id */,
-                           string16 /* key */,
-                           string16 /* value */,
-                           GURL /* url */,
-                           WebKit::WebStorageArea::Result /* result */,
-                           NullableString16 /* old_value */)
-
-// Remove the value associated with a key in a storage area.
-IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_DOMStorageRemoveItem,
-                            int64 /* storage_area_id */,
-                            string16 /* key */,
-                            GURL /* url */,
-                            NullableString16 /* old_value */)
-
-// Clear the storage area.
-IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_DOMStorageClear,
-                            int64 /* storage_area_id */,
-                            GURL /* url */,
-                            bool /* something_cleared */)
 
 // WebIDBCursor::direction() message.
 IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBCursorDirection,

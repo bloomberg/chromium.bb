@@ -6,6 +6,10 @@
 #define CHROME_COMMON_DOM_STORAGE_COMMON_H_
 #pragma once
 
+#include "build/build_config.h"
+
+#include "base/basictypes.h"
+
 const int64 kLocalStorageNamespaceId = 0;
 const int64 kInvalidSessionStorageNamespaceId = kLocalStorageNamespaceId;
 

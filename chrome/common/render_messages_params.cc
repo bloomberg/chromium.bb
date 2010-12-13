@@ -166,13 +166,6 @@ ViewHostMsg_ScriptedPrint_Params::ViewHostMsg_ScriptedPrint_Params()
 ViewHostMsg_ScriptedPrint_Params::~ViewHostMsg_ScriptedPrint_Params() {
 }
 
-ViewMsg_DOMStorageEvent_Params::ViewMsg_DOMStorageEvent_Params()
-    : storage_type_(DOM_STORAGE_LOCAL) {
-}
-
-ViewMsg_DOMStorageEvent_Params::~ViewMsg_DOMStorageEvent_Params() {
-}
-
 ViewHostMsg_IDBFactoryOpen_Params::ViewHostMsg_IDBFactoryOpen_Params()
     : routing_id_(0),
       response_id_(0),
@@ -1215,45 +1208,6 @@ void ParamTraits<ViewHostMsg_ScriptedPrint_Params>::Log(const param_type& p,
   LogParam(p.has_selection, l);
   l->append(",");
   LogParam(p.use_overlays, l);
-  l->append(")");
-}
-
-void ParamTraits<ViewMsg_DOMStorageEvent_Params>::Write(Message* m,
-                                                        const param_type& p) {
-  WriteParam(m, p.key_);
-  WriteParam(m, p.old_value_);
-  WriteParam(m, p.new_value_);
-  WriteParam(m, p.origin_);
-  WriteParam(m, p.url_);
-  WriteParam(m, p.storage_type_);
-}
-
-bool ParamTraits<ViewMsg_DOMStorageEvent_Params>::Read(const Message* m,
-                                                       void** iter,
-                                                       param_type* p) {
-  return
-      ReadParam(m, iter, &p->key_) &&
-      ReadParam(m, iter, &p->old_value_) &&
-      ReadParam(m, iter, &p->new_value_) &&
-      ReadParam(m, iter, &p->origin_) &&
-      ReadParam(m, iter, &p->url_) &&
-      ReadParam(m, iter, &p->storage_type_);
-}
-
-void ParamTraits<ViewMsg_DOMStorageEvent_Params>::Log(const param_type& p,
-                                                      std::string* l) {
-  l->append("(");
-  LogParam(p.key_, l);
-  l->append(", ");
-  LogParam(p.old_value_, l);
-  l->append(", ");
-  LogParam(p.new_value_, l);
-  l->append(", ");
-  LogParam(p.origin_, l);
-  l->append(", ");
-  LogParam(p.url_, l);
-  l->append(", ");
-  LogParam(p.storage_type_, l);
   l->append(")");
 }
 
