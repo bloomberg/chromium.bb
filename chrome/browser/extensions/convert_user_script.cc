@@ -34,6 +34,11 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
     return NULL;
   }
 
+  if (!IsStringUTF8(content)) {
+    *error = "User script must be UTF8 encoded.";
+    return NULL;
+  }
+
   UserScript script;
   if (!UserScriptMaster::ScriptReloader::ParseMetadataHeader(content,
                                                              &script)) {

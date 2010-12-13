@@ -92,3 +92,18 @@ TEST(ExtensionFromUserScript, NoMetdata) {
   // Cleanup
   file_util::Delete(extension->path(), true);
 }
+
+TEST(ExtensionFromUserScript, NotUTF8) {
+  FilePath test_file;
+
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_file));
+  test_file = test_file.AppendASCII("extensions")
+                       .AppendASCII("user_script_not_utf8.user.js");
+
+  std::string error;
+  scoped_refptr<Extension> extension(ConvertUserScriptToExtension(
+      test_file, GURL("http://www.google.com/foo/bar.user.js?monkey"), &error));
+
+  ASSERT_FALSE(extension.get());
+  EXPECT_EQ("User script must be UTF8 encoded.", error);
+}
