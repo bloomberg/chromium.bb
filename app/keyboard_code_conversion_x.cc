@@ -15,15 +15,23 @@ namespace app {
 KeyboardCode KeyboardCodeFromXKeyEvent(XEvent* xev) {
   KeySym keysym = XLookupKeysym(&xev->xkey, 0);
 
+  // Consult GDK key translation (in WindowsKeyCodeForGdkKeyCode) for details
+  // about the following translations.
+
   // TODO(sad): Have |keysym| go through the X map list?
 
   switch (keysym) {
     case XK_BackSpace:
       return VKEY_BACK;
+    case XK_Delete:
+    case XK_KP_Delete:
+      return VKEY_DELETE;
     case XK_Tab:
+    case XK_KP_Tab:
       return VKEY_TAB;
     case XK_Linefeed:
     case XK_Return:
+    case XK_KP_Enter:
       return VKEY_RETURN;
     case XK_Clear:
       return VKEY_CLEAR;
@@ -36,6 +44,12 @@ KeyboardCode KeyboardCodeFromXKeyEvent(XEvent* xev) {
     case XK_End:
     case XK_KP_End:
       return VKEY_END;
+    case XK_Page_Up:
+    case XK_KP_Page_Up:
+      return VKEY_PRIOR;
+    case XK_Page_Down:
+    case XK_KP_Page_Down:
+      return VKEY_NEXT;
     case XK_Left:
     case XK_KP_Left:
       return VKEY_LEFT;
@@ -48,10 +62,6 @@ KeyboardCode KeyboardCodeFromXKeyEvent(XEvent* xev) {
     case XK_Up:
     case XK_KP_Up:
       return VKEY_UP;
-    case XK_Control_L:
-      return VKEY_LCONTROL;
-    case XK_Control_R:
-      return VKEY_RCONTROL;
     case XK_Escape:
       return VKEY_ESCAPE;
     case XK_A:
@@ -153,7 +163,115 @@ KeyboardCode KeyboardCodeFromXKeyEvent(XEvent* xev) {
     case XK_9:
       return VKEY_9;
 
-    // TODO(sad): A lot of keycodes are still missing.
+    case XK_multiply:
+    case XK_KP_Multiply:
+      return VKEY_MULTIPLY;
+    case XK_KP_Add:
+      return VKEY_ADD;
+    case XK_KP_Separator:
+      return VKEY_SEPARATOR;
+    case XK_KP_Subtract:
+      return VKEY_SUBTRACT;
+    case XK_KP_Decimal:
+      return VKEY_DECIMAL;
+    case XK_KP_Divide:
+      return VKEY_DIVIDE;
+    case XK_equal:
+    case XK_plus:
+      return VKEY_OEM_PLUS;
+    case XK_comma:
+    case XK_less:
+      return VKEY_OEM_COMMA;
+    case XK_minus:
+    case XK_underscore:
+      return VKEY_OEM_MINUS;
+    case XK_greater:
+    case XK_period:
+      return VKEY_OEM_PERIOD;
+    case XK_colon:
+    case XK_semicolon:
+      return VKEY_OEM_1;
+    case XK_question:
+    case XK_slash:
+      return VKEY_OEM_2;
+    case XK_asciitilde:
+    case XK_quoteleft:
+      return VKEY_OEM_3;
+    case XK_bracketleft:
+    case XK_braceleft:
+      return VKEY_OEM_4;
+    case XK_backslash:
+    case XK_bar:
+      return VKEY_OEM_5;
+    case XK_bracketright:
+    case XK_braceright:
+      return VKEY_OEM_6;
+    case XK_quoteright:
+    case XK_quotedbl:
+      return VKEY_OEM_7;
+    case XK_Shift_L:
+    case XK_Shift_R:
+      return VKEY_SHIFT;
+    case XK_Control_L:
+    case XK_Control_R:
+      return VKEY_CONTROL;
+    case XK_Alt_L:
+    case XK_Alt_R:
+      return VKEY_MENU;
+    case XK_Pause:
+      return VKEY_PAUSE;
+    case XK_Caps_Lock:
+      return VKEY_CAPITAL;
+    case XK_Num_Lock:
+      return VKEY_NUMLOCK;
+    case XK_Scroll_Lock:
+      return VKEY_SCROLL;
+    case XK_Select:
+      return VKEY_SELECT;
+    case XK_Print:
+      return VKEY_PRINT;
+    case XK_Execute:
+      return VKEY_EXECUTE;
+    case XK_Insert:
+    case XK_KP_Insert:
+      return VKEY_INSERT;
+    case XK_Help:
+      return VKEY_HELP;
+    case XK_Meta_L:
+    case XK_Super_L:
+      return VKEY_LWIN;
+    case XK_Meta_R:
+    case XK_Super_R:
+      return VKEY_RWIN;
+    case XK_Menu:
+      return VKEY_APPS;
+    case XK_F1:
+    case XK_F2:
+    case XK_F3:
+    case XK_F4:
+    case XK_F5:
+    case XK_F6:
+    case XK_F7:
+    case XK_F8:
+    case XK_F9:
+    case XK_F10:
+    case XK_F11:
+    case XK_F12:
+    case XK_F13:
+    case XK_F14:
+    case XK_F15:
+    case XK_F16:
+    case XK_F17:
+    case XK_F18:
+    case XK_F19:
+    case XK_F20:
+    case XK_F21:
+    case XK_F22:
+    case XK_F23:
+    case XK_F24:
+      return static_cast<app::KeyboardCode>(VKEY_F1 + (keysym - XK_F1));
+
+    // TODO(sad): some keycodes are still missing.
   }
 
   DLOG(WARNING) << "Unknown keycode: " << keysym;
