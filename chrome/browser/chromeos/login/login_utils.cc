@@ -107,7 +107,8 @@ class LoginUtilsImpl : public LoginUtils {
   virtual void CompleteLogin(
       const std::string& username,
       const std::string& password,
-      const GaiaAuthConsumer::ClientLoginResult& credentials);
+      const GaiaAuthConsumer::ClientLoginResult& credentials,
+      bool pending_requests);
 
   // Invoked after the tmpfs is successfully mounted.
   // Launches a browser in the off the record (incognito) mode.
@@ -130,6 +131,17 @@ class LoginUtilsImpl : public LoginUtils {
 
   // Warms the url used by authentication.
   virtual void PrewarmAuthentication();
+
+  // Given the credentials try to exchange them for
+  // full-fledged Google authentication cookies.
+  virtual void FetchCookies(
+      Profile* profile,
+      const GaiaAuthConsumer::ClientLoginResult& credentials);
+
+  // Supply credentials for sync and others to use.
+  virtual void FetchTokens(
+      Profile* profile,
+      const GaiaAuthConsumer::ClientLoginResult& credentials);
 
  private:
   // Check user's profile for kApplicationLocale setting.
@@ -172,7 +184,8 @@ class LoginUtilsWrapper {
 void LoginUtilsImpl::CompleteLogin(
     const std::string& username,
     const std::string& password,
-    const GaiaAuthConsumer::ClientLoginResult& credentials) {
+    const GaiaAuthConsumer::ClientLoginResult& credentials,
+    bool pending_requests) {
   BootTimesLoader* btl = BootTimesLoader::Get();
 
   VLOG(1) << "Completing login for " << username;
@@ -223,15 +236,13 @@ void LoginUtilsImpl::CompleteLogin(
                           new ResetDefaultProxyConfigServiceTask(
                               proxy_config_service));
 
-  // Take the credentials passed in and try to exchange them for
-  // full-fledged Google authentication cookies.  This is
-  // best-effort; it's possible that we'll fail due to network
-  // troubles or some such.  Either way, |cf| will call
-  // DoBrowserLaunch on the UI thread when it's done, and then
-  // delete itself.
-  CookieFetcher* cf = new CookieFetcher(profile);
-  cf->AttemptFetch(credentials.data);
-  btl->AddLoginTimeMarker("CookieFetchStarted", false);
+  // Since we're doing parallel authentication, only new user sign in
+  // would perform online auth before calling CompleteLogin.
+  // For existing users there's usually a pending online auth request.
+  // Cookies will be fetched after it's is succeeded.
+  if (!pending_requests) {
+    FetchCookies(profile, credentials);
+  }
 
   // Init extension event routers; this normally happens in browser_main
   // but on Chrome OS it has to be deferred until the user finishes
@@ -247,9 +258,11 @@ void LoginUtilsImpl::CompleteLogin(
   token_service->Initialize(GaiaConstants::kChromeOSSource,
                             profile);
   token_service->LoadTokensFromDB();
-  token_service->UpdateCredentials(credentials);
-  if (token_service->AreCredentialsValid()) {
-    token_service->StartFetchingTokens();
+
+  // For existing users there's usually a pending online auth request.
+  // Tokens will be fetched after it's is succeeded.
+  if (!pending_requests) {
+    FetchTokens(profile, credentials);
   }
   btl->AddLoginTimeMarker("TokensGotten", false);
 
@@ -291,6 +304,29 @@ void LoginUtilsImpl::CompleteLogin(
   }
 
   DoBrowserLaunch(profile);
+}
+
+void LoginUtilsImpl::FetchCookies(
+    Profile* profile,
+    const GaiaAuthConsumer::ClientLoginResult& credentials) {
+  // Take the credentials passed in and try to exchange them for
+  // full-fledged Google authentication cookies.  This is
+  // best-effort; it's possible that we'll fail due to network
+  // troubles or some such.
+  // CookieFetcher will delete itself once done.
+  CookieFetcher* cf = new CookieFetcher(profile);
+  cf->AttemptFetch(credentials.data);
+  BootTimesLoader::Get()->AddLoginTimeMarker("CookieFetchStarted", false);
+}
+
+void LoginUtilsImpl::FetchTokens(
+    Profile* profile,
+    const GaiaAuthConsumer::ClientLoginResult& credentials) {
+  TokenService* token_service = profile->GetTokenService();
+  token_service->UpdateCredentials(credentials);
+  if (token_service->AreCredentialsValid()) {
+    token_service->StartFetchingTokens();
+  }
 }
 
 void LoginUtilsImpl::RespectLocalePreference(PrefService* pref) {

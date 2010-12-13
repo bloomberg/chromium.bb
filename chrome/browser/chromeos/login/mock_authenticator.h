@@ -112,7 +112,8 @@ class MockLoginUtils : public LoginUtils {
 
   virtual void CompleteLogin(const std::string& username,
                              const std::string& password,
-                             const GaiaAuthConsumer::ClientLoginResult& res) {
+                             const GaiaAuthConsumer::ClientLoginResult& res,
+                             bool pending_requests) {
     EXPECT_EQ(expected_username_, username);
     EXPECT_EQ(expected_password_, password);
   }
@@ -135,11 +136,17 @@ class MockLoginUtils : public LoginUtils {
     return true;
   }
 
-  virtual const std::string& GetAuthToken() const {
-    return auth_token_;
+  virtual void PrewarmAuthentication() {
   }
 
-  virtual void PrewarmAuthentication() {
+  virtual void FetchCookies(
+      Profile* profile,
+      const GaiaAuthConsumer::ClientLoginResult& credentials) {
+  }
+
+  virtual void FetchTokens(
+      Profile* profile,
+      const GaiaAuthConsumer::ClientLoginResult& credentials) {
   }
 
  private:

@@ -36,10 +36,12 @@ class LoginUtils {
 
   // Invoked after the user has successfully logged in. This launches a browser
   // and does other bookkeeping after logging in.
+  // If |pending_requests| is true, there's a pending online auth request.
   virtual void CompleteLogin(
       const std::string& username,
       const std::string& password,
-      const GaiaAuthConsumer::ClientLoginResult& credentials) = 0;
+      const GaiaAuthConsumer::ClientLoginResult& credentials,
+      bool pending_requests) = 0;
 
   // Invoked after the tmpfs is successfully mounted.
   // Asks session manager to restart Chrome in Browse Without Sign In mode.
@@ -63,6 +65,17 @@ class LoginUtils {
 
   // Prewarms the authentication network connection.
   virtual void PrewarmAuthentication() = 0;
+
+  // Given the credentials try to exchange them for
+  // full-fledged Google authentication cookies.
+  virtual void FetchCookies(
+      Profile* profile,
+      const GaiaAuthConsumer::ClientLoginResult& credentials) = 0;
+
+  // Supply credentials for sync and others to use.
+  virtual void FetchTokens(
+      Profile* profile,
+      const GaiaAuthConsumer::ClientLoginResult& credentials) = 0;
 
 };
 

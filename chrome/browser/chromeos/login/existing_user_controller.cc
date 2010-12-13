@@ -525,7 +525,10 @@ void ExistingUserController::OnLoginSuccess(
     }
     // For new user login don't launch browser until we pass image screen.
     LoginUtils::Get()->EnableBrowserLaunch(false);
-    LoginUtils::Get()->CompleteLogin(username, password, credentials);
+    LoginUtils::Get()->CompleteLogin(username,
+                                     password,
+                                     credentials,
+                                     pending_requests);
     ActivateWizard(WizardController::IsDeviceRegistered() ?
         WizardController::kUserImageScreenName :
         WizardController::kRegistrationScreenName);
@@ -534,7 +537,10 @@ void ExistingUserController::OnLoginSuccess(
     WmIpc::Message message(WM_IPC_MESSAGE_WM_HIDE_LOGIN);
     WmIpc::instance()->SendMessage(message);
 
-    LoginUtils::Get()->CompleteLogin(username, password, credentials);
+    LoginUtils::Get()->CompleteLogin(username,
+                                     password,
+                                     credentials,
+                                     pending_requests);
 
     // Delay deletion as we're on the stack.
     MessageLoop::current()->DeleteSoon(FROM_HERE, this);

@@ -20,10 +20,10 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/notification_type.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "grit/generated_resources.h"
 
 namespace chromeos {
@@ -127,9 +127,11 @@ void LoginPerformer::OnLoginSuccess(
     DCHECK(!pending_requests)
         << "Pending request w/o delegate_ should not happen!";
     // Online login has succeeded.
-    // TODO(nkostylev): Execute CookieFetcher->AttemptFetch() here once
-    // async login is implemented.
-    // http://crosbug.com/9814
+    Profile* profile =
+        g_browser_process->profile_manager()->GetDefaultProfile();
+    LoginUtils::Get()->FetchCookies(profile, credentials);
+    LoginUtils::Get()->FetchTokens(profile, credentials);
+
     if (ScreenLocker::default_screen_locker()) {
       DVLOG(1) << "Online login OK - unlocking screen.";
       RequestScreenUnlock();

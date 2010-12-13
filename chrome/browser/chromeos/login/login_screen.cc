@@ -102,7 +102,10 @@ void LoginScreen::OnLoginSuccess(
 
   delegate()->GetObserver(this)->OnExit(ScreenObserver::LOGIN_SIGN_IN_SELECTED);
   AppendStartUrlToCmdline();
-  LoginUtils::Get()->CompleteLogin(username, password, credentials);
+  LoginUtils::Get()->CompleteLogin(username,
+                                   password,
+                                   credentials,
+                                   pending_requests);
 }
 
 void LoginScreen::OnOffTheRecordLoginSuccess() {
