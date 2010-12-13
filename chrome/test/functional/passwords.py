@@ -123,6 +123,36 @@ class PasswordTest(pyauto.PyUITest):
     # self.assertFalse(self.GetSavedPasswords())
     # TODO: Check the exceptions list
 
+  def testSavedPasswordInTabsAndWindows(self):
+    """Verify saved username/password displays in Regular/Incognito Window
+       and NTP"""
+    username = 'test'
+    password = 'test12345'
+    password_dict = {
+    u'action_target': u'https://www.google.com/accounts/ServiceLoginAuth',
+    u'blacklist': False,
+    u'origin_url': u'https://www.google.com/accounts/ServiceLogin',
+    u'password_element': u'Passwd',
+    u'password_value': u'test12345',
+    u'signon_realm': u'https://www.google.com/',
+    u'submit_element': u'',
+    u'time': 1280939865.0,
+    u'username_element': u'Email',
+    u'username_value': u'test'}
+    url = 'https://www.google.com/accounts/ServiceLogin'
+    self.AddSavedPassword(password_dict)
+    self.NavigateToURL(url)
+    test_utils.VerifyGoogleAccountCredsFilled(self, username, password,
+        tab_index=0, windex=0)
+    self.AppendTab(pyauto.GURL(url))
+    test_utils.VerifyGoogleAccountCredsFilled(self, username, password,
+        tab_index=1, windex=0)
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    self.NavigateToURL(url, 1, 0)
+    test_utils.VerifyGoogleAccountCredsFilled(self, username, password,
+        tab_index=0, windex=1)
+    test_utils.ClearPasswords(self)
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
