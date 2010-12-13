@@ -56,6 +56,25 @@ string16 GetDisplayNameForLocale(const std::string& locale,
                                  const std::string& display_locale,
                                  bool is_for_ui);
 
+// Converts all - into _, to be consistent with ICU and file system names.
+std::string NormalizeLocale(const std::string& locale);
+
+// Produce a vector of parent locales for given locale.
+// It includes the current locale in the result.
+// sr_Cyrl_RS generates sr_Cyrl_RS, sr_Cyrl and sr.
+void GetParentLocales(const std::string& current_locale,
+                      std::vector<std::string>* parent_locales);
+
+// Checks if a string is plausibly a syntactically-valid locale string,
+// for cases where we want the valid input to be a locale string such as
+// 'en', 'pt-BR', 'fil', 'es-419', 'zh-Hans-CN', 'i-klingon' or
+// 'de_DE@collation=phonebook', but we don't want to limit it to
+// locales that Chrome actually knows about, so 'xx-YY' should be
+// accepted, but 'z', 'German', 'en-$1', or 'abcd-1234' should not.
+// Case-insensitive. Based on BCP 47, see:
+//   http://unicode.org/reports/tr35/#Unicode_Language_and_Locale_Identifiers
+bool IsValidLocaleSyntax(const std::string& locale);
+
 //
 // Mac Note: See l10n_util_mac.h for some NSString versions and other support.
 //

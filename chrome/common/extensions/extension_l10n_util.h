@@ -59,17 +59,8 @@ bool AddLocale(const std::set<std::string>& chrome_locales,
                std::set<std::string>* valid_locales,
                std::string* error);
 
-// Converts all - into _, to be consistent with ICU and file system names.
-std::string NormalizeLocale(const std::string& locale);
-
 // Returns normalized current locale, or default locale - en_US.
 std::string CurrentLocaleOrDefault();
-
-// Produce a vector of parent locales for given locale.
-// It includes the current locale in the result.
-// sr_Cyrl_RS generates sr_Cyrl_RS, sr_Cyrl and sr.
-void GetParentLocales(const std::string& current_locale,
-                      std::vector<std::string>* parent_locales);
 
 // Extends list of Chrome locales to them and their parents, so we can do
 // proper fallback.

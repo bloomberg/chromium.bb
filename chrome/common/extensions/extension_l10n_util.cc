@@ -167,35 +167,12 @@ bool AddLocale(const std::set<std::string>& chrome_locales,
   return true;
 }
 
-std::string NormalizeLocale(const std::string& locale) {
-  std::string normalized_locale(locale);
-  std::replace(normalized_locale.begin(), normalized_locale.end(), '-', '_');
-
-  return normalized_locale;
-}
-
 std::string CurrentLocaleOrDefault() {
-  std::string current_locale = NormalizeLocale(*GetProcessLocale());
+  std::string current_locale = l10n_util::NormalizeLocale(*GetProcessLocale());
   if (current_locale.empty())
     current_locale = "en";
 
   return current_locale;
-}
-
-void GetParentLocales(const std::string& current_locale,
-                      std::vector<std::string>* parent_locales) {
-  std::string locale(NormalizeLocale(current_locale));
-
-  const int kNameCapacity = 256;
-  char parent[kNameCapacity];
-  base::strlcpy(parent, locale.c_str(), kNameCapacity);
-  parent_locales->push_back(parent);
-  UErrorCode err = U_ZERO_ERROR;
-  while (uloc_getParent(parent, parent, kNameCapacity, &err) > 0) {
-    if (U_FAILURE(err))
-      break;
-    parent_locales->push_back(parent);
-  }
 }
 
 void GetAllLocales(std::set<std::string>* all_locales) {
@@ -205,7 +182,7 @@ void GetAllLocales(std::set<std::string>* all_locales) {
   // I.e. for sr_Cyrl_RS we add sr_Cyrl_RS, sr_Cyrl and sr.
   for (size_t i = 0; i < available_locales.size(); ++i) {
     std::vector<std::string> result;
-    GetParentLocales(available_locales[i], &result);
+    l10n_util::GetParentLocales(available_locales[i], &result);
     all_locales->insert(result.begin(), result.end());
   }
 }
@@ -240,6 +217,7 @@ bool GetValidLocales(const FilePath& locale_path,
 
   return true;
 }
+
 // Loads contents of the messages file for given locale. If file is not found,
 // or there was parsing error we return NULL and set |error|.
 // Caller owns the returned object.
@@ -270,7 +248,7 @@ ExtensionMessageBundle* LoadMessageCatalogs(
   // Order locales to load as current_locale, first_parent, ..., default_locale.
   std::vector<std::string> all_fallback_locales;
   if (!application_locale.empty() && application_locale != default_locale)
-    GetParentLocales(application_locale, &all_fallback_locales);
+    l10n_util::GetParentLocales(application_locale, &all_fallback_locales);
   all_fallback_locales.push_back(default_locale);
 
   std::vector<linked_ptr<DictionaryValue> > catalogs;

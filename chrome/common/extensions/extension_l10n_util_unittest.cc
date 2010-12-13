@@ -214,17 +214,6 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsDuplicateKeys) {
   EXPECT_TRUE(error.empty());
 }
 
-TEST(ExtensionL10nUtil, GetParentLocales) {
-  std::vector<std::string> locales;
-  const std::string top_locale("sr_Cyrl_RS");
-  extension_l10n_util::GetParentLocales(top_locale, &locales);
-
-  ASSERT_EQ(3U, locales.size());
-  EXPECT_EQ("sr_Cyrl_RS", locales[0]);
-  EXPECT_EQ("sr_Cyrl", locales[1]);
-  EXPECT_EQ("sr", locales[2]);
-}
-
 // Caller owns the returned object.
 ExtensionMessageBundle* CreateManifestBundle() {
   linked_ptr<DictionaryValue> catalog(new DictionaryValue);

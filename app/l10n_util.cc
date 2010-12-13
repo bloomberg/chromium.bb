@@ -29,6 +29,7 @@
 #include "build/build_config.h"
 #include "gfx/canvas.h"
 #include "unicode/rbbi.h"
+#include "unicode/uloc.h"
 
 #if defined(OS_MACOSX)
 #include "app/l10n_util_mac.h"
@@ -473,6 +474,97 @@ string16 GetDisplayNameForLocale(const std::string& locale,
   if (is_for_ui && base::i18n::IsRTL())
     display_name.push_back(static_cast<char16>(base::i18n::kRightToLeftMark));
   return display_name;
+}
+
+std::string NormalizeLocale(const std::string& locale) {
+  std::string normalized_locale(locale);
+  std::replace(normalized_locale.begin(), normalized_locale.end(), '-', '_');
+
+  return normalized_locale;
+}
+
+void GetParentLocales(const std::string& current_locale,
+                      std::vector<std::string>* parent_locales) {
+  std::string locale(NormalizeLocale(current_locale));
+
+  const int kNameCapacity = 256;
+  char parent[kNameCapacity];
+  base::strlcpy(parent, locale.c_str(), kNameCapacity);
+  parent_locales->push_back(parent);
+  UErrorCode err = U_ZERO_ERROR;
+  while (uloc_getParent(parent, parent, kNameCapacity, &err) > 0) {
+    if (U_FAILURE(err))
+      break;
+    parent_locales->push_back(parent);
+  }
+}
+
+bool IsValidLocaleSyntax(const std::string& locale) {
+  // Check that the length is plausible.
+  if (locale.size() < 2 || locale.size() >= ULOC_FULLNAME_CAPACITY)
+    return false;
+
+  // Strip off the part after an '@' sign, which might contain keywords,
+  // as in en_IE@currency=IEP or fr@collation=phonebook;calendar=islamic-civil.
+  // We don't validate that part much, just check that there's at least one
+  // equals sign in a plausible place.
+  std::string prefix = locale;
+  if (locale.find("@") != std::string::npos) {
+    size_t split_point = locale.find("@");
+    std::string keywords = locale.substr(split_point + 1);
+    prefix = locale.substr(0, split_point);
+
+    size_t equals_loc = keywords.find("=");
+    if (equals_loc == std::string::npos ||
+        equals_loc < 1 || equals_loc > keywords.size() - 2)
+      return false;
+  }
+
+  // Check that all characters before the at-sign are alphanumeric, hyphen,
+  // or underscore.
+  for (size_t i = 0; i < prefix.size(); i++) {
+    char ch = prefix[i];
+    if (!IsAsciiAlpha(ch) && !IsAsciiDigit(ch) && ch != '-' && ch != '_')
+      return false;
+  }
+
+  // Check that the initial token (before the first hyphen/underscore)
+  // is 1 - 3 alphabetical characters (a language tag).
+  for (size_t i = 0; i < prefix.size(); i++) {
+    char ch = prefix[i];
+    if (ch == '-' || ch == '_') {
+      if (i < 1 || i > 3)
+        return false;
+      break;
+    }
+    if (!IsAsciiAlpha(ch))
+      return false;
+  }
+
+  // Check that the all tokens after the initial token are 1 - 8 characters.
+  // (Tokenize/StringTokenizer don't work here, they collapse multiple
+  // delimiters into one.)
+  int token_len = 0;
+  int token_index = 0;
+  for (size_t i = 0; i < prefix.size(); i++) {
+    char ch = prefix[i];
+    if (ch == '-' || ch == '_') {
+      if (token_index > 0 && (token_len < 1 || token_len > 8)) {
+        return false;
+      }
+      token_index++;
+      token_len = 0;
+    } else {
+      token_len++;
+    }
+  }
+  if (token_index == 0 && (token_len < 1 || token_len > 3)) {
+    return false;
+  } else if (token_len < 1 || token_len > 8) {
+    return false;
+  }
+
+  return true;
 }
 
 std::wstring GetString(int message_id) {
