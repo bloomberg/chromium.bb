@@ -58,6 +58,10 @@
 // at the given point (in that view's coordinates).
 - (void)dropURLs:(NSArray*)urls inView:(NSView*)view at:(NSPoint)point;
 
+// The given text was dropped in the given view at the given point (in that
+// view's coordinates).
+- (void)dropText:(NSString*)text inView:(NSView*)view at:(NSPoint)point;
+
 // Dragging is in progress over the owner view (at the given point, in view
 // coordinates) and any indicator of location -- e.g., an arrow -- should be
 // updated/shown.

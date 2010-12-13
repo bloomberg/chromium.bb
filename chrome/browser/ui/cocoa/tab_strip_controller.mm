@@ -15,6 +15,9 @@
 #include "base/nsimage_cache_mac.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/debugger/devtools_window.h"
@@ -1686,6 +1689,40 @@ private:
   *disposition = NEW_FOREGROUND_TAB;
 }
 
+- (void)openURL:(GURL*)url inView:(NSView*)view at:(NSPoint)point {
+  // Get the index and disposition.
+  NSInteger index;
+  WindowOpenDisposition disposition;
+  [self droppingURLsAt:point
+            givesIndex:&index
+           disposition:&disposition];
+
+  // Either insert a new tab or open in a current tab.
+  switch (disposition) {
+    case NEW_FOREGROUND_TAB: {
+      UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"),
+                                browser_->profile());
+      browser::NavigateParams params(browser_, *url, PageTransition::TYPED);
+      params.disposition = disposition;
+      params.tabstrip_index = index;
+      params.tabstrip_add_types =
+          TabStripModel::ADD_SELECTED | TabStripModel::ADD_FORCE_INDEX;
+      browser::Navigate(&params);
+      break;
+    }
+    case CURRENT_TAB:
+      UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLOnTab"),
+                                browser_->profile());
+      tabStripModel_->GetTabContentsAt(index)
+          ->tab_contents()->OpenURL(*url, GURL(), CURRENT_TAB,
+                                    PageTransition::TYPED);
+      tabStripModel_->SelectTabContentsAt(index, true);
+      break;
+    default:
+      NOTIMPLEMENTED();
+  }
+}
+
 // (URLDropTargetController protocol)
 - (void)dropURLs:(NSArray*)urls inView:(NSView*)view at:(NSPoint)point {
   DCHECK_EQ(view, tabStripView_.get());
@@ -1700,40 +1737,24 @@ private:
     NOTIMPLEMENTED();
 
   // Get the first URL and fix it up.
-  GURL url(URLFixerUpper::FixupURL(
-      base::SysNSStringToUTF8([urls objectAtIndex:0]), std::string()));
+  GURL url(GURL(URLFixerUpper::FixupURL(
+      base::SysNSStringToUTF8([urls objectAtIndex:0]), std::string())));
 
-  // Get the index and disposition.
-  NSInteger index;
-  WindowOpenDisposition disposition;
-  [self droppingURLsAt:point
-            givesIndex:&index
-           disposition:&disposition];
+  [self openURL:&url inView:view at:point];
+}
 
-  // Either insert a new tab or open in a current tab.
-  switch (disposition) {
-    case NEW_FOREGROUND_TAB: {
-      UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"),
-                                browser_->profile());
-      browser::NavigateParams params(browser_, url, PageTransition::TYPED);
-      params.disposition = disposition;
-      params.tabstrip_index = index;
-      params.tabstrip_add_types =
-          TabStripModel::ADD_SELECTED | TabStripModel::ADD_FORCE_INDEX;
-      browser::Navigate(&params);
-      break;
-    }
-    case CURRENT_TAB:
-      UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLOnTab"),
-                                browser_->profile());
-      tabStripModel_->GetTabContentsAt(index)
-          ->tab_contents()->OpenURL(url, GURL(), CURRENT_TAB,
-                                    PageTransition::TYPED);
-      tabStripModel_->SelectTabContentsAt(index, true);
-      break;
-    default:
-      NOTIMPLEMENTED();
-  }
+// (URLDropTargetController protocol)
+- (void)dropText:(NSString*)text inView:(NSView*)view at:(NSPoint)point {
+  DCHECK_EQ(view, tabStripView_.get());
+
+  // If the input is plain text, classify the input and make the URL.
+  AutocompleteMatch match;
+  browser_->profile()->GetAutocompleteClassifier()->Classify(
+      base::SysNSStringToWide(text),
+      std::wstring(), false, &match, NULL);
+  GURL url(match.destination_url);
+
+  [self openURL:&url inView:view at:point];
 }
 
 // (URLDropTargetController protocol)

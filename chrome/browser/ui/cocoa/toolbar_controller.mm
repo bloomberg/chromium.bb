@@ -15,7 +15,10 @@
 #include "base/singleton.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -735,6 +738,23 @@ class NotificationBridge : public NotificationObserver {
   // Get the first URL and fix it up.
   GURL url(URLFixerUpper::FixupURL(
       base::SysNSStringToUTF8([urls objectAtIndex:0]), std::string()));
+
+  browser_->GetSelectedTabContents()->OpenURL(url, GURL(), CURRENT_TAB,
+                                              PageTransition::TYPED);
+}
+
+// (URLDropTargetController protocol)
+- (void)dropText:(NSString*)text inView:(NSView*)view at:(NSPoint)point {
+  // TODO(viettrungluu): This code is more or less copied from the code in
+  // |TabStripController|. I'll refactor this soon to make it common and expand
+  // its capabilities (e.g., allow text DnD).
+
+  // If the input is plain text, classify the input and make the URL.
+  AutocompleteMatch match;
+  browser_->profile()->GetAutocompleteClassifier()->Classify(
+      base::SysNSStringToWide(text),
+      std::wstring(), false, &match, NULL);
+  GURL url(match.destination_url);
 
   browser_->GetSelectedTabContents()->OpenURL(url, GURL(), CURRENT_TAB,
                                               PageTransition::TYPED);
