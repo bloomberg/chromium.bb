@@ -502,16 +502,14 @@ class BalsaHeaders {
       const HeaderLines::size_type original_idx = idx_;
       do {
         --idx_;
-      } while (idx_ >= 0 &&
-              idx_ < header_lines_size &&
-              header_lines[idx_].skip == true);
+      } while (idx_ < header_lines_size && header_lines[idx_].skip == true);
       // The condition below exists so that --(rbegin() + 1) == rbegin(), even
       // if there are only 'skip == true' elements between the rbegin() iterator
       // and the beginning of the vector of HeaderLineDescriptions.
       // TODO(fenix): refactor this list so that we don't have to do
       // linear scanning through skipped headers (and this condition is
       // then unnecessary)
-      if (idx_ < 0 || idx_ > header_lines_size) {
+      if (idx_ > header_lines_size) {
         idx_ = original_idx - 1;
       }
     }
@@ -1279,4 +1277,3 @@ class BalsaHeaders {
 }  // namespace net
 
 #endif  // NET_TOOLS_FLIP_SERVER_BALSA_HEADERS_H_
-
