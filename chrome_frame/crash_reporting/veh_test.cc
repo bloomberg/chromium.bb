@@ -53,7 +53,6 @@ class MockApi : public Win32VEHTraits,
                 public ModuleOfInterestWithExcludedRegion {
  public:
   MockApi() {
-    Win32VEHTraits::InitializeIgnoredBlocks();
     ModuleOfInterestWithExcludedRegion::SetModule(&ModuleStart, &ModuleEnd);
     ModuleOfInterestWithExcludedRegion::SetExcludedRegion(&Undetectable,
         &UndetectableEnd);

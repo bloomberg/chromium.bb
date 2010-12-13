@@ -83,9 +83,10 @@ LONG VectoredHandlerT<E>::Handler(EXCEPTION_POINTERS* exceptionInfo) {
     return ExceptionContinueSearch;
   }
 
-  // Check whether exception address is inbetween
-  // [IsBadReadPtr, IsBadReadPtr + 0xXX]
-  if (api_->ShouldIgnoreException(exceptionInfo)) {
+  // Check whether exception will be handled by the module that cuased it.
+  // This should automatically handle the case of IsBadReadPtr and family.
+  const EXCEPTION_REGISTRATION_RECORD* seh = api_->RtlpGetExceptionList();
+  if (api_->ShouldIgnoreException(exceptionInfo, seh)) {
     return ExceptionContinueSearch;
   }
 
@@ -169,27 +170,31 @@ class Win32VEHTraits {
                                       BackTrace, BackTraceHash);
   }
 
-  static bool ShouldIgnoreException(const EXCEPTION_POINTERS* exceptionInfo) {
+  static bool ShouldIgnoreException(const EXCEPTION_POINTERS* exceptionInfo,
+      const EXCEPTION_REGISTRATION_RECORD* seh_record) {
     const void* address = exceptionInfo->ExceptionRecord->ExceptionAddress;
-    for (int i = 0; i < kIgnoreEntries; i++) {
-      const CodeBlock& code_block = IgnoreExceptions[i];
-      DCHECK(code_block.code) << "Win32VEHTraits::CodeBlocks not initialized!";
-      if ((CodeOffset(code_block.code, code_block.begin_offset) <= address) &&
-          (address < CodeOffset(code_block.code, code_block.end_offset))) {
-        return true;
-      }
-    }
+    const DWORD flags = GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT |
+        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS;
+    HMODULE crashing_module = GetModuleHandleFromAddress(address);
+    if (!crashing_module)
+      return false;
+
+    HMODULE top_seh_module = NULL;
+    if (EXCEPTION_CHAIN_END != seh_record)
+      top_seh_module = GetModuleHandleFromAddress(seh_record->Handler);
+
+    // check if the crash address belongs in a module that's expecting
+    // and handling it. This should address cases like kernel32!IsBadXXX
+    // and urlmon!IsValidInterface
+    if (crashing_module == top_seh_module)
+      return true;
 
     // We don't want to report exceptions that occur during DLL loading,
     // as those are captured and ignored by the NT loader. If this thread
     // is holding the loader's lock, there's a possiblity that the crash
     // is occurring in a loading DLL, in which case we resolve the
     // crash address to a module and check on the module's status.
-    const DWORD flags = GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT |
-        GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS;
-    HMODULE crashing_module = NULL;
-    if (nt_loader::OwnsLoaderLock() && ::GetModuleHandleEx(
-            flags, reinterpret_cast<LPCWSTR>(address), &crashing_module)) {
+    if (nt_loader::OwnsLoaderLock()) {
       nt_loader::LDR_DATA_TABLE_ENTRY* entry =
           nt_loader::GetLoaderEntry(crashing_module);
 
@@ -213,7 +218,7 @@ class Win32VEHTraits {
   }
 
   static bool CheckForStackOverflow() {
-    MEMORY_BASIC_INFORMATION mi;
+    MEMORY_BASIC_INFORMATION mi = {0};
     const DWORD kPageSize = 0x1000;
     void* stack_top = GetStackTopLimit() - kPageSize;
     ::VirtualQuery(stack_top, &mi, sizeof(mi));
@@ -225,44 +230,22 @@ class Win32VEHTraits {
     return !(mi.Protect & PAGE_GUARD);
   }
 
-  static void InitializeIgnoredBlocks() {
-    // Initialize ignored exception list
-    for (int i = 0; i < kIgnoreEntries; i++) {
-      CodeBlock& code_block = IgnoreExceptions[i];
-      if (!code_block.code) {
-        HMODULE module = GetModuleHandleA(code_block.module);
-        DCHECK(module) << "GetModuleHandle error: " << GetLastError();
-        code_block.code = GetProcAddress(module, code_block.function);
-        DCHECK(code_block.code) << "GetProcAddress error: "<< GetLastError();
-      }
-    }
-  }
-
  private:
   static inline const void* CodeOffset(const void* code, int offset) {
     return reinterpret_cast<const char*>(code) + offset;
   }
 
-  // Block of code to be ignored for exceptions
-  struct CodeBlock {
-    char* module;
-    char* function;
-    int begin_offset;
-    int end_offset;
-    const void* code;
-  };
+  static HMODULE GetModuleHandleFromAddress(const void* p) {
+    HMODULE module_at_address = NULL;
+    MEMORY_BASIC_INFORMATION mi = {0};
+    if (::VirtualQuery(p, &mi, sizeof(mi)) && (mi.Type & MEM_IMAGE)) {
+      module_at_address = reinterpret_cast<HMODULE>(mi.AllocationBase);
+    }
 
-  static const int kIgnoreEntries = 4;
-  static CodeBlock IgnoreExceptions[kIgnoreEntries];
+    return module_at_address;
+  }
 };
 
-DECLSPEC_SELECTANY Win32VEHTraits::CodeBlock
-Win32VEHTraits::IgnoreExceptions[kIgnoreEntries] = {
-  { "kernel32.dll", "IsBadReadPtr", 0, 100, NULL },
-  { "kernel32.dll", "IsBadWritePtr", 0, 100, NULL },
-  { "kernel32.dll", "IsBadStringPtrA", 0, 100, NULL },
-  { "kernel32.dll", "IsBadStringPtrW", 0, 100, NULL },
-};
 
 // Use Win32 API; checks for single (current) module. Will call a specified
 // CrashHandlerTraits::DumpHandler when taking a dump.
@@ -279,7 +262,6 @@ class CrashHandlerTraits : public Win32VEHTraits,
             DumpHandler dump_handler) {
     DCHECK(dump_handler);
     dump_handler_ = dump_handler;
-    Win32VEHTraits::InitializeIgnoredBlocks();
     ModuleOfInterestWithExcludedRegion::SetCurrentModule();
     // Pointers to static (non-extern) functions take the address of the
     // function's first byte, as opposed to an entry in the compiler generated

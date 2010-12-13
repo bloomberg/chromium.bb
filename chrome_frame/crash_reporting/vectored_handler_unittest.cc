@@ -23,9 +23,7 @@ ACTION_P(StackTraceDump, s) {
 namespace {
 class MockApi : public Win32VEHTraits, public ModuleOfInterest {
  public:
-  MockApi() {
-    Win32VEHTraits::InitializeIgnoredBlocks();
-  }
+  MockApi() {}
 
   MOCK_METHOD1(WriteDump, void(const EXCEPTION_POINTERS*));
   MOCK_METHOD0(RtlpGetExceptionList, const EXCEPTION_REGISTRATION_RECORD*());
@@ -60,7 +58,7 @@ TEST(ChromeFrame, ExceptionReport) {
   VectoredHandlerMock veh(&api);
 
   // Start address of our module.
-  char* s = reinterpret_cast<char*>(0x30000000);
+  char* s = reinterpret_cast<char*>(&__ImageBase);
   char *e = s + 0x10000;
   api.SetModule(s, e);
 
@@ -84,6 +82,7 @@ TEST(ChromeFrame, ExceptionReport) {
   // RPC_E_DISCONNECTED (0x80010108) is "The object invoked has disconnected
   // from its clients", shall not be caught since it's a warning only.
   EXPECT_CALL(api, WriteDump(_)).Times(0);
+  EXPECT_CALL(api, RtlpGetExceptionList()).Times(0);
   EXPECT_EQ(ExceptionContinueSearch,
       veh.Handler(&ExceptionInfo(RPC_E_DISCONNECTED, our_code)));
   testing::Mock::VerifyAndClearExpectations(&api);
@@ -114,21 +113,22 @@ TEST(ChromeFrame, ExceptionReport) {
   testing::Mock::VerifyAndClearExpectations(&api);
 
   // Exception, in IsBadStringPtrA, we are on the stack.
-  api.SetSEH(no_seh);
+  char* is_bad_ptr = reinterpret_cast<char*>(GetProcAddress(
+      GetModuleHandleA("kernel32.dll"), "IsBadStringPtrA"));
+  SEHChain kernel32_seh(is_bad_ptr, is_bad_ptr + 0x100, NULL);
+  api.SetSEH(kernel32_seh);
   api.SetStack(on_stack);
   EXPECT_CALL(api, WriteDump(_)).Times(0);
-  char* ignore_address = reinterpret_cast<char*>(GetProcAddress(
-      GetModuleHandleA("kernel32.dll"), "IsBadStringPtrA")) + 10;
   EXPECT_EQ(ExceptionContinueSearch,
-      veh.Handler(&ExceptionInfo(STATUS_ACCESS_VIOLATION, ignore_address)));
+      veh.Handler(&ExceptionInfo(STATUS_ACCESS_VIOLATION, is_bad_ptr)));
   testing::Mock::VerifyAndClearExpectations(&api);
 
   // Exception, in IsBadStringPtrA, we are not on the stack.
-  api.SetSEH(no_seh);
+  api.SetSEH(kernel32_seh);
   api.SetStack(not_on_stack);
   EXPECT_CALL(api, WriteDump(_)).Times(0);
   EXPECT_EQ(ExceptionContinueSearch,
-      veh.Handler(&ExceptionInfo(STATUS_ACCESS_VIOLATION, ignore_address)));
+      veh.Handler(&ExceptionInfo(STATUS_ACCESS_VIOLATION, is_bad_ptr)));
   testing::Mock::VerifyAndClearExpectations(&api);
 
   // Exception in a loading module, we are on the stack.
