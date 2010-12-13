@@ -7221,7 +7221,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <message name="IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION" desc="The label of the 'Enable phishing and malware protection' checkbox">
-        Enable phishing and malware protection
+        Enable phishing and malware protection.
       </message>
 
       <message name="IDS_OPTIONS_SSL_GROUP_DESCRIPTION" desc="The description of the 'SSL Connections' group">
@@ -7273,7 +7273,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Misc advanced option description strings. -->
       <message name="IDS_NETWORK_DNS_PREFETCH_ENABLED_DESCRIPTION" desc="In the advanced options tab, the text next to the checkbox that enables DNS prefetching.  DNS prefetching involves scanning pages and user text entries, guessing what domain the user may next navigate to, and obtaining the domain's DNS information for that URL in advance. ">
-        Use DNS pre-fetching to improve page load performance
+        Use DNS pre-fetching to improve page load performance.
       </message>
 
       <!-- Collected cookies window -->
@@ -7924,11 +7924,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <message name="IDS_OPTIONS_LINKDOCTOR_PREF" desc="The documentation string of the 'Use Link Doctor' preference">
-        Use a web service to help resolve navigation errors
+        Show suggestions for navigation errors.
       </message>
 
       <message name="IDS_OPTIONS_SUGGEST_PREF" desc="The documentation string of the 'Use Suggest' preference">
-        Use a prediction service to help complete searches and URLs typed in the address bar
+        Show suggestions to help complete searches and URLs.
+      </message>
+
+      <message name="IDS_OPTIONS_ENABLE_LOGGING" desc="The label of the checkbox to enable/disable crash and user metrics logging">
+        Automatically send usage statistics and crash reports to Google.
       </message>
 
       <message name="IDS_OPTIONS_TABS_TO_LINKS_PREF" desc="The documentation string of the 'Tabs to Links' preference">
