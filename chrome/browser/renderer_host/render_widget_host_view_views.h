@@ -70,7 +70,7 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual void SetBackground(const SkBitmap& background);
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id);
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id);
-  virtual void SetVisuallyDeemphasized(bool deemphasized);
+  virtual void SetVisuallyDeemphasized(const SkColor* color, bool animate);
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
   virtual void AcceleratedCompositingActivated(bool activated);
 

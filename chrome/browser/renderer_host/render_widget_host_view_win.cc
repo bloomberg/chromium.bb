@@ -246,7 +246,8 @@ BOOL CALLBACK DetachPluginWindowsCallback(HWND window, LPARAM param) {
 
 // Draw the contents of |backing_store_dc| onto |paint_rect| with a 70% grey
 // filter.
-void DrawDeemphasized(const gfx::Rect& paint_rect,
+void DrawDeemphasized(const SkColor& color,
+                      const gfx::Rect& paint_rect,
                       HDC backing_store_dc,
                       HDC paint_dc) {
   gfx::CanvasSkia canvas(paint_rect.width(), paint_rect.height(), true);
@@ -261,9 +262,7 @@ void DrawDeemphasized(const gfx::Rect& paint_rect,
          paint_rect.y(),
          SRCCOPY);
   canvas.endPlatformPaint();
-  // 178 is 70% grey.
-  canvas.FillRectInt(SkColorSetARGB(178, 0, 0, 0), 0, 0,
-                     paint_rect.width(), paint_rect.height());
+  canvas.FillRectInt(color, 0, 0, paint_rect.width(), paint_rect.height());
   canvas.getTopPlatformDevice().drawToHDC(paint_dc, paint_rect.x(),
                                           paint_rect.y(), NULL);
 }
@@ -296,7 +295,7 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       shutdown_factory_(this),
       parent_hwnd_(NULL),
       is_loading_(false),
-      visually_deemphasized_(false),
+      overlay_color_(0),
       text_input_type_(WebKit::WebTextInputTypeNone) {
   render_widget_host_->set_view(this);
   registrar_.Add(this,
@@ -808,11 +807,16 @@ bool RenderWidgetHostViewWin::ContainsNativeView(
   return false;
 }
 
-void RenderWidgetHostViewWin::SetVisuallyDeemphasized(bool deemphasized) {
-  if (visually_deemphasized_ == deemphasized)
-    return;
+void RenderWidgetHostViewWin::SetVisuallyDeemphasized(const SkColor* color,
+                                                      bool animate) {
+  // |animate| is not yet implemented, and currently isn't used.
+  CHECK(!animate);
 
-  visually_deemphasized_ = deemphasized;
+  SkColor overlay_color = color ? *color : 0;
+  if (overlay_color_ == overlay_color)
+    return;
+  overlay_color_ = overlay_color;
+
   InvalidateRect(NULL, FALSE);
 }
 
@@ -922,8 +926,11 @@ void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
     for (DWORD i = 0; i < region_data->rdh.nCount; ++i) {
       gfx::Rect paint_rect = bitmap_rect.Intersect(gfx::Rect(region_rects[i]));
       if (!paint_rect.IsEmpty()) {
-        if (visually_deemphasized_) {
-          DrawDeemphasized(paint_rect, backing_store->hdc(), paint_dc.m_hDC);
+        if (SkColorGetA(overlay_color_) > 0) {
+          DrawDeemphasized(overlay_color_,
+                           paint_rect,
+                           backing_store->hdc(),
+                           paint_dc.m_hDC);
         } else {
           BitBlt(paint_dc.m_hDC,
                  paint_rect.x(),

@@ -17,6 +17,7 @@
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextInputType.h"
 
@@ -253,8 +254,12 @@ class RenderWidgetHostView {
 #endif
 
   // Toggles visual muting of the render view area. This is on when a
-  // constrained window is showing.
-  virtual void SetVisuallyDeemphasized(bool deemphasized) = 0;
+  // constrained window is showing, for example. |color| is the shade of
+  // the overlay that covers the render view. If |animate| is true, the overlay
+  // gradually fades in; otherwise it takes effect immediately. To remove the
+  // fade effect, pass a NULL value for |color|. In this case, |animate| is
+  // ignored.
+  virtual void SetVisuallyDeemphasized(const SkColor* color, bool animate) = 0;
 
   void set_popup_type(WebKit::WebPopupType popup_type) {
     popup_type_ = popup_type;

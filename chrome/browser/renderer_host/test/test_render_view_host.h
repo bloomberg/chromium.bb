@@ -130,7 +130,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual void WillWmDestroy();
   virtual void ShowCompositorHostWindow(bool show);
 #endif
-  virtual void SetVisuallyDeemphasized(bool deemphasized) { }
+  virtual void SetVisuallyDeemphasized(const SkColor* color, bool animate) { }
 
 #if defined(TOOLKIT_USES_GTK)
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) { }

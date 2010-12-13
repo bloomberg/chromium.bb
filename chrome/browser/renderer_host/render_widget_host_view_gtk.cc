@@ -46,20 +46,27 @@
 #include "views/widget/tooltip_window_gtk.h"
 #endif  // defined(OS_CHROMEOS)
 
-static const int kMaxWindowWidth = 4000;
-static const int kMaxWindowHeight = 4000;
-static const char* kRenderWidgetHostViewKey = "__RENDER_WIDGET_HOST_VIEW__";
+namespace {
+
+const int kMaxWindowWidth = 4000;
+const int kMaxWindowHeight = 4000;
+const char* kRenderWidgetHostViewKey = "__RENDER_WIDGET_HOST_VIEW__";
+
+// The duration of the fade-out animation. See |overlay_animation_|.
+const int kFadeEffectDuration = 300;
 
 #if defined(OS_CHROMEOS)
 // TODO(davemoore) Under Chromeos we are increasing the rate that the trackpad
 // generates events to get better precisions. Eventually we will coordinate the
 // driver and this setting to ensure they match.
-static const float kDefaultScrollPixelsPerTick = 20;
+const float kDefaultScrollPixelsPerTick = 20;
 #else
 // See WebInputEventFactor.cpp for a reason for this being the default
 // scroll size for linux.
-static const float kDefaultScrollPixelsPerTick = 160.0f / 3.0f;
+const float kDefaultScrollPixelsPerTick = 160.0f / 3.0f;
 #endif
+
+}  // namespace
 
 using WebKit::WebInputEventFactory;
 using WebKit::WebMouseWheelEvent;
@@ -480,7 +487,8 @@ RenderWidgetHostViewGtk::RenderWidgetHostViewGtk(RenderWidgetHost* widget_host)
       is_hidden_(false),
       is_loading_(false),
       is_showing_context_menu_(false),
-      visually_deemphasized_(false),
+      overlay_color_(0),
+      overlay_animation_(this),
       parent_host_view_(NULL),
       parent_(NULL),
       is_popup_first_mouse_release_(true),
@@ -506,6 +514,9 @@ void RenderWidgetHostViewGtk::InitAsChild() {
 #if defined(OS_CHROMEOS)
   tooltip_window_.reset(new views::TooltipWindowGtk(view_.get()));
 #endif  // defined(OS_CHROMEOS)
+
+  overlay_animation_.SetDuration(kFadeEffectDuration);
+  overlay_animation_.SetSlideDuration(kFadeEffectDuration);
 
   gtk_widget_show(view_.get());
 }
@@ -838,7 +849,7 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
     // period where this object isn't attached to a window but hasn't been
     // Destroy()ed yet and it receives paint messages...
     if (window) {
-      if (!visually_deemphasized_) {
+      if (SkColorGetA(overlay_color_) == 0) {
         // In the common case, use XCopyArea. We don't draw more than once, so
         // we don't need to double buffer.
         backing_store->XShowRect(gfx::Point(0, 0),
@@ -863,7 +874,15 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
 
         cairo_t* cr = gdk_cairo_create(window);
         gdk_cairo_rectangle(cr, &rect);
-        cairo_set_source_rgba(cr, 0, 0, 0, 0.7);
+        SkColor overlay = SkColorSetA(
+            overlay_color_,
+            SkColorGetA(overlay_color_) *
+                overlay_animation_.GetCurrentValue());
+        float r = SkColorGetR(overlay) / 255.;
+        float g = SkColorGetG(overlay) / 255.;
+        float b = SkColorGetB(overlay) / 255.;
+        float a = SkColorGetA(overlay) / 255.;
+        cairo_set_source_rgba(cr, r, g, b, a);
         cairo_fill(cr);
         cairo_destroy(cr);
 
@@ -1031,12 +1050,22 @@ void RenderWidgetHostViewGtk::DestroyPluginContainer(
   plugin_container_manager_.DestroyPluginContainer(id);
 }
 
-void RenderWidgetHostViewGtk::SetVisuallyDeemphasized(bool deemphasized) {
-  if (deemphasized == visually_deemphasized_)
+void RenderWidgetHostViewGtk::SetVisuallyDeemphasized(
+    const SkColor* color, bool animate) {
+  // Do nothing unless |color| has changed, meaning |animate| is only
+  // respected for the first call.
+  if (color && (*color == overlay_color_))
     return;
 
-  visually_deemphasized_ = deemphasized;
-  gtk_widget_queue_draw(view_.get());
+  overlay_color_ = color ? *color : 0;
+
+  if (animate) {
+    overlay_animation_.Reset();
+    overlay_animation_.Show();
+  } else {
+    overlay_animation_.Reset(1.0);
+    gtk_widget_queue_draw(view_.get());
+  }
 }
 
 bool RenderWidgetHostViewGtk::ContainsNativeView(
@@ -1065,6 +1094,18 @@ void RenderWidgetHostViewGtk::ForwardKeyboardEvent(
     host_->ForwardEditCommandsForNextKeyEvent(edit_commands);
   }
   host_->ForwardKeyboardEvent(event);
+}
+
+void RenderWidgetHostViewGtk::AnimationEnded(const Animation* animation) {
+  gtk_widget_queue_draw(view_.get());
+}
+
+void RenderWidgetHostViewGtk::AnimationProgressed(const Animation* animation) {
+  gtk_widget_queue_draw(view_.get());
+}
+
+void RenderWidgetHostViewGtk::AnimationCanceled(const Animation* animation) {
+  gtk_widget_queue_draw(view_.get());
 }
 
 // static

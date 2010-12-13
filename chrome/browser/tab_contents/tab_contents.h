@@ -727,6 +727,12 @@ class TabContents : public PageNavigator,
   // Gets the zoom percent for this tab.
   int GetZoomPercent(bool* enable_increment, bool* enable_decrement);
 
+  // Shows a fade effect over this tab contents. Repeated calls will be ignored
+  // until the fade is canceled.
+  void FadeForInstant();
+  // Immediately removes the fade.
+  void CancelInstantFade();
+
   // Gets the minimum/maximum zoom percent.
   int minimum_zoom_percent() const { return minimum_zoom_percent_; }
   int maximum_zoom_percent() const { return maximum_zoom_percent_; }

@@ -591,7 +591,8 @@ void RenderWidgetHostViewViews::DestroyPluginContainer(
   // TODO(anicolao): plugin_container_manager_.DestroyPluginContainer(id);
 }
 
-void RenderWidgetHostViewViews::SetVisuallyDeemphasized(bool deemphasized) {
+void RenderWidgetHostViewViews::SetVisuallyDeemphasized(
+    const SkColor* color, bool animate) {
   // TODO(anicolao)
 }
 

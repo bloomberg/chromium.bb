@@ -11,6 +11,8 @@
 #include <vector>
 #include <string>
 
+#include "app/animation_delegate.h"
+#include "app/slide_animation.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/gtk/owned_widget_gtk.h"
@@ -40,7 +42,8 @@ typedef struct _GtkSelectionData GtkSelectionData;
 // -----------------------------------------------------------------------------
 // See comments in render_widget_host_view.h about this class and its members.
 // -----------------------------------------------------------------------------
-class RenderWidgetHostViewGtk : public RenderWidgetHostView {
+class RenderWidgetHostViewGtk : public RenderWidgetHostView,
+                                public AnimationDelegate {
  public:
   explicit RenderWidgetHostViewGtk(RenderWidgetHost* widget);
   ~RenderWidgetHostViewGtk();
@@ -84,9 +87,14 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
   virtual void SetBackground(const SkBitmap& background);
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id);
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id);
-  virtual void SetVisuallyDeemphasized(bool deemphasized);
+  virtual void SetVisuallyDeemphasized(const SkColor* color, bool animate);
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
   virtual void AcceleratedCompositingActivated(bool activated);
+
+  // AnimationDelegate implementation.
+  virtual void AnimationEnded(const Animation* animation);
+  virtual void AnimationProgressed(const Animation* animation);
+  virtual void AnimationCanceled(const Animation* animation);
 
   gfx::NativeView native_view() const { return view_.get(); }
 
@@ -164,8 +172,13 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
   // The time it took after this view was selected for it to be fully painted.
   base::TimeTicks tab_switch_paint_time_;
 
-  // If true, fade the render widget when painting it.
-  bool visually_deemphasized_;
+  // A color we use to shade the entire render view. If 100% transparent, we do
+  // not shade the render view.
+  SkColor overlay_color_;
+
+  // The animation used for the abovementioned shade effect. The animation's
+  // value affects the alpha we use for |overlay_color_|.
+  SlideAnimation overlay_animation_;
 
   // Variables used only for popups --------------------------------------------
   // Our parent widget.

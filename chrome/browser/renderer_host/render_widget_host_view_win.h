@@ -156,7 +156,7 @@ class RenderWidgetHostViewWin
   virtual BackingStore* AllocBackingStore(const gfx::Size& size);
   virtual void SetBackground(const SkBitmap& background);
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
-  virtual void SetVisuallyDeemphasized(bool deemphasized);
+  virtual void SetVisuallyDeemphasized(const SkColor* color, bool animate);
 
   virtual gfx::PluginWindowHandle GetCompositorHostWindow();
   virtual void ShowCompositorHostWindow(bool show);
@@ -338,9 +338,9 @@ class RenderWidgetHostViewWin
   // The time it took after this view was selected for it to be fully painted.
   base::TimeTicks tab_switch_paint_time_;
 
-  // True if we are showing a constrained window. We will grey out the view
-  // whenever we paint.
-  bool visually_deemphasized_;
+  // A color we use to shade the entire render view. If 100% transparent, we do
+  // not shade the render view.
+  SkColor overlay_color_;
 
   // Registrar so we can listen to RENDERER_PROCESS_TERMINATED events.
   NotificationRegistrar registrar_;

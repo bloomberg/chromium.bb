@@ -1109,12 +1109,18 @@ void BrowserWindowGtk::Paste() {
 }
 
 void BrowserWindowGtk::PrepareForInstant() {
-  // TODO: implement fade as done on windows.
+  TabContents* contents = contents_container_->GetTabContents();
+  if (contents)
+    contents->FadeForInstant();
 }
 
 void BrowserWindowGtk::ShowInstant(TabContents* preview_contents) {
   contents_container_->SetPreviewContents(preview_contents);
   MaybeShowBookmarkBar(false);
+
+  TabContents* contents = contents_container_->GetTabContents();
+  if (contents)
+    contents->CancelInstantFade();
 }
 
 void BrowserWindowGtk::HideInstant() {

@@ -798,6 +798,19 @@ void TabContents::DidBecomeSelected() {
   last_selected_time_ = base::TimeTicks::Now();
 }
 
+void TabContents::FadeForInstant() {
+  RenderWidgetHostView* rwhv = GetRenderWidgetHostView();
+  SkColor whitish = SkColorSetARGB(192, 255, 255, 255);
+  if (rwhv)
+    rwhv->SetVisuallyDeemphasized(&whitish, true);
+}
+
+void TabContents::CancelInstantFade() {
+  RenderWidgetHostView* rwhv = GetRenderWidgetHostView();
+  if (rwhv)
+    rwhv->SetVisuallyDeemphasized(NULL, false);
+}
+
 void TabContents::WasHidden() {
   if (!capturing_contents()) {
     // |render_view_host()| can be NULL if the user middle clicks a link to open
@@ -973,8 +986,10 @@ ConstrainedWindow* TabContents::CreateConstrainedDialog(
 
 void TabContents::BlockTabContent(bool blocked) {
   RenderWidgetHostView* rwhv = GetRenderWidgetHostView();
+  // 70% opaque grey.
+  SkColor greyish = SkColorSetARGB(178, 0, 0, 0);
   if (rwhv)
-    rwhv->SetVisuallyDeemphasized(blocked);
+    rwhv->SetVisuallyDeemphasized(blocked ? &greyish : NULL, false);
   render_view_host()->set_ignore_input_events(blocked);
   if (delegate_)
     delegate_->SetTabContentBlocked(this, blocked);

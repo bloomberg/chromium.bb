@@ -262,7 +262,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   // to be reloaded.
   void ForceTextureReload();
 
-  virtual void SetVisuallyDeemphasized(bool deemphasized);
+  virtual void SetVisuallyDeemphasized(const SkColor* color, bool animate);
 
   void KillSelf();
 
