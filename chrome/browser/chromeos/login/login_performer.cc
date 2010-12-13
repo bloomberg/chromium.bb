@@ -10,6 +10,7 @@
 #include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/browser/profiles/profile.h"
@@ -51,6 +53,10 @@ LoginPerformer::~LoginPerformer() {
 // LoginPerformer, LoginStatusConsumer implementation:
 
 void LoginPerformer::OnLoginFailure(const LoginFailure& failure) {
+  UserMetrics::RecordAction(UserMetricsAction("Login_Failure"));
+  UMA_HISTOGRAM_ENUMERATION("Login.FailureReason", failure.reason(),
+                            LoginFailure::NUM_FAILURE_REASONS);
+
   DVLOG(1) << "failure.reason " << failure.reason();
   DVLOG(1) << "failure.error.state " << failure.error().state();
 
@@ -98,6 +104,12 @@ void LoginPerformer::OnLoginSuccess(
     const std::string& password,
     const GaiaAuthConsumer::ClientLoginResult& credentials,
     bool pending_requests) {
+  UserMetrics::RecordAction(UserMetricsAction("Login_Success"));
+  // 0 - Login success offline and online. It's a new user. or it's an
+  //     existing user and offline auth took longer than online auth.
+  // 1 - Login success offline only. It's an existing user login.
+  UMA_HISTOGRAM_ENUMERATION("Login.SuccessReason", pending_requests, 2);
+
   VLOG(1) << "LoginSuccess, pending_requests " << pending_requests;
   if (delegate_) {
     delegate_->OnLoginSuccess(username,
@@ -132,6 +144,9 @@ void LoginPerformer::OnLoginSuccess(
 }
 
 void LoginPerformer::OnOffTheRecordLoginSuccess() {
+  UserMetrics::RecordAction(
+      UserMetricsAction("Login_GuestLoginSuccess"));
+
   if (delegate_)
     delegate_->OnOffTheRecordLoginSuccess();
   else

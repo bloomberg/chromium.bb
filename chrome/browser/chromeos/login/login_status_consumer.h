@@ -24,6 +24,7 @@ class LoginFailure {
     LOGIN_TIMED_OUT,
     UNLOCK_FAILED,
     NETWORK_AUTH_FAILED,  // Could not authenticate against Google
+    NUM_FAILURE_REASONS,  // This has to be the last item.
   };
 
   explicit LoginFailure(FailureReason reason)
