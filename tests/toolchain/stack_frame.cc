@@ -46,7 +46,7 @@ void* GetReturnAddress(void* frame_end) {
 #if defined(__native_client__)
 
 #if TARGET_FULLARCH == arm
-  return ((void**)frame_end)[1];
+  return ((void**)frame_end)[-1];
 #elif TARGET_FULLARCH == x86-32
   return ((void**)frame_end)[-1];
 #elif TARGET_FULLARCH == x86-64
