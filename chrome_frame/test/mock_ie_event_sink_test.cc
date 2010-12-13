@@ -94,7 +94,7 @@ ExpectationSet MockIEEventSink::ExpectNavigationCardinality(
 
 void MockIEEventSink::ExpectNavigation(bool is_cf, const std::wstring& url) {
   InSequence expect_in_sequence_for_scope;
-  if (is_cf) {
+  if (is_cf || GetInstalledIEVersion() == IE_9) {
     ExpectNavigationCardinality(url, Exactly(1), testing::Between(1, 2));
   } else {
     ExpectNavigationCardinality(url, Exactly(1), Exactly(1));
