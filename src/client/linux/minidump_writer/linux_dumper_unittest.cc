@@ -32,25 +32,18 @@
 #include <limits.h>
 #include <unistd.h>
 #include <signal.h>
+#include <stdint.h>
+#include <sys/poll.h>
 #include <sys/types.h>
 
 #include "breakpad_googletest_includes.h"
 #include "client/linux/minidump_writer/linux_dumper.h"
+#include "common/linux/eintr_wrapper.h"
 #include "common/linux/file_id.h"
 #include "common/memory.h"
 
 using std::string;
 using namespace google_breakpad;
-
-// This provides a wrapper around system calls which may be
-// interrupted by a signal and return EINTR. See man 7 signal.
-#define HANDLE_EINTR(x) ({ \
-  typeof(x) __eintr_result__; \
-  do { \
-    __eintr_result__ = x; \
-  } while (__eintr_result__ == -1 && errno == EINTR); \
-  __eintr_result__;\
-})
 
 namespace {
 typedef testing::Test LinuxDumperTest;
@@ -88,8 +81,14 @@ TEST(LinuxDumperTest, VerifyStackReadWithMultipleThreads) {
   char kNumberOfThreadsArgument[2];
   sprintf(kNumberOfThreadsArgument, "%d", kNumberOfThreadsInHelperProgram);
 
+  int fds[2];
+  ASSERT_NE(-1, pipe(fds));
+
   pid_t child_pid = fork();
   if (child_pid == 0) {
+    // In child process.
+    close(fds[0]);
+
     // Locate helper binary next to the current binary.
     char self_path[PATH_MAX];
     if (readlink("/proc/self/exe", self_path, sizeof(self_path) - 1) == -1) {
@@ -105,9 +104,12 @@ TEST(LinuxDumperTest, VerifyStackReadWithMultipleThreads) {
     helper_path.erase(pos + 1);
     helper_path += "linux_dumper_unittest_helper";
 
-    // Set the number of threads
+    // Pass the pipe fd and the number of threads as arguments.
+    char pipe_fd_string[8];
+    sprintf(pipe_fd_string, "%d", fds[1]);
     execl(helper_path.c_str(),
           "linux_dumper_unittest_helper",
+          pipe_fd_string,
           kNumberOfThreadsArgument,
           NULL);
     // Kill if we get here.
@@ -115,9 +117,21 @@ TEST(LinuxDumperTest, VerifyStackReadWithMultipleThreads) {
     FAIL() << "Exec of " << helper_path << " failed: " << strerror(errno);
     exit(0);
   }
-  // The sleep is flaky, but prevents us from reading
-  // the child process before all threads have been created.
-  sleep(1);
+  close(fds[1]);
+  // Wait for the child process to signal that it's ready.
+  struct pollfd pfd;
+  memset(&pfd, 0, sizeof(pfd));
+  pfd.fd = fds[0];
+  pfd.events = POLLIN | POLLERR;
+
+  const int r = HANDLE_EINTR(poll(&pfd, 1, 1000));
+  ASSERT_EQ(1, r);
+  ASSERT_TRUE(pfd.revents & POLLIN);
+  uint8_t junk;
+  read(fds[0], &junk, sizeof(junk));
+  close(fds[0]);
+
+  // Child is ready now.
   LinuxDumper dumper(child_pid);
   ASSERT_TRUE(dumper.Init());
   EXPECT_EQ((size_t)kNumberOfThreadsInHelperProgram, dumper.threads().size());
@@ -240,7 +254,8 @@ TEST(LinuxDumperTest, FileIDsMatch) {
 
   uint8_t identifier1[sizeof(MDGUID)];
   uint8_t identifier2[sizeof(MDGUID)];
-  EXPECT_TRUE(dumper.ElfFileIdentifierForMapping(i, identifier1));
+  EXPECT_TRUE(dumper.ElfFileIdentifierForMapping(*mappings[i], i,
+                                                 identifier1));
   FileID fileid(exe_name);
   EXPECT_TRUE(fileid.ElfFileIdentifier(identifier2));
   char identifier_string1[37];

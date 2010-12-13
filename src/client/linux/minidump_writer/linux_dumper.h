@@ -151,8 +151,10 @@ class LinuxDumper {
   // without any slashes.
   void BuildProcPath(char* path, pid_t pid, const char* node) const;
 
-  // Generate a File ID from the .text section of a mapped entry
-  bool ElfFileIdentifierForMapping(unsigned int mapping_id,
+  // Generate a File ID from the .text section of a mapped entry.
+  // mapping_id may be -1 if this is not a member of mappings_.
+  bool ElfFileIdentifierForMapping(const MappingInfo& mapping,
+                                   unsigned int mapping_id,
                                    uint8_t identifier[sizeof(MDGUID)]);
 
   // Utility method to find the location of where the kernel has
@@ -174,7 +176,7 @@ class LinuxDumper {
   // For programs that don't end with ' (deleted)', this is a no-op.
   // This assumes |path| is a buffer with length NAME_MAX.
   // Returns true if |path| is modified.
-  bool HandleDeletedFileInMapping(char* path);
+  bool HandleDeletedFileInMapping(char* path) const;
 
   const pid_t pid_;
 

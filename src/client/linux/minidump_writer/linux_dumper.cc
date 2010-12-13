@@ -104,12 +104,12 @@ static bool ResumeThread(pid_t pid) {
 }
 
 inline static bool IsMappedFileOpenUnsafe(
-    const google_breakpad::MappingInfo* mapping) {
+    const google_breakpad::MappingInfo& mapping) {
   // It is unsafe to attempt to open a mapped file that lives under /dev,
   // because the semantics of the open may be driver-specific so we'd risk
   // hanging the crash dumper. And a file in /dev/ almost certainly has no
   // ELF file identifier anyways.
-  return my_strncmp(mapping->name,
+  return my_strncmp(mapping.name,
                     kMappedFileUnsafePrefix,
                     sizeof(kMappedFileUnsafePrefix) - 1) == 0;
 }
@@ -203,21 +203,21 @@ LinuxDumper::BuildProcPath(char* path, pid_t pid, const char* node) const {
 }
 
 bool
-LinuxDumper::ElfFileIdentifierForMapping(unsigned int mapping_id,
+LinuxDumper::ElfFileIdentifierForMapping(const MappingInfo& mapping,
+                                         unsigned int mapping_id,
                                          uint8_t identifier[sizeof(MDGUID)])
 {
-  assert(mapping_id < mappings_.size());
+  assert(mapping_id == -1 || mapping_id < mappings_.size());
   my_memset(identifier, 0, sizeof(MDGUID));
-  MappingInfo* mapping = mappings_[mapping_id];
   if (IsMappedFileOpenUnsafe(mapping))
     return false;
 
   char filename[NAME_MAX];
-  size_t filename_len = my_strlen(mapping->name);
+  size_t filename_len = my_strlen(mapping.name);
   assert(filename_len < NAME_MAX);
   if (filename_len >= NAME_MAX)
     return false;
-  memcpy(filename, mapping->name, filename_len);
+  memcpy(filename, mapping.name, filename_len);
   filename[filename_len] = '\0';
   bool filename_modified = HandleDeletedFileInMapping(filename);
 
@@ -239,8 +239,11 @@ LinuxDumper::ElfFileIdentifierForMapping(unsigned int mapping_id,
 
   bool success = FileID::ElfFileIdentifierFromMappedFile(base, identifier);
   sys_munmap(base, st.st_size);
-  if (success && filename_modified)
-    mapping->name[filename_len - sizeof(kDeletedSuffix) + 1] = '\0';
+  if (success && mapping_id != -1 && filename_modified) {
+    mappings_[mapping_id]->name[filename_len -
+                                sizeof(kDeletedSuffix) + 1] = '\0';
+  }
+
   return success;
 }
 
@@ -310,7 +313,7 @@ LinuxDumper::EnumerateMappings(wasteful_vector<MappingInfo*>* result) const {
           module->offset = offset;
           const char* name = NULL;
           // Only copy name if the name is a valid path name, or if
-          // we've found the VDSO image
+          // it's the VDSO image.
           if ((name = my_strchr(line, '/')) != NULL) {
             const unsigned l = my_strlen(name);
             if (l < sizeof(module->name))
@@ -500,7 +503,7 @@ const MappingInfo* LinuxDumper::FindMapping(const void* address) const {
   return NULL;
 }
 
-bool LinuxDumper::HandleDeletedFileInMapping(char* path) {
+bool LinuxDumper::HandleDeletedFileInMapping(char* path) const {
   static const size_t kDeletedSuffixLen = sizeof(kDeletedSuffix) - 1;
 
   // Check for ' (deleted)' in |path|.

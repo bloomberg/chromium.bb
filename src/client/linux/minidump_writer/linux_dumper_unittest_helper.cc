@@ -32,6 +32,7 @@
 // id.
 
 #include <pthread.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/syscall.h>
@@ -58,7 +59,13 @@ void *thread_function(void *data) {
 }
 
 int main(int argc, char *argv[]) {
-  int num_threads = atoi(argv[1]);
+  if (argc < 2) {
+    fprintf(stderr,
+            "usage: linux_dumper_unittest_helper <pipe fd> <# of threads\n");
+    return 1;
+  }
+  int pipefd = atoi(argv[1]);
+  int num_threads = atoi(argv[2]);
   if (num_threads < 1) {
     fprintf(stderr, "ERROR: number of threads is 0");
     return 1;
@@ -70,6 +77,9 @@ int main(int argc, char *argv[]) {
   for (int i = 1; i < num_threads; i++) {
     pthread_create(&threads[i], &thread_attributes, &thread_function, NULL);
   }
+  // Signal parent that this process has started all threads.
+  uint8_t byte = 1;
+  write(pipefd, &byte, sizeof(byte));
   thread_function(NULL);
   return 0;
 }
