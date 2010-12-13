@@ -8,6 +8,8 @@
 
 #include "base/file_util.h"
 #include "base/mac_util.h"
+#include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "webkit/glue/plugins/plugin_lib.h"
@@ -41,6 +43,18 @@ bool IsBlacklistedPlugin(const WebPluginInfo& info) {
     // The Gears plugin is Safari-specific, so don't load it.
     if (i->mime_type == "application/x-googlegears")
       return true;
+  }
+
+  // Versions of Flip4Mac 2.3 before 2.3.6 often hang the renderer, so don't
+  // load them.
+  if (StartsWith(info.name, ASCIIToUTF16("Flip4Mac Windows Media"), false) &&
+      StartsWith(info.version, ASCIIToUTF16("2.3"), false)) {
+    std::vector<string16> components;
+    base::SplitString(info.version, '.', &components);
+    int bugfix_version = 0;
+    return (components.size() >= 3 &&
+            base::StringToInt(components[2], &bugfix_version) &&
+            bugfix_version < 6);
   }
 
   return false;
@@ -79,14 +93,6 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
                                   std::vector<WebPluginInfo>* plugins) {
   if (IsBlacklistedPlugin(info))
     return false;
-
-  // Flip4Mac has a reproducible hang during a synchronous call from the render
-  // with certain content types (as well as a common crash). Disable by default
-  // to minimize those issues, but don't blacklist it so that users can choose
-  // to enable it.
-  if (StartsWith(info.name, ASCIIToUTF16("Flip4Mac Windows Media Plugin"),
-                 false))
-    DisablePlugin(info.path);
 
   // Hierarchy check
   // (we're loading plugins hierarchically from Library folders, so plugins we
