@@ -39,7 +39,7 @@
     NoRemove Classes {
       NoRemove MIME {
         NoRemove Database {
-          NoRemove s 'Content Type' {
+          NoRemove 'Content Type' {
             'application/chromepage' {
               val CLSID = s '{3E1D0E7F-F5E3-44CC-AA6A-C0A637619AB8}'
             }
