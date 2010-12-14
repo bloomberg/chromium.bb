@@ -7,6 +7,7 @@
 
 #include "app/app_switches.h"
 #include "app/gfx/gl/gl_implementation.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -76,6 +77,51 @@ void ResizeTabContainer(Browser* browser, const gfx::Size& desired_size) {
   new_size.Enlarge(correction.x(), correction.y());
   window_rect.set_size(new_size);
   browser->window()->SetBounds(window_rect);
+}
+
+// Observes when any GPU info has been collected and quits the current message
+// loop.
+class GPUInfoCollectedObserver {
+ public:
+  explicit GPUInfoCollectedObserver(GpuProcessHostUIShim* gpu_host_shim)
+      : gpu_host_shim_(gpu_host_shim),
+        gpu_info_collected_(false) {
+    gpu_host_shim_->set_gpu_info_collected_callback(
+        NewCallback(this, &GPUInfoCollectedObserver::OnGpuInfoCollected));
+  }
+
+  void OnGpuInfoCollected() {
+    gpu_info_collected_ = true;
+    gpu_host_shim_->set_gpu_info_collected_callback(NULL);
+    MessageLoopForUI::current()->Quit();
+  }
+
+  bool gpu_info_collected() { return gpu_info_collected_; }
+
+ private:
+  GpuProcessHostUIShim* gpu_host_shim_;
+  bool gpu_info_collected_;
+};
+
+// Collects info about the GPU. Iff the info is collected, |client_info| will be
+// set and true will be returned. This info may be partial or complete. This
+// will return false if we are running in a virtualized environment.
+bool CollectGPUInfo(GPUInfo* client_info) {
+  CHECK(client_info);
+  GpuProcessHostUIShim* gpu_host_shim = GpuProcessHostUIShim::GetInstance();
+  if (!gpu_host_shim)
+    return false;
+  GPUInfo info = gpu_host_shim->gpu_info();
+  if (info.progress() == GPUInfo::kUninitialized) {
+    GPUInfoCollectedObserver observer(gpu_host_shim);
+    gpu_host_shim->CollectGraphicsInfoAsynchronously();
+    ui_test_utils::RunMessageLoop();
+    if (!observer.gpu_info_collected())
+      return false;
+    info = gpu_host_shim->gpu_info();
+  }
+  *client_info = info;
+  return true;
 }
 
 }  // namespace
@@ -156,15 +202,16 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
 #error "Not implemented for this platform"
 #endif
     if (using_gpu_) {
-      const GPUInfo& info = GpuProcessHostUIShim::GetInstance()->gpu_info();
-      if (info.progress() != GPUInfo::kComplete) {
+      GPUInfo info;
+      if (!CollectGPUInfo(&info)) {
         LOG(ERROR) << "Could not get gpu info";
         return false;
       }
-      img_name = StringPrintf("%s_%s_%x-%x.png",
+      img_name = base::StringPrintf("%s_%s_%04x-%04x.png",
           img_name.c_str(), os_label, info.vendor_id(), info.device_id());
     } else {
-      img_name = StringPrintf("%s_%s_mesa.png", img_name.c_str(), os_label);
+      img_name = base::StringPrintf("%s_%s_mesa.png",
+          img_name.c_str(), os_label);
     }
 
     // Read the reference image and verify the images' dimensions are equal.

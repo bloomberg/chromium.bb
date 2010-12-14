@@ -104,6 +104,10 @@ const GPUInfo& GpuProcessHostUIShim::gpu_info() const {
 void GpuProcessHostUIShim::OnGraphicsInfoCollected(const GPUInfo& gpu_info) {
   gpu_info_ = gpu_info;
   child_process_logging::SetGpuInfo(gpu_info);
+
+  // Used only in testing.
+  if (gpu_info_collected_callback_.get())
+    gpu_info_collected_callback_->Run();
 }
 
 void GpuProcessHostUIShim::OnScheduleComposite(int renderer_id,
