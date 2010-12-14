@@ -420,7 +420,6 @@
               'msvs_settings': {
                 'VCLinkerTool': {
                   'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
-                  'DelayLoadDLLs': ['nspr4.dll'],
                 },
               },
             },
@@ -429,6 +428,11 @@
             'libraries': [
               '-loleacc.lib',
             ],
+          },
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'DelayLoadDLLs': ['nspr4.dll'],
+            },
           },
           'dependencies': [
             '../breakpad/breakpad.gyp:breakpad_handler',
