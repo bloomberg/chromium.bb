@@ -37,6 +37,22 @@ class MutableHostConfig;
 // being signed is the full Jid concatenated with the time value, separated by
 // space. For example, for the heartbeat stanza above the message that is being
 // signed is "user@gmail.com/chromoting123123 1279061748".
+//
+// Bot sends the following result stanza in response to each heartbeat:
+//
+//  <iq type="set" from="remoting@bot.talk.google.com"
+//      to="user@gmail.com/chromoting123123" id="5" xmlns="jabber:client">
+//    <rem:heartbeat-result xmlns:rem="google:remoting">
+//      <rem:set-interval>300</rem:set-interval>
+//    </rem:heartbeat>
+//  </iq>
+//
+// The set-interval tag is used to specify desired heartbeat interval
+// in seconds. The heartbeat-result and the set-interval tags are
+// optional. Host uses default heartbeat interval if it doesn't find
+// set-interval tag in the result Iq stanza it receives from the
+// server.
+//
 // TODO(sergeyu): Is it enough to sign JID and nothing else?
 class HeartbeatSender : public base::RefCountedThreadSafe<HeartbeatSender> {
  public:
@@ -61,6 +77,7 @@ class HeartbeatSender : public base::RefCountedThreadSafe<HeartbeatSender> {
  private:
   FRIEND_TEST_ALL_PREFIXES(HeartbeatSenderTest, DoSendStanza);
   FRIEND_TEST_ALL_PREFIXES(HeartbeatSenderTest, CreateHeartbeatMessage);
+  FRIEND_TEST_ALL_PREFIXES(HeartbeatSenderTest, ProcessResponse);
 
   enum State {
     CREATED,
@@ -84,6 +101,7 @@ class HeartbeatSender : public base::RefCountedThreadSafe<HeartbeatSender> {
   scoped_ptr<IqRequest> request_;
   std::string host_id_;
   HostKeyPair key_pair_;
+  int interval_ms_;
 
   DISALLOW_COPY_AND_ASSIGN(HeartbeatSender);
 };

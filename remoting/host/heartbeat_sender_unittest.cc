@@ -19,6 +19,9 @@
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 #include "third_party/libjingle/source/talk/xmpp/constants.h"
 
+using buzz::QName;
+using buzz::XmlElement;
+
 using testing::_;
 using testing::DeleteArg;
 using testing::DoAll;
@@ -46,7 +49,7 @@ class MockIqRequest : public IqRequest {
   }
   MOCK_METHOD3(SendIq, void(const std::string& type,
                             const std::string& addressee,
-                            buzz::XmlElement* iq_body));
+                            XmlElement* iq_body));
 };
 
 class HeartbeatSenderTest : public testing::Test {
@@ -79,10 +82,9 @@ class HeartbeatSenderTest : public testing::Test {
   scoped_refptr<InMemoryHostConfig> config_;
 };
 
+// Call Start() followed by Stop(), and makes sure an Iq stanza is
+// being send.
 TEST_F(HeartbeatSenderTest, DoSendStanza) {
-  // This test calls Start() followed by Stop(), and makes sure an Iq
-  // stanza is being send.
-
   // |iq_request| is freed by HeartbeatSender.
   MockIqRequest* iq_request = new MockIqRequest(jingle_client_);
 
@@ -102,30 +104,29 @@ TEST_F(HeartbeatSenderTest, DoSendStanza) {
   message_loop_.RunAllPending();
 }
 
+// Validate format of the heartbeat stanza.
 TEST_F(HeartbeatSenderTest, CreateHeartbeatMessage) {
-  // This test validates format of the heartbeat stanza.
-
   scoped_refptr<HeartbeatSender> heartbeat_sender(new HeartbeatSender());
   ASSERT_TRUE(heartbeat_sender->Init(config_, jingle_client_));
 
   int64 start_time = static_cast<int64>(base::Time::Now().ToDoubleT());
 
-  scoped_ptr<buzz::XmlElement> stanza(
+  scoped_ptr<XmlElement> stanza(
       heartbeat_sender->CreateHeartbeatMessage());
   ASSERT_TRUE(stanza.get() != NULL);
 
-  EXPECT_TRUE(buzz::QName(kChromotingXmlNamespace, "heartbeat") ==
+  EXPECT_TRUE(QName(kChromotingXmlNamespace, "heartbeat") ==
               stanza->Name());
   EXPECT_EQ(std::string(kHostId),
-            stanza->Attr(buzz::QName(kChromotingXmlNamespace, "hostid")));
+            stanza->Attr(QName(kChromotingXmlNamespace, "hostid")));
 
-  buzz::QName signature_tag(kChromotingXmlNamespace, "signature");
-  buzz::XmlElement* signature = stanza->FirstNamed(signature_tag);
+  QName signature_tag(kChromotingXmlNamespace, "signature");
+  XmlElement* signature = stanza->FirstNamed(signature_tag);
   ASSERT_TRUE(signature != NULL);
   EXPECT_TRUE(stanza->NextNamed(signature_tag) == NULL);
 
   std::string time_str =
-      signature->Attr(buzz::QName(kChromotingXmlNamespace, "time"));
+      signature->Attr(QName(kChromotingXmlNamespace, "time"));
   int64 time;
   EXPECT_TRUE(base::StringToInt64(time_str, &time));
   int64 now = static_cast<int64>(base::Time::Now().ToDoubleT());
@@ -137,6 +138,28 @@ TEST_F(HeartbeatSenderTest, CreateHeartbeatMessage) {
   std::string expected_signature =
       key_pair.GetSignature(std::string(kTestJid) + ' ' + time_str);
   EXPECT_EQ(expected_signature, signature->BodyText());
+}
+
+// Verify that ProcessResponse parses set-interval result.
+TEST_F(HeartbeatSenderTest, ProcessResponse) {
+  XmlElement* response = new XmlElement(QName("", "iq"));
+  response->AddAttr(QName("", "type"), "result");
+
+  XmlElement* result = new XmlElement(
+      QName(kChromotingXmlNamespace, "heartbeat-result"));
+  response->AddElement(result);
+
+  XmlElement* set_interval = new XmlElement(
+      QName(kChromotingXmlNamespace, "set-interval"));
+  result->AddElement(set_interval);
+
+  const int kTestInterval = 123;
+  set_interval->AddText(base::IntToString(kTestInterval));
+
+  scoped_refptr<HeartbeatSender> heartbeat_sender(new HeartbeatSender());
+  heartbeat_sender->ProcessResponse(response);
+
+  EXPECT_EQ(kTestInterval * 1000, heartbeat_sender->interval_ms_);
 }
 
 }  // namespace remoting

@@ -16,6 +16,9 @@
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 #include "third_party/libjingle/source/talk/xmpp/constants.h"
 
+using buzz::QName;
+using buzz::XmlElement;
+
 namespace remoting {
 
 namespace {
@@ -24,12 +27,15 @@ const char kHostIdAttr[] = "hostid";
 const char kHeartbeatSignatureTag[] = "signature";
 const char kSignatureTimeAttr[] = "time";
 
-// TODO(sergeyu): Make this configurable by the cloud.
-const int64 kHeartbeatPeriodMs = 5 * 60 * 1000;  // 5 minutes.
+const char kHeartbeatResultTag[] = "heartbeat-result";
+const char kSetIntervalTag[] = "set-interval";
+
+const int64 kDefaultHeartbeatIntervalMs = 5 * 60 * 1000;  // 5 minutes.
 }
 
 HeartbeatSender::HeartbeatSender()
-    : state_(CREATED) {
+    : state_(CREATED),
+      interval_ms_(kDefaultHeartbeatIntervalMs) {
 }
 
 HeartbeatSender::~HeartbeatSender() {
@@ -103,33 +109,56 @@ void HeartbeatSender::DoSendStanza() {
     // Schedule next heartbeat.
     jingle_client_->message_loop()->PostDelayedTask(
         FROM_HERE, NewRunnableMethod(this, &HeartbeatSender::DoSendStanza),
-        kHeartbeatPeriodMs);
+        interval_ms_);
   }
 }
 
-void HeartbeatSender::ProcessResponse(const buzz::XmlElement* response) {
-  if (response->Attr(buzz::QN_TYPE) == buzz::STR_ERROR) {
+void HeartbeatSender::ProcessResponse(const XmlElement* response) {
+  std::string type = response->Attr(buzz::QN_TYPE);
+  if (type == buzz::STR_ERROR) {
     LOG(ERROR) << "Received error in response to heartbeat: "
                << response->Str();
+    return;
+  }
+
+  // This method must only be called for error or result stanzas.
+  DCHECK_EQ(buzz::STR_RESULT, type);
+
+  const XmlElement* result_element =
+      response->FirstNamed(QName(kChromotingXmlNamespace, kHeartbeatResultTag));
+  if (result_element) {
+    const XmlElement* set_interval_element =
+        result_element->FirstNamed(QName(kChromotingXmlNamespace,
+                                         kSetIntervalTag));
+    if (set_interval_element) {
+      const std::string& interval_str = set_interval_element->BodyText();
+      int interval;
+      if (!base::StringToInt(interval_str, &interval) || interval <= 0) {
+        LOG(ERROR) << "Received invalid set-interval: "
+                   << set_interval_element->Str();
+      } else {
+        interval_ms_ = interval * base::Time::kMillisecondsPerSecond;
+      }
+    }
   }
 }
 
-buzz::XmlElement* HeartbeatSender::CreateHeartbeatMessage() {
-  buzz::XmlElement* query = new buzz::XmlElement(
-      buzz::QName(kChromotingXmlNamespace, kHeartbeatQueryTag));
-  query->AddAttr(buzz::QName(kChromotingXmlNamespace, kHostIdAttr), host_id_);
+XmlElement* HeartbeatSender::CreateHeartbeatMessage() {
+  XmlElement* query = new XmlElement(
+      QName(kChromotingXmlNamespace, kHeartbeatQueryTag));
+  query->AddAttr(QName(kChromotingXmlNamespace, kHostIdAttr), host_id_);
   query->AddElement(CreateSignature());
   return query;
 }
 
-buzz::XmlElement* HeartbeatSender::CreateSignature() {
-  buzz::XmlElement* signature_tag = new buzz::XmlElement(
-      buzz::QName(kChromotingXmlNamespace, kHeartbeatSignatureTag));
+XmlElement* HeartbeatSender::CreateSignature() {
+  XmlElement* signature_tag = new XmlElement(
+      QName(kChromotingXmlNamespace, kHeartbeatSignatureTag));
 
   int64 time = static_cast<int64>(base::Time::Now().ToDoubleT());
   std::string time_str(base::Int64ToString(time));
   signature_tag->AddAttr(
-      buzz::QName(kChromotingXmlNamespace, kSignatureTimeAttr), time_str);
+      QName(kChromotingXmlNamespace, kSignatureTimeAttr), time_str);
 
   std::string message = jingle_client_->GetFullJid() + ' ' + time_str;
   std::string signature(key_pair_.GetSignature(message));
