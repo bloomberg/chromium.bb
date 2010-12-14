@@ -11,7 +11,7 @@
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/util_constants.h"
 
-namespace installer {
+namespace installer_util {
 class MasterPreferences;
 }
 
@@ -38,7 +38,7 @@ class GoogleChromeSxSDistribution : public GoogleChromeDistribution {
 
   // Disallow construction from non-friends.
   explicit GoogleChromeSxSDistribution(
-      const installer::MasterPreferences& prefs);
+      const installer_util::MasterPreferences& prefs);
 };
 
 #endif  // CHROME_INSTALLER_UTIL_GOOGLE_CHROME_SXS_DISTRIBUTION_H_

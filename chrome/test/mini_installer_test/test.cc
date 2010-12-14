@@ -27,16 +27,16 @@ class MiniInstallTest : public testing::Test {
 
   static void CleanTheSystem() {
     const CommandLine* cmd = CommandLine::ForCurrentProcess();
-    if (cmd->HasSwitch(installer::switches::kChromeFrame)) {
+    if (cmd->HasSwitch(installer_util::switches::kChromeFrame)) {
       ChromeMiniInstaller systeminstall(kSystemInstall,
-          cmd->HasSwitch(installer::switches::kChromeFrame));
+          cmd->HasSwitch(installer_util::switches::kChromeFrame));
       systeminstall.UnInstall();
     } else {
       ChromeMiniInstaller userinstall(kUserInstall,
-          cmd->HasSwitch(installer::switches::kChromeFrame));
+          cmd->HasSwitch(installer_util::switches::kChromeFrame));
       userinstall.UnInstall();
       ChromeMiniInstaller systeminstall(kSystemInstall,
-          cmd->HasSwitch(installer::switches::kChromeFrame));
+          cmd->HasSwitch(installer_util::switches::kChromeFrame));
       systeminstall.UnInstall();
     }
   }
@@ -48,7 +48,7 @@ class MiniInstallTest : public testing::Test {
         cmd->GetSwitchValueNative(switches::kInstallerTestBuild);
     if (build.empty())
       build = L"latest";
-    chrome_frame_ = cmd->HasSwitch(installer::switches::kChromeFrame);
+    chrome_frame_ = cmd->HasSwitch(installer_util::switches::kChromeFrame);
 
     CleanTheSystem();
     // Separate the test output from cleaning output

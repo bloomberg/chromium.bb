@@ -4,7 +4,7 @@
 
 #include "chrome/installer/util/master_preferences_constants.h"
 
-namespace installer {
+namespace installer_util {
 namespace master_preferences {
   const char kAltFirstRunBubble[] = "oem_bubble";
   const char kAltShortcutText[] = "alternate_shortcut_text";
@@ -41,4 +41,4 @@ namespace master_preferences {
   const char kVerboseLogging[] = "verbose_logging";
   const char kExtensionsBlock[] = "extensions.settings";
 }  // namespace master_preferences
-}  // namespace installer
+}  // namespace installer_util

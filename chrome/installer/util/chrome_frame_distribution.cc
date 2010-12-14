@@ -24,7 +24,7 @@ const wchar_t kChromeFrameGuid[] = L"{8BA986DA-5100-405E-AA35-86F34A02ACBF}";
 }
 
 ChromeFrameDistribution::ChromeFrameDistribution(
-    const installer::MasterPreferences& prefs)
+    const installer_util::MasterPreferences& prefs)
         : BrowserDistribution(prefs) {
   type_ = BrowserDistribution::CHROME_FRAME;
   ceee_ = prefs.install_ceee();
@@ -36,13 +36,13 @@ std::wstring ChromeFrameDistribution::GetAppGuid() {
 
 std::wstring ChromeFrameDistribution::GetApplicationName() {
   const std::wstring& product_name =
-    installer::GetLocalizedString(IDS_PRODUCT_FRAME_NAME_BASE);
+    installer_util::GetLocalizedString(IDS_PRODUCT_FRAME_NAME_BASE);
   return product_name;
 }
 
 std::wstring ChromeFrameDistribution::GetAlternateApplicationName() {
   const std::wstring& product_name =
-    installer::GetLocalizedString(IDS_PRODUCT_FRAME_NAME_BASE);
+    installer_util::GetLocalizedString(IDS_PRODUCT_FRAME_NAME_BASE);
   return product_name;
 }
 
@@ -52,7 +52,7 @@ std::wstring ChromeFrameDistribution::GetInstallSubDir() {
 
 std::wstring ChromeFrameDistribution::GetPublisherName() {
   const std::wstring& publisher_name =
-      installer::GetLocalizedString(IDS_ABOUT_VERSION_COMPANY_NAME_BASE);
+      installer_util::GetLocalizedString(IDS_ABOUT_VERSION_COMPANY_NAME_BASE);
   return publisher_name;
 }
 
@@ -107,7 +107,7 @@ bool ChromeFrameDistribution::CanSetAsDefault() {
 }
 
 void ChromeFrameDistribution::UpdateDiffInstallStatus(bool system_install,
-    bool incremental_install, installer::InstallStatus install_status) {
+    bool incremental_install, installer_util::InstallStatus install_status) {
   GoogleUpdateSettings::UpdateDiffInstallStatus(system_install,
       incremental_install, GetInstallReturnCode(install_status),
       kChromeFrameGuid);
@@ -115,20 +115,20 @@ void ChromeFrameDistribution::UpdateDiffInstallStatus(bool system_install,
 
 std::vector<FilePath> ChromeFrameDistribution::GetKeyFiles() {
   std::vector<FilePath> key_files;
-  key_files.push_back(FilePath(installer::kChromeFrameDll));
+  key_files.push_back(FilePath(installer_util::kChromeFrameDll));
   if (ceee_) {
-    key_files.push_back(FilePath(installer::kCeeeIeDll));
-    key_files.push_back(FilePath(installer::kCeeeBrokerExe));
+    key_files.push_back(FilePath(installer_util::kCeeeIeDll));
+    key_files.push_back(FilePath(installer_util::kCeeeBrokerExe));
   }
   return key_files;
 }
 
 std::vector<FilePath> ChromeFrameDistribution::GetComDllList() {
   std::vector<FilePath> dll_list;
-  dll_list.push_back(FilePath(installer::kChromeFrameDll));
+  dll_list.push_back(FilePath(installer_util::kChromeFrameDll));
   if (ceee_) {
-    dll_list.push_back(FilePath(installer::kCeeeInstallHelperDll));
-    dll_list.push_back(FilePath(installer::kCeeeIeDll));
+    dll_list.push_back(FilePath(installer_util::kCeeeInstallHelperDll));
+    dll_list.push_back(FilePath(installer_util::kCeeeIeDll));
   }
   return dll_list;
 }
@@ -136,9 +136,9 @@ std::vector<FilePath> ChromeFrameDistribution::GetComDllList() {
 void ChromeFrameDistribution::AppendUninstallCommandLineFlags(
     CommandLine* cmd_line) {
   DCHECK(cmd_line);
-  cmd_line->AppendSwitch(installer::switches::kDeleteProfile);
-  cmd_line->AppendSwitch(installer::switches::kChromeFrame);
+  cmd_line->AppendSwitch(installer_util::switches::kDeleteProfile);
+  cmd_line->AppendSwitch(installer_util::switches::kChromeFrame);
   if (ceee_) {
-    cmd_line->AppendSwitch(installer::switches::kCeee);
+    cmd_line->AppendSwitch(installer_util::switches::kCeee);
   }
 }

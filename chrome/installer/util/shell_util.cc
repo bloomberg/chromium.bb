@@ -306,29 +306,29 @@ bool ElevateAndRegisterChrome(BrowserDistribution* dist,
                               const std::wstring& suffix) {
   FilePath exe_path =
       FilePath::FromWStringHack(chrome_exe).DirName()
-          .Append(installer::kSetupExe);
+          .Append(installer_util::kSetupExe);
   if (!file_util::PathExists(exe_path)) {
     HKEY reg_root = InstallUtil::IsPerUserInstall(chrome_exe.c_str()) ?
         HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
     RegKey key(reg_root, dist->GetUninstallRegPath().c_str(), KEY_READ);
     std::wstring uninstall_string;
-    key.ReadValue(installer::kUninstallStringField, &uninstall_string);
+    key.ReadValue(installer_util::kUninstallStringField, &uninstall_string);
     CommandLine command_line = CommandLine::FromString(uninstall_string);
     exe_path = command_line.GetProgram();
   }
 
   if (file_util::PathExists(exe_path)) {
     CommandLine cmd(exe_path);
-    cmd.AppendSwitchNative(installer::switches::kRegisterChromeBrowser,
+    cmd.AppendSwitchNative(installer_util::switches::kRegisterChromeBrowser,
                            chrome_exe);
     if (!suffix.empty()) {
       cmd.AppendSwitchNative(
-          installer::switches::kRegisterChromeBrowserSuffix, suffix);
+          installer_util::switches::kRegisterChromeBrowserSuffix, suffix);
     }
 
     CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
     if (browser_command_line.HasSwitch(switches::kChromeFrame)) {
-      cmd.AppendSwitch(installer::switches::kChromeFrame);
+      cmd.AppendSwitch(installer_util::switches::kChromeFrame);
     }
 
     DWORD ret_val = 0;
@@ -788,10 +788,10 @@ bool ShellUtil::UpdateChromeShortcut(BrowserDistribution* dist,
   std::wstring chrome_path = file_util::GetDirectoryFromPath(chrome_exe);
 
   FilePath prefs_path(chrome_path);
-  prefs_path = prefs_path.AppendASCII(installer::kDefaultMasterPrefs);
-  installer::MasterPreferences prefs(prefs_path);
+  prefs_path = prefs_path.AppendASCII(installer_util::kDefaultMasterPrefs);
+  installer_util::MasterPreferences prefs(prefs_path);
   int icon_index = dist->GetIconIndex();
-  prefs.GetInt(installer::master_preferences::kChromeShortcutIconIndex,
+  prefs.GetInt(installer_util::master_preferences::kChromeShortcutIconIndex,
                &icon_index);
   if (create_new) {
     return file_util::CreateShortcutLink(

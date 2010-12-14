@@ -27,12 +27,12 @@ namespace installer {
 // InitInstallerLogging() and the beginning of EndInstallerLogging().
 bool installer_logging_ = false;
 
-void InitInstallerLogging(const installer::MasterPreferences& prefs) {
+void InitInstallerLogging(const installer_util::MasterPreferences& prefs) {
   if (installer_logging_)
     return;
 
   bool value = false;
-  if (prefs.GetBool(installer::master_preferences::kDisableLogging,
+  if (prefs.GetBool(installer_util::master_preferences::kDisableLogging,
                     &value) && value) {
     installer_logging_ = true;
     return;
@@ -43,7 +43,7 @@ void InitInstallerLogging(const installer::MasterPreferences& prefs) {
                        logging::LOCK_LOG_FILE,
                        logging::DELETE_OLD_LOG_FILE);
 
-  if (prefs.GetBool(installer::master_preferences::kVerboseLogging,
+  if (prefs.GetBool(installer_util::master_preferences::kVerboseLogging,
                     &value) && value) {
     logging::SetMinLogLevel(logging::LOG_VERBOSE);
   } else {
@@ -62,9 +62,9 @@ void EndInstallerLogging() {
   installer_logging_ = false;
 }
 
-FilePath GetLogFilePath(const installer::MasterPreferences& prefs) {
+FilePath GetLogFilePath(const installer_util::MasterPreferences& prefs) {
   std::string path;
-  prefs.GetString(installer::master_preferences::kLogFile, &path);
+  prefs.GetString(installer_util::master_preferences::kLogFile, &path);
   if (!path.empty()) {
     return FilePath(UTF8ToWide(path));
   }

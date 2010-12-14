@@ -14,15 +14,15 @@
 
 namespace {
 
-const installer::LanguageSelector& GetLanguageSelector() {
-  static const installer::LanguageSelector instance;
+const installer_util::LanguageSelector& GetLanguageSelector() {
+  static const installer_util::LanguageSelector instance;
 
   return instance;
 }
 
 }  // namespace
 
-namespace installer {
+namespace installer_util {
 
 std::wstring GetLocalizedString(int base_message_id) {
   std::wstring localized_string;
@@ -75,4 +75,4 @@ std::wstring GetLocalizedEulaResource() {
   return url_path;
 }
 
-}  // namespace installer
+}  // namespace installer_util

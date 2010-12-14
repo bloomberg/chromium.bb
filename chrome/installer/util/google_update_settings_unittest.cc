@@ -213,11 +213,11 @@ TEST_F(GoogleUpdateSettingsTest, CurrentChromeChannelVariousApValuesUser) {
 }
 
 TEST_F(GoogleUpdateSettingsTest, UpdateGoogleUpdateApKey) {
-  installer::InstallStatus s = installer::FIRST_INSTALL_SUCCESS;
-  installer::InstallStatus f = installer::INSTALL_FAILED;
+  installer_util::InstallStatus s = installer_util::FIRST_INSTALL_SUCCESS;
+  installer_util::InstallStatus f = installer_util::INSTALL_FAILED;
 
   // Incremental Installer that worked.
-  installer::ChannelInfo v;
+  installer_util::ChannelInfo v;
   v.set_value(L"");
   EXPECT_FALSE(GoogleUpdateSettings::UpdateGoogleUpdateApKey(true, s, &v));
   EXPECT_EQ(v.value(), L"");
@@ -324,7 +324,7 @@ TEST_F(GoogleUpdateSettingsTest, UpdateDiffInstallStatusTest) {
   ASSERT_TRUE(CreateApKey(work_item_list.get(), L""))
       << "Failed to create ap key.";
   GoogleUpdateSettings::UpdateDiffInstallStatus(false, true,
-                                       installer::INSTALL_FAILED,
+                                       installer_util::INSTALL_FAILED,
                                        kTestProductGuid);
   EXPECT_STREQ(ReadApKeyValue().c_str(), L"-full");
   work_item_list->Rollback();
@@ -334,7 +334,7 @@ TEST_F(GoogleUpdateSettingsTest, UpdateDiffInstallStatusTest) {
   ASSERT_TRUE(CreateApKey(work_item_list.get(), L""))
       << "Failed to create ap key.";
   GoogleUpdateSettings::UpdateDiffInstallStatus(false, true,
-                                       installer::FIRST_INSTALL_SUCCESS,
+                                       installer_util::FIRST_INSTALL_SUCCESS,
                                        kTestProductGuid);
   EXPECT_STREQ(ReadApKeyValue().c_str(), L"");
   work_item_list->Rollback();
@@ -344,7 +344,7 @@ TEST_F(GoogleUpdateSettingsTest, UpdateDiffInstallStatusTest) {
   ASSERT_TRUE(CreateApKey(work_item_list.get(), L"-full"))
       << "Failed to create ap key.";
   GoogleUpdateSettings::UpdateDiffInstallStatus(false, false,
-                                       installer::INSTALL_FAILED,
+                                       installer_util::INSTALL_FAILED,
                                        kTestProductGuid);
   EXPECT_STREQ(ReadApKeyValue().c_str(), L"");
   work_item_list->Rollback();
@@ -354,7 +354,7 @@ TEST_F(GoogleUpdateSettingsTest, UpdateDiffInstallStatusTest) {
   ASSERT_TRUE(CreateApKey(work_item_list.get(), L"-full"))
       << "Failed to create ap key.";
   GoogleUpdateSettings::UpdateDiffInstallStatus(false, false,
-                                       installer::FIRST_INSTALL_SUCCESS,
+                                       installer_util::FIRST_INSTALL_SUCCESS,
                                        kTestProductGuid);
   EXPECT_STREQ(ReadApKeyValue().c_str(), L"");
   work_item_list->Rollback();
@@ -374,12 +374,12 @@ TEST_F(GoogleUpdateSettingsTest, UpdateDiffInstallStatusTest) {
   }
   // try differential installer
   GoogleUpdateSettings::UpdateDiffInstallStatus(false, true,
-                                       installer::INSTALL_FAILED,
+                                       installer_util::INSTALL_FAILED,
                                        kTestProductGuid);
   EXPECT_STREQ(ReadApKeyValue().c_str(), L"-full");
   // try full installer now
   GoogleUpdateSettings::UpdateDiffInstallStatus(false, false,
-                                       installer::INSTALL_FAILED,
+                                       installer_util::INSTALL_FAILED,
                                        kTestProductGuid);
   EXPECT_STREQ(ReadApKeyValue().c_str(), L"");
   // Now cleanup to leave the system in unchanged state.

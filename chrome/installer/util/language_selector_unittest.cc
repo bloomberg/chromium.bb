@@ -44,7 +44,7 @@ const wchar_t* const kWildcardMatchCandidates[] = {
 
 // Test that a language is selected from the system.
 TEST(LanguageSelectorTest, DefaultSelection) {
-  installer::LanguageSelector instance;
+  installer_util::LanguageSelector instance;
   EXPECT_FALSE(instance.matched_candidate().empty());
 }
 
@@ -54,7 +54,7 @@ TEST(LanguageSelectorTest, AssortedSelections) {
     std::wstring candidates[] = {
       L"fr-BE", L"fr", L"en"
     };
-    installer::LanguageSelector instance(
+    installer_util::LanguageSelector instance(
         std::vector<std::wstring>(&candidates[0],
                                   &candidates[arraysize(candidates)]));
 #if defined(GOOGLE_CHROME_BUILD)
@@ -69,7 +69,7 @@ TEST(LanguageSelectorTest, AssortedSelections) {
     std::wstring candidates[] = {
       L"xx-YY", L"cc-Ssss-RR"
     };
-    installer::LanguageSelector instance(
+    installer_util::LanguageSelector instance(
       std::vector<std::wstring>(&candidates[0],
       &candidates[arraysize(candidates)]));
     // Expect the fallback to win.
@@ -79,7 +79,7 @@ TEST(LanguageSelectorTest, AssortedSelections) {
     std::wstring candidates[] = {
       L"zh-SG", L"en-GB"
     };
-    installer::LanguageSelector instance(
+    installer_util::LanguageSelector instance(
       std::vector<std::wstring>(&candidates[0],
       &candidates[arraysize(candidates)]));
 #if defined(GOOGLE_CHROME_BUILD)
@@ -98,7 +98,7 @@ class LanguageSelectorMatchCandidateTest
 };
 
 TEST_P(LanguageSelectorMatchCandidateTest, TestMatchCandidate) {
-  installer::LanguageSelector instance(
+  installer_util::LanguageSelector instance(
     std::vector<std::wstring>(1, std::wstring(GetParam())));
   EXPECT_EQ(GetParam(), instance.matched_candidate());
 }

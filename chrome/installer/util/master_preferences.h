@@ -19,7 +19,7 @@
 class DictionaryValue;
 class FilePath;
 
-namespace installer {
+namespace installer_util {
 
 // This is the default name for the master preferences file used to pre-set
 // values in the user profile at first run.
@@ -196,6 +196,6 @@ class MasterPreferences {
   DISALLOW_COPY_AND_ASSIGN(MasterPreferences);
 };
 
-}  // namespace installer
+}  // namespace installer_util
 
 #endif  // CHROME_INSTALLER_UTIL_MASTER_PREFERENCES_H_

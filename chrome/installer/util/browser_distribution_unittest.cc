@@ -33,8 +33,8 @@ TEST(BrowserDistributionTest, StringsTest) {
     { BrowserDistribution::CHROME_FRAME, true },
   };
 
-  const installer::MasterPreferences& prefs =
-      installer::MasterPreferences::ForCurrentProcess();
+  const installer_util::MasterPreferences& prefs =
+      installer_util::MasterPreferences::ForCurrentProcess();
 
   for (int i = 0; i < arraysize(browser_tests); ++i) {
     BrowserDistribution* dist =

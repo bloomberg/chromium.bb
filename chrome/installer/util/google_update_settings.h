@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 
-namespace installer {
+namespace installer_util {
 class ChannelInfo;
 }
 
@@ -108,7 +108,7 @@ class GoogleUpdateSettings {
   // Returns true if |value| is modified.
   static bool UpdateGoogleUpdateApKey(bool diff_install,
                                       int install_return_code,
-                                      installer::ChannelInfo* value);
+                                      installer_util::ChannelInfo* value);
 
   // For system-level installs, we need to be able to communicate the results
   // of the Toast Experiments back to Google Update. The problem is just that

@@ -211,7 +211,7 @@ void GetCandidatesFromSystem(std::vector<std::wstring>* candidates) {
 
 }  // namespace
 
-namespace installer {
+namespace installer_util {
 
 LanguageSelector::LanguageSelector()
     : offset_(arraysize(kLanguageOffsetPairs)) {
@@ -298,4 +298,4 @@ void LanguageSelector::DoSelect(const std::vector<std::wstring>& candidates) {
   }
 }
 
-}  // namespace installer
+}  // namespace installer_util

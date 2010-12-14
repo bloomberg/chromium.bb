@@ -140,14 +140,14 @@ bool RelaunchSetup(const std::string& flag, int value,
 
   // Re-add the system level toast flag.
   if (system_level_toast) {
-    new_cmd_line.AppendSwitch(installer::switches::kSystemLevelToast);
+    new_cmd_line.AppendSwitch(installer_util::switches::kSystemLevelToast);
 
     // Re-add the toast result key. We need to do this because Setup running as
     // system passes the key to Setup running as user, but that child process
     // does not perform the actual toasting, it launches another Setup (as user)
     // to do so. That is the process that needs the key.
     const CommandLine& current_cmd_line = *CommandLine::ForCurrentProcess();
-    std::string key(installer::switches::kToastResultsKey);
+    std::string key(installer_util::switches::kToastResultsKey);
     std::string toast_key = current_cmd_line.GetSwitchValueASCII(key);
     if (!toast_key.empty()) {
       new_cmd_line.AppendSwitchASCII(key, toast_key);
@@ -225,7 +225,7 @@ bool RelaunchSetupAsConsoleUser(const std::string& flag) {
   // Get the Google Update results key, and pass it on the command line to
   // the child process.
   int key = GoogleUpdateSettings::DuplicateGoogleUpdateSystemClientKey();
-  cmd_line.AppendSwitchASCII(installer::switches::kToastResultsKey,
+  cmd_line.AppendSwitchASCII(installer_util::switches::kToastResultsKey,
                              base::IntToString(key));
 
   if (base::win::GetVersion() > base::win::VERSION_XP) {
@@ -253,7 +253,7 @@ bool RelaunchSetupAsConsoleUser(const std::string& flag) {
 }  // namespace
 
 GoogleChromeDistribution::GoogleChromeDistribution(
-    const installer::MasterPreferences& prefs)
+    const installer_util::MasterPreferences& prefs)
         : BrowserDistribution(prefs), product_guid_(kChromeGuid) {
 }
 
@@ -310,8 +310,8 @@ bool GoogleChromeDistribution::ExtractUninstallMetrics(
   }
 
   DictionaryValue* uninstall_metrics_dict;
-  if (!root.HasKey(installer::kUninstallMetricsName) ||
-      !root.GetDictionary(installer::kUninstallMetricsName,
+  if (!root.HasKey(installer_util::kUninstallMetricsName) ||
+      !root.GetDictionary(installer_util::kUninstallMetricsName,
                           &uninstall_metrics_dict)) {
     return false;
   }
@@ -384,13 +384,13 @@ std::wstring GoogleChromeDistribution::GetAppGuid() {
 
 std::wstring GoogleChromeDistribution::GetApplicationName() {
   const std::wstring& product_name =
-      installer::GetLocalizedString(IDS_PRODUCT_NAME_BASE);
+      installer_util::GetLocalizedString(IDS_PRODUCT_NAME_BASE);
   return product_name;
 }
 
 std::wstring GoogleChromeDistribution::GetAlternateApplicationName() {
   const std::wstring& alt_product_name =
-      installer::GetLocalizedString(IDS_OEM_MAIN_SHORTCUT_NAME_BASE);
+      installer_util::GetLocalizedString(IDS_OEM_MAIN_SHORTCUT_NAME_BASE);
   return alt_product_name;
 }
 
@@ -399,21 +399,21 @@ std::wstring GoogleChromeDistribution::GetBrowserAppId() {
 }
 
 std::wstring GoogleChromeDistribution::GetInstallSubDir() {
-  std::wstring sub_dir(installer::kGoogleChromeInstallSubDir1);
+  std::wstring sub_dir(installer_util::kGoogleChromeInstallSubDir1);
   sub_dir.append(L"\\");
-  sub_dir.append(installer::kGoogleChromeInstallSubDir2);
+  sub_dir.append(installer_util::kGoogleChromeInstallSubDir2);
   return sub_dir;
 }
 
 std::wstring GoogleChromeDistribution::GetPublisherName() {
   const std::wstring& publisher_name =
-      installer::GetLocalizedString(IDS_ABOUT_VERSION_COMPANY_NAME_BASE);
+      installer_util::GetLocalizedString(IDS_ABOUT_VERSION_COMPANY_NAME_BASE);
   return publisher_name;
 }
 
 std::wstring GoogleChromeDistribution::GetAppDescription() {
   const std::wstring& app_description =
-      installer::GetLocalizedString(IDS_SHORTCUT_TOOLTIP_BASE);
+      installer_util::GetLocalizedString(IDS_SHORTCUT_TOOLTIP_BASE);
   return app_description;
 }
 
@@ -477,7 +477,7 @@ std::wstring GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
 
 std::wstring GoogleChromeDistribution::GetUninstallLinkName() {
   const std::wstring& link_name =
-      installer::GetLocalizedString(IDS_UNINSTALL_CHROME_BASE);
+      installer_util::GetLocalizedString(IDS_UNINSTALL_CHROME_BASE);
   return link_name;
 }
 
@@ -502,7 +502,7 @@ std::wstring GoogleChromeDistribution::GetVersionKey() {
 // string (if it is present) regardless of whether installer failed or not.
 // There is no fall-back for full installer :)
 void GoogleChromeDistribution::UpdateDiffInstallStatus(bool system_install,
-    bool incremental_install, installer::InstallStatus install_status) {
+    bool incremental_install, installer_util::InstallStatus install_status) {
   GoogleUpdateSettings::UpdateDiffInstallStatus(system_install,
       incremental_install, GetInstallReturnCode(install_status),
       product_guid().c_str());
@@ -522,10 +522,10 @@ void SetClient(std::wstring experiment_group, bool last_write) {
     // passed in to the command line (such as for system level installs), we use
     // it. Otherwise, we write to the key under HKCU.
     const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
-    if (cmd_line.HasSwitch(installer::switches::kToastResultsKey)) {
+    if (cmd_line.HasSwitch(installer_util::switches::kToastResultsKey)) {
       // Get the handle to the key under HKLM.
       base::StringToInt(cmd_line.GetSwitchValueASCII(
-          installer::switches::kToastResultsKey).c_str(),
+          installer_util::switches::kToastResultsKey).c_str(),
           &reg_key_handle);
     } else {
       reg_key_handle = 0;
@@ -553,17 +553,17 @@ void SetClient(std::wstring experiment_group, bool last_write) {
 // 3- It has been re-launched from the #2 case. In this case we enter
 //    this function with |system_install| true and a REENTRY_SYS_UPDATE status.
 void GoogleChromeDistribution::LaunchUserExperiment(
-    installer::InstallStatus status, const installer::Version& version,
+    installer_util::InstallStatus status, const installer::Version& version,
     const installer::Product& installation, bool system_level) {
   if (system_level) {
-    if (installer::NEW_VERSION_UPDATED == status) {
+    if (installer_util::NEW_VERSION_UPDATED == status) {
       // We need to relaunch as the interactive user.
-      RelaunchSetupAsConsoleUser(installer::switches::kSystemLevelToast);
+      RelaunchSetupAsConsoleUser(installer_util::switches::kSystemLevelToast);
       return;
     }
   } else {
-    if ((installer::NEW_VERSION_UPDATED != status) &&
-        (installer::REENTRY_SYS_UPDATE != status)) {
+    if ((installer_util::NEW_VERSION_UPDATED != status) &&
+        (installer_util::REENTRY_SYS_UPDATE != status)) {
       // We are not updating or in re-launch. Exit.
       return;
     }
@@ -615,7 +615,7 @@ void GoogleChromeDistribution::LaunchUserExperiment(
   // because google_update expects the upgrade process to be quick and nimble.
   // System level: We have already been relaunched, so we don't need to be
   // quick, but we relaunch to follow the exact same codepath.
-  RelaunchSetup(installer::switches::kInactiveUserToast, flavor,
+  RelaunchSetup(installer_util::switches::kInactiveUserToast, flavor,
                 system_level);
 }
 
@@ -668,7 +668,7 @@ void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
   // we waited for chrome to exit so the uninstall would not detect chrome
   // running.
   bool system_level_toast = CommandLine::ForCurrentProcess()->HasSwitch(
-      installer::switches::kSystemLevelToast);
+      installer_util::switches::kSystemLevelToast);
 
   std::wstring cmd(InstallUtil::GetChromeUninstallCmd(
       system_level_toast, this));

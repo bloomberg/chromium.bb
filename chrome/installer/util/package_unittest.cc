@@ -57,7 +57,7 @@ TEST_F(PackageTest, Basic) {
 
   // Create a fake chrome.dll key file in the old version directory.  This
   // should prevent the old version directory from getting deleted.
-  FilePath old_chrome_dll(old_version_dir.Append(installer::kChromeDll));
+  FilePath old_chrome_dll(old_version_dir.Append(installer_util::kChromeDll));
   EXPECT_FALSE(file_util::PathExists(old_chrome_dll));
 
   // Hold on to the file exclusively to prevent the directory from
@@ -87,8 +87,8 @@ TEST_F(PackageTest, Basic) {
 TEST_F(PackageTest, WithProduct) {
   TempRegKeyOverride::DeleteAllTempKeys();
 
-  const installer::MasterPreferences& prefs =
-      installer::MasterPreferences::ForCurrentProcess();
+  const installer_util::MasterPreferences& prefs =
+      installer_util::MasterPreferences::ForCurrentProcess();
 
   // TODO(tommi): We should mock this and use our mocked distribution.
   const bool system_level = true;

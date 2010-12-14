@@ -199,9 +199,9 @@ bool CheckMachineLevelInstall() {
       FilePath uninstall_path(InstallUtil::GetChromeUninstallCmd(false, dist));
       CommandLine uninstall_cmd(uninstall_path);
       if (!uninstall_cmd.GetProgram().value().empty()) {
-        uninstall_cmd.AppendSwitch(installer::switches::kForceUninstall);
+        uninstall_cmd.AppendSwitch(installer_util::switches::kForceUninstall);
         uninstall_cmd.AppendSwitch(
-            installer::switches::kDoNotRemoveSharedItems);
+            installer_util::switches::kDoNotRemoveSharedItems);
         base::LaunchApp(uninstall_cmd, false, false, NULL);
       }
       return true;

@@ -13,7 +13,7 @@
 #include "courgette/courgette.h"
 #include "third_party/bspatch/mbspatch.h"
 
-int installer::ApplyDiffPatch(const FilePath& src,
+int setup_util::ApplyDiffPatch(const FilePath& src,
                                const FilePath& patch,
                                const FilePath& dest) {
   VLOG(1) << "Applying patch " << patch.value() << " to file " << src.value()
@@ -33,7 +33,7 @@ int installer::ApplyDiffPatch(const FilePath& src,
                           dest.value().c_str());
 }
 
-installer::Version* installer::GetVersionFromArchiveDir(
+installer::Version* setup_util::GetVersionFromArchiveDir(
     const FilePath& chrome_path) {
   VLOG(1) << "Looking for Chrome version folder under " << chrome_path.value();
   FilePath root_path = chrome_path.Append(L"*");

@@ -37,7 +37,7 @@ bool IsChromeFrameModule() {
   FilePath module_path;
   PathService::Get(base::FILE_MODULE, &module_path);
   return FilePath::CompareEqualIgnoreCase(module_path.BaseName().value(),
-                                          installer::kChromeFrameDll);
+                                          installer_util::kChromeFrameDll);
 }
 
 // Returns true if currently running in ceee_broker.exe
@@ -45,7 +45,7 @@ bool IsCeeeBrokerProcess() {
   FilePath exe_path;
   PathService::Get(base::FILE_EXE, &exe_path);
   return FilePath::CompareEqualIgnoreCase(exe_path.BaseName().value(),
-                                          installer::kCeeeBrokerExe);
+                                          installer_util::kCeeeBrokerExe);
 }
 
 BrowserDistribution::Type GetCurrentDistributionType() {
@@ -59,13 +59,13 @@ BrowserDistribution::Type GetCurrentDistributionType() {
 }  // end namespace
 
 BrowserDistribution::BrowserDistribution(
-    const installer::MasterPreferences& prefs)
+    const installer_util::MasterPreferences& prefs)
     : type_(BrowserDistribution::CHROME_BROWSER) {
 }
 
 template<class DistributionClass>
 BrowserDistribution* BrowserDistribution::GetOrCreateBrowserDistribution(
-    const installer::MasterPreferences& prefs,
+    const installer_util::MasterPreferences& prefs,
     BrowserDistribution** dist) {
   if (!*dist) {
     DistributionClass* temp = new DistributionClass(prefs);
@@ -79,15 +79,15 @@ BrowserDistribution* BrowserDistribution::GetOrCreateBrowserDistribution(
 }
 
 BrowserDistribution* BrowserDistribution::GetDistribution() {
-  const installer::MasterPreferences& prefs =
-      installer::MasterPreferences::ForCurrentProcess();
+  const installer_util::MasterPreferences& prefs =
+      installer_util::MasterPreferences::ForCurrentProcess();
   return GetSpecificDistribution(GetCurrentDistributionType(), prefs);
 }
 
 // static
 BrowserDistribution* BrowserDistribution::GetSpecificDistribution(
     BrowserDistribution::Type type,
-    const installer::MasterPreferences& prefs) {
+    const installer_util::MasterPreferences& prefs) {
   BrowserDistribution* dist = NULL;
 
   if (type == CHROME_FRAME) {
@@ -151,18 +151,18 @@ std::wstring BrowserDistribution::GetAppDescription() {
 
 std::wstring BrowserDistribution::GetLongAppDescription() {
   const std::wstring& app_description =
-      installer::GetLocalizedString(IDS_PRODUCT_DESCRIPTION_BASE);
+      installer_util::GetLocalizedString(IDS_PRODUCT_DESCRIPTION_BASE);
   return app_description;
 }
 
 // static
 int BrowserDistribution::GetInstallReturnCode(
-    installer::InstallStatus status) {
+    installer_util::InstallStatus status) {
   switch (status) {
-    case installer::FIRST_INSTALL_SUCCESS:
-    case installer::INSTALL_REPAIRED:
-    case installer::NEW_VERSION_UPDATED:
-    case installer::IN_USE_UPDATED:
+    case installer_util::FIRST_INSTALL_SUCCESS:
+    case installer_util::INSTALL_REPAIRED:
+    case installer_util::NEW_VERSION_UPDATED:
+    case installer_util::IN_USE_UPDATED:
       return 0;
     default:
       return status;
@@ -214,11 +214,11 @@ bool BrowserDistribution::GetChromeChannel(std::wstring* channel) {
 }
 
 void BrowserDistribution::UpdateDiffInstallStatus(bool system_install,
-    bool incremental_install, installer::InstallStatus install_status) {
+    bool incremental_install, installer_util::InstallStatus install_status) {
 }
 
 void BrowserDistribution::LaunchUserExperiment(
-    installer::InstallStatus status, const installer::Version& version,
+    installer_util::InstallStatus status, const installer::Version& version,
     const installer::Product& installation, bool system_level) {
 }
 
@@ -229,7 +229,7 @@ void BrowserDistribution::InactiveUserToastExperiment(int flavor,
 
 std::vector<FilePath> BrowserDistribution::GetKeyFiles() {
   std::vector<FilePath> key_files;
-  key_files.push_back(FilePath(installer::kChromeDll));
+  key_files.push_back(FilePath(installer_util::kChromeDll));
   return key_files;
 }
 
@@ -240,5 +240,5 @@ std::vector<FilePath> BrowserDistribution::GetComDllList() {
 void BrowserDistribution::AppendUninstallCommandLineFlags(
     CommandLine* cmd_line) {
   DCHECK(cmd_line);
-  cmd_line->AppendSwitch(installer::switches::kChrome);
+  cmd_line->AppendSwitch(installer_util::switches::kChrome);
 }

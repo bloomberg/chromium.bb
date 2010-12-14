@@ -14,7 +14,7 @@ const std::wstring kChannelDev(L"dev");
 }  // namespace
 
 TEST(ChannelInfoTest, Channels) {
-  installer::ChannelInfo ci;
+  installer_util::ChannelInfo ci;
   std::wstring channel;
 
   ci.set_value(L"");
@@ -55,7 +55,7 @@ TEST(ChannelInfoTest, Channels) {
 }
 
 TEST(ChannelInfoTest, CEEE) {
-  installer::ChannelInfo ci;
+  installer_util::ChannelInfo ci;
 
   ci.set_value(L"");
   EXPECT_TRUE(ci.SetCeee(true));
@@ -87,7 +87,7 @@ TEST(ChannelInfoTest, CEEE) {
 }
 
 TEST(ChannelInfoTest, FullInstall) {
-  installer::ChannelInfo ci;
+  installer_util::ChannelInfo ci;
 
   ci.set_value(L"");
   EXPECT_TRUE(ci.SetFullInstall(true));
@@ -119,7 +119,7 @@ TEST(ChannelInfoTest, FullInstall) {
 }
 
 TEST(ChannelInfoTest, MultiInstall) {
-  installer::ChannelInfo ci;
+  installer_util::ChannelInfo ci;
 
   ci.set_value(L"");
   EXPECT_TRUE(ci.SetMultiInstall(true));

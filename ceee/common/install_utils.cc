@@ -13,7 +13,7 @@
 #include "base/path_service.h"
 #include "chrome/installer/util/util_constants.h"
 
-namespace installer {
+namespace installer_util {
   namespace switches {
     // TODO(joi@chromium.org) Move to chrome/installer/util_constants.h
     // when we refactor this logic to be in the installer rather than
@@ -43,10 +43,10 @@ bool ShouldRegisterImpl(bool check_firefox) {
   // also be provided.
   CommandLine current_command_line(CommandLine::NO_PROGRAM);
   current_command_line.ParseFromString(::GetCommandLine());
-  if (current_command_line.HasSwitch(installer::switches::kEnableCeee) &&
-      current_command_line.HasSwitch(installer::switches::kChromeFrame) &&
+  if (current_command_line.HasSwitch(installer_util::switches::kEnableCeee) &&
+      current_command_line.HasSwitch(installer_util::switches::kChromeFrame) &&
       (!check_firefox || current_command_line.HasSwitch(
-          installer::switches::kEnableFfCeee))) {
+          installer_util::switches::kEnableFfCeee))) {
     return true;
   } else {
     return false;

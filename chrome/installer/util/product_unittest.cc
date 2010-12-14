@@ -17,7 +17,7 @@ using installer::Package;
 using installer::Product;
 using installer::ProductPackageMapping;
 using installer::Version;
-using installer::MasterPreferences;
+using installer_util::MasterPreferences;
 
 void TestWithTempDir::SetUp() {
   // Name a subdirectory of the user temp directory.
@@ -78,8 +78,8 @@ class ProductTest : public TestWithTempDirAndDeleteTempOverrideKeys {
 TEST_F(ProductTest, ProductInstallBasic) {
   // TODO(tommi): We should mock this and use our mocked distribution.
   const bool system_level = true;
-  const installer::MasterPreferences& prefs =
-      installer::MasterPreferences::ForCurrentProcess();
+  const installer_util::MasterPreferences& prefs =
+      installer_util::MasterPreferences::ForCurrentProcess();
   BrowserDistribution* distribution =
       BrowserDistribution::GetSpecificDistribution(
           BrowserDistribution::CHROME_BROWSER, prefs);
@@ -91,7 +91,7 @@ TEST_F(ProductTest, ProductInstallBasic) {
   FilePath user_data(product->GetUserDataPath());
   EXPECT_FALSE(user_data.empty());
   EXPECT_NE(std::wstring::npos,
-            user_data.value().find(installer::kInstallUserDataDir));
+            user_data.value().find(installer_util::kInstallUserDataDir));
 
   FilePath program_files;
   PathService::Get(base::DIR_PROGRAM_FILES, &program_files);
@@ -121,10 +121,10 @@ TEST_F(ProductTest, ProductInstallBasic) {
 
     // See if WriteInstallerResult writes anything.
     std::wstring launch_cmd(L"chrome.exe --this-is-a-test");
-    product->WriteInstallerResult(installer::TEMP_DIR_FAILED,
+    product->WriteInstallerResult(installer_util::TEMP_DIR_FAILED,
                                   0, &launch_cmd);
     std::wstring found_launch_cmd;
-    key.ReadValue(installer::kInstallerSuccessLaunchCmdLine,
+    key.ReadValue(installer_util::kInstallerSuccessLaunchCmdLine,
                   &found_launch_cmd);
     EXPECT_EQ(launch_cmd, found_launch_cmd);
 
@@ -161,11 +161,11 @@ TEST_F(ProductTest, LaunchChrome) {
 class FakeChromeFrameDistribution : public ChromeFrameDistribution {
  public:
   explicit FakeChromeFrameDistribution(
-      const installer::MasterPreferences& prefs)
+      const installer_util::MasterPreferences& prefs)
           : ChromeFrameDistribution(prefs) {}
   virtual std::wstring GetInstallSubDir() {
     const MasterPreferences& prefs =
-        installer::MasterPreferences::ForCurrentProcess();
+        installer_util::MasterPreferences::ForCurrentProcess();
     return BrowserDistribution::GetSpecificDistribution(
         BrowserDistribution::CHROME_BROWSER, prefs)->GetInstallSubDir();
   }
@@ -180,7 +180,7 @@ TEST_F(ProductTest, ProductInstallsBasic) {
 
   // TODO(robertshield): Include test that use mock master preferences.
   const MasterPreferences& prefs =
-      installer::MasterPreferences::ForCurrentProcess();
+      installer_util::MasterPreferences::ForCurrentProcess();
 
   installs.AddDistribution(BrowserDistribution::CHROME_BROWSER, prefs);
   FakeChromeFrameDistribution fake_chrome_frame(prefs);

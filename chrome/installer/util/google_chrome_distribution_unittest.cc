@@ -52,8 +52,8 @@ TEST(GoogleChromeDistTest, TestExtractUninstallMetrics) {
   ASSERT_TRUE(root.get());
   std::wstring uninstall_metrics_string;
 
-  const installer::MasterPreferences& prefs =
-      installer::MasterPreferences::ForCurrentProcess();
+  const installer_util::MasterPreferences& prefs =
+      installer_util::MasterPreferences::ForCurrentProcess();
 
   GoogleChromeDistribution* dist = static_cast<GoogleChromeDistribution*>(
       BrowserDistribution::GetSpecificDistribution(

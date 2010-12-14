@@ -66,9 +66,9 @@ class GoogleChromeDistribution : public BrowserDistribution {
   virtual std::wstring GetVersionKey();
 
   virtual void UpdateDiffInstallStatus(bool system_install,
-      bool incremental_install, installer::InstallStatus install_status);
+      bool incremental_install, installer_util::InstallStatus install_status);
 
-  virtual void LaunchUserExperiment(installer::InstallStatus status,
+  virtual void LaunchUserExperiment(installer_util::InstallStatus status,
       const installer::Version& version,
       const installer::Product& installation,
       bool system_level);
@@ -86,7 +86,7 @@ class GoogleChromeDistribution : public BrowserDistribution {
 
   // Disallow construction from others.
   explicit GoogleChromeDistribution(
-      const installer::MasterPreferences& prefs);
+      const installer_util::MasterPreferences& prefs);
 
  private:
   friend class BrowserDistribution;

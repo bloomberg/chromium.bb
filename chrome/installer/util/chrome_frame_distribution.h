@@ -14,7 +14,7 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/util_constants.h"
 
-namespace installer {
+namespace installer_util {
 class MasterPreferences;
 }
 
@@ -54,7 +54,7 @@ class ChromeFrameDistribution : public BrowserDistribution {
   // Update ap value. We implement this simply to have the same behaviour re.
   // the ap value.
   virtual void UpdateDiffInstallStatus(bool system_install,
-      bool incremental_install, installer::InstallStatus install_status);
+      bool incremental_install, installer_util::InstallStatus install_status);
 
   virtual std::vector<FilePath> GetKeyFiles();
 
@@ -67,7 +67,7 @@ class ChromeFrameDistribution : public BrowserDistribution {
 
   // Disallow construction from non-friends.
   explicit ChromeFrameDistribution(
-      const installer::MasterPreferences& prefs);
+      const installer_util::MasterPreferences& prefs);
 
   // Determines whether this Chrome Frame distribution is being used to work
   // with CEEE bits as well.

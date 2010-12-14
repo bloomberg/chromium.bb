@@ -25,7 +25,7 @@ class CommandLine;
 namespace installer {
 class Product;
 }
-namespace installer {
+namespace installer_util {
 class MasterPreferences;
 }
 
@@ -41,11 +41,11 @@ class BrowserDistribution {
   static BrowserDistribution* GetDistribution();
 
   static BrowserDistribution* GetSpecificDistribution(
-      Type type, const installer::MasterPreferences& prefs);
+      Type type, const installer_util::MasterPreferences& prefs);
 
   Type GetType() const { return type_; }
 
-  static int GetInstallReturnCode(installer::InstallStatus install_status);
+  static int GetInstallReturnCode(installer_util::InstallStatus install_status);
 
   virtual void DoPostUninstallOperations(const installer::Version& version,
                                          const FilePath& local_data_path,
@@ -94,12 +94,12 @@ class BrowserDistribution {
   virtual bool GetChromeChannel(std::wstring* channel);
 
   virtual void UpdateDiffInstallStatus(bool system_install,
-      bool incremental_install, installer::InstallStatus install_status);
+      bool incremental_install, installer_util::InstallStatus install_status);
 
   // After an install or upgrade the user might qualify to participate in an
   // experiment. This function determines if the user qualifies and if so it
   // sets the wheels in motion or in simple cases does the experiment itself.
-  virtual void LaunchUserExperiment(installer::InstallStatus status,
+  virtual void LaunchUserExperiment(installer_util::InstallStatus status,
       const installer::Version& version,
       const installer::Product& installation,
       bool system_level);
@@ -128,11 +128,11 @@ class BrowserDistribution {
   virtual void AppendUninstallCommandLineFlags(CommandLine* cmd_line);
 
  protected:
-  explicit BrowserDistribution(const installer::MasterPreferences& prefs);
+  explicit BrowserDistribution(const installer_util::MasterPreferences& prefs);
 
   template<class DistributionClass>
   static BrowserDistribution* GetOrCreateBrowserDistribution(
-      const installer::MasterPreferences& prefs,
+      const installer_util::MasterPreferences& prefs,
       BrowserDistribution** dist);
 
   Type type_;

@@ -16,7 +16,7 @@
 #include "base/values.h"
 #include "googleurl/src/gurl.h"
 
-namespace installer {
+namespace installer_util {
 
 MasterPreferences::MasterPreferences(const CommandLine& cmd_line)
     : distribution_(NULL), preferences_read_from_file_(false) {

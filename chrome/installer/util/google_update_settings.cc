@@ -165,7 +165,7 @@ bool GoogleUpdateSettings::GetChromeChannel(bool system_install,
   HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   std::wstring reg_path = dist->GetStateKey();
   RegKey key(root_key, reg_path.c_str(), KEY_READ);
-  installer::ChannelInfo channel_info;
+  installer_util::ChannelInfo channel_info;
   if (!channel_info.Initialize(key)) {
     *channel = L"unknown";
     return false;
@@ -190,7 +190,7 @@ void GoogleUpdateSettings::UpdateDiffInstallStatus(bool system_install,
   HKEY reg_root = (system_install) ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
 
   RegKey key;
-  installer::ChannelInfo channel_info;
+  installer_util::ChannelInfo channel_info;
   std::wstring reg_key(google_update::kRegPathClientState);
   reg_key.append(L"\\");
   reg_key.append(product_guid);
@@ -223,7 +223,7 @@ void GoogleUpdateSettings::UpdateDiffInstallStatus(bool system_install,
 
 bool GoogleUpdateSettings::UpdateGoogleUpdateApKey(
     bool diff_install, int install_return_code,
-    installer::ChannelInfo* value) {
+    installer_util::ChannelInfo* value) {
   if (!diff_install || !install_return_code) {
     if (value->SetFullInstall(false)) {
       VLOG(1) << "Removed incremental installer failure key; new value: "

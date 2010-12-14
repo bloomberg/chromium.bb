@@ -58,7 +58,7 @@ bool GetVersion(const wchar_t* exe_path, const wchar_t* key_path,
   // TODO(cpu) : This is solving the same problem as the environment variable
   // so one of them will eventually be deprecated.
   std::wstring new_chrome_exe(exe_path);
-  new_chrome_exe.append(installer::kChromeNewExe);
+  new_chrome_exe.append(installer_util::kChromeNewExe);
   if (::PathFileExistsW(new_chrome_exe.c_str()) &&
       ReadRegistryStr(key, google_update::kRegOldVersionField, version)) {
     ::RegCloseKey(key);
@@ -103,14 +103,14 @@ HMODULE LoadChromeWithDirectory(std::wstring* dir) {
       (cmd_line.GetSwitchValueASCII(switches::kProcessType) ==
       switches::kNaClLoaderProcess)) {
     // Load the 64-bit DLL when running in a 64-bit process.
-    dir->append(installer::kChromeNaCl64Dll);
+    dir->append(installer_util::kChromeNaCl64Dll);
   } else {
     // Only NaCl broker and loader can be launched as Win64 processes.
     NOTREACHED();
     return NULL;
   }
 #else
-  dir->append(installer::kChromeDll);
+  dir->append(installer_util::kChromeDll);
 #endif
 
 #ifdef NDEBUG

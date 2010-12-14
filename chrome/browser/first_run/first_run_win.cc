@@ -65,7 +65,7 @@ namespace {
 bool GetNewerChromeFile(FilePath* path) {
   if (!PathService::Get(base::DIR_EXE, path))
     return false;
-  *path = path->Append(installer::kChromeNewExe);
+  *path = path->Append(installer_util::kChromeNewExe);
   return true;
 }
 
@@ -83,7 +83,7 @@ bool InvokeGoogleUpdateForRename() {
       DWORD exit_code;
       ::GetExitCodeProcess(handle, &exit_code);
       ::CloseHandle(handle);
-      if (exit_code == installer::RENAME_SUCCESSFUL)
+      if (exit_code == installer_util::RENAME_SUCCESSFUL)
         return true;
     }
   }
@@ -95,8 +95,8 @@ bool LaunchSetupWithParam(const std::string& param, const std::wstring& value,
   FilePath exe_path;
   if (!PathService::Get(base::DIR_MODULE, &exe_path))
     return false;
-  exe_path = exe_path.Append(installer::kInstallerDir);
-  exe_path = exe_path.Append(installer::kSetupExe);
+  exe_path = exe_path.Append(installer_util::kInstallerDir);
+  exe_path = exe_path.Append(installer_util::kSetupExe);
   base::ProcessHandle ph;
   CommandLine cl(exe_path);
   cl.AppendSwitchNative(param, value);
@@ -180,8 +180,8 @@ bool FirstRun::LaunchSetupWithParam(const std::string& param,
   FilePath exe_path;
   if (!PathService::Get(base::DIR_MODULE, &exe_path))
     return false;
-  exe_path = exe_path.Append(installer::kInstallerDir);
-  exe_path = exe_path.Append(installer::kSetupExe);
+  exe_path = exe_path.Append(installer_util::kInstallerDir);
+  exe_path = exe_path.Append(installer_util::kSetupExe);
   base::ProcessHandle ph;
   CommandLine cl(exe_path);
   cl.AppendSwitchNative(param, value);
@@ -286,7 +286,7 @@ bool Upgrade::SwapNewChromeExeIfPresent() {
       DWORD exit_code;
       ::GetExitCodeProcess(handle, &exit_code);
       ::CloseHandle(handle);
-      if (exit_code == installer::RENAME_SUCCESSFUL)
+      if (exit_code == installer_util::RENAME_SUCCESSFUL)
         return true;
     }
   }

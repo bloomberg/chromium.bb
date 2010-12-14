@@ -12,7 +12,7 @@
 
 class FilePath;
 
-namespace installer {
+namespace setup_util {
   // Apply a diff patch to source file. First tries to apply it using courgette
   // since it checks for courgette header and fails quickly. If that fails
   // tries to apply the patch using regular bsdiff. Returns status code.
@@ -24,6 +24,6 @@ namespace installer {
   // Chrome_path should contain a version folder.
   // Returns the first version found or NULL if no version is found.
   installer::Version* GetVersionFromArchiveDir(const FilePath& chrome_path);
-}  // namespace installer
+}  // namespace setup_util
 
 #endif  // CHROME_INSTALLER_SETUP_SETUP_UTIL_H_
