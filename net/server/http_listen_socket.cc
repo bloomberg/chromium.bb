@@ -352,6 +352,6 @@ void HttpListenSocket::DidRead(ListenSocket*,
 }
 
 void HttpListenSocket::DidClose(ListenSocket* sock) {
-  sock->Release();
   delegate_->OnClose(this);
+  sock->Release();
 }
