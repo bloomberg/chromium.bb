@@ -17,6 +17,6 @@ test.run_gyp('exclusion.gyp')
 test.build('exclusion.gyp')
 
 # executables
-test.built_file_must_exist('hello.exe', test.EXECUTABLE, bare=True)
+test.built_file_must_exist('hello' + test._exe, test.EXECUTABLE, bare=True)
 
 test.pass_test()
