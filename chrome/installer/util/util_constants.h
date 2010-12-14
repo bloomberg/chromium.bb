@@ -9,7 +9,7 @@
 #define CHROME_INSTALLER_UTIL_UTIL_CONSTANTS_H_
 #pragma once
 
-namespace installer_util {
+namespace installer {
 
 // Return status of installer
 enum InstallStatus {
@@ -118,6 +118,6 @@ extern const wchar_t kInstallerError[];
 extern const wchar_t kInstallerResultUIString[];
 extern const wchar_t kInstallerSuccessLaunchCmdLine[];
 
-}  // namespace installer_util
+}  // namespace installer
 
 #endif  // CHROME_INSTALLER_UTIL_UTIL_CONSTANTS_H_

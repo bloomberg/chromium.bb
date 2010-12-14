@@ -71,25 +71,25 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
     "} \n";
 
   EXPECT_TRUE(file_util::WriteFile(prefs_file(), text, sizeof(text)));
-  installer_util::MasterPreferences prefs(prefs_file());
+  installer::MasterPreferences prefs(prefs_file());
 
   const char* expected_true[] = {
-    installer_util::master_preferences::kDistroSkipFirstRunPref,
-    installer_util::master_preferences::kDistroShowWelcomePage,
-    installer_util::master_preferences::kDistroImportSearchPref,
-    installer_util::master_preferences::kDistroImportHistoryPref,
-    installer_util::master_preferences::kDistroImportBookmarksPref,
-    installer_util::master_preferences::kDistroImportHomePagePref,
-    installer_util::master_preferences::kCreateAllShortcuts,
-    installer_util::master_preferences::kDoNotLaunchChrome,
-    installer_util::master_preferences::kMakeChromeDefault,
-    installer_util::master_preferences::kMakeChromeDefaultForUser,
-    installer_util::master_preferences::kSystemLevel,
-    installer_util::master_preferences::kVerboseLogging,
-    installer_util::master_preferences::kRequireEula,
-    installer_util::master_preferences::kAltShortcutText,
-    installer_util::master_preferences::kAltFirstRunBubble,
-    installer_util::master_preferences::kSearchEngineExperimentPref,
+    installer::master_preferences::kDistroSkipFirstRunPref,
+    installer::master_preferences::kDistroShowWelcomePage,
+    installer::master_preferences::kDistroImportSearchPref,
+    installer::master_preferences::kDistroImportHistoryPref,
+    installer::master_preferences::kDistroImportBookmarksPref,
+    installer::master_preferences::kDistroImportHomePagePref,
+    installer::master_preferences::kCreateAllShortcuts,
+    installer::master_preferences::kDoNotLaunchChrome,
+    installer::master_preferences::kMakeChromeDefault,
+    installer::master_preferences::kMakeChromeDefaultForUser,
+    installer::master_preferences::kSystemLevel,
+    installer::master_preferences::kVerboseLogging,
+    installer::master_preferences::kRequireEula,
+    installer::master_preferences::kAltShortcutText,
+    installer::master_preferences::kAltFirstRunBubble,
+    installer::master_preferences::kSearchEngineExperimentPref,
   };
 
   for (int i = 0; i < arraysize(expected_true); ++i) {
@@ -100,17 +100,17 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
 
   std::string str_value;
   EXPECT_TRUE(prefs.GetString(
-      installer_util::master_preferences::kDistroImportBookmarksFromFilePref,
+      installer::master_preferences::kDistroImportBookmarksFromFilePref,
       &str_value));
   EXPECT_STREQ("c:\\foo", str_value.c_str());
 
   int icon_index = 0;
   EXPECT_TRUE(prefs.GetInt(
-      installer_util::master_preferences::kChromeShortcutIconIndex,
+      installer::master_preferences::kChromeShortcutIconIndex,
       &icon_index));
   EXPECT_EQ(icon_index, 1);
   int ping_delay = 90;
-  EXPECT_TRUE(prefs.GetInt(installer_util::master_preferences::kDistroPingDelay,
+  EXPECT_TRUE(prefs.GetInt(installer::master_preferences::kDistroPingDelay,
                            &ping_delay));
   EXPECT_EQ(ping_delay, 40);
 }
@@ -130,14 +130,14 @@ TEST_F(MasterPreferencesTest, ParseMissingDistroParams) {
     "} \n";
 
   EXPECT_TRUE(file_util::WriteFile(prefs_file(), text, sizeof(text)));
-  installer_util::MasterPreferences prefs(prefs_file());
+  installer::MasterPreferences prefs(prefs_file());
 
   ExpectedBooleans expected_bool[] = {
-    { installer_util::master_preferences::kDistroSkipFirstRunPref, true },
-    { installer_util::master_preferences::kDistroImportSearchPref, true },
-    { installer_util::master_preferences::kDistroImportBookmarksPref, false },
-    { installer_util::master_preferences::kCreateAllShortcuts, true },
-    { installer_util::master_preferences::kDoNotLaunchChrome, true },
+    { installer::master_preferences::kDistroSkipFirstRunPref, true },
+    { installer::master_preferences::kDistroImportSearchPref, true },
+    { installer::master_preferences::kDistroImportBookmarksPref, false },
+    { installer::master_preferences::kCreateAllShortcuts, true },
+    { installer::master_preferences::kDoNotLaunchChrome, true },
   };
 
   bool value = false;
@@ -147,12 +147,12 @@ TEST_F(MasterPreferencesTest, ParseMissingDistroParams) {
   }
 
   const char* missing_bools[] = {
-    installer_util::master_preferences::kDistroShowWelcomePage,
-    installer_util::master_preferences::kDistroImportHistoryPref,
-    installer_util::master_preferences::kDistroImportHomePagePref,
-    installer_util::master_preferences::kDoNotRegisterForUpdateLaunch,
-    installer_util::master_preferences::kMakeChromeDefault,
-    installer_util::master_preferences::kMakeChromeDefaultForUser,
+    installer::master_preferences::kDistroShowWelcomePage,
+    installer::master_preferences::kDistroImportHistoryPref,
+    installer::master_preferences::kDistroImportHomePagePref,
+    installer::master_preferences::kDoNotRegisterForUpdateLaunch,
+    installer::master_preferences::kMakeChromeDefault,
+    installer::master_preferences::kMakeChromeDefaultForUser,
   };
 
   for (int i = 0; i < arraysize(missing_bools); ++i) {
@@ -161,18 +161,18 @@ TEST_F(MasterPreferencesTest, ParseMissingDistroParams) {
 
   std::string str_value;
   EXPECT_FALSE(prefs.GetString(
-      installer_util::master_preferences::kDistroImportBookmarksFromFilePref,
+      installer::master_preferences::kDistroImportBookmarksFromFilePref,
       &str_value));
 
   int icon_index = 0;
   EXPECT_FALSE(prefs.GetInt(
-      installer_util::master_preferences::kChromeShortcutIconIndex,
+      installer::master_preferences::kChromeShortcutIconIndex,
       &icon_index));
   EXPECT_EQ(icon_index, 0);
 
   int ping_delay = 90;
   EXPECT_FALSE(prefs.GetInt(
-      installer_util::master_preferences::kDistroPingDelay, &ping_delay));
+      installer::master_preferences::kDistroPingDelay, &ping_delay));
   EXPECT_EQ(ping_delay, 90);
 }
 
@@ -190,7 +190,7 @@ TEST_F(MasterPreferencesTest, FirstRunTabs) {
     "} \n";
 
   EXPECT_TRUE(file_util::WriteFile(prefs_file(), text, sizeof(text)));
-  installer_util::MasterPreferences prefs(prefs_file());
+  installer::MasterPreferences prefs(prefs_file());
   typedef std::vector<GURL> TabsVector;
   TabsVector tabs = prefs.GetFirstRunTabs();
   ASSERT_EQ(3, tabs.size());
@@ -209,7 +209,7 @@ TEST(MasterPrefsExtension, ValidateExtensionJSON) {
   prefs_path = prefs_path.AppendASCII("extensions")
       .AppendASCII("good").AppendASCII("Preferences");
 
-  installer_util::MasterPreferences prefs(prefs_path);
+  installer::MasterPreferences prefs(prefs_path);
   DictionaryValue* extensions = NULL;
   EXPECT_TRUE(prefs.GetExtensionsBlock(&extensions));
   int location = 0;
@@ -256,16 +256,16 @@ TEST_F(MasterPreferencesTest, GetInstallPreferencesTest) {
   cmd_str.append(L" --do-not-launch-chrome");
   cmd_str.append(L" --alt-desktop-shortcut");
   CommandLine cmd_line = CommandLine::FromString(cmd_str);
-  installer_util::MasterPreferences prefs(cmd_line);
+  installer::MasterPreferences prefs(cmd_line);
 
   // Check prefs that do not have any equivalent command line option.
   ExpectedBooleans expected_bool[] = {
-    { installer_util::master_preferences::kDistroSkipFirstRunPref, true },
-    { installer_util::master_preferences::kCreateAllShortcuts, true },
-    { installer_util::master_preferences::kDoNotLaunchChrome, true },
-    { installer_util::master_preferences::kAltShortcutText, true },
-    { installer_util::master_preferences::kSystemLevel, true },
-    { installer_util::master_preferences::kVerboseLogging, false },
+    { installer::master_preferences::kDistroSkipFirstRunPref, true },
+    { installer::master_preferences::kCreateAllShortcuts, true },
+    { installer::master_preferences::kDoNotLaunchChrome, true },
+    { installer::master_preferences::kAltShortcutText, true },
+    { installer::master_preferences::kSystemLevel, true },
+    { installer::master_preferences::kVerboseLogging, false },
   };
 
   // Now check that prefs got merged correctly.
@@ -283,11 +283,11 @@ TEST_F(MasterPreferencesTest, GetInstallPreferencesTest) {
   cmd_str = L"setup.exe --create-all-shortcuts --do-not-launch-chrome"
             L" --alt-desktop-shortcut";
   cmd_line.ParseFromString(cmd_str);
-  installer_util::MasterPreferences prefs2(cmd_line);
+  installer::MasterPreferences prefs2(cmd_line);
   ExpectedBooleans expected_bool2[] = {
-    { installer_util::master_preferences::kCreateAllShortcuts, true },
-    { installer_util::master_preferences::kDoNotLaunchChrome, true },
-    { installer_util::master_preferences::kAltShortcutText, true },
+    { installer::master_preferences::kCreateAllShortcuts, true },
+    { installer::master_preferences::kDoNotLaunchChrome, true },
+    { installer::master_preferences::kAltShortcutText, true },
   };
 
   for (int i = 0; i < arraysize(expected_bool2); ++i) {
@@ -297,24 +297,24 @@ TEST_F(MasterPreferencesTest, GetInstallPreferencesTest) {
   }
 
   EXPECT_FALSE(prefs2.GetBool(
-      installer_util::master_preferences::kSystemLevel, &value));
+      installer::master_preferences::kSystemLevel, &value));
   EXPECT_FALSE(prefs2.GetBool(
-      installer_util::master_preferences::kVerboseLogging, &value));
+      installer::master_preferences::kVerboseLogging, &value));
 }
 
 TEST_F(MasterPreferencesTest, TestDefaultInstallConfig) {
   std::wstringstream chrome_cmd, cf_cmd, ceee_cmd;
   chrome_cmd << "setup.exe";
-  cf_cmd << "setup.exe --" << installer_util::switches::kChromeFrame;
-  ceee_cmd << "setup.exe --" << installer_util::switches::kCeee;
+  cf_cmd << "setup.exe --" << installer::switches::kChromeFrame;
+  ceee_cmd << "setup.exe --" << installer::switches::kCeee;
 
   CommandLine chrome_install(CommandLine::FromString(chrome_cmd.str()));
   CommandLine cf_install(CommandLine::FromString(cf_cmd.str()));
   CommandLine ceee_install(CommandLine::FromString(ceee_cmd.str()));
 
-  installer_util::MasterPreferences pref_chrome(chrome_install);
-  installer_util::MasterPreferences pref_cf(cf_install);
-  installer_util::MasterPreferences pref_ceee(ceee_install);
+  installer::MasterPreferences pref_chrome(chrome_install);
+  installer::MasterPreferences pref_cf(cf_install);
+  installer::MasterPreferences pref_ceee(ceee_install);
 
   EXPECT_FALSE(pref_chrome.is_multi_install());
   EXPECT_TRUE(pref_chrome.install_chrome());
@@ -333,10 +333,10 @@ TEST_F(MasterPreferencesTest, TestDefaultInstallConfig) {
 }
 
 TEST_F(MasterPreferencesTest, TestMultiInstallConfig) {
-  using installer_util::switches::kMultiInstall;
-  using installer_util::switches::kChrome;
-  using installer_util::switches::kChromeFrame;
-  using installer_util::switches::kCeee;
+  using installer::switches::kMultiInstall;
+  using installer::switches::kChrome;
+  using installer::switches::kChromeFrame;
+  using installer::switches::kCeee;
 
   std::wstringstream chrome_cmd, cf_cmd, ceee_cmd, chrome_cf_cmd,
       chrome_ceee_cf_cmd;
@@ -355,11 +355,11 @@ TEST_F(MasterPreferencesTest, TestMultiInstallConfig) {
   CommandLine chrome_cf_ceee_install(
       CommandLine::FromString(chrome_ceee_cf_cmd.str()));
 
-  installer_util::MasterPreferences pref_chrome(chrome_install);
-  installer_util::MasterPreferences pref_cf(cf_install);
-  installer_util::MasterPreferences pref_ceee(ceee_install);
-  installer_util::MasterPreferences pref_chrome_cf(chrome_cf_install);
-  installer_util::MasterPreferences pref_all(chrome_cf_ceee_install);
+  installer::MasterPreferences pref_chrome(chrome_install);
+  installer::MasterPreferences pref_cf(cf_install);
+  installer::MasterPreferences pref_ceee(ceee_install);
+  installer::MasterPreferences pref_chrome_cf(chrome_cf_install);
+  installer::MasterPreferences pref_all(chrome_cf_ceee_install);
 
   EXPECT_TRUE(pref_chrome.is_multi_install());
   EXPECT_TRUE(pref_chrome.install_chrome());

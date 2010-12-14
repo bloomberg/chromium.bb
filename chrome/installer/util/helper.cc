@@ -33,10 +33,10 @@ FilePath GetChromeInstallBasePath(bool system,
 FilePath installer::GetChromeInstallPath(bool system_install,
                                          BrowserDistribution* dist) {
   return GetChromeInstallBasePath(system_install, dist,
-                                  installer_util::kInstallBinaryDir);
+                                  installer::kInstallBinaryDir);
 }
 
 FilePath installer::GetChromeUserDataPath(BrowserDistribution* dist) {
   return GetChromeInstallBasePath(false, dist,
-      installer_util::kInstallUserDataDir);
+      installer::kInstallUserDataDir);
 }

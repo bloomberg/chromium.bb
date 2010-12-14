@@ -24,7 +24,7 @@ namespace installer {
 // suffix for default browser entry name in the registry (optional).
 bool DeleteChromeRegistrationKeys(BrowserDistribution* dist, HKEY root,
                                   const std::wstring& browser_entry_suffix,
-                                  installer_util::InstallStatus& exit_code);
+                                  installer::InstallStatus& exit_code);
 
 // Removes any legacy registry keys from earlier versions of Chrome that are no
 // longer needed. This is used during autoupdate since we don't do full
@@ -41,7 +41,7 @@ void RemoveLegacyRegistryKeys(BrowserDistribution* dist);
 //                  any checks for Chrome running.
 // cmd_line: CommandLine that contains information about the command that
 //           was used to launch current uninstaller.
-installer_util::InstallStatus UninstallChrome(
+installer::InstallStatus UninstallChrome(
     const FilePath& setup_path, const Product& dist, bool remove_all,
     bool force_uninstall, const CommandLine& cmd_line);
 

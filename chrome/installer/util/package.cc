@@ -58,14 +58,14 @@ bool Package::system_level() const {
 FilePath Package::GetInstallerDirectory(
     const Version& version) const {
   return path_.Append(version.GetString())
-      .Append(installer_util::kInstallerDir);
+      .Append(installer::kInstallerDir);
 }
 
 Version* Package::GetCurrentVersion() const {
   scoped_ptr<Version> current_version;
   // Be aware that there might be a pending "new_chrome.exe" already in the
   // installation path.
-  FilePath new_chrome_exe(path_.Append(installer_util::kChromeNewExe));
+  FilePath new_chrome_exe(path_.Append(installer::kChromeNewExe));
   bool new_chrome_exists = file_util::PathExists(new_chrome_exe);
 
   for (size_t i = 0; i < products_.size(); ++i) {

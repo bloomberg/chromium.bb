@@ -75,7 +75,7 @@ DictionaryValue* ParseDistributionPreferences(
 
 }  // namespace
 
-namespace installer_util {
+namespace installer {
 
 MasterPreferences::MasterPreferences() : distribution_(NULL),
                                          preferences_read_from_file_(false),
@@ -117,9 +117,9 @@ MasterPreferences::~MasterPreferences() {
 
 void MasterPreferences::InitializeFromCommandLine(const CommandLine& cmd_line) {
 #if defined(OS_WIN)
-  if (cmd_line.HasSwitch(installer_util::switches::kInstallerData)) {
+  if (cmd_line.HasSwitch(installer::switches::kInstallerData)) {
     FilePath prefs_path(cmd_line.GetSwitchValuePath(
-        installer_util::switches::kInstallerData));
+        installer::switches::kInstallerData));
     this->MasterPreferences::MasterPreferences(prefs_path);
   } else {
     master_dictionary_.reset(new DictionaryValue());
@@ -134,34 +134,34 @@ void MasterPreferences::InitializeFromCommandLine(const CommandLine& cmd_line) {
     const char* cmd_line_switch;
     const char* distribution_switch;
   } translate_switches[] = {
-    { installer_util::switches::kCeee,
-      installer_util::master_preferences::kCeee },
-    { installer_util::switches::kChrome,
-      installer_util::master_preferences::kChrome },
-    { installer_util::switches::kChromeFrame,
-      installer_util::master_preferences::kChromeFrame },
-    { installer_util::switches::kCreateAllShortcuts,
-      installer_util::master_preferences::kCreateAllShortcuts },
-    { installer_util::switches::kDisableLogging,
-      installer_util::master_preferences::kDisableLogging },
-    { installer_util::switches::kDoNotCreateShortcuts,
-      installer_util::master_preferences::kDoNotCreateShortcuts },
-    { installer_util::switches::kMsi,
-      installer_util::master_preferences::kMsi },
-    { installer_util::switches::kMultiInstall,
-      installer_util::master_preferences::kMultiInstall },
-    { installer_util::switches::kDoNotRegisterForUpdateLaunch,
-      installer_util::master_preferences::kDoNotRegisterForUpdateLaunch },
-    { installer_util::switches::kDoNotLaunchChrome,
-      installer_util::master_preferences::kDoNotLaunchChrome },
-    { installer_util::switches::kMakeChromeDefault,
-      installer_util::master_preferences::kMakeChromeDefault },
-    { installer_util::switches::kSystemLevel,
-      installer_util::master_preferences::kSystemLevel },
-    { installer_util::switches::kVerboseLogging,
-      installer_util::master_preferences::kVerboseLogging },
-    { installer_util::switches::kAltDesktopShortcut,
-      installer_util::master_preferences::kAltShortcutText },
+    { installer::switches::kCeee,
+      installer::master_preferences::kCeee },
+    { installer::switches::kChrome,
+      installer::master_preferences::kChrome },
+    { installer::switches::kChromeFrame,
+      installer::master_preferences::kChromeFrame },
+    { installer::switches::kCreateAllShortcuts,
+      installer::master_preferences::kCreateAllShortcuts },
+    { installer::switches::kDisableLogging,
+      installer::master_preferences::kDisableLogging },
+    { installer::switches::kDoNotCreateShortcuts,
+      installer::master_preferences::kDoNotCreateShortcuts },
+    { installer::switches::kMsi,
+      installer::master_preferences::kMsi },
+    { installer::switches::kMultiInstall,
+      installer::master_preferences::kMultiInstall },
+    { installer::switches::kDoNotRegisterForUpdateLaunch,
+      installer::master_preferences::kDoNotRegisterForUpdateLaunch },
+    { installer::switches::kDoNotLaunchChrome,
+      installer::master_preferences::kDoNotLaunchChrome },
+    { installer::switches::kMakeChromeDefault,
+      installer::master_preferences::kMakeChromeDefault },
+    { installer::switches::kSystemLevel,
+      installer::master_preferences::kSystemLevel },
+    { installer::switches::kVerboseLogging,
+      installer::master_preferences::kVerboseLogging },
+    { installer::switches::kAltDesktopShortcut,
+      installer::master_preferences::kAltShortcutText },
   };
 
   std::string name(kDistroDict);
@@ -175,10 +175,10 @@ void MasterPreferences::InitializeFromCommandLine(const CommandLine& cmd_line) {
 
   // See if the log file path was specified on the command line.
   std::wstring str_value(cmd_line.GetSwitchValueNative(
-      installer_util::switches::kLogFile));
+      installer::switches::kLogFile));
   if (!str_value.empty()) {
     name.resize(arraysize(kDistroDict) - 1);
-    name.append(".").append(installer_util::master_preferences::kLogFile);
+    name.append(".").append(installer::master_preferences::kLogFile);
     master_dictionary_->SetString(name, str_value);
   }
 
@@ -196,9 +196,9 @@ void MasterPreferences::InitializeProductFlags() {
   ceee_ = false;
   chrome_ = true;
 
-  GetBool(installer_util::master_preferences::kMultiInstall, &multi_install_);
-  GetBool(installer_util::master_preferences::kChromeFrame, &chrome_frame_);
-  GetBool(installer_util::master_preferences::kCeee, &ceee_);
+  GetBool(installer::master_preferences::kMultiInstall, &multi_install_);
+  GetBool(installer::master_preferences::kChromeFrame, &chrome_frame_);
+  GetBool(installer::master_preferences::kCeee, &ceee_);
 
   // When multi-install is specified, the checks are pretty simple (in theory):
   // In order to be installed/uninstalled, each product must have its switch
@@ -216,7 +216,7 @@ void MasterPreferences::InitializeProductFlags() {
     chrome_frame_ = true;
 
   if (multi_install_) {
-    if (!GetBool(installer_util::master_preferences::kChrome, &chrome_))
+    if (!GetBool(installer::master_preferences::kChrome, &chrome_))
       chrome_ = false;
   } else {
     // If chrome-frame is on the command line however, we only install CF.

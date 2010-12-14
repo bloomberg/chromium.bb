@@ -94,9 +94,9 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   FilePath master_prefs;
   if (!PathService::Get(base::DIR_EXE, &master_prefs))
     return true;
-  master_prefs = master_prefs.AppendASCII(installer_util::kDefaultMasterPrefs);
+  master_prefs = master_prefs.AppendASCII(installer::kDefaultMasterPrefs);
 
-  installer_util::MasterPreferences prefs(master_prefs);
+  installer::MasterPreferences prefs(master_prefs);
   if (!prefs.read_from_file())
     return true;
 
@@ -107,14 +107,14 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
 #if defined(OS_WIN)
   // RLZ is currently a Windows-only phenomenon.  When it comes to the Mac/
   // Linux, enable it here.
-  if (!prefs.GetInt(installer_util::master_preferences::kDistroPingDelay,
+  if (!prefs.GetInt(installer::master_preferences::kDistroPingDelay,
                     &out_prefs->ping_delay)) {
     // 90 seconds is the default that we want to use in case master
     // preferences is missing, corrupt or ping_delay is missing.
     out_prefs->ping_delay = 90;
   }
 
-  if (prefs.GetBool(installer_util::master_preferences::kRequireEula, &value) &&
+  if (prefs.GetBool(installer::master_preferences::kRequireEula, &value) &&
       value) {
     // Show the post-installation EULA. This is done by setup.exe and the
     // result determines if we continue or not. We wait here until the user
@@ -125,16 +125,16 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
     FilePath inner_html;
     if (WriteEULAtoTempFile(&inner_html)) {
       int retcode = 0;
-      if (!LaunchSetupWithParam(installer_util::switches::kShowEula,
+      if (!LaunchSetupWithParam(installer::switches::kShowEula,
                                 inner_html.ToWStringHack(), &retcode) ||
-          (retcode == installer_util::EULA_REJECTED)) {
+          (retcode == installer::EULA_REJECTED)) {
         LOG(WARNING) << "EULA rejected. Fast exit.";
         ::ExitProcess(1);
       }
-      if (retcode == installer_util::EULA_ACCEPTED) {
+      if (retcode == installer::EULA_ACCEPTED) {
         VLOG(1) << "EULA : no collection";
         GoogleUpdateSettings::SetCollectStatsConsent(false);
-      } else if (retcode == installer_util::EULA_ACCEPTED_OPT_IN) {
+      } else if (retcode == installer::EULA_ACCEPTED_OPT_IN) {
         VLOG(1) << "EULA : collection consent";
         GoogleUpdateSettings::SetCollectStatsConsent(true);
       }
@@ -142,7 +142,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   }
 #endif
 
-  if (prefs.GetBool(installer_util::master_preferences::kAltFirstRunBubble,
+  if (prefs.GetBool(installer::master_preferences::kAltFirstRunBubble,
                     &value) && value) {
     FirstRun::SetOEMFirstRunBubblePref();
   }
@@ -164,7 +164,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   }
 #endif
 
-  if (prefs.GetBool(installer_util::master_preferences::kDistroImportSearchPref,
+  if (prefs.GetBool(installer::master_preferences::kDistroImportSearchPref,
                     &value)) {
     if (value) {
       out_prefs->do_import_items |= importer::SEARCH_ENGINES;
@@ -175,7 +175,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
 
   // Check to see if search engine logos should be randomized.
   if (prefs.GetBool(
-          installer_util::master_preferences::
+          installer::master_preferences::
               kSearchEngineExperimentRandomizePref,
           &value) && value) {
     out_prefs->randomize_search_engine_experiment = true;
@@ -186,12 +186,12 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   // user is guaranteed to see the bubble iff he or she has completed the first
   // run process.
   if (prefs.GetBool(
-          installer_util::master_preferences::kDistroSuppressFirstRunBubble,
+          installer::master_preferences::kDistroSuppressFirstRunBubble,
           &value) && value)
     FirstRun::SetShowFirstRunBubblePref(false);
 
   if (prefs.GetBool(
-          installer_util::master_preferences::kDistroImportHistoryPref,
+          installer::master_preferences::kDistroImportHistoryPref,
           &value)) {
     if (value) {
       out_prefs->do_import_items |= importer::HISTORY;
@@ -204,7 +204,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   out_prefs->homepage_defined = prefs.GetString(prefs::kHomePage, &not_used);
 
   if (prefs.GetBool(
-          installer_util::master_preferences::kDistroImportHomePagePref,
+          installer::master_preferences::kDistroImportHomePagePref,
           &value)) {
     if (value) {
       out_prefs->do_import_items |= importer::HOME_PAGE;
@@ -215,13 +215,13 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
 
   // Bookmarks are never imported unless specifically turned on.
   if (prefs.GetBool(
-          installer_util::master_preferences::kDistroImportBookmarksPref,
+          installer::master_preferences::kDistroImportBookmarksPref,
           &value) && value) {
     out_prefs->do_import_items |= importer::FAVORITES;
   }
 
   if (prefs.GetBool(
-          installer_util::master_preferences::kMakeChromeDefaultForUser,
+          installer::master_preferences::kMakeChromeDefaultForUser,
           &value) && value) {
     out_prefs->make_chrome_default = true;
   }
@@ -231,7 +231,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   // Note we are skipping all other master preferences if skip-first-run-ui
   // is *not* specified. (That is, we continue only if skipping first run ui.)
   if (!prefs.GetBool(
-          installer_util::master_preferences::kDistroSkipFirstRunPref,
+          installer::master_preferences::kDistroSkipFirstRunPref,
           &value) || !value) {
     return true;
   }
@@ -248,14 +248,14 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   if (!FirstRun::CreateSentinel())
     return false;
 
-  if (prefs.GetBool(installer_util::master_preferences::kDistroShowWelcomePage,
+  if (prefs.GetBool(installer::master_preferences::kDistroShowWelcomePage,
                     &value) && value) {
     FirstRun::SetShowWelcomePagePref();
   }
 
   std::string import_bookmarks_path;
   prefs.GetString(
-      installer_util::master_preferences::kDistroImportBookmarksFromFilePref,
+      installer::master_preferences::kDistroImportBookmarksFromFilePref,
       &import_bookmarks_path);
 
 #if defined(OS_WIN)
@@ -302,7 +302,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
 #endif
 
   if (prefs.GetBool(
-          installer_util::master_preferences::kMakeChromeDefaultForUser,
+          installer::master_preferences::kMakeChromeDefaultForUser,
           &value) && value) {
     ShellIntegration::SetAsDefaultBrowser();
   }

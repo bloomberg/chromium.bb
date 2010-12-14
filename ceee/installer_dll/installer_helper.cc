@@ -263,7 +263,7 @@ HRESULT SetCeeeChannelModifier(bool new_value) {
   }
 
   // We create the "ap" value if it doesn't exist.
-  installer_util::ChannelInfo channel_info;
+  installer::ChannelInfo channel_info;
   channel_info.Initialize(key);
 
   if (channel_info.SetCeee(new_value) && !channel_info.Write(&key)) {

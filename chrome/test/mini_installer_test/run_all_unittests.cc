@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
            "from all levels before proceeding with tests.\n");
   } else if (command_line.HasSwitch(switches::kInstallerTestBackup)) {
     BackUpProfile(command_line.HasSwitch(
-        installer_util::switches::kChromeFrame));
+        installer::switches::kChromeFrame));
   } else {
     printf("This test needs command line arguments.\n");
     printf("Usage: %ls -{clean|backup} [-build <version>] [-force] \n",

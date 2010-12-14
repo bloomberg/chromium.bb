@@ -14,7 +14,7 @@
 
 #include "base/basictypes.h"
 
-namespace installer_util {
+namespace installer {
 
 // A helper class for selecting a supported language from a set of candidates.
 // By default, the candidates are retrieved from the operating system.
@@ -55,6 +55,6 @@ class LanguageSelector {
   DISALLOW_COPY_AND_ASSIGN(LanguageSelector);
 };
 
-}  // namespace installer_util.
+}  // namespace installer.
 
 #endif  // CHROME_INSTALLER_UTIL_LANGUAGE_SELECTOR_H_

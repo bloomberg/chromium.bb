@@ -31,7 +31,7 @@ const wchar_t* const kModifiers[] = {
 
 }  // namespace
 
-namespace installer_util {
+namespace installer {
 
 // static
 bool ChannelInfo::HasModifier(const wchar_t* modifier,
@@ -125,4 +125,4 @@ bool ChannelInfo::SetMultiInstall(bool value) {
   return SetModifier(kModMultiInstall, value, &value_);
 }
 
-}  // namespace installer_util
+}  // namespace installer

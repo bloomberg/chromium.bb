@@ -29,7 +29,7 @@
 #include "chrome/installer/util/work_item_list.h"
 
 using base::win::RegKey;
-using installer_util::MasterPreferences;
+using installer::MasterPreferences;
 
 bool InstallUtil::ExecuteExeAsAdmin(const CommandLine& cmd, DWORD* exit_code) {
   FilePath::StringType program(cmd.GetProgram().value());
@@ -74,7 +74,7 @@ std::wstring InstallUtil::GetChromeUninstallCmd(bool system_install,
   HKEY root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   RegKey key(root, dist->GetUninstallRegPath().c_str(), KEY_READ);
   std::wstring uninstall_cmd;
-  key.ReadValue(installer_util::kUninstallStringField, &uninstall_cmd);
+  key.ReadValue(installer::kUninstallStringField, &uninstall_cmd);
   return uninstall_cmd;
 }
 
@@ -121,7 +121,7 @@ bool InstallUtil::IsPerUserInstall(const wchar_t* const exe_path) {
 
 bool InstallUtil::IsChromeFrameProcess() {
   const MasterPreferences& prefs =
-      installer_util::MasterPreferences::ForCurrentProcess();
+      installer::MasterPreferences::ForCurrentProcess();
   return prefs.install_chrome_frame();
 }
 
@@ -129,16 +129,16 @@ bool CheckIsChromeSxSProcess() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   CHECK(command_line);
 
-  if (command_line->HasSwitch(installer_util::switches::kChromeSxS))
+  if (command_line->HasSwitch(installer::switches::kChromeSxS))
     return true;
 
   // Also return true if we are running from Chrome SxS installed path.
   FilePath exe_dir;
   PathService::Get(base::DIR_EXE, &exe_dir);
-  std::wstring chrome_sxs_dir(installer_util::kGoogleChromeInstallSubDir2);
-  chrome_sxs_dir.append(installer_util::kSxSSuffix);
+  std::wstring chrome_sxs_dir(installer::kGoogleChromeInstallSubDir2);
+  chrome_sxs_dir.append(installer::kSxSSuffix);
   return FilePath::CompareEqualIgnoreCase(exe_dir.BaseName().value(),
-                                          installer_util::kInstallBinaryDir) &&
+                                          installer::kInstallBinaryDir) &&
          FilePath::CompareEqualIgnoreCase(exe_dir.DirName().BaseName().value(),
                                           chrome_sxs_dir);
 }
