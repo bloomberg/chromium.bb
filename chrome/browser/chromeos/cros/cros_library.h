@@ -10,8 +10,12 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/scoped_ptr.h"
-#include "base/singleton.h"
 #include "chrome/common/chrome_switches.h"
+
+namespace base {
+template <typename T> struct DefaultLazyInstanceTraits;
+}
+
 namespace chromeos {
 
 class BrightnessLibrary;
@@ -149,7 +153,7 @@ class CrosLibrary {
   }
 
  private:
-  friend struct DefaultSingletonTraits<chromeos::CrosLibrary>;
+  friend struct base::DefaultLazyInstanceTraits<chromeos::CrosLibrary>;
   friend class CrosLibrary::TestApi;
 
   CrosLibrary();

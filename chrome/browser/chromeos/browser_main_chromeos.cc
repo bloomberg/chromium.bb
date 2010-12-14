@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/browser_main_chromeos.h"
 
+#include "base/lazy_instance.h"
 #include "base/message_loop.h"
-#include "base/singleton.h"
 
 #include <gtk/gtk.h>
 
@@ -38,12 +38,13 @@ class MessageLoopObserver : public MessageLoopForUI::Observer {
   }
 };
 
-void BrowserMainPartsChromeos::PostMainMessageLoopStart() {
-  static Singleton<MessageLoopObserver> observer;
+static base::LazyInstance<MessageLoopObserver> g_message_loop_observer(
+    base::LINKER_INITIALIZED);
 
+void BrowserMainPartsChromeos::PostMainMessageLoopStart() {
   BrowserMainPartsPosix::PostMainMessageLoopStart();
   MessageLoopForUI* message_loop = MessageLoopForUI::current();
-  message_loop->AddObserver(observer.get());
+  message_loop->AddObserver(g_message_loop_observer.Pointer());
 }
 
 // static

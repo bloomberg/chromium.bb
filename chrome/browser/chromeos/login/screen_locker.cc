@@ -16,9 +16,9 @@
 #include "app/resource_bundle.h"
 #include "app/x11_util.h"
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
 #include "base/message_loop.h"
-#include "base/singleton.h"
 #include "base/string_util.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
@@ -193,6 +193,9 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
 
   DISALLOW_COPY_AND_ASSIGN(ScreenLockObserver);
 };
+
+static base::LazyInstance<ScreenLockObserver> g_screen_lock_observer(
+    base::LINKER_INITIALIZED);
 
 // A ScreenLock window that covers entire screen to keep the keyboard
 // focus/events inside the grab widget.
@@ -901,7 +904,7 @@ void ScreenLocker::UnlockScreenFailed() {
 
 // static
 void ScreenLocker::InitClass() {
-  Singleton<ScreenLockObserver>::get();
+  g_screen_lock_observer.Get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

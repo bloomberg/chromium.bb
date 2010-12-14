@@ -4,6 +4,7 @@
 
 #include "media/tools/player_wtl/movie.h"
 
+#include "base/singleton.h"
 #include "base/utf_string_conversions.h"
 #include "media/base/filter_collection.h"
 #include "media/base/pipeline_impl.h"
@@ -37,6 +38,10 @@ Movie::Movie()
 }
 
 Movie::~Movie() {
+}
+
+Movie* Movie::GetInstance() {
+  return Singleton<Movie>::get();
 }
 
 bool Movie::IsOpen() {

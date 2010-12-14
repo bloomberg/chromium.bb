@@ -4,11 +4,12 @@
 
 #include "base/worker_pool_mac.h"
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/metrics/histogram.h"
+#include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
-#import "base/singleton_objc.h"
 #include "base/task.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/worker_pool_linux.h"
@@ -34,6 +35,18 @@ std::vector<id> outstanding_ops_;  // Outstanding operations at last check.
 size_t running_ = 0;               // Operations in |Run()|.
 size_t outstanding_ = 0;           // Operations posted but not completed.
 
+// We use a wrapper struct here for the NSOperationQueue so that the object
+// can be released when LazyInstance calls our destructor.
+struct NSOperationQueueWrapper {
+  NSOperationQueueWrapper() {
+    operation_queue.reset([[NSOperationQueue alloc] init]);
+  }
+  scoped_nsobject<NSOperationQueue> operation_queue;
+};
+
+static base::LazyInstance<NSOperationQueueWrapper> g_nsoperation_queue(
+    base::LINKER_INITIALIZED);
+
 }  // namespace
 
 namespace worker_pool_mac {
@@ -47,7 +60,7 @@ void SetUseLinuxWorkerPool(bool flag) {
 @implementation WorkerPoolObjC
 
 + (NSOperationQueue*)sharedOperationQueue {
-  return SingletonObjC<NSOperationQueue>::get();
+  return g_nsoperation_queue.Get().operation_queue.get();
 }
 
 @end  // @implementation WorkerPoolObjC

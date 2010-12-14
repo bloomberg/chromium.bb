@@ -12,10 +12,13 @@
 #include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
 #include "base/ref_counted.h"
-#include "base/singleton.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
+
+namespace base {
+template <typename T> struct DefaultLazyInstanceTraits;
+}
 
 namespace pepper {
 
@@ -91,7 +94,7 @@ class ResourceTracker {
   PluginInstance* GetInstance(PP_Instance instance);
 
  private:
-  friend struct DefaultSingletonTraits<ResourceTracker>;
+  friend struct base::DefaultLazyInstanceTraits<ResourceTracker>;
   friend class Resource;
   friend class ResourceTrackerTest;
 

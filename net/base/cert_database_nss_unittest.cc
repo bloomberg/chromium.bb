@@ -104,16 +104,9 @@ bool ReadCertIntoList(const std::string& name, CertificateList* certs) {
 class CertDatabaseNSSTest : public testing::Test {
  public:
   virtual void SetUp() {
-    if (!temp_db_initialized_) {
-      ScopedTempDir* temp_db_dir = Singleton<
-          ScopedTempDir,
-          DefaultSingletonTraits<ScopedTempDir>,
-          CertDatabaseNSSTest>::get();
-      ASSERT_TRUE(temp_db_dir->CreateUniqueTempDir());
-      ASSERT_TRUE(
-          base::OpenTestNSSDB(temp_db_dir->path(), "CertDatabaseNSSTest db"));
-      temp_db_initialized_ = true;
-    }
+    ASSERT_TRUE(temp_db_dir_.CreateUniqueTempDir());
+    ASSERT_TRUE(
+        base::OpenTestNSSDB(temp_db_dir_.path(), "CertDatabaseNSSTest db"));
     slot_.reset(base::GetDefaultNSSKeySlot());
 
     // Test db should be empty at start of test.
@@ -121,7 +114,6 @@ class CertDatabaseNSSTest : public testing::Test {
   }
   virtual void TearDown() {
     // Don't try to cleanup if the setup failed.
-    ASSERT_TRUE(temp_db_initialized_);
     ASSERT_TRUE(slot_.get());
 
     EXPECT_TRUE(CleanupSlotContents(slot_.get()));
@@ -133,11 +125,8 @@ class CertDatabaseNSSTest : public testing::Test {
   CertDatabase cert_db_;
 
  private:
-  static bool temp_db_initialized_;
+  ScopedTempDir temp_db_dir_;
 };
-
-// static
-bool CertDatabaseNSSTest::temp_db_initialized_ = false;
 
 TEST_F(CertDatabaseNSSTest, ListCerts) {
   // This test isn't terribly useful, though it will at least let valgrind test

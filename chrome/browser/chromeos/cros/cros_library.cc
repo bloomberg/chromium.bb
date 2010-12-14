@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/cros/cros_library.h"
 
+#include "base/lazy_instance.h"
 #include "chrome/browser/chromeos/cros/brightness_library.h"
 #include "chrome/browser/chromeos/cros/burn_library.h"
 #include "chrome/browser/chromeos/cros/cros_library_loader.h"
@@ -23,6 +24,9 @@
 
 namespace chromeos {
 
+static base::LazyInstance<CrosLibrary> g_cros_library(
+    base::LINKER_INITIALIZED);
+
 CrosLibrary::CrosLibrary() : library_loader_(NULL),
                              own_library_loader_(false),
                              use_stub_impl_(false),
@@ -38,7 +42,7 @@ CrosLibrary::~CrosLibrary() {
 
 // static
 CrosLibrary* CrosLibrary::Get() {
-  return Singleton<CrosLibrary>::get();
+  return g_cros_library.Pointer();
 }
 
 BrightnessLibrary* CrosLibrary::GetBrightnessLibrary() {

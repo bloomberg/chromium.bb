@@ -11,9 +11,9 @@
 #include <sys/utsname.h>
 #endif
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
-#include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -356,10 +356,11 @@ struct UserAgentState {
   bool user_agent_is_overridden;
 };
 
-Singleton<UserAgentState> g_user_agent;
+static base::LazyInstance<UserAgentState> g_user_agent(
+    base::LINKER_INITIALIZED);
 
 void SetUserAgentToDefault() {
-  BuildUserAgent(false, &g_user_agent->user_agent);
+  BuildUserAgent(false, &g_user_agent.Get().user_agent);
 }
 
 }  // namespace
@@ -367,31 +368,31 @@ void SetUserAgentToDefault() {
 void SetUserAgent(const std::string& new_user_agent) {
   // If you combine this with the previous line, the function only works the
   // first time.
-  DCHECK(!g_user_agent->user_agent_requested) <<
+  DCHECK(!g_user_agent.Get().user_agent_requested) <<
       "Setting the user agent after someone has "
       "already requested it can result in unexpected behavior.";
-  g_user_agent->user_agent_is_overridden = true;
-  g_user_agent->user_agent = new_user_agent;
+  g_user_agent.Get().user_agent_is_overridden = true;
+  g_user_agent.Get().user_agent = new_user_agent;
 }
 
 const std::string& GetUserAgent(const GURL& url) {
-  if (g_user_agent->user_agent.empty())
+  if (g_user_agent.Get().user_agent.empty())
     SetUserAgentToDefault();
-  g_user_agent->user_agent_requested = true;
-  if (!g_user_agent->user_agent_is_overridden) {
+  g_user_agent.Get().user_agent_requested = true;
+  if (!g_user_agent.Get().user_agent_is_overridden) {
     // Workarounds for sites that use misguided UA sniffing.
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
     if (MatchPattern(url.host(), "*.mail.yahoo.com")) {
       // mail.yahoo.com is ok with Windows Chrome but not Linux Chrome.
       // http://bugs.chromium.org/11136
       // TODO(evanm): remove this if Yahoo fixes their sniffing.
-      if (g_user_agent->mimic_windows_user_agent.empty())
-        BuildUserAgent(true, &g_user_agent->mimic_windows_user_agent);
-      return g_user_agent->mimic_windows_user_agent;
+      if (g_user_agent.Get().mimic_windows_user_agent.empty())
+        BuildUserAgent(true, &g_user_agent.Get().mimic_windows_user_agent);
+      return g_user_agent.Get().mimic_windows_user_agent;
     }
 #endif
   }
-  return g_user_agent->user_agent;
+  return g_user_agent.Get().user_agent;
 }
 
 void SetForcefullyTerminatePluginProcess(bool value) {

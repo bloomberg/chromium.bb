@@ -114,7 +114,6 @@ template <typename Type> intptr_t
 template <typename Type> base::subtle::Atomic32
     StaticMemorySingletonTraits<Type>::dead_ = 0;
 
-
 // The Singleton<Type, Traits, DifferentiatingType> class manages a single
 // instance of Type which will be created on first use and will be destroyed at
 // normal process exit). The Trait::Delete function will not be called on
@@ -124,15 +123,37 @@ template <typename Type> base::subtle::Atomic32
 // singletons having the same memory allocation functions but serving a
 // different purpose. This is mainly used for Locks serving different purposes.
 //
-// Example usages: (none are preferred, they all result in the same code)
-//   1. FooClass* ptr = Singleton<FooClass>::get();
-//      ptr->Bar();
-//   2. Singleton<FooClass>()->Bar();
-//   3. Singleton<FooClass>::get()->Bar();
+// Example usage:
+//
+// In your header:
+//   #include "base/singleton.h"
+//   class FooClass {
+//    public:
+//     static FooClass* GetInstance();  <-- See comment below on this.
+//     void Bar() { ... }
+//    private:
+//     FooClass() { ... }
+//     friend struct DefaultSingletonTraits<FooClass>;
+//
+//     DISALLOW_COPY_AND_ASSIGN(FooClass);
+//   };
+//
+// In your source file:
+//  FooClass* FooClass::GetInstance() {
+//    return Singleton<FooClass>::get();
+//  }
+//
+// And to call methods on FooClass:
+//   FooClass::GetInstance()->Bar();
+//
+// NOTE: The method accessing Singleton<T>::get() has to be named as GetInstance
+// and it is important that FooClass::GetInstance() is not inlined in the
+// header. This makes sure that when source files from multiple targets include
+// this header they don't end up with different copies of the inlined code
+// creating multiple copies of the singleton.
 //
 // Singleton<> has no non-static members and doesn't need to actually be
-// instantiated. It does no harm to instantiate it and use it as a class member
-// or at global level since it is acting as a POD type.
+// instantiated.
 //
 // This class is itself thread-safe. The underlying Type must of course be
 // thread-safe if you want to use it concurrently. Two parameters may be tuned
@@ -152,20 +173,6 @@ template <typename Type> base::subtle::Atomic32
 // shouldn't be false unless absolutely necessary. Remember that the heap where
 // the object is allocated may be destroyed by the CRT anyway.
 //
-// If you want to ensure that your class can only exist as a singleton, make
-// its constructors private, and make DefaultSingletonTraits<> a friend:
-//
-//   #include "base/singleton.h"
-//   class FooClass {
-//    public:
-//     void Bar() { ... }
-//    private:
-//     FooClass() { ... }
-//     friend struct DefaultSingletonTraits<FooClass>;
-//
-//     DISALLOW_COPY_AND_ASSIGN(FooClass);
-//   };
-//
 // Caveats:
 // (a) Every call to get(), operator->() and operator*() incurs some overhead
 //     (16ns on my P4/2.8GHz) to check whether the object has already been
@@ -179,7 +186,11 @@ template <typename Type,
           typename Traits = DefaultSingletonTraits<Type>,
           typename DifferentiatingType = Type>
 class Singleton {
- public:
+ private:
+  // Classes using the Singleton<T> pattern should declare a GetInstance()
+  // method and call Singleton::get() from within that.
+  friend Type* Type::GetInstance();
+
   // This class is safe to be constructed and copy-constructed since it has no
   // member.
 
@@ -240,16 +251,6 @@ class Singleton {
     return reinterpret_cast<Type*>(value);
   }
 
-  // Shortcuts.
-  Type& operator*() {
-    return *get();
-  }
-
-  Type* operator->() {
-    return get();
-  }
-
- private:
   // Adapter function for use with AtExit().  This should be called single
   // threaded, so don't use atomic operations.
   // Calling OnExit while singleton is in use by other threads is a mistake.

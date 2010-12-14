@@ -12,8 +12,8 @@
 
 #include <map>
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/singleton.h"
 #include "skia/ext/bitmap_platform_device.h"
 #include "third_party/skia/include/core/SkFontHost.h"
 #include "third_party/skia/include/core/SkStream.h"
@@ -29,6 +29,8 @@ struct FontInfo {
 };
 
 typedef std::map<uint32_t, FontInfo> MapFontId2FontInfo;
+static base::LazyInstance<MapFontId2FontInfo> g_map_font_id_to_font_info(
+    base::LINKER_INITIALIZED);
 
 // Wrapper for FT_Library that handles initialization and cleanup, and allows
 // us to use a singleton.
@@ -55,6 +57,7 @@ class FtLibrary {
  private:
   FT_Library library_;
 };
+static base::LazyInstance<FtLibrary> g_ft_library(base::LINKER_INITIALIZED);
 
 // Verify cairo surface after creation/modification.
 bool IsContextValid(cairo_t* context) {
@@ -604,12 +607,12 @@ bool VectorPlatformDevice::SelectFontById(uint32_t font_id) {
   DCHECK(IsContextValid(context_));
   DCHECK(SkFontHost::ValidFontID(font_id));
 
-  FtLibrary* ft_library = Singleton<FtLibrary>::get();
+  FtLibrary* ft_library = g_ft_library.Pointer();
   if (!ft_library->library())
     return false;
 
   // Checks if we have a cache hit.
-  MapFontId2FontInfo* g_font_cache = Singleton<MapFontId2FontInfo>::get();
+  MapFontId2FontInfo* g_font_cache = g_map_font_id_to_font_info.Pointer();
   DCHECK(g_font_cache);
 
   MapFontId2FontInfo::iterator it = g_font_cache->find(font_id);
@@ -679,7 +682,7 @@ bool VectorPlatformDevice::SelectFontById(uint32_t font_id) {
 
 // static
 void VectorPlatformDevice::ClearFontCache() {
-  MapFontId2FontInfo* g_font_cache = Singleton<MapFontId2FontInfo>::get();
+  MapFontId2FontInfo* g_font_cache = g_map_font_id_to_font_info.Pointer();
   DCHECK(g_font_cache);
 
   for (MapFontId2FontInfo::iterator it = g_font_cache->begin();

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/singleton.h"
+#include "base/lazy_instance.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/render_messages.h"
@@ -43,17 +43,20 @@ struct ExtensionData {
   std::map<int, PortData> ports;  // port ID -> data
 };
 
+static base::LazyInstance<ExtensionData> g_extension_data(
+    base::LINKER_INITIALIZED);
+
 static bool HasPortData(int port_id) {
-  return Singleton<ExtensionData>::get()->ports.find(port_id) !=
-      Singleton<ExtensionData>::get()->ports.end();
+  return g_extension_data.Get().ports.find(port_id) !=
+      g_extension_data.Get().ports.end();
 }
 
 static ExtensionData::PortData& GetPortData(int port_id) {
-  return Singleton<ExtensionData>::get()->ports[port_id];
+  return g_extension_data.Get().ports[port_id];
 }
 
 static void ClearPortData(int port_id) {
-  Singleton<ExtensionData>::get()->ports.erase(port_id);
+  g_extension_data.Get().ports.erase(port_id);
 }
 
 const char kPortClosedError[] = "Attempting to use a disconnected port object";

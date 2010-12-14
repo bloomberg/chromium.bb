@@ -15,10 +15,10 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -278,6 +278,7 @@ using webkit_glue::WebAccessibility;
 //-----------------------------------------------------------------------------
 
 typedef std::map<WebKit::WebView*, RenderView*> ViewMap;
+static base::LazyInstance<ViewMap> g_view_map(base::LINKER_INITIALIZED);
 
 // define to write the time necessary for thumbnail/DOM text retrieval,
 // respectively, into the system debug log
@@ -616,7 +617,7 @@ RenderView::~RenderView() {
 
 #ifndef NDEBUG
   // Make sure we are no longer referenced by the ViewMap.
-  ViewMap* views = Singleton<ViewMap>::get();
+  ViewMap* views = g_view_map.Pointer();
   for (ViewMap::iterator it = views->begin(); it != views->end(); ++it)
     DCHECK_NE(this, it->second) << "Failed to call Close?";
 #endif
@@ -624,7 +625,7 @@ RenderView::~RenderView() {
 
 /*static*/
 void RenderView::ForEach(RenderViewVisitor* visitor) {
-  ViewMap* views = Singleton<ViewMap>::get();
+  ViewMap* views = g_view_map.Pointer();
   for (ViewMap::iterator it = views->begin(); it != views->end(); ++it) {
     if (!visitor->Visit(it->second))
       return;
@@ -633,7 +634,7 @@ void RenderView::ForEach(RenderViewVisitor* visitor) {
 
 /*static*/
 RenderView* RenderView::FromWebView(WebView* webview) {
-  ViewMap* views = Singleton<ViewMap>::get();
+  ViewMap* views = g_view_map.Pointer();
   ViewMap::iterator it = views->find(webview);
   return it == views->end() ? NULL : it->second;
 }
@@ -896,7 +897,7 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
   devtools_agent_.reset(new DevToolsAgent(routing_id, this));
 
   webwidget_ = WebView::create(this, devtools_agent_.get());
-  Singleton<ViewMap>::get()->insert(std::make_pair(webview(), this));
+  g_view_map.Get().insert(std::make_pair(webview(), this));
   webkit_preferences_.Apply(webview());
   webview()->initializeMainFrame(this);
   if (!frame_name.empty())
@@ -5448,7 +5449,7 @@ void RenderView::Close() {
   // We need to grab a pointer to the doomed WebView before we destroy it.
   WebView* doomed = webview();
   RenderWidget::Close();
-  Singleton<ViewMap>::get()->erase(doomed);
+  g_view_map.Get().erase(doomed);
 }
 
 void RenderView::DidHandleKeyEvent() {

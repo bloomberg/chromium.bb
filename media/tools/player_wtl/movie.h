@@ -11,17 +11,20 @@
 
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "base/singleton.h"
 #include "base/thread.h"
 
+template <typename T> struct DefaultSingletonTraits;
 class WtlVideoRenderer;
 
 namespace media {
 
 class PipelineImpl;
 
-class Movie : public Singleton<Movie> {
+class Movie {
  public:
+   // Returns the singleton instance.
+  static Movie* GetInstance();
+
   // Open a movie.
   bool Open(const wchar_t* url, WtlVideoRenderer* video_renderer);
 

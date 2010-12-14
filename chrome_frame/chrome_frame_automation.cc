@@ -11,11 +11,11 @@
 #include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
+#include "base/lazy_instance.h"
 #include "base/lock.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/singleton.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
@@ -565,7 +565,9 @@ bool ProxyFactory::ReleaseAutomationServer(void* server_id,
   return true;
 }
 
-Singleton<ProxyFactory, LeakySingletonTraits<ProxyFactory> > g_proxy_factory;
+static base::LazyInstance<ProxyFactory,
+                          base::LeakyLazyInstanceTraits<ProxyFactory> >
+    g_proxy_factory(base::LINKER_INITIALIZED);
 
 template <> struct RunnableMethodTraits<ChromeFrameAutomationClient> {
   static void RetainCallee(ChromeFrameAutomationClient* obj) {}
@@ -582,7 +584,7 @@ ChromeFrameAutomationClient::ChromeFrameAutomationClient()
       ui_thread_id_(NULL),
       init_state_(UNINITIALIZED),
       use_chrome_network_(false),
-      proxy_factory_(g_proxy_factory.get()),
+      proxy_factory_(g_proxy_factory.Pointer()),
       handle_top_level_requests_(false),
       tab_handle_(-1),
       session_id_(-1),

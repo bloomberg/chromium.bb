@@ -7,10 +7,14 @@
 #include <limits>
 #include <set>
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "ppapi/c/pp_resource.h"
 #include "webkit/glue/plugins/pepper_resource.h"
+
+static base::LazyInstance<pepper::ResourceTracker> g_resource_tracker(
+    base::LINKER_INITIALIZED);
 
 namespace pepper {
 
@@ -36,7 +40,7 @@ ResourceTracker::~ResourceTracker() {
 ResourceTracker* ResourceTracker::Get() {
   if (singleton_override_)
     return singleton_override_;
-  return Singleton<ResourceTracker>::get();
+  return g_resource_tracker.Pointer();
 }
 
 PP_Resource ResourceTracker::AddResource(Resource* resource) {

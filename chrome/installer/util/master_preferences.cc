@@ -5,9 +5,9 @@
 #include "chrome/installer/util/master_preferences.h"
 
 #include "base/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/singleton.h"
 #include "base/string_util.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/installer/util/master_preferences_constants.h"
@@ -18,6 +18,9 @@ namespace {
 
 const char kDistroDict[] = "distribution";
 const char kFirstRunTabs[] = "first_run_tabs";
+
+base::LazyInstance<installer_util::MasterPreferences> g_master_preferences(
+    base::LINKER_INITIALIZED);
 
 bool GetGURLFromValue(const Value* in_value, GURL* out_value) {
   if (!in_value || !out_value)
@@ -254,6 +257,6 @@ bool MasterPreferences::GetExtensionsBlock(DictionaryValue** extensions) const {
 
 // static
 const MasterPreferences& MasterPreferences::ForCurrentProcess() {
-  return *Singleton<MasterPreferences>::get();
+  return g_master_preferences.Get();
 }
 }  // installer_util

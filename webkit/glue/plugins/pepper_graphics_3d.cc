@@ -5,7 +5,7 @@
 #include "webkit/glue/plugins/pepper_graphics_3d.h"
 
 #include "gpu/command_buffer/common/command_buffer.h"
-#include "base/singleton.h"
+#include "base/lazy_instance.h"
 #include "base/thread_local.h"
 #include "ppapi/c/dev/ppb_graphics_3d_dev.h"
 #include "webkit/glue/plugins/pepper_common.h"
@@ -15,10 +15,8 @@ namespace pepper {
 
 namespace {
 
-struct CurrentContextTag {};
-typedef Singleton<base::ThreadLocalPointer<Graphics3D>,
-    DefaultSingletonTraits<base::ThreadLocalPointer<Graphics3D> >,
-    CurrentContextTag> CurrentContextKey;
+static base::LazyInstance<base::ThreadLocalPointer<Graphics3D> >
+    g_current_context_key(base::LINKER_INITIALIZED);
 
 // Size of the transfer buffer.
 enum { kTransferBufferSize = 512 * 1024 };
@@ -138,11 +136,11 @@ const PPB_Graphics3D_Dev* Graphics3D::GetInterface() {
 }
 
 Graphics3D* Graphics3D::GetCurrent() {
-  return CurrentContextKey::get()->Get();
+  return g_current_context_key.Get().Get();
 }
 
 void Graphics3D::ResetCurrent() {
-  CurrentContextKey::get()->Set(NULL);
+  g_current_context_key.Get().Set(NULL);
 }
 
 Graphics3D* Graphics3D::AsGraphics3D() {
@@ -205,7 +203,7 @@ bool Graphics3D::MakeCurrent() {
   if (!platform_context_.get())
     return false;
 
-  CurrentContextKey::get()->Set(this);
+  g_current_context_key.Get().Set(this);
 
   // TODO(apatrick): Return false on context lost.
   return true;
