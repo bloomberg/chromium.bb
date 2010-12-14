@@ -206,7 +206,7 @@ void ChromotingHost::OnConnectionOpened(ConnectionToClient* connection) {
   context_->main_message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(this, &ChromotingHost::OnClientConnected,
-                        connection_.get()));
+                        connection_));
 }
 
 void ChromotingHost::OnConnectionClosed(ConnectionToClient* connection) {
@@ -216,7 +216,7 @@ void ChromotingHost::OnConnectionClosed(ConnectionToClient* connection) {
   context_->main_message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(this, &ChromotingHost::OnClientDisconnected,
-                        connection_.get()));
+                        connection_));
 }
 
 void ChromotingHost::OnConnectionFailed(ConnectionToClient* connection) {
@@ -226,7 +226,7 @@ void ChromotingHost::OnConnectionFailed(ConnectionToClient* connection) {
   context_->main_message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(this, &ChromotingHost::OnClientDisconnected,
-                        connection_.get()));
+                        connection_));
 }
 
 ////////////////////////////////////////////////////////////////////////////
