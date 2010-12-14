@@ -2102,6 +2102,33 @@ def TurnIntIntoStrInList(the_list):
       TurnIntIntoStrInList(item)
 
 
+def VerifyNoCollidingTargets(targets):
+  """Verify that no two targets in the same directory share the same name.
+
+  Arguments:
+    targets: A list of targets in the form 'path/to/file.gyp:target_name'.
+  """
+  # Keep a dict going from 'subdirectory:target_name' to 'foo.gyp'.
+  used = {}
+  for target in targets:
+    # Separate out 'path/to/file.gyp, 'target_name' from
+    # 'path/to/file.gyp:target_name'.
+    path, name = target.split(':')
+    # Separate out 'path/to', 'file.gyp' from 'path/to/file.gyp'.
+    subdir, gyp = os.path.split(path)
+    # Use '.' for the current directory '', so that the error messages make
+    # more sense.
+    if not subdir:
+      subdir = '.'
+    # Prepare a key like 'path/to:target_name'.
+    key = subdir + ':' + name
+    if key in used:
+      # Complain if this target is already used.
+      raise Exception('Duplicate target name "%s" in directory "%s" used both '
+                      'in "%s" and "%s".' % (name, subdir, gyp, used[key]))
+    used[key] = gyp
+
+
 def Load(build_files, variables, includes, depth, generator_input_info, check,
          circular_check):
   # Set up path_sections and non_configuration_keys with the default data plus
@@ -2165,6 +2192,10 @@ def Load(build_files, variables, includes, depth, generator_input_info, check,
     VerifyNoGYPFileCircularDependencies(targets)
 
   [dependency_nodes, flat_list] = BuildDependencyList(targets)
+
+  # Check that no two targets in the same directory have the same name.
+  VerifyNoCollidingTargets(flat_list)
+  
 
   # Handle dependent settings of various types.
   for settings_type in ['all_dependent_settings',

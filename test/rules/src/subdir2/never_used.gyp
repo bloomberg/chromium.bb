@@ -6,7 +6,7 @@
 {
   'targets': [
     {
-      'target_name': 'files_no_input',
+      'target_name': 'files_no_input2',
       'type': 'none',
       'msvs_cygwin_shell': 0,
       'sources': [
