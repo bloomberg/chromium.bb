@@ -240,12 +240,16 @@ class BrowserMainPartsWin : public BrowserMainParts {
     // Because of a build system issue (http://crbug.com/43461), the default
     // client socket factory uses SChannel (the system SSL library) for SSL by
     // default on Windows.
+
+    // Disabling this temporarily to test out if NSS is causing heap corruption.
+#if 0
     if (!parsed_command_line().HasSwitch(switches::kUseSystemSSL)) {
       net::ClientSocketFactory::SetSSLClientSocketFactory(
           net::SSLClientSocketNSSFactory);
       // We want to be sure to init NSPR on the main thread.
       base::EnsureNSPRInit();
     }
+#endif
   }
 };
 
