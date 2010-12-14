@@ -487,7 +487,7 @@ void TestShell::ResizeSubViews() {
   // GTK manages layout for us so we do nothing.
 }
 
-/* static */ void TestShell::DumpAllBackForwardLists(std::wstring* result) {
+/* static */ void TestShell::DumpAllBackForwardLists(string16* result) {
   result->clear();
   for (WindowList::iterator iter = TestShell::windowList()->begin();
        iter != TestShell::windowList()->end(); iter++) {

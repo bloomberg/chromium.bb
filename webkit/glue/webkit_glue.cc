@@ -122,13 +122,13 @@ string16 DumpRenderer(WebFrame* web_frame) {
 }
 
 bool CounterValueForElementById(WebFrame* web_frame, const std::string& id,
-                                std::wstring* counter_value) {
+                                string16* counter_value) {
   WebString result =
       web_frame->counterValueForElementById(WebString::fromUTF8(id));
   if (result.isNull())
     return false;
 
-  *counter_value = UTF16ToWideHack(result);
+  *counter_value = result;
   return true;
 }
 
@@ -151,18 +151,20 @@ int NumberOfPages(WebFrame* web_frame,
   return number_of_pages;
 }
 
-std::wstring DumpFrameScrollPosition(WebFrame* web_frame, bool recursive) {
+string16 DumpFrameScrollPosition(WebFrame* web_frame, bool recursive) {
   gfx::Size offset = web_frame->scrollOffset();
-  std::wstring result;
+  std::string result_utf8;
 
   if (offset.width() > 0 || offset.height() > 0) {
     if (web_frame->parent()) {
-      base::StringAppendF(&result, L"frame '%ls' ", UTF16ToWide(
-          web_frame->name()).c_str());
+      base::StringAppendF(&result_utf8, "frame '%s' ",
+                          UTF16ToUTF8(web_frame->name()).c_str());
     }
-    base::StringAppendF(&result, L"scrolled to %d,%d\n",
+    base::StringAppendF(&result_utf8, "scrolled to %d,%d\n",
                         offset.width(), offset.height());
   }
+
+  string16 result = UTF8ToUTF16(result_utf8);
 
   if (recursive) {
     WebFrame* child = web_frame->firstChild();
@@ -183,16 +185,16 @@ static bool HistoryItemCompareLess(const WebHistoryItem& item1,
   return target1 < target2;
 }
 
-// Writes out a HistoryItem into a string in a readable format.
-static std::wstring DumpHistoryItem(const WebHistoryItem& item,
-                                    int indent, bool is_current) {
-  std::wstring result;
+// Writes out a HistoryItem into a UTF-8 string in a readable format.
+static std::string DumpHistoryItem(const WebHistoryItem& item,
+                                   int indent, bool is_current) {
+  std::string result;
 
   if (is_current) {
-    result.append(L"curr->");
-    result.append(indent - 6, L' ');  // 6 == L"curr->".length()
+    result.append("curr->");
+    result.append(indent - 6, ' ');  // 6 == "curr->".length()
   } else {
-    result.append(indent, L' ');
+    result.append(indent, ' ');
   }
 
   std::string url = item.urlString().utf8();
@@ -207,12 +209,12 @@ static std::wstring DumpHistoryItem(const WebHistoryItem& item,
     url.replace(kDataUrlPatternSize, url.length(), path);
   }
 
-  result.append(UTF8ToWide(url));
+  result.append(url);
   if (!item.target().isEmpty())
-    result.append(L" (in frame \"" + UTF16ToWide(item.target()) + L"\")");
+    result.append(" (in frame \"" + UTF16ToUTF8(item.target()) + "\")");
   if (item.isTargetItem())
-    result.append(L"  **nav target**");
-  result.append(L"\n");
+    result.append("  **nav target**");
+  result.append("\n");
 
   const WebVector<WebHistoryItem>& children = item.children();
   if (!children.isEmpty()) {
@@ -231,10 +233,11 @@ static std::wstring DumpHistoryItem(const WebHistoryItem& item,
   return result;
 }
 
-std::wstring DumpHistoryState(const std::string& history_state, int indent,
-                              bool is_current) {
-  return DumpHistoryItem(HistoryItemFromString(history_state), indent,
-                         is_current);
+string16 DumpHistoryState(const std::string& history_state, int indent,
+                          bool is_current) {
+  return UTF8ToUTF16(
+      DumpHistoryItem(HistoryItemFromString(history_state), indent,
+                      is_current));
 }
 
 void ResetBeforeTestRun(WebView* view) {

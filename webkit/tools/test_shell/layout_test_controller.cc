@@ -1341,12 +1341,12 @@ void LayoutTestController::counterValueForElementById(
   result->SetNull();
   if (args.size() < 1 || !args[0].isString())
     return;
-  std::wstring counterValue;
+  string16 counterValue;
   if (!webkit_glue::CounterValueForElementById(shell_->webView()->mainFrame(),
                                                args[0].ToString(),
                                                &counterValue))
     return;
-  result->Set(WideToUTF8(counterValue));
+  result->Set(UTF16ToUTF8(counterValue));
 }
 
 static bool ParsePageSizeParameters(const CppArgumentList& args,

@@ -64,7 +64,7 @@ string16 DumpRenderer(WebKit::WebFrame* web_frame);
 // counter_value.  Return false when the specified id doesn't exist.
 bool CounterValueForElementById(WebKit::WebFrame* web_frame,
                                 const std::string& id,
-                                std::wstring* counter_value);
+                                string16* counter_value);
 
 // Returns the number of page where the specified element will be put.
 int PageNumberForElementById(WebKit::WebFrame* web_frame,
@@ -78,13 +78,12 @@ int NumberOfPages(WebKit::WebFrame* web_frame,
                   float page_height_in_pixels);
 
 // Returns a dump of the scroll position of the webframe.
-std::wstring DumpFrameScrollPosition(WebKit::WebFrame* web_frame,
-                                     bool recursive);
+string16 DumpFrameScrollPosition(WebKit::WebFrame* web_frame, bool recursive);
 
 // Returns a dump of the given history state suitable for implementing the
 // dumpBackForwardList command of the layoutTestController.
-std::wstring DumpHistoryState(const std::string& history_state, int indent,
-                              bool is_current);
+string16 DumpHistoryState(const std::string& history_state, int indent,
+                          bool is_current);
 
 // Cleans up state left over from the previous test run.
 void ResetBeforeTestRun(WebKit::WebView* view);

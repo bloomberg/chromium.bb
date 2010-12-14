@@ -227,7 +227,7 @@ ATOM TestShell::RegisterWindowClass() {
   return RegisterClassEx(&wcex);
 }
 
-void TestShell::DumpAllBackForwardLists(std::wstring* result) {
+void TestShell::DumpAllBackForwardLists(string16* result) {
   result->clear();
   for (WindowList::iterator iter = TestShell::windowList()->begin();
      iter != TestShell::windowList()->end(); iter++) {

@@ -260,13 +260,13 @@ public:
 
     // Writes the back-forward list data for every open window into result.
     // Should call DumpBackForwardListOfWindow on each TestShell window.
-    static void DumpAllBackForwardLists(std::wstring* result);
+    static void DumpAllBackForwardLists(string16* result);
 
     // Writes the single back-forward entry into result.
-    void DumpBackForwardEntry(int index, std::wstring* result);
+    void DumpBackForwardEntry(int index, string16* result);
 
     // Writes the back-forward list data for this test shell into result.
-    void DumpBackForwardList(std::wstring* result);
+    void DumpBackForwardList(string16* result);
 
     // Dumps the output from given test as text and/or image depending on
     // the flags set.

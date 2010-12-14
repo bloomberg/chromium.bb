@@ -275,14 +275,14 @@ void TestShell::Dump(TestShell* shell) {
 
         bool recursive = shell->layout_test_controller_->
             ShouldDumpChildFrameScrollPositions();
-        printf("%s", WideToUTF8(
+        printf("%s", UTF16ToUTF8(
             webkit_glue::DumpFrameScrollPosition(frame, recursive)).c_str());
       }
 
       if (shell->layout_test_controller_->ShouldDumpBackForwardList()) {
-        std::wstring bfDump;
+        string16 bfDump;
         DumpAllBackForwardLists(&bfDump);
-        printf("%s", WideToUTF8(bfDump).c_str());
+        printf("%s", UTF16ToUTF8(bfDump).c_str());
       }
     }
 
@@ -566,7 +566,7 @@ void TestShell::BindJSObjectsToWindow(WebFrame* frame) {
   }
 }
 
-void TestShell::DumpBackForwardEntry(int index, std::wstring* result) {
+void TestShell::DumpBackForwardEntry(int index, string16* result) {
   int current_index = navigation_controller_->GetLastCommittedEntryIndex();
 
   std::string content_state =
@@ -580,13 +580,15 @@ void TestShell::DumpBackForwardEntry(int index, std::wstring* result) {
       webkit_glue::DumpHistoryState(content_state, 8, index == current_index));
 }
 
-void TestShell::DumpBackForwardList(std::wstring* result) {
-  result->append(L"\n============== Back Forward List ==============\n");
+void TestShell::DumpBackForwardList(string16* result) {
+  result->append(ASCIIToUTF16(
+                     "\n============== Back Forward List ==============\n"));
 
   for (int i = 0; i < navigation_controller_->GetEntryCount(); ++i)
     DumpBackForwardEntry(i, result);
 
-  result->append(L"===============================================\n");
+  result->append(ASCIIToUTF16(
+                     "===============================================\n"));
 }
 
 void TestShell::CallJSGC() {
