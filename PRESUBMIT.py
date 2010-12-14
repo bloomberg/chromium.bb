@@ -29,6 +29,24 @@ _LICENSE_HEADER = (
        "\n"
 )
 
+def _CheckSingletonInHeaders(input_api, output_api, source_file_filter):
+  """Checks to make sure no header files have |Singleton<|."""
+  pattern = input_api.re.compile(r'Singleton<')
+  files = []
+  for f in input_api.AffectedSourceFiles(source_file_filter):
+    if (f.LocalPath().endswith('.h') or f.LocalPath().endswith('.hxx') or
+        f.LocalPath().endswith('.hpp') or f.LocalPath().endswith('.inl')):
+      contents = input_api.ReadFile(f)
+      if pattern.search(contents):
+        files.append(f)
+
+  if len(files):
+    return [ output_api.PresubmitError(
+        'Found Singleton<T> in the following header files.\n' +
+        'Please move them to an appropriate source file so that the ' +
+        'template gets instantiated in a single compilation unit.',
+        files) ]
+  return []
 
 def _CheckConstNSObject(input_api, output_api, source_file_filter):
   """Checks to make sure no objective-c files have |const NSSomeClass*|."""
@@ -80,6 +98,8 @@ def _CommonChecks(input_api, output_api):
   results.extend(input_api.canned_checks.CheckLicense(
       input_api, output_api, _LICENSE_HEADER, source_file_filter=sources))
   results.extend(_CheckConstNSObject(
+      input_api, output_api, source_file_filter=sources))
+  results.extend(_CheckSingletonInHeaders(
       input_api, output_api, source_file_filter=sources))
   return results
 
