@@ -181,10 +181,6 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
   }
   dictionary->Set("apps", list);
 
-  bool showLauncher =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAppLauncher);
-  dictionary->SetBoolean("showLauncher", showLauncher);
-
 #if defined(OS_MACOSX)
   // App windows are not yet implemented on mac.
   dictionary->SetBoolean("disableAppWindowLaunch", true);
