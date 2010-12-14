@@ -24,7 +24,7 @@ unsigned long CurrentThreadId() {
 // Singleton for initializing and cleaning up the OpenSSL library.
 class OpenSSLInitSingleton {
  public:
-  static OpenSSLInitSingleton* Get() {
+  static OpenSSLInitSingleton* GetInstance() {
     // We allow the SSL environment to leak for multiple reasons:
     //   -  it is used from a non-joinable worker thread that is not stopped on
     //      shutdown, hence may still be using OpenSSL library after the AtExit
@@ -58,7 +58,7 @@ class OpenSSLInitSingleton {
   }
 
   static void LockingCallback(int mode, int n, const char* file, int line) {
-    OpenSSLInitSingleton::Get()->OnLockingCallback(mode, n, file, line);
+    OpenSSLInitSingleton::GetInstance()->OnLockingCallback(mode, n, file, line);
   }
 
   void OnLockingCallback(int mode, int n, const char* file, int line) {
@@ -92,7 +92,7 @@ int OpenSSLErrorCallback(const char* str, size_t len, void* context) {
 }  // namespace
 
 void EnsureOpenSSLInit() {
-  (void)OpenSSLInitSingleton::Get();
+  (void)OpenSSLInitSingleton::GetInstance();
 }
 
 void ClearOpenSSLERRStack(const tracked_objects::Location& location) {
