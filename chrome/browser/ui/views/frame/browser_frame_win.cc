@@ -15,12 +15,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
-#include "chrome/browser/views/frame/app_panel_browser_frame_view.h"
 #include "chrome/browser/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/views/frame/browser_root_view.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/frame/glass_browser_frame_view.h"
-#include "chrome/browser/views/frame/opaque_browser_frame_view.h"
 #include "grit/theme_resources.h"
 #include "views/screen.h"
 #include "views/window/window_delegate.h"
@@ -266,10 +264,9 @@ void BrowserFrameWin::Activate() {
 views::NonClientFrameView* BrowserFrameWin::CreateFrameViewForWindow() {
   if (AlwaysUseNativeFrame())
     browser_frame_view_ = new GlassBrowserFrameView(this, browser_view_);
-  else if (browser_view_->IsBrowserTypePanel())
-    browser_frame_view_ = new AppPanelBrowserFrameView(this, browser_view_);
   else
-    browser_frame_view_ = new OpaqueBrowserFrameView(this, browser_view_);
+    browser_frame_view_ =
+        browser::CreateBrowserNonClientFrameView(this, browser_view_);
   return browser_frame_view_;
 }
 

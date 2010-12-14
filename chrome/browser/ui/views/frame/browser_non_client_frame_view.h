@@ -9,6 +9,8 @@
 #include "views/window/non_client_view.h"
 
 class BaseTabStrip;
+class BrowserFrame;
+class BrowserView;
 
 // A specialization of the NonClientFrameView object that provides additional
 // Browser-specific methods.
@@ -29,5 +31,13 @@ class BrowserNonClientFrameView : public views::NonClientFrameView {
   // Updates the throbber.
   virtual void UpdateThrobber(bool running) = 0;
 };
+
+namespace browser {
+
+// Provided by a browser_non_client_frame_view_factory_*.cc implementation
+BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
+    BrowserFrame* frame, BrowserView* browser_view);
+
+}  // browser
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_H_

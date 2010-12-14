@@ -5,9 +5,8 @@
 #include "chrome/browser/chromeos/frame/browser_frame_chromeos.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/views/frame/browser_view.h"
-#include "chrome/browser/views/frame/opaque_browser_frame_view.h"
-#include "chrome/browser/views/frame/popup_non_client_frame_view.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/common/chrome_switches.h"
 
 // static (Factory method.)
@@ -32,18 +31,12 @@ BrowserFrameChromeos::~BrowserFrameChromeos() {
 void BrowserFrameChromeos::Init() {
   // NOTE: This logic supersedes the logic in BrowserFrameGtk::Init()
   // by always setting browser_frame_view_.
-  bool is_popup = browser_view()->IsBrowserTypePopup();
-  if (is_popup) {
-    // ChromeOS Panels should always use PopupNonClientFrameView.
-    set_browser_frame_view(new PopupNonClientFrameView());
-  } else {
-    // Default FrameView.
-    set_browser_frame_view(new OpaqueBrowserFrameView(this, browser_view()));
-  }
+  set_browser_frame_view(
+      browser::CreateBrowserNonClientFrameView(this, browser_view()));
 
   BrowserFrameGtk::Init();
 
-  if (!is_popup) {
+  if (!browser_view()->IsBrowserTypePopup()) {
     // On chromeos we want windows to always render as active.
     GetNonClientView()->DisableInactiveRendering(true);
   }

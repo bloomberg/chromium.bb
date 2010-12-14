@@ -1,0 +1,117 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/touch/frame/touch_browser_frame_view.h"
+
+#include <algorithm>
+
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_host/site_instance.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/views/dom_view.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
+#include "chrome/common/url_constants.h"
+#include "gfx/rect.h"
+
+namespace {
+
+const int kKeyboardHeight = 300;
+
+}  // namespace
+
+///////////////////////////////////////////////////////////////////////////////
+// TouchBrowserFrameView, public:
+
+TouchBrowserFrameView::TouchBrowserFrameView(BrowserFrame* frame,
+                                             BrowserView* browser_view)
+    : OpaqueBrowserFrameView(frame, browser_view),
+      keyboard_(NULL) {
+  registrar_.Add(this,
+                 NotificationType::NAV_ENTRY_COMMITTED,
+                 NotificationService::AllSources());
+  registrar_.Add(this,
+                 NotificationType::FOCUS_CHANGED_IN_PAGE,
+                 NotificationService::AllSources());
+}
+
+TouchBrowserFrameView::~TouchBrowserFrameView() {
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// TouchBrowserFrameView, protected:
+int TouchBrowserFrameView::GetReservedHeight() const {
+  if (keyboard_ && keyboard_->IsVisible()) {
+    return kKeyboardHeight;
+  }
+  return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// TouchBrowserFrameView, private:
+
+void TouchBrowserFrameView::InitVirtualKeyboard() {
+  if (keyboard_)
+    return;
+
+  keyboard_ = new DOMView;
+
+  Profile* keyboard_profile = browser_view()->browser()->profile();
+  DCHECK(keyboard_profile) << "Profile required for virtual keyboard.";
+
+  GURL keyboard_url(chrome::kChromeUIKeyboardURL);
+  keyboard_->Init(keyboard_profile,
+      SiteInstance::CreateSiteInstanceForURL(keyboard_profile, keyboard_url));
+  keyboard_->LoadURL(keyboard_url);
+
+  keyboard_->SetVisible(false);
+  AddChildView(keyboard_);
+}
+
+void TouchBrowserFrameView::UpdateKeyboardAndLayout(bool should_show_keyboard) {
+  if (should_show_keyboard)
+    InitVirtualKeyboard();
+
+  // Don't do any extra work until we have shown the keyboard.
+  if (!keyboard_)
+    return;
+
+  if (should_show_keyboard == keyboard_->IsVisible())
+    return;
+
+  keyboard_->SetVisible(should_show_keyboard);
+
+  // Because the NonClientFrameView is a sibling of the ClientView,
+  // we rely on the parent to properly resize the ClientView.
+  GetParent()->Layout();
+}
+
+void TouchBrowserFrameView::Observe(NotificationType type,
+                                    const NotificationSource& source,
+                                    const NotificationDetails& details) {
+  if (type == NotificationType::FOCUS_CHANGED_IN_PAGE) {
+    // Only modify the keyboard state if the notification is coming from
+    // a source within the same Browser.
+    Browser* browser = browser_view()->browser();
+    Source<RenderViewHost> specific_source(source);
+    for (int i = 0; i < browser->tab_count(); ++i) {
+      if (browser->GetTabContentsAt(i)->render_view_host() ==
+          specific_source.ptr()) {
+        UpdateKeyboardAndLayout(*Details<const bool>(details).ptr());
+        break;
+      }
+    }
+  } else {
+    DCHECK(type == NotificationType::NAV_ENTRY_COMMITTED);
+
+    // TODO(bryeung): this is hiding the keyboard for the very first page
+    //   load after browser startup when the page has an input element focused
+    //   to start with.  It would be nice to fix, but not critical.
+
+    // Everything else we have registered for should hide the keyboard.
+    UpdateKeyboardAndLayout(false);
+  }
+}
