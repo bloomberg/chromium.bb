@@ -18,7 +18,7 @@ ContextMenuParams::ContextMenuParams(const WebKit::WebContextMenuData& data)
       page_url(data.pageURL),
       frame_url(data.frameURL),
       media_flags(data.mediaFlags),
-      selection_text(UTF16ToWideHack(data.selectedText)),
+      selection_text(data.selectedText),
       misspelled_word(data.misspelledWord),
       spellcheck_enabled(data.isSpellCheckingEnabled),
       is_editable(data.isEditable),

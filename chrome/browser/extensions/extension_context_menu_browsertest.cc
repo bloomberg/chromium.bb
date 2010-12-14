@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "app/menus/menu_model.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_browsertest.h"

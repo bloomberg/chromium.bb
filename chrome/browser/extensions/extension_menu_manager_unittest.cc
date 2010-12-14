@@ -8,6 +8,7 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/scoped_vector.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extension_event_router.h"
@@ -419,7 +420,7 @@ TEST_F(ExtensionMenuManagerTest, ExecuteCommand) {
   params.media_type = WebKit::WebContextMenuData::MediaTypeImage;
   params.src_url = GURL("http://foo.bar/image.png");
   params.page_url = GURL("http://foo.bar");
-  params.selection_text = L"Hello World";
+  params.selection_text = ASCIIToUTF16("Hello World");
   params.is_editable = false;
 
   Extension* extension = AddExtension("test");
@@ -471,8 +472,9 @@ TEST_F(ExtensionMenuManagerTest, ExecuteCommand) {
   ASSERT_TRUE(info->GetString("pageUrl", &tmp));
   ASSERT_EQ(params.page_url.spec(), tmp);
 
-  ASSERT_TRUE(info->GetString("selectionText", &tmp));
-  ASSERT_EQ(WideToUTF8(params.selection_text), tmp);
+  string16 tmp16;
+  ASSERT_TRUE(info->GetString("selectionText", &tmp16));
+  ASSERT_EQ(params.selection_text, tmp16);
 
   bool bool_tmp = true;
   ASSERT_TRUE(info->GetBoolean("editable", &bool_tmp));

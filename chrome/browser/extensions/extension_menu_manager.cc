@@ -410,8 +410,7 @@ void ExtensionMenuManager::ExecuteCommand(
   AddURLProperty(properties, "frameUrl", params.frame_url);
 
   if (params.selection_text.length() > 0)
-    properties->SetString("selectionText",
-                          WideToUTF16Hack(params.selection_text));
+    properties->SetString("selectionText", params.selection_text);
 
   properties->SetBoolean("editable", params.is_editable);
 

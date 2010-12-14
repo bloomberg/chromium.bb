@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/utf_string_conversions.h"
+#include "base/string16.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/webmenuitem.h"
 
@@ -57,7 +57,7 @@ struct ContextMenuParams {
   int media_flags;
 
   // This is the text of the selection that the context menu was invoked on.
-  std::wstring selection_text;
+  string16 selection_text;
 
   // The misspelled word under the cursor, if any. Used to generate the
   // |dictionary_suggestions| list.

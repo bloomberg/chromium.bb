@@ -75,7 +75,7 @@ void RenderViewContextMenuMac::LookUpInDictionary() {
   // TODO(morrita): On Safari, A dictionary panel could be shown
   // based on a preference setting of Dictionary.app.  We currently
   // don't support it: http://crbug.com/17951
-  NSString* text = base::SysWideToNSString(params_.selection_text);
+  NSString* text = base::SysUTF16ToNSString(params_.selection_text);
   NSPasteboard* pboard = [NSPasteboard pasteboardWithUniqueName];
   // 10.5 and earlier require declareTypes before setData.
   // See the documentation on [NSPasteboard declareTypes].
