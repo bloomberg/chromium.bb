@@ -9,21 +9,6 @@
 
 #include "base/logging.h"
 
-// A simple class that demonstrates our impressive ability to do nothing.
-@interface NoOp : NSObject
-
-// Does the deed.  Or does it?
-+ (void)noOp;
-
-@end
-
-@implementation NoOp
-
-+ (void)noOp {
-}
-
-@end
-
 namespace base {
 
 // If Cocoa is to be used on more than one thread, it must know that the
@@ -37,8 +22,9 @@ namespace base {
 void InitThreading() {
   static BOOL multithreaded = [NSThread isMultiThreaded];
   if (!multithreaded) {
-    [NSThread detachNewThreadSelector:@selector(noOp)
-                             toTarget:[NoOp class]
+    // +[NSObject class] is idempotent.
+    [NSThread detachNewThreadSelector:@selector(class)
+                             toTarget:[NSObject class]
                            withObject:nil];
     multithreaded = YES;
 
