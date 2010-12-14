@@ -564,12 +564,12 @@ class ChromeFrameUrl {
   std::string profile_name_;
 };
 
+class NavigationConstraints;
 // Returns true if we can navigate to this URL.
-// This function checks if the url scheme is valid for navigation within
-// chrome and whether it is a restricted URL as per IE settings. In either of
-// these cases it returns false.
-bool CanNavigate(const GURL& url, IInternetSecurityManager* security_manager,
-                 bool is_privileged);
+// These decisions are controlled by the NavigationConstraints object passed
+// in.
+bool CanNavigate(const GURL& url,
+                 NavigationConstraints* navigation_constraints);
 
 // Utility function that prevents the current module from ever being unloaded.
 // Call if you make irreversible patches.

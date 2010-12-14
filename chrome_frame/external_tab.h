@@ -63,6 +63,8 @@ struct CreateTabParams {
   GURL referrer;
 };
 
+class NavigationConstraints;
+
 /////////////////////////////////////////////////////////////////////////
 //  ExternalTabProxy is a mediator between ChromeProxy (which runs mostly in
 //  background IPC-channel thread and the UI object (ActiveX, NPAPI,
@@ -92,7 +94,7 @@ class ExternalTabProxy : public CWindowImpl<ExternalTabProxy>,
   virtual void CreateTab(const CreateTabParams& create_params,
                          UIDelegate* delegate);
   virtual void Navigate(const std::string& url, const std::string& referrer,
-                        bool is_privileged);
+                        NavigationConstraints* navigation_constraints);
   virtual void NavigateToIndex(int index);
   virtual void ForwardMessageFromExternalHost(const std::string& message,
       const std::string& origin, const std::string& target);
@@ -218,8 +220,6 @@ class ExternalTabProxy : public CWindowImpl<ExternalTabProxy>,
       referrer = ref;
     }
   } pending_navigation_;
-
-  ScopedComPtr<IInternetSecurityManager> security_manager_;
 };
 
 #endif  // CHROME_FRAME_EXTERNAL_TAB_H_

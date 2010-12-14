@@ -29,6 +29,7 @@
 #include "chrome_frame/chrome_frame_plugin.h"
 #include "chrome_frame/com_message_event.h"
 #include "chrome_frame/com_type_info_holder.h"
+#include "chrome_frame/navigation_constraints.h"
 #include "chrome_frame/simple_resource_loader.h"
 #include "chrome_frame/urlmon_url_request.h"
 #include "chrome_frame/urlmon_url_request_private.h"
@@ -149,10 +150,6 @@ class ATL_NO_VTABLE ProxyDIChromeFrameEvents
 
 extern bool g_first_launch_by_process_;
 
-// Posted when the worker thread used for handling URL requests in IE finishes
-// uninitialization.
-#define WM_WORKER_THREAD_UNINITIALIZED_MSG (WM_APP + 1)
-
 // Common implementation for ActiveX and Active Document
 template <class T, const CLSID& class_id>
 class ATL_NO_VTABLE ChromeFrameActivexBase :  // NOLINT
@@ -173,7 +170,8 @@ class ATL_NO_VTABLE ChromeFrameActivexBase :  // NOLINT
   public IPropertyNotifySinkCP<T>,
   public CComCoClass<T, &class_id>,
   public CComControl<T>,
-  public ChromeFramePlugin<T> {
+  public ChromeFramePlugin<T>,
+  public NavigationConstraintsImpl {
  protected:
   typedef std::set<base::win::ScopedComPtr<IDispatch> > EventHandlers;
   typedef ChromeFrameActivexBase<T, class_id> BasePlugin;
@@ -575,6 +573,20 @@ END_MSG_MAP()
     Fire_onclose();
   }
 
+  // NavigationConstraints overrides.
+  virtual bool IsSchemeAllowed(const GURL& url) {
+    bool allowed = NavigationConstraintsImpl::IsSchemeAllowed(url);
+    if (allowed)
+      return true;
+
+    if (is_privileged_ &&
+        (url.SchemeIs(chrome::kDataScheme) ||
+         url.SchemeIs(chrome::kExtensionScheme))) {
+      return true;
+    }
+    return false;
+  }
+
   // Overridden to take advantage of readystate prop changes and send those
   // to potential listeners.
   HRESULT FireOnChanged(DISPID dispid) {
@@ -611,7 +623,7 @@ END_MSG_MAP()
     // of navigation just after CreateExternalTab is done.
     if (!automation_client_->InitiateNavigation(full_url,
                                                 GetDocumentUrl(),
-                                                is_privileged_)) {
+                                                this)) {
       // TODO(robertshield): Make InitiateNavigation return more useful
       // error information.
       return E_INVALIDARG;

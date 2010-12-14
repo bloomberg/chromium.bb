@@ -5,7 +5,10 @@
 #include "base/file_path.h"
 #include "base/file_version_info.h"
 #include "base/file_version_info_win.h"
+#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
+#include "chrome_frame/navigation_constraints.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/utils.h"
 
@@ -228,8 +231,36 @@ class MockIInternetSecurityManager : public IInternetSecurityManager {
       HRESULT(DWORD zone, IEnumString** enum_string, DWORD flags));
 };
 
+// This class provides a partial mock for the NavigationConstraints
+// interface by providing specialized zone overrides.
+class MockNavigationConstraintsZoneOverride
+    : public NavigationConstraintsImpl {
+ public:
+  MOCK_METHOD1(IsZoneAllowed, bool(const GURL&url));
+};
+
+// Mock NavigationConstraints
+class MockNavigationConstraints : public NavigationConstraints {
+ public:
+  MOCK_METHOD0(AllowUnsafeUrls, bool());
+  MOCK_METHOD1(IsSchemeAllowed, bool(const GURL& url));
+  MOCK_METHOD1(IsZoneAllowed, bool(const GURL& url));
+};
+
+// Matcher which returns true if the URL passed in starts with the prefix
+// specified.
+MATCHER_P(UrlPathStartsWith, url_prefix, "url starts with prefix") {
+  return StartsWith(UTF8ToWide(arg.spec()), url_prefix, false);
+}
+
+ACTION_P3(HandleZone, mock, url_prefix, zone) {
+  if (StartsWith(UTF8ToWide(arg0.spec()), url_prefix, false))
+    return zone != URLZONE_UNTRUSTED;
+  return false;
+}
+
 TEST_F(UtilTests, CanNavigateTest) {
-  MockIInternetSecurityManager mock;
+  MockNavigationConstraintsZoneOverride mock;
 
   struct Zones {
     const wchar_t* url_prefix;
@@ -247,76 +278,139 @@ TEST_F(UtilTests, CanNavigateTest) {
 
   for (int i = 0; i < arraysize(test_zones); ++i) {
     const Zones& zone = test_zones[i];
-    EXPECT_CALL(mock, MapUrlToZone(testing::StartsWith(zone.url_prefix),
-                                                       testing::_, testing::_))
-      .WillRepeatedly(testing::DoAll(
-          testing::SetArgumentPointee<1>(zone.zone),
-          testing::Return(S_OK)));
+    EXPECT_CALL(mock, IsZoneAllowed(UrlPathStartsWith(zone.url_prefix)))
+        .WillRepeatedly(testing::Return(zone.zone != URLZONE_UNTRUSTED));
   }
 
   struct Cases {
     const char* url;
-    bool is_privileged;
     bool default_expected;
     bool unsafe_expected;
   } test_cases[] = {
     // Invalid URL
-    { "          ", false, false, false },
-    { "foo bar", true, false, false },
+    { "          ", false, false },
+    { "foo bar", false, false },
 
     // non-privileged test cases
-    { "http://blah/?attach_external_tab&10&1&0&0&100&100&iexplore", false,
-        true, true },
-    { "http://untrusted/bar.html", false, false, true },
-    { "http://blah/?attach_external_tab&10&1&0&0&100&100&iexplore", false,
-        true, true },
-    { "view-source:http://www.google.ca", false, true, true },
-    { "view-source:javascript:alert('foo');", false, false, true },
-    { "about:blank", false, true, true },
-    { "About:Version", false, true, true },
-    { "about:config", false, false, true },
-    { "chrome-extension://aaaaaaaaaaaaaaaaaaa/toolstrip.html", false, false,
-        true },
-    { "ftp://www.google.ca", false, false, true },
-    { "file://www.google.ca", false, false, true },
-    { "file://C:\boot.ini", false, false, true },
-    { "SIP:someone@10.1.2.3", false, false, true },
-
-    // privileged test cases
-    { "http://blah/?attach_external_tab&10&1&0&0&100&100&iexplore", true, true,
-        true },
-    { "http://untrusted/bar.html", true, false, true },
-    { "http://blah/?attach_external_tab&10&1&0&0&100&100&iexplore", true, true,
-        true },
-    { "view-source:http://www.google.ca", true, true, true },
-    { "view-source:javascript:alert('foo');", true, false, true },
-    { "about:blank", true, true, true },
-    { "About:Version", true, true, true },
-    { "about:config", true, false, true },
-    { "chrome-extension://aaaaaaaaaaaaaaaaaaa/toolstrip.html", true, true,
-        true },
-    { "ftp://www.google.ca", true, false, true },
-    { "file://www.google.ca", true, false, true },
-    { "file://C:\boot.ini", true, false, true },
-    { "sip:someone@10.1.2.3", false, false, true },
+    { "http://blah/?attach_external_tab&10&1&0&0&100&100&iexplore", true,
+       true },
+    { "http://untrusted/bar.html", false, true },
+    { "http://blah/?attach_external_tab&10&1&0&0&100&100&iexplore", true,
+       true },
+    { "view-source:http://www.google.ca", true, true },
+    { "view-source:javascript:alert('foo');", false, true },
+    { "about:blank", true, true },
+    { "About:Version", true, true },
+    { "about:config", false, true },
+    { "chrome-extension://aaaaaaaaaaaaaaaaaaa/toolstrip.html", false, true },
+    { "ftp://www.google.ca", false, true },
+    { "file://www.google.ca", false, true },
+    { "file://C:\boot.ini", false, true },
+    { "SIP:someone@10.1.2.3", false, true },
   };
 
   for (int i = 0; i < arraysize(test_cases); ++i) {
     const Cases& test = test_cases[i];
-    bool actual = CanNavigate(GURL(test.url), &mock, test.is_privileged);
+    bool actual = CanNavigate(GURL(test.url), &mock);
     EXPECT_EQ(test.default_expected, actual) << "Failure url: " << test.url;
   }
+}
 
-  bool enable_gcf = GetConfigBool(false, kAllowUnsafeURLs);
-  SetConfigBool(kAllowUnsafeURLs, true);
+TEST_F(UtilTests, CanNavigateTestDenyAll) {
+  MockNavigationConstraints mock;
 
-  for (int i = 0; i < arraysize(test_cases); ++i) {
-    const Cases& test = test_cases[i];
-    bool actual = CanNavigate(GURL(test.url), &mock, test.is_privileged);
-    EXPECT_EQ(test.unsafe_expected, actual) << "Failure url: " << test.url;
+  EXPECT_CALL(mock, IsZoneAllowed(testing::_))
+      .Times(testing::AnyNumber())
+      .WillRepeatedly(testing::Return(false));
+
+  EXPECT_CALL(mock, IsSchemeAllowed(testing::_))
+      .Times(testing::AnyNumber())
+      .WillRepeatedly(testing::Return(false));
+
+  EXPECT_CALL(mock, AllowUnsafeUrls())
+      .Times(testing::AnyNumber())
+      .WillRepeatedly(testing::Return(false));
+
+  char *urls[] = {
+    { "          "},
+    { "foo bar"},
+    // non-privileged test cases
+    { "http://blah/?attach_external_tab&10&1&0&0&100&100&iexplore"},
+    { "http://untrusted/bar.html"},
+    { "http://blah/?attach_external_tab&10&1&0&0&100&100&iexplore"},
+    { "view-source:http://www.google.ca"},
+    { "view-source:javascript:alert('foo');"},
+    { "about:blank"},
+    { "About:Version"},
+    { "about:config"},
+    { "chrome-extension://aaaaaaaaaaaaaaaaaaa/toolstrip.html"},
+    { "ftp://www.google.ca"},
+    { "file://www.google.ca"},
+    { "file://C:\boot.ini"},
+    { "SIP:someone@10.1.2.3"},
+  };
+
+  for (int i = 0; i < arraysize(urls); ++i) {
+    EXPECT_FALSE(CanNavigate(GURL(urls[i]), &mock));
   }
+}
 
-  SetConfigBool(kAllowUnsafeURLs, enable_gcf);
+TEST_F(UtilTests, CanNavigateTestAllowAll) {
+  MockNavigationConstraints mock;
+
+  EXPECT_CALL(mock, AllowUnsafeUrls())
+      .Times(testing::AnyNumber())
+      .WillRepeatedly(testing::Return(false));
+
+  EXPECT_CALL(mock, IsSchemeAllowed(testing::_))
+      .Times(testing::AnyNumber())
+      .WillRepeatedly(testing::Return(true));
+
+  EXPECT_CALL(mock, IsZoneAllowed(testing::_))
+      .Times(testing::AnyNumber())
+      .WillRepeatedly(testing::Return(true));
+
+  char *urls[] = {
+    // non-privileged test cases
+    { "http://blah/?attach_external_tab&10&1&0&0&100&100&iexplore"},
+    { "http://untrusted/bar.html"},
+    { "http://blah/?attach_external_tab&10&1&0&0&100&100&iexplore"},
+    { "view-source:http://www.google.ca"},
+    { "view-source:javascript:alert('foo');"},
+    { "about:blank"},
+    { "About:Version"},
+    { "about:config"},
+    { "chrome-extension://aaaaaaaaaaaaaaaaaaa/toolstrip.html"},
+    { "ftp://www.google.ca"},
+    { "file://www.google.ca"},
+    { "file://C:\boot.ini"},
+    { "SIP:someone@10.1.2.3"},
+    { "gcf:about:cache"},
+    { "gcf:about:plugins"},
+  };
+
+  for (int i = 0; i < arraysize(urls); ++i) {
+    EXPECT_TRUE(CanNavigate(GURL(urls[i]), &mock));
+  }
+}
+
+TEST_F(UtilTests, CanNavigateTestAllowAllUnsafeUrls) {
+  MockNavigationConstraints mock;
+
+  EXPECT_CALL(mock, AllowUnsafeUrls())
+      .Times(testing::AnyNumber())
+      .WillRepeatedly(testing::Return(true));
+
+  char *urls[] = {
+    {"gcf:about:cache"},
+    {"gcf:http://www.google.com"},
+    {"view-source:javascript:alert('foo');"},
+    {"http://www.google.com"},
+  };
+
+  for (int i = 0; i < arraysize(urls); ++i) {
+    EXPECT_TRUE(CanNavigate(GURL(urls[i]), &mock));
+  }
 }
 
 TEST_F(UtilTests, IsDefaultRendererTest) {

@@ -356,6 +356,9 @@ END_EXEC_COMMAND_MAP()
   STDMETHOD(GetPrivacyImpacted)(BOOL* privacy_impacted);
   STDMETHOD(Next)(BSTR* url, BSTR* policy, LONG* reserved, DWORD* flags);
 
+  // NavigationConstraints overrides.
+  bool IsSchemeAllowed(const GURL& url);
+
   // Accessor for InPlaceMenu.  Returns S_OK if set, S_FALSE if NULL.
   HRESULT GetInPlaceFrame(IOleInPlaceFrame** in_place_frame);
 

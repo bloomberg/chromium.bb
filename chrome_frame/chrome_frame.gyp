@@ -420,6 +420,7 @@
               'msvs_settings': {
                 'VCLinkerTool': {
                   'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                  'DelayLoadDLLs': ['nspr4.dll'],
                 },
               },
             },
@@ -929,6 +930,8 @@
         'custom_sync_call_context.h',
         'external_tab.h',
         'external_tab.cc',
+        'navigation_constraints.h',
+        'navigation_constraints.cc',
         'plugin_url_request.h',
         'plugin_url_request.cc',
         'sync_msg_reply_dispatcher.h',

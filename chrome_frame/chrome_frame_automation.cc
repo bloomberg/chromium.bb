@@ -27,6 +27,7 @@
 #include "chrome_frame/chrome_launcher_utils.h"
 #include "chrome_frame/crash_reporting/crash_metrics.h"
 #include "chrome_frame/custom_sync_call_context.h"
+#include "chrome_frame/navigation_constraints.h"
 #include "chrome_frame/simple_resource_loader.h"
 #include "chrome_frame/utils.h"
 
@@ -649,16 +650,6 @@ bool ChromeFrameAutomationClient::Initialize(
   init_state_ = INITIALIZING;
 
   HRESULT hr = S_OK;
-  // If chrome crashed and is being restarted, the security_manager_ object
-  // might already be valid.
-  if (security_manager_.get() == NULL)
-    hr = security_manager_.CreateInstance(CLSID_InternetSecurityManager);
-
-  if (FAILED(hr)) {
-    NOTREACHED() << __FUNCTION__
-                 << " Failed to create InternetSecurityManager. Error: 0x%x"
-                 << hr;
-  }
 
   if (chrome_launch_params_->url().is_valid())
     navigate_after_initialization_ = false;
@@ -715,8 +706,10 @@ void ChromeFrameAutomationClient::Uninitialize() {
   init_state_ = UNINITIALIZED;
 }
 
-bool ChromeFrameAutomationClient::InitiateNavigation(const std::string& url,
-    const std::string& referrer, bool is_privileged) {
+bool ChromeFrameAutomationClient::InitiateNavigation(
+    const std::string& url,
+    const std::string& referrer,
+    NavigationConstraints* navigation_constraints) {
   if (url.empty())
     return false;
 
@@ -724,7 +717,7 @@ bool ChromeFrameAutomationClient::InitiateNavigation(const std::string& url,
 
   // Catch invalid URLs early.
   // Can we allow this navigation to happen?
-  if (!CanNavigate(parsed_url, security_manager_, is_privileged)) {
+  if (!CanNavigate(parsed_url, navigation_constraints)) {
     DLOG(ERROR) << __FUNCTION__ << " Not allowing navigation to: " << url;
     return false;
   }

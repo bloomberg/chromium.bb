@@ -4,9 +4,10 @@
 #include "chrome_frame/test/automation_client_mock.h"
 
 #include "base/callback.h"
-#include "net/base/net_errors.h"
 #include "chrome_frame/custom_sync_call_context.h"
+#include "chrome_frame/navigation_constraints.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
+#include "net/base/net_errors.h"
 
 #define GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 #include "testing/gmock_mutant.h"
@@ -85,8 +86,8 @@ ACTION_P4(HandleCreateTab, tab_handle, external_tab_container, tab_wnd,
   delete context;
 }
 
-ACTION_P4(InitiateNavigation, client, url, referrer, privileged) {
-  client->InitiateNavigation(url, referrer, privileged);
+ACTION_P4(InitiateNavigation, client, url, referrer, constraints) {
+  client->InitiateNavigation(url, referrer, constraints);
 }
 
 // We mock ChromeFrameDelegate only. The rest is with real AutomationProxy
@@ -151,6 +152,8 @@ TEST(CFACWithChrome, CreateNotSoFast) {
 
 TEST(CFACWithChrome, NavigateOk) {
   MockCFDelegate cfd;
+  NavigationConstraintsImpl navigation_constraints;
+
   chrome_frame_test::TimedMsgLoop loop;
   const std::string url = "about:version";
   const FilePath profile_path(
@@ -162,7 +165,8 @@ TEST(CFACWithChrome, NavigateOk) {
 
   EXPECT_CALL(cfd, OnAutomationServerReady())
       .WillOnce(InitiateNavigation(client.get(),
-                                   url, std::string(), false));
+                                   url, std::string(),
+                                   &navigation_constraints));
 
   EXPECT_CALL(cfd, GetBounds(_)).Times(testing::AnyNumber());
 
@@ -196,6 +200,7 @@ TEST(CFACWithChrome, NavigateOk) {
 
 TEST(CFACWithChrome, NavigateFailed) {
   MockCFDelegate cfd;
+  NavigationConstraintsImpl navigation_constraints;
   chrome_frame_test::TimedMsgLoop loop;
   const FilePath profile_path(
       chrome_frame_test::GetProfilePath(L"Adam.N.Epilinter"));
@@ -210,7 +215,7 @@ TEST(CFACWithChrome, NavigateFailed) {
   EXPECT_CALL(cfd, OnAutomationServerReady())
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
           client.get(), &ChromeFrameAutomationClient::InitiateNavigation,
-          url, std::string(), false))));
+          url, std::string(), &navigation_constraints))));
 
   EXPECT_CALL(cfd, GetBounds(_)).Times(testing::AnyNumber());
   EXPECT_CALL(cfd, OnNavigationStateChanged(_, _)).Times(testing::AnyNumber());
@@ -419,6 +424,8 @@ TEST_F(CFACMockTest, OnChannelError) {
 
 TEST_F(CFACMockTest, NavigateTwiceAfterInitToSameUrl) {
   int timeout = 500;
+  NavigationConstraintsImpl navigation_constraints;
+
   CreateTab();
   SetAutomationServerOk(1);
 
@@ -439,7 +446,7 @@ TEST_F(CFACMockTest, NavigateTwiceAfterInitToSameUrl) {
   EXPECT_CALL(cfd_, OnAutomationServerReady())
       .WillOnce(InitiateNavigation(client_.get(),
                                    std::string("http://www.nonexistent.com"),
-                                   std::string(), false));
+                                   std::string(), &navigation_constraints));
 
   EXPECT_CALL(mock_proxy_, SendAsAsync(testing::Property(
       &IPC::SyncMessage::type, AutomationMsg_NavigateInExternalTab::ID),

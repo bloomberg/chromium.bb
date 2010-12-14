@@ -31,6 +31,7 @@
 #include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome_frame/extra_system_apis.h"
 #include "chrome_frame/html_utils.h"
+#include "chrome_frame/navigation_constraints.h"
 #include "chrome_frame/policy_settings.h"
 #include "chrome_frame/simple_resource_loader.h"
 #include "googleurl/src/gurl.h"
@@ -1423,44 +1424,32 @@ void ChromeFrameUrl::Reset() {
   profile_name_.clear();
 }
 
-bool CanNavigate(const GURL& url, IInternetSecurityManager* security_manager,
-                 bool is_privileged) {
+bool CanNavigate(const GURL& url,
+                 NavigationConstraints* navigation_constraints) {
   if (!url.is_valid()) {
     DLOG(ERROR) << "Invalid URL passed to InitiateNavigation: " << url;
     return false;
   }
 
+  if (!navigation_constraints) {
+    NOTREACHED() << "Invalid NavigationConstraints passed in";
+    return false;
+  }
+
   // No sanity checks if unsafe URLs are allowed
-  if (GetConfigBool(false, kAllowUnsafeURLs))
+  if (navigation_constraints->AllowUnsafeUrls())
     return true;
 
-  if (!IsValidUrlScheme(url, is_privileged)) {
+  if (!navigation_constraints->IsSchemeAllowed(url)) {
     DLOG(WARNING) << __FUNCTION__ << " Disallowing navigation to url: " << url;
     return false;
   }
 
-  // Allow only about:blank or about:version
-  if (url.SchemeIs(chrome::kAboutScheme)) {
-    if (!LowerCaseEqualsASCII(url.spec(), chrome::kAboutBlankURL) &&
-        !LowerCaseEqualsASCII(url.spec(), chrome::kAboutVersionURL)) {
-      DLOG(WARNING) << __FUNCTION__
-                    << " Disallowing navigation to about url: " << url;
-      return false;
-    }
+  if (!navigation_constraints->IsZoneAllowed(url)) {
+    DLOG(WARNING) << __FUNCTION__
+                  << " Disallowing navigation to restricted url: " << url;
+    return false;
   }
-
-  // Prevent navigations to URLs in untrusted zone, even in Firefox.
-  if (security_manager) {
-    DWORD zone = URLZONE_INVALID;
-    std::wstring unicode_url = UTF8ToWide(url.spec());
-    security_manager->MapUrlToZone(unicode_url.c_str(), &zone, 0);
-    if (zone == URLZONE_UNTRUSTED) {
-      DLOG(WARNING) << __FUNCTION__
-                    << " Disallowing navigation to restricted url: " << url;
-      return false;
-    }
-  }
-
   return true;
 }
 

@@ -10,10 +10,11 @@
 // #include "base/waitable_event.h"
 
 #include "chrome/common/automation_messages.h"
+#include "chrome_frame/navigation_constraints.h"
+#include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
-#include "chrome_frame/test/chrome_frame_test_utils.h"
 
 
 
@@ -236,8 +237,11 @@ TEST(ExternalTabProxy, NavigateAfterCreate) {
   tab_params.is_widget_mode = false;
   tab_params.url = initial_url;
 
+  NavigationConstraintsImpl navigation_constraints;
+
   tab->CreateTab(tab_params, &ui_delegate);
-  tab->Navigate("http://asgard.org", EmptyString(), true);
+  tab->Navigate("http://asgard.org", EmptyString(),
+                &navigation_constraints);
 
   loop.RunFor(5);
   EXPECT_FALSE(loop.WasTimedOut());

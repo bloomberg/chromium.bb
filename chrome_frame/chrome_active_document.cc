@@ -501,6 +501,18 @@ STDMETHODIMP ChromeActiveDocument::Next(BSTR* url, BSTR* policy,
   return S_OK;
 }
 
+bool ChromeActiveDocument::IsSchemeAllowed(const GURL& url) {
+  bool allowed = BaseActiveX::IsSchemeAllowed(url);
+  if (allowed)
+    return true;
+
+  if (url.SchemeIs(chrome::kAboutScheme)) {
+    if (LowerCaseEqualsASCII(url.spec(), chrome::kAboutPluginsURL))
+      return true;
+  }
+  return false;
+}
+
 HRESULT ChromeActiveDocument::GetInPlaceFrame(
     IOleInPlaceFrame** in_place_frame) {
   DCHECK(in_place_frame);
@@ -1032,7 +1044,7 @@ bool ChromeActiveDocument::LaunchUrl(const ChromeFrameUrl& cf_url,
     SetWindowDimensions();
   } else if (!automation_client_->InitiateNavigation(cf_url.gurl().spec(),
                                                      referrer,
-                                                     is_privileged_)) {
+                                                     this)) {
     DLOG(ERROR) << "Invalid URL: " << url_;
     Error(L"Invalid URL");
     url_.Reset();

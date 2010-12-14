@@ -32,6 +32,7 @@
 const unsigned long kCommandExecutionTimeout = 60000;  // NOLINT, 60 seconds
 
 class ProxyFactory;
+class NavigationConstraints;
 enum AutomationPageFontSize;
 
 struct DECLSPEC_NOVTABLE ChromeFrameAutomationProxy {  // NOLINT
@@ -330,9 +331,11 @@ class ChromeFrameAutomationClient
   void Uninitialize();
   void NotifyAndUninitialize();
 
-  virtual bool InitiateNavigation(const std::string& url,
-                                  const std::string& referrer,
-                                  bool is_privileged);
+  virtual bool InitiateNavigation(
+      const std::string& url,
+      const std::string& referrer,
+      NavigationConstraints* navigation_constraints);
+
   virtual bool NavigateToIndex(int index);
   bool ForwardMessageFromExternalHost(const std::string& message,
                                       const std::string& origin,

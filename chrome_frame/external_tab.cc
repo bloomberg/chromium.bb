@@ -8,6 +8,7 @@
 #include "base/task.h"
 #include "base/waitable_event.h"
 #include "chrome/common/automation_messages.h"
+#include "chrome_frame/chrome_frame_delegate.h"
 #include "chrome_frame/utils.h"
 
 DISABLE_RUNNABLE_METHOD_REFCOUNT(ExternalTabProxy);
@@ -121,11 +122,12 @@ void ExternalTabProxy::UiPeerLost(ChromeProxy* proxy, DisconnectReason reason) {
 }
 
 void ExternalTabProxy::Navigate(const std::string& url,
-    const std::string& referrer, bool is_privileged) {
+    const std::string& referrer,
+    NavigationConstraints* navigation_constraints) {
   // in ui thread
   // Catch invalid URLs early. Can we allow this navigation to happen?
   GURL parsed_url(url);
-  if (!CanNavigate(parsed_url, security_manager_, is_privileged)) {
+  if (!CanNavigate(parsed_url, navigation_constraints)) {
     DLOG(ERROR) << __FUNCTION__ << " Not allowing navigation to: " << url;
     return;
   }
