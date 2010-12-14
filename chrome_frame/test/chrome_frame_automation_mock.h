@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome_frame/chrome_frame_automation.h"
 #include "chrome_frame/chrome_frame_plugin.h"
+#include "chrome_frame/navigation_constraints.h"
 #include "chrome_frame/test/http_server.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/test_with_web_server.h"
@@ -58,10 +59,10 @@ class AutomationMockDelegate
 
   // Navigate external tab to the specified url through automation
   bool Navigate(const std::string& url) {
+    NavigationConstraintsImpl navigation_constraints;
     url_ = GURL(url);
-    bool result = automation_client_->InitiateNavigation(url,
-                                                         std::string(),
-                                                         false);
+    bool result = automation_client_->InitiateNavigation(
+        url, std::string(), &navigation_constraints);
     if (!result)
       OnLoadFailed(0, url);
     return result;
