@@ -215,13 +215,24 @@ bool HTMLScanner::IsQuote(wchar_t c) {
   return quotes_.find(c) != std::wstring::npos;
 }
 
-bool HTMLScanner::IsHTMLCommentClose(StringRange* html_string, StrPos pos) {
+bool HTMLScanner::IsHTMLCommentClose(const StringRange* html_string,
+                                     StrPos pos) {
   if (pos < html_string->end_ && pos > html_string->start_ + 2 &&
       *pos == L'>') {
     return *(pos-1) == L'-' && *(pos-2) == L'-';
   }
   return false;
 }
+
+bool HTMLScanner::IsIEConditionalCommentClose(const StringRange* html_string,
+                                              StrPos pos) {
+  if (pos < html_string->end_ && pos > html_string->start_ + 2 &&
+      *pos == L'>') {
+    return *(pos-1) == L']';
+  }
+  return false;
+}
+
 
 bool HTMLScanner::NextTag(StringRange* html_string, StringRange* tag) {
   DCHECK(NULL != html_string);
@@ -245,9 +256,28 @@ bool HTMLScanner::NextTag(StringRange* html_string, StringRange* tag) {
   std::wstring tag_name;
   StringRange start_range(tag->start_, html_string->end_);
   start_range.GetTagName(&tag_name);
-  if (StartsWith(tag_name, L"!--", true)) {
-    // We're inside a comment tag, keep going until we get out of it.
+  if (StartsWith(tag_name, L"!--[if", true)) {
+    // This looks like the beginning of an IE conditional comment, scan until
+    // we hit the end which always looks like ']>'. For now we disregard the
+    // contents of the condition, and always assume true.
+    // TODO(robertshield): Optionally support the grammar defined by
+    // http://msdn.microsoft.com/en-us/library/ms537512(VS.85).aspx#syntax.
     while (tag->end_ < html_string->end_ &&
+           !IsIEConditionalCommentClose(html_string, tag->end_)) {
+      tag->end_++;
+    }
+  } else if (StartsWith(tag_name, L"!--", true)) {
+    // We're inside a comment tag which ends in '-->'. Keep going until we
+    // reach the end.
+    while (tag->end_ < html_string->end_ &&
+           !IsHTMLCommentClose(html_string, tag->end_)) {
+      tag->end_++;
+    }
+  } else if (StartsWith(tag_name, L"![endif", true)) {
+    // We're inside the closing tag of an IE conditional comment which ends in
+    // either '-->' of ']>'. Keep going until we reach the end.
+    while (tag->end_ < html_string->end_ &&
+           !IsIEConditionalCommentClose(html_string, tag->end_) &&
            !IsHTMLCommentClose(html_string, tag->end_)) {
       tag->end_++;
     }

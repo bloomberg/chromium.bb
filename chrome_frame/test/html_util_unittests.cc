@@ -213,10 +213,110 @@ TEST_F(HtmlUtilUnittest, CloseTagInsideHTMLCommentTest) {
 
   HTMLScanner scanner(test_data.c_str());
 
-  // Grab the meta tag from the document and ensure that we get exactly one.
+  // Ensure that the the meta tag is NOT detected.
   HTMLScanner::StringRangeList tag_list;
   scanner.GetTagsByName(L"meta", &tag_list, L"body");
   ASSERT_TRUE(tag_list.empty());
+}
+
+TEST_F(HtmlUtilUnittest, IEConditionalCommentTest) {
+  std::wstring test_data(
+      L"<!--[if lte IE 8]><META http-equiv=X-UA-Compatible content='chrome=1'/>"
+      L"<![endif]-->");
+
+  HTMLScanner scanner(test_data.c_str());
+
+  // Ensure that the the meta tag IS detected.
+  HTMLScanner::StringRangeList tag_list;
+  scanner.GetTagsByName(L"meta", &tag_list, L"body");
+  ASSERT_EQ(1, tag_list.size());
+}
+
+TEST_F(HtmlUtilUnittest, IEConditionalCommentWithNestedCommentTest) {
+  std::wstring test_data(
+      L"<!--[if IE]><!--<META http-equiv=X-UA-Compatible content='chrome=1'/>"
+      L"--><![endif]-->");
+
+  HTMLScanner scanner(test_data.c_str());
+
+  // Ensure that the the meta tag IS NOT detected.
+  HTMLScanner::StringRangeList tag_list;
+  scanner.GetTagsByName(L"meta", &tag_list, L"body");
+  ASSERT_TRUE(tag_list.empty());
+}
+
+TEST_F(HtmlUtilUnittest, IEConditionalCommentWithMultipleNestedTagsTest) {
+  std::wstring test_data(
+      L"<!--[if lte IE 8]>        <META http-equiv=X-UA-Compatible "
+      L"content='chrome=1'/><foo bar></foo><foo baz/><![endif]-->"
+      L"<boo hoo><boo hah>");
+
+  HTMLScanner scanner(test_data.c_str());
+
+  // Ensure that the the meta tag IS detected.
+  HTMLScanner::StringRangeList meta_tag_list;
+  scanner.GetTagsByName(L"meta", &meta_tag_list, L"body");
+  ASSERT_EQ(1, meta_tag_list.size());
+
+  // Ensure that the foo tags are also detected.
+  HTMLScanner::StringRangeList foo_tag_list;
+  scanner.GetTagsByName(L"foo", &foo_tag_list, L"body");
+  ASSERT_EQ(2, foo_tag_list.size());
+
+  // Ensure that the boo tags are also detected.
+  HTMLScanner::StringRangeList boo_tag_list;
+  scanner.GetTagsByName(L"boo", &boo_tag_list, L"body");
+  ASSERT_EQ(2, boo_tag_list.size());
+}
+
+TEST_F(HtmlUtilUnittest, IEConditionalCommentWithAlternateEndingTest) {
+  std::wstring test_data(
+      L"<!--[if lte IE 8]>        <META http-equiv=X-UA-Compatible "
+      L"content='chrome=1'/><foo bar></foo><foo baz/><![endif]>"
+      L"<boo hoo><!--><boo hah>");
+
+  HTMLScanner scanner(test_data.c_str());
+
+  // Ensure that the the meta tag IS detected.
+  HTMLScanner::StringRangeList meta_tag_list;
+  scanner.GetTagsByName(L"meta", &meta_tag_list, L"body");
+  ASSERT_EQ(1, meta_tag_list.size());
+
+  // Ensure that the foo tags are also detected.
+  HTMLScanner::StringRangeList foo_tag_list;
+  scanner.GetTagsByName(L"foo", &foo_tag_list, L"body");
+  ASSERT_EQ(2, foo_tag_list.size());
+
+  // Ensure that the boo tags are also detected.
+  HTMLScanner::StringRangeList boo_tag_list;
+  scanner.GetTagsByName(L"boo", &boo_tag_list, L"body");
+  ASSERT_EQ(2, boo_tag_list.size());
+}
+
+TEST_F(HtmlUtilUnittest, IEConditionalCommentNonTerminatedTest) {
+  // This test shouldn't detect any tags up until the end of the conditional
+  // comment tag.
+  std::wstring test_data(
+      L"<!--[if lte IE 8>        <META http-equiv=X-UA-Compatible "
+      L"content='chrome=1'/><foo bar></foo><foo baz/><![endif]>"
+      L"<boo hoo><!--><boo hah>");
+
+  HTMLScanner scanner(test_data.c_str());
+
+  // Ensure that the the meta tag IS NOT detected.
+  HTMLScanner::StringRangeList meta_tag_list;
+  scanner.GetTagsByName(L"meta", &meta_tag_list, L"body");
+  ASSERT_TRUE(meta_tag_list.empty());
+
+  // Ensure that the foo tags are NOT detected.
+  HTMLScanner::StringRangeList foo_tag_list;
+  scanner.GetTagsByName(L"foo", &foo_tag_list, L"body");
+  ASSERT_TRUE(foo_tag_list.empty());
+
+  // Ensure that the boo tags are detected.
+  HTMLScanner::StringRangeList boo_tag_list;
+  scanner.GetTagsByName(L"boo", &boo_tag_list, L"body");
+  ASSERT_EQ(2, boo_tag_list.size());
 }
 
 TEST_F(HtmlUtilUnittest, AddChromeFrameToUserAgentValue) {

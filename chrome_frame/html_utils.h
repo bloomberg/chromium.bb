@@ -107,7 +107,14 @@ class HTMLScanner {
   // string described by html_string, false otherwise.
   // For example with html_string describing <!-- foo> -->, pos must refer to
   // the last > for this method to return true.
-  bool IsHTMLCommentClose(StringRange* html_string, StrPos pos);
+  bool IsHTMLCommentClose(const StringRange* html_string, StrPos pos);
+
+  // Returns true if pos refers to the last character in the terminator of the
+  // opening tag of a downlevel-hidden conditional comment in IE as per
+  // http://msdn.microsoft.com/en-us/library/ms537512(VS.85).aspx#syntax
+  // For example with html_string describing <![if booga >wooga]>, pos must
+  // refer to the last > for this method to return true.
+  bool IsIEConditionalCommentClose(const StringRange* html_string, StrPos pos);
 
   // We store a (CollapsedWhitespace'd) copy of the html data.
   const std::wstring html_string_;
