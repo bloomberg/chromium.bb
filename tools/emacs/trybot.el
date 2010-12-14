@@ -149,7 +149,10 @@
       (clipboard-yank)
       (setq url (buffer-string))))
 
-  ;; TODO: fixup URL to append /text if necessary.
+  ;; Append /text to the URL to get plain text output in the common
+  ;; case of getting a URL to the HTML build log.
+  (when (equal "stdio" (car (last (split-string url "/"))))
+    (setq url (concat url "/text")))
 
   (let ((type-hint (cond ((string-match "/win/" url) 'win)
                          ((string-match "/mac/" url) 'mac)
