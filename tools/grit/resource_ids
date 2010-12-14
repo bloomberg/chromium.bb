@@ -97,6 +97,7 @@
   # strings.
   "chrome/app/generated_resources.grd": {
     "structures": [10500],
+    "includes": [10750],
     "messages": [11000],
   },
   "webkit/glue/inspector_strings.grd": {
