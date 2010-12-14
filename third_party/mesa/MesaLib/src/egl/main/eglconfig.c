@@ -242,7 +242,7 @@ _eglValidateConfig(const _EGLConfig *conf, EGLBoolean for_matching)
 
    /* check attributes by their types */
    for (i = 0; i < ARRAY_SIZE(_eglValidationTable); i++) {
-      EGLint mask;
+      EGLint mask = 0;
 
       attr = _eglValidationTable[i].attr;
       val = GET_CONFIG_ATTRIB(conf, attr);
