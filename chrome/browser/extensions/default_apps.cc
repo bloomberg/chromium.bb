@@ -52,7 +52,7 @@ void DefaultApps::DidInstallApp(const ExtensionIdSet& installed_ids) {
   }
 }
 
-bool DefaultApps::ShouldShowPromo(const ExtensionIdSet& installed_ids) {
+bool DefaultApps::CheckShouldShowPromo(const ExtensionIdSet& installed_ids) {
 #if defined(OS_CHROMEOS)
   // Don't show the promo at all on Chrome OS.
   return false;

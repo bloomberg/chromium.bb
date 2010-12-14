@@ -14,11 +14,17 @@ var PING_WEBSTORE_LAUNCH_PREFIX = 'record-webstore-launch';
 
 function getAppsCallback(data) {
   logEvent('received apps');
+
+  // In the case of prefchange-triggered updates, we don't receive this flag.
+  // Just leave it set as it was before in that case.
+  if ('showPromo' in data)
+    apps.showPromo = data.showPromo;
+
   var appsSection = $('apps');
   var appsSectionContent = $('apps-content');
   var appsMiniview = appsSection.getElementsByClassName('miniview')[0];
   var appsPromo = $('apps-promo');
-  var appsPromoPing = PING_WEBSTORE_LAUNCH_PREFIX + '+' + data.showPromo;
+  var appsPromoPing = PING_WEBSTORE_LAUNCH_PREFIX + '+' + apps.showPromo;
   var webStoreEntry;
 
   // Hide menu options that are not supported on the OS or windowing system.
@@ -33,8 +39,6 @@ function getAppsCallback(data) {
 
   appsMiniview.textContent = '';
   appsSectionContent.textContent = '';
-
-  apps.showPromo = data.showPromo;
 
   data.apps.sort(function(a,b) {
     return a.app_launch_index - b.app_launch_index;
@@ -65,7 +69,7 @@ function getAppsCallback(data) {
   addClosedMenuFooter(apps.menu, 'apps', MINIMIZED_APPS, Section.APPS);
 
   apps.loaded = true;
-  if (data.showPromo)
+  if (apps.showPromo)
     document.documentElement.classList.add('apps-promo-visible');
   else
     document.documentElement.classList.remove('apps-promo-visible');
@@ -73,7 +77,7 @@ function getAppsCallback(data) {
   maybeDoneLoading();
 
   if (data.apps.length > 0 && isDoneLoading()) {
-    if (!data.showPromo && data.apps.length >= MAX_APPS_PER_ROW[layoutMode])
+    if (!apps.showPromo && data.apps.length >= MAX_APPS_PER_ROW[layoutMode])
       webStoreEntry.classList.add('loner');
     else
       webStoreEntry.classList.remove('loner');

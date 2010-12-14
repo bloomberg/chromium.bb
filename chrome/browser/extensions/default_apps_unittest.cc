@@ -10,7 +10,7 @@
 // TODO(dpolukhin): On Chrome OS all apps are installed via external extensions,
 // and the web store promo is never shown.
 #if !defined(OS_CHROMEOS)
-TEST(DefaultApps, Basics) {
+TEST(ExtensionDefaultApps, Basics) {
   TestingPrefService pref_service;
   DefaultApps::RegisterUserPrefs(&pref_service);
   DefaultApps default_apps(&pref_service);
@@ -23,7 +23,7 @@ TEST(DefaultApps, Basics) {
 
   // The promo should not be shown until the default apps have been installed.
   ExtensionIdSet installed_app_ids;
-  EXPECT_FALSE(default_apps.ShouldShowPromo(installed_app_ids));
+  EXPECT_FALSE(default_apps.CheckShouldShowPromo(installed_app_ids));
 
   // Simulate installing the apps one by one and notifying default_apps after
   // each intallation. Nothing should change until we have installed all the
@@ -41,7 +41,7 @@ TEST(DefaultApps, Basics) {
     default_apps.DidInstallApp(extension_id_sets[i]);
     EXPECT_TRUE(default_app_ids == *default_apps.GetAppsToInstall());
     EXPECT_FALSE(default_apps.GetDefaultAppsInstalled());
-    EXPECT_FALSE(default_apps.ShouldShowPromo(extension_id_sets[i]));
+    EXPECT_FALSE(default_apps.CheckShouldShowPromo(extension_id_sets[i]));
   }
 
   // Simulate all the default apps being installed. Now we should stop getting
@@ -51,19 +51,19 @@ TEST(DefaultApps, Basics) {
   EXPECT_TRUE(default_apps.GetDefaultAppsInstalled());
 
   // And the promo should become available.
-  EXPECT_TRUE(default_apps.ShouldShowPromo(default_app_ids));
+  EXPECT_TRUE(default_apps.CheckShouldShowPromo(default_app_ids));
 
   // The promo should be available up to the max allowed times, then stop.
   for (int i = 0; i < DefaultApps::kAppsPromoCounterMax; ++i) {
-    EXPECT_TRUE(default_apps.ShouldShowPromo(default_app_ids));
+    EXPECT_TRUE(default_apps.CheckShouldShowPromo(default_app_ids));
     default_apps.DidShowPromo();
     EXPECT_EQ(i + 1, default_apps.GetPromoCounter());
   }
-  EXPECT_FALSE(default_apps.ShouldShowPromo(default_app_ids));
+  EXPECT_FALSE(default_apps.CheckShouldShowPromo(default_app_ids));
   EXPECT_EQ(DefaultApps::kAppsPromoCounterMax, default_apps.GetPromoCounter());
 }
 
-TEST(DefaultApps, HidePromo) {
+TEST(ExtensionDefaultApps, HidePromo) {
   TestingPrefService pref_service;
   DefaultApps::RegisterUserPrefs(&pref_service);
   DefaultApps default_apps(&pref_service);
@@ -71,16 +71,16 @@ TEST(DefaultApps, HidePromo) {
   ExtensionIdSet default_app_ids = *default_apps.GetAppsToInstall();
   default_apps.DidInstallApp(default_app_ids);
 
-  EXPECT_TRUE(default_apps.ShouldShowPromo(default_app_ids));
+  EXPECT_TRUE(default_apps.CheckShouldShowPromo(default_app_ids));
   default_apps.DidShowPromo();
   EXPECT_EQ(1, default_apps.GetPromoCounter());
 
   default_apps.SetPromoHidden();
-  EXPECT_FALSE(default_apps.ShouldShowPromo(default_app_ids));
+  EXPECT_FALSE(default_apps.CheckShouldShowPromo(default_app_ids));
   EXPECT_EQ(DefaultApps::kAppsPromoCounterMax, default_apps.GetPromoCounter());
 }
 
-TEST(DefaultApps, InstallingAnAppHidesPromo) {
+TEST(ExtensionDefaultApps, InstallingAnAppHidesPromo) {
   TestingPrefService pref_service;
   DefaultApps::RegisterUserPrefs(&pref_service);
   DefaultApps default_apps(&pref_service);
@@ -89,18 +89,18 @@ TEST(DefaultApps, InstallingAnAppHidesPromo) {
   ExtensionIdSet installed_app_ids = default_app_ids;
   default_apps.DidInstallApp(installed_app_ids);
 
-  EXPECT_TRUE(default_apps.ShouldShowPromo(installed_app_ids));
+  EXPECT_TRUE(default_apps.CheckShouldShowPromo(installed_app_ids));
   default_apps.DidShowPromo();
   EXPECT_EQ(1, default_apps.GetPromoCounter());
 
   // Now simulate a new extension being installed. This should cause the promo
   // to be hidden.
   installed_app_ids.insert("foo");
-  EXPECT_FALSE(default_apps.ShouldShowPromo(installed_app_ids));
+  EXPECT_FALSE(default_apps.CheckShouldShowPromo(installed_app_ids));
   EXPECT_EQ(DefaultApps::kAppsPromoCounterMax, default_apps.GetPromoCounter());
 }
 
-TEST(DefaultApps, ManualAppInstalledWhileInstallingDefaultApps) {
+TEST(ExtensionDefaultApps, ManualAppInstalledWhileInstallingDefaultApps) {
   // It is possible to have apps manually installed while the default apps are
   // being installed. The network or server might be down, causing the default
   // app installation to fail. The updater might take awhile to get around to
@@ -131,7 +131,7 @@ TEST(DefaultApps, ManualAppInstalledWhileInstallingDefaultApps) {
 
   // The promo shouldn't turn on though, because it would look weird with the
   // user's extra, manually installed extensions.
-  EXPECT_FALSE(default_apps.ShouldShowPromo(installed_ids));
+  EXPECT_FALSE(default_apps.CheckShouldShowPromo(installed_ids));
   EXPECT_EQ(DefaultApps::kAppsPromoCounterMax, default_apps.GetPromoCounter());
 }
 #endif  // OS_CHROMEOS

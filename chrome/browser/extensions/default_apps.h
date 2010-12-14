@@ -50,10 +50,11 @@ class DefaultApps {
   // all the default apps, GetAppsToInstall() will start returning NULL.
   void DidInstallApp(const ExtensionIdSet& installed_ids);
 
-  // Returns true if the apps promo should be displayed in the launcher. This
-  // starts returning true once the default apps have all been installed and
-  // stops after the promo expires.
-  bool ShouldShowPromo(const ExtensionIdSet& installed_ids);
+  // Returns true if the apps promo should be displayed in the launcher.
+  //
+  // NOTE: If the default apps have been installed, but |installed_ids| is
+  // different than GetDefaultApps(), this will permanently expire the promo.
+  bool CheckShouldShowPromo(const ExtensionIdSet& installed_ids);
 
   // Should be called after each time the promo is installed.
   void DidShowPromo();
@@ -62,10 +63,10 @@ class DefaultApps {
   void SetPromoHidden();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(DefaultApps, Basics);
-  FRIEND_TEST_ALL_PREFIXES(DefaultApps, HidePromo);
-  FRIEND_TEST_ALL_PREFIXES(DefaultApps, InstallingAnAppHidesPromo);
-  FRIEND_TEST_ALL_PREFIXES(DefaultApps,
+  FRIEND_TEST_ALL_PREFIXES(ExtensionDefaultApps, Basics);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionDefaultApps, HidePromo);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionDefaultApps, InstallingAnAppHidesPromo);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionDefaultApps,
                            ManualAppInstalledWhileInstallingDefaultApps);
 
   bool GetDefaultAppsInstalled() const;

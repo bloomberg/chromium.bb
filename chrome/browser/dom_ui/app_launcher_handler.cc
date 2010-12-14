@@ -181,16 +181,6 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
   }
   dictionary->Set("apps", list);
 
-  DefaultApps* default_apps = extensions_service_->default_apps();
-  if (default_apps->ShouldShowPromo(extensions_service_->GetAppIds())) {
-    dictionary->SetBoolean("showPromo", true);
-    default_apps->DidShowPromo();
-    promo_active_ = true;
-  } else {
-    dictionary->SetBoolean("showPromo", false);
-    promo_active_ = false;
-  }
-
   bool showLauncher =
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAppLauncher);
   dictionary->SetBoolean("showLauncher", showLauncher);
@@ -205,6 +195,25 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
 void AppLauncherHandler::HandleGetApps(const ListValue* args) {
   DictionaryValue dictionary;
   FillAppDictionary(&dictionary);
+
+  // Tell the client whether to show the promo for this view. We don't do this
+  // in the case of PREF_CHANGED because:
+  //
+  // a) At that point in time, depending on the pref that changed, it can look
+  //    like the set of apps installed has changed, and we will mark the promo
+  //    expired.
+  // b) Conceptually, it doesn't really make sense to count a
+  //    prefchange-triggered refresh as a promo 'view'.
+  DefaultApps* default_apps = extensions_service_->default_apps();
+  if (default_apps->CheckShouldShowPromo(extensions_service_->GetAppIds())) {
+    dictionary.SetBoolean("showPromo", true);
+    default_apps->DidShowPromo();
+    promo_active_ = true;
+  } else {
+    dictionary.SetBoolean("showPromo", false);
+    promo_active_ = false;
+  }
+
   dom_ui_->CallJavascriptFunction(L"getAppsCallback", dictionary);
 
   // First time we get here we set up the observer so that we can tell update
