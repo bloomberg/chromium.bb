@@ -61,7 +61,7 @@ class DownloadsTest(pyauto.PyUITest):
     os.path.exists(crdownload) and os.remove(crdownload)
 
   def _GetDangerousDownload(self):
-    """Returns the file url for a dangerous download for this OS."""
+    """Returns the file path for a dangerous download for this OS."""
     sub_path = os.path.join(self.DataDir(), 'downloads', 'dangerous')
     if self.IsMac():
       return os.path.join(sub_path, 'invalid-dummy.dmg')
@@ -158,12 +158,10 @@ class DownloadsTest(pyauto.PyUITest):
   def testSaveDangerousFile(self):
     """Verify that we can download and save a dangerous file."""
     file_path = self._GetDangerousDownload()
-    file_url = self.GetFileURLForPath(file_path)
     downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
                                   os.path.basename(file_path))
     self._ClearLocalDownloadState(downloaded_pkg)
-
-    self.DownloadAndWaitForStart(file_url)
+    self._TriggerUnsafeDownload(os.path.basename(file_path))
     self.PerformActionOnDownload(self._GetDownloadId(),
                                  'save_dangerous_download')
     self.WaitForDownloadToComplete(downloaded_pkg)
@@ -176,12 +174,10 @@ class DownloadsTest(pyauto.PyUITest):
   def testDeclineDangerousDownload(self):
     """Verify that we can decline dangerous downloads"""
     file_path = self._GetDangerousDownload()
-    file_url = self.GetFileURLForPath(file_path)
     downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
                                   os.path.basename(file_path))
     self._ClearLocalDownloadState(downloaded_pkg)
-
-    self.DownloadAndWaitForStart(file_url)
+    self._TriggerUnsafeDownload(os.path.basename(file_path))
     self.PerformActionOnDownload(self._GetDownloadId(),
                                  'decline_dangerous_download')
     self.assertFalse(os.path.exists(downloaded_pkg))
@@ -307,14 +303,41 @@ class DownloadsTest(pyauto.PyUITest):
                                   os.path.join(temp_dir, filename)))
       os.path.exists(downloaded_file) and os.remove(downloaded_file)
 
+  def _TriggerUnsafeDownload(self, filename, tab_index=0, windex=0):
+    """Trigger download of an unsafe/dangerous filetype.
+
+    Files explictly requested by the user (like navigating to a package, or
+    clicking on a link) aren't marked unsafe.
+    Only the ones where the user didn't directly initiate a download are
+    marked unsafe.
+
+    Navigates to download-dangerous.html which triggers the download.
+    Waits until the download starts.
+
+    Args:
+      filename: the name of the file to trigger the download.
+                This should exist in the 'dangerous' directory.
+      tab_index: tab index. Default 0.
+      windex: window index. Default 0.
+    """
+    dangerous_dir = os.path.join(
+        self.DataDir(), 'downloads', 'dangerous')
+    assert os.path.isfile(os.path.join(dangerous_dir, filename))
+    file_url = self.GetFileURLForDataPath(os.path.join(
+        dangerous_dir, 'download-dangerous.html')) + '?' + filename
+    num_downloads = len(self.GetDownloadsInfo().Downloads())
+    self.NavigateToURL(file_url, windex, tab_index)
+    # It might take a while for the download to kick in, hold on until then.
+    self.assertTrue(self.WaitUntil(
+        lambda: len(self.GetDownloadsInfo().Downloads()) == num_downloads + 1))
+
   def testNoUnsafeDownloadsOnRestart(self):
     """Verify that unsafe file should not show up on session restart."""
     file_path = self._GetDangerousDownload()
-    file_url = self.GetFileURLForPath(file_path)
     downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
                                   os.path.basename(file_path))
     self._ClearLocalDownloadState(downloaded_pkg)
-    self.DownloadAndWaitForStart(file_url)
+    self._TriggerUnsafeDownload(os.path.basename(file_path))
     self.assertTrue(self.IsDownloadShelfVisible())
     # Restart the browser and assert that the download was removed.
     self.RestartBrowser(clear_profile=False)

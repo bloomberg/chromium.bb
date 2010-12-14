@@ -80,9 +80,6 @@
     # crbug.com/50481, crbug.com/54942
     '-downloads.DownloadsTest.testZip',
     '-downloads.DownloadsTest.testRemoveDownload',
-    # Unsafe downloads tests broken. crbug.com/66081
-    '-downloads.DownloadsTest.testDeclineDangerousDownload',
-    '-downloads.DownloadsTest.testNoUnsafeDownloadsOnRestart',
     '-prefs.PrefsTest.testDownloadDirPref',
     # crbug.com/64269
     '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
@@ -95,10 +92,6 @@
     # codesign tests should run *after* signing. crbug.com/50481
     '-codesign',
     '-content.ContentTest.testThreeWindows',  # crbug.com/47457
-    '-downloads.DownloadsTest.testSaveDangerousFile',  # crbug.com/57875
-    # Unsafe downloads tests broken. crbug.com/66081
-    '-downloads.DownloadsTest.testDeclineDangerousDownload',
-    '-downloads.DownloadsTest.testNoUnsafeDownloadsOnRestart',
   ],
 
   'linux': [  # linux != chromeos
@@ -107,10 +100,6 @@
     '-content.ContentTest.testThreeWindows',  # crbug.com/47457
     # crbug.com/64664
     '-databases.DatabasesTest.testReloadActiveTab',
-    # Unsafe downloads tests broken. crbug.com/66081
-    '-downloads.DownloadsTest.testDeclineDangerousDownload',
-    '-downloads.DownloadsTest.testNoUnsafeDownloadsOnRestart',
-    '-downloads.DownloadsTest.testSaveDangerousFile',
     # crbug.com/64269
     '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
   ],
@@ -148,8 +137,5 @@
     '-crash_reporter.CrashReporterTest.testRendererCrash',
     # crbug.com/64269
     '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
-    # Unsafe downloads tests broken. crbug.com/66081
-    '-downloads.DownloadsTest.testDeclineDangerousDownload',
-    '-downloads.DownloadsTest.testSaveDangerousFile',
   ],
 }
