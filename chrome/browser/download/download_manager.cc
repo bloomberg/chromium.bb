@@ -80,7 +80,7 @@ void DownloadManager::Shutdown() {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(file_manager_,
                           &DownloadFileManager::OnDownloadManagerShutdown,
-                          this));
+                          make_scoped_refptr(this)));
   }
 
   AssertContainersConsistent();
@@ -448,7 +448,8 @@ void DownloadManager::CreateDownloadItem(DownloadCreateInfo* info,
         BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(
             file_manager_, &DownloadFileManager::OnFinalDownloadName,
-            download->id(), target_path, !info->is_dangerous, this));
+            download->id(), target_path, !info->is_dangerous,
+            make_scoped_refptr(this)));
   } else {
     // The download hasn't finished and it is a safe download.  We need to
     // rename it to its intermediate '.crdownload' path.
@@ -457,7 +458,7 @@ void DownloadManager::CreateDownloadItem(DownloadCreateInfo* info,
         BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(
             file_manager_, &DownloadFileManager::OnIntermediateDownloadName,
-            download->id(), download_path, this));
+            download->id(), download_path, make_scoped_refptr(this)));
     download->Rename(download_path);
   }
 
