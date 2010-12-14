@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
@@ -126,6 +127,10 @@ class RenderViewHost : public RenderWidgetHost {
   // Returns true if the RenderView is active and has not crashed. Virtual
   // because it is overridden by TestRenderViewHost.
   virtual bool IsRenderViewLive() const;
+
+  base::TerminationStatus render_view_termination_status() const {
+    return render_view_termination_status_;
+  }
 
   // Send the renderer process the current preferences supplied by the
   // RenderViewHostDelegate.
@@ -550,7 +555,7 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgShowFullscreenWidget(int route_id);
   void OnMsgRunModal(IPC::Message* reply_msg);
   void OnMsgRenderViewReady();
-  void OnMsgRenderViewGone();
+  void OnMsgRenderViewGone(int status, int error_code);
   void OnMsgNavigate(const IPC::Message& msg);
   void OnMsgUpdateState(int32 page_id,
                         const std::string& state);
@@ -818,6 +823,9 @@ class RenderViewHost : public RenderWidgetHost {
 
   // The most recently received accessibility tree - for unit testing only.
   webkit_glue::WebAccessibility accessibility_tree_;
+
+  // The termination status of the last render view that terminated.
+  base::TerminationStatus render_view_termination_status_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHost);
 };

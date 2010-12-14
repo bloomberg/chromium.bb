@@ -91,7 +91,8 @@ const string16& BalloonHost::GetSource() const {
 
 WebPreferences BalloonHost::GetWebkitPrefs() {
   WebPreferences web_prefs =
-      RenderViewHostDelegateHelper::GetWebkitPrefs(GetProfile(), enable_dom_ui_);
+      RenderViewHostDelegateHelper::GetWebkitPrefs(GetProfile(),
+                                                   enable_dom_ui_);
   web_prefs.allow_scripts_to_close_windows = true;
   return web_prefs;
 }
@@ -132,7 +133,9 @@ void BalloonHost::RenderViewReady(RenderViewHost* render_view_host) {
       Source<BalloonHost>(this), NotificationService::NoDetails());
 }
 
-void BalloonHost::RenderViewGone(RenderViewHost* render_view_host) {
+void BalloonHost::RenderViewGone(RenderViewHost* render_view_host,
+                                 base::TerminationStatus status,
+                                 int error_code) {
   Close(render_view_host);
 }
 

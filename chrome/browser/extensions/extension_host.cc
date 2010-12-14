@@ -288,7 +288,9 @@ void ExtensionHost::ClearInspectorSettings() {
   RenderViewHostDelegateHelper::ClearInspectorSettings(profile());
 }
 
-void ExtensionHost::RenderViewGone(RenderViewHost* render_view_host) {
+void ExtensionHost::RenderViewGone(RenderViewHost* render_view_host,
+                                   base::TerminationStatus status,
+                                   int error_code) {
   // During browser shutdown, we may use sudden termination on an extension
   // process, so it is expected to lose our connection to the render view.
   // Do nothing.

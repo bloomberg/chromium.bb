@@ -140,7 +140,8 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
       session_storage_namespace_(session_storage),
       is_extension_process_(false),
       autofill_query_id_(0),
-      save_accessibility_tree_for_testing_(false) {
+      save_accessibility_tree_for_testing_(false),
+      render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING) {
   if (!session_storage_namespace_) {
     session_storage_namespace_ =
         new SessionStorageNamespace(process()->profile());
@@ -998,15 +999,23 @@ void RenderViewHost::OnMsgRunModal(IPC::Message* reply_msg) {
 }
 
 void RenderViewHost::OnMsgRenderViewReady() {
+  render_view_termination_status_ = base::TERMINATION_STATUS_STILL_RUNNING;
   WasResized();
   delegate_->RenderViewReady(this);
 }
 
-void RenderViewHost::OnMsgRenderViewGone() {
-  // Our base class RenderWidgetHost needs to reset some stuff.
-  RendererExited();
+void RenderViewHost::OnMsgRenderViewGone(int status, int exit_code) {
+  // Keep the termination status so we can get at it later when we
+  // need to know why it died.
+  render_view_termination_status_ =
+      static_cast<base::TerminationStatus>(status);
 
-  delegate_->RenderViewGone(this);
+  // Our base class RenderWidgetHost needs to reset some stuff.
+  RendererExited(render_view_termination_status_, exit_code);
+
+  delegate_->RenderViewGone(this,
+                            static_cast<base::TerminationStatus>(status),
+                            exit_code);
 }
 
 // Called when the renderer navigates.  For every frame loaded, we'll get this

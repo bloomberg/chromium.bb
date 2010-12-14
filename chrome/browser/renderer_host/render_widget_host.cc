@@ -643,7 +643,8 @@ void RenderWidgetHost::ForwardTouchEvent(
 }
 #endif
 
-void RenderWidgetHost::RendererExited() {
+void RenderWidgetHost::RendererExited(base::TerminationStatus status,
+                                      int exit_code) {
   // Clearing this flag causes us to re-create the renderer when recovering
   // from a crashed renderer.
   renderer_initialized_ = false;
@@ -671,7 +672,7 @@ void RenderWidgetHost::RendererExited() {
   is_accelerated_compositing_active_ = false;
 
   if (view_) {
-    view_->RenderViewGone();
+    view_->RenderViewGone(status, exit_code);
     view_ = NULL;  // The View should be deleted by RenderViewGone.
   }
 
@@ -777,7 +778,7 @@ void RenderWidgetHost::OnMsgRenderViewReady() {
   WasResized();
 }
 
-void RenderWidgetHost::OnMsgRenderViewGone() {
+void RenderWidgetHost::OnMsgRenderViewGone(int status, int exit_code) {
   // TODO(evanm): This synchronously ends up calling "delete this".
   // Is that really what we want in response to this message?  I'm matching
   // previous behavior of the code here.

@@ -308,8 +308,14 @@ class TabContents : public PageNavigator,
 
   // Indicates whether this tab should be considered crashed. The setter will
   // also notify the delegate when the flag is changed.
-  bool is_crashed() const { return is_crashed_; }
-  void SetIsCrashed(bool state);
+  bool is_crashed() const {
+    return (crashed_status_ == base::TERMINATION_STATUS_PROCESS_CRASHED ||
+            crashed_status_ == base::TERMINATION_STATUS_ABNORMAL_TERMINATION ||
+            crashed_status_ == base::TERMINATION_STATUS_PROCESS_WAS_KILLED);
+  }
+  base::TerminationStatus crashed_status() const { return crashed_status_; }
+  int crashed_error_code() const { return crashed_error_code_; }
+  void SetIsCrashed(base::TerminationStatus status, int error_code);
 
   // Call this after updating a page action to notify clients about the changes.
   void PageActionStateChanged();
@@ -958,7 +964,9 @@ class TabContents : public PageNavigator,
   virtual int GetBrowserWindowID() const;
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
   virtual void RenderViewReady(RenderViewHost* render_view_host);
-  virtual void RenderViewGone(RenderViewHost* render_view_host);
+  virtual void RenderViewGone(RenderViewHost* render_view_host,
+                              base::TerminationStatus status,
+                              int error_code);
   virtual void RenderViewDeleted(RenderViewHost* render_view_host);
   virtual void DidNavigate(RenderViewHost* render_view_host,
                            const ViewHostMsg_FrameNavigate_Params& params);
@@ -1146,7 +1154,8 @@ class TabContents : public PageNavigator,
   bool is_loading_;
 
   // Indicates if the tab is considered crashed.
-  bool is_crashed_;
+  base::TerminationStatus crashed_status_;
+  int crashed_error_code_;
 
   // See waiting_for_response() above.
   bool waiting_for_response_;

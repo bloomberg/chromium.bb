@@ -131,7 +131,8 @@ RenderWidgetHostViewViews::RenderWidgetHostViewViews(RenderWidgetHost* host)
 }
 
 RenderWidgetHostViewViews::~RenderWidgetHostViewViews() {
-  RenderViewGone();
+  RenderViewGone(base::TERMINATION_STATUS_NORMAL_TERMINATION,
+                 ResultCodes::NORMAL_EXIT);
 }
 
 void RenderWidgetHostViewViews::InitAsChild() {
@@ -286,7 +287,8 @@ void RenderWidgetHostViewViews::DidUpdateBackingStore(
   }
 }
 
-void RenderWidgetHostViewViews::RenderViewGone() {
+void RenderWidgetHostViewViews::RenderViewGone(base::TerminationStatus status,
+                                               int error_code) {
   GetRenderWidgetHost()->ViewDestroyed();
   Destroy();
 }

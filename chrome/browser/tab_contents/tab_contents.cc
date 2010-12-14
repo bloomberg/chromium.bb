@@ -336,7 +336,8 @@ TabContents::TabContents(Profile* profile,
       bookmark_drag_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(fav_icon_helper_(this)),
       is_loading_(false),
-      is_crashed_(false),
+      crashed_status_(base::TERMINATION_STATUS_STILL_RUNNING),
+      crashed_error_code_(0),
       waiting_for_response_(false),
       max_page_id_(-1),
       current_load_start_(),
@@ -767,11 +768,12 @@ void TabContents::RemoveNavigationObserver(WebNavigationObserver* observer) {
   web_navigation_observers_.RemoveObserver(observer);
 }
 
-void TabContents::SetIsCrashed(bool state) {
-  if (state == is_crashed_)
+void TabContents::SetIsCrashed(base::TerminationStatus status, int error_code) {
+  if (status == crashed_status_)
     return;
 
-  is_crashed_ = state;
+  crashed_status_ = status;
+  crashed_error_code_ = error_code;
   NotifyNavigationStateChanged(INVALIDATE_TAB);
 }
 
@@ -2423,7 +2425,7 @@ void TabContents::RenderViewReady(RenderViewHost* rvh) {
 
   NotifyConnected();
   bool was_crashed = is_crashed();
-  SetIsCrashed(false);
+  SetIsCrashed(base::TERMINATION_STATUS_STILL_RUNNING, 0);
 
   // Restore the focus to the tab (otherwise the focus will be on the top
   // window).
@@ -2433,7 +2435,9 @@ void TabContents::RenderViewReady(RenderViewHost* rvh) {
   }
 }
 
-void TabContents::RenderViewGone(RenderViewHost* rvh) {
+void TabContents::RenderViewGone(RenderViewHost* rvh,
+                                 base::TerminationStatus status,
+                                 int error_code) {
   // Ask the print preview if this renderer was valuable.
   if (!printing_->OnRenderViewGone(rvh))
     return;
@@ -2444,7 +2448,7 @@ void TabContents::RenderViewGone(RenderViewHost* rvh) {
 
   SetIsLoading(false, NULL);
   NotifyDisconnected();
-  SetIsCrashed(true);
+  SetIsCrashed(status, error_code);
 
   // Remove all infobars.
   for (int i = infobar_delegate_count() - 1; i >=0 ; --i)
@@ -3087,7 +3091,8 @@ void TabContents::DidStartLoadingFromRenderManager(
 
 void TabContents::RenderViewGoneFromRenderManager(
     RenderViewHost* render_view_host) {
-  RenderViewGone(render_view_host);
+  DCHECK(crashed_status_ != base::TERMINATION_STATUS_STILL_RUNNING);
+  RenderViewGone(render_view_host, crashed_status_, crashed_error_code_);
 }
 
 void TabContents::UpdateRenderViewSizeForRenderManager() {

@@ -495,12 +495,12 @@ void GpuProcessHost::OnChildDied() {
   BrowserChildProcessHost::OnChildDied();
 }
 
-void GpuProcessHost::OnProcessCrashed() {
+void GpuProcessHost::OnProcessCrashed(int exit_code) {
   if (++g_gpu_crash_count >= kGpuMaxCrashCount) {
     // The gpu process is too unstable to use. Disable it for current session.
     RenderViewHostDelegateHelper::set_gpu_enabled(false);
   }
-  BrowserChildProcessHost::OnProcessCrashed();
+  BrowserChildProcessHost::OnProcessCrashed(exit_code);
 }
 
 bool GpuProcessHost::CanLaunchGpuProcess() const {

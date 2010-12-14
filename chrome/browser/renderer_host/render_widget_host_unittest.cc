@@ -397,7 +397,7 @@ TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
   // resize ack logic is cleared.  Must clear the view first so it doesn't get
   // deleted.
   host_->set_view(NULL);
-  host_->RendererExited();
+  host_->RendererExited(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
   EXPECT_FALSE(host_->resize_ack_pending_);
   EXPECT_EQ(gfx::Size(), host_->in_flight_size_);
 

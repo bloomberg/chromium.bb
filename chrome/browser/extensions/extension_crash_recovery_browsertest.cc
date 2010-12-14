@@ -14,6 +14,7 @@
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/result_codes.h"
 #include "chrome/test/ui_test_utils.h"
 
 class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
@@ -61,8 +62,7 @@ class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
 
     RenderProcessHost* extension_rph =
         extension_host->render_view_host()->process();
-    base::KillProcess(extension_rph->GetHandle(),
-                      base::PROCESS_END_KILLED_BY_USER, false);
+    base::KillProcess(extension_rph->GetHandle(), ResultCodes::KILLED, false);
     ASSERT_TRUE(WaitForExtensionCrash(extension_id));
     ASSERT_FALSE(
         GetExtensionProcessManager()->GetBackgroundHostForExtension(extension));

@@ -26,6 +26,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/task_manager/task_manager_resource_providers.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/result_codes.h"
 #include "chrome/common/url_constants.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
@@ -944,7 +945,7 @@ void TaskManager::KillProcess(int index) {
   base::ProcessHandle process = model_->GetResourceProcessHandle(index);
   DCHECK(process);
   if (process != base::GetCurrentProcessHandle())
-    base::KillProcess(process, base::PROCESS_END_KILLED_BY_USER, false);
+    base::KillProcess(process, ResultCodes::KILLED, false);
 }
 
 void TaskManager::ActivateProcess(int index) {

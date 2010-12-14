@@ -606,11 +606,13 @@ void MetricsService::Observe(NotificationType type,
       LogLoadStarted();
       break;
 
-    case NotificationType::RENDERER_PROCESS_CLOSED:
-      {
+    case NotificationType::RENDERER_PROCESS_CLOSED: {
         RenderProcessHost::RendererClosedDetails* process_details =
             Details<RenderProcessHost::RendererClosedDetails>(details).ptr();
-        if (process_details->did_crash) {
+        if (process_details->status ==
+            base::TERMINATION_STATUS_PROCESS_CRASHED ||
+            process_details->status ==
+            base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
           if (process_details->was_extension_renderer) {
             LogExtensionRendererCrash();
           } else {

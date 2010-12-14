@@ -148,7 +148,7 @@ IndexedDBKeyUtilityClient::Client::Client(IndexedDBKeyUtilityClient* parent)
     : parent_(parent) {
 }
 
-void IndexedDBKeyUtilityClient::Client::OnProcessCrashed() {
+void IndexedDBKeyUtilityClient::Client::OnProcessCrashed(int exit_code) {
   if (parent_->state_ == STATE_CREATING_KEYS)
     parent_->FinishCreatingKeys();
 }

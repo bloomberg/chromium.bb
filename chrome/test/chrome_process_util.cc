@@ -27,7 +27,7 @@ void TerminateAllChromeProcesses(base::ProcessId browser_pid) {
       continue;
     }
 
-    base::KillProcess(handle, ResultCodes::TASKMAN_KILL, true);
+    base::KillProcess(handle, ResultCodes::KILLED, true);
     base::CloseProcessHandle(handle);
   }
 }
@@ -117,4 +117,3 @@ ChromeTestProcessMetrics::ChromeTestProcessMetrics(
 #endif
   process_handle_ = process;
 }
-
