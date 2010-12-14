@@ -73,20 +73,14 @@ class TypedUrlModelAssociator
   // than the permanent tagged nodes.
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
 
-  virtual void AbortAssociation() {
-    // TODO(zork): Implement this.
-  }
+  virtual void AbortAssociation();
 
   // Not implemented.
-  virtual const std::string* GetChromeNodeFromSyncId(int64 sync_id) {
-    return NULL;
-  }
+  virtual const std::string* GetChromeNodeFromSyncId(int64 sync_id);
 
   // Not implemented.
   virtual bool InitSyncNodeFromChromeId(const std::string& node_id,
-                                        sync_api::BaseNode* sync_node) {
-    return false;
-  }
+                                        sync_api::BaseNode* sync_node);
 
   // Returns the sync id for the given typed_url name, or sync_api::kInvalidId
   // if the typed_url name is not associated to any sync id.

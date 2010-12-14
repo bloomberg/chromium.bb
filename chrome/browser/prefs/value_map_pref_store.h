@@ -17,8 +17,8 @@
 // storing the preference values.
 class ValueMapPrefStore : public PrefStore {
  public:
-  ValueMapPrefStore() {}
-  virtual ~ValueMapPrefStore() {}
+  ValueMapPrefStore();
+  virtual ~ValueMapPrefStore();
 
   // PrefStore overrides:
   virtual ReadResult GetValue(const std::string& key, Value** value) const;

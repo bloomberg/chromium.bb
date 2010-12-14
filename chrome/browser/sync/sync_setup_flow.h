@@ -72,9 +72,7 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
 
   // HtmlDialogUIDelegate implementation.
   // Get the HTML file path for the content to load in the dialog.
-  virtual GURL GetDialogContentURL() const {
-    return GURL("chrome://syncresources/setup");
-  }
+  virtual GURL GetDialogContentURL() const;
 
   // HtmlDialogUIDelegate implementation.
   virtual void GetDOMMessageHandlers(
@@ -86,27 +84,21 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
 
   // HtmlDialogUIDelegate implementation.
   // Gets the JSON string input to use when opening the dialog.
-  virtual std::string GetDialogArgs() const {
-    return dialog_start_args_;
-  }
+  virtual std::string GetDialogArgs() const;
 
   // HtmlDialogUIDelegate implementation.
   // A callback to notify the delegate that the dialog closed.
   virtual void OnDialogClosed(const std::string& json_retval);
 
   // HtmlDialogUIDelegate implementation.
-  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog) { }
+  virtual void OnCloseContents(TabContents* source, bool* out_close_dialog) {}
 
   // HtmlDialogUIDelegate implementation.
-  virtual std::wstring GetDialogTitle() const {
-    return l10n_util::GetString(IDS_SYNC_MY_BOOKMARKS_LABEL);
-  }
+  virtual std::wstring GetDialogTitle() const;
 
   // HtmlDialogUIDelegate implementation.
-  virtual bool IsDialogModal() const {
-    return false;
-  }
-  virtual bool ShouldShowDialogTitle() const { return true; }
+  virtual bool IsDialogModal() const;
+  virtual bool ShouldShowDialogTitle() const;
 
   void OnUserSubmittedAuth(const std::string& username,
                            const std::string& password,

@@ -40,7 +40,7 @@ class VarObjectClass : public Resource {
   virtual ~VarObjectClass();
 
   // Resource override.
-  virtual VarObjectClass* AsVarObjectClass() { return this; }
+  virtual VarObjectClass* AsVarObjectClass();
 
   const PropertyMap &properties() const { return properties_; }
 

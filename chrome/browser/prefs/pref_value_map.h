@@ -16,7 +16,7 @@ class Value;
 // A generic string to value map used by the PrefStore implementations.
 class PrefValueMap {
  public:
-  PrefValueMap() {}
+  PrefValueMap();
   virtual ~PrefValueMap();
 
   // Gets the value for |key| and stores it in |value|. Ownership remains with

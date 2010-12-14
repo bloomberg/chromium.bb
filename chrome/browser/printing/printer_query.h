@@ -36,12 +36,9 @@ class PrinterQuery : public PrintJobWorkerOwner {
   virtual void GetSettingsDone(const PrintSettings& new_settings,
                                PrintingContext::Result result);
   virtual PrintJobWorker* DetachWorker(PrintJobWorkerOwner* new_owner);
-  virtual MessageLoop* message_loop() {
-    return io_message_loop_;
-  }
-  virtual const PrintSettings& settings() const { return settings_; }
-
-  virtual int cookie() const { return cookie_; }
+  virtual MessageLoop* message_loop();
+  virtual const PrintSettings& settings() const;
+  virtual int cookie() const;
 
   // Initializes the printing context. It is fine to call this function multiple
   // times to reinitialize the settings. |parent_view| parameter's window will

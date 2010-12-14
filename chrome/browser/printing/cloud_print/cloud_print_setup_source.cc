@@ -126,6 +126,10 @@ void CloudPrintSetupSource::StartDataRequest(const std::string& path_raw,
   SendResponse(request_id, html_bytes);
 }
 
+std::string CloudPrintSetupSource::GetMimeType(const std::string& path) const {
+  return "text/html";
+}
+
 std::string CloudPrintSetupSource::GetLocalizedUrl(
     const std::string& url) const {
   GURL original_url(url);

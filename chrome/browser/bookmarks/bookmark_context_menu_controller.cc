@@ -278,6 +278,12 @@ bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
   return true;
 }
 
+bool BookmarkContextMenuController::GetAcceleratorForCommandId(
+    int command_id,
+    menus::Accelerator* accelerator) {
+  return false;
+}
+
 void BookmarkContextMenuController::BookmarkModelChanged() {
   if (delegate_)
     delegate_->CloseMenu();

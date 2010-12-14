@@ -70,6 +70,10 @@ bool AddressField::GetFieldInfo(FieldTypeMap* field_type_map) const {
   return ok;
 }
 
+FormFieldType AddressField::GetFormFieldType() const {
+  return kAddressType;
+}
+
 AddressField* AddressField::Parse(
     std::vector<AutoFillField*>::const_iterator* iter,
     bool is_ecml) {

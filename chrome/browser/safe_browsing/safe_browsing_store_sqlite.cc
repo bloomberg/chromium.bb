@@ -84,6 +84,10 @@ void SafeBrowsingStoreSqlite::Init(const FilePath& filename,
   corruption_callback_.reset(corruption_callback);
 }
 
+bool SafeBrowsingStoreSqlite::BeginChunk() {
+  return true;
+}
+
 bool SafeBrowsingStoreSqlite::GetAddPrefixes(
     std::vector<SBAddPrefix>* add_prefixes) {
   add_prefixes->clear();
@@ -91,6 +95,39 @@ bool SafeBrowsingStoreSqlite::GetAddPrefixes(
   bool ret = ReadAddPrefixes(add_prefixes);
   Close();
   return ret;
+}
+
+bool SafeBrowsingStoreSqlite::WriteAddPrefix(int32 chunk_id, SBPrefix prefix) {
+  const std::vector<SBAddPrefix> prefixes(1, SBAddPrefix(chunk_id, prefix));
+  return WriteAddPrefixes(prefixes);
+}
+
+bool SafeBrowsingStoreSqlite::WriteAddHash(int32 chunk_id,
+                                           base::Time receive_time,
+                                           const SBFullHash& full_hash) {
+  const std::vector<SBAddFullHash>
+      hashes(1, SBAddFullHash(chunk_id, receive_time, full_hash));
+  return WriteAddHashes(hashes);
+}
+
+bool SafeBrowsingStoreSqlite::WriteSubPrefix(int32 chunk_id,
+                                             int32 add_chunk_id,
+                                             SBPrefix prefix) {
+  const std::vector<SBSubPrefix>
+      prefixes(1, SBSubPrefix(chunk_id, add_chunk_id, prefix));
+  return WriteSubPrefixes(prefixes);
+}
+
+bool SafeBrowsingStoreSqlite::WriteSubHash(int32 chunk_id,
+                                           int32 add_chunk_id,
+                                           const SBFullHash& full_hash) {
+  const std::vector<SBSubFullHash>
+      hashes(1, SBSubFullHash(chunk_id, add_chunk_id, full_hash));
+  return WriteSubHashes(hashes);
+}
+
+bool SafeBrowsingStoreSqlite::FinishChunk() {
+  return true;
 }
 
 bool SafeBrowsingStoreSqlite::OnCorruptDatabase() {
@@ -669,4 +706,44 @@ bool SafeBrowsingStoreSqlite::FinishUpdate(
 
 bool SafeBrowsingStoreSqlite::CancelUpdate() {
   return Close();
+}
+
+void SafeBrowsingStoreSqlite::SetAddChunk(int32 chunk_id) {
+  add_chunks_cache_.insert(chunk_id);
+}
+
+bool SafeBrowsingStoreSqlite::CheckAddChunk(int32 chunk_id) {
+  return add_chunks_cache_.count(chunk_id) > 0;
+}
+
+void SafeBrowsingStoreSqlite::GetAddChunks(std::vector<int32>* out) {
+  out->clear();
+  out->insert(out->end(), add_chunks_cache_.begin(), add_chunks_cache_.end());
+}
+
+void SafeBrowsingStoreSqlite::SetSubChunk(int32 chunk_id) {
+  sub_chunks_cache_.insert(chunk_id);
+}
+
+bool SafeBrowsingStoreSqlite::CheckSubChunk(int32 chunk_id) {
+  return sub_chunks_cache_.count(chunk_id) > 0;
+}
+
+void SafeBrowsingStoreSqlite::GetSubChunks(std::vector<int32>* out) {
+  out->clear();
+  out->insert(out->end(), sub_chunks_cache_.begin(), sub_chunks_cache_.end());
+}
+
+void SafeBrowsingStoreSqlite::DeleteAddChunk(int32 chunk_id) {
+  add_del_cache_.insert(chunk_id);
+}
+
+void SafeBrowsingStoreSqlite::DeleteSubChunk(int32 chunk_id) {
+  sub_del_cache_.insert(chunk_id);
+}
+
+// static
+const FilePath SafeBrowsingStoreSqlite::JournalFileForFilename(
+    const FilePath& filename) {
+  return FilePath(filename.value() + FILE_PATH_LITERAL("-journal"));
 }

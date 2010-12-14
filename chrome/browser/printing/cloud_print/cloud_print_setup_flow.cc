@@ -165,17 +165,21 @@ std::string CloudPrintSetupFlow::GetDialogArgs() const {
     return dialog_start_args_;
 }
 
-void  CloudPrintSetupFlow::OnCloseContents(TabContents* source,
-                                         bool* out_close_dialog) {
+void CloudPrintSetupFlow::OnCloseContents(TabContents* source,
+                                          bool* out_close_dialog) {
 }
 
-std::wstring  CloudPrintSetupFlow::GetDialogTitle() const {
+std::wstring CloudPrintSetupFlow::GetDialogTitle() const {
   return l10n_util::GetString(IDS_CLOUD_PRINT_SETUP_DIALOG_TITLE);
 }
 
-bool  CloudPrintSetupFlow::IsDialogModal() const {
+bool CloudPrintSetupFlow::IsDialogModal() const {
   // We are always modeless.
   return false;
+}
+
+bool CloudPrintSetupFlow::ShouldShowDialogTitle() const {
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

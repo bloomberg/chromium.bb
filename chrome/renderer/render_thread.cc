@@ -494,6 +494,14 @@ void RenderThread::WidgetRestored() {
     idle_timer_.Stop();
 }
 
+bool RenderThread::IsExtensionProcess() const {
+  return is_extension_process_;
+}
+
+bool RenderThread::IsIncognitoProcess() const {
+  return is_incognito_process_;
+}
+
 void RenderThread::DoNotSuspendWebKitSharedTimer() {
   suspend_webkit_shared_timer_ = false;
 }

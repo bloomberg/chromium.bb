@@ -9,6 +9,14 @@
 
 namespace media {
 
+bool IdentityBitstreamConverter::Initialize() {
+  return true;
+}
+
+bool IdentityBitstreamConverter::ConvertPacket(AVPacket* packet) {
+  return true;
+}
+
 FFmpegBitstreamConverter::FFmpegBitstreamConverter(
     const std::string& filter_name,
     AVCodecContext* stream_context)

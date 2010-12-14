@@ -33,7 +33,7 @@ class FileBasedPolicyLoader : public AsynchronousPolicyLoader {
   // FileBasedPolicyLoader objects should only be deleted by
   // RefCountedThreadSafe.
   friend class base::RefCountedThreadSafe<AsynchronousPolicyLoader>;
-  virtual ~FileBasedPolicyLoader() {}
+  virtual ~FileBasedPolicyLoader();
 
   const FilePath& config_file_path() { return config_file_path_; }
 

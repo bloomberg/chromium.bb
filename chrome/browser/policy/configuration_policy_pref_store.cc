@@ -348,6 +348,10 @@ PrefStore::ReadResult ConfigurationPolicyPrefStore::GetValue(
   return READ_OK;
 }
 
+DictionaryValue* ConfigurationPolicyPrefStore::prefs() const {
+  return prefs_.get();
+}
+
 void ConfigurationPolicyPrefStore::Apply(ConfigurationPolicyType policy,
                                          Value* value) {
   if (ApplyProxyPolicy(policy, value))

@@ -58,6 +58,18 @@ PrintJobWorker* PrinterQuery::DetachWorker(PrintJobWorkerOwner* new_owner) {
   return worker_.release();
 }
 
+MessageLoop* PrinterQuery::message_loop() {
+  return io_message_loop_;
+}
+
+const PrintSettings& PrinterQuery::settings() const {
+  return settings_;
+}
+
+int PrinterQuery::cookie() const {
+  return cookie_;
+}
+
 void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
                                gfx::NativeView parent_view,
                                int expected_page_count,

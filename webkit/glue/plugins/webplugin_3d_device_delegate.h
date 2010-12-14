@@ -15,71 +15,43 @@ namespace webkit_glue {
 // "regular" plugin delegate while being overridden by the "pepper" one.
 class WebPlugin3DDeviceDelegate {
  public:
-  virtual NPError Device3DQueryCapability(int32 capability, int32* value) {
-    return NPERR_GENERIC_ERROR;
-  }
+  virtual NPError Device3DQueryCapability(int32 capability, int32* value);
   virtual NPError Device3DQueryConfig(const NPDeviceContext3DConfig* request,
-                                      NPDeviceContext3DConfig* obtain) {
-    return NPERR_GENERIC_ERROR;
-  }
+                                      NPDeviceContext3DConfig* obtain);
   virtual NPError Device3DInitializeContext(
       const NPDeviceContext3DConfig* config,
-      NPDeviceContext3D* context) {
-    return NPERR_GENERIC_ERROR;
-  }
+      NPDeviceContext3D* context);
   virtual NPError Device3DSetStateContext(NPDeviceContext3D* context,
                                           int32 state,
-                                          intptr_t value) {
-    return NPERR_GENERIC_ERROR;
-  }
+                                          intptr_t value);
   virtual NPError Device3DGetStateContext(NPDeviceContext3D* context,
                                           int32 state,
-                                          intptr_t* value) {
-    return NPERR_GENERIC_ERROR;
-  }
+                                          intptr_t* value);
   virtual NPError Device3DFlushContext(NPP id,
                                        NPDeviceContext3D* context,
                                        NPDeviceFlushContextCallbackPtr callback,
-                                       void* user_data) {
-    return NPERR_GENERIC_ERROR;
-  }
-  virtual NPError Device3DDestroyContext(NPDeviceContext3D* context) {
-    return NPERR_GENERIC_ERROR;
-  }
+                                       void* user_data);
+  virtual NPError Device3DDestroyContext(NPDeviceContext3D* context);
   virtual NPError Device3DCreateBuffer(NPDeviceContext3D* context,
                                        size_t size,
-                                       int32* id) {
-    return NPERR_GENERIC_ERROR;
-  }
+                                       int32* id);
   virtual NPError Device3DDestroyBuffer(NPDeviceContext3D* context,
-                                        int32 id) {
-    return NPERR_GENERIC_ERROR;
-  }
+                                        int32 id);
   virtual NPError Device3DMapBuffer(NPDeviceContext3D* context,
                                     int32 id,
-                                    NPDeviceBuffer* buffer) {
-    return NPERR_GENERIC_ERROR;
-  }
-  virtual NPError Device3DGetNumConfigs(int32* num_configs) {
-    return NPERR_GENERIC_ERROR;
-  }
+                                    NPDeviceBuffer* buffer);
+  virtual NPError Device3DGetNumConfigs(int32* num_configs);
   virtual NPError Device3DGetConfigAttribs(int32 config,
-                                           int32* attrib_list) {
-    return NPERR_GENERIC_ERROR;
-  }
+                                           int32* attrib_list);
   virtual NPError Device3DCreateContext(int32 config,
                                         const int32* attrib_list,
-                                        NPDeviceContext3D** context) {
-    return NPERR_GENERIC_ERROR;
-  }
+                                        NPDeviceContext3D** context);
   virtual NPError Device3DRegisterCallback(
       NPP id,
       NPDeviceContext* context,
       int32 callback_type,
       NPDeviceGenericCallbackPtr callback,
-      void* callback_data) {
-    return NPERR_GENERIC_ERROR;
-  }
+      void* callback_data);
   virtual NPError Device3DSynchronizeContext(
       NPP id,
       NPDeviceContext3D* context,
@@ -87,9 +59,7 @@ class WebPlugin3DDeviceDelegate {
       const int32* input_attrib_list,
       int32* output_attrib_list,
       NPDeviceSynchronizeContextCallbackPtr callback,
-      void* callback_data) {
-    return NPERR_GENERIC_ERROR;
-  }
+      void* callback_data);
 
  protected:
   WebPlugin3DDeviceDelegate() {}

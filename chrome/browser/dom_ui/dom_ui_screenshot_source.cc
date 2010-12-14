@@ -115,3 +115,9 @@ void DOMUIScreenshotSource::StartDataRequest(const std::string& path,
                                             int request_id) {
   SendResponse(request_id, new RefCountedBytes(GetScreenshot(path)));
 }
+
+std::string DOMUIScreenshotSource::GetMimeType(const std::string&) const {
+  // We need to explicitly return a mime type, otherwise if the user tries to
+  // drag the image they get no extension.
+  return "image/png";
+}

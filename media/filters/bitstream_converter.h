@@ -41,8 +41,8 @@ class IdentityBitstreamConverter : public BitstreamConverter {
   IdentityBitstreamConverter() {}
   virtual ~IdentityBitstreamConverter() {}
 
-  virtual bool Initialize() { return true; }
-  virtual bool ConvertPacket(AVPacket* packet) { return true; }
+  virtual bool Initialize();
+  virtual bool ConvertPacket(AVPacket* packet);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IdentityBitstreamConverter);

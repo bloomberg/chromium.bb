@@ -43,7 +43,7 @@ class TranslateInfoBarBase : public TranslateInfoBarView,
  protected:
   // Sub-classes that want to have the options menu button showing sould
   // override and return true.
-  virtual bool ShowOptionsMenuButton() const { return false; }
+  virtual bool ShowOptionsMenuButton() const;
 
   // Creates a label with the appropriate font and color for the translate
   // infobars.

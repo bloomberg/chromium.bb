@@ -30,9 +30,7 @@ class HistoryUIHTMLSource2 : public ChromeURLDataManager::DataSource {
                                 bool is_off_the_record,
                                 int request_id);
 
-  virtual std::string GetMimeType(const std::string&) const {
-    return "text/html";
-  }
+  virtual std::string GetMimeType(const std::string&) const;
 
  private:
   ~HistoryUIHTMLSource2() {}

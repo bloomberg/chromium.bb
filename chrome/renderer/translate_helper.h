@@ -82,7 +82,7 @@ class TranslateHelper {
 
   // Used in unit-tests. Makes the various tasks be posted immediately so that
   // the tests don't have to wait before checking states.
-  virtual bool DontDelayTasks() { return false; }
+  virtual bool DontDelayTasks();
 
  private:
   // Checks if the current running page translation is finished or errored and

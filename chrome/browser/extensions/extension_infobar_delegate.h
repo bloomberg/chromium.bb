@@ -37,7 +37,7 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
   void set_observer(DelegateObserver* observer) { observer_ = observer; }
 
   // Overridden from InfoBarDelegate:
-  virtual void InfoBarDismissed() { closing_ = true; }
+  virtual void InfoBarDismissed();
   virtual bool EqualsDelegate(InfoBarDelegate* delegate) const;
   virtual void InfoBarClosed();
   virtual InfoBar* CreateInfoBar();

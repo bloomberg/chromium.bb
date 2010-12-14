@@ -95,9 +95,7 @@ class BalloonHost : public RenderViewHostDelegate,
   virtual void Activate() {}
   virtual void Deactivate() {}
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut) {
-    return false;
-  }
+                                      bool* is_keyboard_shortcut);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {}
   virtual void HandleMouseMove() {}
   virtual void HandleMouseDown();

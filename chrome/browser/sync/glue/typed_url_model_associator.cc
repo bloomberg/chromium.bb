@@ -232,6 +232,21 @@ bool TypedUrlModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   return true;
 }
 
+void TypedUrlModelAssociator::AbortAssociation() {
+  // TODO(zork): Implement this.
+}
+
+const std::string* TypedUrlModelAssociator::GetChromeNodeFromSyncId(
+    int64 sync_id) {
+  return NULL;
+}
+
+bool TypedUrlModelAssociator::InitSyncNodeFromChromeId(
+    const std::string& node_id,
+    sync_api::BaseNode* sync_node) {
+  return false;
+}
+
 int64 TypedUrlModelAssociator::GetSyncIdFromChromeId(
     const std::string& typed_url) {
   TypedUrlToSyncIdMap::const_iterator iter = id_map_.find(typed_url);

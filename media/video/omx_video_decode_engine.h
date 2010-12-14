@@ -36,7 +36,7 @@ class OmxVideoDecodeEngine : public VideoDecodeEngine {
   virtual void Seek();
 
   // Subclass can provide a different value.
-  virtual int current_omx_spec_version() const { return 0x00000101; }
+  virtual int current_omx_spec_version() const;
 
  private:
   enum OmxIlState {

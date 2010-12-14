@@ -463,6 +463,10 @@ void InterstitialPage::Proceed() {
   }
 }
 
+std::string InterstitialPage::GetHTMLContents() {
+  return std::string();
+}
+
 void InterstitialPage::DontProceed() {
   DCHECK(action_taken_ != DONT_PROCEED_ACTION);
 
@@ -527,6 +531,10 @@ void InterstitialPage::Focus() {
 
 void InterstitialPage::FocusThroughTabTraversal(bool reverse) {
   render_view_host_->SetInitialFocus(reverse);
+}
+
+ViewType::Type InterstitialPage::GetRenderViewType() const {
+  return ViewType::INTERSTITIAL_PAGE;
 }
 
 void InterstitialPage::Disable() {

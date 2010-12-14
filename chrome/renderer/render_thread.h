@@ -163,8 +163,8 @@ class RenderThread : public RenderThreadBase,
   virtual void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter);
   virtual void WidgetHidden();
   virtual void WidgetRestored();
-  virtual bool IsExtensionProcess() const { return is_extension_process_; }
-  virtual bool IsIncognitoProcess() const { return is_incognito_process_; }
+  virtual bool IsExtensionProcess() const;
+  virtual bool IsIncognitoProcess() const;
 
   // These methods modify how the next message is sent.  Normally, when sending
   // a synchronous message that runs a nested message loop, we need to suspend

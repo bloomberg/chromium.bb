@@ -86,6 +86,14 @@ PrintJobWorker* PrintJob::DetachWorker(PrintJobWorkerOwner* new_owner) {
   return NULL;
 }
 
+MessageLoop* PrintJob::message_loop() {
+  return ui_message_loop_;
+}
+
+const PrintSettings& PrintJob::settings() const {
+  return settings_;
+}
+
 int PrintJob::cookie() const {
   if (!document_.get())
     // Always use an invalid cookie in this case.

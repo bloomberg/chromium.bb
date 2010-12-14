@@ -41,7 +41,7 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
   static void AddUrlHandler();
 
  private:
-  virtual ~URLRequestSlowDownloadJob() { }
+  virtual ~URLRequestSlowDownloadJob();
 
   void GetResponseInfoConst(net::HttpResponseInfo* info) const;
 

@@ -28,6 +28,10 @@ SSLCertErrorHandler::SSLCertErrorHandler(
   ssl_info_.SetCertError(cert_error);
 }
 
+SSLCertErrorHandler* SSLCertErrorHandler::AsSSLCertErrorHandler() {
+  return this;
+}
+
 void SSLCertErrorHandler::OnDispatchFailed() {
   CancelRequest();
 }

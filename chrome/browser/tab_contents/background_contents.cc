@@ -147,6 +147,14 @@ gfx::NativeWindow BackgroundContents::GetMessageBoxRootWindow() {
   return NULL;
 }
 
+TabContents* BackgroundContents::AsTabContents() {
+  return NULL;
+}
+
+ExtensionHost* BackgroundContents::AsExtensionHost() {
+  return NULL;
+}
+
 void BackgroundContents::UpdateInspectorSetting(const std::string& key,
                                          const std::string& value) {
   Profile* profile = render_view_host_->process()->profile();

@@ -84,6 +84,27 @@ void AppDataTypeController::Stop() {
   state_ = NOT_RUNNING;
 }
 
+bool AppDataTypeController::enabled() {
+  return true;
+}
+
+syncable::ModelType AppDataTypeController::type() {
+  return syncable::APPS;
+}
+
+browser_sync::ModelSafeGroup AppDataTypeController::model_safe_group() {
+  return browser_sync::GROUP_UI;
+}
+
+const char* AppDataTypeController::name() const {
+  // For logging only.
+  return "app";
+}
+
+DataTypeController::State AppDataTypeController::state() {
+  return state_;
+}
+
 void AppDataTypeController::OnUnrecoverableError(
     const tracked_objects::Location& from_here,
     const std::string& message) {

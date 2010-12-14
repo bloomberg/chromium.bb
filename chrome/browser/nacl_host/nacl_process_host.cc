@@ -292,6 +292,10 @@ URLRequestContext* NaClProcessHost::GetRequestContext(
   return NULL;
 }
 
+bool NaClProcessHost::CanShutdown() {
+  return true;
+}
+
 #if defined(OS_WIN)
 // TODO(gregoryd): invoke CheckIsWow64 only once, not for each NaClProcessHost
 typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS) (HANDLE, PBOOL);

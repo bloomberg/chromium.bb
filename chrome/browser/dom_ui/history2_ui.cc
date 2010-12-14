@@ -107,6 +107,10 @@ void HistoryUIHTMLSource2::StartDataRequest(const std::string& path,
   SendResponse(request_id, html_bytes);
 }
 
+std::string HistoryUIHTMLSource2::GetMimeType(const std::string&) const {
+  return "text/html";
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // HistoryHandler

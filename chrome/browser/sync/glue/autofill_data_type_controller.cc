@@ -148,6 +148,28 @@ void AutofillDataTypeController::Stop() {
   }
 }
 
+bool AutofillDataTypeController::enabled() {
+  return true;
+}
+
+syncable::ModelType AutofillDataTypeController::type() {
+  return syncable::AUTOFILL;
+}
+
+browser_sync::ModelSafeGroup AutofillDataTypeController::model_safe_group() {
+  return browser_sync::GROUP_DB;
+}
+
+const char* AutofillDataTypeController::name() const {
+  // For logging only.
+  return "autofill";
+}
+
+DataTypeController::State AutofillDataTypeController::state() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return state_;
+}
+
 void AutofillDataTypeController::StartImpl() {
   VLOG(1) << "Autofill data type controller StartImpl called.";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));

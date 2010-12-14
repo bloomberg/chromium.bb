@@ -142,6 +142,8 @@ void URLRequestSlowDownloadJob::GetResponseInfo(net::HttpResponseInfo* info) {
   GetResponseInfoConst(info);
 }
 
+URLRequestSlowDownloadJob::~URLRequestSlowDownloadJob() {}
+
 // Private const version.
 void URLRequestSlowDownloadJob::GetResponseInfoConst(
     net::HttpResponseInfo* info) const {

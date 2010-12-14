@@ -93,6 +93,10 @@ void HtmlDialogGtk::OnDialogClosed(const std::string& json_retval) {
   delete this;
 }
 
+bool HtmlDialogGtk::ShouldShowDialogTitle() const {
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TabContentsDelegate implementation:
 

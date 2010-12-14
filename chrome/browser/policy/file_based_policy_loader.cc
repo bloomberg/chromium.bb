@@ -81,6 +81,8 @@ void FileBasedPolicyLoader::OnError() {
              << " failed.";
 }
 
+FileBasedPolicyLoader::~FileBasedPolicyLoader() {}
+
 void FileBasedPolicyLoader::Reload() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 

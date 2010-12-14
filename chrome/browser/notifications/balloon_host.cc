@@ -193,6 +193,11 @@ void BalloonHost::ShowCreatedWindow(int route_id,
   browser->AddTabContents(contents, disposition, initial_pos, user_gesture);
 }
 
+bool BalloonHost::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                         bool* is_keyboard_shortcut) {
+  return false;
+}
+
 void BalloonHost::UpdatePreferredSize(const gfx::Size& new_size) {
   balloon_->SetContentPreferredSize(new_size);
 }

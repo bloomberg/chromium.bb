@@ -28,6 +28,9 @@ void AsynchronousPolicyLoader::SetProvider(
   provider_ = provider;
 }
 
+AsynchronousPolicyLoader::~AsynchronousPolicyLoader() {
+}
+
 // Manages the life cycle of a new policy map during until it's life cycle is
 // taken over by the policy loader.
 class UpdatePolicyTask : public Task {

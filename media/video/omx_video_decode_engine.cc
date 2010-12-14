@@ -276,6 +276,10 @@ void OmxVideoDecodeEngine::Seek() {
   event_handler_->OnSeekComplete();
 }
 
+int OmxVideoDecodeEngine::current_omx_spec_version() const {
+  return 0x00000101;
+}
+
 VideoFrame::Format OmxVideoDecodeEngine::GetSurfaceFormat() const {
   // TODO(jiesun): Both OmxHeaderType and EGLImage surface type could have
   // different surface formats.

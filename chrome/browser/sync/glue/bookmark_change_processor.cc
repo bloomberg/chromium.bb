@@ -128,6 +128,10 @@ void BookmarkChangeProcessor::RemoveSyncNodeHierarchy(
   DCHECK(index_stack.empty());  // Nothing should be left on the stack.
 }
 
+void BookmarkChangeProcessor::Loaded(BookmarkModel* model) {
+  NOTREACHED();
+}
+
 void BookmarkChangeProcessor::BookmarkModelBeingDeleted(
     BookmarkModel* model) {
   DCHECK(!running()) << "BookmarkModel deleted while ChangeProcessor running.";

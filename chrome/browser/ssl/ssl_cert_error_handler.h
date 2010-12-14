@@ -29,7 +29,7 @@ class SSLCertErrorHandler : public SSLErrorHandler {
                       int cert_error,
                       net::X509Certificate* cert);
 
-  virtual SSLCertErrorHandler* AsSSLCertErrorHandler() { return this; }
+  virtual SSLCertErrorHandler* AsSSLCertErrorHandler();
 
   // These accessors are available on either thread
   const net::SSLInfo& ssl_info() const { return ssl_info_; }

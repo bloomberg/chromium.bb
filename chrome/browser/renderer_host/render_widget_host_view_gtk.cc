@@ -531,6 +531,10 @@ void RenderWidgetHostViewGtk::InitAsFullscreen(
   DoInitAsPopup(parent_host_view, GTK_WINDOW_TOPLEVEL, gfx::Rect(), true);
 }
 
+RenderWidgetHost* RenderWidgetHostViewGtk::GetRenderWidgetHost() const {
+  return host_;
+}
+
 void RenderWidgetHostViewGtk::DidBecomeSelected() {
   if (!is_hidden_)
     return;

@@ -648,12 +648,8 @@ class AutomationProviderBookmarkModelObserver : BookmarkModelObserver {
                                           BookmarkModel* model);
   virtual ~AutomationProviderBookmarkModelObserver();
 
-  virtual void Loaded(BookmarkModel* model) {
-    ReplyAndDelete(true);
-  }
-  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) {
-    ReplyAndDelete(false);
-  }
+  virtual void Loaded(BookmarkModel* model);
+  virtual void BookmarkModelBeingDeleted(BookmarkModel* model);
   virtual void BookmarkNodeMoved(BookmarkModel* model,
                                  const BookmarkNode* old_parent,
                                  int old_index,

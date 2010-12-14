@@ -40,7 +40,7 @@ class DownloadShelfGtk : public DownloadShelf,
   virtual bool IsClosing() const;
   virtual void Show();
   virtual void Close();
-  virtual Browser* browser() const { return browser_; }
+  virtual Browser* browser() const;
 
   // SlideAnimatorGtk::Delegate implementation.
   virtual void Closed();

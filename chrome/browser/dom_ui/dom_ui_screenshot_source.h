@@ -27,11 +27,7 @@ class DOMUIScreenshotSource : public ChromeURLDataManager::DataSource {
                                 bool is_off_the_record,
                                 int request_id);
 
-  virtual std::string GetMimeType(const std::string&) const {
-    // We need to explicitly return a mime type, otherwise if the user tries to
-    // drag the image they get no extension.
-    return "image/png";
-  }
+  virtual std::string GetMimeType(const std::string&) const;
 
   std::vector<unsigned char> GetScreenshot(const std::string& path);
 

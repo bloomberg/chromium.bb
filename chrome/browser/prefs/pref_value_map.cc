@@ -9,6 +9,8 @@
 #include "base/stl_util-inl.h"
 #include "base/values.h"
 
+PrefValueMap::PrefValueMap() {}
+
 PrefValueMap::~PrefValueMap() {
   Clear();
 }

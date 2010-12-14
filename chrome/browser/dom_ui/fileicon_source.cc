@@ -59,6 +59,11 @@ void FileIconSource::StartDataRequest(const std::string& path,
   }
 }
 
+std::string FileIconSource::GetMimeType(const std::string&) const {
+  // Rely on image decoder inferring the correct type.
+  return std::string();
+}
+
 void FileIconSource::OnFileIconDataAvailable(IconManager::Handle handle,
                                              SkBitmap* icon) {
   IconManager* im = g_browser_process->icon_manager();

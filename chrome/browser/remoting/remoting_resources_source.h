@@ -13,9 +13,7 @@ class RemotingResourcesSource : public ChromeURLDataManager::DataSource {
                                 bool is_off_the_record,
                                 int request_id);
 
-  virtual std::string GetMimeType(const std::string& path) const {
-    return "text/html";
-  }
+  virtual std::string GetMimeType(const std::string& path) const;
 
   static const char kInvalidPasswordHelpUrl[];
   static const char kCanNotAccessAccountUrl[];

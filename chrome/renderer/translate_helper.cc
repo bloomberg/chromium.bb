@@ -229,6 +229,10 @@ std::string TranslateHelper::GetOriginalPageLanguage() {
   return lang;
 }
 
+bool TranslateHelper::DontDelayTasks() {
+  return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TranslateHelper, private:
 //

@@ -345,6 +345,10 @@ void SyncSetupFlow::GetDialogSize(gfx::Size* size) const {
 #endif
 }
 
+std::string SyncSetupFlow::GetDialogArgs() const {
+  return dialog_start_args_;
+}
+
 // A callback to notify the delegate that the dialog closed.
 void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
   DCHECK(json_retval.empty());
@@ -383,6 +387,18 @@ void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
 
   service_->OnUserCancelledDialog();
   delete this;
+}
+
+std::wstring SyncSetupFlow::GetDialogTitle() const {
+  return l10n_util::GetString(IDS_SYNC_MY_BOOKMARKS_LABEL);
+}
+
+bool SyncSetupFlow::IsDialogModal() const {
+  return false;
+}
+
+bool SyncSetupFlow::ShouldShowDialogTitle() const {
+  return true;
 }
 
 // static
@@ -594,6 +610,10 @@ void SyncSetupFlow::Focus() {
   // implementation of HTML dialogs as described by akalin below.
   NOTIMPLEMENTED();
 #endif  // defined(OS_MACOSX)
+}
+
+GURL SyncSetupFlow::GetDialogContentURL() const {
+  return GURL("chrome://syncresources/setup");
 }
 
 // static

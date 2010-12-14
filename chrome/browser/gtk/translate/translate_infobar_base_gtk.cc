@@ -124,6 +124,10 @@ void TranslateInfoBarBase::AnimationProgressed(const Animation* animation) {
   gtk_widget_queue_draw(widget());
 }
 
+bool TranslateInfoBarBase::ShowOptionsMenuButton() const {
+  return false;
+}
+
 GtkWidget* TranslateInfoBarBase::CreateLabel(const std::string& text) {
   GtkWidget* label = gtk_label_new(text.c_str());
   gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gtk_util::kGdkBlack);

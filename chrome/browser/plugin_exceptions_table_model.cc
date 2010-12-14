@@ -102,6 +102,10 @@ std::wstring PluginExceptionsTableModel::GetText(int row, int column_id) {
   return std::wstring();
 }
 
+bool PluginExceptionsTableModel::HasGroups() {
+  return true;
+}
+
 void PluginExceptionsTableModel::SetObserver(TableModelObserver* observer) {
   observer_ = observer;
 }

@@ -331,6 +331,14 @@ void FFmpegVideoDecodeEngine::Seek() {
   event_handler_->OnSeekComplete();
 }
 
+AVCodecContext* FFmpegVideoDecodeEngine::codec_context() const {
+  return codec_context_;
+}
+
+void FFmpegVideoDecodeEngine::SetCodecContextForTest(AVCodecContext* context) {
+  codec_context_ = context;
+}
+
 void FFmpegVideoDecodeEngine::ReadInput() {
   DCHECK_EQ(output_eos_reached_, false);
   pending_input_buffers_++;

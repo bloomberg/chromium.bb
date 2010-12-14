@@ -52,7 +52,7 @@ class NaClProcessHost : public BrowserChildProcessHost {
       uint32 request_id,
       const ViewHostMsg_Resource_Request& request_data);
 
-  virtual bool CanShutdown() { return true; }
+  virtual bool CanShutdown();
 
 #if defined(OS_WIN)
   // Check whether the browser process is running on WOW64 - Windows only

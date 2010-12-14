@@ -185,7 +185,7 @@ class WorkerProcessHost : public BrowserChildProcessHost {
                            int route_id,
                            CallbackWithReturnValue<int>::Type* next_route_id);
 
-  virtual bool CanShutdown() { return instances_.empty(); }
+  virtual bool CanShutdown();
 
   // Updates the title shown in the task manager.
   void UpdateTitle();

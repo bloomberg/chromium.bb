@@ -27,4 +27,8 @@ void ChangeProcessor::Stop() {
   running_ = false;
 }
 
+bool ChangeProcessor::IsRunning() const {
+  return running_;
+}
+
 }  // namespace browser_sync

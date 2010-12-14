@@ -51,6 +51,7 @@ struct VersionRange {
   explicit VersionRange(VersionRangeDefinition definition);
   VersionRange(const VersionRange& other);
   VersionRange& operator=(const VersionRange& other);
+  ~VersionRange();
 
   std::string low_str;
   std::string high_str;

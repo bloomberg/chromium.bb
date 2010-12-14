@@ -13,28 +13,14 @@ class FormGroup;
 class HomePhoneNumber : public PhoneNumber {
  public:
   HomePhoneNumber() {}
-  virtual FormGroup* Clone() const { return new HomePhoneNumber(*this); }
+  virtual FormGroup* Clone() const;
 
  protected:
-  virtual AutoFillFieldType GetNumberType() const {
-    return PHONE_HOME_NUMBER;
-  }
-
-  virtual AutoFillFieldType GetCityCodeType() const {
-    return PHONE_HOME_CITY_CODE;
-  }
-
-  virtual AutoFillFieldType GetCountryCodeType() const {
-    return PHONE_HOME_COUNTRY_CODE;
-  }
-
-  virtual AutoFillFieldType GetCityAndNumberType() const {
-    return PHONE_HOME_CITY_AND_NUMBER;
-  }
-
-  virtual AutoFillFieldType GetWholeNumberType() const {
-    return PHONE_HOME_WHOLE_NUMBER;
-  }
+  virtual AutoFillFieldType GetNumberType() const;
+  virtual AutoFillFieldType GetCityCodeType() const;
+  virtual AutoFillFieldType GetCountryCodeType() const;
+  virtual AutoFillFieldType GetCityAndNumberType() const;
+  virtual AutoFillFieldType GetWholeNumberType() const;
 
  private:
   explicit HomePhoneNumber(const HomePhoneNumber& phone) : PhoneNumber(phone) {}

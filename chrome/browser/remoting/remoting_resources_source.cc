@@ -113,6 +113,11 @@ void RemotingResourcesSource::StartDataRequest(const std::string& path_raw,
   SendResponse(request_id, html_bytes);
 }
 
+std::string RemotingResourcesSource::GetMimeType(
+    const std::string& path) const {
+  return "text/html";
+}
+
 std::string RemotingResourcesSource::GetLocalizedUrl(
     const std::string& url) const {
   GURL original_url(url);

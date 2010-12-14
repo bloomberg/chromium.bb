@@ -220,6 +220,10 @@ bool OmxVideoDecoder::ProvidesBuffer() {
   return info_.provides_buffers;
 }
 
+const MediaFormat& OmxVideoDecoder::media_format() {
+  return media_format_;
+}
+
 void OmxVideoDecoder::DemuxCompleteTask(Buffer* buffer) {
   // We simply delicate the buffer to the right message loop.
   scoped_refptr<Buffer> ref_buffer = buffer;

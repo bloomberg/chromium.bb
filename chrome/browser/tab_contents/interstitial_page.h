@@ -70,7 +70,7 @@ class InterstitialPage : public NotificationObserver,
   static InterstitialPage* GetInterstitialPage(TabContents* tab_contents);
 
   // Sub-classes should return the HTML that should be displayed in the page.
-  virtual std::string GetHTMLContents() { return std::string(); }
+  virtual std::string GetHTMLContents();
 
   // Reverts to the page showing before the interstitial.
   // Sub-classes should call this method when the user has chosen NOT to proceed
@@ -101,9 +101,7 @@ class InterstitialPage : public NotificationObserver,
   // Called when tab traversing.
   void FocusThroughTabTraversal(bool reverse);
 
-  virtual ViewType::Type GetRenderViewType() const {
-    return ViewType::INTERSTITIAL_PAGE;
-  }
+  virtual ViewType::Type GetRenderViewType() const;
   virtual int GetBrowserWindowID() const;
 
   // See description above field.

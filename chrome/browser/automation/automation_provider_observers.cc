@@ -1169,6 +1169,15 @@ AutomationProviderBookmarkModelObserver::
   model_->RemoveObserver(this);
 }
 
+void AutomationProviderBookmarkModelObserver::Loaded(BookmarkModel* model) {
+  ReplyAndDelete(true);
+}
+
+void AutomationProviderBookmarkModelObserver::BookmarkModelBeingDeleted(
+    BookmarkModel* model) {
+  ReplyAndDelete(false);
+}
+
 void AutomationProviderBookmarkModelObserver::ReplyAndDelete(bool success) {
   AutomationMsg_WaitForBookmarkModelToLoad::WriteReplyParams(
       reply_message_, success);

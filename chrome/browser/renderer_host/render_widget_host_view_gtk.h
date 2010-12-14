@@ -55,7 +55,7 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos);
   virtual void InitAsFullscreen(RenderWidgetHostView* parent_host_view);
-  virtual RenderWidgetHost* GetRenderWidgetHost() const { return host_; }
+  virtual RenderWidgetHost* GetRenderWidgetHost() const;
   virtual void DidBecomeSelected();
   virtual void WasHidden();
   virtual void SetSize(const gfx::Size& size);

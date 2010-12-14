@@ -115,6 +115,27 @@ void TypedUrlDataTypeController::Stop() {
   history_service_->ScheduleDBTask(new ControlTask(this, false), this);
 }
 
+bool TypedUrlDataTypeController::enabled() {
+  return true;
+}
+
+syncable::ModelType TypedUrlDataTypeController::type() {
+  return syncable::TYPED_URLS;
+}
+
+browser_sync::ModelSafeGroup TypedUrlDataTypeController::model_safe_group() {
+  return browser_sync::GROUP_HISTORY;
+}
+
+const char* TypedUrlDataTypeController::name() const {
+  // For logging only.
+  return "typed_url";
+}
+
+DataTypeController::State TypedUrlDataTypeController::state() {
+  return state_;
+}
+
 void TypedUrlDataTypeController::StartImpl(history::HistoryBackend* backend) {
   VLOG(1) << "TypedUrl data type controller StartImpl called.";
   // No additional services need to be started before we can proceed

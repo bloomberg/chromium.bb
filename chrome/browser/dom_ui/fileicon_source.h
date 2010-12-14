@@ -26,10 +26,7 @@ class FileIconSource : public ChromeURLDataManager::DataSource {
                                 bool is_off_the_record,
                                 int request_id);
 
-  virtual std::string GetMimeType(const std::string&) const {
-    // Rely on image decoder inferring the correct type.
-    return std::string();
-  }
+  virtual std::string GetMimeType(const std::string&) const;
 
   // Called when favicon data is available from the history backend.
   void OnFileIconDataAvailable(

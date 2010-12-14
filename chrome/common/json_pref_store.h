@@ -49,7 +49,7 @@ class JsonPrefStore : public PersistentPrefStore,
 
  private:
   // ImportantFileWriter::DataSerializer overrides:
-  bool SerializeData(std::string* output);
+  virtual bool SerializeData(std::string* output);
 
   FilePath path_;
 

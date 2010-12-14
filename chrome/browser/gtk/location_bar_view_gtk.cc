@@ -756,6 +756,10 @@ LocationBarTesting* LocationBarViewGtk::GetLocationBarForTesting() {
   return this;
 }
 
+int LocationBarViewGtk::PageActionCount() {
+  return page_action_views_.size();
+}
+
 int LocationBarViewGtk::PageActionVisibleCount() {
   int count = 0;
   gtk_container_foreach(GTK_CONTAINER(page_action_hbox_.get()),

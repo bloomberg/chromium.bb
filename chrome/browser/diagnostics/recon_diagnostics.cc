@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "chrome/browser/diagnostics/diagnostics_test.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/json_value_serializer.h"

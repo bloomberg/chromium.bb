@@ -37,7 +37,7 @@ class PluginExceptionsTableModel : public RemoveRowsTableModel,
   virtual int RowCount();
   virtual std::wstring GetText(int row, int column_id);
   virtual void SetObserver(TableModelObserver* observer);
-  virtual bool HasGroups() { return true; }
+  virtual bool HasGroups();
   virtual Groups GetGroups();
   virtual int GetGroupID(int row);
 
@@ -54,10 +54,10 @@ class PluginExceptionsTableModel : public RemoveRowsTableModel,
   friend class PluginExceptionsTableModelTest;
 
   struct SettingsEntry {
-   ContentSettingsPattern pattern;
-   int plugin_id;
-   ContentSetting setting;
-   bool is_otr;
+    ContentSettingsPattern pattern;
+    int plugin_id;
+    ContentSetting setting;
+    bool is_otr;
   };
 
   void ClearSettings();

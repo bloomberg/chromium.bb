@@ -38,6 +38,10 @@ ExtensionInfoBarDelegate::~ExtensionInfoBarDelegate() {
     observer_->OnDelegateDeleted();
 }
 
+void ExtensionInfoBarDelegate::InfoBarDismissed() {
+  closing_ = true;
+}
+
 bool ExtensionInfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
   ExtensionInfoBarDelegate* extension_delegate =
       delegate->AsExtensionInfoBarDelegate();

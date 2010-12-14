@@ -70,7 +70,7 @@ class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
   virtual void OnCloseContents(TabContents* source, bool* out_close_dialog);
   virtual std::wstring GetDialogTitle() const;
   virtual bool IsDialogModal() const;
-  virtual bool ShouldShowDialogTitle() const { return true; }
+  virtual bool ShouldShowDialogTitle() const;
 
   // GaiaAuthConsumer implementation.
   virtual void OnClientLoginFailure(

@@ -191,6 +191,9 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
   SendResponse(request_id, html_bytes);
 }
 
+std::string ExtensionsUIHTMLSource::GetMimeType(const std::string&) const {
+  return "text/html";
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -674,6 +677,11 @@ void ExtensionsDOMHandler::FileSelected(const FilePath& path, int index,
   ListValue results;
   results.Append(Value::CreateStringValue(path.value()));
   dom_ui_->CallJavascriptFunction(L"window.handleFilePathSelected", results);
+}
+
+void ExtensionsDOMHandler::MultiFilesSelected(
+    const std::vector<FilePath>& files, void* params) {
+  NOTREACHED();
 }
 
 void ExtensionsDOMHandler::Observe(NotificationType type,

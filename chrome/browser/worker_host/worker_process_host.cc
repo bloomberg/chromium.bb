@@ -439,6 +439,10 @@ void WorkerProcessHost::SenderShutdown(IPC::Message::Sender* sender) {
   }
 }
 
+bool WorkerProcessHost::CanShutdown() {
+  return instances_.empty();
+}
+
 void WorkerProcessHost::UpdateTitle() {
   std::set<std::string> titles;
   for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {

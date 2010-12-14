@@ -39,7 +39,7 @@ class URLRequest;
 //
 class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
  public:
-  virtual SSLCertErrorHandler* AsSSLCertErrorHandler() { return NULL; }
+  virtual SSLCertErrorHandler* AsSSLCertErrorHandler();
 
   // Find the appropriate SSLManager for the net::URLRequest and begin handling
   // this error.

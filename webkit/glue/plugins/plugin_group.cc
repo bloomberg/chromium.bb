@@ -79,6 +79,8 @@ VersionRange& VersionRange::operator=(const VersionRange& other) {
   return *this;
 }
 
+VersionRange::~VersionRange() {}
+
 void VersionRange::InitFrom(const VersionRange& other) {
   low_str = other.low_str;
   high_str = other.high_str;

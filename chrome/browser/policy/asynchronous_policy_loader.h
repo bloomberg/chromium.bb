@@ -45,7 +45,7 @@ class AsynchronousPolicyLoader
   // AsynchronousPolicyLoader objects should only be deleted by
   // RefCountedThreadSafe.
   friend class base::RefCountedThreadSafe<AsynchronousPolicyLoader>;
-  virtual ~AsynchronousPolicyLoader() {}
+  virtual ~AsynchronousPolicyLoader();
 
   // Schedules a call to UpdatePolicy on |origin_loop_|. Takes ownership of
   // |new_policy|.

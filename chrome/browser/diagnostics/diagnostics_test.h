@@ -6,12 +6,10 @@
 #define CHROME_BROWSER_DIAGNOSTICS_DIAGNOSTICS_TEST_H_
 #pragma once
 
-#include "base/file_path.h"
-#include "base/path_service.h"
 #include "base/string16.h"
 #include "chrome/browser/diagnostics/diagnostics_model.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_paths.h"
+
+class FilePath;
 
 // Represents a single diagnostic test and encapsulates the common
 // functionality across platforms as well.
@@ -27,33 +25,20 @@ class DiagnosticTest : public DiagnosticsModel::TestInfo {
  public:
   // |title| is the human readable, localized string that says that
   // the objective of the test is.
-  explicit DiagnosticTest(const string16& title)
-      : title_(title), result_(DiagnosticsModel::TEST_NOT_RUN) {}
+  explicit DiagnosticTest(const string16& title);
 
-  virtual ~DiagnosticTest() {}
+  virtual ~DiagnosticTest();
 
   // Runs the test. Returning false signals that no more tests should be run.
   // The actual outcome of the test should be set using the RecordXX functions.
   bool Execute(DiagnosticsModel::Observer* observer, DiagnosticsModel* model,
-               size_t index) {
-    result_ = DiagnosticsModel::TEST_RUNNING;
-    observer->OnProgress(index, 0, model);
-    bool keep_going = ExecuteImpl(observer);
-    observer->OnFinished(index, model);
-    return keep_going;
-  }
+               size_t index);
 
-  virtual string16 GetTitle() {
-    return title_;
-  }
+  virtual string16 GetTitle();
 
-  virtual DiagnosticsModel::TestResult GetResult() {
-    return result_;
-  }
+  virtual DiagnosticsModel::TestResult GetResult();
 
-  virtual string16 GetAdditionalInfo() {
-    return additional_info_;
-  }
+  virtual string16 GetAdditionalInfo();
 
   void RecordStopFailure(const string16& additional_info) {
     RecordOutcome(additional_info, DiagnosticsModel::TEST_FAIL_STOP);
@@ -68,17 +53,9 @@ class DiagnosticTest : public DiagnosticsModel::TestInfo {
   }
 
   void RecordOutcome(const string16& additional_info,
-                     DiagnosticsModel::TestResult result) {
-    additional_info_ = additional_info;
-    result_ = result;
-  }
+                     DiagnosticsModel::TestResult result);
 
-  static FilePath GetUserDefaultProfileDir() {
-    FilePath path;
-    if (!PathService::Get(chrome::DIR_USER_DATA, &path))
-      return FilePath();
-    return path.Append(FilePath::FromWStringHack(chrome::kNotSignedInProfile));
-  }
+  static FilePath GetUserDefaultProfileDir();
 
  protected:
   // The id needs to be overriden by derived classes and must uniquely

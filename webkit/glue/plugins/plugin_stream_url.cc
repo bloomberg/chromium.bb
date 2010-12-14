@@ -39,6 +39,10 @@ bool PluginStreamUrl::Close(NPReason reason) {
   return result;
 }
 
+webkit_glue::WebPluginResourceClient* PluginStreamUrl::AsResourceClient() {
+  return static_cast<webkit_glue::WebPluginResourceClient*>(this);
+}
+
 void PluginStreamUrl::WillSendRequest(const GURL& url, int http_status_code) {
   if (notify_needed()) {
     // If the plugin participates in HTTP url redirect handling then notify it.

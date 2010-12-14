@@ -177,6 +177,10 @@ void DownloadShelfGtk::Close() {
   browser_->UpdateDownloadShelfVisibility(false);
 }
 
+Browser* DownloadShelfGtk::browser() const {
+  return browser_;
+}
+
 void DownloadShelfGtk::Closed() {
   // When the close animation is complete, remove all completed downloads.
   size_t i = 0;

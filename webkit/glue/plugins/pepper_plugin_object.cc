@@ -884,4 +884,8 @@ const PPB_Class* VarObjectClass::GetInterface() {
 // virtual
 VarObjectClass::~VarObjectClass() { }
 
+VarObjectClass* VarObjectClass::AsVarObjectClass() {
+  return this;
+}
+
 }  // namespace pepper

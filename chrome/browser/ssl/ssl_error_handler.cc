@@ -56,6 +56,10 @@ void SSLErrorHandler::OnDispatched() {
   TakeNoAction();
 }
 
+SSLCertErrorHandler* SSLErrorHandler::AsSSLCertErrorHandler() {
+  return NULL;
+}
+
 void SSLErrorHandler::Dispatch() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

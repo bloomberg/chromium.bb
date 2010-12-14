@@ -34,9 +34,7 @@ class PluginStreamUrl : public PluginStream,
   // it is still loading.
   virtual bool Close(NPReason reason);
 
-  virtual webkit_glue::WebPluginResourceClient* AsResourceClient() {
-    return static_cast<webkit_glue::WebPluginResourceClient*>(this);
-  }
+  virtual webkit_glue::WebPluginResourceClient* AsResourceClient();
 
   virtual void CancelRequest();
 

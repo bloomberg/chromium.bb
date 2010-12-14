@@ -36,11 +36,9 @@ class FFmpegVideoDecodeEngine : public VideoDecodeEngine {
   virtual void Flush();
   virtual void Seek();
 
-  virtual AVCodecContext* codec_context() const { return codec_context_; }
+  virtual AVCodecContext* codec_context() const;
 
-  virtual void SetCodecContextForTest(AVCodecContext* context) {
-    codec_context_ = context;
-  }
+  virtual void SetCodecContextForTest(AVCodecContext* context);
 
   VideoFrame::Format GetSurfaceFormat() const;
  private:

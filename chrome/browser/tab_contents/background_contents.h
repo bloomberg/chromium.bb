@@ -129,8 +129,8 @@ class BackgroundContents : public RenderViewHostDelegate,
                                   const std::wstring& prompt);
   virtual void SetSuppressMessageBoxes(bool suppress_message_boxes) {}
   virtual gfx::NativeWindow GetMessageBoxRootWindow();
-  virtual TabContents* AsTabContents() { return NULL; }
-  virtual ExtensionHost* AsExtensionHost() { return NULL; }
+  virtual TabContents* AsTabContents();
+  virtual ExtensionHost* AsExtensionHost();
 
   virtual void UpdateInspectorSetting(const std::string& key,
                                       const std::string& value);

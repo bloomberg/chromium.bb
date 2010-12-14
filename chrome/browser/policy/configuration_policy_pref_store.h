@@ -36,7 +36,7 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   // PrefStore methods:
   virtual ReadResult GetValue(const std::string& key, Value** result) const;
 
-  virtual DictionaryValue* prefs() const { return prefs_.get(); }
+  virtual DictionaryValue* prefs() const;
 
   // ConfigurationPolicyStore methods:
   virtual void Apply(ConfigurationPolicyType setting, Value* value);

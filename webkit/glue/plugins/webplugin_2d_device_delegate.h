@@ -15,37 +15,23 @@ namespace webkit_glue {
 // "regular" plugin delegate while being overridden by the "pepper" one.
 class WebPlugin2DDeviceDelegate {
  public:
-  virtual NPError Device2DQueryCapability(int32 capability, int32* value) {
-    return NPERR_GENERIC_ERROR;
-  }
+  virtual NPError Device2DQueryCapability(int32 capability, int32* value);
   virtual NPError Device2DQueryConfig(const NPDeviceContext2DConfig* request,
-                                      NPDeviceContext2DConfig* obtain) {
-    return NPERR_GENERIC_ERROR;
-  }
+                                      NPDeviceContext2DConfig* obtain);
   virtual NPError Device2DInitializeContext(
       const NPDeviceContext2DConfig* config,
-      NPDeviceContext2D* context) {
-    return NPERR_GENERIC_ERROR;
-  }
+      NPDeviceContext2D* context);
   virtual NPError Device2DSetStateContext(NPDeviceContext2D* context,
                                           int32 state,
-                                          intptr_t value) {
-    return NPERR_GENERIC_ERROR;
-  }
+                                          intptr_t value);
   virtual NPError Device2DGetStateContext(NPDeviceContext2D* context,
                                           int32 state,
-                                          intptr_t* value) {
-    return NPERR_GENERIC_ERROR;
-  }
+                                          intptr_t* value);
   virtual NPError Device2DFlushContext(NPP id,
                                        NPDeviceContext2D* context,
                                        NPDeviceFlushContextCallbackPtr callback,
-                                       void* user_data) {
-    return NPERR_GENERIC_ERROR;
-  }
-  virtual NPError Device2DDestroyContext(NPDeviceContext2D* context) {
-    return NPERR_GENERIC_ERROR;
-  }
+                                       void* user_data);
+  virtual NPError Device2DDestroyContext(NPDeviceContext2D* context);
 
  protected:
   WebPlugin2DDeviceDelegate() {}

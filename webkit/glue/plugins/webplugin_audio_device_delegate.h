@@ -15,35 +15,21 @@ namespace webkit_glue {
 // "regular" plugin delegate while being overridden by the "pepper" one.
 class WebPluginAudioDeviceDelegate {
  public:
-  virtual NPError DeviceAudioQueryCapability(int32 capability, int32* value) {
-    return NPERR_GENERIC_ERROR;
-  }
+  virtual NPError DeviceAudioQueryCapability(int32 capability, int32* value);
   virtual NPError DeviceAudioQueryConfig(
       const NPDeviceContextAudioConfig* request,
-      NPDeviceContextAudioConfig* obtain) {
-    return NPERR_GENERIC_ERROR;
-  }
+      NPDeviceContextAudioConfig* obtain);
   virtual NPError DeviceAudioInitializeContext(
       const NPDeviceContextAudioConfig* config,
-      NPDeviceContextAudio* context) {
-    return NPERR_GENERIC_ERROR;
-  }
+      NPDeviceContextAudio* context);
   virtual NPError DeviceAudioSetStateContext(NPDeviceContextAudio* context,
-                                             int32 state, intptr_t value) {
-    return NPERR_GENERIC_ERROR;
-  }
+                                             int32 state, intptr_t value);
   virtual NPError DeviceAudioGetStateContext(NPDeviceContextAudio* context,
-                                             int32 state, intptr_t* value) {
-    return NPERR_GENERIC_ERROR;
-  }
+                                             int32 state, intptr_t* value);
   virtual NPError DeviceAudioFlushContext(
       NPP id, NPDeviceContextAudio* context,
-      NPDeviceFlushContextCallbackPtr callback, void* user_data) {
-    return NPERR_GENERIC_ERROR;
-  }
-  virtual NPError DeviceAudioDestroyContext(NPDeviceContextAudio* context) {
-    return NPERR_GENERIC_ERROR;
-  }
+      NPDeviceFlushContextCallbackPtr callback, void* user_data);
+  virtual NPError DeviceAudioDestroyContext(NPDeviceContextAudio* context);
 
  protected:
   WebPluginAudioDeviceDelegate() {}

@@ -9,6 +9,10 @@
 #include "base/stl_util-inl.h"
 #include "base/values.h"
 
+ValueMapPrefStore::ValueMapPrefStore() {}
+
+ValueMapPrefStore::~ValueMapPrefStore() {}
+
 PrefStore::ReadResult ValueMapPrefStore::GetValue(const std::string& key,
                                                   Value** value) const {
   return prefs_.GetValue(key, value) ? READ_OK : READ_NO_VALUE;

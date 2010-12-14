@@ -33,7 +33,7 @@ class OmxVideoDecoder : public VideoDecoder,
   virtual void Seek(base::TimeDelta time, FilterCallback* callback);
   virtual void ProduceVideoFrame(scoped_refptr<VideoFrame> frame);
   virtual bool ProvidesBuffer();
-  virtual const MediaFormat& media_format() { return media_format_; }
+  virtual const MediaFormat& media_format();
 
  private:
   // VideoDecodeEngine::EventHandler interface.

@@ -32,6 +32,8 @@ AutofillProfileModelAssociator::~AutofillProfileModelAssociator() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 }
 
+AutofillProfileModelAssociator::AutofillProfileModelAssociator() {}
+
 bool AutofillProfileModelAssociator::TraverseAndAssociateChromeAutoFillProfiles(
     sync_api::WriteTransaction* write_trans,
     const sync_api::ReadNode& autofill_root,
@@ -328,6 +330,23 @@ bool AutofillProfileModelAssociator::SaveChangesToWebData(
       return false;
   }
   return true;
+}
+
+const std::string* AutofillProfileModelAssociator::GetChromeNodeFromSyncId(
+      int64 sync_id) {
+    return NULL;
+  }
+
+bool AutofillProfileModelAssociator::InitSyncNodeFromChromeId(
+    const std::string& node_id,
+    sync_api::BaseNode* sync_node) {
+  return false;
+}
+
+bool AutofillProfileModelAssociator::GetSyncIdForTaggedNode(
+    const std::string& tag,
+    int64* sync_id) {
+  return false;
 }
 
 void AutofillProfileModelAssociator::Associate(

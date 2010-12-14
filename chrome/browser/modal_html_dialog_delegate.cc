@@ -42,6 +42,10 @@ bool ModalHtmlDialogDelegate::IsDialogModal() const {
   return true;
 }
 
+std::wstring ModalHtmlDialogDelegate::GetDialogTitle() const {
+  return L"Gears";
+}
+
 GURL ModalHtmlDialogDelegate::GetDialogContentURL() const {
   return params_.url;
 }

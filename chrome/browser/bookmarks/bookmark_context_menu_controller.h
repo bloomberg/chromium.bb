@@ -60,9 +60,7 @@ class BookmarkContextMenuController : public BaseBookmarkModelObserver,
   virtual bool IsCommandIdChecked(int command_id) const;
   virtual bool IsCommandIdEnabled(int command_id) const;
   virtual bool GetAcceleratorForCommandId(int command_id,
-                                          menus::Accelerator* accelerator) {
-    return false;
-  }
+                                          menus::Accelerator* accelerator);
   virtual void ExecuteCommand(int command_id);
 
   // Accessors:
