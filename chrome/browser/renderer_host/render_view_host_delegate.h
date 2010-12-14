@@ -589,6 +589,9 @@ class RenderViewHostDelegate {
     // AutoFill popup.
     virtual void ShowAutoFillDialog() = 0;
 
+    // Reset cache in AutoFillManager.
+    virtual void Reset() = 0;
+
    protected:
     virtual ~AutoFill() {}
   };
