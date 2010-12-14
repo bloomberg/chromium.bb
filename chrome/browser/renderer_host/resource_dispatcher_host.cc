@@ -1491,7 +1491,8 @@ void ResourceDispatcherHost::OnResponseCompleted(net::URLRequest* request) {
   // If the load for a main frame has failed, track it in a histogram,
   // since it will probably cause the user to see an error page.
   if (!request->status().is_success() &&
-      info->resource_type() == ResourceType::MAIN_FRAME) {
+      info->resource_type() == ResourceType::MAIN_FRAME &&
+      request->status().os_error() != net::ERR_ABORTED) {
     UMA_HISTOGRAM_CUSTOM_ENUMERATION("Net.ErrorCodesForMainFrame",
                                      -request->status().os_error(),
                                      GetAllNetErrorCodes());
