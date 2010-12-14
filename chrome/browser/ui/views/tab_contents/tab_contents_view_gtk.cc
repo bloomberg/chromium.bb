@@ -8,6 +8,7 @@
 #include <gtk/gtk.h>
 
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/gtk/constrained_window_gtk.h"
