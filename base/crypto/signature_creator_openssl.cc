@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/openssl_util.h"
 #include "base/scoped_ptr.h"
+#include "base/stl_util-inl.h"
 
 namespace base {
 
@@ -41,7 +42,7 @@ bool SignatureCreator::Final(std::vector<uint8>* signature) {
   signature->resize(EVP_PKEY_size(key));
 
   unsigned int len = 0;
-  int rv = EVP_SignFinal(sign_context_, signature->data(), &len, key);
+  int rv = EVP_SignFinal(sign_context_, vector_as_array(signature), &len, key);
   if (!rv) {
     signature->clear();
     return false;

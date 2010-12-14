@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/openssl_util.h"
 #include "base/scoped_ptr.h"
+#include "base/stl_util-inl.h"
 
 namespace base {
 
@@ -77,7 +78,7 @@ bool SignatureVerifier::VerifyFinal() {
   DCHECK(verify_context_);
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
   int rv = EVP_VerifyFinal(verify_context_->ctx.get(),
-                           signature_.data(), signature_.size(),
+                           vector_as_array(&signature_), signature_.size(),
                            verify_context_->public_key.get());
   DCHECK_GE(rv, 0);
   Reset();
