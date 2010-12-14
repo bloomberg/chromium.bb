@@ -34,7 +34,7 @@
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_message_service.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/file_system/file_system_dispatcher_host.h"
 #include "chrome/browser/gpu_process_host.h"
@@ -759,7 +759,7 @@ void BrowserRenderProcessHost::SendExtensionInfo() {
     return;
   }
 
-  ExtensionsService* service = profile()->GetExtensionsService();
+  ExtensionService* service = profile()->GetExtensionService();
   if (!service)
     return;
   ViewMsg_ExtensionsUpdated_Params params;

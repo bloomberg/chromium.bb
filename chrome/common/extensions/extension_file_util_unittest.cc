@@ -239,5 +239,5 @@ TEST(ExtensionFileUtil, ExtensionURLToRelativeFilePath) {
 }
 
 // TODO(aa): More tests as motivation allows. Maybe steal some from
-// ExtensionsService? Many of them could probably be tested here without the
+// ExtensionService? Many of them could probably be tested here without the
 // MessageLoop shenanigans.

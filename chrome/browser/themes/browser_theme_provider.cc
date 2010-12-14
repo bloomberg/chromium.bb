@@ -8,7 +8,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/browser_theme_pack.h"
@@ -304,7 +304,7 @@ void BrowserThemeProvider::SetTheme(const Extension* extension) {
 void BrowserThemeProvider::RemoveUnusedThemes() {
   if (!profile_)
     return;
-  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionService* service = profile_->GetExtensionService();
   if (!service)
     return;
   std::string current_theme = GetThemeID();
@@ -558,7 +558,7 @@ void BrowserThemeProvider::LoadThemePrefs() {
     } else {
       // TODO(erg): We need to pop up a dialog informing the user that their
       // theme is being migrated.
-      ExtensionsService* service = profile_->GetExtensionsService();
+      ExtensionService* service = profile_->GetExtensionService();
       if (service) {
         const Extension* extension =
             service->GetExtensionById(current_id, false);

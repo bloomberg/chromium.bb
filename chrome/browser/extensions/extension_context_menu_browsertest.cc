@@ -8,7 +8,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -146,14 +146,14 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
 
   // Shortcut to return the current ExtensionMenuManager.
   ExtensionMenuManager* menu_manager() {
-    return browser()->profile()->GetExtensionsService()->menu_manager();
+    return browser()->profile()->GetExtensionService()->menu_manager();
   }
 
   // Returns a pointer to the currently loaded extension with |name|, or null
   // if not found.
   const Extension* GetExtensionNamed(std::string name) {
     const ExtensionList* extensions =
-        browser()->profile()->GetExtensionsService()->extensions();
+        browser()->profile()->GetExtensionService()->extensions();
     ExtensionList::const_iterator i;
     for (i = extensions->begin(); i != extensions->end(); ++i) {
       if ((*i)->name() == name) {

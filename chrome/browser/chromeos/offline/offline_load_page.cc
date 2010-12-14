@@ -14,7 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
@@ -108,7 +108,7 @@ std::string OfflineLoadPage::GetHTMLContents() {
   Profile* profile = tab()->profile();
   DCHECK(profile);
   const Extension* extension = NULL;
-  ExtensionsService* extensions_service = profile->GetExtensionsService();
+  ExtensionService* extensions_service = profile->GetExtensionService();
   // Extension service does not exist in test.
   if (extensions_service)
     extension = extensions_service->GetExtensionByWebExtent(url());

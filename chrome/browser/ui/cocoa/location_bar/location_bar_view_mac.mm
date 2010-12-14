@@ -22,7 +22,7 @@
 #include "chrome/browser/content_setting_bubble_model.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profiles/profile.h"
@@ -528,7 +528,7 @@ NSImage* LocationBarViewMac::GetKeywordImage(const std::wstring& keyword) {
   const TemplateURL* template_url =
       profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(keyword);
   if (template_url && template_url->IsExtensionKeyword()) {
-    const SkBitmap& bitmap = profile_->GetExtensionsService()->
+    const SkBitmap& bitmap = profile_->GetExtensionService()->
         GetOmniboxIcon(template_url->GetExtensionId());
     return gfx::SkBitmapToNSImage(bitmap);
   }
@@ -587,7 +587,7 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
     return;
   }
 
-  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionService* service = profile_->GetExtensionService();
   if (!service)
     return;
 

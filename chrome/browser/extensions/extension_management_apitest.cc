@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 
@@ -19,7 +19,7 @@ class ExtensionManagementApiTest : public ExtensionApiTest {
     ASSERT_TRUE(LoadExtension(basedir.AppendASCII("permissions")));
 
     // Load 2 disabled items.
-    ExtensionsService* service = browser()->profile()->GetExtensionsService();
+    ExtensionService* service = browser()->profile()->GetExtensionService();
     ASSERT_TRUE(LoadExtension(basedir.AppendASCII("disabled_extension")));
     service->DisableExtension(last_loaded_extension_id_);
     ASSERT_TRUE(LoadExtension(basedir.AppendASCII("disabled_app")));

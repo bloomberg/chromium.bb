@@ -22,7 +22,7 @@
 
 class DictionaryValue;
 class Extension;
-class ExtensionsService;
+class ExtensionService;
 class FilePath;
 class ListValue;
 class PrefService;
@@ -102,7 +102,7 @@ class ExtensionsDOMHandler
     ExtensionsDOMHandler* handler_;
   };
 
-  explicit ExtensionsDOMHandler(ExtensionsService* extension_service);
+  explicit ExtensionsDOMHandler(ExtensionService* extension_service);
   virtual ~ExtensionsDOMHandler();
 
   // DOMMessageHandler implementation.
@@ -111,7 +111,7 @@ class ExtensionsDOMHandler
   // Extension Detail JSON Struct for page. (static for ease of testing).
   // Note: service can be NULL in unit tests.
   static DictionaryValue* CreateExtensionDetailValue(
-      ExtensionsService* service,
+      ExtensionService* service,
       const Extension* extension,
       const std::vector<ExtensionPage>& pages,
       bool enabled);
@@ -223,7 +223,7 @@ class ExtensionsDOMHandler
   ExtensionInstallUI* GetExtensionInstallUI();
 
   // Our model.
-  scoped_refptr<ExtensionsService> extensions_service_;
+  scoped_refptr<ExtensionService> extensions_service_;
 
   // Used to pick the directory when loading an extension.
   scoped_refptr<SelectFileDialog> load_extension_dialog_;

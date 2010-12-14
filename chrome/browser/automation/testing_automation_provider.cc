@@ -37,7 +37,7 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/notifications/balloon.h"
@@ -3690,7 +3690,7 @@ void TestingAutomationProvider::GetExtensionsInfo(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
-  ExtensionsService* service = profile()->GetExtensionsService();
+  ExtensionService* service = profile()->GetExtensionService();
   if (!service) {
     reply.SendError("No extensions service.");
   }
@@ -3729,7 +3729,7 @@ void TestingAutomationProvider::UninstallExtensionById(
     reply.SendError("Must include string id.");
     return;
   }
-  ExtensionsService* service = profile()->GetExtensionsService();
+  ExtensionService* service = profile()->GetExtensionService();
   if (!service) {
     reply.SendError("No extensions service.");
     return;

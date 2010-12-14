@@ -13,7 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -58,7 +58,7 @@ BrowserSignin* GetBrowserSignin(Profile* profile) {
 }
 
 bool IsWebStoreURL(Profile* profile, const GURL& url) {
-  ExtensionsService* service = profile->GetExtensionsService();
+  ExtensionService* service = profile->GetExtensionService();
   const Extension* store = service->GetWebStoreApp();
   if (!store) {
     NOTREACHED();
@@ -185,7 +185,7 @@ bool GetBrowserLoginFunction::RunImpl() {
 bool GetStoreLoginFunction::RunImpl() {
   if (!IsWebStoreURL(profile_, source_url()))
     return false;
-  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionService* service = profile_->GetExtensionService();
   ExtensionPrefs* prefs = service->extension_prefs();
   std::string login;
   if (prefs->GetWebStoreLogin(&login)) {
@@ -201,7 +201,7 @@ bool SetStoreLoginFunction::RunImpl() {
     return false;
   std::string login;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &login));
-  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionService* service = profile_->GetExtensionService();
   ExtensionPrefs* prefs = service->extension_prefs();
   prefs->SetWebStoreLogin(login);
   return true;

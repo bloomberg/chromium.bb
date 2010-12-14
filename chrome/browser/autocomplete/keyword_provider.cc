@@ -12,7 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/extensions/extension_omnibox_api.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -182,7 +182,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
     const TemplateURL* template_url(model->GetTemplateURLForKeyword(*i));
     if (profile_ &&
         !input.synchronous_only() && template_url->IsExtensionKeyword()) {
-      ExtensionsService* service = profile_->GetExtensionsService();
+      ExtensionService* service = profile_->GetExtensionService();
       const Extension* extension = service->GetExtensionById(
           template_url->GetExtensionId(), false);
       bool enabled = extension && (!profile_->IsOffTheRecord() ||

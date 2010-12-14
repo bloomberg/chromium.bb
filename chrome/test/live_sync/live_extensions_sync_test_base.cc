@@ -12,7 +12,7 @@
 #include "base/ref_counted.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -103,7 +103,7 @@ void LiveExtensionsSyncTestBase::InstallExtension(
     Profile* profile, scoped_refptr<Extension> extension) {
   CHECK(profile);
   CHECK(extension.get());
-  profile->GetExtensionsService()->OnExtensionInstalled(extension);
+  profile->GetExtensionService()->OnExtensionInstalled(extension);
 }
 
 void LiveExtensionsSyncTestBase::InstallAllPendingExtensions(
@@ -115,7 +115,7 @@ void LiveExtensionsSyncTestBase::InstallAllPendingExtensions(
   // We make a copy here since InstallExtension() removes the
   // extension from the extensions service's copy.
   PendingExtensionMap pending_extensions =
-      profile->GetExtensionsService()->pending_extensions();
+      profile->GetExtensionService()->pending_extensions();
   for (PendingExtensionMap::const_iterator it = pending_extensions.begin();
        it != pending_extensions.end(); ++it) {
     ExtensionIdMap::const_iterator it2 = extensions_by_id_.find(it->first);

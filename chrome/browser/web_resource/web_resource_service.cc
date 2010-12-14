@@ -13,7 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/common/chrome_switches.h"
@@ -505,7 +505,7 @@ bool CanShowPromo(Profile* profile) {
     promo_closed = prefs->GetBoolean(prefs::kNTPPromoClosed);
 
   bool has_extensions = false;
-  ExtensionsService* extensions_service = profile->GetExtensionsService();
+  ExtensionService* extensions_service = profile->GetExtensionService();
   if (extensions_service) {
     const ExtensionList* extensions = extensions_service->extensions();
     for (ExtensionList::const_iterator iter = extensions->begin();

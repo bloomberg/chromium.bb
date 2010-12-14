@@ -227,7 +227,7 @@ class Browser : public TabHandlerDelegate,
   // Open an application specified by |app_id| in the appropriate launch
   // container. |existing_tab| is reused if it is not NULL and the launch
   // container is a tab. Returns NULL if the app_id is invalid or if
-  // ExtensionsService isn't ready/available.
+  // ExtensionService isn't ready/available.
   static TabContents* OpenApplication(Profile* profile,
                                       const std::string& app_id,
                                       TabContents* existing_tab);

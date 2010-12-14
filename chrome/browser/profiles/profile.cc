@@ -214,8 +214,8 @@ class OffTheRecordProfileImpl : public Profile,
     return NULL;
   }
 
-  virtual ExtensionsService* GetExtensionsService() {
-    return GetOriginalProfile()->GetExtensionsService();
+  virtual ExtensionService* GetExtensionService() {
+    return GetOriginalProfile()->GetExtensionService();
   }
 
   virtual BackgroundContentsService* GetBackgroundContentsService() const {

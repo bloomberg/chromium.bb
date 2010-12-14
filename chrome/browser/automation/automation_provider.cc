@@ -58,7 +58,7 @@
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_data_types.h"
@@ -308,7 +308,7 @@ const Extension* AutomationProvider::GetExtension(int extension_handle) {
 const Extension* AutomationProvider::GetEnabledExtension(int extension_handle) {
   const Extension* extension =
       extension_tracker_->GetResource(extension_handle);
-  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionService* service = profile_->GetExtensionService();
   if (extension && service &&
       service->GetExtensionById(extension->id(), false))
     return extension;
@@ -319,7 +319,7 @@ const Extension* AutomationProvider::GetDisabledExtension(
     int extension_handle) {
   const Extension* extension =
       extension_tracker_->GetResource(extension_handle);
-  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionService* service = profile_->GetExtensionService();
   if (extension && service &&
       service->GetExtensionById(extension->id(), true) &&
       !service->GetExtensionById(extension->id(), false))
@@ -754,7 +754,7 @@ RenderViewHost* AutomationProvider::GetViewForTab(int tab_handle) {
 
 void AutomationProvider::InstallExtension(const FilePath& crx_path,
                                           IPC::Message* reply_message) {
-  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionService* service = profile_->GetExtensionService();
   if (service) {
     // The observer will delete itself when done.
     new ExtensionInstallNotificationObserver(this,
@@ -774,14 +774,14 @@ void AutomationProvider::InstallExtension(const FilePath& crx_path,
 void AutomationProvider::LoadExpandedExtension(
     const FilePath& extension_dir,
     IPC::Message* reply_message) {
-  if (profile_->GetExtensionsService()) {
+  if (profile_->GetExtensionService()) {
     // The observer will delete itself when done.
     new ExtensionInstallNotificationObserver(
         this,
         AutomationMsg_LoadExpandedExtension::ID,
         reply_message);
 
-    profile_->GetExtensionsService()->LoadExtension(extension_dir);
+    profile_->GetExtensionService()->LoadExtension(extension_dir);
   } else {
     AutomationMsg_LoadExpandedExtension::WriteReplyParams(
         reply_message, AUTOMATION_MSG_EXTENSION_INSTALL_FAILED);
@@ -791,7 +791,7 @@ void AutomationProvider::LoadExpandedExtension(
 
 void AutomationProvider::GetEnabledExtensions(
     std::vector<FilePath>* result) {
-  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionService* service = profile_->GetExtensionService();
   DCHECK(service);
   if (service->extensions_enabled()) {
     const ExtensionList* extensions = service->extensions();
@@ -818,7 +818,7 @@ void AutomationProvider::WaitForExtensionTestResult(
 
 void AutomationProvider::InstallExtensionAndGetHandle(
     const FilePath& crx_path, bool with_ui, IPC::Message* reply_message) {
-  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionService* service = profile_->GetExtensionService();
   ExtensionProcessManager* manager = profile_->GetExtensionProcessManager();
   if (service && manager) {
     // The observer will delete itself when done.
@@ -843,7 +843,7 @@ void AutomationProvider::UninstallExtension(int extension_handle,
                                             bool* success) {
   *success = false;
   const Extension* extension = GetExtension(extension_handle);
-  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionService* service = profile_->GetExtensionService();
   if (extension && service) {
     ExtensionUnloadNotificationObserver observer;
     service->UninstallExtension(extension->id(), false);
@@ -856,7 +856,7 @@ void AutomationProvider::UninstallExtension(int extension_handle,
 void AutomationProvider::EnableExtension(int extension_handle,
                                          IPC::Message* reply_message) {
   const Extension* extension = GetDisabledExtension(extension_handle);
-  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionService* service = profile_->GetExtensionService();
   ExtensionProcessManager* manager = profile_->GetExtensionProcessManager();
   // Only enable if this extension is disabled.
   if (extension && service && manager) {
@@ -877,7 +877,7 @@ void AutomationProvider::DisableExtension(int extension_handle,
                                           bool* success) {
   *success = false;
   const Extension* extension = GetEnabledExtension(extension_handle);
-  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionService* service = profile_->GetExtensionService();
   if (extension && service) {
     ExtensionUnloadNotificationObserver observer;
     service->DisableExtension(extension->id());
@@ -892,7 +892,7 @@ void AutomationProvider::ExecuteExtensionActionInActiveTabAsync(
     IPC::Message* reply_message) {
   bool success = false;
   const Extension* extension = GetEnabledExtension(extension_handle);
-  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionService* service = profile_->GetExtensionService();
   ExtensionMessageService* message_service =
       profile_->GetExtensionMessageService();
   Browser* browser = browser_tracker_->GetResource(browser_handle);
@@ -917,7 +917,7 @@ void AutomationProvider::MoveExtensionBrowserAction(
     int extension_handle, int index, bool* success) {
   *success = false;
   const Extension* extension = GetEnabledExtension(extension_handle);
-  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionService* service = profile_->GetExtensionService();
   if (extension && service) {
     ExtensionToolbarModel* toolbar = service->toolbar_model();
     if (toolbar) {
@@ -938,7 +938,7 @@ void AutomationProvider::GetExtensionProperty(
     std::string* value) {
   *success = false;
   const Extension* extension = GetExtension(extension_handle);
-  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionService* service = profile_->GetExtensionService();
   if (extension && service) {
     ExtensionToolbarModel* toolbar = service->toolbar_model();
     int found_index = -1;

@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/ui_test_utils.h"
@@ -48,7 +48,7 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
   // happened or not.
   bool DidWhitelistInstallPrompt(const std::string& crx_relpath,
                                  const std::string& id) {
-    ExtensionsService* service = browser()->profile()->GetExtensionsService();
+    ExtensionService* service = browser()->profile()->GetExtensionService();
     MockInstallUI* mock_install_ui = new MockInstallUI(browser()->profile());
 
     scoped_refptr<CrxInstaller> installer(

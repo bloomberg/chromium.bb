@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/common/extensions/extension.h"
@@ -53,7 +53,7 @@ bool LiveThemesSyncTest::UsingNativeTheme(Profile* profile) {
 bool LiveThemesSyncTest::ExtensionIsPendingInstall(
     Profile* profile, const Extension* extension) {
   const PendingExtensionMap& pending_extensions =
-      profile->GetExtensionsService()->pending_extensions();
+      profile->GetExtensionService()->pending_extensions();
   return pending_extensions.find(extension->id()) != pending_extensions.end();
 }
 

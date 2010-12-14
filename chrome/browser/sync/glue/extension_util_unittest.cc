@@ -501,7 +501,7 @@ TEST_F(ExtensionUtilTest, IsExtensionOutdated) {
   EXPECT_TRUE(IsExtensionOutdated(*extension, specifics));
 }
 
-// TODO(akalin): Make ExtensionsService/ExtensionUpdater testable
+// TODO(akalin): Make ExtensionService/ExtensionUpdater testable
 // enough to be able to write a unittest for SetExtensionProperties().
 
 TEST_F(ExtensionUtilTest, MergeExtensionSpecificsWithUserProperties) {

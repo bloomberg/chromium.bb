@@ -54,7 +54,7 @@ class ProfileImpl : public Profile,
   virtual UserScriptMaster* GetUserScriptMaster();
   virtual SSLHostState* GetSSLHostState();
   virtual net::TransportSecurityState* GetTransportSecurityState();
-  virtual ExtensionsService* GetExtensionsService();
+  virtual ExtensionService* GetExtensionService();
   virtual ExtensionDevToolsManager* GetExtensionDevToolsManager();
   virtual ExtensionProcessManager* GetExtensionProcessManager();
   virtual ExtensionMessageService* GetExtensionMessageService();
@@ -180,7 +180,7 @@ class ProfileImpl : public Profile,
   // Keep extension_prefs_ on top of extensions_service_ because the latter
   // maintains a pointer to the first and shall be destructed first.
   scoped_ptr<ExtensionPrefs> extension_prefs_;
-  scoped_refptr<ExtensionsService> extensions_service_;
+  scoped_refptr<ExtensionService> extensions_service_;
   scoped_refptr<UserScriptMaster> user_script_master_;
   scoped_refptr<ExtensionDevToolsManager> extension_devtools_manager_;
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;

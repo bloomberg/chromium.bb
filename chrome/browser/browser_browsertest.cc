@@ -12,7 +12,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -161,7 +161,7 @@ class BrowserTest : public ExtensionBrowserTest {
   // Returns the app extension aptly named "App Test".
   const Extension* GetExtension() {
     const ExtensionList* extensions =
-        browser()->profile()->GetExtensionsService()->extensions();
+        browser()->profile()->GetExtensionService()->extensions();
     for (size_t i = 0; i < extensions->size(); ++i) {
       if ((*extensions)[i]->name() == "App Test")
         return (*extensions)[i];
@@ -481,7 +481,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TabClosingWhenRemovingExtension) {
   model->AddObserver(&observer);
 
   // Uninstall the extension and make sure TabClosing is sent.
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  ExtensionService* service = browser()->profile()->GetExtensionService();
   service->UninstallExtension(GetExtension()->id(), false);
   EXPECT_EQ(1, observer.closing_count());
 

@@ -7,7 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/location_bar/location_bar_view.h"
@@ -26,7 +26,7 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
       current_tab_id_(-1),
       preview_enabled_(false),
       popup_(NULL) {
-  const Extension* extension = profile->GetExtensionsService()->
+  const Extension* extension = profile->GetExtensionService()->
       GetExtensionById(page_action->extension_id(), false);
   DCHECK(extension);
 
@@ -146,7 +146,7 @@ bool PageActionImageView::OnKeyPressed(const views::KeyEvent& e) {
 
 void PageActionImageView::ShowContextMenu(const gfx::Point& p,
                                           bool is_mouse_gesture) {
-  const Extension* extension = profile_->GetExtensionsService()->
+  const Extension* extension = profile_->GetExtensionService()->
       GetExtensionById(page_action()->extension_id(), false);
   Browser* browser = BrowserView::GetBrowserViewForNativeWindow(
       platform_util::GetTopLevel(GetWidget()->GetNativeView()))->browser();

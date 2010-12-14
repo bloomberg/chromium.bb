@@ -111,11 +111,11 @@ class TestingProfile : public Profile {
   // ownership of |theme_provider|.
   void UseThemeProvider(BrowserThemeProvider* theme_provider);
 
-  // Creates an ExtensionsService initialized with the testing profile and
+  // Creates an ExtensionService initialized with the testing profile and
   // returns it. The profile keeps its own copy of a scoped_refptr to the
-  // ExtensionsService to make sure that is still alive to be notified when the
+  // ExtensionService to make sure that is still alive to be notified when the
   // profile is destroyed.
-  scoped_refptr<ExtensionsService> CreateExtensionsService(
+  scoped_refptr<ExtensionService> CreateExtensionService(
       const CommandLine* command_line,
       const FilePath& install_directory);
 
@@ -142,7 +142,7 @@ class TestingProfile : public Profile {
   virtual ChromeAppCacheService* GetAppCacheService() { return NULL; }
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker();
   virtual VisitedLinkMaster* GetVisitedLinkMaster() { return NULL; }
-  virtual ExtensionsService* GetExtensionsService();
+  virtual ExtensionService* GetExtensionService();
   virtual UserScriptMaster* GetUserScriptMaster() { return NULL; }
   virtual ExtensionDevToolsManager* GetExtensionDevToolsManager() {
     return NULL;
@@ -412,13 +412,13 @@ class TestingProfile : public Profile {
   // Extension pref store, created for use by |extension_prefs_|.
   scoped_ptr<ExtensionPrefStore> extension_pref_store_;
 
-  // The Extension Preferences. Only created if CreateExtensionsService is
+  // The Extension Preferences. Only created if CreateExtensionService is
   // invoked.
   scoped_ptr<ExtensionPrefs> extension_prefs_;
 
-  // For properly notifying the ExtensionsService when the profile
+  // For properly notifying the ExtensionService when the profile
   // is disposed.
-  scoped_refptr<ExtensionsService> extensions_service_;
+  scoped_refptr<ExtensionService> extensions_service_;
 
   // The proxy prefs tracker.
   scoped_refptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;

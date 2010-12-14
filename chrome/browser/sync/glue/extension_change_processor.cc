@@ -11,7 +11,7 @@
 #include "base/stl_util-inl.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/sync/glue/extension_sync.h"
 #include "chrome/browser/sync/glue/extension_util.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
@@ -96,8 +96,8 @@ void ExtensionChangeProcessor::ApplyChangesFromSyncModel(
   if (!running()) {
     return;
   }
-  ExtensionsService* extensions_service =
-      GetExtensionsServiceFromProfile(profile_);
+  ExtensionService* extensions_service =
+      GetExtensionServiceFromProfile(profile_);
   for (int i = 0; i < change_count; ++i) {
     const sync_api::SyncManager::ChangeRecord& change = changes[i];
     switch (change.action) {

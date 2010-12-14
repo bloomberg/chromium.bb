@@ -9,7 +9,7 @@
 #include "base/values.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 
@@ -213,7 +213,7 @@ bool CreateContextMenuFunction::RunImpl() {
     return false;
 
   ExtensionMenuManager* menu_manager =
-      profile()->GetExtensionsService()->menu_manager();
+      profile()->GetExtensionService()->menu_manager();
 
   ExtensionMenuItem::ContextList contexts(ExtensionMenuItem::PAGE);
   if (!ParseContexts(*properties, kContextsKey, &contexts))
@@ -268,7 +268,7 @@ bool UpdateContextMenuFunction::RunImpl() {
   ExtensionMenuItem::Id item_id(profile(), extension_id(), 0);
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &item_id.uid));
 
-  ExtensionsService* service = profile()->GetExtensionsService();
+  ExtensionService* service = profile()->GetExtensionService();
   ExtensionMenuManager* manager = service->menu_manager();
   ExtensionMenuItem* item = manager->GetItemById(item_id);
   if (!item || item->extension_id() != extension_id()) {
@@ -282,7 +282,7 @@ bool UpdateContextMenuFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(properties != NULL);
 
   ExtensionMenuManager* menu_manager =
-      profile()->GetExtensionsService()->menu_manager();
+      profile()->GetExtensionService()->menu_manager();
 
   // Type.
   ExtensionMenuItem::Type type;
@@ -334,7 +334,7 @@ bool UpdateContextMenuFunction::RunImpl() {
 bool RemoveContextMenuFunction::RunImpl() {
   ExtensionMenuItem::Id id(profile(), extension_id(), 0);
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &id.uid));
-  ExtensionsService* service = profile()->GetExtensionsService();
+  ExtensionService* service = profile()->GetExtensionService();
   ExtensionMenuManager* manager = service->menu_manager();
 
   ExtensionMenuItem* item = manager->GetItemById(id);
@@ -349,7 +349,7 @@ bool RemoveContextMenuFunction::RunImpl() {
 }
 
 bool RemoveAllContextMenusFunction::RunImpl() {
-  ExtensionsService* service = profile()->GetExtensionsService();
+  ExtensionService* service = profile()->GetExtensionService();
   ExtensionMenuManager* manager = service->menu_manager();
   manager->RemoveAllContextItems(extension_id());
   return true;

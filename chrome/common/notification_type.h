@@ -867,7 +867,7 @@ class NotificationType {
     // uninstalled or disabled. The details are an Extension, and the source is
     // a Profile.
     //
-    // Note that when this notification is sent, ExtensionsService has already
+    // Note that when this notification is sent, ExtensionService has already
     // removed the extension from its internal state.
     EXTENSION_UNLOADED,
 

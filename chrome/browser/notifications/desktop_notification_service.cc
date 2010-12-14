@@ -11,7 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_object_proxy.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -615,7 +615,7 @@ string16 DesktopNotificationService::DisplayNameForOrigin(
     const GURL& origin) {
   // If the source is an extension, lookup the display name.
   if (origin.SchemeIs(chrome::kExtensionScheme)) {
-    ExtensionsService* ext_service = profile_->GetExtensionsService();
+    ExtensionService* ext_service = profile_->GetExtensionService();
     if (ext_service) {
       const Extension* extension = ext_service->GetExtensionByURL(origin);
       if (extension)

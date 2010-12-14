@@ -51,7 +51,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_util.h"
@@ -493,7 +493,7 @@ void Browser::OpenURLOffTheRecord(Profile* profile, const GURL& url) {
 TabContents* Browser::OpenApplication(Profile* profile,
                                       const std::string& app_id,
                                       TabContents* existing_tab) {
-  ExtensionsService* extensions_service = profile->GetExtensionsService();
+  ExtensionService* extensions_service = profile->GetExtensionService();
 
   // If the extension with |app_id| could't be found, most likely because it
   // was uninstalled.
@@ -618,7 +618,7 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
     return contents;
 
   // Check the prefs for overridden mode.
-  ExtensionsService* extensions_service = profile->GetExtensionsService();
+  ExtensionService* extensions_service = profile->GetExtensionService();
   DCHECK(extensions_service);
 
   ExtensionPrefs::LaunchType launch_type =
@@ -3039,7 +3039,7 @@ void Browser::OnStartDownload(DownloadItem* download, TabContents* tab) {
 #if defined(OS_CHROMEOS)
   // Don't show content browser for extension/theme downloads from gallery.
   if (download->is_extension_install()) {
-    ExtensionsService* service = profile_->GetExtensionsService();
+    ExtensionService* service = profile_->GetExtensionService();
     if (service && service->IsDownloadFromGallery(download->url(),
                                                   download->referrer_url())) {
       return;
@@ -3063,7 +3063,7 @@ void Browser::OnStartDownload(DownloadItem* download, TabContents* tab) {
 
   // For non-theme extensions, we don't show the download animation.
   if (download->is_extension_install() &&
-      !ExtensionsService::IsDownloadFromMiniGallery(download->url()))
+      !ExtensionService::IsDownloadFromMiniGallery(download->url()))
     return;
 
   TabContents* current_tab = GetSelectedTabContents();
@@ -3165,7 +3165,7 @@ void Browser::OnDidGetApplicationInfo(TabContents* tab_contents,
 
 void Browser::OnInstallApplication(TabContents* source,
                                    const WebApplicationInfo& web_app) {
-  ExtensionsService* extensions_service = profile()->GetExtensionsService();
+  ExtensionService* extensions_service = profile()->GetExtensionService();
   if (!extensions_service)
     return;
 
@@ -3225,7 +3225,7 @@ void Browser::Observe(NotificationType type,
       // Show the UI if the extension was disabled for escalated permissions.
       Profile* profile = Source<Profile>(source).ptr();
       if (profile_->IsSameProfile(profile)) {
-        ExtensionsService* service = profile->GetExtensionsService();
+        ExtensionService* service = profile->GetExtensionService();
         DCHECK(service);
         const Extension* extension = Details<const Extension>(details).ptr();
         if (service->extension_prefs()->DidExtensionEscalatePermissions(
@@ -3259,8 +3259,8 @@ void Browser::Observe(NotificationType type,
       TabContents* tab_contents = GetSelectedTabContents();
       if (!tab_contents)
         break;
-      ExtensionsService* extensions_service =
-          Source<Profile>(source).ptr()->GetExtensionsService();
+      ExtensionService* extensions_service =
+          Source<Profile>(source).ptr()->GetExtensionService();
       ExtensionHost* extension_host = Details<ExtensionHost>(details).ptr();
       tab_contents->AddInfoBar(new CrashedExtensionInfoBarDelegate(
           tab_contents, extensions_service, extension_host->extension()));
@@ -3307,7 +3307,7 @@ void Browser::Observe(NotificationType type,
       // the download_url GURL instead. This means that themes in the extensions
       // gallery won't get the loading dialog.
       GURL download_url = *(Details<GURL>(details).ptr());
-      if (ExtensionsService::IsDownloadFromMiniGallery(download_url))
+      if (ExtensionService::IsDownloadFromMiniGallery(download_url))
         window()->ShowThemeInstallBubble();
       break;
     }
@@ -3495,7 +3495,7 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_INTERNET_OPTIONS, true);
 #endif
 
-  ExtensionsService* extensions_service = profile()->GetExtensionsService();
+  ExtensionService* extensions_service = profile()->GetExtensionService();
   bool enable_extensions =
       extensions_service && extensions_service->extensions_enabled();
   command_updater_.UpdateCommandEnabled(IDC_MANAGE_EXTENSIONS,

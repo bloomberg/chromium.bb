@@ -10,7 +10,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_updater.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #endif
@@ -85,7 +85,7 @@ void SetCurrentThemeFromThemeSpecifics(
     std::string id(theme_specifics.custom_theme_id());
     GURL update_url(theme_specifics.custom_theme_update_url());
     VLOG(1) << "Applying theme " << id << " with update_url " << update_url;
-    ExtensionsService* extensions_service = profile->GetExtensionsService();
+    ExtensionService* extensions_service = profile->GetExtensionService();
     CHECK(extensions_service);
     const Extension* extension = extensions_service->GetExtensionById(id, true);
     if (extension) {
@@ -138,7 +138,7 @@ void SetCurrentThemeFromThemeSpecifics(
           kInstallSilently, kEnableOnInstall, kEnableIncognitoOnInstall);
       ExtensionUpdater* extension_updater = extensions_service->updater();
       // Auto-updates should now be on always (see the construction of
-      // the ExtensionsService in ProfileImpl::InitExtensions()).
+      // the ExtensionService in ProfileImpl::InitExtensions()).
       if (!extension_updater) {
         LOG(DFATAL) << "Extension updater unexpectedly NULL; "
                     << "auto-updates may be turned off";

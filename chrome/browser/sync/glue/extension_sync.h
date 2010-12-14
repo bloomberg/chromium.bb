@@ -13,7 +13,7 @@
 #include <string>
 
 class Extension;
-class ExtensionsService;
+class ExtensionService;
 class Profile;
 class ProfileSyncService;
 
@@ -38,7 +38,7 @@ bool RootNodeHasChildren(const char* tag,
                          ProfileSyncService* sync_service,
                          bool* has_children);
 
-ExtensionsService* GetExtensionsServiceFromProfile(Profile* profile);
+ExtensionService* GetExtensionServiceFromProfile(Profile* profile);
 
 // Fills |extension_data_map| with both client-side information about
 // installed extensions and the server-side information about
@@ -74,12 +74,12 @@ void RemoveServerData(const ExtensionSyncTraits& traits,
 // Starts updating the client data from the given server data.
 void UpdateClient(const ExtensionSyncTraits& traits,
                   const sync_pb::ExtensionSpecifics& server_data,
-                  ExtensionsService* extensions_service);
+                  ExtensionService* extensions_service);
 
 // Removes existing client data for the given extension.
 void RemoveFromClient(const ExtensionSyncTraits& traits,
                       const std::string& id,
-                      ExtensionsService* extensions_service);
+                      ExtensionService* extensions_service);
 
 }  // namespace browser_sync
 

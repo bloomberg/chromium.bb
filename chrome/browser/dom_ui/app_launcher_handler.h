@@ -15,7 +15,7 @@
 
 class Extension;
 class ExtensionPrefs;
-class ExtensionsService;
+class ExtensionService;
 class NotificationRegistrar;
 class PrefChangeRegistrar;
 
@@ -29,7 +29,7 @@ class AppLauncherHandler
       public ExtensionInstallUI::Delegate,
       public NotificationObserver {
  public:
-  explicit AppLauncherHandler(ExtensionsService* extension_service);
+  explicit AppLauncherHandler(ExtensionService* extension_service);
   virtual ~AppLauncherHandler();
 
   // Populate a dictionary with the information from an extension.
@@ -92,7 +92,7 @@ class AppLauncherHandler
   void AnimateAppIcon(const Extension* extension, const gfx::Rect& rect);
 
   // The apps are represented in the extensions model.
-  scoped_refptr<ExtensionsService> extensions_service_;
+  scoped_refptr<ExtensionService> extensions_service_;
 
   // We monitor changes to the extension system so that we can reload the apps
   // when necessary.

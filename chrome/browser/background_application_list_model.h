@@ -15,7 +15,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
-class ExtensionsService;
+class ExtensionService;
 class PrefService;
 class Profile;
 

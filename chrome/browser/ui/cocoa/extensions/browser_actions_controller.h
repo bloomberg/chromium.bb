@@ -17,7 +17,7 @@ class Browser;
 class Extension;
 @class ExtensionPopupController;
 class ExtensionToolbarModel;
-class ExtensionsServiceObserverBridge;
+class ExtensionServiceObserverBridge;
 @class MenuButton;
 class PrefService;
 class Profile;
@@ -41,8 +41,8 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
   // The model that tracks the order of the toolbar icons. Weak.
   ExtensionToolbarModel* toolbarModel_;
 
-  // The observer for the ExtensionsService we're getting events from.
-  scoped_ptr<ExtensionsServiceObserverBridge> observer_;
+  // The observer for the ExtensionService we're getting events from.
+  scoped_ptr<ExtensionServiceObserverBridge> observer_;
 
   // A dictionary of Extension ID -> BrowserActionButton pairs representing the
   // buttons present in the container view. The ID is a string unique to each

@@ -15,7 +15,7 @@
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
@@ -46,7 +46,7 @@ void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
 
 #if defined(OS_CHROMEOS)
   // This makes sure that we create the Default profile first, with no
-  // ExtensionsService and then the real profile with one, as we do when
+  // ExtensionService and then the real profile with one, as we do when
   // running on chromeos.
   command_line->AppendSwitchASCII(switches::kLoginUser,
                                   "TestUser@gmail.com");
@@ -57,7 +57,7 @@ void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
 
 bool ExtensionBrowserTest::LoadExtensionImpl(const FilePath& path,
                                              bool incognito_enabled) {
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  ExtensionService* service = browser()->profile()->GetExtensionService();
   {
     NotificationRegistrar registrar;
     registrar.Add(this, NotificationType::EXTENSION_LOADED,
@@ -124,7 +124,7 @@ bool ExtensionBrowserTest::InstallOrUpdateExtension(const std::string& id,
                                                     const FilePath& path,
                                                     InstallUIType ui_type,
                                                     int expected_change) {
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  ExtensionService* service = browser()->profile()->GetExtensionService();
   service->set_show_extensions_prompts(false);
   size_t num_before = service->extensions()->size();
 
@@ -174,7 +174,7 @@ bool ExtensionBrowserTest::InstallOrUpdateExtension(const std::string& id,
 }
 
 void ExtensionBrowserTest::ReloadExtension(const std::string& extension_id) {
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  ExtensionService* service = browser()->profile()->GetExtensionService();
   service->ReloadExtension(extension_id);
   ui_test_utils::RegisterAndWait(this,
                                  NotificationType::EXTENSION_LOADED,
@@ -182,22 +182,22 @@ void ExtensionBrowserTest::ReloadExtension(const std::string& extension_id) {
 }
 
 void ExtensionBrowserTest::UnloadExtension(const std::string& extension_id) {
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  ExtensionService* service = browser()->profile()->GetExtensionService();
   service->UnloadExtension(extension_id);
 }
 
 void ExtensionBrowserTest::UninstallExtension(const std::string& extension_id) {
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  ExtensionService* service = browser()->profile()->GetExtensionService();
   service->UninstallExtension(extension_id, false);
 }
 
 void ExtensionBrowserTest::DisableExtension(const std::string& extension_id) {
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  ExtensionService* service = browser()->profile()->GetExtensionService();
   service->DisableExtension(extension_id);
 }
 
 void ExtensionBrowserTest::EnableExtension(const std::string& extension_id) {
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  ExtensionService* service = browser()->profile()->GetExtensionService();
   service->EnableExtension(extension_id);
 }
 
@@ -272,7 +272,7 @@ void ExtensionBrowserTest::WaitForExtensionLoad() {
 
 bool ExtensionBrowserTest::WaitForExtensionCrash(
     const std::string& extension_id) {
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  ExtensionService* service = browser()->profile()->GetExtensionService();
 
   if (!service->GetExtensionById(extension_id, true)) {
     // The extension is already unloaded, presumably due to a crash.

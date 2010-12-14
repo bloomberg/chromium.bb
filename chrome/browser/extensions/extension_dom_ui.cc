@@ -12,7 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_bookmark_manager_api.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -64,7 +64,7 @@ class ExtensionDOMUIImageLoadingTracker : public ImageLoadingTracker::Observer {
         extension_(NULL) {
     // Even when the extensions service is enabled by default, it's still
     // disabled in incognito mode.
-    ExtensionsService* service = profile->GetExtensionsService();
+    ExtensionService* service = profile->GetExtensionService();
     if (service)
       extension_ = service->GetExtensionByURL(page_url);
   }
@@ -125,7 +125,7 @@ const char ExtensionDOMUI::kExtensionURLOverrides[] =
 ExtensionDOMUI::ExtensionDOMUI(TabContents* tab_contents, const GURL& url)
     : DOMUI(tab_contents),
       url_(url) {
-  ExtensionsService* service = tab_contents->profile()->GetExtensionsService();
+  ExtensionService* service = tab_contents->profile()->GetExtensionService();
   const Extension* extension = service->GetExtensionByURL(url);
   if (!extension)
     extension = service->GetExtensionByWebExtent(url);
@@ -242,7 +242,7 @@ bool ExtensionDOMUI::HandleChromeURLOverride(GURL* url, Profile* profile) {
   if (!overrides || !overrides->GetList(page, &url_list))
     return false;
 
-  ExtensionsService* service = profile->GetExtensionsService();
+  ExtensionService* service = profile->GetExtensionService();
 
   size_t i = 0;
   while (i < url_list->GetSize()) {

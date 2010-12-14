@@ -12,7 +12,7 @@
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -176,10 +176,10 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 
 // A helper class to proxy extension notifications to the view controller's
 // appropriate methods.
-class ExtensionsServiceObserverBridge : public NotificationObserver,
+class ExtensionServiceObserverBridge : public NotificationObserver,
                                         public ExtensionToolbarModel::Observer {
  public:
-  ExtensionsServiceObserverBridge(BrowserActionsController* owner,
+  ExtensionServiceObserverBridge(BrowserActionsController* owner,
                                   Profile* profile) : owner_(owner) {
     registrar_.Add(this, NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                    Source<Profile>(profile));
@@ -220,7 +220,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   // Used for registering to receive notifications and automatic clean up.
   NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionsServiceObserverBridge);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionServiceObserverBridge);
 };
 
 @implementation BrowserActionsController
@@ -242,8 +242,8 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
         prefs::kBrowserActionContainerWidth))
       [BrowserActionsController registerUserPrefs:profile_->GetPrefs()];
 
-    observer_.reset(new ExtensionsServiceObserverBridge(self, profile_));
-    ExtensionsService* extensionsService = profile_->GetExtensionsService();
+    observer_.reset(new ExtensionServiceObserverBridge(self, profile_));
+    ExtensionService* extensionsService = profile_->GetExtensionService();
     // |extensionsService| can be NULL in Incognito.
     if (extensionsService) {
       toolbarModel_ = extensionsService->toolbar_model();
@@ -747,7 +747,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 - (BOOL)shouldDisplayBrowserAction:(const Extension*)extension {
   // Only display incognito-enabled extensions while in incognito mode.
   return (!profile_->IsOffTheRecord() ||
-          profile_->GetExtensionsService()->IsIncognitoEnabled(extension));
+          profile_->GetExtensionService()->IsIncognitoEnabled(extension));
 }
 
 - (void)showChevronIfNecessaryInFrame:(NSRect)frame animate:(BOOL)animate {

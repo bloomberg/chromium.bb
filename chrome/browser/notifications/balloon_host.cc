@@ -216,7 +216,7 @@ void BalloonHost::Init() {
   DCHECK(!render_view_host_) << "BalloonViewHost already initialized.";
   RenderViewHost* rvh = new RenderViewHost(
       site_instance_.get(), this, MSG_ROUTING_NONE, NULL);
-  if (GetProfile()->GetExtensionsService()) {
+  if (GetProfile()->GetExtensionService()) {
     extension_function_dispatcher_.reset(
         ExtensionFunctionDispatcher::Create(
             rvh, this, balloon_->notification().content_url()));

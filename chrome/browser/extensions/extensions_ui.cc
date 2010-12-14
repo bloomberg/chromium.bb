@@ -26,7 +26,7 @@
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_message_service.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -293,7 +293,7 @@ void ExtensionsDOMHandler::IconLoader::ReportResultOnUIThread(
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-ExtensionsDOMHandler::ExtensionsDOMHandler(ExtensionsService* extension_service)
+ExtensionsDOMHandler::ExtensionsDOMHandler(ExtensionService* extension_service)
     : extensions_service_(extension_service),
       ignore_notifications_(false),
       deleting_rvh_(NULL) {
@@ -793,7 +793,7 @@ static bool ExtensionWantsFileAccess(const Extension* extension) {
 
 // Static
 DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
-    ExtensionsService* service, const Extension* extension,
+    ExtensionService* service, const Extension* extension,
     const std::vector<ExtensionPage>& pages, bool enabled) {
   DictionaryValue* extension_data = new DictionaryValue();
 
@@ -938,8 +938,8 @@ ExtensionsDOMHandler::~ExtensionsDOMHandler() {
 // ExtensionsDOMHandler, public: -----------------------------------------------
 
 ExtensionsUI::ExtensionsUI(TabContents* contents) : DOMUI(contents) {
-  ExtensionsService *exstension_service =
-      GetProfile()->GetOriginalProfile()->GetExtensionsService();
+  ExtensionService *exstension_service =
+      GetProfile()->GetOriginalProfile()->GetExtensionService();
 
   ExtensionsDOMHandler* handler = new ExtensionsDOMHandler(exstension_service);
   AddMessageHandler(handler);

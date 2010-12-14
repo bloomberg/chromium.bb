@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSIONS_SERVICE_UNITTEST_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSIONS_SERVICE_UNITTEST_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_SERVICE_UNITTEST_H_
+#define CHROME_BROWSER_EXTENSIONS_EXTENSION_SERVICE_UNITTEST_H_
 #pragma once
 
 #include "base/file_path.h"
@@ -12,21 +12,21 @@
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class ExtensionsServiceTestBase : public testing::Test {
+class ExtensionServiceTestBase : public testing::Test {
  public:
-  ExtensionsServiceTestBase();
-  ~ExtensionsServiceTestBase();
+  ExtensionServiceTestBase();
+  ~ExtensionServiceTestBase();
 
-  virtual void InitializeExtensionsService(
+  virtual void InitializeExtensionService(
       const FilePath& pref_file, const FilePath& extensions_install_dir);
 
-  virtual void InitializeInstalledExtensionsService(
+  virtual void InitializeInstalledExtensionService(
       const FilePath& prefs_file, const FilePath& source_install_dir);
 
-  virtual void InitializeEmptyExtensionsService();
+  virtual void InitializeEmptyExtensionService();
 
   static void SetUpTestCase();
 
@@ -40,7 +40,7 @@ class ExtensionsServiceTestBase : public testing::Test {
   ScopedTempDir temp_dir_;
   scoped_ptr<Profile> profile_;
   FilePath extensions_install_dir_;
-  scoped_refptr<ExtensionsService> service_;
+  scoped_refptr<ExtensionService> service_;
   size_t total_successes_;
   MessageLoop loop_;
   BrowserThread ui_thread_;
@@ -50,4 +50,4 @@ class ExtensionsServiceTestBase : public testing::Test {
   BrowserThread io_thread_;
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSIONS_SERVICE_UNITTEST_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SERVICE_UNITTEST_H_

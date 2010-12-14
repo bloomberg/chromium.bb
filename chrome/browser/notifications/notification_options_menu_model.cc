@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
@@ -72,8 +72,8 @@ string16 NotificationOptionsMenuModel::GetLabelForCommandId(int command_id)
     DesktopNotificationService* service =
         balloon_->profile()->GetDesktopNotificationService();
     if (origin.SchemeIs(chrome::kExtensionScheme)) {
-      ExtensionsService* ext_service =
-          balloon_->profile()->GetExtensionsService();
+      ExtensionService* ext_service =
+          balloon_->profile()->GetExtensionService();
       const Extension* extension = ext_service->GetExtensionByURL(origin);
       if (extension) {
         ExtensionPrefs* extension_prefs = ext_service->extension_prefs();
@@ -121,8 +121,8 @@ bool NotificationOptionsMenuModel::GetAcceleratorForCommandId(
 void NotificationOptionsMenuModel::ExecuteCommand(int command_id) {
   DesktopNotificationService* service =
       balloon_->profile()->GetDesktopNotificationService();
-  ExtensionsService* ext_service =
-      balloon_->profile()->GetExtensionsService();
+  ExtensionService* ext_service =
+      balloon_->profile()->GetExtensionService();
   const GURL& origin = balloon_->notification().origin_url();
   switch (command_id) {
     case kTogglePermissionCommand:

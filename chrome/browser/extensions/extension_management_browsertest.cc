@@ -6,7 +6,7 @@
 #include "chrome/browser/extensions/autoupdate_interceptor.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -57,7 +57,7 @@ class ExtensionManagementTest : public ExtensionBrowserTest {
   // to the second version requiring increased permissions. Returns whether
   // the operation was completed successfully.
   bool InstallAndUpdateIncreasingPermissionsExtension() {
-    ExtensionsService* service = browser()->profile()->GetExtensionsService();
+    ExtensionService* service = browser()->profile()->GetExtensionService();
     size_t size_before = service->extensions()->size();
 
     // Install the initial version, which should happen just fine.
@@ -82,7 +82,7 @@ class ExtensionManagementTest : public ExtensionBrowserTest {
 
 // Tests that installing the same version overwrites.
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, InstallSameVersion) {
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  ExtensionService* service = browser()->profile()->GetExtensionService();
   const size_t size_before = service->extensions()->size();
   ASSERT_TRUE(InstallExtension(
       test_data_dir_.AppendASCII("install/install.crx"), 1));
@@ -100,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, InstallSameVersion) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, InstallOlderVersion) {
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  ExtensionService* service = browser()->profile()->GetExtensionService();
   const size_t size_before = service->extensions()->size();
   ASSERT_TRUE(InstallExtension(
       test_data_dir_.AppendASCII("install/install.crx"), 1));
@@ -111,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, InstallOlderVersion) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, InstallThenCancel) {
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  ExtensionService* service = browser()->profile()->GetExtensionService();
   const size_t size_before = service->extensions()->size();
   ASSERT_TRUE(InstallExtension(
       test_data_dir_.AppendASCII("install/install.crx"), 1));
@@ -138,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, Incognito) {
 // Tests the process of updating an extension to one that requires higher
 // permissions.
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, UpdatePermissions) {
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  ExtensionService* service = browser()->profile()->GetExtensionService();
   ASSERT_TRUE(InstallAndUpdateIncreasingPermissionsExtension());
   const size_t size_before = service->extensions()->size();
 
@@ -150,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, UpdatePermissions) {
 
 // Tests that we can uninstall a disabled extension.
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, UninstallDisabled) {
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  ExtensionService* service = browser()->profile()->GetExtensionService();
   ASSERT_TRUE(InstallAndUpdateIncreasingPermissionsExtension());
   const size_t size_before = service->extensions()->size();
 
@@ -164,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, UninstallDisabled) {
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, DisableEnable) {
   ExtensionProcessManager* manager = browser()->profile()->
       GetExtensionProcessManager();
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  ExtensionService* service = browser()->profile()->GetExtensionService();
   const size_t size_before = service->extensions()->size();
 
   // Load an extension, expect the background page to be available.
@@ -207,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, AutoUpdate) {
 
   // Install version 1 of the extension.
   ExtensionTestMessageListener listener1("v1 installed", false);
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  ExtensionService* service = browser()->profile()->GetExtensionService();
   const size_t size_before = service->extensions()->size();
   ASSERT_TRUE(service->disabled_extensions()->empty());
   ASSERT_TRUE(InstallExtension(basedir.AppendASCII("v1.crx"), 1));
@@ -253,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, AutoUpdate) {
 
 // See http://crbug.com/57378 for flakiness details.
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  ExtensionService* service = browser()->profile()->GetExtensionService();
   const char* kExtensionId = "ogjcoiohnmldgjemafoockdghcjciccf";
   // We don't want autoupdate blacklist checks.
   service->updater()->set_blacklist_checks_enabled(false);
@@ -273,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
   ASSERT_TRUE(service->disabled_extensions()->empty());
 
   // The code that reads external_extensions.json uses this method to inform
-  // the ExtensionsService of an extension to download.  Using the real code
+  // the ExtensionService of an extension to download.  Using the real code
   // is race-prone, because instantating the ExtensionService starts a read
   // of external_extensions.json before this test function starts.
   service->AddPendingExtensionFromExternalUpdateUrl(
@@ -325,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
 
 // See http://crbug.com/57378 for flakiness details.
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  ExtensionService* service = browser()->profile()->GetExtensionService();
   const char* kExtensionId = "ogjcoiohnmldgjemafoockdghcjciccf";
   // We don't want autoupdate blacklist checks.
   service->updater()->set_blacklist_checks_enabled(false);

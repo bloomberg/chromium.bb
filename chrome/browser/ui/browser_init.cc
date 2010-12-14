@@ -29,7 +29,7 @@
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_creator.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/net/predictor_api.h"
@@ -632,7 +632,7 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationWindow(Profile* profile) {
   // TODO(skerner): Do something reasonable here. Pop up a warning panel?
   // Open an URL to the gallery page of the extension id?
   if (!app_id.empty()) {
-    ExtensionsService* extensions_service = profile->GetExtensionsService();
+    ExtensionService* extensions_service = profile->GetExtensionService();
     const Extension* extension =
         extensions_service->GetExtensionById(app_id, false);
 

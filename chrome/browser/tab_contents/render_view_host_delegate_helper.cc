@@ -9,7 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/background_contents_service.h"
 #include "chrome/browser/character_encoding.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -37,7 +37,7 @@ RenderViewHostDelegateViewHelper::MaybeCreateBackgroundContents(
     SiteInstance* site,
     const GURL& opener_url,
     const string16& frame_name) {
-  ExtensionsService* extensions_service = profile->GetExtensionsService();
+  ExtensionService* extensions_service = profile->GetExtensionService();
 
   if (!opener_url.is_valid() ||
       frame_name.empty() ||

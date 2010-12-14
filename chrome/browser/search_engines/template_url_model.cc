@@ -11,7 +11,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
@@ -741,7 +741,7 @@ void TemplateURLModel::NotifyLoaded() {
       NotificationService::NoDetails());
 
   for (size_t i = 0; i < pending_extension_ids_.size(); ++i) {
-    const Extension* extension = profile_->GetExtensionsService()->
+    const Extension* extension = profile_->GetExtensionService()->
         GetExtensionById(pending_extension_ids_[i], true);
     if (extension)
       RegisterExtensionKeyword(extension);

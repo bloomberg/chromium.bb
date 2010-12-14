@@ -7,7 +7,7 @@
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
@@ -20,19 +20,19 @@ class ExtensionTestingProfile : public TestingProfile {
   ExtensionTestingProfile() {}
 
   FilePath GetExtensionsInstallDir() {
-    return GetPath().AppendASCII(ExtensionsService::kInstallDirectoryName);
+    return GetPath().AppendASCII(ExtensionService::kInstallDirectoryName);
   }
 
   void InitExtensionProfile() {
     DCHECK(!GetExtensionProcessManager());
-    DCHECK(!GetExtensionsService());
+    DCHECK(!GetExtensionService());
 
     manager_.reset(ExtensionProcessManager::Create(this));
     ExtensionPrefStore* pref_store = new ExtensionPrefStore;
     extension_prefs_.reset(new ExtensionPrefs(GetPrefs(),
                                               GetExtensionsInstallDir(),
                                               pref_store));
-    service_ = new ExtensionsService(this,
+    service_ = new ExtensionService(this,
                                      CommandLine::ForCurrentProcess(),
                                      GetExtensionsInstallDir(),
                                      extension_prefs_.get(),
@@ -53,14 +53,14 @@ class ExtensionTestingProfile : public TestingProfile {
     return manager_.get();
   }
 
-  virtual ExtensionsService* GetExtensionsService() {
+  virtual ExtensionService* GetExtensionService() {
     return service_.get();
   }
 
  private:
   scoped_ptr<ExtensionProcessManager> manager_;
   scoped_ptr<ExtensionPrefs> extension_prefs_;
-  scoped_refptr<ExtensionsService> service_;
+  scoped_refptr<ExtensionService> service_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionTestingProfile);
 };

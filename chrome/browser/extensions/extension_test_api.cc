@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/singleton.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -56,7 +56,7 @@ bool ExtensionTestLogFunction::RunImpl() {
 ExtensionTestQuotaResetFunction::~ExtensionTestQuotaResetFunction() {}
 
 bool ExtensionTestQuotaResetFunction::RunImpl() {
-  ExtensionsService* service = profile()->GetExtensionsService();
+  ExtensionService* service = profile()->GetExtensionService();
   ExtensionsQuotaService* quota = service->quota_service();
   quota->Purge();
   quota->violators_.clear();

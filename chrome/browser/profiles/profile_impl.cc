@@ -37,7 +37,7 @@
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/file_system/browser_file_system_helper.h"
@@ -352,10 +352,10 @@ void ProfileImpl::InitExtensions() {
                         // since it isn't used anymore.
   user_script_master_ = new UserScriptMaster(script_dir, this);
 
-  extensions_service_ = new ExtensionsService(
+  extensions_service_ = new ExtensionService(
       this,
       CommandLine::ForCurrentProcess(),
-      GetPath().AppendASCII(ExtensionsService::kInstallDirectoryName),
+      GetPath().AppendASCII(ExtensionService::kInstallDirectoryName),
       extension_prefs_.get(),
       true);
 
@@ -401,7 +401,7 @@ void ProfileImpl::RegisterComponentExtensions() {
         ResourceBundle::GetSharedInstance().GetRawDataResource(
             iter->second).as_string();
     extensions_service_->register_component_extension(
-        ExtensionsService::ComponentExtensionInfo(manifest, path));
+        ExtensionService::ComponentExtensionInfo(manifest, path));
   }
 }
 
@@ -419,7 +419,7 @@ void ProfileImpl::InstallDefaultApps() {
   if (g_browser_process->GetApplicationLocale() != "en-US")
     return;
 
-  ExtensionsService* extensions_service = GetExtensionsService();
+  ExtensionService* extensions_service = GetExtensionService();
   const ExtensionIdSet* app_ids =
       extensions_service->default_apps()->GetAppsToInstall();
   if (!app_ids)
@@ -609,7 +609,7 @@ VisitedLinkMaster* ProfileImpl::GetVisitedLinkMaster() {
   return visited_link_master_.get();
 }
 
-ExtensionsService* ProfileImpl::GetExtensionsService() {
+ExtensionService* ProfileImpl::GetExtensionService() {
   return extensions_service_.get();
 }
 
@@ -689,7 +689,7 @@ PrefService* ProfileImpl::GetPrefs() {
     // as early as possible. The constructor takes care of that.
     extension_prefs_.reset(new ExtensionPrefs(
         prefs_.get(),
-        GetPath().AppendASCII(ExtensionsService::kInstallDirectoryName),
+        GetPath().AppendASCII(ExtensionService::kInstallDirectoryName),
         extension_pref_store));
 
     DCHECK(!net_pref_observer_.get());

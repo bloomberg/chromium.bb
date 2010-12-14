@@ -77,7 +77,7 @@ void UninstallExtension(const FilePath& extensions_dir,
                         const std::string& id) {
   // We don't care about the return value. If this fails (and it can, due to
   // plugins that aren't unloaded yet, it will get cleaned up by
-  // ExtensionsService::GarbageCollectExtensions).
+  // ExtensionService::GarbageCollectExtensions).
   file_util::Delete(extensions_dir.AppendASCII(id), true);  // recursive.
 }
 

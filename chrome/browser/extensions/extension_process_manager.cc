@@ -10,7 +10,7 @@
 #include "chrome/browser/extensions/extension_host_mac.h"
 #endif
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -135,8 +135,8 @@ ExtensionHost* ExtensionProcessManager::CreateView(const GURL& url,
                                                    ViewType::Type view_type) {
   // A NULL browser may only be given for pop-up views.
   DCHECK(browser || (!browser && view_type == ViewType::EXTENSION_POPUP));
-  ExtensionsService* service =
-      browsing_instance_->profile()->GetExtensionsService();
+  ExtensionService* service =
+      browsing_instance_->profile()->GetExtensionService();
   if (service) {
     const Extension* extension = service->GetExtensionByURL(url);
     if (extension)
@@ -226,8 +226,8 @@ void ExtensionProcessManager::RegisterExtensionProcess(
   DCHECK(it == process_ids_.end());
   process_ids_[extension_id] = process_id;
 
-  ExtensionsService* extension_service =
-      browsing_instance_->profile()->GetExtensionsService();
+  ExtensionService* extension_service =
+      browsing_instance_->profile()->GetExtensionService();
 
   std::vector<std::string> page_action_ids;
   const Extension* extension =
@@ -281,13 +281,13 @@ void ExtensionProcessManager::Observe(NotificationType type,
   switch (type.value) {
     case NotificationType::EXTENSIONS_READY: {
       CreateBackgroundHosts(this,
-          Source<Profile>(source).ptr()->GetExtensionsService()->extensions());
+          Source<Profile>(source).ptr()->GetExtensionService()->extensions());
       break;
     }
 
     case NotificationType::EXTENSION_LOADED: {
-      ExtensionsService* service =
-          Source<Profile>(source).ptr()->GetExtensionsService();
+      ExtensionService* service =
+          Source<Profile>(source).ptr()->GetExtensionService();
       if (service->is_ready()) {
         const Extension* extension = Details<const Extension>(details).ptr();
         ::CreateBackgroundHost(this, extension);
@@ -427,8 +427,8 @@ RenderProcessHost* IncognitoExtensionProcessManager::GetExtensionProcess(
 
 const Extension* IncognitoExtensionProcessManager::GetExtensionOrAppByURL(
     const GURL& url) {
-  ExtensionsService* service =
-      browsing_instance_->profile()->GetExtensionsService();
+  ExtensionService* service =
+      browsing_instance_->profile()->GetExtensionService();
   if (!service)
     return NULL;
   return (url.SchemeIs(chrome::kExtensionScheme)) ?
@@ -437,8 +437,8 @@ const Extension* IncognitoExtensionProcessManager::GetExtensionOrAppByURL(
 
 bool IncognitoExtensionProcessManager::IsIncognitoEnabled(
     const Extension* extension) {
-  ExtensionsService* service =
-      browsing_instance_->profile()->GetExtensionsService();
+  ExtensionService* service =
+      browsing_instance_->profile()->GetExtensionService();
   return service && service->IsIncognitoEnabled(extension);
 }
 
@@ -456,8 +456,8 @@ void IncognitoExtensionProcessManager::Observe(
         // On Chrome OS, a login screen is implemented as a browser.
         // This browser has no extension service.  In this case,
         // service will be NULL.
-        ExtensionsService* service =
-            browsing_instance_->profile()->GetExtensionsService();
+        ExtensionService* service =
+            browsing_instance_->profile()->GetExtensionService();
         if (service && service->is_ready())
           CreateBackgroundHosts(this, service->extensions());
       }

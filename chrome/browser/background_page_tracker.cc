@@ -13,7 +13,7 @@
 #include "chrome/browser/background_contents_service.h"
 #include "chrome/browser/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -109,8 +109,8 @@ BackgroundPageTracker::BackgroundPageTracker() {
   // Check to make sure all of the extensions are loaded - once they are loaded
   // we can update the list.
   Profile* profile = g_browser_process->profile_manager()->GetDefaultProfile();
-  if (profile->GetExtensionsService() &&
-      profile->GetExtensionsService()->is_ready()) {
+  if (profile->GetExtensionService() &&
+      profile->GetExtensionService()->is_ready()) {
     UpdateExtensionList();
     // We do not send any change notifications here, because the object was
     // just created (it doesn't seem appropriate to send a change notification
@@ -177,7 +177,7 @@ void BackgroundPageTracker::Observe(NotificationType type,
 bool BackgroundPageTracker::UpdateExtensionList() {
   // Extensions are loaded - update our list.
   Profile* profile = g_browser_process->profile_manager()->GetDefaultProfile();
-  ExtensionsService* extensions_service = profile->GetExtensionsService();
+  ExtensionService* extensions_service = profile->GetExtensionService();
   DCHECK(extensions_service);
 
   // We will make two passes to update the list:

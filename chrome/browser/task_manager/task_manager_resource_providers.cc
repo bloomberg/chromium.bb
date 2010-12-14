@@ -24,7 +24,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/balloon_host.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -174,8 +174,8 @@ std::wstring TaskManagerTabContentsResource::GetTitle() const {
     base::i18n::AdjustStringForLocaleDirection(&tab_title);
   }
 
-  ExtensionsService* extensions_service =
-      tab_contents_->profile()->GetExtensionsService();
+  ExtensionService* extensions_service =
+      tab_contents_->profile()->GetExtensionService();
   int message_id = GetMessagePrefixID(
       extensions_service->IsInstalledApp(tab_contents_->GetURL()),
       tab_contents_->HostsExtension(),
@@ -193,8 +193,8 @@ TabContents* TaskManagerTabContentsResource::GetTabContents() const {
 
 const Extension* TaskManagerTabContentsResource::GetExtension() const {
   if (tab_contents_->HostsExtension()) {
-    ExtensionsService* extensions_service =
-        tab_contents_->profile()->GetExtensionsService();
+    ExtensionService* extensions_service =
+        tab_contents_->profile()->GetExtensionService();
     return extensions_service->GetExtensionByURL(tab_contents_->GetURL());
   }
 
@@ -474,7 +474,7 @@ void TaskManagerBackgroundContentsResourceProvider::StartUpdating() {
        it != profile_manager->end(); ++it) {
     BackgroundContentsService* background_contents_service =
         (*it)->GetBackgroundContentsService();
-    ExtensionsService* extensions_service = (*it)->GetExtensionsService();
+    ExtensionService* extensions_service = (*it)->GetExtensionService();
     std::vector<BackgroundContents*> contents =
         background_contents_service->GetBackgroundContents();
     for (std::vector<BackgroundContents*>::iterator iterator = contents.begin();
@@ -574,8 +574,8 @@ void TaskManagerBackgroundContentsResourceProvider::Observe(
       // except in rare cases when an extension is being unloaded or chrome is
       // exiting while the task manager is displayed.
       std::wstring application_name;
-      ExtensionsService* service =
-          Source<Profile>(source)->GetExtensionsService();
+      ExtensionService* service =
+          Source<Profile>(source)->GetExtensionService();
       if (service) {
         std::string application_id = UTF16ToUTF8(
             Details<BackgroundContentsOpenedDetails>(details)->application_id);

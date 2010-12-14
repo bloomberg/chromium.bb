@@ -61,7 +61,7 @@ class ExtensionEventRouter;
 class ExtensionInfoMap;
 class ExtensionMessageService;
 class ExtensionProcessManager;
-class ExtensionsService;
+class ExtensionService;
 class FaviconService;
 class FilePath;
 class FindBarState;
@@ -195,9 +195,9 @@ class Profile {
   // that this method is called.
   virtual VisitedLinkMaster* GetVisitedLinkMaster() = 0;
 
-  // Retrieves a pointer to the ExtensionsService associated with this
-  // profile. The ExtensionsService is created at startup.
-  virtual ExtensionsService* GetExtensionsService() = 0;
+  // Retrieves a pointer to the ExtensionService associated with this
+  // profile. The ExtensionService is created at startup.
+  virtual ExtensionService* GetExtensionService() = 0;
 
   // Retrieves a pointer to the UserScriptMaster associated with this
   // profile.  The UserScriptMaster is lazily created the first time
@@ -340,7 +340,7 @@ class Profile {
   // is only used for a separate cookie store currently.
   virtual URLRequestContextGetter* GetRequestContextForExtensions() = 0;
 
-  // Called by the ExtensionsService that lives in this profile. Gives the
+  // Called by the ExtensionService that lives in this profile. Gives the
   // profile a chance to react to the load event before the EXTENSION_LOADED
   // notification has fired. The purpose for handling this event first is to
   // avoid race conditions by making sure URLRequestContexts learn about new
@@ -348,7 +348,7 @@ class Profile {
   virtual void RegisterExtensionWithRequestContexts(
       const Extension* extension) {}
 
-  // Called by the ExtensionsService that lives in this profile. Lets the
+  // Called by the ExtensionService that lives in this profile. Lets the
   // profile clean up its RequestContexts once all the listeners to the
   // EXTENSION_UNLOADED notification have finished running.
   virtual void UnregisterExtensionWithRequestContexts(

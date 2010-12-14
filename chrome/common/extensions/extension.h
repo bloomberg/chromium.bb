@@ -296,8 +296,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Returns the url prefix for the extension/apps gallery. Can be set via the
   // --apps-gallery-url switch. The URL returned will not contain a trailing
   // slash. Do not use this as a prefix/extent for the store.  Instead see
-  // ExtensionsService::GetWebStoreApp or
-  // ExtensionsService::IsDownloadFromGallery
+  // ExtensionService::GetWebStoreApp or
+  // ExtensionService::IsDownloadFromGallery
   static std::string ChromeStoreLaunchURL();
 
   // Helper function that consolidates the check for whether the script can
@@ -691,7 +691,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // The Omnibox keyword for this extension, or empty if there is none.
   std::string omnibox_keyword_;
 
-  FRIEND_TEST_ALL_PREFIXES(ExtensionsServiceTest,
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            UpdateExtensionPreservesLocation);
   FRIEND_TEST_ALL_PREFIXES(ExtensionTest, LoadPageActionHelper);
   FRIEND_TEST_ALL_PREFIXES(ExtensionTest, InitFromValueInvalid);

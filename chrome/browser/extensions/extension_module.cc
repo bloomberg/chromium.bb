@@ -7,11 +7,11 @@
 #include <string>
 
 #include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 
 ExtensionPrefs* SetUpdateUrlDataFunction::extension_prefs() {
-  return profile()->GetExtensionsService()->extension_prefs();
+  return profile()->GetExtensionService()->extension_prefs();
 }
 
 bool SetUpdateUrlDataFunction::RunImpl() {

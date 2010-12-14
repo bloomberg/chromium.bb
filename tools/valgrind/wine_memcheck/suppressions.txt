@@ -502,8 +502,8 @@
    Memcheck:Leak
    ...
    fun:operator new
-   fun:NewRunnableMethod<ExtensionsServiceBackend,void (__thiscall ExtensionsServiceBackend::*)(void)>
-   fun:ExtensionsService::ClearProvidersForTesting
+   fun:NewRunnableMethod<ExtensionServiceBackend,void (__thiscall ExtensionServiceBackend::*)(void)>
+   fun:ExtensionService::ClearProvidersForTesting
 }
 {
    bug_33424

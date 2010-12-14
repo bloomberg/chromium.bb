@@ -9,7 +9,7 @@
 #include "base/task.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -47,7 +47,7 @@ class AsyncUninstaller : public ExtensionInstallUI::Delegate {
 
   // Overridden by ExtensionInstallUI::Delegate.
   virtual void InstallUIProceed() {
-    profile_->GetExtensionsService()->
+    profile_->GetExtensionService()->
         UninstallExtension(extension_->id(), false);
   }
 
@@ -216,7 +216,7 @@ int CurrentTabId() {
       break;
     }
     case kExtensionContextDisable: {
-      ExtensionsService* extensionService = profile_->GetExtensionsService();
+      ExtensionService* extensionService = profile_->GetExtensionService();
       if (!extensionService)
         return; // Incognito mode.
       extensionService->DisableExtension(extension_->id());

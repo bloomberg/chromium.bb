@@ -25,7 +25,7 @@ class WebKitContext;
 
 // A helper class that takes care of removing local storage, databases and
 // cookies for a given extension. This is used by
-// ExtensionsService::ClearExtensionData() upon uninstalling an extension.
+// ExtensionService::ClearExtensionData() upon uninstalling an extension.
 class ExtensionDataDeleter
   : public base::RefCountedThreadSafe<ExtensionDataDeleter,
                                       BrowserThread::DeleteOnUIThread> {

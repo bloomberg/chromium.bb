@@ -23,7 +23,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/convert_user_script.h"
 #include "chrome/browser/extensions/convert_web_app.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -79,7 +79,7 @@ bool CrxInstaller::ClearWhitelistedInstallId(const std::string& id) {
   return false;
 }
 
-CrxInstaller::CrxInstaller(ExtensionsService* frontend,
+CrxInstaller::CrxInstaller(ExtensionService* frontend,
                            ExtensionInstallUI* client)
     : install_directory_(frontend->install_directory()),
       install_source_(Extension::INTERNAL),

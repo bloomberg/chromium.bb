@@ -12,7 +12,7 @@
 #include "chrome/browser/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -67,7 +67,7 @@ class BackgroundApplicationListModel::Application
 };
 
 namespace {
-void GetServiceApplications(ExtensionsService* service,
+void GetServiceApplications(ExtensionService* service,
                             ExtensionList* applications_result) {
   const ExtensionList* extensions = service->extensions();
 
@@ -239,7 +239,7 @@ void BackgroundApplicationListModel::Observe(
     Update();
     return;
   }
-  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionService* service = profile_->GetExtensionService();
   if (!service || !service->is_ready())
     return;
 
@@ -286,7 +286,7 @@ void BackgroundApplicationListModel::RemoveObserver(Observer* observer) {
 // differs from the old list, it generates OnApplicationListChanged events for
 // each observer.
 void BackgroundApplicationListModel::Update() {
-  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionService* service = profile_->GetExtensionService();
 
   // Discover current background applications, compare with previous list, which
   // is consistently sorted, and notify observers if they differ.

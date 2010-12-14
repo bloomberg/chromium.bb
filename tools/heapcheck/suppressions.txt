@@ -861,13 +861,13 @@
    fun:PurgePluginListCache
    fun:PluginService::Observe
    fun:NotificationService::Notify
-   fun:ExtensionsService::NotifyExtensionLoaded
-   fun:ExtensionsService::OnExtensionLoaded
-   fun:ExtensionsService::LoadInstalledExtension
-   fun:ExtensionsService::ContinueLoadAllExtensions
-   fun:ExtensionsService::LoadAllExtensions
-   fun:ExtensionsService::Init
-   fun:ExtensionsServiceTest_CleanupOnStartup_Test::TestBody
+   fun:ExtensionService::NotifyExtensionLoaded
+   fun:ExtensionService::OnExtensionLoaded
+   fun:ExtensionService::LoadInstalledExtension
+   fun:ExtensionService::ContinueLoadAllExtensions
+   fun:ExtensionService::LoadAllExtensions
+   fun:ExtensionService::Init
+   fun:ExtensionServiceTest_CleanupOnStartup_Test::TestBody
 }
 {
    bug_53184

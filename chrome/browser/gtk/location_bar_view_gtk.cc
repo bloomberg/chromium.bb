@@ -26,7 +26,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/gtk/bookmark_bubble_gtk.h"
 #include "chrome/browser/gtk/bookmark_utils_gtk.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
@@ -680,7 +680,7 @@ void LocationBarViewGtk::UpdateContentSettingsIcons() {
 
 void LocationBarViewGtk::UpdatePageActions() {
   std::vector<ExtensionAction*> page_actions;
-  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionService* service = profile_->GetExtensionService();
   if (!service)
     return;
 
@@ -995,7 +995,7 @@ void LocationBarViewGtk::SetKeywordLabel(const std::wstring& keyword) {
     if (is_extension_keyword) {
       const TemplateURL* template_url =
           profile_->GetTemplateURLModel()->GetTemplateURLForKeyword(keyword);
-      const SkBitmap& bitmap = profile_->GetExtensionsService()->
+      const SkBitmap& bitmap = profile_->GetExtensionService()->
           GetOmniboxIcon(template_url->GetExtensionId());
       GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&bitmap);
       gtk_image_set_from_pixbuf(GTK_IMAGE(tab_to_search_magnifier_), pixbuf);
@@ -1348,7 +1348,7 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
   image_.Own(gtk_image_new());
   gtk_container_add(GTK_CONTAINER(event_box_.get()), image_.get());
 
-  const Extension* extension = profile->GetExtensionsService()->
+  const Extension* extension = profile->GetExtensionService()->
       GetExtensionById(page_action->extension_id(), false);
   DCHECK(extension);
 
@@ -1512,7 +1512,7 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
           event->button.button);
     }
   } else {
-    const Extension* extension = profile_->GetExtensionsService()->
+    const Extension* extension = profile_->GetExtensionService()->
         GetExtensionById(page_action()->extension_id(), false);
 
     context_menu_model_ =

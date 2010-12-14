@@ -7,7 +7,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/extensions/extension_test_api.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/notification_registrar.h"
@@ -143,7 +143,7 @@ bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
       DCHECK(!std::string(extension_name).empty()) <<
           "Relative page_url given with no extension_name";
 
-      ExtensionsService* service = browser()->profile()->GetExtensionsService();
+      ExtensionService* service = browser()->profile()->GetExtensionService();
       const Extension* extension =
           service->GetExtensionById(last_loaded_extension_id_, false);
       if (!extension)
@@ -166,7 +166,7 @@ bool ExtensionApiTest::RunExtensionTestImpl(const char* extension_name,
 
 // Test that exactly one extension loaded.
 const Extension* ExtensionApiTest::GetSingleLoadedExtension() {
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  ExtensionService* service = browser()->profile()->GetExtensionService();
 
   int found_extension_index = -1;
   for (size_t i = 0; i < service->extensions()->size(); ++i) {

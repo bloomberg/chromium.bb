@@ -39,7 +39,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/external_protocol_handler.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/host_zoom_map.h"
@@ -595,7 +595,7 @@ void TabContents::SetExtensionAppById(const std::string& extension_app_id) {
   if (extension_app_id.empty())
     return;
 
-  ExtensionsService* extension_service = profile()->GetExtensionsService();
+  ExtensionService* extension_service = profile()->GetExtensionService();
   if (!extension_service || !extension_service->is_ready())
     return;
 
@@ -1684,7 +1684,7 @@ void TabContents::DidNavigateMainFramePostCommit(
   // Clear all page actions, blocked content notifications and browser actions
   // for this tab, unless this is an in-page navigation.
   if (!details.is_in_page) {
-    ExtensionsService* service = profile()->GetExtensionsService();
+    ExtensionService* service = profile()->GetExtensionService();
     if (service) {
       for (size_t i = 0; i < service->extensions()->size(); ++i) {
         ExtensionAction* browser_action =
@@ -3243,7 +3243,7 @@ void TabContents::UpdateExtensionAppIcon(const Extension* extension) {
 }
 
 const Extension* TabContents::GetExtensionContaining(const GURL& url) {
-  ExtensionsService* extensions_service = profile()->GetExtensionsService();
+  ExtensionService* extensions_service = profile()->GetExtensionService();
   if (!extensions_service)
     return NULL;
 

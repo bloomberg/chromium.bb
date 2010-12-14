@@ -7,7 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -15,7 +15,7 @@
 
 CrashedExtensionInfoBarDelegate::CrashedExtensionInfoBarDelegate(
     TabContents* tab_contents,
-    ExtensionsService* extensions_service,
+    ExtensionService* extensions_service,
     const Extension* extension)
     : ConfirmInfoBarDelegate(tab_contents),
       extensions_service_(extensions_service),

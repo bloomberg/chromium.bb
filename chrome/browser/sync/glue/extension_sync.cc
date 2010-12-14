@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/extensions/extension_updater.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/extension_data.h"
@@ -33,20 +33,20 @@ bool RootNodeHasChildren(const char* tag,
   return true;
 }
 
-ExtensionsService* GetExtensionsServiceFromProfile(
+ExtensionService* GetExtensionServiceFromProfile(
     Profile* profile) {
   CHECK(profile);
-  ExtensionsService* extensions_service = profile->GetExtensionsService();
+  ExtensionService* extensions_service = profile->GetExtensionService();
   CHECK(extensions_service);
   return extensions_service;
 }
 
 namespace {
 
-ExtensionsService* GetExtensionsServiceFromProfileSyncService(
+ExtensionService* GetExtensionServiceFromProfileSyncService(
     ProfileSyncService* sync_service) {
   CHECK(sync_service);
-  return GetExtensionsServiceFromProfile(sync_service->profile());
+  return GetExtensionServiceFromProfile(sync_service->profile());
 }
 
 // Updates the value in |extension_data_map| from the given data,
@@ -80,7 +80,7 @@ ExtensionData* SetOrCreateExtensionData(
 void ReadClientDataFromExtensionList(
     const ExtensionList& extensions,
     const ExtensionTypeSet& allowed_extension_types,
-    ExtensionsService* extensions_service,
+    ExtensionService* extensions_service,
     std::set<std::string>* unsynced_extensions,
     ExtensionDataMap* extension_data_map) {
   for (ExtensionList::const_iterator it = extensions.begin();
@@ -110,7 +110,7 @@ void ReadClientDataFromExtensionList(
 // enabled and disabled extensions from |extensions_service|.
 void SlurpClientData(
     const ExtensionTypeSet& allowed_extension_types,
-    ExtensionsService* extensions_service,
+    ExtensionService* extensions_service,
     std::set<std::string>* unsynced_extensions,
     ExtensionDataMap* extension_data_map) {
   const ExtensionList* extensions = extensions_service->extensions();
@@ -191,8 +191,8 @@ bool SlurpServerData(
 bool SlurpExtensionData(const ExtensionSyncTraits& traits,
                         ProfileSyncService* sync_service,
                         ExtensionDataMap* extension_data_map) {
-  ExtensionsService* extensions_service =
-      GetExtensionsServiceFromProfileSyncService(sync_service);
+  ExtensionService* extensions_service =
+      GetExtensionServiceFromProfileSyncService(sync_service);
   std::set<std::string> unsynced_extensions;
 
   // Read client-side data first so server data takes precedence, and
@@ -260,7 +260,7 @@ bool UpdateServer(
 void TryUpdateClient(
     const ExtensionTypeSet& allowed_extension_types,
     PendingExtensionInfo::ExpectedCrxType expected_crx_type,
-    ExtensionsService* extensions_service,
+    ExtensionService* extensions_service,
     ExtensionData* extension_data) {
   DCHECK(!extension_data->NeedsUpdate(ExtensionData::SERVER));
   DCHECK(extension_data->NeedsUpdate(ExtensionData::CLIENT));
@@ -307,10 +307,10 @@ void TryUpdateClient(
 //
 // TODO(akalin): Combine this with the similar function in
 // theme_util.cc.
-void NudgeExtensionUpdater(ExtensionsService* extensions_service) {
+void NudgeExtensionUpdater(ExtensionService* extensions_service) {
   ExtensionUpdater* extension_updater = extensions_service->updater();
   // Auto-updates should now be on always (see the construction of the
-  // ExtensionsService in ProfileImpl::InitExtensions()).
+  // ExtensionService in ProfileImpl::InitExtensions()).
   if (extension_updater) {
     extension_updater->CheckNow();
   } else {
@@ -332,8 +332,8 @@ bool FlushExtensionData(const ExtensionSyncTraits& traits,
     return false;
   }
 
-  ExtensionsService* extensions_service =
-      GetExtensionsServiceFromProfileSyncService(sync_service);
+  ExtensionService* extensions_service =
+      GetExtensionServiceFromProfileSyncService(sync_service);
 
   // Update server and client as necessary.
   bool should_nudge_extension_updater = false;
@@ -381,8 +381,8 @@ bool UpdateServerData(const ExtensionSyncTraits& traits,
     return false;
   }
 
-  ExtensionsService* extensions_service =
-      GetExtensionsServiceFromProfileSyncService(sync_service);
+  ExtensionService* extensions_service =
+      GetExtensionServiceFromProfileSyncService(sync_service);
   sync_pb::ExtensionSpecifics client_data;
   GetExtensionSpecifics(extension, extensions_service->extension_prefs(),
                         &client_data);
@@ -442,7 +442,7 @@ void RemoveServerData(const ExtensionSyncTraits& traits,
 
 void UpdateClient(const ExtensionSyncTraits& traits,
                   const sync_pb::ExtensionSpecifics& server_data,
-                  ExtensionsService* extensions_service) {
+                  ExtensionService* extensions_service) {
   DcheckIsExtensionSpecificsValid(server_data);
   ExtensionData extension_data =
       ExtensionData::FromData(ExtensionData::SERVER, server_data);
@@ -477,7 +477,7 @@ void UpdateClient(const ExtensionSyncTraits& traits,
 
 void RemoveFromClient(const ExtensionSyncTraits& traits,
                       const std::string& id,
-                      ExtensionsService* extensions_service) {
+                      ExtensionService* extensions_service) {
   const Extension* extension = extensions_service->GetExtensionById(id, true);
   if (extension) {
     if (IsExtensionValidAndSyncable(*extension,

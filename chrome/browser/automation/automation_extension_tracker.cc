@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/automation/automation_extension_tracker.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
@@ -34,7 +34,7 @@ void AutomationExtensionTracker::Observe(NotificationType type,
   const Extension* extension = Details<const Extension>(details).ptr();
   Profile* profile = Source<Profile>(source).ptr();
   if (profile) {
-    ExtensionsService* service = profile->GetExtensionsService();
+    ExtensionService* service = profile->GetExtensionService();
     if (service) {
       // Remove this extension only if it is uninstalled, not just disabled.
       // If it is being uninstalled, the extension will not be in the regular

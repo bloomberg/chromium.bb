@@ -25,7 +25,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -150,7 +150,7 @@ class FirstRunDelayedTasks : public NotificationObserver {
                        const NotificationDetails& details) {
     // After processing the notification we always delete ourselves.
     if (type.value == NotificationType::EXTENSIONS_READY)
-      DoExtensionWork(Source<Profile>(source).ptr()->GetExtensionsService());
+      DoExtensionWork(Source<Profile>(source).ptr()->GetExtensionService());
     delete this;
     return;
   }
@@ -162,7 +162,7 @@ class FirstRunDelayedTasks : public NotificationObserver {
   // The extension work is to basically trigger an extension update check.
   // If the extension specified in the master pref is older than the live
   // extension it will get updated which is the same as get it installed.
-  void DoExtensionWork(ExtensionsService* service) {
+  void DoExtensionWork(ExtensionService* service) {
     if (!service)
       return;
     service->updater()->CheckNow();

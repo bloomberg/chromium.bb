@@ -18,7 +18,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
@@ -326,14 +326,14 @@ void TestingProfile::UseThemeProvider(BrowserThemeProvider* theme_provider) {
   theme_provider_.reset(theme_provider);
 }
 
-scoped_refptr<ExtensionsService> TestingProfile::CreateExtensionsService(
+scoped_refptr<ExtensionService> TestingProfile::CreateExtensionService(
     const CommandLine* command_line,
     const FilePath& install_directory) {
   extension_pref_store_.reset(new ExtensionPrefStore);
   extension_prefs_.reset(new ExtensionPrefs(GetPrefs(),
                                             install_directory,
                                             extension_pref_store_.get()));
-  extensions_service_ = new ExtensionsService(this,
+  extensions_service_ = new ExtensionService(this,
                                               command_line,
                                               install_directory,
                                               extension_prefs_.get(),
@@ -359,7 +359,7 @@ webkit_database::DatabaseTracker* TestingProfile::GetDatabaseTracker() {
   return db_tracker_;
 }
 
-ExtensionsService* TestingProfile::GetExtensionsService() {
+ExtensionService* TestingProfile::GetExtensionService() {
   return extensions_service_.get();
 }
 

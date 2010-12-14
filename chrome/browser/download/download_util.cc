@@ -33,7 +33,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/history/download_create_info.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/profile.h"
@@ -232,7 +232,7 @@ void OpenChromeExtension(Profile* profile,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(download_item.is_extension_install());
 
-  ExtensionsService* service = profile->GetExtensionsService();
+  ExtensionService* service = profile->GetExtensionService();
   CHECK(service);
   NotificationService* nservice = NotificationService::current();
   GURL nonconst_download_url = download_item.url();
@@ -731,7 +731,7 @@ bool IsDangerous(DownloadCreateInfo* info, Profile* profile) {
   } else if (danger_level == AllowOnUserGesture && !info->has_user_gesture) {
     return true;
   } else if (info->is_extension_install) {
-    ExtensionsService* service = profile->GetExtensionsService();
+    ExtensionService* service = profile->GetExtensionService();
     if (!service ||
         !service->IsDownloadFromGallery(info->url, info->referrer_url)) {
       // Extensions that are not from the gallery are considered dangerous.

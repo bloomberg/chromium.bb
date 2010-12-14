@@ -4,7 +4,7 @@
 
 #include "base/message_loop.h"
 #include "base/thread.h"
-#include "chrome/browser/extensions/extensions_service_unittest.h"
+#include "chrome/browser/extensions/extension_service_unittest.h"
 #include "chrome/browser/extensions/user_script_listener.h"
 #include "chrome/browser/renderer_host/global_request_id.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
@@ -104,7 +104,7 @@ class SimpleTestJob : public URLRequestTestJob {
 };
 
 class UserScriptListenerTest
-    : public ExtensionsServiceTestBase,
+    : public ExtensionServiceTestBase,
       public net::URLRequest::Interceptor {
  public:
   UserScriptListenerTest() {
@@ -116,9 +116,9 @@ class UserScriptListenerTest
   }
 
   virtual void SetUp() {
-    ExtensionsServiceTestBase::SetUp();
+    ExtensionServiceTestBase::SetUp();
 
-    InitializeEmptyExtensionsService();
+    InitializeEmptyExtensionService();
     service_->Init();
     MessageLoop::current()->RunAllPending();
 

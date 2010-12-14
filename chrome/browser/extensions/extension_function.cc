@@ -7,7 +7,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 
 ExtensionFunction::ExtensionFunction()
@@ -22,7 +22,7 @@ ExtensionFunction::~ExtensionFunction() {
 }
 
 const Extension* ExtensionFunction::GetExtension() {
-  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionService* service = profile_->GetExtensionService();
   DCHECK(service);
   return service->GetExtensionById(extension_id_, false);
 }

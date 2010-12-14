@@ -7,7 +7,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 
@@ -72,14 +72,14 @@ bool ExtensionsStartupUtil::UninstallExtension(const CommandLine& cmd_line,
   if (!cmd_line.HasSwitch(switches::kUninstallExtension))
     return false;
 
-  ExtensionsService* extensions_service = profile->GetExtensionsService();
-  if (!extensions_service)
+  ExtensionService* extension_service = profile->GetExtensionService();
+  if (!extension_service)
     return false;
 
   std::string extension_id = cmd_line.GetSwitchValueASCII(
       switches::kUninstallExtension);
-  if (ExtensionsService::UninstallExtensionHelper(extensions_service,
-                                                  extension_id)) {
+  if (ExtensionService::UninstallExtensionHelper(extension_service,
+                                                 extension_id)) {
     return true;
   }
 

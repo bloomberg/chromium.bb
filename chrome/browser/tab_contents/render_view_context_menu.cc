@@ -25,7 +25,7 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/extensions/extension_event_router.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/fonts_languages_window.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/browser_url_util.h"
@@ -183,7 +183,7 @@ static ExtensionMenuItem::List GetRelevantExtensionItems(
 
 void RenderViewContextMenu::AppendExtensionItems(
     const std::string& extension_id, int* index) {
-  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionService* service = profile_->GetExtensionService();
   ExtensionMenuManager* manager = service->menu_manager();
   const Extension* extension = service->GetExtensionById(extension_id, false);
   bool can_cross_incognito = service->CanCrossIncognito(extension);
@@ -302,7 +302,7 @@ void RenderViewContextMenu::RecursivelyAppendExtensionItems(
 }
 
 void RenderViewContextMenu::SetExtensionIcon(const std::string& extension_id) {
-  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionService* service = profile_->GetExtensionService();
   ExtensionMenuManager* menu_manager = service->menu_manager();
 
   int index = menu_model_.GetItemCount() - 1;
@@ -317,7 +317,7 @@ void RenderViewContextMenu::SetExtensionIcon(const std::string& extension_id) {
 
 void RenderViewContextMenu::AppendAllExtensionItems() {
   extension_item_map_.clear();
-  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionService* service = profile_->GetExtensionService();
   if (!service)
     return;  // In unit-tests, we may not have an ExtensionService.
   ExtensionMenuManager* menu_manager = service->menu_manager();
@@ -727,7 +727,7 @@ void RenderViewContextMenu::AppendBidiSubMenu() {
 
 ExtensionMenuItem* RenderViewContextMenu::GetExtensionMenuItem(int id) const {
   ExtensionMenuManager* manager =
-      profile_->GetExtensionsService()->menu_manager();
+      profile_->GetExtensionService()->menu_manager();
   std::map<int, ExtensionMenuItem::Id>::const_iterator i =
       extension_item_map_.find(id);
   if (i != extension_item_map_.end()) {
@@ -1084,7 +1084,7 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
   if (id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
       id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
     ExtensionMenuManager* manager =
-        profile_->GetExtensionsService()->menu_manager();
+        profile_->GetExtensionService()->menu_manager();
     std::map<int, ExtensionMenuItem::Id>::const_iterator i =
         extension_item_map_.find(id);
     if (i != extension_item_map_.end()) {

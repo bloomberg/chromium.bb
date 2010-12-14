@@ -50,7 +50,7 @@
 #include "chrome/browser/extensions/extension_tts_api.h"
 #include "chrome/browser/extensions/extension_webstore_private_api.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -341,8 +341,8 @@ ExtensionFunctionDispatcher* ExtensionFunctionDispatcher::Create(
     RenderViewHost* render_view_host,
     Delegate* delegate,
     const GURL& url) {
-  ExtensionsService* service =
-      render_view_host->process()->profile()->GetExtensionsService();
+  ExtensionService* service =
+      render_view_host->process()->profile()->GetExtensionService();
   DCHECK(service);
 
   if (!service->ExtensionBindingsAllowed(url))
@@ -453,7 +453,7 @@ void ExtensionFunctionDispatcher::HandleRequest(
   function->set_request_id(params.request_id);
   function->set_has_callback(params.has_callback);
   function->set_user_gesture(params.user_gesture);
-  ExtensionsService* service = profile()->GetExtensionsService();
+  ExtensionService* service = profile()->GetExtensionService();
   DCHECK(service);
   const Extension* extension = service->GetExtensionById(extension_id(), false);
   DCHECK(extension);

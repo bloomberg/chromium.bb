@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSIONS_SERVICE_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSIONS_SERVICE_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_SERVICE_H_
+#define CHROME_BROWSER_EXTENSIONS_EXTENSION_SERVICE_H_
 #pragma once
 
 #include <map>
@@ -34,7 +34,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/property_bag.h"
 
-class ExtensionsServiceBackend;
+class ExtensionServiceBackend;
 class ExtensionToolbarModel;
 class ExtensionUpdater;
 class GURL;
@@ -80,7 +80,7 @@ struct PendingExtensionInfo {
 typedef std::map<std::string, PendingExtensionInfo> PendingExtensionMap;
 
 // This is an interface class to encapsulate the dependencies that
-// ExtensionUpdater has on ExtensionsService. This allows easy mocking.
+// ExtensionUpdater has on ExtensionService. This allows easy mocking.
 class ExtensionUpdateService {
  public:
   virtual ~ExtensionUpdateService() {}
@@ -99,8 +99,8 @@ class ExtensionUpdateService {
 };
 
 // Manages installed and running Chromium extensions.
-class ExtensionsService
-    : public base::RefCountedThreadSafe<ExtensionsService,
+class ExtensionService
+    : public base::RefCountedThreadSafe<ExtensionService,
                                         BrowserThread::DeleteOnUIThread>,
       public ExtensionUpdateService,
       public NotificationObserver {
@@ -114,7 +114,7 @@ class ExtensionsService
     }
 
     // The extension's manifest. This is required for component extensions so
-    // that ExtensionsService doesn't need to go to disk to load them.
+    // that ExtensionService doesn't need to go to disk to load them.
     std::string manifest;
 
     // Directory where the extension is stored.
@@ -146,12 +146,12 @@ class ExtensionsService
 
   // Attempts to uninstall an extension from a given ExtensionService. Returns
   // true iff the target extension exists.
-  static bool UninstallExtensionHelper(ExtensionsService* extensions_service,
+  static bool UninstallExtensionHelper(ExtensionService* extensions_service,
                                        const std::string& extension_id);
 
   // Constructor stores pointers to |profile| and |extension_prefs| but
   // ownership remains at caller.
-  ExtensionsService(Profile* profile,
+  ExtensionService(Profile* profile,
                     const CommandLine* command_line,
                     const FilePath& install_directory,
                     ExtensionPrefs* extension_prefs,
@@ -418,7 +418,7 @@ class ExtensionsService
   }
 
   // Notify the frontend that there was an error loading an extension.
-  // This method is public because ExtensionsServiceBackend can post to here.
+  // This method is public because ExtensionServiceBackend can post to here.
   void ReportExtensionLoadError(const FilePath& extension_path,
                                 const std::string& error,
                                 NotificationType type,
@@ -441,7 +441,7 @@ class ExtensionsService
 
  private:
   friend class BrowserThread;
-  friend class DeleteTask<ExtensionsService>;
+  friend class DeleteTask<ExtensionService>;
 
   // Contains Extension data that can change during the life of the process,
   // but does not persist across restarts.
@@ -460,7 +460,7 @@ class ExtensionsService
   };
   typedef std::map<std::string, ExtensionRuntimeData> ExtensionRuntimeDataMap;
 
-  virtual ~ExtensionsService();
+  virtual ~ExtensionService();
 
   // Clear all persistent data that may have been stored by the extension.
   void ClearExtensionData(const GURL& extension_url);
@@ -498,7 +498,7 @@ class ExtensionsService
   void GrantUnlimitedStorage(const Extension* extension);
   void RevokeUnlimitedStorage(const Extension* extension);
 
-  // The profile this ExtensionsService is part of.
+  // The profile this ExtensionService is part of.
   Profile* profile_;
 
   // Preferences for the owning profile (weak reference).
@@ -526,7 +526,7 @@ class ExtensionsService
   bool show_extensions_prompts_;
 
   // The backend that will do IO on behalf of this instance.
-  scoped_refptr<ExtensionsServiceBackend> backend_;
+  scoped_refptr<ExtensionServiceBackend> backend_;
 
   // Used by dispatchers to limit API quota for individual extensions.
   ExtensionsQuotaService quota_service_;
@@ -591,13 +591,13 @@ class ExtensionsService
   // Flag to make sure event routers are only initialized once.
   bool event_routers_initialized_;
 
-  FRIEND_TEST_ALL_PREFIXES(ExtensionsServiceTest,
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            UpdatePendingExtensionAlreadyInstalled);
-  FRIEND_TEST_ALL_PREFIXES(ExtensionsServiceTest,
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            InstallAppsWithUnlimtedStorage);
-  FRIEND_TEST_ALL_PREFIXES(ExtensionsServiceTest,
+  FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            InstallAppsAndCheckStorageProtection);
-  DISALLOW_COPY_AND_ASSIGN(ExtensionsService);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionService);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSIONS_SERVICE_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SERVICE_H_

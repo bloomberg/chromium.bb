@@ -14,7 +14,7 @@
 #include "chrome/browser/app_launched_animation.h"
 #include "chrome/browser/extensions/default_apps.h"
 #include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -73,7 +73,7 @@ bool IsPromoActive(const std::string& path) {
 
 }  // namespace
 
-AppLauncherHandler::AppLauncherHandler(ExtensionsService* extension_service)
+AppLauncherHandler::AppLauncherHandler(ExtensionService* extension_service)
     : extensions_service_(extension_service),
       promo_active_(false) {
 }

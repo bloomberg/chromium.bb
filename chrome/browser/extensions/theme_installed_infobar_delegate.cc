@@ -9,7 +9,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
@@ -75,7 +75,7 @@ string16 ThemeInstalledInfoBarDelegate::GetButtonLabel(
 
 bool ThemeInstalledInfoBarDelegate::Cancel() {
   if (!previous_theme_id_.empty()) {
-    ExtensionsService* service = profile_->GetExtensionsService();
+    ExtensionService* service = profile_->GetExtensionService();
     if (service) {
       const Extension* previous_theme =
           service->GetExtensionById(previous_theme_id_, true);

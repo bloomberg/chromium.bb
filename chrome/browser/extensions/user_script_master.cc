@@ -15,7 +15,7 @@
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/version.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -339,9 +339,9 @@ void UserScriptMaster::Observe(NotificationType type,
     case NotificationType::EXTENSION_LOADED: {
       // Add any content scripts inside the extension.
       const Extension* extension = Details<const Extension>(details).ptr();
-      bool incognito_enabled = profile_->GetExtensionsService()->
+      bool incognito_enabled = profile_->GetExtensionService()->
           IsIncognitoEnabled(extension);
-      bool allow_file_access = profile_->GetExtensionsService()->
+      bool allow_file_access = profile_->GetExtensionService()->
           AllowFileAccess(extension);
       const UserScriptList& scripts = extension->content_scripts();
       for (UserScriptList::const_iterator iter = scripts.begin();
@@ -374,9 +374,9 @@ void UserScriptMaster::Observe(NotificationType type,
     case NotificationType::EXTENSION_USER_SCRIPTS_UPDATED: {
       const Extension* extension = Details<const Extension>(details).ptr();
       UserScriptList new_lone_scripts;
-      bool incognito_enabled = profile_->GetExtensionsService()->
+      bool incognito_enabled = profile_->GetExtensionService()->
           IsIncognitoEnabled(extension);
-      bool allow_file_access = profile_->GetExtensionsService()->
+      bool allow_file_access = profile_->GetExtensionService()->
           AllowFileAccess(extension);
       for (UserScriptList::iterator iter = lone_scripts_.begin();
            iter != lone_scripts_.end(); ++iter) {

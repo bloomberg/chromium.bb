@@ -5,7 +5,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -115,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, ShouldNotCreateDuplicateEntries) {
   for (size_t i = 0; i < 3; ++i) {
     ExtensionDOMUI::RegisterChromeURLOverrides(
         browser()->profile(),
-        browser()->profile()->GetExtensionsService()->extensions()->back()->
+        browser()->profile()->GetExtensionService()->extensions()->back()->
             GetChromeURLOverrides());
   }
 
@@ -161,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, OverrideKeyboard) {
 
   // Unload the failing version.  We should be back to passing now.
   const ExtensionList *extensions =
-      browser()->profile()->GetExtensionsService()->extensions();
+      browser()->profile()->GetExtensionService()->extensions();
   UnloadExtension((*extensions->rbegin())->id());
   {
     ResultCatcher catcher;

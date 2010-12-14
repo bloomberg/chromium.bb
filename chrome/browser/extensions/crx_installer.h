@@ -15,7 +15,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/web_apps.h"
 
-class ExtensionsService;
+class ExtensionService;
 class SkBitmap;
 
 // This class installs a crx file into a profile.
@@ -65,7 +65,7 @@ class CrxInstaller
   // frontend->install_directory() then registered with |frontend|. Any install
   // UI will be displayed using |client|. Pass NULL for |client| for silent
   // install.
-  CrxInstaller(ExtensionsService* frontend,
+  CrxInstaller(ExtensionService* frontend,
                ExtensionInstallUI* client);
 
   // Install the crx in |source_file|.
@@ -182,7 +182,7 @@ class CrxInstaller
   bool create_app_shortcut_;
 
   // The extension we're installing. We own this and either pass it off to
-  // ExtensionsService on success, or delete it on failure.
+  // ExtensionService on success, or delete it on failure.
   scoped_refptr<const Extension> extension_;
 
   // If non-empty, contains the current version of the extension we're
@@ -197,7 +197,7 @@ class CrxInstaller
   FilePath temp_dir_;
 
   // The frontend we will report results back to.
-  scoped_refptr<ExtensionsService> frontend_;
+  scoped_refptr<ExtensionService> frontend_;
 
   // The client we will work with to do the installation. This can be NULL, in
   // which case the install is silent.

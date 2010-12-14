@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -12,7 +12,7 @@
 
 // An InProcessBrowserTest for testing the ExtensionToolbarModel.
 // TODO(erikkay) It's unfortunate that this needs to be an in-proc browser test.
-// It would be nice to refactor things so that ExtensionsService could run
+// It would be nice to refactor things so that ExtensionService could run
 // without so much of the browser in place.
 class ExtensionToolbarModelTest : public ExtensionBrowserTest,
                                   public ExtensionToolbarModel::Observer {
@@ -27,7 +27,7 @@ class ExtensionToolbarModelTest : public ExtensionBrowserTest,
 
   virtual Browser* CreateBrowser(Profile* profile) {
     Browser* b = InProcessBrowserTest::CreateBrowser(profile);
-    ExtensionsService* service = b->profile()->GetExtensionsService();
+    ExtensionService* service = b->profile()->GetExtensionService();
     model_ = service->toolbar_model();
     model_->AddObserver(this);
     return b;

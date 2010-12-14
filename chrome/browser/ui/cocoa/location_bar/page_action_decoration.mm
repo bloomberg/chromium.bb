@@ -8,7 +8,7 @@
 
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_action_context_menu.h"
@@ -39,7 +39,7 @@ PageActionDecoration::PageActionDecoration(
       current_tab_id_(-1),
       preview_enabled_(false) {
   DCHECK(profile);
-  const Extension* extension = profile->GetExtensionsService()->
+  const Extension* extension = profile->GetExtensionService()->
       GetExtensionById(page_action->extension_id(), false);
   DCHECK(extension);
 
@@ -216,7 +216,7 @@ NSPoint PageActionDecoration::GetBubblePointInFrame(NSRect frame) {
 NSMenu* PageActionDecoration::GetMenu() {
   if (!profile_)
     return nil;
-  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionService* service = profile_->GetExtensionService();
   if (!service)
     return nil;
   const Extension* extension = service->GetExtensionById(

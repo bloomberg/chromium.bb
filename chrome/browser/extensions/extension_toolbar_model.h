@@ -11,13 +11,13 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
-class ExtensionsService;
+class ExtensionService;
 class PrefService;
 
 // Model for the browser actions toolbar.
 class ExtensionToolbarModel : public NotificationObserver {
  public:
-  explicit ExtensionToolbarModel(ExtensionsService* service);
+  explicit ExtensionToolbarModel(ExtensionService* service);
   ~ExtensionToolbarModel();
 
   // Notifies the toolbar model that the Profile that suplied its
@@ -96,8 +96,8 @@ class ExtensionToolbarModel : public NotificationObserver {
   void AddExtension(const Extension* extension);
   void RemoveExtension(const Extension* extension);
 
-  // Our ExtensionsService, guaranteed to outlive us.
-  ExtensionsService* service_;
+  // Our ExtensionService, guaranteed to outlive us.
+  ExtensionService* service_;
 
   PrefService* prefs_;
 

@@ -21,7 +21,7 @@
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/utility_process_host.h"
@@ -637,7 +637,7 @@ void ExtensionUpdater::OnCRXFetchComplete(const GURL& url,
       ProcessBlacklist(data);
     } else {
       // Successfully fetched - now write crx to a file so we can have the
-      // ExtensionsService install it.
+      // ExtensionService install it.
       BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
           NewRunnableMethod(
@@ -669,7 +669,7 @@ void ExtensionUpdater::OnCRXFileWritten(const std::string& id,
   // This can be called after we've been stopped.
   if (!alive_)
     return;
-  // The ExtensionsService is now responsible for cleaning up the temp file
+  // The ExtensionService is now responsible for cleaning up the temp file
   // at |path|.
   service_->UpdateExtension(id, path, download_url);
 }
@@ -701,7 +701,7 @@ void ExtensionUpdater::TimerFired() {
 
   // If the user has overridden the update frequency, don't bother reporting
   // this.
-  if (frequency_seconds_ == ExtensionsService::kDefaultUpdateFrequencySeconds) {
+  if (frequency_seconds_ == ExtensionService::kDefaultUpdateFrequencySeconds) {
     Time last = Time::FromInternalValue(prefs_->GetInt64(
         kLastExtensionsUpdateCheck));
     if (last.ToInternalValue() != 0) {

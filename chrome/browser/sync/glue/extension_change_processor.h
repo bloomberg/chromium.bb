@@ -14,7 +14,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/notification_registrar.h"
 
-class ExtensionsService;
+class ExtensionService;
 class NotificationDetails;
 class NotificationSource;
 class Profile;

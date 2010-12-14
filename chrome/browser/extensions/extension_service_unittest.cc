@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extensions_service_unittest.h"
+#include "chrome/browser/extensions/extension_service_unittest.h"
 
 #include <algorithm>
 #include <vector>
@@ -26,7 +26,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/external_extension_provider.h"
 #include "chrome/browser/extensions/external_pref_extension_provider.h"
 #include "chrome/browser/extensions/pack_extension_job.cc"
@@ -298,10 +298,10 @@ class ExtensionTestingProfile : public TestingProfile {
   ExtensionTestingProfile() : service_(NULL) {
   }
 
-  void set_extensions_service(ExtensionsService* service) {
+  void set_extensions_service(ExtensionService* service) {
     service_ = service;
   }
-  virtual ExtensionsService* GetExtensionsService() { return service_; }
+  virtual ExtensionService* GetExtensionService() { return service_; }
 
   virtual ChromeAppCacheService* GetAppCacheService() {
     if (!appcache_service_) {
@@ -324,13 +324,13 @@ class ExtensionTestingProfile : public TestingProfile {
   }
 
  private:
-  ExtensionsService* service_;
+  ExtensionService* service_;
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   scoped_refptr<fileapi::SandboxedFileSystemContext> file_system_context_;
 };
 
 // Our message loop may be used in tests which require it to be an IO loop.
-ExtensionsServiceTestBase::ExtensionsServiceTestBase()
+ExtensionServiceTestBase::ExtensionServiceTestBase()
     : total_successes_(0),
       loop_(MessageLoop::TYPE_IO),
       ui_thread_(BrowserThread::UI, &loop_),
@@ -340,8 +340,8 @@ ExtensionsServiceTestBase::ExtensionsServiceTestBase()
       io_thread_(BrowserThread::IO, &loop_) {
 }
 
-ExtensionsServiceTestBase::~ExtensionsServiceTestBase() {
-  // Drop our reference to ExtensionsService and TestingProfile, so that they
+ExtensionServiceTestBase::~ExtensionServiceTestBase() {
+  // Drop our reference to ExtensionService and TestingProfile, so that they
   // can be destroyed while BrowserThreads and MessageLoop are still around
   // (they are used in the destruction process).
   service_ = NULL;
@@ -349,7 +349,7 @@ ExtensionsServiceTestBase::~ExtensionsServiceTestBase() {
   MessageLoop::current()->RunAllPending();
 }
 
-void ExtensionsServiceTestBase::InitializeExtensionsService(
+void ExtensionServiceTestBase::InitializeExtensionService(
     const FilePath& pref_file, const FilePath& extensions_install_dir) {
   ExtensionTestingProfile* profile = new ExtensionTestingProfile();
   // Create a PrefService that only contains user defined preference values.
@@ -361,7 +361,7 @@ void ExtensionsServiceTestBase::InitializeExtensionsService(
 
   profile_.reset(profile);
 
-  service_ = profile->CreateExtensionsService(
+  service_ = profile->CreateExtensionService(
       CommandLine::ForCurrentProcess(),
       extensions_install_dir);
   service_->set_extensions_enabled(true);
@@ -378,7 +378,7 @@ void ExtensionsServiceTestBase::InitializeExtensionsService(
   total_successes_ = 0;
 }
 
-void ExtensionsServiceTestBase::InitializeInstalledExtensionsService(
+void ExtensionServiceTestBase::InitializeInstalledExtensionService(
     const FilePath& prefs_file, const FilePath& source_install_dir) {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   FilePath path_ = temp_dir_.path();
@@ -392,10 +392,10 @@ void ExtensionsServiceTestBase::InitializeInstalledExtensionsService(
   file_util::Delete(extensions_install_dir_, true);
   file_util::CopyDirectory(source_install_dir, extensions_install_dir_, true);
 
-  InitializeExtensionsService(temp_prefs, extensions_install_dir_);
+  InitializeExtensionService(temp_prefs, extensions_install_dir_);
 }
 
-void ExtensionsServiceTestBase::InitializeEmptyExtensionsService() {
+void ExtensionServiceTestBase::InitializeEmptyExtensionService() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   FilePath path_ = temp_dir_.path();
   path_ = path_.Append(FILE_PATH_LITERAL("TestingExtensionsPath"));
@@ -407,22 +407,22 @@ void ExtensionsServiceTestBase::InitializeEmptyExtensionsService() {
   file_util::Delete(extensions_install_dir_, true);
   file_util::CreateDirectory(extensions_install_dir_);
 
-  InitializeExtensionsService(prefs_filename, extensions_install_dir_);
+  InitializeExtensionService(prefs_filename, extensions_install_dir_);
 }
 
 // static
-void ExtensionsServiceTestBase::SetUpTestCase() {
+void ExtensionServiceTestBase::SetUpTestCase() {
   ExtensionErrorReporter::Init(false);  // no noisy errors
 }
 
-void ExtensionsServiceTestBase::SetUp() {
+void ExtensionServiceTestBase::SetUp() {
   ExtensionErrorReporter::GetInstance()->ClearErrors();
 }
 
-class ExtensionsServiceTest
-  : public ExtensionsServiceTestBase, public NotificationObserver {
+class ExtensionServiceTest
+  : public ExtensionServiceTestBase, public NotificationObserver {
  public:
-  ExtensionsServiceTest() : installed_(NULL) {
+  ExtensionServiceTest() : installed_(NULL) {
     registrar_.Add(this, NotificationType::EXTENSION_LOADED,
                    NotificationService::AllSources());
     registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
@@ -816,7 +816,7 @@ void PackExtensionTestClient::OnPackFailure(const std::string& error_message) {
 }
 
 // Test loading good extensions from the profile directory.
-TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectorySuccess) {
+TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   // Initialize the test dir with a good Preferences/extensions.
   FilePath source_install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_install_dir));
@@ -827,7 +827,7 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   FilePath pref_path = source_install_dir
       .DirName()
       .AppendASCII("Preferences");
-  InitializeInstalledExtensionsService(pref_path, source_install_dir);
+  InitializeInstalledExtensionService(pref_path, source_install_dir);
 
   service_->Init();
 
@@ -920,7 +920,7 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectorySuccess) {
 };
 
 // Test loading bad extensions from the profile directory.
-TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectoryFail) {
+TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectoryFail) {
   // Initialize the test dir with a bad Preferences/extensions.
   FilePath source_install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_install_dir));
@@ -932,7 +932,7 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectoryFail) {
       .DirName()
       .AppendASCII("Preferences");
 
-  InitializeInstalledExtensionsService(pref_path, source_install_dir);
+  InitializeInstalledExtensionService(pref_path, source_install_dir);
 
   service_->Init();
   loop_.RunAllPending();
@@ -959,7 +959,7 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectoryFail) {
 
 // Test that partially deleted extensions are cleaned up during startup
 // Test loading bad extensions from the profile directory.
-TEST_F(ExtensionsServiceTest, CleanupOnStartup) {
+TEST_F(ExtensionServiceTest, CleanupOnStartup) {
   FilePath source_install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_install_dir));
   source_install_dir = source_install_dir
@@ -970,7 +970,7 @@ TEST_F(ExtensionsServiceTest, CleanupOnStartup) {
       .DirName()
       .AppendASCII("Preferences");
 
-  InitializeInstalledExtensionsService(pref_path, source_install_dir);
+  InitializeInstalledExtensionService(pref_path, source_install_dir);
 
   // Simulate that one of them got partially deleted by clearing its pref.
   DictionaryValue* dict =
@@ -999,8 +999,8 @@ TEST_F(ExtensionsServiceTest, CleanupOnStartup) {
 // Test installing extensions. This test tries to install few extensions using
 // crx files. If you need to change those crx files, feel free to repackage
 // them, throw away the key used and change the id's above.
-TEST_F(ExtensionsServiceTest, InstallExtension) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, InstallExtension) {
+  InitializeEmptyExtensionService();
 
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
@@ -1059,8 +1059,8 @@ TEST_F(ExtensionsServiceTest, InstallExtension) {
 }
 
 // Test the handling of killed extensions.
-TEST_F(ExtensionsServiceTest, KilledExtensions) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, KilledExtensions) {
+  InitializeEmptyExtensionService();
 
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
@@ -1105,10 +1105,10 @@ TEST_F(ExtensionsServiceTest, KilledExtensions) {
 }
 
 // Install a user script (they get converted automatically to an extension)
-TEST_F(ExtensionsServiceTest, InstallUserScript) {
+TEST_F(ExtensionServiceTest, InstallUserScript) {
   // The details of script conversion are tested elsewhere, this just tests
-  // integration with ExtensionsService.
-  InitializeEmptyExtensionsService();
+  // integration with ExtensionService.
+  InitializeEmptyExtensionService();
 
   FilePath path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
@@ -1138,8 +1138,8 @@ TEST_F(ExtensionsServiceTest, InstallUserScript) {
 
 // This tests that the granted permissions preferences are correctly set when
 // installing an extension.
-TEST_F(ExtensionsServiceTest, GrantedPermissions) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, GrantedPermissions) {
+  InitializeEmptyExtensionService();
   FilePath path;
   FilePath pem_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
@@ -1197,8 +1197,8 @@ TEST_F(ExtensionsServiceTest, GrantedPermissions) {
 // Tests that the granted permissions full_access bit gets set correctly when
 // an extension contains an NPAPI plugin. Don't run this test on Chrome OS
 // since they don't support plugins.
-TEST_F(ExtensionsServiceTest, GrantedFullAccessPermissions) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, GrantedFullAccessPermissions) {
+  InitializeEmptyExtensionService();
 
   FilePath path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
@@ -1233,8 +1233,8 @@ TEST_F(ExtensionsServiceTest, GrantedFullAccessPermissions) {
 // Tests that the extension is disabled when permissions are missing from
 // the extension's granted permissions preferences. (This simulates updating
 // the browser to a version which recognizes more permissions).
-TEST_F(ExtensionsServiceTest, GrantedAPIAndHostPermissions) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
+  InitializeEmptyExtensionService();
 
   FilePath path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
@@ -1363,8 +1363,8 @@ TEST_F(ExtensionsServiceTest, GrantedAPIAndHostPermissions) {
 }
 
 // Test Packaging and installing an extension.
-TEST_F(ExtensionsServiceTest, PackExtension) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, PackExtension) {
+  InitializeEmptyExtensionService();
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
@@ -1411,8 +1411,8 @@ TEST_F(ExtensionsServiceTest, PackExtension) {
 }
 
 // Test Packaging and installing an extension whose name contains punctuation.
-TEST_F(ExtensionsServiceTest, PackPunctuatedExtension) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, PackPunctuatedExtension) {
+  InitializeEmptyExtensionService();
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
@@ -1490,8 +1490,8 @@ TEST_F(ExtensionsServiceTest, PackPunctuatedExtension) {
 // > openssl pkcs8 -topk8 -nocrypt -in privkey.pem -out privkey_asn1.pem
 // The privkey.pem is a PrivateKey, and the pcks8 -topk8 creates a
 // PrivateKeyInfo ASN.1 structure, we our RSAPrivateKey expects.
-TEST_F(ExtensionsServiceTest, PackExtensionOpenSSLKey) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, PackExtensionOpenSSLKey) {
+  InitializeEmptyExtensionService();
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
@@ -1517,8 +1517,8 @@ TEST_F(ExtensionsServiceTest, PackExtensionOpenSSLKey) {
   InstallExtension(crx_path, true);
 }
 
-TEST_F(ExtensionsServiceTest, InstallTheme) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, InstallTheme) {
+  InitializeEmptyExtensionService();
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
@@ -1553,9 +1553,9 @@ TEST_F(ExtensionsServiceTest, InstallTheme) {
   ValidatePrefKeyCount(pref_count);
 }
 
-TEST_F(ExtensionsServiceTest, LoadLocalizedTheme) {
+TEST_F(ExtensionServiceTest, LoadLocalizedTheme) {
   // Load.
-  InitializeEmptyExtensionsService();
+  InitializeEmptyExtensionService();
   FilePath extension_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extension_path));
   extension_path = extension_path
@@ -1571,8 +1571,8 @@ TEST_F(ExtensionsServiceTest, LoadLocalizedTheme) {
   EXPECT_EQ("description", service_->extensions()->at(0)->description());
 }
 
-TEST_F(ExtensionsServiceTest, InstallLocalizedTheme) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, InstallLocalizedTheme) {
+  InitializeEmptyExtensionService();
   FilePath theme_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &theme_path));
   theme_path = theme_path
@@ -1587,8 +1587,8 @@ TEST_F(ExtensionsServiceTest, InstallLocalizedTheme) {
   EXPECT_EQ("description", service_->extensions()->at(0)->description());
 }
 
-TEST_F(ExtensionsServiceTest, InstallApps) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, InstallApps) {
+  InitializeEmptyExtensionService();
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
@@ -1611,8 +1611,8 @@ TEST_F(ExtensionsServiceTest, InstallApps) {
   ValidatePrefKeyCount(pref_count);
 }
 
-TEST_F(ExtensionsServiceTest, InstallAppsWithUnlimtedStorage) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, InstallAppsWithUnlimtedStorage) {
+  InitializeEmptyExtensionService();
   EXPECT_TRUE(service_->extensions()->empty());
   EXPECT_TRUE(service_->unlimited_storage_map_.empty());
 
@@ -1671,8 +1671,8 @@ TEST_F(ExtensionsServiceTest, InstallAppsWithUnlimtedStorage) {
   EXPECT_TRUE(service_->unlimited_storage_map_.empty());
 }
 
-TEST_F(ExtensionsServiceTest, InstallAppsAndCheckStorageProtection) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, InstallAppsAndCheckStorageProtection) {
+  InitializeEmptyExtensionService();
   EXPECT_TRUE(service_->extensions()->empty());
   EXPECT_TRUE(service_->protected_storage_map_.empty());
 
@@ -1715,8 +1715,8 @@ TEST_F(ExtensionsServiceTest, InstallAppsAndCheckStorageProtection) {
 }
 
 // Test that when an extension version is reinstalled, nothing happens.
-TEST_F(ExtensionsServiceTest, Reinstall) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, Reinstall) {
+  InitializeEmptyExtensionService();
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
@@ -1750,8 +1750,8 @@ TEST_F(ExtensionsServiceTest, Reinstall) {
 }
 
 // Test upgrading a signed extension.
-TEST_F(ExtensionsServiceTest, UpgradeSignedGood) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, UpgradeSignedGood) {
+  InitializeEmptyExtensionService();
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
@@ -1777,8 +1777,8 @@ TEST_F(ExtensionsServiceTest, UpgradeSignedGood) {
 }
 
 // Test upgrading a signed extension with a bad signature.
-TEST_F(ExtensionsServiceTest, UpgradeSignedBad) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, UpgradeSignedBad) {
+  InitializeEmptyExtensionService();
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
@@ -1804,8 +1804,8 @@ TEST_F(ExtensionsServiceTest, UpgradeSignedBad) {
 }
 
 // Test a normal update via the UpdateExtension API
-TEST_F(ExtensionsServiceTest, UpdateExtension) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, UpdateExtension) {
+  InitializeEmptyExtensionService();
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
@@ -1823,8 +1823,8 @@ TEST_F(ExtensionsServiceTest, UpdateExtension) {
 }
 
 // Test updating a not-already-installed extension - this should fail
-TEST_F(ExtensionsServiceTest, UpdateNotInstalledExtension) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, UpdateNotInstalledExtension) {
+  InitializeEmptyExtensionService();
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
@@ -1839,8 +1839,8 @@ TEST_F(ExtensionsServiceTest, UpdateNotInstalledExtension) {
 }
 
 // Makes sure you can't downgrade an extension via UpdateExtension
-TEST_F(ExtensionsServiceTest, UpdateWillNotDowngrade) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, UpdateWillNotDowngrade) {
+  InitializeEmptyExtensionService();
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
@@ -1859,8 +1859,8 @@ TEST_F(ExtensionsServiceTest, UpdateWillNotDowngrade) {
 }
 
 // Make sure calling update with an identical version does nothing
-TEST_F(ExtensionsServiceTest, UpdateToSameVersionIsNoop) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, UpdateToSameVersionIsNoop) {
+  InitializeEmptyExtensionService();
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
@@ -1874,8 +1874,8 @@ TEST_F(ExtensionsServiceTest, UpdateToSameVersionIsNoop) {
 }
 
 // Tests that updating an extension does not clobber old state.
-TEST_F(ExtensionsServiceTest, UpdateExtensionPreservesState) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, UpdateExtensionPreservesState) {
+  InitializeEmptyExtensionService();
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
@@ -1901,8 +1901,8 @@ TEST_F(ExtensionsServiceTest, UpdateExtensionPreservesState) {
 }
 
 // Tests that updating preserves extension location.
-TEST_F(ExtensionsServiceTest, UpdateExtensionPreservesLocation) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, UpdateExtensionPreservesLocation) {
+  InitializeEmptyExtensionService();
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
@@ -1926,8 +1926,8 @@ TEST_F(ExtensionsServiceTest, UpdateExtensionPreservesLocation) {
 }
 
 // Makes sure that LOAD extension types can downgrade.
-TEST_F(ExtensionsServiceTest, LoadExtensionsCanDowngrade) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, LoadExtensionsCanDowngrade) {
+  InitializeEmptyExtensionService();
 
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
@@ -1971,8 +1971,8 @@ TEST_F(ExtensionsServiceTest, LoadExtensionsCanDowngrade) {
 }
 
 // Test adding a pending extension.
-TEST_F(ExtensionsServiceTest, AddPendingExtension) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, AddPendingExtension) {
+  InitializeEmptyExtensionService();
 
   const std::string kFakeId("fake-id");
   const GURL kFakeUpdateURL("http:://fake.update/url");
@@ -2007,8 +2007,8 @@ const bool kGoodInitialIncognitoEnabled = true;
 }  // namespace
 
 // Test updating a pending extension.
-TEST_F(ExtensionsServiceTest, UpdatePendingExtension) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, UpdatePendingExtension) {
+  InitializeEmptyExtensionService();
   service_->AddPendingExtensionFromSync(
       kGoodId, GURL(kGoodUpdateURL), kCrxTypeExtension,
       kGoodInstallSilently, kGoodInitialState,
@@ -2035,8 +2035,8 @@ TEST_F(ExtensionsServiceTest, UpdatePendingExtension) {
 }
 
 // Test updating a pending theme.
-TEST_F(ExtensionsServiceTest, UpdatePendingTheme) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, UpdatePendingTheme) {
+  InitializeEmptyExtensionService();
   service_->AddPendingExtensionFromSync(
       theme_crx, GURL(), PendingExtensionInfo::THEME,
       false, Extension::ENABLED, false);
@@ -2061,8 +2061,8 @@ TEST_F(ExtensionsServiceTest, UpdatePendingTheme) {
 // Test updating a pending CRX as if the source is an external extension
 // with an update URL.  In this case we don't know if the CRX is a theme
 // or not.
-TEST_F(ExtensionsServiceTest, UpdatePendingExternalCrx) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, UpdatePendingExternalCrx) {
+  InitializeEmptyExtensionService();
   service_->AddPendingExtensionFromExternalUpdateUrl(
       theme_crx, GURL(), Extension::EXTERNAL_PREF_DOWNLOAD);
 
@@ -2087,8 +2087,8 @@ TEST_F(ExtensionsServiceTest, UpdatePendingExternalCrx) {
 // Test updating a pending CRX as if the source is an external extension
 // with an update URL.  The external update should overwrite a sync update,
 // but a sync update should not overwrite a non-sync update.
-TEST_F(ExtensionsServiceTest, UpdatePendingExternalCrxWinsOverSync) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, UpdatePendingExternalCrxWinsOverSync) {
+  InitializeEmptyExtensionService();
 
   // Add a crx to be installed from the update mechanism.
   service_->AddPendingExtensionFromSync(
@@ -2125,8 +2125,8 @@ TEST_F(ExtensionsServiceTest, UpdatePendingExternalCrxWinsOverSync) {
 
 // Updating a theme should fail if the updater is explicitly told that
 // the CRX is not a theme.
-TEST_F(ExtensionsServiceTest, UpdatePendingCrxThemeMismatch) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, UpdatePendingCrxThemeMismatch) {
+  InitializeEmptyExtensionService();
   service_->AddPendingExtensionFromSync(
       theme_crx, GURL(),
       PendingExtensionInfo::EXTENSION,
@@ -2151,8 +2151,8 @@ TEST_F(ExtensionsServiceTest, UpdatePendingCrxThemeMismatch) {
 // UpdateExtension().
 
 // Test updating a pending extension with wrong is_theme.
-TEST_F(ExtensionsServiceTest, UpdatePendingExtensionWrongIsTheme) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, UpdatePendingExtensionWrongIsTheme) {
+  InitializeEmptyExtensionService();
   // Add pending extension with a flipped is_theme.
   service_->AddPendingExtensionFromSync(
       kGoodId, GURL(kGoodUpdateURL),
@@ -2176,8 +2176,8 @@ TEST_F(ExtensionsServiceTest, UpdatePendingExtensionWrongIsTheme) {
 // unsyncable extensions are blocked.
 
 // Test updating a pending extension for one that is not pending.
-TEST_F(ExtensionsServiceTest, UpdatePendingExtensionNotPending) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, UpdatePendingExtensionNotPending) {
+  InitializeEmptyExtensionService();
 
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
@@ -2190,8 +2190,8 @@ TEST_F(ExtensionsServiceTest, UpdatePendingExtensionNotPending) {
 
 // Test updating a pending extension for one that is already
 // installed.
-TEST_F(ExtensionsServiceTest, UpdatePendingExtensionAlreadyInstalled) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, UpdatePendingExtensionAlreadyInstalled) {
+  InitializeEmptyExtensionService();
 
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
@@ -2216,8 +2216,8 @@ TEST_F(ExtensionsServiceTest, UpdatePendingExtensionAlreadyInstalled) {
 }
 
 // Test pref settings for blacklist and unblacklist extensions.
-TEST_F(ExtensionsServiceTest, SetUnsetBlacklistInPrefs) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, SetUnsetBlacklistInPrefs) {
+  InitializeEmptyExtensionService();
   std::vector<std::string> blacklist;
   blacklist.push_back(good0);
   blacklist.push_back("invalid_id");  // an invalid id
@@ -2245,8 +2245,8 @@ TEST_F(ExtensionsServiceTest, SetUnsetBlacklistInPrefs) {
 }
 
 // Unload installed extension from blacklist.
-TEST_F(ExtensionsServiceTest, UnloadBlacklistedExtension) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, UnloadBlacklistedExtension) {
+  InitializeEmptyExtensionService();
   FilePath extensions_path;
   EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
@@ -2278,8 +2278,8 @@ TEST_F(ExtensionsServiceTest, UnloadBlacklistedExtension) {
 }
 
 // Unload installed extension from blacklist.
-TEST_F(ExtensionsServiceTest, BlacklistedExtensionWillNotInstall) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, BlacklistedExtensionWillNotInstall) {
+  InitializeEmptyExtensionService();
   std::vector<std::string> blacklist;
   blacklist.push_back(good_crx);
   service_->UpdateExtensionBlacklist(blacklist);
@@ -2302,7 +2302,7 @@ TEST_F(ExtensionsServiceTest, BlacklistedExtensionWillNotInstall) {
 
 // Test loading extensions from the profile directory, except
 // blacklisted ones.
-TEST_F(ExtensionsServiceTest, WillNotLoadBlacklistedExtensionsFromDirectory) {
+TEST_F(ExtensionServiceTest, WillNotLoadBlacklistedExtensionsFromDirectory) {
   // Initialize the test dir with a good Preferences/extensions.
   FilePath source_install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_install_dir));
@@ -2313,7 +2313,7 @@ TEST_F(ExtensionsServiceTest, WillNotLoadBlacklistedExtensionsFromDirectory) {
   FilePath pref_path = source_install_dir
       .DirName()
       .AppendASCII("Preferences");
-  InitializeInstalledExtensionsService(pref_path, source_install_dir);
+  InitializeInstalledExtensionService(pref_path, source_install_dir);
 
   // Blacklist good1.
   std::vector<std::string> blacklist;
@@ -2342,7 +2342,7 @@ TEST_F(ExtensionsServiceTest, WillNotLoadBlacklistedExtensionsFromDirectory) {
 #if defined(OS_CHROMEOS)
 // Test loading extensions from the profile directory, except
 // ones with a plugin.
-TEST_F(ExtensionsServiceTest, WillNotLoadPluginExtensionsFromDirectory) {
+TEST_F(ExtensionServiceTest, WillNotLoadPluginExtensionsFromDirectory) {
   // Initialize the test dir with a good Preferences/extensions.
   FilePath source_install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_install_dir));
@@ -2353,7 +2353,7 @@ TEST_F(ExtensionsServiceTest, WillNotLoadPluginExtensionsFromDirectory) {
   FilePath pref_path = source_install_dir
       .DirName()
       .AppendASCII("Preferences");
-  InitializeInstalledExtensionsService(pref_path, source_install_dir);
+  InitializeInstalledExtensionService(pref_path, source_install_dir);
 
   // good1 contains a plugin.
   // Load extensions.
@@ -2373,8 +2373,8 @@ TEST_F(ExtensionsServiceTest, WillNotLoadPluginExtensionsFromDirectory) {
 #endif
 
 // Will not install extension blacklisted by policy.
-TEST_F(ExtensionsServiceTest, BlacklistedByPolicyWillNotInstall) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, BlacklistedByPolicyWillNotInstall) {
+  InitializeEmptyExtensionService();
 
   ListValue* whitelist =
       profile_->GetPrefs()->GetMutableList(prefs::kExtensionInstallAllowList);
@@ -2404,8 +2404,8 @@ TEST_F(ExtensionsServiceTest, BlacklistedByPolicyWillNotInstall) {
 }
 
 // Extension blacklisted by policy get unloaded after installing.
-TEST_F(ExtensionsServiceTest, BlacklistedByPolicyRemovedIfRunning) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, BlacklistedByPolicyRemovedIfRunning) {
+  InitializeEmptyExtensionService();
 
   // Install good_crx.
   FilePath extensions_path;
@@ -2434,8 +2434,8 @@ TEST_F(ExtensionsServiceTest, BlacklistedByPolicyRemovedIfRunning) {
 }
 
 // Tests disabling extensions
-TEST_F(ExtensionsServiceTest, DisableExtension) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, DisableExtension) {
+  InitializeEmptyExtensionService();
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
@@ -2460,8 +2460,8 @@ TEST_F(ExtensionsServiceTest, DisableExtension) {
 }
 
 // Tests disabling all extensions (simulating --disable-extensions flag).
-TEST_F(ExtensionsServiceTest, DisableAllExtensions) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, DisableAllExtensions) {
+  InitializeEmptyExtensionService();
 
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
@@ -2498,8 +2498,8 @@ TEST_F(ExtensionsServiceTest, DisableAllExtensions) {
 }
 
 // Tests reloading extensions
-TEST_F(ExtensionsServiceTest, ReloadExtensions) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, ReloadExtensions) {
+  InitializeEmptyExtensionService();
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
@@ -2536,8 +2536,8 @@ TEST_F(ExtensionsServiceTest, ReloadExtensions) {
 }
 
 // Tests uninstalling normal extensions
-TEST_F(ExtensionsServiceTest, UninstallExtension) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, UninstallExtension) {
+  InitializeEmptyExtensionService();
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
@@ -2574,8 +2574,8 @@ TEST_F(ExtensionsServiceTest, UninstallExtension) {
 }
 
 // Tests the uninstaller helper.
-TEST_F(ExtensionsServiceTest, UninstallExtensionHelper) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, UninstallExtensionHelper) {
+  InitializeEmptyExtensionService();
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
@@ -2589,7 +2589,7 @@ TEST_F(ExtensionsServiceTest, UninstallExtensionHelper) {
   FilePath extension_path = extensions_install_dir_.AppendASCII(extension_id);
   EXPECT_TRUE(file_util::PathExists(extension_path));
 
-  bool result = ExtensionsService::UninstallExtensionHelper(service_,
+  bool result = ExtensionService::UninstallExtensionHelper(service_,
                                                             extension_id);
   total_successes_ = 0;
 
@@ -2610,13 +2610,13 @@ TEST_F(ExtensionsServiceTest, UninstallExtensionHelper) {
 
   // Attempt to uninstall again. This should fail as we just removed the
   // extension.
-  result = ExtensionsService::UninstallExtensionHelper(service_, extension_id);
+  result = ExtensionService::UninstallExtensionHelper(service_, extension_id);
   EXPECT_FALSE(result);
 }
 
 // Verifies extension state is removed upon uninstall
-TEST_F(ExtensionsServiceTest, ClearExtensionData) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, ClearExtensionData) {
+  InitializeEmptyExtensionService();
 
   // Load a test extension.
   FilePath path;
@@ -2692,8 +2692,8 @@ TEST_F(ExtensionsServiceTest, ClearExtensionData) {
 }
 
 // Tests loading single extensions (like --load-extension)
-TEST_F(ExtensionsServiceTest, LoadExtension) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, LoadExtension) {
+  InitializeEmptyExtensionService();
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
   extensions_path = extensions_path.AppendASCII("extensions");
@@ -2735,8 +2735,8 @@ TEST_F(ExtensionsServiceTest, LoadExtension) {
 
 // Tests that we generate IDs when they are not specified in the manifest for
 // --load-extension.
-TEST_F(ExtensionsServiceTest, GenerateID) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, GenerateID) {
+  InitializeEmptyExtensionService();
 
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
@@ -2761,7 +2761,7 @@ TEST_F(ExtensionsServiceTest, GenerateID) {
   ASSERT_EQ(previous_id, loaded_[0]->id());
 }
 
-void ExtensionsServiceTest::TestExternalProvider(
+void ExtensionServiceTest::TestExternalProvider(
     MockExtensionProvider* provider, Extension::Location location) {
   // Verify that starting with no providers loads no extensions.
   service_->Init();
@@ -2891,9 +2891,9 @@ void ExtensionsServiceTest::TestExternalProvider(
 
 // Tests the external installation feature
 #if defined(OS_WIN)
-TEST_F(ExtensionsServiceTest, ExternalInstallRegistry) {
+TEST_F(ExtensionServiceTest, ExternalInstallRegistry) {
   // This should all work, even when normal extension installation is disabled.
-  InitializeEmptyExtensionsService();
+  InitializeEmptyExtensionService();
   set_extensions_enabled(false);
 
   // Now add providers. Extension system takes ownership of the objects.
@@ -2904,8 +2904,8 @@ TEST_F(ExtensionsServiceTest, ExternalInstallRegistry) {
 }
 #endif
 
-TEST_F(ExtensionsServiceTest, ExternalInstallPref) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, ExternalInstallPref) {
+  InitializeEmptyExtensionService();
 
   // Now add providers. Extension system takes ownership of the objects.
   MockExtensionProvider* pref_provider =
@@ -2915,9 +2915,9 @@ TEST_F(ExtensionsServiceTest, ExternalInstallPref) {
   TestExternalProvider(pref_provider, Extension::EXTERNAL_PREF);
 }
 
-TEST_F(ExtensionsServiceTest, ExternalInstallPrefUpdateUrl) {
+TEST_F(ExtensionServiceTest, ExternalInstallPrefUpdateUrl) {
   // This should all work, even when normal extension installation is disabled.
-  InitializeEmptyExtensionsService();
+  InitializeEmptyExtensionService();
   set_extensions_enabled(false);
 
   // TODO(skerner): The mock provider is not a good model of a provider
@@ -2935,7 +2935,7 @@ TEST_F(ExtensionsServiceTest, ExternalInstallPrefUpdateUrl) {
 
 // Tests that external extensions get uninstalled when the external extension
 // providers can't account for them.
-TEST_F(ExtensionsServiceTest, ExternalUninstall) {
+TEST_F(ExtensionServiceTest, ExternalUninstall) {
   // Start the extensions service with one external extension already installed.
   FilePath source_install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_install_dir));
@@ -2948,7 +2948,7 @@ TEST_F(ExtensionsServiceTest, ExternalUninstall) {
       .AppendASCII("PreferencesExternal");
 
   // This initializes the extensions service with no ExternalExtensionProviders.
-  InitializeInstalledExtensionsService(pref_path, source_install_dir);
+  InitializeInstalledExtensionService(pref_path, source_install_dir);
   set_extensions_enabled(false);
 
   service_->Init();
@@ -2966,8 +2966,8 @@ TEST_F(ExtensionsServiceTest, ExternalUninstall) {
   ASSERT_EQ(0u, loaded_.size());
 }
 
-TEST_F(ExtensionsServiceTest, ExternalPrefProvider) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, ExternalPrefProvider) {
+  InitializeEmptyExtensionService();
   std::string json_data =
       "{"
       "  \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\": {"
@@ -3031,7 +3031,7 @@ TEST_F(ExtensionsServiceTest, ExternalPrefProvider) {
 }
 
 // Test loading good extensions from the profile directory.
-TEST_F(ExtensionsServiceTest, LoadAndRelocalizeExtensions) {
+TEST_F(ExtensionServiceTest, LoadAndRelocalizeExtensions) {
   // Initialize the test dir with a good Preferences/extensions.
   FilePath source_install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &source_install_dir));
@@ -3039,7 +3039,7 @@ TEST_F(ExtensionsServiceTest, LoadAndRelocalizeExtensions) {
       .AppendASCII("extensions")
       .AppendASCII("l10n");
   FilePath pref_path = source_install_dir.AppendASCII("Preferences");
-  InitializeInstalledExtensionsService(pref_path, source_install_dir);
+  InitializeInstalledExtensionService(pref_path, source_install_dir);
 
   service_->Init();
   loop_.RunAllPending();
@@ -3089,25 +3089,25 @@ class ExtensionsReadyRecorder : public NotificationObserver {
 };
 
 // Test that we get enabled/disabled correctly for all the pref/command-line
-// combinations. We don't want to derive from the ExtensionsServiceTest class
-// for this test, so we use ExtensionsServiceTestSimple.
+// combinations. We don't want to derive from the ExtensionServiceTest class
+// for this test, so we use ExtensionServiceTestSimple.
 //
 // Also tests that we always fire EXTENSIONS_READY, no matter whether we are
 // enabled or not.
-TEST(ExtensionsServiceTestSimple, Enabledness) {
+TEST(ExtensionServiceTestSimple, Enabledness) {
   ExtensionsReadyRecorder recorder;
   scoped_ptr<TestingProfile> profile(new TestingProfile());
   MessageLoop loop;
   BrowserThread ui_thread(BrowserThread::UI, &loop);
   BrowserThread file_thread(BrowserThread::FILE, &loop);
   scoped_ptr<CommandLine> command_line;
-  scoped_refptr<ExtensionsService> service;
+  scoped_refptr<ExtensionService> service;
   FilePath install_dir = profile->GetPath()
-      .AppendASCII(ExtensionsService::kInstallDirectoryName);
+      .AppendASCII(ExtensionService::kInstallDirectoryName);
 
   // By default, we are enabled.
   command_line.reset(new CommandLine(CommandLine::NO_PROGRAM));
-  service = profile->CreateExtensionsService(command_line.get(),
+  service = profile->CreateExtensionService(command_line.get(),
                                              install_dir);
   EXPECT_TRUE(service->extensions_enabled());
   service->Init();
@@ -3118,7 +3118,7 @@ TEST(ExtensionsServiceTestSimple, Enabledness) {
   recorder.set_ready(false);
   profile.reset(new TestingProfile());
   command_line->AppendSwitch(switches::kDisableExtensions);
-  service = profile->CreateExtensionsService(command_line.get(),
+  service = profile->CreateExtensionService(command_line.get(),
                                              install_dir);
   EXPECT_FALSE(service->extensions_enabled());
   service->Init();
@@ -3128,7 +3128,7 @@ TEST(ExtensionsServiceTestSimple, Enabledness) {
   recorder.set_ready(false);
   profile.reset(new TestingProfile());
   profile->GetPrefs()->SetBoolean(prefs::kDisableExtensions, true);
-  service = profile->CreateExtensionsService(command_line.get(),
+  service = profile->CreateExtensionService(command_line.get(),
                                              install_dir);
   EXPECT_FALSE(service->extensions_enabled());
   service->Init();
@@ -3139,7 +3139,7 @@ TEST(ExtensionsServiceTestSimple, Enabledness) {
   profile.reset(new TestingProfile());
   profile->GetPrefs()->SetBoolean(prefs::kDisableExtensions, true);
   command_line.reset(new CommandLine(CommandLine::NO_PROGRAM));
-  service = profile->CreateExtensionsService(command_line.get(),
+  service = profile->CreateExtensionService(command_line.get(),
                                              install_dir);
   EXPECT_FALSE(service->extensions_enabled());
   service->Init();
@@ -3152,8 +3152,8 @@ TEST(ExtensionsServiceTestSimple, Enabledness) {
 }
 
 // Test loading extensions that require limited and unlimited storage quotas.
-TEST_F(ExtensionsServiceTest, StorageQuota) {
-  InitializeEmptyExtensionsService();
+TEST_F(ExtensionServiceTest, StorageQuota) {
+  InitializeEmptyExtensionService();
 
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
@@ -3211,9 +3211,9 @@ TEST_F(ExtensionsServiceTest, StorageQuota) {
   EXPECT_EQ(kint64max, unlimited_quota);
 }
 
-// Tests ExtensionsService::register_component_extension().
-TEST_F(ExtensionsServiceTest, ComponentExtensions) {
-  InitializeEmptyExtensionsService();
+// Tests ExtensionService::register_component_extension().
+TEST_F(ExtensionServiceTest, ComponentExtensions) {
+  InitializeEmptyExtensionService();
 
   // Component extensions should work even when extensions are disabled.
   set_extensions_enabled(false);
@@ -3231,7 +3231,7 @@ TEST_F(ExtensionsServiceTest, ComponentExtensions) {
       path.Append(Extension::kManifestFilename), &manifest));
 
   service_->register_component_extension(
-      ExtensionsService::ComponentExtensionInfo(manifest, path));
+      ExtensionService::ComponentExtensionInfo(manifest, path));
   service_->Init();
 
   // Note that we do not pump messages -- the extension should be loaded

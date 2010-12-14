@@ -12,7 +12,7 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/debugger/devtools_window.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/in_process_webkit/session_storage_namespace.h"
 #include "chrome/browser/load_notification_details.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -274,9 +274,9 @@ void DevToolsWindow::AddDevToolsExtensionsToClient() {
     CallClientFunction(L"WebInspector.setInspectedTabId", tabId);
   }
   ListValue results;
-  const ExtensionsService* extension_service =
+  const ExtensionService* extension_service =
       tab_contents_->tab_contents()->profile()->
-          GetOriginalProfile()->GetExtensionsService();
+          GetOriginalProfile()->GetExtensionService();
   const ExtensionList* extensions = extension_service->extensions();
 
   for (ExtensionList::const_iterator extension = extensions->begin();

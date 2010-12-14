@@ -11,11 +11,11 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
-class ExtensionsService;
+class ExtensionService;
 
 class ExtensionManagementFunction : public SyncExtensionFunction {
  protected:
-  ExtensionsService* service();
+  ExtensionService* service();
 };
 
 class GetAllExtensionsFunction : public ExtensionManagementFunction {

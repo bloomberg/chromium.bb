@@ -24,7 +24,7 @@
 #include "chrome/browser/dom_ui/slideshow_ui.h"
 #include "chrome/browser/dom_ui/textfields_ui.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extensions_ui.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/profiles/profile.h"
@@ -74,7 +74,7 @@ template<>
 DOMUI* NewDOMUI<ExtensionDOMUI>(TabContents* contents, const GURL& url) {
   // Don't use a DOMUI for incognito tabs because we require extensions to run
   // within a single process.
-  ExtensionsService* service = contents->profile()->GetExtensionsService();
+  ExtensionService* service = contents->profile()->GetExtensionService();
   if (service &&
       service->ExtensionBindingsAllowed(url)) {
     return new ExtensionDOMUI(contents, url);
@@ -95,7 +95,7 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
   if (url.host() == chrome::kChromeUIDialogHost)
     return &NewDOMUI<ConstrainedHtmlUI>;
 
-  ExtensionsService* service = profile->GetExtensionsService();
+  ExtensionService* service = profile->GetExtensionService();
   if (service && service->ExtensionBindingsAllowed(url))
     return &NewDOMUI<ExtensionDOMUI>;
 

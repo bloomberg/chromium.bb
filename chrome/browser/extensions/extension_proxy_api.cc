@@ -8,7 +8,7 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/pref_names.h"
 
 namespace {
@@ -159,6 +159,6 @@ bool UseCustomProxySettingsFunction::ApplyProxyRules(
 
 void UseCustomProxySettingsFunction::SendNotification(const char* pref_path,
                                                       Value* pref_value) {
-  profile()->GetExtensionsService()->extension_prefs()
+  profile()->GetExtensionService()->extension_prefs()
       ->SetExtensionControlledPref(extension_id(), pref_path, pref_value);
 }

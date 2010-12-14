@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SYNC_GLUE_EXTENSION_SYNC_TRAITS_H_
 #pragma once
 
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/glue/extension_util.h"
 

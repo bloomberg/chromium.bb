@@ -11,7 +11,7 @@
 #include "base/stl_util-inl.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -230,7 +230,7 @@ bool IsExtensionOutdated(const Extension& extension,
 
 void SetExtensionProperties(
     const sync_pb::ExtensionSpecifics& specifics,
-    ExtensionsService* extensions_service, const Extension* extension) {
+    ExtensionService* extensions_service, const Extension* extension) {
   DcheckIsExtensionSpecificsValid(specifics);
   CHECK(extensions_service);
   CHECK(extension);

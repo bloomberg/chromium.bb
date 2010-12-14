@@ -11,7 +11,7 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/download/download_manager.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/profiles/profile.h"
@@ -100,7 +100,7 @@ void BrowsingDataRemover::Remove(int remove_mask) {
   removing_ = true;
 
   std::vector<GURL> origin_whitelist;
-  ExtensionsService* extensions_service = profile_->GetExtensionsService();
+  ExtensionService* extensions_service = profile_->GetExtensionService();
   if (extensions_service && extensions_service->HasInstalledExtensions()) {
     std::map<GURL, int> whitelist_map =
         extensions_service->protected_storage_map();

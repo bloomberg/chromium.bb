@@ -10,7 +10,7 @@
 #include "chrome/browser/extensions/extension_processes_api.h"
 #include "chrome/browser/extensions/extension_processes_api_constants.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/extensions/extension.h"
@@ -56,7 +56,7 @@ struct ExtensionEventRouter::EventListener {
 bool ExtensionEventRouter::CanCrossIncognito(Profile* profile,
                                              const std::string& extension_id) {
   const Extension* extension =
-      profile->GetExtensionsService()->GetExtensionById(extension_id, false);
+      profile->GetExtensionService()->GetExtensionById(extension_id, false);
   return CanCrossIncognito(profile, extension);
 }
 
@@ -66,7 +66,7 @@ bool ExtensionEventRouter::CanCrossIncognito(Profile* profile,
   // We allow the extension to see events and data from another profile iff it
   // uses "spanning" behavior and it has incognito access. "split" mode
   // extensions only see events for a matching profile.
-  return (profile->GetExtensionsService()->IsIncognitoEnabled(extension) &&
+  return (profile->GetExtensionService()->IsIncognitoEnabled(extension) &&
           !extension->incognito_split_mode());
 }
 
@@ -168,7 +168,7 @@ void ExtensionEventRouter::DispatchEventImpl(
     return;
 
   std::set<EventListener>& listeners = it->second;
-  ExtensionsService* service = profile_->GetExtensionsService();
+  ExtensionService* service = profile_->GetExtensionService();
 
   // Send the event only to renderers that are listening for it.
   for (std::set<EventListener>::iterator listener = listeners.begin();

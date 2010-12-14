@@ -10,7 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/extension_popup_gtk.h"
@@ -363,7 +363,7 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
       desired_width_(0),
       start_width_(0),
       method_factory_(this) {
-  ExtensionsService* extension_service = profile_->GetExtensionsService();
+  ExtensionService* extension_service = profile_->GetExtensionService();
   // The |extension_service| can be NULL in Incognito.
   if (!extension_service)
     return;
@@ -562,7 +562,7 @@ bool BrowserActionsToolbarGtk::ShouldDisplayBrowserAction(
     const Extension* extension) {
   // Only display incognito-enabled extensions while in incognito mode.
   return (!profile_->IsOffTheRecord() ||
-          profile_->GetExtensionsService()->IsIncognitoEnabled(extension));
+          profile_->GetExtensionService()->IsIncognitoEnabled(extension));
 }
 
 void BrowserActionsToolbarGtk::HidePopup() {

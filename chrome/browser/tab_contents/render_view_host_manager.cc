@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
@@ -480,8 +480,8 @@ bool RenderViewHostManager::InitRenderView(RenderViewHost* render_view_host,
 
   // Tell the RenderView whether it will be used for an extension process.
   Profile* profile = delegate_->GetControllerForRenderManager().profile();
-  bool is_extension_process = profile->GetExtensionsService() &&
-      profile->GetExtensionsService()->ExtensionBindingsAllowed(entry.url());
+  bool is_extension_process = profile->GetExtensionService() &&
+      profile->GetExtensionService()->ExtensionBindingsAllowed(entry.url());
   render_view_host->set_is_extension_process(is_extension_process);
 
   return delegate_->CreateRenderViewForRenderManager(render_view_host);

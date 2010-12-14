@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/common/extensions/extension.h"
@@ -38,7 +38,7 @@ enum ExtensionState { DISABLED, PENDING, ENABLED };
 
 typedef std::map<std::string, ExtensionState> ExtensionStateMap;
 
-ExtensionStateMap GetExtensionStates(ExtensionsService* extensions_service) {
+ExtensionStateMap GetExtensionStates(ExtensionService* extensions_service) {
   ExtensionStateMap extension_states;
 
   const ExtensionList* extensions = extensions_service->extensions();
@@ -69,8 +69,8 @@ ExtensionStateMap GetExtensionStates(ExtensionsService* extensions_service) {
 bool LiveExtensionsSyncTest::HasSameExtensionsHelper(
     Profile* profile1, Profile* profile2) {
   ExtensionStateMap extension_states1(
-      GetExtensionStates(profile1->GetExtensionsService()));
+      GetExtensionStates(profile1->GetExtensionService()));
   ExtensionStateMap extension_states2(
-      GetExtensionStates(profile2->GetExtensionsService()));
+      GetExtensionStates(profile2->GetExtensionService()));
   return extension_states1 == extension_states2;
 }

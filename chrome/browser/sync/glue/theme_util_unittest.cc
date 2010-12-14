@@ -114,7 +114,7 @@ TEST_F(ThemeUtilTest, SetCurrentThemeSystemTheme) {
   SetCurrentThemeFromThemeSpecifics(theme_specifics, &mock_profile);
 }
 
-// TODO(akalin): Make ExtensionsService/ExtensionUpdater testable
+// TODO(akalin): Make ExtensionService/ExtensionUpdater testable
 // enough to be able to write a unittest for SetCurrentTheme for a
 // custom theme.
 

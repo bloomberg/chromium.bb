@@ -31,7 +31,7 @@
 #include "chrome/browser/chromeos/login/user_image_downloader.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/proxy_config_service.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/net/preconnect.h"
@@ -247,9 +247,9 @@ void LoginUtilsImpl::CompleteLogin(
   // Init extension event routers; this normally happens in browser_main
   // but on Chrome OS it has to be deferred until the user finishes
   // logging in and the profile is not OTR.
-  if (profile->GetExtensionsService() &&
-      profile->GetExtensionsService()->extensions_enabled()) {
-    profile->GetExtensionsService()->InitEventRouters();
+  if (profile->GetExtensionService() &&
+      profile->GetExtensionService()->extensions_enabled()) {
+    profile->GetExtensionService()->InitEventRouters();
   }
   btl->AddLoginTimeMarker("ExtensionsServiceStarted", false);
 

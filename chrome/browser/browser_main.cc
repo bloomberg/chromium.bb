@@ -42,7 +42,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/extensions/extension_protocols.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extensions_startup.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/jankometer.h"
@@ -1567,10 +1567,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Initialize extension event routers. Note that on Chrome OS, this will
   // not succeed if the user has not logged in yet, in which case the
   // event routers are initialized in LoginUtilsImpl::CompleteLogin instead.
-  if (profile->GetExtensionsService()) {
+  if (profile->GetExtensionService()) {
     // This will initialize bookmarks. Call it after bookmark import is done.
     // See issue 40144.
-    profile->GetExtensionsService()->InitEventRouters();
+    profile->GetExtensionService()->InitEventRouters();
   }
 
   // The extension service may be available at this point. If the command line

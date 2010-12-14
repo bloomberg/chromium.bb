@@ -10,7 +10,7 @@
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
@@ -25,7 +25,7 @@
 static std::wstring GetTitle(Profile* profile,
                              bool is_alert,
                              const GURL& frame_url) {
-  ExtensionsService* extensions_service = profile->GetExtensionsService();
+  ExtensionService* extensions_service = profile->GetExtensionService();
   if (extensions_service) {
     const Extension* extension =
         extensions_service->GetExtensionByURL(frame_url);
