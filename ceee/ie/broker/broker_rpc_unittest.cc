@@ -99,7 +99,7 @@ class TestingBrokerRpcClient : public BrokerRpcClient {
  public:
   explicit TestingBrokerRpcClient(bool allow_restarts)
       : BrokerRpcClient(allow_restarts) {}
-  MOCK_METHOD1(StartServer, HRESULT(IUnknown**));
+  MOCK_METHOD1(StartServer, HRESULT(ICeeeBrokerRegistrar**));
 };
 
 TEST_F(BrokerRpcTest, StartServer) {

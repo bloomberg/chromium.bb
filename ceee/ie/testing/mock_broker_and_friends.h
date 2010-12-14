@@ -396,7 +396,7 @@ class MockBrokerRpcClient : public BrokerRpcClient {
  public:
   explicit MockBrokerRpcClient(bool allow_restart)
       : BrokerRpcClient(allow_restart) {}
-  MOCK_METHOD1(StartServer, HRESULT(IUnknown**));
+  MOCK_METHOD1(StartServer, HRESULT(ICeeeBrokerRegistrar**));
   MOCK_METHOD1(Connect, HRESULT(bool));
   MOCK_METHOD0(Disconnect, void());
   MOCK_CONST_METHOD0(is_connected, bool());
