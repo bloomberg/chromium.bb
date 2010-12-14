@@ -880,7 +880,7 @@ STDMETHODIMP CeeeExecutor::InsertCode(BSTR code, BSTR file, BOOL all_frames,
 
   hr = frame_handler_host->InsertCode(code, file, all_frames, type);
   if (FAILED(hr)) {
-    NOTREACHED() << "Failed to insert code. " << com::LogHr(hr);
+    LOG(ERROR) << "Failed to insert code. " << com::LogHr(hr);
     return hr;
   }
 

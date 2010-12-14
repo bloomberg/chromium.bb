@@ -969,10 +969,12 @@ void CreateTab::Execute(const ListValue& args, int request_id) {
     long flags = selected ? navOpenInNewTab : navOpenInBackgroundTab;
     HRESULT hr = executor->Navigate(base::win::ScopedBstr(url_wstring.c_str()),
                                     flags, base::win::ScopedBstr(L"_blank"));
-    // We can DCHECK here because navigating to a new tab shouldn't fail as
-    // described in the comment at the bottom of CeeeExecutor::Navigate().
-    DCHECK(SUCCEEDED(hr)) << "Failed to create tab. " << com::LogHr(hr);
     if (FAILED(hr)) {
+      // Log the error without DCHECKING There are legit reasons for Navigate
+      // to fail, as explained in comments in CeeeExecutor::Navigate.
+      // TODO(motek@chromium.org) See why exactly we fail here in some
+      // integration tests.
+      LOG(ERROR) << "Failed to create tab. " << com::LogHr(hr);
       result->PostError("Internal error while trying to create tab.");
       return;
     }

@@ -1482,7 +1482,10 @@ HRESULT BrowserHelperObject::InsertCode(BSTR code, BSTR file, BOOL all_frames,
   } else if (web_browser_ != NULL) {
     ScopedFrameEventHandlerPtr handler;
     HRESULT hr = GetBrowserHandler(web_browser_, handler.Receive());
-    DCHECK(SUCCEEDED(hr) && handler != NULL) << com::LogHr(hr);
+    LOG_IF(ERROR, FAILED(hr) || handler == NULL) <<
+        "GetBrowserHandler fails in InsertCode: " << com::LogHr(hr);
+    if (FAILED(hr))
+      return hr;
 
     if (handler != NULL) {
       hr = handler->InsertCode(code, file, type);
