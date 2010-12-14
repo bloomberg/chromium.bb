@@ -9,6 +9,9 @@ Tests the use of the NO_LOAD flag which makes loading sub .mk files
 optional.
 """
 
+# Python 2.5 needs this for the with statement.
+from __future__ import with_statement
+
 import os
 import TestGyp
 
