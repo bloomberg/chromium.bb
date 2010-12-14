@@ -3,16 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
 Import('env')
 
 # NOTE: the arm emulator does not handle atomic ops properly
-TEST_SUITES = ['small_tests']
-
-# Do not run on qemu
-if env.Bit('target_arm') or env.Bit('bitcode'):
-  TEST_SUITES = ['small_tests_arm_hw_only']
-
+broken = env.Bit('target_arm') and env.UsingEmulator()
 
 simple_srpc_test_exe = env.ComponentProgram(
     'simple_srpc_test',
@@ -27,7 +21,8 @@ simple_srpc_test_exe = env.ComponentProgram(
 node = env.CommandTest(
     'simple_srpc_test.out',
     command=[simple_srpc_test_exe])
-env.AddNodeToTestSuite(node, TEST_SUITES, 'run_simple_srpc_test')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_simple_srpc_test',
+                       broken=broken)
 
 types_srpc_test_exe = env.ComponentProgram(
     'types_srpc_test',
@@ -42,5 +37,6 @@ types_srpc_test_exe = env.ComponentProgram(
 node = env.CommandTest(
     'types_srpc_test.out',
     command=[types_srpc_test_exe])
-env.AddNodeToTestSuite(node, TEST_SUITES, 'run_types_srpc_test')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_types_srpc_test',
+                       broken=broken)
 

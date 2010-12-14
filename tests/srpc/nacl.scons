@@ -99,11 +99,9 @@ env.Publish('srpc_bad_service.nexe', 'run', [])
 
 # NOTE: sel_universal launches sel_ldr internally and we do not have a
 # good hook to sneak in an emulator yet
-TEST_SUITES = ['small_tests']
 # TODO(robertm): research why srpc_basic and sysv_shm do not work on pnacl arm
 # "execv failed, args were: ... execv: Exec format error Open failed"
-if env.Bit('target_arm'):
-  TEST_SUITES = ['small_tests_arm_hw_only']
+broken = env.Bit('target_arm') and env.UsingEmulator()
 
 node = env.CommandSelLdrTestNacl(
     'srpc_basic_test.out',
@@ -112,7 +110,8 @@ node = env.CommandSelLdrTestNacl(
     stdin=env.File('srpc_basic_test.stdin'),
     stdout_golden=env.File('srpc_basic_test.stdout'),
     )
-env.AddNodeToTestSuite(node, TEST_SUITES, 'run_srpc_basic_test')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_basic_test',
+                       broken=broken)
 
 trusted_env = env.get('TRUSTED_ENV')
 # TODO: add comment explaining the if
@@ -124,7 +123,8 @@ if trusted_env and trusted_env.Bit('linux'):
       stdin=env.File('srpc_sysv_shm_test.stdin'),
       stdout_golden=env.File('srpc_sysv_shm_test.stdout'),
       )
-  env.AddNodeToTestSuite(node, TEST_SUITES, 'run_srpc_sysv_shm_test')
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_sysv_shm_test',
+                         broken=broken)
 
 node = env.CommandSelLdrTestNacl(
     'srpc_bad_service.out',

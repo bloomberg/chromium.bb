@@ -400,10 +400,8 @@ if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
       osenv='NACL_DISABLE_DYNAMIC_LOADING=1')
   # This test fails for arm on 32-bit machines running qemu.
   # So don't run it there.
-  if not (env.Bit('build_arm') and
-          'linux' in sys.platform and
-          'i686' in platform.platform()):
-    env.AddNodeToTestSuite(node, ['medium_tests'])
+  env.AddNodeToTestSuite(node, ['medium_tests'],
+                         broken=env.Bit('build_arm') and env.UsingEmulator())
 
   # also seems to have issues with windows coverage
   # NOTE: uses validator
@@ -506,11 +504,9 @@ if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
       'gio_shm_unbounded_test.out',
       command=[gio_shm_unbounded_test_exe,])
   env.Requires(gio_shm_unbounded_test_exe, crt)
-  if env.Bit('target_arm'):
-    env.AddNodeToTestSuite(node, ['large_tests_arm_hw_only'],
-                           'run_gio_shm_unbounded_test')
-  else:
-    env.AddNodeToTestSuite(node, ['small_tests'], 'run_gio_shm_unbounded_test')
+
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_gio_shm_unbounded_test',
+                         broken=env.Bit('target_arm') and env.UsingEmulator())
 
   gio_nacl_desc_test_exe = env.ComponentProgram(
       'gio_nacl_desc_test',
@@ -601,10 +597,7 @@ env.AddNodeToTestSuite(node, ['small_tests'])
 # Mac does not support thread local storage via "__thread" so do not run this
 # test on Mac.
 if not env.Bit('mac'):
-  # Note that this test hangs in pthread_join() on ARM QEMU.
-  TEST_SUITES = ['small_tests']
-  if env.Bit('target_arm'):
-    TEST_SUITES = ['small_tests_arm_hw_only']
+
 
   nacl_tls_unittest = env.ComponentProgram('nacl_tls_unittest',
                                            ['nacl_tls_unittest.c'],
@@ -612,7 +605,10 @@ if not env.Bit('mac'):
                                                        'gio'])
   node = env.CommandTest('nacl_tls_unittest.out',
                          command=[nacl_tls_unittest])
-  env.AddNodeToTestSuite(node, TEST_SUITES, 'run_nacl_tls_unittest')
+
+  # Note that this test hangs in pthread_join() on ARM QEMU.
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_tls_unittest',
+                         broken=env.Bit('target_arm') and env.UsingEmulator())
 
 # Test that sel_ldr does not crash if the executable file cannot be opened.
 node = env.CommandSelLdrTestNacl(

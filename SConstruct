@@ -436,8 +436,6 @@ MAJOR_TEST_SUITES = set([
   'small_tests',
   'medium_tests',
   'large_tests',
-  'small_tests_arm_hw_only',
-  'large_tests_arm_hw_only',
   'browser_tests',
   'huge_tests',
 
@@ -503,7 +501,15 @@ def ValidateTestSuiteNames(suite_name, node_name):
 def IsBrokenTest(suite_name):
   return len(suite_name) == 1 and 'broken_tests' == suite_name[0]
 
-def AddNodeToTestSuite(env, node, suite_name, node_name=None):
+BROKEN_TEST_COUNT = 0
+
+def AddNodeToTestSuite(env, node, suite_name, node_name=None, broken=False):
+  global BROKEN_TEST_COUNT
+
+  # CommandTest can return an empty list when it silently discards a test
+  if not node:
+    return
+
   build = env['BUILD_TYPE']
 
   # If we are testing 'NACL' we really need the trusted info
@@ -516,9 +522,6 @@ def AddNodeToTestSuite(env, node, suite_name, node_name=None):
 
   # Build the test platform string
   platform = build + '-' + subarch
-
-  if not node:
-    return
 
   # There are no known-to-fail tests any more, but this code is left
   # in so that if/when we port to a new architecture or add a test
@@ -539,11 +542,18 @@ def AddNodeToTestSuite(env, node, suite_name, node_name=None):
   ValidateTestSuiteNames(suite_name, node_name)
 
   AlwaysBuild(node)
-  if not IsBrokenTest(suite_name):
+
+  if broken or IsBrokenTest(suite_name):
+    # Only print if --verbose is specified
+    if not GetOption('brief_comstr'):
+      print '*** BROKEN ', node_name
+    env.Alias('broken_tests', node)
+    BROKEN_TEST_COUNT += 1
+  else:
     env.Alias('all_tests', node)
 
-  for s in suite_name:
-    env.Alias(s, node)
+    for s in suite_name:
+      env.Alias(s, node)
 
   if node_name:
     env.ComponentTestOutput(node_name, node)
@@ -559,6 +569,9 @@ Alias('small_tests', [])
 Alias('medium_tests', [])
 Alias('large_tests', [])
 Alias('browser_tests', [])
+
+# TODO(ncbray) remove once bots no longer use
+Alias('small_tests_arm_hw_only', [])
 
 Alias('unit_tests', 'small_tests')
 Alias('smoke_tests', ['small_tests', 'medium_tests'])
@@ -879,6 +892,11 @@ def GetEmulator(env):
   if emulator is None:
     emulator = env.get('EMULATOR', '')
   return emulator
+
+def UsingEmulator(env):
+  return bool(GetEmulator(env))
+
+pre_base_env.AddMethod(UsingEmulator)
 
 
 def GetValidator(env, validator):
@@ -2443,6 +2461,12 @@ BuildEnvironments(environment_list)
 
 # Change default to build everything, but not run tests.
 Default(['all_programs', 'all_bundles', 'all_test_programs', 'all_libraries'])
+
+if BROKEN_TEST_COUNT > 0:
+  msg = "There are %d broken tests." % BROKEN_TEST_COUNT
+  if GetOption('brief_comstr'):
+    msg += " Add --verbose to the command line for more information."
+  print msg
 
 # separate warnings from actual build output
 Banner('B U I L D - O U T P U T:')

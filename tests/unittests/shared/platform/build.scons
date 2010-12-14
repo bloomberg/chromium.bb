@@ -6,13 +6,6 @@
 
 Import('env')
 
-# NOTE: the arm emulator does not handle atomic ops properly
-TEST_SUITES = ['small_tests']
-
-# Do not run on qemu
-if env.Bit('target_arm') or env.Bit('bitcode'):
-  TEST_SUITES = ['small_tests_arm_hw_only']
-
 nacl_thread_create_joinable_test_exe = env.ComponentProgram(
     'nacl_thread_create_joinable_test',
     'nacl_thread_create_joinable_test.c',
@@ -25,8 +18,10 @@ nacl_thread_create_joinable_test_exe = env.ComponentProgram(
 node = env.CommandTest(
     'nacl_thread_create_joinable_test.out',
     command=[nacl_thread_create_joinable_test_exe])
-env.AddNodeToTestSuite(node,
-                       TEST_SUITES,
-                       'run_nacl_thread_create_joinable_test')
+
+# NOTE: the arm emulator does not handle atomic ops properly
+env.AddNodeToTestSuite(node, ['small_tests'],
+                       'run_nacl_thread_create_joinable_test',
+                       broken=env.Bit('target_arm') and env.UsingEmulator())
 
 
