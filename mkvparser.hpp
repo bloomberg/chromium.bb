@@ -80,6 +80,7 @@ public:
     long long GetTime(const Cluster*) const;      //absolute, and scaled (ns)
     bool IsKey() const;
     void SetKey(bool);
+    bool IsInvisible() const;
 
     int GetFrameCount() const;  //to index frames: [0, count)
 
@@ -91,26 +92,15 @@ public:
         long Read(IMkvReader*, unsigned char*) const;
     };
 
-#if 0
-    long long GetOffset() const;
-    long GetSize() const;
-    long Read(IMkvReader*, unsigned char*) const;
-#else
     const Frame& GetFrame(int frame_index) const;
-#endif
 
 private:
     long long m_track;   //Track::Number()
     short m_timecode;  //relative to cluster
     unsigned char m_flags;
 
-#if 0
-    long long m_frameOff;
-    long m_frameSize;
-#else
     Frame* m_frames;
     int m_frame_count;
-#endif
 
 };
 

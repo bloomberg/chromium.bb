@@ -4853,9 +4853,11 @@ Block::Block(long long start, long long size_, IMkvReader* pReader) :
     long status = pReader->Read(pos, 1, &m_flags);
     assert(status == 0);
 
+#if 0
     const int invisible = int(m_flags & 0x08) >> 3;
     invisible;
     assert(!invisible);  //TODO
+#endif
 
     const int lacing = int(m_flags & 0x06) >> 1;
 
@@ -5135,28 +5137,12 @@ void Block::SetKey(bool bKey)
 }
 
 
-#if 0
-long long Block::GetOffset() const
+bool Block::IsInvisible() const
 {
-  return m_frameOff;
+    return bool(int(m_flags & 0x08) != 0);
 }
 
 
-long Block::GetSize() const
-{
-    return m_frameSize;
-}
-
-long Block::Read(IMkvReader* pReader, unsigned char* buf) const
-{
-    assert(pReader);
-    assert(buf);
-
-    const long hr = pReader->Read(m_frameOff, m_frameSize, buf);
-
-    return hr;
-}
-#else
 int Block::GetFrameCount() const
 {
     return m_frame_count;
@@ -5184,7 +5170,6 @@ long Block::Frame::Read(IMkvReader* pReader, unsigned char* buf) const
     const long status = pReader->Read(pos, len, buf);
     return status;
 }
-#endif
 
 
 }  //end namespace mkvparser
