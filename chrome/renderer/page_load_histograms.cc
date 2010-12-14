@@ -106,10 +106,13 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   // Record the new PLT times prior to the faulty abandon check below.
   // TODO(tonyg): There are many new details we can record, add them after the
   // basic metrics are evaluated.
-  TimeDelta nav_start_to_load_start = load_event_start - navigation_start;
-  TimeDelta nav_start_to_load_end = load_event_end - navigation_start;
-  PLT_HISTOGRAM("PLT.NavStartToLoadStart", nav_start_to_load_start);
-  PLT_HISTOGRAM("PLT.NavStartToLoadEnd", nav_start_to_load_end);
+  // TODO(simonjam): There is no way to distinguish between abandonment and
+  // intentional Javascript navigation before the load event fires.
+  if (!load_event_start.is_null())
+    PLT_HISTOGRAM("PLT.NavStartToLoadStart",
+                  load_event_start - navigation_start);
+  if (!load_event_end.is_null())
+    PLT_HISTOGRAM("PLT.NavStartToLoadEnd", load_event_end - navigation_start);
 
   // We properly handle null values for the next 3 variables.
   Time request = navigation_state->request_time();
