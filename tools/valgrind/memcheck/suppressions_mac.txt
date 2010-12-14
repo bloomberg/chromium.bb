@@ -1174,11 +1174,20 @@
    fun:_ZN13UtilityThreadC1Ev
 }
 {
-   bug_66102
+   bug_66102_a
    Memcheck:Leak
    fun:_Znw*
    ...
    fun:_ZN6policy21FileBasedPolicyLoader11InitWatcherEv
+   ...
+   fun:_ZN54PrefValueStorePolicyRefreshTest_TestPolicyRefresh_Test8TestBodyEv
+}
+{
+   bug_66102_b
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN6policy21FileBasedPolicyLoader16InitOnFileThreadEv
    ...
    fun:_ZN54PrefValueStorePolicyRefreshTest_TestPolicyRefresh_Test8TestBodyEv
 }
