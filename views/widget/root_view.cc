@@ -82,7 +82,7 @@ RootView::RootView(Widget* widget)
       drag_view_(NULL)
 #if defined(TOUCH_UI)
       ,
-      gesture_manager_(GestureManager::Get()),
+      gesture_manager_(GestureManager::GetInstance()),
       touch_pressed_handler_(NULL)
 #endif
 #ifndef NDEBUG

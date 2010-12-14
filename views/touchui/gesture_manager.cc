@@ -16,7 +16,7 @@ namespace views {
 GestureManager::~GestureManager() {
 }
 
-GestureManager* GestureManager::Get() {
+GestureManager* GestureManager::GetInstance() {
   return Singleton<GestureManager>::get();
 }
 

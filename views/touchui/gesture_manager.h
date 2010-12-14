@@ -23,7 +23,7 @@ class GestureManager {
  public:
   virtual ~GestureManager();
 
-  static GestureManager* Get();
+  static GestureManager* GetInstance();
 
   // Invoked for each touch event that could contribute to the current gesture.
   // Takes the event and the View that originated it and which will also
