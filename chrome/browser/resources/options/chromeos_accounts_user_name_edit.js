@@ -14,12 +14,15 @@ cr.define('options.accounts', function() {
   //   e.g. 'john@chromium.org'
   //        {name: 'john', email: 'john@chromium.org'}
   const format2String =
-      '^\\s*([\\w\\.!#\\$%&\'\\*\\+-\\/=\\?\\^`\\{\\|\\}~]+)@(\\w+\\..+)\\s*$';
+      '^\\s*([\\w\\.!#\\$%&\'\\*\\+-\\/=\\?\\^`\\{\\|\\}~]+)@' +
+      '([A-Za-z0-9\-]{2,63}\\..+)\\s*$';
   // Full format.
   //   e.g. '"John Doe" <john@chromium.org>'
   //        {name: 'John doe', email: 'john@chromium.org'}
   const format3String =
-      '^\\s*"{0,1}([^"]+)"{0,1}\\s*<([^@]+@\\w+\\..+)>\\s*$';
+      '^\\s*"{0,1}([^"]+)"{0,1}\\s*' +
+      '<([\\w\\.!#\\$%&\'\\*\\+-\\/=\\?\\^`\\{\\|\\}~]+@' +
+      '[A-Za-z0-9\-]{2,63}\\..+)>\\s*$';
 
   /**
    * Creates a new user name edit element.
