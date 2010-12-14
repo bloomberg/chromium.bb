@@ -744,6 +744,12 @@ class TestingAutomationProvider : public AutomationProvider,
                                           DictionaryValue* args,
                                           IPC::Message* reply_message);
 
+  // Kills the given renderer process and returns after the associated
+  // RenderProcessHost receives notification of its closing.
+  void KillRendererProcess(Browser* browser,
+                           DictionaryValue* args,
+                           IPC::Message* reply_message);
+
   void WaitForTabCountToBecome(int browser_handle,
                                int target_tab_count,
                                IPC::Message* reply_message);

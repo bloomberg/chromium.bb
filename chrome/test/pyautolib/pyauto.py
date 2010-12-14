@@ -255,7 +255,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
 
   @staticmethod
   def Kill(pid):
-    """Terminate the given pid."""
+    """Terminate the given pid.
+
+    If the pid refers to a renderer, use KillRendererProcess instead.
+    """
     if PyUITest.IsWin():
       subprocess.call(['taskkill.exe', '/T', '/F', '/PID', str(pid)])
     else:
@@ -1965,6 +1968,24 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
   def _CheckNTPThumbnailShown(self, thumbnail):
     if self.GetNTPThumbnailIndex(thumbnail) == -1:
       raise NTPThumbnailNotShownError()
+
+  def KillRendererProcess(self, pid):
+    """Kills the given renderer process.
+
+    This will return only after the browser has received notice of the renderer
+    close.
+
+    Args:
+      pid: the process id of the renderer to kill
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'KillRendererProcess',
+        'pid': pid
+    }
+    return self._GetResultFromJSONRequest(cmd_dict)
 
 
 class PyUITestSuite(pyautolib.PyUITestSuiteBase, unittest.TestSuite):

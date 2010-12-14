@@ -276,7 +276,8 @@ class DatabasesTest(pyauto.PyUITest):
     self.NavigateToURL(self.TEST_PAGE_URL)
     self._CreateTable()
     self._InsertRecord('1')
-    self.Kill(self.GetBrowserInfo()['windows'][0]['tabs'][0]['renderer_pid'])
+    self.KillRendererProcess(
+        self.GetBrowserInfo()['windows'][0]['tabs'][0]['renderer_pid'])
     self.ReloadActiveTab()
     self.assertEqual(['1'], self._GetRecords())
 

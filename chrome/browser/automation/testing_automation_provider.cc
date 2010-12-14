@@ -10,6 +10,8 @@
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
 #include "base/path_service.h"
+#include "base/process.h"
+#include "base/process_util.h"
 #include "base/stringprintf.h"
 #include "base/thread_restrictions.h"
 #include "base/time.h"
@@ -2131,6 +2133,9 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::UnpinNTPMostVisitedThumbnail;
   handler_map["RestoreAllNTPMostVisitedThumbnails"] =
       &TestingAutomationProvider::RestoreAllNTPMostVisitedThumbnails;
+
+  handler_map["KillRendererProcess"] =
+      &TestingAutomationProvider::KillRendererProcess;
 
   if (handler_map.find(std::string(command)) != handler_map.end()) {
     (this->*handler_map[command])(browser, dict_value, reply_message);
@@ -4375,6 +4380,27 @@ void TestingAutomationProvider::RestoreAllNTPMostVisitedThumbnails(
   }
   top_sites->ClearBlacklistedURLs();
   reply.SendSuccess(NULL);
+}
+
+void TestingAutomationProvider::KillRendererProcess(
+    Browser* browser,
+    DictionaryValue* args,
+    IPC::Message* reply_message) {
+  int pid;
+  if (!args->GetInteger("pid", &pid)) {
+    AutomationJSONReply(this, reply_message).
+        SendError("'pid' key missing or invalid.");
+    return;
+  }
+  base::ProcessHandle process;
+  if (!base::OpenProcessHandle(static_cast<base::ProcessId>(pid), &process)) {
+    AutomationJSONReply(this, reply_message).SendError(base::StringPrintf(
+        "Failed to open process handle for pid %d", pid));
+    return;
+  }
+  new RendererProcessClosedObserver(this, reply_message);
+  base::KillProcess(process, 0, false);
+  base::CloseProcessHandle(process);
 }
 
 void TestingAutomationProvider::WaitForTabCountToBecome(

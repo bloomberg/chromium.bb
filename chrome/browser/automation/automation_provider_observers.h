@@ -989,5 +989,24 @@ class OnNotificationBalloonCountObserver {
   DISALLOW_COPY_AND_ASSIGN(OnNotificationBalloonCountObserver);
 };
 
+// Allows the automation provider to wait for a RENDERER_PROCESS_CLOSED
+// notification.
+class RendererProcessClosedObserver : public NotificationObserver {
+ public:
+  RendererProcessClosedObserver(AutomationProvider* automation,
+                                IPC::Message* reply_message);
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  NotificationRegistrar registrar_;
+  AutomationProvider* automation_;
+  IPC::Message* reply_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(RendererProcessClosedObserver);
+};
+
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_OBSERVERS_H_

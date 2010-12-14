@@ -235,7 +235,8 @@ class StressTest(pyauto.PyUITest):
     info = self.GetBrowserInfo()
     # Kill all renderer processes
     for tab_index in range(self.GetTabCount(0)):
-      self.Kill(info['windows'][0]['tabs'][tab_index]['renderer_pid'])
+      self.KillRendererProcess(
+          info['windows'][0]['tabs'][tab_index]['renderer_pid'])
     self._ReloadAllTabs()
     self._CloseAllTabs()
 

@@ -1549,3 +1549,20 @@ void OnNotificationBalloonCountObserver::OnBalloonCollectionChanged() {
     delete this;
   }
 }
+
+RendererProcessClosedObserver::RendererProcessClosedObserver(
+    AutomationProvider* automation,
+    IPC::Message* reply_message)
+    : automation_(automation),
+      reply_message_(reply_message) {
+  registrar_.Add(this, NotificationType::RENDERER_PROCESS_CLOSED,
+                 NotificationService::AllSources());
+}
+
+void RendererProcessClosedObserver::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  AutomationJSONReply(automation_, reply_message_).SendSuccess(NULL);
+  delete this;
+}

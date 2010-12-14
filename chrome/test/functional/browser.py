@@ -141,7 +141,7 @@ class BrowserTest(pyauto.PyUITest):
     self.NavigateToURL(flash_url)
     flash_process_id1 = self._GetFlashProcessesInfo()[0]['pid']
     self.Kill(flash_process_id1)
-    self.GetBrowserWindow(0).GetTab(0).Reload()  # Reload
+    self.ReloadActiveTab()
     flash_processes = self._GetFlashProcessesInfo()
     self.assertEqual(1, len(flash_processes))
     self.assertNotEqual(flash_process_id1, flash_processes[0]['pid'])
@@ -163,19 +163,17 @@ class BrowserTest(pyauto.PyUITest):
     # In case if we create 100 processes for 100 tabs, then we are failing.
     self.fail(msg='Got 100 renderer processes')
 
-  def testKillAndRelodRenderer(self):
+  def testKillAndReloadRenderer(self):
     """Verify that reloading of renderer is possible,
        after renderer is killed"""
     test_url = self.GetFileURLForDataPath('english_page.html')
     self.NavigateToURL(test_url)
     pid1 = self.GetBrowserInfo()['windows'][0]['tabs'][0]['renderer_pid']
-    self.Kill(pid1)
-    tab = self.GetBrowserWindow(0).GetTab(0)
-    tab.Reload()
+    self.KillRendererProcess(pid1)
+    self.ReloadActiveTab()
     pid2 = self.GetBrowserInfo()['windows'][0]['tabs'][0]['renderer_pid']
     self.assertNotEqual(pid1, pid2)
 
 
 if __name__ == '__main__':
   pyauto_functional.Main()
-

@@ -33,8 +33,6 @@
     'databases',
     # crbug.com/66714
     '-databases.DatabasesTest.testIncognitoDBPersistentAcrossTabs',
-    # Reloading after kill doesn't load the page, crbug.com/64708.
-    '-databases.DatabasesTest.testModificationsPersistAfterRendererCrash',
     'downloads',
     'find_in_page',
     # Turkish I problem. crbug.com/60638
