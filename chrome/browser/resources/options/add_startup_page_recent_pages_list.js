@@ -39,7 +39,7 @@ cr.define('options.add_startup_page', function() {
       titleEl.className = 'title';
       titleEl.classList.add('favicon-cell');
       titleEl.style.backgroundImage = url('chrome://favicon/' +
-                                         this.pageInfo['url']);
+                                          this.pageInfo['url']);
       this.appendChild(titleEl);
       if (this.pageInfo['title'].length > 0) {
         titleEl.textContent = this.pageInfo['title'];

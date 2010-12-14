@@ -303,19 +303,24 @@ cr.define('cr.ui', function() {
       if (target == this && !inViewport(target, e))
         return;
 
-      while (target && target.parentNode != this) {
-        target = target.parentNode;
-      }
+      target = this.getListItemAncestor(target);
 
-      if (!target) {
-        this.selectionController_.handleMouseDownUp(e, -1);
-      } else {
-        var cs = getComputedStyle(target);
-        var top = target.offsetTop -
-                  parseFloat(cs.marginTop);
-        var index = Math.floor(top / this.getItemHeight_());
-        this.selectionController_.handleMouseDownUp(e, index);
+      var index = target ? this.getIndexOfListItem(target) : -1;
+      this.selectionController_.handleMouseDownUp(e, index);
+    },
+
+    /**
+     * Returns the list item element containing the given element, or null if
+     * it doesn't belong to any list item element.
+     * @param {HTMLElement} element The element.
+     * @return {ListItem} The list item containing |element|, or null.
+     */
+    getListItemAncestor: function(element) {
+      var container = element;
+      while (container && container.parentNode != this) {
+        container = container.parentNode;
       }
+      return container;
     },
 
     /**
@@ -452,6 +457,22 @@ cr.define('cr.ui', function() {
         return null;
 
       return this.children[index - this.firstIndex_ + 1];
+    },
+
+    /**
+     * Find the index of the given list item element.
+     * @param {ListItem} item The list item to get the index of.
+     * @return {number} The index of the list item, or -1 if not found.
+     */
+    getIndexOfListItem: function(item) {
+      var cs = getComputedStyle(item);
+      var top = item.offsetTop - parseFloat(cs.marginTop);
+      var index = Math.floor(top / this.getItemHeight_());
+      var childIndex = index - this.firstIndex_ + 1;
+      if (childIndex >= 0 && childIndex < this.children.length &&
+          this.children[childIndex] == item)
+        return index;
+      return -1;
     },
 
     /**

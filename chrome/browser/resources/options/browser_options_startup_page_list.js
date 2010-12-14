@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('options.browser_options', function() {
-  const List = cr.ui.List;
+  const DeletableItemList = options.DeletableItemList;
   const ListItem = cr.ui.ListItem;
 
   /**
@@ -50,11 +50,16 @@ cr.define('options.browser_options', function() {
   var StartupPageList = cr.ui.define('list');
 
   StartupPageList.prototype = {
-    __proto__: List.prototype,
+    __proto__: DeletableItemList.prototype,
 
     /** @inheritDoc */
-    createItem: function(pageInfo) {
+    createItemContents: function(pageInfo) {
       return new StartupPageListItem(pageInfo);
+    },
+
+    /** @inheritDoc */
+    deleteItemAtIndex: function(index) {
+      chrome.send('removeStartupPages', [String(index)]);
     },
   };
 

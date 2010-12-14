@@ -396,6 +396,35 @@ list > .heading:hover {
   border-color: transparent;
 }
 
+list .deletable-item {
+  display: -webkit-box;
+}
+
+list .deletable-item > :first-child {
+  -webkit-box-flex: 1;
+}
+
+list .close-button {
+  background-color: transparent;
+  /* TODO(stuartmorgan): Replace with real images once they are available. */
+  background-image: url("../../../app/theme/close_bar.png");
+  border: none;
+  height: 16px;
+  width: 16px;
+}
+
+list > *:not(:hover) .close-button, list[disabled] .close-button {
+  display: none;
+}
+
+list .close-button:hover {
+  background-image: url("../../../app/theme/close_bar_h.png");
+}
+
+list .close-button:active {
+  background-image: url("../../../app/theme/close_bar_p.png");
+}
+
 .left-side-table {
   display: -webkit-box;
 }
@@ -429,6 +458,10 @@ html[dir=rtl].option-name {
 list .favicon-cell {
   -webkit-margin-start: 7px;
   -webkit-padding-start: 26px;
+  display: block;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 html[dir=rtl] .favicon-cell {

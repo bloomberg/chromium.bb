@@ -32,22 +32,15 @@ cr.define('options', function() {
       list.autoExpands = true;
       list.selectionModel = new ListSelectionModel;
 
-      list.selectionModel.addEventListener(
-          'change', this.updateRemoveButtonState_.bind(this));
-
       // Wire up controls.
       $('startupAddButton').onclick = function(event) {
         OptionsPage.showOverlay('addStartupPageOverlay');
       };
-      $('startupRemoveButton').onclick =
-          this.removeSelectedStartupPages_.bind(this);
 
       // Remove Windows-style accelerators from button labels.
       // TODO(stuartmorgan): Remove this once the strings are updated.
       $('startupAddButton').textContent =
           localStrings.getStringWithoutAccelerator('startupAddButton');
-      $('startupRemoveButton').textContent =
-          localStrings.getStringWithoutAccelerator('startupRemoveButton');
     },
 
     /**
@@ -57,32 +50,25 @@ cr.define('options', function() {
      */
     updateStartupPages_: function(pages) {
       $('startupPagesFullList').dataModel = new ArrayDataModel(pages);
-      this.updateRemoveButtonState_();
     },
 
     /**
-     * Sets the enabled state of the startup page Remove button based on
-     * the current selection in the startup pages list.
+     * Adds the given startup page at the current selection point.
      * @private
      */
-    updateRemoveButtonState_: function() {
-      $('startupRemoveButton').disabled =
-          $('startupPagesFullList').selectionModel.selectedIndex == -1;
-    },
-
-    /**
-     * Removes the selected startup pages.
-     * @private
-     */
-    removeSelectedStartupPages_: function() {
-      var selections =
-          $('startupPagesFullList').selectionModel.selectedIndexes.map(String);
-      chrome.send('removeStartupPages', selections);
+    addStartupPage_: function(url) {
+      var firstSelection =
+          $('startupPagesFullList').selectionModel.selectedIndex;
+      chrome.send('addStartupPage', [url, String(firstSelection)]);
     },
   };
 
   StartupPageManager.updateStartupPages = function(pages) {
     StartupPageManager.getInstance().updateStartupPages_(pages);
+  };
+
+  StartupPageManager.addStartupPage = function(url) {
+    StartupPageManager.getInstance().addStartupPage_(url);
   };
 
   // Export

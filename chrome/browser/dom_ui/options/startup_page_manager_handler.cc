@@ -21,8 +21,6 @@ void StartupPageManagerHandler::GetLocalizedValues(
 
   localized_strings->SetString("startupAddButton",
       l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_ADD_BUTTON));
-  localized_strings->SetString("startupRemoveButton",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_REMOVE_BUTTON));
   localized_strings->SetString("startupPageManagerPage",
       l10n_util::GetStringUTF16(IDS_STARTUP_PAGE_SUBPAGE_TITLE));
   localized_strings->SetString("startupManagePages",
