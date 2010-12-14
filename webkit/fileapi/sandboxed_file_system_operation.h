@@ -21,14 +21,10 @@ class SandboxedFileSystemContext;
 //    via |file_system_context|.
 class SandboxedFileSystemOperation : public FileSystemOperation {
  public:
-  // This class doesn't hold a reference or ownership of |file_system_context|.
-  // It is the caller's responsibility to keep the pointer alive *until*
-  // it calls any of the operation methods.  The |file_system_context| won't be
-  // used in the callback path and can be deleted after the operation is
-  // made (e.g. after one of CreateFile, CreateDirectory, Copy, etc is called).
-  SandboxedFileSystemOperation(FileSystemCallbackDispatcher* dispatcher,
-                               scoped_refptr<base::MessageLoopProxy> proxy,
-                               SandboxedFileSystemContext* file_system_context);
+  SandboxedFileSystemOperation(
+      FileSystemCallbackDispatcher* dispatcher,
+      scoped_refptr<base::MessageLoopProxy> proxy,
+      scoped_refptr<SandboxedFileSystemContext> file_system_context);
   virtual ~SandboxedFileSystemOperation();
 
   void OpenFileSystem(const GURL& origin_url,
@@ -94,8 +90,7 @@ class SandboxedFileSystemOperation : public FileSystemOperation {
                                     bool create,
                                     int64 growth);
 
-  // Not owned.  See the comment at the constructor.
-  SandboxedFileSystemContext* file_system_context_;
+  scoped_refptr<SandboxedFileSystemContext> file_system_context_;
 
   base::ScopedCallbackFactory<SandboxedFileSystemOperation> callback_factory_;
 

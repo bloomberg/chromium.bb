@@ -15,7 +15,7 @@ namespace fileapi {
 SandboxedFileSystemOperation::SandboxedFileSystemOperation(
     FileSystemCallbackDispatcher* dispatcher,
     scoped_refptr<base::MessageLoopProxy> proxy,
-    SandboxedFileSystemContext* file_system_context)
+    scoped_refptr<SandboxedFileSystemContext> file_system_context)
     : FileSystemOperation(dispatcher, proxy),
       file_system_context_(file_system_context),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {

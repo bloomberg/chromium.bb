@@ -6,13 +6,13 @@
 
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/file_system/browser_file_system_context.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/net_errors.h"
 #include "webkit/database/database_util.h"
 #include "webkit/database/database_tracker.h"
+#include "webkit/fileapi/sandboxed_file_system_context.h"
 
 ExtensionDataDeleter::ExtensionDataDeleter(Profile* profile,
                                            const GURL& extension_url) {

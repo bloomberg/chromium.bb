@@ -19,7 +19,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
-#include "chrome/browser/file_system/browser_file_system_context.h"
+#include "chrome/browser/file_system/browser_file_system_helper.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -337,12 +337,12 @@ class OffTheRecordProfileImpl : public Profile,
     return NULL;
   }
 
-  virtual BrowserFileSystemContext* GetFileSystemContext() {
-    if (!browser_file_system_context_)
-      browser_file_system_context_ = new BrowserFileSystemContext(
+  virtual fileapi::SandboxedFileSystemContext* GetFileSystemContext() {
+    if (!file_system_context_)
+      file_system_context_ = CreateFileSystemContext(
           GetPath(), IsOffTheRecord());
-    DCHECK(browser_file_system_context_.get());
-    return browser_file_system_context_.get();
+    DCHECK(file_system_context_.get());
+    return file_system_context_.get();
   }
 
   virtual void InitThemes() {
@@ -669,7 +669,7 @@ class OffTheRecordProfileImpl : public Profile,
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
 
   // The file_system context for this profile.
-  scoped_refptr<BrowserFileSystemContext> browser_file_system_context_;
+  scoped_refptr<fileapi::SandboxedFileSystemContext> file_system_context_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileImpl);
 };

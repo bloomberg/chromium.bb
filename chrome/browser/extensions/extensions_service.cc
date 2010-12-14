@@ -1298,7 +1298,7 @@ void ExtensionsService::GrantUnlimitedStorage(const Extension* extension) {
           BrowserThread::IO, FROM_HERE,
           NewRunnableMethod(
               profile_->GetFileSystemContext(),
-              &BrowserFileSystemContext::SetOriginQuotaUnlimited,
+              &fileapi::SandboxedFileSystemContext::SetOriginQuotaUnlimited,
               origin));
     }
   }
@@ -1333,7 +1333,7 @@ void ExtensionsService::RevokeUnlimitedStorage(const Extension* extension) {
           BrowserThread::IO, FROM_HERE,
           NewRunnableMethod(
               profile_->GetFileSystemContext(),
-              &BrowserFileSystemContext::ResetOriginQuotaUnlimited,
+              &fileapi::SandboxedFileSystemContext::ResetOriginQuotaUnlimited,
               origin));
     }
   }

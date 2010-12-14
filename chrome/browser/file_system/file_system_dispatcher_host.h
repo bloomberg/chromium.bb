@@ -17,7 +17,6 @@ class Time;
 }
 
 class ChromeURLRequestContext;
-class BrowserFileSystemContext;
 class FilePath;
 class GURL;
 class HostContentSettingsMap;
@@ -28,6 +27,7 @@ class URLRequestContext;
 class URLRequestContextGetter;
 
 namespace fileapi {
+class SandboxedFileSystemContext;
 class SandboxedFileSystemOperation;
 }
 
@@ -81,7 +81,7 @@ class FileSystemDispatcherHost : public BrowserMessageFilter {
   // Creates a new SandboxedFileSystemOperation.
   fileapi::SandboxedFileSystemOperation* GetNewOperation(int request_id);
 
-  scoped_refptr<BrowserFileSystemContext> context_;
+  scoped_refptr<fileapi::SandboxedFileSystemContext> context_;
 
   // Used to look up permissions.
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;

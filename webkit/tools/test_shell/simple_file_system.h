@@ -72,7 +72,7 @@ class SimpleFileSystem
   // A temporary directory for FileSystem API.
   ScopedTempDir file_system_dir_;
 
-  scoped_ptr<fileapi::SandboxedFileSystemContext> sandboxed_context_;
+  scoped_refptr<fileapi::SandboxedFileSystemContext> sandboxed_context_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleFileSystem);
 };

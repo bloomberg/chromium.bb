@@ -39,6 +39,10 @@ namespace webkit_database {
 class DatabaseTracker;
 }
 
+namespace fileapi {
+class SandboxedFileSystemContext;
+}
+
 class AutocompleteClassifier;
 class BackgroundContentsService;
 class BackgroundModeManager;
@@ -54,47 +58,48 @@ class DownloadManager;
 class Extension;
 class ExtensionDevToolsManager;
 class ExtensionEventRouter;
+class ExtensionInfoMap;
 class ExtensionMessageService;
 class ExtensionProcessManager;
 class ExtensionsService;
 class FaviconService;
 class FilePath;
-class BrowserFileSystemContext;
 class FindBarState;
 class GeolocationContentSettingsMap;
 class GeolocationPermissionContext;
 class HistoryService;
 class HostContentSettingsMap;
 class HostZoomMap;
-class NavigationController;
 class NTPResourceCache;
+class NavigationController;
 class PasswordStore;
 class PersonalDataManager;
 class PinnedTabService;
-class PrefService;
-class ExtensionInfoMap;
 class PrefProxyConfigTracker;
+class PrefService;
 class PrerenderManager;
-class PromoCounter;
-class ProfileSyncService;
 class ProfileSyncFactory;
-class SessionService;
-class SpellCheckHost;
+class ProfileSyncService;
+class ProfileSyncService;
+class PromoCounter;
+class PromoCounter;
+class SQLitePersistentCookieStore;
 class SSLConfigServiceManager;
 class SSLHostState;
+class SessionService;
+class SpellCheckHost;
 class StatusTray;
-class TransportSecurityPersister;
-class SQLitePersistentCookieStore;
 class TabRestoreService;
 class TemplateURLFetcher;
 class TemplateURLModel;
 class ThemeProvider;
 class TokenService;
+class TransportSecurityPersister;
 class URLRequestContextGetter;
 class UserScriptMaster;
 class UserStyleSheetWatcher;
-class VisitedLinkMaster;
 class VisitedLinkEventListener;
+class VisitedLinkMaster;
 class WebDataService;
 class WebKitContext;
 class WebResourceService;
@@ -298,7 +303,7 @@ class Profile {
   // Returns the FileSystemContext associated to this profile.  The context
   // is lazily created the first time this method is called.  This is owned
   // by the profile.
-  virtual BrowserFileSystemContext* GetFileSystemContext() = 0;
+  virtual fileapi::SandboxedFileSystemContext* GetFileSystemContext() = 0;
 
   // Returns the BrowserSignin object assigned to this profile.
   virtual BrowserSignin* GetBrowserSignin() = 0;

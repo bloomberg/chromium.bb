@@ -23,7 +23,6 @@
 #include "base/version.h"
 #include "chrome/browser/appcache/chrome_appcache_service.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/file_system/browser_file_system_context.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
@@ -31,6 +30,7 @@
 #include "chrome/browser/extensions/external_extension_provider.h"
 #include "chrome/browser/extensions/external_pref_extension_provider.h"
 #include "chrome/browser/extensions/pack_extension_job.cc"
+#include "chrome/browser/file_system/browser_file_system_helper.h"
 #include "chrome/browser/in_process_webkit/dom_storage_context.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -316,17 +316,17 @@ class ExtensionTestingProfile : public TestingProfile {
     return appcache_service_;
   }
 
-  virtual BrowserFileSystemContext* GetFileSystemContext() {
-    if (!browser_file_system_context_)
-      browser_file_system_context_ = new BrowserFileSystemContext(
+  virtual fileapi::SandboxedFileSystemContext* GetFileSystemContext() {
+    if (!file_system_context_)
+      file_system_context_ = CreateFileSystemContext(
           GetPath(), IsOffTheRecord());
-    return browser_file_system_context_;
+    return file_system_context_;
   }
 
  private:
   ExtensionsService* service_;
   scoped_refptr<ChromeAppCacheService> appcache_service_;
-  scoped_refptr<BrowserFileSystemContext> browser_file_system_context_;
+  scoped_refptr<fileapi::SandboxedFileSystemContext> file_system_context_;
 };
 
 // Our message loop may be used in tests which require it to be an IO loop.

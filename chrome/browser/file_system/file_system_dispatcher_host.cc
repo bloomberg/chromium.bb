@@ -11,7 +11,6 @@
 #include "base/thread.h"
 #include "base/time.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/file_system/browser_file_system_context.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
@@ -24,6 +23,7 @@
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 #include "webkit/fileapi/file_system_quota_manager.h"
+#include "webkit/fileapi/sandboxed_file_system_context.h"
 #include "webkit/fileapi/sandboxed_file_system_operation.h"
 
 using fileapi::FileSystemCallbackDispatcher;
@@ -89,7 +89,7 @@ FileSystemDispatcherHost::FileSystemDispatcherHost(Profile* profile)
 
 FileSystemDispatcherHost::FileSystemDispatcherHost(
     ChromeURLRequestContext* context)
-    : context_(context->browser_file_system_context()),
+    : context_(context->file_system_context()),
       host_content_settings_map_(context->host_content_settings_map()),
       request_context_(context) {
 }
@@ -239,7 +239,7 @@ SandboxedFileSystemOperation* FileSystemDispatcherHost::GetNewOperation(
   SandboxedFileSystemOperation* operation = new SandboxedFileSystemOperation(
       dispatcher,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-      context_.get());
+      context_);
   operations_.AddWithID(operation, request_id);
   return operation;
 }

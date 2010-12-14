@@ -5,6 +5,7 @@
 #include "webkit/tools/test_shell/simple_file_system.h"
 
 #include "base/file_path.h"
+#include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/scoped_callback_factory.h"
 #include "base/time.h"
@@ -117,12 +118,13 @@ class SimpleFileSystemCallbackDispatcher
 
 SimpleFileSystem::SimpleFileSystem() {
   if (file_system_dir_.CreateUniqueTempDir()) {
-    sandboxed_context_.reset(new SandboxedFileSystemContext(
+    sandboxed_context_ = new SandboxedFileSystemContext(
+        base::MessageLoopProxy::CreateForCurrentThread(),
         base::MessageLoopProxy::CreateForCurrentThread(),
         file_system_dir_.path(),
         false /* incognito */,
         true /* allow_file_access */,
-        false /* unlimited_quota */));
+        false /* unlimited_quota */);
   } else {
     LOG(WARNING) << "Failed to create a temp dir for the filesystem."
                     "FileSystem feature will be disabled.";

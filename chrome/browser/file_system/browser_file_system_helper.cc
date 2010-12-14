@@ -1,0 +1,23 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/file_system/browser_file_system_helper.h"
+
+#include "base/file_path.h"
+#include "base/command_line.h"
+#include "chrome/browser/browser_thread.h"
+#include "chrome/common/chrome_switches.h"
+
+scoped_refptr<fileapi::SandboxedFileSystemContext> CreateFileSystemContext(
+        const FilePath& profile_path, bool is_incognito) {
+  return new fileapi::SandboxedFileSystemContext(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+      profile_path,
+      is_incognito,
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAllowFileAccessFromFiles),
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUnlimitedQuotaForFiles));
+}

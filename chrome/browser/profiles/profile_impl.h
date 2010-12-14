@@ -71,7 +71,7 @@ class ProfileImpl : public Profile,
   virtual TemplateURLFetcher* GetTemplateURLFetcher();
   virtual DownloadManager* GetDownloadManager();
   virtual PersonalDataManager* GetPersonalDataManager();
-  virtual BrowserFileSystemContext* GetFileSystemContext();
+  virtual fileapi::SandboxedFileSystemContext* GetFileSystemContext();
   virtual void InitThemes();
   virtual void SetTheme(const Extension* extension);
   virtual void SetNativeTheme();
@@ -235,7 +235,7 @@ class ProfileImpl : public Profile,
   scoped_ptr<StatusTray> status_tray_;
   scoped_refptr<PersonalDataManager> personal_data_manager_;
   scoped_ptr<PinnedTabService> pinned_tab_service_;
-  scoped_refptr<BrowserFileSystemContext> browser_file_system_context_;
+  scoped_refptr<fileapi::SandboxedFileSystemContext> file_system_context_;
   scoped_ptr<BrowserSignin> browser_signin_;
   bool history_service_created_;
   bool favicon_service_created_;
