@@ -362,6 +362,9 @@ void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
 #if defined(USE_SECCOMP_SANDBOX)
         switches::kDisableSeccompSandbox,
 #endif
+#if defined(HAVE_XINPUT2)
+        switches::kTouchDevices,
+#endif
     };
     const CommandLine& browser_command_line =
         *CommandLine::ForCurrentProcess();
