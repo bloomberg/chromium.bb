@@ -46,7 +46,7 @@ class GeolocationPermissionContext
 
   // Called when a geolocation object wants to start receiving location updates.
   // This also applies global policy around which location providers may be
-  // enbaled at a given time (e.g. prior to the user agreeing to any geolocation
+  // enabled at a given time (e.g. prior to the user agreeing to any geolocation
   // permission requests).
   void StartUpdatingRequested(
       int render_process_id, int render_view_id, int bridge_id,

@@ -37,6 +37,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/file_system/file_system_dispatcher_host.h"
+#include "chrome/browser/geolocation/geolocation_dispatcher_host.h"
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/in_process_webkit/dom_storage_message_filter.h"
@@ -400,6 +401,9 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
       new AppCacheDispatcherHost(profile()->GetRequestContext(), id()));
   channel_->AddFilter(new DOMStorageMessageFilter(id(), profile()));
   channel_->AddFilter(new IndexedDBDispatcherHost(id(), profile()));
+  channel_->AddFilter(
+      GeolocationDispatcherHost::New(
+          id(), profile()->GetGeolocationPermissionContext()));
   channel_->AddFilter(new PepperFileMessageFilter(id(), profile()));
   channel_->AddFilter(new speech_input::SpeechInputDispatcherHost(id()));
   channel_->AddFilter(

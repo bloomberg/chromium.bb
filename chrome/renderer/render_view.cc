@@ -63,7 +63,11 @@
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/external_host_bindings.h"
 #include "chrome/renderer/external_popup_menu.h"
+#if ENABLE_CLIENT_BASED_GEOLOCATION
+#include "chrome/renderer/geolocation_dispatcher.h"
+#else
 #include "chrome/renderer/geolocation_dispatcher_old.h"
+#endif
 #include "chrome/renderer/ggl/ggl.h"
 #include "chrome/renderer/localized_error.h"
 #include "chrome/renderer/media/audio_renderer_impl.h"
@@ -5619,11 +5623,20 @@ void RenderView::OnPageTranslated() {
   autofill_helper_->FrameContentsAvailable(frame);
 }
 
+#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
+WebKit::WebGeolocationClient* RenderView::geolocationClient()
+{
+  if (!geolocation_dispatcher_.get())
+    geolocation_dispatcher_.reset(new GeolocationDispatcher(this));
+  return geolocation_dispatcher_.get();
+}
+#else
 WebKit::WebGeolocationService* RenderView::geolocationService() {
   if (!geolocation_dispatcher_.get())
     geolocation_dispatcher_.reset(new GeolocationDispatcherOld(this));
   return geolocation_dispatcher_.get();
 }
+#endif
 
 WebKit::WebSpeechInputController* RenderView::speechInputController(
     WebKit::WebSpeechInputListener* listener) {
