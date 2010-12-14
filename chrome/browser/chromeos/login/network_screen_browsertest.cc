@@ -158,7 +158,8 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Ethernet) {
   EXPECT_CALL(*mock_network_library_, ethernet_connected())
       .WillOnce(Return(true));
   EXPECT_CALL(*mock_network_library_, Connected())
-      .WillOnce(Return(true));
+      .Times(2)
+      .WillRepeatedly(Return(true));
   EXPECT_FALSE(network_view->IsContinueEnabled());
   EXPECT_FALSE(network_view->IsConnecting());
   network_screen->OnNetworkManagerChanged(mock_network_library_);
@@ -199,7 +200,8 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Wifi) {
   EXPECT_CALL(*mock_network_library_, ethernet_connected())
       .WillOnce(Return(true));
   EXPECT_CALL(*mock_network_library_, Connected())
-      .WillOnce(Return(true));
+        .Times(2)
+        .WillRepeatedly(Return(true));
   EXPECT_FALSE(network_view->IsContinueEnabled());
   EXPECT_FALSE(network_view->IsConnecting());
   network_screen->OnNetworkManagerChanged(mock_network_library_);
@@ -238,7 +240,8 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Cellular) {
   EXPECT_CALL(*mock_network_library_, ethernet_connected())
       .WillOnce(Return(true));
   EXPECT_CALL(*mock_network_library_, Connected())
-      .WillOnce(Return(true));
+      .Times(2)
+      .WillRepeatedly(Return(true));
   EXPECT_FALSE(network_view->IsContinueEnabled());
   EXPECT_FALSE(network_view->IsConnecting());
   network_screen->OnNetworkManagerChanged(mock_network_library_);
@@ -273,7 +276,8 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Timeout) {
   network_screen->OnNetworkManagerChanged(mock_network_library_);
 
   EXPECT_CALL(*mock_network_library_, Connected())
-      .WillOnce(Return(false));
+      .Times(2)
+      .WillRepeatedly(Return(false));
   EXPECT_FALSE(network_view->IsContinueEnabled());
   EXPECT_FALSE(network_view->IsConnecting());
   network_screen->OnConnectionTimeout();

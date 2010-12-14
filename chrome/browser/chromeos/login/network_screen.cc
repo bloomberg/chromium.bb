@@ -143,7 +143,11 @@ void NetworkScreen::NotifyOnConnection() {
 
 void NetworkScreen::OnConnectionTimeout() {
   StopWaitingForConnection(network_id_);
-  if (!view()->is_dialog_open() &&
+  NetworkLibrary* network = CrosLibrary::Get()->GetNetworkLibrary();
+  bool is_connected = network && network->Connected();
+
+  if (!is_connected &&
+      !view()->is_dialog_open() &&
       !(help_app_.get() && help_app_->is_open())) {
     // Show error bubble.
     ClearErrors();
@@ -165,6 +169,9 @@ void NetworkScreen::OnConnectionTimeout() {
 void NetworkScreen::UpdateStatus(NetworkLibrary* network) {
   if (!view() || !network)
     return;
+
+  if (network->Connected())
+    ClearErrors();
 
   if (network->ethernet_connected()) {
     StopWaitingForConnection(
