@@ -253,7 +253,7 @@ void spdy_init_ssl(SSLState* state,
     int num_methods = sk_SSL_COMP_num(ssl_comp_methods);
     int i;
     for (i = 0; i < num_methods; i++) {
-      sk_SSL_COMP_delete(ssl_comp_methods, i);
+      static_cast<void>(sk_SSL_COMP_delete(ssl_comp_methods, i));
     }
   }
 }
