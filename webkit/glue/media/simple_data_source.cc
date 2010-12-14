@@ -244,14 +244,13 @@ void SimpleDataSource::StartTask() {
   } else {
     // Prepare the request.
     WebKit::WebURLRequest request(url_);
+    request.setTargetType(WebKit::WebURLRequest::TargetIsMedia);
 
     frame_->setReferrerForRequest(request, WebKit::WebURL());
-    // TODO(annacc): we should be using createAssociatedURLLoader() instead?
-    frame_->dispatchWillSendRequest(request);
 
     // This flag is for unittests as we don't want to reset |url_loader|
     if (!keep_test_loader_)
-      url_loader_.reset(WebKit::webKitClient()->createURLLoader());
+      url_loader_.reset(frame_->createAssociatedURLLoader());
 
     // Start the resource loading.
     url_loader_->loadAsynchronously(request, this);

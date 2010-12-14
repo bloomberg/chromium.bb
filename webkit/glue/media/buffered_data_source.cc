@@ -144,17 +144,16 @@ void BufferedResourceLoader::Start(net::CompletionCallback* start_callback,
 
   // Prepare the request.
   WebURLRequest request(url_);
+  request.setTargetType(WebURLRequest::TargetIsMedia);
   request.setHTTPHeaderField(WebString::fromUTF8("Range"),
                              WebString::fromUTF8(GenerateHeaders(
                                                  first_byte_position_,
                                                  last_byte_position_)));
   frame->setReferrerForRequest(request, WebKit::WebURL());
-  // TODO(annacc): we should be using createAssociatedURLLoader() instead?
-  frame->dispatchWillSendRequest(request);
 
   // This flag is for unittests as we don't want to reset |url_loader|
   if (!keep_test_loader_)
-    url_loader_.reset(WebKit::webKitClient()->createURLLoader());
+    url_loader_.reset(frame->createAssociatedURLLoader());
 
   // Start the resource loading.
   url_loader_->loadAsynchronously(request, this);
