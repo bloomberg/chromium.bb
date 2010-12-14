@@ -352,11 +352,6 @@ def PrepareFlags():
     env.set('LD', '${LD_SB_%s}' % sbtc)
     env.set('LD_FLAGS', '${LD_SB_FLAGS}')
 
-    # Disable MC for sandboxed toolchain
-    # until we've sandboxed llvm-mc
-    env.set('USE_MC_ASM', '0')
-    env.set('MC_DIRECT', '0')
-
 
 ######################################################################
 # Chain Map
