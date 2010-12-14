@@ -141,11 +141,7 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   virtual void focusAccessibilityObject(
       const WebKit::WebAccessibilityObject& object);
   virtual WebKit::WebNotificationPresenter* notificationPresenter();
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
-    WebKit::WebGeolocationClient* geolocationClient();
-#else
   virtual WebKit::WebGeolocationService* geolocationService();
-#endif
   virtual WebKit::WebDeviceOrientationClient* deviceOrientationClient();
   virtual WebKit::WebSpeechInputController* speechInputController(
       WebKit::WebSpeechInputListener*);
@@ -327,9 +323,7 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
     edit_command_value_.clear();
   }
 
-#if !defined(ENABLE_CLIENT_BASED_GEOLOCATION)
   void SetGeolocationPermission(bool allowed);
-#endif
 
   void ClearContextMenuData();
 
@@ -385,10 +379,8 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   // Get a string suitable for dumping a frame to the console.
   std::wstring GetFrameDescription(WebKit::WebFrame* webframe);
 
-#if !defined(ENABLE_CLIENT_BASED_GEOLOCATION)
   // Returns a TestGeolocationService owned by this delegate.
   TestGeolocationService* GetTestGeolocationService();
-#endif
 
   // Causes navigation actions just printout the intended navigation instead
   // of taking you to the page. This is used for cases like mailto, where you
@@ -467,9 +459,7 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   // The mock spellchecker used in TestWebViewDelegate::spellCheck().
   MockSpellCheck mock_spellcheck_;
 
-#if !defined(ENABLE_CLIENT_BASED_GEOLOCATION)
   scoped_ptr<TestGeolocationService> test_geolocation_service_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(TestWebViewDelegate);
 };

@@ -78,9 +78,7 @@ class AutoMockLocationProvider : public MockLocationProvider {
       position_.accuracy = 3;
       position_.latitude = 4.3;
       position_.longitude = -7.8;
-      // Webkit compares the timestamp to wall clock time, so we need it to be
-      // contemporary.
-      position_.timestamp = base::Time::Now();
+      position_.timestamp = base::Time::FromDoubleT(4567.8);
     } else {
       position_.error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
     }

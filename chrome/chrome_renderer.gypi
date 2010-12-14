@@ -112,8 +112,6 @@
         'renderer/external_extension.h',
         'renderer/form_manager.cc',
         'renderer/form_manager.h',
-        'renderer/geolocation_dispatcher.cc',
-        'renderer/geolocation_dispatcher.h',
         'renderer/geolocation_dispatcher_old.cc',
         'renderer/geolocation_dispatcher_old.h',
         'renderer/gpu_channel_host.cc',
@@ -313,14 +311,6 @@
             'renderer/command_buffer_proxy.cc',
             'renderer/command_buffer_proxy.h',
           ],
-        }],
-        # We are migrating to client-based geolocation. Once the migration
-        # has finished, ENABLE_CLIENT_BASED_GEOLOCATION will disappear.
-        # See bugs:
-        #     https://bugs.webkit.org/show_bug.cgi?id=45752 and
-        #     http://code.google.com/p/chromium/issues/detail?id=59907
-        ['"ENABLE_CLIENT_BASED_GEOLOCATION=1" in feature_defines', {
-          'defines': [ 'ENABLE_CLIENT_BASED_GEOLOCATION=1' ]
         }],
       ],
     },

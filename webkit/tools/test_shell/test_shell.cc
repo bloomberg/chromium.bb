@@ -34,9 +34,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDeviceOrientationClientMock.h"
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
-#include "third_party/WebKit/WebKit/chromium/public/WebGeolocationClientMock.h"
-#endif
 #include "third_party/WebKit/WebKit/chromium/public/WebSpeechInputControllerMock.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
@@ -652,10 +649,6 @@ void TestShell::ResetTestController() {
   event_sending_controller_->Reset();
   notification_presenter_->Reset();
   delegate_->Reset();
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
-  if (geolocation_client_mock_.get())
-    geolocation_client_mock_->resetMock();
-#endif
 }
 
 void TestShell::LoadFile(const FilePath& file) {
@@ -794,16 +787,6 @@ WebKit::WebSpeechInputControllerMock*
 TestShell::speech_input_controller_mock() {
   return speech_input_controller_mock_.get();
 }
-
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
-WebKit::WebGeolocationClientMock* TestShell::geolocation_client_mock() {
-  if (!geolocation_client_mock_.get()) {
-    geolocation_client_mock_.reset(
-        WebKit::WebGeolocationClientMock::create());
-  }
-  return geolocation_client_mock_.get();
-}
-#endif
 
 //-----------------------------------------------------------------------------
 

@@ -21,7 +21,8 @@
 #include "chrome/browser/clipboard_dispatcher.h"
 #include "chrome/browser/download/download_types.h"
 #include "chrome/browser/extensions/extension_message_service.h"
-#include "chrome/browser/file_system/file_system_dispatcher_host.h"
+#include "chrome/browser/geolocation/geolocation_dispatcher_host_old.h"
+#include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
@@ -250,6 +251,9 @@ RenderMessageFilter::RenderMessageFilter(
       off_the_record_(profile->IsOffTheRecord()),
       next_route_id_callback_(NewCallbackWithReturnValue(
           render_widget_helper, &RenderWidgetHelper::GetNextRoutingID)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(geolocation_dispatcher_host_(
+          GeolocationDispatcherHostOld::New(
+              this->id(), profile->GetGeolocationPermissionContext()))),
       webkit_context_(profile->GetWebKitContext()) {
   request_context_ = profile_->GetRequestContext();
   DCHECK(request_context_);
@@ -320,7 +324,8 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& msg) {
   bool handled =
       resource_dispatcher_host_->OnMessageReceived(msg, this, &msg_is_ok) ||
       mp_dispatcher->OnMessageReceived(
-          msg, this, next_route_id_callback(), &msg_is_ok);
+          msg, this, next_route_id_callback(), &msg_is_ok) ||
+      geolocation_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok);
 
   if (!handled) {
     DCHECK(msg_is_ok);  // It should have been marked handled if it wasn't OK.

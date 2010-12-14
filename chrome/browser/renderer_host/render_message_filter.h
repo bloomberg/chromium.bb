@@ -34,6 +34,7 @@
 
 class ChromeURLRequestContext;
 struct FontDescriptor;
+class GeolocationDispatcherHostOld;
 class HostZoomMap;
 class NotificationsPrefsCache;
 class PpapiPluginProcessHost;
@@ -448,6 +449,8 @@ class RenderMessageFilter : public IPC::ChannelProxy::MessageFilter,
   // A callback to create a routing id for the associated renderer process.
   scoped_ptr<CallbackWithReturnValue<int>::Type> next_route_id_callback_;
 
+  // Used to handle geolocation-related messages.
+  scoped_refptr<GeolocationDispatcherHostOld> geolocation_dispatcher_host_;
 
   scoped_refptr<WebKitContext> webkit_context_;
 

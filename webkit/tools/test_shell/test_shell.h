@@ -67,7 +67,6 @@ class StringPiece;
 
 namespace WebKit {
 class WebDeviceOrientationClientMock;
-class WebGeolocationClientMock;
 class WebSpeechInputControllerMock;
 class WebSpeechInputListener;
 }
@@ -373,10 +372,6 @@ public:
         WebKit::WebSpeechInputListener* listener);
     WebKit::WebSpeechInputControllerMock* speech_input_controller_mock();
 
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
-    WebKit::WebGeolocationClientMock* geolocation_client_mock();
-#endif
-
 protected:
     void CreateDevToolsClient(TestShellDevToolsAgent* agent);
     bool Initialize(const GURL& starting_url);
@@ -461,9 +456,6 @@ private:
     scoped_ptr<WebKit::WebSpeechInputControllerMock>
         speech_input_controller_mock_;
 
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
-    scoped_ptr<WebKit::WebGeolocationClientMock> geolocation_client_mock_;
-#endif
     const TestParams* test_params_;
 
     // True while a test is preparing to run
