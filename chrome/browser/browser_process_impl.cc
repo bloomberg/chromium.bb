@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #include "base/task.h"
 #include "base/thread.h"
+#include "base/thread_restrictions.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/appcache/chrome_appcache_service.h"
 #include "chrome/browser/automation/automation_provider_list.h"
@@ -252,6 +253,12 @@ unsigned int BrowserProcessImpl::ReleaseModule() {
   DCHECK_NE(0u, module_ref_count_);
   module_ref_count_--;
   if (0 == module_ref_count_) {
+    // Allow UI and IO threads to do blocking IO on shutdown, since we do a lot
+    // of it on shutdown for valid reasons.
+    base::ThreadRestrictions::SetIOAllowed(true);
+    io_thread()->message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableFunction(&base::ThreadRestrictions::SetIOAllowed, true));
     MessageLoop::current()->PostTask(
         FROM_HERE, NewRunnableFunction(DidEndMainMessageLoop));
     MessageLoop::current()->Quit();
