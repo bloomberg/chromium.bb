@@ -15,6 +15,7 @@
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/registry.h"
@@ -241,6 +242,10 @@ bool ConfigurationPolicyProviderWin::GetRegistryPolicyInteger(
 
 bool ConfigurationPolicyProviderWin::Provide(
     ConfigurationPolicyStoreInterface* store) {
+  // This function calls GetRegistryPolicy* which hit up the registry. Those
+  // are I/O functions not allowed to be called on the main thread.
+  // http://crbug.com/66453
+//  base::ThreadRestrictions::ScopedAllowIO allow_io;
   const PolicyDefinitionList* policy_list(policy_definition_list());
   for (const PolicyDefinitionList::Entry* current = policy_list->begin;
        current != policy_list->end; ++current) {
