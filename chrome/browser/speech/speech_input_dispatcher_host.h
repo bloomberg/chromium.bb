@@ -12,7 +12,7 @@
 namespace speech_input {
 
 // SpeechInputDispatcherHost is a delegate for Speech API messages used by
-// ResourceMessageFilter.
+// RenderMessageFilter.
 // It's the complement of SpeechInputDispatcher (owned by RenderView).
 class SpeechInputDispatcherHost : public BrowserMessageFilter,
                                   public SpeechInputManager::Delegate {

@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "chrome/browser/renderer_host/global_request_id.h"
+#include "chrome/browser/renderer_host/render_message_filter.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
-#include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/resource_response.h"
 #include "net/base/net_errors.h"
@@ -39,8 +39,8 @@ SafeBrowsingResourceHandler::SafeBrowsingResourceHandler(
       rdh_(resource_dispatcher_host),
       resource_type_(resource_type) {
   registrar_.Add(this, NotificationType::RESOURCE_MESSAGE_FILTER_SHUTDOWN,
-                 Source<ResourceMessageFilter>(
-                     static_cast<ResourceMessageFilter*>(receiver)));
+                 Source<RenderMessageFilter>(
+                     static_cast<RenderMessageFilter*>(receiver)));
 }
 
 SafeBrowsingResourceHandler::~SafeBrowsingResourceHandler() {

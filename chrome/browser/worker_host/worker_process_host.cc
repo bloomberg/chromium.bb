@@ -23,10 +23,10 @@
 #include "chrome/browser/renderer_host/blob_message_filter.h"
 #include "chrome/browser/renderer_host/database_message_filter.h"
 #include "chrome/browser/renderer_host/file_utilities_message_filter.h"
+#include "chrome/browser/renderer_host/render_message_filter.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/render_view_host_notification_task.h"
-#include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/browser/worker_host/message_port_dispatcher.h"
 #include "chrome/browser/worker_host/worker_service.h"
 #include "chrome/common/chrome_switches.h"
@@ -352,8 +352,8 @@ CallbackWithReturnValue<int>::Type* WorkerProcessHost::GetNextRouteIdCallback(
       return worker->next_route_id_callback_.get();
   }
 
-  // Must be a ResourceMessageFilter.
-  return static_cast<ResourceMessageFilter*>(sender)->next_route_id_callback();
+  // Must be a RenderMessageFilter.
+  return static_cast<RenderMessageFilter*>(sender)->next_route_id_callback();
 }
 
 void WorkerProcessHost::RelayMessage(

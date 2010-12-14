@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/resource_message_filter.h"
+#include "chrome/browser/renderer_host/render_message_filter.h"
 
 #include <fcntl.h>
 #include <map>
@@ -46,13 +46,13 @@ static base::LazyInstance<PrintingFileDescriptorMap>
 // http://crbug.com/9060 for more details.
 
 // Called on the IO thread.
-void ResourceMessageFilter::SendDelayedReply(IPC::Message* reply_msg) {
+void RenderMessageFilter::SendDelayedReply(IPC::Message* reply_msg) {
   Send(reply_msg);
 }
 
 // Called on the BACKGROUND_X11 thread.
-void ResourceMessageFilter::DoOnGetScreenInfo(gfx::NativeViewId view,
-                                              IPC::Message* reply_msg) {
+void RenderMessageFilter::DoOnGetScreenInfo(gfx::NativeViewId view,
+                                            IPC::Message* reply_msg) {
   Display* display = x11_util::GetSecondaryDisplay();
   int screen = x11_util::GetDefaultScreen(display);
   WebScreenInfo results = WebScreenInfoFactory::screenInfo(display, screen);
@@ -61,12 +61,12 @@ void ResourceMessageFilter::DoOnGetScreenInfo(gfx::NativeViewId view,
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
-          this, &ResourceMessageFilter::SendDelayedReply, reply_msg));
+          this, &RenderMessageFilter::SendDelayedReply, reply_msg));
 }
 
 // Called on the BACKGROUND_X11 thread.
-void ResourceMessageFilter::DoOnGetWindowRect(gfx::NativeViewId view,
-                                              IPC::Message* reply_msg) {
+void RenderMessageFilter::DoOnGetWindowRect(gfx::NativeViewId view,
+                                            IPC::Message* reply_msg) {
   // This is called to get the x, y offset (in screen coordinates) of the given
   // view and its width and height.
   gfx::Rect rect;
@@ -87,7 +87,7 @@ void ResourceMessageFilter::DoOnGetWindowRect(gfx::NativeViewId view,
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
-          this, &ResourceMessageFilter::SendDelayedReply, reply_msg));
+          this, &RenderMessageFilter::SendDelayedReply, reply_msg));
 }
 
 // Return the top-level parent of the given window. Called on the
@@ -105,8 +105,8 @@ static XID GetTopLevelWindow(XID window) {
 }
 
 // Called on the BACKGROUND_X11 thread.
-void ResourceMessageFilter::DoOnGetRootWindowRect(gfx::NativeViewId view,
-                                                  IPC::Message* reply_msg) {
+void RenderMessageFilter::DoOnGetRootWindowRect(gfx::NativeViewId view,
+                                                IPC::Message* reply_msg) {
   // This is called to get the screen coordinates and size of the browser
   // window itself.
   gfx::Rect rect;
@@ -130,11 +130,11 @@ void ResourceMessageFilter::DoOnGetRootWindowRect(gfx::NativeViewId view,
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
-          this, &ResourceMessageFilter::SendDelayedReply, reply_msg));
+          this, &RenderMessageFilter::SendDelayedReply, reply_msg));
 }
 
 // Called on the UI thread.
-void ResourceMessageFilter::DoOnClipboardIsFormatAvailable(
+void RenderMessageFilter::DoOnClipboardIsFormatAvailable(
     Clipboard::FormatType format, Clipboard::Buffer buffer,
     IPC::Message* reply_msg) {
   const bool result = GetClipboard()->IsFormatAvailable(format, buffer);
@@ -144,12 +144,12 @@ void ResourceMessageFilter::DoOnClipboardIsFormatAvailable(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
-          this, &ResourceMessageFilter::SendDelayedReply, reply_msg));
+          this, &RenderMessageFilter::SendDelayedReply, reply_msg));
 }
 
 // Called on the UI thread.
-void ResourceMessageFilter::DoOnClipboardReadText(Clipboard::Buffer buffer,
-                                                  IPC::Message* reply_msg) {
+void RenderMessageFilter::DoOnClipboardReadText(Clipboard::Buffer buffer,
+                                                IPC::Message* reply_msg) {
   string16 result;
   GetClipboard()->ReadText(buffer, &result);
 
@@ -158,11 +158,11 @@ void ResourceMessageFilter::DoOnClipboardReadText(Clipboard::Buffer buffer,
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
-          this, &ResourceMessageFilter::SendDelayedReply, reply_msg));
+          this, &RenderMessageFilter::SendDelayedReply, reply_msg));
 }
 
 // Called on the UI thread.
-void ResourceMessageFilter::DoOnClipboardReadAsciiText(
+void RenderMessageFilter::DoOnClipboardReadAsciiText(
     Clipboard::Buffer buffer, IPC::Message* reply_msg) {
   std::string result;
   GetClipboard()->ReadAsciiText(buffer, &result);
@@ -172,12 +172,12 @@ void ResourceMessageFilter::DoOnClipboardReadAsciiText(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
-          this, &ResourceMessageFilter::SendDelayedReply, reply_msg));
+          this, &RenderMessageFilter::SendDelayedReply, reply_msg));
 }
 
 // Called on the UI thread.
-void ResourceMessageFilter::DoOnClipboardReadHTML(Clipboard::Buffer buffer,
-                                                  IPC::Message* reply_msg) {
+void RenderMessageFilter::DoOnClipboardReadHTML(Clipboard::Buffer buffer,
+                                                IPC::Message* reply_msg) {
   std::string src_url_str;
   string16 markup;
   GetClipboard()->ReadHTML(buffer, &markup, &src_url_str);
@@ -188,38 +188,38 @@ void ResourceMessageFilter::DoOnClipboardReadHTML(Clipboard::Buffer buffer,
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
-          this, &ResourceMessageFilter::SendDelayedReply, reply_msg));
+          this, &RenderMessageFilter::SendDelayedReply, reply_msg));
 }
 
 // Called on the UI thread.
-void ResourceMessageFilter::DoOnClipboardReadAvailableTypes(
+void RenderMessageFilter::DoOnClipboardReadAvailableTypes(
     Clipboard::Buffer buffer, IPC::Message* reply_msg) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
-          this, &ResourceMessageFilter::SendDelayedReply, reply_msg));
+          this, &RenderMessageFilter::SendDelayedReply, reply_msg));
 }
 
 // Called on the UI thread.
-void ResourceMessageFilter::DoOnClipboardReadData(Clipboard::Buffer buffer,
-                                                  const string16& type,
-                                                  IPC::Message* reply_msg) {
+void RenderMessageFilter::DoOnClipboardReadData(Clipboard::Buffer buffer,
+                                                const string16& type,
+                                                IPC::Message* reply_msg) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
-          this, &ResourceMessageFilter::SendDelayedReply, reply_msg));
+          this, &RenderMessageFilter::SendDelayedReply, reply_msg));
 }
 // Called on the UI thread.
-void ResourceMessageFilter::DoOnClipboardReadFilenames(
+void RenderMessageFilter::DoOnClipboardReadFilenames(
     Clipboard::Buffer buffer, IPC::Message* reply_msg) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
-          this, &ResourceMessageFilter::SendDelayedReply, reply_msg));
+          this, &RenderMessageFilter::SendDelayedReply, reply_msg));
 }
 
 // Called on the FILE thread.
-void ResourceMessageFilter::DoOnAllocateTempFileForPrinting(
+void RenderMessageFilter::DoOnAllocateTempFileForPrinting(
     IPC::Message* reply_msg) {
   base::FileDescriptor temp_file_fd;
   int fd_in_browser;
@@ -255,120 +255,119 @@ void ResourceMessageFilter::DoOnAllocateTempFileForPrinting(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
-          this, &ResourceMessageFilter::SendDelayedReply, reply_msg));
+          this, &RenderMessageFilter::SendDelayedReply, reply_msg));
 }
 
 // Called on the IO thread.
-void ResourceMessageFilter::OnGetScreenInfo(gfx::NativeViewId view,
-                                            IPC::Message* reply_msg) {
+void RenderMessageFilter::OnGetScreenInfo(gfx::NativeViewId view,
+                                          IPC::Message* reply_msg) {
    BrowserThread::PostTask(
       BrowserThread::BACKGROUND_X11, FROM_HERE,
       NewRunnableMethod(
-          this, &ResourceMessageFilter::DoOnGetScreenInfo, view, reply_msg));
+          this, &RenderMessageFilter::DoOnGetScreenInfo, view, reply_msg));
 }
 
 // Called on the IO thread.
-void ResourceMessageFilter::OnGetWindowRect(gfx::NativeViewId view,
-                                            IPC::Message* reply_msg) {
+void RenderMessageFilter::OnGetWindowRect(gfx::NativeViewId view,
+                                          IPC::Message* reply_msg) {
   BrowserThread::PostTask(
       BrowserThread::BACKGROUND_X11, FROM_HERE,
       NewRunnableMethod(
-          this, &ResourceMessageFilter::DoOnGetWindowRect, view, reply_msg));
+          this, &RenderMessageFilter::DoOnGetWindowRect, view, reply_msg));
 }
 
 // Called on the IO thread.
-void ResourceMessageFilter::OnGetRootWindowRect(gfx::NativeViewId view,
-                                                IPC::Message* reply_msg) {
+void RenderMessageFilter::OnGetRootWindowRect(gfx::NativeViewId view,
+                                              IPC::Message* reply_msg) {
   BrowserThread::PostTask(
       BrowserThread::BACKGROUND_X11, FROM_HERE,
       NewRunnableMethod(
-          this, &ResourceMessageFilter::DoOnGetRootWindowRect, view,
-          reply_msg));
+          this, &RenderMessageFilter::DoOnGetRootWindowRect, view, reply_msg));
 }
 
 // Called on the IO thread.
-void ResourceMessageFilter::OnClipboardIsFormatAvailable(
+void RenderMessageFilter::OnClipboardIsFormatAvailable(
     Clipboard::FormatType format, Clipboard::Buffer buffer,
     IPC::Message* reply_msg) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
-          this, &ResourceMessageFilter::DoOnClipboardIsFormatAvailable, format,
+          this, &RenderMessageFilter::DoOnClipboardIsFormatAvailable, format,
           buffer, reply_msg));
 }
 
 // Called on the IO thread.
-void ResourceMessageFilter::OnClipboardReadText(Clipboard::Buffer buffer,
-                                                IPC::Message* reply_msg) {
+void RenderMessageFilter::OnClipboardReadText(Clipboard::Buffer buffer,
+                                              IPC::Message* reply_msg) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
-          this, &ResourceMessageFilter::DoOnClipboardReadText, buffer,
+          this, &RenderMessageFilter::DoOnClipboardReadText, buffer,
           reply_msg));
 }
 
 // Called on the IO thread.
-void ResourceMessageFilter::OnClipboardReadAsciiText(Clipboard::Buffer buffer,
-                                                     IPC::Message* reply_msg) {
+void RenderMessageFilter::OnClipboardReadAsciiText(Clipboard::Buffer buffer,
+                                                   IPC::Message* reply_msg) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
-          this, &ResourceMessageFilter::DoOnClipboardReadAsciiText, buffer,
+          this, &RenderMessageFilter::DoOnClipboardReadAsciiText, buffer,
           reply_msg));
 }
 
 // Called on the IO thread.
-void ResourceMessageFilter::OnClipboardReadHTML(Clipboard::Buffer buffer,
-                                                IPC::Message* reply_msg) {
+void RenderMessageFilter::OnClipboardReadHTML(Clipboard::Buffer buffer,
+                                              IPC::Message* reply_msg) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
-          this, &ResourceMessageFilter::DoOnClipboardReadHTML, buffer,
+          this, &RenderMessageFilter::DoOnClipboardReadHTML, buffer,
           reply_msg));
 }
 
 // Called on the IO thread.
-void ResourceMessageFilter::OnClipboardReadAvailableTypes(
+void RenderMessageFilter::OnClipboardReadAvailableTypes(
     Clipboard::Buffer buffer, IPC::Message* reply_msg) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
-          this, &ResourceMessageFilter::DoOnClipboardReadAvailableTypes, buffer,
+          this, &RenderMessageFilter::DoOnClipboardReadAvailableTypes, buffer,
           reply_msg));
 }
 
 // Called on the IO thread.
-void ResourceMessageFilter::OnClipboardReadData(
+void RenderMessageFilter::OnClipboardReadData(
     Clipboard::Buffer buffer, const string16& type, IPC::Message* reply_msg) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
-          this, &ResourceMessageFilter::DoOnClipboardReadData, buffer, type,
+          this, &RenderMessageFilter::DoOnClipboardReadData, buffer, type,
           reply_msg));
 }
 
 // Called on the IO thread.
-void ResourceMessageFilter::OnClipboardReadFilenames(
+void RenderMessageFilter::OnClipboardReadFilenames(
     Clipboard::Buffer buffer, IPC::Message* reply_msg) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
-          this, &ResourceMessageFilter::DoOnClipboardReadFilenames, buffer,
+          this, &RenderMessageFilter::DoOnClipboardReadFilenames, buffer,
           reply_msg));
 }
 
 // Called on the IO thread.
-void ResourceMessageFilter::OnAllocateTempFileForPrinting(
+void RenderMessageFilter::OnAllocateTempFileForPrinting(
     IPC::Message* reply_msg) {
    BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
-          this, &ResourceMessageFilter::DoOnAllocateTempFileForPrinting,
+          this, &RenderMessageFilter::DoOnAllocateTempFileForPrinting,
           reply_msg));
 }
 
 // Called on the IO thread.
-void ResourceMessageFilter::OnTempFileForPrintingWritten(int fd_in_browser) {
+void RenderMessageFilter::OnTempFileForPrintingWritten(int fd_in_browser) {
   FdMap* map = &g_printing_file_descriptor_map.Get().map;
   FdMap::iterator it = map->find(fd_in_browser);
   if (it == map->end()) {

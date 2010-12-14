@@ -73,7 +73,7 @@ class PrintJobManager : public NotificationObserver {
   PrintJobs current_jobs_;
 
   // Printing is enabled/disabled. This variable is checked at only one place,
-  // by ResourceMessageFilter::OnGetDefaultPrintSettings. If its value is true
+  // by RenderMessageFilter::OnGetDefaultPrintSettings. If its value is true
   // at that point, then the initiated print flow will complete itself,
   // even if the value of this variable changes afterwards.
   bool printing_enabled_;

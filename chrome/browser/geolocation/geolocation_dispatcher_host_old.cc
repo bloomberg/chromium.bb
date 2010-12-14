@@ -11,10 +11,10 @@
 #include "chrome/common/geoposition.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/geolocation/geolocation_provider.h"
+#include "chrome/browser/renderer_host/render_message_filter.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_notification_task.h"
-#include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/render_messages.h"
 #include "ipc/ipc_message.h"
 

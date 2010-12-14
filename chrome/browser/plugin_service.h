@@ -40,7 +40,6 @@ class Message;
 class MessageLoop;
 class Profile;
 class ResourceDispatcherHost;
-class ResourceMessageFilter;
 class URLRequestContext;
 struct WebPluginInfo;
 

@@ -13,9 +13,9 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/gpu_blacklist.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"
+#include "chrome/browser/renderer_host/render_message_filter.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
-#include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/gpu_feature_flags.h"
@@ -142,7 +142,7 @@ void GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
 }
 
 void GpuProcessHost::EstablishGpuChannel(int renderer_id,
-                                         ResourceMessageFilter* filter) {
+                                         RenderMessageFilter* filter) {
   DCHECK(CalledOnValidThread());
 
   if (Send(new GpuMsg_EstablishChannel(renderer_id))) {
@@ -153,7 +153,7 @@ void GpuProcessHost::EstablishGpuChannel(int renderer_id,
 }
 
 void GpuProcessHost::Synchronize(IPC::Message* reply,
-                                 ResourceMessageFilter* filter) {
+                                 RenderMessageFilter* filter) {
   DCHECK(CalledOnValidThread());
 
   if (Send(new GpuMsg_Synchronize())) {
@@ -163,7 +163,7 @@ void GpuProcessHost::Synchronize(IPC::Message* reply,
   }
 }
 
-GpuProcessHost::ChannelRequest::ChannelRequest(ResourceMessageFilter* filter)
+GpuProcessHost::ChannelRequest::ChannelRequest(RenderMessageFilter* filter)
     : filter(filter) {
 }
 
@@ -171,7 +171,7 @@ GpuProcessHost::ChannelRequest::~ChannelRequest() {}
 
 GpuProcessHost::SynchronizationRequest::SynchronizationRequest(
     IPC::Message* reply,
-    ResourceMessageFilter* filter)
+    RenderMessageFilter* filter)
     : reply(reply),
       filter(filter) {
 }
@@ -460,7 +460,7 @@ void GpuProcessHost::OnGetCompositorHostWindow(
 void GpuProcessHost::SendEstablishChannelReply(
     const IPC::ChannelHandle& channel,
     const GPUInfo& gpu_info,
-    ResourceMessageFilter* filter) {
+    RenderMessageFilter* filter) {
   ViewMsg_GpuChannelEstablished* message =
       new ViewMsg_GpuChannelEstablished(channel, gpu_info);
   // If the renderer process is performing synchronous initialization,
@@ -473,7 +473,7 @@ void GpuProcessHost::SendEstablishChannelReply(
 // Sends the response for synchronization request to the renderer.
 void GpuProcessHost::SendSynchronizationReply(
     IPC::Message* reply,
-    ResourceMessageFilter* filter) {
+    RenderMessageFilter* filter) {
   filter->Send(reply);
 }
 

@@ -51,11 +51,11 @@
 #include "chrome/browser/renderer_host/database_message_filter.h"
 #include "chrome/browser/renderer_host/file_utilities_message_filter.h"
 #include "chrome/browser/renderer_host/pepper_file_message_filter.h"
+#include "chrome/browser/renderer_host/render_message_filter.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/render_widget_helper.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
-#include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
@@ -386,14 +386,14 @@ bool BrowserRenderProcessHost::Init(
 }
 
 void BrowserRenderProcessHost::CreateMessageFilters() {
-  scoped_refptr<ResourceMessageFilter> resource_message_filter(
-      new ResourceMessageFilter(g_browser_process->resource_dispatcher_host(),
-                                id(),
-                                PluginService::GetInstance(),
-                                g_browser_process->print_job_manager(),
-                                profile(),
-                                widget_helper_));
-  channel_->AddFilter(resource_message_filter);
+  scoped_refptr<RenderMessageFilter> render_message_filter(
+      new RenderMessageFilter(g_browser_process->resource_dispatcher_host(),
+                              id(),
+                              PluginService::GetInstance(),
+                              g_browser_process->print_job_manager(),
+                              profile(),
+                              widget_helper_));
+  channel_->AddFilter(render_message_filter);
 
   channel_->AddFilter(new AudioRendererHost());
   channel_->AddFilter(

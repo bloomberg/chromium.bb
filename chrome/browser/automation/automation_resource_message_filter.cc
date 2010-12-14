@@ -14,7 +14,7 @@
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/net/url_request_slow_download_job.h"
 #include "chrome/browser/net/url_request_slow_http_job.h"
-#include "chrome/browser/renderer_host/resource_message_filter.h"
+#include "chrome/browser/renderer_host/render_message_filter.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_paths.h"
 #include "googleurl/src/gurl.h"

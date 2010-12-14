@@ -23,7 +23,7 @@ class GURL;
 class HostContentSettingsMap;
 class Profile;
 class Receiver;
-class ResourceMessageFilter;
+class RenderMessageFilter;
 class URLRequestContext;
 class URLRequestContextGetter;
 

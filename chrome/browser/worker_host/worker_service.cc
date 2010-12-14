@@ -12,8 +12,8 @@
 #include "base/thread.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/plugin_service.h"
+#include "chrome/browser/renderer_host/render_message_filter.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
-#include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/browser/worker_host/worker_process_host.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
@@ -445,7 +445,7 @@ void WorkerService::Observe(NotificationType type,
                             const NotificationSource& source,
                             const NotificationDetails& details) {
   if (type.value == NotificationType::RESOURCE_MESSAGE_FILTER_SHUTDOWN) {
-    ResourceMessageFilter* sender = Source<ResourceMessageFilter>(source).ptr();
+    RenderMessageFilter* sender = Source<RenderMessageFilter>(source).ptr();
     SenderShutdown(sender);
   } else if (type.value == NotificationType::WORKER_PROCESS_HOST_SHUTDOWN) {
     WorkerProcessHost* sender = Source<WorkerProcessHost>(source).ptr();

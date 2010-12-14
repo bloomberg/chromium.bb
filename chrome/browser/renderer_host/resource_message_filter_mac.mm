@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/resource_message_filter.h"
+#include "chrome/browser/renderer_host/render_message_filter.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -30,7 +30,7 @@ class WriteFindPboardTask : public Task {
 };
 
 // Called on the IO thread.
-void ResourceMessageFilter::OnClipboardFindPboardWriteString(
+void RenderMessageFilter::OnClipboardFindPboardWriteString(
     const string16& text) {
   if (text.length() <= kMaxFindPboardStringLength) {
     NSString* nsText = base::SysUTF16ToNSString(text);

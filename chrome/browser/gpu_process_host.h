@@ -18,7 +18,7 @@ struct GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params;
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 class GpuBlacklist;
 class GPUInfo;
-class ResourceMessageFilter;
+class RenderMessageFilter;
 
 namespace gfx {
 class Size;
@@ -42,28 +42,25 @@ class GpuProcessHost : public BrowserChildProcessHost, public NonThreadSafe {
   // Tells the GPU process to create a new channel for communication with a
   // renderer. Will asynchronously send message to object with given routing id
   // on completion.
-  void EstablishGpuChannel(int renderer_id,
-                           ResourceMessageFilter* filter);
+  void EstablishGpuChannel(int renderer_id, RenderMessageFilter* filter);
 
   // Sends a reply message later when the next GpuHostMsg_SynchronizeReply comes
   // in.
-  void Synchronize(IPC::Message* reply,
-                   ResourceMessageFilter* filter);
+  void Synchronize(IPC::Message* reply, RenderMessageFilter* filter);
 
  private:
   // Used to queue pending channel requests.
   struct ChannelRequest {
-    explicit ChannelRequest(ResourceMessageFilter* filter);
+    explicit ChannelRequest(RenderMessageFilter* filter);
     ~ChannelRequest();
 
     // Used to send the reply message back to the renderer.
-    scoped_refptr<ResourceMessageFilter> filter;
+    scoped_refptr<RenderMessageFilter> filter;
   };
 
   // Used to queue pending synchronization requests.
   struct SynchronizationRequest {
-    SynchronizationRequest(IPC::Message* reply,
-                           ResourceMessageFilter* filter);
+    SynchronizationRequest(IPC::Message* reply, RenderMessageFilter* filter);
     ~SynchronizationRequest();
 
     // The delayed reply message which needs to be sent to the
@@ -71,7 +68,7 @@ class GpuProcessHost : public BrowserChildProcessHost, public NonThreadSafe {
     IPC::Message* reply;
 
     // Used to send the reply message back to the renderer.
-    scoped_refptr<ResourceMessageFilter> filter;
+    scoped_refptr<RenderMessageFilter> filter;
   };
 
   GpuProcessHost();
@@ -104,10 +101,10 @@ class GpuProcessHost : public BrowserChildProcessHost, public NonThreadSafe {
   // Sends the response for establish channel request to the renderer.
   void SendEstablishChannelReply(const IPC::ChannelHandle& channel,
                                  const GPUInfo& gpu_info,
-                                 ResourceMessageFilter* filter);
+                                 RenderMessageFilter* filter);
   // Sends the response for synchronization request to the renderer.
   void SendSynchronizationReply(IPC::Message* reply,
-                                ResourceMessageFilter* filter);
+                                RenderMessageFilter* filter);
 
   // ResourceDispatcherHost::Receiver implementation:
   virtual URLRequestContext* GetRequestContext(

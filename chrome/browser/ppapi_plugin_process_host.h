@@ -10,7 +10,7 @@
 #include "base/file_path.h"
 #include "chrome/browser/browser_child_process_host.h"
 
-class ResourceMessageFilter;
+class RenderMessageFilter;
 
 namespace IPC {
 struct ChannelHandle;
@@ -19,7 +19,7 @@ class Message;
 
 class PpapiPluginProcessHost : public BrowserChildProcessHost {
  public:
-  explicit PpapiPluginProcessHost(ResourceMessageFilter* filter);
+  explicit PpapiPluginProcessHost(RenderMessageFilter* filter);
   virtual ~PpapiPluginProcessHost();
 
   void Init(const FilePath& path, IPC::Message* reply_msg);
@@ -42,7 +42,7 @@ class PpapiPluginProcessHost : public BrowserChildProcessHost {
   void ReplyToRenderer(base::ProcessHandle plugin_handle,
                        const IPC::ChannelHandle& channel_handle);
 
-  ResourceMessageFilter* filter_;
+  RenderMessageFilter* filter_;
 
   // Path to the plugin library.
   FilePath plugin_path_;

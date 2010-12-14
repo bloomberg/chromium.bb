@@ -6,7 +6,7 @@
 
 #include "base/callback.h"
 #include "base/singleton.h"
-#include "chrome/browser/renderer_host/resource_message_filter.h"
+#include "chrome/browser/renderer_host/render_message_filter.h"
 #include "chrome/browser/worker_host/worker_process_host.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/worker_messages.h"
@@ -258,7 +258,7 @@ void MessagePortDispatcher::Observe(NotificationType type,
                                     const NotificationDetails& details) {
   IPC::Message::Sender* sender = NULL;
   if (type.value == NotificationType::RESOURCE_MESSAGE_FILTER_SHUTDOWN) {
-    sender = Source<ResourceMessageFilter>(source).ptr();
+    sender = Source<RenderMessageFilter>(source).ptr();
   } else if (type.value == NotificationType::WORKER_PROCESS_HOST_SHUTDOWN) {
     sender = Source<WorkerProcessHost>(source).ptr();
   } else {

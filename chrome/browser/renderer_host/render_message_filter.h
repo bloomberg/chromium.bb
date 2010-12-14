@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RENDERER_HOST_RESOURCE_MESSAGE_FILTER_H_
-#define CHROME_BROWSER_RENDERER_HOST_RESOURCE_MESSAGE_FILTER_H_
+#ifndef CHROME_BROWSER_RENDERER_HOST_RENDER_MESSAGE_FILTER_H_
+#define CHROME_BROWSER_RENDERER_HOST_RENDER_MESSAGE_FILTER_H_
 #pragma once
 
 #if defined(OS_WIN)
@@ -74,17 +74,17 @@ struct ViewHostMsg_DidPrintPage_Params;
 // the browser.  It also means that any hangs in starting a network request
 // will not interfere with browser UI.
 
-class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
-                              public ResourceDispatcherHost::Receiver,
-                              public ResolveProxyMsgHelper::Delegate {
+class RenderMessageFilter : public IPC::ChannelProxy::MessageFilter,
+                            public ResourceDispatcherHost::Receiver,
+                            public ResolveProxyMsgHelper::Delegate {
  public:
   // Create the filter.
-  ResourceMessageFilter(ResourceDispatcherHost* resource_dispatcher_host,
-                        int child_id,
-                        PluginService* plugin_service,
-                        printing::PrintJobManager* print_job_manager,
-                        Profile* profile,
-                        RenderWidgetHelper* render_widget_helper);
+  RenderMessageFilter(ResourceDispatcherHost* resource_dispatcher_host,
+                      int child_id,
+                      PluginService* plugin_service,
+                      printing::PrintJobManager* print_job_manager,
+                      Profile* profile,
+                      RenderWidgetHelper* render_widget_helper);
 
   // IPC::ChannelProxy::MessageFilter methods:
   virtual void OnFilterAdded(IPC::Channel* channel);
@@ -115,9 +115,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
  private:
   friend class BrowserThread;
-  friend class DeleteTask<ResourceMessageFilter>;
+  friend class DeleteTask<RenderMessageFilter>;
 
-  virtual ~ResourceMessageFilter();
+  virtual ~RenderMessageFilter();
 
   void OnMsgCreateWindow(const ViewHostMsg_CreateWindow_Params& params,
                          int* route_id,
@@ -156,7 +156,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 #endif
 
 #if defined(OS_WIN)  // This hack is Windows-specific.
-  // Cache fonts for the renderer. See ResourceMessageFilter::OnPreCacheFont
+  // Cache fonts for the renderer. See RenderMessageFilter::OnPreCacheFont
   // implementation for more details.
   void OnPreCacheFont(LOGFONT font);
 #endif
@@ -454,7 +454,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   scoped_refptr<WebKitContext> webkit_context_;
 
-  DISALLOW_COPY_AND_ASSIGN(ResourceMessageFilter);
+  DISALLOW_COPY_AND_ASSIGN(RenderMessageFilter);
 };
 
 // These classes implement completion callbacks for getting and setting
@@ -491,7 +491,7 @@ class GetCookiesCompletion : public net::CompletionCallback {
   GetCookiesCompletion(int render_process_id,
                        int render_view_id,
                        const GURL& url, IPC::Message* reply_msg,
-                       ResourceMessageFilter* filter,
+                       RenderMessageFilter* filter,
                        ChromeURLRequestContext* context,
                        bool raw_cookies);
   virtual ~GetCookiesCompletion();
@@ -515,7 +515,7 @@ class GetCookiesCompletion : public net::CompletionCallback {
  private:
   GURL url_;
   IPC::Message* reply_msg_;
-  scoped_refptr<ResourceMessageFilter> filter_;
+  scoped_refptr<RenderMessageFilter> filter_;
   scoped_refptr<ChromeURLRequestContext> context_;
   int render_process_id_;
   int render_view_id_;
@@ -526,14 +526,14 @@ class GetCookiesCompletion : public net::CompletionCallback {
 class CookiesEnabledCompletion : public net::CompletionCallback {
  public:
   CookiesEnabledCompletion(IPC::Message* reply_msg,
-                           ResourceMessageFilter* filter);
+                           RenderMessageFilter* filter);
   virtual ~CookiesEnabledCompletion();
 
   virtual void RunWithParams(const Tuple1<int>& params);
 
  private:
   IPC::Message* reply_msg_;
-  scoped_refptr<ResourceMessageFilter> filter_;
+  scoped_refptr<RenderMessageFilter> filter_;
 };
 
-#endif  // CHROME_BROWSER_RENDERER_HOST_RESOURCE_MESSAGE_FILTER_H_
+#endif  // CHROME_BROWSER_RENDERER_HOST_RENDER_MESSAGE_FILTER_H_

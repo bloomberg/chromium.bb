@@ -7,14 +7,14 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/process_util.h"
-#include "chrome/browser/renderer_host/resource_message_filter.h"
+#include "chrome/browser/renderer_host/render_message_filter.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_switches.h"
 #include "ppapi/proxy/ppapi_messages.h"
 
-PpapiPluginProcessHost::PpapiPluginProcessHost(ResourceMessageFilter* filter)
+PpapiPluginProcessHost::PpapiPluginProcessHost(RenderMessageFilter* filter)
     : BrowserChildProcessHost(ChildProcessInfo::PPAPI_PLUGIN_PROCESS,
                               filter->resource_dispatcher_host()),
       filter_(filter) {

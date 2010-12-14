@@ -11,10 +11,10 @@
 //           ^                                ^
 //           |                                |
 //           v                 IPC            v
-//   ResourceMessageFilter <---------> AudioMessageFilter
+//   RenderMessageFilter   <---------> AudioMessageFilter
 //
 // Implementation of interface with audio device is in AudioRendererHost and
-// it provides services and entry points in ResourceMessageFilter, allowing
+// it provides services and entry points in RenderMessageFilter, allowing
 // usage of IPC calls to interact with audio device. AudioMessageFilter acts
 // as a portal for IPC calls and does no more than delegation.
 //

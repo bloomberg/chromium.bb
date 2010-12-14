@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/resource_message_filter.h"
+#include "chrome/browser/renderer_host/render_message_filter.h"
 #include "chrome/common/render_messages.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/win/WebScreenInfoFactory.h"
@@ -16,8 +16,8 @@ using WebKit::WebScreenInfoFactory;
 // TODO(shess): Provide a mapping from reply_msg->routing_id() to HWND
 // so that we can eliminate the NativeViewId parameter.
 
-void ResourceMessageFilter::OnGetWindowRect(gfx::NativeViewId window_id,
-                                            IPC::Message* reply_msg) {
+void RenderMessageFilter::OnGetWindowRect(gfx::NativeViewId window_id,
+                                          IPC::Message* reply_msg) {
   HWND window = gfx::NativeViewFromId(window_id);
   RECT window_rect = {0};
   GetWindowRect(window, &window_rect);
@@ -27,8 +27,8 @@ void ResourceMessageFilter::OnGetWindowRect(gfx::NativeViewId window_id,
   Send(reply_msg);
 }
 
-void ResourceMessageFilter::OnGetRootWindowRect(gfx::NativeViewId window_id,
-                                                IPC::Message* reply_msg) {
+void RenderMessageFilter::OnGetRootWindowRect(gfx::NativeViewId window_id,
+                                              IPC::Message* reply_msg) {
   HWND window = gfx::NativeViewFromId(window_id);
   RECT window_rect = {0};
   HWND root_window = ::GetAncestor(window, GA_ROOT);
@@ -39,8 +39,8 @@ void ResourceMessageFilter::OnGetRootWindowRect(gfx::NativeViewId window_id,
   Send(reply_msg);
 }
 
-void ResourceMessageFilter::OnGetScreenInfo(gfx::NativeViewId view,
-                                            IPC::Message* reply_msg) {
+void RenderMessageFilter::OnGetScreenInfo(gfx::NativeViewId view,
+                                          IPC::Message* reply_msg) {
   WebScreenInfo results =
       WebScreenInfoFactory::screenInfo(gfx::NativeViewFromId(view));
   ViewHostMsg_GetScreenInfo::WriteReplyParams(reply_msg, results);
