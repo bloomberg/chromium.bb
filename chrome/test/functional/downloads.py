@@ -323,7 +323,7 @@ class DownloadsTest(pyauto.PyUITest):
     dangerous_dir = os.path.join(
         self.DataDir(), 'downloads', 'dangerous')
     assert os.path.isfile(os.path.join(dangerous_dir, filename))
-    file_url = self.GetFileURLForDataPath(os.path.join(
+    file_url = self.GetFileURLForPath(os.path.join(
         dangerous_dir, 'download-dangerous.html')) + '?' + filename
     num_downloads = len(self.GetDownloadsInfo().Downloads())
     self.NavigateToURL(file_url, windex, tab_index)
