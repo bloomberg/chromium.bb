@@ -1,9 +1,5 @@
 #include <stdio.h>
 
-extern void func1(void);
-
-int main(int argc, char *argv[]) {
-  printf("hello from link1\n");
-  func1();
-  return 0;
+void func1(void) {
+  printf("hello from func1\n");
 }
