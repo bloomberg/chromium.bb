@@ -101,7 +101,6 @@ int NaClAppCtor(struct NaClApp  *nap) {
   nap->module_load_status = LOAD_STATUS_UNKNOWN;
   nap->module_may_start = 0;  /* only when secure_channel != NULL */
 
-  nap->restrict_to_main_thread = 1;
   nap->ignore_validator_result = 0;
   nap->validator_stub_out_mode = 0;
   nap->allow_dyncode_replacement = 0;

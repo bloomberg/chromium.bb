@@ -128,18 +128,8 @@ static void PrintUsage() {
           " -X create a bound socket and export the address via an\n"
           "    IMC message to a corresponding NaCl app descriptor\n"
           "    (use -1 to create the bound socket / address descriptor\n"
-          "    pair, but that no export via IMC should occur)\n"
-          " [NB: -m and -M only applies to the SDL builds\n ]\n");
+          "    pair, but that no export via IMC should occur)\n");
   fprintf(stderr,
-          " -m enforce that certain syscalls can only be made from\n"
-          "    the main NaCl app thread, so that we're enforcing (bug)\n"
-          "    compatibility with standalone windows apps that must\n"
-          "    make certain (e.g., graphics) calls from the main\n"
-          "    thread (default)\n"
-          " -M allow syscalls to be made from any NaCl app thread,\n"
-          "    since these (windows-library-using) syscalls are\n"
-          "    actually done via a work queue using the sel_ldr\n"
-          "    main thread anyway\n"
           " -R an RPC supplies the NaCl module.\n"
           "    No nacl_file argument is expected, and the -f flag cannot be\n"
           "    used with this flag.\n"
@@ -182,7 +172,6 @@ int main(int  argc,
   struct NaClApp                state;
   char                          *nacl_file = NULL;
   int                           rpc_supplies_nexe = 0;
-  int                           main_thread_only = 1;
   int                           export_addr_to = -2;
   enum NaClAbiCheckOption       check_abi = NACL_ABI_CHECK_OPTION_CHECK;
 
@@ -259,7 +248,7 @@ int main(int  argc,
     exit(1);
   }
 
-  while ((opt = getopt(argc, argv, "abcf:Fgh:i:Il:mMQr:Rsvw:X:")) != -1) {
+  while ((opt = getopt(argc, argv, "abcf:Fgh:i:Il:Qr:Rsvw:X:")) != -1) {
     switch (opt) {
       case 'c':
         fprintf(stderr, "DEBUG MODE ENABLED (ignore validator)\n");
@@ -317,12 +306,6 @@ int main(int  argc,
         break;
      case 'l':
         log_file = optarg;
-        break;
-      case 'm':
-        main_thread_only = 1;
-        break;
-      case 'M':
-        main_thread_only = 0;
         break;
       case 'R':
         rpc_supplies_nexe = 1;
@@ -460,7 +443,6 @@ int main(int  argc,
     goto done_file_dtor;
   }
 
-  state.restrict_to_main_thread = main_thread_only;
   state.ignore_validator_result = debug_mode_ignore_validator;
   state.validator_stub_out_mode = stub_out_mode;
 

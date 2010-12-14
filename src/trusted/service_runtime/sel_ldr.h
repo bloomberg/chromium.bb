@@ -225,11 +225,6 @@ struct NaClApp {
   int                       running;
   int                       exit_status;
 
-  /*
-   * enforce that some "special" syscalls may only be made from the
-   * main/privileged thread
-   */
-  int                       restrict_to_main_thread;
   int                       ignore_validator_result;
   int                       validator_stub_out_mode;
   int                       allow_dyncode_replacement;

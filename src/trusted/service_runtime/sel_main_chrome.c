@@ -38,7 +38,6 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
   int ac = 1;
   const char **envp;
   struct NaClApp state;
-  int main_thread_only = 1;
   int export_addr_to = kSrpcFd; /* Used to be set by -X. */
   struct NaClApp *nap;
   NaClErrorCode errcode;
@@ -67,8 +66,6 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
     fprintf(stderr, "Error while constructing app state\n");
     goto done;
   }
-
-  state.restrict_to_main_thread = main_thread_only;
 
   nap = &state;
   errcode = LOAD_OK;
