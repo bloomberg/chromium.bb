@@ -507,10 +507,11 @@ bool IsValidLocaleSyntax(const std::string& locale) {
   // Strip off the part after an '@' sign, which might contain keywords,
   // as in en_IE@currency=IEP or fr@collation=phonebook;calendar=islamic-civil.
   // We don't validate that part much, just check that there's at least one
-  // equals sign in a plausible place.
-  std::string prefix = locale;
-  if (locale.find("@") != std::string::npos) {
-    size_t split_point = locale.find("@");
+  // equals sign in a plausible place. Normalize the prefix so that hyphens
+  // are changed to underscores.
+  std::string prefix = NormalizeLocale(locale);
+  size_t split_point = locale.find("@");
+  if (split_point != std::string::npos) {
     std::string keywords = locale.substr(split_point + 1);
     prefix = locale.substr(0, split_point);
 
@@ -520,11 +521,11 @@ bool IsValidLocaleSyntax(const std::string& locale) {
       return false;
   }
 
-  // Check that all characters before the at-sign are alphanumeric, hyphen,
-  // or underscore.
+  // Check that all characters before the at-sign are alphanumeric or
+  // underscore.
   for (size_t i = 0; i < prefix.size(); i++) {
     char ch = prefix[i];
-    if (!IsAsciiAlpha(ch) && !IsAsciiDigit(ch) && ch != '-' && ch != '_')
+    if (!IsAsciiAlpha(ch) && !IsAsciiDigit(ch) && ch != '_')
       return false;
   }
 
@@ -532,7 +533,7 @@ bool IsValidLocaleSyntax(const std::string& locale) {
   // is 1 - 3 alphabetical characters (a language tag).
   for (size_t i = 0; i < prefix.size(); i++) {
     char ch = prefix[i];
-    if (ch == '-' || ch == '_') {
+    if (ch == '_') {
       if (i < 1 || i > 3)
         return false;
       break;
@@ -547,16 +548,16 @@ bool IsValidLocaleSyntax(const std::string& locale) {
   int token_len = 0;
   int token_index = 0;
   for (size_t i = 0; i < prefix.size(); i++) {
-    char ch = prefix[i];
-    if (ch == '-' || ch == '_') {
-      if (token_index > 0 && (token_len < 1 || token_len > 8)) {
-        return false;
-      }
-      token_index++;
-      token_len = 0;
-    } else {
+    if (prefix[i] != '_') {
       token_len++;
+      continue;
     }
+
+    if (token_index > 0 && (token_len < 1 || token_len > 8)) {
+      return false;
+    }
+    token_index++;
+    token_len = 0;
   }
   if (token_index == 0 && (token_len < 1 || token_len > 3)) {
     return false;
