@@ -45,15 +45,7 @@
 #define NACL_sys_clock                  41
 #define NACL_sys_nanosleep              42
 
-#define NACL_sys_multimedia_init        50
-#define NACL_sys_multimedia_shutdown    51
-#define NACL_sys_video_init             52
-#define NACL_sys_video_shutdown         53
-#define NACL_sys_video_update           54
-#define NACL_sys_video_poll_event       55
-#define NACL_sys_audio_init             56
-#define NACL_sys_audio_shutdown         57
-#define NACL_sys_audio_stream           58
+/* 50-58 previously used for multimedia syscalls */
 
 #define NACL_sys_imc_makeboundsock      60
 #define NACL_sys_imc_accept             61
