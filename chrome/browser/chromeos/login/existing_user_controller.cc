@@ -560,7 +560,7 @@ void ExistingUserController::OnPasswordChangeDetected(
     const GaiaAuthConsumer::ClientLoginResult& credentials) {
   // When signing in as a "New user" always remove old cryptohome.
   if (selected_view_index_ == controllers_.size() - 1) {
-    login_performer_->ResyncEncryptedData();
+    ResyncEncryptedData();
     return;
   }
 
@@ -618,11 +618,15 @@ void ExistingUserController::OnCaptchaEntered(const std::string& captcha) {
 
 void ExistingUserController::RecoverEncryptedData(
     const std::string& old_password) {
-  login_performer_->RecoverEncryptedData(old_password);
+  // LoginPerformer instance has state of the user so it should exist.
+  if (login_performer_.get())
+    login_performer_->RecoverEncryptedData(old_password);
 }
 
 void ExistingUserController::ResyncEncryptedData() {
-  login_performer_->ResyncEncryptedData();
+  // LoginPerformer instance has state of the user so it should exist.
+  if (login_performer_.get())
+    login_performer_->ResyncEncryptedData();
 }
 
 }  // namespace chromeos
