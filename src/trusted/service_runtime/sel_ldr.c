@@ -925,6 +925,18 @@ static void NaClLoadModuleRpc(struct NaClSrpcRpc      *rpc,
       goto cleanup;
   }
 
+  /*
+   * do not use default case label, to make sure that the compiler
+   * will generate a warning with -Wswitch-enum for new entries in
+   * NaClDescTypeTag introduced in nacl_desc_base.h for which there is no
+   * corresponding entry here.  instead, we pretend that fall-through
+   * from the switch is possible.
+   */
+  if (NULL == load_src) {
+    NaClLog(LOG_FATAL, "nexe_binary's typeTag has unsupported value: %d\n",
+            NACL_VTBL(NaClDesc, nexe_binary)->typeTag);
+  }
+
   NaClXMutexLock(&nap->mu);
 
   if (LOAD_STATUS_UNKNOWN != nap->module_load_status) {
