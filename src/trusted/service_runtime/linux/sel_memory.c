@@ -16,10 +16,12 @@
 #include <errno.h>
 #include <string.h>
 
+#include "native_client/src/include/nacl_platform.h"
+#include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
-#include "native_client/src/include/nacl_platform.h"
+#include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 
 
 #define MSGWIDTH  "25"
@@ -68,6 +70,11 @@ int NaCl_page_alloc_intern(void   **p,
   if (NULL != *p) {
     map_flags |= MAP_FIXED;
   }
+  NaClLog(4,
+          "sel_memory: NaCl_page_alloc_intern:"
+          " mmap(%p, %"NACL_PRIxS", %#x, %#x, %d, %"NACL_PRIdNACL_OFF64")\n",
+          *p, size, PROT_EXEC | PROT_READ | PROT_WRITE, map_flags, -1,
+          (nacl_abi_off64_t) 0);
   addr = mmap(*p,
               size,
               PROT_EXEC | PROT_READ | PROT_WRITE,
