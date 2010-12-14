@@ -160,6 +160,9 @@
             'drop_delegate.cc',
           ],
         }],
+        ['"ENABLE_CLIENT_BASED_GEOLOCATION=1" in feature_defines', {
+          'defines': [ 'ENABLE_CLIENT_BASED_GEOLOCATION=1' ]
+        }],
       ],
     },
     {

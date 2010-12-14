@@ -64,6 +64,7 @@ class DomAutomationController;
 class DOMUIBindings;
 class ExternalHostBindings;
 class FilePath;
+class GeolocationDispatcher;
 class GeolocationDispatcherOld;
 class GURL;
 class ListValue;
@@ -120,6 +121,7 @@ class WebDataSource;
 class WebDocument;
 class WebDragData;
 class WebFrame;
+class WebGeolocationClient;
 class WebGeolocationServiceInterface;
 class WebImage;
 class WebInputElement;
@@ -482,7 +484,11 @@ class RenderView : public RenderWidget,
   virtual void didClearAutoFillSelection(const WebKit::WebNode& node);
   virtual void didAcceptAutocompleteSuggestion(
       const WebKit::WebInputElement& element);
+#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
+  virtual WebKit::WebGeolocationClient* geolocationClient();
+#else
   virtual WebKit::WebGeolocationService* geolocationService();
+#endif
   virtual WebKit::WebSpeechInputController* speechInputController(
       WebKit::WebSpeechInputListener* listener);
   virtual WebKit::WebDeviceOrientationClient* deviceOrientationClient();
@@ -1374,7 +1380,11 @@ class RenderView : public RenderWidget,
   scoped_refptr<AudioMessageFilter> audio_message_filter_;
 
   // The geolocation dispatcher attached to this view, lazily initialized.
+#if ENABLE_CLIENT_BASED_GEOLOCATION
+  scoped_ptr<GeolocationDispatcher> geolocation_dispatcher_;
+#else
   scoped_ptr<GeolocationDispatcherOld> geolocation_dispatcher_;
+#endif
 
   // Handles accessibility requests into the renderer side, as well as
   // maintains the cache and other features of the accessibility tree.

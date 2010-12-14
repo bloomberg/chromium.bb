@@ -33,6 +33,9 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFileError.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
+#include "third_party/WebKit/WebKit/chromium/public/WebGeolocationClientMock.h"
+#endif
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKitClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
@@ -654,9 +657,15 @@ WebNotificationPresenter* TestWebViewDelegate::notificationPresenter() {
   return shell_->notification_presenter();
 }
 
+#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
+WebKit::WebGeolocationClient* TestWebViewDelegate::geolocationClient() {
+  return shell_->geolocation_client_mock();
+}
+#else
 WebKit::WebGeolocationService* TestWebViewDelegate::geolocationService() {
   return GetTestGeolocationService();
 }
+#endif
 
 WebKit::WebDeviceOrientationClient*
 TestWebViewDelegate::deviceOrientationClient() {
@@ -1207,9 +1216,11 @@ void TestWebViewDelegate::WaitForPolicyDelegate() {
   policy_delegate_should_notify_done_ = true;
 }
 
+#if !defined(ENABLE_CLIENT_BASED_GEOLOCATION)
 void TestWebViewDelegate::SetGeolocationPermission(bool allowed) {
   GetTestGeolocationService()->SetGeolocationPermission(allowed);
 }
+#endif
 
 // Private methods -----------------------------------------------------------
 
@@ -1331,11 +1342,13 @@ std::wstring TestWebViewDelegate::GetFrameDescription(WebFrame* webframe) {
   }
 }
 
+#if !defined(ENABLE_CLIENT_BASED_GEOLOCATION)
 TestGeolocationService* TestWebViewDelegate::GetTestGeolocationService() {
   if (!test_geolocation_service_.get())
     test_geolocation_service_.reset(new TestGeolocationService);
   return test_geolocation_service_.get();
 }
+#endif
 
 void TestWebViewDelegate::set_fake_window_rect(const WebRect& rect) {
   fake_rect_ = rect;

@@ -6,6 +6,10 @@
 #define CHROME_RENDERER_GEOLOCATION_DISPATCHER_OLD_H_
 #pragma once
 
+#if !defined(ENABLE_CLIENT_BASED_GEOLOCATION)
+// TODO(jknotten): Remove this class once the new client-based implementation is
+// checked in (see http://crbug.com/59908).
+
 #include "base/basictypes.h"
 #include "base/id_map.h"
 #include "ipc/ipc_message.h"
@@ -21,8 +25,6 @@ struct Geoposition;
 // It's the complement of GeolocationDispatcherHostOld (owned by
 // RenderViewHost).
 
-// TODO(jknotten): Remove this class once the new client-based implementation is
-// checked in (see http://crbug.com/59908).
 class GeolocationDispatcherOld : public WebKit::WebGeolocationService {
  public:
   explicit GeolocationDispatcherOld(RenderView* render_view);
@@ -60,5 +62,7 @@ class GeolocationDispatcherOld : public WebKit::WebGeolocationService {
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationDispatcherOld);
 };
+
+#endif // ENABLE_CLIENT_BASED_GEOLOCATION
 
 #endif  // CHROME_RENDERER_GEOLOCATION_DISPATCHER_OLD_H_

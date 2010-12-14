@@ -1259,8 +1259,8 @@
         'browser/geolocation/gateway_data_provider_win.h',
         'browser/geolocation/geolocation_content_settings_map.cc',
         'browser/geolocation/geolocation_content_settings_map.h',
-        'browser/geolocation/geolocation_dispatcher_host_old.cc',
-        'browser/geolocation/geolocation_dispatcher_host_old.h',
+        'browser/geolocation/geolocation_dispatcher_host.cc',
+        'browser/geolocation/geolocation_dispatcher_host.h',
         'browser/geolocation/geolocation_exceptions_table_model.cc',
         'browser/geolocation/geolocation_exceptions_table_model.h',
         'browser/geolocation/geolocation_observer.h',
@@ -4348,6 +4348,14 @@
             'browser/importer/nss_decryptor_system_nss.cc',
             'browser/importer/nss_decryptor_system_nss.h',
           ],
+        }],
+        # We are migrating to client-based geolocation. Once the migration
+        # has finished, ENABLE_CLIENT_BASED_GEOLOCATION will disappear.
+        # See bugs:
+        #     https://bugs.webkit.org/show_bug.cgi?id=45752 and
+        #     http://code.google.com/p/chromium/issues/detail?id=59907
+        ['"ENABLE_CLIENT_BASED_GEOLOCATION=1" in feature_defines', {
+          'defines': [ 'ENABLE_CLIENT_BASED_GEOLOCATION=1' ]
         }],
       ],
     },
