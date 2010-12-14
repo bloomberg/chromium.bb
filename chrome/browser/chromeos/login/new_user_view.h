@@ -9,7 +9,9 @@
 #include <string>
 
 #include "base/task.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
+#include "chrome/browser/chromeos/login/user_input.h"
 #include "views/accelerator.h"
 #include "views/controls/button/button.h"
 #include "views/controls/button/menu_button.h"
@@ -20,14 +22,14 @@
 namespace views {
 class Label;
 class NativeButton;
-class Throbber;
 }  // namespace views
 
 namespace chromeos {
 
 // View that is used for new user login. It asks for username and password,
 // allows to specify language preferences or initiate new account creation.
-class NewUserView : public views::View,
+class NewUserView : public ThrobberHostView,
+                    public UserInput,
                     public views::Textfield::Controller,
                     public views::LinkController,
                     public views::ButtonListener {
@@ -73,18 +75,6 @@ class NewUserView : public views::View,
   // Update strings from the resources. Executed on language change.
   void UpdateLocalizedStrings();
 
-  // Resets password text and sets the enabled state of the password.
-  void ClearAndEnablePassword();
-
-  // Resets password and username text and focuses on username.
-  void ClearAndEnableFields();
-
-  // Starts throbber shown during login.
-  void StartThrobber();
-
-  // Stops throbber shown during login.
-  void StopThrobber();
-
   // Returns bounds of password field in screen coordinates.
   gfx::Rect GetPasswordBounds() const;
 
@@ -115,8 +105,16 @@ class NewUserView : public views::View,
 
   // Overridden from views::LinkController.
   virtual void LinkActivated(views::Link* source, int event_flags);
-
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
+
+  // Overridden from ThrobberHostView:
+  virtual gfx::Rect CalculateThrobberBounds(views::Throbber* throbber);
+
+  // Overridden from UserInput:
+  virtual void EnableInputControls(bool enabled);
+  virtual void ClearAndFocusControls();
+  virtual void ClearAndFocusPassword();
+  virtual gfx::Rect GetMainInputScreenBounds() const;
 
  protected:
   // views::View overrides:
@@ -130,8 +128,6 @@ class NewUserView : public views::View,
   void AddChildView(View* view);
 
  private:
-  // Enables/disables input controls (textfields, buttons).
-  void EnableInputControls(bool enabled);
   void FocusFirstField();
 
   // Creates Link control and adds it as a child.
@@ -165,7 +161,6 @@ class NewUserView : public views::View,
   views::Link* create_account_link_;
   views::Link* guest_link_;
   views::MenuButton* languages_menubutton_;
-  views::Throbber* throbber_;
 
   views::Accelerator accel_focus_pass_;
   views::Accelerator accel_focus_user_;

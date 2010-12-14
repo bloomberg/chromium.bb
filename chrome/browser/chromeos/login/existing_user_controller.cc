@@ -214,14 +214,11 @@ void ExistingUserController::LoginNewUser(const std::string& username,
   DCHECK(new_user->is_new_user());
   if (!new_user->is_new_user())
     return;
-  NewUserView* new_user_view = new_user->new_user_view();
-  new_user_view->SetUsername(username);
 
   if (password.empty())
     return;
 
-  new_user_view->SetPassword(password);
-  new_user_view->Login();
+  new_user->OnLogin(username, password);
 }
 
 void ExistingUserController::SelectNewUser() {
@@ -361,6 +358,7 @@ void ExistingUserController::ActivateWizard(const std::string& screen_name) {
   // is doing an animation with our windows.
   DCHECK(!delete_scheduled_instance_);
   delete_scheduled_instance_ = this;
+
   delete_timer_.Start(base::TimeDelta::FromSeconds(1), this,
                       &ExistingUserController::Delete);
 }
@@ -469,7 +467,8 @@ void ExistingUserController::ShowError(int error_id,
   // For now just ignore it because error_text contains all required information
   // for end users, developers can see details string in Chrome logs.
 
-  gfx::Rect bounds = controllers_[selected_view_index_]->GetScreenBounds();
+  gfx::Rect bounds =
+      controllers_[selected_view_index_]->GetMainInputScreenBounds();
   BubbleBorder::ArrowLocation arrow;
   if (controllers_[selected_view_index_]->is_new_user()) {
     arrow = BubbleBorder::LEFT_TOP;
@@ -510,6 +509,7 @@ void ExistingUserController::OnLoginSuccess(
   performer = NULL;
   bool known_user = UserManager::Get()->IsKnownUser(username);
   AppendStartUrlToCmdline();
+  controllers_[selected_view_index_]->StopThrobber();
   if (selected_view_index_ + 1 == controllers_.size() && !known_user) {
 #if defined(OFFICIAL_BUILD)
     CommandLine::ForCurrentProcess()->AppendSwitchPath(

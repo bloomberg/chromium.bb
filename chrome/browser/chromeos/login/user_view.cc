@@ -19,7 +19,6 @@
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
-#include "views/controls/throbber.h"
 #include "views/painter.h"
 
 namespace {
@@ -243,7 +242,6 @@ UserView::UserView(Delegate* delegate, bool is_login, bool need_background)
     : delegate_(delegate),
       signout_view_(NULL),
       image_view_(NULL),
-      throbber_(CreateDefaultSmoothedThrobber()),
       remove_button_(NULL) {
   DCHECK(delegate);
   if (!is_login)
@@ -261,16 +259,6 @@ void UserView::Init(bool need_background) {
   if (need_background) {
     image_view_->set_background(
         views::Background::CreateSolidBackground(kBackgroundColor));
-  }
-  if (throbber_) {
-    int w = throbber_->GetPreferredSize().width();
-    int h = throbber_->GetPreferredSize().height();
-    throbber_->SetBounds(kUserImageSize / 2 - w / 2,
-        kUserImageSize / 2 - h / 2 , w, h);
-    // Throbber should be actually hidden while stopped so tooltip manager
-    // doesn't find it.
-    throbber_->SetVisible(false);
-    image_view_->AddChildView(throbber_);
   }
 
   // UserView's layout never changes, so let's layout once here.
@@ -305,16 +293,6 @@ void UserView::SetImage(const SkBitmap& image, const SkBitmap& image_hot) {
 void UserView::SetTooltipText(const std::wstring& text) {
   DCHECK(image_view_);
   image_view_->SetTooltipText(text);
-}
-
-void UserView::StartThrobber() {
-  throbber_->SetVisible(true);
-  throbber_->Start();
-}
-
-void UserView::StopThrobber() {
-  throbber_->Stop();
-  throbber_->SetVisible(false);
 }
 
 gfx::Size UserView::GetPreferredSize() {

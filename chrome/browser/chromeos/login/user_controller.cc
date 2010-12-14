@@ -28,6 +28,7 @@
 #include "views/background.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
+#include "views/controls/throbber.h"
 #include "views/grid_layout.h"
 #include "views/painter.h"
 #include "views/screen.h"
@@ -69,7 +70,7 @@ class ClickNotifyingWidget : public views::WidgetGtk {
  private:
   gboolean OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
     if (!controller_->is_user_selected())
-      controller_->SelectUser(controller_->user_index());
+      controller_->SelectUserRelative(0);
 
     return views::WidgetGtk::OnButtonPress(widget, event);
   }
@@ -114,11 +115,10 @@ UserController::UserController(Delegate* delegate, bool is_guest)
       label_window_(NULL),
       unselected_label_window_(NULL),
       user_view_(NULL),
-      new_user_view_(NULL),
-      existing_user_view_(NULL),
-      guest_user_view_(NULL),
       label_view_(NULL),
       unselected_label_view_(NULL),
+      user_input_(NULL),
+      throbber_host_(NULL),
       method_factory_(this) {
   registrar_.Add(
       this,
@@ -144,11 +144,10 @@ UserController::UserController(Delegate* delegate,
       label_window_(NULL),
       unselected_label_window_(NULL),
       user_view_(NULL),
-      new_user_view_(NULL),
-      existing_user_view_(NULL),
-      guest_user_view_(NULL),
       label_view_(NULL),
       unselected_label_view_(NULL),
+      user_input_(NULL),
+      throbber_host_(NULL),
       method_factory_(this) {
   DCHECK(!user.email().empty());
   registrar_.Add(
@@ -183,16 +182,12 @@ void UserController::Init(int index,
       CreateLabelWindow(index, WM_IPC_WINDOW_LOGIN_UNSELECTED_LABEL);
 }
 
-void UserController::SetPasswordEnabled(bool enable) {
-  DCHECK(!is_new_user_);
-  existing_user_view_->password_field()->SetEnabled(enable);
-  if (enable) {
-    user_view_->StopThrobber();
-    delegate_->SetStatusAreaEnabled(enable);
-  } else {
-    delegate_->SetStatusAreaEnabled(enable);
-    user_view_->StartThrobber();
-  }
+void UserController::StartThrobber() {
+  throbber_host_->StartThrobber();
+}
+
+void UserController::StopThrobber() {
+  throbber_host_->StopThrobber();
 }
 
 std::wstring UserController::GetNameTooltip() const {
@@ -217,25 +212,22 @@ std::wstring UserController::GetNameTooltip() const {
                                        domain.c_str()));
 }
 
-void UserController::ClearAndEnablePassword() {
-  if (is_new_user_) {
-    // TODO(avayvod): This code seems not reachable to me.
-    new_user_view_->ClearAndEnablePassword();
-  } else {
-    existing_user_view_->password_field()->SetText(string16());
-    SetPasswordEnabled(true);
-    FocusPasswordField();
-  }
+void UserController::ClearAndEnableFields() {
+  user_input_->ClearAndFocusControls();
+  user_input_->EnableInputControls(true);
+  SetStatusAreaEnabled(true);
+  StopThrobber();
 }
 
-void UserController::ClearAndEnableFields() {
-  if (is_new_user_) {
-    new_user_view_->ClearAndEnableFields();
-  } else if (is_guest_) {
-    guest_user_view_->FocusSignInButton();
-  } else {
-    ClearAndEnablePassword();
-  }
+void UserController::ClearAndEnablePassword() {
+  user_input_->ClearAndFocusPassword();
+  user_input_->EnableInputControls(true);
+  SetStatusAreaEnabled(true);
+  StopThrobber();
+}
+
+gfx::Rect UserController::GetMainInputScreenBounds() const {
+  return user_input_->GetMainInputScreenBounds();
 }
 
 void UserController::EnableNameTooltip(bool enable) {
@@ -249,32 +241,6 @@ void UserController::EnableNameTooltip(bool enable) {
     label_view_->SetTooltipText(tooltip_text);
   if (unselected_label_view_)
     unselected_label_view_->SetTooltipText(tooltip_text);
-}
-
-void UserController::ButtonPressed(views::Button* sender,
-                                   const views::Event& event) {
-  Login();
-}
-
-bool UserController::HandleKeystroke(
-    views::Textfield* sender,
-    const views::Textfield::Keystroke& keystroke) {
-  if (keystroke.GetKeyboardCode() == app::VKEY_RETURN) {
-    Login();
-    return true;
-  } else if (keystroke.GetKeyboardCode() == app::VKEY_LEFT) {
-    SelectUser(user_index() - 1);
-    return true;
-  } else if (keystroke.GetKeyboardCode() == app::VKEY_RIGHT) {
-    SelectUser(user_index() + 1);
-    return true;
-  }
-  delegate_->ClearErrors();
-  return false;
-}
-
-void UserController::ContentsChanged(views::Textfield* sender,
-                                     const string16& new_contents) {
 }
 
 void UserController::Observe(
@@ -291,17 +257,6 @@ void UserController::Observe(
 
   user_.set_image(user->image());
   user_view_->SetImage(user_.image(), user_.image());
-}
-
-void UserController::Login() {
-  if (is_guest_) {
-    delegate_->LoginOffTheRecord();
-  } else {
-    // Delegate will reenable as necessary.
-    SetPasswordEnabled(false);
-
-    delegate_->Login(this, existing_user_view_->password_field()->text());
-  }
 }
 
 void UserController::IsActiveChanged(bool active) {
@@ -345,25 +300,30 @@ WidgetGtk* UserController::CreateControlsWindow(
     bool need_browse_without_signin) {
   views::View* control_view;
   if (is_new_user_) {
-    new_user_view_ =
+    NewUserView* new_user_view =
         new NewUserView(this, true, need_browse_without_signin);
-    new_user_view_->Init();
-    control_view = new_user_view_;
+    new_user_view->Init();
+    control_view = new_user_view;
+    user_input_ = new_user_view;
+    throbber_host_ = new_user_view;
   } else if (is_guest_) {
-    guest_user_view_ = new GuestUserView(this);
-    guest_user_view_->RecreateFields();
-    control_view = guest_user_view_;
+    GuestUserView* guest_user_view = new GuestUserView(this);
+    guest_user_view->RecreateFields();
+    control_view = guest_user_view;
+    user_input_ = guest_user_view;
+    throbber_host_ = guest_user_view;
   } else {
-    existing_user_view_ = new ExistingUserView(this);
-    existing_user_view_->RecreateFields();
-    control_view = existing_user_view_;
+    ExistingUserView* existing_user_view = new ExistingUserView(this);
+    existing_user_view->RecreateFields();
+    control_view = existing_user_view;
+    user_input_ = existing_user_view;
+    throbber_host_ = existing_user_view;
   }
 
   *height = kControlsHeight;
   *width = kUserImageSize;
   if (is_new_user_) {
-    DCHECK(new_user_view_);
-    gfx::Size size = new_user_view_->GetPreferredSize();
+    gfx::Size size = control_view->GetPreferredSize();
     *width = size.width();
     *height = size.height();
   }
@@ -502,16 +462,15 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
   return window;
 }
 
-gfx::Rect UserController::GetScreenBounds() const {
-  if (is_new_user_)
-    return new_user_view_->GetUsernameBounds();
-  else
-    return existing_user_view_->password_field()->GetScreenBounds();
-}
-
 void UserController::OnLogin(const std::string& username,
                              const std::string& password) {
-  user_.set_email(username);
+  if (is_new_user_)
+    user_.set_email(username);
+
+  user_input_->EnableInputControls(false);
+  SetStatusAreaEnabled(false);
+  StartThrobber();
+
   delegate_->Login(this, UTF8ToUTF16(password));
 }
 
@@ -520,6 +479,10 @@ void UserController::OnCreateAccount() {
 }
 
 void UserController::OnLoginOffTheRecord() {
+  user_input_->EnableInputControls(false);
+  SetStatusAreaEnabled(false);
+  StartThrobber();
+
   delegate_->LoginOffTheRecord();
 }
 
@@ -528,7 +491,7 @@ void UserController::ClearErrors() {
 }
 
 void UserController::NavigateAway() {
-  SelectUser(user_index() - 1);
+  SelectUserRelative(-1);
 }
 
 void UserController::OnRemoveUser() {
@@ -548,12 +511,8 @@ void UserController::OnRemoveUser() {
   delegate_->RemoveUser(this);
 }
 
-void UserController::SelectUser(int index) {
-  delegate_->SelectUser(index);
-}
-
-void UserController::FocusPasswordField() {
-  existing_user_view_->FocusPasswordField();
+void UserController::SelectUserRelative(int shift) {
+  delegate_->SelectUser(user_index() + shift);
 }
 
 }  // namespace chromeos

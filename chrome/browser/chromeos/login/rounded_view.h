@@ -1,5 +1,9 @@
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_VIEW_FILTER_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_VIEW_FILTER_H_
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_ROUNDED_VIEW_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_ROUNDED_VIEW_H_
 
 #include "gfx/canvas.h"
 #include "gfx/canvas_skia.h"
@@ -124,4 +128,4 @@ void RoundedView<C>::DrawFrame(gfx::Canvas* canvas) {
 
 }
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_VIEW_FILTER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_ROUNDED_VIEW_H_

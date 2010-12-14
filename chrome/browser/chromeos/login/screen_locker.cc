@@ -648,6 +648,7 @@ void ScreenLocker::Init() {
     screen_lock_view_ = new ScreenLockView(this);
     screen_lock_view_->Init();
     screen_lock_view_->SetEnabled(false);
+    screen_lock_view_->StartThrobber();
   } else {
     input_event_observer_.reset(new InputEventObserver(this));
     MessageLoopForUI::current()->AddObserver(input_event_observer_.get());
@@ -784,6 +785,7 @@ void ScreenLocker::Authenticate(const string16& password) {
   authentication_start_time_ = base::Time::Now();
   screen_lock_view_->SetEnabled(false);
   screen_lock_view_->SetSignoutEnabled(false);
+  screen_lock_view_->StartThrobber();
 
   // If LoginPerformer instance exists,
   // initial online login phase is still active.
@@ -812,6 +814,7 @@ void ScreenLocker::EnableInput() {
   if (screen_lock_view_) {
     screen_lock_view_->SetEnabled(true);
     screen_lock_view_->ClearAndSetFocusToPassword();
+    screen_lock_view_->StopThrobber();
   }
 }
 

@@ -7,7 +7,6 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -67,6 +66,9 @@ ScreenLockView::ScreenLockView(ScreenLocker* screen_locker)
   DCHECK(screen_locker_);
 }
 
+ScreenLockView::~ScreenLockView() {
+}
+
 gfx::Size ScreenLockView::GetPreferredSize() {
   return main_->GetPreferredSize();
 }
@@ -100,8 +102,12 @@ void ScreenLockView::Init() {
 
   // Password field.
   password_field_ = new PasswordField();
+
   password_field_->SetController(this);
   password_field_->set_background(new CopyBackground(main_));
+
+  // Setup ThrobberView's host view.
+  set_host_view(password_field_);
 
   // User icon.
   UserManager::User user = screen_locker_->user();
@@ -160,11 +166,11 @@ gfx::Rect ScreenLockView::GetPasswordBoundsRelativeTo(const views::View* view) {
   return gfx::Rect(p, size());
 }
 
+
 void ScreenLockView::SetEnabled(bool enabled) {
   views::View::SetEnabled(enabled);
 
   if (!enabled) {
-    user_view_->StartThrobber();
     // TODO(oshima): Re-enabling does not move the focus to the view
     // that had a focus (issue http://crbug.com/43131).
     // Clear focus on the textfield so that re-enabling can set focus
@@ -173,8 +179,6 @@ void ScreenLockView::SetEnabled(bool enabled) {
     // associated Widget yet.
     if (password_field_->GetFocusManager())
       password_field_->GetFocusManager()->ClearFocus();
-  } else {
-    user_view_->StopThrobber();
   }
   password_field_->SetEnabled(enabled);
 }
@@ -213,4 +217,5 @@ void ScreenLockView::ViewHierarchyChanged(bool is_add,
   if (is_add && this == child)
     WizardAccessibilityHelper::GetInstance()->MaybeEnableAccessibility(this);
 }
+
 }  // namespace chromeos

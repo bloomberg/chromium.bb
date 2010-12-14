@@ -91,7 +91,8 @@ void LoginScreen::OnLoginFailure(const LoginFailure& failure) {
     ShowError(IDS_LOGIN_ERROR_AUTHENTICATING_NEW, error);
   }
 
-  view()->ClearAndEnablePassword();
+  view()->ClearAndFocusPassword();
+  view()->EnableInputControls(true);
 }
 
 void LoginScreen::OnLoginSuccess(

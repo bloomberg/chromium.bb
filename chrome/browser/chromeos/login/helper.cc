@@ -17,6 +17,7 @@
 #include "views/controls/throbber.h"
 #include "views/painter.h"
 #include "views/screen.h"
+#include "views/widget/widget.h"
 
 namespace chromeos {
 
@@ -67,7 +68,52 @@ class BackgroundPainter : public views::Painter {
 
 }  // namespace
 
-views::Throbber* CreateDefaultSmoothedThrobber() {
+ThrobberHostView::ThrobberHostView()
+    : host_view_(this),
+      throbber_widget_(NULL) {
+}
+
+ThrobberHostView::~ThrobberHostView() {
+  StopThrobber();
+}
+
+void ThrobberHostView::StartThrobber() {
+  StopThrobber();
+  views::Widget* widget = host_view_->GetWidget();
+  if (widget) {
+    views::SmoothedThrobber* throbber = CreateDefaultSmoothedThrobber();
+    throbber->set_stop_delay_ms(0);
+    gfx::Rect throbber_bounds = CalculateThrobberBounds(throbber);
+
+    throbber_widget_ =
+        views::Widget::CreatePopupWidget(views::Widget::Transparent,
+                                         views::Widget::NotAcceptEvents,
+                                         views::Widget::DeleteOnDestroy,
+                                         views::Widget::DontMirrorOriginInRTL);
+    throbber_bounds.Offset(host_view_->GetScreenBounds().origin());
+    throbber_widget_->InitWithWidget(widget, throbber_bounds);
+    throbber_widget_->SetContentsView(throbber);
+    throbber_widget_->Show();
+    throbber->Start();
+  }
+}
+
+void ThrobberHostView::StopThrobber() {
+  if (throbber_widget_) {
+    throbber_widget_->Close();
+    throbber_widget_ = NULL;
+  }
+}
+
+gfx::Rect ThrobberHostView::CalculateThrobberBounds(views::Throbber* throbber) {
+  gfx::Rect bounds(throbber->GetPreferredSize());
+  bounds.set_x(
+      host_view_->width() - login::kThrobberRightMargin - bounds.width());
+  bounds.set_y((host_view_->height() - bounds.height()) / 2);
+  return bounds;
+}
+
+views::SmoothedThrobber* CreateDefaultSmoothedThrobber() {
   views::SmoothedThrobber* throbber =
       new views::SmoothedThrobber(kThrobberFrameMs);
   throbber->SetFrames(
@@ -94,7 +140,6 @@ gfx::Rect CalculateScreenBounds(const gfx::Size& size) {
     int vertical_diff = bounds.height() - size.height();
     bounds.Inset(horizontal_diff / 2, vertical_diff / 2);
   }
-
   return bounds;
 }
 
@@ -138,4 +183,3 @@ gfx::Size WideButton::GetPreferredSize() {
 }  // namespace login
 
 }  // namespace chromeos
-

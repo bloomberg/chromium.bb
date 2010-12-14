@@ -56,10 +56,6 @@ class UserView : public views::View,
   // Sets tooltip over the image.
   void SetTooltipText(const std::wstring& text);
 
-  // Start/Stop throbber.
-  void StartThrobber();
-  void StopThrobber();
-
   // Show/Hide remove button.
   void SetRemoveButtonVisible(bool flag);
 
@@ -80,8 +76,6 @@ class UserView : public views::View,
 
   SignoutView* signout_view_;
   PodImageView* image_view_;
-
-  views::Throbber* throbber_;
 
   views::TextButton* remove_button_;
 

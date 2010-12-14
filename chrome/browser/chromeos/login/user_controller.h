@@ -26,16 +26,12 @@ class WidgetGtk;
 
 namespace chromeos {
 
-class ExistingUserView;
-class GuestUserView;
-class UserView;
+class ThrobberManager;
 
 // UserController manages the set of windows needed to login a single existing
 // user or first time login for a new user. ExistingUserController creates
 // the nececessary set of UserControllers.
-class UserController : public views::ButtonListener,
-                       public views::Textfield::Controller,
-                       public views::WidgetDelegate,
+class UserController : public views::WidgetDelegate,
                        public NewUserView::Delegate,
                        public NotificationObserver,
                        public UserView::Delegate {
@@ -80,36 +76,30 @@ class UserController : public views::ButtonListener,
   bool is_user_selected() const { return is_user_selected_; }
   bool is_new_user() const { return is_new_user_; }
   bool is_guest() const { return is_guest_; }
-  NewUserView* new_user_view() const { return new_user_view_; }
 
   const UserManager::User& user() const { return user_; }
 
   // Enables or disables tooltip with user's email.
   void EnableNameTooltip(bool enable);
 
-  // Resets password text and sets the enabled state of the password.
-  void ClearAndEnablePassword();
-
   // Called when user view is activated (OnUserSelected).
   void ClearAndEnableFields();
 
-  // Returns bounds of password field in screen coordinates.
-  // For new user it returns username coordinates.
-  gfx::Rect GetScreenBounds() const;
+  // Called when user view is activated (OnUserSelected).
+  void ClearAndEnablePassword();
 
   // Get widget that contains all controls.
   views::WidgetGtk* controls_window() {
     return controls_window_;
   }
 
-  // ButtonListener:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+  // Returns bounds of the main input field in the screen coordinates (e.g.
+  // these bounds could be used to choose positions for the error bubble).
+  gfx::Rect GetMainInputScreenBounds() const;
 
-  // Textfield::Controller:
-  virtual void ContentsChanged(views::Textfield* sender,
-                               const string16& new_contents);
-  virtual bool HandleKeystroke(views::Textfield* sender,
-                               const views::Textfield::Keystroke& keystroke);
+  // Starts/Stops throbber.
+  void StartThrobber();
+  void StopThrobber();
 
   // views::WidgetDelegate:
   virtual void IsActiveChanged(bool active);
@@ -136,11 +126,8 @@ class UserController : public views::ButtonListener,
   // UserView::Delegate implementation:
   virtual void OnRemoveUser();
 
-  // Selects user entry with specified |index|.
-  void SelectUser(int index);
-
-  // Sets focus on password field.
-  void FocusPasswordField();
+  // Selects user relative to the current user.
+  void SelectUserRelative(int shift);
 
   // Padding between the user windows.
   static const int kPadding;
@@ -151,9 +138,6 @@ class UserController : public views::ButtonListener,
 
  private:
   FRIEND_TEST(UserControllerTest, GetNameTooltip);
-
-  // Invoked when the user wants to login. Forwards the call to the delegate.
-  void Login();
 
   // Performs common setup for login windows.
   void ConfigureLoginWindow(views::WidgetGtk* window,
@@ -175,9 +159,6 @@ class UserController : public views::ButtonListener,
   // the image is resized to fit window size precisely. Image view repaints
   // itself.
   void SetImage(const SkBitmap& image);
-
-  // Sets the enabled state of the password field to |enable|.
-  void SetPasswordEnabled(bool enable);
 
   // Returns tooltip text for user name.
   std::wstring GetNameTooltip() const;
@@ -216,18 +197,15 @@ class UserController : public views::ButtonListener,
   // View that shows user image on image window.
   UserView* user_view_;
 
-  // View that is used for new user login.
-  NewUserView* new_user_view_;
-
-  // View that is used for existing user login.
-  ExistingUserView* existing_user_view_;
-
-  // View that is used for guest user login.
-  GuestUserView* guest_user_view_;
-
   // Views that show display name of the user.
   views::Label* label_view_;
   views::Label* unselected_label_view_;
+
+  // Input controls which are used for username and password.
+  UserInput* user_input_;
+
+  // Throbber host that can show a throbber.
+  ThrobberHostView* throbber_host_;
 
   NotificationRegistrar registrar_;
 

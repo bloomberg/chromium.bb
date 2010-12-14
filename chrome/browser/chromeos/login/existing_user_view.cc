@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/login/existing_user_view.h"
 
 #include "app/l10n_util.h"
-#include "chrome/browser/chromeos/login/helper.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/user_controller.h"
 #include "chrome/browser/chromeos/login/textfield_with_margin.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
@@ -34,8 +34,7 @@ class UserEntryTextfield : public TextfieldWithMargin {
   // Overridden from views::View:
   virtual bool OnKeyPressed(const views::KeyEvent& e) {
     if (e.GetKeyCode() == app::VKEY_TAB) {
-      int index = controller_->user_index() + (e.IsShiftDown() ? -1 : 1);
-      controller_->SelectUser(index);
+      controller_->SelectUserRelative(e.IsShiftDown() ? -1 : 1);
       return true;
     } else {
       return false;
@@ -56,11 +55,11 @@ class UserEntryTextfield : public TextfieldWithMargin {
 };
 
 
-ExistingUserView::ExistingUserView(UserController* uc)
-    : accel_login_off_the_record_(
-        views::Accelerator(app::VKEY_B, false, false, true)),
+ExistingUserView::ExistingUserView(UserController* user_controller)
+    : user_controller_(user_controller),
       password_field_(NULL),
-      user_controller_(uc),
+      accel_login_off_the_record_(
+        views::Accelerator(app::VKEY_B, false, false, true)),
       accel_enable_accessibility_(
           WizardAccessibilityHelper::GetAccelerator()) {
   AddAccelerator(accel_login_off_the_record_);
@@ -76,7 +75,7 @@ void ExistingUserView::RecreateFields() {
         views::Background::CreateVerticalGradientBackground(
             kBackgroundColorTop, kBackgroundColorBottom));
     password_field_->SetFocusable(true);
-    password_field_->SetController(user_controller_);
+    password_field_->SetController(this);
     AddChildView(password_field_);
   }
   password_field_->set_text_to_display_when_empty(
@@ -97,6 +96,39 @@ bool ExistingUserView::AcceleratorPressed(
   return false;
 }
 
+bool ExistingUserView::HandleKeystroke(
+    views::Textfield* sender,
+    const views::Textfield::Keystroke& keystroke) {
+  if (keystroke.GetKeyboardCode() == app::VKEY_RETURN) {
+    user_controller_->OnLogin("", UTF16ToUTF8(password_field_->text()));
+  } else if (keystroke.GetKeyboardCode() == app::VKEY_LEFT) {
+    user_controller_->SelectUserRelative(-1);
+  } else if (keystroke.GetKeyboardCode() == app::VKEY_RIGHT) {
+    user_controller_->SelectUserRelative(1);
+  } else {
+    user_controller_->ClearErrors();
+    return false;
+  }
+  return true;
+}
+
+void ExistingUserView::ContentsChanged(views::Textfield* sender,
+                                       const string16& new_contents) {
+}
+
+void ExistingUserView::EnableInputControls(bool enabled) {
+  password_field_->SetEnabled(enabled);
+}
+
+void ExistingUserView::ClearAndFocusControls() {
+  ClearAndFocusPassword();
+}
+
+void ExistingUserView::ClearAndFocusPassword() {
+  password_field_->SetText(string16());
+  FocusPasswordField();
+}
+
 void ExistingUserView::ViewHierarchyChanged(bool is_add,
                                             views::View* parent,
                                             views::View* child) {
@@ -105,9 +137,11 @@ void ExistingUserView::ViewHierarchyChanged(bool is_add,
 }
 
 void ExistingUserView::FocusPasswordField() {
-  if (GetFocusManager()) {
-    password_field()->RequestFocus();
-  }
+  password_field_->RequestFocus();
+}
+
+gfx::Rect ExistingUserView::GetMainInputScreenBounds() const {
+  return password_field_->GetScreenBounds();
 }
 
 void ExistingUserView::OnLocaleChanged() {

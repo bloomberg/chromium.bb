@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_GUEST_USER_VIEW_H_
 #pragma once
 
+#include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/user_input.h"
 #include "views/accelerator.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/textfield/textfield.h"
@@ -18,7 +20,9 @@ class UserController;
 // This view is for controls window of Guest mode pod that allows user to
 // get temporary profile and use it for browsing. Contains only one Sign-in
 // button and handles different common keyboard shortcuts.
-class GuestUserView : public views::View {
+class GuestUserView : public ThrobberHostView,
+                      public UserInput,
+                      public views::ButtonListener {
  public:
   explicit GuestUserView(UserController* uc);
 
@@ -28,6 +32,15 @@ class GuestUserView : public views::View {
 
   // Overridden from views::View:
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
+
+  // Overridden from views::ButtonListener.
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+
+  // Overridden from UserInput:
+  virtual void EnableInputControls(bool enabled);
+  virtual void ClearAndFocusControls();
+  virtual void ClearAndFocusPassword();
+  virtual gfx::Rect GetMainInputScreenBounds() const;
 
  private:
   // Overridden from views::View:

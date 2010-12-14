@@ -20,7 +20,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/textfield_with_margin.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
@@ -95,7 +94,6 @@ NewUserView::NewUserView(Delegate* delegate,
       create_account_link_(NULL),
       guest_link_(NULL),
       languages_menubutton_(NULL),
-      throbber_(NULL),
       accel_focus_pass_(views::Accelerator(app::VKEY_P, false, false, true)),
       accel_focus_user_(views::Accelerator(app::VKEY_U, false, false, true)),
       accel_login_off_the_record_(
@@ -157,9 +155,6 @@ void NewUserView::Init() {
   password_field_ = new TextfieldWithMargin(views::Textfield::STYLE_PASSWORD);
   password_field_->set_background(new CopyBackground(this));
   AddChildView(password_field_);
-
-  throbber_ = CreateDefaultSmoothedThrobber();
-  AddChildView(throbber_);
 
   language_switch_menu_.InitLanguageMenu();
 
@@ -417,15 +412,8 @@ void NewUserView::Layout() {
   y += setViewBounds(username_field_, x, y, width, true) + kRowPad;
   y += setViewBounds(password_field_, x, y, width, true) + kRowPad;
 
-  int throbber_y = y;
   int sign_in_button_width = sign_in_button_->GetPreferredSize().width();
   setViewBounds(sign_in_button_, x, y, sign_in_button_width,true);
-  setViewBounds(throbber_,
-                x + width - throbber_->GetPreferredSize().width(),
-                throbber_y + (sign_in_button_->GetPreferredSize().height() -
-                              throbber_->GetPreferredSize().height()) / 2,
-                width,
-                false);
 
   SchedulePaint();
 }
@@ -448,9 +436,7 @@ void NewUserView::Login() {
   if (login_in_process_ || username_field_->text().empty())
     return;
 
-  StartThrobber();
   login_in_process_ = true;
-  EnableInputControls(false);
   std::string username = UTF16ToUTF8(username_field_->text());
   // todo(cmasone) Need to sanitize memory used to store password.
   std::string password = UTF16ToUTF8(password_field_->text());
@@ -478,21 +464,34 @@ void NewUserView::LinkActivated(views::Link* source, int event_flags) {
   }
 }
 
-void NewUserView::ClearAndEnablePassword() {
+void NewUserView::ClearAndFocusControls() {
   login_in_process_ = false;
-  EnableInputControls(true);
-  SetPassword(std::string());
-  password_field_->RequestFocus();
-  StopThrobber();
-}
-
-void NewUserView::ClearAndEnableFields() {
-  login_in_process_ = false;
-  EnableInputControls(true);
   SetUsername(std::string());
   SetPassword(std::string());
   username_field_->RequestFocus();
-  StopThrobber();
+}
+
+void NewUserView::ClearAndFocusPassword() {
+  login_in_process_ = false;
+  SetPassword(std::string());
+  password_field_->RequestFocus();
+}
+
+gfx::Rect NewUserView::GetMainInputScreenBounds() const {
+  return GetUsernameBounds();
+}
+
+gfx::Rect NewUserView::CalculateThrobberBounds(views::Throbber* throbber) {
+  DCHECK(password_field_);
+  DCHECK(sign_in_button_);
+
+  gfx::Size throbber_size = throbber->GetPreferredSize();
+  int x = password_field_->x();
+  x += password_field_->width() - throbber_size.width();
+  int y = sign_in_button_->y();
+  y += (sign_in_button_->height() - throbber_size.height()) / 2;
+
+  return gfx::Rect(gfx::Point(x, y), throbber_size);
 }
 
 gfx::Rect NewUserView::GetPasswordBounds() const {
@@ -501,14 +500,6 @@ gfx::Rect NewUserView::GetPasswordBounds() const {
 
 gfx::Rect NewUserView::GetUsernameBounds() const {
   return username_field_->GetScreenBounds();
-}
-
-void NewUserView::StartThrobber() {
-  throbber_->Start();
-}
-
-void NewUserView::StopThrobber() {
-  throbber_->Stop();
 }
 
 bool NewUserView::HandleKeystroke(views::Textfield* s,
@@ -549,7 +540,6 @@ void NewUserView::EnableInputControls(bool enabled) {
   if (need_guest_link_) {
     guest_link_->SetEnabled(enabled);
   }
-  delegate_->SetStatusAreaEnabled(enabled);
 }
 
 void NewUserView::InitLink(views::Link** link) {
