@@ -8,5 +8,3 @@
 BUG64371 WIN RELEASE : http/tests/appcache/online-whitelist.html = TEXT
 BUGPKASTING WIN DEBUG SLOW: fast/encoding/parser-tests.html = TEXT
 BUGPKASTING MAC DEBUG : fast/encoding/parser-tests.html = TIMEOUT
-
-BUGRICOW : fast/regex/pcre-test-1.html = TIMEOUT
