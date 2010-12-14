@@ -413,14 +413,16 @@ void PasswordAutocompleteManager::GetSuggestions(
 bool PasswordAutocompleteManager::ShowSuggestionPopup(
     const webkit_glue::PasswordFormFillData& fill_data,
     const WebKit::WebInputElement& user_input) {
-  std::vector<string16> suggestions;
-  GetSuggestions(fill_data, user_input.value(), &suggestions);
-  if (suggestions.empty())
-    return false;
-
   WebKit::WebView* webview = user_input.document().frame()->view();
   if (!webview)
     return false;
+
+  std::vector<string16> suggestions;
+  GetSuggestions(fill_data, user_input.value(), &suggestions);
+  if (suggestions.empty()) {
+    webview->hidePopups();
+    return false;
+  }
 
   std::vector<string16> labels(suggestions.size());
   std::vector<string16> icons(suggestions.size());
