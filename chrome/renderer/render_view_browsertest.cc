@@ -678,7 +678,8 @@ TEST_F(RenderViewTest, OnHandleKeyboardEvent) {
                        "%d,%s\n"  // texts in the second <div> element
                        "%d,%s",   // texts in the third <div> element
                        key_code, kModifierData[j].expected_result,
-                       char_code[0], kModifierData[j].expected_result,
+                       static_cast<int>(char_code[0]),
+                       kModifierData[j].expected_result,
                        key_code, kModifierData[j].expected_result);
 
         // Retrieve the text in the test page and compare it with the expected
