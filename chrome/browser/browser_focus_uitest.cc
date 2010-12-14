@@ -8,6 +8,7 @@
 #include "base/format_macros.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_window.h"
@@ -41,6 +42,11 @@
 #include "chrome/browser/gtk/view_id_util.h"
 #endif
 
+#if defined(OS_WIN)
+#include <windows.h>
+#include <Psapi.h>
+#endif
+
 #if defined(OS_LINUX)
 #define MAYBE_FocusTraversal FocusTraversal
 #define MAYBE_FocusTraversalOnInterstitial FocusTraversalOnInterstitial
@@ -71,6 +77,49 @@ const char kSimplePage[] = "files/focus/page_with_focus.html";
 const char kStealFocusPage[] = "files/focus/page_steals_focus.html";
 const char kTypicalPage[] = "files/focus/typical_page.html";
 const char kTypicalPageName[] = "typical_page.html";
+
+// Test to make sure Chrome is in the foreground as we start testing. This is
+// required for tests that synthesize input to the Chrome window.
+bool ChromeInForeground() {
+#if defined(OS_WIN)
+  HWND window = ::GetForegroundWindow();
+  std::wstring caption;
+  std::wstring filename;
+  int len = ::GetWindowTextLength(window) + 1;
+  ::GetWindowText(window, WriteInto(&caption, len), len);
+  bool chrome_window_in_foreground =
+      EndsWith(caption, L" - Google Chrome", true) ||
+      EndsWith(caption, L" - Chromium", true);
+  if (!chrome_window_in_foreground) {
+    DWORD process_id;
+    int thread_id = ::GetWindowThreadProcessId(window, &process_id);
+
+    base::ProcessHandle process;
+    if (base::OpenProcessHandleWithAccess(process_id,
+                                          PROCESS_QUERY_LIMITED_INFORMATION,
+                                          &process)) {
+      len = MAX_PATH;
+      if (!GetProcessImageFileName(process, WriteInto(&filename, len), len)) {
+        int error = GetLastError();
+        filename = std::wstring(L"Unable to read filename for process id '" +
+                                base::IntToString16(process_id) +
+                                L"' (error ") +
+                                base::IntToString16(error) + L")";
+      }
+      base::CloseProcessHandle(process);
+    }
+  }
+  EXPECT_TRUE(chrome_window_in_foreground)
+      << "Chrome must be in the foreground when running interactive tests\n"
+      << "Process in foreground: " << filename.c_str() << "\n"
+      << "Window: " << window << "\n"
+      << "Caption: " << caption.c_str();
+  return chrome_window_in_foreground;
+#else
+  // Windows only at the moment.
+  return true;
+#endif
+}
 
 class BrowserFocusTest : public InProcessBrowserTest {
  public:
@@ -652,14 +701,15 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
 }
 
 // Make sure Find box can request focus, even when it is already open.
-// Disabled, http://crbug.com/62936.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_FindFocusTest) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_TRUE(test_server()->Start());
 
   // Open some page (any page that doesn't steal focus).
   GURL url = test_server()->GetURL(kTypicalPage);
   ui_test_utils::NavigateToURL(browser(), url);
+
+  EXPECT_TRUE(ChromeInForeground());
 
 #if defined(OS_MACOSX)
   // Press Cmd+F, which will make the Find box open and request focus.
