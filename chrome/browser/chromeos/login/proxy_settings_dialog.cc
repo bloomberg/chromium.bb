@@ -12,7 +12,7 @@ namespace {
 
 // Hints for size of proxy settings dialog.
 const int kProxySettingsDialogReasonableWidth = 750;
-const int kProxySettingsDialogReasonableHeight = 460;
+const int kProxySettingsDialogReasonableHeight = 550;
 const float kProxySettingsDialogReasonableWidthRatio = 0.4f;
 const float kProxySettingsDialogReasonableHeightRatio = 0.4f;
 

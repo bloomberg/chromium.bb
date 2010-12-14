@@ -67,6 +67,10 @@ html[dir='rtl'] .close-subpage {
   left: 0;
 }
 
+html[hide-menu=true] .close-subpage {
+  display: none
+}
+
 .action-area {
   -webkit-box-orient: horizontal;
   -webkit-box-align: center;

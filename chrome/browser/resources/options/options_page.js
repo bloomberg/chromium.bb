@@ -70,7 +70,7 @@ cr.define('options', function() {
     for (var name in this.registeredSubPages) {
       var pageInfo = this.registeredSubPages[name];
       var match = name == pageName;
-      if (match)
+      if (match && document.documentElement.getAttribute('hide-menu') != 'true')
         pageInfo.parentPage.visible = true;
       pageInfo.page.visible = match;
     }

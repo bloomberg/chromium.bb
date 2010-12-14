@@ -115,7 +115,7 @@ function load() {
   if (cr.isChromeOS) {
     OptionsPage.register(AccountsOptions.getInstance());
     OptionsPage.registerSubPage(ProxyOptions.getInstance(),
-                                InternetOptions.getInstance());
+                                AdvancedOptions.getInstance());
     OptionsPage.registerOverlay(new OptionsPage(
         'detailsInternetPage',
         'detailsInternetPage',
