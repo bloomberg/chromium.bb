@@ -236,7 +236,15 @@ int32_t URLLoader::Open(URLRequestInfo* request,
   if (rv != PP_OK)
     return rv;
 
-  loader_.reset(frame->createAssociatedURLLoader());
+  frame->dispatchWillSendRequest(web_request);
+
+  // Sets the appcache host id to allow retrieval from the appcache.
+  if (WebApplicationCacheHostImpl* appcache_host =
+          WebApplicationCacheHostImpl::FromFrame(frame)) {
+    appcache_host->willStartSubResourceRequest(web_request);
+  }
+
+  loader_.reset(WebKit::webKitClient()->createURLLoader());
   if (!loader_.get())
     return PP_ERROR_FAILED;
 

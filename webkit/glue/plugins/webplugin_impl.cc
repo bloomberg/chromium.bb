@@ -1168,13 +1168,22 @@ bool WebPluginImpl::InitiateHTTPRequest(unsigned long resource_id,
 
   SetReferrer(&info.request, referrer_flag);
 
+  // Sets the routing id to associate the ResourceRequest with the RenderView.
+  webframe_->dispatchWillSendRequest(info.request);
+
+  // Sets the appcache host id to allow retrieval from the appcache.
+  if (WebApplicationCacheHostImpl* appcache_host =
+          WebApplicationCacheHostImpl::FromFrame(webframe_)) {
+    appcache_host->willStartSubResourceRequest(info.request);
+  }
+
   if (WebDevToolsAgent* devtools_agent = GetDevToolsAgent()) {
     devtools_agent->identifierForInitialRequest(resource_id, webframe_,
                                                 info.request);
     devtools_agent->willSendRequest(resource_id, info.request);
   }
 
-  info.loader.reset(webframe_->createAssociatedURLLoader());
+  info.loader.reset(WebKit::webKitClient()->createURLLoader());
   if (!info.loader.get())
     return false;
   info.loader->loadAsynchronously(info.request, this);
