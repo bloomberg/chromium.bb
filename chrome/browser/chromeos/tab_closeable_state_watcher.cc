@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/browser_shutdown.h"
-#include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
