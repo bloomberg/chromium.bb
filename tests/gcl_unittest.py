@@ -5,6 +5,9 @@
 
 """Unit tests for gcl.py."""
 
+# pylint is too confused.
+# pylint: disable=E1101,E1103,E1120,W0212,W0403
+
 # Fixes include path.
 from super_mox import mox, SuperMoxTestBase
 

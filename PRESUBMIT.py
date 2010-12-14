@@ -27,17 +27,14 @@ def CommonChecks(input_api, output_api):
       UNIT_TESTS))
   output.extend(WasGitClUploadHookModified(input_api, output_api))
 
-  def filter_python_sources(affected_file):
-    filepath = affected_file.LocalPath()
-    return ((filepath.endswith('.py') and
-             filepath != 'cpplint.py' and
-             not filepath.startswith('tests')) or
-            filepath == 'git-try')
-
+  white_list = [r'.*\.py$', r'.*git-try$']
+  black_list = list(input_api.DEFAULT_BLACK_LIST) + [
+      r'.*cpplint\.py$', r'.*git_cl_repo.*']
   output.extend(input_api.canned_checks.RunPylint(
       input_api,
       output_api,
-      source_file_filter=filter_python_sources))
+      white_list=white_list,
+      black_list=black_list))
   return output
 
 

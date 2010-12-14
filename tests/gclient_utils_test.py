@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# pylint: disable=E1101,W0403
+
 import StringIO
 
 # Fixes include path.
@@ -76,7 +78,7 @@ class CheckCallAndFilterTestCase(GclientUtilBase):
     def __init__(self, test_string):
       self.stdout = StringIO.StringIO(test_string)
     def wait(self):
-        pass
+      pass
 
   def _inner(self, args, test_string):
     cwd = 'bleh'
@@ -112,7 +114,8 @@ class CheckCallAndFilterTestCase(GclientUtilBase):
     self._inner(args, test_string)
     self.checkstdout('\n________ running \'boo foo bar\' in \'bleh\'\n'
         'ahah\naccb\nallo\naddb\n\n'
-        '________ running \'boo foo bar\' in \'bleh\'\nahah\naccb\nallo\naddb\n')
+        '________ running \'boo foo bar\' in \'bleh\'\nahah\naccb\nallo\naddb'
+        '\n')
 
   def testNoLF(self):
     # Exactly as testCheckCallAndFilterAndHeader without trailing \n

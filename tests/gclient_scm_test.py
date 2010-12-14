@@ -5,10 +5,11 @@
 
 """Unit tests for gclient_scm.py."""
 
+# pylint: disable=E1101,E1103,W0403
+
 # Import before super_mox to keep valid references.
 from os import rename
 from shutil import rmtree
-import StringIO
 from subprocess import Popen, PIPE, STDOUT
 import tempfile
 import unittest
@@ -62,7 +63,7 @@ class BaseTestCase(GCBaseTestCase, SuperMoxTestBase):
 
 class SVNWrapperTestCase(BaseTestCase):
   class OptionsObject(object):
-     def __init__(self, verbose=False, revision=None):
+    def __init__(self, verbose=False, revision=None):
       self.verbose = verbose
       self.revision = revision
       self.manually_grab_svn_rev = True
@@ -208,7 +209,6 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.path.islink(file_path).AndReturn(False)
     gclient_scm.os.path.isdir(file_path).AndReturn(True)
     gclient_scm.gclient_utils.RemoveDirectory(file_path)
-    file_list1 = []
     gclient_scm.scm.SVN.RunAndGetFileList(options.verbose,
                                           ['update', '--revision', 'BASE'],
                                           cwd=self.base_path,
@@ -340,10 +340,6 @@ class SVNWrapperTestCase(BaseTestCase):
 
   def testUpdateSingleCheckoutSVN14(self):
     options = self.Options(verbose=True)
-    file_info = {
-      'URL': self.url,
-      'Revision': 42,
-    }
 
     # Checks to make sure that we support svn co --depth.
     gclient_scm.scm.SVN.current_version = None
@@ -466,7 +462,7 @@ class GitWrapperTestCase(GCBaseTestCase, StdoutCheck, TestCaseUtils,
                          unittest.TestCase):
   """This class doesn't use pymox."""
   class OptionsObject(object):
-     def __init__(self, verbose=False, revision=None):
+    def __init__(self, verbose=False, revision=None):
       self.verbose = verbose
       self.revision = revision
       self.manually_grab_svn_rev = True
@@ -523,7 +519,8 @@ from :3
   def Options(self, *args, **kwargs):
     return self.OptionsObject(*args, **kwargs)
 
-  def CreateGitRepo(self, git_import, path):
+  @staticmethod
+  def CreateGitRepo(git_import, path):
     """Do it for real."""
     try:
       Popen(['git', 'init', '-q'], stdout=PIPE, stderr=STDOUT,
@@ -694,9 +691,9 @@ from :3
     options = self.Options()
     expected_file_list = []
     for f in ['a', 'b']:
-        file_path = join(self.base_path, f)
-        open(file_path, 'a').writelines('touched\n')
-        expected_file_list.extend([file_path])
+      file_path = join(self.base_path, f)
+      open(file_path, 'a').writelines('touched\n')
+      expected_file_list.extend([file_path])
     scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
                                 relpath=self.relpath)
     file_list = []
@@ -758,7 +755,7 @@ from :3
     scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
                                 relpath=self.relpath)
     file_path = join(self.base_path, 'b')
-    f = open(file_path, 'w').writelines('conflict\n')
+    open(file_path, 'w').writelines('conflict\n')
     exception = (
         "error: Your local changes to 'b' would be overwritten by merge.  "
         "Aborting.\n"
@@ -773,7 +770,8 @@ from :3
     scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
                                 relpath=self.relpath)
     file_path = join(self.base_path, 'b')
-    f = open(file_path, 'w').writelines('conflict\n')
+    open(file_path, 'w').writelines('conflict\n')
+    # pylint: disable=W0212
     scm._Run(['commit', '-am', 'test'], options)
     __builtin__.raw_input = lambda x: 'y'
     exception = ('Conflict while rebasing this branch.\n'

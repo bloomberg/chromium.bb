@@ -5,11 +5,10 @@
 
 """Unit tests for scm.py."""
 
-from shutil import rmtree
-import tempfile
+# pylint: disable=E1101,W0403
 
 # Fixes include path.
-from super_mox import mox, TestCaseUtils, SuperMoxTestBase
+from super_mox import SuperMoxTestBase
 
 import scm
 
@@ -171,7 +170,7 @@ class SVNTestCase(BaseSCMTestCase):
     self.assertEqual(file_info, expected)
 
   def testCaptureStatus(self):
-    text =r"""<?xml version="1.0"?>
+    text = r"""<?xml version="1.0"?>
 <status>
 <target path=".">
 <entry path="unversionned_file.txt">

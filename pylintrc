@@ -44,6 +44,7 @@ load-plugins=
 # R0901: Too many ancestors (8/7)
 # R0902: Too many instance attributes (N/7)
 # R0903: Too few public methods (N/2)
+# R0904: Too many public methods (N/20)
 # R0911: Too many return statements (N/6)
 # R0912: Too many branches (N/12)
 # R0913: Too many arguments (N/5)
@@ -58,7 +59,7 @@ load-plugins=
 # W0613: Unused argument ''
 # W0703: Catch "Exception"
 # W6501: Specify string format arguments as logging function parameters
-disable=C0103,C0111,C0302,I0011,R0401,R0801,R0901,R0902,R0903,R0911,R0912,R0913,R0914,R0915,W0122,W0141,W0142,W0402,W0511,W0603,W0613,W0703,W6501
+disable=C0103,C0111,C0302,I0011,R0401,R0801,R0901,R0902,R0903,R0904,R0911,R0912,R0913,R0914,R0915,W0122,W0141,W0142,W0402,W0511,W0603,W0613,W0703,W6501
 
 
 [REPORTS]

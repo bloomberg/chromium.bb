@@ -5,7 +5,6 @@
 
 """Simplify unit tests based on pymox."""
 
-import __builtin__
 import os
 import random
 import shutil
@@ -41,10 +40,10 @@ class TestCaseUtils(object):
   ## Some utilities for generating arbitrary arguments.
   def String(self, max_length):
     return ''.join([self._RANDOM_CHOICE(self._STRING_LETTERS)
-                    for x in xrange(self._RANDOM_RANDINT(1, max_length))])
+                    for _ in xrange(self._RANDOM_RANDINT(1, max_length))])
 
   def Strings(self, max_arg_count, max_arg_length):
-    return [self.String(max_arg_length) for x in xrange(max_arg_count)]
+    return [self.String(max_arg_length) for _ in xrange(max_arg_count)]
 
   def Args(self, max_arg_count=8, max_arg_length=16):
     return self.Strings(max_arg_count,
@@ -75,7 +74,8 @@ class TestCaseUtils(object):
     if actual_members != expected_members:
       diff = ([i for i in actual_members if i not in expected_members] +
               [i for i in expected_members if i not in actual_members])
-      print>>sys.stderr, diff
+      print >> sys.stderr, diff
+    # pylint: disable=E1101
     self.assertEqual(actual_members, expected_members)
 
   def setUp(self):
@@ -97,6 +97,7 @@ class StdoutCheck(object):
   def tearDown(self):
     try:
       # If sys.stdout was used, self.checkstdout() must be called.
+      # pylint: disable=E1101
       self.assertEquals('', sys.stdout.getvalue())
     except AttributeError:
       pass
@@ -105,6 +106,7 @@ class StdoutCheck(object):
   def checkstdout(self, expected):
     value = sys.stdout.getvalue()
     sys.stdout.close()
+    # pylint: disable=E1101
     self.assertEquals(expected, value)
 
 
@@ -113,7 +115,6 @@ class SuperMoxTestBase(TestCaseUtils, StdoutCheck, mox.MoxTestBase):
     """Patch a few functions with know side-effects."""
     TestCaseUtils.setUp(self)
     mox.MoxTestBase.setUp(self)
-    #self.mox.StubOutWithMock(__builtin__, 'open')
     os_to_mock = ('chdir', 'chown', 'close', 'closerange', 'dup', 'dup2',
       'fchdir', 'fchmod', 'fchown', 'fdopen', 'getcwd', 'getpid', 'lseek',
       'makedirs', 'mkdir', 'open', 'popen', 'popen2', 'popen3', 'popen4',
@@ -144,9 +145,9 @@ class SuperMoxTestBase(TestCaseUtils, StdoutCheck, mox.MoxTestBase):
         except TypeError:
           raise TypeError('Couldn\'t mock %s in %s' % (item, parent.__name__))
 
-  def UnMock(self, object, name):
+  def UnMock(self, obj, name):
     """Restore an object inside a test."""
     for (parent, old_child, child_name) in self.mox.stubs.cache:
-      if parent == object and child_name == name:
+      if parent == obj and child_name == name:
         setattr(parent, child_name, old_child)
         break

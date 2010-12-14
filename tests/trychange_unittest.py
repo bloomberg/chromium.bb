@@ -5,8 +5,10 @@
 
 """Unit tests for trychange.py."""
 
+# pylint: disable=E1103,W0403
+
 # Fixes include path.
-from super_mox import mox, SuperMoxTestBase
+from super_mox import SuperMoxTestBase
 
 import trychange
 

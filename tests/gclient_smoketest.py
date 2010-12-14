@@ -10,6 +10,8 @@ Shell out 'gclient' and run basic conformance tests.
 This test assumes GClientSmokeBase.URL_BASE is valid.
 """
 
+# pylint: disable=E1103,W0403
+
 import logging
 import os
 import re
@@ -127,7 +129,8 @@ class GClientSmokeBase(FakeReposTestBase):
     self.assertEquals(len(results), len(items), (stdout, items, len(results)))
     return results
 
-  def svnBlockCleanup(self, out):
+  @staticmethod
+  def svnBlockCleanup(out):
     """Work around svn status difference between svn 1.5 and svn 1.6
     I don't know why but on Windows they are reversed. So sorts the items."""
     for i in xrange(len(out)):
@@ -660,12 +663,13 @@ class GClientSmokeSVN(GClientSmokeBase):
     if not self.enabled:
       return
     self.gclient(['config', self.svn_base + 'trunk/src/'])
-    self.parseGclient(['sync', '--jobs', '1'],
-                      ['running', 'running',
-                       # This is due to the way svn update is called for a
-                       # single file when File() is used in a DEPS file.
-                       ('running', os.path.join(self.root_dir, 'src', 'file', 'other')),
-                       'running', 'running', 'running', 'running'])
+    self.parseGclient(
+        ['sync', '--jobs', '1'],
+        ['running', 'running',
+         # This is due to the way svn update is called for a
+         # single file when File() is used in a DEPS file.
+         ('running', os.path.join(self.root_dir, 'src', 'file', 'other')),
+         'running', 'running', 'running', 'running'])
 
   def testInitialCheckoutFailed(self):
     # Check that gclient can be executed from an arbitrary sub directory if the
@@ -883,9 +887,7 @@ class GClientSmokeGIT(GClientSmokeBase):
            'src/repo2/repo_renamed: %(base)srepo_3\n' %
           {
             'base': self.git_base,
-            'hash1': self.githash('repo_1', 2)[:7],
             'hash2': self.githash('repo_2', 1)[:7],
-            'hash3': self.githash('repo_3', 2)[:7],
           })
     self.check((out, '', 0), results)
     results = self.gclient(['revinfo', '--deps', 'mac', '--actual'])
@@ -1012,9 +1014,7 @@ class GClientSmokeBoth(GClientSmokeBase):
            'src/third_party/foo: %(svn_base)s/third_party/foo@1\n') % {
                'svn_base': self.svn_base + 'trunk',
                'git_base': self.git_base,
-               'hash1': self.githash('repo_1', 2)[:7],
                'hash2': self.githash('repo_2', 1)[:7],
-               'hash3': self.githash('repo_3', 2)[:7],
           }
     self.check((out, '', 0), results)
     results = self.gclient(['revinfo', '--deps', 'mac', '--actual'])
@@ -1149,10 +1149,10 @@ class GClientSmokeFromCheckout(GClientSmokeBase):
       return
     self.gclient(['sync'])
     # TODO(maruel): This is incorrect, it should run on ./ too.
-    out = self.parseGclient(
+    self.parseGclient(
         ['cleanup', '--deps', 'mac', '--verbose', '--jobs', '1'],
         [('running', join(self.root_dir, 'foo', 'bar'))])
-    out = self.parseGclient(
+    self.parseGclient(
         ['diff', '--deps', 'mac', '--verbose', '--jobs', '1'],
         [('running', join(self.root_dir, 'foo', 'bar'))])
 

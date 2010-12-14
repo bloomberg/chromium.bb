@@ -5,6 +5,9 @@
 
 """Unit tests for presubmit_support.py and presubmit_canned_checks.py."""
 
+# pylint is too confused.
+# pylint: disable=E1101,E1103,W0212,W0403
+
 import StringIO
 
 # Fixes include path.
@@ -166,7 +169,8 @@ class PresubmitUnittest(PresubmitTestsBase):
       ['D', 'boo/flap.h'],
     ]
     blat = presubmit.os.path.join(self.fake_root_dir, 'foo', 'blat.cc')
-    notfound = presubmit.os.path.join(self.fake_root_dir, 'flop', 'notfound.txt')
+    notfound = presubmit.os.path.join(
+        self.fake_root_dir, 'flop', 'notfound.txt')
     flap = presubmit.os.path.join(self.fake_root_dir, 'boo', 'flap.h')
     binary = presubmit.os.path.join(self.fake_root_dir, 'binary.dll')
     isdir = presubmit.os.path.join(self.fake_root_dir, 'isdir')
@@ -335,11 +339,11 @@ class PresubmitUnittest(PresubmitTestsBase):
     self.mox.ReplayAll()
 
     output = StringIO.StringIO()
-    input = StringIO.StringIO('y\n')
+    input_buf = StringIO.StringIO('y\n')
     change = presubmit.Change('mychange', '\n'.join(description_lines),
                               self.fake_root_dir, files, 0, 0)
-    self.failIf(presubmit.DoPresubmitChecks(change, False, True, output, input,
-                                            None, False))
+    self.failIf(presubmit.DoPresubmitChecks(
+        change, False, True, output, input_buf, None, False))
     self.assertEqual(output.getvalue().count('!!'), 2)
     self.checkstdout('Running presubmit hooks...\n')
 
@@ -355,7 +359,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     haspresubmit_path = join(self.fake_root_dir, 'haspresubmit', 'PRESUBMIT.py')
     inherit_path = presubmit.os.path.join(self.fake_root_dir,
                                           self._INHERIT_SETTINGS)
-    for i in range(2):
+    for _ in range(2):
       presubmit.os.path.isfile(inherit_path).AndReturn(False)
       presubmit.os.path.isfile(presubmit_path).AndReturn(True)
       presubmit.os.path.isfile(haspresubmit_path).AndReturn(True)
@@ -368,17 +372,17 @@ class PresubmitUnittest(PresubmitTestsBase):
     self.mox.ReplayAll()
 
     output = StringIO.StringIO()
-    input = StringIO.StringIO('n\n')  # say no to the warning
+    input_buf = StringIO.StringIO('n\n')  # say no to the warning
     change = presubmit.Change('mychange', '\n'.join(description_lines),
                               self.fake_root_dir, files, 0, 0)
-    self.failIf(presubmit.DoPresubmitChecks(change, False, True, output, input,
-                                            None, True))
+    self.failIf(presubmit.DoPresubmitChecks(
+        change, False, True, output, input_buf, None, True))
     self.assertEqual(output.getvalue().count('??'), 2)
 
     output = StringIO.StringIO()
-    input = StringIO.StringIO('y\n')  # say yes to the warning
-    self.failUnless(presubmit.DoPresubmitChecks(change, False, True, output,
-                                                input, None, True))
+    input_buf = StringIO.StringIO('y\n')  # say yes to the warning
+    self.failUnless(presubmit.DoPresubmitChecks(
+        change, False, True, output, input_buf, None, True))
     self.assertEquals(output.getvalue().count('??'), 2)
     self.checkstdout('Running presubmit hooks...\nRunning presubmit hooks...\n')
 
@@ -407,11 +411,11 @@ class PresubmitUnittest(PresubmitTestsBase):
     self.mox.ReplayAll()
 
     output = StringIO.StringIO()
-    input = StringIO.StringIO()  # should be unused
+    input_buf = StringIO.StringIO()  # should be unused
     change = presubmit.Change('mychange', '\n'.join(description_lines),
                               self.fake_root_dir, files, 0, 0)
-    self.failIf(presubmit.DoPresubmitChecks(change, False, True, output, input,
-                                            None, False))
+    self.failIf(presubmit.DoPresubmitChecks(
+        change, False, True, output, input_buf, None, False))
     self.assertEqual(output.getvalue().count('??'), 2)
     self.assertEqual(output.getvalue().count('XX!!XX'), 2)
     self.assertEqual(output.getvalue().count('(y/N)'), 0)
@@ -443,12 +447,12 @@ def CheckChangeOnCommit(input_api, output_api):
     self.mox.ReplayAll()
 
     output = StringIO.StringIO()
-    input = StringIO.StringIO('y\n')
+    input_buf = StringIO.StringIO('y\n')
     # Always fail.
     change = presubmit.Change('mychange', '\n'.join(description_lines),
                               self.fake_root_dir, files, 0, 0)
-    self.failIf(presubmit.DoPresubmitChecks(change, False, True, output, input,
-                                            DEFAULT_SCRIPT, False))
+    self.failIf(presubmit.DoPresubmitChecks(
+        change, False, True, output, input_buf, DEFAULT_SCRIPT, False))
     text = ('Warning, no presubmit.py found.\n'
             'Running default presubmit script.\n'
             '** Presubmit ERRORS **\n!!\n\n'
@@ -516,12 +520,12 @@ def CheckChangeOnCommit(input_api, output_api):
     self.mox.ReplayAll()
 
     output = StringIO.StringIO()
-    input = StringIO.StringIO('y\n')
+    input_buf = StringIO.StringIO('y\n')
     change = presubmit.Change(
         'foo', "Blah Blah\n\nSTORY=http://tracker.com/42\nBUG=boo\n",
         self.fake_root_dir, None, 0, 0)
-    self.failUnless(presubmit.DoPresubmitChecks(change, False, True, output,
-                                                input, DEFAULT_SCRIPT, False))
+    self.failUnless(presubmit.DoPresubmitChecks(
+        change, False, True, output, input_buf, DEFAULT_SCRIPT, False))
     self.assertEquals(output.getvalue(),
                       ('Warning, no presubmit.py found.\n'
                        'Running default presubmit script.\n'
@@ -817,7 +821,7 @@ class InputApiUnittest(PresubmitTestsBase):
     def FilterSourceFile(affected_file):
       return 'a' in affected_file.LocalPath()
     files = [('A', 'eeaee'), ('M', 'eeabee'), ('M', 'eebcee')]
-    for (action, item) in files:
+    for _, item in files:
       item = presubmit.os.path.join(self.fake_root_dir, item)
       presubmit.os.path.exists(item).AndReturn(True)
       presubmit.os.path.isdir(item).AndReturn(False)
@@ -839,7 +843,7 @@ class InputApiUnittest(PresubmitTestsBase):
     white_list = presubmit.InputApi.DEFAULT_BLACK_LIST + (r".*?a.*?",)
     black_list = [r".*?b.*?"]
     files = [('A', 'eeaee'), ('M', 'eeabee'), ('M', 'eebcee'), ('M', 'eecaee')]
-    for (action, item) in files:
+    for _, item in files:
       item = presubmit.os.path.join(self.fake_root_dir, item)
       presubmit.os.path.exists(item).AndReturn(True)
       presubmit.os.path.isdir(item).AndReturn(False)
@@ -928,18 +932,18 @@ class InputApiUnittest(PresubmitTestsBase):
     input_api.ReadFile(path, 'x')
 
   def testReadFileAffectedFileDenied(self):
-    file = presubmit.AffectedFile('boo', 'M', 'Unrelated')
+    fileobj = presubmit.AffectedFile('boo', 'M', 'Unrelated')
     self.mox.ReplayAll()
 
     change = presubmit.Change('foo', 'foo', self.fake_root_dir, [('M', 'AA')],
                               0, 0)
     input_api = presubmit.InputApi(
         change, presubmit.os.path.join(self.fake_root_dir, '/p'), False)
-    self.assertRaises(IOError, input_api.ReadFile, file, 'x')
+    self.assertRaises(IOError, input_api.ReadFile, fileobj, 'x')
 
   def testReadFileAffectedFileAccepted(self):
-    file = presubmit.AffectedFile('AA/boo', 'M', self.fake_root_dir)
-    presubmit.gclient_utils.FileRead(file.AbsoluteLocalPath(), 'x'
+    fileobj = presubmit.AffectedFile('AA/boo', 'M', self.fake_root_dir)
+    presubmit.gclient_utils.FileRead(fileobj.AbsoluteLocalPath(), 'x'
                                      ).AndReturn(None)
     self.mox.ReplayAll()
 
@@ -947,7 +951,7 @@ class InputApiUnittest(PresubmitTestsBase):
                               0, 0)
     input_api = presubmit.InputApi(
         change, presubmit.os.path.join(self.fake_root_dir, '/p'), False)
-    input_api.ReadFile(file, 'x')
+    input_api.ReadFile(fileobj, 'x')
 
 
 class OuputApiUnittest(PresubmitTestsBase):
@@ -989,21 +993,21 @@ class OuputApiUnittest(PresubmitTestsBase):
     self.failUnless(output.getvalue().count('?see?'))
 
     output = StringIO.StringIO()
-    input = StringIO.StringIO('y')
+    input_buf = StringIO.StringIO('y')
     warning = presubmit.OutputApi.PresubmitPromptWarning('???')
-    self.failUnless(warning._Handle(output, input))
+    self.failUnless(warning._Handle(output, input_buf))
     self.failUnless(output.getvalue().count('???'))
 
     output = StringIO.StringIO()
-    input = StringIO.StringIO('n')
+    input_buf = StringIO.StringIO('n')
     warning = presubmit.OutputApi.PresubmitPromptWarning('???')
-    self.failIf(warning._Handle(output, input))
+    self.failIf(warning._Handle(output, input_buf))
     self.failUnless(output.getvalue().count('???'))
 
     output = StringIO.StringIO()
-    input = StringIO.StringIO('\n')
+    input_buf = StringIO.StringIO('\n')
     warning = presubmit.OutputApi.PresubmitPromptWarning('???')
-    self.failIf(warning._Handle(output, input))
+    self.failIf(warning._Handle(output, input_buf))
     self.failUnless(output.getvalue().count('???'))
 
 
@@ -1064,7 +1068,7 @@ class AffectedFileUnittest(PresubmitTestsBase):
     self.failUnless(affected_file.IsDirectory())
 
   def testIsTextFile(self):
-    list = [presubmit.SvnAffectedFile('foo/blat.txt', 'M'),
+    files = [presubmit.SvnAffectedFile('foo/blat.txt', 'M'),
             presubmit.SvnAffectedFile('foo/binary.blob', 'M'),
             presubmit.SvnAffectedFile('blat/flop.txt', 'D')]
     blat = presubmit.os.path.join('foo', 'blat.txt')
@@ -1078,9 +1082,9 @@ class AffectedFileUnittest(PresubmitTestsBase):
         ).AndReturn('application/octet-stream')
     self.mox.ReplayAll()
 
-    output = filter(lambda x: x.IsTextFile(), list)
+    output = filter(lambda x: x.IsTextFile(), files)
     self.failUnless(len(output) == 1)
-    self.failUnless(list[0] == output[0])
+    self.failUnless(files[0] == output[0])
 
 
 class GclChangeUnittest(PresubmitTestsBase):
@@ -1212,7 +1216,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(len(results2), 1)
     self.assertEquals(results2[0].__class__, error_type)
 
-  def SvnPropertyTest(self, check, property, value1, value2, committing,
+  def SvnPropertyTest(self, check, property_name, value1, value2, committing,
                       error_type, use_source_file):
     change1 = presubmit.SvnChange('mychange', '', self.fake_root_dir, [], 0, 0)
     input_api1 = self.MockInputApi(change1, committing)
@@ -1225,9 +1229,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
     else:
       input_api1.AffectedFiles(include_deleted=False).AndReturn(files1)
     presubmit.scm.SVN.GetFileProperty(presubmit.normpath('foo/bar.cc'),
-                                      property).AndReturn(value1)
+                                      property_name).AndReturn(value1)
     presubmit.scm.SVN.GetFileProperty(presubmit.normpath('foo.cc'),
-                                      property).AndReturn(value1)
+                                      property_name).AndReturn(value1)
     change2 = presubmit.SvnChange('mychange', '', self.fake_root_dir, [], 0, 0)
     input_api2 = self.MockInputApi(change2, committing)
     files2 = [
@@ -1240,9 +1244,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
       input_api2.AffectedFiles(include_deleted=False).AndReturn(files2)
 
     presubmit.scm.SVN.GetFileProperty(presubmit.normpath('foo/bar.cc'),
-                                      property).AndReturn(value2)
+                                      property_name).AndReturn(value2)
     presubmit.scm.SVN.GetFileProperty(presubmit.normpath('foo.cc'),
-                                      property).AndReturn(value2)
+                                      property_name).AndReturn(value2)
     self.mox.ReplayAll()
 
     results1 = check(input_api1, presubmit.OutputApi, None)
@@ -1371,7 +1375,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
 
   def testCannedCheckLongLines(self):
-    check = lambda x,y,z: presubmit_canned_checks.CheckLongLines(x, y, 10, z)
+    check = lambda x, y, z: presubmit_canned_checks.CheckLongLines(x, y, 10, z)
     self.ContentTest(check, '', 'blah blah blah',
                      presubmit.OutputApi.PresubmitPromptWarning)
 
@@ -1386,7 +1390,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
                          'svn:eol-style', 'LF', '', False,
                          presubmit.OutputApi.PresubmitNotifyResult, True)
 
-  def _LicenseCheck(self, text, license, committing, expected_result, **kwargs):
+  def _LicenseCheck(self, text, license_text, committing, expected_result,
+      **kwargs):
     change = self.mox.CreateMock(presubmit.SvnChange)
     change.scm = 'svn'
     input_api = self.MockInputApi(change, committing)
@@ -1398,7 +1403,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
     self.mox.ReplayAll()
     result = presubmit_canned_checks.CheckLicense(
-                 input_api, presubmit.OutputApi, license, source_file_filter=42,
+                 input_api, presubmit.OutputApi, license_text,
+                 source_file_filter=42,
                  **kwargs)
     if expected_result:
       self.assertEqual(len(result), 1)
@@ -1413,11 +1419,11 @@ class CannedChecksUnittest(PresubmitTestsBase):
         "# All Rights Reserved.\n"
         "print 'foo'\n"
     )
-    license = (
+    license_text = (
         r".*? Copyright \(c\) 2037 Nobody." "\n"
         r".*? All Rights Reserved\." "\n"
     )
-    self._LicenseCheck(text, license, True, None)
+    self._LicenseCheck(text, license_text, True, None)
 
   def testCheckLicenseFailCommit(self):
     text = (
@@ -1426,11 +1432,11 @@ class CannedChecksUnittest(PresubmitTestsBase):
         "# All Rights Reserved.\n"
         "print 'foo'\n"
     )
-    license = (
+    license_text = (
         r".*? Copyright \(c\) 0007 Nobody." "\n"
         r".*? All Rights Reserved\." "\n"
     )
-    self._LicenseCheck(text, license, True,
+    self._LicenseCheck(text, license_text, True,
                        presubmit.OutputApi.PresubmitPromptWarning)
 
   def testCheckLicenseFailUpload(self):
@@ -1440,20 +1446,20 @@ class CannedChecksUnittest(PresubmitTestsBase):
         "# All Rights Reserved.\n"
         "print 'foo'\n"
     )
-    license = (
+    license_text = (
         r".*? Copyright \(c\) 0007 Nobody." "\n"
         r".*? All Rights Reserved\." "\n"
     )
-    self._LicenseCheck(text, license, False,
+    self._LicenseCheck(text, license_text, False,
                        presubmit.OutputApi.PresubmitNotifyResult)
 
   def testCheckLicenseEmptySuccess(self):
     text = ''
-    license = (
+    license_text = (
         r".*? Copyright \(c\) 2037 Nobody." "\n"
         r".*? All Rights Reserved\." "\n"
     )
-    self._LicenseCheck(text, license, True, None, accept_empty_files=True)
+    self._LicenseCheck(text, license_text, True, None, accept_empty_files=True)
 
   def testCannedCheckSvnAccidentalSubmission(self):
     modified_dir_file = 'foo/'

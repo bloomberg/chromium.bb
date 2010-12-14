@@ -28,9 +28,13 @@ def addKill():
   """Add kill() method to subprocess.Popen for python <2.6"""
   if getattr(subprocess.Popen, 'kill', None):
     return
+  # Unable to import 'module'
+  # pylint: disable=F0401
   if sys.platform == 'win32':
     def kill_win(process):
       import win32process
+      # Access to a protected member _handle of a client class
+      # pylint: disable=W0212
       return win32process.TerminateProcess(process._handle, -1)
     subprocess.Popen.kill = kill_win
   else:
@@ -169,7 +173,6 @@ def commit_svn(repo):
                 '--no-auth-cache', '--username', 'user1', '--password', 'foo'],
                cwd=repo)
   out, err = proc.communicate()
-  last_line = out.splitlines()[-1]
   match = re.search(r'(\d+)', out)
   if not match:
     raise Exception('Commit failed', out, err, proc.returncode)
@@ -267,7 +270,8 @@ class FakeRepos(object):
       logging.debug('Removing %s' % self.trial_dir())
       rmtree(self.trial_dir())
 
-  def _genTree(self, root, tree_dict):
+  @staticmethod
+  def _genTree(root, tree_dict):
     """For a dictionary of file contents, generate a filesystem."""
     if not os.path.isdir(root):
       os.makedirs(root)
@@ -292,7 +296,6 @@ class FakeRepos(object):
     try:
       check_call(['svnadmin', 'create', root])
     except OSError:
-      self.svn_enabled = False
       return False
     write(join(root, 'conf', 'svnserve.conf'),
         '[general]\n'
@@ -548,13 +551,13 @@ hooks = [
   def _commit_git(self, repo, tree):
     repo_root = join(self.git_root, repo)
     self._genTree(repo_root, tree)
-    hash = commit_git(repo_root)
+    commit_hash = commit_git(repo_root)
     if self.git_hashes[repo][-1]:
       new_tree = self.git_hashes[repo][-1][1].copy()
       new_tree.update(tree)
     else:
       new_tree = tree.copy()
-    self.git_hashes[repo].append((hash, new_tree))
+    self.git_hashes[repo].append((commit_hash, new_tree))
 
 
 class FakeReposTestBase(unittest.TestCase):

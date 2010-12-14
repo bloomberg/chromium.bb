@@ -450,17 +450,48 @@ def RunPythonUnitTests(input_api, output_api, unit_tests):
   return []
 
 
-def RunPylint(input_api, output_api, source_file_filter=None):
-  """Run pylint on python files."""
-  import warnings
+def RunPylint(input_api, output_api, white_list=None, black_list=None):
+  """Run pylint on python files.
+
+  The default white_list enforces looking only a *.py files.
+  """
+  white_list = white_list or ['.*\.py$']
+  black_list = black_list or input_api.DEFAULT_BLACK_LIST
+
+  # Only trigger if there is at least one python file affected.
+  src_filter = lambda x: input_api.FilterSourceFile(x, white_list, black_list)
+  if not input_api.AffectedSourceFiles(src_filter):
+    return []
+
   # On certain pylint/python version combination, running pylint throws a lot of
   # warning messages.
+  import warnings
   warnings.filterwarnings('ignore', category=DeprecationWarning)
   try:
-    if not source_file_filter:
-      source_file_filter = lambda f: f.LocalPath().endswith('.py')
-    files = [f.LocalPath()
-            for f in input_api.AffectedSourceFiles(source_file_filter)]
+    # We cannot use AffectedFiles here because we want to test every python
+    # file on each single python change. It's because a change in a python file
+    # can break another unmodified file.
+    # Use code similar to InputApi.FilterSourceFile()
+    def Find(filepath, filters):
+      for item in filters:
+        if input_api.re.match(item, filepath):
+          return True
+      return False
+
+    import os
+    files = []
+    for dirpath, dirnames, filenames in os.walk(input_api.PresubmitLocalPath()):
+      # Passes dirnames in black list to speed up search.
+      for item in dirnames[:]:
+        if Find(input_api.os_path.join(dirpath, item), black_list):
+          dirnames.remove(item)
+      for item in filenames:
+        filepath = input_api.os_path.join(dirpath, item)
+        if Find(filepath, white_list) and not Find(filepath, black_list):
+          files.append(filepath)
+
+    # Now that at least one python file was modified and all the python files
+    # were listed, try to run pylint.
     try:
       from pylint import lint
       if lint.Run(sorted(files)):
