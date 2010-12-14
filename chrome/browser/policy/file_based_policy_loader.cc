@@ -58,7 +58,7 @@ void FileBasedPolicyLoader::Init() {
   // the task to be forgotten. Instead, post a task to the ui thread to delay
   // the remainder of initialization until threading is fully initialized.
   BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+      BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this,
                         &FileBasedPolicyLoader::InitAfterFileThreadAvailable));
 }
@@ -115,13 +115,11 @@ void FileBasedPolicyLoader::InitAfterFileThreadAvailable() {
   if (provider()) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(this, &FileBasedPolicyLoader::InitWatcher));
-
-    ScheduleFallbackReloadTask();
+        NewRunnableMethod(this, &FileBasedPolicyLoader::InitOnFileThread));
   }
 }
 
-void FileBasedPolicyLoader::InitWatcher() {
+void FileBasedPolicyLoader::InitOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   watcher_.reset(new FilePathWatcher);
   if (!config_file_path().empty() &&
@@ -134,6 +132,8 @@ void FileBasedPolicyLoader::InitWatcher() {
   // construction of the loader and initialization of the watcher. Call reload
   // to detect if that is the case.
   Reload();
+
+  ScheduleFallbackReloadTask();
 }
 
 void FileBasedPolicyLoader::StopOnFileThread() {

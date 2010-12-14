@@ -42,9 +42,9 @@ class FileBasedPolicyLoader : public AsynchronousPolicyLoader {
   // intiialized.
   void InitAfterFileThreadAvailable();
 
-  // Creates the file path watcher and configures it watch |config_file_path_|.
-  // Must be called on the file thread.
-  void InitWatcher();
+  // Creates the file path watcher, configures it to watch |config_file_path_|
+  // and schedules the fallback reload task. Must be called on the file thread.
+  void InitOnFileThread();
 
   // Cancels file path watch notification and destroys the watcher.
   // Must be called on file thread.
