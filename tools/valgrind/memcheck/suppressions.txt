@@ -787,11 +787,11 @@
    fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
    ...
    fun:_ZN11ProfileImpl36RegisterExtensionWithRequestContextsEP9Extension
-   fun:_ZN17ExtensionService21NotifyExtensionLoadedEP9Extension
-   fun:_ZN17ExtensionService17OnExtensionLoadedEP9Extensionb
-   fun:_ZN17ExtensionService23LoadComponentExtensionsEv
-   fun:_ZN17ExtensionService17LoadAllExtensionsEv
-   fun:_ZN17ExtensionService4InitEv
+   fun:_ZN16ExtensionService21NotifyExtensionLoadedEP9Extension
+   fun:_ZN16ExtensionService17OnExtensionLoadedEP9Extensionb
+   fun:_ZN16ExtensionService23LoadComponentExtensionsEv
+   fun:_ZN16ExtensionService17LoadAllExtensionsEv
+   fun:_ZN16ExtensionService4InitEv
    fun:_ZN11ProfileImpl14InitExtensionsEv
 }
 {
@@ -1531,10 +1531,10 @@
    fun:_ZN16UserScriptMaster9StartScanEv
    fun:_ZN16UserScriptMaster7ObserveE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
    fun:_ZN19NotificationService6NotifyE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
-   fun:_ZN17ExtensionService27OnLoadedInstalledExtensionsEv
+   fun:_ZN16ExtensionService27OnLoadedInstalledExtensionsEv
    ...
-   fun:_ZN17ExtensionService17LoadAllExtensionsEv
-   fun:_ZN17ExtensionService4InitEv
+   fun:_ZN16ExtensionService17LoadAllExtensionsEv
+   fun:_ZN16ExtensionService4InitEv
 }
 {
    bug_29069b
@@ -1937,7 +1937,7 @@
    fun:_ZN22ResourceDispatcherHost10InitializeEv
    fun:_ZN18BrowserProcessImpl28CreateResourceDispatcherHostEv
    fun:_ZN18BrowserProcessImpl24resource_dispatcher_hostEv
-   fun:_ZN17ExtensionService4InitEv
+   fun:_ZN16ExtensionService4InitEv
 }
 {
    bug_40877
@@ -2699,8 +2699,8 @@
    ...
    fun:_ZNSt3mapISs8FilePathSt4lessISsESaISt4pairIKSsS0_EEE6insertESt17_Rb_tree_iteratorIS5_ERKS5_
    fun:_ZNSt3mapISs8FilePathSt4lessISsESaISt4pairIKSsS0_EEEixERS4_
-   fun:_ZN17ExtensionService15UnloadExtensionERKSs
-   fun:_ZN17ExtensionService18UninstallExtensionERKSsb
+   fun:_ZN16ExtensionService15UnloadExtensionERKSs
+   fun:_ZN16ExtensionService18UninstallExtensionERKSsb
    fun:_ZN18AutomationProvider18UninstallExtensionEiPb
 }
 {
