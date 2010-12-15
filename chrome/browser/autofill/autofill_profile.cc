@@ -19,7 +19,7 @@
 #include "chrome/browser/autofill/fax_number.h"
 #include "chrome/browser/autofill/home_address.h"
 #include "chrome/browser/autofill/home_phone_number.h"
-#include "chrome/browser/guid.h"
+#include "chrome/common/guid.h"
 #include "grit/generated_resources.h"
 
 namespace {

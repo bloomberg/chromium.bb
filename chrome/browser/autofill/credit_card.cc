@@ -14,7 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/field_types.h"
-#include "chrome/browser/guid.h"
+#include "chrome/common/guid.h"
 #include "grit/generated_resources.h"
 
 namespace {

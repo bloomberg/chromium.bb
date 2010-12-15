@@ -12,9 +12,9 @@
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/guid.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/password_manager/encryptor.h"
+#include "chrome/common/guid.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_observer_mock.h"
 #include "chrome/common/notification_registrar.h"
@@ -1385,4 +1385,3 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInOld) {
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected2.Compare(*results2[0]));
 }
-

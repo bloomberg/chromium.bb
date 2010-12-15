@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GUID_H_
-#define CHROME_BROWSER_GUID_H_
+#ifndef CHROME_COMMON_GUID_H_
+#define CHROME_COMMON_GUID_H_
 #pragma once
 
 #include <string>
@@ -29,4 +29,4 @@ std::string RandomDataToGUIDString(const uint64 bytes[2]);
 
 }  // namespace guid
 
-#endif  // CHROME_BROWSER_GUID_H_
+#endif  // CHROME_COMMON_GUID_H_

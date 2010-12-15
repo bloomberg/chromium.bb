@@ -13,7 +13,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/phone_number.h"
-#include "chrome/browser/guid.h"
+#include "chrome/common/guid.h"
 #include "grit/generated_resources.h"
 
 namespace {
