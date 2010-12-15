@@ -13,7 +13,7 @@ env['ENV']['LIB_DIR'] = env.subst('$LIB_DIR').replace('\\', '/')
 env['ENV']['STAGING_DIR'] = env.subst('$STAGING_DIR').replace('\\', '/')
 env['ENV']['DIR_TMP'] = buildout.abspath.replace('\\', '/')
 
-if sys.platform in ['cygwin', 'win32']:
+if env.Bit('windows'):
   env['ENV']['PATH'] = os.environ['PRESCONS_PATH']
   env.PrependENVPath('PATH', r'c:\cygwin\bin')
 
