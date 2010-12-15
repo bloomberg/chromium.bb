@@ -14,40 +14,28 @@
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "build/build_config.h"
-#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
-#include "ipc/ipc_channel_proxy.h"
+#include "chrome/browser/browser_message_filter.h"
 #include "ipc/ipc_platform_file.h"
 #include "webkit/glue/plugins/pepper_dir_contents.h"
 
 class Profile;
 
 // A message filter for Pepper-specific File I/O messages.
-//
-// NOTE: Contrary to most message filters, this one handles the messages (On*
-// functions) on the FILE thread instead of the IO thread: OnMessageReceived
-// forwards the mesage to the FILE thread, where it's handled by
-// OnMessageReceivedFileThread.
-class PepperFileMessageFilter : public IPC::ChannelProxy::MessageFilter {
+class PepperFileMessageFilter : public BrowserMessageFilter {
  public:
   PepperFileMessageFilter(int child_id, Profile* profile);
 
-  // IPC::ChannelProxy::MessageFilter methods:
-  virtual void OnFilterAdded(IPC::Channel* channel);
-  virtual void OnChannelConnected(int32 peer_pid);
-  virtual void OnChannelError();
-  virtual void OnChannelClosing();
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  // BrowserMessageFilter methods:
+  virtual void OverrideThreadForMessage(const IPC::Message& message,
+                                        BrowserThread::ID* thread);
+  virtual bool OnMessageReceived(const IPC::Message& message,
+                                 bool* message_was_ok);
   virtual void OnDestruct() const;
-
-  // Called from the FILE thread.
-  void Send(IPC::Message* message);
 
  private:
   friend class BrowserThread;
   friend class DeleteTask<PepperFileMessageFilter>;
   virtual ~PepperFileMessageFilter();
-  void OnMessageReceivedFileThread(const IPC::Message& message);
-  bool SendFromIOThread(IPC::Message* message);
 
   // Called on the FILE thread:
   void OnPepperOpenFile(const FilePath& path,
@@ -70,9 +58,6 @@ class PepperFileMessageFilter : public IPC::ChannelProxy::MessageFilter {
                               base::PlatformFileError* error);
 
   FilePath MakePepperPath(const FilePath& base_path);
-
-  // The process handle for the peer.
-  base::ProcessHandle handle_;
 
   // The channel associated with the renderer connection. This pointer is not
   // owned by this class.

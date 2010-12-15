@@ -13,7 +13,7 @@
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/common/child_process_host.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/pepper_file_messages.h"
 #include "ipc/ipc_platform_file.h"
 
 #if defined(OS_POSIX)
@@ -21,108 +21,40 @@
 #endif
 
 PepperFileMessageFilter::PepperFileMessageFilter(
-    int child_id, Profile* profile)
-    : handle_(base::kNullProcessHandle),
-      channel_(NULL) {
+    int child_id, Profile* profile) {
   pepper_path_ = profile->GetPath().Append(FILE_PATH_LITERAL("Pepper Data"));
 }
 
 PepperFileMessageFilter::~PepperFileMessageFilter() {
   // This function should be called on the IO thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  if (handle_)
-    base::CloseProcessHandle(handle_);
 }
 
-// Called on the IPC thread:
-void PepperFileMessageFilter::OnFilterAdded(IPC::Channel* channel) {
-  channel_ = channel;
+void PepperFileMessageFilter::OverrideThreadForMessage(
+    const IPC::Message& message,
+    BrowserThread::ID* thread) {
+  if (IPC_MESSAGE_CLASS(message) == PepperFileMsgStart)
+    *thread = BrowserThread::FILE;
 }
 
-// Called on the IPC thread:
-void PepperFileMessageFilter::OnChannelConnected(int32 peer_pid) {
-  DCHECK(!handle_) << " " << handle_;
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  if (!base::OpenProcessHandle(peer_pid, &handle_)) {
-    NOTREACHED();
-  }
-}
-
-void PepperFileMessageFilter::OnChannelError() {
-}
-
-// Called on the IPC thread:
-void PepperFileMessageFilter::OnChannelClosing() {
-  channel_ = NULL;
-}
-
-// Called on the IPC thread:
-bool PepperFileMessageFilter::OnMessageReceived(const IPC::Message& msg) {
-  switch (msg.type()) {
-    case ViewHostMsg_PepperOpenFile::ID:
-    case ViewHostMsg_PepperRenameFile::ID:
-    case ViewHostMsg_PepperDeleteFileOrDir::ID:
-    case ViewHostMsg_PepperCreateDir::ID:
-    case ViewHostMsg_PepperQueryFile::ID:
-    case ViewHostMsg_PepperGetDirContents::ID:
-      break;
-    default:
-      return false;
-  }
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(
-          this, &PepperFileMessageFilter::OnMessageReceivedFileThread, msg));
-
-  return true;
-}
-
-void PepperFileMessageFilter::OnMessageReceivedFileThread(
-    const IPC::Message& msg) {
-  bool msg_is_ok = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(PepperFileMessageFilter, msg, msg_is_ok)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PepperOpenFile, OnPepperOpenFile)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PepperRenameFile, OnPepperRenameFile)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PepperDeleteFileOrDir,
-                        OnPepperDeleteFileOrDir)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PepperCreateDir, OnPepperCreateDir)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PepperQueryFile, OnPepperQueryFile)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PepperGetDirContents,
-                        OnPepperGetDirContents)
-    IPC_MESSAGE_UNHANDLED_ERROR()
+bool PepperFileMessageFilter::OnMessageReceived(
+    const IPC::Message& message,
+    bool* message_was_ok) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP_EX(PepperFileMessageFilter, message, *message_was_ok)
+    IPC_MESSAGE_HANDLER(PepperFileMsg_OpenFile, OnPepperOpenFile)
+    IPC_MESSAGE_HANDLER(PepperFileMsg_RenameFile, OnPepperRenameFile)
+    IPC_MESSAGE_HANDLER(PepperFileMsg_DeleteFileOrDir, OnPepperDeleteFileOrDir)
+    IPC_MESSAGE_HANDLER(PepperFileMsg_CreateDir, OnPepperCreateDir)
+    IPC_MESSAGE_HANDLER(PepperFileMsg_QueryFile, OnPepperQueryFile)
+    IPC_MESSAGE_HANDLER(PepperFileMsg_GetDirContents, OnPepperGetDirContents)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
-
-  if (!msg_is_ok) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        NewRunnableFunction(
-            &BrowserRenderProcessHost::BadMessageTerminateProcess,
-            msg.type(), handle_));
-  }
+  return handled;
 }
 
 void PepperFileMessageFilter::OnDestruct() const {
   BrowserThread::DeleteOnIOThread::Destruct(this);
-}
-
-// Called on the FILE thread:
-void PepperFileMessageFilter::Send(IPC::Message* message) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-        this, &PepperFileMessageFilter::SendFromIOThread, message));
-}
-
-// Called on the IPC thread:
-bool PepperFileMessageFilter::SendFromIOThread(IPC::Message* message) {
-  if (!channel_) {
-    delete message;
-    return false;
-  }
-
-  return channel_->Send(message);
 }
 
 // Called on the FILE thread:
@@ -159,7 +91,7 @@ void PepperFileMessageFilter::OnPepperOpenFile(
 #if defined(OS_WIN)
   // Duplicate the file handle so that the renderer process can access the file.
   if (!DuplicateHandle(GetCurrentProcess(), file_handle,
-                       handle_, file, 0, false,
+                       peer_handle(), file, 0, false,
                        DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
     // file_handle is closed whether or not DuplicateHandle succeeds.
     *error = base::PLATFORM_FILE_ERROR_ACCESS_DENIED;

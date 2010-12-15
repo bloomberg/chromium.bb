@@ -14,6 +14,7 @@
 
 #include "app/surface/transport_dib.h"
 #include "base/file_util.h"
+#include "base/platform_file.h"
 #include "base/ref_counted.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/page_zoom.h"
@@ -325,6 +326,12 @@ struct ParamTraits<base::PlatformFileInfo> {
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
+};
+
+// Traits for base::PlatformFileError
+template <>
+struct SimilarTypeTraits<base::PlatformFileError> {
+  typedef int Type;
 };
 
 }  // namespace IPC

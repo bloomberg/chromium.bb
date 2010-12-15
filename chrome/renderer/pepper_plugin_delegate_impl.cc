@@ -18,6 +18,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/child_thread.h"
 #include "chrome/common/file_system/file_system_dispatcher.h"
+#include "chrome/common/pepper_file_messages.h"
 #include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
@@ -778,7 +779,7 @@ base::PlatformFileError PepperPluginDelegateImpl::OpenModuleLocalFile(
   }
   IPC::PlatformFileForTransit transit_file;
   base::PlatformFileError error;
-  IPC::Message* msg = new ViewHostMsg_PepperOpenFile(
+  IPC::Message* msg = new PepperFileMsg_OpenFile(
       full_path, flags, &error, &transit_file);
   if (!render_view_->Send(msg)) {
     *file = base::kInvalidPlatformFileValue;
@@ -798,7 +799,7 @@ base::PlatformFileError PepperPluginDelegateImpl::RenameModuleLocalFile(
     return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
   }
   base::PlatformFileError error;
-  IPC::Message* msg = new ViewHostMsg_PepperRenameFile(
+  IPC::Message* msg = new PepperFileMsg_RenameFile(
       full_path_from, full_path_to, &error);
   if (!render_view_->Send(msg)) {
     return base::PLATFORM_FILE_ERROR_FAILED;
@@ -815,7 +816,7 @@ base::PlatformFileError PepperPluginDelegateImpl::DeleteModuleLocalFileOrDir(
     return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
   }
   base::PlatformFileError error;
-  IPC::Message* msg = new ViewHostMsg_PepperDeleteFileOrDir(
+  IPC::Message* msg = new PepperFileMsg_DeleteFileOrDir(
       full_path, recursive, &error);
   if (!render_view_->Send(msg)) {
     return base::PLATFORM_FILE_ERROR_FAILED;
@@ -831,7 +832,7 @@ base::PlatformFileError PepperPluginDelegateImpl::CreateModuleLocalDir(
     return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
   }
   base::PlatformFileError error;
-  IPC::Message* msg = new ViewHostMsg_PepperCreateDir(full_path, &error);
+  IPC::Message* msg = new PepperFileMsg_CreateDir(full_path, &error);
   if (!render_view_->Send(msg)) {
     return base::PLATFORM_FILE_ERROR_FAILED;
   }
@@ -847,7 +848,7 @@ base::PlatformFileError PepperPluginDelegateImpl::QueryModuleLocalFile(
     return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
   }
   base::PlatformFileError error;
-  IPC::Message* msg = new ViewHostMsg_PepperQueryFile(full_path, info, &error);
+  IPC::Message* msg = new PepperFileMsg_QueryFile(full_path, info, &error);
   if (!render_view_->Send(msg)) {
     return base::PLATFORM_FILE_ERROR_FAILED;
   }
@@ -863,7 +864,7 @@ base::PlatformFileError PepperPluginDelegateImpl::GetModuleLocalDirContents(
   }
   base::PlatformFileError error;
   IPC::Message* msg =
-      new ViewHostMsg_PepperGetDirContents(full_path, contents, &error);
+      new PepperFileMsg_GetDirContents(full_path, contents, &error);
   if (!render_view_->Send(msg)) {
     return base::PLATFORM_FILE_ERROR_FAILED;
   }
