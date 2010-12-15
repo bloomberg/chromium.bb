@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
 #include "views/controls/textfield/native_textfield_gtk.h"
@@ -14,6 +15,7 @@
 #include "views/controls/textfield/gtk_views_entry.h"
 #include "views/controls/textfield/gtk_views_textview.h"
 #include "views/controls/textfield/textfield.h"
+#include "views/widget/widget_gtk.h"
 
 namespace views {
 
@@ -361,6 +363,34 @@ gboolean NativeTextfieldGtk::OnKeyPressEvent(GdkEventKey* event) {
 }
 
 // static
+gboolean NativeTextfieldGtk::OnActivateHandler(
+    GtkWidget* widget,
+    NativeTextfieldGtk* textfield) {
+  return textfield->OnActivate();
+}
+
+gboolean NativeTextfieldGtk::OnActivate() {
+  GdkEvent* event = gtk_get_current_event();
+  if (!event || event->type != GDK_KEY_PRESS)
+    return false;
+
+  GdkEventKey* key_event = reinterpret_cast<GdkEventKey*>(event);
+  gboolean handled = false;
+
+  Textfield::Controller* controller = textfield_->GetController();
+  if (controller) {
+    Textfield::Keystroke ks(key_event);
+    handled = controller->HandleKeystroke(textfield_, ks);
+  }
+
+  WidgetGtk* widget = static_cast<WidgetGtk*>(GetWidget());
+  if (!handled && widget)
+    handled = widget->HandleKeyboardEvent(key_event);
+
+  return handled;
+}
+
+// static
 gboolean NativeTextfieldGtk::OnChangedHandler(
     GtkWidget* widget,
     NativeTextfieldGtk* textfield) {
@@ -407,8 +437,11 @@ void NativeTextfieldGtk::NativeControlCreated(GtkWidget* widget) {
     g_signal_connect(widget, "changed",
                      G_CALLBACK(OnChangedHandler), this);
   }
-  g_signal_connect(widget, "key-press-event",
-                   G_CALLBACK(OnKeyPressEventHandler), this);
+  g_signal_connect_after(widget, "key-press-event",
+                         G_CALLBACK(OnKeyPressEventHandler), this);
+  // In order to properly trigger Accelerators bound to VKEY_RETURN, we need to
+  // send an event when the widget gets the activate signal.
+  g_signal_connect(widget, "activate", G_CALLBACK(OnActivateHandler), this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

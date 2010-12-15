@@ -63,6 +63,10 @@ class NativeTextfieldGtk : public NativeControlGtk,
       GdkEventKey* event,
       NativeTextfieldGtk* textfield);
   gboolean OnKeyPressEvent(GdkEventKey* event);
+  static gboolean OnActivateHandler(
+      GtkWidget* entry,
+      NativeTextfieldGtk* textfield);
+  gboolean OnActivate();
   static gboolean OnChangedHandler(
       GtkWidget* entry,
       NativeTextfieldGtk* textfield);
