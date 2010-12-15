@@ -128,8 +128,8 @@ TEST_F(ExceptionHandlerTest, InProcess) {
   EXPECT_EQ(0, WEXITSTATUS(ret));
 }
 
-static bool ChildMDCallback(const char *dump_dir, const char *file_name,
-			    void *context, bool success) {
+static bool DumpNameMDCallback(const char *dump_dir, const char *file_name,
+                               void *context, bool success) {
   ExceptionHandlerTest *self = reinterpret_cast<ExceptionHandlerTest*>(context);
   if (dump_dir && file_name) {
     self->lastDumpName = dump_dir;
@@ -138,6 +138,47 @@ static bool ChildMDCallback(const char *dump_dir, const char *file_name,
     self->lastDumpName += ".dmp";
   }
   return true;
+}
+
+TEST_F(ExceptionHandlerTest, WriteMinidump) {
+  ExceptionHandler eh(tempDir.path, NULL, DumpNameMDCallback, this, true, NULL);
+  ASSERT_TRUE(eh.WriteMinidump());
+
+  // Ensure that minidump file exists and is > 0 bytes.
+  ASSERT_FALSE(lastDumpName.empty());
+  struct stat st;
+  ASSERT_EQ(0, stat(lastDumpName.c_str(), &st));
+  ASSERT_LT(0, st.st_size);
+
+  // The minidump should not contain an exception stream.
+  Minidump minidump(lastDumpName);
+  ASSERT_TRUE(minidump.Read());
+
+  MinidumpException* exception = minidump.GetException();
+  EXPECT_FALSE(exception);
+}
+
+TEST_F(ExceptionHandlerTest, WriteMinidumpWithException) {
+  ExceptionHandler eh(tempDir.path, NULL, DumpNameMDCallback, this, true, NULL);
+  ASSERT_TRUE(eh.WriteMinidump(true));
+
+  // Ensure that minidump file exists and is > 0 bytes.
+  ASSERT_FALSE(lastDumpName.empty());
+  struct stat st;
+  ASSERT_EQ(0, stat(lastDumpName.c_str(), &st));
+  ASSERT_LT(0, st.st_size);
+
+  // The minidump should contain an exception stream.
+  Minidump minidump(lastDumpName);
+  ASSERT_TRUE(minidump.Read());
+
+  MinidumpException* exception = minidump.GetException();
+  ASSERT_TRUE(exception);
+  const MDRawExceptionStream* raw_exception = exception->exception();
+  ASSERT_TRUE(raw_exception);
+
+  EXPECT_EQ(MD_EXCEPTION_MAC_BREAKPOINT,
+            raw_exception->exception_record.exception_code);
 }
 
 TEST_F(ExceptionHandlerTest, DumpChildProcess) {
@@ -188,7 +229,7 @@ TEST_F(ExceptionHandlerTest, DumpChildProcess) {
   bool result = ExceptionHandler::WriteMinidumpForChild(child_task,
 							child_thread,
 							tempDir.path,
-							ChildMDCallback,
+							DumpNameMDCallback,
 							this);
   ASSERT_EQ(true, result);
 
