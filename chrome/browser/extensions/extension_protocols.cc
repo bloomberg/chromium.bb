@@ -32,15 +32,15 @@
 
 namespace {
 
-class URLRequestResourceBundleJob : public URLRequestSimpleJob {
+class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
  public:
   explicit URLRequestResourceBundleJob(net::URLRequest* request,
       const FilePath& filename, int resource_id)
-          : URLRequestSimpleJob(request),
+          : net::URLRequestSimpleJob(request),
             filename_(filename),
             resource_id_(resource_id) { }
 
-  // URLRequestSimpleJob method.
+  // Overridden from URLRequestSimpleJob:
   virtual bool GetData(std::string* mime_type,
                        std::string* charset,
                        std::string* data) const {

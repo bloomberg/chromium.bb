@@ -21,7 +21,7 @@ class BlobStorageController;
 
 // A job subclass that implements a protocol to inspect the internal
 // state of blob registry.
-class ViewBlobInternalsJob : public URLRequestSimpleJob {
+class ViewBlobInternalsJob : public net::URLRequestSimpleJob {
  public:
   ViewBlobInternalsJob(net::URLRequest* request,
                        BlobStorageController* blob_storage_controller);

@@ -153,8 +153,9 @@ namespace appcache {
 
 ViewAppCacheInternalsJob::ViewAppCacheInternalsJob(
     net::URLRequest* request,
-    AppCacheService* service) : URLRequestSimpleJob(request),
-                                appcache_service_(service) {
+    AppCacheService* service)
+    : net::URLRequestSimpleJob(request),
+      appcache_service_(service) {
 }
 
 ViewAppCacheInternalsJob::~ViewAppCacheInternalsJob() {

@@ -102,7 +102,7 @@ namespace webkit_blob {
 
 ViewBlobInternalsJob::ViewBlobInternalsJob(
     net::URLRequest* request, BlobStorageController* blob_storage_controller)
-    : URLRequestSimpleJob(request),
+    : net::URLRequestSimpleJob(request),
       blob_storage_controller_(blob_storage_controller),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
 }
@@ -130,7 +130,7 @@ bool ViewBlobInternalsJob::IsRedirectResponse(GURL* location,
 }
 
 void ViewBlobInternalsJob::Kill() {
-  URLRequestSimpleJob::Kill();
+  net::URLRequestSimpleJob::Kill();
   method_factory_.RevokeAll();
 }
 
