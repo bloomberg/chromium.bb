@@ -96,6 +96,9 @@ class BrowserList {
   // 2. An update exe is present in the install folder.
   static bool CanRestartForUpdate();
 
+  // Called from Browser::Exit.
+  static void Exit();
+
   // Closes all browsers and exits.  This is equivalent to
   // CloseAllBrowsers(true) on platforms where the application exits when no
   // more windows are remaining.  On other platforms (the Mac), this will
@@ -162,6 +165,11 @@ class BrowserList {
  private:
   // Helper method to remove a browser instance from a list of browsers
   static void RemoveBrowserFrom(Browser* browser, BrowserVector* browser_list);
+  static void NotifyAndTerminate();
+#if defined(OS_CHROMEOS)
+  static bool NeedBeforeUnloadFired();
+  static bool PendingDownloads();
+#endif
 
   static BrowserVector browsers_;
   static BrowserVector last_active_browsers_;

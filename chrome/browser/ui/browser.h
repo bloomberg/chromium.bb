@@ -321,6 +321,10 @@ class Browser : public TabHandlerDelegate,
 
   // In-progress download termination handling /////////////////////////////////
 
+  // Are normal and/or incognito downloads in progress?
+  void CheckDownloadsInProgress(bool* normal_downloads,
+                                bool* incognito_downloads);
+
   // Called when the user has decided whether to proceed or not with the browser
   // closure.  |cancel_downloads| is true if the downloads should be canceled
   // and the browser closed, false if the browser should stay open and the
@@ -707,6 +711,9 @@ class Browser : public TabHandlerDelegate,
                              int index);
   virtual void TabPinnedStateChanged(TabContentsWrapper* contents, int index);
   virtual void TabStripEmpty();
+
+  // Figure out if there are tabs that have beforeunload handlers.
+  bool TabsNeedBeforeUnloadFired();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, NoTabsInPopups);

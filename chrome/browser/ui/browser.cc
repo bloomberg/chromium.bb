@@ -131,10 +131,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include <gdk/gdk.h>  // For GdkScreen
 #include "chrome/browser/chromeos/boot_times_loader.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/options/language_config_view.h"
 #endif
 
@@ -821,6 +818,17 @@ void Browser::FormatTitleForDisplay(string16* title) {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, OnBeforeUnload handling:
 
+bool Browser::TabsNeedBeforeUnloadFired() {
+  if (tabs_needing_before_unload_fired_.empty()) {
+    for (int i = 0; i < tab_count(); ++i) {
+      TabContents* contents = GetTabContentsAt(i);
+      if (contents->NeedToFireBeforeUnload())
+        tabs_needing_before_unload_fired_.insert(contents);
+    }
+  }
+  return !tabs_needing_before_unload_fired_.empty();
+}
+
 bool Browser::ShouldCloseWindow() {
   if (!CanCloseWithInProgressDownloads())
     return false;
@@ -830,13 +838,7 @@ bool Browser::ShouldCloseWindow() {
 
   is_attempting_to_close_browser_ = true;
 
-  for (int i = 0; i < tab_count(); ++i) {
-    TabContents* contents = GetTabContentsAt(i);
-    if (contents->NeedToFireBeforeUnload())
-      tabs_needing_before_unload_fired_.insert(contents);
-  }
-
-  if (tabs_needing_before_unload_fired_.empty())
+  if (!TabsNeedBeforeUnloadFired())
     return IsClosingPermitted();
 
   ProcessPendingTabs();
@@ -1486,14 +1488,8 @@ void Browser::Exit() {
   // Write /tmp/uptime-logout-started as well.
   const char kLogoutStarted[] = "logout-started";
   chromeos::BootTimesLoader::Get()->RecordCurrentStats(kLogoutStarted);
-
-  if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
-    chromeos::CrosLibrary::Get()->GetLoginLibrary()->StopSession("");
-    return;
-  }
-  // If running the Chrome OS build, but we're not on the device, fall through
 #endif
-  BrowserList::CloseAllBrowsersAndExit();
+  BrowserList::Exit();
 }
 
 void Browser::BookmarkCurrentPage() {
@@ -3898,6 +3894,32 @@ void Browser::ClearUnloadState(TabContents* tab) {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, In-progress download termination handling (private):
 
+void Browser::CheckDownloadsInProgress(bool* normal_downloads_are_present,
+                                       bool* incognito_downloads_are_present) {
+  *normal_downloads_are_present = false;
+  *incognito_downloads_are_present = false;
+
+  // If there are no download in-progress, our job is done.
+  DownloadManager* download_manager = NULL;
+  // But first we need to check for the existance of the download manager, as
+  // GetDownloadManager() will unnecessarily try to create one if it does not
+  // exist.
+  if (profile()->HasCreatedDownloadManager())
+    download_manager = profile()->GetDownloadManager();
+  if (profile()->IsOffTheRecord()) {
+    // Browser is incognito and so download_manager if present is for incognito
+    // downloads.
+    *incognito_downloads_are_present =
+        (download_manager && download_manager->in_progress_count() != 0);
+    // Check original profile.
+    if (profile()->GetOriginalProfile()->HasCreatedDownloadManager())
+      download_manager = profile()->GetOriginalProfile()->GetDownloadManager();
+  }
+
+  *normal_downloads_are_present =
+      (download_manager && download_manager->in_progress_count() != 0);
+}
+
 bool Browser::CanCloseWithInProgressDownloads() {
   if (cancel_download_confirmation_state_ != NOT_PROMPTED) {
     if (cancel_download_confirmation_state_ == WAITING_FOR_RESPONSE) {
@@ -3910,25 +3932,8 @@ bool Browser::CanCloseWithInProgressDownloads() {
   // Indicated that normal (non-incognito) downloads are pending.
   bool normal_downloads_are_present = false;
   bool incognito_downloads_are_present = false;
-  // If there are no download in-progress, our job is done.
-  DownloadManager* download_manager = NULL;
-  // But first we need to check for the existance of the download manager, as
-  // GetDownloadManager() will unnecessarily try to create one if it does not
-  // exist.
-  if (profile_->HasCreatedDownloadManager())
-    download_manager = profile_->GetDownloadManager();
-  if (profile_->IsOffTheRecord()) {
-    // Browser is incognito and so download_manager if present is for incognito
-    // downloads.
-    incognito_downloads_are_present =
-        (download_manager && download_manager->in_progress_count() != 0);
-    // Check original profile.
-    if (profile_->GetOriginalProfile()->HasCreatedDownloadManager())
-      download_manager = profile_->GetOriginalProfile()->GetDownloadManager();
-  }
-
-  normal_downloads_are_present =
-      (download_manager && download_manager->in_progress_count() != 0);
+  CheckDownloadsInProgress(&normal_downloads_are_present,
+                      &incognito_downloads_are_present);
   if (!normal_downloads_are_present && !incognito_downloads_are_present)
     return true;
 
@@ -3952,16 +3957,20 @@ bool Browser::CanCloseWithInProgressDownloads() {
   for (BrowserList::const_iterator iter = BrowserList::begin();
        iter != BrowserList::end(); ++iter) {
     // Don't count this browser window or any other in the process of closing.
-    if (*iter == this || (*iter)->is_attempting_to_close_browser_)
+    // Only consider normal browser windows, not popups.
+    Browser* const browser = *iter;
+    if (browser == this
+        || browser->is_attempting_to_close_browser_
+        || browser->type() != Browser::TYPE_NORMAL)
       continue;
 
     // Verify that this is not the last non-incognito or incognito browser,
     // depending on the pending downloads.
     if (normal_downloads_are_present && !profile()->IsOffTheRecord() &&
-        (*iter)->profile()->IsOffTheRecord())
+        browser->profile()->IsOffTheRecord())
       continue;
     if (incognito_downloads_are_present && profile()->IsOffTheRecord() &&
-        !(*iter)->profile()->IsOffTheRecord())
+        !browser->profile()->IsOffTheRecord())
       continue;
 
     // We test the original profile, because an incognito browser window keeps

@@ -45,6 +45,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/login_library.h"
 #endif
 
 using base::Time;
@@ -244,6 +246,12 @@ void Shutdown() {
   }
 
   UnregisterURLRequestChromeJob();
+
+#if defined(OS_CHROMEOS)
+  if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
+    chromeos::CrosLibrary::Get()->GetLoginLibrary()->StopSession("");
+  }
+#endif
 }
 
 void ReadLastShutdownFile(
