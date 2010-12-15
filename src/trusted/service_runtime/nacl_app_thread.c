@@ -60,7 +60,6 @@ void WINAPI NaClThreadLauncher(void *state) {
 
 int NaClAppThreadCtor(struct NaClAppThread  *natp,
                       struct NaClApp        *nap,
-                      int                   is_privileged,
                       uintptr_t             usr_entry,
                       uintptr_t             usr_stack_ptr,
                       uint32_t              tls_idx,
@@ -84,8 +83,6 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
   if (!NaClCondVarCtor(&natp->cv)) {
     goto cleanup_mutex;
   }
-
-  natp->is_privileged = is_privileged;
 
   if (!NaClClosureResultCtor(&natp->result)) {
     goto cleanup_cv;
@@ -170,7 +167,6 @@ void NaClAppThreadDtor(struct NaClAppThread *natp) {
 
 int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
                               struct NaClApp        *nap,
-                              int                   is_privileged,
                               uintptr_t             usr_entry,
                               uintptr_t             usr_stack_ptr,
                               uintptr_t             sys_tdb_base,
@@ -207,7 +203,6 @@ int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
 
   return NaClAppThreadCtor(natp,
                            nap,
-                           is_privileged,
                            usr_entry,
                            usr_stack_ptr,
                            tls_idx,

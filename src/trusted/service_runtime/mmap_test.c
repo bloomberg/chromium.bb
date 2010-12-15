@@ -35,8 +35,6 @@ static void InitThread(struct NaClApp *nap, struct NaClAppThread *natp) {
     ASSERT(0);
   }
 
-  natp->is_privileged = 0;
-
   effp = (struct NaClDescEffectorLdr *) malloc(sizeof *effp);
   ASSERT_NE(effp, NULL);
 

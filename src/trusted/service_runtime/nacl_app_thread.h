@@ -38,8 +38,6 @@ struct NaClAppThread {
   struct NaClMutex          mu;
   struct NaClCondVar        cv;
 
-  int                       is_privileged;  /* can make "special" syscalls? */
-
   struct NaClClosureResult  result;
 
   uint32_t                  sysret;
@@ -148,7 +146,6 @@ struct NaClAppThread {
 
 int NaClAppThreadCtor(struct NaClAppThread  *natp,
                       struct NaClApp        *nap,
-                      int                   is_privileged,
                       uintptr_t             entry,
                       uintptr_t             stack_ptr,
                       uint32_t              tls_idx,
@@ -166,7 +163,6 @@ void NaClAppThreadDtor(struct NaClAppThread *natp);
  */
 int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
                               struct NaClApp        *nap,
-                              int                   is_privileged,
                               uintptr_t             usr_entry,
                               uintptr_t             usr_stack_ptr,
                               uintptr_t             sys_tdb_base,
