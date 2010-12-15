@@ -21,11 +21,11 @@ using WebKit::WebURL;
 using WebKit::WebView;
 
 WebPreferences::WebPreferences()
-    : standard_font_family(L"Times New Roman"),
-      fixed_font_family(L"Courier New"),
-      serif_font_family(L"Times New Roman"),
-      sans_serif_font_family(L"Arial"),
-      cursive_font_family(L"Script"),
+    : standard_font_family(ASCIIToUTF16("Times New Roman")),
+      fixed_font_family(ASCIIToUTF16("Courier New")),
+      serif_font_family(ASCIIToUTF16("Times New Roman")),
+      sans_serif_font_family(ASCIIToUTF16("Arial")),
+      cursive_font_family(ASCIIToUTF16("Script")),
       fantasy_font_family(),  // Not sure what to use on Windows.
       default_font_size(16),
       default_fixed_font_size(13),
@@ -73,12 +73,12 @@ WebPreferences::~WebPreferences() {
 
 void WebPreferences::Apply(WebView* web_view) const {
   WebSettings* settings = web_view->settings();
-  settings->setStandardFontFamily(WideToUTF16Hack(standard_font_family));
-  settings->setFixedFontFamily(WideToUTF16Hack(fixed_font_family));
-  settings->setSerifFontFamily(WideToUTF16Hack(serif_font_family));
-  settings->setSansSerifFontFamily(WideToUTF16Hack(sans_serif_font_family));
-  settings->setCursiveFontFamily(WideToUTF16Hack(cursive_font_family));
-  settings->setFantasyFontFamily(WideToUTF16Hack(fantasy_font_family));
+  settings->setStandardFontFamily(standard_font_family);
+  settings->setFixedFontFamily(fixed_font_family);
+  settings->setSerifFontFamily(serif_font_family);
+  settings->setSansSerifFontFamily(sans_serif_font_family);
+  settings->setCursiveFontFamily(cursive_font_family);
+  settings->setFantasyFontFamily(fantasy_font_family);
   settings->setDefaultFontSize(default_font_size);
   settings->setDefaultFixedFontSize(default_fixed_font_size);
   settings->setMinimumFontSize(minimum_font_size);

@@ -1181,12 +1181,12 @@ int32 LayoutTestController::CppVariantToInt32(const CppVariant& value) {
   return 0;
 }
 
-std::wstring LayoutTestController::CppVariantToWstring(
+string16 LayoutTestController::CppVariantToString16(
     const CppVariant& value) {
   if (value.isString())
-    return UTF8ToWide(value.ToString());
+    return UTF8ToUTF16(value.ToString());
   LogErrorToConsole("Invalid value for preference. Expected string value.");
-  return std::wstring();
+  return string16();
 }
 
 void LayoutTestController::overridePreference(
@@ -1196,17 +1196,17 @@ void LayoutTestController::overridePreference(
     CppVariant value = args[1];
     WebPreferences* preferences = shell_->GetWebPreferences();
     if (key == "WebKitStandardFont")
-      preferences->standard_font_family = CppVariantToWstring(value);
+      preferences->standard_font_family = CppVariantToString16(value);
     else if (key == "WebKitFixedFont")
-      preferences->fixed_font_family = CppVariantToWstring(value);
+      preferences->fixed_font_family = CppVariantToString16(value);
     else if (key == "WebKitSerifFont")
-      preferences->serif_font_family = CppVariantToWstring(value);
+      preferences->serif_font_family = CppVariantToString16(value);
     else if (key == "WebKitSansSerifFont")
-      preferences->sans_serif_font_family = CppVariantToWstring(value);
+      preferences->sans_serif_font_family = CppVariantToString16(value);
     else if (key == "WebKitCursiveFont")
-      preferences->cursive_font_family = CppVariantToWstring(value);
+      preferences->cursive_font_family = CppVariantToString16(value);
     else if (key == "WebKitFantasyFont")
-      preferences->fantasy_font_family = CppVariantToWstring(value);
+      preferences->fantasy_font_family = CppVariantToString16(value);
     else if (key == "WebKitDefaultFontSize")
       preferences->default_font_size = CppVariantToInt32(value);
     else if (key == "WebKitDefaultFixedFontSize")

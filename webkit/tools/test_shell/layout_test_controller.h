@@ -17,6 +17,7 @@
 #include <queue>
 
 #include "base/timer.h"
+#include "base/string16.h"
 #include "webkit/glue/cpp_bound_class.h"
 
 class TestShell;
@@ -396,7 +397,7 @@ class LayoutTestController : public CppBoundClass {
   // Support for overridePreference.
   bool CppVariantToBool(const CppVariant&);
   int32 CppVariantToInt32(const CppVariant&);
-  std::wstring CppVariantToWstring(const CppVariant&);
+  string16 CppVariantToString16(const CppVariant&);
 
   void LogErrorToConsole(const std::string& text);
 

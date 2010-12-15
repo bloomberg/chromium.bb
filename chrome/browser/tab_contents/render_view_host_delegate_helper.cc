@@ -197,19 +197,19 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
   WebPreferences web_prefs;
 
   web_prefs.fixed_font_family =
-      UTF8ToWide(prefs->GetString(prefs::kWebKitFixedFontFamily));
+      UTF8ToUTF16(prefs->GetString(prefs::kWebKitFixedFontFamily));
   web_prefs.serif_font_family =
-      UTF8ToWide(prefs->GetString(prefs::kWebKitSerifFontFamily));
+      UTF8ToUTF16(prefs->GetString(prefs::kWebKitSerifFontFamily));
   web_prefs.sans_serif_font_family =
-      UTF8ToWide(prefs->GetString(prefs::kWebKitSansSerifFontFamily));
+      UTF8ToUTF16(prefs->GetString(prefs::kWebKitSansSerifFontFamily));
   if (prefs->GetBoolean(prefs::kWebKitStandardFontIsSerif))
     web_prefs.standard_font_family = web_prefs.serif_font_family;
   else
     web_prefs.standard_font_family = web_prefs.sans_serif_font_family;
   web_prefs.cursive_font_family =
-      UTF8ToWide(prefs->GetString(prefs::kWebKitCursiveFontFamily));
+      UTF8ToUTF16(prefs->GetString(prefs::kWebKitCursiveFontFamily));
   web_prefs.fantasy_font_family =
-      UTF8ToWide(prefs->GetString(prefs::kWebKitFantasyFontFamily));
+      UTF8ToUTF16(prefs->GetString(prefs::kWebKitFantasyFontFamily));
 
   web_prefs.default_font_size =
       prefs->GetInteger(prefs::kWebKitDefaultFontSize);

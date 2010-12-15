@@ -13,6 +13,8 @@
 
 #include <string>
 #include <vector>
+
+#include "base/string16.h"
 #include "googleurl/src/gurl.h"
 
 namespace WebKit {
@@ -20,12 +22,12 @@ class WebView;
 }
 
 struct WebPreferences {
-  std::wstring standard_font_family;
-  std::wstring fixed_font_family;
-  std::wstring serif_font_family;
-  std::wstring sans_serif_font_family;
-  std::wstring cursive_font_family;
-  std::wstring fantasy_font_family;
+  string16 standard_font_family;
+  string16 fixed_font_family;
+  string16 serif_font_family;
+  string16 sans_serif_font_family;
+  string16 cursive_font_family;
+  string16 fantasy_font_family;
   int default_font_size;
   int default_fixed_font_size;
   int minimum_font_size;

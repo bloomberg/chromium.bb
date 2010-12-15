@@ -765,13 +765,13 @@ TEST_F(TabContentsTest, WebKitPrefs) {
 
   // These should still be the default values.
 #if defined(OS_MACOSX)
-  const wchar_t kDefaultFont[] = L"Times";
+  const char kDefaultFont[] = "Times";
 #elif defined(OS_CHROMEOS)
-  const wchar_t kDefaultFont[] = L"Tinos";
+  const char kDefaultFont[] = "Tinos";
 #else
-  const wchar_t kDefaultFont[] = L"Times New Roman";
+  const char kDefaultFont[] = "Times New Roman";
 #endif
-  EXPECT_EQ(kDefaultFont, webkit_prefs.standard_font_family);
+  EXPECT_EQ(ASCIIToUTF16(kDefaultFont), webkit_prefs.standard_font_family);
   EXPECT_TRUE(webkit_prefs.javascript_enabled);
 }
 
