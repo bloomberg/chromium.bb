@@ -22,7 +22,10 @@
  *
  * @constructor
  */
-function TabSwitcherView(tabHandleView) {
+function TabSwitcherView(tabHandleDivId) {
+  document.getElementById(tabHandleDivId).classList.add('tab-switcher-view');
+  var tabHandleView = new DivView(tabHandleDivId);
+
   View.call(this);
   this.tabHandleView_ = tabHandleView;
   this.tabs_ = [];
@@ -122,7 +125,8 @@ TabSwitcherView.prototype.switchToTab = function(id, params) {
 
   // Update data needed by newly active tab, as it may be
   // significantly out of date.
-  g_browser.checkForUpdatedInfo();
+  if (typeof g_browser != 'undefined' && g_browser.checkForUpdatedInfo)
+    g_browser.checkForUpdatedInfo();
 };
 
 TabSwitcherView.prototype.getAllTabIds = function() {

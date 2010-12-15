@@ -280,6 +280,7 @@ std::string AboutAbout() {
         kAllAboutPaths[i] == kConflictsPath ||
 #endif
         kAllAboutPaths[i] == kFlagsPath ||
+        kAllAboutPaths[i] == kGpuPath ||
         kAllAboutPaths[i] == kNetInternalsPath ||
         kAllAboutPaths[i] == kPluginsPath) {
       html.append("<li><a href='chrome://");
@@ -721,110 +722,6 @@ std::string VersionNumberToString(uint32 value) {
   return base::IntToString(hi) + "." + base::IntToString(low);
 }
 
-namespace {
-
-#if defined(OS_WIN)
-
-// Output DxDiagNode tree as HTML tables and nested HTML unordered list
-// elements.
-void DxDiagNodeToHTML(std::string* output, const DxDiagNode& node) {
-  output->append("<table>\n");
-
-  for (std::map<std::string, std::string>::const_iterator it =
-           node.values.begin();
-       it != node.values.end();
-       ++it) {
-     output->append("<tr><td><strong>");
-     output->append(EscapeForHTML(it->first));
-     output->append("</strong></td><td>");
-     output->append(EscapeForHTML(it->second));
-     output->append("</td></tr>\n");
-  }
-
-  output->append("</table>\n<ul>\n");
-
-  for (std::map<std::string, DxDiagNode>::const_iterator it =
-           node.children.begin();
-       it != node.children.end();
-       ++it) {
-     output->append("<li><strong>");
-     output->append(EscapeForHTML(it->first));
-     output->append("</strong>");
-
-     DxDiagNodeToHTML(output, it->second);
-
-     output->append("</li>\n");
-  }
-
-  output->append("</ul>\n");
-}
-
-#endif  // OS_WIN
-
-}
-
-std::string AboutGpu() {
-  const GPUInfo& gpu_info = GpuProcessHostUIShim::GetInstance()->gpu_info();
-
-  std::string html;
-
-  html.append("<html><head><title>About GPU</title></head>\n");
-
-  if (gpu_info.progress() != GPUInfo::kComplete) {
-    GpuProcessHostUIShim::GetInstance()->CollectGraphicsInfoAsynchronously();
-
-    // If it's not fully initialized yet, set a timeout to reload the page.
-    html.append("<body onload=\"setTimeout('window.location.reload(true)',");
-    html.append("2000)\">\n");
-  } else {
-    html.append("<body>\n");
-  }
-
-  html.append("<h2>GPU Information</h2>\n");
-
-  if (gpu_info.progress() == GPUInfo::kUninitialized) {
-    html.append("<p>Retrieving GPU information . . .</p>\n");
-  } else {
-    html.append("<table><tr>");
-    html.append("<td><strong>Initialization time</strong></td><td>");
-    html.append(base::Int64ToString(
-        gpu_info.initialization_time().InMilliseconds()));
-    html.append("</td></tr><tr><td>");
-    html.append("<strong>Vendor ID</strong></td><td>");
-    html.append(base::StringPrintf("0x%04x", gpu_info.vendor_id()));
-    html.append("</td></tr><tr><td>");
-    html.append("<strong>Device ID</strong></td><td>");
-    html.append(base::StringPrintf("0x%04x", gpu_info.device_id()));
-    html.append("</td></tr><tr><td>");
-    html.append("<strong>Driver Version</strong></td><td>");
-    html.append(WideToASCII(gpu_info.driver_version()).c_str());
-    html.append("</td></tr><tr><td>");
-    html.append("<strong>Pixel Shader Version</strong></td><td>");
-    html.append(VersionNumberToString(gpu_info.pixel_shader_version()).c_str());
-    html.append("</td></tr><tr><td>");
-    html.append("<strong>Vertex Shader Version</strong></td><td>");
-    html.append(VersionNumberToString(
-        gpu_info.vertex_shader_version()).c_str());
-    html.append("</td></tr><tr><td>");
-    html.append("<strong>GL Version</strong></td><td>");
-    html.append(VersionNumberToString(gpu_info.gl_version()).c_str());
-    html.append("</td></tr></table>");
-
-#if defined(OS_WIN)
-    if (gpu_info.progress() != GPUInfo::kComplete) {
-      html.append("<p>Retrieving DirectX Diagnostics . . .</p>\n");
-    } else {
-      html.append("<h2>DirectX Diagnostics</h2>");
-      DxDiagNodeToHTML(&html, gpu_info.dx_diagnostics());
-    }
-#endif
-  }
-
-  html.append("</body></html>");
-
-  return html;
-}
-
 // AboutSource -----------------------------------------------------------------
 
 AboutSource::AboutSource()
@@ -909,8 +806,6 @@ void AboutSource::StartDataRequest(const std::string& path_raw,
 #endif
   } else if (path == kSyncPath) {
     response = AboutSync();
-  } else if (path == kGpuPath) {
-    response = AboutGpu();
   }
 
   FinishDataRequest(response, request_id);
@@ -1141,6 +1036,12 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
   // Rewrite about:net-internals/* URLs to chrome://net-internals/*
   if (StartsWithAboutSpecifier(*url, chrome::kAboutNetInternalsURL)) {
     *url = RemapAboutURL(chrome::kNetworkViewInternalsURL, *url);
+    return true;
+  }
+
+  // Rewrite about:gpu/* URLs to chrome://gpu-internals/*
+  if (StartsWithAboutSpecifier(*url, chrome::kAboutGpuURL)) {
+    *url = RemapAboutURL(chrome::kGpuInternalsURL, *url);
     return true;
   }
 

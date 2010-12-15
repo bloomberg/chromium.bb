@@ -54,6 +54,7 @@ const char kAboutCrashURL[] = "about:crash";
 const char kAboutCreditsURL[] = "about:credits";
 const char kAboutDNSURL[] = "about:dns";
 const char kAboutFlagsURL[] = "about:flags";
+const char kAboutGpuURL[] = "about:gpu";
 const char kAboutGpuCrashURL[] = "about:gpucrash";
 const char kAboutGpuHangURL[] = "about:gpuhang";
 const char kAboutHangURL[] = "about:hang";
@@ -113,6 +114,7 @@ const char kChromeUIDownloadsHost[] = "downloads";
 const char kChromeUIExtensionsHost[] = "extensions";
 const char kChromeUIFavIconHost[] = "favicon";
 const char kChromeUIFlagsHost[] = "flags";
+const char kChromeUIGpuInternalsHost[] = "gpu-internals";
 const char kChromeUIHistoryHost[] = "history";
 const char kChromeUIHistory2Host[] = "history2";
 const char kChromeUIInspectorHost[] = "inspector";
@@ -158,6 +160,9 @@ const char kCloudPrintSetupHost[] = "cloudprintsetup";
 
 const char kNetworkViewInternalsURL[] = "chrome://net-internals/";
 const char kNetworkViewCacheURL[] = "chrome://view-http-cache/";
+
+// GPU sub pages
+const char kGpuInternalsURL[] = "chrome://gpu-internals/";
 
 // Option sub pages.
 const char kAdvancedOptionsSubPage[] =  "advanced";

@@ -80,6 +80,8 @@ function DivView(divId) {
   View.call(this);
 
   this.node_ = document.getElementById(divId);
+  if (!this.node_)
+    throw new Error('Element ' + divId + ' not found');
 
   // Initialize the default values to those of the DIV.
   this.width_ = this.node_.offsetWidth;

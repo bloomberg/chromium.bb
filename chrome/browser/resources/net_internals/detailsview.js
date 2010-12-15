@@ -14,7 +14,7 @@ function DetailsView(tabHandlesContainerId,
                      timelineTabId,
                      logBoxId,
                      timelineBoxId) {
-  TabSwitcherView.call(this, new DivView(tabHandlesContainerId));
+  TabSwitcherView.call(this, tabHandlesContainerId);
 
   this.logView_ = new DetailsLogView(logBoxId);
   this.timelineView_ = new DetailsTimelineView(timelineBoxId);

@@ -1,0 +1,91 @@
+<!DOCTYPE HTML>
+<html>
+<!--
+Copyright (c) 2010 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<head i18n-values="dir:textdirection;">
+<link rel="stylesheet" href="dom_ui.css">
+<link rel="stylesheet" href="net_internals/tabswitcherview.css">
+<style>
+* {
+  box-sizing: border-box;
+}
+body {
+  font-family: sans-serif;
+}
+</style>
+<link rel="stylesheet" href="gpu_internals/info_view.css">
+<script src="chrome://resources/js/cr.js"></script>
+<script src="net_internals/util.js"></script>
+<script src="net_internals/view.js"></script>
+<script src="net_internals/tabswitcherview.js"></script>
+<script src="gpu_internals/browser_bridge.js"></script>
+<script src="gpu_internals/info_view.js"></script>
+
+
+<script>
+var browser = null;
+
+/**
+ * Main entry point. called once the page has loaded.
+ */
+function onLoad() {
+  browserBridge = new gpu.BrowserBridge();
+
+  // Create a view which will display general information
+  // about the gpu.
+  var infoView = new gpu.InfoView('info-view');
+
+  // Create a view which lets you tab between the different sub-views.
+  var categoryTabSwitcher =
+      new TabSwitcherView('category-tab-handles');
+
+  // Populate the main tabs.
+  categoryTabSwitcher.addTab('info-tab', infoView, false);
+
+  // Build a map from the anchor name of each tab handle to its 'tab ID'.
+  // We will consider navigations to the #hash as a switch tab request.
+  var anchorMap = {};
+  var tabIds = categoryTabSwitcher.getAllTabIds();
+  for (var i = 0; i < tabIds.length; i++) {
+    var aNode = document.getElementById(tabIds[i]);
+    anchorMap[aNode.hash] = tabIds[i];
+  }
+  // Default the empty hash to the info tab.
+  anchorMap['#'] = anchorMap[''] = 'info-tab';
+
+  window.onhashchange = function() {
+    var tabId = anchorMap[window.location.hash];
+    if (tabId)
+      categoryTabSwitcher.switchToTab(tabId);
+  };
+
+  // Make this category tab widget the primary view, that fills the whole page.
+  var windowView = new WindowView(categoryTabSwitcher);
+
+  // Trigger initial layout.
+  windowView.resetGeometry();
+
+  // Select the initial view based on the current URL.
+  window.onhashchange();
+}
+
+document.addEventListener('DOMContentLoaded', onLoad);
+
+</script>
+</head>
+<body>
+
+  <!-- Tab switcher for main categories. -->
+  <div id=category-tab-handles>
+    <ul>
+      <li><a href="#info" id="info-tab">GPU Info</a></li>
+    </ul>
+  </div>
+
+  <!-- Tabs -->
+  <include src="gpu_internals/info_view.html">
+</body>
+</html>

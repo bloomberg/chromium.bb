@@ -1,0 +1,28 @@
+/*
+Copyright (c) 2010 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+*/
+#info-view {
+  padding: 10px;
+}
+
+#info-view h3 {
+  margin-bottom: 5px;
+}
+
+#info-view .row-title {
+  font-weight: bold;
+}
+
+#info-view table {
+  border-collapse: collapse;
+}
+
+#info-view table,
+#info-view th,
+#info-view td {
+  border: 1px solid #777;
+  padding-right: 4px;
+  padding-left: 4px;
+}

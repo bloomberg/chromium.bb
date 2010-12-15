@@ -147,54 +147,6 @@ body {
   font-size: 10px;
 }
 
-#categoryTabHandles ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-#categoryTabHandles {
-  border-bottom: 1px solid #555;
-  background: #aaa;
-  overflow: hidden;
-}
-
-#categoryTabHandles li {
-  float: left;
-  margin-left: 5px;
-}
-
-#categoryTabHandles a {
-  text-decoration: none;
-  text-align: center;
-  display: inline-block;
-  margin-top: 4px;
-  padding: 5px 10px 3px 10px;
-  border-top-right-radius: 8px;
-  border-top-left-radius: 8px;
-  background-clip: border-box;
-  background: #ccc;
-}
-
-#categoryTabHandles a:hover {
-  background: #eee;
-}
-
-#categoryTabHandles a:visited,
-#categoryTabHandles a  {
-  color: blue;
-}
-
-#categoryTabHandles .selected {
-  background: white;
-}
-
-#categoryTabHandles a.selected {
-  position:relative;
-  top: 3px;
-  color: black;
-}
-
 #detailsLogBox,
 #detailsTimelineBox,
 #httpCacheTabContent,

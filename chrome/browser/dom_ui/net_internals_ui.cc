@@ -32,6 +32,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
@@ -319,6 +320,9 @@ NetInternalsHTMLSource::NetInternalsHTMLSource()
 void NetInternalsHTMLSource::StartDataRequest(const std::string& path,
                                               bool is_off_the_record,
                                               int request_id) {
+  DictionaryValue localized_strings;
+  SetFontAndTextDirection(&localized_strings);
+
   // The provided "path" may contain a fragment, or query section. We only
   // care about the path itself, and will disregard anything else.
   std::string filename =
@@ -329,13 +333,20 @@ void NetInternalsHTMLSource::StartDataRequest(const std::string& path,
   // Note that users can type anything into the address bar, though, so we must
   // handle arbitrary input.
   if (filename.empty() || filename == "index.html") {
-    scoped_refptr<RefCountedStaticMemory> bytes(
-        ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+    base::StringPiece html(
+        ResourceBundle::GetSharedInstance().GetRawDataResource(
             IDR_NET_INTERNALS_INDEX_HTML));
-    if (bytes && bytes->front()) {
-      SendResponse(request_id, bytes);
-      return;
-    }
+    std::string full_html(html.data(), html.size());
+    jstemplate_builder::AppendJsonHtml(&localized_strings, &full_html);
+    jstemplate_builder::AppendI18nTemplateSourceHtml(&full_html);
+    jstemplate_builder::AppendI18nTemplateProcessHtml(&full_html);
+    jstemplate_builder::AppendJsTemplateSourceHtml(&full_html);
+
+    scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
+    html_bytes->data.resize(full_html.size());
+    std::copy(full_html.begin(), full_html.end(), html_bytes->data.begin());
+    SendResponse(request_id, html_bytes);
+    return;
   }
 
   const std::string data_string("<p style='color:red'>Failed to read resource" +

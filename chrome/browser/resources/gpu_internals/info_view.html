@@ -1,0 +1,34 @@
+<!--
+Copyright (c) 2010 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<div id=info-view>
+  <h3>Chrome Version</h3>
+  <div id="client-info"></div>
+  <h3>Driver Information</h3>
+  <div id="basic-info"></div>
+
+  <h3>Diagnostics</h3>
+  <div id="diagnostics">None</div>
+
+  <!-- templates -->
+  <div style="display:none">
+    <div id="info-view-table-template">
+      <table id="info-view-table">
+        <tr jsselect="value">
+          <td jsdisplay="!(value instanceof Array)">
+            <span class="row-title" jscontent="description">title</span>
+          </td>
+          <td jsdisplay="!(value instanceof Array)">
+            <span jscontent="value">value</span>
+          </td>
+          <td jsdisplay="value instanceof Array" colspan=2>
+            <span jscontent="description" class="row-title"></span>
+            <div transclude="info-view-table-template">
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>

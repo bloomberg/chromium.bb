@@ -107,8 +107,7 @@ function onLoaded() {
   }
 
   // Create a view which lets you tab between the different sub-views.
-  var categoryTabSwitcher =
-      new TabSwitcherView(new DivView('categoryTabHandles'));
+  var categoryTabSwitcher = new TabSwitcherView('categoryTabHandles');
 
   // Populate the main tabs.
   categoryTabSwitcher.addTab('eventsTab', eventsView, false);

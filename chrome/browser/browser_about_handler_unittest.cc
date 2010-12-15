@@ -42,6 +42,12 @@ TEST(BrowserAboutHandlerTest, WillHandleBrowserAboutURL) {
         true
       },
       {
+        GURL(std::string(chrome::kAboutGpuURL) + "/jupiter"),
+        GURL(std::string(chrome::kGpuInternalsURL) + "jupiter"),
+        false,
+        true
+      },
+      {
         GURL(std::string(chrome::kAboutAppCacheInternalsURL) + "/earth"),
         GURL(std::string(chrome::kAppCacheViewInternalsURL) + "earth"),
         false,

@@ -11,6 +11,7 @@
 #include "chrome/browser/dom_ui/constrained_html_ui.h"
 #include "chrome/browser/dom_ui/downloads_ui.h"
 #include "chrome/browser/dom_ui/devtools_ui.h"
+#include "chrome/browser/dom_ui/gpu_internals_ui.h"
 #include "chrome/browser/dom_ui/history_ui.h"
 #include "chrome/browser/dom_ui/history2_ui.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
@@ -159,6 +160,8 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
   if (url.host() == chrome::kChromeUILoginHost)
     return &NewDOMUI<chromeos::LoginUI>;
 #endif
+  if (url.host() == chrome::kChromeUIGpuInternalsHost)
+    return &NewDOMUI<GpuInternalsUI>;
   if (url.host() == chrome::kChromeUINetInternalsHost)
     return &NewDOMUI<NetInternalsUI>;
   if (url.host() == chrome::kChromeUIPluginsHost)
