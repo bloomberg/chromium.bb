@@ -2014,6 +2014,15 @@ void RenderViewHost::TranslatePage(int page_id,
                                    const std::string& translate_script,
                                    const std::string& source_lang,
                                    const std::string& target_lang) {
+  // Ideally we'd have a better way to uniquely identify form control elements,
+  // but we don't have that yet.  So before start translation, we clear the
+  // current form and re-parse it in AutoFillManager first to get the new
+  // labels.
+  RenderViewHostDelegate::AutoFill* autofill_delegate =
+      delegate_->GetAutoFillDelegate();
+  if (autofill_delegate)
+    autofill_delegate->Reset();
+
   Send(new ViewMsg_TranslatePage(routing_id(), page_id, translate_script,
                                  source_lang, target_lang));
 }

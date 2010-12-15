@@ -57,13 +57,11 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
                                     const webkit_glue::FormField& field,
                                     int unique_id);
   virtual void ShowAutoFillDialog();
+  virtual void Reset();
 
   // Called by the AutoFillCCInfoBarDelegate when the user interacts with the
   // infobar.
   virtual void OnInfoBarClosed(bool should_save);
-
-  // Resets the stored form data.
-  virtual void Reset();
 
   // AutoFillDownloadManager::Observer implementation:
   virtual void OnLoadedAutoFillHeuristics(const std::string& heuristic_xml);

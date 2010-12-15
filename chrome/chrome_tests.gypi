@@ -313,6 +313,8 @@
         'browser/ui/views/browser_keyboard_accessibility_test_win.cc',
         'browser/ui/views/find_bar_host_interactive_uitest.cc',
         'browser/ui/views/tabs/tab_dragging_test.cc',
+        'common/net/test_url_fetcher_factory.cc',
+        'common/net/test_url_fetcher_factory.h',
         'test/in_process_browser_test.cc',
         'test/in_process_browser_test.h',
         'test/interactive_ui/fast_shutdown_interactive_uitest.cc',
