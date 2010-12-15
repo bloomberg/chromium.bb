@@ -194,9 +194,9 @@ bool FormStructure::EncodeQueryRequest(const ScopedVector<FormStructure>& forms,
 // static
 void FormStructure::ParseQueryResponse(const std::string& response_xml,
                                        const std::vector<FormStructure*>& forms,
-                                       UploadRequired* upload_required) {
-  autofill_metrics::LogServerQueryMetric(
-      autofill_metrics::QUERY_RESPONSE_RECEIVED);
+                                       UploadRequired* upload_required,
+                                       const AutoFillMetrics& metric_logger) {
+  metric_logger.Log(AutoFillMetrics::QUERY_RESPONSE_RECEIVED);
 
   // Parse the field types from the server response to the query.
   std::vector<AutoFillFieldType> field_types;
@@ -206,8 +206,7 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
   if (!parse_handler.succeeded())
     return;
 
-  autofill_metrics::LogServerQueryMetric(
-      autofill_metrics::QUERY_RESPONSE_PARSED);
+  metric_logger.Log(AutoFillMetrics::QUERY_RESPONSE_PARSED);
 
   bool heuristics_detected_fillable_field = false;
   bool query_response_overrode_heuristics = false;
@@ -250,17 +249,17 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
     form->UpdateAutoFillCount();
   }
 
-  autofill_metrics::ServerQueryMetricType metric_type;
+  AutoFillMetrics::ServerQueryMetric metric;
   if (query_response_overrode_heuristics) {
     if (heuristics_detected_fillable_field) {
-      metric_type = autofill_metrics::QUERY_RESPONSE_OVERRODE_LOCAL_HEURISTICS;
+      metric = AutoFillMetrics::QUERY_RESPONSE_OVERRODE_LOCAL_HEURISTICS;
     } else {
-      metric_type = autofill_metrics::QUERY_RESPONSE_WITH_NO_LOCAL_HEURISTICS;
+      metric = AutoFillMetrics::QUERY_RESPONSE_WITH_NO_LOCAL_HEURISTICS;
     }
   } else {
-    metric_type = autofill_metrics::QUERY_RESPONSE_MATCHED_LOCAL_HEURISTICS;
+    metric = AutoFillMetrics::QUERY_RESPONSE_MATCHED_LOCAL_HEURISTICS;
   }
-  autofill_metrics::LogServerQueryMetric(metric_type);
+  metric_logger.Log(metric);
 }
 
 std::string FormStructure::FormSignature() const {

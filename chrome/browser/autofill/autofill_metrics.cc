@@ -6,13 +6,22 @@
 
 #include "base/metrics/histogram.h"
 
-namespace autofill_metrics {
+AutoFillMetrics::AutoFillMetrics() {
+}
 
-void LogServerQueryMetric(ServerQueryMetricType type) {
-  DCHECK(type < NUM_SERVER_QUERY_METRICS);
+AutoFillMetrics::~AutoFillMetrics() {
+}
 
-  UMA_HISTOGRAM_ENUMERATION("AutoFill.ServerQueryResponse", type,
+void AutoFillMetrics::Log(ServerQueryMetric metric) const {
+  DCHECK(metric < NUM_SERVER_QUERY_METRICS);
+
+  UMA_HISTOGRAM_ENUMERATION("AutoFill.ServerQueryResponse", metric,
                             NUM_SERVER_QUERY_METRICS);
 }
 
-}  // namespace autofill_metrics
+void AutoFillMetrics::Log(QualityMetric metric) const {
+  DCHECK(metric < NUM_QUALITY_METRICS);
+
+  UMA_HISTOGRAM_ENUMERATION("AutoFill.Quality", metric,
+                            NUM_QUALITY_METRICS);
+}

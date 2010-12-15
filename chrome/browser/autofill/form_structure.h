@@ -31,6 +31,8 @@ enum UploadRequired {
   USE_UPLOAD_RATES
 };
 
+class AutoFillMetrics;
+
 // FormStructure stores a single HTML form together with the values entered
 // in the fields along with additional information needed by AutoFill.
 class FormStructure {
@@ -55,7 +57,8 @@ class FormStructure {
   // same as the one passed to EncodeQueryRequest when constructing the query.
   static void ParseQueryResponse(const std::string& response_xml,
                                  const std::vector<FormStructure*>& forms,
-                                 UploadRequired* upload_required);
+                                 UploadRequired* upload_required,
+                                 const AutoFillMetrics& metric_logger);
 
   // The unique signature for this form, composed of the target url domain,
   // the form name, and the form field names in a 64-bit hash.

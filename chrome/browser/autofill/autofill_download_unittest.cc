@@ -8,15 +8,30 @@
 #include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_download.h"
+#include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
 #include "chrome/test/testing_profile.h"
 #include "net/url_request/url_request_status.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
 #include "webkit/glue/form_data.h"
 
 using webkit_glue::FormData;
 using WebKit::WebInputElement;
+
+namespace {
+
+class MockAutoFillMetrics : public AutoFillMetrics {
+ public:
+  MockAutoFillMetrics() {}
+  MOCK_CONST_METHOD1(Log, void(ServerQueryMetric metric));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockAutoFillMetrics);
+};
+
+}  // namespace
 
 // This tests AutoFillDownloadManager. AutoFillDownloadTestHelper implements
 // AutoFillDownloadManager::Observer and creates an instance of
@@ -85,8 +100,6 @@ class AutoFillDownloadTestHelper : public AutoFillDownloadManager::Observer {
   TestingProfile profile;
   AutoFillDownloadManager download_manager;
 };
-
-namespace {
 
 TEST(AutoFillDownloadTest, QueryAndUploadTest) {
   MessageLoopForUI message_loop;
@@ -173,7 +186,10 @@ TEST(AutoFillDownloadTest, QueryAndUploadTest) {
   form_structures.push_back(form_structure);
 
   // Request with id 0.
-  EXPECT_TRUE(helper.download_manager.StartQueryRequest(form_structures));
+  MockAutoFillMetrics mock_metric_logger;
+  EXPECT_CALL(mock_metric_logger, Log(AutoFillMetrics::QUERY_SENT)).Times(1);
+  EXPECT_TRUE(helper.download_manager.StartQueryRequest(form_structures,
+                                                        mock_metric_logger));
   // Set upload to 100% so requests happen.
   helper.download_manager.SetPositiveUploadRate(1.0);
   helper.download_manager.SetNegativeUploadRate(1.0);
@@ -258,7 +274,9 @@ TEST(AutoFillDownloadTest, QueryAndUploadTest) {
   EXPECT_EQ(NULL, fetcher);
 
   // Request with id 3.
-  EXPECT_TRUE(helper.download_manager.StartQueryRequest(form_structures));
+  EXPECT_CALL(mock_metric_logger, Log(AutoFillMetrics::QUERY_SENT)).Times(1);
+  EXPECT_TRUE(helper.download_manager.StartQueryRequest(form_structures,
+                                                        mock_metric_logger));
   fetcher = factory.GetFetcherByID(3);
   ASSERT_TRUE(fetcher);
   fetcher->set_backoff_delay(
@@ -274,7 +292,9 @@ TEST(AutoFillDownloadTest, QueryAndUploadTest) {
   helper.responses_.pop_front();
 
   // Query requests should be ignored for the next 10 seconds.
-  EXPECT_FALSE(helper.download_manager.StartQueryRequest(form_structures));
+  EXPECT_CALL(mock_metric_logger, Log(AutoFillMetrics::QUERY_SENT)).Times(0);
+  EXPECT_FALSE(helper.download_manager.StartQueryRequest(form_structures,
+                                                         mock_metric_logger));
   fetcher = factory.GetFetcherByID(4);
   EXPECT_EQ(NULL, fetcher);
 
@@ -304,5 +324,3 @@ TEST(AutoFillDownloadTest, QueryAndUploadTest) {
   // Make sure consumer of URLFetcher does the right thing.
   URLFetcher::set_factory(NULL);
 }
-
-}  // namespace

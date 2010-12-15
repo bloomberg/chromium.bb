@@ -67,7 +67,8 @@ void AutoFillDownloadManager::SetObserver(
 }
 
 bool AutoFillDownloadManager::StartQueryRequest(
-    const ScopedVector<FormStructure>& forms) {
+    const ScopedVector<FormStructure>& forms,
+    const AutoFillMetrics& metric_logger) {
   if (next_query_request_ > base::Time::Now()) {
     // We are in back-off mode: do not do the request.
     return false;
@@ -79,7 +80,7 @@ bool AutoFillDownloadManager::StartQueryRequest(
     return false;
 
   request_data.request_type = AutoFillDownloadManager::REQUEST_QUERY;
-  autofill_metrics::LogServerQueryMetric(autofill_metrics::QUERY_SENT);
+  metric_logger.Log(AutoFillMetrics::QUERY_SENT);
 
   return StartRequest(form_xml, request_data);
 }

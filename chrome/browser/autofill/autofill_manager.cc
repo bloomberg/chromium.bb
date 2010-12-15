@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_cc_infobar_delegate.h"
 #include "chrome/browser/autofill/autofill_dialog.h"
+#include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/autofill/select_control_handler.h"
@@ -128,6 +129,7 @@ AutoFillManager::AutoFillManager(TabContents* tab_contents)
       personal_data_(NULL),
       download_manager_(tab_contents_->profile()),
       disable_download_manager_requests_(false),
+      metric_logger_(new AutoFillMetrics),
       cc_infobar_(NULL) {
   DCHECK(tab_contents);
 
@@ -174,12 +176,17 @@ void AutoFillManager::FormSubmitted(const FormData& form) {
   // Grab a copy of the form data.
   upload_form_structure_.reset(new FormStructure(form));
 
+  // Disregard forms that we wouldn't ever autofill in the first place.
+  if (!upload_form_structure_->ShouldBeParsed(true))
+    return;
+
+  DeterminePossibleFieldTypesForUpload();
+  // TODO(isherman): Consider uploading to server here rather than in
+  // HandleSubmit().
+
   if (!upload_form_structure_->IsAutoFillable(true))
     return;
 
-  // Determine the possible field types and upload the form structure to the
-  // PersonalDataManager.
-  DeterminePossibleFieldTypes(upload_form_structure_.get());
   HandleSubmit();
 }
 
@@ -398,7 +405,8 @@ void AutoFillManager::OnLoadedAutoFillHeuristics(
   UploadRequired upload_required;
   FormStructure::ParseQueryResponse(heuristic_xml,
                                     form_structures_.get(),
-                                    &upload_required);
+                                    &upload_required,
+                                    *metric_logger_);
 }
 
 void AutoFillManager::OnUploadedAutoFillHeuristics(
@@ -425,13 +433,38 @@ bool AutoFillManager::IsAutoFillEnabled() const {
   return prefs->GetBoolean(prefs::kAutoFillEnabled);
 }
 
-void AutoFillManager::DeterminePossibleFieldTypes(
-    FormStructure* form_structure) {
-  for (size_t i = 0; i < form_structure->field_count(); i++) {
-    const AutoFillField* field = form_structure->field(i);
+void AutoFillManager::DeterminePossibleFieldTypesForUpload() {
+  for (size_t i = 0; i < upload_form_structure_->field_count(); i++) {
+    const AutoFillField* field = upload_form_structure_->field(i);
     FieldTypeSet field_types;
     personal_data_->GetPossibleFieldTypes(field->value(), &field_types);
-    form_structure->set_possible_types(i, field_types);
+    DCHECK(!field_types.empty());
+    upload_form_structure_->set_possible_types(i, field_types);
+
+    if (field->form_control_type() == ASCIIToUTF16("select-one")) {
+      // TODO(isherman): <select> fields don't support |is_autofilled()|. Since
+      // this is heavily relied upon by our metrics, we just don't log anything
+      // for all <select> fields. Better to have less data than misleading data.
+      continue;
+    }
+
+    // Log various quality metrics.
+    metric_logger_->Log(AutoFillMetrics::FIELD_SUBMITTED);
+    if (field_types.find(EMPTY_TYPE) == field_types.end() &&
+        field_types.find(UNKNOWN_TYPE) == field_types.end()) {
+      if (field->is_autofilled())
+         metric_logger_->Log(AutoFillMetrics::FIELD_AUTOFILLED);
+      else
+         metric_logger_->Log(AutoFillMetrics::FIELD_AUTOFILL_FAILED);
+
+      // TODO(isherman): Other things we might want to log here:
+      // * Did the field's heuristic type match the PDM type?
+      // * Per Vadim's email, a combination of (1) whether heuristics fired,
+      //   (2) whether the server returned something interesting, (3) whether
+      //   the user filled the field
+      // * Whether the server type matches the heursitic type
+      //   - Perhaps only if at least one of the types is not unknown/no data.
+    }
   }
 }
 
@@ -495,7 +528,8 @@ AutoFillManager::AutoFillManager()
     : tab_contents_(NULL),
       personal_data_(NULL),
       download_manager_(NULL),
-      disable_download_manager_requests_(false),
+      disable_download_manager_requests_(true),
+      metric_logger_(new AutoFillMetrics),
       cc_infobar_(NULL) {
 }
 
@@ -504,9 +538,15 @@ AutoFillManager::AutoFillManager(TabContents* tab_contents,
     : tab_contents_(tab_contents),
       personal_data_(personal_data),
       download_manager_(NULL),
-      disable_download_manager_requests_(false),
+      disable_download_manager_requests_(true),
+      metric_logger_(new AutoFillMetrics),
       cc_infobar_(NULL) {
   DCHECK(tab_contents);
+}
+
+void AutoFillManager::set_metric_logger(
+    const AutoFillMetrics* metric_logger) {
+  metric_logger_.reset(metric_logger);
 }
 
 bool AutoFillManager::GetHost(const std::vector<AutoFillProfile*>& profiles,
@@ -709,8 +749,10 @@ void AutoFillManager::ParseForms(const std::vector<FormData>& forms) {
   }
 
   // If none of the forms were parsed, no use querying the server.
-  if (!form_structures_.empty() && !disable_download_manager_requests_)
-    download_manager_.StartQueryRequest(form_structures_);
+  if (!form_structures_.empty() && !disable_download_manager_requests_) {
+    download_manager_.StartQueryRequest(form_structures_,
+                                        *metric_logger_);
+  }
 
   for (std::vector<FormStructure *>::const_iterator iter =
            non_queryable_forms.begin();
