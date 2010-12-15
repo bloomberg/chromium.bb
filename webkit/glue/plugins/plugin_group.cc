@@ -199,6 +199,7 @@ bool PluginGroup::Match(const WebPluginInfo& plugin) const {
   return false;
 }
 
+/* static */
 Version* PluginGroup::CreateVersionFromString(const string16& version_string) {
   // Remove spaces and ')' from the version string,
   // Replace any instances of 'r', ',' or '(' with a dot.

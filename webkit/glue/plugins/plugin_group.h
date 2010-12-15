@@ -136,6 +136,10 @@ class PluginGroup {
   // minimum version.
   void DisableOutdatedPlugins();
 
+  // Parse a version string as used by a plug-in. This method is more lenient
+  // in accepting weird version strings than Version::GetFromString().
+  static Version* CreateVersionFromString(const string16& version_string);
+
  private:
   typedef std::map<std::string, PluginGroup*> PluginMap;
 
@@ -175,8 +179,6 @@ class PluginGroup {
               const std::string& identifier);
 
   void InitFrom(const PluginGroup& other);
-
-  Version* CreateVersionFromString(const string16& version_string);
 
   // Set the description and version for this plugin group from the
   // given plug-in.
