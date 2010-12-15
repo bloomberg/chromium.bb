@@ -111,7 +111,7 @@ class PasswordTest(pyauto.PyUITest):
     self.assertEquals(1, len(self.GetSavedPasswords()))
     self.AppendTab(pyauto.GURL(creds1['logout_url']))
 
-    creds2 = self.GetPrivateInfo()['etouchqa_google_account']
+    creds2 = self.GetPrivateInfo()['test_google_account_2']
     test_utils.GoogleAccountsLogin(
         self, creds2['username'], creds2['password'], tab_index=1)
     self.assertTrue(self.WaitForInfobarCount(1, tab_index=1))
