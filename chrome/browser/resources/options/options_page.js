@@ -241,11 +241,16 @@ cr.define('options', function() {
     // Set up the overlay sheet. Clicks on the visible part of the parent page
     // should close the overlay, not fall through to the parent page.
     var self = this;
-    $('subpage-sheet-container').onclick = function(event) {
+    var subpageContainer = $('subpage-sheet-container');
+    subpageContainer.onclick = function(event) {
       if (!$('subpage-sheet').contains(event.target))
         self.closeSubPage();
       event.stopPropagation();
     }
+    subpageContainer.onkeydown = function(e) {
+      if (e.keyCode == 27)  // Esc
+        self.closeSubPage();
+    };
   };
 
   /**
