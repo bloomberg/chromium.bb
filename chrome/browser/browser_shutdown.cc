@@ -28,7 +28,6 @@
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/plugin_process_host.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
@@ -135,10 +134,8 @@ void Shutdown() {
   g_browser_process->shutdown_event()->Signal();
 
   PrefService* prefs = g_browser_process->local_state();
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  PrefService* user_prefs = profile_manager->GetDefaultProfile()->GetPrefs();
 
-  chrome_browser_net::SavePredictorStateForNextStartupAndTrim(user_prefs);
+  chrome_browser_net::SavePredictorStateForNextStartupAndTrim(prefs);
 
   MetricsService* metrics = g_browser_process->metrics_service();
   if (metrics) {

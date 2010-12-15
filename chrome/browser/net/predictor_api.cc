@@ -133,9 +133,12 @@ void OnTheRecord(bool enable) {
     g_browser_process->io_thread()->ChangedToOnTheRecord();
 }
 
+void RegisterPrefs(PrefService* local_state) {
+  local_state->RegisterListPref(prefs::kDnsStartupPrefetchList);
+  local_state->RegisterListPref(prefs::kDnsHostReferralList);
+}
+
 void RegisterUserPrefs(PrefService* user_prefs) {
-  user_prefs->RegisterListPref(prefs::kDnsPrefetchingStartupList);
-  user_prefs->RegisterListPref(prefs::kDnsPrefetchingHostReferralList);
   user_prefs->RegisterBooleanPref(prefs::kDnsPrefetchingEnabled, true);
 }
 
@@ -390,21 +393,8 @@ static void InitNetworkPredictor(TimeDelta max_dns_queue_delay,
       GetPredictedUrlListAtStartup(user_prefs, local_state);
 
   ListValue* referral_list =
-      static_cast<ListValue*>(user_prefs->GetMutableList(
-          prefs::kDnsPrefetchingHostReferralList)->DeepCopy());
-
-  // Remove obsolete preferences from local state if necessary.
-  bool dns_prefs_version =
-      user_prefs->GetInteger(prefs::kMultipleProfilePrefMigration);
-  if (dns_prefs_version < 1) {
-    // These prefs only need to be registered if they need to be cleared from
-    // local state.
-    local_state->RegisterListPref(prefs::kDnsStartupPrefetchList);
-    local_state->RegisterListPref(prefs::kDnsHostReferralList);
-    local_state->ClearPref(prefs::kDnsStartupPrefetchList);
-    local_state->ClearPref(prefs::kDnsHostReferralList);
-    user_prefs->SetInteger(prefs::kMultipleProfilePrefMigration, 1);
-  }
+      static_cast<ListValue*>(
+          local_state->GetMutableList(prefs::kDnsHostReferralList)->DeepCopy());
 
   g_browser_process->io_thread()->InitNetworkPredictor(
       prefetching_enabled, max_dns_queue_delay, max_parallel_resolves, urls,
@@ -472,9 +462,9 @@ void SavePredictorStateForNextStartupAndTrim(PrefService* prefs) {
       BrowserThread::IO,
       FROM_HERE,
       NewRunnableFunction(SaveDnsPrefetchStateForNextStartupAndTrimOnIOThread,
-          prefs->GetMutableList(prefs::kDnsPrefetchingStartupList),
-          prefs->GetMutableList(prefs::kDnsPrefetchingHostReferralList),
-          &completion));
+                          prefs->GetMutableList(prefs::kDnsStartupPrefetchList),
+                          prefs->GetMutableList(prefs::kDnsHostReferralList),
+                          &completion));
 
   DCHECK(posted);
   if (posted)
@@ -490,8 +480,7 @@ static UrlList GetPredictedUrlListAtStartup(PrefService* user_prefs,
   // also catch more of the "primary" home pages, since that was (presumably)
   // rendered first (and will be rendered first this time too).
   ListValue* startup_list =
-      user_prefs->GetMutableList(prefs::kDnsPrefetchingStartupList);
-
+      local_state->GetMutableList(prefs::kDnsStartupPrefetchList);
   if (startup_list) {
     ListValue::iterator it = startup_list->begin();
     int format_version = -1;

@@ -139,7 +139,7 @@ class PrefService : public NonThreadSafe {
   void RegisterListPref(const char* path);
   void RegisterDictionaryPref(const char* path);
 
-  // These variants use a default value from the locale dll instead.
+  // These varients use a default value from the locale dll instead.
   void RegisterLocalizedBooleanPref(const char* path,
                                     int locale_default_message_id);
   void RegisterLocalizedIntegerPref(const char* path,
