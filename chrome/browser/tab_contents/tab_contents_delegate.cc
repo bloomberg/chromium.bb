@@ -131,6 +131,9 @@ void TabContentsDelegate::ShowPageInfo(Profile* profile,
                                        bool show_history) {
 }
 
+void TabContentsDelegate::ViewSourceForTab(TabContents* source) {
+}
+
 bool TabContentsDelegate::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event,
     bool* is_keyboard_shortcut) {

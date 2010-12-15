@@ -249,6 +249,9 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
                             const NavigationEntry::SSLStatus& ssl,
                             bool show_history);
 
+  // Opens source view for given tab contents.
+  virtual void ViewSourceForTab(TabContents* source);
+
   // Allows delegates to handle keyboard events before sending to the renderer.
   // Returns true if the |event| was handled. Otherwise, if the |event| would be
   // handled in HandleKeyboardEvent() method as a normal keyboard shortcut,

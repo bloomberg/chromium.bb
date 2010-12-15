@@ -1521,6 +1521,12 @@ int TabContents::GetZoomPercent(bool* enable_increment,
   return percent;
 }
 
+void TabContents::ViewSource()
+{
+  if (delegate_)
+    delegate_->ViewSourceForTab(this);
+}
+
 // Notifies the RenderWidgetHost instance about the fact that the page is
 // loading, or done loading and calls the base implementation.
 void TabContents::SetIsLoading(bool is_loading,

@@ -475,7 +475,7 @@ class Browser : public TabHandlerDelegate,
   // Page-related commands
   void BookmarkCurrentPage();
   void SavePage();
-  void ViewSource();
+  void ViewSelectedSource();
   void ShowFindBar();
 
   // Returns true if the Browser supports the specified feature. The value of
@@ -778,6 +778,7 @@ class Browser : public TabHandlerDelegate,
                             const GURL& url,
                             const NavigationEntry::SSLStatus& ssl,
                             bool show_history);
+  virtual void ViewSourceForTab(TabContents* source);
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                         bool* is_keyboard_shortcut);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
@@ -985,6 +986,15 @@ class Browser : public TabHandlerDelegate,
 
   // If this browser should have instant one is created, otherwise does nothing.
   void CreateInstantIfNecessary();
+
+  // Opens view-source tab for given tab contents.
+  void ViewSource(TabContentsWrapper* tab);
+
+  // Inserts contents dupe next to the original contents. This method is used
+  // to insert duplicate tab and view source tab next to the original tab.
+  void InsertContentsDupe(
+      TabContentsWrapper* original_content,
+      TabContentsWrapper* clone_content);
 
   // Data members /////////////////////////////////////////////////////////////
 

@@ -986,30 +986,33 @@ void NavigationController::CopyStateFromAndPrune(NavigationController* source) {
 }
 
 void NavigationController::PruneAllButActive() {
-  int prune_count = entry_count();
   if (transient_entry_index_ != -1) {
     // There is a transient entry. Prune up to it.
     DCHECK_EQ(entry_count() - 1, transient_entry_index_);
-    prune_count = transient_entry_index_;
+    entries_.erase(entries_.begin(), entries_.begin() + transient_entry_index_);
     transient_entry_index_ = 0;
     last_committed_entry_index_ = -1;
     pending_entry_index_ = -1;
   } else if (!pending_entry_) {
     // There's no pending entry. Leave the last entry (if there is one).
-    if (!prune_count)
+    if (!entry_count())
       return;
 
-    prune_count--;
+    DCHECK(last_committed_entry_index_ >= 0);
+    entries_.erase(entries_.begin(),
+                   entries_.begin() + last_committed_entry_index_);
+    entries_.erase(entries_.begin() + 1, entries_.end());
     last_committed_entry_index_ = 0;
   } else if (pending_entry_index_ != -1) {
-    DCHECK_EQ(pending_entry_index_, prune_count - 1);
+    entries_.erase(entries_.begin(), entries_.begin() + pending_entry_index_);
+    entries_.erase(entries_.begin() + 1, entries_.end());
     pending_entry_index_ = 0;
     last_committed_entry_index_ = 0;
-    prune_count--;
   } else {
     // There is a pending_entry, but it's not in entries_.
     pending_entry_index_ = -1;
     last_committed_entry_index_ = -1;
+    entries_.clear();
   }
 
   if (tab_contents_->interstitial_page()) {
@@ -1018,8 +1021,6 @@ void NavigationController::PruneAllButActive() {
     // so the interstitial triggers a reload if the user doesn't proceed.
     tab_contents_->interstitial_page()->set_reload_on_dont_proceed(true);
   }
-
-  entries_.erase(entries_.begin(), entries_.begin() + prune_count);
 }
 
 void NavigationController::DiscardNonCommittedEntries() {

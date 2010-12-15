@@ -736,8 +736,12 @@ class TabContents : public PageNavigator,
   // Shows a fade effect over this tab contents. Repeated calls will be ignored
   // until the fade is canceled.
   void FadeForInstant();
+
   // Immediately removes the fade.
   void CancelInstantFade();
+
+  // Opens view-source tab for this contents.
+  void ViewSource();
 
   // Gets the minimum/maximum zoom percent.
   int minimum_zoom_percent() const { return minimum_zoom_percent_; }
