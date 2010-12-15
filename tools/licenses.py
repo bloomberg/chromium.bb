@@ -21,6 +21,9 @@ import sys
 
 # Paths from the root of the tree to directories to skip.
 PRUNE_PATHS = set([
+    # Same module occurs in both the top-level third_party and others.
+    "base/third_party/icu",
+
     # Assume for now that breakpad has their licensing in order.
     "breakpad",
 
@@ -31,6 +34,12 @@ PRUNE_PATHS = set([
     # Assume for now that native client has their licensing in order.
     "native_client",
 
+    # Same module occurs in chrome/ and in net/, so skip one of them.
+    "net/third_party/mozilla_security_manager",
+
+    # Same module occurs in base/ and in net/, so skip one of them.
+    "net/third_party/nss",
+
     # We don't bundle o3d samples into our resulting binaries.
     "o3d/samples",
 
@@ -40,18 +49,15 @@ PRUNE_PATHS = set([
     # Written as part of Chromium.
     "third_party/fuzzymatch",
 
+    # Same license as Chromium.
+    "third_party/lss",
+
+    # Only binaries, used during development.
+    "third_party/valgrind",
+
     # Two directories that are the same as those in base/third_party.
     "v8/src/third_party/dtoa",
     "v8/src/third_party/valgrind",
-
-    # Same module occurs in base/ and in net/, so skip one of them.
-    "net/third_party/nss",
-
-    # Same module occurs in chrome/ and in net/, so skip one of them.
-    "net/third_party/mozilla_security_manager",
-
-    # Same module occurs in both the top-level third_party and others.
-    "base/third_party/icu",
 ])
 
 # Directories we don't scan through.
