@@ -57,6 +57,7 @@ enum {
   FILE_GEARS_PLUGIN,            // Full path to the gears.dll plugin file.
   FILE_FLASH_PLUGIN,            // Full path to the internal Flash plugin file.
   FILE_PDF_PLUGIN,              // Full path to the internal PDF plugin file.
+  FILE_NACL_PLUGIN,             // Full path to the internal NaCl plugin file.
   FILE_LIBAVCODEC,              // Full path to libavcodec media decoding
                                 // library.
   FILE_LIBAVFORMAT,             // Full path to libavformat media parsing

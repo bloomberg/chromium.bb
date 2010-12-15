@@ -239,6 +239,18 @@ bool PathProvider(int key, FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("libpdf.so"));
 #endif
       break;
+    case chrome::FILE_NACL_PLUGIN:
+      if (!GetInternalPluginsDirectory(&cur))
+        return false;
+#if defined(OS_WIN)
+      cur = cur.Append(FILE_PATH_LITERAL("ppGoogleNaClPluginChrome.dll"));
+#elif defined(OS_MACOSX)
+      // TODO(noelallen) Please verify this extention name is correct.
+      cur = cur.Append(FILE_PATH_LITERAL("ppGoogleNaClPluginChrome.plugin"));
+#else  // Linux and Chrome OS
+      cur = cur.Append(FILE_PATH_LITERAL("libppGoogleNaClPluginChrome.so"));
+#endif
+      break;
     case chrome::FILE_RESOURCES_PACK:
 #if defined(OS_MACOSX)
       if (mac_util::AmIBundled()) {
