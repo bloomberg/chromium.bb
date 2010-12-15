@@ -338,7 +338,7 @@ std::string Network::GetErrorString() const {
 void Network::InitIPAddress() {
   ip_address_.clear();
   // If connected, get ip config.
-  if (EnsureCrosLoaded() && connected()) {
+  if (EnsureCrosLoaded() && connected() && !device_path_.empty()) {
     IPConfigStatus* ipconfig_status = ListIPConfigs(device_path_.c_str());
     if (ipconfig_status) {
       for (int i = 0; i < ipconfig_status->size; i++) {
@@ -1466,6 +1466,10 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
 
     ClearNetworks();
+    available_devices_ = system->available_technologies;
+    enabled_devices_ = system->enabled_technologies;
+    connected_devices_ = system->connected_technologies;
+    offline_mode_ = system->offline_mode;
 
     DVLOG(1) << "ParseSystem:";
     for (int i = 0; i < system->service_size; i++) {
@@ -1490,16 +1494,23 @@ class NetworkLibraryImpl : public NetworkLibrary  {
         // In this case, once you find a connected service, ignore the
         // other ones.  Otherwise, you may choose an ethernet service
         // that is not connected.
-        if (ethernet_ == NULL || !(ethernet_->connected())) {
+        if (ethernet_enabled() &&
+            (ethernet_ == NULL || !(ethernet_->connected()))) {
           // If previous ethernet was previously created, free it first
           if (ethernet_ != NULL)
             delete ethernet_;
           ethernet_ = new EthernetNetwork(service);
         }
       } else if (service->type == TYPE_WIFI) {
-        wifi_networks_.push_back(new WifiNetwork(service));
+        // Sometimes flimflam still returns wifi networks when disabled.
+        // We don't want to show these in the UI.
+        if (wifi_enabled())
+          wifi_networks_.push_back(new WifiNetwork(service));
       } else if (service->type == TYPE_CELLULAR) {
-        cellular_networks_.push_back(new CellularNetwork(service));
+        // Sometimes flimflam still returns cellular networks when disabled.
+        // We don't want to show these in the UI.
+        if (cellular_enabled())
+          cellular_networks_.push_back(new CellularNetwork(service));
       }
     }
 
@@ -1561,11 +1572,6 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       if (device->type == TYPE_WIFI && device->scanning)
         wifi_scanning_ = true;
     }
-
-    available_devices_ = system->available_technologies;
-    enabled_devices_ = system->enabled_technologies;
-    connected_devices_ = system->connected_technologies;
-    offline_mode_ = system->offline_mode;
   }
 
   void Init() {
