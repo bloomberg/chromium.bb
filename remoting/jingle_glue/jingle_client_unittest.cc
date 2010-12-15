@@ -57,7 +57,7 @@ TEST_F(JingleClientTest, OnStateChanged) {
 
   base::WaitableEvent state_changed_event(true, false);
   thread_.message_loop()->PostTask(FROM_HERE, NewRunnableFunction(
-      &JingleClientTest::ChangeState, client_.get(),
+      &JingleClientTest::ChangeState, client_,
       buzz::XmppEngine::STATE_OPENING, &state_changed_event));
   state_changed_event.Wait();
 
@@ -73,7 +73,7 @@ TEST_F(JingleClientTest, Close) {
   client_->Close();
   // Verify that the channel doesn't call callback anymore.
   thread_.message_loop()->PostTask(FROM_HERE, NewRunnableFunction(
-      &JingleClientTest::ChangeState, client_.get(),
+      &JingleClientTest::ChangeState, client_,
       buzz::XmppEngine::STATE_OPENING,
       static_cast<base::WaitableEvent*>(NULL)));
   thread_.Stop();
