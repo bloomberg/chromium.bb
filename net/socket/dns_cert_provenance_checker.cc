@@ -127,7 +127,7 @@ class DnsCertProvenanceCheck : public NonThreadSafe {
     }
     fingerprint_hex[SHA1_LENGTH * 2] = 0;
 
-    static const char kBaseCertName[] = ".certs.links.org";
+    static const char kBaseCertName[] = ".certs.googlednstest.com";
     domain_.assign(fingerprint_hex);
     domain_.append(kBaseCertName);
 
