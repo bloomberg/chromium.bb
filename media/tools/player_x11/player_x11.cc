@@ -257,7 +257,7 @@ int main(int argc, char** argv) {
     audio_only = !pipeline->IsRendered(media::mime_type::kMajorTypeVideo);
 
     message_loop.PostTask(FROM_HERE,
-        NewRunnableFunction(PeriodicalUpdate, pipeline.get(),
+        NewRunnableFunction(PeriodicalUpdate, pipeline,
                             &message_loop, audio_only));
     message_loop.Run();
   } else{
