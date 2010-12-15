@@ -245,7 +245,7 @@ bool ConfigurationPolicyProviderWin::Provide(
   // This function calls GetRegistryPolicy* which hit up the registry. Those
   // are I/O functions not allowed to be called on the main thread.
   // http://crbug.com/66453
-//  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   const PolicyDefinitionList* policy_list(policy_definition_list());
   for (const PolicyDefinitionList::Entry* current = policy_list->begin;
        current != policy_list->end; ++current) {
