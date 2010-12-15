@@ -1243,6 +1243,15 @@ TokenService* ProfileImpl::GetTokenService() {
 }
 
 ProfileSyncService* ProfileImpl::GetProfileSyncService() {
+#if defined(OS_CHROMEOS)
+  // If kLoginManager is specified, we shouldn't call this unless login has
+  // completed and specified cros_user. Guard with if (HasProfileSyncService())
+  // where this might legitimately get called before login has completed.
+  if (!sync_service_.get() &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoginManager)) {
+    LOG(FATAL) << "GetProfileSyncService() called before login complete.";
+  }
+#endif
   return GetProfileSyncService("");
 }
 
