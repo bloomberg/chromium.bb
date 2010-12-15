@@ -75,8 +75,10 @@ extern const char kSearchProviderOverridesVersion[];
 extern const char kPromptForDownload[];
 extern const char kAlternateErrorPagesEnabled[];
 extern const char kDnsPrefetchingEnabled[];
-extern const char kDnsStartupPrefetchList[];
-extern const char kDnsHostReferralList[];
+extern const char kDnsStartupPrefetchList[];  // OBSOLETE
+extern const char kDnsPrefetchingStartupList[];
+extern const char kDnsHostReferralList[];  // OBSOLETE
+extern const char kDnsPrefetchingHostReferralList[];
 extern const char kDisableSpdy[];
 extern const char kCookiePromptExpanded[];
 extern const char kInstantConfirmDialogShown[];
@@ -84,6 +86,7 @@ extern const char kInstantEnabled[];
 extern const char kInstantEnabledOnce[];
 extern const char kInstantEnabledTime[];
 extern const char kInstantPromo[];
+extern const char kMultipleProfilePrefMigration[];
 #if defined(USE_NSS) || defined(USE_OPENSSL)
 extern const char kCertRevocationCheckingEnabled[];
 extern const char kSSL3Enabled[];
