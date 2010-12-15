@@ -574,6 +574,9 @@ def TryChange(argv,
   group.add_option("-E", "--exclude", action="append",
                    default=['ChangeLog'], metavar='REGEXP',
                    help="Regexp patterns to exclude files. Default: %default")
+  group.add_option("--upstream_branch", action="store",
+                   help="Specify the upstream branch to diff against in the "
+                        "main checkout")
   parser.add_option_group(group)
 
   group = optparse.OptionGroup(parser, "Access the try server by HTTP")
@@ -651,7 +654,10 @@ def TryChange(argv,
   try:
     # Always include os.getcwd() in the checkout settings.
     checkouts = []
-    checkouts.append(GuessVCS(options, os.getcwd()))
+    path = os.getcwd()
+    if options.upstream_branch:
+        path += '@' + options.upstream_branch
+    checkouts.append(GuessVCS(options, path))
     checkouts[0].AutomagicalSettings()
     for item in options.sub_rep:
       checkout = GuessVCS(options, os.path.join(checkouts[0].checkout_root,
