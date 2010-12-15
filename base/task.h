@@ -149,8 +149,9 @@ class ScopedRunnableMethodFactory {
         : obj_(obj),
           meth_(meth),
           params_(params) {
-      COMPILE_ASSERT((MethodUsesScopedRefptrCorrectly<Method, Params>::value),
-                     badscopedrunnablemethodparams);
+      COMPILE_ASSERT(
+          (base::internal::ParamsUseScopedRefptrCorrectly<Params>::value),
+          badscopedrunnablemethodparams);
     }
 
     virtual void Run() {
@@ -317,8 +318,9 @@ class RunnableMethod : public CancelableTask {
   RunnableMethod(T* obj, Method meth, const Params& params)
       : obj_(obj), meth_(meth), params_(params) {
     traits_.RetainCallee(obj_);
-    COMPILE_ASSERT((MethodUsesScopedRefptrCorrectly<Method, Params>::value),
-                   badrunnablemethodparams);
+    COMPILE_ASSERT(
+        (base::internal::ParamsUseScopedRefptrCorrectly<Params>::value),
+        badrunnablemethodparams);
   }
 
   ~RunnableMethod() {
@@ -429,8 +431,9 @@ class RunnableFunction : public CancelableTask {
  public:
   RunnableFunction(Function function, const Params& params)
       : function_(function), params_(params) {
-    COMPILE_ASSERT((FunctionUsesScopedRefptrCorrectly<Function, Params>::value),
-                   badrunnablefunctionparams);
+    COMPILE_ASSERT(
+        (base::internal::ParamsUseScopedRefptrCorrectly<Params>::value),
+        badrunnablefunctionparams);
   }
 
   ~RunnableFunction() {
