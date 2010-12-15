@@ -387,7 +387,6 @@
         'chrome_frame_utils',
         'chrome_tab_idl',
         'npchrome_frame',
-        'xulrunner_sdk',
       ],
       'sources': [
         '../base/perf_test_suite.h',
@@ -432,6 +431,7 @@
           },
           'msvs_settings': {
             'VCLinkerTool': {
+              'IgnoreDefaultLibraryNames': ['nspr.lib', 'nspr4.lib'],
               'DelayLoadDLLs': ['nspr4.dll'],
             },
           },
