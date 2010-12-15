@@ -12,6 +12,7 @@
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/c/ppb_image_data.h"
+#include "ppapi/c/ppb_instance.h"
 
 struct NaClSrpcChannel;
 
@@ -56,6 +57,7 @@ const void* GetBrowserInterfaceSafe(const char* interface_name);
 const PPB_Core* PPBCoreInterface();  // shared
 const PPB_Graphics2D* PPBGraphics2DInterface();
 const PPB_ImageData* PPBImageDataInterface();
+const PPB_Instance* PPBInstanceInterface();
 const PPB_Var_Deprecated* PPBVarInterface();  // shared
 
 // PPAPI constants used in the proxy.

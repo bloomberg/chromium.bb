@@ -573,6 +573,85 @@ static void PPB_ImageData_DescribeDispatcher(
   );
 }
 
+static void PPB_Instance_GetWindowObjectDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(done);
+  PpbInstanceRpcServer::PPB_Instance_GetWindowObject(
+      rpc,
+      done,
+      inputs[0]->u.lval,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr
+  );
+}
+
+static void PPB_Instance_GetOwnerElementObjectDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(done);
+  PpbInstanceRpcServer::PPB_Instance_GetOwnerElementObject(
+      rpc,
+      done,
+      inputs[0]->u.lval,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr
+  );
+}
+
+static void PPB_Instance_BindGraphicsDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(done);
+  PpbInstanceRpcServer::PPB_Instance_BindGraphics(
+      rpc,
+      done,
+      inputs[0]->u.lval,
+      inputs[1]->u.lval,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_Instance_IsFullFrameDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(done);
+  PpbInstanceRpcServer::PPB_Instance_IsFullFrame(
+      rpc,
+      done,
+      inputs[0]->u.lval,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_Instance_ExecuteScriptDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(done);
+  PpbInstanceRpcServer::PPB_Instance_ExecuteScript(
+      rpc,
+      done,
+      inputs[0]->u.lval,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      inputs[2]->u.count, inputs[2]->arrays.carr,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr,
+      &(outputs[1]->u.count), outputs[1]->arrays.carr
+  );
+}
+
 }  // namespace
 
 NACL_SRPC_METHOD_ARRAY(PpbRpcs::srpc_methods) = {
@@ -610,6 +689,11 @@ NACL_SRPC_METHOD_ARRAY(PpbRpcs::srpc_methods) = {
   { "PPB_ImageData_Create:liIi:l", PPB_ImageData_CreateDispatcher },
   { "PPB_ImageData_IsImageData:l:i", PPB_ImageData_IsImageDataDispatcher },
   { "PPB_ImageData_Describe:l:Ii", PPB_ImageData_DescribeDispatcher },
+  { "PPB_Instance_GetWindowObject:l:C", PPB_Instance_GetWindowObjectDispatcher },
+  { "PPB_Instance_GetOwnerElementObject:l:C", PPB_Instance_GetOwnerElementObjectDispatcher },
+  { "PPB_Instance_BindGraphics:ll:i", PPB_Instance_BindGraphicsDispatcher },
+  { "PPB_Instance_IsFullFrame:l:i", PPB_Instance_IsFullFrameDispatcher },
+  { "PPB_Instance_ExecuteScript:lCC:CC", PPB_Instance_ExecuteScriptDispatcher },
   { NULL, NULL }
 };  // NACL_SRPC_METHOD_ARRAY
 

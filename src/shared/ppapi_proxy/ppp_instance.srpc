@@ -2,68 +2,66 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This file declares the RPC methods used to implement PPAPI calls from
-# the browser to the plugin.  It implements the interface in
-# ppapi/c/ppp_instance.h.
+# RPC methods used to implement PPP_Instance interface.
+# See ppapi/c/ppp_instance.h for interface details.
 {
  'name': 'PppInstanceRpc',
  'rpcs': [
           # Generic comment: PPAPI uses Did... apparently to indicate that the
           # return value indicates the plugin successfully responded to the
           # action requested.
-          # PPP_Instance_DidCreate sets the instance's parameters.
+          # Sets the instance's parameters.
           {'name': 'PPP_Instance_DidCreate',
-           'inputs': [['instance', 'int64_t'],
-                      ['argc', 'int32_t'],
-                      ['argn', 'char[]'],
-                      ['argv', 'char[]']],
-           'outputs': [['success', 'int32_t'],
+           'inputs': [['instance', 'int64_t'],  # PP_Instance
+                      ['argc', 'int32_t'],  # uint32_t
+                      ['argn', 'char[]'],  # char*[]
+                      ['argv', 'char[]'],  # char*[]
+                      ],
+           'outputs': [['success', 'int32_t'],  # PP_Bool
                       ]
           },
-          # PPP_Instance_DidDestroy deletes an instance of a plugin.
+          # Deletes an instance of a plugin.
           {'name': 'PPP_Instance_DidDestroy',
-           'inputs': [['instance', 'int64_t'],
+           'inputs': [['instance', 'int64_t'],  # PP_Instance
                      ],
            'outputs': []
           },
-          # PPP_Instance_DidChangeView changes the position, size, or clipping
-          # rectangle of the instance.
+          # Changes the position, size, or clipping rectangle of the instance.
           {'name': 'PPP_Instance_DidChangeView',
-           'inputs': [['instance', 'int64_t'],
-                      ['position', 'int32_t[]'],
-                      ['clip', 'int32_t[]'],
+           'inputs': [['instance', 'int64_t'],  # PP_Instance
+                      ['position', 'int32_t[]'],  # PP_Rect*
+                      ['clip', 'int32_t[]'],  # PP_Rect*
                      ],
            'outputs': []
           },
-          # PPP_Instance_DidChangeFocus processes a bool indicating that the
-          # instance gained or lost focus.
+          # Processes a bool indicating that the instance gained or lost focus.
           {'name': 'PPP_Instance_DidChangeFocus',
-           'inputs': [['instance', 'int64_t'],
-                      ['has_focus', 'bool']],
+           'inputs': [['instance', 'int64_t'],  # PP_Instance
+                      ['has_focus', 'bool'],  # PP_Bool
+                      ],
            'outputs': []
           },
-          # PPP_Instance_HandleInputEvent processes an event sent to an
-          # instance.
+          # Processes an event sent to an instance.
           {'name': 'PPP_Instance_HandleInputEvent',
-           'inputs': [['instance', 'int64_t'],
-                      ['event_data', 'char[]']],
-           'outputs': [['success', 'int32_t']
+           'inputs': [['instance', 'int64_t'],  # PP_Instance
+                      ['event_data', 'char[]'],  # PP_InputEvent*
+                      ],
+           'outputs': [['success', 'int32_t']  # PP_Bool
                       ]
           },
-          # PPP_Instance_HandleDocumentLoad passes URL information to a
-          # full-frame instance.
+          # Passes URL information to a full-frame instance.
           {'name': 'PPP_Instance_HandleDocumentLoad',
-           'inputs': [['instance', 'int64_t'],
-                      ['url_loader', 'int64_t']],
-           'outputs': [['success', 'int32_t'],
+           'inputs': [['instance', 'int64_t'],  # PP_Instance
+                      ['url_loader', 'int64_t'],  # PP_Resource
+                      ],
+           'outputs': [['success', 'int32_t'],  # PP_Bool
                       ]
           },
-          # PPP_Instance_GetInstanceObject gets the instance's scriptable
-          # object.
+          # Gets the instance's scriptable object.
           {'name': 'PPP_Instance_GetInstanceObject',
-           'inputs': [['instance', 'int64_t'],
+           'inputs': [['instance', 'int64_t'],  # PP_Instance
                      ],
-           'outputs': [['capability', 'char[]'],
+           'outputs': [['capability', 'char[]'],  # PP_Var
                       ]
           },
          ]

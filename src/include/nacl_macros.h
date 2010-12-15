@@ -258,7 +258,7 @@ static inline void *NaClArrayCheckHelper(void *arg) {
     TypeName(const TypeName&);                  \
     void operator=(const TypeName&)
 
-/* A macro to use in place of unimplemented sections of code */
+/* A macro to use in place of unimplemented sections of code. */
 #define NACL_UNIMPLEMENTED()                                       \
     fprintf(stderr, "%s:%d: unimplemented\n", __FILE__, __LINE__); \
     exit(1);
@@ -266,6 +266,11 @@ static inline void *NaClArrayCheckHelper(void *arg) {
 /* A macro to use to detect when control reaches a statement it should not. */
 #define NACL_NOTREACHED()                                                  \
     fprintf(stderr, "%s:%d: should not reach here\n", __FILE__, __LINE__); \
+    exit(1);
+
+/* A macro to mark code that has not been tested manually or automatically. */
+#define NACL_UNTESTED()                                                    \
+    fprintf(stderr, "%s:%d: reached untested code\n", __FILE__, __LINE__); \
     exit(1);
 
 // nacl_bit_cast<Dest,Source> is a template function that implements the

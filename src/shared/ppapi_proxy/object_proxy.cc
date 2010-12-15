@@ -31,8 +31,6 @@ namespace {
 
 std::map<ObjectCapability, PP_Var*>* capability_proxy_map = NULL;
 
-const uint32_t kMaxVarSize = 64 * 1024;
-
 }  // namespace
 
 bool ObjectProxy::HasProperty(PP_Var name,

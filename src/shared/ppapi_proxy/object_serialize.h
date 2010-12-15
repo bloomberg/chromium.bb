@@ -13,6 +13,8 @@ struct NaClSrpcChannel;
 
 namespace ppapi_proxy {
 
+const uint32_t kMaxVarSize = 64 * 1024;
+
 // Serialize one PP_Var to the location given in "bytes", using no more
 // than "*length" bytes .  If successful, "*length" reflects the number of
 // bytes written and true is returned.  Otherwise returns false.

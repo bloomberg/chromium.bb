@@ -282,6 +282,44 @@ class PpbImageDataRpcServer {
   void operator=(const PpbImageDataRpcServer);
 };  // class PpbImageDataRpcServer
 
+class PpbInstanceRpcServer {
+ public:
+  static void PPB_Instance_GetWindowObject(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      int64_t instance,
+      nacl_abi_size_t* window_bytes, char* window);
+  static void PPB_Instance_GetOwnerElementObject(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      int64_t instance,
+      nacl_abi_size_t* owner_bytes, char* owner);
+  static void PPB_Instance_BindGraphics(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      int64_t instance,
+      int64_t graphics_device,
+      int32_t* success);
+  static void PPB_Instance_IsFullFrame(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      int64_t instance,
+      int32_t* is_full_frame);
+  static void PPB_Instance_ExecuteScript(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      int64_t instance,
+      nacl_abi_size_t script_bytes, char* script,
+      nacl_abi_size_t exception_in_bytes, char* exception_in,
+      nacl_abi_size_t* result_bytes, char* result,
+      nacl_abi_size_t* exception_bytes, char* exception);
+
+ private:
+  PpbInstanceRpcServer();
+  PpbInstanceRpcServer(const PpbInstanceRpcServer&);
+  void operator=(const PpbInstanceRpcServer);
+};  // class PpbInstanceRpcServer
+
 class PpbRpcs {
  public:
   static NACL_SRPC_METHOD_ARRAY(srpc_methods);

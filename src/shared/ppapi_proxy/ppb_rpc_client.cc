@@ -564,4 +564,82 @@ NaClSrpcError PpbImageDataRpcClient::PPB_ImageData_Describe(
   return retval;
 }
 
+NaClSrpcError PpbInstanceRpcClient::PPB_Instance_GetWindowObject(
+    NaClSrpcChannel* channel,
+    int64_t instance,
+    nacl_abi_size_t* window_bytes, char* window)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Instance_GetWindowObject:l:C",
+      instance,
+      window_bytes, window
+  );
+  return retval;
+}
+
+NaClSrpcError PpbInstanceRpcClient::PPB_Instance_GetOwnerElementObject(
+    NaClSrpcChannel* channel,
+    int64_t instance,
+    nacl_abi_size_t* owner_bytes, char* owner)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Instance_GetOwnerElementObject:l:C",
+      instance,
+      owner_bytes, owner
+  );
+  return retval;
+}
+
+NaClSrpcError PpbInstanceRpcClient::PPB_Instance_BindGraphics(
+    NaClSrpcChannel* channel,
+    int64_t instance,
+    int64_t graphics_device,
+    int32_t* success)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Instance_BindGraphics:ll:i",
+      instance,
+      graphics_device,
+      success
+  );
+  return retval;
+}
+
+NaClSrpcError PpbInstanceRpcClient::PPB_Instance_IsFullFrame(
+    NaClSrpcChannel* channel,
+    int64_t instance,
+    int32_t* is_full_frame)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Instance_IsFullFrame:l:i",
+      instance,
+      is_full_frame
+  );
+  return retval;
+}
+
+NaClSrpcError PpbInstanceRpcClient::PPB_Instance_ExecuteScript(
+    NaClSrpcChannel* channel,
+    int64_t instance,
+    nacl_abi_size_t script_bytes, char* script,
+    nacl_abi_size_t exception_in_bytes, char* exception_in,
+    nacl_abi_size_t* result_bytes, char* result,
+    nacl_abi_size_t* exception_bytes, char* exception)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Instance_ExecuteScript:lCC:CC",
+      instance,
+      script_bytes, script,
+      exception_in_bytes, exception_in,
+      result_bytes, result,
+      exception_bytes, exception
+  );
+  return retval;
+}
+
 

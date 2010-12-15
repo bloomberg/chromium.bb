@@ -248,6 +248,39 @@ class PpbImageDataRpcClient {
   void operator=(const PpbImageDataRpcClient);
 };  // class PpbImageDataRpcClient
 
+class PpbInstanceRpcClient {
+ public:
+  static NaClSrpcError PPB_Instance_GetWindowObject(
+      NaClSrpcChannel* channel,
+      int64_t instance,
+      nacl_abi_size_t* window_bytes, char* window);
+  static NaClSrpcError PPB_Instance_GetOwnerElementObject(
+      NaClSrpcChannel* channel,
+      int64_t instance,
+      nacl_abi_size_t* owner_bytes, char* owner);
+  static NaClSrpcError PPB_Instance_BindGraphics(
+      NaClSrpcChannel* channel,
+      int64_t instance,
+      int64_t graphics_device,
+      int32_t* success);
+  static NaClSrpcError PPB_Instance_IsFullFrame(
+      NaClSrpcChannel* channel,
+      int64_t instance,
+      int32_t* is_full_frame);
+  static NaClSrpcError PPB_Instance_ExecuteScript(
+      NaClSrpcChannel* channel,
+      int64_t instance,
+      nacl_abi_size_t script_bytes, char* script,
+      nacl_abi_size_t exception_in_bytes, char* exception_in,
+      nacl_abi_size_t* result_bytes, char* result,
+      nacl_abi_size_t* exception_bytes, char* exception);
+
+ private:
+  PpbInstanceRpcClient();
+  PpbInstanceRpcClient(const PpbInstanceRpcClient&);
+  void operator=(const PpbInstanceRpcClient);
+};  // class PpbInstanceRpcClient
+
 
 
 #endif  // GEN_PPAPI_PROXY_PPB_RPC_H_

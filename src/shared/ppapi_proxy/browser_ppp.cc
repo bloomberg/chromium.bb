@@ -10,7 +10,7 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_process.h"
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
-#include "native_client/src/shared/ppapi_proxy/browser_instance.h"
+#include "native_client/src/shared/ppapi_proxy/browser_ppp_instance.h"
 #include "native_client/src/shared/ppapi_proxy/browser_upcall.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"

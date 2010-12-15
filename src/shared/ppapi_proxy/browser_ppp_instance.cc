@@ -4,7 +4,7 @@
  * be found in the LICENSE file.
  */
 
-#include "native_client/src/shared/ppapi_proxy/browser_instance.h"
+#include "native_client/src/shared/ppapi_proxy/browser_ppp_instance.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -187,7 +187,7 @@ PP_Var GetInstanceObject(PP_Instance instance) {
 }  // namespace
 
 const PPP_Instance* BrowserInstance::GetInterface() {
-  static const PPP_Instance intf = {
+  static const PPP_Instance instance_interface = {
     DidCreate,
     DidDestroy,
     DidChangeView,
@@ -196,7 +196,7 @@ const PPP_Instance* BrowserInstance::GetInterface() {
     HandleDocumentLoad,
     GetInstanceObject
   };
-  return &intf;
+  return &instance_interface;
 }
 
 }  // namespace ppapi_proxy

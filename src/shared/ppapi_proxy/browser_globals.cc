@@ -136,6 +136,15 @@ const PPB_ImageData* PPBImageDataInterface() {
   return image_data_interface;
 }
 
+const PPB_Instance* PPBInstanceInterface() {
+  static const PPB_Instance* instance_interface = NULL;
+  if (instance_interface == NULL) {
+    instance_interface = reinterpret_cast<const PPB_Instance*>(
+        GetBrowserInterfaceSafe(PPB_INSTANCE_INTERFACE));
+  }
+  return instance_interface;
+}
+
 const PPB_Var_Deprecated* PPBVarInterface() {
   static const PPB_Var_Deprecated* var_interface = NULL;
   if (var_interface == NULL) {
