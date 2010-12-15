@@ -75,3 +75,6 @@ Later modifications (see chromium.patch):
   so that it can be compiled against standard EGL 1.4 headers.
   
 - Initialized uninitialized mask variable in eglconfig.c line 245.
+
+- Fixed compiler warning about cast to pointer from integer of different size
+  in eglapi.c line 276. Replaced void* with EGLNativeDisplayType.

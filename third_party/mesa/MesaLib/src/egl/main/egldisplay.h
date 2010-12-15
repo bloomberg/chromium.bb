@@ -86,7 +86,7 @@ struct _egl_display
    _EGLMutex Mutex;
 
    _EGLPlatformType Platform;
-   void *PlatformDisplay;
+   EGLNativeDisplayType PlatformDisplay;
 
    EGLBoolean Initialized; /**< True if the display is initialized */
    _EGLDriver *Driver;
@@ -118,7 +118,7 @@ _eglFiniDisplay(void);
 
 
 extern _EGLDisplay *
-_eglFindDisplay(_EGLPlatformType plat, void *plat_dpy);
+_eglFindDisplay(_EGLPlatformType plat, EGLNativeDisplayType plat_dpy);
 
 
 PUBLIC void

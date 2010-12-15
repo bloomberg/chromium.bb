@@ -105,7 +105,7 @@ _eglFiniDisplay(void)
  * new one.
  */
 _EGLDisplay *
-_eglFindDisplay(_EGLPlatformType plat, void *plat_dpy)
+_eglFindDisplay(_EGLPlatformType plat, EGLNativeDisplayType plat_dpy)
 {
    _EGLDisplay *dpy;
 

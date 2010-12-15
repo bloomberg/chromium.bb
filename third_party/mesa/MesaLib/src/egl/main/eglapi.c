@@ -273,7 +273,7 @@ EGLDisplay EGLAPIENTRY
 eglGetDisplay(EGLNativeDisplayType nativeDisplay)
 {
    _EGLPlatformType plat = _eglGetNativePlatform();
-   _EGLDisplay *dpy = _eglFindDisplay(plat, (void *) nativeDisplay);
+   _EGLDisplay *dpy = _eglFindDisplay(plat, nativeDisplay);
    return _eglGetDisplayHandle(dpy);
 }
 
