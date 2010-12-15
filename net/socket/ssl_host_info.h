@@ -96,6 +96,10 @@ class SSLHostInfo {
     return verification_start_time_;
   }
 
+  base::TimeTicks verification_end_time() const {
+    return verification_end_time_;
+  }
+
  protected:
   // Parse parses an opaque blob of data and fills out the public member fields
   // of this object. It returns true iff the parse was successful. The public
@@ -121,6 +125,7 @@ class SSLHostInfo {
   bool rev_checking_enabled_;
   bool verify_ev_cert_;
   base::TimeTicks verification_start_time_;
+  base::TimeTicks verification_end_time_;
   CertVerifyResult cert_verify_result_;
   scoped_ptr<CertVerifier> verifier_;
   scoped_refptr<X509Certificate> cert_;

@@ -113,6 +113,7 @@ bool SSLHostInfo::ParseInner(const std::string& data) {
       verifier_.reset(new CertVerifier);
       VLOG(1) << "Kicking off verification for " << hostname_;
       verification_start_time_ = base::TimeTicks::Now();
+      verification_end_time_ = base::TimeTicks();
       if (verifier_->Verify(cert_.get(), hostname_, flags,
                             &cert_verify_result_, callback_) == OK) {
         VerifyCallback(OK);
@@ -185,6 +186,7 @@ void SSLHostInfo::VerifyCallback(int rv) {
   const base::TimeDelta duration = now - verification_start_time();
   UMA_HISTOGRAM_TIMES("Net.SSLHostInfoVerificationTimeMs", duration);
   VLOG(1) << "Verification took " << duration.InMilliseconds() << "ms";
+  verification_end_time_ = now;
   cert_verification_complete_ = true;
   cert_verification_error_ = rv;
   if (cert_verification_callback_) {
