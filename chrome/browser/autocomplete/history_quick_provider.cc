@@ -5,7 +5,7 @@
 #include "chrome/browser/autocomplete/history_quick_provider.h"
 
 #include "base/basictypes.h"
-#include "base/i18n/word_iterator.h"
+#include "base/i18n/break_iterator.h"
 #include "base/string_util.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
@@ -167,11 +167,11 @@ void HistoryQuickProvider::SetIndexForTesting(
 history::InMemoryURLIndex::String16Vector
     HistoryQuickProvider::WordVectorFromString16(const string16& uni_string) {
   history::InMemoryURLIndex::String16Vector words;
-  WordIterator iter(&uni_string, WordIterator::BREAK_WORD);
+  base::BreakIterator iter(&uni_string, base::BreakIterator::BREAK_WORD);
   if (iter.Init()) {
     while (iter.Advance()) {
       if (iter.IsWord())
-        words.push_back(iter.GetWord());
+        words.push_back(iter.GetString());
     }
   }
   return words;

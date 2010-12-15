@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/i18n/word_iterator.h"
+#include "base/i18n/break_iterator.h"
 
 #include "base/logging.h"
 #include "unicode/ubrk.h"
 #include "unicode/uchar.h"
 #include "unicode/ustring.h"
 
+namespace base {
+
 const size_t npos = -1;
 
-WordIterator::WordIterator(const string16* str, BreakType break_type)
+BreakIterator::BreakIterator(const string16* str, BreakType break_type)
     : iter_(NULL),
       string_(str),
       break_type_(break_type),
@@ -19,19 +21,19 @@ WordIterator::WordIterator(const string16* str, BreakType break_type)
       pos_(0) {
 }
 
-WordIterator::~WordIterator() {
+BreakIterator::~BreakIterator() {
   if (iter_)
     ubrk_close(iter_);
 }
 
-bool WordIterator::Init() {
+bool BreakIterator::Init() {
   UErrorCode status = U_ZERO_ERROR;
   UBreakIteratorType break_type;
   switch (break_type_) {
     case BREAK_WORD:
       break_type = UBRK_WORD;
       break;
-    case BREAK_LINE:
+    case BREAK_SPACE:
       break_type = UBRK_LINE;
       break;
     default:
@@ -49,7 +51,7 @@ bool WordIterator::Init() {
   return true;
 }
 
-bool WordIterator::Advance() {
+bool BreakIterator::Advance() {
   prev_ = pos_;
   const int32_t pos = ubrk_next(iter_);
   if (pos == UBRK_DONE) {
@@ -61,11 +63,14 @@ bool WordIterator::Advance() {
   }
 }
 
-bool WordIterator::IsWord() const {
-  return (ubrk_getRuleStatus(iter_) != UBRK_WORD_NONE);
+bool BreakIterator::IsWord() const {
+  return (break_type_ == BREAK_WORD &&
+          ubrk_getRuleStatus(iter_) != UBRK_WORD_NONE);
 }
 
-string16 WordIterator::GetWord() const {
+string16 BreakIterator::GetString() const {
   DCHECK(prev_ != npos && pos_ != npos);
   return string_->substr(prev_, pos_ - prev_);
 }
+
+}  // namespace base

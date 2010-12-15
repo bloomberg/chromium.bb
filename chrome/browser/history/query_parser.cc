@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "app/l10n_util.h"
-#include "base/i18n/word_iterator.h"
+#include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "base/scoped_vector.h"
 #include "base/string_util.h"
@@ -322,7 +322,7 @@ bool QueryParser::DoesQueryMatch(const string16& text,
 
 bool QueryParser::ParseQueryImpl(const string16& query,
                                 QueryNodeList* root) {
-  WordIterator iter(&query, WordIterator::BREAK_WORD);
+  base::BreakIterator iter(&query, base::BreakIterator::BREAK_WORD);
   // TODO(evanm): support a locale here
   if (!iter.Init())
     return false;
@@ -338,7 +338,7 @@ bool QueryParser::ParseQueryImpl(const string16& query,
     // is not necessarily a word, but could also be a sequence of punctuation
     // or whitespace.
     if (iter.IsWord()) {
-      string16 word = iter.GetWord();
+      string16 word = iter.GetString();
 
       QueryNodeWord* word_node = new QueryNodeWord(word);
       if (in_quotes)
@@ -365,7 +365,7 @@ bool QueryParser::ParseQueryImpl(const string16& query,
 
 void QueryParser::ExtractQueryWords(const string16& text,
                                     std::vector<QueryWord>* words) {
-  WordIterator iter(&text, WordIterator::BREAK_WORD);
+  base::BreakIterator iter(&text, base::BreakIterator::BREAK_WORD);
   // TODO(evanm): support a locale here
   if (!iter.Init())
     return;
@@ -375,7 +375,7 @@ void QueryParser::ExtractQueryWords(const string16& text,
     // is not necessarily a word, but could also be a sequence of punctuation
     // or whitespace.
     if (iter.IsWord()) {
-      string16 word = iter.GetWord();
+      string16 word = iter.GetString();
       if (!word.empty()) {
         words->push_back(QueryWord());
         words->back().word = word;

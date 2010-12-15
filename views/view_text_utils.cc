@@ -5,7 +5,7 @@
 #include "views/view_text_utils.h"
 
 #include "app/bidi_line_iterator.h"
-#include "base/i18n/word_iterator.h"
+#include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/canvas_skia.h"
@@ -98,7 +98,7 @@ void DrawTextStartingFrom(gfx::Canvas* canvas,
   // Iterate through line breaking opportunities (which in English would be
   // spaces and such). This tells us where to wrap.
   string16 text16(WideToUTF16(text));
-  WordIterator iter(&text16, WordIterator::BREAK_LINE);
+  base::BreakIterator iter(&text16, base::BreakIterator::BREAK_SPACE);
   if (!iter.Init())
     return;
 
@@ -112,7 +112,7 @@ void DrawTextStartingFrom(gfx::Canvas* canvas,
     // Get the word and figure out the dimensions.
     std::wstring word;
     if (!ltr_within_rtl)
-      word = UTF16ToWide(iter.GetWord());  // Get the next word.
+      word = UTF16ToWide(iter.GetString());  // Get the next word.
     else
       word = text;  // Draw the whole text at once.
 

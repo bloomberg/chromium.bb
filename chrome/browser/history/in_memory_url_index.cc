@@ -8,7 +8,7 @@
 #include <limits>
 
 #include "app/l10n_util.h"
-#include "base/i18n/word_iterator.h"
+#include "base/i18n/break_iterator.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -234,11 +234,11 @@ InMemoryURLIndex::HistoryIDSet InMemoryURLIndex::HistoryIDsForTerm(
 InMemoryURLIndex::String16Set InMemoryURLIndex::WordSetFromString16(
     const string16& uni_string) {
   String16Set words;
-  WordIterator iter(&uni_string, WordIterator::BREAK_WORD);
+  base::BreakIterator iter(&uni_string, base::BreakIterator::BREAK_WORD);
   if (iter.Init()) {
     while (iter.Advance()) {
       if (iter.IsWord())
-        words.insert(iter.GetWord());
+        words.insert(iter.GetString());
     }
   }
   return words;

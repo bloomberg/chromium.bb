@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_I18N_WORD_ITERATOR_H_
-#define BASE_I18N_WORD_ITERATOR_H_
+#ifndef BASE_I18N_BREAK_ITERATOR_H_
+#define BASE_I18N_BREAK_ITERATOR_H_
 #pragma once
-
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/string16.h"
 
-// The WordIterator class iterates through the words and word breaks
+// The BreakIterator class iterates through the words and word breaks
 // in a UTF-16 string.
 //
-// It provides two modes, BREAK_WORD and BREAK_LINE, which modify how
+// It provides two modes, BREAK_WORD and BREAK_SPACE, which modify how
 // trailing non-word characters are aggregated into the returned word.
 //
 // Under BREAK_WORD mode (more common), the non-word characters are
@@ -22,40 +20,41 @@
 // the string " foo bar! ", the word breaks are at the periods in
 // ". .foo. .bar.!. .").
 //
-// Under BREAK_LINE mode (less common), the non-word characters are
+// Under BREAK_SPACE mode (less common), the non-word characters are
 // included in the word, breaking only when a space-equivalent character
 // is encountered (e.g. in the UTF16-equivalent of the string " foo bar! ",
 // the word breaks are at the periods in ". .foo .bar! .").
 //
-// To extract the words from a string, move a BREAK_WORD WordIterator
+// To extract the words from a string, move a BREAK_WORD BreakIterator
 // through the string and test whether IsWord() is true.  E.g.,
-//   WordIterator iter(&str, WordIterator::BREAK_WORD);
+//   BreakIterator iter(&str, BreakIterator::BREAK_WORD);
 //   if (!iter.Init()) return false;
 //   while (iter.Advance()) {
 //     if (iter.IsWord()) {
 //       // region [iter.prev(),iter.pos()) contains a word.
-//       VLOG(1) << "word: " << iter.GetWord();
+//       VLOG(1) << "word: " << iter.GetString();
 //     }
 //   }
 
+namespace base {
 
-class WordIterator {
+class BreakIterator {
  public:
   enum BreakType {
     BREAK_WORD,
-    BREAK_LINE
+    BREAK_SPACE
   };
 
-  // Requires |str| to live as long as the WordIterator does.
-  WordIterator(const string16* str, BreakType break_type);
-  ~WordIterator();
+  // Requires |str| to live as long as the BreakIterator does.
+  BreakIterator(const string16* str, BreakType break_type);
+  ~BreakIterator();
 
   // Init() must be called before any of the iterators are valid.
   // Returns false if ICU failed to initialize.
   bool Init();
 
   // Return the current break position within the string,
-  // or WordIterator::npos when done.
+  // or BreakIterator::npos when done.
   size_t pos() const { return pos_; }
   // Return the value of pos() returned before Advance() was last called.
   size_t prev() const { return prev_; }
@@ -66,15 +65,16 @@ class WordIterator {
   // last time Advance() returns true.)
   bool Advance();
 
-  // Returns true if the break we just hit is the end of a word.
-  // (Otherwise, the break iterator just skipped over e.g. whitespace
-  // or punctuation.)
+  // Under BREAK_WORD mode, returns true if the break we just hit is the
+  // end of a word. (Otherwise, the break iterator just skipped over e.g.
+  // whitespace or punctuation.)  Under BREAK_SPACE mode, this distinction
+  // doesn't apply and it always retuns false.
   bool IsWord() const;
 
-  // Return the word between prev() and pos().
+  // Return the string between prev() and pos().
   // Advance() must have been called successfully at least once
   // for pos() to have advanced to somewhere useful.
-  string16 GetWord() const;
+  string16 GetString() const;
 
  private:
   // ICU iterator, avoiding ICU ubrk.h dependence.
@@ -92,7 +92,9 @@ class WordIterator {
   // Previous and current iterator positions.
   size_t prev_, pos_;
 
-  DISALLOW_COPY_AND_ASSIGN(WordIterator);
+  DISALLOW_COPY_AND_ASSIGN(BreakIterator);
 };
 
-#endif  // BASE_I18N_WORD_ITERATOR_H__
+}  // namespace base
+
+#endif  // BASE_I18N_BREAK_ITERATOR_H__
