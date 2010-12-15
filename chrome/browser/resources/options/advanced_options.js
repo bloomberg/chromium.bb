@@ -140,16 +140,6 @@ var OptionsPage = options.OptionsPage;
           chrome.send('showCloudPrintManagePage');
         };
       }
-    },
-
-    /**
-     * Show a 'restart required' alert.
-     * @private
-     */
-    showRestartRequiredAlert_: function() {
-      AlertOverlay.show(undefined,
-          localStrings.getString('optionsRestartRequired'),
-          undefined, '', undefined);
     }
   };
 
@@ -159,14 +149,11 @@ var OptionsPage = options.OptionsPage;
 
   // Set the checked state of the metrics reporting checkbox.
   AdvancedOptions.SetMetricsReportingCheckboxState = function(
-      checked, disabled, user_changed) {
+      checked, disabled) {
     $('metricsReportingEnabled').checked = checked;
     $('metricsReportingEnabled').disabled = disabled;
     if (disabled)
       $('metricsReportingEnabledText').className = 'disable-services-span';
-
-    if (user_changed)
-      AdvancedOptions.getInstance().showRestartRequiredAlert_();
   }
 
   AdvancedOptions.SetMetricsReportingSettingVisibility = function(visible) {

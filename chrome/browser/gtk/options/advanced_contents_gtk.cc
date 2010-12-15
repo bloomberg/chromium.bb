@@ -614,10 +614,6 @@ class PrivacySection : public OptionsPageBase {
   // permission match the |reporting_enabled_checkbox_|.
   void ResolveMetricsReportingEnabled();
 
-  // Inform the user that the browser must be restarted for changes to take
-  // effect.
-  void ShowRestartMessageBox() const;
-
   // The callback functions for the options widgets.
   static void OnContentSettingsClicked(GtkButton* button,
                                        PrivacySection* privacy_section);
@@ -871,8 +867,6 @@ void PrivacySection::OnLoggingChange(GtkWidget* widget,
                                   reinterpret_cast<gpointer>(OnLoggingChange),
                                   privacy_section);
   privacy_section->ResolveMetricsReportingEnabled();
-  if (enabled == gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
-    privacy_section->ShowRestartMessageBox();
   g_signal_handlers_unblock_by_func(widget,
                                     reinterpret_cast<gpointer>(OnLoggingChange),
                                     privacy_section);
@@ -937,22 +931,6 @@ void PrivacySection::ResolveMetricsReportingEnabled() {
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(reporting_enabled_checkbox_),
                                enabled);
 #endif
-}
-
-void PrivacySection::ShowRestartMessageBox() const {
-  GtkWidget* dialog = gtk_message_dialog_new(
-      GTK_WINDOW(gtk_widget_get_toplevel(page_)),
-      static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL),
-      GTK_MESSAGE_INFO,
-      GTK_BUTTONS_OK,
-      "%s",
-      l10n_util::GetStringUTF8(IDS_OPTIONS_RESTART_REQUIRED).c_str());
-  gtk_util::ApplyMessageDialogQuirks(dialog);
-  gtk_window_set_title(GTK_WINDOW(dialog),
-      l10n_util::GetStringUTF8(IDS_PRODUCT_NAME).c_str());
-  g_signal_connect_swapped(dialog, "response", G_CALLBACK(gtk_widget_destroy),
-                           dialog);
-  gtk_util::ShowDialog(dialog);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
