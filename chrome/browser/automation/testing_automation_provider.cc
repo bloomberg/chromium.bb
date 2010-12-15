@@ -44,7 +44,6 @@
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"
-#include "chrome/browser/notifications/balloon_host.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -4210,27 +4209,7 @@ void TestingAutomationProvider::GetActiveNotifications(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  NotificationUIManager* manager = g_browser_process->notification_ui_manager();
-  const BalloonCollection::Balloons& balloons =
-      manager->balloon_collection()->GetActiveBalloons();
-  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  ListValue* list = new ListValue;
-  return_value->Set("notifications", list);
-  BalloonCollection::Balloons::const_iterator iter;
-  for (iter = balloons.begin(); iter != balloons.end(); ++iter) {
-    const Notification& notification = (*iter)->notification();
-    DictionaryValue* balloon = new DictionaryValue;
-    balloon->SetString("content_url", notification.content_url().spec());
-    balloon->SetString("origin_url", notification.origin_url().spec());
-    balloon->SetString("display_source", notification.display_source());
-    BalloonView* view = (*iter)->view();
-    if (view && view->GetHost() && view->GetHost()->render_view_host()) {
-      balloon->SetInteger("pid", base::GetProcId(
-          view->GetHost()->render_view_host()->process()->GetHandle()));
-    }
-    list->Append(balloon);
-  }
-  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
+  new GetActiveNotificationsObserver(this, reply_message);
 }
 
 // Refer to CloseNotification() in chrome/test/pyautolib/pyauto.py for

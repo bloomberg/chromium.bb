@@ -970,6 +970,26 @@ class AutocompleteEditFocusedObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(AutocompleteEditFocusedObserver);
 };
 
+// Allows the automation provider to wait until all the notification
+// processes are ready.
+class GetActiveNotificationsObserver : public NotificationObserver {
+ public:
+  GetActiveNotificationsObserver(AutomationProvider* automation,
+                                 IPC::Message* reply_message);
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  void SendMessage();
+
+  AutomationJSONReply reply_;
+  NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(GetActiveNotificationsObserver);
+};
+
 // Allows the automation provider to wait for a given number of
 // notification balloons.
 class OnNotificationBalloonCountObserver {

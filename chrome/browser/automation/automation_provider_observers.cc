@@ -34,9 +34,13 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/metrics/metric_event_duration_details.h"
 #include "chrome/browser/notifications/balloon.h"
+#include "chrome/browser/notifications/balloon_host.h"
 #include "chrome/browser/notifications/balloon_collection.h"
+#include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
@@ -1527,6 +1531,75 @@ void AutocompleteEditFocusedObserver::Observe(
   AutomationMsg_WaitForAutocompleteEditFocus::WriteReplyParams(
       reply_message_, true);
   automation_->Send(reply_message_);
+  delete this;
+}
+
+namespace {
+
+// Returns whether the notification's host has a non-null process handle.
+bool IsNotificationProcessReady(Balloon* balloon) {
+  return balloon->view() &&
+         balloon->view()->GetHost() &&
+         balloon->view()->GetHost()->render_view_host() &&
+         balloon->view()->GetHost()->render_view_host()->process()->GetHandle();
+}
+
+// Returns whether all active notifications have an associated process ID.
+bool AreActiveNotificationProcessesReady() {
+  NotificationUIManager* manager = g_browser_process->notification_ui_manager();
+  const BalloonCollection::Balloons& balloons =
+      manager->balloon_collection()->GetActiveBalloons();
+  BalloonCollection::Balloons::const_iterator iter;
+  for (iter = balloons.begin(); iter != balloons.end(); ++iter) {
+    if (!IsNotificationProcessReady(*iter))
+      return false;
+  }
+  return true;
+}
+
+}  // namespace
+
+GetActiveNotificationsObserver::GetActiveNotificationsObserver(
+    AutomationProvider* automation,
+    IPC::Message* reply_message)
+    : reply_(automation, reply_message) {
+  if (AreActiveNotificationProcessesReady()) {
+    SendMessage();
+  } else {
+    registrar_.Add(this, NotificationType::RENDERER_PROCESS_CREATED,
+                   NotificationService::AllSources());
+  }
+}
+
+void GetActiveNotificationsObserver::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  if (AreActiveNotificationProcessesReady())
+    SendMessage();
+}
+
+void GetActiveNotificationsObserver::SendMessage() {
+  NotificationUIManager* manager =
+      g_browser_process->notification_ui_manager();
+  const BalloonCollection::Balloons& balloons =
+      manager->balloon_collection()->GetActiveBalloons();
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  ListValue* list = new ListValue;
+  return_value->Set("notifications", list);
+  BalloonCollection::Balloons::const_iterator iter;
+  for (iter = balloons.begin(); iter != balloons.end(); ++iter) {
+    const Notification& notification = (*iter)->notification();
+    DictionaryValue* balloon = new DictionaryValue;
+    balloon->SetString("content_url", notification.content_url().spec());
+    balloon->SetString("origin_url", notification.origin_url().spec());
+    balloon->SetString("display_source", notification.display_source());
+    BalloonView* view = (*iter)->view();
+    balloon->SetInteger("pid", base::GetProcId(
+        view->GetHost()->render_view_host()->process()->GetHandle()));
+    list->Append(balloon);
+  }
+  reply_.SendSuccess(return_value.get());
   delete this;
 }
 

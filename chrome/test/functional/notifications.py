@@ -527,12 +527,14 @@ class NotificationsTest(pyauto.PyUITest):
     """Test that we can replace a notification using the replaceId."""
     self._AllowAllOrigins()
     self.NavigateToURL(self.TEST_PAGE_URL)
-    self._CreateHTMLNotification(self.NO_SUCH_URL, 'chat')
+    self._CreateSimpleNotification('', 'Title2', '', 'chat')
     self.WaitForNotificationCount(1)
-    self._CreateHTMLNotification(self.NO_SUCH_URL2, 'chat')
+    # Since this notification has the same replaceId, 'chat', it should replace
+    # the first notification.
+    self._CreateHTMLNotification(self.NO_SUCH_URL, 'chat')
     notifications = self.GetActiveNotifications()
     self.assertEquals(1, len(notifications))
-    self.assertEquals(self.NO_SUCH_URL2, notifications[0]['content_url'])
+    self.assertEquals(self.NO_SUCH_URL, notifications[0]['content_url'])
 
 
 if __name__ == '__main__':
