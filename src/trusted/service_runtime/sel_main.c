@@ -304,7 +304,7 @@ int main(int  argc,
       case 'I':
         check_abi = NACL_ABI_CHECK_OPTION_SKIP;
         break;
-     case 'l':
+      case 'l':
         log_file = optarg;
         break;
       case 'R':
@@ -321,16 +321,16 @@ int main(int  argc,
         break;
       case 'Q':
         fprintf(stderr, "PLATFORM QUALIFICATION DISABLED BY -Q - "
-            "Native Client's sandbox will be unreliable!\n");
+                "Native Client's sandbox will be unreliable!\n");
         skip_qualification = 1;
         break;
       case 's':
         stub_out_mode = 1;
         break;
       default:
-       fprintf(stderr, "ERROR: unknown option: [%c]\n\n", opt);
-       PrintUsage();
-       exit(-1);
+        fprintf(stderr, "ERROR: unknown option: [%c]\n\n", opt);
+        PrintUsage();
+        exit(-1);
     }
   }
 
