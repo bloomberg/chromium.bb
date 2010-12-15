@@ -94,7 +94,7 @@ cr.define('options', function() {
         document.querySelector('div[contentType=' + type + ']' +
                                ' list[mode=normal]');
 
-    exceptionsList.clear();
+    exceptionsList.reset();
     for (var i = 0; i < list.length; i++) {
       exceptionsList.addException(list[i]);
     }
@@ -108,7 +108,7 @@ cr.define('options', function() {
 
     exceptionsList.parentNode.classList.remove('hidden');
 
-    exceptionsList.clear();
+    exceptionsList.reset();
     for (var i = 0; i < list.length; i++) {
       exceptionsList.addException(list[i]);
     }
@@ -129,7 +129,7 @@ cr.define('options', function() {
     var otrLists = document.querySelectorAll('list[mode=otr]');
 
     for (var i = 0; i < otrLists.length; i++) {
-      otrLists[i].clear();
+      otrLists[i].reset();
       otrLists[i].parentNode.classList.add('hidden');
     }
   };
@@ -154,8 +154,8 @@ cr.define('options', function() {
   ContentSettings.patternValidityCheckComplete =
       function(type, mode, pattern, valid) {
     var exceptionsList =
-        document.querySelector('div[contentType=' + type + '][mode=' + mode +
-                               '] list');
+        document.querySelector('div[contentType=' + type + '] ' +
+                               'list[mode=' + mode + ']');
     exceptionsList.patternValidityCheckComplete(pattern, valid);
   };
 

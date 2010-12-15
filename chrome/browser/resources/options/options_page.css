@@ -322,7 +322,7 @@ section > div:only-of-type label {
 }
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 .touch-slider {

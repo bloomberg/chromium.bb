@@ -223,12 +223,14 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * The HTML elements representing the items. This is just all the element
+     * The HTML elements representing the items. This is just all the list item
      * children but subclasses may override this to filter out certain elements.
      * @type {HTMLCollection}
      */
     get items() {
-      return this.children;
+      return Array.prototype.filter.call(this.children, function(child) {
+        return !child.classList.contains('spacer');
+      });
     },
 
     batchCount_: 0,

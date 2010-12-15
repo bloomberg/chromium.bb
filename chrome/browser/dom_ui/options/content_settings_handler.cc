@@ -198,6 +198,8 @@ void ContentSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXCEPTIONS_OTR_LABEL));
   localized_strings->SetString("examplePattern",
       l10n_util::GetStringUTF16(IDS_EXCEPTIONS_PATTERN_EXAMPLE));
+  localized_strings->SetString("addNewExceptionInstructions",
+      l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ADD_NEW_INSTRUCTIONS));
 
   // Cookies filter.
   localized_strings->SetString("cookies_tab_label",

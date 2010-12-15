@@ -4,11 +4,13 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 */
 
-.exceptionInput {
-  /* TODO(estade): need something here to make it fill the remaining space. */
+.exceptionPattern {
+  display: -webkit-box;
+  -webkit-box-flex: 1;
 }
 
 .exceptionSetting {
-  float: right;
-  margin-right: 30px;
+  display: inline-block;
+  width: 100px;
+  margin-right: 20px;
 }
