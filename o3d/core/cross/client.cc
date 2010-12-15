@@ -386,6 +386,10 @@ bool Client::IsRendering() {
   return (renderer_.IsAvailable() && renderer_->rendering());
 }
 
+bool Client::NeedsRender() {
+  return NeedsContinuousRender() || renderer_->need_to_render();
+}
+
 bool Client::NeedsContinuousRender() {
   bool needRender = false;
   // Only may happen in RENDERMODE_CONTINUOUS mode.

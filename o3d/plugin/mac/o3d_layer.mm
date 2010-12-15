@@ -96,7 +96,6 @@ using o3d::DisplayWindowMac;
 
 
   if (obj_) {
-    obj_->client()->Tick();
     obj_->client()->RenderClient(true);
   }
 

@@ -82,9 +82,7 @@ void LinuxTimer(XtPointer data, XtIntervalId* id) {
   obj->client()->Tick();
   obj->draw_ = true;
   if (obj->renderer()) {
-    if (obj->client()->NeedsContinuousRender() ||
-        obj->renderer()->need_to_render()) {
-
+    if (obj->client()->NeedsRender()) {
       // NOTE: this draws no matter what instead of just invalidating the
       // region, which means it will execute even if the plug-in window is
       // invisible.
@@ -605,9 +603,7 @@ static gboolean GtkTimeoutCallback(gpointer user_data) {
   obj->draw_ = true;
   obj->client()->Tick();
   if (obj->renderer()) {
-    if (obj->client()->NeedsContinuousRender() ||
-        obj->renderer()->need_to_render()) {
-
+    if (obj->client()->NeedsRender()) {
       GtkWidget *widget;
       if (obj->fullscreen()) {
         widget = obj->gtk_fullscreen_container_;

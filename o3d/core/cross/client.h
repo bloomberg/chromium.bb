@@ -264,6 +264,9 @@ class Client {
   // the plugin to become reentrant. Detect this at a higher level.
   bool IsRendering();
 
+  // Needs either ONDEMAND or CONTINOUS render.
+  bool NeedsRender();
+
   // If Renderer::max_fps has been set in RENDERMODE_CONTINUOUS mode, we don't
   // draw on each tick but just let new textures drive the rendering. There is
   // only one exception: if we haven't received any new textures for a while, we

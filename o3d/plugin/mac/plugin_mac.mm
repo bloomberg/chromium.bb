@@ -251,7 +251,10 @@ void RenderTimer::TimerCallback(CFRunLoopTimerRef timer, void* info) {
       O3DLayer* o3dLayer = static_cast<O3DLayer*>(obj->gl_layer_);
       if (o3dLayer) {
         obj->client()->Tick();
-        [o3dLayer setNeedsDisplay];
+
+        if (obj->client()->NeedsRender()) {
+          [o3dLayer setNeedsDisplay];
+        }
       }
       continue;
     }
@@ -280,8 +283,7 @@ void RenderTimer::TimerCallback(CFRunLoopTimerRef timer, void* info) {
         obj->IsOffscreenRenderingEnabled();
 
     if (plugin_visible && obj->renderer()) {
-      if (obj->client()->NeedsContinuousRender() ||
-          obj->renderer()->need_to_render()) {
+      if (obj->client()->NeedsRender()) {
         // Force a sync to the VBL (once per timer callback)
         // to avoid tearing
         GLint sync = (i == 0);
