@@ -33,6 +33,7 @@ static int BuildInterfaceDesc(NaClSrpcChannel* channel) {
   NaClSrpcHandlerDesc  basic_services[] = { { NULL, NULL } };
 
   /* Set up the output parameters for service discovery. */
+  NaClSrpcArgCtor(&out_carray);
   outs[0] = &out_carray;
   outs[1] = NULL;
   out_carray.tag = NACL_SRPC_ARG_TYPE_CHAR_ARRAY;
@@ -47,6 +48,7 @@ static int BuildInterfaceDesc(NaClSrpcChannel* channel) {
   }
   channel->client = tmp_service;
   /* Build the argument values for invoking service discovery */
+  NaClSrpcArgCtor(&out_carray);
   outs[0] = &out_carray;
   outs[1] = NULL;
   out_carray.tag = NACL_SRPC_ARG_TYPE_CHAR_ARRAY;
@@ -138,6 +140,10 @@ void NaClSrpcDtor(NaClSrpcChannel* channel) {
   NaClSrpcServiceDtor(channel->server);
   free(channel->server);
   NaClSrpcMessageChannelDelete(channel->message_channel);
+}
+
+void NaClSrpcArgCtor(NaClSrpcArg* arg) {
+  memset(arg, 0, sizeof *arg);
 }
 
 /*

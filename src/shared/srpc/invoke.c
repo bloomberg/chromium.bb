@@ -230,8 +230,51 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
       case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:                    \
       default:                                                  \
         rv = NACL_SRPC_RESULT_APP_ERROR;                        \
-        goto abort4;                                            \
+        goto done;                                              \
     }
+
+static void FreeArgs(NaClSrpcArg** vec) {
+  if (NULL == vec) {
+    return;
+  }
+  free(vec[0]);
+  free(vec);
+}
+
+static NaClSrpcArg** AllocArgs(size_t vector_length) {
+  NaClSrpcArg** vec;
+  size_t vector_length_in_bytes;
+  size_t i;
+
+  /* Allocate the index vector. */
+  if (NACL_SRPC_MAX_ARGS < vector_length) {
+    return NULL;
+  }
+  vector_length_in_bytes = (vector_length + 1) * sizeof *vec;
+  vec = (NaClSrpcArg **) malloc(vector_length_in_bytes);
+  memset(vec, 0, vector_length_in_bytes);
+  if (NULL == vec) {
+    FreeArgs(vec);
+    return NULL;
+  }
+  /* Allocate and initialize the arguments (if any). */
+  if (0 != vector_length) {
+    vec[0] = (NaClSrpcArg *) malloc(vector_length * sizeof *vec[0]);
+    if (NULL == vec[0]) {
+      FreeArgs(vec);
+      return NULL;
+    }
+    for (i = 0; i < vector_length; ++i) {
+      NaClSrpcArgCtor(vec[0] + i);
+    }
+  }
+  /* Set the index vector to point to the arguments. */
+  for (i = 1; i < vector_length; ++i) {
+    vec[i] = vec[0] + i;
+  }
+  vec[vector_length] = 0;
+  return vec;
+}
 
 NaClSrpcError NaClSrpcInvokeVaList(NaClSrpcChannel  *channel,
                                    uint32_t         rpc_num,
@@ -243,8 +286,8 @@ NaClSrpcError NaClSrpcInvokeVaList(NaClSrpcChannel  *channel,
   size_t            num_in;
   size_t            num_out;
   uint32_t          i;
-  NaClSrpcArg       **inv;
-  NaClSrpcArg       **outv;
+  NaClSrpcArg       **inv = NULL;
+  NaClSrpcArg       **outv = NULL;
   char const        *p;
   NaClSrpcError     rv;
 
@@ -268,37 +311,14 @@ NaClSrpcError NaClSrpcInvokeVaList(NaClSrpcChannel  *channel,
   }
 
   rv = NACL_SRPC_RESULT_NO_MEMORY;
-  inv = (NaClSrpcArg **) malloc((num_in + 1) * sizeof *inv);
-  if (inv == NULL) {
-    goto abort0;
+  inv = AllocArgs(num_in);
+  if (NULL == inv) {
+    goto done;
   }
-  if (0 != num_in) {
-    inv[0] = (NaClSrpcArg *) malloc(num_in * sizeof *inv[0]);
-    if (NULL == inv[0]) {
-      goto abort1;
-    }
-    for (i = 1; i < num_in; ++i) {
-      inv[i] = inv[0] + i;
-    }
-  }
-  inv[num_in] = 0;
-
-  outv = (NaClSrpcArg **) malloc((num_out+1) * sizeof *outv);
+  outv = AllocArgs(num_out);
   if (NULL == outv) {
-    goto abort2;
+    goto done;
   }
-  if (0 != num_out) {
-    outv[0] = (NaClSrpcArg *) malloc(num_out * sizeof *outv[0]);
-    if (NULL == outv[0]) {
-      goto abort3;
-    }
-    for (i = 1; i < num_out; ++i) {
-      outv[i] = outv[0] + i;
-    }
-  }
-  outv[num_out] = 0;
-
-  rv = NACL_SRPC_RESULT_INTERNAL;
 
   for (i = 0, p = arg_types; i < num_in; ++i, ++p) {
     ARGRET_SWITCH(ARG, in_va, inv[i]);
@@ -318,15 +338,9 @@ NaClSrpcError NaClSrpcInvokeVaList(NaClSrpcChannel  *channel,
     ARGRET_SWITCH(RET, out_va, outv[i]);
   }
 
-abort4:
-  free(outv[0]);
-abort3:
-  free(outv);
-abort2:
-  free(inv[0]);
-abort1:
-  free(inv);
-abort0:
+ done:
+  FreeArgs(outv);
+  FreeArgs(inv);
   return rv;
 }
 

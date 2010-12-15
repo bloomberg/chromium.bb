@@ -696,6 +696,7 @@ static void DumpArgs(const NaClSrpcArg* arg, int n) {
 void BuildArgVec(NaClSrpcArg* argv[], NaClSrpcArg arg[], int count) {
   int i;
   for (i = 0; i < count; ++i) {
+    NaClSrpcArgCtor(&arg[i]);
     argv[i] = &arg[i];
   }
   argv[count] = NULL;

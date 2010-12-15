@@ -207,6 +207,11 @@ struct NaClSrpcArg {
  */
 typedef struct NaClSrpcArg NaClSrpcArg;
 
+/**
+ * A constructor that ensures argument memory is properly initialized.
+ */
+void NaClSrpcArgCtor(NaClSrpcArg* arg);
+
 #define NACL_SRPC_RPC_SERIALIZED_FIELDS        \
   uint32_t                  protocol_version;  \
   uint32_t                  request_id;        \

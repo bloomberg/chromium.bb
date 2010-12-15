@@ -314,9 +314,13 @@ static BoolValue AllocateArgs(NaClSrpcArg** arg_pointers, size_t length) {
   if (arg_array == NULL) {
     return BoolFalse;
   }
+  /* Initialize the individual args. */
+  for (i = 0; i < length; ++i) {
+    NaClSrpcArgCtor(&arg_array[i]);
+  }
+  /* Set each array pointer to point to the respective arg. */
   for (i = 0; i < length; ++i) {
     arg_pointers[i] = &arg_array[i];
-    arg_pointers[i]->arrays.oval = NULL;
   }
   arg_pointers[length] = NULL;
   return BoolTrue;
