@@ -40,12 +40,10 @@
 
 namespace IPC {
 
-// An implementation of ChannelImpl for POSIX systems that works via
-// socketpairs.  See the .cc file for an overview of the implementation.
 class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
  public:
   // Mirror methods of Channel, see ipc_channel.h for description.
-  ChannelImpl(const IPC::ChannelHandle &channel_handle, Mode mode,
+  ChannelImpl(const IPC::ChannelHandle& channel_handle, Mode mode,
               Listener* listener);
   ~ChannelImpl();
   bool Connect();
@@ -53,12 +51,22 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   void set_listener(Listener* listener) { listener_ = listener; }
   bool Send(Message* message);
   int GetClientFileDescriptor() const;
+  bool AcceptsConnections() const;
+  bool HasAcceptedConnection() const;
+  void ResetToAcceptingConnectionState();
 
  private:
-  bool CreatePipe(const IPC::ChannelHandle &channel_handle, Mode mode);
+  bool CreatePipe(const IPC::ChannelHandle& channel_handle,
+                  bool uses_domain_sockets,
+                  bool listening_socket);
 
   bool ProcessIncomingMessages();
   bool ProcessOutgoingMessages();
+
+  bool AcceptConnection();
+  void ClosePipeOnError();
+  void QueueHelloMessage();
+  bool IsHelloMessage(const Message* m) const;
 
   // MessageLoopForIO::Watcher implementation.
   virtual void OnFileCanReadWithoutBlocking(int fd);
@@ -74,17 +82,14 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
 
   // Indicates whether we're currently blocked waiting for a write to complete.
   bool is_blocked_on_write_;
+  bool waiting_connect_;
 
   // If sending a message blocks then we use this variable
   // to keep track of where we are.
   size_t message_send_bytes_written_;
 
-  // If the kTestingChannelID flag is specified, we use a FIFO instead of
-  // a socketpair().
-  bool uses_fifo_;
-
-  // File descriptor we're listening on for new connections in the FIFO case;
-  // unused otherwise.
+  // File descriptor we're listening on for new connections if we listen
+  // for connections.
   int server_listen_pipe_;
 
   // The pipe used for communication.
@@ -132,10 +137,8 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   std::string input_overflow_buf_;
   std::vector<int> input_overflow_fds_;
 
-  // In server-mode, we have to wait for the client to connect before we
-  // can begin reading.  We make use of the input_state_ when performing
-  // the connect operation in overlapped mode.
-  bool waiting_connect_;
+  // True if we are responsible for unlinking the unix domain socket file.
+  bool must_unlink_;
 
   ScopedRunnableMethodFactory<ChannelImpl> factory_;
 
