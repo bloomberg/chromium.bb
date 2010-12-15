@@ -42,11 +42,11 @@ class TestSafeBrowsingDatabase :  public SafeBrowsingDatabase {
   // Called on the IO thread to check if the given URL is safe or not.  If we
   // can synchronously determine that the URL is safe, CheckUrl returns true,
   // otherwise it returns false.
-  virtual bool ContainsUrl(const GURL& url,
-                           std::string* matching_list,
-                           std::vector<SBPrefix>* prefix_hits,
-                           std::vector<SBFullHashResult>* full_hits,
-                           base::Time last_update) {
+  virtual bool ContainsBrowseUrl(const GURL& url,
+                                 std::string* matching_list,
+                                 std::vector<SBPrefix>* prefix_hits,
+                                 std::vector<SBFullHashResult>* full_hits,
+                                 base::Time last_update) {
     base::hash_map<std::string, Hits>::const_iterator
         badurls_it = badurls_.find(url.spec());
     if (badurls_it == badurls_.end())
@@ -54,6 +54,12 @@ class TestSafeBrowsingDatabase :  public SafeBrowsingDatabase {
     *prefix_hits = badurls_it->second.prefix_hits;
     *full_hits = badurls_it->second.full_hits;
     return true;
+  }
+
+  virtual bool ContainsDownloadUrl(const GURL& url,
+                                   std::vector<SBPrefix>* prefix_hits) {
+    ADD_FAILURE() << "Not implemented.";
+    return false;
   }
 
   virtual bool UpdateStarted(std::vector<SBListChunkRanges>* lists) {
@@ -97,7 +103,8 @@ class TestSafeBrowsingDatabaseFactory : public SafeBrowsingDatabaseFactory {
   TestSafeBrowsingDatabaseFactory() : db_(NULL) {}
   virtual ~TestSafeBrowsingDatabaseFactory() {}
 
-  virtual SafeBrowsingDatabase* CreateSafeBrowsingDatabase() {
+  virtual SafeBrowsingDatabase* CreateSafeBrowsingDatabase(
+      bool enable_download_protection) {
     db_ = new TestSafeBrowsingDatabase();
     return db_;
   }

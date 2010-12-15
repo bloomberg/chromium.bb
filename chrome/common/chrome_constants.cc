@@ -91,7 +91,7 @@ const FilePath::CharType kFaviconsFilename[] = FPL("Favicons");
 const FilePath::CharType kHistoryFilename[] = FPL("History");
 const FilePath::CharType kLocalStateFilename[] = FPL("Local State");
 const FilePath::CharType kPreferencesFilename[] = FPL("Preferences");
-const FilePath::CharType kSafeBrowsingFilename[] = FPL("Safe Browsing Bloom");
+const FilePath::CharType kSafeBrowsingBaseFilename[] = FPL("Safe Browsing");
 const FilePath::CharType kSafeBrowsingPhishingModelFilename[] =
     FPL("Safe Browsing Phishing Model");
 const FilePath::CharType kSingletonCookieFilename[] = FPL("SingletonCookie");

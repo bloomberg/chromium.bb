@@ -1024,6 +1024,10 @@ const char kSbMacKeyURLPrefix[] = "safebrowsing-mackey-url-prefix";
 // This is used for testing only.
 const char kSbDisableAutoUpdate[] = "safebrowsing-disable-auto-update";
 
+// If present, safebrowsing checks download url and download content's hash
+// to make sure the content are not malicious.
+const char kSbEnableDownloadProtection[] = "safebrowsing-download-protection";
+
 // Enable support for SDCH filtering (dictionary based expansion of content).
 // Optional argument is *the* only domain name that will have SDCH suppport.
 // Default is  "-enable-sdch" to advertise SDCH on all domains.

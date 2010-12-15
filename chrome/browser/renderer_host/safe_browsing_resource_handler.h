@@ -67,8 +67,8 @@ class SafeBrowsingResourceHandler : public ResourceHandler,
 
   // SafeBrowsingService::Client implementation, called on the IO thread once
   // the URL has been classified.
-  virtual void OnUrlCheckResult(const GURL& url,
-                                SafeBrowsingService::UrlCheckResult result);
+  virtual void OnBrowseUrlCheckResult(
+      const GURL& url, SafeBrowsingService::UrlCheckResult result);
 
   // SafeBrowsingService::Client implementation, called on the IO thread when
   // the user has decided to proceed with the current request, or go back.

@@ -44,7 +44,7 @@ bool FileRewind(FILE* fp) {
 bool FileSkip(size_t bytes, FILE* fp) {
   // Although fseek takes negative values, for this case, we only want
   // to skip forward.
-  DCHECK(static_cast<long>(bytes) > 0);
+  DCHECK(static_cast<long>(bytes) >= 0);
   if (static_cast<long>(bytes) < 0)
     return false;
   int rv = fseek(fp, static_cast<long>(bytes), SEEK_CUR);

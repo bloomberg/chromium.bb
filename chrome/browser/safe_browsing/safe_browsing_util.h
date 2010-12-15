@@ -261,16 +261,23 @@ namespace safe_browsing_util {
 // SafeBrowsing list names.
 extern const char kMalwareList[];
 extern const char kPhishingList[];
+// Binary Download list names.
+extern const char kBinUrlList[];
+extern const char kBinHashList[];
 
-// Converts between the SafeBrowsing list names and their enumerated value.
-// If the list names change, both of these methods must be updated.
 enum ListType {
   INVALID = -1,
   MALWARE = 0,
   PHISH = 1,
+  BINURL = 2,
+  BINHASH = 3,
 };
+
+// Maps a list name to ListType.
 int GetListId(const std::string& name);
-std::string GetListName(int list_id);
+// Maps a ListId to list name. Return false if fails.
+bool GetListName(int list_id, std::string* list);
+
 
 // Canonicalizes url as per Google Safe Browsing Specification.
 // See section 6.1 in
@@ -294,6 +301,7 @@ int CompareFullHashes(const GURL& url,
 
 bool IsPhishingList(const std::string& list_name);
 bool IsMalwareList(const std::string& list_name);
+bool IsBadbinurlList(const std::string& list_name);
 
 // Returns 'true' if 'mac' can be verified using 'key' and 'data'.
 bool VerifyMAC(const std::string& key,

@@ -294,3 +294,43 @@ TEST(SafeBrowsingUtilTest, FullHashCompare) {
   url = GURL("http://www.evil.com/okay_path.html");
   EXPECT_EQ(safe_browsing_util::CompareFullHashes(url, full_hashes), -1);
 }
+
+TEST(SafeBrowsingUtilTest, ListIdListNameConversion) {
+  std::string list_name;
+  EXPECT_FALSE(safe_browsing_util::GetListName(safe_browsing_util::INVALID,
+                                               &list_name));
+  EXPECT_TRUE(safe_browsing_util::GetListName(safe_browsing_util::MALWARE,
+                                              &list_name));
+  EXPECT_EQ(list_name, std::string(safe_browsing_util::kMalwareList));
+  EXPECT_EQ(safe_browsing_util::MALWARE,
+            safe_browsing_util::GetListId(list_name));
+
+  EXPECT_TRUE(safe_browsing_util::GetListName(safe_browsing_util::PHISH,
+                                              &list_name));
+  EXPECT_EQ(list_name, std::string(safe_browsing_util::kPhishingList));
+  EXPECT_EQ(safe_browsing_util::PHISH,
+            safe_browsing_util::GetListId(list_name));
+
+  EXPECT_TRUE(safe_browsing_util::GetListName(safe_browsing_util::BINURL,
+                                              &list_name));
+  EXPECT_EQ(list_name, std::string(safe_browsing_util::kBinUrlList));
+  EXPECT_EQ(safe_browsing_util::BINURL,
+            safe_browsing_util::GetListId(list_name));
+
+
+  EXPECT_TRUE(safe_browsing_util::GetListName(safe_browsing_util::BINHASH,
+                                              &list_name));
+  EXPECT_EQ(list_name, std::string(safe_browsing_util::kBinHashList));
+  EXPECT_EQ(safe_browsing_util::BINHASH,
+            safe_browsing_util::GetListId(list_name));
+}
+
+// Since the ids are saved in file, we need to make sure they don't change.
+// Since only the last bit of each id is saved in file together with
+// chunkids, this checks only last bit.
+TEST(SafeBrowsingUtilTest, ListIdVerification) {
+  EXPECT_EQ(0, safe_browsing_util::MALWARE % 2);
+  EXPECT_EQ(1, safe_browsing_util::PHISH % 2);
+  EXPECT_EQ(0, safe_browsing_util::BINURL %2);
+  EXPECT_EQ(1, safe_browsing_util::BINHASH % 2);
+}

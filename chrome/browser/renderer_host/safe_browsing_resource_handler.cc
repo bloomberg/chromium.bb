@@ -90,7 +90,7 @@ void SafeBrowsingResourceHandler::OnCheckUrlTimeout() {
   CHECK(state_ == STATE_CHECKING_URL);
   CHECK(defer_state_ != DEFERRED_NONE);
   safe_browsing_->CancelCheck(this);
-  OnUrlCheckResult(deferred_url_, SafeBrowsingService::URL_SAFE);
+  OnBrowseUrlCheckResult(deferred_url_, SafeBrowsingService::URL_SAFE);
 }
 
 bool SafeBrowsingResourceHandler::OnWillStart(int request_id,
@@ -139,7 +139,7 @@ void SafeBrowsingResourceHandler::OnRequestClosed() {
 
 // SafeBrowsingService::Client implementation, called on the IO thread once
 // the URL has been classified.
-void SafeBrowsingResourceHandler::OnUrlCheckResult(
+void SafeBrowsingResourceHandler::OnBrowseUrlCheckResult(
     const GURL& url, SafeBrowsingService::UrlCheckResult result) {
   CHECK(state_ == STATE_CHECKING_URL);
   CHECK(defer_state_ != DEFERRED_NONE);
@@ -225,7 +225,7 @@ void SafeBrowsingResourceHandler::Shutdown() {
 
 bool SafeBrowsingResourceHandler::CheckUrl(const GURL& url) {
   CHECK(state_ == STATE_NONE);
-  bool succeeded_synchronously = safe_browsing_->CheckUrl(url, this);
+  bool succeeded_synchronously = safe_browsing_->CheckBrowseUrl(url, this);
   if (succeeded_synchronously) {
     safe_browsing_result_ = SafeBrowsingService::URL_SAFE;
     safe_browsing_->LogPauseDelay(base::TimeDelta());  // No delay.

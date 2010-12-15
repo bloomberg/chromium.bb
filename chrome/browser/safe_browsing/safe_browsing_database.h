@@ -14,7 +14,6 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store.h"
-#include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 namespace base {
@@ -32,22 +31,29 @@ class SafeBrowsingDatabaseFactory {
  public:
   SafeBrowsingDatabaseFactory() { }
   virtual ~SafeBrowsingDatabaseFactory() { }
-  virtual SafeBrowsingDatabase* CreateSafeBrowsingDatabase() = 0;
+  virtual SafeBrowsingDatabase* CreateSafeBrowsingDatabase(
+      bool enable_download_protection) = 0;
  private:
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingDatabaseFactory);
 };
 
-// Encapsulates the database that stores information about phishing
-// and malware sites.  There is one on-disk database for all profiles,
-// as it doesn't contain user-specific data.  This object is not
-// thread-safe, i.e. all its methods should be used on the same thread
-// that it was created on.
 
+
+// Encapsulates on-disk databases that for safebrowsing. There are two
+// databases: browse database and download database. The browse database
+// contains information about phishing and malware urls. The download
+// database contains URLs for bad binaries (e.g: those containing virus)
+// and hash of these downloaded contents. These on-disk databases are shared
+// among all profiles, as it doesn't contain user-specific data. This object
+// is not thread-safe, i.e. all its methods should be used on the same thread
+// that it was created on.
 class SafeBrowsingDatabase {
  public:
   // Factory method for obtaining a SafeBrowsingDatabase implementation.
   // It is not thread safe.
-  static SafeBrowsingDatabase* Create();
+  // |enable_download_protection| is used to control the download database
+  // feature.
+  static SafeBrowsingDatabase* Create(bool enable_download_protection);
 
   // Makes the passed |factory| the factory used to instantiate
   // a SafeBrowsingDatabase. This is used for tests.
@@ -63,16 +69,22 @@ class SafeBrowsingDatabase {
   // Deletes the current database and creates a new one.
   virtual bool ResetDatabase() = 0;
 
-  // Returns false if |url| is not in the database.  If it returns
-  // true, then either |matching_list| is the name of the matching
+  // Returns false if |url| is not in the browse database.  If it
+  // returns true, then either |matching_list| is the name of the matching
   // list, or |prefix_hits| and |full_hits| contains the matching hash
   // prefixes.  This function is safe to call from threads other than
   // the creation thread.
-  virtual bool ContainsUrl(const GURL& url,
-                           std::string* matching_list,
-                           std::vector<SBPrefix>* prefix_hits,
-                           std::vector<SBFullHashResult>* full_hits,
-                           base::Time last_update) = 0;
+  virtual bool ContainsBrowseUrl(const GURL& url,
+                                 std::string* matching_list,
+                                 std::vector<SBPrefix>* prefix_hits,
+                                 std::vector<SBFullHashResult>* full_hits,
+                                 base::Time last_update) = 0;
+
+  // Returns false if |url| is not in Download database. If it returns true,
+  // |prefix_hits| should contain the prefix for |url|.
+  // This function could ONLY be accessed from creation thread.
+  virtual bool ContainsDownloadUrl(const GURL& url,
+                                   std::vector<SBPrefix>* prefix_hits) = 0;
 
   // A database transaction should look like:
   //
@@ -112,19 +124,27 @@ class SafeBrowsingDatabase {
   // The name of the bloom-filter file for the given database file.
   static FilePath BloomFilterForFilename(const FilePath& db_filename);
 
+  // Filename for malware and phishing URL database.
+  static FilePath BrowseDBFilename(const FilePath& db_base_filename);
+
+  // Filename for download URL and download binary hash database.
+  static FilePath DownloadDBFilename(const FilePath& db_base_filename);
+
   // Enumerate failures for histogramming purposes.  DO NOT CHANGE THE
   // ORDERING OF THESE VALUES.
   enum FailureType {
     FAILURE_DATABASE_CORRUPT,
     FAILURE_DATABASE_CORRUPT_HANDLER,
-    FAILURE_DATABASE_UPDATE_BEGIN,
-    FAILURE_DATABASE_UPDATE_FINISH,
+    FAILURE_BROWSE_DATABASE_UPDATE_BEGIN,
+    FAILURE_BROWSE_DATABASE_UPDATE_FINISH,
     FAILURE_DATABASE_FILTER_MISSING,
     FAILURE_DATABASE_FILTER_READ,
     FAILURE_DATABASE_FILTER_WRITE,
     FAILURE_DATABASE_FILTER_DELETE,
     FAILURE_DATABASE_STORE_MISSING,
     FAILURE_DATABASE_STORE_DELETE,
+    FAILURE_DOWNLOAD_DATABASE_UPDATE_BEGIN,
+    FAILURE_DOWNLOAD_DATABASE_UPDATE_FINISH,
 
     // Memory space for histograms is determined by the max.  ALWAYS
     // ADD NEW VALUES BEFORE THIS ONE.
@@ -142,12 +162,15 @@ class SafeBrowsingDatabase {
 
 class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
  public:
-  // Create a database on the given store.  Takes ownership of
-  // |store|.  This method is temporary for
-  // SafeBrowsingDatabase::Create(), do not use it otherwise.
-  explicit SafeBrowsingDatabaseNew(SafeBrowsingStore* store);
+  // Create a database with a browse store and download store. Takes ownership
+  // of browse_store and download_store. When |download_store| is NULL,
+  // the database will ignore any operations related download (url hashes and
+  // binary hashes).
+  SafeBrowsingDatabaseNew(SafeBrowsingStore* browse_store,
+                          SafeBrowsingStore* download_store);
 
-  // Create a database with a default store.
+  // Create a database with a browse store. This is a legacy interface that
+  // useds Sqlite.
   SafeBrowsingDatabaseNew();
 
   virtual ~SafeBrowsingDatabaseNew();
@@ -155,11 +178,14 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // Implement SafeBrowsingDatabase interface.
   virtual void Init(const FilePath& filename);
   virtual bool ResetDatabase();
-  virtual bool ContainsUrl(const GURL& url,
-                           std::string* matching_list,
-                           std::vector<SBPrefix>* prefix_hits,
-                           std::vector<SBFullHashResult>* full_hits,
-                           base::Time last_update);
+  virtual bool ContainsBrowseUrl(const GURL& url,
+                                 std::string* matching_list,
+                                 std::vector<SBPrefix>* prefix_hits,
+                                 std::vector<SBFullHashResult>* full_hits,
+                                 base::Time last_update);
+  virtual bool ContainsDownloadUrl(const GURL& url,
+                                   std::vector<SBPrefix>* prefix_hits);
+
   virtual bool UpdateStarted(std::vector<SBListChunkRanges>* lists);
   virtual void InsertChunks(const std::string& list_name,
                             const SBChunkList& chunks);
@@ -172,7 +198,10 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   friend class SafeBrowsingDatabaseTest;
   FRIEND_TEST(SafeBrowsingDatabaseTest, HashCaching);
 
-  // Deletes the files on disk.
+  // Return the browse_store_ or download_store_ based on list_id.
+  SafeBrowsingStore* GetStore(int list_id);
+
+    // Deletes the files on disk.
   bool Delete();
 
   // Load the bloom filter off disk, or generates one if it doesn't exist.
@@ -197,29 +226,39 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   void InsertSub(int chunk, SBPrefix host, const SBEntry* entry, int list_id);
   void InsertSubChunks(int list_id, const SBChunkList& chunks);
 
+  void UpdateDownloadStore();
+  void UpdateBrowseStore();
+
   // Used to verify that various calls are made from the thread the
   // object was created on.
   MessageLoop* creation_loop_;
 
   // Lock for protecting access to variables that may be used on the
-  // IO thread.  This includes |bloom_filter_|, |full_hashes_|,
-  // |pending_hashes_|, and |prefix_miss_cache_|.
+  // IO thread.  This includes |browse_bloom_filter_|, |full_browse_hashes_|,
+  // |pending_browse_hashes_|, and |prefix_miss_cache_|.
   Lock lookup_lock_;
 
   // Underlying persistent store for chunk data.
-  FilePath filename_;
-  scoped_ptr<SafeBrowsingStore> store_;
+  // For browsing related (phishing and malware URLs) chunks and prefixes.
+  FilePath browse_filename_;
+  scoped_ptr<SafeBrowsingStore> browse_store_;
 
-  // Bloom filter generated from the add-prefixes in |store_|.
+  // For download related (download URL and binary hash) chunks and prefixes.
+  FilePath download_filename_;
+  scoped_ptr<SafeBrowsingStore> download_store_;
+
+  // Bloom filter generated from the add-prefixes in |browse_store_|.
+  // Only browse_store_ requires the BloomFilter for fast query.
   FilePath bloom_filter_filename_;
-  scoped_refptr<BloomFilter> bloom_filter_;
+  scoped_refptr<BloomFilter> browse_bloom_filter_;
 
-  // Cached full-hash items, ordered by prefix for efficient scanning.
-  // |full_hashes_| are items from |store_|, |pending_hashes_| are
-  // items from |CacheHashResults()|, which will be pushed to the
-  // store on the next update.
-  std::vector<SBAddFullHash> full_hashes_;
-  std::vector<SBAddFullHash> pending_hashes_;
+  // Cached browse store related full-hash items, ordered by prefix for
+  // efficient scanning.
+  // |full_browse_hashes_| are items from |browse_store_|,
+  // |pending_browse_hashes_| are items from |CacheHashResults()|, which
+  // will be pushed to the store on the next update.
+  std::vector<SBAddFullHash> full_browse_hashes_;
+  std::vector<SBAddFullHash> pending_browse_hashes_;
 
   // Cache of prefixes that returned empty results (no full hash
   // match) to |CacheHashResults()|.  Cached to prevent asking for
