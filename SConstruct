@@ -375,20 +375,20 @@ pre_base_env.AddMethod(EnsureRequiredBuildWarnings)
 # Add list of Flaky or Bad tests to skip per platform.  A
 # platform is defined as build type
 # <BUILD_TYPE>-<SUBARCH>
-bad_build_lists = dict()
-bad_build_lists['opt-win-64'] = ['run_srpc_basic_test',
-                                 'run_srpc_bad_service_test',
-                                 'run_fake_browser_ppapi_test',
-                                 'run_ppapi_plugin_unittest']
+bad_build_lists = {}
+bad_build_lists['opt-win-64'] = set(['run_srpc_basic_test',
+                                     'run_srpc_bad_service_test',
+                                     'run_fake_browser_ppapi_test',
+                                     'run_ppapi_plugin_unittest'])
 
-bad_build_lists['dbg-win-64'] = ['run_srpc_basic_test',
-                                 'run_srpc_bad_service_test',
-                                 'run_fake_browser_ppapi_test',
-                                 'run_ppapi_plugin_unittest']
+bad_build_lists['dbg-win-64'] = set(['run_srpc_basic_test',
+                                     'run_srpc_bad_service_test',
+                                     'run_fake_browser_ppapi_test',
+                                     'run_ppapi_plugin_unittest'])
 
 # This is a list of tests that do not yet pass when using nacl-glibc.
 # TODO(mseaborn): Enable more of these tests!
-nacl_glibc_skiplist = [
+nacl_glibc_skiplist = set([
     # This test assumes it can allocate address ranges from the
     # dynamic code area itself.  However, this does not work when
     # ld.so assumes it can do the same.  To fix this, ld.so will need
@@ -426,7 +426,7 @@ nacl_glibc_skiplist = [
     # 2) the test needs an explicit fflush(stdout) call because the
     # process is killed without exit() being called.
     'run_srpc_sysv_shm_test',
-    ]
+    ])
 
 
 # If a test is not in one of these suites, it will probally not be run on a
@@ -438,11 +438,6 @@ MAJOR_TEST_SUITES = set([
   'large_tests',
   'browser_tests',
   'huge_tests',
-
-  # Adding a test to broken_tests means the test will not be run unless
-  # explicitly requested by name. Broken tests cannot belong to any other test
-  # suite and are not added to all_tests
-  'broken_tests',
 ])
 
 # These are the test suites we know exist, but aren't run on a regular basis.
@@ -475,17 +470,11 @@ def ValidateTestSuiteNames(suite_name, node_name):
       repr(suite_name)))
 
   if not suite_name:
-    raise Exception("No test suites are specified for %s. Put the test in "
-      "'broken_tests' if there's a known issue and you don't want it to "
-      "run" % (node_name,))
-
-  if 'broken_tests' in suite_name and len(suite_name) != 1:
-    raise Exception("'broken_tests' is a special test suite - if you're "
-      "adding a test to it, that test (%s) should not be in any other "
-      "suite" % (node_name,))
+    raise Exception("No test suites are specified for %s. Set the 'broken' "
+      "parameter on AddNodeToTestSuite in the cases where there's a known "
+      "issue and you don't want the test to run" % (node_name,))
 
   # Make sure each test is in at least one test suite we know will run
-  # 'broken_tests' is where you put tests you deliberately do not want to run
   major_suites = set(suite_name).intersection(MAJOR_TEST_SUITES)
   if not major_suites:
     raise Exception("None of the test suites %s for %s are run on a "
@@ -498,18 +487,10 @@ def ValidateTestSuiteNames(suite_name, node_name):
       "a typo for %s, or it should be added to ACCEPTABLE_TEST_SUITES in "
       "SConstruct" % (s, node_name))
 
-def IsBrokenTest(suite_name):
-  return len(suite_name) == 1 and 'broken_tests' == suite_name[0]
-
 BROKEN_TEST_COUNT = 0
 
-def AddNodeToTestSuite(env, node, suite_name, node_name=None, broken=False):
-  global BROKEN_TEST_COUNT
 
-  # CommandTest can return an empty list when it silently discards a test
-  if not node:
-    return
-
+def GetPlatformString(env):
   build = env['BUILD_TYPE']
 
   # If we are testing 'NACL' we really need the trusted info
@@ -521,8 +502,10 @@ def AddNodeToTestSuite(env, node, suite_name, node_name=None, broken=False):
     subarch = env['BUILD_SUBARCH']
 
   # Build the test platform string
-  platform = build + '-' + subarch
+  return build + '-' + subarch
 
+
+def ShouldSkipTest(env, node_name):
   # There are no known-to-fail tests any more, but this code is left
   # in so that if/when we port to a new architecture or add a test
   # that is known to fail on some platform(s), we can continue to have
@@ -530,25 +513,41 @@ def AddNodeToTestSuite(env, node, suite_name, node_name=None, broken=False):
   # don't *build* on some platforms need to be omitted in another way.
 
   # Retrieve list of tests to skip on this platform
-  skiplist = bad_build_lists.get(platform,[])
-
-  if env.Bit('nacl_glibc'):
-    skiplist = skiplist + nacl_glibc_skiplist
-
+  skiplist = bad_build_lists.get(GetPlatformString(env), [])
   if node_name in skiplist:
-    print '*** SKIPPING ', platform, ':', node_name
+    return True
+
+  if env.Bit('nacl_glibc') and node_name in nacl_glibc_skiplist:
+    return True
+
+  return False
+
+
+def AddNodeToTestSuite(env, node, suite_name, node_name=None, broken=False):
+  global BROKEN_TEST_COUNT
+
+  # CommandTest can return an empty list when it silently discards a test
+  if not node:
     return
 
   ValidateTestSuiteNames(suite_name, node_name)
 
   AlwaysBuild(node)
 
-  if broken or IsBrokenTest(suite_name):
+  if node_name:
+    display_name = node_name
+  else:
+    display_name = '<no name>'
+
+  if broken:
     # Only print if --verbose is specified
     if not GetOption('brief_comstr'):
-      print '*** BROKEN ', node_name
-    env.Alias('broken_tests', node)
+      print '*** BROKEN ', display_name
     BROKEN_TEST_COUNT += 1
+    env.Alias('broken_tests', node)
+  elif ShouldSkipTest(env, node_name):
+    print '*** SKIPPING ', GetPlatformString(env), ':', display_name
+    env.Alias('broken_tests', node)
   else:
     env.Alias('all_tests', node)
 

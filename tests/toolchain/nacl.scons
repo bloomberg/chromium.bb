@@ -36,18 +36,15 @@ env.AddNodeToTestSuite(node,
                        'run_setlongjmp_test')
 
 
-# NOTE: this currently only works for PNaCl, c.f:
-# http://code.google.com/p/nativeclient/issues/detail?id=968
-if env.Bit('bitcode'):
-  INITFINIT_TESTS=['toolchain_tests', 'small_tests']
-else:
-  INITFINIT_TESTS=['broken_tests']
-
 nexe = env.ComponentProgram('initfini.nexe', 'initfini.c')
 node = env.CommandSelLdrTestNacl('initfini.out',
                                  command=[nexe],
                                  stdout_golden=env.File('initfini.stdout'))
-env.AddNodeToTestSuite(node, INITFINIT_TESTS, 'run_initfini_test')
+
+# NOTE: this currently only works for PNaCl, c.f:
+# http://code.google.com/p/nativeclient/issues/detail?id=968
+env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
+                       'run_initfini_test', broken=not env.Bit('bitcode'))
 
 
 # NOTE: the tests below break easily under valgrid and since
@@ -103,22 +100,20 @@ for tag, e in ENVIRONMENTS_TO_TRY:
               'eh_loop_many.cc',
               'eh_catch_many.cc',
               'eh_loop_break.cc']:
-    tests = ['toolchain_tests', 'small_tests']
     # http://code.google.com/p/nativeclient/issues/detail?id=1127
-    if e.Bit('target_arm') and src.startswith('eh_'):
-      tests = ['broken_tests']
+    broken = e.Bit('target_arm') and src.startswith('eh_')
     # http://code.google.com/p/nativeclient/issues/detail?id=1106
     if src =='unwind_trace.cc':
-      if e.Bit('nacl_pic') and e.Bit('target_x86_64'):
-        tests = ['broken_tests']
+      broken |= e.Bit('nacl_pic') and e.Bit('target_x86_64')
 
       # the tracing gets messed up by inlining
-      if tag.startswith('opt'):
-        tests = ['broken_tests']
+      broken |= tag.startswith('opt')
+
     name = src.split('.')[0] + '_' + tag
     nobj = e.ComponentObject(name + '.o', src)
     nexe = e.ComponentProgram(name + '.nexe', nobj)
     node = e.CommandSelLdrTestNacl(name + '.out',
                                    command=[nexe],
                                    exit_status='55')
-    e.AddNodeToTestSuite(node, tests, 'run_' + name  +'_test')
+    e.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
+                         'run_' + name  +'_test', broken=broken)

@@ -793,7 +793,6 @@ if (not env.CrossToolsBuild() and
       exit_status='segfault')
 
   # TODO(tuduce): Make it work on windows.
-  if not env.Bit('windows'):
-    env.AddNodeToTestSuite(node, ['medium_tests'])
-  else:
-    env.AddNodeToTestSuite(node, ['broken_tests'])
+  env.AddNodeToTestSuite(node, ['medium_tests'],
+                         'run_sel_ldr_thread_death_test',
+                         broken=env.Bit('windows'))

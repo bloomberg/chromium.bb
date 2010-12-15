@@ -11,12 +11,7 @@ Import('env')
 # we want to keep building the tests.
 # TODO(mseaborn): To fix this, either switch these tests to
 # dynamically link against libc, or make use of ld.so optional.
-if env.Bit('nacl_glibc'):
-  TEST_SUITES = ['broken_tests']
-  TEST_SUITES_BARE = ['broken_tests']
-else:
-  TEST_SUITES = ['small_tests', 'sel_ldr_tests']
-  TEST_SUITES_BARE = ['small_tests', 'sel_ldr_tests', 'barebones_tests']
+broken = env.Bit('nacl_glibc')
 
 LINK_FLAGS_MULTILIB = ['-nostdlib']
 
@@ -77,8 +72,9 @@ for basename in ['addr_modes',
       command=[env.File(nexe)],
       exit_status='55',)
   env.AddNodeToTestSuite(node,
-                         TEST_SUITES_BARE,
-                         test)
+                         ['small_tests', 'sel_ldr_tests', 'barebones_tests'],
+                         test,
+                         broken=broken)
 
 
 # a test that the validador can handle an empty segment after the last
@@ -90,5 +86,6 @@ if env.Bit('build_arm') and not env.Bit('bitcode'):
       command=[env.File(nexe)],
       exit_status='55',)
   env.AddNodeToTestSuite(node,
-                         TEST_SUITES,
-                         'run_gold-barebones_hello_world_test')
+                         ['small_tests', 'sel_ldr_tests'],
+                         'run_gold-barebones_hello_world_test',
+                         broken=broken)
