@@ -1995,6 +1995,13 @@ void Browser::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kDevToolsSplitLocation, -1);
   prefs->RegisterDictionaryPref(prefs::kPreferencesWindowPlacement);
   prefs->RegisterIntegerPref(prefs::kExtensionSidebarWidth, -1);
+  // Educated guess: Chrome has a bundled Flash version supporting
+  // clearing LSO data, Chromium hasn't.
+#if defined(GOOGLE_CHROME_BUILD)
+  prefs->RegisterBooleanPref(prefs::kClearPluginLSODataEnabled, true);
+#else
+  prefs->RegisterBooleanPref(prefs::kClearPluginLSODataEnabled, false);
+#endif
 }
 
 // static
@@ -2023,6 +2030,7 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kDeleteCookies, true);
   prefs->RegisterBooleanPref(prefs::kDeletePasswords, false);
   prefs->RegisterBooleanPref(prefs::kDeleteFormData, false);
+  prefs->RegisterBooleanPref(prefs::kDeleteLSOData, false);
   prefs->RegisterIntegerPref(prefs::kDeleteTimePeriod, 0);
   prefs->RegisterBooleanPref(prefs::kCheckDefaultBrowser, true);
   prefs->RegisterBooleanPref(prefs::kShowOmniboxSearchHint, true);

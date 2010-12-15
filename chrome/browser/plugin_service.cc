@@ -220,7 +220,6 @@ PluginProcessHost* PluginService::FindOrStartPluginProcess(
   WebPluginInfo info;
   if (!NPAPI::PluginList::Singleton()->GetPluginInfoByPath(
       plugin_path, &info)) {
-    NOTREACHED();
     return NULL;
   }
 
