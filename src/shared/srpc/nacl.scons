@@ -6,12 +6,11 @@
 Import('env')
 
 # TODO(robertm): get rid of this if possible
-env.Append(CCFLAGS=['-Wno-strict-aliasing'])
+env.Append(CCFLAGS=['-fno-strict-aliasing'])
 
 
 # NOTE: keep this sync'ed with build.scons
 trusted_untrusted_shared = [
-    'imc_buffer.c',
     'invoke.c',
     'module_init_fini.c',
     'nacl_srpc.c',

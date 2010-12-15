@@ -13,17 +13,21 @@
     'target_conditions': [
       ['target_base=="srpc"', {
         'sources': [
-          'imc_buffer.c',
           'invoke.c',
           'module_init_fini.c',
           'nacl_srpc.c',
           'nacl_srpc.h',
           'nacl_srpc_internal.h',
+          'nacl_srpc_message.c',
           'rpc_serialize.c',
           'rpc_service.c',
           'rpc_server_loop.c',
           'rpc_universal.c',
           'utility.c',
+        ],
+        'cflags': [
+          '-fno-strict-aliasing',
+          '-Wno-missing-field-initializers'
         ],
       }],
     ],

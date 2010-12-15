@@ -75,11 +75,7 @@ class PluginNpapi : public nacl::NPInstance, public Plugin {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginNpapi);
-  PluginNpapi() :
-    module_(NULL),
-    nacl_instance_(NULL),
-    video_(NULL),
-    multimedia_channel_(NULL) { }
+  PluginNpapi();
   ~PluginNpapi();
   nacl::NPModule* module_;
   NPObject* nacl_instance_;

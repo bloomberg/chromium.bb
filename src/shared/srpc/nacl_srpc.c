@@ -18,6 +18,7 @@
 #endif  /* __native_client__ */
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/srpc/nacl_srpc_internal.h"
+#include "native_client/src/shared/srpc/nacl_srpc_message.h"
 
 /*
  * Service discovery is used to build an interface description that
@@ -93,25 +94,17 @@ static int BuildInterfaceDesc(NaClSrpcChannel* channel) {
  * Set up the buffering structures for a channel.
  */
 int NaClSrpcClientCtor(NaClSrpcChannel* channel, NaClSrpcImcDescType handle) {
-#if defined(__native_client__)
-  channel->imc_handle = handle;
-#else
-  if (NULL == handle) {
+  channel->message_channel = NaClSrpcMessageChannelNew(handle);
+  if (NULL == channel->message_channel) {
     return 0;
   }
-  if (0 == NaClNrdXferEffectorCtor(&channel->eff)) {
-    return 0;
-  }
-  channel->imc_handle = NaClDescRef(handle);
-#endif  /* defined(__native_client__) */
   /* Initialize the server information. */
   channel->server = NULL;
-  /* Construct the buffers. */
-  __NaClSrpcImcBufferCtor(&channel->send_buf, 1);
-  __NaClSrpcImcBufferCtor(&channel->receive_buf, 0);
   channel->next_outgoing_request_id = 0;
   /* Do service discovery to speed method invocation. */
   if (!BuildInterfaceDesc(channel)) {
+    NaClSrpcMessageChannelDelete(channel->message_channel);
+    channel->message_channel = NULL;
     return 0;
   }
   /* Return success. */
@@ -122,22 +115,12 @@ int NaClSrpcServerCtor(NaClSrpcChannel* channel,
                        NaClSrpcImcDescType handle,
                        NaClSrpcService* service,
                        void* server_instance_data) {
-#if defined(__native_client__)
-  channel->imc_handle = handle;
-#else
-  if (NULL == handle) {
+  channel->message_channel = NaClSrpcMessageChannelNew(handle);
+  if (NULL == channel->message_channel) {
     return 0;
   }
-  if (0 == NaClNrdXferEffectorCtor(&channel->eff)) {
-    return 0;
-  }
-  channel->imc_handle = NaClDescRef(handle);
-#endif  /* defined(__native_client__) */
   /* Initialize the client information. */
   channel->client = NULL;
-  /* Construct the buffers. */
-  __NaClSrpcImcBufferCtor(&channel->send_buf, 1);
-  __NaClSrpcImcBufferCtor(&channel->receive_buf, 0);
   /* Set the service to that passed in. */
   channel->server = service;
   channel->server_instance_data = server_instance_data;
@@ -146,21 +129,15 @@ int NaClSrpcServerCtor(NaClSrpcChannel* channel,
   return 1;
 }
 
-void NaClSrpcDtor(NaClSrpcChannel *channel) {
+void NaClSrpcDtor(NaClSrpcChannel* channel) {
   if (NULL == channel) {
     return;
   }
-#ifndef __native_client__
-  /* SCOPE */ {
-    struct NaClDescEffector* effp = (struct NaClDescEffector*) &channel->eff;
-    effp->vtbl->Dtor(effp);
-    NaClDescUnref(channel->imc_handle);
-  }
-#endif
   NaClSrpcServiceDtor(channel->client);
   free(channel->client);
   NaClSrpcServiceDtor(channel->server);
   free(channel->server);
+  NaClSrpcMessageChannelDelete(channel->message_channel);
 }
 
 /*

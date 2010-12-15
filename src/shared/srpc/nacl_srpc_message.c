@@ -132,8 +132,10 @@ static int PortableDescCtor(struct PortableDesc* self,
   if (kInvalidDesc == desc) {
     return 0;
   }
+#ifdef __native_client__
   self->raw_desc = desc;
-#ifndef __native_client__
+#else
+  self->raw_desc = NaClDescRef(desc);
   if (!NaClNrdXferEffectorCtor(&self->eff)) {
     self->raw_desc = kInvalidDesc;
     return 0;
@@ -144,9 +146,7 @@ static int PortableDescCtor(struct PortableDesc* self,
 }
 
 static void PortableDescDtor(struct PortableDesc* self) {
-#ifdef __native_client__
-  close(self->raw_desc);
-#else
+#ifndef __native_client__
   if (NULL != self->effp) {
     self->effp->vtbl->Dtor(self->effp);
   }
@@ -231,7 +231,7 @@ static uint32_t MessageChannelBufferFirstFragment(
              (int) imc_ret));
     return 0;
   }
-  dprintf((SIDE "MessageChannelBufferFirstFragment: buffered message"
+  dprintf((SIDE "MessageChannelBufferFirstFragment: buffered message: "
            "bytes %d, descs %d.\n",
            (int) imc_ret,
            (int) buffer_header.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH));

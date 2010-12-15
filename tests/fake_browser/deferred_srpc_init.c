@@ -31,6 +31,7 @@ int main() {
   int fd;
   int rc;
 
+  NaClSrpcModuleInit();
   /* We ignore the first connection, which is initiated automatically
      by the plugin. */
   fd = imc_accept(3);
@@ -51,5 +52,6 @@ int main() {
   assert(fd >= 0);
   NaClSrpcServerLoop(fd, srpc_methods, NULL);
 
+  NaClSrpcModuleFini();
   return 0;
 }

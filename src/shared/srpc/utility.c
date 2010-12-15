@@ -76,34 +76,3 @@ const char* NaClSrpcErrorString(NaClSrpcError error_code) {
   }
   return "Unrecognized NaClSrpcError value";
 }
-
-#if !defined(__native_client__) && NACL_WINDOWS
-
-double __NaClSrpcGetUsec() {
-  /* TODO(sehr): need to add a Windows specific version of gettimeofday. */
-  /* TODO(sehr): one version of this code. */
-  unsigned __int64 timer = 0;
-  long sec;
-  long usec;
-  FILETIME filetime;
-  GetSystemTimeAsFileTime(&filetime);
-  timer |= filetime.dwHighDateTime;
-  timer <<= 32;
-  timer |= filetime.dwLowDateTime;
-  /* FILETIME has 100ns precision.  Convert to usec. */
-  timer /= 10;
-  sec = (long) (timer / 1000000UL);
-  usec = (long) (timer % 1000000UL);
-  return (double) sec * 1.0e6 + (double) usec;
-}
-
-#else
-
-double __NaClSrpcGetUsec() {
-  int retval;
-  struct timeval tv;
-  retval = gettimeofday(&tv, NULL);
-  return (double) tv.tv_sec * 1.0e6 + (double) tv.tv_usec;
-}
-
-#endif  /* NACL_WINDOWS */

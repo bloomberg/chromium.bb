@@ -134,6 +134,7 @@ PluginPpapi::PluginPpapi(PP_Instance pp_instance)
       ppapi_proxy_(NULL) {
   PLUGIN_PRINTF(("PluginPpapi::PluginPpapi (this=%p, pp_instance=%"
                  NACL_PRId64")\n", static_cast<void*>(this), pp_instance));
+  NaClSrpcModuleInit();
   url_downloader_.Initialize(this);
   callback_factory_.Initialize(this);
 }
@@ -151,6 +152,7 @@ PluginPpapi::~PluginPpapi() {
   delete ppapi_proxy_;
   ScriptableHandle* scriptable_handle_ = scriptable_handle();
   UnrefScriptableHandle(&scriptable_handle_);
+  NaClSrpcModuleFini();
 }
 
 

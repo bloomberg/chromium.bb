@@ -7,6 +7,7 @@
 /*
  * Gather ye all module initializations and finalizations here.
  */
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/debug_stub/debug_stub.h"
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/trusted/handle_pass/ldr_handle.h"
@@ -27,6 +28,7 @@ void  NaClAllModulesInit(void) {
 #endif
   NaClNrdAllModulesInit();
   NaClGlobalModuleInit();  /* various global variables */
+  NaClSrpcModuleInit();
   NaClTlsInit();
   NaClSyscallTableInit();
   NaClThreadNiceInit();
@@ -40,6 +42,7 @@ void  NaClAllModulesInit(void) {
 void NaClAllModulesFini(void) {
   NaClSignalHandlerFini();
   NaClTlsFini();
+  NaClSrpcModuleFini();
   NaClGlobalModuleFini();
   NaClNrdAllModulesFini();
 #ifdef NACL_DEBUG_STUB

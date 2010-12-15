@@ -8,24 +8,874 @@
  * NaCl simple RPC over IMC mechanism.
  */
 
-#include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "native_client/src/shared/srpc/nacl_srpc_internal.h"
-
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
 #include <sys/types.h>
 #ifdef __native_client__
 #include <inttypes.h>
 #include <nacl/nacl_inttypes.h>
+#define NACL_ABI_EIO EIO
+#define NACL_ABI_EINVAL EINVAL
 #else
 #include "native_client/src/include/portability.h"
+#include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #endif
+#include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/shared/srpc/nacl_srpc_internal.h"
+#include "native_client/src/shared/srpc/nacl_srpc_message.h"
 
 #ifndef SIZE_T_MAX
 # define SIZE_T_MAX (~((size_t) 0))
 #endif
+
+/*
+ * Message formats:
+ *
+ * SRPC communicates using two message types, requests and responses.
+ * Both are communicated with a header (NaClSrpcHeader below) prepended.
+ *
+ * Requests and responses also convey vectors of parameters that are
+ * represented in memory by NaClSrpcArg.  Because NaClSrpcArgs may have a
+ * non-fixed amount of additional memory associated (strings, arrays, etc.),
+ * the form communicated separates the vectors of NaClSrpcArgs into a vector
+ * of fixed length structs (ArgFixed) and a region of non-fixed memory.
+ *
+ * request:
+ *   RpcHeader       header
+ *   -- header info, value_len and template_len
+ *      where value_len <= NACL_SRPC_MAX_ARGS, and
+ *            template_len <= NACL_SRPC_MAX_ARGS
+ *   ArgFixed        templates[template_len]
+ *   -- conveys the types and sizes of rets
+ *   ArgFixed        values[value_len]
+ *   -- conveys the scalar values, and array types and sizes of args
+ *   char            nonfixed[]
+ *   -- the bytes used by strings, arrays, etc., in the elements of args in
+ *      the order seen in args
+ *
+ * response:
+ *   RpcHeader       header
+ *   -- header info, value_len and template_len
+ *      where value_len <= NACL_SRPC_MAX_ARGS, and template_len == 0
+ *   ArgFixed        values[value_len]
+ *   -- conveys the scalar values, and array types and sizes of rets
+ *   char            nonfixed[]
+ *   -- the bytes used by strings, arrays, etc., in the elements of rets in
+ *      the order seen in rets
+ */
+
+#define HEADER_IOV_ENTRY_MAX     1
+#define TEMPLATE_IOV_ENTRY_MAX   NACL_SRPC_MAX_ARGS
+#define VALUE_IOV_ENTRY_MAX      NACL_SRPC_MAX_ARGS
+#define NONFIXED_IOV_ENTRY_MAX   NACL_SRPC_MAX_ARGS
+#define IOV_ENTRY_MAX            (HEADER_IOV_ENTRY_MAX + \
+                                  TEMPLATE_IOV_ENTRY_MAX + \
+                                  VALUE_IOV_ENTRY_MAX + \
+                                  NONFIXED_IOV_ENTRY_MAX)
+
+/*
+ * RpcFixed is the fixed portion of NaClSrpcRpc serialized to the channel.
+ */
+struct RpcFixed {
+  NACL_SRPC_RPC_SERIALIZED_FIELDS;
+};
+static const size_t kRpcSize = sizeof(struct RpcFixed);
+
+/*
+ * ArgFixed is the fixed portion of NaClSrpcArg serialized to the channel.
+ */
+struct ArgFixed {
+  NACL_SRPC_ARG_SERIALIZED_FIELDS;
+};
+static const size_t kArgSize = sizeof(struct ArgFixed);
+
+typedef enum {
+  BoolFalse = 0,
+  BoolTrue = 1,
+} BoolValue;
+
+static ssize_t ErrnoFromImcRet(ssize_t imc_ret) {
+  if (0 > imc_ret) {
+    return imc_ret;
+  } else {
+    return -NACL_ABI_EIO;
+  }
+}
+
+static void AddIovEntry(void* base,
+                        size_t length,
+                        size_t max_iov_len,
+                        struct NaClImcMsgIoVec* iov,
+                        size_t* iov_len,
+                        size_t* total_bytes) {
+  if (length == 0) {
+    return;
+  }
+  if (*iov_len >= max_iov_len) {
+    return;
+  }
+  iov[*iov_len].base = base;
+  iov[*iov_len].length = length;
+  ++*iov_len;
+  *total_bytes += length;
+}
+
+static nacl_abi_size_t VectorLen(NaClSrpcArg** vec) {
+  nacl_abi_size_t len = 0;
+  for (len = 0; len <= NACL_SRPC_MAX_ARGS; ++len) {
+    if (vec[len] == NULL) {
+      return len;
+    }
+  }
+  return NACL_SRPC_MAX_ARGS;
+}
+
+static size_t ArrayElementSize(NaClSrpcArg* arg) {
+  switch (arg->tag) {
+    case NACL_SRPC_ARG_TYPE_BOOL:
+    case NACL_SRPC_ARG_TYPE_DOUBLE:
+    case NACL_SRPC_ARG_TYPE_HANDLE:
+    case NACL_SRPC_ARG_TYPE_INT:
+    case NACL_SRPC_ARG_TYPE_INVALID:
+    case NACL_SRPC_ARG_TYPE_LONG:
+    case NACL_SRPC_ARG_TYPE_OBJECT:
+    case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
+      /* These are all scalar types. */
+      return 0;
+
+    case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
+      return sizeof *arg->arrays.carr;
+    case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
+      return sizeof *arg->arrays.darr;
+    case NACL_SRPC_ARG_TYPE_INT_ARRAY:
+      return sizeof *arg->arrays.iarr;
+    case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
+      return sizeof *arg->arrays.larr;
+    case NACL_SRPC_ARG_TYPE_STRING:
+      return sizeof *arg->arrays.str;
+  }
+  /* UNREACHED */
+  return 0;
+}
+
+static void ClearTemplateStringLengths(NaClSrpcArg** vec,
+                                       size_t vec_len) {
+  size_t i;
+  for (i = 0; i < vec_len; ++i) {
+    if (vec[i]->tag == NACL_SRPC_ARG_TYPE_STRING) {
+      vec[i]->u.count = 0;
+    }
+  }
+}
+
+/*
+ * Adds the IOV entries for the fixed portion of the arguments in vec.
+ */
+static void AddFixed(NaClSrpcArg** vec,
+                     size_t vec_len,
+                     size_t max_iov_len,
+                     struct NaClImcMsgIoVec* iov,
+                     size_t* iov_len,
+                     size_t* expected_bytes) {
+  size_t i;
+  for (i = 0; i < vec_len; ++i) {
+    AddIovEntry(vec[i], kArgSize, max_iov_len, iov, iov_len, expected_bytes);
+  }
+}
+
+/*
+ * Copies the handles/descriptors from descs into the appropriately typed
+ * elements of vec.
+ */
+static BoolValue GetHandles(NaClSrpcArg** vec,
+                            size_t vec_len,
+                            NaClSrpcImcDescType* descs,
+                            size_t desc_len) {
+  size_t i;
+  size_t handle_index = 0;
+  for (i = 0; i < vec_len; ++i) {
+    if (vec[i]->tag != NACL_SRPC_ARG_TYPE_HANDLE) {
+      continue;
+    }
+    if (handle_index >= desc_len) {
+      return BoolFalse;
+    }
+    vec[i]->u.hval = descs[handle_index];
+    ++handle_index;
+  }
+  return BoolTrue;
+}
+
+/*
+ * Reads the header of the message to determine whether to call RecvRequest or
+ * RecvResponse.
+ */
+static ssize_t SrpcPeekMessage(struct NaClSrpcMessageChannel* channel,
+                               NaClSrpcRpc* rpc) {
+  struct NaClImcMsgIoVec iov[1];
+  const size_t kMaxIovLen = NACL_ARRAY_SIZE(iov);
+  size_t iov_len;
+  NaClSrpcMessageHeader header;
+  size_t expected_bytes;
+  ssize_t retval;
+
+  iov_len = 0;
+  expected_bytes = 0;
+  AddIovEntry(rpc, kRpcSize, kMaxIovLen, iov, &iov_len, &expected_bytes);
+  header.iov = iov;
+  header.iov_length = NACL_ARRAY_SIZE(iov);
+  header.NACL_SRPC_MESSAGE_HEADER_DESCV = NULL;
+  header.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH = 0;
+  retval = NaClSrpcMessageChannelPeek(channel, &header);
+  /*
+   * Check that the peek read the RPC and that the argument lengths are sane.
+   */
+  if (retval < (ssize_t) expected_bytes) {
+    retval = ErrnoFromImcRet(retval);
+  }
+  else if (rpc->value_len > NACL_SRPC_MAX_ARGS ||
+           rpc->template_len > NACL_SRPC_MAX_ARGS) {
+    retval = -NACL_ABI_EIO;
+  }
+  return retval;
+}
+
+/*
+ * Adds the IOV entries for the nonfixed portions of an argument vector to
+ * read.  For receiving requests we need to allocate memory for the nonfixed
+ * portions of both the inputs and results, but we do not read the results
+ * vector's nonfixed portion.  For receiving responses we do not allocate
+ * memory for the nonfixed portion (the caller has already done that), but we
+ * read the nonfixed portion of results.
+ * If it returns BoolFalse, some memory may have been allocated.  It is the
+ * caller's responsibility to clean up in that case.
+ */
+static BoolValue AddNonfixedForRead(NaClSrpcArg** vec,
+                                    size_t vec_len,
+                                    size_t max_iov_len,
+                                    BoolValue alloc_value,
+                                    BoolValue read_value,
+                                    struct NaClImcMsgIoVec* iov,
+                                    size_t* iov_len,
+                                    size_t* expected_bytes) {
+  size_t i;
+
+  /* Initialize the array pointers to allow cleanup if errors happen. */
+  if (alloc_value) {
+    for (i = 0; i < vec_len; ++i) {
+      vec[i]->arrays.oval = NULL;
+    }
+  }
+
+  for (i = 0; i < vec_len; ++i) {
+    size_t count = vec[i]->u.count;
+    void* base = 0;
+    size_t element_size = ArrayElementSize(vec[i]);
+
+    if (element_size == 0) {
+      /* Skip fixed size arguments. */
+      continue;
+    }
+    if (SIZE_T_MAX / element_size < count) {
+      return BoolFalse;
+    }
+    base = vec[i]->arrays.oval;
+    if (alloc_value) {
+      base = malloc(element_size * count);
+      if (base == 0) {
+        return BoolFalse;
+      }
+      vec[i]->arrays.oval = base;
+    }
+    if (read_value) {
+      AddIovEntry(base, element_size * count, max_iov_len, iov, iov_len,
+                  expected_bytes);
+    }
+  }
+  return BoolTrue;
+}
+
+static BoolValue AllocateArgs(NaClSrpcArg** arg_pointers, size_t length) {
+  NaClSrpcArg* arg_array;
+  nacl_abi_size_t i;
+
+  /* Initialize the array pointers to allow cleanup if errors happen. */
+  for (i = 0; i < length; ++i) {
+    arg_pointers[i] = NULL;
+  }
+
+  if (SIZE_T_MAX / sizeof **arg_pointers < length) {
+    return BoolFalse;
+  }
+  arg_array = (NaClSrpcArg*) malloc(length * sizeof **arg_pointers);
+  if (arg_array == NULL) {
+    return BoolFalse;
+  }
+  for (i = 0; i < length; ++i) {
+    arg_pointers[i] = &arg_array[i];
+    arg_pointers[i]->arrays.oval = NULL;
+  }
+  arg_pointers[length] = NULL;
+  return BoolTrue;
+}
+
+static void FreeArgs(NaClSrpcArg** vec) {
+  nacl_abi_size_t i;
+  NaClSrpcArg* args;
+
+  if (vec == NULL) {
+    return;
+  }
+  args = vec[0];
+
+  for (i = 0; i <= NACL_SRPC_MAX_ARGS; ++i) {
+    if (vec[i] == NULL) {
+      break;
+    }
+    switch (vec[i]->tag) {
+      case NACL_SRPC_ARG_TYPE_BOOL:
+      case NACL_SRPC_ARG_TYPE_DOUBLE:
+      case NACL_SRPC_ARG_TYPE_HANDLE:
+      case NACL_SRPC_ARG_TYPE_INT:
+      case NACL_SRPC_ARG_TYPE_INVALID:
+      case NACL_SRPC_ARG_TYPE_LONG:
+      case NACL_SRPC_ARG_TYPE_OBJECT:
+      case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
+        break;
+
+      case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
+      case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
+      case NACL_SRPC_ARG_TYPE_INT_ARRAY:
+      case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
+      case NACL_SRPC_ARG_TYPE_STRING:
+        free(vec[i]->arrays.oval);
+        break;
+    }
+    vec[i] = NULL;
+  }
+  free(args);
+}
+
+static ssize_t RecvRequest(struct NaClSrpcMessageChannel* channel,
+                           NaClSrpcRpc* rpc,
+                           NaClSrpcArg** inputs,
+                           NaClSrpcArg** results) {
+  struct NaClImcMsgIoVec iov[IOV_ENTRY_MAX];
+  const size_t kMaxIovLen = NACL_ARRAY_SIZE(iov);
+  size_t iov_len;
+  NaClSrpcMessageHeader header;
+  NaClSrpcImcDescType descs[NACL_SRPC_MAX_ARGS];
+  size_t expected_bytes;
+  ssize_t retval;
+
+  /*
+   * SrpcPeekMessage should have been called before this function, and should
+   * have populated rpc.  Make sure that rpc points to a sane header.
+   */
+  if (!rpc->is_request ||
+      rpc->template_len > NACL_SRPC_MAX_ARGS ||
+      rpc->value_len > NACL_SRPC_MAX_ARGS) {
+    retval = -NACL_ABI_EINVAL;
+    goto done;
+  }
+  /*
+   * A request will contain two vectors of NaClSrpcArgs.  Set the index
+   * pointers passed in to new argument vectors that will be filled during
+   * the next peek.
+   */
+  if (!AllocateArgs(results, rpc->template_len) ||
+      !AllocateArgs(inputs, rpc->value_len)) {
+    retval = -NACL_ABI_EINVAL;
+    goto done;
+  }
+
+  /*
+   * Having read the header we know how many elements each argument vector
+   * contains.  The next peek reads the fixed portion of these argument vectors,
+   * but cannot yet read the variable length portion, because we do not yet
+   * know the counts of array types or strings.
+   */
+  iov_len = 0;
+  expected_bytes = 0;
+  AddIovEntry(rpc, kRpcSize, kMaxIovLen, iov, &iov_len, &expected_bytes);
+  AddFixed(results, rpc->template_len, kMaxIovLen, iov, &iov_len,
+           &expected_bytes);
+  AddFixed(inputs, rpc->value_len, kMaxIovLen, iov, &iov_len, &expected_bytes);
+  header.iov = iov;
+  header.iov_length = (nacl_abi_size_t) iov_len;
+  header.NACL_SRPC_MESSAGE_HEADER_DESCV = NULL;
+  header.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH = 0;
+  retval = NaClSrpcMessageChannelPeek(channel, &header);
+  if (retval < (ssize_t) expected_bytes) {
+    retval = ErrnoFromImcRet(retval);
+    goto done;
+  }
+
+  /*
+   * After peeking the fixed portion of the argument vectors we are ready to
+   * read the nonfixed portions as well.  So the read just adds the IOV entries
+   * for the nonfixed portions of the arguments.
+   */
+  iov_len = 0;
+  expected_bytes = 0;
+  AddIovEntry(rpc, kRpcSize, kMaxIovLen, iov, &iov_len, &expected_bytes);
+  ClearTemplateStringLengths(results, rpc->template_len);
+  AddFixed(results, rpc->template_len, kMaxIovLen, iov, &iov_len,
+           &expected_bytes);
+  AddFixed(inputs, rpc->value_len, kMaxIovLen, iov, &iov_len, &expected_bytes);
+  if (!AddNonfixedForRead(results, rpc->template_len, kMaxIovLen,
+                          1, 0, iov, &iov_len, &expected_bytes)) {
+    retval = -NACL_ABI_EIO;
+    goto done;
+  }
+  if (!AddNonfixedForRead(inputs, rpc->value_len, kMaxIovLen,
+                          1, 1, iov, &iov_len, &expected_bytes)) {
+    retval = -NACL_ABI_EIO;
+    goto done;
+  }
+  header.iov = iov;
+  header.iov_length = (nacl_abi_size_t) iov_len;
+  header.NACL_SRPC_MESSAGE_HEADER_DESCV = descs;
+  header.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH = NACL_ARRAY_SIZE(descs);
+  retval = NaClSrpcMessageChannelReceive(channel, &header);
+  dprintf(("RecvRequest: recv: expected to receive %d, receive returned %d\n",
+           (int) expected_bytes, (int) retval));
+  if (retval < (ssize_t) expected_bytes) {
+    retval = ErrnoFromImcRet(retval);
+    goto done;
+  }
+
+  /*
+   * The read left any descriptors passed in the descs array.  We need to
+   * copy those descriptors to the inputs vector.
+   */
+  if (!GetHandles(inputs, rpc->value_len,
+                  descs, header.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH)) {
+     retval = -NACL_ABI_EIO;
+     goto done;
+  }
+  /*
+   * Success, the caller has taken ownership of the memory we allocated
+   * for inputs and results.
+   */
+  inputs = NULL;
+  results = NULL;
+
+ done:
+  FreeArgs(inputs);
+  FreeArgs(results);
+  return retval;
+}
+
+/*
+ * Checks for type conformance between a peeked results vector and the caller's
+ * results vector.  If the types agree then nonfixed sizes are checked to
+ * ensure that the caller's buffers are large enough to receive the peeked
+ * nonfixed size objects.  If this agrees, then the caller's size is updated
+ * to reflect how many elements were actually received.
+ */
+static BoolValue CheckMatchAndCopyCounts(size_t vec_len,
+                                         NaClSrpcArg** expected,
+                                         NaClSrpcArg** peeked) {
+  size_t i;
+
+  for (i = 0; i < vec_len; ++i) {
+    if (expected[i]->tag != peeked[i]->tag) {
+      return BoolFalse;
+    }
+    switch (expected[i]->tag) {
+      case NACL_SRPC_ARG_TYPE_BOOL:
+      case NACL_SRPC_ARG_TYPE_DOUBLE:
+      case NACL_SRPC_ARG_TYPE_HANDLE:
+      case NACL_SRPC_ARG_TYPE_INT:
+      case NACL_SRPC_ARG_TYPE_INVALID:
+      case NACL_SRPC_ARG_TYPE_LONG:
+      case NACL_SRPC_ARG_TYPE_OBJECT:
+      case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
+        break;
+
+      case NACL_SRPC_ARG_TYPE_STRING:
+        /*
+         * Returned strings are allocated by the SRPC transport mechanism,
+         * whereas all the other "array" types are allocated by the caller
+         * of the respective Invoke routine.
+         */
+        expected[i]->arrays.oval = malloc(peeked[i]->u.count);
+        if (expected[i]->arrays.oval == NULL) {
+          return BoolFalse;
+        }
+        expected[i]->u.count = peeked[i]->u.count;
+        break;
+
+      case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
+      case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
+      case NACL_SRPC_ARG_TYPE_INT_ARRAY:
+      case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
+        if (peeked[i]->u.count > expected[i]->u.count) {
+          return BoolFalse;
+        }
+        expected[i]->u.count = peeked[i]->u.count;
+        break;
+    }
+  }
+  return BoolTrue;
+}
+
+static ssize_t RecvResponse(struct NaClSrpcMessageChannel* channel,
+                            NaClSrpcRpc* rpc,
+                            NaClSrpcArg** results) {
+  NaClSrpcArg* result_copy[NACL_SRPC_MAX_ARGS + 1];
+  struct NaClImcMsgIoVec iov[IOV_ENTRY_MAX];
+  const size_t kMaxIovLen = NACL_ARRAY_SIZE(iov);
+  size_t iov_len = 0;
+  NaClSrpcMessageHeader header;
+  NaClSrpcImcDescType descs[NACL_SRPC_MAX_ARGS];
+  size_t expected_bytes;
+  ssize_t retval;
+  size_t i;
+
+  dprintf(("RecvResponse\n"));
+  if (results == NULL) {
+    retval = -NACL_ABI_EINVAL;
+    goto done;
+  }
+  /*
+   * SrpcPeekMessage should have been called before this function, and should
+   * have populated rpc.  Make sure that rpc points to a sane header.
+   */
+  if (rpc->is_request ||
+      rpc->template_len > 0 ||
+      rpc->value_len > NACL_SRPC_MAX_ARGS ||
+      rpc->value_len != VectorLen(results)) {
+    return -NACL_ABI_EINVAL;
+  }
+
+  /*
+   * Having read the header we know how many elements the results vector
+   * contains.  The next peek reads the fixed portion of the results vectors,
+   * but cannot yet read the variable length portion, because we do not yet
+   * know the counts of array types or strings.  Because the results read
+   * could conflict with the expected types, we need to read the fixed portion
+   * into a copy.
+   */
+  if (!AllocateArgs(result_copy, rpc->value_len)) {
+    retval = -NACL_ABI_EINVAL;
+    goto done;
+  }
+  iov_len = 0;
+  expected_bytes = 0;
+  AddIovEntry(rpc, kRpcSize, kMaxIovLen, iov, &iov_len, &expected_bytes);
+  for (i = 0; i < rpc->value_len; ++i) {
+    AddIovEntry(result_copy[i], kArgSize, kMaxIovLen, iov, &iov_len,
+                &expected_bytes);
+  }
+  header.iov = iov;
+  header.iov_length = (nacl_abi_size_t) iov_len;
+  header.NACL_SRPC_MESSAGE_HEADER_DESCV = NULL;
+  header.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH = 0;
+  retval = NaClSrpcMessageChannelPeek(channel, &header);
+  if (retval < (ssize_t) expected_bytes) {
+    retval = ErrnoFromImcRet(retval);
+    goto done;
+  }
+
+  /*
+   * Check that the peeked results vector's types conform to the types passed
+   * in and that any nonfixed size arguments are no larger than the counts
+   * passed in from the caller.  If the values are acceptable, we copy the
+   * actual sizes to the caller's vector.
+   */
+  if (!CheckMatchAndCopyCounts(rpc->value_len, results, result_copy)) {
+    retval = -NACL_ABI_EIO;
+    goto done;
+  }
+
+  /*
+   * After peeking the fixed portion of the results vector we are ready to
+   * read the nonfixed portion as well.  So the read just adds the IOV entries
+   * for the nonfixed portion of results.
+   */
+  iov_len = 0;
+  expected_bytes = 0;
+  AddIovEntry(rpc, kRpcSize, kMaxIovLen, iov, &iov_len, &expected_bytes);
+  AddFixed(results, rpc->value_len, kMaxIovLen, iov, &iov_len, &expected_bytes);
+  if (!AddNonfixedForRead(results, rpc->value_len, kMaxIovLen,
+                          0, 1, iov, &iov_len, &expected_bytes)) {
+    retval = -NACL_ABI_EIO;
+    goto done;
+  }
+  header.iov = iov;
+  header.iov_length = (nacl_abi_size_t) iov_len;
+  header.NACL_SRPC_MESSAGE_HEADER_DESCV = descs;
+  header.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH = NACL_ARRAY_SIZE(descs);
+  retval = NaClSrpcMessageChannelReceive(channel, &header);
+  dprintf(("RecvResponse: recv: expected to receive %d, receive returned %d\n",
+           (int) expected_bytes, (int) retval));
+  if (retval < (ssize_t) expected_bytes) {
+    retval = ErrnoFromImcRet(retval);
+    goto done;
+  }
+
+  /*
+   * The read left any descriptors returned in the descs array.  We need to
+   * copy those descriptors to the results vector.
+   */
+  if (!GetHandles(results, rpc->value_len,
+                  descs, header.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH)) {
+    retval = -NACL_ABI_EIO;
+  }
+
+ done:
+  FreeArgs(result_copy);
+  return retval;
+}
+
+/*
+ * Adds IOV entries for the non-fixed portions of the arguments in vec.
+ * This could also add handles/descriptors to the array to send.
+ */
+static BoolValue AddNonfixedForWrite(NaClSrpcArg** vec,
+                                     size_t vec_len,
+                                     size_t max_iov_len,
+                                     struct NaClImcMsgIoVec* iov,
+                                     size_t* iov_len,
+                                     NaClSrpcImcDescType* descs,
+                                     size_t* desc_len,
+                                     size_t* expected_bytes) {
+  size_t i;
+  size_t element_size;
+  nacl_abi_size_t count;
+  void* base;
+
+  /* Add IOV entries for the array/string types in vec. */
+  for (i = 0; i < vec_len; ++i) {
+    switch (vec[i]->tag) {
+      case NACL_SRPC_ARG_TYPE_BOOL:
+      case NACL_SRPC_ARG_TYPE_DOUBLE:
+      case NACL_SRPC_ARG_TYPE_INT:
+      case NACL_SRPC_ARG_TYPE_INVALID:
+      case NACL_SRPC_ARG_TYPE_LONG:
+      case NACL_SRPC_ARG_TYPE_OBJECT:
+      case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
+       /* Scalar types are handled by fixed iovs alone. */
+       break;
+
+      case NACL_SRPC_ARG_TYPE_HANDLE:
+        /* Handles are added into the desc array. */
+        descs[*desc_len] = vec[i]->u.hval;
+        ++*desc_len;
+        break;
+
+      case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
+      case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
+      case NACL_SRPC_ARG_TYPE_INT_ARRAY:
+      case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
+        count = vec[i]->u.count;
+        base = vec[i]->arrays.oval;
+        element_size = ArrayElementSize(vec[i]);
+        /* Check that computing the number of bytes will not overflow. */
+        if (SIZE_T_MAX / element_size < count) {
+          return BoolFalse;
+        }
+        AddIovEntry(base, element_size * count, max_iov_len, iov, iov_len,
+                    expected_bytes);
+        break;
+
+      case NACL_SRPC_ARG_TYPE_STRING:
+        count = (nacl_abi_size_t) strlen(vec[i]->arrays.str) + 1;
+        base = vec[i]->arrays.oval;
+        vec[i]->u.count = count;
+        AddIovEntry(base, count, max_iov_len, iov, iov_len, expected_bytes);
+        break;
+    }
+  }
+  return BoolTrue;
+}
+
+static ssize_t SrpcSendMessage(NaClSrpcRpc* rpc,
+                               NaClSrpcArg** inputs,
+                               NaClSrpcArg** results,
+                               struct NaClSrpcMessageChannel* channel) {
+  NaClSrpcArg** values;
+  struct NaClImcMsgIoVec iov[IOV_ENTRY_MAX];
+  const size_t kMaxIovLen = NACL_ARRAY_SIZE(iov);
+  size_t iov_len;
+  NaClSrpcImcDescType descs[NACL_SRPC_MAX_ARGS];
+  size_t desc_len = 0;
+  NaClSrpcMessageHeader header;
+  ssize_t retval;
+  size_t expected_bytes;
+
+  dprintf(("SrpcSendMessage: (%s), values %d templates %d\n",
+           (rpc->is_request ? "request" : "response"),
+           (int) rpc->value_len, (int) rpc->template_len));
+
+  /*
+   * The message will be sent in three portions:
+   * 1) the header (rpc)
+   * 2) the fixed portions of the inputs and results arrays (inputs may be
+   *    null for responses)
+   * 3) the nonfixed portions of the inputs or results array
+   */
+  iov_len = 0;
+  expected_bytes = 0;
+  AddIovEntry(rpc, kRpcSize, kMaxIovLen, iov, &iov_len, &expected_bytes);
+
+  if (rpc->is_request) {
+    /*
+     * For requests we pass only the fixed portion of the results vector.
+     * This is to convey to the invoked procedure the type and size of the
+     * allowed result values.
+     * The values to be passed in both fixed and nonfixed are from inputs.
+     */
+    if (results == NULL) {
+      rpc->template_len = 0;
+    } else {
+      rpc->template_len = VectorLen(results);
+      AddFixed(results, rpc->template_len, kMaxIovLen, iov, &iov_len,
+               &expected_bytes);
+    }
+    values = inputs;
+  } else {
+    /*
+     * For responses there are no templates, and the values that will be passed
+     * are from results.
+     */
+    values = results;
+    rpc->template_len = 0;
+  }
+  /*
+   * Pass the fixed and nonfixed portions.
+   */
+  if (values == NULL) {
+    return -NACL_ABI_EINVAL;
+  }
+  rpc->value_len = VectorLen(values);
+  AddFixed(values, rpc->value_len, kMaxIovLen, iov, &iov_len, &expected_bytes);
+  if (!AddNonfixedForWrite(values, rpc->value_len,
+                           kMaxIovLen,
+                           iov, &iov_len,
+                           descs, &desc_len,
+                           &expected_bytes)) {
+    return -NACL_ABI_EIO;
+  }
+  header.iov = iov;
+  header.iov_length = (nacl_abi_size_t) iov_len;
+  header.NACL_SRPC_MESSAGE_HEADER_DESCV = descs;
+  header.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH = (nacl_abi_size_t) desc_len;
+  retval = NaClSrpcMessageChannelSend(channel, &header);
+  dprintf(("SrpcSendMessage: expected to send %d, send returned %d\n",
+           (int) expected_bytes, (int) retval));
+  if (retval >= 0  && retval < (ssize_t) expected_bytes) {
+    return -NACL_ABI_EIO;
+  }
+  return retval;
+}
+
+/* TODO(sehr): make this public when the client side uses RPC. */
+static BoolValue NaClSrpcRpcCtor(NaClSrpcRpc* rpc, NaClSrpcChannel* channel) {
+  rpc->channel = channel;
+  rpc->result = NACL_SRPC_RESULT_INTERNAL;
+  rpc->rets = NULL;
+  return BoolTrue;
+}
+
+/* A self-deleting closure to send responses from RPC servers. */
+typedef struct RpcCheckingClosure {
+  struct NaClSrpcClosure base;
+  NaClSrpcRpc* rpc;
+} RpcCheckingClosure;
+
+static void RpcCheckingClosureRun(NaClSrpcClosure* self) {
+  RpcCheckingClosure* vself = (RpcCheckingClosure*) self;
+  NaClSrpcRpc* rpc = vself->rpc;
+  ssize_t retval;
+
+  dprintf((SIDE "SRPC: RpcCheckingClosureRun: done (result = %d)\n",
+           rpc->result));
+  /* Send the RPC response to the caller. */
+  rpc->is_request = 0;
+  retval = SrpcSendMessage(rpc, NULL, rpc->rets, rpc->channel->message_channel);
+  dprintf((SIDE "SRPC: RpcCheckingClosureRun: response sent\n"));
+  rpc->dispatch_loop_should_continue = 1;
+  if (NACL_SRPC_RESULT_BREAK == rpc->result) {
+    dprintf((SIDE "SRPC: RpcCheckingClosureRun: server requested break\n"));
+    rpc->result = NACL_SRPC_RESULT_OK;
+    rpc->dispatch_loop_should_continue = 0;
+  }
+  if (retval < 0) {
+    /* If the response write failed, drop request and continue. */
+    dprintf((SIDE "SRPC: RpcCheckingClosureRun: response write failed\n"));
+  }
+  free(self);
+  dprintf((SIDE "SRPC: RpcCheckingClosureRun: done\n"));
+}
+
+static BoolValue RpcCheckingClosureCtor(RpcCheckingClosure* self,
+                                        NaClSrpcRpc* rpc) {
+  self->base.Run = RpcCheckingClosureRun;
+  self->rpc = rpc;
+  self->rpc->dispatch_loop_should_continue = 1;
+  return BoolTrue;
+}
+
+static BoolValue RequestVectorTypesConform(NaClSrpcChannel* channel,
+                                           NaClSrpcRpc* rpc,
+                                           NaClSrpcArg** args,
+                                           NaClSrpcArg** rets) {
+  const char* rpc_name;
+  const char* arg_types;
+  const char* ret_types;
+  ssize_t retval;
+  size_t i;
+
+  if (rpc->value_len > NACL_SRPC_MAX_ARGS ||
+      rpc->template_len > NACL_SRPC_MAX_ARGS) {
+    return BoolFalse;
+  }
+  /* Get service discovery's remembered types for args and rets */
+  retval = NaClSrpcServiceMethodNameAndTypes(channel->server,
+                                             rpc->rpc_number,
+                                             &rpc_name,
+                                             &arg_types,
+                                             &ret_types);
+  if (!retval) {
+    return BoolFalse;
+  }
+  /* Check that lengths match. */
+  if (rpc->value_len != strlen(arg_types) ||
+      rpc->template_len != strlen(ret_types)) {
+    return BoolFalse;
+  }
+  /* Check args for type conformance. */
+  for (i = 0; i < rpc->value_len; ++i) {
+    if (args[i] == NULL) {
+      return BoolFalse;
+    }
+    if (args[i]->tag != (unsigned char) arg_types[i]) {
+      return BoolFalse;
+    }
+  }
+  if (args[rpc->value_len] != NULL) {
+    return BoolFalse;
+  }
+  /* Check rets for type conformance. */
+  for (i = 0; i < rpc->template_len; ++i) {
+    if (rets[i] == NULL) {
+      return BoolFalse;
+    }
+    if (rets[i]->tag != (unsigned char) ret_types[i]) {
+      return BoolFalse;
+    }
+  }
+  if (rets[rpc->template_len] != NULL) {
+    return BoolFalse;
+  }
+  return BoolTrue;
+}
 
 /*
  * The receive/dispatch function returns an enum indicating how the enclosing
@@ -38,149 +888,13 @@ typedef enum {
   DISPATCH_EOF        /* No more requests or responses can be received */
 } DispatchReturn;
 
-/*
- * Message formats:
- * SRPC communicates using two main message types, requests and responses.
- * Both are communicated with an rpc (header) prepended.
- *
- * rpc:
- *   protocol               - (uint32_t) 4 bytes
- *   message id             - (uint64_t) 8 bytes
- *   request/response       - (uint8_t) 1 byte
- *   rpc method index       - (uint32_t) 4 bytes
- *   return code            - (uint32_t) 4 bytes (only sent for responses)
- *
- * request:
- *   #args                  - (uint32_t) 4 bytes
- *   #args * (arg value)    - varying size defined by interface below
- *   #rets                  - (uint32_t) 4 bytes
- *   #rets * (arg template) - varying size defined by interface below
- *
- * response:
- *   #rets                  - (uint32_t) 4 bytes
- *   #rets * (arg value)    - varying size defined by interface below
- *
- */
-
-/*
- * Elements of argument lists are serialized using a type-specific interface.
- * ArgEltDesc contains function pointers for basic operations on the argument
- * list elements.
- */
-typedef struct ArgEltInterface ArgEltInterface;
-struct ArgEltInterface {
-  int (*get)(NaClSrpcImcBuffer* buffer,
-             int allocate,
-             int read_value,
-             NaClSrpcArg* arg);
-  int (*put)(const NaClSrpcArg* arg,
-             int write_value,
-             NaClSrpcImcBuffer* buffer);
-  void (*print)(const NaClSrpcArg* arg);
-  uint32_t (*length)(const NaClSrpcArg* arg, int write_value, int* descs);
-  void (*free)(NaClSrpcArg* arg);
-};
-
-/*
- * Argument lists are serialized using a protocol version specific interface.
- */
-typedef struct ArgsIoInterface ArgsIoInterface;
-struct ArgsIoInterface {
-  int (*get)(const ArgsIoInterface* argsdesc,
-             NaClSrpcImcBuffer* buffer,
-             int allocate_args,
-             int read_values,
-             NaClSrpcArg* argvec[],
-             const char* arg_types);
-  int (*put)(const ArgsIoInterface* argsdesc,
-             NaClSrpcImcBuffer* buffer,
-             int write_value,
-             NaClSrpcArg* argvec[]);
-  int (*length)(const ArgsIoInterface* argsdesc,
-                NaClSrpcArg* argvec[],
-                int write_value,
-                uint32_t* bytes,
-                uint32_t* handles);
-  void (*free)(const ArgsIoInterface* argsdesc,
-               NaClSrpcArg* argvec[]);
-  const ArgEltInterface* (*element_interface)(const NaClSrpcArg* arg);
-};
-static const ArgsIoInterface* GetArgsInterface(uint32_t protocol_version);
-
-/*
- * Forward declarations.
- */
-static int RequestGet(NaClSrpcImcBuffer* buffer,
-                      const NaClSrpcRpc* rpc,
-                      const char* arg_types,
-                      NaClSrpcArg* args[],
-                      const char* ret_types,
-                      NaClSrpcArg* rets[]);
-
-static void ResponseWrite(NaClSrpcRpc* rpc,
-                          NaClSrpcArg* rets[]);
-
-static int ResponseGet(NaClSrpcImcBuffer* buffer,
-                       const NaClSrpcRpc* rpc,
-                       const char* ret_types,
-                       NaClSrpcArg* rets[]);
-
-/* TODO(sehr): make this public when the client side uses RPC. */
-static int NaClSrpcRpcCtor(NaClSrpcRpc* rpc,
-                           NaClSrpcChannel* channel) {
-  rpc->channel = channel;
-  rpc->result = NACL_SRPC_RESULT_INTERNAL;
-  rpc->rets = NULL;
-  return 1;
-}
-
-/* A self-deleting closure to send responses from RPC servers. */
-typedef struct RpcCheckingClosure {
-  struct NaClSrpcClosure base;
-  NaClSrpcRpc* rpc;
-} RpcCheckingClosure;
-
-static void RpcCheckingClosureRun(NaClSrpcClosure* self) {
-  RpcCheckingClosure* vself = (RpcCheckingClosure*) self;
-  dprintf((SIDE "SRPC: RpcCheckingClosureRun: done (result = %d)\n",
-           vself->rpc->result));
-  /* Send the RPC response to the caller. */
-  ResponseWrite(vself->rpc, vself->rpc->rets);
-  dprintf((SIDE "SRPC: RpcCheckingClosureRun: response sent\n"));
-  vself->rpc->dispatch_loop_should_continue = 1;
-  if (NACL_SRPC_RESULT_BREAK == vself->rpc->result) {
-    dprintf((SIDE "SRPC: RpcCheckingClosureRun: server requested break\n"));
-    vself->rpc->result = NACL_SRPC_RESULT_OK;
-    vself->rpc->dispatch_loop_should_continue = 0;
-  }
-  if (!vself->rpc->ret_send_succeeded) {
-    /* If the response write failed, drop request and continue. */
-    dprintf((SIDE "SRPC: RpcCheckingClosureRun: response write failed\n"));
-  }
-  free(self);
-  dprintf((SIDE "SRPC: RpcCheckingClosureRun: done\n"));
-}
-
-static int RpcCheckingClosureCtor(RpcCheckingClosure* self,
-                                  NaClSrpcRpc* rpc) {
-  self->base.Run = RpcCheckingClosureRun;
-  self->rpc = rpc;
-  self->rpc->dispatch_loop_should_continue = 1;
-  return 1;
-}
-
 static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
                                                  NaClSrpcRpc* rpc_stack_top) {
-  NaClSrpcImcBuffer* buffer;
   NaClSrpcRpc rpc;
-  const char* rpc_name;
-  const char* arg_types;
-  const char* ret_types;
   NaClSrpcArg* args[NACL_SRPC_MAX_ARGS + 1];
   NaClSrpcArg* rets[NACL_SRPC_MAX_ARGS + 1];
   NaClSrpcMethod method;
-  int retval;
-  const ArgsIoInterface* desc;
+  ssize_t retval;
   RpcCheckingClosure* done;
 
   dprintf((SIDE "SRPC: ReceiveAndDispatch: %p\n", (void*) rpc_stack_top));
@@ -189,22 +903,17 @@ static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
     /* DISPATCH_EOF is the closest we have to an error return. */
     return DISPATCH_EOF;
   }
-  if (!NaClSrpcRpcCtor(&rpc, channel) || !RpcCheckingClosureCtor(done, &rpc)) {
+  if (!NaClSrpcRpcCtor(&rpc, channel) ||
+      !RpcCheckingClosureCtor(done, &rpc)) {
     free(done);
     return DISPATCH_EOF;
   }
   rpc.rets = rets;
   /* Read a message from the channel. */
-  buffer = __NaClSrpcImcFillbuf(channel);
-  if (NULL == buffer) {
+  retval = SrpcPeekMessage(channel->message_channel, &rpc);
+  if (retval < 0) {
     dprintf((SIDE "SRPC: ReceiveAndDispatch: buffer read failed\n"));
     return DISPATCH_EOF;
-  }
-  /* Deserialize the header (0 indicates failure) */
-  if (!NaClSrpcRpcGet(buffer, &rpc)) {
-    dprintf((SIDE "SRPC: ReceiveAndDispatch: rpc deserialize failed\n"));
-    /* Drop the current request and continue */
-    return DISPATCH_CONTINUE;
   }
   if (rpc.is_request) {
     /* This is a new request. */
@@ -214,6 +923,7 @@ static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
         return DISPATCH_EOF;
       } else {
         /* Inform the pending invoke that a failure happened. */
+        dprintf((SIDE "ReceiveAndDispatch: out of order request\n"));
         rpc_stack_top->result = NACL_SRPC_RESULT_INTERNAL;
         return DISPATCH_BREAK;
       }
@@ -222,37 +932,30 @@ static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
   } else {
     /* This is a response to a pending request. */
     if (NULL == rpc_stack_top) {
+      dprintf((SIDE "ReceiveAndDispatch: response, no pending request\n"));
       /* There is no pending request. Abort. */
       return DISPATCH_BREAK;
     } else {
       if (rpc.request_id == rpc_stack_top->request_id) {
-        /* Back up to the start of the message and process it as a response. */
-        rpc_stack_top->buffer = buffer;
+        /* Copy the serialized portion of the Rpc and process as a response. */
+        memcpy(rpc_stack_top, &rpc, kRpcSize);
         return DISPATCH_RESPONSE;
       } else {
         /* Received an out-of-order response.  Abort. */
+        dprintf((SIDE "ReceiveAndDispatch: response for wrong request\n"));
         return DISPATCH_BREAK;
       }
     }
   }
-  /* Get types for receiving args and rets */
-  retval = NaClSrpcServiceMethodNameAndTypes(channel->server,
-                                             rpc.rpc_number,
-                                             &rpc_name,
-                                             &arg_types,
-                                             &ret_types);
-  if (!retval) {
-    dprintf((SIDE "SRPC: ReceiveAndDispatch: bad rpc number in request\n"));
-    /* Drop the request with a bad rpc number and continue */
-    return DISPATCH_CONTINUE;
-  }
-  dprintf((SIDE "SRPC: ReceiveAndDispatch: processing %s\n", rpc_name));
-  /* Deserialize the request from the buffer. */
-  if (!RequestGet(buffer, &rpc, arg_types, args, ret_types, rets)) {
-    dprintf((SIDE "SRPC: ReceiveAndDispatch: receive message failed\n"));
+  retval = RecvRequest(channel->message_channel, &rpc, args, rets);
+  if (retval < 0) {
+    dprintf((SIDE "SRPC: ReceiveAndDispatch: RecvRequest failed\n"));
     return DISPATCH_EOF;
   }
-  desc = GetArgsInterface(rpc.protocol_version);
+  if (!RequestVectorTypesConform(channel, &rpc, args, rets)) {
+    dprintf((SIDE "SRPC: ReceiveAndDispatch: arg/ret type mismatch\n"));
+    return DISPATCH_CONTINUE;
+  }
   /* Then we invoke the method, which computes a return code. */
   method = NaClSrpcServiceMethod(channel->server, rpc.rpc_number);
   if (NULL == method) {
@@ -261,13 +964,8 @@ static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
     return DISPATCH_CONTINUE;
   }
   (*method)(&rpc, args, rets, (NaClSrpcClosure*) done);
-  /*
-   * Free the memory for the args and rets.
-   * TODO(sehr): memory allocation for rets should move to the method
-   * implementation, eliminating the second free.
-   */
-  desc->free(desc, args);
-  desc->free(desc, rets);
+  FreeArgs(args);
+  FreeArgs(rets);
   /*
    * Return code to either continue or break out of the processing loop.
    * When we separate closure invocation from the dispatch loop we will
@@ -308,24 +1006,10 @@ void NaClSrpcRpcWait(NaClSrpcChannel* channel,
     return;
   }
   if (DISPATCH_RESPONSE == retval) {
-    NaClSrpcImcBuffer* buffer = rpc->buffer;
-    /* We know here that the buffer contains a response to the current rpc. */
-    __NaClSrpcImcRefill(buffer);
-    /* Deserialize the header (0 indicates failure) */
-    if (!NaClSrpcRpcGet(buffer, rpc)) {
-      dprintf((SIDE "SRPC: NaClSrpcRpcWait: rpc deserialize failed\n"));
-      rpc->result = NACL_SRPC_RESULT_INTERNAL;
-      return;
-    }
-    /* Paranoia: if the message is a request, return an error */
-    if (rpc->is_request) {
-      dprintf((SIDE "SRPC: NaClSrpcRpcWait: rpc is not response: %d\n",
-               rpc->is_request));
-      rpc->result = NACL_SRPC_RESULT_INTERNAL;
-      return;
-    }
-    if (!ResponseGet(buffer, rpc, rpc->ret_types, rpc->rets)) {
-      dprintf((SIDE "SRPC: NaClSrpcRpcWait: response receive failed\n"));
+    ssize_t recv_ret = RecvResponse(channel->message_channel, rpc, rpc->rets);
+    if (recv_ret < 0) {
+      dprintf((SIDE "SRPC: NaClSrpcRpcWait: rpc receive failed (%d)\n",
+               (int) recv_ret));
       rpc->result = NACL_SRPC_RESULT_INTERNAL;
       return;
     }
@@ -337,877 +1021,20 @@ void NaClSrpcRpcWait(NaClSrpcChannel* channel,
   }
 }
 
-/*
- * Argument element I/O interfaces.
- */
-
-#define BASIC_TYPE_IO_DECLARE(name, impl_type, field, format)   \
-static int name##Get(NaClSrpcImcBuffer* buffer,                 \
-                     int allocate_memory,                       \
-                     int read_value,                            \
-                     NaClSrpcArg* arg) {                        \
-  UNREFERENCED_PARAMETER(allocate_memory);                      \
-  if (read_value &&                                             \
-      1 != __NaClSrpcImcRead(buffer,                            \
-                             sizeof(impl_type),                 \
-                             1,                                 \
-                             &arg->field)) {                    \
-    return 0;                                                   \
-  }                                                             \
-  return 1;                                                     \
-}                                                               \
-                                                                \
-static int name##Put(const NaClSrpcArg* arg,                    \
-                     int write_value,                           \
-                     NaClSrpcImcBuffer* buffer) {               \
-  if (write_value) {                                            \
-    return 1 == __NaClSrpcImcWrite(&arg->field,                 \
-                                   sizeof(impl_type),           \
-                                   1,                           \
-                                   buffer);                     \
-  }                                                             \
-  return 1;                                                     \
-}                                                               \
-                                                                \
-static void name##Print(const NaClSrpcArg* arg) {               \
-  dprintf(("%"format"", arg->field));                           \
-}                                                               \
-                                                                \
-static uint32_t name##Length(const NaClSrpcArg* arg,            \
-                             int write_value,                   \
-                             int* handles) {                    \
-  UNREFERENCED_PARAMETER(arg);                                  \
-  *handles = 0;                                                 \
-  if (write_value) {                                            \
-    return sizeof(impl_type);                                   \
-  } else {                                                      \
-    return 0;                                                   \
-  }                                                             \
-}                                                               \
-                                                                \
-static void name##Free(NaClSrpcArg* arg) {                      \
-  UNREFERENCED_PARAMETER(arg);                                  \
-}                                                               \
-                                                                \
-static const ArgEltInterface k##name##IoInterface = {           \
-  name##Get, name##Put, name##Print, name##Length, name##Free   \
-};
-
-/*
- * The basic parameter types.
- */
-BASIC_TYPE_IO_DECLARE(Bool, char, u.bval, "1d")
-BASIC_TYPE_IO_DECLARE(Double, double, u.dval, "f")
-BASIC_TYPE_IO_DECLARE(Int, int32_t, u.ival, NACL_PRId32)
-BASIC_TYPE_IO_DECLARE(Long, int64_t, u.lval, NACL_PRId64)
-
-#define ARRAY_TYPE_IO_DECLARE(name, impl_type, array)                          \
-static int name##ArrGet(NaClSrpcImcBuffer* buffer,                             \
-                        int allocate_memory,                                   \
-                        int read_value,                                        \
-                        NaClSrpcArg* arg) {                                    \
-  nacl_abi_size_t dim;                                                         \
-                                                                               \
-  if (1 != __NaClSrpcImcRead(buffer, sizeof(dim), 1, &dim)) {                  \
-    return 0;                                                                  \
-  }                                                                            \
-  if (allocate_memory) {                                                       \
-    if (dim >= NACL_ABI_SIZE_T_MAX / sizeof(*arg->array)) {                    \
-      return 0;                                                                \
-    }                                                                          \
-    arg->array =                                                               \
-        (impl_type*) malloc(dim * sizeof(*arg->array));                        \
-    if (NULL == arg->array) {                                                  \
-      return 0;                                                                \
-    }                                                                          \
-    arg->u.count = dim;                                                        \
-  } else if (arg->u.count < dim) {                                             \
-    return 0;                                                                  \
-  }                                                                            \
-  if (read_value &&                                                            \
-      dim != __NaClSrpcImcRead(buffer,                                         \
-                               sizeof(impl_type),                              \
-                               dim,                                            \
-                               arg->array)) {                                  \
-    return 0;                                                                  \
-  }                                                                            \
-  return 1;                                                                    \
-}                                                                              \
-                                                                               \
-static int name##ArrPut(const NaClSrpcArg* arg,                                \
-                        int write_value,                                       \
-                        NaClSrpcImcBuffer* buffer) {                           \
-  if (1 !=                                                                     \
-      __NaClSrpcImcWrite(&arg->u.count, sizeof(uint32_t), 1, buffer)) {        \
-    return 0;                                                                  \
-  }                                                                            \
-  if (write_value) {                                                           \
-    return arg->u.count ==                                                     \
-        __NaClSrpcImcWrite(arg->array,                                         \
-                           sizeof(impl_type),                                  \
-                           arg->u.count,                                       \
-                           buffer);                                            \
-  }                                                                            \
-  return 1;                                                                    \
-}                                                                              \
-                                                                               \
-static void name##ArrPrint(const NaClSrpcArg* arg) {                           \
-  dprintf(("[%"NACL_PRIu32"], array = %p",                                     \
-           arg->u.count,                                                       \
-           (void*) arg->array));                                               \
-}                                                                              \
-                                                                               \
-static uint32_t name##ArrLength(const NaClSrpcArg* arg,                        \
-                                int write_value,                               \
-                                int* handles) {                                \
-  *handles = 0;                                                                \
-  if (write_value) {                                                           \
-    return sizeof(uint32_t) + sizeof(impl_type) * arg->u.count;                \
-  } else {                                                                     \
-    return sizeof(uint32_t);                                                   \
-  }                                                                            \
-}                                                                              \
-                                                                               \
-static void name##ArrFree(NaClSrpcArg* arg) {                                  \
-  free(arg->array);                                                            \
-  arg->array = NULL;                                                           \
-}                                                                              \
-                                                                               \
-static const ArgEltInterface k##name##ArrIoInterface = {                       \
-  name##ArrGet, name##ArrPut, name##ArrPrint, name##ArrLength, name##ArrFree   \
-};
-
-/*
- * The three array parameter types.
- */
-ARRAY_TYPE_IO_DECLARE(Char, char, arrays.carr)
-ARRAY_TYPE_IO_DECLARE(Double, double, arrays.darr)
-ARRAY_TYPE_IO_DECLARE(Int, int32_t, arrays.iarr)
-ARRAY_TYPE_IO_DECLARE(Long, int64_t, arrays.larr)
-
-/*
- * Handle (descriptor) type I/O support.
- */
-static int HandleGet(NaClSrpcImcBuffer* buffer,
-                     int allocate_memory,
-                     int read_value,
-                     NaClSrpcArg* arg) {
-  UNREFERENCED_PARAMETER(allocate_memory);
-  if (read_value) {
-    arg->u.hval = __NaClSrpcImcReadDesc(buffer);
-  }
-  return 1;
-}
-
-static int HandlePut(const NaClSrpcArg* arg,
-                     int write_value,
-                     NaClSrpcImcBuffer* buffer) {
-  if (write_value) {
-    return 1 == __NaClSrpcImcWriteDesc(arg->u.hval, buffer);
-  }
-  return 1;
-}
-
-static void HandlePrint(const NaClSrpcArg* arg) {
-#ifdef __native_client__
-  dprintf(("%d", arg->u.hval));
-#else
-  UNREFERENCED_PARAMETER(arg);
-  dprintf(("handle"));
-#endif  /* __native_client__ */
-}
-
-static uint32_t HandleLength(const NaClSrpcArg* arg,
-                             int write_value,
-                             int* handles) {
-  UNREFERENCED_PARAMETER(arg);
-  if (write_value) {
-    *handles = 1;
-  } else {
-    *handles = 0;
-  }
-  return 0;
-}
-
-static void HandleFree(NaClSrpcArg* arg) {
-  UNREFERENCED_PARAMETER(arg);
-}
-
-static const ArgEltInterface kHandleIoInterface = {
-  HandleGet, HandlePut, HandlePrint, HandleLength, HandleFree
-};
-
-/*
- * String type I/O support.
- */
-static int StringGet(NaClSrpcImcBuffer* buffer,
-                     int allocate_memory,
-                     int read_value,
-                     NaClSrpcArg* arg) {
-  nacl_abi_size_t dim;
-
-  UNREFERENCED_PARAMETER(allocate_memory);
-  UNREFERENCED_PARAMETER(arg);
-  if (read_value) {
-    if (1 != __NaClSrpcImcRead(buffer, sizeof(dim), 1, &dim)) {
-      return 0;
-    }
-    /*
-     * check if dim + 1 (in the malloc below) will result in an
-     * integer overflow
-     */
-    if (dim >= NACL_ABI_SIZE_T_MAX) {
-      return 0;
-    }
-    arg->arrays.str = (char*) malloc(dim + 1);
-    if (NULL == arg->arrays.str) {
-      return 0;
-    }
-    if (dim != __NaClSrpcImcRead(buffer, sizeof(char), dim, arg->arrays.str)) {
-      return 0;
-    }
-    arg->arrays.str[dim] = '\0';
-  }
-  return 1;
-}
-
-static int StringPut(const NaClSrpcArg* arg,
-                     int write_value,
-                     NaClSrpcImcBuffer* buffer) {
-  if (write_value) {
-    uint32_t slen = (uint32_t) strlen(arg->arrays.str);
-    if (1 != __NaClSrpcImcWrite(&slen, sizeof(slen), 1, buffer) ||
-        slen != __NaClSrpcImcWrite(arg->arrays.str, 1,
-                                   (nacl_abi_size_t) slen, buffer)) {
-      return 0;
-    }
-  }
-  return 1;
-}
-
-static void StringPrint(const NaClSrpcArg* arg) {
-  dprintf((", strlen %u, '%s'", (unsigned) strlen(arg->arrays.str),
-           arg->arrays.str));
-}
-
-static uint32_t StringLength(const NaClSrpcArg* arg,
-                             int write_value,
-                             int* handles) {
-  *handles = 0;
-  if (write_value) {
-    uint32_t size = nacl_abi_size_t_saturate(sizeof(uint32_t)
-        + strlen(arg->arrays.str));
-    return size;
-  } else {
-    return 0;
-  }
-}
-
-static void StringFree(NaClSrpcArg* arg) {
-  free(arg->arrays.str);
-  arg->arrays.str = NULL;
-}
-
-static const ArgEltInterface kStringIoInterface = {
-  StringGet, StringPut, StringPrint, StringLength, StringFree
-};
-
-/*
- * Invalid type I/O support.
- */
-static int InvalidGet(NaClSrpcImcBuffer* buffer,
-                      int allocate_memory,
-                      int read_value,
-                      NaClSrpcArg* arg) {
-  UNREFERENCED_PARAMETER(buffer);
-  UNREFERENCED_PARAMETER(allocate_memory);
-  UNREFERENCED_PARAMETER(read_value);
-  UNREFERENCED_PARAMETER(arg);
-  return 0;
-}
-
-static int InvalidPut(const NaClSrpcArg* arg,
-                      int write_value,
-                      NaClSrpcImcBuffer* buffer) {
-  UNREFERENCED_PARAMETER(arg);
-  UNREFERENCED_PARAMETER(write_value);
-  UNREFERENCED_PARAMETER(buffer);
-  return 0;
-}
-
-static void InvalidPrint(const NaClSrpcArg* arg) {
-  UNREFERENCED_PARAMETER(arg);
-  dprintf(("INVALID"));
-}
-
-static uint32_t InvalidLength(const NaClSrpcArg* arg,
-                              int write_value,
-                              int* handles) {
-  UNREFERENCED_PARAMETER(arg);
-  UNREFERENCED_PARAMETER(write_value);
-  *handles = 0;
-  return 0;
-}
-
-static void InvalidFree(NaClSrpcArg* arg) {
-  UNREFERENCED_PARAMETER(arg);
-}
-
-static const ArgEltInterface kInvalidIoInterface = {
-  InvalidGet, InvalidPut, InvalidPrint, InvalidLength, InvalidFree
-};
-
-/*
- * Argument vector (Args) I/O interface.
- */
-static int ArgsGet(const ArgsIoInterface* argsdesc,
-                   NaClSrpcImcBuffer* buffer,
-                   int allocate_args,
-                   int read_values,
-                   NaClSrpcArg* argvec[],
-                   const char* arg_types) {
-  uint32_t lenu32;
-  uint32_t i;
-  NaClSrpcArg *args = NULL;
-
-  if (1 != __NaClSrpcImcRead(buffer, sizeof(lenu32), 1, &lenu32)) {
-    return 0;
-  }
-  if (lenu32 >= NACL_SRPC_MAX_ARGS) {
-    return 0;
-  }
-
-  if (allocate_args && lenu32 > 0) {
-    size_t ix;
-    size_t length = (size_t) lenu32;
-    if (length >= SIZE_T_MAX / sizeof(*args)) {
-      goto error;
-    }
-    /*
-     * post condition: no integer overflow, so
-     * length * sizeof(*args) < SIZE_T_MAX
-     */
-    args = (NaClSrpcArg*) malloc(length * sizeof(*args));
-    if (args == NULL) {
-      goto error;
-    }
-    memset((void*) args, 0, length * sizeof(*args));
-
-    /*
-     * Initialize the arg type tags with those specified in the declaration.
-     */
-    for (ix = 0; ix < length; ++ix) {
-      if (arg_types[ix] == ':' || arg_types[ix] == '\0') {
-        return 0;
-      }
-      args[ix].tag = arg_types[ix];
-    }
-    /* TODO(sehr): include test code to validate arglist mismatches */
-    if (arg_types[length] != ':' && arg_types[length] != '\0') {
-      return 0;
-    }
-  } else {
-    /*
-     * Ensure that the number of elements to be read is equal to the
-     * number the client requests.
-     */
-    if (lenu32 != strlen(arg_types)) {
-      return 0;
-    }
-    args = argvec[0];
-  }
-
-  for (i = 0; i < lenu32; ++i) {
-    char read_type;
-    const ArgEltInterface* desc;
-
-    if (1 != __NaClSrpcImcRead(buffer, sizeof(read_type), 1, &read_type)) {
-      goto error;
-    }
-    if (args[i].tag != (enum NaClSrpcArgType) read_type) {
-      goto error;
-    }
-    /* Set the index pointer to point to the element to be read into */
-    argvec[i] = args + i;
-    argvec[i]->tag = read_type;
-    /* Get the I/O descriptor for the type to be read */
-    desc = argsdesc->element_interface(argvec[i]);
-    /* Read the element */
-    if (!desc->get(buffer, allocate_args, read_values, argvec[i])) {
-      goto error;
-    }
-  }
-  argvec[lenu32] = NULL;
-  return 1;
-error:
-  if (args != NULL) {
-    argsdesc->free(argsdesc, argvec);
-  }
-  return 0;
-}
-
-static int ArgsPut(const ArgsIoInterface* argsdesc,
-                   NaClSrpcImcBuffer* buffer,
-                   int write_value,
-                   NaClSrpcArg* argvec[]) {
-  uint32_t i;
-  uint32_t length;
-
-  for (length = 0; argvec[length] != NULL; ++length) {}
-  if (length >= NACL_SRPC_MAX_ARGS) {
-    return 0;
-  }
-  if (1 != __NaClSrpcImcWrite(&length, sizeof(length), 1, buffer)) {
-    return 0;
-  }
-
-  for (i = 0; i < length; ++i) {
-    const ArgEltInterface* desc = argsdesc->element_interface(argvec[i]);
-    /* The tag */
-    if (1 != __NaClSrpcImcWrite(&argvec[i]->tag, sizeof(char), 1, buffer)) {
-      return 0;
-    }
-    /* And the individual type */
-    if (!desc->put(argvec[i], write_value, buffer)) {
-      return 0;
-    }
-  }
-  return 1;
-}
-
-static int ArgsLength(const ArgsIoInterface* argsdesc,
-                      NaClSrpcArg* argvec[],
-                      int write_value,
-                      uint32_t* bytes,
-                      uint32_t* handles) {
-  int i;
-  nacl_abi_size_t tmp_bytes;
-  int tmp_handles;
-
-  /* Initialize the reported results */
-  *bytes = 0;
-  *handles = 0;
-  /* Initialize to pass the vector length, and no handles. */
-  tmp_bytes = sizeof(uint32_t);
-  tmp_handles = 0;
-  for (i = 0; i < NACL_SRPC_MAX_ARGS && NULL != argvec[i]; ++i) {
-    int handle_cnt;
-    const ArgEltInterface* desc = argsdesc->element_interface(argvec[i]);
-    /* The arg tag + the argument */
-    tmp_bytes += 1 + desc->length(argvec[i], write_value, &handle_cnt);
-    tmp_handles += handle_cnt;
-  }
-  if (NACL_SRPC_MAX_ARGS == i) {
-    return 0;
-  }
-  *bytes = tmp_bytes;
-  *handles = tmp_handles;
-  return 1;
-}
-
-static void ArgsFree(const ArgsIoInterface* argsdesc,
-                     NaClSrpcArg* argvec[]) {
-  NaClSrpcArg** argvecp;
-
-  /* Free any element allocated data on the arguments list. */
-  for (argvecp = argvec; *argvecp != NULL; ++argvecp) {
-    const ArgEltInterface* desc = argsdesc->element_interface(*argvecp);
-    desc->free(*argvecp);
-  }
-  /* Free the whole argument vector. */
-  free(argvec[0]);
-  /* And NULL out the argument vector pointers to avoid double frees. */
-  for (argvecp = argvec; *argvecp != NULL; ++argvecp) {
-    *argvecp = NULL;
-  }
-}
-
-static const ArgEltInterface* ArgsGetEltInterface(const NaClSrpcArg* arg) {
-  switch (arg->tag) {
-   case NACL_SRPC_ARG_TYPE_INVALID:
-    return &kInvalidIoInterface;
-   case NACL_SRPC_ARG_TYPE_BOOL:
-    return &kBoolIoInterface;
-   case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
-    return &kCharArrIoInterface;
-   case NACL_SRPC_ARG_TYPE_DOUBLE:
-    return &kDoubleIoInterface;
-   case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
-    return &kDoubleArrIoInterface;
-   case NACL_SRPC_ARG_TYPE_HANDLE:
-    return &kHandleIoInterface;
-   case NACL_SRPC_ARG_TYPE_INT:
-    return &kIntIoInterface;
-   case NACL_SRPC_ARG_TYPE_INT_ARRAY:
-    return &kIntArrIoInterface;
-   case NACL_SRPC_ARG_TYPE_LONG:
-    return &kLongIoInterface;
-   case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
-    return &kLongArrIoInterface;
-   case NACL_SRPC_ARG_TYPE_STRING:
-    return &kStringIoInterface;
-   case NACL_SRPC_ARG_TYPE_OBJECT:
-    return &kInvalidIoInterface;
-   case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
-    return &kInvalidIoInterface;
-   default:
-    break;
-  }
-  return &kInvalidIoInterface;
-}
-
-static const struct ArgsIoInterface kArgsIoInterface = {
-  ArgsGet, ArgsPut, ArgsLength, ArgsFree, ArgsGetEltInterface
-};
-
-static const ArgsIoInterface* GetArgsInterface(uint32_t protocol_version) {
-  /* Future versioning of the argument vector I/O goes here. */
-  UNREFERENCED_PARAMETER(protocol_version);
-  return &kArgsIoInterface;
-}
-
-/*
- * NaClSrpcRpcGet reads a message header from the specified buffer.
- * It returns 1 if successful, and 0 otherwise.
- */
-int NaClSrpcRpcGet(NaClSrpcImcBuffer* buffer,
-                   NaClSrpcRpc* rpc) {
-  uint32_t protocol;
-  uint8_t is_req = 0;
-  uint64_t request_id = 0;
-  uint32_t rpc_num = 0;
-  NaClSrpcError result = NACL_SRPC_RESULT_OK;
-
-  dprintf((SIDE "SRPC: RpcGet starting\n"));
-  if (1 != __NaClSrpcImcRead(buffer, sizeof(protocol), 1, &protocol)) {
-    dprintf((SIDE "SRPC: READ: protocol read fail\n"));
-    return 0;
-  }
-  rpc->protocol_version = protocol;
-  /*
-   * If there are protocol version specific rpc fields, a version dispatcher
-   * would need to go here.
-   */
-  if (1 != __NaClSrpcImcRead(buffer, sizeof(request_id), 1, &request_id)) {
-    dprintf((SIDE "SRPC: RpcGet: request_id read fail\n"));
-    return 0;
-  }
-  rpc->request_id = request_id;
-  if (1 != __NaClSrpcImcRead(buffer, sizeof(is_req), 1, &is_req)) {
-    dprintf((SIDE "SRPC: RpcGet: is_request read fail\n"));
-    return 0;
-  }
-  rpc->is_request = is_req;
-  if (1 != __NaClSrpcImcRead(buffer, sizeof(rpc_num), 1, &rpc_num)) {
-    dprintf((SIDE "SRPC: RpcGet: rpc_number read fail\n"));
-    return 0;
-  }
-  rpc->rpc_number = rpc_num;
-  if (!rpc->is_request) {
-    /* Responses also need to read the result member */
-    if (1 != __NaClSrpcImcRead(buffer, sizeof(result), 1, &result)) {
-      dprintf((SIDE "SRPC: RpcGet: result read fail\n"));
-      return 0;
-    }
-  }
-  rpc->result = result;
-  dprintf((SIDE "SRPC: RpcGet(%"NACL_PRIx32", %s, %"NACL_PRIu32", %s) done\n",
-           rpc->protocol_version,
-           (rpc->is_request == 0) ? "response" : "request",
-           rpc->rpc_number,
-           NaClSrpcErrorString(rpc->result)));
-  return 1;
-}
-
-/*
- * RpcWrite writes an RPC header to the specified buffer.  We can only
- * send the current protocol version.
- */
-static int RpcWrite(NaClSrpcImcBuffer* buffer, NaClSrpcRpc* rpc) {
-  dprintf((SIDE "SRPC: RpcWrite(%"NACL_PRIx32", %s, %"NACL_PRIu32", %s)\n",
-           rpc->protocol_version,
-           rpc->is_request ? "request" : "response",
-           rpc->rpc_number,
-           NaClSrpcErrorString(rpc->result)));
-  if (1 !=
-      __NaClSrpcImcWrite(&rpc->protocol_version,
-                         sizeof(rpc->protocol_version),
-                         1,
-                         buffer)) {
-    return 0;
-  }
-  if (1 !=
-      __NaClSrpcImcWrite(&rpc->request_id,
-                         sizeof(rpc->request_id),
-                         1,
-                         buffer)) {
-    return 0;
-  }
-  if (1 !=
-      __NaClSrpcImcWrite(&rpc->is_request,
-                         sizeof(rpc->is_request),
-                         1,
-                         buffer)) {
-    return 0;
-  }
-  if (1 !=
-      __NaClSrpcImcWrite(&rpc->rpc_number,
-                         sizeof(rpc->rpc_number),
-                         1,
-                         buffer)) {
-    return 0;
-  }
-  /* Responses also need to send the result member */
-  if (!rpc->is_request) {
-    if (1 !=
-        __NaClSrpcImcWrite(&rpc->result, sizeof(rpc->result), 1, buffer)) {
-      return 0;
-    }
-  }
-  dprintf((SIDE "SRPC: RpcWrite done\n"));
-  return 1;
-}
-
-static void RpcLength(int is_request, uint32_t* bytes, uint32_t* handles) {
-  *bytes =
-      sizeof(uint32_t) +  /* protocol_version */
-      sizeof(uint64_t) +  /* request_id */
-      sizeof(uint8_t)  +  /* is_request */
-      sizeof(uint32_t) +  /* rpc_number */
-      (is_request ? sizeof(uint32_t) : 0);  /* result */
-  *handles = 0;
-}
-
-/*
- * Deserialize a request from the buffer.  If successful, the input
- * arguments and the template of the returns is returned.
- */
-static int RequestGet(NaClSrpcImcBuffer* buffer,
-                      const NaClSrpcRpc* rpc,
-                      const char* arg_types,
-                      NaClSrpcArg* args[],
-                      const char* ret_types,
-                      NaClSrpcArg* rets[]) {
-  const ArgsIoInterface* desc;
-
-  dprintf((SIDE "SRPC: RequestGet(%p, %"NACL_PRIu32"\n",
-          (void*) buffer,
-          rpc->rpc_number));
-  /* Get the Args I/O descriptor for the protocol version read */
-  desc = GetArgsInterface(rpc->protocol_version);
-  if (!desc->get(desc, buffer, 1, 1, args, arg_types)) {
-    dprintf((SIDE "SRPC: RequestGet: argument vector receive failed\n"));
-    return 0; /* get frees memory on error. */
-  }
-  /* Construct the rets from the buffer. */
-  if (!desc->get(desc, buffer, 1, 0, rets, ret_types)) {
-    dprintf((SIDE "SRPC: RequestGet: rets template receive failed\n"));
-    desc->free(desc, args);
-    return 0;
-  }
-  dprintf((SIDE "SRPC: RequestGet(%p, %"NACL_PRIu32") received\n",
-           (void*) buffer,
-           rpc->rpc_number));
-  return 1;
-}
-
-static int RequestPut(const ArgsIoInterface* desc,
-                      NaClSrpcRpc* rpc,
-                      NaClSrpcArg* args[],
-                      NaClSrpcArg* rets[],
-                      NaClSrpcImcBuffer* buffer) {
-  dprintf((SIDE "SRPC: RequestPut(%p, %"NACL_PRIu32")\n",
-           (void*) buffer,
-           rpc->rpc_number));
-  /* Set up and send rpc */
-  rpc->is_request = 1;
-  rpc->result = NACL_SRPC_RESULT_OK;
-  if (!RpcWrite(buffer, rpc)) {
-    return 0;
-  }
-  /* Then send the args */
-  if (!desc->put(desc, buffer, 1, args)) {
-    dprintf((SIDE "SRPC: RequestPut: args send failed\n"));
-    return 0;
-  }
-  /* And finally the rets template */
-  if (!desc->put(desc, buffer, 0, rets)) {
-    dprintf((SIDE "SRPC: RequestPut: rets template send failed\n"));
-    return 0;
-  }
-  dprintf((SIDE "SRPC: RequestPut(%p, %"NACL_PRIu32") sent\n",
-           (void*) buffer,
-           rpc->rpc_number));
-  return 1;
-}
-
-static int RequestLength(const ArgsIoInterface* desc,
-                         NaClSrpcArg* args[],
-                         NaClSrpcArg* rets[],
-                         uint32_t* bytes,
-                         uint32_t* handles) {
-  uint32_t tmp_bytes;
-  uint32_t tmp_hdl;
-
-  RpcLength(1, &tmp_bytes, &tmp_hdl);
-  *bytes += tmp_bytes;
-  *handles += tmp_hdl;
-  if (!desc->length(desc, args, 1, &tmp_bytes, &tmp_hdl)) {
-    return 0;
-  }
-  *bytes += tmp_bytes;
-  *handles += tmp_hdl;
-  if (!desc->length(desc, rets, 0, &tmp_bytes, &tmp_hdl)) {
-    return 0;
-  }
-  *bytes += tmp_bytes;
-  *handles += tmp_hdl;
-
-  return 1;
-}
-
 int NaClSrpcRequestWrite(NaClSrpcChannel* channel,
                          NaClSrpcRpc* rpc,
-                         NaClSrpcArg* args[],
-                         NaClSrpcArg* rets[]) {
-  uint32_t bytes;
-  uint32_t handles;
-  const ArgsIoInterface* desc = GetArgsInterface(rpc->protocol_version);
-  NaClSrpcImcBuffer* buffer;
-
-  if (!RequestLength(desc, args, rets, &bytes, &handles)) {
-    return 0;
-  }
-  buffer = &channel->send_buf;
-  if (!RequestPut(desc, rpc, args, rets, buffer)) {
-    return 0;
-  }
-  if (!__NaClSrpcImcFlush(buffer, channel)) {
+                         NaClSrpcArg** args,
+                         NaClSrpcArg** rets) {
+  ssize_t retval;
+  dprintf((SIDE "SRPC: NaClSrpcRequestWrite(%"NACL_PRIu32")\n",
+           rpc->rpc_number));
+  rpc->is_request = 1;
+  retval = SrpcSendMessage(rpc, args, rets, channel->message_channel);
+  if (retval < 0) {
     /* Requests with bad handles could fail.  Report to the caller. */
-    dprintf((SIDE "SRPC: NaClSrpcRequestWrite(%p, %"NACL_PRIu32") failed\n",
-             (void*) buffer,
+    dprintf((SIDE "SRPC: NaClSrpcRequestWrite(%"NACL_PRIu32") failed\n",
              rpc->rpc_number));
     return 0;
   }
   return 1;
-}
-
-/*
- * Deserialize a response from the buffer.  If successful, the return
- * values are returned.
- */
-static int ResponseGet(NaClSrpcImcBuffer* buffer,
-                       const NaClSrpcRpc* rpc,
-                       const char* ret_types,
-                       NaClSrpcArg* rets[]) {
-  const ArgsIoInterface* desc;
-
-  /* Get the Args I/O descriptor for the protocol version read */
-  desc = GetArgsInterface(rpc->protocol_version);
-  /* Announce start of response processing */
-  dprintf((SIDE "SRPC: ResponseGet: response, rpc %"NACL_PRIu32"\n",
-           rpc->rpc_number));
-  if (NACL_SRPC_RESULT_OK != rpc->result) {
-    dprintf((SIDE "SRPC: ResponseGet: method returned failure: %d\n",
-             rpc->result));
-    return 1;
-  }
-  dprintf((SIDE "SRPC: ResponseGet: getting rets\n"));
-  if (!desc->get(desc, buffer, 0, 1, rets, ret_types)) {
-    dprintf((SIDE "SRPC: ResponseGet: rets receive failed\n"));
-    /* get cleans up argument memory before returning */
-    return 0;
-  }
-  dprintf((SIDE "SRPC: ResponseGet(%p, %"NACL_PRIu32") received\n",
-           (void*) buffer, rpc->rpc_number));
-  return 1;
-}
-
-static int ResponsePut(const ArgsIoInterface* desc,
-                       NaClSrpcRpc* rpc,
-                       NaClSrpcArg* rets[],
-                       NaClSrpcImcBuffer* buffer) {
-  dprintf((SIDE "SRPC: ResponsePut(%p, %"NACL_PRIu32")\n",
-           (void*) buffer, rpc->rpc_number));
-  rpc->is_request = 0;
-  if (!RpcWrite(buffer, rpc)) {
-    return 0;
-  }
-  if (!desc->put(desc, buffer, 1, rets)) {
-    dprintf((SIDE "SRPC: rets send failed\n"));
-    return 0;
-  }
-  dprintf((SIDE "SRPC: ResponsePut(%p, %"NACL_PRIu32", %d, %s): sent\n",
-           (void*) buffer, rpc->rpc_number, rpc->result,
-           NaClSrpcErrorString(rpc->result)));
-  return 1;
-}
-
-static int ResponseLength(const ArgsIoInterface* desc,
-                          NaClSrpcArg* rets[],
-                          uint32_t* bytes,
-                          uint32_t* handles) {
-  uint32_t tmp_bytes;
-  uint32_t tmp_hdl;
-
-  RpcLength(0, &tmp_bytes, &tmp_hdl);
-  *bytes += tmp_bytes;
-  *handles += tmp_hdl;
-  if (!desc->length(desc, rets, 1, &tmp_bytes, &tmp_hdl)) {
-    return 0;
-  }
-  *bytes += tmp_bytes;
-  *handles += tmp_hdl;
-
-  return 1;
-}
-
-/*
- * ResponseWrite writes the header and the return values on the specified
- * channel.
- */
-static void ResponseWrite(NaClSrpcRpc* rpc, NaClSrpcArg* rets[]) {
-  uint32_t bytes;
-  uint32_t handles;
-  const ArgsIoInterface* desc = GetArgsInterface(rpc->protocol_version);
-  NaClSrpcImcBuffer* buffer;
-  NaClSrpcChannel* channel = rpc->channel;
-
-  dprintf((SIDE "SRPC: ResponseWrite %p %p\n",
-           (void*)(rpc), (void*)(rets)));
-  rpc->ret_send_succeeded = 0;
-  /*
-   * ResponseLength computes the requirements for a write buffer.
-   * It is currently unused, but will be used in the next CL to separate
-   * serialization from buffer send/receive.
-   */
-  if (!ResponseLength(desc, rets, &bytes, &handles)) {
-    return;
-  }
-  /* Get the buffer to write into */
-  buffer = &channel->send_buf;
-  /* Serialize into the buffer */
-  if (!ResponsePut(desc, rpc, rets, buffer)) {
-    dprintf((SIDE "SRPC: ResponseWrite: couldn't put rets\n"));
-    return;
-  }
-  /* Flush the buffer to the channel */
-  if (!__NaClSrpcImcFlush(buffer, channel)) {
-    /*
-     * If the flush call fails due to a bad handle, the transport layer
-     * doesn't send anything.  Therefore we need to return an error message
-     * so that the client doesn't wait forever.
-     */
-    dprintf((SIDE
-             "SRPC: ResponseWrite: flush failed -- sending internal error\n"));
-    rpc->result = NACL_SRPC_RESULT_INTERNAL;
-    rpc->is_request = 0;
-    if (!RpcWrite(buffer, rpc)) {
-      dprintf((SIDE "SRPC: ResponseWrite: flush failed twice -- giving up\n"));
-      return;
-    }
-    __NaClSrpcImcFlush(buffer, channel);
-  }
-  dprintf((SIDE "SRPC: ResponseWrite: sent\n"));
-  rpc->ret_send_succeeded = 1;
 }

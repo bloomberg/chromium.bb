@@ -133,44 +133,44 @@ class ScriptableHandleBase;
 }
 #endif
 
-#define NACL_SRPC_ARG_SERIALIZED_FIELDS                                        \
-  /**                                                                          \
-   * Determines which type this argument contains.  Its value determines       \
-   * which element of union <code>u</code> may be validly referred to.         \
-   */                                                                          \
-  enum NaClSrpcArgType  tag;                                                   \
-  /**                                                                          \
-   * Padding (unused) to ensure 8-byte alignment of the union u.               \
-   */                                                                          \
-  uint32_t              reserved_pad;                                          \
-  /*                                                                           \
-   * For efficiency, doubles should be 8-byte aligned so that                  \
-   * loading them would require a single bus cycle, and arrays of              \
-   * NaClSrpcArgs will have to be 8-byte aligned as well, so it's              \
-   * either a 4 byte padding between the tag and the union or                  \
-   * (implicitly) at the end.  gcc does not (by default) enforce               \
-   * 8-byte alignment but visual studio does, so we explicitly pad             \
-   * so that both compilers will use the same memory layout, even if           \
-   * the gcc -malign-double flag were omitted.                                 \
-   */                                                                          \
-  /**                                                                          \
-   * A union containing the value of the argument.  The element containing     \
-   * the valid data is determined by <code>tag</code>.                         \
-   */                                                                          \
-  union {                                                                      \
-    /** A boolean scalar value */                                              \
-    int                 bval;                                                  \
-    /** An array size (count) value */                                         \
-    nacl_abi_size_t     count;                                                 \
-    /** A double-precision floating point scalar value */                      \
-    double              dval;                                                  \
-    /** A handle used to pass descriptors */                                   \
-    NaClSrpcImcDescType hval;                                                  \
-    /** An integer scalar value */                                             \
-    int32_t             ival;                                                  \
-    /** A int64_t scalar value */                                              \
-    int64_t             lval;                                                  \
-    /** An object value that can be exported to the browser as is */           \
+#define NACL_SRPC_ARG_SERIALIZED_FIELDS                                    \
+  /**                                                                      \
+   * Determines which type this argument contains.  Its value determines   \
+   * which element of union <code>u</code> may be validly referred to.     \
+   */                                                                      \
+  enum NaClSrpcArgType  tag;                                               \
+  /**                                                                      \
+   * Padding (unused) to ensure 8-byte alignment of the union u.           \
+   */                                                                      \
+  uint32_t              reserved_pad;                                      \
+  /*                                                                       \
+   * For efficiency, doubles should be 8-byte aligned so that              \
+   * loading them would require a single bus cycle, and arrays of          \
+   * NaClSrpcArgs will have to be 8-byte aligned as well, so it's          \
+   * either a 4 byte padding between the tag and the union or              \
+   * (implicitly) at the end.  gcc does not (by default) enforce           \
+   * 8-byte alignment but visual studio does, so we explicitly pad         \
+   * so that both compilers will use the same memory layout, even if       \
+   * the gcc -malign-double flag were omitted.                             \
+   */                                                                      \
+  /**                                                                      \
+   * A union containing the value of the argument.  The element containing \
+   * the valid data is determined by <code>tag</code>.                     \
+   */                                                                      \
+  union {                                                                  \
+    /** A boolean scalar value */                                          \
+    int                 bval;                                              \
+    /** An array size (count) value */                                     \
+    nacl_abi_size_t     count;                                             \
+    /** A double-precision floating point scalar value */                  \
+    double              dval;                                              \
+    /** A handle used to pass descriptors */                               \
+    NaClSrpcImcDescType hval;                                              \
+    /** An integer scalar value */                                         \
+    int32_t             ival;                                              \
+    /** A int64_t scalar value */                                          \
+    int64_t             lval;                                              \
+    /** An object value that can be exported to the browser as is */       \
   } u
 
 /**
@@ -209,10 +209,12 @@ typedef struct NaClSrpcArg NaClSrpcArg;
 
 #define NACL_SRPC_RPC_SERIALIZED_FIELDS        \
   uint32_t                  protocol_version;  \
-  uint64_t                  request_id;        \
-  uint8_t                   is_request;        \
+  uint32_t                  request_id;        \
+  uint32_t                  is_request;        \
   uint32_t                  rpc_number;        \
-  NaClSrpcError             result             \
+  NaClSrpcError             result;            \
+  uint32_t                  value_len;         \
+  uint32_t                  template_len
 
 /**
  * Remote procedure call state structure.
@@ -226,14 +228,12 @@ struct NaClSrpcRpc {
   NaClSrpcArg**             rets;
   uint8_t                   ret_send_succeeded;
   uint8_t                   dispatch_loop_should_continue;
-  /* TODO(sehr): buffer is actually part of the channel struct. Remove it. */
-  struct NaClSrpcImcBuffer* buffer;
 };
 
 /**
- *  A typedef for struct NaClSrpcRpc for use in C.
+ * A typedef for struct NaClSrpcRpc for use in C.
  */
-typedef struct NaClSrpcRpc  NaClSrpcRpc;
+typedef struct NaClSrpcRpc NaClSrpcRpc;
 
 /* TODO(gregoryd) - duplicate string? */
 /**
@@ -310,50 +310,6 @@ struct NaClSrpcHandlerDesc {
  * A typedef for struct NaClSrpcHandlerDesc for use in C.
  */
 typedef struct NaClSrpcHandlerDesc NaClSrpcHandlerDesc;
-
-/**
- * The structure used to provide a buffering layer over the IMC.
- */
-struct NaClSrpcImcBuffer {
-  struct NaClImcMsgIoVec    iovec[1];  /**< IMC message descriptor */
-  /**
-   * index into <code>bytes</code> of the next descriptor to be read or written
-   */
-  uint32_t                  next_desc;
-  /**
-   * index into <code>bytes</code> of the next data byte to be read or written
-   */
-  nacl_abi_size_t           next_byte;
-  /**
-   * index into <code>bytes</code> of the last data byte to be read or written
-   */
-  nacl_abi_size_t           last_byte;
-#ifdef __native_client__
-  struct NaClImcMsgHdr      header;  /**< IMC message header */
-  /**
-   * array of descriptors to be sent or received
-   */
-  NaClSrpcImcDescType       descs[IMC_USER_DESC_MAX];
-  /**
-   * character array containing the data to be sent or received
-   * This element must be an array to ensure that proper range checking
-   * on reads and writes can be done using sizeof(bytes).  See the note
-   * in imc_buffer.c.
-   * TODO(sehr,bsy): use a preprocessor macro to assert that this element
-   * is an array rather than a pointer.
-   */
-  unsigned char             bytes[IMC_USER_BYTES_MAX];
-#else
-  struct NaClImcTypedMsgHdr header;
-  NaClSrpcImcDescType       descs[NACL_ABI_IMC_USER_DESC_MAX];
-  unsigned char             bytes[NACL_ABI_IMC_USER_BYTES_MAX];
-#endif
-};
-
-/**
- *  A typedef for struct NaClSrpcImcBuffer for use in C.
- */
-typedef struct NaClSrpcImcBuffer NaClSrpcImcBuffer;
 
 /**
  * A private structure type used to describe methods within NaClSrpcService.
@@ -466,35 +422,24 @@ extern NaClSrpcMethod NaClSrpcServiceMethod(const NaClSrpcService* service,
  * either client or server.
  */
 struct NaClSrpcChannel {
-  /** A handle to the IMC channel used to send and receive RPCs */
-  NaClSrpcImcDescType         imc_handle;
-#ifndef __native_client__
-  /**
-   * An interface class used to enable passing of descriptors in trusted
-   * code, such as the browser plugin
-   */
-  struct NaClNrdXferEffector  eff;
-#endif
+  /** A pointer to the message channel used to send and receive RPCs */
+  struct NaClSrpcMessageChannel *message_channel;
   /** The id of the next rpc request message sent over this channel */
-  uint64_t                    next_outgoing_request_id;
-  /** A structure used to buffer data to be sent over this channel */
-  NaClSrpcImcBuffer           send_buf;
-  /** A structure used to buffer data received over this channel */
-  NaClSrpcImcBuffer           receive_buf;
+  uint32_t                      next_outgoing_request_id;
   /**
    * The services implemented by this server.
    */
-  NaClSrpcService             *server;
+  NaClSrpcService               *server;
   /**
    * The services available to this client.
    */
-  NaClSrpcService             *client;
+  NaClSrpcService               *client;
   /**
    * A pointer to channel-specific data.  This allows RPC method
    * implementations to be used across multiple services while still
    * maintaining reentrancy
    */
-  void                        *server_instance_data;
+  void                          *server_instance_data;
 };
 
 /**
@@ -691,13 +636,6 @@ extern NaClSrpcError NaClSrpcInvokeVaList(NaClSrpcChannel *channel,
  * The current protocol (version) number used to send and receive RPCs.
  */
 static const uint32_t kNaClSrpcProtocolVersion = 0xc0da0002;
-
-/**
- * Deserialize a message header from a buffer.
- */
-extern int NaClSrpcRpcGet(NaClSrpcImcBuffer* buffer,
-                          NaClSrpcRpc* rpc);
-
 
 /**
  * Send an RPC request on the given channel.

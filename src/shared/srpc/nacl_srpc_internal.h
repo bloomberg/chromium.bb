@@ -73,33 +73,6 @@ extern int __NaClSrpcDebugPrintCheckEnv();
 #endif
 
 /*
- * Wrappers for accesses to read and write via the IMC layer.
- */
-extern void __NaClSrpcImcBufferCtor(NaClSrpcImcBuffer* buffer,
-                                    int is_write_buf);
-
-extern NaClSrpcImcBuffer* __NaClSrpcImcFillbuf(NaClSrpcChannel* channel);
-
-extern nacl_abi_size_t __NaClSrpcImcRead(NaClSrpcImcBuffer* buffer,
-                                         nacl_abi_size_t elt_size,
-                                         nacl_abi_size_t n_elt,
-                                         void* target);
-
-extern void __NaClSrpcImcRefill(NaClSrpcImcBuffer* buffer);
-
-extern nacl_abi_size_t __NaClSrpcImcWrite(const void* source,
-                                          nacl_abi_size_t elt_size,
-                                          nacl_abi_size_t n_elt,
-                                          NaClSrpcImcBuffer* buffer);
-
-extern int __NaClSrpcImcFlush(NaClSrpcImcBuffer* buffer,
-                              NaClSrpcChannel* channel);
-
-/* Descriptor passing */
-extern NaClSrpcImcDescType __NaClSrpcImcReadDesc(NaClSrpcImcBuffer* buffer);
-extern int __NaClSrpcImcWriteDesc(NaClSrpcImcDescType desc,
-                                  NaClSrpcImcBuffer* buffer);
-/*
  * Maximum sendmsg buffer size.
  */
 extern nacl_abi_size_t kNaClSrpcMaxImcSendmsgSize;

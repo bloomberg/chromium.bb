@@ -128,10 +128,19 @@ PluginNpapi* PluginNpapi::New(NPP npp,
   return plugin;
 }
 
+PluginNpapi::PluginNpapi()
+  : module_(NULL),
+    nacl_instance_(NULL),
+    video_(NULL),
+    multimedia_channel_(NULL) {
+  NaClSrpcModuleInit();
+}
+
 PluginNpapi::~PluginNpapi() {
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)
   NaClHandlePassBrowserDtor();
 #endif
+  NaClSrpcModuleFini();
 
   PLUGIN_PRINTF(("PluginNpapi::~PluginNpapi (this=%p)\n",
                  static_cast<void* >(this)));

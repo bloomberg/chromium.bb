@@ -68,6 +68,7 @@ static nacl::string ProcessArguments(int argc,
                                      vector<nacl::string>* const sel_ldr_argv,
                                      vector<nacl::string>* const app_argv) {
   int i;
+  NaClSrpcModuleInit();
 
   if (argc == 1) {
     printf("%s", kUsage);
@@ -152,6 +153,7 @@ int main(int  argc, char* argv[]) {
   NaClSrpcDtor(&command_channel);
   NaClSrpcDtor(&channel);
 
+  NaClSrpcModuleFini();
   NaClNrdAllModulesFini();
   return 0;
 }

@@ -8,7 +8,6 @@ Import('env')
 
 # NOTE: keep this sync'ed with nacl.scons
 trusted_untrusted_shared = [
-    'imc_buffer.c',
     'invoke.c',
     'module_init_fini.c',
     'nacl_srpc.c',
