@@ -295,6 +295,21 @@
       ],
     },
     {
+      'target_name': 'ppapi_gles2',
+      'type': 'static_library',
+      'dependencies': [
+        'ppapi_c',
+      ],
+      'include_dirs': [
+        'lib/gl/include',
+      ],
+      'sources': [
+        'lib/gl/gles2/gl2ext_ppapi.c',
+        'lib/gl/gles2/gl2ext_ppapi.h',
+        'lib/gl/gles2/gles2.c',
+      ],
+    },
+    {
       'target_name': 'ppapi_example',
       'dependencies': [
         'ppapi_cpp'

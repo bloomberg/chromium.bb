@@ -5326,6 +5326,26 @@ const PPB_OpenGLES_Dev* Graphics3D::GetOpenGLESInterface() {
 
     file.Close()
 
+  def WriteGLES2ToPPAPIBridge(self, filename):
+    """Connects GLES2 helper library to PPB_OpenGLES2 interface"""
+
+    file = CWriter(filename)
+    file.Write(_LICENSE)
+    file.Write("// This file is auto-generated. DO NOT EDIT!\n\n")
+
+    file.Write("#include <GLES2/gl2.h>\n\n")
+
+    for func in self.original_functions:
+      if func.GetInfo('extension') or func.name == 'SwapBuffers':
+        continue
+
+      file.Write("%s GL_APIENTRY gl%s(%s) {\n" %
+                 (func.return_type, func.name,
+                  func.MakeTypedOriginalArgString("")))
+      if func.return_type != "void":
+        file.Write("  return 0;\n")
+      file.Write("}\n\n")
+  
 def main(argv):
   """This is the main function."""
   parser = OptionParser()
@@ -5356,6 +5376,7 @@ def main(argv):
 
   if options.alternate_mode == "ppapi":
     gen.WritePepperGLES2Interface("ppapi/c/dev/ppb_opengles_dev.h")
+    gen.WriteGLES2ToPPAPIBridge("ppapi/lib/gl/gles2/gles2.c")
 
   elif options.alternate_mode == "chrome_ppapi":
     gen.WritePepperGLES2Implementation(
