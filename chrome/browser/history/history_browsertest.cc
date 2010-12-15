@@ -110,7 +110,7 @@ class HistoryBrowserTest : public InProcessBrowserTest {
                             FROM_HERE,
                             NewRunnableMethod(history,
                                               &HistoryService::ScheduleDBTask,
-                                              task.get(),
+                                              task,
                                               &request_consumer));
     ui_test_utils::RunMessageLoop();
   }

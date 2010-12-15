@@ -207,7 +207,7 @@ void PeriodicalUpdate(
   }
 
   message_loop->PostDelayedTask(FROM_HERE,
-      NewRunnableFunction(PeriodicalUpdate, pipeline,
+      NewRunnableFunction(PeriodicalUpdate, make_scoped_refptr(pipeline),
                           message_loop, audio_only), 10);
 }
 

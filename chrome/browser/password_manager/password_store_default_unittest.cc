@@ -62,7 +62,7 @@ class DBThreadObserverHelper :
         FROM_HERE,
         NewRunnableMethod(this,
                           &DBThreadObserverHelper::AddObserverTask,
-                          password_store));
+                          make_scoped_refptr(password_store)));
     done_event_.Wait();
   }
 
