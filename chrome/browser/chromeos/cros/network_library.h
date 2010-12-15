@@ -361,7 +361,6 @@ class WifiNetwork : public WirelessNetwork {
   bool encrypted() const { return encryption_ != SECURITY_NONE; }
   ConnectionSecurity encryption() const { return encryption_; }
   const std::string& passphrase() const { return passphrase_; }
-  bool passphrase_required() const { return passphrase_required_; }
   const std::string& identity() const { return identity_; }
   const std::string& cert_path() const { return cert_path_; }
 
@@ -384,6 +383,9 @@ class WifiNetwork : public WirelessNetwork {
   // Return a string representation of the encryption code.
   // This not translated and should be only used for debugging purposes.
   std::string GetEncryptionString();
+
+  // Return true if a passphrase or other input is required to connect.
+  bool IsPassphraseRequired() const;
 
   // Return true if cert_path_ indicates that we have loaded the certificate.
   bool IsCertificateLoaded() const;

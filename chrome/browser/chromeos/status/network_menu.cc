@@ -132,22 +132,10 @@ bool NetworkMenu::GetNetworkAt(int index, NetworkInfo* info) const {
         info->message = l10n_util::GetStringUTF8(
             IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED);
       }
-      if (wifi->encrypted()) {
-        info->need_passphrase = true;
-        if (wifi->IsCertificateLoaded() ||
-            wifi->encryption() == SECURITY_8021X) {
-          info->need_passphrase = false;
-        }
-        if (wifi->favorite()) {
-          info->passphrase = wifi->passphrase();
-          info->need_passphrase = false;
-        }
-      } else {
-        info->need_passphrase = false;
-      }
+      info->need_passphrase = wifi->IsPassphraseRequired();
       info->ip_address = wifi->ip_address();
       info->remembered = wifi->favorite();
-      info->auto_connect = info->remembered ? wifi->auto_connect() : true;
+      info->auto_connect = wifi->auto_connect();
     } else {
       res = false;  // Network not found, hide entry.
     }
@@ -219,27 +207,13 @@ bool NetworkMenu::ConnectToNetworkAt(int index,
         return true;
       }
       bool connected = false;
-      if (wifi->encrypted()) {
-        if (wifi->IsCertificateLoaded()) {
-          connected = cros->ConnectToWifiNetwork(
-              wifi, std::string(), std::string(), wifi->cert_path());
-        } else if (wifi->encryption() == SECURITY_8021X) {
-          // Always show the wifi settings/dialog to load/select a certificate.
-          ShowNetworkConfigView(new NetworkConfigView(wifi));
-          return true;
-        } else {
-          // If a passphrase is provided use it, otherwise use the saved one.
-          std::string pass =
-              !passphrase.empty() ? passphrase : wifi->passphrase();
-          if (MenuUI::IsEnabled() ||
-              (!pass.empty() && !wifi->passphrase_required())) {
-            connected = cros->ConnectToWifiNetwork(
-                wifi, pass, std::string(), std::string());
-          }
-        }
+      if (wifi->IsPassphraseRequired()) {
+        // Show the connection UI if we require a passphrase.
+        ShowNetworkConfigView(new NetworkConfigView(wifi));
+        return true;
       } else {
         connected = cros->ConnectToWifiNetwork(
-            wifi, std::string(), std::string(), std::string());
+            wifi, passphrase, std::string(), std::string());
       }
       if (!connected) {
         if (!MenuUI::IsEnabled()) {

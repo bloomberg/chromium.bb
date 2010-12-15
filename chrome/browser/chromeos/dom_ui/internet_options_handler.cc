@@ -775,8 +775,7 @@ void InternetOptionsHandler::HandleWifiButtonClick(
   } else if ((network = cros->FindWifiNetworkByPath(service_path))) {
     if (command == "connect") {
       // Connect to wifi here. Open password page if appropriate.
-      if (network->encrypted() && !network->auto_connect() &&
-          !network->IsCertificateLoaded()) {
+      if (network->IsPassphraseRequired()) {
         if (use_settings_ui_) {
           if (network->encryption() == chromeos::SECURITY_8021X) {
             PopulateDictionaryDetails(network, cros);

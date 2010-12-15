@@ -88,15 +88,10 @@ class WifiConfigView : public views::View,
   // Updates state of the Login button.
   void UpdateCanLogin();
 
-  // Updates state of the "view password" button.
-  void UpdateCanViewPassword();
-
   // Updates the error text label.
   void UpdateErrorLabel(bool failed);
 
   NetworkConfigView* parent_;
-
-  bool other_network_;
 
   // Whether or not we can log in. This gets recalculated when textfield
   // contents change.

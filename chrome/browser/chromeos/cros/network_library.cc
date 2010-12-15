@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/time_format.h"
 #include "grit/generated_resources.h"
 
@@ -236,14 +237,14 @@ static bool EnsureCrosLoaded() {
 // Network
 
 Network::Network(const Network& network) {
-  service_path_ = network.service_path();
-  device_path_ = network.device_path();
-  ip_address_ = network.ip_address();
-  type_ = network.type();
-  state_ = network.state();
-  error_ = network.error();
-  connectable_ = network.connectable();
-  is_active_ = network.is_active();
+  service_path_ = network.service_path_;
+  device_path_ = network.device_path_;
+  ip_address_ = network.ip_address_;
+  type_ = network.type_;
+  state_ = network.state_;
+  error_ = network.error_;
+  connectable_ = network.connectable_;
+  is_active_ = network.is_active_;
 }
 
 void Network::Clear() {
@@ -356,10 +357,10 @@ void Network::InitIPAddress() {
 // WirelessNetwork
 WirelessNetwork::WirelessNetwork(const WirelessNetwork& network)
     : Network(network) {
-  name_ = network.name();
-  strength_ = network.strength();
-  auto_connect_ = network.auto_connect();
-  favorite_ = network.favorite();
+  name_ = network.name_;
+  strength_ = network.strength_;
+  auto_connect_ = network.auto_connect_;
+  favorite_ = network.favorite_;
 }
 
 WirelessNetwork::WirelessNetwork(const ServiceInfo* service)
@@ -505,26 +506,26 @@ CellularNetwork::CellularNetwork()
 
 CellularNetwork::CellularNetwork(const CellularNetwork& network)
     : WirelessNetwork(network) {
-  activation_state_ = network.activation_state();
-  network_technology_ = network.network_technology();
-  roaming_state_ = network.roaming_state();
-  connectivity_state_ = network.connectivity_state();
-  service_name_ = network.service_name();
-  operator_name_ = network.operator_name();
-  operator_code_ = network.operator_code();
-  payment_url_ = network.payment_url();
-  meid_ = network.meid();
-  imei_ = network.imei();
-  imsi_ = network.imsi();
-  esn_ = network.esn();
-  mdn_ = network.mdn();
-  min_ = network.min();
-  model_id_ = network.model_id();
-  manufacturer_ = network.manufacturer();
-  firmware_revision_ = network.firmware_revision();
-  hardware_revision_ = network.hardware_revision();
-  last_update_ = network.last_update();
-  prl_version_ = network.prl_version();
+  activation_state_ = network.activation_state_;
+  network_technology_ = network.network_technology_;
+  roaming_state_ = network.roaming_state_;
+  connectivity_state_ = network.connectivity_state_;
+  service_name_ = network.service_name_;
+  operator_name_ = network.operator_name_;
+  operator_code_ = network.operator_code_;
+  payment_url_ = network.payment_url_;
+  meid_ = network.meid_;
+  imei_ = network.imei_;
+  imsi_ = network.imsi_;
+  esn_ = network.esn_;
+  mdn_ = network.mdn_;
+  min_ = network.min_;
+  model_id_ = network.model_id_;
+  manufacturer_ = network.manufacturer_;
+  firmware_revision_ = network.firmware_revision_;
+  hardware_revision_ = network.hardware_revision_;
+  last_update_ = network.last_update_;
+  prl_version_ = network.prl_version_;
   type_ = TYPE_CELLULAR;
 }
 
@@ -750,24 +751,22 @@ WifiNetwork::WifiNetwork()
 
 WifiNetwork::WifiNetwork(const WifiNetwork& network)
     : WirelessNetwork(network) {
-  encryption_ = network.encryption();
-  passphrase_ = network.passphrase();
-  passphrase_required_ = network.passphrase_required();
-  identity_ = network.identity();
-  cert_path_ = network.cert_path();
+  encryption_ = network.encryption_;
+  passphrase_ = network.passphrase_;
+  passphrase_required_ = network.passphrase_required_;
+  identity_ = network.identity_;
+  cert_path_ = network.cert_path_;
 }
 
 WifiNetwork::WifiNetwork(const ServiceInfo* service)
     : WirelessNetwork(service) {
   encryption_ = service->security;
-  passphrase_ = SafeString(service->passphrase);
-  // TODO(stevenjb): Remove this once flimflam is setting passphrase_required
-  // correctly: http://crosbug.com/8830.
-  if (service->state == chromeos::STATE_FAILURE &&
-      service->security != chromeos::SECURITY_NONE)
-    passphrase_required_ = true;
+  // TODO(stevenjb): Remove this if/when flimflam handles multiple profiles.
+  if (UserManager::Get()->current_user_is_owner())
+    passphrase_ = SafeString(service->passphrase);
   else
-    passphrase_required_ = service->passphrase_required;
+    passphrase_.clear();
+  passphrase_required_ = service->passphrase_required;
   identity_ = SafeString(service->identity);
   cert_path_ = SafeString(service->cert_path);
   type_ = TYPE_WIFI;
@@ -797,6 +796,14 @@ std::string WifiNetwork::GetEncryptionString() {
       return "8021X";
   }
   return "Unknown";
+}
+
+bool WifiNetwork::IsPassphraseRequired() const {
+  // TODO(stevenjb): Remove error_ tests when fixed in flimflam
+  // (http://crosbug.com/10135).
+  if (error_ == ERROR_BAD_PASSPHRASE || error_ == ERROR_BAD_WEPKEY)
+    return true;
+  return passphrase_required_;
 }
 
 // Parse 'path' to determine if the certificate is stored in a pkcs#11 device.
@@ -1055,7 +1062,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
       WifiNetwork* wifi = GetWirelessNetworkByPath(
           wifi_networks_, network->service_path());
       if (wifi) {
-        // Note: don't save the passphrase here, it might be incorrect.
+        wifi->set_passphrase(password);
         wifi->set_identity(identity);
         wifi->set_cert_path(certpath);
         wifi->set_connecting(true);

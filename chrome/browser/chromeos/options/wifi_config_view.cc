@@ -59,7 +59,6 @@ string16 WifiConfigView::SecurityComboboxModel::GetItemAt(int index) {
 WifiConfigView::WifiConfigView(NetworkConfigView* parent,
                                const WifiNetwork* wifi)
     : parent_(parent),
-      other_network_(false),
       can_login_(false),
       wifi_(new WifiNetwork(*wifi)),
       ssid_textfield_(NULL),
@@ -75,7 +74,6 @@ WifiConfigView::WifiConfigView(NetworkConfigView* parent,
 
 WifiConfigView::WifiConfigView(NetworkConfigView* parent)
     : parent_(parent),
-      other_network_(true),
       can_login_(false),
       ssid_textfield_(NULL),
       identity_textfield_(NULL),
@@ -95,7 +93,7 @@ void WifiConfigView::UpdateCanLogin(void) {
   static const size_t kMinWirelessPasswordLen = 5;
 
   bool can_login = true;
-  if (other_network_) {
+  if (!wifi_.get()) {
     // Enforce ssid is non empty.
     // If security is not none, also enforce passphrase is non empty.
     can_login = !GetSSID().empty() &&
@@ -120,15 +118,6 @@ void WifiConfigView::UpdateCanLogin(void) {
   if (can_login != can_login_) {
     can_login_ = can_login;
     parent_->GetDialogClientView()->UpdateDialogButtons();
-  }
-}
-
-void WifiConfigView::UpdateCanViewPassword() {
-  if (passphrase_visible_button_ &&
-      !passphrase_visible_button_->IsVisible() &&
-      passphrase_textfield_->text().empty()) {
-    // Once initial password has been deleted, it's safe to show field content.
-    passphrase_visible_button_->SetVisible(true);
   }
 }
 
@@ -158,7 +147,6 @@ void WifiConfigView::UpdateErrorLabel(bool failed) {
 void WifiConfigView::ContentsChanged(views::Textfield* sender,
                                      const string16& new_contents) {
   UpdateCanLogin();
-  UpdateCanViewPassword();
 }
 
 bool WifiConfigView::HandleKeystroke(
@@ -219,7 +207,7 @@ bool WifiConfigView::Login() {
   }
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   bool connected = false;
-  if (other_network_) {
+  if (!wifi_.get()) {
     ConnectionSecurity sec = SECURITY_UNKNOWN;
     int index = security_combobox_->selected_item();
     if (index == INDEX_NONE)
@@ -252,7 +240,7 @@ bool WifiConfigView::Login() {
 
 bool WifiConfigView::Save() {
   // Save password here.
-  if (!other_network_) {
+  if (wifi_.get()) {
     bool changed = false;
 
     if (passphrase_textfield_) {
@@ -314,7 +302,7 @@ void WifiConfigView::Init() {
   layout->StartRow(0, column_view_set_id);
   layout->AddView(new views::Label(l10n_util::GetString(
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID)));
-  if (other_network_) {
+  if (!wifi_.get()) {
     ssid_textfield_ = new views::Textfield(views::Textfield::STYLE_DEFAULT);
     ssid_textfield_->SetController(this);
     layout->AddView(ssid_textfield_);
@@ -374,7 +362,7 @@ void WifiConfigView::Init() {
   }
 
   // Security select
-  if (other_network_) {
+  if (!wifi_.get()) {
     layout->StartRow(0, column_view_set_id);
     layout->AddView(new views::Label(l10n_util::GetString(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY)));
@@ -385,41 +373,34 @@ void WifiConfigView::Init() {
   }
 
   // Passphrase input
-  // Add passphrase if other_network or wifi is encrypted.
-  if (other_network_ || (wifi_.get() && wifi_->encrypted() &&
-                         !certificate_loaded)) {
-    layout->StartRow(0, column_view_set_id);
-    int label_text_id;
-    if (wifi_.get() && wifi_->encryption() == SECURITY_8021X)
-      label_text_id =
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PRIVATE_KEY_PASSWORD;
-    else
-      label_text_id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE;
-    layout->AddView(new views::Label(l10n_util::GetString(label_text_id)));
-    passphrase_textfield_ = new views::Textfield(
-        views::Textfield::STYLE_PASSWORD);
-    passphrase_textfield_->SetController(this);
-    if (wifi_.get() && !wifi_->passphrase().empty())
-      passphrase_textfield_->SetText(UTF8ToUTF16(wifi_->passphrase()));
-    // Disable passphrase input initially for other network.
-    if (other_network_)
-      passphrase_textfield_->SetEnabled(false);
-    layout->AddView(passphrase_textfield_);
-    // Password visible button.
-    passphrase_visible_button_ = new views::ImageButton(this);
-    passphrase_visible_button_->SetImage(views::ImageButton::BS_NORMAL,
-        ResourceBundle::GetSharedInstance().
-        GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE));
-    passphrase_visible_button_->SetImageAlignment(
-        views::ImageButton::ALIGN_CENTER, views::ImageButton::ALIGN_MIDDLE);
-    // Disable viewing password by unauthenticated user.
-    if (wifi_.get() && !wifi_->passphrase().empty() &&
-        chromeos::UserManager::Get()->logged_in_user().email().empty()) {
-      passphrase_visible_button_->SetVisible(false);
-    }
-    layout->AddView(passphrase_visible_button_);
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->StartRow(0, column_view_set_id);
+  int label_text_id;
+  if (wifi_.get() && wifi_->encryption() == SECURITY_8021X) {
+    label_text_id =
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PRIVATE_KEY_PASSWORD;
+  } else {
+    label_text_id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE;
   }
+  layout->AddView(new views::Label(l10n_util::GetString(label_text_id)));
+  passphrase_textfield_ = new views::Textfield(
+      views::Textfield::STYLE_PASSWORD);
+  passphrase_textfield_->SetController(this);
+  if (wifi_.get() && !wifi_->passphrase().empty())
+    passphrase_textfield_->SetText(UTF8ToUTF16(wifi_->passphrase()));
+  // Disable passphrase input initially for other network.
+  if (!wifi_.get())
+    passphrase_textfield_->SetEnabled(false);
+  layout->AddView(passphrase_textfield_);
+  // Password visible button.
+  passphrase_visible_button_ = new views::ImageButton(this);
+  passphrase_visible_button_->SetImage(
+      views::ImageButton::BS_NORMAL,
+      ResourceBundle::GetSharedInstance().
+      GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE));
+  passphrase_visible_button_->SetImageAlignment(
+      views::ImageButton::ALIGN_CENTER, views::ImageButton::ALIGN_MIDDLE);
+  layout->AddView(passphrase_visible_button_);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   // Create an error label.
   layout->StartRow(0, column_view_set_id);
