@@ -283,9 +283,9 @@ willPositionSheet:(NSWindow*)sheet
 
   // Now lay out incognito badge together with the tab strip.
   if (incognitoBadge_.get()) {
-    // Actually place the badge *above* |maxY|.
+    // Actually place the badge *above* |maxY|, by +2 to miss the divider.
     NSPoint origin = NSMakePoint(width - NSWidth([incognitoBadge_ frame]) -
-                                     kIncognitoBadgeOffset, maxY);
+                                     kIncognitoBadgeOffset, maxY + 2);
     [incognitoBadge_ setFrameOrigin:origin];
     [incognitoBadge_ setHidden:NO];  // Make sure it's shown.
   }

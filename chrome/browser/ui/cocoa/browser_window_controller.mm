@@ -40,6 +40,7 @@
 #import "chrome/browser/ui/cocoa/focus_tracker.h"
 #import "chrome/browser/ui/cocoa/fullscreen_controller.h"
 #import "chrome/browser/ui/cocoa/fullscreen_window.h"
+#import "chrome/browser/ui/cocoa/image_utils.h"
 #import "chrome/browser/ui/cocoa/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 #import "chrome/browser/ui/cocoa/previewable_contents_controller.h"
@@ -148,15 +149,45 @@
 @end
 
 
-// IncognitoImageView subclasses NSImageView to allow mouse events to pass
-// through it so you can drag the window by dragging on the spy guy
-@interface IncognitoImageView : NSImageView
+// IncognitoImageView subclasses NSView to allow mouse events to pass through it
+// so you can drag the window by dragging on the spy guy.
+@interface IncognitoImageView : NSView {
+ @private
+  scoped_nsobject<NSImage> image_;
+}
+
+- (void)setImage:(NSImage*)image;
+
 @end
 
 @implementation IncognitoImageView
+
 - (BOOL)mouseDownCanMoveWindow {
   return YES;
 }
+
+- (void)drawRect:(NSRect)rect {
+  [NSGraphicsContext saveGraphicsState];
+
+  scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
+  [shadow.get() setShadowColor:[NSColor colorWithCalibratedWhite:0.0
+                                                           alpha:0.75]];
+  [shadow.get() setShadowOffset:NSMakeSize(0, 0)];
+  [shadow.get() setShadowBlurRadius:3.0];
+  [shadow.get() set];
+
+  [image_.get() drawInRect:[self bounds]
+                  fromRect:NSZeroRect
+                 operation:NSCompositeSourceOver
+                  fraction:1.0
+              neverFlipped:YES];
+  [NSGraphicsContext restoreGraphicsState];
+}
+
+- (void)setImage:(NSImage*)image {
+  image_.reset([image retain]);
+}
+
 @end
 
 
@@ -1552,14 +1583,6 @@
   [incognitoBadge_ setFrameSize:[image size]];
   [incognitoBadge_ setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
   [incognitoBadge_ setHidden:YES];
-
-  // Give it a shadow.
-  scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
-  [shadow.get() setShadowColor:[NSColor colorWithCalibratedWhite:0.0
-                                                           alpha:0.5]];
-  [shadow.get() setShadowOffset:NSMakeSize(0, -1)];
-  [shadow setShadowBlurRadius:2.0];
-  [incognitoBadge_ setShadow:shadow];
 
   // Install the view.
   [[[[self window] contentView] superview] addSubview:incognitoBadge_];
