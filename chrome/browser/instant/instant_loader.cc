@@ -41,9 +41,10 @@
 
 namespace {
 
-// Number of ms to delay before updating the omnibox bounds. This is a bit long
-// as updating the bounds ends up being quite expensive.
-const int kUpdateBoundsDelayMS = 500;
+// Number of ms to delay before updating the omnibox bounds. This is only used
+// when the bounds of the omnibox shrinks. If the bounds grows, we update
+// immediately.
+const int kUpdateBoundsDelayMS = 1000;
 
 // If this status code is seen instant is disabled for the specified host.
 const int kHostBlacklistStatusCode = 403;
@@ -583,12 +584,16 @@ void InstantLoader::SetOmniboxBounds(const gfx::Rect& bounds) {
       !is_waiting_for_load()) {
     // Updating the bounds is rather expensive, and because of the async nature
     // of the omnibox the bounds can dance around a bit. Delay the update in
-    // hopes of things settling down.
-    if (update_bounds_timer_.IsRunning())
-      update_bounds_timer_.Stop();
-    update_bounds_timer_.Start(
-        base::TimeDelta::FromMilliseconds(kUpdateBoundsDelayMS),
-        this, &InstantLoader::ProcessBoundsChange);
+    // hopes of things settling down. To avoid hiding results we grow
+    // immediately, but delay shrinking.
+    update_bounds_timer_.Stop();
+    if (omnibox_bounds_.height() > last_omnibox_bounds_.height()) {
+      SendBoundsToPage(false);
+    } else {
+      update_bounds_timer_.Start(
+          base::TimeDelta::FromMilliseconds(kUpdateBoundsDelayMS),
+          this, &InstantLoader::ProcessBoundsChange);
+    }
   }
 }
 
