@@ -44,7 +44,7 @@ class MockHttpServer {
   static net::URLRequestJob* JobFactory(net::URLRequest* request,
                                         const std::string& scheme) {
     if (request->url().host() != "mockhost")
-      return new URLRequestErrorJob(request, -1);
+      return new net::URLRequestErrorJob(request, -1);
 
     std::string headers, body;
     GetMockResponse(request->url().path(), &headers, &body);

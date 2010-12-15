@@ -103,7 +103,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
     } else {
       // Some of these tests trigger UpdateJobs which start URLRequests.
       // We short circuit those be returning error jobs.
-      return new URLRequestErrorJob(request, net::ERR_INTERNET_DISCONNECTED);
+      return new net::URLRequestErrorJob(request,
+                                         net::ERR_INTERNET_DISCONNECTED);
     }
   }
 

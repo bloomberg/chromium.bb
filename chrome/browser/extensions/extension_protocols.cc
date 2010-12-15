@@ -152,7 +152,7 @@ static net::URLRequestJob* CreateExtensionURLRequestJob(
 
   // TODO(mpcomplete): better error code.
   if (!AllowExtensionResourceLoad(request, context, scheme))
-    return new URLRequestErrorJob(request, net::ERR_ADDRESS_UNREACHABLE);
+    return new net::URLRequestErrorJob(request, net::ERR_ADDRESS_UNREACHABLE);
 
   // chrome-extension://extension-id/resource/path.js
   const std::string& extension_id = request->url().host();

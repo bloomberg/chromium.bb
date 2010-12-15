@@ -61,7 +61,7 @@ class PluginRequestInterceptor
     // This will get called if a plugin failed to intercept a request for a
     // protocol it has registered.  In that case, we return NULL and the request
     // will result in an error.
-    return new URLRequestErrorJob(request, net::ERR_FILE_NOT_FOUND);
+    return new net::URLRequestErrorJob(request, net::ERR_FILE_NOT_FOUND);
   }
 
   explicit PluginRequestInterceptor(ChromePluginLib* plugin)

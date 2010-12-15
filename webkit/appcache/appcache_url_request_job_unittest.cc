@@ -131,7 +131,8 @@ class AppCacheURLRequestJobTest : public testing::Test {
       mock_factory_job_ = NULL;
       return temp;
     } else {
-      return new URLRequestErrorJob(request, net::ERR_INTERNET_DISCONNECTED);
+      return new net::URLRequestErrorJob(request,
+                                         net::ERR_INTERNET_DISCONNECTED);
     }
   }
 
