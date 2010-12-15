@@ -11,8 +11,6 @@
 
 #include "base/time.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 
 using browser_sync::sessions::SyncSessionSnapshot;
 
@@ -23,8 +21,7 @@ class Profile;
 // profile passed to it on construction and automates certain things like setup
 // and authentication. It provides ways to "wait" adequate periods of time for
 // several clients to get to the same state.
-class ProfileSyncServiceHarness : public ProfileSyncServiceObserver,
-                                  public NotificationObserver {
+class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
  public:
   ProfileSyncServiceHarness(Profile* profile,
                             const std::string& username,
@@ -56,11 +53,6 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver,
 
   // ProfileSyncServiceObserver implementation.
   virtual void OnStateChanged();
-
-  // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
 
   // Blocks the caller until this harness has completed a single sync cycle
   // since the previous one.  Returns true if a sync cycle has completed.
@@ -183,8 +175,6 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver,
   // Returns the new value of |last_timestamp_|.
   int64 GetUpdatedTimestamp();
 
-  void StartObservingPassphraseEvents();
-
   WaitState wait_state_;
 
   Profile* profile_;
@@ -203,12 +193,6 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver,
   // Credentials used for GAIA authentication.
   std::string username_;
   std::string password_;
-
-  // A counter to track the number of await passphrase requests versus
-  // actual acceptances.  Can go negative if #requests > #acceptances.
-  int passphrase_acceptance_counter_;
-
-  NotificationRegistrar registrar_;
 
   // Client ID, used for logging purposes.
   int id_;

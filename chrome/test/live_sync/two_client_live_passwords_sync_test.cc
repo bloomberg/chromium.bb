@@ -124,3 +124,49 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
   ASSERT_EQ(0, GetClient(1)->GetLastSessionSnapshot()->
       num_conflicting_updates);
 }
+
+// TODO(sync): Remove FAILS_ annotation after http://crbug.com/59867 is fixed.
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
+                       FAILS_SetPassphraseAndThenSetupSync) {
+#else
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
+                       SetPassphraseAndThenSetupSync) {
+#endif
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  ASSERT_TRUE(GetClient(0)->SetupSync());
+  GetClient(0)->service()->SetPassphrase(kValidPassphrase, true);
+  GetClient(0)->AwaitPassphraseAccepted();
+  GetClient(0)->AwaitSyncCycleCompletion("Initial sync.");
+
+  ASSERT_TRUE(GetClient(1)->SetupSync());
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(GetClient(1)->service()->observed_passphrase_required());
+  GetClient(1)->service()->SetPassphrase(kValidPassphrase, true);
+  GetClient(1)->AwaitPassphraseAccepted();
+  ASSERT_FALSE(GetClient(1)->service()->observed_passphrase_required());
+}
+
+// TODO(sync): Remove FAILS_ annotation after http://crbug.com/59867 is fixed.
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
+                       FAILS_SetPassphraseTwice) {
+#else
+IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
+                       SetPassphraseTwice) {
+#endif
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  GetClient(0)->service()->SetPassphrase(kValidPassphrase, true);
+  GetClient(0)->AwaitPassphraseAccepted();
+  GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1));
+  ASSERT_TRUE(GetClient(1)->service()->observed_passphrase_required());
+
+  GetClient(1)->service()->SetPassphrase(kValidPassphrase, true);
+  GetClient(1)->AwaitPassphraseAccepted();
+  ASSERT_FALSE(GetClient(1)->service()->observed_passphrase_required());
+
+  GetClient(1)->service()->SetPassphrase(kValidPassphrase, true);
+  GetClient(1)->AwaitPassphraseAccepted();
+  ASSERT_FALSE(GetClient(1)->service()->observed_passphrase_required());
+}
