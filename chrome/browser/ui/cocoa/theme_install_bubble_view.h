@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROME_BROWSER_UI_COCOA_THEME_INSTALL_BUBBLE_VIEW_H_
+#define CHROME_BROWSER_UI_COCOA_THEME_INSTALL_BUBBLE_VIEW_H_
+#pragma once
+
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_service.h"
 
 @class NSWindow;
 @class ThemeInstallBubbleViewCocoa;
@@ -55,3 +58,5 @@ class ThemeInstallBubbleView : public NotificationObserver {
 
   DISALLOW_COPY_AND_ASSIGN(ThemeInstallBubbleView);
 };
+
+#endif  // CHROME_BROWSER_UI_COCOA_THEME_INSTALL_BUBBLE_VIEW_H_

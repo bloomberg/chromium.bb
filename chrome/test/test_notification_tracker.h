@@ -8,9 +8,10 @@
 
 #include <vector>
 
+#include "chrome/common/notification_details.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
 
 // Provides an easy way for tests to verify that a given set of notifications
 // was received during test execution.

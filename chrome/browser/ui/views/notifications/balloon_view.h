@@ -15,7 +15,6 @@
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/views/notifications/balloon_view_host.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_service.h"
 #include "gfx/path.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"

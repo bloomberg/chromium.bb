@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/notification_service.h"
 #include "gfx/favicon_size.h"
 #include "webkit/glue/context_menu.h"
 

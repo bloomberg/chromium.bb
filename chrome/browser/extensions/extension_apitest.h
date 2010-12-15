@@ -11,7 +11,6 @@
 
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/common/notification_service.h"
 
 class Extension;
 

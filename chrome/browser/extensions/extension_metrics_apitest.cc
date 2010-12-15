@@ -9,6 +9,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_service.h"
 
 namespace {
 

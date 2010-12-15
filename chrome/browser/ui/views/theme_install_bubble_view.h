@@ -10,7 +10,6 @@
 
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_service.h"
 #include "gfx/canvas.h"
 #include "views/controls/label.h"
 
@@ -76,4 +75,3 @@ class ThemeInstallBubbleView : public NotificationObserver,
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_THEME_INSTALL_BUBBLE_VIEW_H_
-

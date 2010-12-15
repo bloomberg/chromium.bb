@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
+#include "chrome/common/notification_service.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/color_utils.h"
 #include "gfx/skia_util.h"
@@ -785,7 +786,7 @@ bool LocationBarView::OnCommitSuggestedText(const std::wstring& typed_text) {
     return false;
 
 #if defined(OS_WIN)
-  if(!HasValidSuggestText())
+  if (!HasValidSuggestText())
     return false;
   location_entry_->model()->FinalizeInstantQuery(
       typed_text,
@@ -938,8 +939,8 @@ void LocationBarView::LayoutView(views::View* view,
 void LocationBarView::RefreshContentSettingViews() {
   for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
        i != content_setting_views_.end(); ++i) {
-    (*i)->UpdateFromTabContents(
-        model_->input_in_progress() ? NULL : GetTabContentsFromDelegate(delegate_));
+    (*i)->UpdateFromTabContents(model_->input_in_progress() ? NULL :
+                                GetTabContentsFromDelegate(delegate_));
   }
 }
 

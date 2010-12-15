@@ -4,6 +4,9 @@
 
 #include "chrome/browser/extensions/extension_tabs_module.h"
 
+#include <algorithm>
+#include <vector>
+
 #include "base/base64.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -30,6 +33,7 @@
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "gfx/codec/jpeg_codec.h"
 #include "gfx/codec/png_codec.h"

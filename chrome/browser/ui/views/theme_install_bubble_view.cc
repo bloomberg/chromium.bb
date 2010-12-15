@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/notification_service.h"
 #include "gfx/canvas_skia.h"
 #include "grit/generated_resources.h"
 #include "views/widget/widget.h"
@@ -24,7 +25,7 @@ static const int kTextVertPadding = 45;
 // track of number of loads happening.  Close bubble when num_loads < 1.
 static int num_loads_extant_ = 0;
 
-}
+}  // namespace
 
 ThemeInstallBubbleView::ThemeInstallBubbleView(TabContents* tab_contents)
     : popup_(NULL) {
@@ -162,4 +163,3 @@ void ThemeInstallBubbleView::Show(TabContents* tab_contents) {
   if (num_loads_extant_ < 2)
     new ThemeInstallBubbleView(tab_contents);
 }
-

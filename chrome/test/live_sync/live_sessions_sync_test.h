@@ -36,8 +36,7 @@ class TestSessionService
         got_windows_(false, false),
         profile_(NULL),
         window_bounds_(0, 1, 2, 3) {}
-  TestSessionService(SessionService * service,
-                              Profile* profile)
+  TestSessionService(SessionService* service, Profile* profile)
       : SessionServiceTestHelper(service),
         done_saving_(false, false),
         got_windows_(false, false),

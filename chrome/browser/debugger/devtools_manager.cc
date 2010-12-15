@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/site_instance.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
 

@@ -20,6 +20,7 @@
 #include "chrome/browser/keychain_mac.h"
 #include "chrome/browser/password_manager/login_database.h"
 #include "chrome/browser/password_manager/password_store_change.h"
+#include "chrome/common/notification_service.h"
 
 using webkit_glue::PasswordForm;
 

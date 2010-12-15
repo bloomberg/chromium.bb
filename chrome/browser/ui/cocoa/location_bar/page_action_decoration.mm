@@ -16,6 +16,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/notification_service.h"
 #include "skia/ext/skia_utils_mac.h"
 
 namespace {

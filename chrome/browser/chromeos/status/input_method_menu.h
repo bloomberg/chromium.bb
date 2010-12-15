@@ -6,12 +6,13 @@
 #define CHROME_BROWSER_CHROMEOS_STATUS_INPUT_METHOD_MENU_H_
 #pragma once
 
+#include <string>
+
 #include "app/menus/simple_menu_model.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"

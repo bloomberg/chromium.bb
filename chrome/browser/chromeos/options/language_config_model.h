@@ -14,7 +14,6 @@
 #include "chrome/browser/language_combobox_model.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/common/notification_service.h"
 #include "cros/chromeos_input_method.h"
 
 class Profile;
