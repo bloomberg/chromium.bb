@@ -13,6 +13,8 @@ import pyauto
 class SearchEnginesTest(pyauto.PyUITest):
   """TestCase for Search Engines."""
 
+  _localhost_prefix = 'http://localhost:1000/'
+
   def _GetSearchEngineWithKeyword(self, keyword):
     """Get search engine info and return an element that matches keyword.
 
@@ -66,10 +68,10 @@ class SearchEnginesTest(pyauto.PyUITest):
     """Test searching using keyword of user-added search engine."""
     self.AddSearchEngine(title='foo',
                          keyword='foo.com',
-                         url='http://localhost/?q=%s')
+                         url=self._localhost_prefix + '?q=%s')
     self.SetOmniboxText('foo.com foobar')
     self.OmniboxAcceptInput()
-    self.assertEqual('http://localhost/?q=foobar',
+    self.assertEqual(self._localhost_prefix + '?q=foobar',
                      self.GetActiveTabURL().spec())
 
   def testEditSearchEngine(self):
@@ -80,12 +82,12 @@ class SearchEnginesTest(pyauto.PyUITest):
     self.EditSearchEngine(keyword='foo.com',
                           new_title='bar',
                           new_keyword='bar.com',
-                          new_url='http://localhost/?bar=true&q=%s')
+                          new_url=self._localhost_prefix + '?bar=true&q=%s')
     self.assertTrue(self._GetSearchEngineWithKeyword('bar.com'))
     self.assertFalse(self._GetSearchEngineWithKeyword('foo.com'))
     self.SetOmniboxText('bar.com foobar')
     self.OmniboxAcceptInput()
-    self.assertEqual('http://localhost/?bar=true&q=foobar',
+    self.assertEqual(self._localhost_prefix + '?bar=true&q=foobar',
                      self.GetActiveTabURL().spec())
 
   def testDeleteSearchEngine(self):
@@ -104,7 +106,7 @@ class SearchEnginesTest(pyauto.PyUITest):
     self.AddSearchEngine(
         title='foo',
         keyword='foo.com',
-        url='http://localhost/?q=%s')
+        url=self._localhost_prefix + '?q=%s')
     foo = self._GetSearchEngineWithKeyword('foo.com')
     self.assertTrue(foo)
     self.assertFalse(foo['is_default'])
@@ -114,7 +116,7 @@ class SearchEnginesTest(pyauto.PyUITest):
     self.assertTrue(foo['is_default'])
     self.SetOmniboxText('foobar')
     self.OmniboxAcceptInput()
-    self.assertEqual('http://localhost/?q=foobar',
+    self.assertEqual(self._localhost_prefix + '?q=foobar',
                      self.GetActiveTabURL().spec())
 
   def testTabToSearch(self):
