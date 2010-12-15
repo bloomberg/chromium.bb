@@ -10,6 +10,3 @@ BUGPKASTING WIN DEBUG SLOW: fast/encoding/parser-tests.html = TEXT
 BUGPKASTING MAC DEBUG : fast/encoding/parser-tests.html = TIMEOUT
 
 BUGRICOW : fast/regex/pcre-test-1.html = TIMEOUT
-
-BUGYURYS MAC : fast/css/focus-ring-detached.html = IMAGE
-BUGYURYS MAC : fast/css/focus-ring-multiline.html = IMAGE
