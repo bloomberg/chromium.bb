@@ -369,6 +369,17 @@ static float FitNRectsWithAspectIntoBoundingSizeWithConstantPadding(
 
 namespace tabpose {
 
+CGFloat ScaleWithOrigin(CGFloat x, CGFloat origin, CGFloat scale) {
+  return (x - origin) * scale + origin;
+}
+
+NSRect ScaleRectWithOrigin(NSRect r, NSPoint p, CGFloat scale) {
+  return NSMakeRect(ScaleWithOrigin(NSMinX(r), p.x, scale),
+                    ScaleWithOrigin(NSMinY(r), p.y, scale),
+                    NSWidth(r) * scale,
+                    NSHeight(r) * scale);
+}
+
 // A tile is what is shown for a single tab in tabpose mode. It consists of a
 // title, favicon, thumbnail image, and pre- and postanimation rects.
 class Tile {
@@ -432,7 +443,9 @@ NSRect Tile::GetStartRectRelativeTo(const Tile& tile) const {
 
 NSRect Tile::GetFaviconStartRectRelativeTo(const Tile& tile) const {
   NSRect thumb_start = GetStartRectRelativeTo(tile);
-  NSRect rect = favicon_rect_;
+  CGFloat scale_to_start = NSWidth(thumb_start) / NSWidth(thumb_rect_);
+  NSRect rect =
+      ScaleRectWithOrigin(favicon_rect_, thumb_rect_.origin, scale_to_start);
   rect.origin.x += NSMinX(thumb_start) - NSMinX(thumb_rect_);
   rect.origin.y += NSMinY(thumb_start) - NSMinY(thumb_rect_);
   return rect;
@@ -449,7 +462,9 @@ SkBitmap Tile::favicon() const {
 
 NSRect Tile::GetTitleStartRectRelativeTo(const Tile& tile) const {
   NSRect thumb_start = GetStartRectRelativeTo(tile);
-  NSRect rect = title_rect_;
+  CGFloat scale_to_start = NSWidth(thumb_start) / NSWidth(thumb_rect_);
+  NSRect rect =
+      ScaleRectWithOrigin(title_rect_, thumb_rect_.origin, scale_to_start);
   rect.origin.x += NSMinX(thumb_start) - NSMinX(thumb_rect_);
   rect.origin.y += NSMinY(thumb_start) - NSMinY(thumb_rect_);
   return rect;
@@ -826,8 +841,10 @@ void TileSet::MoveTileFromTo(int from_index, int to_index) {
 
 }  // namespace tabpose
 
-void AnimateCALayerFrameFromTo(
-    CALayer* layer, const NSRect& from, const NSRect& to,
+void AnimateScaledCALayerFrameFromTo(
+    CALayer* layer,
+    const NSRect& from, CGFloat from_scale,
+    const NSRect& to, CGFloat to_scale,
     NSTimeInterval duration, id boundsAnimationDelegate) {
   // http://developer.apple.com/mac/library/qa/qa2008/qa1620.html
   CABasicAnimation* animation;
@@ -852,10 +869,10 @@ void AnimateCALayerFrameFromTo(
   NSPoint point = to.origin;
 
   // Adapt to anchorPoint.
-  opoint.x += NSWidth(from) * layer.anchorPoint.x;
-  opoint.y += NSHeight(from) * layer.anchorPoint.y;
-  point.x += NSWidth(to) * layer.anchorPoint.x;
-  point.y += NSHeight(to) * layer.anchorPoint.y;
+  opoint.x += NSWidth(from) * from_scale * layer.anchorPoint.x;
+  opoint.y += NSHeight(from) * from_scale * layer.anchorPoint.y;
+  point.x += NSWidth(to) * to_scale * layer.anchorPoint.x;
+  point.y += NSHeight(to) * to_scale * layer.anchorPoint.y;
 
   animation = [CABasicAnimation animationWithKeyPath:@"position"];
   animation.fromValue = [NSValue valueWithPoint:opoint];
@@ -870,6 +887,13 @@ void AnimateCALayerFrameFromTo(
 
   // Add the animation, overriding the implicit animation.
   [layer addAnimation:animation forKey:@"position"];
+}
+
+void AnimateCALayerFrameFromTo(
+    CALayer* layer, const NSRect& from, const NSRect& to,
+    NSTimeInterval duration, id boundsAnimationDelegate) {
+  AnimateScaledCALayerFrameFromTo(
+      layer, from, 1.0, to, 1.0, duration, boundsAnimationDelegate);
 }
 
 void AnimateCALayerOpacityFromTo(
@@ -1015,15 +1039,34 @@ void AnimateCALayerOpacityFromTo(
   [bgLayer_ addSublayer:faviconLayer];
   [allFaviconLayers_ addObject:faviconLayer];
 
+  // CATextLayers can't animate their fontSize property, at least on 10.5.
+  // Animate transform.scale instead.
+
+  // The scaling should have its origin in the layer's upper left corner.
+  // This needs to be set before |AnimateCALayerFrameFromTo()| is called.
   CATextLayer* titleLayer = [CATextLayer layer];
+  titleLayer.anchorPoint = CGPointMake(0, 1);
   if (showZoom) {
-    AnimateCALayerFrameFromTo(
-        titleLayer,
-        tile.GetTitleStartRectRelativeTo(tileSet_->selected_tile()),
-        tile.title_rect(),
-        interval,
-        nil);
-    AnimateCALayerOpacityFromTo(titleLayer, 0.0, 1.0, interval);
+    NSRect fromRect =
+        tile.GetTitleStartRectRelativeTo(tileSet_->selected_tile());
+    NSRect toRect = tile.title_rect();
+    CGFloat scale = NSWidth(fromRect) / NSWidth(toRect);
+    fromRect.size = toRect.size;
+
+    // Add scale animation.
+    CABasicAnimation* scaleAnimation =
+        [CABasicAnimation animationWithKeyPath:@"transform.scale"];
+    scaleAnimation.fromValue = [NSNumber numberWithDouble:scale];
+    scaleAnimation.toValue = [NSNumber numberWithDouble:1.0];
+    scaleAnimation.duration = interval;
+    scaleAnimation.timingFunction =
+        [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
+    [titleLayer addAnimation:scaleAnimation forKey:@"transform.scale"];
+
+    // Add the position and opacity animations.
+    AnimateScaledCALayerFrameFromTo(
+        titleLayer, fromRect, scale, toRect, 1.0, interval, nil);
+    AnimateCALayerOpacityFromTo(faviconLayer, 0.0, 1.0, interval);
   } else {
     titleLayer.frame = NSRectToCGRect(tile.title_rect());
   }
@@ -1239,6 +1282,52 @@ void AnimateCALayerOpacityFromTo(
   return action == @selector(commandDispatch:) && tag == IDC_TABPOSE;
 }
 
+- (void)fadeAwayTileAtIndex:(int)index {
+  const tabpose::Tile& tile = tileSet_->tile_at(index);
+  CALayer* layer = [allThumbnailLayers_ objectAtIndex:index];
+  // Add a delegate to one of the implicit animations to get a notification
+  // once the animations are done.
+  if (static_cast<int>(index) == tileSet_->selected_index()) {
+    CAAnimation* animation = [CAAnimation animation];
+    animation.delegate = self;
+    [animation setValue:kAnimationIdFadeOut forKey:kAnimationIdKey];
+    [layer addAnimation:animation forKey:@"frame"];
+  }
+
+  // Thumbnail.
+  layer.frame = NSRectToCGRect(
+      tile.GetStartRectRelativeTo(tileSet_->selected_tile()));
+
+  if (static_cast<int>(index) == tileSet_->selected_index()) {
+    // Redraw layer at big resolution, so that zoom-in isn't blocky.
+    [layer setNeedsDisplay];
+  }
+
+  // Title.
+  CALayer* faviconLayer = [allFaviconLayers_ objectAtIndex:index];
+  faviconLayer.frame = NSRectToCGRect(
+      tile.GetFaviconStartRectRelativeTo(tileSet_->selected_tile()));
+  faviconLayer.opacity = 0;
+
+  // Favicon.
+  // The |fontSize| cannot be animated directly, animate the layer's scale
+  // instead. |transform.scale| affects the rendered width, so keep the small
+  // bounds.
+  CALayer* titleLayer = [allTitleLayers_ objectAtIndex:index];
+  NSRect titleRect = tile.title_rect();
+  NSRect titleToRect =
+      tile.GetTitleStartRectRelativeTo(tileSet_->selected_tile());
+  CGFloat scale = NSWidth(titleToRect) / NSWidth(titleRect);
+  titleToRect.origin.x +=
+      NSWidth(titleRect) * scale * titleLayer.anchorPoint.x;
+  titleToRect.origin.y +=
+      NSHeight(titleRect) * scale * titleLayer.anchorPoint.y;
+  titleLayer.position = NSPointToCGPoint(titleToRect.origin);
+  [titleLayer setValue:[NSNumber numberWithDouble:scale]
+            forKeyPath:@"transform.scale"];
+  titleLayer.opacity = 0;
+}
+
 - (void)fadeAway:(BOOL)slomo {
   if (state_ == tabpose::kFadingOut)
     return;
@@ -1271,35 +1360,8 @@ void AnimateCALayerOpacityFromTo(
   CGFloat duration =
       1.3 * kDefaultAnimationDuration * (slomo ? kSlomoFactor : 1);
   ScopedCAActionSetDuration durationSetter(duration);
-  for (int i = 0; i < tabStripModel_->count(); ++i) {
-    const tabpose::Tile& tile = tileSet_->tile_at(i);
-    CALayer* layer = [allThumbnailLayers_ objectAtIndex:i];
-    // Add a delegate to one of the implicit animations to get a notification
-    // once the animations are done.
-    if (static_cast<int>(i) == tileSet_->selected_index()) {
-      CAAnimation* animation = [CAAnimation animation];
-      animation.delegate = self;
-      [animation setValue:kAnimationIdFadeOut forKey:kAnimationIdKey];
-      [layer addAnimation:animation forKey:@"frame"];
-    }
-
-    layer.frame = NSRectToCGRect(
-        tile.GetStartRectRelativeTo(tileSet_->selected_tile()));
-
-    if (static_cast<int>(i) == tileSet_->selected_index()) {
-      // Redraw layer at big resolution, so that zoom-in isn't blocky.
-      [layer setNeedsDisplay];
-    }
-
-    CALayer* faviconLayer = [allFaviconLayers_ objectAtIndex:i];
-    faviconLayer.frame = NSRectToCGRect(
-        tile.GetFaviconStartRectRelativeTo(tileSet_->selected_tile()));
-    faviconLayer.opacity = 0;
-    CALayer* titleLayer = [allTitleLayers_ objectAtIndex:i];
-    titleLayer.frame = NSRectToCGRect(
-        tile.GetTitleStartRectRelativeTo(tileSet_->selected_tile()));
-    titleLayer.opacity = 0;
-  }
+  for (int i = 0; i < tabStripModel_->count(); ++i)
+    [self fadeAwayTileAtIndex:i];
 }
 
 - (void)animationDidStop:(CAAnimation*)animation finished:(BOOL)finished {
