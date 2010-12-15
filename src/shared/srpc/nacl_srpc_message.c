@@ -752,10 +752,10 @@ ssize_t NaClSrpcMessageChannelReceive(struct NaClSrpcMessageChannel* channel,
   retval = (ssize_t) bytes_received;
   header->NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH =
       (nacl_abi_size_t) descs_received;
+  header->flags = header_copy.flags;
 
  done:
   free(iovec);
-  header->flags = header_copy.flags;
   return retval;
 }
 
