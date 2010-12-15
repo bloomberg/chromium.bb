@@ -226,6 +226,11 @@ void ChromeFrameTestWithWebServer::SimpleBrowserTestExpectedResult(
 
 void ChromeFrameTestWithWebServer::SimpleBrowserTest(BrowserKind browser,
     const wchar_t* page) {
+  if (browser == FIREFOX &&
+      base::win::GetVersion() == base::win::VERSION_WIN7) {
+    LOG(INFO) << "Not running Firefox tests on Windows 7";
+    return;
+  }
   SimpleBrowserTestExpectedResult(browser, page, "OK");
 }
 
@@ -244,6 +249,12 @@ void ChromeFrameTestWithWebServer::OptionalBrowserTest(BrowserKind browser,
 
 void ChromeFrameTestWithWebServer::VersionTest(BrowserKind browser,
     const wchar_t* page) {
+  if (browser == FIREFOX &&
+      base::win::GetVersion() == base::win::VERSION_WIN7) {
+    LOG(INFO) << "Not running Firefox tests on Windows 7";
+    return;
+  }
+
   FilePath plugin_path;
   PathService::Get(base::DIR_MODULE, &plugin_path);
   plugin_path = plugin_path.AppendASCII("servers");
@@ -291,6 +302,12 @@ void ChromeFrameTestWithWebServer::SessionIdTest(BrowserKind browser,
                                                  const wchar_t* page,
                                                  int privilege_mode,
                                                  const char* expected_result) {
+  if (browser == FIREFOX &&
+      base::win::GetVersion() == base::win::VERSION_WIN7) {
+    LOG(INFO) << "Not running Firefox tests on Windows 7";
+    return;
+  }
+
   SetConfigInt(kEnableFirefoxPrivilegeMode, privilege_mode);
   EXPECT_TRUE(LaunchBrowser(browser, page));
   server_mock_.set_expected_result(expected_result);
@@ -1052,13 +1069,6 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_WindowClose) {
 }
 
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeFF_WindowClose) {
-  // Please see http://code.google.com/p/chromium/issues/detail?id=60987
-  // for more information on why this test is disabled for Vista with IE7.
-  if (base::win::GetVersion() == base::win::VERSION_VISTA &&
-      chrome_frame_test::GetInstalledIEVersion() == IE_7) {
-    LOG(INFO) << "Not running test on Vista with IE7";
-    return;
-  }
   SimpleBrowserTest(FIREFOX, kWindowCloseTestUrl);
 }
 
