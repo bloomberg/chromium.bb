@@ -5,12 +5,12 @@
 #include "net/socket/ssl_host_info.h"
 
 #include "base/metrics/histogram.h"
+#include "base/pickle.h"
 #include "base/string_piece.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/ssl_config_service.h"
 #include "net/base/x509_certificate.h"
 #include "net/socket/ssl_client_socket.h"
-#include "net/socket/ssl_host_info.pb.h"
 
 namespace net {
 
@@ -20,6 +20,12 @@ SSLHostInfo::State::State()
 }
 
 SSLHostInfo::State::~State() {}
+
+void SSLHostInfo::State::Clear() {
+  certs.clear();
+  server_hello.clear();
+  npn_valid = false;
+}
 
 SSLHostInfo::SSLHostInfo(
     const std::string& hostname,
@@ -39,36 +45,6 @@ SSLHostInfo::SSLHostInfo(
 
 SSLHostInfo::~SSLHostInfo() {}
 
-// This array and the next two functions serve to map between the internal NPN
-// status enum (which might change across versions) and the protocol buffer
-// based enum (which will not).
-static const struct {
-  SSLClientSocket::NextProtoStatus npn_status;
-  SSLHostInfoProto::NextProtoStatus proto_status;
-} kNPNStatusMapping[] = {
-  { SSLClientSocket::kNextProtoUnsupported, SSLHostInfoProto::UNSUPPORTED },
-  { SSLClientSocket::kNextProtoNegotiated, SSLHostInfoProto::NEGOTIATED },
-  { SSLClientSocket::kNextProtoNoOverlap, SSLHostInfoProto::NO_OVERLAP },
-};
-
-static SSLClientSocket::NextProtoStatus NPNStatusFromProtoStatus(
-    SSLHostInfoProto::NextProtoStatus proto_status) {
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kNPNStatusMapping) - 1; i++) {
-    if (kNPNStatusMapping[i].proto_status == proto_status)
-      return kNPNStatusMapping[i].npn_status;
-  }
-  return kNPNStatusMapping[ARRAYSIZE_UNSAFE(kNPNStatusMapping) - 1].npn_status;
-}
-
-static SSLHostInfoProto::NextProtoStatus ProtoStatusFromNPNStatus(
-    SSLClientSocket::NextProtoStatus npn_status) {
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kNPNStatusMapping) - 1; i++) {
-    if (kNPNStatusMapping[i].npn_status == npn_status)
-      return kNPNStatusMapping[i].proto_status;
-  }
-  return kNPNStatusMapping[ARRAYSIZE_UNSAFE(kNPNStatusMapping)-1].proto_status;
-}
-
 const SSLHostInfo::State& SSLHostInfo::state() const {
   return state_;
 }
@@ -78,25 +54,49 @@ SSLHostInfo::State* SSLHostInfo::mutable_state() {
 }
 
 bool SSLHostInfo::Parse(const std::string& data) {
-  SSLHostInfoProto proto;
   State* state = mutable_state();
 
-  state->certs.clear();
-  state->server_hello.clear();
-  state->npn_valid = false;
+  state->Clear();
   cert_verification_complete_ = false;
 
-  if (!proto.ParseFromString(data))
+  bool r = ParseInner(data);
+  if (!r)
+    state->Clear();
+  return r;
+}
+
+bool SSLHostInfo::ParseInner(const std::string& data) {
+  State* state = mutable_state();
+
+  Pickle p(data.data(), data.size());
+  void* iter = NULL;
+
+  int num_der_certs;
+  if (!p.ReadInt(&iter, &num_der_certs) ||
+      num_der_certs < 0) {
+    return false;
+  }
+
+  for (int i = 0; i < num_der_certs; i++) {
+    std::string der_cert;
+    if (!p.ReadString(&iter, &der_cert))
+      return false;
+    state->certs.push_back(der_cert);
+  }
+
+  if (!p.ReadString(&iter, &state->server_hello))
     return false;
 
-  for (int i = 0; i < proto.certificate_der_size(); i++)
-    state->certs.push_back(proto.certificate_der(i));
-  if (proto.has_server_hello())
-    state->server_hello = proto.server_hello();
-  if (proto.has_npn_status() && proto.has_npn_protocol()) {
-    state->npn_valid = true;
-    state->npn_status = NPNStatusFromProtoStatus(proto.npn_status());
-    state->npn_protocol = proto.npn_protocol();
+  if (!p.ReadBool(&iter, &state->npn_valid))
+    return false;
+
+  if (state->npn_valid) {
+    int status;
+    if (!p.ReadInt(&iter, &status) ||
+        !p.ReadString(&iter, &state->npn_protocol)) {
+      return false;
+    }
+    state->npn_status = static_cast<SSLClientSocket::NextProtoStatus>(status);
   }
 
   if (state->certs.size() > 0) {
@@ -127,21 +127,42 @@ bool SSLHostInfo::Parse(const std::string& data) {
 }
 
 std::string SSLHostInfo::Serialize() const {
-  SSLHostInfoProto proto;
+  Pickle p(sizeof(Pickle::Header));
+
+  static const unsigned kMaxCertificatesSize = 32 * 1024;
+  unsigned der_certs_size = 0;
 
   for (std::vector<std::string>::const_iterator
        i = state_.certs.begin(); i != state_.certs.end(); i++) {
-    proto.add_certificate_der(*i);
+    der_certs_size += i->size();
   }
-  if (!state_.server_hello.empty())
-    proto.set_server_hello(state_.server_hello);
+
+  // We don't care to save the certificates over a certain size.
+  if (der_certs_size > kMaxCertificatesSize)
+    return "";
+
+  if (!p.WriteInt(state_.certs.size()))
+    return "";
+
+  for (std::vector<std::string>::const_iterator
+       i = state_.certs.begin(); i != state_.certs.end(); i++) {
+    if (!p.WriteString(*i))
+      return "";
+  }
+
+  if (!p.WriteString(state_.server_hello) ||
+      !p.WriteBool(state_.npn_valid)) {
+    return "";
+  }
 
   if (state_.npn_valid) {
-    proto.set_npn_status(ProtoStatusFromNPNStatus(state_.npn_status));
-    proto.set_npn_protocol(state_.npn_protocol);
+    if (!p.WriteInt(state_.npn_status) ||
+        !p.WriteString(state_.npn_protocol)) {
+      return "";
+    }
   }
 
-  return proto.SerializeAsString();
+  return std::string(reinterpret_cast<const char *>(p.data()), p.size());
 }
 
 const CertVerifyResult& SSLHostInfo::cert_verify_result() const {

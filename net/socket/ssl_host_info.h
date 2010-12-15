@@ -58,6 +58,8 @@ class SSLHostInfo {
     State();
     ~State();
 
+    void Clear();
+
     // certs is a vector of DER encoded X.509 certificates, as the server
     // returned them and in the same order.
     std::vector<std::string> certs;
@@ -107,6 +109,9 @@ class SSLHostInfo {
  private:
   // This is the callback function which the CertVerifier calls via |callback_|.
   void VerifyCallback(int rv);
+
+  // ParseInner is a helper function for Parse.
+  bool ParseInner(const std::string& data);
 
   // This is the hostname that we'll validate the certificates against.
   const std::string hostname_;
