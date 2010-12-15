@@ -15,7 +15,7 @@
 #include "base/logging.h"
 
 GoogleChromeDistribution::GoogleChromeDistribution(
-    const installer_util::MasterPreferences& prefs)
+    const installer::MasterPreferences& prefs)
         : BrowserDistribution(prefs) {
 }
 
@@ -101,12 +101,12 @@ std::wstring GoogleChromeDistribution::GetVersionKey() {
 }
 
 void GoogleChromeDistribution::UpdateDiffInstallStatus(bool system_install,
-      bool incremental_install, installer_util::InstallStatus install_status) {
+      bool incremental_install, installer::InstallStatus install_status) {
   NOTREACHED();
 }
 
 void GoogleChromeDistribution::LaunchUserExperiment(
-    installer_util::InstallStatus status, const installer::Version& version,
+    installer::InstallStatus status, const installer::Version& version,
     const installer::Product& installation, bool system_level) {
   NOTREACHED();
 }

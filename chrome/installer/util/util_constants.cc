@@ -4,7 +4,7 @@
 
 #include "chrome/installer/util/util_constants.h"
 
-namespace installer_util {
+namespace installer {
 
 namespace switches {
 
@@ -161,4 +161,4 @@ const wchar_t kInstallerResultUIString[] = L"InstallerResultUIString";
 const wchar_t kInstallerSuccessLaunchCmdLine[] =
     L"InstallerSuccessLaunchCmdLine";
 
-}  // namespace installer_util
+}  // namespace installer

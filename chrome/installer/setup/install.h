@@ -39,10 +39,10 @@ class Package;
 //
 // Note: since caller unpacks Chrome to install_temp_path\source, the caller
 // is responsible for cleaning up install_temp_path.
-installer_util::InstallStatus InstallOrUpdateChrome(
+installer::InstallStatus InstallOrUpdateChrome(
     const FilePath& setup_path, const FilePath& archive_path,
     const FilePath& install_temp_path, const FilePath& prefs_path,
-    const installer_util::MasterPreferences& prefs, const Version& new_version,
+    const installer::MasterPreferences& prefs, const Version& new_version,
     const Package& package);
 
 // Registers or unregisters COM DLLs in a specific folder as declared in

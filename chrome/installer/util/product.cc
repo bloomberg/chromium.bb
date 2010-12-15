@@ -19,7 +19,7 @@
 #include "chrome/installer/util/work_item_list.h"
 
 using base::win::RegKey;
-using installer_util::MasterPreferences;
+using installer::MasterPreferences;
 
 namespace {
 class ProductIsOfType {
@@ -45,7 +45,7 @@ const Product* FindProduct(const Products& products,
 }
 
 void WriteInstallerResult(const Products& products,
-                          installer_util::InstallStatus status,
+                          installer::InstallStatus status,
                           int string_resource_id,
                           const std::wstring* const launch_cmd) {
   Products::const_iterator end = products.end();
@@ -76,7 +76,7 @@ bool Product::LaunchChrome() const {
   const FilePath& install_package = package_->path();
   bool success = !install_package.empty();
   if (success) {
-    CommandLine cmd(install_package.Append(installer_util::kChromeExe));
+    CommandLine cmd(install_package.Append(installer::kChromeExe));
     success = base::LaunchApp(cmd, false, false, NULL);
   }
   return success;
@@ -88,7 +88,7 @@ bool Product::LaunchChromeAndWait(const CommandLine& options,
   if (install_package.empty())
     return false;
 
-  CommandLine cmd(install_package.Append(installer_util::kChromeExe));
+  CommandLine cmd(install_package.Append(installer::kChromeExe));
   cmd.AppendArguments(options, false);
 
   bool success = false;
@@ -129,10 +129,10 @@ bool Product::IsMsi() const {
     msi_ = NOT_MSI;  // Covers failure cases below.
 
     const MasterPreferences& prefs =
-        installer_util::MasterPreferences::ForCurrentProcess();
+        installer::MasterPreferences::ForCurrentProcess();
 
     bool is_msi = false;
-    prefs.GetBool(installer_util::master_preferences::kMsi, &is_msi);
+    prefs.GetBool(installer::master_preferences::kMsi, &is_msi);
 
     if (!is_msi) {
       // We didn't find it in the preferences, try looking in the registry.
@@ -172,7 +172,7 @@ bool Product::SetMsiMarker(bool set) const {
 }
 
 void Product::WriteInstallerResult(
-    installer_util::InstallStatus status, int string_resource_id,
+    installer::InstallStatus status, int string_resource_id,
     const std::wstring* const launch_cmd) const {
   HKEY root = system_level_ ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   std::wstring key(distribution_->GetStateKey());
@@ -181,19 +181,19 @@ void Product::WriteInstallerResult(
   scoped_ptr<WorkItemList> install_list(WorkItem::CreateWorkItemList());
   install_list->AddCreateRegKeyWorkItem(root, key);
   install_list->AddSetRegValueWorkItem(root, key,
-                                       installer_util::kInstallerResult,
+                                       installer::kInstallerResult,
                                        installer_result, true);
   install_list->AddSetRegValueWorkItem(root, key,
-                                       installer_util::kInstallerError,
+                                       installer::kInstallerError,
                                        status, true);
   if (string_resource_id != 0) {
-    std::wstring msg = installer_util::GetLocalizedString(string_resource_id);
+    std::wstring msg = installer::GetLocalizedString(string_resource_id);
     install_list->AddSetRegValueWorkItem(root, key,
-        installer_util::kInstallerResultUIString, msg, true);
+        installer::kInstallerResultUIString, msg, true);
   }
   if (launch_cmd != NULL && !launch_cmd->empty()) {
     install_list->AddSetRegValueWorkItem(root, key,
-        installer_util::kInstallerSuccessLaunchCmdLine, *launch_cmd, true);
+        installer::kInstallerSuccessLaunchCmdLine, *launch_cmd, true);
   }
   if (!install_list->Do())
     LOG(ERROR) << "Failed to record installer error information in registry.";
@@ -252,7 +252,7 @@ bool ProductPackageMapping::AddDistribution(BrowserDistribution* distribution) {
 
 bool ProductPackageMapping::AddDistribution(
     BrowserDistribution::Type type,
-    const installer_util::MasterPreferences& prefs) {
+    const installer::MasterPreferences& prefs) {
   BrowserDistribution* distribution =
       BrowserDistribution::GetSpecificDistribution(type, prefs);
   if (!distribution) {

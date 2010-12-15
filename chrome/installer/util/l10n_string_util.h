@@ -16,7 +16,7 @@
 
 #include <string>
 
-namespace installer_util {
+namespace installer {
 
 // Given a string base id, return the localized version of the string based on
 // the system language.  This is used for shortcuts placed on the user's
@@ -27,6 +27,6 @@ std::wstring GetLocalizedString(int base_message_id);
 // The empty string is returned on failure.
 std::wstring GetLocalizedEulaResource();
 
-}  // namespace installer_util.
+}  // namespace installer.
 
 #endif  // CHROME_INSTALLER_UTIL_L10N_STRING_UTIL_H_

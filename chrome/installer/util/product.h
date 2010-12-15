@@ -14,7 +14,7 @@
 
 class CommandLine;
 
-namespace installer_util {
+namespace installer {
 class MasterPreferences;
 }
 
@@ -32,7 +32,7 @@ const Product* FindProduct(const Products& products,
 
 // Calls WriteInstallerResult for each Product object.
 void WriteInstallerResult(const Products& products,
-                          installer_util::InstallStatus status,
+                          installer::InstallStatus status,
                           int string_resource_id,
                           const std::wstring* const launch_cmd);
 
@@ -96,7 +96,7 @@ class Product : public base::RefCounted<Product> {
 
   // Sets installer error information in registry so that Google Update can read
   // it and display to the user.
-  void WriteInstallerResult(installer_util::InstallStatus status,
+  void WriteInstallerResult(installer::InstallStatus status,
                             int string_resource_id,
                             const std::wstring* const launch_cmd) const;
 
@@ -139,7 +139,7 @@ class ProductPackageMapping {
   const Products& products() const;
 
   bool AddDistribution(BrowserDistribution::Type type,
-                       const installer_util::MasterPreferences& prefs);
+                       const installer::MasterPreferences& prefs);
   bool AddDistribution(BrowserDistribution* distribution);
 
  protected:

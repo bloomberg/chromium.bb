@@ -21,14 +21,14 @@ const int kSxSIconIndex = 4;
 }  // namespace
 
 GoogleChromeSxSDistribution::GoogleChromeSxSDistribution(
-    const installer_util::MasterPreferences& prefs)
+    const installer::MasterPreferences& prefs)
         : GoogleChromeDistribution(prefs) {
   GoogleChromeDistribution::set_product_guid(kChromeSxSGuid);
 }
 
 std::wstring GoogleChromeSxSDistribution::GetAppShortCutName() {
   const std::wstring& shortcut_name =
-      installer_util::GetLocalizedString(IDS_SXS_SHORTCUT_NAME_BASE);
+      installer::GetLocalizedString(IDS_SXS_SHORTCUT_NAME_BASE);
   return shortcut_name;
 }
 
@@ -38,12 +38,12 @@ std::wstring GoogleChromeSxSDistribution::GetBrowserAppId() {
 
 std::wstring GoogleChromeSxSDistribution::GetInstallSubDir() {
   return GoogleChromeDistribution::GetInstallSubDir().append(
-      installer_util::kSxSSuffix);
+      installer::kSxSSuffix);
 }
 
 std::wstring GoogleChromeSxSDistribution::GetUninstallRegPath() {
   return GoogleChromeDistribution::GetUninstallRegPath().append(
-      installer_util::kSxSSuffix);
+      installer::kSxSSuffix);
 }
 
 bool GoogleChromeSxSDistribution::CanSetAsDefault() {
@@ -66,5 +66,5 @@ std::wstring GoogleChromeSxSDistribution::ChannelName() {
 void GoogleChromeSxSDistribution::AppendUninstallCommandLineFlags(
     CommandLine* cmd_line) {
   DCHECK(cmd_line);
-  cmd_line->AppendSwitch(installer_util::switches::kChromeSxS);
+  cmd_line->AppendSwitch(installer::switches::kChromeSxS);
 }

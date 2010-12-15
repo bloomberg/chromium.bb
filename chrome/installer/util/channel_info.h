@@ -14,7 +14,7 @@ class RegKey;
 }
 }
 
-namespace installer_util {
+namespace installer {
 
 // A helper class for parsing and modifying the Omaha additional parameter
 // ("ap") client state value for a product.
@@ -68,6 +68,6 @@ class ChannelInfo {
   std::wstring value_;
 };  // class ChannelInfo
 
-}  // namespace installer_util
+}  // namespace installer
 
 #endif  // CHROME_INSTALLER_UTIL_CHANNEL_INFO_H_

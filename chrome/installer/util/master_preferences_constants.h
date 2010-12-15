@@ -9,7 +9,7 @@
 #define CHROME_INSTALLER_UTIL_MASTER_PREFERENCES_CONSTANTS_H_
 #pragma once
 
-namespace installer_util {
+namespace installer {
 namespace master_preferences {
 // All the preferences below are expected to be inside the JSON "distribution"
 // block. Some of them also have equivalent command line option. If same option
@@ -82,6 +82,6 @@ extern const char kVerboseLogging[];
 // Name of the block that contains the extensions on the master preferences.
 extern const char kExtensionsBlock[];
 }  // namespace master_preferences
-}  // namespace installer_util
+}  // namespace installer
 
 #endif  // CHROME_INSTALLER_UTIL_MASTER_PREFERENCES_CONSTANTS_H_
