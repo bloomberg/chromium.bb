@@ -271,6 +271,7 @@ TEST_F(UtilTests, CanNavigateTest) {
     { L"about:", URLZONE_TRUSTED },
     { L"view-source:", URLZONE_TRUSTED },
     { L"chrome-extension:", URLZONE_TRUSTED },
+    { L"data:", URLZONE_INTERNET },
     { L"ftp:", URLZONE_UNTRUSTED },
     { L"file:", URLZONE_LOCAL_MACHINE },
     { L"sip:", URLZONE_UNTRUSTED },
@@ -286,31 +287,39 @@ TEST_F(UtilTests, CanNavigateTest) {
     const char* url;
     bool default_expected;
     bool unsafe_expected;
+    bool is_privileged;
   } test_cases[] = {
     // Invalid URL
-    { "          ", false, false },
-    { "foo bar", false, false },
+    { "          ", false, false, false },
+    { "foo bar", false, false, false },
 
     // non-privileged test cases
     { "http://blah/?attach_external_tab&10&1&0&0&100&100&iexplore", true,
-       true },
-    { "http://untrusted/bar.html", false, true },
+       true, false },
+    { "http://untrusted/bar.html", false, true, false },
     { "http://blah/?attach_external_tab&10&1&0&0&100&100&iexplore", true,
+       true, false },
+    { "view-source:http://www.google.ca", true, true, false },
+    { "view-source:javascript:alert('foo');", false, true, false },
+    { "about:blank", true, true, false },
+    { "About:Version", true, true, false },
+    { "about:config", false, true, false },
+    { "chrome-extension://aaaaaaaaaaaaaaaaaaa/toolstrip.html", false, true,
+       false },
+    { "ftp://www.google.ca", false, true, false },
+    { "file://www.google.ca", false, true, false },
+    { "file://C:\boot.ini", false, true, false },
+    { "SIP:someone@10.1.2.3", false, true, false },
+
+    // privileged test cases
+    { "chrome-extension://aaaaaaaaaaaaaaaaaaa/toolstrip.html", true, true,
        true },
-    { "view-source:http://www.google.ca", true, true },
-    { "view-source:javascript:alert('foo');", false, true },
-    { "about:blank", true, true },
-    { "About:Version", true, true },
-    { "about:config", false, true },
-    { "chrome-extension://aaaaaaaaaaaaaaaaaaa/toolstrip.html", false, true },
-    { "ftp://www.google.ca", false, true },
-    { "file://www.google.ca", false, true },
-    { "file://C:\boot.ini", false, true },
-    { "SIP:someone@10.1.2.3", false, true },
+    { "data://aaaaaaaaaaaaaaaaaaa/toolstrip.html", true, true, true },
   };
 
   for (int i = 0; i < arraysize(test_cases); ++i) {
     const Cases& test = test_cases[i];
+    mock.set_is_privileged(test.is_privileged);
     bool actual = CanNavigate(GURL(test.url), &mock);
     EXPECT_EQ(test.default_expected, actual) << "Failure url: " << test.url;
   }

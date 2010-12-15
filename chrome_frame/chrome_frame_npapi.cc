@@ -230,15 +230,15 @@ bool ChromeFrameNPAPI::Initialize(NPMIMEType mime_type, NPP instance,
 
   // Is the privileged mode requested?
   if (wants_privileged) {
-    is_privileged_ = IsFireFoxPrivilegedInvocation(instance);
-    if (!is_privileged_) {
+    set_is_privileged(IsFireFoxPrivilegedInvocation(instance));
+    if (!is_privileged()) {
       DLOG(WARNING) << "Privileged mode requested in non-privileged context";
     }
   }
 
   std::wstring extra_arguments;
   std::wstring profile_name(GetHostProcessName(false));
-  if (is_privileged_) {
+  if (is_privileged()) {
     // Process any privileged mode-only arguments we were handed.
     if (onprivatemessage_arg)
       onprivatemessage_handler_ = JavascriptToNPObject(onprivatemessage_arg);
@@ -260,14 +260,14 @@ bool ChromeFrameNPAPI::Initialize(NPMIMEType mime_type, NPP instance,
 
   // Setup Url fetcher.
   url_fetcher_.set_NPPInstance(instance_);
-  url_fetcher_.set_frame_busting(!is_privileged_);
+  url_fetcher_.set_frame_busting(!is_privileged());
   automation_client_->SetUrlFetcher(&url_fetcher_);
 
   // TODO(joshia): Initialize navigation here and send proxy config as
   // part of LaunchSettings
   /*
   if (!src_.empty())
-    automation_client_->InitiateNavigation(src_, is_privileged_);
+    automation_client_->InitiateNavigation(src_, is_privileged());
 
   std::string proxy_settings;
   bool has_prefs = pref_service_->Initialize(instance_,
@@ -439,7 +439,7 @@ void ChromeFrameNPAPI::OnAcceleratorPressed(int tab_handle,
   // WM_KEYUP, etc, which will result in messages like WM_CHAR, WM_SYSCHAR, etc
   // being posted to the message queue. We don't post these messages here to
   // avoid these messages from getting handled twice.
-  if (!is_privileged_ &&
+  if (!is_privileged() &&
       accel_message.message != WM_CHAR &&
       accel_message.message != WM_DEADCHAR &&
       accel_message.message != WM_SYSCHAR &&
@@ -636,7 +636,7 @@ bool ChromeFrameNPAPI::GetProperty(NPIdentifier name,
     }
   } else if (name ==
              plugin_property_identifiers_[PLUGIN_PROPERTY_ONPRIVATEMESSAGE]) {
-    if (!is_privileged_) {
+    if (!is_privileged()) {
       DLOG(WARNING) << "Attempt to read onprivatemessage property while not "
                        "privileged";
     } else {
@@ -669,7 +669,7 @@ bool ChromeFrameNPAPI::GetProperty(NPIdentifier name,
     BOOLEAN_TO_NPVARIANT(automation_client_->use_chrome_network(), *variant);
     return true;
   } else if (name == plugin_property_identifiers_[PLUGIN_PROPERTY_SESSIONID]) {
-    if (!is_privileged_) {
+    if (!is_privileged()) {
       DLOG(WARNING) << "Attempt to read sessionid property while not "
                        "privileged";
     } else {
@@ -711,7 +711,7 @@ bool ChromeFrameNPAPI::SetProperty(NPIdentifier name,
       return true;
     } else if (name ==
               plugin_property_identifiers_[PLUGIN_PROPERTY_ONPRIVATEMESSAGE]) {
-      if (!is_privileged_) {
+      if (!is_privileged()) {
         DLOG(WARNING) << "Attempt to set onprivatemessage while not privileged";
       } else {
         onprivatemessage_handler_.Free();
@@ -823,7 +823,7 @@ void ChromeFrameNPAPI::OnMessageFromChromeFrame(int tab_handle,
                                                 const std::string& target) {
   bool private_message = false;
   if (target.compare("*") != 0) {
-    if (is_privileged_) {
+    if (is_privileged()) {
       private_message = true;
     } else {
       if (!HaveSameOrigin(target, document_url_)) {
@@ -848,7 +848,7 @@ void ChromeFrameNPAPI::OnMessageFromChromeFrame(int tab_handle,
     OBJECT_TO_NPVARIANT(event, params[0]);
     bool invoke = false;
     if (private_message) {
-      DCHECK(is_privileged_);
+      DCHECK(is_privileged());
       STRINGN_TO_NPVARIANT(target.c_str(), target.length(), params[1]);
       invoke = InvokeDefault(onprivatemessage_handler_,
                              arraysize(params),
@@ -1218,7 +1218,7 @@ bool ChromeFrameNPAPI::postPrivateMessage(NPObject* npobject,
                                           const NPVariant* args,
                                           uint32_t arg_count,
                                           NPVariant* result) {
-  if (!is_privileged_) {
+  if (!is_privileged()) {
     DLOG(WARNING) << "postPrivateMessage invoked in non-privileged mode";
     return false;
   }
@@ -1251,7 +1251,7 @@ bool ChromeFrameNPAPI::installExtension(NPObject* npobject,
     return false;
   }
 
-  if (!is_privileged_) {
+  if (!is_privileged()) {
     DLOG(WARNING) << "installExtension invoked in non-privileged mode";
     return false;
   }
@@ -1298,7 +1298,7 @@ bool ChromeFrameNPAPI::loadExtension(NPObject* npobject,
     return false;
   }
 
-  if (!is_privileged_) {
+  if (!is_privileged()) {
     DLOG(WARNING) << "loadExtension invoked in non-privileged mode";
     return false;
   }
@@ -1331,7 +1331,7 @@ bool ChromeFrameNPAPI::enableExtensionAutomation(NPObject* npobject,
     return false;
   }
 
-  if (!is_privileged_) {
+  if (!is_privileged()) {
     DLOG(WARNING) <<
         "enableExtensionAutomation invoked in non-privileged mode";
     return false;
@@ -1379,7 +1379,7 @@ bool ChromeFrameNPAPI::getEnabledExtensions(NPObject* npobject,
     return false;
   }
 
-  if (!is_privileged_) {
+  if (!is_privileged()) {
     DLOG(WARNING) << "getEnabledExtensions invoked in non-privileged mode";
     return false;
   }
@@ -1480,7 +1480,7 @@ bool ChromeFrameNPAPI::GetBrowserIncognitoMode() {
 bool ChromeFrameNPAPI::PreProcessContextMenu(HMENU menu) {
   // TODO: Remove this overridden method once HandleContextMenuCommand
   // implements "About Chrome Frame" handling.
-  if (!is_privileged_) {
+  if (!is_privileged()) {
     // Call base class (adds 'About' item).
     return ChromeFramePlugin::PreProcessContextMenu(menu);
   }

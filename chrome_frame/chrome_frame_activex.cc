@@ -210,7 +210,7 @@ void ChromeFrameActivex::OnMessageFromChromeFrame(int tab_handle,
   if (target.compare("*") != 0) {
     bool drop = true;
 
-    if (is_privileged_) {
+    if (is_privileged()) {
       // Forward messages if the control is in privileged mode.
       ScopedComPtr<IDispatch> message_event;
       if (SUCCEEDED(CreateDomEvent("message", message, origin,
@@ -272,7 +272,7 @@ void ChromeFrameActivex::OnAutomationServerLaunchFailed(
   Base::OnAutomationServerLaunchFailed(reason, server_version);
 
   if (reason == AUTOMATION_VERSION_MISMATCH &&
-      ShouldShowVersionMismatchDialog(is_privileged_, m_spClientSite)) {
+      ShouldShowVersionMismatchDialog(is_privileged(), m_spClientSite)) {
     THREAD_SAFE_UMA_HISTOGRAM_COUNTS(
         "ChromeFrame.VersionMismatchDisplayed", 1);
     DisplayVersionMismatchWarning(m_hWnd, server_version);
@@ -427,7 +427,7 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
       handlers[i]->clear();
 
     // Drop privileged mode on uninitialization.
-    is_privileged_ = false;
+    set_is_privileged(false);
   } else {
     ScopedComPtr<IHTMLDocument2> document;
     GetContainingDocument(document.Receive());
@@ -448,13 +448,13 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
       service_hr = service->GetWantsPrivileged(&wants_privileged);
 
       if (SUCCEEDED(service_hr) && wants_privileged)
-        is_privileged_ = true;
+        set_is_privileged(true);
 
-      url_fetcher_->set_privileged_mode(is_privileged_);
+      url_fetcher_->set_privileged_mode(is_privileged());
     }
 
     std::wstring profile_name(GetHostProcessName(false));
-    if (is_privileged_) {
+    if (is_privileged()) {
 
       base::win::ScopedBstr automated_functions_arg;
       service_hr = service->GetExtensionApisToAutomate(
@@ -491,7 +491,7 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
     chrome_extra_arguments.append(
         ASCIIToWide(switches::kEnableExperimentalExtensionApis));
 
-    url_fetcher_->set_frame_busting(!is_privileged_);
+    url_fetcher_->set_frame_busting(!is_privileged());
     automation_client_->SetUrlFetcher(url_fetcher_.get());
     if (!InitializeAutomation(profile_name, chrome_extra_arguments,
                               IsIEInPrivate(), true, GURL(utf8_url),

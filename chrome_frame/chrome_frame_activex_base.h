@@ -29,7 +29,6 @@
 #include "chrome_frame/chrome_frame_plugin.h"
 #include "chrome_frame/com_message_event.h"
 #include "chrome_frame/com_type_info_holder.h"
-#include "chrome_frame/navigation_constraints.h"
 #include "chrome_frame/simple_resource_loader.h"
 #include "chrome_frame/urlmon_url_request.h"
 #include "chrome_frame/urlmon_url_request_private.h"
@@ -170,8 +169,7 @@ class ATL_NO_VTABLE ChromeFrameActivexBase :  // NOLINT
   public IPropertyNotifySinkCP<T>,
   public CComCoClass<T, &class_id>,
   public CComControl<T>,
-  public ChromeFramePlugin<T>,
-  public NavigationConstraintsImpl {
+  public ChromeFramePlugin<T> {
  protected:
   typedef std::set<base::win::ScopedComPtr<IDispatch> > EventHandlers;
   typedef ChromeFrameActivexBase<T, class_id> BasePlugin;
@@ -388,7 +386,7 @@ END_MSG_MAP()
   // The base implementation returns true unless we are in privileged
   // mode, in which case we always trust our container so we return false.
   bool is_frame_busting_enabled() const {
-    return !is_privileged_;
+    return !is_privileged();
   }
 
   // Needed to support PostTask.
@@ -494,7 +492,7 @@ END_MSG_MAP()
     // passing mechanism between this CF instance, and the BHO that will
     // be constructed in the new IE tab.
     if (parsed_url.SchemeIs("chrome-extension") &&
-        is_privileged_) {
+        is_privileged()) {
       const char kScheme[] = "http";
       const char kHost[] = "local_host";
 
@@ -571,20 +569,6 @@ END_MSG_MAP()
 
   virtual void OnCloseTab(int tab_handle) {
     Fire_onclose();
-  }
-
-  // NavigationConstraints overrides.
-  virtual bool IsSchemeAllowed(const GURL& url) {
-    bool allowed = NavigationConstraintsImpl::IsSchemeAllowed(url);
-    if (allowed)
-      return true;
-
-    if (is_privileged_ &&
-        (url.SchemeIs(chrome::kDataScheme) ||
-         url.SchemeIs(chrome::kExtensionScheme))) {
-      return true;
-    }
-    return false;
   }
 
   // Overridden to take advantage of readystate prop changes and send those
@@ -733,7 +717,7 @@ END_MSG_MAP()
   }
 
   STDMETHOD(put_useChromeNetwork)(VARIANT_BOOL use_chrome_network) {
-    if (!is_privileged_) {
+    if (!is_privileged()) {
       DLOG(ERROR) << "Attempt to set useChromeNetwork in non-privileged mode";
       return E_ACCESSDENIED;
     }
@@ -830,7 +814,7 @@ END_MSG_MAP()
     if (NULL == message)
       return E_INVALIDARG;
 
-    if (!is_privileged_) {
+    if (!is_privileged()) {
       DLOG(ERROR) << "Attempt to postPrivateMessage in non-privileged mode";
       return E_ACCESSDENIED;
     }
@@ -859,7 +843,7 @@ END_MSG_MAP()
       return E_INVALIDARG;
     }
 
-    if (!is_privileged_) {
+    if (!is_privileged()) {
       DLOG(ERROR) << "Attempt to installExtension in non-privileged mode";
       return E_ACCESSDENIED;
     }
@@ -879,7 +863,7 @@ END_MSG_MAP()
       return E_INVALIDARG;
     }
 
-    if (!is_privileged_) {
+    if (!is_privileged()) {
       DLOG(ERROR) << "Attempt to loadExtension in non-privileged mode";
       return E_ACCESSDENIED;
     }
@@ -894,7 +878,7 @@ END_MSG_MAP()
   STDMETHOD(getEnabledExtensions)() {
     DCHECK(automation_client_.get());
 
-    if (!is_privileged_) {
+    if (!is_privileged()) {
       DLOG(ERROR) << "Attempt to getEnabledExtensions in non-privileged mode";
       return E_ACCESSDENIED;
     }
@@ -907,7 +891,7 @@ END_MSG_MAP()
     DCHECK(automation_client_.get());
     DCHECK(session_id);
 
-    if (!is_privileged_) {
+    if (!is_privileged()) {
       DLOG(ERROR) << "Attempt to getSessionId in non-privileged mode";
       return E_ACCESSDENIED;
     }
@@ -941,7 +925,7 @@ END_MSG_MAP()
     } else if (LowerCaseEqualsASCII(event_type, event_type_end,
                                     "privatemessage")) {
       // This event handler is only available in privileged mode.
-      if (is_privileged_) {
+      if (is_privileged()) {
         *handlers = &onprivatemessage_;
       } else {
         Error("Event type 'privatemessage' is privileged");
@@ -950,7 +934,7 @@ END_MSG_MAP()
     } else if (LowerCaseEqualsASCII(event_type, event_type_end,
                                     "extensionready")) {
       // This event handler is only available in privileged mode.
-      if (is_privileged_) {
+      if (is_privileged()) {
         *handlers = &onextensionready_;
       } else {
         Error("Event type 'extensionready' is privileged");

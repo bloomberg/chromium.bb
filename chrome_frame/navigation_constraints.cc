@@ -9,6 +9,9 @@
 #include "chrome/common/url_constants.h"
 #include "chrome_frame/utils.h"
 
+NavigationConstraintsImpl::NavigationConstraintsImpl() : is_privileged_(false) {
+}
+
 // NavigationConstraintsImpl method definitions.
 bool NavigationConstraintsImpl::AllowUnsafeUrls() {
   // No sanity checks if unsafe URLs are allowed
@@ -42,6 +45,13 @@ bool NavigationConstraintsImpl::IsSchemeAllowed(const GURL& url) {
       return true;
     }
   }
+
+  if (is_privileged_ &&
+      (url.SchemeIs(chrome::kDataScheme) ||
+       url.SchemeIs(chrome::kExtensionScheme))) {
+    return true;
+  }
+
   return false;
 }
 
@@ -67,3 +77,10 @@ bool NavigationConstraintsImpl::IsZoneAllowed(const GURL& url) {
   return true;
 }
 
+bool NavigationConstraintsImpl::is_privileged() const {
+  return is_privileged_;
+}
+
+void NavigationConstraintsImpl::set_is_privileged(bool is_privileged) {
+  is_privileged_ = is_privileged;
+}

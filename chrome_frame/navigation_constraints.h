@@ -23,15 +23,27 @@ class NavigationConstraints {
 // Provides default implementation for the NavigationConstraints interface.
 class NavigationConstraintsImpl : public NavigationConstraints {
  public:
+  NavigationConstraintsImpl();
   virtual ~NavigationConstraintsImpl() {}
 
   // NavigationConstraints method overrides.
   virtual bool AllowUnsafeUrls();
   virtual bool IsSchemeAllowed(const GURL& url);
   virtual bool IsZoneAllowed(const GURL& url);
+
+  bool is_privileged() const;
+  void set_is_privileged(bool is_privileged);
+
  private:
   base::win::ScopedComPtr<IInternetSecurityManager> security_manager_;
+
+  // The plugin is privileged if it is:
+  // * Invoked by a window running under the system principal in FireFox.
+  // * Being hosted by a custom host exposing the SID_ChromeFramePrivileged
+  //   service.
+  //
+  // When privileged, additional interfaces are made available to the user.
+  bool is_privileged_;
 };
 
 #endif  // CHROME_FRAME_NAVIGATION_CONSTRAINTS_H_
-

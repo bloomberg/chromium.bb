@@ -11,7 +11,6 @@
 
 #include "chrome_frame/chrome_frame_automation.h"
 #include "chrome_frame/chrome_frame_plugin.h"
-#include "chrome_frame/navigation_constraints.h"
 #include "chrome_frame/np_browser_functions.h"
 #include "chrome_frame/np_event_listener.h"
 #include "chrome_frame/np_proxy_service.h"
@@ -28,8 +27,7 @@ class nsIURI;
 class ChromeFrameNPAPI
     : public CWindowImpl<ChromeFrameNPAPI>,
       public ChromeFramePlugin<ChromeFrameNPAPI>,
-      public NpEventDelegate,
-      public NavigationConstraintsImpl {
+      public NpEventDelegate {
  public:
   typedef ChromeFramePlugin<ChromeFrameNPAPI> Base;
 
