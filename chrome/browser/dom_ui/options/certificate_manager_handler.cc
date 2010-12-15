@@ -457,9 +457,9 @@ void CertificateManagerHandler::GetCATrust(const ListValue* args) {
 void CertificateManagerHandler::EditCATrust(const ListValue* args) {
   net::X509Certificate* cert = CallbackArgsToCert(args);
   bool fail = !cert;
-  bool trust_ssl;
-  bool trust_email;
-  bool trust_obj_sign;
+  bool trust_ssl = false;
+  bool trust_email = false;
+  bool trust_obj_sign = false;
   fail |= !CallbackArgsToBool(args, 1, &trust_ssl);
   fail |= !CallbackArgsToBool(args, 2, &trust_email);
   fail |= !CallbackArgsToBool(args, 3, &trust_obj_sign);
