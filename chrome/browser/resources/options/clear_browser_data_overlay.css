@@ -1,3 +1,7 @@
+#clearBrowserDataOverlay {
+  width: 300px;
+}
+
 #cbdThrobber {
   background-image: url("../../../../app/resources/throbber.png");
   width: 16px;
