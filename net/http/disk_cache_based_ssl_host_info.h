@@ -10,6 +10,7 @@
 #include "base/lock.h"
 #include "base/non_thread_safe.h"
 #include "base/scoped_ptr.h"
+#include "base/weak_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/socket/ssl_host_info.h"
@@ -36,7 +37,53 @@ class DiskCacheBasedSSLHostInfo : public SSLHostInfo,
   virtual void Persist();
 
  private:
+  enum State {
+    GET_BACKEND,
+    GET_BACKEND_COMPLETE,
+    OPEN,
+    OPEN_COMPLETE,
+    READ,
+    READ_COMPLETE,
+    WAIT_FOR_DATA_READY_DONE,
+    CREATE,
+    CREATE_COMPLETE,
+    WRITE,
+    WRITE_COMPLETE,
+    SET_DONE,
+    NONE,
+  };
+
   ~DiskCacheBasedSSLHostInfo();
+
+  class CallbackImpl : public CallbackRunner<Tuple1<int> > {
+   public:
+    CallbackImpl(const base::WeakPtr<DiskCacheBasedSSLHostInfo>& obj,
+                 void (DiskCacheBasedSSLHostInfo::*meth) (int))
+        : obj_(obj),
+          meth_(meth) {
+    }
+
+    virtual void RunWithParams(const Tuple1<int>& params) {
+      if (!obj_) {
+        delete this;
+      } else {
+        DispatchToMethod(obj_.get(), meth_, params);
+      }
+    }
+
+    disk_cache::Backend** backend_pointer() { return &backend_; }
+    disk_cache::Entry** entry_pointer() { return &entry_; }
+    disk_cache::Backend* backend() const { return backend_; }
+    disk_cache::Entry* entry() const { return entry_; }
+
+   protected:
+    base::WeakPtr<DiskCacheBasedSSLHostInfo> obj_;
+    void (DiskCacheBasedSSLHostInfo::*meth_) (int);
+
+    disk_cache::Backend* backend_;
+    disk_cache::Entry* entry_;
+  };
+
   std::string key() const;
 
   void DoLoop(int rv);
@@ -58,31 +105,18 @@ class DiskCacheBasedSSLHostInfo : public SSLHostInfo,
   // SetDone is the terminal state of the write operation.
   int SetDone();
 
-  enum State {
-    GET_BACKEND,
-    GET_BACKEND_COMPLETE,
-    OPEN,
-    OPEN_COMPLETE,
-    READ,
-    READ_COMPLETE,
-    WAIT_FOR_DATA_READY_DONE,
-    CREATE,
-    CREATE_COMPLETE,
-    WRITE,
-    WRITE_COMPLETE,
-    SET_DONE,
-    NONE,
-  };
+  // IsCallbackPending returns true if we have a pending callback.
+  bool IsCallbackPending() const;
 
-  scoped_refptr<CancelableCompletionCallback<DiskCacheBasedSSLHostInfo> >
-      callback_;
+  base::WeakPtrFactory<DiskCacheBasedSSLHostInfo> weak_ptr_factory_;
+  CallbackImpl* callback_;
   State state_;
   bool ready_;
   std::string new_data_;
   const std::string hostname_;
   HttpCache* const http_cache_;
   disk_cache::Backend* backend_;
-  disk_cache::Entry *entry_;
+  disk_cache::Entry* entry_;
   CompletionCallback* user_callback_;
   scoped_refptr<net::IOBuffer> read_buffer_;
   scoped_refptr<net::IOBuffer> write_buffer_;
