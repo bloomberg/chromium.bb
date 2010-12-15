@@ -30,7 +30,8 @@ Profile* ChooseProfileFromStoreId(const std::string& store_id,
                                   bool include_incognito) {
   DCHECK(profile);
   bool allow_original = !profile->IsOffTheRecord();
-  bool allow_incognito = profile->IsOffTheRecord() || include_incognito;
+  bool allow_incognito = profile->IsOffTheRecord() ||
+      (include_incognito && profile->HasOffTheRecordProfile());
   if (store_id == kOriginalProfileStoreId && allow_original)
     return profile->GetOriginalProfile();
   if (store_id == kOffTheRecordProfileStoreId && allow_incognito)

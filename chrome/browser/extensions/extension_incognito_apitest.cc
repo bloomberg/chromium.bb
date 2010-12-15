@@ -86,8 +86,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoYesScript) {
 // accidentially create and incognito profile.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DontCreateIncognitoProfile) {
   ASSERT_FALSE(browser()->profile()->HasOffTheRecordProfile());
-  ASSERT_TRUE(
-      RunExtensionTestIncognito("incognito/enumerate_tabs")) << message_;
+  ASSERT_TRUE(RunExtensionTestIncognito(
+      "incognito/dont_create_profile")) << message_;
   ASSERT_FALSE(browser()->profile()->HasOffTheRecordProfile());
 }
 

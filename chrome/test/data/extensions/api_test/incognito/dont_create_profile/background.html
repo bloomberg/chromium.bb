@@ -4,6 +4,11 @@ chrome.test.runTests([
     chrome.windows.getAll({"populate": true}, function (windows) {
       chrome.test.succeed();
     });
+  },
+  function getAllCookieStores() {
+    chrome.cookies.getAllCookieStores(function (stores) {
+      chrome.test.succeed();
+    });
   }
 ]);
 </script>

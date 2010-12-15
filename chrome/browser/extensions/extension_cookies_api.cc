@@ -425,7 +425,7 @@ bool GetAllCookieStoresFunction::RunImpl() {
   scoped_ptr<ListValue> original_tab_ids(new ListValue());
   Profile* incognito_profile = NULL;
   scoped_ptr<ListValue> incognito_tab_ids;
-  if (include_incognito()) {
+  if (include_incognito() && profile()->HasOffTheRecordProfile()) {
     incognito_profile = profile()->GetOffTheRecordProfile();
     if (incognito_profile)
       incognito_tab_ids.reset(new ListValue());

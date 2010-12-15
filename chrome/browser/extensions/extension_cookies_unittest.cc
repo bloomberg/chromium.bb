@@ -42,6 +42,10 @@ class OtrTestingProfile : public TestingProfile {
       return linked_profile_;
   }
 
+  virtual bool HasOffTheRecordProfile() {
+    return (!IsOffTheRecord() && linked_profile_);
+  }
+
   static void LinkProfiles(OtrTestingProfile* profile1,
                            OtrTestingProfile* profile2) {
     profile1->set_linked_profile(profile2);
