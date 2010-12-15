@@ -385,17 +385,19 @@ static bool IsWhitelistedForContentSettings(WebFrame* frame) {
 
 // Returns true if the frame is navigating to an URL either into or out of an
 // extension app's extent.
-static bool CrossesExtensionExtents(WebFrame* frame, const GURL& new_url) {
-  if (!RenderThread::current())
-    return false;
-
+// TODO(creis): Temporary workaround for crbug.com/65953: Only return true if
+// we would enter an extension app's extent from a non-app.  We avoid swapping
+// processes to exit an app for now, since we do not yet restore context (such
+// as window.opener) if the window navigates back.
+static bool CrossesIntoExtensionExtent(WebFrame* frame, const GURL& new_url) {
   // If the URL is still empty, this is a window.open navigation. Check the
   // opener's URL.
   GURL old_url(frame->url());
   if (old_url.is_empty() && frame->opener())
     old_url = frame->opener()->url();
 
-  return !ExtensionRendererInfo::InSameExtent(old_url, new_url);
+  return !ExtensionRendererInfo::InSameExtent(old_url, new_url) &&
+         !ExtensionRendererInfo::GetByURL(old_url);
 }
 
 // Returns the ISO 639_1 language code of the specified |text|, or 'unknown'
@@ -3016,7 +3018,10 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
     // TODO(erikkay) This is happening inside of a check to is_content_initiated
     // which means that things like the back button won't trigger it.  Is that
     // OK?
-    if (CrossesExtensionExtents(frame, url)) {
+    // TODO(creis): For now, we only swap processes to enter an app and not
+    // exit it, since we currently lose context (e.g., window.opener) if the
+    // window navigates back.  See crbug.com/65953.
+    if (CrossesIntoExtensionExtent(frame, url)) {
       // Include the referrer in this case since we're going from a hosted web
       // page. (the packaged case is handled previously by the extension
       // navigation test)
