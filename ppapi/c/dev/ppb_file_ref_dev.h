@@ -11,7 +11,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_FILEREF_DEV_INTERFACE "PPB_FileRef(Dev);0.4"
+#define PPB_FILEREF_DEV_INTERFACE "PPB_FileRef(Dev);0.5"
 
 // A FileRef is a "weak pointer" to a file in a file system.  It contains a
 // PP_FileSystemType identifier and a file path string.

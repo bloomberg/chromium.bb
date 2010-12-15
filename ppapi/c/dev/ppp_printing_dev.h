@@ -46,7 +46,7 @@ struct PP_PrintPageNumberRange_Dev {
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_PrintPageNumberRange_Dev, 8);
 
 // Interface for the plugin to implement printing.
-#define PPP_PRINTING_DEV_INTERFACE "PPP_Printing(Dev);0.2"
+#define PPP_PRINTING_DEV_INTERFACE "PPP_Printing(Dev);0.3"
 
 struct PPP_Printing_Dev {
   // Returns array of supported print output formats. The array is allocated

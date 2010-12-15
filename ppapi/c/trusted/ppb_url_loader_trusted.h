@@ -9,7 +9,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_URLLOADERTRUSTED_INTERFACE "PPB_URLLoaderTrusted;0.2"
+#define PPB_URLLOADERTRUSTED_INTERFACE "PPB_URLLoaderTrusted;0.3"
 
 // Callback that indicates the status of the download and upload for the
 // given URLLoader resource.

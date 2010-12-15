@@ -714,7 +714,8 @@ void Var::PluginAddRefPPVar(PP_Var var) {
   if (var.type == PP_VARTYPE_STRING || var.type == PP_VARTYPE_OBJECT) {
     // TODO(brettw) consider checking that the ID is actually a var ID rather
     // than some random other resource ID.
-    if (!ResourceTracker::Get()->AddRefResource(var.value.as_id))
+    PP_Resource resource = static_cast<PP_Resource>(var.value.as_id);
+    if (!ResourceTracker::Get()->AddRefResource(resource))
       DLOG(WARNING) << "AddRefVar()ing a nonexistant string/object var.";
   }
 }
@@ -724,7 +725,8 @@ void Var::PluginReleasePPVar(PP_Var var) {
   if (var.type == PP_VARTYPE_STRING || var.type == PP_VARTYPE_OBJECT) {
     // TODO(brettw) consider checking that the ID is actually a var ID rather
     // than some random other resource ID.
-    if (!ResourceTracker::Get()->UnrefResource(var.value.as_id))
+    PP_Resource resource = static_cast<PP_Resource>(var.value.as_id);
+    if (!ResourceTracker::Get()->UnrefResource(resource))
       DLOG(WARNING) << "ReleaseVar()ing a nonexistant string/object var.";
   }
 }
@@ -776,7 +778,8 @@ PP_Var StringVar::StringToPPVar(PluginModule* module,
 scoped_refptr<StringVar> StringVar::FromPPVar(PP_Var var) {
   if (var.type != PP_VARTYPE_STRING)
     return scoped_refptr<StringVar>(NULL);
-  return Resource::GetAs<StringVar>(var.value.as_id);
+  PP_Resource resource = static_cast<PP_Resource>(var.value.as_id);
+  return Resource::GetAs<StringVar>(resource);
 }
 
 // ObjectVar -------------------------------------------------------------
@@ -817,7 +820,8 @@ PP_Var ObjectVar::NPObjectToPPVar(PluginModule* module, NPObject* object) {
 scoped_refptr<ObjectVar> ObjectVar::FromPPVar(PP_Var var) {
   if (var.type != PP_VARTYPE_OBJECT)
     return scoped_refptr<ObjectVar>(NULL);
-  return Resource::GetAs<ObjectVar>(var.value.as_id);
+  PP_Resource resource = static_cast<PP_Resource>(var.value.as_id);
+  return Resource::GetAs<ObjectVar>(resource);
 }
 
 // TryCatch --------------------------------------------------------------------

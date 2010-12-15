@@ -11,7 +11,7 @@
 #include "ppapi/c/pp_point.h"
 #include "ppapi/c/pp_resource.h"
 
-#define PPB_CURSOR_CONTROL_DEV_INTERFACE "PPB_CursorControl(Dev);0.2"
+#define PPB_CURSOR_CONTROL_DEV_INTERFACE "PPB_CursorControl(Dev);0.3"
 
 struct PPB_CursorControl_Dev {
   // Set a cursor.  If "type" is PP_CURSOR_TYPE_CUSTOM, then "custom_image"

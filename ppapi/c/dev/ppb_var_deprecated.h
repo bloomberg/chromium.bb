@@ -12,7 +12,7 @@
 
 struct PPP_Class_Deprecated;
 
-#define PPB_VAR_DEPRECATED_INTERFACE "PPB_Var(Deprecated);0.2"
+#define PPB_VAR_DEPRECATED_INTERFACE "PPB_Var(Deprecated);0.3"
 
 /**
  * @file

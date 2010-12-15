@@ -30,7 +30,7 @@ struct PP_ImageDataDesc {
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_ImageDataDesc, 16);
 
-#define PPB_IMAGEDATA_INTERFACE "PPB_ImageData;0.2"
+#define PPB_IMAGEDATA_INTERFACE "PPB_ImageData;0.3"
 
 /**
  * @file

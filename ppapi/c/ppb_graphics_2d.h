@@ -15,7 +15,7 @@ struct PP_Point;
 struct PP_Rect;
 struct PP_Size;
 
-#define PPB_GRAPHICS_2D_INTERFACE "PPB_Graphics2D;0.2"
+#define PPB_GRAPHICS_2D_INTERFACE "PPB_Graphics2D;0.3"
 
 /**
  * @file

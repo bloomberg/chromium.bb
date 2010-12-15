@@ -30,8 +30,8 @@
  * it to 0 to indicate a "NULL handle." Some interfaces may return a NULL
  * resource to indicate failure.
  */
-typedef int64_t PP_Resource;
-PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Resource, 8);
+typedef int32_t PP_Resource;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Resource, 4);
 
 /**
  * @}

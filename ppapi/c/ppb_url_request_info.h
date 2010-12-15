@@ -35,7 +35,7 @@ typedef enum {
 } PP_URLRequestProperty;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_URLRequestProperty, 4);
 
-#define PPB_URLREQUESTINFO_INTERFACE "PPB_URLRequestInfo;1.1"
+#define PPB_URLREQUESTINFO_INTERFACE "PPB_URLRequestInfo;0.1"
 
 struct PPB_URLRequestInfo {
   // Create a new URLRequestInfo object.  Returns 0 if the module is invalid.

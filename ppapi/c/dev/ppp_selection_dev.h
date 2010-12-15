@@ -9,7 +9,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPP_SELECTION_DEV_INTERFACE "PPP_Selection(Dev);0.2"
+#define PPP_SELECTION_DEV_INTERFACE "PPP_Selection(Dev);0.3"
 
 struct PPP_Selection_Dev {
   /**

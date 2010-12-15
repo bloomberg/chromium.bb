@@ -12,7 +12,7 @@
 
 struct PP_CompletionCallback;
 
-#define PPB_URLLOADER_INTERFACE "PPB_URLLoader;1"
+#define PPB_URLLOADER_INTERFACE "PPB_URLLoader;0.1"
 
 // The interface for loading URLs.
 //
