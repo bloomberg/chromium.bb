@@ -45,6 +45,9 @@ class ContentsContainer : public views::View, public AnimationDelegate {
   // Fades out the active contents.
   void FadeActiveContents();
 
+  // Shows the fade. This is similiar to |FadeActiveContents|, but is immediate.
+  void ShowFade();
+
   // Removes the fade. This is done implicitly when the preview is made active.
   void RemoveFade();
 
@@ -55,6 +58,14 @@ class ContentsContainer : public views::View, public AnimationDelegate {
   virtual void AnimationProgressed(const Animation* animation);
 
  private:
+  class OverlayContentView;
+
+  // Creates the overlay widget. The opacity is set at |initial_opacity|.
+  void CreateOverlay(int initial_opacity);
+
+  // Invoked when the contents view of the overlay is destroyed.
+  void OverlayViewDestroyed();
+
   views::View* active_;
 
   views::View* preview_;
@@ -64,6 +75,9 @@ class ContentsContainer : public views::View, public AnimationDelegate {
   // Translucent Widget positioned right above the active view that is used to
   // make the active view appear faded out.
   views::Widget* active_overlay_;
+
+  // Content view of active_overlay. Used to track when the widget is destroyed.
+  OverlayContentView* overlay_view_;
 
   // Animation used to vary the opacity of active_overlay.
   scoped_ptr<SlideAnimation> overlay_animation_;

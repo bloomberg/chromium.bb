@@ -128,7 +128,7 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void ToggleTabStripMode() {}
   virtual void PrepareForInstant();
   virtual void ShowInstant(TabContents* preview_contents);
-  virtual void HideInstant();
+  virtual void HideInstant(bool instant_is_active);
   virtual gfx::Rect GetInstantBounds();
 
   // Overridden from NotificationObserver:

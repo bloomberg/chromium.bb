@@ -66,22 +66,36 @@ class InstantTest : public InProcessBrowserTest {
     ASSERT_TRUE(location_bar_);
   }
 
+  TabContentsWrapper* GetPendingPreviewContents() {
+    return browser()->instant()->GetPendingPreviewContents();
+  }
+
   // Type a character to get instant to trigger.
   void SetupLocationBar() {
     FindLocationBar();
     location_bar_->location_entry()->SetUserText(L"a");
   }
 
-  // Wait for instant to load and ensure it is in the state we expect.
-  void SetupPreview() {
-    preview_ = browser()->instant()->GetPreviewContents()->tab_contents();
+  // Waits for preview to be shown.
+  void WaitForPreviewToNavigate(bool use_current) {
+    InstantController* instant = browser()->instant();
+    ASSERT_TRUE(instant);
+    TabContentsWrapper* tab = use_current ?
+        instant->GetPreviewContents() : GetPendingPreviewContents();
+    ASSERT_TRUE(tab);
+    preview_ = tab->tab_contents();
     ASSERT_TRUE(preview_);
     ui_test_utils::WaitForNavigation(&preview_->controller());
+  }
 
-    // Verify the initial setup of the search box.
-    ASSERT_TRUE(browser()->instant());
+  // Wait for instant to load and ensure it is in the state we expect.
+  void SetupPreview() {
+    // Wait for the preview to navigate.
+    WaitForPreviewToNavigate(true);
+
     EXPECT_TRUE(browser()->instant()->IsShowingInstant());
-    EXPECT_FALSE(browser()->instant()->is_active());
+    EXPECT_FALSE(browser()->instant()->is_displayable());
+    EXPECT_TRUE(browser()->instant()->is_active());
 
     // When the page loads, the initial searchBox values are set and only a
     // resize will have been sent.
@@ -152,6 +166,13 @@ class InstantTest : public InProcessBrowserTest {
     EXPECT_EQ(expected, result);
   }
 
+  // Sends a message to the renderer and waits for the response to come back to
+  // the browser.
+  void WaitForMessageToBeProcessedByRenderer(TabContentsWrapper* tab) {
+    ASSERT_NO_FATAL_FAILURE(
+        CheckBoolValueFromJavascript(true, "true", tab->tab_contents()));
+  }
+
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) {
     command_line->AppendSwitch(switches::kEnablePredictiveInstant);
@@ -185,6 +206,94 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
       1, "window.onchangecalls", preview_));
 }
 
+// Verify instant preview is shown correctly for a non-search query.
+IN_PROC_BROWSER_TEST_F(InstantTest, ShowPreviewNonSearch) {
+  ASSERT_TRUE(test_server()->Start());
+  GURL url(test_server()->GetURL("files/instant/empty.html"));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(UTF8ToWide(url.spec())));
+  // The preview should be active and showing.
+  ASSERT_TRUE(browser()->instant()->is_active());
+  ASSERT_TRUE(browser()->instant()->is_displayable());
+  ASSERT_TRUE(browser()->instant()->IsCurrent());
+  ASSERT_TRUE(browser()->instant()->GetPreviewContents());
+  RenderWidgetHostView* rwhv =
+      browser()->instant()->GetPreviewContents()->tab_contents()->
+      GetRenderWidgetHostView();
+  ASSERT_TRUE(rwhv);
+  ASSERT_TRUE(rwhv->IsShowing());
+}
+
+// Transition from non-search to search and make sure everything is shown
+// correctly.
+IN_PROC_BROWSER_TEST_F(InstantTest, NonSearchToSearch) {
+  ASSERT_TRUE(test_server()->Start());
+  GURL url(test_server()->GetURL("files/instant/empty.html"));
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(UTF8ToWide(url.spec())));
+  // The preview should be active and showing.
+  ASSERT_TRUE(browser()->instant()->is_active());
+  ASSERT_TRUE(browser()->instant()->is_displayable());
+  TabContentsWrapper* initial_tab = browser()->instant()->GetPreviewContents();
+  ASSERT_TRUE(initial_tab);
+  RenderWidgetHostView* rwhv =
+      initial_tab->tab_contents()->GetRenderWidgetHostView();
+  ASSERT_TRUE(rwhv);
+  ASSERT_TRUE(rwhv->IsShowing());
+
+  // Now type in some search text.
+  ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
+  location_bar_->location_entry()->SetUserText(L"abc");
+
+  // Wait for the preview to navigate.
+  ASSERT_NO_FATAL_FAILURE(WaitForPreviewToNavigate(false));
+
+  // The controller is still determining if the provider really supports
+  // instant. As a result the tabcontents should not have changed.
+  TabContentsWrapper* current_tab = browser()->instant()->GetPreviewContents();
+  ASSERT_EQ(current_tab, initial_tab);
+  // The preview should still be showing.
+  rwhv = current_tab->tab_contents()->GetRenderWidgetHostView();
+  ASSERT_TRUE(rwhv);
+  ASSERT_TRUE(rwhv->IsShowing());
+
+  // Use MightSupportInstant as the controller is still determining if the
+  // page supports instant and hasn't actually commited yet.
+  EXPECT_TRUE(browser()->instant()->MightSupportInstant());
+
+  // Instant should still be active.
+  EXPECT_TRUE(browser()->instant()->is_active());
+  EXPECT_TRUE(browser()->instant()->is_displayable());
+
+  // Because we're waiting on the page, instant isn't current.
+  ASSERT_FALSE(browser()->instant()->IsCurrent());
+
+  // Bounce a message to the renderer so that we know the instant has gotten a
+  // response back from the renderer as to whether the page supports instant.
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForMessageToBeProcessedByRenderer(GetPendingPreviewContents()));
+
+  // Reset the user text so that the page is told the text changed. We should be
+  // able to nuke this once 66104 is fixed.
+  location_bar_->location_entry()->SetUserText(L"abcd");
+
+  // Wait for the renderer to process it.
+  ASSERT_NO_FATAL_FAILURE(
+      WaitForMessageToBeProcessedByRenderer(GetPendingPreviewContents()));
+
+  // We should have gotten a response back from the renderer that resulted in
+  // committing.
+  ASSERT_FALSE(GetPendingPreviewContents());
+  ASSERT_TRUE(browser()->instant()->is_active());
+  ASSERT_TRUE(browser()->instant()->is_displayable());
+  TabContentsWrapper* new_tab = browser()->instant()->GetPreviewContents();
+  ASSERT_TRUE(new_tab);
+  ASSERT_NE(new_tab, initial_tab);
+  RenderWidgetHostView* new_rwhv =
+      new_tab->tab_contents()->GetRenderWidgetHostView();
+  ASSERT_TRUE(new_rwhv);
+  ASSERT_NE(new_rwhv, rwhv);
+  ASSERT_TRUE(new_rwhv->IsShowing());
+}
+
 // Makes sure that if the server doesn't support the instant API we don't show
 // anything.
 IN_PROC_BROWSER_TEST_F(InstantTest, SearchServerDoesntSupportInstant) {
@@ -198,26 +307,29 @@ IN_PROC_BROWSER_TEST_F(InstantTest, SearchServerDoesntSupportInstant) {
   EXPECT_TRUE(browser()->instant()->IsShowingInstant());
   // But because we're waiting to determine if the page really supports instant
   // we shouldn't be showing the preview.
-  EXPECT_FALSE(browser()->instant()->is_active());
+  EXPECT_FALSE(browser()->instant()->is_displayable());
+  // But instant should still be active.
+  EXPECT_TRUE(browser()->instant()->is_active());
 
   // When the response comes back that the page doesn't support instant the tab
   // should be closed.
   ui_test_utils::WaitForNotification(NotificationType::TAB_CLOSED);
   EXPECT_FALSE(browser()->instant()->IsShowingInstant());
-  EXPECT_FALSE(browser()->instant()->is_active());
+  EXPECT_FALSE(browser()->instant()->is_displayable());
+  EXPECT_TRUE(browser()->instant()->is_active());
+  EXPECT_FALSE(browser()->instant()->IsCurrent());
 }
 
 // Verifies transitioning from loading a non-search string to a search string
 // with the provider not supporting instant works (meaning we don't display
 // anything).
-// Flaky, http://crbug.com/66539.
-IN_PROC_BROWSER_TEST_F(InstantTest,
-                       FLAKY_NonSearchToSearchDoesntSupportInstant) {
+IN_PROC_BROWSER_TEST_F(InstantTest, NonSearchToSearchDoesntSupportInstant) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("empty.html"));
   GURL url(test_server()->GetURL("files/instant/empty.html"));
   ASSERT_NO_FATAL_FAILURE(SetLocationBarText(UTF8ToWide(url.spec())));
   // The preview should be active and showing.
+  ASSERT_TRUE(browser()->instant()->is_displayable());
   ASSERT_TRUE(browser()->instant()->is_active());
   TabContentsWrapper* initial_tab = browser()->instant()->GetPreviewContents();
   ASSERT_TRUE(initial_tab);
@@ -230,6 +342,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest,
   location_bar_->location_entry()->SetUserText(L"a");
 
   // Instant should still be live.
+  ASSERT_TRUE(browser()->instant()->is_displayable());
   ASSERT_TRUE(browser()->instant()->is_active());
   // Because we typed in a search string we should think we're showing instant
   // results.
@@ -241,7 +354,9 @@ IN_PROC_BROWSER_TEST_F(InstantTest,
   // should be closed.
   ui_test_utils::WaitForNotification(NotificationType::TAB_CLOSED);
   EXPECT_FALSE(browser()->instant()->IsShowingInstant());
-  EXPECT_FALSE(browser()->instant()->is_active());
+  EXPECT_FALSE(browser()->instant()->is_displayable());
+  // But because the omnibox is still open, instant should be active.
+  ASSERT_TRUE(browser()->instant()->is_active());
 }
 
 // Verifies the page was told a non-zero height.
@@ -252,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, ValidHeight) {
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("old_api.html"));
   ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"a"));
   // The preview should be active.
-  ASSERT_TRUE(browser()->instant()->is_active());
+  ASSERT_TRUE(browser()->instant()->is_displayable());
   // And the height should be valid.
   TabContents* tab = browser()->instant()->GetPreviewContents()->tab_contents();
   ASSERT_NO_FATAL_FAILURE(
@@ -265,6 +380,33 @@ IN_PROC_BROWSER_TEST_F(InstantTest, ValidHeight) {
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractInt(
                   tab->render_view_host(), std::wstring(), script, &height));
   EXPECT_GT(height, 0);
+}
+
+// Verifies that if the server returns a 403 we don't show the preview and
+// query the host again.
+IN_PROC_BROWSER_TEST_F(InstantTest, HideOn403) {
+  ASSERT_TRUE(test_server()->Start());
+  GURL url(test_server()->GetURL("files/instant/403.html"));
+  ASSERT_NO_FATAL_FAILURE(FindLocationBar());
+  location_bar_->location_entry()->SetUserText(UTF8ToWide(url.spec()));
+  // The preview shouldn't be showing, but it should be loading.
+  ASSERT_TRUE(browser()->instant()->GetPreviewContents());
+  ASSERT_TRUE(browser()->instant()->is_active());
+  ASSERT_FALSE(browser()->instant()->is_displayable());
+
+  // When instant sees the 403, it should close the tab.
+  ui_test_utils::WaitForNotification(NotificationType::TAB_CLOSED);
+  ASSERT_FALSE(browser()->instant()->GetPreviewContents());
+  ASSERT_TRUE(browser()->instant()->is_active());
+  ASSERT_FALSE(browser()->instant()->is_displayable());
+
+  // Try loading another url on the server. Instant shouldn't create a new tab
+  // as the server returned 403.
+  GURL url2(test_server()->GetURL("files/instant/empty.html"));
+  location_bar_->location_entry()->SetUserText(UTF8ToWide(url2.spec()));
+  ASSERT_FALSE(browser()->instant()->GetPreviewContents());
+  ASSERT_TRUE(browser()->instant()->is_active());
+  ASSERT_FALSE(browser()->instant()->is_displayable());
 }
 
 // Verify that the onsubmit event is dispatched upon pressing enter.

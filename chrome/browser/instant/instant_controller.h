@@ -27,6 +27,7 @@ struct AutocompleteMatch;
 class InstantDelegate;
 class InstantLoader;
 class InstantLoaderManager;
+class InstantTest;
 class PrefService;
 class Profile;
 class TabContents;
@@ -153,9 +154,13 @@ class InstantController : public InstantLoaderDelegate {
   // The preview TabContents; may be null.
   TabContentsWrapper* GetPreviewContents();
 
-  // Returns true if the preview TabContents is active. In some situations this
-  // may return false yet preview_contents() returns non-NULL.
+  // Returns true if |Update| has been invoked without a corresponding call to
+  // |DestroyPreviewContents| or |CommitCurrentPreview|.
   bool is_active() const { return is_active_; }
+
+  // Returns true if the preview TabContents is ready to be displayed. In some
+  // situations this may return false yet GetPreviewContents() returns non-NULL.
+  bool is_displayable() const { return is_displayable_; }
 
   // Returns the transition type of the last AutocompleteMatch passed to Update.
   PageTransition::Type last_transition_type() const {
@@ -191,7 +196,16 @@ class InstantController : public InstantLoaderDelegate {
 
 
  private:
+  friend class InstantTest;
+
   typedef std::set<std::string> HostBlacklist;
+
+  // Destroys the current loaders but remains actives.
+  void DestroyAndLeaveActive();
+
+  // Returns the TabContents of the pending loader (or NULL). This is only used
+  // for testing.
+  TabContentsWrapper* GetPendingPreviewContents();
 
   // Returns true if we should update immediately.
   bool ShouldUpdateNow(TemplateURLID instant_id, const GURL& url);
@@ -253,9 +267,12 @@ class InstantController : public InstantLoaderDelegate {
   // The TabContents last passed to |Update|.
   TabContentsWrapper* tab_contents_;
 
+  // See description above getter for details.
+  bool is_active_;
+
   // Has notification been sent out that the preview TabContents is ready to be
   // shown?
-  bool is_active_;
+  bool is_displayable_;
 
   // See description above setter.
   gfx::Rect omnibox_bounds_;

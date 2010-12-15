@@ -1369,18 +1369,20 @@ void BrowserView::ShowInstant(TabContents* preview_contents) {
   contents_->RemoveFade();
 }
 
-void BrowserView::HideInstant() {
-  if (!preview_container_) {
+void BrowserView::HideInstant(bool instant_is_active) {
+  if (instant_is_active)
+    contents_->ShowFade();
+  else
     contents_->RemoveFade();
+
+  if (!preview_container_)
     return;
-  }
 
   // The contents must be changed before SetPreview is invoked.
   preview_container_->ChangeTabContents(NULL);
   contents_->SetPreview(NULL, NULL);
   delete preview_container_;
   preview_container_ = NULL;
-  contents_->RemoveFade();
 }
 
 gfx::Rect BrowserView::GetInstantBounds() {

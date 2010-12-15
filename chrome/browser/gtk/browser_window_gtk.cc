@@ -1123,9 +1123,11 @@ void BrowserWindowGtk::ShowInstant(TabContents* preview_contents) {
     contents->CancelInstantFade();
 }
 
-void BrowserWindowGtk::HideInstant() {
+void BrowserWindowGtk::HideInstant(bool instant_is_active) {
   contents_container_->PopPreviewContents();
   MaybeShowBookmarkBar(false);
+
+  // TODO(sky): honor instant_is_active.
 }
 
 gfx::Rect BrowserWindowGtk::GetInstantBounds() {

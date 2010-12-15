@@ -233,18 +233,17 @@ void LocationBarViewMac::OnAutocompleteLosingFocus(gfx::NativeView unused) {
   if (!instant)
     return;
 
-  if (!instant->is_active() || !instant->GetPreviewContents())
-    return;
-
   // If |IsMouseDownFromActivate()| returns false, the RenderWidgetHostView did
   // not receive a mouseDown event.  Therefore, we should destroy the preview.
   // Otherwise, the RWHV was clicked, so we commit the preview.
-  if (!instant->IsMouseDownFromActivate())
+  if (!instant->is_displayable() || !instant->GetPreviewContents() ||
+      !instant->IsMouseDownFromActivate()) {
     instant->DestroyPreviewContents();
-  else if (instant->IsShowingInstant())
+  } else if (instant->IsShowingInstant()) {
     instant->SetCommitOnMouseUp();
-  else
+  } else {
     instant->CommitCurrentPreview(INSTANT_COMMIT_FOCUS_LOST);
+  }
 }
 
 void LocationBarViewMac::OnAutocompleteWillAccept() {

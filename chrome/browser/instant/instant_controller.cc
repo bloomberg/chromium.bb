@@ -38,6 +38,7 @@ InstantController::InstantController(Profile* profile,
     : delegate_(delegate),
       tab_contents_(NULL),
       is_active_(false),
+      is_displayable_(false),
       commit_on_mouse_up_(false),
       last_transition_type_(PageTransition::LINK),
       ALLOW_THIS_IN_INITIALIZER_LIST(destroy_factory_(this)),
@@ -156,17 +157,24 @@ void InstantController::Update(TabContentsWrapper* tab_contents,
   last_transition_type_ = match.transition;
   const TemplateURL* template_url = NULL;
 
-  if (url.is_empty() || !url.is_valid() ||
-      !ShouldShowPreviewFor(match, &template_url)) {
+  if (url.is_empty() || !url.is_valid()) {
+    // Assume we were invoked with GURL() and should destroy all.
     DestroyPreviewContents();
+    return;
+  }
+
+  if (!ShouldShowPreviewFor(match, &template_url)) {
+    DestroyAndLeaveActive();
     return;
   }
 
   if (!loader_manager_.get())
     loader_manager_.reset(new InstantLoaderManager(this));
 
-  if (!is_active_)
+  if (!is_active_) {
+    is_active_ = true;
     delegate_->PrepareForInstant();
+  }
 
   TemplateURLID template_url_id = template_url ? template_url->id() : 0;
   // Verbatim only makes sense if the search engines supports instant.
@@ -206,13 +214,16 @@ void InstantController::DestroyPreviewContents() {
     return;
   }
 
+  // ReleasePreviewContents sets is_active_ to false, but we need to set it
+  // beore notifying the delegate so.
+  is_active_ = false;
   delegate_->HideInstant();
   delete ReleasePreviewContents(INSTANT_COMMIT_DESTROY);
 }
 
 bool InstantController::IsCurrent() {
-  return loader_manager_.get() && loader_manager_->active_loader()->ready() &&
-      !update_timer_.IsRunning();
+  return loader_manager_.get() && loader_manager_->active_loader() &&
+      loader_manager_->active_loader()->ready() && !update_timer_.IsRunning();
 }
 
 void InstantController::CommitCurrentPreview(InstantCommitType type) {
@@ -235,8 +246,10 @@ bool InstantController::IsMouseDownFromActivate() {
 
 void InstantController::OnAutocompleteLostFocus(
     gfx::NativeView view_gaining_focus) {
-  if (!is_active() || !GetPreviewContents())
+  if (!is_active() || !GetPreviewContents()) {
+    DestroyPreviewContents();
     return;
+  }
 
   RenderWidgetHostView* rwhv =
       GetPreviewContents()->tab_contents()->GetRenderWidgetHostView();
@@ -302,9 +315,10 @@ TabContentsWrapper* InstantController::ReleasePreviewContents(
 
   ClearBlacklist();
   is_active_ = false;
-  omnibox_bounds_ = gfx::Rect();
+  is_displayable_ = false;
   commit_on_mouse_up_ = false;
-  loader_manager_.reset(NULL);
+  omnibox_bounds_ = gfx::Rect();
+  loader_manager_.reset();
   update_timer_.Stop();
   return tab;
 }
@@ -314,24 +328,24 @@ void InstantController::CompleteRelease(TabContents* tab) {
 }
 
 TabContentsWrapper* InstantController::GetPreviewContents() {
-  return loader_manager_.get() ?
+  return loader_manager_.get() && loader_manager_->current_loader() ?
       loader_manager_->current_loader()->preview_contents() : NULL;
 }
 
 bool InstantController::IsShowingInstant() {
-  return loader_manager_.get() &&
+  return loader_manager_.get() && loader_manager_->current_loader() &&
       loader_manager_->current_loader()->is_showing_instant();
 }
 
 bool InstantController::MightSupportInstant() {
-  return loader_manager_.get() &&
+  return loader_manager_.get() && loader_manager_->active_loader() &&
       loader_manager_->active_loader()->is_showing_instant();
 }
 
 void InstantController::ShowInstantLoader(InstantLoader* loader) {
   DCHECK(loader_manager_.get());
   if (loader_manager_->current_loader() == loader) {
-    is_active_ = true;
+    is_displayable_ = true;
     delegate_->ShowInstant(loader->preview_contents());
   } else if (loader_manager_->pending_loader() == loader) {
     scoped_ptr<InstantLoader> old_loader;
@@ -377,20 +391,20 @@ void InstantController::InstantLoaderDoesntSupportInstant(
   DCHECK(!loader->ready());  // We better not be showing this loader.
   DCHECK(loader->template_url_id());
 
-  VLOG(1) << " provider does not support instant";
+  VLOG(1) << "provider does not support instant";
 
   // Don't attempt to use instant for this search engine again.
   BlacklistFromInstant(loader->template_url_id());
 
   if (loader_manager_->active_loader() == loader) {
-    // The loader is active, shut down instant.
-    DestroyPreviewContents();
+    // The loader is active, hide all.
+    DestroyAndLeaveActive();
   } else {
-    if (loader_manager_->current_loader() == loader && is_active_) {
+    if (loader_manager_->current_loader() == loader && is_displayable_) {
       // There is a pending loader and we're active. Hide the preview. When then
       // pending loader finishes loading we'll notify the delegate to show.
       DCHECK(loader_manager_->pending_loader());
-      is_active_ = false;
+      is_displayable_ = false;
       delegate_->HideInstant();
     }
     loader_manager_->DestroyLoader(loader);
@@ -413,14 +427,28 @@ void InstantController::AddToBlacklist(InstantLoader* loader, const GURL& url) {
   ScheduleDestroy(loader);
 
   loader_manager_->ReleaseLoader(loader);
-  if (is_active_ &&
+  if (is_displayable_ &&
       (!loader_manager_->active_loader() ||
        !loader_manager_->current_loader()->ready())) {
     // Hide instant. When the pending loader finishes loading we'll go active
     // again.
-    is_active_ = false;
+    is_displayable_ = false;
     delegate_->HideInstant();
   }
+}
+
+void InstantController::DestroyAndLeaveActive() {
+  is_displayable_ = false;
+  commit_on_mouse_up_ = false;
+  delegate_->HideInstant();
+
+  loader_manager_.reset(new InstantLoaderManager(this));
+  update_timer_.Stop();
+}
+
+TabContentsWrapper* InstantController::GetPendingPreviewContents() {
+  return loader_manager_.get() && loader_manager_->pending_loader() ?
+      loader_manager_->pending_loader()->preview_contents() : NULL;
 }
 
 bool InstantController::ShouldUpdateNow(TemplateURLID instant_id,
@@ -446,8 +474,10 @@ bool InstantController::ShouldUpdateNow(TemplateURLID instant_id,
   // WillUpateChangeActiveLoader should return true if no active loader, so
   // we know there will be an active loader if we get here.
   DCHECK(active_loader);
-  // Immediately update if the hosts differ, otherwise we'll delay the update.
-  return active_loader->url().host() != url.host();
+  // Immediately update if the url is the same (which should result in nothing
+  // happening) or the hosts differ, otherwise we'll delay the update.
+  return (active_loader->url() == url) ||
+      (active_loader->url().host() != url.host());
 }
 
 void InstantController::ScheduleUpdate(const GURL& url) {

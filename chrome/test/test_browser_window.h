@@ -106,7 +106,7 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void OpenTabpose() {}
   virtual void PrepareForInstant() {}
   virtual void ShowInstant(TabContents* preview_contents) {}
-  virtual void HideInstant() {}
+  virtual void HideInstant(bool instant_is_active) {}
   virtual gfx::Rect GetInstantBounds() { return gfx::Rect(); }
 #if defined(OS_CHROMEOS)
   virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window) {}
