@@ -156,15 +156,13 @@ void DevToolsHttpProtocolHandler::OnClose(HttpListenSocket* socket) {
     socket_to_requests_io_.erase(socket);
   }
 
-  // This can't use make_scoped_refptr because |socket| is already deleted
-  // when this runs -- http://crbug.com/59930
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
       NewRunnableMethod(
           this,
           &DevToolsHttpProtocolHandler::OnCloseUI,
-          socket));
+          make_scoped_refptr(socket)));
 }
 
 void DevToolsHttpProtocolHandler::OnHttpRequestUI(
