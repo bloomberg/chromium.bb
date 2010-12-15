@@ -226,7 +226,7 @@ void ParallelAuthenticator::RecoverEncryptedData(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this,
                         &ParallelAuthenticator::ResyncRecoverHelper,
-                        key_migrator_.get()));
+                        key_migrator_));
 }
 
 void ParallelAuthenticator::ResyncEncryptedData(
@@ -237,7 +237,7 @@ void ParallelAuthenticator::ResyncEncryptedData(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this,
                         &ParallelAuthenticator::ResyncRecoverHelper,
-                        data_remover_.get()));
+                        data_remover_));
 }
 
 void ParallelAuthenticator::ResyncRecoverHelper(CryptohomeOp* to_initiate) {
