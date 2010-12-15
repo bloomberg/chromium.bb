@@ -34,6 +34,7 @@
 
 class ChromeURLRequestContext;
 struct FontDescriptor;
+class HostContentSettingsMap;
 class HostZoomMap;
 class NotificationsPrefsCache;
 class PpapiPluginProcessHost;
@@ -412,6 +413,10 @@ class RenderMessageFilter : public IPC::ChannelProxy::MessageFilter,
   // The Profile associated with our renderer process.  This should only be
   // accessed on the UI thread!
   Profile* profile_;
+
+  // The host content settings map. Stored separately from the profile so we can
+  // access it on other threads.
+  HostContentSettingsMap* content_settings_;
 
   // Helper class for handling PluginProcessHost_ResolveProxy messages (manages
   // the requests to the proxy service).

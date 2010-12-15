@@ -240,6 +240,7 @@ RenderMessageFilter::RenderMessageFilter(
       plugin_service_(plugin_service),
       print_job_manager_(print_job_manager),
       profile_(profile),
+      content_settings_(profile->GetHostContentSettingsMap()),
       ALLOW_THIS_IN_INITIALIZER_LIST(resolve_proxy_msg_helper_(this, NULL)),
       media_request_context_(profile->GetRequestContextForMedia()),
       extensions_request_context_(profile->GetRequestContextForExtensions()),
@@ -578,7 +579,9 @@ void RenderMessageFilter::OnSetCookie(const IPC::Message& message,
 
   // If this render view is associated with an automation channel, aka
   // ChromeFrame then we need to set cookies in the external host.
-  if (!AutomationResourceMessageFilter::SetCookiesForUrl(url, cookie, callback)) {
+  if (!AutomationResourceMessageFilter::SetCookiesForUrl(url,
+                                                         cookie,
+                                                         callback)) {
     int policy = net::OK;
     if (context->cookie_policy()) {
       policy = context->cookie_policy()->CanSetCookie(
@@ -787,12 +790,12 @@ void RenderMessageFilter::OnGotPluginInfo(bool found,
   if (found) {
     info_copy.enabled = info_copy.enabled &&
         plugin_service_->PrivatePluginAllowedForURL(info_copy.path, policy_url);
-    HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
     std::string resource =
         NPAPI::PluginList::Singleton()->GetPluginGroupIdentifier(info_copy);
-    setting = map->GetContentSetting(policy_url,
-                                     CONTENT_SETTINGS_TYPE_PLUGINS,
-                                     resource);
+    setting = content_settings_->GetContentSetting(
+        policy_url,
+        CONTENT_SETTINGS_TYPE_PLUGINS,
+        resource);
   }
 
   ViewHostMsg_GetPluginInfo::WriteReplyParams(
