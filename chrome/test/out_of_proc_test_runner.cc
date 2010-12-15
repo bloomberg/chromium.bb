@@ -349,8 +349,17 @@ bool RunTests() {
 
   testing::UnitTest* const unit_test = testing::UnitTest::GetInstance();
 
-  std::string filter_string = command_line->GetSwitchValueASCII(
-      kGTestFilterFlag);
+  std::string filter = command_line->GetSwitchValueASCII(kGTestFilterFlag);
+
+  // Split --gtest_filter at '-', if there is one, to separate into
+  // positive filter and negative filter portions.
+  std::string positive_filter = filter;
+  std::string negative_filter = "";
+  size_t dash_pos = filter.find('-');
+  if (dash_pos != std::string::npos) {
+    positive_filter = filter.substr(0, dash_pos);  // Everything up to the dash.
+    negative_filter = filter.substr(dash_pos + 1); // Everything after the dash.
+  }
 
   int test_run_count = 0;
   int ignored_failure_count = 0;
@@ -374,7 +383,9 @@ bool RunTests() {
       test_name.append(".");
       test_name.append(test_info->name());
       // Skip the test that doesn't match the filter string (if given).
-      if (filter_string.size() && !MatchesFilter(test_name, filter_string)) {
+      if ((!positive_filter.empty() &&
+           !MatchesFilter(test_name, positive_filter)) ||
+          MatchesFilter(test_name, negative_filter)) {
         printer.OnTestEnd(test_info->name(), test_case->name(),
                           false, false, false, 0);
         continue;
