@@ -7,165 +7,124 @@
 #pragma once
 
 #include "base/ref_counted.h"
+#include "base/template_util.h"
 #include "base/tuple.h"
+#include "build/build_config.h"
 
-// It is dangerous to post a task with a raw pointer argument to a function
-// that expects a scoped_refptr<>.  The compiler will happily accept the
-// situation, but it will not attempt to increase the refcount until the task
-// runs.  Callers expecting the argument to be refcounted up at post time are
-// in for a nasty surprise!  Example: http://crbug.com/27191
+// It is dangerous to post a task with a T* argument where T is a subtype of
+// RefCounted(Base|ThreadSafeBase), since by the time the parameter is used, the
+// object may already have been deleted since it was not held with a
+// scoped_refptr. Example: http://crbug.com/27191
 // The following set of traits are designed to generate a compile error
 // whenever this antipattern is attempted.
-template <class A, class B>
-struct ExpectsScopedRefptrButGetsRawPtr {
+
+namespace base {
+
+// This is a base internal implementation file used by task.h and callback.h.
+// Not for public consumption, so we wrap it in namespace internal.
+namespace internal {
+
+template <typename T>
+struct NeedsScopedRefptrButGetsRawPtr {
+#if defined(OS_WIN)
+  enum {
+    value = base::false_type::value
+  };
+#else
+  enum {
+    // Human readable translation: you needed to be a scoped_refptr if you are a
+    // raw pointer type and are convertible to a RefCounted(Base|ThreadSafeBase)
+    // type.
+    value = (is_pointer<T>::value &&
+             (is_convertible<T, subtle::RefCountedBase*>::value ||
+              is_convertible<T, subtle::RefCountedThreadSafeBase*>::value))
+  };
+#endif
+};
+
+template <typename Params>
+struct ParamsUseScopedRefptrCorrectly {
   enum { value = 0 };
 };
 
-template <class A, class B>
-struct ExpectsScopedRefptrButGetsRawPtr<scoped_refptr<A>, B*> {
+template <>
+struct ParamsUseScopedRefptrCorrectly<Tuple0> {
   enum { value = 1 };
 };
 
-template <class Function, class Params>
-struct FunctionUsesScopedRefptrCorrectly {
-  enum { value = 1 };
+template <typename A>
+struct ParamsUseScopedRefptrCorrectly<Tuple1<A> > {
+  enum { value = !NeedsScopedRefptrButGetsRawPtr<A>::value };
 };
 
-template <class A1, class A2>
-struct FunctionUsesScopedRefptrCorrectly<void (*)(A1), Tuple1<A2> > {
-  enum { value = !ExpectsScopedRefptrButGetsRawPtr<A1, A2>::value };
+template <typename A, typename B>
+struct ParamsUseScopedRefptrCorrectly<Tuple2<A, B> > {
+  enum { value = !(NeedsScopedRefptrButGetsRawPtr<A>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<B>::value) };
 };
 
-template <class A1, class B1, class A2, class B2>
-struct FunctionUsesScopedRefptrCorrectly<void (*)(A1, B1), Tuple2<A2, B2> > {
-  enum { value = !(ExpectsScopedRefptrButGetsRawPtr<A1, A2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<B1, B2>::value) };
+template <typename A, typename B, typename C>
+struct ParamsUseScopedRefptrCorrectly<Tuple3<A, B, C> > {
+  enum { value = !(NeedsScopedRefptrButGetsRawPtr<A>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<B>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<C>::value) };
 };
 
-template <class A1, class B1, class C1, class A2, class B2, class C2>
-struct FunctionUsesScopedRefptrCorrectly<void (*)(A1, B1, C1),
-                                         Tuple3<A2, B2, C2> > {
-  enum { value = !(ExpectsScopedRefptrButGetsRawPtr<A1, A2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<B1, B2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<C1, C2>::value) };
+template <typename A, typename B, typename C, typename D>
+struct ParamsUseScopedRefptrCorrectly<Tuple4<A, B, C, D> > {
+  enum { value = !(NeedsScopedRefptrButGetsRawPtr<A>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<B>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<C>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<D>::value) };
 };
 
-template <class A1, class B1, class C1, class D1,
-          class A2, class B2, class C2, class D2>
-struct FunctionUsesScopedRefptrCorrectly<void (*)(A1, B1, C1, D1),
-                                         Tuple4<A2, B2, C2, D2> > {
-  enum { value = !(ExpectsScopedRefptrButGetsRawPtr<A1, A2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<B1, B2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<C1, C2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<D1, D2>::value) };
+template <typename A, typename B, typename C, typename D, typename E>
+struct ParamsUseScopedRefptrCorrectly<Tuple5<A, B, C, D, E> > {
+  enum { value = !(NeedsScopedRefptrButGetsRawPtr<A>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<B>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<C>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<D>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<E>::value) };
 };
 
-template <class A1, class B1, class C1, class D1, class E1,
-          class A2, class B2, class C2, class D2, class E2>
-struct FunctionUsesScopedRefptrCorrectly<void (*)(A1, B1, C1, D1, E1),
-                                         Tuple5<A2, B2, C2, D2, E2> > {
-  enum { value = !(ExpectsScopedRefptrButGetsRawPtr<A1, A2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<B1, B2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<C1, C2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<D1, D2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<E1, E2>::value) };
+template <typename A, typename B, typename C, typename D, typename E,
+          typename F>
+struct ParamsUseScopedRefptrCorrectly<Tuple6<A, B, C, D, E, F> > {
+  enum { value = !(NeedsScopedRefptrButGetsRawPtr<A>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<B>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<C>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<D>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<E>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<F>::value) };
 };
 
-template <class A1, class B1, class C1, class D1, class E1, class F1,
-          class A2, class B2, class C2, class D2, class E2, class F2>
-struct FunctionUsesScopedRefptrCorrectly<void (*)(A1, B1, C1, D1, E1, F1),
-                                         Tuple6<A2, B2, C2, D2, E2, F2> > {
-  enum { value = !(ExpectsScopedRefptrButGetsRawPtr<A1, A2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<B1, B2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<C1, C2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<D1, D2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<E1, E2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<F1, F2>::value) };
+template <typename A, typename B, typename C, typename D, typename E,
+          typename F, typename G>
+struct ParamsUseScopedRefptrCorrectly<Tuple7<A, B, C, D, E, F, G> > {
+  enum { value = !(NeedsScopedRefptrButGetsRawPtr<A>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<B>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<C>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<D>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<E>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<F>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<G>::value) };
 };
 
-template <class A1, class B1, class C1, class D1, class E1, class F1, class G1,
-          class A2, class B2, class C2, class D2, class E2, class F2, class G2>
-struct FunctionUsesScopedRefptrCorrectly<void (*)(A1, B1, C1, D1, E1, F1, G1),
-                                         Tuple7<A2, B2, C2, D2, E2, F2, G2> > {
-  enum { value = !(ExpectsScopedRefptrButGetsRawPtr<A1, A2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<B1, B2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<C1, C2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<D1, D2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<E1, E2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<F1, F2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<G1, G2>::value) };
+template <typename A, typename B, typename C, typename D, typename E,
+          typename F, typename G, typename H>
+struct ParamsUseScopedRefptrCorrectly<Tuple8<A, B, C, D, E, F, G, H> > {
+  enum { value = !(NeedsScopedRefptrButGetsRawPtr<A>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<B>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<C>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<D>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<E>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<F>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<G>::value ||
+                   NeedsScopedRefptrButGetsRawPtr<H>::value) };
 };
 
-template <class Method, class Params>
-struct MethodUsesScopedRefptrCorrectly {
-  enum { value = 1 };
-};
+}  // namespace internal
 
-template <class T, class A1, class A2>
-struct MethodUsesScopedRefptrCorrectly<void (T::*)(A1), Tuple1<A2> > {
-  enum { value = !ExpectsScopedRefptrButGetsRawPtr<A1, A2>::value };
-};
-
-template <class T, class A1, class B1, class A2, class B2>
-struct MethodUsesScopedRefptrCorrectly<void (T::*)(A1, B1), Tuple2<A2, B2> > {
-  enum { value = !(ExpectsScopedRefptrButGetsRawPtr<A1, A2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<B1, B2>::value) };
-};
-
-template <class T, class A1, class B1, class C1,
-                   class A2, class B2, class C2>
-struct MethodUsesScopedRefptrCorrectly<void (T::*)(A1, B1, C1),
-                                       Tuple3<A2, B2, C2> > {
-  enum { value = !(ExpectsScopedRefptrButGetsRawPtr<A1, A2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<B1, B2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<C1, C2>::value) };
-};
-
-template <class T, class A1, class B1, class C1, class D1,
-          class A2, class B2, class C2, class D2>
-struct MethodUsesScopedRefptrCorrectly<void (T::*)(A1, B1, C1, D1),
-                                       Tuple4<A2, B2, C2, D2> > {
-  enum { value = !(ExpectsScopedRefptrButGetsRawPtr<A1, A2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<B1, B2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<C1, C2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<D1, D2>::value) };
-};
-
-template <class T, class A1, class B1, class C1, class D1, class E1,
-                   class A2, class B2, class C2, class D2, class E2>
-struct MethodUsesScopedRefptrCorrectly<void (T::*)(A1, B1, C1, D1, E1),
-                                       Tuple5<A2, B2, C2, D2, E2> > {
-  enum { value = !(ExpectsScopedRefptrButGetsRawPtr<A1, A2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<B1, B2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<C1, C2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<D1, D2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<E1, E2>::value) };
-};
-
-template <class T, class A1, class B1, class C1, class D1, class E1, class F1,
-                   class A2, class B2, class C2, class D2, class E2, class F2>
-struct MethodUsesScopedRefptrCorrectly<void (T::*)(A1, B1, C1, D1, E1, F1),
-                                       Tuple6<A2, B2, C2, D2, E2, F2> > {
-  enum { value = !(ExpectsScopedRefptrButGetsRawPtr<A1, A2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<B1, B2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<C1, C2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<D1, D2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<E1, E2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<F1, F2>::value) };
-};
-
-template <class T,
-          class A1, class B1, class C1, class D1, class E1, class F1, class G1,
-          class A2, class B2, class C2, class D2, class E2, class F2, class G2>
-struct MethodUsesScopedRefptrCorrectly<void (T::*)(A1, B1, C1, D1, E1, F1, G1),
-                                       Tuple7<A2, B2, C2, D2, E2, F2, G2> > {
-  enum { value = !(ExpectsScopedRefptrButGetsRawPtr<A1, A2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<B1, B2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<C1, C2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<D1, D2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<E1, E2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<F1, F2>::value ||
-                   ExpectsScopedRefptrButGetsRawPtr<G1, G2>::value) };
-};
+}  // namespace base
 
 #endif  // BASE_RAW_SCOPED_REFPTR_MISMATCH_CHECKER_H_
