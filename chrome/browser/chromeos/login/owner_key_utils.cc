@@ -4,12 +4,6 @@
 
 #include "chrome/browser/chromeos/login/owner_key_utils.h"
 
-#include <keyhi.h>     // SECKEY_CreateSubjectPublicKeyInfo()
-#include <pk11pub.h>
-#include <prerror.h>   // PR_GetError()
-#include <secder.h>    // DER_Encode()
-#include <secmod.h>
-
 #include <limits>
 
 #include "base/crypto/rsa_private_key.h"
@@ -18,8 +12,6 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/nss_util.h"
-#include "base/nss_util_internal.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -99,10 +91,7 @@ const char OwnerKeyUtilsImpl::kOwnerKeyFile[] = "/var/lib/whitelist/owner.key";
 // static
 const uint16 OwnerKeyUtilsImpl::kKeySizeInBits = 2048;
 
-OwnerKeyUtilsImpl::OwnerKeyUtilsImpl() {
-  // Ensure NSS is initialized.
-  base::EnsureNSSInit();
-}
+OwnerKeyUtilsImpl::OwnerKeyUtilsImpl() {}
 
 OwnerKeyUtilsImpl::~OwnerKeyUtilsImpl() {}
 
