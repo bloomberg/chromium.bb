@@ -253,6 +253,12 @@ BuildAndInstallQemu() {
   cd qemu-0.10.1
   SubBanner "Patching"
   patch -p1 < ${patch}
+
+  echo
+  echo "NOTE: on 64 bit systems you will need to the following 32bit libs:"
+  echo "lib32z1-dev"
+  echo
+
   SubBanner "Configuring"
   env -i PATH=/usr/bin/:/bin \
     ./configure \
@@ -321,6 +327,7 @@ fi
 #@
 #@   update only qemu
 if [ ${MODE} = 'qemu_only' ] ; then
+  mkdir -p ${TMP}
   BuildAndInstallQemu
   exit 0
 fi

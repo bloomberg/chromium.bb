@@ -8,7 +8,12 @@
 set -o nounset
 set -o errexit
 
-#@ various commands to emulate arm code using qemu
+#@ Various commands to emulate arm code using qemu
+#@
+#@ Note: this script is not meant to be run as
+#@     tools/llvm/qemu_tool.sh
+#@ but rather as:
+#@     toolchain/linux_arm-trusted/qemu-arm
 
 # From a qemu build based on qemu-0.10.1.tar.gz
 readonly SDK_ROOT=$(dirname $0)
@@ -22,7 +27,8 @@ readonly QEMU_JAIL=${SDK_ROOT}/arm-2009q3/arm-none-linux-gnueabi/libc
 #                  -d out_asm,in_asm,op,int,exec,cpu
 #       c.f.  cpu_log_items in qemu-XXX/exec.c
 readonly QEMU_ARGS="-cpu cortex-a8"
-readonly QEMU_ARGS_DEBUG="-d in_asm,op,int,exec,cpu"
+readonly QEMU_ARGS_DEBUG="-d in_asm,int,exec,cpu"
+readonly QEMU_ARGS_DEBUG_SR="-d in_asm,int,exec,cpu,service_runtime"
 
 ######################################################################
 # Helpers
@@ -46,9 +52,18 @@ CheckPrerequisites () {
   fi
 }
 
+
+Hints() {
+  echo
+  echo "traces can be found in /tmp/qemu.log"
+  echo "for faster execution disable sel_ldr validation"
+  echo
+}
 ######################################################################
 if [[ $# -eq 0 ]] ; then
      echo "you must specify a mode on the commandline:"
+     echo
+     Usage
      exit -1
 fi
 
@@ -64,7 +79,6 @@ if [[ ${MODE} = 'help' ]] ; then
   exit 0
 fi
 
-
 #@
 #@ run
 #@
@@ -78,9 +92,20 @@ fi
 #@ run_debug
 #@
 #@   run stuff but also generate trace in /tmp
-if [[ ${MODE} = 'run' ]] ; then
+if [[ ${MODE} = 'run_debug' ]] ; then
+  Hints
   CheckPrerequisites
   exec ${QEMU} -L ${QEMU_JAIL} ${QEMU_ARGS} ${QEMU_ARGS_DEBUG} $*
+fi
+
+#@
+#@ run_debug_service_runtime
+#@
+#@   run stuff but also generate trace in /tmp even for service_runtime
+if [[ ${MODE} = 'run_debug_service_runtime' ]] ; then
+  Hints
+  CheckPrerequisites
+  exec ${QEMU} -L ${QEMU_JAIL} ${QEMU_ARGS} ${QEMU_ARGS_DEBUG_SR} $*
 fi
 
 ######################################################################

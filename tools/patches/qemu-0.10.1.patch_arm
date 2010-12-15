@@ -1,6 +1,17 @@
-diff -rbu qemu-0.10.1.orig/cpu-exec.c qemu-0.10.1.tracing/cpu-exec.c
+diff -Naur qemu-0.10.1.orig/cpu-all.h qemu-0.10.1/cpu-all.h
+--- qemu-0.10.1.orig/cpu-all.h	2009-03-21 19:05:48.000000000 -0400
++++ qemu-0.10.1/cpu-all.h	2010-12-15 14:34:06.000000000 -0500
+@@ -817,6 +817,7 @@
+ #define CPU_LOG_IOPORT     (1 << 7)
+ #define CPU_LOG_TB_CPU     (1 << 8)
+ #define CPU_LOG_RESET      (1 << 9)
++#define CPU_LOG_SERVICE_RUNTIME      (1 << 10) /* @LOCALMOD */
+ 
+ /* define log items */
+ typedef struct CPULogItem {
+diff -Naur qemu-0.10.1.orig/cpu-exec.c qemu-0.10.1/cpu-exec.c
 --- qemu-0.10.1.orig/cpu-exec.c	2009-03-21 19:05:48.000000000 -0400
-+++ qemu-0.10.1.tracing/cpu-exec.c	2009-09-11 08:22:49.370121000 -0400
++++ qemu-0.10.1/cpu-exec.c	2010-12-15 14:34:06.000000000 -0500
 @@ -48,8 +48,10 @@
  
  int tb_invalidated_flag;
@@ -14,7 +25,7 @@ diff -rbu qemu-0.10.1.orig/cpu-exec.c qemu-0.10.1.tracing/cpu-exec.c
  
  void cpu_loop_exit(void)
  {
-@@ -531,10 +533,17 @@
+@@ -531,10 +533,40 @@
                      env->exception_index = EXCP_INTERRUPT;
                      cpu_loop_exit();
                  }
@@ -22,6 +33,29 @@ diff -rbu qemu-0.10.1.orig/cpu-exec.c qemu-0.10.1.tracing/cpu-exec.c
 +
 +                // @LOCALMOD-BEGIN
 +                spin_lock(&tb_lock);
++#define VLINE_NACL     "@@NACL =========================================================\n"
++#define VLINE_SR       "@@SERV =========================================================\n"
++#define VLINE_UNKNOWN  "@@???? =========================================================\n"                                
++
++                int loglevel_saved = loglevel;
++                long curr_pc = (long)cpu_get_pc(env);
++                if (curr_pc < 0) {
++                  qemu_log_mask(CPU_LOG_TB_CPU, VLINE_UNKNOWN);
++                } else if (curr_pc < 0x00100000) {
++                  qemu_log_mask(CPU_LOG_TB_CPU, VLINE_NACL);
++                } else {
++                  if (!qemu_loglevel_mask(CPU_LOG_SERVICE_RUNTIME)) {
++                    /* temporary disable logging  */
++                    /* log modes are explained in exec.c */
++                    loglevel &= ~(CPU_LOG_TB_CPU|
++                                  CPU_LOG_EXEC|
++                                  CPU_LOG_TB_IN_ASM|
++                                  CPU_LOG_TB_OUT_ASM|
++                                  CPU_LOG_TB_OP);
++                                  }
++                  qemu_log_mask(CPU_LOG_TB_CPU, VLINE_SR);
++                }
++
 +                // @LOCALMOD-END
 +
  #ifdef DEBUG_EXEC
@@ -32,31 +66,33 @@ diff -rbu qemu-0.10.1.orig/cpu-exec.c qemu-0.10.1.tracing/cpu-exec.c
  #if defined(TARGET_I386)
                      env->eflags = env->eflags | helper_cc_compute_all(CC_OP) | (DF & DF_MASK);
                      log_cpu_state(env, X86_DUMP_CCOP);
-@@ -564,8 +573,22 @@
+@@ -564,8 +596,14 @@
  #endif
                  }
  #endif
 -                spin_lock(&tb_lock);
 +
 +                // @LOCALMOD-BEGIN
++
 +                //spin_lock(&tb_lock);
                  tb = tb_find_fast();
 +                // @LOCALMOD-END
-+
-+                // @LOCALMOD-BEGIN
-+#define VLINE  "@@=========================================================\n"
-+                if ((long)tb->pc < 0x00100000) {
-+                      qemu_log_mask(CPU_LOG_TB_CPU, VLINE);
-+                }
-+
-+                // @LOCALMOD-END
-+
 +
 +
                  /* Note: we do it here to avoid a gcc bug on Mac OS X when
                     doing it in tb_find_slow */
                  if (tb_invalidated_flag) {
-@@ -760,6 +783,8 @@
+@@ -592,6 +630,9 @@
+                       tb_add_jump((TranslationBlock *)(next_tb & ~3), next_tb & 3, tb);
+                     }
+                 }
++
++                loglevel = loglevel_saved;  /* @LOCALMOD */
++
+                 spin_unlock(&tb_lock);
+                 env->current_tb = tb;
+ 
+@@ -760,6 +801,8 @@
      if (cpu_single_env)
          env = cpu_single_env; /* XXX: find a correct solution for multithread */
  #if defined(DEBUG_SIGNAL)
@@ -65,7 +101,7 @@ diff -rbu qemu-0.10.1.orig/cpu-exec.c qemu-0.10.1.tracing/cpu-exec.c
      qemu_printf("qemu: SIGSEGV pc=0x%08lx address=%08lx w=%d oldset=0x%08lx\n",
                  pc, address, is_write, *(unsigned long *)old_set);
  #endif
-@@ -938,6 +963,7 @@
+@@ -938,6 +981,7 @@
  #if defined(DEBUG_SIGNAL)
      printf("qemu: SIGSEGV pc=0x%08lx address=%08lx w=%d oldset=0x%08lx\n",
             pc, address, is_write, *(unsigned long *)old_set);
@@ -73,9 +109,9 @@ diff -rbu qemu-0.10.1.orig/cpu-exec.c qemu-0.10.1.tracing/cpu-exec.c
  #endif
      /* XXX: locking issue */
      if (is_write && page_unprotect(address, pc, puc)) {
-diff -rbu qemu-0.10.1.orig/disas.c qemu-0.10.1.tracing/disas.c
+diff -Naur qemu-0.10.1.orig/disas.c qemu-0.10.1/disas.c
 --- qemu-0.10.1.orig/disas.c	2009-03-21 19:05:48.000000000 -0400
-+++ qemu-0.10.1.tracing/disas.c	2009-09-11 09:53:49.927804000 -0400
++++ qemu-0.10.1/disas.c	2010-12-15 14:34:06.000000000 -0500
 @@ -10,7 +10,9 @@
  
  /* Filled in by elfload.c.  Simplistic, but will do for now. */
@@ -110,9 +146,9 @@ diff -rbu qemu-0.10.1.orig/disas.c qemu-0.10.1.tracing/disas.c
  }
  
  #if !defined(CONFIG_USER_ONLY)
-diff -rbu qemu-0.10.1.orig/disas.h qemu-0.10.1.tracing/disas.h
+diff -Naur qemu-0.10.1.orig/disas.h qemu-0.10.1/disas.h
 --- qemu-0.10.1.orig/disas.h	2009-03-21 19:05:48.000000000 -0400
-+++ qemu-0.10.1.tracing/disas.h	2009-09-11 08:36:40.022909000 -0400
++++ qemu-0.10.1/disas.h	2010-12-15 14:34:06.000000000 -0500
 @@ -29,5 +29,8 @@
  
  /* Filled in by elfload.c.  Simplistic, but will do for now. */
@@ -122,9 +158,52 @@ diff -rbu qemu-0.10.1.orig/disas.h qemu-0.10.1.tracing/disas.h
 +// @LOCALMOD
  
  #endif /* _QEMU_DISAS_H */
-diff -rbu qemu-0.10.1.orig/linux-user/elfload.c qemu-0.10.1.tracing/linux-user/elfload.c
+diff -Naur qemu-0.10.1.orig/exec.c qemu-0.10.1/exec.c
+--- qemu-0.10.1.orig/exec.c	2009-03-21 19:05:48.000000000 -0400
++++ qemu-0.10.1/exec.c	2010-12-15 14:34:06.000000000 -0500
+@@ -1570,6 +1570,10 @@
+     { CPU_LOG_IOPORT, "ioport",
+       "show all i/o ports accesses" },
+ #endif
++    /* @LOCALMOD-START */
++    { CPU_LOG_SERVICE_RUNTIME, "service_runtime",
++      "log service runtime activity" },
++    /* @LOCALMOD-END */
+     { 0, NULL, NULL },
+ };
+ 
+diff -Naur qemu-0.10.1.orig/i386.ld qemu-0.10.1/i386.ld
+--- qemu-0.10.1.orig/i386.ld	2009-03-21 19:05:48.000000000 -0400
++++ qemu-0.10.1/i386.ld	2010-12-15 14:34:06.000000000 -0500
+@@ -40,8 +40,23 @@
+   .rela.fini     : { *(.rela.fini)	}
+   .rel.bss       : { *(.rel.bss)		}
+   .rela.bss      : { *(.rela.bss)		}
+-  .rel.plt       : { *(.rel.plt)		}
+-  .rela.plt      : { *(.rela.plt)		}
++   /* LOCALMOD-START */
++  .rel.plt       : 
++  {
++    PROVIDE_HIDDEN (__rel_iplt_start = .);
++    *(.rel.plt)
++    *(.rel.iplt)
++    PROVIDE_HIDDEN (__rel_iplt_end = .);
++  }
++
++  .rela.plt      : 
++  {
++    PROVIDE_HIDDEN (__rela_iplt_start = .);
++    *(.rela.plt)
++    *(.rela.iplt)
++    PROVIDE_HIDDEN (__rela_iplt_end = .);
++  }
++   /* LOCALMOD-END */
+   .init          : { *(.init)	} =0x47ff041f
+   .text      :
+   {
+diff -Naur qemu-0.10.1.orig/linux-user/elfload.c qemu-0.10.1/linux-user/elfload.c
 --- qemu-0.10.1.orig/linux-user/elfload.c	2009-03-21 19:05:41.000000000 -0400
-+++ qemu-0.10.1.tracing/linux-user/elfload.c	2009-09-11 09:49:48.270714000 -0400
++++ qemu-0.10.1/linux-user/elfload.c	2010-12-15 14:34:06.000000000 -0500
 @@ -1030,18 +1030,22 @@
  }
  
@@ -235,9 +314,9 @@ diff -rbu qemu-0.10.1.orig/linux-user/elfload.c qemu-0.10.1.tracing/linux-user/e
  
      if (interpreter_type != INTERPRETER_AOUT) close(bprm->fd);
      info->personality = (ibcs2_interpreter ? PER_SVR4 : PER_LINUX);
-diff -rbu qemu-0.10.1.orig/linux-user/main.c qemu-0.10.1.tracing/linux-user/main.c
+diff -Naur qemu-0.10.1.orig/linux-user/main.c qemu-0.10.1/linux-user/main.c
 --- qemu-0.10.1.orig/linux-user/main.c	2009-03-21 19:05:42.000000000 -0400
-+++ qemu-0.10.1.tracing/linux-user/main.c	2009-09-11 09:30:07.557090000 -0400
++++ qemu-0.10.1/linux-user/main.c	2010-12-15 14:34:06.000000000 -0500
 @@ -2351,7 +2351,25 @@
      filename = argv[optind];
      exec_path = argv[optind];
@@ -265,3 +344,47 @@ diff -rbu qemu-0.10.1.orig/linux-user/main.c qemu-0.10.1.tracing/linux-user/main
      memset(regs, 0, sizeof(struct target_pt_regs));
  
      /* Zero out image_info */
+diff -Naur qemu-0.10.1.orig/target-arm/cpu.h qemu-0.10.1/target-arm/cpu.h
+--- qemu-0.10.1.orig/target-arm/cpu.h	2009-03-21 19:05:47.000000000 -0400
++++ qemu-0.10.1/target-arm/cpu.h	2010-12-15 14:34:06.000000000 -0500
+@@ -446,4 +446,11 @@
+         *flags |= (1 << 7);
+ }
+ 
++
++/* LOCALMOD-START */
++static inline  target_ulong cpu_get_pc(CPUState *env) {
++  return  env->regs[15];
++}
++/* LOCALMOD-END */
++
+ #endif
+diff -Naur qemu-0.10.1.orig/x86_64.ld qemu-0.10.1/x86_64.ld
+--- qemu-0.10.1.orig/x86_64.ld	2009-03-21 19:05:48.000000000 -0400
++++ qemu-0.10.1/x86_64.ld	2010-12-15 14:34:06.000000000 -0500
+@@ -36,8 +36,23 @@
+   .rela.got       : { *(.rela.got) }
+   .rel.bss        : { *(.rel.bss .rel.bss.* .rel.gnu.linkonce.b.*) }
+   .rela.bss       : { *(.rela.bss .rela.bss.* .rela.gnu.linkonce.b.*) }
+-  .rel.plt        : { *(.rel.plt) }
+-  .rela.plt       : { *(.rela.plt) }
++  /* LOCALMOD-START */
++  .rel.plt       : 
++  {
++    PROVIDE_HIDDEN (__rel_iplt_start = .);
++    *(.rel.plt)
++    *(.rel.iplt)
++    PROVIDE_HIDDEN (__rel_iplt_end = .);
++  }
++
++  .rela.plt      : 
++  {
++    *(.rela.plt)
++    PROVIDE_HIDDEN (__rela_iplt_start = .);
++    *(.rela.iplt)
++    PROVIDE_HIDDEN (__rela_iplt_end = .);
++  }
++   /* LOCALMOD-END */
+   .init           :
+   {
+     KEEP (*(.init))
