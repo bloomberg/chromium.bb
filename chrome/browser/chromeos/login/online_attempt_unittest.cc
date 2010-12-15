@@ -137,7 +137,7 @@ TEST_F(OnlineAttemptTest, LoginCancelRetry) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableFunction(&OnlineAttemptTest::RunThreadTest,
-                          attempt_.get(), &profile));
+                          attempt_, &profile));
 
   MessageLoop::current()->Run();
 
@@ -164,7 +164,7 @@ TEST_F(OnlineAttemptTest, LoginTimeout) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableFunction(&OnlineAttemptTest::RunThreadTest,
-                          attempt_.get(), &profile));
+                          attempt_, &profile));
 
   // Post a task to cancel the login attempt.
   CancelLogin(attempt_.get());
@@ -195,7 +195,7 @@ TEST_F(OnlineAttemptTest, HostedLoginRejected) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableFunction(&OnlineAttemptTest::RunThreadTest,
-                          attempt_.get(), &profile));
+                          attempt_, &profile));
 
   MessageLoop::current()->Run();
 
@@ -221,7 +221,7 @@ TEST_F(OnlineAttemptTest, FullLogin) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableFunction(&OnlineAttemptTest::RunThreadTest,
-                          attempt_.get(), &profile));
+                          attempt_, &profile));
 
   MessageLoop::current()->Run();
 
