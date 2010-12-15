@@ -19,6 +19,7 @@
 #include <string>
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/shared/platform/nacl_check.h"
@@ -46,11 +47,6 @@ static int32_t stringToInt32(char* src) {
   return strtol(src,  // NOLINT(runtime/deprecated_fn)
                 static_cast<char**>(NULL), 0);
 }
-
-// TODO(sehr): using a static jmpbuf here has several problems.  Notably we
-// cannot reliably handle errors when there are multiple plugins in the same
-// process.  Issue 605.
-PLUGIN_JMPBUF g_LoaderEnv;
 
 bool ShmFactory(void* obj, plugin::SrpcParams* params) {
   plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
@@ -140,6 +136,15 @@ bool SetSrcProperty(void* obj, plugin::SrpcParams* params) {
       SetSrcPropertyImpl(params->ins()[0]->arrays.str);
 }
 
+bool LaunchExecutableFromFd(void* obj, plugin::SrpcParams* params) {
+  PLUGIN_PRINTF(("LaunchExecutableFromFd ()\n"));
+  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
+  NaClDescRef(params->ins()[0]->u.hval);
+  nacl::scoped_ptr<nacl::DescWrapper>
+      wrapper(plugin->wrapper_factory()->MakeGeneric(params->ins()[0]->u.hval));
+  return plugin->LoadNaClModule(wrapper.get());
+}
+
 bool GetHeightProperty(void* obj, plugin::SrpcParams* params) {
   plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
   params->outs()[0]->u.ival = plugin->height();
@@ -174,11 +179,6 @@ bool SetVideoUpdateModeProperty(void* obj, plugin::SrpcParams* params) {
   plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
   plugin->set_video_update_mode(params->ins()[0]->u.ival);
   return true;
-}
-
-void SignalHandler(int value) {
-  PLUGIN_PRINTF(("Plugin::SignalHandler ()\n"));
-  PLUGIN_LONGJMP(g_LoaderEnv, value);
 }
 
 }  // namespace
@@ -259,6 +259,7 @@ void Plugin::LoadMethods() {
   // Methods supported by Plugin.
   AddMethodCall(ShmFactory, "__shmFactory", "i", "h");
   AddMethodCall(DefaultSocketAddress, "__defaultSocketAddress", "", "h");
+  AddMethodCall(LaunchExecutableFromFd, "__launchExecutableFromFd", "h", "");
   AddMethodCall(NullPluginMethod, "__nullPluginMethod", "s", "i");
   AddMethodCall(SendAsyncMessage0, "__sendAsyncMessage0", "s", "");
   AddMethodCall(SendAsyncMessage1, "__sendAsyncMessage1", "sh", "");
@@ -508,50 +509,19 @@ Plugin::~Plugin() {
                  static_cast<void*>(this)));
 }
 
-bool Plugin::LoadNaClModule(nacl::string full_url, nacl::string local_path) {
-  return LoadNaClModule(full_url,
-                        local_path,
-                        static_cast<StreamShmBuffer*>(NULL),
-                        NACL_NO_FILE_DESC);
-}
-
-bool Plugin::LoadNaClModule(nacl::string full_url, StreamShmBuffer* buffer) {
-  return LoadNaClModule(full_url,
-                        NACL_NO_FILE_PATH,
-                        buffer,
-                        NACL_NO_FILE_DESC);
-}
-
-bool Plugin::LoadNaClModule(nacl::string full_url, int file_desc) {
-  return LoadNaClModule(full_url,
-                        NACL_NO_FILE_PATH,
-                        static_cast<StreamShmBuffer*>(NULL),
-                        file_desc);
-}
-
-bool Plugin::LoadNaClModule(nacl::string full_url,
-                            nacl::string local_path,
-                            StreamShmBuffer* shm_buffer,
-                            int file_desc) {
-  PLUGIN_PRINTF(("Plugin::LoadNaClModule (full_url='%s')\n",
+bool Plugin::IsValidNexeOrigin(nacl::string full_url, nacl::string local_path) {
+  PLUGIN_PRINTF(("Plugin::IsValidNexeOrigin (full_url='%s')\n",
                  full_url.c_str()));
-  PLUGIN_PRINTF(("Plugin::LoadNaClModule (local_path='%s')\n",
-                 local_path.c_str()));
-  PLUGIN_PRINTF(("Plugin::LoadNaClModule (shm_buffer=%p)\n",
-                 reinterpret_cast<void*>(shm_buffer)));
-  PLUGIN_PRINTF(("Plugin::LoadNaClModule (file_desc=%d)\n",
-                 file_desc));
-
   CHECK(NACL_NO_URL != full_url);
   set_nacl_module_origin(nacl::UrlToOrigin(full_url));
   set_nacl_module_url(full_url);
   set_nacl_module_path(local_path);
 
   bool module_origin_valid = nacl::OriginIsInWhitelist(nacl_module_origin_);
-  PLUGIN_PRINTF(("Plugin::LoadNaClModule "
+  PLUGIN_PRINTF(("Plugin::IsValidNexeOrigin "
                  "(page_origin='%s', page_origin_valid=%d)\n",
                  origin_.c_str(), origin_valid_));
-  PLUGIN_PRINTF(("Plugin::LoadNaClModule "
+  PLUGIN_PRINTF(("Plugin::IsValidNexeOrigin "
                  "(nacl_origin='%s', nacl_origin_valid=%d)\n",
                  nacl_module_origin_.c_str(), module_origin_valid));
 
@@ -566,39 +536,62 @@ bool Plugin::LoadNaClModule(nacl::string full_url,
     browser_interface_->AddToConsole(instance_id(), message.c_str());
     return false;
   }
+  return true;
+}
 
-  // Catch any bad accesses while loading.
-  ScopedCatchSignals sigcatcher(
-      static_cast<ScopedCatchSignals::SigHandlerType>(SignalHandler));
-  if (PLUGIN_SETJMP(g_LoaderEnv, 1)) {
+bool Plugin::LoadNaClModule(nacl::string full_url, nacl::string local_path) {
+  CHECK(local_path != NACL_NO_FILE_PATH);
+  PLUGIN_PRINTF(("Plugin::LoadNaClModule (local_path='%s')\n",
+                 local_path.c_str()));
+  if (!IsValidNexeOrigin(full_url, local_path)) {
     return false;
   }
+  nacl::scoped_ptr<nacl::DescWrapper>
+      wrapper(wrapper_factory_->OpenHostFile(local_path.c_str(), O_RDONLY, 0));
+  return LoadNaClModule(wrapper.get(), /* start_from_browser */ false);
+}
 
-  // Check ELF magic and ABI version compatibility.
-  bool might_be_elf_exe = false;
-  nacl::string error_string;
-  if (NACL_NO_FILE_PATH != local_path) {
-    CHECK(NULL == shm_buffer);
-    CHECK(NACL_NO_FILE_DESC == file_desc);
-    might_be_elf_exe = browser_interface_->MightBeElfExecutable(
-        nacl_module_path_, &error_string);
-  } else if (NULL != shm_buffer) {
-    CHECK(NACL_NO_FILE_DESC == file_desc);
-    // TODO(polina): add another MightBeElfExecutable that operates
-    // on shared memory buffers.
-    // It suffices to read out just the 1st header chunk.
-    char elf_hdr_buf[kAbiHeaderBuffer];
-    ssize_t result = shm_buffer->read(0, sizeof elf_hdr_buf, elf_hdr_buf);
-    if (sizeof elf_hdr_buf == result) {  // (const char*)(elf_hdr_buf)
-      might_be_elf_exe = browser_interface_->MightBeElfExecutable(
-          elf_hdr_buf, sizeof elf_hdr_buf, &error_string);
-    }
-  } else if (file_desc > NACL_NO_FILE_DESC) {
-    might_be_elf_exe =  browser_interface_->MightBeElfExecutable(
-        file_desc, &error_string);
-  } else {
-    NACL_NOTREACHED();
+bool Plugin::LoadNaClModule(nacl::string full_url, StreamShmBuffer* buffer) {
+  PLUGIN_PRINTF(("Plugin::LoadNaClModule (buffer=%p)\n",
+                 reinterpret_cast<void*>(buffer)));
+  if (!IsValidNexeOrigin(full_url, NACL_NO_FILE_PATH)) {
+    return false;
   }
+  int32_t size;
+  NaClDesc* shm_desc = buffer->shm(&size);
+  if (NULL == shm_desc) {
+    return false;
+  }
+  nacl::scoped_ptr<nacl::DescWrapper>
+      wrapper(wrapper_factory_->MakeGeneric(NaClDescRef(shm_desc)));
+  return LoadNaClModule(wrapper.get(), /* start_from_browser */ true);
+}
+
+bool Plugin::LoadNaClModule(nacl::string full_url, int file_desc) {
+  PLUGIN_PRINTF(("Plugin::LoadNaClModule (file_desc=%d)\n",
+                 file_desc));
+  if (!IsValidNexeOrigin(full_url, NACL_NO_FILE_PATH)) {
+    return false;
+  }
+  nacl::scoped_ptr<nacl::DescWrapper>
+      wrapper(wrapper_factory_->MakeFileDesc(file_desc, O_RDONLY));
+  // TODO(polina): switch to StartFromBrowser when we fix: 
+  // http://code.google.com/p/nativeclient/issues/detail?id=934
+  return LoadNaClModule(wrapper.get(), /* start_from_browser */ false);
+}
+
+bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper) {
+  PLUGIN_PRINTF(("Plugin::LoadNaClModule (wrapper=%p)\n",
+                 reinterpret_cast<void*>(wrapper)));
+  return LoadNaClModule(wrapper, /* start_from_browser */ false);
+}
+
+bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
+                            bool start_from_browser) {
+  // Check ELF magic and ABI version compatibility.
+  nacl::string error_string;
+  bool might_be_elf_exe =
+      browser_interface_->MightBeElfExecutable(wrapper, &error_string);
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (might_be_elf_exe=%d)\n",
                  might_be_elf_exe));
   if (!might_be_elf_exe) {
@@ -622,32 +615,12 @@ bool Plugin::LoadNaClModule(nacl::string full_url,
   }
 
   bool service_runtime_started = false;
-  if (NACL_NO_FILE_PATH != local_path) {
-    service_runtime_started = service_runtime_->StartFromCommandLine(
-        nacl_module_path_, static_cast<nacl::DescWrapper*>(NULL));
-  } else if (NULL != shm_buffer) {
-    int32_t size;
-    NaClDesc* shm_nacl_desc = shm_buffer->shm(&size);
-    PLUGIN_PRINTF(("Plugin::LoadNaClModule (shm_nacl_desc=%p)\n",
-                   reinterpret_cast<void*>(shm_nacl_desc)));
-    if (NULL == shm_nacl_desc) {
-      return false;
-    }
-    nacl::DescWrapper* wrapped_shm_desc =
-        wrapper_factory_->MakeGeneric(NaClDescRef(shm_nacl_desc));
-    service_runtime_started = service_runtime_->StartFromBrowser(
-        nacl_module_url_, wrapped_shm_desc);
-    delete wrapped_shm_desc;
-  } else if (file_desc > NACL_NO_FILE_DESC) {
-    nacl::DescWrapper* wrapped_file_desc =
-        wrapper_factory_->MakeFileDesc(file_desc, O_RDONLY);
-    // TODO(polina): switch to StartFromBrowser when we fix:
-    // http://code.google.com/p/nativeclient/issues/detail?id=934
-    service_runtime_started = service_runtime_->StartFromCommandLine(
-        NACL_NO_FILE_PATH, wrapped_file_desc);
-    delete wrapped_file_desc;
+  if (start_from_browser) {
+    service_runtime_started =
+        service_runtime_->StartFromBrowser(NACL_NO_FILE_PATH, wrapper);
   } else {
-    NACL_NOTREACHED();
+    service_runtime_started =
+        service_runtime_->StartFromCommandLine(NACL_NO_FILE_PATH, wrapper);
   }
   PLUGIN_PRINTF(("Plugin::LoadNaClModule (service_runtime_started=%d)\n",
                  service_runtime_started));

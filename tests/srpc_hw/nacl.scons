@@ -13,6 +13,7 @@ nexe = env.ComponentProgram('srpc_hw.nexe', 'srpc_hw.c',
 # needs to be different to specify different plugin content types.
 nacl_js_lib = env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js')
 env.Publish('srpc_hw.nexe', 'run', ['srpc_hw.html', nacl_js_lib])
+env.Publish('srpc_hw.nexe', 'run', ['srpc_hw_fd.html', nacl_js_lib])
 env.Publish('srpc_hw.nexe', 'run', ['srpc_hw_ppapi.html', nacl_js_lib])
 
 env.AddPrebuiltBinaryToRepository(nexe)

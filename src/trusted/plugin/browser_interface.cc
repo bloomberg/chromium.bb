@@ -17,55 +17,16 @@
 #include "native_client/src/include/nacl_elf.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
+#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/origin.h"
 
 namespace plugin {
 
-bool BrowserInterface::GetOrigin(InstanceIdentifier instance_id,
-                                 nacl::string* origin) {
-  nacl::string full_url;
-  if (GetFullURL(instance_id, &full_url)) {
-    *origin = nacl::UrlToOrigin(full_url);
-    return true;
-  } else {
-    *origin = NACL_NO_URL;
-    return false;
-  }
-}
+namespace {
 
-bool BrowserInterface::MightBeElfExecutable(const nacl::string& filename,
-                                            nacl::string* error) {
-  return MightBeElfExecutable(fopen(filename.c_str(), "rb"), error);
-}
-
-bool BrowserInterface::MightBeElfExecutable(int posix_file_desc,
-                                            nacl::string* error) {
-  // The argument is a multi-use descriptor, so it should not be closed.
-  // Make a dup to prevent that.
-  int dup_file_desc = DUP(posix_file_desc);
-  return MightBeElfExecutable(fdopen(dup_file_desc, "rb"), error);
-}
-
-// TODO(polina,sehr): move elf checking code to service_runtime.
-bool BrowserInterface::MightBeElfExecutable(FILE* file_stream,
-                                            nacl::string* error) {
-  if (file_stream == NULL) {
-    *error = "Load failed: cannot open local file for reading.";
-    return false;
-  }
-  char read_buffer[EI_NIDENT];
-  size_t read_amount = fread(read_buffer, sizeof read_buffer, 1, file_stream);
-  fclose(file_stream);  // Also closes the file descriptor associated with it.
-  if (read_amount != 1) {
-    *error = "Load failed: fread should not fail.";
-    return false;
-  }
-  return MightBeElfExecutable(read_buffer, sizeof read_buffer, error);
-}
-
-bool BrowserInterface::MightBeElfExecutable(const char* e_ident_bytes,
-                                            size_t size,
-                                            nacl::string* error) {
+bool ElfHeaderLooksValid(const char* e_ident_bytes,
+                         size_t size,
+                         nacl::string* error) {
   if (size < EI_NIDENT) {
     *error = "Load failed: file too short to be an ELF executable.";
     return false;
@@ -84,6 +45,53 @@ bool BrowserInterface::MightBeElfExecutable(const char* e_ident_bytes,
   }
   *error = NACL_NO_ERROR;
   return true;
+}
+
+}  // namespace
+
+bool BrowserInterface::GetOrigin(InstanceIdentifier instance_id,
+                                 nacl::string* origin) {
+  nacl::string full_url;
+  if (GetFullURL(instance_id, &full_url)) {
+    *origin = nacl::UrlToOrigin(full_url);
+    return true;
+  } else {
+    *origin = NACL_NO_URL;
+    return false;
+  }
+}
+
+bool BrowserInterface::MightBeElfExecutable(nacl::DescWrapper* wrapper,
+                                            nacl::string* error) {
+  if (wrapper == NULL) {
+    *error = "Load failed: bad descriptor for reading.";
+    return false;
+  }
+  if (wrapper->type_tag() == NACL_DESC_SHM) {
+    void* buf;
+    size_t size;
+    if (0 != wrapper->Map(&buf, &size)) {
+      *error = "Load failed: map should not fail.";
+      return false;
+    }
+    char* header = reinterpret_cast<char*>(buf);
+    bool might_be_elf = ElfHeaderLooksValid(header, size, error);
+    if (0 != wrapper->Unmap(buf, size)) {
+      *error = "Load failed: unmap should not fail.";
+      return false;
+    }
+    return might_be_elf;
+  } else if (wrapper->type_tag() == NACL_DESC_HOST_IO) {
+    static int const kAbiHeaderSize = sizeof(Elf_Ehdr);
+    char elf_hdr[kAbiHeaderSize];
+    if (kAbiHeaderSize > wrapper->Read(elf_hdr, sizeof elf_hdr)) {
+      *error = "Load failed: read should not fail.";
+      return false;
+    }
+    return ElfHeaderLooksValid(elf_hdr, kAbiHeaderSize, error);
+  } else {
+    NACL_NOTREACHED();
+  }
 }
 
 }  // namespace plugin

@@ -200,7 +200,7 @@ bool NPVariantObjectLength(const NPVariant* variant,
     return false;
   }
   // Ensure that the length property was set to an integer value.
-  if (!NPVARIANT_IS_INT32(nplength)) {
+  if (!NPVARIANT_IS_INT32(nplength) && !NPVARIANT_IS_DOUBLE(nplength)) {
     NPN_ReleaseVariantValue(&nplength);
     return false;
   }

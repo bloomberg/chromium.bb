@@ -21,6 +21,7 @@
 #include "native_client/src/trusted/plugin/utility.h"
 
 namespace nacl {
+class DescWrapper;
 class DescWrapperFactory;
 }  // namespace nacl
 
@@ -33,6 +34,9 @@ class Plugin : public PortableHandle {
  public:
   void Invalidate();
 
+  // Check that full_url meets the origin requirements for loading a nexe.
+  bool IsValidNexeOrigin(nacl::string full_url, nacl::string local_path);
+
   // Load support.
   // NaCl module can be loaded given a local file name, a shared memory buffer,
   // or a POSIX file descriptor. The functions update nacl_module_origin() and
@@ -40,6 +44,7 @@ class Plugin : public PortableHandle {
   bool LoadNaClModule(nacl::string full_url, nacl::string local_path);
   bool LoadNaClModule(nacl::string full_url, StreamShmBuffer* shm_buffer);
   bool LoadNaClModule(nacl::string full_url, int file_desc);
+  bool LoadNaClModule(nacl::DescWrapper* wrapper);
 
   // Returns the argument value for the specified key, or NULL if not found.
   // The callee retains ownership of the result.
@@ -163,12 +168,7 @@ class Plugin : public PortableHandle {
   NACL_DISALLOW_COPY_AND_ASSIGN(Plugin);
 
   // Helper function that consolidates all types of nacl module loads.
-  // The |full_url| is applicable to any loading approach and should always
-  // be set. The other 3 arguments are mutually exclusive.
-  bool LoadNaClModule(nacl::string full_url,
-                      nacl::string local_path,
-                      StreamShmBuffer* shm_buffer,
-                      int posix_file_desc);
+  bool LoadNaClModule(nacl::DescWrapper* wrapper, bool start_from_browser);
 
   InstanceIdentifier instance_id_;
   BrowserInterface* browser_interface_;
