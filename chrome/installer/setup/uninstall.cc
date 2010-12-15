@@ -540,8 +540,7 @@ InstallStatus UninstallChrome(const FilePath& setup_path,
 
   // Get the version of installed Chrome (if any)
   scoped_ptr<installer::Version>
-      installed_version(InstallUtil::GetChromeVersion(browser_dist,
-                                                      product.system_level()));
+      installed_version(product.GetInstalledVersion());
 
   // Chrome is not in use so lets uninstall Chrome by deleting various files
   // and registry entries. Here we will just make best effort and keep going

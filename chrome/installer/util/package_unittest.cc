@@ -8,6 +8,7 @@
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/package.h"
+#include "chrome/installer/util/package_properties.h"
 #include "chrome/installer/util/product.h"
 #include "chrome/installer/util/product_unittest.h"
 #include "chrome/installer/util/util_constants.h"
@@ -15,6 +16,8 @@
 
 using base::win::RegKey;
 using base::win::ScopedHandle;
+using installer::ChromePackageProperties;
+using installer::ChromiumPackageProperties;
 using installer::Package;
 using installer::Product;
 using installer::Version;
@@ -26,7 +29,10 @@ class PackageTest : public TestWithTempDirAndDeleteTempOverrideKeys {
 // Tests a few basic things of the Package class.  Makes sure that the path
 // operations are correct
 TEST_F(PackageTest, Basic) {
-  scoped_refptr<Package> package(new Package(test_dir_.path()));
+  const bool system_level = true;
+  ChromiumPackageProperties properties;
+  scoped_refptr<Package> package(new Package(system_level, test_dir_.path(),
+                                             &properties));
   EXPECT_EQ(test_dir_.path().value(), package->path().value());
   EXPECT_TRUE(package->IsEqual(test_dir_.path()));
   EXPECT_EQ(0U, package->products().size());
@@ -95,10 +101,10 @@ TEST_F(PackageTest, WithProduct) {
   BrowserDistribution* distribution =
       BrowserDistribution::GetSpecificDistribution(
           BrowserDistribution::CHROME_BROWSER, prefs);
-  scoped_refptr<Package> package(new Package(test_dir_.path()));
-  scoped_refptr<Product> product(new Product(distribution,
-                                             system_level,
-                                             package.get()));
+  ChromePackageProperties properties;
+  scoped_refptr<Package> package(new Package(system_level, test_dir_.path(),
+                                             &properties));
+  scoped_refptr<Product> product(new Product(distribution, package.get()));
   EXPECT_EQ(1U, package->products().size());
   EXPECT_EQ(system_level, package->system_level());
 

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/package.h"
 
@@ -22,6 +23,7 @@ namespace installer {
 
 class Product;
 class Package;
+class PackageProperties;
 class Version;
 
 typedef std::vector<scoped_refptr<Package> > Packages;
@@ -47,15 +49,10 @@ void WriteInstallerResult(const Products& products,
 // distribution specific functionality.
 class Product : public base::RefCounted<Product> {
  public:
-  Product(BrowserDistribution* distribution, bool system_level,
-          Package* installation_package);
+  Product(BrowserDistribution* distribution, Package* installation_package);
 
   BrowserDistribution* distribution() const {
     return distribution_;
-  }
-
-  bool system_level() const {
-    return system_level_;
   }
 
   // Returns the install package object for the installation of this product.
@@ -63,6 +60,11 @@ class Product : public base::RefCounted<Product> {
   // wide location (ProgramFiles\Google). Otherwise it returns a package in a
   // user specific location (Users\<user>\Local Settings...)
   const Package& package() const;
+
+  // Convenience getter for package().system_level().
+  bool system_level() const {
+    return package().system_level();
+  }
 
   // Returns the path to the directory that holds the user data.  This is always
   // inside "Users\<user>\Local Settings".  Note that this is the default user
@@ -108,7 +110,6 @@ class Product : public base::RefCounted<Product> {
  protected:
   BrowserDistribution* distribution_;
   scoped_refptr<Package> package_;
-  bool system_level_;
   mutable enum MsiState {
     MSI_NOT_CHECKED,
     IS_MSI,
@@ -146,6 +147,7 @@ class ProductPackageMapping {
   bool system_level_;
   Packages packages_;
   Products products_;
+  scoped_ptr<PackageProperties> package_properties_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProductPackageMapping);

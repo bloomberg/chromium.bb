@@ -8,11 +8,15 @@
 #include "base/scoped_handle.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "chrome/installer/util/package.h"
+#include "chrome/installer/util/package_properties.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/product.h"
 
 using base::win::RegKey;
 using base::win::ScopedHandle;
+using installer::ChromePackageProperties;
+using installer::ChromiumPackageProperties;
 using installer::Package;
 using installer::Product;
 using installer::ProductPackageMapping;
@@ -83,11 +87,11 @@ TEST_F(ProductTest, ProductInstallBasic) {
   BrowserDistribution* distribution =
       BrowserDistribution::GetSpecificDistribution(
           BrowserDistribution::CHROME_BROWSER, prefs);
-  scoped_refptr<Package> package(new Package(test_dir_.path()));
-  scoped_refptr<Product> product(new Product(distribution, system_level,
-                                             package.get()));
+  ChromePackageProperties properties;
+  scoped_refptr<Package> package(new Package(system_level, test_dir_.path(),
+                                             &properties));
+  scoped_refptr<Product> product(new Product(distribution, package.get()));
 
-  EXPECT_EQ(system_level, product->system_level());
   FilePath user_data(product->GetUserDataPath());
   EXPECT_FALSE(user_data.empty());
   EXPECT_NE(std::wstring::npos,
@@ -115,8 +119,8 @@ TEST_F(ProductTest, ProductInstallBasic) {
     // Set the MSI marker, delete the objects, create new ones and verify
     // that we now see the MSI marker.
     EXPECT_TRUE(product->SetMsiMarker(true));
-    package = new Package(test_dir_.path());
-    product = new Product(distribution, system_level, package.get());
+    package = new Package(system_level, test_dir_.path(), &properties);
+    product = new Product(distribution, package.get());
     EXPECT_TRUE(product->IsMsi());
 
     // See if WriteInstallerResult writes anything.

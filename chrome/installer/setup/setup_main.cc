@@ -29,16 +29,17 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
 #include "chrome/installer/util/delete_tree_work_item.h"
+#include "chrome/installer/util/google_update_settings.h"
+#include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/html_dialog.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/logging_installer.h"
 #include "chrome/installer/util/lzma_util.h"
-#include "chrome/installer/util/google_update_settings.h"
-#include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
+#include "chrome/installer/util/package_properties.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 
@@ -172,6 +173,7 @@ bool CheckPreInstallConditions(const Package& installation,
   DCHECK(products.size());
 
   bool is_first_install = true;
+  bool system_level = installation.system_level();
 
   for (size_t i = 0; i < products.size(); ++i) {
     const Product* product = products[i];
@@ -184,17 +186,17 @@ bool CheckPreInstallConditions(const Package& installation,
 
     // Check to avoid simultaneous per-user and per-machine installs.
     scoped_ptr<Version> chrome_version(
-        InstallUtil::GetChromeVersion(browser_dist, !product->system_level()));
+        InstallUtil::GetChromeVersion(browser_dist, !system_level));
 
     if (chrome_version.get()) {
       LOG(ERROR) << "Already installed version " << chrome_version->GetString()
                  << " conflicts with the current install mode.";
-      if (!product->system_level() && is_first_install) {
+      if (!system_level && is_first_install) {
         // This is user-level install and there is a system-level chrome
         // installation. Instruct Omaha to launch the existing one. There
         // should be no error dialog.
-        FilePath chrome_exe(installer::GetChromeInstallPath(
-            !product->system_level(), browser_dist));
+        FilePath chrome_exe(installer::GetChromeInstallPath(!system_level,
+                                                            browser_dist));
         if (chrome_exe.empty()) {
           // If we failed to construct install path. Give up.
           status = installer::OS_ERROR;
@@ -220,12 +222,10 @@ bool CheckPreInstallConditions(const Package& installation,
 
       // This is an update, not an install. Omaha should know the difference
       // and not show a dialog.
-      status = product->system_level() ?
-          installer::USER_LEVEL_INSTALL_EXISTS :
-          installer::SYSTEM_LEVEL_INSTALL_EXISTS;
-      int str_id = product->system_level() ?
-          IDS_INSTALL_USER_LEVEL_EXISTS_BASE :
-          IDS_INSTALL_SYSTEM_LEVEL_EXISTS_BASE;
+      status = system_level ? installer::USER_LEVEL_INSTALL_EXISTS :
+                              installer::SYSTEM_LEVEL_INSTALL_EXISTS;
+      int str_id = system_level ? IDS_INSTALL_USER_LEVEL_EXISTS_BASE :
+                                  IDS_INSTALL_SYSTEM_LEVEL_EXISTS_BASE;
       product->WriteInstallerResult(status, str_id, NULL);
       return false;
     }
@@ -384,7 +384,7 @@ installer::InstallStatus InstallChrome(const CommandLine& cmd_line,
             prefs.GetBool(
                 installer::master_preferences::kDoNotLaunchChrome,
                 &do_not_launch_chrome);
-            if (!chrome_install->system_level() && !do_not_launch_chrome)
+            if (!installation.system_level() && !do_not_launch_chrome)
               chrome_install->LaunchChrome();
           }
         } else if ((install_status == installer::NEW_VERSION_UPDATED) ||
@@ -406,7 +406,7 @@ installer::InstallStatus InstallChrome(const CommandLine& cmd_line,
     for (size_t i = 0; i < products.size(); ++i) {
       const Product* product = products[i];
       product->distribution()->LaunchUserExperiment(install_status,
-          *installer_version, *product, product->system_level());
+          *installer_version, *product, installation.system_level());
     }
   }
 

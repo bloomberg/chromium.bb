@@ -105,6 +105,8 @@
             'installer/util/master_preferences.h',
             'installer/util/package.h',
             'installer/util/package.cc',
+            'installer/util/package_properties.h',
+            'installer/util/package_properties.cc',
             'installer/util/product.h',
             'installer/util/product.cc',
             'installer/util/shell_util.cc',

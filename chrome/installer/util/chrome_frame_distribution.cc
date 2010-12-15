@@ -36,13 +36,13 @@ std::wstring ChromeFrameDistribution::GetAppGuid() {
 
 std::wstring ChromeFrameDistribution::GetApplicationName() {
   const std::wstring& product_name =
-    installer::GetLocalizedString(IDS_PRODUCT_FRAME_NAME_BASE);
+      installer::GetLocalizedString(IDS_PRODUCT_FRAME_NAME_BASE);
   return product_name;
 }
 
 std::wstring ChromeFrameDistribution::GetAlternateApplicationName() {
   const std::wstring& product_name =
-    installer::GetLocalizedString(IDS_PRODUCT_FRAME_NAME_BASE);
+      installer::GetLocalizedString(IDS_PRODUCT_FRAME_NAME_BASE);
   return product_name;
 }
 

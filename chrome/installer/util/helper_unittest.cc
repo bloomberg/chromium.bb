@@ -13,10 +13,12 @@
 #include "base/string_util.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/package.h"
+#include "chrome/installer/util/package_properties.h"
 #include "chrome/installer/util/version.h"
 #include "chrome/installer/util/work_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using installer::ChromePackageProperties;
 using installer::Package;
 using installer::Version;
 
@@ -109,7 +111,8 @@ TEST_F(SetupHelperTest, Delete) {
   ASSERT_TRUE(file_util::PathExists(chrome_dll_4));
 
   scoped_ptr<Version> latest_version(Version::GetVersionFromString(L"1.0.4.0"));
-  scoped_refptr<Package> package(new Package(chrome_dir));
+  ChromePackageProperties properties;
+  scoped_refptr<Package> package(new Package(true, chrome_dir, &properties));
   package->RemoveOldVersionDirectories(*latest_version.get());
 
   // old versions should be gone
@@ -183,7 +186,9 @@ TEST_F(SetupHelperTest, DeleteInUsed) {
   ASSERT_TRUE(file_util::PathExists(chrome_dll_4));
 
   scoped_ptr<Version> latest_version(Version::GetVersionFromString(L"1.0.4.0"));
-  scoped_refptr<Package> install_path(new Package(chrome_dir));
+  ChromePackageProperties properties;
+  scoped_refptr<Package> install_path(new Package(true, chrome_dir,
+                                                  &properties));
   install_path->RemoveOldVersionDirectories(*latest_version.get());
 
   // old versions not in used should be gone

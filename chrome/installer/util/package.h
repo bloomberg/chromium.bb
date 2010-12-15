@@ -17,6 +17,7 @@ namespace installer {
 
 class Product;
 class Version;
+class PackageProperties;
 
 typedef std::vector<scoped_refptr<const Product> > Products;
 
@@ -25,21 +26,24 @@ typedef std::vector<scoped_refptr<const Product> > Products;
 // not vice versa.
 class Package : public base::RefCounted<Package> {
  public:
-  explicit Package(const FilePath& path);
+  Package(bool system_level, const FilePath& path,
+          PackageProperties* properties);
 
   // Returns the path of the installation folder.
   const FilePath& path() const;
 
   const Products& products() const;
 
+  PackageProperties* properties() const;
+
   bool system_level() const;
 
   bool IsEqual(const FilePath& path) const;
 
-  void AssociateProduct(const Product* distribution);
+  void AssociateProduct(const Product* product);
 
   // Get path to the installer under Chrome version folder
-  // (for example <path>\Google\Chrome\<Version>\installer)
+  // (for example <path>\Google\Chrome\Application\<Version>\Installer)
   FilePath GetInstallerDirectory(const Version& version) const;
 
   // Figure out the oldest currently installed version for this package
@@ -58,8 +62,10 @@ class Package : public base::RefCounted<Package> {
   void RemoveOldVersionDirectories(const Version& latest_version) const;
 
  protected:
+  bool system_level_;
   FilePath path_;
   Products products_;
+  PackageProperties* properties_;  // Weak reference.
 
  private:
   friend class base::RefCounted<Package>;

@@ -79,10 +79,10 @@ class GoogleChromeDistribution : public BrowserDistribution {
   virtual void InactiveUserToastExperiment(int flavor,
       const installer::Product& installation);
 
-  std::wstring product_guid() { return product_guid_; }
+  const std::wstring& product_guid() { return product_guid_; }
 
  protected:
-  void set_product_guid(std::wstring guid) { product_guid_ = guid; }
+  void set_product_guid(const std::wstring& guid) { product_guid_ = guid; }
 
   // Disallow construction from others.
   explicit GoogleChromeDistribution(

@@ -9,13 +9,17 @@
 #include "base/win/registry.h"
 #include "chrome/installer/util/delete_tree_work_item.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "chrome/installer/util/package_properties.h"
 #include "chrome/installer/util/product.h"
 
 using base::win::RegKey;
 
 namespace installer {
 
-Package::Package(const FilePath& path) : path_(path) {
+Package::Package(bool system_level, const FilePath& path,
+                 PackageProperties* properties)
+    : system_level_(system_level), path_(path), properties_(properties) {
+  DCHECK(properties_);
 }
 
 Package::~Package() {
@@ -29,6 +33,10 @@ const Products& Package::products() const {
   return products_;
 }
 
+PackageProperties* Package::properties() const {
+  return properties_;
+}
+
 bool Package::IsEqual(const FilePath& path) const {
   return FilePath::CompareEqualIgnoreCase(path_.value(), path.value());
 }
@@ -36,7 +44,6 @@ bool Package::IsEqual(const FilePath& path) const {
 void Package::AssociateProduct(const Product* product) {
 #ifndef NDEBUG
   for (size_t i = 0; i < products_.size(); ++i) {
-    DCHECK_EQ(product->system_level(), products_[i]->system_level());
     DCHECK_NE(product->distribution()->GetType(),
               products_[i]->distribution()->GetType());
   }
@@ -45,14 +52,7 @@ void Package::AssociateProduct(const Product* product) {
 }
 
 bool Package::system_level() const {
-  // Convenience getter that returns the system_level value of the first
-  // product for this folder.  All distributions must have the same
-  // value, so the function also checks this in debug builds.
-  if (!products_.size()) {
-    NOTREACHED() << "this should not be possible";
-    return false;
-  }
-  return products_[0]->system_level();
+  return system_level_;
 }
 
 FilePath Package::GetInstallerDirectory(
@@ -68,10 +68,10 @@ Version* Package::GetCurrentVersion() const {
   FilePath new_chrome_exe(path_.Append(installer::kChromeNewExe));
   bool new_chrome_exists = file_util::PathExists(new_chrome_exe);
 
+  HKEY root = system_level_ ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+
   for (size_t i = 0; i < products_.size(); ++i) {
     const Product* product = products_[i];
-    HKEY root = product->system_level() ? HKEY_LOCAL_MACHINE :
-                                          HKEY_CURRENT_USER;
     RegKey chrome_key(root, product->distribution()->GetVersionKey().c_str(),
                       KEY_READ);
     std::wstring version;

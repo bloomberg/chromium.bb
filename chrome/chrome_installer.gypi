@@ -93,6 +93,7 @@
             'installer/util/lzma_util_unittest.cc',
             'installer/util/master_preferences_unittest.cc',
             'installer/util/move_tree_work_item_unittest.cc',
+            'installer/util/package_properties_unittest.cc',
             'installer/util/package_unittest.cc',
             'installer/util/product_unittest.h',
             'installer/util/product_unittest.cc',

@@ -16,6 +16,7 @@
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/package.h"
+#include "chrome/installer/util/package_properties.h"
 #include "chrome/installer/util/work_item_list.h"
 
 using base::win::RegKey;
@@ -55,10 +56,8 @@ void WriteInstallerResult(const Products& products,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Product::Product(BrowserDistribution* distribution, bool system_level,
-                 Package* package)
+Product::Product(BrowserDistribution* distribution, Package* package)
     : distribution_(distribution),
-      system_level_(system_level),
       package_(package),
       msi_(MSI_NOT_CHECKED) {
   package_->AssociateProduct(this);
@@ -136,7 +135,7 @@ bool Product::IsMsi() const {
 
     if (!is_msi) {
       // We didn't find it in the preferences, try looking in the registry.
-      HKEY reg_root = system_level_ ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+      HKEY reg_root = system_level() ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
       RegKey key;
       if (key.Open(reg_root, distribution_->GetStateKey().c_str(), KEY_READ)) {
         DWORD msi_value;
@@ -154,7 +153,7 @@ bool Product::IsMsi() const {
 
 bool Product::SetMsiMarker(bool set) const {
   bool success = false;
-  HKEY reg_root = system_level_ ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  HKEY reg_root = system_level() ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   RegKey client_state_key;
   if (client_state_key.Open(reg_root, distribution_->GetStateKey().c_str(),
                             KEY_READ | KEY_WRITE)) {
@@ -174,7 +173,7 @@ bool Product::SetMsiMarker(bool set) const {
 void Product::WriteInstallerResult(
     installer::InstallStatus status, int string_resource_id,
     const std::wstring* const launch_cmd) const {
-  HKEY root = system_level_ ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  HKEY root = system_level() ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   std::wstring key(distribution_->GetStateKey());
   int installer_result = distribution_->GetInstallReturnCode(status) == 0 ?
                          0 : 1;
@@ -200,12 +199,17 @@ void Product::WriteInstallerResult(
 }
 
 Version* Product::GetInstalledVersion() const {
-  return InstallUtil::GetChromeVersion(distribution_, system_level_);
+  return InstallUtil::GetChromeVersion(distribution_, system_level());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 ProductPackageMapping::ProductPackageMapping(bool system_level)
-    : system_level_(system_level) {
+#if defined(GOOGLE_CHROME_BUILD)
+    : package_properties_(new ChromePackageProperties()),
+#else
+    : package_properties_(new ChromiumPackageProperties()),
+#endif
+      system_level_(system_level) {
 }
 
 const Packages& ProductPackageMapping::packages() const {
@@ -234,12 +238,12 @@ bool ProductPackageMapping::AddDistribution(BrowserDistribution* distribution) {
 
   if (!target_package.get()) {
     // create new one and add.
-    target_package = new Package(install_package);
+    target_package = new Package(system_level_, install_package,
+                                 package_properties_.get());
     packages_.push_back(target_package);
   }
 
-  scoped_refptr<Product> product(
-      new Product(distribution, system_level_, target_package));
+  scoped_refptr<Product> product(new Product(distribution, target_package));
 #ifndef NDEBUG
   for (size_t i = 0; i < products_.size(); ++i) {
     DCHECK_EQ(product->IsMsi(), products_[i]->IsMsi());

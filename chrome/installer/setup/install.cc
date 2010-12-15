@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -24,6 +25,7 @@
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/package.h"
+#include "chrome/installer/util/package_properties.h"
 #include "chrome/installer/util/product.h"
 #include "chrome/installer/util/set_reg_value_work_item.h"
 #include "chrome/installer/util/shell_util.h"
@@ -39,6 +41,7 @@ namespace {
 using installer::Products;
 using installer::Product;
 using installer::Package;
+using installer::PackageProperties;
 using installer::Version;
 
 void AddChromeToMediaPlayerList() {
@@ -269,8 +272,8 @@ bool CreateOrUpdateChromeShortcuts(const FilePath& setup_path,
 #endif
 
   FilePath shortcut_path;
-  int dir_enum = product.system_level() ? base::DIR_COMMON_START_MENU :
-                                          base::DIR_START_MENU;
+  int dir_enum = product.system_level() ?
+      base::DIR_COMMON_START_MENU : base::DIR_START_MENU;
   if (!PathService::Get(dir_enum, &shortcut_path)) {
     LOG(ERROR) << "Failed to get location for shortcut.";
     return false;
@@ -412,7 +415,8 @@ bool RegisterComDlls(const Package& install,
 //   it if not.
 // If these operations are successful, the function returns true, otherwise
 // false.
-bool DoPostInstallTasks(const FilePath& setup_path,
+bool DoPostInstallTasks(bool multi_install,
+                        const FilePath& setup_path,
                         const FilePath& new_chrome_exe,
                         const Version* current_version,
                         const Version& new_version,
@@ -442,9 +446,10 @@ bool DoPostInstallTasks(const FilePath& setup_path,
     if (InstallUtil::IsChromeSxSProcess())
       rename.AppendSwitch(installer::switches::kChromeSxS);
 
+    std::wstring version_key;
     for (size_t i = 0; i < products.size(); ++i) {
       BrowserDistribution* dist = products[i]->distribution();
-      std::wstring version_key(dist->GetVersionKey());
+      version_key = dist->GetVersionKey();
       inuse_list->AddSetRegValueWorkItem(root, version_key,
                                          google_update::kRegOldVersionField,
                                          current_version->GetString(), true);
@@ -457,6 +462,17 @@ bool DoPostInstallTasks(const FilePath& setup_path,
       inuse_list->AddSetRegValueWorkItem(root, version_key,
                                          google_update::kRegRenameCmdField,
                                          rename.command_line_string(), true);
+    }
+
+    if (multi_install) {
+      PackageProperties* props = package.properties();
+      if (props->ReceivesUpdates()) {
+        inuse_list->AddSetRegValueWorkItem(root, props->GetVersionKey(),
+                                           google_update::kRegOldVersionField,
+                                           current_version->GetString(), true);
+        // TODO(tommi): We should move the rename command here.  We also need to
+        // update Upgrade::SwapNewChromeExeIfPresent.
+      }
     }
 
     if (!inuse_list->Do()) {
@@ -577,6 +593,7 @@ void RegisterChromeOnMachine(const Product& product,
 // (typical new install), the function creates package during install
 // and removes the whole directory during rollback.
 installer::InstallStatus InstallNewVersion(
+    bool multi_install,
     const FilePath& setup_path,
     const FilePath& archive_path,
     const FilePath& src_path,
@@ -651,6 +668,9 @@ installer::InstallStatus InstallNewVersion(
   AddInstallerCopyTasks(setup_path, archive_path, temp_dir, new_version,
                         install_list.get(), package);
 
+  HKEY root = package.system_level() ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+
+  std::wstring version_key;
   for (size_t i = 0; i < products.size(); ++i) {
     const Product* product = products[i];
 
@@ -659,9 +679,7 @@ installer::InstallStatus InstallNewVersion(
 
     // Create Version key for each distribution (if not already present) and set
     // the new product version as the last step.
-    HKEY root = product->system_level() ? HKEY_LOCAL_MACHINE :
-                                          HKEY_CURRENT_USER;
-    std::wstring version_key(product->distribution()->GetVersionKey());
+    version_key = product->distribution()->GetVersionKey();
     install_list->AddCreateRegKeyWorkItem(root, version_key);
 
     std::wstring product_name(product->distribution()->GetAppShortCutName());
@@ -679,9 +697,25 @@ installer::InstallStatus InstallNewVersion(
                                          true);    // overwrite version
   }
 
+  if (multi_install) {
+    PackageProperties* props = package.properties();
+    if (props->ReceivesUpdates()) {
+      version_key = props->GetVersionKey();
+      install_list->AddCreateRegKeyWorkItem(root, version_key);
+      install_list->AddSetRegValueWorkItem(root, version_key,
+                                           google_update::kRegVersionField,
+                                           new_version.GetString(),
+                                           true);    // overwrite version
+      install_list->AddSetRegValueWorkItem(root, version_key,
+          google_update::kRegNameField,
+          ASCIIToWide(installer::PackageProperties::kPackageProductName),
+          true);    // overwrite name also
+    }
+  }
+
   if (!install_list->Do() ||
-      !DoPostInstallTasks(setup_path, new_chrome_exe, current_version->get(),
-                          new_version, package)) {
+      !DoPostInstallTasks(multi_install, setup_path, new_chrome_exe,
+                          current_version->get(), new_version, package)) {
     installer::InstallStatus result =
         file_util::PathExists(new_chrome_exe) && current_version->get() &&
         new_version.IsEqual(*current_version->get()) ?
@@ -735,8 +769,8 @@ installer::InstallStatus InstallOrUpdateChrome(
   src_path = src_path.Append(kInstallSourceDir).Append(kInstallSourceChromeDir);
 
   scoped_ptr<Version> existing_version;
-  installer::InstallStatus result = InstallNewVersion(setup_path,
-      archive_path, src_path, install_temp_path, new_version,
+  installer::InstallStatus result = InstallNewVersion(prefs.is_multi_install(),
+      setup_path, archive_path, src_path, install_temp_path, new_version,
       &existing_version, install);
 
   if (!BrowserDistribution::GetInstallReturnCode(result)) {
