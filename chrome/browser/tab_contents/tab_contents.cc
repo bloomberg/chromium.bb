@@ -1523,8 +1523,14 @@ int TabContents::GetZoomPercent(bool* enable_increment,
 
 void TabContents::ViewSource()
 {
-  if (delegate_)
-    delegate_->ViewSourceForTab(this);
+  if (!delegate_)
+    return;
+
+  NavigationEntry* active_entry = controller().GetActiveEntry();
+  if (!active_entry)
+    return;
+
+  delegate_->ViewSourceForTab(this, active_entry->url());
 }
 
 // Notifies the RenderWidgetHost instance about the fact that the page is

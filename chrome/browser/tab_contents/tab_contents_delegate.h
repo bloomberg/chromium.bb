@@ -249,8 +249,9 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
                             const NavigationEntry::SSLStatus& ssl,
                             bool show_history);
 
-  // Opens source view for given tab contents.
-  virtual void ViewSourceForTab(TabContents* source);
+  // Opens source view for given tab contents that is navigated to the given
+  // page url.
+  virtual void ViewSourceForTab(TabContents* source, const GURL& page_url);
 
   // Allows delegates to handle keyboard events before sending to the renderer.
   // Returns true if the |event| was handled. Otherwise, if the |event| would be

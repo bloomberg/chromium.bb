@@ -3051,9 +3051,9 @@ void Browser::ShowPageInfo(Profile* profile,
   window()->ShowPageInfo(profile, url, ssl, show_history);
 }
 
-void Browser::ViewSourceForTab(TabContents* contents) {
-  DCHECK(contents);
-  int index = tabstrip_model()->GetWrapperIndex(contents);
+void Browser::ViewSourceForTab(TabContents* source, const GURL& page_url) {
+  DCHECK(source);
+  int index = tabstrip_model()->GetWrapperIndex(source);
   TabContentsWrapper* wrapper = tabstrip_model()->GetTabContentsAt(index);
   ViewSource(wrapper);
 }
@@ -4133,6 +4133,9 @@ void Browser::ViewSource(TabContentsWrapper* contents) {
   view_source_contents->controller().PruneAllButActive();
   NavigationEntry* active_entry =
       view_source_contents->controller().GetActiveEntry();
+  if (!active_entry)
+    return;
+
   GURL url = GURL(chrome::kViewSourceScheme + std::string(":") +
       active_entry->url().spec());
   active_entry->set_virtual_url(url);

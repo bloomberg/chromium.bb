@@ -778,7 +778,7 @@ class Browser : public TabHandlerDelegate,
                             const GURL& url,
                             const NavigationEntry::SSLStatus& ssl,
                             bool show_history);
-  virtual void ViewSourceForTab(TabContents* source);
+  virtual void ViewSourceForTab(TabContents* source, const GURL& page_url);
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                         bool* is_keyboard_shortcut);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
