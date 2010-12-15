@@ -21,6 +21,14 @@ const char* PepperPluginRegistry::kPDFPluginExtension = "pdf";
 const char* PepperPluginRegistry::kPDFPluginDescription =
     "Portable Document Format";
 
+const char* PepperPluginRegistry::kNaClPluginName = "Chrome NaCl";
+const char* PepperPluginRegistry::kNaClPluginMimeType =
+    "application/x-ppapi-nacl-srpc";
+const char* PepperPluginRegistry::kNaClPluginExtension = "nexe";
+const char* PepperPluginRegistry::kNaClPluginDescription =
+    "Native Client Executable";
+
+
 PepperPluginInfo::PepperPluginInfo()
     : is_internal(false),
       is_out_of_process(false) {
@@ -138,6 +146,27 @@ void PepperPluginRegistry::GetExtraPlugins(
       plugins->push_back(pdf);
 
       skip_pdf_file_check = true;
+    }
+  }
+
+  // Verify that we enable nacl on the command line.  The name of the
+  // switch varies between the browser and renderer process.
+  bool enable_nacl =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNaCl) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kInternalNaCl);
+
+  static bool skip_nacl_file_check = false;
+  if (enable_nacl && PathService::Get(chrome::FILE_NACL_PLUGIN, &path)) {
+    if (skip_nacl_file_check || file_util::PathExists(path)) {
+      PepperPluginInfo nacl;
+      nacl.path = path;
+      nacl.name = kNaClPluginName;
+      nacl.mime_types.push_back(kNaClPluginMimeType);
+      nacl.file_extensions = kNaClPluginExtension;
+      nacl.type_descriptions = kNaClPluginDescription;
+      plugins->push_back(nacl);
+
+      skip_nacl_file_check = true;
     }
   }
 }

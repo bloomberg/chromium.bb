@@ -40,6 +40,11 @@ class PepperPluginRegistry {
   static const char* kPDFPluginExtension;
   static const char* kPDFPluginDescription;
 
+  static const char* kNaClPluginName;
+  static const char* kNaClPluginMimeType;
+  static const char* kNaClPluginExtension;
+  static const char* kNaClPluginDescription;
+
   static PepperPluginRegistry* GetInstance();
 
   // Returns the list of known pepper plugins.  This method is static so that
