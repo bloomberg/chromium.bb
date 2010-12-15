@@ -1527,7 +1527,7 @@ bool BrowserView::GetAcceleratorForCommandId(int command_id,
   return toolbar_->GetAcceleratorForCommandId(command_id, accelerator);
 }
 
-bool BrowserView::IsLabelForCommandIdDynamic(int command_id) const {
+bool BrowserView::IsItemForCommandIdDynamic(int command_id) const {
   return command_id == IDC_RESTORE_TAB;
 }
 

@@ -26,7 +26,7 @@ class ButtonMenuItemModel {
   class Delegate {
    public:
     // Some command ids have labels that change over time.
-    virtual bool IsLabelForCommandIdDynamic(int command_id) const;
+    virtual bool IsItemForCommandIdDynamic(int command_id) const;
     virtual string16 GetLabelForCommandId(int command_id) const;
 
     // Performs the action associated with the specified command id.
@@ -49,7 +49,7 @@ class ButtonMenuItemModel {
   void AddItemWithImage(int command_id, int icon_idr);
 
   // Adds a non-clickable button with a desensitized label that doesn't do
-  // anything. Usually combined with IsLabelForCommandIdDynamic() to add
+  // anything. Usually combined with IsItemForCommandIdDynamic() to add
   // information.
   void AddButtonLabel(int command_id, int string_id);
 
@@ -66,7 +66,7 @@ class ButtonMenuItemModel {
   int GetCommandIdAt(int index) const;
 
   // Whether the label for item |index| changes.
-  bool IsLabelDynamicAt(int index) const;
+  bool IsItemDynamicAt(int index) const;
 
   // Returns the current label value for the button at |index|.
   string16 GetLabelAt(int index) const;

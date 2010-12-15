@@ -181,7 +181,7 @@ int InputMethodMenu::GetCommandIdAt(int index) const {
   return 0;  // dummy
 }
 
-bool InputMethodMenu::IsLabelDynamicAt(int index) const {
+bool InputMethodMenu::IsItemDynamicAt(int index) const {
   // Menu content for the language button could change time by time.
   return true;
 }

@@ -54,7 +54,7 @@ NotificationOptionsMenuModel::NotificationOptionsMenuModel(Balloon* balloon)
 NotificationOptionsMenuModel::~NotificationOptionsMenuModel() {
 }
 
-bool NotificationOptionsMenuModel::IsLabelForCommandIdDynamic(int command_id)
+bool NotificationOptionsMenuModel::IsItemForCommandIdDynamic(int command_id)
     const {
   return command_id == kTogglePermissionCommand ||
          command_id == kToggleExtensionCommand;

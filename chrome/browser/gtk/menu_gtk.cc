@@ -744,7 +744,7 @@ void MenuGtk::SetButtonItemInfo(GtkWidget* button, gpointer userdata) {
   int index = GPOINTER_TO_INT(g_object_get_data(
       G_OBJECT(button), "button-model-id"));
 
-  if (model->IsLabelDynamicAt(index)) {
+  if (model->IsItemDynamicAt(index)) {
     std::string label =
         gfx::ConvertAcceleratorsFromWindowsStyle(
             UTF16ToUTF8(model->GetLabelAt(index)));
@@ -803,7 +803,8 @@ void MenuGtk::SetMenuItemInfo(GtkWidget* widget, gpointer userdata) {
 
     if (model->IsVisibleAt(id)) {
       // Update the menu item label if it is dynamic.
-      if (model->IsLabelDynamicAt(id)) {
+      // TODO(atwilson): Update the icon as well (http://crbug.com/66508).
+      if (model->IsItemDynamicAt(id)) {
         std::string label =
             gfx::ConvertAcceleratorsFromWindowsStyle(
                 UTF16ToUTF8(model->GetLabelAt(id)));

@@ -221,9 +221,6 @@ WrenchMenuModel::WrenchMenuModel(menus::AcceleratorProvider* provider,
                  Source<Profile>(browser_->profile()));
   registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
                  NotificationService::AllSources());
-  registrar_.Add(this,
-                 NotificationType::BACKGROUND_PAGE_TRACKER_CHANGED,
-                 NotificationService::AllSources());
 }
 
 WrenchMenuModel::~WrenchMenuModel() {
@@ -235,13 +232,33 @@ bool WrenchMenuModel::DoesCommandIdDismissMenu(int command_id) const {
   return command_id != IDC_ZOOM_MINUS && command_id != IDC_ZOOM_PLUS;
 }
 
-bool WrenchMenuModel::IsLabelForCommandIdDynamic(int command_id) const {
+bool WrenchMenuModel::IsItemForCommandIdDynamic(int command_id) const {
   return command_id == IDC_ZOOM_PERCENT_DISPLAY ||
 #if defined(OS_MACOSX)
          command_id == IDC_FULLSCREEN ||
 #endif
          command_id == IDC_SYNC_BOOKMARKS ||
          command_id == IDC_VIEW_BACKGROUND_PAGES;
+}
+
+bool WrenchMenuModel::GetIconForCommandId(int command_id,
+                                          SkBitmap* bitmap) const {
+  switch (command_id) {
+    case IDC_VIEW_BACKGROUND_PAGES: {
+      int num_pages = BackgroundPageTracker::GetInstance()->
+          GetUnacknowledgedBackgroundPageCount();
+      if (num_pages > 0) {
+        *bitmap = GetBackgroundPageIcon();
+        return true;
+      } else {
+        // No icon.
+        return false;
+      }
+    }
+    default:
+      // No icon for other dynamic menu items.
+      return false;
+  }
 }
 
 string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
@@ -350,18 +367,6 @@ void WrenchMenuModel::Observe(NotificationType type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
   switch (type.value) {
-    case NotificationType::BACKGROUND_PAGE_TRACKER_CHANGED: {
-      int num_pages = BackgroundPageTracker::GetInstance()->
-          GetUnacknowledgedBackgroundPageCount();
-      if (num_pages > 0) {
-        SetIcon(GetIndexOfCommandId(IDC_VIEW_BACKGROUND_PAGES),
-                GetBackgroundPageIcon());
-      } else {
-        // Just set a blank icon (no icon).
-        SetIcon(GetIndexOfCommandId(IDC_VIEW_BACKGROUND_PAGES), SkBitmap());
-      }
-      break;
-    }
     case NotificationType::ZOOM_LEVEL_CHANGED:
     case NotificationType::NAV_ENTRY_COMMITTED:
       UpdateZoomControls();
@@ -481,14 +486,6 @@ void WrenchMenuModel::Build() {
   SetIcon(GetIndexOfCommandId(IDC_VIEW_INCOMPATIBILITIES),
           *rb.GetBitmapNamed(IDR_CONFLICT_MENU));
 #endif
-
-  // Add an icon to the View Background Pages item if there are unacknowledged
-  // pages.
-  if (BackgroundPageTracker::GetInstance()->
-      GetUnacknowledgedBackgroundPageCount() > 0) {
-    SetIcon(GetIndexOfCommandId(IDC_VIEW_BACKGROUND_PAGES),
-            GetBackgroundPageIcon());
-  }
 
   AddItemWithStringId(IDC_HELP_PAGE, IDS_HELP_PAGE);
   if (browser_defaults::kShowExitMenuItem) {

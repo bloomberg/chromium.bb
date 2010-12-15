@@ -34,9 +34,12 @@ class SimpleMenuModel : public MenuModel {
         int command_id,
         menus::Accelerator* accelerator) = 0;
 
-    // Some command ids have labels that change over time.
-    virtual bool IsLabelForCommandIdDynamic(int command_id) const;
+    // Some command ids have labels and icons that change over time.
+    virtual bool IsItemForCommandIdDynamic(int command_id) const;
     virtual string16 GetLabelForCommandId(int command_id) const;
+    // Gets the icon for the item with the specified id, returning true if there
+    // is an icon, false otherwise.
+    virtual bool GetIconForCommandId(int command_id, SkBitmap* icon) const;
 
     // Notifies the delegate that the item with the specified command id was
     // visually highlighted within the menu.
@@ -100,7 +103,7 @@ class SimpleMenuModel : public MenuModel {
   virtual ItemType GetTypeAt(int index) const;
   virtual int GetCommandIdAt(int index) const;
   virtual string16 GetLabelAt(int index) const;
-  virtual bool IsLabelDynamicAt(int index) const;
+  virtual bool IsItemDynamicAt(int index) const;
   virtual bool GetAcceleratorAt(int index,
                                 menus::Accelerator* accelerator) const;
   virtual bool IsItemCheckedAt(int index) const;

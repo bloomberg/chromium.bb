@@ -87,7 +87,7 @@ string16 BackForwardMenuModel::GetLabelAt(int index) const {
   return menu_text;
 }
 
-bool BackForwardMenuModel::IsLabelDynamicAt(int index) const {
+bool BackForwardMenuModel::IsItemDynamicAt(int index) const {
   // This object is only used for a single showing of a menu.
   return false;
 }

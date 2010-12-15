@@ -48,7 +48,7 @@ class BackForwardMenuModel : public menus::MenuModel {
   virtual ItemType GetTypeAt(int index) const;
   virtual int GetCommandIdAt(int index) const;
   virtual string16 GetLabelAt(int index) const;
-  virtual bool IsLabelDynamicAt(int index) const;
+  virtual bool IsItemDynamicAt(int index) const;
   virtual bool GetAcceleratorAt(int index,
                                 menus::Accelerator* accelerator) const;
   virtual bool IsItemCheckedAt(int index) const;

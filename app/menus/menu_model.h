@@ -63,10 +63,11 @@ class MenuModel {
   // Returns the label of the item at the specified index.
   virtual string16 GetLabelAt(int index) const = 0;
 
-  // Returns true if the label at the specified index can change over the course
-  // of the menu's lifetime. If this function returns true, the label of the
-  // menu item will be updated each time the menu is shown.
-  virtual bool IsLabelDynamicAt(int index) const = 0;
+  // Returns true if the menu item (label/icon) at the specified index can
+  // change over the course of the menu's lifetime. If this function returns
+  // true, the label and icon of the menu item will be updated each time the
+  // menu is shown.
+  virtual bool IsItemDynamicAt(int index) const = 0;
 
   // Returns the font use for the label at the specified index.
   // If NULL, then use default font.

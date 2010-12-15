@@ -36,7 +36,7 @@ class PowerMenuButton : public StatusAreaButton,
   virtual menus::MenuModel::ItemType GetTypeAt(int index) const;
   virtual int GetCommandIdAt(int index) const { return index; }
   virtual string16 GetLabelAt(int index) const;
-  virtual bool IsLabelDynamicAt(int index) const { return true; }
+  virtual bool IsItemDynamicAt(int index) const { return true; }
   virtual bool GetAcceleratorAt(int index,
       menus::Accelerator* accelerator) const { return false; }
   virtual bool IsItemCheckedAt(int index) const { return false; }

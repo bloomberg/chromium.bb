@@ -5,11 +5,14 @@
 #import <Cocoa/Cocoa.h>
 
 #include "app/menus/simple_menu_model.h"
+#include "app/resource_bundle.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/menu_controller.h"
+#include "grit/app_resources.h"
 #include "grit/generated_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 class MenuControllerTest : public CocoaTest {
 };
@@ -32,6 +35,29 @@ class Delegate : public menus::SimpleMenuModel::Delegate {
 
   int execute_count_;
   mutable int enable_count_;
+};
+
+// Just like Delegate, except the items are treated as "dynamic" so updates to
+// the label/icon in the model are reflected in the menu.
+class DynamicDelegate : public Delegate {
+ public:
+  DynamicDelegate() : icon_(NULL) {}
+  virtual bool IsItemForCommandIdDynamic(int command_id) const { return true; }
+  virtual string16 GetLabelForCommandId(int command_id) const { return label_; }
+  virtual bool GetIconForCommandId(int command_id, SkBitmap* icon) const {
+    if (icon_) {
+      *icon = *icon_;
+      return true;
+    } else {
+      return false;
+    }
+  }
+  void SetDynamicLabel(string16 label) { label_ = label; }
+  void SetDynamicIcon(SkBitmap* icon) { icon_ = icon; }
+
+ private:
+  string16 label_;
+  SkBitmap* icon_;
 };
 
 TEST_F(MenuControllerTest, EmptyMenu) {
@@ -194,4 +220,43 @@ TEST_F(MenuControllerTest, DefaultInitializer) {
   // Check immutability.
   model.AddItem(4, ASCIIToUTF16("four"));
   EXPECT_EQ(3, [[menu menu] numberOfItems]);
+}
+
+// Test that menus with dynamic labels actually get updated.
+TEST_F(MenuControllerTest, Dynamic) {
+  DynamicDelegate delegate;
+
+  // Create a menu containing a single item whose label is "initial" and who has
+  // no icon.
+  string16 initial = ASCIIToUTF16("initial");
+  delegate.SetDynamicLabel(initial);
+  menus::SimpleMenuModel model(&delegate);
+  model.AddItem(1, ASCIIToUTF16("foo"));
+  scoped_nsobject<MenuController> menu(
+      [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
+  EXPECT_EQ([[menu menu] numberOfItems], 1);
+  // Validate() simulates opening the menu - the item label/icon should be
+  // initialized after this so we can validate the menu contents.
+  Validate(menu.get(), [menu menu]);
+  NSMenuItem* item = [[menu menu] itemAtIndex:0];
+  // Item should have the "initial" label and no icon.
+  EXPECT_EQ(initial, base::SysNSStringToUTF16([item title]));
+  EXPECT_EQ(nil, [item image]);
+
+  // Now update the item to have a label of "second" and an icon.
+  string16 second = ASCIIToUTF16("second");
+  delegate.SetDynamicLabel(second);
+  SkBitmap* bitmap =
+      ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_THROBBER);
+  delegate.SetDynamicIcon(bitmap);
+  // Simulate opening the menu and validate that the item label + icon changes.
+  Validate(menu.get(), [menu menu]);
+  EXPECT_EQ(second, base::SysNSStringToUTF16([item title]));
+  EXPECT_TRUE([item image] != nil);
+
+  // Now get rid of the icon and make sure it goes away.
+  delegate.SetDynamicIcon(NULL);
+  Validate(menu.get(), [menu menu]);
+  EXPECT_EQ(second, base::SysNSStringToUTF16([item title]));
+  EXPECT_EQ(nil, [item image]);
 }

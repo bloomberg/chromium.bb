@@ -28,13 +28,18 @@ bool SimpleMenuModel::Delegate::IsCommandIdVisible(int command_id) const {
   return true;
 }
 
-bool SimpleMenuModel::Delegate::IsLabelForCommandIdDynamic(
+bool SimpleMenuModel::Delegate::IsItemForCommandIdDynamic(
     int command_id) const {
   return false;
 }
 
 string16 SimpleMenuModel::Delegate::GetLabelForCommandId(int command_id) const {
   return string16();
+}
+
+bool SimpleMenuModel::Delegate::GetIconForCommandId(
+    int command_id, SkBitmap* bitmap) const {
+  return false;
 }
 
 void SimpleMenuModel::Delegate::CommandIdHighlighted(int command_id) {
@@ -201,14 +206,14 @@ int SimpleMenuModel::GetCommandIdAt(int index) const {
 }
 
 string16 SimpleMenuModel::GetLabelAt(int index) const {
-  if (IsLabelDynamicAt(index))
+  if (IsItemDynamicAt(index))
     return delegate_->GetLabelForCommandId(GetCommandIdAt(index));
   return items_.at(FlipIndex(index)).label;
 }
 
-bool SimpleMenuModel::IsLabelDynamicAt(int index) const {
+bool SimpleMenuModel::IsItemDynamicAt(int index) const {
   if (delegate_)
-    return delegate_->IsLabelForCommandIdDynamic(GetCommandIdAt(index));
+    return delegate_->IsItemForCommandIdDynamic(GetCommandIdAt(index));
   return false;
 }
 
@@ -235,6 +240,9 @@ int SimpleMenuModel::GetGroupIdAt(int index) const {
 }
 
 bool SimpleMenuModel::GetIconAt(int index, SkBitmap* icon) const {
+  if (IsItemDynamicAt(index))
+    return delegate_->GetIconForCommandId(GetCommandIdAt(index), icon);
+
   if (items_[index].icon.isNull())
     return false;
 

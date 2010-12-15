@@ -136,12 +136,14 @@ void NativeMenuX::UpdateMenuFromModel(SubmenuView* menu,
     MenuItemView* mitem = menu->GetMenuItemAt(index - sep);
     mitem->SetVisible(model->IsVisibleAt(index));
     mitem->SetEnabled(model->IsEnabledAt(index));
-    if (model->IsLabelDynamicAt(index)) {
+    if (model->IsItemDynamicAt(index)) {
       mitem->SetTitle(UTF16ToWide(model->GetLabelAt(index)));
     }
 
     SkBitmap icon;
     if (model->GetIconAt(index, &icon)) {
+      // TODO(atwilson): Support removing the icon dynamically
+      // (http://crbug.com/66508).
       mitem->SetIcon(icon);
     }
 

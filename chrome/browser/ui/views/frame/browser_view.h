@@ -360,7 +360,7 @@ class BrowserView : public BrowserBubbleHost,
   virtual bool IsCommandIdEnabled(int command_id) const;
   virtual bool GetAcceleratorForCommandId(int command_id,
                                           menus::Accelerator* accelerator);
-  virtual bool IsLabelForCommandIdDynamic(int command_id) const;
+  virtual bool IsItemForCommandIdDynamic(int command_id) const;
   virtual string16 GetLabelForCommandId(int command_id) const;
   virtual void ExecuteCommand(int command_id);
 

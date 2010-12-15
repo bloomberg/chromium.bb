@@ -114,7 +114,7 @@ bool DownloadShelfContextMenu::GetAcceleratorForCommandId(
   return false;
 }
 
-bool DownloadShelfContextMenu::IsLabelForCommandIdDynamic(
+bool DownloadShelfContextMenu::IsItemForCommandIdDynamic(
     int command_id) const {
   return command_id == TOGGLE_PAUSE;
 }

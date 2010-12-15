@@ -8,7 +8,7 @@
 
 namespace menus {
 
-bool ButtonMenuItemModel::Delegate::IsLabelForCommandIdDynamic(
+bool ButtonMenuItemModel::Delegate::IsItemForCommandIdDynamic(
     int command_id) const {
   return false;
 }
@@ -82,14 +82,14 @@ int ButtonMenuItemModel::GetCommandIdAt(int index) const {
   return items_[index].command_id;
 }
 
-bool ButtonMenuItemModel::IsLabelDynamicAt(int index) const {
+bool ButtonMenuItemModel::IsItemDynamicAt(int index) const {
   if (delegate_)
-    return delegate_->IsLabelForCommandIdDynamic(GetCommandIdAt(index));
+    return delegate_->IsItemForCommandIdDynamic(GetCommandIdAt(index));
   return false;
 }
 
 string16 ButtonMenuItemModel::GetLabelAt(int index) const {
-  if (IsLabelDynamicAt(index))
+  if (IsItemDynamicAt(index))
     return delegate_->GetLabelForCommandId(GetCommandIdAt(index));
   return items_[index].label;
 }

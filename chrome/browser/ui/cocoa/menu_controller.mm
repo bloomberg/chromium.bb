@@ -144,10 +144,16 @@
     DCHECK([(id)item isKindOfClass:[NSMenuItem class]]);
     [(id)item setState:(checked ? NSOnState : NSOffState)];
     [(id)item setHidden:(!model->IsVisibleAt(modelIndex))];
-    if (model->IsLabelDynamicAt(modelIndex)) {
+    if (model->IsItemDynamicAt(modelIndex)) {
+      // Update the label and the icon.
       NSString* label =
           l10n_util::FixUpWindowsStyleLabel(model->GetLabelAt(modelIndex));
       [(id)item setTitle:label];
+      SkBitmap skiaIcon;
+      NSImage* icon = nil;
+      if (model->GetIconAt(modelIndex, &skiaIcon) && !skiaIcon.isNull())
+        icon = gfx::SkBitmapToNSImage(skiaIcon);
+      [(id)item setImage:icon];
     }
     return model->IsEnabledAt(modelIndex);
   }

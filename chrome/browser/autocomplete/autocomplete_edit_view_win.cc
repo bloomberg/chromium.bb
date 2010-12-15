@@ -1011,7 +1011,7 @@ bool AutocompleteEditViewWin::GetAcceleratorForCommandId(
   return parent_view_->GetWidget()->GetAccelerator(command_id, accelerator);
 }
 
-bool AutocompleteEditViewWin::IsLabelForCommandIdDynamic(int command_id) const {
+bool AutocompleteEditViewWin::IsItemForCommandIdDynamic(int command_id) const {
   // No need to change the default IDS_PASTE_AND_GO label unless this is a
   // search.
   return command_id == IDS_PASTE_AND_GO;
