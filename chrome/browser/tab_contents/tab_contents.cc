@@ -40,6 +40,7 @@
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/host_zoom_map.h"
@@ -99,6 +100,7 @@
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/url_constants.h"
+#include "gfx/codec/png_codec.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -969,6 +971,33 @@ void TabContents::ShowPageInfo(const GURL& url,
     return;
 
   delegate_->ShowPageInfo(profile(), url, ssl, show_history);
+}
+
+void TabContents::SaveFavicon() {
+  NavigationEntry* entry = controller_.GetActiveEntry();
+  if (!entry || entry->url().is_empty())
+    return;
+
+  // Make sure the page is in history, otherwise adding the favicon does
+  // nothing.
+  HistoryService* history = profile()->GetOriginalProfile()->GetHistoryService(
+      Profile::IMPLICIT_ACCESS);
+  if (!history)
+    return;
+  history->AddPageNoVisitForBookmark(entry->url());
+
+  FaviconService* service = profile()->GetOriginalProfile()->GetFaviconService(
+      Profile::IMPLICIT_ACCESS);
+  if (!service)
+    return;
+  const NavigationEntry::FaviconStatus& favicon(entry->favicon());
+  if (!favicon.is_valid() || favicon.url().is_empty() ||
+      favicon.bitmap().empty()) {
+    return;
+  }
+  std::vector<unsigned char> image_data;
+  gfx::PNGCodec::EncodeBGRASkBitmap(favicon.bitmap(), false, &image_data);
+  service->SetFavicon(entry->url(), favicon.url(), image_data);
 }
 
 ConstrainedWindow* TabContents::CreateConstrainedDialog(

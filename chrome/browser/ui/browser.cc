@@ -1501,9 +1501,14 @@ void Browser::BookmarkCurrentPage() {
 
   GURL url;
   string16 title;
-  bookmark_utils::GetURLAndTitleToBookmark(GetSelectedTabContents(), &url,
-                                           &title);
+  TabContents* tab = GetSelectedTabContents();
+  bookmark_utils::GetURLAndTitleToBookmark(tab, &url, &title);
   bool was_bookmarked = model->IsBookmarked(url);
+  if (!was_bookmarked && profile_->IsOffTheRecord()) {
+    // If we're off the record the favicon may not have been saved. Save it now
+    // so that bookmarks have an icon for the page.
+    tab->SaveFavicon();
+  }
   model->SetURLStarred(url, title, true);
   // Make sure the model actually added a bookmark before showing the star. A
   // bookmark isn't created if the url is invalid.

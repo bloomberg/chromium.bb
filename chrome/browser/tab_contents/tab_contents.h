@@ -403,6 +403,9 @@ class TabContents : public PageNavigator,
                     const NavigationEntry::SSLStatus& ssl,
                     bool show_history);
 
+  // Saves the favicon for the current page.
+  void SaveFavicon();
+
   // Window management ---------------------------------------------------------
 
   // Create a new window constrained to this TabContents' clip and visibility.

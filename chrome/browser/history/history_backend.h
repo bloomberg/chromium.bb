@@ -121,6 +121,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   void AddPage(scoped_refptr<HistoryAddPageArgs> request);
   virtual void SetPageTitle(const GURL& url, const string16& title);
+  void AddPageNoVisitForBookmark(const GURL& url);
 
   // Indexing ------------------------------------------------------------------
 

@@ -212,6 +212,11 @@ class HistoryService : public CancelableRequestProvider,
   // All AddPage variants end up here.
   void AddPage(const history::HistoryAddPageArgs& add_page_args);
 
+  // Adds an entry for the specified url without creating a visit. This should
+  // only be used when bookmarking a page, otherwise the row leaks in the
+  // history db (it never gets cleaned).
+  void AddPageNoVisitForBookmark(const GURL& url);
+
   // Sets the title for the given page. The page should be in history. If it
   // is not, this operation is ignored. This call will not update the full
   // text index. The last title set when the page is indexed will be the

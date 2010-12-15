@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/ref_counted_memory.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
@@ -78,7 +79,7 @@ void FavIconHelper::SetFavIcon(
       (image.width() == kFavIconSize && image.height() == kFavIconSize)
       ? image : ConvertToFavIconSize(image);
 
-  if (GetFaviconService() && !profile()->IsOffTheRecord()) {
+  if (GetFaviconService() && ShouldSaveFavicon(url)) {
     std::vector<unsigned char> image_data;
     gfx::PNGCodec::EncodeBGRASkBitmap(sized_image, false, &image_data);
     GetFaviconService()->SetFavicon(url, image_url, image_data);
@@ -295,4 +296,13 @@ SkBitmap FavIconHelper::ConvertToFavIconSize(const SkBitmap& image) {
           width, height);
   }
   return image;
+}
+
+bool FavIconHelper::ShouldSaveFavicon(const GURL& url) {
+  if (!profile()->IsOffTheRecord())
+    return true;
+
+  // Otherwise store the favicon if the page is bookmarked.
+  BookmarkModel* bookmark_model = profile()->GetBookmarkModel();
+  return bookmark_model && bookmark_model->IsBookmarked(url);
 }

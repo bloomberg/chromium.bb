@@ -156,6 +156,9 @@ class FavIconHelper : public RenderViewHostDelegate::FavIcon {
   // wide. Does nothing if the image is empty.
   SkBitmap ConvertToFavIconSize(const SkBitmap& image);
 
+  // Returns true if the favicon should be saved.
+  bool ShouldSaveFavicon(const GURL& url);
+
   // Hosting TabContents. We callback into this when done.
   TabContents* tab_contents_;
 

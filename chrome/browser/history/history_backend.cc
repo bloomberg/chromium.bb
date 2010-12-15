@@ -870,6 +870,23 @@ void HistoryBackend::SetPageTitle(const GURL& url,
     ScheduleCommit();
 }
 
+void HistoryBackend::AddPageNoVisitForBookmark(const GURL& url) {
+  if (!db_.get())
+    return;
+
+  URLRow url_info(url);
+  URLID url_id = db_->GetRowForURL(url, &url_info);
+  if (url_id) {
+    // URL is already known, nothing to do.
+    return;
+  }
+  url_info.set_last_visit(Time::Now());
+  // Mark the page hidden. If the user types it in, it'll unhide.
+  url_info.set_hidden(true);
+
+  db_->AddURL(url_info);
+}
+
 void HistoryBackend::IterateURLs(HistoryService::URLEnumerator* iterator) {
   if (db_.get()) {
     HistoryDatabase::URLEnumerator e;

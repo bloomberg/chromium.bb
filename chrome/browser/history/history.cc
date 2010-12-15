@@ -357,6 +357,14 @@ void HistoryService::AddPage(const history::HistoryAddPageArgs& add_page_args) {
                         add_page_args.Clone()));
 }
 
+void HistoryService::AddPageNoVisitForBookmark(const GURL& url) {
+  if (!CanAddURL(url))
+    return;
+
+  ScheduleAndForget(PRIORITY_NORMAL,
+                    &HistoryBackend::AddPageNoVisitForBookmark, url);
+}
+
 void HistoryService::SetPageTitle(const GURL& url,
                                   const string16& title) {
   ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::SetPageTitle, url, title);

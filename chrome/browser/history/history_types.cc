@@ -60,8 +60,8 @@ void URLRow::Swap(URLRow* other) {
 
 void URLRow::Initialize() {
   id_ = 0;
-  visit_count_ = false;
-  typed_count_ = false;
+  visit_count_ = 0;
+  typed_count_ = 0;
   last_visit_ = Time();
   hidden_ = false;
   favicon_id_ = 0;
