@@ -776,6 +776,8 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnMsgRequestMove)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidStartLoading, OnMsgDidStartLoading)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidStopLoading, OnMsgDidStopLoading)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeLoadProgress,
+                        OnMsgDidChangeLoadProgress)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentAvailableInMainFrame,
                         OnMsgDocumentAvailableInMainFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentOnLoadCompletedInMainFrame,
@@ -1160,6 +1162,10 @@ void RenderViewHost::OnMsgDidStartLoading() {
 
 void RenderViewHost::OnMsgDidStopLoading() {
   delegate_->DidStopLoading();
+}
+
+void RenderViewHost::OnMsgDidChangeLoadProgress(double load_progress) {
+  delegate_->DidChangeLoadProgress(load_progress);
 }
 
 void RenderViewHost::OnMsgDocumentAvailableInMainFrame() {

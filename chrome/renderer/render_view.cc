@@ -69,6 +69,7 @@
 #include "chrome/renderer/geolocation_dispatcher_old.h"
 #endif
 #include "chrome/renderer/ggl/ggl.h"
+#include "chrome/renderer/load_progress_tracker.h"
 #include "chrome/renderer/localized_error.h"
 #include "chrome/renderer/media/audio_renderer_impl.h"
 #include "chrome/renderer/media/ipc_video_decoder.h"
@@ -2200,11 +2201,19 @@ void RenderView::didStopLoading() {
 
   Send(new ViewHostMsg_DidStopLoading(routing_id_));
 
+  if (load_progress_tracker_ != NULL)
+    load_progress_tracker_->DidStopLoading();
+
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       page_info_method_factory_.NewRunnableMethod(
           &RenderView::CapturePageInfo, page_id_, false),
       send_content_state_immediately_ ? 0 : kDelayForCaptureMs);
+}
+
+void RenderView::didChangeLoadProgress(WebFrame* frame, double load_progress) {
+  if (load_progress_tracker_ != NULL)
+    load_progress_tracker_->DidChangeLoadProgress(frame, load_progress);
 }
 
 bool RenderView::isSmartInsertDeleteEnabled() {

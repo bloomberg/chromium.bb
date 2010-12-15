@@ -573,6 +573,7 @@ class RenderViewHost : public RenderWidgetHost {
                                        const GURL& target_url);
   void OnMsgDidStartLoading();
   void OnMsgDidStopLoading();
+  void OnMsgDidChangeLoadProgress(double load_progress);
   void OnMsgDocumentAvailableInMainFrame();
   void OnMsgDocumentOnLoadCompletedInMainFrame(int32 page_id);
   void OnMsgDidLoadResourceFromMemoryCache(const GURL& url,

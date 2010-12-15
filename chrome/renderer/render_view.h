@@ -68,6 +68,7 @@ class GeolocationDispatcher;
 class GeolocationDispatcherOld;
 class GURL;
 class ListValue;
+class LoadProgressTracker;
 class NavigationState;
 class NotificationProvider;
 class PageClickTracker;
@@ -296,6 +297,9 @@ class RenderView : public RenderWidget,
   bool InstallWebApplicationUsingDefinitionFile(WebKit::WebFrame* frame,
                                                 string16* error);
 
+  // Sets whether  the renderer should report load progress to the browser.
+  void SetReportLoadProgressEnabled(bool enabled);
+
   // Extensions ----------------------------------------------------------------
 
   void SendExtensionRequest(const ViewHostMsg_DomMessage_Params& params);
@@ -412,6 +416,8 @@ class RenderView : public RenderWidget,
   virtual WebKit::WebNotificationPresenter* notificationPresenter();
   virtual void didStartLoading();
   virtual void didStopLoading();
+  virtual void didChangeLoadProgress(WebKit::WebFrame* frame,
+                                     double load_progress);
   virtual bool isSmartInsertDeleteEnabled();
   virtual bool isSelectTrailingWhitespaceEnabled();
   virtual void didChangeSelection(bool is_selection_empty);
@@ -1485,6 +1491,9 @@ class RenderView : public RenderWidget,
 
   // The custom menu event listener, if any.
   CustomMenuListener* custom_menu_listener_;
+
+  // Reports load progress to the browser.
+  scoped_ptr<LoadProgressTracker> load_progress_tracker_;
 
   // ---------------------------------------------------------------------------
   // ADDING NEW DATA? Please see if it fits appropriately in one of the above

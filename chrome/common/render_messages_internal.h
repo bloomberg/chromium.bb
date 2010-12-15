@@ -1203,6 +1203,10 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_DidStartLoading)
 // notion of the throbber stopping.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_DidStopLoading)
 
+// Sent when the renderer main frame has made progress loading.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_DidChangeLoadProgress,
+                    double /* load_progress */)
+
 // Sent when the document element is available for the toplevel frame.  This
 // happens after the page starts loading, but before all resources are
 // finished.

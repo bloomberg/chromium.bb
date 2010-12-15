@@ -769,6 +769,11 @@ class RenderViewHostDelegate {
   // notion of the throbber stopping.
   virtual void DidStopLoading() {}
 
+  // The RenderView made progress loading a page's top frame.
+  // |progress_load| is a value between 0 (nothing loaded) to 1.0 (top frame
+  // entirely loaded).
+  virtual void DidChangeLoadProgress(double load_progress) {}
+
   // The RenderView's main frame document element is ready. This happens when
   // the document has finished parsing.
   virtual void DocumentAvailableInMainFrame(RenderViewHost* render_view_host) {}
