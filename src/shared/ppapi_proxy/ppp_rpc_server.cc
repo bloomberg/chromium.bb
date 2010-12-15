@@ -246,6 +246,24 @@ static void PPP_GetInterfaceDispatcher(
   );
 }
 
+static void PPP_Audio_Dev_StreamCreatedDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  UNREFERENCED_PARAMETER(done);
+  PppAudioDevRpcServer::PPP_Audio_Dev_StreamCreated(
+      rpc,
+      done,
+      inputs[0]->u.lval,
+      inputs[1]->u.hval,
+      inputs[2]->u.ival,
+      inputs[3]->u.hval
+  );
+}
+
 static void PPP_Instance_DidCreateDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -375,6 +393,7 @@ NACL_SRPC_METHOD_ARRAY(PppRpcs::srpc_methods) = {
   { "PPP_InitializeModule:ilhs:ii", PPP_InitializeModuleDispatcher },
   { "PPP_ShutdownModule::", PPP_ShutdownModuleDispatcher },
   { "PPP_GetInterface:s:i", PPP_GetInterfaceDispatcher },
+  { "PPP_Audio_Dev_StreamCreated:lhih:", PPP_Audio_Dev_StreamCreatedDispatcher },
   { "PPP_Instance_DidCreate:liCC:i", PPP_Instance_DidCreateDispatcher },
   { "PPP_Instance_DidDestroy:l:", PPP_Instance_DidDestroyDispatcher },
   { "PPP_Instance_DidChangeView:lII:", PPP_Instance_DidChangeViewDispatcher },

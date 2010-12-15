@@ -133,6 +133,22 @@ class PppRpcServer {
   void operator=(const PppRpcServer);
 };  // class PppRpcServer
 
+class PppAudioDevRpcServer {
+ public:
+  static void PPP_Audio_Dev_StreamCreated(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      int64_t instance,
+      NaClSrpcImcDescType out_shm,
+      int32_t out_shm_size,
+      NaClSrpcImcDescType out_socket);
+
+ private:
+  PppAudioDevRpcServer();
+  PppAudioDevRpcServer(const PppAudioDevRpcServer&);
+  void operator=(const PppAudioDevRpcServer);
+};  // class PppAudioDevRpcServer
+
 class PppInstanceRpcServer {
  public:
   static void PPP_Instance_DidCreate(

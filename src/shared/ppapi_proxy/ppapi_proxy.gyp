@@ -11,6 +11,8 @@
       'target_name': 'nacl_ppapi_browser',
       'type': 'static_library',
       'sources': [
+        'browser_audio.cc',
+        'browser_audio_config.cc',
         'browser_core.cc',
         'browser_callback.cc',
         'browser_globals.cc',

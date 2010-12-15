@@ -4,6 +4,8 @@
 
 #include <limits>
 #include <new>
+#include "base/shared_memory.h"
+#include "base/sync_socket.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
@@ -242,6 +244,34 @@ DescWrapper* DescWrapperFactory::ImportShmHandle(NaClHandle handle,
   return NULL;
 }
 
+DescWrapper* DescWrapperFactory::ImportSyncSocketHandle(NaClHandle handle) {
+  struct NaClDescSyncSocket* ss_desc = NULL;
+  DescWrapper* wrapper = NULL;
+
+  ss_desc = static_cast<NaClDescSyncSocket*>(
+      calloc(1, sizeof(*ss_desc)));
+  if (NULL == ss_desc) {
+    // TODO(sehr): Gotos are awful.  Add a scoped_ptr variant that
+    // invokes NaClDescSafeUnref.
+    goto cleanup;
+  }
+  if (!NaClDescSyncSocketCtor(ss_desc, handle)) {
+    free(ss_desc);
+    ss_desc = NULL;
+    goto cleanup;
+  }
+  wrapper = new DescWrapper(common_data_, &ss_desc->base);
+  if (NULL == wrapper) {
+    goto cleanup;
+  }
+  ss_desc = NULL;  // DescWrapper takes ownership of ss_desc.
+  return wrapper;
+
+ cleanup:
+  NaClDescSafeUnref(&ss_desc->base);
+  return NULL;
+}
+
 #if NACL_LINUX
 DescWrapper* DescWrapperFactory::ImportSysvShm(int key, size_t size) {
   struct NaClDescSysvShm* sysv_desc = NULL;
@@ -300,9 +330,37 @@ DescWrapper* DescWrapperFactory::ImportPepper2DSharedMemory(intptr_t shm_int) {
 }
 
 DescWrapper* DescWrapperFactory::ImportPepperSync(intptr_t sync_int) {
-  // PepperSync is only present in the Chrome hookup.
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+  base::SyncSocket* sock = reinterpret_cast<base::SyncSocket*>(sync_int);
+  struct NaClDescSyncSocket* ss_desc = NULL;
+  DescWrapper* wrapper = NULL;
+
+  ss_desc = static_cast<NaClDescSyncSocket*>(
+      calloc(1, sizeof(*ss_desc)));
+  if (NULL == ss_desc) {
+    // TODO(sehr): Gotos are awful.  Add a scoped_ptr variant that
+    // invokes NaClDescSafeUnref.
+    goto cleanup;
+  }
+  if (!NaClDescSyncSocketCtor(ss_desc, sock->handle())) {
+    free(ss_desc);
+    ss_desc = NULL;
+    goto cleanup;
+  }
+  wrapper = new DescWrapper(common_data_, &ss_desc->base);
+  if (NULL == wrapper) {
+    goto cleanup;
+  }
+  ss_desc = NULL;  // DescWrapper takes ownership of ss_desc.
+  return wrapper;
+
+ cleanup:
+  NaClDescSafeUnref(&ss_desc->base);
+  return NULL;
+#else
   UNREFERENCED_PARAMETER(sync_int);
   return NULL;
+#endif
 }
 #endif  // NACL_STANDALONE
 

@@ -47,11 +47,14 @@ class DescWrapperFactory {
   // we provide a wide-open method.
   DescWrapper* MakeGeneric(struct NaClDesc* desc);
 
- private:
+  // Utility routine for importing sync socket
+  DescWrapper* ImportSyncSocketHandle(NaClHandle handle);
   // Utility routine for importing Linux/Mac (posix) and Windows shared memory.
   DescWrapper* ImportShmHandle(NaClHandle handle, size_t size);
   // Utility routine for importing SysV shared memory.
   DescWrapper* ImportSysvShm(int key, size_t size);
+
+ private:
   // The common data from this instance of the wrapper.
   DescWrapperCommon* common_data_;
 

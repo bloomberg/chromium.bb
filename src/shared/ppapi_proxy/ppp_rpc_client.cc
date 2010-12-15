@@ -254,6 +254,24 @@ NaClSrpcError PppRpcClient::PPP_GetInterface(
   return retval;
 }
 
+NaClSrpcError PppAudioDevRpcClient::PPP_Audio_Dev_StreamCreated(
+    NaClSrpcChannel* channel,
+    int64_t instance,
+    NaClSrpcImcDescType out_shm,
+    int32_t out_shm_size,
+    NaClSrpcImcDescType out_socket)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPP_Audio_Dev_StreamCreated:lhih:",
+      instance,
+      out_shm,
+      out_shm_size,
+      out_socket
+  );
+  return retval;
+}
+
 NaClSrpcError PppInstanceRpcClient::PPP_Instance_DidCreate(
     NaClSrpcChannel* channel,
     int64_t instance,

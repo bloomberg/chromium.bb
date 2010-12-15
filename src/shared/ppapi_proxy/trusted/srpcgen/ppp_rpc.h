@@ -120,6 +120,21 @@ class PppRpcClient {
   void operator=(const PppRpcClient);
 };  // class PppRpcClient
 
+class PppAudioDevRpcClient {
+ public:
+  static NaClSrpcError PPP_Audio_Dev_StreamCreated(
+      NaClSrpcChannel* channel,
+      int64_t instance,
+      NaClSrpcImcDescType out_shm,
+      int32_t out_shm_size,
+      NaClSrpcImcDescType out_socket);
+
+ private:
+  PppAudioDevRpcClient();
+  PppAudioDevRpcClient(const PppAudioDevRpcClient&);
+  void operator=(const PppAudioDevRpcClient);
+};  // class PppAudioDevRpcClient
+
 class PppInstanceRpcClient {
  public:
   static NaClSrpcError PPP_Instance_DidCreate(

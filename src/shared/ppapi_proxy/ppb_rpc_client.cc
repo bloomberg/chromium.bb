@@ -208,6 +208,152 @@ NaClSrpcError PpbRpcClient::PPB_GetInterface(
   return retval;
 }
 
+NaClSrpcError PpbAudioDevRpcClient::PPB_Audio_Dev_Create(
+    NaClSrpcChannel* channel,
+    int64_t instance,
+    int64_t config,
+    int64_t* out_resource)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Audio_Dev_Create:ll:l",
+      instance,
+      config,
+      out_resource
+  );
+  return retval;
+}
+
+NaClSrpcError PpbAudioDevRpcClient::PPB_Audio_Dev_IsAudio(
+    NaClSrpcChannel* channel,
+    int64_t resource,
+    int32_t* out_bool)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Audio_Dev_IsAudio:l:i",
+      resource,
+      out_bool
+  );
+  return retval;
+}
+
+NaClSrpcError PpbAudioDevRpcClient::PPB_Audio_Dev_GetCurrentConfig(
+    NaClSrpcChannel* channel,
+    int64_t resource,
+    int64_t* out_resource)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Audio_Dev_GetCurrentConfig:l:l",
+      resource,
+      out_resource
+  );
+  return retval;
+}
+
+NaClSrpcError PpbAudioDevRpcClient::PPB_Audio_Dev_StopPlayback(
+    NaClSrpcChannel* channel,
+    int64_t resource,
+    int32_t* out_bool)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Audio_Dev_StopPlayback:l:i",
+      resource,
+      out_bool
+  );
+  return retval;
+}
+
+NaClSrpcError PpbAudioDevRpcClient::PPB_Audio_Dev_StartPlayback(
+    NaClSrpcChannel* channel,
+    int64_t resource,
+    int32_t* out_bool)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Audio_Dev_StartPlayback:l:i",
+      resource,
+      out_bool
+  );
+  return retval;
+}
+
+NaClSrpcError PpbAudioConfigDevRpcClient::PPB_AudioConfig_Dev_CreateStereo16Bit(
+    NaClSrpcChannel* channel,
+    int64_t module,
+    int32_t sample_rate,
+    int32_t sample_frame_count,
+    int64_t* resource)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_AudioConfig_Dev_CreateStereo16Bit:lii:l",
+      module,
+      sample_rate,
+      sample_frame_count,
+      resource
+  );
+  return retval;
+}
+
+NaClSrpcError PpbAudioConfigDevRpcClient::PPB_AudioConfig_Dev_IsAudioConfig(
+    NaClSrpcChannel* channel,
+    int64_t resource,
+    int32_t* out_bool)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_AudioConfig_Dev_IsAudioConfig:l:i",
+      resource,
+      out_bool
+  );
+  return retval;
+}
+
+NaClSrpcError PpbAudioConfigDevRpcClient::PPB_AudioConfig_Dev_RecommendSampleFrameCount(
+    NaClSrpcChannel* channel,
+    int32_t request,
+    int32_t* sample_frame_count)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_AudioConfig_Dev_RecommendSampleFrameCount:i:i",
+      request,
+      sample_frame_count
+  );
+  return retval;
+}
+
+NaClSrpcError PpbAudioConfigDevRpcClient::PPB_AudioConfig_Dev_GetSampleRate(
+    NaClSrpcChannel* channel,
+    int64_t resource,
+    int32_t* sample_rate)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_AudioConfig_Dev_GetSampleRate:l:i",
+      resource,
+      sample_rate
+  );
+  return retval;
+}
+
+NaClSrpcError PpbAudioConfigDevRpcClient::PPB_AudioConfig_Dev_GetSampleFrameCount(
+    NaClSrpcChannel* channel,
+    int64_t resource,
+    int32_t* sample_frame_count)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_AudioConfig_Dev_GetSampleFrameCount:l:i",
+      resource,
+      sample_frame_count
+  );
+  return retval;
+}
+
 NaClSrpcError PpbCoreRpcClient::PPB_Core_AddRefResource(
     NaClSrpcChannel* channel,
     int64_t resource)  {

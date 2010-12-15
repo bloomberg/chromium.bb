@@ -97,6 +97,67 @@ class PpbRpcClient {
   void operator=(const PpbRpcClient);
 };  // class PpbRpcClient
 
+class PpbAudioDevRpcClient {
+ public:
+  static NaClSrpcError PPB_Audio_Dev_Create(
+      NaClSrpcChannel* channel,
+      int64_t instance,
+      int64_t config,
+      int64_t* out_resource);
+  static NaClSrpcError PPB_Audio_Dev_IsAudio(
+      NaClSrpcChannel* channel,
+      int64_t resource,
+      int32_t* out_bool);
+  static NaClSrpcError PPB_Audio_Dev_GetCurrentConfig(
+      NaClSrpcChannel* channel,
+      int64_t resource,
+      int64_t* out_resource);
+  static NaClSrpcError PPB_Audio_Dev_StopPlayback(
+      NaClSrpcChannel* channel,
+      int64_t resource,
+      int32_t* out_bool);
+  static NaClSrpcError PPB_Audio_Dev_StartPlayback(
+      NaClSrpcChannel* channel,
+      int64_t resource,
+      int32_t* out_bool);
+
+ private:
+  PpbAudioDevRpcClient();
+  PpbAudioDevRpcClient(const PpbAudioDevRpcClient&);
+  void operator=(const PpbAudioDevRpcClient);
+};  // class PpbAudioDevRpcClient
+
+class PpbAudioConfigDevRpcClient {
+ public:
+  static NaClSrpcError PPB_AudioConfig_Dev_CreateStereo16Bit(
+      NaClSrpcChannel* channel,
+      int64_t module,
+      int32_t sample_rate,
+      int32_t sample_frame_count,
+      int64_t* resource);
+  static NaClSrpcError PPB_AudioConfig_Dev_IsAudioConfig(
+      NaClSrpcChannel* channel,
+      int64_t resource,
+      int32_t* out_bool);
+  static NaClSrpcError PPB_AudioConfig_Dev_RecommendSampleFrameCount(
+      NaClSrpcChannel* channel,
+      int32_t request,
+      int32_t* sample_frame_count);
+  static NaClSrpcError PPB_AudioConfig_Dev_GetSampleRate(
+      NaClSrpcChannel* channel,
+      int64_t resource,
+      int32_t* sample_rate);
+  static NaClSrpcError PPB_AudioConfig_Dev_GetSampleFrameCount(
+      NaClSrpcChannel* channel,
+      int64_t resource,
+      int32_t* sample_frame_count);
+
+ private:
+  PpbAudioConfigDevRpcClient();
+  PpbAudioConfigDevRpcClient(const PpbAudioConfigDevRpcClient&);
+  void operator=(const PpbAudioConfigDevRpcClient);
+};  // class PpbAudioConfigDevRpcClient
+
 class PpbCoreRpcClient {
  public:
   static NaClSrpcError PPB_Core_AddRefResource(

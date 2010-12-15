@@ -1,0 +1,49 @@
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file declares the RPC methods used to implement PPB_Audio_Dev
+# calls from the plugin.  The functions are described in
+# ppapi/c/dev/ppb_audio_dev.h.
+{
+ 'name': 'PpbAudioDevRpc',
+ 'rpcs': [
+          # Implements a call to create an audio resource.
+          # Returns descriptors for memory window, sync socket.
+          {'name': 'PPB_Audio_Dev_Create',
+           'inputs': [['instance', 'int64_t'],
+                      ['config', 'int64_t'],
+                     ],
+           'outputs': [['out_resource', 'int64_t'],
+                      ]
+          },
+          # Implements a call to determine IsAudio.
+          {'name': 'PPB_Audio_Dev_IsAudio',
+           'inputs': [['resource', 'int64_t'],
+                     ],
+           'outputs': [['out_bool', 'int32_t'],
+                      ]
+          },
+          # Implements a call to get current config as resource.
+          {'name': 'PPB_Audio_Dev_GetCurrentConfig',
+           'inputs': [['resource', 'int64_t'],
+                     ],
+           'outputs': [['out_resource', 'int64_t'],
+                      ]
+          },
+          # Implements a call to stop playback.
+          {'name': 'PPB_Audio_Dev_StopPlayback',
+           'inputs': [['resource', 'int64_t'],
+                     ],
+           'outputs': [['out_bool', 'int32_t'],
+                      ]
+          },
+          # Implements a call to start playback.
+          {'name': 'PPB_Audio_Dev_StartPlayback',
+           'inputs': [['resource', 'int64_t'],
+                     ],
+           'outputs': [['out_bool', 'int32_t'],
+                      ]
+          },
+         ]
+}

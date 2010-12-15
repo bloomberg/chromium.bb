@@ -1,0 +1,49 @@
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file declares the RPC methods used to implement PPB_AudioConfig_Dev
+# calls from the plugin.  The functions are described in
+# ppapi/c/dev/ppb_audio_config_dev.h.
+{
+ 'name': 'PpbAudioConfigDevRpc',
+ 'rpcs': [
+          # Implements a call to create an audio configuration for stereo output.
+          {'name': 'PPB_AudioConfig_Dev_CreateStereo16Bit',
+           'inputs': [['module', 'int64_t'],
+                      ['sample_rate', 'int32_t'],
+                      ['sample_frame_count', 'int32_t'],
+                     ],
+           'outputs': [['resource', 'int64_t'],
+                      ]
+          },
+          # Implements a call to check if this is an AudioConfig.
+          {'name': 'PPB_AudioConfig_Dev_IsAudioConfig',
+           'inputs': [['resource', 'int64_t'],
+                     ],
+           'outputs': [['out_bool', 'int32_t']
+                      ]
+          },
+          # Implements a call to get recommended sample frame count.
+          {'name': 'PPB_AudioConfig_Dev_RecommendSampleFrameCount',
+           'inputs': [['request', 'int32_t'],
+                     ],
+           'outputs': [['sample_frame_count', 'int32_t']
+                      ]
+          },
+          # Implements a call to get the sample rate.
+          {'name': 'PPB_AudioConfig_Dev_GetSampleRate',
+           'inputs': [['resource', 'int64_t'],
+                     ],
+           'outputs': [['sample_rate', 'int32_t']
+                      ]
+          },
+          # Implements a call to get the obtained sample frame count.
+          {'name': 'PPB_AudioConfig_Dev_GetSampleFrameCount',
+           'inputs': [['resource', 'int64_t'],
+                     ],
+           'outputs': [['sample_frame_count', 'int32_t'],
+                      ]
+          },
+         ]
+}
