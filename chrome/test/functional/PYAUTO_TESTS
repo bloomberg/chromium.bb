@@ -73,6 +73,7 @@
     '-bookmark_bar.BookmarkBarTest.testBookmarkBarVisible',
     # crbug.com/64664
     '-databases.DatabasesTest.testReloadActiveTab',
+    '-databases.DatabasesTest.testModificationsPersistAfterRendererCrash',
     # Some download test fails on win official builder, only thru buildbot when
     # downloading the small zip file.
     # crbug.com/50481, crbug.com/54942
@@ -98,6 +99,7 @@
     '-content.ContentTest.testThreeWindows',  # crbug.com/47457
     # crbug.com/64664
     '-databases.DatabasesTest.testReloadActiveTab',
+    '-databases.DatabasesTest.testModificationsPersistAfterRendererCrash',
     # crbug.com/64269
     '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
   ],
