@@ -62,6 +62,14 @@
 
 namespace {
 
+CGFloat LeftMargin(NSRect superFrame, NSRect subFrame) {
+  return NSMinX(subFrame) - NSMinX(superFrame);
+}
+
+CGFloat RightMargin(NSRect superFrame, NSRect subFrame) {
+  return NSMaxX(superFrame) - NSMaxX(subFrame);
+}
+
 // The dragging code in TabView makes heavy use of autorelease pools so
 // inherit from CocoaTest to have one created for us.
 class TabControllerTest : public CocoaTest {
@@ -263,6 +271,63 @@ TEST_F(TabControllerTest, Menu) {
   NSMenu* menu = [[controller view] menu];
   EXPECT_TRUE(menu);
   EXPECT_GT([menu numberOfItems], 0);
+}
+
+// Tests that the title field is correctly positioned and sized when the
+// view is resized.
+TEST_F(TabControllerTest, TitleViewLayout) {
+  NSWindow* window = test_window();
+
+  scoped_nsobject<TabController> controller([[TabController alloc] init]);
+  [[window contentView] addSubview:[controller view]];
+  NSRect tabFrame = [[controller view] frame];
+  tabFrame.size.width = [TabController maxTabWidth];
+  [[controller view] setFrame:tabFrame];
+
+  const NSRect originalTabFrame = [[controller view] frame];
+  const NSRect originalIconFrame = [[controller iconView] frame];
+  const NSRect originalCloseFrame = [[controller closeButton] frame];
+  const NSRect originalTitleFrame = [[controller titleView] frame];
+
+  // Sanity check the start state.
+  EXPECT_FALSE([[controller iconView] isHidden]);
+  EXPECT_FALSE([[controller closeButton] isHidden]);
+  EXPECT_GT(NSWidth([[controller view] frame]),
+            NSWidth([[controller titleView] frame]));
+
+  // Resize the tab so that that the it shrinks.
+  tabFrame.size.width = [TabController minTabWidth];
+  [[controller view] setFrame:tabFrame];
+
+  // The icon view and close button should be hidden and the title view should
+  // be resize to take up their space.
+  EXPECT_TRUE([[controller iconView] isHidden]);
+  EXPECT_TRUE([[controller closeButton] isHidden]);
+  EXPECT_GT(NSWidth([[controller view] frame]),
+            NSWidth([[controller titleView] frame]));
+  EXPECT_EQ(LeftMargin(originalTabFrame, originalIconFrame),
+            LeftMargin([[controller view] frame],
+                       [[controller titleView] frame]));
+  EXPECT_EQ(RightMargin(originalTabFrame, originalCloseFrame),
+            RightMargin([[controller view] frame],
+                        [[controller titleView] frame]));
+
+  // Resize the tab so that that the it grows.
+  tabFrame.size.width = [TabController maxTabWidth] * 0.75;
+  [[controller view] setFrame:tabFrame];
+
+  // The icon view and close button should be visible again and the title view
+  // should be resized to make room for them.
+  EXPECT_FALSE([[controller iconView] isHidden]);
+  EXPECT_FALSE([[controller closeButton] isHidden]);
+  EXPECT_GT(NSWidth([[controller view] frame]),
+            NSWidth([[controller titleView] frame]));
+  EXPECT_EQ(LeftMargin(originalTabFrame, originalTitleFrame),
+            LeftMargin([[controller view] frame],
+                       [[controller titleView] frame]));
+  EXPECT_EQ(RightMargin(originalTabFrame, originalTitleFrame),
+            RightMargin([[controller view] frame],
+                        [[controller titleView] frame]));
 }
 
 }  // namespace

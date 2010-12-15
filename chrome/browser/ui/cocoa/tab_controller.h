@@ -51,7 +51,6 @@ class MenuDelegate;
   BOOL selected_;
   TabLoadingState loadingState_;
   CGFloat iconTitleXOffset_;  // between left edges of icon and title
-  CGFloat titleCloseWidthOffset_;  // between right edges of icon and close btn.
   id<TabControllerTarget> target_;  // weak, where actions are sent
   SEL action_;  // selector sent when tab is selected by clicking
   scoped_ptr<TabMenuModel> contextMenuModel_;
@@ -67,6 +66,9 @@ class MenuDelegate;
 @property(assign, nonatomic) BOOL pinned;
 @property(assign, nonatomic) BOOL selected;
 @property(assign, nonatomic) id target;
+@property(assign, nonatomic) NSView* iconView;
+@property(assign, nonatomic) NSTextField* titleView;
+@property(assign, nonatomic) HoverCloseButton* closeButton;
 
 // Minimum and maximum allowable tab width. The minimum width does not show
 // the icon or the close button. The selected tab always has at least a close

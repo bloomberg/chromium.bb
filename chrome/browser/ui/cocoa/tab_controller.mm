@@ -21,6 +21,9 @@
 @synthesize mini = mini_;
 @synthesize pinned = pinned_;
 @synthesize target = target_;
+@synthesize iconView = iconView_;
+@synthesize titleView = titleView_;
+@synthesize closeButton = closeButton_;
 
 namespace TabControllerInternal {
 
@@ -114,10 +117,11 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
   // When the icon is removed, the title expands to the left to fill the space
   // left by the icon.  When the close button is removed, the title expands to
   // the right to fill its space.  These are the amounts to expand and contract
-  // titleView_ under those conditions.
+  // titleView_ under those conditions. We don't have to explicilty save the
+  // offset between the title and the close button since we can just get that
+  // value for the close button's frame.
   NSRect titleFrame = [titleView_ frame];
   iconTitleXOffset_ = NSMinX(titleFrame) - NSMinX(originalIconFrame_);
-  titleCloseWidthOffset_ = NSMaxX([closeButton_ frame]) - NSMaxX(titleFrame);
 
   [self internalSetSelected:selected_];
 }
@@ -183,10 +187,6 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
     [[self view] addSubview:iconView_];
 }
 
-- (NSView*)iconView {
-  return iconView_;
-}
-
 - (NSString*)toolTip {
   return [[self view] toolTip];
 }
@@ -230,47 +230,40 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
   // iconView_ may have been replaced or it may be nil, so [iconView_ isHidden]
   // won't work.  Instead, the state of the icon is tracked separately in
   // isIconShowing_.
-  BOOL oldShowIcon = isIconShowing_ ? YES : NO;
-  BOOL newShowIcon = [self shouldShowIcon] ? YES : NO;
+  BOOL newShowIcon = [self shouldShowIcon];
 
-  [iconView_ setHidden:newShowIcon ? NO : YES];
+  [iconView_ setHidden:!newShowIcon];
   isIconShowing_ = newShowIcon;
 
   // If the tab is a mini-tab, hide the title.
   [titleView_ setHidden:[self mini]];
 
-  BOOL oldShowCloseButton = [closeButton_ isHidden] ? NO : YES;
-  BOOL newShowCloseButton = [self shouldShowCloseButton] ? YES : NO;
+  BOOL newShowCloseButton = [self shouldShowCloseButton];
 
-  [closeButton_ setHidden:newShowCloseButton ? NO : YES];
+  [closeButton_ setHidden:!newShowCloseButton];
 
   // Adjust the title view based on changes to the icon's and close button's
   // visibility.
-  NSRect titleFrame = [titleView_ frame];
+  NSRect oldTitleFrame = [titleView_ frame];
+  NSRect newTitleFrame;
+  newTitleFrame.size.height = oldTitleFrame.size.height;
+  newTitleFrame.origin.y = oldTitleFrame.origin.y;
 
-  if (oldShowIcon != newShowIcon) {
-    // Adjust the left edge of the title view according to the presence or
-    // absence of the icon view.
-
-    if (newShowIcon) {
-      titleFrame.origin.x += iconTitleXOffset_;
-      titleFrame.size.width -= iconTitleXOffset_;
-    } else {
-      titleFrame.origin.x -= iconTitleXOffset_;
-      titleFrame.size.width += iconTitleXOffset_;
-    }
+  if (newShowIcon) {
+    newTitleFrame.origin.x = originalIconFrame_.origin.x + iconTitleXOffset_;
+  } else {
+    newTitleFrame.origin.x = originalIconFrame_.origin.x;
   }
 
-  if (oldShowCloseButton != newShowCloseButton) {
-    // Adjust the right edge of the title view according to the presence or
-    // absence of the close button.
-    if (newShowCloseButton)
-      titleFrame.size.width -= titleCloseWidthOffset_;
-    else
-      titleFrame.size.width += titleCloseWidthOffset_;
+  if (newShowCloseButton) {
+    newTitleFrame.size.width = NSMinX([closeButton_ frame]) -
+                               newTitleFrame.origin.x;
+  } else {
+    newTitleFrame.size.width = NSMaxX([closeButton_ frame]) -
+                               newTitleFrame.origin.x;
   }
 
-  [titleView_ setFrame:titleFrame];
+  [titleView_ setFrame:newTitleFrame];
 }
 
 - (void)updateTitleColor {
