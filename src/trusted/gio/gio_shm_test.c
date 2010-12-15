@@ -18,9 +18,9 @@
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
-#include "native_client/src/trusted/service_runtime/gio_shm.h"
-#include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
-#include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/gio/gio_shm.h"
+#include "native_client/src/trusted/desc/nrd_all_modules.h"
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 #define NCHUNKS   3
 
@@ -351,7 +351,7 @@ int main(int ac,
   printf("Using seed %d (0x%x)\n", gRandomSeed, gRandomSeed);
   srand(gRandomSeed);
 
-  NaClAllModulesInit();
+  NaClNrdAllModulesInit();
 
   shmp = malloc(sizeof *shmp);
   if (NULL == shmp) {
@@ -453,7 +453,7 @@ int main(int ac,
   NaClDescUnref(dp);
   (*effp->vtbl->Dtor)(effp);
 
-  NaClAllModulesFini();
+  NaClNrdAllModulesFini();
   if (0 != errs) {
     printf("FAILED\n");
     return EXIT_FAILURE;

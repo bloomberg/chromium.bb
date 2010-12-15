@@ -11,12 +11,13 @@
 
 #include "native_client/src/shared/platform/nacl_check.h"
 
+#include "native_client/src/trusted/desc/nrd_all_modules.h"
+#include "native_client/src/trusted/gio/gio_shm_unbounded.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
-#include "native_client/src/trusted/service_runtime/gio_shm_unbounded.h"
-#include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
-#include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
+
 
 size_t    gNumBytes = 10 * NACL_MAP_PAGESIZE;
 uint32_t  gLinearGeneratorSeed = 0xdeadbeef;
@@ -163,7 +164,7 @@ int main(int ac, char **av) {
   size_t                      nerrs = 0;
   struct NaClGioShmUnbounded  ngsu;
 
-  NaClAllModulesInit();
+  NaClNrdAllModulesInit();
 
   while (EOF != (opt = getopt(ac, av, "n:s:"))) {
     switch (opt) {
@@ -192,7 +193,7 @@ int main(int ac, char **av) {
   nerrs += TestWithDataGenerators(&ngsu);
 
  unrecoverable:
-  NaClAllModulesFini();
+  NaClNrdAllModulesFini();
 
   printf("%s\n", (0 == nerrs) ? "PASSED" : "FAILED");
   return (0 == nerrs) ?  EXIT_SUCCESS : EXIT_FAILURE;

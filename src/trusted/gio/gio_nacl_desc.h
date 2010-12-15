@@ -9,8 +9,8 @@
  * read/write pass through is done.
  */
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_GIO_NACL_DESC_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_GIO_NACL_DESC_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_GIO_WRAPPED_DESC_GIO_NACL_DESC_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_GIO_WRAPPED_DESC_GIO_NACL_DESC_H_
 
 #include "native_client/src/include/nacl_base.h"
 
@@ -31,4 +31,4 @@ struct NaClGioNaClDesc {
 int NaClGioNaClDescCtor(struct NaClGioNaClDesc  *self,
                         struct NaClDesc         *wrapped);
 
-#endif  /* NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_GIO_NACL_DESC_H_ */
+#endif  /* NATIVE_CLIENT_SRC_TRUSTED_GIO_WRAPPED_DESC_GIO_NACL_DESC_H_ */

@@ -9,7 +9,7 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 
-#include "native_client/src/trusted/service_runtime/gio_nacl_desc.h"
+#include "native_client/src/trusted/gio/gio_nacl_desc.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 

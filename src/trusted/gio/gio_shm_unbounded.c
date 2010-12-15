@@ -18,7 +18,7 @@
 
 #include <errno.h>
 
-#include "native_client/src/trusted/service_runtime/gio_shm_unbounded.h"
+#include "native_client/src/trusted/gio/gio_shm_unbounded.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"

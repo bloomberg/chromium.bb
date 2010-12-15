@@ -221,13 +221,6 @@ env.ComponentLibrary('nacl_xdr',
                       'fs/obj_proxy.c',
                       ])
 
-env.DualLibrary('gio_wrapped_desc',
-                ['gio_shm.c',
-                 'gio_shm_unbounded.c',
-                 'gio_nacl_desc.c',
-                ])
-
-
 # NOTE(robertm): these extra libs were orignially only added to the
 #                sel_ldr binary
 # TODO(robertm): see who really needs them and remove
@@ -454,81 +447,6 @@ if (not env.Bit('coverage_enabled') and
 
   env.Requires(nacl_signal_exe, crt)
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_signal_test')
-
-
-
-if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
-    not env.CrossToolsBuild()):
-  gio_shm_test_exe = env.ComponentProgram('gio_shm_test',
-                                              ['gio_shm_test.c'],
-                                              EXTRA_LIBS=['sel',
-                                                          'gio_wrapped_desc',
-                                                          'nonnacl_srpc',
-                                                          'nrd_xfer',
-                                                          'nacl_base',
-                                                          'nonnacl_util_c',
-                                                          'google_nacl_imc_c',
-                                                          'platform',
-                                                          'gio',
-                                                          ] + VALIDATOR_LIBS
-                                                          + DEBUG_LIBS)
-  if env.Bit('target_arm'):
-    params = [ '-n', '512', '-m', '2']
-  else:
-    params = []  # default
-  node = env.CommandTest(
-      'gio_shm_test.out',
-      command=[gio_shm_test_exe] + params)
-  env.Requires(gio_shm_test_exe, crt)
-  env.AddNodeToTestSuite(node, ['large_tests'], 'run_gio_shm_test')
-  # no idea why validator gets pulled in, via sel, since
-  # sel_validate_image is not used.  in any case, this is the only way
-  # to get it to link on linux and arm.
-
-  gio_shm_unbounded_test_exe = (
-      env.ComponentProgram('gio_shm_unbounded_test',
-                               ['gio_shm_unbounded_test.c'],
-                               EXTRA_LIBS=['sel',
-                                           'gio_wrapped_desc',
-                                           'nonnacl_srpc',
-                                           'nrd_xfer',
-                                           'nacl_base',
-                                           'nonnacl_util_c',
-                                           'google_nacl_imc_c',
-                                           'platform',
-                                           'gio',
-                                           ] + VALIDATOR_LIBS
-                                           + DEBUG_LIBS))
-  node = env.CommandTest(
-      'gio_shm_unbounded_test.out',
-      command=[gio_shm_unbounded_test_exe,])
-  env.Requires(gio_shm_unbounded_test_exe, crt)
-
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_gio_shm_unbounded_test',
-                         broken=env.Bit('target_arm') and env.UsingEmulator())
-
-  gio_nacl_desc_test_exe = env.ComponentProgram(
-      'gio_nacl_desc_test',
-      ['gio_nacl_desc_test.c'],
-      EXTRA_LIBS=['sel',
-                  'gio_wrapped_desc',
-                  'nonnacl_srpc',
-                  'nrd_xfer',
-                  'nacl_base',
-                  'nonnacl_util_c',
-                  'google_nacl_imc_c',
-                  'platform',
-                  'gio',
-                  ] + VALIDATOR_LIBS
-                  + DEBUG_LIBS)
-
-  import tempfile
-  node = env.CommandTest('gio_nacl_desc_test.out',
-                         command = [gio_nacl_desc_test_exe,
-                                    env.File('testdata/fib_array.nexe'),
-                                    tempfile.mktemp()])
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_gio_nacl_desc_test')
-
 
 
 check_test_exe = env.ComponentProgram('nacl_check_test',

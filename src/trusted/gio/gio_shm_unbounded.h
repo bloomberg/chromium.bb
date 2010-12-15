@@ -9,14 +9,14 @@
  * buffering into a shared memory object that may grow as needed.
  */
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_GIO_SHM_UNBOUNDED_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_GIO_SHM_UNBOUNDED_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_GIO_WRAPPED_DESC_GIO_SHM_UNBOUNDED_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_GIO_WRAPPED_DESC_GIO_SHM_UNBOUNDED_H_
 
 #include "native_client/src/include/nacl_base.h"
 
 #include "native_client/src/shared/gio/gio.h"
 
-#include "native_client/src/trusted/service_runtime/gio_shm.h"
+#include "native_client/src/trusted/gio/gio_shm.h"
 
 EXTERN_C_BEGIN
 
@@ -53,4 +53,4 @@ int NaClGioShmUnboundedCtor(struct NaClGioShmUnbounded *self);
 
 EXTERN_C_END
 
-#endif  /* NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_GIO_SHM_UNBOUNDED_H_ */
+#endif  /* NATIVE_CLIENT_SRC_TRUSTED_GIO_WRAPPED_DESC_GIO_SHM_UNBOUNDED_H_ */

@@ -9,8 +9,8 @@
  * services to a shared memory object.
  */
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_GIO_SHM_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_GIO_SHM_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_GIO_WRAPPED_DESC_GIO_SHM_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_GIO_WRAPPED_DESC_GIO_SHM_H_
 
 #include "native_client/src/include/nacl_base.h"
 
@@ -64,4 +64,4 @@ int NaClGioShmAllocCtor(struct NaClGioShm *self,
 
 EXTERN_C_END
 
-#endif  /* NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_GIO_SHM_H_ */
+#endif  /* NATIVE_CLIENT_SRC_TRUSTED_GIO_WRAPPED_DESC_GIO_SHM_H_ */

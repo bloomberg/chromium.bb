@@ -1426,6 +1426,7 @@ base_env.Append(
     'src/trusted/desc/build.scons',
     'src/trusted/expiration/build.scons',
     'src/trusted/gdb_rsp/build.scons',
+    'src/trusted/gio/build.scons',
     'src/trusted/handle_pass/build.scons',
     'src/trusted/nacl_base/build.scons',
     'src/trusted/nonnacl_util/build.scons',

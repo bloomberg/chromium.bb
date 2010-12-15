@@ -17,7 +17,7 @@
 
 #include "native_client/src/trusted/plugin/utility.h"
 
-#include "native_client/src/trusted/service_runtime/gio_shm_unbounded.h"
+#include "native_client/src/trusted/gio/gio_shm_unbounded.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 using nacl::assert_cast;

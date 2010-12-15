@@ -24,8 +24,8 @@
 #include "native_client/src/trusted/handle_pass/ldr_handle.h"
 
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
-#include "native_client/src/trusted/service_runtime/gio_nacl_desc.h"
-#include "native_client/src/trusted/service_runtime/gio_shm.h"
+#include "native_client/src/trusted/gio/gio_nacl_desc.h"
+#include "native_client/src/trusted/gio/gio_shm.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"

@@ -32,10 +32,10 @@
 
 #include "native_client/src/trusted/nacl_base/nacl_refcount.h"
 
-#include "native_client/src/trusted/service_runtime/gio_nacl_desc.h"
+#include "native_client/src/trusted/desc/nrd_all_modules.h"
+#include "native_client/src/trusted/gio/gio_nacl_desc.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
-#include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
-#include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 void Usage(void) {
   fprintf(stderr, "Usage: gio_nacl_desc_test src_file dst_file\n");
@@ -212,11 +212,11 @@ int main(int ac,
     return -3;
   }
   if (!NaClGioNaClDescCtor(&gsrc, (struct NaClDesc *) src)) {
-    fprintf(stderr, "NaClGioNaClDescCtor faied for source file\n");
+    fprintf(stderr, "NaClGioNaClDescCtor failed for source file\n");
     return -4;
   }
   if (!NaClGioNaClDescCtor(&gdst, (struct NaClDesc *) dst)) {
-    fprintf(stderr, "NaClGioNaClDescCtor faied for destination file\n");
+    fprintf(stderr, "NaClGioNaClDescCtor failed for destination file\n");
     return -5;
   }
 

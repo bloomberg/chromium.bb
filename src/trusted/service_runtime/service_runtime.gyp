@@ -1,32 +1,7 @@
 # -*- python -*-
-# Copyright 2009, Google Inc.
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Copyright 2010 The Native Client Authors.  All rights reserved.  Use
+# of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 {
   'variables': {
@@ -211,13 +186,13 @@
         'target_base': 'sel',
       },
       'dependencies': [
-        'gio_wrapped_desc',
-        '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
         '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
-        '<(DEPTH)/native_client/src/trusted/gdb_rsp/gdb_rsp.gyp:gdb_rsp',
         '<(DEPTH)/native_client/src/trusted/debug_stub/debug_stub.gyp:debug_stub',
+        '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
+        '<(DEPTH)/native_client/src/trusted/gdb_rsp/gdb_rsp.gyp:gdb_rsp',
+        '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc',
       ],
       'conditions': [
         ['target_arch=="arm"', {
@@ -266,27 +241,12 @@
         'fs/obj_proxy.c',
       ],
     }, {
-      'target_name': 'gio_wrapped_desc',
-      'type': 'static_library',
-      'sources': [
-        'gio_shm.c',
-        'gio_shm_unbounded.c',
-        'gio_nacl_desc.c',
-      ],
-      'dependencies': [
-        '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
-        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
-        '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
-      ],
-    },
-    {
       'target_name': 'sel_ldr',
       'type': 'executable',
-      # TODO(gregoryd): currently building sel_ldr without SDL
       'dependencies': [
         'sel',
-        'gio_wrapped_desc',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
+        '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc',
         '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
       ],
       'sources': [
@@ -306,16 +266,16 @@
             'win_target': 'x64',
           },
           'dependencies': [
-            'gio_wrapped_desc64',
-            '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer64',
             '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64',
-            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate_sfi64',
-            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncopcode_utils_gen',
             '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc64',
+            '<(DEPTH)/native_client/src/trusted/debug_stub/debug_stub.gyp:debug_stub64',
+            '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer64',
+            '<(DEPTH)/native_client/src/trusted/gdb_rsp/gdb_rsp.gyp:gdb_rsp64',
+            '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc64',
+            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncopcode_utils_gen',
+            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate_sfi64',
             'arch/x86/service_runtime_x86.gyp:service_runtime_x86_common64',
             'arch/x86_64/service_runtime_x86_64.gyp:service_runtime_x86_64',
-            '<(DEPTH)/native_client/src/trusted/gdb_rsp/gdb_rsp.gyp:gdb_rsp64',
-            '<(DEPTH)/native_client/src/trusted/debug_stub/debug_stub.gyp:debug_stub64',
           ],
           'conditions': [
             ['nacl_standalone==0 and OS=="win"', {
@@ -348,22 +308,6 @@
             'fs/xdr.c',
             'fs/obj_proxy.c',
           ],
-        }, {
-          'target_name': 'gio_wrapped_desc64',
-          'type': 'static_library',
-          'variables': {
-            'win_target': 'x64',
-          },
-          'sources': [
-            'gio_shm.c',
-            'gio_shm_unbounded.c',
-            'gio_nacl_desc.c',
-          ],
-          'dependencies': [
-            '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64',
-            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
-            '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer64',
-          ],
         },
         {
           'target_name': 'sel_ldr64',
@@ -371,11 +315,10 @@
           'variables': {
             'win_target': 'x64',
           },
-          # TODO(gregoryd): currently building sel_ldr without SDL
           'dependencies': [
             'sel64',
-            'gio_wrapped_desc64',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
+            '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc64',
             '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib64',
           ],
           'sources': [
