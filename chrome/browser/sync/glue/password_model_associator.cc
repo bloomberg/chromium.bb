@@ -198,6 +198,17 @@ void PasswordModelAssociator::AbortAssociation() {
   abort_association_pending_ = true;
 }
 
+const std::string* PasswordModelAssociator::GetChromeNodeFromSyncId(
+    int64 sync_id) {
+  return NULL;
+}
+
+bool PasswordModelAssociator::InitSyncNodeFromChromeId(
+    const std::string& node_id,
+    sync_api::BaseNode* sync_node) {
+  return false;
+}
+
 bool PasswordModelAssociator::IsAbortPending() {
   AutoLock lock(abort_association_pending_lock_);
   return abort_association_pending_;

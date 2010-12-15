@@ -50,7 +50,7 @@ class PrefStore {
   virtual void RemoveObserver(Observer* observer) {}
 
   // Whether the store has completed all asynchronous initialization.
-  virtual bool IsInitializationComplete() const { return true; }
+  virtual bool IsInitializationComplete() const;
 
   // Get the value for a given preference |key| and stores it in |result|.
   // |result| is only modified if the return value is READ_OK. Ownership of the

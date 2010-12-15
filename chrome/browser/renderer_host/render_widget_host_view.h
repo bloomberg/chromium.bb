@@ -51,7 +51,7 @@ struct WebPluginGeometry;
 // changes.
 class RenderWidgetHostView {
  public:
-  virtual ~RenderWidgetHostView() {}
+  virtual ~RenderWidgetHostView();
 
   // Platform-specific creator. Use this to construct new RenderWidgetHostViews
   // rather than using RenderWidgetHostViewWin & friends.
@@ -268,11 +268,9 @@ class RenderWidgetHostView {
   }
   WebKit::WebPopupType popup_type() const { return popup_type_; }
 
-  // Subclasses should override this method to do  is appropriate to set
+  // Subclasses should override this method to do what is appropriate to set
   // the custom background for their platform.
-  virtual void SetBackground(const SkBitmap& background) {
-    background_ = background;
-  }
+  virtual void SetBackground(const SkBitmap& background);
   const SkBitmap& background() const { return background_; }
 
   // Returns true if the native view, |native_view|, is contained within in the

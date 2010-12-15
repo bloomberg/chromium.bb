@@ -432,8 +432,8 @@ TEST(Deserialize, DispatchTabMessage) {
 
   // Tuple3<int, int, IPC::NavigationInfo>
   int flags = 2;
-  IPC::NavigationInfo ni = {2, 3, 4, L"title", url,
-      ref, SECURITY_STYLE_AUTHENTICATION_BROKEN, true, true};
+  IPC::NavigationInfo ni(2, 3, 4, L"title", url,
+                         ref, SECURITY_STYLE_AUTHENTICATION_BROKEN, true, true);
   AutomationMsg_NavigationStateChanged m1(0, 1, flags, ni);
   EXPECT_CALL(delegate, NavigationStateChanged(flags, EqNavigationInfo(ni)));
   EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m1));
@@ -486,9 +486,9 @@ TEST(Deserialize, DispatchTabMessage) {
   EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m9));
 
   // Tuple4<int, HANDLE, int, IPC::ContextMenuParams>
-  IPC::MiniContextMenuParams ctxmenu = { 711, 512, GURL("http://link_src"),
+  IPC::MiniContextMenuParams ctxmenu(711, 512, GURL("http://link_src"),
       GURL("http://unfiltered_link_url"), GURL("http://src_url"),
-      GURL("http://page_url"), GURL("http://frame_url") };
+      GURL("http://page_url"), GURL("http://frame_url"));
   AutomationMsg_ForwardContextMenuToExternalHost m10(0, 1, HANDLE(7), 4,
                                                      ctxmenu);
   EXPECT_CALL(delegate, HandleContextMenu(HANDLE(7), 4,
@@ -496,8 +496,8 @@ TEST(Deserialize, DispatchTabMessage) {
   EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m10));
 
   // Tuple3<int, int, IPC::AutomationURLRequest>
-  IPC::AutomationURLRequest url_request = {"url", "post", "referer",
-      "extra_headers", 0, 3 };
+  IPC::AutomationURLRequest url_request("url", "post", "referer",
+                                        "extra_headers", 0, 3, 0);
   AutomationMsg_RequestStart m11(0, 1, 7, url_request);
   EXPECT_CALL(delegate, Network_Start(7, EqURLRequest(url_request)));
   EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m11));
@@ -523,8 +523,9 @@ TEST(Deserialize, DispatchTabMessage) {
   EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m15));
 
   // Tuple2<int, IPC::AttachExternalTabParams>
-  IPC::AttachExternalTabParams ext_tab = { 0xFEDCBA0987654321i64, url,
-      gfx::Rect(6, 9, 123, 999), 1, false, "theprofile" };
+  IPC::AttachExternalTabParams ext_tab(0xFEDCBA0987654321i64, url,
+                                       gfx::Rect(6, 9, 123, 999), 1,
+                                       false, "theprofile");
   AutomationMsg_AttachExternalTab m16(0, 1, ext_tab);
   EXPECT_CALL(delegate, AttachTab(EqAttachExternalTab(ext_tab)));
   EXPECT_TRUE(DispatchTabMessageToDelegate(&delegate, m16));

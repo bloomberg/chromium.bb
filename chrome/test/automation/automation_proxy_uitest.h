@@ -35,9 +35,7 @@ class AutomationProxyVisibleTest : public UITest {
 class ExternalTabUITestMockClient : public AutomationProxy {
  public:
   explicit ExternalTabUITestMockClient(int execution_timeout);
-  ~ExternalTabUITestMockClient() {
-    EXPECT_TRUE(host_window_ == NULL);
-  }
+  virtual ~ExternalTabUITestMockClient();
 
   MOCK_METHOD2(OnDidNavigate, void(int tab_handle,
       const IPC::NavigationInfo& nav_info));

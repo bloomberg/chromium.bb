@@ -53,8 +53,8 @@ class PrerenderContents : public RenderViewHostDelegate,
   int32 page_id() const { return page_id_; }
 
   // RenderViewHostDelegate implementation.
-  virtual RenderViewHostDelegate::View* GetViewDelegate() { return this; }
-  virtual const GURL& GetURL() const { return url_; }
+  virtual RenderViewHostDelegate::View* GetViewDelegate();
+  virtual const GURL& GetURL() const;
   virtual ViewType::Type GetRenderViewType() const;
   virtual int GetBrowserWindowID() const;
   virtual void DidNavigate(RenderViewHost* render_view_host,
@@ -126,8 +126,8 @@ class PrerenderContents : public RenderViewHostDelegate,
                                   const std::wstring& prompt);
   virtual void SetSuppressMessageBoxes(bool suppress_message_boxes) {}
   virtual gfx::NativeWindow GetMessageBoxRootWindow();
-  virtual TabContents* AsTabContents() { return NULL; }
-  virtual ExtensionHost* AsExtensionHost() { return NULL; }
+  virtual TabContents* AsTabContents();
+  virtual ExtensionHost* AsExtensionHost();
 
   virtual void UpdateInspectorSetting(const std::string& key,
                                       const std::string& value);

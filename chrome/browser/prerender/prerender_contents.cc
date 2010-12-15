@@ -58,6 +58,14 @@ PrerenderContents::~PrerenderContents() {
   render_view_host_->Shutdown();  // deletes render_view_host
 }
 
+RenderViewHostDelegate::View* PrerenderContents::GetViewDelegate() {
+  return this;
+}
+
+const GURL& PrerenderContents::GetURL() const {
+  return url_;
+}
+
 ViewType::Type PrerenderContents::GetRenderViewType() const {
   return ViewType::BACKGROUND_CONTENTS;
 }
@@ -131,6 +139,14 @@ void PrerenderContents::OnMessageBoxClosed(IPC::Message* reply_msg,
 
 gfx::NativeWindow PrerenderContents::GetMessageBoxRootWindow() {
   NOTIMPLEMENTED();
+  return NULL;
+}
+
+TabContents* PrerenderContents::AsTabContents() {
+  return NULL;
+}
+
+ExtensionHost* PrerenderContents::AsExtensionHost() {
   return NULL;
 }
 

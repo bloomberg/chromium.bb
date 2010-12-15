@@ -637,6 +637,10 @@ ExternalTabUITestMockClient::ExternalTabUITestMockClient(int execution_timeout)
       host_window_(NULL) {
 }
 
+ExternalTabUITestMockClient::~ExternalTabUITestMockClient() {
+  EXPECT_TRUE(host_window_ == NULL);
+}
+
 void ExternalTabUITestMockClient::ReplyStarted(
     const IPC::AutomationURLResponse* response,
     int tab_handle, int request_id) {
@@ -661,7 +665,8 @@ void ExternalTabUITestMockClient::ReplyEnd(const URLRequestStatus& status,
 }
 
 void ExternalTabUITestMockClient::Reply404(int tab_handle, int request_id) {
-  const IPC::AutomationURLResponse notfound = {"", "HTTP/1.1 404\r\n\r\n"};
+  const IPC::AutomationURLResponse notfound("", "HTTP/1.1 404\r\n\r\n", 0,
+                                            base::Time(), "", 0);
   ReplyStarted(&notfound, tab_handle, request_id);
   ReplyEOF(tab_handle, request_id);
 }
@@ -708,18 +713,25 @@ void ExternalTabUITestMockClient::InvalidateHandle(
 }
 
 // Most of the time we need external tab with these settings.
-const IPC::ExternalTabSettings ExternalTabUITestMockClient::default_settings = {
-  NULL, gfx::Rect(),  // will be replaced by CreateHostWindowAndTab
-  WS_CHILD | WS_VISIBLE,
-  false,  // is_off_the_record
-  true,   // load_requests_via_automation
-  true,  // handle_top_level_requests
-  GURL()  // initial_url
-};
+const IPC::ExternalTabSettings ExternalTabUITestMockClient::default_settings(
+    NULL, gfx::Rect(),  // will be replaced by CreateHostWindowAndTab
+    WS_CHILD | WS_VISIBLE,
+    false,   // is_off_the_record
+    true,    // load_requests_via_automation
+    true,    // handle_top_level_requests
+    GURL(),  // initial_url
+    GURL(),  // referrer
+    false,   // infobars_enabled
+    false);  // route_all_top_level_navigations
 
 // static
-const IPC::AutomationURLResponse ExternalTabUITestMockClient::http_200 =
-  {"", "HTTP/0.9 200\r\n\r\n", };
+const IPC::AutomationURLResponse ExternalTabUITestMockClient::http_200(
+    "",
+    "HTTP/0.9 200\r\n\r\n",
+    0,
+    base::Time(),
+    "",
+    0);
 
 void ExternalTabUITestMockClient::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(ExternalTabUITestMockClient, msg)
@@ -1102,7 +1114,6 @@ TEST_F(ExternalTabUITest, FLAKY_HostNetworkStackAbortRequest) {
       .Times(testing::AnyNumber());
 
   std::string url = "http://placetogo.org";
-  const IPC::AutomationURLResponse http_200 = {"", "HTTP/0.9 200\r\n\r\n", };
 
   testing::InSequence sequence;
   EXPECT_CALL(*mock_, OnRequestStart(1, 2, testing::AllOf(
@@ -1112,7 +1123,8 @@ TEST_F(ExternalTabUITest, FLAKY_HostNetworkStackAbortRequest) {
       // We can simply do CreateFunctor(1, 2, &http_200) since we know the
       // tab handle and request id, but using WithArgs<> is much more fancy :)
       .WillOnce(testing::WithArgs<0, 1>(testing::Invoke(CreateFunctor(mock_,
-          &ExternalTabUITestMockClient::ReplyStarted, &http_200))));
+          &ExternalTabUITestMockClient::ReplyStarted,
+          &ExternalTabUITestMockClient::http_200))));
 
   // Return some trivial page, that have a link to a "logo.gif" image
   const std::string data = "<!DOCTYPE html><title>Hello";
@@ -1145,7 +1157,6 @@ TEST_F(ExternalTabUITest, FLAKY_HostNetworkStackUnresponsiveRenderer) {
   EXPECT_CALL(*mock_, OnLoad(_, _)).Times(testing::AnyNumber());
 
   std::string url = "http://placetogo.org";
-  const IPC::AutomationURLResponse http_200 = {"", "HTTP/0.9 200\r\n\r\n", };
 
   EXPECT_CALL(*mock_, OnRequestStart(1, 3, testing::_))
       .Times(testing::AnyNumber());
@@ -1159,7 +1170,8 @@ TEST_F(ExternalTabUITest, FLAKY_HostNetworkStackUnresponsiveRenderer) {
       // We can simply do CreateFunctor(1, 2, &http_200) since we know the
       // tab handle and request id, but using WithArgs<> is much more fancy :)
       .WillOnce(testing::WithArgs<0, 1>(testing::Invoke(CreateFunctor(mock_,
-          &ExternalTabUITestMockClient::ReplyStarted, &http_200))));
+          &ExternalTabUITestMockClient::ReplyStarted,
+          &ExternalTabUITestMockClient::http_200))));
 
   const std::string head = "<html><title>Hello</title><body>";
 

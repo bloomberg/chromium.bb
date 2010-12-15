@@ -19,7 +19,7 @@ class BeforeTranslateInfoBar : public TranslateInfoBarBase {
   virtual void Init();
 
  protected:
-  virtual bool ShowOptionsMenuButton() const { return true; }
+  virtual bool ShowOptionsMenuButton() const;
 
  private:
   CHROMEGTK_CALLBACK_0(BeforeTranslateInfoBar, void, OnLanguageModified);

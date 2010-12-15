@@ -130,6 +130,7 @@
         'gfx/gl/gl_context_mac.cc',
         'gfx/gl/gl_context_osmesa.cc',
         'gfx/gl/gl_context_osmesa.h',
+        'gfx/gl/gl_context_stub.cc',
         'gfx/gl/gl_context_stub.h',
         'gfx/gl/gl_context_win.cc',
         'gfx/gl/gl_headers.h',

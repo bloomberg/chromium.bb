@@ -437,15 +437,14 @@ void URLRequestAutomationJob::StartAsync() {
   }
 
   // Ask automation to start this request.
-  IPC::AutomationURLRequest automation_request = {
-    request_->url().spec(),
-    request_->method(),
-    referrer.spec(),
-    new_request_headers.ToString(),
-    request_->get_upload(),
-    resource_type,
-    request_->load_flags()
-  };
+  IPC::AutomationURLRequest automation_request(
+      request_->url().spec(),
+      request_->method(),
+      referrer.spec(),
+      new_request_headers.ToString(),
+      request_->get_upload(),
+      resource_type,
+      request_->load_flags());
 
   DCHECK(message_filter_);
   message_filter_->Send(new AutomationMsg_RequestStart(0, tab_, id_,

@@ -64,6 +64,10 @@ void AfterTranslateInfoBar::Init() {
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
 }
 
+bool AfterTranslateInfoBar::ShowOptionsMenuButton() const {
+  return true;
+}
+
 void AfterTranslateInfoBar::OnOriginalLanguageModified(GtkWidget* sender) {
   int index = GetLanguageComboboxActiveId(GTK_COMBO_BOX(sender));
   if (index == GetDelegate()->original_language_index())

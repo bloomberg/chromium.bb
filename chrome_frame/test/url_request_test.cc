@@ -260,9 +260,9 @@ TEST(UrlmonUrlRequestManagerTest, Simple1) {
 
   scoped_ptr<UrlmonUrlRequestManager> mgr(new UrlmonUrlRequestManager());
   mgr->set_delegate(&mock);
-  IPC::AutomationURLRequest r1 = {
+  IPC::AutomationURLRequest r1(
       WideToUTF8(mock_server.Resolve(L"chrome_frame_window_open.html")),
-      "get" };
+      "get", "", "", NULL, 0, 0);
 
   EXPECT_CALL(mock, OnResponseStarted(1, testing::_, testing::_, testing::_,
                              testing::_, testing::_, testing::_))
@@ -293,9 +293,9 @@ TEST(UrlmonUrlRequestManagerTest, Abort1) {
 
   scoped_ptr<UrlmonUrlRequestManager> mgr(new UrlmonUrlRequestManager());
   mgr->set_delegate(&mock);
-  IPC::AutomationURLRequest r1 = {
+  IPC::AutomationURLRequest r1(
       WideToUTF8(mock_server.Resolve(L"chrome_frame_window_open.html")),
-      "get" };
+      "get", "", "", NULL, 0, 0);
 
   EXPECT_CALL(mock, OnResponseStarted(1, testing::_, testing::_, testing::_,
                                testing::_, testing::_, testing::_))
@@ -314,4 +314,3 @@ TEST(UrlmonUrlRequestManagerTest, Abort1) {
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
   mgr.reset();
 }
-

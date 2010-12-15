@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "app/gfx/gl/gl_bindings.h"
-#include "app/gfx/gl/gl_context_stub.h"
 #include "app/gfx/gl/gl_implementation.h"
 #include "base/base_paths.h"
 #include "base/command_line.h"

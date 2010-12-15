@@ -60,7 +60,7 @@ class WebPluginImpl : public WebPlugin,
                           const char* buf,
                           uint32 length);
 
-  virtual WebPluginDelegate* delegate() { return delegate_; }
+  virtual WebPluginDelegate* delegate();
 
  private:
   // WebKit::WebPlugin methods:
@@ -105,9 +105,7 @@ class WebPluginImpl : public WebPlugin,
 
   // WebPlugin implementation:
   virtual void SetWindow(gfx::PluginWindowHandle window);
-  virtual void SetAcceptsInputEvents(bool accepts) {
-    accepts_input_events_ = accepts;
-  }
+  virtual void SetAcceptsInputEvents(bool accepts);
   virtual void WillDestroyWindow(gfx::PluginWindowHandle window);
 #if defined(OS_WIN)
   void SetWindowlessPumpEvent(HANDLE pump_messages_event) { }
@@ -237,7 +235,7 @@ class WebPluginImpl : public WebPlugin,
   virtual void SetDeferResourceLoading(unsigned long resource_id, bool defer);
 
   // Ignore in-process plugins mode for this flag.
-  virtual bool IsOffTheRecord() { return false; }
+  virtual bool IsOffTheRecord();
 
   // Handles HTTP multipart responses, i.e. responses received with a HTTP
   // status code of 206.

@@ -952,19 +952,18 @@ void ChromeFrameAutomationClient::CreateExternalTab() {
     navigate_after_initialization_ = false;
   }
 
-  const IPC::ExternalTabSettings settings = {
-    m_hWnd,
-    gfx::Rect(),
-    WS_CHILD,
-    chrome_launch_params_->incognito(),
-    !use_chrome_network_,
-    handle_top_level_requests_,
-    chrome_launch_params_->url(),
-    chrome_launch_params_->referrer(),
-    // Infobars disabled in widget mode.
-    !chrome_launch_params_->widget_mode(),
-    chrome_launch_params_->route_all_top_level_navigations(),
-  };
+  const IPC::ExternalTabSettings settings(
+      m_hWnd,
+      gfx::Rect(),
+      WS_CHILD,
+      chrome_launch_params_->incognito(),
+      !use_chrome_network_,
+      handle_top_level_requests_,
+      chrome_launch_params_->url(),
+      chrome_launch_params_->referrer(),
+      // Infobars disabled in widget mode.
+      !chrome_launch_params_->widget_mode(),
+      chrome_launch_params_->route_all_top_level_navigations());
 
   THREAD_SAFE_UMA_HISTOGRAM_CUSTOM_COUNTS(
       "ChromeFrame.HostNetworking", !use_chrome_network_, 0, 1, 2);
@@ -1441,14 +1440,13 @@ void ChromeFrameAutomationClient::OnResponseStarted(int request_id,
     const char* mime_type,  const char* headers, int size,
     base::Time last_modified, const std::string& redirect_url,
     int redirect_status) {
-  const IPC::AutomationURLResponse response = {
+  const IPC::AutomationURLResponse response(
       mime_type,
       headers ? headers : "",
       size,
       last_modified,
       redirect_url,
-      redirect_status
-  };
+      redirect_status);
 
   automation_server_->Send(new AutomationMsg_RequestStarted(0,
       tab_->handle(), request_id, response));

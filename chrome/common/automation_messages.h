@@ -39,197 +39,49 @@ namespace IPC {
 template <>
 struct ParamTraits<AutomationMsg_Find_Params> {
   typedef AutomationMsg_Find_Params param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.unused);
-    WriteParam(m, p.search_string);
-    WriteParam(m, p.forward);
-    WriteParam(m, p.match_case);
-    WriteParam(m, p.find_next);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    return
-      ReadParam(m, iter, &p->unused) &&
-      ReadParam(m, iter, &p->search_string) &&
-      ReadParam(m, iter, &p->forward) &&
-      ReadParam(m, iter, &p->match_case) &&
-      ReadParam(m, iter, &p->find_next);
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("<AutomationMsg_Find_Params>");
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
 struct ParamTraits<AutomationMsg_NavigationResponseValues> {
   typedef AutomationMsg_NavigationResponseValues param_type;
-  static void Write(Message* m, const param_type& p) {
-    m->WriteInt(p);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    int type;
-    if (!m->ReadInt(iter, &type))
-      return false;
-    *p = static_cast<AutomationMsg_NavigationResponseValues>(type);
-    return true;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    std::string control;
-    switch (p) {
-     case AUTOMATION_MSG_NAVIGATION_ERROR:
-      control = "AUTOMATION_MSG_NAVIGATION_ERROR";
-      break;
-     case AUTOMATION_MSG_NAVIGATION_SUCCESS:
-      control = "AUTOMATION_MSG_NAVIGATION_SUCCESS";
-      break;
-     case AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED:
-      control = "AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED";
-      break;
-     default:
-      control = "UNKNOWN";
-      break;
-    }
-
-    LogParam(control, l);
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
 struct ParamTraits<AutomationMsg_ExtensionResponseValues> {
   typedef AutomationMsg_ExtensionResponseValues param_type;
-  static void Write(Message* m, const param_type& p) {
-    m->WriteInt(p);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    int type;
-    if (!m->ReadInt(iter, &type))
-      return false;
-    *p = static_cast<AutomationMsg_ExtensionResponseValues>(type);
-    return true;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    std::string control;
-    switch (p) {
-     case AUTOMATION_MSG_EXTENSION_INSTALL_SUCCEEDED:
-      control = "AUTOMATION_MSG_EXTENSION_INSTALL_SUCCEEDED";
-      break;
-     case AUTOMATION_MSG_EXTENSION_INSTALL_FAILED:
-      control = "AUTOMATION_MSG_EXTENSION_INSTALL_FAILED";
-      break;
-     default:
-      control = "UNKNOWN";
-      break;
-    }
-
-    LogParam(control, l);
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
 struct ParamTraits<AutomationMsg_ExtensionProperty> {
   typedef AutomationMsg_ExtensionProperty param_type;
-  static void Write(Message* m, const param_type& p) {
-    m->WriteInt(p);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    int type;
-    if (!m->ReadInt(iter, &type))
-      return false;
-    *p = static_cast<AutomationMsg_ExtensionProperty>(type);
-    return true;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    std::string control;
-    switch (p) {
-     case AUTOMATION_MSG_EXTENSION_ID:
-      control = "AUTOMATION_MSG_EXTENSION_ID";
-      break;
-     case AUTOMATION_MSG_EXTENSION_NAME:
-      control = "AUTOMATION_MSG_EXTENSION_NAME";
-      break;
-     case AUTOMATION_MSG_EXTENSION_VERSION:
-      control = "AUTOMATION_MSG_EXTENSION_VERSION";
-      break;
-     case AUTOMATION_MSG_EXTENSION_BROWSER_ACTION_INDEX:
-      control = "AUTOMATION_MSG_EXTENSION_BROWSER_ACTION_INDEX";
-      break;
-     default:
-      control = "UNKNOWN";
-      break;
-    }
-
-    LogParam(control, l);
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
 struct ParamTraits<SecurityStyle> {
   typedef SecurityStyle param_type;
-  static void Write(Message* m, const param_type& p) {
-    m->WriteInt(p);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    int type;
-    if (!m->ReadInt(iter, &type))
-      return false;
-    *p = static_cast<SecurityStyle>(type);
-    return true;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    std::string control;
-    switch (p) {
-     case SECURITY_STYLE_UNKNOWN:
-      control = "SECURITY_STYLE_UNKNOWN";
-      break;
-     case SECURITY_STYLE_UNAUTHENTICATED:
-      control = "SECURITY_STYLE_UNAUTHENTICATED";
-      break;
-     case SECURITY_STYLE_AUTHENTICATION_BROKEN:
-      control = "SECURITY_STYLE_AUTHENTICATION_BROKEN";
-      break;
-     case SECURITY_STYLE_AUTHENTICATED:
-      control = "SECURITY_STYLE_AUTHENTICATED";
-      break;
-     default:
-      control = "UNKNOWN";
-      break;
-    }
-
-    LogParam(control, l);
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
 struct ParamTraits<PageType> {
   typedef PageType param_type;
-  static void Write(Message* m, const param_type& p) {
-    m->WriteInt(p);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    int type;
-    if (!m->ReadInt(iter, &type))
-      return false;
-    *p = static_cast<PageType>(type);
-    return true;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    std::string control;
-    switch (p) {
-     case NORMAL_PAGE:
-      control = "NORMAL_PAGE";
-      break;
-     case ERROR_PAGE:
-      control = "ERROR_PAGE";
-      break;
-     case INTERSTITIAL_PAGE:
-      control = "INTERSTITIAL_PAGE";
-      break;
-     default:
-      control = "UNKNOWN";
-      break;
-    }
-
-    LogParam(control, l);
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
 };
 
 #if defined(OS_WIN)
@@ -296,6 +148,16 @@ struct ParamTraits<Reposition_Params> {
 #endif  // defined(OS_WIN)
 
 struct AutomationURLRequest {
+  AutomationURLRequest();
+  AutomationURLRequest(const std::string& url,
+                       const std::string& method,
+                       const std::string& referrer,
+                       const std::string& extra_request_headers,
+                       scoped_refptr<net::UploadData> upload_data,
+                       int resource_type,
+                       int load_flags);
+  ~AutomationURLRequest();
+
   std::string url;
   std::string method;
   std::string referrer;
@@ -309,44 +171,21 @@ struct AutomationURLRequest {
 template <>
 struct ParamTraits<AutomationURLRequest> {
   typedef AutomationURLRequest param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.url);
-    WriteParam(m, p.method);
-    WriteParam(m, p.referrer);
-    WriteParam(m, p.extra_request_headers);
-    WriteParam(m, p.upload_data);
-    WriteParam(m, p.resource_type);
-    WriteParam(m, p.load_flags);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    return ReadParam(m, iter, &p->url) &&
-           ReadParam(m, iter, &p->method) &&
-           ReadParam(m, iter, &p->referrer) &&
-           ReadParam(m, iter, &p->extra_request_headers) &&
-           ReadParam(m, iter, &p->upload_data) &&
-           ReadParam(m, iter, &p->resource_type) &&
-           ReadParam(m, iter, &p->load_flags);
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("(");
-    LogParam(p.url, l);
-    l->append(", ");
-    LogParam(p.method, l);
-    l->append(", ");
-    LogParam(p.referrer, l);
-    l->append(", ");
-    LogParam(p.extra_request_headers, l);
-    l->append(", ");
-    LogParam(p.upload_data, l);
-    l->append(", ");
-    LogParam(p.resource_type, l);
-    l->append(", ");
-    LogParam(p.load_flags, l);
-    l->append(")");
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
 };
 
 struct AutomationURLResponse {
+  AutomationURLResponse();
+  AutomationURLResponse(const std::string& mime_type,
+                        const std::string& headers,
+                        int64 content_length,
+                        const base::Time& last_modified,
+                        const std::string& redirect_url,
+                        int redirect_status);
+  ~AutomationURLResponse();
+
   std::string mime_type;
   std::string headers;
   int64 content_length;
@@ -359,40 +198,25 @@ struct AutomationURLResponse {
 template <>
 struct ParamTraits<AutomationURLResponse> {
   typedef AutomationURLResponse param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.mime_type);
-    WriteParam(m, p.headers);
-    WriteParam(m, p.content_length);
-    WriteParam(m, p.last_modified);
-    WriteParam(m, p.redirect_url);
-    WriteParam(m, p.redirect_status);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    return ReadParam(m, iter, &p->mime_type) &&
-           ReadParam(m, iter, &p->headers) &&
-           ReadParam(m, iter, &p->content_length) &&
-           ReadParam(m, iter, &p->last_modified) &&
-           ReadParam(m, iter, &p->redirect_url) &&
-           ReadParam(m, iter, &p->redirect_status);
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("(");
-    LogParam(p.mime_type, l);
-    l->append(", ");
-    LogParam(p.headers, l);
-    l->append(", ");
-    LogParam(p.content_length, l);
-    l->append(", ");
-    LogParam(p.last_modified, l);
-    l->append(", ");
-    LogParam(p.redirect_url, l);
-    l->append(", ");
-    LogParam(p.redirect_status, l);
-    l->append(")");
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
 };
 
 struct ExternalTabSettings {
+  ExternalTabSettings();
+  ExternalTabSettings(gfx::NativeWindow parent,
+                      const gfx::Rect& dimensions,
+                      unsigned int style,
+                      bool is_off_the_record,
+                      bool load_requests_via_automation,
+                      bool handle_top_level_requests,
+                      const GURL& initial_url,
+                      const GURL& referrer,
+                      bool infobars_enabled,
+                      bool route_all_top_level_navigations);
+  ~ExternalTabSettings();
+
   gfx::NativeWindow parent;
   gfx::Rect dimensions;
   unsigned int style;
@@ -409,56 +233,24 @@ struct ExternalTabSettings {
 template <>
 struct ParamTraits<ExternalTabSettings> {
   typedef ExternalTabSettings param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.parent);
-    WriteParam(m, p.dimensions);
-    WriteParam(m, p.style);
-    WriteParam(m, p.is_off_the_record);
-    WriteParam(m, p.load_requests_via_automation);
-    WriteParam(m, p.handle_top_level_requests);
-    WriteParam(m, p.initial_url);
-    WriteParam(m, p.referrer);
-    WriteParam(m, p.infobars_enabled);
-    WriteParam(m, p.route_all_top_level_navigations);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    return ReadParam(m, iter, &p->parent) &&
-           ReadParam(m, iter, &p->dimensions) &&
-           ReadParam(m, iter, &p->style) &&
-           ReadParam(m, iter, &p->is_off_the_record) &&
-           ReadParam(m, iter, &p->load_requests_via_automation) &&
-           ReadParam(m, iter, &p->handle_top_level_requests) &&
-           ReadParam(m, iter, &p->initial_url) &&
-           ReadParam(m, iter, &p->referrer) &&
-           ReadParam(m, iter, &p->infobars_enabled) &&
-           ReadParam(m, iter, &p->route_all_top_level_navigations);
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("(");
-    LogParam(p.parent, l);
-    l->append(", ");
-    LogParam(p.dimensions, l);
-    l->append(", ");
-    LogParam(p.style, l);
-    l->append(", ");
-    LogParam(p.is_off_the_record, l);
-    l->append(", ");
-    LogParam(p.load_requests_via_automation, l);
-    l->append(", ");
-    LogParam(p.handle_top_level_requests, l);
-    l->append(", ");
-    LogParam(p.initial_url, l);
-    l->append(", ");
-    LogParam(p.referrer, l);
-    l->append(", ");
-    LogParam(p.infobars_enabled, l);
-    l->append(", ");
-    LogParam(p.route_all_top_level_navigations, l);
-    l->append(")");
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
 };
 
 struct NavigationInfo {
+  NavigationInfo();
+  NavigationInfo(int navigation_type,
+                 int relative_offset,
+                 int navigation_index,
+                 const std::wstring& title,
+                 const GURL& url,
+                 const GURL& referrer,
+                 SecurityStyle security_style,
+                 bool displayed_insecure_content,
+                 bool ran_insecure_content);
+  ~NavigationInfo();
+
   int navigation_type;
   int relative_offset;
   int navigation_index;
@@ -474,53 +266,23 @@ struct NavigationInfo {
 template <>
 struct ParamTraits<NavigationInfo> {
   typedef NavigationInfo param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.navigation_type);
-    WriteParam(m, p.relative_offset);
-    WriteParam(m, p.navigation_index);
-    WriteParam(m, p.title);
-    WriteParam(m, p.url);
-    WriteParam(m, p.referrer);
-    WriteParam(m, p.security_style);
-    WriteParam(m, p.displayed_insecure_content);
-    WriteParam(m, p.ran_insecure_content);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    return ReadParam(m, iter, &p->navigation_type) &&
-           ReadParam(m, iter, &p->relative_offset) &&
-           ReadParam(m, iter, &p->navigation_index) &&
-           ReadParam(m, iter, &p->title) &&
-           ReadParam(m, iter, &p->url) &&
-           ReadParam(m, iter, &p->referrer) &&
-           ReadParam(m, iter, &p->security_style) &&
-           ReadParam(m, iter, &p->displayed_insecure_content) &&
-           ReadParam(m, iter, &p->ran_insecure_content);
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("(");
-    LogParam(p.navigation_type, l);
-    l->append(", ");
-    LogParam(p.relative_offset, l);
-    l->append(", ");
-    LogParam(p.navigation_index, l);
-    l->append(", ");
-    LogParam(p.title, l);
-    l->append(", ");
-    LogParam(p.url, l);
-    l->append(", ");
-    LogParam(p.referrer, l);
-    l->append(", ");
-    LogParam(p.security_style, l);
-    l->append(", ");
-    LogParam(p.displayed_insecure_content, l);
-    l->append(", ");
-    LogParam(p.ran_insecure_content, l);
-    l->append(")");
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
 };
 
 // A stripped down version of ContextMenuParams in webkit/glue/context_menu.h.
 struct MiniContextMenuParams {
+  MiniContextMenuParams();
+  MiniContextMenuParams(int screen_x,
+                        int screen_y,
+                        const GURL& link_url,
+                        const GURL& unfiltered_link_url,
+                        const GURL& src_url,
+                        const GURL& page_url,
+                        const GURL& frame_url);
+  ~MiniContextMenuParams();
+
   // The x coordinate for displaying the menu.
   int screen_x;
 
@@ -552,44 +314,21 @@ struct MiniContextMenuParams {
 template <>
 struct ParamTraits<MiniContextMenuParams> {
   typedef MiniContextMenuParams param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.screen_x);
-    WriteParam(m, p.screen_y);
-    WriteParam(m, p.link_url);
-    WriteParam(m, p.unfiltered_link_url);
-    WriteParam(m, p.src_url);
-    WriteParam(m, p.page_url);
-    WriteParam(m, p.frame_url);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    return ReadParam(m, iter, &p->screen_x) &&
-      ReadParam(m, iter, &p->screen_y) &&
-      ReadParam(m, iter, &p->link_url) &&
-      ReadParam(m, iter, &p->unfiltered_link_url) &&
-      ReadParam(m, iter, &p->src_url) &&
-      ReadParam(m, iter, &p->page_url) &&
-      ReadParam(m, iter, &p->frame_url);
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("(");
-    LogParam(p.screen_x, l);
-    l->append(", ");
-    LogParam(p.screen_y, l);
-    l->append(", ");
-    LogParam(p.link_url, l);
-    l->append(", ");
-    LogParam(p.unfiltered_link_url, l);
-    l->append(", ");
-    LogParam(p.src_url, l);
-    l->append(", ");
-    LogParam(p.page_url, l);
-    l->append(", ");
-    LogParam(p.frame_url, l);
-    l->append(")");
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
 };
 
 struct AttachExternalTabParams {
+  AttachExternalTabParams();
+  AttachExternalTabParams(uint64 cookie,
+                          const GURL& url,
+                          const gfx::Rect& dimensions,
+                          int disposition,
+                          bool user_gesture,
+                          const std::string& profile_name);
+  ~AttachExternalTabParams();
+
   uint64 cookie;
   GURL url;
   gfx::Rect dimensions;
@@ -601,39 +340,9 @@ struct AttachExternalTabParams {
 template <>
 struct ParamTraits<AttachExternalTabParams> {
   typedef AttachExternalTabParams param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.cookie);
-    WriteParam(m, p.url);
-    WriteParam(m, p.dimensions);
-    WriteParam(m, p.disposition);
-    WriteParam(m, p.user_gesture);
-    WriteParam(m, p.profile_name);
-  }
-
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    return ReadParam(m, iter, &p->cookie) &&
-        ReadParam(m, iter, &p->url) &&
-        ReadParam(m, iter, &p->dimensions) &&
-        ReadParam(m, iter, &p->disposition) &&
-        ReadParam(m, iter, &p->user_gesture) &&
-        ReadParam(m, iter, &p->profile_name);
-  }
-
-  static void Log(const param_type& p, std::string* l) {
-    l->append("(");
-    LogParam(p.cookie, l);
-    l->append(", ");
-    LogParam(p.url, l);
-    l->append(", ");
-    LogParam(p.dimensions, l);
-    l->append(", ");
-    LogParam(p.disposition, l);
-    l->append(", ");
-    LogParam(p.user_gesture, l);
-    l->append(",");
-    LogParam(p.profile_name, l);
-    l->append(")");
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
 };
 
 }  // namespace IPC

@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCanvas.h"
 
 namespace gfx {
 class Rect;
@@ -22,21 +23,14 @@ class WebPluginPrintDelegate {
   // If a plugin supports print extensions, then it gets to participate fully
   // in the browser's print workflow by specifying the number of pages to be
   // printed and providing a print output for specified pages.
-  virtual bool PrintSupportsPrintExtension() {
-    return false;
-  }
+  virtual bool PrintSupportsPrintExtension();
 
   // Note: printable_area is in points (a point is 1/72 of an inch).
-  virtual int PrintBegin(const gfx::Rect& printable_area, int printer_dpi) {
-    return 0;
-  }
+  virtual int PrintBegin(const gfx::Rect& printable_area, int printer_dpi);
 
-  virtual bool PrintPage(int page_number, WebKit::WebCanvas* canvas) {
-    return false;
-  }
+  virtual bool PrintPage(int page_number, WebKit::WebCanvas* canvas);
 
-  virtual void PrintEnd() {
-  }
+  virtual void PrintEnd();
 
  protected:
   WebPluginPrintDelegate() {}

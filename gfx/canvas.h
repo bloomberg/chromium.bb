@@ -210,8 +210,8 @@ class Canvas {
   // TODO(beng): remove this once we don't need to use any skia-specific methods
   //             through this interface.
   // A quick and dirty way to obtain the underlying SkCanvas.
-  virtual CanvasSkia* AsCanvasSkia() { return NULL; }
-  virtual const CanvasSkia* AsCanvasSkia() const { return NULL; }
+  virtual CanvasSkia* AsCanvasSkia();
+  virtual const CanvasSkia* AsCanvasSkia() const;
 };
 
 class CanvasPaint {

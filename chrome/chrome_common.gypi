@@ -299,6 +299,7 @@
         'common/plugin_messages.h',
         'common/plugin_messages_internal.h',
         'common/persistent_pref_store.h',
+        'common/pref_store.cc',
         'common/pref_store.h',
         'common/render_messages.cc',
         'common/render_messages.h',

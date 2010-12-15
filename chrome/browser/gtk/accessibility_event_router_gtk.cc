@@ -12,11 +12,11 @@
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/notification_type.h"
-#include "views/controls/textfield/native_textfield_gtk.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "views/controls/textfield/gtk_views_textview.h"
 #include "views/controls/textfield/gtk_views_entry.h"
+#include "views/controls/textfield/native_textfield_gtk.h"
 #endif
 
 namespace {

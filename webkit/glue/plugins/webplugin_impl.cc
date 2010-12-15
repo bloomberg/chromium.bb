@@ -562,6 +562,10 @@ void WebPluginImpl::SetWindow(gfx::PluginWindowHandle window) {
 #endif
 }
 
+void WebPluginImpl::SetAcceptsInputEvents(bool accepts) {
+  accepts_input_events_ = accepts;
+}
+
 void WebPluginImpl::WillDestroyWindow(gfx::PluginWindowHandle window) {
   DCHECK_EQ(window, window_);
   window_ = gfx::kNullPluginWindow;
@@ -621,6 +625,10 @@ bool WebPluginImpl::SetPostData(WebURLRequest* request,
   request->setHTTPBody(http_body);
 
   return rv;
+}
+
+WebPluginDelegate* WebPluginImpl::delegate() {
+  return delegate_;
 }
 
 bool WebPluginImpl::IsValidUrl(const GURL& url, Referrer referrer_flag) {
@@ -1248,6 +1256,10 @@ void WebPluginImpl::SetDeferResourceLoading(unsigned long resource_id,
     }
     client_index++;
   }
+}
+
+bool WebPluginImpl::IsOffTheRecord() {
+  return false;
 }
 
 void WebPluginImpl::HandleHttpMultipartResponse(

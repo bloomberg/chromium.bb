@@ -73,6 +73,27 @@ void PasswordDataTypeController::Stop() {
       NewRunnableMethod(this, &PasswordDataTypeController::StopImpl));
 }
 
+bool PasswordDataTypeController::enabled() {
+  return true;
+}
+
+syncable::ModelType PasswordDataTypeController::type() {
+  return syncable::PASSWORDS;
+}
+
+browser_sync::ModelSafeGroup PasswordDataTypeController::model_safe_group() {
+  return browser_sync::GROUP_PASSWORD;
+}
+
+const char* PasswordDataTypeController::name() const {
+  // For logging only.
+  return "password";
+}
+
+DataTypeController::State PasswordDataTypeController::state() {
+  return state_;
+}
+
 void PasswordDataTypeController::StartImpl() {
   // No additional services need to be started before we can proceed
   // with model association.
