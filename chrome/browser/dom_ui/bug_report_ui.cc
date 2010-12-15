@@ -570,7 +570,7 @@ base::StringPiece BugReportHandler::Init() {
   TabContents* target_tab = browser->GetTabContentsAt(index);
   if (target_tab) {
     target_tab_title_ = target_tab->GetTitle();
-    target_tab_url_ = target_tab->controller().GetActiveEntry()->url().spec();
+    target_tab_url_ = target_tab->GetURL().spec();
   }
 
   // Setup the screenshot source after we've verified input is legit.
