@@ -413,7 +413,8 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
         failure.error().state() == GoogleServiceAuthError::CAPTCHA_REQUIRED) {
       if (!failure.error().captcha().image_url.is_empty()) {
         CaptchaView* view =
-            new CaptchaView(failure.error().captcha().image_url);
+            new CaptchaView(failure.error().captcha().image_url, false);
+        view->Init();
         view->set_delegate(this);
         views::Window* window = browser::CreateViewsWindow(
             GetNativeWindow(), gfx::Rect(), view);

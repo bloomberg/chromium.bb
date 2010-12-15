@@ -393,10 +393,11 @@ void LoginPerformer::ResolveLockNetworkAuthFailure() {
       break;
     case GoogleServiceAuthError::CAPTCHA_REQUIRED:
       // User is requested to enter CAPTCHA challenge.
-      msg = l10n_util::GetString(IDS_LOGIN_ERROR_AUTHENTICATING);
-      // TODO(nkostylev): Instruct ScreenLocker to show CAPTCHA input.
-      // http://crosbug.com/9812
-      break;
+      msg = l10n_util::GetString(IDS_LOGIN_ERROR_PASSWORD_CHANGED);
+      ScreenLocker::default_screen_locker()->ShowCaptchaAndErrorMessage(
+          last_login_failure_.error().captcha().image_url,
+          msg);
+      return;
     default:
       // Unless there's new GoogleServiceAuthError state has been added.
       NOTREACHED();

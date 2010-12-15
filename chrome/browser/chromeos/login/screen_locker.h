@@ -8,8 +8,10 @@
 
 #include <string>
 
+#include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "base/time.h"
+#include "chrome/browser/chromeos/login/captcha_view.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -20,6 +22,7 @@ class Rect;
 }  // namespace gfx
 
 namespace views {
+class View;
 class WidgetGtk;
 }  // namespace views
 
@@ -43,8 +46,18 @@ class ScreenLockerTester;
 // delete itself when it's unlocked.
 class ScreenLocker : public LoginStatusConsumer,
                      public MessageBubbleDelegate,
+                     public CaptchaView::Delegate,
                      public views::AcceleratorTarget {
  public:
+  // Interface that helps switching from ScreenLockView to CaptchaView.
+  class ScreenLockViewContainer {
+   public:
+    virtual void SetScreenLockView(views::View* screen_lock_view) = 0;
+
+   protected:
+    virtual ~ScreenLockViewContainer() {}
+  };
+
   explicit ScreenLocker(const UserManager::User& user);
 
   // Returns the default instance if it has been created.
@@ -69,6 +82,9 @@ class ScreenLocker : public LoginStatusConsumer,
   virtual bool FadeInOnShow() { return false; }
   virtual void OnHelpLinkActivated() {}
 
+  // CaptchaView::Delegate implementation:
+  virtual void OnCaptchaEntered(const std::string& captcha);
+
   // Authenticates the user with given |password| and authenticator.
   void Authenticate(const string16& password);
 
@@ -80,6 +96,11 @@ class ScreenLocker : public LoginStatusConsumer,
 
   // Exit the chrome, which will sign out the current session.
   void Signout();
+
+  // Present user a CAPTCHA challenge with image from |captcha_url|,
+  // After that shows error bubble with |message|.
+  void ShowCaptchaAndErrorMessage(const GURL& captcha_url,
+                                  const std::wstring& message);
 
   // Disables all UI needed and shows error bubble with |message|.
   // If |sign_out_only| is true then all other input except "Sign Out"
@@ -155,6 +176,23 @@ class ScreenLocker : public LoginStatusConsumer,
 
   // A view that can display html page as background.
   BackgroundView* background_view_;
+
+  // View used to present CAPTCHA challenge input.
+  CaptchaView* captcha_view_;
+
+  // Containers that hold currently visible view.
+  // Initially it's ScreenLockView instance.
+  // When CAPTCHA input dialog is presented it's swapped to CaptchaView
+  // instance, then back after CAPTCHA input is done.
+  ScreenLockViewContainer* grab_container_;
+  ScreenLockViewContainer* background_container_;
+
+  // View that's not owned by grab_container_ - either ScreenLockView or
+  // CaptchaView instance. Keep that under scoped_ptr so that it's deleted.
+  scoped_ptr<views::View> secondary_view_;
+
+  // Postponed error message to be shown after CAPTCHA input is done.
+  std::wstring postponed_error_message_;
 
   // Logged in user.
   UserManager::User user_;

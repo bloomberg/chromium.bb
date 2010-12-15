@@ -249,7 +249,9 @@ class LockWindow : public views::WidgetGtk {
 
 // GrabWidget's root view to layout the ScreenLockView at the center
 // and the Shutdown button at the right bottom.
-class GrabWidgetRootView : public views::View {
+class GrabWidgetRootView
+    : public views::View,
+      public chromeos::ScreenLocker::ScreenLockViewContainer {
  public:
   explicit GrabWidgetRootView(chromeos::ScreenLockView* screen_lock_view)
       : screen_lock_view_(screen_lock_view),
@@ -264,6 +266,18 @@ class GrabWidgetRootView : public views::View {
     gfx::Size size = screen_lock_view_->GetPreferredSize();
     screen_lock_view_->SetBounds(0, 0, size.width(), size.height());
     shutdown_button_->LayoutIn(this);
+  }
+
+  // ScreenLocker::ScreenLockViewContainer implementation:
+  void SetScreenLockView(views::View* screen_lock_view) {
+    if (screen_lock_view_) {
+      RemoveChildView(screen_lock_view_);
+    }
+    screen_lock_view_ =  screen_lock_view;
+    if (screen_lock_view_) {
+      AddChildView(0, screen_lock_view_);
+    }
+    Layout();
   }
 
  private:
@@ -435,7 +449,9 @@ void GrabWidget::TryUngrabOtherClients() {
 
 // BackgroundView for ScreenLocker, which layouts a lock widget in
 // addition to other background components.
-class ScreenLockerBackgroundView : public chromeos::BackgroundView {
+class ScreenLockerBackgroundView
+    : public chromeos::BackgroundView,
+      public chromeos::ScreenLocker::ScreenLockViewContainer {
  public:
   ScreenLockerBackgroundView(views::WidgetGtk* lock_widget,
                              views::View* screen_lock_view)
@@ -461,6 +477,12 @@ class ScreenLockerBackgroundView : public chromeos::BackgroundView {
       // No password entry. Move the lock widget to off screen.
       lock_widget_->SetBounds(gfx::Rect(-100, -100, 1, 1));
     }
+  }
+
+  // ScreenLocker::ScreenLockViewContainer implementation:
+  void SetScreenLockView(views::View* screen_lock_view) {
+    screen_lock_view_ =  screen_lock_view;
+    Layout();
   }
 
  private:
@@ -617,6 +639,9 @@ ScreenLocker::ScreenLocker(const UserManager::User& user)
     : lock_window_(NULL),
       lock_widget_(NULL),
       screen_lock_view_(NULL),
+      captcha_view_(NULL),
+      grab_container_(NULL),
+      background_container_(NULL),
       user_(user),
       error_info_(NULL),
       drawn_(false),
@@ -663,8 +688,9 @@ void ScreenLocker::Init() {
   lock_widget_->MakeTransparent();
   lock_widget_->InitWithWidget(lock_window_, gfx::Rect());
   if (screen_lock_view_) {
-    lock_widget_->SetContentsView(
-        new GrabWidgetRootView(screen_lock_view_));
+    GrabWidgetRootView* root_view = new GrabWidgetRootView(screen_lock_view_);
+    grab_container_ = root_view;
+    lock_widget_->SetContentsView(root_view);
   }
   lock_widget_->Show();
 
@@ -672,8 +698,10 @@ void ScreenLocker::Init() {
   std::string url_string =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kScreenSaverUrl);
-  background_view_ = new ScreenLockerBackgroundView(lock_widget_,
-                                                    screen_lock_view_);
+  ScreenLockerBackgroundView* screen_lock_background_view_ =
+      new ScreenLockerBackgroundView(lock_widget_, screen_lock_view_);
+  background_container_ = screen_lock_background_view_;
+  background_view_ = screen_lock_background_view_;
   background_view_->Init(GURL(url_string));
   if (background_view_->ScreenSaverEnabled())
     StartScreenSaver();
@@ -781,6 +809,29 @@ void ScreenLocker::InfoBubbleClosing(InfoBubble* info_bubble,
   }
 }
 
+void ScreenLocker::OnCaptchaEntered(const std::string& captcha) {
+  // Captcha dialog is only shown when LoginPerformer instance exists,
+  // i.e. blocking UI after password change is in place.
+  DCHECK(LoginPerformer::default_performer());
+  LoginPerformer::default_performer()->set_captcha(captcha);
+
+  // ScreenLockView ownership is passed to grab_container_.
+  // Need to save return value here so that compile
+  // doesn't fail with "unused result" warning.
+  views::View* view = secondary_view_.release();
+  view = NULL;
+  captcha_view_->SetVisible(false);
+  grab_container_->SetScreenLockView(screen_lock_view_);
+  background_container_->SetScreenLockView(screen_lock_view_);
+  screen_lock_view_->SetVisible(true);
+  screen_lock_view_->ClearAndSetFocusToPassword();
+
+  // Take CaptchaView ownership now that it's removed from grab_container_.
+  secondary_view_.reset(captcha_view_);
+  ShowErrorMessage(postponed_error_message_, false);
+  postponed_error_message_.clear();
+}
+
 void ScreenLocker::Authenticate(const string16& password) {
   authentication_start_time_ = base::Time::Now();
   screen_lock_view_->SetEnabled(false);
@@ -828,6 +879,27 @@ void ScreenLocker::Signout() {
     // Don't hide yet the locker because the chrome screen may become visible
     // briefly.
   }
+}
+
+void ScreenLocker::ShowCaptchaAndErrorMessage(const GURL& captcha_url,
+                                              const std::wstring& message) {
+  postponed_error_message_ = message;
+  if (captcha_view_) {
+    captcha_view_->SetCaptchaURL(captcha_url);
+  } else {
+    captcha_view_ = new CaptchaView(captcha_url, true);
+    captcha_view_->Init();
+    captcha_view_->set_delegate(this);
+  }
+  // CaptchaView ownership is passed to grab_container_.
+  views::View* view = secondary_view_.release();
+  view = NULL;
+  screen_lock_view_->SetVisible(false);
+  grab_container_->SetScreenLockView(captcha_view_);
+  background_container_->SetScreenLockView(captcha_view_);
+  captcha_view_->SetVisible(true);
+  // Take ScreenLockView ownership now that it's removed from grab_container_.
+  secondary_view_.reset(screen_lock_view_);
 }
 
 void ScreenLocker::ShowErrorMessage(const std::wstring& message,

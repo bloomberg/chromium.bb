@@ -169,9 +169,6 @@ GURL GetAccountRecoveryHelpUrl() {
 
 namespace login {
 
-// Minimal width for the button.
-const int kButtonMinWidth = 90;
-
 gfx::Size WideButton::GetPreferredSize() {
   gfx::Size preferred_size = NativeButton::GetPreferredSize();
   // Set minimal width.

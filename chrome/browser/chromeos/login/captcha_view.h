@@ -10,11 +10,13 @@
 
 #include "chrome/browser/chromeos/login/image_decoder.h"
 #include "googleurl/src/gurl.h"
+#include "views/controls/button/button.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/window/dialog_delegate.h"
 
 namespace views {
 class ImageView;
+class TextButton;
 class View;
 class Window;
 }  // namespace views
@@ -25,7 +27,8 @@ namespace chromeos {
 class CaptchaView : public views::View,
                     public views::DialogDelegate,
                     public views::Textfield::Controller,
-                    public ImageDecoder::Delegate {
+                    public ImageDecoder::Delegate,
+                    public views::ButtonListener {
  public:
   class Delegate {
    public:
@@ -37,7 +40,8 @@ class CaptchaView : public views::View,
   };
 
   // |captcha_url| represents CAPTCHA image URL.
-  explicit CaptchaView(const GURL& captcha_url);
+  // |is_standalone| is true when CaptchaView is not presented as dialog.
+  CaptchaView(const GURL& captcha_url, bool is_standalone);
   virtual ~CaptchaView() {}
 
   // views::DialogDelegate overrides:
@@ -59,9 +63,19 @@ class CaptchaView : public views::View,
   // Overriden from ImageDownloader::Delegate:
   virtual void OnImageDecoded(const SkBitmap& decoded_image);
 
+  // Overridden from views::ButtonListener.
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+
+  // Initializes UI.
+  void Init();
+
   void set_delegate(Delegate* delegate) {
     delegate_ = delegate;
   }
+
+  // Instructs to download and display another captcha image.
+  // Is used when same CaptchaView is reused.
+  void SetCaptchaURL(const GURL& captcha_url);
 
  protected:
   // views::View overrides:
@@ -71,13 +85,17 @@ class CaptchaView : public views::View,
                                     views::View* child);
 
  private:
-  // Initializes UI.
-  void Init();
-
   Delegate* delegate_;
   GURL captcha_url_;
   views::ImageView* captcha_image_;
   views::Textfield* captcha_textfield_;
+
+  // True when view is not hosted inside dialog,
+  // thus should draw OK button/background.
+  bool is_standalone_;
+
+  // Used in standalone mode.
+  views::TextButton* ok_button_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptchaView);
 };

@@ -133,6 +133,9 @@ const int kUserCornerRadius = 6;
 const int kSelectedLabelHeight = 25;
 const int kUnselectedLabelHeight = 20;
 
+// Minimal width for the button.
+const int kButtonMinWidth = 90;
+
 class WideButton : public views::NativeButton {
  public:
   WideButton(views::ButtonListener* listener, const std::wstring& text)
