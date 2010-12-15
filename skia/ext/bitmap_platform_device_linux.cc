@@ -153,9 +153,12 @@ bool BitmapPlatformDevice::IsVectorial() {
 cairo_t* BitmapPlatformDevice::beginPlatformPaint() {
   data_->LoadConfig();
   cairo_t* cairo = data_->bitmap_context();
-  // Tell Cairo that we've (probably) modified its pixel buffer without
-  // its knowledge.
-  cairo_surface_mark_dirty(cairo_get_target(cairo));
+  cairo_surface_t* surface = cairo_get_target(cairo);
+  // Tell cairo to flush anything it has pending.
+  cairo_surface_flush(surface);
+  // Tell Cairo that we (probably) modified (actually, will modify) its pixel
+  // buffer directly.
+  cairo_surface_mark_dirty(surface);
   return cairo;
 }
 
