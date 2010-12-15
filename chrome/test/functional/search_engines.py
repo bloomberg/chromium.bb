@@ -66,10 +66,11 @@ class SearchEnginesTest(pyauto.PyUITest):
     """Test searching using keyword of user-added search engine."""
     self.AddSearchEngine(title='foo',
                          keyword='foo.com',
-                         url='http://foo/?q=%s')
+                         url='http://localhost/?q=%s')
     self.SetOmniboxText('foo.com foobar')
     self.OmniboxAcceptInput()
-    self.assertEqual('http://foo/?q=foobar', self.GetActiveTabURL().spec())
+    self.assertEqual('http://localhost/?q=foobar',
+                     self.GetActiveTabURL().spec())
 
   def testEditSearchEngine(self):
     """Test editing a search engine's properties."""
@@ -79,12 +80,12 @@ class SearchEnginesTest(pyauto.PyUITest):
     self.EditSearchEngine(keyword='foo.com',
                           new_title='bar',
                           new_keyword='bar.com',
-                          new_url='http://foo/?bar=true&q=%s')
+                          new_url='http://localhost/?bar=true&q=%s')
     self.assertTrue(self._GetSearchEngineWithKeyword('bar.com'))
     self.assertFalse(self._GetSearchEngineWithKeyword('foo.com'))
     self.SetOmniboxText('bar.com foobar')
     self.OmniboxAcceptInput()
-    self.assertEqual('http://foo/?bar=true&q=foobar',
+    self.assertEqual('http://localhost/?bar=true&q=foobar',
                      self.GetActiveTabURL().spec())
 
   def testDeleteSearchEngine(self):
@@ -103,7 +104,7 @@ class SearchEnginesTest(pyauto.PyUITest):
     self.AddSearchEngine(
         title='foo',
         keyword='foo.com',
-        url='http://foo/?q=%s')
+        url='http://localhost/?q=%s')
     foo = self._GetSearchEngineWithKeyword('foo.com')
     self.assertTrue(foo)
     self.assertFalse(foo['is_default'])
@@ -113,7 +114,7 @@ class SearchEnginesTest(pyauto.PyUITest):
     self.assertTrue(foo['is_default'])
     self.SetOmniboxText('foobar')
     self.OmniboxAcceptInput()
-    self.assertEqual('http://foo/?q=foobar',
+    self.assertEqual('http://localhost/?q=foobar',
                      self.GetActiveTabURL().spec())
 
   def testTabToSearch(self):
