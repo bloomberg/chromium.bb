@@ -150,8 +150,9 @@ class ExceptionHandler {
   bool Teardown();
 
   // Send an "empty" mach message to the exception handler.  Return true on
-  // success, false otherwise
-  bool SendEmptyMachMessage();
+  // success, false otherwise. If quit is true, the handler thread should
+  // simply quit.
+  bool SendEmptyMachMessage(bool quit);
 
   // All minidump writing goes through this one routine
   bool WriteMinidumpWithException(int exception_type, int exception_code,

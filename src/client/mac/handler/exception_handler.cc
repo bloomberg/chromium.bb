@@ -53,6 +53,9 @@ namespace google_breakpad {
 
 using std::map;
 
+// Message ID telling the handler thread to quit.
+static const mach_msg_id_t kQuitMessage = 1;
+
 // These structures and techniques are illustrated in
 // Mac OS X Internals, Amit Singh, ch 9.7
 struct ExceptionMessage {
@@ -281,7 +284,7 @@ bool ExceptionHandler::WriteMinidump() {
   if (pthread_mutex_lock(&minidump_write_mutex_) == 0) {
     // Send an empty message to the handle port so that a minidump will
     // be written
-    SendEmptyMachMessage();
+    SendEmptyMachMessage(false);
 
     // Wait for the minidump writer to complete its writing.  It will unlock
     // the mutex when completed
@@ -522,7 +525,9 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
       // to avoid misleading stacks.  If appropriate they will be resumed
       // afterwards.
       if (!receive.exception) {
-        if (self->is_in_teardown_)
+        // Don't touch self, since this message could have been sent
+        // from its destructor.
+        if (receive.header.msgh_id == kQuitMessage)
           return NULL;
 
         self->SuspendThreads();
@@ -705,7 +710,7 @@ bool ExceptionHandler::Teardown() {
     return false;
 
   // Send an empty message so that the handler_thread exits
-  if (SendEmptyMachMessage()) {
+  if (SendEmptyMachMessage(true)) {
     mach_port_t current_task = mach_task_self();
     result = mach_port_deallocate(current_task, handler_port_);
     if (result != KERN_SUCCESS)
@@ -721,9 +726,11 @@ bool ExceptionHandler::Teardown() {
   return result == KERN_SUCCESS;
 }
 
-bool ExceptionHandler::SendEmptyMachMessage() {
+bool ExceptionHandler::SendEmptyMachMessage(bool quit) {
   ExceptionMessage empty;
   memset(&empty, 0, sizeof(empty));
+  if (quit)
+    empty.header.msgh_id = kQuitMessage;
   empty.header.msgh_size = sizeof(empty) - sizeof(empty.padding);
   empty.header.msgh_remote_port = handler_port_;
   empty.header.msgh_bits = MACH_MSGH_BITS(MACH_MSG_TYPE_COPY_SEND,
