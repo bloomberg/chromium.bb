@@ -107,7 +107,7 @@
                          (when (eq type-hint 'mac)
                            ; Pipe it through the output shortener.
                            (concat " | " (get-chrome-root)
-                                   "build/sanitize-mac-build-log.sed")))))
+                                   "build/sanitize-mac-build-log.sh")))))
 
     ; Start up the subprocess.
     (let* ((coding-system-for-read 'utf-8-dos)
