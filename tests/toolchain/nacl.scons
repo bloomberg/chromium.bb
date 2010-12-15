@@ -44,7 +44,7 @@ node = env.CommandSelLdrTestNacl('initfini.out',
 # NOTE: this currently only works for PNaCl, c.f:
 # http://code.google.com/p/nativeclient/issues/detail?id=968
 env.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
-                       'run_initfini_test', broken=not env.Bit('bitcode'))
+                       'run_initfini_test', is_broken=not env.Bit('bitcode'))
 
 
 # NOTE: the tests below break easily under valgrid and since
@@ -101,13 +101,13 @@ for tag, e in ENVIRONMENTS_TO_TRY:
               'eh_catch_many.cc',
               'eh_loop_break.cc']:
     # http://code.google.com/p/nativeclient/issues/detail?id=1127
-    broken = e.Bit('target_arm') and src.startswith('eh_')
+    is_broken = e.Bit('target_arm') and src.startswith('eh_')
     # http://code.google.com/p/nativeclient/issues/detail?id=1106
     if src =='unwind_trace.cc':
-      broken |= e.Bit('nacl_pic') and e.Bit('target_x86_64')
+      is_broken |= e.Bit('nacl_pic') and e.Bit('target_x86_64')
 
       # the tracing gets messed up by inlining
-      broken |= tag.startswith('opt')
+      is_broken |= tag.startswith('opt')
 
     name = src.split('.')[0] + '_' + tag
     nobj = e.ComponentObject(name + '.o', src)
@@ -116,4 +116,4 @@ for tag, e in ENVIRONMENTS_TO_TRY:
                                    command=[nexe],
                                    exit_status='55')
     e.AddNodeToTestSuite(node, ['toolchain_tests', 'small_tests'],
-                         'run_' + name  +'_test', broken=broken)
+                         'run_' + name  +'_test', is_broken=is_broken)

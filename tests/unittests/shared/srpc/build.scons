@@ -6,7 +6,7 @@
 Import('env')
 
 # NOTE: the arm emulator does not handle atomic ops properly
-broken = env.Bit('target_arm') and env.UsingEmulator()
+is_broken = env.Bit('target_arm') and env.UsingEmulator()
 
 simple_srpc_test_exe = env.ComponentProgram(
     'simple_srpc_test',
@@ -22,7 +22,7 @@ node = env.CommandTest(
     'simple_srpc_test.out',
     command=[simple_srpc_test_exe])
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_simple_srpc_test',
-                       broken=broken)
+                       is_broken=is_broken)
 
 types_srpc_test_exe = env.ComponentProgram(
     'types_srpc_test',
@@ -38,5 +38,5 @@ node = env.CommandTest(
     'types_srpc_test.out',
     command=[types_srpc_test_exe])
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_types_srpc_test',
-                       broken=broken)
+                       is_broken=is_broken)
 

@@ -22,6 +22,6 @@ node = env.CommandTest(
 # NOTE: the arm emulator does not handle atomic ops properly
 env.AddNodeToTestSuite(node, ['small_tests'],
                        'run_nacl_thread_create_joinable_test',
-                       broken=env.Bit('target_arm') and env.UsingEmulator())
+                       is_broken=env.Bit('target_arm') and env.UsingEmulator())
 
 

@@ -393,7 +393,7 @@ if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
   # This test fails for arm on 32-bit machines running qemu.
   # So don't run it there.
   env.AddNodeToTestSuite(node, ['medium_tests'],
-                         broken=env.Bit('build_arm') and env.UsingEmulator())
+                         is_broken=env.Bit('build_arm') and env.UsingEmulator())
 
   # also seems to have issues with windows coverage
   # NOTE: uses validator
@@ -524,8 +524,9 @@ if not env.Bit('mac'):
                          command=[nacl_tls_unittest])
 
   # Note that this test hangs in pthread_join() on ARM QEMU.
+  is_broken = env.Bit('target_arm') and env.UsingEmulator()
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_tls_unittest',
-                         broken=env.Bit('target_arm') and env.UsingEmulator())
+                         is_broken=is_broken)
 
 # Test that sel_ldr does not crash if the executable file cannot be opened.
 node = env.CommandSelLdrTestNacl(
@@ -713,4 +714,4 @@ if (not env.CrossToolsBuild() and
   # TODO(tuduce): Make it work on windows.
   env.AddNodeToTestSuite(node, ['medium_tests'],
                          'run_sel_ldr_thread_death_test',
-                         broken=env.Bit('windows'))
+                         is_broken=env.Bit('windows'))

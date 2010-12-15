@@ -523,7 +523,7 @@ def ShouldSkipTest(env, node_name):
   return False
 
 
-def AddNodeToTestSuite(env, node, suite_name, node_name=None, broken=False):
+def AddNodeToTestSuite(env, node, suite_name, node_name=None, is_broken=False):
   global BROKEN_TEST_COUNT
 
   # CommandTest can return an empty list when it silently discards a test
@@ -539,7 +539,7 @@ def AddNodeToTestSuite(env, node, suite_name, node_name=None, broken=False):
   else:
     display_name = '<no name>'
 
-  if broken:
+  if is_broken:
     # Only print if --verbose is specified
     if not GetOption('brief_comstr'):
       print '*** BROKEN ', display_name

@@ -101,7 +101,7 @@ env.Publish('srpc_bad_service.nexe', 'run', [])
 # good hook to sneak in an emulator yet
 # TODO(robertm): research why srpc_basic and sysv_shm do not work on pnacl arm
 # "execv failed, args were: ... execv: Exec format error Open failed"
-broken = env.Bit('target_arm') and env.UsingEmulator()
+is_broken = env.Bit('target_arm') and env.UsingEmulator()
 
 node = env.CommandSelLdrTestNacl(
     'srpc_basic_test.out',
@@ -111,7 +111,7 @@ node = env.CommandSelLdrTestNacl(
     stdout_golden=env.File('srpc_basic_test.stdout'),
     )
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_basic_test',
-                       broken=broken)
+                       is_broken=is_broken)
 
 trusted_env = env.get('TRUSTED_ENV')
 # TODO: add comment explaining the if
@@ -124,7 +124,7 @@ if trusted_env and trusted_env.Bit('linux'):
       stdout_golden=env.File('srpc_sysv_shm_test.stdout'),
       )
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_sysv_shm_test',
-                         broken=broken)
+                         is_broken=is_broken)
 
 node = env.CommandSelLdrTestNacl(
     'srpc_bad_service.out',

@@ -49,4 +49,4 @@ node = env.CommandTest(
 # NOTE: This actually works on arm but the signal does not make it through the
 #       emulator. This code could be rewritten to catch the signal internally
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_tool_tests',
-                       broken=env.Bit('target_arm') and env.UsingEmulator())
+                       is_broken=env.Bit('target_arm') and env.UsingEmulator())
