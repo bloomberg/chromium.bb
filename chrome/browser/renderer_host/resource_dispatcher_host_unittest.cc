@@ -12,6 +12,7 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/browser/renderer_host/resource_handler.h"
+#include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
@@ -127,55 +128,47 @@ void ResourceIPCAccumulator::GetClassifiedMessages(ClassifiedMessages* msgs) {
 }
 
 // This class forwards the incoming messages to the ResourceDispatcherHostTest.
-// This is used to emulate different sub-procseses, since this receiver will
+// This is used to emulate different sub-processes, since this filter will
 // have a different ID than the original. For the test, we want all the incoming
 // messages to go to the same place, which is why this forwards.
-class ForwardingReceiver : public ResourceDispatcherHost::Receiver {
+class ForwardingFilter : public ResourceMessageFilter {
  public:
-  explicit ForwardingReceiver(ResourceDispatcherHost::Receiver* dest)
-    : ResourceDispatcherHost::Receiver(dest->type(), -1),
+  explicit ForwardingFilter(IPC::Message::Sender* dest)
+    : ResourceMessageFilter(ChildProcessInfo::GenerateChildProcessUniqueId(),
+                            ChildProcessInfo::RENDER_PROCESS,
+                            NULL),
       dest_(dest) {
-    set_handle(dest->handle());
+    OnChannelConnected(base::GetCurrentProcId());
   }
 
-  // ResourceDispatcherHost::Receiver implementation
+  // ResourceMessageFilter override
   virtual bool Send(IPC::Message* msg) {
+    if (!dest_)
+      return false;
     return dest_->Send(msg);
-  }
-  URLRequestContext* GetRequestContext(
-      uint32 request_id,
-      const ViewHostMsg_Resource_Request& request_data) {
-    return dest_->GetRequestContext(request_id, request_data);
   }
 
  private:
-  ResourceDispatcherHost::Receiver* dest_;
+  IPC::Message::Sender* dest_;
 
-  DISALLOW_COPY_AND_ASSIGN(ForwardingReceiver);
+  DISALLOW_COPY_AND_ASSIGN(ForwardingFilter);
 };
 
 class ResourceDispatcherHostTest : public testing::Test,
-                                   public ResourceDispatcherHost::Receiver {
+                                   public IPC::Message::Sender {
  public:
   ResourceDispatcherHostTest()
-      : Receiver(ChildProcessInfo::RENDER_PROCESS, -1),
+      : ALLOW_THIS_IN_INITIALIZER_LIST(filter_(new ForwardingFilter(this))),
         ui_thread_(BrowserThread::UI, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_),
         old_factory_(NULL),
         resource_type_(ResourceType::SUB_RESOURCE) {
-    set_handle(base::GetCurrentProcessHandle());
   }
-  // ResourceDispatcherHost::Receiver implementation
+  // IPC::Message::Sender implementation
   virtual bool Send(IPC::Message* msg) {
     accum_.AddMessage(*msg);
     delete msg;
     return true;
-  }
-
-  URLRequestContext* GetRequestContext(
-      uint32 request_id,
-      const ViewHostMsg_Resource_Request& request_data) {
-    return NULL;
   }
 
  protected:
@@ -210,14 +203,14 @@ class ResourceDispatcherHostTest : public testing::Test,
     message_loop_.RunAllPending();
   }
 
-  // Creates a request using the current test object as the receiver.
+  // Creates a request using the current test object as the filter.
   void MakeTestRequest(int render_view_id,
                        int request_id,
                        const GURL& url);
 
-  // Generates a request using the given receiver. This will probably be a
-  // ForwardingReceiver.
-  void MakeTestRequest(ResourceDispatcherHost::Receiver* receiver,
+  // Generates a request using the given filter. This will probably be a
+  // ForwardingFilter.
+  void MakeTestRequest(ResourceMessageFilter* filter,
                        int render_view_id,
                        int request_id,
                        const GURL& url);
@@ -266,6 +259,7 @@ class ResourceDispatcherHostTest : public testing::Test,
     }
   }
 
+  scoped_refptr<ForwardingFilter> filter_;
   MessageLoopForIO message_loop_;
   BrowserThread ui_thread_;
   BrowserThread io_thread_;
@@ -284,11 +278,11 @@ ResourceDispatcherHostTest* ResourceDispatcherHostTest::test_fixture_ = NULL;
 void ResourceDispatcherHostTest::MakeTestRequest(int render_view_id,
                                                  int request_id,
                                                  const GURL& url) {
-  MakeTestRequest(this, render_view_id, request_id, url);
+  MakeTestRequest(filter_.get(), render_view_id, request_id, url);
 }
 
 void ResourceDispatcherHostTest::MakeTestRequest(
-    ResourceDispatcherHost::Receiver* receiver,
+    ResourceMessageFilter* filter,
     int render_view_id,
     int request_id,
     const GURL& url) {
@@ -296,12 +290,12 @@ void ResourceDispatcherHostTest::MakeTestRequest(
       CreateResourceRequest("GET", resource_type_, url);
   ViewHostMsg_RequestResource msg(render_view_id, request_id, request);
   bool msg_was_ok;
-  host_.OnMessageReceived(msg, receiver, &msg_was_ok);
+  host_.OnMessageReceived(msg, filter, &msg_was_ok);
   KickOffRequest();
 }
 
 void ResourceDispatcherHostTest::MakeCancelRequest(int request_id) {
-  host_.CancelRequest(id(), request_id, false);
+  host_.CancelRequest(filter_->child_id(), request_id, false);
 }
 
 void CheckSuccessfulRequest(const std::vector<IPC::Message>& messages,
@@ -409,35 +403,31 @@ TEST_F(ResourceDispatcherHostTest, Cancel) {
   EXPECT_EQ(URLRequestStatus::CANCELED, status.status());
 }
 
+// The host delegate acts as a second one so we can have some requests
+// pending and some canceled.
+class TestFilter : public ForwardingFilter {
+ public:
+  TestFilter()
+      : ForwardingFilter(NULL),
+        has_canceled_(false),
+        received_after_canceled_(0) {
+  }
+
+  // ForwardingFilter override
+  virtual bool Send(IPC::Message* msg) {
+    // no messages should be received when the process has been canceled
+    if (has_canceled_)
+      received_after_canceled_++;
+    delete msg;
+    return true;
+  }
+  bool has_canceled_;
+  int received_after_canceled_;
+};
+
 // Tests CancelRequestsForProcess
 TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
-  // the host delegate acts as a second one so we can have some requests
-  // pending and some canceled
-  class TestReceiver : public ResourceDispatcherHost::Receiver {
-   public:
-    TestReceiver()
-        : Receiver(ChildProcessInfo::RENDER_PROCESS, -1),
-          has_canceled_(false),
-          received_after_canceled_(0) {
-    }
-
-    // ResourceDispatcherHost::Receiver implementation
-    virtual bool Send(IPC::Message* msg) {
-      // no messages should be received when the process has been canceled
-      if (has_canceled_)
-        received_after_canceled_++;
-      delete msg;
-      return true;
-    }
-    URLRequestContext* GetRequestContext(
-        uint32 request_id,
-        const ViewHostMsg_Resource_Request& request_data) {
-      return NULL;
-    }
-    bool has_canceled_;
-    int received_after_canceled_;
-  };
-  TestReceiver test_receiver;
+  scoped_refptr<TestFilter> test_filter = new TestFilter();
 
   // request 1 goes to the test delegate
   ViewHostMsg_Resource_Request request = CreateResourceRequest(
@@ -445,13 +435,13 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
 
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
-  MakeTestRequest(&test_receiver, 0, 1, URLRequestTestJob::test_url_1());
+  MakeTestRequest(test_filter.get(), 0, 1, URLRequestTestJob::test_url_1());
 
   // request 2 goes to us
   MakeTestRequest(0, 2, URLRequestTestJob::test_url_2());
 
   // request 3 goes to the test delegate
-  MakeTestRequest(&test_receiver, 0, 3, URLRequestTestJob::test_url_3());
+  MakeTestRequest(test_filter.get(), 0, 3, URLRequestTestJob::test_url_3());
 
   // TODO(mbelshe):
   // Now that the async IO path is in place, the IO always completes on the
@@ -464,18 +454,17 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
     EXPECT_TRUE(URLRequestTestJob::ProcessOnePendingMessage());
 
   // Cancel the requests to the test process.
-  host_.CancelRequestsForProcess(id());
-  test_receiver.has_canceled_ = true;
+  host_.CancelRequestsForProcess(filter_->child_id());
+  test_filter->has_canceled_ = true;
 
   // Flush all the pending requests.
   while (URLRequestTestJob::ProcessOnePendingMessage()) {}
 
   EXPECT_EQ(0, host_.pending_requests());
-  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(
-      id()));
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(filter_->child_id()));
 
   // The test delegate should not have gotten any messages after being canceled.
-  ASSERT_EQ(0, test_receiver.received_after_canceled_);
+  ASSERT_EQ(0, test_filter->received_after_canceled_);
 
   // We should have gotten exactly one result.
   ResourceIPCAccumulator::ClassifiedMessages msgs;
@@ -486,12 +475,11 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
 
 // Tests blocking and resuming requests.
 TEST_F(ResourceDispatcherHostTest, TestBlockingResumingRequests) {
-  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(
-      id()));
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(filter_->child_id()));
 
-  host_.BlockRequestsForRoute(id(), 1);
-  host_.BlockRequestsForRoute(id(), 2);
-  host_.BlockRequestsForRoute(id(), 3);
+  host_.BlockRequestsForRoute(filter_->child_id(), 1);
+  host_.BlockRequestsForRoute(filter_->child_id(), 2);
+  host_.BlockRequestsForRoute(filter_->child_id(), 3);
 
   MakeTestRequest(0, 1, URLRequestTestJob::test_url_1());
   MakeTestRequest(1, 2, URLRequestTestJob::test_url_2());
@@ -514,7 +502,7 @@ TEST_F(ResourceDispatcherHostTest, TestBlockingResumingRequests) {
   CheckSuccessfulRequest(msgs[1], URLRequestTestJob::test_data_3());
 
   // Resume requests for RVH 1 and flush pending requests.
-  host_.ResumeBlockedRequestsForRoute(id(), 1);
+  host_.ResumeBlockedRequestsForRoute(filter_->child_id(), 1);
   KickOffRequest();
   while (URLRequestTestJob::ProcessOnePendingMessage()) {}
 
@@ -533,13 +521,12 @@ TEST_F(ResourceDispatcherHostTest, TestBlockingResumingRequests) {
   CheckSuccessfulRequest(msgs[0], URLRequestTestJob::test_data_1());
 
   // Now resumes requests for all RVH (2 and 3).
-  host_.ResumeBlockedRequestsForRoute(id(), 2);
-  host_.ResumeBlockedRequestsForRoute(id(), 3);
+  host_.ResumeBlockedRequestsForRoute(filter_->child_id(), 2);
+  host_.ResumeBlockedRequestsForRoute(filter_->child_id(), 3);
   KickOffRequest();
   while (URLRequestTestJob::ProcessOnePendingMessage()) {}
 
-  EXPECT_EQ(0,
-            host_.GetOutstandingRequestsMemoryCost(id()));
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(filter_->child_id()));
 
   msgs.clear();
   accum_.GetClassifiedMessages(&msgs);
@@ -550,10 +537,9 @@ TEST_F(ResourceDispatcherHostTest, TestBlockingResumingRequests) {
 
 // Tests blocking and canceling requests.
 TEST_F(ResourceDispatcherHostTest, TestBlockingCancelingRequests) {
-  EXPECT_EQ(0,
-            host_.GetOutstandingRequestsMemoryCost(id()));
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(filter_->child_id()));
 
-  host_.BlockRequestsForRoute(id(), 1);
+  host_.BlockRequestsForRoute(filter_->child_id(), 1);
 
   MakeTestRequest(0, 1, URLRequestTestJob::test_url_1());
   MakeTestRequest(1, 2, URLRequestTestJob::test_url_2());
@@ -574,12 +560,11 @@ TEST_F(ResourceDispatcherHostTest, TestBlockingCancelingRequests) {
   CheckSuccessfulRequest(msgs[1], URLRequestTestJob::test_data_3());
 
   // Cancel requests for RVH 1.
-  host_.CancelBlockedRequestsForRoute(id(), 1);
+  host_.CancelBlockedRequestsForRoute(filter_->child_id(), 1);
   KickOffRequest();
   while (URLRequestTestJob::ProcessOnePendingMessage()) {}
 
-  EXPECT_EQ(0,
-            host_.GetOutstandingRequestsMemoryCost(id()));
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(filter_->child_id()));
 
   msgs.clear();
   accum_.GetClassifiedMessages(&msgs);
@@ -588,31 +573,29 @@ TEST_F(ResourceDispatcherHostTest, TestBlockingCancelingRequests) {
 
 // Tests that blocked requests are canceled if their associated process dies.
 TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsProcessDies) {
-  // This second receiver is used to emulate a second process.
-  ForwardingReceiver second_receiver(this);
+  // This second filter is used to emulate a second process.
+  scoped_refptr<ForwardingFilter> second_filter = new ForwardingFilter(this);
 
-  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(
-      id()));
-  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(
-      second_receiver.id()));
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(filter_->child_id()));
+  EXPECT_EQ(0,
+            host_.GetOutstandingRequestsMemoryCost(second_filter->child_id()));
 
-  host_.BlockRequestsForRoute(second_receiver.id(), 0);
+  host_.BlockRequestsForRoute(second_filter->child_id(), 0);
 
-  MakeTestRequest(this, 0, 1, URLRequestTestJob::test_url_1());
-  MakeTestRequest(&second_receiver, 0, 2, URLRequestTestJob::test_url_2());
-  MakeTestRequest(this, 0, 3, URLRequestTestJob::test_url_3());
-  MakeTestRequest(&second_receiver, 0, 4, URLRequestTestJob::test_url_1());
+  MakeTestRequest(filter_.get(), 0, 1, URLRequestTestJob::test_url_1());
+  MakeTestRequest(second_filter.get(), 0, 2, URLRequestTestJob::test_url_2());
+  MakeTestRequest(filter_.get(), 0, 3, URLRequestTestJob::test_url_3());
+  MakeTestRequest(second_filter.get(), 0, 4, URLRequestTestJob::test_url_1());
 
   // Simulate process death.
-  host_.CancelRequestsForProcess(second_receiver.id());
+  host_.CancelRequestsForProcess(second_filter->child_id());
 
   // Flush all the pending requests.
   while (URLRequestTestJob::ProcessOnePendingMessage()) {}
 
-  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(
-      id()));
-  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(
-      second_receiver.id()));
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(filter_->child_id()));
+  EXPECT_EQ(0,
+            host_.GetOutstandingRequestsMemoryCost(second_filter->child_id()));
 
   // Sort out all the messages we saw by request.
   ResourceIPCAccumulator::ClassifiedMessages msgs;
@@ -632,19 +615,19 @@ TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsProcessDies) {
 // If this test turns the Purify bot red, check the ResourceDispatcherHost
 // destructor to make sure the blocked requests are deleted.
 TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsDontLeak) {
-  // This second receiver is used to emulate a second process.
-  ForwardingReceiver second_receiver(this);
+  // This second filter is used to emulate a second process.
+  scoped_refptr<ForwardingFilter> second_filter = new ForwardingFilter(this);
 
-  host_.BlockRequestsForRoute(id(), 1);
-  host_.BlockRequestsForRoute(id(), 2);
-  host_.BlockRequestsForRoute(second_receiver.id(), 1);
+  host_.BlockRequestsForRoute(filter_->child_id(), 1);
+  host_.BlockRequestsForRoute(filter_->child_id(), 2);
+  host_.BlockRequestsForRoute(second_filter->child_id(), 1);
 
-  MakeTestRequest(this, 0, 1, URLRequestTestJob::test_url_1());
-  MakeTestRequest(this, 1, 2, URLRequestTestJob::test_url_2());
-  MakeTestRequest(this, 0, 3, URLRequestTestJob::test_url_3());
-  MakeTestRequest(&second_receiver, 1, 4, URLRequestTestJob::test_url_1());
-  MakeTestRequest(this, 2, 5, URLRequestTestJob::test_url_2());
-  MakeTestRequest(this, 2, 6, URLRequestTestJob::test_url_3());
+  MakeTestRequest(filter_.get(), 0, 1, URLRequestTestJob::test_url_1());
+  MakeTestRequest(filter_.get(), 1, 2, URLRequestTestJob::test_url_2());
+  MakeTestRequest(filter_.get(), 0, 3, URLRequestTestJob::test_url_3());
+  MakeTestRequest(second_filter.get(), 1, 4, URLRequestTestJob::test_url_1());
+  MakeTestRequest(filter_.get(), 2, 5, URLRequestTestJob::test_url_2());
+  MakeTestRequest(filter_.get(), 2, 6, URLRequestTestJob::test_url_3());
 
   // Flush all the pending requests.
   while (URLRequestTestJob::ProcessOnePendingMessage()) {}
@@ -709,8 +692,7 @@ TEST_F(ResourceDispatcherHostTest, IncrementOutstandingRequestsMemoryCost) {
 // Test that when too many requests are outstanding for a particular
 // render_process_host_id, any subsequent request from it fails.
 TEST_F(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
-  EXPECT_EQ(0,
-            host_.GetOutstandingRequestsMemoryCost(id()));
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(filter_->child_id()));
 
   // Expected cost of each request as measured by
   // ResourceDispatcherHost::CalculateApproximateMemoryCost().
@@ -727,30 +709,31 @@ TEST_F(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
   // throttling kicks in.
   size_t kMaxRequests = kMaxCostPerProcess / kMemoryCostOfTest2Req;
 
-  // This second receiver is used to emulate a second process.
-  ForwardingReceiver second_receiver(this);
+  // This second filter is used to emulate a second process.
+  scoped_refptr<ForwardingFilter> second_filter = new ForwardingFilter(this);
 
   // Saturate the number of outstanding requests for our process.
   for (size_t i = 0; i < kMaxRequests; ++i)
-    MakeTestRequest(this, 0, i + 1, URLRequestTestJob::test_url_2());
+    MakeTestRequest(filter_.get(), 0, i + 1, URLRequestTestJob::test_url_2());
 
   // Issue two more requests for our process -- these should fail immediately.
-  MakeTestRequest(this, 0, kMaxRequests + 1, URLRequestTestJob::test_url_2());
-  MakeTestRequest(this, 0, kMaxRequests + 2, URLRequestTestJob::test_url_2());
+  MakeTestRequest(filter_.get(), 0, kMaxRequests + 1,
+                  URLRequestTestJob::test_url_2());
+  MakeTestRequest(filter_.get(), 0, kMaxRequests + 2,
+                  URLRequestTestJob::test_url_2());
 
   // Issue two requests for the second process -- these should succeed since
   // it is just process 0 that is saturated.
-  MakeTestRequest(&second_receiver, 0, kMaxRequests + 3,
+  MakeTestRequest(second_filter.get(), 0, kMaxRequests + 3,
                   URLRequestTestJob::test_url_2());
-  MakeTestRequest(&second_receiver, 0, kMaxRequests + 4,
+  MakeTestRequest(second_filter.get(), 0, kMaxRequests + 4,
                   URLRequestTestJob::test_url_2());
 
   // Flush all the pending requests.
   while (URLRequestTestJob::ProcessOnePendingMessage()) {}
   MessageLoop::current()->RunAllPending();
 
-  EXPECT_EQ(0,
-            host_.GetOutstandingRequestsMemoryCost(id()));
+  EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(filter_->child_id()));
 
   // Sorts out all the messages we saw by request.
   ResourceIPCAccumulator::ClassifiedMessages msgs;

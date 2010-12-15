@@ -16,7 +16,6 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/profile_writer.h"
-#include "ipc/ipc_channel.h"
 
 namespace webkit_glue {
 struct PasswordForm;
@@ -128,9 +127,6 @@ class ProfileImportProcessHost : public BrowserChildProcessHost {
   // Overridden from BrowserChildProcessHost:
   virtual void OnProcessCrashed(int exit_code);
   virtual bool CanShutdown();
-  virtual URLRequestContext* GetRequestContext(
-      uint32 request_id,
-      const ViewHostMsg_Resource_Request& request_data);
 
   // Receives messages to be passed back to the importer host.
   scoped_refptr<ImportProcessClient> import_process_client_;

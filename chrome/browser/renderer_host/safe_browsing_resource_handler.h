@@ -11,11 +11,13 @@
 #include "base/ref_counted.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/renderer_host/resource_handler.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+
+class ResourceDispatcherHost;
+class ResourceMessageFilter;
 
 // SafeBrowsingResourceHandler checks that URLs are "safe" before navigating
 // to them. To be considered "safe", a URL must not appear in the
@@ -44,12 +46,11 @@ class SafeBrowsingResourceHandler : public ResourceHandler,
                                     public NotificationObserver {
  public:
   SafeBrowsingResourceHandler(ResourceHandler* handler,
-                              int render_process_host_id,
                               int render_view_id,
                               ResourceType::Type resource_type,
                               SafeBrowsingService* safe_browsing,
                               ResourceDispatcherHost* resource_dispatcher_host,
-                              ResourceDispatcherHost::Receiver* receiver);
+                              ResourceMessageFilter* filter);
 
   // ResourceHandler implementation:
   virtual bool OnUploadProgress(int request_id, uint64 position, uint64 size);

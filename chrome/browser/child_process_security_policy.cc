@@ -20,7 +20,7 @@ static const int kReadFilePermissions =
     base::PLATFORM_FILE_EXCLUSIVE_READ |
     base::PLATFORM_FILE_ASYNC;
 
-// The SecurityState class is used to maintain per-renderer security state
+// The SecurityState class is used to maintain per-child process security state
 // information.
 class ChildProcessSecurityPolicy::SecurityState {
  public:
@@ -111,7 +111,7 @@ class ChildProcessSecurityPolicy::SecurityState {
   // or revoked.
   SchemeMap scheme_policy_;
 
-  // The set of files the renderer is permited to upload to the web.
+  // The set of files the child process is permited to upload to the web.
   FileMap file_permissions_;
 
   int enabled_bindings_;
@@ -150,23 +150,23 @@ ChildProcessSecurityPolicy* ChildProcessSecurityPolicy::GetInstance() {
   return Singleton<ChildProcessSecurityPolicy>::get();
 }
 
-void ChildProcessSecurityPolicy::Add(int renderer_id) {
+void ChildProcessSecurityPolicy::Add(int child_id) {
   AutoLock lock(lock_);
-  if (security_state_.count(renderer_id) != 0) {
-    NOTREACHED() << "Add renderers at most once.";
+  if (security_state_.count(child_id) != 0) {
+    NOTREACHED() << "Add child process at most once.";
     return;
   }
 
-  security_state_[renderer_id] = new SecurityState();
+  security_state_[child_id] = new SecurityState();
 }
 
-void ChildProcessSecurityPolicy::Remove(int renderer_id) {
+void ChildProcessSecurityPolicy::Remove(int child_id) {
   AutoLock lock(lock_);
-  if (!security_state_.count(renderer_id))
+  if (!security_state_.count(child_id))
     return;  // May be called multiple times.
 
-  delete security_state_[renderer_id];
-  security_state_.erase(renderer_id);
+  delete security_state_[child_id];
+  security_state_.erase(child_id);
 }
 
 void ChildProcessSecurityPolicy::RegisterWebSafeScheme(
@@ -201,13 +201,13 @@ bool ChildProcessSecurityPolicy::IsPseudoScheme(const std::string& scheme) {
 }
 
 void ChildProcessSecurityPolicy::GrantRequestURL(
-    int renderer_id, const GURL& url) {
+    int child_id, const GURL& url) {
 
   if (!url.is_valid())
     return;  // Can't grant the capability to request invalid URLs.
 
   if (IsWebSafeScheme(url.scheme()))
-    return;  // The scheme has already been white-listed for every renderer.
+    return;  // The scheme has already been whitelisted for every child process.
 
   if (IsPseudoScheme(url.scheme())) {
     // The view-source scheme is a special case of a pseudo-URL that eventually
@@ -215,9 +215,9 @@ void ChildProcessSecurityPolicy::GrantRequestURL(
     if (url.SchemeIs(chrome::kViewSourceScheme)) {
       // URLs with the view-source scheme typically look like:
       //   view-source:http://www.google.com/a
-      // In order to request these URLs, the renderer needs to be able to
+      // In order to request these URLs, the child_id needs to be able to
       // request the embedded URL.
-      GrantRequestURL(renderer_id, GURL(url.path()));
+      GrantRequestURL(child_id, GURL(url.path()));
     }
 
     return;  // Can't grant the capability to request pseudo schemes.
@@ -225,26 +225,26 @@ void ChildProcessSecurityPolicy::GrantRequestURL(
 
   {
     AutoLock lock(lock_);
-    SecurityStateMap::iterator state = security_state_.find(renderer_id);
+    SecurityStateMap::iterator state = security_state_.find(child_id);
     if (state == security_state_.end())
       return;
 
-    // If the renderer has been commanded to request a scheme, then we grant
-    // it the capability to request URLs of that scheme.
+    // If the child process has been commanded to request a scheme, then we
+    // grant it the capability to request URLs of that scheme.
     state->second->GrantScheme(url.scheme());
   }
 }
 
-void ChildProcessSecurityPolicy::GrantReadFile(int renderer_id,
+void ChildProcessSecurityPolicy::GrantReadFile(int child_id,
                                                const FilePath& file) {
-  GrantPermissionsForFile(renderer_id, file, kReadFilePermissions);
+  GrantPermissionsForFile(child_id, file, kReadFilePermissions);
 }
 
 void ChildProcessSecurityPolicy::GrantPermissionsForFile(
-    int renderer_id, const FilePath& file, int permissions) {
+    int child_id, const FilePath& file, int permissions) {
   AutoLock lock(lock_);
 
-  SecurityStateMap::iterator state = security_state_.find(renderer_id);
+  SecurityStateMap::iterator state = security_state_.find(child_id);
   if (state == security_state_.end())
     return;
 
@@ -252,31 +252,31 @@ void ChildProcessSecurityPolicy::GrantPermissionsForFile(
 }
 
 void ChildProcessSecurityPolicy::RevokeAllPermissionsForFile(
-    int renderer_id, const FilePath& file) {
+    int child_id, const FilePath& file) {
   AutoLock lock(lock_);
 
-  SecurityStateMap::iterator state = security_state_.find(renderer_id);
+  SecurityStateMap::iterator state = security_state_.find(child_id);
   if (state == security_state_.end())
     return;
 
   state->second->RevokeAllPermissionsForFile(file);
 }
 
-void ChildProcessSecurityPolicy::GrantScheme(int renderer_id,
+void ChildProcessSecurityPolicy::GrantScheme(int child_id,
                                              const std::string& scheme) {
   AutoLock lock(lock_);
 
-  SecurityStateMap::iterator state = security_state_.find(renderer_id);
+  SecurityStateMap::iterator state = security_state_.find(child_id);
   if (state == security_state_.end())
     return;
 
   state->second->GrantScheme(scheme);
 }
 
-void ChildProcessSecurityPolicy::GrantDOMUIBindings(int renderer_id) {
+void ChildProcessSecurityPolicy::GrantDOMUIBindings(int child_id) {
   AutoLock lock(lock_);
 
-  SecurityStateMap::iterator state = security_state_.find(renderer_id);
+  SecurityStateMap::iterator state = security_state_.find(child_id);
   if (state == security_state_.end())
     return;
 
@@ -289,30 +289,30 @@ void ChildProcessSecurityPolicy::GrantDOMUIBindings(int renderer_id) {
   state->second->GrantScheme(chrome::kFileScheme);
 }
 
-void ChildProcessSecurityPolicy::GrantExtensionBindings(int renderer_id) {
+void ChildProcessSecurityPolicy::GrantExtensionBindings(int child_id) {
   AutoLock lock(lock_);
 
-  SecurityStateMap::iterator state = security_state_.find(renderer_id);
+  SecurityStateMap::iterator state = security_state_.find(child_id);
   if (state == security_state_.end())
     return;
 
   state->second->GrantBindings(BindingsPolicy::EXTENSION);
 }
 
-void ChildProcessSecurityPolicy::GrantReadRawCookies(int renderer_id) {
+void ChildProcessSecurityPolicy::GrantReadRawCookies(int child_id) {
   AutoLock lock(lock_);
 
-  SecurityStateMap::iterator state = security_state_.find(renderer_id);
+  SecurityStateMap::iterator state = security_state_.find(child_id);
   if (state == security_state_.end())
     return;
 
   state->second->GrantReadRawCookies();
 }
 
-void ChildProcessSecurityPolicy::RevokeReadRawCookies(int renderer_id) {
+void ChildProcessSecurityPolicy::RevokeReadRawCookies(int child_id) {
   AutoLock lock(lock_);
 
-  SecurityStateMap::iterator state = security_state_.find(renderer_id);
+  SecurityStateMap::iterator state = security_state_.find(child_id);
   if (state == security_state_.end())
     return;
 
@@ -320,33 +320,33 @@ void ChildProcessSecurityPolicy::RevokeReadRawCookies(int renderer_id) {
 }
 
 bool ChildProcessSecurityPolicy::CanRequestURL(
-    int renderer_id, const GURL& url) {
+    int child_id, const GURL& url) {
   if (!url.is_valid())
     return false;  // Can't request invalid URLs.
 
   if (IsWebSafeScheme(url.scheme()))
-    return true;  // The scheme has been white-listed for every renderer.
+    return true;  // The scheme has been white-listed for every child process.
 
   if (IsPseudoScheme(url.scheme())) {
     // There are a number of special cases for pseudo schemes.
 
     if (url.SchemeIs(chrome::kViewSourceScheme)) {
-      // A view-source URL is allowed if the renderer is permitted to request
-      // the embedded URL. Careful to avoid pointless recursion.
+      // A view-source URL is allowed if the child process is permitted to
+      // request the embedded URL. Careful to avoid pointless recursion.
       GURL child_url(url.path());
       if (child_url.SchemeIs(chrome::kViewSourceScheme) &&
           url.SchemeIs(chrome::kViewSourceScheme))
           return false;
 
-      return CanRequestURL(renderer_id, child_url);
+      return CanRequestURL(child_id, child_url);
     }
 
     if (LowerCaseEqualsASCII(url.spec(), chrome::kAboutBlankURL))
-      return true;  // Every renderer can request <about:blank>.
+      return true;  // Every child process can request <about:blank>.
 
     // URLs like <about:memory> and <about:crash> shouldn't be requestable by
-    // any renderer.  Also, this case covers <javascript:...>, which should be
-    // handled internally by the renderer and not kicked up to the browser.
+    // any child process.  Also, this case covers <javascript:...>, which should
+    // be handled internally by the process and not kicked up to the browser.
     return false;
   }
 
@@ -356,56 +356,56 @@ bool ChildProcessSecurityPolicy::CanRequestURL(
   {
     AutoLock lock(lock_);
 
-    SecurityStateMap::iterator state = security_state_.find(renderer_id);
+    SecurityStateMap::iterator state = security_state_.find(child_id);
     if (state == security_state_.end())
       return false;
 
-    // Otherwise, we consult the renderer's security state to see if it is
+    // Otherwise, we consult the child process's security state to see if it is
     // allowed to request the URL.
     return state->second->CanRequestURL(url);
   }
 }
 
-bool ChildProcessSecurityPolicy::CanReadFile(int renderer_id,
+bool ChildProcessSecurityPolicy::CanReadFile(int child_id,
                                              const FilePath& file) {
-  return HasPermissionsForFile(renderer_id, file, kReadFilePermissions);
+  return HasPermissionsForFile(child_id, file, kReadFilePermissions);
 }
 
 bool ChildProcessSecurityPolicy::HasPermissionsForFile(
-    int renderer_id, const FilePath& file, int permissions) {
+    int child_id, const FilePath& file, int permissions) {
   AutoLock lock(lock_);
 
-  SecurityStateMap::iterator state = security_state_.find(renderer_id);
+  SecurityStateMap::iterator state = security_state_.find(child_id);
   if (state == security_state_.end())
     return false;
 
   return state->second->HasPermissionsForFile(file, permissions);
 }
 
-bool ChildProcessSecurityPolicy::HasDOMUIBindings(int renderer_id) {
+bool ChildProcessSecurityPolicy::HasDOMUIBindings(int child_id) {
   AutoLock lock(lock_);
 
-  SecurityStateMap::iterator state = security_state_.find(renderer_id);
+  SecurityStateMap::iterator state = security_state_.find(child_id);
   if (state == security_state_.end())
     return false;
 
   return state->second->has_dom_ui_bindings();
 }
 
-bool ChildProcessSecurityPolicy::HasExtensionBindings(int renderer_id) {
+bool ChildProcessSecurityPolicy::HasExtensionBindings(int child_id) {
   AutoLock lock(lock_);
 
-  SecurityStateMap::iterator state = security_state_.find(renderer_id);
+  SecurityStateMap::iterator state = security_state_.find(child_id);
   if (state == security_state_.end())
     return false;
 
   return state->second->has_extension_bindings();
 }
 
-bool ChildProcessSecurityPolicy::CanReadRawCookies(int renderer_id) {
+bool ChildProcessSecurityPolicy::CanReadRawCookies(int child_id) {
   AutoLock lock(lock_);
 
-  SecurityStateMap::iterator state = security_state_.find(renderer_id);
+  SecurityStateMap::iterator state = security_state_.find(child_id);
   if (state == security_state_.end())
     return false;
 

@@ -67,7 +67,7 @@ bool ServiceUtilityProcessHost::StartRenderPDFPagesToMetafile(
   if (!pdf_file_in_utility_process)
     return false;
   waiting_for_reply_ = true;
-  return SendOnChannel(
+  return Send(
       new UtilityMsg_RenderPDFPagesToMetafile(pdf_file_in_utility_process,
                                               metafile_path_,
                                               render_area,

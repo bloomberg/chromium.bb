@@ -20,9 +20,9 @@ class FilePath;
 class GURL;
 
 // The ChildProcessSecurityPolicy class is used to grant and revoke security
-// capabilities for renderers.  For example, it restricts whether a renderer
-// is permmitted to loaded file:// URLs based on whether the renderer has ever
-// been commanded to load file:// URLs by the browser.
+// capabilities for child porcesses.  For example, it restricts whether a child
+// process is permmitted to loaded file:// URLs based on whether the process
+// has ever been commanded to load file:// URLs by the browser.
 //
 // ChildProcessSecurityPolicy is a singleton that may be used on any thread.
 //
@@ -37,9 +37,9 @@ class ChildProcessSecurityPolicy {
   // any thread.
   static ChildProcessSecurityPolicy* GetInstance();
 
-  // Web-safe schemes can be requested by any renderer.  Once a web-safe scheme
-  // has been registered, any renderer processes can request URLs with that
-  // scheme.  There is no mechanism for revoking web-safe schemes.
+  // Web-safe schemes can be requested by any child process.  Once a web-safe
+  // scheme has been registered, any child process can request URLs with
+  // that scheme.  There is no mechanism for revoking web-safe schemes.
   void RegisterWebSafeScheme(const std::string& scheme);
 
   // Returns true iff |scheme| has been registered as a web-safe scheme.
@@ -53,77 +53,77 @@ class ChildProcessSecurityPolicy {
   // Returns true iff |scheme| has been registered as pseudo scheme.
   bool IsPseudoScheme(const std::string& scheme);
 
-  // Upon creation, render processes should register themselves by calling this
+  // Upon creation, child processes should register themselves by calling this
   // this method exactly once.
-  void Add(int renderer_id);
+  void Add(int child_id);
 
-  // Upon destruction, render processess should unregister themselves by caling
+  // Upon destruction, child processess should unregister themselves by caling
   // this method exactly once.
-  void Remove(int renderer_id);
+  void Remove(int child_id);
 
-  // Whenever the browser processes commands the renderer to request a URL, it
-  // should call this method to grant the renderer process the capability to
+  // Whenever the browser processes commands the child process to request a URL,
+  // it should call this method to grant the child process the capability to
   // request the URL.
-  void GrantRequestURL(int renderer_id, const GURL& url);
+  void GrantRequestURL(int child_id, const GURL& url);
 
   // Whenever the user picks a file from a <input type="file"> element, the
-  // browser should call this function to grant the renderer the capability to
-  // upload the file to the web.
-  void GrantReadFile(int renderer_id, const FilePath& file);
+  // browser should call this function to grant the child process the capability
+  // to upload the file to the web.
+  void GrantReadFile(int child_id, const FilePath& file);
 
   // Grants certain permissions to a file. |permissions| must be a bit-set of
   // base::PlatformFileFlags.
-  void GrantPermissionsForFile(int renderer_id,
+  void GrantPermissionsForFile(int child_id,
                                const FilePath& file,
                                int permissions);
 
   // Revokes all permissions granted to the given file.
-  void RevokeAllPermissionsForFile(int renderer_id, const FilePath& file);
+  void RevokeAllPermissionsForFile(int child_id, const FilePath& file);
 
-  // Grants the renderer process the capability to access URLs of the provided
+  // Grants the child process the capability to access URLs of the provided
   // scheme.
-  void GrantScheme(int renderer_id, const std::string& scheme);
+  void GrantScheme(int child_id, const std::string& scheme);
 
-  // Grant this renderer the ability to use DOM UI Bindings.
-  void GrantDOMUIBindings(int renderer_id);
+  // Grant the child process the ability to use DOM UI Bindings.
+  void GrantDOMUIBindings(int child_id);
 
-  // Grant this renderer the ability to use extension Bindings.
-  void GrantExtensionBindings(int renderer_id);
+  // Grant the child process the ability to use extension Bindings.
+  void GrantExtensionBindings(int child_id);
 
-  // Grant this renderer the ability to read raw cookies.
-  void GrantReadRawCookies(int renderer_id);
+  // Grant the child process the ability to read raw cookies.
+  void GrantReadRawCookies(int child_id);
 
   // Revoke read raw cookies permission.
-  void RevokeReadRawCookies(int renderer_id);
+  void RevokeReadRawCookies(int child_id);
 
-  // Before servicing a renderer's request for a URL, the browser should call
-  // this method to determine whether the renderer has the capability to
+  // Before servicing a child process's request for a URL, the browser should
+  // call this method to determine whether the process has the capability to
   // request the URL.
-  bool CanRequestURL(int renderer_id, const GURL& url);
+  bool CanRequestURL(int child_id, const GURL& url);
 
-  // Before servicing a renderer's request to upload a file to the web, the
-  // browser should call this method to determine whether the renderer has the
+  // Before servicing a child process's request to upload a file to the web, the
+  // browser should call this method to determine whether the process has the
   // capability to upload the requested file.
-  bool CanReadFile(int renderer_id, const FilePath& file);
+  bool CanReadFile(int child_id, const FilePath& file);
 
   // Determines if certain permissions were granted for a file. |permissions|
   // must be a bit-set of base::PlatformFileFlags.
-  bool HasPermissionsForFile(int renderer_id,
+  bool HasPermissionsForFile(int child_id,
                              const FilePath& file,
                              int permissions);
 
-  // Returns true if the specified renderer_id has been granted DOMUIBindings.
-  // The browser should check this property before assuming the renderer is
+  // Returns true if the specified child_id has been granted DOMUIBindings.
+  // The browser should check this property before assuming the child process is
   // allowed to use DOMUIBindings.
-  bool HasDOMUIBindings(int renderer_id);
+  bool HasDOMUIBindings(int child_id);
 
-  // Returns true if the specified renderer_id has been granted DOMUIBindings.
-  // The browser should check this property before assuming the renderer is
+  // Returns true if the specified child_id has been granted DOMUIBindings.
+  // The browser should check this property before assuming the child process is
   // allowed to use extension bindings.
-  bool HasExtensionBindings(int renderer_id);
+  bool HasExtensionBindings(int child_id);
 
-  // Returns true if the specified renderer_id has been granted ReadRawCookies.
-  bool CanReadRawCookies(int renderer_id);
+  // Returns true if the specified child_id has been granted ReadRawCookies.
+  bool CanReadRawCookies(int child_id);
 
  private:
   friend class ChildProcessSecurityPolicyInProcessBrowserTest;
@@ -143,8 +143,8 @@ class ChildProcessSecurityPolicy {
   // class.  You must not block while holding this lock.
   Lock lock_;
 
-  // These schemes are white-listed for all renderers.  This set is protected
-  // by |lock_|.
+  // These schemes are white-listed for all child processes.  This set is
+  // protected by |lock_|.
   SchemeSet web_safe_schemes_;
 
   // These schemes do not actually represent retrievable URLs.  For example,
@@ -152,8 +152,8 @@ class ChildProcessSecurityPolicy {
   // protected by |lock_|.
   SchemeSet pseudo_schemes_;
 
-  // This map holds a SecurityState for each renderer process.  The key for the
-  // map is the ID of the RenderProcessHost.  The SecurityState objects are
+  // This map holds a SecurityState for each child process.  The key for the
+  // map is the ID of the ChildProcessHost.  The SecurityState objects are
   // owned by this object and are protected by |lock_|.  References to them must
   // not escape this class.
   SecurityStateMap security_state_;

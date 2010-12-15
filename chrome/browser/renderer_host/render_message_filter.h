@@ -18,17 +18,15 @@
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/linked_ptr.h"
-#include "base/process.h"
-#include "base/ref_counted.h"
 #include "base/string16.h"
 #include "base/task.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_message_filter.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/net/resolve_proxy_msg_helper.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/common/content_settings.h"
 #include "gfx/native_widget_types.h"
-#include "ipc/ipc_channel_proxy.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 
@@ -46,7 +44,6 @@ struct ViewHostMsg_CreateWorker_Params;
 struct WebPluginInfo;
 
 namespace base {
-struct PlatformFileInfo;
 class SharedMemory;
 }
 
@@ -59,47 +56,27 @@ class PrinterQuery;
 class PrintJobManager;
 }
 
-namespace webkit_glue {
-struct WebCookie;
-}
-
 struct ViewHostMsg_ScriptedPrint_Params;
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-struct ViewHostMsg_DidPrintPage_Params;
-#endif
 
-// This class filters out incoming IPC messages for network requests and
-// processes them on the IPC thread.  As a result, network requests are not
-// delayed by costly UI processing that may be occuring on the main thread of
-// the browser.  It also means that any hangs in starting a network request
-// will not interfere with browser UI.
-
-class RenderMessageFilter : public IPC::ChannelProxy::MessageFilter,
-                            public ResourceDispatcherHost::Receiver,
+// This class filters out incoming IPC messages for the renderer process on the
+// IPC thread.
+class RenderMessageFilter : public BrowserMessageFilter,
                             public ResolveProxyMsgHelper::Delegate {
  public:
   // Create the filter.
-  RenderMessageFilter(ResourceDispatcherHost* resource_dispatcher_host,
-                      int child_id,
+  RenderMessageFilter(int render_process_id,
                       PluginService* plugin_service,
-                      printing::PrintJobManager* print_job_manager,
                       Profile* profile,
                       RenderWidgetHelper* render_widget_helper);
 
-  // IPC::ChannelProxy::MessageFilter methods:
-  virtual void OnFilterAdded(IPC::Channel* channel);
+  // BrowserMessageFilter methods:
   virtual void OnChannelConnected(int32 peer_pid);
   virtual void OnChannelError();
-  virtual void OnChannelClosing();
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message,
+                                 bool* message_was_ok);
   virtual void OnDestruct() const;
 
-  // ResourceDispatcherHost::Receiver methods:
-  virtual bool Send(IPC::Message* message);
-  virtual URLRequestContext* GetRequestContext(
-      uint32 request_id,
-      const ViewHostMsg_Resource_Request& request_data);
-
+  int render_process_id() const { return render_process_id_; }
   ResourceDispatcherHost* resource_dispatcher_host() {
     return resource_dispatcher_host_;
   }
@@ -370,7 +347,6 @@ class RenderMessageFilter : public IPC::ChannelProxy::MessageFilter,
                                  int routing_id);
 
 #if defined(USE_X11)
-  void SendDelayedReply(IPC::Message* reply_msg);
   void DoOnGetScreenInfo(gfx::NativeViewId view, IPC::Message* reply_msg);
   void DoOnGetWindowRect(gfx::NativeViewId view, IPC::Message* reply_msg);
   void DoOnGetRootWindowRect(gfx::NativeViewId view, IPC::Message* reply_msg);
@@ -399,10 +375,6 @@ class RenderMessageFilter : public IPC::ChannelProxy::MessageFilter,
   // thread.
   static Clipboard* GetClipboard();
 
-  // The channel associated with the renderer connection. This pointer is not
-  // owned by this class.
-  IPC::Channel* channel_;
-
   // Cached resource request dispatcher host and plugin service, guaranteed to
   // be non-null if Init succeeds. We do not own the objects, they are managed
   // by the BrowserProcess, which has a wider scope than we do.
@@ -424,9 +396,6 @@ class RenderMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   // Contextual information to be used for requests created here.
   scoped_refptr<URLRequestContextGetter> request_context_;
-
-  // A request context specific for media resources.
-  scoped_refptr<URLRequestContextGetter> media_request_context_;
 
   // A request context that holds a cookie store for chrome-extension URLs.
   scoped_refptr<URLRequestContextGetter> extensions_request_context_;
@@ -453,8 +422,9 @@ class RenderMessageFilter : public IPC::ChannelProxy::MessageFilter,
   // A callback to create a routing id for the associated renderer process.
   scoped_ptr<CallbackWithReturnValue<int>::Type> next_route_id_callback_;
 
-
   scoped_refptr<WebKitContext> webkit_context_;
+
+  int render_process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderMessageFilter);
 };

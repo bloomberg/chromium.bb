@@ -8,19 +8,19 @@
 #include "chrome/browser/debugger/devtools_netlog_observer.h"
 #include "chrome/browser/net/load_timing_observer.h"
 #include "chrome/browser/renderer_host/global_request_id.h"
+#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/render_messages.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_response_headers.h"
 
 SyncResourceHandler::SyncResourceHandler(
-    ResourceDispatcherHost::Receiver* receiver,
-    int process_id,
+    ResourceMessageFilter* filter,
     const GURL& url,
     IPC::Message* result_message,
     ResourceDispatcherHost* resource_dispatcher_host)
     : read_buffer_(new net::IOBuffer(kReadBufSize)),
-      receiver_(receiver),
-      process_id_(process_id),
+      filter_(filter),
       result_message_(result_message),
       rdh_(resource_dispatcher_host) {
   result_.final_url = url;
@@ -40,7 +40,7 @@ bool SyncResourceHandler::OnRequestRedirected(int request_id,
                                               ResourceResponse* response,
                                               bool* defer) {
   net::URLRequest* request = rdh_->GetURLRequest(
-      GlobalRequestID(process_id_, request_id));
+      GlobalRequestID(filter_->child_id(), request_id));
   LoadTimingObserver::PopulateTimingInfo(request, response);
   DevToolsNetLogObserver::PopulateResponseInfo(request, response);
   // TODO(darin): It would be much better if this could live in WebCore, but
@@ -57,7 +57,7 @@ bool SyncResourceHandler::OnRequestRedirected(int request_id,
 bool SyncResourceHandler::OnResponseStarted(int request_id,
                                             ResourceResponse* response) {
   net::URLRequest* request = rdh_->GetURLRequest(
-      GlobalRequestID(process_id_, request_id));
+      GlobalRequestID(filter_->child_id(), request_id));
   LoadTimingObserver::PopulateTimingInfo(request, response);
   DevToolsNetLogObserver::PopulateResponseInfo(request, response);
 
@@ -103,7 +103,7 @@ bool SyncResourceHandler::OnResponseCompleted(
   result_.status = status;
 
   ViewHostMsg_SyncLoad::WriteReplyParams(result_message_, result_);
-  receiver_->Send(result_message_);
+  filter_->Send(result_message_);
   result_message_ = NULL;
   return true;
 }
@@ -113,6 +113,5 @@ void SyncResourceHandler::OnRequestClosed() {
     return;
 
   result_message_->set_reply_error();
-  receiver_->Send(result_message_);
-  receiver_ = NULL;  // net::URLRequest is gone, and perhaps also the receiver.
+  filter_->Send(result_message_);
 }

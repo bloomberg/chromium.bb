@@ -35,6 +35,7 @@ class LoginHandler;
 class PluginService;
 class ResourceDispatcherHostRequestInfo;
 class ResourceHandler;
+class ResourceMessageFilter;
 class SafeBrowsingService;
 class SaveFileManager;
 class SSLClientAuthHandler;
@@ -52,32 +53,6 @@ class DeletableFileReference;
 
 class ResourceDispatcherHost : public net::URLRequest::Delegate {
  public:
-  // Implemented by the client of ResourceDispatcherHost to receive messages in
-  // response to a resource load.  The messages are intended to be forwarded to
-  // the ResourceDispatcher in the child process via an IPC channel that the
-  // client manages.
-  //
-  // NOTE: This class unfortunately cannot be named 'Delegate' because that
-  // conflicts with the name of ResourceDispatcherHost's base class.
-  //
-  // If the receiver is unable to send a given message (i.e., if Send returns
-  // false), then the ResourceDispatcherHost assumes the receiver has failed,
-  // and the given request will be dropped. (This happens, for example, when a
-  // renderer crashes and the channel dies).
-  class Receiver : public IPC::Message::Sender,
-                   public ChildProcessInfo {
-   public:
-    // Returns the URLRequestContext for the given request.
-    // If NULL is returned, the default context for the profile is used.
-    virtual URLRequestContext* GetRequestContext(
-        uint32 request_id,
-        const ViewHostMsg_Resource_Request& request_data) = 0;
-
-   protected:
-    explicit Receiver(ChildProcessInfo::ProcessType type, int child_id);
-    virtual ~Receiver();
-  };
-
   class Observer {
    public:
     virtual ~Observer() {}
@@ -103,7 +78,7 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   // Returns true if the message was a resource message that was processed.
   // If it was, message_was_ok will be false iff the message was corrupt.
   bool OnMessageReceived(const IPC::Message& message,
-                         Receiver* receiver,
+                         ResourceMessageFilter* filter,
                          bool* message_was_ok);
 
   // Initiates a download from the browser process (as opposed to a resource
@@ -276,9 +251,9 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   // child process and to defer deletion of the file until it's
   // no longer needed.
   void RegisterDownloadedTempFile(
-      int receiver_id, int request_id,
+      int child_id, int request_id,
       webkit_blob::DeletableFileReference* reference);
-  void UnregisterDownloadedTempFile(int receiver_id, int request_id);
+  void UnregisterDownloadedTempFile(int child_id, int request_id);
 
   // Needed for the sync IPC message dispatcher macros.
   bool Send(IPC::Message* message);
@@ -422,8 +397,7 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   void OnReleaseDownloadedFile(int request_id);
 
   ResourceHandler* CreateSafeBrowsingResourceHandler(
-      ResourceHandler* handler, int child_id, int route_id,
-      ResourceType::Type resource_type);
+      ResourceHandler* handler, int route_id, ResourceType::Type resource_type);
 
   // Creates ResourceDispatcherHostRequestInfo for a browser-initiated request
   // (a download or a page save). |download| should be true if the request
@@ -433,9 +407,6 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
 
   // Returns true if |request| is in |pending_requests_|.
   bool IsValidRequest(net::URLRequest* request);
-
-  // Returns true if the message passed in is a resource related message.
-  static bool IsResourceDispatcherHostMessage(const IPC::Message&);
 
   // Sets replace_extension_localization_templates on all text/css requests that
   // have "chrome-extension://" scheme.
@@ -521,7 +492,7 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
 
   // Used during IPC message dispatching so that the handlers can get a pointer
   // to the source of the message.
-  Receiver* receiver_;
+  ResourceMessageFilter* filter_;
 
   static bool is_prefetch_enabled_;
 

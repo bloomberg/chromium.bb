@@ -28,6 +28,7 @@
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/chrome_switches.h"
@@ -54,6 +55,25 @@
 
 static const char kDefaultPluginFinderURL[] =
     "https://dl-ssl.google.com/edgedl/chrome/plugins/plugins2.xml";
+
+namespace {
+
+// Helper class that we pass to ResourceMessageFilter so that it can find the
+// right URLRequestContext for a request.
+class PluginURLRequestContextOverride
+    : public ResourceMessageFilter::URLRequestContextOverride {
+ public:
+  PluginURLRequestContextOverride() {
+  }
+
+  virtual URLRequestContext* GetRequestContext(
+      uint32 request_id, ResourceType::Type resource_type) {
+    return CPBrowsingContextManager::GetInstance()->ToURLRequestContext(
+        request_id);
+  }
+};
+
+}  // namespace
 
 #if defined(OS_WIN)
 void PluginProcessHost::OnPluginWindowDestroyed(HWND window, HWND parent) {
@@ -94,7 +114,8 @@ void PluginProcessHost::OnMapNativeViewId(gfx::NativeViewId id,
 PluginProcessHost::PluginProcessHost()
     : BrowserChildProcessHost(
           PLUGIN_PROCESS,
-          PluginService::GetInstance()->resource_dispatcher_host()),
+          PluginService::GetInstance()->resource_dispatcher_host(),
+          new PluginURLRequestContextOverride()),
       ALLOW_THIS_IN_INITIALIZER_LIST(resolve_proxy_msg_helper_(this, NULL))
 #if defined(OS_MACOSX)
       , plugin_cursor_visible_(true)
@@ -397,13 +418,6 @@ void PluginProcessHost::OnResolveProxyCompleted(IPC::Message* reply_msg,
   PluginProcessHostMsg_ResolveProxy::WriteReplyParams(
       reply_msg, result, proxy_list);
   Send(reply_msg);
-}
-
-URLRequestContext* PluginProcessHost::GetRequestContext(
-    uint32 request_id,
-    const ViewHostMsg_Resource_Request& request_data) {
-  return CPBrowsingContextManager::GetInstance()->ToURLRequestContext(
-      request_id);
 }
 
 void PluginProcessHost::RequestPluginChannel(Client* client) {

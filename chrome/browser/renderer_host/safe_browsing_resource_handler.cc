@@ -8,6 +8,7 @@
 #include "chrome/browser/renderer_host/global_request_id.h"
 #include "chrome/browser/renderer_host/render_message_filter.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/resource_response.h"
 #include "net/base/net_errors.h"
@@ -23,24 +24,22 @@ static const int kCheckUrlTimeoutMs = 5000;
 
 SafeBrowsingResourceHandler::SafeBrowsingResourceHandler(
     ResourceHandler* handler,
-    int render_process_host_id,
     int render_view_id,
     ResourceType::Type resource_type,
     SafeBrowsingService* safe_browsing,
     ResourceDispatcherHost* resource_dispatcher_host,
-    ResourceDispatcherHost::Receiver* receiver)
+    ResourceMessageFilter* filter)
     : state_(STATE_NONE),
       defer_state_(DEFERRED_NONE),
       deferred_request_id_(-1),
       next_handler_(handler),
-      render_process_host_id_(render_process_host_id),
+      render_process_host_id_(filter->child_id()),
       render_view_id_(render_view_id),
       safe_browsing_(safe_browsing),
       rdh_(resource_dispatcher_host),
       resource_type_(resource_type) {
   registrar_.Add(this, NotificationType::RESOURCE_MESSAGE_FILTER_SHUTDOWN,
-                 Source<RenderMessageFilter>(
-                     static_cast<RenderMessageFilter*>(receiver)));
+                 NotificationService::AllSources());
 }
 
 SafeBrowsingResourceHandler::~SafeBrowsingResourceHandler() {
@@ -208,8 +207,10 @@ void SafeBrowsingResourceHandler::OnBlockingPageComplete(bool proceed) {
 void SafeBrowsingResourceHandler::Observe(NotificationType type,
                                           const NotificationSource& source,
                                           const NotificationDetails& details) {
-  DCHECK(type.value == NotificationType::RESOURCE_MESSAGE_FILTER_SHUTDOWN);
-  Shutdown();
+  if (Source<ResourceMessageFilter>(source).ptr()->child_id() ==
+          render_process_host_id_) {
+    Shutdown();
+  }
 }
 
 void SafeBrowsingResourceHandler::Shutdown() {

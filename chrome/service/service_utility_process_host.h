@@ -88,12 +88,6 @@ class ServiceUtilityProcessHost : public ServiceChildProcessHost {
       int render_dpi,
       const std::vector<printing::PageRange>& page_ranges);
 
-  // Since we handle a sync IPC message (UtilityHostMsg_PreCacheFont), we need
-  // an Send method.
-  bool Send(IPC::Message* message) {
-    return SendOnChannel(message);
-  }
-
  protected:
   // Allows this method to be overridden for tests.
   virtual FilePath GetUtilityProcessCmd();

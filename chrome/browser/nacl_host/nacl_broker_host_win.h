@@ -7,9 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/process.h"
 #include "chrome/browser/browser_child_process_host.h"
-#include "ipc/ipc_message.h"
 
 class NaClBrokerHost : public BrowserChildProcessHost {
  public:
@@ -28,11 +26,6 @@ class NaClBrokerHost : public BrowserChildProcessHost {
   void StopBroker();
 
  private:
-  // ResourceDispatcherHost::Receiver implementation:
-  virtual URLRequestContext* GetRequestContext(
-      uint32 request_id,
-      const ViewHostMsg_Resource_Request& request_data);
-
   virtual bool CanShutdown() { return true; }
 
   // Handler for NaClProcessMsg_LoaderLaunched message

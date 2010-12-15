@@ -140,12 +140,6 @@ bool ProfileImportProcessHost::CanShutdown() {
   return true;
 }
 
-URLRequestContext* ProfileImportProcessHost::GetRequestContext(
-    uint32 request_id,
-    const ViewHostMsg_Resource_Request& request_data) {
-  return NULL;
-}
-
 ProfileImportProcessHost::ImportProcessClient::ImportProcessClient() {}
 
 ProfileImportProcessHost::ImportProcessClient::~ImportProcessClient() {}

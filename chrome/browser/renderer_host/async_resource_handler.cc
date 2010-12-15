@@ -9,13 +9,14 @@
 
 #include "base/hash_tables.h"
 #include "base/logging.h"
-#include "base/process.h"
 #include "base/shared_memory.h"
 #include "chrome/browser/debugger/devtools_netlog_observer.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/load_timing_observer.h"
 #include "chrome/browser/renderer_host/global_request_id.h"
+#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/resource_response.h"
 #include "net/base/io_buffer.h"
@@ -74,16 +75,12 @@ class SharedIOBuffer : public net::IOBuffer {
 };
 
 AsyncResourceHandler::AsyncResourceHandler(
-    ResourceDispatcherHost::Receiver* receiver,
-    int process_id,
+    ResourceMessageFilter* filter,
     int routing_id,
-    base::ProcessHandle process_handle,
     const GURL& url,
     ResourceDispatcherHost* resource_dispatcher_host)
-    : receiver_(receiver),
-      process_id_(process_id),
+    : filter_(filter),
       routing_id_(routing_id),
-      process_handle_(process_handle),
       rdh_(resource_dispatcher_host),
       next_buffer_size_(kInitialReadBufSize) {
 }
@@ -94,9 +91,9 @@ AsyncResourceHandler::~AsyncResourceHandler() {
 bool AsyncResourceHandler::OnUploadProgress(int request_id,
                                             uint64 position,
                                             uint64 size) {
-  return receiver_->Send(new ViewMsg_Resource_UploadProgress(routing_id_,
-                                                             request_id,
-                                                             position, size));
+  return filter_->Send(new ViewMsg_Resource_UploadProgress(routing_id_,
+                                                           request_id,
+                                                           position, size));
 }
 
 bool AsyncResourceHandler::OnRequestRedirected(int request_id,
@@ -105,10 +102,10 @@ bool AsyncResourceHandler::OnRequestRedirected(int request_id,
                                                bool* defer) {
   *defer = true;
   net::URLRequest* request = rdh_->GetURLRequest(
-      GlobalRequestID(process_id_, request_id));
+      GlobalRequestID(filter_->child_id(), request_id));
   LoadTimingObserver::PopulateTimingInfo(request, response);
   DevToolsNetLogObserver::PopulateResponseInfo(request, response);
-  return receiver_->Send(new ViewMsg_Resource_ReceivedRedirect(
+  return filter_->Send(new ViewMsg_Resource_ReceivedRedirect(
       routing_id_, request_id, new_url, response->response_head));
 }
 
@@ -120,7 +117,7 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
   // request commits, avoiding the possibility of e.g. zooming the old content
   // or of having to layout the new content twice.
   net::URLRequest* request = rdh_->GetURLRequest(
-      GlobalRequestID(process_id_, request_id));
+      GlobalRequestID(filter_->child_id(), request_id));
 
   LoadTimingObserver::PopulateTimingInfo(request, response);
   DevToolsNetLogObserver::PopulateResponseInfo(request, response);
@@ -131,23 +128,23 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
     ChromeURLRequestContext* context =
         static_cast<ChromeURLRequestContext*>(request->context());
     if (context) {
-      receiver_->Send(new ViewMsg_SetContentSettingsForLoadingURL(
+      filter_->Send(new ViewMsg_SetContentSettingsForLoadingURL(
           info->route_id(), request_url,
           context->host_content_settings_map()->GetContentSettings(
               request_url)));
-      receiver_->Send(new ViewMsg_SetZoomLevelForLoadingURL(info->route_id(),
+      filter_->Send(new ViewMsg_SetZoomLevelForLoadingURL(info->route_id(),
           request_url, context->host_zoom_map()->GetZoomLevel(request_url)));
     }
   }
 
-  receiver_->Send(new ViewMsg_Resource_ReceivedResponse(
+  filter_->Send(new ViewMsg_Resource_ReceivedResponse(
       routing_id_, request_id, response->response_head));
 
   if (request->response_info().metadata) {
     std::vector<char> copy(request->response_info().metadata->data(),
                            request->response_info().metadata->data() +
                            request->response_info().metadata->size());
-    receiver_->Send(new ViewMsg_Resource_ReceivedCachedMetadata(
+    filter_->Send(new ViewMsg_Resource_ReceivedCachedMetadata(
         routing_id_, request_id, copy));
   }
 
@@ -198,18 +195,19 @@ bool AsyncResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
     next_buffer_size_ = std::min(next_buffer_size_ * 2, kMaxReadBufSize);
   }
 
-  if (!rdh_->WillSendData(process_id_, request_id)) {
+  if (!rdh_->WillSendData(filter_->child_id(), request_id)) {
     // We should not send this data now, we have too many pending requests.
     return true;
   }
 
   base::SharedMemoryHandle handle;
-  if (!read_buffer_->shared_memory()->GiveToProcess(process_handle_, &handle)) {
+  if (!read_buffer_->shared_memory()->GiveToProcess(
+          filter_->peer_handle(), &handle)) {
     // We wrongfully incremented the pending data count. Fake an ACK message
     // to fix this. We can't move this call above the WillSendData because
     // it's killing our read_buffer_, and we don't want that when we pause
     // the request.
-    rdh_->DataReceivedACK(process_id_, request_id);
+    rdh_->DataReceivedACK(filter_->child_id(), request_id);
     // We just unmapped the memory.
     read_buffer_ = NULL;
     return false;
@@ -217,7 +215,7 @@ bool AsyncResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
   // We just unmapped the memory.
   read_buffer_ = NULL;
 
-  receiver_->Send(new ViewMsg_Resource_DataReceived(
+  filter_->Send(new ViewMsg_Resource_DataReceived(
       routing_id_, request_id, handle, *bytes_read));
 
   return true;
@@ -225,7 +223,7 @@ bool AsyncResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
 
 void AsyncResourceHandler::OnDataDownloaded(
     int request_id, int bytes_downloaded) {
-  receiver_->Send(new ViewMsg_Resource_DataDownloaded(
+  filter_->Send(new ViewMsg_Resource_DataDownloaded(
       routing_id_, request_id, bytes_downloaded));
 }
 
@@ -234,11 +232,11 @@ bool AsyncResourceHandler::OnResponseCompleted(
     const URLRequestStatus& status,
     const std::string& security_info) {
   Time completion_time = Time::Now();
-  receiver_->Send(new ViewMsg_Resource_RequestComplete(routing_id_,
-                                                       request_id,
-                                                       status,
-                                                       security_info,
-                                                       completion_time));
+  filter_->Send(new ViewMsg_Resource_RequestComplete(routing_id_,
+                                                     request_id,
+                                                     status,
+                                                     security_info,
+                                                     completion_time));
 
   // If we still have a read buffer, then see about caching it for later...
   // Note that we have to make sure the buffer is not still being used, so we

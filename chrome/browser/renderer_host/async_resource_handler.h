@@ -8,20 +8,18 @@
 
 #include <string>
 
-#include "base/process.h"
-#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/renderer_host/resource_handler.h"
 
+class ResourceDispatcherHost;
+class ResourceMessageFilter;
 class SharedIOBuffer;
 
 // Used to complete an asynchronous resource request in response to resource
 // load events from the resource dispatcher host.
 class AsyncResourceHandler : public ResourceHandler {
  public:
-  AsyncResourceHandler(ResourceDispatcherHost::Receiver* receiver,
-                       int process_id,
+  AsyncResourceHandler(ResourceMessageFilter* filter,
                        int routing_id,
-                       base::ProcessHandle process_handle,
                        const GURL& url,
                        ResourceDispatcherHost* resource_dispatcher_host);
 
@@ -46,10 +44,8 @@ class AsyncResourceHandler : public ResourceHandler {
   virtual ~AsyncResourceHandler();
 
   scoped_refptr<SharedIOBuffer> read_buffer_;
-  ResourceDispatcherHost::Receiver* receiver_;
-  int process_id_;
+  ResourceMessageFilter* filter_;
   int routing_id_;
-  base::ProcessHandle process_handle_;
   ResourceDispatcherHost* rdh_;
 
   // |next_buffer_size_| is the size of the buffer to be allocated on the next

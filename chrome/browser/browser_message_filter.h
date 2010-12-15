@@ -45,10 +45,10 @@ class BrowserMessageFilter : public IPC::ChannelProxy::MessageFilter,
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) = 0;
 
- protected:
   // Can be called on any thread, after OnChannelConnected is called.
   base::ProcessHandle peer_handle() { return peer_handle_; }
 
+ protected:
   // Call this if a message couldn't be deserialized.  This kills the renderer.
   // Can be called on any thread.
   void BadMessageReceived(uint32 msg_type);

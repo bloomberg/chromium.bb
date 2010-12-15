@@ -57,6 +57,7 @@
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/render_widget_helper.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
+#include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/browser/renderer_host/socket_stream_dispatcher_host.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
@@ -219,6 +220,36 @@ class VisitedLinkUpdater {
   bool has_receiver_;
   VisitedLinkCommon::Fingerprints pending_;
 };
+
+namespace {
+
+// Helper class that we pass to ResourceMessageFilter so that it can find the
+// right URLRequestContext for a request.
+class RendererURLRequestContextOverride
+    : public ResourceMessageFilter::URLRequestContextOverride {
+ public:
+  explicit RendererURLRequestContextOverride(Profile* profile)
+      : request_context_(profile->GetRequestContext()),
+        media_request_context_(profile->GetRequestContextForMedia()) {
+  }
+
+  virtual URLRequestContext* GetRequestContext(
+      uint32 request_id, ResourceType::Type resource_type) {
+    URLRequestContextGetter* request_context = request_context_;
+    // If the request has resource type of ResourceType::MEDIA, we use a request
+    // context specific to media for handling it because these resources have
+    // specific needs for caching.
+    if (resource_type == ResourceType::MEDIA)
+      request_context = media_request_context_;
+    return request_context->GetURLRequestContext();
+  }
+
+ private:
+  scoped_refptr<URLRequestContextGetter> request_context_;
+  scoped_refptr<URLRequestContextGetter> media_request_context_;
+};
+
+}  // namespace
 
 BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
     : RenderProcessHost(profile),
@@ -389,13 +420,21 @@ bool BrowserRenderProcessHost::Init(
 
 void BrowserRenderProcessHost::CreateMessageFilters() {
   scoped_refptr<RenderMessageFilter> render_message_filter(
-      new RenderMessageFilter(g_browser_process->resource_dispatcher_host(),
-                              id(),
+      new RenderMessageFilter(id(),
                               PluginService::GetInstance(),
-                              g_browser_process->print_job_manager(),
                               profile(),
                               widget_helper_));
   channel_->AddFilter(render_message_filter);
+
+  scoped_refptr<RendererURLRequestContextOverride> url_request_context_override(
+      new RendererURLRequestContextOverride(profile()));
+
+  ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
+      id(), ChildProcessInfo::RENDER_PROCESS,
+      g_browser_process->resource_dispatcher_host());
+  resource_message_filter->set_url_request_context_override(
+      url_request_context_override);
+  channel_->AddFilter(resource_message_filter);
 
   channel_->AddFilter(new AudioRendererHost());
   channel_->AddFilter(

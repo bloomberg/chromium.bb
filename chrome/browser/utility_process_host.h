@@ -15,7 +15,6 @@
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/common/extensions/update_manifest.h"
-#include "ipc/ipc_channel.h"
 
 class DictionaryValue;
 class IndexedDBKey;
@@ -155,9 +154,6 @@ class UtilityProcessHost : public BrowserChildProcessHost {
   // BrowserChildProcessHost:
   virtual void OnProcessCrashed(int exit_code);
   virtual bool CanShutdown();
-  virtual URLRequestContext* GetRequestContext(
-      uint32 request_id,
-      const ViewHostMsg_Resource_Request& request_data);
 
   // A pointer to our client interface, who will be informed of progress.
   scoped_refptr<Client> client_;

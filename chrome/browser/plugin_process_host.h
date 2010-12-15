@@ -28,8 +28,6 @@ namespace IPC {
 struct ChannelHandle;
 }
 
-class URLRequestContext;
-struct ViewHostMsg_Resource_Request;
 class GURL;
 
 // Represents the browser side of the browser <--> plugin communication
@@ -103,11 +101,6 @@ class PluginProcessHost : public BrowserChildProcessHost,
 
  private:
   friend class PluginResolveProxyHelper;
-
-  // ResourceDispatcherHost::Receiver implementation:
-  virtual URLRequestContext* GetRequestContext(
-      uint32 request_id,
-      const ViewHostMsg_Resource_Request& request_data);
 
   // Sends a message to the plugin process to request creation of a new channel
   // for the given mime type.

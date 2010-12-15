@@ -187,7 +187,7 @@ void NaClProcessHost::OnProcessLaunched() {
     HANDLE handle_in_renderer;
     DuplicateHandle(base::GetCurrentProcessHandle(),
                     reinterpret_cast<HANDLE>(sockets_for_renderer_[i]),
-                    render_message_filter_->handle(),
+                    render_message_filter_->peer_handle(),
                     &handle_in_renderer,
                     GENERIC_READ | GENERIC_WRITE,
                     FALSE,
@@ -208,7 +208,7 @@ void NaClProcessHost::OnProcessLaunched() {
   // Copy the process handle into the renderer process.
   DuplicateHandle(base::GetCurrentProcessHandle(),
                   handle(),
-                  render_message_filter_->handle(),
+                  render_message_filter_->peer_handle(),
                   &nacl_process_handle,
                   PROCESS_DUP_HANDLE,
                   FALSE,
@@ -284,12 +284,6 @@ void NaClProcessHost::SendStartMessage() {
 
 void NaClProcessHost::OnMessageReceived(const IPC::Message& msg) {
   NOTREACHED() << "Invalid message with type = " << msg.type();
-}
-
-URLRequestContext* NaClProcessHost::GetRequestContext(
-    uint32 request_id,
-    const ViewHostMsg_Resource_Request& request_data) {
-  return NULL;
 }
 
 bool NaClProcessHost::CanShutdown() {

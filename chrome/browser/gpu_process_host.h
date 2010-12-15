@@ -106,11 +106,6 @@ class GpuProcessHost : public BrowserChildProcessHost, public NonThreadSafe {
   void SendSynchronizationReply(IPC::Message* reply,
                                 RenderMessageFilter* filter);
 
-  // ResourceDispatcherHost::Receiver implementation:
-  virtual URLRequestContext* GetRequestContext(
-      uint32 request_id,
-      const ViewHostMsg_Resource_Request& request_data);
-
   virtual bool CanShutdown();
   virtual void OnChildDied();
   virtual void OnProcessCrashed(int exit_code);

@@ -23,12 +23,6 @@ NaClBrokerHost::NaClBrokerHost(
 NaClBrokerHost::~NaClBrokerHost() {
 }
 
-URLRequestContext* NaClBrokerHost::GetRequestContext(
-    uint32 request_id,
-    const ViewHostMsg_Resource_Request& request_data) {
-  return NULL;
-}
-
 bool NaClBrokerHost::Init() {
   // Create the channel that will be used for communicating with the broker.
   if (!CreateChannel())

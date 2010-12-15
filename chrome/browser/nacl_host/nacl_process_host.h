@@ -47,11 +47,6 @@ class NaClProcessHost : public BrowserChildProcessHost {
 
   virtual void OnProcessLaunched();
 
-  // ResourceDispatcherHost::Receiver implementation:
-  virtual URLRequestContext* GetRequestContext(
-      uint32 request_id,
-      const ViewHostMsg_Resource_Request& request_data);
-
   virtual bool CanShutdown();
 
 #if defined(OS_WIN)

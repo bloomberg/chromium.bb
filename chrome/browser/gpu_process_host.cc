@@ -477,12 +477,6 @@ void GpuProcessHost::SendSynchronizationReply(
   filter->Send(reply);
 }
 
-URLRequestContext* GpuProcessHost::GetRequestContext(
-    uint32 request_id,
-    const ViewHostMsg_Resource_Request& request_data) {
-  return NULL;
-}
-
 bool GpuProcessHost::CanShutdown() {
   return true;
 }

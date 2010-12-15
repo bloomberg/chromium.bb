@@ -8,6 +8,8 @@
 #include <fcntl.h>
 #include <dirent.h>
 
+#include <set>
+
 #include "base/eintr_wrapper.h"
 #include "base/file_version_info.h"
 #include "base/string_util.h"

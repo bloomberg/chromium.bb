@@ -8,9 +8,15 @@
 
 #include <string>
 
-#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/renderer_host/resource_handler.h"
 #include "chrome/common/resource_response.h"
+
+class ResourceDispatcherHost;
+class ResourceMessageFilter;
+
+namespace IPC {
+class Message;
+}
 
 namespace net {
 class IOBuffer;
@@ -20,8 +26,7 @@ class IOBuffer;
 // events from the resource dispatcher host.
 class SyncResourceHandler : public ResourceHandler {
  public:
-  SyncResourceHandler(ResourceDispatcherHost::Receiver* receiver,
-                      int process_id,
+  SyncResourceHandler(ResourceMessageFilter* filter,
                       const GURL& url,
                       IPC::Message* result_message,
                       ResourceDispatcherHost* resource_dispatcher_host);
@@ -47,8 +52,7 @@ class SyncResourceHandler : public ResourceHandler {
   scoped_refptr<net::IOBuffer> read_buffer_;
 
   SyncLoadResult result_;
-  ResourceDispatcherHost::Receiver* receiver_;
-  int process_id_;
+  ResourceMessageFilter* filter_;
   IPC::Message* result_message_;
   ResourceDispatcherHost* rdh_;
 };

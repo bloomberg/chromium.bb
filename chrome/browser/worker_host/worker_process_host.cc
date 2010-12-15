@@ -75,11 +75,6 @@ WorkerProcessHost::WorkerProcessHost(
 }
 
 WorkerProcessHost::~WorkerProcessHost() {
-  for (size_t i = 0; i < filters_.size(); ++i) {
-    filters_[i]->OnChannelClosing();
-    filters_[i]->OnFilterRemoved();
-  }
-
   // Let interested observers know we are being deleted.
   NotificationService::current()->Notify(
       NotificationType::WORKER_PROCESS_HOST_SHUTDOWN,
@@ -197,19 +192,16 @@ bool WorkerProcessHost::Init() {
 }
 
 void WorkerProcessHost::CreateMessageFilters() {
-  filters_.push_back(new AppCacheDispatcherHost(request_context_, id()));
-  filters_.push_back(new FileSystemDispatcherHost(request_context_));
-  filters_.push_back(new FileUtilitiesMessageFilter(id()));
-  filters_.push_back(
+  AddFilter(new AppCacheDispatcherHost(request_context_, id()));
+  AddFilter(new FileSystemDispatcherHost(request_context_));
+  AddFilter(new FileUtilitiesMessageFilter(id()));
+  AddFilter(
       new BlobMessageFilter(id(), request_context_->blob_storage_context()));
-  filters_.push_back(new MimeRegistryMessageFilter());
-  filters_.push_back(new DatabaseMessageFilter(
+  AddFilter(new MimeRegistryMessageFilter());
+  AddFilter(new DatabaseMessageFilter(
       request_context_->database_tracker(),
       request_context_->host_content_settings_map()));
-  filters_.push_back(new SocketStreamDispatcherHost());
-
-  for (size_t i = 0; i < filters_.size(); ++i)
-    filters_[i]->OnFilterAdded(channel());
+  AddFilter(new SocketStreamDispatcherHost());
 }
 
 void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {
@@ -253,12 +245,6 @@ bool WorkerProcessHost::FilterMessage(const IPC::Message& message,
   return false;
 }
 
-URLRequestContext* WorkerProcessHost::GetRequestContext(
-    uint32 request_id,
-    const ViewHostMsg_Resource_Request& request_data) {
-  return request_context_;
-}
-
 // Sent to notify the browser process when a worker context invokes close(), so
 // no new connections are sent to shared workers.
 void WorkerProcessHost::OnWorkerContextClosed(int worker_route_id) {
@@ -274,11 +260,6 @@ void WorkerProcessHost::OnWorkerContextClosed(int worker_route_id) {
 }
 
 void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
-  for (size_t i = 0; i < filters_.size(); ++i) {
-    if (filters_[i]->OnMessageReceived(message))
-      return;
-  }
-
   bool msg_is_ok = true;
   bool handled =
       MessagePortDispatcher::GetInstance()->OnMessageReceived(
@@ -327,16 +308,6 @@ void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
       break;
     }
   }
-}
-
-void WorkerProcessHost::OnChannelConnected(int32 peer_pid) {
-  for (size_t i = 0; i < filters_.size(); ++i)
-    filters_[i]->OnChannelConnected(peer_pid);
-}
-
-void WorkerProcessHost::OnChannelError() {
-  for (size_t i = 0; i < filters_.size(); ++i)
-    filters_[i]->OnChannelError();
 }
 
 void WorkerProcessHost::OnProcessLaunched() {

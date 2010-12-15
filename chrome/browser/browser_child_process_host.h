@@ -9,17 +9,19 @@
 #include <list>
 
 #include "chrome/browser/child_process_launcher.h"
-#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/child_process_host.h"
+#include "chrome/common/child_process_info.h"
 
+class ResourceDispatcherHost;
 
 // Plugins/workers and other child processes that live on the IO thread should
 // derive from this class.
 //
 // [Browser]RenderProcessHost is the main exception that doesn't derive from
 // this class. That project lives on the UI thread.
-class BrowserChildProcessHost : public ResourceDispatcherHost::Receiver,
-                                public ChildProcessHost,
+class BrowserChildProcessHost : public ChildProcessHost,
+                                public ChildProcessInfo,
                                 public ChildProcessLauncher::Client {
  public:
   virtual ~BrowserChildProcessHost();
@@ -34,9 +36,6 @@ class BrowserChildProcessHost : public ResourceDispatcherHost::Receiver,
   // Terminates all child processes and deletes each ChildProcessHost instance.
   static void TerminateAll();
 
-  // ResourceDispatcherHost::Receiver implementation:
-  virtual bool Send(IPC::Message* msg);
-
   // The Iterator class allows iteration through either all child processes, or
   // ones of a specific type, depending on which constructor is used.  Note that
   // this should be done from the IO thread and that the iterator should not be
@@ -45,7 +44,7 @@ class BrowserChildProcessHost : public ResourceDispatcherHost::Receiver,
   class Iterator {
    public:
     Iterator();
-    explicit Iterator(ProcessType type);
+    explicit Iterator(ChildProcessInfo::ProcessType type);
     BrowserChildProcessHost* operator->() { return *iterator_; }
     BrowserChildProcessHost* operator*() { return *iterator_; }
     BrowserChildProcessHost* operator++();
@@ -53,15 +52,26 @@ class BrowserChildProcessHost : public ResourceDispatcherHost::Receiver,
 
    private:
     bool all_;
-    ProcessType type_;
+    ChildProcessInfo::ProcessType type_;
     std::list<BrowserChildProcessHost*>::iterator iterator_;
   };
 
  protected:
-  // The resource_dispatcher_host may be NULL to indicate none is needed for
+  // |resource_dispatcher_host| may be NULL to indicate none is needed for
   // this process type.
-  BrowserChildProcessHost(ProcessType type,
-                          ResourceDispatcherHost* resource_dispatcher_host);
+  // |url_request_context_getter| allows derived classes to override the
+  // URLRequestContext.
+  BrowserChildProcessHost(
+      ChildProcessInfo::ProcessType type,
+      ResourceDispatcherHost* resource_dispatcher_host,
+      ResourceMessageFilter::URLRequestContextOverride*
+          url_request_context_override);
+
+  // A convenient constructor for those classes that want to use the default
+  // URLRequestContext.
+  BrowserChildProcessHost(
+      ChildProcessInfo::ProcessType type,
+      ResourceDispatcherHost* resource_dispatcher_host);
 
   // Derived classes call this to launch the child process asynchronously.
   void Launch(
@@ -73,7 +83,7 @@ class BrowserChildProcessHost : public ResourceDispatcherHost::Receiver,
 #endif
       CommandLine* cmd_line);
 
-  // Returns the handle of the child process. This must be called only after
+  // Returns the handle of the child process. This can be called only after
   // OnProcessLaunched is called or it will be invalid and may crash.
   base::ProcessHandle GetChildProcessHandle() const;
 
@@ -100,13 +110,16 @@ class BrowserChildProcessHost : public ResourceDispatcherHost::Receiver,
 
   // Overrides from ChildProcessHost
   virtual void OnChildDied();
-  virtual bool InterceptMessageFromChild(const IPC::Message& msg);
+  virtual void ShutdownStarted();
   virtual void Notify(NotificationType type);
   // Extends the base class implementation and removes this host from
   // the host list. Calls ChildProcessHost::ForceShutdown
   virtual void ForceShutdown();
 
  private:
+  void Initialize(ResourceMessageFilter::URLRequestContextOverride*
+      url_request_context_override);
+
   // By using an internal class as the ChildProcessLauncher::Client, we can
   // intercept OnProcessLaunched and do our own processing before
   // calling the subclass' implementation.

@@ -45,11 +45,6 @@ static base::LazyInstance<PrintingFileDescriptorMap>
 // We get null window_ids passed into the two functions below; please see
 // http://crbug.com/9060 for more details.
 
-// Called on the IO thread.
-void RenderMessageFilter::SendDelayedReply(IPC::Message* reply_msg) {
-  Send(reply_msg);
-}
-
 // Called on the BACKGROUND_X11 thread.
 void RenderMessageFilter::DoOnGetScreenInfo(gfx::NativeViewId view,
                                             IPC::Message* reply_msg) {
@@ -57,11 +52,7 @@ void RenderMessageFilter::DoOnGetScreenInfo(gfx::NativeViewId view,
   int screen = x11_util::GetDefaultScreen(display);
   WebScreenInfo results = WebScreenInfoFactory::screenInfo(display, screen);
   ViewHostMsg_GetScreenInfo::WriteReplyParams(reply_msg, results);
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this, &RenderMessageFilter::SendDelayedReply, reply_msg));
+  Send(reply_msg);
 }
 
 // Called on the BACKGROUND_X11 thread.
@@ -83,11 +74,7 @@ void RenderMessageFilter::DoOnGetWindowRect(gfx::NativeViewId view,
   }
 
   ViewHostMsg_GetWindowRect::WriteReplyParams(reply_msg, rect);
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this, &RenderMessageFilter::SendDelayedReply, reply_msg));
+  Send(reply_msg);
 }
 
 // Return the top-level parent of the given window. Called on the
@@ -126,11 +113,7 @@ void RenderMessageFilter::DoOnGetRootWindowRect(gfx::NativeViewId view,
   }
 
   ViewHostMsg_GetRootWindowRect::WriteReplyParams(reply_msg, rect);
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this, &RenderMessageFilter::SendDelayedReply, reply_msg));
+  Send(reply_msg);
 }
 
 // Called on the UI thread.
@@ -140,11 +123,7 @@ void RenderMessageFilter::DoOnClipboardIsFormatAvailable(
   const bool result = GetClipboard()->IsFormatAvailable(format, buffer);
 
   ViewHostMsg_ClipboardIsFormatAvailable::WriteReplyParams(reply_msg, result);
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this, &RenderMessageFilter::SendDelayedReply, reply_msg));
+  Send(reply_msg);
 }
 
 // Called on the UI thread.
@@ -154,11 +133,7 @@ void RenderMessageFilter::DoOnClipboardReadText(Clipboard::Buffer buffer,
   GetClipboard()->ReadText(buffer, &result);
 
   ViewHostMsg_ClipboardReadText::WriteReplyParams(reply_msg, result);
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this, &RenderMessageFilter::SendDelayedReply, reply_msg));
+  Send(reply_msg);
 }
 
 // Called on the UI thread.
@@ -168,11 +143,7 @@ void RenderMessageFilter::DoOnClipboardReadAsciiText(
   GetClipboard()->ReadAsciiText(buffer, &result);
 
   ViewHostMsg_ClipboardReadAsciiText::WriteReplyParams(reply_msg, result);
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this, &RenderMessageFilter::SendDelayedReply, reply_msg));
+  Send(reply_msg);
 }
 
 // Called on the UI thread.
@@ -184,38 +155,25 @@ void RenderMessageFilter::DoOnClipboardReadHTML(Clipboard::Buffer buffer,
   const GURL src_url = GURL(src_url_str);
 
   ViewHostMsg_ClipboardReadHTML::WriteReplyParams(reply_msg, markup, src_url);
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this, &RenderMessageFilter::SendDelayedReply, reply_msg));
+  Send(reply_msg);
 }
 
 // Called on the UI thread.
 void RenderMessageFilter::DoOnClipboardReadAvailableTypes(
     Clipboard::Buffer buffer, IPC::Message* reply_msg) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this, &RenderMessageFilter::SendDelayedReply, reply_msg));
+  Send(reply_msg);
 }
 
 // Called on the UI thread.
 void RenderMessageFilter::DoOnClipboardReadData(Clipboard::Buffer buffer,
                                                 const string16& type,
                                                 IPC::Message* reply_msg) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this, &RenderMessageFilter::SendDelayedReply, reply_msg));
+  Send(reply_msg);
 }
 // Called on the UI thread.
 void RenderMessageFilter::DoOnClipboardReadFilenames(
     Clipboard::Buffer buffer, IPC::Message* reply_msg) {
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this, &RenderMessageFilter::SendDelayedReply, reply_msg));
+  Send(reply_msg);
 }
 
 // Called on the FILE thread.
@@ -251,11 +209,7 @@ void RenderMessageFilter::DoOnAllocateTempFileForPrinting(
 
   ViewHostMsg_AllocateTempFileForPrinting::WriteReplyParams(
       reply_msg, temp_file_fd, fd_in_browser);
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this, &RenderMessageFilter::SendDelayedReply, reply_msg));
+  Send(reply_msg);
 }
 
 // Called on the IO thread.

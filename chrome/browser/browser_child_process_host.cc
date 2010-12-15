@@ -61,19 +61,43 @@ class ChildNotificationTask : public Task {
 
 
 BrowserChildProcessHost::BrowserChildProcessHost(
-    ProcessType type, ResourceDispatcherHost* resource_dispatcher_host)
-    : Receiver(type, -1),
+    ChildProcessInfo::ProcessType type,
+    ResourceDispatcherHost* resource_dispatcher_host,
+    ResourceMessageFilter::URLRequestContextOverride*
+        url_request_context_override)
+    : ChildProcessInfo(type, -1),
       ALLOW_THIS_IN_INITIALIZER_LIST(client_(this)),
       resource_dispatcher_host_(resource_dispatcher_host) {
+  Initialize(url_request_context_override);
+}
+
+BrowserChildProcessHost::BrowserChildProcessHost(
+    ChildProcessInfo::ProcessType type,
+    ResourceDispatcherHost* resource_dispatcher_host)
+    : ChildProcessInfo(type, -1),
+      ALLOW_THIS_IN_INITIALIZER_LIST(client_(this)),
+      resource_dispatcher_host_(resource_dispatcher_host) {
+  Initialize(NULL);
+}
+
+void BrowserChildProcessHost::Initialize(
+    ResourceMessageFilter::URLRequestContextOverride*
+        url_request_context_override) {
+  if (resource_dispatcher_host_) {
+    ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
+        id(), type(), resource_dispatcher_host_);
+    if (url_request_context_override) {
+      resource_message_filter->set_url_request_context_override(
+        url_request_context_override);
+    }
+    AddFilter(resource_message_filter);
+  }
+
   g_child_process_list.Get().push_back(this);
 }
 
-
 BrowserChildProcessHost::~BrowserChildProcessHost() {
   g_child_process_list.Get().remove(this);
-
-  if (resource_dispatcher_host_)
-    resource_dispatcher_host_->CancelRequestsForProcess(id());
 }
 
 // static
@@ -127,10 +151,6 @@ base::ProcessHandle BrowserChildProcessHost::GetChildProcessHandle() const {
   return child_process_->GetHandle();
 }
 
-bool BrowserChildProcessHost::Send(IPC::Message* msg) {
-  return SendOnChannel(msg);
-}
-
 void BrowserChildProcessHost::ForceShutdown() {
   g_child_process_list.Get().remove(this);
   ChildProcessHost::ForceShutdown();
@@ -176,22 +196,10 @@ void BrowserChildProcessHost::OnChildDied() {
   ChildProcessHost::OnChildDied();
 }
 
-bool BrowserChildProcessHost::InterceptMessageFromChild(
-    const IPC::Message& msg) {
-  bool msg_is_ok = true;
-  bool handled = false;
-  if (resource_dispatcher_host_) {
-    handled = resource_dispatcher_host_->OnMessageReceived(
-        msg, this, &msg_is_ok);
-  }
-  if (!handled && (msg.type() == PluginProcessHostMsg_ShutdownRequest::ID)) {
-    // Must remove the process from the list now, in case it gets used for a
-    // new instance before our watcher tells us that the process terminated.
-    g_child_process_list.Get().remove(this);
-  }
-  if (!msg_is_ok)
-    base::KillProcess(handle(), ResultCodes::KILLED_BAD_MESSAGE, false);
-  return handled;
+void BrowserChildProcessHost::ShutdownStarted() {
+  // Must remove the process from the list now, in case it gets used for a
+  // new instance before our watcher tells us that the process terminated.
+  g_child_process_list.Get().remove(this);
 }
 
 BrowserChildProcessHost::ClientHook::ClientHook(BrowserChildProcessHost* host)
@@ -214,7 +222,7 @@ BrowserChildProcessHost::Iterator::Iterator()
   iterator_ = g_child_process_list.Get().begin();
 }
 
-BrowserChildProcessHost::Iterator::Iterator(ProcessType type)
+BrowserChildProcessHost::Iterator::Iterator(ChildProcessInfo::ProcessType type)
     : all_(false), type_(type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO)) <<
           "ChildProcessInfo::Iterator must be used on the IO thread.";

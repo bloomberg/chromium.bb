@@ -191,7 +191,7 @@ class OpenChannelToPluginCallback : public PluginProcessHost::Client {
   }
 
   virtual int ID() {
-    return filter_->id();
+    return filter_->render_process_id();
   }
 
   virtual bool OffTheRecord() {
@@ -227,21 +227,16 @@ class OpenChannelToPluginCallback : public PluginProcessHost::Client {
 }  // namespace
 
 RenderMessageFilter::RenderMessageFilter(
-    ResourceDispatcherHost* resource_dispatcher_host,
-    int child_id,
+    int render_process_id,
     PluginService* plugin_service,
-    printing::PrintJobManager* print_job_manager,
     Profile* profile,
     RenderWidgetHelper* render_widget_helper)
-    : Receiver(RENDER_PROCESS, child_id),
-      channel_(NULL),
-      resource_dispatcher_host_(resource_dispatcher_host),
+    : resource_dispatcher_host_(g_browser_process->resource_dispatcher_host()),
       plugin_service_(plugin_service),
-      print_job_manager_(print_job_manager),
+      print_job_manager_(g_browser_process->print_job_manager()),
       profile_(profile),
       content_settings_(profile->GetHostContentSettingsMap()),
       ALLOW_THIS_IN_INITIALIZER_LIST(resolve_proxy_msg_helper_(this, NULL)),
-      media_request_context_(profile->GetRequestContextForMedia()),
       extensions_request_context_(profile->GetRequestContextForExtensions()),
       render_widget_helper_(render_widget_helper),
       notification_prefs_(
@@ -250,12 +245,12 @@ RenderMessageFilter::RenderMessageFilter(
       off_the_record_(profile->IsOffTheRecord()),
       next_route_id_callback_(NewCallbackWithReturnValue(
           render_widget_helper, &RenderWidgetHelper::GetNextRoutingID)),
-      webkit_context_(profile->GetWebKitContext()) {
+      webkit_context_(profile->GetWebKitContext()),
+      render_process_id_(render_process_id) {
   request_context_ = profile_->GetRequestContext();
   DCHECK(request_context_);
-  DCHECK(media_request_context_);
 
-  render_widget_helper_->Init(id(), resource_dispatcher_host_);
+  render_widget_helper_->Init(render_process_id_, resource_dispatcher_host_);
 #if defined(OS_CHROMEOS)
   cloud_print_enabled_ = true;
 #else
@@ -273,31 +268,18 @@ RenderMessageFilter::~RenderMessageFilter() {
       NotificationType::RESOURCE_MESSAGE_FILTER_SHUTDOWN,
       Source<RenderMessageFilter>(this),
       NotificationService::NoDetails());
-
-  if (handle())
-    base::CloseProcessHandle(handle());
-}
-
-// Called on the IPC thread:
-void RenderMessageFilter::OnFilterAdded(IPC::Channel* channel) {
-  channel_ = channel;
 }
 
 // Called on the IPC thread:
 void RenderMessageFilter::OnChannelConnected(int32 peer_pid) {
-  DCHECK(!handle()) << " " << handle();
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  base::ProcessHandle peer_handle;
-  if (!base::OpenProcessHandle(peer_pid, &peer_handle)) {
-    NOTREACHED();
-  }
-  set_handle(peer_handle);
+  BrowserMessageFilter::OnChannelConnected(peer_pid);
 
   WorkerService::GetInstance()->Initialize(resource_dispatcher_host_);
 }
 
 void RenderMessageFilter::OnChannelError() {
+  BrowserMessageFilter::OnChannelError();
+
   NotificationService::current()->Notify(
       NotificationType::RESOURCE_MESSAGE_FILTER_SHUTDOWN,
       Source<RenderMessageFilter>(this),
@@ -305,27 +287,15 @@ void RenderMessageFilter::OnChannelError() {
 }
 
 // Called on the IPC thread:
-void RenderMessageFilter::OnChannelClosing() {
-  channel_ = NULL;
-
-  // Unhook us from all pending network requests so they don't get sent to a
-  // deleted object.
-  resource_dispatcher_host_->CancelRequestsForProcess(id());
-}
-
-// Called on the IPC thread:
-bool RenderMessageFilter::OnMessageReceived(const IPC::Message& msg) {
+bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
+                                            bool* message_was_ok) {
   MessagePortDispatcher* mp_dispatcher = MessagePortDispatcher::GetInstance();
-  bool msg_is_ok = true;
-  bool handled =
-      resource_dispatcher_host_->OnMessageReceived(msg, this, &msg_is_ok) ||
-      mp_dispatcher->OnMessageReceived(
-          msg, this, next_route_id_callback(), &msg_is_ok);
+  bool handled = mp_dispatcher->OnMessageReceived(
+      message, this, next_route_id_callback(), message_was_ok);
 
   if (!handled) {
-    DCHECK(msg_is_ok);  // It should have been marked handled if it wasn't OK.
     handled = true;
-    IPC_BEGIN_MESSAGE_MAP_EX(RenderMessageFilter, msg, msg_is_ok)
+    IPC_BEGIN_MESSAGE_MAP_EX(RenderMessageFilter, message, *message_was_ok)
       // On Linux we need to dispatch these messages to the UI2 thread
       // because we cannot make X calls from the IO thread.  Mac
       // doesn't have windowed plug-ins so we handle the messages in
@@ -362,7 +332,7 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& msg) {
                                       OnGetPluginInfo)
       IPC_MESSAGE_HANDLER(ViewHostMsg_DownloadUrl, OnDownloadUrl)
       IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_ContextMenu,
-                                  OnReceiveContextMenuMsg(msg))
+                                  OnReceiveContextMenuMsg(message))
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenChannelToPlugin,
                                       OnOpenChannelToPlugin)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenChannelToPepperPlugin,
@@ -390,7 +360,7 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_RendererHistograms,
                           OnRendererHistograms)
       IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_UpdateRect,
-          render_widget_helper_->DidReceiveUpdateMsg(msg))
+          render_widget_helper_->DidReceiveUpdateMsg(message))
       IPC_MESSAGE_HANDLER(ViewHostMsg_ClipboardWriteObjectsAsync,
                           OnClipboardWriteObjectsAsync)
       IPC_MESSAGE_HANDLER(ViewHostMsg_ClipboardWriteObjectsSync,
@@ -470,13 +440,9 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_SynchronizeGpu,
                                       OnSynchronizeGpu)
       IPC_MESSAGE_HANDLER(ViewHostMsg_AsyncOpenFile, OnAsyncOpenFile)
-      IPC_MESSAGE_UNHANDLED(
-          handled = false)
+      IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP_EX()
   }
-
-  if (!msg_is_ok)
-    BrowserRenderProcessHost::BadMessageTerminateProcess(msg.type(), handle());
 
   return handled;
 }
@@ -489,11 +455,13 @@ void RenderMessageFilter::OnRevealFolderInOS(const FilePath& path) {
 #endif
   if (!BrowserThread::CurrentlyOn(kThreadID)) {
     // Only honor the request if appropriate persmissions are granted.
-    if (ChildProcessSecurityPolicy::GetInstance()->CanReadFile(id(), path))
+    if (ChildProcessSecurityPolicy::GetInstance()->CanReadFile(
+          render_process_id_, path)) {
       BrowserThread::PostTask(
           kThreadID, FROM_HERE,
           NewRunnableMethod(
               this, &RenderMessageFilter::OnRevealFolderInOS, path));
+    }
     return;
   }
 
@@ -515,29 +483,8 @@ void RenderMessageFilter::OnReceiveContextMenuMsg(const IPC::Message& msg) {
   const ViewHostMsg_ContextMenu context_menu_message(msg.routing_id(), params);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      new ContextMenuMessageDispatcher(id(), context_menu_message));
-}
-
-// Called on the IPC thread:
-bool RenderMessageFilter::Send(IPC::Message* message) {
-  if (!channel_) {
-    delete message;
-    return false;
-  }
-
-  return channel_->Send(message);
-}
-
-URLRequestContext* RenderMessageFilter::GetRequestContext(
-    uint32 request_id,
-    const ViewHostMsg_Resource_Request& request_data) {
-  URLRequestContextGetter* request_context = request_context_;
-  // If the request has resource type of ResourceType::MEDIA, we use a request
-  // context specific to media for handling it because these resources have
-  // specific needs for caching.
-  if (request_data.resource_type == ResourceType::MEDIA)
-    request_context = media_request_context_;
-  return request_context->GetURLRequestContext();
+      new ContextMenuMessageDispatcher(
+          render_process_id_, context_menu_message));
 }
 
 void RenderMessageFilter::OnMsgCreateWindow(
@@ -550,7 +497,7 @@ void RenderMessageFilter::OnMsgCreateWindow(
                                          params.user_gesture,
                                          params.window_container_type,
                                          params.frame_name,
-                                         handle(),
+                                         peer_handle(),
                                          route_id);
 }
 
@@ -572,9 +519,8 @@ void RenderMessageFilter::OnSetCookie(const IPC::Message& message,
                                       const std::string& cookie) {
   ChromeURLRequestContext* context = GetRequestContextForURL(url);
 
-  SetCookieCompletion* callback =
-      new SetCookieCompletion(id(), message.routing_id(), url, cookie,
-                              context);
+  SetCookieCompletion* callback = new SetCookieCompletion(
+      render_process_id_, message.routing_id(), url, cookie, context);
 
   // If this render view is associated with an automation channel, aka
   // ChromeFrame then we need to set cookies in the external host.
@@ -597,9 +543,9 @@ void RenderMessageFilter::OnGetCookies(const GURL& url,
                                        IPC::Message* reply_msg) {
   ChromeURLRequestContext* context = GetRequestContextForURL(url);
 
-  GetCookiesCompletion* callback =
-      new GetCookiesCompletion(id(), reply_msg->routing_id(), url, reply_msg,
-                               this, context, false);
+  GetCookiesCompletion* callback = new GetCookiesCompletion(
+      render_process_id_, reply_msg->routing_id(), url, reply_msg, this,
+      context, false);
 
   // If this render view is associated with an automation channel, aka
   // ChromeFrame then we need to retrieve cookies from the external host.
@@ -628,8 +574,8 @@ void RenderMessageFilter::OnGetRawCookies(
   // not targeted to an an external host like ChromeFrame.
   // TODO(ananta) We need to support retreiving raw cookies from external
   // hosts.
-  if (!ChildProcessSecurityPolicy::GetInstance()->CanReadRawCookies(id()) ||
-      context->IsExternal()) {
+  if (!ChildProcessSecurityPolicy::GetInstance()->CanReadRawCookies(
+          render_process_id_) || context->IsExternal()) {
     ViewHostMsg_GetRawCookies::WriteReplyParams(
         reply_msg,
         std::vector<webkit_glue::WebCookie>());
@@ -637,9 +583,9 @@ void RenderMessageFilter::OnGetRawCookies(
     return;
   }
 
-  GetCookiesCompletion* callback =
-      new GetCookiesCompletion(id(), reply_msg->routing_id(), url,
-                               reply_msg, this, context, true);
+  GetCookiesCompletion* callback = new GetCookiesCompletion(
+      render_process_id_, reply_msg->routing_id(), url, reply_msg, this,
+      context, true);
 
   // We check policy here to avoid sending back cookies that would not normally
   // be applied to outbound requests for the given URL.  Since this cookie info
@@ -832,15 +778,15 @@ void RenderMessageFilter::OnCreateWorker(
   if (params.is_shared)
     WorkerService::GetInstance()->CreateSharedWorker(
         params.url, off_the_record(), params.name,
-        params.document_id, id(), params.render_view_route_id, this, *route_id,
-        params.script_resource_appcache_id,
+        params.document_id, render_process_id_, params.render_view_route_id,
+        this, *route_id, params.script_resource_appcache_id,
         static_cast<ChromeURLRequestContext*>(
             request_context_->GetURLRequestContext()));
   else
     WorkerService::GetInstance()->CreateDedicatedWorker(
         params.url, off_the_record(),
-        params.document_id, id(), params.render_view_route_id, this, *route_id,
-        id(), params.parent_appcache_host_id,
+        params.document_id, render_process_id_, params.render_view_route_id,
+        this, *route_id, render_process_id_, params.parent_appcache_host_id,
         static_cast<ChromeURLRequestContext*>(
             request_context_->GetURLRequestContext()));
 }
@@ -850,8 +796,9 @@ void RenderMessageFilter::OnLookupSharedWorker(
     bool* url_mismatch) {
   *route_id = render_widget_helper_->GetNextRoutingID();
   *exists = WorkerService::GetInstance()->LookupSharedWorker(
-      params.url, params.name, off_the_record(), params.document_id, id(),
-      params.render_view_route_id, this, *route_id, url_mismatch);
+      params.url, params.name, off_the_record(), params.document_id,
+      render_process_id_, params.render_view_route_id, this, *route_id,
+      url_mismatch);
 }
 
 void RenderMessageFilter::OnDocumentDetached(unsigned long long document_id) {
@@ -879,7 +826,7 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
                                            referrer,
                                            DownloadSaveInfo(),
                                            prompt_for_save_location,
-                                           id(),
+                                           render_process_id_,
                                            message.routing_id(),
                                            context);
 }
@@ -897,7 +844,7 @@ void RenderMessageFilter::OnClipboardWriteObjectsSync(
 
   // Splice the shared memory handle into the clipboard data.
   Clipboard::ReplaceSharedMemHandle(long_living_objects, bitmap_handle,
-                                    handle());
+                                    peer_handle());
 
   BrowserThread::PostTask(
       BrowserThread::UI,
@@ -1030,7 +977,7 @@ void RenderMessageFilter::OnDuplicateSection(
     base::SharedMemoryHandle* browser_handle) {
   // Duplicate the handle in this process right now so the memory is kept alive
   // (even if it is not mapped)
-  base::SharedMemory shared_buf(renderer_handle, true, handle());
+  base::SharedMemory shared_buf(renderer_handle, true, peer_handle());
   shared_buf.GiveToProcess(base::GetCurrentProcessHandle(), browser_handle);
 }
 #endif
@@ -1068,7 +1015,7 @@ void RenderMessageFilter::OnResourceTypeStats(
       NewRunnableFunction(
           &RenderMessageFilter::OnResourceTypeStatsOnUIThread,
           stats,
-          base::GetProcId(handle())));
+          base::GetProcId(peer_handle())));
 }
 
 void RenderMessageFilter::OnResourceTypeStatsOnUIThread(
@@ -1086,7 +1033,7 @@ void RenderMessageFilter::OnV8HeapStats(int v8_memory_allocated,
       NewRunnableFunction(&RenderMessageFilter::OnV8HeapStatsOnUIThread,
                           v8_memory_allocated,
                           v8_memory_used,
-                          base::GetProcId(handle())));
+                          base::GetProcId(peer_handle())));
 }
 
 // static
@@ -1105,7 +1052,7 @@ void RenderMessageFilter::OnDidZoomURL(const IPC::Message& message,
                                        const GURL& url) {
   Task* task = NewRunnableMethod(this,
       &RenderMessageFilter::UpdateHostZoomLevelsOnUIThread, zoom_level,
-      remember, url, id(), message.routing_id());
+      remember, url, render_process_id_, message.routing_id());
 #if defined(OS_MACOSX)
   cocoa_utils::PostTaskInEventTrackingRunLoopMode(FROM_HERE, task);
 #else
@@ -1337,7 +1284,7 @@ void RenderMessageFilter::OnOpenChannelToExtension(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           this, &RenderMessageFilter::OpenChannelToExtensionOnUIThread,
-          id(), routing_id, port2_id, source_extension_id,
+          render_process_id_, routing_id, port2_id, source_extension_id,
           target_extension_id, channel_name));
 }
 
@@ -1363,7 +1310,8 @@ void RenderMessageFilter::OnOpenChannelToTab(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
           this, &RenderMessageFilter::OpenChannelToTabOnUIThread,
-          id(), routing_id, port2_id, tab_id, extension_id, channel_name));
+          render_process_id_, routing_id, port2_id, tab_id, extension_id,
+          channel_name));
 }
 
 void RenderMessageFilter::OpenChannelToTabOnUIThread(
@@ -1537,7 +1485,7 @@ void RenderMessageFilter::OnRendererTcmalloc(base::ProcessId pid,
 #endif
 
 void RenderMessageFilter::OnEstablishGpuChannel() {
-  GpuProcessHost::Get()->EstablishGpuChannel(id(), this);
+  GpuProcessHost::Get()->EstablishGpuChannel(render_process_id_, this);
 }
 
 void RenderMessageFilter::OnSynchronizeGpu(IPC::Message* reply) {
@@ -1605,10 +1553,9 @@ void RenderMessageFilter::OnAsyncOpenFile(const IPC::Message& msg,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (!ChildProcessSecurityPolicy::GetInstance()->HasPermissionsForFile(
-          id(), path, flags)) {
+          render_process_id_, path, flags)) {
     DLOG(ERROR) << "Bad flags in ViewMsgHost_AsyncOpenFile message: " << flags;
-    BrowserRenderProcessHost::BadMessageTerminateProcess(
-        ViewHostMsg_AsyncOpenFile::ID, handle());
+    BadMessageReceived(ViewHostMsg_AsyncOpenFile::ID);
     return;
   }
 
@@ -1630,7 +1577,7 @@ void RenderMessageFilter::AsyncOpenFileOnFileThread(const FilePath& path,
       IPC::InvalidPlatformFileForTransit();
   if (file != base::kInvalidPlatformFileValue) {
 #if defined(OS_WIN)
-    ::DuplicateHandle(::GetCurrentProcess(), file, handle(),
+    ::DuplicateHandle(::GetCurrentProcess(), file, peer_handle(),
                       &file_for_transit, 0, false, DUPLICATE_SAME_ACCESS);
 #else
     file_for_transit = base::FileDescriptor(file, true);

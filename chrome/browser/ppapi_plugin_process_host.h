@@ -12,11 +12,6 @@
 
 class RenderMessageFilter;
 
-namespace IPC {
-struct ChannelHandle;
-class Message;
-}
-
 class PpapiPluginProcessHost : public BrowserChildProcessHost {
  public:
   explicit PpapiPluginProcessHost(RenderMessageFilter* filter);
@@ -27,9 +22,6 @@ class PpapiPluginProcessHost : public BrowserChildProcessHost {
  private:
   virtual bool CanShutdown() { return true; }
   virtual void OnProcessLaunched();
-  virtual URLRequestContext* GetRequestContext(
-      uint32 request_id,
-      const ViewHostMsg_Resource_Request& request_data);
 
   virtual void OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelConnected(int32 peer_pid);

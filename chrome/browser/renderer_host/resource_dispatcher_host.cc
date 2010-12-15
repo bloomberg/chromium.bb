@@ -41,6 +41,7 @@
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/render_view_host_notification_task.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/browser/renderer_host/resource_queue.h"
 #include "chrome/browser/renderer_host/resource_request_details.h"
 #include "chrome/browser/renderer_host/safe_browsing_resource_handler.h"
@@ -194,14 +195,6 @@ std::vector<int> GetAllNetErrorCodes() {
 
 }  // namespace
 
-ResourceDispatcherHost::Receiver::Receiver(ChildProcessInfo::ProcessType type,
-                                           int child_id)
-    : ChildProcessInfo(type, child_id) {
-}
-
-ResourceDispatcherHost::Receiver::~Receiver() {
-}
-
 ResourceDispatcherHost::ResourceDispatcherHost()
     : ALLOW_THIS_IN_INITIALIZER_LIST(
           download_file_manager_(new DownloadFileManager(this))),
@@ -216,7 +209,7 @@ ResourceDispatcherHost::ResourceDispatcherHost()
       is_shutdown_(false),
       max_outstanding_requests_cost_per_process_(
           kMaxOutstandingRequestsCostPerProcess),
-      receiver_(NULL) {
+      filter_(NULL) {
   ResourceQueue::DelegateSet resource_queue_delegates;
   resource_queue_delegates.insert(user_script_listener_.get());
   resource_queue_.Initialize(resource_queue_delegates);
@@ -299,15 +292,10 @@ bool ResourceDispatcherHost::HandleExternalProtocol(int request_id,
 }
 
 bool ResourceDispatcherHost::OnMessageReceived(const IPC::Message& message,
-                                               Receiver* receiver,
+                                               ResourceMessageFilter* filter,
                                                bool* message_was_ok) {
-  if (!IsResourceDispatcherHostMessage(message)) {
-    return false;
-  }
-
-  *message_was_ok = true;
-  receiver_ = receiver;
-
+  filter_ = filter;
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(ResourceDispatcherHost, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestResource, OnRequestResource)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_SyncLoad, OnSyncLoad)
@@ -319,11 +307,11 @@ bool ResourceDispatcherHost::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_CancelRequest, OnCancelRequest)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FollowRedirect, OnFollowRedirect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ClosePage_ACK, OnClosePageACK)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
-  receiver_ = NULL;
-
-  return true;
+  filter_ = NULL;
+  return handled;
 }
 
 void ResourceDispatcherHost::OnRequestResource(
@@ -354,18 +342,11 @@ void ResourceDispatcherHost::BeginRequest(
     const ViewHostMsg_Resource_Request& request_data,
     IPC::Message* sync_result,  // only valid for sync
     int route_id) {
-  ChildProcessInfo::ProcessType process_type = receiver_->type();
-  int child_id = receiver_->id();
-  ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
-      receiver_->GetRequestContext(request_id, request_data));
-  if (!context) {
-    URLRequestContextGetter* context_getter =
-        Profile::GetDefaultRequestContext();
-    if (context_getter) {
-      context = static_cast<ChromeURLRequestContext*>(
-          context_getter->GetURLRequestContext());
-    }
-  }
+  ChildProcessInfo::ProcessType process_type = filter_->process_type();
+  int child_id = filter_->child_id();
+
+  ChromeURLRequestContext* context = filter_->GetURLRequestContext(
+      request_id, request_data.resource_type);
 
   // Might need to resolve the blob references in the upload data.
   if (request_data.upload_data && context) {
@@ -380,10 +361,10 @@ void ResourceDispatcherHost::BeginRequest(
       SyncLoadResult result;
       result.status = status;
       ViewHostMsg_SyncLoad::WriteReplyParams(sync_result, result);
-      receiver_->Send(sync_result);
+      filter_->Send(sync_result);
     } else {
       // Tell the renderer that this request was disallowed.
-      receiver_->Send(new ViewMsg_Resource_RequestComplete(
+      filter_->Send(new ViewMsg_Resource_RequestComplete(
           route_id,
           request_id,
           status,
@@ -402,18 +383,11 @@ void ResourceDispatcherHost::BeginRequest(
   // Construct the event handler.
   scoped_refptr<ResourceHandler> handler;
   if (sync_result) {
-    handler = new SyncResourceHandler(receiver_,
-                                      child_id,
-                                      request_data.url,
-                                      sync_result,
-                                      this);
+    handler = new SyncResourceHandler(
+        filter_, request_data.url, sync_result, this);
   } else {
-    handler = new AsyncResourceHandler(receiver_,
-                                       child_id,
-                                       route_id,
-                                       receiver_->handle(),
-                                       request_data.url,
-                                       this);
+    handler = new AsyncResourceHandler(
+        filter_, route_id, request_data.url, this);
   }
 
   // The RedirectToFileResourceHandler depends on being next in the chain.
@@ -491,7 +465,7 @@ void ResourceDispatcherHost::BeginRequest(
   // Insert safe browsing at the front of the chain, so it gets to decide
   // on policies first.
   if (safe_browsing_->enabled()) {
-    handler = CreateSafeBrowsingResourceHandler(handler, child_id, route_id,
+    handler = CreateSafeBrowsingResourceHandler(handler, route_id,
                                                 request_data.resource_type);
   }
 
@@ -544,12 +518,13 @@ void ResourceDispatcherHost::BeginRequest(
 
 void ResourceDispatcherHost::OnReleaseDownloadedFile(int request_id) {
   DCHECK(pending_requests_.end() ==
-         pending_requests_.find(GlobalRequestID(receiver_->id(), request_id)));
-  UnregisterDownloadedTempFile(receiver_->id(), request_id);
+         pending_requests_.find(
+             GlobalRequestID(filter_->child_id(), request_id)));
+  UnregisterDownloadedTempFile(filter_->child_id(), request_id);
 }
 
 void ResourceDispatcherHost::OnDataReceivedACK(int request_id) {
-  DataReceivedACK(receiver_->id(), request_id);
+  DataReceivedACK(filter_->child_id(), request_id);
 }
 
 void ResourceDispatcherHost::DataReceivedACK(int child_id,
@@ -580,22 +555,21 @@ void ResourceDispatcherHost::OnDataDownloadedACK(int request_id) {
 }
 
 void ResourceDispatcherHost::RegisterDownloadedTempFile(
-    int receiver_id, int request_id, DeletableFileReference* reference) {
-  // Note: receiver_id is the child_id is the render_process_id...
-  registered_temp_files_[receiver_id][request_id] = reference;
+    int child_id, int request_id, DeletableFileReference* reference) {
+  registered_temp_files_[child_id][request_id] = reference;
   ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(
-      receiver_id, reference->path());
+      child_id, reference->path());
 }
 
 void ResourceDispatcherHost::UnregisterDownloadedTempFile(
-    int receiver_id, int request_id) {
-  DeletableFilesMap& map = registered_temp_files_[receiver_id];
+    int child_id, int request_id) {
+  DeletableFilesMap& map = registered_temp_files_[child_id];
   DeletableFilesMap::iterator found = map.find(request_id);
   if (found == map.end())
     return;
 
   ChildProcessSecurityPolicy::GetInstance()->RevokeAllPermissionsForFile(
-      receiver_id, found->second->path());
+      child_id, found->second->path());
   map.erase(found);
 }
 
@@ -605,7 +579,7 @@ bool ResourceDispatcherHost::Send(IPC::Message* message) {
 }
 
 void ResourceDispatcherHost::OnUploadProgressACK(int request_id) {
-  int child_id = receiver_->id();
+  int child_id = filter_->child_id();
   PendingRequestList::iterator i = pending_requests_.find(
       GlobalRequestID(child_id, request_id));
   if (i == pending_requests_.end())
@@ -616,28 +590,22 @@ void ResourceDispatcherHost::OnUploadProgressACK(int request_id) {
 }
 
 void ResourceDispatcherHost::OnCancelRequest(int request_id) {
-  CancelRequest(receiver_->id(), request_id, true);
+  CancelRequest(filter_->child_id(), request_id, true);
 }
 
 void ResourceDispatcherHost::OnFollowRedirect(
     int request_id,
     bool has_new_first_party_for_cookies,
     const GURL& new_first_party_for_cookies) {
-  FollowDeferredRedirect(receiver_->id(), request_id,
+  FollowDeferredRedirect(filter_->child_id(), request_id,
                          has_new_first_party_for_cookies,
                          new_first_party_for_cookies);
 }
 
 ResourceHandler* ResourceDispatcherHost::CreateSafeBrowsingResourceHandler(
-    ResourceHandler* handler, int child_id, int route_id,
-    ResourceType::Type resource_type) {
-  return new SafeBrowsingResourceHandler(handler,
-                                         child_id,
-                                         route_id,
-                                         resource_type,
-                                         safe_browsing_,
-                                         this,
-                                         receiver_);
+    ResourceHandler* handler, int route_id, ResourceType::Type resource_type) {
+  return new SafeBrowsingResourceHandler(
+      handler, route_id, resource_type, safe_browsing_, this, filter_);
 }
 
 ResourceDispatcherHostRequestInfo*
@@ -722,7 +690,7 @@ void ResourceDispatcherHost::BeginDownload(
                                   save_info));
 
   if (safe_browsing_->enabled()) {
-    handler = CreateSafeBrowsingResourceHandler(handler, child_id, route_id,
+    handler = CreateSafeBrowsingResourceHandler(handler, route_id,
                                                 ResourceType::MAIN_FRAME);
   }
 
@@ -1863,28 +1831,6 @@ bool ResourceDispatcherHost::IsValidRequest(net::URLRequest* request) {
   return pending_requests_.find(
       GlobalRequestID(info->child_id(), info->request_id())) !=
       pending_requests_.end();
-}
-
-// static
-bool ResourceDispatcherHost::IsResourceDispatcherHostMessage(
-    const IPC::Message& message) {
-  switch (message.type()) {
-    case ViewHostMsg_RequestResource::ID:
-    case ViewHostMsg_CancelRequest::ID:
-    case ViewHostMsg_FollowRedirect::ID:
-    case ViewHostMsg_ClosePage_ACK::ID:
-    case ViewHostMsg_ReleaseDownloadedFile::ID:
-    case ViewHostMsg_DataReceived_ACK::ID:
-    case ViewHostMsg_DataDownloaded_ACK::ID:
-    case ViewHostMsg_UploadProgress_ACK::ID:
-    case ViewHostMsg_SyncLoad::ID:
-      return true;
-
-    default:
-      break;
-  }
-
-  return false;
 }
 
 // static
