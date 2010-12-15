@@ -37,6 +37,7 @@
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/plugin_data_remover.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -110,6 +111,10 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
   clipboard_.reset(new Clipboard);
   main_notification_service_.reset(new NotificationService);
 
+  notification_registrar_.Add(this,
+                              NotificationType::APP_TERMINATING,
+                              NotificationService::AllSources());
+
   // Must be created after the NotificationService.
   print_job_manager_.reset(new printing::PrintJobManager);
 
@@ -174,6 +179,9 @@ BrowserProcessImpl::~BrowserProcessImpl() {
   // The IO thread must outlive the BACKGROUND_X11 thread.
   background_x11_thread_.reset();
 #endif
+
+  // Wait for removing plugin data to finish before shutting down the IO thread.
+  WaitForPluginDataRemoverToFinish();
 
   // Need to stop io_thread_ before resource_dispatcher_host_, since
   // io_thread_ may still deref ResourceDispatcherHost and handle resource
@@ -505,6 +513,34 @@ void BrowserProcessImpl::CheckForInspectorFiles() {
   file_thread()->message_loop()->PostTask
       (FROM_HERE,
        NewRunnableMethod(this, &BrowserProcessImpl::DoInspectorFilesCheck));
+}
+
+void BrowserProcessImpl::Observe(NotificationType type,
+                                 const NotificationSource& source,
+                                 const NotificationDetails& details) {
+  if (type == NotificationType::APP_TERMINATING) {
+    Profile* profile = ProfileManager::GetDefaultProfile();
+    if (profile) {
+      PrefService* prefs = profile->GetPrefs();
+      if (prefs->GetBoolean(prefs::kClearPluginLSODataOnExit) &&
+          local_state()->GetBoolean(prefs::kClearPluginLSODataEnabled)) {
+        plugin_data_remover_ = new PluginDataRemover();
+        plugin_data_remover_->StartRemoving(base::Time(), NULL);
+      }
+    }
+  } else {
+    NOTREACHED();
+  }
+}
+
+void BrowserProcessImpl::WaitForPluginDataRemoverToFinish() {
+  if (!plugin_data_remover_.get() || !plugin_data_remover_->is_removing())
+    return;
+  plugin_data_remover_->set_done_task(new MessageLoop::QuitTask());
+  base::Time start_time(base::Time::Now());
+  MessageLoop::current()->Run();
+  UMA_HISTOGRAM_TIMES("ClearPluginData.wait_at_shutdown",
+                      base::Time::Now() - start_time);
 }
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)

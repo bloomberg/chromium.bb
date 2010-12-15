@@ -22,6 +22,8 @@
 #include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "ipc/ipc_message.h"
 
 class ChromeNetLog;
@@ -29,16 +31,20 @@ class CommandLine;
 class DebuggerWrapper;
 class FilePath;
 class NotificationService;
+class PluginDataRemover;
 class TabCloseableStateWatcher;
 
 // Real implementation of BrowserProcess that creates and returns the services.
-class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
+class BrowserProcessImpl : public BrowserProcess,
+                           public NonThreadSafe,
+                           public NotificationObserver {
  public:
   explicit BrowserProcessImpl(const CommandLine& command_line);
   virtual ~BrowserProcessImpl();
 
   virtual void EndSession();
 
+  // BrowserProcess methods
   virtual ResourceDispatcherHost* resource_dispatcher_host();
   virtual MetricsService* metrics_service();
   virtual IOThread* io_thread();
@@ -75,6 +81,11 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
       safe_browsing_detection_service();
   virtual void CheckForInspectorFiles();
 
+  // NotificationObserver methods
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
   virtual void StartAutoupdateTimer();
 #endif
@@ -95,6 +106,8 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
 
   void CreateIOThread();
   static void CleanupOnIOThread();
+
+  void WaitForPluginDataRemoverToFinish();
 
   void CreateFileThread();
   void CreateDBThread();
@@ -223,6 +236,9 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
 
   // Lives here so can safely log events on shutdown.
   scoped_ptr<ChromeNetLog> net_log_;
+
+  NotificationRegistrar notification_registrar_;
+  scoped_refptr<PluginDataRemover> plugin_data_remover_;
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
   base::RepeatingTimer<BrowserProcessImpl> autoupdate_timer_;

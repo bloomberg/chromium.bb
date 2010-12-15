@@ -12,6 +12,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 
+// The internal class is refcounted so it can outlive PluginDataRemoverHelper.
 class PluginDataRemoverHelper::Internal
     : public base::RefCountedThreadSafe<PluginDataRemoverHelper::Internal> {
  public:

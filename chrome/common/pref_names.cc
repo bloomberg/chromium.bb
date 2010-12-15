@@ -558,6 +558,11 @@ const char kBlockNonsandboxedPlugins[] = "profile.block_nonsandboxed_plugins";
 // storage, etc..) should be deleted on exit.
 const char kClearSiteDataOnExit[] = "profile.clear_site_data_on_exit";
 
+// Boolean that is true when plug-in locally stored data ("Flash cookies")
+// should be deleted on exit.
+const char kClearPluginLSODataOnExit[] =
+    "profile.clear_plugin_lso_data_on_exit";
+
 // Double that indicates the default zoom level.
 const char kDefaultZoomLevel[] = "profile.default_zoom_level";
 
