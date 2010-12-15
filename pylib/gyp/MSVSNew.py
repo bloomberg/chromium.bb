@@ -10,6 +10,8 @@ import common
 import os
 import random
 
+import gyp.common
+
 # hashlib is supplied as of Python 2.5 as the replacement interface for md5
 # and other secure hashes.  In 2.6, md5 is deprecated.  Import hashlib if
 # available, avoiding a deprecation warning under 2.6.  Import md5 otherwise,
@@ -105,27 +107,29 @@ class MSVSProject:
   """Visual Studio project."""
 
   def __init__(self, path, name = None, dependencies = None, guid = None,
-               config_platform_overrides = None):
+               spec = None, build_file = None, config_platform_overrides = None,
+               fixpath_prefix = None):
     """Initializes the project.
 
     Args:
-      path: Relative path to project file.
+      path: Absolute path to the project file.
       name: Name of project.  If None, the name will be the same as the base
           name of the project file.
       dependencies: List of other Project objects this project is dependent
           upon, if not None.
       guid: GUID to use for project, if not None.
+      spec: Dictionary specifying how to build this project.
+      build_file: Filename of the .gyp file that the vcproj file comes from.
       config_platform_overrides: optional dict of configuration platforms to
           used in place of the default for this target.
+      fixpath_prefix: the path used to adjust the behavior of _fixpath
     """
     self.path = path
     self.guid = guid
-
-    if name:
-      self.name = name
-    else:
-      # Use project filename
-      self.name = os.path.splitext(os.path.basename(path))[0]
+    self.spec = spec
+    self.build_file = build_file
+    # Use project filename if name not specified
+    self.name = name or os.path.splitext(os.path.basename(path))[0]
 
     # Copy passed lists (or set to empty lists)
     self.dependencies = list(dependencies or [])
@@ -136,7 +140,11 @@ class MSVSProject:
       self.config_platform_overrides = config_platform_overrides
     else:
       self.config_platform_overrides = {}
+    self.fixpath_prefix = fixpath_prefix
 
+  def set_dependencies(self, dependencies):
+    self.dependencies = list(dependencies or [])
+  
   def get_guid(self):
     if self.guid is None:
       # Set GUID from path
@@ -241,11 +249,13 @@ class MSVSSolution:
     f.write('# %s\r\n' % self.version.Description())
 
     # Project entries
+    sln_root = os.path.split(self.path)[0]
     for e in all_entries:
+      relative_path = gyp.common.RelativePath(e.path, sln_root)
       f.write('Project("%s") = "%s", "%s", "%s"\r\n' % (
           e.entry_type_guid,          # Entry type GUID
           e.name,                     # Folder name
-          e.path.replace('/', '\\'),  # Folder name (again)
+          relative_path.replace('/', '\\'),  # Folder name (again)
           e.get_guid(),               # Entry GUID
       ))
 

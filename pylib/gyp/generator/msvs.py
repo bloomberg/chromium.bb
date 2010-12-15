@@ -612,16 +612,19 @@ def _GenerateRules(p, output_dir, options, spec,
         sources.update(outputs)
 
 
-def _GenerateProject(proj_path, build_file, spec, options, version):
-  """Generates a vcproj file.
+def _GetDefaultConfiguration(spec):
+  return spec['configurations'][spec['default_configuration']]
+
+
+def _GetGuidOfProject(proj_path, spec):
+  """Get the guid for the project
 
   Arguments:
     proj_path: Path of the vcproj file to generate.
-    build_file: Filename of the .gyp file that the vcproj file comes from.
     spec: The target dictionary containing the properties of the target.
   """
   # Pluck out the default configuration.
-  default_config = spec['configurations'][spec['default_configuration']]
+  default_config = _GetDefaultConfiguration(spec)
   # Decide the guid of the project.
   guid = default_config.get('msvs_guid')
   if guid:
@@ -629,49 +632,55 @@ def _GenerateProject(proj_path, build_file, spec, options, version):
       raise ValueError('Invalid MSVS guid: "%s".  Must match regex: "%s".' %
                        (guid, VALID_MSVS_GUID_CHARS.pattern))
     guid = '{%s}' % guid
-
-  # Skip emitting anything if told to with msvs_existing_vcproj option.
-  if default_config.get('msvs_existing_vcproj'):
-    return guid
-
   guid = guid or MSVSNew.MakeGuid(proj_path)
-  _GenerateMsvsProject(proj_path, guid, build_file, spec, options, version)
-
-  # Return the guid so we can refer to it elsewhere.
   return guid
 
 
-def _GenerateMsvsProject(proj_path, guid, build_file, spec, options, version):
+def _GenerateProject(project, options, version):
+  """Generates a vcproj file.
+
+  Arguments:
+    project: the MSVSProject object.
+    options: global generator options.
+    version: the MSVSVersion object.
+"""
+  default_config = _GetDefaultConfiguration(project.spec)
+
+  # Skip emitting anything if told to with msvs_existing_vcproj option.
+  if default_config.get('msvs_existing_vcproj'):
+    return
+
+  _GenerateMsvsProject(project, options, version)
+
+
+def _GenerateMsvsProject(project, options, version):
   """Generates a .vcproj file.  It may create .rules and .user files too.
 
   Arguments:
-    proj_path: The path of the project file to be created.  The .rules and
-               .user files will start with the same path.
-    guid: The GUID of this project.
-    build_file: Filename of the .gyp file that the vcproj file comes from.
-    spec: The target dictionary containing the properties of the target.
+    project: The project object we will generate the file for.
     options: Global options passed to the generator.
     version: The VisualStudioVersion object.
   """
-  vcproj_dir = os.path.dirname(proj_path)
+  spec = project.spec
+  vcproj_dir = os.path.dirname(project.path)
   if vcproj_dir and not os.path.exists(vcproj_dir):
     os.makedirs(vcproj_dir)
 
   platforms = _GetUniquePlatforms(spec)
 
-  p = MSVSProject.Writer(proj_path, version=version)
-  p.Create(spec['target_name'], guid=guid, platforms=platforms)
-  user_file = _CreateMsvsUserFile(proj_path, version, spec)
+  p = MSVSProject.Writer(project.path, version=version)
+  p.Create(spec['target_name'], guid=project.guid, platforms=platforms)
+  user_file = _CreateMsvsUserFile(project.path, version, spec)
 
   # Get directory project file is in.
-  gyp_dir = os.path.split(proj_path)[0]
+  gyp_dir = os.path.split(project.path)[0]
 
-  config_type = _GetMsvsConfigurationType(spec, build_file)
+  config_type = _GetMsvsConfigurationType(spec, project.build_file)
   for config_name, config in spec['configurations'].iteritems():
     _AddConfigurationToMsvsProject(p, spec, config_type, config_name, config)
 
   # Prepare list of sources and excluded sources.
-  sources, excluded_sources = _PrepareListOfSources(spec, build_file)
+  sources, excluded_sources = _PrepareListOfSources(spec, project.build_file)
 
   # Add rules.
   actions_to_add = []
@@ -1259,14 +1268,14 @@ def _CollapseSingles(parent, node):
   return node
 
 
-def _GatherSolutionFolders(project_objs, flat):
+def _GatherSolutionFolders(sln_projects, project_objects, flat):
   root = {}
   # Convert into a tree of dicts on path.
-  for p in project_objs.keys():
+  for p in sln_projects:
     gyp_file, target = gyp.common.ParseQualifiedTarget(p)[0:2]
     gyp_dir = os.path.dirname(gyp_file)
     path_dict = _GetPathDict(root, gyp_dir)
-    path_dict[target + '.vcproj'] = project_objs[p]
+    path_dict[target + '.vcproj'] = project_objects[p]
   # Walk down from the top until we hit a folder that has more than one entry.
   # In practice, this strips the top-level "src/" dir from the hierarchy in
   # the solution.
@@ -1278,19 +1287,24 @@ def _GatherSolutionFolders(project_objs, flat):
   return _DictsToFolders('', root, flat)
 
 
-def _ProjectObject(sln, qualified_target, project_objs, projects):
-  # Done if this project has an object.
-  if project_objs.get(qualified_target):
-    return project_objs[qualified_target]
-  # Get dependencies for this project.
-  spec = projects[qualified_target]['spec']
-  deps = spec.get('dependencies', [])
-  # Get objects for each dependency.
-  deps = [_ProjectObject(sln, d, project_objs, projects) for d in deps]
-  # Find relative path to vcproj from sln.
-  vcproj_rel_path = gyp.common.RelativePath(
-      projects[qualified_target]['vcproj_path'], os.path.split(sln)[0])
-  vcproj_rel_path = _FixPath(vcproj_rel_path)
+def _GetPathOfProject(qualified_target, spec, options, msvs_version):
+  default_config = _GetDefaultConfiguration(spec)
+  proj_filename = default_config.get('msvs_existing_vcproj')
+  if not proj_filename:
+    proj_filename = spec['target_name'] + options.suffix + '.vcproj'
+
+  build_file = gyp.common.BuildFile(qualified_target)
+  proj_path = os.path.join(os.path.split(build_file)[0], proj_filename)
+  fixpath_prefix = None
+  if options.generator_output:
+    projectDirPath = os.path.dirname(os.path.abspath(proj_path))
+    proj_path = os.path.join(options.generator_output, proj_path)
+    fixpath_prefix = gyp.common.RelativePath(projectDirPath,
+                                             os.path.dirname(proj_path))
+  return proj_path, fixpath_prefix
+
+
+def _GetPlatformOverridesOfProject(spec):
   # Prepare a dict indicating which project configurations are used for which
   # solution configurations for this target.
   config_platform_overrides = {}
@@ -1300,17 +1314,50 @@ def _ProjectObject(sln, qualified_target, project_objs, projects):
     fixed_config_fullname = '%s|%s' % (
         _ConfigBaseName(config_name, _ConfigPlatform(c)), platform)
     config_platform_overrides[config_fullname] = fixed_config_fullname
-  # Create object for this project.
-  obj = MSVSNew.MSVSProject(
-      vcproj_rel_path,
-      name=spec['target_name'],
-      guid=projects[qualified_target]['guid'],
-      dependencies=deps,
-      config_platform_overrides=config_platform_overrides)
-  # Store it to the list of objects.
-  project_objs[qualified_target] = obj
-  # Return project object.
-  return obj
+  return config_platform_overrides
+
+
+def _CreateProjectObjects(target_list, target_dicts, options, msvs_version):
+  """Create a MSVSProject object for the targets found in target list.
+
+  Arguments:
+    target_list: the list of targets to generate project objects for.
+    target_dicts: the dictionary of specifications.
+    options: global generator options.
+    version: the MSVSVersion object.
+  Returns:
+    A set of created projects, keyed by target.
+  """
+  global fixpath_prefix
+  # Generate each project.
+  projects = {}
+  for qualified_target in target_list:
+    spec = target_dicts[qualified_target]
+    if spec['toolset'] != 'target':
+      raise Exception(
+          'Multiple toolsets not supported in msvs build (target %s)' %
+          qualified_target)
+    proj_path, fixpath_prefix = _GetPathOfProject(qualified_target, spec,
+                                                  options, msvs_version)
+    guid = _GetGuidOfProject(proj_path, spec)
+    overrides = _GetPlatformOverridesOfProject(spec)
+    build_file = gyp.common.BuildFile(qualified_target)
+    # Create object for this project.
+    obj = MSVSNew.MSVSProject(
+        _FixPath(proj_path),
+        name=spec['target_name'],
+        guid=guid,
+        spec=spec,
+        build_file=build_file,
+        config_platform_overrides=overrides,
+        fixpath_prefix=fixpath_prefix)
+    projects[qualified_target] = obj
+  # Set all the dependencies
+  for project in projects.values():
+    deps = project.spec.get('dependencies', [])
+    deps = [projects[d] for d in deps]
+    project.set_dependencies(deps)
+  return projects
 
 
 def CalculateVariables(default_variables, params):
@@ -1360,38 +1407,19 @@ def GenerateOutput(target_list, target_dicts, data, params):
   # Prepare the set of configurations.
   configs = set()
   for qualified_target in target_list:
-    build_file = gyp.common.BuildFile(qualified_target)
     spec = target_dicts[qualified_target]
     for config_name, config in spec['configurations'].iteritems():
       configs.add(_ConfigFullName(config_name, config))
   configs = list(configs)
 
+  # Figure out all the projects that will be generated and their guids
+  project_objects = _CreateProjectObjects(target_list, target_dicts, options,
+                                          msvs_version)
+  
   # Generate each project.
-  projects = {}
-  for qualified_target in target_list:
-    build_file = gyp.common.BuildFile(qualified_target)
-    spec = target_dicts[qualified_target]
-    if spec['toolset'] != 'target':
-      raise Exception(
-          'Multiple toolsets not supported in msvs build (target %s)' %
-          qualified_target)
-    default_config = spec['configurations'][spec['default_configuration']]
-    proj_filename = default_config.get('msvs_existing_vcproj')
-    if not proj_filename:
-      proj_filename = spec['target_name'] + options.suffix + '.vcproj'
-    proj_path = os.path.join(os.path.split(build_file)[0], proj_filename)
-    if options.generator_output:
-      projectDirPath = os.path.dirname(os.path.abspath(proj_path))
-      proj_path = os.path.join(options.generator_output, proj_path)
-      fixpath_prefix = gyp.common.RelativePath(projectDirPath,
-                                               os.path.dirname(proj_path))
-    projects[qualified_target] = {
-        'vcproj_path': proj_path,
-        'guid': _GenerateProject(proj_path, build_file,
-                                 spec, options, version=msvs_version),
-        'spec': spec,
-    }
-
+  for project in project_objects.values():
+    fixpath_prefix = project.fixpath_prefix
+    _GenerateProject(project, options, msvs_version)
   fixpath_prefix = None
 
   for build_file in data.keys():
@@ -1404,13 +1432,9 @@ def GenerateOutput(target_list, target_dicts, data, params):
     # Get projects in the solution, and their dependents.
     sln_projects = gyp.common.BuildFileTargets(target_list, build_file)
     sln_projects += gyp.common.DeepDependencyTargets(target_dicts, sln_projects)
-    # Convert projects to Project Objects.
-    project_objs = {}
-    for p in sln_projects:
-      _ProjectObject(sln_path, p, project_objs, projects)
     # Create folder hierarchy.
     root_entries = _GatherSolutionFolders(
-        project_objs, flat=msvs_version.FlatSolution())
+        sln_projects, project_objects, flat=msvs_version.FlatSolution())
     # Create solution.
     sln = MSVSNew.MSVSSolution(sln_path,
                                entries=root_entries,
