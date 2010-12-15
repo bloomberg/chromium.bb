@@ -337,6 +337,11 @@ bool InstantController::IsShowingInstant() {
       loader_manager_->current_loader()->is_showing_instant();
 }
 
+string16 InstantController::GetCompleteSuggestedText() {
+  return loader_manager_.get() && loader_manager_->active_loader() ?
+      loader_manager_->active_loader()->complete_suggested_text() : string16();
+}
+
 bool InstantController::MightSupportInstant() {
   return loader_manager_.get() && loader_manager_->active_loader() &&
       loader_manager_->active_loader()->is_showing_instant();

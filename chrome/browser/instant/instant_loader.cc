@@ -13,6 +13,7 @@
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/history/history_marshaling.h"
 #include "chrome/browser/instant/instant_loader_delegate.h"
@@ -664,6 +665,15 @@ void InstantLoader::SetCompleteSuggestedText(
 
   if (verbatim_) {
     // Don't show suggest results for verbatim queries.
+    return;
+  }
+
+  AutocompleteInput::Type type =
+      AutocompleteInput::Parse(UTF16ToWide(complete_suggested_text),
+                               std::wstring(), NULL, NULL);
+  if (type == AutocompleteInput::URL) {
+    // Ignore suggestions that look like urls. Otherwise the omnibox ends up
+    // showing what looks like a url but the page shows search results.
     return;
   }
 

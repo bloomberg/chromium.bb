@@ -167,6 +167,10 @@ class InstantController : public InstantLoaderDelegate {
     return last_transition_type_;
   }
 
+  // Returns the current complete suggested text, or an empty string if there is
+  // no suggestion.
+  string16 GetCompleteSuggestedText();
+
   // Returns true if we're showing results from a provider that supports the
   // instant API. See description of |MightSupportInstant| for how this
   // differs from actual loading state.

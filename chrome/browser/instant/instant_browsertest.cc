@@ -468,3 +468,31 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnCancelEvent) {
   EXPECT_NO_FATAL_FAILURE(CheckIntValueFromJavascript(
       1, "window.oncancelcalls", contents));
 }
+
+// Verify that suggestion that looks like a url ('www.google.com' in this case)
+// is not shown.
+IN_PROC_BROWSER_TEST_F(InstantTest, DontShowURLSuggest) {
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("suggest_google.html"));
+  ASSERT_NO_FATAL_FAILURE(FindLocationBar());
+  location_bar_->location_entry()->SetUserText(L"w");
+  InstantController* instant = browser()->instant();
+  ASSERT_TRUE(instant);
+  ASSERT_TRUE(instant->IsShowingInstant());
+  ASSERT_TRUE(instant->GetPreviewContents());
+  ui_test_utils::WaitForNavigation(
+      &(instant->GetPreviewContents()->controller()));
+  ASSERT_NO_FATAL_FAILURE(WaitForMessageToBeProcessedByRenderer(
+                              instant->GetPreviewContents()));
+  // TODO: remove this second change when 66104 is fixed.
+  location_bar_->location_entry()->SetUserText(L"ww");
+  ASSERT_NO_FATAL_FAILURE(WaitForMessageToBeProcessedByRenderer(
+                              instant->GetPreviewContents()));
+  ASSERT_TRUE(instant->is_displayable());
+
+  location_bar_->location_entry()->SetUserText(L"www");
+  ASSERT_NO_FATAL_FAILURE(WaitForMessageToBeProcessedByRenderer(
+                              instant->GetPreviewContents()));
+  ASSERT_EQ(UTF16ToWide(string16()),
+            UTF16ToWide(instant->GetCompleteSuggestedText()));
+}
