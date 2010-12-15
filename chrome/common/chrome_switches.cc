@@ -1347,25 +1347,19 @@ const char kTouchDevices[]                  = "touch-devices";
 #endif
 
 
-// USE_SECCOMP_SANDBOX controls whether the seccomp sandbox is opt-in or -out.
+// SeccompSandboxEnabled() controls whether we are using Seccomp.
+// It is currently off by default on all platforms.
 // TODO(evan): unify all of these once we turn the seccomp sandbox always
 // on.  Also remove the #include of command_line.h above.
-#if defined(USE_SECCOMP_SANDBOX)
+
 // Disable the seccomp sandbox (Linux only)
 const char kDisableSeccompSandbox[]         = "disable-seccomp-sandbox";
-#else
 // Enable the seccomp sandbox (Linux only)
 const char kEnableSeccompSandbox[]          = "enable-seccomp-sandbox";
-#endif
 
 bool SeccompSandboxEnabled() {
-#if defined(USE_SECCOMP_SANDBOX)
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kDisableSeccompSandbox);
-#else
   return CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kEnableSeccompSandbox);
-#endif
 }
 
 // -----------------------------------------------------------------------------

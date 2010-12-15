@@ -73,12 +73,12 @@ CommandLine RendererMainTest::MakeCmdLine(const std::string& procname,
                                           bool debug_on_start) {
   CommandLine command_line =
       MultiProcessTest::MakeCmdLine(procname, debug_on_start);
-#if defined(USE_SECCOMP_SANDBOX)
-  // Turn off seccomp for this test.  It's just a problem of refactoring,
+
+  // Force seccomp off for this test.  It's just a problem of refactoring,
   // not a bug.
   // http://code.google.com/p/chromium/issues/detail?id=59376
   command_line.AppendSwitch(switches::kDisableSeccompSandbox);
-#endif
+
   return command_line;
 }
 

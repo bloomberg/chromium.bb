@@ -359,9 +359,7 @@ void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
         switches::kLoginProfile,
         switches::kEnableTabbedOptions,
         switches::kCompressSystemFeedback,
-#if defined(USE_SECCOMP_SANDBOX)
         switches::kDisableSeccompSandbox,
-#endif
 #if defined(HAVE_XINPUT2)
         switches::kTouchDevices,
 #endif

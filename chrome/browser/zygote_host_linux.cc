@@ -104,11 +104,8 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
     switches::kUserDataDir,  // Make logs go to the right file.
     // Load (in-process) Pepper plugins in-process in the zygote pre-sandbox.
     switches::kRegisterPepperPlugins,
-#if defined(USE_SECCOMP_SANDBOX)
     switches::kDisableSeccompSandbox,
-#else
     switches::kEnableSeccompSandbox,
-#endif
   };
   cmd_line.CopySwitchesFrom(browser_command_line, kForwardSwitches,
                             arraysize(kForwardSwitches));

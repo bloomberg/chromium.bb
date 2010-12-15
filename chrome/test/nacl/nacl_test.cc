@@ -30,7 +30,7 @@ NaClTest::NaClTest()
   // Currently we disable some of the sandboxes.  See:
   // Make NaCl work in Chromium's Linux seccomp sandbox and the Mac sandbox
   // http://code.google.com/p/nativeclient/issues/detail?id=344
-#if defined(OS_LINUX) && defined(USE_SECCOMP_SANDBOX)
+#if defined(OS_LINUX)
   launch_arguments_.AppendSwitch(switches::kDisableSeccompSandbox);
 #endif
   launch_arguments_.AppendSwitchASCII(switches::kLoggingLevel, "0");

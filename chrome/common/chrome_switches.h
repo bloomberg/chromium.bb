@@ -401,11 +401,9 @@ extern const char kRendererCheckFalseTest[];
 extern const char kTouchDevices[];
 #endif
 
-#if defined(USE_SECCOMP_SANDBOX)
 extern const char kDisableSeccompSandbox[];
-#else
 extern const char kEnableSeccompSandbox[];
-#endif
+
 // Return true if the switches indicate the seccomp sandbox is enabled.
 bool SeccompSandboxEnabled();
 
