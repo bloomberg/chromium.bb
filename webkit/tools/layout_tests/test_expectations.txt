@@ -10,3 +10,8 @@ BUGPKASTING WIN DEBUG SLOW: fast/encoding/parser-tests.html = TEXT
 BUGPKASTING MAC DEBUG : fast/encoding/parser-tests.html = TIMEOUT
 
 BUGRICOW : fast/regex/pcre-test-1.html = TIMEOUT
+
+BUGJIANLI WIN DEBUG : inspector/console-uncaught-exception-in-eval.html = CRASH
+BUGJIANLI WIN DEBUG : inspector/timeline-enum-stability.html = CRASH
+BUGJIANLI WIN DEBUG : inspector/dom-breakpoints.html = TIMEOUT
+BUGJIANLI WIN DEBUG : inspector/timeline-parse-html.html = TIMEOUT
