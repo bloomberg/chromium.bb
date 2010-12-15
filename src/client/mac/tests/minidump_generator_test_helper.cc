@@ -1,5 +1,6 @@
-// Copyright (c) 2008, Google Inc.
-// All rights reserved
+// Copyright (c) 2010, Google Inc.
+// All rights reserved.
+//
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
 // met:
@@ -26,22 +27,37 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// breakpad_nlist.h
-//
-// This file is meant to provide a header for clients of the modified
-// nlist function implemented to work on 64-bit.
+// minidump_generator_test_helper.cc: A helper program that
+//   minidump_generator_test.cc can launch to test certain things
+//   that require a separate executable.
 
-#ifndef CLIENT_MAC_HANDLER_BREAKPAD_NLIST_H__
+#include "common/mac/MachIPC.h"
+#include <unistd.h>
 
-#include <mach/machine.h>
+using google_breakpad::MachPortSender;
+using google_breakpad::MachReceiveMessage;
+using google_breakpad::MachSendMessage;
+using google_breakpad::ReceivePort;
 
-int breakpad_nlist(const char *name,
-                   struct nlist *list,
-                   const char **symbolNames,
-                   cpu_type_t cpu_type);
-int breakpad_nlist(const char *name,
-                   struct nlist_64 *list,
-                   const char **symbolNames,
-                   cpu_type_t cpu_type);
+int main(int argc, char** argv) {
+  if (argc < 2)
+    return 1;
 
-#endif  /* CLIENT_MAC_HANDLER_BREAKPAD_NLIST_H__ */
+  const int kTimeoutMs = 2000;
+  // Send parent process the task and thread ports.
+  MachSendMessage child_message(0);
+  child_message.AddDescriptor(mach_task_self());
+  child_message.AddDescriptor(mach_thread_self());
+
+  MachPortSender child_sender(argv[1]);
+  if (child_sender.SendMessage(child_message, kTimeoutMs) != KERN_SUCCESS) {
+    fprintf(stderr, "Error sending message from child process!\n");
+    exit(1);
+  }
+
+  // Loop forever.
+  while (true) {
+    sleep(100);
+  }
+  return 0;
+}

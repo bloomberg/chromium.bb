@@ -53,6 +53,8 @@
 		8DC2EF570486A6940098B216 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
 		D23F4B2E12A7E13200686C8D /* minidump_generator_test.cc in Sources */ = {isa = PBXBuildFile; fileRef = D23F4B2C12A7E13200686C8D /* minidump_generator_test.cc */; };
 		D23F4B3312A7E17700686C8D /* libgtest.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D2F9A41512131EF0002747C1 /* libgtest.a */; };
+		D23F4BB112A868CB00686C8D /* minidump_generator_test_helper.cc in Sources */ = {isa = PBXBuildFile; fileRef = D23F4B9A12A8688800686C8D /* minidump_generator_test_helper.cc */; };
+		D23F4BB812A868F700686C8D /* MachIPC.mm in Sources */ = {isa = PBXBuildFile; fileRef = F92C53790ECCE635009BE4BA /* MachIPC.mm */; };
 		D244536A12426F00009BBCE0 /* logging.cc in Sources */ = {isa = PBXBuildFile; fileRef = D244535112426EBB009BBCE0 /* logging.cc */; };
 		D244536B12426F00009BBCE0 /* minidump.cc in Sources */ = {isa = PBXBuildFile; fileRef = D244535212426EBB009BBCE0 /* minidump.cc */; };
 		D244536C12426F00009BBCE0 /* pathname_stripper.cc in Sources */ = {isa = PBXBuildFile; fileRef = D244535312426EBB009BBCE0 /* pathname_stripper.cc */; };
@@ -324,6 +326,13 @@
 			remoteGlobalIDString = D2F9A41412131EF0002747C1;
 			remoteInfo = gtest;
 		};
+		D23F4BB912A8694C00686C8D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D23F4BAA12A868A500686C8D;
+			remoteInfo = minidump_generator_test_helper;
+		};
 		D2F9A44212131F80002747C1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
@@ -525,6 +534,8 @@
 		8B4BDAA7120124EA009C7060 /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = usr/lib/libcrypto.dylib; sourceTree = SDKROOT; };
 		8DC2EF5B0486A6940098B216 /* Breakpad.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Breakpad.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D23F4B2C12A7E13200686C8D /* minidump_generator_test.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = minidump_generator_test.cc; path = tests/minidump_generator_test.cc; sourceTree = "<group>"; };
+		D23F4B9A12A8688800686C8D /* minidump_generator_test_helper.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = minidump_generator_test_helper.cc; path = tests/minidump_generator_test_helper.cc; sourceTree = "<group>"; };
+		D23F4BAB12A868A500686C8D /* minidump_generator_test_helper */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = minidump_generator_test_helper; sourceTree = BUILT_PRODUCTS_DIR; };
 		D244534F12426E98009BBCE0 /* basic_code_modules.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = basic_code_modules.cc; path = ../../processor/basic_code_modules.cc; sourceTree = SOURCE_ROOT; };
 		D244535112426EBB009BBCE0 /* logging.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = logging.cc; path = ../../processor/logging.cc; sourceTree = SOURCE_ROOT; };
 		D244535212426EBB009BBCE0 /* minidump.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = minidump.cc; path = ../../processor/minidump.cc; sourceTree = SOURCE_ROOT; };
@@ -656,6 +667,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D23F4BA912A868A500686C8D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D2F9A41312131EF0002747C1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -767,6 +785,7 @@
 				F93DE32C0F82C55600608B94 /* handler_test */,
 				D2F9A41512131EF0002747C1 /* libgtest.a */,
 				D2F9A546121383A1002747C1 /* crash_generation_server_test */,
+				D23F4BAB12A868A500686C8D /* minidump_generator_test_helper */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1021,6 +1040,7 @@
 		F9C77DDF0F7DD7CF0045F7DB /* tests */ = {
 			isa = PBXGroup;
 			children = (
+				D23F4B9A12A8688800686C8D /* minidump_generator_test_helper.cc */,
 				D23F4B2C12A7E13200686C8D /* minidump_generator_test.cc */,
 				D2F9A4CE121336F7002747C1 /* crash_generation_server_test.cc */,
 				D2F9A3D41212F87C002747C1 /* exception_handler_test.cc */,
@@ -1094,6 +1114,22 @@
 			productName = Breakpad;
 			productReference = 8DC2EF5B0486A6940098B216 /* Breakpad.framework */;
 			productType = "com.apple.product-type.framework";
+		};
+		D23F4BAA12A868A500686C8D /* minidump_generator_test_helper */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D23F4BB012A868C400686C8D /* Build configuration list for PBXNativeTarget "minidump_generator_test_helper" */;
+			buildPhases = (
+				D23F4BA812A868A500686C8D /* Sources */,
+				D23F4BA912A868A500686C8D /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = minidump_generator_test_helper;
+			productName = minidump_generator_test_helper;
+			productReference = D23F4BAB12A868A500686C8D /* minidump_generator_test_helper */;
+			productType = "com.apple.product-type.tool";
 		};
 		D2F9A41412131EF0002747C1 /* gtest */ = {
 			isa = PBXNativeTarget;
@@ -1192,6 +1228,7 @@
 			);
 			dependencies = (
 				D23F4B3012A7E16200686C8D /* PBXTargetDependency */,
+				D23F4BBA12A8694C00686C8D /* PBXTargetDependency */,
 			);
 			name = generator_test;
 			productName = generator_test;
@@ -1325,6 +1362,7 @@
 				F93DE32B0F82C55600608B94 /* handler_test */,
 				D2F9A41412131EF0002747C1 /* gtest */,
 				D2F9A52A121383A1002747C1 /* crash_generation_server_test */,
+				D23F4BAA12A868A500686C8D /* minidump_generator_test_helper */,
 			);
 		};
 /* End PBXProject section */
@@ -1559,6 +1597,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D23F4BA812A868A500686C8D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D23F4BB112A868CB00686C8D /* minidump_generator_test_helper.cc in Sources */,
+				D23F4BB812A868F700686C8D /* MachIPC.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D2F9A41212131EF0002747C1 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1755,6 +1802,11 @@
 			isa = PBXTargetDependency;
 			target = D2F9A41412131EF0002747C1 /* gtest */;
 			targetProxy = D23F4B2F12A7E16200686C8D /* PBXContainerItemProxy */;
+		};
+		D23F4BBA12A8694C00686C8D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D23F4BAA12A868A500686C8D /* minidump_generator_test_helper */;
+			targetProxy = D23F4BB912A8694C00686C8D /* PBXContainerItemProxy */;
 		};
 		D2F9A44312131F80002747C1 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1953,6 +2005,10 @@
 			baseConfigurationReference = 8B31027711F0D3AF00FCF3E4 /* BreakpadDebug.xcconfig */;
 			buildSettings = {
 				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				SDKROOT = macosx10.5;
+				"SDKROOT[arch=i386]" = macosx10.4;
+				"SDKROOT[arch=ppc]" = macosx10.4;
+				"SDKROOT[arch=x86_64]" = macosx10.6;
 			};
 			name = Debug;
 		};
@@ -1961,6 +2017,49 @@
 			baseConfigurationReference = 8B31027811F0D3AF00FCF3E4 /* BreakpadRelease.xcconfig */;
 			buildSettings = {
 				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+			};
+			name = Release;
+		};
+		D23F4BAD12A868A600686C8D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				HEADER_SEARCH_PATHS = ../..;
+				INSTALL_PATH = /usr/local/bin;
+				PREBINDING = NO;
+				PRODUCT_NAME = minidump_generator_test_helper;
+			};
+			name = Debug;
+		};
+		D23F4BAE12A868A600686C8D /* Debug With Code Coverage */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PREBINDING = NO;
+				PRODUCT_NAME = minidump_generator_test_helper;
+			};
+			name = "Debug With Code Coverage";
+		};
+		D23F4BAF12A868A600686C8D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PREBINDING = NO;
+				PRODUCT_NAME = minidump_generator_test_helper;
+				ZERO_LINK = NO;
 			};
 			name = Release;
 		};
@@ -2383,6 +2482,16 @@
 				1DEB91B208733DA50010E9CD /* Debug */,
 				F93DE3B90F830E7000608B94 /* Debug With Code Coverage */,
 				1DEB91B308733DA50010E9CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D23F4BB012A868C400686C8D /* Build configuration list for PBXNativeTarget "minidump_generator_test_helper" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D23F4BAD12A868A600686C8D /* Debug */,
+				D23F4BAE12A868A600686C8D /* Debug With Code Coverage */,
+				D23F4BAF12A868A600686C8D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

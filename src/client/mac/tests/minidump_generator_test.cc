@@ -29,9 +29,20 @@
 
 // minidump_generator_test.cc: Unit tests for google_breakpad::MinidumpGenerator
 
+#include <AvailabilityMacros.h>
+#ifndef MAC_OS_X_VERSION_10_6
+#define MAC_OS_X_VERSION_10_6 1060
+#endif
 #include <crt_externs.h>
+#include <mach-o/dyld.h>
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6
+#include <spawn.h>
+#endif
 #include <sys/stat.h>
 #include <unistd.h>
+
+#include <string>
+#include <vector>
 
 #include "breakpad_googletest_includes.h"
 #include "client/mac/handler/minidump_generator.h"
@@ -48,6 +59,7 @@ std::ostringstream info_log;
 
 namespace {
 using std::string;
+using std::vector;
 using google_breakpad::AutoTempDir;
 using google_breakpad::MinidumpGenerator;
 using google_breakpad::MachPortSender;
@@ -161,7 +173,7 @@ TEST_F(MinidumpGeneratorTest, OutOfProcess) {
   const int kTimeoutMs = 2000;
   // Create a mach port to receive the child task on.
   char machPortName[128];
-  sprintf(machPortName, "MinidumpGeneratorTest.%d", getpid());
+  sprintf(machPortName, "MinidumpGeneratorTest.OutOfProcess.%d", getpid());
   ReceivePort parent_recv_port(machPortName);
 
   // Give the child process a pipe to block on.
@@ -247,5 +259,151 @@ TEST_F(MinidumpGeneratorTest, OutOfProcess) {
   ASSERT_TRUE(main_module);
   EXPECT_EQ(GetExecutablePath(), main_module->code_file());
 }
+
+static string GetHelperPath() {
+  string helper_path(GetExecutablePath());
+  size_t pos = helper_path.rfind('/');
+  if (pos == string::npos)
+    return "";
+
+  helper_path.erase(pos + 1);
+  helper_path += "minidump_generator_test_helper";
+  return helper_path;
+}
+
+// This test fails on 10.5, but I don't have easy access to a 10.5 machine,
+// so it's simpler to just limit it to 10.6 for now.
+#if (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6) && \
+  (defined(__x86_64__) || defined(__i386__))
+static pid_t spawn_child_process(const char** argv) {
+  posix_spawnattr_t spawnattr;
+  if (posix_spawnattr_init(&spawnattr) != 0)
+    return (pid_t)-1;
+
+  cpu_type_t pref_cpu_types[2] = {
+#if defined(__x86_64__)
+    CPU_TYPE_X86,
+#elif defined(__i386__)
+    CPU_TYPE_X86_64,
+#endif
+    CPU_TYPE_ANY
+  };
+
+  // Set spawn attributes.
+  size_t attr_count = sizeof(pref_cpu_types) / sizeof(pref_cpu_types[0]);
+  size_t attr_ocount = 0;
+  if (posix_spawnattr_setbinpref_np(&spawnattr,
+                                    attr_count,
+                                    pref_cpu_types,
+                                    &attr_ocount) != 0 ||
+      attr_ocount != attr_count) {
+    posix_spawnattr_destroy(&spawnattr);
+    return (pid_t)-1;
+  }
+
+  // Create an argv array.
+  vector<char*> argv_v;
+  while (*argv) {
+    argv_v.push_back(strdup(*argv));
+    argv++;
+  }
+  argv_v.push_back(NULL);
+  pid_t new_pid = 0;
+  int result = posix_spawnp(&new_pid, argv_v[0], NULL, &spawnattr,
+                            &argv_v[0], *_NSGetEnviron());
+  posix_spawnattr_destroy(&spawnattr);
+  
+  for (unsigned i = 0; i < argv_v.size(); i++) {
+    free(argv_v[i]);
+  }
+
+  return result == 0 ? new_pid : -1;
+}
+
+TEST_F(MinidumpGeneratorTest, CrossArchitectureDump) {
+  const int kTimeoutMs = 5000;
+  // Create a mach port to receive the child task on.
+  char machPortName[128];
+  sprintf(machPortName,
+          "MinidumpGeneratorTest.CrossArchitectureDump.%d", getpid());
+
+  ReceivePort parent_recv_port(machPortName);
+
+  // Spawn a child process to dump.
+  string helper_path = GetHelperPath();
+  const char* argv[] = {
+    helper_path.c_str(),
+    machPortName,
+    NULL
+  };
+  pid_t pid = spawn_child_process(argv);
+  ASSERT_NE(-1, pid);
+
+  // Read the child's task port.
+  MachReceiveMessage child_message;
+  ASSERT_EQ(KERN_SUCCESS,
+	    parent_recv_port.WaitForMessage(&child_message, kTimeoutMs));
+  mach_port_t child_task = child_message.GetTranslatedPort(0);
+  ASSERT_NE((mach_port_t)MACH_PORT_NULL, child_task);
+
+  // Write a minidump of the child process.
+  MinidumpGenerator generator(child_task, MACH_PORT_NULL);
+  string dump_filename = MinidumpGenerator::UniqueNameInDirectory(tempDir.path,
+                                                                  NULL);
+  ASSERT_TRUE(generator.Write(dump_filename.c_str()));
+
+  // Ensure that minidump file exists and is > 0 bytes.
+  struct stat st;
+  ASSERT_EQ(0, stat(dump_filename.c_str(), &st));
+  ASSERT_LT(0, st.st_size);
+
+  // Kill child process.
+  kill(pid, SIGKILL);
+
+  int ret;
+  ASSERT_EQ(pid, waitpid(pid, &ret, 0));
+
+const MDCPUArchitecture kExpectedArchitecture =
+#if defined(__x86_64__)
+  MD_CPU_ARCHITECTURE_X86
+#elif defined(__i386__)
+  MD_CPU_ARCHITECTURE_AMD64
+#endif
+  ;
+const u_int32_t kExpectedContext =
+#if defined(__i386__)
+  MD_CONTEXT_AMD64
+#elif defined(__x86_64__)
+  MD_CONTEXT_X86
+#endif
+  ;
+
+  // Read the minidump, sanity check some data.
+  Minidump minidump(dump_filename.c_str());
+  ASSERT_TRUE(minidump.Read());
+
+  MinidumpSystemInfo* system_info = minidump.GetSystemInfo();
+  ASSERT_TRUE(system_info);
+  const MDRawSystemInfo* raw_info = system_info->system_info();
+  ASSERT_TRUE(raw_info);
+  EXPECT_EQ(kExpectedArchitecture, raw_info->processor_architecture);
+
+  MinidumpThreadList* thread_list = minidump.GetThreadList();
+  ASSERT_TRUE(thread_list);
+  ASSERT_EQ((unsigned int)1, thread_list->thread_count());
+
+  MinidumpThread* main_thread = thread_list->GetThreadAtIndex(0);
+  ASSERT_TRUE(main_thread);
+  MinidumpContext* context = main_thread->GetContext();
+  ASSERT_TRUE(context);
+  EXPECT_EQ(kExpectedContext, context->GetContextCPU());
+
+  MinidumpModuleList* module_list = minidump.GetModuleList();
+  ASSERT_TRUE(module_list);
+  const MinidumpModule* main_module = module_list->GetMainModule();
+  ASSERT_TRUE(main_module);
+  EXPECT_EQ(helper_path, main_module->code_file());
+}
+#endif  // 10.6 && (x86-64 || i386)
 
 }
