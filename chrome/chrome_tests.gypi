@@ -3246,8 +3246,7 @@
         },
       ]},  # 'targets'
     ],  # OS=="win"
-    ['OS=="mac" or (OS=="win" and component=="static_library") '
-     'or (OS=="linux" and target_arch==python_arch)', {
+    ['OS=="mac" or OS=="win" or (OS=="linux" and target_arch==python_arch)', {
       'targets': [
         {
           # Documentation: http://dev.chromium.org/developers/testing/pyauto
