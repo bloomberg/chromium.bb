@@ -8,47 +8,41 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/net/socket_stream.h"
 #include "chrome/common/net/url_request_context_getter.h"
-#include "chrome/common/render_messages.h"
 #include "net/socket_stream/socket_stream_job.h"
 
-static const char* kSocketHostKey = "socketHost";
+static const char* kSocketIdKey = "socketId";
 
-class SocketStreamInfo : public net::SocketStream::UserData {
+class SocketStreamId : public net::SocketStream::UserData {
  public:
-  explicit SocketStreamInfo(SocketStreamHost* host) : host_(host) {}
-  virtual ~SocketStreamInfo() {}
-  SocketStreamHost* host() const { return host_; }
+  explicit SocketStreamId(int socket_id) : socket_id_(socket_id) {}
+  virtual ~SocketStreamId() {}
+  int socket_id() const { return socket_id_; }
 
  private:
-  SocketStreamHost* host_;
+  int socket_id_;
 };
 
 SocketStreamHost::SocketStreamHost(
     net::SocketStream::Delegate* delegate,
-    ResourceDispatcherHost::Receiver* receiver,
     int socket_id)
     : delegate_(delegate),
-      receiver_(receiver),
       socket_id_(socket_id) {
   DCHECK_NE(socket_id_, chrome_common_net::kNoSocketId);
   VLOG(1) << "SocketStreamHost: socket_id=" << socket_id_;
 }
 
 /* static */
-SocketStreamHost*
-SocketStreamHost::GetSocketStreamHost(net::SocketStream* socket) {
-  net::SocketStream::UserData* d = socket->GetUserData(kSocketHostKey);
+int SocketStreamHost::SocketIdFromSocketStream(net::SocketStream* socket) {
+  net::SocketStream::UserData* d = socket->GetUserData(kSocketIdKey);
   if (d) {
-    SocketStreamInfo* info = static_cast<SocketStreamInfo*>(d);
-    return info->host();
+    SocketStreamId* socket_stream_id = static_cast<SocketStreamId*>(d);
+    return socket_stream_id->socket_id();
   }
-  return NULL;
+  return chrome_common_net::kNoSocketId;
 }
 
 SocketStreamHost::~SocketStreamHost() {
   VLOG(1) << "SocketStreamHost destructed socket_id=" << socket_id_;
-  if (!receiver_->Send(new ViewMsg_SocketStream_Closed(socket_id_)))
-    LOG(ERROR) << "ViewMsg_SocketStream_Closed failed.";
   socket_->DetachDelegate();
 }
 
@@ -58,7 +52,7 @@ void SocketStreamHost::Connect(const GURL& url) {
   URLRequestContextGetter* context_getter = Profile::GetDefaultRequestContext();
   if (context_getter)
       socket_->set_context(context_getter->GetURLRequestContext());
-  socket_->SetUserData(kSocketHostKey, new SocketStreamInfo(this));
+  socket_->SetUserData(kSocketIdKey, new SocketStreamId(socket_id_));
   socket_->Connect();
 }
 
@@ -72,19 +66,4 @@ void SocketStreamHost::Close() {
   if (!socket_)
     return;
   socket_->Close();
-}
-
-bool SocketStreamHost::Connected(int max_pending_send_allowed) {
-  return receiver_->Send(new ViewMsg_SocketStream_Connected(
-      socket_id_, max_pending_send_allowed));
-}
-
-bool SocketStreamHost::SentData(int amount_sent) {
-  return receiver_->Send(new ViewMsg_SocketStream_SentData(
-      socket_id_, amount_sent));
-}
-
-bool SocketStreamHost::ReceivedData(const char* data, int len) {
-  return receiver_->Send(new ViewMsg_SocketStream_ReceivedData(
-      socket_id_, std::vector<char>(data, data + len)));
 }

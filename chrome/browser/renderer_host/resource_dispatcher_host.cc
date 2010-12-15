@@ -45,7 +45,6 @@
 #include "chrome/browser/renderer_host/resource_request_details.h"
 #include "chrome/browser/renderer_host/safe_browsing_resource_handler.h"
 #include "chrome/browser/renderer_host/save_file_resource_handler.h"
-#include "chrome/browser/renderer_host/socket_stream_dispatcher_host.h"
 #include "chrome/browser/renderer_host/sync_resource_handler.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ssl/ssl_client_auth_handler.h"
@@ -211,7 +210,6 @@ ResourceDispatcherHost::ResourceDispatcherHost()
           save_file_manager_(new SaveFileManager(this))),
       user_script_listener_(new UserScriptListener(&resource_queue_)),
       safe_browsing_(SafeBrowsingService::CreateSafeBrowsingService()),
-      socket_stream_dispatcher_host_(new SocketStreamDispatcherHost),
       webkit_thread_(new WebKitThread),
       request_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_runner_(this)),
@@ -304,8 +302,7 @@ bool ResourceDispatcherHost::OnMessageReceived(const IPC::Message& message,
                                                Receiver* receiver,
                                                bool* message_was_ok) {
   if (!IsResourceDispatcherHostMessage(message)) {
-    return socket_stream_dispatcher_host_->OnMessageReceived(
-        message, receiver, message_was_ok);
+    return false;
   }
 
   *message_was_ok = true;
@@ -896,7 +893,6 @@ int ResourceDispatcherHost::GetOutstandingRequestsMemoryCost(
 // for downloads, which belong to the browser process even if initiated via a
 // renderer.
 void ResourceDispatcherHost::CancelRequestsForProcess(int child_id) {
-  socket_stream_dispatcher_host_->CancelRequestsForProcess(child_id);
   CancelRequestsForRoute(child_id, -1 /* cancel all */);
   registered_temp_files_.erase(child_id);
 }

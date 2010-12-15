@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/ref_counted.h"
-#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "net/socket_stream/socket_stream.h"
 
 class GURL;
@@ -28,15 +27,12 @@ class SocketStreamJob;
 // SocketStreamDispatcherHost.
 class SocketStreamHost {
  public:
-  SocketStreamHost(net::SocketStream::Delegate* delegate,
-                   ResourceDispatcherHost::Receiver* receiver,
-                   int socket_id);
+  SocketStreamHost(net::SocketStream::Delegate* delegate, int socket_id);
   ~SocketStreamHost();
 
-  // Gets SocketStreamHost associated with |socket|.
-  static SocketStreamHost* GetSocketStreamHost(net::SocketStream* socket);
+  // Gets socket_id associated with |socket|.
+  static int SocketIdFromSocketStream(net::SocketStream* socket);
 
-  ResourceDispatcherHost::Receiver* receiver() const { return receiver_; }
   int socket_id() const { return socket_id_; }
 
   // Starts to open connection to |url|.
@@ -52,15 +48,8 @@ class SocketStreamHost {
   // Closes the socket stream.
   void Close();
 
-  bool Connected(int max_pending_send_allowed);
-
-  bool SentData(int amount_sent);
-
-  bool ReceivedData(const char* data, int len);
-
  private:
   net::SocketStream::Delegate* delegate_;
-  ResourceDispatcherHost::Receiver* receiver_;
   int socket_id_;
 
   scoped_refptr<net::SocketStreamJob> socket_;

@@ -27,6 +27,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/render_view_host_notification_task.h"
+#include "chrome/browser/renderer_host/socket_stream_dispatcher_host.h"
 #include "chrome/browser/worker_host/message_port_dispatcher.h"
 #include "chrome/browser/worker_host/worker_service.h"
 #include "chrome/common/chrome_switches.h"
@@ -205,6 +206,7 @@ void WorkerProcessHost::CreateMessageFilters() {
   filters_.push_back(new DatabaseMessageFilter(
       request_context_->database_tracker(),
       request_context_->host_content_settings_map()));
+  filters_.push_back(new SocketStreamDispatcherHost());
 
   for (size_t i = 0; i < filters_.size(); ++i)
     filters_[i]->OnFilterAdded(channel());

@@ -57,6 +57,7 @@
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/render_widget_helper.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
+#include "chrome/browser/renderer_host/socket_stream_dispatcher_host.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
@@ -416,6 +417,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
   channel_->AddFilter(new MimeRegistryMessageFilter());
   channel_->AddFilter(new DatabaseMessageFilter(
       profile()->GetDatabaseTracker(), profile()->GetHostContentSettingsMap()));
+  channel_->AddFilter(new SocketStreamDispatcherHost());
 }
 
 int BrowserRenderProcessHost::GetNextRoutingID() {
