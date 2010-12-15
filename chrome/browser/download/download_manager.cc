@@ -720,6 +720,8 @@ int DownloadManager::RemoveDownloadsBetween(const base::Time remove_begin,
                                             const base::Time remove_end) {
   download_history_->RemoveEntriesBetween(remove_begin, remove_end);
 
+  // All downloads visible to the user will be in the history,
+  // so scan that map.
   DownloadMap::iterator it = history_downloads_.begin();
   std::vector<DownloadItem*> pending_deletes;
   while (it != history_downloads_.end()) {
@@ -741,12 +743,21 @@ int DownloadManager::RemoveDownloadsBetween(const base::Time remove_begin,
     ++it;
   }
 
-  // Tell observers to refresh their views.
+  // If we aren't deleting anything, we're done.
   int num_deleted = static_cast<int>(pending_deletes.size());
-  if (num_deleted > 0)
-    NotifyModelChanged();
+  if (num_deleted == 0)
+    return num_deleted;
 
-  // Delete the download items after updating the observers.
+  // Remove the chosen downloads from the main owning container.
+  for (std::vector<DownloadItem*>::iterator it = pending_deletes.begin();
+       it != pending_deletes.end(); it++) {
+    downloads_.erase(*it);
+  }
+
+  // Tell observers to refresh their views.
+  NotifyModelChanged();
+
+  // Delete the download items themselves.
   STLDeleteContainerPointers(pending_deletes.begin(), pending_deletes.end());
   pending_deletes.clear();
 
