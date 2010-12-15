@@ -87,7 +87,9 @@ def VerifyGoogleAccountCredsFilled(test, username, password, tab_index=0,
   passwd_value = test.GetDOMValue('document.getElementById("Passwd").value',
                                   windex, tab_index)
   test.assertEqual(email_value, username)
-  test.assertEqual(passwd_value, password)
+  # Not using assertEqual because if it fails it would end up dumping the
+  # password (which is supposed to be private)
+  test.assertTrue(passwd_value == password)
 
 
 def ClearPasswords(test):
