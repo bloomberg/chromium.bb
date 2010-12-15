@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import commands
 import filecmp
 import logging
 import os
@@ -454,6 +455,52 @@ class DownloadsTest(pyauto.PyUITest):
     self.assertTrue(self.WaitUntilDownloadedThemeSet('camo theme'))
     self.assertTrue(self.WaitUntil(lambda path: not os.path.exists(path),
                                    args=[downloaded_pkg]))
+
+  def testExtendedAttributesOnMac(self):
+    """Verify that Chrome sets the extended attributes on a file.
+       This test is for mac only.
+    """
+    if not self.IsMac():
+      logging.info('Skipping testExtendedAttributesOnMac on non-Mac')
+      return
+    downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
+                                  'a_zip_file.zip')
+    self._ClearLocalDownloadState(downloaded_pkg)
+    file_url = 'http://src.chromium.org/viewvc/chrome/trunk/src/chrome/'\
+               'test/data/downloads/a_zip_file.zip'
+    self.DownloadAndWaitForStart(file_url)
+    self.WaitForAllDownloadsToComplete()
+    import xattr
+    self.assertTrue('com.apple.quarantine' in xattr.listxattr(downloaded_pkg))
+
+  def testDownloadIncognitoAndRegular(self):
+    """Download the same zip file in regular and incognito window and
+       verify that it downloaded correctly with same file name appended with
+       counter for the second download in regular window.
+    """
+    test_dir = os.path.join(os.path.abspath(self.DataDir()), 'downloads')
+    file_path = os.path.join(test_dir, 'a_zip_file.zip')
+    file_url = self.GetFileURLForPath(file_path)
+    downloaded_pkg_regul = os.path.join(self.GetDownloadDirectory().value(),
+                                        'a_zip_file.zip')
+    downloaded_pkg_incog = os.path.join(self.GetDownloadDirectory().value(),
+                                        'a_zip_file (1).zip')
+    self._ClearLocalDownloadState(downloaded_pkg_regul)
+    self._ClearLocalDownloadState(downloaded_pkg_incog)
+    self.NavigateToURL(file_url, 0, 0)
+    self.RunCommand(pyauto.IDC_NEW_INCOGNITO_WINDOW)
+    self.NavigateToURL(file_url, 1, 0)
+    self.WaitForAllDownloadsToComplete()
+
+    # Verify download in regular Window.
+    self.assertTrue(os.path.exists(downloaded_pkg_regul))
+    self.assertTrue(self._EqualFileContents(file_path, downloaded_pkg_regul))
+
+    # Verify download in Incognito Window.
+    # WaitForAllDownloadsToComplete does not wait for incognito downloads
+    self.assertTrue(self.WaitUntil(
+        lambda: os.path.exists(downloaded_pkg_incog)))
+    self.assertTrue(self._EqualFileContents(file_path, downloaded_pkg_incog))
 
 
 if __name__ == '__main__':
