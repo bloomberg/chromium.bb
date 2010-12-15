@@ -2598,17 +2598,17 @@ void TestingAutomationProvider::WaitForDownloadsToComplete(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  AutomationJSONReply reply(this, reply_message);
 
   // Look for a quick return.
   if (!profile_->HasCreatedDownloadManager()) {
-    reply.SendSuccess(NULL);  // No download manager.
+    // No download manager.
+    AutomationJSONReply(this, reply_message).SendSuccess(NULL);
     return;
   }
   std::vector<DownloadItem*> downloads;
   profile_->GetDownloadManager()->GetCurrentDownloads(FilePath(), &downloads);
   if (downloads.empty()) {
-    reply.SendSuccess(NULL);
+    AutomationJSONReply(this, reply_message).SendSuccess(NULL);
     return;
   }
 
