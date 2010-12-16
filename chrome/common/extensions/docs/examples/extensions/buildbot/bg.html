@@ -49,9 +49,14 @@ function requestURL(url, callback) {
   try {
     xhr.onreadystatechange = function(state) {
       if (xhr.readyState == 4) {
-        var text = xhr.responseText;
-        //console.log(text);
-        callback(text);
+        if (xhr.status == 200) {
+          var text = xhr.responseText;
+          //console.log(text);
+          callback(text);
+        } else {
+          chrome.browserAction.setBadgeText({text:"?"});
+          chrome.browserAction.setBadgeBackgroundColor({color:[0,0,255,255]});
+        }
       }
     }
 

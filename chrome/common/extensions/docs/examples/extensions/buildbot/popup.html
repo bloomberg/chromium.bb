@@ -17,7 +17,11 @@ function updateBotList(text) {
   }
   var data;
   try {
-    data = JSON.parse(results[1]);
+    // The build bot returns invalid JSON. Namely it uses single
+    // quotes and includes commas in some invalid locations. We have to
+    // run some regexps across the text to fix it up.
+    var jsonString = results[1].replace(/'/g, '"').replace(/},]/g,'}]');
+    data = JSON.parse(jsonString);
   } catch (e) {
     console.dir(e);
     console.log(text);
@@ -104,9 +108,13 @@ function requestURL(url, callback) {
   try {
     xhr.onreadystatechange = function(state) {
       if (xhr.readyState == 4) {
-        var text = xhr.responseText;
-        //console.log(text);
-        callback(text);
+        if (xhr.status == 200) {
+          var text = xhr.responseText;
+          //console.log(text);
+          callback(text);
+        } else {
+          bots.innerText = "Error.";
+        }
       }
     }
 
