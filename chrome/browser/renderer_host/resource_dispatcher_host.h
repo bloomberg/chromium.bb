@@ -397,7 +397,8 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   void OnReleaseDownloadedFile(int request_id);
 
   ResourceHandler* CreateSafeBrowsingResourceHandler(
-      ResourceHandler* handler, int route_id, ResourceType::Type resource_type);
+      ResourceHandler* handler, int child_id, int route_id,
+      ResourceType::Type resource_type);
 
   // Creates ResourceDispatcherHostRequestInfo for a browser-initiated request
   // (a download or a page save). |download| should be true if the request

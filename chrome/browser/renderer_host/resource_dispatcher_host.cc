@@ -465,7 +465,7 @@ void ResourceDispatcherHost::BeginRequest(
   // Insert safe browsing at the front of the chain, so it gets to decide
   // on policies first.
   if (safe_browsing_->enabled()) {
-    handler = CreateSafeBrowsingResourceHandler(handler, route_id,
+    handler = CreateSafeBrowsingResourceHandler(handler, child_id, route_id,
                                                 request_data.resource_type);
   }
 
@@ -603,9 +603,10 @@ void ResourceDispatcherHost::OnFollowRedirect(
 }
 
 ResourceHandler* ResourceDispatcherHost::CreateSafeBrowsingResourceHandler(
-    ResourceHandler* handler, int route_id, ResourceType::Type resource_type) {
+    ResourceHandler* handler, int child_id, int route_id,
+    ResourceType::Type resource_type) {
   return new SafeBrowsingResourceHandler(
-      handler, route_id, resource_type, safe_browsing_, this, filter_);
+      handler, child_id, route_id, resource_type, safe_browsing_, this);
 }
 
 ResourceDispatcherHostRequestInfo*
@@ -690,7 +691,7 @@ void ResourceDispatcherHost::BeginDownload(
                                   save_info));
 
   if (safe_browsing_->enabled()) {
-    handler = CreateSafeBrowsingResourceHandler(handler, route_id,
+    handler = CreateSafeBrowsingResourceHandler(handler, child_id, route_id,
                                                 ResourceType::MAIN_FRAME);
   }
 

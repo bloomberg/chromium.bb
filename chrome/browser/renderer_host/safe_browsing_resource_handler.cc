@@ -24,16 +24,16 @@ static const int kCheckUrlTimeoutMs = 5000;
 
 SafeBrowsingResourceHandler::SafeBrowsingResourceHandler(
     ResourceHandler* handler,
+    int render_process_host_id,
     int render_view_id,
     ResourceType::Type resource_type,
     SafeBrowsingService* safe_browsing,
-    ResourceDispatcherHost* resource_dispatcher_host,
-    ResourceMessageFilter* filter)
+    ResourceDispatcherHost* resource_dispatcher_host)
     : state_(STATE_NONE),
       defer_state_(DEFERRED_NONE),
       deferred_request_id_(-1),
       next_handler_(handler),
-      render_process_host_id_(filter->child_id()),
+      render_process_host_id_(render_process_host_id),
       render_view_id_(render_view_id),
       safe_browsing_(safe_browsing),
       rdh_(resource_dispatcher_host),

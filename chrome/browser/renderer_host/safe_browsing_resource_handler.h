@@ -17,7 +17,6 @@
 #include "chrome/common/notification_registrar.h"
 
 class ResourceDispatcherHost;
-class ResourceMessageFilter;
 
 // SafeBrowsingResourceHandler checks that URLs are "safe" before navigating
 // to them. To be considered "safe", a URL must not appear in the
@@ -46,11 +45,11 @@ class SafeBrowsingResourceHandler : public ResourceHandler,
                                     public NotificationObserver {
  public:
   SafeBrowsingResourceHandler(ResourceHandler* handler,
+                              int render_process_host_id,
                               int render_view_id,
                               ResourceType::Type resource_type,
                               SafeBrowsingService* safe_browsing,
-                              ResourceDispatcherHost* resource_dispatcher_host,
-                              ResourceMessageFilter* filter);
+                              ResourceDispatcherHost* resource_dispatcher_host);
 
   // ResourceHandler implementation:
   virtual bool OnUploadProgress(int request_id, uint64 position, uint64 size);
