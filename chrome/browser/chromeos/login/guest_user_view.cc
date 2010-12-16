@@ -45,7 +45,7 @@ class UserEntryButton : public login::WideButton {
 GuestUserView::GuestUserView(UserController* uc)
     : submit_button_(NULL),
       user_controller_(uc),
-      accel_enable_accessibility_(
+      accel_toggle_accessibility_(
           WizardAccessibilityHelper::GetAccelerator()),
       accel_login_off_the_record_(
           views::Accelerator(app::VKEY_B, false, false, true)),
@@ -53,7 +53,7 @@ GuestUserView::GuestUserView(UserController* uc)
           views::Accelerator(app::VKEY_LEFT, false, false, false)),
       accel_next_pod_by_arrow_(
           views::Accelerator(app::VKEY_RIGHT, false, false, false)) {
-  AddAccelerator(accel_enable_accessibility_);
+  AddAccelerator(accel_toggle_accessibility_);
   AddAccelerator(accel_login_off_the_record_);
   AddAccelerator(accel_previous_pod_by_arrow_);
   AddAccelerator(accel_next_pod_by_arrow_);
@@ -78,8 +78,8 @@ bool GuestUserView::AcceleratorPressed(
     const views::Accelerator& accelerator) {
   if (accelerator == accel_login_off_the_record_)
     user_controller_->OnLoginOffTheRecord();
-  else if (accelerator == accel_enable_accessibility_)
-    WizardAccessibilityHelper::GetInstance()->EnableAccessibility(this);
+  else if (accelerator == accel_toggle_accessibility_)
+    WizardAccessibilityHelper::GetInstance()->ToggleAccessibility(this);
   else if (accelerator == accel_previous_pod_by_arrow_)
     user_controller_->SelectUserRelative(-1);
   else if (accelerator == accel_next_pod_by_arrow_)

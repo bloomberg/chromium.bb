@@ -165,7 +165,7 @@ class NewUserView : public ThrobberHostView,
   views::Accelerator accel_focus_pass_;
   views::Accelerator accel_focus_user_;
   views::Accelerator accel_login_off_the_record_;
-  views::Accelerator accel_enable_accessibility_;
+  views::Accelerator accel_toggle_accessibility_;
 
   // Notifications receiver.
   Delegate* delegate_;

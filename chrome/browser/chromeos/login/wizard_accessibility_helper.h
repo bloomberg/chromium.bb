@@ -37,7 +37,7 @@ class WizardAccessibilityHelper {
   // Enables Accessibility by setting the accessibility pref and registers
   // all views in the view buffer to raise accessibility notifications,
   // including the specified |view_tree|.
-  void EnableAccessibility(views::View* view_tree);
+  void EnableAccessibilityForView(views::View* view_tree);
 
   // Enables accessibility for the specified |view_tree| if the
   // accessibility pref is already set. Otherwise the |view_tree| is
@@ -54,6 +54,11 @@ class WizardAccessibilityHelper {
   // Unregisters all accessibility notifications
   void UnregisterNotifications();
 
+  // Toggles accessibility support. If |view_tree| is null, only the
+  // access preference setting is toggled. |view_tree| has no effect while
+  // disabling accessibility.
+  void ToggleAccessibility(views::View* view_tree);
+
  private:
   friend struct DefaultSingletonTraits<WizardAccessibilityHelper>;
 
@@ -62,6 +67,10 @@ class WizardAccessibilityHelper {
   virtual ~WizardAccessibilityHelper() {}
 
   void RegisterNotifications();
+
+  bool IsAccessibilityEnabled();
+
+  void SetAccessibilityEnabled(bool);
 
   static scoped_ptr<views::Accelerator> accelerator_;
 

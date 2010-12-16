@@ -80,7 +80,7 @@ const int kWaitForRebootTimeSec = 3;
 class ContentView : public views::View {
  public:
   ContentView()
-      : accel_enable_accessibility_(
+      : accel_toggle_accessibility_(
             chromeos::WizardAccessibilityHelper::GetAccelerator()) {
 #if defined(OFFICIAL_BUILD)
     accel_cancel_update_ =  views::Accelerator(app::VKEY_ESCAPE,
@@ -110,7 +110,7 @@ class ContentView : public views::View {
     AddAccelerator(accel_eula_screen_);
     AddAccelerator(accel_register_screen_);
 #endif
-    AddAccelerator(accel_enable_accessibility_);
+    AddAccelerator(accel_toggle_accessibility_);
     AddAccelerator(accel_cancel_update_);
   }
 
@@ -126,8 +126,8 @@ class ContentView : public views::View {
     if (!controller)
       return false;
 
-    if (accel == accel_enable_accessibility_) {
-      chromeos::WizardAccessibilityHelper::GetInstance()->EnableAccessibility(
+    if (accel == accel_toggle_accessibility_) {
+      chromeos::WizardAccessibilityHelper::GetInstance()->ToggleAccessibility(
           controller->contents()); }
     else if (accel == accel_cancel_update_) {
       controller->CancelOOBEUpdate();
@@ -174,7 +174,7 @@ class ContentView : public views::View {
   views::Accelerator accel_eula_screen_;
   views::Accelerator accel_register_screen_;
 #endif
-  views::Accelerator accel_enable_accessibility_;
+  views::Accelerator accel_toggle_accessibility_;
   views::Accelerator accel_cancel_update_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentView);

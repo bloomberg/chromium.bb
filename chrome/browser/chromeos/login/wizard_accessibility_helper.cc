@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 
+#include "app/l10n_util.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/browser_process.h"
@@ -14,6 +15,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
+#include "grit/generated_resources.h"
 #include "views/accelerator.h"
 #include "views/view.h"
 
@@ -23,13 +25,9 @@ scoped_ptr<views::Accelerator> WizardAccessibilityHelper::accelerator_;
 
 // static
 views::Accelerator WizardAccessibilityHelper::GetAccelerator() {
-  // Use an accelerator that would never match any hotkey to temporarily
-  // disable the accessibility hotkey per http://crosbug.com/9195
-  // TODO(xiyuan): Change back to real hotkey as the following
-  //      new views::Accelerator(app::VKEY_Z, false, true, true)
   if (!WizardAccessibilityHelper::accelerator_.get())
     WizardAccessibilityHelper::accelerator_.reset(
-        new views::Accelerator(app::VKEY_UNKNOWN, 0xdeadbeef));
+        new views::Accelerator(app::VKEY_Z, false, true, true));
   return *(WizardAccessibilityHelper::accelerator_.get());
 }
 
@@ -70,12 +68,16 @@ void WizardAccessibilityHelper::UnregisterNotifications() {
   registered_notifications_ = false;
 }
 
+bool WizardAccessibilityHelper::IsAccessibilityEnabled() {
+  return g_browser_process &&
+      g_browser_process->local_state()->GetBoolean(
+      prefs::kAccessibilityEnabled);
+}
+
 void WizardAccessibilityHelper::MaybeEnableAccessibility(
     views::View* view_tree) {
-  if (g_browser_process &&
-      g_browser_process->local_state()->GetBoolean(
-          prefs::kAccessibilityEnabled)) {
-      EnableAccessibility(view_tree);
+  if (IsAccessibilityEnabled()) {
+    EnableAccessibilityForView(view_tree);
   } else {
     AddViewToBuffer(view_tree);
   }
@@ -83,39 +85,54 @@ void WizardAccessibilityHelper::MaybeEnableAccessibility(
 
 void WizardAccessibilityHelper::MaybeSpeak(const char* str, bool queue,
     bool interruptible) {
-  if (g_browser_process &&
-      g_browser_process->local_state()->GetBoolean(
-          prefs::kAccessibilityEnabled)) {
+  if (IsAccessibilityEnabled()) {
     accessibility_handler_->Speak(str, queue, interruptible);
   }
 }
 
-void WizardAccessibilityHelper::EnableAccessibility(views::View* view_tree) {
+void WizardAccessibilityHelper::EnableAccessibilityForView(
+    views::View* view_tree) {
   VLOG(1) << "Enabling accessibility.";
   if (!registered_notifications_)
     RegisterNotifications();
+  SetAccessibilityEnabled(true);
+  if (view_tree) {
+    AddViewToBuffer(view_tree);
+    // If accessibility pref is set, enable accessibility for all views in
+    // the buffer for which access is not yet enabled.
+    for (std::map<views::View*, bool>::iterator iter =
+        views_buffer_.begin();
+        iter != views_buffer_.end(); ++iter) {
+      if (!(*iter).second) {
+        AccessibleViewHelper *helper = new AccessibleViewHelper((*iter).first,
+            profile_);
+        accessible_view_helpers_.push_back(helper);
+        (*iter).second = true;
+      }
+    }
+  }
+}
+
+void WizardAccessibilityHelper::ToggleAccessibility(views::View* view_tree) {
+  if (!IsAccessibilityEnabled()) {
+    EnableAccessibilityForView(view_tree);
+  } else {
+    SetAccessibilityEnabled(false);
+  }
+}
+
+void WizardAccessibilityHelper::SetAccessibilityEnabled(bool enabled) {
   if (g_browser_process) {
     PrefService* prefService = g_browser_process->local_state();
-    if (!prefService->GetBoolean(prefs::kAccessibilityEnabled)) {
-      prefService->SetBoolean(prefs::kAccessibilityEnabled, true);
-      prefService->ScheduleSavePersistentPrefs();
-    }
+    prefService->SetBoolean(prefs::kAccessibilityEnabled, enabled);
+    prefService->ScheduleSavePersistentPrefs();
   }
   ExtensionAccessibilityEventRouter::GetInstance()->
-      SetAccessibilityEnabled(true);
-  AddViewToBuffer(view_tree);
-  // If accessibility pref is set, enable accessibility for all views in
-  // the buffer for which access is not yet enabled.
-  for (std::map<views::View*, bool>::iterator iter =
-      views_buffer_.begin();
-      iter != views_buffer_.end(); ++iter) {
-    if (!(*iter).second) {
-      AccessibleViewHelper *helper = new AccessibleViewHelper((*iter).first,
-          profile_);
-      accessible_view_helpers_.push_back(helper);
-      (*iter).second = true;
-    }
-  }
+      SetAccessibilityEnabled(enabled);
+  accessibility_handler_->Speak(enabled ?
+      l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_ACCESS_ENABLED).c_str() :
+      l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_ACCESS_DISABLED).c_str(),
+      false, true);
 }
 
 void WizardAccessibilityHelper::AddViewToBuffer(views::View* view_tree) {

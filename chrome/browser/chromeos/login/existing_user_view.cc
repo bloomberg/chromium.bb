@@ -60,10 +60,10 @@ ExistingUserView::ExistingUserView(UserController* user_controller)
       password_field_(NULL),
       accel_login_off_the_record_(
         views::Accelerator(app::VKEY_B, false, false, true)),
-      accel_enable_accessibility_(
+      accel_toggle_accessibility_(
           WizardAccessibilityHelper::GetAccelerator()) {
   AddAccelerator(accel_login_off_the_record_);
-  AddAccelerator(accel_enable_accessibility_);
+  AddAccelerator(accel_toggle_accessibility_);
 }
 
 void ExistingUserView::RecreateFields() {
@@ -89,8 +89,8 @@ bool ExistingUserView::AcceleratorPressed(
   if (accelerator == accel_login_off_the_record_) {
     user_controller_->OnLoginOffTheRecord();
     return true;
-  } else if (accelerator == accel_enable_accessibility_) {
-    WizardAccessibilityHelper::GetInstance()->EnableAccessibility(this);
+  } else if (accelerator == accel_toggle_accessibility_) {
+    WizardAccessibilityHelper::GetInstance()->ToggleAccessibility(this);
     return true;
   }
   return false;

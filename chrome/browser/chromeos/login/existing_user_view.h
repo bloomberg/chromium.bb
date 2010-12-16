@@ -56,7 +56,7 @@ class ExistingUserView : public ThrobberHostView,
   views::Textfield* password_field_;
 
   views::Accelerator accel_login_off_the_record_;
-  views::Accelerator accel_enable_accessibility_;
+  views::Accelerator accel_toggle_accessibility_;
 
   DISALLOW_COPY_AND_ASSIGN(ExistingUserView);
 };

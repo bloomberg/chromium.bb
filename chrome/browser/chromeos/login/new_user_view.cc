@@ -98,7 +98,7 @@ NewUserView::NewUserView(Delegate* delegate,
       accel_focus_user_(views::Accelerator(app::VKEY_U, false, false, true)),
       accel_login_off_the_record_(
           views::Accelerator(app::VKEY_B, false, false, true)),
-      accel_enable_accessibility_(WizardAccessibilityHelper::GetAccelerator()),
+      accel_toggle_accessibility_(WizardAccessibilityHelper::GetAccelerator()),
       delegate_(delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)),
       focus_delayed_(false),
@@ -150,6 +150,8 @@ void NewUserView::Init() {
 
   username_field_ = new UsernameField();
   username_field_->set_background(new CopyBackground(this));
+  username_field_->SetAccessibleName(
+      ASCIIToWide(l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_USERNAME_LABEL)));
   AddChildView(username_field_);
 
   password_field_ = new TextfieldWithMargin(views::Textfield::STYLE_PASSWORD);
@@ -173,7 +175,7 @@ void NewUserView::Init() {
   AddAccelerator(accel_focus_user_);
   AddAccelerator(accel_focus_pass_);
   AddAccelerator(accel_login_off_the_record_);
-  AddAccelerator(accel_enable_accessibility_);
+  AddAccelerator(accel_toggle_accessibility_);
 
   OnLocaleChanged();
 
@@ -196,8 +198,8 @@ bool NewUserView::AcceleratorPressed(const views::Accelerator& accelerator) {
     password_field_->RequestFocus();
   } else if (accelerator == accel_login_off_the_record_) {
     delegate_->OnLoginOffTheRecord();
-  } else if (accelerator == accel_enable_accessibility_) {
-    WizardAccessibilityHelper::GetInstance()->EnableAccessibility(this);
+  } else if (accelerator == accel_toggle_accessibility_) {
+    WizardAccessibilityHelper::GetInstance()->ToggleAccessibility(this);
   } else {
     return false;
   }

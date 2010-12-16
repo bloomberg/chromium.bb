@@ -55,7 +55,7 @@ class GuestUserView : public ThrobberHostView,
 
   UserController* user_controller_;
 
-  views::Accelerator accel_enable_accessibility_;
+  views::Accelerator accel_toggle_accessibility_;
   views::Accelerator accel_login_off_the_record_;
   views::Accelerator accel_previous_pod_by_arrow_;
   views::Accelerator accel_previous_pod_by_tab_;
