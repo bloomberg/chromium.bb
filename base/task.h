@@ -338,10 +338,10 @@ class RunnableMethod : public CancelableTask {
 
  private:
   void ReleaseCallee() {
-    if (obj_) {
-      traits_.ReleaseCallee(obj_);
-      obj_ = NULL;
-    }
+    T* obj = obj_;
+    obj_ = NULL;
+    if (obj)
+      traits_.ReleaseCallee(obj);
   }
 
   T* obj_;
