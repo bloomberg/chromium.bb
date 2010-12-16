@@ -25,11 +25,8 @@ const wchar_t kCmdNewSetupExe[] = L" --new-setup-exe";
 
 // Temp directory prefix that this process creates
 const wchar_t kTempPrefix[] = L"CR_";
-// Google Update will use the full installer if this suffix is found in the ap
-// value.
+// Google Update will use full installer if this suffix is found in ap key.
 const wchar_t kFullInstallerSuffix[] = L"-full";
-// ap value tag for a multi-install product.
-const wchar_t kMultiInstallTag[] = L"-multi";
 
 // The resource types that would be unpacked from the mini installer.
 // 'BN' is uncompressed binary and 'BL' is LZ compressed binary.

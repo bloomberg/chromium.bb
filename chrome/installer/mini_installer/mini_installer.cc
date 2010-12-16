@@ -56,83 +56,6 @@ struct Context {
   size_t setup_resource_path_size;
 };
 
-// A helper class used to manipulate the Windows registry.  Typically, members
-// return Windows last-error codes a la the Win32 registry API.
-class RegKey {
- public:
-  RegKey() : key_(NULL) { }
-  ~RegKey() { Close(); }
-
-  // Opens the key named |sub_key| with given |access| rights.  Returns
-  // ERROR_SUCCESS or some other error.
-  LONG Open(HKEY key, const wchar_t* sub_key, REGSAM access);
-
-  // Returns true if the is open.
-  bool IsOpen() const { return key_ != NULL; }
-
-  // Read a REG_SZ value from the registry into the memory indicated by |value|
-  // (of |value_size| wchar_t units).  Returns ERROR_SUCCESS,
-  // ERROR_FILE_NOT_FOUND, ERROR_MORE_DATA, or some other error.  |value| is
-  // guaranteed to be null-terminated on success.
-  LONG ReadValue(const wchar_t* value_name,
-                 wchar_t* value,
-                 size_t value_size) const;
-
-  // Write a REG_SZ value to the registry.  |value| must be null-terminated.
-  // Returns ERROR_SUCCESS or an error code.
-  LONG WriteValue(const wchar_t* value_name, const wchar_t* value);
-
-  // Closes the key if it was open.
-  void Close();
-
- private:
-  RegKey(const RegKey&);
-  RegKey& operator=(const RegKey&);
-
-  HKEY key_;
-};  // class RegKey
-
-LONG RegKey::Open(HKEY key, const wchar_t* sub_key, REGSAM access) {
-  Close();
-  return ::RegOpenKeyEx(key, sub_key, NULL, access, &key_);
-}
-
-LONG RegKey::ReadValue(const wchar_t* value_name,
-                       wchar_t* value,
-                       size_t value_size) const {
-  DWORD type;
-  DWORD byte_length = static_cast<DWORD>(value_size * sizeof(wchar_t));
-  LONG result = ::RegQueryValueEx(key_, value_name, NULL, &type,
-                                  reinterpret_cast<BYTE*>(value),
-                                  &byte_length);
-  if (result == ERROR_SUCCESS) {
-    if (type != REG_SZ) {
-      result = ERROR_NOT_SUPPORTED;
-    } else if (byte_length == 0) {
-      *value = L'\0';
-    } else if (value[byte_length/sizeof(wchar_t) - 1] != L'\0') {
-      if ((byte_length / sizeof(wchar_t)) < value_size)
-        value[byte_length / sizeof(wchar_t)] = L'\0';
-      else
-        result = ERROR_MORE_DATA;
-    }
-  }
-  return result;
-}
-
-LONG RegKey::WriteValue(const wchar_t* value_name, const wchar_t* value) {
-  return ::RegSetValueEx(key_, value_name, 0, REG_SZ,
-                         reinterpret_cast<const BYTE*>(value),
-                         (lstrlen(value) + 1) * sizeof(wchar_t));
-}
-
-void RegKey::Close() {
-  if (key_ != NULL) {
-    ::RegCloseKey(key_);
-    key_ = NULL;
-  }
-}
-
 // Returns true if the given two ASCII characters are same (ignoring case).
 bool EqualASCIICharI(wchar_t a, wchar_t b) {
   if (a >= L'A' && a <= L'Z')
@@ -206,86 +129,60 @@ bool StrStartsWith(const wchar_t *str, const wchar_t *start_str) {
 
 // Helper function to read a value from registry. Returns true if value
 // is read successfully and stored in parameter value. Returns false otherwise.
-// |size| is measured in wchar_t units.
 bool ReadValueFromRegistry(HKEY root_key, const wchar_t *sub_key,
                            const wchar_t *value_name, wchar_t *value,
                            size_t size) {
-  RegKey key;
-
-  if (key.Open(root_key, sub_key, KEY_QUERY_VALUE) == ERROR_SUCCESS &&
-      key.ReadValue(value_name, value, size) == ERROR_SUCCESS) {
+  HKEY key;
+  if ((::RegOpenKeyEx(root_key, sub_key, NULL,
+                      KEY_READ, &key) == ERROR_SUCCESS) &&
+      (::RegQueryValueEx(key, value_name, NULL, NULL,
+                         reinterpret_cast<LPBYTE>(value),
+                         reinterpret_cast<LPDWORD>(&size)) == ERROR_SUCCESS)) {
+    ::RegCloseKey(key);
     return true;
   }
   return false;
 }
 
-// Opens the Google Update ClientState key for a product.
-bool OpenClientStateKey(HKEY root_key, const wchar_t* app_guid, REGSAM access,
-                        RegKey* key) {
-  wchar_t client_state_key[128];
-
-  return SafeStrCopy(client_state_key, _countof(client_state_key),
-                     kApRegistryKeyBase) &&
-         SafeStrCat(client_state_key, _countof(client_state_key), app_guid) &&
-         (key->Open(root_key, client_state_key, access) == ERROR_SUCCESS);
-}
-
-// TODO(grt): Write a unit test for this that uses registry virtualization.
-void SetFullInstallerFlagHelper(int args_num, const wchar_t* const* args) {
-  bool multi_install = false;
-  RegKey key;
-  const REGSAM key_access = KEY_QUERY_VALUE | KEY_SET_VALUE;
+// This function sets the flag in registry to indicate that Google Update
+// should try full installer next time. If the current installer works, this
+// flag is cleared by setup.exe at the end of install. The flag will by default
+// be written to HKCU, but if --system-level is included in the command line,
+// it will be written to HKLM instead.
+void SetFullInstallerFlag() {
+  HKEY key;
+  wchar_t ap_registry_key[128];
   const wchar_t* app_guid = google_update::kAppGuid;
   HKEY root_key = HKEY_CURRENT_USER;
-  wchar_t value[128];
-  LONG ret;
 
+  int args_num;
+  wchar_t* cmd_line = ::GetCommandLine();
+  wchar_t** args = ::CommandLineToArgvW(cmd_line, &args_num);
   for (int i = 1; i < args_num; ++i) {
     if (0 == ::lstrcmpi(args[i], L"--chrome-sxs"))
       app_guid = google_update::kSxSAppGuid;
     else if (0 == ::lstrcmpi(args[i], L"--chrome-frame"))
       app_guid = google_update::kChromeFrameAppGuid;
-    else if (0 == ::lstrcmpi(args[i], L"--multi-install"))
-      multi_install = true;
     else if (0 == ::lstrcmpi(args[i], L"--system-level"))
       root_key = HKEY_LOCAL_MACHINE;
   }
 
-  // When multi_install is true, we are potentially:
-  // 1. Performing a multi-install of some product(s) on a clean machine.
-  //    Neither the product(s) nor the multi-installer will have a ClientState
-  //    key in the registry, so there is nothing to be done.
-  // 2. Upgrading an existing multi-install.  The multi-installer will have a
-  //    ClientState key in the registry.  Only it need be modified.
-  // 3. Migrating a single-install into a multi-install.  The product will have
-  //    a ClientState key in the registry.  Only it need be modified.
-  // To handle all cases, we inspect the product's ClientState to see if it
-  // exists and its "ap" value does not contain "-multi".  This is case 3, so we
-  // modify the product's ClientState.  Otherwise, we check the
-  // multi-installer's ClientState and modify it if it exists.
-  if (multi_install) {
-    if (OpenClientStateKey(root_key, app_guid, key_access, &key)) {
-      // The app is installed.  See if it's a single-install.
-      ret = key.ReadValue(kApRegistryValueName, value, _countof(value));
-      if (ret != ERROR_FILE_NOT_FOUND &&
-          (ret != ERROR_SUCCESS || StrStr(value, kMultiInstallTag) != NULL)) {
-        // Error or case 2: add "-full" to the multi-installer's value.
-        key.Close();
-        app_guid = google_update::kMultiInstallAppGuid;
-      }  // else case 3: add "-full" to this value.
-    } else {
-      // case 1 or 2: add "-full" to the multi-installer's value.
-      key.Close();
-      app_guid = google_update::kMultiInstallAppGuid;
-    }
+  if (!SafeStrCopy(ap_registry_key, _countof(ap_registry_key),
+                   kApRegistryKeyBase) ||
+      !SafeStrCat(ap_registry_key, _countof(ap_registry_key),
+                  app_guid)) {
+    return;
   }
+  if (::RegOpenKeyEx(root_key, ap_registry_key, NULL,
+                     KEY_READ | KEY_SET_VALUE, &key) != ERROR_SUCCESS)
+    return;
 
-  if (!key.IsOpen()) {
-    if (!OpenClientStateKey(root_key, app_guid, key_access, &key))
-      return;
-
-    ret = key.ReadValue(kApRegistryValueName, value, _countof(value));
-  }
+  wchar_t value[128];
+  size_t size = _countof(value);
+  size_t buf_size = size;
+  LONG ret = ::RegQueryValueEx(key, kApRegistryValueName, NULL, NULL,
+                               reinterpret_cast<LPBYTE>(value),
+                               reinterpret_cast<LPDWORD>(&size));
 
   // The conditions below are handling two cases:
   // 1. When ap key is present, we want to make sure it doesn't already end
@@ -296,29 +193,18 @@ void SetFullInstallerFlagHelper(int args_num, const wchar_t* const* args) {
       value[0] = L'\0';
 
     if (!StrEndsWith(value, kFullInstallerSuffix) &&
-        (SafeStrCat(value, _countof(value), kFullInstallerSuffix)))
-      key.WriteValue(kApRegistryValueName, value);
+        (SafeStrCat(value, buf_size, kFullInstallerSuffix)))
+      ::RegSetValueEx(key, kApRegistryValueName, 0, REG_SZ,
+                      reinterpret_cast<LPBYTE>(value),
+                      lstrlen(value) * sizeof(wchar_t));
   }
-}
 
-// This function sets the flag in registry to indicate that Google Update
-// should try full installer next time. If the current installer works, this
-// flag is cleared by setup.exe at the end of install. The flag will by default
-// be written to HKCU, but if --system-level is included in the command line,
-// it will be written to HKLM instead.
-void SetFullInstallerFlag() {
-  int args_num;
-  wchar_t* cmd_line = ::GetCommandLine();
-  wchar_t** args = ::CommandLineToArgvW(cmd_line, &args_num);
-
-  SetFullInstallerFlagHelper(args_num, args);
-
-  ::LocalFree(args);
+  ::RegCloseKey(key);
 }
 
 // Gets the setup.exe path from Registry by looking the value of Uninstall
 // string, strips the arguments for uninstall and returns only the full path
-// to setup.exe.  |size| is measured in wchar_t units.
+// to setup.exe.
 bool GetSetupExePathFromRegistry(wchar_t *path, size_t size) {
   if (!ReadValueFromRegistry(HKEY_CURRENT_USER, kUninstallRegistryKey,
       kUninstallRegistryValueName, path, size)) {
@@ -662,10 +548,9 @@ int WMain(HMODULE module) {
   if (!RunSetup(archive_path, setup_path, &exit_code))
     return exit_code;
 
-  wchar_t value[2];
+  wchar_t value[4];
   if ((!ReadValueFromRegistry(HKEY_CURRENT_USER, kCleanupRegistryKey,
-                              kCleanupRegistryValueName, value,
-                              _countof(value))) ||
+                              kCleanupRegistryValueName, value, 4)) ||
       (value[0] != L'0'))
     DeleteExtractedFiles(base_path, archive_path, setup_path);
 
