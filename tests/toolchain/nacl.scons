@@ -102,10 +102,8 @@ for tag, e in ENVIRONMENTS_TO_TRY:
               'eh_loop_break.cc']:
     # http://code.google.com/p/nativeclient/issues/detail?id=1127
     is_broken = e.Bit('target_arm') and src.startswith('eh_')
-    # http://code.google.com/p/nativeclient/issues/detail?id=1106
-    if src =='unwind_trace.cc':
-      is_broken |= e.Bit('nacl_pic') and e.Bit('target_x86_64')
 
+    if src == 'unwind_trace.cc':
       # the tracing gets messed up by inlining
       is_broken |= tag.startswith('opt')
 
