@@ -32,6 +32,11 @@ const char ClientSideDetectionService::kClientReportPhishingUrl[] =
 const char ClientSideDetectionService::kClientModelUrl[] =
     "https://ssl.gstatic.com/safebrowsing/csd/client_model_v0.pb";
 
+struct ClientSideDetectionService::ClientReportInfo {
+  scoped_ptr<ClientReportPhishingRequestCallback> callback;
+  GURL phishing_url;
+};
+
 ClientSideDetectionService::ClientSideDetectionService(
     const FilePath& model_path,
     URLRequestContextGetter* request_context_getter)

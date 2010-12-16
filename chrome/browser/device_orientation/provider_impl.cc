@@ -189,12 +189,10 @@ int ProviderImpl::SamplingIntervalMs() const {
   DCHECK(MessageLoop::current() == polling_thread_->message_loop());
   DCHECK(data_fetcher_.get());
 
-  int fetcher_interval = data_fetcher_->MinSamplingIntervalMs();
-
-  if (fetcher_interval > kDesiredSamplingIntervalMs)
-    return fetcher_interval;
-  else
-    return kDesiredSamplingIntervalMs;
+  // TODO(erg): There used to be unused code here, that called a default
+  // implementation on the DataFetcherInterface that was never defined. I'm
+  // removing unused methods from headers.
+  return kDesiredSamplingIntervalMs;
 }
 
 }  // namespace device_orientation

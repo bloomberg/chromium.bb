@@ -131,6 +131,10 @@ gfx::Size BalloonViewImpl::GetSize() const {
   return gfx::Size(GetTotalWidth(), GetTotalHeight());
 }
 
+BalloonHost* BalloonViewImpl::GetHost() const {
+  return html_contents_.get();
+}
+
 void BalloonViewImpl::RunMenu(views::View* source, const gfx::Point& pt) {
   RunOptionsMenu(pt);
 }
@@ -164,6 +168,10 @@ void BalloonViewImpl::DelayedClose(bool by_user) {
 void BalloonViewImpl::DidChangeBounds(const gfx::Rect& previous,
                                       const gfx::Rect& current) {
   SizeContentsWindow();
+}
+
+gfx::Size BalloonViewImpl::GetPreferredSize() {
+  return gfx::Size(1000, 1000);
 }
 
 void BalloonViewImpl::SizeContentsWindow() {

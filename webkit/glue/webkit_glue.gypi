@@ -324,6 +324,8 @@
         'plugins/webplugin_delegate_impl_gtk.cc',
         'plugins/webplugin_delegate_impl_mac.mm',
         'plugins/webplugin_delegate_impl_win.cc',
+        'plugins/webplugin_file_delegate.cc',
+        'plugins/webplugin_file_delegate.h',
         'plugins/webplugin_impl.cc',
         'plugins/webplugin_impl.h',
         'plugins/webplugin_print_delegate.cc',

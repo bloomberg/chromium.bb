@@ -35,7 +35,7 @@ class FirstRunBubble : public InfoBubbleGtkDelegate,
   // is about to be closed.
   virtual void InfoBubbleClosing(InfoBubbleGtk* info_bubble,
                                  bool closed_by_escape);
-  virtual bool CloseOnEscape() { return true; }
+  virtual bool CloseOnEscape();
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,

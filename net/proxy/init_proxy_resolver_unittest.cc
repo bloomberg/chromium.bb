@@ -107,6 +107,8 @@ class RuleBasedProxyScriptFetcher : public ProxyScriptFetcher {
 
   virtual void Cancel() {}
 
+  virtual URLRequestContext* GetRequestContext() { return NULL; }
+
  private:
   const Rules* rules_;
 };
@@ -127,6 +129,10 @@ class RuleBasedProxyResolver : public ProxyResolver {
   }
 
   virtual void CancelRequest(RequestHandle request_handle) {
+    NOTREACHED();
+  }
+
+  virtual void CancelSetPacScript() {
     NOTREACHED();
   }
 

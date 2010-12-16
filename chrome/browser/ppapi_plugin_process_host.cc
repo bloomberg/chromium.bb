@@ -62,6 +62,10 @@ void PpapiPluginProcessHost::Init(const FilePath& path,
       cmd_line);
 }
 
+bool PpapiPluginProcessHost::CanShutdown() {
+  return true;
+}
+
 void PpapiPluginProcessHost::OnProcessLaunched() {
 }
 

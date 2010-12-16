@@ -35,9 +35,7 @@ class RenderViewContextMenuGtk : public RenderViewContextMenu,
   // TODO(port): implement.
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      menus::Accelerator* accelerator) {
-    return false;
-  }
+      menus::Accelerator* accelerator);
 
  private:
   scoped_ptr<MenuGtk> menu_gtk_;

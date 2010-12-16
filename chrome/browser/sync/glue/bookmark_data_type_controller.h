@@ -41,26 +41,15 @@ class BookmarkDataTypeController : public DataTypeController,
 
   virtual void Stop();
 
-  virtual bool enabled() {
-    return true;
-  }
+  virtual bool enabled();
 
-  virtual syncable::ModelType type() {
-    return syncable::BOOKMARKS;
-  }
+  virtual syncable::ModelType type();
 
-  virtual browser_sync::ModelSafeGroup model_safe_group() {
-    return browser_sync::GROUP_UI;
-  }
+  virtual browser_sync::ModelSafeGroup model_safe_group();
 
-  virtual const char* name() const {
-    // For logging only.
-    return "bookmark";
-  }
+  virtual const char* name() const;
 
-  virtual State state() {
-    return state_;
-  }
+  virtual State state();
 
   // UnrecoverableErrorHandler interface.
   virtual void OnUnrecoverableError(const tracked_objects::Location& from_here,

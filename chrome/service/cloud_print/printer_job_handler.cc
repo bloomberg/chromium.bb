@@ -17,6 +17,19 @@
 #include "googleurl/src/gurl.h"
 #include "net/http/http_response_headers.h"
 
+PrinterJobHandler::JobDetails::JobDetails() {}
+
+PrinterJobHandler::JobDetails::~JobDetails() {}
+
+void PrinterJobHandler::JobDetails::Clear() {
+  job_id_.clear();
+  job_title_.clear();
+  print_ticket_.clear();
+  print_data_mime_type_.clear();
+  print_data_file_path_ = FilePath();
+  tags_.clear();
+}
+
 PrinterJobHandler::PrinterJobHandler(
     const printing::PrinterBasicInfo& printer_info,
     const PrinterInfoFromCloud& printer_info_cloud,

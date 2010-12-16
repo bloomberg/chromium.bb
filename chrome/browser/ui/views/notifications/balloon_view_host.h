@@ -39,9 +39,7 @@ class BalloonViewHost : public BalloonHost {
 
  protected:
   virtual void InitRenderWidgetHostView();
-  virtual RenderWidgetHostView* render_widget_host_view() const {
-    return render_widget_host_view_;
-  }
+  virtual RenderWidgetHostView* render_widget_host_view() const;
 
  private:
   // The platform-specific widget host view.  Pointer is owned by the RVH.

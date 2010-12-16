@@ -165,6 +165,17 @@ bool PreferenceModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   return true;
 }
 
+const PrefService::Preference*
+PreferenceModelAssociator::GetChromeNodeFromSyncId(int64 sync_id) {
+  return NULL;
+}
+
+bool PreferenceModelAssociator::InitSyncNodeFromChromeId(
+    const std::string& node_id,
+    sync_api::BaseNode* sync_node) {
+  return false;
+}
+
 int64 PreferenceModelAssociator::GetSyncIdFromChromeId(
     const std::string& preference_name) {
   PreferenceNameToSyncIdMap::const_iterator iter =

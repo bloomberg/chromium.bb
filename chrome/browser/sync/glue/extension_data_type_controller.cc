@@ -84,6 +84,27 @@ void ExtensionDataTypeController::Stop() {
   state_ = NOT_RUNNING;
 }
 
+bool ExtensionDataTypeController::enabled() {
+  return true;
+}
+
+syncable::ModelType ExtensionDataTypeController::type() {
+  return syncable::EXTENSIONS;
+}
+
+browser_sync::ModelSafeGroup ExtensionDataTypeController::model_safe_group() {
+  return browser_sync::GROUP_UI;
+}
+
+const char* ExtensionDataTypeController::name() const {
+  // For logging only.
+  return "extension";
+}
+
+DataTypeController::State ExtensionDataTypeController::state() {
+  return state_;
+}
+
 void ExtensionDataTypeController::OnUnrecoverableError(
     const tracked_objects::Location& from_here,
     const std::string& message) {

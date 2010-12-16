@@ -86,6 +86,27 @@ void PreferenceDataTypeController::Stop() {
   state_ = NOT_RUNNING;
 }
 
+bool PreferenceDataTypeController::enabled() {
+  return true;
+}
+
+syncable::ModelType PreferenceDataTypeController::type() {
+  return syncable::PREFERENCES;
+}
+
+browser_sync::ModelSafeGroup PreferenceDataTypeController::model_safe_group() {
+  return browser_sync::GROUP_UI;
+}
+
+const char* PreferenceDataTypeController::name() const {
+  // For logging only.
+  return "preference";
+}
+
+DataTypeController::State PreferenceDataTypeController::state() {
+  return state_;
+}
+
 void PreferenceDataTypeController::OnUnrecoverableError(
     const tracked_objects::Location& from_here,
     const std::string& message) {

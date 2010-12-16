@@ -30,7 +30,7 @@ class DevToolsAgentFilter : public IPC::ChannelProxy::MessageFilter {
   // IPC::ChannelProxy::MessageFilter override. Called on IO thread.
   virtual bool OnMessageReceived(const IPC::Message& message);
 
-  virtual void OnFilterAdded(IPC::Channel* channel) { channel_ = channel; }
+  virtual void OnFilterAdded(IPC::Channel* channel);
 
   static void DispatchMessageLoop();
 

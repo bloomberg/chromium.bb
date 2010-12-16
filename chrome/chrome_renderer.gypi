@@ -206,6 +206,7 @@
         # TODO(noelutz): Find a better way to include these files
         '<(protoc_out_dir)/chrome/renderer/safe_browsing/client_model.pb.cc',
         '<(protoc_out_dir)/chrome/renderer/safe_browsing/client_model.pb.h',
+        'renderer/safe_browsing/feature_extractor_clock.cc',
         'renderer/safe_browsing/feature_extractor_clock.h',
         'renderer/safe_browsing/features.cc',
         'renderer/safe_browsing/features.h',

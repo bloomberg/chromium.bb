@@ -30,7 +30,6 @@
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
 #include "gfx/rect.h"
-#include "views/window/window.h"
 
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -43,6 +42,10 @@
 #include "base/mac_util.h"
 #elif defined(OS_WIN)
 #include "app/win_util.h"
+#endif
+
+#if defined(TOOLKIT_VIEWS)
+#include "views/window/window.h"
 #endif
 
 #if defined(OS_CHROMEOS)

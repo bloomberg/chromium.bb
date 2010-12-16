@@ -88,6 +88,27 @@ void BookmarkDataTypeController::Stop() {
   state_ = NOT_RUNNING;
 }
 
+bool BookmarkDataTypeController::enabled() {
+  return true;
+}
+
+syncable::ModelType BookmarkDataTypeController::type() {
+  return syncable::BOOKMARKS;
+}
+
+browser_sync::ModelSafeGroup BookmarkDataTypeController::model_safe_group() {
+  return browser_sync::GROUP_UI;
+}
+
+const char* BookmarkDataTypeController::name() const {
+  // For logging only.
+  return "bookmark";
+}
+
+DataTypeController::State BookmarkDataTypeController::state() {
+  return state_;
+}
+
 void BookmarkDataTypeController::OnUnrecoverableError(
     const tracked_objects::Location& from_here, const std::string& message) {
   // The ProfileSyncService will invoke our Stop() method in response to this.

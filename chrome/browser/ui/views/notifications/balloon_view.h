@@ -59,16 +59,14 @@ class BalloonViewImpl : public BalloonView,
   virtual void RepositionToBalloon();
   virtual void Close(bool by_user);
   virtual gfx::Size GetSize() const;
-  virtual BalloonHost* GetHost() const { return html_contents_.get(); }
+  virtual BalloonHost* GetHost() const;
 
  private:
   // views::View interface.
   virtual void Paint(gfx::Canvas* canvas);
   virtual void DidChangeBounds(const gfx::Rect& previous,
                                const gfx::Rect& current);
-  virtual gfx::Size GetPreferredSize() {
-    return gfx::Size(1000, 1000);
-  }
+  virtual gfx::Size GetPreferredSize();
 
   // views::ViewMenuDelegate interface.
   virtual void RunMenu(views::View* source, const gfx::Point& pt);

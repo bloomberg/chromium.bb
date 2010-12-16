@@ -20,7 +20,7 @@ class PpapiPluginProcessHost : public BrowserChildProcessHost {
   void Init(const FilePath& path, IPC::Message* reply_msg);
 
  private:
-  virtual bool CanShutdown() { return true; }
+  virtual bool CanShutdown();
   virtual void OnProcessLaunched();
 
   virtual void OnMessageReceived(const IPC::Message& msg);

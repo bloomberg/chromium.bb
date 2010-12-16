@@ -46,7 +46,7 @@ class BalloonViewImpl : public BalloonView,
   virtual void RepositionToBalloon();
   virtual void Close(bool by_user);
   virtual gfx::Size GetSize() const;
-  virtual BalloonHost* GetHost() const { return html_contents_.get(); }
+  virtual BalloonHost* GetHost() const;
 
  private:
   // NotificationObserver interface.

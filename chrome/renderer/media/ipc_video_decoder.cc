@@ -76,6 +76,10 @@ void IpcVideoDecoder::Initialize(media::DemuxerStream* demuxer_stream,
                              decode_context_.get(), param);
 }
 
+const media::MediaFormat& IpcVideoDecoder::media_format() {
+  return media_format_;
+}
+
 void IpcVideoDecoder::Stop(media::FilterCallback* callback) {
   stop_callback_.reset(callback);
   decode_engine_->Uninitialize();
@@ -173,6 +177,10 @@ void IpcVideoDecoder::OnDestroyComplete() {
 void IpcVideoDecoder::ProduceVideoFrame(
     scoped_refptr<media::VideoFrame> video_frame) {
   decode_engine_->ProduceVideoFrame(video_frame);
+}
+
+bool IpcVideoDecoder::ProvidesBuffer() {
+  return true;
 }
 
 // This method is called by VideoDecodeEngine that a video frame is produced.

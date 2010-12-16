@@ -33,7 +33,6 @@
 #include "chrome/common/notification_service.h"
 #include "grit/browser_resources.h"
 #include "net/base/escape.h"
-#include "views/window/window_delegate.h"
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;

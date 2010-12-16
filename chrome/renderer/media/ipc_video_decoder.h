@@ -33,11 +33,11 @@ class IpcVideoDecoder : public media::VideoDecoder,
   // media::VideoDecoder implementation.
   virtual void Initialize(media::DemuxerStream* demuxer_stream,
                           media::FilterCallback* callback);
-  virtual const media::MediaFormat& media_format() { return media_format_; }
+  virtual const media::MediaFormat& media_format();
   virtual void ProduceVideoFrame(scoped_refptr<media::VideoFrame> video_frame);
 
   // TODO(hclam): Remove this method.
-  virtual bool ProvidesBuffer() { return true; }
+  virtual bool ProvidesBuffer();
 
   // media::VideoDecodeEngine::EventHandler implementation.
   virtual void OnInitializeComplete(const media::VideoCodecInfo& info);

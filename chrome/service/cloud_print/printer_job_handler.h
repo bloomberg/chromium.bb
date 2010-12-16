@@ -73,20 +73,16 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
     PRINT_FAILED,
   };
   struct JobDetails {
+    JobDetails();
+    ~JobDetails();
+    void Clear();
+
     std::string job_id_;
     std::string job_title_;
     std::string print_ticket_;
     FilePath print_data_file_path_;
     std::string print_data_mime_type_;
     std::vector<std::string> tags_;
-    void Clear() {
-      job_id_.clear();
-      job_title_.clear();
-      print_ticket_.clear();
-      print_data_mime_type_.clear();
-      print_data_file_path_ = FilePath();
-      tags_.clear();
-    }
   };
 
  public:

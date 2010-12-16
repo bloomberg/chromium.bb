@@ -75,6 +75,10 @@ bool DevToolsAgentFilter::OnMessageReceived(const IPC::Message& message) {
   return message_handled_;
 }
 
+void DevToolsAgentFilter::OnFilterAdded(IPC::Channel* channel) {
+  channel_ = channel;
+}
+
 void DevToolsAgentFilter::OnDebuggerCommand(const std::string& command) {
   WebDevToolsAgent::executeDebuggerCommand(
       WebString::fromUTF8(command), current_routing_id_);

@@ -35,6 +35,10 @@ void PasswordModelWorker::CallDoWorkAndSignalTask(Callback0::Type* work,
   done->Signal();
 }
 
+ModelSafeGroup PasswordModelWorker::GetModelSafeGroup() {
+  return GROUP_PASSWORD;
+}
+
 bool PasswordModelWorker::CurrentThreadIsWorkThread() {
   // TODO(ncarter): How to determine this?
   return true;

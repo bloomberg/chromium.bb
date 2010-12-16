@@ -40,9 +40,9 @@ class ExtensionTtsPlatformImpl {
   // Return true if the synthesis engine is currently speaking.
   virtual bool IsSpeaking() = 0;
 
-  virtual std::string error() { return error_; }
-  virtual void clear_error() { error_ = std::string(); }
-  virtual void set_error(const std::string& error) { error_ = error; }
+  virtual std::string error();
+  virtual void clear_error();
+  virtual void set_error(const std::string& error);
 
  protected:
   ExtensionTtsPlatformImpl() {}
@@ -60,13 +60,8 @@ class ExtensionTtsController {
   static ExtensionTtsController* GetInstance();
 
   struct Utterance {
-    Utterance()
-        : rate(-1.0),
-          pitch(-1.0),
-          volume(-1.0),
-          success_task(NULL),
-          failure_task(NULL) {
-    }
+    Utterance();
+    ~Utterance();
 
     std::string text;
     std::string language;

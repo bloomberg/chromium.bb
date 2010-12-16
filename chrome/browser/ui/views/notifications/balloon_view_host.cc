@@ -90,3 +90,7 @@ void BalloonViewHost::InitRenderWidgetHostView() {
   NOTIMPLEMENTED();
 #endif
 }
+
+RenderWidgetHostView* BalloonViewHost::render_widget_host_view() const {
+  return render_widget_host_view_;
+}

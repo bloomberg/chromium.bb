@@ -48,6 +48,10 @@ void FirstRunBubble::InfoBubbleClosing(InfoBubbleGtk* info_bubble,
   // TODO(port): Enable parent window
 }
 
+bool FirstRunBubble::CloseOnEscape() {
+  return true;
+}
+
 void FirstRunBubble::Observe(NotificationType type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {

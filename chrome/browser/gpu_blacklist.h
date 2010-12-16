@@ -116,6 +116,7 @@ class GpuBlacklist {
            const std::string& version_op,
            const std::string& version_string,
            const std::string& version_string2);
+    ~OsInfo();
 
     // Determines if a given os/version is included in the OsInfo set.
     bool Contains(OsType type, const Version& version) const;
@@ -149,6 +150,8 @@ class GpuBlacklist {
 
     // Returns the GpuFeatureFlags.
     GpuFeatureFlags GetGpuFeatureFlags() const;
+
+    ~GpuBlacklistEntry();
 
    private:
     GpuBlacklistEntry();

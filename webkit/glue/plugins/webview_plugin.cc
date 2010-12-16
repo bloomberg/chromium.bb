@@ -105,6 +105,10 @@ void WebViewPlugin::destroy() {
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
+NPObject* WebViewPlugin::scriptableObject() {
+  return NULL;
+}
+
 void WebViewPlugin::paint(WebCanvas* canvas, const WebRect& rect) {
   gfx::Rect paintRect(rect_.Intersect(rect));
   if (paintRect.IsEmpty())
@@ -143,6 +147,10 @@ void WebViewPlugin::updateGeometry(
   }
 }
 
+bool WebViewPlugin::acceptsInputEvents() {
+  return true;
+}
+
 bool WebViewPlugin::handleInputEvent(const WebInputEvent& event,
                                      WebCursorInfo& cursor) {
   if (event.type == WebInputEvent::ContextMenu) {
@@ -176,6 +184,10 @@ void WebViewPlugin::didFinishLoading() {
 void WebViewPlugin::didFailLoading(const WebURLError& error) {
   DCHECK(!error_.get());
   error_.reset(new WebURLError(error));
+}
+
+bool WebViewPlugin::acceptsLoadDrops() {
+  return false;
 }
 
 void WebViewPlugin::setToolTipText(const WebKit::WebString& text,

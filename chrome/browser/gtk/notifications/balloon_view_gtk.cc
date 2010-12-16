@@ -126,6 +126,10 @@ gfx::Size BalloonViewImpl::GetSize() const {
   return gfx::Size(GetDesiredTotalWidth(), GetDesiredTotalHeight());
 }
 
+BalloonHost* BalloonViewImpl::GetHost() const {
+  return html_contents_.get();
+}
+
 void BalloonViewImpl::DelayedClose(bool by_user) {
   html_contents_->Shutdown();
   if (frame_container_) {

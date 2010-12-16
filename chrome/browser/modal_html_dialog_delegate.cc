@@ -69,3 +69,7 @@ void ModalHtmlDialogDelegate::OnDialogClosed(const std::string& json_retval) {
   // We are done with this request, so delete us.
   delete this;
 }
+
+bool ModalHtmlDialogDelegate::ShouldShowDialogTitle() const {
+  return true;
+}

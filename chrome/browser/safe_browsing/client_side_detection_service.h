@@ -97,11 +97,6 @@ class ClientSideDetectionService : public URLFetcher::Delegate {
     ERROR_STATUS,
   };
 
-  struct ClientReportInfo {
-    scoped_ptr<ClientReportPhishingRequestCallback> callback;
-    GURL phishing_url;
-  };
-
   static const char kClientReportPhishingUrl[];
   static const char kClientModelUrl[];
 
@@ -177,6 +172,7 @@ class ClientSideDetectionService : public URLFetcher::Delegate {
 
   // Map of client report phishing request to the corresponding callback that
   // has to be invoked when the request is done.
+  struct ClientReportInfo;
   std::map<const URLFetcher*, ClientReportInfo*> client_phishing_reports_;
 
   // Used to asynchronously call the callbacks for GetModelFile and

@@ -15,10 +15,10 @@ namespace safe_browsing {
 class FeatureExtractorClock {
  public:
   FeatureExtractorClock() {}
-  virtual ~FeatureExtractorClock() {}
+  virtual ~FeatureExtractorClock();
 
   // Returns the current time.  May be mocked for testing.
-  virtual base::TimeTicks Now() { return base::TimeTicks::Now(); }
+  virtual base::TimeTicks Now();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FeatureExtractorClock);

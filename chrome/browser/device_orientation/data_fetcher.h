@@ -13,7 +13,6 @@ class DataFetcher {
  public:
   virtual ~DataFetcher() {}
   virtual bool GetOrientation(Orientation*) = 0;
-  virtual int MinSamplingIntervalMs() const { return 0; }
 };
 
 }  // namespace device_orientation

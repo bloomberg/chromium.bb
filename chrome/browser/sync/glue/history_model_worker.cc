@@ -50,6 +50,10 @@ void HistoryModelWorker::DoWorkAndWaitUntilDone(Callback0::Type* work) {
   done.Wait();
 }
 
+ModelSafeGroup HistoryModelWorker::GetModelSafeGroup() {
+  return GROUP_HISTORY;
+}
+
 bool HistoryModelWorker::CurrentThreadIsWorkThread() {
   // TODO(ncarter): How to determine this?
   return true;

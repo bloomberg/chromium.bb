@@ -134,6 +134,22 @@ base::ProcessHandle TaskManagerRendererResource::GetProcess() const {
   return process_;
 }
 
+TaskManager::Resource::Type TaskManagerRendererResource::GetType() const {
+  return RENDERER;
+}
+
+bool TaskManagerRendererResource::ReportsCacheStats() const {
+  return true;
+}
+
+bool TaskManagerRendererResource::ReportsV8MemoryStats() const {
+  return true;
+}
+
+bool TaskManagerRendererResource::SupportNetworkUsage() const {
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TaskManagerTabContentsResource class
 ////////////////////////////////////////////////////////////////////////////////
@@ -888,6 +904,19 @@ base::ProcessHandle TaskManagerExtensionProcessResource::GetProcess() const {
   return process_handle_;
 }
 
+TaskManager::Resource::Type
+TaskManagerExtensionProcessResource::GetType() const {
+  return EXTENSION;
+}
+
+bool TaskManagerExtensionProcessResource::SupportNetworkUsage() const {
+  return true;
+}
+
+void TaskManagerExtensionProcessResource::SetSupportNetworkUsage() {
+  NOTREACHED();
+}
+
 const Extension* TaskManagerExtensionProcessResource::GetExtension() const {
   return extension_host_->extension();
 }
@@ -1062,12 +1091,24 @@ TaskManagerNotificationResource::TaskManagerNotificationResource(
 TaskManagerNotificationResource::~TaskManagerNotificationResource() {
 }
 
+std::wstring TaskManagerNotificationResource::GetTitle() const {
+  return title_;
+}
+
 SkBitmap TaskManagerNotificationResource::GetIcon() const {
   return *default_icon_;
 }
 
 base::ProcessHandle TaskManagerNotificationResource::GetProcess() const {
   return process_handle_;
+}
+
+TaskManager::Resource::Type TaskManagerNotificationResource::GetType() const {
+  return NOTIFICATION;
+}
+
+bool TaskManagerNotificationResource::SupportNetworkUsage() const {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1237,6 +1278,22 @@ size_t TaskManagerBrowserProcessResource::SqliteMemoryUsedBytes() const {
 
 base::ProcessHandle TaskManagerBrowserProcessResource::GetProcess() const {
   return base::GetCurrentProcessHandle();  // process_;
+}
+
+TaskManager::Resource::Type TaskManagerBrowserProcessResource::GetType() const {
+  return BROWSER;
+}
+
+bool TaskManagerBrowserProcessResource::SupportNetworkUsage() const {
+  return true;
+}
+
+void TaskManagerBrowserProcessResource::SetSupportNetworkUsage() {
+  NOTREACHED();
+}
+
+bool TaskManagerBrowserProcessResource::ReportsSqliteMemoryUsed() const {
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

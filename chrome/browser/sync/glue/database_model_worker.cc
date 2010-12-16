@@ -34,6 +34,10 @@ void DatabaseModelWorker::CallDoWorkAndSignalTask(Callback0::Type* work,
   done->Signal();
 }
 
+ModelSafeGroup DatabaseModelWorker::GetModelSafeGroup() {
+  return GROUP_DB;
+}
+
 bool DatabaseModelWorker::CurrentThreadIsWorkThread() {
   return BrowserThread::CurrentlyOn(BrowserThread::DB);
 }

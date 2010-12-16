@@ -102,6 +102,8 @@ GpuBlacklist::OsInfo::OsInfo(const std::string& os,
   }
 }
 
+GpuBlacklist::OsInfo::~OsInfo() {}
+
 bool GpuBlacklist::OsInfo::Contains(OsType type,
                                     const Version& version) const {
   if (!IsValid())
@@ -213,6 +215,8 @@ GpuBlacklist::GpuBlacklistEntry::GetGpuBlacklistEntryFromValue(
 
   return entry;
 }
+
+GpuBlacklist::GpuBlacklistEntry::~GpuBlacklistEntry() {}
 
 GpuBlacklist::GpuBlacklistEntry::GpuBlacklistEntry()
     : vendor_id_(0),

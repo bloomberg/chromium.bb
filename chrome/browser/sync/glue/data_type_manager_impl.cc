@@ -340,6 +340,14 @@ void DataTypeManagerImpl::Stop() {
     FinishStop();
 }
 
+const DataTypeController::TypeMap& DataTypeManagerImpl::controllers() {
+  return controllers_;
+}
+
+DataTypeManager::State DataTypeManagerImpl::state() {
+  return state_;
+}
+
 void DataTypeManagerImpl::FinishStop() {
   DCHECK(state_== CONFIGURING ||
          state_ == STOPPING ||

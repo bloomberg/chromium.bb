@@ -16,18 +16,9 @@ class ClickTask : public Task {
  public:
   // A |followup| Task can be specified to notify the caller when the mouse
   // click event is sent. If can be NULL if the caller does not care about it.
-  ClickTask(MouseButton button, int state, Task* followup)
-      : button_(button), state_(state), followup_(followup)  {
-  }
-
-  virtual ~ClickTask() {}
-
-  virtual void Run() {
-    if (followup_)
-      SendMouseEventsNotifyWhenDone(button_, state_, followup_);
-    else
-      SendMouseEvents(button_, state_);
-  }
+  ClickTask(MouseButton button, int state, Task* followup);
+  virtual ~ClickTask();
+  virtual void Run();
 
  private:
   MouseButton button_;

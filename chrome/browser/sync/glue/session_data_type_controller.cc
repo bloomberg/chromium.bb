@@ -82,6 +82,27 @@ void SessionDataTypeController::Stop() {
   state_ = NOT_RUNNING;
 }
 
+bool SessionDataTypeController::enabled() {
+  return true;
+}
+
+syncable::ModelType SessionDataTypeController::type() {
+  return syncable::SESSIONS;
+}
+
+browser_sync::ModelSafeGroup SessionDataTypeController::model_safe_group() {
+  return browser_sync::GROUP_UI;
+}
+
+const char* SessionDataTypeController::name() const {
+  // For logging only.
+  return "session";
+}
+
+DataTypeController::State SessionDataTypeController::state() {
+  return state_;
+}
+
 void SessionDataTypeController::OnUnrecoverableError(
     const tracked_objects::Location& from_here,
     const std::string& message) {

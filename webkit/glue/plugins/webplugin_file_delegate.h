@@ -21,9 +21,7 @@ class WebPluginFileDelegate {
   virtual bool ChooseFile(const char* mime_types,
                           int mode,
                           NPChooseFileCallback callback,
-                          void* user_data) {
-    return false;
-  }
+                          void* user_data);
 
  protected:
   WebPluginFileDelegate() {}

@@ -37,13 +37,9 @@ class DataTypeManagerImpl : public DataTypeManager,
 
   virtual void Stop();
 
-  virtual const DataTypeController::TypeMap& controllers() {
-    return controllers_;
-  };
+  virtual const DataTypeController::TypeMap& controllers();
 
-  virtual State state() {
-    return state_;
-  }
+  virtual State state();
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,

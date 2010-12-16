@@ -18,10 +18,32 @@ const char kCrosLibraryNotLoadedError[] =
 const int kSpeechCheckDelayIntervalMs = 100;
 };
 
+std::string ExtensionTtsPlatformImpl::error() {
+  return error_;
+}
+
+void ExtensionTtsPlatformImpl::clear_error() {
+  error_ = std::string();
+}
+
+void ExtensionTtsPlatformImpl::set_error(const std::string& error) {
+  error_ = error;
+}
+
 // static
 ExtensionTtsController* ExtensionTtsController::GetInstance() {
   return Singleton<ExtensionTtsController>::get();
 }
+
+ExtensionTtsController::Utterance::Utterance()
+    : rate(-1.0),
+      pitch(-1.0),
+      volume(-1.0),
+      success_task(NULL),
+      failure_task(NULL) {
+}
+
+ExtensionTtsController::Utterance::~Utterance() {}
 
 ExtensionTtsController::ExtensionTtsController()
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),

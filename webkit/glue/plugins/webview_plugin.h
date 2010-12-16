@@ -70,7 +70,7 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
   virtual bool initialize(WebKit::WebPluginContainer*);
   virtual void destroy();
 
-  virtual NPObject* scriptableObject() { return NULL; }
+  virtual NPObject* scriptableObject();
 
   virtual void paint(WebKit::WebCanvas* canvas, const WebKit::WebRect& rect);
 
@@ -82,7 +82,7 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
   virtual void updateFocus(bool) { }
   virtual void updateVisibility(bool) { }
 
-  virtual bool acceptsInputEvents() { return true; }
+  virtual bool acceptsInputEvents();
   virtual bool handleInputEvent(const WebKit::WebInputEvent& event,
                                 WebKit::WebCursorInfo& cursor_info);
 
@@ -99,7 +99,7 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
                                           const WebKit::WebURLError& error) { }
 
   // WebViewClient methods:
-  virtual bool acceptsLoadDrops() { return false; }
+  virtual bool acceptsLoadDrops();
 
   virtual void setToolTipText(const WebKit::WebString&,
                               WebKit::WebTextDirection);
