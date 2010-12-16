@@ -170,8 +170,6 @@
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/image_decoder.h"
 #include "webkit/glue/image_resource_fetcher.h"
-#include "webkit/glue/media/buffered_data_source.h"
-#include "webkit/glue/media/simple_data_source.h"
 #include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/plugins/default_plugin_shared.h"
@@ -2879,10 +2877,6 @@ WebMediaPlayer* RenderView::createMediaPlayer(
     collection->AddVideoDecoder(new IpcVideoDecoder(
         MessageLoop::current(), context->context()));
   }
-
-  // TODO(annacc): do we still need appcache_host?  http://crbug.com/65135
-  // WebApplicationCacheHostImpl* appcache_host =
-  //     WebApplicationCacheHostImpl::FromFrame(frame);
 
   scoped_refptr<webkit_glue::WebVideoRenderer> video_renderer;
   bool pts_logging = cmd_line->HasSwitch(switches::kEnableVideoLogging);

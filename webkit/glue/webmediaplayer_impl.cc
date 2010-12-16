@@ -24,7 +24,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVideoFrame.h"
 #include "webkit/glue/media/buffered_data_source.h"
-#include "webkit/glue/media/media_resource_loader_bridge_factory.h"
 #include "webkit/glue/media/simple_data_source.h"
 #include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/media/web_video_renderer.h"

@@ -34,9 +34,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLError.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
-#include "webkit/glue/media/buffered_data_source.h"
-#include "webkit/glue/media/media_resource_loader_bridge_factory.h"
-#include "webkit/glue/media/simple_data_source.h"
 #include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/webplugin_impl.h"
@@ -269,10 +266,6 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(WebFrame* frame,
                                           WebMediaPlayerClient* client) {
   scoped_ptr<media::FilterCollection> collection(
       new media::FilterCollection());
-
-  // TODO(annacc): do we still need appcache_host?  http://crbug.com/65135
-  // appcache::WebApplicationCacheHostImpl* appcache_host =
-  //     appcache::WebApplicationCacheHostImpl::FromFrame(frame);
 
   scoped_refptr<webkit_glue::VideoRendererImpl> video_renderer(
       new webkit_glue::VideoRendererImpl(false));

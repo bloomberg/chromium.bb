@@ -2,27 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "webkit/glue/media/simple_data_source.h"
+
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "media/base/filter_host.h"
-#include "net/base/load_flags.h"
 #include "net/base/data_url.h"
+#include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKitClient.h"
-#include "webkit/glue/media/simple_data_source.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace {
 
-const char kHttpScheme[] = "http";
-const char kHttpsScheme[] = "https";
 const char kDataScheme[] = "data";
-
-// A helper method that accepts only HTTP, HTTPS and FILE protocol.
-bool IsDataProtocol(const GURL& url) {
-  return url.SchemeIs(kDataScheme);
-}
 
 }  // namespace
 
@@ -233,7 +227,7 @@ void SimpleDataSource::StartTask() {
 
   DCHECK_EQ(state_, INITIALIZING);
 
-  if (IsDataProtocol(url_)) {
+  if (url_.SchemeIs(kDataScheme)) {
     // If this using data protocol, we just need to decode it.
     std::string mime_type, charset;
     bool success = net::DataURL::Parse(url_, &mime_type, &charset, &data_);
@@ -276,7 +270,7 @@ void SimpleDataSource::DoneInitialization_Locked(bool success) {
     host()->SetTotalBytes(size_);
     host()->SetBufferedBytes(size_);
     // If scheme is file or data, say we are loaded.
-    host()->SetLoaded(url_.SchemeIsFile() || IsDataProtocol(url_));
+    host()->SetLoaded(url_.SchemeIsFile() || url_.SchemeIs(kDataScheme));
   } else {
     host()->SetError(media::PIPELINE_ERROR_NETWORK);
   }
