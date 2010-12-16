@@ -6,19 +6,15 @@
 
 namespace ppapi_proxy {
 
-PluginResource::PluginResource(PluginModule* module)
-    : resource_id_(0), module_(module) {
+PluginResource::PluginResource()
+    : resource_id_(0) {
 }
 
 PluginResource::~PluginResource() {
 }
 
 PP_Resource PluginResource::GetReference() {
-  PluginResourceTracker *tracker = PluginResourceTracker::Get();
-  if (resource_id_)
-    tracker->AddRefResource(resource_id_);
-  else
-    resource_id_ = tracker->AddResource(this);
+  PluginResourceTracker::Get()->AddRefResource(resource_id_);
   return resource_id_;
 }
 

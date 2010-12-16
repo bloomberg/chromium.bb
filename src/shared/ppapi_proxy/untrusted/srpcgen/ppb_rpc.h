@@ -166,6 +166,10 @@ class PpbCoreRpcClient {
   static NaClSrpcError PPB_Core_ReleaseResource(
       NaClSrpcChannel* channel,
       int64_t resource);
+  static NaClSrpcError ReleaseResourceMultipleTimes(
+      NaClSrpcChannel* channel,
+      int64_t resource,
+      int32_t count);
   static NaClSrpcError PPB_Core_GetTime(
       NaClSrpcChannel* channel,
       double* time);

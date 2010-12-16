@@ -378,6 +378,20 @@ NaClSrpcError PpbCoreRpcClient::PPB_Core_ReleaseResource(
   return retval;
 }
 
+NaClSrpcError PpbCoreRpcClient::ReleaseResourceMultipleTimes(
+    NaClSrpcChannel* channel,
+    int64_t resource,
+    int32_t count)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "ReleaseResourceMultipleTimes:li:",
+      resource,
+      count
+  );
+  return retval;
+}
+
 NaClSrpcError PpbCoreRpcClient::PPB_Core_GetTime(
     NaClSrpcChannel* channel,
     double* time)  {

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "native_client/src/include/portability.h"
+#include "native_client/src/shared/ppapi_proxy/browser_globals.h"
 #include "srpcgen/ppb_rpc.h"
 
 //
@@ -13,9 +14,7 @@ void PpbCoreRpcServer::PPB_Core_AddRefResource(NaClSrpcRpc* rpc,
                                                NaClSrpcClosure* done,
                                                int64_t resource) {
   NaClSrpcClosureRunner runner(done);
-  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  // TODO(sehr): implement AddRefResource.
-  UNREFERENCED_PARAMETER(resource);
+  ppapi_proxy::PPBCoreInterface()->AddRefResource(resource);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -23,9 +22,7 @@ void PpbCoreRpcServer::PPB_Core_ReleaseResource(NaClSrpcRpc* rpc,
                                                 NaClSrpcClosure* done,
                                                 int64_t resource) {
   NaClSrpcClosureRunner runner(done);
-  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  // TODO(sehr): implement ReleaseResource.
-  UNREFERENCED_PARAMETER(resource);
+  ppapi_proxy::PPBCoreInterface()->ReleaseResource(resource);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -36,11 +33,21 @@ void PpbCoreRpcServer::PPB_Core_GetTime(NaClSrpcRpc* rpc,
                                         NaClSrpcClosure* done,
                                         double* time) {
   NaClSrpcClosureRunner runner(done);
-  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  // TODO(sehr): implement time.
-  *time = 0.0;
+  *time = ppapi_proxy::PPBCoreInterface()->GetTime();
   rpc->result = NACL_SRPC_RESULT_OK;
 }
+
+// Release multiple references at once.
+void PpbCoreRpcServer::ReleaseResourceMultipleTimes(NaClSrpcRpc* rpc,
+                                                    NaClSrpcClosure* done,
+                                                    int64_t resource,
+                                                    int32_t count) {
+  NaClSrpcClosureRunner runner(done);
+  while (count--)
+    ppapi_proxy::PPBCoreInterface()->ReleaseResource(resource);
+  rpc->result = NACL_SRPC_RESULT_OK;
+}
+
 
 // CallOnMainThread is handled on the upcall thread, where another RPC service
 // is exported.

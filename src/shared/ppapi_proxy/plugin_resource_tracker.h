@@ -17,7 +17,6 @@
 namespace ppapi_proxy {
 
 class PluginInstance;
-class PluginModule;
 class PluginResource;
 
 // This class maintains a global list of all live pepper resources. It allows
@@ -34,15 +33,7 @@ class PluginResourceTracker {
 
   // PP_Resources --------------------------------------------------------------
 
-  // The returned pointer will be NULL if there is no resource. Note that this
-  // return value is a scoped_refptr so that we ensure the resource is valid
-  // from the point of the lookup to the point that the calling code needs it.
-  // Otherwise, the plugin could Release() the resource on another thread and
-  // the object will get deleted out from under us.
-  scoped_refptr<PluginResource> GetResource(PP_Resource res) const;
-
-  // Increment resource's plugin refcount. See ResourceAndRefCount comments
-  // below.
+  // Increment resource's plugin refcount. See ResourceAndRefCount.
   bool AddRefResource(PP_Resource res);
   bool UnrefResource(PP_Resource res);
 
@@ -51,24 +42,41 @@ class PluginResourceTracker {
 
   // Prohibit creation other then by the Singleton class.
   PluginResourceTracker();
-  ~PluginResourceTracker();
 
   // Adds the given resource to the tracker and assigns it a resource ID and
-  // refcount of 1. The assigned resource ID will be returned. Used only by the
-  // Resource class.
-  PP_Resource AddResource(PluginResource* resource);
+  // refcount of 1. Used only by the Resource class.
+  void AddResource(PluginResource* resource, PP_Resource id);
+
+  // The returned pointer will be NULL if there is no resource. Note that this
+  // return value is a scoped_refptr so that we ensure the resource is valid
+  // from the point of the lookup to the point that the calling code needs it.
+  // Otherwise, the plugin could Release() the resource on another thread and
+  // the object will get deleted out from under us.
+  scoped_refptr<PluginResource> GetExistingResource(PP_Resource res) const;
+
+  // Get or create a new PluginResource from a browser resource.
+  // If we are already tracking this resource, we bump its browser_refcount to
+  // reflect that we took ownership of it. If this is a new resource, we create
+  // a PluginResource for it with browser_refcount 1.
+  template<typename T> scoped_refptr<T> AdoptBrowserResource(PP_Resource res);
+
+  // Try to get a browser-side refcount for an existing resource.
+  void ObtainBrowserResource(PP_Resource res);
+
+  // Release browser-side refcount.
+  void ReleaseBrowserResource(PP_Resource res, size_t refcount);
 
   // Last assigned resource ID.
   PP_Resource last_id_;
 
-  // For each PP_Resource, keep the Resource* (as refptr) and plugin use count.
-  // This use count is different then Resource's RefCount, and is manipulated
-  // using this RefResource/UnrefResource. When it drops to zero, we just remove
-  // the resource from this resource tracker, but the resource object will be
-  // alive so long as some scoped_refptr still holds it's reference. This
-  // prevents plugins from forcing destruction of Resource objects.
-  typedef std::pair<scoped_refptr<PluginResource>, size_t> ResourceAndRefCount;
-  typedef std::map<PP_Resource, ResourceAndRefCount> ResourceMap;
+  struct ResourceAndRefCounts {
+    scoped_refptr<PluginResource> resource;
+    size_t browser_refcount;
+    size_t plugin_refcount;
+    explicit ResourceAndRefCounts(PluginResource* r);
+    ~ResourceAndRefCounts();
+  };
+  typedef std::map<PP_Resource, ResourceAndRefCounts> ResourceMap;
   ResourceMap live_resources_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginResourceTracker);

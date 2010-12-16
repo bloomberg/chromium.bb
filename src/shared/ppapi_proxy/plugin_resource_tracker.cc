@@ -7,36 +7,38 @@
 #include <limits>
 #include <set>
 
+#include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/portability.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_resource.h"
 #include "ppapi/c/pp_resource.h"
+#include "srpcgen/ppb_rpc.h"
 
 namespace ppapi_proxy {
 
-scoped_refptr<PluginResource>
-PluginResourceTracker::GetResource(PP_Resource res) const {
+PluginResourceTracker::ResourceAndRefCounts::ResourceAndRefCounts(
+    PluginResource* r) : resource(r), browser_refcount(1), plugin_refcount(1) {
+}
+
+PluginResourceTracker::ResourceAndRefCounts::~ResourceAndRefCounts() {
+}
+
+scoped_refptr<PluginResource> PluginResourceTracker::GetExistingResource(
+    PP_Resource res) const {
   ResourceMap::const_iterator result = live_resources_.find(res);
-  if (result == live_resources_.end()) {
+  if (result == live_resources_.end())
     return scoped_refptr<PluginResource>();
-  }
-  return result->second.first;
+  else
+    return result->second.resource;
 }
 
-PluginResourceTracker::PluginResourceTracker()
-    : last_id_(0) {
+PluginResourceTracker::PluginResourceTracker() : last_id_(0) {
 }
 
-PluginResourceTracker::~PluginResourceTracker() {
-}
-
-PP_Resource PluginResourceTracker::AddResource(PluginResource* resource) {
-  // If the plugin manages to create 4B resources...
-  if (last_id_ == std::numeric_limits<PP_Resource>::max()) {
-    return 0;
-  }
+void PluginResourceTracker::AddResource(PluginResource* resource,
+                                        PP_Resource id) {
   // Add the resource with plugin use-count 1.
-  ++last_id_;
-  live_resources_.insert(std::make_pair(last_id_, std::make_pair(resource, 1)));
-  return last_id_;
+  live_resources_.insert(std::make_pair(id, ResourceAndRefCounts(resource)));
 }
 
 bool PluginResourceTracker::AddRefResource(PP_Resource res) {
@@ -47,7 +49,7 @@ bool PluginResourceTracker::AddRefResource(PP_Resource res) {
     // We don't protect against overflow, since a plugin as malicious as to ref
     // once per every byte in the address space could have just as well unrefed
     // one time too many.
-    ++i->second.second;
+    i->second.plugin_refcount++;
     return true;
   }
 }
@@ -55,13 +57,35 @@ bool PluginResourceTracker::AddRefResource(PP_Resource res) {
 bool PluginResourceTracker::UnrefResource(PP_Resource res) {
   ResourceMap::iterator i = live_resources_.find(res);
   if (i != live_resources_.end()) {
-    if (!--i->second.second) {
-      i->second.first->StoppedTracking();
+    i->second.plugin_refcount--;
+    if (0 == i->second.plugin_refcount) {
+      size_t browser_refcount = i->second.browser_refcount;
+      i->second.resource->StoppedTracking();
       live_resources_.erase(i);
+
+      // Release all browser references.
+      ReleaseBrowserResource(res, browser_refcount);
     }
     return true;
   } else {
     return false;
+  }
+}
+
+void PluginResourceTracker::ObtainBrowserResource(PP_Resource res) {
+  if (res) {
+    NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
+    PpbCoreRpcClient::PPB_Core_AddRefResource(channel, res);
+  }
+}
+
+void PluginResourceTracker::ReleaseBrowserResource(PP_Resource res,
+                                                   size_t browser_refcount) {
+  // Release all browser references.
+  if (res) {
+    NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
+    PpbCoreRpcClient::ReleaseResourceMultipleTimes(channel, res,
+                                                   browser_refcount);
   }
 }
 

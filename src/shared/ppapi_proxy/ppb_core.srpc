@@ -19,6 +19,15 @@
                      ],
            'outputs': []
           },
+          # Implements calls to decrement more than one reference count on a
+          # resource. This does not exist in PPB_Core, we implement it as an
+          # optimization.
+          {'name': 'ReleaseResourceMultipleTimes',
+           'inputs': [['resource', 'int64_t'],
+                      ['count', 'int32_t']
+                     ],
+           'outputs': []
+          },
           # MemAlloc and MemFree do not require RPCs to the browser.
           # Implements calls to get the time.
           {'name': 'PPB_Core_GetTime',

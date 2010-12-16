@@ -12,16 +12,14 @@
 
 namespace ppapi_proxy {
 
-class PluginModule;
-
 // If you inherit from resource, make sure you add the class name here.
 #define FOR_ALL_RESOURCES(F) \
-  F(Audio) \
-  F(AudioConfig) \
-  F(Buffer) \
-  F(Graphics2D) \
-  F(Graphics3D) \
-  F(ImageData)
+  F(PluginAudio) \
+  F(PluginAudioConfig) \
+  F(PluginBuffer) \
+  F(PluginGraphics2D) \
+  F(PluginGraphics3D) \
+  F(PluginImageData)
 
 // Forward declaration of PluginResource classes.
 #define DECLARE_RESOURCE_CLASS(RESOURCE) class RESOURCE;
@@ -30,18 +28,22 @@ FOR_ALL_RESOURCES(DECLARE_RESOURCE_CLASS)
 
 class PluginResource : public nacl::RefCounted<PluginResource> {
  public:
-  explicit PluginResource(PluginModule* module);
+  PluginResource();
   virtual ~PluginResource();
 
   // Returns NULL if the resource is invalid or is a different type.
   template<typename T>
   static scoped_refptr<T> GetAs(PP_Resource res) {
+    // See if we have the resource cached.
     scoped_refptr<PluginResource> resource =
-        PluginResourceTracker::Get()->GetResource(res);
+        PluginResourceTracker::Get()->GetExistingResource(res);
+
     return resource ? resource->Cast<T>() : NULL;
   }
 
-  PluginModule* module() const { return module_; }
+  // Returns NULL if the resource is invalid or is a different type.
+  template<typename T>
+  static scoped_refptr<T> AdoptAs(PP_Resource res);
 
   // Cast the resource into a specified type. This will return NULL if the
   // resource does not match the specified type. Specializations of this
@@ -69,6 +71,9 @@ class PluginResource : public nacl::RefCounted<PluginResource> {
     const PP_Resource id;
   };
 
+ protected:
+  virtual bool InitFromBrowserResource(PP_Resource resource) = 0;
+
  private:
   // Type-specific getters for individual resource types. These will return
   // NULL if the resource does not match the specified type. Used by the Cast()
@@ -83,7 +88,6 @@ class PluginResource : public nacl::RefCounted<PluginResource> {
   #define IMPLEMENT_RESOURCE(RESOURCE)  \
       virtual RESOURCE* As##RESOURCE() { return this; }
 
- private:
   // If referenced by a plugin, holds the id of this resource object. Do not
   // access this member directly, because it is possible that the plugin holds
   // no references to the object, and therefore the resource_id_ is zero. Use
@@ -92,11 +96,8 @@ class PluginResource : public nacl::RefCounted<PluginResource> {
   // refcount.
   PP_Resource resource_id_;
 
-  // Non-owning pointer to our module.
-  PluginModule* module_;
-
   // Called by the resource tracker when the last plugin reference has been
-  // dropped.
+  // dropped. You cannot use resource_id_ after this function is called!
   friend class PluginResourceTracker;
   void StoppedTracking();
 
@@ -104,15 +105,46 @@ class PluginResource : public nacl::RefCounted<PluginResource> {
 };
 
 // Cast() specializations.
-#define DEFINE_RESOURCE_CAST(Type)                   \
+#define DEFINE_RESOURCE_CAST(Type)                         \
   template <> inline Type* PluginResource::Cast<Type>() {  \
-      return As##Type();                             \
+      return As##Type();                                   \
   }
 
 FOR_ALL_RESOURCES(DEFINE_RESOURCE_CAST)
 #undef DEFINE_RESOURCE_CAST
 
 #undef FOR_ALL_RESOURCES
+
+template<typename T> scoped_refptr<T>
+PluginResourceTracker::AdoptBrowserResource(PP_Resource res) {
+  ResourceMap::iterator result = live_resources_.find(res);
+  // Do we have it already?
+  if (result == live_resources_.end()) {
+    // No - try to create a new one.
+    scoped_refptr<T> new_resource = new T();
+    if (new_resource->InitFromBrowserResource(res)) {
+      AddResource(new_resource, res);
+      return new_resource;
+    } else {
+      return scoped_refptr<T>();
+    }
+  } else {
+    // Consume one more browser refcount.
+    ++result->second.browser_refcount;
+    return result->second.resource->Cast<T>();
+  }
+}
+
+template<typename T>
+scoped_refptr<T> PluginResource::AdoptAs(PP_Resource res) {
+  // Short-circuit if null resource.
+  if (!res)
+    return NULL;
+
+  // Adopt the resource.
+  return PluginResourceTracker::Get()->AdoptBrowserResource<T>(res);
+}
+
 }  // namespace ppapi_proxy
 
 #endif  // NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_PLUGIN_RESOURCE_H_

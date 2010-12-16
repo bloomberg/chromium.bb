@@ -379,6 +379,22 @@ static void PPB_Core_ReleaseResourceDispatcher(
   );
 }
 
+static void ReleaseResourceMultipleTimesDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  UNREFERENCED_PARAMETER(done);
+  PpbCoreRpcServer::ReleaseResourceMultipleTimes(
+      rpc,
+      done,
+      inputs[0]->u.lval,
+      inputs[1]->u.ival
+  );
+}
+
 static void PPB_Core_GetTimeDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -677,6 +693,7 @@ NACL_SRPC_METHOD_ARRAY(PpbRpcs::srpc_methods) = {
   { "PPB_AudioConfig_Dev_GetSampleFrameCount:l:i", PPB_AudioConfig_Dev_GetSampleFrameCountDispatcher },
   { "PPB_Core_AddRefResource:l:", PPB_Core_AddRefResourceDispatcher },
   { "PPB_Core_ReleaseResource:l:", PPB_Core_ReleaseResourceDispatcher },
+  { "ReleaseResourceMultipleTimes:li:", ReleaseResourceMultipleTimesDispatcher },
   { "PPB_Core_GetTime::d", PPB_Core_GetTimeDispatcher },
   { "PPB_Graphics2D_Create:lIi:l", PPB_Graphics2D_CreateDispatcher },
   { "PPB_Graphics2D_IsGraphics2D:l:i", PPB_Graphics2D_IsGraphics2DDispatcher },

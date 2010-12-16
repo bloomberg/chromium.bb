@@ -188,6 +188,11 @@ class PpbCoreRpcServer {
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       int64_t resource);
+  static void ReleaseResourceMultipleTimes(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      int64_t resource,
+      int32_t count);
   static void PPB_Core_GetTime(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
