@@ -43,6 +43,9 @@
     'infobars',
     'navigation',
     'notifications',
+    # crbug.com/66072
+    '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
+    '-notifications.NotificationsTest.testKillNotificationProcess',
     'ntp',
     'omnibox',
     'passwords',
