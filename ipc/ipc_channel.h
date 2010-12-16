@@ -13,21 +13,6 @@
 namespace IPC {
 
 //------------------------------------------------------------------------------
-// See
-// http://www.chromium.org/developers/design-documents/inter-process-communication
-// for overview of IPC in Chromium.
-
-// Channels are implemented using named pipes on Windows, and
-// socket pairs (or in some special cases unix domain sockets) on POSIX.
-// On Windows we access pipes in various processes by name.
-// On POSIX we pass file descriptors to child processes and assign names to them
-// in a lookup table.
-// In general on POSIX we do not use unix domain sockets due to security
-// concerns and the fact that they can leave garbage around the file system
-// (MacOS does not support abstract named unix domain sockets).
-// You can use unix domain sockets if you like on POSIX by constructing the
-// the channel with the mode set to one of the NAMED modes. NAMED modes are
-// currently used by automation and service processes.
 
 class Channel : public Message::Sender {
   // Security tests need access to the pipe handle.
@@ -49,29 +34,12 @@ class Channel : public Message::Sender {
     // Called when an error is detected that causes the channel to close.
     // This method is not called when a channel is closed normally.
     virtual void OnChannelError() {}
-
-#if defined(OS_POSIX)
-    // Called on the server side when a channel that listens for connections
-    // denies an attempt to connect.
-    virtual void OnChannelDenied() {}
-
-    // Called on the server side when a channel that listens for connections
-    // has an error that causes the listening channel to close.
-    virtual void OnChannelListenError() {}
-#endif  // OS_POSIX
   };
 
   enum Mode {
     MODE_NONE,
     MODE_SERVER,
-    MODE_CLIENT,
-    // Channels on Windows are named by default and accessible from other
-    // processes. On POSIX channels are anonymous by default and not accessible
-    // from other processes. Named channels work via named unix domain sockets.
-    // On Windows MODE_NAMED_SERVER == MODE_SERVER and
-    // MODE_NAMED_CLIENT == MODE_CLIENT.
-    MODE_NAMED_SERVER,
-    MODE_NAMED_CLIENT,
+    MODE_CLIENT
   };
 
   enum {
@@ -109,10 +77,6 @@ class Channel : public Message::Sender {
   bool Connect() WARN_UNUSED_RESULT;
 
   // Close this Channel explicitly.  May be called multiple times.
-  // On POSIX calling close on an IPC channel that listens for connections will
-  // cause it to close any accepted connections, and it will stop listening for
-  // new connections. If you just want to close the currently accepted
-  // connection and listen for new ones, use ResetToAcceptingConnectionState.
   void Close();
 
   // Modify the Channel's listener.
@@ -128,23 +92,11 @@ class Channel : public Message::Sender {
   // On POSIX an IPC::Channel wraps a socketpair(), this method returns the
   // FD # for the client end of the socket.
   // This method may only be called on the server side of a channel.
+  //
+  // If the kTestingChannelID flag is specified on the command line then
+  // a named FIFO is used as the channel transport mechanism rather than a
+  // socketpair() in which case this method returns -1.
   int GetClientFileDescriptor() const;
-
-  // On POSIX an IPC::Channel can either wrap an established socket, or it
-  // can wrap a socket that is listening for connections. Currently an
-  // IPC::Channel that listens for connections can only accept one connection
-  // at a time.
-
-  // Returns true if the channel supports listening for connections.
-  bool AcceptsConnections() const;
-
-  // Returns true if the channel supports listening for connections and is
-  // currently connected.
-  bool HasAcceptedConnection() const;
-
-  // Closes any currently connected socket, and returns to a listening state
-  // for more connections.
-  void ResetToAcceptingConnectionState();
 #endif  // defined(OS_POSIX)
 
  protected:
