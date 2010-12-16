@@ -47,6 +47,7 @@
 #include "base/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
+#include "chrome/browser/sync/syncable/autofill_migration.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -347,6 +348,9 @@ class WriteNode : public BaseNode {
   // Should only be called if GetModelType() == AUTOFILL.
   void SetAutofillSpecifics(const sync_pb::AutofillSpecifics& specifics);
 
+  void SetAutofillProfileSpecifics(
+      const sync_pb::AutofillProfileSpecifics& specifics);
+
   // Set the nigori specifics.
   // Should only be called if GetModelType() == NIGORI.
   void SetNigoriSpecifics(const sync_pb::NigoriSpecifics& specifics);
@@ -398,6 +402,8 @@ class WriteNode : public BaseNode {
       const sync_pb::AppSpecifics& new_value);
   void PutAutofillSpecificsAndMarkForSyncing(
       const sync_pb::AutofillSpecifics& new_value);
+  void PutAutofillProfileSpecificsAndMarkForSyncing(
+      const sync_pb::AutofillProfileSpecifics& new_value);
   void PutBookmarkSpecificsAndMarkForSyncing(
       const sync_pb::BookmarkSpecifics& new_value);
   void PutNigoriSpecificsAndMarkForSyncing(
@@ -816,6 +822,17 @@ class SyncManager {
   // Prerequisite for calling this is that OnInitializationComplete has been
   // called.
   bool InitialSyncEndedForAllEnabledTypes();
+
+  syncable::AutofillMigrationState GetAutofillMigrationState();
+
+  void SetAutofillMigrationState(
+    syncable::AutofillMigrationState state);
+
+  syncable::AutofillMigrationDebugInfo GetAutofillMigrationDebugInfo();
+
+  void SetAutofillMigrationDebugInfo(
+      syncable::AutofillMigrationDebugInfo::PropertyToSet property_to_set,
+      const syncable::AutofillMigrationDebugInfo& info);
 
   // Migrate tokens from user settings DB to the token service.
   void MigrateTokens();

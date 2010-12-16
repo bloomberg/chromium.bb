@@ -10,6 +10,9 @@
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
 #include "chrome/browser/sync/glue/autofill_model_associator2.h"
+#include "chrome/browser/sync/glue/autofill_profile_change_processor.h"
+#include "chrome/browser/sync/glue/autofill_profile_data_type_controller.h"
+#include "chrome/browser/sync/glue/autofill_profile_model_associator.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
@@ -38,13 +41,17 @@
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 
 using browser_sync::AppDataTypeController;
 using browser_sync::AutofillChangeProcessor;
 using browser_sync::AutofillChangeProcessor2;
+using browser_sync::AutofillProfileChangeProcessor;
 using browser_sync::AutofillDataTypeController;
+using browser_sync::AutofillProfileDataTypeController;
 using browser_sync::AutofillModelAssociator;
 using browser_sync::AutofillModelAssociator2;
+using browser_sync::AutofillProfileModelAssociator;
 using browser_sync::BookmarkChangeProcessor;
 using browser_sync::BookmarkDataTypeController;
 using browser_sync::BookmarkModelAssociator;
@@ -145,6 +152,12 @@ ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService(
     pss->RegisterDataTypeController(
         new SessionDataTypeController(this, pss));
   }
+
+  if (!command_line_->HasSwitch(switches::kDisableSyncAutofillProfile) &&
+      command_line_->HasSwitch(switches::kEnableSyncNewAutofill)) {
+    pss->RegisterDataTypeController(new AutofillProfileDataTypeController(
+        this, profile_, pss));
+  }
   return pss;
 }
 
@@ -199,6 +212,25 @@ ProfileSyncFactoryImpl::CreateAutofillSyncComponents(
                                     error_handler);
     return SyncComponents(model_associator, change_processor);
   }
+}
+
+ProfileSyncFactory::SyncComponents
+ProfileSyncFactoryImpl::CreateAutofillProfileSyncComponents(
+    ProfileSyncService* profile_sync_service,
+    WebDatabase* web_database,
+    PersonalDataManager* personal_data,
+    browser_sync::UnrecoverableErrorHandler* error_handler) {
+
+  AutofillProfileModelAssociator* model_associator =
+      new AutofillProfileModelAssociator(profile_sync_service,
+                                  web_database,
+                                  personal_data);
+  AutofillProfileChangeProcessor* change_processor =
+      new AutofillProfileChangeProcessor(model_associator,
+                                  web_database,
+                                  personal_data,
+                                  error_handler);
+  return SyncComponents(model_associator, change_processor);
 }
 
 ProfileSyncFactory::SyncComponents

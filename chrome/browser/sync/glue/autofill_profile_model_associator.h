@@ -31,6 +31,8 @@ class WriteTransaction;
 
 namespace browser_sync {
 
+extern const char kAutofillProfileTag[];
+
 class AutofillChangeProcessor;
 class UnrecoverableErrorHandler;
 
@@ -94,6 +96,10 @@ class AutofillProfileModelAssociator
   // Returns sync service instance.
   ProfileSyncService* sync_service() { return sync_service_; }
 
+  static bool OverwriteProfileWithServerData(
+      AutoFillProfile* merge_into,
+      const sync_pb::AutofillProfileSpecifics& specifics);
+
  protected:
   AutofillProfileModelAssociator();
   bool TraverseAndAssociateChromeAutoFillProfiles(
@@ -130,10 +136,6 @@ class AutofillProfileModelAssociator
       const sync_api::ReadNode& autofill_root,
       DataBundle* bundle);
 
-  static bool OverwriteProfileWithServerData(
-      AutoFillProfile* merge_into,
-      const sync_pb::AutofillProfileSpecifics& specifics);
-
  private:
   typedef std::map<std::string, int64> AutofillToSyncIdMap;
   typedef std::map<int64, std::string> SyncIdToAutofillMap;
@@ -161,6 +163,8 @@ class AutofillProfileModelAssociator
       const sync_api::BaseNode& autofill_root,
       const AutoFillProfile& profile);
 
+  bool MigrationLoggingEnabled();
+
   ProfileSyncService* sync_service_;
   WebDatabase* web_database_;
   PersonalDataManager* personal_data_;
@@ -174,6 +178,8 @@ class AutofillProfileModelAssociator
   // AssociateModels method as soon as possible.
   Lock abort_association_pending_lock_;
   bool abort_association_pending_;
+
+  int number_of_profiles_created_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillProfileModelAssociator);
 };
@@ -189,3 +195,4 @@ struct AutofillProfileModelAssociator::DataBundle {
 }  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_GLUE_AUTOFILL_PROFILE_MODEL_ASSOCIATOR_H_
+

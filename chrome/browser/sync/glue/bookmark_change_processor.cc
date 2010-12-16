@@ -1,7 +1,6 @@
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 
 #include <stack>
@@ -9,6 +8,7 @@
 
 #include "base/string16.h"
 #include "base/string_util.h"
+
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_thread.h"
@@ -451,6 +451,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateOrUpdateBookmarkNode(
     DLOG(WARNING) << "Could not find parent of node being added/updated."
       << " Node title: " << src->GetTitle()
       << ", parent id = " << src->GetParentId();
+
     return NULL;
   }
   int index = CalculateBookmarkModelInsertionIndex(parent, src);

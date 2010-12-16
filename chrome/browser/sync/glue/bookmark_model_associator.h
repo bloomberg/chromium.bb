@@ -135,6 +135,8 @@ class BookmarkModelAssociator
   // allows this class to be non-refcounted).
   ScopedRunnableMethodFactory<BookmarkModelAssociator> persist_associations_;
 
+  int number_of_new_sync_nodes_created_at_association_;
+
   DISALLOW_COPY_AND_ASSIGN(BookmarkModelAssociator);
 };
 

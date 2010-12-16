@@ -9,8 +9,8 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
 #include "chrome/browser/sync/glue/autofill_model_associator2.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -581,4 +581,3 @@ void AutofillChangeProcessor2::WriteAutofillProfile(
 }
 
 }  // namespace browser_sync
-

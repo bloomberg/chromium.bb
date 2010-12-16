@@ -37,6 +37,12 @@ class ProfileSyncFactoryImpl : public ProfileSyncFactory {
       PersonalDataManager* personal_data,
       browser_sync::UnrecoverableErrorHandler* error_handler);
 
+  virtual SyncComponents CreateAutofillProfileSyncComponents(
+      ProfileSyncService* profile_sync_service,
+      WebDatabase* web_database,
+      PersonalDataManager* personal_data,
+      browser_sync::UnrecoverableErrorHandler* error_handler);
+
   virtual SyncComponents CreateBookmarkSyncComponents(
       ProfileSyncService* profile_sync_service,
       browser_sync::UnrecoverableErrorHandler* error_handler);

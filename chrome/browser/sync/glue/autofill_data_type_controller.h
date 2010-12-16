@@ -12,6 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 
@@ -62,6 +63,14 @@ class AutofillDataTypeController : public DataTypeController,
   // PersonalDataManager::Observer implementation:
   virtual void OnPersonalDataLoaded();
 
+ protected:
+  virtual ProfileSyncFactory::SyncComponents CreateSyncComponents(
+      ProfileSyncService* profile_sync_service,
+      WebDatabase* web_database,
+      PersonalDataManager* personal_data,
+      browser_sync::UnrecoverableErrorHandler* error_handler);
+  ProfileSyncFactory* profile_sync_factory_;
+
  private:
   void StartImpl();
   void StartDone(StartResult result, State state);
@@ -80,7 +89,6 @@ class AutofillDataTypeController : public DataTypeController,
     state_ = state;
   }
 
-  ProfileSyncFactory* profile_sync_factory_;
   Profile* profile_;
   ProfileSyncService* sync_service_;
   State state_;

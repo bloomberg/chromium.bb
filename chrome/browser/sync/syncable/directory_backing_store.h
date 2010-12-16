@@ -80,6 +80,7 @@ class DirectoryBackingStore {
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion70To71);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion71To72);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion72To73);
+  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, MigrateVersion73To74);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, ModelTypeIds);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, Corruption);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest, DeleteEntries);
@@ -92,10 +93,11 @@ class DirectoryBackingStore {
   int CreateTables();
 
   // Create 'share_info' or 'temp_share_info' depending on value of
-  // is_temporary.  If with_notification_state is true, creates the
-  // table with the notification_state column.  Returns an sqlite
+  // is_temporary. Returns an sqlite
   // return code, SQLITE_DONE on success.
-  int CreateShareInfoTable(bool is_temporary, bool with_notification_state);
+  int CreateShareInfoTable(bool is_temporary);
+
+  int CreateShareInfoTableVersion71(bool is_temporary);
   // Create 'metas' or 'temp_metas' depending on value of is_temporary.
   // Returns an sqlite return code, SQLITE_DONE on success.
   int CreateMetasTable(bool is_temporary);
@@ -172,6 +174,7 @@ class DirectoryBackingStore {
   bool MigrateVersion70To71();
   bool MigrateVersion71To72();
   bool MigrateVersion72To73();
+  bool MigrateVersion73To74();
 
   // The handle to our sqlite on-disk store for initialization and loading, and
   // for saving changes periodically via SaveChanges, respectively.

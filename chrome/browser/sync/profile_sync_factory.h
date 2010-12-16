@@ -77,6 +77,15 @@ class ProfileSyncFactory {
       browser_sync::UnrecoverableErrorHandler* error_handler) = 0;
 
   // Instantiates both a model associator and change processor for the
+  // autofill data type.  The pointers in the return struct are owned
+  // by the caller.
+  virtual SyncComponents CreateAutofillProfileSyncComponents(
+      ProfileSyncService* profile_sync_service,
+      WebDatabase* web_database,
+      PersonalDataManager* personal_data,
+      browser_sync::UnrecoverableErrorHandler* error_handler) = 0;
+
+  // Instantiates both a model associator and change processor for the
   // bookmark data type.  The pointers in the return struct are owned
   // by the caller.
   virtual SyncComponents CreateBookmarkSyncComponents(

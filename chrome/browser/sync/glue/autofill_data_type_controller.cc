@@ -12,8 +12,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/autofill_change_processor.h"
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/notification_service.h"
 
@@ -170,6 +170,19 @@ DataTypeController::State AutofillDataTypeController::state() {
   return state_;
 }
 
+ProfileSyncFactory::SyncComponents
+  AutofillDataTypeController::CreateSyncComponents(
+      ProfileSyncService* profile_sync_service,
+      WebDatabase* web_database,
+      PersonalDataManager* personal_data,
+      browser_sync::UnrecoverableErrorHandler* error_handler) {
+  return profile_sync_factory_->CreateAutofillSyncComponents(
+      profile_sync_service,
+      web_database,
+      personal_data,
+      this);
+}
+
 void AutofillDataTypeController::StartImpl() {
   VLOG(1) << "Autofill data type controller StartImpl called.";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
@@ -182,7 +195,7 @@ void AutofillDataTypeController::StartImpl() {
       return;
     }
     ProfileSyncFactory::SyncComponents sync_components =
-        profile_sync_factory_->CreateAutofillSyncComponents(
+        CreateSyncComponents(
             sync_service_,
             web_data_service_->GetDatabase(),
             profile_->GetPersonalDataManager(),

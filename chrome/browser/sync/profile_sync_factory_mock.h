@@ -38,6 +38,12 @@ class ProfileSyncFactoryMock : public ProfileSyncFactory {
                    WebDatabase* web_database,
                    PersonalDataManager* personal_data,
                    browser_sync::UnrecoverableErrorHandler* error_handler));
+  MOCK_METHOD4(CreateAutofillProfileSyncComponents,
+               SyncComponents(
+                   ProfileSyncService* profile_sync_service,
+                   WebDatabase* web_database,
+                   PersonalDataManager* personal_data,
+                   browser_sync::UnrecoverableErrorHandler* error_handler));
   MOCK_METHOD2(CreateBookmarkSyncComponents,
       SyncComponents(ProfileSyncService* profile_sync_service,
                      browser_sync::UnrecoverableErrorHandler* error_handler));

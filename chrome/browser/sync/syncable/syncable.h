@@ -21,6 +21,7 @@
 #include "base/lock.h"
 #include "base/time.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
+#include "chrome/browser/sync/syncable/autofill_migration.h"
 #include "chrome/browser/sync/syncable/blob.h"
 #include "chrome/browser/sync/syncable/dir_open_result.h"
 #include "chrome/browser/sync/syncable/directory_event.h"
@@ -660,6 +661,8 @@ class Directory {
   // Various data that the Directory::Kernel we are backing (persisting data
   // for) needs saved across runs of the application.
   struct PersistedKernelInfo {
+    AutofillMigrationDebugInfo autofill_migration_debug_info;
+
     PersistedKernelInfo();
     ~PersistedKernelInfo();
 
@@ -674,6 +677,8 @@ class Directory {
     int64 next_id;
     // The persisted notification state.
     std::string notification_state;
+
+    AutofillMigrationState autofill_migration_state;
   };
 
   // What the Directory needs on initialization to create itself and its Kernel.
@@ -754,6 +759,15 @@ class Directory {
 
   bool initial_sync_ended_for_type(ModelType type) const;
   void set_initial_sync_ended_for_type(ModelType type, bool value);
+  AutofillMigrationState get_autofill_migration_state() const;
+
+  AutofillMigrationDebugInfo get_autofill_migration_debug_info() const;
+
+  void set_autofill_migration_state(AutofillMigrationState state);
+
+  void set_autofill_migration_state_debug_info(
+      syncable::AutofillMigrationDebugInfo::PropertyToSet property_to_set,
+      const syncable::AutofillMigrationDebugInfo& info);
 
   const std::string& name() const { return kernel_->name; }
 
@@ -803,6 +817,8 @@ class Directory {
   EntryKernel* GetEntryById(const Id& id, ScopedKernelLock* const lock);
 
   DirOpenResult OpenImpl(const FilePath& file_path, const std::string& name);
+
+  template <class T> void TestAndSet(T* kernel_data, const T* data_to_set);
 
   struct DirectoryEventTraits {
     typedef DirectoryEvent EventType;

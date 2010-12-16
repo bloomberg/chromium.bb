@@ -142,6 +142,19 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   virtual void ConfigureDataTypes(const syncable::ModelTypeSet& types,
                                   CancelableTask* ready_task);
 
+  syncable::AutofillMigrationState
+      GetAutofillMigrationState();
+
+  void SetAutofillMigrationState(
+      syncable::AutofillMigrationState state);
+
+  syncable::AutofillMigrationDebugInfo
+      GetAutofillMigrationDebugInfo();
+
+  void SetAutofillMigrationDebugInfo(
+      syncable::AutofillMigrationDebugInfo::PropertyToSet property_to_set,
+      const syncable::AutofillMigrationDebugInfo& info);
+
   // Activates change processing for the given data type.  This must
   // be called synchronously with the data type's model association so
   // no changes are dropped between model association and change
@@ -444,6 +457,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
  private:
 
   UIModelWorker* ui_worker();
+
+  void ConfigureAutofillMigration();
 
   // A thread we dedicate for use by our Core to perform initialization,
   // authentication, handle messages from the syncapi, and periodically tell

@@ -49,10 +49,11 @@ enum ModelType {
   PREFERENCES,
   // A password folder or password object.
   PASSWORDS,
+    // An AutofillProfile Object
+  AUTOFILL_PROFILE,
   // An autofill folder or an autofill object.
   AUTOFILL,
-  // An autofill Profile Object
-  AUTOFILL_PROFILE,
+
   // A themes folder or a themes object.
   THEMES,
   // A typed_url folder or a typed_url object.

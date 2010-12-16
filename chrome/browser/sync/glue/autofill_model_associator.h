@@ -52,17 +52,6 @@ class AutofillModelAssociator
                           PersonalDataManager* data_manager);
   virtual ~AutofillModelAssociator();
 
-  // A task used by this class and the change processor to inform the
-  // PersonalDataManager living on the UI thread that it needs to refresh.
-  class DoOptimisticRefreshTask : public Task {
-   public:
-    explicit DoOptimisticRefreshTask(PersonalDataManager* pdm);
-    virtual ~DoOptimisticRefreshTask();
-    virtual void Run();
-   private:
-    scoped_refptr<PersonalDataManager> pdm_;
-  };
-
   // PerDataTypeAssociatorInterface implementation.
   //
   // Iterates through the sync model looking for matched pairs of items.
@@ -114,13 +103,13 @@ class AutofillModelAssociator
   // Returns sync service instance.
   ProfileSyncService* sync_service() { return sync_service_; }
 
- protected:
   // Is called to determine if we need to upgrade to the new
   // autofillprofile2 data type. If so we need to sync up autofillprofile
   // first to the latest available changes on the server and then upgrade
   // to autofillprofile2.
-  virtual bool HasNotMigratedYet();
+  virtual bool HasNotMigratedYet(const sync_api::BaseTransaction* trans);
 
+ protected:
   // Given a profile from sync db it tries to match the profile against
   // one in web db. it ignores the guid and compares the actual data.
   AutoFillProfile* FindCorrespondingNodeFromWebDB(
@@ -180,19 +169,11 @@ class AutofillModelAssociator
       const sync_api::ReadNode& node,
       const std::vector<AutoFillProfile*>& all_profiles_from_db);
 
-  // Helper to insert a sync node for the given AutoFillProfile (e.g. in
-  // response to encountering a native profile that doesn't exist yet in the
-  // cloud).
-  bool MakeNewAutofillProfileSyncNode(
-      sync_api::WriteTransaction* trans,
-      const sync_api::BaseNode& autofill_root,
-      const std::string& tag,
-      const AutoFillProfile& profile,
-      int64* sync_id);
-
   // Called at various points in model association to determine if the
   // user requested an abort.
   bool IsAbortPending();
+
+  bool MigrationLoggingEnabled();
 
   ProfileSyncService* sync_service_;
   WebDatabase* web_database_;
@@ -207,6 +188,7 @@ class AutofillModelAssociator
   // AssociateModels method as soon as possible.
   Lock abort_association_pending_lock_;
   bool abort_association_pending_;
+  int number_of_entries_created_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillModelAssociator);
 };

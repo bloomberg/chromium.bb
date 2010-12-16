@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
+#include "chrome/browser/sync/syncable/autofill_migration.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 
@@ -159,7 +160,8 @@ BookmarkModelAssociator::BookmarkModelAssociator(
     UnrecoverableErrorHandler* persist_ids_error_handler)
     : sync_service_(sync_service),
       persist_ids_error_handler_(persist_ids_error_handler),
-      ALLOW_THIS_IN_INITIALIZER_LIST(persist_associations_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(persist_associations_(this)),
+      number_of_new_sync_nodes_created_at_association_(0) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(sync_service_);
   DCHECK(persist_ids_error_handler_);
@@ -413,7 +415,18 @@ bool BookmarkModelAssociator::BuildAssociations() {
           parent_node, model, i, &trans, this, sync_service_);
       if (parent_node->GetChild(i)->is_folder())
         dfs_stack.push(sync_child_id);
+      number_of_new_sync_nodes_created_at_association_++;
     }
+  }
+
+  if (sync_service_->backend()->GetAutofillMigrationState() !=
+      syncable::MIGRATED) {
+    syncable::AutofillMigrationDebugInfo debug_info;
+    debug_info.bookmarks_added_during_migration =
+        number_of_new_sync_nodes_created_at_association_;
+    sync_service_->backend()->SetAutofillMigrationDebugInfo(
+        syncable::AutofillMigrationDebugInfo::BOOKMARK_ADDED,
+        debug_info);
   }
   return true;
 }

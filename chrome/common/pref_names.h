@@ -370,6 +370,7 @@ extern const char kSyncPasswords[];
 extern const char kSyncPreferences[];
 extern const char kSyncApps[];
 extern const char kSyncAutofill[];
+extern const char kSyncAutofillProfile[];
 extern const char kSyncThemes[];
 extern const char kSyncTypedUrls[];
 extern const char kSyncExtensions[];
@@ -379,6 +380,7 @@ extern const char kGoogleServicesUsername[];
 extern const char kSyncCredentialsMigrated[];
 extern const char kSyncUsingSecondaryPassphrase[];
 extern const char kEncryptionBootstrapToken[];
+extern const char kAutofillProfileMigrated[];
 
 extern const char kWebAppCreateOnDesktop[];
 extern const char kWebAppCreateInAppsMenu[];

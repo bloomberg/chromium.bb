@@ -153,6 +153,9 @@ std::string ModelTypeToString(ModelType model_type) {
       return "Sessions";
     case APPS:
       return "Apps";
+    case AUTOFILL_PROFILE:
+      return "Autofill Profile";
+      break;
     default:
       NOTREACHED() << "No known extension for model type.";
       return "INVALID";
@@ -269,7 +272,7 @@ const char kAppNotificationType[] = "APP";
 const char kSessionNotificationType[] = "SESSION";
 // TODO(lipalani) Bug 64111.
 // talk to akalin to make sure this is what I understand this to be.
-const char kAutofillProfileType[] = "AUTOFILL_PROFILE";
+const char kAutofillProfileNotificationType[] = "AUTOFILL_PROFILE";
 // TODO(akalin): This is a hack to make new sync data types work with
 // server-issued notifications.  Remove this when it's not needed
 // anymore.
@@ -310,7 +313,7 @@ bool RealModelTypeToNotificationType(ModelType model_type,
       *notification_type = kSessionNotificationType;
       return true;
     case AUTOFILL_PROFILE:
-      *notification_type = kAutofillProfileType;
+      *notification_type = kAutofillProfileNotificationType;
       return true;
     // TODO(akalin): This is a hack to make new sync data types work with
     // server-issued notifications.  Remove this when it's not needed
@@ -356,6 +359,9 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
     return true;
   } else if (notification_type == kSessionNotificationType) {
     *model_type = SESSIONS;
+    return true;
+  } else if (notification_type == kAutofillProfileNotificationType) {
+    *model_type = AUTOFILL_PROFILE;
     return true;
   } else if (notification_type == kUnknownNotificationType) {
     // TODO(akalin): This is a hack to make new sync data types work with

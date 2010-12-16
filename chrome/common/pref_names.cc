@@ -1001,6 +1001,7 @@ const char kSyncPasswords[] = "sync.passwords";
 const char kSyncPreferences[] = "sync.preferences";
 const char kSyncApps[] = "sync.apps";
 const char kSyncAutofill[] = "sync.autofill";
+const char kSyncAutofillProfile[] = "sync.autofill_profile";
 const char kSyncThemes[] = "sync.themes";
 const char kSyncTypedUrls[] = "sync.typed_urls";
 const char kSyncExtensions[] = "sync.extensions";
@@ -1017,6 +1018,10 @@ const char kSyncSuppressStart[] = "sync.suppress_start";
 // Boolean to reperesent if sync credentials have been migrated from the
 // user settings DB to the token service.
 const char kSyncCredentialsMigrated[] = "sync.credentials_migrated";
+
+// Boolean to represent whether the legacy autofill profile data has been
+// migrated to the new model.
+const char kAutofillProfileMigrated[] = "sync.autofill_migrated";
 
 // A string that can be used to restore sync encryption infrastructure on
 // startup so that the user doesn't need to provide credentials on each start.

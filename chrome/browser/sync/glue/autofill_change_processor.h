@@ -63,9 +63,6 @@ class AutofillChangeProcessor : public ChangeProcessor,
   // node.
   static void WriteAutofillEntry(const AutofillEntry& entry,
                                  sync_api::WriteNode* node);
-  // As above, for autofill profiles.
-  static void WriteAutofillProfile(const AutoFillProfile& profile,
-                                   sync_api::WriteNode* node);
   // TODO(georgey) : add the same processing for CC info (already in protocol
   // buffers).
 
@@ -112,7 +109,7 @@ class AutofillChangeProcessor : public ChangeProcessor,
   void PostOptimisticRefreshTask();
 
   // Called to see if we need to upgrade to the new autofill2 profile.
-  bool HasNotMigratedYet();
+  bool HasNotMigratedYet(const sync_api::BaseTransaction* trans);
 
   // The two models should be associated according to this ModelAssociator.
   AutofillModelAssociator* model_associator_;

@@ -318,6 +318,9 @@ const char kDisableSyncApps[]               = "disable-sync-apps";
 // Disable syncing of autofill.
 const char kDisableSyncAutofill[]           = "disable-sync-autofill";
 
+// Disable syncing of autofill Profile.
+const char kDisableSyncAutofillProfile[]     = "disable-sync-autofill-profile";
+
 // Disable syncing of bookmarks.
 const char kDisableSyncBookmarks[]          = "disable-sync-bookmarks";
 

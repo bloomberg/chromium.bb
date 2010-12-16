@@ -43,6 +43,7 @@
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"
 #include "chrome/browser/sync/protocol/typed_url_specifics.pb.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
+#include "chrome/browser/sync/syncable/autofill_migration.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/crypto_helpers.h"
@@ -372,6 +373,20 @@ void WriteNode::PutAutofillSpecificsAndMarkForSyncing(
     const sync_pb::AutofillSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.MutableExtension(sync_pb::autofill)->CopyFrom(new_value);
+  PutSpecificsAndMarkForSyncing(entity_specifics);
+}
+
+void WriteNode::SetAutofillProfileSpecifics(
+    const sync_pb::AutofillProfileSpecifics& new_value) {
+  DCHECK_EQ(GetModelType(), syncable::AUTOFILL_PROFILE);
+  PutAutofillProfileSpecificsAndMarkForSyncing(new_value);
+}
+
+void WriteNode::PutAutofillProfileSpecificsAndMarkForSyncing(
+    const sync_pb::AutofillProfileSpecifics& new_value) {
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.MutableExtension(sync_pb::autofill_profile)->CopyFrom(
+      new_value);
   PutSpecificsAndMarkForSyncing(entity_specifics);
 }
 
@@ -1094,6 +1109,50 @@ class SyncManager::SyncInternal
     return true;
   }
 
+  syncable::AutofillMigrationState GetAutofillMigrationState() {
+    syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
+    if (!lookup.good()) {
+      DCHECK(false) << "ScopedDirLookup failed when checking initial sync";
+      return syncable::NOT_MIGRATED;
+    }
+
+    return lookup->get_autofill_migration_state();
+  }
+
+  void SetAutofillMigrationState(syncable::AutofillMigrationState state) {
+    syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
+    if (!lookup.good()) {
+      DCHECK(false) << "ScopedDirLookup failed when checking initial sync";
+      return;
+    }
+
+    return lookup->set_autofill_migration_state(state);
+  }
+
+  void SetAutofillMigrationDebugInfo(
+      syncable::AutofillMigrationDebugInfo::PropertyToSet property_to_set,
+      const syncable::AutofillMigrationDebugInfo& info) {
+    syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
+    if (!lookup.good()) {
+      DCHECK(false) << "ScopedDirLookup failed when checking initial sync";
+      return;
+    }
+
+    return lookup->set_autofill_migration_state_debug_info(
+        property_to_set, info);
+  }
+
+  syncable::AutofillMigrationDebugInfo
+      GetAutofillMigrationDebugInfo() {
+    syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
+    if (!lookup.good()) {
+      DCHECK(false) << "ScopedDirLookup failed when checking initial sync";
+      syncable::AutofillMigrationDebugInfo null_value = {0};
+      return null_value;
+    }
+    return lookup->get_autofill_migration_debug_info();
+  }
+
   // SyncEngineEventListener implementation.
   virtual void OnSyncEngineEvent(const SyncEngineEvent& event);
  private:
@@ -1313,6 +1372,27 @@ bool SyncManager::InitialSyncEndedForAllEnabledTypes() {
 
 void SyncManager::StartSyncing() {
   data_->StartSyncing();
+}
+
+syncable::AutofillMigrationState
+    SyncManager::GetAutofillMigrationState() {
+  return data_->GetAutofillMigrationState();
+}
+
+void SyncManager::SetAutofillMigrationState(
+    syncable::AutofillMigrationState state) {
+  return data_->SetAutofillMigrationState(state);
+}
+
+syncable::AutofillMigrationDebugInfo
+    SyncManager::GetAutofillMigrationDebugInfo() {
+  return data_->GetAutofillMigrationDebugInfo();
+}
+
+void SyncManager::SetAutofillMigrationDebugInfo(
+    syncable::AutofillMigrationDebugInfo::PropertyToSet property_to_set,
+    const syncable::AutofillMigrationDebugInfo& info) {
+  return data_->SetAutofillMigrationDebugInfo(property_to_set, info);
 }
 
 void SyncManager::SetPassphrase(const std::string& passphrase,

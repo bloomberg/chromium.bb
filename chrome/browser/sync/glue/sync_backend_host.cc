@@ -15,6 +15,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
+#include "chrome/browser/sync/glue/autofill_model_associator.h"
+#include "chrome/browser/sync/glue/autofill_profile_model_associator.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/database_model_worker.h"
 #include "chrome/browser/sync/glue/history_model_worker.h"
@@ -24,6 +26,7 @@
 #include "chrome/browser/sync/sessions/session_state.h"
 // TODO(tim): Remove this! We should have a syncapi pass-thru instead.
 #include "chrome/browser/sync/syncable/directory_manager.h"  // Cryptographer.
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -251,11 +254,72 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
   core_ = NULL;  // Releases reference to core_.
 }
 
+syncable::AutofillMigrationState
+    SyncBackendHost::GetAutofillMigrationState() {
+  return core_->syncapi()->GetAutofillMigrationState();
+}
+
+void SyncBackendHost::SetAutofillMigrationState(
+    syncable::AutofillMigrationState state) {
+  return core_->syncapi()->SetAutofillMigrationState(state);
+}
+
+syncable::AutofillMigrationDebugInfo
+    SyncBackendHost::GetAutofillMigrationDebugInfo() {
+  return core_->syncapi()->GetAutofillMigrationDebugInfo();
+}
+
+void SyncBackendHost::SetAutofillMigrationDebugInfo(
+    syncable::AutofillMigrationDebugInfo::PropertyToSet property_to_set,
+    const syncable::AutofillMigrationDebugInfo& info) {
+  return core_->syncapi()->SetAutofillMigrationDebugInfo(property_to_set, info);
+}
+
+void SyncBackendHost::ConfigureAutofillMigration() {
+  if (GetAutofillMigrationState() == syncable::NOT_DETERMINED) {
+    sync_api::ReadTransaction trans(GetUserShareHandle());
+    sync_api::ReadNode autofil_root_node(&trans);
+
+    // Check for the presence of autofill node.
+    if (!autofil_root_node.InitByTagLookup(browser_sync::kAutofillTag)) {
+        SetAutofillMigrationState(syncable::INSUFFICIENT_INFO_TO_DETERMINE);
+      return;
+    }
+
+    // Check for children under autofill node.
+    if (autofil_root_node.GetFirstChildId() == static_cast<int64>(0)) {
+      SetAutofillMigrationState(syncable::INSUFFICIENT_INFO_TO_DETERMINE);
+      return;
+    }
+
+    sync_api::ReadNode autofill_profile_root_node(&trans);
+
+    // Check for the presence of autofill profile root node.
+    if (!autofill_profile_root_node.InitByTagLookup(
+       browser_sync::kAutofillProfileTag)) {
+      SetAutofillMigrationState(syncable::NOT_MIGRATED);
+      return;
+    }
+
+    // If our state is not determined then we should not have the autofill
+    // profile node.
+    DCHECK(false);
+
+    // just set it as not migrated.
+    SetAutofillMigrationState(syncable::NOT_MIGRATED);
+    return;
+  }
+}
+
 void SyncBackendHost::ConfigureDataTypes(const syncable::ModelTypeSet& types,
                                          CancelableTask* ready_task) {
   // Only one configure is allowed at a time.
   DCHECK(!configure_ready_task_.get());
   DCHECK(syncapi_initialized_);
+
+  if (types.count(syncable::AUTOFILL_PROFILE) != 0) {
+    ConfigureAutofillMigration();
+  }
 
   bool deleted_type = false;
 

@@ -24,6 +24,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/net/gaia/token_service.h"
+#include "chrome/browser/sync/glue/autofill_profile_data_type_controller.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
@@ -367,6 +368,9 @@ void ProfileSyncService::RegisterPreferences() {
       enable_by_default);
   pref_service->RegisterBooleanPref(prefs::kSyncManaged, false);
   pref_service->RegisterStringPref(prefs::kEncryptionBootstrapToken, "");
+
+  pref_service->RegisterBooleanPref(prefs::kSyncAutofillProfile,
+      enable_by_default);
 }
 
 void ProfileSyncService::ClearPreferences() {
@@ -549,6 +553,9 @@ const char* ProfileSyncService::GetPrefNameForDataType(
       return prefs::kSyncPreferences;
     case syncable::AUTOFILL:
       return prefs::kSyncAutofill;
+    case syncable::AUTOFILL_PROFILE:
+      return prefs::kSyncAutofillProfile;
+      break;
     case syncable::THEMES:
       return prefs::kSyncThemes;
     case syncable::TYPED_URLS:
@@ -882,6 +889,10 @@ void ProfileSyncService::ChangePreferredDataTypes(
       continue;
     profile_->GetPrefs()->SetBoolean(pref_name,
         preferred_types.count(model_type) != 0);
+    if (syncable::AUTOFILL == model_type) {
+      profile_->GetPrefs()->SetBoolean(prefs::kSyncAutofillProfile,
+          preferred_types.count(model_type) != 0);
+    }
   }
 
   // If we haven't initialized yet, don't configure the DTM as it could cause
@@ -893,23 +904,33 @@ void ProfileSyncService::ChangePreferredDataTypes(
 void ProfileSyncService::GetPreferredDataTypes(
     syncable::ModelTypeSet* preferred_types) const {
   preferred_types->clear();
-
-  // Filter out any datatypes which aren't registered, or for which
-  // the preference can't be read.
-  syncable::ModelTypeSet registered_types;
-  GetRegisteredDataTypes(&registered_types);
   if (profile_->GetPrefs()->GetBoolean(prefs::kKeepEverythingSynced)) {
-    *preferred_types = registered_types;
+    GetRegisteredDataTypes(preferred_types);
   } else {
+    // Filter out any datatypes which aren't registered, or for which
+    // the preference can't be read.
+    syncable::ModelTypeSet registered_types;
+    GetRegisteredDataTypes(&registered_types);
     for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
       syncable::ModelType model_type = syncable::ModelTypeFromInt(i);
       if (!registered_types.count(model_type))
         continue;
+      if (model_type == syncable::AUTOFILL_PROFILE)
+        continue;
       const char* pref_name = GetPrefNameForDataType(model_type);
       if (!pref_name)
         continue;
-      if (profile_->GetPrefs()->GetBoolean(pref_name))
+
+      // We are trying to group autofill_profile tag with the same
+      // enabled/disabled state as autofill. Because the UI only shows autofill.
+      if (profile_->GetPrefs()->GetBoolean(pref_name)) {
         preferred_types->insert(model_type);
+        if (model_type == syncable::AUTOFILL) {
+          if (!registered_types.count(syncable::AUTOFILL_PROFILE))
+            continue;
+          preferred_types->insert(syncable::AUTOFILL_PROFILE);
+        }
+      }
     }
   }
 }

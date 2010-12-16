@@ -101,6 +101,7 @@ extern const char kDisableSSLFalseStart[];
 extern const char kDisableSync[];
 extern const char kDisableSyncApps[];
 extern const char kDisableSyncAutofill[];
+extern const char kDisableSyncAutofillProfile[];
 extern const char kDisableSyncBookmarks[];
 extern const char kDisableSyncExtensions[];
 extern const char kDisableSyncPreferences[];

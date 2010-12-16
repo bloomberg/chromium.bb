@@ -9,16 +9,20 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/autofill_change_processor2.h"
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
+#include "chrome/browser/sync/glue/autofill_profile_model_associator.h"
+#include "chrome/browser/sync/glue/do_optimistic_refresh_task.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/guid.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/pref_names.h"
 
 namespace browser_sync {
 
@@ -83,7 +87,7 @@ void AutofillChangeProcessor::Observe(NotificationType type,
 
 void AutofillChangeProcessor::PostOptimisticRefreshTask() {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      new AutofillModelAssociator::DoOptimisticRefreshTask(
+      new DoOptimisticRefreshForAutofill(
            personal_data_));
 }
 
@@ -195,6 +199,8 @@ void AutofillChangeProcessor::ApplyChangesFromSyncModel(
     return;
   StopObserving();
 
+  bool autofill_profile_not_migrated = HasNotMigratedYet(trans);
+
   sync_api::ReadNode autofill_root(trans);
   if (!autofill_root.InitByTagLookup(kAutofillTag)) {
     error_handler()->OnUnrecoverableError(FROM_HERE,
@@ -210,7 +216,7 @@ void AutofillChangeProcessor::ApplyChangesFromSyncModel(
       const sync_pb::AutofillSpecifics& autofill =
           changes[i].specifics.GetExtension(sync_pb::autofill);
       if (autofill.has_value() ||
-        (HasNotMigratedYet() && autofill.has_profile())) {
+        (autofill_profile_not_migrated && autofill.has_profile())) {
         autofill_changes_.push_back(AutofillChangeRecord(changes[i].action,
                                                          changes[i].id,
                                                          autofill));
@@ -236,7 +242,7 @@ void AutofillChangeProcessor::ApplyChangesFromSyncModel(
         sync_node.GetAutofillSpecifics());
     int64 sync_id = sync_node.GetId();
     if (autofill.has_value() ||
-      (HasNotMigratedYet() && autofill.has_profile())) {
+      (autofill_profile_not_migrated && autofill.has_profile())) {
       autofill_changes_.push_back(AutofillChangeRecord(changes[i].action,
                                                        sync_id, autofill));
     } else {
@@ -261,7 +267,6 @@ void AutofillChangeProcessor::CommitChangesFromSyncModel() {
       if (autofill_changes_[i].autofill_.has_value()) {
         ApplySyncAutofillEntryDelete(autofill_changes_[i].autofill_);
       } else if (autofill_changes_[i].autofill_.has_profile()) {
-        DCHECK(HasNotMigratedYet());
         ApplySyncAutofillProfileDelete(autofill_changes_[i].id_);
       } else {
         NOTREACHED() << "Autofill's CommitChanges received change with no"
@@ -276,7 +281,6 @@ void AutofillChangeProcessor::CommitChangesFromSyncModel() {
                                    autofill_changes_[i].autofill_, &new_entries,
                                    autofill_changes_[i].id_);
     } else if (autofill_changes_[i].autofill_.has_profile()) {
-      DCHECK(HasNotMigratedYet());
       ApplySyncAutofillProfileChange(autofill_changes_[i].action_,
                                      autofill_changes_[i].autofill_.profile(),
                                      autofill_changes_[i].id_);
@@ -433,40 +437,9 @@ void AutofillChangeProcessor::WriteAutofillEntry(
   node->SetAutofillSpecifics(autofill);
 }
 
-// static
-void AutofillChangeProcessor::WriteAutofillProfile(
-    const AutoFillProfile& profile, sync_api::WriteNode* node) {
-  sync_pb::AutofillSpecifics autofill;
-  sync_pb::AutofillProfileSpecifics* s(autofill.mutable_profile());
-  s->set_name_first(UTF16ToUTF8(
-      profile.GetFieldText(AutoFillType(NAME_FIRST))));
-  s->set_name_middle(UTF16ToUTF8(
-      profile.GetFieldText(AutoFillType(NAME_MIDDLE))));
-  s->set_name_last(UTF16ToUTF8(profile.GetFieldText(AutoFillType(NAME_LAST))));
-  s->set_address_home_line1(
-      UTF16ToUTF8(profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE1))));
-  s->set_address_home_line2(
-      UTF16ToUTF8(profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE2))));
-  s->set_address_home_city(UTF16ToUTF8(profile.GetFieldText(
-      AutoFillType(ADDRESS_HOME_CITY))));
-  s->set_address_home_state(UTF16ToUTF8(profile.GetFieldText(
-      AutoFillType(ADDRESS_HOME_STATE))));
-  s->set_address_home_country(UTF16ToUTF8(profile.GetFieldText(
-      AutoFillType(ADDRESS_HOME_COUNTRY))));
-  s->set_address_home_zip(UTF16ToUTF8(profile.GetFieldText(
-      AutoFillType(ADDRESS_HOME_ZIP))));
-  s->set_email_address(UTF16ToUTF8(profile.GetFieldText(
-      AutoFillType(EMAIL_ADDRESS))));
-  s->set_company_name(UTF16ToUTF8(profile.GetFieldText(
-      AutoFillType(COMPANY_NAME))));
-  s->set_phone_fax_whole_number(UTF16ToUTF8(profile.GetFieldText(
-      AutoFillType(PHONE_FAX_WHOLE_NUMBER))));
-  s->set_phone_home_whole_number(UTF16ToUTF8(profile.GetFieldText(
-      AutoFillType(PHONE_HOME_WHOLE_NUMBER))));
-  node->SetAutofillSpecifics(autofill);
-}
-bool AutofillChangeProcessor::HasNotMigratedYet() {
-  return true;
+bool AutofillChangeProcessor::HasNotMigratedYet(
+    const sync_api::BaseTransaction* trans) {
+  return model_associator_->HasNotMigratedYet(trans);
 }
 
 }  // namespace browser_sync
