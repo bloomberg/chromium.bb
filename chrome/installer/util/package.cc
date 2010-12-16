@@ -8,12 +8,16 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
+#include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/delete_tree_work_item.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/package_properties.h"
 #include "chrome/installer/util/product.h"
 
 using base::win::RegKey;
+using installer::ChannelInfo;
+using installer::MasterPreferences;
 
 namespace installer {
 
@@ -137,6 +141,46 @@ void Package::RemoveOldVersionDirectories(
 
     next_version = version_enum.Next();
   }
+}
+
+size_t Package::GetMultiInstallDependencyCount() const {
+  BrowserDistribution::Type product_types[] = {
+    BrowserDistribution::CHROME_BROWSER,
+    BrowserDistribution::CHROME_FRAME,
+  };
+
+  const MasterPreferences& prefs = MasterPreferences::ForCurrentProcess();
+  HKEY root_key = system_level_ ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+
+  size_t ret = 0;
+
+  for (int i = 0; i < arraysize(product_types); ++i) {
+    BrowserDistribution* dist =
+        BrowserDistribution::GetSpecificDistribution(product_types[i], prefs);
+    // First see if the product is installed by checking its version key.
+    // If the key doesn't exist, the product isn't installed.
+    RegKey version_key(root_key, dist->GetVersionKey().c_str(), KEY_READ);
+    if (!version_key.Valid()) {
+      VLOG(1) << "Product not installed: " << dist->GetApplicationName();
+    } else {
+      RegKey key(root_key, dist->GetStateKey().c_str(), KEY_READ);
+      ChannelInfo channel_info;
+      if (channel_info.Initialize(key)) {
+        if (channel_info.IsMultiInstall()) {
+          VLOG(1) << "Product dependency: " << dist->GetApplicationName();
+          ret++;
+        } else {
+          VLOG(1) << "Product is installed, but not multi: "
+                  << dist->GetApplicationName();
+        }
+      } else {
+        LOG(INFO) << "Product missing 'ap' value: "
+                  << dist->GetApplicationName();
+      }
+    }
+  }
+
+  return ret;
 }
 
 }  // namespace installer

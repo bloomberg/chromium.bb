@@ -61,6 +61,13 @@ class Package : public base::RefCounted<Package> {
   // latest_version: the latest version of Chrome installed.
   void RemoveOldVersionDirectories(const Version& latest_version) const;
 
+  // Returns how many installed products depend on the binaries currently
+  // in the installation path.
+  // Note: The function counts only products that are installed as part of
+  // a multi install installation and only products that have the same
+  // system_level() value.
+  size_t GetMultiInstallDependencyCount() const;
+
  protected:
   bool system_level_;
   FilePath path_;

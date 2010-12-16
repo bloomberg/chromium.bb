@@ -20,6 +20,7 @@
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
@@ -31,6 +32,7 @@
 #include "registered_dlls.h"  // NOLINT
 
 using base::win::RegKey;
+using installer::ChannelInfo;
 using installer::InstallStatus;
 
 namespace installer {
@@ -210,12 +212,6 @@ bool DeleteEmptyParentDir(const FilePath& path) {
   return ret;
 }
 
-enum DeleteResult {
-  DELETE_SUCCEEDED,
-  DELETE_FAILED,
-  DELETE_REQUIRES_REBOOT
-};
-
 FilePath GetLocalStateFolder(const Product& product) {
   // Obtain the location of the user profile data. Chrome Frame needs to
   // build this path manually since it doesn't use the Chrome default dir.
@@ -243,6 +239,12 @@ FilePath BackupLocalStateFile(const FilePath& local_state_folder) {
   }
   return backup;
 }
+
+enum DeleteResult {
+  DELETE_SUCCEEDED,
+  DELETE_FAILED,
+  DELETE_REQUIRES_REBOOT,
+};
 
 // Copies the local state to the temp folder and then deletes it.
 // The path to the copy is returned via the local_state_copy parameter.
@@ -500,6 +502,17 @@ InstallStatus UninstallChrome(const FilePath& setup_path,
 
   VLOG(1) << "UninstallChrome: " << browser_dist->GetApplicationName();
 
+  // Stash away information about the channel which the product is currently
+  // installed on.  We'll need this later to determine if we should delete
+  // the binaries or not.
+  ChannelInfo channel_info;
+  {
+    HKEY root_key = product.system_level() ? HKEY_LOCAL_MACHINE :
+                                             HKEY_CURRENT_USER;
+    RegKey key(root_key, browser_dist->GetStateKey().c_str(), KEY_READ);
+    channel_info.Initialize(key);
+  }
+
   if (force_uninstall) {
     // Since --force-uninstall command line option is used, we are going to
     // do silent uninstall. Try to close all running Chrome instances.
@@ -627,10 +640,24 @@ InstallStatus UninstallChrome(const FilePath& setup_path,
   FilePath backup_state_file(BackupLocalStateFile(
       GetLocalStateFolder(product)));
 
-  // TODO(tommi): We should only do this when the last distribution is being
-  // uninstalled.
-  DeleteResult delete_result = DeleteFilesAndFolders(product.package(),
-                                                     *installed_version);
+  // When deleting files, we must make sure that we're either a "single"
+  // (aka non-multi) installation or, in the case of multi, that no other
+  // "multi" products share the binaries we are about to delete.
+
+  bool can_delete_files;
+  if (channel_info.IsMultiInstall()) {
+    can_delete_files =
+        (product.package().GetMultiInstallDependencyCount() == 0);
+    LOG(INFO) << (can_delete_files ? "Shared binaries will be deleted." :
+                                     "Shared binaries still in use.");
+  } else {
+    can_delete_files = true;
+  }
+
+  DeleteResult delete_result = DELETE_SUCCEEDED;
+  if (can_delete_files)
+    delete_result = DeleteFilesAndFolders(product.package(),
+                                          *installed_version);
 
   if (delete_profile)
     DeleteLocalState(product);

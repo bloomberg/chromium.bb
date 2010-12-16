@@ -6,6 +6,7 @@
 #include "base/scoped_handle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/package.h"
@@ -16,10 +17,12 @@
 
 using base::win::RegKey;
 using base::win::ScopedHandle;
+using installer::ChannelInfo;
 using installer::ChromePackageProperties;
 using installer::ChromiumPackageProperties;
 using installer::Package;
 using installer::Product;
+using installer::MasterPreferences;
 
 class PackageTest : public TestWithTempDirAndDeleteTempOverrideKeys {
  protected:
@@ -92,10 +95,7 @@ TEST_F(PackageTest, Basic) {
 }
 
 TEST_F(PackageTest, WithProduct) {
-  TempRegKeyOverride::DeleteAllTempKeys();
-
-  const installer::MasterPreferences& prefs =
-      installer::MasterPreferences::ForCurrentProcess();
+  const MasterPreferences& prefs = MasterPreferences::ForCurrentProcess();
 
   // TODO(tommi): We should mock this and use our mocked distribution.
   const bool system_level = true;
@@ -130,6 +130,44 @@ TEST_F(PackageTest, WithProduct) {
       }
     }
   }
+}
 
-  TempRegKeyOverride::DeleteAllTempKeys();
+TEST_F(PackageTest, Dependency) {
+  const bool system_level = true;
+  HKEY root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  TempRegKeyOverride override(root, L"root_dep");
+
+  ChromePackageProperties properties;
+  scoped_refptr<Package> package(new Package(system_level, test_dir_.path(),
+                                             &properties));
+  EXPECT_EQ(0U, package->GetMultiInstallDependencyCount());
+
+  const MasterPreferences& prefs = MasterPreferences::ForCurrentProcess();
+
+  BrowserDistribution* chrome = BrowserDistribution::GetSpecificDistribution(
+      BrowserDistribution::CHROME_BROWSER, prefs);
+  BrowserDistribution* cf = BrowserDistribution::GetSpecificDistribution(
+      BrowserDistribution::CHROME_FRAME, prefs);
+
+  // "install" Chrome.
+  RegKey chrome_version_key(root, chrome->GetVersionKey().c_str(),
+                            KEY_ALL_ACCESS);
+  RegKey chrome_key(root, chrome->GetStateKey().c_str(), KEY_ALL_ACCESS);
+  ChannelInfo channel;
+  channel.set_value(L"");
+  channel.SetMultiInstall(true);
+  channel.Write(&chrome_key);
+  EXPECT_EQ(1U, package->GetMultiInstallDependencyCount());
+
+  // "install" Chrome Frame without multi-install.
+  RegKey cf_version_key(root, cf->GetVersionKey().c_str(), KEY_ALL_ACCESS);
+  RegKey cf_key(root, cf->GetStateKey().c_str(), KEY_ALL_ACCESS);
+  channel.SetMultiInstall(false);
+  channel.Write(&cf_key);
+  EXPECT_EQ(1U, package->GetMultiInstallDependencyCount());
+
+  // "install" Chrome Frame with multi-install.
+  channel.SetMultiInstall(true);
+  channel.Write(&cf_key);
+  EXPECT_EQ(2U, package->GetMultiInstallDependencyCount());
 }
