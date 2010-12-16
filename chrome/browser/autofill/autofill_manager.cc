@@ -644,8 +644,8 @@ void AutoFillManager::GetProfileSuggestions(FormStructure* form,
     form_fields.push_back((*iter)->type());
   }
 
-  AutoFillProfile::CreateInferredLabels(&matched_profiles, labels, 1,
-                                        type.field_type(), &form_fields);
+  AutoFillProfile::CreateInferredLabels(&matched_profiles, &form_fields,
+                                        type.field_type(), 1, labels);
 
   // No icons for profile suggestions.
   icons->resize(values->size());

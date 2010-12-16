@@ -332,23 +332,18 @@ TEST(AutoFillProfileTest, CreateInferredLabels) {
                                 "01987654321");
   std::vector<string16> labels;
   // Two fields at least - no filter.
-  AutoFillProfile::CreateInferredLabels(&profiles, &labels, 2, UNKNOWN_TYPE,
-                                        NULL);
+  AutoFillProfile::CreateInferredLabels(&profiles, NULL, UNKNOWN_TYPE, 2,
+                                        &labels);
   EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St."), labels[0]);
   EXPECT_EQ(ASCIIToUTF16("Jane Doe, 123 Letha Shore."), labels[1]);
 
   // Three fields at least - no filter.
-  AutoFillProfile::CreateInferredLabels(&profiles, &labels, 3, UNKNOWN_TYPE,
-                                        NULL);
+  AutoFillProfile::CreateInferredLabels(&profiles, NULL, UNKNOWN_TYPE, 3,
+                                        &labels);
   EXPECT_EQ(ASCIIToUTF16("John Doe, 666 Erebus St., Elysium"),
             labels[0]);
   EXPECT_EQ(ASCIIToUTF16("Jane Doe, 123 Letha Shore., Dis"),
             labels[1]);
-
-  // Two fields at least - filter out the name.
-  AutoFillProfile::CreateInferredLabels(&profiles, &labels, 2, NAME_FULL, NULL);
-  EXPECT_EQ(ASCIIToUTF16("666 Erebus St., Elysium"), labels[0]);
-  EXPECT_EQ(ASCIIToUTF16("123 Letha Shore., Dis"), labels[1]);
 
   std::vector<AutoFillFieldType> suggested_fields;
   suggested_fields.push_back(ADDRESS_HOME_CITY);
@@ -356,21 +351,21 @@ TEST(AutoFillProfileTest, CreateInferredLabels) {
   suggested_fields.push_back(ADDRESS_HOME_ZIP);
 
   // Two fields at least, from suggested fields - no filter.
-  AutoFillProfile::CreateInferredLabels(&profiles, &labels, 2, UNKNOWN_TYPE,
-                                        &suggested_fields);
+  AutoFillProfile::CreateInferredLabels(&profiles, &suggested_fields,
+                                        UNKNOWN_TYPE, 2, &labels);
   EXPECT_EQ(ASCIIToUTF16("Elysium, CA"), labels[0]);
   EXPECT_EQ(ASCIIToUTF16("Dis, CA"), labels[1]);
 
   // Three fields at least, from suggested fields - no filter.
-  AutoFillProfile::CreateInferredLabels(&profiles, &labels, 3, UNKNOWN_TYPE,
-                                        &suggested_fields);
+  AutoFillProfile::CreateInferredLabels(&profiles, &suggested_fields,
+                                        UNKNOWN_TYPE, 3, &labels);
   EXPECT_EQ(ASCIIToUTF16("Elysium, CA, 91111"), labels[0]);
   EXPECT_EQ(ASCIIToUTF16("Dis, CA, 91222"), labels[1]);
 
   // Three fields at least, from suggested fields - but filter reduces available
   // fields to two.
-  AutoFillProfile::CreateInferredLabels(&profiles, &labels, 3,
-                                        ADDRESS_HOME_STATE, &suggested_fields);
+  AutoFillProfile::CreateInferredLabels(&profiles, &suggested_fields,
+                                        ADDRESS_HOME_STATE, 3, &labels);
   EXPECT_EQ(ASCIIToUTF16("Elysium, 91111"), labels[0]);
   EXPECT_EQ(ASCIIToUTF16("Dis, 91222"), labels[1]);
 
@@ -378,19 +373,92 @@ TEST(AutoFillProfileTest, CreateInferredLabels) {
   // In our implementation we always display NAME_FULL for all NAME* fields...
   suggested_fields.push_back(NAME_MIDDLE);
   // One field at least, from suggested fields - no filter.
-  AutoFillProfile::CreateInferredLabels(&profiles, &labels, 1, UNKNOWN_TYPE,
-                                        &suggested_fields);
+  AutoFillProfile::CreateInferredLabels(&profiles, &suggested_fields,
+                                        UNKNOWN_TYPE, 1, &labels);
   EXPECT_EQ(ASCIIToUTF16("John Doe"), labels[0]);
   EXPECT_EQ(ASCIIToUTF16("Jane Doe"), labels[1]);
 
   // One field at least, from suggested fields - filter the same as suggested
   // field.
-  AutoFillProfile::CreateInferredLabels(&profiles, &labels, 1, NAME_MIDDLE,
-                                        &suggested_fields);
+  AutoFillProfile::CreateInferredLabels(&profiles, &suggested_fields,
+                                        NAME_MIDDLE, 1, &labels);
   EXPECT_EQ(string16(), labels[0]);
   EXPECT_EQ(string16(), labels[1]);
+
+  // One field at least, from suggested fields - filter same as the first non-
+  // unknown suggested field.
+  suggested_fields.clear();
+  suggested_fields.push_back(UNKNOWN_TYPE);
+  suggested_fields.push_back(NAME_FULL);
+  suggested_fields.push_back(ADDRESS_HOME_LINE1);
+  AutoFillProfile::CreateInferredLabels(&profiles, &suggested_fields, NAME_FULL,
+                                        1, &labels);
+  EXPECT_EQ(string16(ASCIIToUTF16("666 Erebus St.")), labels[0]);
+  EXPECT_EQ(string16(ASCIIToUTF16("123 Letha Shore.")), labels[1]);
+
   // Clean up.
   STLDeleteContainerPointers(profiles.begin(), profiles.end());
+}
+
+// Test that we fall back to using the full name if there are no other
+// distinguishing fields, but only if it makes sense given the suggested fields.
+TEST(AutoFillProfileTest, CreateInferredLabelsFallsBackToFullName) {
+  ScopedVector<AutoFillProfile> profiles;
+  profiles.push_back(new AutoFillProfile);
+  autofill_test::SetProfileInfo(profiles[0],
+                                "", "John", "", "Doe", "doe@example.com", "",
+                                "88 Nowhere Ave.", "", "", "", "", "", "", "");
+  profiles.push_back(new AutoFillProfile);
+  autofill_test::SetProfileInfo(profiles[1],
+                                "", "Johnny", "K", "Doe", "doe@example.com", "",
+                                "88 Nowhere Ave.", "", "", "", "", "", "", "");
+
+  // If the only name field in the suggested fields is the excluded field, we
+  // should not fall back to the full name as a distinguishing field.
+  std::vector<AutoFillFieldType> suggested_fields;
+  suggested_fields.push_back(NAME_LAST);
+  suggested_fields.push_back(ADDRESS_HOME_LINE1);
+  suggested_fields.push_back(EMAIL_ADDRESS);
+  std::vector<string16> labels;
+  AutoFillProfile::CreateInferredLabels(&profiles.get(), &suggested_fields,
+                                        NAME_LAST, 1, &labels);
+  ASSERT_EQ(2U, labels.size());
+  EXPECT_EQ(ASCIIToUTF16("88 Nowhere Ave."), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("88 Nowhere Ave."), labels[1]);
+
+  // Otherwise, we should.
+  suggested_fields.push_back(NAME_FIRST);
+  AutoFillProfile::CreateInferredLabels(&profiles.get(),  &suggested_fields,
+                                        NAME_LAST, 1, &labels);
+  ASSERT_EQ(2U, labels.size());
+  EXPECT_EQ(ASCIIToUTF16("88 Nowhere Ave., John Doe"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("88 Nowhere Ave., Johnny K Doe"), labels[1]);
+}
+
+// Test that we do not show duplicate fields in the labels.
+TEST(AutoFillProfileTest, CreateInferredLabelsNoDuplicatedFields) {
+  ScopedVector<AutoFillProfile> profiles;
+  profiles.push_back(new AutoFillProfile);
+  autofill_test::SetProfileInfo(profiles[0],
+                                "", "John", "", "Doe", "doe@example.com", "",
+                                "88 Nowhere Ave.", "", "", "", "", "", "", "");
+  profiles.push_back(new AutoFillProfile);
+  autofill_test::SetProfileInfo(profiles[1],
+                                "", "John", "", "Doe", "dojo@example.com", "",
+                                "88 Nowhere Ave.", "", "", "", "", "", "", "");
+
+  // If the only name field in the suggested fields is the excluded field, we
+  // should not fall back to the full name as a distinguishing field.
+  std::vector<AutoFillFieldType> suggested_fields;
+  suggested_fields.push_back(ADDRESS_HOME_LINE1);
+  suggested_fields.push_back(ADDRESS_BILLING_LINE1);
+  suggested_fields.push_back(EMAIL_ADDRESS);
+  std::vector<string16> labels;
+  AutoFillProfile::CreateInferredLabels(&profiles.get(), &suggested_fields,
+                                        UNKNOWN_TYPE, 2, &labels);
+  ASSERT_EQ(2U, labels.size());
+  EXPECT_EQ(ASCIIToUTF16("88 Nowhere Ave., doe@example.com"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("88 Nowhere Ave., dojo@example.com"), labels[1]);
 }
 
 // Make sure that empty fields are not treated as distinguishing fields.
@@ -410,8 +478,8 @@ TEST(AutoFillProfileTest, CreateInferredLabelsSkipsEmptyFields) {
                                 "Goolge", "", "", "", "", "", "", "", "");
 
   std::vector<string16> labels;
-  AutoFillProfile::CreateInferredLabels(&profiles.get(), &labels, 3,
-                                        UNKNOWN_TYPE, NULL);
+  AutoFillProfile::CreateInferredLabels(&profiles.get(), NULL, UNKNOWN_TYPE, 3,
+                                        &labels);
   ASSERT_EQ(3U, labels.size());
   EXPECT_EQ(ASCIIToUTF16("John Doe, doe@example.com, Gogole"), labels[0]);
   EXPECT_EQ(ASCIIToUTF16("John Doe, doe@example.com, Ggoole"), labels[1]);
