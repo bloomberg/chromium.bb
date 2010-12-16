@@ -2475,9 +2475,6 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
-   fun:*FactoryForOffTheRecordC*EP7Profile
-   ...
    fun:_ZN29ChromeURLRequestContextGetter18CreateOffTheRecordEP7Profile
    ...
    fun:_ZN23OffTheRecordProfileImpl*Profile
