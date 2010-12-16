@@ -402,9 +402,10 @@ ChromeURLRequestContext* FactoryForOffTheRecord::Create() {
 
   IOThread::Globals* io_thread_globals = io_thread()->globals();
 
-  // Share the same proxy service, host resolver, and http_auth_handler_factory
-  // as the original profile.
+  // Share the same proxy service, host resolver, cert verifier,
+  // and http_auth_handler_factory as the original profile.
   context->set_host_resolver(original_context->host_resolver());
+  context->set_cert_verifier(original_context->cert_verifier());
   context->set_proxy_service(original_context->proxy_service());
   context->set_http_auth_handler_factory(
       original_context->http_auth_handler_factory());
