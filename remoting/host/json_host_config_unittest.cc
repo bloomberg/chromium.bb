@@ -22,15 +22,6 @@ const char* kTestConfig =
 "  \"host_name\" : \"TEST_MACHINE_NAME\",\n"
 "  \"private_key\" : \"TEST_PRIVATE_KEY\"\n"
 "}\n";
-
-// Helper for Update test.
-class TestConfigUpdater : public base::RefCountedThreadSafe<TestConfigUpdater> {
- public:
-  void DoUpdate(scoped_refptr<JsonHostConfig> target,
-                  std::string new_auth_token_value) {
-    target->SetString(kXmppAuthTokenConfigPath, new_auth_token_value);
-  }
-};
 }  // namespace
 
 class JsonHostConfigTest : public testing::Test {
@@ -92,10 +83,8 @@ TEST_F(JsonHostConfigTest, Write) {
   ASSERT_TRUE(target->Read());
 
   std::string new_auth_token_value = "NEW_AUTH_TOKEN";
-  scoped_refptr<TestConfigUpdater> config_updater(new TestConfigUpdater());
-  target->Update(
-      NewRunnableMethod(config_updater.get(), &TestConfigUpdater::DoUpdate,
-                        target, new_auth_token_value));
+  target->SetString(kXmppAuthTokenConfigPath, new_auth_token_value);
+  target->Save();
 
   message_loop_.RunAllPending();
 

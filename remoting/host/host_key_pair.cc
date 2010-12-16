@@ -54,13 +54,6 @@ void HostKeyPair::Save(MutableHostConfig* host_config) {
   // Check that the key initialized.
   DCHECK(key_.get() != NULL);
 
-  host_config->Update(
-      NewRunnableMethod(this,
-                        &HostKeyPair::DoSave,
-                        make_scoped_refptr(host_config)));
-}
-
-void HostKeyPair::DoSave(MutableHostConfig* host_config) const {
   std::vector<uint8> key_buf;
   key_->ExportPrivateKey(&key_buf);
   std::string key_str(key_buf.begin(), key_buf.end());

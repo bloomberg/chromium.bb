@@ -17,7 +17,6 @@ JsonHostConfig::JsonHostConfig(
     const FilePath& filename,
     base::MessageLoopProxy* file_message_loop_proxy)
     : filename_(filename),
-      values_(new DictionaryValue()),
       message_loop_proxy_(file_message_loop_proxy) {
 }
 
@@ -41,32 +40,15 @@ bool JsonHostConfig::Read() {
   return true;
 }
 
-bool JsonHostConfig::GetString(const std::string& path,
-                               std::string* out_value) {
-  AutoLock auto_lock(lock_);
-  return values_->GetString(path, out_value);
-}
-
-void JsonHostConfig::Update(Task* task) {
-  {
-    AutoLock auto_lock(lock_);
-    task->Run();
-  }
-  delete task;
+void JsonHostConfig::Save() {
   message_loop_proxy_->PostTask(
       FROM_HERE, NewRunnableMethod(this, &JsonHostConfig::DoWrite));
 }
 
-void JsonHostConfig::SetString(const std::string& path,
-                               const std::string& in_value) {
-  lock_.AssertAcquired();
-  values_->SetString(path, in_value);
-}
-
 void JsonHostConfig::DoWrite() {
   std::string file_content;
-  base::JSONWriter::Write(values_.get(), true, &file_content);
   AutoLock auto_lock(lock_);
+  base::JSONWriter::Write(values_.get(), true, &file_content);
   // TODO(sergeyu): Move ImportantFileWriter to base and use it here.
   file_util::WriteFile(filename_, file_content.c_str(), file_content.size());
 }

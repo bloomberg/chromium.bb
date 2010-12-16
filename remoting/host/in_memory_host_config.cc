@@ -21,18 +21,24 @@ bool InMemoryHostConfig::GetString(const std::string& path,
   return values_->GetString(path, out_value);
 }
 
-void InMemoryHostConfig::Update(Task* task) {
-  {
-    AutoLock auto_lock(lock_);
-    task->Run();
-  }
-  delete task;
+bool InMemoryHostConfig::GetBoolean(const std::string& path, bool* out_value) {
+  AutoLock auto_lock(lock_);
+  return values_->GetBoolean(path, out_value);
+}
+
+void InMemoryHostConfig::Save() {
+  // Save is NOP for in-memory host config.
 }
 
 void InMemoryHostConfig::SetString(const std::string& path,
                                    const std::string& in_value) {
-  lock_.AssertAcquired();
+  AutoLock auto_lock(lock_);
   values_->SetString(path, in_value);
+}
+
+void InMemoryHostConfig::SetBoolean(const std::string& path, bool in_value) {
+  AutoLock auto_lock(lock_);
+  values_->SetBoolean(path, in_value);
 }
 
 }  // namespace remoting

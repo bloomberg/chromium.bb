@@ -25,15 +25,19 @@ class InMemoryHostConfig : public MutableHostConfig {
 
   // MutableHostConfig interface.
   virtual bool GetString(const std::string& path, std::string* out_value);
-
-  virtual void Update(Task* task);
+  virtual bool GetBoolean(const std::string& path, bool* out_value);
 
   virtual void SetString(const std::string& path, const std::string& in_value);
+  virtual void SetBoolean(const std::string& path, bool in_value);
 
- private:
+  virtual void Save();
+
+ protected:
+  // |lock_| must be locked whenever |values_| is used.
   Lock lock_;
   scoped_ptr<DictionaryValue> values_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(InMemoryHostConfig);
 };
 

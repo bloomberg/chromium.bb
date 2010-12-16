@@ -17,23 +17,12 @@ const char kTestJid[] = "host@domain.com";
 
 class AccessVerifierTest : public testing::Test {
  protected:
-  class TestConfigUpdater :
-      public base::RefCountedThreadSafe<TestConfigUpdater> {
-   public:
-    void DoUpdate(scoped_refptr<InMemoryHostConfig> target) {
-      target->SetString(kXmppLoginConfigPath, kTestJid);
-    }
-  };
-
   virtual void SetUp() {
     config_ = new InMemoryHostConfig();
   }
 
   void InitConfig() {
-    scoped_refptr<TestConfigUpdater> config_updater(new TestConfigUpdater());
-    config_->Update(
-        NewRunnableMethod(config_updater.get(), &TestConfigUpdater::DoUpdate,
-                          config_));
+    config_->SetString(kXmppLoginConfigPath, kTestJid);
   }
 
   scoped_refptr<InMemoryHostConfig> config_;

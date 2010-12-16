@@ -54,21 +54,10 @@ class MockIqRequest : public IqRequest {
 
 class HeartbeatSenderTest : public testing::Test {
  protected:
-  class TestConfigUpdater :
-      public base::RefCountedThreadSafe<TestConfigUpdater> {
-   public:
-    void DoUpdate(scoped_refptr<InMemoryHostConfig> target) {
-      target->SetString(kHostIdConfigPath, kHostId);
-      target->SetString(kPrivateKeyConfigPath, kTestHostKeyPair);
-    }
-  };
-
   virtual void SetUp() {
     config_ = new InMemoryHostConfig();
-    scoped_refptr<TestConfigUpdater> config_updater(new TestConfigUpdater());
-    config_->Update(
-        NewRunnableMethod(config_updater.get(), &TestConfigUpdater::DoUpdate,
-                          config_));
+    config_->SetString(kHostIdConfigPath, kHostId);
+    config_->SetString(kPrivateKeyConfigPath, kTestHostKeyPair);
 
     jingle_thread_.message_loop_ = &message_loop_;
 

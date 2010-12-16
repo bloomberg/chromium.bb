@@ -332,18 +332,6 @@ void ServiceProcess::OnRemotingDirectoryError() {
   // to the client that started this.
 }
 
-// A util function to update the login information to host config.
-static void SaveChromotingConfigFunc(remoting::JsonHostConfig* config,
-                                     const std::string& login,
-                                     const std::string& token,
-                                     const std::string& host_id,
-                                     const std::string& host_name) {
-  config->SetString(remoting::kXmppLoginConfigPath, login);
-  config->SetString(remoting::kXmppAuthTokenConfigPath, token);
-  config->SetString(remoting::kHostIdConfigPath, host_id);
-  config->SetString(remoting::kHostNameConfigPath, host_name);
-}
-
 void ServiceProcess::SaveChromotingConfig(
     const std::string& login,
     const std::string& token,
@@ -354,13 +342,11 @@ void ServiceProcess::SaveChromotingConfig(
   LoadChromotingConfig();
 
   // And then do the update.
-  chromoting_config_->Update(
-      NewRunnableFunction(&SaveChromotingConfigFunc,
-                          chromoting_config_,
-                          login,
-                          token,
-                          host_id,
-                          host_name));
+  chromoting_config_->SetString(remoting::kXmppLoginConfigPath, login);
+  chromoting_config_->SetString(remoting::kXmppAuthTokenConfigPath, token);
+  chromoting_config_->SetString(remoting::kHostIdConfigPath, host_id);
+  chromoting_config_->SetString(remoting::kHostNameConfigPath, host_name);
+  chromoting_config_->Save();
 
   // And then save the key pair.
   host_key_pair->Save(chromoting_config_);

@@ -34,8 +34,6 @@ class HostKeyPair {
   std::string GetSignature(const std::string& message) const;
 
  private:
-  void DoSave(MutableHostConfig* host_config) const;
-
   scoped_ptr<base::RSAPrivateKey> key_;
 };
 

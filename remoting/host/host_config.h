@@ -15,6 +15,8 @@ namespace remoting {
 
 // Following constants define names for configuration parameters.
 
+// Status of the host, whether it is enabled or disabled.
+extern const char kHostEnabledConfigPath[];
 // Login used to authenticate in XMPP network.
 extern const char kXmppLoginConfigPath[];
 // Auth token used to authenticate in XMPP network.
@@ -34,26 +36,24 @@ class HostConfig : public base::RefCountedThreadSafe<HostConfig> {
   virtual ~HostConfig() { }
 
   virtual bool GetString(const std::string& path, std::string* out_value) = 0;
+  virtual bool GetBoolean(const std::string& path, bool* out_value) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(HostConfig);
 };
 
 // MutableHostConfig extends HostConfig for mutability.
-//
-// TODO(sergeyu): Simplify this interface.
 class MutableHostConfig : public HostConfig {
  public:
   MutableHostConfig() { };
 
-  // Update() must be used to update config values.
-  // It acquires lock, calls the specified task, releases the lock and
-  // then schedules the config to be written to storage.
-  virtual void Update(Task* task) = 0;
-
-  // SetString() updates specified config value. This methods must only
-  // be called from task specified in Update().
+  // SetString() updates specified config value. Save() must be called to save
+  // the changes on the disk.
   virtual void SetString(const std::string& path,
                          const std::string& in_value) = 0;
+  virtual void SetBoolean(const std::string& path, bool in_value) = 0;
+
+  // Save's changes.
+  virtual void Save() = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MutableHostConfig);
 };

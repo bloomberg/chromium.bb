@@ -11,7 +11,7 @@
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "remoting/host/host_config.h"
+#include "remoting/host/in_memory_host_config.h"
 
 class DictionaryValue;
 class Task;
@@ -23,7 +23,7 @@ class MessageLoopProxy;
 namespace remoting {
 
 // JsonHostConfig implements MutableHostConfig for JSON file.
-class JsonHostConfig : public MutableHostConfig {
+class JsonHostConfig : public InMemoryHostConfig {
  public:
   JsonHostConfig(const FilePath& pref_filename,
                  base::MessageLoopProxy* file_message_loop_proxy);
@@ -32,19 +32,12 @@ class JsonHostConfig : public MutableHostConfig {
   virtual bool Read();
 
   // MutableHostConfig interface.
-  virtual bool GetString(const std::string& path, std::string* out_value);
-
-  virtual void Update(Task* task);
-
-  virtual void SetString(const std::string& path, const std::string& in_value);
+  virtual void Save();
 
  private:
   void DoWrite();
 
-  // |lock_| must be locked whenever we access values_;
-  Lock lock_;
   FilePath filename_;
-  scoped_ptr<DictionaryValue> values_;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(JsonHostConfig);
