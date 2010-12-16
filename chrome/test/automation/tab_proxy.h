@@ -343,11 +343,11 @@ class TabProxy : public AutomationResourceProxy,
 
   // Causes a click on the "accept" button of the info-bar at |info_bar_index|.
   // If |wait_for_navigation| is true, this call does not return until a
-  // navigation has occured.
+  // navigation has occurred.
   bool ClickInfoBarAccept(int info_bar_index,
                           bool wait_for_navigation) WARN_UNUSED_RESULT;
 
-  // Retrieves the time at which the last navigation occured.  This is intended
+  // Retrieves the time at which the last navigation occurred.  This is intended
   // to be used with WaitForNavigation (see below).
   bool GetLastNavigationTime(int64* last_navigation_time) WARN_UNUSED_RESULT;
 
