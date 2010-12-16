@@ -133,11 +133,9 @@ void ExtensionInstallUI::OnInstallSuccess(const Extension* extension,
     return;
   }
 
-  // Note that browser actions don't appear in incognito mode initially,
-  // so be sure to use a normal browser window.
-  Profile* profile = profile_;
-  if (extension->browser_action())
-    profile = profile->GetOriginalProfile();
+  // Extensions aren't enabled by default in incognito so we confirm
+  // the install in a normal window.
+  Profile* profile = profile_->GetOriginalProfile();
   Browser* browser = Browser::GetOrCreateTabbedBrowser(profile);
   if (browser->tab_count() == 0)
     browser->AddBlankTab(true);
