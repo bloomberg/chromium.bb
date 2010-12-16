@@ -78,3 +78,5 @@ Later modifications (see chromium.patch):
 
 - Fixed compiler warning about cast to pointer from integer of different size
   in eglapi.c line 276. Replaced void* with EGLNativeDisplayType.
+
+- Suppressed spurious compiler warning from gcc in eglCompareConfig
