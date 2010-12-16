@@ -18,6 +18,7 @@
 #include "views/painter.h"
 #include "views/screen.h"
 #include "views/widget/widget.h"
+#include "views/widget/widget_gtk.h"
 
 namespace chromeos {
 
@@ -85,15 +86,18 @@ void ThrobberHostView::StartThrobber() {
     throbber->set_stop_delay_ms(0);
     gfx::Rect throbber_bounds = CalculateThrobberBounds(throbber);
 
-    throbber_widget_ =
-        views::Widget::CreatePopupWidget(views::Widget::Transparent,
-                                         views::Widget::NotAcceptEvents,
-                                         views::Widget::DeleteOnDestroy,
-                                         views::Widget::DontMirrorOriginInRTL);
+    views::WidgetGtk* widget_gtk =
+        new views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW);
+    widget_gtk->make_transient_to_parent();
+    widget_gtk->MakeTransparent();
+    throbber_widget_ = widget_gtk;
+
     throbber_bounds.Offset(host_view_->GetScreenBounds().origin());
     throbber_widget_->InitWithWidget(widget, throbber_bounds);
     throbber_widget_->SetContentsView(throbber);
     throbber_widget_->Show();
+    // WM can ignore bounds before widget is shown.
+    throbber_widget_->SetBounds(throbber_bounds);
     throbber->Start();
   }
 }
