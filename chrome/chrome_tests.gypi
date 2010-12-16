@@ -1287,6 +1287,7 @@
         'browser/prefs/pref_value_store_unittest.cc',
         'browser/prefs/session_startup_pref_unittest.cc',
         'browser/prerender/prerender_interceptor_unittest.cc',
+        'browser/prerender/prerender_manager_unittest.cc',
         'browser/printing/cloud_print/cloud_print_setup_source_unittest.cc',
         'browser/printing/print_dialog_cloud_unittest.cc',
         'browser/printing/print_job_unittest.cc',

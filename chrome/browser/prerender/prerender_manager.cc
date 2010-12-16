@@ -25,7 +25,10 @@ struct PrerenderManager::PrerenderContentsData {
 };
 
 PrerenderManager::PrerenderManager(Profile* profile)
-    : profile_(profile) {
+    : profile_(profile),
+      max_prerender_age_(base::TimeDelta::FromSeconds(
+          kDefaultMaxPrerenderAgeSeconds)),
+      max_elements_(kDefaultMaxPrerenderElements) {
 }
 
 PrerenderManager::~PrerenderManager() {
@@ -46,11 +49,11 @@ void PrerenderManager::AddPreload(const GURL& url) {
     if (it->url_ == url)
       return;
   }
-  PrerenderContentsData data(new PrerenderContents(this, profile_, url),
-                             base::Time::Now(), url);
+  PrerenderContentsData data(CreatePrerenderContents(url),
+                             GetCurrentTime(), url);
   prerender_list_.push_back(data);
   data.contents_->StartPrerendering();
-  while (prerender_list_.size() > kMaxPrerenderElements) {
+  while (prerender_list_.size() > max_elements_) {
     data = prerender_list_.front();
     prerender_list_.pop_front();
     delete data.contents_;
@@ -58,10 +61,9 @@ void PrerenderManager::AddPreload(const GURL& url) {
 }
 
 void PrerenderManager::DeleteOldEntries() {
-  base::Time now = base::Time::Now();
   while (prerender_list_.size() > 0) {
     PrerenderContentsData data = prerender_list_.front();
-    if ((now - data.start_time_).InSeconds() < kMaxPrerenderAgeSeconds)
+    if (IsPrerenderElementFresh(data.start_time_))
       return;
     prerender_list_.pop_front();
     delete data.contents_;
@@ -116,4 +118,17 @@ void PrerenderManager::RemoveEntry(PrerenderContents* entry) {
   }
   delete entry;
   DeleteOldEntries();
+}
+
+base::Time PrerenderManager::GetCurrentTime() const {
+  return base::Time::Now();
+}
+
+bool PrerenderManager::IsPrerenderElementFresh(const base::Time start) const {
+  base::Time now = GetCurrentTime();
+  return (now - start < max_prerender_age_);
+}
+
+PrerenderContents* PrerenderManager::CreatePrerenderContents(const GURL& url) {
+  return new PrerenderContents(this, profile_, url);
 }

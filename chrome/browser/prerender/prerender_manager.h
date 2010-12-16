@@ -10,6 +10,7 @@
 
 #include "base/non_thread_safe.h"
 #include "base/scoped_ptr.h"
+#include "base/time.h"
 #include "googleurl/src/gurl.h"
 
 class PrerenderContents;
@@ -22,7 +23,7 @@ class PrerenderManager : NonThreadSafe {
  public:
   // Owned by a Profile object for the lifetime of the profile.
   explicit PrerenderManager(Profile* profile);
-  ~PrerenderManager();
+  virtual ~PrerenderManager();
 
   // Preloads the URL supplied.
   void AddPreload(const GURL& url);
@@ -37,27 +38,42 @@ class PrerenderManager : NonThreadSafe {
   // be cancelled.  Also deletes the entry.
   void RemoveEntry(PrerenderContents* entry);
 
- private:
-  struct PrerenderContentsData;
-
-  void DeleteOldEntries();
-
   // Retrieves the PrerenderContents object for the specified URL, if it
   // has been prerendered.  The caller will then have ownership of the
   // PrerenderContents object and is responsible for freeing it.
   // Returns NULL if the specified URL has not been prerendered.
   PrerenderContents* GetEntry(const GURL& url);
 
+  base::TimeDelta max_prerender_age() const { return max_prerender_age_; }
+  void set_max_prerender_age(base::TimeDelta td) { max_prerender_age_ = td; }
+  unsigned int max_elements() const { return max_elements_; }
+  void set_max_elements(unsigned int num) { max_elements_ = num; }
+
+ protected:
+  // The following methods exist explicitly rather than just inlined to
+  // facilitate testing.
+  virtual base::Time GetCurrentTime() const;
+  virtual PrerenderContents* CreatePrerenderContents(const GURL& url);
+
+ private:
+  struct PrerenderContentsData;
+
+  bool IsPrerenderElementFresh(const base::Time start) const;
+  void DeleteOldEntries();
+
   Profile* profile_;
+
+  base::TimeDelta max_prerender_age_;
+  unsigned int max_elements_;
 
   // List of prerendered elements.
   std::list<PrerenderContentsData> prerender_list_;
 
-  // Maximum permitted elements to prerender.
-  static const unsigned int kMaxPrerenderElements = 1;
+  // Default maximum permitted elements to prerender.
+  static const unsigned int kDefaultMaxPrerenderElements = 1;
 
-  // Maximum age a prerendered element may have, in seconds.
-  static const int kMaxPrerenderAgeSeconds = 20;
+  // Default maximum age a prerendered element may have, in seconds.
+  static const int kDefaultMaxPrerenderAgeSeconds = 20;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderManager);
 };

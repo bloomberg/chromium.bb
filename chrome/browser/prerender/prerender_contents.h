@@ -39,7 +39,7 @@ class PrerenderContents : public RenderViewHostDelegate,
   PrerenderContents(PrerenderManager* prerender_manager, Profile* profile,
                     const GURL& url);
   virtual ~PrerenderContents();
-  void StartPrerendering();
+  virtual void StartPrerendering();
 
   RenderViewHost* render_view_host() { return render_view_host_; }
   // Allows replacing of the RenderViewHost owned by this class, including

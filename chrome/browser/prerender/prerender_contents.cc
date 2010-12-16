@@ -28,10 +28,10 @@ PrerenderContents::PrerenderContents(PrerenderManager* prerender_manager,
       profile_(profile),
       page_id_(0) {
   DCHECK(prerender_manager != NULL);
-  DCHECK(profile != NULL);
 }
 
 void PrerenderContents::StartPrerendering() {
+  DCHECK(profile_ != NULL);
   SiteInstance* site_instance = SiteInstance::CreateSiteInstance(profile_);
   render_view_host_ = new RenderViewHost(site_instance, this, MSG_ROUTING_NONE,
                                          NULL);
