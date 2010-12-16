@@ -24,12 +24,17 @@ std::string ToASCIIOrEmpty(const WebString& string) {
 }  // namespace
 
 TestShellWebMimeRegistryImpl::TestShellWebMimeRegistryImpl() {
+  // Claim we support Ogg+Theora/Vorbis.
   media_map_.insert("video/ogg");
   media_map_.insert("audio/ogg");
   media_map_.insert("application/ogg");
-
   codecs_map_.insert("theora");
   codecs_map_.insert("vorbis");
+
+  // Claim we support WAV.
+  media_map_.insert("audio/wav");
+  media_map_.insert("audio/x-wav");
+  codecs_map_.insert("1");  // PCM for WAV.
 }
 
 WebMimeRegistry::SupportsType
