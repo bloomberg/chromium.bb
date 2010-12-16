@@ -134,6 +134,7 @@ TEST(InputMethodUtilTest, GetKeyboardLayoutName) {
   EXPECT_EQ("ua", GetKeyboardLayoutName("xkb:ua::ukr"));
   EXPECT_EQ("us", GetKeyboardLayoutName("xkb:us::eng"));
   EXPECT_EQ("us", GetKeyboardLayoutName("xkb:us:dvorak:eng"));
+  EXPECT_EQ("us", GetKeyboardLayoutName("xkb:us:colemak:eng"));
 }
 
 TEST(InputMethodUtilTest, GetKeyboardOverlayId) {
@@ -171,6 +172,8 @@ TEST(InputMethodUtilTest, GetKeyboardOverlayId) {
   EXPECT_EQ("en_US", GetKeyboardOverlayId("xkb:us:intl:eng"));
   EXPECT_EQ("en_US", GetKeyboardOverlayId("xkb:us:altgr-intl:eng"));
   EXPECT_EQ("en_US_dvorak", GetKeyboardOverlayId("xkb:us:dvorak:eng"));
+  // TODO(mazda): Add keyboard overlay definition for US Colemak.
+  EXPECT_EQ("en_US", GetKeyboardOverlayId("xkb:us:colemak:eng"));
   EXPECT_EQ("ko", GetKeyboardOverlayId("hangul"));
   EXPECT_EQ("zh_CN", GetKeyboardOverlayId("pinyin"));
   EXPECT_EQ("ar", GetKeyboardOverlayId("m17n:ar:kbd"));

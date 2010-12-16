@@ -64,6 +64,8 @@ const struct InputMethodIdToKeyboardOverlayId {
   { "xkb:us:intl:eng", "en_US" },
   { "xkb:us:altgr-intl:eng", "en_US" },
   { "xkb:us:dvorak:eng", "en_US_dvorak" },
+  // TODO(mazda): Add keyboard overlay definition for US Colemak.
+  { "xkb:us:colemak:eng", "en_US" },
   { "hangul", "ko" },
   { "pinyin", "zh_CN" },
   { "m17n:ar:kbd", "ar" },
@@ -278,6 +280,7 @@ const struct EnglishToResouceId {
   { "Serbia", IDS_STATUSBAR_LAYOUT_SERBIA },
   { "Czechia", IDS_STATUSBAR_LAYOUT_CZECHIA },
   { "USA - Dvorak", IDS_STATUSBAR_LAYOUT_USA_DVORAK },
+  { "USA - Colemak", IDS_STATUSBAR_LAYOUT_USA_COLEMAK },
   { "Romania", IDS_STATUSBAR_LAYOUT_ROMANIA },
   { "USA", IDS_STATUSBAR_LAYOUT_USA },
   { "USA - International (AltGr dead keys)",

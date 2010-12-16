@@ -11083,6 +11083,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_STATUSBAR_LAYOUT_USA_DVORAK" desc="In the language menu button, this shows the input mode.">
         English (Dvorak)
       </message>
+      <message name="IDS_STATUSBAR_LAYOUT_USA_COLEMAK" desc="In the language menu button, this shows the input mode.">
+        English (Colemak)
+      </message>
       <message name="IDS_STATUSBAR_LAYOUT_ROMANIA" desc="In the language menu button, this shows the input mode.">
         Romanian
       </message>

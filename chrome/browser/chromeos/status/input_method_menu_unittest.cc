@@ -35,6 +35,10 @@ TEST(InputMethodMenuTest, GetTextForIndicatorTest) {
     EXPECT_EQ(L"DV", InputMethodMenu::GetTextForIndicator(desc));
   }
   {
+    InputMethodDescriptor desc("xkb:us:colemak:eng", "Colemak", "us", "eng");
+    EXPECT_EQ(L"CO", InputMethodMenu::GetTextForIndicator(desc));
+  }
+  {
     InputMethodDescriptor desc("xkb:us:altgr-intl:eng", "US extd", "us", "eng");
     EXPECT_EQ(L"EXTD", InputMethodMenu::GetTextForIndicator(desc));
   }
