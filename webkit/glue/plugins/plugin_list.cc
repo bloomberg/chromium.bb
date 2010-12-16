@@ -74,7 +74,7 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
 // TODO(panayiotis): We should group "RealJukebox NS Plugin" with the rest of
 // the RealPlayer files.
 static const VersionRangeDefinition kQuicktimeVersionRange[] = {
-    { "", "", "7.6.8" }
+    { "", "", "7.6.9" }
 };
 static const VersionRangeDefinition kJavaVersionRange[] = {
     { "0", "7", "6.0.220" }  // "220" is not a typo.
@@ -97,6 +97,9 @@ static const VersionRangeDefinition kShockwaveVersionRange[] = {
 static const VersionRangeDefinition kDivXVersionRange[] = {
     { "", "", "1.4.3.4" }
 };
+static const VersionRangeDefinition kRealPlayerVersionRange[] = {
+    { "", "", "12.0.1.609" }
+};
 static const PluginGroupDefinition kGroupDefinitions[] = {
   { "apple-quicktime", "Quicktime", "QuickTime Plug-in", kQuicktimeVersionRange,
     arraysize(kQuicktimeVersionRange),
@@ -118,16 +121,14 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
     arraysize(kDivXVersionRange),
     "http://download.divx.com/divx/autoupdate/player/"
     "DivXWebPlayerInstaller.exe" },
+  { "realplayer", "RealPlayer", "RealPlayer", kRealPlayerVersionRange,
+    arraysize(kRealPlayerVersionRange),
+    "http://www.real.com/realplayer" },
   // These are here for grouping, no vulnerabilities known.
   { "windows-media-player", "Windows Media Player", "Windows Media Player",
     NULL, 0, "" },
   { "microsoft-office", "Microsoft Office", "Microsoft Office",
     NULL, 0, "" },
-  // TODO(panayiotis): The vulnerable versions are
-  //  (v >=  6.0.12.1040 && v <= 6.0.12.1663)
-  //  || v == 6.0.12.1698  || v == 6.0.12.1741
-  { "realplayer", "RealPlayer", "RealPlayer", NULL, 0,
-    "www.real.com/realplayer/downloads" },
 };
 
 #else
