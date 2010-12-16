@@ -327,15 +327,6 @@ class ValgrindTool(BaseTool):
     We need to run some sanity checks, set up a Wine prefix, and make sure
     wineserver is running by starting a dummy win32 program.
     """
-    if not os.path.exists('/usr/share/ca-certificates/root_ca_cert.crt'):
-      logging.warning('WARNING: SSL certificate missing! SSL tests will fail.')
-      logging.warning('You need to run:')
-      logging.warning('sudo cp src/net/data/ssl/certificates/root_ca_cert.crt '
-                      '/usr/share/ca-certificates/')
-      logging.warning('sudo vi /etc/ca-certificates.conf')
-      logging.warning('  (and add the line root_ca_cert.crt)')
-      logging.warning('sudo update-ca-certificates')
-
     # Shutdown the Wine server in case the last run got interrupted.
     common.RunSubprocess([os.environ.get('WINESERVER'), '-k'])
 

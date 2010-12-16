@@ -1,0 +1,23 @@
+# The default configuration to use when requesting a certificate to be used
+# as the server test certificate, whether OK or expired.
+[req]
+# Common configuration for all requests
+default_bits       = 1024
+default_md         = sha1
+string_mask        = utf8only
+prompt             = no
+encrypt_key        = no
+distinguished_name = req_dn
+req_extensions     = req_extensions
+
+[req_dn]
+C  = US
+ST = California
+L  = Mountain View
+O  = Test CA
+# TODO(joth): Support matching the iPAddress subjectAltName when using
+# OpenSSL. See http://crbug.com/62973 and http://crbug.com/20276
+CN = 127.0.0.1
+
+[req_extensions]
+subjectAltName = IP:127.0.0.1

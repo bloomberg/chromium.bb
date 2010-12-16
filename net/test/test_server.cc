@@ -307,7 +307,7 @@ bool TestServer::SetPythonPath() {
 }
 
 FilePath TestServer::GetRootCertificatePath() {
-  return certificates_dir_.AppendASCII("root_ca_cert.crt");
+  return certificates_dir_.AppendASCII("root_ca_cert.pem");
 }
 
 bool TestServer::LoadTestRootCert() {
