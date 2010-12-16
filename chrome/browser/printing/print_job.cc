@@ -5,6 +5,7 @@
 #include "chrome/browser/printing/print_job.h"
 
 #include "base/message_loop.h"
+#include "base/thread_restrictions.h"
 #include "base/timer.h"
 #include "chrome/browser/printing/print_job_worker.h"
 #include "chrome/common/notification_service.h"
@@ -335,6 +336,10 @@ void PrintJob::ControlledWorkerShutdown() {
     }
   }
 #endif
+
+  // Temporarily allow it until we fix
+  // http://code.google.com/p/chromium/issues/detail?id=67044
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
 
   // Now make sure the thread object is cleaned up.
   worker_->Stop();
