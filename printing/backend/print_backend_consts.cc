@@ -8,3 +8,7 @@
 
 const char kLocationTagName[] = "location";
 const char kDriverNameTagName[] = "drivername";
+const char kCUPSPrintServerURL[] = "print_server_url";
+const char kCUPSBlocking[] = "cups_blocking";
+const char kValueTrue[] = "true";
+const char kValueFalse[] = "false";

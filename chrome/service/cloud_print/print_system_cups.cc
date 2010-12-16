@@ -31,13 +31,13 @@
 #include "googleurl/src/gurl.h"
 #include "printing/backend/cups_helper.h"
 #include "printing/backend/print_backend.h"
+#include "printing/backend/print_backend_consts.h"
 
 namespace {
 static const char kCUPSPrinterInfoOpt[] = "printer-info";
 static const char kCUPSPrinterStateOpt[] = "printer-state";
 static const char kCUPSPrintServerURLs[] = "print_server_urls";
 static const char kCUPSUpdateTimeoutMs[] = "update_timeout_ms";
-static const char kCUPSPrintBackendServerURL[] = "print_server_url";
 
 // Default port for IPP print servers.
 static const int kDefaultIPPServerPort = 631;
@@ -380,7 +380,10 @@ void PrintSystemCUPS::AddPrintServer(const std::string& url) {
 
   // Get Print backend for the specific print server.
   DictionaryValue backend_settings;
-  backend_settings.SetString(kCUPSPrintBackendServerURL, url);
+  backend_settings.SetString(kCUPSPrintServerURL, url);
+
+  // Make CUPS requests non-blocking.
+  backend_settings.SetString(kCUPSBlocking, kValueFalse);
 
   PrintServerInfoCUPS print_server;
   print_server.backend =
@@ -622,6 +625,7 @@ int PrintSystemCUPS::PrintFile(const GURL& url, const char* name,
     return cupsPrintFile(name, filename, title, num_options, options);
   } else {
     printing::HttpConnectionCUPS http(url);
+    http.SetBlocking(false);
     return cupsPrintFile2(http.http(), name, filename,
                           title, num_options, options);
   }
@@ -633,6 +637,7 @@ int PrintSystemCUPS::GetJobs(cups_job_t** jobs, const GURL& url,
     return cupsGetJobs(jobs, name, myjobs, whichjobs);
   } else {
     printing::HttpConnectionCUPS http(url);
+    http.SetBlocking(false);
     return cupsGetJobs2(http.http(), jobs, name, myjobs, whichjobs);
   }
 }

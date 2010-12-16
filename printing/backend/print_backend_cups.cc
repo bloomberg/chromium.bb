@@ -19,6 +19,7 @@
 #include "base/values.h"
 #include "googleurl/src/gurl.h"
 #include "printing/backend/cups_helper.h"
+#include "printing/backend/print_backend_consts.h"
 
 #if !defined(OS_MACOSX)
 GCRY_THREAD_OPTION_PTHREAD_IMPL;
@@ -76,11 +77,10 @@ namespace printing {
 
 static const char kCUPSPrinterInfoOpt[] = "printer-info";
 static const char kCUPSPrinterStateOpt[] = "printer-state";
-static const char kCUPSPrintServerURL[] = "print_server_url";
 
 class PrintBackendCUPS : public PrintBackend {
  public:
-  explicit PrintBackendCUPS(const GURL& print_server_url);
+  PrintBackendCUPS(const GURL& print_server_url, bool blocking);
   virtual ~PrintBackendCUPS() {}
 
   // PrintBackend implementation.
@@ -100,10 +100,11 @@ class PrintBackendCUPS : public PrintBackend {
   FilePath GetPPD(const char* name);
 
   GURL print_server_url_;
+  bool blocking_;
 };
 
-PrintBackendCUPS::PrintBackendCUPS(const GURL& print_server_url)
-    : print_server_url_(print_server_url) {
+PrintBackendCUPS::PrintBackendCUPS(const GURL& print_server_url, bool blocking)
+    : print_server_url_(print_server_url), blocking_(blocking) {
 }
 
 void PrintBackendCUPS::EnumeratePrinters(PrinterList* printer_list) {
@@ -194,13 +195,16 @@ scoped_refptr<PrintBackend> PrintBackend::CreateInstance(
   g_gcrypt_initializer.Get();
 #endif
 
-  std::string print_server_url_str;
+  std::string print_server_url_str, cups_blocking;
   if (print_backend_settings) {
     print_backend_settings->GetString(kCUPSPrintServerURL,
                                       &print_server_url_str);
+
+    print_backend_settings->GetString(kCUPSBlocking,
+                                      &cups_blocking);
   }
   GURL print_server_url(print_server_url_str.c_str());
-  return new PrintBackendCUPS(print_server_url);
+  return new PrintBackendCUPS(print_server_url, cups_blocking == kValueTrue);
 }
 
 int PrintBackendCUPS::GetDests(cups_dest_t** dests) {
@@ -208,6 +212,7 @@ int PrintBackendCUPS::GetDests(cups_dest_t** dests) {
     return cupsGetDests(dests);
   } else {
     HttpConnectionCUPS http(print_server_url_);
+    http.SetBlocking(blocking_);
     return cupsGetDests2(http.http(), dests);
   }
 }
@@ -233,7 +238,7 @@ FilePath PrintBackendCUPS::GetPPD(const char* name) {
     // To distinguish error case from the normal return, will check result file
     // size agains content length.
     HttpConnectionCUPS http(print_server_url_);
-    http.SetBlocking(false);
+    http.SetBlocking(blocking_);
     ppd_file_path = cupsGetPPD2(http.http(), name);
     // Check if the get full PPD, since non-blocking call may simply return
     // normally after timeout expired.

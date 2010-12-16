@@ -8,5 +8,9 @@
 
 extern const char kLocationTagName[];
 extern const char kDriverNameTagName[];
+extern const char kCUPSPrintServerURL[];
+extern const char kCUPSBlocking[];
+extern const char kValueTrue[];
+extern const char kValueFalse[];
 
 #endif  // PRINTING_BACKEND_PRINT_BACKEND_CONSTS_H_
