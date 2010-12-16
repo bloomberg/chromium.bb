@@ -194,18 +194,27 @@ const char kAlternateErrorPagesEnabled[] = "alternate_error_pages.enabled";
 // A boolean pref set to true if DNS pre-fetching is being done in browser.
 const char kDnsPrefetchingEnabled[] = "dns_prefetching.enabled";
 
-// An adaptively identified list of domain names to be pre-fetched during the
-// next startup, based on what was actually needed during this startup.
+// OBSOLETE: new pref now stored with user prefs instead of profile, as
+// kDnsPrefetchingStartupList.
 const char kDnsStartupPrefetchList[] = "StartupDNSPrefetchList";
 
-// Disables the SPDY protocol.
-const char kDisableSpdy[] = "spdy.disabled";
+// An adaptively identified list of domain names to be pre-fetched during the
+// next startup, based on what was actually needed during this startup.
+const char kDnsPrefetchingStartupList[] = "dns_prefetching.startup_list";
+
+// OBSOLETE: new pref now stored with user prefs instead of profile, as
+// kDnsPrefetchingHostReferralList.
+const char kDnsHostReferralList[] = "HostReferralList";
 
 // A list of host names used to fetch web pages, and their commonly used
 // sub-resource hostnames (and expected latency benefits from pre-resolving, or
 // preconnecting to, such sub-resource hostnames).
 // This list is adaptively grown and pruned.
-const char kDnsHostReferralList[] = "HostReferralList";
+const char kDnsPrefetchingHostReferralList[] =
+    "dns_prefetching.host_referral_list";
+
+// Disables the SPDY protocol.
+const char kDisableSpdy[] = "spdy.disabled";
 
 // Is the cookie prompt expanded?
 const char kCookiePromptExpanded[] = "cookieprompt.expanded";
@@ -225,6 +234,14 @@ const char kInstantEnabledTime[] = "instant.enabled_time";
 // Used to maintain instant promo keys. See PromoCounter for details of subkeys
 // that are used.
 const char kInstantPromo[] = "instant.promo";
+
+// Used to migrate preferences from local state to user preferences to
+// enable multiple profiles.
+// Holds possible values:
+// 0: no preferences migrated yet.
+// 1: dns prefetching preferences stored in user preferences.
+const char kMultipleProfilePrefMigration[] =
+    "profile.multiple_profile_prefs_version";
 
 #if defined(USE_NSS) || defined(USE_OPENSSL)
 // Prefs for SSLConfigServicePref.  Currently, these are only present on
