@@ -108,7 +108,7 @@ cr.define('options', function() {
         length = page.pageDiv.childNodes.length;
         for (var i = 0; i < length; i++) {
           childDiv = page.pageDiv.childNodes[i];
-          if (childDiv.nodeType == 1) {
+          if (childDiv.nodeType == document.ELEMENT_NODE) {
             if (active) {
               if (childDiv.nodeName.toLowerCase() != 'section')
                 childDiv.classList.add('search-hidden');
@@ -140,16 +140,10 @@ cr.define('options', function() {
       var searchText =
           text.toLowerCase().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 
-      // Generate a regular expression and transform string for searching the
-      // navigation sidebar.
-      var navRegEx = new RegExp('(\\b' + searchText + ')', 'ig');
-      var navTransform = '<span class="search-highlighted">$1</span>';
-
-      // Generate a regular expression and transform string for searching the
-      // pages.
-      var sectionRegEx =
-          new RegExp('>([^<]*)?(\\b' + searchText + ')([^>]*)?<', 'ig');
-      var sectionTransform = '>$1<span class="search-highlighted">$2</span>$3<';
+      // Generate a regular expression and replace string for hilighting
+      // search terms.
+      var regEx = new RegExp('(\\b' + searchText + ')', 'ig');
+      var replaceString = '<span class="search-highlighted">$1</span>';
 
       // Initialize all sections.  If the search string matches a title page,
       // show sections for that page.
@@ -160,13 +154,13 @@ cr.define('options', function() {
         this.unhighlightMatches_(page.pageDiv);
         var pageMatch = false;
         if (searchText.length) {
-          pageMatch = this.performReplace_(navRegEx, navTransform, page.tab);
+          pageMatch = this.performReplace_(regEx, replaceString, page.tab);
         }
         if (pageMatch)
           foundMatches = true;
         for (var i = 0; i < page.pageDiv.childNodes.length; i++) {
           var childDiv = page.pageDiv.childNodes[i];
-          if (childDiv.nodeType == 1 &&
+          if (childDiv.nodeType == document.ELEMENT_NODE &&
               childDiv.nodeName.toLowerCase() == 'section') {
             if (pageMatch) {
               childDiv.classList.remove('search-hidden');
@@ -183,10 +177,9 @@ cr.define('options', function() {
           var page = pagesToSearch[key];
           for (var i = 0; i < page.pageDiv.childNodes.length; i++) {
             var childDiv = page.pageDiv.childNodes[i];
-            if (childDiv.nodeType == 1 &&
+            if (childDiv.nodeType == document.ELEMENT_NODE &&
                 childDiv.nodeName.toLowerCase() == 'section' &&
-                this.performReplace_(sectionRegEx, sectionTransform,
-                    childDiv)) {
+                this.performReplace_(regEx, replaceString, childDiv)) {
               childDiv.classList.remove('search-hidden');
               foundMatches = true;
             }
@@ -208,22 +201,54 @@ cr.define('options', function() {
     },
 
     /**
-     * Performs a string replacement based on a regex and transform.
+     * Performs a string replacement based on a regex and replace string.
      * @param {RegEx} regex A regular expression for finding search matches.
-     * @param {String} transform A string to apply the replace operation.
+     * @param {String} replace A string to apply the replace operation.
      * @param {Element} element An HTML container element.
      * @returns {Boolean} true if the element was changed.
      * @private
      */
-    performReplace_: function(regex, transform, element) {
-      var originalHTML = element.innerHTML;
-      var newHTML = originalHTML.replace(regex, transform);
-      if (originalHTML != newHTML) {
-        element.innerHTML = newHTML;
-        return true;
-      } else {
-        return false;
+    performReplace_: function(regex, replace, element) {
+      var found = false;
+      var div, child, tmp;
+
+      // Walk the tree, searching each TEXT node.
+      var walker = document.createTreeWalker(element,
+                                             NodeFilter.SHOW_TEXT,
+                                             null,
+                                             false);
+      var node = walker.nextNode();
+      while (node) {
+        // Perform a search and replace on the text node value.
+        var newValue = node.nodeValue.replace(regex, replace);
+        if (newValue != node.nodeValue) {
+          // The text node has changed so that means we found at least one
+          // match.
+          found = true;
+
+          // Create a temporary div element and set the innerHTML to the new
+          // value.
+          div = document.createElement('div');
+          div.innerHTML = newValue;
+
+          // Insert all the child nodes of the temporary div element into the
+          // document, before the original node.
+          child = div.firstChild;
+          while (child = div.firstChild) {
+            node.parentNode.insertBefore(child, node);
+          };
+
+          // Delete the old text node and advance the walker to the next
+          // node.
+          tmp = node;
+          node = walker.nextNode();
+          tmp.parentNode.removeChild(tmp);
+        } else {
+          node = walker.nextNode();
+        }
       }
+
+      return found;
     },
 
     /**
@@ -232,9 +257,21 @@ cr.define('options', function() {
      * @private
      */
     unhighlightMatches_: function(element) {
-      var regex =
-          new RegExp('<span class="search-highlighted">(.*?)</span>', 'g');
-      element.innerHTML = element.innerHTML.replace(regex, '$1');
+      // Find all search highlight elements.
+      var elements = element.querySelectorAll('.search-highlighted');
+
+      // For each element, remove the highlighting.
+      var node, parent, i, length = elements.length;
+      for (i = 0; i < length; i++) {
+        node = elements[i];
+        parent = node.parentNode;
+
+        // Replace the highlight element with the first child (the text node).
+        parent.replaceChild(node.firstChild, node);
+
+        // Normalize the parent so that multiple text nodes will be combined.
+        parent.normalize();
+      }
     },
 
     /**
