@@ -26,6 +26,7 @@
 #include "chrome/renderer/command_buffer_proxy.h"
 #include "chrome/renderer/ggl/ggl.h"
 #include "chrome/renderer/gpu_channel_host.h"
+#include "chrome/renderer/pepper_platform_context_3d_impl.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/webgraphicscontext3d_command_buffer_impl.h"
@@ -97,36 +98,6 @@ class PlatformImage2DImpl : public pepper::PluginDelegate::PlatformImage2D {
   DISALLOW_COPY_AND_ASSIGN(PlatformImage2DImpl);
 };
 
-#ifdef ENABLE_GPU
-
-class PlatformContext3DImpl : public pepper::PluginDelegate::PlatformContext3D {
- public:
-  explicit PlatformContext3DImpl(WebKit::WebView* web_view)
-      : web_view_(web_view),
-        context_(NULL) {
-  }
-
-  virtual ~PlatformContext3DImpl() {
-    if (context_) {
-      ggl::DestroyContext(context_);
-      context_ = NULL;
-    }
-  }
-
-  virtual bool Init();
-  virtual bool SwapBuffers();
-  virtual unsigned GetError();
-  virtual void SetSwapBuffersCallback(Callback0::Type* callback);
-  void ResizeBackingTexture(const gfx::Size& size);
-  virtual unsigned GetBackingTextureId();
-  virtual gpu::gles2::GLES2Implementation* GetGLES2Implementation();
-
- private:
-  WebKit::WebView* web_view_;
-  ggl::Context* context_;
-};
-
-#endif  // ENABLE_GPU
 
 class PlatformAudioImpl
     : public pepper::PluginDelegate::PlatformAudio,
@@ -190,89 +161,6 @@ class PlatformAudioImpl
 
   DISALLOW_COPY_AND_ASSIGN(PlatformAudioImpl);
 };
-
-#ifdef ENABLE_GPU
-
-bool PlatformContext3DImpl::Init() {
-  // Ignore initializing more than once.
-  if (context_)
-    return true;
-
-  WebGraphicsContext3DCommandBufferImpl* context =
-      static_cast<WebGraphicsContext3DCommandBufferImpl*>(
-          web_view_->graphicsContext3D());
-  if (!context)
-    return false;
-
-  ggl::Context* parent_context = context->context();
-  if (!parent_context)
-    return false;
-
-  RenderThread* render_thread = RenderThread::current();
-  if (!render_thread)
-    return false;
-
-  GpuChannelHost* host = render_thread->GetGpuChannel();
-  if (!host)
-    return false;
-
-  DCHECK(host->state() == GpuChannelHost::kConnected);
-
-  // TODO(apatrick): Let Pepper plugins configure their back buffer surface.
-  static const int32 attribs[] = {
-    ggl::GGL_ALPHA_SIZE, 8,
-    ggl::GGL_DEPTH_SIZE, 24,
-    ggl::GGL_STENCIL_SIZE, 8,
-    ggl::GGL_SAMPLES, 0,
-    ggl::GGL_SAMPLE_BUFFERS, 0,
-    ggl::GGL_NONE,
-  };
-
-  // TODO(apatrick): Decide which extensions to expose to Pepper plugins.
-  // Currently they get only core GLES2.
-  context_ = ggl::CreateOffscreenContext(host,
-                                         parent_context,
-                                         gfx::Size(1, 1),
-                                         "",
-                                         attribs);
-  if (!context_)
-    return false;
-
-  return true;
-}
-
-bool PlatformContext3DImpl::SwapBuffers() {
-  DCHECK(context_);
-  return ggl::SwapBuffers(context_);
-}
-
-unsigned PlatformContext3DImpl::GetError() {
-  DCHECK(context_);
-  return ggl::GetError(context_);
-}
-
-void PlatformContext3DImpl::ResizeBackingTexture(const gfx::Size& size) {
-  DCHECK(context_);
-  ggl::ResizeOffscreenContext(context_, size);
-}
-
-void PlatformContext3DImpl::SetSwapBuffersCallback(Callback0::Type* callback) {
-  DCHECK(context_);
-  ggl::SetSwapBuffersCallback(context_, callback);
-}
-
-unsigned PlatformContext3DImpl::GetBackingTextureId() {
-  DCHECK(context_);
-  return ggl::GetParentTextureId(context_);
-}
-
-gpu::gles2::GLES2Implementation*
-    PlatformContext3DImpl::GetGLES2Implementation() {
-  DCHECK(context_);
-  return ggl::GetImplementation(context_);
-}
-
-#endif  // ENABLE_GPU
 
 bool PlatformAudioImpl::Initialize(
     uint32_t sample_rate, uint32_t sample_count,
@@ -611,7 +499,17 @@ PepperPluginDelegateImpl::CreateImage2D(int width, int height) {
 pepper::PluginDelegate::PlatformContext3D*
     PepperPluginDelegateImpl::CreateContext3D() {
 #ifdef ENABLE_GPU
-  return new PlatformContext3DImpl(render_view_->webview());
+  WebGraphicsContext3DCommandBufferImpl* context =
+      static_cast<WebGraphicsContext3DCommandBufferImpl*>(
+          render_view_->webview()->graphicsContext3D());
+  if (!context)
+    return NULL;
+
+  ggl::Context* parent_context = context->context();
+  if (!parent_context)
+    return NULL;
+
+  return new PlatformContext3DImpl(parent_context);
 #else
   return NULL;
 #endif
