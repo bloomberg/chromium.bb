@@ -953,24 +953,40 @@ class SMConnection:  public SMConnectionInterface,
     }
   }
 
-  int Send(const char* bytes, int len, int flags) {
+  int Send(const char* data, int len, int flags) {
     ssize_t bytes_written = 0;
     if (ssl_) {
-      bytes_written = SSL_write(ssl_, bytes, len);
-      if (bytes_written < 0) {
-        switch(SSL_get_error(ssl_, bytes_written)) {
-          case SSL_ERROR_WANT_READ:
-          case SSL_ERROR_WANT_WRITE:
-          case SSL_ERROR_WANT_ACCEPT:
-          case SSL_ERROR_WANT_CONNECT:
-            return -2;
-          default:
-            PrintSslError();
-            break;
+      // Write smallish chunks to SSL so that we don't have large
+      // multi-packet TLS records to receive before being able to handle
+      // the data.
+      while(len > 0) {
+        const int kMaxTLSRecordSize = 1460;
+        const char* ptr = &(data[bytes_written]);
+        int chunksize = std::min(len, kMaxTLSRecordSize);
+        int rv = SSL_write(ssl_, ptr, chunksize);
+        if (rv <= 0) {
+          switch(SSL_get_error(ssl_, rv)) {
+            case SSL_ERROR_WANT_READ:
+            case SSL_ERROR_WANT_WRITE:
+            case SSL_ERROR_WANT_ACCEPT:
+            case SSL_ERROR_WANT_CONNECT:
+              rv = -2;
+              break;
+            default:
+              PrintSslError();
+              break;
+          }
+          // If we wrote some data, return that count.  Otherwise
+          // return the stall error.
+          return bytes_written > 0 ? bytes_written : rv;
         }
+        bytes_written += rv;
+        len -= rv;
+        if (rv != chunksize)
+          break;  // If we couldn't write everything, we're implicitly stalled
       }
     } else {
-      bytes_written = send(fd_, bytes, len, flags);
+      bytes_written = send(fd_, data, len, flags);
     }
     return bytes_written;
   }
