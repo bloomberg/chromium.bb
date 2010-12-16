@@ -3473,3 +3473,10 @@
    fun:_ZN14ProfileManager10GetProfileERK8FilePath
    fun:_ZN14ProfileManager17GetDefaultProfileERK8FilePath
 }
+{
+   bug_67142
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN16ChildProcessHost13CreateChannelEv
+   fun:_ZN14GpuProcessHost4InitEv
+}
