@@ -5977,6 +5977,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED" desc="Heading of the error page when the network connection failed.">
         Unable to connect to the Internet
       </message>
+      <message name="IDS_ERRORPAGES_HEADING_CACHE_READ_FAILURE" desc="Heading in the error page when we encountered an error reading from the cache.  Generally this happens when the disk cache is corrupted from improper shutdown.">
+        Cache read error
+      </message>
+      <message name="IDS_ERRORPAGES_HEADING_NETWORK_IO_SUSPENDED" desc="Heading in the error page when a page load failed due to the computer entering sleep/suspend mode.">
+        Network access suspended
+      </message>
       <message name="IDS_ERRORPAGES_HEADING_NOT_FOUND" desc="Heading in the error page when the server returns a 404 or 410.">
         This webpage is not found
       </message>
@@ -6062,6 +6068,24 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
+      <message name="IDS_ERRORPAGES_SUMMARY_CACHE_READ_FAILURE" desc="Summary in the error page when we encountered an error reading from the cache.  Generally this happens when the disk cache is corrupted from improper shutdown.">
+        To speed up webpages,
+        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+        temporarily saves downloaded files to disk. When
+        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+        is not shut down properly, these files can become corrupted, resulting
+        in this error.  Reloading the page should resolve this issue, and
+        shutting down properly should prevent it from happening in the future.
+        <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
+        If the problem persists, try clearing the cache.  In some cases, this
+        can also be a symptom of hardware starting to fail.
+      </message>
+      <message name="IDS_ERRORPAGES_SUMMARY_NETWORK_IO_SUSPENDED" desc="Summary in the error page when a page load failed due to the computer entering sleep/suspend mode.">
+        Unable to load the webpage because your computer entered sleep or
+        hibernate mode.  When this happens, network connections are shut
+        down and new network requests fail.  Reloading the page should
+        resolve this.
+      </message>
       <message name="IDS_ERRORPAGES_SUMMARY_NOT_FOUND" desc="Summary in the error page when the server returns a 404.">
         No webpage was found for the web address: <ph name="URL">&lt;strong jscontent="failedUrl"&gt;&lt;/strong&gt;</ph>
       </message>
@@ -6076,8 +6100,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         means that the server is trying to set up a secure connection but, due to
         a disastrous misconfiguration, the connection wouldn't be secure at all!
         <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph> In this case the
-        server needs to be fixed. Chrome won't use insecure connections in order
-        to protect your privacy.
+        server needs to be fixed.
+        <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph>
+        won't use insecure connections in order to protect your privacy.
       </message>
 
       <message name="IDS_ERRORPAGES_SUMMARY_ESET_ANTI_VIRUS_SSL_INTERCEPTION" desc="Summary in the error page when we detect that ESET anti-virus is running and intercepting our HTTPS connections. 'ESET' is a product name and may be best left untranslated. 'Learn more' should be the contents of IDS_OPTIONS_LEARN_MORE_LABEL.">
@@ -6125,6 +6150,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_INTERNET_DISCONNECTED" desc="The error message displayed when we have no Internet access.">
         The Internet connection has been lost.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_CACHE_READ_FAILURE" desc="The error message displayed when we encountered an error reading from the cache.  Generally this happens when the disk cache is corrupted from improper shutdown.">
+        Error reading data from cache.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_NETWORK_IO_SUSPENDED" desc="The error message displayed when a page load failed due to the computer entering sleep/suspend mode.">
+        Network IO suspended.
       </message>
       <message name="IDS_ERRORPAGES_DETAILS_FILE_NOT_FOUND" desc="The error message displayed when a local file can not be found.">
         The file or directory could not be found.
