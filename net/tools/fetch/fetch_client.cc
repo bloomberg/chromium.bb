@@ -11,6 +11,7 @@
 #include "base/metrics/stats_counters.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "net/base/cert_verifier.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_resolver.h"
 #include "net/base/io_buffer.h"
@@ -140,6 +141,7 @@ int main(int argc, char**argv) {
       net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
                                     NULL, NULL));
 
+  scoped_ptr<net::CertVerifier> cert_verifier(new net::CertVerifier);
   scoped_refptr<net::ProxyService> proxy_service(
       net::ProxyService::CreateDirect());
   scoped_refptr<net::SSLConfigService> ssl_config_service(
@@ -148,13 +150,15 @@ int main(int argc, char**argv) {
   scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory(
       net::HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
   if (use_cache) {
-    factory = new net::HttpCache(host_resolver.get(), NULL, NULL, proxy_service,
-        ssl_config_service, http_auth_handler_factory.get(), NULL, NULL,
+    factory = new net::HttpCache(host_resolver.get(), cert_verifier.get(),
+        NULL, NULL, proxy_service, ssl_config_service,
+        http_auth_handler_factory.get(), NULL, NULL,
         net::HttpCache::DefaultBackend::InMemory(0));
   } else {
     factory = new net::HttpNetworkLayer(
         net::ClientSocketFactory::GetDefaultFactory(),
         host_resolver.get(),
+        cert_verifier.get(),
         NULL /* dnsrr_resolver */,
         NULL /* dns_cert_checker */,
         NULL /* ssl_host_info_factory */,
@@ -204,7 +208,7 @@ int main(int argc, char**argv) {
     // Dump the stats table.
     printf("<stats>\n");
     int counter_max = table.GetMaxCounters();
-    for (int index=0; index < counter_max; index++) {
+    for (int index = 0; index < counter_max; index++) {
       std::string name(table.GetRowName(index));
       if (name.length() > 0) {
         int value = table.GetRowValue(index);

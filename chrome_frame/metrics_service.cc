@@ -74,6 +74,7 @@
 #include "chrome_frame/http_negotiate.h"
 #include "chrome_frame/utils.h"
 #include "net/base/capturing_net_log.h"
+#include "net/base/cert_verifier.h"
 #include "net/base/host_resolver.h"
 #include "net/base/ssl_config_service_defaults.h"
 #include "net/base/upload_data.h"
@@ -106,7 +107,7 @@ struct UploadThreadInstanceTraits
     // Use placement new to initialize our instance in our preallocated space.
     // The parenthesis is very important here to force POD type initialization.
     base::Thread* upload_thread =
-        new (instance) base::Thread("ChromeFrameUploadThread");
+        new(instance) base::Thread("ChromeFrameUploadThread");
     base::Thread::Options options;
     options.message_loop_type = MessageLoop::TYPE_IO;
     bool ret = upload_thread->StartWithOptions(options);
@@ -143,6 +144,8 @@ class ChromeFrameUploadRequestContext : public URLRequestContext {
     DVLOG(1) << __FUNCTION__;
     delete http_transaction_factory_;
     delete http_auth_handler_factory_;
+    delete cert_verifier_;
+    delete host_resolver_;
   }
 
   void Initialize() {
@@ -153,6 +156,7 @@ class ChromeFrameUploadRequestContext : public URLRequestContext {
     host_resolver_ =
         net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
                                       NULL, NULL);
+    cert_verifier_ = new net::CertVerifier;
     net::ProxyConfigService* proxy_config_service =
         net::ProxyService::CreateSystemProxyConfigService(NULL, NULL);
     DCHECK(proxy_config_service);
@@ -176,6 +180,7 @@ class ChromeFrameUploadRequestContext : public URLRequestContext {
 
     http_transaction_factory_ = new net::HttpCache(
         net::HttpNetworkLayer::CreateFactory(host_resolver_,
+                                             cert_verifier_,
                                              NULL /* dnsrr_resovler */,
                                              NULL /* dns_cert_checker*/,
                                              NULL /* ssl_host_info */,

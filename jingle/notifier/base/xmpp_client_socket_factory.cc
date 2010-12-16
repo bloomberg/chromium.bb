@@ -35,10 +35,11 @@ net::SSLClientSocket* XmppClientSocketFactory::CreateSSLClientSocket(
     const net::HostPortPair& host_and_port,
     const net::SSLConfig& ssl_config,
     net::SSLHostInfo* ssl_host_info,
+    net::CertVerifier* cert_verifier,
     net::DnsCertProvenanceChecker* dns_cert_checker) {
   return client_socket_factory_->CreateSSLClientSocket(
       transport_socket, host_and_port, ssl_config, ssl_host_info,
-      dns_cert_checker);
+      cert_verifier, dns_cert_checker);
 }
 
 }  // namespace

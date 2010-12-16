@@ -19,10 +19,11 @@ SSLClientSocket* SSLClientSocketNSSFactory(
     const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
     SSLHostInfo* ssl_host_info,
+    CertVerifier* cert_verifier,
     DnsCertProvenanceChecker* dns_cert_checker) {
   scoped_ptr<SSLHostInfo> shi(ssl_host_info);
   return new SSLClientSocketNSS(transport_socket, host_and_port, ssl_config,
-                                shi.release(), dns_cert_checker);
+                                shi.release(), cert_verifier, dns_cert_checker);
 }
 
 }  // namespace net

@@ -9,6 +9,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_cache.h"
+#include "net/http/http_network_session.h"
 
 namespace net {
 
@@ -16,7 +17,8 @@ DiskCacheBasedSSLHostInfo::DiskCacheBasedSSLHostInfo(
     const std::string& hostname,
     const SSLConfig& ssl_config,
     HttpCache* http_cache)
-    : SSLHostInfo(hostname, ssl_config),
+    : SSLHostInfo(hostname, ssl_config,
+                  http_cache->network_layer()->GetSession()->cert_verifier()),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       callback_(new CallbackImpl(weak_ptr_factory_.GetWeakPtr(),
                                  &DiskCacheBasedSSLHostInfo::DoLoop)),

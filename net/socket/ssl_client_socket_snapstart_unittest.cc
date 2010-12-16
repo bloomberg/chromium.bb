@@ -41,8 +41,8 @@ namespace net {
 // pretends that certificate verification always succeeds.
 class TestSSLHostInfo : public SSLHostInfo {
  public:
-  TestSSLHostInfo()
-      : SSLHostInfo("example.com", kDefaultSSLConfig) {
+  explicit TestSSLHostInfo(CertVerifier* cert_verifier)
+      : SSLHostInfo("example.com", kDefaultSSLConfig, cert_verifier) {
     if (!saved_.empty())
       Parse(saved_);
     cert_verification_complete_ = true;
@@ -194,7 +194,7 @@ class SSLClientSocketSnapStartTest : public PlatformTest {
     scoped_ptr<SSLClientSocket> sock(
         socket_factory_->CreateSSLClientSocket(
             transport, HostPortPair("example.com", 443), ssl_config_,
-            new TestSSLHostInfo()));
+            new TestSSLHostInfo(&cert_verifier_), &cert_verifier_));
 
     TestCompletionCallback callback;
     int rv = sock->Connect(&callback);
@@ -265,6 +265,7 @@ class SSLClientSocketSnapStartTest : public PlatformTest {
   }
 
   base::ProcessHandle child_;
+  CertVerifier cert_verifier_;
   ClientSocketFactory* const socket_factory_;
   struct sockaddr_in remote_;
   int client_;

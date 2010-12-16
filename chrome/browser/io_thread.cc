@@ -28,6 +28,7 @@
 #include "chrome/common/net/raw_host_resolver_proc.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/pref_names.h"
+#include "net/base/cert_verifier.h"
 #include "net/base/dnsrr_resolver.h"
 #include "net/base/host_cache.h"
 #include "net/base/host_resolver.h"
@@ -332,6 +333,7 @@ void IOThread::Init() {
 
   globals_->host_resolver.reset(
       CreateGlobalHostResolver(net_log_));
+  globals_->cert_verifier.reset(new net::CertVerifier);
   globals_->dnsrr_resolver.reset(new net::DnsRRResolver);
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(
       globals_->host_resolver.get()));

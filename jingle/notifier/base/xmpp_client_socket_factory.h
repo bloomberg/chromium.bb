@@ -33,7 +33,7 @@ class XmppClientSocketFactory : public net::ClientSocketFactory {
   virtual net::SSLClientSocket* CreateSSLClientSocket(
       net::ClientSocketHandle* transport_socket,
       const net::HostPortPair& host_and_port, const net::SSLConfig& ssl_config,
-      net::SSLHostInfo* ssl_host_info,
+      net::SSLHostInfo* ssl_host_info, net::CertVerifier* cert_verifier,
       net::DnsCertProvenanceChecker* dns_cert_checker);
 
  private:

@@ -11,13 +11,13 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
+#include "net/base/cert_verifier.h"
 #include "net/base/cert_verify_result.h"
 #include "net/base/completion_callback.h"
 #include "net/socket/ssl_client_socket.h"
 
 namespace net {
 
-class CertVerifier;
 class X509Certificate;
 struct SSLConfig;
 
@@ -27,7 +27,9 @@ struct SSLConfig;
 // certificates.
 class SSLHostInfo {
  public:
-  SSLHostInfo(const std::string& hostname, const SSLConfig& ssl_config);
+  SSLHostInfo(const std::string& hostname,
+              const SSLConfig& ssl_config,
+              CertVerifier *certVerifier);
   virtual ~SSLHostInfo();
 
   // Start will commence the lookup. This must be called before any other
@@ -127,7 +129,7 @@ class SSLHostInfo {
   base::TimeTicks verification_start_time_;
   base::TimeTicks verification_end_time_;
   CertVerifyResult cert_verify_result_;
-  scoped_ptr<CertVerifier> verifier_;
+  SingleRequestCertVerifier verifier_;
   scoped_refptr<X509Certificate> cert_;
   scoped_refptr<CancelableCompletionCallback<SSLHostInfo> > callback_;
 };

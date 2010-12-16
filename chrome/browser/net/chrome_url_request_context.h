@@ -127,6 +127,9 @@ class ChromeURLRequestContext : public URLRequestContext {
   void set_host_resolver(net::HostResolver* resolver) {
     host_resolver_ = resolver;
   }
+  void set_cert_verifier(net::CertVerifier* cert_verifier) {
+    cert_verifier_ = cert_verifier;
+  }
   void set_dnsrr_resolver(net::DnsRRResolver* dnsrr_resolver) {
     dnsrr_resolver_ = dnsrr_resolver;
   }

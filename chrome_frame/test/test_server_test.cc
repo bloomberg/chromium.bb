@@ -64,6 +64,7 @@ class URLRequestTestContext : public URLRequestContext {
     host_resolver_ =
         net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
                                       NULL, NULL);
+    cert_verifier_ = new net::CertVerifier;
     proxy_service_ = net::ProxyService::CreateDirect();
     ssl_config_service_ = new net::SSLConfigServiceDefaults;
     http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault(
@@ -71,6 +72,7 @@ class URLRequestTestContext : public URLRequestContext {
     http_transaction_factory_ = new net::HttpCache(
         net::HttpNetworkLayer::CreateFactory(
             host_resolver_,
+            cert_verifier_,
             NULL /* dnsrr_resolver */,
             NULL /* dns_cert_checker */,
             NULL /* ssl_host_info_factory */,
@@ -87,6 +89,8 @@ class URLRequestTestContext : public URLRequestContext {
   virtual ~URLRequestTestContext() {
     delete http_transaction_factory_;
     delete http_auth_handler_factory_;
+    delete cert_verifier_;
+    delete host_resolver_;
   }
 };
 

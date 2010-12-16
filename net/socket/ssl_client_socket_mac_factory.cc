@@ -14,9 +14,11 @@ SSLClientSocket* SSLClientSocketMacFactory(
     const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
     SSLHostInfo* ssl_host_info,
+    CertVerifier* cert_verifier,
     DnsCertProvenanceChecker* dns_cert_checker) {
   delete ssl_host_info;
-  return new SSLClientSocketMac(transport_socket, host_and_port, ssl_config);
+  return new SSLClientSocketMac(transport_socket, host_and_port, ssl_config,
+                                cert_verifier);
 }
 
 }  // namespace net

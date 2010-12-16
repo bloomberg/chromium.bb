@@ -38,6 +38,7 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/capturing_net_log.h"
+#include "net/base/cert_verifier.h"
 #include "net/base/host_resolver.h"
 #include "net/base/net_util.h"
 #include "net/base/ssl_config_service_defaults.h"
@@ -258,12 +259,15 @@ class PluginInstallerDownloadTest
       DVLOG(1) << __FUNCTION__;
       delete http_transaction_factory_;
       delete http_auth_handler_factory_;
+      delete cert_verifier_;
+      delete host_resolver_;
     }
 
     void Initialize() {
       host_resolver_ =
           net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
                                         NULL, NULL);
+      cert_verifier_ = new net::CertVerifier;
       net::ProxyConfigService* proxy_config_service =
           net::ProxyService::CreateSystemProxyConfigService(NULL, NULL);
       DCHECK(proxy_config_service);
@@ -280,6 +284,7 @@ class PluginInstallerDownloadTest
           host_resolver_);
       http_transaction_factory_ = new net::HttpCache(
           net::HttpNetworkLayer::CreateFactory(host_resolver_,
+                                               cert_verifier_,
                                                NULL /* dnsrr_resolver */,
                                                NULL /* dns_cert_checker */,
                                                NULL /* ssl_host_info_factory */,

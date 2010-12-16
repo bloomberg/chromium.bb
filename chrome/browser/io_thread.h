@@ -30,6 +30,7 @@ class Predictor;
 }  // namespace chrome_browser_net
 
 namespace net {
+class CertVerifier;
 class DnsRRResolver;
 class HostResolver;
 class HttpAuthHandlerFactory;
@@ -44,6 +45,7 @@ class IOThread : public BrowserProcessSubThread {
     ~Globals();
 
     scoped_ptr<net::HostResolver> host_resolver;
+    scoped_ptr<net::CertVerifier> cert_verifier;
     scoped_ptr<net::DnsRRResolver> dnsrr_resolver;
     scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory;
     scoped_ptr<net::URLSecurityManager> url_security_manager;

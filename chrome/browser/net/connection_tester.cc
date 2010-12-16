@@ -12,6 +12,7 @@
 #include "chrome/browser/importer/firefox_proxy_settings.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/common/chrome_switches.h"
+#include "net/base/cert_verifier.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/dnsrr_resolver.h"
 #include "net/base/host_resolver.h"
@@ -58,14 +59,15 @@ class ExperimentURLRequestContext : public URLRequestContext {
 
     // The rest of the dependencies are standard, and don't depend on the
     // experiment being run.
+    cert_verifier_ = new net::CertVerifier;
     dnsrr_resolver_ = new net::DnsRRResolver;
     ftp_transaction_factory_ = new net::FtpNetworkLayer(host_resolver_);
     ssl_config_service_ = new net::SSLConfigServiceDefaults;
     http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault(
         host_resolver_);
     http_transaction_factory_ = new net::HttpCache(
-        net::HttpNetworkLayer::CreateFactory(host_resolver_, dnsrr_resolver_,
-            NULL /* dns_cert_checker */,
+        net::HttpNetworkLayer::CreateFactory(host_resolver_, cert_verifier_,
+            dnsrr_resolver_, NULL /* dns_cert_checker */,
             NULL /* ssl_host_info_factory */, proxy_service_,
             ssl_config_service_, http_auth_handler_factory_, NULL, NULL),
         net::HttpCache::DefaultBackend::InMemory(0));
@@ -81,6 +83,7 @@ class ExperimentURLRequestContext : public URLRequestContext {
     delete http_transaction_factory_;
     delete http_auth_handler_factory_;
     delete dnsrr_resolver_;
+    delete cert_verifier_;
     delete host_resolver_;
   }
 

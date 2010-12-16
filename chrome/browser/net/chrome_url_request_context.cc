@@ -262,6 +262,7 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
 
   // Global host resolver for the context.
   context->set_host_resolver(io_thread_globals->host_resolver.get());
+  context->set_cert_verifier(io_thread_globals->cert_verifier.get());
   context->set_dnsrr_resolver(io_thread_globals->dnsrr_resolver.get());
   context->set_http_auth_handler_factory(
       io_thread_globals->http_auth_handler_factory.get());
@@ -284,6 +285,7 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
   net::HttpCache* cache =
       new net::HttpCache(context->host_resolver(),
+                         context->cert_verifier(),
                          context->dnsrr_resolver(),
                          context->dns_cert_checker(),
                          context->proxy_service(),
@@ -412,6 +414,7 @@ ChromeURLRequestContext* FactoryForOffTheRecord::Create() {
 
   net::HttpCache* cache =
       new net::HttpCache(context->host_resolver(),
+                         context->cert_verifier(),
                          context->dnsrr_resolver(),
                          NULL /* dns_cert_checker */,
                          context->proxy_service(),
@@ -505,6 +508,7 @@ ChromeURLRequestContext* FactoryForMedia::Create() {
     // If original HttpCache doesn't exist, simply construct one with a whole
     // new set of network stack.
     cache = new net::HttpCache(main_context->host_resolver(),
+                               main_context->cert_verifier(),
                                main_context->dnsrr_resolver(),
                                NULL /* dns_cert_checker */,
                                main_context->proxy_service(),

@@ -20,6 +20,7 @@
 #include "base/thread.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
+#include "net/base/cert_verifier.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/cookie_policy.h"
 #include "net/base/host_resolver.h"
@@ -150,17 +151,20 @@ class TestURLRequestContext : public URLRequestContext {
     delete ftp_transaction_factory_;
     delete http_transaction_factory_;
     delete http_auth_handler_factory_;
+    delete cert_verifier_;
     delete host_resolver_;
   }
 
  private:
   void Init() {
+    cert_verifier_ = new net::CertVerifier;
     ftp_transaction_factory_ = new net::FtpNetworkLayer(host_resolver_);
     ssl_config_service_ = new net::SSLConfigServiceDefaults;
     http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault(
         host_resolver_);
     http_transaction_factory_ = new net::HttpCache(
         net::HttpNetworkLayer::CreateFactory(host_resolver_,
+                                             cert_verifier_,
                                              NULL /* dnsrr_resolver */,
                                              NULL /* dns_cert_checker */,
                                              NULL /* ssl_host_info_factory */,

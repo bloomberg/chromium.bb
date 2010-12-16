@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "net/base/cert_verifier.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/request_priority.h"
 #include "net/base/ssl_config_service_defaults.h"
@@ -327,6 +328,7 @@ class SpdySessionDependencies {
   // Default set of dependencies -- "null" proxy service.
   SpdySessionDependencies()
       : host_resolver(new MockHostResolver),
+        cert_verifier(new CertVerifier),
         proxy_service(ProxyService::CreateDirect()),
         ssl_config_service(new SSLConfigServiceDefaults),
         socket_factory(new MockClientSocketFactory),
@@ -345,6 +347,7 @@ class SpdySessionDependencies {
   // Custom proxy service dependency.
   explicit SpdySessionDependencies(ProxyService* proxy_service)
       : host_resolver(new MockHostResolver),
+        cert_verifier(new CertVerifier),
         proxy_service(proxy_service),
         ssl_config_service(new SSLConfigServiceDefaults),
         socket_factory(new MockClientSocketFactory),
@@ -354,6 +357,7 @@ class SpdySessionDependencies {
 
   // NOTE: host_resolver must be ordered before http_auth_handler_factory.
   scoped_ptr<MockHostResolverBase> host_resolver;
+  scoped_ptr<CertVerifier> cert_verifier;
   scoped_refptr<ProxyService> proxy_service;
   scoped_refptr<SSLConfigService> ssl_config_service;
   scoped_ptr<MockClientSocketFactory> socket_factory;
@@ -363,6 +367,7 @@ class SpdySessionDependencies {
   static HttpNetworkSession* SpdyCreateSession(
       SpdySessionDependencies* session_deps) {
     return new HttpNetworkSession(session_deps->host_resolver.get(),
+                                  session_deps->cert_verifier.get(),
                                   NULL /* dnsrr_resolver */,
                                   NULL /* dns_cert_checker */,
                                   NULL /* ssl_host_info_factory */,
@@ -377,6 +382,7 @@ class SpdySessionDependencies {
   static HttpNetworkSession* SpdyCreateSessionDeterministic(
       SpdySessionDependencies* session_deps) {
     return new HttpNetworkSession(session_deps->host_resolver.get(),
+                                  session_deps->cert_verifier.get(),
                                   NULL /* dnsrr_resolver */,
                                   NULL /* dns_cert_checker */,
                                   NULL /* ssl_host_info_factory */,
@@ -395,6 +401,7 @@ class SpdyURLRequestContext : public URLRequestContext {
  public:
   SpdyURLRequestContext() {
     host_resolver_ = new MockHostResolver();
+    cert_verifier_ = new CertVerifier;
     proxy_service_ = ProxyService::CreateDirect();
     ssl_config_service_ = new SSLConfigServiceDefaults;
     http_auth_handler_factory_ = HttpAuthHandlerFactory::CreateDefault(
@@ -402,6 +409,7 @@ class SpdyURLRequestContext : public URLRequestContext {
     http_transaction_factory_ = new net::HttpCache(
         new HttpNetworkLayer(&socket_factory_,
                              host_resolver_,
+                             cert_verifier_,
                              NULL /* dnsrr_resolver */,
                              NULL /* dns_cert_checker */,
                              NULL /* ssl_host_info_factory */,
@@ -420,6 +428,7 @@ class SpdyURLRequestContext : public URLRequestContext {
   virtual ~SpdyURLRequestContext() {
     delete http_transaction_factory_;
     delete http_auth_handler_factory_;
+    delete cert_verifier_;
     delete host_resolver_;
   }
 

@@ -149,7 +149,7 @@ class MockPendingClientSocket : public ClientSocket {
   virtual bool IsConnectedAndIdle() const {
     return is_connected_;
   }
-  virtual int GetPeerAddress(AddressList* address) const{
+  virtual int GetPeerAddress(AddressList* address) const {
     return ERR_UNEXPECTED;
   }
   virtual const BoundNetLog& NetLog() const {
@@ -251,6 +251,7 @@ class MockClientSocketFactory : public ClientSocketFactory {
       const HostPortPair& host_and_port,
       const SSLConfig& ssl_config,
       SSLHostInfo* ssl_host_info,
+      CertVerifier* cert_verifier,
       DnsCertProvenanceChecker* dns_cert_checker) {
     NOTIMPLEMENTED();
     delete ssl_host_info;

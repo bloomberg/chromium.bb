@@ -437,7 +437,8 @@ bool ChromeAsyncSocket::StartTls(const std::string& domain_name) {
   transport_socket_.reset(
       client_socket_factory_->CreateSSLClientSocket(
           transport_socket_.release(), net::HostPortPair(domain_name, 443),
-          ssl_config_, NULL /* ssl_host_info */));
+          ssl_config_, NULL /* ssl_host_info */,
+          NULL /* TODO(wtc): cert_verifier */));
   int status = transport_socket_->Connect(&ssl_connect_callback_);
   if (status != net::ERR_IO_PENDING) {
     MessageLoop* message_loop = MessageLoop::current();
