@@ -40,9 +40,7 @@ const PPP_Instance* GetInstanceInterface() {
 
 // Build vector of "count" char pointers from a string of NUL-separated tokens.
 // Returns NULL on out of memory or parsing error.
-static const char** GetCharpArray(uint32_t count,
-                                  char* str,
-                                  uint32_t total_len) {
+const char** GetCharpArray(uint32_t count, char* str, uint32_t total_len) {
   const char** array = new const char *[count];
   if (array == NULL) {
     return NULL;

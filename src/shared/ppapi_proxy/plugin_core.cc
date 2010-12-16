@@ -85,9 +85,9 @@ PP_TimeTicks GetTimeTicks() {
   }
 }
 
-static void CallOnMainThread(int32_t delay_in_milliseconds,
-                             PP_CompletionCallback callback,
-                             int32_t result) {
+void CallOnMainThread(int32_t delay_in_milliseconds,
+                      PP_CompletionCallback callback,
+                      int32_t result) {
   UNREFERENCED_PARAMETER(callback);
   DebugPrintf("Plugin::PPB_Core::CallOnMainThread: delay=%" NACL_PRIu32
               ", result=%" NACL_PRIu32 "\n",
@@ -98,7 +98,7 @@ static void CallOnMainThread(int32_t delay_in_milliseconds,
                                                 result);
 }
 
-static PP_Bool IsMainThread() {
+PP_Bool IsMainThread() {
   DebugPrintf("Plugin::PPB_Core::IsMainThread\n");
 #ifdef __native_client__
   return pp::BoolToPPBool(is_main_thread);

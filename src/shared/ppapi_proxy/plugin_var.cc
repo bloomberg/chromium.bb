@@ -65,7 +65,7 @@ class StrImpl {
   NACL_DISALLOW_COPY_AND_ASSIGN(StrImpl);
 };
 
-static ObjImpl* VarToObjImpl(PP_Var var) {
+ObjImpl* VarToObjImpl(PP_Var var) {
   if (var.type == PP_VARTYPE_OBJECT) {
     return reinterpret_cast<ObjImpl*>(var.value.as_id);
   } else {
@@ -73,7 +73,7 @@ static ObjImpl* VarToObjImpl(PP_Var var) {
   }
 }
 
-static StrImpl* VarToStrImpl(PP_Var var) {
+StrImpl* VarToStrImpl(PP_Var var) {
   if (var.type == PP_VARTYPE_STRING) {
     return reinterpret_cast<StrImpl*>(var.value.as_id);
   } else {

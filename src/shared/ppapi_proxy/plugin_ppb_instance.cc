@@ -21,7 +21,7 @@ namespace ppapi_proxy {
 
 namespace {
 
-static PP_Var GetWindowObject(PP_Instance instance) {
+PP_Var GetWindowObject(PP_Instance instance) {
   DebugPrintf("Plugin::PPB_Instance::GetWindowObject: instance=%"
               NACL_PRIx64"\n", instance);
   NACL_UNTESTED();
@@ -42,7 +42,7 @@ static PP_Var GetWindowObject(PP_Instance instance) {
   return window;
 }
 
-static PP_Var GetOwnerElementObject(PP_Instance instance) {
+PP_Var GetOwnerElementObject(PP_Instance instance) {
   DebugPrintf("Plugin::PPB_Instance::GetOwnerElementObject: instance=%"
               NACL_PRIx64 "\n", instance);
   NACL_UNTESTED();
@@ -63,7 +63,7 @@ static PP_Var GetOwnerElementObject(PP_Instance instance) {
   return owner;
 }
 
-static PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) {
+PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) {
   DebugPrintf("Plugin::PPB_Instance::BindGraphicsDeviceContext: instance=%"
               NACL_PRIx64 ", device=%" NACL_PRIu64 "\n", instance, device);
   NACL_UNTESTED();
@@ -81,7 +81,7 @@ static PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) {
     return PP_FALSE;
 }
 
-static PP_Bool IsFullFrame(PP_Instance instance) {
+PP_Bool IsFullFrame(PP_Instance instance) {
   DebugPrintf("Plugin::PPB_Instance::IsFullFrame: instance=%" NACL_PRIx64 "\n",
               instance);
   NACL_UNTESTED();
@@ -98,9 +98,7 @@ static PP_Bool IsFullFrame(PP_Instance instance) {
     return PP_FALSE;
 }
 
-static PP_Var ExecuteScript(PP_Instance instance,
-                            PP_Var script,
-                            PP_Var* exception) {
+PP_Var ExecuteScript(PP_Instance instance, PP_Var script, PP_Var* exception) {
   DebugPrintf("Plugin::PPB_Instance::ExecuteScript: instance=%"
               NACL_PRIx64"\n", instance);
   NACL_UNTESTED();

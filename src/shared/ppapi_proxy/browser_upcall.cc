@@ -39,7 +39,7 @@ struct UpcallInfo {
   NaClSrpcChannel* channel;
 };
 
-static void WINAPI UpcallThread(void* arg) {
+void WINAPI UpcallThread(void* arg) {
   // The memory for info was allocated on the creating (browser UI) thread,
   // but ownership was conferred to the upcall thread for deletion.
   nacl::scoped_ptr<UpcallInfo> info(reinterpret_cast<UpcallInfo*>(arg));

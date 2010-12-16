@@ -19,14 +19,16 @@
 #include "srpcgen/ppb_rpc.h"
 #include "srpcgen/ppp_rpc.h"
 
-static const PPB_AudioTrusted_Dev* GetAudioTrustedInterface() {
+namespace {
+
+const PPB_AudioTrusted_Dev* GetAudioTrustedInterface() {
   static const PPB_AudioTrusted_Dev* audioTrusted =
       static_cast<const PPB_AudioTrusted_Dev*>
           (ppapi_proxy::GetBrowserInterface(PPB_AUDIO_TRUSTED_DEV_INTERFACE));
   return audioTrusted;
 }
 
-static const PPB_Audio_Dev* GetAudioInterface() {
+const PPB_Audio_Dev* GetAudioInterface() {
   static const PPB_Audio_Dev* audio =
       static_cast<const PPB_Audio_Dev*>
           (ppapi_proxy::GetBrowserInterface(PPB_AUDIO_DEV_INTERFACE));
@@ -43,7 +45,7 @@ struct StreamCreatedCallbackData {
 
 // This completion callback will be invoked when the sync socket and shared
 // memory handles become available.
-static void StreamCreatedCallback(void* user_data, int32_t result) {
+void StreamCreatedCallback(void* user_data, int32_t result) {
   if (NULL == user_data)
     return;
   nacl::scoped_ptr<StreamCreatedCallbackData> data(
@@ -87,6 +89,8 @@ static void StreamCreatedCallback(void* user_data, int32_t result) {
       shared_memory_size,
       nacl_socket);
 }
+
+}  // namespace
 
 void PpbAudioDevRpcServer::PPB_Audio_Dev_Create(
     NaClSrpcRpc* rpc,
