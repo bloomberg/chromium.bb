@@ -142,7 +142,7 @@ TEST_F(HeartbeatSenderTest, CreateHeartbeatMessage) {
 
 // Verify that ProcessResponse parses set-interval result.
 TEST_F(HeartbeatSenderTest, ProcessResponse) {
-  XmlElement* response = new XmlElement(QName("", "iq"));
+  scoped_ptr<XmlElement> response(new XmlElement(QName("", "iq")));
   response->AddAttr(QName("", "type"), "result");
 
   XmlElement* result = new XmlElement(
@@ -157,7 +157,7 @@ TEST_F(HeartbeatSenderTest, ProcessResponse) {
   set_interval->AddText(base::IntToString(kTestInterval));
 
   scoped_refptr<HeartbeatSender> heartbeat_sender(new HeartbeatSender());
-  heartbeat_sender->ProcessResponse(response);
+  heartbeat_sender->ProcessResponse(response.get());
 
   EXPECT_EQ(kTestInterval * 1000, heartbeat_sender->interval_ms_);
 }

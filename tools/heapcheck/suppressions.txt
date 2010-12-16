@@ -1142,9 +1142,3 @@
    ...
    fun:MalwareDetailsTest_*
 }
-{
-   bug_66808
-   Heapcheck:Leak
-   ...
-   fun:remoting::HeartbeatSenderTest_ProcessResponse_Test::TestBody
-}
