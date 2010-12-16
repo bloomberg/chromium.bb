@@ -93,12 +93,7 @@ SetupGccX8664Opt() {
 ######################################################################
 
 SetupNaclX8632Common() {
-  SEL_LDR=../../scons-out/opt-linux-x86-32/staging/sel_ldr
-  if [[ ! -x ${SEL_LDR} ]] ; then
-    echo "you have not build the sel_ldr yet"
-    exit -1
-  fi
-  SEL_LDR=$(readlink -f ${SEL_LDR})
+  SEL_LDR=$(GetSelLdr "x86-32")
   PREFIX="${SEL_LDR} -a -f"
 }
 
@@ -119,12 +114,7 @@ SetupNaclX8632Opt() {
 }
 
 SetupNaclX8664Common() {
-  SEL_LDR=../../scons-out/opt-linux-x86-64/staging/sel_ldr
-  if [[ ! -x ${SEL_LDR} ]] ; then
-    echo "you have not build the sel_ldr yet"
-    exit -1
-  fi
-  SEL_LDR=$(readlink -f ${SEL_LDR})
+  SEL_LDR=$(GetSelLdr "x86-64")
   PREFIX="${SEL_LDR} -a -f"
 }
 
@@ -145,12 +135,7 @@ SetupNaclX8664Opt() {
 }
 
 SetupNaclDynX8632Common() {
-  SEL_LDR=../../scons-out/opt-linux-x86-32/staging/sel_ldr
-  if [[ ! -x ${SEL_LDR} ]] ; then
-    echo "you have not build the sel_ldr yet"
-    exit 1
-  fi
-  SEL_LDR=$(readlink -f ${SEL_LDR})
+  SEL_LDR=$(GetSelLdr "x86-32")
   RUNNABLE_LD=../../toolchain/linux_x86/nacl/lib/runnable-ld.so
   RUNNABLE_LD=$(readlink -f ${RUNNABLE_LD})
   PREFIX="${SEL_LDR} -a -s -f ${RUNNABLE_LD}"
@@ -173,12 +158,7 @@ SetupNaclDynX8632Opt() {
 }
 
 SetupNaclDynX8664Common() {
-  SEL_LDR=../../scons-out/opt-linux-x86-64/staging/sel_ldr
-  if [[ ! -x ${SEL_LDR} ]] ; then
-    echo "you have not build the sel_ldr yet"
-    exit 1
-  fi
-  SEL_LDR=$(readlink -f ${SEL_LDR})
+  SEL_LDR=$(GetSelLdr "x86-64")
   RUNNABLE_LD=../../toolchain/linux_x86/nacl64/lib/runnable-ld.so
   RUNNABLE_LD=$(readlink -f ${RUNNABLE_LD})
   PREFIX="${SEL_LDR} -a -c -f ${RUNNABLE_LD}"
@@ -203,12 +183,7 @@ SetupNaclDynX8664Opt() {
 ######################################################################
 
 SetupPnaclX8664Common() {
-  SEL_LDR=../../scons-out/opt-linux-x86-64/staging/sel_ldr
-  if [[ ! -x ${SEL_LDR} ]] ; then
-    echo "you have not build the sel_ldr yet"
-    exit -1
-  fi
-  SEL_LDR=$(readlink -f ${SEL_LDR})
+  SEL_LDR=$(GetSelLdr "x86-64")
   PREFIX="${SEL_LDR} -a -f"
 }
 
@@ -245,12 +220,7 @@ SetupPnaclTranslatorX8664Opt() {
 }
 
 SetupPnaclX8632Common() {
-  SEL_LDR=../../scons-out/opt-linux-x86-32/staging/sel_ldr
-  if [[ ! -x ${SEL_LDR} ]] ; then
-    echo "you have not build the sel_ldr yet"
-    exit -1
-  fi
-  SEL_LDR=$(readlink -f ${SEL_LDR})
+  SEL_LDR=$(GetSelLdr "x86-32")
   PREFIX="${SEL_LDR} -a -f"
 }
 
@@ -298,32 +268,49 @@ SetupGccArm() {
 
 SetupPnaclArmCommon() {
   QEMU=$(readlink -f ../../toolchain/linux_arm-trusted/qemu_tool.sh)
-  SEL_LDR=../../scons-out/opt-linux-arm/staging/sel_ldr
-
-  if [[ ! -x ${SEL_LDR} ]] ; then
-    echo "you have not build the sel_ldr yet"
-    exit -1
-  fi
-  SEL_LDR=$(readlink -f ${SEL_LDR})
+  SEL_LDR=$(GetSelLdr "arm")
   PREFIX="${QEMU} run ${SEL_LDR} -a -Q -f"
   SUFFIX=pnacl.arm
 }
 
 #@
-#@ SetupPnaclArm
-#@    use pnacl arm compiler (no lto)
+#@ SetupPnaclArmOpt
+#@    use pnacl arm compiler (with lto)  -- run with QEMU
 SetupPnaclArmOpt() {
   SetupPnaclArmCommon
   SUFFIX=pnacl.opt.arm
 }
 
 #@
-#@ SetupPnaclArmOpt
-#@    use pnacl arm compiler (with lto)
+#@ SetupPnaclArm
+#@    use pnacl arm compiler (no lto)  -- run with QEMU
 SetupPnaclArm() {
   SetupPnaclArmCommon
   SUFFIX=pnacl.arm
 }
+
+SetupPnaclArmCommonHW() {
+  SEL_LDR=$(GetSelLdr "arm")
+  PREFIX="${SEL_LDR} -a -f"
+  SUFFIX=pnacl.arm
+}
+
+#@
+#@ SetupPnaclArmOptHW
+#@    use pnacl arm compiler (with lto) -- run on ARM hardware
+SetupPnaclArmOptHW() {
+  SetupPnaclArmCommonHW
+  SUFFIX=pnacl.opt.arm
+}
+
+#@
+#@ SetupPnaclArmHW
+#@    use pnacl arm compiler (no lto) -- run on ARM hardware
+SetupPnaclArmHW() {
+  SetupPnaclArmCommonHW
+  SUFFIX=pnacl.arm
+}
+
 
 # TODO(robertm): add arm translator support
 
@@ -348,7 +335,7 @@ ConfigInfo() {
 #@
 #@ GetBenchmarkList
 #@
-#@   Show avilable benchmarks
+#@   Show available benchmarks
 GetBenchmarkList() {
   if [[ $# -ge 1 ]]; then
       if [[ ($1 == "ref") || ($1 == "train") ]]; then
@@ -381,6 +368,31 @@ GetInputSize() {
     esac
   fi
   echo ${SPEC2K_SCRIPT}
+}
+
+#+
+#+ CheckFileBuilt <depname> <file> -
+#+
+#+   Check that a dependency is actually built.
+CheckFileBuilt() {
+  local depname=$1
+  local filename=$2
+  if [[ ! -x ${filename} ]] ; then
+    echo "You have not built ${depname} yet (${filename})!"
+    exit -1
+  fi
+}
+
+#+
+#+ GetSelLdr <arch>
+#+
+#+   Get sel_ldr for the given arch.
+GetSelLdr() {
+  local arch=$1
+  SEL_LDR=../../scons-out/opt-linux-${arch}/staging/sel_ldr
+  CheckFileBuilt "sel_ldr" ${SEL_LDR}
+  SEL_LDR=$(readlink -f ${SEL_LDR})
+  echo "${SEL_LDR}"
 }
 
 
@@ -506,12 +518,76 @@ BuildAndRunBenchmarks() {
 #@   Results are saved in {execname}.compile_time and
 #@   {execname}.run_time for each benchmark executable
 #@   Note that the VERIFY variable effects the timing!
-
 TimedBuildAndRunBenchmarks() {
   setup=$1
   shift
   BuildBenchmarks 1 ${setup} "$@"
   RunTimedBenchmarks ${setup} "$@"
+}
+
+#@
+#@ ArchivedRunOnArmHW <user> <ip> <setup> [usual var-args for RunBenchmarks]
+#@
+#@   Copies ARM binaries built from a local QEMU run of spec to a remote
+#@   ARM machine, and runs the tests without QEMU.
+#@
+#@   Note: <setup> should be the QEMU setup (e.g., SetupPnaclArmOpt)
+#@   Note: As with the other modes in this script, this script should be
+#@   run from the directory of the script (not the native_client directory).
+#@
+ArchivedRunOnArmHW() {
+  local USER=$1
+  local ARM_MACHINE_IP=$2
+  # Assume binaries built w/ this setup (e.g. SetupPnaclArmOpt).
+  # We will use this to determine a setup that doesn't use Qemu.
+  local SPEC_SETUP=$3
+  local SPEC_SETUP_HW=${SPEC_SETUP}HW
+
+  # The rest of args should be the usual var-args for RunBenchmarks.
+  shift 3
+  local BENCH_LIST=$(GetBenchmarkList "$@")
+
+  local TAR_TO=/tmp
+  local SEL_ARCHIVE_ZIPPED=arm_sel_ldr.tar.gz
+  local TESTS_ARCHIVE=arm_spec.tar
+  local TESTS_ARCHIVE_ZIPPED=arm_spec.tar.gz
+  local REMOTE_BUILD_DIR=/build/nacl_build_spec
+
+  # Switch to native_client directory (from tests/spec2k) so that
+  # when we extract, the builder will have a more natural directory layout.
+  # Unfortunately, this means we can't reuse GetSelLdr()...
+  local TAR_FROM="../.."
+  tar -C ${TAR_FROM} -czvf ${TAR_TO}/${SEL_ARCHIVE_ZIPPED} \
+    scons-out/opt-linux-arm/staging/sel_ldr
+  # Carefully tar only the parts of the spec harness that we need.
+  (cd ${TAR_FROM} ;
+    find tests/spec2k -type f -maxdepth 1 -print |
+    xargs tar --no-recursion -cvf ${TAR_TO}/${TESTS_ARCHIVE})
+  tar -C ${TAR_FROM} -rvf ${TAR_TO}/${TESTS_ARCHIVE} tests/spec2k/bin
+  for i in ${BENCH_LIST} ; do
+    tar -C ${TAR_FROM} -rvf ${TAR_TO}/${TESTS_ARCHIVE} tests/spec2k/$i
+  done
+  gzip -f ${TAR_TO}/${TESTS_ARCHIVE}
+
+  # Clean remote directory and copy over.
+  echo "==== Nuking remote build dir: ${REMOTE_BUILD_DIR}"
+  local CLEAN_CMD="(rm -rf ${REMOTE_BUILD_DIR} && \
+    mkdir -p ${REMOTE_BUILD_DIR})"
+  ssh ${USER}@${ARM_MACHINE_IP} ${CLEAN_CMD}
+  echo "==== Copying files to: ${REMOTE_BUILD_DIR}"
+  scp ${TAR_TO}/${SEL_ARCHIVE_ZIPPED} \
+      ${TAR_TO}/${TESTS_ARCHIVE_ZIPPED} \
+      ${USER}@${ARM_MACHINE_IP}:${REMOTE_BUILD_DIR}/.
+  rm ${TAR_TO}/${SEL_ARCHIVE_ZIPPED} ${TAR_TO}/${TESTS_ARCHIVE_ZIPPED}
+
+  # Now try to remotely run.
+  echo "Extracting to ${REMOTE_BUILD_DIR} and running"
+  local EXTRACT_RUN_CMD="(cd ${REMOTE_BUILD_DIR}; \
+    tar -xzvf ${SEL_ARCHIVE_ZIPPED} && \
+    tar -xzvf ${TESTS_ARCHIVE_ZIPPED}; \
+    cd tests/spec2k; \
+    ./run_all.sh RunTimedBenchmarks ${SPEC_SETUP_HW} $@)"
+  ssh ${USER}@${ARM_MACHINE_IP} ${EXTRACT_RUN_CMD}
 }
 
 
