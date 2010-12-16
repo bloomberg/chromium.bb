@@ -101,7 +101,25 @@
    fun:base::OpenTestNSSDB
    fun:net::CertDatabaseNSSTest::SetUp
 }
-
+{
+   bug_66941_a
+   Heapcheck:Leak
+   fun:PR_NewLock
+   fun:net::TestRootCerts::*
+}
+{
+   bug_66941_b
+   Heapcheck:Leak
+   fun:nss_ZAlloc
+   fun:net::TestRootCerts::*
+}
+{
+   bug_66941_c
+   Heapcheck:Leak
+   fun:PL_ArenaAllocate
+   fun:net::TestRootCerts::*
+}
+   
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing
