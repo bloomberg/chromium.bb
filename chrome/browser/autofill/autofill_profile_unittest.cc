@@ -4,6 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "base/scoped_vector.h"
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
@@ -390,6 +391,31 @@ TEST(AutoFillProfileTest, CreateInferredLabels) {
   EXPECT_EQ(string16(), labels[1]);
   // Clean up.
   STLDeleteContainerPointers(profiles.begin(), profiles.end());
+}
+
+// Make sure that empty fields are not treated as distinguishing fields.
+TEST(AutoFillProfileTest, CreateInferredLabelsSkipsEmptyFields) {
+  ScopedVector<AutoFillProfile> profiles;
+  profiles.push_back(new AutoFillProfile);
+  autofill_test::SetProfileInfo(profiles[0],
+                                "", "John", "", "Doe", "doe@example.com",
+                                "Gogole", "", "", "", "", "", "", "", "");
+  profiles.push_back(new AutoFillProfile);
+  autofill_test::SetProfileInfo(profiles[1],
+                                "", "John", "", "Doe", "doe@example.com",
+                                "Ggoole", "", "", "", "", "", "", "", "");
+  profiles.push_back(new AutoFillProfile);
+  autofill_test::SetProfileInfo(profiles[2],
+                                "", "John", "", "Doe", "john.doe@example.com",
+                                "Goolge", "", "", "", "", "", "", "", "");
+
+  std::vector<string16> labels;
+  AutoFillProfile::CreateInferredLabels(&profiles.get(), &labels, 3,
+                                        UNKNOWN_TYPE, NULL);
+  ASSERT_EQ(3U, labels.size());
+  EXPECT_EQ(ASCIIToUTF16("John Doe, doe@example.com, Gogole"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("John Doe, doe@example.com, Ggoole"), labels[1]);
+  EXPECT_EQ(ASCIIToUTF16("John Doe, john.doe@example.com, Goolge"), labels[2]);
 }
 
 TEST(AutoFillProfileTest, IsSubsetOf) {

@@ -297,7 +297,7 @@ void AutoFillProfile::CreateInferredLabels(
           fields.push_back(fields_to_use[i]);
         } else if (added_fields < minimal_fields_shown &&
                    exclude_field != fields_to_use[i] &&
-                   !label_iterator->first.empty()) {
+                   !tested_fields[i].count(string16())) {
           fields.push_back(fields_to_use[i]);
           first_non_empty_fields.push_back(fields_to_use[i]);
           ++added_fields;
