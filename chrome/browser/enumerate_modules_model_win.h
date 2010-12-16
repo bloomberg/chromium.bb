@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "base/singleton.h"
 #include "base/string16.h"
@@ -125,6 +126,8 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
   void ScanNow(ModulesVector* list);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(EnumerateModulesTest, CollapsePath);
+
   // The (currently) hard coded blacklist of known bad modules.
   static const BlacklistEntry kModuleBlacklist[];
 

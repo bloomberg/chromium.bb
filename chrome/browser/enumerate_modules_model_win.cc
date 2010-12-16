@@ -115,7 +115,7 @@ const ModuleEnumerator::BlacklistEntry ModuleEnumerator::kModuleBlacklist[] = {
   { "5d10b363", "", "", "", "", kUninstallLink },
 
   // icf.dll, "%systemroot%\\system32\\".
-  { "303825ed", "23d01d5b", "", "", "", kUninstallLink },
+  { "303825ed", "23d01d5b", "", "", "", INVESTIGATING },
 
   // idmmbc.dll (IDM), "%systemroot%\\system32\\". See: http://crbug.com/26892/.
   { "b8dce5c3", "23d01d5b", "", "", "6.03",
@@ -126,14 +126,13 @@ const ModuleEnumerator::BlacklistEntry ModuleEnumerator::kModuleBlacklist[] = {
       static_cast<RecommendedAction>(UPDATE | DISABLE) },
 
   // is3lsp.dll, "%commonprogramfiles%\\is3\\anti-spyware\\".
-  { "7ffbdce9", "bc5673f2", "", "", "",
-      static_cast<RecommendedAction>(UPDATE | DISABLE) },
+  { "7ffbdce9", "bc5673f2", "", "", "", INVESTIGATING },
 
   // jsi.dll, "%programfiles%\\profilecraze\\".
   { "f9555eea", "e3548061", "", "", "", kUninstallLink },
 
   // kernel.dll, "%programfiles%\\contentwatch\\internet protection\\modules\\".
-  { "ead2768e", "4e61ce60", "", "", "", kUninstallLink },
+  { "ead2768e", "4e61ce60", "", "", "", INVESTIGATING },
 
   // mgking0.dll, "%systemroot%\\system32\\".
   { "d0893e38", "23d01d5b", "", "", "", kUninstallLink },
@@ -148,7 +147,7 @@ const ModuleEnumerator::BlacklistEntry ModuleEnumerator::kModuleBlacklist[] = {
   { "3e837222", "59145acf", "", "", "", kUninstallLink },
 
   // mstcipha.ime, "%systemroot%\\system32\\".
-  { "5523579e", "23d01d5b", "", "", "", kUninstallLink },
+  { "5523579e", "23d01d5b", "", "", "", INVESTIGATING },
 
   // mwtsp.dll, "%systemroot%\\system32\\".
   { "9830bff6", "23d01d5b", "", "", "", kUninstallLink },
@@ -158,25 +157,24 @@ const ModuleEnumerator::BlacklistEntry ModuleEnumerator::kModuleBlacklist[] = {
 
   // nvlsp.dll,
   // "%programfiles%\\nvidia corporation\\networkaccessmanager\\bin32\\".
-  { "37f907e2", "3ad0ff23", "", "", "", kUninstallLink },
+  { "37f907e2", "3ad0ff23", "", "", "", INVESTIGATING },
 
   // radhslib.dll (Naomi web filter), "%programfiles%\\rnamfler\\".
   // See http://crbug.com/12517.
-  { "7edcd250", "0733dc3e", "", "", "", kUninstallLink },
+  { "7edcd250", "0733dc3e", "", "", "", INVESTIGATING },
 
   // rlls.dll, "%programfiles%\\relevantknowledge\\".
   { "a1ed94a7", "ea9d6b36", "", "", "", kUninstallLink },
 
   // rooksdol.dll, "%programfiles%\\trusteer\\rapport\\bin\\".
-  { "802aefef", "06120e13", "", "", "", kUninstallLink },
+  { "802aefef", "06120e13", "", "", "", INVESTIGATING },
 
   // searchtree.dll,
   // "%programfiles%\\contentwatch\\internet protection\\modules\\".
-  { "f6915a31", "4e61ce60", "", "", "", kUninstallLink },
+  { "f6915a31", "4e61ce60", "", "", "", INVESTIGATING },
 
   // sgprxy.dll, "%commonprogramfiles%\\is3\\anti-spyware\\".
-  { "005965ea", "bc5673f2", "", "", "",
-      static_cast<RecommendedAction>(UPDATE | DISABLE) },
+  { "005965ea", "bc5673f2", "", "", "", INVESTIGATING },
 
   // twking0.dll, "%systemroot%\\system32\\".
   { "0355549b", "23d01d5b", "", "", "", kUninstallLink },
@@ -187,15 +185,15 @@ const ModuleEnumerator::BlacklistEntry ModuleEnumerator::kModuleBlacklist[] = {
   // vksaver.dll, "%systemroot%\\system32\\".
   { "c4a784d5", "23d01d5b", "", "", "", kUninstallLink },
 
-  // vlsp.dll, "%systemroot%\\system32\\".
-  { "2e4eb93d", "23d01d5b", "", "", "", kUninstallLink },
+  // vlsp.dll (Venturi Firewall?), "%systemroot%\\system32\\".
+  { "2e4eb93d", "23d01d5b", "", "", "", INVESTIGATING },
 
   // vmn3_1dn.dll, "%appdata%\\roaming\\vmndtxtb\\".
   { "bba2037d", "9ab68585", "", "", "", kUninstallLink },
 
   // webanalyzer.dll,
   // "%programfiles%\\contentwatch\\internet protection\\modules\\".
-  { "c70b697d", "4e61ce60", "", "", "", kUninstallLink },
+  { "c70b697d", "4e61ce60", "", "", "", INVESTIGATING },
 
   // wowst0.dll, "%systemroot%\\system32\\".
   { "38ad9963", "23d01d5b", "", "", "", kUninstallLink },
@@ -312,15 +310,15 @@ ModuleEnumerator::ModuleStatus ModuleEnumerator::Match(
 }
 
 ModuleEnumerator::ModuleEnumerator(EnumerateModulesModel* observer)
-    : observer_(observer) {
-  CHECK(BrowserThread::GetCurrentThreadIdentifier(&callback_thread_id_));
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    : observer_(observer),
+      callback_thread_id_(BrowserThread::ID_COUNT) {
 }
 
 ModuleEnumerator::~ModuleEnumerator() {
 }
 
 void ModuleEnumerator::ScanNow(ModulesVector* list) {
+  CHECK(BrowserThread::GetCurrentThreadIdentifier(&callback_thread_id_));
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::FILE));
   enumerated_modules_ = list;
   BrowserThread::PostTask(
@@ -526,14 +524,21 @@ void ModuleEnumerator::PreparePathMappings() {
 void ModuleEnumerator::CollapsePath(Module* entry) {
   // Take the path and see if we can use any of the substitution values
   // from the vector constructed above to replace c:\windows with, for
-  // example, %systemroot%.
+  // example, %systemroot%. The most collapsed path (the one with the
+  // minimum length) wins.
+  size_t min_length = MAXINT;
+  string16 location = entry->location;
   for (PathMapping::const_iterator mapping = path_mapping_.begin();
        mapping != path_mapping_.end(); ++mapping) {
     string16 prefix = mapping->first;
-    if (StartsWith(entry->location, prefix, false)) {
-      entry->location = mapping->second +
-                        entry->location.substr(prefix.length() - 1);
-      return;
+    if (StartsWith(location, prefix, false)) {
+      string16 new_location = mapping->second +
+                              location.substr(prefix.length() - 1);
+      size_t length = new_location.length() - mapping->second.length();
+      if (length < min_length) {
+        entry->location = new_location;
+        min_length = length;
+      }
     }
   }
 }
