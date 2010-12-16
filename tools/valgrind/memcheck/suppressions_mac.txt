@@ -987,6 +987,23 @@
    fun:CSSM_DL_DataGetFirst
 }
 {
+   bug_51682c
+   Memcheck:Leak
+   fun:realloc
+   fun:_ZN16DefaultAllocator7reallocEPvm
+   fun:_ZN8Security28CssmAllocatorMemoryFunctions12relayReallocEPvmS1_
+   fun:_ZNK8Security19CssmMemoryFunctions7reallocEPvm
+   fun:_ZN8Security28CssmMemoryFunctionsAllocator7reallocEPvm
+   fun:_ZN10Attachment13upcallReallocElPvj
+   fun:_ZN8Security13PluginSession7reallocEPvm
+   fun:_ZN17DecodedExtensions12addExtensionERK9cssm_databPvbPK22SecAsn1Template_structPS1_
+   fun:_ZN17DecodedExtensions13decodeFromNssEPP17NSS_CertExtension
+   fun:_ZN11DecodedCertC2ER18AppleX509CLSessionRKN8Security8CssmDataE
+   fun:_ZN18AppleX509CLSession22CertGetFirstFieldValueERKN8Security8CssmDataES3_RjRP9cssm_data
+   fun:_Z27cssm_CertGetFirstFieldValuelPK9cssm_dataS1_PlPjPPS_
+   fun:CSSM_CL_CertGetFirstFieldValue
+}
+{
    bug_60873
    Memcheck:Cond
    fun:UTF8ToCString
