@@ -298,7 +298,6 @@ Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle& channel_handle,
 #endif  // IPC_USES_READWRITE
       pipe_name_(channel_handle.name),
       listener_(listener),
-      must_unlink_(false),
       factory_(this) {
   // Check to see if we want to implement using domain sockets.
   bool uses_domain_socket = false;
