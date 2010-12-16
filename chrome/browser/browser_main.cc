@@ -408,10 +408,13 @@ void BrowserMainParts::SpdyFieldTrial() {
   }
 }
 
-// If neither --enable-content-prefetch or --disable-content-prefetch
-// is set, users will not be in an A/B test for prefetching.
+// If any of --enable-prerender, --enable-content-prefetch or
+// --disable-content-prefetch are set, use those to determine if
+// prefetch is enabled. Otherwise, randomly assign users to an A/B test for
+// prefetching.
 void BrowserMainParts::PrefetchFieldTrial() {
-  if (parsed_command_line().HasSwitch(switches::kEnableContentPrefetch))
+  if (parsed_command_line().HasSwitch(switches::kEnableContentPrefetch) ||
+      parsed_command_line().HasSwitch(switches::kEnablePagePrerender))
     ResourceDispatcherHost::set_is_prefetch_enabled(true);
   else if (parsed_command_line().HasSwitch(switches::kDisableContentPrefetch)) {
     ResourceDispatcherHost::set_is_prefetch_enabled(false);
