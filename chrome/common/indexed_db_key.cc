@@ -56,10 +56,6 @@ IndexedDBKey::operator WebIDBKey() const {
       return WebIDBKey(number_);
     case WebIDBKey::InvalidType:
       return WebIDBKey::createInvalid();
-    default:
-      // TODO(hans): Implement the WebIDBKey::DateType case once that is added
-      // WebKit side, and then remove this temporary default: clause.
-      return WebIDBKey::createInvalid();
   }
   NOTREACHED();
   return WebIDBKey::createInvalid();
