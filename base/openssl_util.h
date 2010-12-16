@@ -18,7 +18,9 @@ class ScopedOpenSSL {
  public:
   ScopedOpenSSL() : ptr_(NULL) { }
   explicit ScopedOpenSSL(T* ptr) : ptr_(ptr) { }
-  ~ScopedOpenSSL() { if (ptr_) (*destructor)(ptr_); }
+  ~ScopedOpenSSL() {
+    reset(NULL);
+  }
 
   T* get() const { return ptr_; }
   void reset(T* ptr) {

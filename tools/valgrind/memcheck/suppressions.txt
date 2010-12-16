@@ -597,6 +597,13 @@
    fun:_ZN23AutocompleteEditViewGtk6UpdateEPK11TabContents
    fun:_ZN15LocationBarView6UpdateEPK11TabContents
 }
+{
+   bug_66941
+   Memcheck:Leak
+   ...
+   fun:STAN_ChangeCertTrust
+   fun:CERT_ChangeCertTrust
+}
 
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive

@@ -163,8 +163,4 @@ bool TestServer::WaitToStart() {
   return true;
 }
 
-bool TestServer::CheckCATrusted() {
-  return true;
-}
-
 }  // namespace net

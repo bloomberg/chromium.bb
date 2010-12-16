@@ -216,32 +216,4 @@ bool TestServer::WaitToStart() {
   return true;
 }
 
-bool TestServer::CheckCATrusted() {
-  HCERTSTORE cert_store = CertOpenSystemStore(NULL, L"ROOT");
-  if (!cert_store) {
-    LOG(ERROR) << " could not open trusted root CA store";
-    return false;
-  }
-  PCCERT_CONTEXT cert =
-      CertFindCertificateInStore(cert_store,
-                                 X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
-                                 0,
-                                 CERT_FIND_ISSUER_STR,
-                                 L"Test CA",
-                                 NULL);
-  if (cert)
-    CertFreeCertificateContext(cert);
-  CertCloseStore(cert_store, 0);
-
-  if (!cert) {
-    LOG(ERROR) << " TEST CONFIGURATION ERROR: you need to import the test ca "
-                  "certificate to your trusted roots for this test to work. "
-                  "For more info visit:\n"
-                  "http://dev.chromium.org/developers/testing\n";
-    return false;
-  }
-
-  return true;
-}
-
 }  // namespace net
