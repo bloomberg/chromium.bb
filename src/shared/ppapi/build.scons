@@ -1,6 +1,7 @@
-# Copyright (c) 2010 The Native Client Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
+# -*- python -*-
+# Copyright 2010 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
 
 # The source files (.cc and .h) listed in this file are maintained by the
 # script ./update-scons.py.  Update $SOURCE_ROOT/ppapi and run the script

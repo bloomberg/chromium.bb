@@ -1,8 +1,7 @@
-# Copyright (c) 2008 The Native Client Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
-#
-# This file now builds two plugin shared libraries, NPAPI and PPAPI, plus tests.
+# -*- python -*-
+# Copyright 2008 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
 
 # TODO(polina): for Mac build check if no longer need .r files and/or document
 # target browsers for each bundle target.
