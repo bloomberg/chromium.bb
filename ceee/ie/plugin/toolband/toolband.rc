@@ -63,6 +63,8 @@ BEGIN
             VALUE "OriginalFilename", "ceee_ie.dll"
             VALUE "ProductName", CEEE_PRODUCT_FULLNAME_STRING
             VALUE "ProductVersion", CHROME_VERSION_STRING
+            VALUE "LastChange", LASTCHANGE_STRING
+            VALUE "Official Build", OFFICIAL_BUILD_STRING
         END
     END
     BLOCK "VarFileInfo"

@@ -54,6 +54,8 @@ BEGIN
             VALUE "OriginalFilename", "ceee_installer_helper.dll"
             VALUE "ProductName", "Google Chrome Extension Execution Environment"
             VALUE "ProductVersion", CHROME_VERSION_STRING
+            VALUE "LastChange", LASTCHANGE_STRING
+            VALUE "Official Build", OFFICIAL_BUILD_STRING
         END
     END
     BLOCK "VarFileInfo"
