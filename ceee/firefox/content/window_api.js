@@ -149,6 +149,9 @@ CEEE_window_internal_.getCurrentWindow_ = function(cmd, data) {
     if (win)
       return this.buildWindowValue(win);
   }
+
+  throw(new Error(CEEE_window_internal_.CMD_GET_CURRENT_WINDOW +
+                  ': invalid context'));
 };
 
 CEEE_window_internal_.CMD_GET_LAST_FOCUSED_WINDOW =

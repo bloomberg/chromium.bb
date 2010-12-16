@@ -828,7 +828,6 @@ CEEE_Class.prototype.onCfMessage_ = function(evt, target) {
       this.logError('onCfMessage_: exception thrown by handler cmd=' + cmd +
                     ' err=' + ex);
       err = ex.message;
-      value = null;
     }
   } else {
     this.logError('onCfMessage_: dispatch entry is not a function');
