@@ -152,6 +152,7 @@
         'chrome_frame_privileged_mock',
         'chrome_frame_strings',
         'chrome_tab_idl',
+        'xulrunner_sdk',
       ],
       'sources': [
         'chrome_tab.h',
@@ -188,6 +189,9 @@
         'urlmon_upload_data_stream_unittest.cc',
         'vtable_patch_manager_unittest.cc',
       ],
+      'include_dirs': [
+        '<@(xul_include_directories)',
+      ],
       'resource_include_dirs': [
         '<(INTERMEDIATE_DIR)',
         '<(SHARED_INTERMEDIATE_DIR)',
@@ -200,7 +204,6 @@
         ['coverage==0', {
           'dependencies': [
             'chrome_frame_npapi',
-            'xulrunner_sdk',
           ],
           'sources': [
             'chrome_frame_npapi_unittest.cc',
@@ -273,7 +276,6 @@
         'chrome_frame_utils',
         'chrome_tab_idl',
         'npchrome_frame',
-        'xulrunner_sdk',
       ],
       'sources': [
         '../base/test_suite.h',
@@ -432,7 +434,6 @@
           'msvs_settings': {
             'VCLinkerTool': {
               'IgnoreDefaultLibraryNames': ['nspr.lib', 'nspr4.lib'],
-              'DelayLoadDLLs': ['nspr4.dll'],
             },
           },
           'dependencies': [
@@ -688,7 +689,6 @@
         'chrome_frame_strings',
         'chrome_frame_utils',
         '../chrome/chrome.gyp:common',
-        'xulrunner_sdk',
       ],
       'sources': [
         'chrome_frame_npapi.cc',
@@ -706,6 +706,9 @@
         'ns_associate_iid_win.h',
         'ns_isupports_impl.h',
         'scoped_ns_ptr_win.h',
+      ],
+      'include_dirs': [
+        '<@(xul_include_directories)',
       ],
     },
     {
