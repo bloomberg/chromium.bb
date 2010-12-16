@@ -81,13 +81,7 @@ bool Thread::StartWithOptions(const Options& options) {
   SetThreadWasQuitProperly(false);
 
   StartupData startup_data(options);
-  {
-    // Use a lock to force instruction order on SMP architectures.  On SMP
-    // machines, the assignment of startup_data_ may be moved after creation of
-    // the thread and possibly after the new thread attempts to use it.
-    AutoLock lock(startup_data_lock_);
-    startup_data_ = &startup_data;
-  }
+  startup_data_ = &startup_data;
 
   if (!PlatformThread::Create(options.stack_size, this, &thread_)) {
     DLOG(ERROR) << "failed to create thread";
@@ -148,15 +142,8 @@ void Thread::Run(MessageLoop* message_loop) {
 
 void Thread::ThreadMain() {
   {
-    StartupData* startup_data = NULL;
-    {
-      // Use a lock to ensure that startup_data_ has been written before we
-      // access it here.
-      AutoLock lock(startup_data_lock_);
-      startup_data = startup_data_;
-    }
     // The message loop for this thread.
-    MessageLoop message_loop(startup_data->options.message_loop_type);
+    MessageLoop message_loop(startup_data_->options.message_loop_type);
 
     // Complete the initialization of our Thread object.
     thread_id_ = PlatformThread::CurrentId();
@@ -170,7 +157,7 @@ void Thread::ThreadMain() {
     // Let's do this before signaling we are started.
     Init();
 
-    startup_data->event.Signal();
+    startup_data_->event.Signal();
     // startup_data_ can't be touched anymore since the starting thread is now
     // unlocked.
 
