@@ -105,14 +105,27 @@ function initializeSection(sectionId, mask, opt_section) {
 function updateSimpleSection(id, section) {
   var elm = $(id);
   var maxiview = getSectionMaxiview(elm);
+  var miniview = getSectionMiniview(elm);
   if (shownSections & section) {
-    $(id).classList.remove('hidden');
-    if (maxiview)
+    // The section is expanded, so the maxiview should be opaque (visible) and
+    // the miniview should be hidden.
+    elm.classList.remove('hidden');
+    if (maxiview) {
       maxiview.classList.remove('hidden');
+      maxiview.classList.add('opaque');
+    }
+    if (miniview)
+      miniview.classList.remove('opaque');
   } else {
-    $(id).classList.add('hidden');
-    if (maxiview)
+    // The section is minimized, so the maxiview should be hidden and the
+    // miniview should be opaque.
+    elm.classList.add('hidden');
+    if (maxiview) {
       maxiview.classList.add('hidden');
+      maxiview.classList.remove('opaque');
+    }
+    if (miniview)
+      miniview.classList.add('opaque');
   }
 }
 
@@ -337,6 +350,28 @@ function updateAllMiniviewClippings() {
   }
 }
 
+// Returns whether or not vertical scrollbars are present.
+function hasScrollBars() {
+  return window.innerHeight != document.body.clientHeight;
+}
+
+// Enables scrollbars (they will only show up if needed).
+function showScrollBars() {
+  document.body.classList.remove('noscroll');
+}
+
+// Hides all scrollbars.
+function hideScrollBars() {
+  document.body.classList.add('noscroll');
+}
+
+// Returns whether or not the sections are currently animating due to a
+// section transition.
+function isAnimating() {
+  var de = document.documentElement;
+  return de.getAttribute('enable-section-animations') == 'true';
+}
+
 // Layout the sections in a modified accordian. The header and miniview, if
 // visible are fixed within the viewport. If there is an expanded section, its
 // it scrolls.
@@ -367,6 +402,11 @@ function updateAllMiniviewClippings() {
 // don't have a bunch of dead whitespace in the case of expanded sections that
 // aren't very tall.
 function layoutSections() {
+  // While transitioning sections, we only want scrollbars to appear if they're
+  // already present or the window is being resized (so there's no animation).
+  if (!hasScrollBars() && isAnimating())
+    hideScrollBars();
+
   var sections = SectionLayoutInfo.getAll();
   var expandedSection = null;
   var headerHeight = LAYOUT_SPACING_TOP;
@@ -433,10 +473,21 @@ function layoutSections() {
     section.section.style.top = y + 'px';
     y += section.fixedHeight;
 
-    if (section.maxiview && section == expandedSection) {
-      section.maxiview.style.top = y + 'px';
-      updateMask(section.maxiview, expandedSectionHeight);
+    if (section.maxiview) {
+      if (section == expandedSection) {
+        section.maxiview.style.top = y + 'px';
+      } else {
+        // The miniviews fade out gradually, so it may have height at this
+        // point. We position the maxiview as if the miniview was not displayed
+        // by subtracting off the miniview's total height (height + margin).
+        var miniviewFudge = 40;  // miniview margin-bottom + margin-top
+        var miniviewHeight = section.miniview.offsetHeight + miniviewFudge;
+        section.maxiview.style.top = y - miniviewHeight + 'px';
+      }
     }
+
+    if (section.maxiview && section == expandedSection)
+      updateMask(section.maxiview, expandedSectionHeight);
 
     if (section == expandedSection)
       y += expandedSectionHeight;
@@ -502,6 +553,10 @@ function getSectionMaxiview(section) {
   return $(section.id + '-maxiview');
 }
 
+function getSectionMiniview(section) {
+  return section.querySelector('.miniview');
+}
+
 // You usually want to call |showOnlySection()| instead of this.
 function showSection(section) {
   if (!(section & shownSections)) {
@@ -514,6 +569,21 @@ function showSection(section) {
       if (maxiview) {
         maxiview.classList.remove('hiding');
         maxiview.classList.remove('hidden');
+        // The opacity won't transition if you toggle the display property
+        // at the same time. To get a fade effect, we set the opacity
+        // asynchronously from another function, after the display is toggled.
+        //   1) 'hidden' (display: none, opacity: 0)
+        //   2) none (display: block, opacity: 0)
+        //   3) 'opaque' (display: block, opacity: 1)
+        setTimeout(function () {
+          maxiview.classList.add('opaque');
+        }, 0);
+      }
+
+      var miniview = getSectionMiniview(el);
+      if (miniview) {
+        // The miniview is hidden immediately (no need to set this async).
+        miniview.classList.remove('opaque');
       }
     }
 
@@ -553,12 +623,19 @@ function hideSection(section) {
       el.classList.add('hidden');
 
       var maxiview = getSectionMaxiview(el);
-      if (maxiview)
+      if (maxiview) {
         maxiview.classList.add(isDoneLoading() ? 'hiding' : 'hidden');
+        maxiview.classList.remove('opaque');
+      }
 
-      var miniview = el.querySelector('.miniview');
-      if (miniview)
+      var miniview = getSectionMiniview(el);
+      if (miniview) {
+        // We need to set this asynchronously to properly get the fade effect.
+        setTimeout(function() {
+          miniview.classList.add('opaque');
+        }, 0);
         updateMiniviewClipping(miniview);
+      }
     }
   }
 }
@@ -569,7 +646,11 @@ window.addEventListener('webkitTransitionEnd', function(e) {
     e.target.classList.remove('hiding');
   }
 
-  document.documentElement.setAttribute('enable-section-animations', 'false');
+  if (e.target.classList.contains('maxiview') ||
+      e.target.classList.contains('miniview'))  {
+    document.documentElement.removeAttribute('enable-section-animations');
+    showScrollBars();
+  }
 });
 
 /**
@@ -599,16 +680,18 @@ function setShownSections(newShownSections) {
 
 function layoutRecentlyClosed() {
   var recentElement = $('recently-closed');
-  var miniview = recentElement.querySelector('.miniview');
+  var miniview = getSectionMiniview(recentElement);
 
   updateMiniviewClipping(miniview);
 
   if (miniview.hasChildNodes()) {
     if (!(shownSections & MINIMIZED_RECENT)) {
       recentElement.classList.remove('disabled');
+      miniview.classList.add('opaque');
     }
   } else {
     recentElement.classList.add('disabled');
+    miniview.classList.remove('opaque');
   }
 }
 

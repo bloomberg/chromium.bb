@@ -322,6 +322,10 @@ html[hasattribution=false] #attribution > div {
   font-size: 92%;
 }
 
+body.noscroll {
+  overflow: hidden;
+}
+
 html[anim=true][enable-section-animations=true] .section {
   -webkit-transition: top .15s;
 }
@@ -458,6 +462,10 @@ html[dir=rtl] .section-close-button {
   padding: 5px 0 30px;
   position: absolute;
   -webkit-mask-attachment: fixed;
+  opacity: 0;
+}
+
+.maxiview.opaque {
   opacity: 1;
 }
 
@@ -467,9 +475,14 @@ html[dir=rtl] .section-close-button {
 
 .maxiview.hidden {
   display: none;
+  opacity: 0;
 }
 
-html[anim=true] .maxiview {
+html[anim=true][enable-section-animations=true] .maxiview {
+  -webkit-transition: opacity .10s, top .15s;
+}
+
+html[anim=true][enable-section-animations=true] .miniview {
   -webkit-transition: opacity .15s;
 }
 
@@ -484,9 +497,17 @@ html[anim=true] .maxiview {
   display: none;
 }
 
-.section.hidden > h2,
+.section.hidden > h2 {
+  display: block;
+}
+
 .section.hidden > .miniview {
   display: block;
+  opacity: 0;
+}
+
+.section.hidden > .miniview.opaque {
+  opacity: 1;
 }
 
 .section.hidden > h2 {
