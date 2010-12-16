@@ -169,7 +169,7 @@ def PrintHeaderFile(output, is_server, guard_name, interface_name, specs):
   if is_server:
     s += 'class %s {\n' % interface_name
     s += ' public:\n'
-    s += '  static NACL_SRPC_METHOD_ARRAY(srpc_methods);\n'
+    s += '  static NaClSrpcHandlerDesc srpc_methods[];\n'
     s += '};  // class %s' % interface_name
   s += HEADER_END.replace('xyz', guard_name)
   print >>output, s
@@ -256,14 +256,13 @@ def PrintServerFile(output, include_name, interface_name, specs):
       s += '  %s;\n' % FormatCall(class_name, '  ', rpc)
       s += '}\n\n'
   s += '}  // namespace\n\n'
-  s += 'NACL_SRPC_METHOD_ARRAY(%s' % interface_name
-  s += '::srpc_methods) = {\n'
+  s += 'NaClSrpcHandlerDesc %s::srpc_methods[] = {\n' % interface_name
   for spec in specs:
     class_name = spec['name'] + 'Server'
     rpcs = spec['rpcs']
     for rpc in rpcs:
       s += FormatMethodString(rpc)
-  s += '  { NULL, NULL }\n};  // NACL_SRPC_METHOD_ARRAY\n'
+  s += '  { NULL, NULL }\n};\n'
   print >>output, SOURCE_FILE_INCLUDES.replace('xyz', include_name)
   print >>output, s
 

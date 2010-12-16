@@ -379,7 +379,7 @@ static void PPP_Instance_GetInstanceObjectDispatcher(
 
 }  // namespace
 
-NACL_SRPC_METHOD_ARRAY(PppRpcs::srpc_methods) = {
+NaClSrpcHandlerDesc PppRpcs::srpc_methods[] = {
   { "HasProperty:CCC:iC", HasPropertyDispatcher },
   { "HasMethod:CCC:iC", HasMethodDispatcher },
   { "GetProperty:CCC:CC", GetPropertyDispatcher },
@@ -402,5 +402,5 @@ NACL_SRPC_METHOD_ARRAY(PppRpcs::srpc_methods) = {
   { "PPP_Instance_HandleDocumentLoad:ll:i", PPP_Instance_HandleDocumentLoadDispatcher },
   { "PPP_Instance_GetInstanceObject:l:C", PPP_Instance_GetInstanceObjectDispatcher },
   { NULL, NULL }
-};  // NACL_SRPC_METHOD_ARRAY
+};
 

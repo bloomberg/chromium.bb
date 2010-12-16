@@ -56,20 +56,10 @@ static int nacl_file_done = 0;
 static int nacl_file_embedded = -1;
 
 
-#define NACL_SRPC_HANDLER(signature, name) \
-  extern "C" void name( \
-      NaClSrpcRpc *rpc, \
-      NaClSrpcArg **in_args, \
-      NaClSrpcArg **out_args, \
-      NaClSrpcClosure *done); \
-  NACL_SRPC_METHOD(signature, name); \
-  void name( \
-      NaClSrpcRpc *rpc, \
-      NaClSrpcArg **in_args, \
-      NaClSrpcArg **out_args, \
-      NaClSrpcClosure *done)
-
-NACL_SRPC_HANDLER("file:shi:", NaClFile) {
+extern "C" void NaClFile(NaClSrpcRpc *rpc,
+                         NaClSrpcArg **in_args,
+                         NaClSrpcArg **out_args,
+                         NaClSrpcClosure *done) {
   char *pathname;
   int fd;
   int last;

@@ -37,11 +37,3 @@ _fini:
      * be aligned individually, so we need to align it.
      */
     .p2align NACLENTRYALIGN
-
-    /*
-     * This section contains the simple rpc method descriptors.
-     */
-    .section .nacl_rpc_methods, "aw", @progbits
-    .p2align 3
-    .global __kNaClSrpcHandlers
-__kNaClSrpcHandlers:

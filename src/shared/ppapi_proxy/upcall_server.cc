@@ -54,9 +54,9 @@ static void PPB_Graphics2D_FlushDispatcher(
 
 }  // namespace
 
-NACL_SRPC_METHOD_ARRAY(PpbUpcalls::srpc_methods) = {
+NaClSrpcHandlerDesc PpbUpcalls::srpc_methods[] = {
   { "PPB_Core_CallOnMainThread:ii:", PPB_Core_CallOnMainThreadDispatcher },
   { "PPB_Graphics2D_Flush:li:i", PPB_Graphics2D_FlushDispatcher },
   { NULL, NULL }
-};  // NACL_SRPC_METHOD_ARRAY
+};
 

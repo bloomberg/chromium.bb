@@ -670,7 +670,7 @@ static void PPB_Instance_ExecuteScriptDispatcher(
 
 }  // namespace
 
-NACL_SRPC_METHOD_ARRAY(PpbRpcs::srpc_methods) = {
+NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "HasProperty:CCC:iC", HasPropertyDispatcher },
   { "HasMethod:CCC:iC", HasMethodDispatcher },
   { "GetProperty:CCC:CC", GetPropertyDispatcher },
@@ -712,5 +712,5 @@ NACL_SRPC_METHOD_ARRAY(PpbRpcs::srpc_methods) = {
   { "PPB_Instance_IsFullFrame:l:i", PPB_Instance_IsFullFrameDispatcher },
   { "PPB_Instance_ExecuteScript:lCC:CC", PPB_Instance_ExecuteScriptDispatcher },
   { NULL, NULL }
-};  // NACL_SRPC_METHOD_ARRAY
+};
 

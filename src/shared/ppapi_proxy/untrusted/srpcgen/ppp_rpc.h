@@ -200,7 +200,7 @@ class PppInstanceRpcServer {
 
 class PppRpcs {
  public:
-  static NACL_SRPC_METHOD_ARRAY(srpc_methods);
+  static NaClSrpcHandlerDesc srpc_methods[];
 };  // class PppRpcs
 
 #endif  // GEN_PPAPI_PROXY_PPP_RPC_H_

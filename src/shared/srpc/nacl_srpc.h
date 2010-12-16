@@ -502,55 +502,6 @@ int NaClSrpcServerLoop(NaClSrpcImcDescType              imc_socket_desc,
                        const struct NaClSrpcHandlerDesc methods[],
                        void                             *instance_data);
 
-#ifdef __native_client__
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
-/*
- * Not documented: in Native Client code the default RPC descriptors are
- * recorded in a special section, ".nacl_rpc_methods".  The use of a special
- * section allows declaring RPC handlers in multiple files by having the linker
- * concatenate the respective chunks of this section.  The default RPC
- * processing loop refers to this section to build its tables.
- * The handler array begins at __kNaclSrpcHandlers.
- */
-#define NACL_SRPC_METHOD_SECTION_ATTRIBUTE \
-  __attribute__((section(".nacl_rpc_methods"))) \
-  __attribute__((aligned(8)))
-
-extern const struct NaClSrpcHandlerDesc
-  NACL_SRPC_METHOD_SECTION_ATTRIBUTE
-  __kNaClSrpcHandlers[];
-/*
- * Not documented: in NativeClient code the default RPC descriptors are
- * recorded in a special section, ".nacl_rpc_methods".
- * The handler array ends at __kNaclSrpcHandlerEnd.
- */
-extern const struct NaClSrpcHandlerDesc
-  NACL_SRPC_METHOD_SECTION_ATTRIBUTE
-  __kNaClSrpcHandlerEnd;
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
-#else
-#define NACL_SRPC_METHOD_SECTION_ATTRIBUTE
-#endif /* defined(__native_client__) ... */
-
-/**
- * Exports an array of method descriptors to the default RPC descriptor array.
- * @param name is the name of the array containing the method descriptors.
- */
-#define NACL_SRPC_METHOD_ARRAY(name) \
-    struct NaClSrpcHandlerDesc NACL_SRPC_METHOD_SECTION_ATTRIBUTE name[]
-
-/**
- * Exports a method to the default RPC descriptor array.
- * @param entry_format a string with the format "x:y:z", where x is the method
- * name, * y is the parameter type list, and z is the return value type list.
- * @param method_handler A function pointer for the implementation of the
- * method.
- */
-/* TODO(sehr): these names can clash. */
-#define NACL_SRPC_METHOD(entry_format, method_handler) \
-  NACL_SRPC_METHOD_ARRAY(NaClSrpcMethod##method_handler) = \
-      { { entry_format, method_handler } }
-
 /**
  *  Initializes the SRPC module.
  *  @return Returns one on success, zero otherwise.

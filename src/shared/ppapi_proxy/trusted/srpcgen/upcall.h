@@ -36,7 +36,7 @@ class PppUpcallRpcServer {
 
 class PpbUpcalls {
  public:
-  static NACL_SRPC_METHOD_ARRAY(srpc_methods);
+  static NaClSrpcHandlerDesc srpc_methods[];
 };  // class PpbUpcalls
 
 #endif  // GEN_PPAPI_PROXY_UPCALL_H_

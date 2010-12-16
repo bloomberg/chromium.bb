@@ -159,12 +159,6 @@ void nacl_multimedia_bridge(NaClSrpcRpc *rpc,
   done->Run(done);
 }
 
-/*
- * Export the method as taking two handles (the display shared memory and
- * a connected socket for upcalls)
- */
-NACL_SRPC_METHOD("nacl_multimedia_bridge:hh:", nacl_multimedia_bridge);
-
 static int nacl_multimedia_bridge_connected() {
   return NULL != nacl_multimedia.video_data;
 }

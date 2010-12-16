@@ -28,16 +28,3 @@
     nacljmp %ecx
 
     .p2align NACLENTRYALIGN,0xf4
-
-    .text
-    .weak __NaClSrpcListServices
-__NaClSrpcListServices:
-
-    /*
-     * This section contains the simple rpc method descriptors.
-     */
-    .section .nacl_rpc_methods, ""
-    .4byte 0
-    .4byte 0
-    .global __kNaClSrpcHandlerEnd
-__kNaClSrpcHandlerEnd:

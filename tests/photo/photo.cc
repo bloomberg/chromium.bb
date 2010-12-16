@@ -739,22 +739,31 @@ void UpdateFineAngle(NaClSrpcRpc* rpc,
 }
 
 
+extern "C" void NaClFile(NaClSrpcRpc* rpc,
+                         NaClSrpcArg** in_args,
+                         NaClSrpcArg** out_args,
+                         NaClSrpcClosure* done);
+
 // register SRPC methods
 // These functions are called by the SRPC service thread via Javascript.
-NACL_SRPC_METHOD("OpenPhoto:s:", OpenPhoto);
-NACL_SRPC_METHOD("UpdateSaturation:i:", UpdateSaturation);
-NACL_SRPC_METHOD("UpdateContrast:i:", UpdateContrast);
-NACL_SRPC_METHOD("UpdateBrightness:i:", UpdateBrightness);
-NACL_SRPC_METHOD("UpdateTemperature:i:", UpdateTemperature);
-NACL_SRPC_METHOD("UpdateBlackPoint:i:", UpdateBlackPoint);
-NACL_SRPC_METHOD("UpdateFill:i:", UpdateFill);
-NACL_SRPC_METHOD("UpdateShadowsHue:i:", UpdateShadowsHue);
-NACL_SRPC_METHOD("UpdateShadowsSaturation:i:", UpdateShadowsSaturation);
-NACL_SRPC_METHOD("UpdateHighlightsHue:i:", UpdateHighlightsHue);
-NACL_SRPC_METHOD("UpdateHighlightsSaturation:i:", UpdateHighlightsSaturation);
-NACL_SRPC_METHOD("UpdateSplitPoint:i:", UpdateSplitPoint);
-NACL_SRPC_METHOD("UpdateAngle:i:", UpdateAngle);
-NACL_SRPC_METHOD("UpdateFineAngle:i:", UpdateFineAngle);
+static NaClSrpcHandlerDesc methods[] = {
+  { "file:shi:", NaClFile },
+  { "OpenPhoto:s:", OpenPhoto },
+  { "UpdateSaturation:i:", UpdateSaturation },
+  { "UpdateContrast:i:", UpdateContrast },
+  { "UpdateBrightness:i:", UpdateBrightness },
+  { "UpdateTemperature:i:", UpdateTemperature },
+  { "UpdateBlackPoint:i:", UpdateBlackPoint },
+  { "UpdateFill:i:", UpdateFill },
+  { "UpdateShadowsHue:i:", UpdateShadowsHue },
+  { "UpdateShadowsSaturation:i:", UpdateShadowsSaturation },
+  { "UpdateHighlightsHue:i:", UpdateHighlightsHue },
+  { "UpdateHighlightsSaturation:i:", UpdateHighlightsSaturation },
+  { "UpdateSplitPoint:i:", UpdateSplitPoint },
+  { "UpdateAngle:i:", UpdateAngle },
+  { "UpdateFineAngle:i:", UpdateFineAngle },
+  { NULL, NULL }
+};
 
 
 

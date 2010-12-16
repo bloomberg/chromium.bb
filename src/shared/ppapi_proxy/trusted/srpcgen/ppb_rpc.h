@@ -327,7 +327,7 @@ class PpbInstanceRpcServer {
 
 class PpbRpcs {
  public:
-  static NACL_SRPC_METHOD_ARRAY(srpc_methods);
+  static NaClSrpcHandlerDesc srpc_methods[];
 };  // class PpbRpcs
 
 #endif  // GEN_PPAPI_PROXY_PPB_RPC_H_

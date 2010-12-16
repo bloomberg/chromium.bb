@@ -53,22 +53,3 @@
     nop
     bic lr, lr, #NACL_CONTROL_FLOW_MASK
     bx lr
-
-/* ====================================================================== */
-/* END .text section */
-/* ====================================================================== */
-    .text
-    .weak __NaClSrpcListServices
-__NaClSrpcListServices:
-
-/* ====================================================================== */
-/* END .nacl_rpc_methods section */
-/* ====================================================================== */
-
-    .section .nacl_rpc_methods, ""
-    /* TODO(robertm): add comment regarding padding, probably terminator */
-    .4byte 0
-    .4byte 0
-    .global __kNaClSrpcHandlerEnd
-__kNaClSrpcHandlerEnd:
-

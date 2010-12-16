@@ -39,9 +39,6 @@
 *
 * The last code appended to these sections is crtn_arm.S
 * which adds the return code for the respective functions.
-*
-* The __kNaClSrpcHandlers symbol is used by __CommandLoop and
-* NaClSrpcDefaultServerLoop
 */
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
@@ -93,14 +90,3 @@ _fini:
     .global __tdb
 __tdb:
     .fill TDB_SIZE, 1, -1
-
-/* ====================================================================== */
-/* BEGIN .nacl_rpc_methods section */
-/* This section contains the simple rpc method descriptors. */
-/* ====================================================================== */
-    /* TODO: check proper .section syntax for arm */
-    .section .nacl_rpc_methods  /* , "aw", @progbits */
-    .align NACL_ARM_BUNDLE_SIZE_LOG
-    .global __kNaClSrpcHandlers
-__kNaClSrpcHandlers:
-
