@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <cairo.h>
+#include <math.h>
 
 #include "wayland-util.h"
 #include "wayland-client.h"
@@ -73,6 +74,11 @@ resizor_draw(struct resizor *resizor)
 	cairo_surface_destroy(surface);
 
 	window_flush(resizor->window);
+
+	if (fabs(resizor->height.previous - resizor->height.target) < 0.1) {
+		wl_display_frame_callback(display_get_display(resizor->display),
+					  frame_callback, resizor);
+	}
 }
 
 static void
@@ -120,11 +126,7 @@ frame_callback(void *data, uint32_t time)
 	window_set_child_size(resizor->window,
 			      &resizor->child_allocation);
 
-	if ((int) (height + 0.5) != resizor->height.target) {
-		window_schedule_redraw(resizor->window);
-		wl_display_frame_callback(display_get_display(resizor->display),
-					  frame_callback, resizor);
-	}
+	window_schedule_redraw(resizor->window);
 }
 
 static void
