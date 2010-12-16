@@ -52,6 +52,9 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   virtual void traceEventBegin(const char* name, void* id, const char* extra);
   virtual void traceEventEnd(const char* name, void* id, const char* extra);
   virtual WebKit::WebData loadResource(const char* name);
+  virtual bool loadAudioResource(
+      WebKit::WebAudioBus* destination_bus, const char* audio_file_data,
+      size_t data_size, double sample_rate);
   virtual WebKit::WebString queryLocalizedString(
       WebKit::WebLocalizedString::Name name);
   virtual WebKit::WebString queryLocalizedString(

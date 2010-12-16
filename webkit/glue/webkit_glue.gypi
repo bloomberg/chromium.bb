@@ -250,6 +250,8 @@
         '../plugins/ppapi/var.h',
         '../plugins/ppapi/var_object_class.cc',
         '../plugins/ppapi/var_object_class.h',
+        'media/audio_decoder.cc',
+        'media/audio_decoder.h',
         'media/buffered_data_source.cc',
         'media/buffered_data_source.h',
         'media/buffered_resource_loader.cc',

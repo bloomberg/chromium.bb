@@ -34,6 +34,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
+#include "webkit/glue/media/audio_decoder.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/plugins/webplugininfo.h"
 #include "webkit/glue/webkit_glue.h"
@@ -44,6 +45,7 @@
 #include "v8/include/v8.h"
 #endif
 
+using WebKit::WebAudioBus;
 using WebKit::WebCookie;
 using WebKit::WebData;
 using WebKit::WebLocalizedString;
@@ -350,6 +352,15 @@ WebData WebKitClientImpl::loadResource(const char* name) {
   // strings. http://crbug.com/50675.
   //NOTREACHED() << "Unknown image resource " << name;
   return WebData();
+}
+
+bool WebKitClientImpl::loadAudioResource(
+    WebKit::WebAudioBus* destination_bus, const char* audio_file_data,
+    size_t data_size, double sample_rate) {
+  return DecodeAudioFileData(destination_bus,
+                             audio_file_data,
+                             data_size,
+                             sample_rate);
 }
 
 WebString WebKitClientImpl::queryLocalizedString(
