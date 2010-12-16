@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_AUTOCOMPLETE_HISTORY_PROVIDER_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
-#include "chrome/browser/autocomplete/history_provider_util.h"
 
 namespace history {
 
@@ -30,6 +30,8 @@ class HistoryProvider : public AutocompleteProvider {
   HistoryProvider(ACProviderListener* listener,
                   Profile* profile,
                   const char* name);
+
+  virtual void DeleteMatch(const AutocompleteMatch& match) OVERRIDE;
 
   // Fixes up user URL input to make it more possible to match against.  Among
   // many other things, this takes care of the following:

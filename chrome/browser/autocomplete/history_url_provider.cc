@@ -147,40 +147,6 @@ void HistoryURLProvider::Stop() {
     params_->cancel = true;
 }
 
-void HistoryURLProvider::DeleteMatch(const AutocompleteMatch& match) {
-  DCHECK(done_);
-
-  // Delete the match from the history DB.
-  HistoryService* const history_service =
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  GURL selected_url(match.destination_url);
-  if (!history_service || !selected_url.is_valid()) {
-    NOTREACHED() << "Can't delete requested URL";
-    return;
-  }
-  history_service->DeleteURL(selected_url);
-
-  // Delete the match from the current set of matches.
-  bool found = false;
-  for (ACMatches::iterator i(matches_.begin()); i != matches_.end(); ++i) {
-    if (i->destination_url == match.destination_url) {
-      found = true;
-      if (i->is_history_what_you_typed_match) {
-        // We can't get rid of the What You Typed match, but we can make it
-        // look like it has no backing data.
-        i->deletable = false;
-        i->description.clear();
-        i->description_class.clear();
-      } else {
-        matches_.erase(i);
-      }
-      break;
-    }
-  }
-  DCHECK(found) << "Asked to delete a URL that isn't in our set of matches";
-  listener_->OnProviderUpdate(true);
-}
-
 // Called on the history thread.
 void HistoryURLProvider::ExecuteWithDB(history::HistoryBackend* backend,
                                        history::URLDatabase* db,

@@ -8,7 +8,11 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/history/history.h"
 #include "chrome/browser/net/url_fixer_upper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/url_util.h"
 
@@ -16,6 +20,43 @@ HistoryProvider::HistoryProvider(ACProviderListener* listener,
                                  Profile* profile,
                                  const char* name)
     : AutocompleteProvider(listener, profile, name) {
+}
+
+void HistoryProvider::DeleteMatch(const AutocompleteMatch& match) {
+  DCHECK(done_);
+  DCHECK(profile_);
+  DCHECK(match.deletable);
+
+  HistoryService* const history_service =
+    profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+
+  // Delete the match from the history DB.
+  GURL selected_url(match.destination_url);
+  if (!history_service || !selected_url.is_valid()) {
+    NOTREACHED() << "Can't delete requested URL";
+    return;
+  }
+  history_service->DeleteURL(selected_url);
+
+  // Delete the match from the current set of matches.
+  bool found = false;
+  for (ACMatches::iterator i(matches_.begin()); i != matches_.end(); ++i) {
+    if (i->destination_url == selected_url && i->type == match.type) {
+      found = true;
+      if (i->is_history_what_you_typed_match) {
+        // We can't get rid of the What You Typed match, but we can make it
+        // look like it has no backing data.
+        i->deletable = false;
+        i->description.clear();
+        i->description_class.clear();
+      } else {
+        matches_.erase(i);
+      }
+      break;
+    }
+  }
+  DCHECK(found) << "Asked to delete a URL that isn't in our set of matches";
+  listener_->OnProviderUpdate(true);
 }
 
 // static

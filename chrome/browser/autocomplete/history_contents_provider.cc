@@ -53,7 +53,7 @@ using history::HistoryDatabase;
 
 HistoryContentsProvider::HistoryContentsProvider(ACProviderListener* listener,
                                                  Profile* profile)
-    : AutocompleteProvider(listener, profile, "HistoryContents"),
+    : HistoryProvider(listener, profile, "HistoryContents"),
       star_title_count_(0),
       star_contents_count_(0),
       title_count_(0),
@@ -222,7 +222,7 @@ AutocompleteMatch HistoryContentsProvider::ResultToMatch(
     int score) {
   // TODO(sky): if matched title highlight matching words in title.
   // Also show star in popup.
-  AutocompleteMatch match(this, score, false, MatchInTitle(result) ?
+  AutocompleteMatch match(this, score, true, MatchInTitle(result) ?
       AutocompleteMatch::HISTORY_TITLE : AutocompleteMatch::HISTORY_BODY);
   match.contents = StringForURLDisplay(result.url(), true, trim_http_);
   match.fill_into_edit =

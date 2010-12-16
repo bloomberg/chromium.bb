@@ -125,7 +125,7 @@ struct AutocompleteMatch {
                                        int style,
                                        ACMatchClassifications* classifications);
 
-  // The provider of this match, used to  remember which provider the user had
+  // The provider of this match, used to remember which provider the user had
   // selected when the input changes. This may be NULL, in which case there is
   // no provider (or memory of the user's selection).
   AutocompleteProvider* provider;

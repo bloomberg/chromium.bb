@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/autocomplete/history_provider.h"
 #include "chrome/browser/autocomplete/history_provider_util.h"
 
@@ -151,9 +152,8 @@ class HistoryURLProvider : public HistoryProvider {
 
   // AutocompleteProvider
   virtual void Start(const AutocompleteInput& input,
-                     bool minimal_changes);
-  virtual void Stop();
-  virtual void DeleteMatch(const AutocompleteMatch& match);
+                     bool minimal_changes) OVERRIDE;
+  virtual void Stop() OVERRIDE;
 
   // Runs the history query on the history thread, called by the history
   // system. The history database MAY BE NULL in which case it is not
