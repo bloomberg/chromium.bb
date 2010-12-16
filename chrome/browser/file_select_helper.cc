@@ -166,6 +166,10 @@ SelectFileDialog::FileTypeInfo* FileSelectHelper::GetFileTypesFromAcceptType(
       valid_type_count++;
   }
 
+  // If no valid extension is added, bail out.
+  if (valid_type_count == 0)
+    return NULL;
+
   // Use a generic description "Custom Files" if either of the following is
   // true:
   // 1) There're multiple types specified, like "audio/*,video/*"
@@ -227,7 +231,7 @@ void FileSelectHelper::RunFileChooser(
                                   params.title,
                                   default_file_name,
                                   file_types.get(),
-                                  0,
+                                  file_types.get() ? 1 : 0,  // 1-based index.
                                   FILE_PATH_LITERAL(""),
                                   owning_window,
                                   NULL);
