@@ -36,6 +36,7 @@ class TouchBrowserFrameView : public OpaqueBrowserFrameView,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  bool keyboard_showing_;
   DOMView* keyboard_;
   NotificationRegistrar registrar_;
 

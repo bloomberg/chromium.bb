@@ -8,6 +8,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/site_instance.h"
+#include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/dom_view.h"
@@ -29,6 +30,7 @@ const int kKeyboardHeight = 300;
 TouchBrowserFrameView::TouchBrowserFrameView(BrowserFrame* frame,
                                              BrowserView* browser_view)
     : OpaqueBrowserFrameView(frame, browser_view),
+      keyboard_showing_(false),
       keyboard_(NULL) {
   registrar_.Add(this,
                  NotificationType::NAV_ENTRY_COMMITTED,
@@ -44,9 +46,9 @@ TouchBrowserFrameView::~TouchBrowserFrameView() {
 ///////////////////////////////////////////////////////////////////////////////
 // TouchBrowserFrameView, protected:
 int TouchBrowserFrameView::GetReservedHeight() const {
-  if (keyboard_ && keyboard_->IsVisible()) {
+  if (keyboard_showing_)
     return kKeyboardHeight;
-  }
+
   return 0;
 }
 
@@ -75,27 +77,28 @@ void TouchBrowserFrameView::UpdateKeyboardAndLayout(bool should_show_keyboard) {
   if (should_show_keyboard)
     InitVirtualKeyboard();
 
-  // Don't do any extra work until we have shown the keyboard.
-  if (!keyboard_)
+  if (should_show_keyboard == keyboard_showing_)
     return;
 
-  if (should_show_keyboard == keyboard_->IsVisible())
-    return;
+  DCHECK(keyboard_);
 
+  keyboard_showing_ = should_show_keyboard;
+
+  keyboard_->SetBounds(GetBoundsForReservedArea());
   keyboard_->SetVisible(should_show_keyboard);
 
-  // Because the NonClientFrameView is a sibling of the ClientView,
-  // we rely on the parent to properly resize the ClientView.
+  // Because the NonClientFrameView is a sibling of the ClientView, we rely on
+  // the parent to resize the ClientView instead of resizing it directly.
   GetParent()->Layout();
 }
 
 void TouchBrowserFrameView::Observe(NotificationType type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
+  Browser* browser = browser_view()->browser();
   if (type == NotificationType::FOCUS_CHANGED_IN_PAGE) {
     // Only modify the keyboard state if the notification is coming from
     // a source within the same Browser.
-    Browser* browser = browser_view()->browser();
     Source<RenderViewHost> specific_source(source);
     for (int i = 0; i < browser->tab_count(); ++i) {
       if (browser->GetTabContentsAt(i)->render_view_host() ==
@@ -104,14 +107,12 @@ void TouchBrowserFrameView::Observe(NotificationType type,
         break;
       }
     }
-  } else {
-    DCHECK(type == NotificationType::NAV_ENTRY_COMMITTED);
-
-    // TODO(bryeung): this is hiding the keyboard for the very first page
-    //   load after browser startup when the page has an input element focused
-    //   to start with.  It would be nice to fix, but not critical.
-
-    // Everything else we have registered for should hide the keyboard.
-    UpdateKeyboardAndLayout(false);
+  } else if (type == NotificationType::NAV_ENTRY_COMMITTED) {
+    Browser* source_browser = Browser::GetBrowserForController(
+        Source<NavigationController>(source).ptr(), NULL);
+    // If the Browser for the keyboard has navigated, hide the keyboard.
+    if (source_browser == browser) {
+      UpdateKeyboardAndLayout(false);
+    }
   }
 }

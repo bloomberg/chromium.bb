@@ -183,6 +183,15 @@ int OpaqueBrowserFrameView::GetReservedHeight() const {
   return 0;
 }
 
+gfx::Rect OpaqueBrowserFrameView::GetBoundsForReservedArea() const {
+  gfx::Rect client_view_bounds = CalculateClientAreaBounds(width(), height());
+  return gfx::Rect(
+      client_view_bounds.x(),
+      client_view_bounds.y() + client_view_bounds.height(),
+      client_view_bounds.width(),
+      GetReservedHeight());
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, BrowserNonClientFrameView implementation:
 

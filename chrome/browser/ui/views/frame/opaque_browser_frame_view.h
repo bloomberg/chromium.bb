@@ -43,6 +43,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // Used to allow subclasses to reserve height for other components they
   // will add.  The space is reserved below the ClientView.
   virtual int GetReservedHeight() const;
+  virtual gfx::Rect GetBoundsForReservedArea() const;
 
   // Overridden from views::NonClientFrameView:
   virtual gfx::Rect GetBoundsForClientView() const;
