@@ -343,7 +343,9 @@ static void WriteHistoryItem(
 // Creates a new HistoryItem tree based on the serialized string.
 // Assumes the data is in the format returned by WriteHistoryItem.
 static WebHistoryItem ReadHistoryItem(
-    const SerializeObject* obj, bool include_form_data) {
+    const SerializeObject* obj,
+    bool include_form_data,
+    bool include_scroll_offset) {
   // See note in WriteHistoryItem. on this.
   obj->version = ReadInteger(obj);
 
@@ -368,9 +370,12 @@ static WebHistoryItem ReadHistoryItem(
   item.setTitle(ReadString(obj));
   item.setAlternateTitle(ReadString(obj));
   item.setLastVisitedTime(ReadReal(obj));
+
   int x = ReadInteger(obj);
   int y = ReadInteger(obj);
-  item.setScrollOffset(WebPoint(x, y));
+  if (include_scroll_offset)
+    item.setScrollOffset(WebPoint(x, y));
+
   item.setIsTargetItem(ReadBoolean(obj));
   item.setVisitCount(ReadInteger(obj));
   item.setReferrer(ReadString(obj));
@@ -401,7 +406,9 @@ static WebHistoryItem ReadHistoryItem(
   // Subitems
   int num_children = ReadInteger(obj);
   for (int i = 0; i < num_children; ++i)
-    item.appendToChildren(ReadHistoryItem(obj, include_form_data));
+    item.appendToChildren(ReadHistoryItem(obj,
+                                          include_form_data,
+                                          include_scroll_offset));
 
   return item;
 }
@@ -420,20 +427,22 @@ std::string HistoryItemToString(const WebHistoryItem& item) {
 // This assumes that the given serialized string has all the required key,value
 // pairs, and does minimal error checking. If |include_form_data| is true,
 // the form data from a post is restored, otherwise the form data is empty.
+// If |include_scroll_offset| is true, the scroll offset is restored.
 static WebHistoryItem HistoryItemFromString(
     const std::string& serialized_item,
-    bool include_form_data) {
+    bool include_form_data,
+    bool include_scroll_offset) {
   if (serialized_item.empty())
     return WebHistoryItem();
 
   SerializeObject obj(serialized_item.data(),
                       static_cast<int>(serialized_item.length()));
-  return ReadHistoryItem(&obj, include_form_data);
+  return ReadHistoryItem(&obj, include_form_data, include_scroll_offset);
 }
 
 WebHistoryItem HistoryItemFromString(
     const std::string& serialized_item) {
-  return HistoryItemFromString(serialized_item, true);
+  return HistoryItemFromString(serialized_item, true, true);
 }
 
 // For testing purposes only.
@@ -470,7 +479,22 @@ std::string CreateHistoryStateForURL(const GURL& url) {
 std::string RemoveFormDataFromHistoryState(const std::string& content_state) {
   // TODO(darin): We should avoid using the WebKit API here, so that we do not
   // need to have WebKit initialized before calling this method.
-  const WebHistoryItem& item = HistoryItemFromString(content_state, false);
+  const WebHistoryItem& item =
+      HistoryItemFromString(content_state, false, true);
+  if (item.isNull()) {
+    // Couldn't parse the string, return an empty string.
+    return std::string();
+  }
+
+  return HistoryItemToString(item);
+}
+
+std::string RemoveScrollOffsetFromHistoryState(
+    const std::string& content_state) {
+  // TODO(darin): We should avoid using the WebKit API here, so that we do not
+  // need to have WebKit initialized before calling this method.
+  const WebHistoryItem& item =
+      HistoryItemFromString(content_state, true, false);
   if (item.isNull()) {
     // Couldn't parse the string, return an empty string.
     return std::string();

@@ -108,6 +108,7 @@
 #include "net/base/registry_controlled_domain.h"
 #include "net/base/static_cookie_policy.h"
 #include "net/url_request/url_request_context.h"
+#include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/window_open_disposition.h"
 
 #if defined(ENABLE_REMOTING)
@@ -4159,6 +4160,11 @@ void Browser::ViewSource(TabContentsWrapper* contents) {
       view_source_contents->controller().GetActiveEntry();
   if (!active_entry)
     return;
+
+  // Do not restore scroller position.
+  std::string content_state = webkit_glue::RemoveScrollOffsetFromHistoryState(
+      active_entry->content_state());
+  active_entry->set_content_state(content_state);
 
   GURL url = GURL(chrome::kViewSourceScheme + std::string(":") +
       active_entry->url().spec());
