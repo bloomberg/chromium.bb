@@ -270,6 +270,18 @@ void DevToolsHttpProtocolHandler::OnCloseUI(HttpListenSocket* socket) {
   client_host->NotifyCloseListener();
   delete client_host;
   socket_to_client_host_ui_.erase(socket);
+
+  // We are holding last reference to scoped refptr 'socket' here.
+  // We can't exit method just like that since 'socket' is going to
+  // be destroyed on the UI thread then. Schedule no-op to IO thread
+  // so that socket is destroyed on IO instead.
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      NewRunnableMethod(
+          this,
+          &DevToolsHttpProtocolHandler::ReleaseSocket,
+          make_scoped_refptr(socket)));
 }
 
 void DevToolsHttpProtocolHandler::OnResponseStarted(net::URLRequest* request) {
@@ -402,6 +414,11 @@ void DevToolsHttpProtocolHandler::AcceptWebSocket(
       NewRunnableMethod(socket,
                         &HttpListenSocket::AcceptWebSocket,
                         request));
+}
+
+void DevToolsHttpProtocolHandler::ReleaseSocket(
+    HttpListenSocket* socket) {
+  // This in fact is scoped ref ptr. It'll get nuked on exit.
 }
 
 TabContents* DevToolsHttpProtocolHandler::GetTabContents(int session_id) {

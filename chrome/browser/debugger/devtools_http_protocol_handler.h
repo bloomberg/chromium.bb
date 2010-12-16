@@ -68,6 +68,7 @@ class DevToolsHttpProtocolHandler
                const std::string& message);
   void AcceptWebSocket(HttpListenSocket* socket,
                        const HttpServerRequestInfo& request);
+  void ReleaseSocket(HttpListenSocket* socket);
 
   TabContents* GetTabContents(int session_id);
 
