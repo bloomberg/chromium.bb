@@ -178,6 +178,11 @@ class LoginPerformer : public LoginStatusConsumer,
   // such requests with cases when screen is locked on its own.
   bool screen_lock_requested_;
 
+  // True if LoginPerformer instance is waiting for the initial (very first one)
+  // online authentication response. Used to distinguish cases when screen
+  // is locked during that stage. No need to resolve screen lock action then.
+  bool initial_online_auth_pending_;
+
   ScopedRunnableMethodFactory<LoginPerformer> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginPerformer);

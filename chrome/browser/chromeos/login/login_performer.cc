@@ -37,6 +37,7 @@ LoginPerformer::LoginPerformer(Delegate* delegate)
       delegate_(delegate),
       password_changed_(false),
       screen_lock_requested_(false),
+      initial_online_auth_pending_(false),
       method_factory_(this) {
   DCHECK(default_performer_ == NULL)
       << "LoginPerformer should have only one instance.";
@@ -74,13 +75,15 @@ void LoginPerformer::OnLoginFailure(const LoginFailure& failure) {
 
   // Consequent online login failure with blocking UI on.
   // No difference between cases whether screen was locked by the user or
-  // by LoginPerformer.
+  // by LoginPerformer except for the very first screen lock while waiting
+  // for online auth. Otherwise it will be SL active > timeout > screen unlock.
   // Display recoverable error message using ScreenLocker,
   // force sign out otherwise.
-  if (ScreenLocker::default_screen_locker()) {
+  if (ScreenLocker::default_screen_locker() && !initial_online_auth_pending_) {
     ResolveLockLoginFailure();
     return;
   }
+  initial_online_auth_pending_ = false;
 
   // Offline auth - OK, online auth - failed.
   if (failure.reason() == LoginFailure::NETWORK_AUTH_FAILED) {
@@ -112,10 +115,6 @@ void LoginPerformer::OnLoginSuccess(
 
   VLOG(1) << "LoginSuccess, pending_requests " << pending_requests;
   if (delegate_) {
-    delegate_->OnLoginSuccess(username,
-                              password,
-                              credentials,
-                              pending_requests);
     // After delegate_->OnLoginSuccess(...) is called, delegate_ releases
     // LoginPerformer ownership. LP now manages it's lifetime on its own.
     // 2 things could make it exist longer:
@@ -123,6 +122,14 @@ void LoginPerformer::OnLoginSuccess(
     // 2. Pending online auth request.
     if (!pending_requests)
       MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+    else
+      initial_online_auth_pending_ = true;
+
+    delegate_->OnLoginSuccess(username,
+                              password,
+                              credentials,
+                              pending_requests);
+    return;
   } else {
     DCHECK(!pending_requests)
         << "Pending request w/o delegate_ should not happen!";
@@ -132,13 +139,17 @@ void LoginPerformer::OnLoginSuccess(
     LoginUtils::Get()->FetchCookies(profile, credentials);
     LoginUtils::Get()->FetchTokens(profile, credentials);
 
-    if (ScreenLocker::default_screen_locker()) {
+    // Don't unlock screen if it was locked while we're waiting
+    // for initial online auth.
+    if (ScreenLocker::default_screen_locker() &&
+        !initial_online_auth_pending_) {
       DVLOG(1) << "Online login OK - unlocking screen.";
       RequestScreenUnlock();
       // Do not delete itself just yet, wait for unlock.
       // See ResolveScreenUnlocked().
       return;
     }
+    initial_online_auth_pending_ = false;
     // There's nothing else that's holding LP from deleting itself -
     // no ScreenLock, no pending requests.
     MessageLoop::current()->DeleteSoon(FROM_HERE, this);
@@ -274,15 +285,15 @@ void LoginPerformer::ResyncEncryptedData() {
 
 void LoginPerformer::RequestScreenLock() {
   DVLOG(1) << "Screen lock requested";
+  // Will receive notifications on screen unlock and delete itself.
+  registrar_.Add(this,
+                 NotificationType::SCREEN_LOCK_STATE_CHANGED,
+                 NotificationService::AllSources());
   if (ScreenLocker::default_screen_locker()) {
     DVLOG(1) << "Screen already locked";
     ResolveScreenLocked();
   } else {
     screen_lock_requested_ = true;
-    registrar_.Add(
-        this,
-        NotificationType::SCREEN_LOCK_STATE_CHANGED,
-        NotificationService::AllSources());
     chromeos::CrosLibrary::Get()->GetScreenLockLibrary()->
         NotifyScreenLockRequested();
   }
