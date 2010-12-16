@@ -417,6 +417,35 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) {
   return _AtlModule.DllGetClassObject(rclsid, riid, ppv);
 }
 
+const wchar_t kPostPlatformUAKey[] =
+    L"Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\"
+    L"User Agent\\Post Platform";
+const wchar_t kChromeFramePrefix[] = L"chromeframe/";
+
+// To delete the user agent, set value to NULL.
+// The is_system parameter indicates whether this is a per machine or a per
+// user installation.
+HRESULT SetChromeFrameUA(bool is_system, const wchar_t* value) {
+  HRESULT hr = E_FAIL;
+  HKEY parent_hive = is_system ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+
+  RegKey ua_key;
+  if (ua_key.Create(parent_hive, kPostPlatformUAKey, KEY_WRITE)) {
+    std::wstring chrome_frame_ua_value_name = kChromeFramePrefix;
+    chrome_frame_ua_value_name += GetCurrentModuleVersion();
+    if (value) {
+      ua_key.WriteValue(chrome_frame_ua_value_name.c_str(), value);
+    } else {
+      ua_key.DeleteValue(chrome_frame_ua_value_name.c_str());
+    }
+    hr = S_OK;
+  } else {
+    DLOG(ERROR) << __FUNCTION__ << ": " << kPostPlatformUAKey;
+    hr = E_UNEXPECTED;
+  }
+  return hr;
+}
+
 enum RegistrationFlags {
   ACTIVEX             = 0x0001,
   ACTIVEDOC           = 0x0002,
@@ -500,6 +529,13 @@ STDAPI CustomRegistration(UINT reg_flags, BOOL reg, bool is_system) {
     hr = _AtlModule.UpdateRegistryAppId(reg);
   }
 
+  if (hr == S_OK) {
+    if (reg) {
+      hr = SetChromeFrameUA(is_system, L"1");
+    } else {
+      hr = SetChromeFrameUA(is_system, NULL);
+    }
+  }
   return hr;
 }
 

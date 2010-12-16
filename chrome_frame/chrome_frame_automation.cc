@@ -46,15 +46,6 @@ static const wchar_t kUmaSendIntervalValue[] = L"UmaSendInterval";
 // threads.
 Lock g_ChromeFrameHistogramLock;
 
-namespace {
-std::wstring GetCurrentModuleVersion() {
-  scoped_ptr<FileVersionInfo> module_version_info(
-      FileVersionInfo::CreateFileVersionInfoForCurrentModule());
-  DCHECK(module_version_info.get() != NULL);
-  return module_version_info->file_version();
-}
-}
-
 class ChromeFrameAutomationProxyImpl::TabProxyNotificationMessageFilter
     : public IPC::ChannelProxy::MessageFilter {
  public:

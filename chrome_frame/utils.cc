@@ -1565,3 +1565,10 @@ void EnumerateKeyValues(HKEY parent_key, const wchar_t* sub_key_name,
     ++url_list;
   }
 }
+
+std::wstring GetCurrentModuleVersion() {
+  scoped_ptr<FileVersionInfo> module_version_info(
+      FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+  DCHECK(module_version_info.get() != NULL);
+  return module_version_info->file_version();
+}

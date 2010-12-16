@@ -611,4 +611,7 @@ void EnumerateKeyValues(HKEY parent_key, const wchar_t* sub_key_name,
 bool CheckXUaCompatibleDirective(const std::string& directive,
                                  int ie_major_version);
 
+// Returns the version of the current module as a string.
+std::wstring GetCurrentModuleVersion();
+
 #endif  // CHROME_FRAME_UTILS_H_

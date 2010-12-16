@@ -11,6 +11,7 @@
 #include "chrome_frame/test/chrome_frame_ui_test_utils.h"
 #include "chrome_frame/test/mock_ie_event_sink_actions.h"
 #include "chrome_frame/test/mock_ie_event_sink_test.h"
+#include "net/http/http_util.h"
 
 // Needed for CreateFunctor.
 #define GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
@@ -922,19 +923,20 @@ TEST_P(FullTabNavigationTest, RefreshContents) {
     return;
   }
 
+  const char kHeaders[] = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n"
+                          "X-UA-Compatible: chrome=1\r\n";
+
+  const char kBody[] =  "<html><body>Hi there. Got new content?"
+                        "</body></html>";
+
   std::wstring src_url = server_mock_.Resolve(L"/refresh_src.html");
 
   EXPECT_CALL(server_mock_, Get(_, StrEq(L"/refresh_src.html"), _))
       .Times(2)
-      .WillRepeatedly(
-        SendFast(
-            "HTTP/1.1 200 OK\r\n"
-            "Content-Type: text/html\r\n",
-            "<html>"
-            "<head><meta http-equiv=\"x-ua-compatible\" content=\"chrome=1\""
-            "/></head>"
-            "<body>Hi there. Got new content?"
-            "</body></html>"));
+      .WillOnce(SendFast(kHeaders, kBody))
+      .WillOnce(testing::DoAll(
+          SendFast(kHeaders, kBody),
+          DelayCloseBrowserMock(&loop_, 4000, &ie_mock_)));
 
   EXPECT_CALL(ie_mock_, OnFileDownload(_, _)).Times(testing::AnyNumber());
 
@@ -945,9 +947,7 @@ TEST_P(FullTabNavigationTest, RefreshContents) {
   EXPECT_CALL(ie_mock_,
               OnNavigateComplete2(_, testing::Field(&VARIANT::bstrVal,
                                                     StrEq(src_url))))
-      .WillOnce(testing::DoAll(
-          DelayRefresh(&ie_mock_, &loop_, 2000),
-          DelayCloseBrowserMock(&loop_, 4000, &ie_mock_)));
+      .WillOnce(DelayRefresh(&ie_mock_, &loop_, 2000));
 
   EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(src_url)))
       .Times(2);
@@ -1102,6 +1102,64 @@ TEST_F(FullTabDownloadTest, TopLevelPostReissueFromChromeFramePage) {
       .WillOnce(testing::Return());
 
   LaunchIENavigateAndLoop(src_url, kChromeFrameLongNavigationTimeoutInSeconds);
+}
+
+MATCHER_P(UserAgentHeaderMatcher, ua_string, "") {
+  std::string headers = arg.headers();
+  StringToUpperASCII(&headers);
+
+  std::string ua_string_to_search = ua_string;
+  StringToUpperASCII(&ua_string_to_search);
+
+  net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(),
+                                    "\r\n");
+  while (it.GetNext()) {
+    if (lstrcmpiA(it.name().c_str(), "User-Agent") == 0) {
+      if (it.values().find(ua_string_to_search) != std::string::npos)
+        return true;
+    }
+  }
+  return false;
+}
+
+// Tests refreshing causes a page load and that the chrome frame user agent
+// string is appended to the UA in the incoming top level HTTP requests.
+TEST_P(FullTabNavigationTest, RefreshContentsUATest) {
+  const char kBody[] = "<html><head></head>"
+                       "<body>Hi there. Got new content?"
+                       "</body></html>";
+
+  std::string headers = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n";
+  bool in_cf = GetParam().invokes_cf();
+  if (in_cf) {
+    headers.append("X-UA-Compatible: chrome=1\r\n");
+  }
+
+  std::wstring src_url = server_mock_.Resolve(L"/refresh_src.html");
+
+  EXPECT_CALL(server_mock_, Get(_, StrEq(L"/refresh_src.html"),
+                                UserAgentHeaderMatcher("chromeframe")))
+      .Times(2)
+      .WillOnce(SendFast(headers, kBody))
+      .WillOnce(testing::DoAll(
+          SendFast(headers, kBody),
+          DelayCloseBrowserMock(&loop_, 4000, &ie_mock_)));
+
+  EXPECT_CALL(ie_mock_, OnFileDownload(_, _)).Times(testing::AnyNumber());
+
+  EXPECT_CALL(ie_mock_,
+              OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
+                                                  StrEq(src_url)),
+                                _, _, _, _, _));
+  EXPECT_CALL(ie_mock_,
+              OnNavigateComplete2(_, testing::Field(&VARIANT::bstrVal,
+                                                    StrEq(src_url))))
+      .WillOnce(DelayRefresh(&ie_mock_, &loop_, 2000));
+
+  EXPECT_CALL(ie_mock_, OnLoad(in_cf, StrEq(src_url)))
+      .Times(testing::AtMost(2));
+
+  LaunchIEAndNavigate(src_url);
 }
 
 }  // namespace chrome_frame_test

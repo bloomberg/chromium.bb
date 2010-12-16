@@ -319,7 +319,6 @@ bool PatchHelper::InitializeAndPatchProtocolsIfNeeded() {
 
   if (state_ == UNKNOWN) {
     g_trans_hooks.InstallHooks();
-    HttpNegotiatePatch::Initialize();
     state_ = PATCH_PROTOCOL;
     ret = true;
   }
@@ -343,10 +342,6 @@ void PatchHelper::UnpatchIfNeeded() {
   } else if (state_ == PATCH_IBROWSER) {
     vtable_patch::UnpatchInterfaceMethods(IBrowserService_PatchInfo);
     MonikerPatch::Uninitialize();
-    HttpNegotiatePatch::Uninitialize();
-  } else {
-    HttpNegotiatePatch::Uninitialize();
   }
-
   state_ = UNKNOWN;
 }
