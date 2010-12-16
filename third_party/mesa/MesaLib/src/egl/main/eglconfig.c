@@ -601,19 +601,6 @@ _eglParseConfigAttribList(_EGLConfig *conf, const EGLint *attrib_list)
  * Note that EGL_NATIVE_VISUAL_TYPE is platform-dependent and is
  * ignored here.
  */
-/*
- * Note that there is code that causes spurious array bounds warnings
- * at the bottom of this function (gcc 4.4.1 and 4.4.3 -O2 + ...)
- * GCC does not allow changing the warnings inside the function, but
- * the combination of iterating over the array of attribs, calling
- * GET_CONFIG_ATTRIB( , compare_attribs[i]) which calls _eglGetConfigKey
- * which calls _eglGetConfigIdx to get the index into Storgae[]
- * but the compiler loses track of the fact that all of the elements of
- * compare_attribs don't cause it to return or use -1 as an index.
- * Unrolling the loop is sufficient to eliminate the warnings, which puts
- * high confidence in their spuriousness.
- */
-#pragma GCC diagnostic ignored "-Warray-bounds"
 EGLint
 _eglCompareConfigs(const _EGLConfig *conf1, const _EGLConfig *conf2,
                    const _EGLConfig *criteria, EGLBoolean compare_id)
@@ -705,7 +692,6 @@ _eglCompareConfigs(const _EGLConfig *conf1, const _EGLConfig *conf2,
 
    return (val1 - val2);
 }
-#pragma GCC diagnostic warning "-Warray-bounds"
 
 
 static INLINE
