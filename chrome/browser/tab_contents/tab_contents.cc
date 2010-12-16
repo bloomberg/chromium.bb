@@ -801,11 +801,11 @@ void TabContents::DidBecomeSelected() {
   last_selected_time_ = base::TimeTicks::Now();
 }
 
-void TabContents::FadeForInstant() {
+void TabContents::FadeForInstant(bool animate) {
   RenderWidgetHostView* rwhv = GetRenderWidgetHostView();
   SkColor whitish = SkColorSetARGB(192, 255, 255, 255);
   if (rwhv)
-    rwhv->SetVisuallyDeemphasized(&whitish, true);
+    rwhv->SetVisuallyDeemphasized(&whitish, animate);
 }
 
 void TabContents::CancelInstantFade() {

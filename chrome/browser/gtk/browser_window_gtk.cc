@@ -1111,7 +1111,7 @@ void BrowserWindowGtk::Paste() {
 void BrowserWindowGtk::PrepareForInstant() {
   TabContents* contents = contents_container_->GetTabContents();
   if (contents)
-    contents->FadeForInstant();
+    contents->FadeForInstant(true);
 }
 
 void BrowserWindowGtk::ShowInstant(TabContents* preview_contents) {
@@ -1127,7 +1127,13 @@ void BrowserWindowGtk::HideInstant(bool instant_is_active) {
   contents_container_->PopPreviewContents();
   MaybeShowBookmarkBar(false);
 
-  // TODO(sky): honor instant_is_active.
+  TabContents* contents = contents_container_->GetTabContents();
+  if (contents) {
+    if (instant_is_active)
+      contents->FadeForInstant(false);
+    else
+      contents->CancelInstantFade();
+  }
 }
 
 gfx::Rect BrowserWindowGtk::GetInstantBounds() {
