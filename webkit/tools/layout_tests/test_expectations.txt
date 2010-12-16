@@ -19,3 +19,10 @@ BUGJIANLI WIN DEBUG : inspector/console-clear.html = CRASH TIMEOUT PASS
 BUGJIANLI WIN DEBUG : inspector/styles-disable-then-delete.html = CRASH TIMEOUT PASS
 
 BUGYURYS MAC : svg/repaint/filter-repaint.svg = IMAGE
+
+BUGSCHERKUS : media/audio-constructor-preload.html = TEXT
+BUGSCHERKUS : media/audio-constructor-src.html = TEXT
+BUGSCHERKUS : media/audio-constructor.html = TEXT
+BUGSCHERKUS : media/media-load-event.html = TEXT
+BUGSCHERKUS : media/media-document-audio-size.html = PASS
+BUGSCHERKUS : media/media-can-play-wav-audio.html = PASS
