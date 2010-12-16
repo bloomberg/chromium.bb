@@ -598,6 +598,51 @@ TEST_F(AutoFillManagerTest, GetProfileSuggestionsUnknownFields) {
   EXPECT_FALSE(autofill_manager_->GetAutoFillSuggestions(form, field));
 }
 
+// Test that we cull duplicate profile suggestions.
+TEST_F(AutoFillManagerTest, GetProfileSuggestionsWithDuplicates) {
+  // Set up our form data.
+  FormData form;
+  CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  autofill_manager_->FormsSeen(forms);
+
+  // Add a duplicate profile.
+  AutoFillProfile* duplicate_profile = static_cast<AutoFillProfile*>(
+      autofill_manager_->GetLabeledProfile("Home")->Clone());
+  autofill_manager_->AddProfile(duplicate_profile);
+
+  const FormField& field = form.fields[0];
+  rvh()->ResetAutoFillState(kDefaultPageID);
+  EXPECT_TRUE(autofill_manager_->GetAutoFillSuggestions(form, field));
+
+  // No suggestions provided, so send an empty vector as the results.
+  // This triggers the combined message send.
+  rvh()->AutocompleteSuggestionsReturned(std::vector<string16>());
+
+  // Test that we sent the right message to the renderer.
+  int page_id = 0;
+  std::vector<string16> values;
+  std::vector<string16> labels;
+  std::vector<string16> icons;
+  std::vector<int> unique_ids;
+  EXPECT_TRUE(GetAutoFillSuggestionsMessage(&page_id, &values, &labels, &icons,
+                                            &unique_ids));
+
+  string16 expected_values[] = {
+    ASCIIToUTF16("Elvis"),
+    ASCIIToUTF16("Charles")
+  };
+  string16 expected_labels[] = {
+    ASCIIToUTF16("3734 Elvis Presley Blvd."),
+    ASCIIToUTF16("123 Apple St.")
+  };
+  string16 expected_icons[] = {string16(), string16()};
+  int expected_unique_ids[] = {1, 2};
+  ExpectSuggestions(page_id, values, labels, icons, unique_ids,
+                    kDefaultPageID, arraysize(expected_values), expected_values,
+                    expected_labels, expected_icons, expected_unique_ids);
+}
+
 // Test that we return no suggestions when autofill is disabled.
 TEST_F(AutoFillManagerTest, GetProfileSuggestionsAutofillDisabledByUser) {
   // Set up our form data.

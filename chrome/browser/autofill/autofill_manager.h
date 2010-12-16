@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_MANAGER_H_
 #pragma once
 
-#include <vector>
-#include <string>
 #include <list>
+#include <string>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"

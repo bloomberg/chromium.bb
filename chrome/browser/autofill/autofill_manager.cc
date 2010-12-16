@@ -5,7 +5,7 @@
 #include "chrome/browser/autofill/autofill_manager.h"
 
 #include <limits>
-#include <string>
+#include <set>
 
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
@@ -42,35 +42,35 @@ const double kAutoFillNegativeUploadRateDefaultValue = 0.01;
 const string16::value_type kCreditCardPrefix[] = {'*',0};
 const string16::value_type kLabelSeparator[] = {';',' ','*',0};
 
-// Removes duplicate elements whilst preserving original order of |elements| and
-// |unique_ids|.
-void RemoveDuplicateElements(
-    std::vector<string16>* elements, std::vector<int>* unique_ids) {
-  DCHECK_EQ(elements->size(), unique_ids->size());
+// Removes duplicate suggestions whilst preserving their original order.
+void RemoveDuplicateSuggestions(std::vector<string16>* values,
+                                std::vector<string16>* labels,
+                                std::vector<string16>* icons,
+                                std::vector<int>* unique_ids) {
+  DCHECK_EQ(values->size(), labels->size());
+  DCHECK_EQ(values->size(), icons->size());
+  DCHECK_EQ(values->size(), unique_ids->size());
 
-  std::vector<string16> elements_copy;
+  std::set<std::pair<string16, string16> > seen_suggestions;
+  std::vector<string16> values_copy;
+  std::vector<string16> labels_copy;
+  std::vector<string16> icons_copy;
   std::vector<int> unique_ids_copy;
-  for (size_t i = 0; i < elements->size(); ++i) {
-    const string16& element = (*elements)[i];
 
-    bool unique = true;
-    for (std::vector<string16>::const_iterator copy_iter
-             = elements_copy.begin();
-         copy_iter != elements_copy.end(); ++copy_iter) {
-      if (element == *copy_iter) {
-        unique = false;
-        break;
-      }
-    }
-
-    if (unique) {
-      elements_copy.push_back(element);
+  for (size_t i = 0; i < values->size(); ++i) {
+    const std::pair<string16, string16> suggestion((*values)[i], (*labels)[i]);
+    if (seen_suggestions.insert(suggestion).second) {
+      values_copy.push_back((*values)[i]);
+      labels_copy.push_back((*labels)[i]);
+      icons_copy.push_back((*icons)[i]);
       unique_ids_copy.push_back((*unique_ids)[i]);
     }
   }
 
-  elements->assign(elements_copy.begin(), elements_copy.end());
-  unique_ids->assign(unique_ids_copy.begin(), unique_ids_copy.end());
+  values->swap(values_copy);
+  labels->swap(labels_copy);
+  icons->swap(icons_copy);
+  unique_ids->swap(unique_ids_copy);
 }
 
 // Precondition: |form_structure| and |form| should correspond to the same
@@ -258,14 +258,13 @@ bool AutoFillManager::GetAutoFillSuggestions(const FormData& form,
 
   // If the form is auto-filled and the renderer is querying for suggestions,
   // then the user is editing the value of a field. In this case, mimick
-  // autocomplete. In particular, don't display labels, as that information is
-  // redundant. In addition, remove duplicate values.
+  // autocomplete: don't display or icons, as that information is redundant.
   if (FormIsAutoFilled(form_structure, form, is_filling_credit_card)) {
-    RemoveDuplicateElements(&values, &unique_ids);
-    labels.assign(values.size(), string16());
-    icons.assign(values.size(), string16());
+    labels.assign(labels.size(), string16());
+    icons.assign(icons.size(), string16());
   }
 
+  RemoveDuplicateSuggestions(&values, &labels, &icons, &unique_ids);
   host->AutoFillSuggestionsReturned(values, labels, icons, unique_ids);
   return true;
 }
