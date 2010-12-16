@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/plugins/pepper_plugin_delegate.h"
+#include "webkit/plugins/ppapi/plugin_delegate.h"
 
 #ifdef ENABLE_GPU
 
@@ -12,7 +12,8 @@ class Context;
 
 }  // namespace ggl;
 
-class PlatformContext3DImpl : public pepper::PluginDelegate::PlatformContext3D {
+class PlatformContext3DImpl
+    : public webkit::ppapi::PluginDelegate::PlatformContext3D {
  public:
   explicit PlatformContext3DImpl(ggl::Context* parent_context);
   virtual ~PlatformContext3DImpl();

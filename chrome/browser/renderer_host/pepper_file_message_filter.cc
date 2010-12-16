@@ -164,7 +164,7 @@ void PepperFileMessageFilter::OnPepperQueryFile(
 
 void PepperFileMessageFilter::OnPepperGetDirContents(
     const FilePath& path,
-    PepperDirContents* contents,
+    webkit::ppapi::DirContents* contents,
     base::PlatformFileError* error) {
   FilePath full_path = MakePepperPath(path);
   if (full_path.empty()) {
@@ -184,7 +184,7 @@ void PepperFileMessageFilter::OnPepperGetDirContents(
   while (!enumerator.Next().empty()) {
     file_util::FileEnumerator::FindInfo info;
     enumerator.GetFindInfo(&info);
-    PepperDirEntry entry = {
+    webkit::ppapi::DirEntry entry = {
       file_util::FileEnumerator::GetFilename(info),
       file_util::FileEnumerator::IsDirectory(info)
     };

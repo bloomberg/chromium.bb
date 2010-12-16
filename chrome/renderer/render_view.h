@@ -96,10 +96,14 @@ class Point;
 class Rect;
 }
 
-namespace pepper {
+namespace webkit {
+namespace ppapi {
+
 class PluginInstance;
 class FullscreenContainer;
-}
+
+}  // namespace ppapi
+}  // namespace webkit
 
 namespace safe_browsing {
 class PhishingClassifierDelegate;
@@ -331,8 +335,8 @@ class RenderView : public RenderWidget,
   void OnPepperPluginDestroy(WebPluginDelegatePepper* pepper_plugin);
 
   // Creates a fullscreen container for a pepper plugin instance.
-  pepper::FullscreenContainer* CreatePepperFullscreenContainer(
-      pepper::PluginInstance* plugin);
+  webkit::ppapi::FullscreenContainer* CreatePepperFullscreenContainer(
+      webkit::ppapi::PluginInstance* plugin);
 
   // Create a new plugin without checking the content settings.
   WebKit::WebPlugin* CreatePluginNoCheck(WebKit::WebFrame* frame,
@@ -1013,10 +1017,11 @@ class RenderView : public RenderWidget,
                                        const std::string& mime_type);
 
   // Create a new Pepper plugin.
-  WebKit::WebPlugin* CreatePepperPlugin(WebKit::WebFrame* frame,
-                                        const WebKit::WebPluginParams& params,
-                                        const FilePath& path,
-                                        pepper::PluginModule* pepper_module);
+  WebKit::WebPlugin* CreatePepperPlugin(
+      WebKit::WebFrame* frame,
+      const WebKit::WebPluginParams& params,
+      const FilePath& path,
+      webkit::ppapi::PluginModule* pepper_module);
 
   WebKit::WebPlugin* CreateOutdatedPluginPlaceholder(
       WebKit::WebFrame* frame,

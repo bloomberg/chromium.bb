@@ -9,6 +9,7 @@ include_rules = [
   "+sandbox/src",
   "+skia",
   "+webkit/glue",
+  "+webkit/plugins",
 
   # Other libraries.
   "+chrome/third_party/xdg_user_dirs",

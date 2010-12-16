@@ -9,8 +9,8 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebWidget.h"
-#include "webkit/glue/plugins/pepper_fullscreen_container.h"
-#include "webkit/glue/plugins/pepper_plugin_instance.h"
+#include "webkit/plugins/ppapi/fullscreen_container.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebCompositionUnderline;
@@ -29,7 +29,7 @@ namespace {
 // WebWidget that simply wraps the pepper plugin.
 class PepperWidget : public WebWidget {
  public:
-  PepperWidget(pepper::PluginInstance* plugin,
+  PepperWidget(webkit::ppapi::PluginInstance* plugin,
                RenderWidgetFullscreenPepper* widget)
       : plugin_(plugin),
         widget_(widget),
@@ -119,7 +119,7 @@ class PepperWidget : public WebWidget {
   }
 
  private:
-  pepper::PluginInstance* plugin_;
+  webkit::ppapi::PluginInstance* plugin_;
   RenderWidgetFullscreenPepper* widget_;
   WebSize size_;
   WebCursorInfo cursor_;
@@ -130,7 +130,8 @@ class PepperWidget : public WebWidget {
 
 // A FullscreenContainer that forwards the API calls to the
 // RenderWidgetFullscreenPepper.
-class WidgetFullscreenContainer : public pepper::FullscreenContainer {
+class WidgetFullscreenContainer
+    : public webkit::ppapi::FullscreenContainer {
  public:
   explicit WidgetFullscreenContainer(RenderWidgetFullscreenPepper* widget)
       : widget_(widget) {
@@ -164,7 +165,7 @@ class WidgetFullscreenContainer : public pepper::FullscreenContainer {
 // static
 RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
     int32 opener_id, RenderThreadBase* render_thread,
-    pepper::PluginInstance* plugin) {
+    webkit::ppapi::PluginInstance* plugin) {
   DCHECK_NE(MSG_ROUTING_NONE, opener_id);
   scoped_refptr<RenderWidgetFullscreenPepper> widget(
       new RenderWidgetFullscreenPepper(render_thread, plugin));
@@ -173,7 +174,8 @@ RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
 }
 
 RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
-    RenderThreadBase* render_thread, pepper::PluginInstance* plugin)
+    RenderThreadBase* render_thread,
+    webkit::ppapi::PluginInstance* plugin)
     : RenderWidgetFullscreen(render_thread, WebKit::WebPopupTypeSelect),
       plugin_(plugin),
       ALLOW_THIS_IN_INITIALIZER_LIST(

@@ -14,8 +14,8 @@
 #include "base/ref_counted.h"
 #include "base/weak_ptr.h"
 #include "ppapi/c/pp_errors.h"
-#include "webkit/glue/plugins/pepper_plugin_delegate.h"
-#include "webkit/glue/plugins/pepper_plugin_instance.h"
+#include "webkit/plugins/ppapi/plugin_delegate.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 class FilePath;
 class RenderView;
@@ -24,11 +24,14 @@ namespace gfx {
 class Rect;
 }
 
-namespace pepper {
-class FileIO;
+namespace webkit {
+namespace ppapi {
+
 class PluginInstance;
 class PluginModule;
-}
+
+}  // namespace ppapi
+}  // namespace webkit
 
 namespace WebKit {
 class WebFileChooserCompletion;
@@ -38,13 +41,14 @@ struct WebFileChooserParams;
 class TransportDIB;
 
 class PepperPluginDelegateImpl
-    : public pepper::PluginDelegate,
+    : public webkit::ppapi::PluginDelegate,
       public base::SupportsWeakPtr<PepperPluginDelegateImpl> {
  public:
   explicit PepperPluginDelegateImpl(RenderView* render_view);
   virtual ~PepperPluginDelegateImpl();
 
-  scoped_refptr<pepper::PluginModule> CreatePepperPlugin(const FilePath& path);
+  scoped_refptr<webkit::ppapi::PluginModule> CreatePepperPlugin(
+      const FilePath& path);
 
   // Called by RenderView to tell us about painting events, these two functions
   // just correspond to the DidInitiatePaint and DidFlushPaint in R.V..
@@ -68,13 +72,15 @@ class PepperPluginDelegateImpl
   // notifies all of the plugins.
   void OnSetFocus(bool has_focus);
 
-  // pepper::PluginDelegate implementation.
-  virtual void InstanceCreated(pepper::PluginInstance* instance);
-  virtual void InstanceDeleted(pepper::PluginInstance* instance);
+  // PluginDelegate implementation.
+  virtual void InstanceCreated(
+      webkit::ppapi::PluginInstance* instance);
+  virtual void InstanceDeleted(
+      webkit::ppapi::PluginInstance* instance);
   virtual PlatformAudio* CreateAudio(
       uint32_t sample_rate,
       uint32_t sample_count,
-      pepper::PluginDelegate::PlatformAudio::Client* client);
+      PlatformAudio::Client* client);
   virtual PlatformImage2D* CreateImage2D(int width, int height);
   virtual PlatformContext3D* CreateContext3D();
   virtual PlatformVideoDecoder* CreateVideoDecoder(
@@ -133,10 +139,11 @@ class PepperPluginDelegateImpl
   virtual base::PlatformFileError GetModuleLocalDirContents(
       const std::string& module_name,
       const FilePath& path,
-      PepperDirContents* contents);
+      webkit::ppapi::DirContents* contents);
   virtual scoped_refptr<base::MessageLoopProxy> GetFileThreadMessageLoopProxy();
-  virtual pepper::FullscreenContainer* CreateFullscreenContainer(
-      pepper::PluginInstance* instance);
+  virtual webkit::ppapi::FullscreenContainer*
+      CreateFullscreenContainer(
+          webkit::ppapi::PluginInstance* instance);
   virtual std::string GetDefaultEncoding();
   virtual void ZoomLimitsChanged(double minimum_factor, double maximum_factor);
   virtual std::string ResolveProxy(const GURL& url);
@@ -148,7 +155,7 @@ class PepperPluginDelegateImpl
   // Pointer to the RenderView that owns us.
   RenderView* render_view_;
 
-  std::set<pepper::PluginInstance*> active_instances_;
+  std::set<webkit::ppapi::PluginInstance*> active_instances_;
 
   int id_generator_;
   IDMap<AsyncOpenFileCallback> messages_waiting_replies_;

@@ -16,7 +16,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_message_filter.h"
 #include "ipc/ipc_platform_file.h"
-#include "webkit/glue/plugins/pepper_dir_contents.h"
+#include "webkit/plugins/ppapi/dir_contents.h"
 
 class Profile;
 
@@ -54,7 +54,7 @@ class PepperFileMessageFilter : public BrowserMessageFilter {
                          base::PlatformFileInfo* info,
                          base::PlatformFileError* error);
   void OnPepperGetDirContents(const FilePath& path,
-                              PepperDirContents* contents,
+                              webkit::ppapi::DirContents* contents,
                               base::PlatformFileError* error);
 
   FilePath MakePepperPath(const FilePath& base_path);

@@ -10,15 +10,16 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 #include "ipc/ipc_platform_file.h"
-#include "webkit/glue/plugins/pepper_dir_contents.h"
+#include "webkit/plugins/ppapi/dir_contents.h"
 
 #define IPC_MESSAGE_START PepperFileMsgStart
 
 namespace IPC {
 
+// Also needed for Serializing DirContents, which is just a vector of DirEntry.
 template <>
-struct ParamTraits<PepperDirEntry> {
-  typedef PepperDirEntry param_type;
+struct ParamTraits<webkit::ppapi::DirEntry> {
+  typedef webkit::ppapi::DirEntry param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
@@ -61,7 +62,7 @@ IPC_SYNC_MESSAGE_CONTROL1_2(PepperFileMsg_QueryFile,
 // Get the directory's contents.
 IPC_SYNC_MESSAGE_CONTROL1_2(PepperFileMsg_GetDirContents,
                             FilePath /* path */,
-                            PepperDirContents, /* contents */
+                            webkit::ppapi::DirContents, /* contents */
                             base::PlatformFileError /* error_code */)
 
 #endif  // CHROME_COMMON_PEPPER_FILE_MESSAGES_H_

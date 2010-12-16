@@ -8,10 +8,14 @@
 #include "chrome/renderer/render_widget_fullscreen.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebWidget.h"
 
-namespace pepper {
+namespace webkit {
+namespace ppapi {
+
 class PluginInstance;
 class FullscreenContainer;
-}
+
+}  // namespace ppapi
+}  // namespace webkit
 
 // A RenderWidget that hosts a fullscreen pepper plugin. This provides a
 // FullscreenContainer that the plugin instance can callback into to e.g.
@@ -21,7 +25,7 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen {
   static RenderWidgetFullscreenPepper* Create(
       int32 opener_id,
       RenderThreadBase* render_thread,
-      pepper::PluginInstance* plugin);
+      webkit::ppapi::PluginInstance* plugin);
 
   // Asks the browser to close this view, which will tear off the window and
   // close this widget.
@@ -30,11 +34,13 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen {
   // Invalidate the whole widget to force a redraw.
   void GenerateFullRepaint();
 
-  pepper::FullscreenContainer* container() const { return container_.get(); }
+  webkit::ppapi::FullscreenContainer* container() const {
+    return container_.get();
+  }
 
  protected:
   RenderWidgetFullscreenPepper(RenderThreadBase* render_thread,
-                               pepper::PluginInstance* plugin);
+                               webkit::ppapi::PluginInstance* plugin);
   virtual ~RenderWidgetFullscreenPepper();
 
   // RenderWidget API.
@@ -52,10 +58,10 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen {
 
  private:
   // The plugin instance this widget wraps.
-  pepper::PluginInstance* plugin_;
+  webkit::ppapi::PluginInstance* plugin_;
 
   // The FullscreenContainer that the plugin instance can callback into.
-  scoped_ptr<pepper::FullscreenContainer> container_;
+  scoped_ptr<webkit::ppapi::FullscreenContainer> container_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetFullscreenPepper);
 };

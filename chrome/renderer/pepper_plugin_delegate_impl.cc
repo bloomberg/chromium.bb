@@ -41,10 +41,10 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
-#include "webkit/glue/plugins/pepper_file_io.h"
-#include "webkit/glue/plugins/pepper_plugin_instance.h"
-#include "webkit/glue/plugins/pepper_plugin_module.h"
 #include "webkit/glue/plugins/webplugin.h"
+#include "webkit/plugins/ppapi/ppb_file_io_impl.h"
+#include "webkit/plugins/ppapi/plugin_module.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/common/render_messages.h"
@@ -62,7 +62,8 @@ namespace {
 const int32 kDefaultCommandBufferSize = 1024 * 1024;
 
 // Implements the Image2D using a TransportDIB.
-class PlatformImage2DImpl : public pepper::PluginDelegate::PlatformImage2D {
+class PlatformImage2DImpl
+    : public webkit::ppapi::PluginDelegate::PlatformImage2D {
  public:
   // This constructor will take ownership of the dib pointer.
   PlatformImage2DImpl(int width, int height, TransportDIB* dib)
@@ -100,7 +101,7 @@ class PlatformImage2DImpl : public pepper::PluginDelegate::PlatformImage2D {
 
 
 class PlatformAudioImpl
-    : public pepper::PluginDelegate::PlatformAudio,
+    : public webkit::ppapi::PluginDelegate::PlatformAudio,
       public AudioMessageFilter::Delegate,
       public base::RefCountedThreadSafe<PlatformAudioImpl> {
  public:
@@ -119,7 +120,7 @@ class PlatformAudioImpl
   // Initialize this audio context. StreamCreated() will be called when the
   // stream is created.
   bool Initialize(uint32_t sample_rate, uint32_t sample_count,
-       pepper::PluginDelegate::PlatformAudio::Client* client);
+       webkit::ppapi::PluginDelegate::PlatformAudio::Client* client);
 
   virtual bool StartPlayback() {
     return filter_ && filter_->Send(
@@ -151,7 +152,7 @@ class PlatformAudioImpl
   virtual void OnVolume(double volume) { }
 
   // The client to notify when the stream is created.
-  pepper::PluginDelegate::PlatformAudio::Client* client_;
+  webkit::ppapi::PluginDelegate::PlatformAudio::Client* client_;
   // MessageFilter used to send/receive IPC.
   scoped_refptr<AudioMessageFilter> filter_;
   // Our ID on the MessageFilter.
@@ -164,7 +165,7 @@ class PlatformAudioImpl
 
 bool PlatformAudioImpl::Initialize(
     uint32_t sample_rate, uint32_t sample_count,
-    pepper::PluginDelegate::PlatformAudio::Client* client) {
+    webkit::ppapi::PluginDelegate::PlatformAudio::Client* client) {
 
   DCHECK(client);
   // Make sure we don't call init more than once.
@@ -224,7 +225,7 @@ void PlatformAudioImpl::ShutDown() {
 
 // Implements the VideoDecoder.
 class PlatformVideoDecoderImpl
-    : public pepper::PluginDelegate::PlatformVideoDecoder {
+    : public webkit::ppapi::PluginDelegate::PlatformVideoDecoder {
  public:
   PlatformVideoDecoderImpl()
       : input_buffer_size_(0),
@@ -308,7 +309,8 @@ class PlatformVideoDecoderImpl
   DISALLOW_COPY_AND_ASSIGN(PlatformVideoDecoderImpl);
 };
 
-class DispatcherWrapper : public pepper::PluginDelegate::OutOfProcessProxy {
+class DispatcherWrapper
+    : public webkit::ppapi::PluginDelegate::OutOfProcessProxy {
  public:
   DispatcherWrapper() {}
   virtual ~DispatcherWrapper() {}
@@ -366,7 +368,7 @@ PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderView* render_view)
 PepperPluginDelegateImpl::~PepperPluginDelegateImpl() {
 }
 
-scoped_refptr<pepper::PluginModule>
+scoped_refptr<webkit::ppapi::PluginModule>
 PepperPluginDelegateImpl::CreatePepperPlugin(const FilePath& path) {
   // Easy case is in-process plugins.
   if (!PepperPluginRegistry::GetInstance()->RunOutOfProcessForPlugin(path))
@@ -378,16 +380,18 @@ PepperPluginDelegateImpl::CreatePepperPlugin(const FilePath& path) {
   render_view_->Send(new ViewHostMsg_OpenChannelToPepperPlugin(
       path, &plugin_process_handle, &channel_handle));
   if (channel_handle.name.empty())
-    return scoped_refptr<pepper::PluginModule>();  // Couldn't be initialized.
+    return scoped_refptr<webkit::ppapi::PluginModule>();  // Couldn't be initialized.
 
   // Create a new HostDispatcher for the proxying, and hook it to a new
   // PluginModule.
-  scoped_refptr<pepper::PluginModule> module(new pepper::PluginModule);
+  scoped_refptr<webkit::ppapi::PluginModule> module(
+      new webkit::ppapi::PluginModule);
   scoped_ptr<DispatcherWrapper> dispatcher(new DispatcherWrapper);
-  if (!dispatcher->Init(plugin_process_handle, channel_handle,
-                        module->pp_module(),
-                        pepper::PluginModule::GetLocalGetInterfaceFunc()))
-    return scoped_refptr<pepper::PluginModule>();
+  if (!dispatcher->Init(
+          plugin_process_handle, channel_handle,
+          module->pp_module(),
+          webkit::ppapi::PluginModule::GetLocalGetInterfaceFunc()))
+    return scoped_refptr<webkit::ppapi::PluginModule>();
   module->InitAsProxied(dispatcher.release());
   return module;
 }
@@ -396,7 +400,7 @@ void PepperPluginDelegateImpl::ViewInitiatedPaint() {
   // Notify all of our instances that we started painting. This is used for
   // internal bookkeeping only, so we know that the set can not change under
   // us.
-  for (std::set<pepper::PluginInstance*>::iterator i =
+  for (std::set<webkit::ppapi::PluginInstance*>::iterator i =
            active_instances_.begin();
        i != active_instances_.end(); ++i)
     (*i)->ViewInitiatedPaint();
@@ -407,8 +411,8 @@ void PepperPluginDelegateImpl::ViewFlushedPaint() {
   // we it may ask to close itself as a result. This will, in turn, modify our
   // set, possibly invalidating the iterator. So we iterate on a copy that
   // won't change out from under us.
-  std::set<pepper::PluginInstance*> plugins = active_instances_;
-  for (std::set<pepper::PluginInstance*>::iterator i = plugins.begin();
+  std::set<webkit::ppapi::PluginInstance*> plugins = active_instances_;
+  for (std::set<webkit::ppapi::PluginInstance*>::iterator i = plugins.begin();
        i != plugins.end(); ++i) {
     // The copy above makes sure our iterator is never invalid if some plugins
     // are destroyed. But some plugin may decide to close all of its views in
@@ -436,10 +440,10 @@ bool PepperPluginDelegateImpl::GetBitmapForOptimizedPluginPaint(
     TransportDIB** dib,
     gfx::Rect* location,
     gfx::Rect* clip) {
-  for (std::set<pepper::PluginInstance*>::iterator i =
+  for (std::set<webkit::ppapi::PluginInstance*>::iterator i =
            active_instances_.begin();
        i != active_instances_.end(); ++i) {
-    pepper::PluginInstance* instance = *i;
+    webkit::ppapi::PluginInstance* instance = *i;
     if (instance->GetBitmapForOptimizedPluginPaint(
             paint_bounds, dib, location, clip))
       return true;
@@ -448,7 +452,7 @@ bool PepperPluginDelegateImpl::GetBitmapForOptimizedPluginPaint(
 }
 
 void PepperPluginDelegateImpl::InstanceCreated(
-    pepper::PluginInstance* instance) {
+    webkit::ppapi::PluginInstance* instance) {
   active_instances_.insert(instance);
 
   // Set the initial focus.
@@ -456,11 +460,11 @@ void PepperPluginDelegateImpl::InstanceCreated(
 }
 
 void PepperPluginDelegateImpl::InstanceDeleted(
-    pepper::PluginInstance* instance) {
+    webkit::ppapi::PluginInstance* instance) {
   active_instances_.erase(instance);
 }
 
-pepper::PluginDelegate::PlatformImage2D*
+webkit::ppapi::PluginDelegate::PlatformImage2D*
 PepperPluginDelegateImpl::CreateImage2D(int width, int height) {
   uint32 buffer_size = width * height * 4;
 
@@ -496,7 +500,7 @@ PepperPluginDelegateImpl::CreateImage2D(int width, int height) {
   return new PlatformImage2DImpl(width, height, dib);
 }
 
-pepper::PluginDelegate::PlatformContext3D*
+webkit::ppapi::PluginDelegate::PlatformContext3D*
     PepperPluginDelegateImpl::CreateContext3D() {
 #ifdef ENABLE_GPU
   WebGraphicsContext3DCommandBufferImpl* context =
@@ -515,7 +519,7 @@ pepper::PluginDelegate::PlatformContext3D*
 #endif
 }
 
-pepper::PluginDelegate::PlatformVideoDecoder*
+webkit::ppapi::PluginDelegate::PlatformVideoDecoder*
 PepperPluginDelegateImpl::CreateVideoDecoder(
     const PP_VideoDecoderConfig_Dev& decoder_config) {
   scoped_ptr<PlatformVideoDecoderImpl> decoder(new PlatformVideoDecoderImpl());
@@ -538,9 +542,10 @@ void PepperPluginDelegateImpl::SelectedFindResultChanged(int identifier,
       identifier, index + 1, WebKit::WebRect());
 }
 
-pepper::PluginDelegate::PlatformAudio* PepperPluginDelegateImpl::CreateAudio(
+webkit::ppapi::PluginDelegate::PlatformAudio*
+PepperPluginDelegateImpl::CreateAudio(
     uint32_t sample_rate, uint32_t sample_count,
-    pepper::PluginDelegate::PlatformAudio::Client* client) {
+    webkit::ppapi::PluginDelegate::PlatformAudio::Client* client) {
   scoped_refptr<PlatformAudioImpl> audio(
       new PlatformAudioImpl(render_view_->audio_message_filter()));
   if (audio->Initialize(sample_rate, sample_count, client)) {
@@ -582,7 +587,7 @@ void PepperPluginDelegateImpl::OnAsyncFileOpened(
 }
 
 void PepperPluginDelegateImpl::OnSetFocus(bool has_focus) {
-  for (std::set<pepper::PluginInstance*>::iterator i =
+  for (std::set<webkit::ppapi::PluginInstance*>::iterator i =
          active_instances_.begin();
        i != active_instances_.end(); ++i)
     (*i)->SetContentAreaFocus(has_focus);
@@ -755,7 +760,7 @@ base::PlatformFileError PepperPluginDelegateImpl::QueryModuleLocalFile(
 base::PlatformFileError PepperPluginDelegateImpl::GetModuleLocalDirContents(
       const std::string& module_name,
       const FilePath& path,
-      PepperDirContents* contents) {
+      webkit::ppapi::DirContents* contents) {
   FilePath full_path = GetModuleLocalFilePath(module_name, path);
   if (full_path.empty()) {
     return base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
@@ -774,9 +779,9 @@ PepperPluginDelegateImpl::GetFileThreadMessageLoopProxy() {
   return RenderThread::current()->GetFileThreadMessageLoopProxy();
 }
 
-pepper::FullscreenContainer*
+webkit::ppapi::FullscreenContainer*
 PepperPluginDelegateImpl::CreateFullscreenContainer(
-    pepper::PluginInstance* instance) {
+    webkit::ppapi::PluginInstance* instance) {
   return render_view_->CreatePepperFullscreenContainer(instance);
 }
 

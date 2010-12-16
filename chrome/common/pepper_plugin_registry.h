@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/file_path.h"
-#include "webkit/glue/plugins/pepper_plugin_module.h"
+#include "webkit/plugins/ppapi/plugin_module.h"
 
 struct PepperPluginInfo {
   PepperPluginInfo();
@@ -64,7 +64,7 @@ class PepperPluginRegistry {
   // Returns a preloaded module for the given path. This only works for
   // non-out-of-process plugins since we preload them so they will run in the
   // sandbox. Returns NULL if the plugin hasn't been preloaded.
-  pepper::PluginModule* GetModule(const FilePath& path) const;
+  webkit::ppapi::PluginModule* GetModule(const FilePath& path) const;
 
   ~PepperPluginRegistry();
 
@@ -74,14 +74,14 @@ class PepperPluginRegistry {
 
   struct InternalPluginInfo : public PepperPluginInfo {
     InternalPluginInfo();  // Sets |is_internal|.
-    pepper::PluginModule::EntryPoints entry_points;
+    webkit::ppapi::PluginModule::EntryPoints entry_points;
   };
   typedef std::vector<InternalPluginInfo> InternalPluginInfoList;
   static void GetInternalPluginInfo(InternalPluginInfoList* plugin_info);
 
   PepperPluginRegistry();
 
-  typedef scoped_refptr<pepper::PluginModule> ModuleHandle;
+  typedef scoped_refptr<webkit::ppapi::PluginModule> ModuleHandle;
   typedef std::map<FilePath, ModuleHandle> ModuleMap;
   ModuleMap modules_;
 };

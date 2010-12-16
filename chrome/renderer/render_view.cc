@@ -175,7 +175,6 @@
 #include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/plugins/default_plugin_shared.h"
-#include "webkit/glue/plugins/pepper_webplugin_impl.h"
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/webplugin_delegate.h"
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
@@ -187,6 +186,7 @@
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webmediaplayer_impl.h"
+#include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
 
 #if defined(OS_WIN)
 // TODO(port): these files are currently Windows only because they concern:
@@ -845,7 +845,7 @@ WebPlugin* RenderView::CreatePluginNoCheck(WebFrame* frame,
   if (!found || !info.enabled)
     return NULL;
 
-  scoped_refptr<pepper::PluginModule> pepper_module(
+  scoped_refptr<webkit::ppapi::PluginModule> pepper_module(
       pepper_delegate_.CreatePepperPlugin(info.path));
   if (pepper_module)
     return CreatePepperPlugin(frame, params, info.path, pepper_module.get());
@@ -2128,8 +2128,9 @@ WebWidget* RenderView::createFullscreenWindow(WebKit::WebPopupType popup_type) {
   return widget->webwidget();
 }
 
-pepper::FullscreenContainer* RenderView::CreatePepperFullscreenContainer(
-    pepper::PluginInstance* plugin) {
+webkit::ppapi::FullscreenContainer*
+RenderView::CreatePepperFullscreenContainer(
+    webkit::ppapi::PluginInstance* plugin) {
   RenderWidgetFullscreenPepper* widget =
       RenderWidgetFullscreenPepper::Create(routing_id_, render_thread_, plugin);
   widget->show(WebKit::WebNavigationPolicyIgnore);
@@ -2781,7 +2782,7 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
   if (info.path.value() == kDefaultPluginLibraryName ||
       plugin_setting == CONTENT_SETTING_ALLOW ||
       host_setting == CONTENT_SETTING_ALLOW) {
-    scoped_refptr<pepper::PluginModule> pepper_module(
+    scoped_refptr<webkit::ppapi::PluginModule> pepper_module(
         pepper_delegate_.CreatePepperPlugin(info.path));
     if (pepper_module)
       return CreatePepperPlugin(frame, params, info.path, pepper_module.get());
@@ -4429,11 +4430,12 @@ void RenderView::ClearBlockedContentSettings() {
     content_blocked_[i] = false;
 }
 
-WebPlugin* RenderView::CreatePepperPlugin(WebFrame* frame,
-                                          const WebPluginParams& params,
-                                          const FilePath& path,
-                                          pepper::PluginModule* pepper_module) {
-  return new pepper::WebPluginImpl(
+WebPlugin* RenderView::CreatePepperPlugin(
+    WebFrame* frame,
+    const WebPluginParams& params,
+    const FilePath& path,
+    webkit::ppapi::PluginModule* pepper_module) {
+  return new webkit::ppapi::WebPluginImpl(
       pepper_module, params, pepper_delegate_.AsWeakPtr());
 }
 

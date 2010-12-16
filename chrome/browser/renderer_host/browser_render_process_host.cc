@@ -89,7 +89,7 @@
 #include "ipc/ipc_switches.h"
 #include "media/base/media_switches.h"
 #include "webkit/fileapi/file_system_path_manager.h"
-#include "webkit/glue/plugins/plugin_switches.h"
+#include "webkit/plugins/plugin_switches.h"
 
 #if defined(OS_WIN)
 #include "app/win_util.h"

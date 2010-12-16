@@ -9,19 +9,21 @@
 
 namespace IPC {
 
-void ParamTraits<PepperDirEntry>::Write(Message* m, const param_type& p) {
+void ParamTraits<webkit::ppapi::DirEntry>::Write(Message* m,
+                                                 const param_type& p) {
   WriteParam(m, p.name);
   WriteParam(m, p.is_dir);
 }
 
-bool ParamTraits<PepperDirEntry>::Read(const Message* m,
-                                    void** iter,
-                                    param_type* p) {
+bool ParamTraits<webkit::ppapi::DirEntry>::Read(const Message* m,
+                                                void** iter,
+                                                param_type* p) {
   return ReadParam(m, iter, &p->name) &&
       ReadParam(m, iter, &p->is_dir);
 }
 
-void ParamTraits<PepperDirEntry>::Log(const param_type& p, std::string* l) {
+void ParamTraits<webkit::ppapi::DirEntry>::Log(const param_type& p,
+                                               std::string* l) {
   l->append("(");
   LogParam(p.name, l);
   l->append(", ");

@@ -377,13 +377,13 @@ IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBInstance_ExecuteScript,
                            pp::proxy::SerializedVar /* result */)
 
 IPC_SYNC_MESSAGE_ROUTED3_1(
-    PpapiHostMsg_PPBPdf_GetFontFileWithFallback,
+    PpapiHostMsg_PPBPDF_GetFontFileWithFallback,
     PP_Module /* module */,
     pp::proxy::SerializedFontDescription /* description */,
     int32_t /* charset */,
     PP_Resource /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_1(
-    PpapiHostMsg_PPBPdf_GetFontTableForPrivateFontFile,
+    PpapiHostMsg_PPBPDF_GetFontTableForPrivateFontFile,
     PP_Resource /* font_file */,
     uint32_t /* table */,
     std::string /* result */)

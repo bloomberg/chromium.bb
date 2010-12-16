@@ -220,7 +220,7 @@ bool PepperPluginRegistry::RunOutOfProcessForPlugin(
   return false;
 }
 
-pepper::PluginModule* PepperPluginRegistry::GetModule(
+webkit::ppapi::PluginModule* PepperPluginRegistry::GetModule(
     const FilePath& path) const {
   ModuleMap::const_iterator it = modules_.find(path);
   if (it == modules_.end())
@@ -240,7 +240,7 @@ PepperPluginRegistry::PepperPluginRegistry() {
        it != internal_plugin_info.end();
        ++it) {
     const FilePath& path = it->path;
-    ModuleHandle module(new pepper::PluginModule);
+    ModuleHandle module(new webkit::ppapi::PluginModule);
     if (!module->InitAsInternalPlugin(it->entry_points)) {
       DLOG(ERROR) << "Failed to load pepper module: " << path.value();
       continue;
@@ -259,7 +259,7 @@ PepperPluginRegistry::PepperPluginRegistry() {
       continue;  // Only preload in-process plugins.
 
     const FilePath& path = plugins[i].path;
-    ModuleHandle module(new pepper::PluginModule);
+    ModuleHandle module(new webkit::ppapi::PluginModule);
     if (!module->InitAsLibrary(path)) {
       DLOG(ERROR) << "Failed to load pepper module: " << path.value();
       continue;

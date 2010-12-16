@@ -15,7 +15,7 @@
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
-#include "webkit/glue/plugins/ppb_private2.h"
+#include "webkit/plugins/ppapi/ppb_flash.h"
 
 namespace pp {
 namespace proxy {
@@ -192,7 +192,7 @@ bool NavigateToURL(PP_Instance pp_instance,
   return result;
 }
 
-const PPB_Private2 ppb_flash = {
+const PPB_Flash ppb_flash = {
   &SetInstanceAlwaysOnTop,
   &DrawGlyphs,
   &GetProxyForURL,

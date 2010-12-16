@@ -13,7 +13,7 @@
 #include "ppapi/proxy/interface_proxy.h"
 
 struct PP_FileInfo_Dev;
-struct PPB_Private2;
+struct PPB_Flash;
 
 namespace pp {
 namespace proxy {
@@ -28,8 +28,8 @@ class PPB_Flash_Proxy : public InterfaceProxy {
   PPB_Flash_Proxy(Dispatcher* dispatcher, const void* target_interface);
   virtual ~PPB_Flash_Proxy();
 
-  const PPB_Private2* ppb_flash_target() const {
-    return static_cast<const PPB_Private2*>(target_interface());
+  const PPB_Flash* ppb_flash_target() const {
+    return static_cast<const PPB_Flash*>(target_interface());
   }
 
   // InterfaceProxy implementation.

@@ -11,7 +11,7 @@
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
-#include "webkit/glue/plugins/plugin_switches.h"
+#include "webkit/plugins/plugin_switches.h"
 
 namespace {
 

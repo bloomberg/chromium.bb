@@ -55,8 +55,8 @@
 #include "ppapi/proxy/ppp_class_proxy.h"
 #include "ppapi/proxy/ppp_instance_proxy.h"
 #include "ppapi/proxy/var_serialization_rules.h"
-#include "webkit/glue/plugins/ppb_private.h"
-#include "webkit/glue/plugins/ppb_private2.h"
+#include "webkit/plugins/ppapi/ppb_pdf.h"
+#include "webkit/plugins/ppapi/ppb_flash.h"
 
 namespace pp {
 namespace proxy {
@@ -262,10 +262,10 @@ InterfaceProxy* Dispatcher::CreateProxyForInterface(
 
   // Trusted interfaces.
   if (!disallow_trusted_interfaces_) {
-    if (interface_name == PPB_PRIVATE2_INTERFACE)
+    if (interface_name == PPB_FLASH_INTERFACE)
       return new PPB_Flash_Proxy(this, interface_functions);
-    if (interface_name == PPB_PRIVATE_INTERFACE)
-      return new PPB_Pdf_Proxy(this, interface_functions);
+    if (interface_name == PPB_PDF_INTERFACE)
+      return new PPB_PDF_Proxy(this, interface_functions);
     if (interface_name == PPB_URLLOADERTRUSTED_INTERFACE)
       return new PPB_URLLoaderTrusted_Proxy(this, interface_functions);
   }

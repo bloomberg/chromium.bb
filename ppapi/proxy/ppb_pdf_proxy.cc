@@ -14,7 +14,7 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "webkit/glue/plugins/ppb_private.h"
+#include "webkit/plugins/ppapi/ppb_pdf.h"
 
 namespace pp {
 namespace proxy {
@@ -65,7 +65,7 @@ PP_Resource GetFontFileWithFallback(
   desc.SetFromPPFontDescription(dispatcher, *description, true);
 
   PP_Resource result = 0;
-  dispatcher->Send(new PpapiHostMsg_PPBPdf_GetFontFileWithFallback(
+  dispatcher->Send(new PpapiHostMsg_PPBPDF_GetFontFileWithFallback(
       INTERFACE_ID_PPB_PDF, module_id, desc, charset, &result));
   if (!result)
     return 0;
@@ -87,7 +87,7 @@ bool GetFontTableForPrivateFontFile(PP_Resource font_file,
   if (!contents) {
     std::string deserialized;
     PluginDispatcher::Get()->Send(
-        new PpapiHostMsg_PPBPdf_GetFontTableForPrivateFontFile(
+        new PpapiHostMsg_PPBPDF_GetFontTableForPrivateFontFile(
             INTERFACE_ID_PPB_PDF, font_file, table, &deserialized));
     if (deserialized.empty())
       return false;
@@ -100,7 +100,7 @@ bool GetFontTableForPrivateFontFile(PP_Resource font_file,
   return true;
 }
 
-const PPB_Private ppb_private = {
+const PPB_PDF ppb_pdf = {
   NULL,  // &GetLocalizedString,
   NULL,  // &GetResourceImage,
   &GetFontFileWithFallback,
@@ -109,33 +109,33 @@ const PPB_Private ppb_private = {
 
 }  // namespace
 
-PPB_Pdf_Proxy::PPB_Pdf_Proxy(Dispatcher* dispatcher,
+PPB_PDF_Proxy::PPB_PDF_Proxy(Dispatcher* dispatcher,
                              const void* target_interface)
     : InterfaceProxy(dispatcher, target_interface) {
 }
 
-PPB_Pdf_Proxy::~PPB_Pdf_Proxy() {
+PPB_PDF_Proxy::~PPB_PDF_Proxy() {
 }
 
-const void* PPB_Pdf_Proxy::GetSourceInterface() const {
-  return &ppb_private;
+const void* PPB_PDF_Proxy::GetSourceInterface() const {
+  return &ppb_pdf;
 }
 
-InterfaceID PPB_Pdf_Proxy::GetInterfaceId() const {
+InterfaceID PPB_PDF_Proxy::GetInterfaceId() const {
   return INTERFACE_ID_PPB_PDF;
 }
 
-void PPB_Pdf_Proxy::OnMessageReceived(const IPC::Message& msg) {
-  IPC_BEGIN_MESSAGE_MAP(PPB_Pdf_Proxy, msg)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBPdf_GetFontFileWithFallback,
+void PPB_PDF_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  IPC_BEGIN_MESSAGE_MAP(PPB_PDF_Proxy, msg)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBPDF_GetFontFileWithFallback,
                         OnMsgGetFontFileWithFallback)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBPdf_GetFontTableForPrivateFontFile,
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBPDF_GetFontTableForPrivateFontFile,
                         OnMsgGetFontTableForPrivateFontFile)
   IPC_END_MESSAGE_MAP()
   // TODO(brettw): handle bad messages!
 }
 
-void PPB_Pdf_Proxy::OnMsgGetFontFileWithFallback(
+void PPB_PDF_Proxy::OnMsgGetFontFileWithFallback(
     PP_Module module,
     const SerializedFontDescription& in_desc,
     int32_t charset,
@@ -146,7 +146,7 @@ void PPB_Pdf_Proxy::OnMsgGetFontFileWithFallback(
       static_cast<PP_PrivateFontCharset>(charset));
 }
 
-void PPB_Pdf_Proxy::OnMsgGetFontTableForPrivateFontFile(PP_Resource font_file,
+void PPB_PDF_Proxy::OnMsgGetFontTableForPrivateFontFile(PP_Resource font_file,
                                                         uint32_t table,
                                                         std::string* result) {
   // TODO(brettw): It would be nice not to copy here. At least on Linux,

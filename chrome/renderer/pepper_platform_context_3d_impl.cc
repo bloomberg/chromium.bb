@@ -10,7 +10,7 @@
 
 #ifdef ENABLE_GPU
 PlatformContext3DImpl::PlatformContext3DImpl(ggl::Context* parent_context)
-  : parent_context_(parent_context),
+      : parent_context_(parent_context),
   context_(NULL) {
 }
 

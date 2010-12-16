@@ -5,8 +5,8 @@ include_rules = [
   # These files are really Chrome-only and we don't want to expose them, but
   # we need to use them for the proxy. Allow the code here to pull these
   # headers (which don't depend on anything else).
-  "+webkit/glue/plugins/ppb_private.h",
-  "+webkit/glue/plugins/ppb_private2.h",
+  "+webkit/plugins/ppapi/ppb_pdf.h",
+  "+webkit/plugins/ppapi/ppb_flash.h",
 
   # We don't want the proxy to depend on the C++ layer, which is appropriate
   # for plugins only. However, the completion callback factory is a very useful

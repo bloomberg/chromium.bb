@@ -17,8 +17,8 @@
 #include "net/base/mime_util.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_lib.h"
-#include "webkit/glue/plugins/plugin_switches.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/plugins/plugin_switches.h"
 
 #if defined(OS_POSIX)
 #include "base/stl_util-inl.h"
