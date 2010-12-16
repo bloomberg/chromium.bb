@@ -72,9 +72,6 @@ class TaskManagerGtk : public TaskManagerModelObserver {
   void ShowContextMenu();
 #endif
 
-  // Activates the tab associated with the focused row.
-  void ActivateFocusedTab();
-
   // Opens about:memory in a new foreground tab.
   void OnLinkActivated();
 
@@ -95,9 +92,10 @@ class TaskManagerGtk : public TaskManagerModelObserver {
   CHROMEG_CALLBACK_0(TaskManagerGtk, void, OnSelectionChanged,
                      GtkTreeSelection*);
 
-  // button-press-event handler that activates a process on double-click.
-  CHROMEGTK_CALLBACK_1(TaskManagerGtk, gboolean, OnButtonPressEvent,
-                       GdkEventButton*);
+  // row-activated handler that foregrounds a process on activation (e.g.,
+  // double-click).
+  CHROMEGTK_CALLBACK_2(TaskManagerGtk, void, OnRowActivated,
+                       GtkTreePath*, GtkTreeViewColumn*);
 
   // button-release-event handler that opens the right-click context menu.
   CHROMEGTK_CALLBACK_1(TaskManagerGtk, gboolean, OnButtonReleaseEvent,

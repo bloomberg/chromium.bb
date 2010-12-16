@@ -476,10 +476,8 @@ void TaskManagerGtk::Init() {
 
   CreateTaskManagerTreeview();
   gtk_tree_view_set_headers_clickable(GTK_TREE_VIEW(treeview_), TRUE);
-  g_signal_connect(treeview_, "button-press-event",
-                   G_CALLBACK(OnButtonPressEventThunk), this);
-  gtk_widget_add_events(treeview_,
-                        GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
+  g_signal_connect(treeview_, "row-activated",
+                   G_CALLBACK(OnRowActivatedThunk), this);
 
   // |selection| is owned by |treeview_|.
   GtkTreeSelection* selection = gtk_tree_view_get_selection(
@@ -780,25 +778,6 @@ void TaskManagerGtk::ShowContextMenu() {
 }
 #endif
 
-void TaskManagerGtk::ActivateFocusedTab() {
-  GtkTreeSelection* selection = gtk_tree_view_get_selection(
-      GTK_TREE_VIEW(treeview_));
-
-  // If the user has just double clicked, only one item is selected.
-  GtkTreeModel* model;
-  GList* selected = gtk_tree_selection_get_selected_rows(selection, &model);
-  if (selected) {
-    GtkTreePath* path = gtk_tree_model_sort_convert_path_to_child_path(
-        GTK_TREE_MODEL_SORT(process_list_sort_),
-        reinterpret_cast<GtkTreePath*>(selected->data));
-    int row = gtk_tree::GetRowNumForPath(path);
-    gtk_tree_path_free(path);
-    task_manager_->ActivateProcess(row);
-  }
-  g_list_foreach(selected, reinterpret_cast<GFunc>(gtk_tree_path_free), NULL);
-  g_list_free(selected);
-}
-
 void TaskManagerGtk::OnLinkActivated() {
   task_manager_->OpenAboutMemory();
 }
@@ -942,12 +921,14 @@ void TaskManagerGtk::OnSelectionChanged(GtkTreeSelection* selection) {
                                     kTaskManagerResponseKill, sensitive);
 }
 
-gboolean TaskManagerGtk::OnButtonPressEvent(GtkWidget* widget,
-                                            GdkEventButton* event) {
-  if (event->type == GDK_2BUTTON_PRESS)
-    ActivateFocusedTab();
-
-  return FALSE;
+void TaskManagerGtk::OnRowActivated(GtkWidget* widget,
+                                    GtkTreePath* path,
+                                    GtkTreeViewColumn* column) {
+  GtkTreePath* child_path = gtk_tree_model_sort_convert_path_to_child_path(
+      GTK_TREE_MODEL_SORT(process_list_sort_), path);
+  int row = gtk_tree::GetRowNumForPath(child_path);
+  gtk_tree_path_free(child_path);
+  task_manager_->ActivateProcess(row);
 }
 
 gboolean TaskManagerGtk::OnButtonReleaseEvent(GtkWidget* widget,
