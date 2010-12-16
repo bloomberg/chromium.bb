@@ -870,13 +870,10 @@ MinidumpGenerator::WriteExceptionStream(MDRawDirectory *exception_stream) {
   exception_ptr->exception_record.exception_flags = exception_code_;
 
   breakpad_thread_state_data_t state;
-  mach_msg_type_number_t stateCount
+  mach_msg_type_number_t state_count
       = static_cast<mach_msg_type_number_t>(sizeof(state));
 
-  if (thread_get_state(exception_thread_,
-                       BREAKPAD_MACHINE_THREAD_STATE,
-                       state,
-                       &stateCount) != KERN_SUCCESS)
+  if (!GetThreadState(exception_thread_, state, &state_count))
     return false;
 
   if (!WriteContext(state, &exception_ptr->thread_context))
