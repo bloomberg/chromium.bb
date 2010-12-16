@@ -2983,35 +2983,28 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
           is_content_initiated();
   GURL old_url(frame->url());
 
-  // We only care about navigations that are within the current tab (as opposed
-  // to, for example, opening a new window).
-  // But we sometimes navigate to about:blank to clear a tab, and we want to
-  // still allow that.
-  if (default_policy == WebKit::WebNavigationPolicyCurrentTab &&
-      is_content_initiated && frame->parent() == NULL &&
-      type != WebKit::WebNavigationTypeFormSubmitted &&
-      !url.SchemeIs(chrome::kAboutScheme)) {
-    // When we received such unsolicited navigations, we sometimes want to
-    // punt them up to the browser to handle.
-    if (BindingsPolicy::is_dom_ui_enabled(enabled_bindings_) ||
+  // Detect when we're crossing a permission-based boundary (e.g. into or out of
+  // an extension or app origin, leaving a DOMUI page, etc). We only care about
+  // top-level navigations withing the current tab (as opposed to, for example,
+  // opening a new window). But we sometimes navigate to about:blank to clear a
+  // tab, and we want to still allow that.
+  //
+  // Note: we do this only for GET requests because we our mechanism for
+  // switching processes only issues GET requests. In particular, POST
+  // requests don't work, because this mechanism does not preserve form POST
+  // data. If it becomes necessary to support process switching for POST
+  // requests, we will need to send the request's httpBody data up to the
+  // browser process, and issue a special POST navigation in WebKit (via
+  // FrameLoader::loadFrameRequest). See ResourceDispatcher and
+  // WebURLLoaderImpl for examples of how to send the httpBody data.
+  if (!frame->parent() && is_content_initiated &&
+      default_policy == WebKit::WebNavigationPolicyCurrentTab &&
+      request.httpMethod() == "GET" && !url.SchemeIs(chrome::kAboutScheme)) {
+    bool send_referrer = false;
+    bool should_fork =
+        BindingsPolicy::is_dom_ui_enabled(enabled_bindings_) ||
         frame->isViewSourceModeEnabled() ||
-        url.SchemeIs(chrome::kViewSourceScheme)) {
-      // We don't send referrer from these special pages.
-      OpenURL(url, GURL(), default_policy);
-      return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
-    }
-
-    // We forward non-local navigations from extensions to the browser if they
-    // are top-level events, even if the browser hasn't expressed interest.
-    // TODO(erikkay) crbug.com/54118 - combine this clause and the next into
-    // some shared logic.
-    if (BindingsPolicy::is_extension_enabled(enabled_bindings_) &&
-        old_url.SchemeIs(chrome::kExtensionScheme) &&
-        IsNonLocalTopLevelNavigation(url, frame, type)) {
-        // We don't send referrer from extensions.
-        OpenURL(url, GURL(), default_policy);
-        return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
-    }
+        url.SchemeIs(chrome::kViewSourceScheme);
 
     // If the navigation would cross an app extent boundary, we also need
     // to defer to the browser to ensure process isolation.
@@ -3021,12 +3014,17 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
     // TODO(creis): For now, we only swap processes to enter an app and not
     // exit it, since we currently lose context (e.g., window.opener) if the
     // window navigates back.  See crbug.com/65953.
-    if (CrossesIntoExtensionExtent(frame, url)) {
+    if (!should_fork && CrossesIntoExtensionExtent(frame, url)) {
       // Include the referrer in this case since we're going from a hosted web
       // page. (the packaged case is handled previously by the extension
       // navigation test)
+      should_fork = true;
+      send_referrer = true;
+    }
+
+    if (should_fork) {
       GURL referrer(request.httpHeaderField(WebString::fromUTF8("Referer")));
-      OpenURL(url, referrer, default_policy);
+      OpenURL(url, send_referrer ? referrer : GURL(), default_policy);
       return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
     }
   }
