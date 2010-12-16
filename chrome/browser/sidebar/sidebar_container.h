@@ -136,4 +136,3 @@ class SidebarContainer
 };
 
 #endif  // CHROME_BROWSER_SIDEBAR_SIDEBAR_CONTAINER_H_
-

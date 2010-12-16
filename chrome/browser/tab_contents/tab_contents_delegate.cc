@@ -12,6 +12,9 @@ std::string TabContentsDelegate::GetNavigationHeaders(const GURL& url) {
   return std::string();
 }
 
+void TabContentsDelegate::LoadProgressChanged(double progress) {
+}
+
 void TabContentsDelegate::DetachContents(TabContents* source) {
 }
 

@@ -2765,6 +2765,11 @@ void TabContents::DidStopLoading() {
                     DidStopLoading());
 }
 
+void TabContents::DidChangeLoadProgress(double progress) {
+  if (delegate())
+    delegate()->LoadProgressChanged(progress);
+}
+
 void TabContents::DocumentOnLoadCompletedInMainFrame(
     RenderViewHost* render_view_host,
     int32 page_id) {

@@ -738,6 +738,15 @@ bool RenderView::InstallWebApplicationUsingDefinitionFile(WebFrame* frame,
   return true;
 }
 
+void RenderView::SetReportLoadProgressEnabled(bool enabled) {
+  if (!enabled) {
+    load_progress_tracker_.reset(NULL);
+    return;
+  }
+  if (load_progress_tracker_ == NULL)
+    load_progress_tracker_.reset(new LoadProgressTracker(this));
+}
+
 void RenderView::DidDownloadApplicationDefinition(
     const WebKit::WebURLResponse& response,
     const std::string& data) {

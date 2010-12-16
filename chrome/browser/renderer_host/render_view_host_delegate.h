@@ -770,9 +770,9 @@ class RenderViewHostDelegate {
   virtual void DidStopLoading() {}
 
   // The RenderView made progress loading a page's top frame.
-  // |progress_load| is a value between 0 (nothing loaded) to 1.0 (top frame
+  // |progress| is a value between 0 (nothing loaded) to 1.0 (top frame
   // entirely loaded).
-  virtual void DidChangeLoadProgress(double load_progress) {}
+  virtual void DidChangeLoadProgress(double progress) {}
 
   // The RenderView's main frame document element is ready. This happens when
   // the document has finished parsing.

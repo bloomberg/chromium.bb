@@ -88,6 +88,13 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   // loading feedback. See TabContents::is_loading()
   virtual void LoadingStateChanged(TabContents* source) = 0;
 
+  // Notifies the delegate that the page has made some progress loading.
+  // |progress| is a value between 0.0 (nothing loaded) to 1.0 (page fully
+  // loaded).
+  // Note that to receive this notification, you must have called
+  // SetReportLoadProgressEnabled(true) in the render view.
+  virtual void LoadProgressChanged(double progress);
+
   // Request the delegate to close this tab contents, and do whatever cleanup
   // it needs to do.
   virtual void CloseContents(TabContents* source) = 0;
