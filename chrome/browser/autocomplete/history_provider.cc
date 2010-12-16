@@ -28,7 +28,7 @@ void HistoryProvider::DeleteMatch(const AutocompleteMatch& match) {
   DCHECK(match.deletable);
 
   HistoryService* const history_service =
-    profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
 
   // Delete the match from the history DB.
   GURL selected_url(match.destination_url);
