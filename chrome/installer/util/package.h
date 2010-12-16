@@ -12,11 +12,11 @@
 #include "base/ref_counted.h"
 
 class CommandLine;
+class Version;
 
 namespace installer {
 
 class Product;
-class Version;
 class PackageProperties;
 
 typedef std::vector<scoped_refptr<const Product> > Products;

@@ -113,7 +113,7 @@ BrowserDistribution* BrowserDistribution::GetSpecificDistribution(
 }
 
 void BrowserDistribution::DoPostUninstallOperations(
-    const installer::Version& version, const FilePath& local_data_path,
+    const Version& version, const FilePath& local_data_path,
     const std::wstring& distribution_data) {
 }
 
@@ -218,7 +218,7 @@ void BrowserDistribution::UpdateDiffInstallStatus(bool system_install,
 }
 
 void BrowserDistribution::LaunchUserExperiment(
-    installer::InstallStatus status, const installer::Version& version,
+    installer::InstallStatus status, const Version& version,
     const installer::Product& installation, bool system_level) {
 }
 

@@ -33,34 +33,22 @@ int installer::ApplyDiffPatch(const FilePath& src,
                           dest.value().c_str());
 }
 
-installer::Version* installer::GetVersionFromArchiveDir(
-    const FilePath& chrome_path) {
+Version* installer::GetVersionFromArchiveDir(const FilePath& chrome_path) {
   VLOG(1) << "Looking for Chrome version folder under " << chrome_path.value();
-  FilePath root_path = chrome_path.Append(L"*");
-
+  Version* version = NULL;
+  file_util::FileEnumerator version_enum(chrome_path, false,
+      file_util::FileEnumerator::DIRECTORIES);
   // TODO(tommi): The version directory really should match the version of
   // setup.exe.  To begin with, we should at least DCHECK that that's true.
 
-  // TODO(tommi): use file_util::FileEnumerator.
-  WIN32_FIND_DATA find_data = {0};
-  HANDLE file_handle = FindFirstFile(root_path.value().c_str(), &find_data);
-  BOOL ret = TRUE;
-  installer::Version* version = NULL;
-  // Here we are assuming that the installer we have is really valid so there
-  // can not be two version directories. We exit as soon as we find a valid
-  // version directory.
-  while (ret) {
-    if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY &&
-        lstrcmpW(find_data.cFileName, L"..") != 0 &&
-        lstrcmpW(find_data.cFileName, L".") != 0) {
-      VLOG(1) << "directory found: " << find_data.cFileName;
-      version = installer::Version::GetVersionFromString(find_data.cFileName);
-      if (version)
-        break;
-    }
-    ret = FindNextFile(file_handle, &find_data);
+  while (!version_enum.Next().empty()) {
+    file_util::FileEnumerator::FindInfo find_data = {0};
+    version_enum.GetFindInfo(&find_data);
+    VLOG(1) << "directory found: " << find_data.cFileName;
+    version = Version::GetVersionFromString(find_data.cFileName);
+    if (version)
+      break;
   }
-  FindClose(file_handle);
 
   return version;
 }

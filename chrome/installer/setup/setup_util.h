@@ -8,7 +8,7 @@
 #define CHROME_INSTALLER_SETUP_SETUP_UTIL_H_
 #pragma once
 
-#include "chrome/installer/util/version.h"
+#include "base/version.h"
 
 class FilePath;
 
@@ -23,7 +23,7 @@ namespace installer {
   // Find the version of Chrome from an install source directory.
   // Chrome_path should contain a version folder.
   // Returns the first version found or NULL if no version is found.
-  installer::Version* GetVersionFromArchiveDir(const FilePath& chrome_path);
+  Version* GetVersionFromArchiveDir(const FilePath& chrome_path);
 }  // namespace installer
 
 #endif  // CHROME_INSTALLER_SETUP_SETUP_UTIL_H_

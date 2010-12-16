@@ -102,7 +102,6 @@
             'installer/util/shell_util_unittest.cc',
             'installer/util/wmi_unittest.cc',
             'installer/util/work_item_list_unittest.cc',
-            'installer/util/version_unittest.cc',
           ],
           'msvs_settings': {
             'VCManifestTool': {

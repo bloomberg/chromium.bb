@@ -15,7 +15,6 @@
 #include "base/command_line.h"
 #include "chrome/installer/util/product.h"
 #include "chrome/installer/util/util_constants.h"
-#include "chrome/installer/util/version.h"
 
 namespace installer {
 // This function removes all Chrome registration related keys. It returns true

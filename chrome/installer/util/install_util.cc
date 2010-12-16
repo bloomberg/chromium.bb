@@ -78,8 +78,8 @@ std::wstring InstallUtil::GetChromeUninstallCmd(bool system_install,
   return uninstall_cmd;
 }
 
-installer::Version* InstallUtil::GetChromeVersion(BrowserDistribution* dist,
-                                                  bool system_install) {
+Version* InstallUtil::GetChromeVersion(BrowserDistribution* dist,
+                                       bool system_install) {
   DCHECK(dist);
   RegKey key;
   std::wstring version_str;
@@ -93,7 +93,7 @@ installer::Version* InstallUtil::GetChromeVersion(BrowserDistribution* dist,
   }
   key.Close();
   VLOG(1) << "Existing Chrome version found " << version_str;
-  return installer::Version::GetVersionFromString(version_str);
+  return Version::GetVersionFromString(version_str);
 }
 
 bool InstallUtil::IsOSSupported() {

@@ -14,6 +14,7 @@
 #include "chrome/installer/util/package.h"
 
 class CommandLine;
+class Version;
 
 namespace installer {
 class MasterPreferences;
@@ -24,7 +25,6 @@ namespace installer {
 class Product;
 class Package;
 class PackageProperties;
-class Version;
 
 typedef std::vector<scoped_refptr<Package> > Packages;
 typedef std::vector<scoped_refptr<const Product> > Products;

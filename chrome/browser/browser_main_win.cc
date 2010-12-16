@@ -183,8 +183,7 @@ bool CheckMachineLevelInstall() {
   // TODO(tommi): Check if using the default distribution is always the right
   // thing to do.
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  scoped_ptr<installer::Version> version(InstallUtil::GetChromeVersion(dist,
-                                                                       true));
+  scoped_ptr<Version> version(InstallUtil::GetChromeVersion(dist, true));
   if (version.get()) {
     FilePath exe_path;
     PathService::Get(base::DIR_EXE, &exe_path);

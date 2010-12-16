@@ -20,7 +20,7 @@ GoogleChromeDistribution::GoogleChromeDistribution(
 }
 
 void GoogleChromeDistribution::DoPostUninstallOperations(
-    const installer::Version& version,
+    const Version& version,
     const FilePath& local_data_path,
     const std::wstring& distribution_data) {
 }
@@ -106,7 +106,7 @@ void GoogleChromeDistribution::UpdateDiffInstallStatus(bool system_install,
 }
 
 void GoogleChromeDistribution::LaunchUserExperiment(
-    installer::InstallStatus status, const installer::Version& version,
+    installer::InstallStatus status, const Version& version,
     const installer::Product& installation, bool system_level) {
   NOTREACHED();
 }

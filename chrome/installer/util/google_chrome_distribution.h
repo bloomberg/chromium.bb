@@ -28,7 +28,7 @@ class GoogleChromeDistribution : public BrowserDistribution {
   // distribution_data contains Google Update related data that will be
   //   concatenated to the survey url if the file in local_data_path indicates
   //   the user has opted in to providing anonymous usage data.
-  virtual void DoPostUninstallOperations(const installer::Version& version,
+  virtual void DoPostUninstallOperations(const Version& version,
                                          const FilePath& local_data_path,
                                          const std::wstring& distribution_data);
 
@@ -69,7 +69,7 @@ class GoogleChromeDistribution : public BrowserDistribution {
       bool incremental_install, installer::InstallStatus install_status);
 
   virtual void LaunchUserExperiment(installer::InstallStatus status,
-      const installer::Version& version,
+      const Version& version,
       const installer::Product& installation,
       bool system_level);
 

@@ -49,8 +49,6 @@
           'installer/util/set_reg_value_work_item.h',
           'installer/util/util_constants.cc',
           'installer/util/util_constants.h',
-          'installer/util/version.cc',
-          'installer/util/version.h',
           'installer/util/wmi.cc',
           'installer/util/wmi.h',
           'installer/util/work_item.cc',
@@ -154,8 +152,6 @@
             'installer/util/master_preferences.h',
             'installer/util/master_preferences_constants.cc',
             'installer/util/master_preferences_constants.h',
-            'installer/util/version.cc',
-            'installer/util/version.h',
           ],
           'include_dirs': [
             '<(DEPTH)',

@@ -10,11 +10,11 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/service_process_util.h"
-#include "chrome/installer/util/version.h"
 
 namespace {
 
@@ -75,9 +75,7 @@ ServiceProcessRunningState GetServiceProcessRunningState(
   if (service_version_out)
     *service_version_out = version;
 
-  scoped_ptr<installer::Version> service_version;
-  service_version.reset(
-      installer::Version::GetVersionFromString(ASCIIToUTF16(version)));
+  scoped_ptr<Version> service_version(Version::GetVersionFromString(version));
   // If the version string is invalid, treat it like an older version.
   if (!service_version.get())
     return SERVICE_OLDER_VERSION_RUNNING;
@@ -90,9 +88,8 @@ ServiceProcessRunningState GetServiceProcessRunningState(
     // are out of date.
     return SERVICE_NEWER_VERSION_RUNNING;
   }
-  scoped_ptr<installer::Version> running_version(
-      installer::Version::GetVersionFromString(
-          ASCIIToUTF16(version_info.Version())));
+  scoped_ptr<Version> running_version(Version::GetVersionFromString(
+      version_info.Version()));
   if (!running_version.get()) {
     NOTREACHED() << "Failed to parse version info";
     // Our own version is invalid. This is an error case. Pretend that we
@@ -100,9 +97,9 @@ ServiceProcessRunningState GetServiceProcessRunningState(
     return SERVICE_NEWER_VERSION_RUNNING;
   }
 
-  if (running_version->IsHigherThan(service_version.get())) {
+  if (running_version->CompareTo(*service_version) > 0) {
     return SERVICE_OLDER_VERSION_RUNNING;
-  } else if (service_version->IsHigherThan(running_version.get())) {
+  } else if (service_version->CompareTo(*running_version) > 0) {
     return SERVICE_NEWER_VERSION_RUNNING;
   }
   return SERVICE_SAME_VERSION_RUNNING;

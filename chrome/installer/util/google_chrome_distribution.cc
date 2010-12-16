@@ -326,7 +326,7 @@ bool GoogleChromeDistribution::ExtractUninstallMetrics(
 #endif
 
 void GoogleChromeDistribution::DoPostUninstallOperations(
-    const installer::Version& version, const FilePath& local_data_path,
+    const Version& version, const FilePath& local_data_path,
     const std::wstring& distribution_data) {
   // Send the Chrome version and OS version as params to the form.
   // It would be nice to send the locale, too, but I don't see an
@@ -336,7 +336,6 @@ void GoogleChromeDistribution::DoPostUninstallOperations(
   // characters that need escaping: 0.2.13.4. Should that change, we will
   // need to escape the string before using it in a URL.
   const std::wstring kVersionParam = L"crversion";
-  const std::wstring kVersion = version.GetString();
   const std::wstring kOSParam = L"os";
   std::wstring os_version = L"na";
   OSVERSIONINFO version_info;
@@ -355,8 +354,8 @@ void GoogleChromeDistribution::DoPostUninstallOperations(
   iexplore = iexplore.AppendASCII("iexplore.exe");
 
   std::wstring command = iexplore.value() + L" " + GetUninstallSurveyUrl() +
-      L"&" + kVersionParam + L"=" + kVersion + L"&" + kOSParam + L"=" +
-      os_version;
+      L"&" + kVersionParam + L"=" + UTF8ToWide(version.GetString()) + L"&" +
+      kOSParam + L"=" + os_version;
 
   std::wstring uninstall_metrics;
   if (ExtractUninstallMetricsFromFile(local_data_path.value(),
@@ -553,7 +552,7 @@ void SetClient(std::wstring experiment_group, bool last_write) {
 // 3- It has been re-launched from the #2 case. In this case we enter
 //    this function with |system_install| true and a REENTRY_SYS_UPDATE status.
 void GoogleChromeDistribution::LaunchUserExperiment(
-    installer::InstallStatus status, const installer::Version& version,
+    installer::InstallStatus status, const Version& version,
     const installer::Product& installation, bool system_level) {
   if (system_level) {
     if (installer::NEW_VERSION_UPDATED == status) {

@@ -15,6 +15,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
@@ -42,7 +43,6 @@ using installer::Products;
 using installer::Product;
 using installer::Package;
 using installer::PackageProperties;
-using installer::Version;
 
 void AddChromeToMediaPlayerList() {
   std::wstring reg_path(installer::kMediaPlayerRegPath);
@@ -177,11 +177,13 @@ void AddUninstallShortcutWorkItems(const FilePath& setup_path,
                                          browser_dist->GetPublisherName(),
                                          true);
     install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
-                                         L"Version", new_version.GetString(),
+                                         L"Version",
+                                         UTF8ToWide(new_version.GetString()),
                                          true);
     install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
                                          L"DisplayVersion",
-                                         new_version.GetString(), true);
+                                         UTF8ToWide(new_version.GetString()),
+                                         true);
     time_t rawtime = time(NULL);
     struct tm timeinfo = {0};
     localtime_s(&timeinfo, &rawtime);
@@ -395,13 +397,15 @@ bool RegisterComDlls(const Package& install,
 
   // Unregister DLLs that were left from the old version that is being upgraded.
   if (current_version) {
-    FilePath old_dll_path(install.path().Append(current_version->GetString()));
+    FilePath old_dll_path(install.path().Append(
+        UTF8ToWide(current_version->GetString())));
     // Ignore failures to unregister old DLLs.
     installer::RegisterComDllList(old_dll_path, install.system_level(), false,
                                   false);
   }
 
-  FilePath dll_path(install.path().Append(new_version.GetString()));
+  FilePath dll_path(install.path().Append(
+      UTF8ToWide(new_version.GetString())));
   return installer::RegisterComDllList(dll_path, install.system_level(), true,
                                        true);
 }
@@ -451,8 +455,8 @@ bool DoPostInstallTasks(bool multi_install,
       BrowserDistribution* dist = products[i]->distribution();
       version_key = dist->GetVersionKey();
       inuse_list->AddSetRegValueWorkItem(root, version_key,
-                                         google_update::kRegOldVersionField,
-                                         current_version->GetString(), true);
+          google_update::kRegOldVersionField,
+          UTF8ToWide(current_version->GetString()), true);
 
       // Adding this registry entry for all products is overkill.
       // However, as it stands, we don't have a way to know which distribution
@@ -468,8 +472,8 @@ bool DoPostInstallTasks(bool multi_install,
       PackageProperties* props = package.properties();
       if (props->ReceivesUpdates()) {
         inuse_list->AddSetRegValueWorkItem(root, props->GetVersionKey(),
-                                           google_update::kRegOldVersionField,
-                                           current_version->GetString(), true);
+            google_update::kRegOldVersionField,
+            UTF8ToWide(current_version->GetString()), true);
         // TODO(tommi): We should move the rename command here.  We also need to
         // update Upgrade::SwapNewChromeExeIfPresent.
       }
@@ -643,13 +647,13 @@ installer::InstallStatus InstallNewVersion(
   // take the permissions of %ProgramFiles% folder) otherwise just move it.
   if (package.system_level()) {
     install_list->AddCopyTreeWorkItem(
-        src_path.Append(new_version.GetString()).value(),
-        package.path().Append(new_version.GetString()).value(),
+        src_path.Append(UTF8ToWide(new_version.GetString())).value(),
+        package.path().Append(UTF8ToWide(new_version.GetString())).value(),
         temp_dir.value(), WorkItem::ALWAYS);
   } else {
     install_list->AddMoveTreeWorkItem(
-        src_path.Append(new_version.GetString()).value(),
-        package.path().Append(new_version.GetString()).value(),
+        src_path.Append(UTF8ToWide(new_version.GetString())).value(),
+        package.path().Append(UTF8ToWide(new_version.GetString())).value(),
         temp_dir.value());
   }
 
@@ -693,7 +697,7 @@ installer::InstallStatus InstallNewVersion(
                                          false);   // set during first install
     install_list->AddSetRegValueWorkItem(root, version_key,
                                          google_update::kRegVersionField,
-                                         new_version.GetString(),
+                                         UTF8ToWide(new_version.GetString()),
                                          true);    // overwrite version
   }
 
@@ -704,7 +708,7 @@ installer::InstallStatus InstallNewVersion(
       install_list->AddCreateRegKeyWorkItem(root, version_key);
       install_list->AddSetRegValueWorkItem(root, version_key,
                                            google_update::kRegVersionField,
-                                           new_version.GetString(),
+                                           UTF8ToWide(new_version.GetString()),
                                            true);    // overwrite version
       install_list->AddSetRegValueWorkItem(root, version_key,
           google_update::kRegNameField,
@@ -718,7 +722,7 @@ installer::InstallStatus InstallNewVersion(
                           current_version->get(), new_version, package)) {
     installer::InstallStatus result =
         file_util::PathExists(new_chrome_exe) && current_version->get() &&
-        new_version.IsEqual(*current_version->get()) ?
+        new_version.Equals(**current_version) ?
         installer::SAME_VERSION_REPAIR_FAILED :
         installer::INSTALL_FAILED;
     LOG(ERROR) << "Install failed, rolling back... result: " << result;
@@ -732,12 +736,12 @@ installer::InstallStatus InstallNewVersion(
     return installer::FIRST_INSTALL_SUCCESS;
   }
 
-  if (new_version.IsEqual(*current_version->get())) {
+  if (new_version.Equals(**current_version)) {
     VLOG(1) << "Install repaired of version " << new_version.GetString();
     return installer::INSTALL_REPAIRED;
   }
 
-  if (new_version.IsHigherThan(current_version->get())) {
+  if (new_version.CompareTo(**current_version) > 0) {
     if (file_util::PathExists(new_chrome_exe)) {
       VLOG(1) << "Version updated to " << new_version.GetString()
               << " while running " << (*current_version)->GetString();

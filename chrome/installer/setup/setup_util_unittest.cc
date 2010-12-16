@@ -62,9 +62,9 @@ TEST_F(SetupUtilTest, GetVersionFromArchiveDirTest) {
   FilePath chrome_dir = test_dir_.path().AppendASCII("1.0.0.0");
   file_util::CreateDirectory(chrome_dir);
   ASSERT_TRUE(file_util::PathExists(chrome_dir));
-  scoped_ptr<installer::Version> version(
+  scoped_ptr<Version> version(
       installer::GetVersionFromArchiveDir(test_dir_.path()));
-  ASSERT_TRUE(version->GetString() == L"1.0.0.0");
+  ASSERT_EQ(version->GetString(), "1.0.0.0");
 
   file_util::Delete(chrome_dir, true);
   ASSERT_FALSE(file_util::PathExists(chrome_dir));
@@ -79,5 +79,5 @@ TEST_F(SetupUtilTest, GetVersionFromArchiveDirTest) {
   file_util::CreateDirectory(chrome_dir);
   ASSERT_TRUE(file_util::PathExists(chrome_dir));
   version.reset(installer::GetVersionFromArchiveDir(test_dir_.path()));
-  ASSERT_TRUE(version->GetString() == L"2.3.4.5");
+  ASSERT_EQ(version->GetString(), "2.3.4.5");
 }

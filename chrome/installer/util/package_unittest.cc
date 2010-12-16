@@ -4,6 +4,7 @@
 
 #include "base/logging.h"
 #include "base/scoped_handle.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/master_preferences.h"
@@ -12,7 +13,6 @@
 #include "chrome/installer/util/product.h"
 #include "chrome/installer/util/product_unittest.h"
 #include "chrome/installer/util/util_constants.h"
-#include "chrome/installer/util/version.h"
 
 using base::win::RegKey;
 using base::win::ScopedHandle;
@@ -20,7 +20,6 @@ using installer::ChromePackageProperties;
 using installer::ChromiumPackageProperties;
 using installer::Package;
 using installer::Product;
-using installer::Version;
 
 class PackageTest : public TestWithTempDirAndDeleteTempOverrideKeys {
  protected:
@@ -48,8 +47,10 @@ TEST_F(PackageTest, Basic) {
   FilePath installer_dir(package->GetInstallerDirectory(*new_version.get()));
   EXPECT_FALSE(installer_dir.empty());
 
-  FilePath new_version_dir(package->path().Append(new_version->GetString()));
-  FilePath old_version_dir(package->path().Append(old_version->GetString()));
+  FilePath new_version_dir(package->path().Append(
+      UTF8ToWide(new_version->GetString())));
+  FilePath old_version_dir(package->path().Append(
+      UTF8ToWide(old_version->GetString())));
 
   EXPECT_FALSE(file_util::PathExists(new_version_dir));
   EXPECT_FALSE(file_util::PathExists(old_version_dir));
@@ -120,12 +121,12 @@ TEST_F(PackageTest, WithProduct) {
     EXPECT_TRUE(chrome_key.Valid());
     if (chrome_key.Valid()) {
       chrome_key.WriteValue(google_update::kRegVersionField,
-                            current_version->GetString().c_str());
+                            UTF8ToWide(current_version->GetString()).c_str());
       // TODO(tommi): Also test for when there exists a new_chrome.exe.
       scoped_ptr<Version> found_version(package->GetCurrentVersion());
       EXPECT_TRUE(found_version.get() != NULL);
       if (found_version.get()) {
-        EXPECT_TRUE(current_version->IsEqual(*found_version.get()));
+        EXPECT_TRUE(current_version->Equals(*found_version));
       }
     }
   }

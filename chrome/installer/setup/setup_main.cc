@@ -50,7 +50,6 @@ using installer::ProductPackageMapping;
 using installer::Products;
 using installer::Package;
 using installer::Packages;
-using installer::Version;
 using installer::MasterPreferences;
 
 namespace {
@@ -95,8 +94,8 @@ DWORD UnPackArchive(const FilePath& archive,
       return installer::CHROME_NOT_INSTALLED;
     }
 
-    FilePath existing_archive(
-        installation.path().Append(archive_version->GetString()));
+    FilePath existing_archive(installation.path().Append(
+        UTF8ToWide(archive_version->GetString())));
     existing_archive = existing_archive.Append(installer::kInstallerDir);
     existing_archive = existing_archive.Append(installer::kChromeArchive);
     if (int i = installer::ApplyDiffPatch(FilePath(existing_archive),
@@ -308,7 +307,7 @@ installer::InstallStatus InstallChrome(const CommandLine& cmd_line,
       for (size_t i = 0; i < installation.products().size(); ++i) {
         const Product* product = installation.products()[i];
         scoped_ptr<Version> v(product->GetInstalledVersion());
-        if (v.get() && v->IsHigherThan(installer_version.get())) {
+        if (v.get() && (v->CompareTo(*installer_version) > 0)) {
           LOG(ERROR) << "Higher version is already installed.";
           higher_version_installed = true;
           install_status = installer::HIGHER_VERSION_EXISTS;

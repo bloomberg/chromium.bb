@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/scoped_handle.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/package.h"
@@ -20,7 +21,6 @@ using installer::ChromiumPackageProperties;
 using installer::Package;
 using installer::Product;
 using installer::ProductPackageMapping;
-using installer::Version;
 using installer::MasterPreferences;
 
 void TestWithTempDir::SetUp() {
@@ -144,12 +144,12 @@ TEST_F(ProductTest, ProductInstallBasic) {
     scoped_ptr<Version> current_version(
         Version::GetVersionFromString(kCurrentVersion));
     version_key.WriteValue(google_update::kRegVersionField,
-                           current_version->GetString().c_str());
+                           UTF8ToWide(current_version->GetString()).c_str());
 
     scoped_ptr<Version> installed(product->GetInstalledVersion());
     EXPECT_TRUE(installed.get() != NULL);
     if (installed.get()) {
-      EXPECT_TRUE(installed->IsEqual(*current_version.get()));
+      EXPECT_TRUE(installed->Equals(*current_version.get()));
     }
   }
 }

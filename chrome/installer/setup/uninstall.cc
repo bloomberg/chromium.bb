@@ -26,7 +26,6 @@
 #include "chrome/installer/util/logging_installer.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
-#include "chrome/installer/util/version.h"
 
 // Build-time generated include file.
 #include "registered_dlls.h"  // NOLINT
@@ -291,7 +290,7 @@ bool MoveSetupOutOfInstallFolder(const Package& package,
 }
 
 DeleteResult DeleteFilesAndFolders(const Package& package,
-    const installer::Version& installed_version) {
+                                   const Version& installed_version) {
   VLOG(1) << "DeleteFilesAndFolders: " << package.path().value();
   if (package.path().empty()) {
     LOG(ERROR) << "Could not get installation destination path.";
@@ -539,8 +538,7 @@ InstallStatus UninstallChrome(const FilePath& setup_path,
   }
 
   // Get the version of installed Chrome (if any)
-  scoped_ptr<installer::Version>
-      installed_version(product.GetInstalledVersion());
+  scoped_ptr<Version> installed_version(product.GetInstalledVersion());
 
   // Chrome is not in use so lets uninstall Chrome by deleting various files
   // and registry entries. Here we will just make best effort and keep going
@@ -601,8 +599,8 @@ InstallStatus UninstallChrome(const FilePath& setup_path,
     // Simplest would be to always register them.
     if (installed_version.get() && !is_chrome) {
       RegisterComDllList(product.package().path().Append(
-                             installed_version->GetString()),
-                         product.system_level(), false, false);
+          UTF8ToWide(installed_version->GetString())), product.system_level(),
+          false, false);
     }
   }
 

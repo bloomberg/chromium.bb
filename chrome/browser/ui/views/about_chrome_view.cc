@@ -745,15 +745,13 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
       // Google Update reported that Chrome is up-to-date. Now make sure that we
       // are running the latest version and if not, notify the user by falling
       // into the next case of UPGRADE_SUCCESSFUL.
-      // TODO(tommi): Check if using the default distribution is always the
-      // right thing to do.
       BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-      scoped_ptr<installer::Version> installed_version(
+      scoped_ptr<Version> installed_version(
           InstallUtil::GetChromeVersion(dist, false));
-      scoped_ptr<installer::Version> running_version(
-          installer::Version::GetVersionFromString(current_version_));
+      scoped_ptr<Version> running_version(
+          Version::GetVersionFromString(current_version_));
       if (!installed_version.get() ||
-          !installed_version->IsHigherThan(running_version.get())) {
+          (installed_version->CompareTo(*running_version) < 0)) {
 #endif
         UserMetrics::RecordAction(
             UserMetricsAction("UpgradeCheck_AlreadyUpToDate"), profile_);

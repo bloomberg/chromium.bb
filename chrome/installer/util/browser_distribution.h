@@ -13,8 +13,8 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/version.h"
 #include "chrome/installer/util/util_constants.h"
-#include "chrome/installer/util/version.h"
 
 #if defined(OS_WIN)
 #include <windows.h>  // NOLINT
@@ -47,7 +47,7 @@ class BrowserDistribution {
 
   static int GetInstallReturnCode(installer::InstallStatus install_status);
 
-  virtual void DoPostUninstallOperations(const installer::Version& version,
+  virtual void DoPostUninstallOperations(const Version& version,
                                          const FilePath& local_data_path,
                                          const std::wstring& distribution_data);
 
@@ -100,8 +100,7 @@ class BrowserDistribution {
   // experiment. This function determines if the user qualifies and if so it
   // sets the wheels in motion or in simple cases does the experiment itself.
   virtual void LaunchUserExperiment(installer::InstallStatus status,
-      const installer::Version& version,
-      const installer::Product& installation,
+      const Version& version, const installer::Product& installation,
       bool system_level);
 
   // The user has qualified for the inactive user toast experiment and this

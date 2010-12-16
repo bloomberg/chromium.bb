@@ -16,9 +16,9 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/version.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/util_constants.h"
-#include "chrome/installer/util/version.h"
 
 class WorkItemList;
 class BrowserDistribution;
@@ -48,8 +48,8 @@ class InstallUtil {
   // found.
   // system_install: if true, looks for version number under the HKLM root,
   //                 otherwise looks under the HKCU.
-  static installer::Version* GetChromeVersion(BrowserDistribution* dist,
-                                              bool system_install);
+  static Version* GetChromeVersion(BrowserDistribution* dist,
+                                   bool system_install);
 
   // This function checks if the current OS is supported for Chromium.
   static bool IsOSSupported();

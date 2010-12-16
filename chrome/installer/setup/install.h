@@ -11,10 +11,10 @@
 #include <string>
 #include <vector>
 
+#include "base/version.h"
 #include "chrome/installer/util/product.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/util_constants.h"
-#include "chrome/installer/util/version.h"
 
 class DictionaryValue;
 

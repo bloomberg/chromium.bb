@@ -6,6 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/delete_tree_work_item.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -57,7 +58,7 @@ bool Package::system_level() const {
 
 FilePath Package::GetInstallerDirectory(
     const Version& version) const {
-  return path_.Append(version.GetString())
+  return path_.Append(UTF8ToWide(version.GetString()))
       .Append(installer::kInstallerDir);
 }
 
@@ -85,7 +86,7 @@ Version* Package::GetCurrentVersion() const {
       scoped_ptr<Version> this_version(Version::GetVersionFromString(version));
       if (this_version.get()) {
         if (!current_version.get() ||
-            current_version->IsHigherThan(this_version.get())) {
+            (current_version->CompareTo(*this_version) > 0)) {
           current_version.reset(this_version.release());
         } else if (current_version.get()) {
           DCHECK_EQ(current_version->GetString(), this_version->GetString())
@@ -101,55 +102,41 @@ Version* Package::GetCurrentVersion() const {
 
 void Package::RemoveOldVersionDirectories(
     const Version& latest_version) const {
-  std::wstring search_path(path_.value());
-  file_util::AppendToPath(&search_path, L"*");
-
-  // TODO(tommi): use file_util::FileEnumerator.
-  WIN32_FIND_DATA find_file_data;
-  HANDLE file_handle = FindFirstFile(search_path.c_str(), &find_file_data);
-  if (file_handle == INVALID_HANDLE_VALUE) {
-    VLOG(1) << "No directories found under: " << search_path;
-    return;
-  }
-
-  BOOL ret = TRUE;
+  file_util::FileEnumerator version_enum(path_, false,
+      file_util::FileEnumerator::DIRECTORIES);
   scoped_ptr<Version> version;
 
   // We try to delete all directories whose versions are lower than
   // latest_version.
-  while (ret) {
-    if (find_file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY &&
-        lstrcmpW(find_file_data.cFileName, L"..") != 0 &&
-        lstrcmpW(find_file_data.cFileName, L".") != 0) {
-      VLOG(1) << "directory found: " << find_file_data.cFileName;
-      version.reset(Version::GetVersionFromString(find_file_data.cFileName));
-      if (version.get() && latest_version.IsHigherThan(version.get())) {
-        FilePath remove_dir(path_.Append(find_file_data.cFileName));
-        std::vector<FilePath> key_files;
-
-        Products::const_iterator it = products_.begin();
-        for (; it != products_.end(); ++it) {
-          BrowserDistribution* dist = it->get()->distribution();
-          std::vector<FilePath> dist_key_files(dist->GetKeyFiles());
-          std::vector<FilePath>::const_iterator key_file_iter(
-              dist_key_files.begin());
-          for (; key_file_iter != dist_key_files.end(); ++key_file_iter) {
-            key_files.push_back(remove_dir.Append(*key_file_iter));
-          }
+  FilePath next_version = version_enum.Next();
+  while (!next_version.empty()) {
+    file_util::FileEnumerator::FindInfo find_data = {0};
+    version_enum.GetFindInfo(&find_data);
+    VLOG(1) << "directory found: " << find_data.cFileName;
+    version.reset(Version::GetVersionFromString(find_data.cFileName));
+    if (version.get() && (latest_version.CompareTo(*version) > 0)) {
+      std::vector<FilePath> key_files;
+      for (Products::const_iterator it = products_.begin();
+          it != products_.end(); ++it) {
+        BrowserDistribution* dist = it->get()->distribution();
+        std::vector<FilePath> dist_key_files(dist->GetKeyFiles());
+        std::vector<FilePath>::const_iterator key_file_iter(
+            dist_key_files.begin());
+        for (; key_file_iter != dist_key_files.end(); ++key_file_iter) {
+          key_files.push_back(next_version.Append(*key_file_iter));
         }
-
-        VLOG(1) << "Deleting directory: " << remove_dir.value();
-
-        scoped_ptr<DeleteTreeWorkItem> item(
-            WorkItem::CreateDeleteTreeWorkItem(remove_dir, key_files));
-        if (!item->Do())
-          item->Rollback();
       }
-    }
-    ret = FindNextFile(file_handle, &find_file_data);
-  }
 
-  FindClose(file_handle);
+      VLOG(1) << "Deleting directory: " << next_version.value();
+
+      scoped_ptr<DeleteTreeWorkItem> item(
+          WorkItem::CreateDeleteTreeWorkItem(next_version, key_files));
+      if (!item->Do())
+        item->Rollback();
+    }
+
+    next_version = version_enum.Next();
+  }
 }
 
 }  // namespace installer
