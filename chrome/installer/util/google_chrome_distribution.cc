@@ -569,11 +569,18 @@ void GoogleChromeDistribution::LaunchUserExperiment(
   }
 
   // This ends up being processed by ShowTryChromeDialog to show different
-  // experiments.  Only run the experiment in en-US.
+  // experiments.  Only run the experiment in en-US and ja.
   int flavor = 0;
   std::wstring language;
-  if (GoogleUpdateSettings::GetLanguage(&language) && (language == L"en-US"))
-    flavor = base::RandInt(0, 3);
+  if (GoogleUpdateSettings::GetLanguage(&language)) {
+    if (language == L"en-US") {
+      // en-US has four different toasts.
+      flavor = base::RandInt(0, 3);
+    } else if (language == L"ja") {
+      // ja has three different toasts.
+      flavor = base::RandInt(0, 2);
+    }
+  }
 
   std::wstring brand;
   if (GoogleUpdateSettings::GetBrand(&brand) && (brand == L"CHXX")) {
