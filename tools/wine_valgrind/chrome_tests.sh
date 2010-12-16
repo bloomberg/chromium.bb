@@ -241,6 +241,16 @@ init_runtime() {
       echo Please kill the server listening on port 1337, or reboot.  The net tests need this port.
       exit 1
     fi
+    if test ! -f /usr/share/ca-certificates/root_ca_cert.crt
+    then
+      echo "You need to do"
+      echo   "sudo cp src/net/data/ssl/certificates/root_ca_cert.crt /usr/share/ca-certificates/"
+      echo   "sudo vi /etc/ca-certificates.conf    (and add the line root_ca_cert.crt)"
+      echo   "sudo update-ca-certificates"
+      echo "else ssl tests will fail."
+      echo "(Alternately, modify this script to run Juan's importer, http://bugs.winehq.org/show_bug.cgi?id=20370#c4 )"
+      exit 1
+    fi
 
     if test -n "$VNC"
     then

@@ -169,7 +169,7 @@ TEST_F(CertDatabaseNSSTest, ImportFromPKCS12AndExportAgain) {
 }
 
 TEST_F(CertDatabaseNSSTest, ImportCACert_SSLTrust) {
-  std::string cert_data = ReadTestFile("root_ca_cert.pem");
+  std::string cert_data = ReadTestFile("root_ca_cert.crt");
 
   CertificateList certs =
       X509Certificate::CreateCertificateListFromBytes(
@@ -187,7 +187,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_SSLTrust) {
   CertificateList cert_list = ListCertsInSlot(slot_.get());
   ASSERT_EQ(1U, cert_list.size());
   scoped_refptr<X509Certificate> cert(cert_list[0]);
-  EXPECT_EQ("Test Root CA", cert->subject().common_name);
+  EXPECT_EQ("Test CA", cert->subject().common_name);
 
   EXPECT_EQ(CertDatabase::TRUSTED_SSL,
             cert_db_.GetCertTrust(cert.get(), CA_CERT));
@@ -201,7 +201,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_SSLTrust) {
 }
 
 TEST_F(CertDatabaseNSSTest, ImportCACert_EmailTrust) {
-  std::string cert_data = ReadTestFile("root_ca_cert.pem");
+  std::string cert_data = ReadTestFile("root_ca_cert.crt");
 
   CertificateList certs =
       X509Certificate::CreateCertificateListFromBytes(
@@ -219,7 +219,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_EmailTrust) {
   CertificateList cert_list = ListCertsInSlot(slot_.get());
   ASSERT_EQ(1U, cert_list.size());
   scoped_refptr<X509Certificate> cert(cert_list[0]);
-  EXPECT_EQ("Test Root CA", cert->subject().common_name);
+  EXPECT_EQ("Test CA", cert->subject().common_name);
 
   EXPECT_EQ(CertDatabase::TRUSTED_EMAIL,
             cert_db_.GetCertTrust(cert.get(), CA_CERT));
@@ -232,7 +232,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_EmailTrust) {
 }
 
 TEST_F(CertDatabaseNSSTest, ImportCACert_ObjSignTrust) {
-  std::string cert_data = ReadTestFile("root_ca_cert.pem");
+  std::string cert_data = ReadTestFile("root_ca_cert.crt");
 
   CertificateList certs =
       X509Certificate::CreateCertificateListFromBytes(
@@ -250,7 +250,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACert_ObjSignTrust) {
   CertificateList cert_list = ListCertsInSlot(slot_.get());
   ASSERT_EQ(1U, cert_list.size());
   scoped_refptr<X509Certificate> cert(cert_list[0]);
-  EXPECT_EQ("Test Root CA", cert->subject().common_name);
+  EXPECT_EQ("Test CA", cert->subject().common_name);
 
   EXPECT_EQ(CertDatabase::TRUSTED_OBJ_SIGN,
             cert_db_.GetCertTrust(cert.get(), CA_CERT));
@@ -391,7 +391,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyTree) {
 }
 
 TEST_F(CertDatabaseNSSTest, ImportCACertNotHierarchy) {
-  std::string cert_data = ReadTestFile("root_ca_cert.pem");
+  std::string cert_data = ReadTestFile("root_ca_cert.crt");
   CertificateList certs =
       X509Certificate::CreateCertificateListFromBytes(
           cert_data.data(), cert_data.size(), X509Certificate::FORMAT_AUTO);
@@ -415,7 +415,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACertNotHierarchy) {
 
   CertificateList cert_list = ListCertsInSlot(slot_.get());
   ASSERT_EQ(1U, cert_list.size());
-  EXPECT_EQ("Test Root CA", cert_list[0]->subject().common_name);
+  EXPECT_EQ("Test CA", cert_list[0]->subject().common_name);
 }
 
 TEST_F(CertDatabaseNSSTest, ImportServerCert) {
