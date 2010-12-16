@@ -114,10 +114,10 @@ bool SSLHostInfo::ParseInner(const std::string& data) {
       VLOG(1) << "Kicking off verification for " << hostname_;
       verification_start_time_ = base::TimeTicks::Now();
       verification_end_time_ = base::TimeTicks();
-      if (verifier_.Verify(cert_.get(), hostname_, flags,
-                           &cert_verify_result_, callback_) == OK) {
-        VerifyCallback(OK);
-      }
+      int rv = verifier_.Verify(cert_.get(), hostname_, flags,
+                           &cert_verify_result_, callback_);
+      if (rv != ERR_IO_PENDING)
+        VerifyCallback(rv);
     } else {
       cert_parsing_failed_ = true;
       DCHECK(!cert_verification_callback_);
