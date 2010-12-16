@@ -17,5 +17,3 @@ BUGJIANLI WIN DEBUG : inspector/dom-breakpoints.html = CRASH TIMEOUT PASS
 BUGJIANLI WIN DEBUG : inspector/timeline-parse-html.html = CRASH TIMEOUT PASS
 BUGJIANLI WIN DEBUG : inspector/console-clear.html = CRASH TIMEOUT PASS
 BUGJIANLI WIN DEBUG : inspector/styles-disable-then-delete.html = CRASH TIMEOUT PASS
-
-BUGYURYS WIN MAC DEBUG : storage/close-during-stress-test.html = CRASH PASS
