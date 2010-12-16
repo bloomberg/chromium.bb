@@ -21,8 +21,6 @@ EXTERN_C_BEGIN
 
 #include "native_client/src/trusted/service_runtime/sel_util-inl.h"
 
-size_t  NaClAppPow2Ceil(size_t  max_addr);
-
 typedef uint64_t tick_t;
 tick_t get_ticks();
 

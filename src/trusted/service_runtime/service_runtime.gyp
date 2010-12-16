@@ -71,7 +71,6 @@
           'sel_main_chrome.c',
           'sel_mem.c',
           'sel_qualify.c',
-          'sel_util.c',
           'sel_util-inl.c',
           'sel_validate_image.c',
         ],
