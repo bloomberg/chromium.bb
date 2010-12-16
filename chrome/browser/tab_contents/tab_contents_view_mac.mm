@@ -337,10 +337,6 @@ void TabContentsViewMac::Observe(NotificationType type,
   }
 }
 
-@interface NSApplication(SPI)
-- (void)_cycleWindowsReversed:(BOOL)reversed;
-@end
-
 @implementation TabContentsViewCocoa
 
 - (id)initWithTabContentsViewMac:(TabContentsViewMac*)w {
