@@ -78,6 +78,11 @@ bool ParamTraits<IndexedDBKey>::Read(const Message* m,
     case WebKit::WebIDBKey::InvalidType:
       r->SetInvalid();
       return true;
+    default:
+      // TODO(hans): Implement the WebIDBKey::DateType case once that is added
+      // WebKit side, and then remove this temporary default: clause.
+      r->SetInvalid();
+      return true;
   }
   NOTREACHED();
   return false;
