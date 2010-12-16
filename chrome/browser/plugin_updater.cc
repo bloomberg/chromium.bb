@@ -273,12 +273,7 @@ void PluginUpdater::OnUpdatePreferences(
 
   // Add the groups as well.
   for (size_t i = 0; i < groups.size(); ++i) {
-    // Don't save preferences for vulnerable pugins.
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableOutdatedPlugins) ||
-        !groups[i].IsVulnerable()) {
-      plugins_list->Append(groups[i].GetSummary());
-    }
+    plugins_list->Append(groups[i].GetSummary());
   }
 }
 

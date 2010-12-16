@@ -2764,16 +2764,19 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
       NPAPI::PluginList::Singleton()->GetPluginGroup(info);
   DCHECK(group != NULL);
 
-  if (!info.enabled) {
-    if (cmd->HasSwitch(switches::kDisableOutdatedPlugins) &&
-        group->IsVulnerable()) {
-      Send(new ViewHostMsg_DisabledOutdatedPlugin(routing_id_,
-                                                  group->GetGroupName(),
-                                                  GURL(group->GetUpdateURL())));
-      return CreateOutdatedPluginPlaceholder(frame, params, *group);
-    }
-    return NULL;
+  if (cmd->HasSwitch(switches::kBlockOutdatedPlugins) &&
+      group->IsVulnerable()) {
+    Send(new ViewHostMsg_BlockedOutdatedPlugin(routing_id_,
+                                               group->GetGroupName(),
+                                               GURL(group->GetUpdateURL())));
+    return CreatePluginPlaceholder(frame,
+                                   params,
+                                   *group,
+                                   IDR_OUTDATED_PLUGIN_HTML,
+                                   IDS_PLUGIN_OUTDATED);
   }
+  if (!info.enabled)
+    return NULL;
 
   ContentSetting host_setting =
       current_content_settings_.settings[CONTENT_SETTINGS_TYPE_PLUGINS];
@@ -2790,26 +2793,19 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
   if (cmd->HasSwitch(switches::kEnableResourceContentSettings))
     resource = group->identifier();
   DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, resource);
-  int resource_id;
-  int message_id;
   if (plugin_setting == CONTENT_SETTING_ASK) {
-    resource_id = IDR_BLOCKED_PLUGIN_HTML;
-    message_id = IDS_PLUGIN_LOAD;
+    return CreatePluginPlaceholder(frame,
+                                   params,
+                                   *group,
+                                   IDR_BLOCKED_PLUGIN_HTML,
+                                   IDS_PLUGIN_LOAD);
   } else {
-    resource_id = IDR_OUTDATED_PLUGIN_HTML;
-    message_id = IDS_PLUGIN_BLOCKED;
+    return CreatePluginPlaceholder(frame,
+                                   params,
+                                   *group,
+                                   IDR_OUTDATED_PLUGIN_HTML,
+                                   IDS_PLUGIN_BLOCKED);
   }
-  // |blocked_plugin| will delete itself when the WebViewPlugin
-  // is destroyed.
-  BlockedPlugin* blocked_plugin =
-      new BlockedPlugin(this,
-                        frame,
-                        *group,
-                        params,
-                        webkit_preferences_,
-                        resource_id,
-                        l10n_util::GetStringUTF16(message_id));
-  return blocked_plugin->plugin();
 }
 
 WebWorker* RenderView::createWorker(WebFrame* frame, WebWorkerClient* client) {
@@ -4441,30 +4437,23 @@ WebPlugin* RenderView::CreateNPAPIPlugin(WebFrame* frame,
       frame, params, path, mime_type, AsWeakPtr());
 }
 
-WebPlugin* RenderView::CreateOutdatedPluginPlaceholder(
+WebPlugin* RenderView::CreatePluginPlaceholder(
     WebFrame* frame,
     const WebPluginParams& params,
-    const PluginGroup& group) {
-  int resource_id = IDR_OUTDATED_PLUGIN_HTML;
-  const base::StringPiece template_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id));
-
-  DCHECK(!template_html.empty()) << "unable to load template. ID: "
-                                 << resource_id;
-
-  DictionaryValue values;
-  values.SetString("message",
-      l10n_util::GetStringFUTF8(IDS_PLUGIN_OUTDATED, group.GetGroupName()));
-  values.Set("pluginGroup", group.GetDataForUI());
-
-  // "t" is the id of the templates root node.
-  std::string htmlData = jstemplate_builder::GetTemplatesHtml(
-      template_html, &values, "t");
-
-  return WebViewPlugin::Create(NULL,
-                               webkit_preferences_,
-                               htmlData,
-                               GURL("chrome://outdatedplugin/"));
+    const PluginGroup& group,
+    int resource_id,
+    int message_id) {
+  // |blocked_plugin| will delete itself when the WebViewPlugin
+  // is destroyed.
+  BlockedPlugin* blocked_plugin =
+      new BlockedPlugin(this,
+                        frame,
+                        group,
+                        params,
+                        webkit_preferences_,
+                        resource_id,
+                        l10n_util::GetStringUTF16(message_id));
+  return blocked_plugin->plugin();
 }
 
 void RenderView::OnZoom(PageZoom::Function function) {

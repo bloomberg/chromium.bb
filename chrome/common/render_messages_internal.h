@@ -1824,7 +1824,7 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_CrashedPlugin,
                     FilePath /* plugin_path */)
 
 // Notifies when a plugin couldn't be loaded because it's outdated.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_DisabledOutdatedPlugin,
+IPC_MESSAGE_ROUTED2(ViewHostMsg_BlockedOutdatedPlugin,
                     string16, /* name */
                     GURL      /* update_url */)
 

@@ -1023,10 +1023,12 @@ class RenderView : public RenderWidget,
       const FilePath& path,
       webkit::ppapi::PluginModule* pepper_module);
 
-  WebKit::WebPlugin* CreateOutdatedPluginPlaceholder(
+  WebKit::WebPlugin* CreatePluginPlaceholder(
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params,
-      const PluginGroup& group);
+      const PluginGroup& group,
+      int resource_id,
+      int message_id);
 
   // Sends an IPC notification that the specified content type was blocked.
   // If the content type requires it, |resource_identifier| names the specific

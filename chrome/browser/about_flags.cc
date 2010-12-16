@@ -149,7 +149,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_DISABLE_OUTDATED_PLUGINS_NAME,
     IDS_FLAGS_DISABLE_OUTDATED_PLUGINS_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kDisableOutdatedPlugins)
+    SINGLE_VALUE_TYPE(switches::kBlockOutdatedPlugins)
   },
   {
     "xss-auditor",  // FLAGS:RECORD_UMA

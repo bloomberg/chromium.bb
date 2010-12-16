@@ -665,7 +665,7 @@ class RenderViewHost : public RenderWidgetHost {
                                         const std::string& value);
   void OnMissingPluginStatus(int status);
   void OnCrashedPlugin(const FilePath& plugin_path);
-  void OnDisabledOutdatedPlugin(const string16& name, const GURL& update_url);
+  void OnBlockedOutdatedPlugin(const string16& name, const GURL& update_url);
 
   void OnReceivedSavableResourceLinksForCurrentPage(
       const std::vector<GURL>& resources_list,

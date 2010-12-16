@@ -246,9 +246,9 @@ void MakeNavigateParams(const NavigationEntry& entry,
   params->request_time = base::Time::Now();
 }
 
-class DisabledPluginInfoBar : public ConfirmInfoBarDelegate {
+class OutdatedPluginInfoBar : public ConfirmInfoBarDelegate {
  public:
-  DisabledPluginInfoBar(TabContents* tab_contents,
+  OutdatedPluginInfoBar(TabContents* tab_contents,
                         const string16& name,
                         const GURL& update_url)
       : ConfirmInfoBarDelegate(tab_contents),
@@ -290,9 +290,8 @@ class DisabledPluginInfoBar : public ConfirmInfoBarDelegate {
   }
 
   virtual bool Cancel() {
-    tab_contents_->OpenURL(GURL(chrome::kChromeUIPluginsURL), GURL(),
-                           NEW_FOREGROUND_TAB, PageTransition::LINK);
-    return false;
+    tab_contents_->render_view_host()->LoadBlockedPlugins();
+    return true;
   }
 
   virtual bool LinkClicked(WindowOpenDisposition disposition) {
@@ -2132,9 +2131,9 @@ void TabContents::OnInstallApplication(const WebApplicationInfo& info) {
     delegate()->OnInstallApplication(this, info);
 }
 
-void TabContents::OnDisabledOutdatedPlugin(const string16& name,
-                                           const GURL& update_url) {
-  new DisabledPluginInfoBar(this, name, update_url);
+void TabContents::OnBlockedOutdatedPlugin(const string16& name,
+                                          const GURL& update_url) {
+  new OutdatedPluginInfoBar(this, name, update_url);
 }
 
 void TabContents::OnPageContents(const GURL& url,

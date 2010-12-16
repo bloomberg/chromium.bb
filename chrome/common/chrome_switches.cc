@@ -87,6 +87,9 @@ const char kAutomationClientChannelID[]     = "automation-channel";
 // Block non-sandboxed plugins.
 const char kBlockNonSandboxedPlugins[]      = "block-nonsandboxed-plugins";
 
+// Prevent outdated plugins from running.
+const char kBlockOutdatedPlugins[]          = "block-outdated-plugins";
+
 // Causes the browser process to throw an assertion on startup.
 const char kBrowserAssertTest[]             = "assert-test";
 
@@ -267,9 +270,6 @@ const char kDisableLogging[]                = "disable-logging";
 // Whether we should prevent the new tab page from showing the first run
 // notification.
 const char kDisableNewTabFirstRun[]         = "disable-new-tab-first-run";
-
-// Prevent outdated plugins from running.
-const char kDisableOutdatedPlugins[]        = "disable-outdated-plugins";
 
 // Prevent plugins from running.
 const char kDisablePlugins[]                = "disable-plugins";

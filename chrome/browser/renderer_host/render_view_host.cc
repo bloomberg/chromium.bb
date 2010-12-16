@@ -852,8 +852,8 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnDevToolsRuntimePropertyChanged);
     IPC_MESSAGE_HANDLER(ViewHostMsg_MissingPluginStatus, OnMissingPluginStatus);
     IPC_MESSAGE_HANDLER(ViewHostMsg_CrashedPlugin, OnCrashedPlugin);
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DisabledOutdatedPlugin,
-                        OnDisabledOutdatedPlugin);
+    IPC_MESSAGE_HANDLER(ViewHostMsg_BlockedOutdatedPlugin,
+                        OnBlockedOutdatedPlugin);
     IPC_MESSAGE_HANDLER(ViewHostMsg_SendCurrentPageAllSavableResourceLinks,
                         OnReceivedSavableResourceLinksForCurrentPage);
     IPC_MESSAGE_HANDLER(ViewHostMsg_SendSerializedHtmlData,
@@ -1645,12 +1645,12 @@ void RenderViewHost::OnCrashedPlugin(const FilePath& plugin_path) {
     integration_delegate->OnCrashedPlugin(plugin_path);
 }
 
-void RenderViewHost::OnDisabledOutdatedPlugin(const string16& name,
+void RenderViewHost::OnBlockedOutdatedPlugin(const string16& name,
                                               const GURL& update_url) {
   RenderViewHostDelegate::BrowserIntegration* integration_delegate =
       delegate_->GetBrowserIntegrationDelegate();
   if (integration_delegate)
-    integration_delegate->OnDisabledOutdatedPlugin(name, update_url);
+    integration_delegate->OnBlockedOutdatedPlugin(name, update_url);
 }
 
 void RenderViewHost::GetAllSavableResourceLinksForCurrentPage(
