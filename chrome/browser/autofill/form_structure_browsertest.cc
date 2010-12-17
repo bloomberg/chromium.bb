@@ -4,20 +4,74 @@
 
 #include <vector>
 
+#include "base/file_path.h"
+#include "base/path_service.h"
+#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "googleurl/src/gurl.h"
 
+namespace {
+
+FilePath GetInputFileDirectory() {
+  FilePath test_data_dir_;
+  PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
+  test_data_dir_ = test_data_dir_.AppendASCII("autofill_heuristics")
+                                 .AppendASCII("input");
+  return test_data_dir_;
+}
+
+FilePath GetOutputFileDirectory() {
+  FilePath test_data_dir_;
+  PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
+  test_data_dir_ = test_data_dir_.AppendASCII("autofill_heuristics")
+                                 .AppendASCII("output");
+  return test_data_dir_;
+}
+
+// Write |content| to |file|. Returns true on success.
+bool WriteFile(const FilePath& file, const std::string& content) {
+  int write_size = file_util::WriteFile(file, content.c_str(),
+                                        content.length());
+  return write_size == static_cast<int>(content.length());
+}
+
+// Convert |html| to URL format, and return the converted string.
+const std::string ConvertToURLFormat(const std::string& html) {
+  return std::string("data:text/html;charset=utf-8,") + html;
+}
+
+// Compare |output_file_source| with |form_string|. Returns true when they are
+// identical.
+bool CompareText(const std::string& output_file_source,
+                 const std::string& form_string) {
+  std::string output_file = output_file_source;
+  std::string form = form_string;
+
+  ReplaceSubstringsAfterOffset(&output_file, 0, "\r\n", " ");
+  ReplaceSubstringsAfterOffset(&output_file, 0, "\r", " ");
+  ReplaceSubstringsAfterOffset(&output_file, 0, "\n", " ");
+  ReplaceSubstringsAfterOffset(&form, 0, "\n", " ");
+
+  return (output_file == form);
+}
+
+}  // namespace
+
 // Test class for verifying proper form structure as determined by AutoFill
-// heuristics.  After a test loads HTML content with a call to |NavigateToURL|
-// the |AutoFillManager| associated with the tab contents is queried for the
-// form structures that were loaded and parsed.
-// These form structures are serialized to string form and compared with
-// expected results.
+// heuristics. A test inputs each form file(e.g. form_[language_code].html),
+// loads its HTML content with a call to |NavigateToURL|, the |AutoFillManager|
+// associated with the tab contents is queried for the form structures that
+// were loaded and parsed. These form structures are serialized to string form.
+// If this is the first time test is run, a gold test result file is generated
+// in output directory, else the form structures are compared against the
+// existing result file.
 class FormStructureBrowserTest : public InProcessBrowserTest {
  public:
   FormStructureBrowserTest() {}
@@ -51,8 +105,6 @@ const std::string FormStructureBrowserTest::FormStructuresToString(
   for (std::vector<FormStructure*>::const_iterator iter = forms.begin();
        iter != forms.end();
        ++iter) {
-    forms_string += (*iter)->source_url().spec();
-    forms_string += "\n";
 
     for (std::vector<AutoFillField*>::const_iterator field_iter =
             (*iter)->begin();
@@ -162,55 +214,53 @@ const std::string FormStructureBrowserTest::AutoFillFieldTypeToString(
     default:
       NOTREACHED() << "Invalid AutoFillFieldType value.";
   }
-
   return std::string();
 }
 
-IN_PROC_BROWSER_TEST_F(FormStructureBrowserTest, BasicFormStructure) {
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
-      browser(), GURL("data:text/html;charset=utf-8,"
-                      "<form action=\"http://www.google.com/\" method=\"POST\">"
-                      "<label for=\"firstname\">First name:</label>"
-                      " <input type=\"text\" id=\"firstname\"/><br />"
-                      "<label for=\"lastname\">Last name:</label>"
-                      " <input type=\"text\" id=\"lastname\" /><br />"
-                      "<label for=\"address1\">Address line 1:</label>"
-                      " <input type=\"text\" id=\"address1\" /><br />"
-                      "<label for=\"address2\">Address line 2:</label>"
-                      " <input type=\"text\" id=\"address2\" /><br />"
-                      "<label for=\"city\">City:</label>"
-                      " <input type=\"text\" id=\"city\" /><br />"
-                      "</form>")));
+IN_PROC_BROWSER_TEST_F(FormStructureBrowserTest, HTMLFiles) {
+  FilePath input_file_path = GetInputFileDirectory();
+  file_util::FileEnumerator input_file_enumerator(input_file_path,
+      false, file_util::FileEnumerator::FILES, FILE_PATH_LITERAL("*.html"));
 
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::ClickOnView(browser(),
-                                                     VIEW_ID_TAB_CONTAINER));
-  ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(),
-                                           VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
+  for (input_file_path = input_file_enumerator.Next();
+       !input_file_path.empty();
+       input_file_path = input_file_enumerator.Next()) {
+    std::string input_file_source;
 
-  AutoFillManager* autofill_manager =
-      browser()->GetSelectedTabContents()->GetAutoFillManager();
-  ASSERT_NE(static_cast<AutoFillManager*>(NULL), autofill_manager);
-  std::vector<FormStructure*> forms = GetFormStructures(*autofill_manager);
-  std::string expected("data:text/html;charset=utf-8,"
-                       "<form action=\"http://www.google.com/\""
-                       " method=\"POST\">"
-                       "<label for=\"firstname\">First name:</label>"
-                       " <input type=\"text\" id=\"firstname\"/><br />"
-                       "<label for=\"lastname\">Last name:</label>"
-                       " <input type=\"text\" id=\"lastname\" /><br />"
-                       "<label for=\"address1\">Address line 1:</label>"
-                       " <input type=\"text\" id=\"address1\" /><br />"
-                       "<label for=\"address2\">Address line 2:</label>"
-                       " <input type=\"text\" id=\"address2\" /><br />"
-                       "<label for=\"city\">City:</label>"
-                       " <input type=\"text\" id=\"city\" /><br />"
-                       "</form>\n"
-                       "NAME_FIRST\n"
-                       "NAME_LAST\n"
-                       "ADDRESS_HOME_LINE1\n"
-                       "ADDRESS_HOME_LINE2\n"
-                       "ADDRESS_HOME_CITY\n");
+    ASSERT_TRUE(file_util::ReadFileToString(input_file_path,
+                                            &input_file_source));
+    input_file_source = ConvertToURLFormat(input_file_source);
 
-  EXPECT_EQ(expected, FormStructureBrowserTest::FormStructuresToString(forms));
+    ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+    ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+        browser(), GURL(input_file_source)));
+
+    ASSERT_NO_FATAL_FAILURE(ui_test_utils::ClickOnView(browser(),
+                                                       VIEW_ID_TAB_CONTAINER));
+    ASSERT_TRUE(ui_test_utils::IsViewFocused(
+        browser(),
+        VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
+
+    AutoFillManager* autofill_manager =
+        browser()->GetSelectedTabContents()->GetAutoFillManager();
+    ASSERT_NE(static_cast<AutoFillManager*>(NULL), autofill_manager);
+    std::vector<FormStructure*> forms = GetFormStructures(*autofill_manager);
+
+    FilePath output_file_directory = GetOutputFileDirectory();
+    FilePath output_file_path = output_file_directory.Append(
+        input_file_path.BaseName().StripTrailingSeparators().ReplaceExtension(
+            FILE_PATH_LITERAL(".out")));
+
+    std::string output_file_source;
+    if (file_util::ReadFileToString(output_file_path, &output_file_source)) {
+      ASSERT_TRUE(CompareText(
+          output_file_source,
+          FormStructureBrowserTest::FormStructuresToString(forms)));
+
+    } else {
+      ASSERT_TRUE(WriteFile(
+          output_file_path,
+          FormStructureBrowserTest::FormStructuresToString(forms)));
+    }
+  }
 }
