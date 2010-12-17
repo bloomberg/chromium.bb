@@ -827,6 +827,9 @@ ChromeURLRequestContext::ChromeURLRequestContext(
   // Set URLRequestContext members
   net_log_ = other->net_log_;
   host_resolver_ = other->host_resolver_;
+  cert_verifier_ = other->cert_verifier_;
+  dnsrr_resolver_ = other->dnsrr_resolver_;
+  // TODO(agl): How do we copy dns_cert_checker_, which is a scoped_ptr?
   proxy_service_ = other->proxy_service_;
   ssl_config_service_ = other->ssl_config_service_;
   http_transaction_factory_ = other->http_transaction_factory_;
