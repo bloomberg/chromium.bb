@@ -1855,13 +1855,18 @@ if nacl_env.Bit('nacl_glibc') and nacl_env.Bit('nacl_static_link'):
                              '-T', 'ldscripts/elf_nacl.x.static',
                              '-lc'])
 
-if nacl_env.Bit('bitcode'):
-  target_root = nacl_env.subst('${TARGET_ROOT}') + '-pnacl'
-  nacl_env.Replace(TARGET_ROOT=target_root)
+def AddTargetRootSuffix(env, bit_name, suffix):
+  """Add a suffix to the subdirectory of scons-out that we use.  This
+  usually does not affect correctness, but saves us triggering a
+  rebuild whenever we add or remove a build option such as --nacl_glibc.
+  """
+  if env.Bit(bit_name):
+    pathname = '%s-%s' % (env.subst('${TARGET_ROOT}'), suffix)
+    env.Replace(TARGET_ROOT=pathname)
 
-if nacl_env.Bit('nacl_pic'):
-  target_root = nacl_env.subst('${TARGET_ROOT}') + '-pic'
-  nacl_env.Replace(TARGET_ROOT=target_root)
+AddTargetRootSuffix(nacl_env, 'bitcode', 'pnacl')
+AddTargetRootSuffix(nacl_env, 'nacl_pic', 'pic')
+AddTargetRootSuffix(nacl_env, 'nacl_glibc', 'glibc')
 
 
 if nacl_env.Bit('running_on_valgrind'):
@@ -2062,9 +2067,8 @@ nacl_extra_sdk_env = pre_base_env.Clone(
     ARFLAGS = 'rc'
 )
 
-if nacl_extra_sdk_env.Bit('bitcode'):
-  target_root = nacl_extra_sdk_env.subst('${TARGET_ROOT}') + '-pnacl'
-  nacl_extra_sdk_env.Replace(TARGET_ROOT=target_root)
+AddTargetRootSuffix(nacl_extra_sdk_env, 'bitcode', 'pnacl')
+AddTargetRootSuffix(nacl_extra_sdk_env, 'nacl_glibc', 'glibc')
 
 # TODO(robertm): consider moving some of these flags to the naclsdk tool
 nacl_extra_sdk_env.Append(CCFLAGS=['-Wall',
