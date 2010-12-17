@@ -257,8 +257,9 @@ bool AutoFillManager::GetAutoFillSuggestions(const FormData& form,
   }
 
   // If the form is auto-filled and the renderer is querying for suggestions,
-  // then the user is editing the value of a field. In this case, mimick
-  // autocomplete: don't display or icons, as that information is redundant.
+  // then the user is editing the value of a field. In this case, mimic
+  // autocomplete: don't display labels or icons, as that information is
+  // redundant.
   if (FormIsAutoFilled(form_structure, form, is_filling_credit_card)) {
     labels.assign(labels.size(), string16());
     icons.assign(icons.size(), string16());
