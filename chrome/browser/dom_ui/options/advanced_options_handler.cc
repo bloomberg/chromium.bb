@@ -28,7 +28,7 @@
 #include "chrome/browser/ui/options/options_util.h"
 #include "chrome/browser/ui/options/options_window.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_details.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"

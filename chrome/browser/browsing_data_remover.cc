@@ -25,7 +25,7 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/net/url_request_context_getter.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/net_errors.h"
@@ -471,7 +471,6 @@ void BrowsingDataRemover::OnGotAppCacheInfo(int rv) {
   for (InfoByOrigin::const_iterator origin =
            appcache_info_->infos_by_origin.begin();
        origin != appcache_info_->infos_by_origin.end(); ++origin) {
-
     bool found_in_whitelist = false;
     for (size_t i = 0; i < appcache_whitelist_.size(); ++i) {
       if (appcache_whitelist_[i] == origin->first)

@@ -10,7 +10,9 @@
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_source.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "net/base/ssl_config_service.h"
 

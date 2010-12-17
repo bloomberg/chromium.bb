@@ -4,13 +4,15 @@
 
 #include "chrome/browser/gtk/tab_contents_container_gtk.h"
 
+#include <algorithm>
+
 #include "base/i18n/rtl.h"
 #include "chrome/browser/gtk/gtk_expanded_container.h"
 #include "chrome/browser/gtk/gtk_floating_container.h"
 #include "chrome/browser/gtk/status_bubble_gtk.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
 #include "gfx/native_widget_types.h"
 
 TabContentsContainerGtk::TabContentsContainerGtk(StatusBubbleGtk* status_bubble)
@@ -152,7 +154,6 @@ void TabContentsContainerGtk::HideTabContents(TabContents* contents) {
     gtk_widget_hide(widget);
 
   contents->WasHidden();
-
 }
 
 void TabContentsContainerGtk::DetachTabContents(TabContents* tab_contents) {

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/glue/password_change_processor.h"
 
+#include <string>
+
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_store.h"
@@ -12,7 +14,8 @@
 #include "chrome/browser/sync/glue/password_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "webkit/glue/password_form.h"
 

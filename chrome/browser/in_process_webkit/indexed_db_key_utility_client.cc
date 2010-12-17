@@ -4,9 +4,10 @@
 
 #include "chrome/browser/in_process_webkit/indexed_db_key_utility_client.h"
 
+#include <vector>
+
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/indexed_db_key.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/serialized_script_value.h"
 
 IndexedDBKeyUtilityClient::IndexedDBKeyUtilityClient()

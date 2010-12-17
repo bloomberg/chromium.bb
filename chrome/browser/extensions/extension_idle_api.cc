@@ -22,7 +22,6 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/notification_service.h"
 
 namespace keys = extension_idle_api_constants;
 

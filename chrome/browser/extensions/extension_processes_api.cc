@@ -22,7 +22,6 @@
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension_error_utils.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 
 namespace keys = extension_processes_api_constants;

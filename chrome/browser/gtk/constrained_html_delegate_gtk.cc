@@ -11,7 +11,6 @@
 #include "chrome/browser/gtk/tab_contents_container_gtk.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "gfx/rect.h"
 #include "ipc/ipc_message.h"

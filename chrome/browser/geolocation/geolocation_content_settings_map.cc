@@ -15,13 +15,14 @@
 
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"
 
+#include <string>
+
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"

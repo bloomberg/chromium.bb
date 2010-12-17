@@ -6,6 +6,7 @@
 
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 
+#include <set>
 #include <vector>
 
 #include "base/logging.h"
@@ -53,7 +54,6 @@
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/worker_host/worker_service.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/url_constants.h"
@@ -489,7 +489,7 @@ void ResourceDispatcherHost::BeginRequest(
           request_data.resource_type,
           upload_size,
           false,  // is download
-          ResourceType::IsFrame(request_data.resource_type), // allow_download
+          ResourceType::IsFrame(request_data.resource_type),  // allow_download
           request_data.has_user_gesture,
           request_data.host_renderer_id,
           request_data.host_render_view_id);

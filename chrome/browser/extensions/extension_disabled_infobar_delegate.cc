@@ -15,8 +15,9 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_resource.h"
+#include "chrome/common/notification_details.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
 #include "grit/generated_resources.h"
 
 class ExtensionDisabledDialogDelegate

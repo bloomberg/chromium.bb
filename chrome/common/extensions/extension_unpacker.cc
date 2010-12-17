@@ -4,6 +4,8 @@
 
 #include "chrome/common/extensions/extension_unpacker.h"
 
+#include <set>
+
 #include "base/file_util.h"
 #include "base/scoped_handle.h"
 #include "base/scoped_temp_dir.h"
@@ -18,7 +20,6 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/json_value_serializer.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/zip.h"
 #include "ipc/ipc_message_utils.h"
@@ -150,7 +151,6 @@ bool ExtensionUnpacker::Run() {
     extension_path_.DirName().AppendASCII(filenames::kTempExtensionName);
 
   if (!file_util::CreateDirectory(temp_install_dir_)) {
-
 #if defined(OS_WIN)
     std::string dir_string = WideToUTF8(temp_install_dir_.value());
 #else

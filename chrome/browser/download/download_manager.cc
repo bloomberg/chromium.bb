@@ -40,7 +40,6 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
@@ -179,7 +178,6 @@ void DownloadManager::GetCurrentDownloads(
   if (original_profile != profile_)
     original_profile->GetDownloadManager()->GetCurrentDownloads(dir_path,
                                                                 result);
-
 }
 
 void DownloadManager::SearchDownloads(const string16& query,
@@ -282,7 +280,7 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
     // Determine the proper path for a download, by either one of the following:
     // 1) using the default download directory.
     // 2) prompting the user.
-    if (info->prompt_user_for_save_location && !last_download_path_.empty()){
+    if (info->prompt_user_for_save_location && !last_download_path_.empty()) {
       info->suggested_path = last_download_path_;
     } else {
       info->suggested_path = download_prefs_->download_path();

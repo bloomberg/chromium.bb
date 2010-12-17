@@ -12,7 +12,7 @@
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
 
 // TabDownloadState ------------------------------------------------------------
 

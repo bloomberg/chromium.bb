@@ -19,7 +19,6 @@
 #include "base/values.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"

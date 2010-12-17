@@ -31,7 +31,6 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/user_script.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/url_util.h"
 #include "grit/chromium_strings.h"

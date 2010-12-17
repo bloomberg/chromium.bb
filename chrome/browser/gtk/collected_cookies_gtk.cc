@@ -4,12 +4,14 @@
 
 #include "chrome/browser/gtk/collected_cookies_gtk.h"
 
+#include <string>
+
 #include "app/l10n_util.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
 #include "grit/generated_resources.h"
 
 namespace {

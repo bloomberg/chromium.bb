@@ -4,9 +4,10 @@
 
 #include "chrome/nacl/nacl_thread.h"
 
+#include <vector>
+
 #include "base/atomicops.h"
 #include "base/scoped_ptr.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/nacl_messages.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
 
@@ -47,8 +48,8 @@ int CreateMemoryObject(size_t size, bool executable) {
   return -1;
 }
 
-}
-#endif
+}  // namespace
+#endif  // defined(OS_MACOSX)
 
 // This is ugly.  We need an interface header file for the exported
 // sel_ldr interfaces.

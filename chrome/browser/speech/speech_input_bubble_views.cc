@@ -15,7 +15,7 @@
 #include "chrome/browser/views/info_bubble.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"

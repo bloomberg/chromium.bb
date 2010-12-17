@@ -4,6 +4,9 @@
 
 #include "chrome/browser/dom_ui/history_ui.h"
 
+#include <algorithm>
+#include <set>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
@@ -28,7 +31,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/jstemplate_builder.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/escape.h"

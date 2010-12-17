@@ -5,6 +5,7 @@
 #include "chrome/browser/background_application_list_model.h"
 
 #include <algorithm>
+#include <set>
 
 #include "app/l10n_util_collator.h"
 #include "base/stl_util-inl.h"
@@ -18,7 +19,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_source.h"
 #include "chrome/common/pref_names.h"
 
 class ExtensionNameComparator {

@@ -29,7 +29,6 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/ui/options/show_options_url.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "gfx/gtk_util.h"

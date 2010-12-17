@@ -4,6 +4,9 @@
 
 #include "chrome/browser/history/in_memory_history_backend.h"
 
+#include <set>
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/time.h"
@@ -16,7 +19,8 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_source.h"
 #include "chrome/common/pref_names.h"
 
 namespace history {

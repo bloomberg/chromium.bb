@@ -4,6 +4,8 @@
 
 #include "chrome/browser/gtk/extension_installed_bubble_gtk.h"
 
+#include <string>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
@@ -18,7 +20,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "gfx/gtk_util.h"
 #include "grit/generated_resources.h"

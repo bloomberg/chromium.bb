@@ -30,7 +30,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_plugin_util.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_apps.h"
 
@@ -40,6 +39,8 @@
 
 #if defined(OS_WIN)
 #include "base/win_util.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_source.h"
 #include "gfx/icon_util.h"
 #endif  // defined(OS_WIN)
 

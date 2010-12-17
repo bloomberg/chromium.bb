@@ -20,7 +20,7 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
 #include "gfx/codec/png_codec.h"
 #include "gfx/favicon_size.h"
 #include "grit/generated_resources.h"

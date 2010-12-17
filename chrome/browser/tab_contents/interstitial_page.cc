@@ -4,6 +4,8 @@
 
 #include "chrome/browser/tab_contents/interstitial_page.h"
 
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -26,13 +28,14 @@
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/dom_storage_common.h"
+#include "chrome/common/net/url_request_context_getter.h"
+#include "chrome/common/notification_source.h"
+#include "grit/browser_resources.h"
+#include "net/base/escape.h"
+
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #endif
-#include "chrome/common/net/url_request_context_getter.h"
-#include "chrome/common/notification_service.h"
-#include "grit/browser_resources.h"
-#include "net/base/escape.h"
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;

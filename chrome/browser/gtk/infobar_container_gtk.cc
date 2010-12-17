@@ -6,6 +6,8 @@
 
 #include <gtk/gtk.h>
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
@@ -16,7 +18,8 @@
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_source.h"
 #include "third_party/skia/include/core/SkPaint.h"
 
 namespace {

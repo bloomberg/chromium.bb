@@ -16,7 +16,7 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
 
 namespace {
 

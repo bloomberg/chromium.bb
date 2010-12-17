@@ -21,7 +21,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/options/options_window.h"
 #include "chrome/browser/ui/window_sizer.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

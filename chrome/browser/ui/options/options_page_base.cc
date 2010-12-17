@@ -6,7 +6,9 @@
 
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_source.h"
+#include "chrome/common/notification_type.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // OptionsPageBase

@@ -6,6 +6,8 @@
 
 #include <gtk/gtk.h>
 
+#include <algorithm>
+
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "chrome/browser/browser_window.h"
@@ -17,7 +19,8 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_source.h"
 #include "googleurl/src/gurl.h"
 
 ExtensionPopupGtk* ExtensionPopupGtk::current_extension_popup_ = NULL;

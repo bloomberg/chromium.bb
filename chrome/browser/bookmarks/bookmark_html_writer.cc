@@ -19,7 +19,6 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"

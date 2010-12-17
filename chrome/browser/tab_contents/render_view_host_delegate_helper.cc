@@ -4,6 +4,8 @@
 
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -23,7 +25,6 @@
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 
 RenderViewHostDelegateViewHelper::RenderViewHostDelegateViewHelper() {}

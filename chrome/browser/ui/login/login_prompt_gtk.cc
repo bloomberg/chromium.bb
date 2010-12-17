@@ -20,7 +20,6 @@
 #include "chrome/browser/tab_contents/tab_contents_view_gtk.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/login/login_model.h"
-#include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request.h"
 

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/dom_ui/options/font_settings_handler.h"
 
+#include <string>
+
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/string_number_conversions.h"
@@ -13,7 +15,7 @@
 #include "chrome/browser/dom_ui/options/font_settings_utils.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_details.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"

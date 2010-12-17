@@ -5,7 +5,6 @@
 #include "chrome/browser/automation/automation_resource_tracker.h"
 
 #include "chrome/common/automation_messages.h"
-#include "chrome/common/notification_service.h"
 
 AutomationResourceTrackerImpl::AutomationResourceTrackerImpl(
     IPC::Message::Sender* sender)
