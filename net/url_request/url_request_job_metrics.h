@@ -16,6 +16,8 @@
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 
+namespace net {
+
 class URLRequestJobMetrics {
  public:
   URLRequestJobMetrics();
@@ -46,5 +48,7 @@ class URLRequestJobMetrics {
   // Append the text report of the frame loading to the input string.
   void AppendText(std::wstring* text);
 };
+
+}  // namespace net
 
 #endif  // NET_URL_REQUEST_URL_REQUEST_JOB_METRICS_H_
