@@ -2437,7 +2437,14 @@
    fun:_ZN29ChromeURLRequestContextGetter22CreateOriginalForMediaEP7ProfileRK8FilePathi
    fun:_ZN11ProfileImpl25GetRequestContextForMediaEv
 }
-
+{
+   bug_49279_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:*ChromeCookieMonsterDelegateC2EP7Profile
+   fun:*ChromeCookieMonsterDelegateC1EP7Profile
+   fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
+}
 {
    bug_50056
    Memcheck:Leak
