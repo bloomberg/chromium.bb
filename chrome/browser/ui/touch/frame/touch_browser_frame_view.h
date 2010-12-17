@@ -23,6 +23,9 @@ class TouchBrowserFrameView : public OpaqueBrowserFrameView,
   TouchBrowserFrameView(BrowserFrame* frame, BrowserView* browser_view);
   virtual ~TouchBrowserFrameView();
 
+  // Overridden from OpaqueBrowserFrameView
+  virtual void Layout();
+
  protected:
   // Overridden from OpaqueBrowserFrameView
   virtual int GetReservedHeight() const;

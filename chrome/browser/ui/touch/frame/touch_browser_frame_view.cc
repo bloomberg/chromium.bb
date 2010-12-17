@@ -43,6 +43,17 @@ TouchBrowserFrameView::TouchBrowserFrameView(BrowserFrame* frame,
 TouchBrowserFrameView::~TouchBrowserFrameView() {
 }
 
+void TouchBrowserFrameView::Layout() {
+  OpaqueBrowserFrameView::Layout();
+
+  if (!keyboard_)
+    return;
+
+  keyboard_->SetBounds(GetBoundsForReservedArea());
+  keyboard_->SetVisible(keyboard_showing_);
+  keyboard_->Layout();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // TouchBrowserFrameView, protected:
 int TouchBrowserFrameView::GetReservedHeight() const {
@@ -83,9 +94,6 @@ void TouchBrowserFrameView::UpdateKeyboardAndLayout(bool should_show_keyboard) {
   DCHECK(keyboard_);
 
   keyboard_showing_ = should_show_keyboard;
-
-  keyboard_->SetBounds(GetBoundsForReservedArea());
-  keyboard_->SetVisible(should_show_keyboard);
 
   // Because the NonClientFrameView is a sibling of the ClientView, we rely on
   // the parent to resize the ClientView instead of resizing it directly.
