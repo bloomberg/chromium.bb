@@ -21,17 +21,21 @@ const size_t kMaxNumEntries = 1000;
 
 namespace {
 
+const int64 kSyncPeriodMicroseconds = 1000 * 1000 * 10;
+
 // We know that this conversion is not solid and suffers from world clock
-// changes, but it should be good enough for the load timing info.
+// changes, but given that we sync clock every 10 seconds, it should be good
+// enough for the load timing info.
 static Time TimeTicksToTime(const TimeTicks& time_ticks) {
   static int64 tick_to_time_offset;
-  static bool tick_to_time_offset_available = false;
-  if (!tick_to_time_offset_available) {
+  static int64 last_sync_ticks = 0;
+  if (time_ticks.ToInternalValue() - last_sync_ticks >
+          kSyncPeriodMicroseconds) {
     int64 cur_time = (Time::Now() - Time()).InMicroseconds();
     int64 cur_time_ticks = (TimeTicks::Now() - TimeTicks()).InMicroseconds();
     // If we add this number to a time tick value, it gives the timestamp.
     tick_to_time_offset = cur_time - cur_time_ticks;
-    tick_to_time_offset_available = true;
+    last_sync_ticks = time_ticks.ToInternalValue();
   }
   return Time::FromInternalValue(time_ticks.ToInternalValue() +
                                  tick_to_time_offset);
