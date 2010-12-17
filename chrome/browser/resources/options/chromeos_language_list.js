@@ -288,14 +288,39 @@ cr.define('options.language', function() {
       // Encode the language codes into a CSV string.
       Preferences.setStringPref(this.preferredLanguagesPref,
                                 this.dataModel.slice().join(','));
-      // Save the same language list as accept languages preference. In
-      // theory, we don't need two separate preferences but we keep these
-      // separate, as these are conceptually different. In other words,
-      // using "intl.accept_languages" for preferred languages in Chrome
-      // OS is a bit awkward.
+      // Save the same language list as accept languages preference as
+      // well, but we need to expand the language list, to make it more
+      // acceptable. For instance, some web sites don't understand 'en-US'
+      // but 'en'. See crosbug.com/9884.
+      var acceptLanguages = this.expandLanguageCodes(this.dataModel.slice());
       Preferences.setStringPref(this.acceptLanguagesPref,
-                                this.dataModel.slice().join(','));
+                                acceptLanguages.join(','));
       cr.dispatchSimpleEvent(this, 'save');
+    },
+
+    /**
+     * Expands language codes to make these more suitable for Accept-Language.
+     * Example: ['en-US', 'ja', 'en-CA'] => ['en-US', 'en', 'ja', 'en-CA'].
+     * 'en' won't appear twice as this function eliminates duplicates.
+     * @param {Array} languageCodes List of language codes.
+     * @private
+     */
+    expandLanguageCodes: function(languageCodes) {
+      var expandedLanguageCodes = [];
+      var seen = {};  // Used to eliminiate duplicates.
+      for (var i = 0; i < languageCodes.length; i++) {
+        var languageCode = languageCodes[i];
+        if (!(languageCode in seen)) {
+          expandedLanguageCodes.push(languageCode);
+          seen[languageCode] = true;
+        }
+        var parts = languageCode.split('-');
+        if (!(parts[0] in seen)) {
+          expandedLanguageCodes.push(parts[0]);
+          seen[parts[0]] = true;
+        }
+      }
+      return expandedLanguageCodes;
     },
 
     /**
