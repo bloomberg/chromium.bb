@@ -1133,7 +1133,16 @@ TEST_P(FullTabNavigationTest, RefreshContentsUATest) {
   bool in_cf = GetParam().invokes_cf();
   if (in_cf) {
     headers.append("X-UA-Compatible: chrome=1\r\n");
+  } else {
+    if (GetInstalledIEVersion() == IE_9) {
+      LOG(ERROR) << "Test disabled for IE9";
+      return;
+    }
   }
+
+  EXPECT_CALL(server_mock_, Get(_, testing::StrCaseEq(L"/favicon.ico"), _))
+      .Times(testing::AtMost(2))
+      .WillRepeatedly(SendFast("HTTP/1.1 404 Not Found", ""));
 
   std::wstring src_url = server_mock_.Resolve(L"/refresh_src.html");
 
