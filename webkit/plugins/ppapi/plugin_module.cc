@@ -46,7 +46,7 @@
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_instance.h"
-#include "ppapi/c/private/ppb_nacl_util_private.h"
+#include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "webkit/plugins/ppapi/common.h"
@@ -66,7 +66,7 @@
 #include "webkit/plugins/ppapi/ppb_font_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
-#include "webkit/plugins/ppapi/ppb_nacl_util_private_impl.h"
+#include "webkit/plugins/ppapi/ppb_nacl_private_impl.h"
 #include "webkit/plugins/ppapi/ppb_pdf.h"
 #include "webkit/plugins/ppapi/ppb_pdf_impl.h"
 #include "webkit/plugins/ppapi/ppb_scrollbar_impl.h"
@@ -226,8 +226,8 @@ const void* GetInterface(const char* name) {
     return PPB_FileChooser_Impl::GetInterface();
   if (strcmp(name, PPB_FILEIO_DEV_INTERFACE) == 0)
     return PPB_FileIO_Impl::GetInterface();
-  if (strcmp(name, PPB_NACLUTIL_PRIVATE_INTERFACE) == 0)
-    return PPB_NaClUtil_Private_Impl::GetInterface();
+  if (strcmp(name, PPB_NACL_PRIVATE_INTERFACE) == 0)
+    return PPB_NaCl_Private_Impl::GetInterface();
   if (strcmp(name, PPB_FILEIOTRUSTED_DEV_INTERFACE) == 0)
     return PPB_FileIO_Impl::GetTrustedInterface();
   if (strcmp(name, PPB_FILEREF_DEV_INTERFACE) == 0)

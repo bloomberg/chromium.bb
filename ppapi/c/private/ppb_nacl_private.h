@@ -8,9 +8,9 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_NACLUTIL_PRIVATE_INTERFACE "PPB_NaClUtil(Private);0.1"
+#define PPB_NACL_PRIVATE_INTERFACE "PPB_NaCl(Private);0.1"
 
-struct PPB_NaClUtil_Private {
+struct PPB_NaCl_Private {
   // This function launches NaCl's sel_ldr process.  On success, the function
   // returns true, otherwise it returns false.  When it returns true, it will
   // write |socket_count| nacl::Handles to imc_handles and will write the
@@ -26,4 +26,4 @@ struct PPB_NaClUtil_Private {
   int (*UrandomFD)(void);
 };
 
-#endif  // PPAPI_C_PRIVATE_PPB_NACL_UTIL_PRIVATE_H_
+#endif  // PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_

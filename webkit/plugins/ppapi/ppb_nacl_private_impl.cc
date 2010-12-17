@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/plugins/ppapi/ppb_nacl_util_private_impl.h"
+#include "webkit/plugins/ppapi/ppb_nacl_private_impl.h"
 
 #include "base/rand_util_c.h"
-#include "ppapi/c/private/ppb_nacl_util_private.h"
+#include "ppapi/c/private/ppb_nacl_private.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace webkit {
@@ -30,14 +30,14 @@ int UrandomFD(void) {
 
 }  // namespace
 
-const PPB_NaClUtil_Private ppb_nacl_util = {
+const PPB_NaCl_Private ppb_nacl = {
   &LaunchSelLdr,
   &UrandomFD,
 };
 
 // static
-const PPB_NaClUtil_Private* PPB_NaClUtil_Private_Impl::GetInterface() {
-  return &ppb_nacl_util;
+const PPB_NaCl_Private* PPB_NaCl_Private_Impl::GetInterface() {
+  return &ppb_nacl;
 }
 
 }  // namespace ppapi
