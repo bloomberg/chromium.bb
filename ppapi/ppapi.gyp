@@ -100,6 +100,9 @@
         'c/dev/ppp_widget_dev.h',
         'c/dev/ppp_zoom_dev.h',
 
+        # Private interfaces.
+        'c/private/ppb_nacl_util_private.h',
+
         # Deprecated interfaces.
         'c/dev/deprecated_bool.h',
         'c/dev/ppb_var_deprecated.h',
