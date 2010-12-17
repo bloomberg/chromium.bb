@@ -156,16 +156,16 @@ void AboutChromeView::Init() {
     return;
   }
 
-  current_version_ = version_info.Version();
+  current_version_ = ASCIIToWide(version_info.Version());
 
   std::string version_modifier = platform_util::GetVersionStringModifier();
   if (!version_modifier.empty())
-    version_details_ += " " + version_modifier;
+    version_details_ += L" " + ASCIIToWide(version_modifier);
 
 #if !defined(GOOGLE_CHROME_BUILD)
-  version_details_ += " (";
-  version_details_ += version_info.LastChange();
-  version_details_ += ")";
+  version_details_ += L" (";
+  version_details_ += ASCIIToWide(version_info.LastChange());
+  version_details_ += L")";
 #endif
 
   // Views we will add to the *parent* of this dialog, since it will display
@@ -210,7 +210,7 @@ void AboutChromeView::Init() {
 
   // This is a text field so people can copy the version number from the dialog.
   version_label_ = new views::Textfield();
-  version_label_->SetText(ASCIIToUTF16(current_version_ + version_details_));
+  version_label_->SetText(WideToUTF16Hack(current_version_ + version_details_));
   version_label_->SetReadOnly(true);
   version_label_->RemoveBorder();
   version_label_->SetTextColor(SK_ColorBLACK);
@@ -763,7 +763,7 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
         std::wstring update_label_text =
             l10n_util::GetStringF(IDS_UPGRADE_ALREADY_UP_TO_DATE,
                                   l10n_util::GetString(IDS_PRODUCT_NAME),
-                                  ASCIIToUTF16(current_version_));
+                                  current_version_);
 #endif
         if (base::i18n::IsRTL()) {
           update_label_text.push_back(

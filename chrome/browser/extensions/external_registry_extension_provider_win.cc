@@ -58,8 +58,7 @@ void ExternalRegistryExtensionProvider::VisitRegisteredExtension(
           StringToLowerASCII(&id);
 
           scoped_ptr<Version> version;
-          version.reset(Version::GetVersionFromString(
-                            WideToASCII(extension_version)));
+          version.reset(Version::GetVersionFromString(extension_version));
           if (!version.get()) {
             LOG(ERROR) << "Invalid version value " << extension_version
                        << " for key " << key_path;
@@ -104,10 +103,8 @@ bool ExternalRegistryExtensionProvider::GetExtensionDetails(
   if (!key.ReadValue(kRegistryExtensionVersion, &extension_version))
     return false;
 
-  if (version) {
-    version->reset(Version::GetVersionFromString(
-                       WideToASCII(extension_version)));
-  }
+  if (version)
+    version->reset(Version::GetVersionFromString(extension_version));
 
   if (location)
     *location = Extension::EXTERNAL_REGISTRY;
