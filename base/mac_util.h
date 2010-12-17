@@ -209,7 +209,7 @@ void NSObjectRelease(void* obj);
 #define CF_TO_NS_CAST(TypeCF, TypeNS) \
 inline TypeNS* CFToNSCast(TypeCF cf_val) { \
   TypeNS* ns_val = \
-      const_cast<id>(reinterpret_cast<const struct objc_object*>(cf_val)); \
+      const_cast<TypeNS*>(reinterpret_cast<const TypeNS*>(cf_val)); \
   DCHECK(!ns_val || [ns_val isKindOfClass:[TypeNS class]]); \
   return ns_val; \
 }
