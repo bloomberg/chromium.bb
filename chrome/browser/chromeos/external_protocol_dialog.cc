@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/message_box_flags.h"
+#include "app/text_elider.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -86,7 +87,7 @@ ExternalProtocolDialog::ExternalProtocolDialog(TabContents* tab_contents,
       scheme_(url.scheme()) {
   const int kMaxUrlWithoutSchemeSize = 256;
   std::wstring elided_url_without_scheme;
-  ElideString(ASCIIToWide(url.possibly_invalid_spec()),
+  gfx::ElideString(ASCIIToWide(url.possibly_invalid_spec()),
       kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
 
   std::wstring message_text = l10n_util::GetStringF(

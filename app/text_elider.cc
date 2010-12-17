@@ -460,4 +460,41 @@ string16 SortedDisplayURL::AfterHost() const {
   return display_url_.substr(slash_index + sort_host_.length());
 }
 
+bool ElideString(const std::wstring& input, int max_len, std::wstring* output) {
+  DCHECK_GE(max_len, 0);
+  if (static_cast<int>(input.length()) <= max_len) {
+    output->assign(input);
+    return false;
+  }
+
+  switch (max_len) {
+    case 0:
+      output->clear();
+      break;
+    case 1:
+      output->assign(input.substr(0, 1));
+      break;
+    case 2:
+      output->assign(input.substr(0, 2));
+      break;
+    case 3:
+      output->assign(input.substr(0, 1) + L"." +
+                     input.substr(input.length() - 1));
+      break;
+    case 4:
+      output->assign(input.substr(0, 1) + L".." +
+                     input.substr(input.length() - 1));
+      break;
+    default: {
+      int rstr_len = (max_len - 3) / 2;
+      int lstr_len = rstr_len + ((max_len - 3) % 2);
+      output->assign(input.substr(0, lstr_len) + L"..." +
+                     input.substr(input.length() - rstr_len));
+      break;
+    }
+  }
+
+  return true;
+}
+
 }  // namespace gfx

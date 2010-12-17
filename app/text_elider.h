@@ -88,6 +88,19 @@ class SortedDisplayURL {
   string16 display_url_;
 };
 
+// Function to elide strings when the font information is unknown.  As
+// opposed to the above functions, the ElideString() function operates
+// in terms of character units, not pixels.
+// If the size of |input| is more than |max_len|, this function returns
+// true and |input| is shortened into |output| by removing chars in the
+// middle (they are replaced with up to 3 dots, as size permits).
+// Ex: ElideString(L"Hello", 10, &str) puts Hello in str and returns false.
+// ElideString(L"Hello my name is Tom", 10, &str) puts "Hell...Tom" in str
+// and returns true.
+// TODO(tsepez): Doesn't handle UTF-16 surrogate pairs properly.
+// TODO(tsepez): Doesn't handle bidi properly
+bool ElideString(const std::wstring& input, int max_len, std::wstring* output);
+
 } // namespace gfx.
 
 #endif  // APP_TEXT_ELIDER_H_

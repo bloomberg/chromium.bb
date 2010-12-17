@@ -278,14 +278,16 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     // Elide giant extensions (this shouldn't currently be hit, but might
     // in future, should we ever notice unsafe giant extensions).
     if (extension.length() > kFileNameMaxLength / 2)
-      ElideString(extension, kFileNameMaxLength / 2, &extension);
+      gfx::ElideString(extension, kFileNameMaxLength / 2, &extension);
 
     // The dangerous download label text is different for an extension file.
     if (download->is_extension_install()) {
       dangerous_download_label_ = new views::Label(
           l10n_util::GetString(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION));
     } else {
-      ElideString(rootname, kFileNameMaxLength - extension.length(), &rootname);
+      gfx::ElideString(rootname,
+                       kFileNameMaxLength - extension.length(),
+                       &rootname);
       std::wstring filename = rootname + L"." + extension;
       filename = UTF16ToWide(base::i18n::GetDisplayStringInLTRDirectionality(
           WideToUTF16(filename)));

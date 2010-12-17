@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 
+#include "app/text_elider.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -39,9 +40,9 @@ JavaScriptAppModalDialog::JavaScriptAppModalDialog(
       reply_msg_(reply_msg) {
   // We trim the various parts of the message dialog because otherwise we can
   // overflow the message dialog (and crash/hang the GTK+ version).
-  ElideString(message_text, kMessageTextMaxSize, &message_text_);
-  ElideString(default_prompt_text, kDefaultPromptTextSize,
-              &default_prompt_text_);
+  gfx::ElideString(message_text, kMessageTextMaxSize, &message_text_);
+  gfx::ElideString(default_prompt_text, kDefaultPromptTextSize,
+                   &default_prompt_text_);
 
   DCHECK((tab_contents_ != NULL) != (extension_host_ != NULL));
   InitNotifications();

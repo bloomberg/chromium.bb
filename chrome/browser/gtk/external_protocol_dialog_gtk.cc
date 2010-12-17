@@ -9,6 +9,7 @@
 #include <string>
 
 #include "app/l10n_util.h"
+#include "app/text_elider.h"
 #include "base/metrics/histogram.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -62,9 +63,9 @@ ExternalProtocolDialogGtk::ExternalProtocolDialogGtk(const GURL& url)
   const int kMaxCommandSize = 256;
   std::wstring elided_url_without_scheme;
   std::wstring elided_command;
-  ElideString(ASCIIToWide(url.possibly_invalid_spec()),
+  gfx::ElideString(ASCIIToWide(url.possibly_invalid_spec()),
       kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
-  ElideString(ASCIIToWide(std::string("xdg-open ") + url.spec()),
+  gfx::ElideString(ASCIIToWide(std::string("xdg-open ") + url.spec()),
       kMaxCommandSize, &elided_command);
 
   std::string message_text = l10n_util::GetStringFUTF8(
