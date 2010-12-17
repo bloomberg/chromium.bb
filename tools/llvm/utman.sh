@@ -2646,10 +2646,6 @@ test-x86-32() {
 #@ test-x86-64 <test>    - run a single x86-64 test via pnacl toolchain
 test-x86-64() {
   test-scons-common x86-64 "$@"
-
-  # TODO(jvoung) have the bots call this directly, or at least keep
-  # test-x86-64 the same as the others.
-  test-x86-64-pic "$@"
 }
 
 #@ test-arm-pic           - run all arm pic tests via pnacl toolchain
@@ -2679,8 +2675,11 @@ test-all() {
   fi
 
   test-arm "$@"
+  test-arm-pic "$@"
   test-x86-64 "$@"
+  test-x86-64-pic "$@"
   test-x86-32 "$@"
+  test-x86-32-pic "$@"
 }
 
 
