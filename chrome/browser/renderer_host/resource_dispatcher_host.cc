@@ -1564,15 +1564,6 @@ static int GetCertID(net::URLRequest* request, int child_id) {
     return CertStore::GetInstance()->StoreCert(request->ssl_info().cert,
                                                child_id);
   }
-  // If there is no SSL info attached to this request, we must either be a non
-  // secure request, or the request has been canceled or failed (before the SSL
-  // info was populated), or the response is an error (we have seen 403, 404,
-  // and 501) made up by the proxy.
-  DCHECK(!request->url().SchemeIsSecure() ||
-         (request->status().status() == URLRequestStatus::CANCELED) ||
-         (request->status().status() == URLRequestStatus::FAILED) ||
-         ((request->response_headers()->response_code() >= 400) &&
-         (request->response_headers()->response_code() <= 599)));
   return 0;
 }
 

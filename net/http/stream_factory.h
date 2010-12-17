@@ -69,6 +69,13 @@ class StreamRequest {
     // may take a reference if it needs the cert_info beyond the lifetime of
     // this callback.
     virtual void OnNeedsClientAuth(SSLCertRequestInfo* cert_info) = 0;
+
+    // This is the failure of the CONNECT request through an HTTPS proxy.
+    // Headers can be read from |response_info|, while the body can be read
+    // from |stream|.
+    // Ownership of |stream| is transferred to the delegate.
+    virtual void OnHttpsProxyTunnelResponse(
+        const HttpResponseInfo& response_info, HttpStream* stream) = 0;
   };
 
   virtual ~StreamRequest() {}
