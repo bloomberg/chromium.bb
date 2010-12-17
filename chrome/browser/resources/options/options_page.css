@@ -213,18 +213,28 @@ html[hide-menu=true] #mainview {
   position: relative;
 }
 
-#subpage-sheet-container {
-  box-sizing: border-box;
-  height: 100%;
+.subpage-sheet-container {
   padding: 8px;
   -webkit-padding-start: 60px;
+  box-sizing: border-box;
+  height: 100%;
   position: absolute;
   top: 0;
   left: 0;
-  width: 748px;
 }
 
-#subpage-sheet {
+#subpage-sheet-container-1 {
+  width: 748px;
+  z-index: 5;
+}
+
+#subpage-sheet-container-2 {
+  left: 60px;
+  width: 688px;
+  z-index: 10;
+}
+
+.subpage-sheet {
   -webkit-box-shadow: #666 0px 3px 5px;
   background-color: white;
   border: 1px solid #b8b8b8;
@@ -234,7 +244,6 @@ html[hide-menu=true] #mainview {
   padding: 0px 20px;
   position: relative;
   width: 100%;
-  z-index: 5;
 }
 
 #managed-prefs-banner {
@@ -280,7 +289,7 @@ html[hide-menu=true] #mainview {
   padding-top: 13px;
 }
 
-#subpage-sheet .page > h1 {
+.subpage-sheet .page > h1 {
   padding-top: 4px;
 }
 

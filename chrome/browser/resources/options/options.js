@@ -156,10 +156,6 @@ function load() {
     document.documentElement.setAttribute('os', 'mac');
   if (cr.isViews)
     document.documentElement.setAttribute('toolkit', 'views');
-
-  $('subpage-close').onclick = function() {
-    OptionsPage.closeSubPage();
-  };
 }
 
 document.addEventListener('DOMContentLoaded', load);

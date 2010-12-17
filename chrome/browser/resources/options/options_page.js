@@ -31,12 +31,6 @@ cr.define('options', function() {
   OptionsPage.registeredPages = {};
 
   /**
-   * Pages which are nested under a main level page.
-   * @protected
-   */
-  OptionsPage.registeredSubPages = {};
-
-  /**
    * Pages which are meant to behave like modal dialogs.
    * @protected
    */
@@ -53,29 +47,24 @@ cr.define('options', function() {
    * @param {string} pageName Page name.
    */
   OptionsPage.showPageByName = function(pageName) {
-    // Notify main pages if they will be hidden.
+    var targetPage = this.registeredPages[pageName];
+    // Notify pages if they will be hidden.
     for (var name in this.registeredPages) {
       var page = this.registeredPages[name];
-      if (name != pageName && page.willHidePage)
+      if (page.willHidePage && name != pageName &&
+          !page.isAncestorOfPage(targetPage))
         page.willHidePage();
     }
 
-    // Update the visibility attribute for main pages.
+    // Update visibilities to show only the hierarchy of the target page.
     for (var name in this.registeredPages) {
       var page = this.registeredPages[name];
-      page.visible = name == pageName;
+      page.visible = name == pageName ||
+          (document.documentElement.getAttribute('hide-menu') != 'true' &&
+           page.isAncestorOfPage(targetPage));
     }
 
-    // Update the visibility attribute for sub-pages.
-    for (var name in this.registeredSubPages) {
-      var pageInfo = this.registeredSubPages[name];
-      var match = name == pageName;
-      if (match && document.documentElement.getAttribute('hide-menu') != 'true')
-        pageInfo.parentPage.visible = true;
-      pageInfo.page.visible = match;
-    }
-
-    // Notify main pages if they were shown.
+    // Notify pages if they were shown.
     for (var name in this.registeredPages) {
       var page = this.registeredPages[name];
       if (name == pageName && page.didShowPage)
@@ -91,9 +80,6 @@ cr.define('options', function() {
    */
   OptionsPage.handleHashForPage = function(pageName, hash) {
     var page = this.registeredPages[pageName];
-    if (!page) {
-      page = this.registeredSubPages[pageName].page;
-    }
     page.handleHash(hash);
   };
 
@@ -108,6 +94,19 @@ cr.define('options', function() {
   };
 
   /**
+   * Returns whether or not an overlay is visible.
+   * @return {boolean} True if an overlay is visible.
+   * @private
+   */
+  OptionsPage.isOverlayVisible_ = function() {
+    for (var name in this.registeredOverlayPages) {
+      if (this.registeredOverlayPages[name].visible)
+        return true;
+    }
+    return false;
+  };
+
+  /**
    * Clears overlays (i.e. hide all overlays).
    */
   OptionsPage.clearOverlays = function() {
@@ -118,29 +117,48 @@ cr.define('options', function() {
   };
 
   /**
-   * Handle 'keydown' events.
-   * @param {Event} e Key event.
-   * @private
+   * Returns the topmost visible page, or null if no page is visible.
+   * @return {OptionPage} The topmost visible page.
    */
-  OptionsPage.onKeyDown_ = function(e) {
-    if (e.keyCode == 27) { // Esc
-      this.clearOverlays();
+  OptionsPage.getTopmostVisiblePage = function() {
+    var topPage = null;
+    for (var name in this.registeredPages) {
+      var page = this.registeredPages[name];
+      if (page.visible &&
+          (!topPage || page.nestingLevel > topPage.nestingLevel))
+        topPage = page;
+    }
+    return topPage;
+  }
+
+  /**
+   * Closes the topmost open subpage, if any.
+   */
+  OptionsPage.closeTopSubPage = function() {
+    var topPage = this.getTopmostVisiblePage();
+    if (topPage && topPage.parentPage)
+      topPage.visible = false;
+  };
+
+  /**
+   * Closes all subpages below the given level.
+   * @param {number} level The nesting level to close below.
+   */
+  OptionsPage.closeSubPagesToLevel = function(level) {
+    var topPage = this.getTopmostVisiblePage();
+    while (topPage && topPage.nestingLevel > level) {
+      topPage.visible = false;
+      topPage = topPage.parentPage;
     }
   };
 
   /**
-   * Closes any currently-open subpage.
+   * Updates managed banner visibility state based on the topmost page.
    */
-  OptionsPage.closeSubPage = function() {
-    for (var name in this.registeredSubPages) {
-      var pageInfo = this.registeredSubPages[name];
-      if (pageInfo.page.visible) {
-        pageInfo.page.visible = false;
-        // Since the managed pref banner lives outside the overlay, and the
-        // parent is not changing visibility, update the banner explicitly.
-        pageInfo.parentPage.updateManagedBannerVisibility();
-      }
-    }
+  OptionsPage.updateManagedBannerVisibility = function() {
+    var topPage = this.getTopmostVisiblePage();
+    if (topPage)
+      topPage.updateManagedBannerVisibility();
   };
 
   /**
@@ -201,10 +219,9 @@ cr.define('options', function() {
    * @param {OptionsPage} page Page to register.
    */
   OptionsPage.registerSubPage = function(subPage, parentPage) {
-    this.registeredSubPages[subPage.name] = {
-        page: subPage, parentPage: parentPage };
+    this.registeredPages[subPage.name] = subPage;
+    subPage.parentPage = parentPage;
     subPage.tab = undefined;
-    subPage.isSubPageSheet = true;
     subPage.initializePage();
   };
 
@@ -238,18 +255,47 @@ cr.define('options', function() {
     chrome.send('coreOptionsInitialize');
     this.initialized_ = true;
 
-    // Set up the overlay sheet. Clicks on the visible part of the parent page
-    // should close the overlay, not fall through to the parent page.
-    var self = this;
-    var subpageContainer = $('subpage-sheet-container');
-    subpageContainer.onclick = function(event) {
-      if (!$('subpage-sheet').contains(event.target))
-        self.closeSubPage();
-      event.stopPropagation();
+    // Set up the overlay sheets:
+    // Close nested sub-pages when clicking the visible part of an earlier page.
+    for (var level = 1; level <= 2; level++) {
+      var containerId = 'subpage-sheet-container-' + level;
+      $(containerId).onclick = this.subPageClosingClickHandler_(level);
     }
-    subpageContainer.onkeydown = function(e) {
-      if (e.keyCode == 27)  // Esc
-        self.closeSubPage();
+    // Hook up the close buttons.
+    var self = this;
+    subpageCloseButtons = document.querySelectorAll('.close-subpage');
+    for (var i = 0; i < subpageCloseButtons.length; i++) {
+      subpageCloseButtons[i].onclick = function() {
+        self.closeTopSubPage();
+      };
+    }
+
+    // Close the top overlay or sub-page on esc.
+    document.addEventListener('keydown', function(e) {
+      if (e.keyCode == 27) { // Esc
+        if (self.isOverlayVisible_())
+          self.clearOverlays();
+        else
+          self.closeTopSubPage();
+      }
+    });
+  };
+
+  /**
+   * Returns a function to handle clicks behind a subpage at level |level| by
+   * closing all subpages down to |level| - 1.
+   * @param {number} level The level of the subpage being handled.
+   * @return {function} a function to handle clicks outside the given subpage.
+   * @private
+   */
+  OptionsPage.subPageClosingClickHandler_ = function(level) {
+    var self = this;
+    return function(event) {
+      // Clicks on the visible part of the parent page should close the overlay,
+      // not fall through to the parent page.
+      if (!$('subpage-sheet-' + level).contains(event.target))
+        self.closeSubPagesToLevel(level - 1);
+      event.stopPropagation();
     };
   };
 
@@ -267,6 +313,12 @@ cr.define('options', function() {
 
   OptionsPage.prototype = {
     __proto__: cr.EventTarget.prototype,
+
+    /**
+     * The parent page of this option page, or null for top-level pages.
+     * @type {OptionsPage}
+     */
+    parentPage: null,
 
     /**
      * Initializes page content.
@@ -314,12 +366,17 @@ cr.define('options', function() {
         this.pageDiv.classList.remove('hidden');
         if (this.isOverlay) {
           $('overlay').classList.remove('hidden');
-          document.addEventListener('keydown', OptionsPage.onKeyDown_);
         } else {
-          if (this.isSubPageSheet)
-            $('subpage-sheet-container').classList.remove('hidden');
+          var nestingLevel = this.nestingLevel;
+          if (nestingLevel > 0) {
+            var containerId = 'subpage-sheet-container-' + nestingLevel;
+            $(containerId).classList.remove('hidden');
+          }
 
-          this.updateManagedBannerVisibility();
+          // The managed prefs banner is global, so after any visibility change
+          // update it based on the topmost page, not necessarily this page.
+          // (e.g., if an ancestor is made visible after a child).
+          OptionsPage.updateManagedBannerVisibility();
 
           // Recent webkit change no longer allows url change from "chrome://".
           window.history.pushState({pageName: this.name}, this.title);
@@ -331,9 +388,14 @@ cr.define('options', function() {
         this.pageDiv.classList.add('hidden');
         if (this.isOverlay) {
           $('overlay').classList.add('hidden');
-          document.removeEventListener('keydown', OptionsPage.onKeyDown_);
-        } else if (this.isSubPageSheet) {
-          $('subpage-sheet-container').classList.add('hidden');
+        } else if (this.parentPage) {
+          var nestingLevel = this.nestingLevel;
+          if (nestingLevel > 0) {
+            var containerId = 'subpage-sheet-container-' + nestingLevel;
+            $(containerId).classList.add('hidden');
+          }
+
+          OptionsPage.updateManagedBannerVisibility();
         }
         if (this.tab) {
           this.tab.classList.remove('navbar-item-selected');
@@ -341,6 +403,36 @@ cr.define('options', function() {
       }
 
       cr.dispatchPropertyChange(this, 'visible', visible, !visible);
+    },
+
+    /**
+     * Gets the nesting level of this page.
+     * @return {number} The nesting level of this page (0 for top-level page)
+     */
+    get nestingLevel() {
+      var level = 0;
+      var parent = this.parentPage;
+      while (parent) {
+        level++;
+        parent = parent.parentPage;
+      }
+      return level;
+    },
+
+    /**
+     * Checks whether this page is an ancestor of the given page in terms of
+     * subpage nesting.
+     * @param {OptionsPage} page
+     * @return {boolean} True if this page is nested under |page|
+     */
+    isAncestorOfPage: function(page) {
+      var parent = page.parentPage;
+      while (parent) {
+        if (parent == this)
+          return true;
+        parent = parent.parentPage;
+      }
+      return false;
     },
 
     /**
