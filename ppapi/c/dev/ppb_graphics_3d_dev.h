@@ -6,6 +6,7 @@
 #define PPAPI_C_DEV_PPB_GRAPHICS_3D_DEV_H_
 
 #include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
@@ -20,12 +21,12 @@
 // CHECK(device->MakeCurrent(context));
 // glClear(GL_COLOR_BUFFER);
 // CHECK(device->MakeCurrent(NULL));
-// CHECK(device->SwapBuffers(context));
+// CHECK(device->SwapBuffers(context, callback));
 //
 // // Shutdown.
 // core->ReleaseResource(context);
 
-#define PPB_GRAPHICS_3D_DEV_INTERFACE "PPB_Graphics3D(Dev);0.3"
+#define PPB_GRAPHICS_3D_DEV_INTERFACE "PPB_Graphics3D(Dev);0.4"
 
 // These are the same error codes as used by EGL.
 enum {
@@ -89,11 +90,15 @@ struct PPB_Graphics3D_Dev {
   // Snapshots the rendered frame and makes it available for composition with
   // the rest of the page. The alpha channel is used for translucency effects.
   // One means fully opaque. Zero means fully transparent. Any thread.
+  // The callback will be called when SwapBuffers completes. While a SwapBuffers
+  // call is pending, all subsequent SwapBuffers calls will fail. Specifying a
+  // NULL callback means blocking but this is not legal on the main thread.
   // TODO(apatrick): premultiplied alpha or linear alpha? Premultiplied alpha is
   // better for correct alpha blending effect. Most existing OpenGL code assumes
   // linear. I could convert from linear to premultiplied during the copy from
   // back-buffer to offscreen "front-buffer".
-  PP_Bool (*SwapBuffers)(PP_Resource context);
+  PP_Bool (*SwapBuffers)(PP_Resource context,
+                         struct PP_CompletionCallback callback);
 
   // Returns the current error for this thread. This is not associated with a
   // particular context. It is distinct from the GL error returned by

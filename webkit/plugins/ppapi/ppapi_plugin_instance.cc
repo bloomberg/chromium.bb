@@ -591,7 +591,7 @@ void PluginInstance::ViewChanged(const gfx::Rect& position,
     // potentially been rendered. Plan is to embed resize commands in the
     // command buffer just before ViewChanged is called.
     bound_graphics_3d()->ResizeBackingTexture(position.size());
-    bound_graphics_3d()->SwapBuffers();
+    bound_graphics_3d()->SwapBuffers(PP_BlockUntilComplete());
   }
 
   position_ = position;
@@ -639,11 +639,15 @@ void PluginInstance::SetContentAreaFocus(bool has_focus) {
 void PluginInstance::ViewInitiatedPaint() {
   if (bound_graphics_2d())
     bound_graphics_2d()->ViewInitiatedPaint();
+  if (bound_graphics_3d())
+    bound_graphics_3d()->ViewInitiatedPaint();
 }
 
 void PluginInstance::ViewFlushedPaint() {
   if (bound_graphics_2d())
     bound_graphics_2d()->ViewFlushedPaint();
+  if (bound_graphics_3d())
+    bound_graphics_3d()->ViewFlushedPaint();
 }
 
 bool PluginInstance::GetBitmapForOptimizedPluginPaint(

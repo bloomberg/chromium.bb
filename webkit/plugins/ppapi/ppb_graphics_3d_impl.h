@@ -48,21 +48,24 @@ class PPB_Graphics3D_Impl : public Resource {
   bool Init(PP_Instance instance_id, int32_t config,
             const int32_t* attrib_list);
 
-  // Associates this PPB_Graphics3D_Impl with the given plugin instance. You can pass
-  // NULL to clear the existing device. Returns true on success. In this case,
-  // the last rendered frame is displayed.
+  // Associates this PPB_Graphics3D_Impl with the given plugin instance. You can
+  // pass NULL to clear the existing device. Returns true on success. In this
+  // case, the last rendered frame is displayed.
   // TODO(apatrick): Figure out the best semantics here.
   bool BindToInstance(PluginInstance* new_instance);
 
   bool MakeCurrent();
 
-  bool SwapBuffers();
+  bool SwapBuffers(PP_CompletionCallback callback);
 
   unsigned GetError();
 
   void ResizeBackingTexture(const gfx::Size& size);
 
   void SetSwapBuffersCallback(Callback0::Type* callback);
+
+  void ViewInitiatedPaint();
+  void ViewFlushedPaint();
 
   unsigned GetBackingTextureId();
 
@@ -76,6 +79,10 @@ class PPB_Graphics3D_Impl : public Resource {
   // Non-owning pointer to the plugin instance this context is currently bound
   // to, if any. If the context is currently unbound, this will be NULL.
   PluginInstance* bound_instance_;
+
+  // True when the page's SwapBuffers has been issued but not returned yet.
+  bool swap_initiated_;
+  PP_CompletionCallback swap_callback_;
 
   // PluginDelegate's 3D Context. Responsible for providing the command buffer.
   scoped_ptr<PluginDelegate::PlatformContext3D> platform_context_;

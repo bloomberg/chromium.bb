@@ -7,6 +7,7 @@
 
 #include "ppapi/c/dev/ppb_graphics_3d_dev.h"
 #include "ppapi/c/dev/ppb_opengles_dev.h"
+#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/resource.h"
 
@@ -41,7 +42,7 @@ class Graphics3D_Dev : public Resource {
                  const int32_t* attrib_list);
 
   bool MakeCurrent() const;
-  bool SwapBuffers() const;
+  bool SwapBuffers(const CompletionCallback& cc) const;
 
  protected:
   explicit Graphics3D_Dev(PP_Resource resource_id) : Resource(resource_id) {}

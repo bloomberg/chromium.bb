@@ -97,10 +97,10 @@ PP_Resource GetCurrentContext() {
   return current_context ? current_context->GetReference() : 0;
 }
 
-PP_Bool SwapBuffers(PP_Resource graphics3d) {
+PP_Bool SwapBuffers(PP_Resource graphics3d, PP_CompletionCallback callback) {
   scoped_refptr<PPB_Graphics3D_Impl> context(
       Resource::GetAs<PPB_Graphics3D_Impl>(graphics3d));
-  return BoolToPPBool(context && context->SwapBuffers());
+  return BoolToPPBool(context && context->SwapBuffers(callback));
 }
 
 uint32_t GetError() {
@@ -132,7 +132,9 @@ const PPB_Graphics3D_Dev ppb_graphics3d = {
 
 PPB_Graphics3D_Impl::PPB_Graphics3D_Impl(PluginModule* module)
   : Resource(module),
-    bound_instance_(NULL) {
+    bound_instance_(NULL),
+    swap_initiated_(false),
+    swap_callback_(PP_BlockUntilComplete()) {
 }
 
 const PPB_Graphics3D_Dev* PPB_Graphics3D_Impl::GetInterface() {
@@ -213,10 +215,16 @@ bool PPB_Graphics3D_Impl::MakeCurrent() {
   return true;
 }
 
-bool PPB_Graphics3D_Impl::SwapBuffers() {
+bool PPB_Graphics3D_Impl::SwapBuffers(PP_CompletionCallback callback) {
   if (!platform_context_.get())
     return false;
 
+  if (swap_callback_.func) {
+    // Already a pending SwapBuffers that hasn't returned yet.
+    return false;
+  }
+
+  swap_callback_ = callback;
   return platform_context_->SwapBuffers();
 }
 
@@ -239,6 +247,26 @@ void PPB_Graphics3D_Impl::SetSwapBuffersCallback(Callback0::Type* callback) {
     return;
 
   platform_context_->SetSwapBuffersCallback(callback);
+}
+
+void PPB_Graphics3D_Impl::ViewInitiatedPaint() {
+  if (swap_callback_.func) {
+    swap_initiated_ = true;
+  }
+}
+
+void PPB_Graphics3D_Impl::ViewFlushedPaint() {
+  // Notify any "painted" callback. See |unpainted_flush_callback_| in the
+  // header for more.
+  if (swap_initiated_ && swap_callback_.func) {
+    // We must clear swap_callback_ before issuing the callback. It will be
+    // common for the plugin to issue another SwapBuffers in response to the
+    // callback, and we don't want to think that a callback is already pending.
+    PP_CompletionCallback callback = PP_BlockUntilComplete();
+    std::swap(callback, swap_callback_);
+    swap_initiated_ = false;
+    PP_RunCompletionCallback(&callback, PP_OK);
+  }
 }
 
 unsigned PPB_Graphics3D_Impl::GetBackingTextureId() {
