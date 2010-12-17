@@ -1208,4 +1208,11 @@
    ...
    fun:_ZN54PrefValueStorePolicyRefreshTest_TestPolicyRefresh_Test8TestBodyEv
 }
-
+{
+   bug_67261
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3sql10Connection18GetUniqueStatementEPKc
+   fun:_ZN3sql10Connection18GetCachedStatementERKNS_11StatementIDEPKc
+   fun:_ZN8appcache16AppCacheDatabase22PrepareCachedStatementERKN3sql11StatementIDEPKcPNS1_9StatementE
+}
