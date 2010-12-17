@@ -20,7 +20,7 @@ bool LaunchSelLdr(const char* alleged_url, int socket_count,
   return webkit_glue::LaunchSelLdr(alleged_url, socket_count, imc_handles,
                                    nacl_process_handle, nacl_process_id);
 #else
-  return 0;
+  return false;
 #endif
 }
 
