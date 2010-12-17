@@ -161,7 +161,6 @@ const char *kAllAboutPaths[] = {
   kTermsPath,
   kVersionPath,
 #if defined(OS_LINUX)
-  kLinuxProxyConfigPath,
   kSandboxPath,
 #endif
 #if defined(OS_CHROMEOS)
