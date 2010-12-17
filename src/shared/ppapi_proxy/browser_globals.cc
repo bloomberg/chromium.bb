@@ -154,4 +154,13 @@ const PPB_Var_Deprecated* PPBVarInterface() {
   return var_interface;
 }
 
+const PPB_URLRequestInfo* PPBURLRequestInfoInterface() {
+  static const PPB_URLRequestInfo* url_request_info_interface = NULL;
+  if (url_request_info_interface == NULL) {
+    url_request_info_interface = reinterpret_cast<const PPB_URLRequestInfo*>(
+        GetBrowserInterfaceSafe(PPB_URLREQUESTINFO_INTERFACE));
+  }
+  return url_request_info_interface;
+}
+
 }  // namespace ppapi_proxy

@@ -325,6 +325,47 @@ class PpbInstanceRpcServer {
   void operator=(const PpbInstanceRpcServer);
 };  // class PpbInstanceRpcServer
 
+class PpbURLRequestInfoRpcServer {
+ public:
+  static void PPB_URLRequestInfo_Create(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      int64_t module,
+      int64_t* resource);
+  static void PPB_URLRequestInfo_IsURLRequestInfo(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      int64_t resource,
+      int32_t* is_url_request_info);
+  static void PPB_URLRequestInfo_SetProperty(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      int64_t request,
+      int32_t property,
+      nacl_abi_size_t value_bytes, char* value,
+      int32_t* success);
+  static void PPB_URLRequestInfo_AppendDataToBody(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      int64_t request,
+      nacl_abi_size_t data_bytes, char* data,
+      int32_t* success);
+  static void PPB_URLRequestInfo_AppendFileToBody(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      int64_t request,
+      int64_t file_ref,
+      int64_t start_offset,
+      int64_t number_of_bytes,
+      double expected_last_modified_time,
+      int32_t* success);
+
+ private:
+  PpbURLRequestInfoRpcServer();
+  PpbURLRequestInfoRpcServer(const PpbURLRequestInfoRpcServer&);
+  void operator=(const PpbURLRequestInfoRpcServer);
+};  // class PpbURLRequestInfoRpcServer
+
 class PpbRpcs {
  public:
   static NaClSrpcHandlerDesc srpc_methods[];

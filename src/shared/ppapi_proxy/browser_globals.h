@@ -13,6 +13,7 @@
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/ppb_instance.h"
+#include "ppapi/c/ppb_url_request_info.h"
 
 struct NaClSrpcChannel;
 
@@ -59,6 +60,7 @@ const PPB_Graphics2D* PPBGraphics2DInterface();
 const PPB_ImageData* PPBImageDataInterface();
 const PPB_Instance* PPBInstanceInterface();
 const PPB_Var_Deprecated* PPBVarInterface();  // shared
+const PPB_URLRequestInfo* PPBURLRequestInfoInterface();
 
 // PPAPI constants used in the proxy.
 extern const PP_Resource kInvalidResourceId;

@@ -656,4 +656,88 @@ NaClSrpcError PpbInstanceRpcClient::PPB_Instance_ExecuteScript(
   return retval;
 }
 
+NaClSrpcError PpbURLRequestInfoRpcClient::PPB_URLRequestInfo_Create(
+    NaClSrpcChannel* channel,
+    int64_t module,
+    int64_t* resource)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_URLRequestInfo_Create:l:l",
+      module,
+      resource
+  );
+  return retval;
+}
+
+NaClSrpcError PpbURLRequestInfoRpcClient::PPB_URLRequestInfo_IsURLRequestInfo(
+    NaClSrpcChannel* channel,
+    int64_t resource,
+    int32_t* is_url_request_info)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_URLRequestInfo_IsURLRequestInfo:l:i",
+      resource,
+      is_url_request_info
+  );
+  return retval;
+}
+
+NaClSrpcError PpbURLRequestInfoRpcClient::PPB_URLRequestInfo_SetProperty(
+    NaClSrpcChannel* channel,
+    int64_t request,
+    int32_t property,
+    nacl_abi_size_t value_bytes, char* value,
+    int32_t* success)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_URLRequestInfo_SetProperty:liC:i",
+      request,
+      property,
+      value_bytes, value,
+      success
+  );
+  return retval;
+}
+
+NaClSrpcError PpbURLRequestInfoRpcClient::PPB_URLRequestInfo_AppendDataToBody(
+    NaClSrpcChannel* channel,
+    int64_t request,
+    nacl_abi_size_t data_bytes, char* data,
+    int32_t* success)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_URLRequestInfo_AppendDataToBody:lC:i",
+      request,
+      data_bytes, data,
+      success
+  );
+  return retval;
+}
+
+NaClSrpcError PpbURLRequestInfoRpcClient::PPB_URLRequestInfo_AppendFileToBody(
+    NaClSrpcChannel* channel,
+    int64_t request,
+    int64_t file_ref,
+    int64_t start_offset,
+    int64_t number_of_bytes,
+    double expected_last_modified_time,
+    int32_t* success)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_URLRequestInfo_AppendFileToBody:lllld:i",
+      request,
+      file_ref,
+      start_offset,
+      number_of_bytes,
+      expected_last_modified_time,
+      success
+  );
+  return retval;
+}
+
 

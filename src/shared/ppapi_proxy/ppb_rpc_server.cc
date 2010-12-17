@@ -668,6 +668,88 @@ static void PPB_Instance_ExecuteScriptDispatcher(
   );
 }
 
+static void PPB_URLRequestInfo_CreateDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(done);
+  PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_Create(
+      rpc,
+      done,
+      inputs[0]->u.lval,
+      &(outputs[0]->u.lval)
+  );
+}
+
+static void PPB_URLRequestInfo_IsURLRequestInfoDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(done);
+  PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_IsURLRequestInfo(
+      rpc,
+      done,
+      inputs[0]->u.lval,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_URLRequestInfo_SetPropertyDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(done);
+  PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_SetProperty(
+      rpc,
+      done,
+      inputs[0]->u.lval,
+      inputs[1]->u.ival,
+      inputs[2]->u.count, inputs[2]->arrays.carr,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_URLRequestInfo_AppendDataToBodyDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(done);
+  PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_AppendDataToBody(
+      rpc,
+      done,
+      inputs[0]->u.lval,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_URLRequestInfo_AppendFileToBodyDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(done);
+  PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_AppendFileToBody(
+      rpc,
+      done,
+      inputs[0]->u.lval,
+      inputs[1]->u.lval,
+      inputs[2]->u.lval,
+      inputs[3]->u.lval,
+      inputs[4]->u.dval,
+      &(outputs[0]->u.ival)
+  );
+}
+
 }  // namespace
 
 NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
@@ -711,6 +793,11 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_Instance_BindGraphics:ll:i", PPB_Instance_BindGraphicsDispatcher },
   { "PPB_Instance_IsFullFrame:l:i", PPB_Instance_IsFullFrameDispatcher },
   { "PPB_Instance_ExecuteScript:lCC:CC", PPB_Instance_ExecuteScriptDispatcher },
+  { "PPB_URLRequestInfo_Create:l:l", PPB_URLRequestInfo_CreateDispatcher },
+  { "PPB_URLRequestInfo_IsURLRequestInfo:l:i", PPB_URLRequestInfo_IsURLRequestInfoDispatcher },
+  { "PPB_URLRequestInfo_SetProperty:liC:i", PPB_URLRequestInfo_SetPropertyDispatcher },
+  { "PPB_URLRequestInfo_AppendDataToBody:lC:i", PPB_URLRequestInfo_AppendDataToBodyDispatcher },
+  { "PPB_URLRequestInfo_AppendFileToBody:lllld:i", PPB_URLRequestInfo_AppendFileToBodyDispatcher },
   { NULL, NULL }
 };
 

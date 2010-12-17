@@ -20,6 +20,7 @@
         'browser_image_data.cc',
         'browser_ppb_instance_rpc_server.cc',
         'browser_ppb_rpc_server.cc',
+	'browser_ppb_url_request_info_rpc_server.cc',
 	'browser_ppp_instance.cc',
         'browser_ppp.cc',
         'browser_upcall.cc',
