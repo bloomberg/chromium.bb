@@ -76,7 +76,7 @@ class DiskCacheBasedSSLHostInfo : public SSLHostInfo,
     disk_cache::Backend* backend() const { return backend_; }
     disk_cache::Entry* entry() const { return entry_; }
 
-   protected:
+   private:
     base::WeakPtr<DiskCacheBasedSSLHostInfo> obj_;
     void (DiskCacheBasedSSLHostInfo::*meth_) (int);
 
