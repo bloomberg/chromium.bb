@@ -40,13 +40,24 @@ function getSuccess()
   result.onerror = unexpectedErrorCallback;
 }
 
-function dataAddedSuccess()
+function addWithSameKeyFailed()
 {
-  debug('Data added');
+  debug('Adding a record with same key failed');
+  shouldBe("event.code", "webkitIDBDatabaseException.CONSTRAINT_ERR");
 
   var result = objectStore.get(1);
   result.onsuccess = getSuccess;
   result.onerror = unexpectedErrorCallback;
+}
+
+function dataAddedSuccess()
+{
+  debug('Data added');
+
+  debug('Try to add employee with same id');
+  var result = objectStore.add({fname: "Tom", lname: "Jones", id: 1});
+  result.onsuccess = unexpectedSuccessCallback;
+  result.onerror = addWithSameKeyFailed;
 }
 
 function populateObjectStore()
