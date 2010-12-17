@@ -266,7 +266,7 @@ ModuleEnumerator::ModuleStatus ModuleEnumerator::Match(
     // We have a name match against the blacklist (and possibly location match
     // also), so check version.
     scoped_ptr<Version> module_version(
-        Version::GetVersionFromString(module.version));
+        Version::GetVersionFromString(UTF16ToASCII(module.version)));
     scoped_ptr<Version> version_min(
         Version::GetVersionFromString(blacklisted.version_from));
     scoped_ptr<Version> version_max(

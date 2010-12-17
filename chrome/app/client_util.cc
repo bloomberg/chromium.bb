@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
 #include "chrome/app/breakpad_win.h"
@@ -213,26 +214,25 @@ HMODULE MainDllLoader::Load(std::wstring* out_version, std::wstring* out_file) {
   if (dll)
     return dll;
 
-  std::wstring version_env_string;
+  std::wstring version_string;
   scoped_ptr<Version> version;
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
   if (cmd_line.HasSwitch(switches::kChromeVersion)) {
-    version_env_string = cmd_line.GetSwitchValueNative(
-        switches::kChromeVersion);
-    version.reset(Version::GetVersionFromString(version_env_string));
+    version_string = cmd_line.GetSwitchValueNative(switches::kChromeVersion);
+    version.reset(Version::GetVersionFromString(WideToASCII(version_string)));
 
     if (!version.get()) {
       // If a bogus command line flag was given, then abort.
       LOG(ERROR) << "Invalid version string received on command line: "
-                 << version_env_string;
+                 << version_string;
       return NULL;
     }
   }
 
   if (!version.get()) {
     if (EnvQueryStr(ASCIIToWide(chrome::kChromeVersionEnvVar).c_str(),
-                    &version_env_string)) {
-      version.reset(Version::GetVersionFromString(version_env_string));
+                    &version_string)) {
+      version.reset(Version::GetVersionFromString(WideToASCII(version_string)));
     }
   }
 
@@ -241,13 +241,13 @@ HMODULE MainDllLoader::Load(std::wstring* out_version, std::wstring* out_file) {
     // Look into the registry to find the latest version. We don't validate
     // this by building a Version object to avoid harming normal case startup
     // time.
-    version_env_string.clear();
-    GetVersion(dir.c_str(), reg_path.c_str(), &version_env_string);
+    version_string.clear();
+    GetVersion(dir.c_str(), reg_path.c_str(), &version_string);
   }
 
-  if (version.get() || !version_env_string.empty()) {
+  if (version.get() || !version_string.empty()) {
     *out_file = dir;
-    *out_version = version_env_string;
+    *out_version = version_string;
     out_file->append(*out_version).append(L"\\");
     return LoadChromeWithDirectory(out_file);
   } else {
