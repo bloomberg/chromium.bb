@@ -334,8 +334,7 @@ static const struct wl_output_listener output_listener = {
 static void
 handle_configure(void *data, struct wl_shell *shell,
 		 uint32_t time, uint32_t edges,
-		 struct wl_surface *surface,
-		 int32_t x, int32_t y, int32_t width, int32_t height)
+		 struct wl_surface *surface, int32_t width, int32_t height)
 {
 #if 0
 	struct output *output = wl_surface_get_user_data(surface);
