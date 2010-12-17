@@ -1438,7 +1438,7 @@ void AutocompleteEditViewGtk::HandleInsertText(
     enter_was_inserted_ = true;
 
   const gchar* p = text;
-  while (*p) {
+  while (*p && (p - text) < len) {
     gunichar c = g_utf8_get_char(p);
     const gchar* next = g_utf8_next_char(p);
 

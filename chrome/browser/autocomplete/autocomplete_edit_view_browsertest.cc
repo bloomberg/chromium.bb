@@ -833,4 +833,21 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, PrimarySelection) {
   // The content in the PRIMARY clipboard should not be cleared.
   EXPECT_EQ("Hello world", GetPrimarySelectionText());
 }
+
+// See http://crosbug.com/10306
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest,
+                       BackspaceDeleteHalfWidthKatakana) {
+  browser()->FocusLocationBar();
+  AutocompleteEditView* edit_view = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
+  // Insert text: ﾀﾞ
+  edit_view->SetUserText(UTF8ToWide("\357\276\200\357\276\236"));
+
+  // Move the cursor to the end.
+  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_END, false, false, false));
+
+  // Backspace should delete one character.
+  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_BACK, false, false, false));
+  EXPECT_EQ(UTF8ToWide("\357\276\200"), edit_view->GetText());
+}
 #endif
