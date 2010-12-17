@@ -1183,11 +1183,9 @@ def _AddActions(p, spec):
 def _AddRunAs(p, spec, user_file):
   # Add run_as and test targets.
   has_run_as = False
-  if spec.get('run_as') or int(spec.get('test', 0)):
+  run_as = spec.get('run_as')
+  if run_as:
     has_run_as = True
-    run_as = spec.get('run_as', {
-      'action' : ['$(TargetPath)', '--gtest_print_time'],
-      })
     working_directory = run_as.get('working_directory', '.')
     action = run_as.get('action', [])
     environment = run_as.get('environment', [])

@@ -530,10 +530,8 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
       fp.write(fmt % (repr(dest), repr(f)))
       fp.write('target_files.extend(_outputs)\n')
 
-  if spec.get('run_as') or int(spec.get('test', 0)):
-    run_as = spec.get('run_as', {
-        'action' : ['$TARGET_NAME', '--gtest_print_time'],
-        })
+  run_as = spec.get('run_as')
+  if run_as:
     action = run_as.get('action', [])
     working_directory = run_as.get('working_directory')
     if not working_directory:
@@ -564,7 +562,7 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
     fp.write('  env.Requires(prerequisite, dependencies)\n')
   fp.write('env.Requires(gyp_target, prerequisites)\n')
 
-  if spec.get('run_as', 0) or int(spec.get('test', 0)):
+  if run_as:
     fp.write(_run_as_template_suffix % {
       'target_name': target_name,
     })

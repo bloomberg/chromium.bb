@@ -225,11 +225,9 @@ class XcodeProject(object):
       if target_name.lower() == 'all':
         has_custom_all = True;
 
-      # If this target has a 'run_as' attribute, or is a test, add its
-      # target to the targets, and (if it's a test) add it the to the
-      # test targets.
-      is_test = int(target.get('test', 0))
-      if target.get('run_as') or is_test:
+      # If this target has a 'run_as' attribute, add its target to the
+      # targets, and add it to the test targets.
+      if target.get('run_as'):
         # Make a target to run something.  It should have one
         # dependency, the parent xcode target.
         xccl = CreateXCConfigurationList(configurations)
@@ -241,14 +239,7 @@ class XcodeProject(object):
             parent=self.project)
         run_target.AddDependency(xcode_target)
 
-        # The test runner target has a build phase that executes the
-        # test, if this has the 'test' attribute.  If the 'run_as' tag
-        # doesn't exist (meaning that this must be a test), then we
-        # define a default test command line.
-        command = target.get('run_as', {
-          'action': ['${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}']
-          })
-
+        command = target['run_as']
         script = ''
         if command.get('working_directory'):
           script = script + 'cd "%s"\n' % \
@@ -268,7 +259,7 @@ class XcodeProject(object):
         # little bit of python does the same as the linux flock utility to
         # make sure only one runs at a time.
         command_prefix = ''
-        if is_test and serialize_all_tests:
+        if serialize_all_tests:
           command_prefix = \
 """python -c "import fcntl, subprocess, sys
 file = open('$TMPDIR/GYP_serialize_test_runs', 'a')
@@ -290,9 +281,8 @@ sys.exit(subprocess.call(sys.argv[1:]))" """
 
         # Add the run target to the project file.
         targets.append(run_target)
-        if is_test:
-          run_test_targets.append(run_target)
-          xcode_target.test_runner = run_target
+        run_test_targets.append(run_target)
+        xcode_target.test_runner = run_target
 
 
     # Make sure that the list of targets being replaced is the same length as
@@ -372,9 +362,7 @@ sys.exit(subprocess.call(sys.argv[1:]))" """
           for pbxtd in pbxtds:
             pbxcip = pbxtd.GetProperty('targetProxy')
             dependency_xct = pbxcip.GetProperty('remoteGlobalIDString')
-            target_dict = xcode_target_to_target_dict[dependency_xct]
-            if target_dict and int(target_dict.get('test', 0)):
-              assert dependency_xct.test_runner
+            if hasattr(dependency_xct, 'test_runner'):
               all_run_tests.append(dependency_xct.test_runner)
 
           # Directly depend on all the runners as they depend on the target

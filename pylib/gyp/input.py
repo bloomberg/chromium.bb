@@ -83,7 +83,6 @@ base_non_configuration_keys = [
   'sources',
   'suppress_wildcard',
   'target_name',
-  'test',
   'toolset',
   'toolsets',
   'type',
