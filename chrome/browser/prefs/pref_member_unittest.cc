@@ -4,7 +4,8 @@
 
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_value_store.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_source.h"
 #include "chrome/test/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

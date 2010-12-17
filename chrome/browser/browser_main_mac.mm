@@ -25,7 +25,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/main_function_params.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/result_codes.h"
 #include "net/socket/ssl_client_socket_mac_factory.h"
 

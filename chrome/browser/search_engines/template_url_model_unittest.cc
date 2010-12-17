@@ -19,7 +19,6 @@
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/notification_details.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_pref_service.h"
@@ -37,8 +36,8 @@ using base::TimeDelta;
 #endif
 
 // Test the GenerateSearchURL on a thread or the main thread.
-class TestGenerateSearchURL :
-    public base::RefCountedThreadSafe<TestGenerateSearchURL> {
+class TestGenerateSearchURL
+    : public base::RefCountedThreadSafe<TestGenerateSearchURL> {
  public:
   explicit TestGenerateSearchURL(SearchTermsData* search_terms_data)
       : search_terms_data_(search_terms_data),

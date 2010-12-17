@@ -4,11 +4,14 @@
 
 #include "chrome/browser/chromeos/dom_ui/core_chromeos_options_handler.h"
 
+#include <string>
+
 #include "base/json/json_reader.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_source.h"
 
 namespace chromeos {
 

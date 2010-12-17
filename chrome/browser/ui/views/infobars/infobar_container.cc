@@ -9,7 +9,8 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/infobars/infobars.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_source.h"
 #include "grit/generated_resources.h"
 
 // InfoBarContainer, public: ---------------------------------------------------

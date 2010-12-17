@@ -12,7 +12,7 @@
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_observer_mock.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
@@ -129,4 +129,3 @@ TEST_F(HostZoomMapTest, ChangeDefaultZoomLevel) {
   scoped_refptr<HostZoomMap> map(new HostZoomMap(&profile_));
   EXPECT_EQ(kDefaultZoomLevel, map->GetZoomLevel(url_));
 }
-

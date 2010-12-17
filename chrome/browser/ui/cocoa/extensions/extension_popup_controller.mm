@@ -14,8 +14,9 @@
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/ui/cocoa/extension_view_mac.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
+#include "chrome/common/notification_details.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
 
 namespace {
 // The duration for any animations that might be invoked by this controller.

@@ -11,7 +11,6 @@
 #include "chrome/browser/repost_form_warning_controller.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "views/controls/message_box_view.h"
 #include "views/window/window.h"

@@ -9,7 +9,8 @@
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_source.h"
 #include "gfx/color_utils.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -33,7 +34,7 @@ void ShowCollectedCookiesDialog(gfx::NativeWindow parent_window,
   new CollectedCookiesWin(parent_window, tab_contents);
 }
 
-} // namespace browser
+}  // namespace browser
 
 namespace {
 // Spacing between the infobar frame and its contents.
@@ -47,7 +48,7 @@ const int kInfobarBorderSize = 1;
 const int kTreeViewWidth = 400;
 const int kTreeViewHeight = 125;
 
-} // namespace
+}  // namespace
 
 // A custom view that conditionally displays an infobar.
 class InfobarView : public views::View {

@@ -9,7 +9,9 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros_settings_provider.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_source.h"
+#include "chrome/common/notification_type.h"
 
 namespace chromeos {
 
@@ -142,7 +144,7 @@ void CrosSettings::RemoveSettingsObserver(const char* path,
 CrosSettingsProvider* CrosSettings::GetProvider(
     const std::string& path) const {
   for (size_t i = 0; i < providers_.size(); ++i) {
-    if (providers_[i]->HandlesSetting(path)){
+    if (providers_[i]->HandlesSetting(path)) {
       return providers_[i];
     }
   }

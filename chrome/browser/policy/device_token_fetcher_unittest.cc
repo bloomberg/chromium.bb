@@ -12,7 +12,6 @@
 #include "chrome/browser/policy/device_token_fetcher.h"
 #include "chrome/browser/policy/mock_device_management_backend.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/test/testing_device_token_fetcher.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gmock/include/gmock/gmock.h"

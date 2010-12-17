@@ -28,7 +28,6 @@
 #include "chrome/browser/dom_ui/dom_ui_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/window.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/time_format.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"

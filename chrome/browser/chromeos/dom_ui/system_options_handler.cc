@@ -14,7 +14,6 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/dom_ui/system_settings_provider.h"
 #include "chrome/browser/chromeos/language_preferences.h"
-#include "chrome/common/notification_service.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

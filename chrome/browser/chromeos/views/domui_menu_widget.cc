@@ -16,7 +16,6 @@
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/dom_view.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "gfx/canvas_skia.h"
 #include "googleurl/src/gurl.h"

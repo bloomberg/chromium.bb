@@ -28,7 +28,8 @@
 #include "chrome/browser/views/tabs/side_tab_strip.h"
 #include "chrome/browser/views/tabs/tab.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_source.h"
 #include "gfx/canvas_skia.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -42,8 +43,8 @@
 #endif
 
 #if defined(OS_LINUX)
-#include <gdk/gdk.h>
-#include <gdk/gdkkeysyms.h>
+#include <gdk/gdk.h>  // NOLINT
+#include <gdk/gdkkeysyms.h>  // NOLINT
 #endif
 
 static const int kHorizontalMoveThreshold = 16;  // Pixels.

@@ -10,7 +10,8 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_container.h"
-#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_source.h"
 
 #if defined(TOUCH_UI)
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_container_gtk.h"
@@ -152,7 +153,7 @@ void TabContentsContainer::RemoveObservers() {
 void TabContentsContainer::RenderViewHostChanged(RenderViewHost* old_host,
                                                  RenderViewHost* new_host) {
 #if defined(TOUCH_UI)
-  NOTIMPLEMENTED(); // TODO(anicolao)
+  NOTIMPLEMENTED();  // TODO(anicolao)
 #else
   if (new_host) {
     RenderWidgetHostViewChanged(

@@ -12,7 +12,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_pref_service.h"
@@ -795,7 +794,7 @@ TEST_F(HostContentSettingsMapTest, OverwrittenDefaultContentSetting) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetDefaultContentSetting(
                 CONTENT_SETTINGS_TYPE_COOKIES));
- }
+}
 
 // If a setting for a default-content-setting-type is set while the type is
 // managed, then the new setting should be preserved and used after the

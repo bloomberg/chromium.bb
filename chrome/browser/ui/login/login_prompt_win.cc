@@ -15,7 +15,6 @@
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/views/login_view.h"
-#include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request.h"
 #include "views/window/dialog_delegate.h"
