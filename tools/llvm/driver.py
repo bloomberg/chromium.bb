@@ -77,7 +77,7 @@ INITIAL_ENV = {
 
   'LOG_TO_FILE'          : '1',
   'LOG_FILENAME'         : '${BASE_NACL}/toolchain/hg-log/driver.log',
-  'LOG_FILE_SIZE_LIMIT'  : '20971520', # 20 MB
+  'LOG_FILE_SIZE_LIMIT'  : str(20 * 1024 * 1024),
   'LOG_PRETTY_PRINT'     : '1',
 
   'GOLD_PLUGIN_SO'  : '${BASE_ARM}/lib/libLLVMgold.so',
@@ -270,7 +270,7 @@ GCCPatterns = [
   ( '(.+\\.pexe)',     "env.append('INPUTS', $0)"),
   ( '(-l.+)',          "env.append('INPUTS', $0)"),
 
-  ( '-O(.+)',          "env.set('OPT_LEVEL', '-O' + $0)"),
+  ( '(-O.+)',          "env.set('OPT_LEVEL', $0)"),
 
   ( '(-W.*)',          "env.append('CC_FLAGS', $0)"),
   ( '(-std=.*)',       "env.append('CC_FLAGS', $0)"),
@@ -1239,21 +1239,27 @@ class Log:
     cls.LogPrint(m)
 
   @classmethod
-  def Fatal(cls, m, ret=-1):
+  def FatalWithResult(cls, ret, m, *args):
     m = 'FATAL: ' + m
-    cls.LogPrint(m)
-    cls.ErrorPrint(m)
+    cls.LogPrint(m, *args)
+    cls.ErrorPrint(m, *args)
     NiceExit(ret)
 
   @classmethod
-  def LogPrint(cls, m):
-    for o in cls.LOG_OUT:
-      print >> o, m
+  def Fatal(cls, m, *args):
+    # Note, using keyword args and arg lists while trying to keep
+    # the m and *args parameters next to each other does not work
+    cls.FatalWithResult(-1, m, *args)
 
   @classmethod
-  def ErrorPrint(cls, m):
+  def LogPrint(cls, m, *args):
+    for o in cls.LOG_OUT:
+      print >> o, m % args
+
+  @classmethod
+  def ErrorPrint(cls, m, *args):
     for o in cls.ERROR_OUT:
-      print >> o, m
+      print >> o, m % args
 
 def StringifyCommand(a):
   if env.getbool('LOG_PRETTY_PRINT'):
@@ -1300,9 +1306,11 @@ def RunWithLog(args):
   sys.stderr.write(buf_stderr)
 
   if ret:
-    Log.Fatal('failed command: ' + StringifyCommand(args) + '\n' +
-              'stdout        :\n' + buf_stdout + '\n' +
-              'stderr        :\n' + buf_stderr + '\n', ret)
+    Log.FatalWithResult(ret,
+                        'failed command: %s\n'
+                        'stdout        : %s\n'
+                        'stderr        : %s\n',
+                        StringifyCommand(args), buf_stdout, buf_stderr)
 
 ######################################################################
 # TLS Hack
