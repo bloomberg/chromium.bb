@@ -162,8 +162,7 @@ resizor_create(struct display *display)
 		return resizor;
 	memset(resizor, 0, sizeof *resizor);
 
-	resizor->window = window_create(display, "Wayland Resizor",
-				     100, 100, 500, 400);
+	resizor->window = window_create(display, "Wayland Resizor", 500, 400);
 	resizor->display = display;
 
 	window_set_key_handler(resizor->window, key_handler);

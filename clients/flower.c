@@ -30,6 +30,7 @@
 #include <math.h>
 #include <time.h>
 #include <cairo.h>
+#include <sys/time.h>
 #include <glib.h>
 
 #include "wayland-client.h"
@@ -97,31 +98,36 @@ draw_stuff(cairo_surface_t *surface, int width, int height)
 	cairo_destroy(cr);
 }
 
+static int
+motion_handler(struct window *window,
+	       struct input *input, uint32_t time,
+	       int32_t x, int32_t y,
+	       int32_t sx, int32_t sy, void *data)
+{
+	return POINTER_HAND1;
+}
+
+static void
+button_handler(struct window *window,
+	       struct input *input, uint32_t time,
+	       int button, int state, void *data)
+{
+	if (state)
+		window_move(window, input, time);
+}
+
 struct flower {
 	struct display *display;
 	struct window *window;
-	int x, y, width, height;
-	int offset;
+	int width, height;
 };
-
-static void
-frame_callback(void *data, uint32_t time)
-{
-	struct flower *flower = data;
-
-	window_move(flower->window, 
-		    flower->x + cos((flower->offset + time) / 400.0) * 400 - flower->width / 2,
-		    flower->y + sin((flower->offset + time) / 320.0) * 300 - flower->height / 2);
-	wl_display_frame_callback(display_get_display(flower->display),
-				  frame_callback, flower);
-}
 
 int main(int argc, char *argv[])
 {
 	cairo_surface_t *s;
-	struct timespec ts;
 	struct flower flower;
 	struct display *d;
+	struct timeval tv;
 
 	d = display_create(&argc, &argv, NULL);
 	if (d == NULL) {
@@ -129,17 +135,14 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	flower.x = 512;
-	flower.y = 384;
+	gettimeofday(&tv, NULL);
+	srandom(tv.tv_usec);
+
 	flower.width = 200;
 	flower.height = 200;
 	flower.display = d;
-	flower.window = window_create(d, "flower", flower.x, flower.y,
+	flower.window = window_create(d, "flower",
 				      flower.width, flower.height);
-
-	clock_gettime(CLOCK_MONOTONIC, &ts);
-	srandom(ts.tv_nsec);
-	flower.offset = random();
 
 	window_set_decoration(flower.window, 0);
 	window_draw(flower.window);
@@ -154,10 +157,9 @@ int main(int argc, char *argv[])
 	cairo_surface_destroy(s);
 	window_flush(flower.window);
 
+	window_set_motion_handler(flower.window, motion_handler);
+	window_set_button_handler(flower.window, button_handler);
 	window_set_user_data(flower.window, &flower);
-	wl_display_frame_callback(display_get_display(d),
-				  frame_callback, &flower);
-
 	display_run(d);
 
 	return 0;

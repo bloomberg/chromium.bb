@@ -464,7 +464,7 @@ terminal_create(struct display *display, int fullscreen)
 	terminal->fullscreen = fullscreen;
 	terminal->color_scheme = &jbarnes_colors;
 	terminal->window = window_create(display, "Wayland Terminal",
-					 500, 100, 500, 400);
+					 500, 400);
 	terminal->display = display;
 	terminal->margin = 5;
 

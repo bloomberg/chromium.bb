@@ -419,27 +419,31 @@ surface_destroy(struct wl_client *client,
 
 static void
 surface_attach(struct wl_client *client,
-	       struct wl_surface *surface, struct wl_buffer *buffer)
+	       struct wl_surface *surface, struct wl_buffer *buffer,
+	       int32_t x, int32_t y)
 {
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 
 	buffer->attach(buffer, surface);
 	es->buffer = buffer;
+	es->x += x;
+	es->y += y;
+	es->width = buffer->width;
+	es->height = buffer->height;
+	wlsc_surface_update_matrix(es);
 }
 
 static void
-surface_map(struct wl_client *client,
-	    struct wl_surface *surface,
-	    int32_t x, int32_t y, int32_t width, int32_t height)
+surface_map_toplevel(struct wl_client *client,
+		     struct wl_surface *surface)
 {
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 
-	es->x = x;
-	es->y = y;
-	es->width = width;
-	es->height = height;
+	es->x = 10 + random() % 400;
+	es->y = 10 + random() % 400;
 
 	wlsc_surface_update_matrix(es);
+	wl_list_insert(es->compositor->surface_list.prev, &es->link);
 	wlsc_compositor_schedule_repaint(es->compositor);
 }
 
@@ -457,7 +461,7 @@ surface_damage(struct wl_client *client,
 const static struct wl_surface_interface surface_interface = {
 	surface_destroy,
 	surface_attach,
-	surface_map,
+	surface_map_toplevel,
 	surface_damage
 };
 
@@ -557,17 +561,9 @@ move_grab_motion(struct wl_grab *grab,
 	struct wlsc_move_grab *move = (struct wlsc_move_grab *) grab;
 	struct wlsc_surface *es =
 		(struct wlsc_surface *) grab->input_device->pointer_focus;
-	struct wlsc_compositor *ec =
-		(struct wlsc_compositor *) grab->input_device->compositor;
 
 	es->x = x + move->dx;
 	es->y = y + move->dy;
-	wl_client_post_event(es->surface.client, &ec->shell.object,
-			     WL_SHELL_CONFIGURE,
-			     time, WLSC_DEVICE_GRAB_MOVE,
-			     &es->surface, es->x, es->y,
-			     es->width, es->height);
-
 	wlsc_surface_update_matrix(es);
 }
 
@@ -630,33 +626,27 @@ resize_grab_motion(struct wl_grab *grab,
 	struct wlsc_compositor *ec =
 		(struct wlsc_compositor *) device->compositor;
 	struct wl_surface *surface = device->pointer_focus;
-	int32_t sx, sy, width, height;
+	int32_t width, height;
 
 	if (resize->edges & WLSC_DEVICE_GRAB_RESIZE_LEFT) {
-		sx = x + resize->dx;
 		width = device->grab_x - x + resize->width;
 	} else if (resize->edges & WLSC_DEVICE_GRAB_RESIZE_RIGHT) {
-		sx = device->grab_x + resize->dx;
 		width = x - device->grab_x + resize->width;
 	} else {
-		sx = device->grab_x + resize->dx;
 		width = resize->width;
 	}
 
 	if (resize->edges & WLSC_DEVICE_GRAB_RESIZE_TOP) {
-		sy = y + resize->dy;
 		height = device->grab_y - y + resize->height;
 	} else if (resize->edges & WLSC_DEVICE_GRAB_RESIZE_BOTTOM) {
-		sy = device->grab_y + resize->dy;
 		height = y - device->grab_y + resize->height;
 	} else {
-		sy = device->grab_y + resize->dy;
 		height = resize->height;
 	}
 
 	wl_client_post_event(surface->client, &ec->shell.object,
 			     WL_SHELL_CONFIGURE, time, resize->edges,
-			     surface, sx, sy, width, height);
+			     surface, width, height);
 }
 
 static void
@@ -814,7 +804,6 @@ compositor_create_surface(struct wl_client *client,
 		return;
 	}
 
-	wl_list_insert(ec->surface_list.prev, &surface->link);
 	surface->surface.resource.destroy = destroy_surface;
 
 	surface->surface.resource.object.id = id;

@@ -193,7 +193,8 @@ wayland_compositor_present(struct wlsc_compositor *base)
 					  output->rbo[output->current]);
 
 		wl_surface_attach(output->parent.surface,
-				  output->parent.buffer[output->current ^ 1]);
+				  output->parent.buffer[output->current ^ 1],
+				  0, 0);
 		wl_surface_damage(output->parent.surface, 0, 0,
 			          output->base.width, output->base.height);
 	}
@@ -264,10 +265,8 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 				  output->rbo[output->current]);
 
 	wl_surface_attach(output->parent.surface,
-			  output->parent.buffer[output->current]);
-	wl_surface_map(output->parent.surface,
-		       output->base.x, output->base.y,
-		       output->base.width, output->base.height);
+			  output->parent.buffer[output->current], 0, 0);
+	wl_surface_map_toplevel(output->parent.surface);
 
 	glClearColor(0, 0, 0, 0.5);
 

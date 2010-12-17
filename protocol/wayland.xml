@@ -172,11 +172,8 @@
          received. -->
     <event name="configure">
       <arg name="time" type="uint"/>
-      <!-- Same as edges except also move (16) -->
-      <arg name="type" type="uint"/>
+      <arg name="edges" type="uint"/>
       <arg name="surface" type="object" interface="surface"/>
-      <arg name="x" type="int"/>
-      <arg name="y" type="int"/>
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
     </event>
@@ -281,19 +278,17 @@
     <!-- Deletes the surface and invalidates its object id. -->
     <request name="destroy" type="destructor"/>
 
-    <!-- Copy the contents of a buffer into this surface. -->
+    <!-- Copy the contents of a buffer into this surface. The x and y
+         arguments specify the location of the new buffers upper left
+         corner, relative to the old buffers upper left corner. -->
     <request name="attach">
       <arg name="buffer" type="object" interface="buffer"/>
-    </request>
-
-    <!-- Set the location on the screen that this surface will
-         be displayed. -->
-    <request name="map">
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
-      <arg name="width" type="int"/>
-      <arg name="height" type="int"/>
     </request>
+
+    <!-- Make the surface visible as a toplevel window. -->
+    <request name="map_toplevel"/>
 
     <!-- Notify the server that the attached buffer's contents have
          changed, and request a redraw. The arguments allow you to

@@ -340,15 +340,14 @@ frame_callback(void *data, uint32_t time)
 static struct gears *
 gears_create(struct display *display)
 {
-	const int x = 200, y = 200, width = 450, height = 500;
+	const int width = 450, height = 500;
 	struct gears *gears;
 	int i;
 
 	gears = malloc(sizeof *gears);
 	memset(gears, 0, sizeof *gears);
 	gears->d = display;
-	gears->window = window_create(display, "Wayland Gears",
-				      x, y, width, height);
+	gears->window = window_create(display, "Wayland Gears", width, height);
 
 	gears->display = display_get_egl_display(gears->d);
 	if (gears->display == NULL)

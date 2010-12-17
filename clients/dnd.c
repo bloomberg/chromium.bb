@@ -633,7 +633,7 @@ dnd_create(struct display *display)
 
 	title = g_strdup_printf("Wayland Drag and Drop Demo");
 
-	dnd->window = window_create(display, title, 100, 100, 500, 400);
+	dnd->window = window_create(display, title, 500, 400);
 	dnd->display = display;
 	dnd->key = 100;
 

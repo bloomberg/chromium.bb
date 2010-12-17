@@ -125,7 +125,10 @@ typedef void (*display_drag_offer_handler_t)(struct wl_drag_offer *offer,
 
 struct window *
 window_create(struct display *display, const char *title,
-	      int32_t x, int32_t y, int32_t width, int32_t height);
+	      int32_t width, int32_t height);
+
+void
+window_move(struct window *window, struct input *input, uint32_t time);
 
 void
 window_draw(struct window *window);
@@ -141,9 +144,6 @@ window_copy_image(struct window *window,
 		  void *image);
 void
 window_schedule_redraw(struct window *window);
-
-void
-window_move(struct window *window, int32_t x, int32_t y);
 
 void
 window_damage(struct window *window, int32_t x, int32_t y,

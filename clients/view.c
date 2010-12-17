@@ -171,8 +171,7 @@ view_create(struct display *display, uint32_t key, const char *filename)
 
 	view->filename = g_strdup(filename);
 
-	view->window = window_create(display, title,
-				     100 * key, 100 * key, 500, 400);
+	view->window = window_create(display, title, 500, 400);
 	view->display = display;
 
 	/* FIXME: Window uses key 1 for moves, need some kind of

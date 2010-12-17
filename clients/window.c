@@ -86,7 +86,7 @@ struct window {
 	struct display *display;
 	struct wl_surface *surface;
 	const char *title;
-	struct rectangle allocation, saved_allocation, pending_allocation;
+	struct rectangle allocation, saved_allocation, server_allocation;
 	int resize_edges;
 	int redraw_scheduled;
 	int minimum_width, minimum_height;
@@ -97,6 +97,7 @@ struct window {
 	struct input *keyboard_device;
 	uint32_t name;
 	enum window_buffer_type buffer_type;
+	int mapped;
 
 	EGLImageKHR *image;
 	cairo_surface_t *cairo_surface, *pending_surface;
@@ -126,6 +127,22 @@ struct input {
 enum {
 	POINTER_DEFAULT = 100,
 	POINTER_UNSET
+};
+
+enum window_location {
+	WINDOW_INTERIOR = 0,
+	WINDOW_RESIZING_TOP = 1,
+	WINDOW_RESIZING_BOTTOM = 2,
+	WINDOW_RESIZING_LEFT = 4,
+	WINDOW_RESIZING_TOP_LEFT = 5,
+	WINDOW_RESIZING_BOTTOM_LEFT = 6,
+	WINDOW_RESIZING_RIGHT = 8,
+	WINDOW_RESIZING_TOP_RIGHT = 9,
+	WINDOW_RESIZING_BOTTOM_RIGHT = 10,
+	WINDOW_RESIZING_MASK = 15,
+	WINDOW_EXTERIOR = 16,
+	WINDOW_TITLEBAR = 17,
+	WINDOW_CLIENT_AREA = 18,
 };
 
 const char *option_xkb_layout = "us";
@@ -547,6 +564,7 @@ window_attach_surface(struct window *window)
 {
 	struct display *display = window->display;
 	struct wl_buffer *buffer;
+	int32_t x, y;
 
 	if (window->pending_surface != NULL)
 		return;
@@ -556,15 +574,31 @@ window_attach_surface(struct window *window)
 
 	buffer = display_get_buffer_for_surface(display,
 						window->pending_surface);
-	wl_surface_attach(window->surface, buffer);
+	if (window->resize_edges & WINDOW_RESIZING_LEFT)
+		x = window->server_allocation.width -
+			window->allocation.width;
+	else
+		x = 0;
 
-	wl_surface_map(window->surface,
-		       window->allocation.x,
-		       window->allocation.y,
-		       window->allocation.width,
-		       window->allocation.height);
+	if (window->resize_edges & WINDOW_RESIZING_TOP)
+		y = window->server_allocation.height -
+			window->allocation.height;
+	else
+		y = 0;
 
+	window->server_allocation = window->allocation;
+	window->resize_edges = 0;
+	wl_surface_attach(window->surface, buffer, x, y);
 	wl_display_sync_callback(display->display, free_surface, window);
+
+	if (!window->mapped) {
+		wl_surface_map_toplevel(window->surface);
+		window->mapped = 1;
+	}
+
+	wl_surface_damage(window->surface, 0, 0,
+			  window->allocation.width,
+			  window->allocation.height);
 }
 
 void
@@ -687,27 +721,14 @@ window_get_surface(struct window *window)
 	return cairo_surface_reference(window->cairo_surface);
 }
 
-enum window_location {
-	WINDOW_INTERIOR = 0,
-	WINDOW_RESIZING_TOP = 1,
-	WINDOW_RESIZING_BOTTOM = 2,
-	WINDOW_RESIZING_LEFT = 4,
-	WINDOW_RESIZING_TOP_LEFT = 5,
-	WINDOW_RESIZING_BOTTOM_LEFT = 6,
-	WINDOW_RESIZING_RIGHT = 8,
-	WINDOW_RESIZING_TOP_RIGHT = 9,
-	WINDOW_RESIZING_BOTTOM_RIGHT = 10,
-	WINDOW_RESIZING_MASK = 15,
-	WINDOW_EXTERIOR = 16,
-	WINDOW_TITLEBAR = 17,
-	WINDOW_CLIENT_AREA = 18,
-};
-
 static int
 get_pointer_location(struct window *window, int32_t x, int32_t y)
 {
 	int vlocation, hlocation, location;
 	const int grip_size = 8;
+
+	if (!window->decoration)
+		return WINDOW_CLIENT_AREA;
 
 	if (x < window->margin)
 		hlocation = WINDOW_EXTERIOR;
@@ -997,6 +1018,13 @@ window_create_drag(struct window *window)
 }
 
 void
+window_move(struct window *window, struct input *input, uint32_t time)
+{
+	wl_shell_move(window->display->shell,
+		      window->surface, input->input_device, time);
+}
+
+void
 window_activate_drag(struct wl_drag *drag, struct window *window,
 		     struct input *input, uint32_t time)
 {
@@ -1006,27 +1034,18 @@ window_activate_drag(struct wl_drag *drag, struct window *window,
 static void
 handle_configure(void *data, struct wl_shell *shell,
 		 uint32_t time, uint32_t edges,
-		 struct wl_surface *surface,
-		 int32_t x, int32_t y, int32_t width, int32_t height)
+		 struct wl_surface *surface, int32_t width, int32_t height)
 {
 	struct window *window = wl_surface_get_user_data(surface);
 
 	window->resize_edges = edges;
-	window->pending_allocation.x = x;
-	window->pending_allocation.y = y;
-	window->pending_allocation.width = width;
-	window->pending_allocation.height = height;
+	window->allocation.width = width;
+	window->allocation.height = height;
 
-	if (edges & WINDOW_TITLEBAR) {
-		window->allocation.x = window->pending_allocation.x;
-		window->allocation.y = window->pending_allocation.y;
-	} else if (edges & WINDOW_RESIZING_MASK) {
-		if (window->resize_handler)
-			(*window->resize_handler)(window,
-						  window->user_data);
-		else if (window->redraw_handler)
-			window_schedule_redraw(window);
-	}
+	if (window->resize_handler)
+		(*window->resize_handler)(window, window->user_data);
+	if (window->redraw_handler)
+		window_schedule_redraw(window);
 }
 
 static const struct wl_shell_listener shell_listener = {
@@ -1051,21 +1070,11 @@ void
 window_set_child_size(struct window *window,
 		      struct rectangle *rectangle)
 {
-	int32_t width, height;
-
 	if (!window->fullscreen) {
-		width = rectangle->width + 20 + window->margin * 2;
-		height = rectangle->height + 60 + window->margin * 2;
-
-		if (window->resize_edges & WINDOW_RESIZING_LEFT)
-			window->allocation.x +=
-				window->allocation.width - width;
-		if (window->resize_edges & WINDOW_RESIZING_TOP)
-			window->allocation.y +=
-				window->allocation.height - height;
-
-		window->allocation.width = width;
-		window->allocation.height = height;
+		window->allocation.width =
+			rectangle->width + 20 + window->margin * 2;
+		window->allocation.height =
+			rectangle->height + 60 + window->margin * 2;
 	}
 }
 
@@ -1098,13 +1107,9 @@ idle_redraw(void *data)
 {
 	struct window *window = data;
 
-	if (window->resize_edges)
-		window->allocation = window->pending_allocation;
-
 	window->redraw_handler(window, window->user_data);
 
 	window->redraw_scheduled = 0;
-	window->resize_edges = 0;
 
 	return FALSE;
 }
@@ -1191,19 +1196,6 @@ window_set_keyboard_focus_handler(struct window *window,
 }
 
 void
-window_move(struct window *window, int32_t x, int32_t y)
-{
-	window->allocation.x = x;
-	window->allocation.y = y;
-
-	wl_surface_map(window->surface,
-		       window->allocation.x - window->margin,
-		       window->allocation.y - window->margin,
-		       window->allocation.width,
-		       window->allocation.height);
-}
-
-void
 window_damage(struct window *window, int32_t x, int32_t y,
 	      int32_t width, int32_t height)
 {
@@ -1212,7 +1204,7 @@ window_damage(struct window *window, int32_t x, int32_t y,
 
 struct window *
 window_create(struct display *display, const char *title,
-	      int32_t x, int32_t y, int32_t width, int32_t height)
+	      int32_t width, int32_t height)
 {
 	struct window *window;
 
@@ -1224,8 +1216,8 @@ window_create(struct display *display, const char *title,
 	window->display = display;
 	window->title = strdup(title);
 	window->surface = wl_compositor_create_surface(display->compositor);
-	window->allocation.x = x;
-	window->allocation.y = y;
+	window->allocation.x = 0;
+	window->allocation.y = 0;
 	window->allocation.width = width;
 	window->allocation.height = height;
 	window->saved_allocation = window->allocation;
