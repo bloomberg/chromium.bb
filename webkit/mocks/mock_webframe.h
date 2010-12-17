@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_MOCK_WEBFRAME_H_
-#define WEBKIT_GLUE_MOCK_WEBFRAME_H_
+#ifndef WEBKIT_MOCKS_MOCK_WEBFRAME_H_
+#define WEBKIT_MOCKS_MOCK_WEBFRAME_H_
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
@@ -349,4 +349,4 @@ class MockWebFrame : public WebKit::WebFrame {
 
 }  // namespace webkit_glue
 
-#endif  // WEBKIT_GLUE_MOCK_WEBFRAME_H_
+#endif  // WEBKIT_MOCKS_MOCK_WEBFRAME_H_

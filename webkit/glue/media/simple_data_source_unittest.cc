@@ -13,8 +13,8 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "webkit/glue/media/simple_data_source.h"
-#include "webkit/glue/mock_webframe.h"
-#include "webkit/glue/mock_weburlloader_impl.h"
+#include "webkit/mocks/mock_webframe.h"
+#include "webkit/mocks/mock_weburlloader.h"
 
 using ::testing::_;
 using ::testing::DoAll;

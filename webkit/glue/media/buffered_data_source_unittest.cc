@@ -11,7 +11,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURLError.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "webkit/glue/media/buffered_data_source.h"
-#include "webkit/glue/mock_webframe.h"
+#include "webkit/mocks/mock_webframe.h"
 
 using ::testing::_;
 using ::testing::Assign;
