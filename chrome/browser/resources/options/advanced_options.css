@@ -4,9 +4,6 @@
  * found in the LICENSE file.
  */
 
-.disable-services-div {
-  color: grey;
-}
-.disable-services-span {
+.informational-text {
   color: grey;
 }

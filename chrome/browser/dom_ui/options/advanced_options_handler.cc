@@ -169,8 +169,10 @@ void AdvancedOptionsHandler::GetLocalizedValues(
 #endif
   localized_strings->SetString("enableLogging",
       l10n_util::GetStringUTF16(IDS_OPTIONS_ENABLE_LOGGING));
-  localized_strings->SetString("disableServices",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_DISABLE_SERVICES));
+  localized_strings->SetString("improveBrowsingExperience",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_IMPROVE_BROWSING_EXPERIENCE));
+  localized_strings->SetString("disableWebServices",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_DISABLE_WEB_SERVICES));
   localized_strings->SetString("optionsReset",
       l10n_util::GetStringUTF16(IDS_OPTIONS_RESET));
   localized_strings->SetString("optionsResetMessage",
