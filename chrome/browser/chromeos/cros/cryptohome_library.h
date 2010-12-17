@@ -10,7 +10,7 @@
 
 #include "base/singleton.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "cros/chromeos_cryptohome.h"
+#include "third_party/cros/chromeos_cryptohome.h"
 
 namespace chromeos {
 

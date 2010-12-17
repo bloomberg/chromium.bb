@@ -8,7 +8,7 @@
 
 #include "base/singleton.h"
 #include "chrome/browser/cancelable_request.h"
-#include "cros/chromeos_syslogs.h"
+#include "third_party/cros/chromeos_syslogs.h"
 
 class CancelableRequestConsumerBase;
 

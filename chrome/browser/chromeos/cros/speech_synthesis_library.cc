@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "cros/chromeos_speech_synthesis.h"
+#include "third_party/cros/chromeos_speech_synthesis.h"
 
 namespace chromeos {
 

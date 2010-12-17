@@ -19,8 +19,8 @@
 #include "chrome/browser/chromeos/cros/cros_library_loader.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "cros/chromeos_cros_api.h"
 #include "grit/app_locale_settings.h"
+#include "third_party/cros/chromeos_cros_api.h"
 #include "views/focus/accelerator_handler.h"
 
 int main(int argc, char** argv) {

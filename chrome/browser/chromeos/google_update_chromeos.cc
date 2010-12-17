@@ -12,7 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "cros/chromeos_update.h"
+#include "third_party/cros/chromeos_update.h"
 #include "views/window/window.h"
 
 using views::Window;

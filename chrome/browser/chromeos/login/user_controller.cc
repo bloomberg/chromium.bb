@@ -21,7 +21,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
-#include "cros/chromeos_wm_ipc_enums.h"
+#include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"

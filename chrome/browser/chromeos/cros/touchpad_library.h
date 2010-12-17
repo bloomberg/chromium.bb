@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_CROS_TOUCHPAD_LIBRARY_H_
 #pragma once
 
-#include "cros/chromeos_touchpad.h"
+#include "third_party/cros/chromeos_touchpad.h"
 
 namespace chromeos {
 

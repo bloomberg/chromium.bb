@@ -8,7 +8,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/test/in_process_browser_test.h"
-#include "cros/chromeos_input_method.h"
+#include "third_party/cros/chromeos_input_method.h"
 
 namespace chromeos {
 

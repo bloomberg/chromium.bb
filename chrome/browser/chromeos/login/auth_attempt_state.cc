@@ -9,7 +9,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
-#include "cros/chromeos_cryptohome.h"
+#include "third_party/cros/chromeos_cryptohome.h"
 
 namespace chromeos {
 

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_CROS_BRIGHTNESS_LIBRARY_H_
 #pragma once
 
-#include "cros/chromeos_brightness.h"
+#include "third_party/cros/chromeos_brightness.h"
 
 namespace chromeos {
 

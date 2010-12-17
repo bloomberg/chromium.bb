@@ -11,9 +11,9 @@
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/cros/mount_library.h"
-#include "cros/chromeos_mount.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/cros/chromeos_mount.h"
 
 namespace chromeos {
 

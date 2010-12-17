@@ -12,8 +12,7 @@
 #include "base/file_path.h"
 #include "base/observer_list.h"
 #include "base/weak_ptr.h"
-
-#include "cros/chromeos_imageburn.h"
+#include "third_party/cros/chromeos_imageburn.h"
 
 struct ImageBurnStatus {
   explicit ImageBurnStatus(const chromeos::BurnStatus& status)

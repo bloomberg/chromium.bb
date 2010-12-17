@@ -48,7 +48,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
-#include "cros/chromeos_wm_ipc_enums.h"
+#include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "unicode/timezone.h"
 #include "views/accelerator.h"
 #include "views/painter.h"

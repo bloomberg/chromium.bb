@@ -9,7 +9,7 @@
 #include <gtk/gtk.h>
 
 #include "app/x11_util.h"
-#include "cros/chromeos_wm_ipc_enums.h"
+#include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "views/controls/button/button.h"
 
 class BrowserView;

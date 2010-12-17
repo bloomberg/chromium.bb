@@ -16,9 +16,9 @@
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
-#include "cros/chromeos_input_method.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
+#include "third_party/cros/chromeos_input_method.h"
 
 
 class KeyboardOverlayUIHTMLSource : public ChromeURLDataManager::DataSource {

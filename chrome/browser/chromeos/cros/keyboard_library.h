@@ -6,11 +6,10 @@
 #define CHROME_BROWSER_CHROMEOS_CROS_KEYBOARD_LIBRARY_H_
 #pragma once
 
-#include "cros/chromeos_keyboard.h"
-
 #include <string>
 
 #include "base/basictypes.h"
+#include "third_party/cros/chromeos_keyboard.h"
 
 namespace chromeos {
 

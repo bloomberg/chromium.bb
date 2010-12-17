@@ -9,7 +9,7 @@
 #include "base/observer_list.h"
 #include "base/singleton.h"
 #include "base/time.h"
-#include "cros/chromeos_power.h"
+#include "third_party/cros/chromeos_power.h"
 
 namespace chromeos {
 

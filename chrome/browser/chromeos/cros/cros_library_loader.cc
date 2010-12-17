@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
-#include "cros/chromeos_cros_api.h"
+#include "third_party/cros/chromeos_cros_api.h"
 
 namespace chromeos {
 

@@ -11,7 +11,7 @@
 #include "base/observer_list.h"
 #include "base/singleton.h"
 #include "base/time.h"
-#include "cros/chromeos_update_engine.h"
+#include "third_party/cros/chromeos_update_engine.h"
 
 namespace chromeos {
 

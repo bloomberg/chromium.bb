@@ -14,7 +14,7 @@
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/chromeos/wm_overview_snapshot.h"
 #include "chrome/browser/ui/browser.h"
-#include "cros/chromeos_wm_ipc_enums.h"
+#include "third_party/cros/chromeos_wm_ipc_enums.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/border.h"
 #include "views/grid_layout.h"

@@ -7,7 +7,7 @@
 #include <string>
 
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
-#include "cros/chromeos_cryptohome.h"
+#include "third_party/cros/chromeos_cryptohome.h"
 
 namespace chromeos {
 

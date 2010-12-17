@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/observer_list.h"
-#include "cros/chromeos_screen_lock.h"
+#include "third_party/cros/chromeos_screen_lock.h"
 
 namespace chromeos {
 

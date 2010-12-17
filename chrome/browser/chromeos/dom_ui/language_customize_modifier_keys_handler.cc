@@ -6,8 +6,8 @@
 
 #include "app/l10n_util.h"
 #include "base/values.h"
-#include "cros/chromeos_keyboard.h"
 #include "grit/generated_resources.h"
+#include "third_party/cros/chromeos_keyboard.h"
 
 namespace {
 const struct ModifierKeysSelectItem {

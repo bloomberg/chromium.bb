@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/singleton.h"
-#include "cros/chromeos_login.h"
+#include "third_party/cros/chromeos_login.h"
 
 namespace chromeos {
 

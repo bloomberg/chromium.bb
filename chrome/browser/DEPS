@@ -7,7 +7,6 @@ include_rules = [
   "+chrome/profile_import",
   "+chrome/tools/profiles",  # For history unit tests.
   "+chrome/views",
-  "+cros",
   "+grit",  # For generated headers
   "+ppapi/proxy",
   "+rlz",
@@ -15,6 +14,7 @@ include_rules = [
   "+sandbox/src",  # The path doesn't say it, but this is the Windows sandbox.
   "+skia/ext",
   "+skia/include",
+  "+third_party/cros",
   "+webkit/database",
   "+webkit/glue",  # Defines some types that are marshalled over IPC.
   "+webkit/plugins",  # Defines some types that are marshalled over IPC.

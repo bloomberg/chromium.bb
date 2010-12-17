@@ -16,7 +16,7 @@
 #include "base/singleton.h"
 #include "base/string16.h"
 #include "base/timer.h"
-#include "cros/chromeos_network.h"
+#include "third_party/cros/chromeos_network.h"
 
 class Value;
 

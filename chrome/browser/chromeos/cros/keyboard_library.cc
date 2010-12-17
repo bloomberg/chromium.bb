@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/cros/keyboard_library.h"
 
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "cros/chromeos_keyboard.h"
+#include "third_party/cros/chromeos_keyboard.h"
 
 namespace chromeos {
 

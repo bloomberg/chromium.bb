@@ -20,7 +20,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/wm_ipc.h"
-#include "cros/chromeos_wm_ipc_enums.h"
+#include "third_party/cros/chromeos_wm_ipc_enums.h"
 #endif
 
 // How long the fade should last for.
