@@ -123,7 +123,8 @@ struct UploadThreadInstanceTraits
 // started on. We don't have a good way of achieving this at this point. This
 // thread object is currently leaked.
 // TODO(ananta)
-// Fix this.
+// TODO(vitalybuka@chromium.org) : Fix this by using MetricsService::Stop() in
+// appropriate location.
 base::LazyInstance<base::Thread, UploadThreadInstanceTraits>
     g_metrics_upload_thread_(base::LINKER_INITIALIZED);
 
@@ -414,10 +415,15 @@ void MetricsService::Start() {
 
 // static
 void MetricsService::Stop() {
-  AutoLock lock(metrics_service_lock_);
+  {
+    AutoLock lock(metrics_service_lock_);
 
-  GetInstance()->SetReporting(false);
-  GetInstance()->SetRecording(false);
+    GetInstance()->SetReporting(false);
+    GetInstance()->SetRecording(false);
+  }
+
+  if (GetInstance()->user_permits_upload_)
+    g_metrics_upload_thread_.Get().Stop();
 }
 
 void MetricsService::SetRecording(bool enabled) {
