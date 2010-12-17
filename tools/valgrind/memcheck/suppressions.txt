@@ -3463,3 +3463,12 @@
    fun:_ZN16ChildProcessHost13CreateChannelEv
    fun:_ZN14GpuProcessHost4InitEv
 }
+{
+   bug_67261
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN3sql10Connection18GetUniqueStatementEPKc
+   fun:_ZN3sql10Connection18GetCachedStatementERKNS_11StatementIDEPKc
+   fun:_ZN8appcache16AppCacheDatabase22PrepareCachedStatementERKN3sql11StatementIDEPKcPNS1_9StatementE
+}
