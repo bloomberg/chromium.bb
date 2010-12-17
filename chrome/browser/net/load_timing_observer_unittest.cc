@@ -48,8 +48,8 @@ void AddEndEntry(LoadTimingObserver& observer,
 void AddStartURLRequestEntries(LoadTimingObserver& observer,
                                uint32 id,
                                bool request_timing) {
-  scoped_refptr<URLRequestStartEventParameters> params(
-      new URLRequestStartEventParameters(
+  scoped_refptr<net::URLRequestStartEventParameters> params(
+      new net::URLRequestStartEventParameters(
           GURL(StringPrintf("http://req%d", id)),
           "GET",
           request_timing ? net::LOAD_ENABLE_LOAD_TIMING : 0,

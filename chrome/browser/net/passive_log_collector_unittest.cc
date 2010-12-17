@@ -27,7 +27,7 @@ ChromeNetLog::Entry MakeStartLogEntryWithURL(int source_id,
       base::TimeTicks(),
       NetLog::Source(kSourceType, source_id),
       NetLog::PHASE_BEGIN,
-      new URLRequestStartEventParameters(GURL(url), "GET", 0, net::LOW));
+      new net::URLRequestStartEventParameters(GURL(url), "GET", 0, net::LOW));
 }
 
 ChromeNetLog::Entry MakeStartLogEntry(int source_id) {

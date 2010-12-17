@@ -127,8 +127,9 @@ void LoadTimingObserver::OnAddURLRequestEntry(
   if (type == net::NetLog::TYPE_URL_REQUEST_START_JOB) {
     if (is_begin) {
       // Only record timing for entries with corresponding flag.
-      int load_flags = static_cast<URLRequestStartEventParameters*>(params)->
-          load_flags();
+      int load_flags =
+          static_cast<net::URLRequestStartEventParameters*>(params)->
+              load_flags();
       if (!(load_flags & net::LOAD_ENABLE_LOAD_TIMING))
         return;
 

@@ -48,7 +48,7 @@ void DevToolsNetLogObserver::OnAddEntry(net::NetLog::EventType type,
   if (type == net::NetLog::TYPE_URL_REQUEST_START_JOB) {
     if (phase != net::NetLog::PHASE_BEGIN)
       return;
-    int load_flags = static_cast<URLRequestStartEventParameters*>(params)->
+    int load_flags = static_cast<net::URLRequestStartEventParameters*>(params)->
         load_flags();
     if (!(load_flags & net::LOAD_REPORT_RAW_HEADERS))
       return;
