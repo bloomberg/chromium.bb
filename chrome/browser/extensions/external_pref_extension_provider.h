@@ -10,6 +10,8 @@
 
 // A specialization of the ExternalExtensionProvider that uses a json file to
 // look up which external extensions are registered.
+// Instances of this class are expected to be created and destroyed on the UI
+// thread and they are expecting public method calls from the FILE thread.
 class ExternalPrefExtensionProvider : public StatefulExternalExtensionProvider {
  public:
   explicit ExternalPrefExtensionProvider();

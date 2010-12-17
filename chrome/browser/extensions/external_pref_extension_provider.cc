@@ -9,12 +9,14 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/stateful_external_extension_provider.h"
 #include "chrome/common/json_value_serializer.h"
 
 ExternalPrefExtensionProvider::ExternalPrefExtensionProvider()
   : StatefulExternalExtensionProvider(Extension::EXTERNAL_PREF,
                                       Extension::EXTERNAL_PREF_DOWNLOAD) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FilePath json_file;
   PathService::Get(app::DIR_EXTERNAL_EXTENSIONS, &json_file);
   json_file = json_file.Append(FILE_PATH_LITERAL("external_extensions.json"));
@@ -23,11 +25,12 @@ ExternalPrefExtensionProvider::ExternalPrefExtensionProvider()
     JSONFileValueSerializer serializer(json_file);
     SetPreferences(&serializer);
   } else {
-    prefs_.reset(new DictionaryValue());
+    set_prefs(new DictionaryValue());
   }
 }
 
 ExternalPrefExtensionProvider::~ExternalPrefExtensionProvider() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 void ExternalPrefExtensionProvider::SetPreferencesForTesting(
@@ -50,5 +53,5 @@ void ExternalPrefExtensionProvider::SetPreferences(
       dictionary.reset(static_cast<DictionaryValue*>(extensions));
     }
   }
-  prefs_.reset(dictionary.release());
+  set_prefs(dictionary.release());
 }

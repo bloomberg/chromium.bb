@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/stateful_external_extension_provider.h"
 #include "chrome/browser/prefs/pref_service.h"
 
@@ -30,15 +31,26 @@ bool CheckExtension(std::string id, std::string update_url) {
 
 }
 
-ExternalPolicyExtensionProvider::ExternalPolicyExtensionProvider()
-  : StatefulExternalExtensionProvider(Extension::INVALID,
-                                      Extension::EXTERNAL_POLICY_DOWNLOAD) {
+ExternalPolicyExtensionProvider::ExternalPolicyExtensionProvider(
+    const ListValue* forcelist)
+        : StatefulExternalExtensionProvider(
+            Extension::INVALID,
+            Extension::EXTERNAL_POLICY_DOWNLOAD) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  ProcessPreferences(forcelist);
 }
 
 ExternalPolicyExtensionProvider::~ExternalPolicyExtensionProvider() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 void ExternalPolicyExtensionProvider::SetPreferences(
+    const ListValue* forcelist) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  ProcessPreferences(forcelist);
+}
+
+void ExternalPolicyExtensionProvider::ProcessPreferences(
     const ListValue* forcelist) {
   DictionaryValue* result = new DictionaryValue();
   if (forcelist != NULL) {
@@ -60,5 +72,5 @@ void ExternalPolicyExtensionProvider::SetPreferences(
       }
     }
   }
-  prefs_.reset(result);
+  set_prefs(result);
 }

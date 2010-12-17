@@ -302,9 +302,8 @@ ExtensionServiceBackend::ExtensionServiceBackend(
   // variable so that UpdateExternalPolicyExtensionProvider can access it and
   // update its extension list later.
   external_policy_extension_provider_.reset(
-      new ExternalPolicyExtensionProvider());
-  external_policy_extension_provider_->SetPreferences(
-      prefs->GetList(prefs::kExtensionInstallForceList));
+      new ExternalPolicyExtensionProvider(
+          prefs->GetList(prefs::kExtensionInstallForceList)));
   external_extension_providers_.push_back(external_policy_extension_provider_);
 }
 

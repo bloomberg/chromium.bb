@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "chrome/browser/browser_thread.h"
 
 namespace {
 
@@ -27,13 +28,17 @@ StatefulExternalExtensionProvider::StatefulExternalExtensionProvider(
     Extension::Location download_location)
   : crx_location_(crx_location),
     download_location_(download_location) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 StatefulExternalExtensionProvider::~StatefulExternalExtensionProvider() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 void StatefulExternalExtensionProvider::VisitRegisteredExtension(
     Visitor* visitor) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(prefs_.get());
   for (DictionaryValue::key_iterator i = prefs_->begin_keys();
        i != prefs_->end_keys(); ++i) {
     const std::string& extension_id = *i;
@@ -120,12 +125,16 @@ void StatefulExternalExtensionProvider::VisitRegisteredExtension(
 
 bool StatefulExternalExtensionProvider::HasExtension(
     const std::string& id) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(prefs_.get());
   return prefs_->HasKey(id);
 }
 
 bool StatefulExternalExtensionProvider::GetExtensionDetails(
     const std::string& id, Extension::Location* location,
     scoped_ptr<Version>* version) const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(prefs_.get());
   DictionaryValue* extension = NULL;
   if (!prefs_->GetDictionary(id, &extension))
     return false;
@@ -153,4 +162,8 @@ bool StatefulExternalExtensionProvider::GetExtensionDetails(
     *location = loc;
 
   return true;
+}
+
+void StatefulExternalExtensionProvider::set_prefs(DictionaryValue* prefs) {
+  prefs_.reset(prefs);
 }

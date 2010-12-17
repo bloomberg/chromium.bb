@@ -7,11 +7,26 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/external_policy_extension_provider.h"
 #include "chrome/common/extensions/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ExternalPolicyExtensionProviderTest : public testing::Test {
+ public:
+  ExternalPolicyExtensionProviderTest()
+      : loop_(MessageLoop::TYPE_IO),
+        ui_thread_(BrowserThread::UI, &loop_),
+        file_thread_(BrowserThread::FILE, &loop_) {
+  }
+
+  virtual ~ExternalPolicyExtensionProviderTest() {
+  }
+
+ private:
+  MessageLoop loop_;
+  BrowserThread ui_thread_;
+  BrowserThread file_thread_;
 };
 
 class MockExternalPolicyExtensionProviderVisitor
@@ -25,9 +40,7 @@ class MockExternalPolicyExtensionProviderVisitor
   void Visit(ListValue* policy_forcelist,
              ListValue* policy_validlist,
              const std::set<std::string>& ignore_list) {
-    provider_.reset(new ExternalPolicyExtensionProvider());
-    // Give the list extensions to the provider.
-    provider_->SetPreferences(policy_forcelist);
+    provider_.reset(new ExternalPolicyExtensionProvider(policy_forcelist));
 
     // Extensions will be removed from this list as they visited,
     // so it should be emptied by the end.

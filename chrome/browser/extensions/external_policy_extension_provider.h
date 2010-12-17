@@ -14,11 +14,14 @@ class PrefService;
 
 // A specialization of the ExternalExtensionProvider that uses
 // prefs::kExtensionInstallForceList to look up which external extensions are
-// registered.
+// registered. The value of this preference is received via the constructor and
+// via |SetPreferences| in case of run-time updates.
+// Instances of this class are expected to be created and destroyed on the UI
+// thread and they are expecting public method calls from the FILE thread.
 class ExternalPolicyExtensionProvider
     : public StatefulExternalExtensionProvider {
  public:
-  explicit ExternalPolicyExtensionProvider();
+  explicit ExternalPolicyExtensionProvider(const ListValue* forcelist);
   virtual ~ExternalPolicyExtensionProvider();
 
   // Set the internal list of extensions based on |forcelist|.
@@ -28,6 +31,9 @@ class ExternalPolicyExtensionProvider
  private:
   friend class MockExternalPolicyExtensionProviderVisitor;
 
+  // Set the internal list of extensions based on |forcelist|.
+  // Does not take ownership of |forcelist|.
+  void ProcessPreferences(const ListValue* forcelist);
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTERNAL_POLICY_EXTENSION_PROVIDER_H_
