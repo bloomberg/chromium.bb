@@ -290,7 +290,14 @@ TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
           requesting_frame_1, requesting_frame_0));
 }
 
-TEST_F(GeolocationPermissionContextTests, StopUpdating) {
+// TODO(jknotten): Remove this test once we have completely
+// switched over to client-based geolocation.
+#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
+#define MAYBE_StopUpdating DISABLED_StopUpdating
+#else
+#define MAYBE_StopUpdating StopUpdating
+#endif
+TEST_F(GeolocationPermissionContextTests, MAYBE_StopUpdating) {
   GURL requesting_frame("http://www.example.com/geolocation");
   NavigateAndCommit(requesting_frame);
   EXPECT_EQ(0, contents()->infobar_delegate_count());
