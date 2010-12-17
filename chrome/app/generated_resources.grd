@@ -4630,10 +4630,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Passwords and Exceptions Dialog -->
       <message name="IDS_PASSWORDS_EXCEPTIONS_WINDOW_TITLE" desc="Title for 'Passwords and exceptions dialog'">
-        Passwords and Exceptions
+        Passwords
       </message>
       <message name="IDS_PASSWORDS_SHOW_PASSWORDS_TAB_TITLE" desc="Title for 'Saved passwords' tab">
-        Saved passwords
+        Saved Passwords
       </message>
       <message name="IDS_PASSWORDS_EXCEPTIONS_TAB_TITLE" desc="Title for 'Exceptions' tab">
         Exceptions

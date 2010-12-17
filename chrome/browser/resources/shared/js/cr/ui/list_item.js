@@ -27,10 +27,38 @@ cr.define('cr.ui', function() {
     },
 
     /**
+     * The current selection state.
+     * @type {Boolean}
+     */
+    get selected() {
+      return this.hasAttribute('selected');
+    },
+    set selected(selected) {
+      selected = Boolean(selected);
+      var oldSelected = this.selected;
+      if (oldSelected == selected)
+        return;
+
+      if (selected)
+        this.setAttribute('selected', '');
+      else
+        this.removeAttribute('selected');
+
+      cr.dispatchPropertyChange(this, 'selected', selected, oldSelected);
+      this.selectionChanged();
+    },
+
+    /**
      * Called when an element is decorated as a list item.
      */
     decorate: function() {
-    }
+    },
+
+    /**
+     * Called when the selection state of this element changes.
+     */
+    selectionChanged: function() {
+    },
   };
 
   /**

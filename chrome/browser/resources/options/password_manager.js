@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-
-  var OptionsPage = options.OptionsPage;
+  const OptionsPage = options.OptionsPage;
+  const ArrayDataModel = cr.ui.ArrayDataModel;
+  const ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
 
   /////////////////////////////////////////////////////////////////////////////
   // PasswordManager class:
@@ -17,8 +18,8 @@ cr.define('options', function() {
     this.activeNavTab = null;
     OptionsPage.call(this,
                      'passwordManager',
-                     templateData.savedPasswordsTitle,
-                     'passwordManager');
+                     templateData.passwordsTitle,
+                     'password-manager');
   }
 
   cr.addSingletonGetter(PasswordManager);
@@ -26,37 +27,70 @@ cr.define('options', function() {
   PasswordManager.prototype = {
     __proto__: OptionsPage.prototype,
 
+    /**
+     * The saved passwords list.
+     * @type {DeletableItemList}
+     * @private
+     */
+    savedPasswordsList_: null,
+
+    /**
+     * The password exceptions list.
+     * @type {DeletableItemList}
+     * @private
+     */
+    passwordExceptionsList_: null,
+
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 
-      options.passwordManager.PasswordsListArea.decorate($('passwordsArea'));
-      options.passwordManager.PasswordExceptionsListArea.decorate(
-          $('passwordExceptionsArea'));
+      this.createSavedPasswordsList_();
+      this.createPasswordExceptionsList_();
 
-      $('password-exceptions-nav-tab').onclick = function() {
-        OptionsPage.showTab($('password-exceptions-nav-tab'));
-        passwordExceptionsList.redraw();
-      }
+      chrome.send('updatePasswordLists');
     },
 
+    /**
+     * Creates, decorates and initializes the saved passwords list.
+     * @private
+     */
+    createSavedPasswordsList_: function() {
+      this.savedPasswordsList_ = $('saved-passwords-list');
+      options.passwordManager.PasswordsList.decorate(this.savedPasswordsList_);
+      this.savedPasswordsList_.selectionModel = new ListSingleSelectionModel;
+      this.savedPasswordsList_.autoExpands = true;
+    },
+
+    /**
+     * Creates, decorates and initializes the password exceptions list.
+     * @private
+     */
+    createPasswordExceptionsList_: function() {
+      this.passwordExceptionsList_ = $('password-exceptions-list');
+      options.passwordManager.PasswordExceptionsList.decorate(
+          this.passwordExceptionsList_);
+      this.passwordExceptionsList_.selectionModel =
+          new ListSingleSelectionModel;
+      this.passwordExceptionsList_.autoExpands = true;
+    },
+
+    /**
+     * Updates the data model for the saved passwords list with the values from
+     * |entries|.
+     * @param {Array} entries The list of saved password data.
+     */
     setSavedPasswordsList_: function(entries) {
-      savedPasswordsList.clear();
-      for (var i = 0; i < entries.length; i++) {
-        savedPasswordsList.addEntry(entries[i]);
-      }
+      this.savedPasswordsList_.dataModel = new ArrayDataModel(entries);
     },
 
+    /**
+     * Updates the data model for the password exceptions list with the values
+     * from |entries|.
+     * @param {Array} entries The list of password exception data.
+     */
     setPasswordExceptionsList_: function(entries) {
-      passwordExceptionsList.clear();
-      for (var i = 0; i < entries.length; i++) {
-        passwordExceptionsList.addEntry(entries[i]);
-      }
+      this.passwordExceptionsList_.dataModel = new ArrayDataModel(entries);
     },
-
-  };
-
-  PasswordManager.load = function() {
-    chrome.send('loadLists');
   };
 
   /**
@@ -75,7 +109,6 @@ cr.define('options', function() {
       chrome.send('removePasswordException', [String(rowIndex)]);
   };
 
-
   /**
    * Call to remove all saved passwords.
    * @param tab contentType of the tab currently on.
@@ -92,20 +125,12 @@ cr.define('options', function() {
     chrome.send('removeAllPasswordExceptions');
   };
 
-  PasswordManager.showSelectedPassword = function(index) {
-    chrome.send('showSelectedPassword', [String(index)]);
-  };
-
   PasswordManager.setSavedPasswordsList = function(entries) {
     PasswordManager.getInstance().setSavedPasswordsList_(entries);
   };
 
   PasswordManager.setPasswordExceptionsList = function(entries) {
     PasswordManager.getInstance().setPasswordExceptionsList_(entries);
-  };
-
-  PasswordManager.selectedPasswordCallback = function(password) {
-    passwordsArea.displayReturnedPassword(password);
   };
 
   // Export

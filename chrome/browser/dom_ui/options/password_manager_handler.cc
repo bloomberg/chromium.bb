@@ -30,11 +30,11 @@ void PasswordManagerHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
-  localized_strings->SetString("savedPasswordsTitle",
+  localized_strings->SetString("passwordsTitle",
       l10n_util::GetStringUTF16(IDS_PASSWORDS_EXCEPTIONS_WINDOW_TITLE));
-  localized_strings->SetString("passwordsTabTitle",
+  localized_strings->SetString("savedPasswordsTitle",
       l10n_util::GetStringUTF16(IDS_PASSWORDS_SHOW_PASSWORDS_TAB_TITLE));
-  localized_strings->SetString("passwordExceptionsTabTitle",
+  localized_strings->SetString("passwordExceptionsTitle",
       l10n_util::GetStringUTF16(IDS_PASSWORDS_EXCEPTIONS_TAB_TITLE));
   localized_strings->SetString("passwordsSiteColumn",
       l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_SITE_COLUMN));
@@ -63,8 +63,8 @@ void PasswordManagerHandler::Initialize() {
 void PasswordManagerHandler::RegisterMessages() {
   DCHECK(dom_ui_);
 
-  dom_ui_->RegisterMessageCallback("loadLists",
-      NewCallback(this, &PasswordManagerHandler::LoadLists));
+  dom_ui_->RegisterMessageCallback("updatePasswordLists",
+      NewCallback(this, &PasswordManagerHandler::UpdatePasswordLists));
   dom_ui_->RegisterMessageCallback("removeSavedPassword",
       NewCallback(this, &PasswordManagerHandler::RemoveSavedPassword));
   dom_ui_->RegisterMessageCallback("removePasswordException",
@@ -73,15 +73,13 @@ void PasswordManagerHandler::RegisterMessages() {
       NewCallback(this, &PasswordManagerHandler::RemoveAllSavedPasswords));
   dom_ui_->RegisterMessageCallback("removeAllPasswordExceptions", NewCallback(
       this, &PasswordManagerHandler::RemoveAllPasswordExceptions));
-  dom_ui_->RegisterMessageCallback("showSelectedPassword",
-      NewCallback(this, &PasswordManagerHandler::ShowSelectedPassword));
 }
 
 PasswordStore* PasswordManagerHandler::GetPasswordStore() {
   return dom_ui_->GetProfile()->GetPasswordStore(Profile::EXPLICIT_ACCESS);
 }
 
-void PasswordManagerHandler::LoadLists(const ListValue* args) {
+void PasswordManagerHandler::UpdatePasswordLists(const ListValue* args) {
   languages_ =
       dom_ui_->GetProfile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
   populater_.Populate();
@@ -129,17 +127,6 @@ void PasswordManagerHandler::RemoveAllPasswordExceptions(
   SetPasswordExceptionList();
 }
 
-void PasswordManagerHandler::ShowSelectedPassword(const ListValue* args) {
-  std::string string_value = WideToUTF8(ExtractStringValue(args));
-  int index;
-  base::StringToInt(string_value, &index);
-
-  std::string pass = UTF16ToUTF8(password_list_[index]->password_value);
-  scoped_ptr<Value> password_string(Value::CreateStringValue(pass));
-  dom_ui_->CallJavascriptFunction(
-      L"PasswordManager.selectedPasswordCallback", *password_string.get());
-}
-
 void PasswordManagerHandler::SetPasswordList() {
   ListValue entries;
   for (size_t i = 0; i < password_list_.size(); ++i) {
@@ -147,6 +134,7 @@ void PasswordManagerHandler::SetPasswordList() {
     entry->Append(new StringValue(net::FormatUrl(password_list_[i]->origin,
                                                  languages_)));
     entry->Append(new StringValue(password_list_[i]->username_value));
+    entry->Append(new StringValue(password_list_[i]->password_value));
     entries.Append(entry);
   }
 

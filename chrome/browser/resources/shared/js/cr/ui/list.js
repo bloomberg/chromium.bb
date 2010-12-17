@@ -583,7 +583,7 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Redraws a single item
+     * Redraws a single item.
      * @param {number} index The row index to redraw.
      */
     redrawItem: function(index) {
@@ -591,7 +591,7 @@ cr.define('cr.ui', function() {
         delete this.cachedItems_[index];
         this.redraw();
       }
-    }
+    },
   };
 
   cr.defineProperty(List, 'disabled', cr.PropertyKind.BOOL_ATTR);

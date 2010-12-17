@@ -31,7 +31,7 @@ cr.define('options', function() {
     __proto__: ListItem.prototype,
 
     /**
-     * The list item being wrapped to make in deletable.
+     * The list item being wrapped to make it deletable.
      * @type {!ListItem}
      * @private
      */
@@ -41,23 +41,29 @@ cr.define('options', function() {
     decorate: function() {
       ListItem.prototype.decorate.call(this);
 
-      this.className = 'deletable-item';
-      var contentEl = this.ownerDocument.createElement('div');
-      contentEl.appendChild(this.baseItem_);
+      this.baseItem_.classList.add('deletable-item');
+      this.appendChild(this.baseItem_);
+
       var closeButtonEl = this.ownerDocument.createElement('button');
       closeButtonEl.className = 'close-button';
-
-      this.appendChild(contentEl);
       this.appendChild(closeButtonEl);
     },
 
+    /** @inheritDoc */
+    selectionChanged: function() {
+      // Forward the selection state to the |baseItem_|.
+      // TODO(jhawkins): This is terrible.
+      this.baseItem_.selected = this.selected;
+      this.baseItem_.selectionChanged();
+    },
+
     /**
-     * Returns the list item being wrapped to make in deletable.
+     * Returns the list item being wrapped to make it deletable.
      * @return {!ListItem} The list item being wrapped
      */
     get contentItem() {
       return this.baseItem_;
-    }
+    },
   };
 
   var DeletableItemList = cr.ui.define('list');
@@ -107,7 +113,7 @@ cr.define('options', function() {
     /**
      * Called when an item should be deleted; subclasses are responsible for
      * implementing.
-     * @param {number} index The indexd of the item that is being deleted.
+     * @param {number} index The index of the item that is being deleted.
      */
     deleteItemAtIndex: function(index) {
     },

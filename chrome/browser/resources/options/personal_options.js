@@ -44,7 +44,6 @@ cr.define('options', function() {
         chrome.send('openPrivacyDashboardTabAndActivate');
       };
       $('manage-passwords').onclick = function(event) {
-        PasswordManager.load();
         OptionsPage.showPageByName('passwordManager');
         OptionsPage.showTab($('passwords-nav-tab'));
         chrome.send('coreOptionsUserMetricsAction',

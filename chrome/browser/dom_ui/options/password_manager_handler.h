@@ -27,8 +27,8 @@ class PasswordManagerHandler : public OptionsPageUIHandler {
   // The password store associated with the currently active profile.
   PasswordStore* GetPasswordStore();
 
-  // Fired when user clicks 'show saved passwords' button in personal page.
-  void LoadLists(const ListValue* args);
+  // Called when the JS PasswordManager object is initialized.
+  void UpdatePasswordLists(const ListValue* args);
 
   // Remove an entry.
   // @param value the entry index to be removed.

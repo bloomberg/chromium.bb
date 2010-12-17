@@ -360,6 +360,7 @@ select {
 
 list > * {
   -webkit-box-align: center;
+  -webkit-transition: .15s background-color;
   box-sizing: border-box;
   border-radius: 0px;
   display: -webkit-box;
@@ -399,24 +400,25 @@ list > .heading:hover {
 }
 
 list .deletable-item {
+  -webkit-box-align: center;
+  -webkit-box-flex: 1;
   display: -webkit-box;
 }
 
-list .deletable-item > :first-child {
-  -webkit-box-flex: 1;
-}
-
 list .close-button {
+  -webkit-transition: .15s opacity;
   background-color: transparent;
   /* TODO(stuartmorgan): Replace with real images once they are available. */
   background-image: url("../../../app/theme/close_bar.png");
   border: none;
   height: 16px;
+  opacity: 1;
   width: 16px;
 }
 
 list > *:not(:hover) .close-button, list[disabled] .close-button {
-  display: none;
+  opacity: 0;
+  pointer-events: none;
 }
 
 list .close-button:hover {
