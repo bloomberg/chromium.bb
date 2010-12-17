@@ -31,6 +31,7 @@ class ImporterView : public views::View,
                      public views::ButtonListener,
                      public ComboboxModel,
                      public views::Combobox::Listener,
+                     public ImporterList::Observer,
                      public ImportObserver {
  public:
   // Creates a new ImporterView. |initial_state| is a bitmask of ImportItems.
@@ -38,11 +39,11 @@ class ImporterView : public views::View,
   ImporterView(Profile* profile, int initial_state);
   virtual ~ImporterView();
 
-  // Overridden from views::View:
+  // views::View implementation.
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
 
-  // Overridden from views::DialogDelegate:
+  // views::DialogDelegate implementation.
   virtual std::wstring GetDialogButtonLabel(
       MessageBoxFlags::DialogButton button) const;
   virtual bool IsDialogButtonEnabled(
@@ -52,19 +53,22 @@ class ImporterView : public views::View,
   virtual bool Accept();
   virtual views::View* GetContentsView();
 
-  // Overridden from views::ButtonListener:
+  // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
-  // Overridden from ComboboxModel:
+  // ComboboxModel implementation.
   virtual int GetItemCount();
   virtual string16 GetItemAt(int index);
 
-  // Overridden from ChromeViews::Combobox::Listener:
+  // ChromeViews::Combobox::Listener implementation.
   virtual void ItemChanged(views::Combobox* combobox,
                            int prev_index,
                            int new_index);
 
-  // Overridden from ImportObserver:
+  // ImporterList::Observer implementation.
+  virtual void SourceProfilesLoaded();
+
+  // ImportObserver implementation.
   virtual void ImportCanceled();
   virtual void ImportComplete();
 

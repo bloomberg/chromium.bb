@@ -61,6 +61,9 @@ class ImporterList : public base::RefCountedThreadSafe<ImporterList> {
   const importer::ProfileInfo& GetSourceProfileInfoForBrowserType(
       int browser_type) const;
 
+  // Returns true if the source profiles have been loaded.
+  bool source_profiles_loaded() const;
+
  private:
   friend class base::RefCountedThreadSafe<ImporterList>;
 

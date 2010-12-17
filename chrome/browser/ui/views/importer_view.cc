@@ -5,7 +5,7 @@
 #include "chrome/browser/views/importer_view.h"
 
 #include "app/l10n_util.h"
-#include "base/string16.h"
+#include "base/compiler_specific.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
@@ -42,7 +42,7 @@ ImporterView::ImporterView(Profile* profile, int initial_state)
       passwords_checkbox_(NULL),
       search_engines_checkbox_(NULL),
       profile_(profile),
-      importer_host_(new ImporterHost()),
+      ALLOW_THIS_IN_INITIALIZER_LIST(importer_host_(new ImporterHost(this))),
       initial_state_(initial_state) {
   DCHECK(profile);
   SetupControl();
@@ -149,9 +149,8 @@ std::wstring ImporterView::GetWindowTitle() const {
 }
 
 bool ImporterView::Accept() {
-  if (!IsDialogButtonEnabled(MessageBoxFlags::DIALOGBUTTON_OK)) {
+  if (!IsDialogButtonEnabled(MessageBoxFlags::DIALOGBUTTON_OK))
     return false;
-  }
 
   uint16 items = GetCheckedItems();
 
@@ -179,15 +178,16 @@ void ImporterView::ButtonPressed(
 
 int ImporterView::GetItemCount() {
   DCHECK(importer_host_.get());
-  int item_count = importer_host_->GetAvailableProfileCount();
-  if (checkbox_items_.size() < static_cast<size_t>(item_count))
-    checkbox_items_.resize(item_count, initial_state_);
-  return item_count;
+  return checkbox_items_.size();
 }
 
 string16 ImporterView::GetItemAt(int index) {
   DCHECK(importer_host_.get());
-  return WideToUTF16Hack(importer_host_->GetSourceProfileNameAt(index));
+
+  if (!importer_host_->source_profiles_loaded())
+    return l10n_util::GetStringUTF16(IDS_IMPORT_LOADING_PROFILES);
+  else
+    return WideToUTF16Hack(importer_host_->GetSourceProfileNameAt(index));
 }
 
 void ImporterView::ItemChanged(views::Combobox* combobox,
@@ -198,6 +198,11 @@ void ImporterView::ItemChanged(views::Combobox* combobox,
 
   if (prev_index == new_index)
     return;
+
+  if (!importer_host_->source_profiles_loaded()) {
+    SetCheckedItemsState(0);
+    return;
+  }
 
   // Save the current state
   uint16 prev_items = GetCheckedItems();
@@ -211,6 +216,15 @@ void ImporterView::ItemChanged(views::Combobox* combobox,
   // Set the checked items for this Item
   uint16 new_items = checkbox_items_[new_index];
   SetCheckedItems(new_items);
+}
+
+void ImporterView::SourceProfilesLoaded() {
+  DCHECK(importer_host_->source_profiles_loaded());
+  checkbox_items_.resize(
+      importer_host_->GetAvailableProfileCount(), initial_state_);
+
+  // Reload the profile combobox.
+  profile_combobox_->ModelChanged();
 }
 
 void ImporterView::ImportCanceled() {
@@ -282,6 +296,5 @@ void ImporterView::SetCheckedItems(uint16 items) {
     passwords_checkbox_->SetChecked(!!(items & importer::PASSWORDS));
 
   if (search_engines_checkbox_->IsEnabled())
-    search_engines_checkbox_->SetChecked(!!(items &
-                                            importer::SEARCH_ENGINES));
+    search_engines_checkbox_->SetChecked(!!(items & importer::SEARCH_ENGINES));
 }

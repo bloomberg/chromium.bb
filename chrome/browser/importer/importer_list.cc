@@ -98,7 +98,8 @@ void DetectFirefoxProfiles(std::vector<importer::ProfileInfo*>* profiles) {
   profiles->push_back(firefox);
 }
 
-void DetectGoogleToolbarProfiles(std::vector<importer::ProfileInfo*>* profiles) {
+void DetectGoogleToolbarProfiles(
+    std::vector<importer::ProfileInfo*>* profiles) {
   if (FirstRun::IsChromeFirstRun())
     return;
 
@@ -194,6 +195,10 @@ const importer::ProfileInfo& ImporterList::GetSourceProfileInfoForBrowserType(
   }
   NOTREACHED();
   return *(new importer::ProfileInfo());
+}
+
+bool ImporterList::source_profiles_loaded() const {
+  return source_profiles_loaded_;
 }
 
 void ImporterList::DetectSourceProfilesWorker() {
