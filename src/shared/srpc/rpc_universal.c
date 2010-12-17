@@ -829,6 +829,7 @@ void NaClSrpcCommandLoop(NaClSrpcService* service,
     }
     if (!NaClSrpcServiceHandlerCtor(service, upcall_handlers)) {
       fprintf(stderr, "Couldn't construct upcall service\n");
+      free(service);
       return;
     }
     channel->server = service;

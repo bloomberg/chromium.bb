@@ -303,8 +303,11 @@ static BoolValue AllocateArgs(NaClSrpcArg** arg_pointers, size_t length) {
   nacl_abi_size_t i;
 
   /* Initialize the array pointers to allow cleanup if errors happen. */
-  for (i = 0; i < length; ++i) {
+  for (i = 0; i < length + 1; ++i) {
     arg_pointers[i] = NULL;
+  }
+  if (length == 0) {
+    return BoolTrue;
   }
 
   if (SIZE_T_MAX / sizeof **arg_pointers < length) {
@@ -322,7 +325,6 @@ static BoolValue AllocateArgs(NaClSrpcArg** arg_pointers, size_t length) {
   for (i = 0; i < length; ++i) {
     arg_pointers[i] = &arg_array[i];
   }
-  arg_pointers[length] = NULL;
   return BoolTrue;
 }
 
@@ -898,38 +900,41 @@ static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
   NaClSrpcArg* args[NACL_SRPC_MAX_ARGS + 1];
   NaClSrpcArg* rets[NACL_SRPC_MAX_ARGS + 1];
   NaClSrpcMethod method;
-  ssize_t retval;
-  RpcCheckingClosure* done;
+  ssize_t bytes_read;
+  RpcCheckingClosure* closure = NULL;
+  /* DISPATCH_EOF is the closest we have to an error return. */
+  DispatchReturn dispatch_return = DISPATCH_EOF;
 
   dprintf((SIDE "SRPC: ReceiveAndDispatch: %p\n", (void*) rpc_stack_top));
-  done = (RpcCheckingClosure*) malloc(sizeof *done);
-  if (NULL == done) {
-    /* DISPATCH_EOF is the closest we have to an error return. */
-    return DISPATCH_EOF;
+  closure = (RpcCheckingClosure*) malloc(sizeof *closure);
+  if (NULL == closure) {
+    dispatch_return = DISPATCH_EOF;
+    goto done;
   }
   if (!NaClSrpcRpcCtor(&rpc, channel) ||
-      !RpcCheckingClosureCtor(done, &rpc)) {
-    free(done);
-    return DISPATCH_EOF;
+      !RpcCheckingClosureCtor(closure, &rpc)) {
+    goto done;
   }
   rpc.rets = rets;
   /* Read a message from the channel. */
-  retval = SrpcPeekMessage(channel->message_channel, &rpc);
-  if (retval < 0) {
+  bytes_read = SrpcPeekMessage(channel->message_channel, &rpc);
+  if (bytes_read < 0) {
     dprintf((SIDE "SRPC: ReceiveAndDispatch: buffer read failed\n"));
-    return DISPATCH_EOF;
+    goto done;
   }
   if (rpc.is_request) {
     /* This is a new request. */
     if (NULL == channel->server) {
       if (NULL == rpc_stack_top) {
         /* There is no service to dispatch requests. Abort. */
-        return DISPATCH_EOF;
+        dispatch_return = DISPATCH_EOF;
+        goto done;
       } else {
         /* Inform the pending invoke that a failure happened. */
         dprintf((SIDE "ReceiveAndDispatch: out of order request\n"));
         rpc_stack_top->result = NACL_SRPC_RESULT_INTERNAL;
-        return DISPATCH_BREAK;
+        dispatch_return = DISPATCH_BREAK;
+        goto done;
       }
     }
     /* Fall through to request handling below. */
@@ -938,38 +943,45 @@ static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
     if (NULL == rpc_stack_top) {
       dprintf((SIDE "ReceiveAndDispatch: response, no pending request\n"));
       /* There is no pending request. Abort. */
-      return DISPATCH_BREAK;
+      dispatch_return = DISPATCH_BREAK;
+      goto done;
     } else {
       if (rpc.request_id == rpc_stack_top->request_id) {
         /* Copy the serialized portion of the Rpc and process as a response. */
         memcpy(rpc_stack_top, &rpc, kRpcSize);
-        return DISPATCH_RESPONSE;
+        dispatch_return = DISPATCH_RESPONSE;
+        goto done;
       } else {
         /* Received an out-of-order response.  Abort. */
         dprintf((SIDE "ReceiveAndDispatch: response for wrong request\n"));
-        return DISPATCH_BREAK;
+        dispatch_return = DISPATCH_BREAK;
+        goto done;
       }
     }
   }
-  retval = RecvRequest(channel->message_channel, &rpc, args, rets);
-  if (retval < 0) {
+  bytes_read = RecvRequest(channel->message_channel, &rpc, args, rets);
+  if (bytes_read < 0) {
     dprintf((SIDE "SRPC: ReceiveAndDispatch: RecvRequest failed\n"));
-    return DISPATCH_EOF;
+    dispatch_return = DISPATCH_EOF;
   }
   if (!RequestVectorTypesConform(channel, &rpc, args, rets)) {
     dprintf((SIDE "SRPC: ReceiveAndDispatch: arg/ret type mismatch\n"));
-    return DISPATCH_CONTINUE;
+    dispatch_return = DISPATCH_CONTINUE;
+    goto done;
   }
   /* Then we invoke the method, which computes a return code. */
   method = NaClSrpcServiceMethod(channel->server, rpc.rpc_number);
   if (NULL == method) {
     dprintf((SIDE "SRPC: ReceiveAndDispatch: bad rpc number %"NACL_PRIu32"\n",
              rpc.rpc_number));
-    return DISPATCH_CONTINUE;
+    dispatch_return = DISPATCH_CONTINUE;
+    goto done;
   }
-  (*method)(&rpc, args, rets, (NaClSrpcClosure*) done);
+  (*method)(&rpc, args, rets, (NaClSrpcClosure*) closure);
   FreeArgs(args);
   FreeArgs(rets);
+  /* The invoked method takes ownership of the closure and deletes it. */
+  closure = NULL;
   /*
    * Return code to either continue or break out of the processing loop.
    * When we separate closure invocation from the dispatch loop we will
@@ -977,10 +989,14 @@ static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
    * completed, and then signal the dispatcher to stop.
    */
   if (rpc.dispatch_loop_should_continue) {
-    return DISPATCH_CONTINUE;
+    dispatch_return = DISPATCH_CONTINUE;
   } else {
-    return DISPATCH_BREAK;
+    dispatch_return = DISPATCH_BREAK;
   }
+
+ done:
+  free(closure);
+  return dispatch_return;
 }
 
 /*

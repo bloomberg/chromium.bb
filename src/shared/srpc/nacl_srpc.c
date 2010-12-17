@@ -44,9 +44,12 @@ static int BuildInterfaceDesc(NaClSrpcChannel* channel) {
     goto cleanup;
   }
   if (!NaClSrpcServiceHandlerCtor(tmp_service, basic_services)) {
+    free(tmp_service);
     goto cleanup;
   }
+  /* Channel takes ownership of tmp_service. */
   channel->client = tmp_service;
+  tmp_service = NULL;
   /* Build the argument values for invoking service discovery */
   NaClSrpcArgCtor(&out_carray);
   outs[0] = &out_carray;
@@ -62,9 +65,9 @@ static int BuildInterfaceDesc(NaClSrpcChannel* channel) {
     goto cleanup;
   }
   /* Clean up the temporary service. */
-  NaClSrpcServiceDtor(tmp_service);
-  free(tmp_service);
-  tmp_service = NULL;
+  NaClSrpcServiceDtor(channel->client);
+  free(channel->client);
+  channel->client = NULL;
   /* Allocate the real service. */
   service = (NaClSrpcService*) malloc(sizeof(*service));
   if (NULL == service) {
