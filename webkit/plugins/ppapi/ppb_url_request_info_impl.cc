@@ -34,18 +34,51 @@ namespace ppapi {
 
 namespace {
 
-// If any of these request headers are specified, they will not be sent.
-// TODO(darin): Add more based on security considerations?
-const char* const kIgnoredRequestHeaders[] = {
-  "content-length"
+// A header string containing any of the following fields will cause
+// an error. The list comes from the XMLHttpRequest standard.
+// http://www.w3.org/TR/XMLHttpRequest/#the-setrequestheader-method
+const char* const kForbiddenHeaderFields[] = {
+  "accept-charset",
+  "accept-encoding",
+  "connection",
+  "content-length",
+  "cookie",
+  "cookie2",
+  "content-transfer-encoding",
+  "date",
+  "expect",
+  "host",
+  "keep-alive",
+  "origin",
+  "referer",
+  "te",
+  "trailer",
+  "transfer-encoding",
+  "upgrade",
+  "user-agent",
+  "via",
 };
 
-PP_Bool IsIgnoredRequestHeader(const std::string& name) {
-  for (size_t i = 0; i < arraysize(kIgnoredRequestHeaders); ++i) {
-    if (LowerCaseEqualsASCII(name, kIgnoredRequestHeaders[i]))
-      return PP_TRUE;
+bool IsValidHeaderField(const std::string& name) {
+  for (size_t i = 0; i < arraysize(kForbiddenHeaderFields); ++i) {
+    if (LowerCaseEqualsASCII(name, kForbiddenHeaderFields[i]))
+      return false;
   }
-  return PP_FALSE;
+  if (StartsWithASCII(name, "proxy-", false))
+    return false;
+  if (StartsWithASCII(name, "sec-", false))
+    return false;
+
+  return true;
+}
+
+bool AreValidHeaders(const std::string& headers) {
+  net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(), "\n");
+  while (it.GetNext()) {
+    if (!IsValidHeaderField(it.name()))
+      return false;
+  }
+  return true;
 }
 
 PP_Resource Create(PP_Module module_id) {
@@ -190,7 +223,6 @@ bool PPB_URLRequestInfo_Impl::SetBooleanProperty(PP_URLRequestProperty property,
       record_upload_progress_ = value;
       return true;
     default:
-      //NOTIMPLEMENTED();  // TODO(darin): Implement me!
       return false;
   }
 }
@@ -206,6 +238,8 @@ bool PPB_URLRequestInfo_Impl::SetStringProperty(PP_URLRequestProperty property,
       method_ = value;
       return true;
     case PP_URLREQUESTPROPERTY_HEADERS:
+      if (!AreValidHeaders(value))
+        return false;
       headers_ = value;
       return true;
     default:
@@ -251,11 +285,9 @@ WebURLRequest PPB_URLRequestInfo_Impl::ToWebURLRequest(WebFrame* frame) const {
   if (!headers_.empty()) {
     net::HttpUtil::HeadersIterator it(headers_.begin(), headers_.end(), "\n");
     while (it.GetNext()) {
-      if (!IsIgnoredRequestHeader(it.name())) {
-        web_request.addHTTPHeaderField(
-            WebString::fromUTF8(it.name()),
-            WebString::fromUTF8(it.values()));
-      }
+      web_request.addHTTPHeaderField(
+          WebString::fromUTF8(it.name()),
+          WebString::fromUTF8(it.values()));
     }
   }
 
