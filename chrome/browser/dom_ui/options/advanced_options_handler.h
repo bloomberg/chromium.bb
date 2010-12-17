@@ -51,10 +51,6 @@ class AdvancedOptionsHandler
   // remove all auto-open file-type settings.
   void HandleAutoOpenButton(const ListValue* args);
 
-  // Callback for the "resetToDefaults" message.  This will ask the user if
-  // they want to reset all options to their default values.
-  void HandleResetToDefaults(const ListValue* args);
-
   // Callback for the "metricsReportingCheckboxAction" message.  This is called
   // if the user toggles the metrics reporting checkbox.
   void HandleMetricsReportingCheckbox(const ListValue* args);

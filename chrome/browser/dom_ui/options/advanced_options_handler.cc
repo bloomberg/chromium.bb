@@ -173,14 +173,6 @@ void AdvancedOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_IMPROVE_BROWSING_EXPERIENCE));
   localized_strings->SetString("disableWebServices",
       l10n_util::GetStringUTF16(IDS_OPTIONS_DISABLE_WEB_SERVICES));
-  localized_strings->SetString("optionsReset",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_RESET));
-  localized_strings->SetString("optionsResetMessage",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_RESET_MESSAGE));
-  localized_strings->SetString("optionsResetOkLabel",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_RESET_OKLABEL));
-  localized_strings->SetString("optionsResetCancelLabel",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_RESET_CANCELLABEL));
 }
 
 void AdvancedOptionsHandler::Initialize() {
@@ -239,9 +231,6 @@ void AdvancedOptionsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("autoOpenFileTypesAction",
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleAutoOpenButton));
-  dom_ui_->RegisterMessageCallback("resetToDefaults",
-      NewCallback(this,
-                  &AdvancedOptionsHandler::HandleResetToDefaults));
   dom_ui_->RegisterMessageCallback("defaultZoomLevelAction",
       NewCallback(this, &AdvancedOptionsHandler::HandleDefaultZoomLevel));
 #if !defined(OS_CHROMEOS)
@@ -339,10 +328,6 @@ void AdvancedOptionsHandler::HandleAutoOpenButton(const ListValue* args) {
   DownloadManager* manager = dom_ui_->GetProfile()->GetDownloadManager();
   if (manager)
     manager->download_prefs()->ResetAutoOpen();
-}
-
-void AdvancedOptionsHandler::HandleResetToDefaults(const ListValue* args) {
-  OptionsUtil::ResetToDefaults(dom_ui_->GetProfile());
 }
 
 void AdvancedOptionsHandler::HandleMetricsReportingCheckbox(

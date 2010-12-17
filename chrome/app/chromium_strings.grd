@@ -302,6 +302,7 @@ be available for now. -->
           Please sign out of Chromium OS and sign in again for this change to take effect.
         </message>
       </if>
+      <!--TODO(kmadhusu): Remove "IDS_OPTIONS_RESET_MESSAGE" after platform-specific dialogs are removed.-->
       <message name="IDS_OPTIONS_RESET_MESSAGE" desc="The message shown when the user presses the 'Reset Chrome options' button">
         When you reset Chromium options any changes you've made will be reverted to the default settings. Do you want to reset Chromium options?
       </message>

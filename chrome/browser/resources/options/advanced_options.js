@@ -60,13 +60,6 @@ var OptionsPage = options.OptionsPage;
         chrome.send('defaultZoomLevelAction',
             [String(event.target.options[event.target.selectedIndex].value)]);
       }
-      $('optionsReset').onclick = function(event) {
-        AlertOverlay.show(undefined,
-                          localStrings.getString('optionsResetMessage'),
-                          localStrings.getString('optionsResetOkLabel'),
-                          localStrings.getString('optionsResetCancelLabel'),
-                          function() { chrome.send('resetToDefaults'); });
-      }
 
       if (cr.isWindows || cr.isMac) {
         $('certificatesManageButton').onclick = function(event) {

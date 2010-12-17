@@ -8004,6 +8004,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Correct spelling automatically:
       </message>
 
+      <!-- TODO(kmadhusu): Remove "IDS_OPTIONS_RESET", "IDS_OPTIONS_RESET_OKLABEL", "IDS_OPTIONS_RESET_CANCELLABEL" after platform-specific dialogs are removed.-->
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_OPTIONS_RESET" desc="The label of the 'Reset all settings to defaults' button">
           Reset to defaults

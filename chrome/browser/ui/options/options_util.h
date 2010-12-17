@@ -12,6 +12,8 @@ class Profile;
 
 class OptionsUtil {
  public:
+  // TODO(kmadhusu): Remove "ResetToDefaults" function after platform-specific
+  // dialogs are removed.
   // Resets all prefs to their default values.
   static void ResetToDefaults(Profile* profile);
 
