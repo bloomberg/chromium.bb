@@ -7,6 +7,7 @@ import os
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
+import test_utils
 
 
 class ContentTest(pyauto.PyUITest):
@@ -15,17 +16,6 @@ class ContentTest(pyauto.PyUITest):
   def _DataDirURL(self, filename):
     """Return a URL in the data dir for the given filename."""
     return self.GetFileURLForPath(os.path.join(self.DataDir(), filename))
-
-  def _StringContentCheck(self, content_string, have_list, nothave_list):
-    """Look for the presence or absence of strings in content.
-
-       Confirm all strings in have_list are found in content_string.
-       Confirm all strings in nothave_list are NOT found in content_string.
-    """
-    for s in have_list:
-      self.assertTrue(s in content_string)
-    for s in nothave_list:
-      self.assertTrue(s not in content_string)
 
   def _FileContentCheck(self, filename, have_list, nothave_list):
     """String check in local file.
@@ -37,7 +27,8 @@ class ContentTest(pyauto.PyUITest):
        window/tab is open.
     """
     self.NavigateToURL(self._DataDirURL(filename))
-    self._StringContentCheck(self.GetTabContents(), have_list, nothave_list)
+    test_utils.StringContentCheck(self, self.GetTabContents(),
+                                  have_list, nothave_list)
 
   def testLocalFileBasics(self):
     """For a few local files, do some basic has / not has."""
@@ -55,12 +46,12 @@ class ContentTest(pyauto.PyUITest):
     """Test content when we have 2 tabs."""
     self.NavigateToURL(self._DataDirURL('title1.html'))
     self.AppendTab(pyauto.GURL(self._DataDirURL('title2.html')), 0)
-    self._StringContentCheck(self.GetTabContents(0, 0),
-                             ['page has no title'],
-                             ['Awesomeness'])
-    self._StringContentCheck(self.GetTabContents(1, 0),
-                             ['Awesomeness'],
-                             ['page has no title'])
+    test_utils.StringContentCheck(self, self.GetTabContents(0, 0),
+                                  ['page has no title'],
+                                  ['Awesomeness'])
+    test_utils.StringContentCheck(self, self.GetTabContents(1, 0),
+                                  ['Awesomeness'],
+                                  ['page has no title'])
 
   def testThreeWindows(self):
     """Test content when we have 3 windows."""
@@ -70,22 +61,22 @@ class ContentTest(pyauto.PyUITest):
       self.GetBrowserWindow(window_index).BringToFront()
       self.NavigateToURL(self._DataDirURL(url), window_index, 0)
 
-    self._StringContentCheck(self.GetTabContents(0, 0),
-                             ['page has no title'],
-                             ['Awesomeness'])
-    self._StringContentCheck(self.GetTabContents(0, 1),
-                             ['Awesomeness'],
-                             ['page has no title'])
-    self._StringContentCheck(self.GetTabContents(0, 2),
-                             ['Title Of More Awesomeness'],
-                             ['page has no title'])
+    test_utils.StringContentCheck(self, self.GetTabContents(0, 0),
+                                  ['page has no title'],
+                                  ['Awesomeness'])
+    test_utils.StringContentCheck(self, self.GetTabContents(0, 1),
+                                  ['Awesomeness'],
+                                  ['page has no title'])
+    test_utils.StringContentCheck(self, self.GetTabContents(0, 2),
+                                  ['Title Of More Awesomeness'],
+                                  ['page has no title'])
 
   def testAboutVersion(self):
     """Confirm about:version contains some expected content."""
     self.NavigateToURL('about:version')
-    self._StringContentCheck(self.GetTabContents(),
-                             ['User Agent', 'Command Line'],
-                             ['odmomfodfm disfnodugdzuoufgbn ifdnf fif'])
+    test_utils.StringContentCheck(self, self.GetTabContents(),
+                                  ['User Agent', 'Command Line'],
+                                  ['odmomfodfm disfnodugdzuoufgbn ifdnf fif'])
 
   def testHttpsPage(self):
     """Test content in https://www.google.com"""

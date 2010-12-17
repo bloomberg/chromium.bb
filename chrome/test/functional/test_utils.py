@@ -199,3 +199,19 @@ def StripUnmatchedKeys(item_to_strip, reference_item):
     elif item_to_strip_type is types.DictType:
       return StripDict(item_to_strip, reference_item)
   return copy.deepcopy(item_to_strip)
+
+
+def StringContentCheck(test, content_string, have_list, nothave_list):
+  """Check for the presence or absence of strings within content.
+  Confirm all strings in have_list are found in content_strings.
+  Confirm all strings in nothave_list are not found in content_strings.
+
+  Args:
+    content_string: string to search for within content
+    have_list: list of strings found within content
+    nothave_list: list of strings not found within content
+  """
+  for s in have_list:
+    test.assertTrue(s in content_string, s)
+  for s in nothave_list:
+    test.assertTrue(s not in content_string)
