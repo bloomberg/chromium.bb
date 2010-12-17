@@ -10,8 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
-
 class FilePath;
 
 #ifdef __OBJC__
@@ -189,52 +187,6 @@ bool WasLaunchedAsHiddenLoginItem();
 // Retain/release calls for memory management in C++.
 void NSObjectRetain(void* obj);
 void NSObjectRelease(void* obj);
-
-// Convert toll-free bridged CFTypes to NSTypes. This does not autorelease
-// |cf_val|. This is useful for the case where there is a CFType in a call that
-// expects an NSType and the compiler is complaining about const casting
-// problems.
-// The call is used like this:
-// NSString *foo = CFToNSCast(CFSTR("Hello"));
-// The macro magic below is to enforce safe casting. It could possibly have
-// been done using template function specialization, but template function
-// specialization doesn't always work intuitively,
-// (http://www.gotw.ca/publications/mill17.htm) so the trusty combination
-// of macros and function overloading is used instead.
-
-#define CF_TO_NS_CAST(TypeCF, TypeNS) \
-TypeNS* CFToNSCast(TypeCF cf_val) { \
-  TypeNS* ns_val = \
-      const_cast<id>(reinterpret_cast<const struct objc_object*>(cf_val)); \
-  DCHECK(!ns_val || [ns_val isKindOfClass:[TypeNS class]]); \
-  return ns_val; \
-}
-
-// List of toll-free bridged types taken from:
-// http://www.cocoadev.com/index.pl?TollFreeBridged
-
-CF_TO_NS_CAST(CFArrayRef, NSArray);
-CF_TO_NS_CAST(CFMutableArrayRef, NSMutableArray);
-CF_TO_NS_CAST(CFAttributedStringRef, NSAttributedString);
-CF_TO_NS_CAST(CFMutableAttributedStringRef, NSMutableAttributedString);
-CF_TO_NS_CAST(CFCalendarRef, NSCalendar);
-CF_TO_NS_CAST(CFCharacterSetRef, NSCharacterSet);
-CF_TO_NS_CAST(CFMutableCharacterSetRef, NSMutableCharacterSet);
-CF_TO_NS_CAST(CFDataRef, NSData);
-CF_TO_NS_CAST(CFMutableDataRef, NSMutableData);
-CF_TO_NS_CAST(CFDateRef, NSDate);
-CF_TO_NS_CAST(CFDictionaryRef, NSDictionary);
-CF_TO_NS_CAST(CFMutableDictionaryRef, NSMutableDictionary);
-CF_TO_NS_CAST(CFNumberRef, NSNumber);
-CF_TO_NS_CAST(CFRunLoopTimerRef, NSTimer);
-CF_TO_NS_CAST(CFSetRef, NSSet);
-CF_TO_NS_CAST(CFMutableSetRef, NSMutableSet);
-CF_TO_NS_CAST(CFStringRef, NSString);
-CF_TO_NS_CAST(CFMutableStringRef, NSMutableString);
-CF_TO_NS_CAST(CFURLRef, NSURL);
-CF_TO_NS_CAST(CFTimeZoneRef, NSTimeZone);
-CF_TO_NS_CAST(CFReadStreamRef, NSInputStream);
-CF_TO_NS_CAST(CFWriteStreamRef, NSOutputStream);
 
 }  // namespace mac_util
 
