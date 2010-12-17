@@ -2262,7 +2262,10 @@ class Main(object):
       else:
         args.extend(self._GetTestsFromName(name))
     for name in excluded:
-      args.remove(name)
+      if name in args:
+        args.remove(name)
+      else:
+        logging.warn('Cannot exclude %s. Not included. Ignoring' % name)
     if excluded:
       logging.debug('Excluded %d test(s): %s' % (len(excluded), excluded))
     return args
