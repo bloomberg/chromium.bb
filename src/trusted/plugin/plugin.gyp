@@ -206,10 +206,11 @@
         {
           # Static library for linking with Chrome.
           'target_name': 'ppGoogleNaClPluginChrome',
-          'type': 'static_library',
+          'type': 'loadable_module',
           'sources': [
             '<@(common_sources)',
             '<@(ppapi_sources)',
+            'browser_utils.cc',
           ],
           'defines': [
             'NACL_PPAPI',
