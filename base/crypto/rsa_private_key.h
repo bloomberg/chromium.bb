@@ -208,6 +208,7 @@ class RSAPrivateKey {
   EVP_PKEY* key() { return key_; }
 #elif defined(USE_NSS)
   SECKEYPrivateKeyStr* key() { return key_; }
+  SECKEYPublicKeyStr* public_key() { return public_key_; }
 #elif defined(OS_WIN)
   HCRYPTPROV provider() { return provider_; }
   HCRYPTKEY key() { return key_; }
