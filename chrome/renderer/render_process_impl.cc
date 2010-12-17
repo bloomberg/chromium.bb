@@ -51,6 +51,7 @@
 
 namespace {
 
+// TODO(abarth): Remove this function in favor of webkit_glue::LaunchSelLdr.
 #if !defined(DISABLE_NACL)
 bool LaunchNaClProcessMultiFD(const char* alleged_url,
                               int socket_count,

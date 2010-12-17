@@ -36,6 +36,11 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/websocketstreamhandle_bridge.h"
 
+#if !defined(DISABLE_NACL)
+#include "native_client/src/shared/imc/nacl_imc.h"
+#include "native_client/src/trusted/plugin/nacl_entry_points.h"
+#endif
+
 #if defined(OS_WIN)
 #include <strsafe.h>  // note: per msdn docs, this must *follow* other includes
 #elif defined(OS_LINUX)
@@ -273,6 +278,30 @@ void UserMetricsRecordAction(const std::string& action) {
   RenderThread::current()->Send(
       new ViewHostMsg_UserMetricsRecordAction(action));
 }
+
+#if !defined(DISABLE_NACL)
+bool LaunchSelLdr(const char* alleged_url, int socket_count, void* imc_handles,
+                  void* nacl_process_handle, int* nacl_process_id) {
+  std::vector<nacl::FileDescriptor> sockets;
+  base::ProcessHandle nacl_process;
+  if (!RenderThread::current()->Send(
+    new ViewHostMsg_LaunchNaCl(
+        ASCIIToWide(alleged_url),
+        socket_count,
+        &sockets,
+        &nacl_process,
+        reinterpret_cast<base::ProcessId*>(nacl_process_id)))) {
+    return false;
+  }
+  CHECK(static_cast<int>(sockets.size()) == socket_count);
+  for (int i = 0; i < socket_count; i++) {
+    static_cast<nacl::Handle*>(imc_handles)[i] =
+        nacl::ToNativeHandle(sockets[i]);
+  }
+  *static_cast<nacl::Handle*>(nacl_process_handle) = nacl_process;
+  return true;
+}
+#endif
 
 #if defined(OS_LINUX)
 int MatchFontWithFallback(const std::string& face, bool bold,
