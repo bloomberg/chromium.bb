@@ -34,6 +34,8 @@
     # crbug.com/66714
     '-databases.DatabasesTest.testIncognitoDBPersistentAcrossTabs',
     'downloads',
+    # crbug.com/67233
+    '-downloads.DownloadsTest.testDownloadIncognitoAndRegular',
     'find_in_page',
     # Turkish I problem. crbug.com/60638
     '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
