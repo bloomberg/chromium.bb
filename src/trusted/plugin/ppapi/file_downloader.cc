@@ -32,7 +32,7 @@ void FileDownloader::Initialize(const pp::Instance* instance) {
 
 
 bool FileDownloader::Open(const nacl::string& url,
-                             const pp::CompletionCallback& callback) {
+                          const pp::CompletionCallback& callback) {
   CHECK(instance_ != NULL);
   if (instance_ == NULL)
     return false;  // Initialize() not called.
@@ -43,6 +43,10 @@ bool FileDownloader::Open(const nacl::string& url,
   // this will implicitly close any pending IO and destroy them.
   url_loader_ = pp::URLLoader(*instance_);
   file_reader_ = pp::FileIO_Dev();
+  file_io_trusted_interface_ = static_cast<const PPB_FileIOTrusted_Dev*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_FILEIOTRUSTED_DEV_INTERFACE));
+  if (file_io_trusted_interface_ == NULL)
+    return false;  // Interface not supported by our browser
 
   // Prepare the url request.
   pp::URLRequestInfo url_request;
@@ -65,7 +69,13 @@ bool FileDownloader::Open(const nacl::string& url,
 }
 
 int32_t FileDownloader::GetPOSIXFileDescriptor() {
-  int32_t file_desc = file_reader_.GetOSFileDescriptor();
+  // Use the trusted interface to get the file descriptor.
+  if (file_io_trusted_interface_ == NULL) {
+    return NACL_NO_FILE_DESC;
+  }
+  int32_t file_desc = file_io_trusted_interface_->GetOSFileDescriptor(
+      file_reader_.pp_resource());
+
 
 #if NACL_WINDOWS
   // Convert the Windows HANDLE from Pepper to a POSIX file descriptor.

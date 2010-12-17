@@ -3,11 +3,11 @@ vars = {
   "native_client_trunk": "http://src.chromium.org/native_client/trunk",
   "o3d_trunk": "http://o3d.googlecode.com/svn/trunk",
 
-  "x86_toolchain_version": "3969",
-  "arm_toolchain_version": "3969",
+  "x86_toolchain_version": "3951",
+  "arm_toolchain_version": "3961",
 
   "breakpad_rev": "452",
-  "chrome_rev": "67913",
+  "chrome_rev": "69240",
   "nacl_breakpad_gyp_rev": "1806",
   "gyp_rev": "856",
   "gtest_rev": "267",
@@ -22,8 +22,6 @@ deps = {
     "http://gyp.googlecode.com/svn/trunk@" + Var("gyp_rev"),
   "build":
     Var("chromium_trunk") + "/src/build@" + Var("chrome_rev"),
-  "site_scons":
-    Var("chromium_trunk") + "/src/site_scons@" + Var("chrome_rev"),
   "testing/gtest":
     "http://googletest.googlecode.com/svn/trunk@" + Var("gtest_rev"),
   "third_party/binutils":

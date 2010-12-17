@@ -7,6 +7,7 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
+#include "ppapi/c/dev/ppb_file_io_trusted_dev.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/file_io_dev.h"
 #include "ppapi/cpp/url_loader.h"
@@ -22,7 +23,8 @@ class FileDownloader {
   // calling Open(), or Open() will fail.
   FileDownloader()
       : instance_(NULL),
-        file_open_notify_callback_(pp::CompletionCallback::Block()) {}
+        file_open_notify_callback_(pp::CompletionCallback::Block()),
+        file_io_trusted_interface_(NULL) {}
   ~FileDownloader() {}
 
   // Initialize() can only be called once during the lifetime of this instance.
@@ -34,6 +36,9 @@ class FileDownloader {
   // indicating if the above steps could be scheduled asynchronously. The
   // |callback| will always be called with a code indicating success or failure
   // of any of the steps.  Fails if Initialize() has not been called.
+  // NOTE: If you call Open() before Initialize() has been called or if the
+  // FileIOTrustedInterface is not available, then |callback| will not be called
+  // and you get a false return value.
   bool Open(const nacl::string& url, const pp::CompletionCallback& callback);
 
   // If downloading and opening succeeded, this returns a valid read-only
@@ -67,6 +72,7 @@ class FileDownloader {
   nacl::string url_;
   pp::CompletionCallback file_open_notify_callback_;
   pp::FileIO_Dev file_reader_;
+  const PPB_FileIOTrusted_Dev* file_io_trusted_interface_;
   pp::URLLoader url_loader_;
   pp::CompletionCallbackFactory<FileDownloader> callback_factory_;
 };
