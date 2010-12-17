@@ -111,12 +111,9 @@ class AutoFillProfile : public FormGroup {
  private:
   Address* GetHomeAddress();
 
-  // Builds inferred label, includes first non-empty field at the beginning,
-  // even if it matches for all.
-  // |included_fields| - array of the fields, that needs to be included in this
-  // label.
+  // Builds inferred label from all non-empty fields in |included_fields|.
   string16 ConstructInferredLabel(
-      const std::vector<AutoFillFieldType>* included_fields) const;
+      const std::vector<AutoFillFieldType>& included_fields) const;
 
   // The label presented to the user when selecting a profile.
   string16 label_;

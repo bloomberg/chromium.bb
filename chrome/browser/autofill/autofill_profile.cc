@@ -367,10 +367,10 @@ void AutoFillProfile::CreateInferredLabels(
           unique_fields.resize(std::max(field_it + 1, minimal_fields_shown));
           new_label =
               profiles->at(*similar_profiles)->ConstructInferredLabel(
-                  &unique_fields);
+                  unique_fields);
         } else {
           new_label =
-              profiles->at(*similar_profiles)->ConstructInferredLabel(&fields);
+              profiles->at(*similar_profiles)->ConstructInferredLabel(fields);
         }
         (*created_labels)[*similar_profiles] = new_label;
       }
@@ -389,7 +389,7 @@ void AutoFillProfile::CreateInferredLabels(
 
       (*created_labels)[label_iterator->second.front()] =
           profiles->at(label_iterator->second.front())->ConstructInferredLabel(
-              &non_empty_fields);
+              non_empty_fields);
     }
   }
 }
@@ -469,25 +469,27 @@ Address* AutoFillProfile::GetHomeAddress() {
 }
 
 string16 AutoFillProfile::ConstructInferredLabel(
-    const std::vector<AutoFillFieldType>* included_fields) const {
-  DCHECK(included_fields);
+    const std::vector<AutoFillFieldType>& included_fields) const {
+  const string16 separator =
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_SEPARATOR);
+
   string16 label;
-  string16 separator = l10n_util::GetStringUTF16(
-                       IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_SEPARATOR);
   for (std::vector<AutoFillFieldType>::const_iterator it =
-       included_fields->begin(); it != included_fields->end(); ++it) {
+           included_fields.begin();
+       it != included_fields.end(); ++it) {
     string16 field = GetFieldText(AutoFillType(*it));
-    if (!field.empty()) {
-      if (!label.empty()) {
-        label.append(separator);
-      }
-      // Fax number has special format, to indicate that this is a fax number.
-      if (*it == PHONE_FAX_WHOLE_NUMBER) {
-        field = l10n_util::GetStringFUTF16(
-            IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_FAX_FORMAT, field);
-      }
-      label.append(field);
+    if (field.empty())
+      continue;
+
+    if (!label.empty())
+      label.append(separator);
+
+    // Fax number has special format, to indicate that this is a fax number.
+    if (*it == PHONE_FAX_WHOLE_NUMBER) {
+      field = l10n_util::GetStringFUTF16(
+          IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_FAX_FORMAT, field);
     }
+    label.append(field);
   }
   return label;
 }
