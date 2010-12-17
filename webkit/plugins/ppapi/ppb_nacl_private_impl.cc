@@ -16,8 +16,12 @@ namespace {
 bool LaunchSelLdr(const char* alleged_url, int socket_count,
                   void* imc_handles, void* nacl_process_handle,
                   int* nacl_process_id) {
+#if !defined(DISABLE_NACL)
   return webkit_glue::LaunchSelLdr(alleged_url, socket_count, imc_handles,
                                    nacl_process_handle, nacl_process_id);
+#else
+  return 0;
+#endif
 }
 
 int UrandomFD(void) {
