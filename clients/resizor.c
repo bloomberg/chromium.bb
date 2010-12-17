@@ -48,57 +48,6 @@ struct resizor {
 };
 
 static void
-resizor_draw(struct resizor *resizor)
-{
-	cairo_surface_t *surface;
-	cairo_t *cr;
-
-	window_draw(resizor->window);
-
-	window_get_child_rectangle(resizor->window,
-				   &resizor->child_allocation);
-
-	surface = window_get_surface(resizor->window);
-
-	cr = cairo_create(surface);
-	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-	cairo_rectangle(cr,
-			resizor->child_allocation.x,
-			resizor->child_allocation.y,
-			resizor->child_allocation.width,
-			resizor->child_allocation.height);
-	cairo_set_source_rgba(cr, 0, 0, 0, 0.8);
-	cairo_fill(cr);
-	cairo_destroy(cr);
-
-	cairo_surface_destroy(surface);
-
-	window_flush(resizor->window);
-
-	if (fabs(resizor->height.previous - resizor->height.target) < 0.1) {
-		wl_display_frame_callback(display_get_display(resizor->display),
-					  frame_callback, resizor);
-	}
-}
-
-static void
-redraw_handler(struct window *window, void *data)
-{
-	struct resizor *resizor = data;
-
-	resizor_draw(resizor);
-}
-
-static void
-keyboard_focus_handler(struct window *window,
-		       struct input *device, void *data)
-{
-	struct resizor *resizor = data;
-
-	window_schedule_redraw(resizor->window);
-}
-
-static void
 frame_callback(void *data, uint32_t time)
 {
 	struct resizor *resizor = data;
@@ -130,6 +79,57 @@ frame_callback(void *data, uint32_t time)
 }
 
 static void
+resizor_draw(struct resizor *resizor)
+{
+	cairo_surface_t *surface;
+	cairo_t *cr;
+
+	window_draw(resizor->window);
+
+	window_get_child_rectangle(resizor->window,
+				   &resizor->child_allocation);
+
+	surface = window_get_surface(resizor->window);
+
+	cr = cairo_create(surface);
+	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+	cairo_rectangle(cr,
+			resizor->child_allocation.x,
+			resizor->child_allocation.y,
+			resizor->child_allocation.width,
+			resizor->child_allocation.height);
+	cairo_set_source_rgba(cr, 0, 0, 0, 0.8);
+	cairo_fill(cr);
+	cairo_destroy(cr);
+
+	cairo_surface_destroy(surface);
+
+	window_flush(resizor->window);
+
+	if (fabs(resizor->height.previous - resizor->height.target) > 0.1) {
+		wl_display_frame_callback(display_get_display(resizor->display),
+					  frame_callback, resizor);
+	}
+}
+
+static void
+redraw_handler(struct window *window, void *data)
+{
+	struct resizor *resizor = data;
+
+	resizor_draw(resizor);
+}
+
+static void
+keyboard_focus_handler(struct window *window,
+		       struct input *device, void *data)
+{
+	struct resizor *resizor = data;
+
+	window_schedule_redraw(resizor->window);
+}
+
+static void
 key_handler(struct window *window, uint32_t key, uint32_t sym,
 	    uint32_t state, uint32_t modifiers, void *data)
 {
@@ -139,12 +139,12 @@ key_handler(struct window *window, uint32_t key, uint32_t sym,
 		return;
 
 	switch (sym) {
-	case XK_F1:
+	case XK_Down:
 		resizor->height.target = 400;
 		resizor->height.current = resizor->child_allocation.height;
 		frame_callback(resizor, 0);
 		break;
-	case XK_F2:
+	case XK_Up:
 		resizor->height.target = 200;
 		resizor->height.current = resizor->child_allocation.height;
 		frame_callback(resizor, 0);
