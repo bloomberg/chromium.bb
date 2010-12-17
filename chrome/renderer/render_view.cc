@@ -2781,7 +2781,7 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
     return CreatePluginPlaceholder(frame,
                                    params,
                                    *group,
-                                   IDR_OUTDATED_PLUGIN_HTML,
+                                   IDR_BLOCKED_PLUGIN_HTML,
                                    IDS_PLUGIN_OUTDATED);
   }
   if (!info.enabled)
@@ -2806,13 +2806,13 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
     return CreatePluginPlaceholder(frame,
                                    params,
                                    *group,
-                                   IDR_BLOCKED_PLUGIN_HTML,
+                                   IDR_CLICK_TO_PLAY_PLUGIN_HTML,
                                    IDS_PLUGIN_LOAD);
   } else {
     return CreatePluginPlaceholder(frame,
                                    params,
                                    *group,
-                                   IDR_OUTDATED_PLUGIN_HTML,
+                                   IDR_BLOCKED_PLUGIN_HTML,
                                    IDS_PLUGIN_BLOCKED);
   }
 }
@@ -4459,7 +4459,8 @@ WebPlugin* RenderView::CreatePluginPlaceholder(
                         params,
                         webkit_preferences_,
                         resource_id,
-                        l10n_util::GetStringUTF16(message_id));
+                        l10n_util::GetStringFUTF16(message_id,
+                                                   group.GetGroupName()));
   return blocked_plugin->plugin();
 }
 
