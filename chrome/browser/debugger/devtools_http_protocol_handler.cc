@@ -263,13 +263,13 @@ void DevToolsHttpProtocolHandler::OnWebSocketMessageUI(
 
 void DevToolsHttpProtocolHandler::OnCloseUI(HttpListenSocket* socket) {
   SocketToClientHostMap::iterator it = socket_to_client_host_ui_.find(socket);
-  if (it == socket_to_client_host_ui_.end())
-    return;
-  DevToolsClientHostImpl* client_host =
-      static_cast<DevToolsClientHostImpl*>(it->second);
-  client_host->NotifyCloseListener();
-  delete client_host;
-  socket_to_client_host_ui_.erase(socket);
+  if (it != socket_to_client_host_ui_.end()) {
+    DevToolsClientHostImpl* client_host =
+        static_cast<DevToolsClientHostImpl*>(it->second);
+    client_host->NotifyCloseListener();
+    delete client_host;
+    socket_to_client_host_ui_.erase(socket);
+  }
 
   // We are holding last reference to scoped refptr 'socket' here.
   // We can't exit method just like that since 'socket' is going to
