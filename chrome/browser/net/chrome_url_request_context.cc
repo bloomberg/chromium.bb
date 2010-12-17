@@ -820,48 +820,6 @@ bool ChromeURLRequestContext::IsExternal() const {
   return false;
 }
 
-ChromeURLRequestContext::ChromeURLRequestContext(
-    ChromeURLRequestContext* other) {
-  CheckCurrentlyOnIOThread();
-
-  // Set URLRequestContext members
-  net_log_ = other->net_log_;
-  host_resolver_ = other->host_resolver_;
-  cert_verifier_ = other->cert_verifier_;
-  dnsrr_resolver_ = other->dnsrr_resolver_;
-  // TODO(agl): How do we copy dns_cert_checker_, which is a scoped_ptr?
-  proxy_service_ = other->proxy_service_;
-  ssl_config_service_ = other->ssl_config_service_;
-  http_transaction_factory_ = other->http_transaction_factory_;
-  ftp_transaction_factory_ = other->ftp_transaction_factory_;
-  cookie_store_ = other->cookie_store_;
-  cookie_policy_ = other->cookie_policy_;
-  transport_security_state_ = other->transport_security_state_;
-  accept_language_ = other->accept_language_;
-  accept_charset_ = other->accept_charset_;
-  referrer_charset_ = other->referrer_charset_;
-  // NOTE(cbentzel): Sharing the http_auth_handler_factory_ is potentially
-  // dangerous because it is a raw pointer. However, the current implementation
-  // creates and destroys the pointed-to-object in the io_thread and it is
-  // valid for the lifetime of all ChromeURLRequestContext objects.
-  // If this is no longer the case, HttpAuthHandlerFactory will need to be
-  // ref-counted or cloneable.
-  http_auth_handler_factory_ = other->http_auth_handler_factory_;
-
-  // Set ChromeURLRequestContext members
-  user_script_dir_path_ = other->user_script_dir_path_;
-  appcache_service_ = other->appcache_service_;
-  database_tracker_ = other->database_tracker_;
-  chrome_cookie_policy_ = other->chrome_cookie_policy_;
-  host_content_settings_map_ = other->host_content_settings_map_;
-  host_zoom_map_ = other->host_zoom_map_;
-  is_media_ = other->is_media_;
-  is_off_the_record_ = other->is_off_the_record_;
-  blob_storage_context_ = other->blob_storage_context_;
-  file_system_context_ = other->file_system_context_;
-  extension_info_map_ = other->extension_info_map_;
-}
-
 void ChromeURLRequestContext::OnAcceptLanguageChange(
     const std::string& accept_language) {
   CheckCurrentlyOnIOThread();

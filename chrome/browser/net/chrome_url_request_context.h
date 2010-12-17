@@ -99,10 +99,6 @@ class ChromeURLRequestContext : public URLRequestContext {
   virtual bool IsExternal() const;
 
  protected:
-  // Copies the dependencies from |other| into |this|. If you use this
-  // constructor, then you should hold a reference to |other|, as we
-  // depend on |other| being alive.
-  explicit ChromeURLRequestContext(ChromeURLRequestContext* other);
   virtual ~ChromeURLRequestContext();
 
  public:
