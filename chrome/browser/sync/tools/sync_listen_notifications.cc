@@ -25,6 +25,7 @@
 #include "jingle/notifier/listener/send_update_task.h"
 #include "jingle/notifier/listener/subscribe_task.h"
 #include "jingle/notifier/listener/xml_element_util.h"
+#include "net/base/cert_verifier.h"
 #include "net/base/ssl_config_service.h"
 #include "net/socket/client_socket_factory.h"
 #include "talk/base/cryptstring.h"
@@ -66,10 +67,12 @@ class XmppNotificationClient : public notifier::XmppConnection::Delegate {
   virtual ~XmppNotificationClient() {}
 
   // Connect with the given XMPP settings and run until disconnected.
-  void Run(const buzz::XmppClientSettings& xmpp_client_settings) {
+  void Run(const buzz::XmppClientSettings& xmpp_client_settings,
+           net::CertVerifier* cert_verifier) {
     DCHECK(!xmpp_connection_.get());
     xmpp_connection_.reset(
-        new notifier::XmppConnection(xmpp_client_settings, this, NULL));
+        new notifier::XmppConnection(xmpp_client_settings, cert_verifier,
+                                     this, NULL));
     MessageLoop::current()->Run();
     DCHECK(!xmpp_connection_.get());
   }
@@ -295,6 +298,8 @@ int main(int argc, char* argv[]) {
   }
   xmpp_client_settings.set_server(addr);
 
+  net::CertVerifier cert_verifier;
+
   MessageLoopForIO message_loop;
 
   // Connect and listen.
@@ -310,7 +315,7 @@ int main(int argc, char* argv[]) {
   }
   XmppNotificationClient xmpp_notification_client(
       observers.begin(), observers.end());
-  xmpp_notification_client.Run(xmpp_client_settings);
+  xmpp_notification_client.Run(xmpp_client_settings, &cert_verifier);
 
   return 0;
 }

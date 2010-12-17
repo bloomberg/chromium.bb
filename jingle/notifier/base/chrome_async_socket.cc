@@ -33,6 +33,7 @@ namespace notifier {
 ChromeAsyncSocket::ChromeAsyncSocket(
     net::ClientSocketFactory* client_socket_factory,
     const net::SSLConfig& ssl_config,
+    net::CertVerifier* cert_verifier,
     size_t read_buf_size,
     size_t write_buf_size,
     net::NetLog* net_log)
@@ -46,6 +47,7 @@ ChromeAsyncSocket::ChromeAsyncSocket(
                             &ChromeAsyncSocket::ProcessSSLConnectDone),
       client_socket_factory_(client_socket_factory),
       ssl_config_(ssl_config),
+      cert_verifier_(cert_verifier),
       bound_net_log_(
           net::BoundNetLog::Make(net_log, net::NetLog::SOURCE_SOCKET)),
       state_(STATE_CLOSED),
@@ -438,7 +440,7 @@ bool ChromeAsyncSocket::StartTls(const std::string& domain_name) {
       client_socket_factory_->CreateSSLClientSocket(
           transport_socket_.release(), net::HostPortPair(domain_name, 443),
           ssl_config_, NULL /* ssl_host_info */,
-          NULL /* TODO(wtc): cert_verifier */));
+          cert_verifier_));
   int status = transport_socket_->Connect(&ssl_connect_callback_);
   if (status != net::ERR_IO_PENDING) {
     MessageLoop* message_loop = MessageLoop::current();

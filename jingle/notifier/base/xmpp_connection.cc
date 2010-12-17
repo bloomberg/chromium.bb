@@ -20,7 +20,8 @@ namespace notifier {
 namespace {
 
 buzz::AsyncSocket* CreateSocket(
-    const buzz::XmppClientSettings& xmpp_client_settings) {
+    const buzz::XmppClientSettings& xmpp_client_settings,
+    net::CertVerifier* cert_verifier) {
   bool use_fake_ssl_client_socket =
       (xmpp_client_settings.protocol() == cricket::PROTO_SSLTCP);
   net::ClientSocketFactory* const client_socket_factory =
@@ -36,7 +37,7 @@ buzz::AsyncSocket* CreateSocket(
   // TODO(akalin): Use a real NetLog.
   net::NetLog* const net_log = NULL;
   return new ChromeAsyncSocket(
-      client_socket_factory, ssl_config,
+      client_socket_factory, ssl_config, cert_verifier,
       kReadBufSize, kWriteBufSize, net_log);
 }
 
@@ -44,6 +45,7 @@ buzz::AsyncSocket* CreateSocket(
 
 XmppConnection::XmppConnection(
     const buzz::XmppClientSettings& xmpp_client_settings,
+    net::CertVerifier* cert_verifier,
     Delegate* delegate, buzz::PreXmppAuth* pre_xmpp_auth)
     : task_pump_(new TaskPump()),
       on_connect_called_(false),
@@ -61,7 +63,8 @@ XmppConnection::XmppConnection(
   const char kLanguage[] = "en";
   buzz::XmppReturnStatus connect_status =
       weak_xmpp_client->Connect(xmpp_client_settings, kLanguage,
-                                CreateSocket(xmpp_client_settings),
+                                CreateSocket(xmpp_client_settings,
+                                             cert_verifier),
                                 pre_xmpp_auth);
   // buzz::XmppClient::Connect() should never fail.
   DCHECK_EQ(connect_status, buzz::XMPP_RETURN_OK);

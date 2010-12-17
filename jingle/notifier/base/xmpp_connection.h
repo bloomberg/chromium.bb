@@ -22,6 +22,10 @@ class XmlElement;
 class XmppClientSettings;
 }  // namespace
 
+namespace net {
+class CertVerifier;
+}  // namespace
+
 namespace talk_base {
 class Task;
 }  // namespace
@@ -59,11 +63,13 @@ class XmppConnection : public sigslot::has_slots<> {
                          const buzz::XmlElement* stream_error) = 0;
   };
 
+  // Does not take ownership of |cert_verifier|, which may not be NULL.
   // Does not take ownership of |delegate|, which may not be NULL.
   // Takes ownership of |pre_xmpp_auth|, which may be NULL.
   //
   // TODO(akalin): Avoid the need for |pre_xmpp_auth|.
   XmppConnection(const buzz::XmppClientSettings& xmpp_client_settings,
+                 net::CertVerifier* cert_verifier,
                  Delegate* delegate, buzz::PreXmppAuth* pre_xmpp_auth);
 
   // Invalidates any weak pointers passed to the delegate by

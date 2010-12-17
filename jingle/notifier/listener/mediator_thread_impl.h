@@ -105,6 +105,7 @@ class MediatorThreadImpl : public MediatorThread, public LoginDelegate,
 
   base::Thread worker_thread_;
   scoped_ptr<net::HostResolver> host_resolver_;
+  scoped_ptr<net::CertVerifier> cert_verifier_;
 
   scoped_ptr<notifier::Login> login_;
 

@@ -13,6 +13,7 @@
 #include "jingle/notifier/listener/listen_task.h"
 #include "jingle/notifier/listener/send_update_task.h"
 #include "jingle/notifier/listener/subscribe_task.h"
+#include "net/base/cert_verifier.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/host_resolver.h"
 #include "talk/xmpp/xmppclientsettings.h"
@@ -118,16 +119,19 @@ void MediatorThreadImpl::DoLogin(
 
   // TODO(akalin): Use an existing HostResolver from somewhere (maybe
   // the IOThread one).
+  // TODO(wtc): Sharing HostResolver and CertVerifier with the IO Thread won't
+  // work because HostResolver and CertVerifier are single-threaded.
   host_resolver_.reset(
       net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
                                     NULL, NULL));
+  cert_verifier_.reset(new net::CertVerifier);
 
   notifier::ServerInformation server_list[2];
   int server_list_count = 0;
 
   // Override the default servers with a test notification server if one was
   // provided.
-  if(!notifier_options_.xmpp_host_port.host().empty()) {
+  if (!notifier_options_.xmpp_host_port.host().empty()) {
     server_list[0].server = notifier_options_.xmpp_host_port;
     server_list[0].special_port_magic = false;
     server_list_count = 1;
@@ -149,6 +153,7 @@ void MediatorThreadImpl::DoLogin(
                                    settings,
                                    options,
                                    host_resolver_.get(),
+                                   cert_verifier_.get(),
                                    server_list,
                                    server_list_count,
                                    notifier_options_.try_ssltcp_first));
@@ -159,6 +164,7 @@ void MediatorThreadImpl::DoDisconnect() {
   DCHECK_EQ(MessageLoop::current(), worker_message_loop());
   VLOG(1) << "P2P: Thread logging out of talk network.";
   login_.reset();
+  cert_verifier_.reset();
   host_resolver_.reset();
   base_task_.reset();
 }

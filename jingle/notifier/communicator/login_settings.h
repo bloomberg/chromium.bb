@@ -14,6 +14,7 @@ class XmppClientSettings;
 }
 
 namespace net {
+class CertVerifier;
 class HostPortPair;
 class HostResolver;
 }
@@ -31,6 +32,7 @@ class LoginSettings {
   LoginSettings(const buzz::XmppClientSettings& user_settings,
                 const ConnectionOptions& options,
                 net::HostResolver* host_resolver,
+                net::CertVerifier* cert_verifier,
                 ServerInformation* server_list,
                 int server_count,
                 bool try_ssltcp_first);
@@ -43,6 +45,10 @@ class LoginSettings {
 
   net::HostResolver* host_resolver() {
     return host_resolver_;
+  }
+
+  net::CertVerifier* cert_verifier() {
+    return cert_verifier_;
   }
 
   const ServerInformation* server_list() const {
@@ -72,6 +78,7 @@ class LoginSettings {
   bool try_ssltcp_first_;
 
   net::HostResolver* host_resolver_;
+  net::CertVerifier* cert_verifier_;
   talk_base::scoped_array<ServerInformation> server_list_;
   int server_count_;
   // Used to handle redirects

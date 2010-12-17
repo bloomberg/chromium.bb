@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/weak_ptr.h"
 #include "jingle/notifier/base/weak_xmpp_client.h"
+#include "net/base/cert_verifier.h"
 #include "talk/xmpp/prexmppauth.h"
 #include "talk/xmpp/xmppclientsettings.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -76,12 +77,13 @@ class XmppConnectionTest : public testing::Test {
 
   // Needed by XmppConnection.
   MessageLoop message_loop_;
+  net::CertVerifier cert_verifier_;
   MockXmppConnectionDelegate mock_xmpp_connection_delegate_;
   scoped_ptr<MockPreXmppAuth> mock_pre_xmpp_auth_;
 };
 
 TEST_F(XmppConnectionTest, CreateDestroy) {
-  XmppConnection xmpp_connection(buzz::XmppClientSettings(),
+  XmppConnection xmpp_connection(buzz::XmppClientSettings(), &cert_verifier_,
                                  &mock_xmpp_connection_delegate_, NULL);
 }
 
@@ -92,7 +94,7 @@ TEST_F(XmppConnectionTest, ImmediateFailure) {
   EXPECT_CALL(mock_xmpp_connection_delegate_,
               OnError(buzz::XmppEngine::ERROR_NONE, 0, NULL));
 
-  XmppConnection xmpp_connection(buzz::XmppClientSettings(),
+  XmppConnection xmpp_connection(buzz::XmppClientSettings(), &cert_verifier_,
                                  &mock_xmpp_connection_delegate_, NULL);
 
   // We need to do this *before* |xmpp_connection| gets destroyed or
@@ -111,8 +113,8 @@ TEST_F(XmppConnectionTest, PreAuthFailure) {
               OnError(buzz::XmppEngine::ERROR_AUTH, 5, NULL));
 
   XmppConnection xmpp_connection(
-      buzz::XmppClientSettings(), &mock_xmpp_connection_delegate_,
-      mock_pre_xmpp_auth_.release());
+      buzz::XmppClientSettings(), &cert_verifier_,
+      &mock_xmpp_connection_delegate_, mock_pre_xmpp_auth_.release());
 
   // We need to do this *before* |xmpp_connection| gets destroyed or
   // our delegate won't be called.
@@ -129,8 +131,8 @@ TEST_F(XmppConnectionTest, FailureAfterPreAuth) {
               OnError(buzz::XmppEngine::ERROR_NONE, 0, NULL));
 
   XmppConnection xmpp_connection(
-      buzz::XmppClientSettings(), &mock_xmpp_connection_delegate_,
-      mock_pre_xmpp_auth_.release());
+      buzz::XmppClientSettings(), &cert_verifier_,
+      &mock_xmpp_connection_delegate_, mock_pre_xmpp_auth_.release());
 
   // We need to do this *before* |xmpp_connection| gets destroyed or
   // our delegate won't be called.
@@ -141,7 +143,7 @@ TEST_F(XmppConnectionTest, RaisedError) {
   EXPECT_CALL(mock_xmpp_connection_delegate_,
               OnError(buzz::XmppEngine::ERROR_NONE, 0, NULL));
 
-  XmppConnection xmpp_connection(buzz::XmppClientSettings(),
+  XmppConnection xmpp_connection(buzz::XmppClientSettings(), &cert_verifier_,
                                  &mock_xmpp_connection_delegate_, NULL);
 
   xmpp_connection.weak_xmpp_client_->
@@ -154,7 +156,7 @@ TEST_F(XmppConnectionTest, Connect) {
       WillOnce(SaveArg<0>(&weak_ptr));
 
   {
-    XmppConnection xmpp_connection(buzz::XmppClientSettings(),
+    XmppConnection xmpp_connection(buzz::XmppClientSettings(), &cert_verifier_,
                                    &mock_xmpp_connection_delegate_, NULL);
 
     xmpp_connection.weak_xmpp_client_->
@@ -171,7 +173,7 @@ TEST_F(XmppConnectionTest, MultipleConnect) {
     EXPECT_CALL(mock_xmpp_connection_delegate_, OnConnect(_)).
         WillOnce(SaveArg<0>(&weak_ptr));
 
-    XmppConnection xmpp_connection(buzz::XmppClientSettings(),
+    XmppConnection xmpp_connection(buzz::XmppClientSettings(), &cert_verifier_,
                                    &mock_xmpp_connection_delegate_, NULL);
 
     xmpp_connection.weak_xmpp_client_->
@@ -192,7 +194,7 @@ TEST_F(XmppConnectionTest, ConnectThenError) {
   EXPECT_CALL(mock_xmpp_connection_delegate_,
               OnError(buzz::XmppEngine::ERROR_NONE, 0, NULL));
 
-  XmppConnection xmpp_connection(buzz::XmppClientSettings(),
+  XmppConnection xmpp_connection(buzz::XmppClientSettings(), &cert_verifier_,
                                  &mock_xmpp_connection_delegate_, NULL);
 
   xmpp_connection.weak_xmpp_client_->

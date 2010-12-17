@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "jingle/notifier/communicator/connection_options.h"
 #include "jingle/notifier/communicator/xmpp_connection_generator.h"
+#include "net/base/cert_verifier.h"
 #include "talk/base/common.h"
 #include "talk/base/socketaddress.h"
 #include "talk/xmpp/xmppclientsettings.h"
@@ -18,11 +19,13 @@ namespace notifier {
 LoginSettings::LoginSettings(const buzz::XmppClientSettings& user_settings,
                              const ConnectionOptions& options,
                              net::HostResolver* host_resolver,
+                             net::CertVerifier* cert_verifier,
                              ServerInformation* server_list,
                              int server_count,
                              bool try_ssltcp_first)
     :  try_ssltcp_first_(try_ssltcp_first),
        host_resolver_(host_resolver),
+       cert_verifier_(cert_verifier),
        server_list_(new ServerInformation[server_count]),
        server_count_(server_count),
        user_settings_(new buzz::XmppClientSettings(user_settings)),
@@ -30,6 +33,7 @@ LoginSettings::LoginSettings(const buzz::XmppClientSettings& user_settings,
   // Note: firewall may be NULL.
   DCHECK(server_list);
   DCHECK(host_resolver);
+  DCHECK(cert_verifier);
   DCHECK_GT(server_count, 0);
   for (int i = 0; i < server_count_; ++i) {
     server_list_[i] = server_list[i];

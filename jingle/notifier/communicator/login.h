@@ -22,6 +22,7 @@ class XmppClientSettings;
 }  // namespace buzz
 
 namespace net {
+class CertVerifier;
 class HostResolver;
 }  // namespace net
 
@@ -54,12 +55,13 @@ class Login : public net::NetworkChangeNotifier::Observer,
     virtual void OnDisconnect() = 0;
   };
 
-  // Does not take ownership of |delegate|, |host_resolver|, or
-  // |server_list|, none of which may be NULL.
+  // Does not take ownership of |delegate|, |host_resolver|, |cert_verifier|,
+  // or |server_list|, none of which may be NULL.
   Login(Delegate* delegate,
         const buzz::XmppClientSettings& user_settings,
         const ConnectionOptions& options,
         net::HostResolver* host_resolver,
+        net::CertVerifier* cert_verifier,
         ServerInformation* server_list,
         int server_count,
         bool try_ssltcp_first);

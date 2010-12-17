@@ -25,6 +25,7 @@
 #include "talk/xmpp/asyncsocket.h"
 
 namespace net {
+class CertVerifier;
 class ClientSocket;
 class ClientSocketFactory;
 class IOBufferWithSize;
@@ -34,10 +35,11 @@ namespace notifier {
 
 class ChromeAsyncSocket : public buzz::AsyncSocket {
  public:
-  // Takes ownership of |client_socket_factory| but not |net_log|.
-  // |net_log| may be NULL.
+  // Takes ownership of |client_socket_factory| but not |cert_verifier| and
+  // |net_log|.  |cert_verifier| may not be NULL.  |net_log| may be NULL.
   ChromeAsyncSocket(net::ClientSocketFactory* client_socket_factory,
                     const net::SSLConfig& ssl_config,
+                    net::CertVerifier* cert_verifier,
                     size_t read_buf_size,
                     size_t write_buf_size,
                     net::NetLog* net_log);
@@ -187,6 +189,7 @@ class ChromeAsyncSocket : public buzz::AsyncSocket {
 
   scoped_ptr<net::ClientSocketFactory> client_socket_factory_;
   const net::SSLConfig ssl_config_;
+  net::CertVerifier* cert_verifier_;
   net::BoundNetLog bound_net_log_;
 
   // buzz::AsyncSocket state.

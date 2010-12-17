@@ -115,7 +115,8 @@ void SingleLoginAttempt::OnNewSettings(
           jid.Str(), client_settings.auth_cookie(),
           client_settings.token_service());
   xmpp_connection_.reset(
-      new XmppConnection(client_settings, this, pre_xmpp_auth));
+      new XmppConnection(client_settings, login_settings_->cert_verifier(),
+                         this, pre_xmpp_auth));
 }
 
 void SingleLoginAttempt::OnExhaustedSettings(

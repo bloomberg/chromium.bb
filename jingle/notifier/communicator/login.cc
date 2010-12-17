@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
-
 #include "jingle/notifier/communicator/login.h"
+
+#include <string>
 
 #include "base/logging.h"
 #include "base/rand_util.h"
@@ -34,6 +34,7 @@ Login::Login(Delegate* delegate,
              const buzz::XmppClientSettings& user_settings,
              const ConnectionOptions& options,
              net::HostResolver* host_resolver,
+             net::CertVerifier* cert_verifier,
              ServerInformation* server_list,
              int server_count,
              bool try_ssltcp_first)
@@ -41,6 +42,7 @@ Login::Login(Delegate* delegate,
       login_settings_(new LoginSettings(user_settings,
                                         options,
                                         host_resolver,
+                                        cert_verifier,
                                         server_list,
                                         server_count,
                                         try_ssltcp_first)),

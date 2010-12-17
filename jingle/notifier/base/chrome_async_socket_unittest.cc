@@ -11,9 +11,10 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
-#include "net/base/ssl_config_service.h"
 #include "net/base/capturing_net_log.h"
+#include "net/base/cert_verifier.h"
 #include "net/base/net_errors.h"
+#include "net/base/ssl_config_service.h"
 #include "net/socket/socket_test_util.h"
 #include "talk/base/sigslot.h"
 #include "talk/base/socketaddress.h"
@@ -115,7 +116,8 @@ class ChromeAsyncSocketTest
 
     chrome_async_socket_.reset(
         new ChromeAsyncSocket(mock_client_socket_factory.release(),
-                              ssl_config_, 14, 20, &capturing_net_log_)),
+                              ssl_config_, &cert_verifier_, 14, 20,
+                              &capturing_net_log_)),
 
     chrome_async_socket_->SignalConnected.connect(
         this, &ChromeAsyncSocketTest::OnConnect);
@@ -371,6 +373,7 @@ class ChromeAsyncSocketTest
 
   net::CapturingNetLog capturing_net_log_;
   net::SSLConfig ssl_config_;
+  net::CertVerifier cert_verifier_;
   scoped_ptr<ChromeAsyncSocket> chrome_async_socket_;
   std::deque<SignalSocketState> signal_socket_states_;
   const talk_base::SocketAddress addr_;
