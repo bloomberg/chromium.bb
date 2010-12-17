@@ -58,12 +58,6 @@ class PrintedDocument : public base::RefCountedThreadSafe<PrintedDocument> {
   void RenderPrintedPage(const PrintedPage& page,
                          gfx::NativeDrawingContext context) const;
 
-  // Draws the page in the context. If the page is not available right now, it
-  // requests to have this page be rendered and returns false.
-  // Note: locks for a short amount of time.
-  bool RenderPrintedPageNumber(int page_number,
-                               gfx::NativeDrawingContext context);
-
   // Returns true if all the necessary pages for the settings are already
   // rendered.
   // Note: locks while parsing the whole tree.

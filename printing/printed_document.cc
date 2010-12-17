@@ -102,15 +102,6 @@ bool PrintedDocument::GetPage(int page_number,
   return false;
 }
 
-bool PrintedDocument::RenderPrintedPageNumber(
-    int page_number, gfx::NativeDrawingContext context) {
-  scoped_refptr<PrintedPage> page;
-  if (!GetPage(page_number, &page))
-    return false;
-  RenderPrintedPage(*page.get(), context);
-  return true;
-}
-
 bool PrintedDocument::IsComplete() const {
   AutoLock lock(lock_);
   if (!mutable_.page_count_)
