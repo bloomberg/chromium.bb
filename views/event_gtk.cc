@@ -10,14 +10,18 @@
 
 namespace views {
 
-KeyEvent::KeyEvent(GdkEventKey* event)
+KeyEvent::KeyEvent(const GdkEventKey* event)
     : Event(event->type == GDK_KEY_PRESS ?
             Event::ET_KEY_PRESSED : Event::ET_KEY_RELEASED,
             GetFlagsFromGdkState(event->state)),
       // TODO(erg): All these values are iffy.
       key_code_(app::WindowsKeyCodeForGdkKeyCode(event->keyval)),
       repeat_count_(0),
-      message_flags_(0) {
+      message_flags_(0)
+#if !defined(TOUCH_UI)
+      , native_event_(event)
+#endif
+{
 }
 
 // static

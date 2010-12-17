@@ -223,11 +223,15 @@
         'controls/textfield/gtk_views_textview.h',
         'controls/textfield/textfield.cc',
         'controls/textfield/textfield.h',
+        'controls/textfield/textfield_views_model.cc',
+        'controls/textfield/textfield_views_model.h',
         'controls/textfield/native_textfield_gtk.cc',
         'controls/textfield/native_textfield_gtk.h',
         'controls/textfield/native_textfield_win.cc',
         'controls/textfield/native_textfield_win.h',
         'controls/textfield/native_textfield_wrapper.h',
+        'controls/textfield/native_textfield_views.cc',
+        'controls/textfield/native_textfield_views.h',
         'controls/throbber.cc',
         'controls/throbber.h',
         'controls/tree/tree_view.cc',
@@ -392,6 +396,10 @@
             'controls/slider/slider.cc',
             'controls/slider/slider.h',
             'controls/slider/native_slider_wrapper.h',
+            'controls/textfield/native_textfield_views.cc',
+            'controls/textfield/native_textfield_views.h',
+            'controls/textfield/textfield_views_model.cc',
+            'controls/textfield/textfield_views_model.h',
           ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
@@ -424,6 +432,8 @@
         'controls/progress_bar_unittest.cc',
         'controls/tabbed_pane/tabbed_pane_unittest.cc',
         'controls/table/table_view_unittest.cc',
+        'controls/textfield/native_textfield_views_unittest.cc',
+        'controls/textfield/textfield_views_model_unittest.cc',
         'focus/accelerator_handler_gtk_unittest.cc',
         'focus/focus_manager_unittest.cc',
         'grid_layout_unittest.cc',
@@ -453,6 +463,10 @@
             #                 factored out. (for some reason it pulls in a bunch
             #                 unrelated things like v8, sqlite nss...).
             '../chrome/app/locales/locales.gyp:en-US',
+          ],
+          'sources!': [
+            'controls/textfield/native_textfield_views_unittest.cc',
+            'controls/textfield/textfield_views_model_unittest.cc',
           ],
           'link_settings': {
             'libraries': [

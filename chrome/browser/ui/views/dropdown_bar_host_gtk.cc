@@ -11,6 +11,10 @@
 #include "views/widget/widget_gtk.h"
 #include "views/controls/textfield/textfield.h"
 
+#if defined(TOUCH_UI)
+#include "app/keyboard_code_conversion_gtk.h"
+#endif
+
 views::Widget* DropdownBarHost::CreateHost() {
   views::WidgetGtk* host = new views::WidgetGtk(views::WidgetGtk::TYPE_CHILD);
   // We own the host.
@@ -27,5 +31,22 @@ void DropdownBarHost::SetWidgetPositionNative(const gfx::Rect& new_pos,
 NativeWebKeyboardEvent DropdownBarHost::GetKeyboardEvent(
      const TabContents* contents,
      const views::Textfield::Keystroke& key_stroke) {
+#if defined(TOUCH_UI)
+  // TODO(oshima): This is a copy from
+  // RenderWidgetHostViewViews::OnKeyPressed().
+  // Refactor and eliminate the dup code.
+  const views::KeyEvent& e = key_stroke.key_event();
+  NativeWebKeyboardEvent wke;
+  wke.type = WebKit::WebInputEvent::KeyDown;
+  wke.windowsKeyCode = e.GetKeyCode();
+  wke.setKeyIdentifierFromWindowsKeyCode();
+
+  wke.text[0] = wke.unmodifiedText[0] =
+    static_cast<unsigned short>(gdk_keyval_to_unicode(
+          app::GdkKeyCodeForWindowsKeyCode(e.GetKeyCode(),
+              e.IsShiftDown() ^ e.IsCapsLockDown())));
+  return wke;
+#else
   return NativeWebKeyboardEvent(key_stroke.event());
+#endif
 }

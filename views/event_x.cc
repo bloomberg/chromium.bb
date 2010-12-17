@@ -205,7 +205,8 @@ KeyEvent::KeyEvent(XEvent* xev)
             GetEventFlagsFromXState(xev->xkey.state)),
       key_code_(app::KeyboardCodeFromXKeyEvent(xev)),
       repeat_count_(0),
-      message_flags_(0) {
+      message_flags_(0),
+      native_event_(NULL) {
 }
 
 MouseEvent::MouseEvent(XEvent* xev)

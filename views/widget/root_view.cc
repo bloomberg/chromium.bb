@@ -22,6 +22,7 @@
 
 #if defined(OS_LINUX)
 #include "views/widget/widget_gtk.h"
+#include "views/controls/textfield/native_textfield_views.h"
 #endif  // defined(OS_LINUX)
 
 namespace views {
@@ -617,11 +618,13 @@ View* RootView::GetFocusedView() {
   View* view = focus_manager->GetFocusedView();
   if (view && (view->GetRootView() == this))
     return view;
-#if defined(TOUCH_UI)
-  // hack to deal with two root views in touch
-  // should be fixed by eliminating one of them
-  if (view)
+
+#if defined(OS_LINUX)
+  if (view && NativeTextfieldViews::IsTextfieldViewsEnabled()) {
+    // hack to deal with two root views.
+    // should be fixed by eliminating one of them
     return view;
+  }
 #endif
   return NULL;
 }

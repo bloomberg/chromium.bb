@@ -358,8 +358,7 @@ app::KeyboardCode Textfield::Keystroke::GetKeyboardCode() const {
 #if defined(OS_WIN)
   return static_cast<app::KeyboardCode>(key_);
 #else
-  return static_cast<app::KeyboardCode>(
-      app::WindowsKeyCodeForGdkKeyCode(event_.keyval));
+  return event_->GetKeyCode();
 #endif
 }
 
@@ -373,13 +372,11 @@ bool Textfield::Keystroke::IsShiftHeld() const {
 }
 #else
 bool Textfield::Keystroke::IsControlHeld() const {
-  return (event_.state & gtk_accelerator_get_default_mod_mask()) ==
-      GDK_CONTROL_MASK;
+  return event_->IsControlDown();
 }
 
 bool Textfield::Keystroke::IsShiftHeld() const {
-  return (event_.state & gtk_accelerator_get_default_mod_mask()) ==
-      GDK_SHIFT_MASK;
+  return event_->IsShiftDown();
 }
 #endif
 

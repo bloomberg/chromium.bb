@@ -60,10 +60,11 @@ class Textfield : public View {
     int repeat_count() const { return repeat_count_; }
     unsigned int flags() const { return flags_; }
 #else
-    explicit Keystroke(GdkEventKey* event)
-        : event_(*event) {
+    explicit Keystroke(const KeyEvent* event)
+        : event_(event) {
     }
-    const GdkEventKey* event() const { return &event_; }
+    const KeyEvent& key_event() const { return *event_;};
+    const GdkEventKey* event() const { return event_->native_event(); }
 #endif
     app::KeyboardCode GetKeyboardCode() const;
     bool IsControlHeld() const;
@@ -76,7 +77,7 @@ class Textfield : public View {
     int repeat_count_;
     unsigned int flags_;
 #else
-    GdkEventKey event_;
+    const KeyEvent* event_;
 #endif
 
     DISALLOW_COPY_AND_ASSIGN(Keystroke);
@@ -169,7 +170,7 @@ class Textfield : public View {
   void UseDefaultBackgroundColor();
 
   // Gets/Sets the font used when rendering the text within the Textfield.
-  gfx::Font font() const { return font_; }
+  const gfx::Font& font() const { return font_; }
   void SetFont(const gfx::Font& font);
 
   // Sets the left and right margin (in pixels) within the text box. On Windows
@@ -229,6 +230,9 @@ class Textfield : public View {
 #ifdef UNIT_TEST
   gfx::NativeView GetTestingHandle() const {
     return native_wrapper_ ? native_wrapper_->GetTestingHandle() : NULL;
+  }
+  NativeTextfieldWrapper* native_wrapper() const {
+    return native_wrapper_;
   }
 #endif
 

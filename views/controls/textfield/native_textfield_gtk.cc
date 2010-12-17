@@ -356,7 +356,8 @@ gboolean NativeTextfieldGtk::OnKeyPressEventHandler(
 gboolean NativeTextfieldGtk::OnKeyPressEvent(GdkEventKey* event) {
   Textfield::Controller* controller = textfield_->GetController();
   if (controller) {
-    Textfield::Keystroke ks(event);
+    KeyEvent key_event(event);
+    Textfield::Keystroke ks(&key_event);
     return controller->HandleKeystroke(textfield_, ks);
   }
   return false;
@@ -379,7 +380,8 @@ gboolean NativeTextfieldGtk::OnActivate() {
 
   Textfield::Controller* controller = textfield_->GetController();
   if (controller) {
-    Textfield::Keystroke ks(key_event);
+    KeyEvent views_key_event(key_event);
+    Textfield::Keystroke ks(&views_key_event);
     handled = controller->HandleKeystroke(textfield_, ks);
   }
 
@@ -442,15 +444,6 @@ void NativeTextfieldGtk::NativeControlCreated(GtkWidget* widget) {
   // In order to properly trigger Accelerators bound to VKEY_RETURN, we need to
   // send an event when the widget gets the activate signal.
   g_signal_connect(widget, "activate", G_CALLBACK(OnActivateHandler), this);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// NativeTextfieldWrapper, public:
-
-// static
-NativeTextfieldWrapper* NativeTextfieldWrapper::CreateWrapper(
-    Textfield* field) {
-  return new NativeTextfieldGtk(field);
 }
 
 }  // namespace views

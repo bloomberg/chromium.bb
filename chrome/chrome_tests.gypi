@@ -1690,6 +1690,8 @@
         '../views/controls/progress_bar_unittest.cc',
         '../views/controls/tabbed_pane/tabbed_pane_unittest.cc',
         '../views/controls/table/table_view_unittest.cc',
+        '../views/controls/textfield/textfield_views_model_unittest.cc',
+        '../views/controls/textfield/native_textfield_views_unittest.cc',
         '../views/focus/accelerator_handler_gtk_unittest.cc',
         '../views/focus/focus_manager_unittest.cc',
         '../views/grid_layout_unittest.cc',
@@ -1771,6 +1773,8 @@
             'browser/gtk/tabs/tab_renderer_gtk_unittest.cc',
             'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
             '../views/focus/accelerator_handler_gtk_unittest.cc',
+            '../views/controls/textfield/textfield_views_model_unittest.cc',
+            '../views/controls/textfield/native_textfield_views_unittest.cc',
           ],
         }],
         ['OS=="linux" or OS=="freebsd"', {

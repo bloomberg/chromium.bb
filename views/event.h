@@ -13,6 +13,7 @@
 #if defined(OS_LINUX)
 typedef struct _GdkEventKey GdkEventKey;
 #endif
+
 #if defined(TOUCH_UI)
 typedef union _XEvent XEvent;
 #endif
@@ -332,7 +333,9 @@ class KeyEvent : public Event {
            int repeat_count,
            int message_flags);
 #if defined(OS_LINUX)
-  explicit KeyEvent(GdkEventKey* event);
+  explicit KeyEvent(const GdkEventKey* event);
+
+  const GdkEventKey* native_event() const { return native_event_; }
 #endif
 
 #if defined(TOUCH_UI)
@@ -366,7 +369,9 @@ class KeyEvent : public Event {
   app::KeyboardCode key_code_;
   int repeat_count_;
   int message_flags_;
-
+#if defined(OS_LINUX)
+  const GdkEventKey* native_event_;
+#endif
   DISALLOW_COPY_AND_ASSIGN(KeyEvent);
 };
 
