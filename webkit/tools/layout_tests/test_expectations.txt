@@ -9,4 +9,4 @@ BUGCR64371 WIN RELEASE : http/tests/appcache/online-whitelist.html = TEXT
 BUGPKASTING WIN DEBUG SLOW: fast/encoding/parser-tests.html = TEXT
 BUGPKASTING MAC DEBUG : fast/encoding/parser-tests.html = TIMEOUT
 
-BUGYURYS MAC : svg/repaint/filter-repaint.svg = IMAGE
+BUGYURYS SKIP : http/tests/inspector/extensions-headers.html = FAIL
