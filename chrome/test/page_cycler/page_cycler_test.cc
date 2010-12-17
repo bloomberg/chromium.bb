@@ -163,6 +163,7 @@ class PageCyclerTest : public UIPerfTest {
   PageCyclerTest()
       : print_times_only_(false) {
     show_window_ = true;
+    dom_automation_enabled_ = true;
 
     const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
     num_test_iterations_ = kTestIterations;
@@ -246,6 +247,14 @@ class PageCyclerTest : public UIPerfTest {
     pages->assign(UTF8ToWide(cookie));
     ASSERT_FALSE(pages->empty());
     ASSERT_TRUE(tab->GetCookieByName(test_url, "__pc_timings", &cookie));
+
+    std::wstring wcookie;
+    ASSERT_TRUE(tab->ExecuteAndExtractString(L"",
+          L"window.domAutomationController.send("
+          L"JSON.stringify(__get_timings()));",
+          &wcookie));
+    cookie = base::SysWideToNativeMB(wcookie);
+
     timings->assign(cookie);
     ASSERT_FALSE(timings->empty());
   }
