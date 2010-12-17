@@ -809,6 +809,9 @@ STDMETHODIMP Hook_LockRequest(InternetProtocol_LockRequest_Fn orig_req,
     return S_OK;
   }
 
+  // We are just pass through at this point, avoid false positive crash
+  // reports.
+  ExceptionBarrierReportOnlyModule barrier;
   return orig_req(protocol, options);
 }
 
@@ -822,6 +825,9 @@ STDMETHODIMP Hook_UnlockRequest(InternetProtocol_UnlockRequest_Fn orig_req,
     return S_OK;
   }
 
+  // We are just pass through at this point, avoid false positive crash
+  // reports.
+  ExceptionBarrierReportOnlyModule barrier;
   return orig_req(protocol);
 }
 
