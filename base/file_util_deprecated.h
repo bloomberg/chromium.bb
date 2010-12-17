@@ -49,8 +49,6 @@ void AppendToPath(std::wstring* path, const std::wstring& new_ending);
 FilePath::StringType GetFileExtensionFromPath(const FilePath& path);
 std::wstring GetFileExtensionFromPath(const std::wstring& path);
 
-bool AbsolutePath(std::wstring* path);
-
 // Use version that takes a FilePath.
 bool Delete(const std::wstring& path, bool recursive);
 bool CopyDirectory(const std::wstring& from_path, const std::wstring& to_path,
