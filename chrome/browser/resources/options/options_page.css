@@ -40,8 +40,7 @@ body {
 
 .close-subpage {
   background-color: transparent;
-  /* TODO(stuartmorgan): Replace with real images once they are available. */
-  background-image: url("../../../app/theme/close_bar.png");
+  background-image: url('chrome://theme/IDR_CLOSE_BAR');
   border: none;
   position: relative;
   top: 12px;
@@ -50,11 +49,11 @@ body {
 }
 
 .close-subpage:hover {
-  background-image: url("../../../app/theme/close_bar_h.png");
+  background-image: url('chrome://theme/IDR_CLOSE_BAR_H');
 }
 
 .close-subpage:active {
-  background-image: url("../../../app/theme/close_bar_p.png");
+  background-image: url('chrome://theme/IDR_CLOSE_BAR_P');
 }
 
 html[dir='ltr'] .close-subpage {

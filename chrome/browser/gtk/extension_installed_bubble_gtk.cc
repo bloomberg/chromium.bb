@@ -242,11 +242,6 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
   close_button_.reset(CustomDrawButton::CloseButton(theme_provider));
   g_signal_connect(close_button_->widget(), "clicked",
                    G_CALLBACK(OnButtonClick), this);
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  close_button_->SetBackground(
-      theme_provider->GetColor(BrowserThemeProvider::COLOR_TAB_TEXT),
-      rb.GetBitmapNamed(IDR_CLOSE_BAR),
-      rb.GetBitmapNamed(IDR_CLOSE_BAR_MASK));
   gtk_box_pack_start(GTK_BOX(close_column), close_button_->widget(),
       FALSE, FALSE, 0);
 
