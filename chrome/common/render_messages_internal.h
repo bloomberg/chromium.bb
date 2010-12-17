@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -1940,14 +1941,6 @@ IPC_SYNC_MESSAGE_CONTROL0_2(ViewHostMsg_AllocateTempFileForPrinting,
                             int /* fd in browser*/)
 IPC_MESSAGE_CONTROL1(ViewHostMsg_TempFileForPrintingWritten,
                      int /* fd in browser */)
-#endif
-
-#if defined(OS_MACOSX)
-// Asks the browser to create a block of shared memory for the renderer to
-// pass NativeMetafile data to the browser.
-IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_AllocatePDFTransport,
-                           uint32 /* buffer size */,
-                           base::SharedMemoryHandle /* browser handle */)
 #endif
 
 #if defined(OS_POSIX)

@@ -104,9 +104,9 @@ void MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DuplicateSection, OnDuplicateSection)
 #endif
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AllocatePDFTransport,
-                        OnAllocatePDFTransport)
+#if defined(OS_POSIX)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateSharedMemoryBuffer,
+                        OnAllocateSharedMemoryBuffer)
 #endif
 #if defined(OS_LINUX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateTempFileForPrinting,
@@ -143,13 +143,13 @@ void MockRenderThread::OnDuplicateSection(
 }
 #endif
 
-#if defined(OS_MACOSX)
-void MockRenderThread::OnAllocatePDFTransport(
+#if defined(OS_POSIX)
+void MockRenderThread::OnAllocateSharedMemoryBuffer(
     uint32 buffer_size, base::SharedMemoryHandle* handle) {
   base::SharedMemory shared_buf;
   if (!shared_buf.CreateAndMapAnonymous(buffer_size)) {
     *handle = base::SharedMemory::NULLHandle();
-    NOTREACHED() << "Cannot map PDF transport buffer";
+    NOTREACHED() << "Cannot map shared memory buffer";
     return;
   }
   shared_buf.GiveToProcess(base::GetCurrentProcessHandle(), handle);

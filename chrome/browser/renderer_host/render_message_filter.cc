@@ -4,6 +4,8 @@
 
 #include "chrome/browser/renderer_host/render_message_filter.h"
 
+#include <map>
+
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/metrics/histogram.h"
@@ -391,10 +393,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
 #if defined(OS_WIN)
       IPC_MESSAGE_HANDLER(ViewHostMsg_DuplicateSection, OnDuplicateSection)
 #endif
-#if defined(OS_MACOSX)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_AllocatePDFTransport,
-                          OnAllocateSharedMemoryBuffer)
-#endif
 #if defined(OS_POSIX)
       IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateSharedMemoryBuffer,
                           OnAllocateSharedMemoryBuffer)
@@ -624,7 +622,7 @@ void RenderMessageFilter::OnCookiesEnabled(
         url, first_party_for_cookies, callback);
     if (policy == net::ERR_IO_PENDING) {
       Send(new ViewMsg_SignalCookiePromptEvent());
-      return; // CanGetCookies will take care to call our callback in this case.
+      return;  // CanGetCookies will call our callback in this case.
     }
   }
   callback->Run(policy);
