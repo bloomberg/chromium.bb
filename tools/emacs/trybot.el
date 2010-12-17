@@ -103,11 +103,15 @@
            (switch-to-buffer (process-buffer process))
            (when (equal state "finished\n")
              (trybot-fixup (process-get process 'type-hint)))))
-        (command (concat "curl -s " url
-                         (when (eq type-hint 'mac)
-                           ; Pipe it through the output shortener.
+        (command (concat "curl -s " (shell-quote-argument url)
+                         ; Pipe it through the output shortener.
+                         (cond
+                          ((eq type-hint 'win)
                            (concat " | " (get-chrome-root)
-                                   "build/sanitize-mac-build-log.sh")))))
+                                   "build/sanitize-win-build-log.sh"))
+                          ((eq type-hint 'mac)
+                           (concat " | " (get-chrome-root)
+                                   "build/sanitize-mac-build-log.sh"))))))
 
     ; Start up the subprocess.
     (let* ((coding-system-for-read 'utf-8-dos)
@@ -154,7 +158,7 @@
   (when (equal "stdio" (car (last (split-string url "/"))))
     (setq url (concat url "/text")))
 
-  (let ((type-hint (cond ((string-match "/win/" url) 'win)
+  (let ((type-hint (cond ((string-match "/[Ww]in" url) 'win)
                          ((string-match "/mac/" url) 'mac)
                          ; Match /linux, /linux_view, etc.
                          ((string-match "/linux" url) 'linux)
