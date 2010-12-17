@@ -50,9 +50,12 @@ extern "C" {
 #include <CoreFoundation/CoreFoundation.h>
 #include <Foundation/Foundation.h>
 
-  // Keys for configuration file
+// Keys for configuration file
 #define kReporterMinidumpDirectoryKey "MinidumpDir"
 #define kReporterMinidumpIDKey        "MinidumpID"
+
+// Filename for recording uploaded IDs
+#define kReporterLogFilename          "uploads.log"
 
 // The default subdirectory of the Library to put crash dumps in
 // The subdirectory is

@@ -255,6 +255,9 @@ NSString *const kDefaultServerType = @"google";
 // in their comments/email.
 - (void)controlTextDidBeginEditing:(NSNotification *)aNotification;
 
+// Records the uploaded crash ID to the log file.
+- (void)logUploadWithID:(const char *)uploadID;
+
 @end
 
 @implementation Reporter
@@ -992,6 +995,7 @@ doCommandBySelector:(SEL)commandSelector {
     } else {
       NSCharacterSet *trimSet = [NSCharacterSet whitespaceAndNewlineCharacterSet];
       reportID = [[result stringByTrimmingCharactersInSet:trimSet] UTF8String];
+      [self logUploadWithID:reportID];
     }
 
     // rename the minidump file according to the id returned from the server
@@ -1034,6 +1038,29 @@ doCommandBySelector:(SEL)commandSelector {
   }
 
   [upload release];
+}
+
+- (void)logUploadWithID:(const char *)uploadID {
+  NSString *minidumpDir =
+      [parameters_ objectForKey:@kReporterMinidumpDirectoryKey];
+  NSString *logFilePath = [NSString stringWithFormat:@"%@/%s",
+      minidumpDir, kReporterLogFilename];
+  NSString *logLine = [NSString stringWithFormat:@"%0.f,%s\n",
+      [[NSDate date] timeIntervalSince1970], uploadID];
+  NSData *logData = [logLine dataUsingEncoding:kCFStringEncodingUTF8];
+
+  NSFileManager *fileManager = [NSFileManager defaultManager];
+  if ([fileManager fileExistsAtPath:logFilePath]) {
+    NSFileHandle *logFileHandle =
+       [NSFileHandle fileHandleForWritingAtPath:logFilePath];
+    [logFileHandle seekToEndOfFile];
+    [logFileHandle writeData:logData];
+    [logFileHandle closeFile];
+  } else {
+    [fileManager createFileAtPath:logFilePath
+                         contents:logData
+                       attributes:nil];
+  }
 }
 
 //=============================================================================
