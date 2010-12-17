@@ -58,7 +58,8 @@ const char kDefaultDomain[] = "@gmail.com";
 // username doesn't have full domain.
 class UsernameField : public chromeos::TextfieldWithMargin {
  public:
-  UsernameField() {}
+  explicit UsernameField(chromeos::NewUserView* controller)
+      : controller_(controller) {}
 
   // views::Textfield overrides:
   virtual void WillLoseFocus() {
@@ -72,6 +73,16 @@ class UsernameField : public chromeos::TextfieldWithMargin {
     }
   }
 
+  // Overridden from views::View:
+  virtual bool OnKeyPressed(const views::KeyEvent& e) {
+    if (e.GetKeyCode() == app::VKEY_LEFT) {
+      return controller_->NavigateAway();
+    }
+    return false;
+  }
+
+ private:
+  chromeos::NewUserView* controller_;
   DISALLOW_COPY_AND_ASSIGN(UsernameField);
 };
 
@@ -148,7 +159,7 @@ void NewUserView::Init() {
   splitter_down1_ = CreateSplitter(kSplitterDown1Color);
   splitter_down2_ = CreateSplitter(kSplitterDown2Color);
 
-  username_field_ = new UsernameField();
+  username_field_ = new UsernameField(this);
   username_field_->set_background(new CopyBackground(this));
   username_field_->SetAccessibleName(
       ASCIIToWide(l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_USERNAME_LABEL)));
@@ -510,16 +521,10 @@ bool NewUserView::HandleKeystroke(views::Textfield* s,
     return false;
 
   if (keystroke.GetKeyboardCode() == app::VKEY_RETURN) {
-    Login();
+    if (!username_field_->text().empty() && !password_field_->text().empty())
+      Login();
     // Return true so that processing ends
     return true;
-  } else if (keystroke.GetKeyboardCode() == app::VKEY_LEFT) {
-    if (s == username_field_ &&
-        username_field_->text().empty() &&
-        password_field_->text().empty()) {
-      delegate_->NavigateAway();
-      return true;
-    }
   }
   delegate_->ClearErrors();
   // Return false so that processing does not end
@@ -541,6 +546,16 @@ void NewUserView::EnableInputControls(bool enabled) {
   }
   if (need_guest_link_) {
     guest_link_->SetEnabled(enabled);
+  }
+}
+
+bool NewUserView::NavigateAway() {
+  if (username_field_->text().empty() &&
+      password_field_->text().empty()) {
+    delegate_->NavigateAway();
+    return true;
+  } else {
+    return false;
   }
 }
 

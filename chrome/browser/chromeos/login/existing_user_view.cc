@@ -36,6 +36,12 @@ class UserEntryTextfield : public TextfieldWithMargin {
     if (e.GetKeyCode() == app::VKEY_TAB) {
       controller_->SelectUserRelative(e.IsShiftDown() ? -1 : 1);
       return true;
+    } else if (e.GetKeyCode() == app::VKEY_LEFT) {
+      controller_->SelectUserRelative(-1);
+      return true;
+    } else if (e.GetKeyCode() == app::VKEY_RIGHT) {
+      controller_->SelectUserRelative(1);
+      return true;
     } else {
       return false;
     }
@@ -100,11 +106,8 @@ bool ExistingUserView::HandleKeystroke(
     views::Textfield* sender,
     const views::Textfield::Keystroke& keystroke) {
   if (keystroke.GetKeyboardCode() == app::VKEY_RETURN) {
-    user_controller_->OnLogin("", UTF16ToUTF8(password_field_->text()));
-  } else if (keystroke.GetKeyboardCode() == app::VKEY_LEFT) {
-    user_controller_->SelectUserRelative(-1);
-  } else if (keystroke.GetKeyboardCode() == app::VKEY_RIGHT) {
-    user_controller_->SelectUserRelative(1);
+    if (!password_field_->text().empty())
+      user_controller_->OnLogin("", UTF16ToUTF8(password_field_->text()));
   } else {
     user_controller_->ClearErrors();
     return false;

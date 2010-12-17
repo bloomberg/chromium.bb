@@ -116,6 +116,10 @@ class NewUserView : public ThrobberHostView,
   virtual void ClearAndFocusPassword();
   virtual gfx::Rect GetMainInputScreenBounds() const;
 
+  // Navigates "away" to other user pods if allowed.
+  // Returns true if event has been processed.
+  bool NavigateAway();
+
  protected:
   // views::View overrides:
   virtual void ViewHierarchyChanged(bool is_add,
