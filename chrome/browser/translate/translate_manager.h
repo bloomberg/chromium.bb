@@ -80,9 +80,7 @@ class TranslateManager : public NotificationObserver,
   // Convenience method to know if a tab is showing a translate infobar.
   static bool IsShowingTranslateInfobar(TabContents* tab);
 
-  // Returns true if the URL can be translated, if it is not an internal URL
-  // (chrome:// and others) or a FTP page (as FTP pages tend to have long
-  // lists of filenames that may confuse the CLD).
+  // Returns true if the URL can be translated.
   static bool IsTranslatableURL(const GURL& url);
 
   // Fills |languages| with the list of languages that the translate server can
