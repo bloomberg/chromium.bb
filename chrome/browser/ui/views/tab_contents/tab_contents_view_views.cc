@@ -161,7 +161,8 @@ void TabContentsViewViews::Focus() {
   }
 
   RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
-  gtk_widget_grab_focus(rwhv ? rwhv->GetNativeView() : GetNativeView());
+  if (rwhv)
+    rwhv->Focus();
 }
 
 void TabContentsViewViews::SetInitialFocus() {

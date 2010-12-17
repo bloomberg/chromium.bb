@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "gfx/canvas.h"
 #include "views/controls/native/native_view_host_wrapper.h"
+#include "views/controls/native/native_view_host_views.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 
@@ -29,6 +30,7 @@ const bool NativeViewHost::kRenderNativeControlFocus = true;
 
 NativeViewHost::NativeViewHost()
     : native_view_(NULL),
+      views_view_(NULL),
       fast_resize_(false),
       focus_view_(NULL) {
   // The native widget is placed relative to the root. As such, we need to
@@ -43,7 +45,23 @@ NativeViewHost::~NativeViewHost() {
 void NativeViewHost::Attach(gfx::NativeView native_view) {
   DCHECK(native_view);
   DCHECK(!native_view_);
+  DCHECK(!views_view_);
   native_view_ = native_view;
+  // If set_focus_view() has not been invoked, this view is the one that should
+  // be seen as focused when the native view receives focus.
+  if (!focus_view_)
+    focus_view_ = this;
+  native_wrapper_->NativeViewAttached();
+}
+
+void NativeViewHost::AttachToView(View* view) {
+  if (view == views_view_)
+    return;
+  DCHECK(view);
+  DCHECK(!native_view_);
+  DCHECK(!views_view_);
+  native_wrapper_.reset(new NativeViewHostViews(this));
+  views_view_ = view;
   // If set_focus_view() has not been invoked, this view is the one that should
   // be seen as focused when the native view receives focus.
   if (!focus_view_)
@@ -74,7 +92,7 @@ gfx::Size NativeViewHost::GetPreferredSize() {
 }
 
 void NativeViewHost::Layout() {
-  if (!native_view_ || !native_wrapper_.get())
+  if ((!native_view_ && !views_view_) || !native_wrapper_.get())
     return;
 
   gfx::Rect vis_bounds = GetVisibleBounds();
@@ -164,6 +182,8 @@ void NativeViewHost::Focus() {
 bool NativeViewHost::ContainsNativeView(gfx::NativeView native_view) const {
   if (native_view == native_view_)
     return true;
+  if (!native_view_)
+    return false;
 
   views::Widget* native_widget =
       views::Widget::GetWidgetFromNativeView(native_view_);
@@ -179,9 +199,10 @@ bool NativeViewHost::ContainsNativeView(gfx::NativeView native_view) const {
 // NativeViewHost, private:
 
 void NativeViewHost::Detach(bool destroyed) {
-  DCHECK(native_view_);
+  DCHECK(native_view_ || views_view_);
   native_wrapper_->NativeViewDetaching(destroyed);
   native_view_ = NULL;
+  views_view_ = NULL;
 }
 
 }  // namespace views

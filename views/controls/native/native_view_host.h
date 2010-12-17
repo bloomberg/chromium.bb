@@ -38,6 +38,9 @@ class NativeViewHost : public View {
   // added to a View hierarchy hosted within a valid Widget.
   void Attach(gfx::NativeView native_view);
 
+  // Attach a views::View instead of a native view to this host.
+  void AttachToView(View* view);
+
   // Detach the attached window handle. Its bounds and visibility will no longer
   // be manipulated by this View.
   void Detach();
@@ -67,6 +70,9 @@ class NativeViewHost : public View {
   // Accessor for |native_view_|.
   gfx::NativeView native_view() const { return native_view_; }
 
+  // Accessor for |views_view_|.
+  View* views_view() const { return views_view_; }
+
   void NativeViewDestroyed();
 
   // Overridden from View:
@@ -87,8 +93,13 @@ class NativeViewHost : public View {
   // detached because it's being destroyed, or false otherwise.
   void Detach(bool destroyed);
 
-  // The attached native view.
+  // The attached native view. There is exactly one native_view_ or views_view_
+  // attached.
   gfx::NativeView native_view_;
+
+  // The attached view. There is exactly one native_view_ or views_view_
+  // attached.
+  View* views_view_;
 
   // A platform-specific wrapper that does the OS-level manipulation of the
   // attached gfx::NativeView.

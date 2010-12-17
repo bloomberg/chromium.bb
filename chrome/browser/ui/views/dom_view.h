@@ -43,6 +43,11 @@ class DOMView : public views::NativeViewHost {
   virtual void ViewHierarchyChanged(bool is_add, views::View* parent,
                                     views::View* child);
 
+  // AttachTabContents calls Attach to hook up the NativeViewHost. This is
+  // here because depending on whether this is a touch build or not the
+  // implementation varies slightly, while Detach is the same in both cases.
+  void AttachTabContents();
+
   // Returns new allocated TabContents instance, caller is responsible deleting.
   // Override in derived classes to replace TabContents with derivative.
   virtual TabContents* CreateTabContents(Profile* profile,

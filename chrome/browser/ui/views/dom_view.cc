@@ -8,6 +8,10 @@
 #include "ipc/ipc_message.h"
 #include "views/focus/focus_manager.h"
 
+#if defined(TOUCH_UI)
+#include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
+#endif
+
 DOMView::DOMView() : tab_contents_(NULL), initialized_(false) {
   SetFocusable(true);
 }
@@ -25,7 +29,7 @@ bool DOMView::Init(Profile* profile, SiteInstance* instance) {
   tab_contents_.reset(CreateTabContents(profile, instance));
   // Attach the native_view now if the view is already added to Widget.
   if (GetWidget())
-    Attach(tab_contents_->GetNativeView());
+    AttachTabContents();
   return true;
 }
 
@@ -56,7 +60,15 @@ void DOMView::ViewHierarchyChanged(bool is_add, views::View* parent,
   // the native view has not been attached yet and tab_contents_ exists.
   views::NativeViewHost::ViewHierarchyChanged(is_add, parent, child);
   if (is_add && GetWidget() && !native_view() && tab_contents_.get())
-    Attach(tab_contents_->GetNativeView());
+    AttachTabContents();
   else if (!is_add && child == this && native_view())
     Detach();
+}
+
+void DOMView::AttachTabContents() {
+#if defined(TOUCH_UI)
+  AttachToView(static_cast<TabContentsViewViews*>(tab_contents_->view()));
+#else
+  Attach(tab_contents_->GetNativeView());
+#endif
 }

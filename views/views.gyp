@@ -171,6 +171,8 @@
         'controls/native/native_view_host_gtk.h',
         'controls/native/native_view_host_win.cc',
         'controls/native/native_view_host_win.h',
+        'controls/native/native_view_host_views.cc',
+        'controls/native/native_view_host_views.h',
         'controls/native/native_view_host_wrapper.h',
         'controls/progress_bar.h',
         'controls/progress_bar.cc',
