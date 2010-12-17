@@ -119,9 +119,8 @@ bool Graphics3D_Dev::MakeCurrent() const {
   return graphics_3d_f && graphics_3d_f->MakeCurent(pp_resource());
 }
 
-bool Graphics3D_Dev::SwapBuffers(const CompletionCallback& cc) const {
-  return graphics_3d_f && graphics_3d_f->SwapBuffers(
-      pp_resource(), cc.pp_completion_callback());
+bool Graphics3D_Dev::SwapBuffers() const {
+  return graphics_3d_f && graphics_3d_f->SwapBuffers(pp_resource());
 }
 
 }  // namespace pp

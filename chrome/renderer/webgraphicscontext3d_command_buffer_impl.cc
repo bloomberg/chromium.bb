@@ -116,11 +116,6 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
         renderview->routing_id(),
         kWebGraphicsContext3DPerferredGLExtensions,
         attribs);
-    if (context_) {
-      ggl::SetSwapBuffersCallback(
-          context_,
-          NewCallback(renderview, &RenderView::DidFlushPaint));
-    }
   } else {
     bool compositing_enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kDisableAcceleratedCompositing);
