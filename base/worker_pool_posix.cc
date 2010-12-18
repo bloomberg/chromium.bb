@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/worker_pool.h"
-#include "base/worker_pool_linux.h"
+#include "base/worker_pool_posix.h"
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -28,11 +28,11 @@ class WorkerPoolImpl {
                 bool task_is_slow);
 
  private:
-  scoped_refptr<base::LinuxDynamicThreadPool> pool_;
+  scoped_refptr<base::PosixDynamicThreadPool> pool_;
 };
 
 WorkerPoolImpl::WorkerPoolImpl()
-    : pool_(new base::LinuxDynamicThreadPool(
+    : pool_(new base::PosixDynamicThreadPool(
         "WorkerPool", kIdleSecondsBeforeExit)) {}
 
 WorkerPoolImpl::~WorkerPoolImpl() {
@@ -50,7 +50,7 @@ base::LazyInstance<WorkerPoolImpl> g_lazy_worker_pool(base::LINKER_INITIALIZED);
 class WorkerThread : public PlatformThread::Delegate {
  public:
   WorkerThread(const std::string& name_prefix, int idle_seconds_before_exit,
-               base::LinuxDynamicThreadPool* pool)
+               base::PosixDynamicThreadPool* pool)
       : name_prefix_(name_prefix),
         idle_seconds_before_exit_(idle_seconds_before_exit),
         pool_(pool) {}
@@ -60,7 +60,7 @@ class WorkerThread : public PlatformThread::Delegate {
  private:
   const std::string name_prefix_;
   const int idle_seconds_before_exit_;
-  scoped_refptr<base::LinuxDynamicThreadPool> pool_;
+  scoped_refptr<base::PosixDynamicThreadPool> pool_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerThread);
 };
@@ -84,33 +84,15 @@ void WorkerThread::ThreadMain() {
 
 }  // namespace
 
-// NOTE(shess): Temporarily allow the Mac WorkerPool implementation to
-// call into the linux so that it can provide a command-line flag for
-// switching back and forth.  After evaluating, either remove the
-// ifdef, or shift this to a shared POSIX implementation.
-// http://crbug.com/44392
-#if defined(OS_MACOSX)
-namespace worker_pool_mac {
-
-bool MacPostTaskHelper(const tracked_objects::Location& from_here,
-                       Task* task, bool task_is_slow) {
-  g_lazy_worker_pool.Pointer()->PostTask(from_here, task, task_is_slow);
-  return true;
-}
-
-}  // namespace worker_pool_mac
-
-#else
 bool WorkerPool::PostTask(const tracked_objects::Location& from_here,
                           Task* task, bool task_is_slow) {
   g_lazy_worker_pool.Pointer()->PostTask(from_here, task, task_is_slow);
   return true;
 }
-#endif
 
 namespace base {
 
-LinuxDynamicThreadPool::LinuxDynamicThreadPool(
+PosixDynamicThreadPool::PosixDynamicThreadPool(
     const std::string& name_prefix,
     int idle_seconds_before_exit)
     : name_prefix_(name_prefix),
@@ -120,7 +102,7 @@ LinuxDynamicThreadPool::LinuxDynamicThreadPool(
       terminated_(false),
       num_idle_threads_cv_(NULL) {}
 
-LinuxDynamicThreadPool::~LinuxDynamicThreadPool() {
+PosixDynamicThreadPool::~PosixDynamicThreadPool() {
   while (!tasks_.empty()) {
     Task* task = tasks_.front();
     tasks_.pop();
@@ -128,7 +110,7 @@ LinuxDynamicThreadPool::~LinuxDynamicThreadPool() {
   }
 }
 
-void LinuxDynamicThreadPool::Terminate() {
+void PosixDynamicThreadPool::Terminate() {
   {
     AutoLock locked(lock_);
     DCHECK(!terminated_) << "Thread pool is already terminated.";
@@ -137,7 +119,7 @@ void LinuxDynamicThreadPool::Terminate() {
   tasks_available_cv_.Broadcast();
 }
 
-void LinuxDynamicThreadPool::PostTask(Task* task) {
+void PosixDynamicThreadPool::PostTask(Task* task) {
   AutoLock locked(lock_);
   DCHECK(!terminated_) <<
       "This thread pool is already terminated.  Do not post new tasks.";
@@ -156,7 +138,7 @@ void LinuxDynamicThreadPool::PostTask(Task* task) {
   }
 }
 
-Task* LinuxDynamicThreadPool::WaitForTask() {
+Task* PosixDynamicThreadPool::WaitForTask() {
   AutoLock locked(lock_);
 
   if (terminated_)

@@ -15,7 +15,6 @@
 #include "base/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/sys_string_conversions.h"
-#import "base/worker_pool_mac.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "base/worker_pool.h"
@@ -95,7 +94,6 @@ NSString* SystemBrandFilePath() {
 
 // Adaptor for scheduling an Objective-C method call on a |WorkerPool|
 // thread.
-// TODO(shess): Move this into workerpool_mac.h?
 class PerformBridge : public base::RefCountedThreadSafe<PerformBridge> {
  public:
 

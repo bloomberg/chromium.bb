@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/worker_pool_linux.h"
+#include "base/worker_pool_posix.h"
 
 #include <set>
 
@@ -15,10 +15,10 @@
 
 namespace base {
 
-// Peer class to provide passthrough access to LinuxDynamicThreadPool internals.
-class LinuxDynamicThreadPool::LinuxDynamicThreadPoolPeer {
+// Peer class to provide passthrough access to PosixDynamicThreadPool internals.
+class PosixDynamicThreadPool::PosixDynamicThreadPoolPeer {
  public:
-  explicit LinuxDynamicThreadPoolPeer(LinuxDynamicThreadPool* pool)
+  explicit PosixDynamicThreadPoolPeer(PosixDynamicThreadPool* pool)
       : pool_(pool) {}
 
   Lock* lock() { return &pool_->lock_; }
@@ -35,9 +35,9 @@ class LinuxDynamicThreadPool::LinuxDynamicThreadPoolPeer {
   }
 
  private:
-  LinuxDynamicThreadPool* pool_;
+  PosixDynamicThreadPool* pool_;
 
-  DISALLOW_COPY_AND_ASSIGN(LinuxDynamicThreadPoolPeer);
+  DISALLOW_COPY_AND_ASSIGN(PosixDynamicThreadPoolPeer);
 };
 
 }  // namespace base
@@ -120,10 +120,10 @@ class BlockingIncrementingTask : public Task {
   DISALLOW_COPY_AND_ASSIGN(BlockingIncrementingTask);
 };
 
-class LinuxDynamicThreadPoolTest : public testing::Test {
+class PosixDynamicThreadPoolTest : public testing::Test {
  protected:
-  LinuxDynamicThreadPoolTest()
-      : pool_(new base::LinuxDynamicThreadPool("dynamic_pool", 60*60)),
+  PosixDynamicThreadPoolTest()
+      : pool_(new base::PosixDynamicThreadPool("dynamic_pool", 60*60)),
         peer_(pool_.get()),
         counter_(0),
         num_waiting_to_start_(0),
@@ -165,8 +165,8 @@ class LinuxDynamicThreadPoolTest : public testing::Test {
         &num_waiting_to_start_cv_, &start_);
   }
 
-  scoped_refptr<base::LinuxDynamicThreadPool> pool_;
-  base::LinuxDynamicThreadPool::LinuxDynamicThreadPoolPeer peer_;
+  scoped_refptr<base::PosixDynamicThreadPool> pool_;
+  base::PosixDynamicThreadPool::PosixDynamicThreadPoolPeer peer_;
   Lock counter_lock_;
   int counter_;
   Lock unique_threads_lock_;
@@ -177,7 +177,7 @@ class LinuxDynamicThreadPoolTest : public testing::Test {
   base::WaitableEvent start_;
 };
 
-TEST_F(LinuxDynamicThreadPoolTest, Basic) {
+TEST_F(PosixDynamicThreadPoolTest, Basic) {
   EXPECT_EQ(0, peer_.num_idle_threads());
   EXPECT_EQ(0U, unique_threads_.size());
   EXPECT_EQ(0U, peer_.tasks().size());
@@ -193,7 +193,7 @@ TEST_F(LinuxDynamicThreadPoolTest, Basic) {
   EXPECT_EQ(1, counter_);
 }
 
-TEST_F(LinuxDynamicThreadPoolTest, ReuseIdle) {
+TEST_F(PosixDynamicThreadPoolTest, ReuseIdle) {
   // Add one task and wait for it to be completed.
   pool_->PostTask(CreateNewIncrementingTask());
 
@@ -212,7 +212,7 @@ TEST_F(LinuxDynamicThreadPoolTest, ReuseIdle) {
   EXPECT_EQ(3, counter_);
 }
 
-TEST_F(LinuxDynamicThreadPoolTest, TwoActiveTasks) {
+TEST_F(PosixDynamicThreadPoolTest, TwoActiveTasks) {
   // Add two blocking tasks.
   pool_->PostTask(CreateNewBlockingIncrementingTask());
   pool_->PostTask(CreateNewBlockingIncrementingTask());
@@ -228,7 +228,7 @@ TEST_F(LinuxDynamicThreadPoolTest, TwoActiveTasks) {
   EXPECT_EQ(2, counter_);
 }
 
-TEST_F(LinuxDynamicThreadPoolTest, Complex) {
+TEST_F(PosixDynamicThreadPoolTest, Complex) {
   // Add two non blocking tasks and wait for them to finish.
   pool_->PostTask(CreateNewIncrementingTask());
 

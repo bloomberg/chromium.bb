@@ -383,7 +383,6 @@ extern const char kPasswordStore[];
 extern const char kDisableHolePunching[];
 extern const char kEnableExposeForTabs[];
 extern const char kEnableSandboxLogging[];
-extern const char kDisableLinuxWorkerPool[];
 #else
 extern const char kKioskMode[];
 #endif

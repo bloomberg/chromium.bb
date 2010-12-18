@@ -2,27 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// The thread pool used in the Linux implementation of WorkerPool dynamically
+// The thread pool used in the POSIX implementation of WorkerPool dynamically
 // adds threads as necessary to handle all tasks.  It keeps old threads around
 // for a period of time to allow them to be reused.  After this waiting period,
 // the threads exit.  This thread pool uses non-joinable threads, therefore
 // worker threads are not joined during process shutdown.  This means that
 // potentially long running tasks (such as DNS lookup) do not block process
 // shutdown, but also means that process shutdown may "leak" objects.  Note that
-// although LinuxDynamicThreadPool spawns the worker threads and manages the
+// although PosixDynamicThreadPool spawns the worker threads and manages the
 // task queue, it does not own the worker threads.  The worker threads ask the
-// LinuxDynamicThreadPool for work and eventually clean themselves up.  The
-// worker threads all maintain scoped_refptrs to the LinuxDynamicThreadPool
-// instance, which prevents LinuxDynamicThreadPool from disappearing before all
-// worker threads exit.  The owner of LinuxDynamicThreadPool should likewise
-// maintain a scoped_refptr to the LinuxDynamicThreadPool instance.
+// PosixDynamicThreadPool for work and eventually clean themselves up.  The
+// worker threads all maintain scoped_refptrs to the PosixDynamicThreadPool
+// instance, which prevents PosixDynamicThreadPool from disappearing before all
+// worker threads exit.  The owner of PosixDynamicThreadPool should likewise
+// maintain a scoped_refptr to the PosixDynamicThreadPool instance.
 //
-// NOTE: The classes defined in this file are only meant for use by the Linux
+// NOTE: The classes defined in this file are only meant for use by the POSIX
 // implementation of WorkerPool.  No one else should be using these classes.
 // These symbols are exported in a header purely for testing purposes.
 
-#ifndef BASE_WORKER_POOL_LINUX_H_
-#define BASE_WORKER_POOL_LINUX_H_
+#ifndef BASE_WORKER_POOL_POSIX_H_
+#define BASE_WORKER_POOL_POSIX_H_
 #pragma once
 
 #include <queue>
@@ -39,22 +39,22 @@ class Task;
 
 namespace base {
 
-class LinuxDynamicThreadPool
-    : public RefCountedThreadSafe<LinuxDynamicThreadPool> {
+class PosixDynamicThreadPool
+    : public RefCountedThreadSafe<PosixDynamicThreadPool> {
  public:
-  class LinuxDynamicThreadPoolPeer;
+  class PosixDynamicThreadPoolPeer;
 
   // All worker threads will share the same |name_prefix|.  They will exit after
   // |idle_seconds_before_exit|.
-  LinuxDynamicThreadPool(const std::string& name_prefix,
+  PosixDynamicThreadPool(const std::string& name_prefix,
                          int idle_seconds_before_exit);
-  ~LinuxDynamicThreadPool();
+  ~PosixDynamicThreadPool();
 
   // Indicates that the thread pool is going away.  Stops handing out tasks to
   // worker threads.  Wakes up all the idle threads to let them exit.
   void Terminate();
 
-  // Adds |task| to the thread pool.  LinuxDynamicThreadPool assumes ownership
+  // Adds |task| to the thread pool.  PosixDynamicThreadPool assumes ownership
   // of |task|.
   void PostTask(Task* task);
 
@@ -63,7 +63,7 @@ class LinuxDynamicThreadPool
   Task* WaitForTask();
 
  private:
-  friend class LinuxDynamicThreadPoolPeer;
+  friend class PosixDynamicThreadPoolPeer;
 
   const std::string name_prefix_;
   const int idle_seconds_before_exit_;
@@ -81,23 +81,9 @@ class LinuxDynamicThreadPool
   // NULL in non-test code.
   scoped_ptr<ConditionVariable> num_idle_threads_cv_;
 
-  DISALLOW_COPY_AND_ASSIGN(LinuxDynamicThreadPool);
+  DISALLOW_COPY_AND_ASSIGN(PosixDynamicThreadPool);
 };
 
 }  // namespace base
 
-#if defined(OS_MACOSX)
-namespace worker_pool_mac {
-
-// NOTE(shess): Helper so that Mac WorkerPool implementation can call
-// into Linux implementation while determining if the implementations
-// should be merged.  After evaluating, either remove the ifdef, or
-// shift this to a shared POSIX implementation.
-// http://crbug.com/44392
-bool MacPostTaskHelper(const tracked_objects::Location& from_here,
-                       Task* task, bool task_is_slow);
-
-}  // namespace worker_pool_mac
-#endif
-
-#endif  // BASE_WORKER_POOL_LINUX_H_
+#endif  // BASE_WORKER_POOL_POSIX_H_

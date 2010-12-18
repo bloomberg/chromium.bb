@@ -13,7 +13,6 @@
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/sys_string_conversions.h"
-#import "base/worker_pool_mac.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
@@ -222,15 +221,6 @@ void RecordLastRunAppBundlePath() {
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   if (parsed_command_line.HasSwitch(switches::kActivateOnLaunch)) {
     [NSApp activateIgnoringOtherApps:YES];
-  }
-
-  // Temporary flag to revert to the old WorkerPool implementation.
-  // This will be removed once we either fix the Mac WorkerPool
-  // implementation, or completely switch to the shared (with Linux)
-  // implementation.
-  // http://crbug.com/44392
-  if (parsed_command_line.HasSwitch(switches::kDisableLinuxWorkerPool)) {
-    worker_pool_mac::SetUseLinuxWorkerPool(false);
   }
 }
 
