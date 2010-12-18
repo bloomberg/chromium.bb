@@ -4169,6 +4169,8 @@ void Browser::ViewSource(TabContentsWrapper* contents) {
   GURL url = GURL(chrome::kViewSourceScheme + std::string(":") +
       active_entry->url().spec());
   active_entry->set_virtual_url(url);
+  // Do not restore title, calculate it from url instead.
+  active_entry->set_title(L"");
   InsertContentsDupe(contents, view_source_contents);
 }
 
