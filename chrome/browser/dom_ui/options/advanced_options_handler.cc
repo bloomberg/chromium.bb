@@ -79,7 +79,7 @@ void AdvancedOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_DOWNLOADLOCATION_ASKFORSAVELOCATION));
   localized_strings->SetString("autoOpenFileTypesInfo",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_AUTOOPENFILETYPES_INFO));
+      l10n_util::GetStringUTF16(IDS_OPTIONS_OPEN_FILE_TYPES_AUTOMATICALLY));
   localized_strings->SetString("autoOpenFileTypesResetToDefault",
       l10n_util::GetStringUTF16(IDS_OPTIONS_AUTOOPENFILETYPES_RESETTODEFAULT));
   localized_strings->SetString("gearSettingsGroupName",

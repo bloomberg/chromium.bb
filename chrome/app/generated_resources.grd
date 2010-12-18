@@ -6844,6 +6844,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Ask where to save each file before downloading
       </message>
 
+      <message name="IDS_OPTIONS_OPEN_FILE_TYPES_AUTOMATICALLY" desc="The information label for the 'Clear auto-opening settings' button">
+        You have chosen to open certain file types automatically after downloading.
+      </message>
+
       <message name="IDS_OPTIONS_AUTOOPENFILETYPES_INFO" desc="The information label for the 'Reset always open files' button">
         You have chosen to open certain file types automatically after downloading. You can clear these settings so that downloaded files don't open automatically.
       </message>
