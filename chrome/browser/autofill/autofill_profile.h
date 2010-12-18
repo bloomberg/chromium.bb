@@ -109,8 +109,6 @@ class AutoFillProfile : public FormGroup {
   const string16 PrimaryValue() const;
 
  private:
-  Address* GetHomeAddress();
-
   // Builds inferred label from all non-empty fields in |included_fields|.
   string16 ConstructInferredLabel(
       const std::vector<AutoFillFieldType>& included_fields) const;

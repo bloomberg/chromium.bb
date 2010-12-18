@@ -466,10 +466,6 @@ const string16 AutoFillProfile::PrimaryValue() const {
          GetFieldText(AutoFillType(EMAIL_ADDRESS));
 }
 
-Address* AutoFillProfile::GetHomeAddress() {
-  return static_cast<Address*>(personal_info_[AutoFillType::ADDRESS_HOME]);
-}
-
 string16 AutoFillProfile::ConstructInferredLabel(
     const std::vector<AutoFillFieldType>& included_fields) const {
   const string16 separator =
