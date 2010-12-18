@@ -545,7 +545,8 @@ TEST_F(PersonalDataManagerTest, ImportFormData) {
   EXPECT_EQ(0, expected.Compare(*results[0]));
 }
 
-TEST_F(PersonalDataManagerTest, ImportFormDataNotEnoughFilledFields) {
+// Crashy, http://crbug.com/67423.
+TEST_F(PersonalDataManagerTest, DISABLED_ImportFormDataNotEnoughFilledFields) {
   FormData form;
   webkit_glue::FormField field;
   autofill_test::CreateTestFormField(
