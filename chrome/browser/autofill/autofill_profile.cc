@@ -237,16 +237,18 @@ const string16 AutoFillProfile::Label() const {
 // static
 bool AutoFillProfile::AdjustInferredLabels(
     std::vector<AutoFillProfile*>* profiles) {
-  std::vector<string16> created_labels;
   const size_t kMinimalFieldsShown = 2;
+
+  std::vector<string16> created_labels;
   CreateInferredLabels(profiles, NULL, UNKNOWN_TYPE, kMinimalFieldsShown,
                        &created_labels);
-  DCHECK(profiles->size() == created_labels.size());
+  DCHECK_EQ(profiles->size(), created_labels.size());
+
   bool updated_labels = false;
   for (size_t i = 0; i < profiles->size(); ++i) {
-    if (profiles->at(i)->Label() != created_labels[i]) {
+    if ((*profiles)[i]->Label() != created_labels[i]) {
       updated_labels = true;
-      profiles->at(i)->set_label(created_labels[i]);
+      (*profiles)[i]->set_label(created_labels[i]);
     }
   }
   return updated_labels;
