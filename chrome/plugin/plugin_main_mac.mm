@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/chrome_application_mac.h"
 #include "base/environment.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "chrome/common/chrome_application_mac.h"
 #include "chrome/common/plugin_carbon_interpose_constants_mac.h"
 #include "chrome/plugin/plugin_interpose_util_mac.h"
 

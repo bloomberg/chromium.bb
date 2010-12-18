@@ -5,14 +5,12 @@
 #include "chrome/nacl/nacl_main_platform_delegate.h"
 
 #import <Cocoa/Cocoa.h>
-#import "base/chrome_application_mac.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/native_library.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/sandbox_mac.h"
-#include "third_party/WebKit/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
 
 NaClMainPlatformDelegate::NaClMainPlatformDelegate(
     const MainFunctionParams& parameters)

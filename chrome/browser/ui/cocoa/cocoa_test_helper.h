@@ -8,12 +8,12 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/chrome_application_mac.h"
 #include "base/debug_util.h"
 #include "base/mac_util.h"
 #include "base/path_service.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
 #import "base/scoped_nsobject.h"
+#import "chrome/common/chrome_application_mac.h"
 #include "chrome/common/chrome_constants.h"
 #include "testing/platform_test.h"
 

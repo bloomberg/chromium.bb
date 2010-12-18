@@ -8,7 +8,6 @@
 
 #include "app/app_switches.h"
 #include "app/surface/io_surface_support_mac.h"
-#import "base/chrome_application_mac.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"

@@ -8,7 +8,6 @@
 
 #include <string>
 
-#import "base/chrome_application_mac.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_factory.h"
@@ -24,6 +23,7 @@
 #import "chrome/browser/ui/cocoa/web_drag_source.h"
 #import "chrome/browser/ui/cocoa/web_drop_target.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
+#import "chrome/common/chrome_application_mac.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"

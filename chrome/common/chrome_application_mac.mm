@@ -2,19 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome_application_mac.h"
+#import "chrome/common/chrome_application_mac.h"
 
 #include "base/logging.h"
 
 @interface CrApplication ()
-@property(readwrite,
-          getter=isHandlingSendEvent,
-          nonatomic) BOOL handlingSendEvent;
+- (void)setHandlingSendEvent:(BOOL)handlingSendEvent;
 @end
 
 @implementation CrApplication
-@synthesize handlingSendEvent = handlingSendEvent_;
-
 // Initialize NSApplication using the custom subclass.  Check whether NSApp
 // was already initialized using another class, because that would break
 // some things.
@@ -33,6 +29,14 @@
     eventHooks_.reset([[NSMutableArray alloc] init]);
   }
   return self;
+}
+
+- (BOOL)isHandlingSendEvent {
+  return handlingSendEvent_;
+}
+
+- (void)setHandlingSendEvent:(BOOL)handlingSendEvent {
+  handlingSendEvent_ = handlingSendEvent;
 }
 
 - (void)sendEvent:(NSEvent*)event {

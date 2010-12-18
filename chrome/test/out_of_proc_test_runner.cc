@@ -32,6 +32,10 @@
 #include "sandbox/src/sandbox_types.h"
 #endif  // defined(OS_WIN)
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/chrome_browser_application_mac.h"
+#endif  // defined(OS_MACOSX)
+
 #if defined(OS_WIN)
 // The entry point signature of chrome.dll.
 typedef int (*DLL_MAIN)(HINSTANCE, sandbox::SandboxInterfaceInfo*, wchar_t*);
@@ -454,6 +458,10 @@ void PrintUsage() {
 }  // namespace
 
 int main(int argc, char** argv) {
+#if defined(OS_MACOSX)
+  chrome_browser_application_mac::RegisterBrowserCrApp();
+#endif
+
   CommandLine::Init(argc, argv);
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 

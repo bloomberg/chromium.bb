@@ -10,15 +10,35 @@
 #import <objc/objc-runtime.h>
 #include <mach/task.h>
 
-#include "base/chrome_application_mac.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/message_pump_mac.h"
 #include "third_party/WebKit/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
 #include "webkit/tools/test_shell/test_shell.h"
 #include "webkit/tools/test_shell/test_shell_platform_delegate.h"
 #include "webkit/tools/test_shell/test_shell_switches.h"
 
 static NSAutoreleasePool *gTestShellAutoreleasePool = nil;
+
+@interface CrApplication : NSApplication<CrAppProtocol> {
+ @private
+  BOOL handlingSendEvent_;
+}
+- (BOOL)isHandlingSendEvent;
+@end
+
+@implementation CrApplication
+- (BOOL)isHandlingSendEvent {
+  return handlingSendEvent_;
+}
+
+- (void)sendEvent:(NSEvent*)event {
+  BOOL wasHandlingSendEvent = handlingSendEvent_;
+  handlingSendEvent_ = YES;
+  [super sendEvent:event];
+  handlingSendEvent_ = wasHandlingSendEvent;
+}
+@end
 
 static void SetDefaultsToLayoutTestValues(void) {
   // So we can match the WebKit layout tests, we want to force a bunch of
@@ -90,10 +110,12 @@ static void ClearAnyDefaultsForLayoutTests(void) {
 #if OBJC_API_VERSION == 2
 static void SwizzleAllMethods(Class imposter, Class original) {
   unsigned int imposterMethodCount = 0;
-  Method* imposterMethods = class_copyMethodList(imposter, &imposterMethodCount);
+  Method* imposterMethods =
+      class_copyMethodList(imposter, &imposterMethodCount);
 
   unsigned int originalMethodCount = 0;
-  Method* originalMethods = class_copyMethodList(original, &originalMethodCount);
+  Method* originalMethods =
+      class_copyMethodList(original, &originalMethodCount);
 
   for (unsigned int i = 0; i < imposterMethodCount; i++) {
     SEL imposterMethodName = method_getName(imposterMethods[i]);

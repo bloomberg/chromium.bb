@@ -17,7 +17,6 @@ extern "C" {
 
 #include "app/gfx/gl/gl_context.h"
 #include "base/basictypes.h"
-#include "base/chrome_application_mac.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/mac_util.h"
@@ -29,6 +28,7 @@ extern "C" {
 #include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/chrome_application_mac.h"
 #include "chrome/common/chrome_switches.h"
 #include "unicode/uchar.h"
 

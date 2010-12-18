@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
+#include "base/test/mock_chrome_application_mac.h"
 #endif
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/test/test_suite.h"
@@ -25,6 +26,11 @@ class AppTestSuite : public base::TestSuite {
  protected:
 
   virtual void Initialize() {
+#if defined(OS_MACOSX)
+    // Some of the app unit tests try to open windows.
+    mock_cr_app::RegisterMockCrApp();
+#endif
+
     base::mac::ScopedNSAutoreleasePool autorelease_pool;
 
     TestSuite::Initialize();

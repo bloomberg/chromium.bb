@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_CHROME_APPLICATION_MAC_H_
-#define BASE_CHROME_APPLICATION_MAC_H_
+#ifndef CHROME_COMMON_CHROME_APPLICATION_MAC_H_
+#define CHROME_COMMON_CHROME_APPLICATION_MAC_H_
 #pragma once
 
 #import <AppKit/AppKit.h>
 
 #include "base/basictypes.h"
+#include "base/message_pump_mac.h"
 #include "base/scoped_nsobject.h"
 
 // Event hooks must implement this protocol.
@@ -17,15 +18,13 @@
 @end
 
 
-@interface CrApplication : NSApplication {
+@interface CrApplication : NSApplication<CrAppProtocol> {
  @private
   BOOL handlingSendEvent_;
   // Array of objects implementing the CrApplicationEventHookProtocol
   scoped_nsobject<NSMutableArray> eventHooks_;
 }
-@property(readonly,
-          getter=isHandlingSendEvent,
-          nonatomic) BOOL handlingSendEvent;
+- (BOOL)isHandlingSendEvent;
 
 // Add or remove an event hook to be called for every sendEvent:
 // that the application receives.  These handlers are called before
@@ -58,4 +57,4 @@ class ScopedSendingEvent {
 
 }  // chrome_application_mac
 
-#endif  // BASE_CHROME_APPLICATION_MAC_H_
+#endif  // CHROME_COMMON_CHROME_APPLICATION_MAC_H_

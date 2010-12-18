@@ -8,7 +8,7 @@
 
 #ifdef __OBJC__
 
-#import "base/chrome_application_mac.h"
+#import "chrome/common/chrome_application_mac.h"
 
 @interface BrowserCrApplication : CrApplication
 // Our implementation of |-terminate:| only attempts to terminate the
@@ -35,6 +35,9 @@ void RecordExceptionWithUma(NSException* exception);
 #endif  // __OBJC__
 
 namespace chrome_browser_application_mac {
+
+// To be used to instantiate BrowserCrApplication from C++ code.
+void RegisterBrowserCrApp();
 
 // Calls -[NSApp terminate:].
 void Terminate();

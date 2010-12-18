@@ -3744,7 +3744,7 @@
             '../third_party/mozilla/ComplexTextInputPanel.mm',
             # Headers so that IB can find classes it needs to resolve classes
             # in XIB files.
-            '../base/chrome_application_mac.h',
+            'common/chrome_application_mac.h',
           ],
           'include_dirs': [
             '../third_party/apple',

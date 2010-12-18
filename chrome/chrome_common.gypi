@@ -28,6 +28,8 @@
           'common/app_mode_common_mac.h',
           'common/app_mode_common_mac.mm',
           'common/bindings_policy.h',
+          'common/chrome_application_mac.h',
+          'common/chrome_application_mac.mm',
           'common/child_process.cc',
           'common/child_process.h',
           'common/child_process_info.cc',

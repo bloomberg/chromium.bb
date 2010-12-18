@@ -64,7 +64,8 @@ static IMP gOriginalInitIMP = NULL;
     BOOL fatal = NO;
     if (aName == NSInternalInconsistencyException) {
       NSString* const kNSMenuItemArrayBoundsCheck =
-          @"Invalid parameter not satisfying: (index >= 0) && (index < [_itemArray count])";
+          @"Invalid parameter not satisfying: (index >= 0) && "
+          @"(index < [_itemArray count])";
       if ([aReason isEqualToString:kNSMenuItemArrayBoundsCheck]) {
         fatal = YES;
       }
@@ -140,6 +141,10 @@ void RecordExceptionWithUma(NSException* exception) {
   UMA_HISTOGRAM_ENUMERATION("OSX.NSException",
       BinForException(exception), kUnknownNSException);
 }
+
+void RegisterBrowserCrApp() {
+  [BrowserCrApplication sharedApplication];
+};
 
 void Terminate() {
   [NSApp terminate:nil];

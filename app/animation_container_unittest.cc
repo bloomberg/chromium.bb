@@ -109,13 +109,13 @@ TEST_F(AnimationContainerTest, Observer) {
   animation1.Start();
   EXPECT_TRUE(container->is_running());
 
-  // Run the message loop the delegate quits the message loop when notified.
+  // Run the message loop. The delegate quits the message loop when notified.
   MessageLoop::current()->Run();
 
   // The timer should have finished.
   EXPECT_TRUE(delegate1.finished());
 
-  // And the container should no longer be runnings.
+  // And the container should no longer be running.
   EXPECT_FALSE(container->is_running());
 
   container->set_observer(NULL);

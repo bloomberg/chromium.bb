@@ -6,12 +6,12 @@
 
 #include "chrome/browser/tab_contents/popup_menu_helper_mac.h"
 
-#import "base/chrome_application_mac.h"
 #include "base/message_loop.h"
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #import "chrome/browser/ui/cocoa/base_view.h"
+#import "chrome/common/chrome_application_mac.h"
 #include "chrome/common/notification_source.h"
 #include "webkit/glue/webmenurunner_mac.h"
 
