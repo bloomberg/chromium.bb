@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_PROFILE_H_
 #pragma once
 
+#include <list>
 #include <map>
 #include <vector>
 
@@ -67,7 +68,7 @@ class AutoFillProfile : public FormGroup {
   // started typing in the field, for example) use CreateInferredLabels().
   static bool AdjustInferredLabels(std::vector<AutoFillProfile*>* profiles);
 
-  // Created inferred labels for |profiles|, according to the rules above and
+  // Creates inferred labels for |profiles|, according to the rules above and
   // stores them in |created_labels|. If |suggested_fields| is not NULL, the
   // resulting label fields are drawn from |suggested_fields|, except excluding
   // |excluded_field|. Otherwise, the label fields are drawn from a default set,
@@ -109,9 +110,24 @@ class AutoFillProfile : public FormGroup {
   const string16 PrimaryValue() const;
 
  private:
-  // Builds inferred label from all non-empty fields in |included_fields|.
+  // Builds inferred label from the first |num_fields_to_include| non-empty
+  // fields in |label_fields|. Uses as many fields as possible if there are not
+  // enough non-empty fields.
   string16 ConstructInferredLabel(
-      const std::vector<AutoFillFieldType>& included_fields) const;
+      const std::vector<AutoFillFieldType>& label_fields,
+      size_t num_fields_to_include) const;
+
+  // Creates inferred labels for |profiles| at indices corresponding to
+  // |indices|, and stores the results to the corresponding elements of
+  // |created_labels|. These labels include enough fields to differentiate among
+  // the profiles, if possible; and also at least |num_fields_to_include|
+  // fields, if possible. The label fields are drawn from |fields|.
+  static void CreateDifferentiatingLabels(
+      const std::vector<AutoFillProfile*>& profiles,
+      const std::list<size_t>& indices,
+      const std::vector<AutoFillFieldType>& fields,
+      size_t num_fields_to_include,
+      std::vector<string16>* created_labels);
 
   // The label presented to the user when selecting a profile.
   string16 label_;

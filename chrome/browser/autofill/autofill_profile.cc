@@ -5,10 +5,7 @@
 #include "chrome/browser/autofill/autofill_profile.h"
 
 #include <algorithm>
-#include <list>
-#include <map>
 #include <set>
-#include <vector>
 
 #include "app/l10n_util.h"
 #include "base/stl_util-inl.h"
@@ -268,130 +265,31 @@ void AutoFillProfile::CreateInferredLabels(
   GetFieldsForDistinguishingProfiles(suggested_fields, excluded_field,
                                      &fields_to_use);
 
-  // First non empty data are always present in the label, even if it matches.
-  created_labels->resize(profiles->size());
+  // Construct the default label for each profile. Also construct a map that
+  // associates each label with the profiles that have this label. This map is
+  // then used to detect which labels need further differentiating fields.
   std::map<string16, std::list<size_t> > labels;
-  for (size_t it = 0; it < profiles->size(); ++it) {
-    labels[profiles->at(it)->GetFieldText(
-        AutoFillType(fields_to_use.size() ? fields_to_use[0] :
-                                            NAME_FULL))].push_back(it);
+  for (size_t i = 0; i < profiles->size(); ++i) {
+    string16 label =
+        (*profiles)[i]->ConstructInferredLabel(fields_to_use,
+                                               minimal_fields_shown);
+    labels[label].push_back(i);
   }
-  std::map<string16, std::list<size_t> >::iterator label_iterator;
-  for (label_iterator = labels.begin(); label_iterator != labels.end();
-       ++label_iterator) {
-    if (label_iterator->second.size() > 1) {
-      // We have more than one item with the same preview, add differentiating
-      // data.
-      std::list<size_t>::iterator similar_profiles;
-      DCHECK(fields_to_use.size() <= MAX_VALID_FIELD_TYPE);
-      std::map<string16, int> tested_fields[MAX_VALID_FIELD_TYPE];
-      for (similar_profiles = label_iterator->second.begin();
-           similar_profiles != label_iterator->second.end();
-           ++similar_profiles) {
-        for (size_t i = 0; i < fields_to_use.size(); ++i) {
-          string16 key = profiles->at(*similar_profiles)->GetFieldText(
-              AutoFillType(fields_to_use[i]));
-          std::map<string16, int>::iterator tested_field =
-              tested_fields[i].find(key);
-          if (tested_field == tested_fields[i].end())
-            (tested_fields[i])[key] = 1;
-          else
-            ++(tested_field->second);
-        }
-      }
-      std::vector<AutoFillFieldType> fields;
-      std::vector<AutoFillFieldType> first_non_empty_fields;
-      size_t added_fields = 0;
-      bool matched_necessary = false;
-      // Leave it as a candidate if it is not the same for everybody.
-      for (size_t i = 0; i < fields_to_use.size(); ++i) {
-        if (tested_fields[i].size() == label_iterator->second.size()) {
-          // This field is different for everybody.
-          if (!matched_necessary) {
-            matched_necessary = true;
-            fields.clear();
-            added_fields = 1;
-            if (first_non_empty_fields.size()) {
-              added_fields += first_non_empty_fields.size();
-              fields.resize(added_fields - 1);
-              std::copy(first_non_empty_fields.begin(),
-                        first_non_empty_fields.end(),
-                        fields.begin());
-            }
-          } else {
-            ++added_fields;
-          }
-          fields.push_back(fields_to_use[i]);
-          if (added_fields >= minimal_fields_shown)
-            break;
-        } else if (tested_fields[i].size() != 1) {
-          // this field is different for some.
-          if (added_fields < minimal_fields_shown) {
-            first_non_empty_fields.push_back(fields_to_use[i]);
-            ++added_fields;
-            if (added_fields == minimal_fields_shown && matched_necessary)
-              break;
-          }
-          fields.push_back(fields_to_use[i]);
-        } else if (added_fields < minimal_fields_shown &&
-                   !tested_fields[i].count(string16())) {
-          fields.push_back(fields_to_use[i]);
-          first_non_empty_fields.push_back(fields_to_use[i]);
-          ++added_fields;
-          if (added_fields == minimal_fields_shown && matched_necessary)
-            break;
-        }
-      }
-      // Update labels if needed.
-      for (similar_profiles = label_iterator->second.begin();
-           similar_profiles != label_iterator->second.end();
-           ++similar_profiles) {
-        size_t field_it = 0;
-        for (size_t field_id = 0;
-             field_id < fields_to_use.size() &&
-             field_it < fields.size(); ++field_id) {
-          if (fields[field_it] == fields_to_use[field_id]) {
-            if ((tested_fields[field_id])[
-                profiles->at(*similar_profiles)->GetFieldText(
-                AutoFillType(fields_to_use[field_id]))] == 1) {
-              // this field is unique among the subset.
-              break;
-            }
-            ++field_it;
-          }
-        }
 
-        string16 new_label;
-        if (field_it < fields.size() && fields.size() > minimal_fields_shown) {
-          std::vector<AutoFillFieldType> unique_fields;
-          unique_fields.resize(fields.size());
-          std::copy(fields.begin(), fields.end(), unique_fields.begin());
-          unique_fields.resize(std::max(field_it + 1, minimal_fields_shown));
-          new_label =
-              profiles->at(*similar_profiles)->ConstructInferredLabel(
-                  unique_fields);
-        } else {
-          new_label =
-              profiles->at(*similar_profiles)->ConstructInferredLabel(fields);
-        }
-        (*created_labels)[*similar_profiles] = new_label;
-      }
+  created_labels->resize(profiles->size());
+  for (std::map<string16, std::list<size_t> >::const_iterator it =
+           labels.begin();
+       it != labels.end(); ++it) {
+    if (it->second.size() == 1) {
+      // This label is unique, so use it without any further ado.
+      string16 label = it->first;
+      size_t profile_index = it->second.front();
+      (*created_labels)[profile_index] = label;
     } else {
-      std::vector<AutoFillFieldType> non_empty_fields;
-      size_t include_fields = minimal_fields_shown ? minimal_fields_shown : 1;
-      non_empty_fields.reserve(include_fields);
-      for (size_t i = 0; i < fields_to_use.size(); ++i) {
-        if (!profiles->at(label_iterator->second.front())->GetFieldText(
-            AutoFillType(fields_to_use[i])).empty()) {
-          non_empty_fields.push_back(fields_to_use[i]);
-          if (non_empty_fields.size() >= include_fields)
-            break;
-        }
-      }
-
-      (*created_labels)[label_iterator->second.front()] =
-          profiles->at(label_iterator->second.front())->ConstructInferredLabel(
-              non_empty_fields);
+      // We have more than one profile with the same label, so add
+      // differentiating fields.
+      CreateDifferentiatingLabels(*profiles, it->second, fields_to_use,
+                                  minimal_fields_shown, created_labels);
     }
   }
 }
@@ -467,14 +365,17 @@ const string16 AutoFillProfile::PrimaryValue() const {
 }
 
 string16 AutoFillProfile::ConstructInferredLabel(
-    const std::vector<AutoFillFieldType>& included_fields) const {
+    const std::vector<AutoFillFieldType>& included_fields,
+    size_t num_fields_to_use) const {
   const string16 separator =
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_SEPARATOR);
 
   string16 label;
+  size_t num_fields_used = 0;
   for (std::vector<AutoFillFieldType>::const_iterator it =
            included_fields.begin();
-       it != included_fields.end(); ++it) {
+       it != included_fields.end() && num_fields_used < num_fields_to_use;
+       ++it) {
     string16 field = GetFieldText(AutoFillType(*it));
     if (field.empty())
       continue;
@@ -488,8 +389,84 @@ string16 AutoFillProfile::ConstructInferredLabel(
           IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_FAX_FORMAT, field);
     }
     label.append(field);
+    ++num_fields_used;
   }
   return label;
+}
+
+// static
+void AutoFillProfile::CreateDifferentiatingLabels(
+    const std::vector<AutoFillProfile*>& profiles,
+    const std::list<size_t>& indices,
+    const std::vector<AutoFillFieldType>& fields,
+    size_t num_fields_to_include,
+    std::vector<string16>* created_labels) {
+  // For efficiency, we first construct a map of fields to their text values and
+  // each value's frequency.
+  std::map<AutoFillFieldType,
+           std::map<string16, size_t> > field_text_frequencies_by_field;
+  for (std::vector<AutoFillFieldType>::const_iterator field = fields.begin();
+       field != fields.end(); ++field) {
+    std::map<string16, size_t>& field_text_frequencies =
+        field_text_frequencies_by_field[*field];
+
+    for (std::list<size_t>::const_iterator it = indices.begin();
+         it != indices.end(); ++it) {
+      const AutoFillProfile* profile = profiles[*it];
+      string16 field_text = profile->GetFieldText(AutoFillType(*field));
+
+      // If this label is not already in the map, add it with frequency 0.
+      if (!field_text_frequencies.count(field_text))
+        field_text_frequencies[field_text] = 0;
+
+      // Now, increment the frequency for this label.
+      ++field_text_frequencies[field_text];
+    }
+  }
+
+  // Now comes the meat of the algorithm. For each profile, we scan the list of
+  // fields to use, looking for two things:
+  //  1. A (non-empty) field that differentiates the profile from all others
+  //  2. At least |num_fields_to_include| non-empty fields
+  // Before we've satisfied condition (2), we include all fields, even ones that
+  // are identical across all the profiles. Once we've satisfied condition (2),
+  // we only include fields that that have at last two distinct values.
+  for (std::list<size_t>::const_iterator it = indices.begin();
+       it != indices.end(); ++it) {
+    const AutoFillProfile* profile = profiles[*it];
+
+    std::vector<AutoFillFieldType> label_fields;
+    bool found_differentiating_field = false;
+    for (std::vector<AutoFillFieldType>::const_iterator field = fields.begin();
+         field != fields.end(); ++field) {
+      // Skip over empty fields.
+      string16 field_text = profile->GetFieldText(AutoFillType(*field));
+      if (field_text.empty())
+        continue;
+
+      std::map<string16, size_t>& field_text_frequencies =
+          field_text_frequencies_by_field[*field];
+      found_differentiating_field |= (field_text_frequencies[field_text] == 1);
+
+      // Once we've found enough non-empty fields, skip over any remaining
+      // fields that are identical across all the profiles.
+      if (label_fields.size() >= num_fields_to_include &&
+          (field_text_frequencies.size() == 1))
+        continue;
+
+      label_fields.push_back(*field);
+
+      // If we've (1) found a differentiating field and (2) found at least
+      // |num_fields_to_include| non-empty fields, we're done!
+      if (found_differentiating_field &&
+          label_fields.size() >= num_fields_to_include)
+        break;
+    }
+
+    (*created_labels)[*it] =
+        profile->ConstructInferredLabel(label_fields,
+                                        label_fields.size());
+  }
 }
 
 // So we can compare AutoFillProfiles with EXPECT_EQ().
