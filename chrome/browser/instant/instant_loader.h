@@ -92,11 +92,6 @@ class InstantLoader : public NotificationObserver {
   // See description above field.
   const string16& user_text() const { return user_text_; }
 
-  // See description above field.
-  const string16& complete_suggested_text() const {
-    return complete_suggested_text_;
-  }
-
  private:
   friend class InstantLoaderManagerTest;
   class FrameLoadObserver;
