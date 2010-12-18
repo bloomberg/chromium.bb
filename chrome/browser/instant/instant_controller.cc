@@ -141,6 +141,15 @@ void InstantController::Disable(Profile* profile) {
   service->SetBoolean(prefs::kInstantEnabled, false);
 }
 
+// static
+bool InstantController::CommitIfCurrent(InstantController* controller) {
+  if (controller && controller->IsCurrent()) {
+    controller->CommitCurrentPreview(INSTANT_COMMIT_PRESSED_ENTER);
+    return true;
+  }
+  return false;
+}
+
 void InstantController::Update(TabContentsWrapper* tab_contents,
                                const AutocompleteMatch& match,
                                const string16& user_text,

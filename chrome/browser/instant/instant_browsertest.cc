@@ -27,6 +27,7 @@ class InstantTest : public InProcessBrowserTest {
   InstantTest()
       : location_bar_(NULL),
         preview_(NULL) {
+    set_show_window(true);
     EnableDOMAutomation();
   }
 
@@ -59,7 +60,7 @@ class InstantTest : public InProcessBrowserTest {
     model->SetDefaultSearchProvider(template_url);
   }
 
-  virtual void FindLocationBar() {
+  void FindLocationBar() {
     if (location_bar_)
       return;
     location_bar_ = browser()->window()->GetLocationBar();
@@ -93,26 +94,13 @@ class InstantTest : public InProcessBrowserTest {
     // Wait for the preview to navigate.
     WaitForPreviewToNavigate(true);
 
-    EXPECT_TRUE(browser()->instant()->IsShowingInstant());
-    EXPECT_FALSE(browser()->instant()->is_displayable());
-    EXPECT_TRUE(browser()->instant()->is_active());
+    ASSERT_TRUE(browser()->instant()->IsShowingInstant());
+    ASSERT_FALSE(browser()->instant()->is_displayable());
+    ASSERT_TRUE(browser()->instant()->is_active());
 
     // When the page loads, the initial searchBox values are set and only a
     // resize will have been sent.
-    EXPECT_NO_FATAL_FAILURE(CheckBoolValueFromJavascript(
-        true, "window.chrome.sv", preview_));
-    EXPECT_NO_FATAL_FAILURE(CheckIntValueFromJavascript(
-        0, "window.onsubmitcalls", preview_));
-    EXPECT_NO_FATAL_FAILURE(CheckIntValueFromJavascript(
-        0, "window.oncancelcalls", preview_));
-    EXPECT_NO_FATAL_FAILURE(CheckIntValueFromJavascript(
-        0, "window.onchangecalls", preview_));
-    EXPECT_NO_FATAL_FAILURE(CheckIntValueFromJavascript(
-        1, "window.onresizecalls", preview_));
-    EXPECT_NO_FATAL_FAILURE(CheckStringValueFromJavascript(
-        "a", "window.chrome.searchBox.value", preview_));
-    EXPECT_NO_FATAL_FAILURE(CheckBoolValueFromJavascript(
-        false, "window.chrome.searchBox.verbatim", preview_));
+    ASSERT_EQ("true 0 0 0 1 a false", GetSearchStateAsString(preview_));
   }
 
   void SetLocationBarText(const std::wstring& text) {
@@ -127,43 +115,99 @@ class InstantTest : public InProcessBrowserTest {
         browser(), key, false, false, false, false));
   }
 
+  bool GetStringFromJavascript(TabContents* tab_contents,
+                               const std::string& function,
+                               std::string* result) {
+    std::string script = StringPrintf(
+        "window.domAutomationController.send(%s)", function.c_str());
+    return ui_test_utils::ExecuteJavaScriptAndExtractString(
+        tab_contents->render_view_host(),
+        std::wstring(), UTF8ToWide(script), result);
+  }
+
+  bool GetIntFromJavascript(TabContents* tab_contents,
+                            const std::string& function,
+                            int* result) {
+    std::string script = StringPrintf(
+        "window.domAutomationController.send(%s)", function.c_str());
+    return ui_test_utils::ExecuteJavaScriptAndExtractInt(
+        tab_contents->render_view_host(),
+        std::wstring(), UTF8ToWide(script), result);
+  }
+
+  bool GetBoolFromJavascript(TabContents* tab_contents,
+                             const std::string& function,
+                             bool* result) {
+    std::string script = StringPrintf(
+        "window.domAutomationController.send(%s)", function.c_str());
+    return ui_test_utils::ExecuteJavaScriptAndExtractBool(
+        tab_contents->render_view_host(),
+        std::wstring(), UTF8ToWide(script), result);
+  }
+
+  // Returns the state of the search box as a string. This consists of the
+  // following:
+  // window.chrome.sv window.onsubmitcalls window.oncancelcalls
+  // window.onchangecalls window.onresizecalls
+  // window.chrome.searchBox.value
+  // window.chrome.searchBox.verbatim
+  // If determining any of the values fails, the value is 'fail'.
+  std::string GetSearchStateAsString(TabContents* tab_contents) {
+    bool sv = false;
+    int onsubmitcalls = 0;
+    int oncancelcalls = 0;
+    int onchangecalls = 0;
+    int onresizecalls = 0;
+    std::string value;
+    bool verbatim = false;
+
+    if (!GetBoolFromJavascript(tab_contents, "window.chrome.sv", &sv) ||
+        !GetIntFromJavascript(tab_contents, "window.onsubmitcalls",
+                              &onsubmitcalls) ||
+        !GetIntFromJavascript(tab_contents, "window.oncancelcalls",
+                              &oncancelcalls) ||
+        !GetIntFromJavascript(tab_contents, "window.onchangecalls",
+                              &onchangecalls) ||
+        !GetIntFromJavascript(tab_contents, "window.onresizecalls",
+                              &onresizecalls) ||
+        !GetStringFromJavascript(tab_contents, "window.chrome.searchBox.value",
+                                 &value) ||
+        !GetBoolFromJavascript(tab_contents, "window.chrome.searchBox.verbatim",
+                               &verbatim)) {
+      return "fail";
+    }
+
+    return StringPrintf("%s %d %d %d %d %s %s",
+                        sv ? "true" : "false", onsubmitcalls, oncancelcalls,
+                        onchangecalls, onresizecalls, value.c_str(),
+                        verbatim ? "true" : "false");
+  }
+
   void CheckStringValueFromJavascript(
       const std::string& expected,
       const std::string& function,
       TabContents* tab_contents) {
-    std::string script = StringPrintf(
-        "window.domAutomationController.send(%s)", function.c_str());
     std::string result;
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-        tab_contents->render_view_host(),
-        std::wstring(), UTF8ToWide(script), &result));
-    EXPECT_EQ(expected, result);
+    ASSERT_TRUE(GetStringFromJavascript(tab_contents, function, &result));
+    ASSERT_EQ(expected, result);
   }
 
   void CheckBoolValueFromJavascript(
       bool expected,
       const std::string& function,
       TabContents* tab_contents) {
-    std::string script = StringPrintf(
-        "window.domAutomationController.send(%s)", function.c_str());
     bool result;
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        tab_contents->render_view_host(),
-        std::wstring(), UTF8ToWide(script), &result));
-    EXPECT_EQ(expected, result);
+    ASSERT_TRUE(GetBoolFromJavascript(tab_contents, function, &result));
+    ASSERT_EQ(expected, result);
   }
 
   void CheckIntValueFromJavascript(
       int expected,
       const std::string& function,
       TabContents* tab_contents) {
-    std::string script = StringPrintf(
-        "window.domAutomationController.send(%s)", function.c_str());
     int result;
-    ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractInt(
-        tab_contents->render_view_host(),
-        std::wstring(), UTF8ToWide(script), &result));
-    EXPECT_EQ(expected, result);
+    ASSERT_TRUE(GetIntFromJavascript(tab_contents, function, &result));
+    ASSERT_EQ(expected, result);
   }
 
   // Sends a message to the renderer and waits for the response to come back to
@@ -198,12 +242,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
   ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
 
   // Check that the value is reflected and onchange is called.
-  EXPECT_NO_FATAL_FAILURE(CheckStringValueFromJavascript(
-      "abc", "window.chrome.searchBox.value", preview_));
-  EXPECT_NO_FATAL_FAILURE(CheckBoolValueFromJavascript(
-      false, "window.chrome.searchBox.verbatim", preview_));
-  EXPECT_NO_FATAL_FAILURE(CheckIntValueFromJavascript(
-      1, "window.onchangecalls", preview_));
+  EXPECT_EQ("true 0 0 1 1 abc false", GetSearchStateAsString(preview_));
 }
 
 // Verify instant preview is shown correctly for a non-search query.
@@ -410,10 +449,11 @@ IN_PROC_BROWSER_TEST_F(InstantTest, HideOn403) {
 }
 
 // Verify that the onsubmit event is dispatched upon pressing enter.
-// TODO(sky): Disabled, http://crbug.com/62940.
-IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_OnSubmitEvent) {
+IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
+
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
 
@@ -422,30 +462,20 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_OnSubmitEvent) {
 
   // Check that the preview contents have been committed.
   ASSERT_FALSE(browser()->instant()->GetPreviewContents());
+  ASSERT_FALSE(browser()->instant()->is_active());
   TabContents* contents = browser()->GetSelectedTabContents();
   ASSERT_TRUE(contents);
 
   // Check that the value is reflected and onsubmit is called.
-  EXPECT_NO_FATAL_FAILURE(CheckBoolValueFromJavascript(
-      true, "window.chrome.sv", contents));
-  EXPECT_NO_FATAL_FAILURE(CheckStringValueFromJavascript(
-      "abc", "window.chrome.searchBox.value", contents));
-  EXPECT_NO_FATAL_FAILURE(CheckBoolValueFromJavascript(
-      true, "window.chrome.searchBox.verbatim", contents));
-  EXPECT_NO_FATAL_FAILURE(CheckIntValueFromJavascript(
-      1, "window.onsubmitcalls", contents));
+  EXPECT_EQ("true 1 0 1 1 abc true", GetSearchStateAsString(preview_));
 }
 
-#if defined(OS_MACOSX)
-// Does not pass on Mac.  http://crbug.com/64696
-#define MAYBE_OnCancelEvent FAILS_OnCancelEvent
-#else
-#define MAYBE_OnCancelEvent OnCancelEvent
-#endif
 // Verify that the oncancel event is dispatched upon losing focus.
-IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnCancelEvent) {
+IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
   ASSERT_TRUE(test_server()->Start());
   ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
+
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
   ASSERT_NO_FATAL_FAILURE(SetupPreview());
 
@@ -455,18 +485,12 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_OnCancelEvent) {
 
   // Check that the preview contents have been committed.
   ASSERT_FALSE(browser()->instant()->GetPreviewContents());
+  ASSERT_FALSE(browser()->instant()->is_active());
   TabContents* contents = browser()->GetSelectedTabContents();
   ASSERT_TRUE(contents);
 
   // Check that the value is reflected and oncancel is called.
-  EXPECT_NO_FATAL_FAILURE(CheckBoolValueFromJavascript(
-      true, "window.chrome.sv", contents));
-  EXPECT_NO_FATAL_FAILURE(CheckStringValueFromJavascript(
-      "abc", "window.chrome.searchBox.value", contents));
-  EXPECT_NO_FATAL_FAILURE(CheckBoolValueFromJavascript(
-      false, "window.chrome.searchBox.verbatim", contents));
-  EXPECT_NO_FATAL_FAILURE(CheckIntValueFromJavascript(
-      1, "window.oncancelcalls", contents));
+  EXPECT_EQ("true 0 1 1 1 abc false", GetSearchStateAsString(preview_));
 }
 
 // Verify that suggestion that looks like a url ('www.google.com' in this case)
@@ -495,4 +519,40 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DontShowURLSuggest) {
                               instant->GetPreviewContents()));
   ASSERT_EQ(UTF16ToWide(string16()),
             UTF16ToWide(instant->GetCompleteSuggestedText()));
+}
+
+#if !defined(OS_MACOSX)
+// Only passes on Mac.  http://crbug.com/66850
+#define MAYBE_TabKey FAILS_TabKey
+#else
+#define MAYBE_TabKey TabKey
+#endif
+IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_TabKey) {
+  ASSERT_TRUE(test_server()->Start());
+  ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
+
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
+  ASSERT_NO_FATAL_FAILURE(SetupPreview());
+
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
+
+  // Pressing tab to convert instant suggest into inline autocomplete.
+  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_TAB));
+
+  ASSERT_EQ(L"abcdef", location_bar_->location_entry()->GetText());
+
+  EXPECT_EQ("true 0 0 2 2 abcdef false", GetSearchStateAsString(preview_));
+
+  // Pressing tab again to accept the current instant preview.
+  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_TAB));
+
+  // Check that the preview contents have been committed.
+  ASSERT_FALSE(browser()->instant()->GetPreviewContents());
+  ASSERT_FALSE(browser()->instant()->is_active());
+  TabContents* contents = browser()->GetSelectedTabContents();
+  ASSERT_TRUE(contents);
+
+  // Check that the value is reflected and onsubmit is called.
+  EXPECT_EQ("true 1 0 2 2 abcdef true", GetSearchStateAsString(preview_));
 }

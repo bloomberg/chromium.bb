@@ -91,6 +91,10 @@ class InstantController : public InstantLoaderDelegate {
   // Disables instant.
   static void Disable(Profile* profile);
 
+  // Accepts the currently showing instant preview, if any, and returns true.
+  // Returns false if there is no instant preview showing.
+  static bool CommitIfCurrent(InstantController* controller);
+
   // Invoked as the user types in the omnibox with the url to navigate to.  If
   // the url is empty and there is a preview TabContents it is destroyed. If url
   // is non-empty and the preview TabContents has not been created it is
@@ -197,7 +201,6 @@ class InstantController : public InstantLoaderDelegate {
   virtual void CommitInstantLoader(InstantLoader* loader);
   virtual void InstantLoaderDoesntSupportInstant(InstantLoader* loader);
   virtual void AddToBlacklist(InstantLoader* loader, const GURL& url);
-
 
  private:
   friend class InstantTest;

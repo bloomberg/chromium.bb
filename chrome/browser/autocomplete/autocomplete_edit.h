@@ -52,7 +52,7 @@ class AutocompleteEditController {
 
   // Accepts the currently showing instant preview, if any, and returns true.
   // Returns false if there is no instant preview showing.
-  virtual bool AcceptCurrentInstantPreview();
+  virtual bool AcceptCurrentInstantPreview() = 0;
 
   // Sets the suggested search text to |suggested_text|.
   virtual void OnSetSuggestedSearchText(const string16& suggested_text) = 0;

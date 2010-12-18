@@ -797,6 +797,10 @@ bool LocationBarView::OnCommitSuggestedText(const std::wstring& typed_text) {
 #endif
 }
 
+bool LocationBarView::AcceptCurrentInstantPreview() {
+  return InstantController::CommitIfCurrent(delegate_->GetInstant());
+}
+
 void LocationBarView::OnSetSuggestedSearchText(const string16& suggested_text) {
   SetSuggestedText(suggested_text);
 }
@@ -1062,38 +1066,28 @@ std::string LocationBarView::GetClassName() const {
 }
 
 bool LocationBarView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
-  if (views::FocusManager::IsTabTraversalKeyEvent(e)) {
 #if defined(OS_WIN)
+  if (views::FocusManager::IsTabTraversalKeyEvent(e)) {
     if (HasValidSuggestText()) {
       // Return true so that the edit sees the tab and commits the suggestion.
       return true;
     }
-#endif
     if (keyword_hint_view_->IsVisible() && !e.IsShiftDown()) {
       // Return true so the edit gets the tab event and enters keyword mode.
       return true;
     }
-    InstantController* instant = delegate_->GetInstant();
-    if (instant && instant->IsCurrent()) {
-      // Tab while showing instant commits instant immediately.
-      instant->CommitCurrentPreview(INSTANT_COMMIT_PRESSED_ENTER);
-      // Return true so that focus traversal isn't attempted. The edit ends
-      // up doing nothing in this case.
+
+    // Tab while showing instant commits instant immediately.
+    // Return true so that focus traversal isn't attempted. The edit ends
+    // up doing nothing in this case.
+    if (AcceptCurrentInstantPreview())
       return true;
-    }
   }
 
-#if defined(OS_WIN)
   return location_entry_->SkipDefaultKeyEventProcessing(e);
 #else
-  // TODO(jcampan): We need to refactor the code of
-  // AutocompleteEditViewWin::SkipDefaultKeyEventProcessing into this class so
-  // it can be shared between Windows and Linux.
-  // For now, we just override back-space and tab keys, as back-space is the
-  // accelerator for back navigation and tab key is used by some input methods.
-  if (e.GetKeyCode() == app::VKEY_BACK ||
-      views::FocusManager::IsTabTraversalKeyEvent(e))
-    return true;
+  // This method is not used for Linux ports. See FocusManager::OnKeyEvent() in
+  // src/views/focus/focus_manager.cc for details.
   return false;
 #endif
 }

@@ -254,6 +254,10 @@ bool LocationBarViewMac::OnCommitSuggestedText(const std::wstring& typed_text) {
   return edit_view_->CommitSuggestText();
 }
 
+bool LocationBarViewMac::AcceptCurrentInstantPreview() {
+  return InstantController::CommitIfCurrent(browser_->instant());
+}
+
 void LocationBarViewMac::OnSetSuggestedSearchText(
     const string16& suggested_text) {
   SetSuggestedText(suggested_text);

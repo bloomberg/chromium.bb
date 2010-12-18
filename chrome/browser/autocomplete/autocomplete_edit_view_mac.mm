@@ -810,6 +810,9 @@ bool AutocompleteEditViewMac::OnDoCommandBySelector(SEL cmd) {
       controller_->OnCommitSuggestedText(GetText());
       return true;
     }
+
+    if (controller_->AcceptCurrentInstantPreview())
+      return true;
   }
 
   // |-noop:| is sent when the user presses Cmd+Return. Override the no-op

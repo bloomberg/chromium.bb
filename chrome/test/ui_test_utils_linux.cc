@@ -89,6 +89,9 @@ void HideNativeWindow(gfx::NativeWindow window) {
 }
 
 void ShowAndFocusNativeWindow(gfx::NativeWindow window) {
+  if (gtk_window_has_toplevel_focus(GTK_WINDOW(window)))
+    return;
+
   gtk_window_present(GTK_WINDOW(window));
 }
 
