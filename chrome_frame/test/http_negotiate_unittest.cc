@@ -70,7 +70,7 @@ TEST_F(HttpNegotiateTest, BeginningTransaction) {
   std::wstring cf_tag(
       ASCIIToWide(http_utils::GetChromeFrameUserAgent()));
 
-  EXPECT_NE(std::wstring::npos, cf_ua.find(cf_tag));
+  EXPECT_NE(std::wstring::npos, cf_ua.find(L"chromeframe/"));
 
   struct TestCase {
     const std::wstring original_headers_;
