@@ -96,9 +96,9 @@ deps = {
   "src/tools/page_cycler/acid3":
     "/trunk/deps/page_cycler/acid3@19546",
 
-  # We run these layout tests as UI tests.  Since many of the buildbots that
+  # We run these layout tests as UI tests. Since many of the buildbots that
   # run layout tests do NOT have access to the LayoutTest directory, we need
-  # to map them here.  In practice, these do not take up much space.
+  # to map them here. In practice, these do not take up much space.
   "src/chrome/test/data/layout_tests/LayoutTests/fast/events":
     Var("webkit_trunk") + "/LayoutTests/fast/events@" +
     Var("webkit_revision"),
