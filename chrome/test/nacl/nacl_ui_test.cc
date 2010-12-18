@@ -40,7 +40,7 @@ TEST_F(NaClUITest, ServerTest) {
   RunTest(test_file, action_max_timeout_ms());
 }
 
-TEST_F(NaClUITest, SrpcHelloWorld) {
+TEST_F(NaClUITest, DISABLED_SrpcHelloWorld) {
   FilePath test_file(kSrpcHwHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
@@ -51,32 +51,32 @@ TEST_F(NaClUITest, DISABLED_SrpcBasicTest) {
   RunTest(test_file, action_max_timeout_ms());
 }
 
-TEST_F(NaClUITest, SrpcSockAddrTest) {
+TEST_F(NaClUITest, DISABLED_SrpcSockAddrTest) {
   FilePath test_file(kSrpcSockAddrHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
 
-TEST_F(NaClUITest, SrpcShmTest) {
+TEST_F(NaClUITest, DISABLED_SrpcShmTest) {
   FilePath test_file(kSrpcShmHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
 
-TEST_F(NaClUITest, SrpcPluginTest) {
+TEST_F(NaClUITest, DISABLED_SrpcPluginTest) {
   FilePath test_file(kSrpcPluginHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
 
-TEST_F(NaClUITest, SrpcNrdXferTest) {
+TEST_F(NaClUITest, DISABLED_SrpcNrdXferTest) {
   FilePath test_file(kSrpcNrdXferHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
 
-TEST_F(NaClUITest, NpapiHwTest) {
+TEST_F(NaClUITest, DISABLED_NpapiHwTest) {
   FilePath test_file(kNpapiHwHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
 
-TEST_F(NaClUITest, MultiarchTest) {
+TEST_F(NaClUITest, DISABLED_MultiarchTest) {
   FilePath test_file(kSrpcHwHtmlFileName);
   RunMultiarchTest(test_file, action_max_timeout_ms());
 }
