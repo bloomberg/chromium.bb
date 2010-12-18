@@ -83,8 +83,7 @@ test_deps = [ 'gtest',
               'platform',
               'google_nacl_imc_c',
               'gio',
-              'nonnacl_srpc',
-              'env_cleanser' ]
+              'nonnacl_srpc' ]
 # TODO(polina): figure out why empty osenv causes
 #   File "/usr/lib/python2.5/subprocess.py", line 1054, in _execute_child
 #      executable = args[0]

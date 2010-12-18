@@ -32,6 +32,7 @@
 #ifdef NACL_BREAKPAD
 #include "native_client/src/trusted/nacl_breakpad/nacl_breakpad.h"
 #endif
+#include "native_client/src/trusted/service_runtime/env_cleanser.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_config_dangerous.h"
@@ -146,12 +147,21 @@ static void PrintUsage() {
 }
 
 /*
+ * Note that we cannot use the 3 arg declaration for main, since SDL
+ * preprocessor defines main to SDLmain and then provides a
+ * replacement main that performs other startup initialization.  The
+ * SDL startup code only supplies 2 args to the renamed SDLmain, and
+ * if we used the 3 arg version here we'd pick up some garbage off the
+ * stack for envp.  Instead, we make envp be a local variable, and
+ * initialize it from the eviron global variable.
+ *
  * NB: do NOT return from main until our dependency on SDL is removed.
  * This is because the OSX version of SDL ignores main's return value
  * and always exits with an exit status of 0, breaking tests.
  */
 int main(int  argc,
          char **argv) {
+  char const *const             *envp;
   int                           opt;
   char                          *rest;
   struct redir                  *entry;
@@ -173,7 +183,9 @@ int main(int  argc,
 
 
   int                           ret_code;
-  struct DynArray               env_vars;
+  /* NOTE: because of windows dll issue this cannot be moved to the top level */
+  /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
+  extern char                   **environ;
 
   char                          *log_file = NULL;
   struct GioFile                *log_gio;
@@ -185,6 +197,8 @@ int main(int  argc,
   int                           stub_out_mode = 0;
   int                           skip_qualification = 0;
   int                           start_broken = 0;
+
+  struct NaClEnvCleanser        filtered_env;
 
   const char* sandbox_fd_string;
 
@@ -210,6 +224,9 @@ int main(int  argc,
   mallopt(M_MMAP_MAX, 0);
 #endif
 
+  /* SDL does not pass 3 args to re-defined main */
+  envp = (char const *const *) environ;
+
   ret_code = 1;
   redir_queue = NULL;
   redir_qend = &redir_queue;
@@ -231,10 +248,7 @@ int main(int  argc,
     exit(1);
   }
 
-  if (!DynArrayCtor(&env_vars, 0)) {
-    NaClLog(LOG_FATAL, "Failed to allocate env var array\n");
-  }
-  while ((opt = getopt(argc, argv, "abcE:f:Fgh:i:Il:Qr:Rsvw:X:")) != -1) {
+  while ((opt = getopt(argc, argv, "abcf:Fgh:i:Il:Qr:Rsvw:X:")) != -1) {
     switch (opt) {
       case 'c':
         fprintf(stderr, "DEBUG MODE ENABLED (ignore validator)\n");
@@ -312,24 +326,6 @@ int main(int  argc,
         break;
       case 's':
         stub_out_mode = 1;
-        break;
-      case 'E':
-        /*
-         * For simplicity, we treat the environment variables as a
-         * list of strings rather than a key/value mapping.  We do not
-         * try to prevent duplicate keys or require the strings to be
-         * of the form "KEY=VALUE".  This is in line with how execve()
-         * works in Unix.
-         *
-         * We expect that most callers passing "-E" will either pass
-         * in a fixed list or will construct the list using a
-         * high-level language, in which case de-duplicating keys
-         * outside of sel_ldr is easier.  However, we could do
-         * de-duplication here if it proves to be worthwhile.
-         */
-        if (!DynArraySet(&env_vars, env_vars.num_entries, optarg)) {
-          NaClLog(LOG_FATAL, "Adding item to env_vars failed\n");
-        }
         break;
       default:
         fprintf(stderr, "ERROR: unknown option: [%c]\n\n", opt);
@@ -700,8 +696,11 @@ int main(int  argc,
     goto done;
   }
 
-  if (!DynArraySet(&env_vars, env_vars.num_entries, NULL)) {
-    NaClLog(LOG_FATAL, "Adding env_vars NULL terminator failed\n");
+  NaClEnvCleanserCtor(&filtered_env);
+  if (!NaClEnvCleanserInit(&filtered_env, envp)) {
+    fprintf(stderr, "Filtering environment variables failed\n");
+    NaClEnvCleanserDtor(&filtered_env);
+    goto done;
   }
   /*
    * only nap->ehdrs.e_entry is usable, no symbol table is
@@ -710,11 +709,12 @@ int main(int  argc,
   if (!NaClCreateMainThread(nap,
                             argc - optind,
                             argv + optind,
-                            (const char **) env_vars.ptr_array)) {
+                            NaClEnvCleanserEnvironment(&filtered_env))) {
     fprintf(stderr, "creating main thread failed\n");
+    NaClEnvCleanserDtor(&filtered_env);
     goto done;
   }
-  DynArrayDtor(&env_vars);
+  NaClEnvCleanserDtor(&filtered_env);
 
   ret_code = NaClWaitForMainThreadToExit(nap);
 

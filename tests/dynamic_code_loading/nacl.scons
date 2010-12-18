@@ -61,7 +61,7 @@ tests = [
         # differently in the plugin, but the plugin does not provide a
         # way to distinguish itself.  TODO(mseaborn): Fix that.
         # See http://code.google.com/p/nativeclient/issues/detail?id=889
-        sel_ldr_flags=['-E', 'NACL_SRPC_STANDALONE=1'],
+        osenv='NACL_SRPC_STANDALONE=1',
         ),
     env.CommandSelLdrTestNacl(
         'write_to_dyncode.out',

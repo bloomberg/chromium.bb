@@ -14,6 +14,8 @@
 int main(int argc, char **argv, char **env) {
   int count = 0;
   char **ptr;
+  char *value;
+  int compare;
 
   for (ptr = environ; *ptr != NULL; ptr++) {
     count++;
@@ -24,6 +26,14 @@ int main(int argc, char **argv, char **env) {
   }
 
   assert(env == environ);
+
+  value = getenv("NACL_SRPC_DEBUG");
+  assert(value != NULL);
+  /* TODO(mseaborn): Splitting this into two lines is a workaround for
+     http://code.google.com/p/nativeclient/issues/detail?id=941.
+     -Werror -pedantic -O2 + glibc conspire to produce fail. */
+  compare = strcmp(value, "example_contents_of_env_var");
+  assert(compare == 0);
 
   return 0;
 }

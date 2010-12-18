@@ -49,6 +49,7 @@
       ['target_base=="sel"', {
         'sources': [
           'dyn_array.c',
+          'env_cleanser.c',
           'nacl_all_modules.c',
           'nacl_app_thread.c',
           'nacl_bottom_half.c',
@@ -184,7 +185,6 @@
         'target_base': 'sel',
       },
       'dependencies': [
-        'env_cleanser',
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
         '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
@@ -240,12 +240,6 @@
         'fs/obj_proxy.c',
       ],
     }, {
-      'target_name': 'env_cleanser',
-      'type': 'static_library',
-      'sources': [
-        'env_cleanser.c',
-      ],
-    }, {
       'target_name': 'sel_ldr',
       'type': 'executable',
       'dependencies': [
@@ -271,7 +265,6 @@
             'win_target': 'x64',
           },
           'dependencies': [
-            'env_cleanser64',
             '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64',
             '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc64',
             '<(DEPTH)/native_client/src/trusted/debug_stub/debug_stub.gyp:debug_stub64',
@@ -313,16 +306,6 @@
           'sources': [
             'fs/xdr.c',
             'fs/obj_proxy.c',
-          ],
-        },
-        {
-          'target_name': 'env_cleanser64',
-          'type': 'static_library',
-          'variables': {
-            'win_target': 'x64',
-          },
-          'sources': [
-            'env_cleanser.c',
           ],
         },
         {
