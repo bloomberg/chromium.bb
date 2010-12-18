@@ -4,8 +4,6 @@
 //
 // Unit test for SyncChannel.
 
-#include "ipc/ipc_sync_channel.h"
-
 #include <string>
 #include <vector>
 
@@ -20,6 +18,7 @@
 #include "base/thread.h"
 #include "base/waitable_event.h"
 #include "ipc/ipc_message.h"
+#include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "ipc/ipc_sync_message_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
