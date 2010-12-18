@@ -82,12 +82,6 @@ ServiceProcessRunningState GetServiceProcessRunningState(
 
   // Get the version of the currently *running* instance of Chrome.
   chrome::VersionInfo version_info;
-  if (!version_info.is_valid()) {
-    NOTREACHED() << "Failed to get current file version";
-    // Our own version is invalid. This is an error case. Pretend that we
-    // are out of date.
-    return SERVICE_NEWER_VERSION_RUNNING;
-  }
   scoped_ptr<Version> running_version(Version::GetVersionFromString(
       version_info.Version()));
   if (!running_version.get()) {
@@ -130,7 +124,6 @@ std::string GetServiceProcessScopedVersionedName(
     const std::string& append_str) {
   std::string versioned_str;
   chrome::VersionInfo version_info;
-  DCHECK(version_info.is_valid());
   versioned_str.append(version_info.Version());
   versioned_str.append(append_str);
   return GetServiceProcessScopedName(versioned_str);
@@ -198,10 +191,6 @@ bool ServiceProcessState::HandleOtherVersion() {
 
 bool ServiceProcessState::CreateSharedData() {
   chrome::VersionInfo version_info;
-  if (!version_info.is_valid()) {
-    NOTREACHED() << "Failed to get current file version";
-    return false;
-  }
   if (version_info.Version().length() >= kMaxVersionStringLength) {
     NOTREACHED() << "Version string length is << " <<
         version_info.Version().length() << "which is longer than" <<

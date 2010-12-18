@@ -71,11 +71,6 @@ std::string MetricsLog::GetInstallDate() const {
 // static
 std::string MetricsLog::GetVersionString() {
   chrome::VersionInfo version_info;
-  if (!version_info.is_valid()) {
-    NOTREACHED() << "Unable to retrieve version info.";
-    return std::string();
-  }
-
   std::string version = version_info.Version();
   if (!version_extension_.empty())
     version += version_extension_;

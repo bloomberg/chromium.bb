@@ -143,7 +143,6 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   // browser version
 
   chrome::VersionInfo version_info;
-  DCHECK(version_info.is_valid());
 
   std::string browser_version = version_info.Version();
   std::string version_modifier = platform_util::GetVersionStringModifier();

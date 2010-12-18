@@ -1343,11 +1343,6 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
     }
 
     chrome::VersionInfo current_version_info;
-    if (!current_version_info.is_valid()) {
-      NOTREACHED();
-      return false;
-    }
-
     scoped_ptr<Version> current_version(
         Version::GetVersionFromString(current_version_info.Version()));
     if (!current_version.get()) {

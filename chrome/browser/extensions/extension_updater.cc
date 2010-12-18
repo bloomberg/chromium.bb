@@ -827,10 +827,8 @@ std::vector<int> ExtensionUpdater::DetermineUpdates(
       // First determine the browser version if we haven't already.
       if (!browser_version.get()) {
         chrome::VersionInfo version_info;
-        if (version_info.is_valid()) {
-          browser_version.reset(Version::GetVersionFromString(
-                                    version_info.Version()));
-        }
+        browser_version.reset(Version::GetVersionFromString(
+                                  version_info.Version()));
       }
       scoped_ptr<Version> browser_min_version(
           Version::GetVersionFromString(update->browser_min_version));
