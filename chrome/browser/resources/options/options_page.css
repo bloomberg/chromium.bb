@@ -325,8 +325,12 @@ section > div:only-of-type {
  * are converted to the non-table style.
  */
 section > div:only-of-type label {
-  display: block;
   margin: 5px 0;
+}
+
+label.checkbox,
+label.radio {
+  display: block
 }
 
 .hidden {
@@ -496,32 +500,16 @@ button {
  * TODO(arv): Test the vertical position on Linux and CrOS as well.
  */
 
-/*
- * Webkit does not move the absolute positioned input element properly and
- * filed bug 48348 to track the problem.
- *   https://bugs.webkit.org/show_bug.cgi?id=48348
- * In the mean time, mark the outer label element 'relative' so that webkit
- * aligns the input element properly.
- */
-label.checkbox,
-label.radio {
-  position: relative;
-}
-
-label.checkbox > input,
-label.radio > input {
+label > input[type=checkbox],
+label > input[type=radio] {
   margin-top: 1px;
-  position: absolute;
 }
 
-label.checkbox > span,
-label.radio > span,
 .suboption {
   -webkit-margin-start: 16px;
-  display: block;
 }
 
-html[os=mac] label.checkbox > input,
-html[os=mac] label.radio > input {
+html[os=mac] label > input[type=checkbox],
+html[os=mac] label > input[type=radio] {
   margin-top: 2px;
 }
