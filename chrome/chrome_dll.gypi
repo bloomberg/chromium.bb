@@ -280,7 +280,6 @@
                 'app/theme/star_lit.pdf',
                 'app/theme/stop_Template.pdf',
                 'app/theme/tools_Template.pdf',
-                'app/theme/upgrade_dot.pdf',
                 'browser/ui/cocoa/install.sh',
               ],
               'mac_bundle_resources!': [

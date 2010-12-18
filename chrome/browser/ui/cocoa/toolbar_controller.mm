@@ -10,6 +10,7 @@
 #include "app/l10n_util_mac.h"
 #include "app/menus/accelerator_cocoa.h"
 #include "app/menus/menu_model.h"
+#include "app/resource_bundle.h"
 #include "base/mac_util.h"
 #include "base/nsimage_cache_mac.h"
 #include "base/singleton.h"
@@ -526,10 +527,8 @@ class NotificationBridge : public NotificationObserver {
 }
 
 - (void)badgeWrenchMenu {
-  // In the Windows version, the ball doesn't actually pulsate, and is always
-  // drawn with the inactive image. Why? (We follow suit, though not on the
-  // weird positioning they do that overlaps the button border.)
-  NSImage* badge = nsimage_cache::ImageNamed(@"upgrade_dot.pdf");
+  NSImage* badge = ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      IDR_UPDATE_BADGE);
   NSImage* wrenchImage = nsimage_cache::ImageNamed(kWrenchButtonImageName);
   NSSize wrenchImageSize = [wrenchImage size];
 
