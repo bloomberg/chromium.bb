@@ -18,12 +18,14 @@ class IndexedDBKey {
 
   void SetNull();
   void SetInvalid();
-  void Set(const string16& string);
-  void Set(double number);
+  void SetString(const string16& string);
+  void SetDate(double date);
+  void SetNumber(double number);
   void Set(const WebKit::WebIDBKey& key);
 
   WebKit::WebIDBKey::Type type() const { return type_; }
   const string16& string() const { return string_; }
+  double date() const { return date_; }
   double number() const { return number_; }
 
   operator WebKit::WebIDBKey() const;
@@ -31,6 +33,7 @@ class IndexedDBKey {
  private:
   WebKit::WebIDBKey::Type type_;
   string16 string_;
+  double date_;
   double number_;
 };
 

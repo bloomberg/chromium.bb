@@ -199,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, IDBKeyPathExtract) {
   const int kId = 7;
   std::vector<IndexedDBKey> expected_values;
   IndexedDBKey value;
-  value.Set(UTF8ToUTF16("zoo"));
+  value.SetString(UTF8ToUTF16("zoo"));
   expected_values.push_back(value);
 
   IndexedDBKey invalid_value;
@@ -262,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, IDBKeyPathMultipleCalls) {
   // Call again with the Utility process in batch mode and with valid keys.
   expected_values.clear();
   IndexedDBKey value;
-  value.Set(UTF8ToUTF16("zoo"));
+  value.SetString(UTF8ToUTF16("zoo"));
   expected_values.push_back(value);
   expected_values.push_back(invalid_value);
   scoped_helper.SetExpected(kId + 1, expected_values, false);

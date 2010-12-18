@@ -2,6 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var testDate = new Date("February 24, 1955 12:00:00");
+
+function getByDateSuccess()
+{
+  debug('Data retrieved by date key');
+
+  shouldBe("event.result", "'foo'");
+  done();
+}
+
 function recordNotFound()
 {
   debug('Removed data can no longer be found');
@@ -15,7 +25,10 @@ function recordNotFound()
   } catch(e) {
     fail(e);
   }
-  done();
+
+  var result = transaction.objectStore('stuff').get(testDate);
+  result.onsuccess = getByDateSuccess;
+  result.onerror = unexpectedErrorCallback;
 }
 
 function removeSuccess()
@@ -40,13 +53,22 @@ function getSuccess()
   result.onerror = unexpectedErrorCallback;
 }
 
+function moreDataAddedSuccess()
+{
+  debug('More data added');
+
+  var result = objectStore.get(1);
+  result.onsuccess = getSuccess;
+  result.onerror = unexpectedErrorCallback;
+}
+
 function addWithSameKeyFailed()
 {
   debug('Adding a record with same key failed');
   shouldBe("event.code", "webkitIDBDatabaseException.CONSTRAINT_ERR");
 
-  var result = objectStore.get(1);
-  result.onsuccess = getSuccess;
+  var result = transaction.objectStore('stuff').add('foo', testDate);
+  result.onsuccess = moreDataAddedSuccess;
   result.onerror = unexpectedErrorCallback;
 }
 
@@ -62,8 +84,10 @@ function dataAddedSuccess()
 
 function populateObjectStore()
 {
+  window.transaction = event.result;
   debug('Populating object store');
   deleteAllObjectStores(db);
+  db.createObjectStore('stuff');
   window.objectStore = db.createObjectStore('employees', {keyPath: 'id'});
   shouldBe("objectStore.name", "'employees'");
   shouldBe("objectStore.keyPath", "'id'");

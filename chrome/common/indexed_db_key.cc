@@ -29,12 +29,17 @@ void IndexedDBKey::SetInvalid() {
   type_ = WebIDBKey::InvalidType;
 }
 
-void IndexedDBKey::Set(const string16& string) {
+void IndexedDBKey::SetString(const string16& string) {
   type_ = WebIDBKey::StringType;
   string_ = string;
 }
 
-void IndexedDBKey::Set(double number) {
+void IndexedDBKey::SetDate(double date) {
+  type_ = WebIDBKey::DateType;
+  date_ = date;
+}
+
+void IndexedDBKey::SetNumber(double number) {
   type_ = WebIDBKey::NumberType;
   number_ = number;
 }
@@ -44,6 +49,7 @@ void IndexedDBKey::Set(const WebIDBKey& key) {
   string_ = key.type() == WebIDBKey::StringType ?
                 static_cast<string16>(key.string()) : string16();
   number_ = key.type() == WebIDBKey::NumberType ? key.number() : 0;
+  date_ = key.type() == WebIDBKey::DateType ? key.date() : 0;
 }
 
 IndexedDBKey::operator WebIDBKey() const {
@@ -51,14 +57,12 @@ IndexedDBKey::operator WebIDBKey() const {
     case WebIDBKey::NullType:
       return WebIDBKey::createNull();
     case WebIDBKey::StringType:
-      return WebIDBKey(string_);
+      return WebIDBKey::createString(string_);
+    case WebIDBKey::DateType:
+      return WebIDBKey::createDate(date_);
     case WebIDBKey::NumberType:
-      return WebIDBKey(number_);
+      return WebIDBKey::createNumber(number_);
     case WebIDBKey::InvalidType:
-      return WebIDBKey::createInvalid();
-    default:
-      // TODO(hans): Implement the WebIDBKey::DateType case once that is added
-      // WebKit side, and then remove this temporary default: clause.
       return WebIDBKey::createInvalid();
   }
   NOTREACHED();

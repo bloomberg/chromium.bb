@@ -50,6 +50,7 @@ void ParamTraits<IndexedDBKey>::Write(Message* m, const param_type& p) {
   WriteParam(m, int(p.type()));
   // TODO(jorlow): Technically, we only need to pack the type being used.
   WriteParam(m, p.string());
+  WriteParam(m, p.date());
   WriteParam(m, p.number());
 }
 
@@ -58,11 +59,14 @@ bool ParamTraits<IndexedDBKey>::Read(const Message* m,
                                      param_type* r) {
   int type;
   string16 string;
+  double date;
   double number;
   bool ok =
       ReadParam(m, iter, &type) &&
       ReadParam(m, iter, &string) &&
+      ReadParam(m, iter, &date) &&
       ReadParam(m, iter, &number);
+
   if (!ok)
     return false;
   switch (type) {
@@ -70,17 +74,15 @@ bool ParamTraits<IndexedDBKey>::Read(const Message* m,
       r->SetNull();
       return true;
     case WebKit::WebIDBKey::StringType:
-      r->Set(string);
+      r->SetString(string);
+      return true;
+    case WebKit::WebIDBKey::DateType:
+      r->SetDate(date);
       return true;
     case WebKit::WebIDBKey::NumberType:
-      r->Set(number);
+      r->SetNumber(number);
       return true;
     case WebKit::WebIDBKey::InvalidType:
-      r->SetInvalid();
-      return true;
-    default:
-      // TODO(hans): Implement the WebIDBKey::DateType case once that is added
-      // WebKit side, and then remove this temporary default: clause.
       r->SetInvalid();
       return true;
   }
@@ -93,6 +95,8 @@ void ParamTraits<IndexedDBKey>::Log(const param_type& p, std::string* l) {
   LogParam(int(p.type()), l);
   l->append(", ");
   LogParam(p.string(), l);
+  l->append(", ");
+  LogParam(p.date(), l);
   l->append(", ");
   LogParam(p.number(), l);
   l->append(")");
