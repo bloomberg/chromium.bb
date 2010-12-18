@@ -234,6 +234,9 @@ void FormStructure::ParseQueryResponse(const std::string& response_xml,
       if (current_type == field_types.end())
         break;
 
+      // UNKNOWN_TYPE is reserved for use by the client.
+      DCHECK_NE(*current_type, UNKNOWN_TYPE);
+
       AutoFillFieldType heuristic_type = (*field)->type();
       (*field)->set_server_type(*current_type);
       if (heuristic_type != (*field)->type())
