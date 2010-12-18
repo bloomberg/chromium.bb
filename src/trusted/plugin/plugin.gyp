@@ -204,7 +204,6 @@
           ],
         },
         {
-          # Static library for linking with Chrome.
           'target_name': 'ppGoogleNaClPluginChrome',
           'type': 'loadable_module',
           'sources': [
@@ -227,6 +226,13 @@
             '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util',
             '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
             '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc',
+          ],
+          'conditions': [
+            ['OS=="mac"', {
+              'mac_bundle': 1,
+              'product_name': 'ppGoogleNaClPluginChrome',
+              'product_extension': 'plugin',
+            }],
           ],
         },
       ],
