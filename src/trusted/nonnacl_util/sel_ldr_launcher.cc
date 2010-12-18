@@ -143,14 +143,14 @@ bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
   return retval;
 }
 
+
+extern "C" char **environ;
+
 static char **GetEnviron() {
 #if NACL_OSX
   /* Mac dynamic libraries cannot access the environ variable directly. */
   return *_NSGetEnviron();
 #else
-  /* Overzealous code style check is overzealous. */
-  /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */
-  extern char **environ;
   return environ;
 #endif
 }
