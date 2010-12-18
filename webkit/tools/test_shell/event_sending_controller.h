@@ -10,7 +10,7 @@
   the test_shell to fire DOM events.
 
   The OSX reference file is in
-  WebKit/WebKitTools/DumpRenderTree/EventSendingController.m
+  WebKit/Tools/DumpRenderTree/EventSendingController.m
 */
 
 #ifndef WEBKIT_TOOLS_TEST_SHELL_EVENT_SENDING_CONTROLLER_H_

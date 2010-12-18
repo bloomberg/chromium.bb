@@ -15,7 +15,7 @@ if grep -q REBASELINE $exec_dir/test_expectations.txt ; then
   echo "Try:"
   echo "cd ../../../third_party/WebKit"
   echo "\$EDITOR LayoutTests/platform/chromium/test_expectations.txt"
-  echo "./WebKitTools/Scripts/rebaseline-chromium-webkit-tests"
+  echo "./Tools/Scripts/rebaseline-chromium-webkit-tests"
   echo
   echo "See also https://trac.webkit.org/wiki/Rebaseline"
   exit 1
@@ -23,4 +23,4 @@ fi
 
 PYTHON_PROG=python
 
-"$PYTHON_PROG" "$exec_dir/../../../third_party/WebKit/WebKitTools/Scripts/rebaseline-chromium-webkit-tests" "$@"
+"$PYTHON_PROG" "$exec_dir/../../../third_party/WebKit/Tools/Scripts/rebaseline-chromium-webkit-tests" "$@"

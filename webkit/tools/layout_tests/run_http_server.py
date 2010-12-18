@@ -4,7 +4,7 @@
 # found in the LICENSE file.
 
 """Wrapper around
-   third_party/WebKit/WebKitTools/Scripts/new-run-webkit-httpd"""
+   third_party/WebKit/Tools/Scripts/new-run-webkit-httpd"""
 import os
 import subprocess
 import sys
@@ -13,7 +13,7 @@ def main():
     cmd = [sys.executable]
     src_dir=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(
                          os.path.dirname(os.path.abspath(sys.argv[0]))))))
-    script_dir=os.path.join(src_dir, "third_party", "WebKit", "WebKitTools",
+    script_dir=os.path.join(src_dir, "third_party", "WebKit", "Tools",
                             "Scripts")
     script = os.path.join(script_dir, 'new-run-webkit-httpd')
     cmd.append(script)
@@ -22,4 +22,3 @@ def main():
 
 if __name__ == '__main__':
     sys.exit(main())
-

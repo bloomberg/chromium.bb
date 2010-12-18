@@ -30,7 +30,7 @@
 
 //
 // This file comes from WebKit:
-//    WebKit/WebKitTools/DumpRenderTree/mac/DumpRenderTreePasteboard.m
+//    WebKit/Tools/DumpRenderTree/mac/DumpRenderTreePasteboard.m
 // It is copied here since that location is the best for pulling into Chromium
 // and has a few includes commented out.  darin@chromium.org suggests in the
 // future we see if there is a better place for it to live so it could be

@@ -6,7 +6,7 @@
 // when test_shell is running in layout test mode.  Layout tests use it to
 // exercise various corners of text input.
 //
-// Mac equivalent: WebKit/WebKitTools/DumpRenderTree/TextInputController.{h,m}
+// Mac equivalent: WebKit/Tools/DumpRenderTree/TextInputController.{h,m}
 
 #ifndef WEBKIT_TOOLS_TEST_SHELL_TEXT_INPUT_CONTROLLER_H__
 #define WEBKIT_TOOLS_TEST_SHELL_TEXT_INPUT_CONTROLLER_H__

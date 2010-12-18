@@ -8,7 +8,7 @@
 // the test_shell to extract plain text from the DOM or the selection.
 //
 // The OSX reference file is in
-// WebKit/WebKitTools/DumpRenderTree/PlainTextController.mm
+// WebKit/Tools/DumpRenderTree/PlainTextController.mm
 
 #ifndef WEBKIT_TOOLS_TEST_SHELL_PLAIN_TEXT_CONTROLLER_H_
 #define WEBKIT_TOOLS_TEST_SHELL_PLAIN_TEXT_CONTROLLER_H_
@@ -36,4 +36,3 @@ class PlainTextController : public CppBoundClass {
 };
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_PLAIN_TEXT_CONTROLLER_H_
-

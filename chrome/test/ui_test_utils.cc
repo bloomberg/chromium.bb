@@ -731,7 +731,7 @@ void TestWebSocketServer::SetPythonPath() {
   scripts_path = scripts_path
       .Append(FILE_PATH_LITERAL("third_party"))
       .Append(FILE_PATH_LITERAL("WebKit"))
-      .Append(FILE_PATH_LITERAL("WebKitTools"))
+      .Append(FILE_PATH_LITERAL("Tools"))
       .Append(FILE_PATH_LITERAL("Scripts"));
   AppendToPythonPath(scripts_path);
 }

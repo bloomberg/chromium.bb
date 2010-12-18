@@ -30,7 +30,7 @@ except NameError:
 
 this_file = os.path.abspath(f)
 base_dir = this_file[0:this_file.find('webkit'+ os.sep + 'tools')]
-webkitpy_dir = os.path.join(base_dir, 'third_party', 'WebKit', 'WebKitTools',
+webkitpy_dir = os.path.join(base_dir, 'third_party', 'WebKit', 'Tools',
                             'Scripts')
 sys.path.append(webkitpy_dir)
 

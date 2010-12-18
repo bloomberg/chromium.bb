@@ -582,7 +582,7 @@ void EventSendingController::keyDown(
     }
 
     // For one generated keyboard event, we need to generate a keyDown/keyUp
-    // pair; refer to EventSender.cpp in WebKit/WebKitTools/DumpRenderTree/win.
+    // pair; refer to EventSender.cpp in WebKit/Tools/DumpRenderTree/win.
     // On Windows, we might also need to generate a char event to mimic the
     // Windows event flow; on other platforms we create a merged event and test
     // the event flow that that platform provides.
@@ -669,7 +669,7 @@ void EventSendingController::dispatchMessage(
 bool EventSendingController::NeedsShiftModifier(int key_code) {
   // If code is an uppercase letter, assign a SHIFT key to
   // event_down.modifier, this logic comes from
-  // WebKit/WebKitTools/DumpRenderTree/Win/EventSender.cpp
+  // WebKit/Tools/DumpRenderTree/Win/EventSender.cpp
   if ((key_code & 0xFF) >= 'A' && (key_code & 0xFF) <= 'Z')
     return true;
   return false;
