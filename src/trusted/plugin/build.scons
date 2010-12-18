@@ -118,6 +118,7 @@ common_libs = [
     'gio',
     'expiration',
     'sel',
+    'env_cleanser',
 ]
 
 os_libs = [ ]
