@@ -206,19 +206,23 @@ Value* GpuMessageHandler::OnRequestClientInfo(const ListValue* list) {
 
   chrome::VersionInfo version_info;
 
-  // We have everything we need to send the right values.
-  dict->SetString("version", version_info.Version());
-  dict->SetString("cl", version_info.LastChange());
-  dict->SetString("version_mod",
-    platform_util::GetVersionStringModifier());
-  dict->SetString("official",
-    l10n_util::GetStringUTF16(
-    version_info.IsOfficialBuild() ?
-    IDS_ABOUT_VERSION_OFFICIAL
-    : IDS_ABOUT_VERSION_UNOFFICIAL));
+  if (!version_info.is_valid()) {
+    DLOG(ERROR) << "Unable to create chrome::VersionInfo";
+  } else {
+    // We have everything we need to send the right values.
+    dict->SetString("version", version_info.Version());
+    dict->SetString("cl", version_info.LastChange());
+    dict->SetString("version_mod",
+      platform_util::GetVersionStringModifier());
+    dict->SetString("official",
+      l10n_util::GetStringUTF16(
+      version_info.IsOfficialBuild() ?
+      IDS_ABOUT_VERSION_OFFICIAL
+      : IDS_ABOUT_VERSION_UNOFFICIAL));
 
-  dict->SetString("command_line",
-    CommandLine::ForCurrentProcess()->command_line_string());
+    dict->SetString("command_line",
+      CommandLine::ForCurrentProcess()->command_line_string());
+  }
 
   return dict;
 }

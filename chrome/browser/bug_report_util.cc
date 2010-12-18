@@ -309,11 +309,13 @@ void BugReportUtil::SendReport(Profile* profile,
 
   // Add the Chrome version
   chrome::VersionInfo version_info;
-  std::string chrome_version = version_info.Name() + " - " +
-      version_info.Version() +
-      " (" + version_info.LastChange() + ")";
-  AddFeedbackData(&feedback_data, std::string(kChromeVersionTag),
-                  chrome_version);
+  if (version_info.is_valid()) {
+    std::string chrome_version = version_info.Name() + " - " +
+        version_info.Version() +
+        " (" + version_info.LastChange() + ")";
+    AddFeedbackData(&feedback_data, std::string(kChromeVersionTag),
+                    chrome_version);
+  }
 
   // Add OS version (eg, for WinXP SP2: "5.1.2600 Service Pack 2").
   std::string os_version = "";

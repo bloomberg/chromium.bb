@@ -151,6 +151,11 @@ void AboutChromeView::Init() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
   chrome::VersionInfo version_info;
+  if (!version_info.is_valid()) {
+    NOTREACHED() << L"Failed to initialize about window";
+    return;
+  }
+
   current_version_ = ASCIIToWide(version_info.Version());
 
   std::string version_modifier = platform_util::GetVersionStringModifier();

@@ -201,8 +201,13 @@ void MemoryDetails::CollectProcessDataChrome(
     info.type = ChildProcessInfo::UNKNOWN_PROCESS;
 
   chrome::VersionInfo version_info;
-  info.product_name = ASCIIToWide(version_info.Name());
-  info.version = ASCIIToWide(version_info.Version());
+  if (version_info.is_valid()) {
+    info.product_name = ASCIIToWide(version_info.Name());
+    info.version = ASCIIToWide(version_info.Version());
+  } else {
+    info.product_name = process_data_[CHROME_BROWSER].name;
+    info.version = L"";
+  }
 
   // Check if this is one of the child processes whose data we collected
   // on the IO thread, and if so copy over that data.

@@ -174,6 +174,7 @@ AutomationLaunchResult AutomationProxy::WaitForAppLaunch() {
       // Obtain our own version number and compare it to what the automation
       // provider sent.
       chrome::VersionInfo version_info;
+      DCHECK(version_info.is_valid());
 
       // Note that we use a simple string comparison since we expect the version
       // to be a punctuated numeric string. Consider using base/Version if we

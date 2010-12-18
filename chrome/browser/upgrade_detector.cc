@@ -113,6 +113,10 @@ class DetectUpgradeTask : public Task {
 
     // Get the version of the currently *running* instance of Chrome.
     chrome::VersionInfo version_info;
+    if (!version_info.is_valid()) {
+      NOTREACHED() << "Failed to get current file version";
+      return;
+    }
     scoped_ptr<Version> running_version(
         Version::GetVersionFromString(version_info.Version()));
     if (running_version.get() == NULL) {

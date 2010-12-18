@@ -608,11 +608,17 @@ bool MetricsService::UploadData() {
 // static
 std::string MetricsService::GetVersionString() {
   chrome::VersionInfo version_info;
-  std::string version = version_info.Version();
-  // Add the -F extensions to ensure that UMA data uploaded by ChromeFrame
-  // lands in the ChromeFrame bucket.
-  version += "-F";
-  if (!version_info.IsOfficialBuild())
-    version.append("-devel");
-  return version;
+  if (version_info.is_valid()) {
+    std::string version = version_info.Version();
+    // Add the -F extensions to ensure that UMA data uploaded by ChromeFrame
+    // lands in the ChromeFrame bucket.
+    version += "-F";
+    if (!version_info.IsOfficialBuild())
+      version.append("-devel");
+    return version;
+  } else {
+    NOTREACHED() << "Unable to retrieve version string.";
+  }
+
+  return std::string();
 }
