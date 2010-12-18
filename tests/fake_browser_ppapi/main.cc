@@ -17,6 +17,7 @@
 #include "native_client/tests/fake_browser_ppapi/fake_file_io_trusted.h"
 #include "native_client/tests/fake_browser_ppapi/fake_host.h"
 #include "native_client/tests/fake_browser_ppapi/fake_instance.h"
+#include "native_client/tests/fake_browser_ppapi/fake_nacl_private.h"
 #include "native_client/tests/fake_browser_ppapi/fake_resource.h"
 #include "native_client/tests/fake_browser_ppapi/fake_url_loader.h"
 #include "native_client/tests/fake_browser_ppapi/fake_url_request_info.h"
@@ -61,6 +62,9 @@ const void* FakeGetBrowserInterface(const char* interface_name) {
   } else if (std::strcmp(interface_name,
                          PPB_FILEIOTRUSTED_DEV_INTERFACE) == 0) {
     ppb = fake_browser_ppapi::FileIOTrusted::GetInterface();
+  } else if (std::strcmp(interface_name,
+                         PPB_NACL_PRIVATE_INTERFACE) == 0) {
+    ppb = fake_browser_ppapi::NaClPrivate::GetInterface();
   } else {
     NACL_UNIMPLEMENTED();
   }
