@@ -12,15 +12,12 @@
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/nacl_elf.h"
 #include "native_client/src/include/portability_io.h"
+#include "native_client/src/trusted/plugin/nacl_entry_points.h"
 
-// If we are building a plugin for NACL_PPAPI, then define these symbols
-#ifdef NACL_PPAPI
 
 extern "C" {
   int GetUrandomFD(void) {
-    return 0;
+    return get_urandom_fd();
   }
-};
+}
 
-
-#endif

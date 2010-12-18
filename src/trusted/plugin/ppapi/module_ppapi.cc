@@ -7,8 +7,12 @@
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
 #include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
 #include "native_client/src/trusted/expiration/expiration.h"
+#include "native_client/src/trusted/plugin/nacl_entry_points.h"
 
+#include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/cpp/module.h"
+
+GetURandomFDFunc get_urandom_fd;
 
 namespace plugin {
 
@@ -22,13 +26,27 @@ class ModulePpapi : public pp::Module {
     if (NaClHasExpired()) {
       return;
     }
-    NaClNrdAllModulesInit();
   }
 
   virtual ~ModulePpapi() {
     NaClNrdAllModulesFini();
     PLUGIN_PRINTF(("ModulePpapi::~ModulePpapi (this=%p)\n",
                    static_cast<void*>(this)));
+  }
+
+  virtual bool Init() {
+    // Ask the browser for an interface which provides missing functions
+    const PPB_NaCl_Private* ptr = reinterpret_cast<const PPB_NaCl_Private*>(
+        GetBrowserInterface(PPB_NACL_PRIVATE_INTERFACE));
+
+    if (NULL == ptr) return false;
+
+    launch_nacl_process = reinterpret_cast<LaunchNaClProcessFunc>(
+        ptr->LaunchSelLdr);
+    get_urandom_fd = ptr->UrandomFD;
+
+    NaClNrdAllModulesInit();
+    return true;
   }
 
   virtual pp::Instance* CreateInstance(PP_Instance pp_instance) {

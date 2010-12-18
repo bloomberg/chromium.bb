@@ -46,7 +46,11 @@ typedef bool (*LaunchNaClProcessFunc)(const char* url,
                                       nacl::Handle* nacl_process_handle,
                                       int* nacl_process_id);
 
+typedef int (*GetURandomFDFunc)(void);
+
+
 extern LaunchNaClProcessFunc launch_nacl_process;
+extern GetURandomFDFunc get_urandom_fd;
 
 // Registers the internal NaCl plugin with PluginList.
 // Old version.  TODO(mseaborn): Remove this eventually, when Chromium
@@ -56,4 +60,4 @@ void RegisterInternalNaClPlugin();
 // New version.
 void RegisterInternalNaClPlugin(const std::map<std::string, uintptr_t>& funcs);
 
-#endif // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NACL_ENTRY_POINTS_H_
+#endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NACL_ENTRY_POINTS_H_
