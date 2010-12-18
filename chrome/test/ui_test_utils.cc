@@ -744,7 +744,7 @@ CommandLine* TestWebSocketServer::CreateWebSocketServerCommandLine() {
   FilePath script_path(src_path);
   script_path = script_path.AppendASCII("third_party");
   script_path = script_path.AppendASCII("WebKit");
-  script_path = script_path.AppendASCII("WebKitTools");
+  script_path = script_path.AppendASCII("Tools");
   script_path = script_path.AppendASCII("Scripts");
   script_path = script_path.AppendASCII("new-run-webkit-websocketserver");
 
