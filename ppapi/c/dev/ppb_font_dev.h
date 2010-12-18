@@ -12,7 +12,7 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_FONT_DEV_INTERFACE "PPB_Font(Dev);0.5"
+#define PPB_FONT_DEV_INTERFACE "PPB_Font(Dev);0.4"
 
 struct PP_Point;
 struct PP_Rect;

@@ -10,7 +10,7 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_CHAR_SET_DEV_INTERFACE "PPB_CharSet(Dev);0.4"
+#define PPB_CHAR_SET_DEV_INTERFACE "PPB_CharSet(Dev);0.3"
 
 // Specifies the error behavior for the character set conversion functions.
 // This will affect two cases: where the input is not encoded correctly, and

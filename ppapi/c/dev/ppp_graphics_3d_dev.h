@@ -7,7 +7,7 @@
 
 #include "ppapi/c/pp_instance.h"
 
-#define PPP_GRAPHICS_3D_DEV_INTERFACE "PPP_Graphics_3D(Dev);0.2"
+#define PPP_GRAPHICS_3D_DEV_INTERFACE "PPP_Graphics_3D(Dev);0.1"
 
 struct PPP_Graphics3D_Dev {
   // Called when the OpenGL ES window is invalidated and needs to be repainted.

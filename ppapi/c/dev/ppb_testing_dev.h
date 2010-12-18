@@ -12,7 +12,7 @@
 
 struct PP_Point;
 
-#define PPB_TESTING_DEV_INTERFACE "PPB_Testing(Dev);0.4"
+#define PPB_TESTING_DEV_INTERFACE "PPB_Testing(Dev);0.3"
 
 // This interface contains functions used for unit testing. Do not use in
 // production code. They are not guaranteed to be available in normal plugin

@@ -8,7 +8,7 @@
 #include "ppapi/c/pp_instance.h"
 
 // Zoom interface should only apply to those full-page "plugin-document".
-#define PPB_ZOOM_DEV_INTERFACE "PPB_Zoom(Dev);0.2"
+#define PPB_ZOOM_DEV_INTERFACE "PPB_Zoom(Dev);0.1"
 
 struct PPB_Zoom_Dev {
   // Informs the browser about the new zoom factor for the plugin (see

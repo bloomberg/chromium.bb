@@ -9,7 +9,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_FIND_DEV_INTERFACE "PPB_Find(Dev);0.3"
+#define PPB_FIND_DEV_INTERFACE "PPB_Find(Dev);0.2"
 
 struct PPB_Find_Dev {
   // Updates the number of find results for the current search term.  If

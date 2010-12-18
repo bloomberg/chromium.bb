@@ -21,8 +21,8 @@
  * handle assigned by the browser to the plugin. It is guaranteed never to be
  * 0, so a plugin can initialize it to 0 to indicate a "NULL handle."
  */
-typedef int32_t PP_Module;
-PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Module, 4);
+typedef int64_t PP_Module;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Module, 8);
 
 /**
  * @}

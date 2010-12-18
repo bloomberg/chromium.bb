@@ -13,7 +13,7 @@
 
 struct PP_CompletionCallback;
 
-#define PPB_CORE_INTERFACE "PPB_Core;0.3"
+#define PPB_CORE_INTERFACE "PPB_Core;0.2"
 
 /**
  * @file

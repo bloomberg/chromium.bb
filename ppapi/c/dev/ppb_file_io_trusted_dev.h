@@ -10,7 +10,7 @@
 
 struct PP_CompletionCallback;
 
-#define PPB_FILEIOTRUSTED_DEV_INTERFACE "PPB_FileIOTrusted(Dev);0.2"
+#define PPB_FILEIOTRUSTED_DEV_INTERFACE "PPB_FileIOTrusted(Dev);0.1"
 
 // Available only to trusted implementations.
 struct PPB_FileIOTrusted_Dev {

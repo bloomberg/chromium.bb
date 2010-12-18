@@ -11,7 +11,7 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_var.h"
 
-#define PPB_CLASS_INTERFACE "PPB_Class;0.4"
+#define PPB_CLASS_INTERFACE "PPB_Class;0.3"
 
 /**
  * @file

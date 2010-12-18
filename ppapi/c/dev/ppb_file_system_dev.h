@@ -13,7 +13,7 @@
 
 struct PP_CompletionCallback;
 
-#define PPB_FILESYSTEM_DEV_INTERFACE "PPB_FileSystem(Dev);0.3"
+#define PPB_FILESYSTEM_DEV_INTERFACE "PPB_FileSystem(Dev);0.2"
 
 struct PPB_FileSystem_Dev {
   // Creates a weak pointer to the filesystem of the given type.

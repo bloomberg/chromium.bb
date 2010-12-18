@@ -13,7 +13,7 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_VAR_INTERFACE "PPB_Var;0.4"
+#define PPB_VAR_INTERFACE "PPB_Var;0.3"
 
 /**
  * @file

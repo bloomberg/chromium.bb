@@ -10,7 +10,7 @@
 #include "ppapi/c/pp_rect.h"
 
 // Interface for the plugin to implement when using a widget.
-#define PPP_WIDGET_DEV_INTERFACE "PPP_Widget(Dev);0.2"
+#define PPP_WIDGET_DEV_INTERFACE "PPP_Widget(Dev);0.1"
 
 struct PPP_Widget_Dev {
   // Informs the instance that the given rectangle needs to be repainted.

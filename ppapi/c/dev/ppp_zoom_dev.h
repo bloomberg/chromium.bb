@@ -9,7 +9,7 @@
 #include "ppapi/c/pp_instance.h"
 
 // Zoom interface should only apply to those full-page "plugin-document".
-#define PPP_ZOOM_DEV_INTERFACE "PPP_Zoom(Dev);0.3"
+#define PPP_ZOOM_DEV_INTERFACE "PPP_Zoom(Dev);0.2"
 
 struct PPP_Zoom_Dev {
   // Instruct plug-in to zoom according to the given factor and whether the zoom

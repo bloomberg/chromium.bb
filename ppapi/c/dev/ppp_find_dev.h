@@ -8,7 +8,7 @@
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 
-#define PPP_FIND_DEV_INTERFACE "PPP_Find(Dev);0.3"
+#define PPP_FIND_DEV_INTERFACE "PPP_Find(Dev);0.2"
 
 struct PPP_Find_Dev {
   // Finds the given UTF-8 text starting at the current selection. The number of

@@ -24,8 +24,8 @@
  * is guaranteed never to be 0, so a plugin can initialize it to 0 to
  * indicate a "NULL handle."
  */
-typedef int32_t PP_Instance;
-PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Instance, 4);
+typedef int64_t PP_Instance;
+PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Instance, 8);
 
 /**
  * @}
