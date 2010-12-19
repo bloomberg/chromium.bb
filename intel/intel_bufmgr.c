@@ -136,12 +136,12 @@ drm_intel_bo_exec(drm_intel_bo *bo, int used,
 int
 drm_intel_bo_mrb_exec(drm_intel_bo *bo, int used,
 		drm_clip_rect_t *cliprects, int num_cliprects, int DR4,
-		int ring_flag)
+		unsigned int rings)
 {
 	if (bo->bufmgr->bo_mrb_exec)
 		return bo->bufmgr->bo_mrb_exec(bo, used,
 					cliprects, num_cliprects, DR4,
-					ring_flag);
+					rings);
 
 	return -ENODEV;
 }

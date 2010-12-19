@@ -177,8 +177,8 @@ struct _drm_intel_bufmgr {
 	 * ring buffer
 	 */
 	int (*bo_mrb_exec) (drm_intel_bo *bo, int used,
-			drm_clip_rect_t *cliprects, int num_cliprects,
-			int DR4, int ring_flag);
+			    drm_clip_rect_t *cliprects, int num_cliprects,
+			    int DR4, unsigned flags);
 
 	/**
 	 * Pin a buffer to the aperture and fix the offset until unpinned

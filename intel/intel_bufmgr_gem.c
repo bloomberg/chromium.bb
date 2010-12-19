@@ -1555,13 +1555,13 @@ drm_intel_gem_bo_exec(drm_intel_bo *bo, int used,
 static int
 drm_intel_gem_bo_mrb_exec2(drm_intel_bo *bo, int used,
 			drm_clip_rect_t *cliprects, int num_cliprects, int DR4,
-			int ring_flag)
+			unsigned int flags)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo->bufmgr;
 	struct drm_i915_gem_execbuffer2 execbuf;
 	int ret, i;
 
-	switch (ring_flag) {
+	switch (flags & 0x7) {
 	default:
 		return -EINVAL;
 	case I915_EXEC_BLT:
@@ -1594,7 +1594,7 @@ drm_intel_gem_bo_mrb_exec2(drm_intel_bo *bo, int used,
 	execbuf.num_cliprects = num_cliprects;
 	execbuf.DR1 = 0;
 	execbuf.DR4 = DR4;
-	execbuf.flags = ring_flag;
+	execbuf.flags = flags;
 	execbuf.rsvd1 = 0;
 	execbuf.rsvd2 = 0;
 

@@ -114,7 +114,7 @@ int drm_intel_bo_exec(drm_intel_bo *bo, int used,
 		      struct drm_clip_rect *cliprects, int num_cliprects, int DR4);
 int drm_intel_bo_mrb_exec(drm_intel_bo *bo, int used,
 			struct drm_clip_rect *cliprects, int num_cliprects, int DR4,
-			int ring_flag);
+			unsigned int flags);
 int drm_intel_bufmgr_check_aperture_space(drm_intel_bo ** bo_array, int count);
 
 int drm_intel_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
