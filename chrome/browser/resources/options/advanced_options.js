@@ -78,16 +78,16 @@ var OptionsPage = options.OptionsPage;
         $('proxiesConfigureButton').onclick = function(event) {
           chrome.send('showNetworkProxySettings');
         };
-        $('downloadLocationBrowseButton').onclick = function(event) {
+        $('downloadLocationChangeButton').onclick = function(event) {
           chrome.send('selectDownloadLocation');
         };
 
         // Remove Windows-style accelerators from the Browse button label.
         // TODO(csilv): Remove this after the accelerator has been removed from
         // the localized strings file, pending removal of old options window.
-        $('downloadLocationBrowseButton').textContent =
+        $('downloadLocationChangeButton').textContent =
             localStrings.getStringWithoutAccelerator(
-                'downloadLocationBrowseButton');
+                'downloadLocationChangeButton');
       } else {
         $('proxiesConfigureButton').onclick = function(event) {
           OptionsPage.showPageByName('proxy');

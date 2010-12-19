@@ -6831,8 +6831,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME" desc="The title of the download location group">
         Downloads
       </message>
+      <!-- TODO(tfarina): Remove this message when the platform-specific dialogs are removed. -->
       <message name="IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_BUTTON" desc="The label of the 'Browse...' button">
         Br&amp;owse...
+      </message>
+      <message name="IDS_OPTIONS_DOWNLOADLOCATION_CHANGE_BUTTON" desc="The label of the 'Change...' button">
+        Change...
       </message>
       <message name="IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_TITLE" desc="In the 'Browse For Folder' dialog on Windows, this is the text that appears above the directory selector.">
         Download location:

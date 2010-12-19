@@ -68,8 +68,8 @@ void AdvancedOptionsHandler::GetLocalizedValues(
           GURL(chrome::kPrivacyLearnMoreURL)).spec());
   localized_strings->SetString("downloadLocationGroupName",
       l10n_util::GetStringUTF16(IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME));
-  localized_strings->SetString("downloadLocationBrowseButton",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_BUTTON));
+  localized_strings->SetString("downloadLocationChangeButton",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_DOWNLOADLOCATION_CHANGE_BUTTON));
   localized_strings->SetString("downloadLocationBrowseTitle",
       l10n_util::GetStringUTF16(IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_TITLE));
   localized_strings->SetString("downloadLocationBrowseWindowTitle",
