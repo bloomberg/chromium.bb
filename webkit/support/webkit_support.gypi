@@ -30,6 +30,8 @@
         'UNIT_TEST'
       ],
       'sources': [
+        'drt_application_mac.h',
+        'drt_application_mac.mm',
         'platform_support.h',
         'platform_support_gtk.cc',
         'platform_support_mac.mm',

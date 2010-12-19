@@ -18,6 +18,7 @@
 #include "grit/webkit_resources.h"
 #include "third_party/WebKit/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
 #include "webkit/glue/plugins/plugin_list.h"
+#import "webkit/support/drt_application_mac.h"
 #import "webkit/tools/test_shell/mac/DumpRenderTreePasteboard.h"
 
 static base::DataPack* g_resource_data_pack = NULL;
@@ -27,6 +28,7 @@ namespace webkit_support {
 static NSAutoreleasePool* autorelease_pool;
 
 void BeforeInitialize(bool unit_test_mode) {
+  [CrDrtApplication sharedApplication];
   // Need to initialize NSAutoreleasePool before InitWebCoreSystemInterface().
   autorelease_pool = [[NSAutoreleasePool alloc] init];
   DCHECK(autorelease_pool);
