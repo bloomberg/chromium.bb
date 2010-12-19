@@ -29,6 +29,7 @@ env.ComponentProgram('sel_universal',
                                 'platform',
                                 'gio',
                                 'google_nacl_imc_c',
+                                'env_cleanser',
                                 ],
                     FRAMEWORKS=['Cocoa'],
                     )

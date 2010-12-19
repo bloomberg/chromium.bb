@@ -9,6 +9,10 @@
 #include <algorithm>
 #include <vector>
 
+#if NACL_OSX
+#include <crt_externs.h>
+#endif
+
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/nacl_string.h"
@@ -16,6 +20,7 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
+#include "native_client/src/trusted/service_runtime/env_cleanser.h"
 
 using std::vector;
 
@@ -139,6 +144,20 @@ bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
 }
 
 
+#ifdef NACL_STANDALONE
+extern "C" char **environ;
+
+static char **GetEnviron() {
+#if NACL_OSX
+  /* Mac dynamic libraries cannot access the environ variable directly. */
+  return *_NSGetEnviron();
+#else
+  return environ;
+#endif
+}
+#endif
+
+
 void SelLdrLauncher::BuildCommandLine(vector<nacl::string>* command) {
   assert(sel_ldr_ != NACL_NO_FILE_PATH);  // Set by InitCommandLine().
 
@@ -151,6 +170,27 @@ void SelLdrLauncher::BuildCommandLine(vector<nacl::string>* command) {
   }
 
   command->insert(command->end(), sel_ldr_argv_.begin(), sel_ldr_argv_.end());
+
+  // Our use of "environ" above fails to link in the "shared" (DLL)
+  // build of Chromium on Windows.  However, we do not use
+  // BuildCommandLine() when integrated into Chromium anyway -- we use
+  // sel_main_chrome.c -- so it is safe to disable this code, which is
+  // largely for debugging.
+  // TODO(mseaborn): Tidy this up so that we do not need a conditional.
+#ifdef NACL_STANDALONE
+  struct NaClEnvCleanser env_cleanser;
+  NaClEnvCleanserCtor(&env_cleanser);
+  if (!NaClEnvCleanserInit(&env_cleanser, GetEnviron())) {
+    NaClLog(LOG_FATAL, "Failed to initialise env cleanser\n");
+  }
+  for (const char* const* env = NaClEnvCleanserEnvironment(&env_cleanser);
+       *env != NULL;
+       ++env) {
+    command->push_back("-E");
+    command->push_back(*env);
+  }
+  NaClEnvCleanserDtor(&env_cleanser);
+#endif
 
   if (application_argv_.size() > 0) {
     // Separator between sel_universal and app args.

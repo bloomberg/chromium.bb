@@ -7,12 +7,33 @@ Import('env')
 
 env.ComponentProgram('env_var_test.nexe', 'env_var_test.c')
 
-# Note that we do not have a golden file for stdout because sel_ldr
-# passes through a few environment variables by default, but we do not
-# know what their values will be.
-node = env.CommandSelLdrTestNacl(
-    'env_var_test.out',
-    command=[env.File('env_var_test.nexe')],
-    osenv='NACL_SRPC_DEBUG=example_contents_of_env_var')
+nodes = []
 
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_env_var_test')
+nodes.append(env.CommandSelLdrTestNacl(
+    'empty_env_var_test.out',
+    command=[env.File('env_var_test.nexe')],
+    stdout_golden=env.File('empty_env.stdout'),
+    osenv='LANG=This_variable_should_not_get_passed_through_by_default'))
+
+# Note that Scons has trouble with arguments containing spaces so we
+# avoid example values with spaces.
+example_env_args = [
+    '-E', 'FOO=contents_of_foo',
+    '-E', 'ANOTHER_VAR=another_environment_variable',
+    # For simplicity, sel_ldr does not interpret the strings
+    # passed via "-E", so it allows duplicate keys, as well as
+    # strings not of the form "KEY=VALUE".  This is in line with
+    # how Unix's execve() behaves.  We demonstrate this here, but
+    # we could change sel_ldr in the future to remove duplicates
+    # or require "KEY=VALUE" strings.
+    '-E', 'DUP=duplicated_key_1',
+    '-E', 'DUP=duplicated_key_2',
+    '-E', 'Technically_we_do_not_need_an_equals_sign_here']
+nodes.append(env.CommandSelLdrTestNacl(
+    'nonempty_env_var_test.out',
+    command=[env.File('env_var_test.nexe')],
+    sel_ldr_flags=example_env_args,
+    stdout_golden=env.File('nonempty_env.stdout'),
+    osenv='LANG=This_variable_should_not_get_passed_through_by_default'))
+
+env.AddNodeToTestSuite(nodes, ['small_tests'], 'run_env_var_test')

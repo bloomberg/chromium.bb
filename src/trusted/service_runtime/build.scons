@@ -70,7 +70,6 @@ env.Command(target=env.File(GENERATED + '/nacl_syscall_handlers.c'),
 #                for easier unit testing
 ldr_inputs = [
     'dyn_array.c',
-    'env_cleanser.c',
     'nacl_all_modules.c',
     'nacl_app_thread.c',
     'nacl_bottom_half.c',
@@ -209,6 +208,8 @@ syscall_gen_flags = '-c -a ${TARGET_ARCHITECTURE} -s ${TARGET_SUBARCH}'
 env.Append(SYSCALL_GEN_FLAGS=syscall_gen_flags)
 
 env.DualLibrary('sel', ldr_inputs)
+
+env.DualLibrary('env_cleanser', ['env_cleanser.c'])
 
 env.ComponentLibrary('container',
                      ['generic_container/container.c',
@@ -420,7 +421,7 @@ if ((not env.Bit('windows') or not env.Bit('coverage_enabled')) and
 
 env_cleanser_test_exe = env.ComponentProgram('env_cleanser_test',
                                              ['env_cleanser_test.c'],
-                                             EXTRA_LIBS=['sel',
+                                             EXTRA_LIBS=['env_cleanser',
                                                          'gio_wrapped_desc',
                                                          ] + DEBUG_LIBS)
 node = env.CommandTest(
@@ -607,8 +608,7 @@ def AddIntegrationTest(test, location):
       command = [env.File(arch_testdata_dir + '/' + test + '.nexe')],
       stdin = location + '.stdin',
       stdout_golden = location + '.stdout',
-      osenv = 'NACL_SRPC_STANDALONE=1'
-      )
+      sel_ldr_flags = ['-E', 'NACL_SRPC_STANDALONE=1'])
   env.AddNodeToTestSuite(node, ['medium_tests'])
 
 if env.Bit('target_x86'):
@@ -621,7 +621,6 @@ if env.Bit('target_x86'):
       log_golden = env.File('testdata/hello_world.log'),
       filter_regex = '"' + RE_HELLO + '|' + RE_IDENT + '"',
       filter_group_only = 'true',
-      osenv = 'NACL_SRPC_STANDALONE=1'
       )
   env.AddNodeToTestSuite(node, ['medium_tests'])
 

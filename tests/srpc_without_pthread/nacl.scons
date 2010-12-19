@@ -13,7 +13,6 @@ node = env.CommandSelLdrTestNacl(
     command=[env.File('basic_srpc.nexe')],
     stdin=env.File('basic_srpc_test.stdin'),
     stdout_golden=env.File('basic_srpc_test.stdout'),
-    osenv='NACL_SRPC_STANDALONE=1',
-    )
+    sel_ldr_flags=['-E', 'NACL_SRPC_STANDALONE=1'])
 
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_basic_srpc_test')

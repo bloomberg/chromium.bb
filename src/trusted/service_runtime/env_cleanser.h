@@ -13,6 +13,10 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_ENV_CLEANSER_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_ENV_CLEANSER_H_
 
+#include "native_client/src/include/nacl_base.h"
+
+EXTERN_C_BEGIN
+
 struct NaClEnvCleanser {
   /* private */
   char const **cleansed_environ;
@@ -38,5 +42,7 @@ char const *const *NaClEnvCleanserEnvironment(struct NaClEnvCleanser *self);
  * Frees memory associated with the NaClEnvCleanser object.
  */
 void NaClEnvCleanserDtor(struct NaClEnvCleanser *self);
+
+EXTERN_C_END
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_ENV_CLEANSER_H_
