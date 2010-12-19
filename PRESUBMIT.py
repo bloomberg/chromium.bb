@@ -29,6 +29,25 @@ _LICENSE_HEADER = (
        "\n"
 )
 
+def _CheckNoInterfacesInBase(input_api, output_api, source_file_filter):
+  """Checks to make sure no files in libbase.a have |@interface|."""
+  pattern = input_api.re.compile(r'@interface')
+  files = []
+  for f in input_api.AffectedSourceFiles(source_file_filter):
+    if (f.LocalPath().find('base/') != -1 and
+        f.LocalPath().find('base/test/') == -1):
+      contents = input_api.ReadFile(f)
+      if pattern.search(contents):
+        files.append(f)
+
+  if len(files):
+    return [ output_api.PresubmitError(
+        'Objective-C interfaces or categories are forbidden in libbase. ' +
+        'See http://groups.google.com/a/chromium.org/group/chromium-dev/' +
+        'browse_thread/thread/efb28c10435987fd',
+        files) ]
+  return []
+
 def _CheckSingletonInHeaders(input_api, output_api, source_file_filter):
   """Checks to make sure no header files have |Singleton<|."""
   pattern = input_api.re.compile(r'Singleton<')
@@ -100,6 +119,8 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckConstNSObject(
       input_api, output_api, source_file_filter=sources))
   results.extend(_CheckSingletonInHeaders(
+      input_api, output_api, source_file_filter=sources))
+  results.extend(_CheckNoInterfacesInBase(
       input_api, output_api, source_file_filter=sources))
   return results
 
