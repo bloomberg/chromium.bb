@@ -343,7 +343,6 @@ void CFUrlRequestUnittestRunner::OnInitialTabLoaded() {
 void CFUrlRequestUnittestRunner::RunMainUIThread() {
   DCHECK(MessageLoop::current());
   DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
-  OleInitialize(NULL);
   MessageLoop::current()->Run();
 }
 
@@ -467,6 +466,14 @@ void FilterDisabledTests() {
 // We need a module since some of the accessibility code that gets pulled
 // in here uses ATL.
 class ObligatoryModule: public CAtlExeModuleT<ObligatoryModule> {
+ public:
+  static HRESULT InitializeCom() {
+    return OleInitialize(NULL);
+  }
+
+  static void UninitializeCom() {
+    OleUninitialize();
+  }
 };
 
 ObligatoryModule g_obligatory_atl_module;
