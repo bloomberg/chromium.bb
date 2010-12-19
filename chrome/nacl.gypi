@@ -71,7 +71,6 @@
         '../third_party/npapi/npapi.gyp:npapi',
         '../webkit/support/webkit_support.gyp:glue',
         '../native_client/src/trusted/plugin/plugin.gyp:npGoogleNaClPluginChrome',
-        '../native_client/src/trusted/plugin/plugin.gyp:ppGoogleNaClPluginChrome',
         '../native_client/src/trusted/service_runtime/service_runtime.gyp:sel',
         '../native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate',
         '../native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
