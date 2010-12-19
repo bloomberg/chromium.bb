@@ -469,7 +469,9 @@
                 },
                 {
                   'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Internet Plug-Ins',
-                  'files': [],
+                  'files': [
+                    '<(PRODUCT_DIR)/ppGoogleNaClPluginChrome.plugin',
+                  ],
                   'conditions': [
                     [ 'branding == "Chrome"', {
                       'files': [
