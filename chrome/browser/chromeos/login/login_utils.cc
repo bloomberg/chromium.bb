@@ -332,14 +332,23 @@ void LoginUtilsImpl::FetchTokens(
 void LoginUtilsImpl::RespectLocalePreference(PrefService* pref) {
   std::string pref_locale = pref->GetString(prefs::kApplicationLocale);
   if (pref_locale.empty()) {
-    // TODO(dilmah): current code will clobber existing setting in case
-    // language preference was set via another device
-    // but still not synced yet.  Profile is not synced at this point yet.
-    pref->SetString(prefs::kApplicationLocale,
-                    g_browser_process->GetApplicationLocale());
-  } else {
-    LanguageSwitchMenu::SwitchLanguage(pref_locale);
+    // Profile synchronization takes time and is not completed at that moment
+    // at first login.  So we initialize locale preference in steps:
+    // (1) first save it to temporary backup;
+    // (2) on next login we assume that synchronization is already completed
+    //     and we may finalize initialization.
+    std::string pref_locale_backup =
+        pref->GetString(prefs::kApplicationLocaleBackup);
+    if (pref_locale_backup.empty()) {
+      pref->SetString(prefs::kApplicationLocaleBackup,
+                      g_browser_process->GetApplicationLocale());
+      return;
+    } else {
+      pref_locale.swap(pref_locale_backup);
+      pref->SetString(prefs::kApplicationLocale, pref_locale);
+    }
   }
+  LanguageSwitchMenu::SwitchLanguage(pref_locale);
 }
 
 void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {

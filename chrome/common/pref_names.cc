@@ -41,7 +41,15 @@ const char kRestoreOnStartup[] = "session.restore_on_startup";
 const char kURLsToRestoreOnStartup[] = "session.urls_to_restore_on_startup";
 
 // The application locale.
+// For OS_CHROMEOS we maintain kApplicationLocale property in both local state
+// and user's profile.  Global property determines locale of login screen,
+// while user's profile determines his personal locale preference.
 const char kApplicationLocale[] = "intl.app_locale";
+#if defined(OS_CHROMEOS)
+// Non-syncable item.  Used for two-step initialization of locale in ChromeOS
+// because synchronization of kApplicationLocale is not instant.
+const char kApplicationLocaleBackup[] = "intl.app_locale_backup";
+#endif
 
 // The default character encoding to assume for a web page in the
 // absence of MIME charset specification

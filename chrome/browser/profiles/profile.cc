@@ -109,6 +109,7 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
   // In the future we may want to maintain kApplicationLocale
   // in user's profile for other platforms as well.
   prefs->RegisterStringPref(prefs::kApplicationLocale, "");
+  prefs->RegisterStringPref(prefs::kApplicationLocaleBackup, "");
 #endif
 }
 

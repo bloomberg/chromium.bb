@@ -25,6 +25,9 @@ extern const char kURLsToRestoreOnStartup[];
 // and user's profile.  Global property determines locale of login screen,
 // while user's profile determines his personal locale preference.
 extern const char kApplicationLocale[];
+#if defined(OS_CHROMEOS)
+extern const char kApplicationLocaleBackup[];
+#endif
 
 extern const char kDefaultCharset[];
 extern const char kAcceptLanguages[];
