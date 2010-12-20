@@ -35,6 +35,7 @@ function getAppsCallback(data) {
 
   // The "Create App Shortcut" menu option.
   $('apps-create-shortcut-command-menu-item').style.display =
+      $('apps-create-shortcut-command-separator').style.display =
       (data.disableCreateAppShortcut ? 'none' : 'inline');
 
   appsMiniview.textContent = '';

@@ -186,6 +186,11 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
   dictionary->SetBoolean("disableAppWindowLaunch", true);
   dictionary->SetBoolean("disableCreateAppShortcut", true);
 #endif
+#if defined(OS_CHROMEOS)
+  // Making shortcut does not make sense on ChromeOS because it does not have
+  // a desktop.
+  dictionary->SetBoolean("disableCreateAppShortcut", true);
+#endif
 }
 
 void AppLauncherHandler::HandleGetApps(const ListValue* args) {
