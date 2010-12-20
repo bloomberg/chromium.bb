@@ -75,6 +75,8 @@ INITIAL_ENV = {
   'BASE_ARM'        : '${BASE}/arm-none-linux-gnueabi',
   'BASE_ARM_INCLUDE': '${BASE_ARM}/arm-none-linux-gnueabi/include',
 
+  'DRY_RUN'              : '0',
+
   'LOG_TO_FILE'          : '1',
   'LOG_FILENAME'         : '${BASE_NACL}/toolchain/hg-log/driver.log',
   'LOG_FILE_SIZE_LIMIT'  : str(20 * 1024 * 1024),
@@ -241,7 +243,9 @@ DriverPatterns = [
   ( '--pnacl-sb-arm',                  "env.set('SANDBOXED_ARCH', 'ARM')"),
   ( '--pnacl-sb-x86-32',               "env.set('SANDBOXED_ARCH', 'X8632')"),
   ( '--pnacl-sb-x86-64',               "env.set('SANDBOXED_ARCH', 'X8664')"),
-]
+  ( '--dry-run',                       "env.set('DRY_RUN', '1')"),
+ ]
+
 
 GCCPatterns = [
   ( '-o(.+)',          "env.set('OUTPUT', $0)"),
@@ -319,7 +323,7 @@ def FixArch(arch):
               'x86-64': 'X8664',
               'arm'   : 'ARM' }
   if arch not in archfix:
-    Log.Fatal("Unrecognized arch '%s'!" % arch)
+    Log.Fatal('Unrecognized arch "%s"!', arch)
   return archfix[arch]
 
 def PrepareFlags():
@@ -445,7 +449,7 @@ def main(argv):
     # commandline. It is also important to not emit spurious messages.
     env.reset()
     ParseArgs(argv[1:], DriverPatterns + CatchAllPattern)
-    RunWithLog("${LLVM_GCC} ${UNMATCHED}")
+    RunWithLog('${LLVM_GCC} ${UNMATCHED}')
     return 0
 
   unmatched = env.get('UNMATCHED').strip()
@@ -467,13 +471,13 @@ def main(argv):
 
   func = globals().get('Incarnation_' + incarnation)
   if not func:
-    Log.Fatal("Unknown incarnation: " + incarnation)
+    Log.Fatal('Unknown incarnation: ' + incarnation)
 
   return func()
 
 def GetArch():
   if not env.has('ARCH'):
-    Log.Fatal("Missing -arch!")
+    Log.Fatal('Missing -arch!')
   arch = env.get('ARCH')
   return arch
 
@@ -481,7 +485,9 @@ def Incarnation_gcc():
   inputs = shell.split(env.get('INPUTS'))
   output = env.get('OUTPUT')
   emit_llvm = env.getbool('EMIT_LLVM')
-  arch = None if emit_llvm else GetArch()
+  arch = None
+  if not emit_llvm:
+    arch = GetArch()
   gcc_mode = env.get('GCC_MODE')
   output_type_map = {
     ('-E', True) : 'pp',
@@ -511,11 +517,15 @@ def Incarnation_bcld():
   inputs = shell.split(env.get('INPUTS'))
   output = env.get('OUTPUT')
   emit_llvm = env.getbool('EMIT_LLVM')
-  output_type = 'pexe' if emit_llvm else 'nexe'
-  arch = None if emit_llvm else GetArch()
+  output_type = 'pexe'
+  if not emit_llvm:
+    output_type = 'nexe'
+  arch = None
+  if not emit_llvm:
+    arch = GetArch()
   for i in inputs:
     if FileType(i) not in ('bc','o','lib'):
-      Log.Fatal("Expecting only bitcode files for bcld invocation")
+      Log.Fatal('Expecting only bitcode files for bcld invocation')
   Compile(arch, inputs, output, output_type)
   return 0
 
@@ -546,8 +556,12 @@ def Incarnation_as():
   inputs = shell.split(env.get('INPUTS'))
   output = env.get('OUTPUT')
   emit_llvm = env.getbool('EMIT_LLVM')
-  output_type = 'bc' if emit_llvm else 'o'
-  arch = None if emit_llvm else GetArch()
+  output_type = 'bc'
+  if not emit_llvm:
+    output_type = 'o'
+  arch = None
+  if not emit_llvm:
+    arch = GetArch()
 
   assert(len(inputs) == 1)
   if output == '':
@@ -559,7 +573,7 @@ def Incarnation_bclink():
   inputs = shell.split(env.get('INPUTS'))
   output = env.get('OUTPUT')
   if output == '':
-    Log.Fatal("Please specify output name")
+    Log.Fatal('Please specify output name')
   RunWithEnv('RUN_LLVM_LINK',
              inputs=shell.join(inputs),
              output=output)
@@ -569,9 +583,9 @@ def Incarnation_bcopt():
   inputs = shell.split(env.get('INPUTS'))
   output = env.get('OUTPUT')
   if len(inputs) != 1:
-    Log.Fatal("Expected exactly one input")
+    Log.Fatal('Expected exactly one input')
   if output == '':
-    Log.Fatal("Please specify output name")
+    Log.Fatal('Please specify output name')
   OptimizeBC(inputs[0], output)
   return 0
 
@@ -589,7 +603,7 @@ def Incarnation_dis():
   elif intype in ('pexe', 'bc'):
     RunWithEnv('RUN_LLVM_DIS', input=inputs[0], output=output)
   else:
-    Log.Fatal("Unknown file type")
+    Log.Fatal('Unknown file type')
   return 0
 
 def Incarnation_illegal():
@@ -614,7 +628,7 @@ def CompileOne(arch, outtype, infile, output = None):
 
   path = ChainMap.GetPath(intype, outtype)
   if path is None:
-    Log.Fatal("Unable to find a compilation path!")
+    Log.Fatal('Unable to find a compilation path!')
   for (cur_type, next_type, cmd, extra) in path:
     if next_type != outtype or output is None:
       # We are creating a temporary file
@@ -637,14 +651,14 @@ def Compile(arch, inputs, output, output_type):
   """Compile and/or link one or more files all the way to output_type"""
 
   if len(inputs) == 0:
-    Log.Fatal("No input files")
+    Log.Fatal('No input files')
 
   # If there are multiple input files and no linking is being done,
   # then there are multiple outputs. Handle this by recursively
   # calling Compile for each one.
   if len(inputs) > 1 and output_type not in ('nexe', 'pexe'):
     if output != '':
-      Log.Fatal("Cannot have -o with -c, -S, or -E and multiple inputs")
+      Log.Fatal('Cannot have -o with -c, -S, or -E and multiple inputs')
 
     for infile in inputs:
       output = DefaultOutputName(infile, output_type)
@@ -652,7 +666,7 @@ def Compile(arch, inputs, output, output_type):
     return
 
   if output == '':
-    Log.Fatal("Output file name must be specified")
+    Log.Fatal('Output file name must be specified')
 
   InitTempNames(inputs, output)
 
@@ -685,7 +699,7 @@ def Compile(arch, inputs, output, output_type):
   elif output_type == 'pexe':
     LinkBC(inputs, output)
   else:
-    Log.Fatal("Unexpected case")
+    Log.Fatal('Unexpected case')
 
   ClearTemps()
 
@@ -974,8 +988,8 @@ def ParseArgs(argv, patternlist):
       action = action.replace('$%d' % g, 'groups[%d]' % g)
     try:
       exec(action)
-    except Exception:
-      Log.Fatal("ParseArgs action failed: %s" % action)
+    except Exception, err:
+      Log.Fatal('ParseArgs action [%s] failed with: %s', action, err)
     i += num_matched
   return
 
@@ -1162,7 +1176,7 @@ class shell:
         inspace = True
       elif s[i] == '\\':
         if not i+1 < len(s):
-          Log.Fatal("Unterminated \\ escape sequence")
+          Log.Fatal('Unterminated \\ escape sequence')
         inspace = False
         i += 1
         buf += s[i]
@@ -1171,7 +1185,7 @@ class shell:
         buf += s[i]
       i += 1
     if inquote:
-      Log.Fatal("Unterminated quote")
+      Log.Fatal('Unterminated quote')
     if not inspace:
       out.append(buf)
     return out
@@ -1223,20 +1237,23 @@ class Log:
   def AddFile(cls, filename, sizelimit):
     file_too_big = os.path.isfile(filename) and \
                    os.path.getsize(filename) > sizelimit
+    mode = 'a'
+    if file_too_big:
+      mode = 'w'
     try:
-        fp = open(filename, 'w' if file_too_big else 'a')
+      fp = open(filename, mode)
     except Exception:
-        return
+      return
     cls.LOG_OUT.append(fp)
 
   @classmethod
   def Banner(cls, argv):
     cls.Info('PNaCl Driver Invoked With:\n' + StringifyCommand(argv))
-    cls.Info('-'*60)
+    cls.Info('-' * 60)
 
   @classmethod
-  def Info(cls, m):
-    cls.LogPrint(m)
+  def Info(cls, m, *args):
+    cls.LogPrint(m, *args)
 
   @classmethod
   def FatalWithResult(cls, ret, m, *args):
@@ -1291,6 +1308,9 @@ def RunWithLog(args):
 
   if isinstance(args, str):
     args = shell.split(env.eval(args))
+
+  if env.getbool('DRY_RUN'):
+    return
 
   Log.Info('\n' + StringifyCommand(args))
   try:
