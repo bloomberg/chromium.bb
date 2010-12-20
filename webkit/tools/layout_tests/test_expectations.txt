@@ -6,6 +6,5 @@
 // until the changes can be landed upstream.
 
 BUGCR64371 WIN RELEASE : http/tests/appcache/online-whitelist.html = TEXT
-BUGPKASTING WIN DEBUG SLOW: fast/encoding/parser-tests.html = TEXT
-BUGPKASTING MAC DEBUG : fast/encoding/parser-tests.html = TIMEOUT
+BUGPKASTING WIN MAC DEBUG SLOW: fast/encoding/parser-tests.html = PASS
 BUGCR67463 MAC : editing/selection/caret-mode-paragraph-keys-navigation.html = TEXT
