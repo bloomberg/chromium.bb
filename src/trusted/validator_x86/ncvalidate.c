@@ -299,7 +299,7 @@ static void InitBadPrefixMask() {
 struct NCValidatorState *NCValidateInit(const uint32_t vbase,
                                         const uint32_t vlimit,
                                         const uint8_t alignment) {
-  struct NCValidatorState *vstate;
+  struct NCValidatorState *vstate = NULL;
 
   dprint(("NCValidateInit(%08x, %08x, %08x)\n", vbase, vlimit, alignment));
   InitBadPrefixMask();
@@ -325,7 +325,12 @@ struct NCValidatorState *NCValidateInit(const uint32_t vbase,
                               Stats_SegFault, Stats_InternalError);
     return vstate;
   } while (0);
-  /* failure */
+  /* Failure. Clean up memory before returning. */
+  if (NULL != vstate) {
+    if (NULL != vstate->kttable) free(vstate->kttable);
+    if (NULL != vstate->vttable) free(vstate->vttable);
+    free(vstate);
+  }
   return NULL;
 }
 
