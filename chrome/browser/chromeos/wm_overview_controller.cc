@@ -687,7 +687,7 @@ void WmOverviewController::UpdateSnapshots() {
     }
 
     // Found next one;
-    browser_listener_index ++;
+    browser_listener_index++;
     browser_listener_index = browser_listener_index % listeners_.size();
     tab_contents_index = -1;
 
@@ -715,8 +715,7 @@ void WmOverviewController::AddAllBrowsers() {
     // Don't add a browser to the list if that type of browser doesn't
     // have snapshots in overview mode.
     if ((*iterator)->type() != Browser::TYPE_NORMAL &&
-        (*iterator)->type() != Browser::TYPE_APP &&
-        (*iterator)->type() != Browser::TYPE_EXTENSION_APP) {
+        (*iterator)->type() != Browser::TYPE_APP) {
       ++iterator;
       continue;
     }

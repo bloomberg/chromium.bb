@@ -10,6 +10,7 @@
 #import "chrome/browser/ui/cocoa/applescript/constants_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/window_applescript.h"
 #include "chrome/test/in_process_browser_test.h"
+#include "gfx/size.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 
@@ -20,8 +21,8 @@ IN_PROC_BROWSER_TEST_F(BrowserCrApplicationAppleScriptTest, Creation) {
   // Create additional |Browser*| objects of different type.
   Profile* profile = browser()->profile();
   Browser* b1 = Browser::CreateForType(Browser::TYPE_POPUP, profile);
-  Browser* b2 = Browser::CreateForApp("", NULL, profile, true);
-  Browser* b3 = Browser::CreateForApp("", NULL, profile, false);
+  Browser* b2 = Browser::CreateForApp("", gfx::Size(), profile, true);
+  Browser* b3 = Browser::CreateForApp("", gfx::Size(), profile, false);
 
   EXPECT_EQ(4U, [[NSApp appleScriptWindows] count]);
   for (WindowAppleScript* window in [NSApp appleScriptWindows]) {
@@ -104,4 +105,3 @@ IN_PROC_BROWSER_TEST_F(BrowserCrApplicationAppleScriptTest, BookmarkFolders) {
   EXPECT_NSEQ(@"Other Bookmarks", [[NSApp otherBookmarks] title]);
   EXPECT_NSEQ(@"Bookmarks Bar", [[NSApp bookmarksBar] title]);
 }
-

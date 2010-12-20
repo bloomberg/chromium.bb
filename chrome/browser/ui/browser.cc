@@ -204,8 +204,7 @@ Browser::Browser(Type type, Profile* profile)
       block_command_execution_(false),
       last_blocked_command_id_(-1),
       last_blocked_command_disposition_(CURRENT_TAB),
-      pending_web_app_action_(NONE),
-      extension_app_(NULL) {
+      pending_web_app_action_(NONE) {
   registrar_.Add(this, NotificationType::SSL_VISIBLE_STATE_CHANGED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UPDATE_DISABLED,
@@ -337,7 +336,7 @@ Browser* Browser::CreateForType(Type type, Profile* profile) {
 
 // static
 Browser* Browser::CreateForApp(const std::string& app_name,
-                               const Extension* extension,
+                               const gfx::Size& window_size,
                                Profile* profile,
                                bool is_panel) {
   Browser::Type type = TYPE_APP;
@@ -346,19 +345,14 @@ Browser* Browser::CreateForApp(const std::string& app_name,
     // TYPE_APP_PANEL is the logical choice.  However, the panel UI
     // is not fully implemented.  See crbug/55943.
     type = TYPE_APP_POPUP;
-  } else if (extension) {
-    type = TYPE_EXTENSION_APP;
   }
 
   Browser* browser = new Browser(type, profile);
   browser->app_name_ = app_name;
-  browser->extension_app_ = extension;
 
-  if (extension) {
-    gfx::Rect initial_pos(extension->launch_width(),
-                          extension->launch_height());
-    if (!initial_pos.IsEmpty())
-      browser->set_override_bounds(initial_pos);
+  if (!window_size.IsEmpty()) {
+    gfx::Rect initial_pos(window_size);
+    browser->set_override_bounds(initial_pos);
   }
 
   browser->CreateBrowserWindow();
@@ -516,15 +510,6 @@ TabContents* Browser::OpenApplication(
 
   switch (container) {
     case extension_misc::LAUNCH_WINDOW:
-      // TODO(skerner): Setting |extension| to NULL is odd.
-      // Not doing so triggers some vestigial extensions app window
-      // behavior that leads to crashes.  This sort of window is no
-      // longer supported, and its remains need to be cleaned up.
-      // crbug/65630 tracks this cleanup.
-      tab = Browser::OpenApplicationWindow(profile, NULL, container,
-                                           extension->GetFullLaunchURL(),
-                                           NULL);
-      break;
     case extension_misc::LAUNCH_PANEL:
       tab = Browser::OpenApplicationWindow(profile, extension, container,
                                            GURL(), NULL);
@@ -562,7 +547,13 @@ TabContents* Browser::OpenApplicationWindow(
   RegisterAppPrefs(app_name);
 
   bool as_panel = extension && (container == extension_misc::LAUNCH_PANEL);
-  Browser* browser = Browser::CreateForApp(app_name, extension, profile,
+
+  gfx::Size window_size;
+  if (extension)
+    window_size.SetSize(extension->launch_width(),
+                        extension->launch_height());
+
+  Browser* browser = Browser::CreateForApp(app_name, window_size, profile,
                                            as_panel);
   if (app_browser)
     *app_browser = browser;
@@ -1191,16 +1182,16 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
   }
 
   if (!hide_ui_for_fullscreen) {
-    if (type() != TYPE_NORMAL && type() != TYPE_EXTENSION_APP)
+    if (type() != TYPE_NORMAL)
       features |= FEATURE_TITLEBAR;
 
-    if (type() == TYPE_NORMAL || type() == TYPE_EXTENSION_APP)
+    if (type() == TYPE_NORMAL)
       features |= FEATURE_TABSTRIP;
 
-    if (type() == TYPE_NORMAL || type() == TYPE_EXTENSION_APP)
+    if (type() == TYPE_NORMAL)
       features |= FEATURE_TOOLBAR;
 
-    if (type() != TYPE_EXTENSION_APP && (type() & Browser::TYPE_APP) == 0)
+    if ((type() & Browser::TYPE_APP) == 0)
       features |= FEATURE_LOCATIONBAR;
   }
   return !!(features & feature);
@@ -2459,8 +2450,7 @@ bool Browser::CanDuplicateContentsAt(int index) {
 
 void Browser::DuplicateContentsAt(int index) {
   TabContentsWrapper* contents = GetTabContentsWrapperAt(index);
-  DCHECK(contents);
-
+  CHECK(contents);
   TabContentsWrapper* contents_dupe = contents->Clone();
   InsertContentsDupe(contents, contents_dupe);
 }
@@ -2545,7 +2535,7 @@ bool Browser::LargeIconsPermitted() const {
   // We don't show the big icons in tabs for TYPE_EXTENSION_APP windows because
   // for those windows, we already have a big icon in the top-left outside any
   // tab. Having big tab icons too looks kinda redonk.
-  return TYPE_EXTENSION_APP != type();
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2929,7 +2919,8 @@ void Browser::ConvertContentsToApplication(TabContents* contents) {
   RegisterAppPrefs(app_name);
 
   DetachContents(contents);
-  Browser* app_browser = Browser::CreateForApp(app_name, NULL, profile_, false);
+  Browser* app_browser = Browser::CreateForApp(
+      app_name, gfx::Size(), profile_, false);
   TabContentsWrapper* wrapper = new TabContentsWrapper(contents);
   app_browser->tabstrip_model()->AppendTabContents(wrapper, true);
 
@@ -4180,7 +4171,7 @@ void Browser::ViewSource(TabContentsWrapper* contents) {
 void Browser::InsertContentsDupe(
     TabContentsWrapper* contents,
     TabContentsWrapper* contents_dupe) {
-  DCHECK(contents);
+  CHECK(contents);
 
   TabContents* new_contents = contents_dupe->tab_contents();
   bool pinned = false;
@@ -4200,9 +4191,9 @@ void Browser::InsertContentsDupe(
   } else {
     Browser* browser = NULL;
     if (type_ & TYPE_APP) {
-      DCHECK((type_ & TYPE_POPUP) == 0);
-      DCHECK(type_ != TYPE_APP_PANEL);
-      browser = Browser::CreateForApp(app_name_, extension_app_, profile_,
+      CHECK((type_ & TYPE_POPUP) == 0);
+      CHECK(type_ != TYPE_APP_PANEL);
+      browser = Browser::CreateForApp(app_name_, gfx::Size(), profile_,
                                       false);
     } else if (type_ == TYPE_POPUP) {
       browser = Browser::CreateForType(TYPE_POPUP, profile_);

@@ -63,32 +63,27 @@ class Browser : public TabHandlerDelegate,
                 public ProfileSyncServiceObserver,
                 public InstantDelegate {
  public:
-  // If you change the values in this enum you'll need to update browser_proxy.
-  // TODO(sky): move into a common place that is referenced by both ui_tests
-  // and chrome.
+  // SessionService::WindowType mirrors these values.  If you add to this
+  // enum, look at SessionService::WindowType to see if it needs to be
+  // updated.
   enum Type {
     TYPE_NORMAL = 1,
     TYPE_POPUP = 2,
     // The old-style app created via "Create application shortcuts".
+    // Shortcuts to a URL and shortcuts to an installed application
+    // both have this type.
     TYPE_APP = 4,
-    // The new-style app created by installing a crx. This kinda needs to be
-    // separate because we require larger icons and an application name that
-    // are found in the crx. If we ever decide to create this kind of app
-    // using some other system (eg some web standard), maybe we should
-    // generalize this name to TYPE_MULTITAB or something.
-    TYPE_EXTENSION_APP = 8,
     TYPE_APP_POPUP = TYPE_APP | TYPE_POPUP,
-    TYPE_DEVTOOLS = TYPE_APP | 16,
+    TYPE_DEVTOOLS = TYPE_APP | 8,
 
     // TODO(skerner): crbug/56776: Until the panel UI is complete on all
     // platforms, apps that set app.launch.container = "panel" have type
     // APP_POPUP. (see Browser::CreateForApp)
     // NOTE: TYPE_APP_PANEL is a superset of TYPE_APP_POPUP.
-    TYPE_APP_PANEL = TYPE_APP | TYPE_POPUP | 32,
+    TYPE_APP_PANEL = TYPE_APP | TYPE_POPUP | 16,
     TYPE_ANY = TYPE_NORMAL |
                TYPE_POPUP |
                TYPE_APP |
-               TYPE_EXTENSION_APP |
                TYPE_DEVTOOLS |
                TYPE_APP_PANEL
   };
@@ -144,19 +139,16 @@ class Browser : public TabHandlerDelegate,
 
   // Like Create, but creates a toolbar-less "app" window for the specified
   // app. |app_name| is required and is used to identify the window to the
-  // shell.  |extension| is optional. If supplied, we create a window with
-  // a bigger icon and title text, that supports tabs.
+  // shell.  If |extension| is set, it is used to determine the size of the
+  // window to open.
   static Browser* CreateForApp(const std::string& app_name,
-                               const Extension* extension,
+                               const gfx::Size& window_size,
                                Profile* profile,
                                bool is_panel);
 
   // Like Create, but creates a tabstrip-less and toolbar-less
   // DevTools "app" window.
   static Browser* CreateForDevTools(Profile* profile);
-
-  // Returns the extension app associated with this window, if any.
-  const Extension* extension_app() { return extension_app_; }
 
   // Set overrides for the initial window bounds and maximized state.
   void set_override_bounds(const gfx::Rect& bounds) {
@@ -1126,9 +1118,6 @@ class Browser : public TabHandlerDelegate,
   // Which deferred action to perform when OnDidGetApplicationInfo is notified
   // from a TabContents. Currently, only one pending action is allowed.
   WebAppAction pending_web_app_action_;
-
-  // The extension app associated with this window, if any.
-  const Extension* extension_app_;
 
   // Tracks the display mode of the tabstrip.
   mutable BooleanPrefMember use_vertical_tabs_;
