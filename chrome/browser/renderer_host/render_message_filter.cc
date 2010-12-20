@@ -65,11 +65,11 @@
 #include "net/url_request/url_request_context.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNotificationPresenter.h"
 #include "webkit/glue/context_menu.h"
-#include "webkit/glue/plugins/plugin_group.h"
-#include "webkit/glue/plugins/plugin_list.h"
-#include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/webcookie.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/plugins/npapi/plugin_group.h"
+#include "webkit/plugins/npapi/plugin_list.h"
+#include "webkit/plugins/npapi/webplugin.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/plugin_selection_policy.h"
@@ -200,7 +200,7 @@ class OpenChannelToPluginCallback : public PluginProcessHost::Client {
     return filter_->off_the_record();
   }
 
-  virtual void SetPluginInfo(const WebPluginInfo& info) {
+  virtual void SetPluginInfo(const webkit::npapi::WebPluginInfo& info) {
     info_ = info;
   }
 
@@ -223,7 +223,7 @@ class OpenChannelToPluginCallback : public PluginProcessHost::Client {
 
   scoped_refptr<RenderMessageFilter> filter_;
   IPC::Message* reply_msg_;
-  WebPluginInfo info_;
+  webkit::npapi::WebPluginInfo info_;
 };
 
 }  // namespace
@@ -684,8 +684,8 @@ void RenderMessageFilter::OnGetPlugins(bool refresh,
 void RenderMessageFilter::OnGetPluginsOnFileThread(
     bool refresh, IPC::Message* reply_msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  std::vector<WebPluginInfo> plugins;
-  NPAPI::PluginList::Singleton()->GetEnabledPlugins(refresh, &plugins);
+  std::vector<webkit::npapi::WebPluginInfo> plugins;
+  webkit::npapi::PluginList::Singleton()->GetEnabledPlugins(refresh, &plugins);
   ViewHostMsg_GetPlugins::WriteReplyParams(reply_msg, plugins);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -711,7 +711,7 @@ void RenderMessageFilter::OnGetPluginInfoOnFileThread(
     const std::string& mime_type,
     IPC::Message* reply_msg) {
   std::string actual_mime_type;
-  WebPluginInfo info;
+  webkit::npapi::WebPluginInfo info;
   bool found = plugin_service_->GetFirstAllowedPluginInfo(url,
                                                           mime_type,
                                                           &info,
@@ -723,18 +723,20 @@ void RenderMessageFilter::OnGetPluginInfoOnFileThread(
           found, info, actual_mime_type, policy_url, reply_msg));
 }
 
-void RenderMessageFilter::OnGotPluginInfo(bool found,
-                                          const WebPluginInfo& info,
-                                          const std::string& actual_mime_type,
-                                          const GURL& policy_url,
-                                          IPC::Message* reply_msg) {
+void RenderMessageFilter::OnGotPluginInfo(
+    bool found,
+    const webkit::npapi::WebPluginInfo& info,
+    const std::string& actual_mime_type,
+    const GURL& policy_url,
+    IPC::Message* reply_msg) {
   ContentSetting setting = CONTENT_SETTING_DEFAULT;
-  WebPluginInfo info_copy = info;
+  webkit::npapi::WebPluginInfo info_copy = info;
   if (found) {
     info_copy.enabled = info_copy.enabled &&
         plugin_service_->PrivatePluginAllowedForURL(info_copy.path, policy_url);
     std::string resource =
-        NPAPI::PluginList::Singleton()->GetPluginGroupIdentifier(info_copy);
+        webkit::npapi::PluginList::Singleton()->GetPluginGroupIdentifier(
+            info_copy);
     setting = content_settings_->GetContentSetting(
         policy_url,
         CONTENT_SETTINGS_TYPE_PLUGINS,

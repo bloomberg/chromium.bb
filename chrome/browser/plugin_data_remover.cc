@@ -10,8 +10,8 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/common/plugin_messages.h"
-#include "webkit/glue/plugins/plugin_group.h"
-#include "webkit/glue/plugins/plugin_list.h"
+#include "webkit/plugins/npapi/plugin_group.h"
+#include "webkit/plugins/npapi/plugin_list.h"
 
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"
@@ -65,7 +65,8 @@ bool PluginDataRemover::OffTheRecord() {
   return false;
 }
 
-void PluginDataRemover::SetPluginInfo(const WebPluginInfo& info) {
+void PluginDataRemover::SetPluginInfo(
+    const webkit::npapi::WebPluginInfo& info) {
 }
 
 void PluginDataRemover::OnChannelOpened(const IPC::ChannelHandle& handle) {
@@ -142,16 +143,16 @@ void PluginDataRemover::SignalDone() {
 bool PluginDataRemover::IsSupported() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   bool allow_wildcard = false;
-  WebPluginInfo plugin;
+  webkit::npapi::WebPluginInfo plugin;
   std::string mime_type;
-  if (!NPAPI::PluginList::Singleton()->GetPluginInfo(GURL(),
-                                                     g_flash_mime_type,
-                                                     allow_wildcard,
-                                                     &plugin,
-                                                     &mime_type))
+  if (!webkit::npapi::PluginList::Singleton()->GetPluginInfo(GURL(),
+                                                             g_flash_mime_type,
+                                                             allow_wildcard,
+                                                             &plugin,
+                                                             &mime_type))
     return false;
   scoped_ptr<Version> version(
-      PluginGroup::CreateVersionFromString(plugin.version));
+      webkit::npapi::PluginGroup::CreateVersionFromString(plugin.version));
   scoped_ptr<Version> min_version(
       Version::GetVersionFromString(g_min_flash_version));
   return plugin.enabled &&

@@ -55,26 +55,26 @@
 #include "third_party/npapi/bindings/npapi_extensions_private.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
-#include "webkit/glue/plugins/plugin_constants_win.h"
-#include "webkit/glue/plugins/plugin_instance.h"
-#include "webkit/glue/plugins/plugin_lib.h"
-#include "webkit/glue/plugins/plugin_list.h"
-#include "webkit/glue/plugins/plugin_host.h"
-#include "webkit/glue/plugins/plugin_stream_url.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/plugins/npapi/plugin_constants_win.h"
+#include "webkit/plugins/npapi/plugin_instance.h"
+#include "webkit/plugins/npapi/plugin_lib.h"
+#include "webkit/plugins/npapi/plugin_list.h"
+#include "webkit/plugins/npapi/plugin_host.h"
+#include "webkit/plugins/npapi/plugin_stream_url.h"
 
 #if defined(ENABLE_GPU)
-#include "webkit/glue/plugins/plugin_constants_win.h"
+#include "webkit/plugins/npapi/plugin_constants_win.h"
 #endif
 
 #if defined(ENABLE_GPU)
 using gpu::Buffer;
 #endif
 
-using webkit_glue::WebPlugin;
-using webkit_glue::WebPluginDelegate;
-using webkit_glue::WebPluginResourceClient;
+using webkit::npapi::WebPlugin;
+using webkit::npapi::WebPluginDelegate;
+using webkit::npapi::WebPluginResourceClient;
 using WebKit::WebCursorInfo;
 using WebKit::WebKeyboardEvent;
 using WebKit::WebInputEvent;
@@ -114,8 +114,8 @@ WebPluginDelegatePepper* WebPluginDelegatePepper::Create(
     const FilePath& filename,
     const std::string& mime_type,
     const base::WeakPtr<RenderView>& render_view) {
-  scoped_refptr<NPAPI::PluginLib> plugin_lib(
-      NPAPI::PluginLib::CreatePluginLib(filename));
+  scoped_refptr<webkit::npapi::PluginLib> plugin_lib(
+      webkit::npapi::PluginLib::CreatePluginLib(filename));
   if (plugin_lib.get() == NULL)
     return NULL;
 
@@ -123,7 +123,7 @@ WebPluginDelegatePepper* WebPluginDelegatePepper::Create(
   if (err != NPERR_NO_ERROR)
     return NULL;
 
-  scoped_refptr<NPAPI::PluginInstance> instance(
+  scoped_refptr<webkit::npapi::PluginInstance> instance(
       plugin_lib->CreateInstance(mime_type));
   return new WebPluginDelegatePepper(render_view,
                                      instance.get());
@@ -544,7 +544,7 @@ string16 WebPluginDelegatePepper::GetSelectedText(bool html) const {
     return string16();
 
   string16 rv = UTF8ToUTF16(static_cast<char*>(text));
-  NPAPI::PluginHost::Singleton()->host_functions()->memfree(text);
+  webkit::npapi::PluginHost::Singleton()->host_functions()->memfree(text);
   return rv;
 }
 
@@ -680,8 +680,8 @@ NPError WebPluginDelegatePepper::Device3DInitializeContext(
 
   // Create an instance of the GPU plugin that is responsible for 3D
   // rendering.
-  nested_delegate_ = new WebPluginDelegateProxy(kGPUPluginMimeType,
-                                                render_view_);
+  nested_delegate_ = new WebPluginDelegateProxy(
+      "application/vnd.google.chrome.gpu-plugin", render_view_);
 
   // TODO(apatrick): should the GPU plugin be attached to plugin_?
   if (nested_delegate_->Initialize(GURL(),
@@ -1270,7 +1270,8 @@ bool WebPluginDelegatePepper::VectorPrintPage(int page_number,
                     size_in_pixels.height(), true, false, true, true);
 #endif  // defined(OS_WIN)
 
-  NPAPI::PluginHost::Singleton()->host_functions()->memfree(pdf_output);
+  webkit::npapi::PluginHost::Singleton()->host_functions()->memfree(
+      pdf_output);
   return ret;
 }
 
@@ -1378,7 +1379,7 @@ void WebPluginDelegatePepper::PrintEnd() {
 
 WebPluginDelegatePepper::WebPluginDelegatePepper(
     const base::WeakPtr<RenderView>& render_view,
-    NPAPI::PluginInstance *instance)
+    webkit::npapi::PluginInstance *instance)
     : render_view_(render_view),
       plugin_(NULL),
       instance_(instance),
@@ -1636,7 +1637,7 @@ void WebPluginDelegatePepper::SendNestedDelegateGeometryToBrowser(
     return;
   }
 
-  webkit_glue::WebPluginGeometry geom;
+  webkit::npapi::WebPluginGeometry geom;
   geom.window = nested_delegate_->GetPluginWindowHandle();
   geom.window_rect = window_rect;
   geom.clip_rect = clip_rect;

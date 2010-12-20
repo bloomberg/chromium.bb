@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/renderer_host/accelerated_surface_container_mac.h"
-#include "webkit/glue/plugins/webplugin.h"
+#include "webkit/plugins/npapi/webplugin.h"
 
 AcceleratedSurfaceContainerManagerMac::AcceleratedSurfaceContainerManagerMac()
     : current_id_(0),
@@ -86,7 +86,7 @@ void AcceleratedSurfaceContainerManagerMac::SetSizeAndTransportDIB(
 }
 
 void AcceleratedSurfaceContainerManagerMac::SetPluginContainerGeometry(
-    const webkit_glue::WebPluginGeometry& move) {
+    const webkit::npapi::WebPluginGeometry& move) {
   AutoLock lock(lock_);
 
   AcceleratedSurfaceContainerMac* container = MapIDToContainer(move.window);

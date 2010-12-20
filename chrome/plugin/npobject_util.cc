@@ -10,7 +10,7 @@
 #include "chrome/plugin/plugin_channel_base.h"
 #include "third_party/npapi/bindings/nphostapi.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
-#include "webkit/glue/plugins/plugin_host.h"
+#include "webkit/plugins/npapi/plugin_host.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebBindings;
@@ -129,7 +129,7 @@ NPNetscapeFuncs *GetHostFunctions() {
 void PatchNPNFunctions() {
   g_plugin_process = true;
   NPNetscapeFuncs* funcs = GetHostFunctions();
-  NPAPI::PluginHost::Singleton()->PatchNPNetscapeFuncs(funcs);
+  webkit::npapi::PluginHost::Singleton()->PatchNPNetscapeFuncs(funcs);
 }
 
 bool IsPluginProcess() {

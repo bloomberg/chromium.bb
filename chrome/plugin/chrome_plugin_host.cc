@@ -25,7 +25,7 @@
 #include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
 #include "webkit/appcache/appcache_interfaces.h"
-#include "webkit/glue/plugins/plugin_instance.h"
+#include "webkit/plugins/npapi/plugin_instance.h"
 #include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/glue/resource_type.h"
 #include "webkit/glue/webkit_glue.h"
@@ -415,8 +415,8 @@ CPBrowsingContext STDCALL CPB_GetBrowsingContextFromNPP(NPP npp) {
   if (!npp)
     return CPERR_INVALID_PARAMETER;
 
-  NPAPI::PluginInstance* instance =
-      static_cast<NPAPI::PluginInstance *>(npp->ndata);
+  webkit::npapi::PluginInstance* instance =
+      static_cast<webkit::npapi::PluginInstance *>(npp->ndata);
   WebPluginProxy* webplugin =
       static_cast<WebPluginProxy*>(instance->webplugin());
 

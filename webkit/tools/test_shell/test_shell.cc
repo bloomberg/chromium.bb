@@ -11,9 +11,6 @@
 #include "base/debug_on_start.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#if defined(OS_MACOSX)
-#include "base/mac_util.h"
-#endif
 #include "base/md5.h"
 #include "base/message_loop.h"
 #include "base/metrics/stats_table.h"
@@ -34,9 +31,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDeviceOrientationClientMock.h"
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
-#include "third_party/WebKit/WebKit/chromium/public/WebGeolocationClientMock.h"
-#endif
 #include "third_party/WebKit/WebKit/chromium/public/WebSpeechInputControllerMock.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
@@ -49,10 +43,10 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/glue_serialize.h"
-#include "webkit/glue/plugins/plugin_list.h"
-#include "webkit/glue/plugins/webplugininfo.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
+#include "webkit/plugins/npapi/plugin_list.h"
+#include "webkit/plugins/npapi/webplugininfo.h"
 #include "webkit/tools/test_shell/accessibility_controller.h"
 #include "webkit/tools/test_shell/notification_presenter.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
@@ -62,6 +56,14 @@
 #include "webkit/tools/test_shell/test_shell_request_context.h"
 #include "webkit/tools/test_shell/test_shell_switches.h"
 #include "webkit/tools/test_shell/test_webview_delegate.h"
+
+#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
+#include "third_party/WebKit/WebKit/chromium/public/WebGeolocationClientMock.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "base/mac_util.h"
+#endif
 
 using WebKit::WebCanvas;
 using WebKit::WebFrame;
@@ -899,8 +901,9 @@ bool GetFontTable(int fd, uint32_t table, uint8_t* output,
 }
 #endif
 
-void GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins) {
-  NPAPI::PluginList::Singleton()->GetPlugins(refresh, plugins);
+void GetPlugins(bool refresh,
+                std::vector<webkit::npapi::WebPluginInfo>* plugins) {
+  webkit::npapi::PluginList::Singleton()->GetPlugins(refresh, plugins);
   // Don't load the forked TestNetscapePlugIn in the chromium code, use
   // the copy in webkit.org's repository instead.
   const FilePath::StringType kPluginBlackList[] = {
@@ -909,10 +912,10 @@ void GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins) {
     FILE_PATH_LITERAL("libnpapi_layout_test_plugin.so"),
   };
   for (int i = plugins->size() - 1; i >= 0; --i) {
-    WebPluginInfo plugin_info = plugins->at(i);
+    webkit::npapi::WebPluginInfo plugin_info = plugins->at(i);
     for (size_t j = 0; j < arraysize(kPluginBlackList); ++j) {
       if (plugin_info.path.BaseName() == FilePath(kPluginBlackList[j])) {
-        NPAPI::PluginList::Singleton()->DisablePlugin(plugin_info.path);
+        webkit::npapi::PluginList::Singleton()->DisablePlugin(plugin_info.path);
         plugins->erase(plugins->begin() + i);
       }
     }

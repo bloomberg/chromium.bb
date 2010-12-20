@@ -25,6 +25,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/plugins/npapi/webplugininfo.h"
 
 #define OPEN_ELEMENT_FOR_SCOPE(name) ScopedElement scoped_element(this, name)
 
@@ -237,12 +238,13 @@ void MetricsLog::WriteRealtimeStabilityAttributes(PrefService* pref) {
 }
 
 void MetricsLog::WritePluginList(
-         const std::vector<WebPluginInfo>& plugin_list) {
+    const std::vector<webkit::npapi::WebPluginInfo>& plugin_list) {
   DCHECK(!locked_);
 
   OPEN_ELEMENT_FOR_SCOPE("plugins");
 
-  for (std::vector<WebPluginInfo>::const_iterator iter = plugin_list.begin();
+  for (std::vector<webkit::npapi::WebPluginInfo>::const_iterator iter =
+           plugin_list.begin();
        iter != plugin_list.end(); ++iter) {
     OPEN_ELEMENT_FOR_SCOPE("plugin");
 
@@ -262,7 +264,7 @@ void MetricsLog::WriteInstallElement() {
 }
 
 void MetricsLog::RecordEnvironment(
-         const std::vector<WebPluginInfo>& plugin_list,
+         const std::vector<webkit::npapi::WebPluginInfo>& plugin_list,
          const DictionaryValue* profile_metrics) {
   DCHECK(!locked_);
 

@@ -19,7 +19,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/chrome_paths.h"
-#include "webkit/glue/plugins/plugin_list.h"
+#include "webkit/plugins/npapi/plugin_list.h"
 
 using base::TimeDelta;
 
@@ -114,7 +114,7 @@ void ChromePluginLib::RegisterPluginsWithNPAPI() {
   FilePath path;
   // Register Gears, if available.
   if (PathService::Get(chrome::FILE_GEARS_PLUGIN, &path))
-    NPAPI::PluginList::Singleton()->AddExtraPluginPath(path);
+    webkit::npapi::PluginList::Singleton()->AddExtraPluginPath(path);
 }
 
 static void LogPluginLoadTime(const TimeDelta &time) {

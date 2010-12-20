@@ -23,13 +23,13 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
-#include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/plugins/plugin_list.h"
-#include "webkit/glue/plugins/webplugin_delegate_impl.h"
 #include "webkit/glue/window_open_disposition.h"
+#include "webkit/plugins/npapi/webplugin.h"
+#include "webkit/plugins/npapi/plugin_list.h"
+#include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 #include "webkit/tools/test_shell/drag_delegate.h"
 #include "webkit/tools/test_shell/drop_delegate.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
@@ -133,14 +133,14 @@ void TestWebViewDelegate::runModal() {
 
 // WebPluginPageDelegate ------------------------------------------------------
 
-webkit_glue::WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
+webkit::npapi::WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
     const FilePath& path,
     const std::string& mime_type) {
   HWND hwnd = shell_->webViewHost()->view_handle();
   if (!hwnd)
     return NULL;
 
-  return WebPluginDelegateImpl::Create(path, mime_type, hwnd);
+  return webkit::npapi::WebPluginDelegateImpl::Create(path, mime_type, hwnd);
 }
 
 void TestWebViewDelegate::CreatedPluginWindow(
@@ -154,7 +154,7 @@ void TestWebViewDelegate::WillDestroyPluginWindow(
 }
 
 void TestWebViewDelegate::DidMovePlugin(
-    const webkit_glue::WebPluginGeometry& move) {
+    const webkit::npapi::WebPluginGeometry& move) {
   unsigned long flags = 0;
 
   if (move.rects_valid) {

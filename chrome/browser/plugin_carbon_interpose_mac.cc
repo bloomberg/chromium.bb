@@ -8,7 +8,7 @@
 
 #include "chrome/plugin/plugin_interpose_util_mac.h"
 #include "gfx/rect.h"
-#include "webkit/glue/plugins/carbon_plugin_window_tracker_mac.h"
+#include "webkit/plugins/npapi/carbon_plugin_window_tracker_mac.h"
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
@@ -61,16 +61,16 @@ static void OnPluginWindowSelected(WindowRef window) {
 
 static Boolean ChromePluginIsWindowActive(WindowRef window) {
   const OpaquePluginRef delegate =
-      CarbonPluginWindowTracker::SharedInstance()->GetDelegateForDummyWindow(
-          window);
+      webkit::npapi::CarbonPluginWindowTracker::SharedInstance()->
+          GetDelegateForDummyWindow(window);
   return delegate ? IsContainingWindowActive(delegate)
                   : IsWindowActive(window);
 }
 
 static Boolean ChromePluginIsWindowHilited(WindowRef window) {
   const OpaquePluginRef delegate =
-      CarbonPluginWindowTracker::SharedInstance()->GetDelegateForDummyWindow(
-          window);
+      webkit::npapi::CarbonPluginWindowTracker::SharedInstance()->
+          GetDelegateForDummyWindow(window);
   return delegate ? IsContainingWindowActive(delegate)
                   : IsWindowHilited(window);
 }
@@ -126,8 +126,8 @@ static void ChromePluginDisposeDialog(DialogRef dialog) {
 
 static WindowPartCode ChromePluginFindWindow(Point point, WindowRef* window) {
   OpaquePluginRef delegate = mac_plugin_interposing::GetActiveDelegate();
-  CarbonPluginWindowTracker* tracker =
-      CarbonPluginWindowTracker::SharedInstance();
+  webkit::npapi::CarbonPluginWindowTracker* tracker =
+      webkit::npapi::CarbonPluginWindowTracker::SharedInstance();
   WindowRef plugin_window = tracker->GetDummyWindowForDelegate(delegate);
   if (plugin_window) {
     // If plugin_window is non-NULL, then we are in the middle of routing an
