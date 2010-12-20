@@ -402,7 +402,7 @@
         '../../glue/multipart_response_delegate_unittest.cc',
         '../../glue/plugins/plugin_group_unittest.cc',
         '../../glue/plugins/plugin_lib_unittest.cc',
-        '../../glue/plugins/webplugin_impl_unittest.cc',
+        '../../glue/plugins/url_request_info_unittest.cc',
         '../../glue/plugins/webplugin_impl_unittest.cc',
         '../../glue/regular_expression_unittest.cc',
         '../../glue/resource_fetcher_unittest.cc',
