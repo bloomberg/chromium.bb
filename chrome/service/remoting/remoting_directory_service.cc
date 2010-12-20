@@ -7,6 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
+#include "chrome/common/guid.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/service/net/service_url_request_context.h"
 #include "chrome/service/remoting/remoting_directory_service.h"
@@ -31,15 +32,14 @@ void RemotingDirectoryService::AddHost(const std::string& token) {
   host_key_pair_.reset(new remoting::HostKeyPair());
   host_key_pair_->Generate();
 
-  // Use the host address as ID and host name.
-  std::string hostname = net::GetHostName();
-  host_id_ = hostname;
-  host_name_ = hostname;
+  // Get a host name and generate a UUID for the request.
+  host_id_ = guid::GenerateGUID();
+  host_name_ = net::GetHostName();
 
   // Prepare the parameters for the request.
   DictionaryValue data;
-  data.SetString("hostId", hostname);
-  data.SetString("hostName", hostname);
+  data.SetString("hostId", host_id_);
+  data.SetString("hostName", host_name_);
   data.SetString("publicKey", host_key_pair_->GetPublicKey());
 
   // Generate the final json query.
