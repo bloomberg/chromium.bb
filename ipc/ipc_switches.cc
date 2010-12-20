@@ -11,6 +11,10 @@ namespace switches {
 // Can't find the switch you are looking for? try looking in
 // base/base_switches.cc instead.
 
+// On POSIX only: use FIFO for IPC channels so that "unrelated" process
+// can connect to a channel, provided it knows its name. For debugging purposes.
+const char kIPCUseFIFO[]                    = "ipc-use-fifo";
+
 // The value of this switch tells the child process which
 // IPC channel the browser expects to use to communicate with it.
 const char kProcessChannelID[]              = "channel";

@@ -12,6 +12,7 @@
 
 namespace switches {
 
+extern const char kIPCUseFIFO[];
 extern const char kProcessChannelID[];
 extern const char kDebugChildren[];
 
