@@ -55,19 +55,17 @@ void SetUIMode() {
 bool WasLaunchedAsLoginItem() {
   ProcessSerialNumber psn = { 0, kCurrentProcess };
 
-  scoped_nsobject<const NSDictionary> process_info(
-      reinterpret_cast<const NSDictionary*>(
-          ProcessInformationCopyDictionary(&psn,
-              kProcessDictionaryIncludeAllInformationMask)));
+  scoped_nsobject<NSDictionary> process_info(
+      mac_util::CFToNSCast(ProcessInformationCopyDictionary(&psn,
+                               kProcessDictionaryIncludeAllInformationMask)));
 
   long long temp = [[process_info objectForKey:@"ParentPSN"] longLongValue];
   ProcessSerialNumber parent_psn =
       { (temp >> 32) & 0x00000000FFFFFFFFLL, temp & 0x00000000FFFFFFFFLL };
 
-  scoped_nsobject<const NSDictionary> parent_info(
-      reinterpret_cast<const NSDictionary*>(
-          ProcessInformationCopyDictionary(&parent_psn,
-              kProcessDictionaryIncludeAllInformationMask)));
+  scoped_nsobject<NSDictionary> parent_info(
+      mac_util::CFToNSCast(ProcessInformationCopyDictionary(&parent_psn,
+                               kProcessDictionaryIncludeAllInformationMask)));
 
   // Check that creator process code is that of loginwindow.
   BOOL result =
@@ -88,9 +86,8 @@ LSSharedFileListItemRef GetLoginItemForApp() {
     return NULL;
   }
 
-  scoped_nsobject<const NSArray> login_items_array(
-      reinterpret_cast<const NSArray*>(
-        LSSharedFileListCopySnapshot(login_items, NULL)));
+  scoped_nsobject<NSArray> login_items_array(
+      mac_util::CFToNSCast(LSSharedFileListCopySnapshot(login_items, NULL)));
 
   NSURL* url = [NSURL fileURLWithPath:[[NSBundle mainBundle] bundlePath]];
 
@@ -563,7 +560,7 @@ void SetProcessName(CFStringRef process_name) {
     if (!ls_set_application_information_item_func)
       LOG(ERROR) << "Could not find _LSSetApplicationInformationItem";
 
-    const CFStringRef* key_pointer = reinterpret_cast<const CFStringRef*>(
+    CFStringRef* key_pointer = reinterpret_cast<CFStringRef*>(
         CFBundleGetDataPointerForName(launch_services_bundle,
                                       CFSTR("_kLSDisplayNameKey")));
     ls_display_name_key = key_pointer ? *key_pointer : NULL;
