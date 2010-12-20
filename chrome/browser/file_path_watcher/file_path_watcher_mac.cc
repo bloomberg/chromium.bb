@@ -220,7 +220,8 @@ void FilePathWatcherImpl::UpdateEventStream(FSEventStreamEventId start_event) {
 void FilePathWatcherImpl::DestroyEventStream() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FSEventStreamStop(fsevent_stream_);
-  FSEventStreamInvalidate(fsevent_stream_);
+  FSEventStreamUnscheduleFromRunLoop(fsevent_stream_, CFRunLoopGetCurrent(),
+                                     kCFRunLoopDefaultMode);
   FSEventStreamRelease(fsevent_stream_);
   fsevent_stream_ = NULL;
 }
