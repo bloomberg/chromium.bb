@@ -204,6 +204,12 @@
    obj:/lib*/ld-2.*.so
 }
 {
+   libc_dynamiclinker_bar_2
+   Memcheck:Jump
+   obj:*
+   obj:/lib*/ld-2.*.so
+}
+{
    FIXME epoll uninitialized data 1
    Memcheck:Param
    epoll_ctl(epfd)
@@ -3478,4 +3484,13 @@
    fun:_Znw*
    fun:_ZN3net12CertVerifier6VerifyEPNS_15X509CertificateERKSsiPNS_16CertVerifyResultEP14CallbackRunnerI6Tuple1IiEEPPv
    fun:_ZN3net25SingleRequestCertVerifier6VerifyEPNS_15X509CertificateERKSsiPNS_16CertVerifyResultEP14CallbackRunnerI6Tuple1IiEE
+}
+{
+   bug_67553
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZNSt3mapISs13scoped_refptrIK9ExtensionESt4lessISsESaISt4pairIKSsS3_EEEixERS7_
+   fun:_ZN16ExtensionInfoMap12AddExtensionEPK9Extension
+   fun:_Z16DispatchToMethodI16ExtensionInfoMapMS0_FvPK9ExtensionES3_EvPT_T0_RK6Tuple1IT1_E
 }
