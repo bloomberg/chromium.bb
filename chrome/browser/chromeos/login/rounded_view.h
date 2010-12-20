@@ -85,11 +85,11 @@ SkPath RoundedView<C>::GetClipPath() const {
 
 template <typename C>
 SkRect RoundedView<C>::GetViewRect() const {
-  gfx::Rect bounds = RoundedView<C>::GetLocalBounds(false);
   SkRect view_rect;
-  view_rect.iset(bounds.x(), bounds.y(),
-                 bounds.x() + bounds.width(),
-                 bounds.y() + bounds.height());
+  view_rect.iset(this->x(),
+                 this->y(),
+                 this->x() + this->width(),
+                 this->y() + this->height());
   return view_rect;
 }
 

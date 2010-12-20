@@ -41,13 +41,13 @@ class HalfRoundedView : public RoundedView<C> {
       return RoundedView<C>::GetClipPath();
     } else {
       SkPath path;
-      gfx::Rect bounds = C::GetLocalBounds(false);
-      bounds.Inset(kSmallShapeFrameWidth, kSmallShapeFrameWidth,
+      gfx::Rect frame_bounds = this->bounds();
+      frame_bounds.Inset(kSmallShapeFrameWidth, kSmallShapeFrameWidth,
                    kSmallShapeFrameWidth, kSmallShapeFrameWidth);
-      path.addRect(SkIntToScalar(bounds.x()),
-                   SkIntToScalar(bounds.y()),
-                   SkIntToScalar(bounds.x() + bounds.width()),
-                   SkIntToScalar(bounds.y() + bounds.height()));
+      path.addRect(SkIntToScalar(frame_bounds.x()),
+                   SkIntToScalar(frame_bounds.y()),
+                   SkIntToScalar(frame_bounds.x() + frame_bounds.width()),
+                   SkIntToScalar(frame_bounds.y() + frame_bounds.height()));
       return path;
     }
   }
@@ -57,13 +57,13 @@ class HalfRoundedView : public RoundedView<C> {
   }
 
   virtual SkRect GetViewRect() const {
-    gfx::Rect bounds = C::GetLocalBounds(false);
     SkRect view_rect;
     // The rectangle will be intersected with the bounds, so the correct half
     // of the round rectangle will be obtained.
-    view_rect.iset(bounds.x(), bounds.y() - bounds.width(),
-                   bounds.x() + bounds.width(),
-                   bounds.y() + bounds.height());
+    view_rect.iset(this->x(),
+                   this->y() - this->height(),
+                   this->x() + this->width(),
+                   this->y() + this->height());
     return view_rect;
   }
 
@@ -81,7 +81,6 @@ void UsernameView::Paint(gfx::Canvas* canvas) {
   gfx::Rect bounds = GetLocalBounds(false);
   if (!text_image_.get())
     PaintUsername(bounds);
-
   DCHECK(bounds.size() ==
          gfx::Size(text_image_->width(), text_image_->height()));
 
