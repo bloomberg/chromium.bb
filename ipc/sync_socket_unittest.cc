@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/sync_socket.h"
-
 #include <stdio.h>
 #include <string>
 #include <sstream>
@@ -14,6 +12,7 @@
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX)
 #include "base/platform_thread.h"
 #include "base/process_util.h"
+#include "base/sync_socket.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message_utils.h"
