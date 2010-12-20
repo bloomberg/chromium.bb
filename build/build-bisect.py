@@ -138,9 +138,21 @@ def TryRevision(rev, profile, args):
 
   # Download the file.
   download_url = BUILD_BASE_URL + (BUILD_ARCHIVE_URL % rev) + BUILD_ZIP_NAME
+  def _Reporthook(blocknum, blocksize, totalsize):
+    size = blocknum * blocksize
+    if totalsize == -1:  # Total size not known.
+      progress = "Received %d bytes" % size
+    else:
+      size = min(totalsize, size)
+      progress = "Received %d of %d bytes, %.2f%%" % (
+          size, totalsize, 100.0 * size / totalsize)
+    # Send a \r to let all progress messages use just one line of output.
+    sys.stdout.write("\r" + progress)
+    sys.stdout.flush()
   try:
     print 'Fetching ' + download_url
-    urllib.urlretrieve(download_url, BUILD_ZIP_NAME)
+    urllib.urlretrieve(download_url, BUILD_ZIP_NAME, _Reporthook)
+    print
   except Exception, e:
     print('Could not retrieve the download. Sorry.')
     sys.exit(-1)
