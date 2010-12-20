@@ -13,13 +13,15 @@
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/module_impl.h"
 
+namespace pp {
+
 namespace {
 
-DeviceFuncs<PPB_Font_Dev> font_f(PPB_FONT_DEV_INTERFACE);
+template <> const char* interface_name<PPB_Font_Dev>() {
+  return PPB_FONT_DEV_INTERFACE;
+}
 
 }  // namespace
-
-namespace pp {
 
 // FontDescription_Dev ---------------------------------------------------------
 
@@ -99,29 +101,25 @@ Font_Dev::Font_Dev(PP_Resource resource) : Resource(resource) {
 }
 
 Font_Dev::Font_Dev(const FontDescription_Dev& description) {
-  if (!font_f)
+  if (!has_interface<PPB_Font_Dev>())
     return;
-  PassRefFromConstructor(font_f->Create(
+  PassRefFromConstructor(get_interface<PPB_Font_Dev>()->Create(
       Module::Get()->pp_module(), &description.pp_font_description()));
 }
 
 Font_Dev::Font_Dev(const Font_Dev& other) : Resource(other) {
 }
 
-Font_Dev& Font_Dev::operator=(const Font_Dev& other) {
-  Resource::operator=(other);
-  return *this;
-}
 
 bool Font_Dev::Describe(FontDescription_Dev* description,
                         PP_FontMetrics_Dev* metrics) const {
-  if (!font_f)
+  if (!has_interface<PPB_Font_Dev>())
     return false;
 
   // Be careful with ownership of the |face| string. It will come back with
   // a ref of 1, which we want to assign to the |face_| member of the C++ class.
-  if (!font_f->Describe(pp_resource(), &description->pp_font_description_,
-                        metrics))
+  if (!get_interface<PPB_Font_Dev>()->Describe(
+      pp_resource(), &description->pp_font_description_, metrics))
     return false;
   description->face_ = Var(Var::PassRef(),
                            description->pp_font_description_.face);
@@ -135,38 +133,40 @@ bool Font_Dev::DrawTextAt(ImageData* dest,
                           uint32_t color,
                           const Rect& clip,
                           bool image_data_is_opaque) const {
-  if (!font_f)
+  if (!has_interface<PPB_Font_Dev>())
     return false;
-  return PPBoolToBool(font_f->DrawTextAt(pp_resource(),
-                                         dest->pp_resource(),
-                                         &text.pp_text_run(),
-                                         &position.pp_point(),
-                                         color,
-                                         &clip.pp_rect(),
-                                         BoolToPPBool(image_data_is_opaque)));
+  return PPBoolToBool(get_interface<PPB_Font_Dev>()->DrawTextAt(
+      pp_resource(),
+      dest->pp_resource(),
+      &text.pp_text_run(),
+      &position.pp_point(),
+      color,
+      &clip.pp_rect(),
+      BoolToPPBool(image_data_is_opaque)));
 }
 
 int32_t Font_Dev::MeasureText(const TextRun_Dev& text) const {
-  if (!font_f)
+  if (!has_interface<PPB_Font_Dev>())
     return -1;
-  return font_f->MeasureText(pp_resource(), &text.pp_text_run());
+  return get_interface<PPB_Font_Dev>()->MeasureText(pp_resource(),
+                                                    &text.pp_text_run());
 }
 
 uint32_t Font_Dev::CharacterOffsetForPixel(const TextRun_Dev& text,
                                            int32_t pixel_position) const {
-  if (!font_f)
+  if (!has_interface<PPB_Font_Dev>())
     return 0;
-  return font_f->CharacterOffsetForPixel(pp_resource(), &text.pp_text_run(),
-                                         pixel_position);
+  return get_interface<PPB_Font_Dev>()->CharacterOffsetForPixel(
+      pp_resource(), &text.pp_text_run(), pixel_position);
 
 }
 
 int32_t Font_Dev::PixelOffsetForCharacter(const TextRun_Dev& text,
                                           uint32_t char_offset) const {
-  if (!font_f)
+  if (!has_interface<PPB_Font_Dev>())
     return 0;
-  return font_f->PixelOffsetForCharacter(pp_resource(), &text.pp_text_run(),
-                                         char_offset);
+  return get_interface<PPB_Font_Dev>()->PixelOffsetForCharacter(
+      pp_resource(), &text.pp_text_run(), char_offset);
 }
 
 bool Font_Dev::DrawSimpleText(ImageData* dest,

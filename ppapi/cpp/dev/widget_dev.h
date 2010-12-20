@@ -26,8 +26,6 @@ class Widget_Dev : public Resource {
   explicit Widget_Dev(PP_Resource resource);
   Widget_Dev(const Widget_Dev& other);
 
-  Widget_Dev& operator=(const Widget_Dev& other);
-
   // PPB_Widget methods:
   bool Paint(const Rect& rect, ImageData* image);
   bool HandleEvent(const PP_InputEvent& event);

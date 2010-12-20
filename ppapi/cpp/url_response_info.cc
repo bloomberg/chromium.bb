@@ -8,14 +8,15 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 
+namespace pp {
+
 namespace {
 
-DeviceFuncs<PPB_URLResponseInfo> url_response_info_f(
-    PPB_URLRESPONSEINFO_INTERFACE);
+template <> const char* interface_name<PPB_URLResponseInfo>() {
+  return PPB_URLRESPONSEINFO_INTERFACE;
+}
 
 }  // namespace
-
-namespace pp {
 
 URLResponseInfo::URLResponseInfo(const URLResponseInfo& other)
     : Resource(other) {
@@ -26,17 +27,19 @@ URLResponseInfo::URLResponseInfo(PassRef, PP_Resource resource) {
 }
 
 Var URLResponseInfo::GetProperty(PP_URLResponseProperty property) const {
-  if (!url_response_info_f)
+  if (!has_interface<PPB_URLResponseInfo>())
     return Var();
   return Var(Var::PassRef(),
-             url_response_info_f->GetProperty(pp_resource(), property));
+             get_interface<PPB_URLResponseInfo>()->GetProperty(pp_resource(),
+                                                               property));
 }
 
 FileRef_Dev URLResponseInfo::GetBodyAsFileRef() const {
-  if (!url_response_info_f)
+  if (!has_interface<PPB_URLResponseInfo>())
     return FileRef_Dev();
   return FileRef_Dev(FileRef_Dev::PassRef(),
-                     url_response_info_f->GetBodyAsFileRef(pp_resource()));
+                     get_interface<PPB_URLResponseInfo>()->GetBodyAsFileRef(
+                         pp_resource()));
 }
 
 }  // namespace pp

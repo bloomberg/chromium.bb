@@ -7,9 +7,15 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 
-DeviceFuncs<PPB_AudioConfig_Dev> audio_cfg_f(PPB_AUDIO_CONFIG_DEV_INTERFACE);
-
 namespace pp {
+
+namespace {
+
+template <> const char* interface_name<PPB_AudioConfig_Dev>() {
+  return PPB_AUDIO_CONFIG_DEV_INTERFACE;
+}
+
+}  // namespace
 
 AudioConfig_Dev::AudioConfig_Dev()
     : sample_rate_(PP_AUDIOSAMPLERATE_NONE),
@@ -20,19 +26,20 @@ AudioConfig_Dev::AudioConfig_Dev(PP_AudioSampleRate_Dev sample_rate,
                                  uint32_t sample_frame_count)
     : sample_rate_(sample_rate),
       sample_frame_count_(sample_frame_count) {
-  if (audio_cfg_f) {
-    PassRefFromConstructor(audio_cfg_f->CreateStereo16Bit(
-        Module::Get()->pp_module(), sample_rate,
-        sample_frame_count));
+  if (has_interface<PPB_AudioConfig_Dev>()) {
+    PassRefFromConstructor(
+        get_interface<PPB_AudioConfig_Dev>()->CreateStereo16Bit(
+        Module::Get()->pp_module(), sample_rate, sample_frame_count));
   }
 }
 
 // static
 uint32_t AudioConfig_Dev::RecommendSampleFrameCount(
     uint32_t requested_sample_frame_count) {
-  if (!audio_cfg_f)
+  if (!has_interface<PPB_AudioConfig_Dev>())
     return 0;
-  return audio_cfg_f->RecommendSampleFrameCount(requested_sample_frame_count);
+  return get_interface<PPB_AudioConfig_Dev>()->
+      RecommendSampleFrameCount(requested_sample_frame_count);
 }
 
 }  // namespace pp

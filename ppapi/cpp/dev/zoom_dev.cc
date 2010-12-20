@@ -31,7 +31,9 @@ const PPP_Zoom_Dev ppp_zoom = {
   &Zoom
 };
 
-DeviceFuncs<PPB_Zoom_Dev> ppb_zoom_f(PPB_ZOOM_DEV_INTERFACE);
+template <> const char* interface_name<PPB_Zoom_Dev>() {
+  return PPB_ZOOM_DEV_INTERFACE;
+}
 
 }  // namespace
 
@@ -45,15 +47,16 @@ Zoom_Dev::~Zoom_Dev() {
 }
 
 void Zoom_Dev::ZoomChanged(double factor) {
-  if (ppb_zoom_f)
-    ppb_zoom_f->ZoomChanged(associated_instance_->pp_instance(), factor);
+  if (has_interface<PPB_Zoom_Dev>())
+    get_interface<PPB_Zoom_Dev>()->ZoomChanged(
+        associated_instance_->pp_instance(), factor);
 }
 
 void Zoom_Dev::ZoomLimitsChanged(double minimum_factor,
                                  double maximium_factor) {
-  if (!ppb_zoom_f)
+  if (!has_interface<PPB_Zoom_Dev>())
     return;
-  ppb_zoom_f->ZoomLimitsChanged(
+  get_interface<PPB_Zoom_Dev>()->ZoomLimitsChanged(
       associated_instance_->pp_instance(), minimum_factor, maximium_factor);
 }
 

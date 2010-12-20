@@ -30,11 +30,11 @@ class FontDescription_Dev {
   FontDescription_Dev(const FontDescription_Dev& other);
   ~FontDescription_Dev();
 
+  FontDescription_Dev& operator=(const FontDescription_Dev& other);
+
   const PP_FontDescription_Dev& pp_font_description() const {
     return pp_font_description_;
   }
-
-  FontDescription_Dev& operator=(const FontDescription_Dev& other);
 
   Var face() const { return face_; }
   void set_face(const Var& face) {

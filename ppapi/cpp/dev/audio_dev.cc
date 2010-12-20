@@ -6,32 +6,35 @@
 
 #include "ppapi/cpp/module_impl.h"
 
+namespace pp {
+
 namespace {
 
-DeviceFuncs<PPB_Audio_Dev> audio_f(PPB_AUDIO_DEV_INTERFACE);
+template <> const char* interface_name<PPB_Audio_Dev>() {
+  return PPB_AUDIO_DEV_INTERFACE;
+}
 
 }  // namespace
-
-namespace pp {
 
 Audio_Dev::Audio_Dev(const Instance& instance,
                      const AudioConfig_Dev& config,
                      PPB_Audio_Callback callback,
                      void* user_data)
     : config_(config) {
-  if (audio_f) {
-    PassRefFromConstructor(audio_f->Create(instance.pp_instance(),
-                                           config.pp_resource(),
-                                           callback, user_data));
+  if (has_interface<PPB_Audio_Dev>()) {
+    PassRefFromConstructor(get_interface<PPB_Audio_Dev>()->Create(
+        instance.pp_instance(), config.pp_resource(), callback, user_data));
   }
 }
 
 bool Audio_Dev::StartPlayback() {
-  return audio_f && audio_f->StartPlayback(pp_resource());
+  return has_interface<PPB_Audio_Dev>() &&
+      get_interface<PPB_Audio_Dev>()->StartPlayback(pp_resource());
 }
 
 bool Audio_Dev::StopPlayback() {
-  return audio_f && audio_f->StopPlayback(pp_resource());
+  return has_interface<PPB_Audio_Dev>() &&
+      get_interface<PPB_Audio_Dev>()->StopPlayback(pp_resource());
 }
 
 }  // namespace pp

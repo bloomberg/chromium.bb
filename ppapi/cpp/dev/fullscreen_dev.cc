@@ -14,9 +14,11 @@ namespace pp {
 
 namespace {
 
-DeviceFuncs<PPB_Fullscreen_Dev> ppb_fullscreen_f(PPB_FULLSCREEN_DEV_INTERFACE);
+template <> const char* interface_name<PPB_Fullscreen_Dev>() {
+  return PPB_FULLSCREEN_DEV_INTERFACE;
+}
 
-}  // anonymous namespace
+}  // namespace
 
 Fullscreen_Dev::Fullscreen_Dev(Instance* instance)
     : associated_instance_(instance) {
@@ -26,16 +28,16 @@ Fullscreen_Dev::~Fullscreen_Dev() {
 }
 
 bool Fullscreen_Dev::IsFullscreen() {
-  return ppb_fullscreen_f && ppb_fullscreen_f->IsFullscreen(
-      associated_instance_->pp_instance());
+  return has_interface<PPB_Fullscreen_Dev>() &&
+      get_interface<PPB_Fullscreen_Dev>()->IsFullscreen(
+          associated_instance_->pp_instance());
 }
 
 bool Fullscreen_Dev::SetFullscreen(bool fullscreen) {
-  if (!ppb_fullscreen_f)
+  if (!has_interface<PPB_Fullscreen_Dev>())
     return false;
-  return PPBoolToBool(
-      ppb_fullscreen_f->SetFullscreen(associated_instance_->pp_instance(),
-                                      BoolToPPBool(fullscreen)));
+  return PPBoolToBool(get_interface<PPB_Fullscreen_Dev>()->SetFullscreen(
+      associated_instance_->pp_instance(), BoolToPPBool(fullscreen)));
 }
 
 }  // namespace pp

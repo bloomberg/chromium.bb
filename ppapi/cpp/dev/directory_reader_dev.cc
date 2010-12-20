@@ -11,38 +11,33 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 
+namespace pp {
+
 namespace {
 
-DeviceFuncs<PPB_DirectoryReader_Dev> directory_reader_f(
-    PPB_DIRECTORYREADER_DEV_INTERFACE);
+template <> const char* interface_name<PPB_DirectoryReader_Dev>() {
+  return PPB_DIRECTORYREADER_DEV_INTERFACE;
+}
 
 }  // namespace
 
-namespace pp {
-
 DirectoryReader_Dev::DirectoryReader_Dev(const FileRef_Dev& directory_ref) {
-  if (!directory_reader_f)
+  if (!has_interface<PPB_DirectoryReader_Dev>())
     return;
-  PassRefFromConstructor(
-      directory_reader_f->Create(directory_ref.pp_resource()));
+  PassRefFromConstructor(get_interface<PPB_DirectoryReader_Dev>()->Create(
+      directory_ref.pp_resource()));
 }
 
 DirectoryReader_Dev::DirectoryReader_Dev(const DirectoryReader_Dev& other)
     : Resource(other) {
 }
 
-DirectoryReader_Dev& DirectoryReader_Dev::operator=(
-    const DirectoryReader_Dev& other) {
-  Resource::operator=(other);
-  return *this;
-}
-
 int32_t DirectoryReader_Dev::GetNextEntry(DirectoryEntry_Dev* entry,
                                           const CompletionCallback& cc) {
-  if (!directory_reader_f)
+  if (!has_interface<PPB_DirectoryReader_Dev>())
     return PP_ERROR_NOINTERFACE;
-  return directory_reader_f->GetNextEntry(pp_resource(), &entry->data_,
-                                          cc.pp_completion_callback());
+  return get_interface<PPB_DirectoryReader_Dev>()->GetNextEntry(
+      pp_resource(), &entry->data_, cc.pp_completion_callback());
 }
 
 }  // namespace pp

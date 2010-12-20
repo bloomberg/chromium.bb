@@ -9,19 +9,21 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 
+namespace pp {
+
 namespace {
 
-DeviceFuncs<PPB_Transport_Dev> transport_f(PPB_TRANSPORT_DEV_INTERFACE);
+template <> const char* interface_name<PPB_Transport_Dev>() {
+  return PPB_TRANSPORT_DEV_INTERFACE;
+}
 
 }  // namespace
 
-namespace pp {
-
 Transport_Dev::Transport_Dev(const char* name,
                              const char* proto) {
-  if (transport_f)
-    PassRefFromConstructor(
-        transport_f->CreateTransport(Module::Get()->pp_module(), name, proto));
+  if (has_interface<PPB_Transport_Dev>())
+    PassRefFromConstructor(get_interface<PPB_Transport_Dev>()->CreateTransport(
+        Module::Get()->pp_module(), name, proto));
 }
 
 }  // namespace pp

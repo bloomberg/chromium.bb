@@ -14,6 +14,10 @@ namespace pp {
 
 namespace {
 
+template <> const char* interface_name<PPB_Find_Dev>() {
+  return PPB_FIND_DEV_INTERFACE;
+}
+
 static const char kPPPFindInterface[] = PPP_FIND_DEV_INTERFACE;
 
 PP_Bool StartFind(PP_Instance instance,
@@ -48,8 +52,6 @@ const PPP_Find_Dev ppp_find = {
   &StopFind
 };
 
-DeviceFuncs<PPB_Find_Dev> ppb_find_f(PPB_FIND_DEV_INTERFACE);
-
 }  // namespace
 
 Find_Dev::Find_Dev(Instance* instance) : associated_instance_(instance) {
@@ -62,17 +64,16 @@ Find_Dev::~Find_Dev() {
 }
 
 void Find_Dev::NumberOfFindResultsChanged(int32_t total, bool final_result) {
-  if (ppb_find_f) {
-    ppb_find_f->NumberOfFindResultsChanged(associated_instance_->pp_instance(),
-                                           total,
-                                           BoolToPPBool(final_result));
+  if (has_interface<PPB_Find_Dev>()) {
+    get_interface<PPB_Find_Dev>()->NumberOfFindResultsChanged(
+        associated_instance_->pp_instance(), total, BoolToPPBool(final_result));
   }
 }
 
 void Find_Dev::SelectedFindResultChanged(int32_t index) {
-  if (ppb_find_f) {
-    ppb_find_f->SelectedFindResultChanged(associated_instance_->pp_instance(),
-                                          index);
+  if (has_interface<PPB_Find_Dev>()) {
+    get_interface<PPB_Find_Dev>()->SelectedFindResultChanged(
+        associated_instance_->pp_instance(), index);
   }
 }
 

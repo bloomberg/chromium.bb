@@ -25,8 +25,6 @@ class VideoDecoder_Dev : public Resource {
                    const PP_VideoDecoderConfig_Dev& decoder_config);
   VideoDecoder_Dev(const VideoDecoder_Dev& other);
 
-  VideoDecoder_Dev& operator=(const VideoDecoder_Dev& other);
-
   // PPB_VideoDecoder methods:
   static bool GetConfig(const Instance& instance,
                         PP_VideoCodecId_Dev codec,

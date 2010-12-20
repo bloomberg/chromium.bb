@@ -32,8 +32,6 @@ class ImageData : public Resource {
             const Size& size,
             bool init_to_zero);
 
-  virtual ~ImageData();
-
   ImageData& operator=(const ImageData& other);
   void swap(ImageData& other);
 

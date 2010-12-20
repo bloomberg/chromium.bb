@@ -15,21 +15,24 @@
 #include "ppapi/cpp/url_request_info.h"
 #include "ppapi/cpp/url_response_info.h"
 
+namespace pp {
+
 namespace {
 
-DeviceFuncs<PPB_URLLoader> url_loader_f(PPB_URLLOADER_INTERFACE);
+template <> const char* interface_name<PPB_URLLoader>() {
+  return PPB_URLLOADER_INTERFACE;
+}
 
 }  // namespace
-
-namespace pp {
 
 URLLoader::URLLoader(PP_Resource resource) : Resource(resource) {
 }
 
 URLLoader::URLLoader(const Instance& instance) {
-  if (!url_loader_f)
+  if (!has_interface<PPB_URLLoader>())
     return;
-  PassRefFromConstructor(url_loader_f->Create(instance.pp_instance()));
+  PassRefFromConstructor(get_interface<PPB_URLLoader>()->Create(
+      instance.pp_instance()));
 }
 
 URLLoader::URLLoader(const URLLoader& other) : Resource(other) {
@@ -37,68 +40,66 @@ URLLoader::URLLoader(const URLLoader& other) : Resource(other) {
 
 int32_t URLLoader::Open(const URLRequestInfo& request_info,
                         const CompletionCallback& cc) {
-  if (!url_loader_f)
+  if (!has_interface<PPB_URLLoader>())
     return PP_ERROR_NOINTERFACE;
-  return url_loader_f->Open(pp_resource(), request_info.pp_resource(),
-                            cc.pp_completion_callback());
+  return get_interface<PPB_URLLoader>()->Open(pp_resource(),
+                                              request_info.pp_resource(),
+                                              cc.pp_completion_callback());
 }
 
 int32_t URLLoader::FollowRedirect(const CompletionCallback& cc) {
-  if (!url_loader_f)
+  if (!has_interface<PPB_URLLoader>())
     return PP_ERROR_NOINTERFACE;
-  return url_loader_f->FollowRedirect(pp_resource(),
-                                      cc.pp_completion_callback());
+  return get_interface<PPB_URLLoader>()->FollowRedirect(
+      pp_resource(), cc.pp_completion_callback());
 }
 
 bool URLLoader::GetUploadProgress(int64_t* bytes_sent,
                                   int64_t* total_bytes_to_be_sent) const {
-  if (!url_loader_f)
+  if (!has_interface<PPB_URLLoader>())
     return false;
-  return PPBoolToBool(url_loader_f->GetUploadProgress(pp_resource(),
-                                                      bytes_sent,
-                                                      total_bytes_to_be_sent));
+  return PPBoolToBool(get_interface<PPB_URLLoader>()->GetUploadProgress(
+      pp_resource(), bytes_sent, total_bytes_to_be_sent));
 }
 
 bool URLLoader::GetDownloadProgress(
     int64_t* bytes_received,
     int64_t* total_bytes_to_be_received) const {
-  if (!url_loader_f)
+  if (!has_interface<PPB_URLLoader>())
     return false;
   return PPBoolToBool(
-      url_loader_f->GetDownloadProgress(pp_resource(),
-                                        bytes_received,
-                                        total_bytes_to_be_received));
+      get_interface<PPB_URLLoader>()->GetDownloadProgress(
+          pp_resource(), bytes_received, total_bytes_to_be_received));
 }
 
 URLResponseInfo URLLoader::GetResponseInfo() const {
-  if (!url_loader_f)
+  if (!has_interface<PPB_URLLoader>())
     return URLResponseInfo();
   return URLResponseInfo(URLResponseInfo::PassRef(),
-                         url_loader_f->GetResponseInfo(pp_resource()));
+                         get_interface<PPB_URLLoader>()->GetResponseInfo(
+                             pp_resource()));
 }
 
 int32_t URLLoader::ReadResponseBody(char* buffer,
                                     int32_t bytes_to_read,
                                     const CompletionCallback& cc) {
-  if (!url_loader_f)
+  if (!has_interface<PPB_URLLoader>())
     return PP_ERROR_NOINTERFACE;
-  return url_loader_f->ReadResponseBody(pp_resource(),
-                                        buffer,
-                                        bytes_to_read,
-                                        cc.pp_completion_callback());
+  return get_interface<PPB_URLLoader>()->ReadResponseBody(
+      pp_resource(), buffer, bytes_to_read, cc.pp_completion_callback());
 }
 
 int32_t URLLoader::FinishStreamingToFile(const CompletionCallback& cc) {
-  if (!url_loader_f)
+  if (!has_interface<PPB_URLLoader>())
     return PP_ERROR_NOINTERFACE;
-  return url_loader_f->FinishStreamingToFile(pp_resource(),
-                                             cc.pp_completion_callback());
+  return get_interface<PPB_URLLoader>()->FinishStreamingToFile(
+      pp_resource(), cc.pp_completion_callback());
 }
 
 void URLLoader::Close() {
-  if (!url_loader_f)
+  if (!has_interface<PPB_URLLoader>())
     return;
-  url_loader_f->Close(pp_resource());
+  get_interface<PPB_URLLoader>()->Close(pp_resource());
 }
 
 }  // namespace pp

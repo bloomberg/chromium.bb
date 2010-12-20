@@ -12,13 +12,15 @@
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/module_impl.h"
 
+namespace pp {
+
 namespace {
 
-DeviceFuncs<PPB_Widget_Dev> widget_f(PPB_WIDGET_DEV_INTERFACE);
+template <> const char* interface_name<PPB_Widget_Dev>() {
+  return PPB_WIDGET_DEV_INTERFACE;
+}
 
 }  // namespace
-
-namespace pp {
 
 Widget_Dev::Widget_Dev(PP_Resource resource) : Resource(resource) {
 }
@@ -26,35 +28,31 @@ Widget_Dev::Widget_Dev(PP_Resource resource) : Resource(resource) {
 Widget_Dev::Widget_Dev(const Widget_Dev& other) : Resource(other) {
 }
 
-Widget_Dev& Widget_Dev::operator=(const Widget_Dev& other) {
-  Resource::operator=(other);
-  return *this;
-}
-
 bool Widget_Dev::Paint(const Rect& rect, ImageData* image) {
-  if (!widget_f)
+  if (!has_interface<PPB_Widget_Dev>())
     return false;
-  return PPBoolToBool(widget_f->Paint(pp_resource(),
-                                      &rect.pp_rect(),
-                                      image->pp_resource()));
+  return PPBoolToBool(get_interface<PPB_Widget_Dev>()->Paint(
+      pp_resource(), &rect.pp_rect(), image->pp_resource()));
 }
 
 bool Widget_Dev::HandleEvent(const PP_InputEvent& event) {
-  if (!widget_f)
+  if (!has_interface<PPB_Widget_Dev>())
     return false;
-  return PPBoolToBool(widget_f->HandleEvent(pp_resource(), &event));
+  return PPBoolToBool(get_interface<PPB_Widget_Dev>()->HandleEvent(
+      pp_resource(), &event));
 }
 
 bool Widget_Dev::GetLocation(Rect* location) {
-  if (!widget_f)
+  if (!has_interface<PPB_Widget_Dev>())
     return false;
-  return PPBoolToBool(widget_f->GetLocation(pp_resource(),
-                                            &location->pp_rect()));
+  return PPBoolToBool(get_interface<PPB_Widget_Dev>()->GetLocation(
+      pp_resource(), &location->pp_rect()));
 }
 
 void Widget_Dev::SetLocation(const Rect& location) {
-  if (widget_f)
-    widget_f->SetLocation(pp_resource(), &location.pp_rect());
+  if (has_interface<PPB_Widget_Dev>())
+    get_interface<PPB_Widget_Dev>()->SetLocation(pp_resource(),
+                                                 &location.pp_rect());
 }
 
 }  // namespace pp

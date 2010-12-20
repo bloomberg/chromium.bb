@@ -17,13 +17,15 @@
 #include "ppapi/cpp/resource.h"
 #include "ppapi/cpp/var.h"
 
+namespace pp {
+
 namespace {
 
-DeviceFuncs<PPB_Instance> ppb_instance_f(PPB_INSTANCE_INTERFACE);
+template <> const char* interface_name<PPB_Instance>() {
+  return PPB_INSTANCE_INTERFACE;
+}
 
 }  // namespace
-
-namespace pp {
 
 Instance::Instance(PP_Instance instance) : pp_instance_(instance) {
 }
@@ -68,44 +70,49 @@ Var Instance::GetSelectedText(bool /* html */) {
 }
 
 Var Instance::GetWindowObject() {
-  if (!ppb_instance_f)
+  if (!has_interface<PPB_Instance>())
     return Var();
-  return Var(Var::PassRef(), ppb_instance_f->GetWindowObject(pp_instance()));
+  return Var(Var::PassRef(),
+             get_interface<PPB_Instance>()->GetWindowObject(pp_instance()));
 }
 
 Var Instance::GetOwnerElementObject() {
-  if (!ppb_instance_f)
+  if (!has_interface<PPB_Instance>())
     return Var();
   return Var(Var::PassRef(),
-             ppb_instance_f->GetOwnerElementObject(pp_instance()));
+             get_interface<PPB_Instance>()->GetOwnerElementObject(
+                 pp_instance()));
 }
 
 bool Instance::BindGraphics(const Graphics2D& graphics) {
-  if (!ppb_instance_f)
+  if (!has_interface<PPB_Instance>())
     return false;
-  return PPBoolToBool(ppb_instance_f->BindGraphics(pp_instance(),
-                                                   graphics.pp_resource()));
+  return PPBoolToBool(get_interface<PPB_Instance>()->BindGraphics(
+      pp_instance(), graphics.pp_resource()));
 }
 
 bool Instance::BindGraphics(const Graphics3D_Dev& graphics) {
-  if (!ppb_instance_f)
+  if (!has_interface<PPB_Instance>())
     return false;
-  return PPBoolToBool(ppb_instance_f->BindGraphics(pp_instance(),
-                                                   graphics.pp_resource()));
+  return PPBoolToBool(get_interface<PPB_Instance>()->BindGraphics(
+      pp_instance(), graphics.pp_resource()));
 }
 
 bool Instance::IsFullFrame() {
-  if (!ppb_instance_f)
+  if (!has_interface<PPB_Instance>())
     return false;
-  return PPBoolToBool(ppb_instance_f->IsFullFrame(pp_instance()));
+  return PPBoolToBool(get_interface<PPB_Instance>()->IsFullFrame(
+      pp_instance()));
 }
 
 Var Instance::ExecuteScript(const Var& script, Var* exception) {
-  if (!ppb_instance_f)
+  if (!has_interface<PPB_Instance>())
     return Var();
   return Var(Var::PassRef(),
-             ppb_instance_f->ExecuteScript(pp_instance(), script.pp_var(),
-                                           Var::OutException(exception).get()));
+             get_interface<PPB_Instance>()->ExecuteScript(
+                 pp_instance(),
+                 script.pp_var(),
+                 Var::OutException(exception).get()));
 }
 
 void Instance::AddPerInstanceObject(const std::string& interface_name,

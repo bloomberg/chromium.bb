@@ -14,13 +14,15 @@
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/rect.h"
 
+namespace pp {
+
 namespace {
 
-DeviceFuncs<PPB_Graphics2D> graphics_2d_f(PPB_GRAPHICS_2D_INTERFACE);
+template <> const char* interface_name<PPB_Graphics2D>() {
+  return PPB_GRAPHICS_2D_INTERFACE;
+}
 
 }  // namespace
-
-namespace pp {
 
 Graphics2D::Graphics2D() : Resource() {
 }
@@ -32,11 +34,12 @@ Graphics2D::Graphics2D(const Graphics2D& other)
 
 Graphics2D::Graphics2D(const Size& size, bool is_always_opaque)
     : Resource() {
-  if (!graphics_2d_f)
+  if (!has_interface<PPB_Graphics2D>())
     return;
-  PassRefFromConstructor(graphics_2d_f->Create(Module::Get()->pp_module(),
-                                               &size.pp_size(),
-                                               BoolToPPBool(is_always_opaque)));
+  PassRefFromConstructor(get_interface<PPB_Graphics2D>()->Create(
+      Module::Get()->pp_module(),
+      &size.pp_size(),
+      BoolToPPBool(is_always_opaque)));
   if (!is_null()) {
     // Only save the size if allocation succeeded.
     size_ = size;
@@ -59,31 +62,38 @@ void Graphics2D::swap(Graphics2D& other) {
 
 void Graphics2D::PaintImageData(const ImageData& image,
                                 const Point& top_left) {
-  if (!graphics_2d_f)
+  if (!has_interface<PPB_Graphics2D>())
     return;
-  graphics_2d_f->PaintImageData(pp_resource(), image.pp_resource(),
-                                &top_left.pp_point(), NULL);
+  get_interface<PPB_Graphics2D>()->PaintImageData(pp_resource(),
+                                                  image.pp_resource(),
+                                                  &top_left.pp_point(),
+                                                  NULL);
 }
 
 void Graphics2D::PaintImageData(const ImageData& image,
                                 const Point& top_left,
                                 const Rect& src_rect) {
-  if (!graphics_2d_f)
+  if (!has_interface<PPB_Graphics2D>())
     return;
-  graphics_2d_f->PaintImageData(pp_resource(), image.pp_resource(),
-                                &top_left.pp_point(), &src_rect.pp_rect());
+  get_interface<PPB_Graphics2D>()->PaintImageData(pp_resource(),
+                                                  image.pp_resource(),
+                                                  &top_left.pp_point(),
+                                                  &src_rect.pp_rect());
 }
 
 void Graphics2D::Scroll(const Rect& clip, const Point& amount) {
-  if (!graphics_2d_f)
+  if (!has_interface<PPB_Graphics2D>())
     return;
-  graphics_2d_f->Scroll(pp_resource(), &clip.pp_rect(), &amount.pp_point());
+  get_interface<PPB_Graphics2D>()->Scroll(pp_resource(),
+                                          &clip.pp_rect(),
+                                          &amount.pp_point());
 }
 
 void Graphics2D::ReplaceContents(ImageData* image) {
-  if (!graphics_2d_f)
+  if (!has_interface<PPB_Graphics2D>())
     return;
-  graphics_2d_f->ReplaceContents(pp_resource(), image->pp_resource());
+  get_interface<PPB_Graphics2D>()->ReplaceContents(pp_resource(),
+                                                   image->pp_resource());
 
   // On success, reset the image data. This is to help prevent people
   // from continuing to use the resource which will result in artifacts.
@@ -91,9 +101,10 @@ void Graphics2D::ReplaceContents(ImageData* image) {
 }
 
 int32_t Graphics2D::Flush(const CompletionCallback& cc) {
-  if (!graphics_2d_f)
+  if (!has_interface<PPB_Graphics2D>())
     return PP_ERROR_NOINTERFACE;
-  return graphics_2d_f->Flush(pp_resource(), cc.pp_completion_callback());
+  return get_interface<PPB_Graphics2D>()->Flush(pp_resource(),
+                                                cc.pp_completion_callback());
 }
 
 }  // namespace pp

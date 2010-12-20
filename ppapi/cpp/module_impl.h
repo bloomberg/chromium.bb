@@ -7,35 +7,29 @@
 
 #include "ppapi/cpp/module.h"
 
+namespace pp {
+
 namespace {
 
-template <typename T> class DeviceFuncs {
- public:
-  explicit DeviceFuncs(const char* ifname) : ifname_(ifname), funcs_(NULL) {}
+// Specialize this function to return the interface string corresponding to the
+// PP?_XXX structure.
+template <typename T> const char* interface_name() {
+  return NULL;
+}
 
-  operator T const*() {
-    if (!funcs_) {
-      funcs_ = reinterpret_cast<T const*>(
-          pp::Module::Get()->GetBrowserInterface(ifname_));
-    }
-    return funcs_;
-  }
+template <typename T> inline T const* get_interface() {
+  static T const* funcs = reinterpret_cast<T const*>(
+      pp::Module::Get()->GetBrowserInterface(interface_name<T>()));
+  return funcs;
+}
 
-  // This version doesn't check for existence of the function object. It is
-  // used so that, for DeviceFuncs f, the expression:
-  // if (f) f->doSomething();
-  // checks the existence only once.
-  T const* operator->() const { return funcs_; }
-
- private:
-  DeviceFuncs(const DeviceFuncs&other);
-  DeviceFuncs &operator=(const DeviceFuncs &other);
-
-  const char* ifname_;
-  T const* funcs_;
-};
+template <typename T> inline bool has_interface() {
+  return get_interface<T>() != NULL;
+}
 
 }  // namespace
+
+}  // namespace pp
 
 #endif  // PPAPI_CPP_MODULE_IMPL_H_
 
