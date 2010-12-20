@@ -27,7 +27,7 @@
 #include "gfx/gtk_util.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
-#include "webkit/glue/plugins/plugin_list.h"
+#include "webkit/plugins/npapi/plugin_list.h"
 
 namespace {
 
@@ -109,7 +109,7 @@ void ContentSettingBubbleGtk::BuildBubble() {
     for (std::set<std::string>::const_iterator it = plugins.begin();
         it != plugins.end(); ++it) {
       std::string name = UTF16ToUTF8(
-          NPAPI::PluginList::Singleton()->GetPluginGroupName(*it));
+          webkit::npapi::PluginList::Singleton()->GetPluginGroupName(*it));
       if (name.empty())
         name = *it;
 

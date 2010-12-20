@@ -14,8 +14,10 @@
 #include "base/lock.h"
 #include "gfx/native_widget_types.h"
 
-namespace webkit_glue {
+namespace webkit {
+namespace npapi {
 struct WebPluginGeometry;
+}
 }
 
 class AcceleratedSurfaceContainerMac;
@@ -63,7 +65,8 @@ class AcceleratedSurfaceContainerManagerMac {
 
   // Takes an update from WebKit about a plugin's position and size and moves
   // the plugin accordingly.
-  void SetPluginContainerGeometry(const webkit_glue::WebPluginGeometry& move);
+  void SetPluginContainerGeometry(
+      const webkit::npapi::WebPluginGeometry& move);
 
   // Draws the plugin container associated with the given id into the given
   // OpenGL context, which must already be current.

@@ -18,9 +18,9 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebPlugin.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
-#include "webkit/glue/plugins/plugin_instance.h"
-#include "webkit/glue/plugins/plugin_list.h"
-#include "webkit/glue/plugins/webplugin_impl.h"
+#include "webkit/plugins/npapi/plugin_instance.h"
+#include "webkit/plugins/npapi/plugin_list.h"
+#include "webkit/plugins/npapi/webplugin_impl.h"
 
 class PepperDeviceTest;
 
@@ -135,9 +135,9 @@ class PepperDeviceTest : public RenderViewTest {
   virtual void SetUp();
   virtual void TearDown();
 
-  NPAPI::PluginVersionInfo version_info_;
+  webkit::npapi::PluginVersionInfo version_info_;
 
-  scoped_ptr<webkit_glue::WebPluginImpl> plugin_;
+  scoped_ptr<webkit::npapi::WebPluginImpl> plugin_;
   WebPluginDelegatePepper* pepper_plugin_;  // FIXME(brettw): check lifetime.
 };
 
@@ -147,7 +147,7 @@ PepperDeviceTest::PepperDeviceTest() {
   version_info_.file_description = ASCIIToWide("Pepper device test plugin");
   version_info_.file_version = ASCIIToWide("1");
   version_info_.mime_types = ASCIIToWide(kTestPluginMimeType);
-  NPAPI::PluginEntryPoints entry_points = {
+  webkit::npapi::PluginEntryPoints entry_points = {
 #if !defined(OS_POSIX) || defined(OS_MACOSX)
       NP_GetEntryPoints,
 #endif
@@ -163,14 +163,14 @@ PepperDeviceTest::~PepperDeviceTest() {
 void PepperDeviceTest::SetUp() {
   RenderViewTest::SetUp();
 
-  NPAPI::PluginList::Singleton()->RegisterInternalPlugin(version_info_);
+  webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(version_info_);
 
   // Create the WebKit plugin with no delegates (this seems to work
   // sufficiently for the test).
   WebKit::WebPluginParams params;
-  plugin_.reset(new webkit_glue::WebPluginImpl(
+  plugin_.reset(new webkit::npapi::WebPluginImpl(
       NULL, params, FilePath(), std::string(),
-      base::WeakPtr<webkit_glue::WebPluginPageDelegate>()));
+      base::WeakPtr<webkit::npapi::WebPluginPageDelegate>()));
 
   // Create a pepper plugin for the RenderView.
   pepper_plugin_ = WebPluginDelegatePepper::Create(
@@ -201,7 +201,8 @@ void PepperDeviceTest::TearDown() {
   if (pepper_plugin_)
     pepper_plugin_->PluginDestroyed();
 
-  NPAPI::PluginList::Singleton()->UnregisterInternalPlugin(version_info_.path);
+  webkit::npapi::PluginList::Singleton()->UnregisterInternalPlugin(
+      version_info_.path);
 
   RenderViewTest::TearDown();
 }

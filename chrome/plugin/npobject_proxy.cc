@@ -9,7 +9,7 @@
 #include "chrome/plugin/plugin_channel.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/plugins/plugin_instance.h"
+#include "webkit/plugins/npapi/plugin_instance.h"
 
 using WebKit::WebBindings;
 
@@ -460,8 +460,8 @@ bool NPObjectProxy::NPNEvaluate(NPP npp,
   bool popups_allowed = false;
 
   if (npp) {
-    NPAPI::PluginInstance* plugin_instance =
-        reinterpret_cast<NPAPI::PluginInstance*>(npp->ndata);
+    webkit::npapi::PluginInstance* plugin_instance =
+        reinterpret_cast<webkit::npapi::PluginInstance*>(npp->ndata);
     if (plugin_instance)
       popups_allowed = plugin_instance->popups_allowed();
   }

@@ -9,40 +9,39 @@
 #ifndef WEBKIT_TOOLS_TEST_SHELL_TEST_WEBVIEW_DELEGATE_H_
 #define WEBKIT_TOOLS_TEST_SHELL_TEST_WEBVIEW_DELEGATE_H_
 
-#include "build/build_config.h"
-
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
-
 #include <map>
 #include <set>
 #include <string>
 
-#if defined(TOOLKIT_USES_GTK)
-#include <gdk/gdkcursor.h>
-#endif
-
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/weak_ptr.h"
+#include "build/build_config.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
-#if defined(OS_MACOSX)
-#include "third_party/WebKit/WebKit/chromium/public/WebPopupMenuInfo.h"
-#endif
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebViewClient.h"
 #include "webkit/glue/webcursor.h"
-#include "webkit/glue/plugins/webplugin_page_delegate.h"
+#include "webkit/plugins/npapi/webplugin_page_delegate.h"
+#include "webkit/tools/test_shell/mock_spellcheck.h"
+#include "webkit/tools/test_shell/test_navigation_controller.h"
+
+#if defined(OS_MACOSX)
+#include "third_party/WebKit/WebKit/chromium/public/WebPopupMenuInfo.h"
+#endif
+
 #if defined(OS_WIN)
+#include <windows.h>
+
 #include "webkit/tools/test_shell/drag_delegate.h"
 #include "webkit/tools/test_shell/drop_delegate.h"
 #endif
-#include "webkit/tools/test_shell/mock_spellcheck.h"
-#include "webkit/tools/test_shell/test_navigation_controller.h"
+
+#if defined(TOOLKIT_USES_GTK)
+#include <gdk/gdkcursor.h>
+#endif
 
 struct WebPreferences;
 class GURL;
@@ -60,7 +59,7 @@ struct WebWindowFeatures;
 
 class TestWebViewDelegate : public WebKit::WebViewClient,
                             public WebKit::WebFrameClient,
-                            public webkit_glue::WebPluginPageDelegate,
+                            public webkit::npapi::WebPluginPageDelegate,
                             public base::SupportsWeakPtr<TestWebViewDelegate> {
  public:
   struct CapturedContextMenuEvent {
@@ -239,8 +238,8 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
       bool create,
       WebKit::WebFileSystemCallbacks* callbacks);
 
-  // webkit_glue::WebPluginPageDelegate
-  virtual webkit_glue::WebPluginDelegate* CreatePluginDelegate(
+  // webkit::npapi::WebPluginPageDelegate
+  virtual webkit::npapi::WebPluginDelegate* CreatePluginDelegate(
       const FilePath& url,
       const std::string& mime_type);
   virtual void CreatedPluginWindow(
@@ -248,7 +247,7 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   virtual void WillDestroyPluginWindow(
       gfx::PluginWindowHandle handle);
   virtual void DidMovePlugin(
-      const webkit_glue::WebPluginGeometry& move);
+      const webkit::npapi::WebPluginGeometry& move);
   virtual void DidStartLoadingForPlugin() {}
   virtual void DidStopLoadingForPlugin() {}
   virtual void ShowModalHTMLDialogForPlugin(

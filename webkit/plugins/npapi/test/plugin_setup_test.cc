@@ -5,7 +5,7 @@
 #include "base/basictypes.h"
 #include "base/string_util.h"
 
-#include "webkit/glue/plugins/test/plugin_setup_test.h"
+#include "webkit/plugins/npapi/test/plugin_setup_test.h"
 
 namespace NPAPIClient {
 
@@ -19,4 +19,4 @@ NPError PluginSetupTest::SetWindow(NPWindow* pNPWindow) {
   return NPERR_NO_ERROR;
 }
 
-} // namespace NPAPIClient
+}  // namespace NPAPIClient

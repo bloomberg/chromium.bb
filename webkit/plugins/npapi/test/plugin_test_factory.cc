@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/plugins/test/plugin_test_factory.h"
+#include "webkit/plugins/npapi/test/plugin_test_factory.h"
 
-#include "webkit/glue/plugins/test/plugin_arguments_test.h"
-#include "webkit/glue/plugins/test/plugin_delete_plugin_in_stream_test.h"
-#include "webkit/glue/plugins/test/plugin_get_javascript_url_test.h"
-#include "webkit/glue/plugins/test/plugin_get_javascript_url2_test.h"
-#include "webkit/glue/plugins/test/plugin_geturl_test.h"
-#include "webkit/glue/plugins/test/plugin_javascript_open_popup.h"
-#include "webkit/glue/plugins/test/plugin_new_fails_test.h"
-#include "webkit/glue/plugins/test/plugin_npobject_lifetime_test.h"
-#include "webkit/glue/plugins/test/plugin_npobject_proxy_test.h"
-#include "webkit/glue/plugins/test/plugin_private_test.h"
-#include "webkit/glue/plugins/test/plugin_schedule_timer_test.h"
-#include "webkit/glue/plugins/test/plugin_setup_test.h"
-#include "webkit/glue/plugins/test/plugin_thread_async_call_test.h"
-#include "webkit/glue/plugins/test/plugin_window_size_test.h"
+#include "webkit/plugins/npapi/test/plugin_arguments_test.h"
+#include "webkit/plugins/npapi/test/plugin_delete_plugin_in_stream_test.h"
+#include "webkit/plugins/npapi/test/plugin_get_javascript_url_test.h"
+#include "webkit/plugins/npapi/test/plugin_get_javascript_url2_test.h"
+#include "webkit/plugins/npapi/test/plugin_geturl_test.h"
+#include "webkit/plugins/npapi/test/plugin_javascript_open_popup.h"
+#include "webkit/plugins/npapi/test/plugin_new_fails_test.h"
+#include "webkit/plugins/npapi/test/plugin_npobject_lifetime_test.h"
+#include "webkit/plugins/npapi/test/plugin_npobject_proxy_test.h"
+#include "webkit/plugins/npapi/test/plugin_private_test.h"
+#include "webkit/plugins/npapi/test/plugin_schedule_timer_test.h"
+#include "webkit/plugins/npapi/test/plugin_setup_test.h"
+#include "webkit/plugins/npapi/test/plugin_thread_async_call_test.h"
+#include "webkit/plugins/npapi/test/plugin_window_size_test.h"
 #if defined(OS_WIN)
-#include "webkit/glue/plugins/test/plugin_windowed_test.h"
+#include "webkit/plugins/npapi/test/plugin_windowed_test.h"
 #endif
-#include "webkit/glue/plugins/test/plugin_windowless_test.h"
+#include "webkit/plugins/npapi/test/plugin_windowless_test.h"
 
 namespace NPAPIClient {
 

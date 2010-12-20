@@ -32,7 +32,7 @@
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "webkit/glue/plugins/plugin_list.h"
+#include "webkit/plugins/npapi/plugin_list.h"
 
 namespace {
 
@@ -223,7 +223,8 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
     plugin_updater->EnablePluginGroup(enable, group_name);
     if (enable) {
       // See http://crbug.com/50105 for background.
-      string16 adobereader = ASCIIToUTF16(PluginGroup::kAdobeReaderGroupName);
+      string16 adobereader = ASCIIToUTF16(
+          webkit::npapi::PluginGroup::kAdobeReaderGroupName);
       string16 internalpdf = ASCIIToUTF16(PepperPluginRegistry::kPDFPluginName);
       if (group_name == adobereader) {
         plugin_updater->EnablePluginGroup(false, internalpdf);

@@ -1,8 +1,8 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/plugins/test/plugin_new_fails_test.h"
+#include "webkit/plugins/npapi/test/plugin_new_fails_test.h"
 
 namespace NPAPIClient {
 
@@ -15,4 +15,4 @@ NPError NewFailsTest::New(uint16 mode, int16 argc, const char* argn[],
   return NPERR_GENERIC_ERROR;
 }
 
-} // namespace NPAPIClient
+}  // namespace NPAPIClient

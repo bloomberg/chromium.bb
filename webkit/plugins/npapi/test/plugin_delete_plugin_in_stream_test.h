@@ -1,11 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_DELETE_PLUGIN_IN_STREAM_TEST_H
-#define WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_DELETE_PLUGIN_IN_STREAM_TEST_H
+#ifndef WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_DELETE_PLUGIN_IN_STREAM_TEST_H_
+#define WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_DELETE_PLUGIN_IN_STREAM_TEST_H_
 
-#include "webkit/glue/plugins/test/plugin_test.h"
+#include "webkit/plugins/npapi/test/plugin_test.h"
 
 namespace NPAPIClient {
 
@@ -25,6 +25,6 @@ class DeletePluginInStreamTest : public PluginTest {
   std::string self_url_;
 };
 
-} // namespace NPAPIClient
+}  // namespace NPAPIClient
 
-#endif  // WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_DELETE_PLUGIN_IN_STREAM_TEST_H
+#endif  // WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_DELETE_PLUGIN_IN_STREAM_TEST_H_

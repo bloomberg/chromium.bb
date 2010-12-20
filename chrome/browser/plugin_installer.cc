@@ -12,7 +12,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
-#include "webkit/glue/plugins/default_plugin_shared.h"
+#include "webkit/plugins/npapi/default_plugin_shared.h"
 
 // The URL for the "Problems installing" page for the Plugins infobar.
 static const char kLearnMorePluginInstallerUrl[] =
@@ -30,11 +30,11 @@ PluginInstaller::~PluginInstaller() {
 
 void PluginInstaller::OnMissingPluginStatus(int status) {
   switch (status) {
-    case default_plugin::MISSING_PLUGIN_AVAILABLE: {
+    case webkit::npapi::default_plugin::MISSING_PLUGIN_AVAILABLE: {
       tab_contents_->AddInfoBar(this);
       break;
     }
-    case default_plugin::MISSING_PLUGIN_USER_STARTED_DOWNLOAD: {
+    case webkit::npapi::default_plugin::MISSING_PLUGIN_USER_STARTED_DOWNLOAD: {
       // Hide the InfoBar if user already started download/install of the
       // missing plugin.
       tab_contents_->RemoveInfoBar(this);

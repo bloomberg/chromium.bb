@@ -33,7 +33,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
-#include "webkit/glue/plugins/plugin_list.h"
+#include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/tools/test_shell/mac/test_shell_webview.h"
 #include "webkit/tools/test_shell/resource.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
@@ -252,7 +252,7 @@ void TestShell::InitializeTestShell(bool layout_test_mode,
   } else {
     plugins_dir = plugins_dir.AppendASCII("plugins");
   }
-  NPAPI::PluginList::Singleton()->AddExtraPluginDir(plugins_dir);
+  webkit::npapi::PluginList::Singleton()->AddExtraPluginDir(plugins_dir);
 }
 
 NSButton* MakeTestButton(NSRect* rect, NSString* title, NSView* parent) {

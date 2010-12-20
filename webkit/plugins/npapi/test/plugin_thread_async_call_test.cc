@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/plugins/test/plugin_thread_async_call_test.h"
+#include "webkit/plugins/npapi/test/plugin_thread_async_call_test.h"
 
 #include "base/at_exit.h"
 #include "base/message_loop.h"
 #include "base/thread.h"
-#include "webkit/glue/plugins/test/plugin_client.h"
+#include "webkit/plugins/npapi/test/plugin_client.h"
 
 namespace NPAPIClient {
 

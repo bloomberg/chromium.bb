@@ -1,11 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_PORT_PLUGINS_TEST_PLUGIN_ARGUMENTS_TEST_H__
-#define WEBKIT_PORT_PLUGINS_TEST_PLUGIN_ARGUMENTS_TEST_H__
+#ifndef WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_ARGUMENTS_TEST_H_
+#define WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_ARGUMENTS_TEST_H_
 
-#include "webkit/glue/plugins/test/plugin_test.h"
+#include "webkit/plugins/npapi/test/plugin_test.h"
 
 namespace NPAPIClient {
 
@@ -38,6 +38,6 @@ class PluginArgumentsTest : public PluginTest {
   virtual NPError SetWindow(NPWindow* pNPWindow);
 };
 
-} // namespace NPAPIClient
+}  // namespace NPAPIClient
 
-#endif  // WEBKIT_PORT_PLUGINS_TEST_PLUGIN_ARGUMENTS_TEST_H__
+#endif  // WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_ARGUMENTS_TEST_H_

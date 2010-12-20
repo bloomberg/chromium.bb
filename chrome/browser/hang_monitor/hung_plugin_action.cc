@@ -12,7 +12,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/common/logging_chrome.h"
 #include "grit/generated_resources.h"
-#include "webkit/glue/plugins/webplugin_delegate_impl.h"
+#include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 
 HungPluginAction::HungPluginAction() : current_hung_plugin_window_(NULL) {
 }
@@ -122,8 +122,8 @@ bool HungPluginAction::GetPluginName(HWND plugin_window,
       // we have gone too far.
       return false;
     }
-    if (WebPluginDelegateImpl::GetPluginNameFromWindow(window_to_check,
-                                                       plugin_name)) {
+    if (webkit::npapi::WebPluginDelegateImpl::GetPluginNameFromWindow(
+            window_to_check, plugin_name)) {
       return true;
     }
     window_to_check = GetParent(window_to_check);

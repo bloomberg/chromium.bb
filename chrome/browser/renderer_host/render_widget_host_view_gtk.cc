@@ -38,9 +38,9 @@
 #include "chrome/common/native_web_keyboard_event.h"
 #include "gfx/gtk_preserve_window.h"
 #include "third_party/WebKit/WebKit/chromium/public/gtk/WebInputEventFactory.h"
-#include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webcursor_gtk_data.h"
+#include "webkit/plugins/npapi/webplugin.h"
 
 #if defined(OS_CHROMEOS)
 #include "views/widget/tooltip_window_gtk.h"
@@ -587,7 +587,7 @@ gfx::NativeView RenderWidgetHostViewGtk::GetNativeView() {
 }
 
 void RenderWidgetHostViewGtk::MovePluginWindows(
-    const std::vector<webkit_glue::WebPluginGeometry>& moves) {
+    const std::vector<webkit::npapi::WebPluginGeometry>& moves) {
   for (size_t i = 0; i < moves.size(); ++i) {
     plugin_container_manager_.MovePluginContainer(moves[i]);
   }

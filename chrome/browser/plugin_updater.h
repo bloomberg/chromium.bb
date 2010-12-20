@@ -12,15 +12,19 @@
 #include "base/file_path.h"
 #include "base/singleton.h"
 #include "chrome/common/notification_observer.h"
-#include "webkit/glue/plugins/plugin_list.h"
 
 class DictionaryValue;
 class ListValue;
 class NotificationDetails;
 class NotificationSource;
-class PluginGroup;
 class Profile;
+
+namespace webkit {
+namespace npapi {
+class PluginGroup;
 struct WebPluginInfo;
+}
+}
 
 class PluginUpdater : public NotificationObserver {
  public:
@@ -58,8 +62,8 @@ class PluginUpdater : public NotificationObserver {
   // Called on the UI thread with the plugin data to save the preferences.
   static void OnUpdatePreferences(
       Profile* profile,
-      const std::vector<WebPluginInfo>& plugins,
-      const std::vector<PluginGroup>& groups);
+      const std::vector<webkit::npapi::WebPluginInfo>& plugins,
+      const std::vector<webkit::npapi::PluginGroup>& groups);
 
   // Queues sending the notification that plugin data has changed.  This is done
   // so that if a bunch of changes happen, we only send one notification.
@@ -68,7 +72,8 @@ class PluginUpdater : public NotificationObserver {
   // Used for the post task to notify that plugin enabled status changed.
   static void OnNotifyPluginStatusChanged();
 
-  static DictionaryValue* CreatePluginFileSummary(const WebPluginInfo& plugin);
+  static DictionaryValue* CreatePluginFileSummary(
+      const webkit::npapi::WebPluginInfo& plugin);
 
   // Force plugins to be disabled due to policy. |plugins| contains
   // the list of StringValues of the names of the policy-disabled plugins.

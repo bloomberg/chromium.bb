@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_PORT_PLUGINS_TEST_PLUGIN_TEST_FACTROY_H__
-#define WEBKIT_PORT_PLUGINS_TEST_PLUGIN_TEST_FACTROY_H__
+#ifndef WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_TEST_FACTROY_H__
+#define WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_TEST_FACTROY_H__
 
 #include <string>
 
@@ -19,4 +19,4 @@ extern PluginTest* CreatePluginTest(const std::string& test_name,
 
 }  // namespace NPAPIClient
 
-#endif  // WEBKIT_PORT_PLUGINS_TEST_PLUGIN_TEST_FACTROY_H__
+#endif  // WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_TEST_FACTROY_H__

@@ -15,8 +15,8 @@
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
-#include "webkit/glue/plugins/plugin_list.h"
-#include "webkit/glue/plugins/webplugininfo.h"
+#include "webkit/plugins/npapi/plugin_list.h"
+#include "webkit/plugins/npapi/webplugininfo.h"
 
 class TableModelArrayControllerTest : public CocoaTest {
  public:
@@ -50,27 +50,27 @@ class TableModelArrayControllerTest : public CocoaTest {
 
     model_.reset(new MockPluginExceptionsTableModel(map, NULL));
 
-    std::vector<PluginGroup> plugins;
-    WebPluginInfo foo_plugin;
+    std::vector<webkit::npapi::PluginGroup> plugins;
+    webkit::npapi::WebPluginInfo foo_plugin;
     foo_plugin.path = FilePath(FILE_PATH_LITERAL("a-foo"));
     foo_plugin.name = ASCIIToUTF16("FooPlugin");
     foo_plugin.enabled = true;
-    scoped_ptr<PluginGroup> foo_group(
-        PluginGroup::FromWebPluginInfo(foo_plugin));
+    scoped_ptr<webkit::npapi::PluginGroup> foo_group(
+        webkit::npapi::PluginGroup::FromWebPluginInfo(foo_plugin));
     plugins.push_back(*foo_group);
-    WebPluginInfo bar_plugin;
+    webkit::npapi::WebPluginInfo bar_plugin;
     bar_plugin.path = FilePath(FILE_PATH_LITERAL("b-bar"));
     bar_plugin.name = ASCIIToUTF16("BarPlugin");
     bar_plugin.enabled = true;
-    scoped_ptr<PluginGroup> bar_group(
-        PluginGroup::FromWebPluginInfo(bar_plugin));
+    scoped_ptr<webkit::npapi::PluginGroup> bar_group(
+        webkit::npapi::PluginGroup::FromWebPluginInfo(bar_plugin));
     plugins.push_back(*bar_group);
-    WebPluginInfo blurp_plugin;
+    webkit::npapi::WebPluginInfo blurp_plugin;
     blurp_plugin.path = FilePath(FILE_PATH_LITERAL("c-blurp"));
     blurp_plugin.name = ASCIIToUTF16("BlurpPlugin");
     blurp_plugin.enabled = true;
-    scoped_ptr<PluginGroup> blurp_group(
-        PluginGroup::FromWebPluginInfo(blurp_plugin));
+    scoped_ptr<webkit::npapi::PluginGroup> blurp_group(
+        webkit::npapi::PluginGroup::FromWebPluginInfo(blurp_plugin));
     plugins.push_back(*blurp_group);
 
     model_->set_plugins(plugins);

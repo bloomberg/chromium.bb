@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_PORT_PLUGINS_TEST_PLUGIN_CLIENT_H__
-#define WEBKIT_PORT_PLUGINS_TEST_PLUGIN_CLIENT_H__
+#ifndef WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_CLIENT_H_
+#define WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_CLIENT_H_
 
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/nphostapi.h"
@@ -40,6 +40,6 @@ class PluginClient {
   static NPNetscapeFuncs* host_functions_;
 };
 
-} // namespace NPAPIClient
+}  // namespace NPAPIClient
 
-#endif  // WEBKIT_PORT_PLUGINS_TEST_PLUGIN_CLIENT_H__
+#endif  // WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_CLIENT_H_
