@@ -569,9 +569,6 @@ Alias('medium_tests', [])
 Alias('large_tests', [])
 Alias('browser_tests', [])
 
-# TODO(ncbray) remove once bots no longer use
-Alias('small_tests_arm_hw_only', [])
-
 Alias('unit_tests', 'small_tests')
 Alias('smoke_tests', ['small_tests', 'medium_tests'])
 
