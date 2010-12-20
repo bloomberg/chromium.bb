@@ -4,7 +4,7 @@
  * be found in the LICENSE file.
  */
 
-#include "native_client/src/shared/ppapi_proxy/plugin_file_io.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_file_io.h"
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
