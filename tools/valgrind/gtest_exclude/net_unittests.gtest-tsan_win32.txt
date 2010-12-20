@@ -21,8 +21,12 @@ ClientSocketPoolBaseTest.CancelPendingSocketAtSocketLimit
 HttpNetworkTransactionTest.*
 HttpNetworkLayerTest.GET
 
-# Single-threaded and relatively slow - no reason to test; see http://59642
+# Single-threaded and relatively slow - no reason to test
+# See http://crbug.com/59642
 CookieMonsterTest.GarbageCollectionTriggers
+
+# Fails for unknown reason; see http://crbug.com/67599
+CertVerifierTest.CacheHit
 
 #########################################
 # These tests fail if you don't have our SSL certificate installed.
