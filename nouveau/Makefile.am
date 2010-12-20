@@ -28,6 +28,8 @@ libdrm_nouveaucommoninclude_HEADERS = \
 				nouveau_grobj.h \
 				nouveau_notifier.h \
 				nouveau_pushbuf.h \
+				nv04_pushbuf.h \
+				nvc0_pushbuf.h \
 				nouveau_bo.h \
 				nouveau_resource.h \
 				nouveau_reloc.h
