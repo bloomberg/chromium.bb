@@ -492,6 +492,7 @@ void BugReportData::SendReport() {
 BugReportHandler::BugReportHandler(TabContents* tab)
     : tab_(tab)
     , screenshot_source_(NULL)
+    , bug_report_(NULL)
 #if defined(OS_CHROMEOS)
     , syslogs_handle_(0)
 #endif
