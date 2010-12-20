@@ -22,7 +22,7 @@
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
-#include "webkit/plugins/npapi/plugin_list.h"
+#include "webkit/glue/plugins/plugin_list.h"
 
 namespace {
 
@@ -422,18 +422,18 @@ bool BufferedResourceHandler::ShouldDownload(bool* need_plugin_list) {
     return false;
 
   if (need_plugin_list) {
-    if (!webkit::npapi::PluginList::Singleton()->PluginsLoaded()) {
+    if (!NPAPI::PluginList::Singleton()->PluginsLoaded()) {
       *need_plugin_list = true;
       return true;
     }
   } else {
-    DCHECK(webkit::npapi::PluginList::Singleton()->PluginsLoaded());
+    DCHECK(NPAPI::PluginList::Singleton()->PluginsLoaded());
   }
 
   // Finally, check the plugin list.
-  webkit::npapi::WebPluginInfo info;
+  WebPluginInfo info;
   bool allow_wildcard = false;
-  return !webkit::npapi::PluginList::Singleton()->GetPluginInfo(
+  return !NPAPI::PluginList::Singleton()->GetPluginInfo(
       GURL(), type, allow_wildcard, &info, NULL) || !info.enabled;
 }
 
@@ -469,8 +469,8 @@ void BufferedResourceHandler::UseAlternateResourceHandler(
 }
 
 void BufferedResourceHandler::LoadPlugins() {
-  std::vector<webkit::npapi::WebPluginInfo> plugins;
-  webkit::npapi::PluginList::Singleton()->GetPlugins(false, &plugins);
+  std::vector<WebPluginInfo> plugins;
+  NPAPI::PluginList::Singleton()->GetPlugins(false, &plugins);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_THREAD_ASYNC_CALL_TEST_H_
-#define WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_THREAD_ASYNC_CALL_TEST_H_
+#ifndef WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_THREAD_ASYNC_CALL_TEST_H_
+#define WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_THREAD_ASYNC_CALL_TEST_H_
 
 #include "base/scoped_ptr.h"
-#include "webkit/plugins/npapi/test/plugin_test.h"
+#include "webkit/glue/plugins/test/plugin_test.h"
 
 namespace base {
 class AtExitManager;
@@ -36,4 +36,4 @@ class PluginThreadAsyncCallTest : public PluginTest {
 
 }  // namespace NPAPIClient
 
-#endif  // WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_THREAD_ASYNC_CALL_TEST_H_
+#endif  // WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_THREAD_ASYNC_CALL_TEST_H_

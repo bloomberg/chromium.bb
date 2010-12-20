@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_TEST_H_
-#define WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_TEST_H_
+#ifndef WEBKIT_PORT_PLUGINS_TEST_PLUGIN_TEST_H_
+#define WEBKIT_PORT_PLUGINS_TEST_PLUGIN_TEST_H_
 
 #include <string>
 
@@ -129,6 +129,6 @@ class PluginTest {
   bool                      test_completed_;
 };
 
-}  // namespace NPAPIClient
+} // namespace NPAPIClient
 
-#endif  // WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_TEST_H_
+#endif  // WEBKIT_PORT_PLUGINS_TEST_PLUGIN_TEST_H_

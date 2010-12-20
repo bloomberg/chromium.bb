@@ -48,7 +48,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
-#include "webkit/plugins/npapi/webplugin.h"
+#include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_POSIX)
@@ -65,7 +65,7 @@ using WebKit::WebView;
 
 // Proxy for WebPluginResourceClient.  The object owns itself after creation,
 // deleting itself after its callback has been called.
-class ResourceClientProxy : public webkit::npapi::WebPluginResourceClient {
+class ResourceClientProxy : public webkit_glue::WebPluginResourceClient {
  public:
   ResourceClientProxy(PluginChannelHost* channel, int instance_id)
     : channel_(channel), instance_id_(instance_id), resource_id_(0),
@@ -267,11 +267,10 @@ static bool SilverlightColorIsTransparent(const std::string& color) {
   return false;
 }
 
-bool WebPluginDelegateProxy::Initialize(
-    const GURL& url,
+bool WebPluginDelegateProxy::Initialize(const GURL& url,
     const std::vector<std::string>& arg_names,
     const std::vector<std::string>& arg_values,
-    webkit::npapi::WebPlugin* plugin,
+    webkit_glue::WebPlugin* plugin,
     bool load_manually) {
   IPC::ChannelHandle channel_handle;
   if (!RenderThread::current()->Send(new ViewHostMsg_OpenChannelToPlugin(
@@ -1350,7 +1349,7 @@ void WebPluginDelegateProxy::OnHandleURLRequest(
       params.popups_allowed, params.notify_redirects);
 }
 
-webkit::npapi::WebPluginResourceClient*
+webkit_glue::WebPluginResourceClient*
 WebPluginDelegateProxy::CreateResourceClient(
     unsigned long resource_id, const GURL& url, int notify_id) {
   if (!channel_host_)
@@ -1362,7 +1361,7 @@ WebPluginDelegateProxy::CreateResourceClient(
   return proxy;
 }
 
-webkit::npapi::WebPluginResourceClient*
+webkit_glue::WebPluginResourceClient*
 WebPluginDelegateProxy::CreateSeekableResourceClient(
     unsigned long resource_id, int range_request_id) {
   if (!channel_host_)
@@ -1405,7 +1404,7 @@ bool WebPluginDelegateProxy::BindFakePluginWindowHandle(bool opaque) {
   // Since this isn't a real window, it doesn't get initial size and location
   // information the way a real windowed plugin would, so we need to feed it its
   // starting geometry.
-  webkit::npapi::WebPluginGeometry geom;
+  webkit_glue::WebPluginGeometry geom;
   geom.window = fake_window;
   geom.window_rect = plugin_rect_;
   geom.clip_rect = clip_rect_;
@@ -1544,7 +1543,7 @@ bool WebPluginDelegateProxy::UseSynchronousGeometryUpdates() {
 
   // The move networks plugin needs to be informed of geometry updates
   // synchronously.
-  std::vector<webkit::npapi::WebPluginMimeType>::iterator index;
+  std::vector<WebPluginMimeType>::iterator index;
   for (index = info_.mime_types.begin(); index != info_.mime_types.end();
        index++) {
     if (index->mime_type == "application/x-vnd.moveplayer.qm" ||

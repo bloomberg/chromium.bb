@@ -21,15 +21,15 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
+#include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/glue/plugins/gtk_plugin_container_manager.h"
+#include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/window_open_disposition.h"
-#include "webkit/plugins/npapi/gtk_plugin_container_manager.h"
-#include "webkit/plugins/npapi/plugin_list.h"
-#include "webkit/plugins/npapi/webplugin.h"
-#include "webkit/plugins/npapi/webplugin_delegate_impl.h"
+#include "webkit/glue/plugins/webplugin_delegate_impl.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 #include "webkit/tools/test_shell/test_shell.h"
 
@@ -197,7 +197,7 @@ void TestWebViewDelegate::runModal() {
 
 // WebPluginPageDelegate ------------------------------------------------------
 
-webkit::npapi::WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
+webkit_glue::WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
     const FilePath& path,
     const std::string& mime_type) {
   // TODO(evanm): we probably shouldn't be doing this mapping to X ids at
@@ -205,8 +205,7 @@ webkit::npapi::WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
   GdkNativeWindow plugin_parent =
       GDK_WINDOW_XWINDOW(shell_->webViewHost()->view_handle()->window);
 
-  return webkit::npapi::WebPluginDelegateImpl::Create(
-      path, mime_type, plugin_parent);
+  return WebPluginDelegateImpl::Create(path, mime_type, plugin_parent);
 }
 
 void TestWebViewDelegate::CreatedPluginWindow(
@@ -220,9 +219,9 @@ void TestWebViewDelegate::WillDestroyPluginWindow(
 }
 
 void TestWebViewDelegate::DidMovePlugin(
-    const webkit::npapi::WebPluginGeometry& move) {
+    const webkit_glue::WebPluginGeometry& move) {
   WebWidgetHost* host = GetWidgetHost();
-  webkit::npapi::GtkPluginContainerManager* plugin_container_manager =
+  GtkPluginContainerManager* plugin_container_manager =
       static_cast<WebViewHost*>(host)->plugin_container_manager();
   plugin_container_manager->MovePluginContainer(move);
 }

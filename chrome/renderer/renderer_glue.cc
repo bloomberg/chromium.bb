@@ -205,8 +205,7 @@ bool ClipboardReadFilenames(Clipboard::Buffer buffer,
   return result;
 }
 
-void GetPlugins(bool refresh,
-                std::vector<webkit::npapi::WebPluginInfo>* plugins) {
+void GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins) {
   if (!RenderThread::current()->plugin_refresh_allowed())
     refresh = false;
   RenderThread::current()->Send(new ViewHostMsg_GetPlugins(refresh, plugins));

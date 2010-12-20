@@ -14,7 +14,7 @@
 #include "grit/webkit_strings.h"
 #include "unicode/locid.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/plugins/npapi/default_plugin_shared.h"
+#include "webkit/glue/plugins/default_plugin_shared.h"
 
 // TODO(thakis): Most methods in this class are stubbed out an need to be
 // implemented.
@@ -137,6 +137,6 @@ void PluginInstallerImpl::NotifyPluginStatus(int status) {
   default_plugin::g_browser->getvalue(
       instance_,
       static_cast<NPNVariable>(
-          webkit::npapi::default_plugin::kMissingPluginStatusStart + status),
+          default_plugin::kMissingPluginStatusStart + status),
       NULL);
 }

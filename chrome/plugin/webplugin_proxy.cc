@@ -34,17 +34,16 @@
 #endif
 #include "skia/ext/platform_device.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
-#include "webkit/plugins/npapi/webplugin_delegate_impl.h"
+#include "webkit/glue/plugins/webplugin_delegate_impl.h"
 
 #if defined(USE_X11)
 #include "app/x11_util_internal.h"
 #endif
 
 using WebKit::WebBindings;
-
-using webkit::npapi::WebPluginResourceClient;
+using webkit_glue::WebPluginResourceClient;
 #if defined(OS_MACOSX)
-using webkit::npapi::WebPluginAcceleratedSurface;
+using webkit_glue::WebPluginAcceleratedSurface;
 #endif
 
 typedef std::map<CPBrowsingContext, WebPluginProxy*> ContextMap;
@@ -324,8 +323,7 @@ void WebPluginProxy::HandleURLRequest(const char* url,
     // Please refer to https://bugzilla.mozilla.org/show_bug.cgi?id=366082
     // for more details on this.
     if (delegate_->GetQuirks() &
-        webkit::npapi::WebPluginDelegateImpl::
-            PLUGIN_QUIRK_BLOCK_NONSTANDARD_GETURL_REQUESTS) {
+        WebPluginDelegateImpl::PLUGIN_QUIRK_BLOCK_NONSTANDARD_GETURL_REQUESTS) {
       GURL request_url(url);
       if (!request_url.SchemeIs(chrome::kHttpScheme) &&
           !request_url.SchemeIs(chrome::kHttpsScheme) &&

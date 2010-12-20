@@ -22,8 +22,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pepper_plugin_registry.h"
 #include "chrome/common/pref_names.h"
-#include "webkit/plugins/npapi/plugin_list.h"
-#include "webkit/plugins/npapi/webplugininfo.h"
+#include "webkit/glue/plugins/webplugininfo.h"
 
 // How long to wait to save the plugin enabled information, which might need to
 // go to disk.
@@ -35,7 +34,7 @@ PluginUpdater::PluginUpdater()
 }
 
 DictionaryValue* PluginUpdater::CreatePluginFileSummary(
-    const webkit::npapi::WebPluginInfo& plugin) {
+    const WebPluginInfo& plugin) {
   DictionaryValue* data = new DictionaryValue();
   data->SetString("path", plugin.path.value());
   data->SetString("name", plugin.name);
@@ -46,8 +45,8 @@ DictionaryValue* PluginUpdater::CreatePluginFileSummary(
 
 // static
 ListValue* PluginUpdater::GetPluginGroupsData() {
-  std::vector<webkit::npapi::PluginGroup> plugin_groups;
-  webkit::npapi::PluginList::Singleton()->GetPluginGroups(true, &plugin_groups);
+  std::vector<PluginGroup> plugin_groups;
+  NPAPI::PluginList::Singleton()->GetPluginGroups(true, &plugin_groups);
 
   // Construct DictionaryValues to return to the UI
   ListValue* plugin_groups_data = new ListValue();
@@ -58,20 +57,19 @@ ListValue* PluginUpdater::GetPluginGroupsData() {
 }
 
 void PluginUpdater::EnablePluginGroup(bool enable, const string16& group_name) {
-  if (webkit::npapi::PluginGroup::IsPluginNameDisabledByPolicy(group_name))
+  if (PluginGroup::IsPluginNameDisabledByPolicy(group_name))
     enable = false;
-  webkit::npapi::PluginList::Singleton()->EnableGroup(enable, group_name);
+  NPAPI::PluginList::Singleton()->EnableGroup(enable, group_name);
   NotifyPluginStatusChanged();
 }
 
 void PluginUpdater::EnablePluginFile(bool enable,
                                      const FilePath::StringType& path) {
   FilePath file_path(path);
-  if (enable &&
-      !webkit::npapi::PluginGroup::IsPluginPathDisabledByPolicy(file_path))
-    webkit::npapi::PluginList::Singleton()->EnablePlugin(file_path);
+  if (enable && !PluginGroup::IsPluginPathDisabledByPolicy(file_path))
+    NPAPI::PluginList::Singleton()->EnablePlugin(file_path);
   else
-    webkit::npapi::PluginList::Singleton()->DisablePlugin(file_path);
+    NPAPI::PluginList::Singleton()->DisablePlugin(file_path);
 
   NotifyPluginStatusChanged();
 }
@@ -107,8 +105,7 @@ void PluginUpdater::DisablePluginsFromPolicy(const ListValue* plugin_names) {
       }
     }
   }
-  webkit::npapi::PluginGroup::SetPolicyDisabledPluginPatterns(
-      policy_disabled_plugin_patterns);
+  PluginGroup::SetPolicyDisabledPluginPatterns(policy_disabled_plugin_patterns);
 
   NotifyPluginStatusChanged();
 }
@@ -193,7 +190,7 @@ void PluginUpdater::DisablePluginGroupsFromPrefs(Profile* profile) {
           }
         }
         if (!enabled)
-          webkit::npapi::PluginList::Singleton()->DisablePlugin(plugin_path);
+          NPAPI::PluginList::Singleton()->DisablePlugin(plugin_path);
       } else if (!enabled && plugin->GetString("name", &group_name)) {
         // Don't disable this group if it's for the pdf plugin and we just
         // forced it on.
@@ -216,14 +213,13 @@ void PluginUpdater::DisablePluginGroupsFromPrefs(Profile* profile) {
       !force_internal_pdf_for_this_run) {
     // The internal PDF plugin is disabled by default, and the user hasn't
     // overridden the default.
-    webkit::npapi::PluginList::Singleton()->DisablePlugin(pdf_path);
+    NPAPI::PluginList::Singleton()->DisablePlugin(pdf_path);
     EnablePluginGroup(false, pdf_group_name);
   }
 
   if (force_enable_internal_pdf) {
     // See http://crbug.com/50105 for background.
-    EnablePluginGroup(false, ASCIIToUTF16(
-        webkit::npapi::PluginGroup::kAdobeReaderGroupName));
+    EnablePluginGroup(false, ASCIIToUTF16(PluginGroup::kAdobeReaderGroupName));
 
     // We want to save this, but doing so requires loading the list of plugins,
     // so do it after a minute as to not impact startup performance.  Note that
@@ -241,11 +237,11 @@ void PluginUpdater::UpdatePreferences(Profile* profile, int delay_ms) {
 }
 
 void PluginUpdater::GetPreferencesDataOnFileThread(void* profile) {
-  std::vector<webkit::npapi::WebPluginInfo> plugins;
-  webkit::npapi::PluginList::Singleton()->GetPlugins(false, &plugins);
+  std::vector<WebPluginInfo> plugins;
+  NPAPI::PluginList::Singleton()->GetPlugins(false, &plugins);
 
-  std::vector<webkit::npapi::PluginGroup> groups;
-  webkit::npapi::PluginList::Singleton()->GetPluginGroups(false, &groups);
+  std::vector<PluginGroup> groups;
+  NPAPI::PluginList::Singleton()->GetPluginGroups(false, &groups);
 
   BrowserThread::PostTask(
     BrowserThread::UI,
@@ -257,8 +253,8 @@ void PluginUpdater::GetPreferencesDataOnFileThread(void* profile) {
 
 void PluginUpdater::OnUpdatePreferences(
     Profile* profile,
-    const std::vector<webkit::npapi::WebPluginInfo>& plugins,
-    const std::vector<webkit::npapi::PluginGroup>& groups) {
+    const std::vector<WebPluginInfo>& plugins,
+    const std::vector<PluginGroup>& groups) {
   ListValue* plugins_list = profile->GetPrefs()->GetMutableList(
       prefs::kPluginsPluginsList);
   plugins_list->Clear();
@@ -269,8 +265,7 @@ void PluginUpdater::OnUpdatePreferences(
                                      internal_dir);
 
   // Add the plugin files.
-  for (std::vector<webkit::npapi::WebPluginInfo>::const_iterator it =
-           plugins.begin();
+  for (std::vector<WebPluginInfo>::const_iterator it = plugins.begin();
        it != plugins.end();
        ++it) {
     plugins_list->Append(CreatePluginFileSummary(*it));

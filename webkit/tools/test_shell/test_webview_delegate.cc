@@ -33,6 +33,9 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFileError.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
+#include "third_party/WebKit/WebKit/chromium/public/WebGeolocationClientMock.h"
+#endif
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKitClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
@@ -56,14 +59,14 @@
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/media/video_renderer_impl.h"
+#include "webkit/glue/plugins/webplugin_impl.h"
+#include "webkit/glue/plugins/plugin_list.h"
+#include "webkit/glue/plugins/webplugin_delegate_impl.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webmediaplayer_impl.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/window_open_disposition.h"
-#include "webkit/plugins/npapi/webplugin_impl.h"
-#include "webkit/plugins/npapi/plugin_list.h"
-#include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 #include "webkit/tools/test_shell/accessibility_controller.h"
 #include "webkit/tools/test_shell/mock_spellcheck.h"
 #include "webkit/tools/test_shell/notification_presenter.h"
@@ -73,10 +76,6 @@
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 #include "webkit/tools/test_shell/test_shell.h"
 #include "webkit/tools/test_shell/test_web_worker.h"
-
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
-#include "third_party/WebKit/WebKit/chromium/public/WebGeolocationClientMock.h"
-#endif
 
 #if defined(OS_WIN)
 // TODO(port): make these files work everywhere.
@@ -712,22 +711,22 @@ WebScreenInfo TestWebViewDelegate::screenInfo() {
 
 // WebFrameClient ------------------------------------------------------------
 
-WebPlugin* TestWebViewDelegate::createPlugin(WebFrame* frame,
-                                             const WebPluginParams& params) {
+WebPlugin* TestWebViewDelegate::createPlugin(
+    WebFrame* frame, const WebPluginParams& params) {
   bool allow_wildcard = true;
-  webkit::npapi::WebPluginInfo info;
+  WebPluginInfo info;
   std::string actual_mime_type;
-  if (!webkit::npapi::PluginList::Singleton()->GetPluginInfo(
+  if (!NPAPI::PluginList::Singleton()->GetPluginInfo(
           params.url, params.mimeType.utf8(), allow_wildcard, &info,
           &actual_mime_type) || !info.enabled)
     return NULL;
 
-  return new webkit::npapi::WebPluginImpl(
+  return new webkit_glue::WebPluginImpl(
       frame, params, info.path, actual_mime_type, AsWeakPtr());
 }
 
-WebWorker* TestWebViewDelegate::createWorker(WebFrame* frame,
-                                             WebWorkerClient* client) {
+WebWorker* TestWebViewDelegate::createWorker(
+    WebFrame* frame, WebWorkerClient* client) {
   return new TestWebWorker();
 }
 

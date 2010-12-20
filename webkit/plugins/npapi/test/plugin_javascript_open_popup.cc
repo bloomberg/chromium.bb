@@ -1,14 +1,14 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "build/build_config.h"
-#include "webkit/plugins/npapi/test/plugin_javascript_open_popup.h"
+#include "webkit/glue/plugins/test/plugin_javascript_open_popup.h"
 
 #if defined(USE_X11)
 #include "third_party/npapi/bindings/npapi_x11.h"
 #endif
-#include "webkit/plugins/npapi/test/plugin_client.h"
+#include "webkit/glue/plugins/test/plugin_client.h"
 
 namespace NPAPIClient {
 

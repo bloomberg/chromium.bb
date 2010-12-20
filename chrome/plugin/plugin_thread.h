@@ -11,7 +11,7 @@
 #include "build/build_config.h"
 #include "chrome/common/child_thread.h"
 #include "chrome/plugin/plugin_channel.h"
-#include "webkit/plugins/npapi/plugin_lib.h"
+#include "webkit/glue/plugins/plugin_lib.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"

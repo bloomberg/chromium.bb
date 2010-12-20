@@ -18,8 +18,8 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
-#include "webkit/plugins/npapi/webplugininfo.h"
-#include "webkit/plugins/npapi/webplugin_delegate.h"
+#include "webkit/glue/plugins/webplugininfo.h"
+#include "webkit/glue/plugins/webplugin_delegate.h"
 
 #if defined(OS_MACOSX)
 #include "base/hash_tables.h"
@@ -44,16 +44,14 @@ namespace skia {
 class PlatformCanvas;
 }
 
-namespace webkit {
-namespace npapi {
+namespace webkit_glue {
 class WebPlugin;
-}
 }
 
 // An implementation of WebPluginDelegate that proxies all calls to
 // the plugin process.
 class WebPluginDelegateProxy
-    : public webkit::npapi::WebPluginDelegate,
+    : public webkit_glue::WebPluginDelegate,
       public IPC::Channel::Listener,
       public IPC::Message::Sender,
       public base::SupportsWeakPtr<WebPluginDelegateProxy> {
@@ -66,7 +64,7 @@ class WebPluginDelegateProxy
   virtual bool Initialize(const GURL& url,
                           const std::vector<std::string>& arg_names,
                           const std::vector<std::string>& arg_values,
-                          webkit::npapi::WebPlugin* plugin,
+                          webkit_glue::WebPlugin* plugin,
                           bool load_manually);
   virtual void UpdateGeometry(const gfx::Rect& window_rect,
                               const gfx::Rect& clip_rect);
@@ -115,9 +113,9 @@ class WebPluginDelegateProxy
   virtual void DidFinishManualLoading();
   virtual void DidManualLoadFail();
   virtual void InstallMissingPlugin();
-  virtual webkit::npapi::WebPluginResourceClient* CreateResourceClient(
+  virtual webkit_glue::WebPluginResourceClient* CreateResourceClient(
       unsigned long resource_id, const GURL& url, int notify_id);
-  virtual webkit::npapi::WebPluginResourceClient* CreateSeekableResourceClient(
+  virtual webkit_glue::WebPluginResourceClient* CreateSeekableResourceClient(
       unsigned long resource_id, int range_request_id);
 
   CommandBufferProxy* CreateCommandBuffer();
@@ -233,13 +231,13 @@ class WebPluginDelegateProxy
 #endif
 
   base::WeakPtr<RenderView> render_view_;
-  webkit::npapi::WebPlugin* plugin_;
+  webkit_glue::WebPlugin* plugin_;
   bool uses_shared_bitmaps_;
   gfx::PluginWindowHandle window_;
   scoped_refptr<PluginChannelHost> channel_host_;
   std::string mime_type_;
   int instance_id_;
-  webkit::npapi::WebPluginInfo info_;
+  WebPluginInfo info_;
 
   gfx::Rect plugin_rect_;
   gfx::Rect clip_rect_;

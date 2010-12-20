@@ -12,7 +12,7 @@
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
-#include "webkit/plugins/npapi/plugin_constants_win.h"
+#include "webkit/glue/plugins/plugin_constants_win.h"
 
 using WebKit::WebBindings;
 
@@ -243,7 +243,7 @@ void NPObjectStub::OnSetProperty(const NPIdentifier_Param& name,
           PluginThread::current()->plugin_path().BaseName().value());
       static NPIdentifier fullscreen =
           WebBindings::getStringIdentifier("fullScreen");
-      if (filename == webkit::npapi::kNewWMPPlugin && id == fullscreen) {
+      if (filename == kNewWMPPlugin && id == fullscreen) {
         // Workaround for bug 15985, which is if Flash causes WMP to go
         // full screen a deadlock can occur when WMP calls SetFocus.
         NPObjectMsg_SetProperty::WriteReplyParams(reply_msg, true);

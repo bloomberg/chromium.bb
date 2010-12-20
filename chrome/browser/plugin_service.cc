@@ -34,13 +34,12 @@
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
-#include "webkit/plugins/npapi/plugin_constants_win.h"
-#include "webkit/plugins/npapi/plugin_list.h"
-#include "webkit/plugins/npapi/webplugininfo.h"
-
 #ifndef DISABLE_NACL
 #include "native_client/src/trusted/plugin/nacl_entry_points.h"
 #endif
+#include "webkit/glue/plugins/plugin_constants_win.h"
+#include "webkit/glue/plugins/plugin_list.h"
+#include "webkit/glue/plugins/webplugininfo.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/plugin_selection_policy.h"
@@ -95,10 +94,10 @@ PluginService::PluginService()
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   FilePath path = command_line->GetSwitchValuePath(switches::kLoadPlugin);
   if (!path.empty())
-    webkit::npapi::PluginList::Singleton()->AddExtraPluginPath(path);
+    NPAPI::PluginList::Singleton()->AddExtraPluginPath(path);
   path = command_line->GetSwitchValuePath(switches::kExtraPluginDir);
   if (!path.empty())
-    webkit::npapi::PluginList::Singleton()->AddExtraPluginDir(path);
+    NPAPI::PluginList::Singleton()->AddExtraPluginDir(path);
 
   chrome::RegisterInternalDefaultPlugin();
 
@@ -106,7 +105,7 @@ PluginService::PluginService()
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableInternalFlash) &&
       PathService::Get(chrome::FILE_FLASH_PLUGIN, &path)) {
-    webkit::npapi::PluginList::Singleton()->AddExtraPluginPath(path);
+    NPAPI::PluginList::Singleton()->AddExtraPluginPath(path);
   }
 
 #ifndef DISABLE_NACL
@@ -124,9 +123,9 @@ PluginService::PluginService()
 
 #if defined(OS_WIN)
   hkcu_key_.Create(
-      HKEY_CURRENT_USER, webkit::npapi::kRegistryMozillaPlugins, KEY_NOTIFY);
+      HKEY_CURRENT_USER, kRegistryMozillaPlugins, KEY_NOTIFY);
   hklm_key_.Create(
-      HKEY_LOCAL_MACHINE, webkit::npapi::kRegistryMozillaPlugins, KEY_NOTIFY);
+      HKEY_LOCAL_MACHINE, kRegistryMozillaPlugins, KEY_NOTIFY);
   if (hkcu_key_.StartWatching()) {
     hkcu_event_.reset(new base::WaitableEvent(hkcu_key_.watch_event()));
     hkcu_watcher_.StartWatching(hkcu_event_.get(), this);
@@ -141,7 +140,7 @@ PluginService::PluginService()
   // e.g. ~/.config/chromium/Plugins.
   FilePath user_data_dir;
   if (PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
-    webkit::npapi::PluginList::Singleton()->AddExtraPluginDir(
+    NPAPI::PluginList::Singleton()->AddExtraPluginDir(
         user_data_dir.Append("Plugins"));
   }
 #endif
@@ -213,9 +212,9 @@ PluginProcessHost* PluginService::FindOrStartPluginProcess(
   if (plugin_host)
     return plugin_host;
 
-  webkit::npapi::WebPluginInfo info;
-  if (!webkit::npapi::PluginList::Singleton()->GetPluginInfoByPath(
-          plugin_path, &info)) {
+  WebPluginInfo info;
+  if (!NPAPI::PluginList::Singleton()->GetPluginInfoByPath(
+      plugin_path, &info)) {
     return NULL;
   }
 
@@ -247,7 +246,7 @@ void PluginService::GetAllowedPluginForOpenChannelToPlugin(
     const std::string& mime_type,
     PluginProcessHost::Client* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  webkit::npapi::WebPluginInfo info;
+  WebPluginInfo info;
   bool found = GetFirstAllowedPluginInfo(url, mime_type, &info, NULL);
   FilePath plugin_path;
   if (found && info.enabled)
@@ -276,16 +275,16 @@ void PluginService::FinishOpenChannelToPlugin(
 bool PluginService::GetFirstAllowedPluginInfo(
     const GURL& url,
     const std::string& mime_type,
-    webkit::npapi::WebPluginInfo* info,
+    WebPluginInfo* info,
     std::string* actual_mime_type) {
   // GetPluginInfoArray may need to load the plugins, so we need to be
   // on the FILE thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   bool allow_wildcard = true;
 #if defined(OS_CHROMEOS)
-  std::vector<webkit::npapi::WebPluginInfo> info_array;
+  std::vector<WebPluginInfo> info_array;
   std::vector<std::string> actual_mime_types;
-  webkit::npapi::PluginList::Singleton()->GetPluginInfoArray(
+  NPAPI::PluginList::Singleton()->GetPluginInfoArray(
       url, mime_type, allow_wildcard, &info_array, &actual_mime_types);
 
   // Now we filter by the plugin selection policy.
@@ -299,7 +298,7 @@ bool PluginService::GetFirstAllowedPluginInfo(
   }
   return false;
 #else
-  return webkit::npapi::PluginList::Singleton()->GetPluginInfo(
+  return NPAPI::PluginList::Singleton()->GetPluginInfo(
       url, mime_type, allow_wildcard, info, actual_mime_type);
 #endif
 }
@@ -320,7 +319,7 @@ void PluginService::OnWaitableEventSignaled(
     hklm_key_.StartWatching();
   }
 
-  webkit::npapi::PluginList::Singleton()->RefreshPlugins();
+  NPAPI::PluginList::Singleton()->RefreshPlugins();
   PurgePluginListCache(true);
 #endif  // defined(OS_WIN)
 }
@@ -341,8 +340,8 @@ void PluginService::Observe(NotificationType type,
       bool plugins_changed = false;
       for (size_t i = 0; i < extension->plugins().size(); ++i) {
         const Extension::PluginInfo& plugin = extension->plugins()[i];
-        webkit::npapi::PluginList::Singleton()->RefreshPlugins();
-        webkit::npapi::PluginList::Singleton()->AddExtraPluginPath(plugin.path);
+        NPAPI::PluginList::Singleton()->RefreshPlugins();
+        NPAPI::PluginList::Singleton()->AddExtraPluginPath(plugin.path);
         plugins_changed = true;
         if (!plugin.is_public)
           private_plugins_[plugin.path] = extension->url();
@@ -360,9 +359,8 @@ void PluginService::Observe(NotificationType type,
         BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                                 NewRunnableFunction(&ForceShutdownPlugin,
                                                     plugin.path));
-        webkit::npapi::PluginList::Singleton()->RefreshPlugins();
-        webkit::npapi::PluginList::Singleton()->RemoveExtraPluginPath(
-            plugin.path);
+        NPAPI::PluginList::Singleton()->RefreshPlugins();
+        NPAPI::PluginList::Singleton()->RemoveExtraPluginPath(plugin.path);
         plugins_changed = true;
         if (!plugin.is_public)
           private_plugins_.erase(plugin.path);
@@ -409,7 +407,7 @@ void PluginService::RegisterPepperPlugins() {
   std::vector<PepperPluginInfo> plugins;
   PepperPluginRegistry::GetList(&plugins);
   for (size_t i = 0; i < plugins.size(); ++i) {
-    webkit::npapi::PluginVersionInfo info;
+    NPAPI::PluginVersionInfo info;
     info.path = plugins[i].path;
     info.product_name = plugins[i].name.empty() ?
         plugins[i].path.BaseName().ToWStringHack() :
@@ -424,6 +422,6 @@ void PluginService::RegisterPepperPlugins() {
     // or perhaps refactor the PluginList to be less specific to NPAPI.
     memset(&info.entry_points, 0, sizeof(info.entry_points));
 
-    webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(info);
+    NPAPI::PluginList::Singleton()->RegisterInternalPlugin(info);
   }
 }

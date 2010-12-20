@@ -23,12 +23,12 @@
 #include "webkit/blob/blob_data.h"
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/password_form.h"
+#include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webcookie.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webmenuitem.h"
-#include "webkit/plugins/npapi/webplugin.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/common/font_descriptor_mac.h"
@@ -196,8 +196,8 @@ void ParamTraits<ContextMenuParams>::Log(const param_type& p,
   l->append("<ContextMenuParams>");
 }
 
-void ParamTraits<webkit::npapi::WebPluginGeometry>::Write(Message* m,
-                                                          const param_type& p) {
+void ParamTraits<webkit_glue::WebPluginGeometry>::Write(Message* m,
+                                                        const param_type& p) {
   WriteParam(m, p.window);
   WriteParam(m, p.window_rect);
   WriteParam(m, p.clip_rect);
@@ -206,7 +206,7 @@ void ParamTraits<webkit::npapi::WebPluginGeometry>::Write(Message* m,
   WriteParam(m, p.visible);
 }
 
-bool ParamTraits<webkit::npapi::WebPluginGeometry>::Read(
+bool ParamTraits<webkit_glue::WebPluginGeometry>::Read(
     const Message* m, void** iter, param_type* p) {
   return
       ReadParam(m, iter, &p->window) &&
@@ -217,8 +217,8 @@ bool ParamTraits<webkit::npapi::WebPluginGeometry>::Read(
       ReadParam(m, iter, &p->visible);
 }
 
-void ParamTraits<webkit::npapi::WebPluginGeometry>::Log(const param_type& p,
-                                                        std::string* l) {
+void ParamTraits<webkit_glue::WebPluginGeometry>::Log(const param_type& p,
+                                                      std::string* l) {
   l->append("(");
   LogParam(p.window, l);
   l->append(", ");
@@ -234,24 +234,21 @@ void ParamTraits<webkit::npapi::WebPluginGeometry>::Log(const param_type& p,
   l->append(")");
 }
 
-void ParamTraits<webkit::npapi::WebPluginMimeType>::Write(Message* m,
-                                                          const param_type& p) {
+void ParamTraits<WebPluginMimeType>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.mime_type);
   WriteParam(m, p.file_extensions);
   WriteParam(m, p.description);
 }
 
-bool ParamTraits<webkit::npapi::WebPluginMimeType>::Read(const Message* m,
-                                                         void** iter,
-                                                         param_type* r) {
+bool ParamTraits<WebPluginMimeType>::Read(const Message* m, void** iter,
+                                          param_type* r) {
   return
       ReadParam(m, iter, &r->mime_type) &&
       ReadParam(m, iter, &r->file_extensions) &&
       ReadParam(m, iter, &r->description);
 }
 
-void ParamTraits<webkit::npapi::WebPluginMimeType>::Log(const param_type& p,
-                                                        std::string* l) {
+void ParamTraits<WebPluginMimeType>::Log(const param_type& p, std::string* l) {
   l->append("(");
   LogParam(p.mime_type, l);
   l->append(", ");
@@ -261,8 +258,7 @@ void ParamTraits<webkit::npapi::WebPluginMimeType>::Log(const param_type& p,
   l->append(")");
 }
 
-void ParamTraits<webkit::npapi::WebPluginInfo>::Write(Message* m,
-                                                      const param_type& p) {
+void ParamTraits<WebPluginInfo>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.name);
   WriteParam(m, p.path);
   WriteParam(m, p.version);
@@ -271,9 +267,8 @@ void ParamTraits<webkit::npapi::WebPluginInfo>::Write(Message* m,
   WriteParam(m, p.enabled);
 }
 
-bool ParamTraits<webkit::npapi::WebPluginInfo>::Read(const Message* m,
-                                                     void** iter,
-                                                     param_type* r) {
+bool ParamTraits<WebPluginInfo>::Read(const Message* m, void** iter,
+                                      param_type* r) {
   return
       ReadParam(m, iter, &r->name) &&
       ReadParam(m, iter, &r->path) &&
@@ -283,8 +278,7 @@ bool ParamTraits<webkit::npapi::WebPluginInfo>::Read(const Message* m,
       ReadParam(m, iter, &r->enabled);
 }
 
-void ParamTraits<webkit::npapi::WebPluginInfo>::Log(const param_type& p,
-                                                    std::string* l) {
+void ParamTraits<WebPluginInfo>::Log(const param_type& p, std::string* l) {
   l->append("(");
   LogParam(p.name, l);
   l->append(", ");

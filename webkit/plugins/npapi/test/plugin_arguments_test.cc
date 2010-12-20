@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/plugins/npapi/test/plugin_arguments_test.h"
-
 #include "base/basictypes.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+
+#include "webkit/glue/plugins/test/plugin_arguments_test.h"
 
 namespace NPAPIClient {
 
@@ -66,4 +66,4 @@ NPError PluginArgumentsTest::SetWindow(NPWindow* pNPWindow) {
   return NPERR_NO_ERROR;
 }
 
-}  // namespace NPAPIClient
+} // namespace NPAPIClient

@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/glue/plugins/plugin_list.h"
 
 namespace {
 

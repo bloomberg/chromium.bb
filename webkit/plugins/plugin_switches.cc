@@ -12,10 +12,4 @@ const char kEnablePepperTesting[] = "enable-pepper-testing";
 // Dumps extra logging about plugin loading to the log file.
 const char kDebugPluginLoading[] = "debug-plugin-loading";
 
-#if defined(OS_WIN)
-// Used by the plugins_test when testing the older WMP plugin to force the new
-// plugin to not get loaded.
-extern const char kUseOldWMPPlugin[] = "use-old-wmp";
-#endif
-
 }  // namespace switches

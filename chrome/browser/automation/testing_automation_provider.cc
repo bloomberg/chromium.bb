@@ -75,7 +75,7 @@
 #include "net/base/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "views/event.h"
-#include "webkit/plugins/npapi/plugin_list.h"
+#include "webkit/glue/plugins/plugin_list.h"
 
 namespace {
 
@@ -2993,11 +2993,10 @@ void TestingAutomationProvider::GetPluginsInfo(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  std::vector<webkit::npapi::WebPluginInfo> plugins;
-  webkit::npapi::PluginList::Singleton()->GetPlugins(false, &plugins);
+  std::vector<WebPluginInfo> plugins;
+  NPAPI::PluginList::Singleton()->GetPlugins(false, &plugins);
   ListValue* items = new ListValue;
-  for (std::vector<webkit::npapi::WebPluginInfo>::const_iterator it =
-           plugins.begin();
+  for (std::vector<WebPluginInfo>::const_iterator it = plugins.begin();
        it != plugins.end();
        ++it) {
     DictionaryValue* item = new DictionaryValue;
@@ -3008,7 +3007,7 @@ void TestingAutomationProvider::GetPluginsInfo(
     item->SetBoolean("enabled", it->enabled);
     // Add info about mime types.
     ListValue* mime_types = new ListValue();
-    for (std::vector<webkit::npapi::WebPluginMimeType>::const_iterator type_it =
+    for (std::vector<WebPluginMimeType>::const_iterator type_it =
              it->mime_types.begin();
          type_it != it->mime_types.end();
          ++type_it) {
@@ -3047,8 +3046,7 @@ void TestingAutomationProvider::EnablePlugin(Browser* browser,
   if (!args->GetString("path", &path)) {
     reply.SendError("path not specified.");
     return;
-  } else if (!webkit::npapi::PluginList::Singleton()->EnablePlugin(
-        FilePath(path))) {
+  } else if (!NPAPI::PluginList::Singleton()->EnablePlugin(FilePath(path))) {
     reply.SendError(StringPrintf("Could not enable plugin for path %s.",
                                  path.c_str()));
     return;
@@ -3067,8 +3065,7 @@ void TestingAutomationProvider::DisablePlugin(Browser* browser,
   if (!args->GetString("path", &path)) {
     reply.SendError("path not specified.");
     return;
-  } else if (!webkit::npapi::PluginList::Singleton()->DisablePlugin(
-        FilePath(path))) {
+  } else if (!NPAPI::PluginList::Singleton()->DisablePlugin(FilePath(path))) {
     reply.SendError(StringPrintf("Could not disable plugin for path %s.",
                                  path.c_str()));
     return;

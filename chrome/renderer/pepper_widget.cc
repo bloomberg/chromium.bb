@@ -9,9 +9,9 @@
 #include "chrome/renderer/pepper_scrollbar_widget.h"
 #include "chrome/renderer/webplugin_delegate_pepper.h"
 #include "skia/ext/platform_canvas.h"
-#include "webkit/plugins/npapi/plugin_instance.h"
-#include "webkit/plugins/npapi/webplugin.h"
-#include "webkit/plugins/npapi/webplugin_delegate.h"
+#include "webkit/glue/plugins/plugin_instance.h"
+#include "webkit/glue/plugins/webplugin.h"
+#include "webkit/glue/plugins/webplugin_delegate.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -57,8 +57,8 @@ NPError NPPaintWidget(NPP instance,
   if (iter == g_widgets.Get().end())
     return NPERR_INVALID_PARAM;
 
-  webkit::npapi::PluginInstance* plugin =
-      static_cast<webkit::npapi::PluginInstance*>(instance->ndata);
+  NPAPI::PluginInstance* plugin =
+      static_cast<NPAPI::PluginInstance*>(instance->ndata);
   WebPluginDelegatePepper* delegate =
       static_cast<WebPluginDelegatePepper*>(plugin->webplugin()->delegate());
   Graphics2DDeviceContext* gdc = delegate->GetGraphicsContext(context);
@@ -135,8 +135,8 @@ void PepperWidget::Init(NPP instance, int id) {
 }
 
 void PepperWidget::WidgetPropertyChanged(NPWidgetProperty property) {
-  webkit::npapi::PluginInstance* instance =
-      static_cast<webkit::npapi::PluginInstance*>(instance_->ndata);
+  NPAPI::PluginInstance* instance =
+      static_cast<NPAPI::PluginInstance*>(instance_->ndata);
   NPPExtensions* extensions = NULL;
   instance->NPP_GetValue(NPPVPepperExtensions, &extensions);
   if (!extensions)

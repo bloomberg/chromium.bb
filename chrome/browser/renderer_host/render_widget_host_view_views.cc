@@ -193,7 +193,7 @@ void RenderWidgetHostViewViews::SetSize(const gfx::Size& size) {
 }
 
 void RenderWidgetHostViewViews::MovePluginWindows(
-    const std::vector<webkit::npapi::WebPluginGeometry>& moves) {
+    const std::vector<webkit_glue::WebPluginGeometry>& moves) {
   // TODO(anicolao): NIY
   // NOTIMPLEMENTED();
 }

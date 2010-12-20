@@ -43,8 +43,8 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebViewClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNavigationType.h"
+#include "webkit/glue/plugins/webplugin_page_delegate.h"
 #include "webkit/glue/webpreferences.h"
-#include "webkit/plugins/npapi/webplugin_page_delegate.h"
 
 #if defined(OS_WIN)
 // RenderView is a diamond-shaped hierarchy, with WebWidgetClient at the root.
@@ -74,6 +74,7 @@ class NotificationProvider;
 class PageClickTracker;
 class PasswordAutocompleteManager;
 class PepperDeviceTest;
+class PluginGroup;
 class PrintWebViewHelper;
 class RenderViewVisitor;
 class SkBitmap;
@@ -96,16 +97,12 @@ class Rect;
 }
 
 namespace webkit {
-
-namespace npapi {
-class PluginGroup;
-}  // namespace npapi
-
 namespace ppapi {
+
 class PluginInstance;
 class FullscreenContainer;
-}  // namespace ppapi
 
+}  // namespace ppapi
 }  // namespace webkit
 
 namespace safe_browsing {
@@ -174,7 +171,7 @@ class RenderView : public RenderWidget,
                    public WebKit::WebViewClient,
                    public WebKit::WebFrameClient,
                    public WebKit::WebPageSerializerClient,
-                   public webkit::npapi::WebPluginPageDelegate,
+                   public webkit_glue::WebPluginPageDelegate,
                    public base::SupportsWeakPtr<RenderView> {
  public:
   // Creates a new RenderView.  The parent_hwnd specifies a HWND to use as the
@@ -653,12 +650,12 @@ class RenderView : public RenderWidget,
 
   // webkit_glue::WebPluginPageDelegate implementation -------------------------
 
-  virtual webkit::npapi::WebPluginDelegate* CreatePluginDelegate(
+  virtual webkit_glue::WebPluginDelegate* CreatePluginDelegate(
       const FilePath& file_path,
       const std::string& mime_type);
   virtual void CreatedPluginWindow(gfx::PluginWindowHandle handle);
   virtual void WillDestroyPluginWindow(gfx::PluginWindowHandle handle);
-  virtual void DidMovePlugin(const webkit::npapi::WebPluginGeometry& move);
+  virtual void DidMovePlugin(const webkit_glue::WebPluginGeometry& move);
   virtual void DidStartLoadingForPlugin();
   virtual void DidStopLoadingForPlugin();
   virtual void ShowModalHTMLDialogForPlugin(
@@ -1029,7 +1026,7 @@ class RenderView : public RenderWidget,
   WebKit::WebPlugin* CreatePluginPlaceholder(
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params,
-      const webkit::npapi::PluginGroup& group,
+      const PluginGroup& group,
       int resource_id,
       int message_id);
 
@@ -1342,7 +1339,7 @@ class RenderView : public RenderWidget,
 
   // Remember the first uninstalled plugin, so that we can ask the plugin
   // to install itself when user clicks on the info bar.
-  base::WeakPtr<webkit::npapi::WebPluginDelegate> first_default_plugin_;
+  base::WeakPtr<webkit_glue::WebPluginDelegate> first_default_plugin_;
 
   PepperPluginDelegateImpl pepper_delegate_;
 

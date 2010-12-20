@@ -46,11 +46,11 @@
 #include "views/focus/focus_util_win.h"
 // Included for views::kReflectedMessage - TODO(beng): move this to win_util.h!
 #include "views/widget/widget_win.h"
+#include "webkit/glue/plugins/plugin_constants_win.h"
+#include "webkit/glue/plugins/webplugin_delegate_impl.h"
+#include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webcursor.h"
-#include "webkit/plugins/npapi/plugin_constants_win.h"
-#include "webkit/plugins/npapi/webplugin_delegate_impl.h"
-#include "webkit/plugins/npapi/webplugin.h"
 
 using app::ViewProp;
 using base::TimeDelta;
@@ -59,7 +59,7 @@ using WebKit::WebInputEvent;
 using WebKit::WebInputEventFactory;
 using WebKit::WebMouseEvent;
 using WebKit::WebTextDirection;
-using webkit::npapi::WebPluginGeometry;
+using webkit_glue::WebPluginGeometry;
 
 const wchar_t kRenderWidgetHostHWNDClass[] = L"Chrome_RenderWidgetHostHWND";
 
@@ -236,7 +236,7 @@ class NotifyPluginProcessHostTask : public Task {
 
 // Windows callback for OnDestroy to detach the plugin windows.
 BOOL CALLBACK DetachPluginWindowsCallback(HWND window, LPARAM param) {
-  if (webkit::npapi::WebPluginDelegateImpl::IsPluginDelegateWindow(window) &&
+  if (WebPluginDelegateImpl::IsPluginDelegateWindow(window) &&
       !IsHungAppWindow(window)) {
     ::ShowWindow(window, SW_HIDE);
     SetParent(window, NULL);
@@ -490,7 +490,7 @@ HWND RenderWidgetHostViewWin::ReparentWindow(HWND window) {
     wcex.hCursor        = 0;
     wcex.hbrBackground  = reinterpret_cast<HBRUSH>(COLOR_WINDOW+1);
     wcex.lpszMenuName   = 0;
-    wcex.lpszClassName  = webkit::npapi::kWrapperNativeWindowClassName;
+    wcex.lpszClassName  = kWrapperNativeWindowClassName;
     wcex.hIconSm        = 0;
     window_class = RegisterClassEx(&wcex);
   }
@@ -654,11 +654,11 @@ void RenderWidgetHostViewWin::ImeCancelComposition() {
 }
 
 BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lparam) {
-  if (!webkit::npapi::WebPluginDelegateImpl::IsPluginDelegateWindow(hwnd))
+  if (!WebPluginDelegateImpl::IsPluginDelegateWindow(hwnd))
     return TRUE;
 
   gfx::Rect* rect = reinterpret_cast<gfx::Rect*>(lparam);
-  static UINT msg = RegisterWindowMessage(webkit::npapi::kPaintMessageName);
+  static UINT msg = RegisterWindowMessage(kPaintMessageName);
   WPARAM wparam = rect->x() << 16 | rect->y();
   lparam = rect->width() << 16 | rect->height();
 
@@ -1447,8 +1447,7 @@ LRESULT RenderWidgetHostViewWin::OnMouseActivate(UINT message,
     ::ScreenToClient(m_hWnd, &cursor_pos);
     HWND child_window = ::RealChildWindowFromPoint(m_hWnd, cursor_pos);
     if (::IsWindow(child_window) && child_window != m_hWnd) {
-      if (win_util::GetClassName(child_window) ==
-              webkit::npapi::kWrapperNativeWindowClassName)
+      if (win_util::GetClassName(child_window) == kWrapperNativeWindowClassName)
         child_window = ::GetWindow(child_window, GW_CHILD);
 
       ::SetFocus(child_window);

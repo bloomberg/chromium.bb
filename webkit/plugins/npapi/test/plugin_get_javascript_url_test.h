@@ -1,11 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_PLUGINS_NPAPI_PLUGINS_TEST_PLUGIN_GET_JAVASCRIPT_URL_H_
-#define WEBKIT_PLUGINS_NPAPI_PLUGINS_TEST_PLUGIN_GET_JAVASCRIPT_URL_H_
+#ifndef WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_GET_JAVASCRIPT_URL_H
+#define WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_GET_JAVASCRIPT_URL_H
 
-#include "webkit/plugins/npapi/test/plugin_test.h"
+#include "webkit/glue/plugins/test/plugin_test.h"
 
 namespace NPAPIClient {
 
@@ -42,6 +42,6 @@ class ExecuteGetJavascriptUrlTest : public PluginTest {
 #endif
 };
 
-}  // namespace NPAPIClient
+} // namespace NPAPIClient
 
-#endif  // WEBKIT_PLUGINS_NPAPI_PLUGINS_TEST_PLUGIN_GET_JAVASCRIPT_URL_H_
+#endif  // WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_GET_JAVASCRIPT_URL_H

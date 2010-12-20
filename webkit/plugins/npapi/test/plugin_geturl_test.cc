@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/plugins/npapi/test/plugin_geturl_test.h"
+#include "webkit/glue/plugins/test/plugin_geturl_test.h"
 
 #include <stdio.h>
 

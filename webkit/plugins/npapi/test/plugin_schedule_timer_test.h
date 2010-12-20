@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_SCHEDULE_TIMER_TEST_H
-#define WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_SCHEDULE_TIMER_TEST_H
+#ifndef WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_SCHEDULE_TIMER_TEST_H
+#define WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_SCHEDULE_TIMER_TEST_H
 
 #include "base/at_exit.h"
 #include "base/time.h"
-#include "webkit/plugins/npapi/test/plugin_test.h"
+#include "webkit/glue/plugins/test/plugin_test.h"
 
 namespace NPAPIClient {
 
@@ -65,4 +65,4 @@ class ScheduleTimerTest : public PluginTest {
 
 }  // namespace NPAPIClient
 
-#endif  // WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_SCHEDULE_TIMER_TEST_H
+#endif  // WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_SCHEDULE_TIMER_TEST_H

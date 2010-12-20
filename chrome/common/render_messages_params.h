@@ -32,11 +32,11 @@
 #include "media/audio/audio_parameters.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
 #include "webkit/glue/password_form.h"
+#include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/resource_type.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webmenuitem.h"
 #include "webkit/glue/webpreferences.h"
-#include "webkit/plugins/npapi/webplugin.h"
 
 // TODO(erg): Split this file into $1_db_params.h, $1_audio_params.h,
 // $1_print_params.h and $1_render_params.h.
@@ -356,7 +356,7 @@ struct ViewHostMsg_UpdateRect_Params {
   gfx::Rect resizer_rect;
 
   // New window locations for plugin child windows.
-  std::vector<webkit::npapi::WebPluginGeometry> plugin_window_moves;
+  std::vector<webkit_glue::WebPluginGeometry> plugin_window_moves;
 
   // The following describes the various bits that may be set in flags:
   //

@@ -17,7 +17,7 @@
 #include "base/string16.h"
 #include "grit/webkit_resources.h"
 #include "third_party/WebKit/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
-#include "webkit/plugins/npapi/plugin_list.h"
+#include "webkit/glue/plugins/plugin_list.h"
 #import "webkit/support/drt_application_mac.h"
 #import "webkit/tools/test_shell/mac/DumpRenderTreePasteboard.h"
 
@@ -148,7 +148,7 @@ void AfterInitialize(bool unit_test_mode) {
   FilePath plugins_dir;
   PathService::Get(base::DIR_EXE, &plugins_dir);
   plugins_dir = plugins_dir.AppendASCII("../../../plugins");
-  webkit::npapi::PluginList::Singleton()->AddExtraPluginDir(plugins_dir);
+  NPAPI::PluginList::Singleton()->AddExtraPluginDir(plugins_dir);
 }
 
 void BeforeShutdown() {

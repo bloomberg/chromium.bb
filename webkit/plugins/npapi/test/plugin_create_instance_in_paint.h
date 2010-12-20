@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_CREATE_INSTANCE_IN_PAINT_H_
-#define WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_CREATE_INSTANCE_IN_PAINT_H_
+#ifndef WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_CREATE_INSTANCE_IN_PAINT_H
+#define WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_CREATE_INSTANCE_IN_PAINT_H
 
-#include "webkit/plugins/npapi/test/plugin_test.h"
+#include "webkit/glue/plugins/test/plugin_test.h"
 
 namespace NPAPIClient {
 
@@ -28,6 +28,6 @@ class CreateInstanceInPaintTest : public PluginTest {
   bool created_;
 };
 
-}  // namespace NPAPIClient
+} // namespace NPAPIClient
 
-#endif  // WEBKIT_PLUGINS_NPAPI_TEST_PLUGIN_CREATE_INSTANCE_IN_PAINT_H_
+#endif  // WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_CREATE_INSTANCE_IN_PAINT_H
