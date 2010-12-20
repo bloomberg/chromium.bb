@@ -186,10 +186,21 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
   dictionary->SetBoolean("disableAppWindowLaunch", true);
   dictionary->SetBoolean("disableCreateAppShortcut", true);
 #endif
+
 #if defined(OS_CHROMEOS)
   // Making shortcut does not make sense on ChromeOS because it does not have
   // a desktop.
   dictionary->SetBoolean("disableCreateAppShortcut", true);
+#endif
+
+  // We always show the launcher on Chrome OS. On Desktop Chrome, only show it
+  // if we've installed our default apps.
+#if defined(OS_CHROMEOS)
+  dictionary->SetBoolean("showLauncher", true);
+#else
+  dictionary->SetBoolean(
+      "showLauncher",
+      extensions_service_->default_apps()->GetDefaultAppsInstalled());
 #endif
 }
 

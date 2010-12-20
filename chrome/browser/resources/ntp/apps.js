@@ -66,7 +66,9 @@ function getAppsCallback(data) {
                                apps.createWebStoreClosedMenuElement());
   }
 
-  if (!(shownSections & MINIMIZED_APPS)) {
+  if (!data.showLauncher || (shownSections & MINIMIZED_APPS)) {
+    appsSection.classList.add('disabled');
+  } else {
     appsSection.classList.remove('disabled');
   }
   addClosedMenuFooter(apps.menu, 'apps', MINIMIZED_APPS, Section.APPS);

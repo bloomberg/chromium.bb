@@ -46,6 +46,9 @@ class DefaultApps {
   // Gets the list of default apps.
   const ExtensionIdSet* GetDefaultApps() const;
 
+  // Returns true if the default apps have been installed. False otherwise.
+  bool GetDefaultAppsInstalled() const;
+
   // Should be called after each app is installed. Once installed_ids contains
   // all the default apps, GetAppsToInstall() will start returning NULL.
   void DidInstallApp(const ExtensionIdSet& installed_ids);
@@ -69,7 +72,6 @@ class DefaultApps {
   FRIEND_TEST_ALL_PREFIXES(ExtensionDefaultApps,
                            ManualAppInstalledWhileInstallingDefaultApps);
 
-  bool GetDefaultAppsInstalled() const;
   void SetDefaultAppsInstalled(bool val);
 
   int GetPromoCounter() const;

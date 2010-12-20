@@ -151,7 +151,7 @@ if ('mode' in hashParams) {
   <div class="maxiview" id="most-visited-maxiview"></div>
 
   <div class="sections">
-    <!-- Start disabled. We only enable if we have at least one app. -->
+    <!-- Start disabled. We only enable once we have installed default apps. -->
     <div id="apps" class="section disabled" section="APPS">
       <h2>
         <img class="disclosure" img src="ntp/ntp_disclosure_triangle.png">
@@ -319,6 +319,20 @@ i18nTemplate.process(document, templateData);
   setSectionVisible(
       'recently-closed', undefined,
       recentlyClosedInitiallyVisible, MINIMIZED_RECENT);
+
+  // This is insane, but we use the CSS class 'disabled' for both 'minimized'
+  // sections and sections that are actually disabled, as in not accessible in
+  // any way.
+  //
+  // The above code syncs up the DOM and shownSection wrt minimized. But we
+  // don't know until we receive the apps data whether the apps section will be
+  // disabled or not. So we need to add the 'disabled' class back to the apps
+  // section here. We remove it later, once we know for sure we want it to be
+  // enabled.
+  //
+  // See also: crbug.com/67273.
+  $('apps').classList.add('disabled');
+
   layoutSections();
 </script>
 </html>
