@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/message_loop.h"
 #include "chrome/browser/sync/notifier/chrome_invalidation_client.h"
 #include "chrome/browser/sync/notifier/state_writer.h"
 #include "jingle/notifier/base/fake_base_task.h"
