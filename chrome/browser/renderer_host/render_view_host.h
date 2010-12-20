@@ -366,6 +366,9 @@ class RenderViewHost : public RenderWidgetHost {
   // Clears the node that is currently focused (if any).
   void ClearFocusedNode();
 
+  // Tells the renderer view to scroll to the focused node.
+  void ScrollFocusedEditableNodeIntoView();
+
   // Update render view specific (WebKit) preferences.
   void UpdateWebPreferences(const WebPreferences& prefs);
 

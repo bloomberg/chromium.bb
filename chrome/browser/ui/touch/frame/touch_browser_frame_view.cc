@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -98,6 +99,14 @@ void TouchBrowserFrameView::UpdateKeyboardAndLayout(bool should_show_keyboard) {
   // Because the NonClientFrameView is a sibling of the ClientView, we rely on
   // the parent to resize the ClientView instead of resizing it directly.
   GetParent()->Layout();
+
+  // The keyboard that pops up may end up hiding the text entry. So make sure
+  // the renderer scrolls when necessary to keep the textfield visible.
+  if (keyboard_showing_) {
+    RenderViewHost* host =
+        browser_view()->browser()->GetSelectedTabContents()->render_view_host();
+    host->ScrollFocusedEditableNodeIntoView();
+  }
 }
 
 void TouchBrowserFrameView::Observe(NotificationType type,

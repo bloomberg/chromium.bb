@@ -695,6 +695,10 @@ void RenderViewHost::ClearFocusedNode() {
   Send(new ViewMsg_ClearFocusedNode(routing_id()));
 }
 
+void RenderViewHost::ScrollFocusedEditableNodeIntoView() {
+  Send(new ViewMsg_ScrollFocusedEditableNodeIntoView(routing_id()));
+}
+
 void RenderViewHost::UpdateWebPreferences(const WebPreferences& prefs) {
   Send(new ViewMsg_UpdateWebPreferences(routing_id(), prefs));
 }
