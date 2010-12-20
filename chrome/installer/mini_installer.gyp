@@ -39,6 +39,7 @@
             'EnableIntrinsicFunctions': 'true',
             'BufferSecurityCheck': 'false',
             'BasicRuntimeChecks': '0',
+            'ExceptionHandling': '0',
           },
           'VCLinkerTool': {
             'RandomizedBaseAddress': '1',
@@ -71,6 +72,7 @@
               'VCCLCompilerTool': {
                 'BasicRuntimeChecks': '0',
                 'BufferSecurityCheck': 'false',
+                'ExceptionHandling': '0',
               },
               'VCLinkerTool': {
                 'SubSystem': '2',     # Set /SUBSYSTEM:WINDOWS
@@ -91,6 +93,7 @@
                 'EnableIntrinsicFunctions': 'true',
                 'BasicRuntimeChecks': '0',
                 'BufferSecurityCheck': 'false',
+                'ExceptionHandling': '0',
               },
               'VCLinkerTool': {
                 'SubSystem': '2',     # Set /SUBSYSTEM:WINDOWS
