@@ -438,6 +438,8 @@ extern const char kGSSAPILibraryName[];
 
 extern const char kKnownBackgroundPages[];
 
+extern const char kDisable3DAPIs[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

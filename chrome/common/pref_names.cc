@@ -631,6 +631,9 @@ const char kGeolocationDefaultContentSetting[] =
 // Dictionary that maps [frame, toplevel] to their Geolocation content setting.
 const char kGeolocationContentSettings[] = "geolocation.content_settings";
 
+// Preference to disable 3D APIs (WebGL, Pepper 3D).
+const char kDisable3DAPIs[] = "disable_3d_apis";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 

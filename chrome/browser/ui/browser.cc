@@ -2047,6 +2047,9 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kDevToolsDisabled, false);
   prefs->RegisterRealPref(prefs::kDefaultZoomLevel, 0.0);
   prefs->RegisterIntegerPref(prefs::kMultipleProfilePrefMigration, 0);
+  // We need to register the type of this preference in order to query
+  // it even though it's only typically controlled via policy.
+  prefs->RegisterBooleanPref(prefs::kDisable3DAPIs, false);
 }
 
 // static

@@ -185,7 +185,9 @@ INSTANTIATE_TEST_CASE_P(
         TypeAndName(kPolicyDisableAuthNegotiateCnameLookup,
                     prefs::kDisableAuthNegotiateCnameLookup),
         TypeAndName(kPolicyEnableAuthNegotiatePort,
-                    prefs::kEnableAuthNegotiatePort)));
+                    prefs::kEnableAuthNegotiatePort),
+        TypeAndName(kPolicyDisable3DAPIs,
+                    prefs::kDisable3DAPIs)));
 
 #if defined(OS_CHROMEOS)
 INSTANTIATE_TEST_CASE_P(
