@@ -905,7 +905,7 @@
    bug_16089
    Memcheck:Leak
    fun:*
-   fun:_ZN4base22LinuxDynamicThreadPool8PostTaskEP4Task
+   fun:_ZN4base22PosixDynamicThreadPool8PostTaskEP4Task
    ...
    fun:_ZN3net12HostResolver3Job5StartEv
 }
@@ -914,7 +914,7 @@
    bug_16089b
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN4base22LinuxDynamicThreadPool8PostTaskEP4Task
+   fun:_ZN4base22PosixDynamicThreadPool8PostTaskEP4Task
    ...
    fun:_ZN18chrome_browser_net9DnsMaster24PreLockedScheduleLookupsEv
 }
@@ -923,7 +923,7 @@
    bug_16089c
    Memcheck:Leak
    ...
-   fun:_ZN4base22LinuxDynamicThreadPool8PostTaskEP4Task
+   fun:_ZN4base22PosixDynamicThreadPool8PostTaskEP4Task
    ...
    fun:_ZN3net13TCPConnectJob13DoResolveHostEv
 }
@@ -933,7 +933,7 @@
    Memcheck:Leak
    fun:*
    ...
-   fun:_ZN4base22LinuxDynamicThreadPool8PostTaskEP4Task
+   fun:_ZN4base22PosixDynamicThreadPool8PostTaskEP4Task
    ...
    fun:_ZN3net16HostResolverImpl3Job5StartEv
 }
@@ -943,7 +943,7 @@
    Memcheck:Leak
    fun:*
    ...
-   fun:_ZN4base22LinuxDynamicThreadPool8PostTaskEP4Task
+   fun:_ZN4base22PosixDynamicThreadPool8PostTaskEP4Task
    ...
    fun:_ZN3net16HostResolverImpl16ProbeIPv6SupportEv
 }
