@@ -44,7 +44,6 @@ static int BuildInterfaceDesc(NaClSrpcChannel* channel) {
     goto cleanup;
   }
   if (!NaClSrpcServiceHandlerCtor(tmp_service, basic_services)) {
-    free(tmp_service);
     goto cleanup;
   }
   /* Channel takes ownership of tmp_service. */
