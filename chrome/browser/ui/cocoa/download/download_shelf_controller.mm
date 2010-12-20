@@ -24,6 +24,24 @@
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
+// Download shelf autoclose behavior:
+//
+// The download shelf autocloses if all of this is true:
+// 1) An item on the shelf has just been opened.
+// 2) All remaining items on the shelf have been opened in the past.
+// 3) The mouse leaves the shelf and remains off the shelf for 5 seconds.
+//
+// If the mouse re-enters the shelf within the 5 second grace period, the
+// autoclose is canceled.  An autoclose can only be scheduled in response to a
+// shelf item being opened or removed.  If an item is opened and then the
+// resulting autoclose is canceled, subsequent mouse exited events will NOT
+// trigger an autoclose.
+//
+// If the shelf is manually closed while a download is still in progress, that
+// download is marked as "opened" for these purposes.  If the shelf is later
+// reopened, these previously-in-progress download will not block autoclose,
+// even if that download was never actually clicked on and opened.
+
 namespace {
 
 // Max number of download views we'll contain. Any time a view is added and
@@ -39,16 +57,24 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
 // Duration for download shelf closing animation, in seconds.
 const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
 
+// Amount of time between when the mouse is moved off the shelf and the shelf is
+// autoclosed, in seconds.
+const NSTimeInterval kAutoCloseDelaySeconds = 5;
+
 }  // namespace
 
 @interface DownloadShelfController(Private)
 - (void)showDownloadShelf:(BOOL)enable;
 - (void)layoutItems:(BOOL)skipFirst;
 - (void)closed;
+- (BOOL)canAutoClose;
 
 - (void)updateTheme;
 - (void)themeDidChangeNotification:(NSNotification*)notification;
 - (void)viewFrameDidChange:(NSNotification*)notification;
+
+- (void)installTrackingArea;
+- (void)cancelAutoCloseAndRemoveTrackingArea;
 @end
 
 
@@ -100,6 +126,7 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [self cancelAutoCloseAndRemoveTrackingArea];
 
   // The controllers will unregister themselves as observers when they are
   // deallocated. No need to do that here.
@@ -173,10 +200,19 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
     [self showDownloadShelf:NO];
 }
 
+- (void)downloadWasOpened:(DownloadItemController*)item_controller {
+  // This should only be called on the main thead.
+  DCHECK([NSThread isMainThread]);
+
+  if ([self canAutoClose])
+    [self installTrackingArea];
+}
+
 // We need to explicitly release our download controllers here since they need
 // to remove themselves as observers before the remaining shutdown happens.
 - (void)exiting {
   [[self animatableView] stopAnimation];
+  [self cancelAutoCloseAndRemoveTrackingArea];
   downloadItemControllers_.reset();
 }
 
@@ -216,6 +252,8 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
 }
 
 - (void)hide:(id)sender {
+  [self cancelAutoCloseAndRemoveTrackingArea];
+
   // If |sender| isn't nil, then we're being closed from the UI by the user and
   // we need to tell our shelf implementation to close. Otherwise, we're being
   // closed programmatically by our shelf implementation.
@@ -255,6 +293,8 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
 
 - (void)addDownloadItem:(BaseDownloadItemModel*)model {
   DCHECK([NSThread isMainThread]);
+  [self cancelAutoCloseAndRemoveTrackingArea];
+
   // Insert new item at the left.
   scoped_nsobject<DownloadItemController> controller(
       [[DownloadItemController alloc] initWithModel:model shelf:self]);
@@ -312,15 +352,74 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
   while (i < [downloadItemControllers_ count]) {
     DownloadItemController* itemController =
         [downloadItemControllers_ objectAtIndex:i];
+    DownloadItem* download = [itemController download];
     bool isTransferDone =
-        [itemController download]->state() == DownloadItem::COMPLETE ||
-        [itemController download]->state() == DownloadItem::CANCELLED;
+        download->state() == DownloadItem::COMPLETE ||
+        download->state() == DownloadItem::CANCELLED;
     if (isTransferDone &&
-        [itemController download]->safety_state() != DownloadItem::DANGEROUS) {
+        download->safety_state() != DownloadItem::DANGEROUS) {
       [self remove:itemController];
     } else {
+      // Treat the item as opened when we close. This way if we get shown again
+      // the user need not open this item for the shelf to auto-close.
+      download->set_opened(true);
       ++i;
     }
+  }
+}
+
+- (void)mouseEntered:(NSEvent*)event {
+  // If the mouse re-enters the download shelf, cancel the auto-close.  Further
+  // mouse exits should not trigger autoclose, so also remove the tracking area.
+  [self cancelAutoCloseAndRemoveTrackingArea];
+}
+
+- (void)mouseExited:(NSEvent*)event {
+  // Cancel any previous hide requests, just to be safe.
+  [NSObject cancelPreviousPerformRequestsWithTarget:self
+                                           selector:@selector(hide:)
+                                             object:self];
+
+  // Schedule an autoclose after a delay.  If the mouse is moved back into the
+  // view, or if an item is added to the shelf, the timer will be canceled.
+  [self performSelector:@selector(hide:)
+             withObject:self
+             afterDelay:kAutoCloseDelaySeconds];
+}
+
+- (BOOL)canAutoClose {
+  for (NSUInteger i = 0; i < [downloadItemControllers_ count]; ++i) {
+    DownloadItemController* itemController =
+        [downloadItemControllers_ objectAtIndex:i];
+    if (![itemController download]->opened())
+      return NO;
+  }
+  return YES;
+}
+
+- (void)installTrackingArea {
+  // Install the tracking area to listen for mouseExited messages and trigger
+  // the shelf autoclose.
+  if (trackingArea_.get())
+    return;
+
+  trackingArea_.reset([[NSTrackingArea alloc]
+                        initWithRect:[[self view] bounds]
+                             options:NSTrackingMouseEnteredAndExited |
+                                     NSTrackingActiveAlways
+                               owner:self
+                            userInfo:nil]);
+  [[self view] addTrackingArea:trackingArea_];
+}
+
+- (void)cancelAutoCloseAndRemoveTrackingArea {
+  [NSObject cancelPreviousPerformRequestsWithTarget:self
+                                           selector:@selector(hide:)
+                                             object:self];
+
+  if (trackingArea_.get()) {
+    [[self view] removeTrackingArea:trackingArea_];
+    trackingArea_.reset(nil);
   }
 }
 

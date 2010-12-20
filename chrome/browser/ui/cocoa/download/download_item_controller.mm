@@ -242,6 +242,10 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   [view setHidden:(NSMaxX([view frame]) > NSWidth(containerFrame))];
 }
 
+- (void)downloadWasOpened {
+  [shelf_ downloadWasOpened:self];
+}
+
 - (IBAction)handleButtonClick:(id)sender {
   NSEvent* event = [NSApp currentEvent];
   if ([event modifierFlags] & NSCommandKeyMask) {

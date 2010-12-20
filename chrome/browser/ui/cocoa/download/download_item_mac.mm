@@ -64,6 +64,11 @@ void DownloadItemMac::OnDownloadUpdated(DownloadItem* download) {
   }
 }
 
+void DownloadItemMac::OnDownloadOpened(DownloadItem* download) {
+  DCHECK_EQ(download, download_model_->download());
+  [item_controller_ downloadWasOpened];
+}
+
 void DownloadItemMac::LoadIcon() {
   IconManager* icon_manager = g_browser_process->icon_manager();
   if (!icon_manager) {

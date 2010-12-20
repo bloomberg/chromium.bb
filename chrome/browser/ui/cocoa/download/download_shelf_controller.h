@@ -52,6 +52,11 @@ class DownloadShelf;
   // out.
   CGFloat currentShelfHeight_;
 
+  // Used to autoclose the shelf when the mouse is moved off it.  Is non-nil
+  // only when a subsequent mouseExited event can trigger autoclose or when a
+  // subsequent mouseEntered event will cancel autoclose.  Is nil otherwise.
+  scoped_nsobject<NSTrackingArea> trackingArea_;
+
   // The download items we have added to our shelf.
   scoped_nsobject<NSMutableArray> downloadItemControllers_;
 
@@ -82,6 +87,9 @@ class DownloadShelf;
 
 // Remove a download, possibly via clearing browser data.
 - (void)remove:(DownloadItemController*)download;
+
+// Called by individual item controllers when their downloads are opened.
+- (void)downloadWasOpened:(DownloadItemController*)download;
 
 // Notification that we are closing and should release our downloads.
 - (void)exiting;

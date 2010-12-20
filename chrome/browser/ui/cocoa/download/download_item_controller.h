@@ -74,6 +74,9 @@ class DownloadShelfContextMenuMac;
 // contained in its parent.
 - (void)updateVisibility:(id)sender;
 
+// Called after a download is opened.
+- (void)downloadWasOpened;
+
 // Asynchronous icon loading callback.
 - (void)setIcon:(NSImage*)icon;
 
