@@ -5,9 +5,11 @@
 #include "chrome/browser/renderer_host/socket_stream_dispatcher_host.h"
 
 #include "base/logging.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/socket_stream_host.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/net/socket_stream.h"
+#include "chrome/common/net/url_request_context_getter.h"
 #include "net/websockets/websocket_job.h"
 #include "net/websockets/websocket_throttle.h"
 
@@ -108,7 +110,7 @@ void SocketStreamDispatcherHost::OnConnect(const GURL& url, int socket_id) {
   }
   SocketStreamHost* socket_stream_host = new SocketStreamHost(this, socket_id);
   hosts_.AddWithID(socket_stream_host, socket_id);
-  socket_stream_host->Connect(url);
+  socket_stream_host->Connect(url, GetURLRequestContext());
   DVLOG(1) << "SocketStreamDispatcherHost::OnConnect -> " << socket_id;
 }
 
@@ -142,4 +144,20 @@ void SocketStreamDispatcherHost::DeleteSocketStreamHost(int socket_id) {
   if (!Send(new ViewMsg_SocketStream_Closed(socket_id))) {
     LOG(ERROR) << "ViewMsg_SocketStream_Closed failed.";
   }
+}
+
+URLRequestContext* SocketStreamDispatcherHost::GetURLRequestContext() {
+  URLRequestContext* rv = NULL;
+  if (url_request_context_override_.get()) {
+    rv = url_request_context_override_->GetRequestContext(
+        0, ResourceType::SUB_RESOURCE);
+  }
+  if (!rv) {
+    URLRequestContextGetter* context_getter =
+        Profile::GetDefaultRequestContext();
+    if (context_getter)
+      rv = context_getter->GetURLRequestContext();
+  }
+
+  return rv;
 }

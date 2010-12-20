@@ -456,7 +456,12 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
   channel_->AddFilter(new MimeRegistryMessageFilter());
   channel_->AddFilter(new DatabaseMessageFilter(
       profile()->GetDatabaseTracker(), profile()->GetHostContentSettingsMap()));
-  channel_->AddFilter(new SocketStreamDispatcherHost());
+
+  SocketStreamDispatcherHost* socket_stream_dispatcher_host =
+      new SocketStreamDispatcherHost();
+  socket_stream_dispatcher_host->set_url_request_context_override(
+      url_request_context_override);
+  channel_->AddFilter(socket_stream_dispatcher_host);
 }
 
 int BrowserRenderProcessHost::GetNextRoutingID() {

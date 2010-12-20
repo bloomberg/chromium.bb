@@ -5,9 +5,7 @@
 #include "chrome/browser/renderer_host/socket_stream_host.h"
 
 #include "base/logging.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/net/socket_stream.h"
-#include "chrome/common/net/url_request_context_getter.h"
 #include "net/socket_stream/socket_stream_job.h"
 
 static const char* kSocketIdKey = "socketId";
@@ -46,12 +44,11 @@ SocketStreamHost::~SocketStreamHost() {
   socket_->DetachDelegate();
 }
 
-void SocketStreamHost::Connect(const GURL& url) {
+void SocketStreamHost::Connect(const GURL& url,
+                               URLRequestContext* request_context) {
   VLOG(1) << "SocketStreamHost::Connect url=" << url;
   socket_ = net::SocketStreamJob::CreateSocketStreamJob(url, delegate_);
-  URLRequestContextGetter* context_getter = Profile::GetDefaultRequestContext();
-  if (context_getter)
-      socket_->set_context(context_getter->GetURLRequestContext());
+  socket_->set_context(request_context);
   socket_->SetUserData(kSocketIdKey, new SocketStreamId(socket_id_));
   socket_->Connect();
 }

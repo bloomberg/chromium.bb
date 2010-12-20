@@ -12,6 +12,7 @@
 #include "net/socket_stream/socket_stream.h"
 
 class GURL;
+class URLRequestContext;
 
 namespace net {
 class SocketStreamJob;
@@ -36,7 +37,7 @@ class SocketStreamHost {
   int socket_id() const { return socket_id_; }
 
   // Starts to open connection to |url|.
-  void Connect(const GURL& url);
+  void Connect(const GURL& url, URLRequestContext* request_context);
 
   // Sends |data| over the socket stream.
   // socket stream must be open to send data.

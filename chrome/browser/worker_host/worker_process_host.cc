@@ -42,6 +42,30 @@
 #include "net/base/registry_controlled_domain.h"
 #include "webkit/fileapi/file_system_path_manager.h"
 
+namespace {
+
+// Helper class that we pass to SocketStreamDispatcherHost so that it can find
+// the right URLRequestContext for a request.
+class URLRequestContextOverride
+    : public ResourceMessageFilter::URLRequestContextOverride {
+ public:
+  explicit URLRequestContextOverride(
+      URLRequestContext* url_request_context)
+      : url_request_context_(url_request_context) {
+  }
+  virtual ~URLRequestContextOverride() {}
+
+  virtual URLRequestContext* GetRequestContext(
+      uint32 request_id, ResourceType::Type resource_type) {
+    return url_request_context_;
+  }
+
+ private:
+  URLRequestContext* url_request_context_;
+};
+
+}  // namespace
+
 // Notifies RenderViewHost that one or more worker objects crashed.
 class WorkerCrashTask : public Task {
  public:
@@ -201,7 +225,12 @@ void WorkerProcessHost::CreateMessageFilters() {
   AddFilter(new DatabaseMessageFilter(
       request_context_->database_tracker(),
       request_context_->host_content_settings_map()));
-  AddFilter(new SocketStreamDispatcherHost());
+
+  SocketStreamDispatcherHost* socket_stream_dispatcher_host =
+      new SocketStreamDispatcherHost();
+  socket_stream_dispatcher_host->set_url_request_context_override(
+      new URLRequestContextOverride(request_context_));
+  AddFilter(socket_stream_dispatcher_host);
 }
 
 void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {

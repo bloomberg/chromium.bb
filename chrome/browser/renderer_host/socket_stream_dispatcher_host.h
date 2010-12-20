@@ -10,6 +10,7 @@
 
 #include "base/id_map.h"
 #include "chrome/browser/browser_message_filter.h"
+#include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "net/socket_stream/socket_stream.h"
 
 class GURL;
@@ -39,6 +40,11 @@ class SocketStreamDispatcherHost : public BrowserMessageFilter,
                               const char* data, int len);
   virtual void OnClose(net::SocketStream* socket);
 
+  void set_url_request_context_override(
+      ResourceMessageFilter::URLRequestContextOverride* u) {
+    url_request_context_override_ = u;
+  }
+
  private:
   // Message handlers called by OnMessageReceived.
   void OnConnect(const GURL& url, int socket_id);
@@ -47,7 +53,12 @@ class SocketStreamDispatcherHost : public BrowserMessageFilter,
 
   void DeleteSocketStreamHost(int socket_id);
 
+  // Returns the URLRequestContext.
+  URLRequestContext* GetURLRequestContext();
+
   IDMap<SocketStreamHost> hosts_;
+  scoped_refptr<ResourceMessageFilter::URLRequestContextOverride>
+      url_request_context_override_;
 
   DISALLOW_COPY_AND_ASSIGN(SocketStreamDispatcherHost);
 };
