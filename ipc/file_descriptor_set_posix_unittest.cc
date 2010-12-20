@@ -4,12 +4,13 @@
 
 // This test is POSIX only.
 
+#include "ipc/file_descriptor_set_posix.h"
+
 #include <unistd.h>
 #include <fcntl.h>
 
 #include "base/basictypes.h"
 #include "base/eintr_wrapper.h"
-#include "ipc/file_descriptor_set_posix.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

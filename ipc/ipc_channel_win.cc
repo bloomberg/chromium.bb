@@ -106,6 +106,22 @@ Channel::ChannelImpl::ChannelImpl(const IPC::ChannelHandle &channel_handle,
       waiting_connect_(mode == MODE_SERVER),
       processing_incoming_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(factory_(this)) {
+  switch(mode) {
+    case MODE_NONE:
+      LOG(FATAL) << "Bad mode for " << channel_handle.name;
+      break;
+    case MODE_SERVER:
+    case MODE_CLIENT:
+      break;
+    case MODE_NAMED_SERVER:
+      mode = MODE_SERVER;
+      break;
+    case MODE_NAMED_CLIENT:
+      mode = MODE_CLIENT;
+      break;
+    // Intentionally no default case here so that the compiler
+    // will check that we handle all the cases in the enum.
+  }
   if (!CreatePipe(channel_handle, mode)) {
     // The pipe may have been closed already.
     LOG(WARNING) << "Unable to create pipe named \"" << channel_handle.name <<
