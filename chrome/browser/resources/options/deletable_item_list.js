@@ -46,6 +46,8 @@ cr.define('options', function() {
 
       var closeButtonEl = this.ownerDocument.createElement('button');
       closeButtonEl.className = 'close-button';
+      closeButtonEl.disabled = this.baseItem_.undeletable;
+      closeButtonEl.addEventListener('mousedown', this.handleMouseDownOnClose_);
       this.appendChild(closeButtonEl);
     },
 
@@ -63,6 +65,17 @@ cr.define('options', function() {
      */
     get contentItem() {
       return this.baseItem_;
+    },
+
+    /**
+     * Don't let the list have a crack at the event. We don't want clicking the
+     * close button to select the list.
+     * @param {Event} e The mouse down event object.
+     * @private
+     */
+    handleMouseDownOnClose_: function(e) {
+      if (!e.target.disabled)
+        e.stopPropagation();
     },
   };
 

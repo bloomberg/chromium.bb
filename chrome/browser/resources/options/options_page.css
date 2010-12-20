@@ -420,7 +420,9 @@ list .close-button {
   width: 16px;
 }
 
-list > *:not(:hover) .close-button, list[disabled] .close-button {
+list > *:not(:hover) .close-button,
+list[disabled] .close-button,
+list .close-button[disabled] {
   opacity: 0;
   pointer-events: none;
 }

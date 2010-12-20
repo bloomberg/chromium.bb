@@ -6,6 +6,7 @@ cr.define('options.contentSettings', function() {
   const List = cr.ui.List;
   const ListItem = cr.ui.ListItem;
   const ArrayDataModel = cr.ui.ArrayDataModel;
+  const DeletableItemList = options.DeletableItemList;
 
   /**
    * Creates a new exceptions list item.
@@ -19,7 +20,7 @@ cr.define('options.contentSettings', function() {
    * @extends {cr.ui.ListItem}
    */
   function ExceptionsListItem(contentType, mode, enableAskOption, exception) {
-    var el = cr.doc.createElement('li');
+    var el = cr.doc.createElement('div');
     el.mode = mode;
     el.contentType = contentType;
     el.enableAskOption = enableAskOption;
@@ -330,7 +331,7 @@ cr.define('options.contentSettings', function() {
    * @extends {cr.ui.ExceptionsListItem}
    */
   function ExceptionsAddRowListItem(contentType, mode, enableAskOption) {
-    var el = cr.doc.createElement('li');
+    var el = cr.doc.createElement('div');
     el.mode = mode;
     el.contentType = contentType;
     el.enableAskOption = enableAskOption;
@@ -392,13 +393,13 @@ cr.define('options.contentSettings', function() {
   var ExceptionsList = cr.ui.define('list');
 
   ExceptionsList.prototype = {
-    __proto__: List.prototype,
+    __proto__: DeletableItemList.prototype,
 
     /**
      * Called when an element is decorated as a list.
      */
     decorate: function() {
-      List.prototype.decorate.call(this);
+      DeletableItemList.prototype.decorate.call(this);
 
       this.contentType = this.parentNode.getAttribute('contentType');
       this.mode = this.getAttribute('mode');
@@ -422,6 +423,7 @@ cr.define('options.contentSettings', function() {
       this.enableAskOption = (this.contentType == 'plugins' &&
                               templateData.enable_click_to_play);
 
+      this.autoExpands = true;
       this.reset();
     },
 
@@ -429,16 +431,18 @@ cr.define('options.contentSettings', function() {
      * Creates an item to go in the list.
      * @param {Object} entry The element from the data model for this row.
      */
-    createItem: function(entry) {
+    createItemContents: function(entry) {
       if (entry) {
         return new ExceptionsListItem(this.contentType,
                                       this.mode,
                                       this.enableAskOption,
                                       entry);
       } else {
-        return new ExceptionsAddRowListItem(this.contentType,
-                                            this.mode,
-                                            this.enableAskOption);
+        var addRowItem = new ExceptionsAddRowListItem(this.contentType,
+                                                      this.mode,
+                                                      this.enableAskOption);
+        addRowItem.undeletable = true;
+        return addRowItem;
       }
     },
 
@@ -447,7 +451,12 @@ cr.define('options.contentSettings', function() {
      * @param {Object} entry A dictionary of values for the exception.
      */
     addException: function(entry) {
-      this.dataModel.push(entry);
+      if (this.isEditable()) {
+        // We have to add it before the Add New Exception row.
+        this.dataModel.splice(this.dataModel.length - 1, 0, entry);
+      } else {
+        this.dataModel.push(entry);
+      }
     },
 
     /**
@@ -460,7 +469,7 @@ cr.define('options.contentSettings', function() {
     patternValidityCheckComplete: function(pattern, valid) {
       var listItems = this.items;
       for (var i = 0; i < listItems.length; i++) {
-        var listItem = listItems[i];
+        var listItem = listItems[i].contentItem;
         // Don't do anything for messages for the item if it is not the intended
         // recipient, or if the response is stale (i.e. the input value has
         // changed since we sent the request to analyze it).
@@ -470,11 +479,36 @@ cr.define('options.contentSettings', function() {
     },
 
     /**
+     * Returns whether the rows are editable in this list.
+     */
+    isEditable: function() {
+      // Editing notifications and geolocation is disabled for now.
+      return !(this.contentType == 'notifications' ||
+               this.contentType == 'location');
+    },
+
+    /**
      * Removes all exceptions from the js model.
      */
     reset: function() {
-      // The null creates the Add New Exception row.
-      this.dataModel = new ArrayDataModel([null]);
+      if (this.isEditable()) {
+        // The null creates the Add New Exception row.
+        this.dataModel = new ArrayDataModel([null]);
+      } else {
+        this.dataModel = new ArrayDataModel([]);
+      }
+    },
+
+    /** @inheritDoc */
+    deleteItemAtIndex: function(index) {
+      var listItem = this.getListItemByIndex(index).contentItem;
+      if (listItem.undeletable) {
+        console.log('Tried to delete an undeletable row.');
+        return;
+      }
+      chrome.send(
+          'removeExceptions',
+          [listItem.contentType, listItem.mode, listItem.pattern]);
     },
 
     /**

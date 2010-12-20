@@ -1,7 +1,3 @@
-#searchEngineList {
-  height: auto;
-}
-
 #searchEngineList > div, #searchEngineHeading {
   display: -webkit-box;
 }
