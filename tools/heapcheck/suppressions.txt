@@ -1142,3 +1142,9 @@
    ...
    fun:MalwareDetailsTest_*
 }
+{
+   bug_67524
+   Heapcheck:Leak
+   ...
+   fun:net::::ProxyResolverV8WithMockBindings::SetPacScriptFromDisk
+}
