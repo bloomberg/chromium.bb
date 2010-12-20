@@ -586,11 +586,11 @@ void TaskManagerModel::RemoveResourceProvider(
 }
 
 void TaskManagerModel::RegisterForJobDoneNotifications() {
-  g_url_request_job_tracker.AddObserver(this);
+  net::g_url_request_job_tracker.AddObserver(this);
 }
 
 void TaskManagerModel::UnregisterForJobDoneNotifications() {
-  g_url_request_job_tracker.RemoveObserver(this);
+  net::g_url_request_job_tracker.RemoveObserver(this);
 }
 
 void TaskManagerModel::AddResource(TaskManager::Resource* resource) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -75,7 +75,7 @@ net::URLRequestJob* GViewRequestInterceptor::MaybeInterceptResponse(
   if (supported_mime_types_.count(mime_type) > 0) {
     std::string url(kGViewUrlPrefix);
     url += EscapePath(request->url().spec());
-    return new URLRequestRedirectJob(request, GURL(url));
+    return new net::URLRequestRedirectJob(request, GURL(url));
   }
   return NULL;
 }

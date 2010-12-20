@@ -49,7 +49,7 @@ bool GetResponseBody(const GURL& url, std::string* out_body) {
   return true;
 }
 
-class MockJobObserver : public URLRequestJobTracker::JobObserver {
+class MockJobObserver : public net::URLRequestJobTracker::JobObserver {
  public:
   MOCK_METHOD1(OnJobAdded, void(net::URLRequestJob* job));
   MOCK_METHOD1(OnJobRemoved, void(net::URLRequestJob* job));
@@ -176,9 +176,9 @@ class URLRequestJobTrackerTest : public PlatformTest {
     EXPECT_CALL(observer, OnJobRemoved(NotNull()));
 
     // Attach our observer and perform the resource fetch.
-    g_url_request_job_tracker.AddObserver(&observer);
+    net::g_url_request_job_tracker.AddObserver(&observer);
     Fetch(gurl);
-    g_url_request_job_tracker.RemoveObserver(&observer);
+    net::g_url_request_job_tracker.RemoveObserver(&observer);
   }
 
   void Fetch(const GURL& url) {

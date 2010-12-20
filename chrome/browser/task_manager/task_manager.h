@@ -213,7 +213,7 @@ class TaskManagerModelObserver {
 };
 
 // The model that the TaskManager is using.
-class TaskManagerModel : public URLRequestJobTracker::JobObserver,
+class TaskManagerModel : public net::URLRequestJobTracker::JobObserver,
                          public base::RefCountedThreadSafe<TaskManagerModel> {
  public:
   explicit TaskManagerModel(TaskManager* task_manager);

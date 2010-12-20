@@ -240,8 +240,9 @@ void ProfileManager::SuspendProfile(Profile* profile) {
   DCHECK(profile);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  for (URLRequestJobTracker::JobIterator i = g_url_request_job_tracker.begin();
-       i != g_url_request_job_tracker.end(); ++i)
+  for (net::URLRequestJobTracker::JobIterator i =
+           net::g_url_request_job_tracker.begin();
+       i != net::g_url_request_job_tracker.end(); ++i)
     (*i)->Kill();
 
   profile->GetRequestContext()->GetURLRequestContext()->
