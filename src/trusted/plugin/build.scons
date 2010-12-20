@@ -13,11 +13,6 @@ env.Prepend(
     CPPPATH=['${SOURCE_ROOT}/native_client/src/third_party/npapi/files/include']
 )
 
-# NOTE(robertm): needed for a bunch of includes from X11/Intrinsic.h
-env.Prepend(
-    CPPPATH=['${SOURCE_ROOT}/third_party/libxt/include']
-)
-
 if not env.Bit('mac'):
   env['COMPONENT_STATIC'] = False
 
