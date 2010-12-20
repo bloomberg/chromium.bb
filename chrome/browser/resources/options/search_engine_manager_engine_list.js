@@ -38,29 +38,30 @@ cr.define('options.search_engines', function() {
       ListItem.prototype.decorate.call(this);
 
       var engine = this.searchEngine_;
-      if (engine['heading']) {
-        var titleEl = this.ownerDocument.createElement('div');
-        titleEl.textContent = engine['heading'];
+
+      if (engine['heading'])
         this.classList.add('heading');
-        this.appendChild(titleEl);
+      else if (engine['default'])
+        this.classList.add('default');
+
+      var nameEl = this.ownerDocument.createElement('div');
+      nameEl.className = 'name';
+      if (engine['heading']) {
+        nameEl.textContent = engine['heading'];
       } else {
-        var nameEl = this.ownerDocument.createElement('div');
-        nameEl.className = 'name';
-        nameEl.classList.add('favicon-cell');
         nameEl.textContent = engine['name'];
+        nameEl.classList.add('favicon-cell');
         nameEl.style.backgroundImage = url('chrome://favicon/iconurl/' +
                                            engine['iconURL']);
-
-        var keywordEl = this.ownerDocument.createElement('div');
-        keywordEl.className = 'keyword';
-        keywordEl.textContent = engine['keyword'];
-
-        this.appendChild(nameEl);
-        this.appendChild(keywordEl);
-
-        if (engine['default'])
-          this.classList.add('default');
       }
+      this.appendChild(nameEl);
+
+      var keywordEl = this.ownerDocument.createElement('div');
+      keywordEl.className = 'keyword';
+      keywordEl.textContent = engine['heading'] ?
+          localStrings.getString('searchEngineTableKeywordHeader') :
+          engine['keyword'];
+      this.appendChild(keywordEl);
     },
   };
 

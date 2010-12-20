@@ -466,15 +466,18 @@ html[dir=rtl].option-name {
 }
 
 list .favicon-cell {
-  -webkit-margin-start: 7px;
-  -webkit-padding-start: 26px;
+  -webkit-padding-start: 33px;
+  background-position: 7px;
   display: block;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
 }
 
-html[dir=rtl] .favicon-cell {
+html[dir=rtl] list .favicon-cell {
+  /* TODO(stuartmorgan): position this 7px from the right (and remove the
+     padding override) once the CSS support is available */
+  -webkit-padding-start: 26px;
   background-position: right;
 }
 
