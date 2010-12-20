@@ -1,7 +1,7 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
+/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
 #ifndef PPAPI_C_PPP_H_
 #define PPAPI_C_PPP_H_
 
@@ -24,8 +24,9 @@
  * @{
  */
 
-// We don't want name mangling for these external functions.  We only need
-// 'extern "C"' if we're compiling with a C++ compiler.
+/* We don't want name mangling for these external functions.  We only need
+ * 'extern "C"' if we're compiling with a C++ compiler.
+ */
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -50,11 +51,12 @@ PP_EXPORT void PPP_ShutdownModule();
 PP_EXPORT const void* PPP_GetInterface(const char* interface_name);
 
 #ifdef __cplusplus
-}  // extern "C"
+}  /* extern "C" */
 #endif
 
 /**
  * @}
  * End addtogroup PPP
  */
-#endif  // PPAPI_C_PPP_H_
+#endif  /* PPAPI_C_PPP_H_ */
+

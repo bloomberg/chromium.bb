@@ -1,7 +1,7 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
+/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
 #ifndef PPAPI_C_PPB_URL_LOADER_H_
 #define PPAPI_C_PPB_URL_LOADER_H_
 
@@ -106,4 +106,5 @@ struct PPB_URLLoader {
   void (*Close)(PP_Resource loader);
 };
 
-#endif  // PPAPI_C_PPB_URL_LOADER_H_
+#endif  /* PPAPI_C_PPB_URL_LOADER_H_ */
+

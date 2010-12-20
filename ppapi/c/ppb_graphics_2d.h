@@ -1,7 +1,7 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
+/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
 #ifndef PPAPI_C_PPB_GRAPHICS_2D_H_
 #define PPAPI_C_PPB_GRAPHICS_2D_H_
 
@@ -210,8 +210,9 @@ struct PPB_Graphics2D {
    * Flush is already pending that has not issued its callback yet.  In the
    * failure case, nothing will be updated and no callback will be scheduled.
    */
-  // TODO(darin): We should ensure that the completion callback always runs, so
-  // that it is easier for consumers to manage memory referenced by a callback.
+  /* TODO(darin): We should ensure that the completion callback always runs, so
+   * that it is easier for consumers to manage memory referenced by a callback.
+   */
   int32_t (*Flush)(PP_Resource graphics_2d,
                    struct PP_CompletionCallback callback);
 
@@ -221,4 +222,5 @@ struct PPB_Graphics2D {
  * @}
  * End addtogroup PPB
  */
-#endif  // PPAPI_C_PPB_GRAPHICS_2D_H_
+#endif  /* PPAPI_C_PPB_GRAPHICS_2D_H_ */
+

@@ -1,7 +1,7 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
+/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
 #ifndef PPAPI_C_PPB_IMAGE_DATA_H_
 #define PPAPI_C_PPB_IMAGE_DATA_H_
 
@@ -21,11 +21,12 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_ImageDataFormat, 4);
 struct PP_ImageDataDesc {
   PP_ImageDataFormat format;
 
-  // Size of the bitmap in pixels.
+  /** Size of the bitmap in pixels. */
   struct PP_Size size;
 
-  // The row width in bytes. This may be different than width * 4 since there
-  // may be padding at the end of the lines.
+  /** The row width in bytes. This may be different than width * 4 since there
+   * may be padding at the end of the lines.
+   */
   int32_t stride;
 };
 PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_ImageDataDesc, 16);
@@ -100,4 +101,5 @@ struct PPB_ImageData {
  * @}
  * End addtogroup PPB
  */
-#endif  // PPAPI_C_PPB_IMAGE_DATA_H_
+#endif  /* PPAPI_C_PPB_IMAGE_DATA_H_ */
+

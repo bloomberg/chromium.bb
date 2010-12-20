@@ -1,7 +1,7 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
+/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
 #ifndef PPAPI_C_DEV_PPB_FONT_DEV_H_
 #define PPAPI_C_DEV_PPB_FONT_DEV_H_
 
@@ -173,4 +173,5 @@ struct PPB_Font_Dev {
                                      uint32_t char_offset);
 };
 
-#endif  // PPAPI_C_DEV_PPB_FONT_DEV_H_
+#endif  /* PPAPI_C_DEV_PPB_FONT_DEV_H_ */
+

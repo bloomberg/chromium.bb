@@ -1,7 +1,7 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
+/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
 #include <stdlib.h>
 #include <string.h>
 
@@ -27,7 +27,7 @@ const struct PPB_Graphics2D* g_graphics_2d_interface;
 const struct PPB_ImageData* g_image_data_interface;
 const struct PPB_Instance* g_instance_interface;
 
-// PPP_Instance implementation -------------------------------------------------
+/* PPP_Instance implementation -----------------------------------------------*/
 
 struct InstanceInfo {
   PP_Instance pp_instance;
@@ -36,10 +36,10 @@ struct InstanceInfo {
   struct InstanceInfo* next;
 };
 
-// Linked list of all live instances.
+/** Linked list of all live instances. */
 struct InstanceInfo* all_instances = NULL;
 
-// Returns a refed resource corresponding to the created device context.
+/** Returns a refed resource corresponding to the created device context. */
 PP_Resource MakeAndBindDeviceContext(PP_Instance instance,
                                      const struct PP_Size* size) {
   PP_Resource device_context;
@@ -56,7 +56,7 @@ PP_Resource MakeAndBindDeviceContext(PP_Instance instance,
 }
 
 void FlushCompletionCallback(void* user_data, int32_t result) {
-  // Don't need to do anything here.
+  /* Don't need to do anything here. */
 }
 
 void Repaint(struct InstanceInfo* instance, const struct PP_Size* size) {
@@ -65,14 +65,14 @@ void Repaint(struct InstanceInfo* instance, const struct PP_Size* size) {
   uint32_t* image_data;
   int num_words, i;
 
-  // Create image data to paint into.
+  /* Create image data to paint into. */
   image = g_image_data_interface->Create(
       g_module_id, PP_IMAGEDATAFORMAT_BGRA_PREMUL, size, PP_TRUE);
   if (!image)
     return;
   g_image_data_interface->Describe(image, &image_desc);
 
-  // Fill the image with blue.
+  /* Fill the image with blue. */
   image_data = (uint32_t*)g_image_data_interface->Map(image);
   if (!image_data) {
     g_core_interface->ReleaseResource(image);
@@ -82,7 +82,7 @@ void Repaint(struct InstanceInfo* instance, const struct PP_Size* size) {
   for (i = 0; i < num_words; i++)
     image_data[i] = 0xFF0000FF;
 
-  // Create the device context and paint the image to it.
+  /* Create the device context and paint the image to it. */
   device_context = MakeAndBindDeviceContext(instance->pp_instance, size);
   if (!device_context) {
     g_core_interface->ReleaseResource(image);
@@ -97,7 +97,7 @@ void Repaint(struct InstanceInfo* instance, const struct PP_Size* size) {
   g_core_interface->ReleaseResource(image);
 }
 
-// Returns the info for the given instance, or NULL if it's not found.
+/** Returns the info for the given instance, or NULL if it's not found. */
 struct InstanceInfo* FindInstance(PP_Instance instance) {
   struct InstanceInfo* cur = all_instances;
   while (cur) {
@@ -117,14 +117,16 @@ PP_Bool Instance_DidCreate(PP_Instance instance,
   info->last_size.width = 0;
   info->last_size.height = 0;
 
-  // Insert into linked list of live instances.
+  /* Insert into linked list of live instances. */
   info->next = all_instances;
   all_instances = info;
   return PP_TRUE;
 }
 
 void Instance_DidDestroy(PP_Instance instance) {
-  // Find the matching item in the linked list, delete it, and patch the links.
+  /* Find the matching item in the linked list, delete it, and patch the
+   * links.
+   */
   struct InstanceInfo** prev_ptr = &all_instances;
   struct InstanceInfo* cur = all_instances;
   while (cur) {
@@ -146,7 +148,7 @@ void Instance_DidChangeView(PP_Instance pp_instance,
 
   if (info->last_size.width != position->size.width ||
       info->last_size.height != position->size.height) {
-    // Got a resize, repaint the plugin.
+    /* Got a resize, repaint the plugin. */
     Repaint(info, &position->size);
     info->last_size.width = position->size.width;
     info->last_size.height = position->size.height;
@@ -158,7 +160,7 @@ void Instance_DidChangeFocus(PP_Instance pp_instance, PP_Bool has_focus) {
 
 PP_Bool Instance_HandleInputEvent(PP_Instance pp_instance,
                                const struct PP_InputEvent* event) {
-  // We don't handle any events.
+  /* We don't handle any events. */
   return PP_FALSE;
 }
 
@@ -182,11 +184,11 @@ static struct PPP_Instance instance_interface = {
 };
 
 
-// Global entrypoints ----------------------------------------------------------
+/* Global entrypoints --------------------------------------------------------*/
 
 PP_EXPORT int32_t PPP_InitializeModule(PP_Module module,
                                        PPB_GetInterface get_browser_interface) {
-  // Save the global module information for later.
+  /* Save the global module information for later. */
   g_module_id = module;
   g_get_browser_interface = get_browser_interface;
 
@@ -213,3 +215,4 @@ PP_EXPORT const void* PPP_GetInterface(const char* interface_name) {
     return &instance_interface;
   return NULL;
 }
+

@@ -1,7 +1,7 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
+/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
 #ifndef PPAPI_C_PPB_TRANSPORT_DEV_H_
 #define PPAPI_C_PPB_TRANSPORT_DEV_H_
 
@@ -67,4 +67,5 @@ struct PPB_Transport_Dev {
   int32_t (*Close)(PP_Resource transport);
 };
 
-#endif  // PPAPI_C_PPB_TRANSPORT_DEV_H_
+#endif  /* PPAPI_C_PPB_TRANSPORT_DEV_H_ */
+
