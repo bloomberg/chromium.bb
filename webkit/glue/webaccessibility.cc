@@ -324,6 +324,8 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
     attributes[ATTR_SHORTCUT] = src.keyboardShortcut();
   if (src.hasComputedStyle())
     attributes[ATTR_DISPLAY] = src.computedStyleDisplay();
+  if (!src.url().isEmpty())
+    attributes[ATTR_URL] = src.url().spec().utf16();
 
   WebKit::WebNode node = src.node();
 

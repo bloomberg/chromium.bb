@@ -256,7 +256,7 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
     WebAccessibility::Attribute urlAttribute =
         [[self role] isEqualToString:@"AXWebArea"] ?
             WebAccessibility::ATTR_DOC_URL :
-            WebAccessibility::ATTR_LINK_TARGET;
+            WebAccessibility::ATTR_URL;
     return NSStringForWebAccessibilityAttribute(
         browserAccessibility_->attributes(),
         urlAttribute);

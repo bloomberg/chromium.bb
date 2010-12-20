@@ -175,8 +175,8 @@ struct WebAccessibility {
     ATTR_DISPLAY,
     ATTR_HELP,
     ATTR_HTML_TAG,
-    ATTR_LINK_TARGET,
     ATTR_SHORTCUT,
+    ATTR_URL,
     NUM_ATTRIBUTES
   };
 
