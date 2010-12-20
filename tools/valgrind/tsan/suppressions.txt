@@ -123,6 +123,24 @@
   fun:HistoryURLProvider::ExecuteWithDB*
 }
 
+{
+  bug_67546a
+  ThreadSanitizer:Race
+  ...
+  fun:g_main_context_dispatch
+  fun:g_main_context_iterate
+  fun:g_main_context_iteration
+}
+
+{
+  bug_67546b
+  ThreadSanitizer:Race
+  ...
+  fun:g_cclosure_marshal_VOID__OBJECT
+  fun:g_type_class_meta_marshal
+  fun:g_closure_invoke
+}
+
 ############################
 # Benign races
 {

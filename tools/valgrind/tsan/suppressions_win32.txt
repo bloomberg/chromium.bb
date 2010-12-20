@@ -2,13 +2,6 @@
 # Chromium
 
 {
-  bug_25385 (2)
-  ThreadSanitizer:Race
-  ...
-  fun:*base*Thread*~*
-}
-
-{
   Benign race durung InitializeClock
   ThreadSanitizer:Race
   ...
