@@ -275,7 +275,6 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
         !command_line.HasSwitch(switches::kDisableDatabases);
     web_prefs.experimental_webgl_enabled =
         gpu_enabled() &&
-        !command_line.HasSwitch(switches::kDisable3DAPIs) &&
         !command_line.HasSwitch(switches::kDisableExperimentalWebGL);
     web_prefs.site_specific_quirks_enabled =
         !command_line.HasSwitch(switches::kDisableSiteSpecificQuirks);

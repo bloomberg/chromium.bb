@@ -67,7 +67,6 @@ extern const char kEnableAuthNegotiatePort[];
 extern const char kAuthServerWhitelist[];
 extern const char kAuthNegotiateDelegateWhitelist[];
 extern const char kGSSAPILibraryName[];
-extern const char kDisable3DAPIs[];
 
 // Chrome Frame specific policy constants
 extern const char kChromeFrameRendererSettings[];

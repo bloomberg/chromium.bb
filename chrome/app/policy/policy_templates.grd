@@ -726,16 +726,6 @@ templates and will be translated for each locale. -->
     <message name="IDS_POLICY_DEFAULTSEARCHPROVIDERENCODINGS_DESC" desc="Caption of the 'Encodings' text field in the 'Default Search Provider' policy settings page.">
       Specifies the character encodings supported by the search provider. Encodings are code page names like UTF-8, GB2312, and ISO-8859-1. They are tried in the order provided. The default is UTF-8.
     </message>
-    <message name="IDS_POLICY_DISABLE3DAPIS_CAPTION" desc="Label of the Disable3DAPIs policy text field.">
-      Disable support for 3D graphics APIs
-    </message>
-    <message name="IDS_POLICY_DISABLE3DAPIS_DESC" desc="Caption of the Disable3DAPIs policy text field.">
-      Disable support for 3D graphics APIs.
-
-      Enabling this setting prevents web pages from accessing the graphics processing unit (GPU). Specifically, web pages can not access the WebGL API and plugins can not use the Pepper 3D API.
-
-      Disabling this setting potentially allows web pages to use the WebGL API and plugins to use the Pepper 3D API. The default settings of the browser may still require command line arguments to be passed in order to use these APIs.
-    </message>
     <!-- Begin Chrome Frame messages -->
     <message name="IDS_POLICY_CHROMEFRAMERENDERERSETTINGS_CAPTION"
              desc="Caption of Chrome Frame renderer policy group">

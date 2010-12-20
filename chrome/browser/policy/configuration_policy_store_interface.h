@@ -66,7 +66,6 @@ enum ConfigurationPolicyType {
   kPolicyAuthServerWhitelist,
   kPolicyAuthNegotiateDelegateWhitelist,
   kPolicyGSSAPILibraryName,
-  kPolicyDisable3DAPIs
 };
 
 static const int kPolicyNoProxyServerMode = 0;

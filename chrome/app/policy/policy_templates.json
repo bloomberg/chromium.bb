@@ -506,16 +506,6 @@
       ]
     },
     {
-      'name': 'Disable3DAPIs',
-      'type': 'main',
-      'supported_on': ['chrome.*:9-'],
-      'annotations': {
-        # It'll be difficult to support dynamically disabling access to these APIs.
-        'features': {'dynamic_refresh': 0},
-        'example_value': False,
-      }
-    },
-    {
       'name': 'ContentSettings',
       'type': 'group',
       'policies': [

@@ -139,12 +139,6 @@ const char kDeviceManagementUrl[]           = "device-management-url";
 // Triggers a pletora of diagnostic modes.
 const char kDiagnostics[]                   = "diagnostics";
 
-// Disables client-visible 3D APIs, in particular WebGL and Pepper 3D.
-// This is controlled by policy and is kept separate from the other
-// enable/disable switches to avoid accidentally regressing the policy
-// support for controlling access to these APIs.
-const char kDisable3DAPIs[]                 = "disable-3d-apis";
-
 // Disables accelerated compositing.
 const char kDisableAcceleratedCompositing[] =
     "disable-accelerated-compositing";

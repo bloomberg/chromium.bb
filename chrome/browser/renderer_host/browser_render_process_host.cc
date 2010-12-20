@@ -596,14 +596,6 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
   if (!profile.empty())
     command_line->AppendSwitchASCII(switches::kLoginProfile, profile);
 #endif
-
-  PrefService* prefs = profile()->GetPrefs();
-  // Currently this pref is only registered if applied via a policy.
-  if (prefs->HasPrefPath(prefs::kDisable3DAPIs) &&
-      prefs->GetBoolean(prefs::kDisable3DAPIs)) {
-    // Turn this policy into a command line switch.
-    command_line->AppendSwitch(switches::kDisable3DAPIs);
-  }
 }
 
 void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
@@ -706,8 +698,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kDisableFileSystem,
     switches::kPpapiOutOfProcess,
     switches::kEnablePrintPreview,
-    switches::kEnableCrxlessWebApps,
-    switches::kDisable3DAPIs
+    switches::kEnableCrxlessWebApps
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));

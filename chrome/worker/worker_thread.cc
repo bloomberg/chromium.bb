@@ -60,7 +60,6 @@ WorkerThread::WorkerThread() {
       !command_line.HasSwitch(switches::kDisableFileSystem));
 
   WebRuntimeFeatures::enableWebGL(
-      !command_line.HasSwitch(switches::kDisable3DAPIs) &&
       !command_line.HasSwitch(switches::kDisableExperimentalWebGL));
 }
 

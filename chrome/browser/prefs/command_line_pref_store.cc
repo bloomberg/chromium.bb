@@ -31,7 +31,6 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
           prefs::kDisableAuthNegotiateCnameLookup, true },
       { switches::kEnableAuthNegotiatePort, prefs::kEnableAuthNegotiatePort,
           true },
-      { switches::kDisable3DAPIs, prefs::kDisable3DAPIs, true },
 };
 
 CommandLinePrefStore::CommandLinePrefStore(const CommandLine* command_line)
