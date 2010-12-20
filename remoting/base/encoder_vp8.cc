@@ -6,15 +6,14 @@
 
 #include "base/logging.h"
 #include "media/base/callback.h"
-#include "media/base/media.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/proto/video.pb.h"
 
 extern "C" {
 #define VPX_CODEC_DISABLE_COMPAT 1
-#include "third_party/libvpx/include/vpx/vpx_codec.h"
-#include "third_party/libvpx/include/vpx/vpx_encoder.h"
-#include "third_party/libvpx/include/vpx/vp8cx.h"
+#include "third_party/libvpx/source/libvpx/vpx/vpx_codec.h"
+#include "third_party/libvpx/source/libvpx/vpx/vpx_encoder.h"
+#include "third_party/libvpx/source/libvpx/vpx/vp8cx.h"
 }
 
 namespace remoting {
@@ -47,8 +46,7 @@ bool EncoderVp8::Init(int width, int height) {
   image_->h = height;
 
   vpx_codec_enc_cfg_t config;
-  const vpx_codec_iface_t* algo =
-      (const vpx_codec_iface_t*)media::GetVp8CxAlgoAddress();
+  const vpx_codec_iface_t* algo = vpx_codec_vp8_cx();
   CHECK(algo);
   vpx_codec_err_t ret = vpx_codec_enc_config_default(algo, &config, 0);
   if (ret != VPX_CODEC_OK)

@@ -10,9 +10,9 @@
 
 extern "C" {
 #define VPX_CODEC_DISABLE_COMPAT 1
-#include "third_party/libvpx/include/vpx/vpx_codec.h"
-#include "third_party/libvpx/include/vpx/vpx_decoder.h"
-#include "third_party/libvpx/include/vpx/vp8dx.h"
+#include "third_party/libvpx/source/libvpx/vpx/vpx_codec.h"
+#include "third_party/libvpx/source/libvpx/vpx/vpx_decoder.h"
+#include "third_party/libvpx/source/libvpx/vpx/vp8dx.h"
 }
 
 namespace remoting {
@@ -52,8 +52,7 @@ Decoder::DecodeResult DecoderVp8::DecodePacket(const VideoPacket* packet) {
     codec_ = new vpx_codec_ctx_t();
     vpx_codec_err_t ret =
         vpx_codec_dec_init(
-            codec_,
-            (const vpx_codec_iface_t*)media::GetVp8DxAlgoAddress(), NULL, 0);
+            codec_, vpx_codec_vp8_dx(), NULL, 0);
     if (ret != VPX_CODEC_OK) {
       LOG(INFO) << "Cannot initialize codec.";
       delete codec_;

@@ -11,7 +11,7 @@ vars = {
   "nacl_revision": "4007",
   "libjingle_revision": "50",
   "libvpx_revision": "65287",
-  "ffmpeg_revision": "67548",
+  "ffmpeg_revision": "69487",
 }
 
 deps = {
