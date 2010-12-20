@@ -158,7 +158,6 @@ void URLRequestAutomationJob::Kill() {
 
 bool URLRequestAutomationJob::ReadRawData(
     net::IOBuffer* buf, int buf_size, int* bytes_read) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DVLOG(1) << "URLRequestAutomationJob: " << request_->url().spec()
            << " - read pending: " << buf_size;
 
