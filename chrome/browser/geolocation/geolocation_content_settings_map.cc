@@ -20,9 +20,13 @@
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/content_settings/content_settings_details.h"
+#include "chrome/browser/content_settings/content_settings_pattern.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -36,6 +40,11 @@ const ContentSetting
 GeolocationContentSettingsMap::GeolocationContentSettingsMap(Profile* profile)
     : profile_(profile) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  prefs_registrar_.Init(profile_->GetPrefs());
+  prefs_registrar_.Add(prefs::kGeolocationDefaultContentSetting, this);
+  prefs_registrar_.Add(prefs::kGeolocationContentSettings, this);
+  notification_registrar_.Add(this, NotificationType::PROFILE_DESTROYED,
+                              Source<Profile>(profile_));
 }
 
 // static
@@ -47,11 +56,23 @@ void GeolocationContentSettingsMap::RegisterUserPrefs(PrefService* prefs) {
 
 ContentSetting GeolocationContentSettingsMap::GetDefaultContentSetting() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // If the profile is destroyed (and set to NULL) return CONTENT_SETTING_BLOCK.
+  if (!profile_)
+    return CONTENT_SETTING_BLOCK;
   const PrefService* prefs = profile_->GetPrefs();
   const ContentSetting default_content_setting = IntToContentSetting(
       prefs->GetInteger(prefs::kGeolocationDefaultContentSetting));
   return default_content_setting == CONTENT_SETTING_DEFAULT ?
          kDefaultSetting : default_content_setting;
+}
+
+bool GeolocationContentSettingsMap::IsDefaultContentSettingManaged() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // If the profile is destroyed (and set to NULL) return true.
+  if (!profile_)
+    return true;
+  return profile_->GetPrefs()->IsManagedPreference(
+      prefs::kGeolocationDefaultContentSetting);
 }
 
 ContentSetting GeolocationContentSettingsMap::GetContentSetting(
@@ -62,7 +83,9 @@ ContentSetting GeolocationContentSettingsMap::GetContentSetting(
   GURL requesting_origin(requesting_url.GetOrigin());
   GURL embedding_origin(embedding_url.GetOrigin());
   DCHECK(requesting_origin.is_valid() && embedding_origin.is_valid());
-
+  // If the profile is destroyed (and set to NULL) return CONTENT_SETTING_BLOCK.
+  if (!profile_)
+    return CONTENT_SETTING_BLOCK;
   const DictionaryValue* all_settings_dictionary =
       profile_->GetPrefs()->GetDictionary(prefs::kGeolocationContentSettings);
   // Careful: The returned value could be NULL if the pref has never been set.
@@ -115,6 +138,8 @@ GeolocationContentSettingsMap::AllOriginsSettings
 void GeolocationContentSettingsMap::SetDefaultContentSetting(
     ContentSetting setting) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!profile_)
+    return;
   profile_->GetPrefs()->SetInteger(prefs::kGeolocationDefaultContentSetting,
                                    setting == CONTENT_SETTING_DEFAULT ?
                                        kDefaultSetting : setting);
@@ -131,6 +156,8 @@ void GeolocationContentSettingsMap::SetContentSetting(
   GURL embedding_origin(embedding_url.GetOrigin());
   DCHECK(requesting_origin.is_valid());
   DCHECK(embedding_origin.is_valid() || embedding_url.is_empty());
+  if (!profile_)
+    return;
   PrefService* prefs = profile_->GetPrefs();
   DictionaryValue* all_settings_dictionary = prefs->GetMutableDictionary(
       prefs::kGeolocationContentSettings);
@@ -162,13 +189,52 @@ void GeolocationContentSettingsMap::SetContentSetting(
 
 void GeolocationContentSettingsMap::ResetToDefault() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
+  if (!profile_)
+    return;
   PrefService* prefs = profile_->GetPrefs();
   prefs->ClearPref(prefs::kGeolocationDefaultContentSetting);
   prefs->ClearPref(prefs::kGeolocationContentSettings);
 }
 
+void GeolocationContentSettingsMap::NotifyObservers(
+    const ContentSettingsDetails& details) {
+  NotificationService::current()->Notify(
+      NotificationType::GEOLOCATION_SETTINGS_CHANGED,
+      Source<GeolocationContentSettingsMap>(this),
+      Details<const ContentSettingsDetails>(&details));
+}
+
+void GeolocationContentSettingsMap::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  if (type == NotificationType::PREF_CHANGED) {
+    const std::string& name = *Details<std::string>(details).ptr();
+    if (name == prefs::kGeolocationDefaultContentSetting) {
+      NotifyObservers(ContentSettingsDetails(
+      ContentSettingsPattern(),
+      CONTENT_SETTINGS_TYPE_DEFAULT,
+      ""));
+    }
+  } else if (NotificationType::PROFILE_DESTROYED == type) {
+    UnregisterObservers();
+  } else {
+    NOTREACHED();
+  }
+}
+
+void GeolocationContentSettingsMap::UnregisterObservers() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!profile_)
+    return;
+  prefs_registrar_.RemoveAll();
+  notification_registrar_.Remove(this, NotificationType::PROFILE_DESTROYED,
+                                 Source<Profile>(profile_));
+  profile_ = NULL;
+}
+
 GeolocationContentSettingsMap::~GeolocationContentSettingsMap() {
+  UnregisterObservers();
 }
 
 // static

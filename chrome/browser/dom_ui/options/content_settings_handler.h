@@ -96,6 +96,10 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
   // Gets the default setting in string form.
   std::string GetSettingDefaultFromModel(ContentSettingsType type);
 
+  // Returns true if the default setting for the given content settings type
+  // |type| is managed.
+  bool GetDefaultSettingManagedFromModel(ContentSettingsType type);
+
   // Member variables ---------------------------------------------------------
 
   NotificationRegistrar notification_registrar_;

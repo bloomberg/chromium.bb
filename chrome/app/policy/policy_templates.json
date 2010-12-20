@@ -506,6 +506,105 @@
       ]
     },
     {
+      'name': 'ContentSettings',
+      'type': 'group',
+      'policies': [
+        {
+          'name': 'DefaultCookiesSetting',
+          'type': 'enum',
+          'items': [
+            {'name': 'AllowCookies', 'value': '0'},
+            {'name': 'BlockCookies', 'value': '1'},
+          ],
+          'supported_on': ['chrome.*:10-'],
+          'annotations': {
+            'features': {'dynamic_refresh': 1},
+            'example_value': 0,
+          }
+        },
+        {
+          'name': 'DefaultImagesSetting',
+          'type': 'enum',
+          'items': [
+            {'name': 'AllowImages', 'value': '0'},
+            {'name': 'BlockImages', 'value': '1'},
+          ],
+          'supported_on': ['chrome.*:10-'],
+          'annotations': {
+            'features': {'dynamic_refresh': 1},
+            'example_value': 0,
+          }
+        },
+	{
+          'name': 'DefaultJavaScriptSetting',
+          'type': 'enum',
+          'items': [
+            {'name': 'AllowJavaScript', 'value': '0'},
+            {'name': 'BlockJavaScript', 'value': '1'},
+          ],
+          'supported_on': ['chrome.*:10-'],
+          'annotations': {
+            'features': {'dynamic_refresh': 1},
+            'example_value': 0,
+          }
+        },
+	{
+          'name': 'DefaultPluginsSetting',
+          'type': 'enum',
+          'items': [
+            {'name': 'AllowPlugins', 'value': '0'},
+            {'name': 'BlockPlugins', 'value': '1'},
+          ],
+          'supported_on': ['chrome.*:10-'],
+          'annotations': {
+            'features': {'dynamic_refresh': 1},
+            'example_value': 0,
+          }
+        },
+	{
+          'name': 'DefaultPopupsSetting',
+          'type': 'enum',
+          'items': [
+            {'name': 'AllowPopups', 'value': '0'},
+            {'name': 'BlockPopups', 'value': '1'},
+          ],
+          'supported_on': ['chrome.*:10-'],
+          'annotations': {
+            'features': {'dynamic_refresh': 1},
+            'example_value': 1,
+          }
+        },
+        {
+          'name': 'DefaultNotificationSetting',
+          'type': 'enum',
+          'items': [
+            {'name': 'AllowNotifications', 'value': '0'},
+            {'name': 'BlockNotifications', 'value': '1'},
+            {'name': 'AskNotifications', 'value': '2'},
+          ],
+          'supported_on': ['chrome.*:10-'],
+          'annotations': {
+            'features': {'dynamic_refresh': 1},
+            'example_value': 2,
+          }
+        },
+        {
+          'name': 'DefaultGeolocationSetting',
+          'type': 'enum',
+          'items': [
+            {'name': 'AllowGeolocation', 'value': '0'},
+            {'name': 'BlockGeolocation', 'value': '1'},
+            {'name': 'AskGeolocation', 'value': '2'},
+          ],
+          'supported_on': ['chrome.*:10-'],
+          'annotations': {
+            'features': {'dynamic_refresh': 1},
+            'example_value': 0,
+          }
+        },
+      ]
+    },
+    {
       'name': 'ChromeFrameRendererSettings',
       'type': 'group',
       'policies': [{

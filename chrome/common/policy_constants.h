@@ -59,6 +59,8 @@ extern const char kDefaultImagesSetting[];
 extern const char kDefaultJavaScriptSetting[];
 extern const char kDefaultPluginsSetting[];
 extern const char kDefaultPopupsSetting[];
+extern const char kDefaultNotificationSetting[];
+extern const char kDefaultGeolocationSetting[];
 extern const char kAuthSchemes[];
 extern const char kDisableAuthNegotiateCnameLookup[];
 extern const char kEnableAuthNegotiatePort[];

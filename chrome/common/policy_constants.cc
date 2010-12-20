@@ -62,6 +62,8 @@ const char kDefaultImagesSetting[] = "DefaultImagesSetting";
 const char kDefaultJavaScriptSetting[] = "DefaultJavaScriptSetting";
 const char kDefaultPluginsSetting[] = "DefaultPluginsSetting";
 const char kDefaultPopupsSetting[] = "DefaultPopupsSetting";
+const char kDefaultNotificationSetting[] = "DefaultNotificationSetting";
+const char kDefaultGeolocationSetting[] = "DefaultGeolocationSetting";
 const char kAuthSchemes[] = "AuthSchemes";
 const char kDisableAuthNegotiateCnameLookup[] =
     "DisableAuthNegotiateCnameLookup";

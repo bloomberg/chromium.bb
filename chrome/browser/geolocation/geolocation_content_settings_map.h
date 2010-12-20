@@ -17,20 +17,27 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
+#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/common/content_settings.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
+class ContentSettingsDetails;
 class DictionaryValue;
 class PrefService;
 class Profile;
 
 class GeolocationContentSettingsMap
-    : public base::RefCountedThreadSafe<GeolocationContentSettingsMap> {
+    : public base::RefCountedThreadSafe<GeolocationContentSettingsMap>,
+      public NotificationObserver {
  public:
   typedef std::map<GURL, ContentSetting> OneOriginSettings;
   typedef std::map<GURL, OneOriginSettings> AllOriginsSettings;
 
   explicit GeolocationContentSettingsMap(Profile* profile);
+
+  virtual ~GeolocationContentSettingsMap();
 
   static void RegisterUserPrefs(PrefService* prefs);
 
@@ -38,6 +45,9 @@ class GeolocationContentSettingsMap
   //
   // This should only be called on the UI thread.
   ContentSetting GetDefaultContentSetting() const;
+
+  // Returns true if the content setting is managed (set by a policy).
+  bool IsDefaultContentSettingManaged() const;
 
   // Returns a single ContentSetting which applies to the given |requesting_url|
   // when embedded in a top-level page from |embedding_url|.  To determine the
@@ -80,13 +90,21 @@ class GeolocationContentSettingsMap
   // This should only be called on the UI thread.
   void ResetToDefault();
 
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
  private:
   friend class base::RefCountedThreadSafe<GeolocationContentSettingsMap>;
 
   // The default setting.
   static const ContentSetting kDefaultSetting;
 
-  ~GeolocationContentSettingsMap();
+  // Sends a CONTENT_SETTINGS_CHANGED notification.
+  void NotifyObservers(const ContentSettingsDetails& details);
+
+  void UnregisterObservers();
 
   // Sets the fields of |one_origin_settings| based on the values in
   // |dictionary|.
@@ -96,6 +114,10 @@ class GeolocationContentSettingsMap
 
   // The profile we're associated with.
   Profile* profile_;
+
+  // Registrar to register for PREF_CHANGED notifications.
+  PrefChangeRegistrar prefs_registrar_;
+  NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationContentSettingsMap);
 };

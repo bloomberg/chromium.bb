@@ -452,6 +452,11 @@ void DesktopNotificationService::SetDefaultContentSetting(
   // The cache is updated through the notification observer.
 }
 
+bool DesktopNotificationService::IsDefaultContentSettingManaged() const {
+  return profile_->GetPrefs()->IsManagedPreference(
+      prefs::kDesktopNotificationDefaultContentSetting);
+}
+
 void DesktopNotificationService::ResetToDefaultContentSetting() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 

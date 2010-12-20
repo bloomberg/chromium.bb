@@ -56,6 +56,8 @@ enum ConfigurationPolicyType {
   kPolicyDefaultJavaScriptSetting,
   kPolicyDefaultPluginsSetting,
   kPolicyDefaultPopupsSetting,
+  kPolicyDefaultNotificationSetting,
+  kPolicyDefaultGeolocationSetting,
   kPolicyExtensionInstallForceList,
   kPolicyChromeOsLockOnIdleSuspend,
   kPolicyAuthSchemes,

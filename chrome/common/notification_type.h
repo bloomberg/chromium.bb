@@ -1116,6 +1116,11 @@ class NotificationType {
     // details are None.
     DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
 
+    // Sent when the geolocation settings change. The source is the
+    // GeolocationContentSettingsMap object, the details are
+    // ContentSettingsNotificationsDetails.
+    GEOLOCATION_SETTINGS_CHANGED,
+
     // Sync --------------------------------------------------------------------
 
     // Sent when the sync backend has been paused.

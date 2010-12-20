@@ -368,8 +368,10 @@ void ContentSettingsHandler::Observe(NotificationType type,
 void ContentSettingsHandler::UpdateSettingDefaultFromModel(
     ContentSettingsType type) {
   DictionaryValue filter_settings;
-  filter_settings.SetString(ContentSettingsTypeToGroupName(type),
-                            GetSettingDefaultFromModel(type));
+  filter_settings.SetString(ContentSettingsTypeToGroupName(type) + ".value",
+      GetSettingDefaultFromModel(type));
+  filter_settings.SetBoolean(ContentSettingsTypeToGroupName(type) + ".managed",
+      GetDefaultSettingManagedFromModel(type));
 
   dom_ui_->CallJavascriptFunction(
       L"ContentSettings.setContentFilterSettingsValue", filter_settings);
@@ -389,6 +391,19 @@ std::string ContentSettingsHandler::GetSettingDefaultFromModel(
   }
 
   return ContentSettingToString(default_setting);
+}
+
+bool ContentSettingsHandler::GetDefaultSettingManagedFromModel(
+    ContentSettingsType type) {
+  if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
+    return dom_ui_->GetProfile()->
+        GetGeolocationContentSettingsMap()->IsDefaultContentSettingManaged();
+  } else if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+    return dom_ui_->GetProfile()->
+        GetDesktopNotificationService()->IsDefaultContentSettingManaged();
+  } else {
+    return GetContentSettingsMap()->IsDefaultContentSettingManaged(type);
+  }
 }
 
 void ContentSettingsHandler::UpdateAllExceptionsViewsFromModel() {

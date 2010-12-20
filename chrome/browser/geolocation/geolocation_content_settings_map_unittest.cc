@@ -6,13 +6,51 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 
 namespace {
+
+class StubSettingsObserver : public NotificationObserver {
+ public:
+  StubSettingsObserver() : last_notifier(NULL), counter(0) {
+    registrar_.Add(this, NotificationType::GEOLOCATION_SETTINGS_CHANGED,
+                   NotificationService::AllSources());
+  }
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    ++counter;
+    Source<GeolocationContentSettingsMap> content_settings(source);
+    Details<ContentSettingsDetails> settings_details(details);
+    last_notifier = content_settings.ptr();
+    last_pattern = settings_details.ptr()->pattern();
+    last_update_all = settings_details.ptr()->update_all();
+    last_update_all_types = settings_details.ptr()->update_all_types();
+    last_type = settings_details.ptr()->type();
+    // This checks that calling a Get function from an observer doesn't
+    // deadlock.
+    last_notifier->GetContentSetting(GURL("http://random-hostname.com/"),
+                                     GURL("http://foo.random-hostname.com/"));
+  }
+
+  GeolocationContentSettingsMap* last_notifier;
+  ContentSettingsPattern last_pattern;
+  bool last_update_all;
+  bool last_update_all_types;
+  int counter;
+  ContentSettingsType last_type;
+
+ private:
+  NotificationRegistrar registrar_;
+};
 
 class GeolocationContentSettingsMapTests : public testing::Test {
  public:
@@ -239,6 +277,34 @@ TEST_F(GeolocationContentSettingsMapTests, IgnoreInvalidURLsInPrefs) {
   EXPECT_EQ(CONTENT_SETTING_ASK,
             map->GetContentSetting(GURL("http://bad_requester/"),
             GURL("http://b/")));
+}
+
+TEST_F(GeolocationContentSettingsMapTests, Observe) {
+  TestingProfile profile;
+  GeolocationContentSettingsMap* map =
+      profile.GetGeolocationContentSettingsMap();
+  StubSettingsObserver observer;
+
+  EXPECT_EQ(CONTENT_SETTING_ASK, map->GetDefaultContentSetting());
+
+  // Test if a CONTENT_SETTING_CHANGE notification is sent after the geolocation
+  // default content setting was changed through calling the
+  // SetDefaultContentSetting method.
+  map->SetDefaultContentSetting(CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(map, observer.last_notifier);
+  EXPECT_EQ(CONTENT_SETTINGS_TYPE_DEFAULT, observer.last_type);
+  EXPECT_EQ(1, observer.counter);
+
+
+  // Test if a CONTENT_SETTING_CHANGE notification is sent after the preference
+  // GeolocationDefaultContentSetting was changed.
+  PrefService* prefs = profile.GetPrefs();
+  prefs->SetInteger(prefs::kGeolocationDefaultContentSetting,
+                    CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(2, observer.counter);
+  EXPECT_EQ(map, observer.last_notifier);
+  EXPECT_EQ(CONTENT_SETTINGS_TYPE_DEFAULT, observer.last_type);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, map->GetDefaultContentSetting());
 }
 
 }  // namespace

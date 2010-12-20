@@ -93,6 +93,7 @@ class DesktopNotificationService : public NotificationObserver {
   // been allowed or denied yet.
   ContentSetting GetDefaultContentSetting();
   void SetDefaultContentSetting(ContentSetting setting);
+  bool IsDefaultContentSettingManaged() const;
 
   // NOTE: This should only be called on the UI thread.
   void ResetToDefaultContentSetting();
