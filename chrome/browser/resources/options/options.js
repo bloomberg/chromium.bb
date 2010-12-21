@@ -92,7 +92,7 @@ function load() {
   OptionsPage.registerSubPage(ContentSettings.getInstance(),
                               AdvancedOptions.getInstance());
   OptionsPage.registerSubPage(CookiesView.getInstance(),
-                              AdvancedOptions.getInstance());
+                              ContentSettings.getInstance());
   OptionsPage.registerSubPage(FontSettings.getInstance(),
                               AdvancedOptions.getInstance());
   if (!cr.isWindows && !cr.isMac) {
