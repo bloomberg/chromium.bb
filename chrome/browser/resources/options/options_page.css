@@ -405,6 +405,9 @@ list > .heading:hover {
 
 list .deletable-item {
   -webkit-box-align: center;
+}
+
+list .deletable-item > :first-child {
   -webkit-box-flex: 1;
   display: -webkit-box;
 }

@@ -5,8 +5,8 @@
 cr.define('options.passwordManager', function() {
   const ArrayDataModel = cr.ui.ArrayDataModel;
   const DeletableItemList = options.DeletableItemList;
+  const DeletableItem = options.DeletableItem;
   const List = cr.ui.List;
-  const ListItem = cr.ui.ListItem;
 
   /**
    * Creates a new passwords list item.
@@ -24,11 +24,11 @@ cr.define('options.passwordManager', function() {
   }
 
   PasswordListItem.prototype = {
-    __proto__: ListItem.prototype,
+    __proto__: DeletableItem.prototype,
 
     /** @inheritDoc */
     decorate: function() {
-      ListItem.prototype.decorate.call(this);
+      DeletableItem.prototype.decorate.call(this);
 
       // The URL of the site.
       var urlLabel = this.ownerDocument.createElement('div');
@@ -36,13 +36,13 @@ cr.define('options.passwordManager', function() {
       urlLabel.classList.add('favicon-cell');
       urlLabel.textContent = this.url;
       urlLabel.style.backgroundImage = url('chrome://favicon/' + this.url);
-      this.appendChild(urlLabel);
+      this.contentElement.appendChild(urlLabel);
 
       // The stored username.
       var usernameLabel = this.ownerDocument.createElement('div');
       usernameLabel.className = 'name';
       usernameLabel.textContent = this.username;
-      this.appendChild(usernameLabel);
+      this.contentElement.appendChild(usernameLabel);
 
       // The stored password.
       var passwordInputDiv = this.ownerDocument.createElement('div');
@@ -61,7 +61,7 @@ cr.define('options.passwordManager', function() {
       buttonSpan.addEventListener('click', this.onClick_, true);
       passwordInputDiv.appendChild(buttonSpan);
 
-      this.appendChild(passwordInputDiv);
+      this.contentElement.appendChild(passwordInputDiv);
     },
 
     /** @inheritDoc */
@@ -128,7 +128,7 @@ cr.define('options.passwordManager', function() {
    * Creates a new PasswordExceptions list item.
    * @param {Array} entry A pair of the form [url, username].
    * @constructor
-   * @extends {cr.ui.ListItem}
+   * @extends {Deletable.ListItem}
    */
   function PasswordExceptionsListItem(entry) {
     var el = cr.doc.createElement('div');
@@ -140,13 +140,13 @@ cr.define('options.passwordManager', function() {
   }
 
   PasswordExceptionsListItem.prototype = {
-    __proto__: ListItem.prototype,
+    __proto__: DeletableItem.prototype,
 
     /**
      * Call when an element is decorated as a list item.
      */
     decorate: function() {
-      ListItem.prototype.decorate.call(this);
+      DeletableItem.prototype.decorate.call(this);
 
       // The URL of the site.
       var urlLabel = this.ownerDocument.createElement('div');
@@ -154,7 +154,7 @@ cr.define('options.passwordManager', function() {
       urlLabel.classList.add('favicon-cell');
       urlLabel.textContent = this.url;
       urlLabel.style.backgroundImage = url('chrome://favicon/' + this.url);
-      this.appendChild(urlLabel);
+      this.contentElement.appendChild(urlLabel);
     },
 
     /**
@@ -180,7 +180,7 @@ cr.define('options.passwordManager', function() {
     __proto__: DeletableItemList.prototype,
 
     /** @inheritDoc */
-    createItemContents: function(entry) {
+    createItem: function(entry) {
       return new PasswordListItem(entry);
     },
 
@@ -208,7 +208,7 @@ cr.define('options.passwordManager', function() {
     __proto__: DeletableItemList.prototype,
 
     /** @inheritDoc */
-    createItemContents: function(entry) {
+    createItem: function(entry) {
       return new PasswordExceptionsListItem(entry);
     },
 

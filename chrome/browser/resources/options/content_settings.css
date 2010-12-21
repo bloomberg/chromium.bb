@@ -10,8 +10,10 @@ found in the LICENSE file.
 }
 
 .exceptionPattern {
-  display: -webkit-box;
   -webkit-box-flex: 1;
+  display: -webkit-box;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .exceptionSetting {

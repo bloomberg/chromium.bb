@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 cr.define('options.contentSettings', function() {
-  const List = cr.ui.List;
-  const ListItem = cr.ui.ListItem;
-  const ArrayDataModel = cr.ui.ArrayDataModel;
   const DeletableItemList = options.DeletableItemList;
+  const DeletableItem = options.DeletableItem;
+  const ArrayDataModel = cr.ui.ArrayDataModel;
 
   /**
    * Creates a new exceptions list item.
@@ -17,7 +16,7 @@ cr.define('options.contentSettings', function() {
    * @param {Object} exception A dictionary that contains the data of the
    *     exception.
    * @constructor
-   * @extends {cr.ui.ListItem}
+   * @extends {options.DeletableItem}
    */
   function ExceptionsListItem(contentType, mode, enableAskOption, exception) {
     var el = cr.doc.createElement('div');
@@ -32,13 +31,13 @@ cr.define('options.contentSettings', function() {
   }
 
   ExceptionsListItem.prototype = {
-    __proto__: ListItem.prototype,
+    __proto__: DeletableItem.prototype,
 
     /**
      * Called when an element is decorated as a list item.
      */
     decorate: function() {
-      ListItem.prototype.decorate.call(this);
+      DeletableItem.prototype.decorate.call(this);
 
       // Labels for display mode. |pattern| will be null for the 'add new
       // exception' row.
@@ -46,20 +45,20 @@ cr.define('options.contentSettings', function() {
         var patternLabel = cr.doc.createElement('span');
         patternLabel.textContent = this.pattern;
         patternLabel.className = 'exceptionPattern';
-        this.appendChild(patternLabel);
+        this.contentElement.appendChild(patternLabel);
         this.patternLabel = patternLabel;
 
         var settingLabel = cr.doc.createElement('span');
         settingLabel.textContent = this.settingForDisplay();
         settingLabel.className = 'exceptionSetting';
-        this.appendChild(settingLabel);
+        this.contentElement.appendChild(settingLabel);
         this.settingLabel = settingLabel;
       }
 
       // Elements for edit mode.
       var input = cr.doc.createElement('input');
       input.type = 'text';
-      this.appendChild(input);
+      this.contentElement.appendChild(input);
       input.className = 'exceptionPattern hidden';
 
       var select = cr.doc.createElement('select');
@@ -85,7 +84,7 @@ cr.define('options.contentSettings', function() {
       optionBlock.textContent = templateData.blockException;
       select.appendChild(optionBlock);
 
-      this.appendChild(select);
+      this.contentElement.appendChild(select);
       select.className = 'exceptionSetting hidden';
 
       // Used to track whether the URL pattern in the input is valid.
@@ -431,7 +430,7 @@ cr.define('options.contentSettings', function() {
      * Creates an item to go in the list.
      * @param {Object} entry The element from the data model for this row.
      */
-    createItemContents: function(entry) {
+    createItem: function(entry) {
       if (entry) {
         return new ExceptionsListItem(this.contentType,
                                       this.mode,
@@ -441,7 +440,7 @@ cr.define('options.contentSettings', function() {
         var addRowItem = new ExceptionsAddRowListItem(this.contentType,
                                                       this.mode,
                                                       this.enableAskOption);
-        addRowItem.undeletable = true;
+        addRowItem.deletable = false;
         return addRowItem;
       }
     },
@@ -469,7 +468,7 @@ cr.define('options.contentSettings', function() {
     patternValidityCheckComplete: function(pattern, valid) {
       var listItems = this.items;
       for (var i = 0; i < listItems.length; i++) {
-        var listItem = listItems[i].contentItem;
+        var listItem = listItems[i];
         // Don't do anything for messages for the item if it is not the intended
         // recipient, or if the response is stale (i.e. the input value has
         // changed since we sent the request to analyze it).
@@ -501,7 +500,7 @@ cr.define('options.contentSettings', function() {
 
     /** @inheritDoc */
     deleteItemAtIndex: function(index) {
-      var listItem = this.getListItemByIndex(index).contentItem;
+      var listItem = this.getListItemByIndex(index);
       if (listItem.undeletable) {
         console.log('Tried to delete an undeletable row.');
         return;

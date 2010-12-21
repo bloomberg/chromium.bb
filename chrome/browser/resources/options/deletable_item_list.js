@@ -7,14 +7,12 @@ cr.define('options', function() {
   const ListItem = cr.ui.ListItem;
 
   /**
-   * Wraps a list item to make it deletable, adding a button that will trigger a
-   * call to deleteItemAtIndex(index) in the list.
-   * @param {!ListItem} baseItem The list element to wrap.
+   * Creates a deletable list item, which has a button that will trigger a call
+   * to deleteItemAtIndex(index) in the list.
    */
-  function DeletableListItem(baseItem) {
+  function DeletableItem(value) {
     var el = cr.doc.createElement('div');
-    el.baseItem_ = baseItem;
-    DeletableListItem.decorate(el);
+    DeletableItem.decorate(el);
     return el;
   }
 
@@ -22,49 +20,68 @@ cr.define('options', function() {
    * Decorates an element as a deletable list item.
    * @param {!HTMLElement} el The element to decorate.
    */
-  DeletableListItem.decorate = function(el) {
-    el.__proto__ = DeletableListItem.prototype;
+  DeletableItem.decorate = function(el) {
+    el.__proto__ = DeletableItem.prototype;
     el.decorate();
   };
 
-  DeletableListItem.prototype = {
+  DeletableItem.prototype = {
     __proto__: ListItem.prototype,
 
     /**
-     * The list item being wrapped to make it deletable.
-     * @type {!ListItem}
+     * The element subclasses should populate with content.
+     * @type {HTMLElement}
      * @private
      */
-    baseItem_: null,
+    contentElement_: null,
+
+    /**
+     * The close button element.
+     * @type {HTMLElement}
+     * @private
+     */
+    closeButtonElement_: null,
+
+    /**
+     * Whether or not this item can be deleted.
+     * @type {boolean}
+     * @private
+     */
+    deletable_: true,
 
     /** @inheritDoc */
     decorate: function() {
       ListItem.prototype.decorate.call(this);
 
-      this.baseItem_.classList.add('deletable-item');
-      this.appendChild(this.baseItem_);
+      this.classList.add('deletable-item');
 
-      var closeButtonEl = this.ownerDocument.createElement('button');
-      closeButtonEl.className = 'close-button';
-      closeButtonEl.disabled = this.baseItem_.undeletable;
-      closeButtonEl.addEventListener('mousedown', this.handleMouseDownOnClose_);
-      this.appendChild(closeButtonEl);
-    },
+      this.contentElement_ = this.ownerDocument.createElement('div');
+      this.appendChild(this.contentElement_);
 
-    /** @inheritDoc */
-    selectionChanged: function() {
-      // Forward the selection state to the |baseItem_|.
-      // TODO(jhawkins): This is terrible.
-      this.baseItem_.selected = this.selected;
-      this.baseItem_.selectionChanged();
+      this.closeButtonElement_ = this.ownerDocument.createElement('button');
+      this.closeButtonElement_.className = 'close-button';
+      this.closeButtonElement_.addEventListener('mousedown',
+                                                this.handleMouseDownOnClose_);
+      this.appendChild(this.closeButtonElement_);
     },
 
     /**
-     * Returns the list item being wrapped to make it deletable.
-     * @return {!ListItem} The list item being wrapped
+     * Returns the element subclasses should add content to.
+     * @return {HTMLElement} The element subclasses should popuplate.
      */
-    get contentItem() {
-      return this.baseItem_;
+    get contentElement() {
+      return this.contentElement_;
+    },
+
+    /* Gets/sets the deletable property. An item that is not deletable doesn't
+     * show the delete button (although space is still reserved for it).
+     */
+    get deletable() {
+      return this.deletable_;
+    },
+    set deletable(value) {
+      this.deletable_ = value;
+      this.closeButtonElement_.disabled = !value;
     },
 
     /**
@@ -88,22 +105,6 @@ cr.define('options', function() {
     decorate: function() {
       List.prototype.decorate.call(this);
       this.addEventListener('click', this.handleClick_);
-    },
-
-    /** @inheritDoc */
-    createItem: function(value) {
-      var baseItem = this.createItemContents(value);
-      return new DeletableListItem(baseItem);
-    },
-
-    /**
-     * Creates a new list item to use as the main row contents for |value|.
-     * Subclasses should override this instead of createItem.
-     * @param {*} value The value to use for the item.
-     * @return {!ListItem} The newly created list item.
-     */
-    createItemContents: function(value) {
-      List.prototype.createItem.call(this, value);
     },
 
     /**
@@ -133,6 +134,7 @@ cr.define('options', function() {
   };
 
   return {
-    DeletableItemList: DeletableItemList
+    DeletableItemList: DeletableItemList,
+    DeletableItem: DeletableItem,
   };
 });

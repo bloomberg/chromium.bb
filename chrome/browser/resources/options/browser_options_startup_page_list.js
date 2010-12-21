@@ -4,7 +4,7 @@
 
 cr.define('options.browser_options', function() {
   const DeletableItemList = options.DeletableItemList;
-  const ListItem = cr.ui.ListItem;
+  const DeletableItem = options.DeletableItem;
 
   /**
    * Creates a new startup page list item.
@@ -29,11 +29,11 @@ cr.define('options.browser_options', function() {
   };
 
   StartupPageListItem.prototype = {
-    __proto__: ListItem.prototype,
+    __proto__: DeletableItem.prototype,
 
     /** @inheritDoc */
     decorate: function() {
-      ListItem.prototype.decorate.call(this);
+      DeletableItem.prototype.decorate.call(this);
 
       var titleEl = this.ownerDocument.createElement('span');
       titleEl.className = 'title';
@@ -43,7 +43,7 @@ cr.define('options.browser_options', function() {
                                           this.pageInfo_['url']);
       titleEl.title = this.pageInfo_['tooltip'];
 
-      this.appendChild(titleEl);
+      this.contentElement.appendChild(titleEl);
     },
   };
 
@@ -53,7 +53,7 @@ cr.define('options.browser_options', function() {
     __proto__: DeletableItemList.prototype,
 
     /** @inheritDoc */
-    createItemContents: function(pageInfo) {
+    createItem: function(pageInfo) {
       return new StartupPageListItem(pageInfo);
     },
 
