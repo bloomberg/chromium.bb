@@ -45,7 +45,6 @@ class SandboxedFileSystemContext;
 
 class AutocompleteClassifier;
 class BackgroundContentsService;
-class BackgroundModeManager;
 class BookmarkModel;
 class BrowserSignin;
 class BrowserThemeProvider;
