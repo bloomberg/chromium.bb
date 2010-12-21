@@ -494,9 +494,10 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None):
     # were listed, try to run pylint.
     try:
       from pylint import lint
-      if lint.Run(sorted(files)):
-        return [output_api.PresubmitPromptWarning('Fix pylint errors first.')]
-      return []
+      result = lint.Run(sorted(files))
+    except SystemExit, e:
+      # pylint has the bad habit of calling sys.exit(), trap it here.
+      result = e.code
     except ImportError:
       if input_api.platform == 'win32':
         return [output_api.PresubmitNotifyResult(
@@ -507,6 +508,9 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None):
           'Please install pylint with "sudo apt-get install python-setuptools; '
           'sudo easy_install pylint"\n'
           'Cannot do static analysis of python files.')]
+    if result:
+      return [output_api.PresubmitPromptWarning('Fix pylint errors first.')]
+    return []
   finally:
     warnings.filterwarnings('default', category=DeprecationWarning)
 

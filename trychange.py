@@ -656,7 +656,7 @@ def TryChange(argv,
     checkouts = []
     path = os.getcwd()
     if options.upstream_branch:
-        path += '@' + options.upstream_branch
+      path += '@' + options.upstream_branch
     checkouts.append(GuessVCS(options, path))
     checkouts[0].AutomagicalSettings()
     for item in options.sub_rep:
