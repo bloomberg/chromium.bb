@@ -615,7 +615,8 @@ void PluginList::GetPluginGroups(
   plugin_groups->clear();
   for (PluginGroup::PluginMap::const_iterator it = plugin_groups_.begin();
        it != plugin_groups_.end(); ++it) {
-    plugin_groups->push_back(*it->second);
+    if (!it->second->IsEmpty())
+      plugin_groups->push_back(*it->second);
   }
 }
 

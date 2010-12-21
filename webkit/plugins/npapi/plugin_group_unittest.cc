@@ -30,40 +30,40 @@ static const VersionRangeDefinition kPlugin4VersionRange[] = {
 };
 static const VersionRangeDefinition kPlugin34VersionRange[] = {
     { "0", "4", "3.0.44" },
-    { "4", "5", "4.0.44" }
+    { "4", "5", "" }
 };
 
 static const PluginGroupDefinition kPluginDef = {
-    "myplugin", "MyPlugin", "MyPlugin", kPluginVersionRange, 1,
-    "http://latest/" };
+    "myplugin", "MyPlugin", "MyPlugin", kPluginVersionRange,
+    arraysize(kPluginVersionRange), "http://latest/" };
 static const PluginGroupDefinition kPluginDef3 = {
-    "myplugin-3", "MyPlugin 3", "MyPlugin", kPlugin3VersionRange, 1,
-    "http://latest" };
+    "myplugin-3", "MyPlugin 3", "MyPlugin", kPlugin3VersionRange,
+    arraysize(kPlugin3VersionRange), "http://latest" };
 static const PluginGroupDefinition kPluginDef4 = {
-    "myplugin-4", "MyPlugin 4", "MyPlugin", kPlugin4VersionRange, 1,
-    "http://latest" };
+    "myplugin-4", "MyPlugin 4", "MyPlugin", kPlugin4VersionRange,
+    arraysize(kPlugin4VersionRange), "http://latest" };
 static const PluginGroupDefinition kPluginDef34 = {
-    "myplugin-34", "MyPlugin 3/4", "MyPlugin", kPlugin34VersionRange, 2,
-    "http://latest" };
+    "myplugin-34", "MyPlugin 3/4", "MyPlugin", kPlugin34VersionRange,
+    arraysize(kPlugin34VersionRange), "http://latest" };
 static const PluginGroupDefinition kPluginDefNotVulnerable = {
     "myplugin-latest", "MyPlugin", "MyPlugin", NULL, 0, "http://latest" };
 
-// name, path, version, desc, mime_types, enabled.
+// name, path, version, desc.
 static WebPluginInfo kPlugin2043 = WebPluginInfo(
-    ASCIIToUTF16("MyPlugin"), ASCIIToUTF16("2.0.43"),
-    ASCIIToUTF16("MyPlugin version 2.0.43"));
+    ASCIIToUTF16("MyPlugin"), FilePath(FILE_PATH_LITERAL("myplugin.so.2.0.43")),
+    ASCIIToUTF16("2.0.43"), ASCIIToUTF16("MyPlugin version 2.0.43"));
 static WebPluginInfo kPlugin3043 = WebPluginInfo(
-    ASCIIToUTF16("MyPlugin"), ASCIIToUTF16("3.0.43"),
-    ASCIIToUTF16("MyPlugin version 3.0.43"));
+    ASCIIToUTF16("MyPlugin"), FilePath(FILE_PATH_LITERAL("myplugin.so.3.0.43")),
+    ASCIIToUTF16("3.0.43"), ASCIIToUTF16("MyPlugin version 3.0.43"));
 static WebPluginInfo kPlugin3044 = WebPluginInfo(
-    ASCIIToUTF16("MyPlugin"), ASCIIToUTF16("3.0.44"),
-    ASCIIToUTF16("MyPlugin version 3.0.44"));
+    ASCIIToUTF16("MyPlugin"), FilePath(FILE_PATH_LITERAL("myplugin.so.3.0.44")),
+    ASCIIToUTF16("3.0.44"), ASCIIToUTF16("MyPlugin version 3.0.44"));
 static WebPluginInfo kPlugin3045 = WebPluginInfo(
-    ASCIIToUTF16("MyPlugin"), ASCIIToUTF16("3.0.45"),
-    ASCIIToUTF16("MyPlugin version 3.0.45"));
+    ASCIIToUTF16("MyPlugin"), FilePath(FILE_PATH_LITERAL("myplugin.so.3.0.45")),
+     ASCIIToUTF16("3.0.45"), ASCIIToUTF16("MyPlugin version 3.0.45"));
 static WebPluginInfo kPlugin4043 = WebPluginInfo(
-    ASCIIToUTF16("MyPlugin"), ASCIIToUTF16("4.0.43"),
-    ASCIIToUTF16("MyPlugin version 4.0.43"));
+    ASCIIToUTF16("MyPlugin"), FilePath(FILE_PATH_LITERAL("myplugin.so.4.0.43")),
+     ASCIIToUTF16("4.0.43"), ASCIIToUTF16("MyPlugin version 4.0.43"));
 
 class PluginGroupTest : public testing::Test {
  public:
@@ -110,8 +110,9 @@ TEST(PluginGroupTest, PluginGroupDescription) {
   string16 desc3043(ASCIIToUTF16("MyPlugin version 3.0.43"));
   string16 desc3045(ASCIIToUTF16("MyPlugin version 3.0.45"));
 
-  PluginGroupDefinition plugindefs[] = { kPluginDef3, kPluginDef34 };
-  for (size_t i = 0; i < 2; ++i) {
+  PluginGroupDefinition plugindefs[] =
+      { kPluginDef, kPluginDef3, kPluginDef34 };
+  for (size_t i = 0; i < arraysize(plugindefs); ++i) {
     WebPluginInfo plugin3043(kPlugin3043);
     WebPluginInfo plugin3045(kPlugin3045);
     {
@@ -200,7 +201,8 @@ TEST(PluginGroupTest, VersionExtraction) {
 
   for (size_t i = 0; i < arraysize(versions); i++) {
     const WebPluginInfo plugin = WebPluginInfo(
-        ASCIIToUTF16("Blah Plugin"), ASCIIToUTF16(versions[i][0]), string16());
+        ASCIIToUTF16("Blah Plugin"), FilePath(FILE_PATH_LITERAL("blahfile")),
+        ASCIIToUTF16(versions[i][0]), string16());
     scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(plugin));
     EXPECT_TRUE(group->Match(plugin));
     group->AddPlugin(plugin, 0);
@@ -224,5 +226,43 @@ TEST(PluginGroupTest, DisabledByPolicy) {
       ASCIIToUTF16("Google Earth")));
 }
 
+TEST(PluginGroupTest, IsVulnerable) {
+  // Adobe Reader 10
+  VersionRangeDefinition adobe_reader_version_range[] = {
+      { "10", "11", "" },
+      { "9", "10", "9.4.1" },
+      { "0", "9", "8.2.5" }
+  };
+  PluginGroupDefinition adobe_reader_plugin_def = {
+      "adobe-reader", "Adobe Reader", "Adobe Acrobat",
+      adobe_reader_version_range, arraysize(adobe_reader_version_range),
+      "http://get.adobe.com/reader/" };
+  WebPluginInfo adobe_reader_plugin(ASCIIToUTF16("Adobe Reader"),
+                                    FilePath(FILE_PATH_LITERAL("/reader.so")),
+                                    ASCIIToUTF16("10.0.0.396"),
+                                    ASCIIToUTF16("adobe reader 10"));
+  scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
+      adobe_reader_plugin_def));
+  group->AddPlugin(adobe_reader_plugin, 0);
+  PluginGroup group_copy(*group);  // Exercise the copy constructor.
+  EXPECT_FALSE(group_copy.IsVulnerable());
+
+  // Silverlight 4
+  VersionRangeDefinition silverlight_version_range[] = {
+      { "0", "4", "3.0.50106.0" },
+      { "4", "5", "" }
+  };
+  PluginGroupDefinition silverlight_plugin_def = {
+      "silverlight", "Silverlight", "Silverlight", silverlight_version_range,
+      arraysize(silverlight_version_range),
+      "http://www.microsoft.com/getsilverlight/" };
+  WebPluginInfo silverlight_plugin(ASCIIToUTF16("Silverlight"),
+                                   FilePath(FILE_PATH_LITERAL("/silver.so")),
+                                   ASCIIToUTF16("4.0.50917.0"),
+                                   ASCIIToUTF16("silverlight 4"));
+  group.reset(PluginGroupTest::CreatePluginGroup(silverlight_plugin_def));
+  group->AddPlugin(silverlight_plugin, 0);
+  EXPECT_FALSE(PluginGroup(*group).IsVulnerable());
+}
 }  // namespace npapi
 }  // namespace webkit

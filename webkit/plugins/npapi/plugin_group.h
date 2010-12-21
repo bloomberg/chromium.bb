@@ -104,6 +104,8 @@ class PluginGroup {
   // plugin as given by PluginList so we can display its priority.
   void AddPlugin(const WebPluginInfo& plugin, int position);
 
+  bool IsEmpty() const;
+
   // Enables/disables this group. This enables/disables all plugins in the
   // group.
   void Enable(bool enable);

@@ -112,13 +112,10 @@ void PluginGroup::InitFrom(const PluginGroup& other) {
   description_ = other.description_;
   update_url_ = other.update_url_;
   enabled_ = other.enabled_;
-  for (size_t i = 0; i < other.version_ranges_.size(); ++i)
-    version_ranges_.push_back(other.version_ranges_[i]);
-  DCHECK_EQ(other.web_plugin_infos_.size(), other.web_plugin_positions_.size());
-  for (size_t i = 0; i < other.web_plugin_infos_.size(); ++i)
-    AddPlugin(other.web_plugin_infos_[i], other.web_plugin_positions_[i]);
-  if (!version_.get())
-    version_.reset(Version::GetVersionFromString("0"));
+  version_ranges_ = other.version_ranges_;
+  version_.reset(other.version_->Clone());
+  web_plugin_infos_ = other.web_plugin_infos_;
+  web_plugin_positions_ = other.web_plugin_positions_;
 }
 
 PluginGroup::PluginGroup(const PluginGroup& other) {
@@ -126,7 +123,6 @@ PluginGroup::PluginGroup(const PluginGroup& other) {
 }
 
 PluginGroup& PluginGroup::operator=(const PluginGroup& other) {
-  version_ranges_.clear();
   InitFrom(other);
   return *this;
 }
@@ -253,6 +249,10 @@ void PluginGroup::AddPlugin(const WebPluginInfo& plugin, int position) {
   // The position of this plugin relative to the global list of plugins.
   web_plugin_positions_.push_back(position);
   UpdateActivePlugin(plugin);
+}
+
+bool PluginGroup::IsEmpty() const {
+  return web_plugin_infos_.empty();
 }
 
 string16 PluginGroup::GetGroupName() const {
