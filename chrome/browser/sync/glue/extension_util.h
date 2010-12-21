@@ -9,12 +9,10 @@
 // This file contains some low-level utility functions used by
 // extensions sync.
 
-#include <set>
 #include <string>
 
 class Extension;
 class ExtensionPrefs;
-class ExtensionTypeSet;
 class ExtensionService;
 struct UninstalledExtensionInfo;
 
@@ -24,37 +22,8 @@ class ExtensionSpecifics;
 
 namespace browser_sync {
 
-enum ExtensionType {
-  THEME,
-  EXTENSION,
-  // A converted user script that does not have an update URL.
-  LOCAL_USER_SCRIPT,
-  // A converted user script that has an update URL.  (We don't have a
-  // similar distinction for "regular" extensions as an empty update
-  // URL is interpreted to mean the default update URL [i.e., the
-  // extensions gallery].)
-  UPDATEABLE_USER_SCRIPT,
-  APP,
-};
-
-typedef std::set<ExtensionType> ExtensionTypeSet;
-
-// Returns the type of the given extension.
-//
-// TODO(akalin): Might be useful to move this into extension.cc.
-ExtensionType GetExtensionType(const Extension& extension);
-
-// TODO(akalin): Remove this once we unify ExtensionType and simply
-// have an ExtensionType member in UninstalledExtensionInfo.
-ExtensionType GetExtensionTypeFromUninstalledExtensionInfo(
-    const UninstalledExtensionInfo& uninstalled_extension_info);
-
 // Returns whether or not the given extension is one we want to sync.
 bool IsExtensionValid(const Extension& extension);
-
-// Returns whether or not the given extension is one we want to sync.
-bool IsExtensionValidAndSyncable(const Extension& extension,
-                                 const ExtensionTypeSet& allowed_types);
 
 // Stringifies the given ExtensionSpecifics.
 std::string ExtensionSpecificsToString(

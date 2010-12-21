@@ -83,9 +83,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     EXTENSION_ICON_BITTY = 16,
   };
 
-  // Type used for UMA_HISTOGRAM_ENUMERATION about extensions.
-  // Do not change the order of entries or remove entries in this list.
-  enum HistogramType {
+  // Do not change the order of entries or remove entries in this list
+  // as this is used in UMA_HISTOGRAM_ENUMERATIONs about extensions.
+  enum Type {
     TYPE_UNKNOWN = 0,
     TYPE_EXTENSION,
     TYPE_THEME,
@@ -227,8 +227,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
            IsExternalLocation(location);
   }
 
-  // See HistogramType definition above.
-  HistogramType GetHistogramType() const;
+  // See Type definition above.
+  Type GetType() const;
 
   // Returns an absolute url to a resource inside of an extension. The
   // |extension_url| argument should be the url() from an Extension object. The
@@ -730,11 +730,7 @@ struct UninstalledExtensionInfo {
 
   std::string extension_id;
   std::set<std::string> extension_api_permissions;
-  // TODO(akalin): Once we have a unified ExtensionType, replace the
-  // below member variables with a member of that type.
-  bool is_theme;
-  bool is_app;
-  bool converted_from_user_script;
+  Extension::Type extension_type;
   GURL update_url;
 };
 

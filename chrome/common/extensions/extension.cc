@@ -469,7 +469,7 @@ std::string Extension::GenerateIdForPath(const FilePath& path) {
   return id;
 }
 
-Extension::HistogramType Extension::GetHistogramType() const {
+Extension::Type Extension::GetType() const {
   if (is_theme())
     return TYPE_THEME;
   if (converted_from_user_script())
@@ -2255,9 +2255,7 @@ UninstalledExtensionInfo::UninstalledExtensionInfo(
     const Extension& extension)
     : extension_id(extension.id()),
       extension_api_permissions(extension.api_permissions()),
-      is_theme(extension.is_theme()),
-      is_app(extension.is_app()),
-      converted_from_user_script(extension.converted_from_user_script()),
+      extension_type(extension.GetType()),
       update_url(extension.update_url()) {}
 
 UninstalledExtensionInfo::~UninstalledExtensionInfo() {}

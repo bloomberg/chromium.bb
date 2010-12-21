@@ -7,23 +7,26 @@
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/sync/engine/syncapi.h"
+#include "chrome/browser/sync/glue/extension_util.h"
 #include "chrome/browser/sync/protocol/app_specifics.pb.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
+#include "chrome/common/extensions/extension.h"
 
 namespace browser_sync {
 
 ExtensionSyncTraits::ExtensionSyncTraits(
     syncable::ModelType model_type,
-    PendingExtensionInfo::ExpectedCrxType expected_crx_type,
+    IsValidAndSyncablePredicate is_valid_and_syncable,
+    ShouldHandleExtensionUninstallPredicate
+        should_handle_extension_uninstall,
     const char* root_node_tag,
-    const ExtensionTypeSet& allowed_extension_types,
     ExtensionSpecificsGetter extension_specifics_getter,
     ExtensionSpecificsSetter extension_specifics_setter,
     ExtensionSpecificsEntityGetter extension_specifics_entity_getter)
     : model_type(model_type),
-      expected_crx_type(expected_crx_type),
+      is_valid_and_syncable(is_valid_and_syncable),
+      should_handle_extension_uninstall(should_handle_extension_uninstall),
       root_node_tag(root_node_tag),
-      allowed_extension_types(allowed_extension_types),
       extension_specifics_getter(extension_specifics_getter),
       extension_specifics_setter(extension_specifics_setter),
       extension_specifics_entity_getter(extension_specifics_entity_getter) {}
@@ -54,16 +57,37 @@ bool GetExtensionSpecificsFromEntity(
   return true;
 }
 
+bool IsSyncableExtension(Extension::Type type, const GURL& update_url) {
+  switch (type) {
+    case Extension::TYPE_EXTENSION:
+      return true;
+    case Extension::TYPE_USER_SCRIPT:
+      // We only want to sync user scripts with update URLs.
+      return !update_url.is_empty();
+    default:
+      return false;
+  }
+}
+
+bool IsValidAndSyncableExtension(const Extension& extension) {
+  return
+      IsExtensionValid(extension) &&
+      IsSyncableExtension(extension.GetType(), extension.update_url());
+}
+
+bool IsExtensionUninstall(
+    const UninstalledExtensionInfo& uninstalled_extension_info) {
+  return IsSyncableExtension(uninstalled_extension_info.extension_type,
+                             uninstalled_extension_info.update_url);
+}
+
 }  // namespace
 
 ExtensionSyncTraits GetExtensionSyncTraits() {
-  ExtensionTypeSet allowed_extension_types;
-  allowed_extension_types.insert(EXTENSION);
-  allowed_extension_types.insert(UPDATEABLE_USER_SCRIPT);
   return ExtensionSyncTraits(syncable::EXTENSIONS,
-                             PendingExtensionInfo::EXTENSION,
+                             &IsValidAndSyncableExtension,
+                             &IsExtensionUninstall,
                              "google_chrome_extensions",
-                             allowed_extension_types,
                              &GetExtensionSpecifics,
                              &SetExtensionSpecifics,
                              &GetExtensionSpecificsFromEntity);
@@ -96,15 +120,29 @@ bool GetExtensionSpecificsFromEntityOfApp(
   return true;
 }
 
+bool IsSyncableApp(Extension::Type type) {
+  return
+      (type == Extension::TYPE_HOSTED_APP) ||
+      (type == Extension::TYPE_PACKAGED_APP);
+}
+
+bool IsValidAndSyncableApp(
+    const Extension& extension) {
+  return IsExtensionValid(extension) && IsSyncableApp(extension.GetType());
+}
+
+bool IsAppUninstall(
+    const UninstalledExtensionInfo& uninstalled_extension_info) {
+  return IsSyncableApp(uninstalled_extension_info.extension_type);
+}
+
 }  // namespace
 
 ExtensionSyncTraits GetAppSyncTraits() {
-  ExtensionTypeSet allowed_extension_types;
-  allowed_extension_types.insert(APP);
   return ExtensionSyncTraits(syncable::APPS,
-                             PendingExtensionInfo::APP,
+                             &IsValidAndSyncableApp,
+                             &IsAppUninstall,
                              "google_chrome_apps",
-                             allowed_extension_types,
                              &GetExtensionSpecificsOfApp,
                              &SetExtensionSpecificsOfApp,
                              &GetExtensionSpecificsFromEntityOfApp);

@@ -49,8 +49,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/sync/glue/extension_sync_traits.h"
-#include "chrome/browser/sync/glue/extension_util.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -146,14 +144,14 @@ void GetExplicitOriginsInExtent(const Extension* extension,
 
 PendingExtensionInfo::PendingExtensionInfo(
     const GURL& update_url,
-    PendingExtensionInfo::ExpectedCrxType expected_crx_type,
+    ShouldInstallExtensionPredicate should_install_extension,
     bool is_from_sync,
     bool install_silently,
     bool enable_on_install,
     bool enable_incognito_on_install,
     Extension::Location location)
     : update_url(update_url),
-      expected_crx_type(expected_crx_type),
+      should_install_extension(should_install_extension),
       is_from_sync(is_from_sync),
       install_silently(install_silently),
       enable_on_install(enable_on_install),
@@ -162,7 +160,7 @@ PendingExtensionInfo::PendingExtensionInfo(
 
 PendingExtensionInfo::PendingExtensionInfo()
     : update_url(),
-      expected_crx_type(PendingExtensionInfo::UNKNOWN),
+      should_install_extension(NULL),
       is_from_sync(true),
       install_silently(false),
       enable_on_install(false),
@@ -718,7 +716,7 @@ void ExtensionService::UpdateExtension(const std::string& id,
 
 void ExtensionService::AddPendingExtensionFromSync(
     const std::string& id, const GURL& update_url,
-    PendingExtensionInfo::ExpectedCrxType expected_crx_type,
+    ShouldInstallExtensionPredicate should_install_extension,
     bool install_silently, bool enable_on_install,
     bool enable_incognito_on_install) {
   if (GetExtensionByIdInternal(id, true, true)) {
@@ -727,18 +725,23 @@ void ExtensionService::AddPendingExtensionFromSync(
     return;
   }
 
-  AddPendingExtensionInternal(id, update_url, expected_crx_type, true,
+  AddPendingExtensionInternal(id, update_url, should_install_extension, true,
                               install_silently, enable_on_install,
                               enable_incognito_on_install,
                               Extension::INTERNAL);
 }
 
+namespace {
+
+bool AlwaysInstall(const Extension& extension) {
+  return true;
+}
+
+}  // namespace
+
 void ExtensionService::AddPendingExtensionFromExternalUpdateUrl(
     const std::string& id, const GURL& update_url,
     Extension::Location location) {
-  // Add the extension to this list of extensions to update.
-  const PendingExtensionInfo::ExpectedCrxType kExpectedCrxType =
-      PendingExtensionInfo::UNKNOWN;
   const bool kIsFromSync = false;
   const bool kInstallSilently = true;
   const bool kEnableOnInstall = true;
@@ -752,17 +755,25 @@ void ExtensionService::AddPendingExtensionFromExternalUpdateUrl(
     return;
   }
 
-  AddPendingExtensionInternal(id, update_url, kExpectedCrxType, kIsFromSync,
-                              kInstallSilently, kEnableOnInstall,
-                              kEnableIncognitoOnInstall,
+  AddPendingExtensionInternal(id, update_url, &AlwaysInstall,
+                              kIsFromSync, kInstallSilently,
+                              kEnableOnInstall, kEnableIncognitoOnInstall,
                               location);
 }
 
+namespace {
+
+bool IsApp(const Extension& extension) {
+  return extension.is_app();
+}
+
+}  // namespace
+
+// TODO(akalin): Change DefaultAppList to DefaultExtensionList and
+// remove the IsApp() check.
+
 void ExtensionService::AddPendingExtensionFromDefaultAppList(
     const std::string& id) {
-  // Add the extension to this list of extensions to update.
-  const PendingExtensionInfo::ExpectedCrxType kExpectedCrxType =
-      PendingExtensionInfo::APP;
   const bool kIsFromSync = false;
   const bool kInstallSilently = true;
   const bool kEnableOnInstall = true;
@@ -773,15 +784,15 @@ void ExtensionService::AddPendingExtensionFromDefaultAppList(
   if (GetExtensionByIdInternal(id, true, true))
     return;
 
-  AddPendingExtensionInternal(id, GURL(), kExpectedCrxType, kIsFromSync,
-                              kInstallSilently, kEnableOnInstall,
-                              kEnableIncognitoOnInstall,
+  AddPendingExtensionInternal(id, GURL(), &IsApp,
+                              kIsFromSync, kInstallSilently,
+                              kEnableOnInstall, kEnableIncognitoOnInstall,
                               Extension::INTERNAL);
 }
 
 void ExtensionService::AddPendingExtensionInternal(
     const std::string& id, const GURL& update_url,
-    PendingExtensionInfo::ExpectedCrxType expected_crx_type,
+    ShouldInstallExtensionPredicate should_install_extension,
     bool is_from_sync, bool install_silently,
     bool enable_on_install, bool enable_incognito_on_install,
     Extension::Location install_source) {
@@ -806,8 +817,8 @@ void ExtensionService::AddPendingExtensionInternal(
   }
 
   pending_extensions_[id] =
-      PendingExtensionInfo(update_url, expected_crx_type, is_from_sync,
-                           install_silently, enable_on_install,
+      PendingExtensionInfo(update_url, should_install_extension,
+                           is_from_sync, install_silently, enable_on_install,
                            enable_incognito_on_install, install_source);
 }
 
@@ -871,7 +882,7 @@ void ExtensionService::UninstallExtension(const std::string& extension_id,
   UninstalledExtensionInfo uninstalled_extension_info(*extension);
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.UninstallType",
-                            extension->GetHistogramType(), 100);
+                            extension->GetType(), 100);
 
   // Also copy the extension identifier since the reference might have been
   // obtained via Extension::id().
@@ -1100,7 +1111,7 @@ void ExtensionService::LoadAllExtensions() {
   ExtensionList::iterator ex;
   for (ex = extensions_.begin(); ex != extensions_.end(); ++ex) {
     Extension::Location location = (*ex)->location();
-    Extension::HistogramType type = (*ex)->GetHistogramType();
+    Extension::Type type = (*ex)->GetType();
     if ((*ex)->is_app()) {
       UMA_HISTOGRAM_ENUMERATION("Extensions.AppLocation",
                                 location, 100);
@@ -1729,25 +1740,17 @@ void ExtensionService::OnExtensionInstalled(const Extension* extension) {
       pending_extensions_.find(extension->id());
   if (it != pending_extensions_.end()) {
     PendingExtensionInfo pending_extension_info = it->second;
-    PendingExtensionInfo::ExpectedCrxType expected_crx_type =
-        pending_extension_info.expected_crx_type;
-    bool is_from_sync = pending_extension_info.is_from_sync;
     pending_extensions_.erase(it);
     it = pending_extensions_.end();
 
-    // Set initial state from pending extension data.
-    PendingExtensionInfo::ExpectedCrxType actual_crx_type =
-        PendingExtensionInfo::EXTENSION;
-    if (extension->is_app())
-      actual_crx_type = PendingExtensionInfo::APP;
-    else if (extension->is_theme())
-      actual_crx_type = PendingExtensionInfo::THEME;
-
-    if (expected_crx_type != PendingExtensionInfo::UNKNOWN &&
-        expected_crx_type != actual_crx_type) {
+    if (!pending_extension_info.should_install_extension(*extension)) {
       LOG(WARNING)
-          << "Not installing pending extension " << extension->id()
-          << " with is_theme = " << extension->is_theme();
+          << "should_install_extension ("
+          << pending_extension_info.should_install_extension
+          << ") returned false for " << extension->id()
+          << " of type " << extension->GetType()
+          << " and update URL " << extension->update_url().spec()
+          << "; not installing";
       // Delete the extension directory since we're not going to
       // load it.
       BrowserThread::PostTask(
@@ -1756,55 +1759,6 @@ void ExtensionService::OnExtensionInstalled(const Extension* extension) {
       return;
     }
 
-    // If |extension| is not syncable, and was installed via sync, disallow
-    // the instanation.
-    //
-    // Themes are always allowed.  Because they contain no active code, they
-    // are less of a risk than extensions.
-    //
-    // If |is_from_sync| is false, then the install was not initiated by sync,
-    // and this check should pass.  Extensions that were installed from an
-    // update URL in external_extensions.json are an example.  They are not
-    // syncable, because the user did not make an explicit choice to install
-    // them.  However, they were installed through the update mechanism, so
-    // control must pass into this function.
-    //
-    // TODO(akalin): When we do apps sync, we have to work with its
-    // traits, too.
-    const browser_sync::ExtensionSyncTraits extension_sync_traits =
-        browser_sync::GetExtensionSyncTraits();
-    const browser_sync::ExtensionSyncTraits app_sync_traits =
-        browser_sync::GetAppSyncTraits();
-    // If an extension is a theme, we bypass the valid/syncable check
-    // as themes are harmless.
-    if (!extension->is_theme() && is_from_sync &&
-        !browser_sync::IsExtensionValidAndSyncable(
-            *extension, extension_sync_traits.allowed_extension_types) &&
-        !browser_sync::IsExtensionValidAndSyncable(
-            *extension, app_sync_traits.allowed_extension_types)) {
-      // We're an extension installed via sync that is unsyncable,
-      // i.e. we may have been syncable previously.  We block these
-      // installs.  We'll have to update the clause above if we decide
-      // to sync other extension-like things, like apps or user
-      // scripts.
-      //
-      // Note that this creates a small window where a user who tries
-      // to download/install an extension that is simultaneously
-      // installed via sync (and blocked) will find his download
-      // blocked.
-      //
-      // TODO(akalin): Remove this check once we've put in UI to
-      // approve synced extensions.
-      LOG(WARNING)
-          << "Not installing invalid or unsyncable extension "
-          << extension->id();
-      // Delete the extension directory since we're not going to
-      // load it.
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          NewRunnableFunction(&DeleteFileHelper, extension->path(), true));
-      return;
-    }
     if (extension->is_theme()) {
       DCHECK(pending_extension_info.enable_on_install);
       initial_state = Extension::ENABLED;
@@ -1829,7 +1783,7 @@ void ExtensionService::OnExtensionInstalled(const Extension* extension) {
   }
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.InstallType",
-                            extension->GetHistogramType(), 100);
+                            extension->GetType(), 100);
   ShownSectionsHandler::OnExtensionInstalled(profile_->GetPrefs(), extension);
   extension_prefs_->OnExtensionInstalled(
       extension, initial_state, initial_enable_incognito);
@@ -1976,15 +1930,13 @@ void ExtensionService::OnExternalExtensionFileFound(
   }
 
   GURL update_url = GURL();
-  PendingExtensionInfo::ExpectedCrxType expected_crx_type =
-      PendingExtensionInfo::UNKNOWN;
   bool is_from_sync = false;
   bool install_silently = true;
   bool enable_on_install = true;
   bool enable_incognito_on_install = false;
   pending_extensions_[id] = PendingExtensionInfo(
       update_url,
-      expected_crx_type,
+      &AlwaysInstall,
       is_from_sync,
       install_silently,
       enable_on_install,

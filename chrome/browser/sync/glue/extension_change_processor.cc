@@ -61,13 +61,11 @@ void ExtensionChangeProcessor::Observe(NotificationType type,
     const UninstalledExtensionInfo* uninstalled_extension_info =
         Details<UninstalledExtensionInfo>(details).ptr();
     CHECK(uninstalled_extension_info);
-    ExtensionType extension_type =
-        GetExtensionTypeFromUninstalledExtensionInfo(
-            *uninstalled_extension_info);
-    if (ContainsKey(traits_.allowed_extension_types, extension_type)) {
+    if (traits_.should_handle_extension_uninstall(
+            *uninstalled_extension_info)) {
       const std::string& id = uninstalled_extension_info->extension_id;
       VLOG(1) << "Removing server data for uninstalled extension " << id
-              << " of type " << extension_type;
+              << " of type " << uninstalled_extension_info->extension_type;
       RemoveServerData(traits_, id, profile_->GetProfileSyncService());
     }
   } else {
@@ -75,9 +73,7 @@ void ExtensionChangeProcessor::Observe(NotificationType type,
     CHECK(extension);
     VLOG(1) << "Updating server data for extension " << extension->id()
             << " (notification type = " << type.value << ")";
-    // Ignore non-syncable extensions.
-    if (!IsExtensionValidAndSyncable(
-            *extension, traits_.allowed_extension_types)) {
+    if (!traits_.is_valid_and_syncable(*extension)) {
       return;
     }
     std::string error;

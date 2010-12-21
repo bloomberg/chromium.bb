@@ -75,6 +75,14 @@ bool AreThemeSpecificsEqualHelper(
   }
 }
 
+namespace {
+
+bool IsTheme(const Extension& extension) {
+  return extension.is_theme();
+}
+
+}  // namespace
+
 void SetCurrentThemeFromThemeSpecifics(
     const sync_pb::ThemeSpecifics& theme_specifics,
     Profile* profile) {
@@ -125,8 +133,6 @@ void SetCurrentThemeFromThemeSpecifics(
       // No extension with this id exists -- we must install it; we do
       // so by adding it as a pending extension and then triggering an
       // auto-update cycle.
-      const PendingExtensionInfo::ExpectedCrxType kExpectedCrxType =
-          PendingExtensionInfo::THEME;
       // Themes don't need to install silently as they just pop up an
       // informational dialog after installation instead of a
       // confirmation dialog.
@@ -134,7 +140,7 @@ void SetCurrentThemeFromThemeSpecifics(
       const bool kEnableOnInstall = true;
       const bool kEnableIncognitoOnInstall = false;
       extensions_service->AddPendingExtensionFromSync(
-          id, update_url, kExpectedCrxType,
+          id, update_url, &IsTheme,
           kInstallSilently, kEnableOnInstall, kEnableIncognitoOnInstall);
       ExtensionUpdater* extension_updater = extensions_service->updater();
       // Auto-updates should now be on always (see the construction of

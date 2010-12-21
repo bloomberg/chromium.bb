@@ -41,33 +41,29 @@ class GURL;
 class Profile;
 class Version;
 
+typedef bool (*ShouldInstallExtensionPredicate)(const Extension&);
+
 // A pending extension is an extension that hasn't been installed yet
 // and is intended to be installed in the next auto-update cycle.  The
 // update URL of a pending extension may be blank, in which case a
 // default one is assumed.
 struct PendingExtensionInfo {
-  // TODO(skerner): Consider merging ExpectedCrxType with
-  // browser_sync::ExtensionType.
-  enum ExpectedCrxType {
-    UNKNOWN,  // Sometimes we don't know the type of a pending item.  An
-              // update URL from external_extensions.json is one such case.
-    APP,
-    THEME,
-    EXTENSION
-  };
-
-  PendingExtensionInfo(const GURL& update_url,
-                       ExpectedCrxType expected_crx_type,
-                       bool is_from_sync,
-                       bool install_silently,
-                       bool enable_on_install,
-                       bool enable_incognito_on_install,
-                       Extension::Location install_source);
+  PendingExtensionInfo(
+      const GURL& update_url,
+      ShouldInstallExtensionPredicate should_install_extension,
+      bool is_from_sync,
+      bool install_silently,
+      bool enable_on_install,
+      bool enable_incognito_on_install,
+      Extension::Location install_source);
 
   PendingExtensionInfo();
 
   GURL update_url;
-  ExpectedCrxType expected_crx_type;
+  // When the extension is about to be installed, this function is
+  // called.  If this function returns true, the install proceeds.  If
+  // this function returns false, the install is aborted.
+  ShouldInstallExtensionPredicate should_install_extension;
   bool is_from_sync;  // This update check was initiated from sync.
   bool install_silently;
   bool enable_on_install;
@@ -242,7 +238,7 @@ class ExtensionService
   // pre-enabled permissions.
   void AddPendingExtensionFromSync(
       const std::string& id, const GURL& update_url,
-      const PendingExtensionInfo::ExpectedCrxType expected_crx_type,
+      ShouldInstallExtensionPredicate should_install_extension,
       bool install_silently, bool enable_on_install,
       bool enable_incognito_on_install);
 
@@ -471,11 +467,11 @@ class ExtensionService
                                             bool include_enabled,
                                             bool include_disabled);
 
-  // Like AddPendingExtension() but assumes an extension with the same
-  // id is not already installed.
+  // Like AddPendingExtension*() functions above, but assumes an
+  // extension with the same id is not already installed.
   void AddPendingExtensionInternal(
       const std::string& id, const GURL& update_url,
-      PendingExtensionInfo::ExpectedCrxType crx_type,
+      ShouldInstallExtensionPredicate should_install_extension,
       bool is_from_sync, bool install_silently,
       bool enable_on_install, bool enable_incognito_on_install,
       Extension::Location install_source);

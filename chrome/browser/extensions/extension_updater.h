@@ -104,15 +104,19 @@ class ManifestFetchesBuilder {
         : no_url_count(0),
           google_url_count(0),
           other_url_count(0),
-          theme_count(0) {}
+          extension_count(0),
+          theme_count(0),
+          app_count(0),
+          pending_count(0) {}
 
-    int no_url_count, google_url_count, other_url_count, theme_count;
+    int no_url_count, google_url_count, other_url_count;
+    int extension_count, theme_count, app_count, pending_count;
   };
 
   void AddExtensionData(Extension::Location location,
                         const std::string& id,
                         const Version& version,
-                        PendingExtensionInfo::ExpectedCrxType crx_type,
+                        Extension::Type extension_type,
                         GURL update_url,
                         const std::string& update_url_data);
   ExtensionUpdateService* service_;

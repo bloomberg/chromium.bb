@@ -190,8 +190,7 @@ void ManifestFetchesBuilder::AddExtension(const Extension& extension) {
   AddExtensionData(extension.location(),
                    extension.id(),
                    *extension.version(),
-                   (extension.is_theme() ? PendingExtensionInfo::THEME
-                                         : PendingExtensionInfo::EXTENSION),
+                   extension.GetType(),
                    extension.update_url(), update_url_data);
 }
 
@@ -204,17 +203,20 @@ void ManifestFetchesBuilder::AddPendingExtension(
   scoped_ptr<Version> version(
       Version::GetVersionFromString("0.0.0.0"));
 
-  AddExtensionData(info.install_source, id, *version,
-                   info.expected_crx_type, info.update_url, "");
+  AddExtensionData(
+      info.install_source, id, *version,
+      Extension::TYPE_UNKNOWN, info.update_url, "");
 }
 
 void ManifestFetchesBuilder::ReportStats() const {
-  UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateCheckExtensions",
-                           url_stats_.google_url_count +
-                           url_stats_.other_url_count -
-                           url_stats_.theme_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateCheckExtension",
+                           url_stats_.extension_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateCheckTheme",
                            url_stats_.theme_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateCheckApp",
+                           url_stats_.app_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateCheckPending",
+                           url_stats_.pending_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateCheckGoogleUrl",
                            url_stats_.google_url_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateCheckOtherUrl",
@@ -239,7 +241,7 @@ void ManifestFetchesBuilder::AddExtensionData(
     Extension::Location location,
     const std::string& id,
     const Version& version,
-    PendingExtensionInfo::ExpectedCrxType crx_type,
+    Extension::Type extension_type,
     GURL update_url,
     const std::string& update_url_data) {
 
@@ -272,8 +274,21 @@ void ManifestFetchesBuilder::AddExtensionData(
     url_stats_.other_url_count++;
   }
 
-  if (crx_type == PendingExtensionInfo::THEME) {
-    url_stats_.theme_count++;
+  switch (extension_type) {
+    case Extension::TYPE_THEME:
+      ++url_stats_.theme_count;
+      break;
+    case Extension::TYPE_EXTENSION:
+    case Extension::TYPE_USER_SCRIPT:
+      ++url_stats_.extension_count;
+      break;
+    case Extension::TYPE_HOSTED_APP:
+    case Extension::TYPE_PACKAGED_APP:
+      ++url_stats_.app_count;
+    case Extension::TYPE_UNKNOWN:
+    default:
+      ++url_stats_.pending_count;
+      break;
   }
 
   DCHECK(!update_url.is_empty());

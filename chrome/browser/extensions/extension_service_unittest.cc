@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_service_unittest.h"
 
 #include <algorithm>
+#include <set>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -1970,36 +1971,38 @@ TEST_F(ExtensionServiceTest, LoadExtensionsCanDowngrade) {
   EXPECT_EQ("1.0", loaded_[0]->VersionString());
 }
 
+namespace {
+
+bool IsExtension(const Extension& extension) {
+  return extension.GetType() == Extension::TYPE_EXTENSION;
+}
+
+}  // namespace
+
 // Test adding a pending extension.
-TEST_F(ExtensionServiceTest, AddPendingExtension) {
+TEST_F(ExtensionServiceTest, AddPendingExtensionFromSync) {
   InitializeEmptyExtensionService();
 
   const std::string kFakeId("fake-id");
   const GURL kFakeUpdateURL("http:://fake.update/url");
-  const PendingExtensionInfo::ExpectedCrxType kFakeExpectedCrxType =
-      PendingExtensionInfo::EXTENSION;
   const bool kFakeInstallSilently(true);
   const Extension::State kFakeInitialState(Extension::ENABLED);
   const bool kFakeInitialIncognitoEnabled(false);
 
   service_->AddPendingExtensionFromSync(
-      kFakeId, kFakeUpdateURL, kFakeExpectedCrxType, kFakeInstallSilently,
-      kFakeInitialState, kFakeInitialIncognitoEnabled);
+      kFakeId, kFakeUpdateURL, &IsExtension,
+      kFakeInstallSilently, kFakeInitialState, kFakeInitialIncognitoEnabled);
   PendingExtensionMap::const_iterator it =
       service_->pending_extensions().find(kFakeId);
   ASSERT_TRUE(it != service_->pending_extensions().end());
   EXPECT_EQ(kFakeUpdateURL, it->second.update_url);
-  EXPECT_EQ(kFakeExpectedCrxType, it->second.expected_crx_type);
+  EXPECT_EQ(&IsExtension, it->second.should_install_extension);
   EXPECT_EQ(kFakeInstallSilently, it->second.install_silently);
 }
 
 namespace {
 const char kGoodId[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
 const char kGoodUpdateURL[] = "http://good.update/url";
-const PendingExtensionInfo::ExpectedCrxType kCrxTypeTheme =
-    PendingExtensionInfo::THEME;
-const PendingExtensionInfo::ExpectedCrxType kCrxTypeExtension =
-    PendingExtensionInfo::EXTENSION;
 const bool kGoodIsFromSync = true;
 const bool kGoodInstallSilently = true;
 const Extension::State kGoodInitialState = Extension::DISABLED;
@@ -2010,7 +2013,7 @@ const bool kGoodInitialIncognitoEnabled = true;
 TEST_F(ExtensionServiceTest, UpdatePendingExtension) {
   InitializeEmptyExtensionService();
   service_->AddPendingExtensionFromSync(
-      kGoodId, GURL(kGoodUpdateURL), kCrxTypeExtension,
+      kGoodId, GURL(kGoodUpdateURL), &IsExtension,
       kGoodInstallSilently, kGoodInitialState,
       kGoodInitialIncognitoEnabled);
   EXPECT_TRUE(ContainsKey(service_->pending_extensions(), kGoodId));
@@ -2034,11 +2037,19 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtension) {
             service_->IsIncognitoEnabled(extension));
 }
 
+namespace {
+
+bool IsTheme(const Extension& extension) {
+  return extension.is_theme();
+}
+
+}  // namespace
+
 // Test updating a pending theme.
 TEST_F(ExtensionServiceTest, UpdatePendingTheme) {
   InitializeEmptyExtensionService();
   service_->AddPendingExtensionFromSync(
-      theme_crx, GURL(), PendingExtensionInfo::THEME,
+      theme_crx, GURL(), &IsTheme,
       false, Extension::ENABLED, false);
   EXPECT_TRUE(ContainsKey(service_->pending_extensions(), theme_crx));
 
@@ -2092,7 +2103,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExternalCrxWinsOverSync) {
 
   // Add a crx to be installed from the update mechanism.
   service_->AddPendingExtensionFromSync(
-      kGoodId, GURL(kGoodUpdateURL), kCrxTypeExtension,
+      kGoodId, GURL(kGoodUpdateURL), &IsExtension,
       kGoodInstallSilently, kGoodInitialState,
       kGoodInitialIncognitoEnabled);
 
@@ -2113,7 +2124,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExternalCrxWinsOverSync) {
 
   // Add a crx to be installed from the update mechanism.
   service_->AddPendingExtensionFromSync(
-      kGoodId, GURL(kGoodUpdateURL), kCrxTypeExtension,
+      kGoodId, GURL(kGoodUpdateURL), &IsExtension,
       kGoodInstallSilently, kGoodInitialState,
       kGoodInitialIncognitoEnabled);
 
@@ -2128,8 +2139,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExternalCrxWinsOverSync) {
 TEST_F(ExtensionServiceTest, UpdatePendingCrxThemeMismatch) {
   InitializeEmptyExtensionService();
   service_->AddPendingExtensionFromSync(
-      theme_crx, GURL(),
-      PendingExtensionInfo::EXTENSION,
+      theme_crx, GURL(), &IsExtension,
       true, Extension::ENABLED, false);
 
   EXPECT_TRUE(ContainsKey(service_->pending_extensions(), theme_crx));
@@ -2150,13 +2160,13 @@ TEST_F(ExtensionServiceTest, UpdatePendingCrxThemeMismatch) {
 // we can mock out ExtensionInstallUI and inject our version into
 // UpdateExtension().
 
-// Test updating a pending extension with wrong is_theme.
-TEST_F(ExtensionServiceTest, UpdatePendingExtensionWrongIsTheme) {
+// Test updating a pending extension which fails the should-install test.
+TEST_F(ExtensionServiceTest, UpdatePendingExtensionFailedShouldInstallTest) {
   InitializeEmptyExtensionService();
   // Add pending extension with a flipped is_theme.
   service_->AddPendingExtensionFromSync(
-      kGoodId, GURL(kGoodUpdateURL),
-      kCrxTypeTheme, kGoodInstallSilently, kGoodInitialState,
+      kGoodId, GURL(kGoodUpdateURL), &IsTheme,
+      kGoodInstallSilently, kGoodInitialState,
       kGoodInitialIncognitoEnabled);
   EXPECT_TRUE(ContainsKey(service_->pending_extensions(), kGoodId));
 
@@ -2206,8 +2216,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtensionAlreadyInstalled) {
   // Use AddPendingExtensionInternal() as AddPendingExtension() would
   // balk.
   service_->AddPendingExtensionInternal(
-      good->id(), good->update_url(),
-      PendingExtensionInfo::EXTENSION,
+      good->id(), good->update_url(), &IsExtension,
       kGoodIsFromSync, kGoodInstallSilently, kGoodInitialState,
       kGoodInitialIncognitoEnabled, Extension::INTERNAL);
   UpdateExtension(good->id(), path, INSTALLED);

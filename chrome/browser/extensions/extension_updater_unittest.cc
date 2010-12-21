@@ -124,22 +124,34 @@ std::string GenerateId(std::string input) {
   return result;
 }
 
+bool ShouldInstallExtensionsOnly(const Extension& extension) {
+  return extension.GetType() == Extension::TYPE_EXTENSION;
+}
+
+bool ShouldInstallThemesOnly(const Extension& extension) {
+  return extension.is_theme();
+}
+
+bool ShouldAlwaysInstall(const Extension& extension) {
+  return true;
+}
+
 // Creates test pending extensions and inserts them into list. The
 // name and version are all based on their index.
 void CreateTestPendingExtensions(int count, const GURL& update_url,
                                  PendingExtensionMap* pending_extensions) {
-  PendingExtensionInfo::ExpectedCrxType crx_type;
   for (int i = 1; i <= count; i++) {
-    crx_type = ((i % 2) ? PendingExtensionInfo::EXTENSION
-                        : PendingExtensionInfo::THEME);
+    ShouldInstallExtensionPredicate should_install_extension =
+        (i % 2 == 0) ? &ShouldInstallThemesOnly :
+        &ShouldInstallExtensionsOnly;
     const bool kIsFromSync = true;
     const bool kInstallSilently = true;
     const Extension::State kInitialState = Extension::ENABLED;
     const bool kInitialIncognitoEnabled = false;
     std::string id = GenerateId(base::StringPrintf("extension%i", i));
     (*pending_extensions)[id] =
-        PendingExtensionInfo(update_url, crx_type, kIsFromSync,
-                             kInstallSilently, kInitialState,
+        PendingExtensionInfo(update_url, should_install_extension,
+                             kIsFromSync, kInstallSilently, kInitialState,
                              kInitialIncognitoEnabled, Extension::INTERNAL);
   }
 }
@@ -636,15 +648,13 @@ class ExtensionUpdaterTest : public testing::Test {
     updater->FetchUpdatedExtension(id, test_url, hash, version->GetString());
 
     if (pending) {
-      const PendingExtensionInfo::ExpectedCrxType kExpectedCrxType =
-          PendingExtensionInfo::EXTENSION;
       const bool kIsFromSync = true;
       const bool kInstallSilently = true;
       const Extension::State kInitialState = Extension::ENABLED;
       const bool kInitialIncognitoEnabled = false;
       PendingExtensionMap pending_extensions;
       pending_extensions[id] =
-          PendingExtensionInfo(test_url, kExpectedCrxType, kIsFromSync,
+          PendingExtensionInfo(test_url, &ShouldAlwaysInstall, kIsFromSync,
                                kInstallSilently, kInitialState,
                                kInitialIncognitoEnabled, Extension::INTERNAL);
       service.set_pending_extensions(pending_extensions);
@@ -985,14 +995,14 @@ TEST(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
   // Extensions with invalid update URLs should be rejected.
   builder.AddPendingExtension(
       GenerateId("foo"), PendingExtensionInfo(GURL("http:google.com:foo"),
-                                              PendingExtensionInfo::EXTENSION,
+                                              &ShouldInstallExtensionsOnly,
                                               false, false, true, false,
                                               Extension::INTERNAL));
   EXPECT_TRUE(builder.GetFetches().empty());
 
   // Extensions with empty IDs should be rejected.
   builder.AddPendingExtension(
-      "", PendingExtensionInfo(GURL(), PendingExtensionInfo::EXTENSION,
+      "", PendingExtensionInfo(GURL(), &ShouldInstallExtensionsOnly,
                                false, false, true, false,
                                Extension::INTERNAL));
   EXPECT_TRUE(builder.GetFetches().empty());
@@ -1004,7 +1014,7 @@ TEST(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
   // filled in.
   builder.AddPendingExtension(
       GenerateId("foo"), PendingExtensionInfo(GURL(),
-                                              PendingExtensionInfo::EXTENSION,
+                                              &ShouldInstallExtensionsOnly,
                                               false, false, true, false,
                                               Extension::INTERNAL));
   std::vector<ManifestFetchData*> fetches = builder.GetFetches();
