@@ -654,6 +654,76 @@
             }],
           ],
         },
+        {
+          'target_name': 'npapi_pepper_test_plugin',
+          'type': 'loadable_module',
+          'mac_bundle': 1,
+          'msvs_guid': '821F3B89-6AE1-4254-99CB-93C04D0A79BE',
+          'dependencies': [
+            '<(DEPTH)/gpu/gpu.gyp:pgl',
+            '<(DEPTH)/third_party/gles2_book/gles2_book.gyp:stencil_test',
+            'npapi_test_common',
+          ],
+          'sources': [
+            '../npapi_pepper_test_plugin/main.cc',
+            '../npapi_pepper_test_plugin/pepper_3d_test.cc',
+            '../npapi_pepper_test_plugin/pepper_3d_test.h',
+            '../npapi_pepper_test_plugin/plugin.def',
+            '../npapi_pepper_test_plugin/plugin.rc',
+            '../npapi_pepper_test_plugin/test_factory.cc',
+          ],
+          'include_dirs': [
+            '../../..',
+          ],
+          'conditions': [
+            ['OS!="win"', {
+              # windows-specific resources
+              'sources!': [
+                '../npapi_pepper_test_plugin/plugin.def',
+                '../npapi_pepper_test_plugin/plugin.rc',
+              ],
+            }],
+            ['OS=="mac"', {
+              'product_extension': 'plugin',
+            }],
+          ],
+          'xcode_settings': {
+            'INFOPLIST_FILE': '<(DEPTH)/webkit/tools/npapi_pepper_test_plugin/Info.plist',
+          },
+        },
+        {
+          'target_name': 'copy_npapi_pepper_test_plugin',
+          'type': 'none',
+          'dependencies': [
+            'npapi_pepper_test_plugin',
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'copies': [
+                {
+                  'destination': '<(PRODUCT_DIR)/plugins',
+                  'files': ['<(PRODUCT_DIR)/npapi_pepper_test_plugin.dll'],
+                },
+              ],
+            }],
+            ['OS=="mac"', {
+              'copies': [
+                {
+                  'destination': '<(PRODUCT_DIR)/plugins/',
+                  'files': ['<(PRODUCT_DIR)/npapi_pepper_test_plugin.plugin/'],
+                },
+              ]
+            }],
+            ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
+              'copies': [
+                {
+                  'destination': '<(PRODUCT_DIR)/plugins',
+                  'files': ['<(PRODUCT_DIR)/libnpapi_pepper_test_plugin.so'],
+                },
+              ],
+            }],
+          ],
+        },
       ],
     }],
     ['OS=="linux"  or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
