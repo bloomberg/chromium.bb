@@ -482,6 +482,10 @@
         'browser/chromeos/dom_ui/language_pinyin_options_handler.cc',
         'browser/chromeos/dom_ui/language_pinyin_options_handler.h',
         'browser/chromeos/dom_ui/login/authenticator_facade.h',
+        'browser/chromeos/dom_ui/login/authenticator_facade_cros.cc',
+        'browser/chromeos/dom_ui/login/authenticator_facade_cros.h',
+        'browser/chromeos/dom_ui/login/authenticator_facade_cros_helpers.h',
+        'browser/chromeos/dom_ui/login/authenticator_facade_cros_helpers.cc',
         'browser/chromeos/dom_ui/login/authenticator_facade_stub.cc',
         'browser/chromeos/dom_ui/login/authenticator_facade_stub.h',
         'browser/chromeos/dom_ui/login/login_ui.cc',
@@ -3050,7 +3054,7 @@
         'browser/ui/cocoa/wrench_menu_button_cell.h',
         'browser/ui/cocoa/wrench_menu_button_cell.mm',
         'browser/ui/cocoa/wrench_menu_controller.h',
-        'browser/ui/cocoa/wrench_menu_controller.mm',        
+        'browser/ui/cocoa/wrench_menu_controller.mm',
         'browser/ui/find_bar/find_bar.h',
         'browser/ui/find_bar/find_bar_controller.cc',
         'browser/ui/find_bar/find_bar_controller.h',
@@ -3516,6 +3520,10 @@
         ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],
+            ['exclude', 'browser/chromeos/dom_ui/login/authenticator_facade_cros.cc'],
+            ['exclude', 'browser/chromeos/dom_ui/login/authenticator_facade_cros.h'],
+            ['exclude', 'browser/chromeos/dom_ui/login/authenticator_facade_cros_helpers.cc'],
+            ['exclude', 'browser/chromeos/dom_ui/login/authenticator_facade_cros_helpers.h'],
             ['exclude', 'browser/dom_ui/chrome_about_ui.cc'],
             ['exclude', 'browser/dom_ui/filebrowse_ui.cc'],
             ['exclude', 'browser/dom_ui/mediaplayer_ui.cc'],
@@ -3530,6 +3538,8 @@
         ['chromeos==1', {
           'sources!': [
             'browser/background_mode_manager_linux.cc',
+            'browser/chromeos/dom_ui/login/authenticator_facade_stub.cc',
+            'browser/chromeos/dom_ui/login/authenticator_facade_stub.h',
             'browser/password_manager/native_backend_gnome_x.h',
             'browser/password_manager/native_backend_gnome_x.cc',
             'browser/password_manager/native_backend_kwallet_x.h',
@@ -3556,10 +3566,7 @@
         }],
         ['touchui==0', {
           'sources/': [
-            ['exclude', '^browser/chromeos/dom_ui/login/authenticator_facade.h$'],
-            ['exclude', '^browser/chromeos/dom_ui/login/authenticator_facade_stub.*'],
-            ['exclude', '^browser/chromeos/dom_ui/login/login_ui.*'],
-            ['exclude', '^browser/chromeos/dom_ui/login/login_ui_helpers.*'],
+            ['exclude', '^browser/chromeos/dom_ui/login/'],
             ['exclude', '^browser/dom_ui/keyboard_ui.*'],
             ['exclude', '^browser/renderer_host/render_widget_host_view_views.*'],
             ['exclude', '^browser/ui/touch/*'],
@@ -3569,6 +3576,8 @@
         ['touchui==1', {
           'sources/': [
             ['include', 'browser/chromeos/dom_ui/login/authenticator_facade.h'],
+            ['include', 'browser/chromeos/dom_ui/login/authenticator_facade_cros.cc'],
+            ['include', 'browser/chromeos/dom_ui/login/authenticator_facade_cros.h'],
             ['include', 'browser/chromeos/dom_ui/login/authenticator_facade_stub.cc'],
             ['include', 'browser/chromeos/dom_ui/login/authenticator_facade_stub.h'],
             ['include', 'browser/chromeos/dom_ui/login/login_ui.cc'],

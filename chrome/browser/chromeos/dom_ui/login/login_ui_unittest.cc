@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/dom_ui/login/login_ui.h"
 #include "chrome/browser/chromeos/dom_ui/login/login_ui_unittest.h"
+#include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;

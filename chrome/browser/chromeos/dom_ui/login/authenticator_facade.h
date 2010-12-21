@@ -36,6 +36,7 @@ class AuthenticatorFacade {
   explicit AuthenticatorFacade(LoginStatusConsumer* consumer) :
       consumer_(consumer) {}
   virtual ~AuthenticatorFacade() {}
+  virtual void Setup() {}
   virtual void AuthenticateToLogin(Profile* profile,
                                    const std::string& username,
                                    const std::string& password,

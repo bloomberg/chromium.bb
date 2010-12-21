@@ -8,12 +8,17 @@
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/dom_ui/login/authenticator_facade.h"
-#include "chrome/browser/chromeos/dom_ui/login/authenticator_facade_stub.h"
 #include "chrome/browser/chromeos/dom_ui/login/login_ui.h"
 #include "chrome/browser/chromeos/dom_ui/login/login_ui_helpers.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/url_constants.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/dom_ui/login/authenticator_facade_cros.h"
+#else
+#include "chrome/browser/chromeos/dom_ui/login/authenticator_facade_stub.h"
+#endif
 
 namespace chromeos {
 
@@ -50,11 +55,19 @@ void LoginUIHTMLSource::StartDataRequest(const std::string& path,
 ////////////////////////////////////////////////////////////////////////////////
 
 LoginUIHandler::LoginUIHandler()
-    : facade_(new AuthenticatorFacadeStub(this,
-                                          "chronos",
-                                          "chronos")),
-      profile_operations_(new ProfileOperationsInterface()),
-      browser_operations_(new BrowserOperationsInterface()) {
+    : facade_(NULL),
+      profile_operations_(NULL),
+      browser_operations_(NULL) {
+#if defined(OS_CHROMEOS)
+  facade_.reset(new chromeos::AuthenticatorFacadeCros(this));
+#else
+  facade_.reset(new chromeos::AuthenticatorFacadeStub(this,
+                                                      "chronos",
+                                                      "chronos"));
+#endif
+  facade_->Setup();
+  profile_operations_.reset(new ProfileOperationsInterface());
+  browser_operations_.reset(new BrowserOperationsInterface());
 }
 
 DOMMessageHandler* LoginUIHandler::Attach(DOMUI* dom_ui) {

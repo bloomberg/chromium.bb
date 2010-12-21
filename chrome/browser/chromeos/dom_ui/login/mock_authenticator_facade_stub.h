@@ -21,6 +21,8 @@ class MockAuthenticatorFacadeStub : public AuthenticatorFacadeStub {
       : chromeos::AuthenticatorFacadeStub(consumer,
                                           expected_username,
                                           expected_password) {}
+  MOCK_METHOD0(Setup,
+               void());
   MOCK_METHOD5(AuthenticateToLogin,
                void(Profile* profile,
                     const std::string& username,
@@ -30,9 +32,11 @@ class MockAuthenticatorFacadeStub : public AuthenticatorFacadeStub {
   MOCK_METHOD2(AuthenticateToUnlock,
                void(const std::string& username,
                     const std::string& password));
-
   const std::string& GetUsername() { return expected_username_; }
   const std::string& GetPassword() { return expected_password_; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockAuthenticatorFacadeStub);
 };
 
 }  // namespace chromeos

@@ -1058,8 +1058,11 @@
         'browser/chrome_plugin_unittest.cc',
         'browser/chromeos/customization_document_unittest.cc',
         'browser/chromeos/dom_ui/language_options_handler_unittest.cc',
+        'browser/chromeos/dom_ui/login/authenticator_facade_cros_unittest.cc',
         'browser/chromeos/dom_ui/login/authenticator_facade_stub_unittest.cc',
         'browser/chromeos/dom_ui/login/login_ui_unittest.cc',
+        'browser/chromeos/dom_ui/login/mock_authenticator_facade_cros.h',
+        'browser/chromeos/dom_ui/login/mock_authenticator_facade_cros_helpers.h',
         'browser/chromeos/dom_ui/login/mock_authenticator_facade_stub.h',
         'browser/chromeos/dom_ui/login/mock_login_ui_helpers.h',
         'browser/chromeos/external_metrics_unittest.cc',
@@ -1697,13 +1700,27 @@
           ],
         }, { # else: touchui == 0
           'sources/': [
-            ['exclude', 'browser/chromeos/dom_ui/login/authenticator_facade_stub_unittest.cc'],
-            ['exclude', 'browser/chromeos/dom_ui/login/login_ui_unittest.cc'],
-            ['exclude', 'browser/chromeos/dom_ui/login/mock_authenticator_facade_stub.h'],
-            ['exclude', 'browser/chromeos/dom_ui/login/mock_login_ui_helpers.h'],
+            ['exclude', '^browser/chromeos/dom_ui/login/'],
           ],
         }],
         ['chromeos==1', {
+          'conditions': [
+            ['touchui==1', {
+              'sources/': [
+                ['include', 'browser/chromeos/dom_ui/login/authenticator_facade_cros_unittest.cc'],
+                ['exclude', 'browser/chromeos/dom_ui/login/authenticator_facade_stub_unittest.cc'],
+                ['include', 'browser/chromeos/dom_ui/login/login_ui_unittest.cc'],
+                ['include', 'browser/chromeos/dom_ui/login/mock_authenticator_facade_cros.h'],
+                ['exclude', 'browser/chromeos/dom_ui/login/mock_authenticator_facade_stub.h'],
+                ['include', 'browser/chromeos/dom_ui/login/mock_authenticator_facade_cros_helpers.h'],
+                ['include', 'browser/chromeos/dom_ui/login/mock_login_ui_helpers.h'],
+              ],
+             }, { # else: touchui == 0
+               'sources/': [
+                ['exclude', '^browser/chromeos/dom_ui/login/'],
+               ],
+             }],
+           ],
           'sources/': [
             ['exclude', 'browser/notifications/desktop_notifications_unittest.cc'],
           ],
@@ -1712,9 +1729,12 @@
             ['touchui==1', {
               'sources/': [
                 ['exclude', '^browser/chromeos/'],
+                ['exclude', 'browser/chromeos/dom_ui/login/authenticator_facade_cros_unittest.cc'],
                 ['include', 'browser/chromeos/dom_ui/login/authenticator_facade_stub_unittest.cc'],
                 ['include', 'browser/chromeos/dom_ui/login/login_ui_unittest.cc'],
+                ['exclude', 'browser/chromeos/dom_ui/login/mock_authenticator_facade_cros.h'],
                 ['include', 'browser/chromeos/dom_ui/login/mock_authenticator_facade_stub.h'],
+                ['include', 'browser/chromeos/dom_ui/login/mock_authenticator_facade_cros_helpers.h'],
                 ['include', 'browser/chromeos/dom_ui/login/mock_login_ui_helpers.h'],
               ],
              }, { # else: touchui == 0
