@@ -56,6 +56,8 @@
     'popups',
     'prefs',
     'search_engines',
+    # crbug.com/67628
+    '-search_engines.SearchEnginesTest.testTabToSearch',
     'special_tabs',
     # 'sync',  crbug.com/60970
     'test_basic.SimpleTest.testCanOpenGoogle',
