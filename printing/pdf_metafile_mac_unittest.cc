@@ -15,15 +15,18 @@
 TEST(PdfMetafileTest, Pdf) {
   // Test in-renderer constructor.
   printing::PdfMetafile pdf;
-  CGContextRef context = pdf.Init();
-  EXPECT_TRUE(context != NULL);
+  EXPECT_TRUE(pdf.Init() != NULL);
 
-  // Render page 1.
-  pdf.StartPage(540, 720, 1.25);
+  // Render page 1 at origin (10.0, 10.0).
+  gfx::Point origin_1(10.0f, 10.0f);
+  gfx::Size size_1(540, 720);
+  pdf.StartPage(size_1, origin_1, 1.25);
   pdf.FinishPage();
 
-  // Render page 2.
-  pdf.StartPage(720, 540, 2.0);
+  // Render page 2 at origin (10.0, 10.0).
+  gfx::Point origin_2(10.0f, 10.0f);
+  gfx::Size size_2(720, 540);
+  pdf.StartPage(size_2, origin_2, 2.0);
   pdf.FinishPage();
 
   pdf.Close();

@@ -552,6 +552,21 @@ struct ViewMsg_PrintPages_Params {
   std::vector<int> pages;
 };
 
+//Parameters to describe a rendered document.
+struct ViewHostMsg_DidPreviewDocument_Params {
+  ViewHostMsg_DidPreviewDocument_Params();
+  ~ViewHostMsg_DidPreviewDocument_Params();
+
+  // A shared memory handle to metafile data.
+  base::SharedMemoryHandle metafile_data_handle;
+
+  // Size of metafile data.
+  uint32 data_size;
+
+  // Cookie for the document to ensure correctness.
+  int document_cookie;
+};
+
 // Parameters to describe a rendered page.
 struct ViewHostMsg_DidPrintPage_Params {
   ViewHostMsg_DidPrintPage_Params();
@@ -980,6 +995,14 @@ struct ParamTraits<ViewMsg_PrintPage_Params> {
 template <>
 struct ParamTraits<ViewMsg_PrintPages_Params> {
   typedef ViewMsg_PrintPages_Params param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<ViewHostMsg_DidPreviewDocument_Params> {
+  typedef ViewHostMsg_DidPreviewDocument_Params param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

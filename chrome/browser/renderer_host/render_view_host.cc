@@ -53,6 +53,7 @@
 #include "chrome/common/web_apps.h"
 #include "gfx/native_widget_types.h"
 #include "net/base/net_util.h"
+#include "printing/native_metafile.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFindOptions.h"
 #include "webkit/glue/context_menu.h"
@@ -2256,25 +2257,38 @@ TabContents* RenderViewHost::GetOrCreatePrintPreviewTab() {
   return NULL;
 }
 
-void RenderViewHost::OnPagesReadyForPreview(int document_cookie,
-                                            int fd_in_browser) {
+void RenderViewHost::OnPagesReadyForPreview(
+    const ViewHostMsg_DidPreviewDocument_Params& params) {
+#if defined(OS_MACOSX)
+  base::SharedMemory shared_buf(params.metafile_data_handle, true);
+  if (!shared_buf.Map(params.data_size)) {
+    NOTREACHED();
+    return;
+  }
+  scoped_ptr<printing::NativeMetafile> metafile(new printing::NativeMetafile());
+  if (!metafile->Init(shared_buf.memory(), params.data_size)) {
+    NOTREACHED();
+    return;
+  }
+
+  // TODO(kmadhusu): Add more functionality for the preview tab to access this
+  // |metafile| data.
+#endif
+
   // Get/Create print preview tab.
   TabContents* print_preview_tab = GetOrCreatePrintPreviewTab();
   DCHECK(print_preview_tab);
 
-  // TODO(kmadhusu): Function definition needs to be changed.
-  // fd_in_browser should be the file descriptor of the metafile.
-
   scoped_refptr<printing::PrinterQuery> printer_query;
-  g_browser_process->print_job_manager()->PopPrinterQuery(document_cookie,
-                                                          &printer_query);
+  g_browser_process->print_job_manager()->PopPrinterQuery(
+      params.document_cookie, &printer_query);
   if (printer_query.get()) {
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(printer_query.get(),
-                            &printing::PrinterQuery::StopWorker));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableMethod(printer_query.get(),
+                          &printing::PrinterQuery::StopWorker));
   }
 
   // Send the printingDone msg for now.
-  Send(new ViewMsg_PrintingDone(routing_id(), -1, true));
+  Send(new ViewMsg_PrintingDone(routing_id(), params.document_cookie, true));
 }

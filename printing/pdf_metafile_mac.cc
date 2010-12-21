@@ -59,9 +59,13 @@ bool PdfMetafile::Init(const void* src_buffer, uint32 src_buffer_size) {
   return true;
 }
 
-void PdfMetafile::StartPage(double width, double height, double scale_factor) {
+CGContextRef PdfMetafile::StartPage(const gfx::Size& page_size,
+    const gfx::Point& content_origin, const float& scale_factor) {
   DCHECK(context_.get());
   DCHECK(!page_is_open_);
+
+  double height = page_size.height();
+  double width = page_size.width();
 
   CGRect bounds = CGRectMake(0, 0, width, height);
   CGContextBeginPage(context_, &bounds);
@@ -71,6 +75,11 @@ void PdfMetafile::StartPage(double width, double height, double scale_factor) {
   // Flip the context.
   CGContextTranslateCTM(context_, 0, height);
   CGContextScaleCTM(context_, scale_factor, -scale_factor);
+
+  // Move the context to origin.
+  CGContextTranslateCTM(context_, content_origin.x(), content_origin.y());
+
+  return context_.get();
 }
 
 void PdfMetafile::FinishPage() {

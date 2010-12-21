@@ -11,8 +11,13 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "gfx/size.h"
+#include "printing/native_metafile.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebViewClient.h"
+
+#if defined(OS_MACOSX)
+#include "base/shared_memory.h"
+#endif  // defined(OS_MACOSX)
 
 namespace gfx {
 class Size;
@@ -22,17 +27,11 @@ namespace IPC {
 class Message;
 }
 
-#if defined(USE_X11)
-namespace printing {
-class PdfPsMetafile;
-typedef PdfPsMetafile NativeMetafile;
-}
-#endif
-
 class RenderView;
 struct ViewMsg_Print_Params;
 struct ViewMsg_PrintPage_Params;
 struct ViewMsg_PrintPages_Params;
+struct ViewHostMsg_DidPreviewDocument_Params;
 
 // Class that calls the Begin and End print functions on the frame and changes
 // the size of the view temporarily to support full page printing..
@@ -146,6 +145,19 @@ class PrintWebViewHelper : public WebKit::WebViewClient,
 
   // Render the frame for printing.
   void RenderPagesForPrint(WebKit::WebFrame* frame);
+
+  // Render the frame for preview.
+  void RenderPagesForPreview(WebKit::WebFrame* frame);
+  void CreatePreviewDocument(const ViewMsg_PrintPages_Params& params,
+      WebKit::WebFrame* frame,
+      ViewHostMsg_DidPreviewDocument_Params* print_params);
+#if defined(OS_MACOSX)
+  void RenderPage(const gfx::Size& page_size, const gfx::Point& content_origin,
+                  const float& scale_factor, int page_number,
+                  WebKit::WebFrame* frame, printing::NativeMetafile* metafile);
+  bool CopyMetafileDataToSharedMem(printing::NativeMetafile* metafile,
+      base::SharedMemoryHandle* shared_mem_handle);
+#endif
 
   RenderView* render_view_;
   WebKit::WebView* print_web_view_;

@@ -52,12 +52,6 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
   metafile.Close();
 
   int fd_in_browser = -1;
-  if (is_preview_) {
-    Send(new ViewHostMsg_PagesReadyForPreview(routing_id(),
-                                              params.params.document_cookie,
-                                              fd_in_browser));
-    return;
-  }
   // Get the size of the resulting metafile.
   uint32 buf_size = metafile.GetDataSize();
   DCHECK_GT(buf_size, 0u);

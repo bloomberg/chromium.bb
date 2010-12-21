@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/logging.h"
+#include "base/process_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
@@ -149,7 +150,11 @@ void PrintWebViewHelper::Print(WebFrame* frame,
 
     // Render Pages for printing.
     if (!print_cancelled) {
-      RenderPagesForPrint(frame);
+      if (is_preview_)
+        RenderPagesForPreview(frame);
+      else
+        RenderPagesForPrint(frame);
+
       // Reset cancel counter on first successful print.
       user_cancelled_scripted_print_count_ = 0;
       return;  // All went well.
@@ -227,11 +232,9 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
                                               frame->view());
   int page_count = prep_frame_view.GetExpectedPageCount();
 
-  if (!is_preview_) {
-    Send(new ViewHostMsg_DidGetPrintedPagesCount(routing_id(),
-                                                 printParams.document_cookie,
-                                                 page_count));
-  }
+  Send(new ViewHostMsg_DidGetPrintedPagesCount(routing_id(),
+                                               printParams.document_cookie,
+                                               page_count));
   if (!page_count)
     return;
 
@@ -250,13 +253,6 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
       page_params.page_number = params.pages[i];
       PrintPage(page_params, canvas_size, frame);
     }
-  }
-
-  if (is_preview_) {
-    // TODO(kmadhusu) Put this in the right place when fixing bug 64121.
-    Send(new ViewHostMsg_PagesReadyForPreview(routing_id(),
-                                              printParams.document_cookie,
-                                              -1));
   }
 }
 #endif  // OS_MACOSX || OS_WIN
@@ -359,14 +355,24 @@ void PrintWebViewHelper::UpdatePrintableSizeInPrintParameters(
     WebFrame* frame, ViewMsg_Print_Params* params) {
   double content_width_in_points;
   double content_height_in_points;
+  double margin_top_in_points;
+  double margin_right_in_points;
+  double margin_bottom_in_points;
+  double margin_left_in_points;
   PrepareFrameAndViewForPrint prepare(*params, frame, frame->view());
   PrintWebViewHelper::GetPageSizeAndMarginsInPoints(frame, 0, *params,
-                                                    &content_width_in_points,
-                                                    &content_height_in_points,
-                                                    NULL, NULL, NULL, NULL);
+      &content_width_in_points, &content_height_in_points,
+      &margin_top_in_points, &margin_right_in_points,
+      &margin_bottom_in_points, &margin_left_in_points);
+
 #if defined(OS_MACOSX)
-  params->printable_size = gfx::Size(
-      static_cast<int>(content_width_in_points),
+  params->page_size = gfx::Size(
+      static_cast<int>(content_width_in_points +
+          margin_left_in_points + margin_right_in_points),
+      static_cast<int>(content_height_in_points +
+          margin_top_in_points + margin_bottom_in_points));
+
+  params->printable_size = gfx::Size(static_cast<int>(content_width_in_points),
       static_cast<int>(content_height_in_points));
 #else
   params->printable_size = gfx::Size(
@@ -375,6 +381,8 @@ void PrintWebViewHelper::UpdatePrintableSizeInPrintParameters(
       static_cast<int>(ConvertUnitDouble(
           content_height_in_points, printing::kPointsPerInch, params->dpi)));
 #endif
+  params->margin_top = static_cast<int>(margin_top_in_points);
+  params->margin_left = static_cast<int>(margin_left_in_points);
 }
 
 bool PrintWebViewHelper::InitPrintSettings(WebFrame* frame) {
@@ -455,3 +463,42 @@ void PrintWebViewHelper::RenderPagesForPrint(WebFrame *frame) {
     PrintPages(print_settings, frame);
   }
 }
+
+void PrintWebViewHelper::RenderPagesForPreview(WebFrame *frame) {
+  ViewMsg_PrintPages_Params print_settings = *print_pages_params_;
+  ViewHostMsg_DidPreviewDocument_Params print_params;
+  CreatePreviewDocument(print_settings, frame, &print_params);
+  Send(new ViewHostMsg_PagesReadyForPreview(routing_id(), print_params));
+}
+
+#if !defined(OS_MACOSX)
+void PrintWebViewHelper::CreatePreviewDocument(
+    const ViewMsg_PrintPages_Params& params,
+    WebFrame* frame,
+    ViewHostMsg_DidPreviewDocument_Params* print_params) {
+  // TODO(kmadhusu): Implement this function for windows & linux.
+  print_params->document_cookie = params.params.document_cookie;
+}
+#endif
+
+#if defined(OS_MACOSX)
+bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
+    printing::NativeMetafile* metafile,
+    base::SharedMemoryHandle* shared_mem_handle) {
+  uint32 buf_size = metafile->GetDataSize();
+  base::SharedMemoryHandle mem_handle;
+  if (Send(new ViewHostMsg_AllocateSharedMemoryBuffer(buf_size, &mem_handle))) {
+    if (base::SharedMemory::IsHandleValid(mem_handle)) {
+      base::SharedMemory shared_buf(mem_handle, false);
+      if (shared_buf.Map(buf_size)) {
+        metafile->GetData(shared_buf.memory(), buf_size);
+        shared_buf.GiveToProcess(base::GetCurrentProcessHandle(),
+                                 shared_mem_handle);
+        return true;
+      }
+    }
+  }
+  NOTREACHED();
+  return false;
+}
+#endif

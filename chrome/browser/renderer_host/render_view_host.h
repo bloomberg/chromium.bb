@@ -39,6 +39,7 @@ struct ContextMenuParams;
 struct MediaPlayerAction;
 struct ThumbnailScore;
 struct ViewHostMsg_AccessibilityNotification_Params;
+struct ViewHostMsg_DidPreviewDocument_Params;
 struct ViewHostMsg_DidPrintPage_Params;
 struct ViewHostMsg_DomMessage_Params;
 struct ViewHostMsg_PageHasOSDD_Type;
@@ -733,7 +734,8 @@ class RenderViewHost : public RenderWidgetHost {
                               const SkBitmap& thumbnail);
   void OnScriptEvalResponse(int id, const ListValue& result);
   void OnUpdateContentRestrictions(int restrictions);
-  void OnPagesReadyForPreview(int document_cookie, int fd_in_browser);
+  void OnPagesReadyForPreview(
+      const ViewHostMsg_DidPreviewDocument_Params& params);
 
 #if defined(OS_MACOSX)
   void OnMsgShowPopup(const ViewHostMsg_ShowPopup_Params& params);

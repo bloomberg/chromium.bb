@@ -100,6 +100,7 @@ struct ViewHostMsg_Resource_Request;
 struct ViewMsg_Print_Params;
 struct ViewMsg_PrintPage_Params;
 struct ViewMsg_PrintPages_Params;
+struct ViewHostMsg_DidPreviewDocument_Params;
 struct ViewHostMsg_DidPrintPage_Params;
 struct ViewHostMsg_Audio_CreateStream_Params;
 struct ViewHostMsg_ShowPopup_Params;

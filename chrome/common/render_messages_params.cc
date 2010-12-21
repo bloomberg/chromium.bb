@@ -118,6 +118,21 @@ ViewMsg_PrintPages_Params::ViewMsg_PrintPages_Params() {
 ViewMsg_PrintPages_Params::~ViewMsg_PrintPages_Params() {
 }
 
+ViewHostMsg_DidPreviewDocument_Params::ViewHostMsg_DidPreviewDocument_Params()
+    : data_size(0) {
+#if defined(OS_WIN)
+  // Initialize |metafile_data_handle| only on Windows because it maps
+  // base::SharedMemoryHandle to HANDLE. We do not need to initialize this
+  // variable on Posix because it maps base::SharedMemoryHandle to
+  // FileDescriptior, which has the default constructor.
+  metafile_data_handle = INVALID_HANDLE_VALUE;
+#endif
+}
+
+ViewHostMsg_DidPreviewDocument_Params::
+    ~ViewHostMsg_DidPreviewDocument_Params() {
+}
+
 ViewHostMsg_DidPrintPage_Params::ViewHostMsg_DidPrintPage_Params()
     : data_size(0),
       document_cookie(0),
@@ -993,6 +1008,26 @@ bool ParamTraits<ViewMsg_PrintPages_Params>::Read(const Message* m,
 void ParamTraits<ViewMsg_PrintPages_Params>::Log(const param_type& p,
                                                  std::string* l) {
   l->append("<ViewMsg_PrintPages_Params>");
+}
+
+void ParamTraits<ViewHostMsg_DidPreviewDocument_Params>::Write(Message* m,
+                                                         const param_type& p) {
+  WriteParam(m, p.metafile_data_handle);
+  WriteParam(m, p.data_size);
+  WriteParam(m, p.document_cookie);
+}
+
+bool ParamTraits<ViewHostMsg_DidPreviewDocument_Params>::Read(const Message* m,
+                                                        void** iter,
+                                                        param_type* p) {
+  return ReadParam(m, iter, &p->metafile_data_handle) &&
+      ReadParam(m, iter, &p->data_size) &&
+      ReadParam(m, iter, &p->document_cookie);
+}
+
+void ParamTraits<ViewHostMsg_DidPreviewDocument_Params>::Log(
+    const param_type& p, std::string* l) {
+  l->append("<ViewHostMsg_DidPreviewDocument_Params>");
 }
 
 void ParamTraits<ViewHostMsg_DidPrintPage_Params>::Write(Message* m,
