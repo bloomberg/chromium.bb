@@ -170,12 +170,11 @@ bool SameObject(HANDLE handle, const wchar_t* full_path) {
     return false;
 
   // Check up to the drive letter.
-  if (0 != actual_path.compare(0, vol_length, vol_name))
+  if (0 != _wcsnicmp(actual_path.c_str(), vol_name, vol_length))
     return false;
 
   // Check the path after the drive letter.
-  if (0 != actual_path.compare(vol_length, std::wstring::npos,
-                               &path[colon_pos + 1]))
+  if (0 != _wcsicmp(&actual_path[vol_length], &path[colon_pos + 1]))
     return false;
 
   return true;
