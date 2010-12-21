@@ -69,7 +69,9 @@ cr.define('options', function() {
       if (engineDetails) {
         $('editSearchEngineName').value = engineDetails['name'];
         $('editSearchEngineKeyword').value = engineDetails['keyword'];
-        $('editSearchEngineURL').value = engineDetails['url'];
+        var urlField = $('editSearchEngineURL');
+        urlField.value = engineDetails['url'];
+        urlField.disabled = engineDetails['urlLocked'];
         this.validateFields_();
       } else {
         $('editSearchEngineName').value = '';

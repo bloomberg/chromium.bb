@@ -234,6 +234,7 @@ void SearchEngineManagerHandler::EditSearchEngine(const ListValue* args) {
     engine_details.SetString("keyword", WideToUTF16Hack(edit_url->keyword()));
     engine_details.SetString("url",
                              WideToUTF16Hack(edit_url->url()->DisplayURL()));
+    engine_details.SetBoolean("urlLocked", edit_url->prepopulate_id() > 0);
     dom_ui_->CallJavascriptFunction(L"EditSearchEngineOverlay.setEditDetails",
                                     engine_details);
   }
