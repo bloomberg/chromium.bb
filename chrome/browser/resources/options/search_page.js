@@ -31,7 +31,7 @@ cr.define('options', function() {
 
       // Create a search field element.
       var searchField = document.createElement('input');
-      searchField.id = 'searchField';
+      searchField.id = 'search-field';
       searchField.type = 'search';
       searchField.setAttribute('autosave', 'org.chromium.options.search');
       searchField.setAttribute('results', '10');
@@ -87,7 +87,7 @@ cr.define('options', function() {
           this.setSearchText_('');
         } else {
           // Just wipe out any active search text since it's no longer relevant.
-          $('searchField').value = '';
+          $('search-field').value = '';
         }
       }
 

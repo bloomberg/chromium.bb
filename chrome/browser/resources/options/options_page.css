@@ -24,6 +24,10 @@ body {
   bottom: 0;
 }
 
+#search-field {
+  margin: 0;
+}
+
 .overlay {
   position: fixed;
   left: 0;
