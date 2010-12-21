@@ -5,8 +5,9 @@
  */
 
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
-#include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
 #include "native_client/src/trusted/expiration/expiration.h"
+#include "native_client/src/trusted/handle_pass/browser_handle.h"
+#include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
 #include "native_client/src/trusted/plugin/nacl_entry_points.h"
 
 #include "ppapi/c/private/ppb_nacl_private.h"
@@ -46,6 +47,10 @@ class ModulePpapi : public pp::Module {
     get_urandom_fd = ptr->UrandomFD;
 
     NaClNrdAllModulesInit();
+
+#if NACL_WINDOWS && !defined(NACL_STANDALONE)
+    NaClHandlePassBrowserInit();
+#endif
     return true;
   }
 
