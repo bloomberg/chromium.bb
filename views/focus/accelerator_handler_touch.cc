@@ -153,19 +153,27 @@ bool DispatchXEvent(XEvent* xev) {
 
   if (RootView* root = FindRootViewForGdkWindow(gwind)) {
     switch (xev->type) {
-      case KeyPress:
-      case KeyRelease: {
+      case KeyPress: {
+        // If Tab is pressed, then the RootView needs to process it first,
+        // because the focus-manager will move the focus to the next focusable
+        // view, without letting the currently focused view process it (which
+        // means, for example, tab-ing to move focus between fields/links in a
+        // RenderWidgetHostViewViews won't work). For all other keys, let the
+        // focus manager process it first so that the keyboard accelerators can
+        // be triggered.
         KeyEvent keyev(xev);
-
-        // If it's a keypress, check to see if it triggers an accelerator.
-        if (xev->type == KeyPress) {
-          FocusManager* focus_manager = root->GetFocusManager();
-          if (focus_manager && !focus_manager->OnKeyEvent(keyev))
-            return true;
+        FocusManager* focus_manager = root->GetFocusManager();
+        if (FocusManager::IsTabTraversalKeyEvent(keyev)) {
+          return root->ProcessKeyEvent(keyev) ||
+              (focus_manager && !focus_manager->OnKeyEvent(keyev));
+        } else {
+          return (focus_manager && !focus_manager->OnKeyEvent(keyev)) ||
+              root->ProcessKeyEvent(keyev);
         }
-
-        return root->ProcessKeyEvent(keyev);
       }
+
+      case KeyRelease:
+        return root->ProcessKeyEvent(KeyEvent(xev));
 
       case ButtonPress:
       case ButtonRelease: {
