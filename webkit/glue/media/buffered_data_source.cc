@@ -191,12 +191,9 @@ void BufferedDataSource::InitializeTask() {
       &BufferedDataSource::WatchDogTask);
 
   if (url_.SchemeIs(kHttpScheme) || url_.SchemeIs(kHttpsScheme)) {
-    // Fetch only first 1024 bytes as this usually covers the header portion
-    // of a media file that gives enough information about the codecs, etc.
-    // This also serve as a probe to determine server capability to serve
-    // range request.
-    // TODO(hclam): Do some experiments for the best approach.
-    loader_ = CreateResourceLoader(0, 1024);
+    // Do an unbounded range request starting at the beginning.  If the server
+    // responds with 200 instead of 206 we'll fall back into a streaming mode.
+    loader_ = CreateResourceLoader(0, kPositionNotSpecified);
     loader_->Start(
         NewCallback(this, &BufferedDataSource::HttpInitialStartCallback),
         NewCallback(this, &BufferedDataSource::NetworkEventCallback),
