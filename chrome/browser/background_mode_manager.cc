@@ -277,16 +277,15 @@ void BackgroundModeManager::UpdateStatusTrayIconContextMenu() {
   menu->AddItem(IDC_OPTIONS, GetPreferencesMenuLabel());
   menu->AddItemWithStringId(IDC_TASK_MANAGER, IDS_TASK_MANAGER);
   menu->AddSeparator();
-  int application_position = 0;
+  int position = 0;
   context_menu_application_offset_ = menu->GetItemCount();
   for (ExtensionList::const_iterator cursor = applications_.begin();
        cursor != applications_.end();
-       ++cursor, ++application_position) {
+       ++cursor, ++position) {
     const SkBitmap* icon = applications_.GetIcon(*cursor);
-    int sort_position = applications_.GetPosition(*cursor);
-    DCHECK(sort_position == application_position);
+    DCHECK(position == applications_.GetPosition(*cursor));
     const std::string& name = (*cursor)->name();
-    menu->AddItem(sort_position, ASCIIToUTF16(name));
+    menu->AddItem(position, UTF8ToUTF16(name));
     if (icon)
       menu->SetIcon(menu->GetItemCount() - 1, *icon);
   }
