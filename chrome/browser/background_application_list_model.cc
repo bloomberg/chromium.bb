@@ -10,6 +10,7 @@
 #include "app/l10n_util_collator.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -157,6 +158,9 @@ BackgroundApplicationListModel::BackgroundApplicationListModel(Profile* profile)
   registrar_.Add(this,
                  NotificationType::EXTENSIONS_READY,
                  Source<Profile>(profile));
+  ExtensionService* service = profile->GetExtensionService();
+  if (service && service->is_ready())
+    Update();
 }
 
 void BackgroundApplicationListModel::AddObserver(Observer* observer) {
@@ -168,6 +172,13 @@ void BackgroundApplicationListModel::AssociateApplicationData(
   DCHECK(IsBackgroundApp(*extension));
   Application* application = FindApplication(extension);
   if (!application) {
+    // App position is used as a dynamic command and so must be less than any
+    // predefined command id.
+    if (applications_.size() >= IDC_MinimumLabelValue) {
+      LOG(ERROR) << "Background application limit of " << IDC_MinimumLabelValue
+                 << " exceeded.  Ignoring.";
+      return;
+    }
     application = new Application(this, extension);
     applications_[extension->id()] = application;
     application->RequestIcon(Extension::EXTENSION_ICON_BITTY);

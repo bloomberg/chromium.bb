@@ -14,6 +14,7 @@
 #include "base/string_number_conversions.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/background_application_list_model.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/browser_thread.h"
@@ -154,6 +155,7 @@ void RecordLastRunAppBundlePath() {
 - (void)showPreferencesWindow:(id)sender
                          page:(OptionsPage)page
                       profile:(Profile*)profile;
+- (void)executeApplication:(id)sender;
 @end
 
 @implementation AppController
@@ -792,7 +794,7 @@ void RecordLastRunAppBundlePath() {
     enable = YES;
   } else if (action == @selector(orderFrontStandardAboutPanel:)) {
     enable = YES;
-  } else if (action == @selector(newWindowFromDock:)) {
+  } else if (action == @selector(commandFromDock:)) {
     enable = YES;
   }
   return enable;
@@ -928,7 +930,30 @@ void RecordLastRunAppBundlePath() {
     case IDC_OPTIONS:
       [self showPreferences:sender];
       break;
+    default:
+      // Background Applications use dynamic values that must be less than the
+      // smallest value among the predefined IDC_* labels.
+      if ([sender tag] < IDC_MinimumLabelValue)
+        [self executeApplication:sender];
+      break;
   }
+}
+
+// Run a (background) application in a new tab.
+- (void)executeApplication:(id)sender {
+  NSInteger tag = [sender tag];
+  Profile* profile = [self defaultProfile];
+  DCHECK(profile);
+  BackgroundApplicationListModel applications(profile);
+  DCHECK(tag >= 0 &&
+         tag < static_cast<int>(applications.size()));
+  Browser* browser = BrowserList::GetLastActive();
+  if (!browser) {
+    Browser::OpenEmptyWindow(profile);
+    browser = BrowserList::GetLastActive();
+  }
+  const Extension* extension = applications.GetExtension(tag);
+  browser->OpenApplicationTab(profile, extension, NULL);
 }
 
 // Same as |-commandDispatch:|, but executes commands using a disposition
@@ -1162,25 +1187,52 @@ void RecordLastRunAppBundlePath() {
 }
 
 // Explicitly bring to the foreground when creating new windows from the dock.
-- (void)newWindowFromDock:(id)sender {
+- (void)commandFromDock:(id)sender {
   [NSApp activateIgnoringOtherApps:YES];
   [self commandDispatch:sender];
 }
 
 - (NSMenu*)applicationDockMenu:(NSApplication*)sender {
   NSMenu* dockMenu = [[[NSMenu alloc] initWithTitle: @""] autorelease];
+  Profile* profile = [self defaultProfile];
+
+  // TODO(rickcam): Mock out BackgroundApplicationListModel, then add unit
+  // tests which use the mock in place of the profile-initialized model.
+
+  // Avoid breaking unit tests which have no profile.
+  if (profile) {
+    int position = 0;
+    BackgroundApplicationListModel applications(profile);
+    for (ExtensionList::const_iterator cursor = applications.begin();
+         cursor != applications.end();
+         ++cursor, ++position) {
+      DCHECK(position == applications.GetPosition(*cursor));
+      scoped_nsobject<NSMenuItem> appItem([[NSMenuItem alloc]
+          initWithTitle:base::SysUTF16ToNSString(UTF8ToUTF16((*cursor)->name()))
+          action:@selector(commandFromDock:)
+          keyEquivalent:@""]);
+      [appItem setTarget:self];
+      [appItem setTag:position];
+      [dockMenu addItem:appItem];
+    }
+    if (applications.begin() != applications.end()) {
+      NSMenuItem* sepItem = [[NSMenuItem separatorItem] init];
+      [dockMenu addItem:sepItem];
+    }
+  }
+
   NSString* titleStr = l10n_util::GetNSStringWithFixup(IDS_NEW_WINDOW_MAC);
   scoped_nsobject<NSMenuItem> item([[NSMenuItem alloc]
-                                       initWithTitle:titleStr
-                                       action:@selector(newWindowFromDock:)
-                                       keyEquivalent:@""]);
+                                    initWithTitle:titleStr
+                                    action:@selector(commandFromDock:)
+                                    keyEquivalent:@""]);
   [item setTarget:self];
   [item setTag:IDC_NEW_WINDOW];
   [dockMenu addItem:item];
 
   titleStr = l10n_util::GetNSStringWithFixup(IDS_NEW_INCOGNITO_WINDOW_MAC);
   item.reset([[NSMenuItem alloc] initWithTitle:titleStr
-                                 action:@selector(newWindowFromDock:)
+                                 action:@selector(commandFromDock:)
                                  keyEquivalent:@""]);
   [item setTarget:self];
   [item setTag:IDC_NEW_INCOGNITO_WINDOW];

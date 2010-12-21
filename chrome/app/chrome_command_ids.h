@@ -5,6 +5,9 @@
 // This file lists all the command IDs understood by e.g. the browser.
 // It is used by Windows RC files, Mac NIB files, and other platforms too.
 
+// Values below IDC_MinimumLabelValue are reserved for dynamic menu items.
+#define IDC_MinimumLabelValue           4000
+
 #define IDC_Messages                    4000
 #define IDC_MessagesAll                 4007
 #define IDC_MessagesNone                4008

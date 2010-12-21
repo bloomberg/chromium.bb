@@ -22,6 +22,6 @@ TEST_F(AppControllerTest, DockMenu) {
   EXPECT_NE(-1, [menu indexOfItemWithTag:IDC_NEW_INCOGNITO_WINDOW]);
   for (item in [menu itemArray]) {
     EXPECT_EQ(ac.get(), [item target]);
-    EXPECT_EQ(@selector(newWindowFromDock:), [item action]);
+    EXPECT_EQ(@selector(commandFromDock:), [item action]);
   }
 }
