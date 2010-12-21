@@ -177,9 +177,10 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
               ErrorExit('If are using a Mac and svn --version shows 1.4.x, '
                   'please hack gcl.py to remove --non-interactive usage, it\'s'
                   'a bug on your installed copy')
-            if not content_array[0].startswith('svn: File not found:'):
-              # Try again.
-              continue
+            if (content_array[0].startswith('svn: File not found:') or
+                content_array[0].endswith('path not found')):
+              break
+            # Otherwise, fall through to trying again.
         if content:
           break
         if url_path == repo_root:
