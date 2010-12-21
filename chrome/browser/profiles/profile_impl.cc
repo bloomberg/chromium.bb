@@ -291,9 +291,12 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   registrar_.Add(this, NotificationType::THEME_INSTALLED,
                  Source<Profile>(GetOriginalProfile()));
 
+#if !defined(OS_CHROMEOS)
   // Listen for bookmark model load, to bootstrap the sync service.
+  // On CrOS sync service will be initialized after sign in.
   registrar_.Add(this, NotificationType::BOOKMARK_MODEL_LOADED,
                  Source<Profile>(this));
+#endif
 
   ssl_config_service_manager_.reset(
       SSLConfigServiceManager::CreateDefaultManager(this));
