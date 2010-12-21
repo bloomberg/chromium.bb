@@ -5445,6 +5445,24 @@ void GLES2DecoderImpl::DoCompressedTexSubImage2D(
       target, level, xoffset, yoffset, width, height, format, image_size, data);
 }
 
+static void Clip(
+    GLint start, GLint range, GLint sourceRange,
+    GLint* out_start, GLint* out_range) {
+  DCHECK(out_start);
+  DCHECK(out_range);
+  if (start < 0) {
+    range += start;
+    start = 0;
+  }
+  GLint end = start + range;
+  if (end > sourceRange) {
+    range -= end - sourceRange;
+  }
+  *out_start = start;
+  *out_range = range;
+}
+
+
 void GLES2DecoderImpl::DoCopyTexImage2D(
   GLenum target,
   GLint level,
@@ -5472,7 +5490,44 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
   // TODO(gman): Type needs to match format for FBO.
   CopyRealGLErrorsToWrapper();
   ScopedResolvedFrameBufferBinder binder(this);
-  glCopyTexImage2D(target, level, internal_format, x, y, width, height, border);
+  // Clip to size to source dimensions
+  gfx::Size size = GetBoundReadFrameBufferSize();
+  GLint copyX = 0;
+  GLint copyY = 0;
+  GLint copyWidth = 0;
+  GLint copyHeight = 0;
+  Clip(x, width, size.width(), &copyX, &copyWidth);
+  Clip(y, height, size.height(), &copyY, &copyHeight);
+
+  if (copyX != x ||
+      copyY != y ||
+      copyWidth != width ||
+      copyHeight != height) {
+    // some part was clipped so clear the texture.
+    uint32 pixels_size = 0;
+    if (!GLES2Util::ComputeImageDataSize(
+        width, height, internal_format, GL_UNSIGNED_BYTE,
+        unpack_alignment_, &pixels_size)) {
+      SetGLError(GL_INVALID_VALUE, "glCopyTexImage2D: dimensions too large");
+      return;
+    }
+    scoped_array<char> zero(new char[pixels_size]);
+    memset(zero.get(), 0, pixels_size);
+    glTexImage2D(target, level, internal_format, width, height, 0,
+                 internal_format, GL_UNSIGNED_BYTE, zero.get());
+    if (copyHeight > 0 && copyWidth > 0) {
+      GLint dx = copyX - x;
+      GLint dy = copyY - y;
+      GLint destX = dx;
+      GLint destY = dy;
+      glCopyTexSubImage2D(target, level,
+                          destX, destY, copyX, copyY,
+                          copyWidth, copyHeight);
+    }
+  } else {
+    glCopyTexImage2D(target, level, internal_format,
+                     copyX, copyY, copyWidth, copyHeight, border);
+  }
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
     texture_manager()->SetLevelInfo(
@@ -5508,7 +5563,39 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
   // TODO(gman): Should we check that x, y, width, and height are in range
   // for current FBO?
   ScopedResolvedFrameBufferBinder binder(this);
-  glCopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
+  gfx::Size size = GetBoundReadFrameBufferSize();
+  GLint copyX = 0;
+  GLint copyY = 0;
+  GLint copyWidth = 0;
+  GLint copyHeight = 0;
+  Clip(x, width, size.width(), &copyX, &copyWidth);
+  Clip(y, height, size.height(), &copyY, &copyHeight);
+  if (copyX != x ||
+      copyY != y ||
+      copyWidth != width ||
+      copyHeight != height) {
+    // some part was clipped so clear the texture.
+    uint32 pixels_size = 0;
+    if (!GLES2Util::ComputeImageDataSize(
+        width, height, format, type, unpack_alignment_, &pixels_size)) {
+      SetGLError(GL_INVALID_VALUE, "glCopyTexSubImage2D: dimensions too large");
+      return;
+    }
+    scoped_array<char> zero(new char[pixels_size]);
+    memset(zero.get(), 0, pixels_size);
+    glTexSubImage2D(
+        target, level, xoffset, yoffset, width, height,
+        format, type, zero.get());
+  }
+  if (copyHeight > 0 && copyWidth > 0) {
+    GLint dx = copyX - x;
+    GLint dy = copyY - y;
+    GLint destX = xoffset + dx;
+    GLint destY = yoffset + dy;
+    glCopyTexSubImage2D(target, level,
+                        destX, destY, copyX, copyY,
+                        copyWidth, copyHeight);
+  }
 }
 
 void GLES2DecoderImpl::DoTexSubImage2D(

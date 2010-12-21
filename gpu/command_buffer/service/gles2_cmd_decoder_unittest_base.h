@@ -71,6 +71,9 @@ class GLES2DecoderTestBase : public testing::Test {
   static const uint32 kNewServiceId = 502;
   static const uint32 kInvalidClientId = 601;
 
+  static const int kBackBufferWidth = 128;
+  static const int kBackBufferHeight = 64;
+
   // Template to call glGenXXX functions.
   template <typename T>
   void GenHelper(GLuint client_id) {

@@ -108,10 +108,11 @@ void GLES2DecoderTestBase::InitDecoder(const char* extensions) {
   shared_memory_id_ = kSharedMemoryId;
 
   context_ = new gfx::StubGLContext;
+  context_->SetSize(gfx::Size(kBackBufferWidth, kBackBufferHeight));
 
   decoder_.reset(GLES2Decoder::Create(group_.get()));
   decoder_->Initialize(
-      context_, gfx::Size(), NULL, std::vector<int32>(), NULL, 0);
+      context_, context_->GetSize(), NULL, std::vector<int32>(), NULL, 0);
   decoder_->set_engine(engine_.get());
 
   EXPECT_CALL(*gl_, GenBuffersARB(_, _))
@@ -423,6 +424,9 @@ const uint8 GLES2DecoderTestBase::kInitialMemoryValue;
 const uint32 GLES2DecoderTestBase::kNewClientId;
 const uint32 GLES2DecoderTestBase::kNewServiceId;
 const uint32 GLES2DecoderTestBase::kInvalidClientId;
+
+const int GLES2DecoderTestBase::kBackBufferWidth;
+const int GLES2DecoderTestBase::kBackBufferHeight;
 #endif
 
 void GLES2DecoderWithShaderTestBase::SetUp() {
