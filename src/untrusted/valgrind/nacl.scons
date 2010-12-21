@@ -14,6 +14,7 @@ if env.Bit('target_arm') or env.Bit('bitcode'):
 
 sources = ['valgrind_interceptors.c']
 
+env.Append(CPPPATH=['$SOURCE_ROOT'])
 env.ComponentLibrary('libvalgrind', sources)
 env.AddLibraryToSdk(['libvalgrind'])
 env.AddHeaderToSdk(['dynamic_annotations.h'])

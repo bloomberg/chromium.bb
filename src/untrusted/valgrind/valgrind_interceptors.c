@@ -32,15 +32,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "native_client/src/third_party/valgrind/nacl_valgrind.h"
-#include "native_client/src/third_party/valgrind/nacl_memcheck.h"
+#include "third_party/valgrind/nacl_valgrind.h"
+#include "third_party/valgrind/nacl_memcheck.h"
 
 /* For DYNAMIC_ANNOTATIONS_NAME() */
 #include "native_client/src/untrusted/valgrind/dynamic_annotations.h"
 
 #define INLINE __attribute__((always_inline))
 
-#include "native_client/src/third_party/valgrind/ts_valgrind_client_requests.h"
+#include "third_party/valgrind/ts_valgrind_client_requests.h"
 
 /* For sizeof(nc_thread_memory_block_t) */
 #include "native_client/src/untrusted/pthread/pthread_types.h"
