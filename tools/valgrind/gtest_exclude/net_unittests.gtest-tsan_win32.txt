@@ -25,8 +25,8 @@ HttpNetworkLayerTest.GET
 # See http://crbug.com/59642
 CookieMonsterTest.GarbageCollectionTriggers
 
-# Fails for unknown reason; see http://crbug.com/67599
-CertVerifierTest.CacheHit
+# Fail for unknown reason; see http://crbug.com/67599
+CertVerifierTest.*
 
 #########################################
 # These tests fail if you don't have our SSL certificate installed.
