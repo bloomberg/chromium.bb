@@ -108,6 +108,12 @@ const void* PpapiUnittest::GetMockInterface(const char* interface_name) const {
   return NULL;
 }
 
+void PpapiUnittest::ShutdownModule() {
+  DCHECK(instance_->HasOneRef());
+  instance_ = NULL;
+  DCHECK(module_->HasOneRef());
+  module_ = NULL;
+}
+
 }  // namespace ppapi
 }  // namespace webkit
-

@@ -92,52 +92,84 @@ std::string TestDirectoryReader::TestGetNextFile() {
   if (rv != PP_OK)
     return ReportError("FileRef::MakeDirectory", rv);
 
-  pp::DirectoryReader_Dev directory_reader(dir_ref);
-  std::vector<pp::DirectoryEntry_Dev> entries;
-  pp::DirectoryEntry_Dev entry;
-  do {
-    rv = directory_reader.GetNextEntry(&entry, callback);
-    if (rv == PP_ERROR_WOULDBLOCK)
+  {
+    pp::DirectoryReader_Dev directory_reader(dir_ref);
+    std::vector<pp::DirectoryEntry_Dev> entries;
+    pp::DirectoryEntry_Dev entry;
+    do {
+      rv = directory_reader.GetNextEntry(&entry, callback);
+      if (rv == PP_ERROR_WOULDBLOCK)
+        rv = callback.WaitForResult();
+      if (rv != PP_OK)
+        return ReportError("DirectoryReader::GetNextEntry", rv);
+      if (!entry.is_null())
+        entries.push_back(entry);
+    } while (!entry.is_null());
+
+    if (entries.size() != 6)
+      return "Expected 6 entries, got " + IntegerToString(entries.size());
+
+    std::set<std::string> expected_file_names;
+    expected_file_names.insert("/file_1");
+    expected_file_names.insert("/file_2");
+    expected_file_names.insert("/file_3");
+
+    std::set<std::string> expected_dir_names;
+    expected_dir_names.insert("/dir_1");
+    expected_dir_names.insert("/dir_2");
+    expected_dir_names.insert("/dir_3");
+
+    for (std::vector<pp::DirectoryEntry_Dev>::const_iterator it =
+             entries.begin(); it != entries.end(); it++) {
+      pp::FileRef_Dev file_ref = it->file_ref();
+      std::string file_path = file_ref.GetPath().AsString();
+      std::set<std::string>::iterator found =
+          expected_file_names.find(file_path);
+      if (found != expected_file_names.end()) {
+        if (it->file_type() != PP_FILETYPE_REGULAR)
+          return file_path + " should have been a regular file.";
+        expected_file_names.erase(found);
+      } else {
+        found = expected_dir_names.find(file_path);
+        if (found == expected_dir_names.end())
+          return "Unexpected file path: " + file_path;
+        if (it->file_type() != PP_FILETYPE_DIRECTORY)
+          return file_path + " should have been a directory.";
+        expected_dir_names.erase(found);
+      }
+    }
+    if (!expected_file_names.empty() || !expected_dir_names.empty())
+      return "Expected more file paths.";
+  }
+
+  // Test cancellation of asynchronous |GetNextEntry()|.
+  {
+    // Declaring |entry| here prevents memory corruption for some failure modes
+    // and lets us to detect some other failures.
+    pp::DirectoryEntry_Dev entry;
+    callback.reset_run_count();
+    // Note that the directory reader will be deleted immediately.
+    rv = pp::DirectoryReader_Dev(dir_ref).GetNextEntry(&entry, callback);
+    if (callback.run_count() > 0)
+      return "DirectoryReader::GetNextEntry ran callback synchronously.";
+
+    // If |GetNextEntry()| is completing asynchronously, the callback should be
+    // aborted (i.e., called with |PP_ERROR_ABORTED| from the message loop)
+    // since the resource was destroyed.
+    if (rv == PP_ERROR_WOULDBLOCK) {
+      // |GetNextEntry()| *may* have written to |entry| (e.g., synchronously,
+      // before the resource was destroyed), but it must not write to it after
+      // destruction.
+      bool entry_is_null = entry.is_null();
       rv = callback.WaitForResult();
-    if (rv != PP_OK)
+      if (rv != PP_ERROR_ABORTED)
+        return "DirectoryReader::GetNextEntry not aborted.";
+      if (entry.is_null() != entry_is_null)
+        return "DirectoryReader::GetNextEntry wrote result after destruction.";
+    } else if (rv != PP_OK) {
       return ReportError("DirectoryReader::GetNextEntry", rv);
-    if (!entry.is_null())
-      entries.push_back(entry);
-  } while (!entry.is_null());
-
-  if (entries.size() != 6)
-    return "Expected 6 entries, got " + IntegerToString(entries.size());
-
-  std::set<std::string> expected_file_names;
-  expected_file_names.insert("/file_1");
-  expected_file_names.insert("/file_2");
-  expected_file_names.insert("/file_3");
-
-  std::set<std::string> expected_dir_names;
-  expected_dir_names.insert("/dir_1");
-  expected_dir_names.insert("/dir_2");
-  expected_dir_names.insert("/dir_3");
-
-  for (std::vector<pp::DirectoryEntry_Dev>::const_iterator it = entries.begin();
-       it != entries.end(); it++) {
-    pp::FileRef_Dev file_ref = it->file_ref();
-    std::string file_path = file_ref.GetPath().AsString();
-    std::set<std::string>::iterator found = expected_file_names.find(file_path);
-    if (found != expected_file_names.end()) {
-      if (it->file_type() != PP_FILETYPE_REGULAR)
-        return file_path + " should have been a regular file.";
-      expected_file_names.erase(found);
-    } else {
-      found = expected_dir_names.find(file_path);
-      if (found == expected_dir_names.end())
-        return "Unexpected file path: " + file_path;
-      if (it->file_type() != PP_FILETYPE_DIRECTORY)
-        return file_path + " should have been a directory.";
-      expected_dir_names.erase(found);
     }
   }
-  if (!expected_file_names.empty() || !expected_dir_names.empty())
-    return "Expected more file paths.";
 
   return "";
 }

@@ -5,6 +5,8 @@
 #include "webkit/plugins/ppapi/resource.h"
 
 #include "base/logging.h"
+#include "webkit/plugins/ppapi/callbacks.h"
+#include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/resource_tracker.h"
 
 namespace webkit {
@@ -32,6 +34,7 @@ PP_Resource Resource::GetReferenceNoAddRef() const {
 
 void Resource::StoppedTracking() {
   DCHECK(resource_id_ != 0);
+  module_->GetCallbackTracker()->PostAbortForResource(resource_id_);
   resource_id_ = 0;
 }
 

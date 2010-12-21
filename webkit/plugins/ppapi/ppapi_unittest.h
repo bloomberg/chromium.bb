@@ -32,6 +32,9 @@ class PpapiUnittest : public testing::Test {
   // implements PPP_INSTANCE.
   virtual const void* GetMockInterface(const char* interface_name) const;
 
+  // Deletes the instance and module to simulate module shutdown.
+  void ShutdownModule();
+
  private:
   scoped_ptr<MockPluginDelegate> delegate_;
 

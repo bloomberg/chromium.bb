@@ -9,8 +9,10 @@
 #include "ppapi/c/dev/ppb_file_system_dev.h"
 #include "ppapi/c/dev/pp_file_info_dev.h"
 #include "ppapi/c/pp_errors.h"
-#include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
+#include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/error_util.h"
+#include "webkit/plugins/ppapi/plugin_module.h"
+#include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_system_impl.h"
 #include "webkit/fileapi/file_system_types.h"
 
@@ -19,12 +21,14 @@ namespace ppapi {
 
 FileCallbacks::FileCallbacks(
     const base::WeakPtr<PluginModule>& module,
+    PP_Resource resource_id,
     PP_CompletionCallback callback,
     PP_FileInfo_Dev* info,
     scoped_refptr<PPB_FileSystem_Impl> file_system,
     scoped_refptr<PPB_DirectoryReader_Impl> directory_reader)
-    : module_(module),
-      callback_(callback),
+    : callback_(new TrackedCompletionCallback(module->GetCallbackTracker(),
+                                              resource_id,
+                                              callback)),
       info_(info),
       file_system_(file_system),
       directory_reader_(directory_reader) {
@@ -33,15 +37,15 @@ FileCallbacks::FileCallbacks(
 FileCallbacks::~FileCallbacks() {}
 
 void FileCallbacks::DidSucceed() {
-  if (!module_.get() || !callback_.func)
+  if (callback_->completed())
     return;
 
-  PP_RunCompletionCallback(&callback_, PP_OK);
+  callback_->Run(PP_OK);
 }
 
 void FileCallbacks::DidReadMetadata(
     const base::PlatformFileInfo& file_info) {
-  if (!module_.get() || !callback_.func)
+  if (callback_->completed())
     return;
 
   DCHECK(info_);
@@ -56,30 +60,30 @@ void FileCallbacks::DidReadMetadata(
   else
     info_->type = PP_FILETYPE_REGULAR;
 
-  PP_RunCompletionCallback(&callback_, PP_OK);
+  callback_->Run(PP_OK);
 }
 
 void FileCallbacks::DidReadDirectory(
     const std::vector<base::FileUtilProxy::Entry>& entries, bool has_more) {
-  if (!module_.get() || !callback_.func)
+  if (callback_->completed())
     return;
 
   DCHECK(directory_reader_);
   directory_reader_->AddNewEntries(entries, has_more);
 
-  PP_RunCompletionCallback(&callback_, PP_OK);
+  callback_->Run(PP_OK);
 }
 
 void FileCallbacks::DidOpenFileSystem(const std::string&,
                                       const FilePath& root_path) {
-  if (!module_.get() || !callback_.func)
+  if (callback_->completed())
     return;
 
   DCHECK(file_system_);
   file_system_->set_root_path(root_path);
   file_system_->set_opened(true);
 
-  PP_RunCompletionCallback(&callback_, PP_OK);
+  callback_->Run(PP_OK);
 }
 
 void FileCallbacks::DidFail(base::PlatformFileError error_code) {
@@ -91,13 +95,11 @@ void FileCallbacks::DidWrite(int64 bytes, bool complete) {
 }
 
 void FileCallbacks::RunCallback(base::PlatformFileError error_code) {
-  if (!module_.get() || !callback_.func)
+  if (callback_->completed())
     return;
 
-  PP_RunCompletionCallback(
-      &callback_, PlatformFileErrorToPepperError(error_code));
+  callback_->Run(PlatformFileErrorToPepperError(error_code));
 }
 
 }  // namespace ppapi
 }  // namespace webkit
-

@@ -4,8 +4,8 @@
 
 #include "webkit/plugins/ppapi/ppapi_unittest.h"
 
-#include "webkit/plugins/ppapi/resource_tracker.h"
 #include "webkit/plugins/ppapi/mock_resource.h"
+#include "webkit/plugins/ppapi/resource_tracker.h"
 
 namespace webkit {
 namespace ppapi {
@@ -116,4 +116,3 @@ TEST_F(ResourceTrackerTest, ForceDelete) {
 
 }  // namespace ppapi
 }  // namespace webkit
-

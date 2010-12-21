@@ -59,7 +59,7 @@ int32_t Open(PP_Resource file_system_id,
   if (!instance->delegate()->OpenFileSystem(
           instance->container()->element().document().frame()->url(),
           file_system_type, expected_size,
-          new FileCallbacks(instance->module()->AsWeakPtr(),
+          new FileCallbacks(instance->module()->AsWeakPtr(), file_system_id,
                             callback, NULL, file_system, NULL)))
     return PP_ERROR_FAILED;
 

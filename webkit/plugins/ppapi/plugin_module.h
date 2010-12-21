@@ -41,6 +41,7 @@ struct ChannelHandle;
 namespace webkit {
 namespace ppapi {
 
+class CallbackTracker;
 class ObjectVar;
 class PluginDelegate;
 class PluginInstance;
@@ -133,11 +134,17 @@ class PluginModule : public base::RefCounted<PluginModule>,
   void AddPluginObject(PluginObject* plugin_object);
   void RemovePluginObject(PluginObject* plugin_object);
 
+  scoped_refptr<CallbackTracker> GetCallbackTracker();
+
  private:
   // Calls the InitializeModule entrypoint. The entrypoint must have been
   // set and the plugin must not be out of process (we don't maintain
   // entrypoints in that case).
   bool InitializeModule();
+
+  // Tracker for completion callbacks, used mainly to ensure that all callbacks
+  // are properly aborted on module shutdown.
+  scoped_refptr<CallbackTracker> callback_tracker_;
 
   PP_Module pp_module_;
 
@@ -167,7 +174,7 @@ class PluginModule : public base::RefCounted<PluginModule>,
 
   // Tracks all live ObjectVars used by this module so we can map NPObjects to
   // the corresponding object. These are non-owning references.
-  typedef std::map<NPObject*, ObjectVar*> NPObjectToObjectVarMap;;
+  typedef std::map<NPObject*, ObjectVar*> NPObjectToObjectVarMap;
   NPObjectToObjectVarMap np_object_to_object_var_;
 
   typedef std::set<PluginObject*> PluginObjectSet;

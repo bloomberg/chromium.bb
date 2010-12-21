@@ -28,7 +28,8 @@ std::string ReportError(const char* method, int32_t error) {
 
 TestCompletionCallback::TestCompletionCallback()
     : result_(PP_ERROR_WOULDBLOCK),
-      post_quit_task_(false) {
+      post_quit_task_(false),
+      run_count_(0) {
 }
 
 int32_t TestCompletionCallback::WaitForResult() {
@@ -48,6 +49,7 @@ void TestCompletionCallback::Handler(void* user_data, int32_t result) {
   TestCompletionCallback* callback =
       static_cast<TestCompletionCallback*>(user_data);
   callback->result_ = result;
+  callback->run_count_++;
   if (callback->post_quit_task_) {
     callback->post_quit_task_ = false;
     GetTestingInterface()->QuitMessageLoop();

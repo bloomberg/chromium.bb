@@ -49,6 +49,7 @@
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
+#include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_object.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -336,7 +337,9 @@ PluginModule::EntryPoints::EntryPoints()
 
 // PluginModule ----------------------------------------------------------------
 
-PluginModule::PluginModule() : library_(NULL) {
+PluginModule::PluginModule()
+    : callback_tracker_(new CallbackTracker),
+      library_(NULL) {
   pp_module_ = ResourceTracker::Get()->AddModule(this);
   GetMainThreadMessageLoop();  // Initialize the main thread message loop.
   GetLivePluginSet()->insert(this);
@@ -359,6 +362,8 @@ PluginModule::~PluginModule() {
   DCHECK(instances_.empty());
 
   GetLivePluginSet()->erase(this);
+
+  callback_tracker_->AbortAll();
 
   if (entry_points_.shutdown_module)
     entry_points_.shutdown_module();
@@ -485,6 +490,10 @@ void PluginModule::RemovePluginObject(PluginObject* plugin_object) {
   // Don't actually verify that the object is in the set since during module
   // deletion we'll be in the process of freeing them.
   live_plugin_objects_.erase(plugin_object);
+}
+
+scoped_refptr<CallbackTracker> PluginModule::GetCallbackTracker() {
+  return callback_tracker_;
 }
 
 bool PluginModule::InitializeModule() {

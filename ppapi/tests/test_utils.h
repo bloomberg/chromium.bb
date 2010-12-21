@@ -22,11 +22,15 @@ class TestCompletionCallback {
 
   operator pp::CompletionCallback() const;
 
+  unsigned run_count() const { return run_count_; }
+  void reset_run_count() { run_count_ = 0; }
+
  private:
   static void Handler(void* user_data, int32_t result);
 
   int32_t result_;
   bool post_quit_task_;
+  unsigned run_count_;
 };
 
 #endif  // PPAPI_TESTS_TEST_UTILS_H_

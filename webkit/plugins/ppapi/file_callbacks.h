@@ -6,8 +6,10 @@
 #define WEBKIT_PLUGINS_PPAPI_FILE_CALLBACKS_H_
 
 #include "base/platform_file.h"
+#include "base/ref_counted.h"
 #include "base/weak_ptr.h"
 #include "ppapi/c/pp_completion_callback.h"
+#include "ppapi/c/pp_resource.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
 
 struct PP_FileInfo_Dev;
@@ -22,11 +24,13 @@ namespace ppapi {
 class PPB_DirectoryReader_Impl;
 class PPB_FileSystem_Impl;
 class PluginModule;
+class TrackedCompletionCallback;
 
 // Instances of this class are deleted by FileSystemDispatcher.
 class FileCallbacks : public fileapi::FileSystemCallbackDispatcher {
  public:
   FileCallbacks(const base::WeakPtr<PluginModule>& module,
+                PP_Resource resource_id,
                 PP_CompletionCallback callback,
                 PP_FileInfo_Dev* info,
                 scoped_refptr<PPB_FileSystem_Impl> file_system,
@@ -43,11 +47,12 @@ class FileCallbacks : public fileapi::FileSystemCallbackDispatcher {
   virtual void DidFail(base::PlatformFileError error_code);
   virtual void DidWrite(int64 bytes, bool complete);
 
+  scoped_refptr<TrackedCompletionCallback> GetTrackedCompletionCallback() const;
+
  private:
   void RunCallback(base::PlatformFileError error_code);
 
-  base::WeakPtr<PluginModule> module_;
-  PP_CompletionCallback callback_;
+  scoped_refptr<TrackedCompletionCallback> callback_;
   PP_FileInfo_Dev* info_;
   scoped_refptr<PPB_FileSystem_Impl> file_system_;
   scoped_refptr<PPB_DirectoryReader_Impl> directory_reader_;

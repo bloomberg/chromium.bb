@@ -124,7 +124,7 @@ int32_t MakeDirectory(PP_Resource directory_ref_id,
   PluginInstance* instance = file_system->instance();
   if (!instance->delegate()->MakeDirectory(
           directory_ref->GetSystemPath(), PPBoolToBool(make_ancestors),
-          new FileCallbacks(instance->module()->AsWeakPtr(),
+          new FileCallbacks(instance->module()->AsWeakPtr(), directory_ref_id,
                             callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
 
@@ -147,7 +147,7 @@ int32_t Query(PP_Resource file_ref_id,
   PluginInstance* instance = file_system->instance();
   if (!instance->delegate()->Query(
           file_ref->GetSystemPath(),
-          new FileCallbacks(instance->module()->AsWeakPtr(),
+          new FileCallbacks(instance->module()->AsWeakPtr(), file_ref_id,
                             callback, info, file_system, NULL)))
     return PP_ERROR_FAILED;
 
@@ -172,7 +172,7 @@ int32_t Touch(PP_Resource file_ref_id,
   if (!instance->delegate()->Touch(
           file_ref->GetSystemPath(), base::Time::FromDoubleT(last_access_time),
           base::Time::FromDoubleT(last_modified_time),
-          new FileCallbacks(instance->module()->AsWeakPtr(),
+          new FileCallbacks(instance->module()->AsWeakPtr(), file_ref_id,
                             callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
 
@@ -194,7 +194,7 @@ int32_t Delete(PP_Resource file_ref_id,
   PluginInstance* instance = file_system->instance();
   if (!instance->delegate()->Delete(
           file_ref->GetSystemPath(),
-          new FileCallbacks(instance->module()->AsWeakPtr(),
+          new FileCallbacks(instance->module()->AsWeakPtr(), file_ref_id,
                             callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
 
@@ -220,10 +220,12 @@ int32_t Rename(PP_Resource file_ref_id,
       (file_system->type() == PP_FILESYSTEMTYPE_EXTERNAL))
     return PP_ERROR_NOACCESS;
 
+  // TODO(viettrungluu): Also cancel when the new file ref is destroyed?
+  // http://crbug.com/67624
   PluginInstance* instance = file_system->instance();
   if (!instance->delegate()->Rename(
           file_ref->GetSystemPath(), new_file_ref->GetSystemPath(),
-          new FileCallbacks(instance->module()->AsWeakPtr(),
+          new FileCallbacks(instance->module()->AsWeakPtr(), file_ref_id,
                             callback, NULL, NULL, NULL)))
     return PP_ERROR_FAILED;
 

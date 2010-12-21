@@ -170,6 +170,8 @@
         # names.
         '../plugins/plugin_switches.cc',
         '../plugins/plugin_switches.h',
+        '../plugins/ppapi/callbacks.cc',
+        '../plugins/ppapi/callbacks.h',
         '../plugins/ppapi/common.h',
         '../plugins/ppapi/dir_contents.h',
         '../plugins/ppapi/error_util.cc',

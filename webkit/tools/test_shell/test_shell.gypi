@@ -415,6 +415,7 @@
         '../../mocks/mock_resource_loader_bridge.h',
         '../../mocks/mock_webframe.h',
         '../../mocks/mock_weburlloader.h',
+        '../../plugins/ppapi/callbacks_unittest.cc',
         '../../plugins/ppapi/mock_plugin_delegate.cc',
         '../../plugins/ppapi/mock_plugin_delegate.h',
         '../../plugins/ppapi/mock_resource.h',

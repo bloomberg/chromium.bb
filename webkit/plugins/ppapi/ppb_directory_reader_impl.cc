@@ -109,9 +109,12 @@ int32_t PPB_DirectoryReader_Impl::GetNextEntry(
   }
 
   PluginInstance* instance = directory_ref_->GetFileSystem()->instance();
+  PP_Resource resource_id = GetReferenceNoAddRef();
+  DCHECK(resource_id != 0);
   if (!instance->delegate()->ReadDirectory(
           directory_ref_->GetSystemPath(),
           new FileCallbacks(instance->module()->AsWeakPtr(),
+                            resource_id,
                             callback, NULL, NULL, this)))
     return PP_ERROR_FAILED;
 
