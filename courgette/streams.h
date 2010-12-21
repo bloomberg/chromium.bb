@@ -126,6 +126,10 @@ class SinkStream {
   // Appends the 'varint32' encoding of |value| to the stream.
   void WriteVarint32Signed(int32 value);
 
+  // Appends the 'varint32' encoding of |value| to the stream.
+  // On platforms where sizeof(size_t) != sizeof(int32), do a safety check.
+  void WriteSizeVarint32(size_t value);
+
   // Contents of |other| are appended to |this| stream.  The |other| stream
   // becomes retired.
   void Append(SinkStream* other);

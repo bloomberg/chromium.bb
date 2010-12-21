@@ -166,7 +166,7 @@ void DisassemblerWin32X86::ParseRel32RelocsFromSection(const Section* section) {
   // Find the rel32 relocations.
   const uint8* p = start_pointer;
   while (p < end_pointer) {
-    RVA current_rva = p - adjust_pointer_to_rva;
+    RVA current_rva = static_cast<RVA>(p - adjust_pointer_to_rva);
     if (current_rva == relocs_start_rva) {
       uint32 relocs_size = pe_info().base_relocation_table().size_;
       if (relocs_size) {
@@ -195,7 +195,7 @@ void DisassemblerWin32X86::ParseRel32RelocsFromSection(const Section* section) {
       }
     }
     if (rel32) {
-      RVA rel32_rva = rel32 - adjust_pointer_to_rva;
+      RVA rel32_rva = static_cast<RVA>(rel32 - adjust_pointer_to_rva);
 
       // Is there an abs32 reloc overlapping the candidate?
       while (abs32_pos != abs32_locations_.end() && *abs32_pos < rel32_rva - 3)
@@ -297,7 +297,7 @@ void DisassemblerWin32X86::ParseFileRegion(
   const uint8* p = start_pointer;
 
   while (p < end_pointer) {
-    RVA current_rva = p - adjust_pointer_to_rva;
+    RVA current_rva = static_cast<RVA>(p - adjust_pointer_to_rva);
 
     // The base relocation table is usually in the .relocs section, but it could
     // actually be anywhere.  Make sure we skip it because we will regenerate it

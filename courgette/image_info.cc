@@ -50,7 +50,7 @@ PEInfo::PEInfo()
 
 void PEInfo::Init(const void* start, size_t length) {
   start_ = reinterpret_cast<const uint8*>(start);
-  length_ = length;
+  length_ = static_cast<int>(length);
   end_ = start_ + length_;
   failure_reason_ = "unparsed";
 }
@@ -329,7 +329,7 @@ bool PEInfo::ReadDataDirectory(int index, ImageDataDirectory* directory) {
 
     // TODO(sra): validate RVA.
     directory->address_ = rva;
-    directory->size_ = size;
+    directory->size_ = static_cast<uint32>(size);
     return true;
   } else {
     directory->address_ = 0;

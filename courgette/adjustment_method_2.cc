@@ -389,8 +389,10 @@ class Shingle {
   }
 
   LabelInfo* at(size_t i) const { return trace_[exemplar_position_ + i]; }
-  void add_position(size_t position) { positions_.push_back(position); }
-  size_t position_count() const { return positions_.size(); }
+  void add_position(size_t position) {
+    positions_.push_back(static_cast<uint32>(position));
+  }
+  int position_count() const { return static_cast<int>(positions_.size()); }
 
   bool InModel() const { return at(0)->is_model_; }
 
@@ -436,7 +438,7 @@ std::string ToString(const Shingle* instance) {
     s += ToString(instance->at(i));
     sep = ", ";
   }
-  base::StringAppendF(&s, ">(%" PRIuS ")@{%" PRIuS "}",
+  base::StringAppendF(&s, ">(%" PRIuS ")@{%d}",
                       instance->exemplar_position_,
                       instance->position_count());
   return s;
@@ -493,7 +495,7 @@ class ShinglePattern {
   class FreqView {
    public:
     explicit FreqView(const Shingle* instance) : instance_(instance) {}
-    size_t count() const { return instance_->position_count(); }
+    int count() const { return instance_->position_count(); }
     const Shingle* instance() const { return instance_; }
     struct Greater {
       bool operator()(const FreqView& a, const FreqView& b) const {
@@ -554,7 +556,7 @@ std::string HistogramToString(const ShinglePattern::Histogram& histogram,
       s += " ...";
       break;
     }
-    base::StringAppendF(&s, " %" PRIuS, p->count());
+    base::StringAppendF(&s, " %d", p->count());
   }
   return s;
 }
@@ -574,7 +576,7 @@ std::string HistogramToStringFull(const ShinglePattern::Histogram& histogram,
       s += "...\n";
       break;
     }
-    base::StringAppendF(&s, "(%" PRIuS ") ", p->count());
+    base::StringAppendF(&s, "(%d) ", p->count());
     s += ToString(&(*p->instance()));
     s += "\n";
   }
@@ -647,7 +649,7 @@ ShinglePattern::Index::Index(const Shingle* instance) {
   unique_variables_ = 0;
   first_variable_index_ = 255;
 
-  for (size_t i = 0; i < Shingle::kWidth; ++i) {
+  for (uint32 i = 0; i < Shingle::kWidth; ++i) {
     LabelInfo* info = instance->at(i);
     uint32 kind = 0;
     int code = -1;
@@ -1275,7 +1277,8 @@ class Adjuster : public AdjustmentMethod {
 
   void ReferenceLabel(Trace* trace, Label* label, bool is_model) {
     trace->push_back(
-        label_info_maker_.MakeLabelInfo(label, is_model, trace->size()));
+        label_info_maker_.MakeLabelInfo(label, is_model,
+                                        static_cast<uint32>(trace->size())));
   }
 
   AssemblyProgram* prog_;         // Program to be adjusted, owned by caller.

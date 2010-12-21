@@ -3,6 +3,37 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'lzma_sdk_sources': [
+      '7zCrc.c',
+      '7zCrc.h',
+      'Archive/7z/7zAlloc.c',
+      'Archive/7z/7zAlloc.h',
+      'Archive/7z/7zBuffer.c',
+      'Archive/7z/7zBuffer.h',
+      'Archive/7z/7zDecode.c',
+      'Archive/7z/7zDecode.h',
+      'Archive/7z/7zExtract.c',
+      'Archive/7z/7zExtract.h',
+      'Archive/7z/7zHeader.c',
+      'Archive/7z/7zHeader.h',
+      'Archive/7z/7zIn.c',
+      'Archive/7z/7zIn.h',
+      'Archive/7z/7zItem.c',
+      'Archive/7z/7zItem.h',
+      'Archive/7z/7zMethodID.c',
+      'Archive/7z/7zMethodID.h',
+      'Compress/Branch/BranchTypes.h',
+      'Compress/Branch/BranchX86.c',
+      'Compress/Branch/BranchX86.h',
+      'Compress/Branch/BranchX86_2.c',
+      'Compress/Branch/BranchX86_2.h',
+      'Compress/Lzma/LzmaDecode.c',
+      'Compress/Lzma/LzmaDecode.h',
+      'Compress/Lzma/LzmaTypes.h',
+      'Types.h',
+    ],
+  },
   'targets': [
     {
       'target_name': 'lzma_sdk',
@@ -18,35 +49,7 @@
       # necessary and delete if not.
       #        '/wd4800',
       'msvs_guid': 'B84553C8-5676-427B-B3E4-23DDDC4DBC7B',
-      'sources': [
-        '7zCrc.c',
-        '7zCrc.h',
-        'Archive/7z/7zAlloc.c',
-        'Archive/7z/7zAlloc.h',
-        'Archive/7z/7zBuffer.c',
-        'Archive/7z/7zBuffer.h',
-        'Archive/7z/7zDecode.c',
-        'Archive/7z/7zDecode.h',
-        'Archive/7z/7zExtract.c',
-        'Archive/7z/7zExtract.h',
-        'Archive/7z/7zHeader.c',
-        'Archive/7z/7zHeader.h',
-        'Archive/7z/7zIn.c',
-        'Archive/7z/7zIn.h',
-        'Archive/7z/7zItem.c',
-        'Archive/7z/7zItem.h',
-        'Archive/7z/7zMethodID.c',
-        'Archive/7z/7zMethodID.h',
-        'Compress/Branch/BranchTypes.h',
-        'Compress/Branch/BranchX86.c',
-        'Compress/Branch/BranchX86.h',
-        'Compress/Branch/BranchX86_2.c',
-        'Compress/Branch/BranchX86_2.h',
-        'Compress/Lzma/LzmaDecode.c',
-        'Compress/Lzma/LzmaDecode.h',
-        'Compress/Lzma/LzmaTypes.h',
-        'Types.h',
-      ],
+      'sources': ['<@(lzma_sdk_sources)'],
       'direct_dependent_settings': {
         'defines': [
           '_LZMA_IN_CB',
@@ -56,6 +59,37 @@
         ],
       },
     },
+  ],
+  'conditions': [
+    ['OS=="win"', {
+      'targets': [
+        {
+          'target_name': 'lzma_sdk64',
+          'type': '<(library)',
+          'defines': [
+            '_LZMA_PROB32',
+            '_LZMA_IN_CB',
+          ],
+          'include_dirs': [
+            '.',
+          ],
+          'sources': ['<@(lzma_sdk_sources)'],
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            },
+          },
+          'direct_dependent_settings': {
+            'defines': [
+              '_LZMA_IN_CB',
+            ],
+            'include_dirs': [
+              '.',
+            ],
+          },
+        },
+      ],
+    }],
   ],
 }
 

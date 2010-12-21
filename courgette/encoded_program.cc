@@ -42,10 +42,10 @@ EncodedProgram::~EncodedProgram() {}
 template<typename T>
 void WriteVector(const std::vector<T>& items, SinkStream* buffer) {
   size_t count = items.size();
-  buffer->WriteVarint32(count);
+  buffer->WriteSizeVarint32(count);
   for (size_t i = 0;  i < count;  ++i) {
     COMPILE_ASSERT(sizeof(T) <= sizeof(uint32), T_must_fit_in_uint32);
-    buffer->WriteVarint32(static_cast<uint32>(items[i]));
+    buffer->WriteSizeVarint32(items[i]);
   }
 }
 
@@ -70,7 +70,7 @@ bool ReadVector(std::vector<T>* items, SourceStream* buffer) {
 // Serializes a vector, using delta coding followed by Varint32 coding.
 void WriteU32Delta(const std::vector<uint32>& set, SinkStream* buffer) {
   size_t count = set.size();
-  buffer->WriteVarint32(count);
+  buffer->WriteSizeVarint32(count);
   uint32 prev = 0;
   for (size_t i = 0;  i < count;  ++i) {
     uint32 current = set[i];
@@ -111,8 +111,8 @@ static bool ReadU32Delta(std::vector<uint32>* set, SourceStream* buffer) {
 //
 template<typename T>
 void WriteVectorU8(const std::vector<T>& items, SinkStream* buffer) {
-  uint32 count = items.size();
-  buffer->WriteVarint32(count);
+  size_t count = items.size();
+  buffer->WriteSizeVarint32(count);
   if (count != 0) {
     size_t byte_count = count * sizeof(T);
     buffer->Write(static_cast<const void*>(&items[0]), byte_count);

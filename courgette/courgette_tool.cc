@@ -68,7 +68,7 @@ void WriteSinkToFile(const courgette::SinkStream *sink,
   int count =
       file_util::WriteFile(output_path,
                            reinterpret_cast<const char*>(sink->Buffer()),
-                           sink->Length());
+                           static_cast<int>(sink->Length()));
   if (count == -1)
     Problem("Can't write output.");
   if (static_cast<size_t>(count) != sink->Length())

@@ -21,6 +21,7 @@
 #include <memory.h>
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 
 namespace courgette {
 
@@ -201,6 +202,13 @@ void SinkStream::WriteVarint32Signed(int32 value) {
     WriteVarint32(value * 2);
 }
 
+void SinkStream::WriteSizeVarint32(size_t value) {
+  uint32 narrowed_value = static_cast<uint32>(value);
+  // On 32-bit, the compiler should figure out this test always fails.
+  LOG_ASSERT(value == narrowed_value);
+  WriteVarint32(narrowed_value);
+}
+
 void SinkStream::Append(SinkStream* other) {
   Write(other->buffer_.c_str(), other->buffer_.size());
   other->buffer_.clear();
@@ -316,9 +324,9 @@ void SinkStreamSet::Init(size_t stream_index_limit) {
 //   <version><N><length1><length2>...<lengthN>
 void SinkStreamSet::CopyHeaderTo(SinkStream* header) {
   header->WriteVarint32(kStreamsSerializationFormatVersion);
-  header->WriteVarint32(count_);
+  header->WriteSizeVarint32(count_);
   for (size_t i = 0; i < count_; ++i) {
-    header->WriteVarint32(stream(i)->Length());
+    header->WriteSizeVarint32(stream(i)->Length());
   }
 }
 
@@ -341,15 +349,15 @@ bool SinkStreamSet::WriteSet(SinkStreamSet* set) {
   size_t stream_count = 0;
   for (size_t i = 0; i < kMaxStreams; ++i) {
     SinkStream* stream = set->stream(i);
-    lengths[i] = stream->Length();
+    lengths[i] = static_cast<uint32>(stream->Length());
     if (lengths[i] > 0)
       stream_count = i + 1;
   }
 
   SinkStream* control_stream = this->stream(0);
-  control_stream->WriteVarint32(stream_count);
+  control_stream->WriteSizeVarint32(stream_count);
   for (size_t i = 0; i < stream_count; ++i) {
-    control_stream->WriteVarint32(lengths[i]);
+    control_stream->WriteSizeVarint32(lengths[i]);
   }
 
   for (size_t i = 0; i < stream_count; ++i) {

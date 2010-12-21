@@ -232,8 +232,8 @@ Status GenerateEnsemblePatch(SourceStream* base,
   SinkStream* transformed_elements_correction = patch_streams.stream(2);
   SinkStream* ensemble_correction             = patch_streams.stream(3);
 
-  uint32 number_of_transformations = generators.size();
-  tranformation_descriptions->WriteVarint32(number_of_transformations);
+  size_t number_of_transformations = generators.size();
+  tranformation_descriptions->WriteSizeVarint32(number_of_transformations);
 
   for (size_t i = 0;  i < number_of_transformations;  ++i) {
     CourgettePatchFile::TransformationMethodId kind = generators[i]->Kind();

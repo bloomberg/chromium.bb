@@ -399,7 +399,7 @@ Status ApplyEnsemblePatch(const FilePath::CharType* old_file_name,
       file_util::WriteFile(
           new_file_path,
           reinterpret_cast<const char*>(new_sink_stream.Buffer()),
-          new_sink_stream.Length());
+          static_cast<int>(new_sink_stream.Length()));
   if (written == -1)
     return C_WRITE_OPEN_ERROR;
   if (static_cast<size_t>(written) != new_sink_stream.Length())

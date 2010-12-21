@@ -215,7 +215,7 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
   SinkStream* extra_bytes = patch_streams.stream(5);
 
   const uint8* old = old_stream->Buffer();
-  const int oldsize = old_stream->Remaining();
+  const int oldsize = static_cast<int>(old_stream->Remaining());
 
   uint32 pending_diff_zeros = 0;
 
@@ -241,7 +241,7 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
   V.clear();
 
   const uint8* newbuf = new_stream->Buffer();
-  const int newsize = new_stream->Remaining();
+  const int newsize = static_cast<int>(new_stream->Remaining());
 
   int control_length = 0;
   int diff_bytes_length = 0;

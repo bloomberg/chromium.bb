@@ -228,10 +228,10 @@ void AssemblyProgram::AssignRemainingIndexes(RVAToLabel* labels) {
   for (RVAToLabel::iterator p = labels->begin();  p != labels->end();  ++p) {
     Label* current = p->second;
     if (current->index_ == Label::kNoIndex) {
-      size_t index = 0;
+      int index = 0;
       if (prev  &&  prev->index_ != Label::kNoIndex)
         index = prev->index_ + 1;
-      if (index < available.size() && available.at(index)) {
+      if (index < static_cast<int>(available.size()) && available.at(index)) {
         current->index_ = index;
         available.at(index) = false;
         ++fill_forward_count;
@@ -254,7 +254,7 @@ void AssemblyProgram::AssignRemainingIndexes(RVAToLabel* labels) {
       if (prev)
         prev_index = prev->index_;
       else
-        prev_index = available.size();
+        prev_index = static_cast<uint32>(available.size());
       if (prev_index != 0  &&
           prev_index != Label::kNoIndex  &&
           available.at(prev_index - 1)) {
