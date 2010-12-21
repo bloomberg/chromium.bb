@@ -308,8 +308,10 @@ cr.define('options.contentSettings', function() {
       this.pattern = newPattern;
       this.setting = newSetting;
 
+      // TODO(estade): this will need to be updated if geolocation/notifications
+      // become editable.
       if (oldPattern != newPattern) {
-        chrome.send('removeExceptions',
+        chrome.send('removeException',
                     [this.contentType, this.mode, oldPattern]);
       }
 
@@ -400,7 +402,16 @@ cr.define('options.contentSettings', function() {
     decorate: function() {
       DeletableItemList.prototype.decorate.call(this);
 
-      this.contentType = this.parentNode.getAttribute('contentType');
+      this.classList.add('settings-list');
+
+      for (var parentNode = this.parentNode; parentNode;
+           parentNode = parentNode.parentNode) {
+        if (parentNode.hasAttribute('contentType')) {
+          this.contentType = parentNode.getAttribute('contentType');
+          break;
+        }
+      }
+
       this.mode = this.getAttribute('mode');
 
       var exceptionList = this;
@@ -505,33 +516,17 @@ cr.define('options.contentSettings', function() {
         console.log('Tried to delete an undeletable row.');
         return;
       }
-      chrome.send(
-          'removeExceptions',
-          [listItem.contentType, listItem.mode, listItem.pattern]);
-    },
 
-    /**
-     * Removes all selected rows from browser's model.
-     */
-    removeSelectedRows: function() {
-      // The first member is the content type; the rest of the values describe
-      // the patterns we are removing.
-      var args = [this.contentType];
-      var selectedItems = this.selectedItems;
-      for (var i = 0; i < selectedItems.length; i++) {
-        if (this.contentType == 'location') {
-          args.push(selectedItems[i]['origin']);
-          args.push(selectedItems[i]['embeddingOrigin']);
-        } else if (this.contentType == 'notifications') {
-          args.push(selectedItems[i]['origin']);
-          args.push(selectedItems[i]['setting']);
-        } else {
-          args.push(this.mode);
-          args.push(selectedItems[i]['displayPattern']);
-        }
-      }
+      var dataItem = listItem.dataItem;
+      var args = [listItem.contentType];
+      if (listItem.contentType == 'location')
+        args.push(dataItem['origin'], dataItem['embeddingOrigin']);
+      else if (listItem.contentType == 'notifications')
+        args.push(dataItem['origin'], dataItem['setting']);
+      else
+        args.push(listItem.mode, listItem.pattern);
 
-      chrome.send('removeExceptions', args);
+      chrome.send('removeException', args);
     },
 
     /**
@@ -544,9 +539,74 @@ cr.define('options.contentSettings', function() {
     }
   };
 
+  var OptionsPage = options.OptionsPage;
+
+  /**
+   * Encapsulated handling of content settings list subpage.
+   * @constructor
+   */
+  function ContentSettingsExceptionsArea() {
+    OptionsPage.call(this, 'contentExceptions',
+                     '', 'contentSettingsExceptionsArea');
+  }
+
+  cr.addSingletonGetter(ContentSettingsExceptionsArea);
+
+  ContentSettingsExceptionsArea.prototype = {
+    __proto__: OptionsPage.prototype,
+
+    initializePage: function() {
+      OptionsPage.prototype.initializePage.call(this);
+
+      var exceptionsLists = this.pageDiv.querySelectorAll('list');
+      for (var i = 0; i < exceptionsLists.length; i++) {
+        options.contentSettings.ExceptionsList.decorate(exceptionsLists[i]);
+      }
+
+      ContentSettingsExceptionsArea.hideOTRLists();
+    },
+
+    /**
+     * Shows one list and hides all others.
+     * @param {string} type The content type.
+     */
+    showList: function(type) {
+      var header = this.pageDiv.querySelector('h1');
+      header.textContent = templateData[type + '_header'];
+
+      var divs = this.pageDiv.querySelectorAll('div[contentType]');
+      for (var i = 0; i < divs.length; i++) {
+        if (divs[i].getAttribute('contentType') == type)
+          divs[i].classList.remove('hidden');
+        else
+          divs[i].classList.add('hidden');
+      }
+    },
+  };
+
+  /**
+   * Called when the last incognito window is closed.
+   */
+  ContentSettingsExceptionsArea.OTRProfileDestroyed = function() {
+    this.hideOTRLists();
+  };
+
+  /**
+   * Clears and hides the incognito exceptions lists.
+   */
+  ContentSettingsExceptionsArea.hideOTRLists = function() {
+    var otrLists = document.querySelectorAll('list[mode=otr]');
+
+    for (var i = 0; i < otrLists.length; i++) {
+      otrLists[i].reset();
+      otrLists[i].parentNode.classList.add('hidden');
+    }
+  };
+
   return {
     ExceptionsListItem: ExceptionsListItem,
     ExceptionsAddRowListItem: ExceptionsAddRowListItem,
     ExceptionsList: ExceptionsList,
+    ContentSettingsExceptionsArea: ContentSettingsExceptionsArea,
   };
 });

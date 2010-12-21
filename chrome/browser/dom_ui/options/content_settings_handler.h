@@ -65,10 +65,10 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
   // chosen.
   void SetContentFilter(const ListValue* args);
 
-  // Removes the given rows from the table. The first entry in |args| is the
-  // content type, and the rest of the arguments describe individual exceptions
+  // Removes the given row from the table. The first entry in |args| is the
+  // content type, and the rest of the arguments depend on the content type
   // to be removed.
-  void RemoveExceptions(const ListValue* args);
+  void RemoveException(const ListValue* args);
 
   // Changes the value of an exception. Called after the user is done editing an
   // exception.

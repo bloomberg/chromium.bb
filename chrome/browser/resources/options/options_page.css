@@ -282,7 +282,7 @@ html[hide-menu=true] #mainview {
   vertical-align: middle;
 }
 
-.page > h1 {
+.page h1 {
   -webkit-padding-end: 24px;
   border-bottom: 1px solid #eeeeee;
   color: #53637d;
@@ -293,7 +293,7 @@ html[hide-menu=true] #mainview {
   padding-top: 13px;
 }
 
-.subpage-sheet .page > h1 {
+.subpage-sheet .page h1 {
   padding-top: 4px;
 }
 

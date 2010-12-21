@@ -11,6 +11,8 @@ var AutoFillOptions = options.AutoFillOptions;
 var BrowserOptions = options.BrowserOptions;
 var ClearBrowserDataOverlay = options.ClearBrowserDataOverlay;
 var ContentSettings = options.ContentSettings;
+var ContentSettingsExceptionsArea =
+    options.contentSettings.ContentSettingsExceptionsArea;
 var CookiesView = options.CookiesView;
 var EditSearchEngineOverlay = options.EditSearchEngineOverlay;
 var FontSettings = options.FontSettings;
@@ -91,6 +93,8 @@ function load() {
   OptionsPage.register(AdvancedOptions.getInstance());
   OptionsPage.registerSubPage(ContentSettings.getInstance(),
                               AdvancedOptions.getInstance());
+  OptionsPage.registerSubPage(ContentSettingsExceptionsArea.getInstance(),
+                              ContentSettings.getInstance());
   OptionsPage.registerSubPage(CookiesView.getInstance(),
                               ContentSettings.getInstance());
   OptionsPage.registerSubPage(FontSettings.getInstance(),

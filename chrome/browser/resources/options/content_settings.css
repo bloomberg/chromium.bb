@@ -16,3 +16,22 @@ found in the LICENSE file.
   width: 100px;
   margin-right: 20px;
 }
+
+#exceptionColumnHeaders {
+  display: -webkit-box;
+  margin-bottom: 4px;
+  margin-top: 17px;
+  -webkit-margin-start: 3px;
+}
+
+#exceptionColumnHeaders > div {
+  font-weight: bold;
+}
+
+#exceptionPatternColumn {
+  -webkit-box-flex: 1;
+}
+
+#exceptionBehaviorColumn {
+  width: 140px;
+}

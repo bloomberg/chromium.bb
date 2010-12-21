@@ -5133,6 +5133,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_COOKIES_TAB_LABEL" desc="Label for Cookies tab on Content Settings dialog">
         Cookies
       </message>
+      <message name="IDS_COOKIES_HEADER" desc="Header for cookie exception management page on Content Settings dialog">
+        Cookie and Site Data Exceptions
+      </message>
       <message name="IDS_MODIFY_COOKIE_STORING_LABEL" desc="Label at the top of Cookies tab of Content Settings dialog">
         Cookie Settings:
       </message>
@@ -5170,6 +5173,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_IMAGES_TAB_LABEL" desc="Label for Images tab on Content Settings dialog">
         Images
       </message>
+      <message name="IDS_IMAGES_HEADER" desc="Header for image exception management page on Content Settings dialog">
+        Image Exceptions
+      </message>
       <message name="IDS_IMAGES_SETTING_LABEL" desc="A label on top of images tab on Content Settings dialog">
         Image Settings:
       </message>
@@ -5182,6 +5188,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_POPUP_TAB_LABEL" desc="Label for Pop-up Windows tab on Content Settings dialog">
         Pop-ups
       </message>
+      <message name="IDS_POPUP_HEADER" desc="Header for popup exception management page on Content Settings dialog">
+        Pop-up Exceptions
+      </message>
       <message name="IDS_POPUP_SETTING_LABEL" desc="A label on top of Pop-up Windows tab on Content Settings dialog">
         Pop-up Settings:
       </message>
@@ -5193,6 +5202,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_PLUGIN_TAB_LABEL" desc="Label for Plug-ins tab on Content Settings dialog">
         Plug-ins
+      </message>
+      <message name="IDS_PLUGIN_HEADER" desc="Header for plugin exception management page on Content Settings dialog">
+        Plug-in Exceptions
       </message>
       <message name="IDS_PLUGIN_SETTING_LABEL" desc="A label on top of Plug-Ins tab on Content Settings dialog">
         When I encounter plug-ins on a site:
@@ -5212,6 +5224,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_JAVASCRIPT_TAB_LABEL" desc="Label for JavaScript tab on Content Settings dialog">
         JavaScript
       </message>
+      <message name="IDS_JAVASCRIPT_HEADER" desc="Label for JavaScript exception management page on Content Settings dialog">
+        JavaScript Exceptions
+      </message>
       <message name="IDS_JS_SETTING_LABEL" desc="A label on top of JavaScript tab on Content Settings dialog">
         JavaScript Settings:
       </message>
@@ -5223,6 +5238,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_GEOLOCATION_TAB_LABEL" desc="Label for Geolocation tab on Content Settings dialog">
         Location
+      </message>
+      <message name="IDS_GEOLOCATION_HEADER" desc="Label for Geolocation exception management page on Content Settings dialog">
+        Geolocation Exceptions
       </message>
       <message name="IDS_GEOLOCATION_SETTING_LABEL" desc="A label on top of Geolocation tab on Content Settings dialog">
         Location Settings:
@@ -5238,6 +5256,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_NOTIFICATIONS_TAB_LABEL" desc="Label for Notifications tab on Content Settings dialog">
         Notifications
+      </message>
+      <message name="IDS_NOTIFICATIONS_HEADER" desc="Label for Notifications exception management page on Content Settings dialog">
+        Notifications Exceptions
       </message>
       <message name="IDS_NOTIFICATIONS_SETTINGS_BUTTON" desc="Label for the Settings button for Notifications tab of Content Settings dialog.">
         Settings...
@@ -5322,6 +5343,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_EXCEPTIONS_OTR_LABEL" desc="A label informing the user that the table below the label shows incognito-only exceptions">
         Exceptions below only apply to the current incognito session.
+      </message>
+      <message name="IDS_EXCEPTIONS_MANAGE" desc="The label on the button that launches the exceptions management page for a given content type">
+        Manage exceptions...
       </message>
       <message translateable="false" name="IDS_EXCEPTIONS_PATTERN_EXAMPLE" desc="Example pattern when the user is adding a new exception" >
         [*.]example.com

@@ -28,14 +28,8 @@
       <a i18n-values="href:flash_storage_url"
           i18n-content="flash_storage_settings" target="_blank"></a>
 
-      <!-- TODO(estade): put this in a sub-sub-page. -->
-      <div contentType="cookies">
-        <list mode="normal" class="settings-list"></list>
-        <div>
-          <span i18n-content="otr_exceptions_explanation"></span>
-          <list mode="otr" class="settings-list"></list>
-        </div>
-      </div>
+      <button class="exceptionsListButton" contentType="cookies"
+              i18n-content="manage_exceptions"></button>
    </div>
   </section>
 
@@ -43,23 +37,17 @@
   <section>
     <h3 i18n-content="images_tab_label"></h3>
     <div>
-        <label class="radio">
-          <input type="radio" name="images" value="allow">
-          <span i18n-content="images_allow"></span>
-        </label>
-        <label class="radio">
-          <input type="radio" name="images" value="block">
-          <span i18n-content="images_block"></span>
-        </label>
+      <label class="radio">
+        <input type="radio" name="images" value="allow">
+        <span i18n-content="images_allow"></span>
+      </label>
+      <label class="radio">
+        <input type="radio" name="images" value="block">
+        <span i18n-content="images_block"></span>
+      </label>
 
-      <!-- TODO(estade): put this in a sub-sub-page. -->
-      <div contentType="images">
-        <list mode="normal" class="settings-list"></list>
-        <div>
-          <span i18n-content="otr_exceptions_explanation"></span>
-          <list mode="otr" class="settings-list"></list>
-        </div>
-      </div>
+      <button class="exceptionsListButton" contentType="images"
+              i18n-content="manage_exceptions"></button>
     </div>
   </section>
 
@@ -76,14 +64,8 @@
         <span i18n-content="javascript_block"></span>
       </label>
 
-      <!-- TODO(estade): put this in a sub-sub-page. -->
-      <div contentType="javascript">
-        <list mode="normal" class="settings-list"></list>
-        <div>
-          <span i18n-content="otr_exceptions_explanation"></span>
-          <list mode="otr" class="settings-list"></list>
-        </div>
-      </div>
+      <button class="exceptionsListButton" contentType="javascript"
+              i18n-content="manage_exceptions"></button>
     </div>
   </section>
 
@@ -104,14 +86,8 @@
         <span i18n-content="plugins_block"></span>
       </label>
 
-      <!-- TODO(estade): put this in a sub-sub-page. -->
-      <div contentType="plugins">
-        <list mode="normal" class="settings-list"></list>
-        <div>
-          <span i18n-content="otr_exceptions_explanation"></span>
-          <list mode="otr" class="settings-list"></list>
-        </div>
-      </div>
+      <button class="exceptionsListButton" contentType="plugins"
+              i18n-content="manage_exceptions"></button>
 
       <a i18n-content="disable_individual_plugins" id="plugins-tab" href="#"></a>
     </div>
@@ -130,14 +106,8 @@
         <span i18n-content="popups_block"></span>
       </label>
 
-      <!-- TODO(estade): put this in a sub-sub-page. -->
-      <div contentType="popups">
-        <list mode="normal" class="settings-list"></list>
-        <div>
-          <span i18n-content="otr_exceptions_explanation"></span>
-          <list mode="otr" class="settings-list"></list>
-        </div>
-      </div>
+      <button class="exceptionsListButton" contentType="popups"
+              i18n-content="manage_exceptions"></button>
     </div>
   </section>
 
@@ -158,10 +128,8 @@
         <span i18n-content="location_block"></span>
       </label>
 
-      <!-- TODO(estade): put this in a sub-sub-page. -->
-      <div contentType="location">
-        <list mode="normal" class="settings-list"></list>
-      </div>
+      <button class="exceptionsListButton" contentType="location"
+              i18n-content="manage_exceptions"></button>
     </div>
   </section>
 
@@ -182,10 +150,8 @@
         <span i18n-content="notifications_block"></span>
       </label>
 
-      <!-- TODO(estade): put this in a sub-sub-page. -->
-      <div contentType="notifications">
-        <list mode="normal" class="settings-list"></list>
-      </div>
+      <button class="exceptionsListButton" contentType="notifications"
+              i18n-content="manage_exceptions"></button>
     </div>
   </section>
 </div>

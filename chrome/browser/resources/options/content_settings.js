@@ -29,17 +29,15 @@ cr.define('options', function() {
 
       chrome.send('getContentFilterSettings');
 
-      var exceptionsLists = this.pageDiv.querySelectorAll('list');
-      for (var i = 0; i < exceptionsLists.length; i++) {
-        options.contentSettings.ExceptionsList.decorate(exceptionsLists[i]);
+      var exceptionsButtons =
+          this.pageDiv.querySelectorAll('.exceptionsListButton');
+      for (var i = 0; i < exceptionsButtons.length; i++) {
+        exceptionsButtons[i].onclick = function(event) {
+          ContentSettingsExceptionsArea.getInstance().showList(
+              event.target.getAttribute('contentType'));
+          OptionsPage.showPageByName('contentExceptions');
+        };
       }
-      ContentSettings.hideOTRLists();
-
-      this.addEventListener('visibleChange', function(event) {
-        for (var i = 0; i < exceptionsLists.length; i++) {
-          exceptionsLists[i].redraw();
-        }
-      });
 
       // Cookies filter page ---------------------------------------------------
       $('block-third-party-cookies').onclick = function(event) {
@@ -63,12 +61,12 @@ cr.define('options', function() {
 
     /**
      * Handles a hash value in the URL (such as bar in
-     * chrome://options/foo#bar). Overrides the default action of showing an
-     * overlay by instead navigating to a particular subtab.
+     * chrome://options/foo#bar).
      * @param {string} hash The hash value.
      */
     handleHash: function(hash) {
-      // TODO(estade): show subpage for hash.
+      ContentSettingsExceptionsArea.getInstance().showList(hash);
+      OptionsPage.showPageByName('contentExceptions');
     },
   };
 
@@ -110,7 +108,7 @@ cr.define('options', function() {
   ContentSettings.setOTRExceptions = function(type, list) {
     var exceptionsList =
         document.querySelector('div[contentType=' + type + ']' +
-                               ' div list[mode=normal]');
+                               ' list[mode=otr]');
 
     exceptionsList.parentNode.classList.remove('hidden');
 
@@ -119,25 +117,6 @@ cr.define('options', function() {
       exceptionsList.addException(list[i]);
     }
     exceptionsList.redraw();
-  };
-
-  /**
-   * Called when the last incognito window is closed.
-   */
-  ContentSettings.OTRProfileDestroyed = function() {
-    this.hideOTRLists();
-  };
-
-  /**
-   * Clears and hides the incognito exceptions lists.
-   */
-  ContentSettings.hideOTRLists = function() {
-    var otrLists = document.querySelectorAll('list[mode=otr]');
-
-    for (var i = 0; i < otrLists.length; i++) {
-      otrLists[i].reset();
-      otrLists[i].parentNode.classList.add('hidden');
-    }
   };
 
   /**
