@@ -27,6 +27,7 @@ CookieMonsterTest.GarbageCollectionTriggers
 
 # Fail for unknown reason; see http://crbug.com/67599
 CertVerifierTest.*
+X509CertificateTest.IntermediateCARequireExplicitPolicy
 
 #########################################
 # These tests fail if you don't have our SSL certificate installed.
