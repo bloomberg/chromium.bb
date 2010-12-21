@@ -12,6 +12,7 @@
 #import "chrome/browser/autofill/autofill_address_sheet_controller_mac.h"
 #import "chrome/browser/autofill/autofill_credit_card_model_mac.h"
 #import "chrome/browser/autofill/autofill_credit_card_sheet_controller_mac.h"
+#import "chrome/browser/autofill/autofill-inl.h"
 #import "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/browser_process.h"
 #import "chrome/browser/ui/cocoa/window_size_autosaver.h"
@@ -93,6 +94,14 @@ static base::LazyInstance<ProfileControllerMap> g_profile_controller_map(
 // Called upon changes to AutoFill preferences that should be reflected in the
 // UI.
 - (void)preferenceDidChange:(const std::string&)preferenceName;
+
+// Adjust the selected index when underlying data changes.
+// Selects the previous row if possible, else current row, else deselect all.
+- (void) adjustSelectionOnDelete:(NSInteger)selectedRow;
+
+// Adjust the selected index when underlying data changes.
+// Selects the current row if possible, else previous row, else deselect all.
+- (void) adjustSelectionOnReload:(NSInteger)selectedRow;
 
 // Returns true if |row| is an index to a valid profile in |tableView_|, and
 // false otherwise.
@@ -332,7 +341,7 @@ class PreferenceObserver : public NotificationObserver {
     // Create a new address and save it to the |profiles_| list.
     AutoFillProfile newAddress;
     [addressSheetController copyModelToProfile:&newAddress];
-    if (!newAddress.IsEmpty()) {
+    if (!newAddress.IsEmpty() && !FindByContents(profiles_, newAddress)) {
       profiles_.push_back(newAddress);
 
       // Saving will save to the PDM and the table will refresh when PDM sends
@@ -359,7 +368,8 @@ class PreferenceObserver : public NotificationObserver {
     // Create a new credit card and save it to the |creditCards_| list.
     CreditCard newCreditCard;
     [creditCardSheetController copyModelToCreditCard:&newCreditCard];
-    if (!newCreditCard.IsEmpty()) {
+    if (!newCreditCard.IsEmpty() &&
+        !FindByContents(creditCards_, newCreditCard)) {
       creditCards_.push_back(newCreditCard);
 
       // Saving will save to the PDM and the table will refresh when PDM sends
@@ -400,15 +410,7 @@ class PreferenceObserver : public NotificationObserver {
   }
 
   // Select the previous row if possible, else current row, else deselect all.
-  if ([self tableView:tableView_ shouldSelectRow:selectedRow-1]) {
-    [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow-1]
-            byExtendingSelection:NO];
-  } else if ([self tableView:tableView_ shouldSelectRow:selectedRow]) {
-    [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow]
-            byExtendingSelection:NO];
-  } else {
-    [tableView_ deselectAll:self];
-  }
+  [self adjustSelectionOnDelete:selectedRow];
 
   // Saving will save to the PDM and the table will refresh when PDM sends
   // notification that the underlying model has changed.
@@ -799,6 +801,7 @@ class PreferenceObserver : public NotificationObserver {
        iter != creditCards.end(); ++iter)
     creditCards_.push_back(**iter);
 
+  [self adjustSelectionOnReload:[tableView_ selectedRow]];
   [tableView_ reloadData];
 }
 
@@ -812,6 +815,30 @@ class PreferenceObserver : public NotificationObserver {
     [self setAuxiliaryEnabled:auxiliaryEnabled_.GetValue()];
   } else {
     NOTREACHED();
+  }
+}
+
+- (void) adjustSelectionOnDelete:(NSInteger)selectedRow {
+  if ([self tableView:tableView_ shouldSelectRow:selectedRow-1]) {
+    [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow-1]
+            byExtendingSelection:NO];
+  } else if ([self tableView:tableView_ shouldSelectRow:selectedRow]) {
+    [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow]
+            byExtendingSelection:NO];
+  } else {
+    [tableView_ deselectAll:self];
+  }
+}
+
+- (void) adjustSelectionOnReload:(NSInteger)selectedRow {
+  if ([self tableView:tableView_ shouldSelectRow:selectedRow]) {
+    [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow]
+            byExtendingSelection:NO];
+  } else if ([self tableView:tableView_ shouldSelectRow:selectedRow-1]) {
+    [tableView_ selectRowIndexes:[NSIndexSet indexSetWithIndex:selectedRow-1]
+            byExtendingSelection:NO];
+  } else {
+    [tableView_ deselectAll:self];
   }
 }
 

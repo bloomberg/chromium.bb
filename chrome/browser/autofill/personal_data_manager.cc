@@ -11,6 +11,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_field.h"
+#include "chrome/browser/autofill/autofill-inl.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/browser_thread.h"
@@ -28,22 +29,15 @@ const int kMinProfileImportSize = 3;
 const int kMinCreditCardImportSize = 2;
 
 template<typename T>
-class FormGroupGUIDMatchesFunctor {
+class FormGroupMatchesByGUIDFunctor {
  public:
-  explicit FormGroupGUIDMatchesFunctor(const std::string& guid) : guid_(guid) {}
+  explicit FormGroupMatchesByGUIDFunctor(const std::string& guid)
+      : guid_(guid) {
+  }
 
   bool operator()(const T& form_group) {
     return form_group.guid() == guid_;
   }
-
- private:
-  std::string guid_;
-};
-
-template<typename T>
-class FormGroupGUIDMatchesFunctor<T *> {
- public:
-  explicit FormGroupGUIDMatchesFunctor(const std::string& guid) : guid_(guid) {}
 
   bool operator()(const T* form_group) {
     return form_group->guid() == guid_;
@@ -52,6 +46,14 @@ class FormGroupGUIDMatchesFunctor<T *> {
  private:
   std::string guid_;
 };
+
+template<typename T, typename C>
+bool FindByGUID(const C& container, const std::string& guid) {
+  return std::find_if(
+      container.begin(),
+      container.end(),
+      FormGroupMatchesByGUIDFunctor<T>(guid)) != container.end();
+}
 
 template<typename T>
 class DereferenceFunctor {
@@ -65,12 +67,6 @@ class DereferenceFunctor {
 template<typename T>
 T* address_of(T& v) {
   return &v;
-}
-
-template<typename T, typename C>
-bool FindByGUID(const C& container, const std::string& guid) {
-  return std::find_if(container.begin(), container.end(),
-                      FormGroupGUIDMatchesFunctor<T>(guid)) != container.end();
 }
 
 }  // namespace
@@ -309,14 +305,15 @@ void PersonalDataManager::SetProfiles(std::vector<AutoFillProfile>* profiles) {
   // Update the web database with the existing profiles.
   for (std::vector<AutoFillProfile>::iterator iter = profiles->begin();
        iter != profiles->end(); ++iter) {
-    if (FindByGUID<AutoFillProfile*>(web_profiles_, iter->guid()))
+    if (FindByGUID<AutoFillProfile>(web_profiles_, iter->guid()))
       wds->UpdateAutoFillProfileGUID(*iter);
   }
 
-  // Add the new profiles to the web database.
+  // Add the new profiles to the web database.  Don't add a duplicate.
   for (std::vector<AutoFillProfile>::iterator iter = profiles->begin();
        iter != profiles->end(); ++iter) {
-    if (!FindByGUID<AutoFillProfile*>(web_profiles_, iter->guid()))
+    if (!FindByGUID<AutoFillProfile>(web_profiles_, iter->guid()) &&
+        !FindByContents(web_profiles_, *iter))
       wds->AddAutoFillProfileGUID(*iter);
   }
 
@@ -362,14 +359,15 @@ void PersonalDataManager::SetCreditCards(
   // Update the web database with the existing credit cards.
   for (std::vector<CreditCard>::iterator iter = credit_cards->begin();
        iter != credit_cards->end(); ++iter) {
-    if (FindByGUID<CreditCard*>(credit_cards_, iter->guid()))
+    if (FindByGUID<CreditCard>(credit_cards_, iter->guid()))
       wds->UpdateCreditCardGUID(*iter);
   }
 
-  // Add the new credit cards to the web database.
+  // Add the new credit cards to the web database.  Don't add a duplicate.
   for (std::vector<CreditCard>::iterator iter = credit_cards->begin();
        iter != credit_cards->end(); ++iter) {
-    if (!FindByGUID<CreditCard*>(credit_cards_, iter->guid()))
+    if (!FindByGUID<CreditCard>(credit_cards_, iter->guid()) &&
+        !FindByContents(credit_cards_, *iter))
       wds->AddCreditCardGUID(*iter);
   }
 
@@ -479,7 +477,7 @@ void PersonalDataManager::RemoveProfile(const std::string& guid) {
   // Remove the profile that matches |guid|.
   profiles.erase(
       std::remove_if(profiles.begin(), profiles.end(),
-                     FormGroupGUIDMatchesFunctor<AutoFillProfile>(guid)),
+                     FormGroupMatchesByGUIDFunctor<AutoFillProfile>(guid)),
       profiles.end());
 
   SetProfiles(&profiles);
@@ -535,7 +533,7 @@ void PersonalDataManager::RemoveCreditCard(const std::string& guid) {
   // Remove the credit card that matches |guid|.
   credit_cards.erase(
       std::remove_if(credit_cards.begin(), credit_cards.end(),
-                     FormGroupGUIDMatchesFunctor<CreditCard>(guid)),
+                     FormGroupMatchesByGUIDFunctor<CreditCard>(guid)),
       credit_cards.end());
 
   SetCreditCards(&credit_cards);
