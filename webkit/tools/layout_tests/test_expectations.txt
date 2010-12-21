@@ -8,3 +8,7 @@
 BUGCR64371 WIN RELEASE : http/tests/appcache/online-whitelist.html = TEXT
 BUGPKASTING WIN MAC DEBUG SLOW: fast/encoding/parser-tests.html = PASS
 BUGCR67463 MAC : editing/selection/caret-mode-paragraph-keys-navigation.html = TEXT
+
+// Fixed upstream at 74387
+BUGTONYG MAC : inspector/console-dir-global.html = TEXT
+BUGTONYG MAC : inspector/debugger-expand-scope.html = TEXT
