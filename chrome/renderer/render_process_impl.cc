@@ -35,8 +35,8 @@
 #include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "skia/ext/platform_canvas.h"
-#include "webkit/plugins/npapi/plugin_instance.h"
-#include "webkit/plugins/npapi/plugin_lib.h"
+#include "webkit/glue/plugins/plugin_instance.h"
+#include "webkit/glue/plugins/plugin_lib.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_MACOSX)

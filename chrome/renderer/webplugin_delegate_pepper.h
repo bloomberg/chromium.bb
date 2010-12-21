@@ -22,21 +22,19 @@
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserCompletion.h"
-#include "webkit/plugins/npapi/webplugin_delegate.h"
+#include "webkit/glue/plugins/webplugin_delegate.h"
 
 class FilePath;
 class RenderView;
 class WebCursor;
 class WebPluginDelegateProxy;
 
-namespace webkit {
-namespace npapi {
+namespace NPAPI {
 class PluginInstance;
-}
 }
 
 // An implementation of WebPluginDelegate for Pepper in-process plugins.
-class WebPluginDelegatePepper : public webkit::npapi::WebPluginDelegate,
+class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate,
                                 public WebKit::WebFileChooserCompletion {
  public:
   static WebPluginDelegatePepper* Create(
@@ -44,7 +42,7 @@ class WebPluginDelegatePepper : public webkit::npapi::WebPluginDelegate,
       const std::string& mime_type,
       const base::WeakPtr<RenderView>& render_view);
 
-  webkit::npapi::PluginInstance* instance() { return instance_.get(); }
+  NPAPI::PluginInstance* instance() { return instance_.get(); }
 
   // WebKit::WebFileChooserCompletion implementation.
   virtual void didChooseFile(
@@ -54,7 +52,7 @@ class WebPluginDelegatePepper : public webkit::npapi::WebPluginDelegate,
   virtual bool Initialize(const GURL& url,
                           const std::vector<std::string>& arg_names,
                           const std::vector<std::string>& arg_values,
-                          webkit::npapi::WebPlugin* plugin,
+                          webkit_glue::WebPlugin* plugin,
                           bool load_manually);
   virtual void PluginDestroyed();
   virtual void UpdateGeometry(const gfx::Rect& window_rect,
@@ -81,9 +79,9 @@ class WebPluginDelegatePepper : public webkit::npapi::WebPluginDelegate,
   virtual void DidFinishManualLoading();
   virtual void DidManualLoadFail();
   virtual void InstallMissingPlugin();
-  virtual webkit::npapi::WebPluginResourceClient* CreateResourceClient(
+  virtual webkit_glue::WebPluginResourceClient* CreateResourceClient(
       unsigned long resource_id, const GURL& url, int notify_id);
-  virtual webkit::npapi::WebPluginResourceClient* CreateSeekableResourceClient(
+  virtual webkit_glue::WebPluginResourceClient* CreateSeekableResourceClient(
       unsigned long resource_id, int range_request_id);
   virtual bool StartFind(const string16& search_text,
                          bool case_sensitive,
@@ -210,7 +208,7 @@ class WebPluginDelegatePepper : public webkit::npapi::WebPluginDelegate,
  private:
   WebPluginDelegatePepper(
       const base::WeakPtr<RenderView>& render_view,
-      webkit::npapi::PluginInstance *instance);
+      NPAPI::PluginInstance *instance);
   ~WebPluginDelegatePepper();
 
   // Set a task that calls the repaint callback the next time the window
@@ -277,8 +275,8 @@ class WebPluginDelegatePepper : public webkit::npapi::WebPluginDelegate,
 
   base::WeakPtr<RenderView> render_view_;
 
-  webkit::npapi::WebPlugin* plugin_;
-  scoped_refptr<webkit::npapi::PluginInstance> instance_;
+  webkit_glue::WebPlugin* plugin_;
+  scoped_refptr<NPAPI::PluginInstance> instance_;
 
   NPWindow window_;
   gfx::Rect window_rect_;

@@ -172,18 +172,18 @@
 #include "webkit/glue/image_resource_fetcher.h"
 #include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/password_form_dom_manager.h"
+#include "webkit/glue/plugins/default_plugin_shared.h"
+#include "webkit/glue/plugins/plugin_list.h"
+#include "webkit/glue/plugins/webplugin_delegate.h"
+#include "webkit/glue/plugins/webplugin_delegate_impl.h"
+#include "webkit/glue/plugins/webplugin_impl.h"
+#include "webkit/glue/plugins/webview_plugin.h"
 #include "webkit/glue/resource_fetcher.h"
 #include "webkit/glue/site_isolation_metrics.h"
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webmediaplayer_impl.h"
-#include "webkit/plugins/npapi/default_plugin_shared.h"
-#include "webkit/plugins/npapi/plugin_list.h"
-#include "webkit/plugins/npapi/webplugin_delegate.h"
-#include "webkit/plugins/npapi/webplugin_delegate_impl.h"
-#include "webkit/plugins/npapi/webplugin_impl.h"
-#include "webkit/plugins/npapi/webview_plugin.h"
 #include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
 
 #if defined(OS_WIN)
@@ -842,7 +842,7 @@ void RenderView::PluginCrashed(const FilePath& plugin_path) {
 
 WebPlugin* RenderView::CreatePluginNoCheck(WebFrame* frame,
                                            const WebPluginParams& params) {
-  webkit::npapi::WebPluginInfo info;
+  WebPluginInfo info;
   bool found;
   ContentSetting setting;
   std::string mime_type;
@@ -2026,15 +2026,14 @@ void RenderView::OnMissingPluginStatus(
 #if defined(OS_WIN)
   if (!first_default_plugin_) {
     // Show the InfoBar for the first available plugin.
-    if (status == webkit::npapi::default_plugin::MISSING_PLUGIN_AVAILABLE) {
+    if (status == default_plugin::MISSING_PLUGIN_AVAILABLE) {
       first_default_plugin_ = delegate->AsWeakPtr();
       Send(new ViewHostMsg_MissingPluginStatus(routing_id_, status));
     }
   } else {
     // Closes the InfoBar if user clicks on the plugin (instead of the InfoBar)
     // to start the download/install.
-    if (status ==
-        webkit::npapi::default_plugin::MISSING_PLUGIN_USER_STARTED_DOWNLOAD) {
+    if (status == default_plugin::MISSING_PLUGIN_USER_STARTED_DOWNLOAD) {
       Send(new ViewHostMsg_MissingPluginStatus(routing_id_, status));
     }
   }
@@ -2755,7 +2754,7 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
   bool found = false;
   ContentSetting plugin_setting = CONTENT_SETTING_DEFAULT;
   CommandLine* cmd = CommandLine::ForCurrentProcess();
-  webkit::npapi::WebPluginInfo info;
+  WebPluginInfo info;
   GURL url(params.url);
   std::string actual_mime_type;
   Send(new ViewHostMsg_GetPluginInfo(url,
@@ -2770,8 +2769,8 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
     return NULL;
   DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);
 
-  const webkit::npapi::PluginGroup* group =
-      webkit::npapi::PluginList::Singleton()->GetPluginGroup(info);
+  const PluginGroup* group =
+      NPAPI::PluginList::Singleton()->GetPluginGroup(info);
   DCHECK(group != NULL);
 
   if (cmd->HasSwitch(switches::kBlockOutdatedPlugins) &&
@@ -2790,7 +2789,7 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
 
   ContentSetting host_setting =
       current_content_settings_.settings[CONTENT_SETTINGS_TYPE_PLUGINS];
-  if (info.path.value() == webkit::npapi::kDefaultPluginLibraryName ||
+  if (info.path.value() == kDefaultPluginLibraryName ||
       plugin_setting == CONTENT_SETTING_ALLOW ||
       host_setting == CONTENT_SETTING_ALLOW) {
     scoped_refptr<webkit::ppapi::PluginModule> pepper_module(
@@ -3940,7 +3939,7 @@ void RenderView::openFileSystem(
 
 // webkit_glue::WebPluginPageDelegate -----------------------------------------
 
-webkit::npapi::WebPluginDelegate* RenderView::CreatePluginDelegate(
+webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
     const FilePath& file_path,
     const std::string& mime_type) {
   if (!PluginChannelHost::IsListening())
@@ -4008,7 +4007,7 @@ webkit::npapi::WebPluginDelegate* RenderView::CreatePluginDelegate(
       return pepper_plugin;
     } else {
 #if defined(OS_WIN)  // In-proc plugins aren't supported on Linux or Mac.
-      return webkit::npapi::WebPluginDelegateImpl::Create(
+      return WebPluginDelegateImpl::Create(
           file_path, mime_type, gfx::NativeViewFromId(host_window_));
 #else
       NOTIMPLEMENTED();
@@ -4035,7 +4034,7 @@ void RenderView::WillDestroyPluginWindow(gfx::PluginWindowHandle window) {
   CleanupWindowInPluginMoves(window);
 }
 
-void RenderView::DidMovePlugin(const webkit::npapi::WebPluginGeometry& move) {
+void RenderView::DidMovePlugin(const webkit_glue::WebPluginGeometry& move) {
   SchedulePluginMove(move);
 }
 
@@ -4437,19 +4436,18 @@ WebPlugin* RenderView::CreatePepperPlugin(
       pepper_module, params, pepper_delegate_.AsWeakPtr());
 }
 
-WebPlugin* RenderView::CreateNPAPIPlugin(
-    WebFrame* frame,
-    const WebPluginParams& params,
-    const FilePath& path,
-    const std::string& mime_type) {
-  return new webkit::npapi::WebPluginImpl(
+WebPlugin* RenderView::CreateNPAPIPlugin(WebFrame* frame,
+                                         const WebPluginParams& params,
+                                         const FilePath& path,
+                                         const std::string& mime_type) {
+  return new webkit_glue::WebPluginImpl(
       frame, params, path, mime_type, AsWeakPtr());
 }
 
 WebPlugin* RenderView::CreatePluginPlaceholder(
     WebFrame* frame,
     const WebPluginParams& params,
-    const webkit::npapi::PluginGroup& group,
+    const PluginGroup& group,
     int resource_id,
     int message_id) {
   // |blocked_plugin| will delete itself when the WebViewPlugin

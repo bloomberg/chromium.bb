@@ -30,8 +30,8 @@
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/password_form_dom_manager.h"
+#include "webkit/glue/plugins/webplugininfo.h"
 #include "webkit/glue/webdropdata.h"
-#include "webkit/plugins/npapi/webplugininfo.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -1362,8 +1362,8 @@ IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_CookiesEnabled,
 
 // Used to get the list of plugins
 IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetPlugins,
-    bool /* refresh*/,
-    std::vector<webkit::npapi::WebPluginInfo> /* plugins */)
+                            bool /* refresh*/,
+                            std::vector<WebPluginInfo> /* plugins */)
 
 // Return information about a plugin for the given URL and MIME
 // type. If there is no matching plugin, |found| is false.  If
@@ -1391,7 +1391,7 @@ IPC_SYNC_MESSAGE_CONTROL3_4(ViewHostMsg_GetPluginInfo,
                             GURL /* policy_url */,
                             std::string /* mime_type */,
                             bool /* found */,
-                            webkit::npapi::WebPluginInfo /* plugin info */,
+                            WebPluginInfo /* plugin info */,
                             ContentSetting /* setting */,
                             std::string /* actual_mime_type */)
 
@@ -1535,7 +1535,7 @@ IPC_SYNC_MESSAGE_CONTROL2_2(ViewHostMsg_OpenChannelToPlugin,
                             GURL /* url */,
                             std::string /* mime_type */,
                             IPC::ChannelHandle /* channel_handle */,
-                            webkit::npapi::WebPluginInfo /* info */)
+                            WebPluginInfo /* info */)
 
 // A renderer sends this to the browser process when it wants to
 // create a pepper plugin.  The browser will create the plugin process if

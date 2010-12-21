@@ -15,7 +15,7 @@
 #include "grit/webkit_strings.h"
 #include "unicode/locid.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/plugins/npapi/default_plugin_shared.h"
+#include "webkit/glue/plugins/default_plugin_shared.h"
 
 static const int TOOLTIP_MAX_WIDTH = 500;
 
@@ -250,8 +250,7 @@ void PluginInstallerImpl::URLNotify(const char* url, NPReason reason) {
     if (plugin_available) {
       DVLOG(1) << "Plugin available for mime type " << mime_type_;
       DisplayAvailablePluginStatus();
-      NotifyPluginStatus(
-          webkit::npapi::default_plugin::MISSING_PLUGIN_AVAILABLE);
+      NotifyPluginStatus(default_plugin::MISSING_PLUGIN_AVAILABLE);
     } else {
       DLOG(WARNING) << "No plugin available for mime type " << mime_type_;
       DisplayStatus(IDS_DEFAULT_PLUGIN_NO_PLUGIN_AVAILABLE_MSG);
@@ -261,8 +260,7 @@ void PluginInstallerImpl::URLNotify(const char* url, NPReason reason) {
 
 int16 PluginInstallerImpl::NPP_HandleEvent(void* event) {
   NPEvent* npp_event = static_cast<NPEvent*>(event);
-  if (npp_event->event ==
-          webkit::npapi::default_plugin::kInstallMissingPluginMessage) {
+  if (npp_event->event == default_plugin::kInstallMissingPluginMessage) {
     // We could get this message because InfoBar may not be in sync with our
     // internal processing. So we need to check the status.
     if (plugin_installer_state() == PluginListDownloaded) {
@@ -529,8 +527,7 @@ LRESULT PluginInstallerImpl::OnLButtonDown(UINT message, WPARAM wparam,
     return 0;
   if (plugin_installer_state() == PluginListDownloaded) {
     ShowInstallDialog();
-    NotifyPluginStatus(
-        webkit::npapi::default_plugin::MISSING_PLUGIN_USER_STARTED_DOWNLOAD);
+    NotifyPluginStatus(default_plugin::MISSING_PLUGIN_USER_STARTED_DOWNLOAD);
   } else if (plugin_installer_state_ == PluginInstallerLaunchSuccess) {
     DCHECK(default_plugin::g_browser);
     DCHECK(default_plugin::g_browser->geturl);
@@ -645,6 +642,6 @@ void PluginInstallerImpl::NotifyPluginStatus(int status) {
   default_plugin::g_browser->getvalue(
       instance_,
       static_cast<NPNVariable>(
-          webkit::npapi::default_plugin::kMissingPluginStatusStart + status),
+          default_plugin::kMissingPluginStatusStart + status),
       NULL);
 }

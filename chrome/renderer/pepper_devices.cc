@@ -9,8 +9,8 @@
 #include "chrome/renderer/webplugin_delegate_pepper.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "webkit/plugins/npapi/plugin_instance.h"
-#include "webkit/plugins/npapi/webplugin.h"
+#include "webkit/glue/plugins/plugin_instance.h"
+#include "webkit/glue/plugins/webplugin.h"
 
 namespace {
 

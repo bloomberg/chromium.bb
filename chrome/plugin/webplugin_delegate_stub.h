@@ -29,11 +29,7 @@ namespace WebKit {
 class WebInputEvent;
 }
 
-namespace webkit {
-namespace npapi {
 class WebPluginDelegateImpl;
-}
-}
 
 // Converts the IPC messages from WebPluginDelegateProxy into calls to the
 // actual WebPluginDelegateImpl object.
@@ -115,7 +111,7 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
 
   scoped_refptr<PluginChannel> channel_;
 
-  webkit::npapi::WebPluginDelegateImpl* delegate_;
+  WebPluginDelegateImpl* delegate_;
   WebPluginProxy* webplugin_;
   bool in_destructor_;
 

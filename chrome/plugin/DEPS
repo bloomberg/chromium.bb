@@ -5,7 +5,7 @@ include_rules = [
   "+skia/ext",
   "+third_party/npapi",
   "+webkit/glue",
-  "+webkit/plugins",
+  "+webkit/glue/plugins",
   "+grit",  # For generated headers
 ]
 

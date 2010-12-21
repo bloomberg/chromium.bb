@@ -24,23 +24,17 @@
 #include "chrome/common/chrome_plugin_api.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
-#include "webkit/plugins/npapi/webplugin.h"
+#include "webkit/glue/plugins/webplugin.h"
 
 class PluginChannel;
-
-namespace webkit {
-namespace npapi {
 class WebPluginDelegateImpl;
-}
-}
-
 #if defined(OS_MACOSX)
 class WebPluginAcceleratedSurfaceProxy;
 #endif
 
 // This is an implementation of WebPlugin that proxies all calls to the
 // renderer.
-class WebPluginProxy : public webkit::npapi::WebPlugin {
+class WebPluginProxy : public webkit_glue::WebPlugin {
  public:
   // Creates a new proxy for WebPlugin, using the given sender to send the
   // marshalled WebPlugin calls.
@@ -51,7 +45,7 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
                  int host_render_view_routing_id);
   ~WebPluginProxy();
 
-  void set_delegate(webkit::npapi::WebPluginDelegateImpl* d) { delegate_ = d; }
+  void set_delegate(WebPluginDelegateImpl* d) { delegate_ = d; }
 
   // WebPlugin overrides
   virtual void SetWindow(gfx::PluginWindowHandle window);
@@ -99,7 +93,7 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
 
   // Returns a WebPluginResourceClient object given its id, or NULL if no
   // object with that id exists.
-  webkit::npapi::WebPluginResourceClient* GetResourceClient(int id);
+  webkit_glue::WebPluginResourceClient* GetResourceClient(int id);
 
   // Returns the id of the renderer that contains this plugin.
   int GetRendererId();
@@ -117,7 +111,7 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
 
   // Notification received on a plugin issued resource request creation.
   void OnResourceCreated(int resource_id,
-                         webkit::npapi::WebPluginResourceClient* client);
+                         webkit_glue::WebPluginResourceClient* client);
 
   virtual void HandleURLRequest(const char* url,
                                 const char* method,
@@ -143,7 +137,7 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
   virtual void SetDeferResourceLoading(unsigned long resource_id, bool defer);
   virtual bool IsOffTheRecord();
   virtual void ResourceClientDeleted(
-      webkit::npapi::WebPluginResourceClient* resource_client);
+      webkit_glue::WebPluginResourceClient* resource_client);
   gfx::NativeViewId containing_window() { return containing_window_; }
 
 #if defined(OS_MACOSX)
@@ -151,7 +145,7 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
 
   virtual void BindFakePluginWindowHandle(bool opaque);
 
-  virtual webkit::npapi::WebPluginAcceleratedSurface* GetAcceleratedSurface();
+  virtual webkit_glue::WebPluginAcceleratedSurface* GetAcceleratedSurface();
 
   // Tell the browser (via the renderer) to invalidate because the
   // accelerated buffers have changed.
@@ -195,7 +189,7 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
                            const TransportDIB::Handle& background_buffer,
                            const gfx::Rect& window_rect);
 
-  typedef base::hash_map<int, webkit::npapi::WebPluginResourceClient*>
+  typedef base::hash_map<int, webkit_glue::WebPluginResourceClient*>
       ResourceClientMap;
   ResourceClientMap resource_clients_;
 
@@ -204,7 +198,7 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
   uint32 cp_browsing_context_;
   NPObject* window_npobject_;
   NPObject* plugin_element_;
-  webkit::npapi::WebPluginDelegateImpl* delegate_;
+  WebPluginDelegateImpl* delegate_;
   gfx::Rect damaged_rect_;
   bool waiting_for_paint_;
   gfx::NativeViewId containing_window_;

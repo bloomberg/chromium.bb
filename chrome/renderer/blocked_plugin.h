@@ -11,32 +11,26 @@
 #include "chrome/renderer/custom_menu_listener.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
 #include "webkit/glue/cpp_bound_class.h"
-#include "webkit/plugins/npapi/webview_plugin.h"
+#include "webkit/glue/plugins/webview_plugin.h"
 
 class GURL;
+class PluginGroup;
 class RenderView;
 
-
-namespace webkit {
-namespace npapi {
-class PluginGroup;
-}
-}
-
 class BlockedPlugin : public CppBoundClass,
-                      public webkit::npapi::WebViewPlugin::Delegate,
+                      public WebViewPlugin::Delegate,
                       public NotificationObserver,
                       public CustomMenuListener {
  public:
   BlockedPlugin(RenderView* render_view,
                 WebKit::WebFrame* frame,
-                const webkit::npapi::PluginGroup& info,
+                const PluginGroup& info,
                 const WebKit::WebPluginParams& params,
                 const WebPreferences& settings,
                 int template_id,
                 const string16& message);
 
-  webkit::npapi::WebViewPlugin* plugin() { return plugin_; }
+  WebViewPlugin* plugin() { return plugin_; }
 
   // WebViewPlugin::Delegate methods:
   virtual void BindWebFrame(WebKit::WebFrame* frame);
@@ -68,7 +62,7 @@ class BlockedPlugin : public CppBoundClass,
   RenderView* render_view_;
   WebKit::WebFrame* frame_;
   WebKit::WebPluginParams plugin_params_;
-  webkit::npapi::WebViewPlugin* plugin_;
+  WebViewPlugin* plugin_;
   // The name of the plugin that was blocked.
   string16 name_;
 

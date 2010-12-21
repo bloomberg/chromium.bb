@@ -22,9 +22,9 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
+#include "webkit/glue/plugins/plugin_group.h"
+#include "webkit/glue/plugins/webview_plugin.h"
 #include "webkit/glue/webpreferences.h"
-#include "webkit/plugins/npapi/plugin_group.h"
-#include "webkit/plugins/npapi/webview_plugin.h"
 
 using WebKit::WebContextMenuData;
 using WebKit::WebFrame;
@@ -42,7 +42,7 @@ static const unsigned kMenuActionRemove = 2;
 
 BlockedPlugin::BlockedPlugin(RenderView* render_view,
                              WebFrame* frame,
-                             const webkit::npapi::PluginGroup& info,
+                             const PluginGroup& info,
                              const WebPluginParams& params,
                              const WebPreferences& preferences,
                              int template_id,
@@ -65,10 +65,10 @@ BlockedPlugin::BlockedPlugin(RenderView* render_view,
   std::string html_data = jstemplate_builder::GetTemplatesHtml(
       template_html, &values, "t");
 
-  plugin_ = webkit::npapi::WebViewPlugin::Create(this,
-                                                 preferences,
-                                                 html_data,
-                                                 GURL(kBlockedPluginDataURL));
+  plugin_ = WebViewPlugin::Create(this,
+                                  preferences,
+                                  html_data,
+                                  GURL(kBlockedPluginDataURL));
 
   registrar_.Add(this,
                  NotificationType::SHOULD_LOAD_PLUGINS,

@@ -35,13 +35,13 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURLError.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/glue/media/video_renderer_impl.h"
+#include "webkit/glue/plugins/plugin_list.h"
+#include "webkit/glue/plugins/webplugin_impl.h"
+#include "webkit/glue/plugins/webplugin_page_delegate.h"
+#include "webkit/glue/plugins/webplugininfo.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webkitclient_impl.h"
 #include "webkit/glue/webmediaplayer_impl.h"
-#include "webkit/plugins/npapi/plugin_list.h"
-#include "webkit/plugins/npapi/webplugin_impl.h"
-#include "webkit/plugins/npapi/webplugin_page_delegate.h"
-#include "webkit/plugins/npapi/webplugininfo.h"
 #include "webkit/support/platform_support.h"
 #include "webkit/support/test_webplugin_page_delegate.h"
 #include "webkit/support/test_webkit_client.h"
@@ -145,14 +145,14 @@ class TestEnvironment {
 class WebPluginImplWithPageDelegate
     : public webkit_support::TestWebPluginPageDelegate,
       public base::SupportsWeakPtr<WebPluginImplWithPageDelegate>,
-      public webkit::npapi::WebPluginImpl {
+      public webkit_glue::WebPluginImpl {
  public:
   WebPluginImplWithPageDelegate(WebFrame* frame,
                                 const WebPluginParams& params,
                                 const FilePath& path,
                                 const std::string& mime_type)
       : webkit_support::TestWebPluginPageDelegate(),
-        webkit::npapi::WebPluginImpl(
+        webkit_glue::WebPluginImpl(
             frame, params, path, mime_type, AsWeakPtr()) {}
   virtual ~WebPluginImplWithPageDelegate() {}
  private:
@@ -250,9 +250,9 @@ WebKit::WebKitClient* GetWebKitClient() {
 WebPlugin* CreateWebPlugin(WebFrame* frame,
                            const WebPluginParams& params) {
   const bool kAllowWildcard = true;
-  webkit::npapi::WebPluginInfo info;
+  WebPluginInfo info;
   std::string actual_mime_type;
-  if (!webkit::npapi::PluginList::Singleton()->GetPluginInfo(
+  if (!NPAPI::PluginList::Singleton()->GetPluginInfo(
           params.url, params.mimeType.utf8(), kAllowWildcard, &info,
           &actual_mime_type) || !info.enabled) {
     return NULL;

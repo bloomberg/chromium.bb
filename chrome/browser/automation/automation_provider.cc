@@ -102,6 +102,7 @@
 #include "chrome/browser/automation/ui_controls.h"
 #include "views/event.h"
 #include "webkit/glue/password_form.h"
+#include "webkit/glue/plugins/plugin_list.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/external_tab_container_win.h"

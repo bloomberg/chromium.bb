@@ -6,7 +6,7 @@
 #define CHROME_PLUGIN_WEBPLUGIN_ACCELERATED_SURFACE_PROXY_H_
 #pragma once
 
-#include "webkit/plugins/npapi/webplugin_accelerated_surface_mac.h"
+#include "webkit/glue/plugins/webplugin_accelerated_surface_mac.h"
 
 class WebPluginProxy;
 class AcceleratedSurface;
@@ -14,7 +14,7 @@ class AcceleratedSurface;
 // Out-of-process implementation of WebPluginAcceleratedSurface that proxies
 // calls through a WebPluginProxy.
 class WebPluginAcceleratedSurfaceProxy
-    : public webkit::npapi::WebPluginAcceleratedSurface {
+    : public webkit_glue::WebPluginAcceleratedSurface {
  public:
   // Creates a new WebPluginAcceleratedSurfaceProxy that uses plugin_proxy
   // to proxy calls. plugin_proxy must outlive this object.

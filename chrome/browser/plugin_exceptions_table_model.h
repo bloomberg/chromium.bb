@@ -13,7 +13,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/remove_rows_table_model.h"
 #include "chrome/common/notification_observer.h"
-#include "webkit/plugins/npapi/plugin_list.h"
+#include "webkit/glue/plugins/plugin_list.h"
 
 struct WebPluginInfo;
 
@@ -48,8 +48,7 @@ class PluginExceptionsTableModel : public RemoveRowsTableModel,
 
  protected:
   // Subclasses can override this method for testing.
-  virtual void GetPlugins(
-      std::vector<webkit::npapi::PluginGroup>* plugin_groups);
+  virtual void GetPlugins(std::vector<PluginGroup>* plugin_groups);
 
  private:
   friend class PluginExceptionsTableModelTest;

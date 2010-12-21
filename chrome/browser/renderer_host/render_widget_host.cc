@@ -22,8 +22,8 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCompositionUnderline.h"
+#include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/webcursor.h"
-#include "webkit/plugins/npapi/webplugin.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "views/view.h"

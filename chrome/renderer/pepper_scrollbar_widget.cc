@@ -11,7 +11,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/platform_device.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScrollbar.h"
-#include "webkit/plugins/npapi/plugin_instance.h"
+#include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebInputEvent;

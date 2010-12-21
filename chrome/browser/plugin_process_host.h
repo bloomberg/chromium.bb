@@ -18,7 +18,7 @@
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/net/resolve_proxy_msg_helper.h"
 #include "gfx/native_widget_types.h"
-#include "webkit/plugins/npapi/webplugininfo.h"
+#include "webkit/glue/plugins/webplugininfo.h"
 
 namespace gfx {
 class Rect;
@@ -47,7 +47,7 @@ class PluginProcessHost : public BrowserChildProcessHost,
     // the channel.
     virtual int ID() = 0;
     virtual bool OffTheRecord() = 0;
-    virtual void SetPluginInfo(const webkit::npapi::WebPluginInfo& info) = 0;
+    virtual void SetPluginInfo(const WebPluginInfo& info) = 0;
     // The client should delete itself when one of these methods is called.
     virtual void OnChannelOpened(const IPC::ChannelHandle& handle) = 0;
     virtual void OnError() = 0;
@@ -61,7 +61,7 @@ class PluginProcessHost : public BrowserChildProcessHost,
 
   // Initialize the new plugin process, returning true on success. This must
   // be called before the object can be used.
-  bool Init(const webkit::npapi::WebPluginInfo& info, const std::string& locale);
+  bool Init(const WebPluginInfo& info, const std::string& locale);
 
   // Force the plugin process to shutdown (cleanly).
   virtual void ForceShutdown();
@@ -92,7 +92,7 @@ class PluginProcessHost : public BrowserChildProcessHost,
   void OnAppActivation();
 #endif
 
-  const webkit::npapi::WebPluginInfo& info() const { return info_; }
+  const WebPluginInfo& info() const { return info_; }
 
 #if defined(OS_WIN)
   // Tracks plugin parent windows created on the browser UI thread.
@@ -150,7 +150,7 @@ class PluginProcessHost : public BrowserChildProcessHost,
   std::queue<Client*> sent_requests_;
 
   // Information about the plugin.
-  webkit::npapi::WebPluginInfo info_;
+  WebPluginInfo info_;
 
   // Helper class for handling PluginProcessHost_ResolveProxy messages (manages
   // the requests to the proxy service).

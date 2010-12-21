@@ -46,10 +46,8 @@ class WebWidget;
 struct WebPopupMenuInfo;
 }
 
-namespace webkit {
-namespace npapi {
+namespace webkit_glue {
 struct WebPluginGeometry;
-}
 }
 
 // RenderWidget provides a communication bridge between a WebWidget and
@@ -113,7 +111,7 @@ class RenderWidget : public IPC::Channel::Listener,
 
   // Called when a plugin is moved.  These events are queued up and sent with
   // the next paint or scroll message to the host.
-  void SchedulePluginMove(const webkit::npapi::WebPluginGeometry& move);
+  void SchedulePluginMove(const webkit_glue::WebPluginGeometry& move);
 
   // Called when a plugin window has been destroyed, to make sure the currently
   // pending moves don't try to reference it.
@@ -339,7 +337,7 @@ class RenderWidget : public IPC::Channel::Listener,
   WebKit::WebPopupType popup_type_;
 
   // Holds all the needed plugin window moves for a scroll.
-  typedef std::vector<webkit::npapi::WebPluginGeometry> WebPluginGeometryVector;
+  typedef std::vector<webkit_glue::WebPluginGeometry> WebPluginGeometryVector;
   WebPluginGeometryVector plugin_window_moves_;
 
   // A custom background for the widget.

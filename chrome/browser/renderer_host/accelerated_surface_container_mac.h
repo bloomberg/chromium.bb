@@ -36,10 +36,8 @@
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
 
-namespace webkit {
-namespace npapi {
+namespace webkit_glue {
 struct WebPluginGeometry;
-}
 }
 
 class AcceleratedSurfaceContainerManagerMac;
@@ -67,7 +65,7 @@ class AcceleratedSurfaceContainerMac {
   // currently only pays attention to the clip width and height, since the
   // view in which it is hosted is responsible for positioning it on the
   // page.)
-  void SetGeometry(const webkit::npapi::WebPluginGeometry& geom);
+  void SetGeometry(const webkit_glue::WebPluginGeometry& geom);
 
   // Draws this accelerated surface's contents, texture mapped onto a quad in
   // the given OpenGL context. TODO(kbr): figure out and define exactly how the

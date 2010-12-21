@@ -19,8 +19,8 @@
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
+#include "webkit/glue/plugins/gtk_plugin_container_manager.h"
 #include "webkit/glue/webcursor.h"
-#include "webkit/plugins/npapi/gtk_plugin_container_manager.h"
 
 class RenderWidgetHost;
 class GtkIMContextWrapper;
@@ -61,7 +61,7 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
   virtual void SetSize(const gfx::Size& size);
   virtual gfx::NativeView GetNativeView();
   virtual void MovePluginWindows(
-      const std::vector<webkit::npapi::WebPluginGeometry>& moves);
+      const std::vector<webkit_glue::WebPluginGeometry>& moves);
   virtual void Focus();
   virtual void Blur();
   virtual bool HasFocus();
@@ -208,7 +208,7 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
   scoped_ptr<GtkKeyBindingsHandler> key_bindings_handler_;
 
   // Helper class that lets us allocate plugin containers and move them.
-  webkit::npapi::GtkPluginContainerManager plugin_container_manager_;
+  GtkPluginContainerManager plugin_container_manager_;
 
   // The size that we want the renderer to be.  We keep this in a separate
   // variable because resizing in GTK+ is async.

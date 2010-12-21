@@ -20,7 +20,7 @@
 #include "skia/ext/platform_device.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
-#include "webkit/plugins/npapi/webplugin_delegate_impl.h"
+#include "webkit/glue/plugins/webplugin_delegate_impl.h"
 #include "webkit/glue/webcursor.h"
 
 #if defined(ENABLE_GPU)
@@ -29,15 +29,13 @@
 
 using WebKit::WebBindings;
 using WebKit::WebCursorInfo;
-using webkit::npapi::WebPlugin;
-using webkit::npapi::WebPluginResourceClient;
+using webkit_glue::WebPlugin;
+using webkit_glue::WebPluginResourceClient;
 
 class FinishDestructionTask : public Task {
  public:
-  FinishDestructionTask(webkit::npapi::WebPluginDelegateImpl* delegate,
-                        WebPlugin* webplugin)
-      : delegate_(delegate), webplugin_(webplugin) {
-  }
+  FinishDestructionTask(WebPluginDelegateImpl* delegate, WebPlugin* webplugin)
+    : delegate_(delegate), webplugin_(webplugin) { }
 
   void Run() {
     // WebPlugin must outlive WebPluginDelegate.
@@ -48,8 +46,8 @@ class FinishDestructionTask : public Task {
   }
 
  private:
-  webkit::npapi::WebPluginDelegateImpl* delegate_;
-  webkit::npapi::WebPlugin* webplugin_;
+  WebPluginDelegateImpl* delegate_;
+  WebPlugin* webplugin_;
 };
 
 WebPluginDelegateStub::WebPluginDelegateStub(
@@ -187,8 +185,7 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
   webplugin_ = new WebPluginProxy(
       channel_, instance_id_, page_url_, params.containing_window,
       params.host_render_view_routing_id);
-  delegate_ = webkit::npapi::WebPluginDelegateImpl::Create(
-      path, mime_type_, parent);
+  delegate_ = WebPluginDelegateImpl::Create(path, mime_type_, parent);
   if (delegate_) {
     webplugin_->set_delegate(delegate_);
     *result = delegate_->Initialize(params.url,

@@ -134,13 +134,13 @@ void PluginExceptionsTableModel::ClearSettings() {
 }
 
 void PluginExceptionsTableModel::GetPlugins(
-    std::vector<webkit::npapi::PluginGroup>* plugin_groups) {
-  webkit::npapi::PluginList::Singleton()->GetPluginGroups(false, plugin_groups);
+    std::vector<PluginGroup>* plugin_groups) {
+  NPAPI::PluginList::Singleton()->GetPluginGroups(false, plugin_groups);
 }
 
 void PluginExceptionsTableModel::LoadSettings() {
   int group_id = 0;
-  std::vector<webkit::npapi::PluginGroup> plugins;
+  std::vector<PluginGroup> plugins;
   GetPlugins(&plugins);
   for (size_t i = 0; i < plugins.size(); ++i) {
     std::string plugin = plugins[i].identifier();

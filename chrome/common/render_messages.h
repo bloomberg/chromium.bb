@@ -61,15 +61,8 @@ struct ResourceLoadTimingInfo;
 struct ResourceResponseInfo;
 struct WebAccessibility;
 struct WebCookie;
-struct WebAccessibility;
-}
-
-namespace webkit {
-namespace npapi {
 struct WebPluginGeometry;
-struct WebPluginInfo;
-struct WebPluginMimeType;
-}
+struct WebAccessibility;
 }
 
 struct AudioBuffersState;
@@ -84,6 +77,8 @@ struct SyncLoadResult;
 struct RendererPreferences;
 struct WebDropData;
 struct WebMenuItem;
+struct WebPluginInfo;
+struct WebPluginMimeType;
 struct WebPreferences;
 
 // Forward declarations of structures used to store data for when we have a lot
@@ -156,8 +151,8 @@ struct ParamTraits<ContextMenuParams> {
 };
 
 template <>
-struct ParamTraits<webkit::npapi::WebPluginGeometry> {
-  typedef webkit::npapi::WebPluginGeometry param_type;
+struct ParamTraits<webkit_glue::WebPluginGeometry> {
+  typedef webkit_glue::WebPluginGeometry param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
@@ -165,16 +160,16 @@ struct ParamTraits<webkit::npapi::WebPluginGeometry> {
 
 // Traits for ViewMsg_GetPlugins_Reply structure to pack/unpack.
 template <>
-struct ParamTraits<webkit::npapi::WebPluginMimeType> {
-  typedef webkit::npapi::WebPluginMimeType param_type;
+struct ParamTraits<WebPluginMimeType> {
+  typedef WebPluginMimeType param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
 template <>
-struct ParamTraits<webkit::npapi::WebPluginInfo> {
-  typedef webkit::npapi::WebPluginInfo param_type;
+struct ParamTraits<WebPluginInfo> {
+  typedef WebPluginInfo param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

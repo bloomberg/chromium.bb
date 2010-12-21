@@ -113,7 +113,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/password_form.h"
-#include "webkit/plugins/npapi/plugin_list.h"
+#include "webkit/glue/plugins/plugin_list.h"
 
 // Cross-Site Navigations
 //
@@ -2091,8 +2091,8 @@ void TabContents::OnCrashedPlugin(const FilePath& plugin_path) {
   DCHECK(!plugin_path.value().empty());
 
   std::wstring plugin_name = plugin_path.ToWStringHack();
-  webkit::npapi::WebPluginInfo plugin_info;
-  if (webkit::npapi::PluginList::Singleton()->GetPluginInfoByPath(
+  WebPluginInfo plugin_info;
+  if (NPAPI::PluginList::Singleton()->GetPluginInfoByPath(
           plugin_path, &plugin_info) &&
       !plugin_info.name.empty()) {
     plugin_name = UTF16ToWide(plugin_info.name);

@@ -11,8 +11,8 @@
 #include "gfx/size.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
+#include "webkit/glue/plugins/gtk_plugin_container.h"
 #include "webkit/glue/webpreferences.h"
-#include "webkit/plugins/npapi/gtk_plugin_container.h"
 #include "webkit/tools/test_shell/test_webview_delegate.h"
 
 using WebKit::WebDevToolsAgentClient;

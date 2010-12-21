@@ -41,7 +41,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
-#include "webkit/plugins/npapi/webplugin.h"
+#include "webkit/glue/plugins/webplugin.h"
 #include "webkit/plugins/ppapi/ppb_file_io_impl.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"

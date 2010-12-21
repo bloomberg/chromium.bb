@@ -48,9 +48,8 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
 #include "third_party/npapi/bindings/npapi.h"
-#include "webkit/plugins/npapi/plugin_constants_win.h"
-#include "webkit/plugins/npapi/plugin_list.h"
-#include "webkit/plugins/plugin_switches.h"
+#include "webkit/glue/plugins/plugin_constants_win.h"
+#include "webkit/glue/plugins/plugin_list.h"
 
 #if defined(OS_WIN)
 #include "base/win/registry.h"
@@ -91,7 +90,7 @@ class PluginTest : public UITest {
     } else if (strcmp(test_info->name(), "MediaPlayerOld") == 0) {
       // When testing the old WMP plugin, we need to force Chrome to not load
       // the new plugin.
-      launch_arguments_.AppendSwitch(switches::kUseOldWMPPlugin);
+      launch_arguments_.AppendSwitch(kUseOldWMPPluginSwitch);
     } else if (strcmp(test_info->name(), "FlashSecurity") == 0) {
       launch_arguments_.AppendSwitchASCII(switches::kTestSandbox,
                                           "security_tests.dll");

@@ -40,8 +40,8 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/WebKit/chromium/public/mac/WebInputEventFactory.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
+#include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/webaccessibility.h"
-#include "webkit/plugins/npapi/webplugin.h"
 #import "third_party/mozilla/ComplexTextInputPanel.h"
 
 using WebKit::WebInputEvent;
@@ -623,15 +623,15 @@ gfx::NativeView RenderWidgetHostViewMac::GetNativeView() {
 }
 
 void RenderWidgetHostViewMac::MovePluginWindows(
-    const std::vector<webkit::npapi::WebPluginGeometry>& moves) {
+    const std::vector<webkit_glue::WebPluginGeometry>& moves) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Handle movement of accelerated plugins, which are the only "windowed"
   // plugins that exist on the Mac.
-  for (std::vector<webkit::npapi::WebPluginGeometry>::const_iterator iter =
+  for (std::vector<webkit_glue::WebPluginGeometry>::const_iterator iter =
            moves.begin();
        iter != moves.end();
        ++iter) {
-    webkit::npapi::WebPluginGeometry geom = *iter;
+    webkit_glue::WebPluginGeometry geom = *iter;
 
     AcceleratedPluginView* view = ViewForPluginWindowHandle(geom.window);
     DCHECK(view);
@@ -978,14 +978,14 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSetIOSurface(
     // Fake up a WebPluginGeometry for the root window to set the
     // container's size; we will never get a notification from the
     // browser about the root window, only plugins.
-    webkit::npapi::WebPluginGeometry geom;
+    webkit_glue::WebPluginGeometry geom;
     gfx::Rect rect(0, 0, width, height);
     geom.window = window;
     geom.window_rect = rect;
     geom.clip_rect = rect;
     geom.visible = true;
     geom.rects_valid = true;
-    MovePluginWindows(std::vector<webkit::npapi::WebPluginGeometry>(1, geom));
+    MovePluginWindows(std::vector<webkit_glue::WebPluginGeometry>(1, geom));
   }
 }
 

@@ -7,15 +7,14 @@
 #include "base/base_paths.h"
 #include "base/path_service.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/plugins/npapi/plugin_list.h"
+#include "webkit/glue/plugins/plugin_list.h"
 
 // Functions needed by webkit_glue.
 
 namespace webkit_glue {
 
-void GetPlugins(bool refresh,
-                std::vector<webkit::npapi::WebPluginInfo>* plugins) {
-  webkit::npapi::PluginList::Singleton()->GetPlugins(refresh, plugins);
+void GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins) {
+  NPAPI::PluginList::Singleton()->GetPlugins(refresh, plugins);
   // Don't load the forked npapi_layout_test_plugin in DRT, we only want to
   // use the upstream version TestNetscapePlugIn (on Mac, the upstream version
   // is named WebKitTestNetscapePlugIn).
@@ -25,10 +24,10 @@ void GetPlugins(bool refresh,
     FILE_PATH_LITERAL("libnpapi_layout_test_plugin.so"),
   };
   for (int i = plugins->size() - 1; i >= 0; --i) {
-    webkit::npapi::WebPluginInfo plugin_info = plugins->at(i);
+    WebPluginInfo plugin_info = plugins->at(i);
     for (size_t j = 0; j < arraysize(kPluginBlackList); ++j) {
       if (plugin_info.path.BaseName() == FilePath(kPluginBlackList[j])) {
-        webkit::npapi::PluginList::Singleton()->DisablePlugin(plugin_info.path);
+        NPAPI::PluginList::Singleton()->DisablePlugin(plugin_info.path);
         plugins->erase(plugins->begin() + i);
       }
     }
