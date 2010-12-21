@@ -11,82 +11,49 @@
 #include "base/basictypes.h"
 #include "base/singleton.h"
 #include "chrome/browser/worker_host/worker_process_host.h"
-#include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
 
-class ChromeURLRequestContext;
-class ResourceDispatcherHost;
+class URLRequestContextGetter;
+struct ViewHostMsg_CreateWorker_Params;
 
-class WorkerService : public NotificationObserver {
+// A singelton for managing HTML5 web workers.
+class WorkerService {
  public:
   // Returns the WorkerService singleton.
   static WorkerService* GetInstance();
 
-  // Initialize the WorkerService.  OK to be called multiple times.
-  void Initialize(ResourceDispatcherHost* rdh);
-
-  // Creates a decidated worker.  Returns true on success.
-  bool CreateDedicatedWorker(const GURL &url,
-                             bool is_off_the_record,
-                             unsigned long long document_id,
-                             int renderer_pid,
-                             int render_view_route_id,
-                             IPC::Message::Sender* sender,
-                             int sender_route_id,
-                             int parent_process_id,
-                             int parent_appcache_host_id,
-                             ChromeURLRequestContext* request_context);
-
-  // Creates a shared worker.  Returns true on success.
-  bool CreateSharedWorker(const GURL &url,
-                          bool is_off_the_record,
-                          const string16& name,
-                          unsigned long long document_id,
-                          int renderer_pid,
-                          int render_view_route_id,
-                          IPC::Message::Sender* sender,
-                          int sender_route_id,
-                          int64 main_resource_appcache_id,
-                          ChromeURLRequestContext* request_context);
-
-  // Validates the passed URL and checks for the existence of matching shared
-  // worker. Returns true if the url was found, and sets the url_mismatch out
-  // param to true/false depending on whether there's a url mismatch with an
-  // existing shared worker with the same name.
-  bool LookupSharedWorker(const GURL &url,
-                          const string16& name,
+  // These methods correspond to worker related IPCs.
+  void CreateWorker(const ViewHostMsg_CreateWorker_Params& params,
+                    int route_id,
+                    WorkerMessageFilter* filter,
+                    URLRequestContextGetter* request_context);
+  void LookupSharedWorker(const ViewHostMsg_CreateWorker_Params& params,
+                          int route_id,
+                          WorkerMessageFilter* filter,
                           bool off_the_record,
-                          unsigned long long document_id,
-                          int renderer_pid,
-                          int render_view_route_id,
-                          IPC::Message::Sender* sender,
-                          int sender_route_id,
-                          bool* url_mismatch);
+                          bool* exists,
+                          bool* url_error);
+  void CancelCreateDedicatedWorker(int route_id, WorkerMessageFilter* filter);
+  void ForwardToWorker(const IPC::Message& message,
+                       WorkerMessageFilter* filter);
+  void DocumentDetached(unsigned long long document_id,
+                        WorkerMessageFilter* filter);
 
-  // Notification from the renderer that a given document has detached, so any
-  // associated shared workers can be shut down.
-  void DocumentDetached(IPC::Message::Sender* sender,
-                        unsigned long long document_id);
-
-  // Cancel creation of a dedicated worker that hasn't started yet.
-  void CancelCreateDedicatedWorker(IPC::Message::Sender* sender,
-                                   int sender_route_id);
-
-  // Called by the worker creator when a message arrives that should be
-  // forwarded to the worker process.
-  void ForwardMessage(const IPC::Message& message,
-                      IPC::Message::Sender* sender);
+  void OnWorkerMessageFilterClosing(WorkerMessageFilter* filter);
 
   int next_worker_route_id() { return ++next_worker_route_id_; }
 
+  // Given a worker's process id, return the IDs of the renderer process and
+  // render view that created it.  For shared workers, this returns the first
+  // parent.
   // TODO(dimich): This code assumes there is 1 worker per worker process, which
   // is how it is today until V8 can run in separate threads.
+  bool GetRendererForWorker(int worker_process_id,
+                            int* render_process_id,
+                            int* render_view_id) const;
   const WorkerProcessHost::WorkerInstance* FindWorkerInstance(
       int worker_process_id);
-
-  WorkerProcessHost::WorkerInstance* FindSharedWorkerInstance(
-      const GURL& url, const string16& name, bool off_the_record);
 
   // Used when multiple workers can run in the same process.
   static const int kMaxWorkerProcessesWhenSharing;
@@ -100,20 +67,6 @@ class WorkerService : public NotificationObserver {
 
   WorkerService();
   ~WorkerService();
-
-  bool CreateWorker(const GURL &url,
-                    bool is_shared,
-                    bool is_off_the_record,
-                    const string16& name,
-                    unsigned long long document_id,
-                    int renderer_pid,
-                    int render_view_route_id,
-                    IPC::Message::Sender* sender,
-                    int sender_route_id,
-                    int parent_process_id,
-                    int parent_appcache_host_id,
-                    int64 main_resource_appcache_id,
-                    ChromeURLRequestContext* request_context);
 
   // Given a WorkerInstance, create an associated worker process.
   bool CreateWorkerFromInstance(WorkerProcessHost::WorkerInstance instance);
@@ -139,18 +92,10 @@ class WorkerService : public NotificationObserver {
   // worker process based on the process limit when we're using a strategy of
   // one worker per process.
   bool TabCanCreateWorkerProcess(
-      int renderer_id, int render_view_route_id, bool* hit_total_worker_limit);
+      int render_process_id, int render_route_id, bool* hit_total_worker_limit);
 
-  // NotificationObserver interface.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
-  // Notifies us that a process that's talking to a worker has shut down.
-  void SenderShutdown(IPC::Message::Sender* sender);
-
-  // Notifies us that a worker process has closed.
-  void WorkerProcessDestroyed(WorkerProcessHost* process);
+  // Tries to see if any of the queued workers can be created.
+  void TryStartingQueuedWorker();
 
   // APIs for manipulating our set of pending shared worker instances.
   WorkerProcessHost::WorkerInstance* CreatePendingInstance(
@@ -160,9 +105,11 @@ class WorkerService : public NotificationObserver {
   void RemovePendingInstances(
       const GURL& url, const string16& name, bool off_the_record);
 
+  WorkerProcessHost::WorkerInstance* FindSharedWorkerInstance(
+      const GURL& url, const string16& name, bool off_the_record);
+
   NotificationRegistrar registrar_;
   int next_worker_route_id_;
-  ResourceDispatcherHost* resource_dispatcher_host_;
 
   WorkerProcessHost::Instances queued_workers_;
 

@@ -391,8 +391,7 @@ BackingStore* RenderWidgetHost::GetBackingStore(bool force_create) {
     IPC::Message msg;
     TimeDelta max_delay = TimeDelta::FromMilliseconds(kPaintMsgTimeoutMS);
     if (process_->WaitForUpdateMsg(routing_id_, max_delay, &msg)) {
-      ViewHostMsg_UpdateRect::Dispatch(
-          &msg, this, &RenderWidgetHost::OnMsgUpdateRect);
+      OnMessageReceived(msg);
       backing_store = BackingStoreManager::GetBackingStore(this, current_size_);
     }
   }
@@ -427,10 +426,8 @@ void RenderWidgetHost::ScheduleComposite() {
   // We always block on response because we do not have a backing store.
   IPC::Message msg;
   TimeDelta max_delay = TimeDelta::FromMilliseconds(kPaintMsgTimeoutMS);
-  if (process_->WaitForUpdateMsg(routing_id_, max_delay, &msg)) {
-    ViewHostMsg_UpdateRect::Dispatch(
-        &msg, this, &RenderWidgetHost::OnMsgUpdateRect);
-  }
+  if (process_->WaitForUpdateMsg(routing_id_, max_delay, &msg))
+    OnMessageReceived(msg);
 }
 
 void RenderWidgetHost::StartHangMonitorTimeout(TimeDelta delay) {

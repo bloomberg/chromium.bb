@@ -16,6 +16,7 @@
 #endif
 
 #include "app/app_switches.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
@@ -66,6 +67,7 @@
 #include "chrome/browser/spellcheck_host.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/visitedlink/visitedlink_master.h"
+#include "chrome/browser/worker_host/worker_message_filter.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/child_process_info.h"
@@ -462,6 +464,13 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
   socket_stream_dispatcher_host->set_url_request_context_override(
       url_request_context_override);
   channel_->AddFilter(socket_stream_dispatcher_host);
+
+  channel_->AddFilter(new WorkerMessageFilter(
+      id(),
+      profile()->GetRequestContext(),
+      g_browser_process->resource_dispatcher_host(),
+      NewCallbackWithReturnValue(
+          widget_helper_.get(), &RenderWidgetHelper::GetNextRoutingID)));
 }
 
 int BrowserRenderProcessHost::GetNextRoutingID() {

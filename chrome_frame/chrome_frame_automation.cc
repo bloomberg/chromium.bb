@@ -1103,7 +1103,7 @@ bool ChromeFrameAutomationClient::ProcessUrlRequestMessage(TabProxy* tab,
     case AutomationMsg_RequestStart::ID:
       if (ui_thread || (url_fetcher_flags_ &
                            PluginUrlRequestManager::START_REQUEST_THREADSAFE)) {
-        AutomationMsg_RequestStart::Dispatch(&msg, url_fetcher_,
+        AutomationMsg_RequestStart::Dispatch(&msg, url_fetcher_, this,
             &PluginUrlRequestManager::StartUrlRequest);
         return true;
       }
@@ -1112,7 +1112,7 @@ bool ChromeFrameAutomationClient::ProcessUrlRequestMessage(TabProxy* tab,
     case AutomationMsg_RequestRead::ID:
       if (ui_thread || (url_fetcher_flags_ &
                             PluginUrlRequestManager::READ_REQUEST_THREADSAFE)) {
-        AutomationMsg_RequestRead::Dispatch(&msg, url_fetcher_,
+        AutomationMsg_RequestRead::Dispatch(&msg, url_fetcher_, this,
             &PluginUrlRequestManager::ReadUrlRequest);
         return true;
       }
@@ -1121,7 +1121,7 @@ bool ChromeFrameAutomationClient::ProcessUrlRequestMessage(TabProxy* tab,
     case AutomationMsg_RequestEnd::ID:
       if (ui_thread || (url_fetcher_flags_ &
                             PluginUrlRequestManager::STOP_REQUEST_THREADSAFE)) {
-        AutomationMsg_RequestEnd::Dispatch(&msg, url_fetcher_,
+        AutomationMsg_RequestEnd::Dispatch(&msg, url_fetcher_, this,
             &PluginUrlRequestManager::EndUrlRequest);
         return true;
       }
@@ -1130,7 +1130,7 @@ bool ChromeFrameAutomationClient::ProcessUrlRequestMessage(TabProxy* tab,
     case AutomationMsg_DownloadRequestInHost::ID:
       if (ui_thread || (url_fetcher_flags_ &
                         PluginUrlRequestManager::DOWNLOAD_REQUEST_THREADSAFE)) {
-        AutomationMsg_DownloadRequestInHost::Dispatch(&msg, url_fetcher_,
+        AutomationMsg_DownloadRequestInHost::Dispatch(&msg, url_fetcher_, this,
             &PluginUrlRequestManager::DownloadUrlRequestInHost);
         return true;
       }
@@ -1139,7 +1139,7 @@ bool ChromeFrameAutomationClient::ProcessUrlRequestMessage(TabProxy* tab,
     case AutomationMsg_GetCookiesFromHost::ID:
       if (ui_thread || (url_fetcher_flags_ &
                           PluginUrlRequestManager::COOKIE_REQUEST_THREADSAFE)) {
-        AutomationMsg_GetCookiesFromHost::Dispatch(&msg, url_fetcher_,
+        AutomationMsg_GetCookiesFromHost::Dispatch(&msg, url_fetcher_, this,
             &PluginUrlRequestManager::GetCookiesFromHost);
         return true;
       }
@@ -1148,7 +1148,7 @@ bool ChromeFrameAutomationClient::ProcessUrlRequestMessage(TabProxy* tab,
     case AutomationMsg_SetCookieAsync::ID:
       if (ui_thread || (url_fetcher_flags_ &
                           PluginUrlRequestManager::COOKIE_REQUEST_THREADSAFE)) {
-        AutomationMsg_SetCookieAsync::Dispatch(&msg, url_fetcher_,
+        AutomationMsg_SetCookieAsync::Dispatch(&msg, url_fetcher_, this,
             &PluginUrlRequestManager::SetCookiesInHost);
         return true;
       }

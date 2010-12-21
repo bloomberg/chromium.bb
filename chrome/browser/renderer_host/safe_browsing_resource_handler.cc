@@ -6,10 +6,8 @@
 
 #include "base/logging.h"
 #include "chrome/browser/renderer_host/global_request_id.h"
-#include "chrome/browser/renderer_host/render_message_filter.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/resource_response.h"
 #include "net/base/net_errors.h"
 #include "net/base/io_buffer.h"
@@ -38,8 +36,6 @@ SafeBrowsingResourceHandler::SafeBrowsingResourceHandler(
       safe_browsing_(safe_browsing),
       rdh_(resource_dispatcher_host),
       resource_type_(resource_type) {
-  registrar_.Add(this, NotificationType::RESOURCE_MESSAGE_FILTER_SHUTDOWN,
-                 NotificationService::AllSources());
 }
 
 SafeBrowsingResourceHandler::~SafeBrowsingResourceHandler() {
@@ -202,15 +198,6 @@ void SafeBrowsingResourceHandler::OnBlockingPageComplete(bool proceed) {
   }
 
   Release();  // Balances the AddRef() in StartDisplayingBlockingPage().
-}
-
-void SafeBrowsingResourceHandler::Observe(NotificationType type,
-                                          const NotificationSource& source,
-                                          const NotificationDetails& details) {
-  if (Source<ResourceMessageFilter>(source).ptr()->child_id() ==
-          render_process_host_id_) {
-    Shutdown();
-  }
 }
 
 void SafeBrowsingResourceHandler::Shutdown() {

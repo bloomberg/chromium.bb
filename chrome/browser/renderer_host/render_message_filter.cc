@@ -44,8 +44,6 @@
 #include "chrome/browser/renderer_host/render_widget_helper.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/browser/task_manager/task_manager.h"
-#include "chrome/browser/worker_host/message_port_dispatcher.h"
-#include "chrome/browser/worker_host/worker_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
@@ -245,8 +243,6 @@ RenderMessageFilter::RenderMessageFilter(
           profile->GetDesktopNotificationService()->prefs_cache()),
       host_zoom_map_(profile->GetHostZoomMap()),
       off_the_record_(profile->IsOffTheRecord()),
-      next_route_id_callback_(NewCallbackWithReturnValue(
-          render_widget_helper, &RenderWidgetHelper::GetNextRoutingID)),
       webkit_context_(profile->GetWebKitContext()),
       render_process_id_(render_process_id) {
   request_context_ = profile_->GetRequestContext();
@@ -264,183 +260,139 @@ RenderMessageFilter::RenderMessageFilter(
 RenderMessageFilter::~RenderMessageFilter() {
   // This function should be called on the IO thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  // Let interested observers know we are being deleted.
-  NotificationService::current()->Notify(
-      NotificationType::RESOURCE_MESSAGE_FILTER_SHUTDOWN,
-      Source<RenderMessageFilter>(this),
-      NotificationService::NoDetails());
-}
-
-// Called on the IPC thread:
-void RenderMessageFilter::OnChannelConnected(int32 peer_pid) {
-  BrowserMessageFilter::OnChannelConnected(peer_pid);
-
-  WorkerService::GetInstance()->Initialize(resource_dispatcher_host_);
-}
-
-void RenderMessageFilter::OnChannelError() {
-  BrowserMessageFilter::OnChannelError();
-
-  NotificationService::current()->Notify(
-      NotificationType::RESOURCE_MESSAGE_FILTER_SHUTDOWN,
-      Source<RenderMessageFilter>(this),
-      NotificationService::NoDetails());
 }
 
 // Called on the IPC thread:
 bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                                             bool* message_was_ok) {
-  MessagePortDispatcher* mp_dispatcher = MessagePortDispatcher::GetInstance();
-  bool handled = mp_dispatcher->OnMessageReceived(
-      message, this, next_route_id_callback(), message_was_ok);
-
-  if (!handled) {
-    handled = true;
-    IPC_BEGIN_MESSAGE_MAP_EX(RenderMessageFilter, message, *message_was_ok)
-      // On Linux we need to dispatch these messages to the UI2 thread
-      // because we cannot make X calls from the IO thread.  Mac
-      // doesn't have windowed plug-ins so we handle the messages in
-      // the UI thread.  On Windows, we intercept the messages and
-      // handle them directly.
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP_EX(RenderMessageFilter, message, *message_was_ok)
+    // On Linux we need to dispatch these messages to the UI2 thread
+    // because we cannot make X calls from the IO thread.  Mac
+    // doesn't have windowed plug-ins so we handle the messages in
+    // the UI thread.  On Windows, we intercept the messages and
+    // handle them directly.
 #if !defined(OS_MACOSX)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetScreenInfo,
-                                      OnGetScreenInfo)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetWindowRect,
-                                      OnGetWindowRect)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetRootWindowRect,
-                                      OnGetRootWindowRect)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetScreenInfo, OnGetScreenInfo)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetWindowRect, OnGetWindowRect)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetRootWindowRect,
+                                    OnGetRootWindowRect)
 #endif
 
-      IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWindow, OnMsgCreateWindow)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnMsgCreateWidget)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_CreateFullscreenWidget,
-                          OnMsgCreateFullscreenWidget)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_SetCookie, OnSetCookie)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetCookies, OnGetCookies)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetRawCookies,
-                                      OnGetRawCookies)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_DeleteCookie, OnDeleteCookie)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_CookiesEnabled,
-                                      OnCookiesEnabled)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWindow, OnMsgCreateWindow)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnMsgCreateWidget)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateFullscreenWidget,
+                        OnMsgCreateFullscreenWidget)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SetCookie, OnSetCookie)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetCookies, OnGetCookies)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetRawCookies, OnGetRawCookies)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DeleteCookie, OnDeleteCookie)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_CookiesEnabled,
+                                    OnCookiesEnabled)
 #if defined(OS_MACOSX)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_LoadFont, OnLoadFont)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_LoadFont, OnLoadFont)
 #endif
 #if defined(OS_WIN)  // This hack is Windows-specific.
-      IPC_MESSAGE_HANDLER(ViewHostMsg_PreCacheFont, OnPreCacheFont)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PreCacheFont, OnPreCacheFont)
 #endif
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetPlugins, OnGetPlugins)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetPluginInfo,
-                                      OnGetPluginInfo)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_DownloadUrl, OnDownloadUrl)
-      IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_ContextMenu,
-                                  OnReceiveContextMenuMsg(message))
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenChannelToPlugin,
-                                      OnOpenChannelToPlugin)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenChannelToPepperPlugin,
-                                      OnOpenChannelToPepperPlugin)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_LaunchNaCl, OnLaunchNaCl)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWorker, OnCreateWorker)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_LookupSharedWorker, OnLookupSharedWorker)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentDetached, OnDocumentDetached)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_CancelCreateDedicatedWorker,
-                          OnCancelCreateDedicatedWorker)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardToWorker,
-                          OnForwardToWorker)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_SpellChecker_PlatformCheckSpelling,
-                          OnPlatformCheckSpelling)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_SpellChecker_PlatformFillSuggestionList,
-                          OnPlatformFillSuggestionList)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetDocumentTag,
-                                      OnGetDocumentTag)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentWithTagClosed,
-                          OnDocumentWithTagClosed)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_ShowSpellingPanel, OnShowSpellingPanel)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateSpellingPanelWithMisspelledWord,
-                          OnUpdateSpellingPanelWithMisspelledWord)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_DnsPrefetch, OnDnsPrefetch)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_RendererHistograms,
-                          OnRendererHistograms)
-      IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_UpdateRect,
-          render_widget_helper_->DidReceiveUpdateMsg(message))
-      IPC_MESSAGE_HANDLER(ViewHostMsg_ClipboardWriteObjectsAsync,
-                          OnClipboardWriteObjectsAsync)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_ClipboardWriteObjectsSync,
-                          OnClipboardWriteObjectsSync)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardIsFormatAvailable,
-                                      OnClipboardIsFormatAvailable)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardReadText,
-                                      OnClipboardReadText)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardReadAsciiText,
-                                      OnClipboardReadAsciiText)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardReadHTML,
-                                      OnClipboardReadHTML)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetPlugins, OnGetPlugins)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetPluginInfo, OnGetPluginInfo)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DownloadUrl, OnDownloadUrl)
+    IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_ContextMenu,
+                                OnReceiveContextMenuMsg(message))
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenChannelToPlugin,
+                                    OnOpenChannelToPlugin)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenChannelToPepperPlugin,
+                                    OnOpenChannelToPepperPlugin)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_LaunchNaCl, OnLaunchNaCl)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SpellChecker_PlatformCheckSpelling,
+                        OnPlatformCheckSpelling)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SpellChecker_PlatformFillSuggestionList,
+                        OnPlatformFillSuggestionList)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetDocumentTag,
+                                    OnGetDocumentTag)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentWithTagClosed,
+                        OnDocumentWithTagClosed)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowSpellingPanel, OnShowSpellingPanel)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateSpellingPanelWithMisspelledWord,
+                        OnUpdateSpellingPanelWithMisspelledWord)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DnsPrefetch, OnDnsPrefetch)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RendererHistograms, OnRendererHistograms)
+    IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_UpdateRect,
+        render_widget_helper_->DidReceiveUpdateMsg(message))
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ClipboardWriteObjectsAsync,
+                        OnClipboardWriteObjectsAsync)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ClipboardWriteObjectsSync,
+                        OnClipboardWriteObjectsSync)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardIsFormatAvailable,
+                                    OnClipboardIsFormatAvailable)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardReadText,
+                                    OnClipboardReadText)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardReadAsciiText,
+                                    OnClipboardReadAsciiText)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardReadHTML,
+                                    OnClipboardReadHTML)
 #if defined(OS_MACOSX)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_ClipboardFindPboardWriteStringAsync,
-                          OnClipboardFindPboardWriteString)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ClipboardFindPboardWriteStringAsync,
+                        OnClipboardFindPboardWriteString)
 #endif
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardReadAvailableTypes,
-                                      OnClipboardReadAvailableTypes)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardReadData,
-                                      OnClipboardReadData)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardReadFilenames,
-                                      OnClipboardReadFilenames)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_CheckNotificationPermission,
-                          OnCheckNotificationPermission)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_RevealFolderInOS, OnRevealFolderInOS)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_GetCPBrowsingContext,
-                          OnGetCPBrowsingContext)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardReadAvailableTypes,
+                                    OnClipboardReadAvailableTypes)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardReadData,
+                                    OnClipboardReadData)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClipboardReadFilenames,
+                                    OnClipboardReadFilenames)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_CheckNotificationPermission,
+                        OnCheckNotificationPermission)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RevealFolderInOS, OnRevealFolderInOS)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GetCPBrowsingContext,
+                        OnGetCPBrowsingContext)
 #if defined(OS_WIN)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_DuplicateSection, OnDuplicateSection)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DuplicateSection, OnDuplicateSection)
 #endif
 #if defined(OS_POSIX)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateSharedMemoryBuffer,
-                          OnAllocateSharedMemoryBuffer)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateSharedMemoryBuffer,
+                        OnAllocateSharedMemoryBuffer)
 #endif
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_AllocateTempFileForPrinting,
-                                      OnAllocateTempFileForPrinting)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_TempFileForPrintingWritten,
-                          OnTempFileForPrintingWritten)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_AllocateTempFileForPrinting,
+                                    OnAllocateTempFileForPrinting)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_TempFileForPrintingWritten,
+                        OnTempFileForPrintingWritten)
 #endif
-      IPC_MESSAGE_HANDLER(ViewHostMsg_ResourceTypeStats, OnResourceTypeStats)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_V8HeapStats, OnV8HeapStats)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_DidZoomURL, OnDidZoomURL)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ResolveProxy, OnResolveProxy)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetDefaultPrintSettings,
-                                      OnGetDefaultPrintSettings)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ScriptedPrint,
-                                      OnScriptedPrint)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ResourceTypeStats, OnResourceTypeStats)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_V8HeapStats, OnV8HeapStats)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidZoomURL, OnDidZoomURL)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ResolveProxy, OnResolveProxy)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetDefaultPrintSettings,
+                                    OnGetDefaultPrintSettings)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ScriptedPrint, OnScriptedPrint)
 #if defined(OS_MACOSX)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_AllocTransportDIB,
-                          OnAllocTransportDIB)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_FreeTransportDIB,
-                          OnFreeTransportDIB)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_AllocTransportDIB, OnAllocTransportDIB)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_FreeTransportDIB, OnFreeTransportDIB)
 #endif
-      IPC_MESSAGE_HANDLER(ViewHostMsg_OpenChannelToExtension,
-                          OnOpenChannelToExtension)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_OpenChannelToTab, OnOpenChannelToTab)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_CloseCurrentConnections,
-                          OnCloseCurrentConnections)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_SetCacheMode, OnSetCacheMode)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClearCache, OnClearCache)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_DidGenerateCacheableMetadata,
-                          OnCacheableMetadataAvailable)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_EnableSpdy, OnEnableSpdy)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_Keygen, OnKeygen)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetExtensionMessageBundle,
-                                      OnGetExtensionMessageBundle)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_OpenChannelToExtension,
+                        OnOpenChannelToExtension)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_OpenChannelToTab, OnOpenChannelToTab)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_CloseCurrentConnections,
+                        OnCloseCurrentConnections)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SetCacheMode, OnSetCacheMode)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClearCache, OnClearCache)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidGenerateCacheableMetadata,
+                        OnCacheableMetadataAvailable)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_EnableSpdy, OnEnableSpdy)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_Keygen, OnKeygen)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetExtensionMessageBundle,
+                                    OnGetExtensionMessageBundle)
 #if defined(USE_TCMALLOC)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_RendererTcmalloc, OnRendererTcmalloc)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RendererTcmalloc, OnRendererTcmalloc)
 #endif
-      IPC_MESSAGE_HANDLER(ViewHostMsg_EstablishGpuChannel,
-                          OnEstablishGpuChannel)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_SynchronizeGpu,
-                                      OnSynchronizeGpu)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_AsyncOpenFile, OnAsyncOpenFile)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP_EX()
-  }
+    IPC_MESSAGE_HANDLER(ViewHostMsg_EstablishGpuChannel, OnEstablishGpuChannel)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_SynchronizeGpu,
+                                    OnSynchronizeGpu)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_AsyncOpenFile, OnAsyncOpenFile)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP_EX()
 
   return handled;
 }
@@ -769,50 +721,6 @@ void RenderMessageFilter::OnLaunchNaCl(
     const std::wstring& url, int channel_descriptor, IPC::Message* reply_msg) {
   NaClProcessHost* host = new NaClProcessHost(resource_dispatcher_host_, url);
   host->Launch(this, channel_descriptor, reply_msg);
-}
-
-void RenderMessageFilter::OnCreateWorker(
-    const ViewHostMsg_CreateWorker_Params& params, int* route_id) {
-  *route_id = params.route_id != MSG_ROUTING_NONE ?
-      params.route_id : render_widget_helper_->GetNextRoutingID();
-  if (params.is_shared)
-    WorkerService::GetInstance()->CreateSharedWorker(
-        params.url, off_the_record(), params.name,
-        params.document_id, render_process_id_, params.render_view_route_id,
-        this, *route_id, params.script_resource_appcache_id,
-        static_cast<ChromeURLRequestContext*>(
-            request_context_->GetURLRequestContext()));
-  else
-    WorkerService::GetInstance()->CreateDedicatedWorker(
-        params.url, off_the_record(),
-        params.document_id, render_process_id_, params.render_view_route_id,
-        this, *route_id, render_process_id_, params.parent_appcache_host_id,
-        static_cast<ChromeURLRequestContext*>(
-            request_context_->GetURLRequestContext()));
-}
-
-void RenderMessageFilter::OnLookupSharedWorker(
-    const ViewHostMsg_CreateWorker_Params& params, bool* exists, int* route_id,
-    bool* url_mismatch) {
-  *route_id = render_widget_helper_->GetNextRoutingID();
-  *exists = WorkerService::GetInstance()->LookupSharedWorker(
-      params.url, params.name, off_the_record(), params.document_id,
-      render_process_id_, params.render_view_route_id, this, *route_id,
-      url_mismatch);
-}
-
-void RenderMessageFilter::OnDocumentDetached(unsigned long long document_id) {
-  // Notify the WorkerService that the passed document was detached so any
-  // associated shared workers can be shut down.
-  WorkerService::GetInstance()->DocumentDetached(this, document_id);
-}
-
-void RenderMessageFilter::OnCancelCreateDedicatedWorker(int route_id) {
-  WorkerService::GetInstance()->CancelCreateDedicatedWorker(this, route_id);
-}
-
-void RenderMessageFilter::OnForwardToWorker(const IPC::Message& message) {
-  WorkerService::GetInstance()->ForwardMessage(message, this);
 }
 
 void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,

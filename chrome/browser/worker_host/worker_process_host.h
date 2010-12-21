@@ -9,26 +9,19 @@
 #include <list>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
 #include "base/file_path.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/worker_host/worker_document_set.h"
 #include "googleurl/src/gurl.h"
 
-class ChromeURLRequestContext;
-class ChromeURLRequestContextGetter;
-namespace webkit_database {
-class DatabaseTracker;
-}  // namespace webkit_database
-
-struct ViewHostMsg_CreateWorker_Params;
+class URLRequestContextGetter;
 
 // The WorkerProcessHost is the interface that represents the browser side of
 // the browser <-> worker communication channel. There will be one
 // WorkerProcessHost per worker process.  Currently each worker runs in its own
 // process, but that may change.  However, we do assume [by storing a
-// ChromeURLRequestContext] that a WorkerProcessHost serves a single Profile.
+// URLRequestContext] that a WorkerProcessHost serves a single Profile.
 class WorkerProcessHost : public BrowserChildProcessHost {
  public:
 
@@ -44,24 +37,24 @@ class WorkerProcessHost : public BrowserChildProcessHost {
                    int parent_process_id,
                    int parent_appcache_host_id,
                    int64 main_resource_appcache_id,
-                   ChromeURLRequestContext* request_context);
+                   URLRequestContextGetter* request_context);
     ~WorkerInstance();
 
     // Unique identifier for a worker client.
-    typedef std::pair<IPC::Message::Sender*, int> SenderInfo;
+    typedef std::pair<WorkerMessageFilter*, int> FilterInfo;
 
-    // APIs to manage the sender list for a given instance.
-    void AddSender(IPC::Message::Sender* sender, int sender_route_id);
-    void RemoveSender(IPC::Message::Sender* sender, int sender_route_id);
-    void RemoveSenders(IPC::Message::Sender* sender);
-    bool HasSender(IPC::Message::Sender* sender, int sender_route_id) const;
-    bool RendererIsParent(int renderer_id, int render_view_route_id) const;
-    int NumSenders() const { return senders_.size(); }
-    // Returns the single sender (must only be one).
-    SenderInfo GetSender() const;
+    // APIs to manage the filter list for a given instance.
+    void AddFilter(WorkerMessageFilter* filter, int route_id);
+    void RemoveFilter(WorkerMessageFilter* filter, int route_id);
+    void RemoveFilters(WorkerMessageFilter* filter);
+    bool HasFilter(WorkerMessageFilter* filter, int route_id) const;
+    bool RendererIsParent(int render_process_id, int render_view_id) const;
+    int NumFilters() const { return filters_.size(); }
+    // Returns the single filter (must only be one).
+    FilterInfo GetFilter() const;
 
-    typedef std::list<SenderInfo> SenderList;
-    const SenderList& senders() const { return senders_; }
+    typedef std::list<FilterInfo> FilterList;
+    const FilterList& filters() const { return filters_; }
 
     // Checks if this WorkerInstance matches the passed url/name params
     // (per the comparison algorithm in the WebWorkers spec). This API only
@@ -92,12 +85,12 @@ class WorkerProcessHost : public BrowserChildProcessHost {
     WorkerDocumentSet* worker_document_set() const {
       return worker_document_set_;
     }
-    ChromeURLRequestContext* request_context() const {
+    URLRequestContextGetter* request_context() const {
       return request_context_;
     }
 
    private:
-    // Set of all senders (clients) associated with this worker.
+    // Set of all filters (clients) associated with this worker.
     GURL url_;
     bool shared_;
     bool off_the_record_;
@@ -107,34 +100,36 @@ class WorkerProcessHost : public BrowserChildProcessHost {
     int parent_process_id_;
     int parent_appcache_host_id_;
     int64 main_resource_appcache_id_;
-    scoped_refptr<ChromeURLRequestContext> request_context_;
-    SenderList senders_;
+    scoped_refptr<URLRequestContextGetter> request_context_;
+    FilterList filters_;
     scoped_refptr<WorkerDocumentSet> worker_document_set_;
   };
 
   WorkerProcessHost(
       ResourceDispatcherHost* resource_dispatcher_host,
-      ChromeURLRequestContext* request_context);
+      URLRequestContextGetter* request_context);
   ~WorkerProcessHost();
 
   // Starts the process.  Returns true iff it succeeded.
-  bool Init();
+  // |render_process_id| is the renderer process responsible for starting this
+  // worker.
+  bool Init(int render_process_id);
 
   // Creates a worker object in the process.
   void CreateWorker(const WorkerInstance& instance);
 
   // Returns true iff the given message from a renderer process was forwarded to
   // the worker.
-  bool FilterMessage(const IPC::Message& message, IPC::Message::Sender* sender);
+  bool FilterMessage(const IPC::Message& message, WorkerMessageFilter* filter);
 
-  void SenderShutdown(IPC::Message::Sender* sender);
+  void FilterShutdown(WorkerMessageFilter* filter);
 
   // Shuts down any shared workers that are no longer referenced by active
   // documents.
-  void DocumentDetached(IPC::Message::Sender* sender,
+  void DocumentDetached(WorkerMessageFilter* filter,
                         unsigned long long document_id);
 
-  ChromeURLRequestContext* request_context() const {
+  URLRequestContextGetter* request_context() const {
     return request_context_;
   }
 
@@ -146,61 +141,45 @@ class WorkerProcessHost : public BrowserChildProcessHost {
   Instances& mutable_instances() { return instances_; }
 
  private:
+  // Called when the process has been launched successfully.
+  virtual void OnProcessLaunched();
+
+  // Creates and adds the message filters.
+  void CreateMessageFilters(int render_process_id);
+
   // IPC::Channel::Listener implementation:
   // Called when a message arrives from the worker process.
   virtual void OnMessageReceived(const IPC::Message& message);
 
-  // Creates and adds the message filters.
-  void CreateMessageFilters();
-
-  // Called when the process has been launched successfully.
-  virtual void OnProcessLaunched();
-
-  // Called when the app invokes close() from within worker context.
   void OnWorkerContextClosed(int worker_route_id);
-
-  // Called if a worker tries to connect to a shared worker.
-  void OnLookupSharedWorker(const ViewHostMsg_CreateWorker_Params& params,
-                            bool* exists,
-                            int* route_id,
-                            bool* url_error);
-
-  // Given a Sender, returns the callback that generates a new routing id.
-  static CallbackWithReturnValue<int>::Type* GetNextRouteIdCallback(
-      IPC::Message::Sender* sender);
+  void OnAllowDatabase(int worker_route_id,
+                       const GURL& url,
+                       const string16& name,
+                       const string16& display_name,
+                       unsigned long estimated_size,
+                       bool* result);
 
   // Relays a message to the given endpoint.  Takes care of parsing the message
   // if it contains a message port and sending it a valid route id.
   static void RelayMessage(const IPC::Message& message,
-                           IPC::Message::Sender* sender,
-                           int route_id,
-                           CallbackWithReturnValue<int>::Type* next_route_id);
+                           WorkerMessageFilter* filter,
+                           int route_id);
 
   virtual bool CanShutdown();
 
   // Updates the title shown in the task manager.
   void UpdateTitle();
 
-  void OnCreateWorker(const ViewHostMsg_CreateWorker_Params& params,
-                      int* route_id);
-  void OnCancelCreateDedicatedWorker(int route_id);
-  void OnForwardToWorker(const IPC::Message& message);
-
-  // Checks the content settings whether access to web databases is enabled and
-  // relays the WebDatabaseAccessed message to all documents attached to a
-  // worker.
-  void OnAllowDatabase(const GURL& url,
-                       const string16& name,
-                       const string16& display_name,
-                       unsigned long estimated_size,
-                       IPC::Message* reply_msg);
+  ChromeURLRequestContext* GetChromeURLRequestContext();
 
   Instances instances_;
 
-  scoped_refptr<ChromeURLRequestContext> request_context_;
+  scoped_refptr<URLRequestContextGetter> request_context_;
 
-  // A callback to create a routing id for the associated worker process.
-  scoped_ptr<CallbackWithReturnValue<int>::Type> next_route_id_callback_;
+  // A reference to the filter associated with this worker process.  We need to
+  // keep this around since we'll use it when forward messages to the worker
+  // process.
+  scoped_refptr<WorkerMessageFilter> worker_message_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerProcessHost);
 };

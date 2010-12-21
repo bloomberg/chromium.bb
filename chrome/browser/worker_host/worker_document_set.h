@@ -10,7 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
-#include "ipc/ipc_message.h"
+
+class WorkerMessageFilter;
 
 // The WorkerDocumentSet tracks all of the DOM documents associated with a
 // set of workers. With nested workers, multiple workers can share the same
@@ -23,53 +24,53 @@ class WorkerDocumentSet : public base::RefCounted<WorkerDocumentSet> {
   // The information we track for each document
   class DocumentInfo {
    public:
-    DocumentInfo(IPC::Message::Sender* sender, unsigned long long document_id,
-                 int renderer_id, int render_view_route_id);
-    IPC::Message::Sender* sender() const { return sender_; }
+    DocumentInfo(WorkerMessageFilter* filter, unsigned long long document_id,
+                 int renderer_process_id, int render_view_id);
+    WorkerMessageFilter* filter() const { return filter_; }
     unsigned long long document_id() const { return document_id_; }
-    int renderer_id() const { return renderer_id_; }
-    int render_view_route_id() const { return render_view_route_id_; }
+    int render_process_id() const { return render_process_id_; }
+    int render_view_id() const { return render_view_id_; }
 
     // Define operator "<", which is used to determine uniqueness within
     // the set.
     bool operator <(const DocumentInfo& other) const {
       // Items are identical if the sender and document_id are identical,
       // otherwise create an arbitrary stable ordering based on the document
-      // id/sender.
-      if (sender() == other.sender()) {
+      // id/filter.
+      if (filter() == other.filter()) {
         return document_id() < other.document_id();
       } else {
-        return reinterpret_cast<unsigned long long>(sender()) <
-            reinterpret_cast<unsigned long long>(other.sender());
+        return reinterpret_cast<unsigned long long>(filter()) <
+            reinterpret_cast<unsigned long long>(other.filter());
       }
     }
 
    private:
-    IPC::Message::Sender* sender_;
+    WorkerMessageFilter* filter_;
     unsigned long long document_id_;
-    int renderer_id_;
-    int render_view_route_id_;
+    int render_process_id_;
+    int render_view_id_;
   };
 
   // Adds a document to a shared worker's document set. Also includes the
-  // associated renderer_id the document is associated with, to enable
+  // associated render_process_id the document is associated with, to enable
   // communication with the parent tab for things like http auth dialogs.
-  void Add(IPC::Message::Sender* parent,
+  void Add(WorkerMessageFilter* parent,
            unsigned long long document_id,
-           int renderer_id,
-           int render_view_route_id);
+           int render_process_id,
+           int render_view_id);
 
   // Checks to see if a document is in a shared worker's document set.
-  bool Contains(IPC::Message::Sender* parent,
+  bool Contains(WorkerMessageFilter* parent,
                 unsigned long long document_id) const;
 
   // Removes a specific document from a worker's document set when that document
   // is detached.
-  void Remove(IPC::Message::Sender* parent, unsigned long long document_id);
+  void Remove(WorkerMessageFilter* parent, unsigned long long document_id);
 
   // Invoked when a render process exits, to remove all associated documents
   // from a worker's document set.
-  void RemoveAll(IPC::Message::Sender* parent);
+  void RemoveAll(WorkerMessageFilter* parent);
 
   bool IsEmpty() const { return document_set_.empty(); }
 

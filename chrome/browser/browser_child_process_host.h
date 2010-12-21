@@ -116,6 +116,10 @@ class BrowserChildProcessHost : public ChildProcessHost,
   // the host list. Calls ChildProcessHost::ForceShutdown
   virtual void ForceShutdown();
 
+  ResourceDispatcherHost* resource_dispatcher_host() {
+    return resource_dispatcher_host_;
+  }
+
  private:
   void Initialize(ResourceMessageFilter::URLRequestContextOverride*
       url_request_context_override);

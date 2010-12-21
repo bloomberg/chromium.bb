@@ -1051,7 +1051,7 @@ void class_name::OnMessageReceived(const IPC::Message& msg) \
 
 #define IPC_MESSAGE_FORWARD(msg_class, obj, member_func) \
   case msg_class::ID: \
-    msg_is_ok__ = msg_class::Dispatch(&ipc_message__, obj, &member_func); \
+    msg_is_ok__ = msg_class::Dispatch(&ipc_message__, obj, this, &member_func); \
     break;
 
 #define IPC_MESSAGE_HANDLER(msg_class, member_func) \

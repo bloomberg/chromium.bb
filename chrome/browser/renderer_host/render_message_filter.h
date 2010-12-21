@@ -15,7 +15,6 @@
 
 #include "app/clipboard/clipboard.h"
 #include "app/surface/transport_dib.h"
-#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/linked_ptr.h"
 #include "base/string16.h"
@@ -75,8 +74,6 @@ class RenderMessageFilter : public BrowserMessageFilter,
                       RenderWidgetHelper* render_widget_helper);
 
   // BrowserMessageFilter methods:
-  virtual void OnChannelConnected(int32 peer_pid);
-  virtual void OnChannelError();
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok);
   virtual void OnDestruct() const;
@@ -86,9 +83,6 @@ class RenderMessageFilter : public BrowserMessageFilter,
     return resource_dispatcher_host_;
   }
   bool off_the_record() { return off_the_record_; }
-  CallbackWithReturnValue<int>::Type* next_route_id_callback() {
-    return next_route_id_callback_.get();
-  }
 
   // Returns either the extension URLRequestContext or regular URLRequestContext
   // depending on whether |url| is an extension URL.
@@ -170,15 +164,6 @@ class RenderMessageFilter : public BrowserMessageFilter,
   void OnLaunchNaCl(const std::wstring& url,
                     int channel_descriptor,
                     IPC::Message* reply_msg);
-  void OnCreateWorker(const ViewHostMsg_CreateWorker_Params& params,
-                      int* route_id);
-  void OnLookupSharedWorker(const ViewHostMsg_CreateWorker_Params& params,
-                            bool* exists,
-                            int* route_id,
-                            bool* url_error);
-  void OnDocumentDetached(unsigned long long document_id);
-  void OnCancelCreateDedicatedWorker(int route_id);
-  void OnForwardToWorker(const IPC::Message& msg);
   void OnDownloadUrl(const IPC::Message& message,
                      const GURL& url,
                      const GURL& referrer);
@@ -423,9 +408,6 @@ class RenderMessageFilter : public BrowserMessageFilter,
 
   // A list of all Ppapi plugin processes for this renderer.
   std::vector<linked_ptr<PpapiPluginProcessHost> > ppapi_plugin_hosts_;
-
-  // A callback to create a routing id for the associated renderer process.
-  scoped_ptr<CallbackWithReturnValue<int>::Type> next_route_id_callback_;
 
   scoped_refptr<WebKitContext> webkit_context_;
 
