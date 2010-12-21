@@ -83,7 +83,7 @@ class PrintJobWorker : public base::Thread {
   // context.
   void OnFailure();
 
-#if defined(OS_MACOSX) || defined(USE_X11)
+#if defined(OS_POSIX)
   // Asks the user for print settings. Must be called on the UI thread.
   // Mac and Linux-only since Windows can display UI from non-main threads.
   void GetSettingsWithUI(gfx::NativeView parent_view,
@@ -94,7 +94,7 @@ class PrintJobWorker : public base::Thread {
   // object that the print settings are set.  This is needed in order to bounce
   // back into the IO thread for GetSettingsDone().
   void GetSettingsWithUIDone(PrintingContext::Result result);
-#endif
+#endif  // defined(OS_POSIX)
 
   // Reports settings back to owner_.
   void GetSettingsDone(PrintingContext::Result result);

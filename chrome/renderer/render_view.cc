@@ -2244,7 +2244,7 @@ bool RenderView::isSelectTrailingWhitespaceEnabled() {
 }
 
 void RenderView::didChangeSelection(bool is_empty_selection) {
-#if defined(USE_X11) || defined(OS_MACOSX)
+#if defined(OS_POSIX)
   if (!handling_input_event_)
       return;
   // TODO(estade): investigate incremental updates to the selection so that we
@@ -2266,7 +2266,7 @@ void RenderView::didChangeSelection(bool is_empty_selection) {
     Send(new ViewHostMsg_SelectionChanged(routing_id_,
          last_selection_));
   }
-#endif
+#endif  // defined(OS_POSIX)
 }
 
 void RenderView::didExecuteCommand(const WebString& command_name) {
@@ -5633,8 +5633,7 @@ void RenderView::OnPageTranslated() {
 }
 
 #if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
-WebKit::WebGeolocationClient* RenderView::geolocationClient()
-{
+WebKit::WebGeolocationClient* RenderView::geolocationClient() {
   if (!geolocation_dispatcher_.get())
     geolocation_dispatcher_.reset(new GeolocationDispatcher(this));
   return geolocation_dispatcher_.get();

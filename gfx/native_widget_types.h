@@ -37,7 +37,7 @@
 // 'views'.
 
 #if defined(OS_WIN)
-#include <windows.h>
+#include <windows.h>  // NOLINT
 typedef struct HFONT__* HFONT;
 #elif defined(OS_MACOSX)
 struct CGContext;
@@ -120,7 +120,7 @@ static inline NativeView NativeViewFromId(NativeViewId id) {
   return reinterpret_cast<NativeView>(id);
 }
 #define NativeViewFromIdInBrowser(x) NativeViewFromId(x)
-#elif defined(OS_MACOSX) || defined(USE_X11)
+#elif defined(OS_POSIX)
 // On Mac and Linux, a NativeView is a pointer to an object, and is useless
 // outside the process in which it was created. NativeViewFromId should only be
 // used inside the appropriate platform ifdef outside of the browser.
@@ -133,7 +133,7 @@ static inline NativeView NativeViewFromId(NativeViewId id) {
 static inline NativeView NativeViewFromIdInBrowser(NativeViewId id) {
   return reinterpret_cast<NativeView>(id);
 }
-#endif  // defined(OS_MACOSX) || defined(USE_X11)
+#endif  // defined(OS_POSIX)
 
 // Convert a NativeView to a NativeViewId.  See the comments at the top of
 // this file.

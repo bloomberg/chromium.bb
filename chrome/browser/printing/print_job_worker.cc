@@ -84,7 +84,7 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
   printing_context_->set_use_overlays(use_overlays);
 
   if (ask_user_for_settings) {
-#if defined(OS_MACOSX) || defined(USE_X11)
+#if defined(OS_POSIX)
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this, &PrintJobWorker::GetSettingsWithUI,
@@ -96,14 +96,14 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
         document_page_count,
         has_selection,
         NewCallback(this, &PrintJobWorker::GetSettingsDone));
-#endif  // defined(OS_MACOSX) || defined(USE_X11)
+#endif  // defined(OS_POSIX)
   } else {
-#if defined(OS_MACOSX) || defined(USE_X11)
+#if defined(OS_POSIX)
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         NewRunnableMethod(this, &PrintJobWorker::UseDefaultSettings));
 #else
     UseDefaultSettings();
-#endif  // defined(OS_MACOSX) || defined(USE_X11)
+#endif  // defined(OS_POSIX)
   }
 }
 
@@ -122,7 +122,7 @@ void PrintJobWorker::GetSettingsDone(PrintingContext::Result result) {
       result));
 }
 
-#if defined(OS_MACOSX) || defined(USE_X11)
+#if defined(OS_POSIX)
 void PrintJobWorker::GetSettingsWithUI(gfx::NativeView parent_view,
                                        int document_page_count,
                                        bool has_selection) {
@@ -139,7 +139,7 @@ void PrintJobWorker::GetSettingsWithUIDone(PrintingContext::Result result) {
   message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
       this, &PrintJobWorker::GetSettingsDone, result));
 }
-#endif  // defined(OS_MACOSX) || defined(USE_X11)
+#endif  // defined(OS_POSIX)
 
 void PrintJobWorker::UseDefaultSettings() {
   PrintingContext::Result result = printing_context_->UseDefaultSettings();

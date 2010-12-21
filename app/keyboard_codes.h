@@ -10,7 +10,7 @@
 
 #if defined(OS_WIN)
 #include "app/keyboard_codes_win.h"
-#elif defined(USE_X11) || defined(OS_MACOSX)
+#elif defined(OS_POSIX)
 #include "app/keyboard_codes_posix.h"
 #endif
 

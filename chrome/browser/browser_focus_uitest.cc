@@ -178,14 +178,14 @@ class TestInterstitialPage : public InterstitialPage {
 
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, ClickingMovesFocus) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-#if defined(USE_X11) || defined(OS_MACOSX)
+#if defined(OS_POSIX)
   // It seems we have to wait a little bit for the widgets to spin up before
   // we can start clicking on them.
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
                                           new MessageLoop::QuitTask(),
                                           kActionDelayMs);
   ui_test_utils::RunMessageLoop();
-#endif
+#endif  // defined(OS_POSIX)
 
   ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 
