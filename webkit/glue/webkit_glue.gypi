@@ -293,7 +293,7 @@
         '../plugins/ppapi/ppb_image_data_impl.h',
         '../plugins/ppapi/ppb_nacl_private_impl.cc',
         '../plugins/ppapi/ppb_nacl_private_impl.h',
-        '../plugins/ppapi/ppb_open_gl_es_impl.cc',
+        '../plugins/ppapi/ppb_opengles_impl.cc',
         '../plugins/ppapi/ppb_pdf.h',
         '../plugins/ppapi/ppb_pdf_impl.cc',
         '../plugins/ppapi/ppb_pdf_impl.h',

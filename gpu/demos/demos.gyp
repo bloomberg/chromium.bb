@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 {
+  'includes': [
+    '../../ppapi/ppapi.gypi',
+  ],
   'variables': {
     'chromium_code': 1,
     'conditions': [
@@ -127,12 +130,13 @@
       'type': 'static_library',
       'dependencies': [
         'gpu_demo_framework',
-        '../../ppapi/ppapi.gyp:ppapi_cpp',
-        '../../ppapi/ppapi.gyp:ppapi_cpp_objects'
+        '../../ppapi/ppapi.gyp:ppapi_cpp_objects',
+        '../../ppapi/ppapi.gyp:ppapi_gles2',
       ],
       'include_dirs': [
         '../..',
         '../../ppapi',
+        '../../ppapi/lib/gl/include',
         '../../third_party/gles2_book/Common/Include',
       ],
       'sources': [
@@ -149,6 +153,7 @@
           '../../third_party',
           '../../third_party/gles2_book/Common/Include',
           '../../ppapi',
+          '../../ppapi/lib/gl/include',
           '../..'
         ],
         'run_as': {
@@ -363,6 +368,7 @@
           'variables': { 'chromium_code': 0, },
           'dependencies': [ 'gpu_demo_framework_ppapi', ],
           'sources': [
+            '<@(ppp_entrypoints_sources)',
             'gles2_book/example.h',
             'gles2_book/demo_hello_triangle.cc',
             '../../third_party/gles2_book/Chapter_2/Hello_Triangle/Hello_Triangle.c',
@@ -375,6 +381,7 @@
           'variables': { 'chromium_code': 0, },
           'dependencies': [ 'gpu_demo_framework_ppapi', ],
           'sources': [
+            '<@(ppp_entrypoints_sources)',
             'gles2_book/example.h',
             'gles2_book/demo_mip_map_2d.cc',
             '../../third_party/gles2_book/Chapter_9/MipMap2D/MipMap2D.c',
@@ -387,6 +394,7 @@
           'variables': { 'chromium_code': 0, },
           'dependencies': [ 'gpu_demo_framework_ppapi', ],
           'sources': [
+            '<@(ppp_entrypoints_sources)',
             'gles2_book/example.h',
             'gles2_book/demo_simple_texture_2d.cc',
             '../../third_party/gles2_book/Chapter_9/Simple_Texture2D/Simple_Texture2D.c',
@@ -399,6 +407,7 @@
           'variables': { 'chromium_code': 0, },
           'dependencies': [ 'gpu_demo_framework_ppapi', ],
           'sources': [
+            '<@(ppp_entrypoints_sources)',
             'gles2_book/example.h',
             'gles2_book/demo_simple_texture_cubemap.cc',
             '../../third_party/gles2_book/Chapter_9/Simple_TextureCubemap/Simple_TextureCubemap.c',
@@ -411,6 +420,7 @@
           'variables': { 'chromium_code': 0, },
           'dependencies': [ 'gpu_demo_framework_ppapi', ],
           'sources': [
+            '<@(ppp_entrypoints_sources)',
             'gles2_book/example.h',
             'gles2_book/demo_simple_vertex_shader.cc',
             '../../third_party/gles2_book/Chapter_8/Simple_VertexShader/Simple_VertexShader.c',
@@ -423,6 +433,7 @@
           'variables': { 'chromium_code': 0, },
           'dependencies': [ 'gpu_demo_framework_ppapi', ],
           'sources': [
+            '<@(ppp_entrypoints_sources)',
             'gles2_book/example.h',
             'gles2_book/demo_stencil_test.cc',
             '../../third_party/gles2_book/Chapter_11/Stencil_Test/Stencil_Test.c',
@@ -435,6 +446,7 @@
           'variables': { 'chromium_code': 0, },
           'dependencies': [ 'gpu_demo_framework_ppapi', ],
           'sources': [
+            '<@(ppp_entrypoints_sources)',
             'gles2_book/example.h',
             'gles2_book/demo_texture_wrap.cc',
             '../../third_party/gles2_book/Chapter_9/TextureWrap/TextureWrap.c',

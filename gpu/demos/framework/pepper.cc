@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <GLES2/gl2.h>
+
 #include "base/at_exit.h"
 #include "base/scoped_ptr.h"
 #include "gpu/demos/framework/demo.h"
@@ -12,6 +14,7 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
+#include "ppapi/lib/gl/gles2/gl2ext_ppapi.h"
 
 namespace gpu {
 namespace demos {
@@ -29,9 +32,9 @@ class PluginInstance : public pp::Instance {
 
   ~PluginInstance() {
     if (!graphics_.is_null()) {
-      graphics_.MakeCurrent();
+      glSetCurrentContextPPAPI(graphics_.pp_resource());
       demo_.reset();
-      pp::Graphics3D_Dev::ResetCurrent();
+      glSetCurrentContextPPAPI(0);
     }
   }
 
@@ -51,9 +54,9 @@ class PluginInstance : public pp::Instance {
       if (!pp::Instance::BindGraphics(graphics_))
         return;
 
-      graphics_.MakeCurrent();
+      glSetCurrentContextPPAPI(graphics_.pp_resource());
       demo_->InitGL();
-      pp::Graphics3D_Dev::ResetCurrent();
+      glSetCurrentContextPPAPI(0);
     }
 
     if (demo_->IsAnimated())
@@ -63,10 +66,10 @@ class PluginInstance : public pp::Instance {
   }
 
   void Paint() {
-    graphics_.MakeCurrent();
+    glSetCurrentContextPPAPI(graphics_.pp_resource());
     demo_->Draw();
     graphics_.SwapBuffers();
-    pp::Graphics3D_Dev::ResetCurrent();
+    glSetCurrentContextPPAPI(0);
   }
 
  private:
@@ -85,7 +88,14 @@ class PluginInstance : public pp::Instance {
 
 class PluginModule : public pp::Module {
  public:
-  PluginModule() : pp::Module(), at_exit_manager_(new base::AtExitManager) {}
+  PluginModule() : at_exit_manager_(new base::AtExitManager) {}
+  ~PluginModule() {
+    glTerminatePPAPI();
+  }
+
+  virtual bool Init() {
+    return glInitializePPAPI(get_browser_interface()) == GL_TRUE ? true : false;
+  }
 
   virtual pp::Instance* CreateInstance(PP_Instance instance) {
     return new PluginInstance(instance, this);

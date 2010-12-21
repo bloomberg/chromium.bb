@@ -5,8 +5,6 @@
 #include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
 
 #include "gpu/command_buffer/common/command_buffer.h"
-#include "base/lazy_instance.h"
-#include "base/thread_local.h"
 #include "ppapi/c/dev/ppb_graphics_3d_dev.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
@@ -15,9 +13,6 @@ namespace webkit {
 namespace ppapi {
 
 namespace {
-
-static base::LazyInstance<base::ThreadLocalPointer<PPB_Graphics3D_Impl> >
-    g_current_context_key(base::LINKER_INITIALIZED);
 
 // Size of the transfer buffer.
 enum { kTransferBufferSize = 512 * 1024 };
@@ -81,22 +76,6 @@ void* GetProcAddress(const char* name) {
   return NULL;
 }
 
-PP_Bool MakeCurrent(PP_Resource graphics3d) {
-  if (!graphics3d) {
-    PPB_Graphics3D_Impl::ResetCurrent();
-    return PP_TRUE;
-  } else {
-    scoped_refptr<PPB_Graphics3D_Impl> context(
-        Resource::GetAs<PPB_Graphics3D_Impl>(graphics3d));
-    return BoolToPPBool(context.get() && context->MakeCurrent());
-  }
-}
-
-PP_Resource GetCurrentContext() {
-  PPB_Graphics3D_Impl* current_context = PPB_Graphics3D_Impl::GetCurrent();
-  return current_context ? current_context->GetReference() : 0;
-}
-
 PP_Bool SwapBuffers(PP_Resource graphics3d) {
   scoped_refptr<PPB_Graphics3D_Impl> context(
       Resource::GetAs<PPB_Graphics3D_Impl>(graphics3d));
@@ -104,14 +83,8 @@ PP_Bool SwapBuffers(PP_Resource graphics3d) {
 }
 
 uint32_t GetError() {
-  // Technically, this should return the last error that occurred on the current
-  // thread, rather than an error associated with a particular context.
-  // TODO(apatrick): Fix this.
-  PPB_Graphics3D_Impl* current_context = PPB_Graphics3D_Impl::GetCurrent();
-  if (!current_context)
-    return 0;
-
-  return current_context->GetError();
+  // TODO(alokp): Fix this.
+  return 0;
 }
 
 const PPB_Graphics3D_Dev ppb_graphics3d = {
@@ -122,8 +95,6 @@ const PPB_Graphics3D_Dev ppb_graphics3d = {
   &QueryString,
   &CreateContext,
   &GetProcAddress,
-  &MakeCurrent,
-  &GetCurrentContext,
   &SwapBuffers,
   &GetError
 };
@@ -137,14 +108,6 @@ PPB_Graphics3D_Impl::PPB_Graphics3D_Impl(PluginModule* module)
 
 const PPB_Graphics3D_Dev* PPB_Graphics3D_Impl::GetInterface() {
   return &ppb_graphics3d;
-}
-
-PPB_Graphics3D_Impl* PPB_Graphics3D_Impl::GetCurrent() {
-  return g_current_context_key.Get().Get();
-}
-
-void PPB_Graphics3D_Impl::ResetCurrent() {
-  g_current_context_key.Get().Set(NULL);
 }
 
 PPB_Graphics3D_Impl::~PPB_Graphics3D_Impl() {
@@ -203,16 +166,6 @@ bool PPB_Graphics3D_Impl::BindToInstance(PluginInstance* new_instance) {
   return true;
 }
 
-bool PPB_Graphics3D_Impl::MakeCurrent() {
-  if (!platform_context_.get())
-    return false;
-
-  g_current_context_key.Get().Set(this);
-
-  // TODO(apatrick): Return false on context lost.
-  return true;
-}
-
 bool PPB_Graphics3D_Impl::SwapBuffers() {
   if (!platform_context_.get())
     return false;
@@ -249,12 +202,7 @@ unsigned PPB_Graphics3D_Impl::GetBackingTextureId() {
 }
 
 void PPB_Graphics3D_Impl::Destroy() {
-  if (GetCurrent() == this) {
-    ResetCurrent();
-  }
-
   gles2_implementation_ = NULL;
-
   platform_context_.reset();
 }
 

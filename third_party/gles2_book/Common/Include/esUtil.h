@@ -17,9 +17,6 @@
 #ifndef ESUTIL_H
 #define ESUTIL_H
 
-///
-//  Includes
-//
 #include <GLES2/gl2.h>
 
 #ifdef __cplusplus

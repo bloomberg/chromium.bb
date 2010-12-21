@@ -283,8 +283,8 @@ const void* GetInterface(const char* name) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch("disable-3d-apis")) {
     if (strcmp(name, PPB_GRAPHICS_3D_DEV_INTERFACE) == 0)
       return PPB_Graphics3D_Impl::GetInterface();
-    if (strcmp(name, PPB_OPENGLES_DEV_INTERFACE) == 0)
-      return PPB_Graphics3D_Impl::GetOpenGLESInterface();
+    if (strcmp(name, PPB_OPENGLES2_DEV_INTERFACE) == 0)
+      return PPB_Graphics3D_Impl::GetOpenGLES2Interface();
   }
 #endif  // ENABLE_GPU
 

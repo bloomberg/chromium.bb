@@ -20,7 +20,6 @@
       },
       'sources': [
         'Common/Include/esUtil.h',
-        'Common/Include/esUtil_win.h',
         'Common/Source/esShader.c',
         'Common/Source/esShapes.c',
         'Common/Source/esTransform.c',

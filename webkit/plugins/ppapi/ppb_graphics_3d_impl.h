@@ -22,7 +22,7 @@ class GLES2Implementation;
 }  // namespace gpu
 
 struct PPB_Graphics3D_Dev;
-struct PPB_OpenGLES_Dev;
+struct PPB_OpenGLES2_Dev;
 
 namespace webkit {
 namespace ppapi {
@@ -34,13 +34,9 @@ class PPB_Graphics3D_Impl : public Resource {
   virtual ~PPB_Graphics3D_Impl();
 
   static const PPB_Graphics3D_Dev* GetInterface();
-  static const PPB_OpenGLES_Dev* GetOpenGLESInterface();
+  static const PPB_OpenGLES2_Dev* GetOpenGLES2Interface();
 
   static bool Shutdown();
-
-  static PPB_Graphics3D_Impl* GetCurrent();
-
-  static void ResetCurrent();
 
   // Resource override.
   virtual PPB_Graphics3D_Impl* AsPPB_Graphics3D_Impl();
@@ -53,8 +49,6 @@ class PPB_Graphics3D_Impl : public Resource {
   // the last rendered frame is displayed.
   // TODO(apatrick): Figure out the best semantics here.
   bool BindToInstance(PluginInstance* new_instance);
-
-  bool MakeCurrent();
 
   bool SwapBuffers();
 

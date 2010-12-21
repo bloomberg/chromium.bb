@@ -27,10 +27,8 @@ class Graphics3D_Dev : public Resource {
 
   static void* GetProcAddress(const char* name);
 
-  static bool ResetCurrent();
-  static Graphics3D_Dev GetCurrentContext();
   static uint32_t GetError();
-  static const PPB_OpenGLES_Dev* GetImplementation();
+  static const PPB_OpenGLES2_Dev* GetImplementation();
 
   // Creates an is_null() Graphics3D object.
   Graphics3D_Dev() {}
@@ -40,7 +38,6 @@ class Graphics3D_Dev : public Resource {
                  int32_t share_context,
                  const int32_t* attrib_list);
 
-  bool MakeCurrent() const;
   bool SwapBuffers() const;
 
  protected:

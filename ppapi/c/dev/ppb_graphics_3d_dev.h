@@ -78,14 +78,6 @@ struct PPB_Graphics3D_Dev {
   // Any thread.
   void* (*GetProcAddress)(const char* name);
 
-  // Make a particular context current of the calling thread.  Returns PP_TRUE
-  // on success, PP_FALSE on failure.
-  PP_Bool (*MakeCurent)(PP_Resource context);
-
-  // Returns the calling thread's current context or NULL if no context is
-  // current.
-  PP_Resource (*GetCurrentContext)();
-
   // Snapshots the rendered frame and makes it available for composition with
   // the rest of the page. The alpha channel is used for translucency effects.
   // One means fully opaque. Zero means fully transparent. Any thread.

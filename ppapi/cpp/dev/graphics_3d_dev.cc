@@ -10,10 +10,6 @@
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 
-extern "C" {
-const PPB_OpenGLES_Dev* pepper_opengl_interface = NULL;
-}
-
 namespace pp {
 
 namespace {
@@ -22,13 +18,8 @@ template <> const char* interface_name<PPB_Graphics3D_Dev>() {
   return PPB_GRAPHICS_3D_DEV_INTERFACE;
 }
 
-template <> const char* interface_name<PPB_OpenGLES_Dev>() {
-  return PPB_OPENGLES_DEV_INTERFACE;
-}
-
-inline void InitializeOpenGLCInterface() {
-  if (!pepper_opengl_interface)
-    pepper_opengl_interface = get_interface<PPB_OpenGLES_Dev>();
+template <> const char* interface_name<PPB_OpenGLES2_Dev>() {
+  return PPB_OPENGLES2_DEV_INTERFACE;
 }
 
 }  // namespace
@@ -84,26 +75,14 @@ Graphics3D_Dev Graphics3D_Dev::FromResource(PP_Resource resource_id) {
   return Graphics3D_Dev();
 }
 
-bool Graphics3D_Dev::ResetCurrent() {
-  return has_interface<PPB_Graphics3D_Dev>() &&
-      get_interface<PPB_Graphics3D_Dev>()->MakeCurent(0);
-}
-
-Graphics3D_Dev Graphics3D_Dev::GetCurrentContext() {
-  if (has_interface<PPB_Graphics3D_Dev>())
-    return FromResource(
-        get_interface<PPB_Graphics3D_Dev>()->GetCurrentContext());
-  return Graphics3D_Dev();
-}
-
 uint32_t Graphics3D_Dev::GetError() {
   if (has_interface<PPB_Graphics3D_Dev>())
     return get_interface<PPB_Graphics3D_Dev>()->GetError();
   return PP_GRAPHICS_3D_ERROR_NOT_INITIALIZED;
 }
 
-const PPB_OpenGLES_Dev* Graphics3D_Dev::GetImplementation() {
-  return get_interface<PPB_OpenGLES_Dev>();
+const PPB_OpenGLES2_Dev* Graphics3D_Dev::GetImplementation() {
+  return get_interface<PPB_OpenGLES2_Dev>();
 }
 
 Graphics3D_Dev::Graphics3D_Dev(const Instance& instance,
@@ -111,17 +90,10 @@ Graphics3D_Dev::Graphics3D_Dev(const Instance& instance,
                                int32_t share_context,
                                const int32_t* attrib_list) {
   if (has_interface<PPB_Graphics3D_Dev>() &&
-      has_interface<PPB_OpenGLES_Dev>()) {
-    InitializeOpenGLCInterface();
+      has_interface<PPB_OpenGLES2_Dev>()) {
     PassRefFromConstructor(get_interface<PPB_Graphics3D_Dev>()->CreateContext(
         instance.pp_instance(), config, share_context, attrib_list));
   }
-}
-
-bool Graphics3D_Dev::MakeCurrent() const {
-  InitializeOpenGLCInterface();
-  return has_interface<PPB_Graphics3D_Dev>() &&
-      get_interface<PPB_Graphics3D_Dev>()->MakeCurent(pp_resource());
 }
 
 bool Graphics3D_Dev::SwapBuffers() const {

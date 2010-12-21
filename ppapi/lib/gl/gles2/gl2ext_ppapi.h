@@ -9,7 +9,6 @@
 
 #include <GLES2/gl2platform.h>
 
-#include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/dev/ppb_opengles_dev.h"
@@ -21,13 +20,12 @@ extern "C" {
 // Initializes OpenGL ES 2.0 library.
 // Must be called once before making any gl calls.
 // GL_FALSE is returned on failure, GL_TRUE otherwise.
-GL_APICALL int GL_APIENTRY glInitializePPAPI(
-    PP_Module module,
+GL_APICALL GLboolean GL_APIENTRY glInitializePPAPI(
     PPB_GetInterface get_browser_interface);
 
 // Terminates OpenGL ES 2.0 library.
 // GL_FALSE is returned on failure, GL_TRUE otherwise.
-GL_APICALL int GL_APIENTRY glTerminatePPAPI();
+GL_APICALL GLboolean GL_APIENTRY glTerminatePPAPI();
 
 // Sets context to be used for rendering in the current thread.
 GL_APICALL void GL_APIENTRY glSetCurrentContextPPAPI(PP_Resource context);
@@ -37,7 +35,7 @@ GL_APICALL void GL_APIENTRY glSetCurrentContextPPAPI(PP_Resource context);
 GL_APICALL PP_Resource GL_APIENTRY glGetCurrentContextPPAPI();
 
 // Returns OpenGL ES 2.0 interface.
-GL_APICALL const struct PPB_OpenGLES_Dev* GL_APIENTRY glGetInterfacePPAPI();
+GL_APICALL const struct PPB_OpenGLES2_Dev* GL_APIENTRY glGetInterfacePPAPI();
 
 #ifdef __cplusplus
 }

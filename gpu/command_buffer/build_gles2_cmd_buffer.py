@@ -48,8 +48,8 @@ _GL_TYPES = {
   'GLvoid': 'void',
   'GLfixed': 'int',
   'GLclampx': 'int',
-  'GLintptr': 'khronos_intptr_t',
-  'GLsizeiptr': 'khronos_ssize_t',
+  'GLintptr': 'long int',
+  'GLsizeiptr': 'long int',
 }
 _GL_FUNCTIONS = """
 GL_APICALL void         GL_APIENTRY glActiveTexture (GLenum texture);
@@ -1462,6 +1462,7 @@ _FUNCTION_INFO = {
     'type': 'Custom',
     'impl_func': False,
     'unit_test': False,
+    'extension': True,
   },
   'TexImage2D': {'type': 'Manual', 'immediate': True},
   'TexParameterf': {'decoder_func': 'DoTexParameterf'},
@@ -4513,6 +4514,9 @@ class Function(object):
     """Adds an info."""
     setattr(self.info, name, value)
 
+  def IsCoreGLFunction(self):
+    return not self.GetInfo('extension')
+
   def GetGLFunctionName(self):
     """Gets the function to call to execute GL for this command."""
     if self.GetInfo('decoder_func'):
@@ -5255,24 +5259,28 @@ class GLGenerator(object):
     """Writes the Pepper OpenGLES interface definition."""
     file = CHeaderWriter(
         filename,
-        "// This interface is used to access common and lite profile OpenGL ES "
-        "2.0\n// functions.\n",
+        "// OpenGL ES interface.\n",
         3)
 
-    file.Write("#include \"ppapi/GLES2/khrplatform.h\"\n\n")
-
-    file.Write("#define PPB_OPENGLES_DEV_INTERFACE \"PPB_OpenGLES(Dev);2.0\"\n\n")
-
+    file.Write("#ifndef __gl2_h_\n")
     for (k, v) in _GL_TYPES.iteritems():
       file.Write("typedef %s %s;\n" % (v, k))
+    file.Write("#endif  // __gl2_h_\n\n")
 
-    file.Write("\nstruct PPB_OpenGLES_Dev {\n")
+    file.Write("#define PPB_OPENGLES2_DEV_INTERFACE \"PPB_OpenGLES(Dev);2.0\"\n")
+
+    file.Write("\nstruct PPB_OpenGLES2_Dev {\n")
     for func in self.original_functions:
-      if func.GetInfo('extension'):
+      if not func.IsCoreGLFunction():
         continue
-      file.Write("  %s (*%s)(%s);\n" %
-                 (func.return_type, func.name,
-                  func.MakeTypedOriginalArgString("")))
+
+      original_arg = func.MakeTypedOriginalArgString("")
+      context_arg = "PP_Resource context"
+      if len(original_arg):
+        arg = context_arg + ", " + original_arg
+      else:
+        arg = context_arg
+      file.Write("  %s (*%s)(%s);\n" % (func.return_type, func.name, arg))
     file.Write("};\n\n")
 
     file.Close()
@@ -5284,45 +5292,54 @@ class GLGenerator(object):
     file.Write(_LICENSE)
     file.Write("// This file is auto-generated. DO NOT EDIT!\n\n")
 
-    file.Write("#include \"webkit/glue/plugins/pepper_graphics_3d.h\"\n\n")
+    file.Write("#include \"webkit/plugins/ppapi/ppb_graphics_3d_impl.h\"\n\n")
 
     file.Write("#include \"gpu/command_buffer/client/gles2_implementation.h\"")
     file.Write("\n#include \"ppapi/c/dev/ppb_opengles_dev.h\"\n\n")
 
-    file.Write("namespace pepper {\n\n")
+    file.Write("namespace webkit {\n")
+    file.Write("namespace ppapi {\n\n")
     file.Write("namespace {\n\n")
 
     for func in self.original_functions:
-      if func.GetInfo('extension'):
+      if not func.IsCoreGLFunction():
         continue
-      file.Write("%s %s(%s) {\n" %
-                 (func.return_type, func.name,
-                  func.MakeTypedOriginalArgString("")))
-      return_string = "return "
-      if func.return_type == "void":
-        return_string = ""
-      file.Write("  %sGraphics3D::GetCurrent()->impl()->%s(%s);\n" %
-                 (return_string, func.original_name,
+
+      original_arg = func.MakeTypedOriginalArgString("")
+      context_arg = "PP_Resource context"
+      if len(original_arg):
+        arg = context_arg + ", " + original_arg
+      else:
+        arg = context_arg
+      file.Write("%s %s(%s) {\n" % (func.return_type, func.name, arg))
+      
+      file.Write("""  scoped_refptr<PPB_Graphics3D_Impl> graphics_3d = 
+      Resource::GetAs<PPB_Graphics3D_Impl>(context);
+""")
+
+      return_str = "" if func.return_type == "void" else "return "
+      file.Write("  %sgraphics_3d->impl()->%s(%s);\n" %
+                 (return_str, func.original_name,
                   func.MakeOriginalArgString("")))
-      file.Write("}\n")
+      file.Write("}\n\n")
 
-    file.Write("\nconst struct PPB_OpenGLES_Dev ppb_opengles = {\n")
-
+    file.Write("\nconst struct PPB_OpenGLES2_Dev ppb_opengles2 = {\n")
     file.Write("  &")
     file.Write(",\n  &".join(
-      f.name for f in self.original_functions if not f.GetInfo('extension')))
+      f.name for f in self.original_functions if f.IsCoreGLFunction()))
     file.Write("\n")
-
     file.Write("};\n\n")
+
     file.Write("}  // namespace\n")
 
     file.Write("""
-const PPB_OpenGLES_Dev* Graphics3D::GetOpenGLESInterface() {
-  return &ppb_opengles;
+const PPB_OpenGLES2_Dev* PPB_Graphics3D_Impl::GetOpenGLES2Interface() {
+  return &ppb_opengles2;
 }
 
 """)
-    file.Write("}  // namespace pepper\n\n")
+    file.Write("}  // namespace ppapi\n")
+    file.Write("}  // namespace webkit\n\n")
 
     file.Close()
 
@@ -5333,19 +5350,28 @@ const PPB_OpenGLES_Dev* Graphics3D::GetOpenGLESInterface() {
     file.Write(_LICENSE)
     file.Write("// This file is auto-generated. DO NOT EDIT!\n\n")
 
-    file.Write("#include <GLES2/gl2.h>\n\n")
+    file.Write("#include <GLES2/gl2.h>\n")
+    file.Write("#include \"ppapi/lib/gl/gles2/gl2ext_ppapi.h\"\n\n")
 
     for func in self.original_functions:
-      if func.GetInfo('extension') or func.name == 'SwapBuffers':
+      if not func.IsCoreGLFunction():
         continue
 
       file.Write("%s GL_APIENTRY gl%s(%s) {\n" %
                  (func.return_type, func.name,
                   func.MakeTypedOriginalArgString("")))
-      if func.return_type != "void":
-        file.Write("  return 0;\n")
+      return_str = "" if func.return_type == "void" else "return "
+      interface_str = "glGetInterfacePPAPI()"
+      original_arg = func.MakeOriginalArgString("")
+      context_arg = "glGetCurrentContextPPAPI()"
+      if len(original_arg):
+        arg = context_arg + ", " + original_arg
+      else:
+        arg = context_arg
+      file.Write("  %s%s->%s(%s);\n" %
+                 (return_str, interface_str, func.name, arg))
       file.Write("}\n\n")
-  
+
 def main(argv):
   """This is the main function."""
   parser = OptionParser()
@@ -5380,7 +5406,7 @@ def main(argv):
 
   elif options.alternate_mode == "chrome_ppapi":
     gen.WritePepperGLES2Implementation(
-        "webkit/glue/plugins/pepper_graphics_3d_gl.cc")
+        "webkit/plugins/ppapi/ppb_opengles_impl.cc")
 
   else:
     gen.WriteCommandIds("common/gles2_cmd_ids_autogen.h")
