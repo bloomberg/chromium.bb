@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 cr.define('options.search_engines', function() {
-  const List = cr.ui.List;
+  const DeletableItem = options.DeletableItem;
+  const DeletableItemList = options.DeletableItemList;
   const ListInlineHeaderSelectionController =
       options.ListInlineHeaderSelectionController;
-  const ListItem = cr.ui.ListItem;
 
   /**
    * Creates a new search engine list item.
@@ -31,11 +31,11 @@ cr.define('options.search_engines', function() {
   };
 
   SearchEngineListItem.prototype = {
-    __proto__: ListItem.prototype,
+    __proto__: DeletableItem.prototype,
 
     /** @inheritDoc */
     decorate: function() {
-      ListItem.prototype.decorate.call(this);
+      DeletableItem.prototype.decorate.call(this);
 
       var engine = this.searchEngine_;
 
@@ -43,6 +43,8 @@ cr.define('options.search_engines', function() {
         this.classList.add('heading');
       else if (engine['default'])
         this.classList.add('default');
+
+      this.deletable = engine['canBeRemoved'];
 
       var nameEl = this.ownerDocument.createElement('div');
       nameEl.className = 'name';
@@ -54,21 +56,21 @@ cr.define('options.search_engines', function() {
         nameEl.style.backgroundImage = url('chrome://favicon/iconurl/' +
                                            engine['iconURL']);
       }
-      this.appendChild(nameEl);
+      this.contentElement.appendChild(nameEl);
 
       var keywordEl = this.ownerDocument.createElement('div');
       keywordEl.className = 'keyword';
       keywordEl.textContent = engine['heading'] ?
           localStrings.getString('searchEngineTableKeywordHeader') :
           engine['keyword'];
-      this.appendChild(keywordEl);
+      this.contentElement.appendChild(keywordEl);
     },
   };
 
   var SearchEngineList = cr.ui.define('list');
 
   SearchEngineList.prototype = {
-    __proto__: List.prototype,
+    __proto__: DeletableItemList.prototype,
 
     /** @inheritDoc */
     createItem: function(searchEngine) {
@@ -80,13 +82,19 @@ cr.define('options.search_engines', function() {
       return new ListInlineHeaderSelectionController(sm, this);
     },
 
+    /** @inheritDoc */
+    deleteItemAtIndex: function(index) {
+      var modelIndex = this.dataModel.item(index)['modelIndex']
+      chrome.send('removeSearchEngine', [String(modelIndex)]);
+    },
+
     /**
      * Returns true if the given item is selectable.
      * @param {number} index The index to check.
      */
     canSelectIndex: function(index) {
       return !this.dataModel.item(index).hasOwnProperty('heading');
-    }
+    },
   };
 
   // Export
