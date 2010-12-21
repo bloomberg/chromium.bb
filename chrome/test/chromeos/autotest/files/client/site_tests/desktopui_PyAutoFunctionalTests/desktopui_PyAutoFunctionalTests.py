@@ -12,6 +12,6 @@ class desktopui_PyAutoFunctionalTests(site_chrome_test.ChromeTestBase):
     def run_once(self):
         deps_dir = os.path.join(self.autodir, 'deps')
         self.test_binary_dir = ''
-        pyauto_script = '%s/test_src/chrome/test/functional/' \
+        pyauto_script = '%s/chrome_test/test_src/chrome/test/functional/' \
                         'pyauto_functional.py' % deps_dir
         self.run_chrome_test(pyauto_script)
