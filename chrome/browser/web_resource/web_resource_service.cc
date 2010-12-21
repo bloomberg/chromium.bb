@@ -31,11 +31,8 @@ namespace {
 // Delay on first fetch so we don't interfere with startup.
 static const int kStartResourceFetchDelay = 5000;
 
-// Long delay between calls to update the cache (48 hours).
-static const int kLongCacheUpdateDelay = 48 * 60 * 60 * 1000;
-
-// Short delay between calls to update the cache (8 hours).
-static const int kShortCacheUpdateDelay = 8 * 60 * 60 * 1000;
+// Delay between calls to update the cache (48 hours).
+static const int kCacheUpdateDelay = 48 * 60 * 60 * 1000;
 
 }  // namespace
 
@@ -220,10 +217,7 @@ WebResourceService::WebResourceService(Profile* profile)
 WebResourceService::~WebResourceService() { }
 
 void WebResourceService::Init() {
-  // Much shorter update time if looking for a promo to display.
-  cache_update_delay_ =
-      WebResourceServiceUtil::CanShowPromo(profile_) ? kShortCacheUpdateDelay :
-                                                       kLongCacheUpdateDelay;
+  cache_update_delay_ = kCacheUpdateDelay;
   resource_dispatcher_host_ = g_browser_process->resource_dispatcher_host();
   web_resource_fetcher_.reset(new WebResourceFetcher(this));
   prefs_->RegisterStringPref(prefs::kNTPWebResourceCacheUpdate, "0");
