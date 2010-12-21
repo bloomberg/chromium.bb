@@ -366,6 +366,11 @@ select {
   background-color: pink;
 }
 
+.settings-list {
+  border: 1px solid #d9d9d9;
+  border-radius: 2px;
+}
+
 list > * {
   -webkit-box-align: center;
   -webkit-transition: .15s background-color;

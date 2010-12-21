@@ -175,12 +175,12 @@ cr.define('options', function() {
       list.dataModel = new ArrayDataModel(pages);
       if (pages.length > 0 && pages.length <= 10) {
         list.classList.remove("hidden");
-        $('startupPageManagement').classList.add('fullView');
+        $('startupPageManagement').classList.add('settings-list');
         $('startupShowPagesLabel').textContent =
             localStrings.getStringWithoutAccelerator('startupShowPages');
       } else {
         list.classList.add("hidden");
-        $('startupPageManagement').classList.remove('fullView');
+        $('startupPageManagement').classList.remove('settings-list');
         $('startupShowPagesLabel').textContent =
             localStrings.getStringWithoutAccelerator('startupShowManyPages');
       }
