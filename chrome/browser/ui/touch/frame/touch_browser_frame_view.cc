@@ -114,15 +114,11 @@ void TouchBrowserFrameView::Observe(NotificationType type,
                                     const NotificationDetails& details) {
   Browser* browser = browser_view()->browser();
   if (type == NotificationType::FOCUS_CHANGED_IN_PAGE) {
-    // Only modify the keyboard state if the notification is coming from
-    // a source within the same Browser.
-    Source<RenderViewHost> specific_source(source);
-    for (int i = 0; i < browser->tab_count(); ++i) {
-      if (browser->GetTabContentsAt(i)->render_view_host() ==
-          specific_source.ptr()) {
-        UpdateKeyboardAndLayout(*Details<const bool>(details).ptr());
-        break;
-      }
+    // Only modify the keyboard state if the currently active tab sent the
+    // notification.
+    if (browser->GetSelectedTabContents()->render_view_host() ==
+        Source<RenderViewHost>(source).ptr()) {
+      UpdateKeyboardAndLayout(*Details<const bool>(details).ptr());
     }
   } else if (type == NotificationType::NAV_ENTRY_COMMITTED) {
     Browser* source_browser = Browser::GetBrowserForController(
