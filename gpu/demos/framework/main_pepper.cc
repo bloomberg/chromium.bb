@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/at_exit.h"
-#include "base/logging.h"
 #include "gpu/demos/framework/plugin.h"
 #include "gpu/pgl/pgl.h"
 #include "third_party/npapi/bindings/nphostapi.h"
@@ -16,13 +14,6 @@
 // signature even inside extern "C" {}
 #define EXPORT
 #endif  // GNUC
-
-namespace {
-// AtExitManager is used by singleton classes to delete themselves when
-// the program terminates. There should be only one instance of this class
-// per thread;
-base::AtExitManager* g_at_exit_manager;
-}  // namespace
 
 namespace gpu {
 namespace demos {
@@ -126,7 +117,6 @@ NPError NPP_GetValue(NPP instance, NPPVariable variable, void* value) {
       break;
     }
     default:
-      LOG(INFO) << "Unhandled variable to NPP_GetValue\n";
       err = NPERR_GENERIC_ERROR;
       break;
   }
@@ -167,7 +157,6 @@ EXPORT NPError API_CALL NP_Initialize(NPNetscapeFuncs* browser_funcs
                                      , NPPluginFuncs* plugin_funcs
 #endif  // OS_LINUX
                                      ) {
-  g_at_exit_manager = new base::AtExitManager();
   gpu::demos::g_browser = browser_funcs;
   pglInitialize();
 
@@ -179,7 +168,6 @@ EXPORT NPError API_CALL NP_Initialize(NPNetscapeFuncs* browser_funcs
 
 EXPORT void API_CALL NP_Shutdown() {
   pglTerminate();
-  delete g_at_exit_manager;
 }
 
 #if defined(OS_LINUX)

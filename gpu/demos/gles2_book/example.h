@@ -7,8 +7,9 @@
 #ifndef GPU_DEMOS_GLES2_BOOK_EXAMPLE_H_
 #define GPU_DEMOS_GLES2_BOOK_EXAMPLE_H_
 
-#include "base/logging.h"
-#include "gpu/command_buffer/common/logging.h"
+#include <cassert>
+#include <cstring>
+
 #include "gpu/demos/framework/demo.h"
 #include "third_party/gles2_book/Common/Include/esUtil.h"
 
@@ -48,7 +49,7 @@ class Example : public gpu::demos::Demo {
 
   virtual bool InitGL() {
     // Note that update_func is optional.
-    CHECK(init_func_ && draw_func_ && shut_down_func_);
+    assert(init_func_ && draw_func_ && shut_down_func_);
 
     context_.width = width();
     context_.height = height();
@@ -81,8 +82,6 @@ class Example : public gpu::demos::Demo {
   UpdateFunc* update_func_;
   DrawFunc* draw_func_;
   ShutDownFunc* shut_down_func_;
-
-  DISALLOW_COPY_AND_ASSIGN(Example);
 };
 
 }  // namespace gles2_book

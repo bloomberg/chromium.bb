@@ -25,19 +25,14 @@
     {
       'target_name': 'gpu_demo_framework',
       'type': 'static_library',
-      'dependencies': [
-        '../../base/base.gyp:base',
+      'include_dirs': [
+        '../..',
       ],
       'sources': [
         'framework/demo.cc',
         'framework/demo.h',
         'framework/demo_factory.h',
       ],
-      'all_dependent_settings': {
-        'include_dirs': [
-          '../..',
-        ],
-      },
     },
     {
       'target_name': 'gpu_demo_framework_exe',
@@ -74,14 +69,14 @@
         'gpu_demo_framework',
         '../gpu.gyp:pgl',
       ],
+      'include_dirs': ['../..'],
       'sources': [
         'framework/plugin.cc',
         'framework/plugin.h',
       ],
       'direct_dependent_settings': {
-        'sources': [
-          'framework/main_pepper.cc',
-        ],
+        'include_dirs': ['../..'],
+        'sources': ['framework/main_pepper.cc'],
         'run_as': {
           'conditions': [
             ['OS=="mac"', {
@@ -135,7 +130,6 @@
       ],
       'include_dirs': [
         '../..',
-        '../../ppapi',
         '../../ppapi/lib/gl/include',
         '../../third_party/gles2_book/Common/Include',
       ],
@@ -150,11 +144,9 @@
       ],
       'direct_dependent_settings': {
         'include_dirs': [
-          '../../third_party',
-          '../../third_party/gles2_book/Common/Include',
-          '../../ppapi',
+          '../..',
           '../../ppapi/lib/gl/include',
-          '../..'
+          '../../third_party/gles2_book/Common/Include',
         ],
         'run_as': {
           'conditions': [

@@ -7,7 +7,7 @@
 #ifndef GPU_DEMOS_FRAMEWORK_DEMO_H_
 #define GPU_DEMOS_FRAMEWORK_DEMO_H_
 
-#include "base/time.h"
+#include <ctime>
 
 namespace gpu {
 namespace demos {
@@ -61,9 +61,7 @@ class Demo {
   int height_;  // Window height.
 
   // Time at which draw was called last.
-  base::Time last_draw_time_;
-
-  DISALLOW_COPY_AND_ASSIGN(Demo);
+  clock_t last_draw_time_;
 };
 
 }  // namespace demos

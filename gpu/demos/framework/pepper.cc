@@ -4,8 +4,6 @@
 
 #include <GLES2/gl2.h>
 
-#include "base/at_exit.h"
-#include "base/scoped_ptr.h"
 #include "gpu/demos/framework/demo.h"
 #include "gpu/demos/framework/demo_factory.h"
 #include "ppapi/cpp/completion_callback.h"
@@ -33,7 +31,7 @@ class PluginInstance : public pp::Instance {
   ~PluginInstance() {
     if (!graphics_.is_null()) {
       glSetCurrentContextPPAPI(graphics_.pp_resource());
-      demo_.reset();
+      delete demo_;
       glSetCurrentContextPPAPI(0);
     }
   }
@@ -80,7 +78,7 @@ class PluginInstance : public pp::Instance {
   }
 
   pp::Module* module_;
-  scoped_ptr<Demo> demo_;
+  Demo* demo_;
   pp::Graphics3D_Dev graphics_;
   pp::Size size_;
   pp::CompletionCallbackFactory<PluginInstance> callback_factory_;
@@ -88,7 +86,7 @@ class PluginInstance : public pp::Instance {
 
 class PluginModule : public pp::Module {
  public:
-  PluginModule() : at_exit_manager_(new base::AtExitManager) {}
+  PluginModule() {}
   ~PluginModule() {
     glTerminatePPAPI();
   }
@@ -100,9 +98,6 @@ class PluginModule : public pp::Module {
   virtual pp::Instance* CreateInstance(PP_Instance instance) {
     return new PluginInstance(instance, this);
   }
-
- private:
-  scoped_ptr<base::AtExitManager> at_exit_manager_;
 };
 
 }  // namespace demos

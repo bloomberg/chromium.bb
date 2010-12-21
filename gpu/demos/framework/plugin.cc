@@ -4,7 +4,7 @@
 
 #include "gpu/demos/framework/plugin.h"
 
-#include "base/logging.h"
+#include <cassert>
 #include "gpu/demos/framework/demo_factory.h"
 
 using gpu::demos::Plugin;
@@ -114,11 +114,11 @@ void Plugin::New(NPMIMEType pluginType,
                  int16 argc, char* argn[], char* argv[]) {
   if (!g_extensions) {
     g_browser->getvalue(npp_, NPNVPepperExtensions, &g_extensions);
-    CHECK(g_extensions);
+    assert(g_extensions);
   }
 
   device3d_ = g_extensions->acquireDevice(npp_, NPPepper3DDevice);
-  CHECK(device3d_);
+  assert(device3d_);
 }
 
 void Plugin::SetWindow(const NPWindow& window) {
@@ -160,7 +160,7 @@ void Plugin::Paint() {
 }
 
 bool Plugin::CreateContext() {
-  DCHECK(!pgl_context_);
+  assert(!pgl_context_);
 
   // Initialize a 3D context.
   NPDeviceContext3DConfig config;

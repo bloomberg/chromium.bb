@@ -8,7 +8,7 @@
 namespace gpu {
 namespace demos {
 
-Demo::Demo() : width_(0), height_(0) {
+Demo::Demo() : width_(0), height_(0), last_draw_time_(0) {
 }
 
 Demo::~Demo() {
@@ -21,10 +21,10 @@ void Demo::InitWindowSize(int width, int height) {
 
 void Demo::Draw() {
   float elapsed_sec = 0.0f;
-  const base::Time current_time = base::Time::Now();
-  if (!last_draw_time_.is_null()) {
-    base::TimeDelta time_delta = current_time - last_draw_time_;
-    elapsed_sec = static_cast<float>(time_delta.InSecondsF());
+  clock_t current_time = clock();
+  if (last_draw_time_ != 0) {
+    elapsed_sec = static_cast<float>(current_time - last_draw_time_) /
+        CLOCKS_PER_SEC;
   }
   last_draw_time_ = current_time;
 
