@@ -591,11 +591,19 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
   if (!user_data_dir.empty())
     command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
 #if defined(OS_CHROMEOS)
-  const std::string& profile =
+  const std::string& login_profile =
       browser_command_line.GetSwitchValueASCII(switches::kLoginProfile);
-  if (!profile.empty())
-    command_line->AppendSwitchASCII(switches::kLoginProfile, profile);
+  if (!login_profile.empty())
+    command_line->AppendSwitchASCII(switches::kLoginProfile, login_profile);
 #endif
+
+  PrefService* prefs = profile()->GetPrefs();
+  // Currently this pref is only registered if applied via a policy.
+  if (prefs->HasPrefPath(prefs::kDisable3DAPIs) &&
+      prefs->GetBoolean(prefs::kDisable3DAPIs)) {
+    // Turn this policy into a command line switch.
+    command_line->AppendSwitch(switches::kDisable3DAPIs);
+  }
 }
 
 void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
@@ -698,7 +706,8 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kDisableFileSystem,
     switches::kPpapiOutOfProcess,
     switches::kEnablePrintPreview,
-    switches::kEnableCrxlessWebApps
+    switches::kEnableCrxlessWebApps,
+    switches::kDisable3DAPIs
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));

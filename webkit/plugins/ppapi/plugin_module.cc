@@ -279,10 +279,13 @@ const void* GetInterface(const char* name) {
     return PluginInstance::GetZoomInterface();
 
 #ifdef ENABLE_GPU
-  if (strcmp(name, PPB_GRAPHICS_3D_DEV_INTERFACE) == 0)
-    return PPB_Graphics3D_Impl::GetInterface();
-  if (strcmp(name, PPB_OPENGLES_DEV_INTERFACE) == 0)
-    return PPB_Graphics3D_Impl::GetOpenGLESInterface();
+  // This should really refer to switches::kDisable3DAPIs.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch("disable-3d-apis")) {
+    if (strcmp(name, PPB_GRAPHICS_3D_DEV_INTERFACE) == 0)
+      return PPB_Graphics3D_Impl::GetInterface();
+    if (strcmp(name, PPB_OPENGLES_DEV_INTERFACE) == 0)
+      return PPB_Graphics3D_Impl::GetOpenGLESInterface();
+  }
 #endif  // ENABLE_GPU
 
   // Only support the testing interface when the command line switch is
