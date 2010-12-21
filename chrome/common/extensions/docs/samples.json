@@ -279,6 +279,34 @@
       "zip_path": "examples/api/pageAction/set_icon.zip"
     }, 
     {
+      "api_calls": [
+        "chrome.extension.getURL", 
+        "chrome.management.get", 
+        "chrome.management.getAll", 
+        "chrome.management.launchApp", 
+        "chrome.tabs.create"
+      ], 
+      "description": "", 
+      "features": [
+        "browser_action", 
+        "management"
+      ], 
+      "icon": null, 
+      "id": "a1f7cf79dd555b04fa8d603247a040e644996293", 
+      "name": "App Launcher", 
+      "path": "examples/extensions/app_launcher/", 
+      "protocols": [], 
+      "search_string": "APP LAUNCHER  BROWSER_ACTION MANAGEMENT CHROME.EXTENSION.GETURL CHROME.MANAGEMENT.GET CHROME.MANAGEMENT.GETALL CHROME.MANAGEMENT.LAUNCHAPP CHROME.TABS.CREATE", 
+      "source_files": [
+        "manifest.json", 
+        "popup.css", 
+        "popup.html", 
+        "popup.js"
+      ], 
+      "source_hash": "4cb1348cfca9c990117d52290f93eb5fc5081bc2", 
+      "zip_path": "examples/extensions/app_launcher.zip"
+    }, 
+    {
       "api_calls": [], 
       "description": "", 
       "features": [
