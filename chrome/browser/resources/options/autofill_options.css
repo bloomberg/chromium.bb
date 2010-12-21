@@ -3,13 +3,14 @@ div.autofill-section {
   padding: 1em 0 0;
 }
 
-#profileSelectContainer {
+#profile-select-container {
   display: -webkit-box;
 }
 
-#profileSelectLeftColumn {
+#profile-select-left-column {
   -webkit-box-flex: 1;
 }
-#profileSelectLeftColumn select {
+
+#profile-select-left-column select {
   width: 100%;
 }
