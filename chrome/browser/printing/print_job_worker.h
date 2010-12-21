@@ -99,6 +99,11 @@ class PrintJobWorker : public base::Thread {
   // Reports settings back to owner_.
   void GetSettingsDone(PrintingContext::Result result);
 
+  // Use the default settings. When using GTK+ or Mac, this can still end up
+  // displaying a dialog. So this needs to happen from the UI thread on these
+  // systems.
+  void UseDefaultSettings();
+
   // Information about the printer setting.
   scoped_ptr<PrintingContext> printing_context_;
 

@@ -98,8 +98,12 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
         NewCallback(this, &PrintJobWorker::GetSettingsDone));
 #endif  // defined(OS_MACOSX) || defined(USE_X11)
   } else {
-    PrintingContext::Result result = printing_context_->UseDefaultSettings();
-    GetSettingsDone(result);
+#if defined(OS_MACOSX) || defined(USE_X11)
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &PrintJobWorker::UseDefaultSettings));
+#else
+    UseDefaultSettings();
+#endif  // defined(OS_MACOSX) || defined(USE_X11)
   }
 }
 
@@ -136,6 +140,11 @@ void PrintJobWorker::GetSettingsWithUIDone(PrintingContext::Result result) {
       this, &PrintJobWorker::GetSettingsDone, result));
 }
 #endif  // defined(OS_MACOSX) || defined(USE_X11)
+
+void PrintJobWorker::UseDefaultSettings() {
+  PrintingContext::Result result = printing_context_->UseDefaultSettings();
+  GetSettingsDone(result);
+}
 
 void PrintJobWorker::StartPrinting(PrintedDocument* new_document) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
