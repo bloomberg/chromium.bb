@@ -295,6 +295,10 @@ bool ServiceProcess::ShutdownChromotingHost() {
   // the chromoting context.
   chromoting_host_->Shutdown();
   chromoting_host_ = NULL;
+
+  chromoting_context_->Stop();
+  chromoting_context_ .reset();
+
   return true;
 }
 
