@@ -37,7 +37,6 @@
 
 #include "utils/cross/text_writer.h"
 #include "base/string_util.h"
-#include "base/stringprintf.h"
 
 using std::string;
 
@@ -79,7 +78,7 @@ void TextWriter::WriteFormatted(const char* format, ...) {
   va_list args;
   va_start(args, format);
   string formatted;
-  base::StringAppendV(&formatted, format, args);
+  StringAppendV(&formatted, format, args);
   va_end(args);
 
   WriteString(formatted);
