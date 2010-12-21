@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/thread.h"
+#include "base/win/scoped_comptr.h"
 #include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 
@@ -288,7 +289,7 @@ HRESULT DoQueryService(const IID& service_id, IUnknown* unk, T** service) {
   if (!unk)
     return E_INVALIDARG;
 
-  ScopedComPtr<IServiceProvider> service_provider;
+  base::win::ScopedComPtr<IServiceProvider> service_provider;
   HRESULT hr = service_provider.QueryFrom(unk);
   if (service_provider)
     hr = service_provider->QueryService(service_id, service);
@@ -362,7 +363,7 @@ STDMETHODIMP QueryInterfaceIfDelegateSupports(void* obj, REFIID iid,
   T* instance = reinterpret_cast<T*>(obj);
   IUnknown* delegate = instance ? instance->delegate() : NULL;
   if (delegate) {
-    ScopedComPtr<IUnknown> original;
+    base::win::ScopedComPtr<IUnknown> original;
     hr = delegate->QueryInterface(iid,
                                   reinterpret_cast<void**>(original.Receive()));
     if (original) {

@@ -19,8 +19,8 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/scoped_comptr_win.h"
 #include "base/scoped_ptr.h"
+#include "base/win/scoped_comptr.h"
 #include "base/win/rgs_helper.h"
 #include "ceee/ie/plugin/toolband/resource.h"
 
@@ -225,7 +225,7 @@ class ATL_NO_VTABLE ToolBand : public CComObjectRootEx<CComSingleThreadModel>,
   virtual HRESULT CreateBhoInstance(IObjectWithSite** new_bho_instance);
 
   // The web browser that initialized this toolband.
-  ScopedComPtr<IWebBrowser2> web_browser_;
+  base::win::ScopedComPtr<IWebBrowser2> web_browser_;
   // Our parent window, yielded by our site's IOleWindow.
   CWindow parent_window_;
   // Our band id, provided by GetBandInfo.

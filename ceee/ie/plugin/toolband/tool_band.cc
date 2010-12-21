@@ -287,7 +287,7 @@ HRESULT ToolBand::Initialize(IUnknown* site) {
 }
 
 HRESULT ToolBand::InitializeAndShowWindow(IUnknown* site) {
-  ScopedComPtr<IOleWindow> site_window;
+  base::win::ScopedComPtr<IOleWindow> site_window;
   HRESULT hr = site_window.QueryFrom(site);
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to get site window: " << com::LogHr(hr);
@@ -319,7 +319,7 @@ HRESULT ToolBand::Teardown() {
   if (IsWindow()) {
     // Teardown the ActiveX host window.
     CAxWindow host(m_hWnd);
-    ScopedComPtr<IObjectWithSite> host_with_site;
+    base::win::ScopedComPtr<IObjectWithSite> host_with_site;
     HRESULT hr = host.QueryHost(host_with_site.Receive());
     if (SUCCEEDED(hr))
       host_with_site->SetSite(NULL);
@@ -350,7 +350,7 @@ LRESULT ToolBand::OnCreate(LPCREATESTRUCT lpCreateStruct) {
   GetUnknown()->AddRef();
 
   // Create a host window instance.
-  ScopedComPtr<IAxWinHostWindow> host;
+  base::win::ScopedComPtr<IAxWinHostWindow> host;
   HRESULT hr = CAxHostWindow::CreateInstance(host.Receive());
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to create ActiveX host window. " << com::LogHr(hr);
@@ -564,7 +564,7 @@ STDMETHODIMP_(void) ToolBand::OnCfGetEnabledExtensionsComplete(
     current_height_ = 0;
 
     // Ask IE to reload all info for this toolband.
-    ScopedComPtr<IOleCommandTarget> cmd_target;
+    base::win::ScopedComPtr<IOleCommandTarget> cmd_target;
     HRESULT hr = GetSite(IID_IOleCommandTarget,
                          reinterpret_cast<void**>(cmd_target.Receive()));
     if (SUCCEEDED(hr)) {
@@ -684,7 +684,7 @@ HRESULT ToolBand::EnsureBhoIsAvailable() {
     if (existing_bho.vt == VT_UNKNOWN && existing_bho.punkVal != NULL) {
       // This is a sanity / assumption check regarding what we should regard
       // as a valid BHO.
-      ScopedComPtr<IPersist> bho_iid_access;
+      base::win::ScopedComPtr<IPersist> bho_iid_access;
       HRESULT hr2 = bho_iid_access.QueryFrom(existing_bho.punkVal);
       DCHECK(SUCCEEDED(hr2) && bho_iid_access.get() != NULL);
       if (SUCCEEDED(hr2) && bho_iid_access.get() != NULL) {
@@ -704,7 +704,7 @@ HRESULT ToolBand::EnsureBhoIsAvailable() {
     return SUCCEEDED(hr) ? S_OK : hr;
   }
 
-  ScopedComPtr<IObjectWithSite> bho;
+  base::win::ScopedComPtr<IObjectWithSite> bho;
   hr = CreateBhoInstance(bho.Receive());
 
   if (FAILED(hr)) {
@@ -738,7 +738,7 @@ HRESULT ToolBand::CreateBhoInstance(IObjectWithSite** new_bho_instance) {
 
 HRESULT ToolBand::GetSessionId(int* session_id) {
   if (chrome_frame_) {
-    ScopedComPtr<IChromeFrameInternal> chrome_frame_internal_;
+    base::win::ScopedComPtr<IChromeFrameInternal> chrome_frame_internal_;
     chrome_frame_internal_.QueryFrom(chrome_frame_);
     if (chrome_frame_internal_) {
       return chrome_frame_internal_->getSessionId(session_id);
@@ -752,7 +752,7 @@ HRESULT ToolBand::SendSessionIdToBho(IUnknown* bho) {
   if (already_sent_id_to_bho_)
     return S_FALSE;
   // Now send the tool band's session ID to the BHO.
-  ScopedComPtr<ICeeeBho> ceee_bho;
+  base::win::ScopedComPtr<ICeeeBho> ceee_bho;
   HRESULT hr = ceee_bho.QueryFrom(bho);
   if (SUCCEEDED(hr)) {
     int session_id = 0;

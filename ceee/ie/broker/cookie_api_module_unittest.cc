@@ -8,8 +8,8 @@
 // incompatibility with atlwin.h.
 #include "ceee/testing/utils/mock_win32.h"  // NOLINT
 
-#include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
+#include "base/win/scoped_comptr.h"
 #include "ceee/common/process_utils_win.h"
 #include "ceee/ie/broker/api_dispatcher.h"
 #include "ceee/ie/broker/api_module_constants.h"
@@ -364,7 +364,7 @@ TEST_F(CookieApiTests, GetCookieInfo) {
                                                  NULL));
   // Test executor.
   testing::MockCookieExecutor* mock_cookie_executor;
-  ScopedComPtr<ICeeeCookieExecutor> mock_cookie_executor_keeper;
+  base::win::ScopedComPtr<ICeeeCookieExecutor> mock_cookie_executor_keeper;
   EXPECT_HRESULT_SUCCEEDED(testing::MockCookieExecutor::CreateInitialized(
       &mock_cookie_executor, mock_cookie_executor_keeper.Receive()));
   EXPECT_CALL(result.mock_api_dispatcher_,
@@ -542,7 +542,7 @@ TEST_F(CookieApiTests, GetTabListForWindow) {
 
   // Test executor.
   testing::MockWindowExecutor* mock_window_executor;
-  ScopedComPtr<ICeeeWindowExecutor> mock_window_executor_keeper;
+  base::win::ScopedComPtr<ICeeeWindowExecutor> mock_window_executor_keeper;
   EXPECT_HRESULT_SUCCEEDED(testing::MockWindowExecutor::CreateInitialized(
       &mock_window_executor, mock_window_executor_keeper.Receive()));
   EXPECT_CALL(result.mock_api_dispatcher_,
@@ -653,7 +653,7 @@ TEST_F(CookieApiTests, GetTabProtectedMode) {
 
   // Test executor.
   testing::MockTabExecutor* mock_tab_executor;
-  ScopedComPtr<ICeeeTabExecutor> mock_tab_executor_keeper;
+  base::win::ScopedComPtr<ICeeeTabExecutor> mock_tab_executor_keeper;
   EXPECT_HRESULT_SUCCEEDED(testing::MockTabExecutor::CreateInitialized(
       &mock_tab_executor, mock_tab_executor_keeper.Receive()));
   EXPECT_CALL(result.mock_api_dispatcher_,

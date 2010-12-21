@@ -10,7 +10,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/json/json_reader.h"
-#include "base/scoped_comptr_win.h"
+#include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
 #include "ceee/common/initializing_coclass.h"
 #include "ceee/ie/broker/api_dispatcher.h"
@@ -189,8 +189,8 @@ class TabApiTests: public testing::Test {
   // one and only singleton to use all the time.
   CComObjectStackEx< StrictMock< MockChromePostman > > postman_;
   // To control the life span of the tab executor.
-  ScopedComPtr<ICeeeTabExecutor> mock_tab_executor_keeper_;
-  ScopedComPtr<ICeeeWindowExecutor> mock_window_executor_keeper_;
+  base::win::ScopedComPtr<ICeeeTabExecutor> mock_tab_executor_keeper_;
+  base::win::ScopedComPtr<ICeeeWindowExecutor> mock_window_executor_keeper_;
 };
 
 TEST_F(TabApiTests, CreateTabValueErrorHandling) {
@@ -770,7 +770,7 @@ TEST_F(TabApiTests, GetAllTabsInWindow) {
   // Failing Executor.
   // The executor classes are already strict from their base class impl.
   testing::MockWindowExecutor* mock_window_executor;
-  ScopedComPtr<ICeeeWindowExecutor> mock_window_executor_keeper_;
+  base::win::ScopedComPtr<ICeeeWindowExecutor> mock_window_executor_keeper_;
   EXPECT_HRESULT_SUCCEEDED(testing::MockWindowExecutor::CreateInitialized(
       &mock_window_executor, mock_window_executor_keeper_.Receive()));
   EXPECT_CALL(invocation.mock_api_dispatcher_,
@@ -1121,7 +1121,7 @@ TEST_F(TabApiTests, CreateTabExecute) {
   CComObject<StrictMock<testing::MockIWebBrowser2>>::CreateInstance(
       &browser);
   DCHECK(browser != NULL);
-  ScopedComPtr<IWebBrowser2> browser_keeper(browser);
+  base::win::ScopedComPtr<IWebBrowser2> browser_keeper(browser);
   if (pre_vista) {
     EXPECT_CALL(mock_ie_util, GetWebBrowserForTopLevelIeHwnd(
         kGoodFrameWindow, _, NotNull())).WillRepeatedly(DoAll(

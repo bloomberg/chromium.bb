@@ -11,9 +11,9 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
 #include "base/win/scoped_bstr.h"
+#include "base/win/scoped_comptr.h"
 #include "ceee/common/com_utils.h"
 #include "ceee/common/process_utils_win.h"
 #include "ceee/common/window_utils.h"
@@ -67,7 +67,7 @@ bool CookieApiResult::GetTabListForWindow(HWND window,
   DCHECK(tab_list);
   ApiDispatcher* dispatcher = GetDispatcher();
   DCHECK(dispatcher);
-  ScopedComPtr<ICeeeWindowExecutor> executor;
+  base::win::ScopedComPtr<ICeeeWindowExecutor> executor;
   dispatcher->GetExecutor(window, IID_ICeeeWindowExecutor,
                           reinterpret_cast<void**>(executor.Receive()));
   if (executor == NULL) {
@@ -134,7 +134,7 @@ bool CookieApiResult::GetTabProtectedMode(HWND tab_window,
   }
   ApiDispatcher* dispatcher = GetDispatcher();
   DCHECK(dispatcher);
-  ScopedComPtr<ICeeeTabExecutor> executor;
+  base::win::ScopedComPtr<ICeeeTabExecutor> executor;
   dispatcher->GetExecutor(tab_window, IID_ICeeeTabExecutor,
                           reinterpret_cast<void**>(executor.Receive()));
   if (executor == NULL) {
@@ -164,7 +164,7 @@ HRESULT CookieApiResult::GetCookieInfo(
 
   ApiDispatcher* dispatcher = GetDispatcher();
   DCHECK(dispatcher);
-  ScopedComPtr<ICeeeCookieExecutor> executor;
+  base::win::ScopedComPtr<ICeeeCookieExecutor> executor;
   dispatcher->GetExecutor(tab_window, IID_ICeeeCookieExecutor,
                           reinterpret_cast<void**>(executor.Receive()));
   if (executor == NULL) {
@@ -229,7 +229,7 @@ bool CookieApiResult::CreateCookieStoreValues(DWORD process_id,
 HRESULT CookieApiResult::RegisterCookieStore(HWND window) {
   ApiDispatcher* dispatcher = GetDispatcher();
   DCHECK(dispatcher);
-  ScopedComPtr<ICeeeCookieExecutor> executor;
+  base::win::ScopedComPtr<ICeeeCookieExecutor> executor;
   dispatcher->GetExecutor(window, IID_ICeeeCookieExecutor,
                           reinterpret_cast<void**>(executor.Receive()));
   if (executor == NULL) {
@@ -249,7 +249,7 @@ HRESULT CookieApiResult::RegisterCookieStore(HWND window) {
 HRESULT CookieApiResult::CookieStoreIsRegistered(HWND window) {
   ApiDispatcher* dispatcher = GetDispatcher();
   DCHECK(dispatcher);
-  ScopedComPtr<ICeeeCookieExecutor> executor;
+  base::win::ScopedComPtr<ICeeeCookieExecutor> executor;
   dispatcher->GetExecutor(window, IID_ICeeeCookieExecutor,
                           reinterpret_cast<void**>(executor.Receive()));
   if (executor == NULL) {

@@ -11,8 +11,8 @@
 #include <iepmapi.h>
 #include <set>
 
-#include "base/scoped_comptr_win.h"
 #include "base/scoped_ptr.h"
+#include "base/win/scoped_comptr.h"
 #include "ceee/common/process_utils_win.h"
 #include "ceee/ie/broker/chrome_postman.h"
 #include "ceee/ie/broker/window_api_module.h"
@@ -275,8 +275,8 @@ class WindowApiTests: public testing::Test {
   testing::MockWindowExecutor* mock_window_executor_;
   testing::MockTabExecutor* mock_tab_executor_;
   // To control the life span of the executors.
-  ScopedComPtr<ICeeeWindowExecutor> mock_window_executor_keeper_;
-  ScopedComPtr<ICeeeTabExecutor> mock_tab_executor_keeper_;
+  base::win::ScopedComPtr<ICeeeWindowExecutor> mock_window_executor_keeper_;
+  base::win::ScopedComPtr<ICeeeTabExecutor> mock_tab_executor_keeper_;
 
   // Lifespan controlled by Singleton template.
   StrictMock<testing::MockExecutorsManager>* executors_manager_;
@@ -738,7 +738,7 @@ TEST_F(WindowApiTests, CreateWindowErrorHandling) {
   CComObject<StrictMock<testing::MockIWebBrowser2>>* browser;
   CComObject<StrictMock<testing::MockIWebBrowser2>>::CreateInstance(&browser);
   DCHECK(browser != NULL);
-  ScopedComPtr<IWebBrowser2> browser_keeper(browser);
+  base::win::ScopedComPtr<IWebBrowser2> browser_keeper(browser);
   EXPECT_CALL(mock_ie_create, CoCreateInstance(_, _, _, _, _)).
       WillRepeatedly(DoAll(SetArgumentPointee<4>(browser_keeper.get()),
                      AddRef(browser_keeper.get()), Return(S_OK)));
@@ -803,7 +803,7 @@ TEST_F(WindowApiTests, CreateWindowStraightline) {
   CComObject<StrictMock<testing::MockIWebBrowser2>>* browser;
   CComObject<StrictMock<testing::MockIWebBrowser2>>::CreateInstance(&browser);
   DCHECK(browser != NULL);
-  ScopedComPtr<IWebBrowser2> browser_keeper(browser);
+  base::win::ScopedComPtr<IWebBrowser2> browser_keeper(browser);
   MockIeWindowCreation mock_ie_create;
   // TODO(mad@chromium.org): Test behavior with protected on too.
   EXPECT_CALL(mock_ie_create, IEIsProtectedModeURL(_)).
