@@ -8,19 +8,12 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#if defined(OS_MACOSX)
-#include "app/surface/io_surface_support_mac.h"
-#endif
-#include "app/text_elider.h"
 #include "base/auto_reset.h"
-#include "base/file_version_info.h"
-#include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
-#include "base/process_util.h"
 #include "base/string16.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/blocked_content_container.h"
@@ -34,19 +27,18 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
-#include "chrome/browser/dom_ui/dom_ui_factory.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_request_limiter.h"
-#include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/external_protocol_handler.h"
+#include "chrome/browser/favicon_service.h"
+#include "chrome/browser/file_select_helper.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/host_zoom_map.h"
-#include "chrome/browser/favicon_service.h"
-#include "chrome/browser/file_select_helper.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/hung_renderer_dialog.h"
 #include "chrome/browser/in_process_webkit/session_storage_namespace.h"
 #include "chrome/browser/load_from_memory_cache_details.h"
@@ -98,7 +90,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
-#include "chrome/common/renderer_preferences.h"
 #include "chrome/common/url_constants.h"
 #include "gfx/codec/png_codec.h"
 #include "grit/chromium_strings.h"
@@ -106,14 +97,16 @@
 #include "grit/locale_settings.h"
 #include "grit/platform_locale_settings.h"
 #include "grit/theme_resources.h"
-#include "net/base/mime_util.h"
-#include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domain.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
-#include "webkit/glue/webpreferences.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/plugins/npapi/plugin_list.h"
+#include "webkit/glue/webpreferences.h"
+
+#if defined(OS_MACOSX)
+#include "app/surface/io_surface_support_mac.h"
+#endif  // defined(OS_MACOSX)
 
 // Cross-Site Navigations
 //
@@ -1549,8 +1542,7 @@ int TabContents::GetZoomPercent(bool* enable_increment,
   return percent;
 }
 
-void TabContents::ViewSource()
-{
+void TabContents::ViewSource() {
   if (!delegate_)
     return;
 
