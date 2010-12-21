@@ -223,9 +223,6 @@
             '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
             '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
             '<(DEPTH)/native_client/src/trusted/expiration/expiration.gyp:expiration',
-            '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:browserhandle',
-            '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:handle_lookup',
-            '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:ldrhandle',
             '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util',
             '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
             '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc',
@@ -235,6 +232,13 @@
               'mac_bundle': 1,
               'product_name': 'ppGoogleNaClPluginChrome',
               'product_extension': 'plugin',
+            }],
+            ['OS=="win"', {
+              'dependencies': [
+                '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:browserhandle',
+                '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:handle_lookup',
+                '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:ldrhandle',
+              ],
             }],
           ],
         },
