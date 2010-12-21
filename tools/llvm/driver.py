@@ -120,13 +120,13 @@ INITIAL_ENV = {
   'BASE_SB_X8632' : '${BASE}/tools-sb/x8632',
   'BASE_SB_X8664' : '${BASE}/tools-sb/x8664',
 
-  'LLC_SB_X8632'  : '${SEL_LDR_X8632} -a -- ${BASE_SB_X8632}/bin/llc',
-  'AS_SB_X8632'   : '${SEL_LDR_X8632} -a -- ${BASE_SB_X8632}/bin/as',
-  'LD_SB_X8632'   : '${SEL_LDR_X8632} -a -- ${BASE_SB_X8632}/bin/ld',
+  'LLC_SB_X8632'  : '${SEL_LDR_X8632} -a -- ${BASE_SB_X8632}/nonsrpc/bin/llc',
+  'AS_SB_X8632'   : '${SEL_LDR_X8632} -a -- ${BASE_SB_X8632}/nonsrpc/bin/as',
+  'LD_SB_X8632'   : '${SEL_LDR_X8632} -a -- ${BASE_SB_X8632}/nonsrpc/bin/ld',
 
-  'LLC_SB_X8664'  : '${SEL_LDR_X8664} -a -- ${BASE_SB_X8664}/bin/llc',
-  'AS_SB_X8664'   : '${SEL_LDR_X8664} -a -- ${BASE_SB_X8664}/bin/as',
-  'LD_SB_X8664'   : '${SEL_LDR_X8664} -a -- ${BASE_SB_X8664}/bin/ld',
+  'LLC_SB_X8664'  : '${SEL_LDR_X8664} -a -- ${BASE_SB_X8664}/nonsrpc/bin/llc',
+  'AS_SB_X8664'   : '${SEL_LDR_X8664} -a -- ${BASE_SB_X8664}/nonsrpc/bin/as',
+  'LD_SB_X8664'   : '${SEL_LDR_X8664} -a -- ${BASE_SB_X8664}/nonsrpc/bin/ld',
 
   'LD_SB_FLAGS'   : '-nostdlib -T ${BASE_SB_%arch%}/script/ld_script -static',
 

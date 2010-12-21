@@ -9,7 +9,7 @@ set -o errexit
 # 64-bit sandboxed translators root
 readonly SB_ROOT=$(dirname $0)
 
-readonly BIN_ROOT=${SB_ROOT}/bin
+readonly BIN_ROOT=${SB_ROOT}/nonsrpc/bin
 readonly LIB_ROOT=${SB_ROOT}/../../libs-x8664
 readonly SCRIPT_ROOT=${SB_ROOT}/script
 readonly SEL_LDR_ROOT=${SB_ROOT}/../../../../.

@@ -125,10 +125,10 @@ readonly PNACL_AS_X8664="${INSTALL_BIN}/pnacl-as_x86_64"
 
 # Current milestones in each repo
 # hg-update-stable  uses these
-readonly LLVM_REV=e6ad8231cf8b
+readonly LLVM_REV=dc7409599947
 readonly LLVM_GCC_REV=335d73f4eae2
 readonly NEWLIB_REV=d0ac50acf303
-readonly BINUTILS_REV=a5b54c0cc733
+readonly BINUTILS_REV=18098c353f3c
 
 # Repositories
 readonly REPO_LLVM_GCC="llvm-gcc.nacl-llvm-branches"
@@ -919,7 +919,7 @@ llvm-make() {
   RunWithLog llvm.make \
     env -i PATH=/usr/bin/:/bin \
            MAKE_OPTS="${MAKE_OPTS}" \
-           SANDBOX_LLVM=0 \
+           NACL_SANDBOX=0 \
            CC=${CC} \
            CXX=${CXX} \
            make ${MAKE_OPTS} all
@@ -1619,8 +1619,8 @@ llvm-tools-sb() {
 
   assert-dir "${srcdir}" "You need to checkout llvm."
 
-  if [ $# != 1 ]; then
-    echo "ERROR: Usage llvm-tools-sb <arch>"
+  if [ $# -lt 1 ] || [ $# -gt 2 ]; then
+    echo "ERROR: Usage llvm-tools-sb <arch> <mode>"
     exit -1
   fi
 
@@ -1630,38 +1630,49 @@ llvm-tools-sb() {
     exit -1
   fi
 
+  local mode="nonsrpc"
+  if [ $# == 2 ]; then
+    mode=$2
+    if [ ${mode} != "srpc" ]; then
+      echo "ERROR: Unsupported mode. Choose one of: <blank>, srpc"
+      exit -1
+    fi
+  fi
+
   if [ ! -d ${NACL_TOOLCHAIN} ] ; then
     echo "ERROR: Install Native Client toolchain"
     exit -1
   fi
 
-  if llvm-tools-sb-needs-configure "${arch}"; then
-    llvm-tools-sb-clean "${arch}"
-    llvm-tools-sb-configure "${arch}"
+  if llvm-tools-sb-needs-configure "${arch}" "${mode}"; then
+    llvm-tools-sb-clean "${arch}" "${mode}"
+    llvm-tools-sb-configure "${arch}" "${mode}"
   else
-    SkipBanner "LLVM-TOOLS-SB" "configure ${arch}"
+    SkipBanner "LLVM-TOOLS-SB" "configure ${arch} ${mode}"
   fi
 
-  if llvm-tools-sb-needs-make "${arch}"; then
-    llvm-tools-sb-make "${arch}"
+  if llvm-tools-sb-needs-make "${arch}" "${mode}"; then
+    llvm-tools-sb-make "${arch}" "${mode}"
   else
-    SkipBanner "LLVM-TOOLS-SB" "make ${arch}"
+    SkipBanner "LLVM-TOOLS-SB" "make ${arch} ${mode}"
   fi
 
-  llvm-tools-sb-install "${arch}"
+  llvm-tools-sb-install "${arch}" "${mode}"
 }
 
 llvm-tools-sb-needs-configure() {
   local arch=$1
-  [ ! -f "${TC_BUILD}/llvm-tools-${arch}-sandboxed/config.status" ]
+  local mode=$2
+  [ ! -f "${TC_BUILD}/llvm-tools-${arch}-${mode}-sandboxed/config.status" ]
   return $?
 }
 
 # llvm-tools-sb-clean - Clean llvm tools (sandboxed) for x86
 llvm-tools-sb-clean() {
   local arch=$1
-  StepBanner "LLVM-TOOLS-SB" "Clean ${arch}"
-  local objdir="${TC_BUILD}/llvm-tools-${arch}-sandboxed"
+  local mode=$2
+  StepBanner "LLVM-TOOLS-SB" "Clean ${arch} ${mode}"
+  local objdir="${TC_BUILD}/llvm-tools-${arch}-${mode}-sandboxed"
 
   rm -rf "${objdir}"
   mkdir -p "${objdir}"
@@ -1670,10 +1681,11 @@ llvm-tools-sb-clean() {
 # llvm-tools-sb-configure - Configure llvm tools (sandboxed) for x86
 llvm-tools-sb-configure() {
   local arch=$1
-  StepBanner "LLVM-TOOLS-SB" "Configure ${arch}"
+  local mode=$2
+  StepBanner "LLVM-TOOLS-SB" "Configure ${arch} ${mode}"
   local srcdir="${TC_SRC_LLVM}"
-  local objdir="${TC_BUILD}/llvm-tools-${arch}-sandboxed"
-  local installdir="${PNACL_SB_ROOT}/${arch}"
+  local objdir="${TC_BUILD}/llvm-tools-${arch}-${mode}-sandboxed"
+  local installdir="${PNACL_SB_ROOT}/${arch}/${mode}"
   local bitsize=""
   local nacl=""
   local target""
@@ -1690,9 +1702,13 @@ llvm-tools-sb-configure() {
 
   local flags="-m${bitsize} -static -I${NACL_TOOLCHAIN}/${nacl}/include \
       -L${NACL_TOOLCHAIN}/${nacl}/lib"
+  if [ ${mode} == "srpc" ]; then
+    flags+=" -DNACL_SRPC"
+  fi
+
   spushd ${objdir}
   RunWithLog \
-      llvm.tools.${arch}.sandboxed.configure \
+      llvm.tools.${arch}.${mode}.sandboxed.configure \
       env -i \
       PATH="/usr/bin:/bin" \
       AR="${NACL_TOOLCHAIN}/bin/${nacl}-ar" \
@@ -1717,8 +1733,9 @@ llvm-tools-sb-configure() {
 
 llvm-tools-sb-needs-make() {
   local arch=$1
+  local mode=$2
   local srcdir="${TC_SRC_LLVM}"
-  local objdir="${TC_BUILD}/llvm-tools-${arch}-sandboxed"
+  local objdir="${TC_BUILD}/llvm-tools-${arch}-${mode}-sandboxed"
 
   ts-modified "$srcdir" "$objdir"
   return $?
@@ -1727,16 +1744,23 @@ llvm-tools-sb-needs-make() {
 # llvm-tools-sb-make - Make llvm tools (sandboxed) for x86
 llvm-tools-sb-make() {
   local arch=$1
-  StepBanner "LLVM-TOOLS-SB" "Make ${arch}"
-  local objdir="${TC_BUILD}/llvm-tools-${arch}-sandboxed"
+  local mode=$2
+  StepBanner "LLVM-TOOLS-SB" "Make ${arch} ${mode}"
+  local objdir="${TC_BUILD}/llvm-tools-${arch}-${mode}-sandboxed"
   spushd ${objdir}
 
   ts-touch-open "${objdir}"
 
-  RunWithLog llvm.tools.${arch}.sandboxed.make \
+  local build_with_srpc=0
+  if [ ${mode} == "srpc" ]; then
+    build_with_srpc=1
+  fi
+
+  RunWithLog llvm.tools.${arch}.${mode}.sandboxed.make \
       env -i PATH="/usr/bin:/bin" \
       ONLY_TOOLS=llc \
-      SANDBOX_LLVM=1 \
+      NACL_SANDBOX=1 \
+      NACL_SRPC=${build_with_srpc} \
       KEEP_SYMBOLS=1 \
       VERBOSE=1 \
       make ENABLE_OPTIMIZED=1 OPTIMIZE_OPTION=-O0 tools-only ${MAKE_OPTS}
@@ -1749,14 +1773,15 @@ llvm-tools-sb-make() {
 # llvm-tools-sb-install - Install llvm tools (sandboxed) for x86
 llvm-tools-sb-install() {
   local arch=$1
-  StepBanner "LLVM-TOOLS-SB" "Install ${arch}"
-  local objdir="${TC_BUILD}/llvm-tools-${arch}-sandboxed"
+  local srpc=$2
+  StepBanner "LLVM-TOOLS-SB" "Install ${arch} ${srpc}"
+  local objdir="${TC_BUILD}/llvm-tools-${arch}-${srpc}-sandboxed"
   spushd ${objdir}
 
-  RunWithLog llvm.tools.${arch}.sandboxed.install \
+  RunWithLog llvm.tools.${arch}.${srpc}.sandboxed.install \
       env -i PATH="/usr/bin:/bin" \
       ONLY_TOOLS=llc \
-      SANDBOX_LLVM=1 \
+      NACL_SANDBOX=1 \
       KEEP_SYMBOLS=1 \
       make install ${MAKE_OPTS}
 
@@ -1770,8 +1795,8 @@ binutils-sb() {
 
   assert-dir "${srcdir}" "You need to checkout binutils."
 
-  if [ $# != 1 ]; then
-    echo "ERROR: Usage binutils-sb <arch>"
+  if [ $# -lt 1 ] || [ $# -gt 2 ]; then
+    echo "ERROR: Usage binutils-sb <arch> <mode>"
     exit -1
   fi
 
@@ -1781,43 +1806,54 @@ binutils-sb() {
     exit -1
   fi
 
+  local mode="nonsrpc"
+  if [ $# == 2 ]; then
+    mode=$2
+    if [ ${mode} != "srpc" ]; then
+      echo "ERROR: Unsupported mode. Choose one of: <blank>, srpc"
+      exit -1
+    fi
+  fi
+
   if [ ! -d ${NACL_TOOLCHAIN} ] ; then
     echo "ERROR: Install Native Client toolchain"
     exit -1
   fi
 
   if [ ! -f ${PNACL_SB_ROOT}/lib/libiberty.a ] ; then
-    echo "ERROR: Missing lib. Run this script with  binutils-liberty-x86 option"
+    echo "ERROR: Missing lib. Run this script with binutils-liberty-x86 option"
     exit -1
   fi
 
-  if binutils-sb-needs-configure "${arch}"; then
-    binutils-sb-clean "${arch}"
-    binutils-sb-configure "${arch}"
+  if binutils-sb-needs-configure "${arch}" "${mode}"; then
+    binutils-sb-clean "${arch}" "${mode}"
+    binutils-sb-configure "${arch}" "${mode}"
   else
-    SkipBanner "BINUTILS-SB" "configure ${arch}"
+    SkipBanner "BINUTILS-SB" "configure ${arch} ${mode}"
   fi
 
-  if binutils-sb-needs-make "${arch}"; then
-    binutils-sb-make "${arch}"
+  if binutils-sb-needs-make "${arch}" "${mode}"; then
+    binutils-sb-make "${arch}" "${mode}"
   else
-    SkipBanner "BINUTILS-SB" "make ${arch}"
+    SkipBanner "BINUTILS-SB" "make ${arch} ${mode}"
   fi
 
-  binutils-sb-install "${arch}"
+  binutils-sb-install "${arch}" "${mode}"
 }
 
 binutils-sb-needs-configure() {
   local arch=$1
-  [ ! -f "${TC_BUILD}/binutils-${arch}-sandboxed/config.status" ]
+  local mode=$2
+  [ ! -f "${TC_BUILD}/binutils-${arch}-${mode}-sandboxed/config.status" ]
   return $?
 }
 
 # binutils-sb-clean - Clean binutils (sandboxed) for x86
 binutils-sb-clean() {
   local arch=$1
-  StepBanner "BINUTILS-SB" "Clean ${arch}"
-  local objdir="${TC_BUILD}/binutils-${arch}-sandboxed"
+  local mode=$2
+  StepBanner "BINUTILS-SB" "Clean ${arch} ${mode}"
+  local objdir="${TC_BUILD}/binutils-${arch}-${mode}-sandboxed"
   rm -rf "${objdir}"
   mkdir -p "${objdir}"
 }
@@ -1825,19 +1861,24 @@ binutils-sb-clean() {
 # binutils-sb-configure - Configure binutils (sandboxed) for x86
 binutils-sb-configure() {
   local arch=$1
-  StepBanner "BINUTILS-SB" "Configure ${arch}"
+  local mode=$2
+  StepBanner "BINUTILS-SB" "Configure ${arch} ${mode}"
   local bitsize=${arch:3:2}
   local nacl="nacl${bitsize/"32"/}"
-  local flags="-DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5 -DNACL_TOOLCHAIN_PATCH"
   local srcdir="${TC_SRC_BINUTILS}"
-  local objdir="${TC_BUILD}/binutils-${arch}-sandboxed"
-  local installdir="${PNACL_SB_ROOT}/${arch}"
+  local objdir="${TC_BUILD}/binutils-${arch}-${mode}-sandboxed"
+  local installdir="${PNACL_SB_ROOT}/${arch}/${mode}"
+
+  local flags="-DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5 -DNACL_TOOLCHAIN_PATCH"
+  if [ ${mode} == "srpc" ]; then
+    flags+=" -DNACL_SRPC"
+  fi
 
   mkdir ${objdir}/opcodes
   spushd ${objdir}
   cp ${PNACL_SB_ROOT}/lib/libiberty.a ./opcodes/.
   RunWithLog \
-      binutils.${arch}.sandboxed.configure \
+      binutils.${arch}.${mode}.sandboxed.configure \
       env -i \
       PATH="/usr/bin:/bin" \
       AR="${NACL_TOOLCHAIN}/bin/${nacl}-ar" \
@@ -1862,8 +1903,9 @@ binutils-sb-configure() {
 
 binutils-sb-needs-make() {
   local arch=$1
+  local mode=$2
   local srcdir="${TC_SRC_BINUTILS}"
-  local objdir="${TC_BUILD}/binutils-${arch}-sandboxed"
+  local objdir="${TC_BUILD}/binutils-${arch}-${mode}-sandboxed"
 
   ts-modified "$srcdir" "$objdir"
   return $?
@@ -1872,15 +1914,22 @@ binutils-sb-needs-make() {
 # binutils-sb-make - Make binutils (sandboxed) for x86
 binutils-sb-make() {
   local arch=$1
-  StepBanner "BINUTILS-SB" "Make ${arch}"
-  local objdir="${TC_BUILD}/binutils-${arch}-sandboxed"
+  local mode=$2
+  StepBanner "BINUTILS-SB" "Make ${arch} ${mode}"
+  local objdir="${TC_BUILD}/binutils-${arch}-${mode}-sandboxed"
 
   spushd ${objdir}
 
   ts-touch-open "${objdir}"
 
+  local build_with_srpc=0
+  if [ ${mode} == "srpc" ]; then
+    build_with_srpc=1
+  fi
+
   RunWithLog binutils.${arch}.sandboxed.make \
       env -i PATH="/usr/bin:/bin" \
+      NACL_SRPC=${build_with_srpc} \
       make ${MAKE_OPTS} all-gas all-ld
 
   ts-touch-commit "${objdir}"
@@ -1891,12 +1940,13 @@ binutils-sb-make() {
 # binutils-sb-install - Install binutils (sandboxed) for x86
 binutils-sb-install() {
   local arch=$1
-  StepBanner "BINUTILS-SB" "Install ${arch}"
-  local objdir="${TC_BUILD}/binutils-${arch}-sandboxed"
+  local mode=$2
+  StepBanner "BINUTILS-SB" "Install ${arch} ${mode}"
+  local objdir="${TC_BUILD}/binutils-${arch}-${mode}-sandboxed"
 
   spushd ${objdir}
 
-  RunWithLog binutils.${arch}.sandboxed.install \
+  RunWithLog binutils.${arch}.${mode}.sandboxed.install \
       env -i PATH="/usr/bin:/bin" \
       make install-gas install-ld
 
@@ -1958,13 +2008,13 @@ prune-translator-install() {
 
   StepBanner "PRUNE" "Pruning translator installs"
 
-  spushd "${PNACL_SB_X8632}"
+  spushd "${PNACL_SB_X8632}/nonsrpc"
   rm -rf include lib nacl share
   rm -rf bin/llvm-config bin/tblgen
   spopd
 
-  spushd "${PNACL_SB_X8664}"
-  rm -rf include lib nacl share
+  spushd "${PNACL_SB_X8664}/nonsrpc"
+  rm -rf include lib nacl64 share
   rm -rf bin/llvm-config bin/tblgen
   spopd
 
