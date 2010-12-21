@@ -359,6 +359,12 @@ class FakeReposBase(object):
       new_tree = tree.copy()
     self.git_hashes[repo].append((commit_hash, new_tree))
 
+  def populateSvn(self):
+    raise NotImplementedError()
+
+  def populateGit(self):
+    raise NotImplementedError()
+
 
 class FakeRepos(FakeReposBase):
   """Implements populateSvn() and populateGit()."""
