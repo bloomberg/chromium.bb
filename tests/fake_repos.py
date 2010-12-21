@@ -195,13 +195,16 @@ def commit_git(repo):
 
 _FAKE_LOADED = False
 
-class FakeRepos(object):
+class FakeReposBase(object):
   """Generate both svn and git repositories to test gclient functionality.
 
   Many DEPS functionalities need to be tested: Var, File, From, deps_os, hooks,
   use_relative_paths.
 
-  And types of dependencies: Relative urls, Full urls, both svn and git."""
+  And types of dependencies: Relative urls, Full urls, both svn and git.
+
+  populateSvn() and populateGit() need to be implemented by the subclass.
+  """
 
   # Should leak the repositories.
   SHOULD_LEAK = False
@@ -209,6 +212,7 @@ class FakeRepos(object):
   TRIAL_DIR = None
   # Hostname
   HOST = '127.0.0.1'
+  NB_GIT_REPOS = 1
 
   def __init__(self, trial_dir=None, leak=None, host=None):
     global _FAKE_LOADED
@@ -315,6 +319,51 @@ class FakeRepos(object):
     self.populateSvn()
     return True
 
+  def setUpGIT(self):
+    """Creates git repositories and start the servers."""
+    if self.gitdaemon:
+      return True
+    self.setUp()
+    if sys.platform == 'win32':
+      return False
+    for repo in ['repo_%d' % r for r in range(1, self.NB_GIT_REPOS + 1)]:
+      check_call(['git', 'init', '-q', join(self.git_root, repo)])
+      self.git_hashes[repo] = [None]
+    self.populateGit()
+    # Start the daemon.
+    cmd = ['git', 'daemon', '--export-all', '--base-path=' + self.repos_dir]
+    if self.HOST == '127.0.0.1':
+      cmd.append('--listen=127.0.0.1')
+    logging.debug(cmd)
+    self.gitdaemon = Popen(cmd, cwd=self.repos_dir)
+    return True
+
+  def _commit_svn(self, tree):
+    self._genTree(self.svn_root, tree)
+    commit_svn(self.svn_root)
+    if self.svn_revs and self.svn_revs[-1]:
+      new_tree = self.svn_revs[-1].copy()
+      new_tree.update(tree)
+    else:
+      new_tree = tree.copy()
+    self.svn_revs.append(new_tree)
+
+  def _commit_git(self, repo, tree):
+    repo_root = join(self.git_root, repo)
+    self._genTree(repo_root, tree)
+    commit_hash = commit_git(repo_root)
+    if self.git_hashes[repo][-1]:
+      new_tree = self.git_hashes[repo][-1][1].copy()
+      new_tree.update(tree)
+    else:
+      new_tree = tree.copy()
+    self.git_hashes[repo].append((commit_hash, new_tree))
+
+
+class FakeRepos(FakeReposBase):
+  """Implements populateSvn() and populateGit()."""
+  NB_GIT_REPOS = 4
+
   def populateSvn(self):
     """Creates a few revisions of changes including DEPS files."""
     # Repos
@@ -420,17 +469,7 @@ hooks = [
 """ % { 'host': self.HOST }
     self._commit_svn(fs)
 
-  def setUpGIT(self):
-    """Creates git repositories and start the servers."""
-    if self.gitdaemon:
-      return True
-    self.setUp()
-    if sys.platform == 'win32':
-      return False
-    for repo in ['repo_%d' % r for r in range(1, 5)]:
-      check_call(['git', 'init', '-q', join(self.git_root, repo)])
-      self.git_hashes[repo] = [None]
-
+  def populateGit(self):
     # Testing:
     # - dependency disapear
     # - dependency renamed
@@ -530,35 +569,6 @@ hooks = [
       'origin': 'git/repo_1@2\n',
     })
 
-    # Start the daemon.
-    cmd = ['git', 'daemon', '--export-all', '--base-path=' + self.repos_dir]
-    if self.HOST == '127.0.0.1':
-      cmd.append('--listen=127.0.0.1')
-    logging.debug(cmd)
-    self.gitdaemon = Popen(cmd, cwd=self.repos_dir)
-    return True
-
-  def _commit_svn(self, tree):
-    self._genTree(self.svn_root, tree)
-    commit_svn(self.svn_root)
-    if self.svn_revs and self.svn_revs[-1]:
-      new_tree = self.svn_revs[-1].copy()
-      new_tree.update(tree)
-    else:
-      new_tree = tree.copy()
-    self.svn_revs.append(new_tree)
-
-  def _commit_git(self, repo, tree):
-    repo_root = join(self.git_root, repo)
-    self._genTree(repo_root, tree)
-    commit_hash = commit_git(repo_root)
-    if self.git_hashes[repo][-1]:
-      new_tree = self.git_hashes[repo][-1][1].copy()
-      new_tree.update(tree)
-    else:
-      new_tree = tree.copy()
-    self.git_hashes[repo].append((commit_hash, new_tree))
-
 
 class FakeReposTestBase(unittest.TestCase):
   """This is vaguely inspired by twisted."""
@@ -568,11 +578,13 @@ class FakeReposTestBase(unittest.TestCase):
 
   # static FakeRepos instance. Lazy loaded.
   FAKE_REPOS = None
+  # Override if necessary.
+  FAKE_REPOS_CLASS = FakeRepos
 
   def __init__(self, *args, **kwargs):
     unittest.TestCase.__init__(self, *args, **kwargs)
     if not FakeReposTestBase.FAKE_REPOS:
-      FakeReposTestBase.FAKE_REPOS = FakeRepos()
+      FakeReposTestBase.FAKE_REPOS = self.FAKE_REPOS_CLASS()
 
   def setUp(self):
     unittest.TestCase.setUp(self)
