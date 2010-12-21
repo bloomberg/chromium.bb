@@ -111,8 +111,7 @@ class BufferedResourceLoader :
   // Used to inject a mock used for unittests.
   virtual void SetURLLoaderForTest(WebKit::WebURLLoader* mock_loader);
 
-  /////////////////////////////////////////////////////////////////////////////
-  // WebKit::WebURLLoaderClient implementations.
+  // WebKit::WebURLLoaderClient implementation.
   virtual void willSendRequest(
       WebKit::WebURLLoader* loader,
       WebKit::WebURLRequest& newRequest,
@@ -232,7 +231,7 @@ class BufferedResourceLoader :
   uint8* read_buffer_;
 
   // Offsets of the requested first byte and last byte in |buffer_|. They are
-  // written by VerifyRead().
+  // written by Read().
   int first_offset_;
   int last_offset_;
 

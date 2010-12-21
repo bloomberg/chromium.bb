@@ -79,7 +79,7 @@ base::TimeDelta BufferedDataSource::GetTimeoutMilliseconds() {
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// BufferedDataSource, media::Filter implementation
+// media::Filter implementation.
 void BufferedDataSource::Initialize(const std::string& url,
                                     media::FilterCallback* callback) {
   // Saves the url.
@@ -134,7 +134,7 @@ void BufferedDataSource::SetPlaybackRate(float playback_rate) {
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// BufferedDataSource, media::DataSource implementation
+// media::DataSource implementation.
 void BufferedDataSource::Read(int64 position, size_t size, uint8* data,
                               media::DataSource::ReadCallback* read_callback) {
   render_loop_->PostTask(FROM_HERE,
@@ -175,7 +175,7 @@ void BufferedDataSource::Abort() {
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// BufferedDataSource, render thread tasks
+// Render thread tasks.
 void BufferedDataSource::InitializeTask() {
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(!loader_.get());
@@ -373,9 +373,7 @@ void BufferedDataSource::DoneInitialization_Locked() {
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// BufferedDataSource, callback methods.
-// These methods are called on the render thread for the events reported by
-// BufferedResourceLoader.
+// BufferedResourceLoader callback methods.
 void BufferedDataSource::HttpInitialStartCallback(int error) {
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(loader_.get());
@@ -402,7 +400,7 @@ void BufferedDataSource::HttpInitialStartCallback(int error) {
     // Assuming that the Range header was causing the problem. Retry without
     // the Range header.
     using_range_request_ = false;
-    loader_ = CreateResourceLoader(kPositionNotSpecified, 
+    loader_ = CreateResourceLoader(kPositionNotSpecified,
                                    kPositionNotSpecified);
     loader_->Start(
         NewCallback(this, &BufferedDataSource::HttpInitialStartCallback),

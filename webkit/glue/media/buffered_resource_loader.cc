@@ -232,7 +232,8 @@ void BufferedResourceLoader::SetURLLoaderForTest(WebURLLoader* mock_loader) {
   keep_test_loader_ = true;
 }
 
-// WebKit::WebURLLoaderClient implementations.
+/////////////////////////////////////////////////////////////////////////////
+// WebKit::WebURLLoaderClient implementation.
 void BufferedResourceLoader::willSendRequest(
     WebURLLoader* loader,
     WebURLRequest& newRequest,
@@ -424,6 +425,8 @@ void BufferedResourceLoader::didFail(
   Release();
 }
 
+/////////////////////////////////////////////////////////////////////////////
+// Helper methods.
 void BufferedResourceLoader::EnableDeferIfNeeded() {
   if (!defer_allowed_)
     return;
