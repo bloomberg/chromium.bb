@@ -23,6 +23,7 @@ namespace switches {
 extern const char kActivateOnLaunch[];
 extern const char kAllowFileAccessFromFiles[];
 extern const char kAllowFileAccess[];
+extern const char kAllowOutdatedPlugins[];
 extern const char kAllowSSLMITMProxies[];
 extern const char kAllowSandboxDebugging[];
 extern const char kAllowScriptingGallery[];
@@ -37,8 +38,6 @@ extern const char kAuthNegotiateDelegateWhitelist[];
 extern const char kAuthSchemes[];
 extern const char kAuthServerWhitelist[];
 extern const char kAutomationClientChannelID[];
-extern const char kBlockNonSandboxedPlugins[];
-extern const char kBlockOutdatedPlugins[];
 extern const char kBrowserAssertTest[];
 extern const char kBrowserCrashTest[];
 extern const char kBrowserSubprocessPath[];

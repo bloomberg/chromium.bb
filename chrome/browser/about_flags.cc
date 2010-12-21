@@ -145,13 +145,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableRemoting)
   },
   {
-    "disable-outdated-plugins",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_DISABLE_OUTDATED_PLUGINS_NAME,
-    IDS_FLAGS_DISABLE_OUTDATED_PLUGINS_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kBlockOutdatedPlugins)
-  },
-  {
     "xss-auditor",  // FLAGS:RECORD_UMA
     IDS_FLAGS_XSS_AUDITOR_NAME,
     IDS_FLAGS_XSS_AUDITOR_DESCRIPTION,

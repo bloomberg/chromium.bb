@@ -2774,8 +2774,8 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
       webkit::npapi::PluginList::Singleton()->GetPluginGroup(info);
   DCHECK(group != NULL);
 
-  if (cmd->HasSwitch(switches::kBlockOutdatedPlugins) &&
-      group->IsVulnerable()) {
+  if (group->IsVulnerable() &&
+      !cmd->HasSwitch(switches::kAllowOutdatedPlugins)) {
     Send(new ViewHostMsg_BlockedOutdatedPlugin(routing_id_,
                                                group->GetGroupName(),
                                                GURL(group->GetUpdateURL())));
@@ -2785,6 +2785,7 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
                                    IDR_BLOCKED_PLUGIN_HTML,
                                    IDS_PLUGIN_OUTDATED);
   }
+
   if (!info.enabled)
     return NULL;
 

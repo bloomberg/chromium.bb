@@ -26,6 +26,9 @@ const char kAllowFileAccessFromFiles[]      = "allow-file-access-from-files";
 // directories. This switch re-enables file:// for testing.
 const char kAllowFileAccess[]               = "allow-file-access";
 
+// Don't block outdated plugins.
+const char kAllowOutdatedPlugins[]          = "allow-outdated-plugins";
+
 // Disable checking of the renegotiation extension and any future checks over
 // and above what a "traditional" SSL stack might do. This has been requested
 // in order to support some web development tools that intercept SSL
@@ -83,12 +86,6 @@ const char kAuthServerWhitelist[] = "auth-server-whitelist";
 // The value of this switch tells the app to listen for and broadcast
 // automation-related messages on IPC channel with the given ID.
 const char kAutomationClientChannelID[]     = "automation-channel";
-
-// Block non-sandboxed plugins.
-const char kBlockNonSandboxedPlugins[]      = "block-nonsandboxed-plugins";
-
-// Prevent outdated plugins from running.
-const char kBlockOutdatedPlugins[]          = "block-outdated-plugins";
 
 // Causes the browser process to throw an assertion on startup.
 const char kBrowserAssertTest[]             = "assert-test";
