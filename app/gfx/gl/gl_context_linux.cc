@@ -6,6 +6,10 @@
 
 #include "app/gfx/gl/gl_context.h"
 
+extern "C" {
+#include <X11/Xlib.h>
+}
+
 #include <GL/osmesa.h>
 
 #include "app/gfx/gl/gl_bindings.h"
@@ -17,6 +21,23 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+
+namespace {
+
+Display* GetXDisplayHelper() {
+  static Display* display = NULL;
+
+  if (!display) {
+    if (x11_util::XDisplayExists()) {
+      display = x11_util::GetXDisplay();
+    } else {
+      display = XOpenDisplay(NULL);
+    }
+  }
+  return display;
+}
+
+}
 
 namespace gfx {
 
@@ -183,7 +204,7 @@ bool GLContext::InitializeOneOff() {
     case kGLImplementationDesktopGL: {
       // Only check the GLX version if we are in fact using GLX. We might
       // actually be using the mock GL implementation.
-      Display* display = x11_util::GetXDisplay();
+      Display* display = GetXDisplayHelper();
       int major, minor;
       if (!glXQueryVersion(display, &major, &minor)) {
         LOG(ERROR) << "glxQueryVersion failed";
@@ -211,7 +232,7 @@ bool GLContext::InitializeOneOff() {
 }
 
 std::string BaseLinuxGLContext::GetExtensions() {
-  Display* display = x11_util::GetXDisplay();
+  Display* display = GetXDisplayHelper();
   const char* extensions = glXQueryExtensionsString(display, 0);
   if (extensions) {
     return GLContext::GetExtensions() + " " + extensions;
@@ -225,7 +246,7 @@ bool ViewGLContext::Initialize(bool multisampled) {
     LOG(WARNING) << "Multisampling not implemented.";
   }
 
-  Display* display = x11_util::GetXDisplay();
+  Display* display = GetXDisplayHelper();
   XWindowAttributes attributes;
   XGetWindowAttributes(display, window_, &attributes);
   XVisualInfo visual_info_template;
@@ -264,7 +285,7 @@ bool ViewGLContext::Initialize(bool multisampled) {
 }
 
 void ViewGLContext::Destroy() {
-  Display* display = x11_util::GetXDisplay();
+  Display* display = GetXDisplayHelper();
   bool result = glXMakeCurrent(display, 0, 0);
 
   // glXMakeCurrent isn't supposed to fail when unsetting the context, unless
@@ -282,7 +303,7 @@ bool ViewGLContext::MakeCurrent() {
     return true;
   }
 
-  Display* display = x11_util::GetXDisplay();
+  Display* display = GetXDisplayHelper();
   if (glXMakeCurrent(display, window_, context_) != True) {
     glXDestroyContext(display, context_);
     context_ = 0;
@@ -303,14 +324,14 @@ bool ViewGLContext::IsOffscreen() {
 }
 
 bool ViewGLContext::SwapBuffers() {
-  Display* display = x11_util::GetXDisplay();
+  Display* display = GetXDisplayHelper();
   glXSwapBuffers(display, window_);
   return true;
 }
 
 gfx::Size ViewGLContext::GetSize() {
   XWindowAttributes attributes;
-  Display* display = x11_util::GetXDisplay();
+  Display* display = GetXDisplayHelper();
   XGetWindowAttributes(display, window_, &attributes);
   return gfx::Size(attributes.width, attributes.height);
 }
@@ -322,7 +343,7 @@ void* ViewGLContext::GetHandle() {
 void ViewGLContext::SetSwapInterval(int interval) {
   DCHECK(IsCurrent());
   if (HasExtension("GLX_EXT_swap_control") && glXSwapIntervalEXT) {
-    Display* display = x11_util::GetXDisplay();
+    Display* display = GetXDisplayHelper();
     glXSwapIntervalEXT(display, window_, interval);
   }
 }
@@ -334,7 +355,7 @@ bool OSMesaViewGLContext::Initialize() {
     return false;
   }
 
-  window_graphics_context_ = XCreateGC(x11_util::GetXDisplay(),
+  window_graphics_context_ = XCreateGC(GetXDisplayHelper(),
                                        window_,
                                        0,
                                        NULL);
@@ -352,7 +373,7 @@ bool OSMesaViewGLContext::Initialize() {
 void OSMesaViewGLContext::Destroy() {
   osmesa_context_.Destroy();
 
-  Display* display = x11_util::GetXDisplay();
+  Display* display = GetXDisplayHelper();
 
   if (pixmap_graphics_context_) {
     XFreeGC(display, pixmap_graphics_context_);
@@ -396,7 +417,7 @@ bool OSMesaViewGLContext::SwapBuffers() {
 
   gfx::Size size = osmesa_context_.GetSize();
 
-  Display* display = x11_util::GetXDisplay();
+  Display* display = GetXDisplayHelper();
 
   // Copy the frame into the pixmap.
   XWindowAttributes attributes;
@@ -439,7 +460,7 @@ void OSMesaViewGLContext::SetSwapInterval(int interval) {
 bool OSMesaViewGLContext::UpdateSize() {
   // Get the window size.
   XWindowAttributes attributes;
-  Display* display = x11_util::GetXDisplay();
+  Display* display = GetXDisplayHelper();
   XGetWindowAttributes(display, window_, &attributes);
   gfx::Size window_size = gfx::Size(std::max(1, attributes.width),
                                     std::max(1, attributes.height));
@@ -529,7 +550,7 @@ bool PbufferGLContext::Initialize(GLContext* shared_context) {
     0
   };
 
-  Display* display = x11_util::GetXDisplay();
+  Display* display = GetXDisplayHelper();
 
   int nelements = 0;
   // TODO(kbr): figure out whether hardcoding screen to 0 is sufficient.
@@ -588,7 +609,7 @@ bool PbufferGLContext::Initialize(GLContext* shared_context) {
 }
 
 void PbufferGLContext::Destroy() {
-  Display* display = x11_util::GetXDisplay();
+  Display* display = GetXDisplayHelper();
   bool result = glXMakeCurrent(display, 0, 0);
   // glXMakeCurrent isn't supposed to fail when unsetting the context, unless
   // we have pending draws on an invalid window - which shouldn't be the case
@@ -609,7 +630,7 @@ bool PbufferGLContext::MakeCurrent() {
   if (IsCurrent()) {
     return true;
   }
-  Display* display = x11_util::GetXDisplay();
+  Display* display = GetXDisplayHelper();
   if (glXMakeCurrent(display, pbuffer_, context_) != True) {
     glXDestroyContext(display, context_);
     context_ = NULL;
@@ -656,7 +677,7 @@ bool PixmapGLContext::Initialize(GLContext* shared_context) {
     0
   };
 
-  Display* display = x11_util::GetXDisplay();
+  Display* display = GetXDisplayHelper();
   int screen = DefaultScreen(display);
 
   scoped_ptr_malloc<XVisualInfo, ScopedPtrXFree> visual_info(
@@ -706,7 +727,7 @@ bool PixmapGLContext::Initialize(GLContext* shared_context) {
 }
 
 void PixmapGLContext::Destroy() {
-  Display* display = x11_util::GetXDisplay();
+  Display* display = GetXDisplayHelper();
   bool result = glXMakeCurrent(display, 0, 0);
   // glXMakeCurrent isn't supposed to fail when unsetting the context, unless
   // we have pending draws on an invalid window - which shouldn't be the case
@@ -732,7 +753,7 @@ bool PixmapGLContext::MakeCurrent() {
   if (IsCurrent()) {
     return true;
   }
-  Display* display = x11_util::GetXDisplay();
+  Display* display = GetXDisplayHelper();
   if (glXMakeCurrent(display, glx_pixmap_, context_) != True) {
     glXDestroyContext(display, context_);
     context_ = NULL;
