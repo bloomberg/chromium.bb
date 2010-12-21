@@ -11,7 +11,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
-#include "webkit/glue/plugins/webplugininfo.h"
+#include "webkit/plugins/npapi/webplugininfo.h"
 
 class GURL;
 class FilePath;
@@ -45,7 +45,8 @@ class PluginSelectionPolicy
   // allowed (or if the info vector is empty).  InitFromFile must
   // complete before any calls to FindFirstAllowed happen or it will
   // assert.
-  int FindFirstAllowed(const GURL& url, const std::vector<WebPluginInfo>& info);
+  int FindFirstAllowed(const GURL& url,
+                       const std::vector<webkit::npapi::WebPluginInfo>& info);
 
   // Applies the current policy to the given path using the url to
   // look up what the policy for that domain is.  Returns true if the

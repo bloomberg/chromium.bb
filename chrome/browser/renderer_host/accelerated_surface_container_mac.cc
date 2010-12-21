@@ -7,7 +7,7 @@
 #include "app/surface/io_surface_support_mac.h"
 #include "base/logging.h"
 #include "chrome/browser/renderer_host/accelerated_surface_container_manager_mac.h"
-#include "webkit/glue/plugins/webplugin.h"
+#include "webkit/plugins/npapi/webplugin.h"
 
 AcceleratedSurfaceContainerMac::AcceleratedSurfaceContainerMac(
     AcceleratedSurfaceContainerManagerMac* manager,
@@ -51,7 +51,7 @@ void AcceleratedSurfaceContainerMac::SetSizeAndTransportDIB(
 }
 
 void AcceleratedSurfaceContainerMac::SetGeometry(
-    const webkit_glue::WebPluginGeometry& geom) {
+    const webkit::npapi::WebPluginGeometry& geom) {
   visible_ = geom.visible;
   if (geom.rects_valid)
     clip_rect_ = geom.clip_rect;

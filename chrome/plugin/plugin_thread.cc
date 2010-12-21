@@ -29,9 +29,9 @@
 #include "chrome/renderer/render_thread.h"
 #include "ipc/ipc_channel_handle.h"
 #include "net/base/net_errors.h"
-#include "webkit/glue/plugins/plugin_lib.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/plugins/webplugin_delegate_impl.h"
+#include "webkit/plugins/npapi/plugin_lib.h"
+#include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include "gfx/gtk_util.h"
@@ -86,8 +86,8 @@ PluginThread::PluginThread()
 
   ChromePluginLib::Create(plugin_path_, GetCPBrowserFuncsForPlugin());
 
-  scoped_refptr<NPAPI::PluginLib> plugin(
-      NPAPI::PluginLib::CreatePluginLib(plugin_path_));
+  scoped_refptr<webkit::npapi::PluginLib> plugin(
+      webkit::npapi::PluginLib::CreatePluginLib(plugin_path_));
   if (plugin.get()) {
     plugin->NP_Initialize();
 
@@ -115,7 +115,7 @@ PluginThread::~PluginThread() {
     preloaded_plugin_module_ = NULL;
   }
   PluginChannelBase::CleanupChannels();
-  NPAPI::PluginLib::UnloadAllPlugins();
+  webkit::npapi::PluginLib::UnloadAllPlugins();
   ChromePluginLib::UnloadAllPlugins();
 
   if (webkit_glue::ShouldForcefullyTerminatePluginProcess())

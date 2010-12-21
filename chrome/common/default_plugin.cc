@@ -5,13 +5,13 @@
 #include "chrome/common/default_plugin.h"
 
 #include "chrome/default_plugin/plugin_main.h"
-#include "webkit/glue/plugins/plugin_list.h"
+#include "webkit/plugins/npapi/plugin_list.h"
 
 namespace chrome {
 
 void RegisterInternalDefaultPlugin() {
-  const NPAPI::PluginVersionInfo default_plugin = {
-    FilePath(kDefaultPluginLibraryName),
+  const webkit::npapi::PluginVersionInfo default_plugin = {
+    FilePath(webkit::npapi::kDefaultPluginLibraryName),
     L"Default Plug-in",
     L"Provides functionality for installing third-party plug-ins",
     L"1",
@@ -27,7 +27,8 @@ void RegisterInternalDefaultPlugin() {
     }
   };
 
-  NPAPI::PluginList::Singleton()->RegisterInternalPlugin(default_plugin);
+  webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(
+      default_plugin);
 }
 
 }  // namespace chrome

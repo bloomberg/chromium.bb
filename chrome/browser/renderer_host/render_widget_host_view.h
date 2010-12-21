@@ -39,7 +39,12 @@ struct ViewHostMsg_AccessibilityNotification_Params;
 
 namespace webkit_glue {
 struct WebAccessibility;
+}
+
+namespace webkit {
+namespace npapi {
 struct WebPluginGeometry;
+}
 }
 
 // RenderWidgetHostView is an interface implemented by an object that acts as
@@ -97,7 +102,7 @@ class RenderWidgetHostView {
 
   // Moves all plugin windows as described in the given list.
   virtual void MovePluginWindows(
-      const std::vector<webkit_glue::WebPluginGeometry>& moves) = 0;
+      const std::vector<webkit::npapi::WebPluginGeometry>& moves) = 0;
 
   // Actually set/take focus to/from the associated View component.
   virtual void Focus() = 0;

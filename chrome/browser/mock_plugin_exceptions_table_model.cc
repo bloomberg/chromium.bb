@@ -5,11 +5,11 @@
 #include "chrome/browser/mock_plugin_exceptions_table_model.h"
 
 void MockPluginExceptionsTableModel::set_plugins(
-    std::vector<PluginGroup>& plugins) {
+    std::vector<webkit::npapi::PluginGroup>& plugins) {
   plugins_ = plugins;
 }
 
 void MockPluginExceptionsTableModel::GetPlugins(
-    std::vector<PluginGroup>* plugin_groups) {
+    std::vector<webkit::npapi::PluginGroup>* plugin_groups) {
   *plugin_groups = plugins_;
 }

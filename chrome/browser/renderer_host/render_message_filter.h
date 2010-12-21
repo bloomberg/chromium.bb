@@ -41,7 +41,12 @@ class RenderWidgetHelper;
 class URLRequestContextGetter;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_CreateWorker_Params;
+
+namespace webkit {
+namespace npapi {
 struct WebPluginInfo;
+}
+}
 
 namespace base {
 class SharedMemory;
@@ -153,7 +158,7 @@ class RenderMessageFilter : public BrowserMessageFilter,
                                    const std::string& mime_type,
                                    IPC::Message* reply_msg);
   void OnGotPluginInfo(bool found,
-                       const WebPluginInfo& info,
+                       const webkit::npapi::WebPluginInfo& info,
                        const std::string& actual_mime_type,
                        const GURL& policy_url,
                        IPC::Message* reply_msg);

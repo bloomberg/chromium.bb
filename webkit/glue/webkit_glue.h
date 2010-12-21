@@ -23,7 +23,6 @@
 
 class GURL;
 class SkBitmap;
-struct WebPluginInfo;
 
 namespace base {
 class StringPiece;
@@ -37,6 +36,12 @@ namespace WebKit {
 class WebFrame;
 class WebString;
 class WebView;
+}
+
+namespace webkit {
+namespace npapi {
+struct WebPluginInfo;
+}
 }
 
 namespace webkit_glue {
@@ -225,7 +230,8 @@ bool GetApplicationDirectory(FilePath* path);
 bool GetExeDirectory(FilePath* path);
 
 // Embedders implement this function to return the list of plugins to Webkit.
-void GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins);
+void GetPlugins(bool refresh,
+                std::vector<webkit::npapi::WebPluginInfo>* plugins);
 
 // Returns true if the plugins run in the same process as the renderer, and
 // false otherwise.

@@ -169,7 +169,7 @@ PluginProcessHost::~PluginProcessHost() {
   CancelRequests();
 }
 
-bool PluginProcessHost::Init(const WebPluginInfo& info,
+bool PluginProcessHost::Init(const webkit::npapi::WebPluginInfo& info,
                              const std::string& locale) {
   info_ = info;
   set_name(UTF16ToWideHack(info_.name));

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 
 #include "chrome/common/plugin_messages.h"
 #include "chrome/plugin/plugin_thread.h"
-#include "webkit/glue/plugins/webplugin_delegate_impl.h"
+#include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 
 namespace mac_plugin_interposing {
 
@@ -32,7 +32,7 @@ void SwitchToPluginProcess() {
 
 __attribute__((visibility("default")))
 OpaquePluginRef GetActiveDelegate() {
-  return WebPluginDelegateImpl::GetActiveDelegate();
+  return webkit::npapi::WebPluginDelegateImpl::GetActiveDelegate();
 }
 
 __attribute__((visibility("default")))
@@ -72,13 +72,15 @@ void NotifyBrowserOfPluginHideWindow(uint32 window_id, CGRect bounds) {
 __attribute__((visibility("default")))
 void NotifyPluginOfSetThemeCursor(OpaquePluginRef delegate,
                                   ThemeCursor cursor) {
-  static_cast<WebPluginDelegateImpl*>(delegate)->SetThemeCursor(cursor);
+  static_cast<webkit::npapi::WebPluginDelegateImpl*>(delegate)->SetThemeCursor(
+      cursor);
 }
 
 __attribute__((visibility("default")))
 void NotifyPluginOfSetCursor(OpaquePluginRef delegate,
                              const Cursor* cursor) {
-  static_cast<WebPluginDelegateImpl*>(delegate)->SetCursor(cursor);
+  static_cast<webkit::npapi::WebPluginDelegateImpl*>(delegate)->SetCursor(
+      cursor);
 }
 
 void NotifyPluginOfSetCursorVisibility(bool visibility) {
@@ -91,7 +93,8 @@ void NotifyPluginOfSetCursorVisibility(bool visibility) {
 
 __attribute__((visibility("default")))
 bool GetPluginWindowHasFocus(const OpaquePluginRef delegate) {
-  return static_cast<WebPluginDelegateImpl*>(delegate)->GetWindowHasFocus();
+  return static_cast<webkit::npapi::WebPluginDelegateImpl*>(
+      delegate)->GetWindowHasFocus();
 }
 
 }  // namespace mac_plugin_interposing
@@ -237,7 +240,8 @@ static void OnPluginWindowShown(const WindowInfo& window_info, BOOL is_modal) {
 - (void)chromePlugin_set {
   OpaquePluginRef delegate = mac_plugin_interposing::GetActiveDelegate();
   if (delegate) {
-    static_cast<WebPluginDelegateImpl*>(delegate)->SetNSCursor(self);
+    static_cast<webkit::npapi::WebPluginDelegateImpl*>(delegate)->SetNSCursor(
+        self);
     return;
   }
   [self chromePlugin_set];

@@ -7,26 +7,27 @@
 
 #include <string>
 
-#include "webkit/glue/plugins/webplugin_delegate_impl.h"
-#include "webkit/glue/plugins/webplugin_page_delegate.h"
+#include "webkit/plugins/npapi/webplugin_delegate_impl.h"
+#include "webkit/plugins/npapi/webplugin_page_delegate.h"
 
 namespace webkit_support {
 
-class TestWebPluginPageDelegate : public webkit_glue::WebPluginPageDelegate {
+class TestWebPluginPageDelegate : public webkit::npapi::WebPluginPageDelegate {
  public:
   TestWebPluginPageDelegate() {}
   virtual ~TestWebPluginPageDelegate() {}
 
-  virtual webkit_glue::WebPluginDelegate* CreatePluginDelegate(
+  virtual webkit::npapi::WebPluginDelegate* CreatePluginDelegate(
       const FilePath& file_path,
       const std::string& mime_type) {
     // We don't need a valid native window handle in layout tests.
     // So just passing 0.
-    return WebPluginDelegateImpl::Create(file_path, mime_type, 0);
+    return webkit::npapi::WebPluginDelegateImpl::Create(
+        file_path, mime_type, 0);
   }
   virtual void CreatedPluginWindow(gfx::PluginWindowHandle handle) {}
   virtual void WillDestroyPluginWindow(gfx::PluginWindowHandle handle) {}
-  virtual void DidMovePlugin(const webkit_glue::WebPluginGeometry& move) {}
+  virtual void DidMovePlugin(const webkit::npapi::WebPluginGeometry& move) {}
   virtual void DidStartLoadingForPlugin() {}
   virtual void DidStopLoadingForPlugin() {}
   virtual void ShowModalHTMLDialogForPlugin(
@@ -40,4 +41,5 @@ class TestWebPluginPageDelegate : public webkit_glue::WebPluginPageDelegate {
 };
 
 }  // namespace webkit_support
+
 #endif  // WEBKIT_SUPPORT_TEST_WEBPLUGIN_PAGE_DELEGATE_H_

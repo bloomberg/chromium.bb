@@ -540,13 +540,6 @@
             '../webkit/webkit.gyp:copy_npapi_test_plugin',
           ],
         }],
-        # Only copy the pepper plugin on Windows which is the only platform
-        # that runs tests that need this plugin.
-        ['target_arch!="x64" and target_arch!="arm" and OS=="win"', {
-          'dependencies': [
-            '../webkit/webkit.gyp:copy_npapi_pepper_test_plugin',
-          ],
-        }],
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
