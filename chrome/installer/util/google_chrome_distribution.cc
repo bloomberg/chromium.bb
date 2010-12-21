@@ -591,11 +591,15 @@ void GoogleChromeDistribution::LaunchUserExperiment(
     // chrome user data directory.
     FilePath user_data_dir(installation.GetUserDataPath());
 
-    // TODO(cpu): re-enable experiment.
-    const int kThirtyDays = 3000 * 24;
+    const bool experiment_enabled = false;
+    const int kThirtyDays = 30 * 24;
+
     int dir_age_hours = GetDirectoryWriteAgeInHours(
         user_data_dir.value().c_str());
-    if (dir_age_hours < 0) {
+    if (!experiment_enabled) {
+      VLOG(1) << "Toast experiment is disabled.";
+      return;
+    } else if (dir_age_hours < 0) {
       // This means that we failed to find the user data dir. The most likely
       // cause is that this user has not ever used chrome at all which can
       // happen in a system-level install.
