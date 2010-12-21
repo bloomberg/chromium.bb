@@ -41,6 +41,10 @@ cr.define('options', function() {
 
       userList.disabled =
       userNameEdit.disabled = !AccountsOptions.currentUserIsOwner();
+      // If the current user is not the owner, show some warning.
+      if (!AccountsOptions.currentUserIsOwner()) {
+        $('ownerOnlyWarning').classList.remove('hidden');
+      }
 
       this.addEventListener('visibleChange', this.handleVisibleChange_);
 

@@ -78,6 +78,22 @@ html[dir=rtl] .remove-user-button {
   width: 366px;
 }
 
+#ownerOnlyWarning {
+  margin-bottom: 10px;
+}
+
+#ownerOnlyWarning > * {
+  vertical-align: middle;
+}
+
+#warningIcon {
+  width: 17px;
+  height: 17px;
+  display: inline-block;
+  background-repeat: no-repeat;
+  background-image: url('warning.png');
+}
+
 input#userNameEdit:invalid {
   background-color: #ff6666;
 }

@@ -53,6 +53,10 @@ void AccountsOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_ACCOUNTS_USERNAME_FORMAT));
   localized_strings->SetString("add_users",l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_ADD_USERS));
+  localized_strings->SetString("owner_only", l10n_util::GetStringUTF16(
+      IDS_OPTIONS_ACCOUNTS_OWNER_ONLY));
+  localized_strings->SetString("owner_user_id", UTF8ToUTF16(
+      UserCrosSettingsProvider::cached_owner()));
 
   localized_strings->SetString("current_user_is_owner",
       UserManager::Get()->current_user_is_owner() ?
