@@ -16,14 +16,14 @@
 namespace webkit {
 namespace ppapi {
 
-namespace {
-
 struct CallbackRunInfo {
   // All valid results (PP_OK, PP_ERROR_...) are nonpositive.
   CallbackRunInfo() : run_count(0), result(1) {}
   unsigned run_count;
   int32_t result;
 };
+
+namespace {
 
 void TestCallback(void* user_data, int32_t result) {
   CallbackRunInfo* info = reinterpret_cast<CallbackRunInfo*>(user_data);
