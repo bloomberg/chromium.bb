@@ -39,6 +39,9 @@ void TabContentsContainer::ChangeTabContents(TabContents* contents) {
   if (tab_contents_) {
 #if !defined(TOUCH_UI)
     native_container_->DetachContents(tab_contents_);
+#else
+    views::View *v = static_cast<TabContentsViewViews*>(tab_contents_->view());
+    RemoveChildView(v);
 #endif
     tab_contents_->WasHidden();
     RemoveObservers();
