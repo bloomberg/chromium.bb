@@ -598,6 +598,10 @@ class Browser : public TabHandlerDelegate,
   // Calls ExecuteCommandWithDisposition with the given disposition.
   void ExecuteCommandWithDisposition(int id, WindowOpenDisposition);
 
+  // Executes a command if it's enabled.
+  // Returns true if the command is executed.
+  bool ExecuteCommandIfEnabled(int id);
+
   // Returns whether the |id| is a reserved command, whose keyboard shortcuts
   // should not be sent to the renderer.
   bool IsReservedCommand(int id);

@@ -357,10 +357,6 @@ class BrowserWindowGtk : public BrowserWindow,
   CHROMEGTK_CALLBACK_1(BrowserWindowGtk, gboolean, OnFocusOut,
                        GdkEventFocus*);
 
-  // A small shim for browser_->ExecuteCommand.
-  // Returns true if the command was executed.
-  bool ExecuteBrowserCommand(int id);
-
   // Callback for the loading animation(s) associated with this window.
   void LoadingAnimationCallback();
 

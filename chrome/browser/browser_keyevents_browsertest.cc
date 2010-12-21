@@ -649,16 +649,15 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, FLAKY_ReservedAccelerators) {
 
   ASSERT_EQ(1, browser()->tab_count());
 
-#if defined(OS_WIN) || defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
   static const KeyEventTestData kTestCtrlOrCmdT = {
-#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
-    app::VKEY_T, true, false, false, false,
-    true, false, false, false, 1,
-    { "D 17 0 true false false false" }
-#else  // OS_MACOSX
+#if defined(OS_MACOSX)
     app::VKEY_T, false, false, false, true,
     true, false, false, false, 1,
     { "D 91 0 false false false true" }
+#else
+    app::VKEY_T, true, false, false, false,
+    true, false, false, false, 1,
+    { "D 17 0 true false false false" }
 #endif
   };
 
@@ -697,92 +696,17 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, FLAKY_ReservedAccelerators) {
           &browser()->GetTabContentsAt(1)->controller()));
 
   // Press Ctrl/Cmd+W, which will close the tab.
-#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
-  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser(), app::VKEY_W, true, false, false, false));
-#else  // OS_MACOSX
+#if defined(OS_MACOSX)
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), app::VKEY_W, false, false, false, true));
+#else
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), app::VKEY_W, true, false, false, false));
 #endif
 
   ASSERT_NO_FATAL_FAILURE(wait_for_tab_closed.Wait());
 
   EXPECT_EQ(1, browser()->tab_count());
-#elif defined(TOOLKIT_GTK)
-  // Ctrl-[a-z] are not treated as reserved accelerators on GTK.
-  static const KeyEventTestData kTestCtrlT = {
-    app::VKEY_T, true, false, false, false,
-    false, false, false, false, 2,
-    { "D 17 0 true false false false",
-      "D 84 0 true false false false" }
-  };
-
-  static const KeyEventTestData kTestCtrlPageDown = {
-    app::VKEY_NEXT, true, false, false, false,
-    true, false, false, false, 1,
-    { "D 17 0 true false false false" }
-  };
-
-  static const KeyEventTestData kTestCtrlTab = {
-    app::VKEY_TAB, true, false, false, false,
-    true, false, false, false, 1,
-    { "D 17 0 true false false false" }
-  };
-
-  static const KeyEventTestData kTestCtrlTBlocked = {
-    app::VKEY_T, true, false, false, false,
-    true, false, false, false, 4,
-    { "D 17 0 true false false false",
-      "D 84 0 true false false false",
-      "U 84 0 true false false false",
-      "U 17 0 true false false false" }
-  };
-
-  static const KeyEventTestData kTestCtrlWBlocked = {
-    app::VKEY_W, true, false, false, false,
-    true, false, false, false, 4,
-    { "D 17 0 true false false false",
-      "D 87 0 true false false false",
-      "U 87 0 true false false false",
-      "U 17 0 true false false false" }
-  };
-
-  // Ctrl+T should be blockable.
-  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(0, kTestCtrlTBlocked));
-  ASSERT_EQ(1, browser()->tab_count());
-
-  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(0, kTestCtrlT));
-  ASSERT_EQ(2, browser()->tab_count());
-  ASSERT_EQ(1, browser()->selected_index());
-  browser()->SelectNumberedTab(0);
-  ASSERT_EQ(0, browser()->selected_index());
-  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
-
-  // Ctrl+PageDown and Ctrl+Tab switches to the next tab.
-  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(0, kTestCtrlPageDown));
-  ASSERT_EQ(1, browser()->selected_index());
-
-  browser()->SelectNumberedTab(0);
-  ASSERT_EQ(0, browser()->selected_index());
-  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
-
-  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(0, kTestCtrlTab));
-  ASSERT_EQ(1, browser()->selected_index());
-
-  // Ctrl+W should be blockable.
-  browser()->SelectNumberedTab(0);
-  ASSERT_EQ(0, browser()->selected_index());
-  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
-
-  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(0, kTestCtrlWBlocked));
-  ASSERT_EQ(2, browser()->tab_count());
-
-  // Ctrl+F4 to close the tab.
-  ASSERT_NO_FATAL_FAILURE(SuppressAllEvents(0, true));
-  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-      browser(), app::VKEY_F4, true, false, false, false));
-  ASSERT_EQ(1, browser()->tab_count());
-#endif
 }
 
 #if defined(OS_MACOSX)

@@ -285,26 +285,6 @@ GQuark GetBrowserWindowQuarkKey() {
   return quark;
 }
 
-// Checks if a reserved accelerator key should be processed immediately, rather
-// than being sent to the renderer first.
-bool ShouldExecuteReservedCommandImmediately(
-    const NativeWebKeyboardEvent& event, int command_id) {
-  // IDC_EXIT is now only bound to Ctrl+Shift+q, so we should always execute it
-  // immediately.
-  if (command_id == IDC_EXIT)
-    return true;
-
-  // Keys like Ctrl+w, Ctrl+n, etc. should always be sent to the renderer first,
-  // otherwise some web apps or the Emacs key bindings may not work correctly.
-  int vkey = event.windowsKeyCode;
-  if ((vkey >= app::VKEY_0 && vkey <= app::VKEY_9) ||
-      (vkey >= app::VKEY_A && vkey <= app::VKEY_Z))
-    return false;
-
-  // All other reserved accelerators should be processed immediately.
-  return true;
-}
-
 }  // namespace
 
 std::map<XID, GtkWindow*> BrowserWindowGtk::xid_map_;
@@ -1052,11 +1032,9 @@ bool BrowserWindowGtk::PreHandleKeyboardEvent(
   if (id == -1)
     return false;
 
-  if (browser_->IsReservedCommand(id) &&
-      ShouldExecuteReservedCommandImmediately(event, id)) {
-    // Executing the command may cause |this| object to be destroyed.
-    return ExecuteBrowserCommand(id);
-  }
+  // Executing the command may cause |this| object to be destroyed.
+  if (browser_->IsReservedCommand(id) && !event.match_edit_command)
+    return browser_->ExecuteCommandIfEnabled(id);
 
   // The |event| is a keyboard shortcut.
   DCHECK(is_keyboard_shortcut != NULL);
@@ -1081,7 +1059,7 @@ void BrowserWindowGtk::HandleKeyboardEvent(
   // gtk_window_activate_key() takes care of it automatically.
   int id = GetCustomCommandId(os_event);
   if (id != -1)
-    ExecuteBrowserCommand(id);
+    browser_->ExecuteCommandIfEnabled(id);
   else
     gtk_window_activate_key(window_, os_event);
 }
@@ -1873,7 +1851,7 @@ gboolean BrowserWindowGtk::OnGtkAccelerator(GtkAccelGroup* accel_group,
   BrowserWindowGtk* browser_window =
       GetBrowserWindowForNativeWindow(GTK_WINDOW(acceleratable));
   DCHECK(browser_window != NULL);
-  return browser_window->ExecuteBrowserCommand(command_id);
+  return browser_window->browser()->ExecuteCommandIfEnabled(command_id);
 }
 
 // Let the focused widget have first crack at the key event so we don't
@@ -1890,7 +1868,7 @@ gboolean BrowserWindowGtk::OnKeyPress(GtkWidget* widget, GdkEventKey* event) {
     if (command_id == -1)
       command_id = GetPreHandleCommandId(event);
 
-    if (command_id != -1 && ExecuteBrowserCommand(command_id))
+    if (command_id != -1 && browser_->ExecuteCommandIfEnabled(command_id))
       return TRUE;
 
     // Propagate the key event to child widget first, so we don't override their
@@ -2089,14 +2067,6 @@ gboolean BrowserWindowGtk::OnFocusIn(GtkWidget* widget,
 gboolean BrowserWindowGtk::OnFocusOut(GtkWidget* widget,
                                       GdkEventFocus* event) {
   return FALSE;
-}
-
-bool BrowserWindowGtk::ExecuteBrowserCommand(int id) {
-  if (browser_->command_updater()->IsCommandEnabled(id)) {
-    browser_->ExecuteCommand(id);
-    return true;
-  }
-  return false;
 }
 
 void BrowserWindowGtk::ShowSupportedWindowFeatures() {

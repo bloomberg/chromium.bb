@@ -608,12 +608,7 @@ bool BrowserView::AcceleratorPressed(const views::Accelerator& accelerator) {
   DCHECK(iter != accelerator_table_.end());
 
   int command_id = iter->second;
-  if (browser_->command_updater()->SupportsCommand(command_id) &&
-      browser_->command_updater()->IsCommandEnabled(command_id)) {
-    browser_->ExecuteCommand(command_id);
-    return true;
-  }
-  return false;
+  return browser_->ExecuteCommandIfEnabled(command_id);
 }
 
 bool BrowserView::GetAccelerator(int cmd_id, menus::Accelerator* accelerator) {
@@ -1275,14 +1270,13 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
   if (id == -1)
     return false;
 
-  if (browser_->IsReservedCommand(id)) {
-    // TODO(suzhe): For Linux, should we send things like Ctrl+w, Ctrl+n
-    // to the renderer first, just like what
-    // BrowserWindowGtk::HandleKeyboardEvent() does?
-    // Executing the command may cause |this| object to be destroyed.
-    browser_->ExecuteCommand(id);
-    return true;
-  }
+  // Executing the command may cause |this| object to be destroyed.
+#if defined(OS_LINUX)
+  if (browser_->IsReservedCommand(id) && !event.match_edit_command)
+#else
+  if (browser_->IsReservedCommand(id))
+#endif
+    return browser_->ExecuteCommandIfEnabled(id);
 
   DCHECK(is_keyboard_shortcut != NULL);
   *is_keyboard_shortcut = true;
@@ -1544,7 +1538,7 @@ string16 BrowserView::GetLabelForCommandId(int command_id) const {
 }
 
 void BrowserView::ExecuteCommand(int command_id) {
-  browser_->ExecuteCommand(command_id);
+  browser_->ExecuteCommandIfEnabled(command_id);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1613,12 +1607,7 @@ bool BrowserView::ExecuteWindowsCommand(int command_id) {
   if (command_id_from_app_command != -1)
     command_id = command_id_from_app_command;
 
-  if (browser_->command_updater()->SupportsCommand(command_id)) {
-    if (browser_->command_updater()->IsCommandEnabled(command_id))
-      browser_->ExecuteCommand(command_id);
-    return true;
-  }
-  return false;
+  return browser_->ExecuteCommandIfEnabled(command_id);
 }
 
 std::wstring BrowserView::GetWindowName() const {

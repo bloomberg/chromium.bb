@@ -2266,6 +2266,15 @@ void Browser::ExecuteCommandWithDisposition(
   }
 }
 
+bool Browser::ExecuteCommandIfEnabled(int id) {
+  if (command_updater_.SupportsCommand(id) &&
+      command_updater_.IsCommandEnabled(id)) {
+    ExecuteCommand(id);
+    return true;
+  }
+  return false;
+}
+
 bool Browser::IsReservedCommand(int command_id) {
   return command_id == IDC_CLOSE_TAB ||
          command_id == IDC_CLOSE_WINDOW ||

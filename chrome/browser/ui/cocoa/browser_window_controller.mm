@@ -1059,8 +1059,7 @@
 // Called when another part of the internal codebase needs to execute a
 // command.
 - (void)executeCommand:(int)command {
-  if (browser_->command_updater()->IsCommandEnabled(command))
-    browser_->ExecuteCommand(command);
+  browser_->ExecuteCommandIfEnabled(command);
 }
 
 // StatusBubble delegate method: tell the status bubble the frame it should
