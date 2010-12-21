@@ -11,7 +11,7 @@ vars = {
   "nacl_breakpad_gyp_rev": "1806",
   "gyp_rev": "856",
   "gtest_rev": "267",
-  "tools_rev": "4019",
+  "tools_rev": "3851",
   "python_26_rev": "53573",
   "wix_rev": "153",
   "lcov_rev": "54822",
@@ -51,9 +51,6 @@ deps = {
   "third_party/selenium":
     (Var("native_client_trunk") + "/src/third_party/selenium@" +
      Var("tools_rev")),
-  "third_party/valgrind":
-    Var("native_client_trunk") + "/src/third_party/valgrind@" +
-    Var("tools_rev"),
   "third_party/zlib":
     Var("native_client_trunk") + "/src/third_party/zlib@" + Var("tools_rev"),
   "third_party/npapi/bindings":  # Includes needed for using Chromium NPAPI

@@ -13,8 +13,8 @@
 #include <assert.h>
 
 /* For NaCl we have to use a special verion of valgrind.h */
-#include "third_party/valgrind/nacl_valgrind.h"
-#include "third_party/valgrind/nacl_memcheck.h"
+#include "native_client/src/third_party/valgrind/nacl_valgrind.h"
+#include "native_client/src/third_party/valgrind/nacl_memcheck.h"
 
 #define NOINLINE __attribute__((noinline))
 #define INLINE __attribute__((always_inline))

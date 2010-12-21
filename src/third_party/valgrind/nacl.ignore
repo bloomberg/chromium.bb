@@ -1,0 +1,5 @@
+# This function does a push as a first instruction, before we can tell
+# ThreadSanitizer about the new stack location.
+
+fun:nc_thread_starter
+
