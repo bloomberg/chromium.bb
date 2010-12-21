@@ -13,7 +13,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "ppapi/c/pp_resource.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/icu/public/i18n/unicode/usearch.h"
+#include "unicode/usearch.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
