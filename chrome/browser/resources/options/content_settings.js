@@ -54,6 +54,7 @@ cr.define('options', function() {
 
       $('plugins-tab').onclick = function(event) {
         chrome.send('openPluginsTab');
+        return false;
       };
 
       if (!templateData.enable_click_to_play)
