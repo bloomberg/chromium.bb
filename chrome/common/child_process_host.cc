@@ -168,17 +168,18 @@ void ChildProcessHost::ListenerHook::OnMessageReceived(
     logger->OnPreDispatchMessage(msg);
 #endif
 
-  if (msg.type() == PluginProcessHostMsg_ShutdownRequest::ID &&
-      host_->CanShutdown()) {
-    host_->Send(new PluginProcessMsg_Shutdown());
-  }
-
   bool handled = false;
   for (size_t i = 0; i < host_->filters_.size(); ++i) {
     if (host_->filters_[i]->OnMessageReceived(msg)) {
       handled = true;
       break;
     }
+  }
+
+  if (!handled && msg.type() == PluginProcessHostMsg_ShutdownRequest::ID) {
+    if (host_->CanShutdown())
+      host_->Send(new PluginProcessMsg_Shutdown());
+    handled = true;
   }
 
   if (!handled)
