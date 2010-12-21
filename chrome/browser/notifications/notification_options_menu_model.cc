@@ -13,6 +13,7 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
@@ -20,7 +21,6 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/browser_dialogs.h"
-#include "chrome/installer/util/install_util.h"
 #endif  // OS_WIN
 
 // Menu commands
@@ -150,7 +150,8 @@ void NotificationOptionsMenuModel::ExecuteCommand(int command_id) {
             CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
       } else {
 #if defined(OS_WIN)
-        if (InstallUtil::IsChromeFrameProcess()) {
+        if (CommandLine::ForCurrentProcess()->HasSwitch(
+                switches::kChromeFrame)) {
           // We may not have a browser if this is a chrome frame process.
           browser::ShowContentSettingsWindow(NULL,
                                              CONTENT_SETTINGS_TYPE_DEFAULT,

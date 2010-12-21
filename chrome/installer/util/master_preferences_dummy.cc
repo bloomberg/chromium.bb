@@ -30,8 +30,7 @@ MasterPreferences::~MasterPreferences() {
 }
 
 bool MasterPreferences::GetBool(const std::string& name, bool* value) const {
-  // This function is called by InstallUtil::IsChromeFrameProcess()
-  // We return false because GetInstallPreferences returns an empty value below.
+  NOTREACHED();
   return false;
 }
 

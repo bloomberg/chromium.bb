@@ -21,10 +21,12 @@
 #include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome/installer/util/google_chrome_distribution.h"
 #include "chrome/installer/util/google_chrome_sxs_distribution.h"
-#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/l10n_string_util.h"
+#include "chrome/installer/util/master_preferences.h"
 
 #include "installer_util_strings.h"  // NOLINT
+
+using installer::MasterPreferences;
 
 namespace {
 // The BrowserDistribution objects are never freed.
@@ -50,7 +52,8 @@ bool IsCeeeBrokerProcess() {
 
 BrowserDistribution::Type GetCurrentDistributionType() {
   static BrowserDistribution::Type type =
-      (InstallUtil::IsChromeFrameProcess() || IsChromeFrameModule()) ?
+      (MasterPreferences::ForCurrentProcess().install_chrome_frame() ||
+       IsChromeFrameModule()) ?
           BrowserDistribution::CHROME_FRAME :
           BrowserDistribution::CHROME_BROWSER;
   return type;

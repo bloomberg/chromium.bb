@@ -86,7 +86,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "chrome/installer/util/master_preferences.h"
 #include "grit/app_locale_settings.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -688,7 +687,7 @@ void InitializeBrokerServices(const MainFunctionParams& parameters,
 MetricsService* InitializeMetrics(const CommandLine& parsed_command_line,
                                   const PrefService* local_state) {
 #if defined(OS_WIN)
-  if (InstallUtil::IsChromeFrameProcess())
+  if (parsed_command_line.HasSwitch(switches::kChromeFrame))
     MetricsLog::set_version_extension("-F");
 #elif defined(ARCH_CPU_64_BITS)
   MetricsLog::set_version_extension("-64");

@@ -59,12 +59,6 @@ class InstallUtil {
   // Program Files).
   static bool IsPerUserInstall(const wchar_t* const exe_path);
 
-  // Returns true if this is a Chrome Frame installation (as indicated by the
-  // presence of --chrome-frame on the command line) or if this is running
-  // inside of the Chrome Frame dll. Also returns true if a master.preferences
-  // file containing chrome_frame: true is specified on the command line.
-  static bool IsChromeFrameProcess();
-
   // Returns true if this is running setup process for Chrome SxS (as
   // indicated by the presence of --chrome-sxs on the command line) or if this
   // is running Chrome process from the Chrome SxS installation (as indicated

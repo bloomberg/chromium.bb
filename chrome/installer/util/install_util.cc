@@ -119,12 +119,6 @@ bool InstallUtil::IsPerUserInstall(const wchar_t* const exe_path) {
   return true;
 }
 
-bool InstallUtil::IsChromeFrameProcess() {
-  const MasterPreferences& prefs =
-      installer::MasterPreferences::ForCurrentProcess();
-  return prefs.install_chrome_frame();
-}
-
 bool CheckIsChromeSxSProcess() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   CHECK(command_line);
