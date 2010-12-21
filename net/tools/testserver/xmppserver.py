@@ -379,7 +379,15 @@ class XmppConnection(asynchat.async_chat):
       connections: The set of handshake-completed connections.
       addr: The host/port of the client.
     """
-    asynchat.async_chat.__init__(self, sock)
+    # We do this because in versions of python < 2.6,
+    # async_chat.__init__ doesn't take a map argument nor pass it to
+    # dispatcher.__init__.  We rely on the fact that
+    # async_chat.__init__ calls dispatcher.__init__ as the last thing
+    # it does, and that calling dispatcher.__init__ with socket=None
+    # and map=None is essentially a no-op.
+    asynchat.async_chat.__init__(self)
+    asyncore.dispatcher.__init__(self, sock, socket_map)
+
     self.set_terminator(None)
     # async_chat in Python 2.4 has a bug where it ignores a
     # socket_map argument.  So we handle that ourselves.
