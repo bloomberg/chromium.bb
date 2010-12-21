@@ -105,7 +105,8 @@ void ExtensionToolbarModel::Observe(NotificationType type,
       if (toolitems_[i].get() == extension)
         return;  // Already exists.
     }
-    AddExtension(extension);
+    if (service_->GetBrowserActionVisibility(extension))
+      AddExtension(extension);
   } else if (type == NotificationType::EXTENSION_UNLOADED ||
              type == NotificationType::EXTENSION_UNLOADED_DISABLED) {
     RemoveExtension(extension);
