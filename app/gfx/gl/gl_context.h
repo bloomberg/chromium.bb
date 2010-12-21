@@ -45,6 +45,10 @@ class GLContext {
   // Set swap interval. This context must be current.
   virtual void SetSwapInterval(int interval) = 0;
 
+  // Returns the internal frame buffer object name if the context is backed by
+  // FBO. Otherwise returns 0.
+  virtual unsigned int GetBackingFrameBufferObject();
+
   // Returns space separated list of extensions. The context must be current.
   virtual std::string GetExtensions();
 

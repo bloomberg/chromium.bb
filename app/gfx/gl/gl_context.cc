@@ -13,6 +13,10 @@
 
 namespace gfx {
 
+unsigned int GLContext::GetBackingFrameBufferObject() {
+  return 0;
+}
+
 std::string GLContext::GetExtensions() {
   DCHECK(IsCurrent());
   const char* ext = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));

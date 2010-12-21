@@ -2737,6 +2737,8 @@ void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint client_id) {
     } else {
       service_id = info->service_id();
     }
+  } else {
+    service_id = context_->GetBackingFrameBufferObject();
   }
 
   if (target == GL_FRAMEBUFFER || target == GL_DRAW_FRAMEBUFFER_EXT) {
