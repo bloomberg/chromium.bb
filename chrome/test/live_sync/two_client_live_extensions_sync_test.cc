@@ -44,9 +44,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 }
 
-// TODO(rsimha): Remove FAILS_ prefix after http://crbug.com/66925 is fixed.
+// TODO(rsimha): Remove DISABLED_ prefix after http://crbug.com/66925 is fixed.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
-                       FAILS_StartWithDifferentExtensions) {
+                       DISABLED_StartWithDifferentExtensions) {
   ASSERT_TRUE(SetupClients());
 
   int i = 0;
@@ -80,9 +80,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 }
 
-// TODO(rsimha): Remove FAILS_ prefix after http://crbug.com/66925 is fixed.
+// TODO(rsimha): Remove DISABLED_ prefix after http://crbug.com/66925 is fixed.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveExtensionsSyncTest,
-                       FAILS_InstallDifferentExtensions) {
+                       DISABLED_InstallDifferentExtensions) {
   ASSERT_TRUE(SetupClients());
 
   int i = 0;
