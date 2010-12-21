@@ -797,8 +797,10 @@ void AutomationProvider::GetEnabledExtensions(
     for (size_t i = 0; i < extensions->size(); ++i) {
       const Extension* extension = (*extensions)[i];
       DCHECK(extension);
-      if (extension->location() == Extension::INTERNAL ||
-          extension->location() == Extension::LOAD) {
+      // AutomationProvider only exposes non app internal/loaded extensions.
+      if (!extension->is_app() &&
+          (extension->location() == Extension::INTERNAL ||
+           extension->location() == Extension::LOAD)) {
         result->push_back(extension->path());
       }
     }

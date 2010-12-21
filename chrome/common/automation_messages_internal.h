@@ -1136,10 +1136,9 @@ IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_LoadExpandedExtension,
 // Retrieves a list of the root directories of all enabled extensions
 // that have been installed into Chrome by dropping a .crx file onto
 // Chrome or an equivalent action (including loaded extensions).
-// Other types of extensions are not included on the list (e.g. "component"
-// or "external" extensions) since they are generally not useful for testing
-// (e.g. an external extension could mess with an automated test if it's
-// present on some systems only).
+// Other types of extensions are not included on the list (e.g. "component",
+// "app" or "external" extensions) since since CEEE does not yet support them
+// (and it actually only support a single extension in its profile for now).
 IPC_SYNC_MESSAGE_ROUTED0_1(AutomationMsg_GetEnabledExtensions,
                            std::vector<FilePath>)
 
