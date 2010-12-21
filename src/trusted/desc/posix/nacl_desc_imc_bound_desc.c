@@ -104,30 +104,60 @@ int NaClDescImcBoundDescAcceptConn(struct NaClDesc *vself,
             ("NaClDescImcBoundDescAcceptConn:"
              " could not receive connection message, errno %d\n"),
             errno);
-    return -NACL_ABI_EIO;
+    retval = -NACL_ABI_EIO;
+    goto cleanup;
   }
 
-  received_fd = -1;
+  received_fd = NACL_INVALID_HANDLE;
+  retval = 0;
+  /*
+   * If we got more than one fd in the message, we must clean up by
+   * closing those extra descriptors.  Given that control_buf is
+   * CMSG_SPACE(sizeof(int)) in size, this shouldn't actualy happen.
+   *
+   * We follow the principle of being strict in what we send and
+   * tolerant in what we accept, and simply discard the extra
+   * descriptors without signaling an error (other than a log
+   * message).  This makes it easier to rev the protocol w/o
+   * necessarily requiring a protocol version number bump.
+   */
   for (cmsg = CMSG_FIRSTHDR(&accept_msg);
        cmsg != NULL;
        cmsg = CMSG_NXTHDR(&accept_msg, cmsg)) {
     if (cmsg->cmsg_level == SOL_SOCKET &&
         cmsg->cmsg_type == SCM_RIGHTS &&
         cmsg->cmsg_len == CMSG_LEN(sizeof(int))) {
-      if (-1 != received_fd) {
+      if (NACL_INVALID_HANDLE != received_fd) {
+        int bad_fd;
+
+        /* can only be true on 2nd time through */
         NaClLog(LOG_ERROR, ("NaClDescImcBoundDescAcceptConn: connection"
                             " message contains more than 1 descriptors?!?\n"));
-        return -NACL_ABI_EIO;
+        memcpy(&bad_fd, CMSG_DATA(cmsg), sizeof bad_fd);
+        (void) close(bad_fd);
+        /*
+         * If we want to NOT be tolerant about what we receive, we could
+         * uncomment this:
+         *
+         * retval = -NACL_ABI_EIO;
+         */
+        continue;
       }
-      /* We use memcpy() rather than assignment through a cast to avoid
-         strict-aliasing warnings */
-      memcpy(&received_fd, CMSG_DATA(cmsg), sizeof(int));
+      /*
+       * We use memcpy() rather than assignment through a cast to avoid
+       * strict-aliasing warnings
+       */
+      memcpy(&received_fd, CMSG_DATA(cmsg), sizeof received_fd);
     }
   }
-  if (received_fd == -1) {
+  if (0 != retval) {
+    goto cleanup;
+  }
+  if (NACL_INVALID_HANDLE == received_fd) {
     NaClLog(LOG_ERROR, ("NaClDescImcBoundDescAcceptConn: connection"
                         " message contains NO descriptors?!?\n"));
-    return -NACL_ABI_EIO;
+    retval = -NACL_ABI_EIO;
+    goto cleanup;
   }
 
   if (!NaClDescImcDescCtor(peer, received_fd)) {
@@ -142,7 +172,7 @@ int NaClDescImcBoundDescAcceptConn(struct NaClDesc *vself,
 cleanup:
   if (retval < 0) {
     if (received_fd != NACL_INVALID_HANDLE) {
-      NaClClose(received_fd);
+      (void) close(received_fd);
     }
     free(peer);
   }
