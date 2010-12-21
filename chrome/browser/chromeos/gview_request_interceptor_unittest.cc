@@ -66,33 +66,34 @@ class GViewRequestInterceptorTest : public testing::Test {
   }
 
   void RegisterPDFPlugin() {
-    NPAPI::PluginVersionInfo info;
+    webkit::npapi::PluginVersionInfo info;
     info.path = pdf_path_;
     memset(&info.entry_points, 0, sizeof(info.entry_points));
-    NPAPI::PluginList::Singleton()->RegisterInternalPlugin(info);
-    NPAPI::PluginList::Singleton()->RefreshPlugins();
+    webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(info);
+    webkit::npapi::PluginList::Singleton()->RefreshPlugins();
   }
 
   void UnregisterPDFPlugin() {
-    NPAPI::PluginList::Singleton()->UnregisterInternalPlugin(pdf_path_);
-    NPAPI::PluginList::Singleton()->RefreshPlugins();
+    webkit::npapi::PluginList::Singleton()->UnregisterInternalPlugin(pdf_path_);
+    webkit::npapi::PluginList::Singleton()->RefreshPlugins();
   }
 
   void SetPDFPluginLoadedState(bool want_loaded, bool* out_is_enabled) {
-    WebPluginInfo info;
+    webkit::npapi::WebPluginInfo info;
     bool is_loaded =
-        NPAPI::PluginList::Singleton()->GetPluginInfoByPath(pdf_path_, &info);
+        webkit::npapi::PluginList::Singleton()->GetPluginInfoByPath(
+            pdf_path_, &info);
     if (is_loaded && !want_loaded) {
       UnregisterPDFPlugin();
-      is_loaded =
-          NPAPI::PluginList::Singleton()->GetPluginInfoByPath(pdf_path_, &info);
+      is_loaded = webkit::npapi::PluginList::Singleton()->GetPluginInfoByPath(
+          pdf_path_, &info);
     } else if (!is_loaded && want_loaded) {
       // This "loads" the plug-in even if it's not present on the
       // system - which is OK since we don't actually use it, just
       // need it to be "enabled" for the test.
       RegisterPDFPlugin();
-      is_loaded =
-          NPAPI::PluginList::Singleton()->GetPluginInfoByPath(pdf_path_, &info);
+      is_loaded = webkit::npapi::PluginList::Singleton()->GetPluginInfoByPath(
+          pdf_path_, &info);
     }
     EXPECT_EQ(want_loaded, is_loaded);
     *out_is_enabled = info.enabled;
@@ -128,7 +129,7 @@ TEST_F(GViewRequestInterceptorTest, DoNotInterceptPdfWhenEnabled) {
 
   if (!enabled) {
     bool pdf_plugin_enabled =
-        NPAPI::PluginList::Singleton()->EnablePlugin(pdf_path_);
+        webkit::npapi::PluginList::Singleton()->EnablePlugin(pdf_path_);
     EXPECT_TRUE(pdf_plugin_enabled);
   }
 
@@ -145,7 +146,7 @@ TEST_F(GViewRequestInterceptorTest, InterceptPdfWhenDisabled) {
 
   if (enabled) {
     bool pdf_plugin_disabled =
-        NPAPI::PluginList::Singleton()->DisablePlugin(pdf_path_);
+        webkit::npapi::PluginList::Singleton()->DisablePlugin(pdf_path_);
     EXPECT_TRUE(pdf_plugin_disabled);
   }
 

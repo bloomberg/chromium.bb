@@ -242,8 +242,8 @@ TEST_F(PluginSelectionPolicyTest, FindFirstAllowed) {
                                 FilePath("/usr/local/bin/allow_baz_bim2.so")));
   EXPECT_FALSE(policy->IsAllowed(GURL("http://www.google.com/blah.html"),
                                  FilePath("/usr/local/bin/allow_baz_bim2.so")));
-  std::vector<WebPluginInfo> info_vector;
-  WebPluginInfo info;
+  std::vector<webkit::npapi::WebPluginInfo> info_vector;
+  webkit::npapi::WebPluginInfo info;
   // First we test that the one without any policy gets
   // selected for all if it's first.
   info.path = FilePath("/usr/local/bin/no_policy.so");

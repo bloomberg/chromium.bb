@@ -65,7 +65,8 @@ net::URLRequestJob* GViewRequestInterceptor::MaybeInterceptResponse(
     FilePath pdf_path;
     webkit::npapi::WebPluginInfo info;
     PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
-    if (NPAPI::PluginList::Singleton()->GetPluginInfoByPath(pdf_path, &info) &&
+    if (webkit::npapi::PluginList::Singleton()->GetPluginInfoByPath(
+            pdf_path, &info) &&
         info.enabled)
       return NULL;
   }
