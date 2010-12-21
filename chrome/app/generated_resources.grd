@@ -9297,7 +9297,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         System update failed.
       </message>
       <message name="IDS_UPDATE_AVAILABLE" desc="Notification for available update">
-        System update available&#x2026;
+        System update available. Preparing to download&#x2026;
       </message>
       <message name="IDS_UPDATE_DOWNLOADING" desc="Notification for update download progress">
         System update downloading: <ph name="PERCENT">$1<ex>10</ex></ph>&#37; complete.
