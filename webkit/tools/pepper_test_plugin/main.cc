@@ -43,6 +43,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #endif
+#include "base/stringprintf.h"
 #include "third_party/npapi/bindings/nphostapi.h"
 #include "webkit/tools/pepper_test_plugin/plugin_object.h"
 #include "webkit/tools/pepper_test_plugin/event_handler.h"
@@ -63,7 +64,7 @@ void Log(NPP instance, const char* format, ...) {
   char msgbuf[100];
   vsnprintf(msgbuf, sizeof(msgbuf), format, args);
 #else
-  StringAppendV(&message, format, args);
+  base::StringAppendV(&message, format, args);
 #endif
   va_end(args);
 

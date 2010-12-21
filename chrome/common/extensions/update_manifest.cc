@@ -10,6 +10,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/version.h"
 #include "chrome/common/libxml_utils.h"
 #include "libxml/tree.h"
@@ -35,7 +36,7 @@ void UpdateManifest::ParseError(const char* details, ...) {
     // TODO(asargent) make a platform abstracted newline?
     errors_ += "\r\n";
   }
-  StringAppendV(&errors_, details, args);
+  base::StringAppendV(&errors_, details, args);
   va_end(args);
 }
 
@@ -81,7 +82,7 @@ static void XmlErrorFunc(void *context, const char *message, ...) {
   va_list args;
   va_start(args, message);
   std::string* error = static_cast<std::string*>(context);
-  StringAppendV(error, message, args);
+  base::StringAppendV(error, message, args);
   va_end(args);
 }
 

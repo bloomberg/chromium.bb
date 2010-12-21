@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/sync/notifier/invalidation_util.h"
 
 namespace sync_notifier {
@@ -114,7 +115,7 @@ void ChromeSystemResources::Log(
     va_list ap;
     va_start(ap, format);
     std::string result;
-    StringAppendV(&result, format, ap);
+    base::StringAppendV(&result, format, ap);
     logging::LogMessage(file, line, log_severity).stream() << result;
     va_end(ap);
   }
