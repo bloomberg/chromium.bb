@@ -17,7 +17,7 @@ void UpdateFromSystemSettings(RendererPreferences* prefs, Profile* profile) {
 #if defined(TOOLKIT_USES_GTK)
   gtk_util::UpdateGtkFontSettings(prefs);
 
-#if !defined(TOOLKIT_VIEWS)
+#if !defined(OS_CHROMEOS)
   GtkThemeProvider* provider = GtkThemeProvider::GetFrom(profile);
 
   prefs->focus_ring_color = provider->get_focus_ring_color();
@@ -30,9 +30,7 @@ void UpdateFromSystemSettings(RendererPreferences* prefs, Profile* profile) {
       provider->get_inactive_selection_bg_color();
   prefs->inactive_selection_fg_color =
       provider->get_inactive_selection_fg_color();
-#endif  // !defined(TOOLKIT_VIEWS)
-
-#if defined(OS_CHROMEOS)
+#else
   prefs->focus_ring_color = SkColorSetARGB(255, 229, 151, 0);
   prefs->active_selection_bg_color = SkColorSetRGB(0xDC, 0xE4, 0xFA);
   prefs->active_selection_fg_color = SK_ColorBLACK;
