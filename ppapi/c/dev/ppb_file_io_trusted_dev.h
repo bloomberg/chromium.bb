@@ -14,10 +14,11 @@ struct PP_CompletionCallback;
 
 // Available only to trusted implementations.
 struct PPB_FileIOTrusted_Dev {
-  // Returns a POSIX file descriptor corresponding to the given FileIO object.
-  // The FileIO object must have been opened with a successful call to
-  // FileIO::Open.  The file descriptor will be closed automatically when the
-  // FileIO object is closed or destroyed.
+  // Returns a file descriptor corresponding to the given FileIO object. On
+  // Windows, returns a HANDLE; on all other platforms, returns a POSIX file
+  // descriptor. The FileIO object must have been opened with a successful
+  // call to FileIO::Open.  The file descriptor will be closed automatically
+  // when the FileIO object is closed or destroyed.
   int32_t (*GetOSFileDescriptor)(PP_Resource file_io);
 
   // Notifies the browser that underlying file will be modified.  This gives
