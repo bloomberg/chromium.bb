@@ -664,4 +664,14 @@ ScopedVirtualizeHklmAndHkcu::~ScopedVirtualizeHklmAndHkcu() {
   TempRegKeyOverride::DeleteAllTempKeys();
 }
 
+bool KillProcesses(const std::wstring& executable_name, int exit_code,
+                   bool wait) {
+  bool result = true;
+  base::NamedProcessIterator iter(executable_name, NULL);
+  while (const base::ProcessEntry* entry = iter.NextProcessEntry()) {
+    result &= base::KillProcessById(entry->pid(), exit_code, wait);
+  }
+  return result;
+}
+
 }  // namespace chrome_frame_test

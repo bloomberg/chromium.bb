@@ -163,6 +163,8 @@ class IEEventSink
   // Used only for debugging/logging purposes.
   bool reference_count() { return m_dwRef; }
 
+  static void SetAbnormalShutdown(bool abnormal_shutdown);
+
  private:
   void ConnectToChromeFrame();
   void DisconnectFromChromeFrame();
@@ -239,6 +241,7 @@ END_SINK_MAP()
   IEEventListener* listener_;
   base::ProcessId ie_process_id_;
   bool did_receive_on_quit_;
+  static bool abnormal_shutdown_;
 
   static _ATL_FUNC_INFO kBeforeNavigate2Info;
   static _ATL_FUNC_INFO kNavigateComplete2Info;

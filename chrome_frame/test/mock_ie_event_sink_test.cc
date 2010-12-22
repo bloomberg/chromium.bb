@@ -192,6 +192,11 @@ void MockIEEventSinkTest::LaunchIEAndNavigate(const std::wstring& url) {
 
 void MockIEEventSinkTest::LaunchIENavigateAndLoop(const std::wstring& url,
                                                   int timeout) {
+  hung_call_detector_ = HungCOMCallDetector::Setup(timeout);
+  EXPECT_TRUE(hung_call_detector_ != NULL);
+
+  IEEventSink::SetAbnormalShutdown(false);
+
   EXPECT_CALL(ie_mock_, OnQuit())
       .WillOnce(QUIT_LOOP(loop_));
   HRESULT hr = ie_mock_.event_sink()->LaunchIEAndNavigate(url, &ie_mock_);
@@ -201,6 +206,9 @@ void MockIEEventSinkTest::LaunchIENavigateAndLoop(const std::wstring& url,
 
   ASSERT_TRUE(ie_mock_.event_sink()->web_browser2() != NULL);
   loop_.RunFor(timeout);
+
+  IEEventSink::SetAbnormalShutdown(hung_call_detector_->is_hung());
+  hung_call_detector_->TearDown();
 }
 
 FilePath MockIEEventSinkTest::GetTestFilePath(

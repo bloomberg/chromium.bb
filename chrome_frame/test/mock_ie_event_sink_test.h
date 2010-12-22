@@ -330,7 +330,7 @@ class MockIEEventSinkTest {
   chrome_frame_test::TimedMsgLoop loop_;
   testing::StrictMock<MockIEEventSink> ie_mock_;
   testing::StrictMock<MockWebServer> server_mock_;
-
+  scoped_refptr<HungCOMCallDetector> hung_call_detector_;
  private:
   DISALLOW_COPY_AND_ASSIGN(MockIEEventSinkTest);
 };

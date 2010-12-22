@@ -82,6 +82,8 @@ _ATL_FUNC_INFO IEEventSink::kFileDownloadInfo = {
   }
 };
 
+bool IEEventSink::abnormal_shutdown_ = false;
+
 IEEventSink::IEEventSink()
     : ALLOW_THIS_IN_INITIALIZER_LIST(
           onmessage_(this, &IEEventSink::OnMessage)),
@@ -96,6 +98,10 @@ IEEventSink::IEEventSink()
 
 IEEventSink::~IEEventSink() {
   Uninitialize();
+}
+
+void IEEventSink::SetAbnormalShutdown(bool abnormal_shutdown) {
+  abnormal_shutdown_ = abnormal_shutdown;
 }
 
 // IEEventSink member defines
@@ -119,43 +125,49 @@ HRESULT IEEventSink::Attach(IWebBrowser2* browser) {
 }
 
 void IEEventSink::Uninitialize() {
-  DisconnectFromChromeFrame();
-  if (web_browser2_.get()) {
-    if (m_dwEventCookie != 0xFEFEFEFE) {
-      DispEventUnadvise(web_browser2_);
-      CoDisconnectObject(this, 0);
+  if (!abnormal_shutdown_) {
+    DisconnectFromChromeFrame();
+    if (web_browser2_.get()) {
+      if (m_dwEventCookie != 0xFEFEFEFE) {
+        DispEventUnadvise(web_browser2_);
+        CoDisconnectObject(this, 0);
+      }
+
+      if (!did_receive_on_quit_) {
+        // Log the browser window url for debugging purposes.
+        ScopedBstr browser_url;
+        web_browser2_->get_LocationURL(browser_url.Receive());
+        std::wstring browser_url_wstring;
+        browser_url_wstring.assign(browser_url, browser_url.Length());
+        std::string browser_url_string = WideToUTF8(browser_url_wstring);
+        EXPECT_TRUE(did_receive_on_quit_) << "OnQuit was not received for "
+                                          << "browser with url "
+                                          << browser_url_string;
+
+        web_browser2_->Quit();
+      }
+
+      ScopedHandle process;
+      process.Set(OpenProcess(SYNCHRONIZE, FALSE,
+                              ie_process_id_));
+      web_browser2_.Release();
+
+      if (!process.IsValid()) {
+        DLOG_IF(WARNING, !process.IsValid())
+            << base::StringPrintf("OpenProcess failed: %i", ::GetLastError());
+        return;
+      }
+      // IE may not have closed yet. Wait here for the process to finish.
+      // This is necessary at least on some browser/platform configurations.
+      WaitForSingleObject(process, kDefaultWaitForIEToTerminateMs);
     }
-
-    if (!did_receive_on_quit_) {
-      // Log the browser window url for debugging purposes.
-      ScopedBstr browser_url;
-      web_browser2_->get_LocationURL(browser_url.Receive());
-      std::wstring browser_url_wstring;
-      browser_url_wstring.assign(browser_url, browser_url.Length());
-      std::string browser_url_string = WideToUTF8(browser_url_wstring);
-      EXPECT_TRUE(did_receive_on_quit_) << "OnQuit was not received for "
-                                        << "browser with url "
-                                        << browser_url_string;
-
-      web_browser2_->Quit();
-    }
-
-    ScopedHandle process;
-    process.Set(OpenProcess(SYNCHRONIZE, FALSE,
-                            ie_process_id_));
-    web_browser2_.Release();
-
-    if (!process.IsValid()) {
-      DLOG_IF(WARNING, !process.IsValid())
-          << base::StringPrintf("OpenProcess failed: %i", ::GetLastError());
-      return;
-    }
-    // IE may not have closed yet. Wait here for the process to finish.
-    // This is necessary at least on some browser/platform configurations.
-    WaitForSingleObject(process, kDefaultWaitForIEToTerminateMs);
-    base::KillProcesses(chrome_frame_test::kIEImageName, 0, NULL);
-    base::KillProcesses(chrome_frame_test::kIEBrokerImageName, 0, NULL);
+  } else {
+    LOG(ERROR) << "Terminating hung IE process";
   }
+  chrome_frame_test::KillProcesses(chrome_frame_test::kIEImageName, 0,
+                                   !abnormal_shutdown_);
+  chrome_frame_test::KillProcesses(chrome_frame_test::kIEBrokerImageName, 0,
+                                   !abnormal_shutdown_);
 }
 
 bool IEEventSink::IsCFRendering() {
