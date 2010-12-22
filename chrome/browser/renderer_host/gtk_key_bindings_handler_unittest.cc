@@ -88,8 +88,7 @@ class GtkKeyBindingsHandlerTest : public testing::Test {
   GtkKeyBindingsHandler* handler_;
 };
 
-// Does not work in a chroot. See bug 60363.
-TEST_F(GtkKeyBindingsHandlerTest, FAILS_MoveCursor) {
+TEST_F(GtkKeyBindingsHandlerTest, MoveCursor) {
   static const EditCommand kEditCommands[] = {
     // "move-cursor" (logical-positions, -2, 0)
     { "MoveBackward", "" },
@@ -131,8 +130,7 @@ TEST_F(GtkKeyBindingsHandlerTest, FAILS_MoveCursor) {
                  kEditCommands, arraysize(kEditCommands));
 }
 
-// Does not work in a chroot. See bug 60363.
-TEST_F(GtkKeyBindingsHandlerTest, FAILS_DeleteFromCursor) {
+TEST_F(GtkKeyBindingsHandlerTest, DeleteFromCursor) {
   static const EditCommand kEditCommands[] = {
     // "delete-from-cursor" (chars, -2)
     { "DeleteBackward", "" },
@@ -176,8 +174,7 @@ TEST_F(GtkKeyBindingsHandlerTest, FAILS_DeleteFromCursor) {
                  kEditCommands, arraysize(kEditCommands));
 }
 
-// Does not work in a chroot. See bug 60363.
-TEST_F(GtkKeyBindingsHandlerTest, FAILS_OtherActions) {
+TEST_F(GtkKeyBindingsHandlerTest, OtherActions) {
   static const EditCommand kBackspace[] = {
     { "DeleteBackward", "" }
   };
