@@ -76,8 +76,8 @@ void ClockMenuButton::UpdateTextAndSetNextTimer() {
 
 void ClockMenuButton::UpdateText() {
   base::Time time(base::Time::Now());
-  SetText(base::TimeFormatTimeOfDay(time));
-  SetTooltipText(base::TimeFormatShortDate(time));
+  SetText(UTF16ToWide(base::TimeFormatTimeOfDay(time)));
+  SetTooltipText(UTF16ToWide(base::TimeFormatShortDate(time)));
   SchedulePaint();
 }
 
@@ -99,7 +99,7 @@ menus::MenuModel::ItemType ClockMenuButton::GetTypeAt(int index) const {
 
 string16 ClockMenuButton::GetLabelAt(int index) const {
   if (index == 0)
-    return WideToUTF16(base::TimeFormatFriendlyDate(base::Time::Now()));
+    return base::TimeFormatFriendlyDate(base::Time::Now());
   return l10n_util::GetStringUTF16(IDS_STATUSBAR_CLOCK_OPEN_OPTIONS_DIALOG);
 }
 

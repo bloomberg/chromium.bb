@@ -387,7 +387,7 @@ string16 CellularDataPlan::GetPlanDesciption() const {
     case chromeos::CELLULAR_DATA_PLAN_UNLIMITED: {
       return l10n_util::GetStringFUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PURCHASE_UNLIMITED_DATA,
-          WideToUTF16(base::TimeFormatFriendlyDate(plan_start_time)));
+          base::TimeFormatFriendlyDate(plan_start_time));
       break;
     }
     case chromeos::CELLULAR_DATA_PLAN_METERED_PAID: {
@@ -396,8 +396,7 @@ string16 CellularDataPlan::GetPlanDesciption() const {
                 FormatBytes(plan_data_bytes,
                             GetByteDisplayUnits(plan_data_bytes),
                             true),
-                WideToUTF16(base::TimeFormatFriendlyDate(
-                                plan_start_time)));
+                base::TimeFormatFriendlyDate(plan_start_time));
     }
     case chromeos::CELLULAR_DATA_PLAN_METERED_BASE: {
       return l10n_util::GetStringFUTF16(
@@ -405,8 +404,7 @@ string16 CellularDataPlan::GetPlanDesciption() const {
                 FormatBytes(plan_data_bytes,
                             GetByteDisplayUnits(plan_data_bytes),
                             true),
-                WideToUTF16(base::TimeFormatFriendlyDate(
-                                plan_start_time)));
+                base::TimeFormatFriendlyDate(plan_start_time));
     default:
       break;
     }
