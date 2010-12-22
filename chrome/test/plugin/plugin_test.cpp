@@ -200,11 +200,8 @@ TEST_F(PluginTest, FLAKY_Quicktime) {
   TestPlugin("quicktime.html", action_max_timeout_ms(), false);
 }
 
-// Disabled on Release bots - http://crbug.com/44662
-#if defined(NDEBUG)
-#define MediaPlayerNew DISABLED_MediaPlayerNew
-#endif
-TEST_F(PluginTest, MediaPlayerNew) {
+// Disabled - http://crbug.com/44662
+TEST_F(PluginTest, DISABLED_MediaPlayerNew) {
   TestPlugin("wmp_new.html", action_max_timeout_ms(), false);
 }
 
