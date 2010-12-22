@@ -839,7 +839,6 @@ void SafeBrowsingDatabaseNew::HandleCorruptDatabase() {
 }
 
 void SafeBrowsingDatabaseNew::OnHandleCorruptDatabase() {
-  UMA_HISTOGRAM_COUNTS("SB2.HandleCorrupt", 1);
   RecordFailure(FAILURE_DATABASE_CORRUPT_HANDLER);
   corruption_detected_ = true;  // Stop updating the database.
   ResetDatabase();
@@ -862,7 +861,6 @@ void SafeBrowsingDatabaseNew::LoadBloomFilter() {
 
   if (!file_util::GetFileSize(bloom_filter_filename_, &size_64) ||
       size_64 == 0) {
-    UMA_HISTOGRAM_COUNTS("SB2.FilterMissing", 1);
     RecordFailure(FAILURE_DATABASE_FILTER_MISSING);
     return;
   }
@@ -872,10 +870,8 @@ void SafeBrowsingDatabaseNew::LoadBloomFilter() {
   DVLOG(1) << "SafeBrowsingDatabaseNew read bloom filter in "
            << (base::TimeTicks::Now() - before).InMilliseconds() << " ms";
 
-  if (!browse_bloom_filter_.get()) {
-    UMA_HISTOGRAM_COUNTS("SB2.FilterReadFail", 1);
+  if (!browse_bloom_filter_.get())
     RecordFailure(FAILURE_DATABASE_FILTER_READ);
-  }
 }
 
 bool SafeBrowsingDatabaseNew::Delete() {
@@ -906,8 +902,6 @@ void SafeBrowsingDatabaseNew::WriteBloomFilter() {
   DVLOG(1) << "SafeBrowsingDatabaseNew wrote bloom filter in "
            << (base::TimeTicks::Now() - before).InMilliseconds() << " ms";
 
-  if (!write_ok) {
-    UMA_HISTOGRAM_COUNTS("SB2.FilterWriteFail", 1);
+  if (!write_ok)
     RecordFailure(FAILURE_DATABASE_FILTER_WRITE);
-  }
 }
