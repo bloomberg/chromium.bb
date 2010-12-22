@@ -615,7 +615,8 @@ PrefService* InitializeLocalState(const CommandLine& parsed_command_line,
   // Initialize ResourceBundle which handles files loaded from external
   // sources. This has to be done before uninstall code path and before prefs
   // are registered.
-  local_state->RegisterStringPref(prefs::kApplicationLocale, "");
+  local_state->RegisterStringPref(prefs::kApplicationLocale,
+                                  std::string());
 #if !defined(OS_CHROMEOS)
   local_state->RegisterBooleanPref(prefs::kMetricsReportingEnabled,
       GoogleUpdateSettings::GetCollectStatsConsent());
@@ -1151,9 +1152,12 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #else
     // On a POSIX OS other than ChromeOS, the parameter that is passed to the
     // method InitSharedInstance is ignored.
-    std::string app_locale = ResourceBundle::InitSharedInstance(
-        local_state->GetString(prefs::kApplicationLocale));
-    g_browser_process->SetApplicationLocale(app_locale);
+    const std::string locale =
+        local_state->GetString(prefs::kApplicationLocale);
+    const std::string loaded_locale =
+        ResourceBundle::InitSharedInstance(locale);
+    CHECK(!loaded_locale.empty()) << "Locale could not be found for " << locale;
+    g_browser_process->SetApplicationLocale(loaded_locale);
 
     FilePath resources_pack_path;
     PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);

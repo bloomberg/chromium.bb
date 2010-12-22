@@ -67,8 +67,9 @@ void LanguageSwitchMenu::InitLanguageMenu() {
 std::wstring LanguageSwitchMenu::GetCurrentLocaleName() const {
   DCHECK(g_browser_process);
   const std::string locale = g_browser_process->GetApplicationLocale();
-  return language_list_->GetLanguageNameAt(
-      language_list_->GetIndexFromLocale(locale));
+  int index = language_list_->GetIndexFromLocale(locale);
+  CHECK_NE(-1, index) << "Unknown locale: " << locale;
+  return language_list_->GetLanguageNameAt(index);
 };
 
 void LanguageSwitchMenu::SetFirstLevelMenuWidth(int width) {
@@ -93,7 +94,9 @@ void LanguageSwitchMenu::SwitchLanguage(const std::string& locale) {
     prefs->SavePersistentPrefs();
 
     // Switch the locale.
-    ResourceBundle::ReloadSharedInstance(locale);
+    const std::string loaded_locale =
+        ResourceBundle::ReloadSharedInstance(locale);
+    CHECK(!loaded_locale.empty()) << "Locale could not be found for " << locale;
 
     // Enable the keyboard layouts that are necessary for the new locale.
     input_method::EnableInputMethods(

@@ -99,10 +99,11 @@ class BrowserMainPartsMac : public BrowserMainPartsPosix {
 
       // Before we load the nib, we need to start up the resource bundle so we
       // have the strings avaiable for localization.
-      std::string pref_locale;
       // TODO(markusheintz): Read preference pref::kApplicationLocale in order
       // to enforce the application locale.
-      ResourceBundle::InitSharedInstance(pref_locale);
+      const std::string loaded_locale =
+          ResourceBundle::InitSharedInstance(std::string());
+      CHECK(!loaded_locale.empty()) << "Default locale could not be found";
 
       FilePath resources_pack_path;
       PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);

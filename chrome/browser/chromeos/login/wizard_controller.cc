@@ -1007,7 +1007,10 @@ void ShowLoginWizard(const std::string& first_screen_name,
       locale = controller->GetCustomization()->initial_locale();
       VLOG(1) << "Initial locale: " << locale;
       if (!locale.empty()) {
-        ResourceBundle::ReloadSharedInstance(locale);
+        const std::string loaded_locale =
+            ResourceBundle::ReloadSharedInstance(locale);
+        CHECK(!loaded_locale.empty()) << "Locale could not be found for "
+                                      << locale;
       }
     }
   }
