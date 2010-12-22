@@ -157,8 +157,6 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
 #if defined(TOUCH_UI)
   if (url.host() == chrome::kChromeUIKeyboardHost)
     return &NewDOMUI<KeyboardUI>;
-  if (url.host() == chrome::kChromeUILoginHost)
-    return &NewDOMUI<chromeos::LoginUI>;
 #endif
   if (url.host() == chrome::kChromeUIGpuInternalsHost)
     return &NewDOMUI<GpuInternalsUI>;
@@ -213,6 +211,11 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
       return &NewDOMUI<PrintPreviewUI>;
     }
   }
+#endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_CHROMEOS) && defined(TOUCH_UI)
+  if (url.host() == chrome::kChromeUILoginHost)
+    return &NewDOMUI<chromeos::LoginUI>;
 #endif
 
   if (url.spec() == chrome::kChromeUIConstrainedHTMLTestURL)
