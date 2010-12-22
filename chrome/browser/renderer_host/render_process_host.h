@@ -178,7 +178,7 @@ class RenderProcessHost : public IPC::Channel::Sender,
                                 IPC::Message* msg) = 0;
 
   // Called when a received message cannot be decoded.
-  virtual void ReceivedBadMessage(uint32 msg_type) = 0;
+  virtual void ReceivedBadMessage() = 0;
 
   // Track the count of visible widgets. Called by listeners to register and
   // unregister visibility.

@@ -51,6 +51,7 @@
 #include "chrome/browser/extensions/extension_webstore_private_api.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -494,6 +495,7 @@ void ExtensionFunctionDispatcher::HandleBadMessage(ExtensionFunction* api) {
     CHECK(false);
   } else {
     NOTREACHED();
+    UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_EFD"));
     base::KillProcess(render_view_host_->process()->GetHandle(),
                       ResultCodes::KILLED_BAD_MESSAGE, false);
   }

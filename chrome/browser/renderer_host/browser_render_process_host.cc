@@ -44,6 +44,7 @@
 #include "chrome/browser/in_process_webkit/dom_storage_message_filter.h"
 #include "chrome/browser/in_process_webkit/indexed_db_dispatcher_host.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/mime_registry_message_filter.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_service.h"
@@ -500,8 +501,14 @@ bool BrowserRenderProcessHost::WaitForUpdateMsg(
   return widget_helper_->WaitForUpdateMsg(render_widget_id, max_delay, msg);
 }
 
-void BrowserRenderProcessHost::ReceivedBadMessage(uint32 msg_type) {
-  BadMessageTerminateProcess(msg_type, GetHandle());
+void BrowserRenderProcessHost::ReceivedBadMessage() {
+  if (run_renderer_in_process()) {
+    // In single process mode it is better if we don't suicide but just
+    // crash.
+    CHECK(false);
+  }
+  NOTREACHED();
+  base::KillProcess(GetHandle(), ResultCodes::KILLED_BAD_MESSAGE, false);
 }
 
 void BrowserRenderProcessHost::ViewCreated() {
@@ -1007,7 +1014,9 @@ void BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
     if (!msg_is_ok) {
       // The message had a handler, but its de-serialization failed.
       // We consider this a capital crime. Kill the renderer if we have one.
-      ReceivedBadMessage(msg.type());
+      LOG(ERROR) << "bad message " << msg.type() << " terminating renderer.";
+      UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_BRPH"));
+      ReceivedBadMessage();
     }
     return;
   }
@@ -1032,18 +1041,6 @@ void BrowserRenderProcessHost::OnChannelConnected(int32 peer_pid) {
   Send(new ViewMsg_SetIPCLoggingEnabled(
       IPC::Logging::GetInstance()->Enabled()));
 #endif
-}
-
-// Static. This function can be called from any thread.
-void BrowserRenderProcessHost::BadMessageTerminateProcess(
-    uint32 msg_type, base::ProcessHandle process) {
-  LOG(ERROR) << "bad message " << msg_type << " terminating renderer.";
-  if (run_renderer_in_process()) {
-    // In single process mode it is better if we don't suicide but just crash.
-    CHECK(false);
-  }
-  NOTREACHED();
-  base::KillProcess(process, ResultCodes::KILLED_BAD_MESSAGE, false);
 }
 
 void BrowserRenderProcessHost::OnChannelError() {

@@ -40,7 +40,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual bool WaitForUpdateMsg(int render_widget_id,
                                 const base::TimeDelta& max_delay,
                                 IPC::Message* msg);
-  virtual void ReceivedBadMessage(uint32 msg_type);
+  virtual void ReceivedBadMessage();
   virtual void WidgetRestored();
   virtual void WidgetHidden();
   virtual void ViewCreated();

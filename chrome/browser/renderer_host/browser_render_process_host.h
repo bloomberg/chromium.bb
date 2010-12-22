@@ -69,7 +69,7 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   virtual bool WaitForUpdateMsg(int render_widget_id,
                                 const base::TimeDelta& max_delay,
                                 IPC::Message* msg);
-  virtual void ReceivedBadMessage(uint32 msg_type);
+  virtual void ReceivedBadMessage();
   virtual void WidgetRestored();
   virtual void WidgetHidden();
   virtual void ViewCreated();
@@ -88,12 +88,6 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   virtual void OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelConnected(int32 peer_pid);
   virtual void OnChannelError();
-
-  // If the a process has sent a message that cannot be decoded, it is deemed
-  // corrupted and thus needs to be terminated using this call. This function
-  // can be safely called from any thread.
-  static void BadMessageTerminateProcess(uint32 msg_type,
-                                         base::ProcessHandle renderer);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,

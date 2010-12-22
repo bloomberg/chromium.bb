@@ -68,17 +68,14 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   // Helper templates.
   template <class ReturnType>
   ReturnType* GetOrTerminateProcess(
-    IDMap<ReturnType, IDMapOwnPointer>* map, int32 return_object_id,
-    uint32 message_type);
+    IDMap<ReturnType, IDMapOwnPointer>* map, int32 return_object_id);
 
-  template <typename ReplyType, typename MessageType,
-            typename WebObjectType, typename Method>
+  template <typename ReplyType, typename WebObjectType, typename Method>
   void SyncGetter(IDMap<WebObjectType, IDMapOwnPointer>* map, int32 object_id,
                   ReplyType* reply, Method method);
 
   template <typename ObjectType>
-  void DestroyObject(IDMap<ObjectType, IDMapOwnPointer>* map, int32 object_id,
-                     uint32 message_type);
+  void DestroyObject(IDMap<ObjectType, IDMapOwnPointer>* map, int32 object_id);
 
   class DatabaseDispatcherHost {
    public:

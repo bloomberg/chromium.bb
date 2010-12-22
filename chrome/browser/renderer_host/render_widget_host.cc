@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/renderer_host/backing_store.h"
 #include "chrome/browser/renderer_host/backing_store_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_painting_observer.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/result_codes.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
@@ -195,7 +197,8 @@ void RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
 
   if (!msg_is_ok) {
     // The message de-serialization failed. Kill the renderer process.
-    process()->ReceivedBadMessage(msg.type());
+    UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_RWH"));
+    process()->ReceivedBadMessage();
   }
 }
 
@@ -850,7 +853,9 @@ void RenderWidgetHost::OnMsgUpdateRect(
     if (dib) {
       if (dib->size() < size) {
         DLOG(WARNING) << "Transport DIB too small for given rectangle";
-        process()->ReceivedBadMessage(ViewHostMsg_UpdateRect::ID);
+        UserMetrics::RecordAction(UserMetricsAction(
+            "BadMessageTerminate_RWH1"));
+        process()->ReceivedBadMessage();
       } else {
         // Scroll the backing store.
         if (!params.scroll_rect.IsEmpty()) {
@@ -924,7 +929,8 @@ void RenderWidgetHost::OnMsgInputEventAck(const IPC::Message& message) {
   void* iter = NULL;
   int type = 0;
   if (!message.ReadInt(&iter, &type) || (type < WebInputEvent::Undefined)) {
-    process()->ReceivedBadMessage(message.type());
+    UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_RWH2"));
+    process()->ReceivedBadMessage();
   } else if (type == WebInputEvent::MouseMove) {
     mouse_move_pending_ = false;
 
@@ -937,8 +943,10 @@ void RenderWidgetHost::OnMsgInputEventAck(const IPC::Message& message) {
     ProcessWheelAck();
   } else if (WebInputEvent::isKeyboardEventType(type)) {
     bool processed = false;
-    if (!message.ReadBool(&iter, &processed))
-      process()->ReceivedBadMessage(message.type());
+    if (!message.ReadBool(&iter, &processed)) {
+      UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_RWH3"));
+      process()->ReceivedBadMessage();
+    }
 
     ProcessKeyboardEventAck(type, processed);
   }
@@ -958,12 +966,14 @@ void RenderWidgetHost::ProcessWheelAck() {
 
 void RenderWidgetHost::OnMsgFocus() {
   // Only RenderViewHost can deal with that message.
-  process()->ReceivedBadMessage(ViewHostMsg_Focus::ID);
+  UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_RWH4"));
+  process()->ReceivedBadMessage();
 }
 
 void RenderWidgetHost::OnMsgBlur() {
   // Only RenderViewHost can deal with that message.
-  process()->ReceivedBadMessage(ViewHostMsg_Blur::ID);
+  UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_RWH5"));
+  process()->ReceivedBadMessage();
 }
 
 void RenderWidgetHost::OnMsgSetCursor(const WebCursor& cursor) {

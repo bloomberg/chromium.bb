@@ -26,6 +26,7 @@
 #include "chrome/browser/gpu_process_host.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor_api.h"
@@ -1463,7 +1464,8 @@ void RenderMessageFilter::OnAsyncOpenFile(const IPC::Message& msg,
   if (!ChildProcessSecurityPolicy::GetInstance()->HasPermissionsForFile(
           render_process_id_, path, flags)) {
     DLOG(ERROR) << "Bad flags in ViewMsgHost_AsyncOpenFile message: " << flags;
-    BadMessageReceived(ViewHostMsg_AsyncOpenFile::ID);
+    UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_AOF"));
+    BadMessageReceived();
     return;
   }
 

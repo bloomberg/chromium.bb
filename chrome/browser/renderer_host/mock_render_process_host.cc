@@ -46,7 +46,7 @@ bool MockRenderProcessHost::WaitForUpdateMsg(int render_widget_id,
   return false;
 }
 
-void MockRenderProcessHost::ReceivedBadMessage(uint32 msg_type) {
+void MockRenderProcessHost::ReceivedBadMessage() {
   ++bad_msg_count_;
 }
 

@@ -7,7 +7,8 @@
 #include "base/logging.h"
 #include "base/process.h"
 #include "base/process_util.h"
-#include "chrome/browser/renderer_host/browser_render_process_host.h"
+#include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/common/result_codes.h"
 
 BrowserMessageFilter::BrowserMessageFilter()
     : channel_(NULL), peer_handle_(base::kNullProcessHandle) {
@@ -77,12 +78,14 @@ bool BrowserMessageFilter::DispatchMessage(const IPC::Message& message) {
   bool rv = OnMessageReceived(message, &message_was_ok);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO) || rv) <<
       "Must handle messages that were dispatched to another thread!";
-  if (!message_was_ok)
-    BadMessageReceived(message.type());
+  if (!message_was_ok) {
+    UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_BMF"));
+    BadMessageReceived();
+  }
 
   return rv;
 }
 
-void BrowserMessageFilter::BadMessageReceived(uint32 msg_type) {
-  BrowserRenderProcessHost::BadMessageTerminateProcess(msg_type, peer_handle());
+void BrowserMessageFilter::BadMessageReceived() {
+  base::KillProcess(peer_handle(), ResultCodes::KILLED_BAD_MESSAGE, false);
 }

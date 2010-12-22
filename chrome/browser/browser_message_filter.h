@@ -51,7 +51,7 @@ class BrowserMessageFilter : public IPC::ChannelProxy::MessageFilter,
  protected:
   // Call this if a message couldn't be deserialized.  This kills the renderer.
   // Can be called on any thread.
-  void BadMessageReceived(uint32 msg_type);
+  virtual void BadMessageReceived();
 
  private:
   // Dispatches a message to the derived class.

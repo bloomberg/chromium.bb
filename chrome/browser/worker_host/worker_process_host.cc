@@ -17,6 +17,7 @@
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/file_system/file_system_dispatcher_host.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/mime_registry_message_filter.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/renderer_host/blob_message_filter.h"
@@ -287,6 +288,7 @@ void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
 
   if (!msg_is_ok) {
     NOTREACHED();
+    UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_WPH"));
     base::KillProcess(handle(), ResultCodes::KILLED_BAD_MESSAGE, false);
   }
 

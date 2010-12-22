@@ -25,6 +25,7 @@
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/in_process_webkit/session_storage_namespace.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/printing/printer_query.h"
@@ -922,7 +923,8 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
   if (!msg_is_ok) {
     // The message had a handler, but its de-serialization failed.
     // Kill the renderer.
-    process()->ReceivedBadMessage(msg.type());
+    UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_RVH"));
+    process()->ReceivedBadMessage();
   }
 }
 
