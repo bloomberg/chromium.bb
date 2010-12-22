@@ -226,6 +226,15 @@ bool BaseTabStrip::IsDragSessionActive() const {
   return drag_controller_.get() != NULL;
 }
 
+bool BaseTabStrip::IsActiveDropTarget() const {
+  for (int i = 0; i < tab_count(); ++i) {
+    BaseTab* tab = base_tab_at_tab_index(i);
+    if (tab->dragging())
+      return true;
+  }
+  return false;
+}
+
 void BaseTabStrip::SelectTab(BaseTab* tab) {
   int model_index = GetModelIndexOfBaseTab(tab);
   if (IsValidModelIndex(model_index))

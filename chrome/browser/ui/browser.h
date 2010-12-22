@@ -348,6 +348,9 @@ class Browser : public TabHandlerDelegate,
 
   // Tab adding/showing functions /////////////////////////////////////////////
 
+  // Returns true if the tab strip is editable (for extensions).
+  bool IsTabStripEditable() const;
+
   // Returns the index to insert a tab at during session restore and startup.
   // |relative_index| gives the index of the url into the number of tabs that
   // are going to be opened. For example, if three urls are passed in on the

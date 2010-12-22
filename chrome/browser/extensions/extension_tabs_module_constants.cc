@@ -58,6 +58,8 @@ const char kNoCurrentWindowError[] = "No current window";
 const char kNoLastFocusedWindowError[] = "No last-focused window";
 const char kWindowNotFoundError[] = "No window with id: *.";
 const char kTabNotFoundError[] = "No tab with id: *.";
+const char kTabStripNotEditableError[] =
+    "Tabs cannot be edited right now (user may be dragging a tab).";
 const char kNoSelectedTabError[] = "No selected tab";
 const char kInvalidUrlError[] = "Invalid url: \"*\".";
 const char kInternalVisibleTabCaptureError[] =

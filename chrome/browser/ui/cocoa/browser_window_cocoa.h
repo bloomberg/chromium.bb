@@ -65,6 +65,7 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual void RotatePaneFocus(bool forwards);
   virtual bool IsBookmarkBarVisible() const;
   virtual bool IsBookmarkBarAnimating() const;
+  virtual bool IsTabStripEditable() const;
   virtual bool IsToolbarVisible() const;
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
                                         Profile* profile);

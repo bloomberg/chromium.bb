@@ -854,6 +854,11 @@ bool BrowserWindowGtk::IsBookmarkBarAnimating() const {
   return false;
 }
 
+bool BrowserWindowGtk::IsTabStripEditable() const {
+  return !tabstrip()->IsDragSessionActive() &&
+      !tabstrip()->IsActiveDropTarget();
+}
+
 bool BrowserWindowGtk::IsToolbarVisible() const {
   return IsToolbarSupported();
 }

@@ -92,6 +92,9 @@
 // implementation.
 - (void)removePlaceholder;
 
+// Returns whether one of the window's tabs is being dragged.
+- (BOOL)isDragSessionActive;
+
 // The follow return YES if tab dragging/tab tearing (off the tab strip)/window
 // movement is currently allowed. Any number of things can choose to disable it,
 // such as pending animations. The default implementations always return YES.

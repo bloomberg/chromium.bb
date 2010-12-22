@@ -67,6 +67,7 @@ class TestBrowserWindow : public BrowserWindow {
 
   virtual bool IsBookmarkBarVisible() const { return false; }
   virtual bool IsBookmarkBarAnimating() const { return false; }
+  virtual bool IsTabStripEditable() const { return false; }
   virtual bool IsToolbarVisible() const { return false; }
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
                                         Profile* profile) {}

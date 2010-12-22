@@ -131,6 +131,9 @@ class BaseTabStrip : public views::View,
   // Returns true if a drag session is currently active.
   bool IsDragSessionActive() const;
 
+  // Returns true if a tab is being dragged into this tab strip.
+  bool IsActiveDropTarget() const;
+
   // TabController overrides:
   virtual void SelectTab(BaseTab* tab);
   virtual void CloseTab(BaseTab* tab);

@@ -128,6 +128,7 @@ TabGtk::TabGtk(TabDelegate* delegate)
     : TabRendererGtk(delegate->GetThemeProvider()),
       delegate_(delegate),
       closing_(false),
+      dragging_(false),
       last_mouse_down_(NULL),
       drag_widget_(NULL),
       title_width_(0),

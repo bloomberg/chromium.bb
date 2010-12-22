@@ -54,6 +54,9 @@ class TabStripGtk : public TabStripModelObserver,
   // Returns true if there is an active drag session.
   bool IsDragSessionActive() const { return drag_controller_.get() != NULL; }
 
+  // Returns true if a tab is being dragged into this tabstrip.
+  bool IsActiveDropTarget() const;
+
   // Sets the bounds of the tabs.
   void Layout();
 

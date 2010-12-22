@@ -781,6 +781,15 @@ void TabStripGtk::Hide() {
   gtk_widget_hide(tabstrip_.get());
 }
 
+bool TabStripGtk::IsActiveDropTarget() const {
+  for (int i = 0; i < GetTabCount(); ++i) {
+    TabGtk* tab = GetTabAt(i);
+    if (tab->dragging())
+      return true;
+  }
+  return false;
+}
+
 void TabStripGtk::Layout() {
   // Called from:
   // - window resize

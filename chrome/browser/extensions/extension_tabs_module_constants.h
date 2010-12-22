@@ -61,6 +61,7 @@ extern const char kNoCurrentWindowError[];
 extern const char kNoLastFocusedWindowError[];
 extern const char kWindowNotFoundError[];
 extern const char kTabNotFoundError[];
+extern const char kTabStripNotEditableError[];
 extern const char kNoSelectedTabError[];
 extern const char kInvalidUrlError[];
 extern const char kInternalVisibleTabCaptureError[];

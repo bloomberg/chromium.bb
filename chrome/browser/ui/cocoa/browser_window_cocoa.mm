@@ -278,6 +278,10 @@ bool BrowserWindowCocoa::IsBookmarkBarAnimating() const {
   return [controller_ isBookmarkBarAnimating];
 }
 
+bool BrowserWindowCocoa::IsTabStripEditable() const {
+  return ![controller_ isDragSessionActive];
+}
+
 bool BrowserWindowCocoa::IsToolbarVisible() const {
   return browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
          browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);

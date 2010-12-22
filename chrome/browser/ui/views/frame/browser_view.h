@@ -275,6 +275,7 @@ class BrowserView : public BrowserBubbleHost,
   virtual void DestroyBrowser();
   virtual bool IsBookmarkBarVisible() const;
   virtual bool IsBookmarkBarAnimating() const;
+  virtual bool IsTabStripEditable() const;
   virtual bool IsToolbarVisible() const;
   virtual void DisableInactiveFrame();
   virtual void ConfirmSetDefaultSearchProvider(

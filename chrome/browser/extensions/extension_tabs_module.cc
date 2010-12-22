@@ -550,6 +550,13 @@ bool RemoveWindowFunction::RunImpl() {
   if (!browser)
     return false;
 
+  // Don't let the extension remove the window if the user is dragging tabs
+  // in that window.
+  if (!browser->IsTabStripEditable()) {
+    error_ = keys::kTabStripNotEditableError;
+    return false;
+  }
+
   browser->CloseWindow();
 
   return true;
@@ -848,6 +855,12 @@ bool MoveTabFunction::RunImpl() {
                   &tab_index, &error_))
     return false;
 
+  // Don't let the extension move the tab if the user is dragging tabs.
+  if (!source_browser->IsTabStripEditable()) {
+    error_ = keys::kTabStripNotEditableError;
+    return false;
+  }
+
   if (update_props->HasKey(keys::kWindowIdKey)) {
     Browser* target_browser;
     int window_id;
@@ -857,6 +870,11 @@ bool MoveTabFunction::RunImpl() {
                                                include_incognito(), &error_);
     if (!target_browser)
       return false;
+
+    if (!target_browser->IsTabStripEditable()) {
+      error_ = keys::kTabStripNotEditableError;
+      return false;
+    }
 
     if (target_browser->type() != Browser::TYPE_NORMAL) {
       error_ = keys::kCanOnlyMoveTabsWithinNormalWindowsError;
@@ -916,6 +934,12 @@ bool RemoveTabFunction::RunImpl() {
   if (!GetTabById(tab_id, profile(), include_incognito(),
                   &browser, NULL, &contents, NULL, &error_))
     return false;
+
+  // Don't let the extension remove a tab if the user is dragging tabs around.
+  if (!browser->IsTabStripEditable()) {
+    error_ = keys::kTabStripNotEditableError;
+    return false;
+  }
 
   // Close the tab in this convoluted way, since there's a chance that the tab
   // is being dragged, or we're in some other nested event loop. This code path

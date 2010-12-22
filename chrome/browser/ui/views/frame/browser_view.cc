@@ -1004,6 +1004,10 @@ bool BrowserView::IsBookmarkBarAnimating() const {
   return bookmark_bar_view_.get() && bookmark_bar_view_->is_animating();
 }
 
+bool BrowserView::IsTabStripEditable() const {
+  return !tabstrip_->IsDragSessionActive() && !tabstrip_->IsActiveDropTarget();
+}
+
 bool BrowserView::IsToolbarVisible() const {
   return browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
          browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);

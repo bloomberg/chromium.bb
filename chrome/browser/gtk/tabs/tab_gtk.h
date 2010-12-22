@@ -94,6 +94,10 @@ class TabGtk : public TabRendererGtk,
   void set_closing(bool closing) { closing_ = closing; }
   bool closing() const { return closing_; }
 
+  // Used to set/check whether this Tab is being dragged.
+  void set_dragging(bool dragging) { dragging_ = dragging; }
+  bool dragging() const { return dragging_; }
+
   // TabRendererGtk overrides:
   virtual bool IsSelected() const;
   virtual bool IsVisible() const;
@@ -163,6 +167,9 @@ class TabGtk : public TabRendererGtk,
 
   // True if the tab is being animated closed.
   bool closing_;
+
+  // True if the tab is being dragged.
+  bool dragging_;
 
   // The context menu controller.
   scoped_ptr<ContextMenuController> menu_controller_;

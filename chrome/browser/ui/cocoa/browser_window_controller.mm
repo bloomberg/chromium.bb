@@ -1273,6 +1273,13 @@
                                  yStretchiness:0];
 }
 
+- (BOOL)isDragSessionActive {
+  // The tab can be dragged within the existing tab strip or detached
+  // into its own window (then the overlay window will be present).
+  return [[self tabStripController] isDragSessionActive] ||
+         [self overlayWindow] != nil;
+}
+
 - (BOOL)tabDraggingAllowed {
   return [tabStripController_ tabDraggingAllowed];
 }

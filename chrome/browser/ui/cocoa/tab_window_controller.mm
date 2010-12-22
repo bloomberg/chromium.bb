@@ -267,6 +267,11 @@
   [self showNewTabButton:YES];
 }
 
+- (BOOL)isDragSessionActive {
+  NOTIMPLEMENTED();
+  return NO;
+}
+
 - (BOOL)tabDraggingAllowed {
   return YES;
 }

@@ -201,6 +201,9 @@ class ToolbarModel;
                           frame:(NSRect)frame
                   yStretchiness:(CGFloat)yStretchiness;
 
+// Returns whether a tab is being dragged within the tab strip.
+- (BOOL)isDragSessionActive;
+
 // Returns whether or not |tab| can still be fully seen in the tab strip or if
 // its current position would cause it be obscured by things such as the edge
 // of the window or the window decorations. Returns YES only if the entire tab

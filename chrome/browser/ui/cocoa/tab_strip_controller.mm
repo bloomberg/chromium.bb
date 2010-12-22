@@ -701,6 +701,10 @@ private:
   [self layoutTabsWithAnimation:initialLayoutComplete_ regenerateSubviews:NO];
 }
 
+- (BOOL)isDragSessionActive {
+  return placeholderTab_ != nil;
+}
+
 - (BOOL)isTabFullyVisible:(TabView*)tab {
   NSRect frame = [tab frame];
   return NSMinX(frame) >= [self indentForControls] &&
