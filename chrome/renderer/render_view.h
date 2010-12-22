@@ -679,7 +679,7 @@ class RenderView : public RenderWidget,
                         const gfx::Rect& resizer_rect);
   virtual void DidInitiatePaint();
   virtual void DidFlushPaint();
-  virtual bool GetBitmapForOptimizedPluginPaint(
+  virtual webkit::ppapi::PluginInstance* GetBitmapForOptimizedPluginPaint(
       const gfx::Rect& paint_bounds,
       TransportDIB** dib,
       gfx::Rect* location,

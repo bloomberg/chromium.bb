@@ -29,6 +29,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/webplugin.h"
+#include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"
@@ -389,6 +390,7 @@ void RenderWidget::ClearFocus() {
 void RenderWidget::PaintRect(const gfx::Rect& rect,
                              const gfx::Point& canvas_origin,
                              skia::PlatformCanvas* canvas) {
+
   canvas->save();
 
   // Bring the canvas into the coordinate system of the paint rect.
@@ -406,13 +408,45 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
     canvas->drawPaint(paint);
   }
 
-  webwidget_->paint(webkit_glue::ToWebCanvas(canvas), rect);
+  // First see if this rect is a plugin that can paint itself faster.
+  TransportDIB* optimized_dib = NULL;
+  gfx::Rect optimized_copy_rect, optimized_copy_location;
+  webkit::ppapi::PluginInstance* optimized_instance =
+      GetBitmapForOptimizedPluginPaint(rect, &optimized_dib,
+                                       &optimized_copy_location,
+                                       &optimized_copy_rect);
+  if (optimized_instance) {
+    // This plugin can be optimize-painted and we can just ask it to paint
+    // itself. We don't actually need the TransportDIB in this case.
+    //
+    // This is an optimization for PPAPI plugins that know they're on top of
+    // the page content. If this rect is inside such a plugin, we can save some
+    // time and avoid re-rendering the page content which we know will be
+    // covered by the plugin later (this time can be significant, especially
+    // for a playing movie that is invalidating a lot).
+    //
+    // In the plugin movie case, hopefully the similar call to
+    // GetBitmapForOptimizedPluginPaint in DoDeferredUpdate handles the
+    // painting, because that avoids copying the plugin image to a different
+    // paint rect. Unfortunately, if anything on the page is animating other
+    // than the movie, it break this optimization since the union of the
+    // invalid regions will be larger than the plugin.
+    //
+    // This code optimizes that case, where we can still avoid painting in
+    // WebKit and filling the background (which can be slow) and just painting
+    // the plugin. Unlike the DoDeferredUpdate case, an extra copy is still
+    // required.
+    optimized_instance->Paint(webkit_glue::ToWebCanvas(canvas),
+                              optimized_copy_location, optimized_copy_location);
+  } else {
+    // Normal painting case.
+    webwidget_->paint(webkit_glue::ToWebCanvas(canvas), rect);
+
+    // Flush to underlying bitmap.  TODO(darin): is this needed?
+    canvas->getTopPlatformDevice().accessBitmap(false);
+  }
 
   PaintDebugBorder(rect, canvas);
-
-  // Flush to underlying bitmap.  TODO(darin): is this needed?
-  canvas->getTopPlatformDevice().accessBitmap(false);
-
   canvas->restore();
 }
 
@@ -475,6 +509,15 @@ void RenderWidget::DoDeferredUpdate() {
 
   // A plugin may be able to do an optimized paint. First check this, in which
   // case we can skip all of the bitmap generation and regular paint code.
+  // This optimization allows PPAPI plugins that declare themselves on top of
+  // the page (like a traditional windowed plugin) to be able to animate (think
+  // movie playing) without repeatedly re-painting the page underneath, or
+  // copying the plugin backing store (since we can send the plugin's backing
+  // store directly to the browser).
+  //
+  // This optimization only works when the entire invalid region is contained
+  // within the plugin. There is a related optimization in PaintRect for the
+  // case where there may be multiple invalid regions.
   TransportDIB::Id dib_id = TransportDIB::Id();
   TransportDIB* dib = NULL;
   std::vector<gfx::Rect> copy_rects;
@@ -864,13 +907,13 @@ void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
   webwidget_->setTextDirection(direction);
 }
 
-bool RenderWidget::GetBitmapForOptimizedPluginPaint(
+webkit::ppapi::PluginInstance* RenderWidget::GetBitmapForOptimizedPluginPaint(
     const gfx::Rect& paint_bounds,
     TransportDIB** dib,
     gfx::Rect* location,
     gfx::Rect* clip) {
-  // Normal RenderWidgets don't support optimized plugin painting.
-  return false;
+  // Bare RenderWidgets don't support optimized plugin painting.
+  return NULL;
 }
 
 void RenderWidget::SetHidden(bool hidden) {

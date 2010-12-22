@@ -49,8 +49,12 @@ struct WebPopupMenuInfo;
 namespace webkit {
 namespace npapi {
 struct WebPluginGeometry;
-}
-}
+}  // namespace npapi
+
+namespace ppapi {
+class PluginInstance;
+}  // namespace ppapi
+}  // namespace webkit
 
 // RenderWidget provides a communication bridge between a WebWidget and
 // a RenderWidgetHost, the latter of which lives in a different process.
@@ -202,13 +206,14 @@ class RenderWidget : public IPC::Channel::Listener,
   // Detects if a suitable opaque plugin covers the given paint bounds with no
   // compositing necessary.
   //
-  // Returns true if the paint can be handled by just blitting the plugin
-  // bitmap. In this case, the location, clipping, and ID of the backing store
-  // will be filled into the given output parameters.
+  // Returns the plugin instance that's the source of the paint if the paint
+  // can be handled by just blitting the plugin bitmap. In this case, the
+  // location, clipping, and ID of the backing store will be filled into the
+  // given output parameters.
   //
-  // A return value of false means optimized painting can not be used and we
+  // A return value of null means optimized painting can not be used and we
   // should continue with the normal painting code path.
-  virtual bool GetBitmapForOptimizedPluginPaint(
+  virtual webkit::ppapi::PluginInstance* GetBitmapForOptimizedPluginPaint(
       const gfx::Rect& paint_bounds,
       TransportDIB** dib,
       gfx::Rect* location,

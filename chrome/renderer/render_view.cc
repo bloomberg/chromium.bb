@@ -5228,7 +5228,7 @@ void RenderView::DidFlushPaint() {
   }
 }
 
-bool RenderView::GetBitmapForOptimizedPluginPaint(
+webkit::ppapi::PluginInstance* RenderView::GetBitmapForOptimizedPluginPaint(
     const gfx::Rect& paint_bounds,
     TransportDIB** dib,
     gfx::Rect* location,

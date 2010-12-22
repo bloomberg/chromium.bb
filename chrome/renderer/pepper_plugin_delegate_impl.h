@@ -57,7 +57,7 @@ class PepperPluginDelegateImpl
 
   // Called by RenderView to implement the corresponding function in its base
   // class RenderWidget (see that for more).
-  bool GetBitmapForOptimizedPluginPaint(
+  webkit::ppapi::PluginInstance* GetBitmapForOptimizedPluginPaint(
       const gfx::Rect& paint_bounds,
       TransportDIB** dib,
       gfx::Rect* location,

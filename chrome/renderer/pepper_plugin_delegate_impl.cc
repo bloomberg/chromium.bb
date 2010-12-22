@@ -379,8 +379,10 @@ PepperPluginDelegateImpl::CreatePepperPlugin(const FilePath& path) {
   IPC::ChannelHandle channel_handle;
   render_view_->Send(new ViewHostMsg_OpenChannelToPepperPlugin(
       path, &plugin_process_handle, &channel_handle));
-  if (channel_handle.name.empty())
-    return scoped_refptr<webkit::ppapi::PluginModule>();  // Couldn't be initialized.
+  if (channel_handle.name.empty()) {
+    // Couldn't be initialized.
+    return scoped_refptr<webkit::ppapi::PluginModule>();
+  }
 
   // Create a new HostDispatcher for the proxying, and hook it to a new
   // PluginModule.
@@ -435,7 +437,8 @@ void PepperPluginDelegateImpl::ViewFlushedPaint() {
   }
 }
 
-bool PepperPluginDelegateImpl::GetBitmapForOptimizedPluginPaint(
+webkit::ppapi::PluginInstance*
+PepperPluginDelegateImpl::GetBitmapForOptimizedPluginPaint(
     const gfx::Rect& paint_bounds,
     TransportDIB** dib,
     gfx::Rect* location,
@@ -446,9 +449,9 @@ bool PepperPluginDelegateImpl::GetBitmapForOptimizedPluginPaint(
     webkit::ppapi::PluginInstance* instance = *i;
     if (instance->GetBitmapForOptimizedPluginPaint(
             paint_bounds, dib, location, clip))
-      return true;
+      return *i;
   }
-  return false;
+  return NULL;
 }
 
 void PepperPluginDelegateImpl::InstanceCreated(
