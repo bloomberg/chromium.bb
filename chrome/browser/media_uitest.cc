@@ -65,7 +65,7 @@ class MediaTest : public UITest {
   }
 };
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_WIN)
 // Test appears to be fine on linux, but let's first change to flaky and
 // see how that goes.
 // http://crbug.com/56364
