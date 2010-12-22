@@ -122,6 +122,20 @@ void AdvancedOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_FONTSETTINGS_INFO));
   localized_strings->SetString("defaultZoomLevelLabel",
       l10n_util::GetStringUTF16(IDS_OPTIONS_DEFAULT_ZOOM_LEVEL_LABEL));
+  localized_strings->SetString("defaultFontSizeLabel",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_DEFAULT_FONT_SIZE_LABEL));
+  localized_strings->SetString("fontSizeLabelVerySmall",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_FONT_SIZE_LABEL_VERY_SMALL));
+  localized_strings->SetString("fontSizeLabelSmall",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_FONT_SIZE_LABEL_SMALL));
+  localized_strings->SetString("fontSizeLabelMedium",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_FONT_SIZE_LABEL_MEDIUM));
+  localized_strings->SetString("fontSizeLabelLarge",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_FONT_SIZE_LABEL_LARGE));
+  localized_strings->SetString("fontSizeLabelVeryLarge",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_FONT_SIZE_LABEL_VERY_LARGE));
+  localized_strings->SetString("fontSizeLabelCustom",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_FONT_SIZE_LABEL_CUSTOM));
   localized_strings->SetString("fontSettingsCustomizeFontsButton",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_FONTSETTINGS_CUSTOMIZE_FONTS_BUTTON));
@@ -180,6 +194,7 @@ void AdvancedOptionsHandler::Initialize() {
   SetupMetricsReportingCheckbox();
   SetupMetricsReportingSettingVisibility();
   SetupDefaultZoomLevel();
+  SetupFontSizeLabel();
   SetupDownloadLocationPath();
   SetupAutoOpenFileTypesDisabledAttribute();
   SetupProxySettingsSection();
@@ -215,6 +230,9 @@ DOMMessageHandler* AdvancedOptionsHandler::Attach(DOMUI* dom_ui) {
                                   prefs, this);
   auto_open_files_.Init(prefs::kDownloadExtensionsToOpen, prefs, this);
   default_zoom_level_.Init(prefs::kDefaultZoomLevel, prefs, this);
+  default_font_size_.Init(prefs::kWebKitDefaultFontSize, prefs, this);
+  default_fixed_font_size_.Init(prefs::kWebKitDefaultFixedFontSize, prefs,
+                                this);
   proxy_prefs_.reset(
       PrefSetObserver::CreateProxyPrefSetObserver(prefs, this));
 
@@ -233,6 +251,8 @@ void AdvancedOptionsHandler::RegisterMessages() {
                   &AdvancedOptionsHandler::HandleAutoOpenButton));
   dom_ui_->RegisterMessageCallback("defaultZoomLevelAction",
       NewCallback(this, &AdvancedOptionsHandler::HandleDefaultZoomLevel));
+  dom_ui_->RegisterMessageCallback("defaultFontSizeAction",
+      NewCallback(this, &AdvancedOptionsHandler::HandleDefaultFontSize));
 #if !defined(OS_CHROMEOS)
   dom_ui_->RegisterMessageCallback("metricsReportingCheckboxAction",
       NewCallback(this,
@@ -293,6 +313,9 @@ void AdvancedOptionsHandler::Observe(NotificationType type,
       if (cloud_print_proxy_ui_enabled_)
         SetupCloudPrintProxySection();
 #endif
+    } else if (*pref_name == prefs::kWebKitDefaultFontSize ||
+               *pref_name == prefs::kWebKitDefaultFixedFontSize) {
+      SetupFontSizeLabel();
     }
   }
 }
@@ -350,6 +373,17 @@ void AdvancedOptionsHandler::HandleDefaultZoomLevel(const ListValue* args) {
   int zoom_level;
   if (ExtractIntegerValue(args, &zoom_level)) {
     default_zoom_level_.SetValue(static_cast<double>(zoom_level));
+  }
+}
+
+void AdvancedOptionsHandler::HandleDefaultFontSize(const ListValue* args) {
+  int font_size;
+  if (ExtractIntegerValue(args, &font_size)) {
+    if (font_size > 0) {
+      default_font_size_.SetValue(font_size);
+      default_fixed_font_size_.SetValue(font_size);
+      SetupFontSizeLabel();
+    }
   }
 }
 
@@ -490,6 +524,15 @@ void AdvancedOptionsHandler::SetupDefaultZoomLevel() {
   FundamentalValue value(static_cast<int>(default_zoom_level_.GetValue()));
   dom_ui_->CallJavascriptFunction(
       L"options.AdvancedOptions.SetDefaultZoomLevel", value);
+}
+
+void AdvancedOptionsHandler::SetupFontSizeLabel() {
+  // We're only interested in integer values, so convert to int.
+  FundamentalValue fixed_font_size(default_fixed_font_size_.GetValue());
+  FundamentalValue font_size(default_font_size_.GetValue());
+  dom_ui_->CallJavascriptFunction(
+      L"options.AdvancedOptions.SetFontSize", fixed_font_size,
+      font_size);
 }
 
 void AdvancedOptionsHandler::SetupDownloadLocationPath() {

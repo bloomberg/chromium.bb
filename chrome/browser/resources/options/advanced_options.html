@@ -63,10 +63,22 @@
         <span i18n-content="tabsToLinksPref"></span>
       </label>
 </if>
-      <div><button id="fontSettingsCustomizeFontsButton"
-          i18n-content="fontSettingsCustomizeFontsButton"></button></div>
       <div>
-        <label style="display:inline;">
+        <label>
+          <span i18n-content="defaultFontSizeLabel"></span>
+          <select id="defaultFontSize">
+            <option value="9" i18n-content="fontSizeLabelVerySmall"></option>
+            <option value="12" i18n-content="fontSizeLabelSmall"></option>
+            <option value="16" i18n-content="fontSizeLabelMedium"></option>
+            <option value="20" i18n-content="fontSizeLabelLarge"></option>
+            <option value="24" i18n-content="fontSizeLabelVeryLarge"></option>
+          </select>
+        </label>
+        <button id="fontSettingsCustomizeFontsButton"
+            i18n-content="fontSettingsCustomizeFontsButton"></button>
+      </div>
+      <div>
+        <label>
           <span i18n-content="defaultZoomLevelLabel"></span>
           <select id="defaultZoomLevel">
             <option value="-3">57%</option>

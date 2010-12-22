@@ -59,7 +59,11 @@ var OptionsPage = options.OptionsPage;
       $('defaultZoomLevel').onchange = function(event) {
         chrome.send('defaultZoomLevelAction',
             [String(event.target.options[event.target.selectedIndex].value)]);
-      }
+      };
+      $('defaultFontSize').onchange = function(event) {
+        chrome.send('defaultFontSizeAction',
+            [String(event.target.options[event.target.selectedIndex].value)]);
+      };
 
       if (cr.isWindows || cr.isMac) {
         $('certificatesManageButton').onclick = function(event) {
@@ -167,6 +171,31 @@ var OptionsPage = options.OptionsPage;
       }
     }
     selectCtl.selectedIndex = 4;  // 100%
+  };
+
+  // Set the font size selected item.
+  AdvancedOptions.SetFontSize = function(fixed_font_size_value,
+      font_size_value) {
+    var selectCtl = $('defaultFontSize');
+    if (fixed_font_size_value == font_size_value) {
+      for (var i = 0; i < selectCtl.options.length; i++) {
+        if (selectCtl.options[i].value == font_size_value) {
+          selectCtl.selectedIndex = i;
+          if ($('Custom'))
+            selectCtl.remove($('Custom').index);
+          return;
+        }
+      }
+    }
+
+    // Add/Select Custom Option in the font size label list.
+    if (!$('Custom')) {
+      var option = new Option(localStrings.getString('fontSizeLabelCustom'),
+                              -1, false, true);
+      option.setAttribute("id", "Custom");
+      selectCtl.add(option);
+    }
+    $('Custom').selected = true;
   };
 
   // Set the download path.

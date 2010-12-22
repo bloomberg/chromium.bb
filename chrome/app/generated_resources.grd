@@ -8035,6 +8035,27 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_DEFAULT_ZOOM_LEVEL_LABEL" desc="The label of the 'Default Zoom Level' select menu">
         Page zoom:
       </message>
+      <message name="IDS_OPTIONS_DEFAULT_FONT_SIZE_LABEL" desc="The label of the 'Default font size' select menu">
+        Font size:
+      </message>
+      <message name="IDS_OPTIONS_FONT_SIZE_LABEL_VERY_SMALL" desc="The label of the 'Very Small' option">
+        Very Small
+      </message>
+      <message name="IDS_OPTIONS_FONT_SIZE_LABEL_SMALL" desc="The label of the 'Small' option">
+        Small
+      </message>
+      <message name="IDS_OPTIONS_FONT_SIZE_LABEL_MEDIUM" desc="The label of the 'Medium' option">
+        Medium
+      </message>
+      <message name="IDS_OPTIONS_FONT_SIZE_LABEL_LARGE" desc="The label of the 'Large' option">
+        Large
+      </message>
+      <message name="IDS_OPTIONS_FONT_SIZE_LABEL_VERY_LARGE" desc="The label of the 'Very Large' option">
+        Very Large
+      </message>
+      <message name="IDS_OPTIONS_FONT_SIZE_LABEL_CUSTOM" desc="The label of the 'Custom' option">
+        Custom
+      </message>
 
       <message name="IDS_OPTIONS_CHROME_DICTIONARY_INFO" desc="The documentation string of the 'Spell check dictionary language' section">
         Change the language of the spell-checking dictionary.
