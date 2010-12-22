@@ -189,6 +189,7 @@
             '<(DEPTH)/ceee/ie/plugin/toolband/toolband.gyp:ceee_ie',
             '<(DEPTH)/ceee/installer_dll/ceee_installer_dll.gyp:ceee_installer_helper',
             '<(DEPTH)/chrome_frame/chrome_frame.gyp:npchrome_frame',
+            '<(DEPTH)/breakpad/breakpad.gyp:breakpad_handler',
           ],
           'include_dirs': [
             '<(DEPTH)',

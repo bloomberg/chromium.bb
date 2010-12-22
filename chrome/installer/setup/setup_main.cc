@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/file_version_info.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/scoped_handle_win.h"
@@ -20,7 +21,9 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "base/win_util.h"
 #include "base/win/windows_version.h"
+#include "breakpad/src/client/windows/handler/exception_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/setup_constants.h"
@@ -51,6 +54,15 @@ using installer::Products;
 using installer::Package;
 using installer::Packages;
 using installer::MasterPreferences;
+
+const wchar_t kChromePipeName[] = L"\\\\.\\pipe\\ChromeCrashServices";
+const wchar_t kGoogleUpdatePipeName[] = L"\\\\.\\pipe\\GoogleCrashServices\\";
+const wchar_t kSystemPrincipalSid[] = L"S-1-5-18";
+
+const MINIDUMP_TYPE kLargerDumpType = static_cast<MINIDUMP_TYPE>(
+    MiniDumpWithProcessThreadData |  // Get PEB and TEB.
+    MiniDumpWithUnloadedModules |  // Get unloaded modules when available.
+    MiniDumpWithIndirectlyReferencedMemory);  // Get memory referenced by stack.
 
 namespace {
 
@@ -702,6 +714,74 @@ void PopulateInstallations(const MasterPreferences& prefs,
   }
 }
 
+// Returns the Custom information for the client identified by the exe path
+// passed in. This information is used for crash reporting.
+google_breakpad::CustomClientInfo* GetCustomInfo(const wchar_t* exe_path) {
+  std::wstring product;
+  std::wstring version;
+  scoped_ptr<FileVersionInfo>
+      version_info(FileVersionInfo::CreateFileVersionInfo(FilePath(exe_path)));
+  if (version_info.get()) {
+    version = version_info->product_version();
+    product = version_info->product_short_name();
+  }
+
+  if (version.empty())
+    version = L"0.1.0.0";
+
+  if (product.empty())
+    product = L"Chrome Installer";
+
+  static google_breakpad::CustomInfoEntry ver_entry(L"ver", version.c_str());
+  static google_breakpad::CustomInfoEntry prod_entry(L"prod", product.c_str());
+  static google_breakpad::CustomInfoEntry plat_entry(L"plat", L"Win32");
+  static google_breakpad::CustomInfoEntry type_entry(L"ptype",
+                                                     L"Chrome Installer");
+  static google_breakpad::CustomInfoEntry entries[] = {
+      ver_entry, prod_entry, plat_entry, type_entry };
+  static google_breakpad::CustomClientInfo custom_info = {
+      entries, arraysize(entries) };
+  return &custom_info;
+}
+
+// Initialize crash reporting for this process. This involves connecting to
+// breakpad, etc.
+google_breakpad::ExceptionHandler* InitializeCrashReporting(
+    bool system_install) {
+  // Only report crashes if the user allows it.
+  if (!GoogleUpdateSettings::GetCollectStatsConsent())
+    return NULL;
+
+  // Get the alternate dump directory. We use the temp path.
+  FilePath temp_directory;
+  if (!file_util::GetTempDir(&temp_directory) || temp_directory.empty())
+    return NULL;
+
+  wchar_t exe_path[MAX_PATH * 2] = {0};
+  GetModuleFileName(NULL, exe_path, arraysize(exe_path));
+
+  // Build the pipe name. It can be either:
+  // System-wide install: "NamedPipe\GoogleCrashServices\S-1-5-18"
+  // Per-user install: "NamedPipe\GoogleCrashServices\<user SID>"
+  std::wstring user_sid = kSystemPrincipalSid;
+
+  if (!system_install) {
+    if (!win_util::GetUserSidString(&user_sid)) {
+      return NULL;
+    }
+  }
+
+  std::wstring pipe_name = kGoogleUpdatePipeName;
+  pipe_name += user_sid;
+
+  google_breakpad::ExceptionHandler* breakpad =
+      new google_breakpad::ExceptionHandler(
+          temp_directory.ToWStringHack(), NULL, NULL, NULL,
+          google_breakpad::ExceptionHandler::HANDLER_ALL, kLargerDumpType,
+          pipe_name.c_str(), GetCustomInfo(exe_path));
+  return breakpad;
+}
+
 }  // namespace
 
 int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
@@ -721,6 +801,9 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   bool system_install = false;
   prefs.GetBool(installer::master_preferences::kSystemLevel, &system_install);
   VLOG(1) << "system install is " << system_install;
+
+  google_breakpad::scoped_ptr<google_breakpad::ExceptionHandler> breakpad(
+      InitializeCrashReporting(system_install));
 
   ProductPackageMapping installations(prefs.is_multi_install(), system_install);
   PopulateInstallations(prefs, &installations);
