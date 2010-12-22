@@ -32,11 +32,12 @@ class PackageProperties {
 
   static const char kPackageProductName[];
 
-  // Returns true iff this package will be updated by Omaha.
+  // Returns true iff this package will be updated by Google Update.
   virtual bool ReceivesUpdates() const = 0;
 
   // Equivalent to BrowserDistribution::GetAppGuid()
   virtual const std::wstring& GetStateKey() = 0;
+  virtual const std::wstring& GetStateMediumKey() = 0;
   virtual const std::wstring& GetVersionKey() = 0;
   virtual void UpdateDiffInstallStatus(bool system_level,
       bool incremental_install, installer::InstallStatus status) = 0;
@@ -49,10 +50,12 @@ class PackagePropertiesImpl : public PackageProperties {
  public:
   explicit PackagePropertiesImpl(const wchar_t* guid,
                                  const std::wstring& state_key,
+                                 const std::wstring& state_medium_key,
                                  const std::wstring& version_key);
   virtual ~PackagePropertiesImpl();
 
   virtual const std::wstring& GetStateKey();
+  virtual const std::wstring& GetStateMediumKey();
   virtual const std::wstring& GetVersionKey();
   virtual void UpdateDiffInstallStatus(bool system_level,
       bool incremental_install, installer::InstallStatus status);
@@ -60,6 +63,7 @@ class PackagePropertiesImpl : public PackageProperties {
  protected:
   std::wstring guid_;
   std::wstring state_key_;
+  std::wstring state_medium_key_;
   std::wstring version_key_;
 
  private:

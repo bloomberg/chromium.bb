@@ -94,6 +94,9 @@ class InstallUtil {
   static bool DeleteRegistryValue(HKEY reg_root, const std::wstring& key_path,
                                   const std::wstring& value_name);
 
+  // Returns zero on install success, or an InstallStatus value otherwise.
+  static int GetInstallReturnCode(installer::InstallStatus install_status);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(InstallUtil);
 };

@@ -159,20 +159,6 @@ std::wstring BrowserDistribution::GetLongAppDescription() {
   return app_description;
 }
 
-// static
-int BrowserDistribution::GetInstallReturnCode(
-    installer::InstallStatus status) {
-  switch (status) {
-    case installer::FIRST_INSTALL_SUCCESS:
-    case installer::INSTALL_REPAIRED:
-    case installer::NEW_VERSION_UPDATED:
-    case installer::IN_USE_UPDATED:
-      return 0;
-    default:
-      return status;
-  }
-}
-
 std::string BrowserDistribution::GetSafeBrowsingName() {
   return "chromium";
 }

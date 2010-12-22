@@ -213,15 +213,8 @@ bool DeleteEmptyParentDir(const FilePath& path) {
 }
 
 FilePath GetLocalStateFolder(const Product& product) {
-  // Obtain the location of the user profile data. Chrome Frame needs to
-  // build this path manually since it doesn't use the Chrome default dir.
-  FilePath local_state_folder;
-  if (product.distribution()->GetType() == BrowserDistribution::CHROME_FRAME) {
-    chrome::GetChromeFrameUserDataDirectory(&local_state_folder);
-  } else {
-    chrome::GetDefaultUserDataDirectory(&local_state_folder);
-  }
-
+  // Obtain the location of the user profile data.
+  FilePath local_state_folder = product.GetUserDataPath();
   LOG_IF(ERROR, local_state_folder.empty())
       << "Could not retrieve user's profile directory.";
 
@@ -254,7 +247,7 @@ DeleteResult DeleteLocalState(const Product& product) {
     return DELETE_SUCCEEDED;
 
   DeleteResult result = DELETE_SUCCEEDED;
-  VLOG(1) << "Deleting user profile" << user_local_state.value();
+  VLOG(1) << "Deleting user profile " << user_local_state.value();
   if (!file_util::Delete(user_local_state, true)) {
     LOG(ERROR) << "Failed to delete user profile dir: "
                << user_local_state.value();
@@ -551,7 +544,7 @@ InstallStatus UninstallChrome(const FilePath& setup_path,
   }
 
   // Get the version of installed Chrome (if any)
-  scoped_ptr<Version> installed_version(product.GetInstalledVersion());
+  const Version* installed_version = product.GetInstalledVersion();
 
   // Chrome is not in use so lets uninstall Chrome by deleting various files
   // and registry entries. Here we will just make best effort and keep going
@@ -610,7 +603,7 @@ InstallStatus UninstallChrome(const FilePath& setup_path,
     // TODO(tommi): We should only do this when the folder itself is
     // being removed and we know that the DLLs were previously registered.
     // Simplest would be to always register them.
-    if (installed_version.get() && !is_chrome) {
+    if (installed_version != NULL && !is_chrome) {
       RegisterComDllList(product.package().path().Append(
           UTF8ToWide(installed_version->GetString())), product.system_level(),
           false, false);
@@ -623,7 +616,7 @@ InstallStatus UninstallChrome(const FilePath& setup_path,
     CloseChromeFrameHelperProcess();
   }
 
-  if (!installed_version.get())
+  if (installed_version == NULL)
     return installer::UNINSTALL_SUCCESSFUL;
 
   // Finally delete all the files from Chrome folder after moving setup.exe

@@ -31,10 +31,11 @@ class PackageTest : public TestWithTempDirAndDeleteTempOverrideKeys {
 // Tests a few basic things of the Package class.  Makes sure that the path
 // operations are correct
 TEST_F(PackageTest, Basic) {
+  const bool multi_install = false;
   const bool system_level = true;
   ChromiumPackageProperties properties;
-  scoped_refptr<Package> package(new Package(system_level, test_dir_.path(),
-                                             &properties));
+  scoped_refptr<Package> package(new Package(multi_install, system_level,
+                                             test_dir_.path(), &properties));
   EXPECT_EQ(test_dir_.path().value(), package->path().value());
   EXPECT_TRUE(package->IsEqual(test_dir_.path()));
   EXPECT_EQ(0U, package->products().size());
@@ -98,13 +99,14 @@ TEST_F(PackageTest, WithProduct) {
   const MasterPreferences& prefs = MasterPreferences::ForCurrentProcess();
 
   // TODO(tommi): We should mock this and use our mocked distribution.
+  const bool multi_install = false;
   const bool system_level = true;
   BrowserDistribution* distribution =
       BrowserDistribution::GetSpecificDistribution(
           BrowserDistribution::CHROME_BROWSER, prefs);
   ChromePackageProperties properties;
-  scoped_refptr<Package> package(new Package(system_level, test_dir_.path(),
-                                             &properties));
+  scoped_refptr<Package> package(new Package(multi_install, system_level,
+                                             test_dir_.path(), &properties));
   scoped_refptr<Product> product(new Product(distribution, package.get()));
   EXPECT_EQ(1U, package->products().size());
   EXPECT_EQ(system_level, package->system_level());
@@ -133,13 +135,14 @@ TEST_F(PackageTest, WithProduct) {
 }
 
 TEST_F(PackageTest, Dependency) {
+  const bool multi_install = false;
   const bool system_level = true;
   HKEY root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   TempRegKeyOverride override(root, L"root_dep");
 
   ChromePackageProperties properties;
-  scoped_refptr<Package> package(new Package(system_level, test_dir_.path(),
-                                             &properties));
+  scoped_refptr<Package> package(new Package(multi_install, system_level,
+                                             test_dir_.path(), &properties));
   EXPECT_EQ(0U, package->GetMultiInstallDependencyCount());
 
   const MasterPreferences& prefs = MasterPreferences::ForCurrentProcess();
@@ -170,4 +173,59 @@ TEST_F(PackageTest, Dependency) {
   channel.SetMultiInstall(true);
   channel.Write(&cf_key);
   EXPECT_EQ(2U, package->GetMultiInstallDependencyCount());
+}
+
+TEST_F(PackageTest, InstallerResult) {
+  const bool system_level = true;
+  bool multi_install = false;
+  HKEY root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+
+  const MasterPreferences& prefs = MasterPreferences::ForCurrentProcess();
+  ChromePackageProperties properties;
+  BrowserDistribution* distribution =
+      BrowserDistribution::GetSpecificDistribution(
+          BrowserDistribution::CHROME_BROWSER, prefs);
+  scoped_refptr<Package> package(new Package(multi_install, system_level,
+                                             test_dir_.path(), &properties));
+  scoped_refptr<Product> product(new Product(distribution, package.get()));
+  RegKey key;
+  std::wstring launch_cmd = L"hey diddle diddle";
+  std::wstring value;
+
+  // check results for single Chrome
+  {
+    TempRegKeyOverride override(root, L"root_inst_res");
+    package->WriteInstallerResult(installer::FIRST_INSTALL_SUCCESS, 0,
+                                  &launch_cmd);
+    EXPECT_TRUE(key.Open(root, distribution->GetStateKey().c_str(), KEY_READ));
+    EXPECT_TRUE(key.ReadValue(installer::kInstallerSuccessLaunchCmdLine,
+                              &value));
+    EXPECT_EQ(launch_cmd, value);
+    key.Close();
+  }
+  TempRegKeyOverride::DeleteAllTempKeys();
+
+  // check results for multi Chrome
+  multi_install = true;
+  package = new Package(multi_install, system_level, test_dir_.path(),
+                        &properties);
+  product = new Product(distribution, package.get());
+  {
+    TempRegKeyOverride override(root, L"root_inst_res");
+    package->WriteInstallerResult(installer::FIRST_INSTALL_SUCCESS, 0,
+                                  &launch_cmd);
+    EXPECT_TRUE(key.Open(root, distribution->GetStateKey().c_str(), KEY_READ));
+    EXPECT_TRUE(key.ReadValue(installer::kInstallerSuccessLaunchCmdLine,
+                              &value));
+    EXPECT_EQ(launch_cmd, value);
+    EXPECT_EQ(properties.ReceivesUpdates(),
+              key.Open(root, properties.GetStateKey().c_str(), KEY_READ));
+    if (properties.ReceivesUpdates()) {
+      EXPECT_TRUE(key.ReadValue(installer::kInstallerSuccessLaunchCmdLine,
+                                &value));
+      EXPECT_EQ(launch_cmd, value);
+    }
+    key.Close();
+  }
+  TempRegKeyOverride::DeleteAllTempKeys();
 }

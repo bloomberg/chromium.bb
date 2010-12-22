@@ -45,8 +45,6 @@ class BrowserDistribution {
 
   Type GetType() const { return type_; }
 
-  static int GetInstallReturnCode(installer::InstallStatus install_status);
-
   virtual void DoPostUninstallOperations(const Version& version,
                                          const FilePath& local_data_path,
                                          const std::wstring& distribution_data);

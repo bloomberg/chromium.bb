@@ -23,7 +23,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/result_codes.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
@@ -53,8 +52,7 @@ ProcessSingleton::ProcessSingleton(const FilePath& user_data_dir)
     // access. As documented, it's clearer to NOT request ownership on creation
     // since it isn't guaranteed we will get it. It is better to create it
     // without ownership and explicitly get the ownership afterward.
-    std::wstring mutex_name(L"Local\\ProcessSingletonStartup!");
-    mutex_name += BrowserDistribution::GetDistribution()->GetAppGuid();
+    std::wstring mutex_name(L"Local\\ChromeProcessSingletonStartup!");
     ScopedHandle only_me(CreateMutex(NULL, FALSE, mutex_name.c_str()));
     DCHECK(only_me.Get() != NULL) << "GetLastError = " << GetLastError();
 

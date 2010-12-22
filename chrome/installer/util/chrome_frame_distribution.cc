@@ -14,6 +14,7 @@
 #include "base/string_util.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/master_preferences.h"
 
@@ -109,7 +110,7 @@ bool ChromeFrameDistribution::CanSetAsDefault() {
 void ChromeFrameDistribution::UpdateDiffInstallStatus(bool system_install,
     bool incremental_install, installer::InstallStatus install_status) {
   GoogleUpdateSettings::UpdateDiffInstallStatus(system_install,
-      incremental_install, GetInstallReturnCode(install_status),
+      incremental_install, InstallUtil::GetInstallReturnCode(install_status),
       kChromeFrameGuid);
 }
 

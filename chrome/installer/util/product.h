@@ -32,12 +32,6 @@ typedef std::vector<scoped_refptr<const Product> > Products;
 const Product* FindProduct(const Products& products,
                            BrowserDistribution::Type type);
 
-// Calls WriteInstallerResult for each Product object.
-void WriteInstallerResult(const Products& products,
-                          installer::InstallStatus status,
-                          int string_resource_id,
-                          const std::wstring* const launch_cmd);
-
 // Represents an installation of a specific product which has a one-to-one
 // relation to a BrowserDistribution.  A product has registry settings, related
 // installation/uninstallation actions and exactly one Package that represents
@@ -96,25 +90,25 @@ class Product : public base::RefCounted<Product> {
   // ClientState key.
   bool SetMsiMarker(bool set) const;
 
-  // Sets installer error information in registry so that Google Update can read
-  // it and display to the user.
-  void WriteInstallerResult(installer::InstallStatus status,
-                            int string_resource_id,
-                            const std::wstring* const launch_cmd) const;
-
   // Find the version of this product installed on the system by checking the
   // Google Update registry key. Returns the version or NULL if no version is
-  // found.  Caller must free the returned Version object.
-  Version* GetInstalledVersion() const;
+  // found.  The returned Version object is owned by |this| Product instance.
+  const Version* GetInstalledVersion() const;
+
+  // Returns true if the product is already installed.
+  bool IsInstalled() const;
 
  protected:
+  enum CacheStateFlags {
+    MSI_STATE = 0x01,
+    VERSION = 0x02
+  };
+
   BrowserDistribution* distribution_;
   scoped_refptr<Package> package_;
-  mutable enum MsiState {
-    MSI_NOT_CHECKED,
-    IS_MSI,
-    NOT_MSI,
-  } msi_;
+  mutable scoped_ptr<Version> installed_version_;
+  mutable bool msi_;
+  mutable uint8 cache_state_;
 
  private:
   friend class base::RefCounted<Product>;
@@ -129,7 +123,11 @@ class Product : public base::RefCounted<Product> {
 // Product objects.
 class ProductPackageMapping {
  public:
-  explicit ProductPackageMapping(bool system_level);
+  explicit ProductPackageMapping(bool multi_install, bool system_level);
+
+  bool multi_install() const {
+    return multi_install_;
+  }
 
   bool system_level() const {
     return system_level_;
@@ -144,6 +142,7 @@ class ProductPackageMapping {
   bool AddDistribution(BrowserDistribution* distribution);
 
  protected:
+  bool multi_install_;
   bool system_level_;
   Packages packages_;
   Products products_;

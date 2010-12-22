@@ -111,7 +111,8 @@ TEST_F(SetupHelperTest, Delete) {
 
   scoped_ptr<Version> latest_version(Version::GetVersionFromString(L"1.0.4.0"));
   ChromePackageProperties properties;
-  scoped_refptr<Package> package(new Package(true, chrome_dir, &properties));
+  scoped_refptr<Package> package(new Package(false, true, chrome_dir,
+                                             &properties));
   package->RemoveOldVersionDirectories(*latest_version.get());
 
   // old versions should be gone
@@ -186,7 +187,7 @@ TEST_F(SetupHelperTest, DeleteInUsed) {
 
   scoped_ptr<Version> latest_version(Version::GetVersionFromString(L"1.0.4.0"));
   ChromePackageProperties properties;
-  scoped_refptr<Package> install_path(new Package(true, chrome_dir,
+  scoped_refptr<Package> install_path(new Package(false, true, chrome_dir,
                                                   &properties));
   install_path->RemoveOldVersionDirectories(*latest_version.get());
 

@@ -188,3 +188,16 @@ bool InstallUtil::DeleteRegistryValue(HKEY reg_root,
   }
   return true;
 }
+
+// static
+int InstallUtil::GetInstallReturnCode(installer::InstallStatus status) {
+  switch (status) {
+    case installer::FIRST_INSTALL_SUCCESS:
+    case installer::INSTALL_REPAIRED:
+    case installer::NEW_VERSION_UPDATED:
+    case installer::IN_USE_UPDATED:
+      return 0;
+    default:
+      return status;
+  }
+}

@@ -6,18 +6,16 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
-#include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
-#include "chrome/installer/util/package.h"
 #include "chrome/installer/util/package_properties.h"
-#include "chrome/installer/util/work_item_list.h"
 
 using base::win::RegKey;
 using installer::MasterPreferences;
@@ -45,21 +43,13 @@ const Product* FindProduct(const Products& products,
   return i == products.end() ? NULL : *i;
 }
 
-void WriteInstallerResult(const Products& products,
-                          installer::InstallStatus status,
-                          int string_resource_id,
-                          const std::wstring* const launch_cmd) {
-  Products::const_iterator end = products.end();
-  for (Products::const_iterator i = products.begin(); i != end; ++i)
-    (*i)->WriteInstallerResult(status, string_resource_id, launch_cmd);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 
 Product::Product(BrowserDistribution* distribution, Package* package)
     : distribution_(distribution),
       package_(package),
-      msi_(MSI_NOT_CHECKED) {
+      msi_(false),
+      cache_state_(0) {
   package_->AssociateProduct(this);
 }
 
@@ -124,8 +114,8 @@ bool Product::LaunchChromeAndWait(const CommandLine& options,
 }
 
 bool Product::IsMsi() const {
-  if (msi_ == MSI_NOT_CHECKED) {
-    msi_ = NOT_MSI;  // Covers failure cases below.
+  if ((cache_state_ & MSI_STATE) == 0) {
+    msi_ = false;  // Covers failure cases below.
 
     const MasterPreferences& prefs =
         installer::MasterPreferences::ForCurrentProcess();
@@ -139,16 +129,18 @@ bool Product::IsMsi() const {
       RegKey key;
       if (key.Open(reg_root, distribution_->GetStateKey().c_str(), KEY_READ)) {
         DWORD msi_value;
-        if (key.ReadValueDW(google_update::kRegMSIField, &msi_value)) {
-          msi_ = (msi_value == 1) ? IS_MSI : NOT_MSI;
+        if (key.ReadValueDW(google_update::kRegMSIField, &msi_value) &&
+            msi_value != 0) {
+          msi_ = true;
         }
       }
     } else {
-      msi_ = IS_MSI;
+      msi_ = true;
     }
+    cache_state_ |= MSI_STATE;
   }
 
-  return msi_ == IS_MSI;
+  return msi_;
 }
 
 bool Product::SetMsiMarker(bool set) const {
@@ -170,45 +162,30 @@ bool Product::SetMsiMarker(bool set) const {
   return success;
 }
 
-void Product::WriteInstallerResult(
-    installer::InstallStatus status, int string_resource_id,
-    const std::wstring* const launch_cmd) const {
-  HKEY root = system_level() ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  std::wstring key(distribution_->GetStateKey());
-  int installer_result = distribution_->GetInstallReturnCode(status) == 0 ?
-                         0 : 1;
-  scoped_ptr<WorkItemList> install_list(WorkItem::CreateWorkItemList());
-  install_list->AddCreateRegKeyWorkItem(root, key);
-  install_list->AddSetRegValueWorkItem(root, key,
-                                       installer::kInstallerResult,
-                                       installer_result, true);
-  install_list->AddSetRegValueWorkItem(root, key,
-                                       installer::kInstallerError,
-                                       status, true);
-  if (string_resource_id != 0) {
-    std::wstring msg = installer::GetLocalizedString(string_resource_id);
-    install_list->AddSetRegValueWorkItem(root, key,
-        installer::kInstallerResultUIString, msg, true);
+const Version* Product::GetInstalledVersion() const {
+  if ((cache_state_ & VERSION) == 0) {
+    DCHECK(installed_version_.get() == NULL);
+    installed_version_.reset(InstallUtil::GetChromeVersion(distribution_,
+                                                           system_level()));
+    cache_state_ |= VERSION;
   }
-  if (launch_cmd != NULL && !launch_cmd->empty()) {
-    install_list->AddSetRegValueWorkItem(root, key,
-        installer::kInstallerSuccessLaunchCmdLine, *launch_cmd, true);
-  }
-  if (!install_list->Do())
-    LOG(ERROR) << "Failed to record installer error information in registry.";
+
+  return installed_version_.get();
 }
 
-Version* Product::GetInstalledVersion() const {
-  return InstallUtil::GetChromeVersion(distribution_, system_level());
+bool Product::IsInstalled() const {
+  return GetInstalledVersion() != NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-ProductPackageMapping::ProductPackageMapping(bool system_level)
+ProductPackageMapping::ProductPackageMapping(bool multi_install,
+                                             bool system_level)
 #if defined(GOOGLE_CHROME_BUILD)
     : package_properties_(new ChromePackageProperties()),
 #else
     : package_properties_(new ChromiumPackageProperties()),
 #endif
+      multi_install_(multi_install),
       system_level_(system_level) {
 }
 
@@ -237,8 +214,9 @@ bool ProductPackageMapping::AddDistribution(BrowserDistribution* distribution) {
   }
 
   if (!target_package.get()) {
+    DCHECK(packages_.empty()) << "Multiple packages per run unsupported.";
     // create new one and add.
-    target_package = new Package(system_level_, install_package,
+    target_package = new Package(multi_install_, system_level_, install_package,
                                  package_properties_.get());
     packages_.push_back(target_package);
   }

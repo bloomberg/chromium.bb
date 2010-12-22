@@ -17,10 +17,21 @@
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/install_util.h"
+#include "chrome/installer/util/package.h"
+#include "chrome/installer/util/package_properties.h"
+#include "chrome/installer/util/product.h"
 
 using base::win::RegKey;
 
 namespace {
+
+// An list of search results in increasing order of desirability.
+enum EulaSearchResult {
+  NO_SETTING,
+  FOUND_CLIENT_STATE,
+  FOUND_OPPOSITE_SETTING,
+  FOUND_SAME_SETTING
+};
 
 bool ReadGoogleUpdateStrKey(const wchar_t* const name, std::wstring* value) {
   // The registry functions below will end up going to disk.  Do this on another
@@ -63,6 +74,21 @@ bool RemoveGoogleUpdateStrKey(const wchar_t* const name) {
   return key.DeleteValue(name);
 }
 
+EulaSearchResult HasEULASetting(HKEY root, const std::wstring& state_key,
+                                bool setting) {
+  RegKey key;
+  DWORD previous_value;
+
+  if (!key.Open(root, state_key.c_str(), KEY_QUERY_VALUE))
+    return NO_SETTING;
+
+  if (!key.ReadValueDW(google_update::kRegEULAAceptedField, &previous_value))
+    return FOUND_CLIENT_STATE;
+
+  return ((previous_value != 0) == setting) ?
+      FOUND_SAME_SETTING : FOUND_OPPOSITE_SETTING;
+}
+
 }  // namespace.
 
 bool GoogleUpdateSettings::GetCollectStatsConsent() {
@@ -99,11 +125,38 @@ bool GoogleUpdateSettings::SetMetricsId(const std::wstring& metrics_id) {
   return WriteGoogleUpdateStrKey(google_update::kRegMetricsId, metrics_id);
 }
 
-bool GoogleUpdateSettings::SetEULAConsent(bool consented) {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  std::wstring reg_path = dist->GetStateMediumKey();
-  RegKey key(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_READ | KEY_SET_VALUE);
-  return key.WriteValue(google_update::kRegEULAAceptedField, consented? 1 : 0);
+bool GoogleUpdateSettings::SetEULAConsent(
+    const installer::Package& package,
+    bool consented) {
+  // If this is a multi install, Google Update will have put eulaaccepted=0 into
+  // the ClientState key of the multi-installer.  Conduct a brief search for
+  // this value and store the consent in the corresponding location.
+  HKEY root = package.system_level() ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+
+  std::wstring reg_path = package.properties()->GetStateMediumKey();
+  EulaSearchResult status = HasEULASetting(
+      root, package.properties()->GetStateKey(), !consented);
+  if (status != FOUND_SAME_SETTING) {
+    EulaSearchResult new_status = NO_SETTING;
+    installer::Products::const_iterator scan = package.products().begin();
+    installer::Products::const_iterator end = package.products().end();
+    for (; status != FOUND_SAME_SETTING && scan != end; ++scan) {
+      const installer::Product& product = *(scan->get());
+      new_status = HasEULASetting(root, product.distribution()->GetStateKey(),
+                                  !consented);
+      if (new_status > status) {
+        status = new_status;
+        reg_path = product.distribution()->GetStateMediumKey();
+      }
+    }
+    if (status == NO_SETTING) {
+      LOG(WARNING)
+          << "eulaaccepted value not found; setting consent on package";
+      reg_path = package.properties()->GetStateMediumKey();
+    }
+  }
+  RegKey key(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_SET_VALUE);
+  return key.WriteValue(google_update::kRegEULAAceptedField, consented ? 1 : 0);
 }
 
 int GoogleUpdateSettings::GetLastRunTime() {

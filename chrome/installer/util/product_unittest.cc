@@ -81,6 +81,7 @@ class ProductTest : public TestWithTempDirAndDeleteTempOverrideKeys {
 
 TEST_F(ProductTest, ProductInstallBasic) {
   // TODO(tommi): We should mock this and use our mocked distribution.
+  const bool multi_install = false;
   const bool system_level = true;
   const installer::MasterPreferences& prefs =
       installer::MasterPreferences::ForCurrentProcess();
@@ -88,8 +89,8 @@ TEST_F(ProductTest, ProductInstallBasic) {
       BrowserDistribution::GetSpecificDistribution(
           BrowserDistribution::CHROME_BROWSER, prefs);
   ChromePackageProperties properties;
-  scoped_refptr<Package> package(new Package(system_level, test_dir_.path(),
-                                             &properties));
+  scoped_refptr<Package> package(new Package(multi_install, system_level,
+                                             test_dir_.path(), &properties));
   scoped_refptr<Product> product(new Product(distribution, package.get()));
 
   FilePath user_data(product->GetUserDataPath());
@@ -119,20 +120,13 @@ TEST_F(ProductTest, ProductInstallBasic) {
     // Set the MSI marker, delete the objects, create new ones and verify
     // that we now see the MSI marker.
     EXPECT_TRUE(product->SetMsiMarker(true));
-    package = new Package(system_level, test_dir_.path(), &properties);
+    package = new Package(multi_install, system_level, test_dir_.path(),
+                          &properties);
     product = new Product(distribution, package.get());
     EXPECT_TRUE(product->IsMsi());
 
-    // See if WriteInstallerResult writes anything.
-    std::wstring launch_cmd(L"chrome.exe --this-is-a-test");
-    product->WriteInstallerResult(installer::TEMP_DIR_FAILED,
-                                  0, &launch_cmd);
-    std::wstring found_launch_cmd;
-    key.ReadValue(installer::kInstallerSuccessLaunchCmdLine,
-                  &found_launch_cmd);
-    EXPECT_EQ(launch_cmd, found_launch_cmd);
-
     // There should be no installed version in the registry.
+    EXPECT_FALSE(product->IsInstalled());
     EXPECT_TRUE(product->GetInstalledVersion() == NULL);
 
     // Let's pretend chrome is installed.
@@ -146,9 +140,13 @@ TEST_F(ProductTest, ProductInstallBasic) {
     version_key.WriteValue(google_update::kRegVersionField,
                            UTF8ToWide(current_version->GetString()).c_str());
 
-    scoped_ptr<Version> installed(product->GetInstalledVersion());
-    EXPECT_TRUE(installed.get() != NULL);
-    if (installed.get()) {
+    package = new Package(multi_install, system_level, test_dir_.path(),
+                          &properties);
+    product = new Product(distribution, package.get());
+    const Version* installed(product->GetInstalledVersion());
+    EXPECT_TRUE(product->IsInstalled());
+    EXPECT_TRUE(installed != NULL);
+    if (installed) {
       EXPECT_TRUE(installed->Equals(*current_version.get()));
     }
   }
@@ -176,8 +174,10 @@ class FakeChromeFrameDistribution : public ChromeFrameDistribution {
 };
 
 TEST_F(ProductTest, ProductInstallsBasic) {
+  const bool multi_install = true;
   const bool system_level = true;
-  ProductPackageMapping installs(system_level);
+  ProductPackageMapping installs(multi_install, system_level);
+  EXPECT_EQ(multi_install, installs.multi_install());
   EXPECT_EQ(system_level, installs.system_level());
   EXPECT_EQ(0U, installs.packages().size());
   EXPECT_EQ(0U, installs.products().size());
@@ -193,4 +193,5 @@ TEST_F(ProductTest, ProductInstallsBasic) {
   // Since our fake Chrome Frame distribution class is reporting the same
   // installation directory as Chrome, we should have only one package object.
   EXPECT_EQ(1U, installs.packages().size());
+  EXPECT_EQ(multi_install, installs.packages()[0]->multi_install());
 }

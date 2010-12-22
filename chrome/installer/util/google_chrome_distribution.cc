@@ -503,7 +503,7 @@ std::wstring GoogleChromeDistribution::GetVersionKey() {
 void GoogleChromeDistribution::UpdateDiffInstallStatus(bool system_install,
     bool incremental_install, installer::InstallStatus install_status) {
   GoogleUpdateSettings::UpdateDiffInstallStatus(system_install,
-      incremental_install, GetInstallReturnCode(install_status),
+      incremental_install, InstallUtil::GetInstallReturnCode(install_status),
       product_guid().c_str());
 }
 

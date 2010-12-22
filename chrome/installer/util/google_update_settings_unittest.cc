@@ -5,12 +5,17 @@
 #include <windows.h>
 #include <shlwapi.h>  // For SHDeleteKey.
 
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "chrome/installer/util/master_preferences.h"
+#include "chrome/installer/util/package.h"
+#include "chrome/installer/util/package_properties.h"
+#include "chrome/installer/util/product.h"
 #include "chrome/installer/util/work_item_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -394,4 +399,45 @@ TEST_F(GoogleUpdateSettingsTest, UpdateDiffInstallStatusTest) {
     ASSERT_TRUE(CreateApKey(work_item_list.get(), ap_key_value))
         << "Failed to restore ap key.";
   }
+}
+
+TEST_F(GoogleUpdateSettingsTest, SetEULAConsent) {
+  const bool multi_install = false;
+  const bool system_level = true;
+  HKEY root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+
+  const installer::MasterPreferences& prefs =
+      installer::MasterPreferences::ForCurrentProcess();
+  installer::ChromePackageProperties properties;
+  BrowserDistribution* distribution =
+      BrowserDistribution::GetSpecificDistribution(
+          BrowserDistribution::CHROME_BROWSER, prefs);
+  scoped_refptr<installer::Package> package(
+      new installer::Package(multi_install, system_level, FilePath(),
+                             &properties));
+  scoped_refptr<installer::Product> product(
+      new installer::Product(distribution, package.get()));
+  RegKey key;
+  DWORD value;
+
+  // By default, eulaconsent ends up on the package.
+  EXPECT_TRUE(GoogleUpdateSettings::SetEULAConsent(*package.get(), true));
+  EXPECT_TRUE(key.Open(HKEY_LOCAL_MACHINE,
+                       properties.GetStateMediumKey().c_str(),
+                       KEY_QUERY_VALUE | KEY_SET_VALUE));
+  EXPECT_TRUE(key.ReadValueDW(google_update::kRegEULAAceptedField, &value));
+  EXPECT_EQ(1U, value);
+  EXPECT_TRUE(key.DeleteValue(google_update::kRegEULAAceptedField));
+
+  // But it will end up on the product if needed
+  EXPECT_TRUE(key.Create(HKEY_LOCAL_MACHINE,
+                         distribution->GetStateKey().c_str(), KEY_SET_VALUE));
+  EXPECT_TRUE(key.WriteValue(google_update::kRegEULAAceptedField,
+                             static_cast<DWORD>(0)));
+  EXPECT_TRUE(GoogleUpdateSettings::SetEULAConsent(*package.get(), true));
+  EXPECT_TRUE(key.Open(HKEY_LOCAL_MACHINE,
+                       distribution->GetStateMediumKey().c_str(),
+                       KEY_QUERY_VALUE | KEY_SET_VALUE));
+  EXPECT_TRUE(key.ReadValueDW(google_update::kRegEULAAceptedField, &value));
+  EXPECT_EQ(1U, value);
 }

@@ -16,6 +16,7 @@ class Version;
 
 namespace installer {
 
+enum InstallStatus;
 class Product;
 class PackageProperties;
 
@@ -26,7 +27,7 @@ typedef std::vector<scoped_refptr<const Product> > Products;
 // not vice versa.
 class Package : public base::RefCounted<Package> {
  public:
-  Package(bool system_level, const FilePath& path,
+  Package(bool multi_install, bool system_level, const FilePath& path,
           PackageProperties* properties);
 
   // Returns the path of the installation folder.
@@ -35,6 +36,8 @@ class Package : public base::RefCounted<Package> {
   const Products& products() const;
 
   PackageProperties* properties() const;
+
+  bool multi_install() const;
 
   bool system_level() const;
 
@@ -68,7 +71,14 @@ class Package : public base::RefCounted<Package> {
   // system_level() value.
   size_t GetMultiInstallDependencyCount() const;
 
+  // Sets installer error information in registry so that Google Update can read
+  // it and display it to the user.
+  void WriteInstallerResult(installer::InstallStatus status,
+                            int string_resource_id,
+                            const std::wstring* const launch_cmd) const;
+
  protected:
+  bool multi_install_;
   bool system_level_;
   FilePath path_;
   Products products_;

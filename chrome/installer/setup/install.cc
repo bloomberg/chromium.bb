@@ -15,7 +15,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
@@ -450,6 +449,9 @@ bool DoPostInstallTasks(bool multi_install,
     if (InstallUtil::IsChromeSxSProcess())
       rename.AppendSwitch(installer::switches::kChromeSxS);
 
+    if (multi_install)
+      rename.AppendSwitch(installer::switches::kMultiInstall);
+
     std::wstring version_key;
     for (size_t i = 0; i < products.size(); ++i) {
       BrowserDistribution* dist = products[i]->distribution();
@@ -767,8 +769,6 @@ installer::InstallStatus InstallOrUpdateChrome(
     const FilePath& install_temp_path, const FilePath& prefs_path,
     const installer::MasterPreferences& prefs, const Version& new_version,
     const Package& install) {
-  bool system_install = install.system_level();
-
   FilePath src_path(install_temp_path);
   src_path = src_path.Append(kInstallSourceDir).Append(kInstallSourceChromeDir);
 
@@ -777,7 +777,7 @@ installer::InstallStatus InstallOrUpdateChrome(
       setup_path, archive_path, src_path, install_temp_path, new_version,
       &existing_version, install);
 
-  if (!BrowserDistribution::GetInstallReturnCode(result)) {
+  if (!InstallUtil::GetInstallReturnCode(result)) {
     if (result == installer::FIRST_INSTALL_SUCCESS)
       CopyPreferenceFileForFirstRun(install, prefs_path);
 
