@@ -136,6 +136,12 @@ class CloudPrintProxyBackend::Core
   // printer and print them.
   void InitJobHandlerForPrinter(DictionaryValue* printer_data);
 
+  // Callback method for GetPrinterCapsAndDefaults.
+  void OnReceivePrinterCaps(
+      bool succeeded,
+      const std::string& printer_name,
+      const printing::PrinterCapsAndDefaults& caps_and_defaults);
+
   void HandlePrinterNotification(const std::string& printer_id);
   void PollForJobs();
   // Schedules a task to poll for jobs. Does nothing if a task is already
@@ -424,75 +430,93 @@ void CloudPrintProxyBackend::Core::RegisterNextPrinter() {
   if (next_upload_index_ < printer_list_.size()) {
     const printing::PrinterBasicInfo& info =
         printer_list_.at(next_upload_index_);
-    bool have_printer_info = true;
     // If we are retrying a previous upload, we don't need to fetch the caps
     // and defaults again.
     if (info.printer_name != last_uploaded_printer_name_) {
-      have_printer_info =
-          print_system_->GetPrinterCapsAndDefaults(
-              info.printer_name.c_str(), &last_uploaded_printer_info_);
-    }
-    if (have_printer_info) {
-      last_uploaded_printer_name_ = info.printer_name;
-      std::string mime_boundary;
-      CloudPrintHelpers::CreateMimeBoundaryForUpload(&mime_boundary);
-      std::string post_data;
-      CloudPrintHelpers::AddMultipartValueForUpload(kProxyIdValue, proxy_id_,
-                                                    mime_boundary,
-                                                    std::string(), &post_data);
-      CloudPrintHelpers::AddMultipartValueForUpload(kPrinterNameValue,
-                                                    info.printer_name,
-                                                    mime_boundary,
-                                                    std::string(), &post_data);
-      CloudPrintHelpers::AddMultipartValueForUpload(kPrinterDescValue,
-                                                    info.printer_description,
-                                                    mime_boundary,
-                                                    std::string() , &post_data);
-      CloudPrintHelpers::AddMultipartValueForUpload(
-          kPrinterStatusValue, StringPrintf("%d", info.printer_status),
-          mime_boundary, std::string(), &post_data);
-      // Add printer options as tags.
-      CloudPrintHelpers::GenerateMultipartPostDataForPrinterTags(info.options,
-                                                                 mime_boundary,
-                                                                 &post_data);
-
-      CloudPrintHelpers::AddMultipartValueForUpload(
-          kPrinterCapsValue, last_uploaded_printer_info_.printer_capabilities,
-          mime_boundary, last_uploaded_printer_info_.caps_mime_type,
-          &post_data);
-      CloudPrintHelpers::AddMultipartValueForUpload(
-          kPrinterDefaultsValue, last_uploaded_printer_info_.printer_defaults,
-          mime_boundary, last_uploaded_printer_info_.defaults_mime_type,
-          &post_data);
-      // Send a hash of the printer capabilities to the server. We will use this
-      // later to check if the capabilities have changed
-      CloudPrintHelpers::AddMultipartValueForUpload(
-          kPrinterCapsHashValue,
-          MD5String(last_uploaded_printer_info_.printer_capabilities),
-          mime_boundary, std::string(), &post_data);
-      // Terminate the request body
-      post_data.append("--" + mime_boundary + "--\r\n");
-      std::string mime_type("multipart/form-data; boundary=");
-      mime_type += mime_boundary;
-      GURL register_url = CloudPrintHelpers::GetUrlForPrinterRegistration(
-          cloud_print_server_url_);
-
-      next_response_handler_ =
-          &CloudPrintProxyBackend::Core::HandleRegisterPrinterResponse;
-      request_ = new CloudPrintURLFetcher;
-      request_->StartPostRequest(register_url, this, auth_token_,
-                                 kCloudPrintAPIMaxRetryCount, mime_type,
-                                 post_data);
-
+      cloud_print::PrintSystem::PrinterCapsAndDefaultsCallback* callback =
+           NewCallback(this,
+                       &CloudPrintProxyBackend::Core::OnReceivePrinterCaps);
+        // Asnchronously fetch the printer caps and defaults. The story will
+        // continue in OnReceivePrinterCaps.
+        print_system_->GetPrinterCapsAndDefaults(
+            info.printer_name.c_str(), callback);
     } else {
-      LOG(ERROR) << "CP_PROXY: Failed to get printer info for: " <<
-          info.printer_name;
-      next_upload_index_++;
-      MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(this,
-          &CloudPrintProxyBackend::Core::RegisterNextPrinter));
+      OnReceivePrinterCaps(true,
+                           last_uploaded_printer_name_,
+                           last_uploaded_printer_info_);
     }
   } else {
     EndRegistration();
+  }
+}
+
+void CloudPrintProxyBackend::Core::OnReceivePrinterCaps(
+    bool succeeded,
+    const std::string& printer_name,
+    const printing::PrinterCapsAndDefaults& caps_and_defaults) {
+  DCHECK(next_upload_index_ < printer_list_.size());
+  if (succeeded) {
+    const printing::PrinterBasicInfo& info =
+        printer_list_.at(next_upload_index_);
+
+    last_uploaded_printer_name_ = info.printer_name;
+    last_uploaded_printer_info_ = caps_and_defaults;
+
+    std::string mime_boundary;
+    CloudPrintHelpers::CreateMimeBoundaryForUpload(&mime_boundary);
+    std::string post_data;
+    CloudPrintHelpers::AddMultipartValueForUpload(kProxyIdValue, proxy_id_,
+                                                  mime_boundary,
+                                                  std::string(), &post_data);
+    CloudPrintHelpers::AddMultipartValueForUpload(kPrinterNameValue,
+                                                  info.printer_name,
+                                                  mime_boundary,
+                                                  std::string(), &post_data);
+    CloudPrintHelpers::AddMultipartValueForUpload(kPrinterDescValue,
+                                                  info.printer_description,
+                                                  mime_boundary,
+                                                  std::string() , &post_data);
+    CloudPrintHelpers::AddMultipartValueForUpload(
+        kPrinterStatusValue, StringPrintf("%d", info.printer_status),
+        mime_boundary, std::string(), &post_data);
+    // Add printer options as tags.
+    CloudPrintHelpers::GenerateMultipartPostDataForPrinterTags(info.options,
+                                                               mime_boundary,
+                                                               &post_data);
+
+    CloudPrintHelpers::AddMultipartValueForUpload(
+        kPrinterCapsValue, last_uploaded_printer_info_.printer_capabilities,
+        mime_boundary, last_uploaded_printer_info_.caps_mime_type,
+        &post_data);
+    CloudPrintHelpers::AddMultipartValueForUpload(
+        kPrinterDefaultsValue, last_uploaded_printer_info_.printer_defaults,
+        mime_boundary, last_uploaded_printer_info_.defaults_mime_type,
+        &post_data);
+    // Send a hash of the printer capabilities to the server. We will use this
+    // later to check if the capabilities have changed
+    CloudPrintHelpers::AddMultipartValueForUpload(
+        kPrinterCapsHashValue,
+        MD5String(last_uploaded_printer_info_.printer_capabilities),
+        mime_boundary, std::string(), &post_data);
+    // Terminate the request body
+    post_data.append("--" + mime_boundary + "--\r\n");
+    std::string mime_type("multipart/form-data; boundary=");
+    mime_type += mime_boundary;
+    GURL register_url = CloudPrintHelpers::GetUrlForPrinterRegistration(
+        cloud_print_server_url_);
+
+    next_response_handler_ =
+        &CloudPrintProxyBackend::Core::HandleRegisterPrinterResponse;
+    request_ = new CloudPrintURLFetcher;
+    request_->StartPostRequest(register_url, this, auth_token_,
+                               kCloudPrintAPIMaxRetryCount, mime_type,
+                               post_data);
+  } else {
+    LOG(ERROR) << "CP_PROXY: Failed to get printer info for: " <<
+        printer_name;
+    next_upload_index_++;
+    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(this,
+        &CloudPrintProxyBackend::Core::RegisterNextPrinter));
   }
 }
 

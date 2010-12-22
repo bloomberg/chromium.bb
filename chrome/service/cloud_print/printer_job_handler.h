@@ -230,6 +230,12 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   bool HavePendingTasks();
   void FailedFetchingJobData();
 
+  // Callback that asynchronously receives printer caps and defaults.
+  void OnReceivePrinterCaps(
+    bool succeeded,
+    const std::string& printer_name,
+    const printing::PrinterCapsAndDefaults& caps_and_defaults);
+
   // Called on print_thread_.
   void DoPrint(const JobDetails& job_details,
                const std::string& printer_name);

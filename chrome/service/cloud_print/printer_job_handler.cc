@@ -160,31 +160,54 @@ bool PrinterJobHandler::UpdatePrinterInfo() {
           << printer_info_cloud_.printer_id;
   // We need to update the parts of the printer info that have changed
   // (could be printer name, description, status or capabilities).
+  // First asynchronously fetch the capabilities.
   printing::PrinterBasicInfo printer_info;
   printer_watcher_->GetCurrentPrinterInfo(&printer_info);
-  printing::PrinterCapsAndDefaults printer_caps;
+  cloud_print::PrintSystem::PrinterCapsAndDefaultsCallback* callback =
+       NewCallback(this,
+                   &PrinterJobHandler::OnReceivePrinterCaps);
+  // Asnchronously fetch the printer caps and defaults. The story will
+  // continue in OnReceivePrinterCaps.
+  print_system_->GetPrinterCapsAndDefaults(
+      printer_info.printer_name.c_str(), callback);
+  // While we are waiting for the data, pretend we have work to do and return
+  // true.
+  return true;
+}
+
+void PrinterJobHandler::OnReceivePrinterCaps(
+    bool succeeded,
+    const std::string& printer_name,
+    const printing::PrinterCapsAndDefaults& caps_and_defaults) {
+  printing::PrinterBasicInfo printer_info;
+  printer_watcher_->GetCurrentPrinterInfo(&printer_info);
+
   std::string post_data;
   std::string mime_boundary;
   CloudPrintHelpers::CreateMimeBoundaryForUpload(&mime_boundary);
-  if (print_system_->GetPrinterCapsAndDefaults(
-      printer_info.printer_name, &printer_caps)) {
-    std::string caps_hash = MD5String(printer_caps.printer_capabilities);
+
+  if (succeeded) {
+    std::string caps_hash = MD5String(caps_and_defaults.printer_capabilities);
     if (caps_hash != printer_info_cloud_.caps_hash) {
       // Hashes don't match, we need to upload new capabilities (the defaults
       // go for free along with the capabilities)
       printer_info_cloud_.caps_hash = caps_hash;
       CloudPrintHelpers::AddMultipartValueForUpload(
-          kPrinterCapsValue, printer_caps.printer_capabilities,
-          mime_boundary, printer_caps.caps_mime_type, &post_data);
+          kPrinterCapsValue, caps_and_defaults.printer_capabilities,
+          mime_boundary, caps_and_defaults.caps_mime_type, &post_data);
       CloudPrintHelpers::AddMultipartValueForUpload(
-          kPrinterDefaultsValue, printer_caps.printer_defaults,
-          mime_boundary, printer_caps.defaults_mime_type,
+          kPrinterDefaultsValue, caps_and_defaults.printer_defaults,
+          mime_boundary, caps_and_defaults.defaults_mime_type,
           &post_data);
       CloudPrintHelpers::AddMultipartValueForUpload(
           kPrinterCapsHashValue, caps_hash, mime_boundary, std::string(),
           &post_data);
     }
+  } else {
+    LOG(ERROR) << "Failed to get printer caps and defaults for printer: "
+               << printer_name;
   }
+
   std::string tags_hash =
       CloudPrintHelpers::GenerateHashOfStringMap(printer_info.options);
   if (tags_hash != printer_info_cloud_.tags_hash) {
@@ -216,7 +239,6 @@ bool PrinterJobHandler::UpdatePrinterInfo() {
         mime_boundary, std::string(), &post_data);
   }
   printer_info_ = printer_info;
-  bool ret = false;
   if (!post_data.empty()) {
     // Terminate the request body
     post_data.append("--" + mime_boundary + "--\r\n");
@@ -228,9 +250,11 @@ bool PrinterJobHandler::UpdatePrinterInfo() {
         CloudPrintHelpers::GetUrlForPrinterUpdate(
             cloud_print_server_url_, printer_info_cloud_.printer_id),
         this, auth_token_, kCloudPrintAPIMaxRetryCount, mime_type, post_data);
-    ret = true;
+  } else {
+    // We are done here. Go to the Stop state
+    MessageLoop::current()->PostTask(
+        FROM_HERE, NewRunnableMethod(this, &PrinterJobHandler::Stop));
   }
-  return ret;
 }
 
 // CloudPrintURLFetcher::Delegate implementation.

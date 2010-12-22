@@ -76,9 +76,9 @@ class PrintSystemCUPS : public PrintSystem {
 
   virtual void EnumeratePrinters(printing::PrinterList* printer_list);
 
-  virtual bool GetPrinterCapsAndDefaults(
+  virtual void GetPrinterCapsAndDefaults(
       const std::string& printer_name,
-      printing::PrinterCapsAndDefaults* printer_info);
+      PrinterCapsAndDefaultsCallback* callback);
 
   virtual bool IsValidPrinter(const std::string& printer_name);
 
@@ -107,6 +107,11 @@ class PrintSystemCUPS : public PrintSystem {
   bool ParsePrintTicket(const std::string& print_ticket,
                         std::map<std::string, std::string>* options);
 
+  // Synchronous version of GetPrinterCapsAndDefaults.
+  bool GetPrinterCapsAndDefaults(
+      const std::string& printer_name,
+      printing::PrinterCapsAndDefaults* printer_info);
+
   int GetUpdateTimeoutMs() const {
     return update_timeout_;
   }
@@ -132,6 +137,13 @@ class PrintSystemCUPS : public PrintSystem {
                                   const std::string& short_printer_name);
   PrintServerInfoCUPS* FindServerByFullName(
       const std::string& full_printer_name, std::string* short_printer_name);
+
+  // Helper method to invoke a PrinterCapsAndDefaultsCallback.
+  static void RunCapsCallback(
+      PrinterCapsAndDefaultsCallback* callback,
+      bool succeeded,
+      const std::string& printer_name,
+      const printing::PrinterCapsAndDefaults& printer_info);
 
   // PrintServerList contains information about all print servers and backends
   // this proxy is connected to.
@@ -430,31 +442,18 @@ void PrintSystemCUPS::EnumeratePrinters(printing::PrinterList* printer_list) {
   VLOG(1) << "CUPS: Total " << printer_list->size() << " printers enumerated.";
 }
 
-bool PrintSystemCUPS::GetPrinterCapsAndDefaults(
+void PrintSystemCUPS::GetPrinterCapsAndDefaults(
     const std::string& printer_name,
-    printing::PrinterCapsAndDefaults* printer_info) {
-  DCHECK(initialized_);
-  std::string short_printer_name;
-  PrintServerInfoCUPS* server_info =
-      FindServerByFullName(printer_name, &short_printer_name);
-  if (!server_info)
-    return false;
-
-  PrintServerInfoCUPS::CapsMap::iterator caps_it =
-      server_info->caps_cache.find(printer_name);
-  if (caps_it != server_info->caps_cache.end()) {
-    *printer_info = caps_it->second;
-    return true;
-  }
-
-  // TODO(gene): Retry multiple times in case of error.
-  if (!server_info->backend->GetPrinterCapsAndDefaults(short_printer_name,
-                                                       printer_info) ) {
-    return false;
-  }
-
-  server_info->caps_cache[printer_name] = *printer_info;
-  return true;
+    PrinterCapsAndDefaultsCallback* callback) {
+  printing::PrinterCapsAndDefaults printer_info;
+  bool succeeded = GetPrinterCapsAndDefaults(printer_name, &printer_info);
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      NewRunnableFunction(&PrintSystemCUPS::RunCapsCallback,
+                          callback,
+                          succeeded,
+                          printer_name,
+                          printer_info));
 }
 
 bool PrintSystemCUPS::IsValidPrinter(const std::string& printer_name) {
@@ -489,6 +488,33 @@ bool PrintSystemCUPS::ParsePrintTicket(const std::string& print_ticket,
     }
   }
 
+  return true;
+}
+
+bool PrintSystemCUPS::GetPrinterCapsAndDefaults(
+    const std::string& printer_name,
+    printing::PrinterCapsAndDefaults* printer_info) {
+  DCHECK(initialized_);
+  std::string short_printer_name;
+  PrintServerInfoCUPS* server_info =
+      FindServerByFullName(printer_name, &short_printer_name);
+  if (!server_info)
+    return false;
+
+  PrintServerInfoCUPS::CapsMap::iterator caps_it =
+      server_info->caps_cache.find(printer_name);
+  if (caps_it != server_info->caps_cache.end()) {
+    *printer_info = caps_it->second;
+    return true;
+  }
+
+  // TODO(gene): Retry multiple times in case of error.
+  if (!server_info->backend->GetPrinterCapsAndDefaults(short_printer_name,
+                                                       printer_info) ) {
+    return false;
+  }
+
+  server_info->caps_cache[printer_name] = *printer_info;
   return true;
 }
 
@@ -735,6 +761,15 @@ PrintServerInfoCUPS* PrintSystemCUPS::FindServerByFullName(
 
   LOG(WARNING) << "Server not found for printer: " << full_printer_name;
   return NULL;
+}
+
+void PrintSystemCUPS::RunCapsCallback(
+    PrinterCapsAndDefaultsCallback* callback,
+    bool succeeded,
+    const std::string& printer_name,
+    const printing::PrinterCapsAndDefaults& printer_info) {
+  callback->Run(succeeded, printer_name, printer_info);
+  delete callback;
 }
 
 }  // namespace cloud_print

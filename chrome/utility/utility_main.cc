@@ -45,12 +45,14 @@ int UtilityMain(const MainFunctionParams& parameters) {
     DCHECK(rv) << "Couldn't load PDF plugin";
   }
 
-  sandbox::TargetServices* target_services =
-      parameters.sandbox_info_.TargetServices();
-  if (!target_services)
-    return false;
-
-  target_services->LowerToken();
+  bool no_sandbox = parameters.command_line_.HasSwitch(switches::kNoSandbox);
+  if (!no_sandbox) {
+    sandbox::TargetServices* target_services =
+        parameters.sandbox_info_.TargetServices();
+    if (!target_services)
+      return false;
+    target_services->LowerToken();
+  }
 #endif
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();

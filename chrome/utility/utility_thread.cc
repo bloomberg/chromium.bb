@@ -63,6 +63,8 @@ void UtilityThread::OnControlMessageReceived(const IPC::Message& msg) {
                         OnIDBKeysFromValuesAndKeyPath)
     IPC_MESSAGE_HANDLER(UtilityMsg_BatchMode_Started, OnBatchModeStarted)
     IPC_MESSAGE_HANDLER(UtilityMsg_BatchMode_Finished, OnBatchModeFinished)
+    IPC_MESSAGE_HANDLER(UtilityMsg_GetPrinterCapsAndDefaults,
+                        OnGetPrinterCapsAndDefaults)
   IPC_END_MESSAGE_MAP()
 }
 
@@ -306,7 +308,22 @@ void UtilityThread::OnBatchModeFinished() {
   ChildProcess::current()->ReleaseProcess();
 }
 
+void UtilityThread::OnGetPrinterCapsAndDefaults(
+    const std::string& printer_name) {
+  scoped_refptr<printing::PrintBackend> print_backend =
+      printing::PrintBackend::CreateInstance(NULL);
+  printing::PrinterCapsAndDefaults printer_info;
+  if (print_backend->GetPrinterCapsAndDefaults(printer_name, &printer_info)) {
+    Send(new UtilityHostMsg_GetPrinterCapsAndDefaults_Succeeded(printer_name,
+                                                                printer_info));
+  } else {
+    Send(new UtilityHostMsg_GetPrinterCapsAndDefaults_Failed(printer_name));
+  }
+  ReleaseProcessIfNeeded();
+}
+
 void UtilityThread::ReleaseProcessIfNeeded() {
   if (!batch_mode_)
     ChildProcess::current()->ReleaseProcess();
 }
+

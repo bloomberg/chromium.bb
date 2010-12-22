@@ -56,6 +56,7 @@ class UploadData;
 
 namespace printing {
 struct PageRange;
+struct PrinterCapsAndDefaults;
 }  // namespace printing
 
 namespace webkit_glue {
@@ -332,6 +333,14 @@ struct ParamTraits<base::PlatformFileInfo> {
 template <>
 struct SimilarTypeTraits<base::PlatformFileError> {
   typedef int Type;
+};
+
+template <>
+struct ParamTraits<printing::PrinterCapsAndDefaults> {
+  typedef printing::PrinterCapsAndDefaults param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
 };
 
 }  // namespace IPC

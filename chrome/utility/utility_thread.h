@@ -84,6 +84,12 @@ class UtilityThread : public ChildThread {
   // IPC to notify batch mode has finished and we should now quit.
   void OnBatchModeFinished();
 
+  // IPC to get capabilities and defaults for the specified
+  // printer. Used on Windows to isolate the service process from printer driver
+  // crashes by executing this in a separate process. This does not run in a
+  // sandbox.
+  void OnGetPrinterCapsAndDefaults(const std::string& printer_name);
+
   // Releases the process if we are not (or no longer) in batch mode.
   void ReleaseProcessIfNeeded();
 

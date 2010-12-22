@@ -8,6 +8,7 @@
 #include "base/platform_file.h"
 #include "gfx/rect.h"
 #include "ipc/ipc_message_macros.h"
+#include "printing/backend/print_backend.h"
 #include "printing/page_range.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -59,6 +60,13 @@ IPC_MESSAGE_CONTROL0(UtilityMsg_BatchMode_Started)
 
 // Tells the utility process that it can shutdown.
 IPC_MESSAGE_CONTROL0(UtilityMsg_BatchMode_Finished)
+
+// Tells the utility process to get capabilities and defaults for the specified
+// printer. Used on Windows to isolate the service process from printer driver
+// crashes by executing this in a separate process. This does not run in a
+// sandbox.
+IPC_MESSAGE_CONTROL1(UtilityMsg_GetPrinterCapsAndDefaults,
+                     std::string /* printer name */)
 
 //------------------------------------------------------------------------------
 // Utility process host messages:
@@ -128,3 +136,15 @@ IPC_MESSAGE_CONTROL2(UtilityHostMsg_IDBKeysFromValuesAndKeyPath_Succeeded,
 // IDBKeyPath.
 IPC_MESSAGE_CONTROL1(UtilityHostMsg_IDBKeysFromValuesAndKeyPath_Failed,
                      int /* id */)
+
+// Reply when the utility process has succeeded in obtaining the printer
+// capabilities and defaults.
+IPC_MESSAGE_CONTROL2(UtilityHostMsg_GetPrinterCapsAndDefaults_Succeeded,
+                     std::string /* printer name */,
+                     printing::PrinterCapsAndDefaults)
+
+// Reply when the utility process has failed to obtain the printer
+// capabilities and defaults.
+IPC_MESSAGE_CONTROL1(UtilityHostMsg_GetPrinterCapsAndDefaults_Failed,
+                     std::string /* printer name */)
+

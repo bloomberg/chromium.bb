@@ -12,6 +12,7 @@
 #include <windows.h>
 #endif  // defined(OS_WIN)
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -35,6 +36,7 @@ class Rect;
 
 namespace printing {
 struct PageRange;
+struct PrinterCapsAndDefaults;
 }  // namespace printing
 
 // Acts as the service-side host to a utility child process. A
@@ -59,6 +61,17 @@ class ServiceUtilityProcessHost : public ServiceChildProcessHost {
         int highest_rendered_page_number) {}
     // Called when no page in the passed in PDF could be rendered.
     virtual void OnRenderPDFPagesToMetafileFailed() {}
+
+    // Called when the printer capabilities and defaults have been
+    // retrieved successfully.
+    virtual void OnGetPrinterCapsAndDefaultsSucceeded(
+        const std::string& printer_name,
+        const printing::PrinterCapsAndDefaults& caps_and_defaults) {}
+
+    // Called when the printer capabilities and defaults could not be
+    // retrieved successfully.
+    virtual void OnGetPrinterCapsAndDefaultsFailed(
+        const std::string& printer_name) {}
 
    protected:
     virtual ~Client() {}
@@ -88,6 +101,12 @@ class ServiceUtilityProcessHost : public ServiceChildProcessHost {
       int render_dpi,
       const std::vector<printing::PageRange>& page_ranges);
 
+  // Starts a process to get capabilities and defaults for the specified
+  // printer. Used on Windows to isolate the service process from printer driver
+  // crashes by executing this in a separate process. The process does not run
+  // in a sandbox.
+  bool StartGetPrinterCapsAndDefaults(const std::string& printer_name);
+
  protected:
   // Allows this method to be overridden for tests.
   virtual FilePath GetUtilityProcessCmd();
@@ -97,8 +116,10 @@ class ServiceUtilityProcessHost : public ServiceChildProcessHost {
   virtual void OnChildDied();
 
  private:
-  // Starts a process.  Returns true iff it succeeded.
-  bool StartProcess(const FilePath& exposed_dir);
+  // Starts a process.  Returns true iff it succeeded. |exposed_dir| is the
+  // path to tbe exposed to the sandbox. This is ignored if |no_sandbox| is
+  // true.
+  bool StartProcess(bool no_sandbox, const FilePath& exposed_dir);
 
   // IPC messages:
   virtual void OnMessageReceived(const IPC::Message& message);

@@ -4,8 +4,10 @@
 
 #include "chrome/service/service_child_process_host.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/process_util.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/result_codes.h"
 
 #if defined(OS_WIN)
@@ -23,13 +25,22 @@ ServiceChildProcessHost::~ServiceChildProcessHost() {
 }
 
 bool ServiceChildProcessHost::Launch(CommandLine* cmd_line,
+                                     bool no_sandbox,
                                      const FilePath& exposed_dir) {
 #if !defined(OS_WIN)
   // TODO(sanjeevr): Implement for non-Windows OSes.
   NOTIMPLEMENTED();
   return false;
 #else  // !defined(OS_WIN)
-  set_handle(sandbox::StartProcessWithAccess(cmd_line, exposed_dir));
+
+  if (no_sandbox) {
+    base::ProcessHandle process = base::kNullProcessHandle;
+    cmd_line->AppendSwitch(switches::kNoSandbox);
+    base::LaunchApp(*cmd_line, false, false, &process);
+    set_handle(process);
+  } else {
+    set_handle(sandbox::StartProcessWithAccess(cmd_line, exposed_dir));
+  }
   return (handle() != base::kNullProcessHandle);
 #endif  // !defined(OS_WIN)
 }

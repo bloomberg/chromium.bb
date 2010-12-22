@@ -13,6 +13,7 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_utils.h"
+#include "printing/backend/print_backend.h"
 #include "printing/native_metafile.h"
 #include "printing/page_range.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -263,4 +264,25 @@ TEST(IPCMessageTest, Metafile) {
       &bad_msg, &iter, &bad_output));
 }
 #endif  // defined(OS_WIN)
+
+// Tests printing::PrinterCapsAndDefaults serialization
+TEST(IPCMessageTest, PrinterCapsAndDefaults) {
+  printing::PrinterCapsAndDefaults input;
+  input.printer_capabilities = "Test Capabilities";
+  input.caps_mime_type = "text/plain";
+  input.printer_defaults = "Test Defaults";
+  input.defaults_mime_type = "text/plain";
+
+  IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
+  IPC::ParamTraits<printing::PrinterCapsAndDefaults>::Write(&msg, input);
+
+  printing::PrinterCapsAndDefaults output;
+  void* iter = NULL;
+  EXPECT_TRUE(IPC::ParamTraits<printing::PrinterCapsAndDefaults>::Read(
+      &msg, &iter, &output));
+  EXPECT_TRUE(input.printer_capabilities == output.printer_capabilities);
+  EXPECT_TRUE(input.caps_mime_type == output.caps_mime_type);
+  EXPECT_TRUE(input.printer_defaults == output.printer_defaults);
+  EXPECT_TRUE(input.defaults_mime_type == output.defaults_mime_type);
+}
 

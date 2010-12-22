@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/ref_counted.h"
 
 #include "printing/backend/print_backend.h"
@@ -130,6 +131,12 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
                        JobSpooler::Delegate* delegate) = 0;
   };
 
+  typedef Callback3<
+      bool,
+      const std::string&,
+      const printing::PrinterCapsAndDefaults&>::Type
+          PrinterCapsAndDefaultsCallback;
+
   virtual ~PrintSystem();
 
   // Initialize print system. This need to be called before any other function
@@ -139,10 +146,10 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
   // Enumerates the list of installed local and network printers.
   virtual void EnumeratePrinters(printing::PrinterList* printer_list) = 0;
 
-  // Gets the capabilities and defaults for a specific printer.
-  virtual bool GetPrinterCapsAndDefaults(
+  // Gets the capabilities and defaults for a specific printer asynchronously.
+  virtual void GetPrinterCapsAndDefaults(
       const std::string& printer_name,
-      printing::PrinterCapsAndDefaults* printer_info) = 0;
+      PrinterCapsAndDefaultsCallback* callback) = 0;
 
   // Returns true if printer_name points to a valid printer.
   virtual bool IsValidPrinter(const std::string& printer_name) = 0;

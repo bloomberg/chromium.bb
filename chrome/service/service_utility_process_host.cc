@@ -47,7 +47,7 @@ bool ServiceUtilityProcessHost::StartRenderPDFPagesToMetafile(
     return false;
   }
 
-  if (!StartProcess(scratch_metafile_dir_->path()))
+  if (!StartProcess(false, scratch_metafile_dir_->path()))
     return false;
 
   ScopedHandle pdf_file(
@@ -76,7 +76,17 @@ bool ServiceUtilityProcessHost::StartRenderPDFPagesToMetafile(
 #endif  // !defined(OS_WIN)
 }
 
-bool ServiceUtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
+bool ServiceUtilityProcessHost::StartGetPrinterCapsAndDefaults(
+    const std::string& printer_name) {
+  FilePath exposed_path;
+  if (!StartProcess(true, exposed_path))
+    return false;
+  waiting_for_reply_ = true;
+  return Send(new UtilityMsg_GetPrinterCapsAndDefaults(printer_name));
+}
+
+bool ServiceUtilityProcessHost::StartProcess(bool no_sandbox,
+                                             const FilePath& exposed_dir) {
   // Name must be set or metrics_service will crash in any test which
   // launches a UtilityProcessHost.
   set_name(L"utility process");
@@ -95,7 +105,7 @@ bool ServiceUtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
   cmd_line.AppendSwitchASCII(switches::kProcessChannelID, channel_id());
   cmd_line.AppendSwitch(switches::kLang);
 
-  return Launch(&cmd_line, exposed_dir);
+  return Launch(&cmd_line, no_sandbox, exposed_dir);
 }
 
 FilePath ServiceUtilityProcessHost::GetUtilityProcessCmd() {
@@ -167,6 +177,10 @@ void ServiceUtilityProcessHost::Client::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(ServiceUtilityProcessHost, message)
     IPC_MESSAGE_HANDLER(UtilityHostMsg_RenderPDFPagesToMetafile_Failed,
                         Client::OnRenderPDFPagesToMetafileFailed)
+    IPC_MESSAGE_HANDLER(UtilityHostMsg_GetPrinterCapsAndDefaults_Succeeded,
+                        Client::OnGetPrinterCapsAndDefaultsSucceeded)
+    IPC_MESSAGE_HANDLER(UtilityHostMsg_GetPrinterCapsAndDefaults_Failed,
+                        Client::OnGetPrinterCapsAndDefaultsFailed)
   IPC_END_MESSAGE_MAP_EX()
 }
 

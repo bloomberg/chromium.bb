@@ -13,6 +13,7 @@
 #include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/upload_data.h"
+#include "printing/backend/print_backend.h"
 #include "printing/native_metafile.h"
 #include "printing/page_range.h"
 
@@ -643,6 +644,36 @@ void ParamTraits<base::PlatformFileInfo>::Log(
   LogParam(p.last_accessed.ToDoubleT(), l);
   l->append(",");
   LogParam(p.creation_time.ToDoubleT(), l);
+  l->append(")");
+}
+
+void ParamTraits<printing::PrinterCapsAndDefaults>::Write(
+    Message* m, const param_type& p) {
+  WriteParam(m, p.printer_capabilities);
+  WriteParam(m, p.caps_mime_type);
+  WriteParam(m, p.printer_defaults);
+  WriteParam(m, p.defaults_mime_type);
+}
+
+bool ParamTraits<printing::PrinterCapsAndDefaults>::Read(
+    const Message* m, void** iter, param_type* p) {
+  return
+      ReadParam(m, iter, &p->printer_capabilities) &&
+      ReadParam(m, iter, &p->caps_mime_type) &&
+      ReadParam(m, iter, &p->printer_defaults) &&
+      ReadParam(m, iter, &p->defaults_mime_type);
+}
+
+void ParamTraits<printing::PrinterCapsAndDefaults>::Log(
+    const param_type& p, std::string* l) {
+  l->append("(");
+  LogParam(p.printer_capabilities, l);
+  l->append(",");
+  LogParam(p.caps_mime_type, l);
+  l->append(",");
+  LogParam(p.printer_defaults, l);
+  l->append(",");
+  LogParam(p.defaults_mime_type, l);
   l->append(")");
 }
 

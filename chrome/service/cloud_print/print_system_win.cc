@@ -245,9 +245,9 @@ class PrintSystemWin : public PrintSystem {
 
   virtual void EnumeratePrinters(printing::PrinterList* printer_list);
 
-  virtual bool GetPrinterCapsAndDefaults(
+  virtual void GetPrinterCapsAndDefaults(
       const std::string& printer_name,
-      printing::PrinterCapsAndDefaults* printer_info);
+      PrinterCapsAndDefaultsCallback* callback);
 
   virtual bool IsValidPrinter(const std::string& printer_name);
 
@@ -516,6 +516,69 @@ class PrintSystemWin : public PrintSystem {
     DISALLOW_COPY_AND_ASSIGN(JobSpoolerWin);
   };
 
+  // A helper class to handle the response from the utility process to the
+  // request to fetch printer capabilities and defaults.
+  class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
+   public:
+    PrinterCapsHandler(
+        const std::string& printer_name,
+        PrinterCapsAndDefaultsCallback* callback)
+            : printer_name_(printer_name), callback_(callback) {
+    }
+    virtual void Start() {
+      g_service_process->io_thread()->message_loop_proxy()->PostTask(
+          FROM_HERE,
+          NewRunnableMethod(
+              this,
+              &PrinterCapsHandler::GetPrinterCapsAndDefaultsImpl,
+              base::MessageLoopProxy::CreateForCurrentThread()));
+    }
+
+    virtual void OnChildDied() {
+      OnGetPrinterCapsAndDefaultsFailed(printer_name_);
+    }
+    virtual void OnGetPrinterCapsAndDefaultsSucceeded(
+        const std::string& printer_name,
+        const printing::PrinterCapsAndDefaults& caps_and_defaults) {
+      callback_->Run(true, printer_name, caps_and_defaults);
+      callback_.reset();
+      Release();
+    }
+
+    virtual void OnGetPrinterCapsAndDefaultsFailed(
+        const std::string& printer_name) {
+      printing::PrinterCapsAndDefaults caps_and_defaults;
+      callback_->Run(false, printer_name, caps_and_defaults);
+      callback_.reset();
+      Release();
+    }
+   private:
+      // Called on the service process IO thread.
+    void GetPrinterCapsAndDefaultsImpl(
+        const scoped_refptr<base::MessageLoopProxy>&
+            client_message_loop_proxy) {
+      DCHECK(g_service_process->io_thread()->message_loop_proxy()->
+          BelongsToCurrentThread());
+      scoped_ptr<ServiceUtilityProcessHost> utility_host(
+          new ServiceUtilityProcessHost(this, client_message_loop_proxy));
+      if (utility_host->StartGetPrinterCapsAndDefaults(printer_name_)) {
+        // The object will self-destruct when the child process dies.
+        utility_host.release();
+      } else {
+        client_message_loop_proxy->PostTask(
+            FROM_HERE,
+            NewRunnableMethod(
+                this,
+                &PrinterCapsHandler::OnGetPrinterCapsAndDefaultsFailed,
+                printer_name_));
+      }
+    }
+
+    std::string printer_name_;
+    scoped_ptr<PrinterCapsAndDefaultsCallback> callback_;
+  };
+
+
   virtual PrintSystem::PrintServerWatcher* CreatePrintServerWatcher();
   virtual PrintSystem::PrinterWatcher* CreatePrinterWatcher(
       const std::string& printer_name);
@@ -536,10 +599,16 @@ void PrintSystemWin::EnumeratePrinters(printing::PrinterList* printer_list) {
   print_backend_->EnumeratePrinters(printer_list);
 }
 
-bool PrintSystemWin::GetPrinterCapsAndDefaults(
+void PrintSystemWin::GetPrinterCapsAndDefaults(
     const std::string& printer_name,
-    printing::PrinterCapsAndDefaults* printer_info) {
-  return print_backend_->GetPrinterCapsAndDefaults(printer_name, printer_info);
+    PrinterCapsAndDefaultsCallback* callback) {
+  // Launch as child process to retrieve the capabilities and defaults because
+  // this involves invoking a printer driver DLL and crashes have been known to
+  // occur.
+  PrinterCapsHandler* handler =
+      new PrinterCapsHandler(printer_name, callback);
+  handler->AddRef();
+  handler->Start();
 }
 
 bool PrintSystemWin::IsValidPrinter(const std::string& printer_name) {
