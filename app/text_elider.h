@@ -88,9 +88,11 @@ class SortedDisplayURL {
   string16 display_url_;
 };
 
-// Function to elide strings when the font information is unknown.  As
-// opposed to the above functions, the ElideString() function operates
-// in terms of character units, not pixels.
+// Functions to elide strings when the font information is unknown.  As
+// opposed to the above functions, the ElideString() and
+// ElideRectangleString() functions operate in terms of character units,
+// not pixels.
+
 // If the size of |input| is more than |max_len|, this function returns
 // true and |input| is shortened into |output| by removing chars in the
 // middle (they are replaced with up to 3 dots, as size permits).
@@ -100,6 +102,17 @@ class SortedDisplayURL {
 // TODO(tsepez): Doesn't handle UTF-16 surrogate pairs properly.
 // TODO(tsepez): Doesn't handle bidi properly
 bool ElideString(const std::wstring& input, int max_len, std::wstring* output);
+
+// Reformat |input| into |output| so that it fits into a |max_rows| by
+// |max_cols| rectangle of characters.  Input newlines are respected, but
+// lines that are too long are broken into pieces, first at naturally
+// occuring whitespace boundaries, and then intra-word (respecting UTF-16
+// surrogate pairs) as necssary. Truncation (indicated by an added 3 dots)
+// occurs if the result is still too long.  Returns true if the input had
+// to be truncated (and not just reformatted).
+bool ElideRectangleString(const string16& input, size_t max_rows,
+                          size_t max_cols, string16* output);
+
 
 } // namespace gfx.
 

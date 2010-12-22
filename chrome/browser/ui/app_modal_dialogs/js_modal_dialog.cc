@@ -6,6 +6,7 @@
 
 #include "app/text_elider.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -17,7 +18,8 @@
 namespace {
 
 // The maximum sizes of various texts passed to us from javascript.
-const int kMessageTextMaxSize = 3000;
+const int kMessageTextMaxRows = 32;
+const int kMessageTextMaxCols = 132;
 const int kDefaultPromptTextSize = 2000;
 
 }  // namespace
@@ -40,7 +42,10 @@ JavaScriptAppModalDialog::JavaScriptAppModalDialog(
       reply_msg_(reply_msg) {
   // We trim the various parts of the message dialog because otherwise we can
   // overflow the message dialog (and crash/hang the GTK+ version).
-  gfx::ElideString(message_text, kMessageTextMaxSize, &message_text_);
+  string16 elided_text;
+  gfx::ElideRectangleString(WideToUTF16(message_text),
+       kMessageTextMaxRows, kMessageTextMaxCols, &elided_text);
+  message_text_ = UTF16ToWide(elided_text);
   gfx::ElideString(default_prompt_text, kDefaultPromptTextSize,
                    &default_prompt_text_);
 

@@ -319,6 +319,122 @@ TEST(TextEliderTest, ElideString) {
     std::wstring output;
     EXPECT_EQ(cases[i].result,
               gfx::ElideString(cases[i].input, cases[i].max_len, &output));
-    EXPECT_TRUE(output == cases[i].output);
+    EXPECT_EQ(cases[i].output, output);
   }
 }
+
+TEST(TextEliderTest, ElideRectangleString) {
+  struct TestData {
+    const wchar_t* input;
+    int max_rows;
+    int max_cols;
+    bool result;
+    const wchar_t* output;
+  } cases[] = {
+    { L"", 0, 0, false, L"" },
+    { L"", 1, 1, false, L"" },
+    { L"Hi, my name is\nTom", 0, 0,  true,  L"..." },
+    { L"Hi, my name is\nTom", 1, 0,  true,  L"\n..." },
+    { L"Hi, my name is\nTom", 0, 1,  true,  L"..." },
+    { L"Hi, my name is\nTom", 1, 1,  true,  L"H\n..." },
+    { L"Hi, my name is\nTom", 2, 1,  true,  L"H\ni\n..." },
+    { L"Hi, my name is\nTom", 3, 1,  true,  L"H\ni\n,\n..." },
+    { L"Hi, my name is\nTom", 4, 1,  true,  L"H\ni\n,\n \n..." },
+    { L"Hi, my name is\nTom", 5, 1,  true,  L"H\ni\n,\n \nm\n..." },
+    { L"Hi, my name is\nTom", 0, 2,  true,  L"..." },
+    { L"Hi, my name is\nTom", 1, 2,  true,  L"Hi\n..." },
+    { L"Hi, my name is\nTom", 2, 2,  true,  L"Hi\n, \n..." },
+    { L"Hi, my name is\nTom", 3, 2,  true,  L"Hi\n, \nmy\n..." },
+    { L"Hi, my name is\nTom", 4, 2,  true,  L"Hi\n, \nmy\n n\n..." },
+    { L"Hi, my name is\nTom", 5, 2,  true,  L"Hi\n, \nmy\n n\nam\n..." },
+    { L"Hi, my name is\nTom", 0, 3,  true,  L"..." },
+    { L"Hi, my name is\nTom", 1, 3,  true,  L"Hi,\n..." },
+    { L"Hi, my name is\nTom", 2, 3,  true,  L"Hi,\n my\n..." },
+    { L"Hi, my name is\nTom", 3, 3,  true,  L"Hi,\n my\n na\n..." },
+    { L"Hi, my name is\nTom", 4, 3,  true,  L"Hi,\n my\n na\nme \n..." },
+    { L"Hi, my name is\nTom", 5, 3,  true,  L"Hi,\n my\n na\nme \nis\n..." },
+    { L"Hi, my name is\nTom", 1, 4,  true,  L"Hi, \n..." },
+    { L"Hi, my name is\nTom", 2, 4,  true,  L"Hi, \nmy n\n..." },
+    { L"Hi, my name is\nTom", 3, 4,  true,  L"Hi, \nmy n\name \n..." },
+    { L"Hi, my name is\nTom", 4, 4,  true,  L"Hi, \nmy n\name \nis\n..." },
+    { L"Hi, my name is\nTom", 5, 4,  false, L"Hi, \nmy n\name \nis\nTom" },
+    { L"Hi, my name is\nTom", 1, 5,  true,  L"Hi, \n..." },
+    { L"Hi, my name is\nTom", 2, 5,  true,  L"Hi, \nmy na\n..." },
+    { L"Hi, my name is\nTom", 3, 5,  true,  L"Hi, \nmy na\nme \n..." },
+    { L"Hi, my name is\nTom", 4, 5,  true,  L"Hi, \nmy na\nme \nis\n..." },
+    { L"Hi, my name is\nTom", 5, 5,  false, L"Hi, \nmy na\nme \nis\nTom" },
+    { L"Hi, my name is\nTom", 1, 6,  true,  L"Hi, \n..." },
+    { L"Hi, my name is\nTom", 2, 6,  true,  L"Hi, \nmy \n..." },
+    { L"Hi, my name is\nTom", 3, 6,  true,  L"Hi, \nmy \nname \n..." },
+    { L"Hi, my name is\nTom", 4, 6,  true,  L"Hi, \nmy \nname \nis\n..." },
+    { L"Hi, my name is\nTom", 5, 6,  false, L"Hi, \nmy \nname \nis\nTom" },
+    { L"Hi, my name is\nTom", 1, 7,  true,  L"Hi, \n..." },
+    { L"Hi, my name is\nTom", 2, 7,  true,  L"Hi, \nmy \n..." },
+    { L"Hi, my name is\nTom", 3, 7,  true,  L"Hi, \nmy \nname \n..." },
+    { L"Hi, my name is\nTom", 4, 7,  true,  L"Hi, \nmy \nname \nis\n..." },
+    { L"Hi, my name is\nTom", 5, 7,  false, L"Hi, \nmy \nname \nis\nTom" },
+    { L"Hi, my name is\nTom", 1, 8,  true,  L"Hi, my \n..." },
+    { L"Hi, my name is\nTom", 2, 8,  true,  L"Hi, my \nname \n..." },
+    { L"Hi, my name is\nTom", 3, 8,  true,  L"Hi, my \nname \nis\n..." },
+    { L"Hi, my name is\nTom", 4, 8,  false, L"Hi, my \nname \nis\nTom" },
+    { L"Hi, my name is\nTom", 1, 9,  true,  L"Hi, my \n..." },
+    { L"Hi, my name is\nTom", 2, 9,  true,  L"Hi, my \nname is\n..." },
+    { L"Hi, my name is\nTom", 3, 9,  false, L"Hi, my \nname is\nTom" },
+    { L"Hi, my name is\nTom", 1, 10, true,  L"Hi, my \n..." },
+    { L"Hi, my name is\nTom", 2, 10, true,  L"Hi, my \nname is\n..." },
+    { L"Hi, my name is\nTom", 3, 10, false, L"Hi, my \nname is\nTom" },
+    { L"Hi, my name is\nTom", 1, 11, true,  L"Hi, my \n..." },
+    { L"Hi, my name is\nTom", 2, 11, true,  L"Hi, my \nname is\n..." },
+    { L"Hi, my name is\nTom", 3, 11, false, L"Hi, my \nname is\nTom" },
+    { L"Hi, my name is\nTom", 1, 12, true,  L"Hi, my \n..." },
+    { L"Hi, my name is\nTom", 2, 12, true,  L"Hi, my \nname is\n..." },
+    { L"Hi, my name is\nTom", 3, 12, false, L"Hi, my \nname is\nTom" },
+    { L"Hi, my name is\nTom", 1, 13, true,  L"Hi, my name \n..." },
+    { L"Hi, my name is\nTom", 2, 13, true,  L"Hi, my name \nis\n..." },
+    { L"Hi, my name is\nTom", 3, 13, false, L"Hi, my name \nis\nTom" },
+    { L"Hi, my name is\nTom", 1, 20, true,  L"Hi, my name is\n..." },
+    { L"Hi, my name is\nTom", 2, 20, false, L"Hi, my name is\nTom" },
+    { L"Hi, my name is Tom",  1, 40, false, L"Hi, my name is Tom" },
+  };
+  string16 output;
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    EXPECT_EQ(cases[i].result,
+              gfx::ElideRectangleString(WideToUTF16(cases[i].input),
+                                        cases[i].max_rows, cases[i].max_cols,
+                                        &output));
+    EXPECT_EQ(cases[i].output, UTF16ToWide(output));
+  }
+}
+
+TEST(TextEliderTest, ElideRectangleWide16) {
+  // Two greek words separated by space.
+  const string16 str(WideToUTF16(
+      L"\x03a0\x03b1\x03b3\x03ba\x03cc\x03c3\x03bc\x03b9"
+      L"\x03bf\x03c2\x0020\x0399\x03c3\x03c4\x03cc\x03c2"));
+  const string16 out1(WideToUTF16(
+      L"\x03a0\x03b1\x03b3\x03ba\n"
+      L"\x03cc\x03c3\x03bc\x03b9\n"
+      L"..."));
+  const string16 out2(WideToUTF16(
+      L"\x03a0\x03b1\x03b3\x03ba\x03cc\x03c3\x03bc\x03b9\x03bf\x03c2\x0020\n"
+      L"\x0399\x03c3\x03c4\x03cc\x03c2"));
+  string16 output;
+  EXPECT_TRUE(gfx::ElideRectangleString(str, 2, 4, &output));
+  EXPECT_EQ(out1, output);
+  EXPECT_FALSE(gfx::ElideRectangleString(str, 2, 12, &output));
+  EXPECT_EQ(out2, output);
+}
+
+TEST(TextEliderTest, ElideRectangleWide32) {
+  // Four U+1D49C MATHEMATICAL SCRIPT CAPITAL A followed by space "aaaaa".
+  const string16 str(UTF8ToUTF16(
+      "\xF0\x9D\x92\x9C\xF0\x9D\x92\x9C\xF0\x9D\x92\x9C\xF0\x9D\x92\x9C"
+      " aaaaa"));
+  const string16 out(UTF8ToUTF16(
+      "\xF0\x9D\x92\x9C\xF0\x9D\x92\x9C\xF0\x9D\x92\x9C\n"
+      "\xF0\x9D\x92\x9C \naaa\n..."));
+  string16 output;
+  EXPECT_TRUE(gfx::ElideRectangleString(str, 3, 3, &output));
+  EXPECT_EQ(out, output);
+}
+

@@ -6,6 +6,8 @@
 
 #include "app/text_elider.h"
 #include "base/file_path.h"
+#include "base/i18n/break_iterator.h"
+#include "base/i18n/char_iterator.h"
 #include "base/i18n/rtl.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -498,3 +500,168 @@ bool ElideString(const std::wstring& input, int max_len, std::wstring* output) {
 }
 
 }  // namespace gfx
+
+namespace {
+
+// Internal class used to track progress of a rectangular string elide
+// operation.  Exists so the top-level ElideRectangleString() function
+// can be broken into smaller methods sharing this state.
+class RectangleString {
+ public:
+  RectangleString(size_t max_rows, size_t max_cols, string16 *output)
+      : max_rows_(max_rows),
+        max_cols_(max_cols),
+        current_row_(0),
+        current_col_(0),
+        suppressed_(false),
+        output_(output) {}
+
+  // Perform deferred initializions following creation.  Must be called
+  // before any input can be added via AddString().
+  void Init() { output_->clear(); }
+
+  // Add an input string, reformatting to fit the desired dimensions.
+  // AddString() may be called multiple times to concatenate together
+  // multiple strings into the region (the current caller doesn't do
+  // this, however).
+  void AddString(const string16& input);
+
+  // Perform any deferred output processing.  Must be called after the
+  // last  AddString() call has occured.
+  bool Finalize();
+
+ private:
+  // Add a line to the rectangular region at the current position,
+  // either by itself or by breaking it into words.
+  void AddLine(const string16& line);
+
+  // Add a word to the rectangluar region at the current position,
+  // either by itelf or by breaking it into characters.
+  void AddWord(const string16& word);
+
+  // Add text to the output string if the rectangular boundaries
+  // have not been exceeded, advancing the current position.
+  void Append(const string16& string);
+
+  // Add a newline to the output string if the rectangular boundaries
+  // have not been exceeded, resetting the current position to the
+  // beginning of the next line.
+  void NewLine();
+
+  // Maximum number of rows allowed in the output string.
+  size_t max_rows_;
+
+  // Maximum number of characters allowed in the output string.
+  size_t max_cols_;
+
+  // Current row position, always incremented and may exceed max_rows_
+  // when the input can not fit in the region.  We stop appending to
+  // the output string, however, when this condition occurs.  In the
+  // future, we may want to expose this value to allow the caller to
+  // determine how many rows would actually be required to hold the
+  // formatted string.
+  size_t current_row_;
+
+  // Current character position, should never exceed max_cols_.
+  size_t current_col_;
+
+  // True when some of the input has been truncated.
+  bool suppressed_;
+
+  // String onto which the output is accumulated.
+  string16 *output_;
+};
+
+void RectangleString::AddString(const string16& input) {
+  base::BreakIterator lines(&input, base::BreakIterator::BREAK_NEWLINE);
+  if (lines.Init()) {
+    while (lines.Advance())
+      AddLine(lines.GetString());
+  } else {
+    NOTREACHED() << "BreakIterator (lines) init failed";
+  }
+}
+
+bool RectangleString::Finalize() {
+  if (suppressed_) {
+    output_->append(ASCIIToUTF16("..."));
+    return true;
+  }
+  return false;
+}
+
+void RectangleString::AddLine(const string16& line) {
+  if (line.length() < max_cols_) {
+    Append(line);
+  } else {
+    base::BreakIterator words(&line, base::BreakIterator::BREAK_SPACE);
+    if (words.Init()) {
+      while (words.Advance())
+        AddWord(words.GetString());
+    } else {
+      NOTREACHED() << "BreakIterator (words) init failed";
+    }
+  }
+  // Account for naturally-occuring newlines.
+  ++current_row_;
+  current_col_ = 0;
+}
+
+void RectangleString::AddWord(const string16& word) {
+  if (word.length() < max_cols_) {
+    // Word can be made to fit, no need to fragment it.
+    if (current_col_ + word.length() >= max_cols_)
+      NewLine();
+    Append(word);
+  } else {
+    // Word is so big that it must be fragmented.
+    int array_start = 0;
+    int char_start = 0;
+    base::UTF16CharIterator chars(&word);
+    while (!chars.end()) {
+      // When boundary is hit, add as much as will fit on this line.
+      if (current_col_ + (chars.char_pos() - char_start) >= max_cols_) {
+        Append(word.substr(array_start, chars.array_pos() - array_start));
+        NewLine();
+        array_start = chars.array_pos();
+        char_start = chars.char_pos();
+      }
+      chars.Advance();
+    }
+    // add last remaining fragment, if any.
+    if (array_start != chars.array_pos())
+      Append(word.substr(array_start, chars.array_pos() - array_start));
+  }
+}
+
+void RectangleString::Append(const string16& string) {
+  if (current_row_ < max_rows_)
+    output_->append(string);
+  else
+    suppressed_ = true;
+  current_col_ += string.length();
+}
+
+void RectangleString::NewLine() {
+  if (current_row_ < max_rows_)
+    output_->append(ASCIIToUTF16("\n"));
+  else
+    suppressed_ = true;
+  ++current_row_;
+  current_col_ = 0;
+}
+
+}  // namespace
+
+namespace gfx {
+
+bool ElideRectangleString(const string16& input, size_t max_rows,
+                          size_t max_cols, string16* output) {
+  RectangleString rect(max_rows, max_cols, output);
+  rect.Init();
+  rect.AddString(input);
+  return rect.Finalize();
+}
+
+}  // namespace gfx
+
