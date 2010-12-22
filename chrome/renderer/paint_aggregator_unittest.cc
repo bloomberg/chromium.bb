@@ -50,8 +50,11 @@ TEST(PaintAggregator, DoubleDisjointInvalidation) {
 TEST(PaintAggregator, DisjointInvalidationsCombined) {
   PaintAggregator greg;
 
-  gfx::Rect r1(2, 4, 2, 2);
-  gfx::Rect r2(4, 2, 2, 2);
+  // Make the rectangles such that they don't overlap but cover a very large
+  // percentage of the area of covered by their union. This is so we're not
+  // very sensitive to the combining heuristic in the paint aggregator.
+  gfx::Rect r1(2, 4, 2, 1000);
+  gfx::Rect r2(5, 2, 2, 1000);
 
   greg.InvalidateRect(r1);
   greg.InvalidateRect(r2);
