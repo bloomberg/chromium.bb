@@ -1083,6 +1083,17 @@ void RenderWidgetHostViewMac::AcknowledgeSwapBuffers(
     int renderer_id,
     int32 route_id,
     uint64 swap_buffers_count) {
+  // Called on the display link. Hand actual work off to the UI thread, which
+  // will then redispatch the message to the IPC thread.
+  // Currently, this is never called for plugins.
+  if (render_widget_host_) {
+    DCHECK_EQ(render_widget_host_->process()->id(), renderer_id);
+    // |render_widget_host_->routing_id()| and |route_id| are usually not
+    // equal: The former identifies the channel from the RWH in the browser
+    // process to the corresponding render widget in the renderer process, while
+    // the latter identifies the channel from the GpuCommandBufferStub in the
+    // GPU process to the corresponding command buffer client in the renderer.
+  }
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       new BuffersSwappedAcknowledger(
