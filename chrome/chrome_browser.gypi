@@ -3520,10 +3520,6 @@
         ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],
-            ['exclude', 'browser/chromeos/dom_ui/login/authenticator_facade_cros.cc'],
-            ['exclude', 'browser/chromeos/dom_ui/login/authenticator_facade_cros.h'],
-            ['exclude', 'browser/chromeos/dom_ui/login/authenticator_facade_cros_helpers.cc'],
-            ['exclude', 'browser/chromeos/dom_ui/login/authenticator_facade_cros_helpers.h'],
             ['exclude', 'browser/dom_ui/chrome_about_ui.cc'],
             ['exclude', 'browser/dom_ui/filebrowse_ui.cc'],
             ['exclude', 'browser/dom_ui/mediaplayer_ui.cc'],
@@ -3575,15 +3571,6 @@
         }],
         ['touchui==1', {
           'sources/': [
-            ['include', 'browser/chromeos/dom_ui/login/authenticator_facade.h'],
-            ['include', 'browser/chromeos/dom_ui/login/authenticator_facade_cros.cc'],
-            ['include', 'browser/chromeos/dom_ui/login/authenticator_facade_cros.h'],
-            ['include', 'browser/chromeos/dom_ui/login/authenticator_facade_stub.cc'],
-            ['include', 'browser/chromeos/dom_ui/login/authenticator_facade_stub.h'],
-            ['include', 'browser/chromeos/dom_ui/login/login_ui.cc'],
-            ['include', 'browser/chromeos/dom_ui/login/login_ui.h'],
-            ['include', 'browser/chromeos/dom_ui/login/login_ui_helpers.cc'],
-            ['include', 'browser/chromeos/dom_ui/login/login_ui_helpers.h'],
             ['include', '^browser/ui/touch/*'],
             ['exclude', '^browser/chromeos/frame/browser_non_client_frame_view_factory_chromeos.cc'],
             ['exclude', '^browser/renderer_host/render_widget_host_view_gtk.cc'],
@@ -3593,6 +3580,11 @@
             ['exclude', '^browser/ui/views/frame/browser_non_client_frame_view_factory_gtk.cc'],
             ['exclude', '^browser/views/tab_contents/tab_contents_view_gtk.cc'],
             ['exclude', '^browser/views/tab_contents/tab_contents_view_gtk.h'],
+          ],
+        }],
+        ['touchui==1 and chromeos==1', {
+          'sources/': [
+            ['include', '^browser/chromeos/dom_ui/login/'],
           ],
         }],
         ['OS=="linux"', {

@@ -1708,41 +1708,20 @@
             ['touchui==1', {
               'sources/': [
                 ['include', 'browser/chromeos/dom_ui/login/authenticator_facade_cros_unittest.cc'],
-                ['exclude', 'browser/chromeos/dom_ui/login/authenticator_facade_stub_unittest.cc'],
                 ['include', 'browser/chromeos/dom_ui/login/login_ui_unittest.cc'],
                 ['include', 'browser/chromeos/dom_ui/login/mock_authenticator_facade_cros.h'],
-                ['exclude', 'browser/chromeos/dom_ui/login/mock_authenticator_facade_stub.h'],
                 ['include', 'browser/chromeos/dom_ui/login/mock_authenticator_facade_cros_helpers.h'],
                 ['include', 'browser/chromeos/dom_ui/login/mock_login_ui_helpers.h'],
               ],
-             }, { # else: touchui == 0
-               'sources/': [
-                ['exclude', '^browser/chromeos/dom_ui/login/'],
-               ],
              }],
            ],
           'sources/': [
             ['exclude', 'browser/notifications/desktop_notifications_unittest.cc'],
           ],
         }, { # else: chromeos == 0
-          'conditions': [
-            ['touchui==1', {
-              'sources/': [
-                ['exclude', '^browser/chromeos/'],
-                ['exclude', 'browser/chromeos/dom_ui/login/authenticator_facade_cros_unittest.cc'],
-                ['include', 'browser/chromeos/dom_ui/login/authenticator_facade_stub_unittest.cc'],
-                ['include', 'browser/chromeos/dom_ui/login/login_ui_unittest.cc'],
-                ['exclude', 'browser/chromeos/dom_ui/login/mock_authenticator_facade_cros.h'],
-                ['include', 'browser/chromeos/dom_ui/login/mock_authenticator_facade_stub.h'],
-                ['include', 'browser/chromeos/dom_ui/login/mock_authenticator_facade_cros_helpers.h'],
-                ['include', 'browser/chromeos/dom_ui/login/mock_login_ui_helpers.h'],
-              ],
-             }, { # else: touchui == 0
-               'sources/': [
-                 ['exclude', '^browser/chromeos/'],
-               ],
-             }],
-           ],
+          'sources/': [
+            ['exclude', '^browser/chromeos/'],
+          ],
         }],
         ['OS=="linux"', {
           'conditions': [
