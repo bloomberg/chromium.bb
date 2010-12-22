@@ -446,7 +446,9 @@ void AutoFillProfile::CreateDifferentiatingLabels(
 
       std::map<string16, size_t>& field_text_frequencies =
           field_text_frequencies_by_field[*field];
-      found_differentiating_field |= (field_text_frequencies[field_text] == 1);
+      found_differentiating_field |=
+          !field_text_frequencies.count(string16()) &&
+          (field_text_frequencies[field_text] == 1);
 
       // Once we've found enough non-empty fields, skip over any remaining
       // fields that are identical across all the profiles.

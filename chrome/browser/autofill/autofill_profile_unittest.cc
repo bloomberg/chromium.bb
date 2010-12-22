@@ -484,6 +484,18 @@ TEST(AutoFillProfileTest, CreateInferredLabelsSkipsEmptyFields) {
   EXPECT_EQ(ASCIIToUTF16("John Doe, doe@example.com, Gogole"), labels[0]);
   EXPECT_EQ(ASCIIToUTF16("John Doe, doe@example.com, Ggoole"), labels[1]);
   EXPECT_EQ(ASCIIToUTF16("John Doe, john.doe@example.com, Goolge"), labels[2]);
+
+  // A field must have a non-empty value for each profile to be considered a
+  // distinguishing field.
+  profiles[1]->SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
+                       ASCIIToUTF16("88 Nowhere Ave."));
+  AutoFillProfile::CreateInferredLabels(&profiles.get(), NULL, UNKNOWN_TYPE, 1,
+                                        &labels);
+  ASSERT_EQ(3U, labels.size());
+  EXPECT_EQ(ASCIIToUTF16("John Doe, doe@example.com, Gogole"), labels[0]);
+  EXPECT_EQ(ASCIIToUTF16("John Doe, 88 Nowhere Ave., doe@example.com, Ggoole"),
+            labels[1]) << labels[1];
+  EXPECT_EQ(ASCIIToUTF16("John Doe, john.doe@example.com"), labels[2]);
 }
 
 TEST(AutoFillProfileTest, IsSubsetOf) {
