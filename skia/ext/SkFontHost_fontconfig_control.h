@@ -19,9 +19,17 @@
 #define FontConfigControl_DEFINED
 #pragma once
 
-// http://code.google.com/p/chromium/wiki/LinuxSandboxIPC
+// Sets the Skia FontHost to use the direct (non-IPC, requires filesystem
+// access) FontConfig implementation. Any previously-set FontConfigInterface
+// will be freed.
+void SkiaFontConfigUseDirectImplementation();
 
-extern void SkiaFontConfigUseDirectImplementation();
-extern void SkiaFontConfigUseIPCImplementation(int fd);
+// Sets the Skia FontHost to use the given implementation of FontConfig. This
+// is normally used to configure the IPC-based implementation to get out of
+// the sandbox.
+//
+// Ownership of the given pointer is transferred, and any previously-set
+// FontConfigInterface will be freed.
+void SkiaFontConfigSetImplementation(FontConfigInterface* font_config);
 
 #endif  // FontConfigControl_DEFINED

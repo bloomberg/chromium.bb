@@ -26,13 +26,12 @@
 #include "base/singleton.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/unix_domain_socket_posix.h"
+#include "chrome/common/font_config_ipc_linux.h"
 #include "chrome/common/sandbox_methods_linux.h"
+#include "chrome/common/unix_domain_socket_posix.h"
+#include "skia/ext/SkFontHost_fontconfig_direct.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 #include "third_party/WebKit/WebKit/chromium/public/gtk/WebFontInfo.h"
-
-#include "SkFontHost_fontconfig_direct.h"
-#include "SkFontHost_fontconfig_ipc.h"
 
 using WebKit::WebCString;
 using WebKit::WebFontInfo;
@@ -114,7 +113,7 @@ class SandboxIPCProcess  {
     // error for a maximum length message.
     char buf[FontConfigInterface::kMaxFontFamilyLength + 128];
 
-    const ssize_t len = base::RecvMsg(fd, buf, sizeof(buf), &fds);
+    const ssize_t len = UnixDomainSocket::RecvMsg(fd, buf, sizeof(buf), &fds);
     if (len == -1) {
       // TODO: should send an error reply, or the sender might block forever.
       NOTREACHED()

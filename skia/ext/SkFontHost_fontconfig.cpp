@@ -35,7 +35,6 @@
 #include "SkStream.h"
 #include "SkFontHost_fontconfig_impl.h"
 #include "SkFontHost_fontconfig_direct.h"
-#include "SkFontHost_fontconfig_ipc.h"
 
 static FontConfigInterface* global_fc_impl = NULL;
 
@@ -45,10 +44,10 @@ void SkiaFontConfigUseDirectImplementation() {
     global_fc_impl = new FontConfigDirect;
 }
 
-void SkiaFontConfigUseIPCImplementation(int fd) {
+void SkiaFontConfigSetImplementation(FontConfigInterface* font_config) {
     if (global_fc_impl)
       delete global_fc_impl;
-    global_fc_impl = new FontConfigIPC(fd);
+    global_fc_impl = font_config;
 }
 
 static FontConfigInterface* GetFcImpl() {

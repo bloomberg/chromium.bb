@@ -20,15 +20,13 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/scoped_ptr.h"
-#include "base/unix_domain_socket_posix.h"
 #include "base/utf_string_conversions.h"
-
 #include "chrome/browser/renderer_host/render_sandbox_host_linux.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/process_watcher.h"
 #include "chrome/common/result_codes.h"
-
+#include "chrome/common/unix_domain_socket_posix.h"
 #include "sandbox/linux/suid/suid_unsafe_environment_variables.h"
 
 static void SaveSUIDUnsafeEnvironmentVariables() {
@@ -154,7 +152,8 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
     std::vector<int> fds_vec;
     const int kExpectedLength = sizeof(kZygoteMagic);
     char buf[kExpectedLength];
-    const ssize_t len = base::RecvMsg(fds[0], buf, sizeof(buf), &fds_vec);
+    const ssize_t len = UnixDomainSocket::RecvMsg(fds[0], buf, sizeof(buf),
+                                                  &fds_vec);
     CHECK(len == kExpectedLength) << "Incorrect zygote magic length";
     CHECK(0 == strcmp(buf, kZygoteMagic)) << "Incorrect zygote magic";
 
@@ -191,7 +190,8 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
   Pickle pickle;
   pickle.WriteInt(kCmdGetSandboxStatus);
   std::vector<int> empty_fds;
-  if (!base::SendMsg(control_fd_, pickle.data(), pickle.size(), empty_fds))
+  if (!UnixDomainSocket::SendMsg(control_fd_, pickle.data(), pickle.size(),
+                                 empty_fds))
     LOG(FATAL) << "Cannot communicate with zygote";
   // We don't wait for the reply. We'll read it in ReadReply.
 }
@@ -236,7 +236,8 @@ pid_t ZygoteHost::ForkRenderer(
   pid_t pid;
   {
     AutoLock lock(control_lock_);
-    if (!base::SendMsg(control_fd_, pickle.data(), pickle.size(), fds))
+    if (!UnixDomainSocket::SendMsg(control_fd_, pickle.data(), pickle.size(),
+                                   fds))
       return base::kNullProcessHandle;
 
     if (ReadReply(&pid, sizeof(pid)) != sizeof(pid))

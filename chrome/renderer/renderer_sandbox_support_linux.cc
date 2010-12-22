@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "chrome/renderer/renderer_sandbox_support_linux.h"
 
@@ -10,9 +10,9 @@
 #include "base/global_descriptors_posix.h"
 #include "base/pickle.h"
 #include "base/scoped_ptr.h"
-#include "base/unix_domain_socket_posix.h"
 #include "chrome/common/chrome_descriptors.h"
 #include "chrome/common/sandbox_methods_linux.h"
+#include "chrome/common/unix_domain_socket_posix.h"
 
 #include "third_party/WebKit/WebKit/chromium/public/linux/WebFontRenderStyle.h"
 
@@ -31,8 +31,8 @@ std::string getFontFamilyForCharacters(const uint16_t* utf16,
     request.WriteUInt32(utf16[i]);
 
   uint8_t buf[512];
-  const ssize_t n = base::SendRecvMsg(GetSandboxFD(), buf, sizeof(buf), NULL,
-                                      request);
+  const ssize_t n = UnixDomainSocket::SendRecvMsg(GetSandboxFD(), buf,
+                                                  sizeof(buf), NULL, request);
 
   std::string family_name;
   if (n != -1) {
@@ -52,8 +52,8 @@ void getRenderStyleForStrike(const char* family, int sizeAndStyle,
   request.WriteInt(sizeAndStyle);
 
   uint8_t buf[512];
-  const ssize_t n = base::SendRecvMsg(GetSandboxFD(), buf, sizeof(buf), NULL,
-                                      request);
+  const ssize_t n = UnixDomainSocket::SendRecvMsg(GetSandboxFD(), buf,
+                                                  sizeof(buf), NULL, request);
 
   out->setDefaults();
   if (n == -1) {
@@ -84,9 +84,9 @@ int MakeSharedMemorySegmentViaIPC(size_t length, bool executable) {
   request.WriteUInt32(length);
   uint8_t reply_buf[10];
   int result_fd;
-  ssize_t result = base::SendRecvMsg(GetSandboxFD(),
-                                     reply_buf, sizeof(reply_buf),
-                                     &result_fd, request);
+  ssize_t result = UnixDomainSocket::SendRecvMsg(GetSandboxFD(),
+                                                 reply_buf, sizeof(reply_buf),
+                                                 &result_fd, request);
   if (result == -1)
     return -1;
   return result_fd;
@@ -102,8 +102,8 @@ int MatchFontWithFallback(const std::string& face, bool bold,
   request.WriteUInt32(charset);
   uint8_t reply_buf[64];
   int fd = -1;
-  base::SendRecvMsg(GetSandboxFD(), reply_buf, sizeof(reply_buf),
-                    &fd, request);
+  UnixDomainSocket::SendRecvMsg(GetSandboxFD(), reply_buf, sizeof(reply_buf),
+                                &fd, request);
   return fd;
 }
 

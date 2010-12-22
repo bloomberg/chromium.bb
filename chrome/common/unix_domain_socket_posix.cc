@@ -1,8 +1,8 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/unix_domain_socket_posix.h"
+#include "chrome/common/unix_domain_socket_posix.h"
 
 #include <errno.h>
 #include <unistd.h>
@@ -13,10 +13,11 @@
 #include "base/logging.h"
 #include "base/pickle.h"
 
-namespace base {
-
-bool SendMsg(int fd, const void* buf, size_t length,
-             const std::vector<int>& fds) {
+// static
+bool UnixDomainSocket::SendMsg(int fd,
+                               const void* buf,
+                               size_t length,
+                               const std::vector<int>& fds) {
   struct msghdr msg;
   memset(&msg, 0, sizeof(msg));
   struct iovec iov = {const_cast<void*>(buf), length};
@@ -45,7 +46,11 @@ bool SendMsg(int fd, const void* buf, size_t length,
   return ret;
 }
 
-ssize_t RecvMsg(int fd, void* buf, size_t length, std::vector<int>* fds) {
+// static
+ssize_t UnixDomainSocket::RecvMsg(int fd,
+                                  void* buf,
+                                  size_t length,
+                                  std::vector<int>* fds) {
   static const unsigned kMaxDescriptors = 16;
 
   fds->clear();
@@ -94,8 +99,12 @@ ssize_t RecvMsg(int fd, void* buf, size_t length, std::vector<int>* fds) {
   return r;
 }
 
-ssize_t SendRecvMsg(int fd, uint8_t* reply, unsigned max_reply_len, int* result_fd,
-                    const Pickle& request) {
+// static
+ssize_t UnixDomainSocket::SendRecvMsg(int fd,
+                                      uint8_t* reply,
+                                      unsigned max_reply_len,
+                                      int* result_fd,
+                                      const Pickle& request) {
   int fds[2];
 
   // This socketpair is only used for the IPC and is cleaned up before
@@ -140,4 +149,3 @@ ssize_t SendRecvMsg(int fd, uint8_t* reply, unsigned max_reply_len, int* result_
   return reply_len;
 }
 
-}  // namespace base
