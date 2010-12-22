@@ -64,6 +64,8 @@
       # crbug.com/67628
       '-search_engines.SearchEnginesTest.testTabToSearch',
       'special_tabs',
+      # crbug.com/67851
+      '-special_tabs.SpecialTabsTest.testAboutDNSTab',
       # 'sync',  crbug.com/60970
       'test_basic.SimpleTest.testCanOpenGoogle',
       'themes',
