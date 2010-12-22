@@ -68,7 +68,7 @@ cr.define('options', function() {
       creditCard[3] = $('expirationMonth').value;
       creditCard[4] = $('expirationYear').value;
 
-      chrome.send('updateCreditCard', creditCard);
+      chrome.send('setCreditCard', creditCard);
     },
 
     /**

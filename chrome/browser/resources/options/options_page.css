@@ -309,6 +309,12 @@ div.page section:last-child {
   border-bottom: none;
 }
 
+div.page > h3 {
+  font-size: 105%;
+  font-weight: bold;
+  margin: 20px 0 10px 0;
+}
+
 section > h3 {
   font-size: 105%;
   font-weight: bold;

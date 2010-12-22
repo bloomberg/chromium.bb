@@ -34,20 +34,14 @@ void AutoFillOptionsHandler::GetLocalizedValues(
 
   localized_strings->SetString("autoFillOptionsTitle",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS_TITLE));
-  localized_strings->SetString("autoFillEnabled",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_AUTOFILL_ENABLE));
-  localized_strings->SetString("addressesHeader",
+  localized_strings->SetString("autoFillAddresses",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESSES_GROUP_NAME));
-  localized_strings->SetString("creditCardsHeader",
+  localized_strings->SetString("autoFillCreditCards",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_CREDITCARDS_GROUP_NAME));
-  localized_strings->SetString("addAddressButton",
+  localized_strings->SetString("autoFillAddAddress",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_ADD_ADDRESS_BUTTON));
-  localized_strings->SetString("addCreditCardButton",
+  localized_strings->SetString("autoFillAddCreditCard",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_ADD_CREDITCARD_BUTTON));
-  localized_strings->SetString("editButton",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_EDIT_BUTTON));
-  localized_strings->SetString("deleteButton",
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_DELETE_BUTTON));
   localized_strings->SetString("helpButton",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_HELP_LABEL));
   localized_strings->SetString("addAddressTitle",
@@ -64,8 +58,7 @@ void AutoFillOptionsHandler::GetLocalizedValues(
 }
 
 void AutoFillOptionsHandler::Initialize() {
-  personal_data_ =
-      dom_ui_->GetProfile()->GetOriginalProfile()->GetPersonalDataManager();
+  personal_data_ = dom_ui_->GetProfile()->GetPersonalDataManager();
   personal_data_->SetObserver(this);
 
   LoadAutoFillData();
@@ -73,28 +66,17 @@ void AutoFillOptionsHandler::Initialize() {
 
 void AutoFillOptionsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback(
-      "updateAddress",
-      NewCallback(this, &AutoFillOptionsHandler::UpdateAddress));
-
+      "removeAutoFillProfile",
+      NewCallback(this, &AutoFillOptionsHandler::RemoveAutoFillProfile));
   dom_ui_->RegisterMessageCallback(
-      "editAddress",
-      NewCallback(this, &AutoFillOptionsHandler::EditAddress));
-
+      "loadProfileEditor",
+      NewCallback(this, &AutoFillOptionsHandler::LoadProfileEditor));
   dom_ui_->RegisterMessageCallback(
-      "removeAddress",
-      NewCallback(this, &AutoFillOptionsHandler::RemoveAddress));
-
+      "setAddress",
+      NewCallback(this, &AutoFillOptionsHandler::SetAddress));
   dom_ui_->RegisterMessageCallback(
-      "updateCreditCard",
-      NewCallback(this, &AutoFillOptionsHandler::UpdateCreditCard));
-
-  dom_ui_->RegisterMessageCallback(
-      "editCreditCard",
-      NewCallback(this, &AutoFillOptionsHandler::EditCreditCard));
-
-  dom_ui_->RegisterMessageCallback(
-      "removeCreditCard",
-      NewCallback(this, &AutoFillOptionsHandler::RemoveCreditCard));
+      "setCreditCard",
+      NewCallback(this, &AutoFillOptionsHandler::SetCreditCard));
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -157,30 +139,68 @@ void AutoFillOptionsHandler::LoadAutoFillData() {
   for (std::vector<AutoFillProfile*>::const_iterator i =
            personal_data_->web_profiles().begin();
        i != personal_data_->web_profiles().end(); ++i) {
-    DictionaryValue* address = new DictionaryValue();
-    address->SetString("label", (*i)->Label());
-    address->SetString("guid", (*i)->guid());
-    addresses.Append(address);
+    ListValue* entry = new ListValue();
+    entry->Append(new StringValue((*i)->guid()));
+    entry->Append(new StringValue((*i)->Label()));
+    addresses.Append(entry);
   }
 
-  dom_ui_->CallJavascriptFunction(L"AutoFillOptions.updateAddresses",
+  dom_ui_->CallJavascriptFunction(L"AutoFillOptions.setAddressList",
                                   addresses);
 
   ListValue credit_cards;
   for (std::vector<CreditCard*>::const_iterator i =
            personal_data_->credit_cards().begin();
        i != personal_data_->credit_cards().end(); ++i) {
-    DictionaryValue* credit_card = new DictionaryValue();
-    credit_card->SetString("label", (*i)->PreviewSummary());
-    credit_card->SetString("guid", (*i)->guid());
-    credit_cards.Append(credit_card);
+    ListValue* entry = new ListValue();
+    entry->Append(new StringValue((*i)->guid()));
+    entry->Append(new StringValue((*i)->PreviewSummary()));
+    credit_cards.Append(entry);
   }
 
-  dom_ui_->CallJavascriptFunction(L"AutoFillOptions.updateCreditCards",
+  dom_ui_->CallJavascriptFunction(L"AutoFillOptions.setCreditCardList",
                                   credit_cards);
 }
 
-void AutoFillOptionsHandler::UpdateAddress(const ListValue* args) {
+void AutoFillOptionsHandler::RemoveAutoFillProfile(const ListValue* args) {
+  DCHECK(personal_data_->IsDataLoaded());
+
+  std::string guid;
+  if (!args->GetString(0, &guid)) {
+    NOTREACHED();
+    return;
+  }
+
+  // |guid| is the GUID of either an address or a credit card. Try to load the
+  // corresponding address. If it exists, then remove that address; otherwise,
+  // the GUID identifies a credit card, so remove the credit card.
+  // TODO(jhawkins): Make RemoveProfile return true/false depending on whether
+  // the profile was removed or not.
+  if (personal_data_->GetProfileByGUID(guid) != NULL)
+    personal_data_->RemoveProfile(guid);
+  else
+    personal_data_->RemoveCreditCard(guid);
+}
+
+void AutoFillOptionsHandler::LoadProfileEditor(const ListValue* args) {
+  DCHECK(personal_data_->IsDataLoaded());
+
+  std::string guid;
+  if (!args->GetString(0, &guid)) {
+    NOTREACHED();
+    return;
+  }
+
+  // |guid| is the GUID of either an address or a credit card. Try to load the
+  // corresponding address. If it exists, then edit that address; otherwise, the
+  // GUID identifies a credit card, so load the credit card editor.
+  if (personal_data_->GetProfileByGUID(guid) != NULL)
+    EditAddress(guid);
+  else
+    EditCreditCard(guid);
+}
+
+void AutoFillOptionsHandler::SetAddress(const ListValue* args) {
   if (!personal_data_->IsDataLoaded())
     return;
 
@@ -224,7 +244,7 @@ void AutoFillOptionsHandler::UpdateAddress(const ListValue* args) {
   }
 }
 
-void AutoFillOptionsHandler::EditAddress(const ListValue* args) {
+void AutoFillOptionsHandler::SetCreditCard(const ListValue* args) {
   if (!personal_data_->IsDataLoaded())
     return;
 
@@ -233,6 +253,29 @@ void AutoFillOptionsHandler::EditAddress(const ListValue* args) {
     NOTREACHED();
     return;
   }
+
+  CreditCard credit_card(guid);
+
+  string16 value;
+  if (args->GetString(1, &value))
+    credit_card.SetInfo(AutoFillType(CREDIT_CARD_NAME), value);
+  if (args->GetString(2, &value))
+    credit_card.SetInfo(AutoFillType(CREDIT_CARD_NUMBER), value);
+  if (args->GetString(3, &value))
+    credit_card.SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH), value);
+  if (args->GetString(4, &value))
+    credit_card.SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), value);
+
+  if (!guid::IsValidGUID(credit_card.guid())) {
+    credit_card.set_guid(guid::GenerateGUID());
+    personal_data_->AddCreditCard(credit_card);
+  } else {
+    personal_data_->UpdateCreditCard(credit_card);
+  }
+}
+
+void AutoFillOptionsHandler::EditAddress(const std::string& guid) {
+  DCHECK(personal_data_->IsDataLoaded());
 
   AutoFillProfile* profile = personal_data_->GetProfileByGUID(guid);
   if (!profile) {
@@ -275,62 +318,10 @@ void AutoFillOptionsHandler::EditAddress(const ListValue* args) {
                                   addressList);
 }
 
-void AutoFillOptionsHandler::RemoveAddress(const ListValue* args) {
-  if (!personal_data_->IsDataLoaded())
-    return;
-
-  std::string guid;
-  if (!args->GetString(0, &guid)) {
-    NOTREACHED();
-    return;
-  }
-
-  personal_data_->RemoveProfile(guid);
-}
-
-void AutoFillOptionsHandler::UpdateCreditCard(const ListValue* args) {
-  if (!personal_data_->IsDataLoaded())
-    return;
-
-  std::string guid;
-  if (!args->GetString(0, &guid)) {
-    NOTREACHED();
-    return;
-  }
-
-  CreditCard credit_card(guid);
-
-  string16 value;
-  if (args->GetString(1, &value))
-    credit_card.SetInfo(AutoFillType(CREDIT_CARD_NAME), value);
-  if (args->GetString(2, &value))
-    credit_card.SetInfo(AutoFillType(CREDIT_CARD_NUMBER), value);
-  if (args->GetString(3, &value))
-    credit_card.SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH), value);
-  if (args->GetString(4, &value))
-    credit_card.SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), value);
-
-  if (!guid::IsValidGUID(credit_card.guid())) {
-    credit_card.set_guid(guid::GenerateGUID());
-    personal_data_->AddCreditCard(credit_card);
-  } else {
-    personal_data_->UpdateCreditCard(credit_card);
-  }
-
-}
-
-void AutoFillOptionsHandler::EditCreditCard(const ListValue* args) {
-  if (!personal_data_->IsDataLoaded())
-      return;
-
-  std::string guid;
-  if (!args->GetString(0, &guid)) {
-    NOTREACHED();
-    return;
-  }
+void AutoFillOptionsHandler::EditCreditCard(const std::string& guid) {
+  DCHECK(personal_data_->IsDataLoaded());
 
   CreditCard* credit_card = personal_data_->GetCreditCardByGUID(guid);
-
   if (!credit_card) {
     NOTREACHED();
     return;
@@ -357,17 +348,4 @@ void AutoFillOptionsHandler::EditCreditCard(const ListValue* args) {
 
   dom_ui_->CallJavascriptFunction(L"AutoFillOptions.editCreditCard",
                                   credit_card_list);
-}
-
-void AutoFillOptionsHandler::RemoveCreditCard(const ListValue* args) {
-  if (!personal_data_->IsDataLoaded())
-    return;
-
-  std::string guid;
-  if (!args->GetString(0, &guid)) {
-    NOTREACHED();
-    return;
-  }
-
-  personal_data_->RemoveCreditCard(guid);
 }

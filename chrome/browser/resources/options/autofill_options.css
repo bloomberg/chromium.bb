@@ -1,16 +1,12 @@
-div.autofill-section {
-  display: block;
-  padding: 1em 0 0;
+.autofill-list-item {
+  -webkit-padding-start: 8px;
 }
 
-#profile-select-container {
-  display: -webkit-box;
+#autofill-options > div:last-child {
+  margin-top: 15px;
 }
 
-#profile-select-left-column {
-  -webkit-box-flex: 1;
-}
-
-#profile-select-left-column select {
-  width: 100%;
+#autofill-options * div.settings-list > :last-child {
+  border-top: 1px solid #D9D9D9;
+  padding: 5px 10px;
 }

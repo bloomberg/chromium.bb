@@ -75,7 +75,7 @@ cr.define('options', function() {
       address[10] = $('fax').value;
       address[11] = $('email').value;
 
-      chrome.send('updateAddress', address);
+      chrome.send('setAddress', address);
     },
 
     /**

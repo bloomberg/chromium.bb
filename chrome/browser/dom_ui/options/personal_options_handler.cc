@@ -73,6 +73,8 @@ void PersonalOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("autofill",
       dom_options_util::StripColon(
           l10n_util::GetStringUTF16(IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME)));
+  localized_strings->SetString("autoFillEnabled",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_AUTOFILL_ENABLE));
   localized_strings->SetString("manageAutofillSettings",
       l10n_util::GetStringUTF16(IDS_OPTIONS_MANAGE_AUTOFILL_SETTINGS));
 

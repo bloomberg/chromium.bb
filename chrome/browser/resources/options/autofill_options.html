@@ -1,38 +1,22 @@
 <div id="autofill-options" class="page hidden">
   <h1 i18n-content="autoFillOptionsTitle"></h1>
-
-  <div id="profile-select-container" class="autofill-section">
-    <div id="profile-select-left-column">
-      <select id="profile-list" size="10">
-        <option value="addressesHeader" disabled
-            i18n-content="addressesHeader"></option>
-        <option value="addressesHorizontalRule" disabled></option>
-        <option value="addressesBlankOption" disabled></option>
-        <option value="creditCardsHeader" disabled
-            i18n-content="creditCardsHeader"></option>
-        <option value="creditCardsHorizontalRule" disabled></option>
-      </select>
-    </div>
+  <h3 i18n-content="autoFillAddresses"></h3>
+  <div class="settings-list">
+    <list id="address-list"></list>
     <div>
-      <div>
-        <button id="add-address-button" i18n-content="addAddressButton">
-        </button>
-      </div>
-      <div>
-        <button id="add-credit-card-button" i18n-content="addCreditCardButton">
-        </button>
-      </div>
-      <div>
-        <button id="autofill-edit-button" i18n-content="editButton"></button>
-      </div>
-      <div>
-        <button id="autofill-remove-button" i18n-content="deleteButton">
-        </button>
-      </div>
+      <button id="autofill-add-address" i18n-content="autoFillAddAddress">
+      </button>
     </div>
   </div>
-
-  <div class="autofill-section">
+  <h3 i18n-content="autoFillCreditCards"></h3>
+  <div class="settings-list">
+    <list id="creditcard-list"></list>
+    <div>
+      <button id="autofill-add-creditcard"
+          i18n-content="autoFillAddCreditCard"></button>
+    </div>
+  </div>
+  <div>
 <if expr="pp_ifdef('chromeos')">
     <a href="http://www.google.com/support/chromeos/bin/answer.py?answer=142893"
         target="_blank" i18n-content="helpButton"></a>

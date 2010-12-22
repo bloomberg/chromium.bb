@@ -269,6 +269,7 @@ cr.define('cr.ui', function() {
       var length = this.dataModel ? this.dataModel.length : 0;
       this.selectionModel = new ListSelectionModel(length);
 
+      this.addEventListener('dblclick', this.handleDoubleClick_);
       this.addEventListener('mousedown', this.handleMouseDownUp_);
       this.addEventListener('mouseup', this.handleMouseDownUp_);
       this.addEventListener('keydown', this.handleKeyDown);
@@ -287,6 +288,20 @@ cr.define('cr.ui', function() {
       if (!this.itemHeight_)
         this.itemHeight_ = measureItem(this);
       return this.itemHeight_;
+    },
+
+    /**
+     * Callback for the double click event.
+     * @param {Event} e The mouse event object.
+     * @private
+     */
+    handleDoubleClick_: function(e) {
+      if (this.disabled)
+        return;
+
+      var target = this.getListItemAncestor(e.target);
+      var index = target ? this.getIndexOfListItem(target) : -1;
+      this.activateItemAtIndex(index);
     },
 
     /**

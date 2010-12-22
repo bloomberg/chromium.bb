@@ -5,8 +5,13 @@
 #ifndef CHROME_BROWSER_DOM_UI_OPTIONS_AUTOFILL_OPTIONS_HANDLER_H_
 #define CHROME_BROWSER_DOM_UI_OPTIONS_AUTOFILL_OPTIONS_HANDLER_H_
 
+#include <string>
+
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/dom_ui/options/options_ui.h"
+
+class DictionaryValue;
+class ListValue;
 
 class AutoFillOptionsHandler : public OptionsPageUIHandler,
                                public PersonalDataManager::Observer {
@@ -31,38 +36,38 @@ class AutoFillOptionsHandler : public OptionsPageUIHandler,
   // Loads AutoFill addresses and credit cards using the PersonalDataManager.
   void LoadAutoFillData();
 
-  // Adds or updates an address, depending on the unique ID of the address. If
-  // the unique ID is 0, a new address is added to the WebDatabase; otherwise,
-  // the address with the matching ID is updated. Called from DOMUI.
-  // |args| - an array containing the unique ID of the address followed by the
+  // Removes either an address or a credit card, depending on the type of the
+  // profile.
+  // |args| - A string, the GUID of the profile to remove.
+  void RemoveAutoFillProfile(const ListValue* args);
+
+  // Requests profile data for a specific profile. Calls into DOMUI with the
+  // loaded profile data to open the appropriate editor, depending on the type
+  // of the profile.
+  // |args| - A string, the GUID of the profile to load.
+  void LoadProfileEditor(const ListValue* args);
+
+  // Adds or updates an address, depending on the GUID of the profile. If the
+  // GUID is empty, a new address is added to the WebDatabase; otherwise, the
+  // address with the matching GUID is updated. Called from DOMUI.
+  // |args| - an array containing the GUID of the address followed by the
   // address data.
-  void UpdateAddress(const ListValue* args);
+  void SetAddress(const ListValue* args);
+
+  // Adds or updates a credit card, depending on the GUID of the profile. If the
+  // GUID is empty, a new credit card is added to the WebDatabase; otherwise,
+  // the credit card with the matching GUID is updated. Called from DOMUI.
+  // |args| - an array containing the GUID of the credit card followed by the
+  // credit card data.
+  void SetCreditCard(const ListValue* args);
 
   // Loads the data from an address and sends this data back to the DOMUI to
-  // show in the address editor. Called from DOMUI.
-  // |args| - an integer, the unique ID of the address to edit.
-  void EditAddress(const ListValue* args);
-
-  // Removes an address from the WebDatabase. Called from DOMUI.
-  // |args| - an integer, the unique ID of the address to remove.
-  void RemoveAddress(const ListValue* args);
-
-  // Adds or updates a credit card, depending on the unique ID of the credit
-  // card. If the unique ID is 0, a new credit card is added to the WebDatabase;
-  // otherwise, the credit card with the matching ID is updated. Called from
-  // DOMUI.
-  // |args| - an array containing the unique ID of the credit card followed by
-  // the credit card data.
-  void UpdateCreditCard(const ListValue* args);
+  // show in the address editor. |guid| is the GUID of the profile to load.
+  void EditAddress(const std::string& guid);
 
   // Loads the data from a credit card and sends this data back to the DOMUI to
-  // show in the credit card editor. Called from DOMUI.
-  // |args| - an integer, the unique ID of the credit card to edit.
-  void EditCreditCard(const ListValue* args);
-
-  // Removes a credit card from the WebDatabase. Called from DOMUI.
-  // |args| - an integer, the unique ID of the credit card to remove.
-  void RemoveCreditCard(const ListValue* args);
+  // show in the credit card editor. |guid| is the GUID of the profile to load.
+  void EditCreditCard(const std::string& guid);
 
   // The personal data manager, used to load AutoFill profiles and credit cards.
   // Unowned pointer, may not be NULL.
