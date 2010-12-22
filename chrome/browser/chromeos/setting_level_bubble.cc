@@ -100,8 +100,12 @@ void SettingLevelBubble::ShowBubble(int percent) {
     const int x = view_size.width() / 2 +
         kBubbleXRatio * (bounds.width() - view_size.width());
     const int y = bounds.height() - view_size.height() / 2 - kBubbleBottomGap;
-    bubble_ = InfoBubble::ShowFocusless(widget, gfx::Rect(x, y, 0, 20),
-                                        BubbleBorder::FLOAT, view_, this);
+    bubble_ = InfoBubble::ShowFocusless(widget,  // parent
+                                        gfx::Rect(x, y, 0, 20),
+                                        BubbleBorder::FLOAT,
+                                        view_,  // contents
+                                        this,   // delegate
+                                        true);  // show while screen is locked
   } else {
     DCHECK(view_);
     timeout_timer_.Stop();

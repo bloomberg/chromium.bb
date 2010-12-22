@@ -4,6 +4,8 @@
 
 #include "chrome/browser/views/extensions/extension_popup.h"
 
+#include <vector>
+
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -24,7 +26,6 @@
 #include "views/widget/root_view.h"
 #include "views/window/window.h"
 
-
 #if defined(OS_LINUX)
 #include "views/widget/widget_gtk.h"
 #endif
@@ -34,6 +35,7 @@
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
 #endif
 
+using std::vector;
 using views::Widget;
 
 // The minimum, and default maximum dimensions of the popup.
@@ -120,10 +122,14 @@ ExtensionPopup::ExtensionPopup(ExtensionHost* host,
 #endif
     border_widget_->Init(native_window, bounds());
 #if defined(OS_CHROMEOS)
-    chromeos::WmIpc::instance()->SetWindowType(
-        border_widget_->GetNativeView(),
-        chromeos::WM_IPC_WINDOW_CHROME_INFO_BUBBLE,
-        NULL);
+    {
+      vector<int> params;
+      params.push_back(0);  // don't show while screen is locked
+      chromeos::WmIpc::instance()->SetWindowType(
+          border_widget_->GetNativeView(),
+          chromeos::WM_IPC_WINDOW_CHROME_INFO_BUBBLE,
+          &params);
+    }
 #endif
     border_ = new BubbleBorder(arrow_location);
     border_view_ = new views::View;

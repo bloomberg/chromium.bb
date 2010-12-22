@@ -4,6 +4,8 @@
 
 #include "chrome/browser/views/info_bubble.h"
 
+#include <vector>
+
 #include "app/keyboard_codes.h"
 #include "app/slide_animation.h"
 #include "chrome/browser/ui/window_sizer.h"
@@ -22,6 +24,8 @@
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
 #endif
+
+using std::vector;
 
 // How long the fade should last for.
 static const int kHideFadeDurationMS = 200;
@@ -256,8 +260,10 @@ InfoBubble* InfoBubble::ShowFocusless(
     const gfx::Rect& position_relative_to,
     BubbleBorder::ArrowLocation arrow_location,
     views::View* contents,
-    InfoBubbleDelegate* delegate) {
-  InfoBubble* window = new InfoBubble(views::WidgetGtk::TYPE_POPUP);
+    InfoBubbleDelegate* delegate,
+    bool show_while_screen_is_locked) {
+  InfoBubble* window = new InfoBubble(views::WidgetGtk::TYPE_POPUP,
+                                      show_while_screen_is_locked);
   window->Init(parent, position_relative_to, arrow_location,
                contents, delegate);
   return window;
@@ -317,17 +323,22 @@ InfoBubble::InfoBubble()
       delegate_(NULL),
       show_status_(kOpen),
       fade_away_on_close_(false),
+#if defined(OS_CHROMEOS)
+      show_while_screen_is_locked_(false),
+#endif
       arrow_location_(BubbleBorder::NONE),
       contents_(NULL) {
 }
 
 #if defined(OS_CHROMEOS)
-InfoBubble::InfoBubble(views::WidgetGtk::Type type)
+InfoBubble::InfoBubble(views::WidgetGtk::Type type,
+                       bool show_while_screen_is_locked)
     : WidgetGtk(type),
       border_contents_(NULL),
       delegate_(NULL),
       show_status_(kOpen),
       fade_away_on_close_(false),
+      show_while_screen_is_locked_(show_while_screen_is_locked),
       arrow_location_(BubbleBorder::NONE),
       contents_(NULL) {
 }
@@ -380,10 +391,14 @@ void InfoBubble::Init(views::Widget* parent,
   make_transient_to_parent();
   WidgetGtk::InitWithWidget(parent, gfx::Rect());
 #if defined(OS_CHROMEOS)
-  chromeos::WmIpc::instance()->SetWindowType(
-      GetNativeView(),
-      chromeos::WM_IPC_WINDOW_CHROME_INFO_BUBBLE,
-      NULL);
+  {
+    vector<int> params;
+    params.push_back(show_while_screen_is_locked_ ? 1 : 0);
+    chromeos::WmIpc::instance()->SetWindowType(
+        GetNativeView(),
+        chromeos::WM_IPC_WINDOW_CHROME_INFO_BUBBLE,
+        &params);
+  }
 #endif
 #endif
 

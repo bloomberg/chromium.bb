@@ -201,13 +201,17 @@ class InfoBubble
                           InfoBubbleDelegate* delegate);
 
 #if defined(OS_CHROMEOS)
-  // Shows the InfoBubble not grabbing the focus. Others are the same as above.
-  // TYPE_POPUP widget is used to achieve the focusless effect.
+  // Shows the InfoBubble without grabbing the focus. Others are the same as
+  // above.  TYPE_POPUP widget is used to achieve the focusless effect.
+  // If |show_while_screen_is_locked| is true, a property is set telling the
+  // window manager to continue showing the bubble even while the screen is
+  // locked.
   static InfoBubble* ShowFocusless(views::Widget* parent,
                                    const gfx::Rect& position_relative_to,
                                    BubbleBorder::ArrowLocation arrow_location,
                                    views::View* contents,
-                                   InfoBubbleDelegate* delegate);
+                                   InfoBubbleDelegate* delegate,
+                                   bool show_while_screen_is_locked);
 #endif
 
   // Resizes and potentially moves the InfoBubble to best accommodate the
@@ -234,7 +238,7 @@ class InfoBubble
  protected:
   InfoBubble();
 #if defined(OS_CHROMEOS)
-  explicit InfoBubble(views::WidgetGtk::Type type);
+  InfoBubble(views::WidgetGtk::Type type, bool show_while_screen_is_locked);
 #endif
   virtual ~InfoBubble();
 
@@ -298,6 +302,12 @@ class InfoBubble
 
   // Whether to fade away when the bubble closes.
   bool fade_away_on_close_;
+
+#if defined(OS_CHROMEOS)
+  // Should we set a property telling the window manager to show this window
+  // onscreen even when the screen is locked?
+  bool show_while_screen_is_locked_;
+#endif
 
   gfx::Rect position_relative_to_;
   BubbleBorder::ArrowLocation arrow_location_;

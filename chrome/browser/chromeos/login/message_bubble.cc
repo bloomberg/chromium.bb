@@ -27,7 +27,7 @@ MessageBubble::MessageBubble(views::WidgetGtk::Type type,
                              const std::wstring& help,
                              bool grab_enabled,
                              MessageBubbleDelegate* delegate)
-    : InfoBubble(type),
+    : InfoBubble(type, false),  // don't show while screen is locked
       parent_(parent),
       help_link_(NULL),
       message_delegate_(delegate),

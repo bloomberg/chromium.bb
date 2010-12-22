@@ -4,6 +4,8 @@
 
 #include "chrome/browser/views/browser_bubble.h"
 
+#include <vector>
+
 #include "chrome/browser/views/frame/browser_view.h"
 #include "views/widget/widget_gtk.h"
 #include "views/window/window.h"
@@ -12,6 +14,8 @@
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
 #endif
+
+using std::vector;
 
 namespace {
 
@@ -88,10 +92,14 @@ void BrowserBubble::InitPopup() {
   pop->make_transient_to_parent();
   pop->Init(frame_->GetNativeView(), bounds_);
 #if defined(OS_CHROMEOS)
-  chromeos::WmIpc::instance()->SetWindowType(
-      pop->GetNativeView(),
-      chromeos::WM_IPC_WINDOW_CHROME_INFO_BUBBLE,
-      NULL);
+  {
+    vector<int> params;
+    params.push_back(0);  // don't show while screen is locked
+    chromeos::WmIpc::instance()->SetWindowType(
+        pop->GetNativeView(),
+        chromeos::WM_IPC_WINDOW_CHROME_INFO_BUBBLE,
+        &params);
+  }
 #endif
   pop->SetContentsView(view_);
   popup_ = pop;
