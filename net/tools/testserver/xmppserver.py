@@ -370,13 +370,15 @@ class XmppConnection(asynchat.async_chat):
        </iq>
     """)
 
-  def __init__(self, sock, socket_map, connections, addr):
+  def __init__(self, sock, socket_map, delegate, addr):
     """Starts up the xmpp connection.
 
     Args:
       sock: The socket to the client.
       socket_map: A map from sockets to their owning objects.
-      connections: The set of handshake-completed connections.
+      delegate: The delegate, which is notified when the XMPP
+        handshake is successful, when the connection is closed, and
+        when a notification has to be broadcast.
       addr: The host/port of the client.
     """
     # We do this because in versions of python < 2.6,
@@ -389,12 +391,8 @@ class XmppConnection(asynchat.async_chat):
     asyncore.dispatcher.__init__(self, sock, socket_map)
 
     self.set_terminator(None)
-    # async_chat in Python 2.4 has a bug where it ignores a
-    # socket_map argument.  So we handle that ourselves.
-    self._socket_map = socket_map
-    self._socket_map[self.fileno()] = self
 
-    self._connections = connections
+    self._delegate = delegate
     self._parser = StanzaParser(self)
     self._jid = None
 
@@ -420,11 +418,10 @@ class XmppConnection(asynchat.async_chat):
   def found_terminator(self):
     asynchat.async_chat.found_terminator(self)
 
-  def handle_close(self):
+  def close(self):
     print "Closing connection to %s" % self
-    # Remove ourselves from anywhere we possibly installed ourselves.
-    self._connections.discard(self)
-    del self._socket_map[self.fileno()]
+    self._delegate.OnXmppConnectionClosed(self)
+    asynchat.async_chat.close(self)
 
   # Called by self._parser.FeedString().
   def FeedStanza(self, stanza):
@@ -439,7 +436,7 @@ class XmppConnection(asynchat.async_chat):
   def HandshakeDone(self, jid):
     self._jid = jid
     self._handshake_task = None
-    self._connections.add(self)
+    self._delegate.OnXmppHandshakeDone(self)
     print "Handshake done for %s" % self
 
   def _HandleIq(self, iq):
@@ -462,7 +459,7 @@ class XmppConnection(asynchat.async_chat):
       self._SendNotifierStanza(id, 'result')
     elif command == 'set':
       # Send notification request.
-      SendNotification(self._connections)
+      self._delegate.SendNotification(self)
     else:
       raise UnexpectedXml(command_xml)
 
@@ -499,13 +496,6 @@ class XmppConnection(asynchat.async_chat):
     self._SendNotifierStanza(next_id, 'set')
 
 
-def SendNotification(connections):
-  """Sends a notification to all connections in the given sequence."""
-  for connection in connections:
-    print 'Sending notification to %s' % connection
-    connection.SendNotification()
-
-
 class XmppServer(asyncore.dispatcher):
   """The main XMPP server class.
 
@@ -526,9 +516,30 @@ class XmppServer(asyncore.dispatcher):
     self.bind(addr)
     self.listen(5)
     self._socket_map = socket_map
-    self._socket_map[self.fileno()] = self
     self._connections = set()
+    self._handshake_done_connections = set()
 
   def handle_accept(self):
     (sock, addr) = self.accept()
-    XmppConnection(sock, self._socket_map, self._connections, addr)
+    xmpp_connection = XmppConnection(sock, self._socket_map, self, addr)
+    self._connections.add(xmpp_connection)
+
+  def close(self):
+    # A copy is necessary since calling close on each connection
+    # removes it from self._connections.
+    for connection in self._connections.copy():
+      connection.close()
+    asyncore.dispatcher.close(self)
+
+  # XmppConnection delegate methods.
+  def OnXmppHandshakeDone(self, xmpp_connection):
+    self._handshake_done_connections.add(xmpp_connection)
+
+  def OnXmppConnectionClosed(self, xmpp_connection):
+    self._connections.discard(xmpp_connection)
+    self._handshake_done_connections.discard(xmpp_connection)
+
+  def SendNotification(self, unused_xmpp_connection):
+    for connection in self._handshake_done_connections:
+      print 'Sending notification to %s' % connection
+      connection.SendNotification()

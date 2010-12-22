@@ -168,6 +168,7 @@ class HandshakeTaskTest(unittest.TestCase):
 class XmppConnectionTest(unittest.TestCase):
 
   def setUp(self):
+    self.connections = set()
     self.data = []
 
   # socket-like methods.
@@ -184,13 +185,29 @@ class XmppConnectionTest(unittest.TestCase):
     self.data.append(data)
     pass
 
+  def close(self):
+    pass
+
+  # XmppConnection delegate methods.
+  def OnXmppHandshakeDone(self, xmpp_connection):
+    self.connections.add(xmpp_connection)
+
+  def OnXmppConnectionClosed(self, xmpp_connection):
+    self.connections.discard(xmpp_connection)
+
+  def SendNotification(self, unused_xmpp_connection):
+    for connection in self.connections:
+      connection.SendNotification()
+
   def testBasic(self):
-    connections = set()
+    socket_map = {}
     xmpp_connection = xmppserver.XmppConnection(
-      self, {}, connections, ('', 0))
-    self.assertEqual(len(connections), 0)
+      self, socket_map, self, ('', 0))
+    self.assertEqual(len(socket_map), 1)
+    self.assertEqual(len(self.connections), 0)
     xmpp_connection.HandshakeDone(xmppserver.Jid('foo', 'bar'))
-    self.assertEqual(len(connections), 1)
+    self.assertEqual(len(socket_map), 1)
+    self.assertEqual(len(self.connections), 1)
 
     # Test subscription request.
     self.assertEqual(len(self.data), 0)
@@ -220,6 +237,10 @@ class XmppConnectionTest(unittest.TestCase):
     self.assertRaises(xmppserver.UnexpectedXml,
                       SendUnexpectedNotifierCommand)
 
+    # Test close
+    xmpp_connection.close()
+    self.assertEqual(len(socket_map), 0)
+    self.assertEqual(len(self.connections), 0)
 
 class XmppServerTest(unittest.TestCase):
 
@@ -233,6 +254,9 @@ class XmppServerTest(unittest.TestCase):
   def getpeername(self):
     return ('', 0)
 
+  def close(self):
+    pass
+
   def testBasic(self):
     class FakeXmppServer(xmppserver.XmppServer):
       def accept(self2):
@@ -244,6 +268,8 @@ class XmppServerTest(unittest.TestCase):
     self.assertEqual(len(socket_map), 1)
     xmpp_server.handle_accept()
     self.assertEqual(len(socket_map), 2)
+    xmpp_server.close()
+    self.assertEqual(len(socket_map), 0)
 
 
 if __name__ == '__main__':
