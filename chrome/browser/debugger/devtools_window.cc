@@ -278,6 +278,9 @@ void DevToolsWindow::AddDevToolsExtensionsToClient() {
   const ExtensionService* extension_service =
       tab_contents_->tab_contents()->profile()->
           GetOriginalProfile()->GetExtensionService();
+  if (!extension_service)
+    return;
+
   const ExtensionList* extensions = extension_service->extensions();
 
   for (ExtensionList::const_iterator extension = extensions->begin();
