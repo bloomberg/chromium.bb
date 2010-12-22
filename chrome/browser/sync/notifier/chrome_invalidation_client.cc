@@ -149,20 +149,24 @@ void ChromeInvalidationClient::RegistrationStateChanged(
     invalidation::RegistrationState new_state,
     const invalidation::UnknownHint& unknown_hint) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  VLOG(1) << "RegistrationStateChanged to " << new_state;
+  VLOG(1) << "RegistrationStateChanged: "
+          << ObjectIdToString(object_id) << " " << new_state;
   if (new_state == invalidation::RegistrationState_UNKNOWN) {
     VLOG(1) << "is_transient=" << unknown_hint.is_transient()
             << ", message=" << unknown_hint.message();
   }
-  // TODO(akalin): Figure out something else to do if the failure
-  // isn't transient.  Even if it is transient, we may still want to
-  // add exponential back-off or limit the number of attempts.
+
   syncable::ModelType model_type;
-  if (ObjectIdToRealModelType(object_id, &model_type) &&
-      (new_state != invalidation::RegistrationState_REGISTERED)) {
-    registration_manager_->MarkRegistrationLost(model_type);
-  } else {
+  if (!ObjectIdToRealModelType(object_id, &model_type)) {
     LOG(WARNING) << "Could not get object id model type; ignoring";
+    return;
+  }
+
+  if (new_state != invalidation::RegistrationState_REGISTERED) {
+    // TODO(akalin): Figure out something else to do if the failure
+    // isn't transient.  Even if it is transient, we may still want to
+    // add exponential back-off or limit the number of attempts.
+    registration_manager_->MarkRegistrationLost(model_type);
   }
 }
 
