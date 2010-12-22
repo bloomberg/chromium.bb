@@ -31,7 +31,6 @@ class GtkKeyBindingsHandlerTest : public testing::Test {
     FilePath gtkrc;
     PathService::Get(chrome::DIR_TEST_DATA, &gtkrc);
     gtkrc = gtkrc.AppendASCII("gtk_key_bindings_test_gtkrc");
-    CHECK(file_util::PathExists(gtkrc)) << gtkrc.value();
 
     gtk_rc_parse(gtkrc.value().c_str());
 
@@ -49,7 +48,6 @@ class GtkKeyBindingsHandlerTest : public testing::Test {
   NativeWebKeyboardEvent NewNativeWebKeyboardEvent(guint keyval, guint state) {
     GdkKeymap* keymap =
         gdk_keymap_get_for_display(gtk_widget_get_display(window_));
-    CHECK(keymap != NULL);
 
     GdkKeymapKey *keys = NULL;
     gint n_keys = 0;
@@ -67,12 +65,9 @@ class GtkKeyBindingsHandlerTest : public testing::Test {
       event.group = keys[0].group;
       event.is_modifier = 0;
       g_free(keys);
-      LOG(INFO) << "Create key event: keyval:" << keyval
-                << " hardware_keycode:" << event.hardware_keycode
-                << " group:" << static_cast<unsigned int>(event.group);
       return NativeWebKeyboardEvent(&event);
     }
-    CHECK(false) << "Failed to create key event for keyval:" << keyval;
+    LOG(ERROR) << "Failed to create key event for keyval:" << keyval;
     return NativeWebKeyboardEvent();
   }
 
