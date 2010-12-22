@@ -3292,7 +3292,7 @@ void GLES2DecoderImpl::DoDrawArrays(
   // We have to check this here because the prototype for glDrawArrays
   // is GLint not GLsizei.
   if (first < 0) {
-    SetGLError(GL_INVALID_ENUM, "glDrawArrays: first < 0");
+    SetGLError(GL_INVALID_VALUE, "glDrawArrays: first < 0");
     return;
   }
 

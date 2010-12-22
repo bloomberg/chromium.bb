@@ -177,7 +177,8 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   // Check if we should allow GL_EXT_texture_format_BGRA8888
   if (ext.Desire("GL_EXT_texture_format_BGRA8888") &&
       (ext.Have("GL_EXT_texture_format_BGRA8888") ||
-       ext.Have("GL_APPLE_texture_format_BGRA8888"))) {
+       ext.Have("GL_APPLE_texture_format_BGRA8888") ||
+       ext.Have("GL_EXT_bgra"))) {
     enable_texture_format_bgra8888 = true;
   }
 
@@ -186,7 +187,9 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
     enable_read_format_bgra = true;
   }
 
-  if (ext.HaveAndDesire("GL_EXT_read_format_bgra")) {
+  if (ext.Desire("GL_EXT_read_format_bgra") &&
+      (ext.Have("GL_EXT_read_format_bgra") ||
+       ext.Have("GL_EXT_bgra"))) {
     enable_read_format_bgra = true;
   }
 
