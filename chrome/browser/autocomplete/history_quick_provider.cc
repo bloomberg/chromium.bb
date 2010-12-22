@@ -70,6 +70,10 @@ void HistoryQuickProvider::Start(const AutocompleteInput& input,
   }
 }
 
+// HistoryQuickProvider matches are currently not deletable.
+// TODO(mrossetti): Determine when a match should be deletable.
+void HistoryQuickProvider::DeleteMatch(const AutocompleteMatch& match) {}
+
 void HistoryQuickProvider::DoAutocomplete() {
   // Get the matching URLs from the DB.
   string16 term_string(WideToUTF16(autocomplete_input_.text()));

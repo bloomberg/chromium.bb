@@ -33,7 +33,10 @@ class HistoryQuickProvider : public HistoryProvider {
 
   // AutocompleteProvider. |minimal_changes| is ignored since there
   // is no asynch completion performed.
-  virtual void Start(const AutocompleteInput& input, bool minimal_changes);
+  virtual void Start(const AutocompleteInput& input,
+                     bool minimal_changes) OVERRIDE;
+
+  virtual void DeleteMatch(const AutocompleteMatch& match) OVERRIDE;
 
   // Performs the autocomplete matching and scoring.
   void DoAutocomplete();
