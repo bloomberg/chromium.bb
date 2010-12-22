@@ -194,7 +194,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
         Type http_type = Parse(http_scheme_prefix + text, desired_tld,
                                &http_parts, &http_scheme,
                                &http_canonicalized_url);
-        DCHECK_EQ(http_scheme, L"http");
+        DCHECK_EQ(http_scheme, std::wstring(L"http"));
 
         if ((http_type == URL || http_type == REQUESTED_URL) &&
             http_parts.username.is_nonempty() &&
