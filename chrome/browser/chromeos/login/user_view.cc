@@ -11,7 +11,6 @@
 #include "chrome/browser/chromeos/login/rounded_view.h"
 #include "gfx/canvas.h"
 #include "gfx/canvas_skia.h"
-#include "gfx/gtk_util.h"
 #include "gfx/rect.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -230,12 +229,6 @@ class PodImageView : public views::ImageView {
 
   virtual void OnMouseExited(const views::MouseEvent& event) {
     views::ImageView::SetImage(image_);
-  }
-
-  gfx::NativeCursor GetCursorForPoint(
-      views::Event::EventType event_type,
-      const gfx::Point& p) {
-    return gfx::GetCursor(GDK_HAND2);
   }
 
  private:
