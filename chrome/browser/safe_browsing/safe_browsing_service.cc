@@ -136,42 +136,35 @@ bool SafeBrowsingService::CanCheckUrl(const GURL& url) const {
 }
 
 void SafeBrowsingService::CheckDownloadUrlDone(
-    Client* client, const GURL& url, UrlCheckResult result) {
+    SafeBrowsingCheck* check, UrlCheckResult result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(enable_download_protection_);
   VLOG(1) << "CheckDownloadUrlDone: " << result;
-  client->OnSafeBrowsingResult(url, result);
+
+  if (checks_.find(check) == checks_.end() || !check->client)
+    return;
+  check->client->OnSafeBrowsingResult(check->url, result);
+  checks_.erase(check);
 }
 
-void SafeBrowsingService::CheckDownloadUrlOnSBThread(const GURL& url,
-                                                     Client* client) {
+void SafeBrowsingService::CheckDownloadUrlOnSBThread(SafeBrowsingCheck* check) {
   DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
   DCHECK(enable_download_protection_);
 
   std::vector<SBPrefix> prefix_hits;
 
-  if (!database_->ContainsDownloadUrl(url, &prefix_hits)) {
+  if (!database_->ContainsDownloadUrl(check->url, &prefix_hits)) {
     // Good, we don't have hash for this url prefix.
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(this,
                           &SafeBrowsingService::CheckDownloadUrlDone,
-                          client, url, URL_SAFE));
+                          check, URL_SAFE));
     return;
   }
 
-  // Now, we need to fetch the url from the safebrowsing backends.
-  // Needs to be asynchronous, since we could be in the constructor of a
-  // ResourceDispatcherHost event handler which can't pause there.
-  SafeBrowsingCheck* check = new SafeBrowsingCheck();
-
-  check->url = url;
-  check->client = client;
-  check->result = URL_SAFE;
   check->need_get_hash = true;
   check->prefix_hits.swap(prefix_hits);
-  checks_.insert(check);
-
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &SafeBrowsingService::OnCheckDone, check));
@@ -183,8 +176,17 @@ bool SafeBrowsingService::CheckDownloadUrl(const GURL& url,
   if (!enabled_ || !enable_download_protection_)
     return true;
 
+  // We need to check the database for url prefix, and later may fetch the url
+  // from the safebrowsing backends. These need to be asynchronous.
+  SafeBrowsingCheck* check = new SafeBrowsingCheck();
+
+  check->url = url;
+  check->client = client;
+  check->result = URL_SAFE;
+  checks_.insert(check);
   safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &SafeBrowsingService::CheckDownloadUrlOnSBThread, url, client));
+      this, &SafeBrowsingService::CheckDownloadUrlOnSBThread, check));
+
   return false;
 }
 
@@ -702,8 +704,7 @@ void SafeBrowsingService::DatabaseLoadComplete() {
 }
 
 void SafeBrowsingService::HandleChunkForDatabase(
-    const std::string& list_name,
-    SBChunkList* chunks) {
+    const std::string& list_name, SBChunkList* chunks) {
   DCHECK_EQ(MessageLoop::current(), safe_browsing_thread_->message_loop());
   if (chunks) {
     GetDatabase()->InsertChunks(list_name, *chunks);

@@ -323,11 +323,10 @@ class SafeBrowsingService
 
   // Invoked by CheckDownloadUrl. It checks the download URL on
   // safe_browsing_thread_.
-  void CheckDownloadUrlOnSBThread(const GURL& url, Client* client);
+  void CheckDownloadUrlOnSBThread(SafeBrowsingCheck* check);
 
   // Call the Client's callback in IO thread after CheckDownloadUrl finishes.
-  void CheckDownloadUrlDone(Client* client, const GURL& url,
-                            UrlCheckResult result);
+  void CheckDownloadUrlDone(SafeBrowsingCheck* check, UrlCheckResult result);
 
   // The factory used to instanciate a SafeBrowsingService object.
   // Useful for tests, so they can provide their own implementation of

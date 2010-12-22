@@ -7,9 +7,12 @@
 // service.
 
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
+#include "base/ref_counted.h"
 #include "base/sha2.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
+#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -20,6 +23,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
+
+using base::Histogram;
+using base::StatisticsRecorder;
 
 namespace {
 
@@ -47,19 +53,17 @@ class TestSafeBrowsingDatabase :  public SafeBrowsingDatabase {
                                  std::vector<SBPrefix>* prefix_hits,
                                  std::vector<SBFullHashResult>* full_hits,
                                  base::Time last_update) {
-    base::hash_map<std::string, Hits>::const_iterator
-        badurls_it = badurls_.find(url.spec());
-    if (badurls_it == badurls_.end())
-      return false;
-    *prefix_hits = badurls_it->second.prefix_hits;
-    *full_hits = badurls_it->second.full_hits;
-    return true;
+    return ContainsUrl(safe_browsing_util::kMalwareList,
+                       safe_browsing_util::kPhishingList,
+                       url, prefix_hits, full_hits);
   }
 
   virtual bool ContainsDownloadUrl(const GURL& url,
                                    std::vector<SBPrefix>* prefix_hits) {
-    ADD_FAILURE() << "Not implemented.";
-    return false;
+    std::vector<SBFullHashResult> full_hits;
+    return ContainsUrl(safe_browsing_util::kBinUrlList,
+                       safe_browsing_util::kBinHashList,
+                       url, prefix_hits, &full_hits);
   }
 
   virtual bool UpdateStarted(std::vector<SBListChunkRanges>* lists) {
@@ -84,16 +88,42 @@ class TestSafeBrowsingDatabase :  public SafeBrowsingDatabase {
 
   // Fill up the database with test URL.
   void AddUrl(const GURL& url,
+              const std::string& list_name,
               const std::vector<SBPrefix>& prefix_hits,
               const std::vector<SBFullHashResult>& full_hits) {
+    badurls_[url.spec()].list_name = list_name;
     badurls_[url.spec()].prefix_hits = prefix_hits;
     badurls_[url.spec()].full_hits = full_hits;
   }
+
  private:
   struct Hits {
+    std::string list_name;
     std::vector<SBPrefix> prefix_hits;
     std::vector<SBFullHashResult> full_hits;
   };
+
+  bool ContainsUrl(const std::string& list_name0,
+                   const std::string& list_name1,
+                   const GURL& url,
+                   std::vector<SBPrefix>* prefix_hits,
+                   std::vector<SBFullHashResult>* full_hits) {
+    base::hash_map<std::string, Hits>::const_iterator
+        badurls_it = badurls_.find(url.spec());
+
+    if (badurls_it == badurls_.end())
+      return false;
+
+    if (badurls_it->second.list_name == list_name0 ||
+        badurls_it->second.list_name == list_name1) {
+      *prefix_hits = badurls_it->second.prefix_hits;
+      *full_hits = badurls_it->second.full_hits;
+      return true;
+    }
+
+    return false;
+  }
+
   base::hash_map<std::string, Hits> badurls_;
 };
 
@@ -193,7 +223,6 @@ class TestSBProtocolManagerFactory : public SBProtocolManagerFactory {
   TestProtocolManager* pm_;
 };
 
-
 // Tests the safe browsing blocking page in a browser.
 class SafeBrowsingServiceTest : public InProcessBrowserTest {
  public:
@@ -236,6 +265,8 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     // This test will fill up the database using testing prefixes
     // and urls.
     command_line->AppendSwitch(switches::kSbDisableAutoUpdate);
+
+    command_line->AppendSwitch(switches::kSbEnableDownloadProtection);
   }
 
   virtual void SetUpInProcessBrowserTestFixture() {
@@ -253,7 +284,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     // full hash is hit in database's local cache.
     std::vector<SBFullHashResult> empty_full_hits;
     TestSafeBrowsingDatabase* db = db_factory_.GetDb();
-    db->AddUrl(url, prefix_hits, empty_full_hits);
+    db->AddUrl(url, full_hash.list_name, prefix_hits, empty_full_hits);
 
     TestProtocolManager* pm = pm_factory_.GetProtocolManager();
     pm->SetGetFullHashResponse(url, full_hash);
@@ -273,11 +304,14 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
 };
 
 const char kEmptyPage[] = "files/empty.html";
-const char kMalwarePage[] = "files/safe_browsing/malware.html";
+const char kMalwareFile[] = "files/downloads/dangerous/dangerous.exe";
 const char kMalwareIframe[] = "files/safe_browsing/malware_iframe.html";
+const char kMalwarePage[] = "files/safe_browsing/malware.html";
 
+// This test goes through DownloadResourceHandler.
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, Malware) {
   GURL url = test_server()->GetURL(kEmptyPage);
+
   // After adding the url to safebrowsing database and getfullhash result,
   // we should see the interstitial page.
   SBFullHashResult malware_full_hash;
@@ -287,6 +321,73 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, Malware) {
   SetupResponseForUrl(url, malware_full_hash);
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_TRUE(ShowingInterstitialPage());
+}
+
+// This test uses SafeBrowsingService::Client to directly interact with
+// SafeBrowsingService.
+class TestSBClient
+    : public base::RefCountedThreadSafe<TestSBClient>,
+      public SafeBrowsingService::Client {
+ public:
+  TestSBClient() : result_(SafeBrowsingService::URL_SAFE),
+                   safe_browsing_service_(g_browser_process->
+                                          resource_dispatcher_host()->
+                                          safe_browsing_service()) {
+  }
+
+  int GetResult() {
+    return result_;
+  }
+
+  void CheckUrl(const GURL& url) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableMethod(this, &TestSBClient::CheckUrlOnIOThread, url));
+    ui_test_utils::RunMessageLoop();  // Will stop in OnDownloadUrlCheckResult.
+  }
+
+ private:
+  void CheckUrlOnIOThread(const GURL& url) {
+    safe_browsing_service_->CheckDownloadUrl(url, this);
+  }
+
+  // Called when the result of checking a download URL is known.
+  void OnDownloadUrlCheckResult(const GURL& url,
+                                SafeBrowsingService::UrlCheckResult result) {
+    result_ = result;
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &TestSBClient::DownloadUrlCheckDone));
+  }
+
+  void DownloadUrlCheckDone() {
+    MessageLoopForUI::current()->Quit();
+  }
+
+  SafeBrowsingService::UrlCheckResult result_;
+  SafeBrowsingService* safe_browsing_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestSBClient);
+};
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrl) {
+  GURL badbin_url = test_server()->GetURL(kMalwareFile);
+
+  scoped_refptr<TestSBClient> client(new TestSBClient);
+  client->CheckUrl(badbin_url);
+
+  // Since badbin_url is not in database, it is considered to be safe.
+  EXPECT_EQ(SafeBrowsingService::URL_SAFE, client->GetResult());
+
+  SBFullHashResult badbinurl_full_hash;
+  int chunk_id = 0;
+  GenerateFullhashResult(badbin_url, safe_browsing_util::kBinUrlList,
+                         chunk_id, &badbinurl_full_hash);
+  SetupResponseForUrl(badbin_url, badbinurl_full_hash);
+
+  client->CheckUrl(badbin_url);
+
+  // Now, the badbin_url is not safe since it is added to download database.
+  EXPECT_EQ(SafeBrowsingService::BINARY_MALWARE, client->GetResult());
 }
 
 }  // namespace
