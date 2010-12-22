@@ -97,6 +97,9 @@ TextRun_Dev& TextRun_Dev::operator=(const TextRun_Dev& other) {
 
 // Font ------------------------------------------------------------------------
 
+Font_Dev::Font_Dev() : Resource() {
+}
+
 Font_Dev::Font_Dev(PP_Resource resource) : Resource(resource) {
 }
 
@@ -110,6 +113,10 @@ Font_Dev::Font_Dev(const FontDescription_Dev& description) {
 Font_Dev::Font_Dev(const Font_Dev& other) : Resource(other) {
 }
 
+Font_Dev& Font_Dev::operator=(const Font_Dev& other) {
+  Resource::operator=(other);
+  return *this;
+}
 
 bool Font_Dev::Describe(FontDescription_Dev* description,
                         PP_FontMetrics_Dev* metrics) const {
