@@ -316,19 +316,6 @@ static inline void FixupRef(const std::string& text,
   url->append(text, part.begin, part.len);
 }
 
-static void OffsetComponent(int offset, url_parse::Component* part) {
-  DCHECK(part);
-
-  if (part->is_valid()) {
-    // Offset the location of this component.
-    part->begin += offset;
-
-    // This part might not have existed in the original text.
-    if (part->begin < 0)
-      part->reset();
-  }
-}
-
 static bool HasPort(const std::string& original_text,
                     const url_parse::Component& scheme_component) {
   // Find the range between the ":" and the "/".
@@ -598,4 +585,17 @@ GURL URLFixerUpper::FixupRelativeFile(const std::wstring& base_dir,
                                       const std::wstring& text) {
   return FixupRelativeFile(FilePath::FromWStringHack(base_dir),
                            FilePath::FromWStringHack(text));
+}
+
+void URLFixerUpper::OffsetComponent(int offset, url_parse::Component* part) {
+  DCHECK(part);
+
+  if (part->is_valid()) {
+    // Offset the location of this component.
+    part->begin += offset;
+
+    // This part might not have existed in the original text.
+    if (part->begin < 0)
+      part->reset();
+  }
 }

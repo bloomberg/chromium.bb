@@ -225,17 +225,6 @@ AutocompleteMatch::Type AutocompleteEditModel::CurrentTextType() const {
   return match.type;
 }
 
-bool AutocompleteEditModel::GetURLForText(const std::wstring& text,
-                                          GURL* url) const {
-  const AutocompleteInput::Type type = AutocompleteInput::Parse(
-      UserTextFromDisplayText(text), std::wstring(), NULL, NULL);
-  if (type != AutocompleteInput::URL)
-    return false;
-
-  *url = URLFixerUpper::FixupURL(WideToUTF8(text), std::string());
-  return true;
-}
-
 void AutocompleteEditModel::AdjustTextForCopy(int sel_min,
                                               bool is_all_selected,
                                               std::wstring* text,
@@ -792,6 +781,18 @@ void AutocompleteEditModel::GetInfoForCurrentText(
         UserTextFromDisplayText(view_->GetText()), GetDesiredTLD(), true,
         match, alternate_nav_url);
   }
+}
+
+bool AutocompleteEditModel::GetURLForText(const std::wstring& text,
+                                          GURL* url) const {
+  GURL parsed_url;
+  const AutocompleteInput::Type type = AutocompleteInput::Parse(
+      UserTextFromDisplayText(text), std::wstring(), NULL, NULL, &parsed_url);
+  if (type != AutocompleteInput::URL)
+    return false;
+
+  *url = parsed_url;
+  return true;
 }
 
 // Returns true if suggested search text should be shown for the specified match

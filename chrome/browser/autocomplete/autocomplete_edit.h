@@ -179,14 +179,6 @@ class AutocompleteEditModel : public NotificationObserver {
   // Returns the match type for the current edit contents.
   AutocompleteMatch::Type CurrentTextType() const;
 
-  // Returns true if |text| (which is display text in the current context)
-  // parses as a URL, and in that case sets |url| to the calculated URL.
-  // Subtle note: This ignores the desired_tld_ (unlike GetDataForURLExport()
-  // and CurrentTextIsURL()).  The view needs this because it calls this
-  // function during copy handling, when the control key is down to trigger the
-  // copy.
-  bool GetURLForText(const std::wstring& text, GURL* url) const;
-
   // Invoked to adjust the text before writting to the clipboard for a copy
   // (e.g. by adding 'http' to the front). |sel_min| gives the minimum position
   // of the selection e.g. min(selection_start, selection_end). |text| is the
@@ -390,6 +382,14 @@ class AutocompleteEditModel : public NotificationObserver {
   // nav URL, if |alternate_nav_url| is non-NULL and there is such a URL.
   void GetInfoForCurrentText(AutocompleteMatch* match,
                              GURL* alternate_nav_url) const;
+
+  // Returns true if |text| (which is display text in the current context)
+  // parses as a URL, and in that case sets |url| to the calculated URL.
+  // Subtle note: This ignores the desired_tld_ (unlike GetDataForURLExport()
+  // and CurrentTextIsURL()).  The view needs this because it calls this
+  // function during copy handling, when the control key is down to trigger the
+  // copy.
+  bool GetURLForText(const std::wstring& text, GURL* url) const;
 
   // Determines the suggested search text and invokes OnSetSuggestedSearchText
   // on the controller.

@@ -288,18 +288,25 @@ TEST(AutocompleteTest, InputType) {
     { L"foo+bar.com", AutocompleteInput::UNKNOWN },
     { L"\"foo:bar\"", AutocompleteInput::QUERY },
     { L"link:foo.com", AutocompleteInput::UNKNOWN },
+    { L"foo:81", AutocompleteInput::URL },
     { L"www.foo.com:81", AutocompleteInput::URL },
     { L"localhost:8080", AutocompleteInput::URL },
     { L"foo.com:123456", AutocompleteInput::QUERY },
     { L"foo.com:abc", AutocompleteInput::QUERY },
     { L"1.2.3.4:abc", AutocompleteInput::QUERY },
     { L"user@foo.com", AutocompleteInput::UNKNOWN },
-    { L"user:pass@foo.com", AutocompleteInput::UNKNOWN },
+    { L"user:pass@", AutocompleteInput::UNKNOWN },
+    { L"user:pass@!foo.com", AutocompleteInput::UNKNOWN },
+    { L"user:pass@foo", AutocompleteInput::URL },
+    { L"user:pass@foo.c", AutocompleteInput::URL },
+    { L"user:pass@foo.com", AutocompleteInput::URL },
+    { L"user:pass@foo.com:81", AutocompleteInput::URL },
+    { L"user:pass@foo:81", AutocompleteInput::URL },
     { L"1.2", AutocompleteInput::UNKNOWN },
     { L"1.2/45", AutocompleteInput::UNKNOWN },
     { L"1.2:45", AutocompleteInput::UNKNOWN },
     { L"user@1.2:45", AutocompleteInput::UNKNOWN },
-    { L"user:foo@1.2:45", AutocompleteInput::UNKNOWN },
+    { L"user:pass@1.2:45", AutocompleteInput::URL },
     { L"ps/2 games", AutocompleteInput::UNKNOWN },
     { L"en.wikipedia.org/wiki/James Bond", AutocompleteInput::URL },
     // In Chrome itself, mailto: will get handled by ShellExecute, but in
@@ -344,10 +351,10 @@ TEST(AutocompleteTest, InputType) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {
+    SCOPED_TRACE(input_cases[i].input);
     AutocompleteInput input(input_cases[i].input, std::wstring(), true, false,
                             true, false);
-    EXPECT_EQ(input_cases[i].type, input.type()) << "Input: " <<
-        input_cases[i].input;
+    EXPECT_EQ(input_cases[i].type, input.type());
   }
 }
 

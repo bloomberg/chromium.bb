@@ -68,19 +68,17 @@ AutocompleteInput::AutocompleteInput(const std::wstring& text,
   if (TrimWhitespace(text, TRIM_ALL, &text_) & TRIM_TRAILING)
     prevent_inline_autocomplete_ = true;
 
-  type_ = Parse(text_, desired_tld, &parts_, &scheme_);
+  GURL canonicalized_url;
+  type_ = Parse(text_, desired_tld, &parts_, &scheme_, &canonicalized_url);
 
   if (type_ == INVALID)
     return;
 
-  if ((type_ == UNKNOWN) || (type_ == REQUESTED_URL) || (type_ == URL)) {
-    GURL canonicalized_url(URLFixerUpper::FixupURL(WideToUTF8(text_),
-                                                   WideToUTF8(desired_tld_)));
-    if (canonicalized_url.is_valid() &&
-        (!canonicalized_url.IsStandard() || canonicalized_url.SchemeIsFile() ||
-         !canonicalized_url.host().empty()))
-      canonicalized_url_ = canonicalized_url;
-  }
+  if (((type_ == UNKNOWN) || (type_ == REQUESTED_URL) || (type_ == URL)) &&
+      canonicalized_url.is_valid() &&
+      (!canonicalized_url.IsStandard() || canonicalized_url.SchemeIsFile() ||
+       !canonicalized_url.host().empty()))
+    canonicalized_url_ = canonicalized_url;
 
   RemoveForcedQueryStringIfNecessary(type_, &text_);
 }
@@ -116,7 +114,8 @@ AutocompleteInput::Type AutocompleteInput::Parse(
     const std::wstring& text,
     const std::wstring& desired_tld,
     url_parse::Parsed* parts,
-    std::wstring* scheme) {
+    std::wstring* scheme,
+    GURL* canonicalized_url) {
   const size_t first_non_white = text.find_first_not_of(kWhitespaceWide, 0);
   if (first_non_white == std::wstring::npos)
     return INVALID;  // All whitespace.
@@ -137,6 +136,10 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   const std::wstring parsed_scheme(URLFixerUpper::SegmentURL(text, parts));
   if (scheme)
     *scheme = parsed_scheme;
+  if (canonicalized_url) {
+    *canonicalized_url = URLFixerUpper::FixupURL(WideToUTF8(text),
+                                                 WideToUTF8(desired_tld));
+  }
 
   if (parsed_scheme == L"file") {
     // A user might or might not type a scheme when entering a file URL.  In
@@ -167,9 +170,10 @@ AutocompleteInput::Type AutocompleteInput::Parse(
       return URL;
 
     // Finally, check and see if the user has explicitly opened this scheme as
-    // a URL before.  We need to do this last because some schemes may be in
-    // here as "blocked" (e.g. "javascript") because we don't want pages to open
-    // them, but users still can.
+    // a URL before, or if the "scheme" is actually a username.  We need to do
+    // this last because some schemes (e.g. "javascript") may be treated as
+    // "blocked" by the external protocol handler because we don't want pages to
+    // open them, but users still can.
     // TODO(viettrungluu): get rid of conversion.
     switch (ExternalProtocolHandler::GetBlockState(WideToUTF8(parsed_scheme))) {
       case ExternalProtocolHandler::DONT_BLOCK:
@@ -180,13 +184,55 @@ AutocompleteInput::Type AutocompleteInput::Parse(
         // to at all.
         return QUERY;
 
-      default:
-        // We don't know about this scheme.  It's likely to be a search operator
+      default: {
+        // We don't know about this scheme.  It might be that the user typed a
+        // URL of the form "username:password@foo.com".
+        const std::wstring http_scheme_prefix = L"http://";
+        url_parse::Parsed http_parts;
+        std::wstring http_scheme;
+        GURL http_canonicalized_url;
+        Type http_type = Parse(http_scheme_prefix + text, desired_tld,
+                               &http_parts, &http_scheme,
+                               &http_canonicalized_url);
+        DCHECK_EQ(http_scheme, L"http");
+
+        if ((http_type == URL || http_type == REQUESTED_URL) &&
+            http_parts.username.is_nonempty() &&
+            http_parts.password.is_nonempty()) {
+          // Manually re-jigger the parsed parts to match |text| (without the
+          // http scheme added).
+          http_parts.scheme.reset();
+          url_parse::Component* components[] = {
+            &http_parts.username,
+            &http_parts.password,
+            &http_parts.host,
+            &http_parts.port,
+            &http_parts.path,
+            &http_parts.query,
+            &http_parts.ref,
+          };
+          for (size_t i = 0; i < arraysize(components); ++i) {
+            URLFixerUpper::OffsetComponent(
+                -static_cast<int>(http_scheme_prefix.size()), components[i]);
+          }
+
+          *parts = http_parts;
+          if (scheme)
+            scheme->clear();
+          if (canonicalized_url)
+            *canonicalized_url = http_canonicalized_url;
+
+          return http_type;
+        }
+
+        // We don't know about this scheme and it doesn't look like the user
+        // typed a username and password.  It's likely to be a search operator
         // like "site:" or "link:".  We classify it as UNKNOWN so the user has
         // the option of treating it as a URL if we're wrong.
         // Note that SegmentURL() is smart so we aren't tricked by "c:\foo" or
         // "www.example.com:81" in this case.
         return UNKNOWN;
+      }
     }
   }
 
@@ -352,7 +398,7 @@ void AutocompleteInput::ParseForEmphasizeComponents(
     url_parse::Component* host) {
   url_parse::Parsed parts;
   std::wstring scheme_str;
-  Parse(text, desired_tld, &parts, &scheme_str);
+  Parse(text, desired_tld, &parts, &scheme_str, NULL);
 
   *scheme = parts.scheme;
   *host = parts.host;
@@ -365,7 +411,7 @@ void AutocompleteInput::ParseForEmphasizeComponents(
     // Obtain the URL prefixed by view-source and parse it.
     std::wstring real_url(text.substr(after_scheme_and_colon));
     url_parse::Parsed real_parts;
-    AutocompleteInput::Parse(real_url, desired_tld, &real_parts, NULL);
+    AutocompleteInput::Parse(real_url, desired_tld, &real_parts, NULL, NULL);
     if (real_parts.scheme.is_nonempty() || real_parts.host.is_nonempty()) {
       if (real_parts.scheme.is_nonempty()) {
         *scheme = url_parse::Component(
@@ -392,8 +438,10 @@ std::wstring AutocompleteInput::FormattedStringWithEquivalentMeaning(
   if (!net::CanStripTrailingSlash(url))
     return formatted_url;
   const std::wstring url_with_path(formatted_url + L"/");
-  return (AutocompleteInput::Parse(formatted_url, std::wstring(), NULL, NULL) ==
-          AutocompleteInput::Parse(url_with_path, std::wstring(), NULL, NULL)) ?
+  return (AutocompleteInput::Parse(formatted_url, std::wstring(), NULL, NULL,
+                                   NULL) ==
+          AutocompleteInput::Parse(url_with_path, std::wstring(), NULL, NULL,
+                                   NULL)) ?
       formatted_url : url_with_path;
 }
 

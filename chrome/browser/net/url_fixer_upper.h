@@ -11,6 +11,7 @@
 #include "googleurl/src/gurl.h"
 
 namespace url_parse {
+  struct Component;
   struct Parsed;
 }
 
@@ -61,6 +62,14 @@ namespace URLFixerUpper {
   // Deprecated temporary compatibility function.
   GURL FixupRelativeFile(const std::wstring& base_dir,
                          const std::wstring& text);
+
+  // Offsets the beginning index of |part| by |offset|, which is allowed to be
+  // negative.  In some cases, the desired component does not exist at the given
+  // offset.  For example, when converting from "http://foo" to "foo", the
+  // scheme component no longer exists.  In such a case, the beginning index is
+  // set to 0.
+  // Does nothing if |part| is invalid.
+  void OffsetComponent(int offset, url_parse::Component* part);
 
   // For paths like ~, we use $HOME for the current user's home
   // directory.  For tests, we allow our idea of $HOME to be overriden
