@@ -18,128 +18,154 @@
 #
 # Tests beginning with '-' will be excluded.  This can be used to enforce
 # exclusions for a particular platform.
+# Names beginning with '@' will be treated as suite names and will be
+# recursively expanded.
 
 {
-  'all': [
-    'autofill',
-    'bookmark_bar',
-    'bookmarks',
-    'browser',
-    'browsing_data',
-    'codesign',
-    'content',
-    'cookies',
-    'crash_reporter',
-    'databases',
-    # crbug.com/66714
-    '-databases.DatabasesTest.testIncognitoDBPersistentAcrossTabs',
-    'downloads',
-    # crbug.com/67233
-    '-downloads.DownloadsTest.testDownloadIncognitoAndRegular',
-    'find_in_page',
-    # Turkish I problem. crbug.com/60638
-    '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
-    'execute_javascript',
-    'history',
-    'imports',
-    'infobars',
-    'navigation',
-    'notifications',
-    # crbug.com/66072
-    '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
-    '-notifications.NotificationsTest.testKillNotificationProcess',
-    'ntp',
-    'omnibox',
-    'passwords',
-    'pdf',
-    'plugins',
-    'popups',
-    'prefs',
-    'search_engines',
-    # crbug.com/67628
-    '-search_engines.SearchEnginesTest.testTabToSearch',
-    'special_tabs',
-    # 'sync',  crbug.com/60970
-    'test_basic.SimpleTest.testCanOpenGoogle',
-    'themes',
-    # Disable translate test until it can run fine on golo. crbug.com/61256
-    # 'translate',
-    ## This test fails due to crbug.com/35485
-    # '-translate.TranslateTest.testBarNotVisibleOnSSLErrorPage',
-    ## This test fails due to crbug.com/50706
-    # '-translate.TranslateTest.testToggleTranslateOption',
-  ],
+  # The CONTINUOUS suite includes tests that we expect to pass on a
+  # continuous builder.
+  'CONTINUOUS': {
+    'all': [
+      'autofill',
+      'bookmark_bar',
+      'bookmarks',
+      'browser',
+      'browsing_data',
+      'codesign',
+      'content',
+      'cookies',
+      'crash_reporter',
+      'databases',
+      # crbug.com/66714
+      '-databases.DatabasesTest.testIncognitoDBPersistentAcrossTabs',
+      'downloads',
+      # crbug.com/67233
+      '-downloads.DownloadsTest.testDownloadIncognitoAndRegular',
+      'find_in_page',
+      # Turkish I problem. crbug.com/60638
+      '-find_in_page.FindMatchTests.testLocalizationAndCaseOrder',
+      'execute_javascript',
+      'history',
+      'imports',
+      'infobars',
+      'navigation',
+      'notifications',
+      # crbug.com/66072
+      '-notifications.NotificationsTest.testNotificationOrderAfterClosingOne',
+      '-notifications.NotificationsTest.testKillNotificationProcess',
+      'ntp',
+      'omnibox',
+      'passwords',
+      'pdf',
+      'plugins',
+      'popups',
+      'prefs',
+      'search_engines',
+      # crbug.com/67628
+      '-search_engines.SearchEnginesTest.testTabToSearch',
+      'special_tabs',
+      # 'sync',  crbug.com/60970
+      'test_basic.SimpleTest.testCanOpenGoogle',
+      'themes',
+    ],
 
-  'win': [
-    # testBookmarkBarVisible fails on windows. crbug.com/42823
-    '-bookmark_bar.BookmarkBarTest.testBookmarkBarVisible',
-    # crbug.com/64664
-    '-databases.DatabasesTest.testReloadActiveTab',
-    '-databases.DatabasesTest.testModificationsPersistAfterRendererCrash',
-    # Some download test fails on win official builder, only thru buildbot when
-    # downloading the small zip file.
-    # crbug.com/50481, crbug.com/54942
-    '-downloads.DownloadsTest.testZip',
-    '-downloads.DownloadsTest.testRemoveDownload',
-    '-prefs.PrefsTest.testDownloadDirPref',
-    # crbug.com/64269
-    '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
-    # crbug.com/67588
-    '-passwords.PasswordTest.testSavedPasswordInTabsAndWindows',
-  ],
+    'win': [
+      # testBookmarkBarVisible fails on windows. crbug.com/42823
+      '-bookmark_bar.BookmarkBarTest.testBookmarkBarVisible',
+      # crbug.com/64664
+      '-databases.DatabasesTest.testReloadActiveTab',
+      '-databases.DatabasesTest.testModificationsPersistAfterRendererCrash',
+      # Some download test fails on win official builder, only thru buildbot
+      # when downloading the small zip file.
+      # crbug.com/50481, crbug.com/54942
+      '-downloads.DownloadsTest.testZip',
+      '-downloads.DownloadsTest.testRemoveDownload',
+      '-prefs.PrefsTest.testDownloadDirPref',
+      # crbug.com/64269
+      '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
+      # crbug.com/67588
+      '-passwords.PasswordTest.testSavedPasswordInTabsAndWindows',
+    ],
 
-  'mac': [
-    # Keychain popups make password & autofill tests difficult. crbug.com/49378
-    '-passwords',
-    '-autofill',
-    # codesign tests should run *after* signing. crbug.com/50481
-    '-codesign',
-    '-content.ContentTest.testThreeWindows',  # crbug.com/47457
-  ],
+    'mac': [
+      # Keychain popups make password & autofill tests difficult.
+      # crbug.com/49378
+      '-passwords',
+      '-autofill',
+      # codesign tests should run *after* signing. crbug.com/50481
+      '-codesign',
+      '-content.ContentTest.testThreeWindows',  # crbug.com/47457
+    ],
 
-  'linux': [  # linux != chromeos
-    '-browser.BrowserTest.testWindowResize',  # crbug.com/44963
-    '-browser.BrowserTest.testFlashLoadsAfterKill',  # crbug.com/63039
-    '-content.ContentTest.testThreeWindows',  # crbug.com/47457
-    # crbug.com/64664
-    '-databases.DatabasesTest.testReloadActiveTab',
-    '-databases.DatabasesTest.testModificationsPersistAfterRendererCrash',
-    # crbug.com/64269
-    '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
-  ],
+    'linux': [  # linux != chromeos
+      '-browser.BrowserTest.testWindowResize',  # crbug.com/44963
+      '-browser.BrowserTest.testFlashLoadsAfterKill',  # crbug.com/63039
+      '-content.ContentTest.testThreeWindows',  # crbug.com/47457
+      # crbug.com/64664
+      '-databases.DatabasesTest.testReloadActiveTab',
+      '-databases.DatabasesTest.testModificationsPersistAfterRendererCrash',
+      # crbug.com/64269
+      '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
+    ],
 
-  # ChromeOS is linux, but note that this section does not include the
-  # entries in the linux section above.
-  'chromeos': [
-    # you cannot resize browser window on chromeos
-    '-browser.BrowserTest.testWindowResize',
-    # Importer tests are invalid on chromeos since chrome is the only browser
-    '-imports',
+    # ChromeOS is linux, but note that this section does not include the
+    # entries in the linux section above.
+    'chromeos': [
+      # you cannot resize browser window on chromeos
+      '-browser.BrowserTest.testWindowResize',
+      # Importer tests are invalid on chromeos since chrome is the only browser
+      '-imports',
 
-    # crbug.com/42823
-    '-bookmark_bar.BookmarkBarTest.testBookmarkBarVisible',
-    # chrome/test/data/plugins dir missing in autotest pkg. crosbug.com/6855
-    '-browser.BrowserTest.testCanLoadFlash',
-    '-browser.BrowserTest.testFlashLoadsAfterKill',
-    '-browser.BrowserTest.testSingleFlashPluginProcess',
-    '-infobars.InfobarTest.testPluginCrashInfobar',
-    '-omnibox',  # http://crbug.com/44203
-    # crosbug.com/6856
-    '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
-    '-prefs.PrefsTest.testSessionRestoreURLs',
-    '-prefs.PrefsTest.testSessionRestore',
-    '-translate.TranslateTest.testSessionRestore',
-    '-downloads.DownloadsTest.testNoUnsafeDownloadsOnRestart',
-    '-downloads.DownloadsTest.testZip',
-    '-downloads.DownloadsTest.testZipInIncognito',
-    '-downloads.DownloadsTest.testCrazyFilenames',
-    '-downloads.DownloadsTest.testBigZip',
-    '-downloads.DownloadsTest.testCancelDownload',
-    '-downloads.DownloadsTest.testPauseAndResume',
-    '-translate.TranslateTest.testDownloadsNotTranslated',
-    # crosbug.com/9499
-    '-crash_reporter.CrashReporterTest.testRendererCrash',
-    # crbug.com/64269
-    '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
-  ],
+      # crbug.com/42823
+      '-bookmark_bar.BookmarkBarTest.testBookmarkBarVisible',
+      # chrome/test/data/plugins dir missing in autotest pkg. crosbug.com/6855
+      '-browser.BrowserTest.testCanLoadFlash',
+      '-browser.BrowserTest.testFlashLoadsAfterKill',
+      '-browser.BrowserTest.testSingleFlashPluginProcess',
+      '-infobars.InfobarTest.testPluginCrashInfobar',
+      '-omnibox',  # http://crbug.com/44203
+      # crosbug.com/6856
+      '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
+      '-prefs.PrefsTest.testSessionRestoreURLs',
+      '-prefs.PrefsTest.testSessionRestore',
+      '-downloads.DownloadsTest.testNoUnsafeDownloadsOnRestart',
+      '-downloads.DownloadsTest.testZip',
+      '-downloads.DownloadsTest.testZipInIncognito',
+      '-downloads.DownloadsTest.testCrazyFilenames',
+      '-downloads.DownloadsTest.testBigZip',
+      '-downloads.DownloadsTest.testCancelDownload',
+      '-downloads.DownloadsTest.testPauseAndResume',
+      # crosbug.com/9499
+      '-crash_reporter.CrashReporterTest.testRendererCrash',
+      # crbug.com/64269
+      '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
+    ],
+  },
+
+  # The FULL suite includes CONTINUOUS, and more.
+  'FULL': {
+    'all': [
+      '@CONTINUOUS',
+      'translate',
+      # This test fails due to crbug.com/35485
+      '-translate.TranslateTest.testBarNotVisibleOnSSLErrorPage',
+      # This test fails due to crbug.com/50706
+      '-translate.TranslateTest.testToggleTranslateOption',
+    ],
+
+    'win': [
+    ],
+
+    'mac': [
+    ],
+
+    'linux': [
+    ],
+
+    'chromeos': [
+      # crosbug.com/6856
+      '-translate.TranslateTest.testSessionRestore',
+      '-translate.TranslateTest.testDownloadsNotTranslated',
+    ],
+  }
 }

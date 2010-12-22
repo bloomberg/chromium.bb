@@ -2107,6 +2107,12 @@ class Main(object):
         '', '--repeat', type='int', default=1,
         help='Number of times to repeat the tests. Useful to determine '
              'flakiness. Defaults to 1.')
+    parser.add_option(
+        '-S', '--suite', type='string', default='FULL',
+        help='Name of the suite to load.  Defaults to "FULL".')
+    parser.add_option(
+        '-L', '--list-tests', action='store_true', default=False,
+        help='List all tests, and exit.')
 
     self._options, self._args = parser.parse_args()
 
@@ -2135,7 +2141,7 @@ class Main(object):
     return os.path.dirname(__file__)
 
   @staticmethod
-  def _GetTestsFromName(name):
+  def _ImportTestsFromName(name):
     """Get a list of all test names from the given string.
 
     Args:
@@ -2198,12 +2204,13 @@ class Main(object):
                             os.listdir(self.TestsDir()))
     all_tests_modules = [os.path.splitext(x)[0] for x in all_test_files]
     all_tests = reduce(lambda x, y: x + y,
-                       map(self._GetTestsFromName, all_tests_modules))
+                       map(self._ImportTestsFromName, all_tests_modules))
     # Fetch tests included by PYAUTO_TESTS
     pyauto_tests_file = os.path.join(self.TestsDir(), self._tests_filename)
     pyauto_tests = reduce(lambda x, y: x + y,
-                          map(self._GetTestsFromName,
-                              self._LoadTestNamesFrom(pyauto_tests_file)))
+                          map(self._ImportTestsFromName,
+                              self._ExpandTestNamesFrom(pyauto_tests_file,
+                                                        self._options.suite)))
     for a_test in all_tests:
       if a_test not in pyauto_tests:
         print a_test
@@ -2219,8 +2226,8 @@ class Main(object):
         return True
     return False
 
-  def _LoadTests(self, args):
-    """Returns a suite of tests loaded from the given args.
+  def _ExpandTestNames(self, args):
+    """Returns a list of tests loaded from the given args.
 
     The given args can be either a module (ex: module1) or a testcase
     (ex: module2.MyTestCase) or a test (ex: module1.MyTestCase.testX)
@@ -2229,6 +2236,16 @@ class Main(object):
     Args:
       args: [module1, module2, module3.testcase, module4.testcase.testX]
             These modules or test cases or tests should be importable
+
+      Returns:
+        a list of expanded test names.  Example:
+          [
+            'module1.TestCase1.testA',
+            'module1.TestCase1.testB',
+            'module2.TestCase2.testX',
+            'module3.testcase.testY',
+            'module4.testcase.testX'
+          ]
     """
     if not args:  # Load tests ourselves
       if self._HasTestCases('__main__'):    # we are running a test script
@@ -2239,28 +2256,50 @@ class Main(object):
         if not os.path.exists(pyauto_tests_file):
           logging.warn("%s missing. Cannot load tests." % pyauto_tests_file)
         else:
-          args = self._LoadTestNamesFrom(pyauto_tests_file)
-    args = args * self._options.repeat
-    logging.debug("Loading %d tests from %s", len(args), args)
-    loaded_tests = unittest.defaultTestLoader.loadTestsFromNames(args)
-    return loaded_tests
+          args = self._ExpandTestNamesFrom(pyauto_tests_file,
+                                           self._options.suite)
+    return args
 
-  def _LoadTestNamesFrom(self, filename):
-    modules= PyUITest.EvalDataFrom(filename)
+  def _ExpandTestNamesFrom(self, filename, suite):
+    """Load test names from the given file.
+
+    Args:
+      filename: the file to read the tests from
+      suite: the name of the suite to load from |filename|.
+
+    Returns:
+      a list of test names
+      [module.testcase.testX, module.testcase.testY, ..]
+    """
+    suites = PyUITest.EvalDataFrom(filename)
     platform = sys.platform
     if PyUITest.IsChromeOS():  # check if it's chromeos
       platform = 'chromeos'
     assert platform in self._platform_map, '%s unsupported' % platform
-    all_names = modules.get('all', []) + \
-                modules.get(self._platform_map[platform], [])
+    def _NamesInSuite(suite_name):
+      logging.debug('Expanding suite %s' % suite_name)
+      platforms = suites.get(suite_name)
+      names = platforms.get('all', []) + \
+              platforms.get(self._platform_map[platform], [])
+      ret = []
+      # Recursively include suites if any.  Suites begin with @.
+      for name in names:
+        if name.startswith('@'):  # Include another suite
+          ret.extend(_NamesInSuite(name[1:]))
+        else:
+          ret.append(name)
+      return ret
+
+    assert suite in suites, '%s: No such suite in %s' % (suite, filename)
+    all_names = _NamesInSuite(suite)
     args = []
     excluded = []
     # Find all excluded tests.  Excluded tests begin with '-'.
     for name in all_names:
       if name.startswith('-'):  # Exclude
-        excluded.extend(self._GetTestsFromName(name[1:]))
+        excluded.extend(self._ImportTestsFromName(name[1:]))
       else:
-        args.extend(self._GetTestsFromName(name))
+        args.extend(self._ImportTestsFromName(name))
     for name in excluded:
       if name in args:
         args.remove(name)
@@ -2286,7 +2325,14 @@ class Main(object):
     # overrides to obtain the command line for the current process directly.
     # Refer CommandLine::Init().
     pyauto_suite = PyUITestSuite(suite_args)
-    loaded_tests = self._LoadTests(self._args)
+    test_names = self._ExpandTestNames(self._args)
+    test_names *= self._options.repeat
+    logging.debug("Loading %d tests from %s", len(test_names), test_names)
+    if self._options.list_tests:  # List tests and exit
+      for name in test_names:
+        print name
+      sys.exit(0)
+    loaded_tests = unittest.defaultTestLoader.loadTestsFromNames(test_names)
     pyauto_suite.addTests(loaded_tests)
     verbosity = 1
     if self._options.verbose:

@@ -3,18 +3,20 @@
 # found in the LICENSE file.
 
 {
-  'all': [
-  ],
+  'FULL': {
+    'all': [
+    ],
 
-  'win': [
-  ],
+    'win': [
+    ],
 
-  'mac': [
-  ],
+    'mac': [
+    ],
 
-  'linux': [
-  ],
+    'linux': [
+    ],
 
-  'chromeos': [
-  ],
+    'chromeos': [
+    ],
+  },
 }
