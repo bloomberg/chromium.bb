@@ -393,8 +393,10 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
   if (read_error || file_too_large) {
     // No need to close |file_desc|, that is handled by |url_downloader_|.
     PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen failed: "
-                   "read_error=%d file_too_large=%d read_byte_count=%d\n",
-                   read_error, file_too_large, read_byte_count));
+                   "read_error=%d file_too_large=%d "
+                   "read_byte_count=%"NACL_PRIuS"\n",
+                   read_error, file_too_large,
+                   read_byte_count));
     return;
   }
   json_buffer[read_byte_count] = '\0';  // Force null termination.
