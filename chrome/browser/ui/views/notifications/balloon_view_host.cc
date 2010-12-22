@@ -37,8 +37,8 @@ class BalloonViewHostView : public views::NativeViewHost {
                                     views::View* child) {
     NativeViewHost::ViewHierarchyChanged(is_add, parent, child);
     if (is_add && GetWidget() && !initialized_) {
-      host_->Init(GetWidget()->GetNativeView());
       initialized_ = true;
+      host_->Init(GetWidget()->GetNativeView());
     }
   }
 
@@ -79,7 +79,7 @@ void BalloonViewHost::InitRenderWidgetHostView() {
   RenderWidgetHostViewViews* view_views =
       static_cast<RenderWidgetHostViewViews*>(render_widget_host_view_);
   view_views->InitAsChild();
-  native_host_->Attach(view_views->native_view());
+  native_host_->AttachToView(view_views);
 #else
   RenderWidgetHostViewGtk* view_gtk =
       static_cast<RenderWidgetHostViewGtk*>(render_widget_host_view_);
