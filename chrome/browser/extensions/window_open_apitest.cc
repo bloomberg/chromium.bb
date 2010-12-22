@@ -10,7 +10,8 @@
 #include "chrome/test/ui_test_utils.h"
 #include "net/base/mock_host_resolver.h"
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WindowOpen) {
+// Disabled, http://crbug.com/64899.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_WindowOpen) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
