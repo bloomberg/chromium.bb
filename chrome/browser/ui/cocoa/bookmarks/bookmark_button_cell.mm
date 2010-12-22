@@ -5,8 +5,8 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button_cell.h"
 
 #include "app/l10n_util_mac.h"
+#include "app/mac/nsimage_cache.h"
 #include "base/logging.h"
-#include "base/nsimage_cache_mac.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -203,8 +203,8 @@
 - (void)setDrawFolderArrow:(BOOL)draw {
   drawFolderArrow_ = draw;
   if (draw && !arrowImage_) {
-    arrowImage_.reset([nsimage_cache::ImageNamed(@"menu_hierarchy_arrow.pdf")
-                                    retain]);
+    arrowImage_.reset(
+        [app::mac::GetCachedImageWithName(@"menu_hierarchy_arrow.pdf") retain]);
   }
 }
 

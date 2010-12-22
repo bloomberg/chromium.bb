@@ -7,7 +7,7 @@
 #include <cmath>
 #include <string>
 
-#include "base/nsimage_cache_mac.h"
+#include "app/mac/nsimage_cache.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -777,7 +777,8 @@ class ExtensionServiceObserverBridge : public NotificationObserver,
     chevronMenuButton_.reset([[ChevronMenuButton alloc] init]);
     [chevronMenuButton_ setBordered:NO];
     [chevronMenuButton_ setShowsBorderOnlyWhileMouseInside:YES];
-    NSImage* chevronImage = nsimage_cache::ImageNamed(kOverflowChevronsName);
+    NSImage* chevronImage =
+        app::mac::GetCachedImageWithName(kOverflowChevronsName);
     [chevronMenuButton_ setImage:chevronImage];
     [containerView_ addSubview:chevronMenuButton_];
   }

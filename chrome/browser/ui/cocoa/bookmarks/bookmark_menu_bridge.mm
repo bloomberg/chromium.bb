@@ -6,7 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/nsimage_cache_mac.h"
+#include "app/mac/nsimage_cache.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -238,7 +238,7 @@ void BookmarkMenuBridge::ConfigureMenuItem(const BookmarkNode* node,
   // Either we do not have a loaded favicon or the conversion from SkBitmap
   // failed. Use the default site image instead.
   if (!favicon)
-    favicon = nsimage_cache::ImageNamed(@"nav.pdf");
+    favicon = app::mac::GetCachedImageWithName(@"nav.pdf");
   [item setImage:favicon];
 }
 

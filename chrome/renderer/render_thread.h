@@ -30,7 +30,6 @@ class FilePath;
 class GpuChannelHost;
 class IndexedDBDispatcher;
 class ListValue;
-class NullableString16;
 class RendererHistogram;
 class RendererHistogramSnapshots;
 class RendererNetPredictor;

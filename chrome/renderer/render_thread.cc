@@ -15,7 +15,6 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/stats_table.h"
-#include "base/nullable_string16.h"
 #include "base/process_util.h"
 #include "base/scoped_callback_factory.h"
 #include "base/shared_memory.h"

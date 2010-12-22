@@ -8,11 +8,11 @@
 
 #include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
+#include "app/mac/nsimage_cache.h"
 #include "app/menus/accelerator_cocoa.h"
 #include "app/menus/menu_model.h"
 #include "app/resource_bundle.h"
 #include "base/mac_util.h"
-#include "base/nsimage_cache_mac.h"
 #include "base/singleton.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -235,12 +235,15 @@ class NotificationBridge : public NotificationObserver {
   // images loaded directly from nibs in a framework to not get their "template"
   // flags set properly. Thus, despite the images being set on the buttons in
   // the xib, we must set them in code.
-  [backButton_ setImage:nsimage_cache::ImageNamed(kBackButtonImageName)];
-  [forwardButton_ setImage:nsimage_cache::ImageNamed(kForwardButtonImageName)];
-  [reloadButton_
-      setImage:nsimage_cache::ImageNamed(kReloadButtonReloadImageName)];
-  [homeButton_ setImage:nsimage_cache::ImageNamed(kHomeButtonImageName)];
-  [wrenchButton_ setImage:nsimage_cache::ImageNamed(kWrenchButtonImageName)];
+  [backButton_ setImage:app::mac::GetCachedImageWithName(kBackButtonImageName)];
+  [forwardButton_ setImage:
+      app::mac::GetCachedImageWithName(kForwardButtonImageName)];
+  [reloadButton_ setImage:
+      app::mac::GetCachedImageWithName(kReloadButtonReloadImageName)];
+  [homeButton_ setImage:
+      app::mac::GetCachedImageWithName(kHomeButtonImageName)];
+  [wrenchButton_ setImage:
+      app::mac::GetCachedImageWithName(kWrenchButtonImageName)];
   [self badgeWrenchMenuIfNeeded];
 
   [backButton_ setShowsBorderOnlyWhileMouseInside:YES];
@@ -553,7 +556,8 @@ class NotificationBridge : public NotificationObserver {
 
   NSImage* badge =
       ResourceBundle::GetSharedInstance().GetNativeImageNamed(badgeResource);
-  NSImage* wrenchImage = nsimage_cache::ImageNamed(kWrenchButtonImageName);
+  NSImage* wrenchImage =
+      app::mac::GetCachedImageWithName(kWrenchButtonImageName);
   NSSize wrenchImageSize = [wrenchImage size];
   NSSize badgeSize = [badge size];
 

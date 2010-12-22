@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/nsimage_cache_mac.h"
+#import "app/mac/nsimage_cache.h"
 #import "chrome/browser/ui/cocoa/animatable_image.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,7 +16,7 @@ class AnimatableImageTest : public CocoaTest {
  public:
   AnimatableImageTest() {
     NSRect frame = NSMakeRect(0, 0, 500, 500);
-    NSImage* image = nsimage_cache::ImageNamed(@"forward_Template.pdf");
+    NSImage* image = app::mac::GetCachedImageWithName(@"forward_Template.pdf");
     animation_ = [[AnimatableImage alloc] initWithImage:image
                                          animationFrame:frame];
   }

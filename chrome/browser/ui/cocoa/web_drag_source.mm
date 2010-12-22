@@ -1,11 +1,11 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/web_drag_source.h"
 
+#include "app/mac/nsimage_cache.h"
 #include "base/file_path.h"
-#include "base/nsimage_cache_mac.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/task.h"
@@ -406,7 +406,7 @@ void PromiseWriterTask::Run() {
     return dragImage_;
 
   // Default to returning a generic image.
-  return nsimage_cache::ImageNamed(@"nav.pdf");
+  return app::mac::GetCachedImageWithName(@"nav.pdf");
 }
 
 @end  // @implementation WebDragSource (Private)

@@ -6,7 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
-#include "base/nsimage_cache_mac.h"
+#include "app/mac/nsimage_cache.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/gradient_button_cell.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
@@ -69,10 +69,10 @@ NSTimeInterval kPendingReloadTimeout = 1.35;
 
   [self setTag:anInt];
   if (anInt == IDC_RELOAD) {
-    [self setImage:nsimage_cache::ImageNamed(kReloadImageName)];
+    [self setImage:app::mac::GetCachedImageWithName(kReloadImageName)];
     [self setToolTip:l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_RELOAD)];
   } else if (anInt == IDC_STOP) {
-    [self setImage:nsimage_cache::ImageNamed(kStopImageName)];
+    [self setImage:app::mac::GetCachedImageWithName(kStopImageName)];
     [self setToolTip:l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_STOP)];
   } else {
     NOTREACHED();

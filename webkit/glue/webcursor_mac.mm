@@ -1,14 +1,14 @@
-// Copyright (c) 2008 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "webkit/glue/webcursor.h"
 
 #import <AppKit/AppKit.h>
 #include <Carbon/Carbon.h>
 
+#include "app/mac/nsimage_cache.h"
 #include "base/logging.h"
-#include "base/nsimage_cache_mac.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebImage.h"
@@ -21,11 +21,11 @@ using WebKit::WebSize;
 namespace {
 
 // TODO: This image fetch can (and probably should) be serviced by the resource
-// resource bundle instead of going through nsimage_cache.
+// resource bundle instead of going through the image cache.
 NSCursor* LoadCursor(const char* name, int x, int y) {
   NSString* file_name = [NSString stringWithUTF8String:name];
   DCHECK(file_name);
-  NSImage* cursor_image = nsimage_cache::ImageNamed(file_name);
+  NSImage* cursor_image = app::mac::GetCachedImageWithName(file_name);
   DCHECK(cursor_image);
   return [[[NSCursor alloc] initWithImage:cursor_image
                                   hotSpot:NSMakePoint(x, y)] autorelease];

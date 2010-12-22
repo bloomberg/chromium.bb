@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/nsimage_cache_mac.h"
+#include "app/mac/nsimage_cache.h"
 
 #import <AppKit/AppKit.h>
 
@@ -18,11 +18,12 @@
 #undef try
 #undef catch
 
-namespace nsimage_cache {
+namespace app {
+namespace mac {
 
 static NSMutableDictionary* image_cache = nil;
 
-NSImage* ImageNamed(NSString* name) {
+NSImage* GetCachedImageWithName(NSString* name) {
   DCHECK(name);
 
   // NOTE: to make this thread safe, we'd have to sync on the cache and
@@ -65,9 +66,10 @@ NSImage* ImageNamed(NSString* name) {
   return result;
 }
 
-void Clear(void) {
+void ClearCachedImages(void) {
   // NOTE: to make this thread safe, we'd have to sync on the cache.
   [image_cache removeAllObjects];
 }
 
-}  // namespace nsimage_cache
+}  // namespace mac
+}  // namespace app

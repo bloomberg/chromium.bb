@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_window.h"
 
 #import "base/logging.h"
-#include "base/nsimage_cache_mac.h"
+#include "app/mac/nsimage_cache.h"
 #import "base/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_controller.h"
 #import "chrome/browser/ui/cocoa/image_utils.h"
@@ -41,10 +41,10 @@ const CGFloat kViewCornerRadius = 4.0;
 @implementation BookmarkBarFolderWindowContentView
 
 - (void)awakeFromNib {
-  arrowUpImage_.reset([nsimage_cache::ImageNamed(@"menu_overflow_up.pdf")
-                                    retain]);
-  arrowDownImage_.reset([nsimage_cache::ImageNamed(@"menu_overflow_down.pdf")
-                                      retain]);
+  arrowUpImage_.reset(
+      [app::mac::GetCachedImageWithName(@"menu_overflow_up.pdf") retain]);
+  arrowDownImage_.reset(
+      [app::mac::GetCachedImageWithName(@"menu_overflow_down.pdf") retain]);
 }
 
 // Draw the arrows at the top and bottom of the folder window as a

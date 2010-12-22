@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #import "base/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/nsimage_cache_mac.h"
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #import "chrome/browser/ui/cocoa/tab_controller.h"

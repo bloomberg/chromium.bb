@@ -10,9 +10,9 @@
 #include <string>
 
 #include "app/l10n_util.h"
+#include "app/mac/nsimage_cache.h"
 #include "app/resource_bundle.h"
 #include "base/mac_util.h"
-#include "base/nsimage_cache_mac.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
@@ -316,9 +316,9 @@ private:
     [newTabButton_ setTag:IDC_NEW_TAB];
     // Set the images from code because Cocoa fails to find them in our sub
     // bundle during tests.
-    [newTabButton_ setImage:nsimage_cache::ImageNamed(kNewTabImage)];
-    [newTabButton_
-        setAlternateImage:nsimage_cache::ImageNamed(kNewTabPressedImage)];
+    [newTabButton_ setImage:app::mac::GetCachedImageWithName(kNewTabImage)];
+    [newTabButton_ setAlternateImage:
+        app::mac::GetCachedImageWithName(kNewTabPressedImage)];
     newTabButtonShowingHoverImage_ = NO;
     newTabTrackingArea_.reset(
         [[NSTrackingArea alloc] initWithRect:[newTabButton_ bounds]
@@ -1590,10 +1590,11 @@ private:
 - (void)setNewTabButtonHoverState:(BOOL)shouldShowHover {
   if (shouldShowHover && !newTabButtonShowingHoverImage_) {
     newTabButtonShowingHoverImage_ = YES;
-    [newTabButton_ setImage:nsimage_cache::ImageNamed(kNewTabHoverImage)];
+    [newTabButton_ setImage:
+        app::mac::GetCachedImageWithName(kNewTabHoverImage)];
   } else if (!shouldShowHover && newTabButtonShowingHoverImage_) {
     newTabButtonShowingHoverImage_ = NO;
-    [newTabButton_ setImage:nsimage_cache::ImageNamed(kNewTabImage)];
+    [newTabButton_ setImage:app::mac::GetCachedImageWithName(kNewTabImage)];
   }
 }
 

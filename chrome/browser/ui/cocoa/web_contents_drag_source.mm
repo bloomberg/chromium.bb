@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/web_contents_drag_source.h"
 
-#include "base/nsimage_cache_mac.h"
+#include "app/mac/nsimage_cache.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -20,7 +20,7 @@ NSImage* MakeDragImage() {
   // WebKit/WebKit/mac/Misc/WebNSViewExtras.m: |-_web_DragImageForElement:...|).
 
   // Default to returning a generic image.
-  return nsimage_cache::ImageNamed(@"nav.pdf");
+  return app::mac::GetCachedImageWithName(@"nav.pdf");
 }
 
 // Flips screen and point coordinates over the y axis to work with webkit

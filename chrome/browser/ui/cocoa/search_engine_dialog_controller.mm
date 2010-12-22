@@ -9,7 +9,6 @@
 #include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
 #include "base/mac_util.h"
-#include "base/nsimage_cache_mac.h"
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
 #include "chrome/browser/profiles/profile.h"

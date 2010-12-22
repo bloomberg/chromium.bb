@@ -8,8 +8,8 @@
 
 #include "app/clipboard/clipboard.h"
 #include "app/clipboard/scoped_clipboard_writer.h"
+#include "app/mac/nsimage_cache.h"
 #include "app/resource_bundle.h"
-#include "base/nsimage_cache_mac.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -149,7 +149,7 @@ NSImage* AutocompleteEditViewMac::ImageForResource(int resource_id) {
   }
 
   if (image_name) {
-    if (NSImage* image = nsimage_cache::ImageNamed(image_name)) {
+    if (NSImage* image = app::mac::GetCachedImageWithName(image_name)) {
       return image;
     } else {
       NOTREACHED()

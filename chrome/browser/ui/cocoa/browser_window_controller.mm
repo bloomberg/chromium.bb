@@ -8,9 +8,9 @@
 
 #include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
-#include "base/mac_util.h"
 #include "app/mac/scoped_nsdisable_screen_updates.h"
-#include "base/nsimage_cache_mac.h"
+#include "app/mac/nsimage_cache.h"
+#include "base/mac_util.h"
 #import "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
@@ -1583,7 +1583,7 @@
 
   // Install the image into the badge view and size the view appropriately.
   // Hide it for now; positioning and showing will be done by the layout code.
-  NSImage* image = nsimage_cache::ImageNamed(@"otr_icon.pdf");
+  NSImage* image = app::mac::GetCachedImageWithName(@"otr_icon.pdf");
   incognitoBadge_.reset([[IncognitoImageView alloc] init]);
   [incognitoBadge_ setImage:image];
   [incognitoBadge_ setFrameSize:[image size]];

@@ -4,8 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_controller.h"
 
+#include "app/mac/nsimage_cache.h"
 #include "base/mac_util.h"
-#include "base/nsimage_cache_mac.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -131,7 +131,7 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
     barController_ = barController;  // WEAK
     buttons_.reset([[NSMutableArray alloc] init]);
     folderTarget_.reset([[BookmarkFolderTarget alloc] initWithController:self]);
-    NSImage* image = nsimage_cache::ImageNamed(@"menu_overflow_up.pdf");
+    NSImage* image = app::mac::GetCachedImageWithName(@"menu_overflow_up.pdf");
     DCHECK(image);
     verticalScrollArrowHeight_ = [image size].height;
     [self configureWindow];

@@ -168,6 +168,8 @@
         'l10n_util_win.h',
         'linear_animation.cc',
         'linear_animation.h',
+        'mac/nsimage_cache.h',
+        'mac/nsimage_cache.mm',
         'mac/scoped_nsdisable_screen_updates.h',
         'menus/accelerator.h',
         'menus/accelerator_gtk.h',
