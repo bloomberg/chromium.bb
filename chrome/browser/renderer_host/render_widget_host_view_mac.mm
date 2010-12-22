@@ -948,9 +948,50 @@ void RenderWidgetHostViewMac::DestroyFakePluginWindowHandle(
   // taken if a plugin is removed, but the RWHVMac itself stays alive.
 }
 
+namespace {
+class DidDestroyAcceleratedSurfaceSender : public Task {
+ public:
+  DidDestroyAcceleratedSurfaceSender(
+      int renderer_id,
+      int32 renderer_route_id)
+      : renderer_id_(renderer_id),
+        renderer_route_id_(renderer_route_id) {
+  }
+
+  void Run() {
+    GpuProcessHost::Get()->Send(
+        new GpuMsg_DidDestroyAcceleratedSurface(
+            renderer_id_, renderer_route_id_));
+  }
+
+ private:
+  int renderer_id_;
+  int32 renderer_route_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(DidDestroyAcceleratedSurfaceSender);
+};
+}  // anonymous namespace
+
 // This is called by AcceleratedPluginView's -dealloc.
 void RenderWidgetHostViewMac::DeallocFakePluginWindowHandle(
     gfx::PluginWindowHandle window) {
+  // When a browser window with a GPUProcessor is closed, the render process
+  // will attempt to finish all GL commands. It will busy-wait on the GPU
+  // process until the command queue is empty. If a paint is pending, the GPU
+  // process won't process any GL commands until the browser sends a paint ack,
+  // but since the browser window is already closed, it will never arrive.
+  // To break this infinite loop, the browser tells the GPU process that the
+  // surface became invalid, which causes the GPU process to not wait for paint
+  // acks.
+  if (render_widget_host_ &&
+      plugin_container_manager_.IsRootContainer(window)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        new DidDestroyAcceleratedSurfaceSender(
+            render_widget_host_->process()->id(),
+            render_widget_host_->routing_id()));
+  }
+
   plugin_container_manager_.DestroyFakePluginWindowHandle(window);
 }
 
@@ -1083,8 +1124,8 @@ void RenderWidgetHostViewMac::AcknowledgeSwapBuffers(
     int renderer_id,
     int32 route_id,
     uint64 swap_buffers_count) {
-  // Called on the display link. Hand actual work off to the UI thread, which
-  // will then redispatch the message to the IPC thread.
+  // Called on the display link thread. Hand actual work off to the IO thread,
+  // because |GpuProcessHost::Get()| can only be called there.
   // Currently, this is never called for plugins.
   if (render_widget_host_) {
     DCHECK_EQ(render_widget_host_->process()->id(), renderer_id);

@@ -108,6 +108,18 @@ void GPUProcessor::set_acknowledged_swap_buffers_count(
   acknowledged_swap_buffers_count_ = acknowledged_swap_buffers_count;
 }
 
+void GPUProcessor::DidDestroySurface() {
+  // When a browser window with a GPUProcessor is closed, the render process
+  // will attempt to finish all GL commands, it will busy-wait on the GPU
+  // process until the command queue is empty. If a paint is pending, the GPU
+  // process won't process any GL commands until the browser sends a paint ack,
+  // but since the browser window is already closed, it will never arrive.
+  // To break this infinite loop, the browser tells the GPU process that the
+  // surface became invalid, which causes the GPU process to not wait for paint
+  // acks.
+  surface_.reset();
+}
+
 void GPUProcessor::WillSwapBuffers() {
   DCHECK(decoder_.get());
   DCHECK(decoder_->GetGLContext());

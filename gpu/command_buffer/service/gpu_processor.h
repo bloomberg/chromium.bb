@@ -97,6 +97,8 @@ class GPUProcessor : public CommandBufferEngine {
   uint64 swap_buffers_count() const;
   void set_acknowledged_swap_buffers_count(
       uint64 acknowledged_swap_buffers_count);
+
+  void DidDestroySurface();
 #endif
 
   // Sets a callback that is called when a glResizeCHROMIUM command

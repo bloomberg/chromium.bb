@@ -79,6 +79,19 @@ void GpuChannel::AcceleratedSurfaceBuffersSwapped(
     return;
   stub->AcceleratedSurfaceBuffersSwapped(swap_buffers_count);
 }
+
+void GpuChannel::DidDestroySurface(int32 renderer_route_id) {
+  // Since acclerated views are created in the renderer process and then sent
+  // to the browser process during GPU channel construction, it is possible that
+  // this is called before a GpuCommandBufferStub for |renderer_route_id| was
+  // put into |stubs_|. Hence, do not walk |stubs_| here but instead remember
+  // all |renderer_route_id|s this was called for and use them later.
+  destroyed_renderer_routes_.insert(renderer_route_id);
+}
+
+bool GpuChannel::IsRenderViewGone(int32 renderer_route_id) {
+  return destroyed_renderer_routes_.count(renderer_route_id) > 0;
+}
 #endif
 
 void GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {

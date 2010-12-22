@@ -55,22 +55,18 @@ void GpuThread::RemoveChannel(int renderer_id) {
 void GpuThread::OnControlMessageReceived(const IPC::Message& msg) {
   bool msg_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(GpuThread, msg, msg_is_ok)
-    IPC_MESSAGE_HANDLER(GpuMsg_EstablishChannel,
-                        OnEstablishChannel)
-    IPC_MESSAGE_HANDLER(GpuMsg_CloseChannel,
-                        OnCloseChannel)
-    IPC_MESSAGE_HANDLER(GpuMsg_Synchronize,
-                        OnSynchronize)
-    IPC_MESSAGE_HANDLER(GpuMsg_CollectGraphicsInfo,
-                        OnCollectGraphicsInfo)
+    IPC_MESSAGE_HANDLER(GpuMsg_EstablishChannel, OnEstablishChannel)
+    IPC_MESSAGE_HANDLER(GpuMsg_CloseChannel, OnCloseChannel)
+    IPC_MESSAGE_HANDLER(GpuMsg_Synchronize, OnSynchronize)
+    IPC_MESSAGE_HANDLER(GpuMsg_CollectGraphicsInfo, OnCollectGraphicsInfo)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(GpuMsg_AcceleratedSurfaceBuffersSwappedACK,
                         OnAcceleratedSurfaceBuffersSwappedACK)
+    IPC_MESSAGE_HANDLER(GpuMsg_DidDestroyAcceleratedSurface,
+                        OnDidDestroyAcceleratedSurface)
 #endif
-    IPC_MESSAGE_HANDLER(GpuMsg_Crash,
-                        OnCrash)
-    IPC_MESSAGE_HANDLER(GpuMsg_Hang,
-                        OnHang)
+    IPC_MESSAGE_HANDLER(GpuMsg_Crash, OnCrash)
+    IPC_MESSAGE_HANDLER(GpuMsg_Hang, OnHang)
   IPC_END_MESSAGE_MAP_EX()
 }
 
@@ -131,6 +127,14 @@ void GpuThread::OnAcceleratedSurfaceBuffersSwappedACK(
     return;
   scoped_refptr<GpuChannel> channel = iter->second;
   channel->AcceleratedSurfaceBuffersSwapped(route_id, swap_buffers_count);
+}
+void GpuThread::OnDidDestroyAcceleratedSurface(
+    int renderer_id, int32 renderer_route_id) {
+  GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
+  if (iter == gpu_channels_.end())
+    return;
+  scoped_refptr<GpuChannel> channel = iter->second;
+  channel->DidDestroySurface(renderer_route_id);
 }
 #endif
 
