@@ -253,9 +253,9 @@ bool WindowGtk::ShouldUseNativeFrame() const {
 }
 
 void WindowGtk::FrameTypeChanged() {
-  // We currently don't support different frame types on Gtk, so we don't
-  // need to implement this.
-  NOTIMPLEMENTED();
+  // This is called when the Theme has changed, so forward the event to the root
+  // widget.
+  GetRootView()->NotifyThemeChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
