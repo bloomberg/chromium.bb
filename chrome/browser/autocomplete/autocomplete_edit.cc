@@ -178,9 +178,16 @@ void AutocompleteEditModel::GetDataForURLExport(GURL* url,
 }
 
 bool AutocompleteEditModel::UseVerbatimInstant() {
+#if defined(OS_MACOSX)
+  // TODO(suzhe): Fix Mac port to display Instant suggest in a separated NSView,
+  // so that we can display instant suggest along with composition text.
   const AutocompleteInput& input = popup_->autocomplete_controller()->input();
-  if (input.initial_prevent_inline_autocomplete() ||
-      view_->DeleteAtEndPressed() || (popup_->selected_line() != 0))
+  if (input.initial_prevent_inline_autocomplete())
+    return true;
+#endif
+
+  if (view_->DeleteAtEndPressed() || (popup_->selected_line() != 0) ||
+      just_deleted_text_)
     return true;
 
   std::wstring::size_type start, end;

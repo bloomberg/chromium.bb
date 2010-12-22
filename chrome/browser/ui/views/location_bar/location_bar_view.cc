@@ -1157,7 +1157,8 @@ void LocationBarView::SetSuggestedText(const string16& input) {
     } else if (suggested_text_view_->GetText() != UTF16ToWide(text)) {
       suggested_text_view_->SetText(UTF16ToWide(text));
     }
-    suggested_text_view_->StartAnimation();
+    if (!location_entry_->IsImeComposing())
+      suggested_text_view_->StartAnimation();
   } else if (suggested_text_view_) {
     delete suggested_text_view_;
     suggested_text_view_ = NULL;

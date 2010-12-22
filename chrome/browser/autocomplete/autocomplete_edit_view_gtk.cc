@@ -186,6 +186,11 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
       selection_suggested_(false),
       delete_was_pressed_(false),
       delete_at_end_pressed_(false),
+      handling_key_press_(false),
+      content_maybe_changed_by_key_press_(false),
+#if GTK_CHECK_VERSION(2, 20, 0)
+      preedit_size_before_change_(0),
+#endif
       going_to_focus_(NULL) {
   model_->SetPopupModel(popup_view_->GetModel());
 }
@@ -684,6 +689,12 @@ void AutocompleteEditViewGtk::OnRevertTemporaryText() {
 }
 
 void AutocompleteEditViewGtk::OnBeforePossibleChange() {
+  // This method will be called in HandleKeyPress() method just before
+  // handling a key press event. So we should prevent it from being called
+  // when handling the key press event.
+  if (handling_key_press_)
+    return;
+
   // If this change is caused by a paste clipboard action and all text is
   // selected, then call model_->on_paste_replacing_all() to prevent inline
   // autocomplete.
@@ -696,10 +707,21 @@ void AutocompleteEditViewGtk::OnBeforePossibleChange() {
   // Record our state.
   text_before_change_ = GetText();
   sel_before_change_ = GetSelection();
+#if GTK_CHECK_VERSION(2, 20, 0)
+  preedit_size_before_change_ = preedit_.size();
+#endif
 }
 
 // TODO(deanm): This is mostly stolen from Windows, and will need some work.
 bool AutocompleteEditViewGtk::OnAfterPossibleChange() {
+  // This method will be called in HandleKeyPress() method just after
+  // handling a key press event. So we should prevent it from being called
+  // when handling the key press event.
+  if (handling_key_press_) {
+    content_maybe_changed_by_key_press_ = true;
+    return false;
+  }
+
   // If the change is caused by an Enter key press event, and the event was not
   // handled by IME, then it's an unexpected change and shall be reverted here.
   // {Start|Finish}UpdatingHighlightedText() are called here to prevent the
@@ -720,6 +742,10 @@ bool AutocompleteEditViewGtk::OnAfterPossibleChange() {
   // See if the text or selection have changed since OnBeforePossibleChange().
   std::wstring new_text(GetText());
   text_changed_ = (new_text != text_before_change_);
+#if GTK_CHECK_VERSION(2, 20, 0)
+  text_changed_ =
+      text_changed_ || (preedit_.size() != preedit_size_before_change_);
+#endif
 
   if (text_changed_)
     AdjustTextJustification();
@@ -1020,10 +1046,18 @@ gboolean AutocompleteEditViewGtk::HandleKeyPress(GtkWidget* widget,
   // Reset |text_changed_| before passing the key event on to the text view.
   text_changed_ = false;
 
+  OnBeforePossibleChange();
+  handling_key_press_ = true;
+  content_maybe_changed_by_key_press_ = false;
+
   // Call the default handler, so that IME can work as normal.
   // New line characters will be filtered out by our "insert-text"
   // signal handler attached to |text_buffer_| object.
   gboolean result = klass->key_press_event(widget, event);
+
+  handling_key_press_ = false;
+  if (content_maybe_changed_by_key_press_)
+    OnAfterPossibleChange();
 
   // Set |tab_was_pressed_| to false, to make sure Tab to search behavior can
   // only be triggered by pressing Tab key.
@@ -1707,18 +1741,27 @@ AutocompleteEditViewGtk::CharRange AutocompleteEditViewGtk::GetSelection() {
   mark = gtk_text_buffer_get_insert(text_buffer_);
   gtk_text_buffer_get_iter_at_mark(text_buffer_, &insert, mark);
 
+  gint start_offset = gtk_text_iter_get_offset(&start);
+  gint end_offset = gtk_text_iter_get_offset(&insert);
+
 #if GTK_CHECK_VERSION(2, 20, 0)
   // Nothing should be selected when we are in the middle of composition.
-  DCHECK(preedit_.empty() || gtk_text_iter_equal(&start, &insert));
+  DCHECK(preedit_.empty() || start_offset == end_offset);
+  if (!preedit_.empty()) {
+    start_offset += preedit_.size();
+    end_offset += preedit_.size();
+  }
 #endif
 
-  return CharRange(gtk_text_iter_get_offset(&start),
-                   gtk_text_iter_get_offset(&insert));
+  return CharRange(start_offset, end_offset);
 }
 
 void AutocompleteEditViewGtk::ItersFromCharRange(const CharRange& range,
                                                  GtkTextIter* iter_min,
                                                  GtkTextIter* iter_max) {
+#if GTK_CHECK_VERSION(2, 20, 0)
+  DCHECK(preedit_.empty());
+#endif
   gtk_text_buffer_get_iter_at_offset(text_buffer_, iter_min, range.cp_min);
   gtk_text_buffer_get_iter_at_offset(text_buffer_, iter_max, range.cp_max);
 }
@@ -1742,8 +1785,10 @@ void AutocompleteEditViewGtk::EmphasizeURLComponents() {
   // a part of the text content inside GtkTextView. And it's ok to simply return
   // in this case, as this method will be called again when the preedit string
   // gets committed.
-  if (preedit_.size())
+  if (preedit_.size()) {
+    strikethrough_ = CharRange();
     return;
+  }
 #endif
   // See whether the contents are a URL with a non-empty host portion, which we
   // should emphasize.  To check for a URL, rather than using the type returned
@@ -1811,7 +1856,11 @@ void AutocompleteEditViewGtk::SetInstantSuggestion(
     gtk_widget_hide(instant_view_);
   } else {
     if (InstantController::IsEnabled(model_->profile(),
-                                     InstantController::PREDICTIVE_TYPE)) {
+                                     InstantController::PREDICTIVE_TYPE)
+#if GTK_CHECK_VERSION(2, 20, 0)
+        && preedit_.empty()
+#endif
+        ) {
       instant_animation_->set_delegate(this);
       instant_animation_->Start();
     }

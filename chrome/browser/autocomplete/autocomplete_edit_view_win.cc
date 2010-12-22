@@ -711,14 +711,6 @@ void AutocompleteEditViewWin::UpdatePopup() {
     return;
   }
 
-  // Figure out whether the user is trying to compose something in an IME.
-  bool ime_composing = false;
-  HIMC context = ImmGetContext(m_hWnd);
-  if (context) {
-    ime_composing = !!ImmGetCompositionString(context, GCS_COMPSTR, NULL, 0);
-    ImmReleaseContext(m_hWnd, context);
-  }
-
   // Don't inline autocomplete when:
   //   * The user is deleting text
   //   * The caret/selection isn't at the end of the text
@@ -727,7 +719,7 @@ void AutocompleteEditViewWin::UpdatePopup() {
   CHARRANGE sel;
   GetSel(sel);
   model_->StartAutocomplete(sel.cpMax != sel.cpMin,
-                            (sel.cpMax < GetTextLength()) || ime_composing);
+                            (sel.cpMax < GetTextLength()) || IsImeComposing());
 }
 
 void AutocompleteEditViewWin::ClosePopup() {
@@ -2592,4 +2584,14 @@ int AutocompleteEditViewWin::WidthNeededToDisplay(const std::wstring& text) {
   // apparently buggy. In both LTR UI and RTL UI with left-to-right layout,
   // PosFromChar(i) might return 0 when i is greater than 1.
   return font_.GetStringWidth(text) + GetHorizontalMargin();
+}
+
+bool AutocompleteEditViewWin::IsImeComposing() const {
+  bool ime_composing = false;
+  HIMC context = ImmGetContext(m_hWnd);
+  if (context) {
+    ime_composing = !!ImmGetCompositionString(context, GCS_COMPSTR, NULL, 0);
+    ImmReleaseContext(m_hWnd, context);
+  }
+  return ime_composing;
 }

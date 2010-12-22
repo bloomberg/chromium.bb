@@ -213,6 +213,9 @@ class AutocompleteEditViewWin
   virtual std::wstring GetLabelForCommandId(int command_id) const;
   virtual void ExecuteCommand(int command_id);
 
+  // Returns true if the user is composing something in an IME.
+  bool IsImeComposing() const;
+
  private:
   enum MouseButton {
     kLeft  = 0,
