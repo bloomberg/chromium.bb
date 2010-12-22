@@ -303,6 +303,7 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   // clock can creep forward a little bit while the asynchronous
   // SetPlaybackRate(0) is being executed.
   bool paused_;
+  bool seeking_;
   float playback_rate_;
   base::TimeDelta paused_time_;
 

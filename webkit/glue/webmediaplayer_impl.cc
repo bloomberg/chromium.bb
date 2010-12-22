@@ -233,6 +233,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       pipeline_(NULL),
       pipeline_thread_("PipelineThread"),
       paused_(true),
+      seeking_(false),
       playback_rate_(0.0f),
       client_(client),
       proxy_(NULL),
@@ -368,11 +369,6 @@ void WebMediaPlayerImpl::seek(float seconds) {
     return;
   }
 
-  // Drop our ready state if the media file isn't fully loaded.
-  if (!pipeline_->IsLoaded()) {
-    SetReadyState(WebKit::WebMediaPlayer::HaveMetadata);
-  }
-
   // Try to preserve as much accuracy as possible.
   float microseconds = seconds * base::Time::kMicrosecondsPerSecond;
   base::TimeDelta seek_time =
@@ -382,6 +378,8 @@ void WebMediaPlayerImpl::seek(float seconds) {
   if (paused_) {
     paused_time_ = seek_time;
   }
+
+  seeking_ = true;
 
   // Kick off the asynchronous seek!
   pipeline_->Seek(
@@ -476,7 +474,7 @@ bool WebMediaPlayerImpl::seeking() const {
   if (ready_state_ == WebKit::WebMediaPlayer::HaveNothing)
     return false;
 
-  return ready_state_ == WebKit::WebMediaPlayer::HaveMetadata;
+  return seeking_;
 }
 
 float WebMediaPlayerImpl::duration() const {
@@ -705,6 +703,7 @@ void WebMediaPlayerImpl::OnPipelineSeek() {
     }
 
     SetReadyState(WebKit::WebMediaPlayer::HaveEnoughData);
+    seeking_ = false;
     GetClient()->timeChanged();
   }
 }
