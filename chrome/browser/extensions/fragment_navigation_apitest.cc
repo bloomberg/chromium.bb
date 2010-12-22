@@ -11,7 +11,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptFragmentNavigation) {
   ASSERT_TRUE(RunExtensionTest(extension_name)) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ExecuteScriptFragmentNavigation) {
+// Crashy, http://crbug.com/67774.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
+                       DISABLED_ExecuteScriptFragmentNavigation) {
   ASSERT_TRUE(StartTestServer());
   const char* extension_name = "executescript/fragment";
   ASSERT_TRUE(RunExtensionTest(extension_name)) << message_;
