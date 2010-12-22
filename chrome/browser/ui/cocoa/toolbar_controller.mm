@@ -20,6 +20,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/background_page_tracker.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -94,7 +95,7 @@ const CGFloat kWrenchMenuLeftPadding = 3.0;
 - (void)browserActionsContainerDragFinished:(NSNotification*)notification;
 - (void)browserActionsVisibilityChanged:(NSNotification*)notification;
 - (void)adjustLocationSizeBy:(CGFloat)dX animate:(BOOL)animate;
-- (void)badgeWrenchMenu;
+- (void)badgeWrenchMenuIfNeeded;
 @end
 
 namespace ToolbarControllerInternal {
@@ -128,16 +129,27 @@ class NotificationBridge : public NotificationObserver {
       : controller_(controller) {
     registrar_.Add(this, NotificationType::UPGRADE_RECOMMENDED,
                    NotificationService::AllSources());
+    registrar_.Add(this,
+                   NotificationType::BACKGROUND_PAGE_TRACKER_CHANGED,
+                   NotificationService::AllSources());
   }
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    if (type == NotificationType::PREF_CHANGED)
-      [controller_ prefChanged:Details<std::string>(details).ptr()];
-    else if (type == NotificationType::UPGRADE_RECOMMENDED)
-      [controller_ badgeWrenchMenu];
+    switch (type.value) {
+      case NotificationType::PREF_CHANGED:
+        [controller_ prefChanged:Details<std::string>(details).ptr()];
+        break;
+      case NotificationType::BACKGROUND_PAGE_TRACKER_CHANGED:
+        // fall-through
+      case NotificationType::UPGRADE_RECOMMENDED:
+        [controller_ badgeWrenchMenuIfNeeded];
+        break;
+      default:
+        NOTREACHED();
+    }
   }
 
  private:
@@ -229,9 +241,7 @@ class NotificationBridge : public NotificationObserver {
       setImage:nsimage_cache::ImageNamed(kReloadButtonReloadImageName)];
   [homeButton_ setImage:nsimage_cache::ImageNamed(kHomeButtonImageName)];
   [wrenchButton_ setImage:nsimage_cache::ImageNamed(kWrenchButtonImageName)];
-
-  if (UpgradeDetector::GetInstance()->notify_upgrade())
-    [self badgeWrenchMenu];
+  [self badgeWrenchMenuIfNeeded];
 
   [backButton_ setShowsBorderOnlyWhileMouseInside:YES];
   [forwardButton_ setShowsBorderOnlyWhileMouseInside:YES];
@@ -526,17 +536,37 @@ class NotificationBridge : public NotificationObserver {
   return wrenchMenuController_;
 }
 
-- (void)badgeWrenchMenu {
-  NSImage* badge = ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_UPDATE_BADGE);
+- (void)badgeWrenchMenuIfNeeded {
+
+  int badgeResource = 0;
+  if (UpgradeDetector::GetInstance()->notify_upgrade()) {
+    badgeResource = IDR_UPDATE_BADGE;
+  } else if (BackgroundPageTracker::GetInstance()->
+             GetUnacknowledgedBackgroundPageCount() > 0) {
+    badgeResource = IDR_BACKGROUND_BADGE;
+  } else {
+    // No badge - clear the badge if one is already set.
+    if ([[wrenchButton_ cell] overlayImage])
+      [[wrenchButton_ cell] setOverlayImage:nil];
+    return;
+  }
+
+  NSImage* badge =
+      ResourceBundle::GetSharedInstance().GetNativeImageNamed(badgeResource);
   NSImage* wrenchImage = nsimage_cache::ImageNamed(kWrenchButtonImageName);
   NSSize wrenchImageSize = [wrenchImage size];
+  NSSize badgeSize = [badge size];
 
   scoped_nsobject<NSImage> overlayImage(
       [[NSImage alloc] initWithSize:wrenchImageSize]);
 
+  // Draw badge in the upper right corner of the button.
+  NSPoint overlayPosition =
+      NSMakePoint(wrenchImageSize.width - badgeSize.width,
+                  wrenchImageSize.height - badgeSize.height);
+
   [overlayImage lockFocus];
-  [badge drawAtPoint:NSZeroPoint
+  [badge drawAtPoint:overlayPosition
             fromRect:NSZeroRect
            operation:NSCompositeSourceOver
             fraction:1.0];
