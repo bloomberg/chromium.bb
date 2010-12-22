@@ -3250,20 +3250,21 @@ void Browser::Observe(NotificationType type,
       // If any "This extension has crashed" InfoBarDelegates are around for
       // this extension, it means that it has been reloaded in another window
       // so just remove the remaining CrashedExtensionInfoBarDelegate objects.
-      TabContents* tab_contents = GetSelectedTabContents();
-      if (!tab_contents)
-        break;
       const Extension* extension = Details<const Extension>(details).ptr();
       CrashedExtensionInfoBarDelegate* delegate = NULL;
-      for (int i = 0; i < tab_contents->infobar_delegate_count();) {
-        delegate = tab_contents->GetInfoBarDelegateAt(i)->
-            AsCrashedExtensionInfoBarDelegate();
-        if (delegate && delegate->extension_id() == extension->id()) {
-          tab_contents->RemoveInfoBar(delegate);
-          continue;
+      TabStripModel* model = tab_handler_->GetTabStripModel();
+      for (int m = 0; m < model->count(); ++m) {
+        TabContents* tab_contents = model->GetTabContentsAt(m)->tab_contents();
+        for (int i = 0; i < tab_contents->infobar_delegate_count();) {
+          delegate = tab_contents->GetInfoBarDelegateAt(i)->
+              AsCrashedExtensionInfoBarDelegate();
+          if (delegate && delegate->extension_id() == extension->id()) {
+            tab_contents->RemoveInfoBar(delegate);
+            continue;
+          }
+          // Only increment |i| if we didn't remove an entry.
+          ++i;
         }
-        // Only increment |i| if we didn't remove an entry.
-        ++i;
       }
       break;
     }

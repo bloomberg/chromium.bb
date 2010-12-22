@@ -30,6 +30,11 @@ AsCrashedExtensionInfoBarDelegate() {
   return this;
 }
 
+bool CrashedExtensionInfoBarDelegate::ShouldExpire(
+    const NavigationController::LoadCommittedDetails& details) const {
+  return false;
+}
+
 string16 CrashedExtensionInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(IDS_EXTENSION_CRASHED_INFOBAR_MESSAGE,
       UTF8ToUTF16(extension_name_));

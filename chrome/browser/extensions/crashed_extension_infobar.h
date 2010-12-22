@@ -30,6 +30,8 @@ class CrashedExtensionInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // InfoBarDelegate
   virtual CrashedExtensionInfoBarDelegate* AsCrashedExtensionInfoBarDelegate();
+  virtual bool ShouldExpire(
+      const NavigationController::LoadCommittedDetails& details) const;
 
   // ConfirmInfoBarDelegate
   virtual string16 GetMessageText() const;
