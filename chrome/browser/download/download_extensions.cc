@@ -60,11 +60,11 @@ static const struct Executables {
     const char* extension;
     DownloadDangerLevel level;
 } g_executables[] = {
-  { "class", AllowOnUserGesture },
+  { "class", Dangerous },
   { "htm", AllowOnUserGesture },
   { "html", AllowOnUserGesture },
-  { "jar", AllowOnUserGesture },
-  { "jnlp", AllowOnUserGesture },
+  { "jar", Dangerous },
+  { "jnlp", Dangerous },
   { "pdf", AllowOnUserGesture },
   { "pdfxml", AllowOnUserGesture },
   { "mars", AllowOnUserGesture },
