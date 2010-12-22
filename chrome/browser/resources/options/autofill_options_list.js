@@ -36,28 +36,6 @@ cr.define('options.autoFillOptions', function() {
       label.textContent = this.label;
       this.contentElement.appendChild(label);
     },
-
-    /**
-     * Get and set the GUID for the entry.
-     * @type {string}
-     */
-    get guid() {
-      return this.guid;
-    },
-    set guid(guid) {
-      this.guid = guid;
-    },
-
-    /**
-     * Get and set the label for the entry.
-     * @type {string}
-     */
-    get label() {
-      return this.label;
-    },
-    set label(label) {
-      this.label = label;
-    },
   };
 
   /**
