@@ -15,20 +15,9 @@ import subprocess
 import sys
 
 
-# The string that the PrintNamesAndSizes plugin uses to indicate a type is or
-# contains a pointer.
-HAS_POINTER_STRING = "HasPointer"
-# These are types that don't include a pointer but nonetheless have
-# architecture-dependent size.  They all are ultimately typedefs to 'long' or
-# 'unsigned long'.  If there get to be too many types that use 'long' or
-# 'unsigned long', we can add detection of them to the plugin to automate this.
-ARCH_DEPENDENT_TYPES = set(["khronos_intptr_t",
-                            "khronos_uintptr_t",
-                            "khronos_ssize_t",
-                            "khronos_usize_t",
-                            "GLintptr",
-                            "GLsizeiptr"
-                           ])
+# The string that the PrintNamesAndSizes plugin uses to indicate a type is
+# expected to have architecture-dependent size.
+ARCH_DEPENDENT_STRING = "ArchDependentSize"
 
 
 
@@ -45,10 +34,42 @@ class SourceLocation:
 
 class TypeInfo:
 
-  """A class representing information about a C++ type."""
+  """A class representing information about a C++ type.  It contains the
+  following fields:
+   - kind:  The Clang TypeClassName (Record, Enum, Typedef, Union, etc)
+   - name:  The unmangled string name of the type.
+   - size:  The size in bytes of the type.
+   - arch_dependent:  True if the type may have architecture dependent size
+                      according to PrintNamesAndSizes.  False otherwise.  Types
+                      which are considered architecture-dependent from 32-bit
+                      to 64-bit are pointers, longs, unsigned longs, and any
+                      type that contains an architecture-dependent type.
+   - source_location:  A SourceLocation describing where the type is defined.
+   - target:  The target Clang was compiling when it found the type definition.
+              This is used only for diagnostic output.
+   - parsed_line:  The line which Clang output which was used to create this
+                   TypeInfo (as the info_string parameter to __init__).  This is
+                   used only for diagnostic output.
+  """
 
   def __init__(self, info_string, target):
-    [self.kind, self.name, self.size, has_pointer_string, source_file,
+    """Create a TypeInfo from a given info_string.  Also store the name of the
+    target for which the TypeInfo was first created just so we can print useful
+    error information.
+    info_string is a comma-delimited string of the following form:
+    kind,name,size,arch_dependent,source_file,start_line,end_line
+    Where:
+   - kind:  The Clang TypeClassName (Record, Enum, Typedef, Union, etc)
+   - name:  The unmangled string name of the type.
+   - size:  The size in bytes of the type.
+   - arch_dependent:  'ArchDependentSize' if the type has architecture-dependent
+                      size, NotArchDependentSize otherwise.
+   - source_file:  The source file in which the type is defined.
+   - first_line:  The first line of the definition (counting from 0).
+   - last_line:  The last line of the definition (counting from 0).
+   This should match the output of the PrintNamesAndSizes plugin.
+   """
+    [self.kind, self.name, self.size, arch_dependent_string, source_file,
         start_line, end_line] = info_string.split(',')
     self.target = target
     self.parsed_line = info_string
@@ -56,24 +77,13 @@ class TypeInfo:
     self.source_location = SourceLocation(source_file,
                                           int(start_line)-1,
                                           int(end_line)-1)
-    # If the type is one of our known special cases, mark it as architecture-
-    # dependent.
-    if self.name in ARCH_DEPENDENT_TYPES:
-      self.arch_dependent = True
-    # Otherwise, its size can be architecture dependent if it contains one or
-    # more pointers (or is a pointer).
-    else:
-      self.arch_dependent = (has_pointer_string == HAS_POINTER_STRING)
-    self.target = target
-    self.parsed_line = info_string
-
+    self.arch_dependent = (arch_dependent_string == ARCH_DEPENDENT_STRING)
 
 
 class FilePatch:
 
   """A class representing a set of line-by-line changes to a particular file.
-  None
-  of the changes are applied until Apply is called.  All line numbers are
+  None of the changes are applied until Apply is called.  All line numbers are
   counted from 0.
   """
 
@@ -85,7 +95,9 @@ class FilePatch:
     self.lines_to_add = {}
 
   def Delete(self, start_line, end_line):
-    """Make the patch delete the lines [start_line, end_line)."""
+    """Make the patch delete the lines starting with |start_line| up to but not
+    including |end_line|.
+    """
     self.linenums_to_delete |= set(range(start_line, end_line))
 
   def Add(self, text, line_number):
@@ -96,7 +108,7 @@ class FilePatch:
       self.lines_to_add[line_number] = [text]
 
   def Apply(self):
-    """Apply the patch by writing it to self.filename"""
+    """Apply the patch by writing it to self.filename."""
     # Read the lines of the existing file in to a list.
     sourcefile = open(self.filename, "r")
     file_lines = sourcefile.readlines()
@@ -163,14 +175,12 @@ def CheckAndInsert(typeinfo, typeinfo_map):
     typeinfo_map[typeinfo.name] = typeinfo
 
 
-def ProcessTarget(clang_command, target, arch_types, ind_types):
+def ProcessTarget(clang_command, target, types):
   """Run clang using the given clang_command for the given target string.  Parse
   the output to create TypeInfos for each discovered type.  Insert each type in
-  to the appropriate dictionary.  For each type that has architecture-dependent
-  size, insert it in to arch_types.  Types with independent size go in to
-  ind_types.  If the type already exists in the appropriate map, make sure that
-  the size matches what's already in the map.  If not, the script terminates
-  with an error message.
+  to the 'types' dictionary.  If the type already exists in the types
+  dictionary, make sure that the size matches what's already in the map.  If
+  not, exit with an error message.
   """
   p = subprocess.Popen(clang_command + " -triple " + target,
                        shell=True,
@@ -178,13 +188,7 @@ def ProcessTarget(clang_command, target, arch_types, ind_types):
   lines = p.communicate()[0].split()
   for line in lines:
     typeinfo = TypeInfo(line, target)
-    # Put types which have architecture-specific size in to arch_types.  All
-    # other types are 'architecture-independent' and get put in ind_types.
-    # in the appropraite dictionary.
-    if typeinfo.arch_dependent:
-      CheckAndInsert(typeinfo, arch_types)
-    else:
-      CheckAndInsert(typeinfo, ind_types)
+    CheckAndInsert(typeinfo, types)
 
 
 def ToAssertionCode(typeinfo):
@@ -245,6 +249,26 @@ def WriteArchSpecificCode(types, root, filename):
 
 
 def main(argv):
+  # See README file for example command-line invocation.  This script runs the
+  # PrintNamesAndSizes Clang plugin with 'test_struct_sizes.c' as input, which
+  # should include all C headers and all existing size checks.  It runs the
+  # plugin multiple times;  once for each of a set of targets, some 32-bit and
+  # some 64-bit.  It verifies that wherever possible, types have a consistent
+  # size on both platforms.  Types that can't easily have consistent size (e.g.
+  # ones that contain a pointer) are checked to make sure they are consistent
+  # for all 32-bit platforms and consistent on all 64-bit platforms, but the
+  # sizes on 32 vs 64 are allowed to differ.
+  #
+  # Then, if all the types have consistent size as expected, compile assertions
+  # are added to the source code.  Types whose size is independent of
+  # architectureacross have their compile assertions placed immediately after
+  # their definition in the C API header.  Types whose size differs on 32-bit
+  # vs 64-bit have a compile assertion placed in each of:
+  # ppapi/tests/arch_dependent_sizes_32.h and
+  # ppapi/tests/arch_dependent_sizes_64.h.
+  #
+  # Note that you should always check the results of the tool to make sure
+  # they are sane.
   parser = optparse.OptionParser()
   parser.add_option(
       '-c', '--clang-path', dest='clang_path',
@@ -293,19 +317,70 @@ def main(argv):
 
   # Now run clang for each target.  Along the way, make sure architecture-
   # dependent types are consistent sizes on all 32-bit platforms and consistent
-  # on all 64-bit platforms.  Any types in 'types_independent' are checked for
-  # all targets to make sure their size is consistent across all of them.
+  # on all 64-bit platforms.
   targets32 = options.targets32.split(',');
   for target in targets32:
-    ProcessTarget(clang_command, target, types32, types_independent)
+    # For each 32-bit target, run the PrintNamesAndSizes Clang plugin to get
+    # information about all types in the translation unit, and add a TypeInfo
+    # for each of them to types32.  If any size mismatches are found,
+    # ProcessTarget will spit out an error and exit.
+    ProcessTarget(clang_command, target, types32)
   targets64 = options.targets64.split(',');
   for target in targets64:
-    ProcessTarget(clang_command, target, types64, types_independent)
+    # Do the same as above for each 64-bit target;  put all types in types64.
+    ProcessTarget(clang_command, target, types64)
 
-  # This dictionary maps file names to FilePatch objects.
+  # Now for each dictionary, find types whose size are consistent regardless of
+  # architecture, and move those in to types_independent.  Anywhere sizes
+  # differ, make sure they are expected to be architecture-dependent based on
+  # their structure.  If we find types which could easily be consistent but
+  # aren't, spit out an error and exit.
+  types_independent = {}
+  for typename, typeinfo32 in types32.items():
+    if (typename in types64):
+      typeinfo64 = types64[typename]
+      if (typeinfo64.size == typeinfo32.size):
+        # The types are the same size, so we can treat it as arch-independent.
+        types_independent[typename] = typeinfo32
+        del types32[typename]
+        del types64[typename]
+      elif (typeinfo32.arch_dependent or typeinfo64.arch_dependent):
+        # The type is defined in such a way that it would be difficult to make
+        # its size consistent.  E.g., it has pointers.  We'll leave it in the
+        # arch-dependent maps so that we can put arch-dependent size checks in
+        # test code.
+        pass
+      else:
+        # The sizes don't match, but there's no reason they couldn't.  It's
+        # probably due to an alignment mismatch between Win32/NaCl vs Linux32/
+        # Mac32.
+        print "Error: '" + typename + "' is", typeinfo32.size, \
+            "bytes on target '" + typeinfo32.target + \
+            "', but", typeinfo64.size, "on target '" + typeinfo64.target + "'"
+        print typeinfo32.parsed_line
+        print typeinfo64.parsed_line
+        sys.exit(1)
+    else:
+      print "WARNING:  Type '", typename, "' was defined for target '",
+      print typeinfo32.target, ", but not for any 64-bit targets."
+
+  # Now we have all the information we need to generate our static assertions.
+  # Types that have consistent size across architectures will have the static
+  # assertion placed immediately after their definition.  Types whose size
+  # depends on 32-bit vs 64-bit architecture will have checks placed in
+  # tests/arch_dependent_sizes_32/64.h.
+
+  # This dictionary maps file names to FilePatch objects.  We will add items
+  # to it as needed.  Each FilePatch represents a set of changes to make to the
+  # associated file (additions and deletions).
   file_patches = {}
 
-  # Find locations of existing macros, and just delete them all.
+  # Find locations of existing macros, and just delete them all.  Note that
+  # normally, only things in 'types_independent' need to be deleted, as arch-
+  # dependent checks exist in tests/arch_dependent_sizes_32/64.h, which are
+  # always completely over-ridden.  However, it's possible that a type that used
+  # to be arch-independent has changed to now be arch-dependent (e.g., because
+  # a pointer was added), and we want to delete the old check in that case.
   for name, typeinfo in \
       types_independent.items() + types32.items() + types64.items():
     if IsMacroDefinedName(name):
@@ -318,18 +393,29 @@ def main(argv):
   # Add a compile-time assertion for each type whose size is independent of
   # architecture.  These assertions go immediately after the class definition.
   for name, typeinfo in types_independent.items():
-    # Ignore macros and types that are 0 bytes (i.e., typedefs to void)
+    # Ignore dummy types that were defined by macros and also ignore types that
+    # are 0 bytes (i.e., typedefs to void).
     if not IsMacroDefinedName(name) and typeinfo.size > 0:
       sourcefile = typeinfo.source_location.filename
       if sourcefile not in file_patches:
         file_patches[sourcefile] = FilePatch(sourcefile)
       # Add the assertion code just after the definition of the type.
+      # E.g.:
+      # struct Foo {
+      #   int32_t x;
+      # };
+      # PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(Foo, 4); <---Add this line
       file_patches[sourcefile].Add(ToAssertionCode(typeinfo),
                                    typeinfo.source_location.end_line+1)
 
+  # Apply our patches.  This actually edits the files containing the definitions
+  # for the types in types_independent.
   for filename, patch in file_patches.items():
     patch.Apply()
 
+  # Write out a file of checks for 32-bit architectures and a separate file for
+  # 64-bit architectures.  These only have checks for types that are
+  # architecture-dependent.
   c_source_root = os.path.join(options.ppapi_root, "tests")
   WriteArchSpecificCode(types32.values(),
                         c_source_root,

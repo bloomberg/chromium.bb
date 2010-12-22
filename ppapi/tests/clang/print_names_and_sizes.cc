@@ -6,11 +6,13 @@
 // structs, enums, and typedefs in the input file.
 
 #include <cstdio>
+#include <cstring>
 #include <string>
 
 #include "clang/AST/AST.h"
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/CharUnits.h"
+#include "clang/AST/Decl.h"
 #include "clang/Basic/SourceManager.h"
 #include "clang/Basic/TargetInfo.h"
 #include "clang/Frontend/CompilerInstance.h"
@@ -20,19 +22,19 @@ namespace {
 
 const char* const kTypedefName = "Typedef";
 const char* const kDelim = ",";
-const char* const kHasPointer = "HasPointer";
-const char* const kNoPointer = "NoPointer";
+const char* const kArchDependent = "ArchDependentSize";
+const char* const kNotArchDependent = "NotArchDependentSize";
 
 // This class consumes a Clang-parsed AST and prints out information about types
 // defined in the global namespace.  Specifically, for each type definition
 // encountered, it prints:
-// "kind,name,size,has_pointer,source_file,first_line,last_line\n"
+// "kind,name,size,arch_dependent,source_file,first_line,last_line\n"
 // Where:
 // - kind:  The Clang TypeClassName (Record, Enum, Typedef, Union, etc)
 // - name:  The unmangled string name of the type.
 // - size:  The size in bytes of the type.
-// - has_pointer:  'HasPointer' if the type is or has a pointer.  Otherwise,
-//                 'NoPointer'.
+// - arch_dependent:  'ArchDependentSize' if the type has architecture-dependent
+//                    size, NotArchDependentSize otherwise.
 // - source_file:  The source file in which the type is defined.
 // - first_line:  The first line of the definition (counting from 0).
 // - last_line:  The last line of the definition (counting from 0).
@@ -47,29 +49,47 @@ class PrintNamesAndSizesConsumer : public clang::ASTConsumer {
   // delete it.
   clang::SourceManager* source_manager_;
 
-  // Return true iff the type is a pointer or contains a pointer.  This is
-  // important because these types may be different sizes on 32-bit vs 64-bit
-  // platforms.  Structs, enums, and unions that do NOT contain pointers are
+  // Return true if the type contains types that differ in size between 32-bit
+  // and 64-bit architectures.  This is true for types that are typedefed to a
+  // pointer, long, or unsigned long and also any types that contain an
+  // architecture-dependent type.  Note that this is a bit overly restrictive;
+  // some unions may be consistent size on 32-bit and 64-bit architectures
+  // despite containing one of these types.  But it's not an important enough
+  // issue to warrant coding the special case.
+  // Structs, enums, and unions that do NOT contain arch-dependent types are
   // crafted to be the same size on 32-bit and 64-bit platforms by convention.
-  bool HasPointer(const clang::Type& type) {
+  bool HasArchDependentSize(const clang::Type& type) {
     if (type.isPointerType()) {
       return true;
+    } else if (const clang::BuiltinType* builtin =
+        dyn_cast<clang::BuiltinType>(&type)) {
+      if ((builtin->getKind() == clang::BuiltinType::Long) ||
+          (builtin->getKind() == clang::BuiltinType::ULong)) {
+        return true;
+      }
+    } else if (const clang::ArrayType* array =
+        dyn_cast<clang::ArrayType>(&type)) {
+      // If it's an array, it has architecture-dependent size if its elements
+      // do.
+      return HasArchDependentSize(*(array->getElementType().getTypePtr()));
+    } else if (const clang::TypedefType* typedef_type =
+        dyn_cast<clang::TypedefType>(&type)) {
+      return HasArchDependentSize(*(typedef_type->desugar().getTypePtr()));
     } else if (const clang::RecordType* record =
         dyn_cast<clang::RecordType>(&type)) {
       // If it's a struct or union, iterate through the fields.  If any of them
-      // contain is or has a pointer, then we have one too.
+      // has architecture-dependent size, then we do too.
       const clang::RecordDecl* decl = record->getDecl();
       clang::RecordDecl::field_iterator iter(decl->field_begin());
       clang::RecordDecl::field_iterator end(decl->field_end());
       for (; iter != end; ++iter) {
-        if (HasPointer(*(iter->getType().getTypePtr()))) {
+        if (HasArchDependentSize(*(iter->getType().getTypePtr()))) {
           return true;
         }
       }
-      // It's a struct or union, but contains no pointers.
+      // It's a struct or union, but contains no architecture-dependent members.
       return false;
     }
-    // It's not a pointer, a struct, or a union.
     return false;
   }
 
@@ -84,7 +104,7 @@ class PrintNamesAndSizesConsumer : public clang::ASTConsumer {
                 kind.c_str(),
                 name.c_str(),
                 size.getQuantity(),
-                HasPointer(type) ? kHasPointer : kNoPointer,
+                HasArchDependentSize(type) ? kArchDependent : kNotArchDependent,
                 presumed_begin.getFilename(),
                 presumed_begin.getLine(),
                 presumed_end.getLine());
