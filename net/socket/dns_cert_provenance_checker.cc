@@ -16,6 +16,7 @@
 #include <set>
 #include <string>
 
+#include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/crypto/encryptor.h"
 #include "base/crypto/symmetric_key.h"
@@ -150,6 +151,7 @@ class DnsCertProvenanceCheck : public NonThreadSafe {
                  << " hostname:" << hostname_
                  << " domain:" << domain_;
       g_dns_cert_limits.Get().DidUpload(hostname_);
+      LogCertificates(der_certs_);
       delegate_->OnDnsCertLookupFailed(hostname_, der_certs_);
     } else if (status == OK) {
       LOG(ERROR) << "GOOD"
@@ -160,6 +162,35 @@ class DnsCertProvenanceCheck : public NonThreadSafe {
     }
 
     delete this;
+  }
+
+  // LogCertificates writes a certificate chain, in PEM format, to LOG(ERROR).
+  static void LogCertificates(
+      const std::vector<std::string>& der_certs) {
+    std::string dump;
+    bool first = true;
+
+    for (std::vector<std::string>::const_iterator
+         i = der_certs.begin(); i != der_certs.end(); i++) {
+      if (!first)
+        dump += "\n";
+      first = false;
+
+      dump += "-----BEGIN CERTIFICATE-----\n";
+      std::string b64_encoded;
+      base::Base64Encode(*i, &b64_encoded);
+      for (size_t i = 0; i < b64_encoded.size();) {
+        size_t todo = b64_encoded.size() - i;
+        if (todo > 64)
+          todo = 64;
+        dump += b64_encoded.substr(i, todo);
+        dump += "\n";
+        i += todo;
+      }
+      dump += "-----END CERTIFICATE-----";
+    }
+
+    LOG(ERROR) << "Offending certificates:\n" << dump;
   }
 
   const std::string hostname_;
