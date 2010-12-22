@@ -75,8 +75,7 @@ class BookmarkHTMLWriterTest : public testing::Test {
     result.append(WideToUTF16Hack(entry.title));
 
     result.append(ASCIIToUTF16(" time="));
-    result.append(WideToUTF16Hack(
-        base::TimeFormatFriendlyDateAndTime(entry.creation_time)));
+    result.append(base::TimeFormatFriendlyDateAndTime(entry.creation_time));
     return result;
   }
 

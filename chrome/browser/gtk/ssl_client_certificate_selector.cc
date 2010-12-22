@@ -246,7 +246,7 @@ std::string SSLClientCertificateSelector::FormatDetailsText(
 
   rv += l10n_util::GetStringFUTF8(
       IDS_CERT_SUBJECTNAME_FORMAT,
-      UTF8ToUTF16(x509_certificate_model::GetSubjectName(cert)));;
+      UTF8ToUTF16(x509_certificate_model::GetSubjectName(cert)));
 
   rv += "\n  ";
   rv += l10n_util::GetStringFUTF8(
@@ -256,10 +256,8 @@ std::string SSLClientCertificateSelector::FormatDetailsText(
 
   base::Time issued, expires;
   if (x509_certificate_model::GetTimes(cert, &issued, &expires)) {
-    string16 issued_str = WideToUTF16(
-        base::TimeFormatShortDateAndTime(issued));
-    string16 expires_str = WideToUTF16(
-        base::TimeFormatShortDateAndTime(expires));
+    string16 issued_str = base::TimeFormatShortDateAndTime(issued);
+    string16 expires_str = base::TimeFormatShortDateAndTime(expires);
     rv += "\n  ";
     rv += l10n_util::GetStringFUTF8(IDS_CERT_VALIDITY_RANGE_FORMAT,
                                     issued_str, expires_str);

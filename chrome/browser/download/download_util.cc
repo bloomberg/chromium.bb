@@ -489,7 +489,7 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
   file_value->SetString("since_string",
       TimeFormat::RelativeDate(download->start_time(), NULL));
   file_value->SetString("date_string",
-      WideToUTF16Hack(base::TimeFormatShortDate(download->start_time())));
+      base::TimeFormatShortDate(download->start_time()));
   file_value->SetInteger("id", id);
   file_value->SetString("file_path",
       WideToUTF16Hack(download->GetTargetFilePath().ToWStringHack()));

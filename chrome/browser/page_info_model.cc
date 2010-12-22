@@ -329,7 +329,7 @@ void PageInfoModel::OnGotVisitCountToHost(HistoryService::Handle handle,
         headline,
         l10n_util::GetStringFUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_VISITED_BEFORE_TODAY,
-            WideToUTF16(base::TimeFormatShortDate(first_visit))),
+            base::TimeFormatShortDate(first_visit)),
         SECTION_INFO_FIRST_VISIT));
   }
   observer_->ModelChanged();

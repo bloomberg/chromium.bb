@@ -210,7 +210,7 @@ void ViewBlobInternalsJob::GenerateHTMLForBlobData(const BlobData& blob_data,
 #endif
                  out);
         if (!item.expected_modification_time().is_null()) {
-          AddHTMLListItem(kModificationTime, WideToUTF8(
+          AddHTMLListItem(kModificationTime, UTF16ToUTF8(
               TimeFormatFriendlyDateAndTime(item.expected_modification_time())),
               out);
         }

@@ -217,12 +217,12 @@ void AddIntSyncDetail(ListValue* details, const std::string& stat_name,
   details->Append(val);
 }
 
-std::wstring ConstructTime(int64 time_in_int) {
+string16 ConstructTime(int64 time_in_int) {
   base::Time time = base::Time::FromInternalValue(time_in_int);
 
   // If time is null the format function returns a time in 1969.
   if (time.is_null())
-    return std::wstring();
+    return string16();
   return base::TimeFormatFriendlyDateAndTime(time);
 }
 
@@ -354,9 +354,7 @@ void ConstructAboutInformation(ProfileSyncService* service,
 
       DictionaryValue* val = new DictionaryValue;
       val->SetString("stat_name", "Autofill Migration Time");
-      val->SetString("stat_value",
-        WideToUTF16Hack(
-              ConstructTime(info.autofill_migration_time)));
+      val->SetString("stat_value", ConstructTime(info.autofill_migration_time));
       details->Append(val);
     }
   }

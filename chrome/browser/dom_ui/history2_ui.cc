@@ -276,20 +276,19 @@ void BrowsingHistoryHandler2::QueryComplete(
       string16 date_str = TimeFormat::RelativeDate(page.visit_time(),
                                                    &midnight_today);
       if (date_str.empty()) {
-        date_str =
-            WideToUTF16Hack(base::TimeFormatFriendlyDate(page.visit_time()));
+        date_str = base::TimeFormatFriendlyDate(page.visit_time());
       } else {
         date_str = l10n_util::GetStringFUTF16(
             IDS_HISTORY_DATE_WITH_RELATIVE_TIME,
             date_str,
-            WideToUTF16Hack(base::TimeFormatFriendlyDate(page.visit_time())));
+            base::TimeFormatFriendlyDate(page.visit_time()));
       }
       page_value->SetString("dateRelativeDay", date_str);
       page_value->SetString("dateTimeOfDay",
-          WideToUTF16Hack(base::TimeFormatTimeOfDay(page.visit_time())));
+          base::TimeFormatTimeOfDay(page.visit_time()));
     } else {
       page_value->SetString("dateShort",
-          WideToUTF16Hack(base::TimeFormatShortDate(page.visit_time())));
+          base::TimeFormatShortDate(page.visit_time()));
       page_value->SetString("snippet", page.snippet().text());
     }
     page_value->SetBoolean("starred",

@@ -474,11 +474,11 @@ void gtk_chrome_cookie_view_display_cookie(
   gtk_entry_set_text(GTK_ENTRY(self->cookie_path_entry_),
                      cookie.Path().c_str());
   gtk_entry_set_text(GTK_ENTRY(self->cookie_created_entry_),
-                     WideToUTF8(base::TimeFormatFriendlyDateAndTime(
+                     UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(
                          cookie.CreationDate())).c_str());
 
   std::string expire_text = cookie.DoesExpire() ?
-      WideToUTF8(base::TimeFormatFriendlyDateAndTime(cookie.ExpiryDate())) :
+      UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(cookie.ExpiryDate())) :
       l10n_util::GetStringUTF8(IDS_COOKIES_COOKIE_EXPIRES_SESSION);
 
   if (self->cookie_expires_entry_) {
@@ -545,7 +545,7 @@ void gtk_chrome_cookie_view_display_database(
                          GetByteDisplayUnits(database_info.size),
                          true)).c_str());
   gtk_entry_set_text(GTK_ENTRY(self->database_last_modified_entry_),
-                     WideToUTF8(base::TimeFormatFriendlyDateAndTime(
+                     UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(
                          database_info.last_modified)).c_str());
   SetDatabaseDetailsSensitivity(self, TRUE);
 }
@@ -565,7 +565,7 @@ void gtk_chrome_cookie_view_display_local_storage(
                          GetByteDisplayUnits(local_storage_info.size),
                          true)).c_str());
   gtk_entry_set_text(GTK_ENTRY(self->local_storage_last_modified_entry_),
-                     WideToUTF8(base::TimeFormatFriendlyDateAndTime(
+                     UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(
                          local_storage_info.last_modified)).c_str());
   SetLocalStorageDetailsSensitivity(self, TRUE);
 }
@@ -584,10 +584,10 @@ void gtk_chrome_cookie_view_display_app_cache(
                          GetByteDisplayUnits(info.size),
                          true)).c_str());
   gtk_entry_set_text(GTK_ENTRY(self->appcache_created_entry_),
-                     WideToUTF8(base::TimeFormatFriendlyDateAndTime(
+                     UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(
                          info.creation_time)).c_str());
   gtk_entry_set_text(GTK_ENTRY(self->appcache_last_accessed_entry_),
-                     WideToUTF8(base::TimeFormatFriendlyDateAndTime(
+                     UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(
                          info.last_access_time)).c_str());
   SetAppCacheDetailsSensitivity(self, TRUE);
 }
@@ -606,7 +606,7 @@ void gtk_chrome_cookie_view_display_indexed_db(
                          GetByteDisplayUnits(indexed_db_info.size),
                          true)).c_str());
   gtk_entry_set_text(GTK_ENTRY(self->indexed_db_last_modified_entry_),
-                     WideToUTF8(base::TimeFormatFriendlyDateAndTime(
+                     UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(
                          indexed_db_info.last_modified)).c_str());
   SetLocalStorageDetailsSensitivity(self, TRUE);
 }

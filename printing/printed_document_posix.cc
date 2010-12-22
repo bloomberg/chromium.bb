@@ -14,8 +14,8 @@ namespace printing {
 
 void PrintedDocument::Immutable::SetDocumentDate() {
   Time now = Time::Now();
-  date_ = WideToUTF16Hack(base::TimeFormatShortDateNumeric(now));
-  time_ = WideToUTF16Hack(base::TimeFormatTimeOfDay(now));
+  date_ = base::TimeFormatShortDateNumeric(now);
+  time_ = base::TimeFormatTimeOfDay(now);
 }
 
 }  // namespace printing

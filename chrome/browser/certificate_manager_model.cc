@@ -65,10 +65,8 @@ string16 CertificateManagerModel::GetColumnText(
               cert.os_cert_handle(), ""));
       break;
     case COL_EXPIRES_ON:
-      if (!cert.valid_expiry().is_null()) {
-        rv = WideToUTF16Hack(
-            base::TimeFormatShortDateNumeric(cert.valid_expiry()));
-      }
+      if (!cert.valid_expiry().is_null())
+        rv = base::TimeFormatShortDateNumeric(cert.valid_expiry());
       break;
     default:
       NOTREACHED();

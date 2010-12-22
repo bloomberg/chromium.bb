@@ -128,14 +128,14 @@
     domain_.reset([origin retain]);
 
     if (cookie->DoesExpire()) {
-      expires_.reset([base::SysWideToNSString(
+      expires_.reset([base::SysUTF16ToNSString(
           base::TimeFormatFriendlyDateAndTime(cookie->ExpiryDate())) retain]);
     } else {
       expires_.reset([l10n_util::GetNSStringWithFixup(
           IDS_COOKIES_COOKIE_EXPIRES_SESSION) retain]);
     }
 
-    created_.reset([base::SysWideToNSString(
+    created_.reset([base::SysUTF16ToNSString(
         base::TimeFormatFriendlyDateAndTime(cookie->CreationDate())) retain]);
 
     if (cookie->IsSecure()) {
@@ -158,7 +158,7 @@
         databaseInfo->description) retain]);
     fileSize_.reset([base::SysUTF16ToNSString(FormatBytes(databaseInfo->size,
         GetByteDisplayUnits(databaseInfo->size), true)) retain]);
-    lastModified_.reset([base::SysWideToNSString(
+    lastModified_.reset([base::SysUTF16ToNSString(
         base::TimeFormatFriendlyDateAndTime(
             databaseInfo->last_modified)) retain]);
   }
@@ -173,7 +173,7 @@
     domain_.reset([base::SysUTF8ToNSString(storageInfo->origin) retain]);
     fileSize_.reset([base::SysUTF16ToNSString(FormatBytes(storageInfo->size,
         GetByteDisplayUnits(storageInfo->size), true)) retain]);
-    lastModified_.reset([base::SysWideToNSString(
+    lastModified_.reset([base::SysUTF16ToNSString(
         base::TimeFormatFriendlyDateAndTime(
             storageInfo->last_modified)) retain]);
   }
@@ -188,10 +188,10 @@
         appcacheInfo->manifest_url.spec()) retain]);
     fileSize_.reset([base::SysUTF16ToNSString(FormatBytes(appcacheInfo->size,
         GetByteDisplayUnits(appcacheInfo->size), true)) retain]);
-    created_.reset([base::SysWideToNSString(
+    created_.reset([base::SysUTF16ToNSString(
         base::TimeFormatFriendlyDateAndTime(
             appcacheInfo->creation_time)) retain]);
-    lastAccessed_.reset([base::SysWideToNSString(
+    lastAccessed_.reset([base::SysUTF16ToNSString(
         base::TimeFormatFriendlyDateAndTime(
             appcacheInfo->last_access_time)) retain]);
   }
@@ -245,7 +245,7 @@
     domain_.reset([base::SysUTF8ToNSString(indexedDBInfo->origin) retain]);
     fileSize_.reset([base::SysUTF16ToNSString(FormatBytes(indexedDBInfo->size,
         GetByteDisplayUnits(indexedDBInfo->size), true)) retain]);
-    lastModified_.reset([base::SysWideToNSString(
+    lastModified_.reset([base::SysUTF16ToNSString(
         base::TimeFormatFriendlyDateAndTime(
             indexedDBInfo->last_modified)) retain]);
   }

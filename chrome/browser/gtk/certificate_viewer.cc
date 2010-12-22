@@ -260,9 +260,9 @@ void CertificateViewer::InitGeneralPage() {
   base::Time issued, expires;
   std::string issued_str, expires_str;
   if (x509_certificate_model::GetTimes(cert, &issued, &expires)) {
-    issued_str = WideToUTF8(
+    issued_str = UTF16ToUTF8(
         base::TimeFormatShortDateNumeric(issued));
-    expires_str = WideToUTF8(
+    expires_str = UTF16ToUTF8(
         base::TimeFormatShortDateNumeric(expires));
   } else {
     issued_str = alternative_text;
@@ -389,8 +389,8 @@ void CertificateViewer::FillTreeStoreWithCertFields(
   base::Time issued, expires;
   std::string issued_str, expires_str;
   if (x509_certificate_model::GetTimes(cert, &issued, &expires)) {
-    issued_str = WideToUTF8(base::TimeFormatShortDateAndTime(issued));
-    expires_str = WideToUTF8(base::TimeFormatShortDateAndTime(expires));
+    issued_str = UTF16ToUTF8(base::TimeFormatShortDateAndTime(issued));
+    expires_str = UTF16ToUTF8(base::TimeFormatShortDateAndTime(expires));
   }
   gtk_tree_store_append(store, &iter, &validity_iter);
   gtk_tree_store_set(
