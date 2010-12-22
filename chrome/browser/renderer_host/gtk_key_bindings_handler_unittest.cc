@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_util.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_paths.h"
@@ -30,6 +31,8 @@ class GtkKeyBindingsHandlerTest : public testing::Test {
     FilePath gtkrc;
     PathService::Get(chrome::DIR_TEST_DATA, &gtkrc);
     gtkrc = gtkrc.AppendASCII("gtk_key_bindings_test_gtkrc");
+    CHECK(file_util::PathExists(gtkrc)) << gtkrc.value();
+
     gtk_rc_parse(gtkrc.value().c_str());
 
     GtkWidget* fixed = gtk_fixed_new();
