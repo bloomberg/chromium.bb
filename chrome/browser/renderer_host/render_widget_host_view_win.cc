@@ -17,6 +17,7 @@
 #include "base/scoped_comptr_win.h"
 #include "base/thread.h"
 #include "base/win_util.h"
+#include "base/win/scoped_gdi_object.h"
 #include "chrome/browser/accessibility/browser_accessibility_win.h"
 #include "chrome/browser/accessibility/browser_accessibility_manager.h"
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
@@ -674,7 +675,7 @@ void RenderWidgetHostViewWin::Redraw() {
   RECT damage_bounds;
   GetUpdateRect(&damage_bounds, FALSE);
 
-  ScopedGDIObject<HRGN> damage_region(CreateRectRgn(0, 0, 0, 0));
+  base::win::ScopedGDIObject<HRGN> damage_region(CreateRectRgn(0, 0, 0, 0));
   GetUpdateRgn(damage_region, FALSE);
 
   // Paint the invalid region synchronously.  Our caller will not paint again
@@ -901,7 +902,7 @@ void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
 
   // Grab the region to paint before creation of paint_dc since it clears the
   // damage region.
-  ScopedGDIObject<HRGN> damage_region(CreateRectRgn(0, 0, 0, 0));
+  base::win::ScopedGDIObject<HRGN> damage_region(CreateRectRgn(0, 0, 0, 0));
   GetUpdateRgn(damage_region, FALSE);
 
   CPaintDC paint_dc(m_hWnd);

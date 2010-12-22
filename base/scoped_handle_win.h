@@ -4,14 +4,13 @@
 
 // TODO(brettw) remove this file when all callers are converted to using the
 // new location/namespace
-#include "base/win/scoped_handle.h"
 #include "base/win/scoped_gdi_object.h"
+#include "base/win/scoped_handle.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_hglobal.h"
 
 using base::win::ScopedBitmap;
-using base::win::ScopedGDIObject;
 using base::win::ScopedHandle;
 using base::win::ScopedHDC;
 using base::win::ScopedHFONT;
