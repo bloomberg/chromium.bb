@@ -575,9 +575,11 @@ bool Plugin::LoadNaClModule(nacl::string full_url, int file_desc) {
   }
   nacl::scoped_ptr<nacl::DescWrapper>
       wrapper(wrapper_factory_->MakeFileDesc(file_desc, O_RDONLY));
-  // TODO(polina): switch to StartFromBrowser when we fix: 
-  // http://code.google.com/p/nativeclient/issues/detail?id=934
+#if !defined(NACL_STANDALONE)
+  return LoadNaClModule(wrapper.get(), /* start_from_browser */ true);
+#else
   return LoadNaClModule(wrapper.get(), /* start_from_browser */ false);
+#endif
 }
 
 bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper) {
