@@ -158,6 +158,8 @@ function load() {
   // Allow platform specific CSS rules.
   if (cr.isMac)
     document.documentElement.setAttribute('os', 'mac');
+  if (cr.isLinux)
+    document.documentElement.setAttribute('toolkit', 'gtk');
   if (cr.isViews)
     document.documentElement.setAttribute('toolkit', 'views');
 }

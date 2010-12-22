@@ -5,9 +5,10 @@ found in the LICENSE file.
 */
 
 .exceptionPattern {
-  -webkit-box-flex: 1;
   display: -webkit-box;
+  margin-right: 4px;
   overflow: hidden;
+  -webkit-box-flex: 1;
   white-space: nowrap;
 }
 
@@ -17,9 +18,18 @@ found in the LICENSE file.
   margin-right: 20px;
 }
 
+select.exceptionSetting {
+  vertical-align: middle;
+}
+
+/* Hacks to make the <select> align better with the <input>. */
+html[toolkit=gtk] select.exceptionSetting {
+  height: 22px;
+  margin-top: 1px;
+}
+
 #exceptionColumnHeaders {
   display: -webkit-box;
-  margin-bottom: 4px;
   margin-top: 17px;
   -webkit-margin-start: 3px;
 }
@@ -34,4 +44,13 @@ found in the LICENSE file.
 
 #exceptionBehaviorColumn {
   width: 140px;
+}
+
+.otr_explanation {
+  font-style: italic;
+}
+
+#contentSettingsExceptionsArea list {
+  margin-bottom: 10px;
+  margin-top: 4px;
 }

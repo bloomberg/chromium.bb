@@ -23,6 +23,12 @@ const cr = (function() {
   const isChromeOS = /CrOS/.test(navigator.userAgent);
 
   /**
+   * Whether this is on vanilla Linux (not chromeOS).
+   * @type {boolean}
+   */
+  const isLinux = /Linux/.test(navigator.userAgent);
+
+  /**
    * Whether this uses the views toolkit or not.
    * @type {boolean}
    */
@@ -325,6 +331,8 @@ const cr = (function() {
     isChromeOS: isChromeOS,
     isMac: isMac,
     isWindows: isWindows,
+    isLinux: isLinux,
+    isViews: isViews,
     define: define,
     defineProperty: defineProperty,
     PropertyKind: PropertyKind,
