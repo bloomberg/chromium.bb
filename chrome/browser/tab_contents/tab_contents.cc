@@ -293,6 +293,10 @@ class OutdatedPluginInfoBar : public ConfirmInfoBarDelegate {
     return false;
   }
 
+  virtual void InfoBarClosed() {
+    delete this;
+  }
+
  private:
   TabContents* tab_contents_;
   string16 name_;
