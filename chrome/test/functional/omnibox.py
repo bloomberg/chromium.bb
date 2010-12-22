@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import glob
 import os
 import re
 import shutil
@@ -276,6 +277,47 @@ class OmniboxTest(pyauto.PyUITest):
     search_term = split_title[len(split_title) - 1]
     partial_title = self._GetOmniboxMatchesFor(search_term, windex=windex)
     self._VerifyHasBookmarkResult(partial_title)
+
+  def _GotNewMatches(self, old_matches_len, search_text):
+    """Determines if omnibox has any new matches"""
+    new_matches = self._GetOmniboxMatchesFor(search_text) 
+    if len(new_matches) > old_matches_len:
+      return True
+    return False
+
+  def testContentHisotry(self):
+    """Verify omnibox results when entering page content
+       
+    Test verifies that visited page shows up in omnibox on entering page
+    content.
+    """
+    search_text = 'British throne'
+    old_matches = self._GetOmniboxMatchesFor(search_text)
+    url = self.GetFileURLForPath(
+        os.path.join(self.DataDir(), 'find_in_page', 'largepage.html'))
+    self.AppendTab(pyauto.GURL(url))
+    self.assertTrue(self.WaitUntil(lambda: self._GotNewMatches(len(old_matches),
+                                   search_text), timeout=1))
+    matches = self._GetOmniboxMatchesFor(search_text)
+    matches_description = [x for x in matches if x['destination_url'] == url]
+    self.assertEqual(1, len(matches_description))
+
+  def testRecentPageHistory(self):
+    """Verify that omnibox shows recent history option in the visited
+       url list."""
+    search_text = 'file'
+    sites = glob.glob(os.path.join(self.DataDir(), 'find_in_page', '*.html')) 
+    for site in sites:
+      self.NavigateToURL(self.GetFileURLForPath(site))
+    old_matches = self._GetOmniboxMatchesFor(search_text)
+    # Using max timeout as 40 seconds, since expected page only shows up
+    # after 40 seconds and default timeout is less than that.
+    self.assertTrue(self.WaitUntil(
+        lambda: self._GotNewMatches(len(old_matches), search_text), timeout=40))
+    matches = self._GetOmniboxMatchesFor(search_text)
+    matches_description = [x for x in matches if x['type'] ==
+                           'open-history-page']
+    self.assertEqual(1, len(matches_description))
 
   def _VerifyHasBookmarkResult(self, matches):
     """Verify that we have a bookmark result."""
