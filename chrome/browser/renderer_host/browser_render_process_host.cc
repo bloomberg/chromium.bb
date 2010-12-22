@@ -247,6 +247,8 @@ class RendererURLRequestContextOverride
   }
 
  private:
+  virtual ~RendererURLRequestContextOverride() {}
+
   scoped_refptr<URLRequestContextGetter> request_context_;
   scoped_refptr<URLRequestContextGetter> media_request_context_;
 };

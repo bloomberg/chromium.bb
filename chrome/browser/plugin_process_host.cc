@@ -71,6 +71,9 @@ class PluginURLRequestContextOverride
     return CPBrowsingContextManager::GetInstance()->ToURLRequestContext(
         request_id);
   }
+
+ private:
+  virtual ~PluginURLRequestContextOverride() {}
 };
 
 }  // namespace

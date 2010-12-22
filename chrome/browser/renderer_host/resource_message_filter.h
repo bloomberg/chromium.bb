@@ -25,8 +25,16 @@ class ResourceMessageFilter : public BrowserMessageFilter {
   class URLRequestContextOverride
       : public base::RefCountedThreadSafe<URLRequestContextOverride> {
    public:
+    URLRequestContextOverride() {}
+
     virtual URLRequestContext* GetRequestContext(
         uint32 request_id, ResourceType::Type resource_type) = 0;
+
+   protected:
+    friend class base::RefCountedThreadSafe<URLRequestContextOverride>;
+    virtual ~URLRequestContextOverride() {}
+
+    DISALLOW_COPY_AND_ASSIGN(URLRequestContextOverride);
   };
 
   ResourceMessageFilter(int child_id,
@@ -51,7 +59,7 @@ class ResourceMessageFilter : public BrowserMessageFilter {
 
  protected:
   // Protected destructor so that we can be overriden in tests.
-  ~ResourceMessageFilter();
+  virtual ~ResourceMessageFilter();
 
  private:
   // The ID of the child process.
