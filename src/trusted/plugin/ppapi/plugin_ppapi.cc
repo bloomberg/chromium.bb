@@ -390,9 +390,11 @@ void PluginPpapi::NaClManifestFileDidOpen(int32_t pp_error) {
   // Once the bytes are read, the FILE is no longer needed, so close it.  This
   // allows for early returns without leaking the |json_file| FILE object.
   fclose(json_file);
-  if (read_error || (file_too_large == 0)) {
+  if (read_error || file_too_large) {
     // No need to close |file_desc|, that is handled by |url_downloader_|.
-    PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen failed\n"));
+    PLUGIN_PRINTF(("PluginPpapi::NaClManifestFileDidOpen failed: "
+                   "read_error=%d file_too_large=%d read_byte_count=%d\n",
+                   read_error, file_too_large, read_byte_count));
     return;
   }
   json_buffer[read_byte_count] = '\0';  // Force null termination.
