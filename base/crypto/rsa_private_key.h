@@ -165,6 +165,7 @@ class PrivateKeyInfoCodec {
 
 // Encapsulates an RSA private key. Can be used to generate new keys, export
 // keys to other formats, or to extract a public key.
+// TODO(hclam): This class should be ref-counted so it can be reused easily.
 class RSAPrivateKey {
  public:
   // Create a new random instance. Can return NULL if initialization fails.

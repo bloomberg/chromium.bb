@@ -30,6 +30,10 @@ void EnsureNSPRInit();
 // ever be initialized once.  NSS will be properly shut down on program exit.
 void EnsureNSSInit();
 
+// Check if the current NSS version is greater than or equals to |version|.
+// A sample version string is "3.12.3".
+bool CheckNSSVersion(const char* version);
+
 #if defined(OS_CHROMEOS)
 // Open the r/w nssdb that's stored inside the user's encrypted home directory.
 void OpenPersistentNSSDB();

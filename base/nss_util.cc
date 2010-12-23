@@ -333,6 +333,10 @@ void EnsureNSSInit() {
   g_nss_singleton.Get();
 }
 
+bool CheckNSSVersion(const char* version) {
+  return !!NSS_VersionCheck(version);
+}
+
 #if defined(USE_NSS)
 bool OpenTestNSSDB(const FilePath& path, const char* description) {
   return g_nss_singleton.Get().OpenTestNSSDB(path, description);
