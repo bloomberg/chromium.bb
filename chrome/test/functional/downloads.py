@@ -10,7 +10,6 @@ import os
 import shutil
 import sys
 import tempfile
-import time
 import urllib
 
 import pyauto_functional  # Must be imported before pyauto
@@ -466,6 +465,10 @@ class DownloadsTest(pyauto.PyUITest):
     This way you won't have to worry about which application might 'open'
     it.
     """
+    if not self.IsMac():
+      logging.info('Don\'t have a standard way to test when a file "opened"')
+      logging.info('Bailing out')
+      return
     file_path = os.path.join(self.DataDir(), 'downloads', 'a_zip_file.zip')
     file_url = self.GetFileURLForPath(file_path)
     downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
@@ -477,15 +480,18 @@ class DownloadsTest(pyauto.PyUITest):
     self.PerformActionOnDownload(id, 'toggle_open_files_like_this')
     os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
     # Retesting the flag we set
-    self.DownloadAndWaitForStart(file_url)
+    file_url2 = self.GetFileURLForDataPath(os.path.join('zip', 'test.zip'))
+    unzip_path = os.path.join(self.GetDownloadDirectory().value(),
+                              'test', 'foo')
+    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+    os.path.exists(unzip_path) and pyauto_utils.RemovePath(unzip_path)
+    self.DownloadAndWaitForStart(file_url2)
     self.WaitForAllDownloadsToComplete()
-    unzip_file_name = os.path.join(self.GetDownloadDirectory().value(),
-                                   'a_file.txt')
     # When the downloaded zip gets 'opened', a_file.txt will become available.
-    self.assertTrue(self.WaitUntil(lambda: os.path.exists(unzip_file_name)),
+    self.assertTrue(self.WaitUntil(lambda: os.path.exists(unzip_path)),
                     'Did not open the filetype')
     os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
-    os.path.exists(unzip_file_name) and os.remove(unzip_file_name)
+    os.path.exists(unzip_path) and pyauto_utils.RemovePath(unzip_path)
 
   def testExtendedAttributesOnMac(self):
     """Verify that Chrome sets the extended attributes on a file.
@@ -511,6 +517,10 @@ class DownloadsTest(pyauto.PyUITest):
     Set this option when file is downloading. Once file is downloaded,
     verify that downloaded zip file is unzipped.
     """
+    if not self.IsMac():
+      logging.info('Don\'t have a standard way to test when a file "opened"')
+      logging.info('Bailing out')
+      return
     # Creating a temp zip file.
     file_path = self._MakeFile(2**24)
     file_url = self.GetFileURLForPath(file_path)
@@ -547,12 +557,11 @@ class DownloadsTest(pyauto.PyUITest):
                                   os.path.basename(file_path))
     downloads = self.GetDownloadsInfo().Downloads()
     old_percentage = downloads[0]['PercentComplete']
-    # Wait for some time again re-check the download percentage
-    time.sleep(1)
-    downloads = self.GetDownloadsInfo().Downloads()
-    percentage = downloads[0]['PercentComplete']
-    self.assertTrue(percentage > old_percentage,
-                    'Download percentage value is not increasing')
+    def _PercentInc():
+      percent = self.GetDownloadsInfo().Downloads()[0]['PercentComplete']
+      return old_percentage == 100 or percent > old_percentage,
+    self.assertTrue(self.WaitUntil(_PercentInc),
+        msg='Download percentage value is not increasing')
     # Once download is completed, percentage is 100
     self.WaitForAllDownloadsToComplete()
     downloads = self.GetDownloadsInfo().Downloads()
