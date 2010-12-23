@@ -43,6 +43,7 @@
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/javascript_execution_controller.h"
+#include "chrome/test/automation/proxy_launcher.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/chrome_process_util.h"
@@ -140,7 +141,9 @@ void UITestBase::SetUp() {
   JavaScriptExecutionController::set_timeout(
       TestTimeouts::action_max_timeout_ms());
   test_start_time_ = Time::NowFromSystemTime();
-  LaunchBrowserAndServer();
+
+  launcher_.reset(CreateProxyLauncher());
+  launcher_->InitializeConnection(this);
 }
 
 void UITestBase::TearDown() {
@@ -175,24 +178,39 @@ void UITestBase::TearDown() {
 
 // TODO(phajdan.jr): get rid of set_command_execution_timeout_ms.
 void UITestBase::set_command_execution_timeout_ms(int timeout) {
-  server_->set_command_execution_timeout_ms(timeout);
+  automation_proxy_->set_command_execution_timeout_ms(timeout);
   VLOG(1) << "Automation command execution timeout set to " << timeout << " ms";
 }
 
-AutomationProxy* UITestBase::CreateAutomationProxy(int execution_timeout) {
-  return new AutomationProxy(execution_timeout, false);
+ProxyLauncher* UITestBase::CreateProxyLauncher() {
+  return new AnonymousProxyLauncher(false);
+}
+
+void UITestBase::LaunchBrowser() {
+  LaunchBrowser(launch_arguments_, clear_profile_);
 }
 
 void UITestBase::LaunchBrowserAndServer() {
-  // Set up IPC testing interface server.
-  server_.reset(CreateAutomationProxy(
-                    TestTimeouts::command_execution_timeout_ms()));
+  // Set up IPC testing interface as a server.
+  automation_proxy_.reset(launcher_->CreateAutomationProxy(
+                              TestTimeouts::command_execution_timeout_ms()));
 
   LaunchBrowser(launch_arguments_, clear_profile_);
-  ASSERT_EQ(AUTOMATION_SUCCESS, server_->WaitForAppLaunch())
+  WaitForBrowserLaunch();
+}
+
+void UITestBase::ConnectToRunningBrowser() {
+  // Set up IPC testing interface as a client.
+  automation_proxy_.reset(launcher_->CreateAutomationProxy(
+                              TestTimeouts::command_execution_timeout_ms()));
+  WaitForBrowserLaunch();
+}
+
+void UITestBase::WaitForBrowserLaunch() {
+  ASSERT_EQ(AUTOMATION_SUCCESS, automation_proxy_->WaitForAppLaunch())
       << "Error while awaiting automation ping from browser process";
   if (wait_for_initial_loads_)
-    ASSERT_TRUE(server_->WaitForInitialLoads());
+    ASSERT_TRUE(automation_proxy_->WaitForInitialLoads());
   else
     PlatformThread::Sleep(sleep_timeout_ms());
 
@@ -210,7 +228,7 @@ void UITestBase::CloseBrowserAndServer() {
     AssertAppNotRunning(StringPrintf(
         L"Unable to quit all browser processes. Original PID %d", process_id_));
 
-  server_.reset();  // Shut down IPC testing interface.
+  automation_proxy_.reset();  // Shut down IPC testing interface.
 }
 
 void UITestBase::LaunchBrowser(const CommandLine& arguments,
@@ -567,7 +585,7 @@ FilePath UITestBase::GetDownloadDirectory() {
 }
 
 void UITestBase::CloseBrowserAsync(BrowserProxy* browser) const {
-  ASSERT_TRUE(server_->Send(
+  ASSERT_TRUE(automation_proxy_->Send(
       new AutomationMsg_CloseBrowserRequestAsync(0, browser->handle())));
 }
 
@@ -579,7 +597,7 @@ bool UITestBase::CloseBrowser(BrowserProxy* browser,
 
   bool result = true;
 
-  bool succeeded = server_->Send(new AutomationMsg_CloseBrowser(
+  bool succeeded = automation_proxy_->Send(new AutomationMsg_CloseBrowser(
       0, browser->handle(), &result, application_closed));
 
   if (!succeeded)
@@ -694,10 +712,9 @@ void UITestBase::PrepareTestCommandline(CommandLine* command_line) {
   if (dom_automation_enabled_)
     command_line->AppendSwitch(switches::kDomAutomationController);
 
-  if (include_testing_id_) {
+  if (include_testing_id_)
     command_line->AppendSwitchASCII(switches::kTestingChannelID,
-                                   server_->channel_id());
-  }
+                                    launcher_->PrefixedChannelID());
 
   if (!show_error_dialogs_ &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
@@ -786,10 +803,11 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
             << browser_wrapper;
   }
 
-  bool started = base::LaunchApp(command_line.argv(),
-                                 server_->fds_to_map(),
-                                 wait,
-                                 process);
+  base::file_handle_mapping_vector fds;
+  if (automation_proxy_.get())
+    fds = automation_proxy_->fds_to_map();
+
+  bool started = base::LaunchApp(command_line.argv(), fds, wait, process);
 #endif
 
   return started;
@@ -867,11 +885,11 @@ void UITest::TearDown() {
   PlatformTest::TearDown();
 }
 
-AutomationProxy* UITest::CreateAutomationProxy(int execution_timeout) {
+ProxyLauncher* UITest::CreateProxyLauncher() {
   // Make the AutomationProxy disconnect the channel on the first error,
   // so that we avoid spending a lot of time in timeouts. The browser is likely
   // hosed if we hit those errors.
-  return new AutomationProxy(execution_timeout, true);
+  return new AnonymousProxyLauncher(true);
 }
 
 static CommandLine* CreatePythonCommandLine() {

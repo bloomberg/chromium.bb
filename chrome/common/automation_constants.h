@@ -7,6 +7,7 @@
 #pragma once
 
 namespace automation {
+
 // JSON value labels for proxy settings that are passed in via
 // AutomationMsg_SetProxyConfig. These are here since they are used by both
 // AutomationProvider and AutomationProxy.
@@ -16,9 +17,16 @@ extern const char kJSONProxyPacUrl[];
 extern const char kJSONProxyBypassList[];
 extern const char kJSONProxyServer[];
 
+// When passing the kTestingChannelID switch to the browser, prepend
+// this prefix to the channel id to enable the named testing interface.
+// Named testing interface is used when you want to connect an
+// AutomationProxy to an already-running browser instance.
+extern const char kNamedInterfacePrefix[];
+
 // Amount of time to wait before querying the browser.
 static const int kSleepTime = 250;
-}
+
+}  // namespace automation
 
 // Used by AutomationProxy, declared here so that other headers don't need
 // to include automation_proxy.h.

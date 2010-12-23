@@ -61,6 +61,17 @@ class AutomationProxy : public IPC::Channel::Listener,
   AutomationProxy(int command_execution_timeout_ms, bool disconnect_on_failure);
   virtual ~AutomationProxy();
 
+  // Creates a previously unused channel id.
+  static std::string GenerateChannelID();
+
+  // Initializes a channel for a connection to an AutomationProvider.
+  // If use_named_interface is false, it will act as a client
+  // and connect to the named IPC socket with channel_id as its path.
+  // If use_named_interface is true, it will act as a server and
+  // use an anonymous socketpair instead.
+  void InitializeChannel(const std::string& channel_id,
+                         bool use_named_interface);
+
   // IPC callback
   virtual void OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelError();
@@ -208,10 +219,6 @@ class AutomationProxy : public IPC::Channel::Listener,
                             const std::string& password) WARN_UNUSED_RESULT;
 #endif
 
-  // Returns the ID of the automation IPC channel, so that it can be
-  // passed to the app as a launch parameter.
-  const std::string& channel_id() const { return channel_id_; }
-
 #if defined(OS_POSIX)
   base::file_handle_mapping_vector fds_to_map() const;
 #endif
@@ -263,12 +270,9 @@ class AutomationProxy : public IPC::Channel::Listener,
 
  protected:
   template <class T> scoped_refptr<T> ProxyObjectFromHandle(int handle);
-  void InitializeChannelID();
   void InitializeThread();
-  void InitializeChannel();
   void InitializeHandleTracker();
 
-  std::string channel_id_;
   scoped_ptr<base::Thread> thread_;
   scoped_ptr<IPC::SyncChannel> channel_;
   scoped_ptr<AutomationHandleTracker> tracker_;
