@@ -6,6 +6,8 @@
 #define CHROME_COMMON_CHROME_APPLICATION_MAC_H_
 #pragma once
 
+#if defined(__OBJC__)
+
 #import <AppKit/AppKit.h>
 
 #include "base/basictypes.h"
@@ -55,6 +57,15 @@ class ScopedSendingEvent {
   DISALLOW_COPY_AND_ASSIGN(ScopedSendingEvent);
 };
 
-}  // chrome_application_mac
+}  // namespace chrome_application_mac
+
+#endif  // defined(__OBJC__)
+
+namespace chrome_application_mac {
+
+// To be used to instantiate CrApplication from C++ code.
+void RegisterCrApp();
+
+}  // namespace chrome_application_mac
 
 #endif  // CHROME_COMMON_CHROME_APPLICATION_MAC_H_

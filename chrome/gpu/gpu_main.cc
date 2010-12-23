@@ -25,6 +25,7 @@
 #endif
 
 #if defined(OS_MACOSX)
+#include "chrome/common/chrome_application_mac.h"
 #include "chrome/common/sandbox_mac.h"
 #endif
 
@@ -74,6 +75,10 @@ int GpuMain(const MainFunctionParams& parameters) {
   if (command_line.HasSwitch(switches::kGpuStartupDialog)) {
     ChildProcess::WaitForDebugger(L"Gpu");
   }
+
+#if defined(OS_MACOSX)
+  chrome_application_mac::RegisterCrApp();
+#endif
 
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);
   PlatformThread::SetName("CrGpuMain");

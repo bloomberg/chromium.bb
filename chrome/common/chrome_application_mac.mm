@@ -69,4 +69,8 @@ ScopedSendingEvent::~ScopedSendingEvent() {
   [app_ setHandlingSendEvent:handling_];
 }
 
+void RegisterCrApp() {
+  [CrApplication sharedApplication];
+}
+
 }  // namespace chrome_application_mac

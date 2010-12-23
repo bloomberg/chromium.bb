@@ -263,10 +263,6 @@ void Sandbox::SandboxWarmup(SandboxProcessType sandbox_type) {
         // Access to /dev/random is required for the field trial code.
         GetUrandomFD();
       }
-
-      { // Without this, the GPU process dies during [CrApplication init].
-        [CrApplication sharedApplication];
-      }
       break;
 
     default:
