@@ -374,3 +374,37 @@ TEST_F(ExtensionManifestTest, DefaultPathForExtent) {
   EXPECT_TRUE(extension->web_extent().ContainsURL(
       GURL("http://www.google.com/monkey")));
 }
+
+TEST_F(ExtensionManifestTest, DefaultLocale) {
+  LoadAndExpectError("default_locale_invalid.json",
+                     extension_manifest_errors::kInvalidDefaultLocale);
+
+  scoped_refptr<Extension> extension(
+      LoadAndExpectSuccess("default_locale_valid.json"));
+  EXPECT_EQ("de-AT", extension->default_locale());
+}
+
+TEST_F(ExtensionManifestTest, TtsProvider) {
+  LoadAndExpectError("tts_provider_invalid_1.json",
+                     extension_manifest_errors::kInvalidTts);
+  LoadAndExpectError("tts_provider_invalid_2.json",
+                     extension_manifest_errors::kInvalidTtsVoices);
+  LoadAndExpectError("tts_provider_invalid_3.json",
+                     extension_manifest_errors::kInvalidTtsVoices);
+  LoadAndExpectError("tts_provider_invalid_4.json",
+                     extension_manifest_errors::kInvalidTtsVoicesVoiceName);
+  LoadAndExpectError("tts_provider_invalid_5.json",
+                     extension_manifest_errors::kInvalidTtsVoicesLocale);
+  LoadAndExpectError("tts_provider_invalid_6.json",
+                     extension_manifest_errors::kInvalidTtsVoicesLocale);
+  LoadAndExpectError("tts_provider_invalid_7.json",
+                     extension_manifest_errors::kInvalidTtsVoicesGender);
+
+  scoped_refptr<Extension> extension(
+      LoadAndExpectSuccess("tts_provider_valid.json"));
+
+  ASSERT_EQ(1u, extension->tts_voices().size());
+  EXPECT_EQ("name", extension->tts_voices()[0].voice_name);
+  EXPECT_EQ("en-US", extension->tts_voices()[0].locale);
+  EXPECT_EQ("female", extension->tts_voices()[0].gender);
+}

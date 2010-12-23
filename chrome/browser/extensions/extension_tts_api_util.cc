@@ -6,6 +6,14 @@
 
 namespace extension_tts_api_util {
 
+const char kVoiceNameKey[] = "voiceName";
+const char kLocaleKey[] = "locale";
+const char kGenderKey[] = "gender";
+const char kRateKey[] = "rate";
+const char kPitchKey[] = "pitch";
+const char kVolumeKey[] = "volume";
+const char kEnqueueKey[] = "enqueue";
+
 // Static.
 bool ReadNumberByKey(DictionaryValue* dict,
                      const char* key,
@@ -26,13 +34,6 @@ bool ReadNumberByKey(DictionaryValue* dict,
     return false;
   }
   return true;
-}
-
-// Static.
-void AppendSpeakOption(std::string key,
-                       std::string value,
-                       std::string* options) {
-  *options += key + kEqualStr + value + kDelimiter;
 }
 
 }  // namespace extension_tts_api_util.

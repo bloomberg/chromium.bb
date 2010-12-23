@@ -100,6 +100,12 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     bool is_public;  // False if only this extension can load this plugin.
   };
 
+  struct TtsVoice {
+    std::string voice_name;
+    std::string locale;
+    std::string gender;
+  };
+
   // A permission is defined by its |name| (what is used in the manifest),
   // and the |message_id| that's used by install/update UI.
   struct Permission {
@@ -428,6 +434,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   }
   const std::string omnibox_keyword() const { return omnibox_keyword_; }
   bool incognito_split_mode() const { return incognito_split_mode_; }
+  const std::vector<TtsVoice>& tts_voices() const { return tts_voices_; }
 
   // App-related.
   bool is_app() const { return is_app_; }
@@ -690,6 +697,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // The Omnibox keyword for this extension, or empty if there is none.
   std::string omnibox_keyword_;
+
+  // List of text-to-speech voices that this extension provides, if any.
+  std::vector<TtsVoice> tts_voices_;
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            UpdateExtensionPreservesLocation);

@@ -517,10 +517,15 @@
 		"optional": true,
 		"description": "If true, enqueues this utterance if TTS is already in progress. If false (the default), interrupts any current speech and flushes the speech queue before speaking this new utterance."
               },
-	      "languageName": {
+	      "voiceName": {
                 "type": "string",
                 "optional": true,
-                "description": "The language name for synthesis specified in the form <language>-<locale>, e.g. en-US, en-GB, fr-CA, zh-CN, etc."
+                "description": "The name of the voice to use for synthesis."
+              },
+	      "locale": {
+                "type": "string",
+                "optional": true,
+                "description": "The language and region code that specify the language and dialect to be used for synthesis, in the form <language>-<region>, e.g. en-US, en-GB, fr-CA, zh-CN, etc."
               },
               "gender": {
                 "type": "string",
@@ -584,6 +589,99 @@
             ]
           }
         ]
+      },
+      {
+        "name": "speakCompleted",
+        "nodoc": true,
+        "type": "function",
+        "description": "A callback passed to the onSpeak event.",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "requestId"
+          },
+          {
+            "type": "string",
+	    "optional": "true",
+            "name": "errorMessage"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onSpeak",
+        "type": "function",
+        "description": "Called when the user makes a call to tts.speak and the options matches one of the tts_voices from this extension's manifest.",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "utterance",
+            "description": "The text to speak."
+          },
+          {
+            "type": "object",
+            "name": "options",
+            "description": "The speak options.",
+            "properties": {
+	      "voiceName": {
+                "type": "string",
+                "optional": true,
+                "description": "The name of the voice to use for synthesis."
+              },
+	      "locale": {
+                "type": "string",
+                "optional": true,
+                "description": "The language and region code that specify the language and dialect to be used for synthesis, in the form <language>-<region>, e.g. en-US, en-GB, fr-CA, zh-CN, etc."
+              },
+              "gender": {
+                "type": "string",
+                "optional": true,
+                "description": "Gender of voice for synthesized speech.",
+                "enum": ["male", "female"]
+              },
+              "rate": {
+                "type": "number",
+                "optional": true,
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Speaking speed between 0 and 1 inclusive, with 0 being slowest and 1 being fastest."
+              },
+              "pitch": {
+                "type": "number",
+                "optional": true,
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Speaking pitch between 0 and 1 inclusive, with 0 being lowest and 1 being highest."
+              },
+              "volume": {
+                "type": "number",
+                "optional": true,
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Speaking volume between 0 and 1 inclusive, with 0 being lowest and 1 being highest."
+              }
+            }
+	  },
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "You must call this function when speaking is finished.",
+            "parameters": [
+              {
+                "type": "string",
+                "name": "error",
+		"optional": true,
+                "description": "Error message, which will be returned to the caller in chrome.extension.lastError."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "onStop",
+        "type": "function",
+        "description": "Fired when a call is made to tts.stop and this extension may be in the middle of speaking."
       }
     ]
   },

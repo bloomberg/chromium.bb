@@ -9,13 +9,15 @@ chrome.test.runTests([
   function testChromeOsSpeech() {
     var callbacks = 0;
     chrome.experimental.tts.speak('text 1', {}, function() {
-        chrome.test.assertNoLastError();
+        chrome.test.assertEq('Utterance interrupted.',
+                             chrome.extension.lastError.message);
         callbacks++;
       });
     chrome.experimental.tts.speak('text 2', {}, function() {
         chrome.test.assertNoLastError();
         callbacks++;
         if (callbacks == 2) {
+          chrome.test.assertNoLastError();
           chrome.test.succeed();
         } else {
           chrome.test.fail();

@@ -10,6 +10,17 @@
 
 namespace chromeos {
 
+// TODO(chaitanyag): rename to "locale" after making equivalent change in
+// Chrome OS code.
+const char SpeechSynthesisLibrary::kSpeechPropertyLocale[] = "name";
+
+const char SpeechSynthesisLibrary::kSpeechPropertyGender[] = "gender";
+const char SpeechSynthesisLibrary::kSpeechPropertyRate[] = "rate";
+const char SpeechSynthesisLibrary::kSpeechPropertyPitch[] = "pitch";
+const char SpeechSynthesisLibrary::kSpeechPropertyVolume[] = "volume";
+const char SpeechSynthesisLibrary::kSpeechPropertyEquals[] = "=";
+const char SpeechSynthesisLibrary::kSpeechPropertyDelimiter[] = ";";
+
 class SpeechSynthesisLibraryImpl : public SpeechSynthesisLibrary {
  public:
   SpeechSynthesisLibraryImpl() {}

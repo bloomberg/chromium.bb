@@ -1789,9 +1789,8 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
   }
 
   if (source.HasKey(keys::kDefaultLocale)) {
-    if (!source.GetString(keys::kDefaultLocale,
-                          &default_locale_) ||
-        default_locale_.empty()) {
+    if (!source.GetString(keys::kDefaultLocale, &default_locale_) ||
+        !l10n_util::IsValidLocaleSyntax(default_locale_)) {
       *error = errors::kInvalidDefaultLocale;
       return false;
     }
@@ -1852,6 +1851,59 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
       return false;
     }
     devtools_url_ = GetResourceURL(devtools_str);
+  }
+
+  // Initialize text-to-speech voices (optional).
+  if (source.HasKey(keys::kTts)) {
+    DictionaryValue* tts_dict;
+    if (!source.GetDictionary(keys::kTts, &tts_dict)) {
+      *error = errors::kInvalidTts;
+      return false;
+    }
+
+    if (tts_dict->HasKey(keys::kTtsVoices)) {
+      ListValue* tts_voices;
+      if (!tts_dict->GetList(keys::kTtsVoices, &tts_voices)) {
+        *error = errors::kInvalidTtsVoices;
+        return false;
+      }
+
+      for (size_t i = 0; i < tts_voices->GetSize(); i++) {
+        DictionaryValue* one_tts_voice;
+        if (!tts_voices->GetDictionary(i, &one_tts_voice)) {
+          *error = errors::kInvalidTtsVoices;
+          return false;
+        }
+
+        TtsVoice voice_data;
+        if (one_tts_voice->HasKey(keys::kTtsVoicesVoiceName)) {
+          if (!one_tts_voice->GetString(
+                  keys::kTtsVoicesVoiceName, &voice_data.voice_name)) {
+            *error = errors::kInvalidTtsVoicesVoiceName;
+            return false;
+          }
+        }
+        if (one_tts_voice->HasKey(keys::kTtsVoicesLocale)) {
+          if (!one_tts_voice->GetString(
+                  keys::kTtsVoicesLocale, &voice_data.locale) ||
+              !l10n_util::IsValidLocaleSyntax(voice_data.locale)) {
+            *error = errors::kInvalidTtsVoicesLocale;
+            return false;
+          }
+        }
+        if (one_tts_voice->HasKey(keys::kTtsVoicesGender)) {
+          if (!one_tts_voice->GetString(
+                  keys::kTtsVoicesGender, &voice_data.gender) ||
+              (voice_data.gender != keys::kTtsGenderMale &&
+               voice_data.gender != keys::kTtsGenderFemale)) {
+            *error = errors::kInvalidTtsVoicesGender;
+            return false;
+          }
+        }
+
+        tts_voices_.push_back(voice_data);
+      }
+    }
   }
 
   // Initialize incognito behavior. Apps default to split mode, extensions

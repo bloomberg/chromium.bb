@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/cros/cros_mock.h"
 #endif
 
+using ::testing::AnyNumber;
 using ::testing::CreateFunctor;
 using ::testing::DoAll;
 using ::testing::InSequence;
@@ -28,7 +29,7 @@ class MockExtensionTtsPlatformImpl : public ExtensionTtsPlatformImpl {
  public:
   MOCK_METHOD6(Speak,
                bool(const std::string& utterance,
-                    const std::string& language,
+                    const std::string& locale,
                     const std::string& gender,
                     double rate,
                     double pitch,
@@ -83,11 +84,20 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakKeepsSpeakingTwice) {
 }
 
 IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakInterrupt) {
+  // One utterances starts speaking, and then a second interrupts.
   InSequence s;
   EXPECT_CALL(mock_platform_impl_, StopSpeaking())
       .WillOnce(Return(true));
   EXPECT_CALL(mock_platform_impl_, Speak("text 1", _, _, _, _, _))
       .WillOnce(Return(true));
+
+  // Ensure that the first utterance keeps going until it's interrupted.
+  EXPECT_CALL(mock_platform_impl_, IsSpeaking())
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(true));
+
+  // Expect the second utterance and allow it to continue for two calls to
+  // IsSpeaking and then finish successfully.
   EXPECT_CALL(mock_platform_impl_, StopSpeaking())
       .WillOnce(Return(true));
   EXPECT_CALL(mock_platform_impl_, Speak("text 2", _, _, _, _, _))
@@ -107,6 +117,14 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakQueueInterrupt) {
       .WillOnce(Return(true));
   EXPECT_CALL(mock_platform_impl_, Speak("text 1", _, _, _, _, _))
       .WillOnce(Return(true));
+
+  // Ensure that the first utterance keeps going until it's interrupted.
+  EXPECT_CALL(mock_platform_impl_, IsSpeaking())
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(true));
+
+  // Expect the third utterance and allow it to continue for two calls to
+  // IsSpeaking and then finish successfully.
   EXPECT_CALL(mock_platform_impl_, StopSpeaking())
       .WillOnce(Return(true));
   EXPECT_CALL(mock_platform_impl_, Speak("text 3", _, _, _, _, _))
@@ -145,17 +163,40 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakError) {
       .WillOnce(Return(true));
   EXPECT_CALL(mock_platform_impl_, IsSpeaking())
       .WillOnce(Return(false));
+  EXPECT_CALL(mock_platform_impl_, StopSpeaking())
+      .WillOnce(Return(true));
   EXPECT_CALL(mock_platform_impl_, Speak(_, _, _, _, _, _))
       .WillOnce(DoAll(
           InvokeWithoutArgs(
               CreateFunctor(&mock_platform_impl_,
                             &MockExtensionTtsPlatformImpl::SetErrorToEpicFail)),
           Return(false)));
+  EXPECT_CALL(mock_platform_impl_, StopSpeaking())
+      .WillOnce(Return(true));
   EXPECT_CALL(mock_platform_impl_, Speak(_, _, _, _, _, _))
       .WillOnce(Return(true));
   EXPECT_CALL(mock_platform_impl_, IsSpeaking())
       .WillOnce(Return(false));
   ASSERT_TRUE(RunExtensionTest("tts/speak_error")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(TtsApiTest, Provide) {
+  EXPECT_CALL(mock_platform_impl_, StopSpeaking())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(mock_platform_impl_, IsSpeaking())
+      .WillRepeatedly(Return(false));
+
+  {
+    InSequence s;
+    EXPECT_CALL(mock_platform_impl_, Speak("native speech", _, _, _, _, _))
+        .WillOnce(Return(true));
+    EXPECT_CALL(mock_platform_impl_, Speak("native speech 2", _, _, _, _, _))
+        .WillOnce(Return(true));
+    EXPECT_CALL(mock_platform_impl_, Speak("native speech 3", _, _, _, _, _))
+        .WillOnce(Return(true));
+  }
+
+  ASSERT_TRUE(RunExtensionTest("tts/provide")) << message_;
 }
 
 #if defined(OS_CHROMEOS)

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_TTS_API_H_
 
 #include <queue>
+#include <string>
 
 #include "base/singleton.h"
 #include "base/task.h"
@@ -19,7 +20,7 @@ class ExtensionTtsPlatformImpl {
 
   // Speak the given utterance with the given parameters if possible,
   // and return true on success. Utterance will always be nonempty.
-  // If the user does not specify the other values, language and gender
+  // If the user does not specify the other values, then locale and gender
   // will be empty strings, and rate, pitch, and volume will be -1.0.
   //
   // The ExtensionTtsController will only try to speak one utterance at
@@ -28,7 +29,7 @@ class ExtensionTtsPlatformImpl {
   // returns false before calling Speak again.
   virtual bool Speak(
       const std::string& utterance,
-      const std::string& language,
+      const std::string& locale,
       const std::string& gender,
       double rate,
       double pitch,
@@ -53,39 +54,101 @@ class ExtensionTtsPlatformImpl {
   DISALLOW_COPY_AND_ASSIGN(ExtensionTtsPlatformImpl);
 };
 
+// One speech utterance.
+class Utterance {
+ public:
+  // Construct an utterance given a profile, the text to speak,
+  // the options passed to tts.speak, and a completion task to call
+  // when the utterance is done speaking.
+  Utterance(Profile* profile,
+            const std::string& text,
+            DictionaryValue* options,
+            Task* completion_task);
+  ~Utterance();
+
+  // Calls the completion task and then destroys itself.
+  void FinishAndDestroy();
+
+  void set_error(const std::string& error) { error_ = error; }
+  void set_extension_id(const std::string& extension_id) {
+    extension_id_ = extension_id;
+  }
+
+  // Accessors
+  Profile* profile() { return profile_; }
+  const std::string& extension_id() { return extension_id_; }
+  int id() { return id_; }
+  const std::string& text() { return text_; }
+  const Value* options() { return options_.get(); }
+  const std::string& voice_name() { return voice_name_; }
+  const std::string& locale() { return locale_; }
+  const std::string& gender() { return gender_; }
+  double rate() { return rate_; }
+  double pitch() { return pitch_; }
+  double volume() { return volume_; }
+  bool can_enqueue() { return can_enqueue_; }
+  const std::string& error() { return error_; }
+
+ private:
+  // The profile that initiated this utterance.
+  Profile* profile_;
+
+  // The extension ID of the extension providing TTS for this utterance, or
+  // empty if native TTS is being used.
+  std::string extension_id_;
+
+  // The unique ID of this utterance, used to associate callback functions
+  // with utterances.
+  int id_;
+
+  // The id of the next utterance, so we can associate requests with
+  // responses.
+  static int next_utterance_id_;
+
+  // The text to speak.
+  std::string text_;
+
+  // The full options arg passed to tts.speak, which may include fields
+  // other than the ones we explicitly parse, below.
+  scoped_ptr<Value> options_;
+
+  // The parsed options.
+  std::string voice_name_;
+  std::string locale_;
+  std::string gender_;
+  double rate_;
+  double pitch_;
+  double volume_;
+  bool can_enqueue_;
+
+  // The error string to pass to the completion task. Will be empty if
+  // no error occurred.
+  std::string error_;
+
+  // The method to call when this utterance has completed speaking.
+  Task* completion_task_;
+};
+
 // Singleton class that manages text-to-speech.
 class ExtensionTtsController {
  public:
   // Get the single instance of this class.
   static ExtensionTtsController* GetInstance();
 
-  struct Utterance {
-    Utterance();
-    ~Utterance();
-
-    std::string text;
-    std::string language;
-    std::string gender;
-    double rate;
-    double pitch;
-    double volume;
-
-    Task* success_task;
-    Task* failure_task;
-
-    std::string error;
-  };
-
   // Returns true if we're currently speaking an utterance.
   bool IsSpeaking() const;
 
-  // Speak the given utterance. If |can_enqueue| is true and another
-  // utterance is in progress, adds it to the end of the queue. Otherwise,
-  // interrupts any current utterance and speaks this one immediately.
-  void SpeakOrEnqueue(Utterance* utterance, bool can_enqueue);
+  // Speak the given utterance. If the utterance's can_enqueue flag is true
+  // and another utterance is in progress, adds it to the end of the queue.
+  // Otherwise, interrupts any current utterance and speaks this one
+  // immediately.
+  void SpeakOrEnqueue(Utterance* utterance);
 
   // Stop all utterances and flush the queue.
   void Stop();
+
+  // Called when an extension finishes speaking an utterance.
+  void OnSpeechFinished(int request_id, std::string error_message);
 
   // For unit testing.
   void SetPlatformImpl(ExtensionTtsPlatformImpl* platform_impl);
@@ -112,6 +175,14 @@ class ExtensionTtsController {
   // Finalize and delete the current utterance.
   void FinishCurrentUtterance();
 
+  // Start speaking the next utterance in the queue.
+  void SpeakNextUtterance();
+
+  // Return the id string of the first extension with tts_voices in its
+  // manifest that matches the speech parameters of this utterance,
+  // or the empty string if none is found.
+  std::string GetMatchingExtensionId(Utterance* utterance);
+
   ScopedRunnableMethodFactory<ExtensionTtsController> method_factory_;
   friend struct DefaultSingletonTraits<ExtensionTtsController>;
 
@@ -136,8 +207,8 @@ class ExtensionTtsSpeakFunction : public AsyncExtensionFunction {
  private:
   ~ExtensionTtsSpeakFunction() {}
   virtual bool RunImpl();
-  void SpeechFinished(bool success);
-  ExtensionTtsController::Utterance* utterance_;
+  void SpeechFinished();
+  Utterance* utterance_;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.tts.speak")
 };
 
@@ -153,6 +224,13 @@ class ExtensionTtsIsSpeakingFunction : public SyncExtensionFunction {
   ~ExtensionTtsIsSpeakingFunction() {}
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.tts.isSpeaking")
+};
+
+class ExtensionTtsSpeakCompletedFunction : public SyncExtensionFunction {
+ private:
+  ~ExtensionTtsSpeakCompletedFunction() {}
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.tts.speakCompleted")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TTS_API_H_

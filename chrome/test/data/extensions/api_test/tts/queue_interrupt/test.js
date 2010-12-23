@@ -7,13 +7,19 @@
 
 chrome.test.runTests([
   function testAllSpeakCallbackFunctionsAreCalled() {
+    // In this test, two utterances are queued, and then a third
+    // interrupts. The first gets interrupted, the second never gets spoken
+    // at all. The test expectations in extension_tts_apitest.cc ensure that
+    // the first call to tts.speak keeps going until it's interrupted.
     var callbacks = 0;
     chrome.experimental.tts.speak('text 1', {'enqueue': true}, function() {
-        chrome.test.assertNoLastError();
+        chrome.test.assertEq('Utterance interrupted.',
+                             chrome.extension.lastError.message);
         callbacks++;
       });
     chrome.experimental.tts.speak('text 2', {'enqueue': true}, function() {
-        chrome.test.assertNoLastError();
+        chrome.test.assertEq('Utterance removed from queue.',
+                             chrome.extension.lastError.message);
         callbacks++;
       });
     chrome.experimental.tts.speak('text 3', {'enqueue': false}, function() {

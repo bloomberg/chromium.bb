@@ -1,0 +1,20 @@
+{
+  "name": "chrome.experimental.tts",
+  "version": "0.1",
+  "description": "browser test for chrome.experimental.tts API",
+  "background_page": "test.html",
+  "tts": {
+    "voices": [
+      {
+        "voiceName": "Alice",
+        "locale": "en-US",
+        "gender": "female"
+      },
+      {
+        "voiceName": "Pat",
+        "locale": "en-US"
+      }
+    ]
+  },
+  "permissions": ["experimental"]
+}

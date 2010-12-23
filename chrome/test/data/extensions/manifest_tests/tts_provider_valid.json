@@ -1,0 +1,14 @@
+{
+  "name": "test",
+  "version": "1",
+  "tts": {
+    "voices": [
+      {
+        "voiceName": "name",
+	"locale": "en-US",
+	"gender": "female",
+	"other_key": "other_value"
+      }
+    ]
+  }
+}

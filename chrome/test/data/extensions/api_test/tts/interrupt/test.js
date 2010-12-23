@@ -9,7 +9,8 @@ chrome.test.runTests([
   function testAllSpeakCallbackFunctionsAreCalled() {
     var callbacks = 0;
     chrome.experimental.tts.speak('text 1', {'enqueue': false}, function() {
-        chrome.test.assertNoLastError();
+        chrome.test.assertEq('Utterance interrupted.',
+                             chrome.extension.lastError.message);
         callbacks++;
       });
     chrome.experimental.tts.speak('text 2', {'enqueue': false}, function() {

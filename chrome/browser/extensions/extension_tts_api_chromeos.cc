@@ -21,7 +21,7 @@ class ExtensionTtsPlatformImplChromeOs : public ExtensionTtsPlatformImpl {
  public:
   virtual bool Speak(
       const std::string& utterance,
-      const std::string& language,
+      const std::string& locale,
       const std::string& gender,
       double rate,
       double pitch,
@@ -38,6 +38,10 @@ class ExtensionTtsPlatformImplChromeOs : public ExtensionTtsPlatformImpl {
   ExtensionTtsPlatformImplChromeOs() {}
   virtual ~ExtensionTtsPlatformImplChromeOs() {}
 
+  void AppendSpeakOption(std::string key,
+                         std::string value,
+                         std::string* options);
+
   friend struct DefaultSingletonTraits<ExtensionTtsPlatformImplChromeOs>;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionTtsPlatformImplChromeOs);
@@ -50,7 +54,7 @@ ExtensionTtsPlatformImpl* ExtensionTtsPlatformImpl::GetInstance() {
 
 bool ExtensionTtsPlatformImplChromeOs::Speak(
     const std::string& utterance,
-    const std::string& language,
+    const std::string& locale,
     const std::string& gender,
     double rate,
     double pitch,
@@ -63,31 +67,41 @@ bool ExtensionTtsPlatformImplChromeOs::Speak(
 
   std::string options;
 
-  if (!language.empty()) {
-    util::AppendSpeakOption(
-        std::string(util::kNameKey), language, &options);
+  if (!locale.empty()) {
+    AppendSpeakOption(
+        chromeos::SpeechSynthesisLibrary::kSpeechPropertyLocale,
+        locale,
+        &options);
   }
 
   if (!gender.empty()) {
-    util::AppendSpeakOption(
-        std::string(util::kGenderKey), gender, &options);
+    AppendSpeakOption(
+        chromeos::SpeechSynthesisLibrary::kSpeechPropertyGender,
+        gender,
+        &options);
   }
 
   if (rate >= 0.0) {
-    util::AppendSpeakOption(
-        std::string(util::kRateKey), DoubleToString(rate * 5), &options);
+    AppendSpeakOption(
+        chromeos::SpeechSynthesisLibrary::kSpeechPropertyRate,
+        DoubleToString(rate * 5),
+        &options);
   }
 
   if (pitch >= 0.0) {
     // The TTS service allows a range of 0 to 2 for speech pitch.
-    util::AppendSpeakOption(
-        std::string(util::kPitchKey), DoubleToString(pitch * 2), &options);
+    AppendSpeakOption(
+        chromeos::SpeechSynthesisLibrary::kSpeechPropertyPitch,
+        DoubleToString(pitch * 2),
+        &options);
   }
 
   if (volume >= 0.0) {
     // The TTS service allows a range of 0 to 5 for speech volume.
-    util::AppendSpeakOption(
-        std::string(util::kVolumeKey), DoubleToString(volume * 5), &options);
+    AppendSpeakOption(
+        chromeos::SpeechSynthesisLibrary::kSpeechPropertyVolume,
+        DoubleToString(volume * 5),
+        &options);
   }
 
   if (!options.empty()) {
@@ -116,6 +130,17 @@ bool ExtensionTtsPlatformImplChromeOs::IsSpeaking() {
 
   set_error(kCrosLibraryNotLoadedError);
   return false;
+}
+
+void ExtensionTtsPlatformImplChromeOs::AppendSpeakOption(
+    std::string key,
+    std::string value,
+    std::string* options) {
+  *options +=
+      key +
+      chromeos::SpeechSynthesisLibrary::kSpeechPropertyEquals +
+      value +
+      chromeos::SpeechSynthesisLibrary::kSpeechPropertyDelimiter;
 }
 
 // static

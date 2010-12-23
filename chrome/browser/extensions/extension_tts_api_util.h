@@ -11,23 +11,17 @@
 
 namespace extension_tts_api_util {
 
-const char kNameKey[] = "name";
-const char kLanguageNameKey[] = "languageName";
-const char kGenderKey[] = "gender";
-const char kRateKey[] = "rate";
-const char kPitchKey[] = "pitch";
-const char kVolumeKey[] = "volume";
-const char kEnqueueKey[] = "enqueue";
-const char kEqualStr[] = "=";
-const char kDelimiter[] = ";";
+extern const char kVoiceNameKey[];
+extern const char kLocaleKey[];
+extern const char kGenderKey[];
+extern const char kRateKey[];
+extern const char kPitchKey[];
+extern const char kVolumeKey[];
+extern const char kEnqueueKey[];
 
 bool ReadNumberByKey(DictionaryValue* dict,
                      const char* key,
                      double* ret_value);
-
-void AppendSpeakOption(std::string key,
-                       std::string value,
-                       std::string* options);
 
 }  // namespace extension_tts_api_util.
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TTS_API_UTIL_H_

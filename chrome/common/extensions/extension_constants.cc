@@ -60,6 +60,13 @@ const char* kThemeImages = "images";
 const char* kThemeTints = "tints";
 const char* kToolstripPath = "path";
 const char* kToolstrips = "toolstrips";
+const char* kTts = "tts";
+const char* kTtsGenderFemale = "female";
+const char* kTtsGenderMale = "male";
+const char* kTtsVoices = "voices";
+const char* kTtsVoicesGender = "gender";
+const char* kTtsVoicesLocale = "locale";
+const char* kTtsVoicesVoiceName = "voiceName";
 const char* kType = "type";
 const char* kUpdateURL = "update_url";
 const char* kVersion = "version";
@@ -234,6 +241,16 @@ const char* kInvalidToolstrip =
     "Invalid value for 'toolstrips[*]'";
 const char* kInvalidToolstrips =
     "Invalid value for 'toolstrips'.";
+const char* kInvalidTts =
+    "Invalid value for 'tts'.";
+const char* kInvalidTtsVoices =
+    "Invalid value for 'tts.voices'.";
+const char* kInvalidTtsVoicesGender =
+    "Invalid value for 'tts.voices[*].gender'.";
+const char* kInvalidTtsVoicesLocale =
+    "Invalid value for 'tts.voices[*].locale'.";
+const char* kInvalidTtsVoicesVoiceName =
+    "Invalid value for 'tts.voices[*].voiceName'.";
 const char* kInvalidUpdateURL =
     "Invalid value for update url: '[*]'.";
 const char* kInvalidVersion =

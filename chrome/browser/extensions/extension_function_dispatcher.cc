@@ -241,6 +241,7 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<ExtensionTtsSpeakFunction>();
   RegisterFunction<ExtensionTtsStopSpeakingFunction>();
   RegisterFunction<ExtensionTtsIsSpeakingFunction>();
+  RegisterFunction<ExtensionTtsSpeakCompletedFunction>();
 
   // Clipboard.
   RegisterFunction<ExecuteCopyClipboardFunction>();

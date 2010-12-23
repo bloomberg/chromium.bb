@@ -343,13 +343,26 @@ var chrome = chrome || {};
     return result;
   }
 
-  function setupOmniboxEvents(extensionId) {
+  function setupOmniboxEvents() {
     chrome.omnibox.onInputChanged.dispatch =
         function(text, requestId) {
       var suggestCallback = function(suggestions) {
         chrome.omnibox.sendSuggestions(requestId, suggestions);
       };
       chrome.Event.prototype.dispatch.apply(this, [text, suggestCallback]);
+    };
+  }
+
+  function setupTtsEvents() {
+    chrome.experimental.tts.onSpeak.dispatch =
+        function(text, options, requestId) {
+      var callback = function(errorMessage) {
+        if (errorMessage)
+          chrome.experimental.tts.speakCompleted(requestId, errorMessage);
+        else
+          chrome.experimental.tts.speakCompleted(requestId);
+      };
+      chrome.Event.prototype.dispatch.apply(this, [text, options, callback]);
     };
   }
 
@@ -783,7 +796,8 @@ var chrome = chrome || {};
     setupToolstripEvents(GetRenderViewId());
     setupPopupEvents(GetRenderViewId());
     setupHiddenContextMenuEvent(extensionId);
-    setupOmniboxEvents(extensionId);
+    setupOmniboxEvents();
+    setupTtsEvents();
   });
 
   if (!chrome.experimental)
