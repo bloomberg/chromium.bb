@@ -499,6 +499,26 @@ uint32 GLES2Util::IndexToGLFaceTarget(int index) {
   return faces[index];
 }
 
+uint32 GLES2Util::GetChannelsForFormat(int format) {
+  switch (format) {
+    case GL_ALPHA:
+      return 0x0008;
+    case GL_LUMINANCE:
+      return 0x0007;
+    case GL_LUMINANCE_ALPHA:
+      return 0x000F;
+    case GL_RGB:
+    case GL_RGB565:
+      return 0x0007;
+    case GL_RGBA:
+    case GL_RGBA4:
+    case GL_RGB5_A1:
+      return 0x000F;
+    default:
+      return 0x0000;
+  }
+}
+
 }  // namespace gles2
 }  // namespace gpu
 

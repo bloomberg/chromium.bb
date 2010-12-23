@@ -380,6 +380,10 @@ error::Error GLES2DecoderImpl::HandleCopyTexImage2D(
     SetGLError(GL_INVALID_VALUE, "glCopyTexImage2D: height < 0");
     return error::kNoError;
   }
+  if (!validators_->texture_border.IsValid(border)) {
+    SetGLError(GL_INVALID_VALUE, "glCopyTexImage2D: border GL_INVALID_VALUE");
+    return error::kNoError;
+  }
   DoCopyTexImage2D(target, level, internalformat, x, y, width, height, border);
   return error::kNoError;
 }
@@ -719,6 +723,11 @@ error::Error GLES2DecoderImpl::HandleFramebufferTexture2D(
   if (!validators_->texture_target.IsValid(textarget)) {
     SetGLError(
         GL_INVALID_ENUM, "glFramebufferTexture2D: textarget GL_INVALID_ENUM");
+    return error::kNoError;
+  }
+  if (!validators_->zero_only.IsValid(level)) {
+    SetGLError(
+        GL_INVALID_VALUE, "glFramebufferTexture2D: level GL_INVALID_VALUE");
     return error::kNoError;
   }
   DoFramebufferTexture2D(target, attachment, textarget, texture, level);

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/framebuffer_manager.h"
+#include "gpu/command_buffer/service/feature_info.h"
 
 #include "gpu/command_buffer/common/gl_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -117,6 +118,10 @@ const GLuint FramebufferInfoTest::kService1Id;
 TEST_F(FramebufferInfoTest, Basic) {
   EXPECT_EQ(kService1Id, info_->service_id());
   EXPECT_FALSE(info_->IsDeleted());
+  EXPECT_TRUE(NULL == info_->GetAttachment(GL_COLOR_ATTACHMENT0));
+  EXPECT_TRUE(NULL == info_->GetAttachment(GL_DEPTH_ATTACHMENT));
+  EXPECT_TRUE(NULL == info_->GetAttachment(GL_STENCIL_ATTACHMENT));
+  EXPECT_TRUE(NULL == info_->GetAttachment(GL_DEPTH_STENCIL_ATTACHMENT));
 }
 
 TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
@@ -125,6 +130,19 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   const GLuint kRenderbufferClient2Id = 34;
   const GLuint kRenderbufferService2Id = 334;
   const GLint kMaxRenderbufferSize = 128;
+  const GLsizei kWidth1 = 16;
+  const GLsizei kHeight1 = 32;
+  const GLenum kFormat1 = GL_STENCIL_INDEX8;
+  const GLsizei kSamples1 = 0;
+  const GLsizei kWidth2 = 64;
+  const GLsizei kHeight2 = 128;
+  const GLenum kFormat2 = GL_STENCIL_INDEX;
+  const GLsizei kSamples2 = 0;
+  const GLsizei kWidth3 = 75;
+  const GLsizei kHeight3 = 123;
+  const GLenum kFormat3 = GL_STENCIL_INDEX8;
+  const GLsizei kSamples3 = 0;
+
   EXPECT_FALSE(info_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_FALSE(info_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
   EXPECT_FALSE(info_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
@@ -157,7 +175,17 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   EXPECT_FALSE(info_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
 
   // Check marking the renderbuffer as unclared.
-  rb_info1->set_internal_format(GL_RGBA);
+  rb_info1->SetInfo(kSamples1, kFormat1, kWidth1, kHeight1);
+
+  const FramebufferManager::FramebufferInfo::Attachment* attachment =
+      info_->GetAttachment(GL_COLOR_ATTACHMENT0);
+  ASSERT_TRUE(attachment != NULL);
+  EXPECT_EQ(kWidth1, attachment->width());
+  EXPECT_EQ(kHeight1, attachment->height());
+  EXPECT_EQ(kSamples1, attachment->samples());
+  EXPECT_EQ(kFormat1, attachment->internal_format());
+  EXPECT_FALSE(attachment->cleared());
+
   EXPECT_TRUE(info_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
 
   // Clear it.
@@ -170,15 +198,131 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   RenderbufferManager::RenderbufferInfo* rb_info2 =
       rb_manager.GetRenderbufferInfo(kRenderbufferClient2Id);
   ASSERT_TRUE(rb_info2 != NULL);
+  rb_info2->SetInfo(kSamples2, kFormat2, kWidth2, kHeight2);
 
   info_->AttachRenderbuffer(GL_STENCIL_ATTACHMENT, rb_info2);
   EXPECT_TRUE(info_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
+
+  attachment = info_->GetAttachment(GL_STENCIL_ATTACHMENT);
+  ASSERT_TRUE(attachment != NULL);
+  EXPECT_EQ(kWidth2, attachment->width());
+  EXPECT_EQ(kHeight2, attachment->height());
+  EXPECT_EQ(kSamples2, attachment->samples());
+  EXPECT_EQ(kFormat2, attachment->internal_format());
+  EXPECT_FALSE(attachment->cleared());
+
+  // Check changing an attachment.
+  rb_info2->SetInfo(kSamples3, kFormat3, kWidth3, kHeight3);
+
+  attachment = info_->GetAttachment(GL_STENCIL_ATTACHMENT);
+  ASSERT_TRUE(attachment != NULL);
+  EXPECT_EQ(kWidth3, attachment->width());
+  EXPECT_EQ(kHeight3, attachment->height());
+  EXPECT_EQ(kSamples3, attachment->samples());
+  EXPECT_EQ(kFormat3, attachment->internal_format());
+  EXPECT_FALSE(attachment->cleared());
 
   // Check removing it.
   info_->AttachRenderbuffer(GL_STENCIL_ATTACHMENT, NULL);
   EXPECT_FALSE(info_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
 
   rb_manager.Destroy(false);
+}
+
+TEST_F(FramebufferInfoTest, AttachTexture) {
+  const GLuint kTextureClient1Id = 33;
+  const GLuint kTextureService1Id = 333;
+  const GLuint kTextureClient2Id = 34;
+  const GLuint kTextureService2Id = 334;
+  const GLint kMaxTextureSize = 128;
+  const GLint kDepth = 1;
+  const GLint kBorder = 0;
+  const GLenum kType = GL_UNSIGNED_BYTE;
+  const GLsizei kWidth1 = 16;
+  const GLsizei kHeight1 = 32;
+  const GLint kLevel1 = 0;
+  const GLenum kFormat1 = GL_RGBA;
+  const GLenum kTarget1 = GL_TEXTURE_2D;
+  const GLsizei kSamples1 = 0;
+  const GLsizei kWidth2 = 64;
+  const GLsizei kHeight2 = 128;
+  const GLint kLevel2 = 0;
+  const GLenum kFormat2 = GL_RGB;
+  const GLenum kTarget2 = GL_TEXTURE_2D;
+  const GLsizei kSamples2 = 0;
+  const GLsizei kWidth3 = 75;
+  const GLsizei kHeight3 = 123;
+  const GLint kLevel3 = 0;
+  const GLenum kFormat3 = GL_RGB565;
+  const GLsizei kSamples3 = 0;
+  EXPECT_FALSE(info_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
+  EXPECT_FALSE(info_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
+  EXPECT_FALSE(info_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
+  EXPECT_FALSE(info_->HasUnclearedAttachment(GL_DEPTH_STENCIL_ATTACHMENT));
+
+  FeatureInfo feature_info;
+  TextureManager tex_manager(kMaxTextureSize, kMaxTextureSize);
+  tex_manager.CreateTextureInfo(
+      &feature_info, kTextureClient1Id, kTextureService1Id);
+  TextureManager::TextureInfo* tex_info1 =
+      tex_manager.GetTextureInfo(kTextureClient1Id);
+  ASSERT_TRUE(tex_info1 != NULL);
+  tex_manager.SetInfoTarget(tex_info1, GL_TEXTURE_2D);
+  tex_manager.SetLevelInfo(
+      &feature_info, tex_info1, GL_TEXTURE_2D, kLevel1,
+      kFormat1, kWidth1, kHeight1, kDepth, kBorder, kFormat1, kType);
+
+  // check adding one attachment
+  info_->AttachTexture(GL_COLOR_ATTACHMENT0, tex_info1, kTarget1, kLevel1);
+  EXPECT_FALSE(info_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
+
+  const FramebufferManager::FramebufferInfo::Attachment* attachment =
+      info_->GetAttachment(GL_COLOR_ATTACHMENT0);
+  ASSERT_TRUE(attachment != NULL);
+  EXPECT_EQ(kWidth1, attachment->width());
+  EXPECT_EQ(kHeight1, attachment->height());
+  EXPECT_EQ(kSamples1, attachment->samples());
+  EXPECT_EQ(kFormat1, attachment->internal_format());
+  EXPECT_TRUE(attachment->cleared());
+
+  // Check replacing an attachment
+  tex_manager.CreateTextureInfo(
+      &feature_info, kTextureClient2Id, kTextureService2Id);
+  TextureManager::TextureInfo* tex_info2 =
+      tex_manager.GetTextureInfo(kTextureClient2Id);
+  ASSERT_TRUE(tex_info2 != NULL);
+  tex_manager.SetInfoTarget(tex_info2, GL_TEXTURE_2D);
+  tex_manager.SetLevelInfo(
+      &feature_info, tex_info2, GL_TEXTURE_2D, kLevel2,
+      kFormat2, kWidth2, kHeight2, kDepth, kBorder, kFormat2, kType);
+
+  info_->AttachTexture(GL_COLOR_ATTACHMENT0, tex_info2, kTarget2, kLevel2);
+
+  attachment = info_->GetAttachment(GL_COLOR_ATTACHMENT0);
+  ASSERT_TRUE(attachment != NULL);
+  EXPECT_EQ(kWidth2, attachment->width());
+  EXPECT_EQ(kHeight2, attachment->height());
+  EXPECT_EQ(kSamples2, attachment->samples());
+  EXPECT_EQ(kFormat2, attachment->internal_format());
+  EXPECT_TRUE(attachment->cleared());
+
+  // Check changing attachment
+  tex_manager.SetLevelInfo(
+      &feature_info, tex_info2, GL_TEXTURE_2D, kLevel3,
+      kFormat3, kWidth3, kHeight3, kDepth, kBorder, kFormat3, kType);
+  attachment = info_->GetAttachment(GL_COLOR_ATTACHMENT0);
+  ASSERT_TRUE(attachment != NULL);
+  EXPECT_EQ(kWidth3, attachment->width());
+  EXPECT_EQ(kHeight3, attachment->height());
+  EXPECT_EQ(kSamples3, attachment->samples());
+  EXPECT_EQ(kFormat3, attachment->internal_format());
+  EXPECT_TRUE(attachment->cleared());
+
+  // Check removing it.
+  info_->AttachTexture(GL_COLOR_ATTACHMENT0, NULL, 0, 0);
+  EXPECT_TRUE(info_->GetAttachment(GL_COLOR_ATTACHMENT0) == NULL);
+
+  tex_manager.Destroy(false);
 }
 
 }  // namespace gles2

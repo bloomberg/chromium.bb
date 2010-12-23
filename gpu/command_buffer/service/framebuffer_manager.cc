@@ -9,6 +9,108 @@
 namespace gpu {
 namespace gles2 {
 
+class RenderbufferAttachment
+    : public FramebufferManager::FramebufferInfo::Attachment {
+ public:
+  explicit RenderbufferAttachment(
+      RenderbufferManager::RenderbufferInfo* render_buffer)
+      : render_buffer_(render_buffer) {
+  }
+
+  virtual ~RenderbufferAttachment() { }
+
+  virtual GLsizei width() const {
+    return render_buffer_->width();
+  }
+
+  virtual GLsizei height() const {
+    return render_buffer_->height();
+  }
+
+  virtual GLenum internal_format() const {
+    return render_buffer_->internal_format();
+  }
+
+  virtual GLsizei samples() const {
+    return render_buffer_->samples();
+  }
+
+  virtual bool cleared() const {
+    return render_buffer_->cleared();
+  }
+
+  virtual void set_cleared() {
+    render_buffer_->set_cleared();
+  }
+
+  RenderbufferManager::RenderbufferInfo* render_buffer() const {
+    return render_buffer_.get();
+  }
+
+ private:
+  RenderbufferManager::RenderbufferInfo::Ref render_buffer_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderbufferAttachment);
+};
+
+class TextureAttachment
+    : public FramebufferManager::FramebufferInfo::Attachment {
+ public:
+  TextureAttachment(
+      TextureManager::TextureInfo* texture, GLenum target, GLint level)
+      : texture_(texture),
+        target_(target),
+        level_(level) {
+  }
+
+  virtual ~TextureAttachment() { }
+
+  virtual GLsizei width() const {
+    GLsizei temp_width = 0;
+    GLsizei temp_height = 0;
+    texture_->GetLevelSize(target_, level_, &temp_width, &temp_height);
+    return temp_width;
+  }
+
+  virtual GLsizei height() const {
+    GLsizei temp_width = 0;
+    GLsizei temp_height = 0;
+    texture_->GetLevelSize(target_, level_, &temp_width, &temp_height);
+    return temp_height;
+  }
+
+  virtual GLenum internal_format() const {
+    GLenum temp_type = 0;
+    GLenum temp_internal_format = 0;
+    texture_->GetLevelType(target_, level_, &temp_type, &temp_internal_format);
+    return temp_internal_format;
+  }
+
+  virtual GLsizei samples() const {
+    return 0;
+  }
+
+  virtual bool cleared() const {
+    // Textures are cleared on creation.
+    return true;
+  }
+
+  virtual void set_cleared() {
+    NOTREACHED();
+  }
+
+  TextureManager::TextureInfo* texture() const {
+    return texture_.get();
+  }
+
+ private:
+  TextureManager::TextureInfo::Ref texture_;
+  GLenum target_;
+  GLint level_;
+
+  DISALLOW_COPY_AND_ASSIGN(TextureAttachment);
+};
+
 FramebufferManager::FramebufferManager() {}
 
 FramebufferManager::~FramebufferManager() {
@@ -47,20 +149,22 @@ FramebufferManager::FramebufferInfo::~FramebufferInfo() {}
 
 bool FramebufferManager::FramebufferInfo::HasUnclearedAttachment(
     GLenum attachment) const {
-  AttachmentToRenderbufferMap::const_iterator it =
-      renderbuffers_.find(attachment);
-  if (it != renderbuffers_.end()) {
-    RenderbufferManager::RenderbufferInfo* info = it->second;
-    return !info->cleared();
+  AttachmentMap::const_iterator it =
+      attachments_.find(attachment);
+  if (it != attachments_.end()) {
+    const Attachment* attachment = it->second;
+    return !attachment->cleared();
   }
   return false;
 }
 
 void FramebufferManager::FramebufferInfo::MarkAttachedRenderbuffersAsCleared() {
-  for (AttachmentToRenderbufferMap::iterator it = renderbuffers_.begin();
-       it != renderbuffers_.end(); ++it) {
-    RenderbufferManager::RenderbufferInfo* info = it->second;
-    info->set_cleared();
+  for (AttachmentMap::iterator it = attachments_.begin();
+       it != attachments_.end(); ++it) {
+    Attachment* attachment = it->second;
+    if (!attachment->cleared()) {
+      attachment->set_cleared();
+    }
   }
 }
 
@@ -85,11 +189,36 @@ void FramebufferManager::FramebufferInfo::AttachRenderbuffer(
          attachment == GL_STENCIL_ATTACHMENT ||
          attachment == GL_DEPTH_STENCIL_ATTACHMENT);
   if (renderbuffer) {
-    renderbuffers_[attachment] =
-        RenderbufferManager::RenderbufferInfo::Ref(renderbuffer);
+    attachments_[attachment] = Attachment::Ref(
+        new RenderbufferAttachment(renderbuffer));
   } else {
-    renderbuffers_.erase(attachment);
+    attachments_.erase(attachment);
   }
+}
+
+void FramebufferManager::FramebufferInfo::AttachTexture(
+    GLenum attachment, TextureManager::TextureInfo* texture, GLenum target,
+    GLint level) {
+  DCHECK(attachment == GL_COLOR_ATTACHMENT0 ||
+         attachment == GL_DEPTH_ATTACHMENT ||
+         attachment == GL_STENCIL_ATTACHMENT ||
+         attachment == GL_DEPTH_STENCIL_ATTACHMENT);
+  if (texture) {
+    attachments_[attachment] = Attachment::Ref(
+        new TextureAttachment(texture, target, level));
+  } else {
+    attachments_.erase(attachment);
+  }
+}
+
+const FramebufferManager::FramebufferInfo::Attachment*
+    FramebufferManager::FramebufferInfo::GetAttachment(
+        GLenum attachment) const {
+  AttachmentMap::const_iterator it = attachments_.find(attachment);
+  if (it != attachments_.end()) {
+    return it->second;
+  }
+  return NULL;
 }
 
 bool FramebufferManager::GetClientId(

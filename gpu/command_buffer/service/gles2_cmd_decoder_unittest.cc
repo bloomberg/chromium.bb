@@ -1235,7 +1235,7 @@ TEST_F(GLES2DecoderTest, FramebufferTexture2DWithNoBoundTarget) {
   FramebufferTexture2D cmd;
   cmd.Init(
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, client_texture_id_,
-      5);
+      0);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
@@ -1259,10 +1259,16 @@ TEST_F(GLES2DecoderTest, GetFramebufferAttachmentParameterivWithNoBoundTarget) {
 TEST_F(GLES2DecoderTest, GetFramebufferAttachmentParameterivWithRenderbuffer) {
   DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
                     kServiceFramebufferId);
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, FramebufferRenderbufferEXT(
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
       kServiceRenderbufferId))
       .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
   SetupExpectationsForFramebufferAttachment(
       GL_COLOR_BUFFER_BIT,    // clear bits
@@ -1313,10 +1319,16 @@ TEST_F(GLES2DecoderTest, GetFramebufferAttachmentParameterivWithRenderbuffer) {
 TEST_F(GLES2DecoderTest, GetFramebufferAttachmentParameterivWithTexture) {
   DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
                     kServiceFramebufferId);
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, FramebufferTexture2DEXT(
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-      kServiceTextureId, 5))
+      kServiceTextureId, 0))
       .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
   SetupExpectationsForFramebufferAttachment(
       0,                      // clear bits
@@ -1353,7 +1365,7 @@ TEST_F(GLES2DecoderTest, GetFramebufferAttachmentParameterivWithTexture) {
   GetFramebufferAttachmentParameteriv cmd;
   fbtex_cmd.Init(
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, client_texture_id_,
-      5);
+      0);
   cmd.Init(
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
       GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME, shared_memory_id_,
@@ -1485,37 +1497,33 @@ void GLES2DecoderTest::CheckReadPixelsOutOfRange(
                  kFormat, GL_UNSIGNED_BYTE, 0, 0);
     DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
                       kServiceFramebufferId);
+    EXPECT_CALL(*gl_, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, FramebufferTexture2DEXT(
+        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+        kServiceTextureId, 0))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
+        .RetiresOnSaturation();
+    SetupExpectationsForFramebufferAttachment(
+        0,                      // clear bits
+        0, 0, 0, 0,             // color
+        0x1111,                 // color bits
+        0,                      // stencil
+        -1,                     // stencil mask back,
+        -1,                     // stencil mask front,
+        1.0f,                   // depth
+        1,                      // depth mask
+        false);                 // scissor test
+    FramebufferTexture2D fbtex_cmd;
+    fbtex_cmd.Init(
+        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, client_texture_id_,
+        0);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(fbtex_cmd));
   }
-
-  // We need to tell our mock GL to return the info about our FBO.
-  EXPECT_CALL(*gl_, GetFramebufferAttachmentParameterivEXT(
-      GL_FRAMEBUFFER,
-      GL_COLOR_ATTACHMENT0,
-      GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE,
-      _))
-      .WillOnce(SetArgumentPointee<3>(GL_TEXTURE))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetFramebufferAttachmentParameterivEXT(
-            GL_FRAMEBUFFER,
-            GL_COLOR_ATTACHMENT0,
-            GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME,
-            _))
-      .WillOnce(SetArgumentPointee<3>(kServiceTextureId))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetFramebufferAttachmentParameterivEXT(
-      GL_FRAMEBUFFER,
-      GL_COLOR_ATTACHMENT0,
-      GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL,
-      _))
-      .WillOnce(SetArgumentPointee<3>(0))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetFramebufferAttachmentParameterivEXT(
-      GL_FRAMEBUFFER,
-      GL_COLOR_ATTACHMENT0,
-      GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE,
-      _))
-      .WillOnce(SetArgumentPointee<3>(0))
-      .RetiresOnSaturation();
 
   ReadPixelsEmulator emu(
       kWidth, kHeight, kBytesPerPixel, kSrcPixels, kPackAlignment);
@@ -2447,10 +2455,16 @@ TEST_F(GLES2DecoderTest, FramebufferRenderbufferClearColor) {
   EXPECT_CALL(*gl_, Enable(GL_SCISSOR_TEST))
       .Times(1)
       .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, FramebufferRenderbufferEXT(
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
       kServiceRenderbufferId))
       .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
   SetupExpectationsForFramebufferAttachment(
       GL_COLOR_BUFFER_BIT,     // clear bits
@@ -2486,10 +2500,16 @@ TEST_F(GLES2DecoderTest, FramebufferRenderbufferClearDepth) {
   EXPECT_CALL(*gl_, DepthMask(0))
       .Times(1)
       .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, FramebufferRenderbufferEXT(
       GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
       kServiceRenderbufferId))
       .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
   SetupExpectationsForFramebufferAttachment(
       GL_DEPTH_BUFFER_BIT,    // clear bits
@@ -2524,10 +2544,16 @@ TEST_F(GLES2DecoderTest, FramebufferRenderbufferClearStencil) {
   EXPECT_CALL(*gl_, StencilMaskSeparate(GL_BACK, 0x1234u))
       .Times(1)
       .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, FramebufferRenderbufferEXT(
       GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
       kServiceRenderbufferId))
       .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
   SetupExpectationsForFramebufferAttachment(
       GL_STENCIL_BUFFER_BIT,  // clear bits

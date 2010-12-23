@@ -415,6 +415,10 @@ static GLenum valid_vertex_pointer_table[] = {
   GL_VERTEX_ATTRIB_ARRAY_POINTER,
 };
 
+static GLint valid_zero_only_table[] = {
+  0,
+};
+
 Validators::Validators()
     : attachment(
           valid_attachment_table, arraysize(valid_attachment_table)),
@@ -524,7 +528,9 @@ Validators::Validators()
           valid_vertex_attribute_table, arraysize(
               valid_vertex_attribute_table)),
       vertex_pointer(
-          valid_vertex_pointer_table, arraysize(valid_vertex_pointer_table)) {
+          valid_vertex_pointer_table, arraysize(valid_vertex_pointer_table)),
+      zero_only(
+          valid_zero_only_table, arraysize(valid_zero_only_table)) {
 }
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_VALIDATION_IMPLEMENTATION_AUTOGEN_H_  // NOLINT

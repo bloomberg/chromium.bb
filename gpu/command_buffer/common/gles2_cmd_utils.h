@@ -80,6 +80,13 @@ class GLES2Util {
 
   static uint32 IndexToGLFaceTarget(int index);
 
+  // Returns a bitmask for the channels the given format supports where
+  // 0x1 is red
+  // 0x2 is green
+  // 0x4 is blue
+  // 0x8 is alpha
+  static uint32 GetChannelsForFormat(int format);
+
   static bool IsNPOT(uint32 value) {
     return value > 0 && (value & (value - 1)) != 0;
   }

@@ -180,9 +180,15 @@ void GLES2DecoderTestBase::SpecializedSetup<RenderbufferStorage, 0>(
   DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
                     kServiceRenderbufferId);
   if (valid) {
+    EXPECT_CALL(*gl_, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
+        .RetiresOnSaturation();
     EXPECT_CALL(*gl_,
                 RenderbufferStorageEXT(GL_RENDERBUFFER, _, 3, 4))
         .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
         .RetiresOnSaturation();
   }
 };

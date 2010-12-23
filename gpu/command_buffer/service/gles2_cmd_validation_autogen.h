@@ -52,6 +52,7 @@ ValueValidator<GLint> vertex_attrib_size;
 ValueValidator<GLenum> vertex_attrib_type;
 ValueValidator<GLenum> vertex_attribute;
 ValueValidator<GLenum> vertex_pointer;
+ValueValidator<GLint> zero_only;
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_VALIDATION_AUTOGEN_H_
 

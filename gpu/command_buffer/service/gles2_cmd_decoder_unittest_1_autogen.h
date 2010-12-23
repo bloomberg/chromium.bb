@@ -801,12 +801,12 @@ TEST_F(GLES2DecoderTest1, FramebufferTexture2DValidArgs) {
   EXPECT_CALL(
       *gl_, FramebufferTexture2DEXT(
           GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-          kServiceTextureId, 5));
+          kServiceTextureId, 0));
   SpecializedSetup<FramebufferTexture2D, 0>(true);
   FramebufferTexture2D cmd;
   cmd.Init(
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, client_texture_id_,
-      5);
+      0);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -817,7 +817,7 @@ TEST_F(GLES2DecoderTest1, FramebufferTexture2DInvalidArgs0_0) {
   FramebufferTexture2D cmd;
   cmd.Init(
       GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-      client_texture_id_, 5);
+      client_texture_id_, 0);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
@@ -828,9 +828,20 @@ TEST_F(GLES2DecoderTest1, FramebufferTexture2DInvalidArgs2_0) {
   FramebufferTexture2D cmd;
   cmd.Init(
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_PROXY_TEXTURE_CUBE_MAP,
-      client_texture_id_, 5);
+      client_texture_id_, 0);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest1, FramebufferTexture2DInvalidArgs4_0) {
+  EXPECT_CALL(*gl_, FramebufferTexture2DEXT(_, _, _, _, _)).Times(0);
+  SpecializedSetup<FramebufferTexture2D, 0>(false);
+  FramebufferTexture2D cmd;
+  cmd.Init(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, client_texture_id_,
+      1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, FrontFaceValidArgs) {

@@ -88,10 +88,16 @@ void GLES2DecoderTestBase::SpecializedSetup<FramebufferRenderbuffer, 0>(
   DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
                     kServiceFramebufferId);
   if (valid) {
+    EXPECT_CALL(*gl_, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
+        .RetiresOnSaturation();
     // Return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT so the code
     // doesn't try to clear the buffer. That is tested else where.
     EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
         .WillOnce(Return(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
         .RetiresOnSaturation();
   }
 };
@@ -102,10 +108,16 @@ void GLES2DecoderTestBase::SpecializedSetup<FramebufferTexture2D, 0>(
   DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
                     kServiceFramebufferId);
   if (valid) {
+    EXPECT_CALL(*gl_, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
+        .RetiresOnSaturation();
     // Return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT so the code
     // doesn't try to clear the buffer. That is tested else where.
     EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
         .WillOnce(Return(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
         .RetiresOnSaturation();
   }
 };

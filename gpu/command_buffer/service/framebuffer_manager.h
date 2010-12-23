@@ -11,6 +11,7 @@
 #include "base/scoped_ptr.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
+#include "gpu/command_buffer/service/texture_manager.h"
 
 namespace gpu {
 namespace gles2 {
@@ -23,6 +24,19 @@ class FramebufferManager {
   class FramebufferInfo : public base::RefCounted<FramebufferInfo> {
    public:
     typedef scoped_refptr<FramebufferInfo> Ref;
+
+    class Attachment : public base::RefCounted<Attachment> {
+     public:
+      typedef scoped_refptr<Attachment> Ref;
+
+      virtual ~Attachment() { }
+      virtual GLsizei width() const = 0;
+      virtual GLsizei height() const = 0;
+      virtual GLenum internal_format() const = 0;
+      virtual GLsizei samples() const = 0;
+      virtual bool cleared() const = 0;
+      virtual void set_cleared() = 0;
+    };
 
     explicit FramebufferInfo(GLuint service_id);
 
@@ -37,7 +51,14 @@ class FramebufferManager {
     void AttachRenderbuffer(
         GLenum attachment, RenderbufferManager::RenderbufferInfo* renderbuffer);
 
+    // Attaches a texture to a particlar attachment. Pass null to detach.
+    void AttachTexture(
+        GLenum attachment, TextureManager::TextureInfo* texture, GLenum target,
+        GLint level);
+
     void MarkAttachedRenderbuffersAsCleared();
+
+    const Attachment* GetAttachment(GLenum attachment) const;
 
     bool IsDeleted() {
       return service_id_ == 0;
@@ -51,16 +72,17 @@ class FramebufferManager {
 
     void MarkAsDeleted() {
       service_id_ = 0;
-      renderbuffers_.clear();
+      attachments_.clear();
     }
 
     // Service side framebuffer id.
     GLuint service_id_;
 
-    // A map of attachments to renderbuffers.
-    typedef std::map<GLenum, RenderbufferManager::RenderbufferInfo::Ref>
-        AttachmentToRenderbufferMap;
-    AttachmentToRenderbufferMap renderbuffers_;
+    // A map of attachments.
+    typedef std::map<GLenum, Attachment::Ref> AttachmentMap;
+    AttachmentMap attachments_;
+
+    DISALLOW_COPY_AND_ASSIGN(FramebufferInfo);
   };
 
   FramebufferManager();
