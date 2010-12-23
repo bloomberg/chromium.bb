@@ -42,12 +42,6 @@ class JingleThread::JingleMessagePump : public base::MessagePump,
     // TODO(sergeyu): Remove it when JingleThread moved on Chromium's
     // base::Thread.
     base::MessagePump::Delegate* delegate = thread_->message_loop();
-    // Loop until we run out of work.
-    while (true) {
-      if (!delegate->DoWork())
-        break;
-    }
-
     // Process all pending tasks.
     while (true) {
       if (delegate->DoWork())
@@ -61,7 +55,6 @@ class JingleThread::JingleMessagePump : public base::MessagePump,
   }
 
  private:
-
   void ScheduleNextDelayedTask() {
     DCHECK_EQ(thread_->message_loop(), MessageLoop::current());
 
@@ -86,6 +79,16 @@ class JingleThread::JingleMessageLoop : public MessageLoop {
       : MessageLoop(MessageLoop::TYPE_IO) {
     pump_ = new JingleMessagePump(thread);
   }
+
+  void Initialize() {
+    jingle_message_loop_state_.reset(new AutoRunState(this));
+  }
+
+ private:
+  // AutoRunState sets |state_| for this message loop. It needs to be
+  // created here because we never call Run() or RunAllPending() for
+  // the thread.
+  scoped_ptr<AutoRunState> jingle_message_loop_state_;
 };
 
 TaskPump::TaskPump() {
@@ -119,6 +122,7 @@ void JingleThread::Start() {
 
 void JingleThread::Run() {
   JingleMessageLoop message_loop(this);
+  message_loop.Initialize();
   message_loop_ = &message_loop;
 
   TaskPump task_pump;

@@ -33,6 +33,16 @@ TEST(JingleThreadTest, PostTask) {
   thread.Stop();
 }
 
+TEST(JingleThreadTest, PostNonNestableTask) {
+  JingleThread thread;
+  MockTask* task = new MockTask();
+  EXPECT_CALL(*task, Run());
+
+  thread.Start();
+  thread.message_loop()->PostNonNestableTask(FROM_HERE, task);
+  thread.Stop();
+}
+
 ACTION_P(SignalEvent, event) {
   event->Signal();
 }
@@ -46,6 +56,22 @@ TEST(JingleThreadTest, PostDelayedTask) {
   thread.Start();
   base::Time start = base::Time::Now();
   thread.message_loop()->PostDelayedTask(FROM_HERE, task, kDelayMs);
+  event.TimedWait(base::TimeDelta::FromMilliseconds(kDelayTimeoutMs));
+  base::Time end = base::Time::Now();
+  thread.Stop();
+
+  EXPECT_GE((end - start).InMillisecondsRoundedUp(), kDelayMs);
+}
+
+TEST(JingleThreadTest, PostNonNestableDelayedTask) {
+  JingleThread thread;
+  MockTask* task = new MockTask();
+  base::WaitableEvent event(true, false);
+  EXPECT_CALL(*task, Run()).WillOnce(SignalEvent(&event));
+
+  thread.Start();
+  base::Time start = base::Time::Now();
+  thread.message_loop()->PostNonNestableDelayedTask(FROM_HERE, task, kDelayMs);
   event.TimedWait(base::TimeDelta::FromMilliseconds(kDelayTimeoutMs));
   base::Time end = base::Time::Now();
   thread.Stop();
