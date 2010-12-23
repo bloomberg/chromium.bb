@@ -125,14 +125,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
       num_conflicting_updates);
 }
 
-// TODO(sync): Remove FAILS_ annotation after http://crbug.com/59867 is fixed.
-#if defined(OS_MACOSX)
+// TODO(sync): Remove DISABLED_ annotation after http://crbug.com/59867 and
+// http://crbug.com/67862 are fixed.
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
-                       FAILS_SetPassphraseAndThenSetupSync) {
-#else
-IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
-                       SetPassphraseAndThenSetupSync) {
-#endif
+                       DISABLED_SetPassphraseAndThenSetupSync) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   ASSERT_TRUE(GetClient(0)->SetupSync());
   GetClient(0)->service()->SetPassphrase(kValidPassphrase, true);
@@ -147,14 +143,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
   ASSERT_FALSE(GetClient(1)->service()->observed_passphrase_required());
 }
 
-// TODO(sync): Remove FAILS_ annotation after http://crbug.com/59867 is fixed.
-#if defined(OS_MACOSX)
+// TODO(sync): Remove DISABLED_ annotation after http://crbug.com/59867 and
+// http://crbug.com/67862 are fixed.
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
-                       FAILS_SetPassphraseTwice) {
-#else
-IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
-                       SetPassphraseTwice) {
-#endif
+                       DISABLED_SetPassphraseTwice) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   GetClient(0)->service()->SetPassphrase(kValidPassphrase, true);
