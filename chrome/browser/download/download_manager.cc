@@ -417,29 +417,58 @@ void DownloadManager::OnPathExistenceAvailable(DownloadCreateInfo* info) {
     FOR_EACH_OBSERVER(Observer, observers_, SelectFileDialogDisplayed());
   } else {
     // No prompting for download, just continue with the suggested name.
-    CreateDownloadItem(info, info->suggested_path);
+    AttachDownloadItem(info, info->suggested_path);
   }
 }
 
-void DownloadManager::CreateDownloadItem(DownloadCreateInfo* info,
+void DownloadManager::CreateDownloadItem(DownloadCreateInfo* info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DownloadItem* download = new DownloadItem(this, *info,
+                                            profile_->IsOffTheRecord());
+  DCHECK(!ContainsKey(in_progress_, info->download_id));
+  downloads_.insert(download);
+}
+
+void DownloadManager::AttachDownloadItem(DownloadCreateInfo* info,
                                          const FilePath& target_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   scoped_ptr<DownloadCreateInfo> infop(info);
   info->path = target_path;
 
-  DownloadItem* download = new DownloadItem(this, *info,
-                                            profile_->IsOffTheRecord());
+  // NOTE(ahendrickson) We will be adding a new map |active_downloads_|, into
+  // which we will be adding the download as soon as it's created.  This will
+  // make this loop unnecessary.
+  // Eventually |active_downloads_| will replace |in_progress_|, but we don't
+  // want to change the semantics yet.
   DCHECK(!ContainsKey(in_progress_, info->download_id));
+  DownloadItem* download = NULL;
+  for (std::set<DownloadItem*>::iterator i = downloads_.begin();
+       i != downloads_.end(); ++i) {
+    DownloadItem* item = (*i);
+    if (item && (item->id() == info->download_id)) {
+      download = item;
+      break;
+    }
+  }
+  DCHECK(download != NULL);
+  download->SetFileCheckResults(info->path,
+                                info->is_dangerous,
+                                info->path_uniquifier,
+                                info->prompt_user_for_save_location,
+                                info->is_extension_install,
+                                info->original_name);
   in_progress_[info->download_id] = download;
-  downloads_.insert(download);
 
   bool download_finished = ContainsKey(pending_finished_downloads_,
                                        info->download_id);
 
   VLOG(20) << __FUNCTION__ << "()"
+           << " target_path = \"" << target_path.value() << "\""
            << " download_finished = " << download_finished
-           << " info = " << info->DebugString();
+           << " info = " << info->DebugString()
+           << " download = " << download->DebugString(true);
 
   if (download_finished || info->is_dangerous) {
     // The download has already finished or the download is not safe.
@@ -877,7 +906,7 @@ void DownloadManager::FileSelected(const FilePath& path,
   DownloadCreateInfo* info = reinterpret_cast<DownloadCreateInfo*>(params);
   if (info->prompt_user_for_save_location)
     last_download_path_ = path.DirName();
-  CreateDownloadItem(info, path);
+  AttachDownloadItem(info, path);
 }
 
 void DownloadManager::FileSelectionCanceled(void* params) {

@@ -176,6 +176,8 @@ void DownloadFileManager::StartDownload(DownloadCreateInfo* info) {
     return;
   }
 
+  manager->CreateDownloadItem(info);
+
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &DownloadFileManager::CreateDownloadFile,
                         info, make_scoped_refptr(manager)));

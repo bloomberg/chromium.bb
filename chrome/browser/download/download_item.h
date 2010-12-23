@@ -150,6 +150,16 @@ class DownloadItem {
   // total size).
   int PercentComplete() const;
 
+  // Update the fields that may have changed in DownloadCreateInfo as a
+  // result of analyzing the file and figuring out its type, location, etc.
+  // May only be called once.
+  void SetFileCheckResults(const FilePath& path,
+                           bool is_dangerous,
+                           int path_uniquifier,
+                           bool prompt,
+                           bool is_extension_install,
+                           const FilePath& original_name);
+
   // Update the download's path, the actual file is renamed on the download
   // thread.
   void Rename(const FilePath& full_path);

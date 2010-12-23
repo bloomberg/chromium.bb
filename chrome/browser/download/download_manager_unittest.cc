@@ -247,6 +247,8 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
     if (kDownloadRenameCases[i].will_delete_crdownload)
       EXPECT_CALL(*download, DeleteCrDownload()).Times(1);
 
+    download_manager_->CreateDownloadItem(info);
+
     if (kDownloadRenameCases[i].finish_before_rename) {
       download_manager_->OnAllDataSaved(i, 1024);
       download_manager_->FileSelected(new_path, i, info);

@@ -298,7 +298,7 @@ std::string DownloadResourceHandler::DebugString() const {
                             " request_id = " "%d"
                             " }"
                             " render_view_id_ = " "%d"
-                            " save_info_.file_path = " "\"%s\""
+                            " save_info_.file_path = \"%" PRFilePath "\""
                             " }",
                             url_.spec().c_str(),
                             download_id_,

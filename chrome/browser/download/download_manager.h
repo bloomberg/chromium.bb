@@ -189,6 +189,9 @@ class DownloadManager
 
   DownloadPrefs* download_prefs() { return download_prefs_.get(); }
 
+  // Creates the download item.  Must be called on the UI thread.
+  void CreateDownloadItem(DownloadCreateInfo* info);
+
   // Clears the last download path, used to initialize "save as" dialogs.
   void ClearLastDownloadPath();
 
@@ -249,7 +252,7 @@ class DownloadManager
   // Called back after a target path for the file to be downloaded to has been
   // determined, either automatically based on the suggested file name, or by
   // the user in a Save As dialog box.
-  void CreateDownloadItem(DownloadCreateInfo* info,
+  void AttachDownloadItem(DownloadCreateInfo* info,
                           const FilePath& target_path);
 
   // Download cancel helper function.

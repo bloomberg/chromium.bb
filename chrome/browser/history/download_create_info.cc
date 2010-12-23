@@ -57,7 +57,7 @@ DownloadCreateInfo::~DownloadCreateInfo() {
 std::string DownloadCreateInfo::DebugString() const {
   return base::StringPrintf("{"
                             " url_ = \"%s\""
-                            " path = \"%s\""
+                            " path = \"%" PRFilePath "\""
                             " received_bytes = %" PRId64
                             " total_bytes = %" PRId64
                             " child_id = %d"
