@@ -83,9 +83,6 @@
       # crbug.com/50481, crbug.com/54942
       '-downloads.DownloadsTest.testZip',
       '-downloads.DownloadsTest.testRemoveDownload',
-      # crbug.com/67932
-      '-omnibox.OmniboxTest.testContentHisotry',
-      '-omnibox.OmniboxTest.testRecentPageHistory',
       '-prefs.PrefsTest.testDownloadDirPref',
       # crbug.com/64269
       '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
@@ -110,9 +107,6 @@
       # crbug.com/64664
       '-databases.DatabasesTest.testReloadActiveTab',
       '-databases.DatabasesTest.testModificationsPersistAfterRendererCrash',
-      # crbug.com/67932
-      '-omnibox.OmniboxTest.testContentHisotry',
-      '-omnibox.OmniboxTest.testRecentPageHistory',
       # crbug.com/64269
       '-passwords.PasswordTest.testDisplayAndSavePasswordInfobar',
     ],
