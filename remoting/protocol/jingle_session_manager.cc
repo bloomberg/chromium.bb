@@ -279,16 +279,17 @@ void JingleSessionManager::OnSessionCreate(
   if (incoming) {
     // Generate private key and certificate.
     // TODO(hclam): Instead of generating we should restore them from the disk.
-    scoped_ptr<base::RSAPrivateKey> private_key(
-        base::RSAPrivateKey::Create(1024));
-    std::string subject = "CN=chromoting";
-    scoped_refptr<net::X509Certificate> x509_certificate =
-        net::X509Certificate::CreateSelfSigned(
-            private_key.get(), subject, 1, base::TimeDelta::FromDays(1));
-    CHECK(x509_certificate);
+    if (!certificate_) {
+      private_key_.reset(base::RSAPrivateKey::Create(1024));
+      certificate_ = net::X509Certificate::CreateSelfSigned(
+          private_key_.get(), "CN=chromoting", 1,
+          base::TimeDelta::FromDays(1));
+      CHECK(certificate_);
+    }
     JingleSession* jingle_session =
-        JingleSession::CreateServerSession(this, x509_certificate,
-                                           private_key.get());
+        JingleSession::CreateServerSession(this, certificate_,
+                                           private_key_.release());
+    certificate_ = NULL;
     sessions_.push_back(make_scoped_refptr(jingle_session));
     jingle_session->Init(cricket_session);
   }
@@ -528,6 +529,14 @@ bool JingleSessionManager::WriteContent(
 
   *elem = root;
   return true;
+}
+
+void JingleSessionManager::SetCertificate(net::X509Certificate* certificate) {
+  certificate_ = certificate;
+}
+
+void JingleSessionManager::SetPrivateKey(base::RSAPrivateKey* private_key) {
+  private_key_.reset(private_key);
 }
 
 cricket::SessionDescription* JingleSessionManager::CreateSessionDescription(

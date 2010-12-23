@@ -19,6 +19,10 @@
 
 class MessageLoop;
 
+namespace base {
+class RSAPrivateKey;
+}  // namespace base
+
 namespace cricket {
 class SessionManager;
 }  // namespace cricket
@@ -101,6 +105,11 @@ class JingleSessionManager
                             buzz::XmlElement** elem,
                             cricket::WriteError* error);
 
+  // Set the certificate and private key if they are provided externally.
+  // TODO(hclam): Combine these two methods.
+  virtual void SetCertificate(net::X509Certificate* certificate);
+  virtual void SetPrivateKey(base::RSAPrivateKey* private_key);
+
  protected:
   virtual ~JingleSessionManager();
 
@@ -134,10 +143,12 @@ class JingleSessionManager
   cricket::SessionManager* cricket_session_manager_;
   scoped_ptr<IncomingSessionCallback> incoming_session_callback_;
   bool allow_local_ips_;
-
   bool closed_;
 
   std::list<scoped_refptr<JingleSession> > sessions_;
+
+  scoped_refptr<net::X509Certificate> certificate_;
+  scoped_ptr<base::RSAPrivateKey> private_key_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleSessionManager);
 };
