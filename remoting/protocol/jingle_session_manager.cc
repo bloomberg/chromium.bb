@@ -210,6 +210,7 @@ void JingleSessionManager::Close(Task* closed_task) {
     closed_ = true;
   }
 
+  key_.reset();
   closed_task->Run();
   delete closed_task;
 }
@@ -224,7 +225,8 @@ scoped_refptr<protocol::Session> JingleSessionManager::Connect(
     CandidateSessionConfig* candidate_config,
     protocol::Session::StateChangeCallback* state_change_callback) {
   // Can be called from any thread.
-  scoped_refptr<JingleSession> jingle_session(new JingleSession(this));
+  scoped_refptr<JingleSession> jingle_session(
+      JingleSession::CreateClientSession(this, server_cert_));
   jingle_session->set_candidate_config(candidate_config);
   jingle_session->set_receiver_token(receiver_token);
   message_loop()->PostTask(
@@ -272,7 +274,8 @@ void JingleSessionManager::OnSessionCreate(
   // If this is an outcoming session the connection object is already
   // created.
   if (incoming) {
-    JingleSession* jingle_session = new JingleSession(this);
+    JingleSession* jingle_session =
+        JingleSession::CreateServerSession(this, server_cert_, key_.get());
     sessions_.push_back(make_scoped_refptr(jingle_session));
     jingle_session->Init(cricket_session);
   }

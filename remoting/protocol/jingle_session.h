@@ -5,8 +5,10 @@
 #ifndef REMOTING_PROTOCOL_JINGLE_SESSION_H_
 #define REMOTING_PROTOCOL_JINGLE_SESSION_H_
 
+#include "base/crypto/rsa_private_key.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
+#include "net/base/completion_callback.h"
 #include "remoting/protocol/session.h"
 #include "third_party/libjingle/source/talk/base/sigslot.h"
 #include "third_party/libjingle/source/talk/p2p/base/session.h"
@@ -16,7 +18,11 @@ class PseudoTcpChannel;
 }  // namespace cricket
 
 namespace net {
+class CertVerifier;
+class ClientSocket;
+class ClientSocketFactory;
 class Socket;
+class X509Certificate;
 }  // namespace net
 
 namespace remoting {
@@ -36,7 +42,18 @@ class JingleSession : public protocol::Session,
  public:
   static const char kChromotingContentName[];
 
-  explicit JingleSession(JingleSessionManager* client);
+  // Create a JingleSession used in client mode. A server certificate is
+  // required.
+  static JingleSession* CreateClientSession(
+      JingleSessionManager* manager,
+      scoped_refptr<net::X509Certificate> certificate);
+
+  // Create a JingleSession used in server mode. A server certificate and
+  // private key is provided. |key| is copied in the constructor.
+  static JingleSession* CreateServerSession(
+      JingleSessionManager* manager,
+      scoped_refptr<net::X509Certificate> certificate,
+      base::RSAPrivateKey* key);
 
   // Chromotocol Session interface.
   virtual void SetStateChangeCallback(StateChangeCallback* callback);
@@ -64,17 +81,29 @@ class JingleSession : public protocol::Session,
 
   virtual void Close(Task* closed_task);
 
- protected:
-  virtual ~JingleSession();
-
  private:
   friend class JingleSessionManager;
+
+  JingleSession(JingleSessionManager* client,
+                scoped_refptr<net::X509Certificate> server_cert,
+                base::RSAPrivateKey* key);
+  virtual ~JingleSession();
 
   // Called by JingleSessionManager.
   void set_candidate_config(const CandidateSessionConfig* candidate_config);
   void Init(cricket::Session* cricket_session);
+
+  // Close all the channels and terminate the session.
+  void CloseInternal(Task* closed_task, int result);
+
   bool HasSession(cricket::Session* cricket_session);
   cricket::Session* ReleaseSession();
+
+  // Helper method to create and initialize SSL socket using the adapter
+  // provided. The resultant SSL socket is written to |ssl_socket|.
+  // Return true if successful.
+  bool EstablishSSLConnection(net::ClientSocket* adapter,
+                              scoped_ptr<net::Socket>* ssl_socket);
 
   // Used for Session.SignalState sigslot.
   void OnSessionState(cricket::BaseSession* session,
@@ -84,10 +113,19 @@ class JingleSession : public protocol::Session,
   void OnAccept();
   void OnTerminate();
 
+  // Called by SSL socket to notify connect event.
+  void OnSSLConnect(int result);
+
   void SetState(State new_state);
 
   // JingleSessionManager that created this session.
   scoped_refptr<JingleSessionManager> jingle_session_manager_;
+
+  // Server certificate used in SSL connections.
+  scoped_refptr<net::X509Certificate> server_cert_;
+
+  // Private key used in SSL server sockets.
+  scoped_ptr<base::RSAPrivateKey> key_;
 
   State state_;
   scoped_ptr<StateChangeCallback> state_change_callback_;
@@ -109,14 +147,32 @@ class JingleSession : public protocol::Session,
   // These data members are only set on the receiving side.
   scoped_ptr<const CandidateSessionConfig> candidate_config_;
 
+  // A channel is the the base channel created by libjingle.
+  // A channel adapter is used to convert a jingle channel to net::Socket.
+  // A SSL socket is a wrapper over a net::Socket to provide SSL functionality.
   cricket::PseudoTcpChannel* control_channel_;
   scoped_ptr<StreamSocketAdapter> control_channel_adapter_;
+  scoped_ptr<net::Socket> control_ssl_socket_;
+
   cricket::PseudoTcpChannel* event_channel_;
   scoped_ptr<StreamSocketAdapter> event_channel_adapter_;
+  scoped_ptr<net::Socket> event_ssl_socket_;
+
   cricket::PseudoTcpChannel* video_channel_;
   scoped_ptr<StreamSocketAdapter> video_channel_adapter_;
+  scoped_ptr<net::Socket> video_ssl_socket_;
+
+  // Count the number of SSL connections esblished.
+  int ssl_connections_;
+
+  // Used to verify the certificate received in SSLClientSocket.
+  scoped_ptr<net::CertVerifier> cert_verifier_;
+
   scoped_ptr<TransportChannelSocketAdapter> video_rtp_channel_;
   scoped_ptr<TransportChannelSocketAdapter> video_rtcp_channel_;
+
+  // Callback called by the SSL layer.
+  scoped_ptr<net::CompletionCallback> connect_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleSession);
 };

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "remoting/jingle_glue/utils.h"
@@ -24,6 +25,47 @@ StreamSocketAdapter::StreamSocketAdapter(talk_base::StreamInterface* stream)
 }
 
 StreamSocketAdapter::~StreamSocketAdapter() {
+}
+
+int StreamSocketAdapter::Connect(net::CompletionCallback* callback) {
+  return net::OK;
+}
+
+void StreamSocketAdapter::Disconnect() {
+}
+
+bool StreamSocketAdapter::IsConnected() const {
+  return true;
+}
+
+bool StreamSocketAdapter::IsConnectedAndIdle() const {
+  return true;
+}
+
+int StreamSocketAdapter::GetPeerAddress(net::AddressList* address) const {
+  // We actually don't know the peer address. Returning so the upper layers
+  // won't complain.
+  net::IPAddressNumber ip_address(4);
+  *address = net::AddressList(ip_address, 0, false);
+  return net::OK;
+}
+
+const net::BoundNetLog& StreamSocketAdapter::NetLog() const {
+  return net_log_;
+}
+
+void StreamSocketAdapter::SetSubresourceSpeculation() {
+}
+
+void StreamSocketAdapter::SetOmniboxSpeculation() {
+}
+
+bool StreamSocketAdapter::WasEverUsed() const {
+  return true;
+}
+
+bool StreamSocketAdapter::UsingTCPFastOpen() const {
+  return false;
 }
 
 int StreamSocketAdapter::Read(

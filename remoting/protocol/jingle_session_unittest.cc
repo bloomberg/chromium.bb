@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/file_path.h"
+#include "base/file_util.h"
+#include "base/nss_util.h"
+#include "base/path_service.h"
 #include "base/time.h"
 #include "base/waitable_event.h"
 #include "base/test/test_timeouts.h"
@@ -128,6 +132,35 @@ class JingleSessionTest : public testing::Test {
         session_manager_pair_->client_session_manager(),
         NewCallback(&client_server_callback_,
                     &MockSessionManagerCallback::OnIncomingSession));
+
+    FilePath certs_dir;
+    PathService::Get(base::DIR_SOURCE_ROOT, &certs_dir);
+    certs_dir = certs_dir.AppendASCII("net");
+    certs_dir = certs_dir.AppendASCII("data");
+    certs_dir = certs_dir.AppendASCII("ssl");
+    certs_dir = certs_dir.AppendASCII("certificates");
+
+    FilePath cert_path = certs_dir.AppendASCII("unittest.selfsigned.der");
+    std::string cert_der;
+    ASSERT_TRUE(file_util::ReadFileToString(cert_path, &cert_der));
+
+    scoped_refptr<net::X509Certificate> cert =
+        net::X509Certificate::CreateFromBytes(cert_der.data(), cert_der.size());
+
+    FilePath key_path = certs_dir.AppendASCII("unittest.key.bin");
+    std::string key_string;
+    ASSERT_TRUE(file_util::ReadFileToString(key_path, &key_string));
+    std::vector<uint8> key_vector(
+        reinterpret_cast<const uint8*>(key_string.data()),
+        reinterpret_cast<const uint8*>(key_string.data() +
+                                       key_string.length()));
+
+    scoped_ptr<base::RSAPrivateKey> private_key(
+        base::RSAPrivateKey::CreateFromPrivateKeyInfo(key_vector));
+
+    host_server_->set_server_cert(cert);
+    host_server_->set_key(private_key.release());
+    client_server_->set_server_cert(cert);
   }
 
   bool InitiateConnection() {
@@ -516,12 +549,18 @@ class UDPChannelTester : public ChannelTesterBase {
 
 // Verify that we can create and destory server objects without a connection.
 TEST_F(JingleSessionTest, CreateAndDestoy) {
+  if (!base::CheckNSSVersion("3.12.8"))
+    return;
+
   CreateServerPair();
 }
 
 // Verify that incoming session can be rejected, and that the status
 // of the connection is set to CLOSED in this case.
 TEST_F(JingleSessionTest, RejectConnection) {
+  if (!base::CheckNSSVersion("3.12.8"))
+    return;
+
   CreateServerPair();
 
   // Reject incoming session.
@@ -551,12 +590,18 @@ TEST_F(JingleSessionTest, RejectConnection) {
 
 // Verify that we can connect two endpoints.
 TEST_F(JingleSessionTest, Connect) {
+  if (!base::CheckNSSVersion("3.12.8"))
+    return;
+
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
 }
 
 // Verify that data can be transmitted over the event channel.
 TEST_F(JingleSessionTest, TestControlChannel) {
+  if (!base::CheckNSSVersion("3.12.8"))
+    return;
+
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<TCPChannelTester> tester(
@@ -570,9 +615,11 @@ TEST_F(JingleSessionTest, TestControlChannel) {
   CloseSessions();
 }
 
-
 // Verify that data can be transmitted over the video channel.
 TEST_F(JingleSessionTest, TestVideoChannel) {
+  if (!base::CheckNSSVersion("3.12.8"))
+    return;
+
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<TCPChannelTester> tester(
@@ -588,6 +635,9 @@ TEST_F(JingleSessionTest, TestVideoChannel) {
 
 // Verify that data can be transmitted over the event channel.
 TEST_F(JingleSessionTest, TestEventChannel) {
+  if (!base::CheckNSSVersion("3.12.8"))
+    return;
+
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<TCPChannelTester> tester(
@@ -603,6 +653,9 @@ TEST_F(JingleSessionTest, TestEventChannel) {
 
 // Verify that data can be transmitted over the video RTP channel.
 TEST_F(JingleSessionTest, TestVideoRtpChannel) {
+  if (!base::CheckNSSVersion("3.12.8"))
+    return;
+
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection());
   scoped_refptr<UDPChannelTester> tester(

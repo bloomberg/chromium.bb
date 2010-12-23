@@ -10,6 +10,7 @@
 
 #include "base/lock.h"
 #include "base/ref_counted.h"
+#include "net/base/x509_certificate.h"
 #include "remoting/protocol/jingle_session.h"
 #include "remoting/protocol/session_manager.h"
 #include "third_party/libjingle/source/talk/p2p/base/session.h"
@@ -93,6 +94,15 @@ class JingleSessionManager
                             buzz::XmlElement** elem,
                             cricket::WriteError* error);
 
+  // The following two methods are used in unit tests only.
+  void set_server_cert(scoped_refptr<net::X509Certificate> server_cert) {
+    server_cert_ = server_cert;
+  }
+
+  void set_key(base::RSAPrivateKey* key) {
+    key_.reset(key);
+  }
+
  protected:
   virtual ~JingleSessionManager();
 
@@ -127,6 +137,9 @@ class JingleSessionManager
   bool allow_local_ips_;
 
   bool closed_;
+
+  scoped_refptr<net::X509Certificate> server_cert_;
+  scoped_ptr<base::RSAPrivateKey> key_;
 
   std::list<scoped_refptr<JingleSession> > sessions_;
 

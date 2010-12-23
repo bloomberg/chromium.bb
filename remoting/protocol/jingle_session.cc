@@ -4,8 +4,16 @@
 
 #include "remoting/protocol/jingle_session.h"
 
+#include "base/crypto/rsa_private_key.h"
 #include "base/message_loop.h"
+#include "net/base/cert_verifier.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
+#include "net/base/ssl_config_service.h"
+#include "net/base/x509_certificate.h"
+#include "net/socket/client_socket_factory.h"
+#include "net/socket/ssl_client_socket.h"
+#include "net/socket/ssl_server_socket.h"
 #include "remoting/base/constants.h"
 #include "remoting/jingle_glue/channel_socket_adapter.h"
 #include "remoting/jingle_glue/jingle_thread.h"
@@ -22,24 +30,77 @@ namespace remoting {
 
 namespace protocol {
 
+const char JingleSession::kChromotingContentName[] = "chromoting";
+
 namespace {
 const char kControlChannelName[] = "control";
 const char kEventChannelName[] = "event";
 const char kVideoChannelName[] = "video";
 const char kVideoRtpChannelName[] = "videortp";
 const char kVideoRtcpChannelName[] = "videortcp";
+
+// Helper method to create a SSL client socket.
+net::SSLClientSocket* CreateSSLClientSocket(
+    net::ClientSocket* socket, scoped_refptr<net::X509Certificate> cert,
+    net::CertVerifier* cert_verifier) {
+  net::SSLConfig ssl_config;
+  ssl_config.false_start_enabled = false;
+  ssl_config.snap_start_enabled = false;
+  ssl_config.ssl3_enabled = true;
+  ssl_config.tls1_enabled = true;
+  ssl_config.session_resume_disabled = true;
+
+  // Certificate provided by the host doesn't need authority.
+  net::SSLConfig::CertAndStatus cert_and_status;
+  cert_and_status.cert_status = net::ERR_CERT_AUTHORITY_INVALID;
+  cert_and_status.cert = cert;
+  ssl_config.allowed_bad_certs.push_back(cert_and_status);
+
+  // SSLClientSocket takes ownership of the adapter.
+  net::HostPortPair host_and_pair(JingleSession::kChromotingContentName, 0);
+  net::SSLClientSocket* ssl_socket =
+      net::ClientSocketFactory::GetDefaultFactory()->CreateSSLClientSocket(
+          socket, host_and_pair, ssl_config, NULL, cert_verifier);
+  return ssl_socket;
+}
+
 }  // namespace
 
-const char JingleSession::kChromotingContentName[] = "chromoting";
+// static
+JingleSession* JingleSession::CreateClientSession(
+    JingleSessionManager* manager,
+    scoped_refptr<net::X509Certificate> certificate) {
+  return new JingleSession(manager, certificate, NULL);
+}
+
+// static
+JingleSession* JingleSession::CreateServerSession(
+    JingleSessionManager* manager,
+    scoped_refptr<net::X509Certificate> certificate,
+    base::RSAPrivateKey* key) {
+  return new JingleSession(manager, certificate, key);
+}
 
 JingleSession::JingleSession(
-    JingleSessionManager* jingle_session_manager)
+    JingleSessionManager* jingle_session_manager,
+    scoped_refptr<net::X509Certificate> server_cert, base::RSAPrivateKey* key)
     : jingle_session_manager_(jingle_session_manager),
+      server_cert_(server_cert),
       state_(INITIALIZING),
       closed_(false),
       cricket_session_(NULL),
       event_channel_(NULL),
-      video_channel_(NULL) {
+      video_channel_(NULL),
+      ssl_connections_(0),
+      ALLOW_THIS_IN_INITIALIZER_LIST(connect_callback_(
+          NewCallback(this, &JingleSession::OnSSLConnect))) {
+  // TODO(hclam): Need a better way to clone a key.
+  if (key) {
+    std::vector<uint8> key_bytes;
+    CHECK(key->ExportPrivateKey(&key_bytes));
+    key_.reset(base::RSAPrivateKey::CreateFromPrivateKeyInfo(key_bytes));
+    CHECK(key_.get());
+  }
 }
 
 JingleSession::~JingleSession() {
@@ -51,8 +112,71 @@ void JingleSession::Init(cricket::Session* cricket_session) {
 
   cricket_session_ = cricket_session;
   jid_ = cricket_session_->remote_name();
+  cert_verifier_.reset(new net::CertVerifier());
   cricket_session_->SignalState.connect(
       this, &JingleSession::OnSessionState);
+}
+
+void JingleSession::CloseInternal(Task* closed_task, int result) {
+  if (MessageLoop::current() != jingle_session_manager_->message_loop()) {
+    jingle_session_manager_->message_loop()->PostTask(
+        FROM_HERE, NewRunnableMethod(this, &JingleSession::CloseInternal,
+                                     closed_task, result));
+    return;
+  }
+
+  if (!closed_) {
+    if (control_ssl_socket_.get())
+      control_ssl_socket_.reset();
+
+    if (control_channel_adapter_.get())
+      control_channel_adapter_->Close(result);
+
+    if (control_channel_) {
+      control_channel_->OnSessionTerminate(cricket_session_);
+      control_channel_ = NULL;
+    }
+
+    if (event_ssl_socket_.get())
+      event_ssl_socket_.reset();
+
+    if (event_channel_adapter_.get())
+      event_channel_adapter_->Close(result);
+
+    if (event_channel_) {
+      event_channel_->OnSessionTerminate(cricket_session_);
+      event_channel_ = NULL;
+    }
+
+    if (video_ssl_socket_.get())
+      video_ssl_socket_.reset();
+
+    if (video_channel_adapter_.get())
+      video_channel_adapter_->Close(result);
+
+    if (video_channel_) {
+      video_channel_->OnSessionTerminate(cricket_session_);
+      video_channel_ = NULL;
+    }
+
+    if (video_rtp_channel_.get())
+      video_rtp_channel_->Close(result);
+    if (video_rtcp_channel_.get())
+      video_rtcp_channel_->Close(result);
+
+    if (cricket_session_)
+      cricket_session_->Terminate();
+
+    SetState(CLOSED);
+
+    closed_ = true;
+  }
+  cert_verifier_.reset();
+
+  if (closed_task) {
+    closed_task->Run();
+    delete closed_task;
+  }
 }
 
 bool JingleSession::HasSession(cricket::Session* cricket_session) {
@@ -71,8 +195,7 @@ cricket::Session* JingleSession::ReleaseSession() {
   return session;
 }
 
-void JingleSession::SetStateChangeCallback(
-    StateChangeCallback* callback) {
+void JingleSession::SetStateChangeCallback(StateChangeCallback* callback) {
   DCHECK_EQ(jingle_session_manager_->message_loop(), MessageLoop::current());
   DCHECK(callback);
   state_change_callback_.reset(callback);
@@ -80,18 +203,18 @@ void JingleSession::SetStateChangeCallback(
 
 net::Socket* JingleSession::control_channel() {
   DCHECK_EQ(jingle_session_manager_->message_loop(), MessageLoop::current());
-  return control_channel_adapter_.get();
+  return control_ssl_socket_.get();
 }
 
 net::Socket* JingleSession::event_channel() {
   DCHECK_EQ(jingle_session_manager_->message_loop(), MessageLoop::current());
-  return event_channel_adapter_.get();
+  return event_ssl_socket_.get();
 }
 
 // TODO(sergeyu): Remove this method after we switch to RTP.
 net::Socket* JingleSession::video_channel() {
   DCHECK_EQ(jingle_session_manager_->message_loop(), MessageLoop::current());
-  return video_channel_adapter_.get();
+  return video_ssl_socket_.get();
 }
 
 net::Socket* JingleSession::video_rtp_channel() {
@@ -114,8 +237,7 @@ MessageLoop* JingleSession::message_loop() {
   return jingle_session_manager_->message_loop();
 }
 
-const CandidateSessionConfig*
-JingleSession::candidate_config() {
+const CandidateSessionConfig* JingleSession::candidate_config() {
   DCHECK(candidate_config_.get());
   return candidate_config_.get();
 }
@@ -155,53 +277,7 @@ void JingleSession::set_receiver_token(const std::string& receiver_token) {
 }
 
 void JingleSession::Close(Task* closed_task) {
-  if (MessageLoop::current() != jingle_session_manager_->message_loop()) {
-    jingle_session_manager_->message_loop()->PostTask(
-        FROM_HERE, NewRunnableMethod(this, &JingleSession::Close,
-                                     closed_task));
-    return;
-  }
-
-  if (!closed_) {
-    if (control_channel_adapter_.get())
-      control_channel_adapter_->Close(net::ERR_CONNECTION_CLOSED);
-
-    if (control_channel_) {
-      control_channel_->OnSessionTerminate(cricket_session_);
-      control_channel_ = NULL;
-    }
-
-    if (event_channel_adapter_.get())
-      event_channel_adapter_->Close(net::ERR_CONNECTION_CLOSED);
-
-    if (event_channel_) {
-      event_channel_->OnSessionTerminate(cricket_session_);
-      event_channel_ = NULL;
-    }
-
-    if (video_channel_adapter_.get())
-      video_channel_adapter_->Close(net::ERR_CONNECTION_CLOSED);
-
-    if (video_channel_) {
-      video_channel_->OnSessionTerminate(cricket_session_);
-      video_channel_ = NULL;
-    }
-
-    if (video_rtp_channel_.get())
-      video_rtp_channel_->Close(net::ERR_CONNECTION_CLOSED);
-    if (video_rtcp_channel_.get())
-      video_rtcp_channel_->Close(net::ERR_CONNECTION_CLOSED);
-
-    if (cricket_session_)
-      cricket_session_->Terminate();
-
-    SetState(CLOSED);
-
-    closed_ = true;
-  }
-
-  closed_task->Run();
-  delete closed_task;
+  CloseInternal(closed_task, net::ERR_CONNECTION_CLOSED);
 }
 
 void JingleSession::OnSessionState(
@@ -287,7 +363,48 @@ void JingleSession::OnInitiate() {
   SetState(CONNECTING);
 }
 
+bool JingleSession::EstablishSSLConnection(
+    net::ClientSocket* adapter, scoped_ptr<net::Socket>* ssl_socket) {
+  if (cricket_session_->initiator()) {
+    // Create client SSL socket.
+    net::SSLClientSocket* socket = CreateSSLClientSocket(adapter,
+                                                         server_cert_,
+                                                         cert_verifier_.get());
+    ssl_socket->reset(socket);
+
+    int ret = socket->Connect(connect_callback_.get());
+    if (ret == net::ERR_IO_PENDING) {
+      return true;
+    } else if (ret != net::OK) {
+      LOG(ERROR) << "Failed to establish SSL connection";
+      cricket_session_->Terminate();
+      return false;
+    }
+  } else {
+    // Create server SSL socket.
+    net::SSLConfig ssl_config;
+    net::SSLServerSocket* socket = net::CreateSSLServerSocket(
+        adapter, server_cert_, key_.get(), ssl_config);
+    ssl_socket->reset(socket);
+
+    int ret = socket->Accept(connect_callback_.get());
+    if (ret == net::ERR_IO_PENDING) {
+      return true;
+    } else if (ret != net::OK) {
+      LOG(ERROR) << "Failed to establish SSL connection";
+      cricket_session_->Terminate();
+      return true;
+    }
+  }
+  // Reach here if net::OK is received.
+  connect_callback_->Run(net::OK);
+  return true;
+}
+
 void JingleSession::OnAccept() {
+  // TODO(hclam): Need to close the adapters on failuire otherwise it will
+  // crash in the destructor.
+
   // Set the config if we are the one who initiated the session.
   if (cricket_session_->initiator()) {
     const cricket::ContentInfo* content =
@@ -307,11 +424,24 @@ void JingleSession::OnAccept() {
       cricket_session_->Terminate();
       return;
     }
-
     set_config(config);
   }
 
-  SetState(CONNECTED);
+  bool ret = EstablishSSLConnection(control_channel_adapter_.release(),
+                                    &control_ssl_socket_);
+  if (ret) {
+    ret = EstablishSSLConnection(event_channel_adapter_.release(),
+                                 &event_ssl_socket_);
+  }
+  if (ret) {
+    ret = EstablishSSLConnection(video_channel_adapter_.release(),
+                                 &video_ssl_socket_);
+  }
+
+  if (!ret) {
+    LOG(ERROR) << "Failed to establish SSL connections";
+    cricket_session_->Terminate();
+  }
 }
 
 void JingleSession::OnTerminate() {
@@ -344,6 +474,26 @@ void JingleSession::OnTerminate() {
   SetState(CLOSED);
 
   closed_ = true;
+}
+
+void JingleSession::OnSSLConnect(int result) {
+  DCHECK(!closed_);
+  if (result != net::OK) {
+    LOG(ERROR) << "Error during SSL connection: " << result;
+    // TODO(hclam): Just setting the state is not enough. Need to invoke a
+    // callback to report failure.
+    CloseInternal(NULL, result);
+    return;
+  }
+
+  // Number of channels for a jingle session.
+  const int kChannels = 3;
+
+  // Set the state to connected only of all SSL sockets are connected.
+  if (++ssl_connections_ == kChannels) {
+    SetState(CONNECTED);
+  }
+  CHECK(ssl_connections_ <= kChannels) << "Unexpected SSL connect callback";
 }
 
 void JingleSession::SetState(State new_state) {

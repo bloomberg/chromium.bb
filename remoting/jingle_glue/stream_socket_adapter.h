@@ -6,7 +6,8 @@
 #define REMOTING_JINGLE_GLUE_STREAM_SOCKET_ADAPTER_H_
 
 #include "base/scoped_ptr.h"
-#include "net/socket/socket.h"
+#include "net/base/net_log.h"
+#include "net/socket/client_socket.h"
 #include "third_party/libjingle/source/talk/base/sigslot.h"
 
 namespace talk_base {
@@ -18,12 +19,24 @@ namespace remoting {
 // StreamSocketAdapter implements net::Socket interface on top of
 // libjingle's StreamInterface. It is used by JingleChromotocolConnection
 // to provide net::Socket interface for channels.
-class StreamSocketAdapter : public net::Socket,
+class StreamSocketAdapter : public net::ClientSocket,
                             public sigslot::has_slots<> {
  public:
   // Ownership of the stream is passed to the adapter.
   explicit StreamSocketAdapter(talk_base::StreamInterface* stream);
   virtual ~StreamSocketAdapter();
+
+  // ClientSocket interface.
+  virtual int Connect(net::CompletionCallback* callback);
+  virtual void Disconnect();
+  virtual bool IsConnected() const;
+  virtual bool IsConnectedAndIdle() const;
+  virtual int GetPeerAddress(net::AddressList* address) const;
+  virtual const net::BoundNetLog& NetLog() const;
+  virtual void SetSubresourceSpeculation();
+  virtual void SetOmniboxSpeculation();
+  virtual bool WasEverUsed() const;
+  virtual bool UsingTCPFastOpen() const;
 
   // Closes the stream. |error_code| specifies error code that will
   // be returned by Read() and Write() after the stream is closed.
@@ -61,6 +74,8 @@ class StreamSocketAdapter : public net::Socket,
   int write_buffer_size_;
 
   int closed_error_code_;
+
+  net::BoundNetLog net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamSocketAdapter);
 };
