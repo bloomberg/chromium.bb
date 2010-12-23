@@ -50,6 +50,7 @@ env.AddLibraryToSdk(['google_nacl_pgl'])
 # GLES2 headers go into the GLES2 subdir, Khronos headers into the KHR subdir,
 # pgl header go int he pgl subdir.
 env.AddHeaderToSdk([
+    'GLES2/gl2ext.h',
     'GLES2/gl2platform.h',
     'GLES2/gl2types.h',
     'GLES2/gl2.h',

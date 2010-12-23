@@ -14,6 +14,8 @@ env.FilterOut(CCFLAGS=['-pedantic'])
 ppapi_header_test_inputs = [
   'cpp_header_test.cc',
   'cpp_dev_header_test.cc',
+  'opengl_header_test.c',
+  'opengl_cpp_header_test.cc',
 ]
 
 # Build-only test to make sure the header layout for ppapi is correct.
