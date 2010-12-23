@@ -128,6 +128,7 @@ class RemoteConnection(object):
             Command.GET_CURRENT_URL: ('GET', '/session/$sessionId/url'),
             Command.GET_TITLE: ('GET', '/session/$sessionId/title'),
             Command.GET_PAGE_SOURCE: ('GET', '/session/$sessionId/source'),
+            Command.IMPLICIT_WAIT: ('POST', '/session/$sessionId/timeouts/implicit_wait'),
             Command.SCREENSHOT: ('GET', '/session/$sessionId/screenshot'),
             Command.SET_BROWSER_VISIBLE:
                 ('POST', '/session/$sessionId/visible'),
