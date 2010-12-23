@@ -16,7 +16,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/common/extensions/extension.h"
 
-namespace base {
+namespace app {
 class DataPack;
 }
 class DictionaryValue;
@@ -170,7 +170,7 @@ class BrowserThemePack : public base::RefCountedThreadSafe<
   color_utils::HSL GetTintInternal(int id) const;
 
   // Data pack, if we have one.
-  scoped_ptr<base::DataPack> data_pack_;
+  scoped_ptr<app::DataPack> data_pack_;
 
   // All structs written to disk need to be packed; no alignment tricks here,
   // please.

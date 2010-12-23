@@ -115,6 +115,8 @@
         'clipboard/scoped_clipboard_writer.cc',
         'clipboard/scoped_clipboard_writer.h',
         'combobox_model.h',
+        'data_pack.cc',
+        'data_pack.h',
         'drag_drop_types_gtk.cc',
         'drag_drop_types_win.cc',
         'drag_drop_types.h',

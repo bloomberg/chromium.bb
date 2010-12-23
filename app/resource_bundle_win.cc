@@ -7,8 +7,8 @@
 #include <atlbase.h>
 
 #include "app/app_paths.h"
+#include "app/data_pack.h"
 #include "app/l10n_util.h"
-#include "base/data_pack.h"
 #include "base/debug_util.h"
 #include "base/debug/stack_trace.h"
 #include "base/file_util.h"

@@ -1,8 +1,8 @@
-// Copyright (c) 2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/data_pack.h"
+#include "app/data_pack.h"
 
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -11,13 +11,15 @@
 #include "base/string_piece.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace app {
+
 TEST(DataPackTest, Load) {
   FilePath data_path;
   PathService::Get(base::DIR_SOURCE_ROOT, &data_path);
   data_path = data_path.Append(
-        FILE_PATH_LITERAL("base/data/data_pack_unittest/sample.pak"));
+      FILE_PATH_LITERAL("app/test/data/data_pack_unittest/sample.pak"));
 
-  base::DataPack pack;
+  DataPack pack;
   ASSERT_TRUE(pack.Load(data_path));
 
   base::StringPiece data;
@@ -53,10 +55,10 @@ TEST(DataPackTest, Write) {
   resources.insert(std::make_pair(15, base::StringPiece(fifteen)));
   resources.insert(std::make_pair(3, base::StringPiece(three)));
   resources.insert(std::make_pair(4, base::StringPiece(four)));
-  ASSERT_TRUE(base::DataPack::WritePack(file, resources));
+  ASSERT_TRUE(DataPack::WritePack(file, resources));
 
   // Now try to read the data back in.
-  base::DataPack pack;
+  DataPack pack;
   ASSERT_TRUE(pack.Load(file));
 
   base::StringPiece data;
@@ -71,3 +73,5 @@ TEST(DataPackTest, Write) {
   ASSERT_TRUE(pack.GetStringPiece(15, &data));
   EXPECT_EQ(fifteen, data);
 }
+
+}  // namespace app

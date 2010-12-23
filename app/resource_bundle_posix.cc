@@ -4,8 +4,8 @@
 
 #include "app/resource_bundle.h"
 
+#include "app/data_pack.h"
 #include "app/l10n_util.h"
-#include "base/data_pack.h"
 #include "base/lock.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
@@ -15,8 +15,8 @@
 
 namespace {
 
-base::DataPack* LoadResourcesDataPak(FilePath resources_pak_path) {
-  base::DataPack* resources_pak = new base::DataPack;
+app::DataPack* LoadResourcesDataPak(FilePath resources_pak_path) {
+  app::DataPack* resources_pak = new app::DataPack;
   bool success = resources_pak->Load(resources_pak_path);
   if (!success) {
     delete resources_pak;

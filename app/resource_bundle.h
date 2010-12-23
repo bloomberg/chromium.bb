@@ -23,7 +23,7 @@
 #include "base/string16.h"
 #include "gfx/native_widget_types.h"
 
-namespace base {
+namespace app {
 class DataPack;
 }
 #if defined(USE_X11)
@@ -178,7 +178,7 @@ class ResourceBundle {
    private:
     void Load();
 
-    scoped_ptr<base::DataPack> data_pack_;
+    scoped_ptr<app::DataPack> data_pack_;
     FilePath path_;
 
     DISALLOW_COPY_AND_ASSIGN(LoadedDataPack);
@@ -191,7 +191,7 @@ class ResourceBundle {
   typedef HINSTANCE DataHandle;
 #elif defined(USE_BASE_DATA_PACK)
   // Linux uses base::DataPack.
-  typedef base::DataPack* DataHandle;
+  typedef app::DataPack* DataHandle;
 #endif
 
   // Ctor/dtor are private, since we're a singleton.

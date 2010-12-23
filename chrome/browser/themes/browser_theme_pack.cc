@@ -4,8 +4,8 @@
 
 #include "chrome/browser/themes/browser_theme_pack.h"
 
+#include "app/data_pack.h"
 #include "app/resource_bundle.h"
-#include "base/data_pack.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/thread_restrictions.h"
@@ -370,7 +370,7 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
     FilePath path, const std::string& expected_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_refptr<BrowserThemePack> pack(new BrowserThemePack);
-  pack->data_pack_.reset(new base::DataPack);
+  pack->data_pack_.reset(new app::DataPack);
 
   if (!pack->data_pack_->Load(path)) {
     LOG(ERROR) << "Failed to load theme data pack.";
@@ -448,7 +448,7 @@ bool BrowserThemePack::WriteToDisk(FilePath path) const {
   RepackImages(prepared_images_, &reencoded_images);
   AddRawImagesTo(reencoded_images, &resources);
 
-  return base::DataPack::WritePack(path, resources);
+  return app::DataPack::WritePack(path, resources);
 }
 
 bool BrowserThemePack::GetTint(int id, color_utils::HSL* hsl) const {
@@ -583,7 +583,7 @@ void BrowserThemePack::BuildHeader(const Extension* extension) {
   header_->version = kThemePackVersion;
 
   // TODO(erg): Need to make this endian safe on other computers. Prerequisite
-  // is that base::DataPack removes this same check.
+  // is that app::DataPack removes this same check.
 #if defined(__BYTE_ORDER)
   // Linux check
   COMPILE_ASSERT(__BYTE_ORDER == __LITTLE_ENDIAN,

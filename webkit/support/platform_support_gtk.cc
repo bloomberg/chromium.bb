@@ -4,7 +4,7 @@
 
 #include "webkit/support/platform_support.h"
 
-#include "base/data_pack.h"
+#include "app/data_pack.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -16,7 +16,7 @@
 namespace {
 
 // Data resources on linux.  This is a pointer to the mmapped resources file.
-base::DataPack* g_resource_data_pack = NULL;
+app::DataPack* g_resource_data_pack = NULL;
 
 }
 
@@ -31,7 +31,7 @@ void BeforeInitialize(bool unit_test_mode) {
 void AfterInitialize(bool unit_test_mode) {
   if (unit_test_mode)
     return;  // We don't have a resource pack when running the unit-tests.
-  g_resource_data_pack = new base::DataPack;
+  g_resource_data_pack = new app::DataPack;
   FilePath data_path;
   PathService::Get(base::DIR_EXE, &data_path);
   data_path = data_path.Append("DumpRenderTree.pak");

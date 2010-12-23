@@ -4,7 +4,7 @@
 
 #include "app/resource_bundle.h"
 
-#include "base/data_pack.h"
+#include "app/data_pack.h"
 #include "base/lock.h"
 #include "base/logging.h"
 #include "base/string_piece.h"
@@ -246,7 +246,7 @@ ResourceBundle::LoadedDataPack::~LoadedDataPack() {
 
 void ResourceBundle::LoadedDataPack::Load() {
   DCHECK(!data_pack_.get());
-  data_pack_.reset(new base::DataPack);
+  data_pack_.reset(new app::DataPack);
   bool success = data_pack_->Load(path_);
   CHECK(success) << "Failed to load " << path_.value();
 }

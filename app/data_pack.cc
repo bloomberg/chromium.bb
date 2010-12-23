@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/data_pack.h"
+#include "app/data_pack.h"
 
 #include <errno.h>
 
@@ -59,7 +59,7 @@ enum LoadErrors {
 
 }  // anonymous namespace
 
-namespace base {
+namespace app {
 
 // In .cc for MemoryMappedFile dtor.
 DataPack::DataPack() : resource_count_(0) {
@@ -118,7 +118,8 @@ bool DataPack::Load(const FilePath& path) {
   return true;
 }
 
-bool DataPack::GetStringPiece(uint32 resource_id, StringPiece* data) const {
+bool DataPack::GetStringPiece(uint32 resource_id,
+                              base::StringPiece* data) const {
   // It won't be hard to make this endian-agnostic, but it's not worth
   // bothering to do right now.
 #if defined(__BYTE_ORDER)
@@ -152,7 +153,7 @@ RefCountedStaticMemory* DataPack::GetStaticMemory(uint32 resource_id) const {
 
 // static
 bool DataPack::WritePack(const FilePath& path,
-                         const std::map<uint32, StringPiece>& resources) {
+                         const std::map<uint32, base::StringPiece>& resources) {
   FILE* file = file_util::OpenFile(path, "wb");
   if (!file)
     return false;
@@ -175,7 +176,8 @@ bool DataPack::WritePack(const FilePath& path,
   // Each entry is 3 uint32s.
   uint32 index_length = entry_count * 3 * kWord;
   uint32 data_offset = kHeaderLength + index_length;
-  for (std::map<uint32, StringPiece>::const_iterator it = resources.begin();
+  for (std::map<uint32, base::StringPiece>::const_iterator it =
+           resources.begin();
        it != resources.end(); ++it) {
     if (fwrite(&it->first, 1, kWord, file) != kWord) {
       LOG(ERROR) << "Failed to write id for " << it->first;
@@ -199,7 +201,8 @@ bool DataPack::WritePack(const FilePath& path,
     data_offset += len;
   }
 
-  for (std::map<uint32, StringPiece>::const_iterator it = resources.begin();
+  for (std::map<uint32, base::StringPiece>::const_iterator it =
+           resources.begin();
        it != resources.end(); ++it) {
     if (fwrite(it->second.data(), it->second.length(), 1, file) != 1) {
       LOG(ERROR) << "Failed to write data for " << it->first;
@@ -213,4 +216,4 @@ bool DataPack::WritePack(const FilePath& path,
   return true;
 }
 
-}  // namespace base
+}  // namespace app

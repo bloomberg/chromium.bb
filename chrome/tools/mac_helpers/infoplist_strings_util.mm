@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "base/data_pack.h"
+#include "app/data_pack.h"
 #include "base/file_path.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/scoped_ptr.h"
@@ -51,16 +51,16 @@ NSString* ApplicationVersionString(const char* version_file_path) {
   return nil;
 }
 
-base::DataPack* LoadResourceDataPack(const char* dir_path,
-                                     const char* branding_strings_name,
-                                     const char* locale_name) {
-  base::DataPack* resource_pack = NULL;
+app::DataPack* LoadResourceDataPack(const char* dir_path,
+                                    const char* branding_strings_name,
+                                    const char* locale_name) {
+  app::DataPack* resource_pack = NULL;
 
   NSString* resource_path = [NSString stringWithFormat:@"%s/%s_%s.pak",
                              dir_path, branding_strings_name, locale_name];
   if (resource_path) {
     FilePath resources_pak_path([resource_path fileSystemRepresentation]);
-    resource_pack = new base::DataPack;
+    resource_pack = new app::DataPack;
     bool success = resource_pack->Load(resources_pak_path);
     if (!success) {
       delete resource_pack;
@@ -71,7 +71,7 @@ base::DataPack* LoadResourceDataPack(const char* dir_path,
   return resource_pack;
 }
 
-NSString* LoadStringFromDataPack(base::DataPack* data_pack,
+NSString* LoadStringFromDataPack(app::DataPack* data_pack,
                                  const char* data_pack_lang,
                                  uint32_t resource_id,
                                  const char* resource_id_str) {
@@ -204,7 +204,7 @@ int main(int argc, char* const argv[]) {
     const char* cur_lang = lang_list[loop];
 
     // Open the branded string pak file
-    scoped_ptr<base::DataPack> branded_data_pack(
+    scoped_ptr<app::DataPack> branded_data_pack(
         LoadResourceDataPack(grit_output_dir,
                              branding_strings_name,
                              cur_lang));
