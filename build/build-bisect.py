@@ -13,7 +13,7 @@ it will ask you whether it is good or bad before continuing the search.
 """
 
 # Base URL to download snapshots from.
-BUILD_BASE_URL = 'http://build.chromium.org/buildbot/snapshots/'
+BUILD_BASE_URL = 'http://build.chromium.org/f/chromium/snapshots/'
 
 # The type (platform) of the build archive. This is what's passed in to the
 # '-a/--archive' option.
