@@ -548,7 +548,8 @@ class UDPChannelTester : public ChannelTesterBase {
 
 // Mac needs to implement X509Certificate::CreateSelfSigned to enable these
 // tests.
-#if defined(USE_NSS) || defined(OS_WIN)
+// TODO(hclam): Run these tests on Windows.
+#if defined(USE_NSS)
 
 // Verify that we can create and destory server objects without a connection.
 TEST_F(JingleSessionTest, CreateAndDestoy) {
