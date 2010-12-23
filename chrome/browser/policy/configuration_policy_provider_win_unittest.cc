@@ -3,15 +3,17 @@
 // found in the LICENSE file.
 
 #include <gtest/gtest.h>
-
 #include <windows.h>
 
+#include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
+#include "chrome/browser/browser_thread.h"
+#include "chrome/browser/policy/asynchronous_policy_loader.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/configuration_policy_provider_win.h"
 #include "chrome/browser/policy/mock_configuration_policy_store.h"
@@ -151,12 +153,15 @@ class ConfigurationPolicyProviderWinTest
   scoped_ptr<MockConfigurationPolicyStore> store_;
   scoped_ptr<ConfigurationPolicyProviderWin> provider_;
 
- private:
   // A message loop must be declared and instantiated for these tests,
   // because Windows policy provider create WaitableEvents and
   // ObjectWatchers that require the tests to have a MessageLoop associated
   // with the thread executing the tests.
   MessageLoop loop_;
+
+ private:
+  BrowserThread ui_thread_;
+  BrowserThread file_thread_;
 
   // Keys are created for the lifetime of a test to contain
   // the sandboxed HKCU and HKLM hives, respectively.
@@ -165,7 +170,9 @@ class ConfigurationPolicyProviderWinTest
 };
 
 ConfigurationPolicyProviderWinTest::ConfigurationPolicyProviderWinTest()
-    : temp_hklm_hive_key_(HKEY_CURRENT_USER, kUnitTestMachineOverrideSubKey,
+    : ui_thread_(BrowserThread::UI, &loop_),
+      file_thread_(BrowserThread::FILE, &loop_),
+      temp_hklm_hive_key_(HKEY_CURRENT_USER, kUnitTestMachineOverrideSubKey,
                           KEY_READ),
       temp_hkcu_hive_key_(HKEY_CURRENT_USER, kUnitTestUserOverrideSubKey,
                           KEY_READ) {
@@ -194,6 +201,7 @@ void ConfigurationPolicyProviderWinTest::SetUp() {
 void ConfigurationPolicyProviderWinTest::TearDown() {
   DeactivateOverrides();
   DeleteRegistrySandbox();
+  loop_.RunAllPending();
 }
 
 void ConfigurationPolicyProviderWinTest::ActivateOverrides() {
@@ -299,6 +307,8 @@ TEST_P(ConfigurationPolicyProviderWinTest, InvalidValue) {
   WriteInvalidValue(HKEY_CURRENT_USER,
                     GetParam().policy_name(),
                     GetParam().hkcu_value());
+  provider_->loader()->Reload();
+  loop_.RunAllPending();
   provider_->Provide(store_.get());
   EXPECT_TRUE(store_->policy_map().empty());
 }
@@ -307,6 +317,8 @@ TEST_P(ConfigurationPolicyProviderWinTest, HKLM) {
   WriteValue(HKEY_LOCAL_MACHINE,
              GetParam().policy_name(),
              GetParam().hklm_value());
+  provider_->loader()->Reload();
+  loop_.RunAllPending();
   provider_->Provide(store_.get());
   const Value* value = store_->Get(GetParam().type());
   ASSERT_TRUE(value);
@@ -317,6 +329,8 @@ TEST_P(ConfigurationPolicyProviderWinTest, HKCU) {
   WriteValue(HKEY_CURRENT_USER,
              GetParam().policy_name(),
              GetParam().hkcu_value());
+  provider_->loader()->Reload();
+  loop_.RunAllPending();
   provider_->Provide(store_.get());
   const Value* value = store_->Get(GetParam().type());
   ASSERT_TRUE(value);
@@ -330,6 +344,8 @@ TEST_P(ConfigurationPolicyProviderWinTest, HKLMOverHKCU) {
   WriteValue(HKEY_CURRENT_USER,
              GetParam().policy_name(),
              GetParam().hkcu_value());
+  provider_->loader()->Reload();
+  loop_.RunAllPending();
   provider_->Provide(store_.get());
   const Value* value = store_->Get(GetParam().type());
   ASSERT_TRUE(value);

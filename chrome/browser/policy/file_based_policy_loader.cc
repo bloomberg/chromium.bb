@@ -21,12 +21,13 @@ namespace policy {
 
 FileBasedPolicyLoader::FileBasedPolicyLoader(
     FileBasedPolicyProvider::ProviderDelegate* provider_delegate)
-    : AsynchronousPolicyLoader(provider_delegate),
+    : AsynchronousPolicyLoader(provider_delegate,
+                               kReloadIntervalMinutes),
       config_file_path_(provider_delegate->config_file_path()),
-      reload_task_(NULL),
-      reload_interval_(base::TimeDelta::FromMinutes(kReloadIntervalMinutes)),
       settle_interval_(base::TimeDelta::FromSeconds(kSettleIntervalSeconds)) {
 }
+
+FileBasedPolicyLoader::~FileBasedPolicyLoader() {}
 
 class FileBasedPolicyWatcherDelegate : public FilePathWatcher::Delegate {
  public:
@@ -49,27 +50,6 @@ class FileBasedPolicyWatcherDelegate : public FilePathWatcher::Delegate {
   DISALLOW_COPY_AND_ASSIGN(FileBasedPolicyWatcherDelegate);
 };
 
-void FileBasedPolicyLoader::Init() {
-  AsynchronousPolicyLoader::Init();
-
-  // Initialization can happen early when the file thread is not yet available,
-  // but the watcher's initialization must be done on the file thread. Posting
-  // to a to the file directly before the file thread is initialized will cause
-  // the task to be forgotten. Instead, post a task to the ui thread to delay
-  // the remainder of initialization until threading is fully initialized.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this,
-                        &FileBasedPolicyLoader::InitAfterFileThreadAvailable));
-}
-
-void FileBasedPolicyLoader::Stop() {
-  AsynchronousPolicyLoader::Stop();
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &FileBasedPolicyLoader::StopOnFileThread));
-}
-
 void FileBasedPolicyLoader::OnFilePathChanged(
     const FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -80,8 +60,6 @@ void FileBasedPolicyLoader::OnError() {
   LOG(ERROR) << "FilePathWatcher on " << config_file_path().value()
              << " failed.";
 }
-
-FileBasedPolicyLoader::~FileBasedPolicyLoader() {}
 
 void FileBasedPolicyLoader::Reload() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -111,14 +89,6 @@ void FileBasedPolicyLoader::Reload() {
   ScheduleFallbackReloadTask();
 }
 
-void FileBasedPolicyLoader::InitAfterFileThreadAvailable() {
-  if (provider()) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(this, &FileBasedPolicyLoader::InitOnFileThread));
-  }
-}
-
 void FileBasedPolicyLoader::InitOnFileThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   watcher_.reset(new FilePathWatcher);
@@ -138,40 +108,7 @@ void FileBasedPolicyLoader::InitOnFileThread() {
 
 void FileBasedPolicyLoader::StopOnFileThread() {
   watcher_.reset();
-  if (reload_task_) {
-    reload_task_->Cancel();
-    reload_task_ = NULL;
-  }
-}
-
-void FileBasedPolicyLoader::ScheduleReloadTask(
-    const base::TimeDelta& delay) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  if (reload_task_)
-    reload_task_->Cancel();
-
-  reload_task_ =
-      NewRunnableMethod(this, &FileBasedPolicyLoader::ReloadFromTask);
-  BrowserThread::PostDelayedTask(BrowserThread::FILE, FROM_HERE, reload_task_,
-                                 delay.InMilliseconds());
-}
-
-void FileBasedPolicyLoader::ScheduleFallbackReloadTask() {
-  // As a safeguard in case that the load delegate failed to timely notice a
-  // change in policy, schedule a reload task that'll make us recheck after a
-  // reasonable interval.
-  ScheduleReloadTask(reload_interval_);
-}
-
-void FileBasedPolicyLoader::ReloadFromTask() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  // Drop the reference to the reload task, since the task might be the only
-  // referer that keeps us alive, so we should not Cancel() it.
-  reload_task_ = NULL;
-
-  Reload();
+  AsynchronousPolicyLoader::StopOnFileThread();
 }
 
 bool FileBasedPolicyLoader::IsSafeToReloadPolicy(

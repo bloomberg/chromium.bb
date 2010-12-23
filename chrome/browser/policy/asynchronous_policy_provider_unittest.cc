@@ -17,6 +17,7 @@ using ::testing::Return;
 
 namespace policy {
 
+// Creating the provider should provide initial policy.
 TEST_F(AsynchronousPolicyTestBase, Provide) {
   InSequence s;
   DictionaryValue* policies = new DictionaryValue();
@@ -25,10 +26,12 @@ TEST_F(AsynchronousPolicyTestBase, Provide) {
   EXPECT_CALL(*store_, Apply(policy::kPolicySyncDisabled, _)).Times(1);
   AsynchronousPolicyProvider provider(
       ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
-      new AsynchronousPolicyLoader(delegate_.release()));
+      new AsynchronousPolicyLoader(delegate_.release(), 10));
   provider.Provide(store_.get());
 }
 
+
+// Trigger a refresh manually and ensure that policy gets reloaded.
 TEST_F(AsynchronousPolicyTestBase, ProvideAfterRefresh) {
   InSequence s;
   DictionaryValue* original_policies = new DictionaryValue();
@@ -39,8 +42,8 @@ TEST_F(AsynchronousPolicyTestBase, ProvideAfterRefresh) {
       policy::key::kJavascriptEnabled,
       true);
   EXPECT_CALL(*delegate_, Load()).WillOnce(Return(refresh_policies));
-  AsynchronousPolicyLoader* loader = new AsynchronousPolicyLoader(
-      delegate_.release());
+  AsynchronousPolicyLoader* loader =
+      new AsynchronousPolicyLoader(delegate_.release(), 10);
   AsynchronousPolicyProvider provider(
       ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList(),
       loader);

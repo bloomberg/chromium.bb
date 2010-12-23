@@ -21,9 +21,7 @@ class FileBasedPolicyLoader : public AsynchronousPolicyLoader {
   FileBasedPolicyLoader(
       FileBasedPolicyProvider::ProviderDelegate* provider_delegate);
 
-  // AsynchronousPolicyLoader implementation:
-  virtual void Init();
-  virtual void Stop();
+  // AsynchronousPolicyLoader overrides:
   virtual void Reload();
 
   void OnFilePathChanged(const FilePath& path);
@@ -37,30 +35,14 @@ class FileBasedPolicyLoader : public AsynchronousPolicyLoader {
 
   const FilePath& config_file_path() { return config_file_path_; }
 
+  // AsynchronousPolicyLoader overrides:
+
+  // Creates the file path watcher and configures it to watch
+  // |config_file_path_|.  Must be called on the file thread.
+  virtual void InitOnFileThread();
+  virtual void StopOnFileThread();
+
  private:
-  // Finishes initialization after the threading system has been fully
-  // intiialized.
-  void InitAfterFileThreadAvailable();
-
-  // Creates the file path watcher, configures it to watch |config_file_path_|
-  // and schedules the fallback reload task. Must be called on the file thread.
-  void InitOnFileThread();
-
-  // Cancels file path watch notification and destroys the watcher.
-  // Must be called on file thread.
-  void StopOnFileThread();
-
-  // Schedules a reload task to run when |delay| expires. Must be called on the
-  // file thread.
-  void ScheduleReloadTask(const base::TimeDelta& delay);
-
-  // Schedules a reload task to run after the number of minutes specified
-  // in |reload_interval_minutes_|. Must be called on the file thread.
-  void ScheduleFallbackReloadTask();
-
-  // Invoked from the reload task on the file thread.
-  void ReloadFromTask();
-
   // Checks whether policy information is safe to read. If not, returns false
   // and then delays until it is considered safe to reload in |delay|.
   // Must be called on the file thread.
@@ -75,14 +57,6 @@ class FileBasedPolicyLoader : public AsynchronousPolicyLoader {
   // (e.g. during Stop), since |watcher_| internally holds a reference to the
   // loader and keeps it alive.
   scoped_ptr<FilePathWatcher> watcher_;
-
-  // The reload task. Access only on the file thread. Holds a reference to the
-  // currently posted task, so we can cancel and repost it if necessary.
-  CancelableTask* reload_task_;
-
-  // The interval that a policy reload will be triggered as a fallback even if
-  // the delegate doesn't indicate that one is needed.
-  const base::TimeDelta  reload_interval_;
 
   // Settle interval.
   const base::TimeDelta settle_interval_;

@@ -53,7 +53,7 @@ TEST_F(AsynchronousPolicyLoaderTest, InitialLoad) {
   DictionaryValue* template_dict(new DictionaryValue());
   EXPECT_CALL(*delegate_, Load()).WillOnce(Return(template_dict));
   scoped_refptr<AsynchronousPolicyLoader> loader =
-      new AsynchronousPolicyLoader(delegate_.release());
+      new AsynchronousPolicyLoader(delegate_.release(), 10);
   loader->Init();
   const DictionaryValue* loaded_dict(loader->policy());
   EXPECT_TRUE(loaded_dict->Equals(template_dict));
@@ -68,7 +68,7 @@ TEST_F(AsynchronousPolicyLoaderTest, InitialLoadWithFallback) {
   EXPECT_CALL(*delegate_, Load()).WillOnce(
       CreateSequencedTestDictionary(&dictionary_number));
   scoped_refptr<AsynchronousPolicyLoader> loader =
-      new AsynchronousPolicyLoader(delegate_.release());
+      new AsynchronousPolicyLoader(delegate_.release(), 10);
   loader->Init();
   loop_.RunAllPending();
   loader->Reload();
@@ -86,7 +86,7 @@ TEST_F(AsynchronousPolicyLoaderTest, Stop) {
   ON_CALL(*delegate_, Load()).WillByDefault(CreateTestDictionary());
   EXPECT_CALL(*delegate_, Load()).Times(1);
   scoped_refptr<AsynchronousPolicyLoader> loader =
-      new AsynchronousPolicyLoader(delegate_.release());
+      new AsynchronousPolicyLoader(delegate_.release(), 10);
   loader->Init();
   loop_.RunAllPending();
   loader->Stop();
@@ -118,7 +118,7 @@ TEST_F(AsynchronousPolicyLoaderTest, ProviderNotificationOnPolicyChange) {
   EXPECT_CALL(*delegate_, Load()).WillOnce(
       CreateSequencedTestDictionary(&dictionary_number_1));
   scoped_refptr<AsynchronousPolicyLoader> loader =
-      new AsynchronousPolicyLoader(delegate_.release());
+      new AsynchronousPolicyLoader(delegate_.release(), 10);
   AsynchronousPolicyProvider provider(NULL, loader);
   loop_.RunAllPending();
   loader->Reload();
