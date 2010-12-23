@@ -61,6 +61,7 @@ class UserMetrics {
  private:
   static void Record(const char *action, Profile *profile);
   static void Record(const char *action);
+  static void CallRecordOnUI(const std::string& action);
 };
 
 #endif  // CHROME_BROWSER_METRICS_USER_METRICS_H_
