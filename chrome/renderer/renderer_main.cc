@@ -251,7 +251,7 @@ int RendererMain(const MainFunctionParams& parameters) {
   // Initialize histogram statistics gathering system.
   // Don't create StatisticsRecorder in the single process mode.
   scoped_ptr<base::StatisticsRecorder> statistics;
-  if (!base::StatisticsRecorder::WasStarted()) {
+  if (!base::StatisticsRecorder::IsActive()) {
     statistics.reset(new base::StatisticsRecorder());
   }
 
