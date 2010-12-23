@@ -7,7 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/mac/nsimage_cache.h"
 #include "app/resource_bundle.h"
-#import "base/cocoa_protocols_mac.h"
+#import "base/mac/cocoa_protocols.h"
 #include "base/mac_util.h"
 #import "base/scoped_nsobject.h"
 #include "base/utf_string_conversions.h"

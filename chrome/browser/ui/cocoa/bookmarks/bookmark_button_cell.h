@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BUTTON_CELL_H_
 #pragma once
 
-#import "base/cocoa_protocols_mac.h"
+#import "base/mac/cocoa_protocols.h"
 #import "chrome/browser/ui/cocoa/gradient_button_cell.h"
 
 class BookmarkNode;

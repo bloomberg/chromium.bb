@@ -6,7 +6,7 @@
 
 class TemplateURL;
 
-#include "base/cocoa_protocols_mac.h"
+#import "base/mac/cocoa_protocols.h"
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/search_engines/edit_search_engine_controller.h"

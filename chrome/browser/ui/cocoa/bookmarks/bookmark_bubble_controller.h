@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/cocoa_protocols_mac.h"
+#import "base/mac/cocoa_protocols.h"
 #include "base/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_model_observer_for_cocoa.h"
 

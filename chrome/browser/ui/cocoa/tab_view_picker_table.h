@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/cocoa_protocols_mac.h"
+#import "base/mac/cocoa_protocols.h"
 #include "base/scoped_nsobject.h"
 
 // TabViewPickerTable is an NSOutlineView that can be used to switch between the

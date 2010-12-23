@@ -5,7 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "app/table_model_observer.h"
-#import "base/cocoa_protocols_mac.h"
+#import "base/mac/cocoa_protocols.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/search_engines/edit_search_engine_controller.h"

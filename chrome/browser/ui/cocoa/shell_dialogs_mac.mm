@@ -12,9 +12,9 @@
 #include <vector>
 
 #include "app/l10n_util_mac.h"
-#import "base/cocoa_protocols_mac.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#import "base/mac/cocoa_protocols.h"
 #include "base/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #import "base/scoped_nsobject.h"

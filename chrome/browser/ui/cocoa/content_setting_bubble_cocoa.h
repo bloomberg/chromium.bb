@@ -6,7 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/cocoa_protocols_mac.h"
+#import "base/mac/cocoa_protocols.h"
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"

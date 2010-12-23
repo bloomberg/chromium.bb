@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/cocoa_protocols_mac.h"
+#import "base/mac/cocoa_protocols.h"
 #include "net/base/cookie_monster.h"
 
 @class CocoaCookieTreeNode;

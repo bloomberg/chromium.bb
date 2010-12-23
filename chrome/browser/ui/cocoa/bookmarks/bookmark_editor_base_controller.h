@@ -8,7 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/cocoa_protocols_mac.h"
+#import "base/mac/cocoa_protocols.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"

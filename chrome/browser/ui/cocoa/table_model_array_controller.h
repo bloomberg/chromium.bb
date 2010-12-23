@@ -9,7 +9,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "app/table_model_observer.h"
-#include "base/cocoa_protocols_mac.h"
+#import "base/mac/cocoa_protocols.h"
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 

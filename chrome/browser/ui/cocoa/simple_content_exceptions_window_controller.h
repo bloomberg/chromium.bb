@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/cocoa_protocols_mac.h"
+#import "base/mac/cocoa_protocols.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/remove_rows_table_model.h"
 #import "chrome/browser/ui/cocoa/table_model_array_controller.h"

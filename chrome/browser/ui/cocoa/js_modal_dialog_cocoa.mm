@@ -8,8 +8,8 @@
 
 #include "app/l10n_util_mac.h"
 #include "app/message_box_flags.h"
-#import "base/cocoa_protocols_mac.h"
 #include "base/logging.h"
+#import "base/mac/cocoa_protocols.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"

@@ -8,7 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/cocoa_protocols_mac.h"
+#import "base/mac/cocoa_protocols.h"
 #include "base/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "third_party/skia/include/core/SkBitmap.h"

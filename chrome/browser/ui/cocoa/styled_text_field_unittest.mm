@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/cocoa_protocols_mac.h"
+#import "base/mac/cocoa_protocols.h"
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/styled_text_field.h"
 #import "chrome/browser/ui/cocoa/styled_text_field_cell.h"

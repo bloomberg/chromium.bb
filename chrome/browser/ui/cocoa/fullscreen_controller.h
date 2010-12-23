@@ -8,7 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/cocoa_protocols_mac.h"
+#import "base/mac/cocoa_protocols.h"
 #include "base/mac_util.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 
