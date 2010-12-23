@@ -22,6 +22,18 @@
 #include "chrome/browser/chromeos/cros/touchpad_library.h"
 #include "chrome/browser/chromeos/cros/update_library.h"
 
+#define DEFINE_GET_LIBRARY_METHOD(class_prefix, var_prefix)                    \
+class_prefix##Library* CrosLibrary::Get##class_prefix##Library() {             \
+  return var_prefix##_lib_.GetDefaultImpl(use_stub_impl_);                     \
+}
+
+#define DEFINE_SET_LIBRARY_METHOD(class_prefix, var_prefix)                    \
+void CrosLibrary::TestApi::Set##class_prefix##Library(                         \
+    class_prefix##Library* library, bool own) {                                \
+  library_->var_prefix##_lib_.SetImpl(library, own);                           \
+}
+
+
 namespace chromeos {
 
 static base::LazyInstance<CrosLibrary> g_cros_library(
@@ -45,65 +57,21 @@ CrosLibrary* CrosLibrary::Get() {
   return g_cros_library.Pointer();
 }
 
-BrightnessLibrary* CrosLibrary::GetBrightnessLibrary() {
-  return brightness_lib_.GetDefaultImpl(use_stub_impl_);
-}
-
-BurnLibrary* CrosLibrary::GetBurnLibrary() {
-  return burn_lib_.GetDefaultImpl(use_stub_impl_);
-}
-
-CryptohomeLibrary* CrosLibrary::GetCryptohomeLibrary() {
-  return crypto_lib_.GetDefaultImpl(use_stub_impl_);
-}
-
-KeyboardLibrary* CrosLibrary::GetKeyboardLibrary() {
-  return keyboard_lib_.GetDefaultImpl(use_stub_impl_);
-}
-
-InputMethodLibrary* CrosLibrary::GetInputMethodLibrary() {
-  return input_method_lib_.GetDefaultImpl(use_stub_impl_);
-}
-
-LoginLibrary* CrosLibrary::GetLoginLibrary() {
-  return login_lib_.GetDefaultImpl(use_stub_impl_);
-}
-
-MountLibrary* CrosLibrary::GetMountLibrary() {
-  return mount_lib_.GetDefaultImpl(use_stub_impl_);
-}
-
-NetworkLibrary* CrosLibrary::GetNetworkLibrary() {
-  return network_lib_.GetDefaultImpl(use_stub_impl_);
-}
-
-PowerLibrary* CrosLibrary::GetPowerLibrary() {
-  return power_lib_.GetDefaultImpl(use_stub_impl_);
-}
-
-ScreenLockLibrary* CrosLibrary::GetScreenLockLibrary() {
-  return screen_lock_lib_.GetDefaultImpl(use_stub_impl_);
-}
-
-SpeechSynthesisLibrary* CrosLibrary::GetSpeechSynthesisLibrary() {
-  return speech_synthesis_lib_.GetDefaultImpl(use_stub_impl_);
-}
-
-SyslogsLibrary* CrosLibrary::GetSyslogsLibrary() {
-  return syslogs_lib_.GetDefaultImpl(use_stub_impl_);
-}
-
-SystemLibrary* CrosLibrary::GetSystemLibrary() {
-  return system_lib_.GetDefaultImpl(use_stub_impl_);
-}
-
-TouchpadLibrary* CrosLibrary::GetTouchpadLibrary() {
-  return touchpad_lib_.GetDefaultImpl(use_stub_impl_);
-}
-
-UpdateLibrary* CrosLibrary::GetUpdateLibrary() {
-  return update_lib_.GetDefaultImpl(use_stub_impl_);
-}
+DEFINE_GET_LIBRARY_METHOD(Brightness, brightness);
+DEFINE_GET_LIBRARY_METHOD(Burn, burn);
+DEFINE_GET_LIBRARY_METHOD(Cryptohome, crypto);
+DEFINE_GET_LIBRARY_METHOD(Keyboard, keyboard);
+DEFINE_GET_LIBRARY_METHOD(InputMethod, input_method);
+DEFINE_GET_LIBRARY_METHOD(Login, login);
+DEFINE_GET_LIBRARY_METHOD(Mount, mount);
+DEFINE_GET_LIBRARY_METHOD(Network, network);
+DEFINE_GET_LIBRARY_METHOD(Power, power);
+DEFINE_GET_LIBRARY_METHOD(ScreenLock, screen_lock);
+DEFINE_GET_LIBRARY_METHOD(SpeechSynthesis, speech_synthesis);
+DEFINE_GET_LIBRARY_METHOD(Syslogs, syslogs);
+DEFINE_GET_LIBRARY_METHOD(System, system);
+DEFINE_GET_LIBRARY_METHOD(Touchpad, touchpad);
+DEFINE_GET_LIBRARY_METHOD(Update, update);
 
 bool CrosLibrary::EnsureLoaded() {
   if (use_stub_impl_)
@@ -147,79 +115,20 @@ void CrosLibrary::TestApi::SetLibraryLoader(LibraryLoader* loader, bool own) {
   library_->load_error_ = false;
 }
 
-void CrosLibrary::TestApi::SetBrightnessLibrary(
-    BrightnessLibrary* library, bool own) {
-  library_->brightness_lib_.SetImpl(library, own);
-}
-
-void CrosLibrary::TestApi::SetBurnLibrary(
-    BurnLibrary* library, bool own) {
-  library_->burn_lib_.SetImpl(library, own);
-}
-
-void CrosLibrary::TestApi::SetCryptohomeLibrary(
-    CryptohomeLibrary* library, bool own) {
-  library_->crypto_lib_.SetImpl(library, own);
-}
-
-void CrosLibrary::TestApi::SetKeyboardLibrary(
-    KeyboardLibrary* library, bool own) {
-  library_->keyboard_lib_.SetImpl(library, own);
-}
-
-void CrosLibrary::TestApi::SetInputMethodLibrary(
-    InputMethodLibrary* library,  bool own) {
-  library_->input_method_lib_.SetImpl(library, own);
-}
-
-void CrosLibrary::TestApi::SetLoginLibrary(
-    LoginLibrary* library, bool own) {
-  library_->login_lib_.SetImpl(library, own);
-}
-
-void CrosLibrary::TestApi::SetMountLibrary(
-    MountLibrary* library, bool own) {
-  library_->mount_lib_.SetImpl(library, own);
-}
-
-void CrosLibrary::TestApi::SetNetworkLibrary(
-    NetworkLibrary* library, bool own) {
-  library_->network_lib_.SetImpl(library, own);
-}
-
-void CrosLibrary::TestApi::SetPowerLibrary(
-    PowerLibrary* library, bool own) {
-  library_->power_lib_.SetImpl(library, own);
-}
-
-void CrosLibrary::TestApi::SetScreenLockLibrary(
-    ScreenLockLibrary* library, bool own) {
-  library_->screen_lock_lib_.SetImpl(library, own);
-}
-
-void CrosLibrary::TestApi::SetSpeechSynthesisLibrary(
-    SpeechSynthesisLibrary* library, bool own) {
-  library_->speech_synthesis_lib_.SetImpl(library, own);
-}
-
-void CrosLibrary::TestApi::SetTouchpadLibrary(
-    TouchpadLibrary* library, bool own) {
-  library_->touchpad_lib_.SetImpl(library, own);
-}
-
-void CrosLibrary::TestApi::SetSyslogsLibrary(
-    SyslogsLibrary* library, bool own) {
-  library_->syslogs_lib_.SetImpl(library, own);
-}
-
-void CrosLibrary::TestApi::SetSystemLibrary(
-    SystemLibrary* library, bool own) {
-  library_->system_lib_.SetImpl(library, own);
-}
-
-void CrosLibrary::TestApi::SetUpdateLibrary(
-    UpdateLibrary* library, bool own) {
-  library_->update_lib_.SetImpl(library, own);
-}
+DEFINE_SET_LIBRARY_METHOD(Brightness, brightness);
+DEFINE_SET_LIBRARY_METHOD(Burn, burn);
+DEFINE_SET_LIBRARY_METHOD(Cryptohome, crypto);
+DEFINE_SET_LIBRARY_METHOD(Keyboard, keyboard);
+DEFINE_SET_LIBRARY_METHOD(InputMethod, input_method);
+DEFINE_SET_LIBRARY_METHOD(Login, login);
+DEFINE_SET_LIBRARY_METHOD(Mount, mount);
+DEFINE_SET_LIBRARY_METHOD(Network, network);
+DEFINE_SET_LIBRARY_METHOD(Power, power);
+DEFINE_SET_LIBRARY_METHOD(ScreenLock, screen_lock);
+DEFINE_SET_LIBRARY_METHOD(SpeechSynthesis, speech_synthesis);
+DEFINE_SET_LIBRARY_METHOD(Syslogs, syslogs);
+DEFINE_SET_LIBRARY_METHOD(System, system);
+DEFINE_SET_LIBRARY_METHOD(Touchpad, touchpad);
+DEFINE_SET_LIBRARY_METHOD(Update, update);
 
 } // namespace chromeos
