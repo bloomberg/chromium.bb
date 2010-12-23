@@ -2106,6 +2106,8 @@
         'browser/profiles/profile_impl.h',
         'browser/profiles/profile_manager.cc',
         'browser/profiles/profile_manager.h',
+        'browser/remoting/directory_add_request.cc',
+        'browser/remoting/directory_add_request.h',
         'browser/remoting/remoting_resources_source.cc',
         'browser/remoting/remoting_resources_source.h',
         'browser/remoting/remoting_setup_flow.cc',

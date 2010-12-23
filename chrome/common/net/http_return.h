@@ -10,9 +10,10 @@
 // contains a few HTTP return codes. Add more HTTP return codes.
 enum HTTPReturnCode {
   RC_REQUEST_OK = 200,
+  RC_BAD_REQUEST = 400,
   RC_UNAUTHORIZED = 401,
   RC_FORBIDDEN = 403,
+  RC_INTERNAL_SERVER_ERROR = 500,
 };
 
 #endif  // CHROME_COMMON_NET_HTTP_RETURN_H_
-
