@@ -49,6 +49,7 @@
 #include "base/basictypes.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/scoped_ptr.h"
 #include "base/string_tokenizer.h"
@@ -409,6 +410,14 @@ void CookieMonster::SetExpiryAndKeyScheme(ExpiryAndKeyScheme key_scheme) {
 void CookieMonster::SetClearPersistentStoreOnExit(bool clear_local_store) {
   if(store_)
     store_->SetClearLocalStateOnExit(clear_local_store);
+}
+
+void CookieMonster::FlushStore(Task* completion_task) {
+  AutoLock autolock(lock_);
+  if (initialized_ && store_)
+    store_->Flush(completion_task);
+  else if (completion_task)
+    MessageLoop::current()->PostTask(FROM_HERE, completion_task);
 }
 
 // The system resolution is not high enough, so we can have multiple
@@ -2012,4 +2021,3 @@ std::string CookieMonster::CanonicalCookie::DebugString() const {
 }
 
 }  // namespace
-

@@ -47,6 +47,9 @@ class SQLitePersistentCookieStore::Backend
   // Batch a cookie deletion.
   void DeleteCookie(const net::CookieMonster::CanonicalCookie& cc);
 
+  // Commit pending operations as soon as possible.
+  void Flush(Task* completion_task);
+
   // Commit any pending operations and close the database.  This must be called
   // before the object is destructed.
   void Close();
@@ -323,6 +326,7 @@ void SQLitePersistentCookieStore::Backend::BatchOperation(
 
 void SQLitePersistentCookieStore::Backend::Commit() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+
   PendingOperationsList ops;
   {
     AutoLock locked(lock_);
@@ -409,6 +413,18 @@ void SQLitePersistentCookieStore::Backend::Commit() {
                             succeeded ? 0 : 1, 2);
 }
 
+void SQLitePersistentCookieStore::Backend::Flush(Task* completion_task) {
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::DB));
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE, NewRunnableMethod(this, &Backend::Commit));
+  if (completion_task) {
+    // We want the completion task to run immediately after Commit() returns.
+    // Posting it from here means there is less chance of another task getting
+    // onto the message queue first, than if we posted it from Commit() itself.
+    BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, completion_task);
+  }
+}
+
 // Fire off a close message to the background thread.  We could still have a
 // pending commit timer that will be holding a reference on us, but if/when
 // this fires we will already have been cleaned up and it will be ignored.
@@ -476,4 +492,11 @@ void SQLitePersistentCookieStore::SetClearLocalStateOnExit(
     bool clear_local_state) {
   if (backend_.get())
     backend_->SetClearLocalStateOnExit(clear_local_state);
+}
+
+void SQLitePersistentCookieStore::Flush(Task* completion_task) {
+  if (backend_.get())
+    backend_->Flush(completion_task);
+  else if (completion_task)
+    MessageLoop::current()->PostTask(FROM_HERE, completion_task);
 }

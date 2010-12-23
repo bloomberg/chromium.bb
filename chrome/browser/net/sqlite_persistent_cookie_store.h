@@ -34,6 +34,8 @@ class SQLitePersistentCookieStore
 
   virtual void SetClearLocalStateOnExit(bool clear_local_state);
 
+  virtual void Flush(Task* completion_task);
+
  private:
   class Backend;
 

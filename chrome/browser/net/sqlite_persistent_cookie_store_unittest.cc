@@ -43,8 +43,8 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
 
   BrowserThread ui_thread_;
   BrowserThread db_thread_;
-  scoped_refptr<SQLitePersistentCookieStore> store_;
   ScopedTempDir temp_dir_;
+  scoped_refptr<SQLitePersistentCookieStore> store_;
 };
 
 TEST_F(SQLitePersistentCookieStoreTest, KeepOnDestruction) {
@@ -110,4 +110,69 @@ TEST_F(SQLitePersistentCookieStoreTest, TestPersistance) {
   // Reload and check if the cookie has been removed.
   ASSERT_TRUE(store_->Load(&cookies));
   ASSERT_EQ(0U, cookies.size());
+}
+
+// Test that we can force the database to be written by calling Flush().
+TEST_F(SQLitePersistentCookieStoreTest, TestFlush) {
+  // File timestamps don't work well on all platforms, so we'll determine
+  // whether the DB file has been modified by checking its size.
+  FilePath path = temp_dir_.path().Append(chrome::kCookieFilename);
+  base::PlatformFileInfo info;
+  ASSERT_TRUE(file_util::GetFileInfo(path, &info));
+  int64 base_size = info.size;
+
+  // Write some large cookies, so the DB will have to expand by several KB.
+  for (char c = 'a'; c < 'z'; ++c) {
+    // Each cookie needs a unique timestamp for creation_utc (see DB schema).
+    base::Time t = base::Time::Now() + base::TimeDelta::FromMicroseconds(c);
+    std::string name(1, c);
+    std::string value(1000, c);
+    store_->AddCookie(
+        net::CookieMonster::CanonicalCookie(name, value, "http://foo.bar", "/",
+                                            false, false, t, t, true, t));
+  }
+
+  // Call Flush() and wait until the DB thread is idle.
+  store_->Flush(NULL);
+  scoped_refptr<ThreadTestHelper> helper(
+      new ThreadTestHelper(BrowserThread::DB));
+  ASSERT_TRUE(helper->Run());
+
+  // We forced a write, so now the file will be bigger.
+  ASSERT_TRUE(file_util::GetFileInfo(path, &info));
+  ASSERT_GT(info.size, base_size);
+}
+
+// Counts the number of times Callback() has been run.
+class CallbackCounter : public base::RefCountedThreadSafe<CallbackCounter> {
+ public:
+  CallbackCounter() : callback_count_(0) {}
+
+  void Callback() {
+    ++callback_count_;
+  }
+
+  int callback_count() {
+    return callback_count_;
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<CallbackCounter>;
+  volatile int callback_count_;
+};
+
+// Test that we can get a completion callback after a Flush().
+TEST_F(SQLitePersistentCookieStoreTest, TestFlushCompletionCallback) {
+  scoped_refptr<CallbackCounter> counter(new CallbackCounter());
+
+  // Callback shouldn't be invoked until we call Flush().
+  ASSERT_EQ(0, counter->callback_count());
+
+  store_->Flush(NewRunnableMethod(counter.get(), &CallbackCounter::Callback));
+
+  scoped_refptr<ThreadTestHelper> helper(
+      new ThreadTestHelper(BrowserThread::DB));
+  ASSERT_TRUE(helper->Run());
+
+  ASSERT_EQ(1, counter->callback_count());
 }

@@ -2069,4 +2069,108 @@ TEST(CookieMonsterTest, ForceSessionOnly) {
   ASSERT_EQ(0U, cookie_list.size());
 }
 
+namespace {
+
+// Mock PersistentCookieStore that keeps track of the number of Flush() calls.
+class FlushablePersistentStore : public CookieMonster::PersistentCookieStore {
+ public:
+  FlushablePersistentStore() : flush_count_(0) {}
+
+  bool Load(std::vector<CookieMonster::CanonicalCookie*>*) {
+    return false;
+  }
+
+  void AddCookie(const CookieMonster::CanonicalCookie&) {}
+  void UpdateCookieAccessTime(const CookieMonster::CanonicalCookie&) {}
+  void DeleteCookie(const CookieMonster::CanonicalCookie&) {}
+  void SetClearLocalStateOnExit(bool clear_local_state) {}
+
+  void Flush(Task* completion_callback) {
+    ++flush_count_;
+    if (completion_callback) {
+      completion_callback->Run();
+      delete completion_callback;
+    }
+  }
+
+  int flush_count() {
+    return flush_count_;
+  }
+
+ private:
+  volatile int flush_count_;
+};
+
+// Counts the number of times Callback() has been run.
+class CallbackCounter : public base::RefCountedThreadSafe<CallbackCounter> {
+ public:
+  CallbackCounter() : callback_count_(0) {}
+
+  void Callback() {
+    ++callback_count_;
+  }
+
+  int callback_count() {
+    return callback_count_;
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<CallbackCounter>;
+  volatile int callback_count_;
+};
+
+}  // namespace
+
+// Test that FlushStore() is forwarded to the store and callbacks are posted.
+TEST(CookieMonsterTest, FlushStore) {
+  scoped_refptr<CallbackCounter> counter(new CallbackCounter());
+  scoped_refptr<FlushablePersistentStore> store(new FlushablePersistentStore());
+  scoped_refptr<net::CookieMonster> cm(new net::CookieMonster(store, NULL));
+
+  ASSERT_EQ(0, store->flush_count());
+  ASSERT_EQ(0, counter->callback_count());
+
+  // Before initialization, FlushStore() should just run the callback.
+  cm->FlushStore(NewRunnableMethod(counter.get(), &CallbackCounter::Callback));
+  MessageLoop::current()->RunAllPending();
+
+  ASSERT_EQ(0, store->flush_count());
+  ASSERT_EQ(1, counter->callback_count());
+
+  // NULL callback is safe.
+  cm->FlushStore(NULL);
+  MessageLoop::current()->RunAllPending();
+
+  ASSERT_EQ(0, store->flush_count());
+  ASSERT_EQ(1, counter->callback_count());
+
+  // After initialization, FlushStore() should delegate to the store.
+  cm->GetAllCookies();  // Force init.
+  cm->FlushStore(NewRunnableMethod(counter.get(), &CallbackCounter::Callback));
+  MessageLoop::current()->RunAllPending();
+
+  ASSERT_EQ(1, store->flush_count());
+  ASSERT_EQ(2, counter->callback_count());
+
+  // NULL callback is still safe.
+  cm->FlushStore(NULL);
+  MessageLoop::current()->RunAllPending();
+
+  ASSERT_EQ(2, store->flush_count());
+  ASSERT_EQ(2, counter->callback_count());
+
+  // If there's no backing store, FlushStore() is always a safe no-op.
+  cm = new net::CookieMonster(NULL, NULL);
+  cm->GetAllCookies();  // Force init.
+  cm->FlushStore(NULL);
+  MessageLoop::current()->RunAllPending();
+
+  ASSERT_EQ(2, counter->callback_count());
+
+  cm->FlushStore(NewRunnableMethod(counter.get(), &CallbackCounter::Callback));
+  MessageLoop::current()->RunAllPending();
+
+  ASSERT_EQ(3, counter->callback_count());
+}
+
 }  // namespace

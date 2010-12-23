@@ -18,6 +18,7 @@
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/task.h"
 #include "base/time.h"
 #include "net/base/cookie_store.h"
 
@@ -222,6 +223,13 @@ class CookieMonster : public CookieStore {
   // Must be called before creating a CookieMonster instance.
   static void EnableFileScheme();
   static bool enable_file_scheme_;
+
+  // Flush the backing store (if any) to disk and post the given task when done.
+  // WARNING: THE CALLBACK WILL RUN ON A RANDOM THREAD. IT MUST BE THREAD SAFE.
+  // It may be posted to the current thread, or it may run on the thread that
+  // actually does the flushing. Your Task should generally post a notification
+  // to the thread you actually want to be notified on.
+  void FlushStore(Task* completion_task);
 
  private:
   ~CookieMonster();
@@ -699,6 +707,9 @@ class CookieMonster::PersistentCookieStore
   // Sets the value of the user preference whether the persistent storage
   // must be deleted upon destruction.
   virtual void SetClearLocalStateOnExit(bool clear_local_state) = 0;
+
+  // Flush the store and post the given Task when complete.
+  virtual void Flush(Task* completion_task) = 0;
 
  protected:
   PersistentCookieStore() {}

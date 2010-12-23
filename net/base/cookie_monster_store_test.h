@@ -7,6 +7,7 @@
 // that need to test out CookieMonster interactions with the backing store.
 // It should only be included by test code.
 
+#include "base/message_loop.h"
 #include "base/time.h"
 #include "net/base/cookie_monster.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -64,6 +65,11 @@ class MockPersistentCookieStore
       const net::CookieMonster::CanonicalCookie& cookie) {
     commands_.push_back(
         CookieStoreCommand(CookieStoreCommand::REMOVE, cookie));
+  }
+
+  virtual void Flush(Task* completion_task) {
+    if (completion_task)
+      MessageLoop::current()->PostTask(FROM_HERE, completion_task);
   }
 
   // No files are created so nothing to clear either
@@ -186,6 +192,11 @@ class MockSimplePersistentCookieStore
     CanonicalCookieMap::iterator it = cookies_.find(creation_time);
     ASSERT_TRUE(it != cookies_.end());
     cookies_.erase(it);
+  }
+
+  virtual void Flush(Task* completion_task) {
+    if (completion_task)
+      MessageLoop::current()->PostTask(FROM_HERE, completion_task);
   }
 
   virtual void SetClearLocalStateOnExit(bool clear_local_state) {}
