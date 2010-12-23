@@ -22,7 +22,7 @@ bool AutocompleteEditProxy::GetText(std::wstring* text) const {
   }
   bool result = false;
   sender_->Send(new AutomationMsg_AutocompleteEditGetText(
-      0, handle_, &result, text));
+      handle_, &result, text));
   return result;
 }
 
@@ -31,7 +31,7 @@ bool AutocompleteEditProxy::WaitForFocus() const {
     return false;
   bool edit_exists = false;
   sender_->Send(new AutomationMsg_WaitForAutocompleteEditFocus(
-      0, handle_, &edit_exists));
+      handle_, &edit_exists));
   return edit_exists;
 }
 
@@ -40,7 +40,7 @@ bool AutocompleteEditProxy::SetText(const std::wstring& text) {
     return false;
   bool result = false;
   sender_->Send(new AutomationMsg_AutocompleteEditSetText(
-      0, handle_, text, &result));
+      handle_, text, &result));
   return result;
 }
 
@@ -53,7 +53,7 @@ bool AutocompleteEditProxy::IsQueryInProgress(bool* query_in_progress) const {
   }
   bool edit_exists = false;
   sender_->Send(new AutomationMsg_AutocompleteEditIsQueryInProgress(
-      0, handle_, &edit_exists, query_in_progress));
+      handle_, &edit_exists, query_in_progress));
   return edit_exists;
 }
 
@@ -81,6 +81,6 @@ bool AutocompleteEditProxy::GetAutocompleteMatches(Matches* matches) const {
   }
   bool edit_exists = false;
   sender_->Send(new AutomationMsg_AutocompleteEditGetMatches(
-      0, handle_, &edit_exists, matches));
+      handle_, &edit_exists, matches));
   return edit_exists;
 }

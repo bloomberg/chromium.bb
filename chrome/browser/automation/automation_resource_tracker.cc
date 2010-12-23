@@ -78,7 +78,7 @@ void AutomationResourceTrackerImpl::HandleCloseNotification(
     return;
 
   sender_->Send(
-    new AutomationMsg_InvalidateHandle(0, resource_to_handle_[resource]));
+    new AutomationMsg_InvalidateHandle(resource_to_handle_[resource]));
 
   RemoveImpl(resource);
 }

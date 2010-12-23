@@ -40,7 +40,7 @@ bool ExtensionPortContainer::PostResponseToExternalPort(
     const std::string& message) {
   return automation_->Send(
       new AutomationMsg_ForwardMessageToExternalHost(
-          0, tab_handle_, message, ext::kAutomationOrigin,
+          tab_handle_, message, ext::kAutomationOrigin,
           ext::kAutomationPortResponseTarget));
 }
 
@@ -48,7 +48,7 @@ bool ExtensionPortContainer::PostMessageToExternalPort(
     const std::string& message) {
   return automation_->Send(
       new AutomationMsg_ForwardMessageToExternalHost(
-          0, tab_handle_, message,
+          tab_handle_, message,
           ext::kAutomationOrigin,
           ext::kAutomationPortRequestTarget));
 }

@@ -67,17 +67,17 @@ class ChromeFrameAutomationProxyImpl::TabProxyNotificationMessageFilter
     if (message.is_reply())
       return false;
 
-    int tab_handle = 0;
-    if (!ChromeFrameDelegateImpl::IsTabMessage(message, &tab_handle))
+    if (!ChromeFrameDelegateImpl::IsTabMessage(message))
       return false;
 
     // Get AddRef-ed pointer to corresponding TabProxy object
-    TabProxy* tab = static_cast<TabProxy*>(tracker_->GetResource(tab_handle));
+    TabProxy* tab = static_cast<TabProxy*>(tracker_->GetResource(
+        message.routing_id()));
     if (tab) {
       tab->OnMessageReceived(message);
       tab->Release();
     } else {
-      DLOG(ERROR) << "Failed to find TabProxy for tab:" << tab_handle;
+      DLOG(ERROR) << "Failed to find TabProxy for tab:" << message.routing_id();
     }
     return true;
   }
@@ -447,7 +447,7 @@ void AutomationProxyCacheEntry::SendUMAData() {
         snapshots_->GatherAllHistograms();
 
     if (!histograms.empty()) {
-      proxy_->Send(new AutomationMsg_RecordHistograms(0, histograms));
+      proxy_->Send(new AutomationMsg_RecordHistograms(histograms));
     }
 
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
@@ -762,7 +762,7 @@ bool ChromeFrameAutomationClient::NavigateToIndex(int index) {
   DCHECK(::IsWindow(chrome_window_));
 
   IPC::SyncMessage* msg = new AutomationMsg_NavigateExternalTabAtIndex(
-      0, tab_->handle(), index, NULL);
+      tab_->handle(), index, NULL);
   automation_server_->SendAsAsync(msg, new BeginNavigateContext(this),
                                   this);
   return true;
@@ -804,7 +804,7 @@ void ChromeFrameAutomationClient::BeginNavigate() {
   }
 
   IPC::SyncMessage* msg =
-      new AutomationMsg_NavigateInExternalTab(0, tab_->handle(),
+      new AutomationMsg_NavigateInExternalTab(tab_->handle(),
           chrome_launch_params_->url(), chrome_launch_params_->referrer(),
           NULL);
   automation_server_->SendAsAsync(msg, new BeginNavigateContext(this), this);
@@ -840,7 +840,7 @@ void ChromeFrameAutomationClient::FindInPage(const std::wstring& search_string,
   params.forward = (forward == FWD);
 
   IPC::SyncMessage* msg =
-      new AutomationMsg_Find(0, tab_->handle(), params, NULL, NULL);
+      new AutomationMsg_Find(tab_->handle(), params, NULL, NULL);
   automation_server_->SendAsAsync(msg, NULL, this);
 }
 
@@ -857,8 +857,7 @@ void ChromeFrameAutomationClient::InstallExtension(
   InstallExtensionContext* ctx = new InstallExtensionContext(
       this, crx_path, user_data);
 
-  IPC::SyncMessage* msg =
-      new AutomationMsg_InstallExtension(0, crx_path, NULL);
+  IPC::SyncMessage* msg = new AutomationMsg_InstallExtension(crx_path, NULL);
 
   // The context will delete itself after it is called.
   automation_server_->SendAsAsync(msg, ctx, this);
@@ -885,7 +884,7 @@ void ChromeFrameAutomationClient::GetEnabledExtensions(void* user_data) {
         this, user_data);
 
     IPC::SyncMessage* msg = new AutomationMsg_GetEnabledExtensions(
-        0, ctx->extension_directories());
+        ctx->extension_directories());
 
     // The context will delete itself after it is called.
     automation_server_->SendAsAsync(msg, ctx, this);
@@ -932,8 +931,7 @@ void ChromeFrameAutomationClient::LoadExpandedExtension(
   InstallExtensionContext* ctx = new InstallExtensionContext(
       this, path, user_data);
 
-  IPC::SyncMessage* msg =
-      new AutomationMsg_LoadExpandedExtension(0, path, NULL);
+  IPC::SyncMessage* msg = new AutomationMsg_LoadExpandedExtension(path, NULL);
 
   // The context will delete itself after it is called.
   automation_server_->SendAsAsync(msg, ctx, this);
@@ -948,7 +946,7 @@ void ChromeFrameAutomationClient::CreateExternalTab() {
     navigate_after_initialization_ = false;
   }
 
-  const IPC::ExternalTabSettings settings(
+  const ExternalTabSettings settings(
       m_hWnd,
       gfx::Rect(),
       WS_CHILD,
@@ -969,7 +967,7 @@ void ChromeFrameAutomationClient::CreateExternalTab() {
       2);
 
   IPC::SyncMessage* message =
-      new AutomationMsg_CreateExternalTab(0, settings, NULL, NULL, 0, 0);
+      new AutomationMsg_CreateExternalTab(settings, NULL, NULL, 0, 0);
   automation_server_->SendAsAsync(message, new CreateExternalTabContext(this),
                                   this);
 }
@@ -1038,7 +1036,7 @@ void ChromeFrameAutomationClient::LaunchComplete(
         // Send a notification to Chrome that we are ready to connect to the
         // ExternalTab.
         IPC::SyncMessage* message =
-            new AutomationMsg_ConnectExternalTab(0, external_tab_cookie_, true,
+            new AutomationMsg_ConnectExternalTab(external_tab_cookie_, true,
               m_hWnd, NULL, NULL, NULL, 0);
         automation_server_->SendAsAsync(message,
                                         new CreateExternalTabContext(this),
@@ -1374,7 +1372,7 @@ void ChromeFrameAutomationClient::AttachExternalTab(
 void ChromeFrameAutomationClient::BlockExternalTab(uint64 cookie) {
   // The host does not want this tab to be shown (due popup blocker).
   IPC::SyncMessage* message =
-      new AutomationMsg_ConnectExternalTab(0, cookie, false, m_hWnd,
+      new AutomationMsg_ConnectExternalTab(cookie, false, m_hWnd,
                                            NULL, NULL, NULL, 0);
   automation_server_->SendAsAsync(message, NULL, this);
 }
@@ -1389,12 +1387,11 @@ void ChromeFrameAutomationClient::SetPageFontSize(
   }
 
   automation_server_->Send(
-      new AutomationMsg_SetPageFontSize(0, tab_handle_, font_size));
+      new AutomationMsg_SetPageFontSize(tab_handle_, font_size));
 }
 
 void ChromeFrameAutomationClient::RemoveBrowsingData(int remove_mask) {
-  automation_server_->Send(
-      new AutomationMsg_RemoveBrowsingData(0, remove_mask));
+  automation_server_->Send(new AutomationMsg_RemoveBrowsingData(remove_mask));
 }
 
 void ChromeFrameAutomationClient::SetUrlFetcher(
@@ -1407,7 +1404,7 @@ void ChromeFrameAutomationClient::SetUrlFetcher(
 
 void ChromeFrameAutomationClient::SetZoomLevel(PageZoom::Function zoom_level) {
   if (automation_server_) {
-    automation_server_->Send(new AutomationMsg_SetZoomLevel(0, tab_handle_,
+    automation_server_->Send(new AutomationMsg_SetZoomLevel(tab_handle_,
                                                             zoom_level));
   }
 }
@@ -1417,7 +1414,7 @@ void ChromeFrameAutomationClient::OnUnload(bool* should_unload) {
   if (automation_server_) {
     const DWORD kUnloadEventTimeout = 20000;
 
-    IPC::SyncMessage* msg = new AutomationMsg_RunUnloadHandlers(0, tab_handle_,
+    IPC::SyncMessage* msg = new AutomationMsg_RunUnloadHandlers(tab_handle_,
                                                                 should_unload);
     base::WaitableEvent unload_call_finished(false, false);
     UnloadContext* unload_context = new UnloadContext(&unload_call_finished,
@@ -1436,7 +1433,7 @@ void ChromeFrameAutomationClient::OnResponseStarted(int request_id,
     const char* mime_type,  const char* headers, int size,
     base::Time last_modified, const std::string& redirect_url,
     int redirect_status) {
-  const IPC::AutomationURLResponse response(
+  const AutomationURLResponse response(
       mime_type,
       headers ? headers : "",
       size,
@@ -1444,24 +1441,24 @@ void ChromeFrameAutomationClient::OnResponseStarted(int request_id,
       redirect_url,
       redirect_status);
 
-  automation_server_->Send(new AutomationMsg_RequestStarted(0,
+  automation_server_->Send(new AutomationMsg_RequestStarted(
       tab_->handle(), request_id, response));
 }
 
 void ChromeFrameAutomationClient::OnReadComplete(int request_id,
                                                  const std::string& data) {
-  automation_server_->Send(new AutomationMsg_RequestData(0, tab_->handle(),
-      request_id, data));
+  automation_server_->Send(new AutomationMsg_RequestData(
+      tab_->handle(), request_id, data));
 }
 
 void ChromeFrameAutomationClient::OnResponseEnd(int request_id,
     const URLRequestStatus& status) {
-  automation_server_->Send(new AutomationMsg_RequestEnd(0, tab_->handle(),
-      request_id, status));
+  automation_server_->Send(new AutomationMsg_RequestEnd(
+      tab_->handle(), request_id, status));
 }
 
 void ChromeFrameAutomationClient::OnCookiesRetrieved(bool success,
     const GURL& url, const std::string& cookie_string, int cookie_id) {
-  automation_server_->Send(new AutomationMsg_GetCookiesHostResponse(0,
+  automation_server_->Send(new AutomationMsg_GetCookiesHostResponse(
       tab_->handle(), success, url, cookie_string, cookie_id));
 }

@@ -31,10 +31,7 @@ class BrowserProxy;
 class ExtensionProxy;
 class TabProxy;
 class WindowProxy;
-
-namespace IPC {
 struct ExternalTabSettings;
-}
 
 // This is an interface that AutomationProxy-related objects can use to
 // access the message-sending abilities of the Proxy.
@@ -235,7 +232,7 @@ class AutomationProxy : public IPC::Channel::Listener,
   // returns a TabProxy representing the tab as well as a window handle
   // that can be reparented in another process.
   scoped_refptr<TabProxy> CreateExternalTab(
-      const IPC::ExternalTabSettings& settings,
+      const ExternalTabSettings& settings,
       gfx::NativeWindow* external_tab_container,
       gfx::NativeWindow* tab);
 

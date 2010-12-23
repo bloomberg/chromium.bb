@@ -215,7 +215,7 @@ PluginUrlRequestManager::ThreadSafeFlags
 }
 
 void NPAPIUrlRequestManager::StartRequest(int request_id,
-    const IPC::AutomationURLRequest& request_info) {
+    const AutomationURLRequest& request_info) {
   scoped_refptr<NPAPIUrlRequest> new_request(new NPAPIUrlRequest(instance_));
   DCHECK(new_request);
   if (new_request->Initialize(this, request_id, request_info.url,

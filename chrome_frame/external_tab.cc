@@ -34,6 +34,35 @@ ExternalTabProxy::~ExternalTabProxy() {
   Destroy();
 }
 
+void ExternalTabProxy::OnMessageReceived(const IPC::Message& message) {
+  IPC_BEGIN_MESSAGE_MAP(ExternalTabProxy, message)
+    IPC_MESSAGE_HANDLER(AutomationMsg_NavigationStateChanged,
+                        OnNavigationStateChanged)
+    IPC_MESSAGE_HANDLER(AutomationMsg_UpdateTargetUrl, OnUpdateTargetUrl)
+    IPC_MESSAGE_HANDLER(AutomationMsg_HandleAccelerator, OnHandleAccelerator)
+    IPC_MESSAGE_HANDLER(AutomationMsg_TabbedOut, OnTabbedOut)
+    IPC_MESSAGE_HANDLER(AutomationMsg_OpenURL, OnOpenURL)
+    IPC_MESSAGE_HANDLER(AutomationMsg_NavigationFailed, OnNavigationFailed)
+    IPC_MESSAGE_HANDLER(AutomationMsg_DidNavigate, OnDidNavigate)
+    IPC_MESSAGE_HANDLER(AutomationMsg_TabLoaded, OnTabLoaded)
+    IPC_MESSAGE_HANDLER(AutomationMsg_ForwardMessageToExternalHost,
+                        OnMessageToHost)
+    IPC_MESSAGE_HANDLER(AutomationMsg_ForwardContextMenuToExternalHost,
+                        OnHandleContextMenu)
+    IPC_MESSAGE_HANDLER(AutomationMsg_RequestStart, OnNetwork_Start)
+    IPC_MESSAGE_HANDLER(AutomationMsg_RequestRead, OnNetwork_Read)
+    IPC_MESSAGE_HANDLER(AutomationMsg_RequestEnd, OnNetwork_End)
+    IPC_MESSAGE_HANDLER(AutomationMsg_DownloadRequestInHost,
+                        OnNetwork_DownloadInHost)
+    IPC_MESSAGE_HANDLER(AutomationMsg_GetCookiesFromHost, OnGetCookies)
+    IPC_MESSAGE_HANDLER(AutomationMsg_SetCookieAsync, OnSetCookie)
+    IPC_MESSAGE_HANDLER(AutomationMsg_AttachExternalTab, OnAttachTab)
+    IPC_MESSAGE_HANDLER(AutomationMsg_RequestGoToHistoryEntryOffset,
+                        OnGoToHistoryOffset)
+    IPC_MESSAGE_HANDLER(AutomationMsg_CloseExternalTab, OnTabClosed)
+  IPC_END_MESSAGE_MAP()
+}
+
 void ExternalTabProxy::Init() {
   if (m_hWnd == NULL) {
     // Create a window on the UI thread for marshaling messages back and forth
@@ -88,7 +117,7 @@ void ExternalTabProxy::Connected(ChromeProxy* proxy) {
 
 void ExternalTabProxy::UiConnected(ChromeProxy* proxy) {
   proxy_ = proxy;
-  IPC::ExternalTabSettings settings;
+  ExternalTabSettings settings;
   settings.parent = m_hWnd;
   settings.style = WS_CHILD;
   settings.is_off_the_record = tab_params_.is_incognito;
@@ -222,122 +251,126 @@ void ExternalTabProxy::Completed_CreateTab(bool success, HWND chrome_wnd,
       success, chrome_wnd, tab_window, tab_handle, session_id));
 }
 
-void ExternalTabProxy::Completed_ConnectToTab(bool success,
-    HWND chrome_window, HWND tab_window, int tab_handle, int session_id) {
+void ExternalTabProxy::Completed_ConnectToTab(
+    bool success, HWND chrome_window, HWND tab_window, int tab_handle,
+    int session_id) {
   CHECK(0);
 }
 
-void ExternalTabProxy::Completed_Navigate(bool success,
-    enum AutomationMsg_NavigationResponseValues res) {
+void ExternalTabProxy::Completed_Navigate(
+    bool success, enum AutomationMsg_NavigationResponseValues res) {
   // ipc_thread;
   CHECK(0);
 }
 
-void ExternalTabProxy::Completed_InstallExtension(bool success,
-    enum AutomationMsg_ExtensionResponseValues res, SyncMessageContext* ctx) {
+void ExternalTabProxy::Completed_InstallExtension(
+    bool success, enum AutomationMsg_ExtensionResponseValues res,
+    SyncMessageContext* ctx) {
   CHECK(0);
 }
 
-void ExternalTabProxy::Completed_LoadExpandedExtension(bool success,
-    enum AutomationMsg_ExtensionResponseValues res, SyncMessageContext* ctx) {
+void ExternalTabProxy::Completed_LoadExpandedExtension(
+    bool success, enum AutomationMsg_ExtensionResponseValues res,
+    SyncMessageContext* ctx) {
   CHECK(0);
 }
 
-void ExternalTabProxy::Completed_GetEnabledExtensions(bool success,
-    const std::vector<FilePath>* extensions) {
+void ExternalTabProxy::Completed_GetEnabledExtensions(
+    bool success, const std::vector<FilePath>* extensions) {
   CHECK(0);
 }
 
-void ExternalTabProxy::NavigationStateChanged(int flags,
-    const IPC::NavigationInfo& nav_info) {
+void ExternalTabProxy::OnNavigationStateChanged(
+    int flags, const NavigationInfo& nav_info) {
   ui_.PostTask(FROM_HERE, NewRunnableMethod(ui_delegate_,
       &UIDelegate::OnNavigationStateChanged, flags, nav_info));
 }
 
-void ExternalTabProxy::UpdateTargetUrl(const std::wstring& url) {
+void ExternalTabProxy::OnUpdateTargetUrl(const std::wstring& url) {
   ui_.PostTask(FROM_HERE, NewRunnableMethod(ui_delegate_,
       &UIDelegate::OnUpdateTargetUrl, url));
 }
 
-void ExternalTabProxy::TabLoaded(const GURL& url) {
+void ExternalTabProxy::OnTabLoaded(const GURL& url) {
   ui_.PostTask(FROM_HERE, NewRunnableMethod(ui_delegate_,
       &UIDelegate::OnLoad, url));
 }
 
-void ExternalTabProxy::MessageToHost(const std::string& message,
-                                     const std::string& origin,
-                                     const std::string& target) {
+void ExternalTabProxy::OnMessageToHost(const std::string& message,
+                                       const std::string& origin,
+                                       const std::string& target) {
   ui_.PostTask(FROM_HERE, NewRunnableMethod(ui_delegate_,
       &UIDelegate::OnMessageFromChromeFrame, message, origin, target));
 }
 
-void ExternalTabProxy::HandleAccelerator(const MSG& accel_message) {
+void ExternalTabProxy::OnHandleAccelerator(const MSG& accel_message) {
   ui_.PostTask(FROM_HERE, NewRunnableMethod(ui_delegate_,
       &UIDelegate::OnHandleAccelerator, accel_message));
 }
 
-void ExternalTabProxy::HandleContextMenu(
+void ExternalTabProxy::OnHandleContextMenu(
     HANDLE menu_handle,
     int align_flags,
-    const IPC::MiniContextMenuParams& params) {
+    const MiniContextMenuParams& params) {
   ui_.PostTask(FROM_HERE, NewRunnableMethod(ui_delegate_,
       &UIDelegate::OnHandleContextMenu, menu_handle, align_flags, params));
 }
 
-void ExternalTabProxy::TabbedOut(bool reverse) {
+void ExternalTabProxy::OnTabbedOut(bool reverse) {
   ui_.PostTask(FROM_HERE, NewRunnableMethod(ui_delegate_,
       &UIDelegate::OnTabbedOut, reverse));
 }
 
-void ExternalTabProxy::GoToHistoryOffset(int offset) {
+void ExternalTabProxy::OnGoToHistoryOffset(int offset) {
   ui_.PostTask(FROM_HERE, NewRunnableMethod(ui_delegate_,
       &UIDelegate::OnGoToHistoryOffset, offset));
 }
 
-void ExternalTabProxy::OpenURL(const GURL& url_to_open, const GURL& referrer,
-                               int open_disposition) {
+void ExternalTabProxy::OnOpenURL(const GURL& url_to_open, const GURL& referrer,
+                                 int open_disposition) {
   ui_.PostTask(FROM_HERE, NewRunnableMethod(ui_delegate_,
       &UIDelegate::OnOpenURL, url_to_open, referrer, open_disposition));
 }
 
-void ExternalTabProxy::NavigationFailed(int error_code, const GURL& gurl) {
+void ExternalTabProxy::OnNavigationFailed(int error_code, const GURL& gurl) {
   // TODO(stoyan):
 }
 
-void ExternalTabProxy::DidNavigate(const IPC::NavigationInfo& navigation_info) {
+void ExternalTabProxy::OnDidNavigate(const NavigationInfo& navigation_info) {
   // TODO(stoyan):
 }
 
-void ExternalTabProxy::Network_Start(
-    int request_id, const IPC::AutomationURLRequest& request_info) {
+void ExternalTabProxy::OnNetwork_Start(
+    int request_id, const AutomationURLRequest& request_info) {
   // TODO(stoyan): url_fetcher_.Start();
 }
 
-void ExternalTabProxy::Network_Read(int request_id, int bytes_to_read) {
+void ExternalTabProxy::OnNetwork_Read(int request_id, int bytes_to_read) {
   // TODO(stoyan): url_fetcher_.Read();
 }
 
-void ExternalTabProxy::Network_End(int request_id, const URLRequestStatus& s) {
+void ExternalTabProxy::OnNetwork_End(int request_id,
+                                     const URLRequestStatus& s) {
   // TODO(stoyan):
 }
 
-void ExternalTabProxy::Network_DownloadInHost(int request_id) {
+void ExternalTabProxy::OnNetwork_DownloadInHost(int request_id) {
   // TODO(stoyan):
 }
 
-void ExternalTabProxy::GetCookies(const GURL& url, int cookie_id) {
+void ExternalTabProxy::OnGetCookies(const GURL& url, int cookie_id) {
   // TODO(stoyan):
 }
 
-void ExternalTabProxy::SetCookie(const GURL& url, const std::string& cookie) {
+void ExternalTabProxy::OnSetCookie(const GURL& url, const std::string& cookie) {
   // TODO(stoyan):
 }
 
-void ExternalTabProxy::TabClosed() {
+void ExternalTabProxy::OnTabClosed() {
   // TODO(stoyan):
 }
 
-void ExternalTabProxy::AttachTab(
-    const IPC::AttachExternalTabParams& attach_params) {
+void ExternalTabProxy::OnAttachTab(
+    const AttachExternalTabParams& attach_params) {
   // TODO(stoyan):
 }

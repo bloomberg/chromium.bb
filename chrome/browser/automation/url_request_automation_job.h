@@ -13,6 +13,7 @@
 #include "net/url_request/url_request_job.h"
 
 class AutomationResourceMessageFilter;
+struct AutomationURLResponse;
 
 namespace net {
 class HttpResponseHeaders;
@@ -21,7 +22,6 @@ class HttpResponseInfo;
 
 namespace IPC {
 class Message;
-struct AutomationURLResponse;
 }
 
 // net::URLRequestJob implementation that loads the resources using
@@ -81,10 +81,9 @@ class URLRequestAutomationJob : public net::URLRequestJob {
   void DisconnectFromMessageFilter();
 
   // IPC message handlers.
-  void OnRequestStarted(int tab, int id,
-      const IPC::AutomationURLResponse& response);
-  void OnDataAvailable(int tab, int id, const std::string& bytes);
-  void OnRequestEnd(int tab, int id, const URLRequestStatus& status);
+  void OnRequestStarted(int id, const AutomationURLResponse& response);
+  void OnDataAvailable(int id, const std::string& bytes);
+  void OnRequestEnd(int id, const URLRequestStatus& status);
 
  private:
   virtual ~URLRequestAutomationJob();

@@ -19,15 +19,14 @@
 bool WindowProxy::SimulateOSClick(const gfx::Point& click, int flags) {
   if (!is_valid()) return false;
 
-  return sender_->Send(
-      new AutomationMsg_WindowClick(0, handle_, click, flags));
+  return sender_->Send(new AutomationMsg_WindowClick(handle_, click, flags));
 }
 
 bool WindowProxy::SimulateOSMouseMove(const gfx::Point& location) {
   if (!is_valid()) return false;
 
   return sender_->Send(
-      new AutomationMsg_WindowMouseMove(0, handle_, location));
+      new AutomationMsg_WindowMouseMove(handle_, location));
 }
 
 bool WindowProxy::GetWindowTitle(string16* text) {
@@ -38,14 +37,14 @@ bool WindowProxy::GetWindowTitle(string16* text) {
     return false;
   }
 
-  return sender_->Send(new AutomationMsg_WindowTitle(0, handle_, text));
+  return sender_->Send(new AutomationMsg_WindowTitle(handle_, text));
 }
 
 bool WindowProxy::SimulateOSKeyPress(app::KeyboardCode key, int flags) {
   if (!is_valid()) return false;
 
   return sender_->Send(
-      new AutomationMsg_WindowKeyPress(0, handle_, key, flags));
+      new AutomationMsg_WindowKeyPress(handle_, key, flags));
 }
 
 bool WindowProxy::SetVisible(bool visible) {
@@ -53,8 +52,7 @@ bool WindowProxy::SetVisible(bool visible) {
 
   bool result = false;
 
-  sender_->Send(new AutomationMsg_SetWindowVisible(0, handle_, visible,
-                                                   &result));
+  sender_->Send(new AutomationMsg_SetWindowVisible(handle_, visible, &result));
   return result;
 }
 
@@ -63,14 +61,14 @@ bool WindowProxy::IsActive(bool* active) {
 
   bool result = false;
 
-  sender_->Send(new AutomationMsg_IsWindowActive(0, handle_, &result, active));
+  sender_->Send(new AutomationMsg_IsWindowActive(handle_, &result, active));
   return result;
 }
 
 bool WindowProxy::Activate() {
   if (!is_valid()) return false;
 
-  return sender_->Send(new AutomationMsg_ActivateWindow(0, handle_));
+  return sender_->Send(new AutomationMsg_ActivateWindow(handle_));
 }
 
 bool WindowProxy::GetViewBounds(int view_id, gfx::Rect* bounds,
@@ -86,7 +84,7 @@ bool WindowProxy::GetViewBounds(int view_id, gfx::Rect* bounds,
   bool result = false;
 
   if (!sender_->Send(new AutomationMsg_WindowViewBounds(
-          0, handle_, view_id, screen_coordinates, &result, bounds))) {
+          handle_, view_id, screen_coordinates, &result, bounds))) {
     return false;
   }
 
@@ -97,8 +95,7 @@ bool WindowProxy::GetBounds(gfx::Rect* bounds) {
   if (!is_valid())
     return false;
   bool result = false;
-  sender_->Send(new AutomationMsg_GetWindowBounds(0, handle_, bounds,
-                                                  &result));
+  sender_->Send(new AutomationMsg_GetWindowBounds(handle_, bounds, &result));
   return result;
 }
 
@@ -106,8 +103,7 @@ bool WindowProxy::SetBounds(const gfx::Rect& bounds) {
   if (!is_valid())
     return false;
   bool result = false;
-  sender_->Send(new AutomationMsg_SetWindowBounds(0, handle_, bounds,
-                                                  &result));
+  sender_->Send(new AutomationMsg_SetWindowBounds(handle_, bounds, &result));
   return result;
 }
 
@@ -119,15 +115,14 @@ bool WindowProxy::GetFocusedViewID(int* view_id) {
     return false;
   }
 
-  return sender_->Send(new AutomationMsg_GetFocusedViewID(0, handle_,
-                                                          view_id));
+  return sender_->Send(new AutomationMsg_GetFocusedViewID(handle_, view_id));
 }
 
 bool WindowProxy::WaitForFocusedViewIDToChange(
     int old_view_id, int* new_view_id) {
   bool result = false;
-  if (!sender_->Send(new AutomationMsg_WaitForFocusedViewIDToChange
-                     (0, handle_, old_view_id, &result, new_view_id)))
+  if (!sender_->Send(new AutomationMsg_WaitForFocusedViewIDToChange(
+                     handle_, old_view_id, &result, new_view_id)))
     return false;
   return result;
 }
@@ -144,7 +139,7 @@ scoped_refptr<BrowserProxy> WindowProxy::GetBrowserWithTimeout(
   bool handle_ok = false;
   int browser_handle = 0;
 
-  sender_->Send(new AutomationMsg_BrowserForWindow(0, handle_, &handle_ok,
+  sender_->Send(new AutomationMsg_BrowserForWindow(handle_, &handle_ok,
                                                    &browser_handle));
   if (!handle_ok)
     return NULL;
@@ -168,7 +163,7 @@ bool WindowProxy::IsMaximized(bool* maximized) {
 
   bool result = false;
 
-  sender_->Send(new AutomationMsg_IsWindowMaximized(0, handle_, maximized,
+  sender_->Send(new AutomationMsg_IsWindowMaximized(handle_, maximized,
                                                     &result));
   return result;
 }

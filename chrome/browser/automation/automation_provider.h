@@ -34,13 +34,13 @@
 #include "views/event.h"
 #endif  // defined(OS_WIN)
 
-struct AutomationMsg_Find_Params;
 class PopupMenuWaiter;
 class TabContents;
-
-namespace IPC {
+struct AutomationMsg_Find_Params;
 struct Reposition_Params;
 struct ExternalTabSettings;
+
+namespace IPC {
 class ChannelProxy;
 }
 
@@ -355,11 +355,11 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                        bool restore_focus_to_view);
 
   void OnTabReposition(int tab_handle,
-                       const IPC::Reposition_Params& params);
+                       const Reposition_Params& params);
 
   void OnForwardContextMenuCommandToChrome(int tab_handle, int command);
 
-  void CreateExternalTab(const IPC::ExternalTabSettings& settings,
+  void CreateExternalTab(const ExternalTabSettings& settings,
                          gfx::NativeWindow* tab_container_window,
                          gfx::NativeWindow* tab_window,
                          int* tab_handle,

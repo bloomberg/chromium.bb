@@ -901,7 +901,7 @@ void ChromeFrameNPAPI::OnAutomationServerLaunchFailed(
   }
 }
 
-void ChromeFrameNPAPI::OnCloseTab(int tab_handle) {
+void ChromeFrameNPAPI::OnCloseTab() {
   std::string arg;
   FireEvent("close", arg);
   ScopedNpVariant result;
@@ -1487,8 +1487,8 @@ bool ChromeFrameNPAPI::PreProcessContextMenu(HMENU menu) {
   return true;
 }
 
-bool ChromeFrameNPAPI::HandleContextMenuCommand(UINT cmd,
-    const IPC::MiniContextMenuParams& params) {
+bool ChromeFrameNPAPI::HandleContextMenuCommand(
+    UINT cmd, const MiniContextMenuParams& params) {
   if (cmd == IDC_ABOUT_CHROME_FRAME) {
     // TODO: implement "About Chrome Frame"
   }

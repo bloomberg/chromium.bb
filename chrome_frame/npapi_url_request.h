@@ -36,7 +36,7 @@ class NPAPIUrlRequestManager : public PluginUrlRequestManager,
   // PluginUrlRequestManager implementation. Called from AutomationClient.
   virtual PluginUrlRequestManager::ThreadSafeFlags GetThreadSafeFlags();
   virtual void StartRequest(int request_id,
-                            const IPC::AutomationURLRequest& request_info);
+                            const AutomationURLRequest& request_info);
   virtual void ReadRequest(int request_id, int bytes_to_read);
   virtual void EndRequest(int request_id);
   virtual void DownloadRequestInHost(int request_id) {
@@ -69,4 +69,3 @@ class NPAPIUrlRequestManager : public PluginUrlRequestManager,
 };
 
 #endif  // CHROME_FRAME_NPAPI_URL_REQUEST_H_
-

@@ -170,18 +170,18 @@ TEST(CFACWithChrome, NavigateOk) {
 
   EXPECT_CALL(cfd, GetBounds(_)).Times(testing::AnyNumber());
 
-  EXPECT_CALL(cfd, OnNavigationStateChanged(_, _))
+  EXPECT_CALL(cfd, OnNavigationStateChanged(_))
       .Times(testing::AnyNumber());
 
   {
     testing::InSequence s;
 
-    EXPECT_CALL(cfd, OnDidNavigate(_, EqNavigationInfoUrl(GURL())))
+    EXPECT_CALL(cfd, OnDidNavigate(EqNavigationInfoUrl(GURL())))
         .Times(1);
 
-    EXPECT_CALL(cfd, OnUpdateTargetUrl(_, _)).Times(testing::AtMost(1));
+    EXPECT_CALL(cfd, OnUpdateTargetUrl(_)).Times(testing::AtMost(1));
 
-    EXPECT_CALL(cfd, OnLoad(_, _))
+    EXPECT_CALL(cfd, OnLoad(_))
         .Times(1)
         .WillOnce(QUIT_LOOP(loop));
   }
@@ -218,18 +218,18 @@ TEST(CFACWithChrome, NavigateFailed) {
           url, std::string(), &navigation_constraints))));
 
   EXPECT_CALL(cfd, GetBounds(_)).Times(testing::AnyNumber());
-  EXPECT_CALL(cfd, OnNavigationStateChanged(_, _)).Times(testing::AnyNumber());
+  EXPECT_CALL(cfd, OnNavigationStateChanged(_)).Times(testing::AnyNumber());
 
-  EXPECT_CALL(cfd, OnRequestStart(_, _, _))
+  EXPECT_CALL(cfd, OnRequestStart(_, _))
       // Often there's another request for the error page
       .Times(testing::Between(1, 2))
-      .WillRepeatedly(testing::WithArgs<1>(testing::Invoke(CreateFunctor(&cfd,
+      .WillRepeatedly(testing::WithArgs<0>(testing::Invoke(CreateFunctor(&cfd,
           &MockCFDelegate::Reply, connection_failed))));
 
-  EXPECT_CALL(cfd, OnUpdateTargetUrl(_, _)).Times(testing::AnyNumber());
-  EXPECT_CALL(cfd, OnLoad(_, _)).Times(testing::AtMost(1));
+  EXPECT_CALL(cfd, OnUpdateTargetUrl(_)).Times(testing::AnyNumber());
+  EXPECT_CALL(cfd, OnLoad(_)).Times(testing::AtMost(1));
 
-  EXPECT_CALL(cfd, OnNavigationFailed(_, _, GURL(url)))
+  EXPECT_CALL(cfd, OnNavigationFailed(_, GURL(url)))
       .Times(1)
       .WillOnce(QUIT_LOOP_SOON(loop, 2));
 

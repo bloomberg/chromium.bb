@@ -126,13 +126,13 @@ TEST_F(ExtensionTestSimpleApiCall, FLAKY_RunTest) {
   namespace keys = extension_automation_constants;
 
   ASSERT_THAT(mock_, testing::NotNull());
-  EXPECT_CALL(*mock_, OnDidNavigate(_, _)).Times(1);
-  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _, _))
+  EXPECT_CALL(*mock_, OnDidNavigate(_)).Times(1);
+  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _))
       .Times(testing::AnyNumber());
 
   std::string message_received;
   EXPECT_CALL(*mock_, OnForwardMessageToExternalHost(
-      _, _, keys::kAutomationOrigin, keys::kAutomationRequestTarget))
+      _, keys::kAutomationOrigin, keys::kAutomationRequestTarget))
       .WillOnce(DoAll(
         SaveArg<1>(&message_received),
         InvokeWithoutArgs(
@@ -277,13 +277,13 @@ TEST_F(ExtensionTestRoundtripApiCall, FLAKY_RunTest) {
   namespace keys = extension_automation_constants;
 
   ASSERT_THAT(mock_, testing::NotNull());
-  EXPECT_CALL(*mock_, OnDidNavigate(_, _)).Times(1);
-  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _, _))
+  EXPECT_CALL(*mock_, OnDidNavigate(_)).Times(1);
+  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _))
       .Times(testing::AnyNumber());
-  EXPECT_CALL(*mock_, OnLoad(_, _)).Times(testing::AnyNumber());
+  EXPECT_CALL(*mock_, OnLoad(_)).Times(testing::AnyNumber());
 
   EXPECT_CALL(*mock_, OnForwardMessageToExternalHost(
-    _, _, keys::kAutomationOrigin, keys::kAutomationRequestTarget))
+    _, keys::kAutomationOrigin, keys::kAutomationRequestTarget))
     .Times(2)
     .WillRepeatedly(WithArgs<1>(Invoke(
         CreateFunctor(this,
@@ -465,14 +465,14 @@ TEST_F(ExtensionTestBrowserEvents, FLAKY_RunTest) {
   namespace keys = extension_automation_constants;
 
   ASSERT_THAT(mock_, testing::NotNull());
-  EXPECT_CALL(*mock_, OnDidNavigate(_, _)).Times(1);
-  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _, _))
+  EXPECT_CALL(*mock_, OnDidNavigate(_)).Times(1);
+  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _))
       .Times(testing::AnyNumber());
-  EXPECT_CALL(*mock_, OnLoad(_, _)).Times(testing::AnyNumber());
+  EXPECT_CALL(*mock_, OnLoad(_)).Times(testing::AnyNumber());
 
   EXPECT_CALL(*mock_, OnForwardMessageToExternalHost(
-    _, _, keys::kAutomationOrigin, _))
-    .WillRepeatedly(WithArgs<1, 3>(Invoke(
+    _, keys::kAutomationOrigin, _))
+    .WillRepeatedly(WithArgs<1, 2>(Invoke(
         CreateFunctor(this,
             &ExtensionTestBrowserEvents::HandleMessageFromChrome))));
 

@@ -615,8 +615,8 @@ HRESULT ChromeActiveDocument::ActiveXDocActivate(LONG verb) {
   return S_OK;
 }
 
-void ChromeActiveDocument::OnNavigationStateChanged(int tab_handle, int flags,
-    const IPC::NavigationInfo& nav_info) {
+void ChromeActiveDocument::OnNavigationStateChanged(
+    int flags, const NavigationInfo& nav_info) {
   // TODO(joshia): handle INVALIDATE_TAB,INVALIDATE_LOAD etc.
   DVLOG(1) << __FUNCTION__
            << "\n Flags: " << flags
@@ -629,7 +629,7 @@ void ChromeActiveDocument::OnNavigationStateChanged(int tab_handle, int flags,
   UpdateNavigationState(nav_info);
 }
 
-void ChromeActiveDocument::OnUpdateTargetUrl(int tab_handle,
+void ChromeActiveDocument::OnUpdateTargetUrl(
     const std::wstring& new_target_url) {
   if (in_place_frame_)
     in_place_frame_->SetStatusText(new_target_url.c_str());
@@ -643,8 +643,7 @@ bool IsFindAccelerator(const MSG& msg) {
          !(win_util::IsAltPressed() || win_util::IsShiftPressed());
 }
 
-void ChromeActiveDocument::OnAcceleratorPressed(int tab_handle,
-                                                const MSG& accel_message) {
+void ChromeActiveDocument::OnAcceleratorPressed(const MSG& accel_message) {
   if (::TranslateAccelerator(m_hWnd, accelerator_table_,
                              const_cast<MSG*>(&accel_message)))
     return;
@@ -660,14 +659,14 @@ void ChromeActiveDocument::OnAcceleratorPressed(int tab_handle,
       // Handle the showing of the find dialog explicitly.
       OnFindInPage();
     } else {
-      BaseActiveX::OnAcceleratorPressed(tab_handle, accel_message);
+      BaseActiveX::OnAcceleratorPressed(accel_message);
     }
   } else {
     DVLOG(1) << "IE handled accel key " << accel_message.wParam;
   }
 }
 
-void ChromeActiveDocument::OnTabbedOut(int tab_handle, bool reverse) {
+void ChromeActiveDocument::OnTabbedOut(bool reverse) {
   DVLOG(1) << __FUNCTION__;
   if (in_place_frame_) {
     MSG msg = { NULL, WM_KEYDOWN, VK_TAB };
@@ -675,8 +674,7 @@ void ChromeActiveDocument::OnTabbedOut(int tab_handle, bool reverse) {
   }
 }
 
-void ChromeActiveDocument::OnDidNavigate(int tab_handle,
-                                         const IPC::NavigationInfo& nav_info) {
+void ChromeActiveDocument::OnDidNavigate(const NavigationInfo& nav_info) {
   DVLOG(1) << __FUNCTION__ << std::endl
            << "Url: " << nav_info.url
            << ", Title: " << nav_info.title
@@ -696,9 +694,9 @@ void ChromeActiveDocument::OnDidNavigate(int tab_handle,
   UpdateNavigationState(nav_info);
 }
 
-void ChromeActiveDocument::OnCloseTab(int tab_handle) {
+void ChromeActiveDocument::OnCloseTab() {
   // Base class will fire DIChromeFrameEvents::onclose.
-  BaseActiveX::OnCloseTab(tab_handle);
+  BaseActiveX::OnCloseTab();
 
   // Close the container window.
   ScopedComPtr<IWebBrowser2> web_browser2;
@@ -708,7 +706,7 @@ void ChromeActiveDocument::OnCloseTab(int tab_handle) {
 }
 
 void ChromeActiveDocument::UpdateNavigationState(
-    const IPC::NavigationInfo& new_navigation_info) {
+    const NavigationInfo& new_navigation_info) {
   HRESULT hr = S_OK;
   bool is_title_changed = (navigation_info_.title != new_navigation_info.title);
   bool is_ssl_state_changed =
@@ -919,8 +917,7 @@ void ChromeActiveDocument::OnUnload(const GUID* cmd_group_guid,
   }
 }
 
-void ChromeActiveDocument::OnOpenURL(int tab_handle,
-                                     const GURL& url_to_open,
+void ChromeActiveDocument::OnOpenURL(const GURL& url_to_open,
                                      const GURL& referrer,
                                      int open_disposition) {
   // If the disposition indicates that we should be opening the URL in the
@@ -934,11 +931,11 @@ void ChromeActiveDocument::OnOpenURL(int tab_handle,
     g_active_doc_cache.Set(this);
   }
 
-  BaseActiveX::OnOpenURL(tab_handle, url_to_open, referrer, open_disposition);
+  BaseActiveX::OnOpenURL(url_to_open, referrer, open_disposition);
 }
 
-void ChromeActiveDocument::OnAttachExternalTab(int tab_handle,
-    const IPC::AttachExternalTabParams& params) {
+void ChromeActiveDocument::OnAttachExternalTab(
+    const AttachExternalTabParams& params) {
   if (!automation_client_.get()) {
     DLOG(WARNING) << "Invalid automation client instance";
     return;
@@ -957,7 +954,7 @@ void ChromeActiveDocument::OnAttachExternalTab(int tab_handle,
   }
   // Allow popup
   if (hr == S_OK) {
-    BaseActiveX::OnAttachExternalTab(tab_handle, params);
+    BaseActiveX::OnAttachExternalTab(params);
     return;
   }
 
@@ -984,8 +981,8 @@ bool ChromeActiveDocument::PreProcessContextMenu(HMENU menu) {
   return BaseActiveX::PreProcessContextMenu(menu);
 }
 
-bool ChromeActiveDocument::HandleContextMenuCommand(UINT cmd,
-    const IPC::MiniContextMenuParams& params) {
+bool ChromeActiveDocument::HandleContextMenuCommand(
+    UINT cmd, const MiniContextMenuParams& params) {
   ScopedComPtr<IWebBrowser2> web_browser2;
   DoQueryService(SID_SWebBrowserApp, m_spClientSite, web_browser2.Receive());
 
@@ -1233,8 +1230,7 @@ HRESULT ChromeActiveDocument::OnEncodingChange(const GUID* cmd_group_guid,
   return S_OK;
 }
 
-void ChromeActiveDocument::OnGoToHistoryEntryOffset(int tab_handle,
-                                                    int offset) {
+void ChromeActiveDocument::OnGoToHistoryEntryOffset(int offset) {
   DVLOG(1) <<  __FUNCTION__ << " - offset:" << offset;
 
   ScopedComPtr<IBrowserService> browser_service;
@@ -1367,7 +1363,7 @@ void ChromeActiveDocument::SetWindowDimensions() {
 }
 
 bool ChromeActiveDocument::IsNewNavigation(
-    const IPC::NavigationInfo& new_navigation_info) const {
+    const NavigationInfo& new_navigation_info) const {
   // A new navigation is typically an internal navigation which is initiated by
   // the renderer(WebKit). Condition 1 below has to be true along with the
   // any of the other conditions below.

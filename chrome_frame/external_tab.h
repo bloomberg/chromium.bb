@@ -36,21 +36,23 @@ namespace IPC {
 // by the customers of ExternalTabProxy class.
 class UIDelegate {
  public:
-  virtual void OnNavigationStateChanged(int flags,
-      const IPC::NavigationInfo& nav_info) = 0;
+  virtual void OnNavigationStateChanged(
+      int flags, const NavigationInfo& nav_info) = 0;
   virtual void OnUpdateTargetUrl(const std::wstring& new_target_url) = 0;
   virtual void OnExtensionInstalled(const FilePath& path, void* user_data,
       AutomationMsg_ExtensionResponseValues response) = 0;
   virtual void OnLoad(const GURL& url) = 0;
-  virtual void OnMessageFromChromeFrame(const std::string& message,
-      const std::string& origin, const std::string& target) = 0;
-  virtual void OnHandleContextMenu(HANDLE menu_handle, int align_flags,
-      const IPC::MiniContextMenuParams& params) = 0;
+  virtual void OnMessageFromChromeFrame(
+      const std::string& message, const std::string& origin,
+      const std::string& target) = 0;
+  virtual void OnHandleContextMenu(
+      HANDLE menu_handle, int align_flags,
+      const MiniContextMenuParams& params) = 0;
   virtual void OnHandleAccelerator(const MSG& accel_message) = 0;
   virtual void OnTabbedOut(bool reverse) = 0;
   virtual void OnGoToHistoryOffset(int offset) = 0;
-  virtual void OnOpenURL(const GURL& url_to_open, const GURL& referrer,
-                       int open_disposition) = 0;
+  virtual void OnOpenURL(
+      const GURL& url_to_open, const GURL& referrer, int open_disposition) = 0;
  protected:
   ~UIDelegate() {}
 };
@@ -90,6 +92,10 @@ class ExternalTabProxy : public CWindowImpl<ExternalTabProxy>,
     proxy_factory_ = factory;
   }
 #endif
+
+  // IPC::Channel::Listener implementation.
+  void OnMessageReceived(const IPC::Message& message);
+
   //
   virtual void CreateTab(const CreateTabParams& create_params,
                          UIDelegate* delegate);
@@ -126,7 +132,6 @@ class ExternalTabProxy : public CWindowImpl<ExternalTabProxy>,
   virtual void PeerLost(ChromeProxy* proxy, DisconnectReason reason);
   virtual void Disconnected();
 
-
   // Sync message responses.
   virtual void Completed_CreateTab(bool success, HWND chrome_wnd,
       HWND tab_window, int tab_handle, int session_id);
@@ -142,37 +147,38 @@ class ExternalTabProxy : public CWindowImpl<ExternalTabProxy>,
       const std::vector<FilePath>* extensions);
 
   // Network requests from Chrome.
-  virtual void Network_Start(int request_id,
-      const IPC::AutomationURLRequest& request_info);
-  virtual void Network_Read(int request_id, int bytes_to_read);
-  virtual void Network_End(int request_id, const URLRequestStatus& s);
-  virtual void Network_DownloadInHost(int request_id);
-  virtual void GetCookies(const GURL& url, int cookie_id);
-  virtual void SetCookie(const GURL& url, const std::string& cookie);
+  virtual void OnNetwork_Start(
+      int request_id, const AutomationURLRequest& request_info);
+  virtual void OnNetwork_Read(int request_id, int bytes_to_read);
+  virtual void OnNetwork_End(int request_id, const URLRequestStatus& s);
+  virtual void OnNetwork_DownloadInHost(int request_id);
+  virtual void OnGetCookies(const GURL& url, int cookie_id);
+  virtual void OnSetCookie(const GURL& url, const std::string& cookie);
 
   // Navigation progress notifications.
-  virtual void NavigationStateChanged(int flags,
-      const IPC::NavigationInfo& nav_info);
-  virtual void UpdateTargetUrl(const std::wstring& url);
-  virtual void NavigationFailed(int error_code, const GURL& gurl);
-  virtual void DidNavigate(const IPC::NavigationInfo& navigation_info);
-  virtual void TabLoaded(const GURL& url);
+  virtual void OnNavigationStateChanged(
+      int flags, const NavigationInfo& nav_info);
+  virtual void OnUpdateTargetUrl(const std::wstring& url);
+  virtual void OnNavigationFailed(int error_code, const GURL& gurl);
+  virtual void OnDidNavigate(const NavigationInfo& navigation_info);
+  virtual void OnTabLoaded(const GURL& url);
 
-  virtual void OpenURL(const GURL& url_to_open, const GURL& referrer,
-                       int open_disposition);
-  virtual void GoToHistoryOffset(int offset);
-  virtual void MessageToHost(const std::string& message,
-      const std::string& origin, const std::string& target);
+  virtual void OnOpenURL(const GURL& url_to_open, const GURL& referrer,
+                         int open_disposition);
+  virtual void OnGoToHistoryOffset(int offset);
+  virtual void OnMessageToHost(
+      const std::string& message, const std::string& origin,
+      const std::string& target);
 
   // Misc. UI.
-  virtual void HandleAccelerator(const MSG& accel_message);
-  virtual void HandleContextMenu(HANDLE menu_handle, int align_flags,
-                                 const IPC::MiniContextMenuParams& params);
-  virtual void TabbedOut(bool reverse);
+  virtual void OnHandleAccelerator(const MSG& accel_message);
+  virtual void OnHandleContextMenu(HANDLE menu_handle, int align_flags,
+                                   const MiniContextMenuParams& params);
+  virtual void OnTabbedOut(bool reverse);
 
   // Other
-  virtual void TabClosed();
-  virtual void AttachTab(const IPC::AttachExternalTabParams& attach_params);
+  virtual void OnTabClosed();
+  virtual void OnAttachTab(const AttachExternalTabParams& attach_params);
 
   // end of ChromeProxyDelegate methods
   //////////////////////////////////////////////////////////////////////////

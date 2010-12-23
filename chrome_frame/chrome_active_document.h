@@ -280,15 +280,13 @@ BEGIN_EXEC_COMMAND_MAP(ChromeActiveDocument)
 END_EXEC_COMMAND_MAP()
 
   // IPCs from automation server.
-  virtual void OnNavigationStateChanged(int tab_handle, int flags,
-                                        const IPC::NavigationInfo& nav_info);
-  virtual void OnUpdateTargetUrl(int tab_handle,
-                                 const std::wstring& new_target_url);
-  virtual void OnAcceleratorPressed(int tab_handle, const MSG& accel_message);
-  virtual void OnTabbedOut(int tab_handle, bool reverse);
-  virtual void OnDidNavigate(int tab_handle,
-                             const IPC::NavigationInfo& nav_info);
-  virtual void OnCloseTab(int tab_handle);
+  virtual void OnNavigationStateChanged(
+      int flags, const NavigationInfo& nav_info);
+  virtual void OnUpdateTargetUrl(const std::wstring& new_target_url);
+  virtual void OnAcceleratorPressed(const MSG& accel_message);
+  virtual void OnTabbedOut(bool reverse);
+  virtual void OnDidNavigate(const NavigationInfo& nav_info);
+  virtual void OnCloseTab();
   // Override DoVerb
   STDMETHOD(DoVerb)(LONG verb,
                     LPMSG msg,
@@ -344,8 +342,7 @@ END_EXEC_COMMAND_MAP()
 
   // Callbacks from ChromeFramePlugin<T>
   bool PreProcessContextMenu(HMENU menu);
-  bool HandleContextMenuCommand(UINT cmd,
-                                const IPC::MiniContextMenuParams& params);
+  bool HandleContextMenuCommand(UINT cmd, const MiniContextMenuParams& params);
 
  // ChromeFramePlugin overrides.
   virtual void OnAutomationServerReady();
@@ -364,16 +361,15 @@ END_EXEC_COMMAND_MAP()
 
  protected:
   // ChromeFrameActivexBase overrides
-  virtual void OnOpenURL(int tab_handle, const GURL& url_to_open,
-                         const GURL& referrer, int open_disposition);
-  virtual void OnAttachExternalTab(int tab_handle,
-      const IPC::AttachExternalTabParams& params);
-  virtual void OnGoToHistoryEntryOffset(int tab_handle, int offset);
+  virtual void OnOpenURL(
+      const GURL& url_to_open, const GURL& referrer, int open_disposition);
+  virtual void OnAttachExternalTab(const AttachExternalTabParams& params);
+  virtual void OnGoToHistoryEntryOffset(int offset);
 
   // A helper method that updates our internal navigation state
   // as well as IE's navigation state (viz Title and current URL).
   // The navigation_flags is a TabContents::InvalidateTypes enum
-  void UpdateNavigationState(const IPC::NavigationInfo& nav_info);
+  void UpdateNavigationState(const NavigationInfo& nav_info);
 
   TabProxy* GetTabProxy() const {
     if (automation_client_.get())
@@ -446,12 +442,12 @@ END_EXEC_COMMAND_MAP()
 
   // Returns true if the NavigationInfo object passed in represents a new
   // navigation initiated by the renderer.
-  bool IsNewNavigation(const IPC::NavigationInfo& new_navigation_info) const;
+  bool IsNewNavigation(const NavigationInfo& new_navigation_info) const;
 
  protected:
   typedef std::map<int, OLECMDF> CommandStatusMap;
 
-  IPC::NavigationInfo navigation_info_;
+  NavigationInfo navigation_info_;
   bool is_doc_object_;
 
   // This indicates whether this is the first navigation in this

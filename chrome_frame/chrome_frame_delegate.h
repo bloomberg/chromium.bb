@@ -79,7 +79,7 @@ class ChromeFrameDelegateImpl : public ChromeFrameDelegate {
   virtual void OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelError() {}
 
-  static bool IsTabMessage(const IPC::Message& message, int* tab_handle);
+  static bool IsTabMessage(const IPC::Message& message);
 
   virtual bool IsValid() const {
     return true;
@@ -89,42 +89,33 @@ class ChromeFrameDelegateImpl : public ChromeFrameDelegate {
 
  protected:
   // Protected methods to be overriden.
-  virtual void OnNavigationStateChanged(int tab_handle, int flags,
-                                        const IPC::NavigationInfo& nav_info) {}
-  virtual void OnUpdateTargetUrl(int tab_handle,
-                                 const std::wstring& new_target_url) {}
-  virtual void OnAcceleratorPressed(int tab_handle, const MSG& accel_message) {}
-  virtual void OnTabbedOut(int tab_handle, bool reverse) {}
-  virtual void OnOpenURL(int tab_handle, const GURL& url,
-                         const GURL& referrer, int open_disposition) {}
-  virtual void OnDidNavigate(int tab_handle,
-                             const IPC::NavigationInfo& navigation_info) {}
-  virtual void OnNavigationFailed(int tab_handle, int error_code,
-                                  const GURL& gurl) {}
-  virtual void OnLoad(int tab_handle, const GURL& url) {}
-  virtual void OnMessageFromChromeFrame(int tab_handle,
-                                        const std::string& message,
+  virtual void OnNavigationStateChanged(
+      int flags, const NavigationInfo& nav_info) {}
+  virtual void OnUpdateTargetUrl(const std::wstring& new_target_url) {}
+  virtual void OnAcceleratorPressed(const MSG& accel_message) {}
+  virtual void OnTabbedOut(bool reverse) {}
+  virtual void OnOpenURL(
+      const GURL& url, const GURL& referrer, int open_disposition) {}
+  virtual void OnDidNavigate(const NavigationInfo& navigation_info) {}
+  virtual void OnNavigationFailed(int error_code, const GURL& gurl) {}
+  virtual void OnLoad(const GURL& url) {}
+  virtual void OnMessageFromChromeFrame(const std::string& message,
                                         const std::string& origin,
                                         const std::string& target) {}
-  virtual void OnHandleContextMenu(int tab_handle, HANDLE menu_handle,
-                                   int align_flags,
-                                   const IPC::MiniContextMenuParams& params) {}
-  virtual void OnRequestStart(int tab_handle, int request_id,
-                              const IPC::AutomationURLRequest& request) {}
-  virtual void OnRequestRead(int tab_handle, int request_id,
-                             int bytes_to_read) {}
-  virtual void OnRequestEnd(int tab_handle, int request_id,
-                            const URLRequestStatus& status) {}
-  virtual void OnDownloadRequestInHost(int tab_handle, int request_id) {}
-  virtual void OnSetCookieAsync(int tab_handle, const GURL& url,
-                                const std::string& cookie) {}
-  virtual void OnAttachExternalTab(int tab_handle,
-      const IPC::AttachExternalTabParams& attach_params) {}
-  virtual void OnGoToHistoryEntryOffset(int tab_handle, int offset) {}
+  virtual void OnHandleContextMenu(HANDLE menu_handle, int align_flags,
+                                   const MiniContextMenuParams& params) {}
+  virtual void OnRequestStart(
+      int request_id, const AutomationURLRequest& request) {}
+  virtual void OnRequestRead(int request_id, int bytes_to_read) {}
+  virtual void OnRequestEnd(int request_id, const URLRequestStatus& status) {}
+  virtual void OnDownloadRequestInHost(int request_id) {}
+  virtual void OnSetCookieAsync(const GURL& url, const std::string& cookie) {}
+  virtual void OnAttachExternalTab(
+      const AttachExternalTabParams& attach_params) {}
+  virtual void OnGoToHistoryEntryOffset(int offset) {}
 
-  virtual void OnGetCookiesFromHost(int tab_handle, const GURL& url,
-                                    int cookie_id) {}
-  virtual void OnCloseTab(int tab_handle) {}
+  virtual void OnGetCookiesFromHost(const GURL& url, int cookie_id) {}
+  virtual void OnCloseTab() {}
 };
 
 // This interface enables tasks to be marshaled to desired threads.

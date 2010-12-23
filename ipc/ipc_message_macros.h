@@ -120,6 +120,9 @@ LogFunctionMap g_log_function_mapping;
 #define IPC_SYNC_MESSAGE_CONTROL0_3_EXTRA(msg_class, type1_out, type2_out, type3_out) \
   IPC_MESSAGE_LOG(msg_class)
 
+#define IPC_SYNC_MESSAGE_CONTROL0_4_EXTRA(msg_class, type1_out, type2_out, type3_out, type4_out) \
+  IPC_MESSAGE_LOG(msg_class)
+
 #define IPC_SYNC_MESSAGE_CONTROL1_0_EXTRA(msg_class, type1_in) \
   IPC_MESSAGE_LOG(msg_class)
 
@@ -132,6 +135,9 @@ LogFunctionMap g_log_function_mapping;
 #define IPC_SYNC_MESSAGE_CONTROL1_3_EXTRA(msg_class, type1_in, type1_out, type2_out, type3_out) \
   IPC_MESSAGE_LOG(msg_class)
 
+#define IPC_SYNC_MESSAGE_CONTROL1_4_EXTRA(msg_class, type1_in, type1_out, type2_out, type3_out, type4_out) \
+  IPC_MESSAGE_LOG(msg_class)
+
 #define IPC_SYNC_MESSAGE_CONTROL2_0_EXTRA(msg_class, type1_in, type2_in) \
   IPC_MESSAGE_LOG(msg_class)
 
@@ -142,6 +148,9 @@ LogFunctionMap g_log_function_mapping;
   IPC_MESSAGE_LOG(msg_class)
 
 #define IPC_SYNC_MESSAGE_CONTROL2_3_EXTRA(msg_class, type1_in, type2_in, type1_out, type2_out, type3_out) \
+  IPC_MESSAGE_LOG(msg_class)
+
+#define IPC_SYNC_MESSAGE_CONTROL2_4_EXTRA(msg_class, type1_in, type2_in, type1_out, type2_out, type3_out, type4_out) \
   IPC_MESSAGE_LOG(msg_class)
 
 #define IPC_SYNC_MESSAGE_CONTROL3_1_EXTRA(msg_class, type1_in, type2_in, type3_in, type1_out) \
@@ -165,6 +174,9 @@ LogFunctionMap g_log_function_mapping;
 #define IPC_SYNC_MESSAGE_CONTROL4_3_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out, type3_out) \
   IPC_MESSAGE_LOG(msg_class)
 
+#define IPC_SYNC_MESSAGE_CONTROL4_4_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out, type3_out, type4_out) \
+  IPC_MESSAGE_LOG(msg_class)
+
 #define IPC_SYNC_MESSAGE_CONTROL5_1_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out) \
   IPC_MESSAGE_LOG(msg_class)
 
@@ -172,6 +184,9 @@ LogFunctionMap g_log_function_mapping;
   IPC_MESSAGE_LOG(msg_class)
 
 #define IPC_SYNC_MESSAGE_CONTROL5_3_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out, type3_out) \
+  IPC_MESSAGE_LOG(msg_class)
+
+#define IPC_SYNC_MESSAGE_CONTROL5_4_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out, type3_out, type4_out) \
   IPC_MESSAGE_LOG(msg_class)
 
 #define IPC_SYNC_MESSAGE_ROUTED0_0_EXTRA(msg_class) \
@@ -184,6 +199,9 @@ LogFunctionMap g_log_function_mapping;
   IPC_MESSAGE_LOG(msg_class)
 
 #define IPC_SYNC_MESSAGE_ROUTED0_3_EXTRA(msg_class, type1_out, type2_out, type3_out) \
+  IPC_MESSAGE_LOG(msg_class)
+
+#define IPC_SYNC_MESSAGE_ROUTED0_4_EXTRA(msg_class, type1_out, type2_out, type3_out, type4_out) \
   IPC_MESSAGE_LOG(msg_class)
 
 #define IPC_SYNC_MESSAGE_ROUTED1_0_EXTRA(msg_class, type1_in) \
@@ -213,6 +231,9 @@ LogFunctionMap g_log_function_mapping;
 #define IPC_SYNC_MESSAGE_ROUTED2_3_EXTRA(msg_class, type1_in, type2_in, type1_out, type2_out, type3_out) \
   IPC_MESSAGE_LOG(msg_class)
 
+#define IPC_SYNC_MESSAGE_ROUTED2_4_EXTRA(msg_class, type1_in, type2_in, type1_out, type2_out, type3_out, type4_out) \
+  IPC_MESSAGE_LOG(msg_class)
+
 #define IPC_SYNC_MESSAGE_ROUTED3_0_EXTRA(msg_class, type1_in, type2_in, type3_in) \
   IPC_MESSAGE_LOG(msg_class)
 
@@ -240,6 +261,10 @@ LogFunctionMap g_log_function_mapping;
 #define IPC_SYNC_MESSAGE_ROUTED4_3_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out, type3_out) \
   IPC_MESSAGE_LOG(msg_class)
 
+
+#define IPC_SYNC_MESSAGE_ROUTED4_4_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out, type3_out, type4_out) \
+  IPC_MESSAGE_LOG(msg_class)
+
 #define IPC_SYNC_MESSAGE_ROUTED5_0_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in) \
   IPC_MESSAGE_LOG(msg_class)
 
@@ -250,6 +275,9 @@ LogFunctionMap g_log_function_mapping;
   IPC_MESSAGE_LOG(msg_class)
 
 #define IPC_SYNC_MESSAGE_ROUTED5_3_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out, type3_out) \
+  IPC_MESSAGE_LOG(msg_class)
+
+#define IPC_SYNC_MESSAGE_ROUTED5_4_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out, type3_out, type4_out) \
   IPC_MESSAGE_LOG(msg_class)
 
 #else
@@ -270,14 +298,17 @@ LogFunctionMap g_log_function_mapping;
 #define IPC_SYNC_MESSAGE_CONTROL0_1_EXTRA(msg_class, type1_out)
 #define IPC_SYNC_MESSAGE_CONTROL0_2_EXTRA(msg_class, type1_out, type2_out)
 #define IPC_SYNC_MESSAGE_CONTROL0_3_EXTRA(msg_class, type1_out, type2_out, type3_out)
+#define IPC_SYNC_MESSAGE_CONTROL0_4_EXTRA(msg_class, type1_out, type2_out, type3_out, type4_out)
 #define IPC_SYNC_MESSAGE_CONTROL1_0_EXTRA(msg_class, type1_in)
 #define IPC_SYNC_MESSAGE_CONTROL1_1_EXTRA(msg_class, type1_in, type1_out)
 #define IPC_SYNC_MESSAGE_CONTROL1_2_EXTRA(msg_class, type1_in, type1_out, type2_out)
 #define IPC_SYNC_MESSAGE_CONTROL1_3_EXTRA(msg_class, type1_in, type1_out, type2_out, type3_out)
+#define IPC_SYNC_MESSAGE_CONTROL1_4_EXTRA(msg_class, type1_in, type1_out, type2_out, type3_out, type4_out)
 #define IPC_SYNC_MESSAGE_CONTROL2_0_EXTRA(msg_class, type1_in, type2_in)
 #define IPC_SYNC_MESSAGE_CONTROL2_1_EXTRA(msg_class, type1_in, type2_in, type1_out)
 #define IPC_SYNC_MESSAGE_CONTROL2_2_EXTRA(msg_class, type1_in, type2_in, type1_out, type2_out)
 #define IPC_SYNC_MESSAGE_CONTROL2_3_EXTRA(msg_class, type1_in, type2_in, type1_out, type2_out, type3_out)
+#define IPC_SYNC_MESSAGE_CONTROL2_4_EXTRA(msg_class, type1_in, type2_in, type1_out, type2_out, type3_out, type4_out)
 #define IPC_SYNC_MESSAGE_CONTROL3_1_EXTRA(msg_class, type1_in, type2_in, type3_in, type1_out)
 #define IPC_SYNC_MESSAGE_CONTROL3_2_EXTRA(msg_class, type1_in, type2_in, type3_in, type1_out, type2_out)
 #define IPC_SYNC_MESSAGE_CONTROL3_3_EXTRA(msg_class, type1_in, type2_in, type3_in, type1_out, type2_out, type3_out)
@@ -285,13 +316,16 @@ LogFunctionMap g_log_function_mapping;
 #define IPC_SYNC_MESSAGE_CONTROL4_1_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out)
 #define IPC_SYNC_MESSAGE_CONTROL4_2_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out)
 #define IPC_SYNC_MESSAGE_CONTROL4_3_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out, type3_out)
+#define IPC_SYNC_MESSAGE_CONTROL4_4_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out, type3_out, type4_out)
 #define IPC_SYNC_MESSAGE_CONTROL5_1_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out)
 #define IPC_SYNC_MESSAGE_CONTROL5_2_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out)
 #define IPC_SYNC_MESSAGE_CONTROL5_3_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out, type3_out)
+#define IPC_SYNC_MESSAGE_CONTROL5_4_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out, type3_out, type4_out)
 #define IPC_SYNC_MESSAGE_ROUTED0_0_EXTRA(msg_class)
 #define IPC_SYNC_MESSAGE_ROUTED0_1_EXTRA(msg_class, type1_out)
 #define IPC_SYNC_MESSAGE_ROUTED0_2_EXTRA(msg_class, type1_out, type2_out)
 #define IPC_SYNC_MESSAGE_ROUTED0_3_EXTRA(msg_class, type1_out, type2_out, type3_out)
+#define IPC_SYNC_MESSAGE_ROUTED0_4_EXTRA(msg_class, type1_out, type2_out, type3_out, type4_out)
 #define IPC_SYNC_MESSAGE_ROUTED1_0_EXTRA(msg_class, type1_in)
 #define IPC_SYNC_MESSAGE_ROUTED1_1_EXTRA(msg_class, type1_in, type1_out)
 #define IPC_SYNC_MESSAGE_ROUTED1_2_EXTRA(msg_class, type1_in, type1_out, type2_out)
@@ -301,6 +335,7 @@ LogFunctionMap g_log_function_mapping;
 #define IPC_SYNC_MESSAGE_ROUTED2_1_EXTRA(msg_class, type1_in, type2_in, type1_out)
 #define IPC_SYNC_MESSAGE_ROUTED2_2_EXTRA(msg_class, type1_in, type2_in, type1_out, type2_out)
 #define IPC_SYNC_MESSAGE_ROUTED2_3_EXTRA(msg_class, type1_in, type2_in, type1_out, type2_out, type3_out)
+#define IPC_SYNC_MESSAGE_ROUTED2_4_EXTRA(msg_class, type1_in, type2_in, type1_out, type2_out, type3_out, type4_out)
 #define IPC_SYNC_MESSAGE_ROUTED3_0_EXTRA(msg_class, type1_in, type2_in, type3_in)
 #define IPC_SYNC_MESSAGE_ROUTED3_1_EXTRA(msg_class, type1_in, type2_in, type3_in, type1_out)
 #define IPC_SYNC_MESSAGE_ROUTED3_2_EXTRA(msg_class, type1_in, type2_in, type3_in, type1_out, type2_out)
@@ -310,10 +345,12 @@ LogFunctionMap g_log_function_mapping;
 #define IPC_SYNC_MESSAGE_ROUTED4_1_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out)
 #define IPC_SYNC_MESSAGE_ROUTED4_2_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out)
 #define IPC_SYNC_MESSAGE_ROUTED4_3_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out, type3_out)
+#define IPC_SYNC_MESSAGE_ROUTED4_4_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out, type3_out, type4_out)
 #define IPC_SYNC_MESSAGE_ROUTED5_0_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in)
 #define IPC_SYNC_MESSAGE_ROUTED5_1_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out)
 #define IPC_SYNC_MESSAGE_ROUTED5_2_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out)
 #define IPC_SYNC_MESSAGE_ROUTED5_3_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out, type3_out)
+#define IPC_SYNC_MESSAGE_ROUTED5_4_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out, type4_out)
 
 #endif
 
@@ -500,6 +537,18 @@ LogFunctionMap g_log_function_mapping;
   }; \
   IPC_SYNC_MESSAGE_CONTROL0_3_EXTRA(msg_class, type1_out, type2_out, type3_out)
 
+#define IPC_SYNC_MESSAGE_CONTROL0_4(msg_class, type1_out, type2_out, type3_out, type4_out) \
+  class msg_class : \
+      public IPC::MessageWithReply<Tuple0, \
+          Tuple4<type1_out&, type2_out&, type3_out&, type4_out&> >{ \
+   public: \
+    enum { ID = (IPC_MESSAGE_START << 16) + __LINE__ }; \
+    msg_class(type1_out* arg1, type2_out* arg2, type3_out* arg3, type4_out* arg4); \
+    ~msg_class();                                                        \
+    static void Log(std::string* name, const Message* msg, std::string* l);  \
+  }; \
+  IPC_SYNC_MESSAGE_CONTROL0_4_EXTRA(msg_class, type1_out, type2_out, type3_out, type4_out)
+
 #define IPC_SYNC_MESSAGE_CONTROL1_0(msg_class, type1_in)                \
   class msg_class :                                                     \
       public IPC::MessageWithReply<Tuple1<type1_in>, Tuple0 > {         \
@@ -544,6 +593,18 @@ LogFunctionMap g_log_function_mapping;
     static void Log(std::string* name, const Message* msg, std::string* l); \
   }; \
   IPC_SYNC_MESSAGE_CONTROL1_3_EXTRA(msg_class, type1_in, type1_out, type2_out, type3_out)
+
+#define IPC_SYNC_MESSAGE_CONTROL1_4(msg_class, type1_in, type1_out, type2_out, type3_out, type4_out) \
+  class msg_class : \
+      public IPC::MessageWithReply<Tuple1<type1_in>, \
+          Tuple4<type1_out&, type2_out&, type3_out&, type4_out&> >{ \
+   public: \
+    enum { ID = (IPC_MESSAGE_START << 16) + __LINE__ }; \
+    msg_class(const type1_in& arg1, type1_out* arg2, type2_out* arg3, type3_out* arg4, type4_out* arg5); \
+    ~msg_class();                                                       \
+    static void Log(std::string* name, const Message* msg, std::string* l); \
+  }; \
+  IPC_SYNC_MESSAGE_CONTROL1_4_EXTRA(msg_class, type1_in, type1_out, type2_out, type3_out, type4_out)
 
 #define IPC_SYNC_MESSAGE_CONTROL2_0(msg_class, type1_in, type2_in)      \
   class msg_class :                                                     \
@@ -590,6 +651,18 @@ LogFunctionMap g_log_function_mapping;
     static void Log(std::string* name, const Message* msg, std::string* l); \
   }; \
   IPC_SYNC_MESSAGE_CONTROL2_3_EXTRA(msg_class, type1_in, type2_in, type1_out, type2_out, type3_out)
+
+#define IPC_SYNC_MESSAGE_CONTROL2_4(msg_class, type1_in, type2_in, type1_out, type2_out, type3_out, type4_out) \
+  class msg_class : \
+      public IPC::MessageWithReply<Tuple2<type1_in, type2_in>, \
+          Tuple4<type1_out&, type2_out&, type3_out&, type4_out&> > { \
+   public: \
+    enum { ID = (IPC_MESSAGE_START << 16) + __LINE__ }; \
+    msg_class(const type1_in& arg1, const type2_in& arg2, type1_out* arg3, type2_out* arg4, type3_out* arg5, type4_out* arg6); \
+    ~msg_class();                                                       \
+    static void Log(std::string* name, const Message* msg, std::string* l); \
+  }; \
+  IPC_SYNC_MESSAGE_CONTROL2_4_EXTRA(msg_class, type1_in, type2_in, type1_out, type2_out, type3_out, type4_out)
 
 #define IPC_SYNC_MESSAGE_CONTROL3_1(msg_class, type1_in, type2_in, type3_in, type1_out) \
   class msg_class : \
@@ -675,6 +748,18 @@ LogFunctionMap g_log_function_mapping;
   }; \
   IPC_SYNC_MESSAGE_CONTROL4_3_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out, type3_out)
 
+#define IPC_SYNC_MESSAGE_CONTROL4_4(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out, type3_out, type4_out) \
+  class msg_class : \
+      public IPC::MessageWithReply<Tuple4<type1_in, type2_in, type3_in, type4_in>, \
+          Tuple4<type1_out&, type2_out&, type3_out&, type4_out&> > { \
+   public: \
+    enum { ID = (IPC_MESSAGE_START << 16) + __LINE__ }; \
+    msg_class(const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, type1_out* arg5, type2_out* arg6, type3_out* arg7, type4_out* arg8); \
+    ~msg_class();                                                     \
+    static void Log(std::string* name, const Message* msg, std::string* l); \
+  }; \
+  IPC_SYNC_MESSAGE_CONTROL4_4_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out, type3_out, type4_out)
+
 #define IPC_SYNC_MESSAGE_CONTROL5_1(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out) \
   class msg_class : \
       public IPC::MessageWithReply<Tuple5<type1_in, type2_in, type3_in, type4_in, type5_in>, \
@@ -709,7 +794,19 @@ LogFunctionMap g_log_function_mapping;
     ~msg_class();                                                     \
     static void Log(std::string* name, const Message* msg, std::string* l); \
   }; \
-  IPC_SYNC_MESSAGE_CONTROL4_2_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out, type3_out)
+  IPC_SYNC_MESSAGE_CONTROL5_3_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out, type3_out)
+
+#define IPC_SYNC_MESSAGE_CONTROL5_4(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out, type3_out, type4_out) \
+  class msg_class : \
+      public IPC::MessageWithReply<Tuple5<type1_in, type2_in, type3_in, type4_in, type5_in>, \
+          Tuple4<type1_out&, type2_out&, type3_out&, type4_out&> > { \
+   public: \
+    enum { ID = (IPC_MESSAGE_START << 16) + __LINE__ }; \
+    msg_class(const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, const type5_in& arg5, type1_out* arg6, type2_out* arg7, type3_out* arg8, type4_out* arg9); \
+    ~msg_class();                                                     \
+    static void Log(std::string* name, const Message* msg, std::string* l); \
+  }; \
+  IPC_SYNC_MESSAGE_CONTROL5_4_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out, type3_out, type4_out)
 
 #define IPC_SYNC_MESSAGE_ROUTED0_0(msg_class) \
   class msg_class : public IPC::MessageWithReply<Tuple0, Tuple0 > { \
@@ -753,6 +850,18 @@ LogFunctionMap g_log_function_mapping;
     static void Log(std::string* name, const Message* msg, std::string* l); \
   }; \
   IPC_SYNC_MESSAGE_ROUTED0_3_EXTRA(msg_class, type1_out, type2_out, type3_out)
+
+#define IPC_SYNC_MESSAGE_ROUTED0_4(msg_class, type1_out, type2_out, type3_out, type4_out) \
+  class msg_class : \
+      public IPC::MessageWithReply<Tuple0, \
+          Tuple4<type1_out&, type2_out&, type3_out&, type4_out&> >{ \
+   public: \
+    enum { ID = (IPC_MESSAGE_START << 16) + __LINE__ }; \
+    msg_class(int routing_id, type1_out* arg1, type2_out* arg2, type3_out* arg3, type4_out* arg4); \
+    ~msg_class();                                                     \
+    static void Log(std::string* name, const Message* msg, std::string* l); \
+  }; \
+  IPC_SYNC_MESSAGE_ROUTED0_4_EXTRA(msg_class, type1_out, type2_out, type3_out, type4_out)
 
 #define IPC_SYNC_MESSAGE_ROUTED1_0(msg_class, type1_in) \
   class msg_class : \
@@ -856,6 +965,18 @@ LogFunctionMap g_log_function_mapping;
     static void Log(std::string* name, const Message* msg, std::string* l); \
   }; \
   IPC_SYNC_MESSAGE_ROUTED2_3_EXTRA(msg_class, type1_in, type2_in, type1_out, type2_out, type3_out)
+
+#define IPC_SYNC_MESSAGE_ROUTED2_4(msg_class, type1_in, type2_in, type1_out, type2_out, type3_out, type4_out) \
+  class msg_class : \
+      public IPC::MessageWithReply<Tuple2<type1_in, type2_in>, \
+          Tuple4<type1_out&, type2_out&, type3_out&, type4_out&> > { \
+   public: \
+    enum { ID = (IPC_MESSAGE_START << 16) + __LINE__ }; \
+    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, type1_out* arg3, type2_out* arg4, type3_out* arg5, type4_out* arg6); \
+    ~msg_class();                                                     \
+    static void Log(std::string* name, const Message* msg, std::string* l); \
+  }; \
+  IPC_SYNC_MESSAGE_ROUTED2_4_EXTRA(msg_class, type1_in, type2_in, type1_out, type2_out, type3_out, type4_out)
 
 #define IPC_SYNC_MESSAGE_ROUTED3_0(msg_class, type1_in, type2_in, type3_in) \
     class msg_class : \
@@ -964,6 +1085,18 @@ LogFunctionMap g_log_function_mapping;
   }; \
   IPC_SYNC_MESSAGE_ROUTED4_3_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out, type3_out)
 
+#define IPC_SYNC_MESSAGE_ROUTED4_4(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out, type3_out, type4_out) \
+  class msg_class : \
+      public IPC::MessageWithReply<Tuple4<type1_in, type2_in, type3_in, type4_in>, \
+          Tuple4<type1_out&, type2_out&, type3_out&, type4_out&> > { \
+   public: \
+    enum { ID = (IPC_MESSAGE_START << 16) + __LINE__ }; \
+    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, type1_out* arg5, type2_out* arg6, type3_out* arg7, type4_out* arg8); \
+    ~msg_class();                                                     \
+    static void Log(std::string* name, const Message* msg, std::string* l); \
+  }; \
+  IPC_SYNC_MESSAGE_ROUTED4_4_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out, type3_out, type4_out)
+
 #define IPC_SYNC_MESSAGE_ROUTED5_0(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in) \
   class msg_class : \
       public IPC::MessageWithReply<Tuple5<type1_in, type2_in, type3_in, type4_in, type5_in>, \
@@ -1011,6 +1144,18 @@ LogFunctionMap g_log_function_mapping;
     static void Log(std::string* name, const Message* msg, std::string* l); \
   }; \
   IPC_SYNC_MESSAGE_ROUTED5_3_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out, type3_out)
+
+#define IPC_SYNC_MESSAGE_ROUTED5_4(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out, type3_out, type4_out) \
+  class msg_class : \
+      public IPC::MessageWithReply<Tuple5<type1_in, type2_in, type3_in, type4_in, type5_in>, \
+          Tuple4<type1_out&, type2_out&, type3_out&, type4_out&> > { \
+   public: \
+    enum { ID = (IPC_MESSAGE_START << 16) + __LINE__ }; \
+    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, const type4_in& arg5, type1_out* arg6, type2_out* arg7, type3_out* arg8, type4_out* arg9); \
+    ~msg_class();                                                     \
+    static void Log(std::string* name, const Message* msg, std::string* l); \
+  }; \
+  IPC_SYNC_MESSAGE_ROUTED5_4_EXTRA(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out, type3_out, type4_out)
 
 
 

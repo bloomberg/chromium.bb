@@ -5,6 +5,167 @@
 #define IPC_MESSAGE_IMPL
 #include "chrome/common/automation_messages.h"
 
+
+AutomationURLRequest::AutomationURLRequest()
+    : resource_type(0),
+      load_flags(0) {
+}
+
+AutomationURLRequest::AutomationURLRequest(
+    const std::string& in_url,
+    const std::string& in_method,
+    const std::string& in_referrer,
+    const std::string& in_extra_request_headers,
+    scoped_refptr<net::UploadData> in_upload_data,
+    int in_resource_type,
+    int in_load_flags)
+    : url(in_url),
+      method(in_method),
+      referrer(in_referrer),
+      extra_request_headers(in_extra_request_headers),
+      upload_data(in_upload_data),
+      resource_type(in_resource_type),
+      load_flags(in_load_flags) {
+}
+
+AutomationURLRequest::~AutomationURLRequest() {}
+
+AutomationURLResponse::AutomationURLResponse()
+    : content_length(0),
+      redirect_status(0) {
+}
+
+AutomationURLResponse::AutomationURLResponse(const std::string& in_mime_type,
+                                             const std::string& in_headers,
+                                             int64 in_content_length,
+                                             const base::Time& in_last_modified,
+                                             const std::string& in_redirect_url,
+                                             int in_redirect_status)
+    : mime_type(in_mime_type),
+      headers(in_headers),
+      content_length(in_content_length),
+      last_modified(in_last_modified),
+      redirect_url(in_redirect_url),
+      redirect_status(in_redirect_status) {
+}
+
+
+AutomationURLResponse::~AutomationURLResponse() {}
+
+ExternalTabSettings::ExternalTabSettings()
+    : parent(NULL),
+      dimensions(),
+      style(0),
+      is_off_the_record(false),
+      load_requests_via_automation(false),
+      handle_top_level_requests(false),
+      initial_url(),
+      referrer(),
+      infobars_enabled(false),
+      route_all_top_level_navigations(false) {
+}
+
+ExternalTabSettings::ExternalTabSettings(
+    gfx::NativeWindow in_parent,
+    const gfx::Rect& in_dimensions,
+    unsigned int in_style,
+    bool in_is_off_the_record,
+    bool in_load_requests_via_automation,
+    bool in_handle_top_level_requests,
+    const GURL& in_initial_url,
+    const GURL& in_referrer,
+    bool in_infobars_enabled,
+    bool in_route_all_top_level_navigations)
+    : parent(in_parent),
+      dimensions(in_dimensions),
+      style(in_style),
+      is_off_the_record(in_is_off_the_record),
+      load_requests_via_automation(in_load_requests_via_automation),
+      handle_top_level_requests(in_handle_top_level_requests),
+      initial_url(in_initial_url),
+      referrer(in_referrer),
+      infobars_enabled(in_infobars_enabled),
+      route_all_top_level_navigations(in_route_all_top_level_navigations) {
+}
+
+ExternalTabSettings::~ExternalTabSettings() {}
+
+NavigationInfo::NavigationInfo()
+    : navigation_type(0),
+      relative_offset(0),
+      navigation_index(0),
+      displayed_insecure_content(0),
+      ran_insecure_content(0) {
+}
+
+NavigationInfo::NavigationInfo(int in_navigation_type,
+                               int in_relative_offset,
+                               int in_navigation_index,
+                               const std::wstring& in_title,
+                               const GURL& in_url,
+                               const GURL& in_referrer,
+                               SecurityStyle in_security_style,
+                               bool in_displayed_insecure_content,
+                               bool in_ran_insecure_content)
+    : navigation_type(in_navigation_type),
+      relative_offset(in_relative_offset),
+      navigation_index(in_navigation_index),
+      title(in_title),
+      url(in_url),
+      referrer(in_referrer),
+      security_style(in_security_style),
+      displayed_insecure_content(in_displayed_insecure_content),
+      ran_insecure_content(in_ran_insecure_content) {
+}
+
+NavigationInfo::~NavigationInfo() {}
+
+MiniContextMenuParams::MiniContextMenuParams()
+    : screen_x(0),
+      screen_y(0) {
+}
+
+MiniContextMenuParams::MiniContextMenuParams(int in_screen_x,
+                                             int in_screen_y,
+                                             const GURL& in_link_url,
+                                             const GURL& in_unfiltered_link_url,
+                                             const GURL& in_src_url,
+                                             const GURL& in_page_url,
+                                             const GURL& in_frame_url)
+    : screen_x(in_screen_x),
+      screen_y(in_screen_y),
+      link_url(in_link_url),
+      unfiltered_link_url(in_unfiltered_link_url),
+      src_url(in_src_url),
+      page_url(in_page_url),
+      frame_url(in_frame_url) {
+}
+
+MiniContextMenuParams::~MiniContextMenuParams() {}
+
+AttachExternalTabParams::AttachExternalTabParams()
+    : cookie(0),
+      disposition(0),
+      user_gesture(false) {
+}
+
+AttachExternalTabParams::AttachExternalTabParams(
+    uint64 in_cookie,
+    const GURL& in_url,
+    const gfx::Rect& in_dimensions,
+    int in_disposition,
+    bool in_user_gesture,
+    const std::string& in_profile_name)
+    : cookie(in_cookie),
+      url(in_url),
+      dimensions(in_dimensions),
+      disposition(in_disposition),
+      user_gesture(in_user_gesture),
+      profile_name(in_profile_name) {
+}
+
+AttachExternalTabParams::~AttachExternalTabParams() {}
+
 namespace IPC {
 
 // static
@@ -231,30 +392,6 @@ void ParamTraits<PageType>::Log(const param_type& p, std::string* l) {
   LogParam(control, l);
 }
 
-AutomationURLRequest::AutomationURLRequest()
-    : resource_type(0),
-      load_flags(0) {
-}
-
-AutomationURLRequest::AutomationURLRequest(
-    const std::string& in_url,
-    const std::string& in_method,
-    const std::string& in_referrer,
-    const std::string& in_extra_request_headers,
-    scoped_refptr<net::UploadData> in_upload_data,
-    int in_resource_type,
-    int in_load_flags)
-    : url(in_url),
-      method(in_method),
-      referrer(in_referrer),
-      extra_request_headers(in_extra_request_headers),
-      upload_data(in_upload_data),
-      resource_type(in_resource_type),
-      load_flags(in_load_flags) {
-}
-
-AutomationURLRequest::~AutomationURLRequest() {}
-
 // static
 void ParamTraits<AutomationURLRequest>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.url);
@@ -299,28 +436,6 @@ void ParamTraits<AutomationURLRequest>::Log(const param_type& p,
   l->append(")");
 }
 
-AutomationURLResponse::AutomationURLResponse()
-    : content_length(0),
-      redirect_status(0) {
-}
-
-AutomationURLResponse::AutomationURLResponse(const std::string& in_mime_type,
-                                             const std::string& in_headers,
-                                             int64 in_content_length,
-                                             const base::Time& in_last_modified,
-                                             const std::string& in_redirect_url,
-                                             int in_redirect_status)
-    : mime_type(in_mime_type),
-      headers(in_headers),
-      content_length(in_content_length),
-      last_modified(in_last_modified),
-      redirect_url(in_redirect_url),
-      redirect_status(in_redirect_status) {
-}
-
-
-AutomationURLResponse::~AutomationURLResponse() {}
-
 // static
 void ParamTraits<AutomationURLResponse>::Write(Message* m,
                                                const param_type& p) {
@@ -361,44 +476,6 @@ void ParamTraits<AutomationURLResponse>::Log(const param_type& p,
   LogParam(p.redirect_status, l);
   l->append(")");
 }
-
-ExternalTabSettings::ExternalTabSettings()
-    : parent(NULL),
-      dimensions(),
-      style(0),
-      is_off_the_record(false),
-      load_requests_via_automation(false),
-      handle_top_level_requests(false),
-      initial_url(),
-      referrer(),
-      infobars_enabled(false),
-      route_all_top_level_navigations(false) {
-}
-
-ExternalTabSettings::ExternalTabSettings(
-    gfx::NativeWindow in_parent,
-    const gfx::Rect& in_dimensions,
-    unsigned int in_style,
-    bool in_is_off_the_record,
-    bool in_load_requests_via_automation,
-    bool in_handle_top_level_requests,
-    const GURL& in_initial_url,
-    const GURL& in_referrer,
-    bool in_infobars_enabled,
-    bool in_route_all_top_level_navigations)
-    : parent(in_parent),
-      dimensions(in_dimensions),
-      style(in_style),
-      is_off_the_record(in_is_off_the_record),
-      load_requests_via_automation(in_load_requests_via_automation),
-      handle_top_level_requests(in_handle_top_level_requests),
-      initial_url(in_initial_url),
-      referrer(in_referrer),
-      infobars_enabled(in_infobars_enabled),
-      route_all_top_level_navigations(in_route_all_top_level_navigations) {
-}
-
-ExternalTabSettings::~ExternalTabSettings() {}
 
 // static
 void ParamTraits<ExternalTabSettings>::Write(Message* m,
@@ -457,36 +534,6 @@ void ParamTraits<ExternalTabSettings>::Log(const param_type& p,
   l->append(")");
 }
 
-NavigationInfo::NavigationInfo()
-    : navigation_type(0),
-      relative_offset(0),
-      navigation_index(0),
-      displayed_insecure_content(0),
-      ran_insecure_content(0) {
-}
-
-NavigationInfo::NavigationInfo(int in_navigation_type,
-                               int in_relative_offset,
-                               int in_navigation_index,
-                               const std::wstring& in_title,
-                               const GURL& in_url,
-                               const GURL& in_referrer,
-                               SecurityStyle in_security_style,
-                               bool in_displayed_insecure_content,
-                               bool in_ran_insecure_content)
-    : navigation_type(in_navigation_type),
-      relative_offset(in_relative_offset),
-      navigation_index(in_navigation_index),
-      title(in_title),
-      url(in_url),
-      referrer(in_referrer),
-      security_style(in_security_style),
-      displayed_insecure_content(in_displayed_insecure_content),
-      ran_insecure_content(in_ran_insecure_content) {
-}
-
-NavigationInfo::~NavigationInfo() {}
-
 // static
 void ParamTraits<NavigationInfo>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.navigation_type);
@@ -538,29 +585,6 @@ void ParamTraits<NavigationInfo>::Log(const param_type& p, std::string* l) {
   l->append(")");
 }
 
-MiniContextMenuParams::MiniContextMenuParams()
-    : screen_x(0),
-      screen_y(0) {
-}
-
-MiniContextMenuParams::MiniContextMenuParams(int in_screen_x,
-                                             int in_screen_y,
-                                             const GURL& in_link_url,
-                                             const GURL& in_unfiltered_link_url,
-                                             const GURL& in_src_url,
-                                             const GURL& in_page_url,
-                                             const GURL& in_frame_url)
-    : screen_x(in_screen_x),
-      screen_y(in_screen_y),
-      link_url(in_link_url),
-      unfiltered_link_url(in_unfiltered_link_url),
-      src_url(in_src_url),
-      page_url(in_page_url),
-      frame_url(in_frame_url) {
-}
-
-MiniContextMenuParams::~MiniContextMenuParams() {}
-
 // static
 void ParamTraits<MiniContextMenuParams>::Write(Message* m,
                                                const param_type& p) {
@@ -605,29 +629,6 @@ void ParamTraits<MiniContextMenuParams>::Log(const param_type& p,
   LogParam(p.frame_url, l);
   l->append(")");
 }
-
-AttachExternalTabParams::AttachExternalTabParams()
-    : cookie(0),
-      disposition(0),
-      user_gesture(false) {
-}
-
-AttachExternalTabParams::AttachExternalTabParams(
-    uint64 in_cookie,
-    const GURL& in_url,
-    const gfx::Rect& in_dimensions,
-    int in_disposition,
-    bool in_user_gesture,
-    const std::string& in_profile_name)
-    : cookie(in_cookie),
-      url(in_url),
-      dimensions(in_dimensions),
-      disposition(in_disposition),
-      user_gesture(in_user_gesture),
-      profile_name(in_profile_name) {
-}
-
-AttachExternalTabParams::~AttachExternalTabParams() {}
 
 // static
 void ParamTraits<AttachExternalTabParams>::Write(Message* m,

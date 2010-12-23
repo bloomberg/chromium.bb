@@ -37,35 +37,34 @@ class ExternalTabUITestMockClient : public AutomationProxy {
   explicit ExternalTabUITestMockClient(int execution_timeout);
   virtual ~ExternalTabUITestMockClient();
 
-  MOCK_METHOD2(OnDidNavigate, void(int tab_handle,
-      const IPC::NavigationInfo& nav_info));
-  MOCK_METHOD4(OnForwardMessageToExternalHost, void(int handle,
+  MOCK_METHOD1(OnDidNavigate, void(const NavigationInfo& nav_info));
+  MOCK_METHOD3(OnForwardMessageToExternalHost, void(
       const std::string& message, const std::string& origin,
       const std::string& target));
-  MOCK_METHOD3(OnRequestStart, void(int tab_handle, int request_id,
-      const IPC::AutomationURLRequest& request));
-  MOCK_METHOD3(OnRequestRead, void(int tab_handle, int request_id,
+  MOCK_METHOD2(OnRequestStart, void(int request_id,
+      const AutomationURLRequest& request));
+  MOCK_METHOD2(OnRequestRead, void(int request_id,
       int bytes_to_read));
-  MOCK_METHOD3(OnRequestEnd, void(int tab_handle, int request_id,
+  MOCK_METHOD2(OnRequestEnd, void(int request_id,
       const URLRequestStatus& status));
-  MOCK_METHOD3(OnSetCookieAsync, void(int tab_handle, const GURL& url,
+  MOCK_METHOD2(OnSetCookieAsync, void(const GURL& url,
       const std::string& cookie));
   MOCK_METHOD1(HandleClosed, void(int handle));
 
 
-  MOCK_METHOD4(OnOpenURL, void(int tab_handle, const GURL& url,
+  MOCK_METHOD3(OnOpenURL, void(const GURL& url,
       const GURL& referrer, int open_disposition));
-  MOCK_METHOD3(OnNavigationStateChanged, void(int tab_handle, int flags,
-      const IPC::NavigationInfo& nav_info));
-  MOCK_METHOD2(OnAttachExternalTab, void(int tab_handle,
-      const IPC::AttachExternalTabParams& params));
-  MOCK_METHOD2(OnLoad, void(int tab_handle, const GURL&url));
+  MOCK_METHOD2(OnNavigationStateChanged, void(int flags,
+      const NavigationInfo& nav_info));
+  MOCK_METHOD1(OnAttachExternalTab, void(
+      const AttachExternalTabParams& params));
+  MOCK_METHOD1(OnLoad, void(const GURL&url));
 
 
   // Action helpers for OnRequest* incoming messages. Create the message and
   // delegate sending to the base class. Apparently we do not have wrappers
   // in AutomationProxy for these messages.
-  void ReplyStarted(const IPC::AutomationURLResponse* response,
+  void ReplyStarted(const AutomationURLResponse* response,
                     int tab_handle, int request_id);
   void ReplyData(const std::string* data, int tab_handle, int request_id);
   void ReplyEOF(int tab_handle, int request_id);
@@ -74,7 +73,7 @@ class ExternalTabUITestMockClient : public AutomationProxy {
 
   // Test setup helpers
   scoped_refptr<TabProxy> CreateHostWindowAndTab(
-      const IPC::ExternalTabSettings& settings);
+      const ExternalTabSettings& settings);
   scoped_refptr<TabProxy> CreateTabWithUrl(const GURL& initial_url);
   void NavigateInExternalTab(int tab_handle, const GURL& url,
                              const GURL& referrer = GURL());
@@ -84,7 +83,7 @@ class ExternalTabUITestMockClient : public AutomationProxy {
   void IgnoreFavIconNetworkRequest();
 
   void ConnectToExternalTab(gfx::NativeWindow parent,
-      const IPC::AttachExternalTabParams& attach_params);
+      const AttachExternalTabParams& attach_params);
   // Helper for network requests.
   void ServeHTMLData(int tab_handle, const GURL& url, const std::string& data);
   // Destroys the host window.
@@ -96,8 +95,8 @@ class ExternalTabUITestMockClient : public AutomationProxy {
   // very possible.
   unsigned long host_window_style_;
 
-  static const IPC::AutomationURLResponse http_200;
-  static const IPC::ExternalTabSettings default_settings;
+  static const AutomationURLResponse http_200;
+  static const ExternalTabSettings default_settings;
  protected:
   gfx::NativeWindow host_window_;
 

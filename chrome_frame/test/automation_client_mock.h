@@ -33,32 +33,28 @@ struct MockCFDelegate : public ChromeFrameDelegateImpl {
   // MOCK_METHOD1(OnMessageReceived, void(const IPC::Message&));
 
   MOCK_METHOD0(OnChannelError, void(void));
-  MOCK_METHOD2(OnNavigationStateChanged, void(int tab_handle, int flags));
-  MOCK_METHOD2(OnUpdateTargetUrl, void(int tab_handle,
+  MOCK_METHOD1(OnNavigationStateChanged, void(int flags));
+  MOCK_METHOD1(OnUpdateTargetUrl, void(
       const std::wstring& new_target_url));
-  MOCK_METHOD2(OnAcceleratorPressed, void(int tab_handle,
-      const MSG& accel_message));
-  MOCK_METHOD2(OnTabbedOut, void(int tab_handle, bool reverse));
-  MOCK_METHOD3(OnOpenURL, void(int tab_handle, const GURL& url,
-      int open_disposition));
-  MOCK_METHOD2(OnDidNavigate, void(int tab_handle,
-      const IPC::NavigationInfo& navigation_info));
-  MOCK_METHOD3(OnNavigationFailed, void(int tab_handle, int error_code,
-      const GURL& gurl));
-  MOCK_METHOD2(OnLoad, void(int tab_handle, const GURL& url));
-  MOCK_METHOD4(OnMessageFromChromeFrame, void(int tab_handle,
+  MOCK_METHOD1(OnAcceleratorPressed, void(const MSG& accel_message));
+  MOCK_METHOD1(OnTabbedOut, void(bool reverse));
+  MOCK_METHOD2(OnOpenURL, void(const GURL& url, int open_disposition));
+  MOCK_METHOD1(OnDidNavigate, void(
+      const NavigationInfo& navigation_info));
+  MOCK_METHOD2(OnNavigationFailed, void(int error_code, const GURL& gurl));
+  MOCK_METHOD1(OnLoad, void(const GURL& url));
+  MOCK_METHOD3(OnMessageFromChromeFrame, void(
       const std::string& message,
       const std::string& origin,
       const std::string& target));
-  MOCK_METHOD4(OnHandleContextMenu, void(int tab_handle, HANDLE menu_handle,
-      int align_flags, const IPC::MiniContextMenuParams& params));
-  MOCK_METHOD3(OnRequestStart, void(int tab_handle, int request_id,
-      const IPC::AutomationURLRequest& request));
-  MOCK_METHOD3(OnRequestRead, void(int tab_handle, int request_id,
-      int bytes_to_read));
-  MOCK_METHOD3(OnRequestEnd, void(int tab_handle, int request_id,
+  MOCK_METHOD3(OnHandleContextMenu, void(HANDLE menu_handle,
+      int align_flags, const MiniContextMenuParams& params));
+  MOCK_METHOD2(OnRequestStart, void(int request_id,
+      const AutomationURLRequest& request));
+  MOCK_METHOD2(OnRequestRead, void(int request_id, int bytes_to_read));
+  MOCK_METHOD2(OnRequestEnd, void(int request_id,
       const URLRequestStatus& status));
-  MOCK_METHOD3(OnSetCookieAsync, void(int tab_handle, const GURL& url,
+  MOCK_METHOD2(OnSetCookieAsync, void(const GURL& url,
       const std::string& cookie));
 
   // Use for sending network responses

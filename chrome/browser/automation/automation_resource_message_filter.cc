@@ -407,7 +407,7 @@ bool AutomationResourceMessageFilter::SendDownloadRequestToHost(
     return false;
   }
 
-  return Send(new AutomationMsg_DownloadRequestInHost(0, tab_handle,
+  return Send(new AutomationMsg_DownloadRequestInHost(tab_handle,
                                                       automation_request_id));
 }
 
@@ -459,7 +459,7 @@ bool AutomationResourceMessageFilter::GetCookiesForUrl(
   if (automation_details_iter->second.filter) {
     automation_details_iter->second.filter->Send(
         new AutomationMsg_GetCookiesFromHost(
-            0, automation_details_iter->second.tab_handle, url,
+            automation_details_iter->second.tab_handle, url,
             completion_callback_id));
   }
   return true;
@@ -530,7 +530,7 @@ bool AutomationResourceMessageFilter::SetCookiesForUrl(
   if (automation_details_iter->second.filter) {
     automation_details_iter->second.filter->Send(
         new AutomationMsg_SetCookieAsync(
-            0, automation_details_iter->second.tab_handle, url, cookie_line));
+            automation_details_iter->second.tab_handle, url, cookie_line));
   }
 
   return true;

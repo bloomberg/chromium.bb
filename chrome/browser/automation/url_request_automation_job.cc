@@ -148,7 +148,7 @@ void URLRequestAutomationJob::Start() {
 void URLRequestAutomationJob::Kill() {
   if (message_filter_.get()) {
     if (!is_pending()) {
-      message_filter_->Send(new AutomationMsg_RequestEnd(0, tab_, id_,
+      message_filter_->Send(new AutomationMsg_RequestEnd(tab_, id_,
           URLRequestStatus(URLRequestStatus::CANCELED, net::ERR_ABORTED)));
     }
   }
@@ -168,8 +168,7 @@ bool URLRequestAutomationJob::ReadRawData(
   pending_buf_size_ = buf_size;
 
   if (message_filter_) {
-    message_filter_->Send(new AutomationMsg_RequestRead(0, tab_, id_,
-        buf_size));
+    message_filter_->Send(new AutomationMsg_RequestRead(tab_, id_, buf_size));
     SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
   } else {
     MessageLoop::current()->PostTask(
@@ -241,11 +240,8 @@ bool URLRequestAutomationJob::MayFilterMessage(const IPC::Message& message,
     case AutomationMsg_RequestData::ID:
     case AutomationMsg_RequestEnd::ID: {
       void* iter = NULL;
-      int tab = 0;
-      if (message.ReadInt(&iter, &tab) &&
-          message.ReadInt(&iter, request_id)) {
+      if (message.ReadInt(&iter, request_id))
         return true;
-      }
       break;
     }
   }
@@ -268,8 +264,8 @@ void URLRequestAutomationJob::OnMessage(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 }
 
-void URLRequestAutomationJob::OnRequestStarted(int tab, int id,
-    const IPC::AutomationURLResponse& response) {
+void URLRequestAutomationJob::OnRequestStarted(
+    int id, const AutomationURLResponse& response) {
   DVLOG(1) << "URLRequestAutomationJob: " << request_->url().spec()
            << " - response started.";
   set_expected_content_size(response.content_length);
@@ -289,7 +285,7 @@ void URLRequestAutomationJob::OnRequestStarted(int tab, int id,
 }
 
 void URLRequestAutomationJob::OnDataAvailable(
-    int tab, int id, const std::string& bytes) {
+    int id, const std::string& bytes) {
   DVLOG(1) << "URLRequestAutomationJob: " << request_->url().spec()
            << " - data available, Size: " << bytes.size();
   DCHECK(!bytes.empty());
@@ -313,7 +309,7 @@ void URLRequestAutomationJob::OnDataAvailable(
 }
 
 void URLRequestAutomationJob::OnRequestEnd(
-    int tab, int id, const URLRequestStatus& status) {
+    int id, const URLRequestStatus& status) {
 #ifndef NDEBUG
   std::string url;
   if (request_)
@@ -436,7 +432,7 @@ void URLRequestAutomationJob::StartAsync() {
   }
 
   // Ask automation to start this request.
-  IPC::AutomationURLRequest automation_request(
+  AutomationURLRequest automation_request(
       request_->url().spec(),
       request_->method(),
       referrer.spec(),
@@ -446,8 +442,8 @@ void URLRequestAutomationJob::StartAsync() {
       request_->load_flags());
 
   DCHECK(message_filter_);
-  message_filter_->Send(new AutomationMsg_RequestStart(0, tab_, id_,
-      automation_request));
+  message_filter_->Send(new AutomationMsg_RequestStart(
+      tab_, id_, automation_request));
 }
 
 void URLRequestAutomationJob::DisconnectFromMessageFilter() {

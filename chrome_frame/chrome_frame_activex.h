@@ -90,9 +90,8 @@ END_MSG_MAP()
 
  protected:
   // ChromeFrameDelegate overrides
-  virtual void OnLoad(int tab_handle, const GURL& url);
-  virtual void OnMessageFromChromeFrame(int tab_handle,
-                                        const std::string& message,
+  virtual void OnLoad(const GURL& url);
+  virtual void OnMessageFromChromeFrame(const std::string& message,
                                         const std::string& origin,
                                         const std::string& target);
   virtual void OnLoadFailed(int error_code, const std::string& url);

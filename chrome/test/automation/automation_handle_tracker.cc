@@ -45,7 +45,7 @@ void AutomationHandleTracker::Remove(AutomationResourceProxy* proxy) {
     AutomationHandle proxy_handle = proxy->handle();
     handle_to_object_.erase(iter);
     if (channel_)
-      channel_->Send(new AutomationMsg_HandleUnused(0, proxy_handle));
+      channel_->Send(new AutomationMsg_HandleUnused(proxy_handle));
   }
 }
 

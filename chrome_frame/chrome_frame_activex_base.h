@@ -349,8 +349,7 @@ END_MSG_MAP()
     return CComControlBase::IOleObject_SetClientSite(client_site);
   }
 
-  bool HandleContextMenuCommand(UINT cmd,
-                                const IPC::MiniContextMenuParams& params) {
+  bool HandleContextMenuCommand(UINT cmd, const MiniContextMenuParams& params) {
     if (cmd == IDC_ABOUT_CHROME_FRAME) {
       int tab_handle = automation_client_->tab()->handle();
       HostNavigate(GURL("about:version"), GURL(), NEW_WINDOW);
@@ -415,7 +414,7 @@ END_MSG_MAP()
     DVLOG(1) << __FUNCTION__ << ": " << profile_path->value();
   }
 
-  void OnLoad(int tab_handle, const GURL& url) {
+  void OnLoad(const GURL& url) {
     if (ready_state_ < READYSTATE_COMPLETE) {
       ready_state_ = READYSTATE_COMPLETE;
       FireOnChanged(DISPID_READYSTATE);
@@ -428,7 +427,7 @@ END_MSG_MAP()
     HRESULT hr = InvokeScriptFunction(onerror_handler_, url);
   }
 
-  void OnMessageFromChromeFrame(int tab_handle, const std::string& message,
+  void OnMessageFromChromeFrame(const std::string& message,
                                 const std::string& origin,
                                 const std::string& target) {
     base::win::ScopedComPtr<IDispatch> message_event;
@@ -440,7 +439,7 @@ END_MSG_MAP()
     }
   }
 
-  virtual void OnTabbedOut(int tab_handle, bool reverse) {
+  virtual void OnTabbedOut(bool reverse) {
     DCHECK(m_bInPlaceActive);
 
     HWND parent = ::GetParent(m_hWnd);
@@ -451,7 +450,7 @@ END_MSG_MAP()
       control_site->OnFocus(FALSE);
   }
 
-  virtual void OnOpenURL(int tab_handle, const GURL& url_to_open,
+  virtual void OnOpenURL(const GURL& url_to_open,
                          const GURL& referrer, int open_disposition) {
     HostNavigate(url_to_open, referrer, open_disposition);
   }
@@ -480,8 +479,7 @@ END_MSG_MAP()
     return TRUE;
   }
 
-  virtual void OnAttachExternalTab(int tab_handle,
-      const IPC::AttachExternalTabParams& params) {
+  virtual void OnAttachExternalTab(const AttachExternalTabParams& params) {
     std::wstring wide_url = url_;
     GURL parsed_url(WideToUTF8(wide_url));
 
@@ -515,12 +513,11 @@ END_MSG_MAP()
     HostNavigate(GURL(url), GURL(), params.disposition);
   }
 
-  virtual void OnHandleContextMenu(int tab_handle, HANDLE menu_handle,
+  virtual void OnHandleContextMenu(HANDLE menu_handle,
                                    int align_flags,
-                                   const IPC::MiniContextMenuParams& params) {
+                                   const MiniContextMenuParams& params) {
     scoped_refptr<BasePlugin> ref(this);
-    ChromeFramePlugin<T>::OnHandleContextMenu(tab_handle, menu_handle,
-                                              align_flags, params);
+    ChromeFramePlugin<T>::OnHandleContextMenu(menu_handle, align_flags, params);
   }
 
   LRESULT OnCreate(UINT message, WPARAM wparam, LPARAM lparam,
@@ -567,7 +564,7 @@ END_MSG_MAP()
     FireOnChanged(DISPID_READYSTATE);
   }
 
-  virtual void OnCloseTab(int tab_handle) {
+  virtual void OnCloseTab() {
     Fire_onclose();
   }
 
@@ -1093,7 +1090,7 @@ END_MSG_MAP()
     return hr;
   }
 
-  virtual void OnAcceleratorPressed(int tab_handle, const MSG& accel_message) {
+  virtual void OnAcceleratorPressed(const MSG& accel_message) {
     DCHECK(m_spInPlaceSite != NULL);
     // Allow our host a chance to handle the accelerator.
     // This catches things like Ctrl+F, Ctrl+O etc, but not browser

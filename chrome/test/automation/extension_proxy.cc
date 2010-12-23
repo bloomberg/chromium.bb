@@ -21,8 +21,7 @@ bool ExtensionProxy::Uninstall() {
     return false;
 
   bool success = false;
-  if (!sender_->Send(new AutomationMsg_UninstallExtension(0, handle_,
-                                                          &success)))
+  if (!sender_->Send(new AutomationMsg_UninstallExtension(handle_, &success)))
     return false;
   return success;
 }
@@ -32,8 +31,7 @@ bool ExtensionProxy::Enable() {
     return false;
 
   bool success = false;
-  if (!sender_->Send(new AutomationMsg_EnableExtension(0, handle_,
-                                                       &success)))
+  if (!sender_->Send(new AutomationMsg_EnableExtension(handle_, &success)))
     return false;
   return success;
 }
@@ -43,8 +41,7 @@ bool ExtensionProxy::Disable() {
     return false;
 
   bool success = false;
-  if (!sender_->Send(new AutomationMsg_DisableExtension(0, handle_,
-                                                        &success)))
+  if (!sender_->Send(new AutomationMsg_DisableExtension(handle_, &success)))
     return false;
   return success;
 }
@@ -55,7 +52,7 @@ bool ExtensionProxy::ExecuteActionInActiveTabAsync(BrowserProxy* browser) {
 
   bool success = false;
   if (!sender_->Send(new AutomationMsg_ExecuteExtensionActionInActiveTabAsync(
-      0, handle_, browser->handle(), &success)))
+      handle_, browser->handle(), &success)))
     return false;
   return success;
 }
@@ -65,8 +62,7 @@ bool ExtensionProxy::MoveBrowserAction(int index) {
     return false;
   bool success = false;
   if (!sender_->Send(
-      new AutomationMsg_MoveExtensionBrowserAction(0, handle_, index,
-                                                   &success)))
+      new AutomationMsg_MoveExtensionBrowserAction(handle_, index, &success)))
     return false;
   return success;
 }
@@ -135,7 +131,7 @@ bool ExtensionProxy::GetProperty(AutomationMsg_ExtensionProperty type,
     return false;
 
   bool success = false;
-  if (!sender_->Send(new AutomationMsg_GetExtensionProperty(0, handle_, type,
+  if (!sender_->Send(new AutomationMsg_GetExtensionProperty(handle_, type,
                                                             &success, value)))
     return false;
   return success;

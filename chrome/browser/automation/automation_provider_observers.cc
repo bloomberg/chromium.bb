@@ -164,7 +164,7 @@ void NewTabUILoadObserver::Observe(NotificationType type,
   if (type == NotificationType::INITIAL_NEW_TAB_UI_LOAD) {
     Details<int> load_time(details);
     automation_->Send(
-        new AutomationMsg_InitialNewTabUILoadComplete(0, *load_time.ptr()));
+        new AutomationMsg_InitialNewTabUILoadComplete(*load_time.ptr()));
   } else {
     NOTREACHED();
   }

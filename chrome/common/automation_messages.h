@@ -34,6 +34,167 @@ struct AutomationMsg_Find_Params {
   bool find_next;
 };
 
+struct AutomationURLResponse {
+  AutomationURLResponse();
+  AutomationURLResponse(const std::string& mime_type,
+                        const std::string& headers,
+                        int64 content_length,
+                        const base::Time& last_modified,
+                        const std::string& redirect_url,
+                        int redirect_status);
+  ~AutomationURLResponse();
+
+  std::string mime_type;
+  std::string headers;
+  int64 content_length;
+  base::Time last_modified;
+  std::string redirect_url;
+  int redirect_status;
+};
+
+struct ExternalTabSettings {
+  ExternalTabSettings();
+  ExternalTabSettings(gfx::NativeWindow parent,
+                      const gfx::Rect& dimensions,
+                      unsigned int style,
+                      bool is_off_the_record,
+                      bool load_requests_via_automation,
+                      bool handle_top_level_requests,
+                      const GURL& initial_url,
+                      const GURL& referrer,
+                      bool infobars_enabled,
+                      bool route_all_top_level_navigations);
+  ~ExternalTabSettings();
+
+  gfx::NativeWindow parent;
+  gfx::Rect dimensions;
+  unsigned int style;
+  bool is_off_the_record;
+  bool load_requests_via_automation;
+  bool handle_top_level_requests;
+  GURL initial_url;
+  GURL referrer;
+  bool infobars_enabled;
+  bool route_all_top_level_navigations;
+};
+
+struct NavigationInfo {
+  NavigationInfo();
+  NavigationInfo(int navigation_type,
+                 int relative_offset,
+                 int navigation_index,
+                 const std::wstring& title,
+                 const GURL& url,
+                 const GURL& referrer,
+                 SecurityStyle security_style,
+                 bool displayed_insecure_content,
+                 bool ran_insecure_content);
+  ~NavigationInfo();
+
+  int navigation_type;
+  int relative_offset;
+  int navigation_index;
+  std::wstring title;
+  GURL url;
+  GURL referrer;
+  SecurityStyle security_style;
+  bool displayed_insecure_content;
+  bool ran_insecure_content;
+};
+
+// A stripped down version of ContextMenuParams in webkit/glue/context_menu.h.
+struct MiniContextMenuParams {
+  MiniContextMenuParams();
+  MiniContextMenuParams(int screen_x,
+                        int screen_y,
+                        const GURL& link_url,
+                        const GURL& unfiltered_link_url,
+                        const GURL& src_url,
+                        const GURL& page_url,
+                        const GURL& frame_url);
+  ~MiniContextMenuParams();
+
+  // The x coordinate for displaying the menu.
+  int screen_x;
+
+  // The y coordinate for displaying the menu.
+  int screen_y;
+
+  // This is the URL of the link that encloses the node the context menu was
+  // invoked on.
+  GURL link_url;
+
+  // The link URL to be used ONLY for "copy link address". We don't validate
+  // this field in the frontend process.
+  GURL unfiltered_link_url;
+
+  // This is the source URL for the element that the context menu was
+  // invoked on.  Example of elements with source URLs are img, audio, and
+  // video.
+  GURL src_url;
+
+  // This is the URL of the top level page that the context menu was invoked
+  // on.
+  GURL page_url;
+
+  // This is the URL of the subframe that the context menu was invoked on.
+  GURL frame_url;
+};
+
+struct AttachExternalTabParams {
+  AttachExternalTabParams();
+  AttachExternalTabParams(uint64 cookie,
+                          const GURL& url,
+                          const gfx::Rect& dimensions,
+                          int disposition,
+                          bool user_gesture,
+                          const std::string& profile_name);
+  ~AttachExternalTabParams();
+
+  uint64 cookie;
+  GURL url;
+  gfx::Rect dimensions;
+  int disposition;
+  bool user_gesture;
+  std::string profile_name;
+};
+
+#if defined(OS_WIN)
+
+struct Reposition_Params {
+  HWND window;
+  HWND window_insert_after;
+  int left;
+  int top;
+  int width;
+  int height;
+  int flags;
+  bool set_parent;
+  HWND parent_window;
+};
+
+#endif  // defined(OS_WIN)
+
+struct AutomationURLRequest {
+  AutomationURLRequest();
+  AutomationURLRequest(const std::string& url,
+                       const std::string& method,
+                       const std::string& referrer,
+                       const std::string& extra_request_headers,
+                       scoped_refptr<net::UploadData> upload_data,
+                       int resource_type,
+                       int load_flags);
+  ~AutomationURLRequest();
+
+  std::string url;
+  std::string method;
+  std::string referrer;
+  std::string extra_request_headers;
+  scoped_refptr<net::UploadData> upload_data;
+  int resource_type;  // see webkit/glue/resource_type.h
+  int load_flags; // see net/base/load_flags.h
+};
+
 namespace IPC {
 
 template <>
@@ -85,17 +246,6 @@ struct ParamTraits<PageType> {
 };
 
 #if defined(OS_WIN)
-struct Reposition_Params {
-  HWND window;
-  HWND window_insert_after;
-  int left;
-  int top;
-  int width;
-  int height;
-  int flags;
-  bool set_parent;
-  HWND parent_window;
-};
 
 // Traits for SetWindowPos_Params structure to pack/unpack.
 template <>
@@ -147,26 +297,6 @@ struct ParamTraits<Reposition_Params> {
 };
 #endif  // defined(OS_WIN)
 
-struct AutomationURLRequest {
-  AutomationURLRequest();
-  AutomationURLRequest(const std::string& url,
-                       const std::string& method,
-                       const std::string& referrer,
-                       const std::string& extra_request_headers,
-                       scoped_refptr<net::UploadData> upload_data,
-                       int resource_type,
-                       int load_flags);
-  ~AutomationURLRequest();
-
-  std::string url;
-  std::string method;
-  std::string referrer;
-  std::string extra_request_headers;
-  scoped_refptr<net::UploadData> upload_data;
-  int resource_type;  // see webkit/glue/resource_type.h
-  int load_flags; // see net/base/load_flags.h
-};
-
 // Traits for AutomationURLRequest structure to pack/unpack.
 template <>
 struct ParamTraits<AutomationURLRequest> {
@@ -174,24 +304,6 @@ struct ParamTraits<AutomationURLRequest> {
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
-};
-
-struct AutomationURLResponse {
-  AutomationURLResponse();
-  AutomationURLResponse(const std::string& mime_type,
-                        const std::string& headers,
-                        int64 content_length,
-                        const base::Time& last_modified,
-                        const std::string& redirect_url,
-                        int redirect_status);
-  ~AutomationURLResponse();
-
-  std::string mime_type;
-  std::string headers;
-  int64 content_length;
-  base::Time last_modified;
-  std::string redirect_url;
-  int redirect_status;
 };
 
 // Traits for AutomationURLResponse structure to pack/unpack.
@@ -203,32 +315,6 @@ struct ParamTraits<AutomationURLResponse> {
   static void Log(const param_type& p, std::string* l);
 };
 
-struct ExternalTabSettings {
-  ExternalTabSettings();
-  ExternalTabSettings(gfx::NativeWindow parent,
-                      const gfx::Rect& dimensions,
-                      unsigned int style,
-                      bool is_off_the_record,
-                      bool load_requests_via_automation,
-                      bool handle_top_level_requests,
-                      const GURL& initial_url,
-                      const GURL& referrer,
-                      bool infobars_enabled,
-                      bool route_all_top_level_navigations);
-  ~ExternalTabSettings();
-
-  gfx::NativeWindow parent;
-  gfx::Rect dimensions;
-  unsigned int style;
-  bool is_off_the_record;
-  bool load_requests_via_automation;
-  bool handle_top_level_requests;
-  GURL initial_url;
-  GURL referrer;
-  bool infobars_enabled;
-  bool route_all_top_level_navigations;
-};
-
 // Traits for ExternalTabSettings structure to pack/unpack.
 template <>
 struct ParamTraits<ExternalTabSettings> {
@@ -236,30 +322,6 @@ struct ParamTraits<ExternalTabSettings> {
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
-};
-
-struct NavigationInfo {
-  NavigationInfo();
-  NavigationInfo(int navigation_type,
-                 int relative_offset,
-                 int navigation_index,
-                 const std::wstring& title,
-                 const GURL& url,
-                 const GURL& referrer,
-                 SecurityStyle security_style,
-                 bool displayed_insecure_content,
-                 bool ran_insecure_content);
-  ~NavigationInfo();
-
-  int navigation_type;
-  int relative_offset;
-  int navigation_index;
-  std::wstring title;
-  GURL url;
-  GURL referrer;
-  SecurityStyle security_style;
-  bool displayed_insecure_content;
-  bool ran_insecure_content;
 };
 
 // Traits for NavigationInfo structure to pack/unpack.
@@ -271,45 +333,6 @@ struct ParamTraits<NavigationInfo> {
   static void Log(const param_type& p, std::string* l);
 };
 
-// A stripped down version of ContextMenuParams in webkit/glue/context_menu.h.
-struct MiniContextMenuParams {
-  MiniContextMenuParams();
-  MiniContextMenuParams(int screen_x,
-                        int screen_y,
-                        const GURL& link_url,
-                        const GURL& unfiltered_link_url,
-                        const GURL& src_url,
-                        const GURL& page_url,
-                        const GURL& frame_url);
-  ~MiniContextMenuParams();
-
-  // The x coordinate for displaying the menu.
-  int screen_x;
-
-  // The y coordinate for displaying the menu.
-  int screen_y;
-
-  // This is the URL of the link that encloses the node the context menu was
-  // invoked on.
-  GURL link_url;
-
-  // The link URL to be used ONLY for "copy link address". We don't validate
-  // this field in the frontend process.
-  GURL unfiltered_link_url;
-
-  // This is the source URL for the element that the context menu was
-  // invoked on.  Example of elements with source URLs are img, audio, and
-  // video.
-  GURL src_url;
-
-  // This is the URL of the top level page that the context menu was invoked
-  // on.
-  GURL page_url;
-
-  // This is the URL of the subframe that the context menu was invoked on.
-  GURL frame_url;
-};
-
 // Traits for MiniContextMenuParams structure to pack/unpack.
 template <>
 struct ParamTraits<MiniContextMenuParams> {
@@ -317,24 +340,6 @@ struct ParamTraits<MiniContextMenuParams> {
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);
-};
-
-struct AttachExternalTabParams {
-  AttachExternalTabParams();
-  AttachExternalTabParams(uint64 cookie,
-                          const GURL& url,
-                          const gfx::Rect& dimensions,
-                          int disposition,
-                          bool user_gesture,
-                          const std::string& profile_name);
-  ~AttachExternalTabParams();
-
-  uint64 cookie;
-  GURL url;
-  gfx::Rect dimensions;
-  int disposition;
-  bool user_gesture;
-  std::string profile_name;
 };
 
 template <>

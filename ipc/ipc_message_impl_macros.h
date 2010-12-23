@@ -175,6 +175,16 @@
                                                                         \
   IPC_SYNC_MESSAGE_DTOR_AND_LOG(msg_class)
 
+#define IPC_SYNC_MESSAGE_CONTROL0_4_EXTRA(msg_class, type1_out, type2_out, \
+                                    type3_out, type4_out)               \
+  msg_class::msg_class(type1_out* arg1, type2_out* arg2, type3_out* arg3, type4_out* arg4) \
+      : IPC::MessageWithReply<Tuple0, Tuple4<type1_out&, type2_out&,    \
+                                             type3_out&, type4_out&> >( \
+          MSG_ROUTING_CONTROL, ID,                                      \
+          MakeTuple(), MakeRefTuple(*arg1, *arg2, *arg3, *arg4)) {}     \
+                                                                        \
+  IPC_SYNC_MESSAGE_DTOR_AND_LOG(msg_class)
+
 
 #define IPC_SYNC_MESSAGE_CONTROL1_0_EXTRA(msg_class, type1_in)          \
   msg_class::msg_class(const type1_in& arg1)                            \
@@ -212,6 +222,17 @@
                                                                         \
   IPC_SYNC_MESSAGE_DTOR_AND_LOG(msg_class)
 
+#define IPC_SYNC_MESSAGE_CONTROL1_4_EXTRA(msg_class, type1_in, type1_out, \
+                                    type2_out, type3_out, type4_out)    \
+  msg_class::msg_class(const type1_in& arg1, type1_out* arg2,           \
+                       type2_out* arg3, type3_out* arg4, type4_out* arg5) \
+      : IPC::MessageWithReply<Tuple1<type1_in>,                         \
+          Tuple4<type1_out&, type2_out&, type3_out&, type4_out&> >(     \
+          MSG_ROUTING_CONTROL, ID,                                      \
+          MakeRefTuple(arg1), MakeRefTuple(*arg2, *arg3, *arg4, *arg5)) {} \
+                                                                        \
+  IPC_SYNC_MESSAGE_DTOR_AND_LOG(msg_class)
+
 #define IPC_SYNC_MESSAGE_CONTROL2_0_EXTRA(msg_class, type1_in, type2_in) \
   msg_class::msg_class(const type1_in& arg1, const type2_in& arg2)      \
       : IPC::MessageWithReply<Tuple2<type1_in, type2_in>, Tuple0 >(     \
@@ -230,7 +251,6 @@
                                                                         \
   IPC_SYNC_MESSAGE_DTOR_AND_LOG(msg_class)
 
-
 #define IPC_SYNC_MESSAGE_CONTROL2_2_EXTRA(msg_class, type1_in, type2_in, \
                                     type1_out, type2_out)               \
   msg_class::msg_class(const type1_in& arg1, const type2_in& arg2,      \
@@ -240,7 +260,6 @@
             MakeRefTuple(arg1, arg2), MakeRefTuple(*arg3, *arg4)) {}    \
                                                                         \
   IPC_SYNC_MESSAGE_DTOR_AND_LOG(msg_class)
-
 
 #define IPC_SYNC_MESSAGE_CONTROL2_3_EXTRA(msg_class, type1_in, type2_in, \
                                     type1_out, type2_out, type3_out)    \
@@ -253,6 +272,16 @@
                                                                         \
   IPC_SYNC_MESSAGE_DTOR_AND_LOG(msg_class)
 
+#define IPC_SYNC_MESSAGE_CONTROL2_4_EXTRA(msg_class, type1_in, type2_in, \
+                                    type1_out, type2_out, type3_out, type4_out) \
+  msg_class::msg_class(const type1_in& arg1, const type2_in& arg2,      \
+                       type1_out* arg3, type2_out* arg4, type3_out* arg5, type4_out* arg6) \
+      : IPC::MessageWithReply<Tuple2<type1_in, type2_in>,               \
+            Tuple4<type1_out&, type2_out&, type3_out&, type4_out&> >(MSG_ROUTING_CONTROL, \
+            ID,                                                         \
+            MakeRefTuple(arg1, arg2), MakeRefTuple(*arg3, *arg4, *arg5, *arg6)) {} \
+                                                                        \
+  IPC_SYNC_MESSAGE_DTOR_AND_LOG(msg_class)
 
 #define IPC_SYNC_MESSAGE_CONTROL3_1_EXTRA(msg_class, type1_in, type2_in, \
                                     type3_in, type1_out)                \
@@ -344,6 +373,21 @@
                                                                         \
   IPC_SYNC_MESSAGE_DTOR_AND_LOG(msg_class)
 
+#define IPC_SYNC_MESSAGE_CONTROL4_4_EXTRA(msg_class, type1_in, type2_in, \
+                                    type3_in, type4_in, type1_out,      \
+                                    type2_out, type3_out, type4_out)    \
+  msg_class::msg_class(const type1_in& arg1, const type2_in& arg2,      \
+                       const type3_in& arg3, const type4_in& arg4,      \
+                       type1_out* arg5, type2_out* arg6,                \
+                       type3_out* arg7, type4_out* arg8)                \
+      : IPC::MessageWithReply<Tuple4<type1_in, type2_in, type3_in,      \
+                                     type4_in>,                         \
+          Tuple4<type1_out&, type2_out&, type3_out&, type4_out&> >(MSG_ROUTING_CONTROL, ID, \
+          MakeRefTuple(arg1, arg2, arg3, arg4),                         \
+          MakeRefTuple(*arg5, *arg6, *arg7, *arg8)) {}                  \
+                                                                        \
+  IPC_SYNC_MESSAGE_DTOR_AND_LOG(msg_class)
+
 #define IPC_SYNC_MESSAGE_CONTROL5_1_EXTRA(msg_class, type1_in, type2_in, \
                                     type3_in, type4_in, type5_in,       \
                                     type1_out)                          \
@@ -385,6 +429,22 @@
                                                                         \
   IPC_SYNC_MESSAGE_DTOR_AND_LOG(msg_class)
 
+#define IPC_SYNC_MESSAGE_CONTROL5_4_EXTRA(msg_class, type1_in, type2_in, \
+                                    type3_in, type4_in, type5_in,       \
+                                    type1_out, type2_out, type3_out,    \
+                                    type4_out)                          \
+  msg_class::msg_class(const type1_in& arg1, const type2_in& arg2,      \
+                       const type3_in& arg3, const type4_in& arg4,      \
+                       const type5_in& arg5, type1_out* arg6,           \
+                       type2_out* arg7, type3_out* arg8, type4_out* arg9) \
+      : IPC::MessageWithReply<Tuple4<type1_in, type2_in, type3_in,      \
+                                     type4_in, type5_in>,               \
+          Tuple4<type1_out&, type2_out&, type3_out&, type4_out&> >(MSG_ROUTING_CONTROL, ID, \
+          MakeRefTuple(arg1, arg2, arg3, arg4, arg5),                   \
+          MakeRefTuple(*arg6, *arg7, *arg8, *arg9)) {}                  \
+                                                                        \
+  IPC_SYNC_MESSAGE_DTOR_AND_LOG(msg_class)
+
 #define IPC_SYNC_MESSAGE_ROUTED0_0_EXTRA(msg_class)                     \
   msg_class::msg_class(int routing_id)                                  \
       : IPC::MessageWithReply<Tuple0, Tuple0>(                          \
@@ -416,6 +476,16 @@
       : IPC::MessageWithReply<Tuple0,                                   \
           Tuple3<type1_out&, type2_out&, type3_out&> >(routing_id, ID,  \
           MakeTuple(), MakeRefTuple(*arg1, *arg2, *arg3)) {}            \
+                                                                        \
+  IPC_SYNC_MESSAGE_DTOR_AND_LOG(msg_class)
+
+#define IPC_SYNC_MESSAGE_ROUTED0_4_EXTRA(msg_class, type1_out, type2_out, \
+                                   type3_out, type4_out)                \
+  msg_class::msg_class(int routing_id, type1_out* arg1, type2_out* arg2, \
+                       type3_out* arg3, type4_out* arg4)                \
+      : IPC::MessageWithReply<Tuple0,                                   \
+          Tuple4<type1_out&, type2_out&, type3_out&, type4_out&> >(routing_id, ID,  \
+          MakeTuple(), MakeRefTuple(*arg1, *arg2, *arg3, *arg4)) {}     \
                                                                         \
   IPC_SYNC_MESSAGE_DTOR_AND_LOG(msg_class)
 
@@ -506,6 +576,18 @@
         : IPC::MessageWithReply<Tuple2<type1_in, type2_in>,             \
             Tuple3<type1_out&, type2_out&, type3_out&> >(routing_id, ID, \
             MakeRefTuple(arg1, arg2), MakeRefTuple(*arg3, *arg4, *arg5)) {} \
+                                                                        \
+  IPC_SYNC_MESSAGE_DTOR_AND_LOG(msg_class)
+
+#define IPC_SYNC_MESSAGE_ROUTED2_4_EXTRA(msg_class, type1_in, type2_in, \
+                                   type1_out, type2_out, type3_out,     \
+                                   type4_out)                           \
+  msg_class::msg_class(int routing_id, const type1_in& arg1,            \
+                       const type2_in& arg2, type1_out* arg3,           \
+                       type2_out* arg4, type3_out* arg5, type4_out* arg6) \
+        : IPC::MessageWithReply<Tuple2<type1_in, type2_in>,             \
+            Tuple4<type1_out&, type2_out&, type3_out&, type4_out&> >(routing_id, ID, \
+            MakeRefTuple(arg1, arg2), MakeRefTuple(*arg3, *arg4, *arg5, *arg6)) {} \
                                                                         \
   IPC_SYNC_MESSAGE_DTOR_AND_LOG(msg_class)
 
@@ -618,6 +700,20 @@
                                                                         \
   IPC_SYNC_MESSAGE_DTOR_AND_LOG(msg_class)
 
+#define IPC_SYNC_MESSAGE_ROUTED4_4_EXTRA(msg_class, type1_in, type2_in, \
+                                   type3_in, type4_in, type1_out,       \
+                                   type2_out, type3_out, type4_out)     \
+  msg_class::msg_class(int routing_id, const type1_in& arg1,            \
+                       const type2_in& arg2, const type3_in& arg3,      \
+                       const type4_in& arg4, type1_out* arg5,           \
+                       type2_out* arg6, type3_out* arg7, type4_out* arg8) \
+      : IPC::MessageWithReply<Tuple4<type1_in, type2_in, type3_in, type4_in>, \
+          Tuple4<type1_out&, type2_out&, type3_out&, type4_out&> >(routing_id, ID,  \
+          MakeRefTuple(arg1, arg2, arg3, arg4),                         \
+          MakeRefTuple(*arg5, *arg6, *arg7, *arg8)) {}                  \
+                                                                        \
+  IPC_SYNC_MESSAGE_DTOR_AND_LOG(msg_class)
+
 #define IPC_SYNC_MESSAGE_ROUTED5_0_EXTRA(msg_class, type1_in, type2_in, \
                                    type3_in, type4_in, type5_in)        \
   msg_class::msg_class(int routing_id, const type1_in& arg1,            \
@@ -669,6 +765,22 @@
           Tuple3<type1_out&, type2_out&, type3_out&> >(routing_id, ID,  \
           MakeRefTuple(arg1, arg2, arg3, arg4, arg5),                   \
           MakeRefTuple(*arg6, *arg7, *arg8)) {}                         \
+                                                                        \
+  IPC_SYNC_MESSAGE_DTOR_AND_LOG(msg_class)
+
+#define IPC_SYNC_MESSAGE_ROUTED5_4_EXTRA(msg_class, type1_in, type2_in, \
+                                   type3_in, type4_in, type5_in,        \
+                                   type1_out, type2_out, type3_out, type4_out) \
+  msg_class::msg_class(int routing_id, const type1_in& arg1,            \
+                       const type2_in& arg2, const type3_in& arg3,      \
+                       const type4_in& arg4, const type4_in& arg5,      \
+                       type1_out* arg6, type2_out* arg7,                \
+                       type3_out* arg8, type4_out* arg9)                \
+      : IPC::MessageWithReply<Tuple5<type1_in, type2_in, type3_in,      \
+                                     type4_in, type5_in>,               \
+          Tuple4<type1_out&, type2_out&, type3_out&, type4_out&> >(routing_id, ID, \
+          MakeRefTuple(arg1, arg2, arg3, arg4, arg5),                   \
+          MakeRefTuple(*arg6, *arg7, *arg8, *arg9)) {}                  \
                                                                         \
   IPC_SYNC_MESSAGE_DTOR_AND_LOG(msg_class)
 

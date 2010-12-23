@@ -29,7 +29,7 @@ bool BrowserProxy::ActivateTab(int tab_index) {
   int activate_tab_response = -1;
 
   if (!sender_->Send(new AutomationMsg_ActivateTab(
-                         0, handle_, tab_index, &activate_tab_response))) {
+                         handle_, tab_index, &activate_tab_response))) {
     return false;
   }
 
@@ -46,7 +46,7 @@ bool BrowserProxy::BringToFront() {
   bool succeeded = false;
 
   if (!sender_->Send(new AutomationMsg_BringBrowserToFront(
-                         0, handle_, &succeeded))) {
+                         handle_, &succeeded))) {
     return false;
   }
 
@@ -57,7 +57,7 @@ bool BrowserProxy::IsMenuCommandEnabled(int id, bool* enabled) {
   if (!is_valid())
     return false;
 
-  return sender_->Send(new AutomationMsg_IsMenuCommandEnabled(0, handle_, id,
+  return sender_->Send(new AutomationMsg_IsMenuCommandEnabled(handle_, id,
                                                               enabled));
 }
 
@@ -67,7 +67,7 @@ bool BrowserProxy::AppendTab(const GURL& tab_url) {
 
   int append_tab_response = -1;
 
-  sender_->Send(new AutomationMsg_AppendTab(0, handle_, tab_url,
+  sender_->Send(new AutomationMsg_AppendTab(handle_, tab_url,
                                             &append_tab_response));
   return append_tab_response >= 0;
 }
@@ -84,7 +84,7 @@ bool BrowserProxy::GetActiveTabIndex(int* active_tab_index) const {
   int active_tab_index_response = -1;
 
   if (!sender_->Send(new AutomationMsg_ActiveTabIndex(
-                         0, handle_, &active_tab_index_response))) {
+                         handle_, &active_tab_index_response))) {
     return false;
   }
 
@@ -102,7 +102,7 @@ scoped_refptr<TabProxy> BrowserProxy::GetTab(int tab_index) const {
 
   int tab_handle = 0;
 
-  sender_->Send(new AutomationMsg_Tab(0, handle_, tab_index, &tab_handle));
+  sender_->Send(new AutomationMsg_Tab(handle_, tab_index, &tab_handle));
   if (!tab_handle)
     return NULL;
 
@@ -137,7 +137,7 @@ bool BrowserProxy::GetTabCount(int* num_tabs) const {
   int tab_count_response = -1;
 
   if (!sender_->Send(new AutomationMsg_TabCount(
-                         0, handle_, &tab_count_response))) {
+                         handle_, &tab_count_response))) {
     return false;
   }
 
@@ -159,7 +159,7 @@ bool BrowserProxy::GetType(Browser::Type* type) const {
   }
 
   int type_as_int;
-  if (!sender_->Send(new AutomationMsg_Type(0, handle_, &type_as_int)))
+  if (!sender_->Send(new AutomationMsg_Type(handle_, &type_as_int)))
     return false;
 
   *type = static_cast<Browser::Type>(type_as_int);
@@ -184,7 +184,7 @@ bool BrowserProxy::SimulateDrag(const gfx::Point& start,
   bool result = false;
 
   if (!sender_->Send(new AutomationMsg_WindowDrag(
-          0, handle_, drag_path, flags, press_escape_en_route, &result))) {
+          handle_, drag_path, flags, press_escape_en_route, &result))) {
     return false;
   }
 
@@ -194,7 +194,7 @@ bool BrowserProxy::SimulateDrag(const gfx::Point& start,
 bool BrowserProxy::WaitForTabCountToBecome(int count) {
   bool success = false;
   if (!sender_->Send(new AutomationMsg_WaitForTabCountToBecome(
-                         0, handle_, count, &success))) {
+                         handle_, count, &success))) {
     return false;
   }
 
@@ -219,7 +219,7 @@ bool BrowserProxy::OpenFindInPage() {
   if (!is_valid())
     return false;
 
-  return sender_->Send(new AutomationMsg_OpenFindInPage(0, handle_));
+  return sender_->Send(new AutomationMsg_OpenFindInPage(handle_));
   // This message expects no response.
 }
 
@@ -227,8 +227,7 @@ bool BrowserProxy::GetFindWindowLocation(int* x, int* y) {
   if (!is_valid() || !x || !y)
     return false;
 
-  return sender_->Send(
-      new AutomationMsg_FindWindowLocation(0, handle_, x, y));
+  return sender_->Send(new AutomationMsg_FindWindowLocation(handle_, x, y));
 }
 
 bool BrowserProxy::IsFindWindowFullyVisible(bool* is_visible) {
@@ -241,7 +240,7 @@ bool BrowserProxy::IsFindWindowFullyVisible(bool* is_visible) {
   }
 
   return sender_->Send(
-      new AutomationMsg_FindWindowVisibility(0, handle_, is_visible));
+      new AutomationMsg_FindWindowVisibility(handle_, is_visible));
 }
 
 bool BrowserProxy::RunCommandAsync(int browser_command) const {
@@ -250,7 +249,7 @@ bool BrowserProxy::RunCommandAsync(int browser_command) const {
 
   bool result = false;
 
-  sender_->Send(new AutomationMsg_WindowExecuteCommandAsync(0, handle_,
+  sender_->Send(new AutomationMsg_WindowExecuteCommandAsync(handle_,
                                                             browser_command,
                                                             &result));
 
@@ -263,7 +262,7 @@ bool BrowserProxy::RunCommand(int browser_command) const {
 
   bool result = false;
 
-  sender_->Send(new AutomationMsg_WindowExecuteCommand(0, handle_,
+  sender_->Send(new AutomationMsg_WindowExecuteCommand(handle_,
                                                        browser_command,
                                                        &result));
 
@@ -281,7 +280,7 @@ bool BrowserProxy::GetBookmarkBarVisibility(bool* is_visible,
   }
 
   return sender_->Send(new AutomationMsg_BookmarkBarVisibility(
-      0, handle_, is_visible, is_animating));
+      handle_, is_visible, is_animating));
 }
 
 bool BrowserProxy::GetBookmarksAsJSON(std::string *json_string) {
@@ -292,7 +291,7 @@ bool BrowserProxy::GetBookmarksAsJSON(std::string *json_string) {
     return false;
 
   bool result = false;
-  sender_->Send(new AutomationMsg_GetBookmarksAsJSON(0, handle_,
+  sender_->Send(new AutomationMsg_GetBookmarksAsJSON(handle_,
                                                      json_string,
                                                      &result));
   return result;
@@ -303,8 +302,7 @@ bool BrowserProxy::WaitForBookmarkModelToLoad() {
     return false;
 
   bool result = false;
-  sender_->Send(new AutomationMsg_WaitForBookmarkModelToLoad(0, handle_,
-                                                             &result));
+  sender_->Send(new AutomationMsg_WaitForBookmarkModelToLoad(handle_, &result));
   return result;
 }
 
@@ -313,7 +311,7 @@ bool BrowserProxy::AddBookmarkGroup(int64 parent_id, int index,
   if (!is_valid())
     return false;
   bool result = false;
-  sender_->Send(new AutomationMsg_AddBookmarkGroup(0, handle_,
+  sender_->Send(new AutomationMsg_AddBookmarkGroup(handle_,
                                                    parent_id, index,
                                                    title,
                                                    &result));
@@ -325,7 +323,7 @@ bool BrowserProxy::AddBookmarkURL(int64 parent_id, int index,
   if (!is_valid())
     return false;
   bool result = false;
-  sender_->Send(new AutomationMsg_AddBookmarkURL(0, handle_,
+  sender_->Send(new AutomationMsg_AddBookmarkURL(handle_,
                                                  parent_id, index,
                                                  title, url,
                                                  &result));
@@ -336,7 +334,7 @@ bool BrowserProxy::ReparentBookmark(int64 id, int64 new_parent_id, int index) {
   if (!is_valid())
     return false;
   bool result = false;
-  sender_->Send(new AutomationMsg_ReparentBookmark(0, handle_,
+  sender_->Send(new AutomationMsg_ReparentBookmark(handle_,
                                                    id, new_parent_id,
                                                    index,
                                                    &result));
@@ -347,7 +345,7 @@ bool BrowserProxy::SetBookmarkTitle(int64 id, const std::wstring& title) {
   if (!is_valid())
     return false;
   bool result = false;
-  sender_->Send(new AutomationMsg_SetBookmarkTitle(0, handle_,
+  sender_->Send(new AutomationMsg_SetBookmarkTitle(handle_,
                                                    id, title,
                                                    &result));
   return result;
@@ -357,7 +355,7 @@ bool BrowserProxy::SetBookmarkURL(int64 id, const GURL& url) {
   if (!is_valid())
     return false;
   bool result = false;
-  sender_->Send(new AutomationMsg_SetBookmarkURL(0, handle_,
+  sender_->Send(new AutomationMsg_SetBookmarkURL(handle_,
                                                  id, url,
                                                  &result));
   return result;
@@ -367,7 +365,7 @@ bool BrowserProxy::RemoveBookmark(int64 id) {
   if (!is_valid())
     return false;
   bool result = false;
-  sender_->Send(new AutomationMsg_RemoveBookmark(0, handle_,
+  sender_->Send(new AutomationMsg_RemoveBookmark(handle_,
                                                  id,
                                                  &result));
   return result;
@@ -382,7 +380,7 @@ bool BrowserProxy::IsShelfVisible(bool* is_visible) {
     return false;
   }
 
-  return sender_->Send(new AutomationMsg_ShelfVisibility(0, handle_,
+  return sender_->Send(new AutomationMsg_ShelfVisibility(handle_,
                                                          is_visible));
 }
 
@@ -390,7 +388,7 @@ bool BrowserProxy::SetShelfVisible(bool is_visible) {
   if (!is_valid())
     return false;
 
-  return sender_->Send(new AutomationMsg_SetShelfVisibility(0, handle_,
+  return sender_->Send(new AutomationMsg_SetShelfVisibility(handle_,
                                                             is_visible));
 }
 
@@ -400,7 +398,7 @@ bool BrowserProxy::SetIntPreference(const std::string& name, int value) {
 
   bool result = false;
 
-  sender_->Send(new AutomationMsg_SetIntPreference(0, handle_, name, value,
+  sender_->Send(new AutomationMsg_SetIntPreference(handle_, name, value,
                                                    &result));
   return result;
 }
@@ -412,7 +410,7 @@ bool BrowserProxy::SetStringPreference(const std::string& name,
 
   bool result = false;
 
-  sender_->Send(new AutomationMsg_SetStringPreference(0, handle_, name, value,
+  sender_->Send(new AutomationMsg_SetStringPreference(handle_, name, value,
                                                       &result));
   return result;
 }
@@ -424,7 +422,7 @@ bool BrowserProxy::GetBooleanPreference(const std::string& name,
 
   bool result = false;
 
-  sender_->Send(new AutomationMsg_GetBooleanPreference(0, handle_, name, value,
+  sender_->Send(new AutomationMsg_GetBooleanPreference(handle_, name, value,
                                                        &result));
   return result;
 }
@@ -436,7 +434,7 @@ bool BrowserProxy::SetBooleanPreference(const std::string& name,
 
   bool result = false;
 
-  sender_->Send(new AutomationMsg_SetBooleanPreference(0, handle_, name,
+  sender_->Send(new AutomationMsg_SetBooleanPreference(handle_, name,
                                                        value, &result));
   return result;
 }
@@ -454,7 +452,7 @@ bool BrowserProxy::SetContentSetting(const std::string& host,
 
   bool result = false;
 
-  sender_->Send(new AutomationMsg_SetContentSetting(0, handle_, host,
+  sender_->Send(new AutomationMsg_SetContentSetting(handle_, host,
                                                     content_type, setting,
                                                     &result));
   return result;
@@ -466,7 +464,7 @@ bool BrowserProxy::TerminateSession() {
 
   bool result = false;
 
-  sender_->Send(new AutomationMsg_TerminateSession(0, handle_, &result));
+  sender_->Send(new AutomationMsg_TerminateSession(handle_, &result));
 
   return result;
 }
@@ -478,7 +476,7 @@ scoped_refptr<WindowProxy> BrowserProxy::GetWindow() const {
   bool handle_ok = false;
   int window_handle = 0;
 
-  sender_->Send(new AutomationMsg_WindowForBrowser(0, handle_, &handle_ok,
+  sender_->Send(new AutomationMsg_WindowForBrowser(handle_, &handle_ok,
                                                    &window_handle));
   if (!handle_ok)
     return NULL;
@@ -504,7 +502,7 @@ scoped_refptr<AutocompleteEditProxy> BrowserProxy::GetAutocompleteEdit() {
   int autocomplete_edit_handle = 0;
 
   sender_->Send(new AutomationMsg_AutocompleteEditForBrowser(
-      0, handle_, &handle_ok, &autocomplete_edit_handle));
+      handle_, &handle_ok, &autocomplete_edit_handle));
 
   if (!handle_ok)
     return NULL;
@@ -529,8 +527,7 @@ bool BrowserProxy::IsFullscreen(bool* is_fullscreen) {
   if (!is_valid())
     return false;
 
-  return sender_->Send(new AutomationMsg_IsFullscreen(0, handle_,
-                                                      is_fullscreen));
+  return sender_->Send(new AutomationMsg_IsFullscreen(handle_, is_fullscreen));
 }
 
 bool BrowserProxy::IsFullscreenBubbleVisible(bool* is_visible) {
@@ -539,14 +536,14 @@ bool BrowserProxy::IsFullscreenBubbleVisible(bool* is_visible) {
   if (!is_valid())
     return false;
 
-  return sender_->Send(new AutomationMsg_IsFullscreenBubbleVisible(0, handle_,
+  return sender_->Send(new AutomationMsg_IsFullscreenBubbleVisible(handle_,
                                                                    is_visible));
 }
 
 bool BrowserProxy::ShutdownSessionService() {
   bool did_shutdown = false;
   bool succeeded = sender_->Send(
-      new AutomationMsg_ShutdownSessionService(0, handle_, &did_shutdown));
+      new AutomationMsg_ShutdownSessionService(handle_, &did_shutdown));
 
   if (!succeeded) {
     DLOG(ERROR) <<
@@ -562,8 +559,8 @@ bool BrowserProxy::StartTrackingPopupMenus() {
     return false;
 
   bool result = false;
-  if (!sender_->Send(new AutomationMsg_StartTrackingPopupMenus
-      (0, handle_, &result)))
+  if (!sender_->Send(new AutomationMsg_StartTrackingPopupMenus(
+          handle_, &result)))
     return false;
   return result;
 }
@@ -573,8 +570,7 @@ bool BrowserProxy::WaitForPopupMenuToOpen() {
     return false;
 
   bool result = false;
-  if (!sender_->Send(new AutomationMsg_WaitForPopupMenuToOpen
-      (0, &result)))
+  if (!sender_->Send(new AutomationMsg_WaitForPopupMenuToOpen(&result)))
     return false;
   return result;
 }
@@ -585,7 +581,7 @@ bool BrowserProxy::SendJSONRequest(const std::string& request,
     return false;
 
   bool result = false;
-  return sender_->Send(new AutomationMsg_SendJSONRequest(0, handle_,
+  return sender_->Send(new AutomationMsg_SendJSONRequest(handle_,
                                                          request, response,
                                                          &result));
   return result;

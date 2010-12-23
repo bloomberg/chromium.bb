@@ -586,7 +586,7 @@ FilePath UITestBase::GetDownloadDirectory() {
 
 void UITestBase::CloseBrowserAsync(BrowserProxy* browser) const {
   ASSERT_TRUE(automation_proxy_->Send(
-      new AutomationMsg_CloseBrowserRequestAsync(0, browser->handle())));
+      new AutomationMsg_CloseBrowserRequestAsync(browser->handle())));
 }
 
 bool UITestBase::CloseBrowser(BrowserProxy* browser,
@@ -598,7 +598,7 @@ bool UITestBase::CloseBrowser(BrowserProxy* browser,
   bool result = true;
 
   bool succeeded = automation_proxy_->Send(new AutomationMsg_CloseBrowser(
-      0, browser->handle(), &result, application_closed));
+      browser->handle(), &result, application_closed));
 
   if (!succeeded)
     return false;

@@ -34,7 +34,7 @@ using chrome_frame_test::TimedMsgLoop;
 
 struct MockUIDelegate : public UIDelegate {
   MOCK_METHOD2(OnNavigationStateChanged, void(int flags,
-      const IPC::NavigationInfo& nav_info));
+      const NavigationInfo& nav_info));
   MOCK_METHOD1(OnUpdateTargetUrl, void(const std::wstring& new_target_url));
   MOCK_METHOD3(OnExtensionInstalled, void(const FilePath& path, void* user_data,
       AutomationMsg_ExtensionResponseValues response));
@@ -42,7 +42,7 @@ struct MockUIDelegate : public UIDelegate {
   MOCK_METHOD3(OnMessageFromChromeFrame, void(const std::string& message,
       const std::string& origin, const std::string& target));
   MOCK_METHOD3(OnHandleContextMenu, void(HANDLE menu_handle, int align_flags,
-      const IPC::MiniContextMenuParams& params));
+      const MiniContextMenuParams& params));
   MOCK_METHOD1(OnHandleAccelerator, void(const MSG& accel_message));
   MOCK_METHOD1(OnTabbedOut, void(bool reverse));
   MOCK_METHOD1(OnGoToHistoryOffset, void(int offset));
@@ -61,7 +61,7 @@ struct MockProxy : public ChromeProxy {
   MOCK_METHOD1(SetProxyConfig, void(const std::string& json_encoded_settings));
 
   MOCK_METHOD2(CreateTab, void(ChromeProxyDelegate* delegate,
-      const IPC::ExternalTabSettings& settings));
+      const ExternalTabSettings& settings));
   MOCK_METHOD3(ConnectTab, void(ChromeProxyDelegate* delegate, HWND hwnd,
       uint64 cookie));
   MOCK_METHOD1(BlockTab, void(uint64 cookie));
@@ -141,11 +141,6 @@ struct AsyncEventCreator {
         tab_window, tab_handle, session_id), delay.InMilliseconds());
   }
 
-  void Fire_TabLoaded(const GURL& url, base::TimeDelta delay) {
-    ipc_loop_->PostDelayedTask(FROM_HERE, NewRunnableMethod(delegate_,
-        &ChromeProxyDelegate::TabLoaded, url), delay.InMilliseconds());
-  }
-
  private:
   ChromeProxyDelegate* delegate_;
   base::Thread ipc_thread_;
@@ -187,62 +182,6 @@ TEST(ExternalTabProxy, CancelledCreateTab) {
   tab_params.url = GURL("http://Xanadu.org");
 
   tab->CreateTab(tab_params, &ui_delegate);
-  loop.RunFor(5);
-  EXPECT_FALSE(loop.WasTimedOut());
-  tab.reset();
-}
-
-// CreateTab with initial url, and the navigate to different url before
-// initialization completes.
-TEST(ExternalTabProxy, NavigateAfterCreate) {
-  MockUIDelegate ui_delegate;
-  StrictMock<MockFactory> factory;
-  scoped_ptr<ExternalTabProxy> tab(new ExternalTabProxy());
-  AsyncEventCreator async_events(tab.get());
-  StrictMock<MockProxy>* proxy = new StrictMock<MockProxy>();
-  TimedMsgLoop loop;
-  tab->set_proxy_factory(&factory);
-  GURL initial_url("http://Xanadu.org");
-  GURL real_url("http://asgard.org");
-
-  EXPECT_CALL(factory, CreateProxy()).WillOnce(Return(proxy));
-  EXPECT_CALL(*proxy, Init(_));
-  EXPECT_CALL(*proxy, AddDelegate(tab.get()))
-      .WillOnce(DoAll(InvokeWithoutArgs(CreateFunctor(&async_events,
-          &AsyncEventCreator::Fire_Connected, proxy,
-          base::TimeDelta::FromMilliseconds(30))),
-      Return(1)));
-
-  EXPECT_CALL(*proxy, CreateTab(tab.get(),
-          Field(&IPC::ExternalTabSettings::initial_url, real_url)))
-      .WillOnce(DoAll(
-      InvokeWithoutArgs(CreateFunctor(&async_events,
-          &AsyncEventCreator::Fire_CompletedCreateTab,
-          true, HWND(0), HWND(0), 7, 0, base::TimeDelta::FromMilliseconds(9))),
-      InvokeWithoutArgs(CreateFunctor(&async_events,
-          &AsyncEventCreator::Fire_TabLoaded, real_url,
-          base::TimeDelta::FromMilliseconds(150)))));
-
-  EXPECT_CALL(ui_delegate, OnLoad(real_url))
-      .WillOnce(QUIT_LOOP(loop));
-
-  EXPECT_CALL(*proxy, RemoveDelegate(_))
-      .WillOnce(DoAll(InvokeWithoutArgs(CreateFunctor(&async_events,
-          &AsyncEventCreator::Fire_Disconnected,
-          base::TimeDelta::FromMilliseconds(0))),
-      Return(0)));
-
-  CreateTabParams tab_params;
-  tab_params.is_incognito = true;
-  tab_params.is_widget_mode = false;
-  tab_params.url = initial_url;
-
-  NavigationConstraintsImpl navigation_constraints;
-
-  tab->CreateTab(tab_params, &ui_delegate);
-  tab->Navigate("http://asgard.org", EmptyString(),
-                &navigation_constraints);
-
   loop.RunFor(5);
   EXPECT_FALSE(loop.WasTimedOut());
   tab.reset();

@@ -75,7 +75,6 @@ class TestingAutomationProvider : public AutomationProvider,
   void DeleteCookie(const GURL& url, const std::string& cookie_name,
                     int handle, bool* success);
   void ShowCollectedCookiesDialog(int handle, bool* success);
-  void NavigateToURL(int handle, const GURL& url, IPC::Message* reply_message);
   void NavigateToURLBlockUntilNavigationsComplete(int handle, const GURL& url,
                                                   int number_of_navigations,
                                                   IPC::Message* reply_message);
@@ -84,8 +83,6 @@ class TestingAutomationProvider : public AutomationProvider,
                                       const GURL& url,
                                       WindowOpenDisposition disposition,
                                       bool* status);
-  void GoBack(int handle, IPC::Message* reply_message);
-  void GoForward(int handle, IPC::Message* reply_message);
   void Reload(int handle, IPC::Message* reply_message);
   void SetAuth(int tab_handle, const std::wstring& username,
                const std::wstring& password, IPC::Message* reply_message);
@@ -162,9 +159,6 @@ class TestingAutomationProvider : public AutomationProvider,
   void WaitForAutocompleteEditFocus(int autocomplete_edit_handle,
                                     IPC::Message* reply_message);
 
-  // Deprecated.
-  void ApplyAccelerator(int handle, int id);
-
   void ExecuteJavascript(int handle,
                          const std::wstring& frame_xpath,
                          const std::wstring& script,
@@ -197,7 +191,6 @@ class TestingAutomationProvider : public AutomationProvider,
   void GetDownloadDirectory(int handle, FilePath* download_directory);
 
   // If |show| is true, call Show() on the new window after creating it.
-  void OpenNewBrowserWindow(bool show, IPC::Message* reply_message);
   void OpenNewBrowserWindowOfType(int type,
                                   bool show,
                                   IPC::Message* reply_message);

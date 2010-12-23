@@ -198,7 +198,7 @@ void AutomationProvider::SetExpectedTabCount(size_t expected_tabs) {
 void AutomationProvider::OnInitialLoadsComplete() {
   initial_loads_complete_ = true;
   if (is_connected_)
-    Send(new AutomationMsg_InitialLoadsComplete(0));
+    Send(new AutomationMsg_InitialLoadsComplete());
 }
 
 NotificationObserver* AutomationProvider::AddNavigationStatusListener(
@@ -353,9 +353,9 @@ void AutomationProvider::OnChannelConnected(int pid) {
 
   // Send a hello message with our current automation protocol version.
   chrome::VersionInfo version_info;
-  channel_->Send(new AutomationMsg_Hello(0, version_info.Version()));
+  channel_->Send(new AutomationMsg_Hello(version_info.Version()));
   if (initial_loads_complete_)
-    Send(new AutomationMsg_InitialLoadsComplete(0));
+    Send(new AutomationMsg_InitialLoadsComplete());
 }
 
 void AutomationProvider::OnMessageReceived(const IPC::Message& message) {

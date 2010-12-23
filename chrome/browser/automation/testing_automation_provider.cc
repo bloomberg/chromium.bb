@@ -218,15 +218,12 @@ void TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER(AutomationMsg_DeleteCookie, DeleteCookie)
     IPC_MESSAGE_HANDLER(AutomationMsg_ShowCollectedCookiesDialog,
                         ShowCollectedCookiesDialog)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_NavigateToURL, NavigateToURL)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
         AutomationMsg_NavigateToURLBlockUntilNavigationsComplete,
         NavigateToURLBlockUntilNavigationsComplete)
     IPC_MESSAGE_HANDLER(AutomationMsg_NavigationAsync, NavigationAsync)
     IPC_MESSAGE_HANDLER(AutomationMsg_NavigationAsyncWithDisposition,
                         NavigationAsyncWithDisposition)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_GoBack, GoBack)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_GoForward, GoForward)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_Reload, Reload)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_SetAuth, SetAuth)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_CancelAuth, CancelAuth)
@@ -281,7 +278,6 @@ void TestingAutomationProvider::OnMessageReceived(
                         AutocompleteEditGetMatches)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForAutocompleteEditFocus,
                                     WaitForAutocompleteEditFocus)
-    IPC_MESSAGE_HANDLER(AutomationMsg_ApplyAccelerator, ApplyAccelerator)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_DomOperation,
                                     ExecuteJavascript)
     IPC_MESSAGE_HANDLER(AutomationMsg_ConstrainedWindowCount,
@@ -298,8 +294,6 @@ void TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_InspectElement,
                                     HandleInspectElementRequest)
     IPC_MESSAGE_HANDLER(AutomationMsg_DownloadDirectory, GetDownloadDirectory)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_OpenNewBrowserWindow,
-                                    OpenNewBrowserWindow)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_OpenNewBrowserWindowOfType,
                                     OpenNewBrowserWindowOfType)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowForBrowser, GetWindowForBrowser)
@@ -569,12 +563,6 @@ void TestingAutomationProvider::ShowCollectedCookiesDialog(
   }
 }
 
-void TestingAutomationProvider::NavigateToURL(int handle,
-                                              const GURL& url,
-                                              IPC::Message* reply_message) {
-  NavigateToURLBlockUntilNavigationsComplete(handle, url, 1, reply_message);
-}
-
 void TestingAutomationProvider::NavigateToURLBlockUntilNavigationsComplete(
     int handle, const GURL& url, int number_of_navigations,
     IPC::Message* reply_message) {
@@ -595,7 +583,7 @@ void TestingAutomationProvider::NavigateToURLBlockUntilNavigationsComplete(
     }
   }
 
-  AutomationMsg_NavigateToURL::WriteReplyParams(
+  AutomationMsg_NavigateToURLBlockUntilNavigationsComplete::WriteReplyParams(
       reply_message, AUTOMATION_MSG_NAVIGATION_ERROR);
   Send(reply_message);
 }
@@ -627,40 +615,6 @@ void TestingAutomationProvider::NavigationAsyncWithDisposition(
       *status = true;
     }
   }
-}
-
-void TestingAutomationProvider::GoBack(int handle,
-                                       IPC::Message* reply_message) {
-  if (tab_tracker_->ContainsHandle(handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(handle);
-    Browser* browser = FindAndActivateTab(tab);
-    if (browser && browser->command_updater()->IsCommandEnabled(IDC_BACK)) {
-      AddNavigationStatusListener(tab, reply_message, 1, false);
-      browser->GoBack(CURRENT_TAB);
-      return;
-    }
-  }
-
-  AutomationMsg_GoBack::WriteReplyParams(
-      reply_message, AUTOMATION_MSG_NAVIGATION_ERROR);
-  Send(reply_message);
-}
-
-void TestingAutomationProvider::GoForward(int handle,
-                                          IPC::Message* reply_message) {
-  if (tab_tracker_->ContainsHandle(handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(handle);
-    Browser* browser = FindAndActivateTab(tab);
-    if (browser && browser->command_updater()->IsCommandEnabled(IDC_FORWARD)) {
-      AddNavigationStatusListener(tab, reply_message, 1, false);
-      browser->GoForward(CURRENT_TAB);
-      return;
-    }
-  }
-
-  AutomationMsg_GoForward::WriteReplyParams(
-      reply_message, AUTOMATION_MSG_NAVIGATION_ERROR);
-  Send(reply_message);
 }
 
 void TestingAutomationProvider::Reload(int handle,
@@ -1148,11 +1102,6 @@ void TestingAutomationProvider::AutocompleteEditIsQueryInProgress(
   }
 }
 
-void TestingAutomationProvider::ApplyAccelerator(int handle, int id) {
-  LOG(ERROR) << "ApplyAccelerator has been deprecated. "
-             << "Please use ExecuteBrowserCommandAsync instead.";
-}
-
 void TestingAutomationProvider::ExecuteJavascript(
     int handle,
     const std::wstring& frame_xpath,
@@ -1216,12 +1165,6 @@ void TestingAutomationProvider::GetDownloadDirectory(
     DownloadManager* dlm = tab->profile()->GetDownloadManager();
     *download_directory = dlm->download_prefs()->download_path();
   }
-}
-
-void TestingAutomationProvider::OpenNewBrowserWindow(
-    bool show, IPC::Message* reply_message) {
-  OpenNewBrowserWindowOfType(static_cast<int>(Browser::TYPE_NORMAL), show,
-                             reply_message);
 }
 
 void TestingAutomationProvider::OpenNewBrowserWindowOfType(

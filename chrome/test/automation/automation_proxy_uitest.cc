@@ -671,15 +671,15 @@ ExternalTabUITestMockClient::~ExternalTabUITestMockClient() {
 }
 
 void ExternalTabUITestMockClient::ReplyStarted(
-    const IPC::AutomationURLResponse* response,
+    const AutomationURLResponse* response,
     int tab_handle, int request_id) {
-  AutomationProxy::Send(new AutomationMsg_RequestStarted(0, tab_handle,
+  AutomationProxy::Send(new AutomationMsg_RequestStarted(tab_handle,
       request_id, *response));
 }
 
 void ExternalTabUITestMockClient::ReplyData(
     const std::string* data, int tab_handle, int request_id) {
-  AutomationProxy::Send(new AutomationMsg_RequestData(0, tab_handle,
+  AutomationProxy::Send(new AutomationMsg_RequestData(tab_handle,
                                                       request_id, *data));
 }
 
@@ -689,13 +689,13 @@ void ExternalTabUITestMockClient::ReplyEOF(int tab_handle, int request_id) {
 
 void ExternalTabUITestMockClient::ReplyEnd(const URLRequestStatus& status,
                                            int tab_handle, int request_id) {
-  AutomationProxy::Send(new AutomationMsg_RequestEnd(0, tab_handle,
+  AutomationProxy::Send(new AutomationMsg_RequestEnd(tab_handle,
                                                      request_id, status));
 }
 
 void ExternalTabUITestMockClient::Reply404(int tab_handle, int request_id) {
-  const IPC::AutomationURLResponse notfound("", "HTTP/1.1 404\r\n\r\n", 0,
-                                            base::Time(), "", 0);
+  const AutomationURLResponse notfound("", "HTTP/1.1 404\r\n\r\n", 0,
+                                       base::Time(), "", 0);
   ReplyStarted(&notfound, tab_handle, request_id);
   ReplyEOF(tab_handle, request_id);
 }
@@ -703,29 +703,29 @@ void ExternalTabUITestMockClient::Reply404(int tab_handle, int request_id) {
 void ExternalTabUITestMockClient::ServeHTMLData(int tab_handle,
                                                 const GURL& url,
                                                 const std::string& data) {
-  EXPECT_CALL(*this, OnRequestStart(tab_handle, _, testing::AllOf(
-    testing::Field(&IPC::AutomationURLRequest::url, url.spec()),
-      testing::Field(&IPC::AutomationURLRequest::method, StrEq("GET")))))
+  EXPECT_CALL(*this, OnRequestStart(tab_handle, testing::AllOf(
+    testing::Field(&AutomationURLRequest::url, url.spec()),
+      testing::Field(&AutomationURLRequest::method, StrEq("GET")))))
     .Times(1)
-    .WillOnce(testing::WithArgs<0, 1>(testing::Invoke(CreateFunctor(this,
+    .WillOnce(testing::WithArgs<0, 0>(testing::Invoke(CreateFunctor(this,
         &ExternalTabUITestMockClient::ReplyStarted, &http_200))));
 
-  EXPECT_CALL(*this, OnRequestRead(tab_handle, _, testing::Gt(0)))
+  EXPECT_CALL(*this, OnRequestRead(tab_handle, testing::Gt(0)))
       .Times(2)
-      .WillOnce(testing::WithArgs<0, 1>(testing::Invoke(CreateFunctor(this,
+      .WillOnce(testing::WithArgs<0, 0>(testing::Invoke(CreateFunctor(this,
           &ExternalTabUITestMockClient::ReplyData, &data))))
-      .WillOnce(testing::WithArgs<0, 1>(testing::Invoke(CreateFunctor(this,
+      .WillOnce(testing::WithArgs<0, 0>(testing::Invoke(CreateFunctor(this,
           &ExternalTabUITestMockClient::ReplyEOF))));
 }
 
 void ExternalTabUITestMockClient::IgnoreFavIconNetworkRequest() {
   // Ignore favicon.ico
-  EXPECT_CALL(*this, OnRequestStart(_, _, testing::AllOf(
-          testing::Field(&IPC::AutomationURLRequest::url,
+  EXPECT_CALL(*this, OnRequestStart(_, testing::AllOf(
+          testing::Field(&AutomationURLRequest::url,
                          testing::EndsWith("favicon.ico")),
-          testing::Field(&IPC::AutomationURLRequest::method, StrEq("GET")))))
+          testing::Field(&AutomationURLRequest::method, StrEq("GET")))))
       .Times(testing::AnyNumber())
-      .WillRepeatedly(testing::WithArgs<0, 1>(testing::Invoke(
+      .WillRepeatedly(testing::WithArgs<0, 0>(testing::Invoke(
           CreateFunctor(this, &ExternalTabUITestMockClient::ReplyEnd,
                 URLRequestStatus(URLRequestStatus::FAILED, 0)))));
 }
@@ -742,7 +742,7 @@ void ExternalTabUITestMockClient::InvalidateHandle(
 }
 
 // Most of the time we need external tab with these settings.
-const IPC::ExternalTabSettings ExternalTabUITestMockClient::default_settings(
+const ExternalTabSettings ExternalTabUITestMockClient::default_settings(
     NULL, gfx::Rect(),  // will be replaced by CreateHostWindowAndTab
     WS_CHILD | WS_VISIBLE,
     false,   // is_off_the_record
@@ -754,7 +754,7 @@ const IPC::ExternalTabSettings ExternalTabUITestMockClient::default_settings(
     false);  // route_all_top_level_navigations
 
 // static
-const IPC::AutomationURLResponse ExternalTabUITestMockClient::http_200(
+const AutomationURLResponse ExternalTabUITestMockClient::http_200(
     "",
     "HTTP/0.9 200\r\n\r\n",
     0,
@@ -775,12 +775,12 @@ void ExternalTabUITestMockClient::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(AutomationMsg_AttachExternalTab, OnAttachExternalTab)
     IPC_MESSAGE_HANDLER(AutomationMsg_OpenURL, OnOpenURL)
     IPC_MESSAGE_HANDLER(AutomationMsg_NavigationStateChanged,
-        OnNavigationStateChanged)
+                        OnNavigationStateChanged)
   IPC_END_MESSAGE_MAP()
 }
 
 scoped_refptr<TabProxy> ExternalTabUITestMockClient::CreateHostWindowAndTab(
-    const IPC::ExternalTabSettings& settings) {
+    const ExternalTabSettings& settings) {
   EXPECT_THAT(settings.parent, testing::IsNull());
 
   host_window_ = CreateWindowW(L"Button", NULL, host_window_style_,
@@ -790,7 +790,7 @@ scoped_refptr<TabProxy> ExternalTabUITestMockClient::CreateHostWindowAndTab(
   RECT client_area = {0};
   ::GetClientRect(host_window_, &client_area);
 
-  IPC::ExternalTabSettings s = settings;
+  ExternalTabSettings s = settings;
   s.parent = host_window_;
   s.dimensions = client_area;
 
@@ -806,7 +806,7 @@ scoped_refptr<TabProxy> ExternalTabUITestMockClient::CreateHostWindowAndTab(
 
 scoped_refptr<TabProxy> ExternalTabUITestMockClient::CreateTabWithUrl(
     const GURL& initial_url) {
-  IPC::ExternalTabSettings settings =
+  ExternalTabSettings settings =
       ExternalTabUITestMockClient::default_settings;
   settings.initial_url = initial_url;
   return CreateHostWindowAndTab(settings);
@@ -814,25 +814,25 @@ scoped_refptr<TabProxy> ExternalTabUITestMockClient::CreateTabWithUrl(
 
 void ExternalTabUITestMockClient::NavigateInExternalTab(int tab_handle,
     const GURL& url, const GURL& referrer /* = GURL()*/) {
-  channel_->ChannelProxy::Send(new AutomationMsg_NavigateInExternalTab(0,
+  channel_->ChannelProxy::Send(new AutomationMsg_NavigateInExternalTab(
         tab_handle, url, referrer, NULL));
 }
 
 void ExternalTabUITestMockClient::ConnectToExternalTab(gfx::NativeWindow parent,
-    const IPC::AttachExternalTabParams& attach_params) {
+    const AttachExternalTabParams& attach_params) {
   gfx::NativeWindow tab_container = NULL;
   gfx::NativeWindow tab_window = NULL;
   int tab_handle = 0;
   int session_id = -1;
 
-  IPC::SyncMessage* message = new AutomationMsg_ConnectExternalTab(0,
+  IPC::SyncMessage* message = new AutomationMsg_ConnectExternalTab(
       attach_params.cookie, true, NULL, &tab_container, &tab_window,
       &tab_handle, &session_id);
   channel_->Send(message);
 
   RECT rect;
   ::GetClientRect(parent, &rect);
-  IPC::Reposition_Params params = {0};
+  Reposition_Params params = {0};
   params.window = tab_container;
   params.flags = SWP_NOZORDER | SWP_SHOWWINDOW;
   params.width = rect.right - rect.left;
@@ -840,7 +840,7 @@ void ExternalTabUITestMockClient::ConnectToExternalTab(gfx::NativeWindow parent,
   params.set_parent = true;
   params.parent_window = parent;
 
-  channel_->Send(new AutomationMsg_TabReposition(0, tab_handle, params));
+  channel_->Send(new AutomationMsg_TabReposition(tab_handle, params));
   ::ShowWindow(parent, SW_SHOWNORMAL);
 }
 
@@ -894,10 +894,10 @@ TEST_F(ExternalTabUITest, FLAKY_CreateExternalTab1) {
   TimedMessageLoopRunner loop(MessageLoop::current());
   ASSERT_THAT(mock_, testing::NotNull());
 
-  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _, _))
+  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _))
       .Times(testing::AnyNumber());
 
-  EXPECT_CALL(*mock_, OnDidNavigate(testing::_, testing::_))
+  EXPECT_CALL(*mock_, OnDidNavigate(testing::_))
       .Times(1)
       .WillOnce(testing::InvokeWithoutArgs(mock_,
                 &ExternalTabUITestMockClient::DestroyHostWindow));
@@ -917,10 +917,10 @@ TEST_F(ExternalTabUITest, FLAKY_CreateExternalTab2) {
   TimedMessageLoopRunner loop(MessageLoop::current());
   ASSERT_THAT(mock_, testing::NotNull());
 
-  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _, _))
+  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _))
       .Times(testing::AnyNumber());
 
-  EXPECT_CALL(*mock_, OnDidNavigate(testing::_, testing::_))
+  EXPECT_CALL(*mock_, OnDidNavigate(testing::_))
     .Times(1)
     .WillOnce(testing::InvokeWithoutArgs(mock_,
               &ExternalTabUITestMockClient::DestroyHostWindow));
@@ -945,7 +945,7 @@ TEST_F(ExternalTabUITest, FLAKY_IncognitoMode) {
 
   EXPECT_CALL(*mock_, HandleClosed(1)).Times(1);
 
-  IPC::ExternalTabSettings incognito =
+  ExternalTabSettings incognito =
       ExternalTabUITestMockClient::default_settings;
   incognito.is_off_the_record = true;
   // SetCookie is a sync call and deadlock can happen if window is visible,
@@ -982,9 +982,9 @@ TEST_F(ExternalTabUITest, FLAKY_TabPostMessage) {
   TimedMessageLoopRunner loop(MessageLoop::current());
   ASSERT_THAT(mock_, testing::NotNull());
 
-  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _, _))
+  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _))
       .Times(testing::AnyNumber());
-  EXPECT_CALL(*mock_, OnLoad(_, _)).Times(testing::AnyNumber());
+  EXPECT_CALL(*mock_, OnLoad(_)).Times(testing::AnyNumber());
 
   std::string content =
       "data:text/html,<html><head><script>"
@@ -998,7 +998,7 @@ TEST_F(ExternalTabUITest, FLAKY_TabPostMessage) {
       "<body onload='onload()'>external tab test<br></div>"
       "</body></html>";
 
-  EXPECT_CALL(*mock_, OnDidNavigate(testing::_, testing::_))
+  EXPECT_CALL(*mock_, OnDidNavigate(testing::_))
       .Times(1)
       .WillOnce(testing::InvokeWithoutArgs(CreateFunctor(
           ReceivePointer(tab),
@@ -1006,7 +1006,7 @@ TEST_F(ExternalTabUITest, FLAKY_TabPostMessage) {
           std::string("Hello from gtest"),
           std::string("null"), std::string("*"))));
 
-  EXPECT_CALL(*mock_, OnForwardMessageToExternalHost(testing::_,
+  EXPECT_CALL(*mock_, OnForwardMessageToExternalHost(
           testing::StrEq("Hello from gtest"), testing::_, testing::_))
       .Times(1)
       .WillOnce(testing::DoAll(
@@ -1030,21 +1030,21 @@ TEST_F(ExternalTabUITest, FLAKY_PostMessageTarget)  {
   scoped_refptr<TabProxy> tab;
   TimedMessageLoopRunner loop(MessageLoop::current());
   ASSERT_THAT(mock_, testing::NotNull());
-  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _, _))
+  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _))
       .Times(testing::AnyNumber());
-  EXPECT_CALL(*mock_, OnLoad(_, _)).Times(testing::AnyNumber());
+  EXPECT_CALL(*mock_, OnLoad(_)).Times(testing::AnyNumber());
 
   std::string kTestMessage("Hello from gtest");
   std::string kTestOrigin("http://www.external.tab");
 
-  EXPECT_CALL(*mock_, OnDidNavigate(1, testing::_))
+  EXPECT_CALL(*mock_, OnDidNavigate(testing::_))
       .Times(1)
       .WillOnce(testing::InvokeWithoutArgs(CreateFunctor(
           ReceivePointer(tab),
           &TabProxy::HandleMessageFromExternalHost,
           kTestMessage, kTestOrigin, std::string("http://localhost:1337/"))));
 
-  EXPECT_CALL(*mock_, OnForwardMessageToExternalHost(1,
+  EXPECT_CALL(*mock_, OnForwardMessageToExternalHost(
                     testing::StrEq(kTestMessage),
                     testing::_,
                     testing::StrEq(GURL(kTestOrigin).GetOrigin().spec())))
@@ -1056,7 +1056,7 @@ TEST_F(ExternalTabUITest, FLAKY_PostMessageTarget)  {
 
   EXPECT_CALL(*mock_, HandleClosed(1)).Times(1);
 
-  IPC::ExternalTabSettings s = ExternalTabUITestMockClient::default_settings;
+  ExternalTabSettings s = ExternalTabUITestMockClient::default_settings;
   s.load_requests_via_automation = false;
   s.initial_url = GURL("http://localhost:1337/files/post_message.html");
   tab = mock_->CreateHostWindowAndTab(s);
@@ -1068,20 +1068,20 @@ TEST_F(ExternalTabUITest, FLAKY_HostNetworkStack) {
   scoped_refptr<TabProxy> tab;
   TimedMessageLoopRunner loop(MessageLoop::current());
   ASSERT_THAT(mock_, testing::NotNull());
-  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _, _))
+  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _))
       .Times(testing::AnyNumber());
-  EXPECT_CALL(*mock_, OnLoad(_, _)).Times(testing::AnyNumber());
+  EXPECT_CALL(*mock_, OnLoad(_)).Times(testing::AnyNumber());
 
   std::string url = "http://placetogo.org";
 
   testing::InSequence sequence;
-  EXPECT_CALL(*mock_, OnRequestStart(1, 2, testing::AllOf(
-          testing::Field(&IPC::AutomationURLRequest::url, StrEq(url + "/")),
-          testing::Field(&IPC::AutomationURLRequest::method, StrEq("GET")))))
+  EXPECT_CALL(*mock_, OnRequestStart(2, testing::AllOf(
+          testing::Field(&AutomationURLRequest::url, StrEq(url + "/")),
+          testing::Field(&AutomationURLRequest::method, StrEq("GET")))))
       .Times(1)
       // We can simply do CreateFunctor(1, 2, &http_200) since we know the
       // tab handle and request id, but using WithArgs<> is much more fancy :)
-      .WillOnce(testing::WithArgs<0, 1>(testing::Invoke(CreateFunctor(mock_,
+      .WillOnce(testing::WithArgs<0, 0>(testing::Invoke(CreateFunctor(mock_,
           &ExternalTabUITestMockClient::ReplyStarted,
           &ExternalTabUITestMockClient::http_200))));
 
@@ -1089,34 +1089,34 @@ TEST_F(ExternalTabUITest, FLAKY_HostNetworkStack) {
   const std::string data = "<!DOCTYPE html><title>Hello</title>"
                            "<img src=\"logo.gif\">";
 
-  EXPECT_CALL(*mock_, OnRequestRead(1, 2, testing::Gt(0)))
+  EXPECT_CALL(*mock_, OnRequestRead(2, testing::Gt(0)))
       .Times(2)
       .WillOnce(testing::InvokeWithoutArgs(CreateFunctor(mock_,
           &ExternalTabUITestMockClient::ReplyData, &data, 1, 2)))
-      .WillOnce(testing::WithArgs<0, 1>(testing::Invoke(CreateFunctor(mock_,
+      .WillOnce(testing::WithArgs<0, 0>(testing::Invoke(CreateFunctor(mock_,
           &ExternalTabUITestMockClient::ReplyEOF))));
 
   // Expect navigation is ok.
-  EXPECT_CALL(*mock_, OnDidNavigate(1, testing::Field(&IPC::NavigationInfo::url,
-                                                      GURL(url))))
+  EXPECT_CALL(*mock_, OnDidNavigate(testing::Field(&NavigationInfo::url,
+                                                   GURL(url))))
       .Times(1);
 
   // Expect GET request for logo.gif
-  EXPECT_CALL(*mock_, OnRequestStart(1, 3, testing::AllOf(
-      testing::Field(&IPC::AutomationURLRequest::url, StrEq(url + "/logo.gif")),
-      testing::Field(&IPC::AutomationURLRequest::method, StrEq("GET")))))
+  EXPECT_CALL(*mock_, OnRequestStart(3, testing::AllOf(
+      testing::Field(&AutomationURLRequest::url, StrEq(url + "/logo.gif")),
+      testing::Field(&AutomationURLRequest::method, StrEq("GET")))))
       .Times(1)
       .WillOnce(testing::InvokeWithoutArgs(CreateFunctor(mock_,
           &ExternalTabUITestMockClient::Reply404, 1, 3)));
 
-  EXPECT_CALL(*mock_, OnRequestRead(1, 3, testing::Gt(0)))
+  EXPECT_CALL(*mock_, OnRequestRead(3, testing::Gt(0)))
     .Times(1);
 
   // Chrome makes a brave request for favicon.ico
-  EXPECT_CALL(*mock_, OnRequestStart(1, 4, testing::AllOf(
-      testing::Field(&IPC::AutomationURLRequest::url,
+  EXPECT_CALL(*mock_, OnRequestStart(4, testing::AllOf(
+      testing::Field(&AutomationURLRequest::url,
                      StrEq(url + "/favicon.ico")),
-      testing::Field(&IPC::AutomationURLRequest::method, StrEq("GET")))))
+      testing::Field(&AutomationURLRequest::method, StrEq("GET")))))
       .Times(1)
       .WillOnce(testing::DoAll(
           testing::InvokeWithoutArgs(CreateFunctor(mock_,
@@ -1126,7 +1126,7 @@ TEST_F(ExternalTabUITest, FLAKY_HostNetworkStack) {
 
   EXPECT_CALL(*mock_, HandleClosed(1)).Times(1);
 
-  EXPECT_CALL(*mock_, OnRequestRead(1, 4, testing::Gt(0)))
+  EXPECT_CALL(*mock_, OnRequestRead(4, testing::Gt(0)))
     .Times(1)
     .WillOnce(QUIT_LOOP_SOON(&loop, 300));
 
@@ -1139,36 +1139,36 @@ TEST_F(ExternalTabUITest, FLAKY_HostNetworkStackAbortRequest) {
   scoped_refptr<TabProxy> tab;
   TimedMessageLoopRunner loop(MessageLoop::current());
   ASSERT_THAT(mock_, testing::NotNull());
-  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _, _))
+  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _))
       .Times(testing::AnyNumber());
 
   std::string url = "http://placetogo.org";
 
   testing::InSequence sequence;
-  EXPECT_CALL(*mock_, OnRequestStart(1, 2, testing::AllOf(
-          testing::Field(&IPC::AutomationURLRequest::url, StrEq(url + "/")),
-          testing::Field(&IPC::AutomationURLRequest::method, StrEq("GET")))))
+  EXPECT_CALL(*mock_, OnRequestStart(2, testing::AllOf(
+          testing::Field(&AutomationURLRequest::url, StrEq(url + "/")),
+          testing::Field(&AutomationURLRequest::method, StrEq("GET")))))
       .Times(1)
       // We can simply do CreateFunctor(1, 2, &http_200) since we know the
       // tab handle and request id, but using WithArgs<> is much more fancy :)
-      .WillOnce(testing::WithArgs<0, 1>(testing::Invoke(CreateFunctor(mock_,
+      .WillOnce(testing::WithArgs<0, 0>(testing::Invoke(CreateFunctor(mock_,
           &ExternalTabUITestMockClient::ReplyStarted,
           &ExternalTabUITestMockClient::http_200))));
 
   // Return some trivial page, that have a link to a "logo.gif" image
   const std::string data = "<!DOCTYPE html><title>Hello";
 
-  EXPECT_CALL(*mock_, OnRequestRead(1, 2, testing::Gt(0)))
+  EXPECT_CALL(*mock_, OnRequestRead(2, testing::Gt(0)))
       .Times(2)
       .WillOnce(testing::InvokeWithoutArgs(CreateFunctor(mock_,
           &ExternalTabUITestMockClient::ReplyData, &data, 1, 2)))
-      .WillOnce(testing::WithArgs<0, 1>(
+      .WillOnce(testing::WithArgs<0, 0>(
           testing::InvokeWithoutArgs(CreateFunctor(mock_,
               &ExternalTabUITestMockClient::DestroyHostWindow))));
 
   EXPECT_CALL(*mock_, HandleClosed(1)).Times(1);
 
-  EXPECT_CALL(*mock_, OnRequestEnd(1, 2, testing::_))
+  EXPECT_CALL(*mock_, OnRequestEnd(2, testing::_))
       .Times(1)
       .WillOnce(QUIT_LOOP_SOON(&loop, 300));
 
@@ -1181,24 +1181,24 @@ TEST_F(ExternalTabUITest, FLAKY_HostNetworkStackUnresponsiveRenderer) {
   scoped_refptr<TabProxy> tab;
   TimedMessageLoopRunner loop(MessageLoop::current());
   ASSERT_THAT(mock_, testing::NotNull());
-  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _, _))
+  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _))
       .Times(testing::AnyNumber());
-  EXPECT_CALL(*mock_, OnLoad(_, _)).Times(testing::AnyNumber());
+  EXPECT_CALL(*mock_, OnLoad(_)).Times(testing::AnyNumber());
 
   std::string url = "http://placetogo.org";
 
-  EXPECT_CALL(*mock_, OnRequestStart(1, 3, testing::_))
+  EXPECT_CALL(*mock_, OnRequestStart(3, testing::_))
       .Times(testing::AnyNumber());
-  EXPECT_CALL(*mock_, OnDidNavigate(_, _)).Times(testing::AnyNumber());
+  EXPECT_CALL(*mock_, OnDidNavigate(_)).Times(testing::AnyNumber());
 
   testing::InSequence sequence;
-  EXPECT_CALL(*mock_, OnRequestStart(1, 2, testing::AllOf(
-          testing::Field(&IPC::AutomationURLRequest::url, StrEq(url + "/")),
-          testing::Field(&IPC::AutomationURLRequest::method, StrEq("GET")))))
+  EXPECT_CALL(*mock_, OnRequestStart(2, testing::AllOf(
+          testing::Field(&AutomationURLRequest::url, StrEq(url + "/")),
+          testing::Field(&AutomationURLRequest::method, StrEq("GET")))))
       .Times(1)
       // We can simply do CreateFunctor(1, 2, &http_200) since we know the
       // tab handle and request id, but using WithArgs<> is much more fancy :)
-      .WillOnce(testing::WithArgs<0, 1>(testing::Invoke(CreateFunctor(mock_,
+      .WillOnce(testing::WithArgs<0, 0>(testing::Invoke(CreateFunctor(mock_,
           &ExternalTabUITestMockClient::ReplyStarted,
           &ExternalTabUITestMockClient::http_200))));
 
@@ -1221,17 +1221,17 @@ TEST_F(ExternalTabUITest, FLAKY_HostNetworkStackUnresponsiveRenderer) {
 
   const std::string tail = "</body></html>";
 
-  EXPECT_CALL(*mock_, OnRequestRead(1, 2, testing::Gt(0)))
+  EXPECT_CALL(*mock_, OnRequestRead(2, testing::Gt(0)))
       .Times(1)
       .WillOnce(testing::InvokeWithoutArgs(CreateFunctor(mock_,
           &ExternalTabUITestMockClient::ReplyData, &head, 1, 2)));
 
-  EXPECT_CALL(*mock_, OnRequestRead(1, 2, testing::Gt(0)))
+  EXPECT_CALL(*mock_, OnRequestRead(2, testing::Gt(0)))
       .Times(100)
       .WillRepeatedly(testing::InvokeWithoutArgs(CreateFunctor(mock_,
               &ExternalTabUITestMockClient::ReplyData, &data, 1, 2)));
 
-  EXPECT_CALL(*mock_, OnRequestRead(1, 2, testing::Gt(0)))
+  EXPECT_CALL(*mock_, OnRequestRead(2, testing::Gt(0)))
       .Times(testing::AnyNumber())
       .WillOnce(testing::DoAll(
           testing::InvokeWithoutArgs(CreateFunctor(mock_,
@@ -1270,9 +1270,9 @@ TEST_F(ExternalTabUITestPopupEnabled, MAYBE_WindowDotOpen) {
   ASSERT_THAT(mock_, testing::NotNull());
   mock_->IgnoreFavIconNetworkRequest();
   // Ignore navigation state changes.
-  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _, _))
+  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _))
       .Times(testing::AnyNumber());
-  EXPECT_CALL(*mock_, OnDidNavigate(_, _)).Times(testing::AnyNumber());
+  EXPECT_CALL(*mock_, OnDidNavigate(_)).Times(testing::AnyNumber());
 
   GURL main_url("http://placetogo.com/");
   std::string main_html =
@@ -1281,7 +1281,7 @@ TEST_F(ExternalTabUITestPopupEnabled, MAYBE_WindowDotOpen) {
     "height=320,width=300,left=1');"
     "</script></head><body>Main.</body></html>";
   mock_->ServeHTMLData(1, main_url, main_html);
-  EXPECT_CALL(*mock_, OnLoad(1, _)).Times(1);
+  EXPECT_CALL(*mock_, OnLoad(_)).Times(1);
 
   GURL popup1_url("http://placetogo.com/popup1.html");
   std::string popup1_html =
@@ -1289,12 +1289,12 @@ TEST_F(ExternalTabUITestPopupEnabled, MAYBE_WindowDotOpen) {
     "window.open('popup2.html','','');"
     "</script></head><body>Popup1.</body></html>";
   mock_->ServeHTMLData(2, popup1_url, popup1_html);
-  EXPECT_CALL(*mock_, OnLoad(2, _)).Times(1);
+  EXPECT_CALL(*mock_, OnLoad(_)).Times(1);
 
   GURL popup2_url("http://placetogo.com/popup2.html");
   std::string popup2_html = "<html><body>Popup2.</body></html>";
   mock_->ServeHTMLData(3, popup2_url, popup2_html);
-  EXPECT_CALL(*mock_, OnLoad(3, _)).Times(1)
+  EXPECT_CALL(*mock_, OnLoad(_)).Times(1)
       .WillOnce(QUIT_LOOP_SOON(&loop, 500));
 
   DWORD style = WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN;
@@ -1306,14 +1306,14 @@ TEST_F(ExternalTabUITestPopupEnabled, MAYBE_WindowDotOpen) {
       CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,  CW_USEDEFAULT,
       NULL, NULL, NULL, NULL);
 
-  EXPECT_CALL(*mock_, OnAttachExternalTab(1, _))
+  EXPECT_CALL(*mock_, OnAttachExternalTab(_))
       .Times(1)
-      .WillOnce(testing::WithArgs<1>(testing::Invoke(CreateFunctor(mock_,
+      .WillOnce(testing::WithArgs<0>(testing::Invoke(CreateFunctor(mock_,
           &ExternalTabUITestMockClient::ConnectToExternalTab, popup1_host))));
 
-  EXPECT_CALL(*mock_, OnAttachExternalTab(2, _))
+  EXPECT_CALL(*mock_, OnAttachExternalTab(_))
     .Times(1)
-    .WillOnce(testing::WithArgs<1>(testing::Invoke(CreateFunctor(mock_,
+    .WillOnce(testing::WithArgs<0>(testing::Invoke(CreateFunctor(mock_,
         &ExternalTabUITestMockClient::ConnectToExternalTab, popup2_host))));
 
   mock_->CreateTabWithUrl(main_url);
@@ -1335,9 +1335,9 @@ TEST_F(ExternalTabUITestPopupEnabled, MAYBE_UserGestureTargetBlank) {
   ASSERT_THAT(mock_, testing::NotNull());
   mock_->IgnoreFavIconNetworkRequest();
   // Ignore navigation state changes.
-  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _, _))
+  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _))
       .Times(testing::AnyNumber());
-  EXPECT_CALL(*mock_, OnDidNavigate(_, _)).Times(testing::AnyNumber());
+  EXPECT_CALL(*mock_, OnDidNavigate(_)).Times(testing::AnyNumber());
 
   GURL main_url("http://placetogo.com/");
   std::string main_html = "<!DOCTYPE html><title>Hello</title>"
@@ -1349,11 +1349,11 @@ TEST_F(ExternalTabUITestPopupEnabled, MAYBE_UserGestureTargetBlank) {
       CW_USEDEFAULT,  CW_USEDEFAULT, NULL, NULL, NULL, NULL);
 
   testing::InSequence s;
-  EXPECT_CALL(*mock_, OnLoad(1, _))
+  EXPECT_CALL(*mock_, OnLoad(_))
       .WillOnce(testing::InvokeWithoutArgs(testing::CreateFunctor(mock_,
           &ExternalTabUITestMockClient::NavigateThroughUserGesture)));
 
-  EXPECT_CALL(*mock_, OnAttachExternalTab(1, _))
+  EXPECT_CALL(*mock_, OnAttachExternalTab(_))
       .Times(1)
       .WillOnce(QUIT_LOOP_SOON(&loop, 500));
 

@@ -240,12 +240,12 @@ TEST(UrlmonUrlRequestTest, ZeroLengthResponse) {
 
 ACTION_P4(ManagerRead, loop, mgr, request_id, bytes_to_read) {
   loop->PostDelayedTask(FROM_HERE, NewRunnableMethod(mgr,
-      &UrlmonUrlRequestManager::ReadUrlRequest, 0, request_id,
+      &UrlmonUrlRequestManager::ReadUrlRequest, request_id,
       bytes_to_read), 0);
 }
 ACTION_P3(ManagerEndRequest, loop, mgr, request_id) {
   loop->PostDelayedTask(FROM_HERE, NewRunnableMethod(mgr,
-      &UrlmonUrlRequestManager::EndUrlRequest, 0, request_id,
+      &UrlmonUrlRequestManager::EndUrlRequest, request_id,
       URLRequestStatus()), 0);
 }
 
@@ -260,7 +260,7 @@ TEST(UrlmonUrlRequestManagerTest, Simple1) {
 
   scoped_ptr<UrlmonUrlRequestManager> mgr(new UrlmonUrlRequestManager());
   mgr->set_delegate(&mock);
-  IPC::AutomationURLRequest r1(
+  AutomationURLRequest r1(
       WideToUTF8(mock_server.Resolve(L"chrome_frame_window_open.html")),
       "get", "", "", NULL, 0, 0);
 
@@ -278,7 +278,7 @@ TEST(UrlmonUrlRequestManagerTest, Simple1) {
     .Times(1)
     .WillOnce(QUIT_LOOP_SOON(loop, 2));
 
-  mgr->StartUrlRequest(0, 1, r1);
+  mgr->StartUrlRequest(1, r1);
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
   mgr.reset();
 }
@@ -293,7 +293,7 @@ TEST(UrlmonUrlRequestManagerTest, Abort1) {
 
   scoped_ptr<UrlmonUrlRequestManager> mgr(new UrlmonUrlRequestManager());
   mgr->set_delegate(&mock);
-  IPC::AutomationURLRequest r1(
+  AutomationURLRequest r1(
       WideToUTF8(mock_server.Resolve(L"chrome_frame_window_open.html")),
       "get", "", "", NULL, 0, 0);
 
@@ -310,7 +310,7 @@ TEST(UrlmonUrlRequestManagerTest, Abort1) {
   EXPECT_CALL(mock, OnResponseEnd(1, testing::_))
     .Times(0);
 
-  mgr->StartUrlRequest(0, 1, r1);
+  mgr->StartUrlRequest(1, r1);
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
   mgr.reset();
 }

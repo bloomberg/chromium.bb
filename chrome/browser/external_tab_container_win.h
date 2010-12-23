@@ -29,13 +29,10 @@ class AutomationProvider;
 class Profile;
 class TabContentsContainer;
 class RenderViewContextMenuViews;
+struct NavigationInfo;
 
 namespace app {
 class ViewProp;
-}
-
-namespace IPC {
-struct NavigationInfo;
 }
 
 // This class serves as the container window for an external tab.
@@ -225,7 +222,7 @@ class ExternalTabContainer : public TabContentsDelegate,
   virtual void OnDestroy();
   virtual void OnFinalMessage(HWND window);
 
-  bool InitNavigationInfo(IPC::NavigationInfo* nav_info,
+  bool InitNavigationInfo(NavigationInfo* nav_info,
                           NavigationType::Type nav_type,
                           int relative_offset);
   void Navigate(const GURL& url, const GURL& referrer);

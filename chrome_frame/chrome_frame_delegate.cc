@@ -4,8 +4,7 @@
 
 #include "chrome_frame/chrome_frame_delegate.h"
 
-bool ChromeFrameDelegateImpl::IsTabMessage(const IPC::Message& message,
-                                           int* tab_handle) {
+bool ChromeFrameDelegateImpl::IsTabMessage(const IPC::Message& message) {
   bool is_tab_message = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeFrameDelegateImpl, message)
     IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_NavigationStateChanged, )
@@ -30,12 +29,6 @@ bool ChromeFrameDelegateImpl::IsTabMessage(const IPC::Message& message,
     IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_CloseExternalTab, )
     IPC_MESSAGE_UNHANDLED(is_tab_message = false);
   IPC_END_MESSAGE_MAP()
-
-  if (is_tab_message) {
-    // Read tab handle from the message.
-    void* iter = NULL;
-    is_tab_message = message.ReadInt(&iter, tab_handle);
-  }
 
   return is_tab_message;
 }

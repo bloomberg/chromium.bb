@@ -227,13 +227,13 @@ void AutomationProxy::SignalNewTabUITab(int load_time) {
 }
 
 bool AutomationProxy::SavePackageShouldPromptUser(bool should_prompt) {
-  return Send(new AutomationMsg_SavePackageShouldPromptUser(0, should_prompt));
+  return Send(new AutomationMsg_SavePackageShouldPromptUser(should_prompt));
 }
 
 scoped_refptr<ExtensionProxy> AutomationProxy::InstallExtension(
     const FilePath& crx_file, bool with_ui) {
   int handle = 0;
-  if (!Send(new AutomationMsg_InstallExtensionAndGetHandle(0, crx_file, with_ui,
+  if (!Send(new AutomationMsg_InstallExtensionAndGetHandle(crx_file, with_ui,
                                                            &handle)))
     return NULL;
 
@@ -243,7 +243,7 @@ scoped_refptr<ExtensionProxy> AutomationProxy::InstallExtension(
 void AutomationProxy::EnsureExtensionTestResult() {
   bool result;
   std::string message;
-  if (!Send(new AutomationMsg_WaitForExtensionTestResult(0, &result,
+  if (!Send(new AutomationMsg_WaitForExtensionTestResult(&result,
                                                          &message))) {
     FAIL() << "Could not send WaitForExtensionTestResult message";
     return;
@@ -253,8 +253,7 @@ void AutomationProxy::EnsureExtensionTestResult() {
 
 bool AutomationProxy::GetEnabledExtensions(
     std::vector<FilePath>* extension_directories) {
-  return Send(new AutomationMsg_GetEnabledExtensions(
-      0, extension_directories));
+  return Send(new AutomationMsg_GetEnabledExtensions(extension_directories));
 }
 
 bool AutomationProxy::GetBrowserWindowCount(int* num_windows) {
@@ -263,7 +262,7 @@ bool AutomationProxy::GetBrowserWindowCount(int* num_windows) {
     return false;
   }
 
-  return Send(new AutomationMsg_BrowserWindowCount(0, num_windows));
+  return Send(new AutomationMsg_BrowserWindowCount(num_windows));
 }
 
 bool AutomationProxy::GetNormalBrowserWindowCount(int* num_windows) {
@@ -272,13 +271,13 @@ bool AutomationProxy::GetNormalBrowserWindowCount(int* num_windows) {
     return false;
   }
 
-  return Send(new AutomationMsg_NormalBrowserWindowCount(0, num_windows));
+  return Send(new AutomationMsg_NormalBrowserWindowCount(num_windows));
 }
 
 bool AutomationProxy::WaitForWindowCountToBecome(int count) {
   bool wait_success = false;
   if (!Send(new AutomationMsg_WaitForBrowserWindowCountToBecome(
-                0, count, &wait_success))) {
+                count, &wait_success))) {
     return false;
   }
   return wait_success;
@@ -295,7 +294,7 @@ bool AutomationProxy::GetShowingAppModalDialog(
   int button_int = 0;
 
   if (!Send(new AutomationMsg_ShowingAppModalDialog(
-                0, showing_app_modal_dialog, &button_int))) {
+                showing_app_modal_dialog, &button_int))) {
     return false;
   }
 
@@ -308,7 +307,7 @@ bool AutomationProxy::ClickAppModalDialogButton(
   bool succeeded = false;
 
   if (!Send(new AutomationMsg_ClickAppModalDialogButton(
-                0, button, &succeeded))) {
+                button, &succeeded))) {
     return false;
   }
 
@@ -317,7 +316,7 @@ bool AutomationProxy::ClickAppModalDialogButton(
 
 bool AutomationProxy::WaitForAppModalDialog() {
   bool wait_success = false;
-  if (!Send(new AutomationMsg_WaitForAppModalDialogToBeShown(0, &wait_success)))
+  if (!Send(new AutomationMsg_WaitForAppModalDialogToBeShown(&wait_success)))
     return false;
   return wait_success;
 }
@@ -355,23 +354,23 @@ bool AutomationProxy::IsURLDisplayed(GURL url) {
 
 bool AutomationProxy::GetMetricEventDuration(const std::string& event_name,
                                              int* duration_ms) {
-  return Send(new AutomationMsg_GetMetricEventDuration(0, event_name,
+  return Send(new AutomationMsg_GetMetricEventDuration(event_name,
                                                        duration_ms));
 }
 
 bool AutomationProxy::SetFilteredInet(bool enabled) {
-  return Send(new AutomationMsg_SetFilteredInet(0, enabled));
+  return Send(new AutomationMsg_SetFilteredInet(enabled));
 }
 
 int AutomationProxy::GetFilteredInetHitCount() {
   int hit_count;
-  if (!Send(new AutomationMsg_GetFilteredInetHitCount(0, &hit_count)))
+  if (!Send(new AutomationMsg_GetFilteredInetHitCount(&hit_count)))
     return -1;
   return hit_count;
 }
 
 bool AutomationProxy::SendProxyConfig(const std::string& new_proxy_config) {
-  return Send(new AutomationMsg_SetProxyConfig(0, new_proxy_config));
+  return Send(new AutomationMsg_SetProxyConfig(new_proxy_config));
 }
 
 void AutomationProxy::Disconnect() {
@@ -394,7 +393,7 @@ void AutomationProxy::OnChannelError() {
 
 scoped_refptr<WindowProxy> AutomationProxy::GetActiveWindow() {
   int handle = 0;
-  if (!Send(new AutomationMsg_ActiveWindow(0, &handle)))
+  if (!Send(new AutomationMsg_ActiveWindow(&handle)))
     return NULL;
 
   return ProxyObjectFromHandle<WindowProxy>(handle);
@@ -403,7 +402,7 @@ scoped_refptr<WindowProxy> AutomationProxy::GetActiveWindow() {
 scoped_refptr<BrowserProxy> AutomationProxy::GetBrowserWindow(
     int window_index) {
   int handle = 0;
-  if (!Send(new AutomationMsg_BrowserWindow(0, window_index, &handle)))
+  if (!Send(new AutomationMsg_BrowserWindow(window_index, &handle)))
     return NULL;
 
   return ProxyObjectFromHandle<BrowserProxy>(handle);
@@ -411,7 +410,7 @@ scoped_refptr<BrowserProxy> AutomationProxy::GetBrowserWindow(
 
 bool AutomationProxy::GetBrowserLocale(string16* locale) {
   DCHECK(locale != NULL);
-  if (!Send(new AutomationMsg_GetBrowserLocale(0, locale)))
+  if (!Send(new AutomationMsg_GetBrowserLocale(locale)))
     return false;
 
   return !locale->empty();
@@ -419,7 +418,7 @@ bool AutomationProxy::GetBrowserLocale(string16* locale) {
 
 scoped_refptr<BrowserProxy> AutomationProxy::FindNormalBrowserWindow() {
   int handle = 0;
-  if (!Send(new AutomationMsg_FindNormalBrowserWindow(0, &handle)))
+  if (!Send(new AutomationMsg_FindNormalBrowserWindow(&handle)))
     return NULL;
 
   return ProxyObjectFromHandle<BrowserProxy>(handle);
@@ -427,7 +426,7 @@ scoped_refptr<BrowserProxy> AutomationProxy::FindNormalBrowserWindow() {
 
 scoped_refptr<BrowserProxy> AutomationProxy::GetLastActiveBrowserWindow() {
   int handle = 0;
-  if (!Send(new AutomationMsg_LastActiveBrowserWindow(0, &handle)))
+  if (!Send(new AutomationMsg_LastActiveBrowserWindow(&handle)))
     return NULL;
 
   return ProxyObjectFromHandle<BrowserProxy>(handle);
@@ -475,21 +474,19 @@ void AutomationProxy::InvalidateHandle(const IPC::Message& message) {
 }
 
 bool AutomationProxy::OpenNewBrowserWindow(Browser::Type type, bool show) {
-  if (type == Browser::TYPE_NORMAL)
-    return Send(new AutomationMsg_OpenNewBrowserWindow(0, show));
   return Send(
-      new AutomationMsg_OpenNewBrowserWindowOfType(0, static_cast<int>(type),
+      new AutomationMsg_OpenNewBrowserWindowOfType(static_cast<int>(type),
                                                    show));
 }
 
 scoped_refptr<TabProxy> AutomationProxy::CreateExternalTab(
-    const IPC::ExternalTabSettings& settings,
+    const ExternalTabSettings& settings,
     gfx::NativeWindow* external_tab_container,
     gfx::NativeWindow* tab) {
   int handle = 0;
   int session_id = 0;
   bool succeeded =
-      Send(new AutomationMsg_CreateExternalTab(0, settings,
+      Send(new AutomationMsg_CreateExternalTab(settings,
                                                external_tab_container,
                                                tab,
                                                &handle,
@@ -539,7 +536,7 @@ void AutomationProxy::ResetChannel() {
 bool AutomationProxy::LoginWithUserAndPass(const std::string& username,
                                            const std::string& password) {
   bool success;
-  bool sent = Send(new AutomationMsg_LoginWithUserAndPass(0, username,
+  bool sent = Send(new AutomationMsg_LoginWithUserAndPass(username,
                                                           password,
                                                           &success));
   // If message sending unsuccessful or test failed, return false.
@@ -548,5 +545,5 @@ bool AutomationProxy::LoginWithUserAndPass(const std::string& username,
 #endif
 
 bool AutomationProxy::ResetToDefaultTheme() {
-  return Send(new AutomationMsg_ResetToDefaultTheme(0));
+  return Send(new AutomationMsg_ResetToDefaultTheme());
 }

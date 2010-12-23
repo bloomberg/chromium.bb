@@ -129,8 +129,7 @@ END_MSG_MAP()
   static void InitializeIdentifiers();
 
   bool PreProcessContextMenu(HMENU menu);
-  bool HandleContextMenuCommand(UINT cmd,
-                                const IPC::MiniContextMenuParams& params);
+  bool HandleContextMenuCommand(UINT cmd, const MiniContextMenuParams& params);
  protected:
   // Handler for accelerator messages passed on from the hosted chrome
   // instance.
@@ -153,7 +152,7 @@ END_MSG_MAP()
   virtual void OnGetEnabledExtensionsComplete(
       void* user_data,
       const std::vector<FilePath>& extension_directories);
-  virtual void OnCloseTab(int tab_handle);
+  virtual void OnCloseTab();
 
  private:
   void SubscribeToFocusEvents();

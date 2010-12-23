@@ -230,7 +230,7 @@ void AutomationProvider::WindowSimulateDrag(int handle,
 }
 
 void AutomationProvider::CreateExternalTab(
-    const IPC::ExternalTabSettings& settings,
+    const ExternalTabSettings& settings,
     gfx::NativeWindow* tab_container_window, gfx::NativeWindow* tab_window,
     int* tab_handle, int* session_id) {
   TRACE_EVENT_BEGIN("AutomationProvider::CreateExternalTab", 0, "");
@@ -318,7 +318,7 @@ ExternalTabContainer* AutomationProvider::GetExternalTabForHandle(int handle) {
 }
 
 void AutomationProvider::OnTabReposition(
-    int tab_handle, const IPC::Reposition_Params& params) {
+    int tab_handle, const Reposition_Params& params) {
   if (!tab_tracker_->ContainsHandle(tab_handle))
     return;
 

@@ -155,7 +155,7 @@ class CFProxy : public Interface2IPCMessage,
   virtual void Tab_OverrideEncoding(int tab, const char* encoding);
   virtual void Tab_Navigate(int tab, const GURL& url, const GURL& referrer);
   virtual void CreateTab(ChromeProxyDelegate* delegate,
-                         const IPC::ExternalTabSettings& p);
+                         const ExternalTabSettings& p);
   virtual void ConnectTab(ChromeProxyDelegate* delegate, HWND hwnd,
                           uint64 cookie);
   virtual void BlockTab(uint64 cookie);
@@ -183,9 +183,6 @@ DISABLE_RUNNABLE_METHOD_REFCOUNT(CFProxy);
 
 // Support functions.
 std::string GenerateChannelId();
-int IsTabMessage(const IPC::Message& message);
-bool DispatchTabMessageToDelegate(ChromeProxyDelegate* delegate,
-                                  const IPC::Message& m);
 std::wstring BuildCmdLine(const std::string& channel_id,
                           const FilePath& profile_path,
                           const std::wstring& extra_args);

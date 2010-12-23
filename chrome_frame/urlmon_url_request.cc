@@ -964,7 +964,7 @@ void UrlmonUrlRequestManager::SetInfoForUrl(const std::wstring& url,
 }
 
 void UrlmonUrlRequestManager::StartRequest(int request_id,
-    const IPC::AutomationURLRequest& request_info) {
+    const AutomationURLRequest& request_info) {
   DVLOG(1) << __FUNCTION__ << " id: " << request_id;
   DCHECK_EQ(0, calling_delegate_);
 

@@ -128,21 +128,21 @@ void CFProxy::SendIpcMessageOnIoThread(IPC::Message* m) {
 void CFProxy::InstallExtension(ChromeProxyDelegate* delegate,
                                const FilePath& crx_path,
                                SyncMessageContext* ctx) {
-  IPC::SyncMessage* m = new AutomationMsg_InstallExtension(0, crx_path, NULL);
+  IPC::SyncMessage* m = new AutomationMsg_InstallExtension(crx_path, NULL);
   sync_dispatcher_.QueueSyncMessage(m, delegate, ctx);
   SendIpcMessage(m);
 }
 
 void CFProxy::LoadExtension(ChromeProxyDelegate* delegate,
                             const FilePath& path, SyncMessageContext* ctx) {
-  IPC::SyncMessage* m = new AutomationMsg_LoadExpandedExtension(0, path, 0);
+  IPC::SyncMessage* m = new AutomationMsg_LoadExpandedExtension(path, 0);
   sync_dispatcher_.QueueSyncMessage(m, delegate, ctx);
   SendIpcMessage(m);
 }
 
 void CFProxy::GetEnabledExtensions(ChromeProxyDelegate* delegate,
                                    SyncMessageContext* ctx) {
-  IPC::SyncMessage* m = new AutomationMsg_GetEnabledExtensions(0, NULL);
+  IPC::SyncMessage* m = new AutomationMsg_GetEnabledExtensions(NULL);
   sync_dispatcher_.QueueSyncMessage(m, delegate, ctx);
   SendIpcMessage(m);
 }
@@ -156,22 +156,21 @@ void CFProxy::Tab_Find(int tab, const string16& search_string,
   params.find_next = find_next;
   params.match_case = (match_case == CASE_SENSITIVE);
   params.forward = (forward == FWD);
-  IPC::SyncMessage* m = new AutomationMsg_Find(0, tab, params, NULL, NULL);
+  IPC::SyncMessage* m = new AutomationMsg_Find(tab, params, NULL, NULL);
   // Not interested in result.
   sync_dispatcher_.QueueSyncMessage(m, NULL, NULL);
   SendIpcMessage(m);
 }
 
 void CFProxy::Tab_OverrideEncoding(int tab, const char* encoding) {
-  IPC::SyncMessage* m = new AutomationMsg_OverrideEncoding(0, tab, encoding,
-                                                           NULL);
+  IPC::SyncMessage* m = new AutomationMsg_OverrideEncoding(tab, encoding, NULL);
   // Not interested in result.
   sync_dispatcher_.QueueSyncMessage(m, NULL, NULL);
   SendIpcMessage(m);
 }
 
 void CFProxy::Tab_Navigate(int tab, const GURL& url, const GURL& referrer) {
-  IPC::SyncMessage* m = new AutomationMsg_NavigateInExternalTab(0,
+  IPC::SyncMessage* m = new AutomationMsg_NavigateInExternalTab(
       tab, url, referrer, NULL);
   // We probably are not interested in result since provider just checks
   // whether tab handle is valid.
@@ -180,29 +179,29 @@ void CFProxy::Tab_Navigate(int tab, const GURL& url, const GURL& referrer) {
 }
 
 void CFProxy::CreateTab(ChromeProxyDelegate* delegate,
-                        const IPC::ExternalTabSettings& p) {
-  IPC::SyncMessage* m = new AutomationMsg_CreateExternalTab(0, p, 0, 0, 0, 0);
+                        const ExternalTabSettings& p) {
+  IPC::SyncMessage* m = new AutomationMsg_CreateExternalTab(p, 0, 0, 0, 0);
   sync_dispatcher_.QueueSyncMessage(m, delegate, NULL);
   SendIpcMessage(m);
 }
 
 void CFProxy::ConnectTab(ChromeProxyDelegate* delegate, HWND hwnd,
                          uint64 cookie) {
-  IPC::SyncMessage* m = new AutomationMsg_ConnectExternalTab(0, cookie, true,
+  IPC::SyncMessage* m = new AutomationMsg_ConnectExternalTab(cookie, true,
       hwnd, NULL, NULL, NULL, 0);
   sync_dispatcher_.QueueSyncMessage(m, delegate, NULL);
   SendIpcMessage(m);
 }
 
 void CFProxy::BlockTab(uint64 cookie) {
-  IPC::SyncMessage* m = new AutomationMsg_ConnectExternalTab(0, cookie, false,
+  IPC::SyncMessage* m = new AutomationMsg_ConnectExternalTab(cookie, false,
       NULL, NULL, NULL, NULL, 0);
   sync_dispatcher_.QueueSyncMessage(m, NULL, NULL);
   SendIpcMessage(m);
 }
 
 void CFProxy::Tab_RunUnloadHandlers(int tab) {
-  IPC::SyncMessage* m = new AutomationMsg_RunUnloadHandlers(0, tab, 0);
+  IPC::SyncMessage* m = new AutomationMsg_RunUnloadHandlers(tab, 0);
   ChromeProxyDelegate* p = Tab2Delegate(tab);
   sync_dispatcher_.QueueSyncMessage(m, p, NULL);
   SendIpcMessage(m);
@@ -216,13 +215,9 @@ void CFProxy::OnMessageReceived(const IPC::Message& message) {
     return;
 
   // Handle tab related message.
-  int tab_handle = IsTabMessage(message);
-  if (tab_handle != 0) {
-    ChromeProxyDelegate* d = Tab2Delegate(tab_handle);
-    if (d)
-      DispatchTabMessageToDelegate(d, message);
-    return;
-  }
+  ChromeProxyDelegate* d = Tab2Delegate(message.routing_id());
+  if (d)
+    return d->OnMessageReceived(message);
 
   DLOG(WARNING) << "Unknown message received!";
 }

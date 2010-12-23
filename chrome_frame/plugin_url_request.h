@@ -68,20 +68,20 @@ class DECLSPEC_NOVTABLE PluginUrlRequestManager {  // NOLINT
   // automation messages are received from Chrome.
   // Strip 'tab' handle and forward to the virtual methods implemented by
   // derived classes.
-  void StartUrlRequest(int tab, int request_id,
-                       const IPC::AutomationURLRequest& request_info) {
+  void StartUrlRequest(int request_id,
+                       const AutomationURLRequest& request_info) {
     StartRequest(request_id, request_info);
   }
 
-  void ReadUrlRequest(int tab, int request_id, int bytes_to_read) {
+  void ReadUrlRequest(int request_id, int bytes_to_read) {
     ReadRequest(request_id, bytes_to_read);
   }
 
-  void EndUrlRequest(int tab, int request_id, const URLRequestStatus& s) {
+  void EndUrlRequest(int request_id, const URLRequestStatus& s) {
     EndRequest(request_id);
   }
 
-  void DownloadUrlRequestInHost(int tab, int request_id) {
+  void DownloadUrlRequestInHost(int request_id) {
     DownloadRequestInHost(request_id);
   }
 
@@ -89,12 +89,11 @@ class DECLSPEC_NOVTABLE PluginUrlRequestManager {  // NOLINT
     StopAll();
   }
 
-  void GetCookiesFromHost(int tab_handle, const GURL& url, int cookie_id) {
+  void GetCookiesFromHost(const GURL& url, int cookie_id) {
     GetCookiesForUrl(url, cookie_id);
   }
 
-  void SetCookiesInHost(int tab_handle, const GURL& url,
-                        const std::string& cookie) {
+  void SetCookiesInHost(const GURL& url, const std::string& cookie) {
     SetCookiesForUrl(url, cookie);
   }
 
@@ -103,8 +102,8 @@ class DECLSPEC_NOVTABLE PluginUrlRequestManager {  // NOLINT
   bool enable_frame_busting_;
 
  private:
-  virtual void StartRequest(int request_id,
-      const IPC::AutomationURLRequest& request_info) = 0;
+  virtual void StartRequest(
+      int request_id, const AutomationURLRequest& request_info) = 0;
   virtual void ReadRequest(int request_id, int bytes_to_read) = 0;
   virtual void EndRequest(int request_id) = 0;
   virtual void DownloadRequestInHost(int request_id) = 0;

@@ -93,70 +93,70 @@ bool DispatchReplyOk(const IPC::Message* reply_msg, uint32 type,
 // Itf2IPCMessage
 // Converts and sends trivial messages.
 void Interface2IPCMessage::RemoveBrowsingData(int mask) {
-  sender_->Send(new AutomationMsg_RemoveBrowsingData(0, mask));
+  sender_->Send(new AutomationMsg_RemoveBrowsingData(mask));
 }
 
 void Interface2IPCMessage::SetProxyConfig(
     const std::string& json_encoded_proxy_cfg) {
-  sender_->Send(new AutomationMsg_SetProxyConfig(0, json_encoded_proxy_cfg));
+  sender_->Send(new AutomationMsg_SetProxyConfig(json_encoded_proxy_cfg));
 }
 
 // Tab related.
 void Interface2IPCMessage::Tab_PostMessage(int tab, const std::string& message,
       const std::string& origin, const std::string& target) {
   sender_->Send(new AutomationMsg_HandleMessageFromExternalHost(
-      0, tab, message, origin, target));
+      tab, message, origin, target));
 }
 
 void Interface2IPCMessage::Tab_Reload(int tab) {
-  sender_->Send(new AutomationMsg_ReloadAsync(0, tab));
+  sender_->Send(new AutomationMsg_ReloadAsync(tab));
 }
 
 void Interface2IPCMessage::Tab_Stop(int tab) {
-  sender_->Send(new AutomationMsg_StopAsync(0, tab));
+  sender_->Send(new AutomationMsg_StopAsync(tab));
 }
 
 void Interface2IPCMessage::Tab_SaveAs(int tab) {
-  sender_->Send(new AutomationMsg_SaveAsAsync(0, tab));
+  sender_->Send(new AutomationMsg_SaveAsAsync(tab));
 }
 
 void Interface2IPCMessage::Tab_Print(int tab) {
-  sender_->Send(new AutomationMsg_PrintAsync(0, tab));
+  sender_->Send(new AutomationMsg_PrintAsync(tab));
 }
 
 void Interface2IPCMessage::Tab_Cut(int tab) {
-  sender_->Send(new AutomationMsg_Cut(0, tab));
+  sender_->Send(new AutomationMsg_Cut(tab));
 }
 
 void Interface2IPCMessage::Tab_Copy(int tab) {
-  sender_->Send(new AutomationMsg_Copy(0, tab));
+  sender_->Send(new AutomationMsg_Copy(tab));
 }
 
 void Interface2IPCMessage::Tab_Paste(int tab) {
-  sender_->Send(new AutomationMsg_Paste(0, tab));
+  sender_->Send(new AutomationMsg_Paste(tab));
 }
 
 void Interface2IPCMessage::Tab_SelectAll(int tab) {
-  sender_->Send(new AutomationMsg_SelectAll(0, tab));
+  sender_->Send(new AutomationMsg_SelectAll(tab));
 }
 
 void Interface2IPCMessage::Tab_MenuCommand(int tab, int selected_command) {
   sender_->Send(new AutomationMsg_ForwardContextMenuCommandToChrome(
-      0, tab, selected_command));
+      tab, selected_command));
 }
 
 void Interface2IPCMessage::Tab_Zoom(int tab, PageZoom::Function zoom_level) {
-  sender_->Send(new AutomationMsg_SetZoomLevel(0, tab, zoom_level));
+  sender_->Send(new AutomationMsg_SetZoomLevel(tab, zoom_level));
 }
 
 void Interface2IPCMessage::Tab_FontSize(int tab,
                                         enum AutomationPageFontSize font_size) {
-  sender_->Send(new AutomationMsg_SetPageFontSize(0, tab, font_size));
+  sender_->Send(new AutomationMsg_SetPageFontSize(tab, font_size));
 }
 
 void Interface2IPCMessage::Tab_SetInitialFocus(int tab, bool reverse,
                                          bool restore_focus_to_view) {
-  sender_->Send(new AutomationMsg_SetInitialFocus(0, tab, reverse,
+  sender_->Send(new AutomationMsg_SetInitialFocus(tab, reverse,
                                                   restore_focus_to_view));
 }
 
@@ -171,17 +171,17 @@ void Interface2IPCMessage::Tab_Resize(int tab) {
 }
 
 void Interface2IPCMessage::Tab_ProcessAccelerator(int tab, const MSG& msg) {
-  sender_->Send(new AutomationMsg_ProcessUnhandledAccelerator(0, tab, msg));
+  sender_->Send(new AutomationMsg_ProcessUnhandledAccelerator(tab, msg));
 }
 
 // Misc.
 void Interface2IPCMessage::Tab_OnHostMoved(int tab) {
-  sender_->Send(new AutomationMsg_BrowserMove(0, tab));
+  sender_->Send(new AutomationMsg_BrowserMove(tab));
 }
 
 void Interface2IPCMessage::Tab_SetEnableExtensionAutomation(int tab,
     const std::vector<std::string>& functions_enabled) {
-  sender_->Send(new AutomationMsg_SetEnableExtensionAutomation(0, tab,
+  sender_->Send(new AutomationMsg_SetEnableExtensionAutomation(tab,
                 functions_enabled));
 }
 
@@ -341,195 +341,4 @@ std::wstring BuildCmdLine(const std::string& channel_id,
     command_line_string.append(extra_args);
   }
   return command_line_string;
-}
-
-int IsTabMessage(const IPC::Message& message) {
-  switch (message.type()) {
-    case AutomationMsg_NavigationStateChanged::ID:
-    case AutomationMsg_UpdateTargetUrl::ID:
-    case AutomationMsg_HandleAccelerator::ID:
-    case AutomationMsg_TabbedOut::ID:
-    case AutomationMsg_OpenURL::ID:
-    case AutomationMsg_NavigationFailed::ID:
-    case AutomationMsg_DidNavigate::ID:
-    case AutomationMsg_TabLoaded::ID:
-    case AutomationMsg_ForwardMessageToExternalHost::ID:
-    case AutomationMsg_ForwardContextMenuToExternalHost::ID:
-    case AutomationMsg_RequestStart::ID:
-    case AutomationMsg_RequestRead::ID:
-    case AutomationMsg_RequestEnd::ID:
-    case AutomationMsg_DownloadRequestInHost::ID:
-    case AutomationMsg_SetCookieAsync::ID:
-    case AutomationMsg_AttachExternalTab::ID:
-    case AutomationMsg_RequestGoToHistoryEntryOffset::ID:
-    case AutomationMsg_GetCookiesFromHost::ID:
-    case AutomationMsg_CloseExternalTab::ID: {
-      // Read tab handle from the message.
-      void* iter = NULL;
-      int tab_handle = 0;
-      message.ReadInt(&iter, &tab_handle);
-      return tab_handle;
-    }
-  }
-
-  return 0;
-}
-
-bool DispatchTabMessageToDelegate(ChromeProxyDelegate* delegate,
-                                  const IPC::Message& m) {
-  // The first argument of the message is always the tab handle.
-  void* iter = 0;
-  switch (m.type()) {
-    case AutomationMsg_NavigationStateChanged::ID: {
-      // Tuple3<int, int, IPC::NavigationInfo>
-      AutomationMsg_NavigationStateChanged::Param params;
-      if (ReadParam(&m, &iter, &params))
-        delegate->NavigationStateChanged(params.b, params.c);
-      return true;
-    }
-
-    case AutomationMsg_UpdateTargetUrl::ID: {
-      // Tuple2<int, std::wstring>
-      AutomationMsg_UpdateTargetUrl::Param params;
-      if (ReadParam(&m, &iter, &params))
-        delegate->UpdateTargetUrl(params.b);
-      return true;
-    }
-
-    case AutomationMsg_HandleAccelerator::ID: {
-      // Tuple2<int, MSG>
-      AutomationMsg_HandleAccelerator::Param params;
-      if (ReadParam(&m, &iter, &params))
-        delegate->HandleAccelerator(params.b);
-      return true;
-    }
-
-    case AutomationMsg_TabbedOut::ID: {
-      // Tuple2<int, bool>
-      AutomationMsg_TabbedOut::Param params;
-      if (ReadParam(&m, &iter, &params))
-        delegate->TabbedOut(params.b);
-      return true;
-    }
-
-    case AutomationMsg_OpenURL::ID: {
-      // Tuple4<int, GURL, GURL, int>
-      AutomationMsg_OpenURL::Param params;
-      if (ReadParam(&m, &iter, &params))
-        delegate->OpenURL(params.b, params.c, params.d);
-      return true;
-    }
-
-    case AutomationMsg_NavigationFailed::ID: {
-      // Tuple3<int, int, GURL>
-      AutomationMsg_NavigationFailed::Param params;
-      if (ReadParam(&m, &iter, &params))
-        delegate->NavigationFailed(params.b, params.c);
-      return true;
-    }
-
-    case AutomationMsg_DidNavigate::ID: {
-      // Tuple2<int, IPC::NavigationInfo>
-      AutomationMsg_DidNavigate::Param params;
-      if (ReadParam(&m, &iter, &params))
-        delegate->DidNavigate(params.b);
-      return true;
-    }
-
-    case AutomationMsg_TabLoaded::ID: {
-      // Tuple2<int, GURL>
-      AutomationMsg_TabLoaded::Param params;
-      if (ReadParam(&m, &iter, &params))
-        delegate->TabLoaded(params.b);
-      return true;
-    }
-
-    case AutomationMsg_ForwardMessageToExternalHost::ID: {
-      // Tuple4<int, string, string, string>
-      AutomationMsg_ForwardMessageToExternalHost::Param params;
-      if (ReadParam(&m, &iter, &params))
-        delegate->MessageToHost(params.b, params.c, params.d);
-      return true;
-    }
-
-    case AutomationMsg_ForwardContextMenuToExternalHost::ID: {
-      // Tuple4<int, HANDLE, int, IPC::ContextMenuParams>
-      AutomationMsg_ForwardContextMenuToExternalHost::Param params;
-      if (ReadParam(&m, &iter, &params))
-        delegate->HandleContextMenu(params.b, params.c, params.d);
-      return true;
-    }
-
-    case AutomationMsg_RequestStart::ID: {
-      // Tuple3<int, int, IPC::AutomationURLRequest>
-      AutomationMsg_RequestStart::Param params;
-      if (ReadParam(&m, &iter, &params))
-        delegate->Network_Start(params.b, params.c);
-      return true;
-    }
-
-    case AutomationMsg_RequestRead::ID: {
-      // Tuple3<int, int, int>
-      AutomationMsg_RequestRead::Param params;
-      if (ReadParam(&m, &iter, &params))
-        delegate->Network_Read(params.b, params.c);
-      return true;
-    }
-
-    case AutomationMsg_RequestEnd::ID: {
-      // Tuple3<int, int, URLRequestStatus>
-      AutomationMsg_RequestEnd::Param params;
-      if (ReadParam(&m, &iter, &params))
-        delegate->Network_End(params.b, params.c);
-      return true;
-    }
-
-    case AutomationMsg_DownloadRequestInHost::ID: {
-      // Tuple2<int, int>
-      AutomationMsg_DownloadRequestInHost::Param params;
-      if (ReadParam(&m, &iter, &params))
-        delegate->Network_DownloadInHost(params.b);
-      return true;
-    }
-
-    case AutomationMsg_SetCookieAsync::ID: {
-      // Tuple3<int, GURL, string>
-      AutomationMsg_SetCookieAsync::Param params;
-      if (ReadParam(&m, &iter, &params))
-        delegate->SetCookie(params.b, params.c);
-      return true;
-    }
-
-    case AutomationMsg_AttachExternalTab::ID: {
-      // Tuple2<int, IPC::AttachExternalTabParams>
-      AutomationMsg_AttachExternalTab::Param params;
-      if (ReadParam(&m, &iter, &params))
-        delegate->AttachTab(params.b);
-      return true;
-    }
-
-    case AutomationMsg_RequestGoToHistoryEntryOffset::ID: {
-      // Tuple2<int, int>
-      AutomationMsg_RequestGoToHistoryEntryOffset::Param params;
-      if (ReadParam(&m, &iter, &params))
-        delegate->GoToHistoryOffset(params.b);
-      return true;
-    }
-
-    case AutomationMsg_GetCookiesFromHost::ID: {
-      // Tuple3<int, GURL, int>
-      AutomationMsg_GetCookiesFromHost::Param params;
-      if (ReadParam(&m, &iter, &params))
-        delegate->GetCookies(params.b, params.c);
-      return true;
-    }
-
-    case AutomationMsg_CloseExternalTab::ID: {
-      // Tuple1<int>
-      delegate->TabClosed();
-      return true;
-    }
-  }
-
-  return false;
 }
