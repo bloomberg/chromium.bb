@@ -59,8 +59,8 @@ const PPB_Core* PPBCoreInterface();  // shared
 const PPB_Graphics2D* PPBGraphics2DInterface();
 const PPB_ImageData* PPBImageDataInterface();
 const PPB_Instance* PPBInstanceInterface();
-const PPB_Var_Deprecated* PPBVarInterface();  // shared
 const PPB_URLRequestInfo* PPBURLRequestInfoInterface();
+const PPB_Var_Deprecated* PPBVarInterface();  // shared
 
 // PPAPI constants used in the proxy.
 extern const PP_Resource kInvalidResourceId;

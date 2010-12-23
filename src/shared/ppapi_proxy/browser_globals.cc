@@ -110,57 +110,41 @@ const void* GetBrowserInterfaceSafe(const char* interface_name) {
 }
 
 const PPB_Core* PPBCoreInterface() {
-  static const PPB_Core* core_interface = NULL;
-  if (core_interface == NULL) {
-    core_interface = reinterpret_cast<const PPB_Core*>(
-        GetBrowserInterfaceSafe(PPB_CORE_INTERFACE));
-  }
-  return core_interface;
+  static const PPB_Core* ppb = reinterpret_cast<const PPB_Core*>(
+      GetBrowserInterfaceSafe(PPB_CORE_INTERFACE));
+  return ppb;
 }
 
 const PPB_Graphics2D* PPBGraphics2DInterface() {
-  static const PPB_Graphics2D* graphics2d_interface = NULL;
-  if (graphics2d_interface == NULL) {
-    graphics2d_interface = reinterpret_cast<const PPB_Graphics2D*>(
-        GetBrowserInterfaceSafe(PPB_GRAPHICS_2D_INTERFACE));
-  }
-  return graphics2d_interface;
+  static const PPB_Graphics2D* ppb = reinterpret_cast<const PPB_Graphics2D*>(
+      GetBrowserInterfaceSafe(PPB_GRAPHICS_2D_INTERFACE));
+  return ppb;
 }
 
 const PPB_ImageData* PPBImageDataInterface() {
-  static const PPB_ImageData* image_data_interface = NULL;
-  if (image_data_interface == NULL) {
-    image_data_interface = reinterpret_cast<const PPB_ImageData*>(
-        GetBrowserInterfaceSafe(PPB_IMAGEDATA_INTERFACE));
-  }
-  return image_data_interface;
+  static const PPB_ImageData* ppb = reinterpret_cast<const PPB_ImageData*>(
+      GetBrowserInterfaceSafe(PPB_IMAGEDATA_INTERFACE));
+  return ppb;
 }
 
 const PPB_Instance* PPBInstanceInterface() {
-  static const PPB_Instance* instance_interface = NULL;
-  if (instance_interface == NULL) {
-    instance_interface = reinterpret_cast<const PPB_Instance*>(
-        GetBrowserInterfaceSafe(PPB_INSTANCE_INTERFACE));
-  }
-  return instance_interface;
-}
-
-const PPB_Var_Deprecated* PPBVarInterface() {
-  static const PPB_Var_Deprecated* var_interface = NULL;
-  if (var_interface == NULL) {
-    var_interface = reinterpret_cast<const PPB_Var_Deprecated*>(
-        GetBrowserInterfaceSafe(PPB_VAR_DEPRECATED_INTERFACE));
-  }
-  return var_interface;
+  static const PPB_Instance* ppb = reinterpret_cast<const PPB_Instance*>(
+      GetBrowserInterfaceSafe(PPB_INSTANCE_INTERFACE));
+  return ppb;
 }
 
 const PPB_URLRequestInfo* PPBURLRequestInfoInterface() {
-  static const PPB_URLRequestInfo* url_request_info_interface = NULL;
-  if (url_request_info_interface == NULL) {
-    url_request_info_interface = reinterpret_cast<const PPB_URLRequestInfo*>(
-        GetBrowserInterfaceSafe(PPB_URLREQUESTINFO_INTERFACE));
-  }
-  return url_request_info_interface;
+  static const PPB_URLRequestInfo* ppb =
+      reinterpret_cast<const PPB_URLRequestInfo*>(
+          GetBrowserInterfaceSafe(PPB_URLREQUESTINFO_INTERFACE));
+  return ppb;
+}
+
+const PPB_Var_Deprecated* PPBVarInterface() {
+  static const PPB_Var_Deprecated* ppb =
+      reinterpret_cast<const PPB_Var_Deprecated*>(
+          GetBrowserInterfaceSafe(PPB_VAR_DEPRECATED_INTERFACE));
+  return ppb;
 }
 
 }  // namespace ppapi_proxy
