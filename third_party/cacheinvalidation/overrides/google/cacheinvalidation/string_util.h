@@ -5,11 +5,11 @@
 #ifndef GOOGLE_CACHEINVALIDATION_STRING_UTIL_H_
 #define GOOGLE_CACHEINVALIDATION_STRING_UTIL_H_
 
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 
 namespace invalidation {
 
-using ::StringAppendV;
+using base::StringAppendV;
 
 }  // namespace invalidation
 

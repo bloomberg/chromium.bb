@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 // that provides integration with the logging of your choice.
 
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 
 void SkDebugf_FileLine(const char* file, int line, bool fatal,
                        const char* format, ...) {
@@ -15,7 +15,7 @@ void SkDebugf_FileLine(const char* file, int line, bool fatal,
   va_start(ap, format);
 
   std::string msg;
-  StringAppendV(&msg, format, ap);
+  base::StringAppendV(&msg, format, ap);
 
   logging::LogMessage(file, line,
                       fatal ? logging::LOG_FATAL : logging::LOG_INFO).stream()
