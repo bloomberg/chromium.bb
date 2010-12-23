@@ -1159,8 +1159,8 @@
         'service/gaia/service_gaia_authenticator.h',
         'service/net/service_url_request_context.cc',
         'service/net/service_url_request_context.h',
-        'service/remoting/remoting_directory_service.cc',
-        'service/remoting/remoting_directory_service.h',
+        'service/remoting/chromoting_host_manager.cc',
+        'service/remoting/chromoting_host_manager.h',
       ],
       'include_dirs': [
         '..',

@@ -16,6 +16,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/service_process_util.h"
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
@@ -24,10 +25,7 @@
 #include "net/base/network_change_notifier.h"
 
 #if defined(ENABLE_REMOTING)
-#include "remoting/base/constants.h"
-#include "remoting/host/chromoting_host.h"
-#include "remoting/host/chromoting_host_context.h"
-#include "remoting/host/json_host_config.h"
+#include "chrome/service/remoting/chromoting_host_manager.h"
 #endif  // defined(ENABLED_REMOTING)
 
 ServiceProcess* g_service_process = NULL;
@@ -99,22 +97,10 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop,
       new ServiceProcessPrefs(pref_path, file_thread_->message_loop_proxy()));
   service_prefs_->ReadPrefs();
 
-  bool remoting_host_enabled = false;
-
-  // For development, we allow forcing the enabling of the host daemon via a
-  // commandline flag, regardless of the preference setting.
-  //
-  // TODO(ajwong): When we've gotten the preference setting workflow more
-  // stable, we should remove the command-line flag force-enable.
-  service_prefs_->GetBoolean(prefs::kRemotingHostEnabled,
-                             &remoting_host_enabled);
-  remoting_host_enabled |= command_line.HasSwitch(switches::kEnableRemoting);
-
 #if defined(ENABLE_REMOTING)
-  // Check if remoting host is already enabled.
-  if (remoting_host_enabled) {
-    StartChromotingHost();
-  }
+  // Initialize chromoting host manager.
+  remoting_host_manager_ = new remoting::ChromotingHostManager(this);
+  remoting_host_manager_->Initialize(file_thread_->message_loop_proxy());
 #endif
 
   // Enable Cloud Print if needed. First check the command-line.
@@ -149,7 +135,7 @@ bool ServiceProcess::Teardown() {
   cloud_print_proxy_.reset();
 
 #if defined(ENABLE_REMOTING)
-  ShutdownChromotingHost();
+  remoting_host_manager_->Teardown();
 #endif
 
   ipc_server_.reset();
@@ -204,6 +190,14 @@ void ServiceProcess::OnCloudPrintProxyDisabled() {
   OnServiceDisabled();
 }
 
+void ServiceProcess::OnRemotingHostEnabled() {
+  OnServiceEnabled();
+}
+
+void ServiceProcess::OnRemotingHostDisabled() {
+  OnServiceDisabled();
+}
+
 void ServiceProcess::OnServiceEnabled() {
   enabled_services_++;
   if (1 == enabled_services_) {
@@ -241,141 +235,6 @@ void ServiceProcess::ShutdownIfNeeded() {
     }
   }
 }
-
-#if defined(ENABLE_REMOTING)
-bool ServiceProcess::EnableChromotingHostWithTokens(
-    const std::string& login,
-    const std::string& remoting_token,
-    const std::string& talk_token) {
-  // Save the login info and tokens.
-  remoting_login_ = login;
-  remoting_token_ = remoting_token;
-  talk_token_ = talk_token;
-
-  // Use the remoting directory to register the host.
-  if (remoting_directory_.get())
-    remoting_directory_->CancelRequest();
-  remoting_directory_.reset(new RemotingDirectoryService(this));
-  remoting_directory_->AddHost(remoting_token);
-  return true;
-}
-
-bool ServiceProcess::StartChromotingHost() {
-  // We have already started.
-  if (chromoting_context_.get())
-    return true;
-
-  // Load chromoting config from the disk.
-  LoadChromotingConfig();
-
-  // Start the chromoting context first.
-  chromoting_context_.reset(new remoting::ChromotingHostContext());
-  chromoting_context_->Start();
-
-  // Create a chromoting host object.
-  chromoting_host_ = remoting::ChromotingHost::Create(chromoting_context_.get(),
-                                                      chromoting_config_);
-
-  // Then start the chromoting host.
-  // When ChromotingHost is shutdown because of failure or a request that
-  // we made OnChromotingShutdown() is calls.
-  chromoting_host_->Start(
-      NewRunnableMethod(this, &ServiceProcess::OnChromotingHostShutdown));
-  OnServiceEnabled();
-  return true;
-}
-
-bool ServiceProcess::ShutdownChromotingHost() {
-  // Chromoting host doesn't exist so return true.
-  if (!chromoting_host_)
-    return true;
-
-  // Shutdown the chromoting host asynchronously. This will signal the host to
-  // shutdown, we'll actually wait for all threads to stop when we destroy
-  // the chromoting context.
-  chromoting_host_->Shutdown();
-  chromoting_host_ = NULL;
-
-  chromoting_context_->Stop();
-  chromoting_context_ .reset();
-
-  return true;
-}
-
-void ServiceProcess::OnRemotingHostAdded() {
-  // Save configuration for chromoting.
-  SaveChromotingConfig(remoting_login_,
-                       talk_token_,
-                       remoting_directory_->host_id(),
-                       remoting_directory_->host_name(),
-                       remoting_directory_->host_key_pair());
-  remoting_directory_.reset();
-  remoting_login_ = "";
-  remoting_token_ = "";
-  talk_token_ = "";
-
-  // Save the preference that we have enabled the remoting host.
-  service_prefs_->SetBoolean(prefs::kRemotingHostEnabled, true);
-
-  // Force writing prefs to the disk.
-  service_prefs_->WritePrefs();
-
-  // TODO(hclam): If we have a problem we need to send an IPC message back
-  // to the client that started this.
-  bool ret = StartChromotingHost();
-  DCHECK(ret);
-}
-
-void ServiceProcess::OnRemotingDirectoryError() {
-  remoting_directory_.reset();
-  remoting_login_ = "";
-  remoting_token_ = "";
-  talk_token_ = "";
-
-  // TODO(hclam): If we have a problem we need to send an IPC message back
-  // to the client that started this.
-}
-
-void ServiceProcess::SaveChromotingConfig(
-    const std::string& login,
-    const std::string& token,
-    const std::string& host_id,
-    const std::string& host_name,
-    remoting::HostKeyPair* host_key_pair) {
-  // First we need to load the config first.
-  LoadChromotingConfig();
-
-  // And then do the update.
-  chromoting_config_->SetString(remoting::kXmppLoginConfigPath, login);
-  chromoting_config_->SetString(remoting::kXmppAuthTokenConfigPath, token);
-  chromoting_config_->SetString(remoting::kHostIdConfigPath, host_id);
-  chromoting_config_->SetString(remoting::kHostNameConfigPath, host_name);
-  chromoting_config_->Save();
-
-  // And then save the key pair.
-  host_key_pair->Save(chromoting_config_);
-}
-
-void ServiceProcess::LoadChromotingConfig() {
-  // TODO(hclam): We really should be doing this on IO thread so we are not
-  // blocked on file IOs.
-  if (chromoting_config_)
-    return;
-
-  FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  FilePath chromoting_config_path =
-      user_data_dir.Append(FILE_PATH_LITERAL(".ChromotingConfig.json"));
-  chromoting_config_ = new remoting::JsonHostConfig(
-      chromoting_config_path, file_thread_->message_loop_proxy());
-  if (!chromoting_config_->Read())
-    VLOG(1) << "Failed to read chromoting config file.";
-}
-
-void ServiceProcess::OnChromotingHostShutdown() {
-  // TODO(hclam): Implement.
-}
-#endif
 
 ServiceProcess::~ServiceProcess() {
   Teardown();

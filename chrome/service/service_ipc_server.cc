@@ -83,12 +83,20 @@ void ServiceIPCServer::OnMessageReceived(const IPC::Message& msg) {
                         OnEnableCloudPrintProxy)
     IPC_MESSAGE_HANDLER(ServiceMsg_EnableCloudPrintProxyWithTokens,
                         OnEnableCloudPrintProxyWithTokens)
-    IPC_MESSAGE_HANDLER(ServiceMsg_EnableRemotingWithTokens,
-                        OnEnableRemotingWithTokens)
     IPC_MESSAGE_HANDLER(ServiceMsg_DisableCloudPrintProxy,
                         OnDisableCloudPrintProxy)
     IPC_MESSAGE_HANDLER(ServiceMsg_IsCloudPrintProxyEnabled,
                         OnIsCloudPrintProxyEnabled)
+#if defined(ENABLE_REMOTING)
+    IPC_MESSAGE_HANDLER(ServiceMsg_SetRemotingHostCredentials,
+                        OnSetRemotingHostCredentials)
+    IPC_MESSAGE_HANDLER(ServiceMsg_EnableRemotingHost,
+                        OnEnableRemotingHost)
+    IPC_MESSAGE_HANDLER(ServiceMsg_DisableRemotingHost,
+                        OnDisableRemotingHost)
+    IPC_MESSAGE_HANDLER(ServiceMsg_GetRemotingHostInfo,
+                        OnGetRemotingHostInfo)
+#endif  // defined(ENABLE_REMOTING)
     IPC_MESSAGE_HANDLER(ServiceMsg_Hello, OnHello);
     IPC_MESSAGE_HANDLER(ServiceMsg_Shutdown, OnShutdown);
     IPC_MESSAGE_HANDLER(ServiceMsg_UpdateAvailable, OnUpdateAvailable);
@@ -112,15 +120,28 @@ void ServiceIPCServer::OnIsCloudPrintProxyEnabled() {
                                                               email));
 }
 
-void ServiceIPCServer::OnEnableRemotingWithTokens(
-    const std::string& login,
-    const std::string& remoting_token,
-    const std::string& talk_token) {
 #if defined(ENABLE_REMOTING)
-  g_service_process->EnableChromotingHostWithTokens(login, remoting_token,
-                                                    talk_token);
-#endif
+void ServiceIPCServer::OnSetRemotingHostCredentials(
+    const std::string& login,
+    const std::string& auth_token) {
+  g_service_process->remoting_host_manager()->SetCredentials(
+      login, auth_token);
 }
+
+void ServiceIPCServer::OnEnableRemotingHost() {
+  g_service_process->remoting_host_manager()->Enable();
+}
+
+void ServiceIPCServer:: OnDisableRemotingHost() {
+  g_service_process->remoting_host_manager()->Disable();
+}
+
+void ServiceIPCServer:: OnGetRemotingHostInfo() {
+  remoting::ChromotingHostInfo host_info;
+  g_service_process->remoting_host_manager()->GetHostInfo(&host_info);
+  channel_->Send(new ServiceHostMsg_RemotingHost_HostInfo(host_info));
+}
+#endif  // defined(ENABLE_REMOTING)
 
 void ServiceIPCServer::OnDisableCloudPrintProxy() {
   g_service_process->GetCloudPrintProxy()->DisableForUser();
@@ -137,4 +158,3 @@ void ServiceIPCServer::OnShutdown() {
 void ServiceIPCServer::OnUpdateAvailable() {
   g_service_process->SetUpdateAvailable();
 }
-

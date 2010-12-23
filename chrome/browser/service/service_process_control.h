@@ -20,6 +20,10 @@
 
 class Profile;
 
+namespace remoting {
+struct ChromotingHostInfo;
+}  // namespace remoting
+
 // A ServiceProcessControl works as a portal between the service process and
 // the browser process.
 //
@@ -36,6 +40,8 @@ class ServiceProcessControl : public IPC::Channel::Sender,
  public:
   typedef IDMap<ServiceProcessControl>::iterator iterator;
   typedef std::queue<IPC::Message> MessageQueue;
+  typedef Callback1<const remoting::ChromotingHostInfo&>::Type
+      GetRemotingHostStatusCallback;
 
   // An interface for handling messages received from the service process.
   class MessageHandler {
@@ -86,6 +92,7 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   // Message handlers
   void OnGoodDay();
   void OnCloudPrintProxyIsEnabled(bool enabled, std::string email);
+  void OnRemotingHostInfo(remoting::ChromotingHostInfo host_info);
 
   // Send a hello message to the service process for testing purpose.
   // Return true if the message was sent.
@@ -96,18 +103,23 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   // Return true if the message was sent.
   bool Shutdown();
 
-  // Send a message to enable the remoting service in the service process.
-  // Return true if the message was sent.
-  bool EnableRemotingWithTokens(const std::string& user,
-                                const std::string& remoting_token,
-                                const std::string& talk_token);
-
   // Send a message to the service process to request a response
   // containing the enablement status of the cloud print proxy and the
   // registered email address.  The callback gets the information when
   // received.
   bool GetCloudPrintProxyStatus(
       Callback2<bool, std::string>::Type* cloud_print_status_callback);
+
+  // Send a message to enable the remoting service in the service process.
+  // Return true if the message was sent.
+  bool SetRemotingHostCredentials(const std::string& user,
+                                    const std::string& auth_token);
+
+  bool EnableRemotingHost();
+  bool DisableRemotingHost();
+
+  bool GetRemotingHostStatus(
+      GetRemotingHostStatusCallback* status_callback);
 
   // Set the message handler for receiving messages from the service process.
   // TODO(hclam): Allow more than 1 handler.
@@ -149,6 +161,7 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   // Callback that gets invoked when a status message is received from
   // the cloud print proxy.
   scoped_ptr<Callback2<bool, std::string>::Type> cloud_print_status_callback_;
+  scoped_ptr<GetRemotingHostStatusCallback> remoting_host_status_callback_;
 
   // Handler for messages from service process.
   MessageHandler* message_handler_;

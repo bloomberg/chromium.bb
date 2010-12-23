@@ -31,11 +31,9 @@ TEST(ServiceProcessTest, DISABLED_RunChromoting) {
   EXPECT_TRUE(process.Initialize(&main_message_loop, command_line));
 
   // Then config the chromoting host and start it.
-  remoting::HostKeyPair key;
-  key.Generate();
-  process.SaveChromotingConfig("hello", "world", "it's a", "good day", &key);
-  EXPECT_TRUE(process.StartChromotingHost());
-  EXPECT_TRUE(process.ShutdownChromotingHost());
+  process.remoting_host_manager()->SetCredentials("email", "token");
+  process.remoting_host_manager()->Enable();
+  process.remoting_host_manager()->Disable();
   EXPECT_TRUE(process.Teardown());
 }
 
@@ -60,10 +58,8 @@ TEST(ServiceProcessTest, DISABLED_RunChromotingUntilShutdown) {
       .WillOnce(QuitMessageLoop(&main_message_loop));
 
   // Then config the chromoting host and start it.
-  remoting::HostKeyPair key;
-  key.Generate();
-  process.SaveChromotingConfig("hello", "world", "it's a", "good day", &key);
-  EXPECT_TRUE(process.StartChromotingHost());
+  process.remoting_host_manager()->SetCredentials("email", "token");
+  process.remoting_host_manager()->Enable();
   MessageLoop::current()->Run();
 
   EXPECT_TRUE(process.Teardown());

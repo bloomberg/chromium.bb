@@ -14,6 +14,7 @@
 #include "chrome/service/cloud_print/print_system.h"
 #include "chrome/service/service_process.h"
 #include "chrome/service/service_process_prefs.h"
+#include "googleurl/src/gurl.h"
 
 // This method is invoked on the IO thread to launch the browser process to
 // display a desktop notification that the Cloud Print token is invalid and

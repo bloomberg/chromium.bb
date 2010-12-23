@@ -262,8 +262,8 @@ void RemotingSetupFlow::OnUserSubmittedAuth(const std::string& user,
 void RemotingSetupFlow::OnProcessLaunched() {
   DCHECK(process_control_->is_connected());
   // TODO(hclam): Need to wait for an ACK to be sure that it is actually active.
-  process_control_->EnableRemotingWithTokens(login_, remoting_token_,
-                                             sync_token_);
+  process_control_->SetRemotingHostCredentials(login_, sync_token_);
+  process_control_->EnableRemotingHost();
 
   // Save the preference that we have completed the setup of remoting.
   profile_->GetPrefs()->SetBoolean(prefs::kRemotingHasSetupCompleted, true);

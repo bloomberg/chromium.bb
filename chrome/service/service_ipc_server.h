@@ -44,11 +44,16 @@ class ServiceIPCServer : public IPC::Channel::Listener,
   void OnEnableCloudPrintProxyWithTokens(const std::string& cloud_print_token,
                                          const std::string& talk_token);
   void OnIsCloudPrintProxyEnabled();
-
-  void OnEnableRemotingWithTokens(const std::string& login,
-                                  const std::string& remoting_token,
-                                  const std::string& talk_token);
   void OnDisableCloudPrintProxy();
+
+#if defined(ENABLE_REMOTING)
+  void OnSetRemotingHostCredentials(const std::string& login,
+                                      const std::string& talk_token);
+  void OnEnableRemotingHost();
+  void OnDisableRemotingHost();
+  void OnGetRemotingHostInfo();
+#endif  // defined(ENABLE_REMOTING)
+
   void OnHello();
   void OnShutdown();
   void OnUpdateAvailable();

@@ -14,7 +14,7 @@
 #include "base/thread.h"
 #include "base/waitable_event.h"
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
-#include "chrome/service/remoting/remoting_directory_service.h"
+#include "chrome/service/remoting/chromoting_host_manager.h"
 
 class ServiceProcessPrefs;
 class ServiceIPCServer;
@@ -23,19 +23,12 @@ namespace net {
 class NetworkChangeNotifier;
 }
 
-namespace remoting {
-class ChromotingHost;
-class ChromotingHostContext;
-class HostKeyPair;
-class JsonHostConfig;
-}
-
 class CommandLine;
 
 // The ServiceProcess does not inherit from ChildProcess because this
 // process can live independently of the browser process.
-class ServiceProcess : public RemotingDirectoryService::Client,
-                       public CloudPrintProxy::Client {
+class ServiceProcess : public CloudPrintProxy::Client,
+                       public remoting::ChromotingHostManager::Observer {
  public:
   ServiceProcess();
   ~ServiceProcess();
@@ -92,27 +85,15 @@ class ServiceProcess : public RemotingDirectoryService::Client,
   virtual void OnCloudPrintProxyEnabled();
   virtual void OnCloudPrintProxyDisabled();
 
+  // ChromotingHostManager::Observer interface.
+  virtual void OnRemotingHostEnabled();
+  virtual void OnRemotingHostDisabled();
+
 #if defined(ENABLE_REMOTING)
   // Return the reference to the chromoting host only if it has started.
-  remoting::ChromotingHost* GetChromotingHost() { return chromoting_host_; }
-
-  // Enable chromoting host with the tokens.
-  // Return true if successful.
-  bool EnableChromotingHostWithTokens(const std::string& login,
-                                      const std::string& remoting_token,
-                                      const std::string& talk_token);
-
-  // Start running the chromoting host asynchronously.
-  // Return true if chromoting host has started.
-  bool StartChromotingHost();
-
-  // Shutdown chromoting host. Return true if chromoting host was shutdown.
-  // The shutdown process will happen asynchronously.
-  bool ShutdownChromotingHost();
-
-  // RemotingDirectoryService::Client implementation.
-  virtual void OnRemotingHostAdded();
-  virtual void OnRemotingDirectoryError();
+  remoting::ChromotingHostManager* remoting_host_manager() {
+    return remoting_host_manager_;
+  }
 #endif
 
  private:
@@ -128,45 +109,12 @@ class ServiceProcess : public RemotingDirectoryService::Client,
   // disabled in this process (note that shutdown != disabled).
   void OnServiceDisabled();
 
-#if defined(ENABLE_REMOTING)
-  FRIEND_TEST_ALL_PREFIXES(ServiceProcessTest, RunChromoting);
-  FRIEND_TEST_ALL_PREFIXES(ServiceProcessTest, RunChromotingUntilShutdown);
-
-  // Save authenication token to the json config file.
-  void SaveChromotingConfig(
-      const std::string& login,
-      const std::string& token,
-      const std::string& host_id,
-      const std::string& host_name,
-      remoting::HostKeyPair* host_key_pair);
-
-  // Load settings for chromoting from json file.
-  void LoadChromotingConfig();
-
-  // This method is called when chromoting is shutting down. This is virtual
-  // for used in the test.
-  virtual void OnChromotingHostShutdown();
-#endif
-
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_ptr<base::Thread> io_thread_;
   scoped_ptr<base::Thread> file_thread_;
   scoped_ptr<CloudPrintProxy> cloud_print_proxy_;
   scoped_ptr<ServiceProcessPrefs> service_prefs_;
   scoped_ptr<ServiceIPCServer> ipc_server_;
-
-#if defined(ENABLE_REMOTING)
-  scoped_refptr<remoting::JsonHostConfig> chromoting_config_;
-  scoped_ptr<remoting::ChromotingHostContext> chromoting_context_;
-  scoped_refptr<remoting::ChromotingHost> chromoting_host_;
-  scoped_ptr<RemotingDirectoryService> remoting_directory_;
-
-  // Temporary storage for remoting credentials. The content is cleared
-  // after it is saved.
-  std::string remoting_login_;
-  std::string remoting_token_;
-  std::string talk_token_;
-#endif
 
   // An event that will be signalled when we shutdown.
   base::WaitableEvent shutdown_event_;
@@ -179,6 +127,10 @@ class ServiceProcess : public RemotingDirectoryService::Client,
 
   // Speficies whether a product update is available.
   bool update_available_;
+
+#if defined(ENABLE_REMOTING)
+  scoped_refptr<remoting::ChromotingHostManager> remoting_host_manager_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ServiceProcess);
 };

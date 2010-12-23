@@ -243,6 +243,8 @@ void ServiceProcessControl::OnMessageReceived(const IPC::Message& message) {
       IPC_MESSAGE_HANDLER(ServiceHostMsg_GoodDay, OnGoodDay)
       IPC_MESSAGE_HANDLER(ServiceHostMsg_CloudPrintProxy_IsEnabled,
                           OnCloudPrintProxyIsEnabled)
+      IPC_MESSAGE_HANDLER(ServiceHostMsg_RemotingHost_HostInfo,
+                          OnRemotingHostInfo)
   IPC_END_MESSAGE_MAP()
 }
 
@@ -273,7 +275,6 @@ void ServiceProcessControl::Observe(NotificationType type,
   }
 }
 
-
 void ServiceProcessControl::OnGoodDay() {
   if (!message_handler_)
     return;
@@ -290,6 +291,22 @@ void ServiceProcessControl::OnCloudPrintProxyIsEnabled(bool enabled,
   }
 }
 
+void ServiceProcessControl::OnRemotingHostInfo(
+    remoting::ChromotingHostInfo host_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (remoting_host_status_callback_ != NULL) {
+    remoting_host_status_callback_->Run(host_info);
+    remoting_host_status_callback_.reset();
+  }
+}
+
+bool ServiceProcessControl::GetCloudPrintProxyStatus(
+    Callback2<bool, std::string>::Type* cloud_print_status_callback) {
+  DCHECK(cloud_print_status_callback);
+  cloud_print_status_callback_.reset(cloud_print_status_callback);
+  return Send(new ServiceMsg_IsCloudPrintProxyEnabled);
+}
+
 bool ServiceProcessControl::SendHello() {
   return Send(new ServiceMsg_Hello());
 }
@@ -300,20 +317,26 @@ bool ServiceProcessControl::Shutdown() {
   return ret;
 }
 
-bool ServiceProcessControl::EnableRemotingWithTokens(
+bool ServiceProcessControl::SetRemotingHostCredentials(
     const std::string& user,
-    const std::string& remoting_token,
     const std::string& talk_token) {
   return Send(
-      new ServiceMsg_EnableRemotingWithTokens(user, remoting_token,
-                                              talk_token));
+      new ServiceMsg_SetRemotingHostCredentials(user, talk_token));
 }
 
-bool ServiceProcessControl::GetCloudPrintProxyStatus(
-    Callback2<bool, std::string>::Type* cloud_print_status_callback) {
-  DCHECK(cloud_print_status_callback);
-  cloud_print_status_callback_.reset(cloud_print_status_callback);
-  return Send(new ServiceMsg_IsCloudPrintProxyEnabled);
+bool ServiceProcessControl::EnableRemotingHost() {
+  return Send(new ServiceMsg_EnableRemotingHost());
+}
+
+bool ServiceProcessControl::DisableRemotingHost() {
+  return Send(new ServiceMsg_DisableRemotingHost());
+}
+
+bool ServiceProcessControl::GetRemotingHostStatus(
+    GetRemotingHostStatusCallback* status_callback) {
+  DCHECK(status_callback);
+  remoting_host_status_callback_.reset(status_callback);
+  return Send(new ServiceMsg_GetRemotingHostInfo);
 }
 
 DISABLE_RUNNABLE_METHOD_REFCOUNT(ServiceProcessControl);
