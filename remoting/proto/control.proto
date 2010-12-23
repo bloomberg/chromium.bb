@@ -14,9 +14,9 @@ package remoting.protocol;
 message SuggestResolutionRequest {
   required int32 width = 1;
   required int32 height = 2;
-};
+}
 
 message NotifyResolutionRequest {
   required int32 width = 1;
   required int32 height = 2;
-};
+}

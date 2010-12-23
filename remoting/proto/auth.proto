@@ -19,3 +19,45 @@ message ClientAuthToken {
   // A short-lived OAuth token identifying the client to the host.
   optional string client_oauth_token = 3;
 }
+
+// There can be more challenge types later
+enum CredentialType {
+  PASSWORD = 0;
+}
+
+message LocalLoginCredentials {
+  optional CredentialType type = 1;
+  optional string username = 2;
+  optional bytes credential = 3;
+}
+
+message LocalLoginStatus {
+  optional bool success = 1;
+
+  // Only populated if success is set to false.
+  optional int32 tries_remaining = 2 [default = 0];
+  optional string error_info = 3;
+}
+
+// Sent from the Host to the Client.  This is the first message after
+// channels are established.
+message LocalLoginProperties {
+  repeated CredentialType supported_credential_types = 1;
+
+  // Used to generate the bank style anti-phishing image.
+  // This info is stored only on the host.
+  optional bytes antiphish_image = 2;
+  optional bytes antiphish_text = 3;
+}
+
+// Sent from Client to Host.  This consists of both the login attempt,
+// and any session configuration information.
+message BeginSessionRequest {
+  optional LocalLoginCredentials credentials = 1;
+}
+
+// Sent from Host to Client.  Replies with login success, and
+// final client configuration.
+message BeginSessionResponse {
+  optional LocalLoginStatus login_status = 1;
+}
