@@ -8,3 +8,6 @@
 BUGCR64371 WIN RELEASE : http/tests/appcache/online-whitelist.html = TEXT
 BUGPKASTING WIN MAC DEBUG SLOW: fast/encoding/parser-tests.html = PASS
 BUGCR67463 MAC : editing/selection/caret-mode-paragraph-keys-navigation.html = TEXT
+
+BUGCR67919 WIN LINUX MAC : fast/events/touch/touch-target.html = IMAGE+TEXT TIMEOUT
+BUGCR67919 WIN LINUX MAC : fast/css/box-shadow.htm = IMAGE+TEXT TIMEOUT
