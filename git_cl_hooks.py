@@ -8,8 +8,8 @@ import sys
 
 import breakpad  # pylint: disable=W0611
 
-from git_cl_repo import git_cl
-from git_cl_repo import upload
+from git_cl import git_cl
+from git_cl import upload
 
 import presubmit_support
 import scm
