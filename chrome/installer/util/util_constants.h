@@ -13,47 +13,63 @@ namespace installer {
 
 // Return status of installer
 enum InstallStatus {
-  FIRST_INSTALL_SUCCESS, // Successfully installed Chrome for the first time
-  INSTALL_REPAIRED,      // Same version reinstalled for repair
-  NEW_VERSION_UPDATED,   // Chrome successfully updated to new version
-  EXISTING_VERSION_LAUNCHED,  // No work done, just launched existing chrome
-  HIGHER_VERSION_EXISTS, // Higher version of Chrome already exists
-  USER_LEVEL_INSTALL_EXISTS, // User level install already exists
-  SYSTEM_LEVEL_INSTALL_EXISTS, // Machine level install already exists
-  INSTALL_FAILED,        // Install/update failed
-  SETUP_PATCH_FAILED,    // Failed to patch setup.exe
-  OS_NOT_SUPPORTED,      // Current OS not supported
-  OS_ERROR,              // OS API call failed
-  TEMP_DIR_FAILED,       // Unable to get Temp directory
-  UNCOMPRESSION_FAILED,  // Failed to uncompress Chrome archive
-  INVALID_ARCHIVE,       // Something wrong with the installer archive
-  INSUFFICIENT_RIGHTS,   // User trying system level install is not Admin
-  CHROME_NOT_INSTALLED,  // Chrome not installed (returned in case of uninstall)
-  CHROME_RUNNING,        // Chrome currently running (when trying to uninstall)
-  UNINSTALL_CONFIRMED,   // User has confirmed Chrome uninstall
-  UNINSTALL_DELETE_PROFILE, // User confirmed uninstall and profile deletion
-  UNINSTALL_SUCCESSFUL,  // Chrome successfully uninstalled
-  UNINSTALL_FAILED,      // Chrome uninstallation failed
-  UNINSTALL_CANCELLED,   // User cancelled Chrome uninstallation
-  UNKNOWN_STATUS,        // Unknown status (this should never happen)
-  RENAME_SUCCESSFUL,     // Rename of new_chrome.exe to chrome.exe worked
-  RENAME_FAILED,         // Rename of new_chrome.exe failed
-  EULA_REJECTED,         // EULA dialog was not accepted by user.
-  EULA_ACCEPTED,         // EULA dialog was accepted by user.
-  EULA_ACCEPTED_OPT_IN,  // EULA accepted wtih the crash optin selected.
-  INSTALL_DIR_IN_USE,    // Installation directory is in use by another process
-  UNINSTALL_REQUIRES_REBOOT, // Uninstallation required a reboot.
-  IN_USE_UPDATED,        // Chrome successfully updated but old version running
-  SAME_VERSION_REPAIR_FAILED, // Chrome repair failed as Chrome was running
-  REENTRY_SYS_UPDATE,    // Setup has been re-launched as the interactive user
-  SXS_OPTION_NOT_SUPPORTED  // The chrome-sxs option provided does not work
-                            // with other command line options.
+  FIRST_INSTALL_SUCCESS, // 0. Successfully installed Chrome for the first time
+  INSTALL_REPAIRED,      // 1. Same version reinstalled for repair
+  NEW_VERSION_UPDATED,   // 2. Chrome successfully updated to new version
+  EXISTING_VERSION_LAUNCHED,  // 3. No work done, just launched existing chrome
+  HIGHER_VERSION_EXISTS, // 4. Higher version of Chrome already exists
+  USER_LEVEL_INSTALL_EXISTS, // 5. User level install already exists
+  SYSTEM_LEVEL_INSTALL_EXISTS, // 6. Machine level install already exists
+  INSTALL_FAILED,        // 7. Install/update failed
+  SETUP_PATCH_FAILED,    // 8. Failed to patch setup.exe
+  OS_NOT_SUPPORTED,      // 9. Current OS not supported
+  OS_ERROR,              // 10. OS API call failed
+  TEMP_DIR_FAILED,       // 11. Unable to get Temp directory
+  UNCOMPRESSION_FAILED,  // 12. Failed to uncompress Chrome archive
+  INVALID_ARCHIVE,       // 13. Something wrong with the installer archive
+  INSUFFICIENT_RIGHTS,   // 14. User trying system level install is not Admin
+  CHROME_NOT_INSTALLED,  // 15. Chrome not installed (returned in case of
+                         // uninstall)
+  CHROME_RUNNING,        // 16. Chrome currently running (when trying to
+                         // uninstall)
+  UNINSTALL_CONFIRMED,   // 17. User has confirmed Chrome uninstall
+  UNINSTALL_DELETE_PROFILE, // 18. User confirmed uninstall and profile deletion
+  UNINSTALL_SUCCESSFUL,  // 19. Chrome successfully uninstalled
+  UNINSTALL_FAILED,      // 20. Chrome uninstallation failed
+  UNINSTALL_CANCELLED,   // 21. User cancelled Chrome uninstallation
+  UNKNOWN_STATUS,        // 22. Unknown status (this should never happen)
+  RENAME_SUCCESSFUL,     // 23. Rename of new_chrome.exe to chrome.exe worked
+  RENAME_FAILED,         // 24. Rename of new_chrome.exe failed
+  EULA_REJECTED,         // 25. EULA dialog was not accepted by user.
+  EULA_ACCEPTED,         // 26. EULA dialog was accepted by user.
+  EULA_ACCEPTED_OPT_IN,  // 27. EULA accepted wtih the crash optin selected.
+  INSTALL_DIR_IN_USE,    // 28. Installation directory is in use by another
+                         // process
+  UNINSTALL_REQUIRES_REBOOT, // 29. Uninstallation required a reboot.
+  IN_USE_UPDATED,        // 30. Chrome successfully updated but old version
+                         // running
+  SAME_VERSION_REPAIR_FAILED, // 31. Chrome repair failed as Chrome was running
+  REENTRY_SYS_UPDATE,    // 32. Setup has been re-launched as the interactive
+                         // user
+  SXS_OPTION_NOT_SUPPORTED,  // 33. The chrome-sxs option provided does not work
+                             // with other command line options.
+  NON_MULTI_INSTALLATION_EXISTS,  // 34. We tried to do a multi-install but
+                                  // failed because there's an existing
+                                  // installation of the same product on the
+                                  // system, but in 'single' mode.
+  MULTI_INSTALLATION_EXISTS,  // 35. We tried to do a 'single' install but
+                              // failed because there's an existing
+                              // multi-install installation of the same product
+                              // on the system.
+  READY_MODE_OPT_IN_FAILED,   // 36. Failed to opt-into Chrome Frame.
 };
 
 namespace switches {
 extern const char kCeee[];
 extern const char kChrome[];
 extern const char kChromeFrame[];
+extern const char kChromeFrameReadyMode[];
+extern const char kChromeFrameReadyModeOptIn[];
 extern const char kChromeSxS[];
 extern const char kCreateAllShortcuts[];
 extern const char kDeleteProfile[];
@@ -95,6 +111,7 @@ extern const wchar_t kChromeExe[];
 extern const wchar_t kChromeFrameDll[];
 extern const wchar_t kChromeFrameHelperExe[];
 extern const wchar_t kChromeFrameHelperWndClass[];
+extern const wchar_t kChromeFrameReadyModeField[];
 extern const wchar_t kChromeNaCl64Dll[];
 extern const wchar_t kChromeOldExe[];
 extern const wchar_t kChromeNewExe[];

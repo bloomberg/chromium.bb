@@ -243,11 +243,13 @@ std::wstring GetShortPathName(const wchar_t* path) {
   std::wstring short_path;
   DWORD length = GetShortPathName(path, WriteInto(&short_path, MAX_PATH),
                                   MAX_PATH);
-  DLOG_IF(WARNING, length == 0) << __FUNCTION__ << " gle=" << GetLastError();
+  DWORD last_error = ::GetLastError();
+  DLOG_IF(WARNING, length == 0 && last_error != ERROR_PATH_NOT_FOUND)
+      << __FUNCTION__ << " gle=" << last_error;
   if (length == 0) {
     // GetShortPathName fails if the path is no longer present. Instead of
     // returning an empty string, just return the original string. This will
-    // serve for our purposes.
+    // serve our purposes.
     return path;
   }
 

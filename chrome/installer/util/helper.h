@@ -13,6 +13,9 @@ class FilePath;
 
 namespace installer {
 
+// Checks if a distribution is currently installed as part of a multi-install.
+bool IsInstalledAsMulti(bool system_install, BrowserDistribution* dist);
+
 // This function returns the install path for Chrome depending on whether its
 // system wide install or user specific install.
 // system_install: if true, the function returns system wide location
@@ -25,6 +28,19 @@ FilePath GetChromeInstallPath(bool system_install, BrowserDistribution* dist);
 // that this is the default user data directory and does not take into account
 // that it can be overriden with a command line parameter.
 FilePath GetChromeUserDataPath(BrowserDistribution* dist);
+
+// This is a workaround while we unify Chrome and Chrome Frame installation
+// folders.  Right now, Chrome Frame can be installed into two different
+// folders: 1) A special "Chrome Frame" folder next to Chrome's folder
+// 2) The same folder as Chrome is installed into.
+// Right now this function will only return Chrome's installation folder
+// if Chrome Frame is not already installed or if Chrome Frame is installed
+// in multi_install mode.
+// If multi_install is false or if CF is installed in single mode, then the
+// returned path will be the "Chrome Frame" subfolder of either the user or
+// system default installation folders.
+FilePath GetChromeFrameInstallPath(bool multi_install, bool system_install,
+                                   BrowserDistribution* dist);
 
 }  // namespace installer
 

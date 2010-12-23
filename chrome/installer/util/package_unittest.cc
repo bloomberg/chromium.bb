@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/scoped_handle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/installer/util/browser_distribution.h"
-#include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/package.h"
@@ -17,7 +17,6 @@
 
 using base::win::RegKey;
 using base::win::ScopedHandle;
-using installer::ChannelInfo;
 using installer::ChromePackageProperties;
 using installer::ChromiumPackageProperties;
 using installer::Package;
@@ -134,6 +133,21 @@ TEST_F(PackageTest, WithProduct) {
   }
 }
 
+namespace {
+bool SetUninstallArguments(HKEY root, BrowserDistribution* dist,
+                           const CommandLine& args) {
+  RegKey key(root, dist->GetStateKey().c_str(), KEY_ALL_ACCESS);
+  return key.WriteValue(installer::kUninstallArgumentsField,
+                        args.command_line_string().c_str());
+}
+
+bool SetInstalledVersion(HKEY root, BrowserDistribution* dist,
+                         const std::wstring& version) {
+  RegKey key(root, dist->GetVersionKey().c_str(), KEY_ALL_ACCESS);
+  return key.WriteValue(google_update::kRegVersionField, version.c_str());
+}
+}  // end namespace
+
 TEST_F(PackageTest, Dependency) {
   const bool multi_install = false;
   const bool system_level = true;
@@ -152,26 +166,25 @@ TEST_F(PackageTest, Dependency) {
   BrowserDistribution* cf = BrowserDistribution::GetSpecificDistribution(
       BrowserDistribution::CHROME_FRAME, prefs);
 
+  CommandLine multi_uninstall_cmd(CommandLine::NO_PROGRAM);
+  multi_uninstall_cmd.AppendSwitch(installer::switches::kUninstall);
+  multi_uninstall_cmd.AppendSwitch(installer::switches::kMultiInstall);
+
+  CommandLine single_uninstall_cmd(CommandLine::NO_PROGRAM);
+  single_uninstall_cmd.AppendSwitch(installer::switches::kUninstall);
+
   // "install" Chrome.
-  RegKey chrome_version_key(root, chrome->GetVersionKey().c_str(),
-                            KEY_ALL_ACCESS);
-  RegKey chrome_key(root, chrome->GetStateKey().c_str(), KEY_ALL_ACCESS);
-  ChannelInfo channel;
-  channel.set_value(L"");
-  channel.SetMultiInstall(true);
-  channel.Write(&chrome_key);
+  SetUninstallArguments(root, chrome, multi_uninstall_cmd);
+  SetInstalledVersion(root, chrome, L"1.2.3.4");
   EXPECT_EQ(1U, package->GetMultiInstallDependencyCount());
 
   // "install" Chrome Frame without multi-install.
-  RegKey cf_version_key(root, cf->GetVersionKey().c_str(), KEY_ALL_ACCESS);
-  RegKey cf_key(root, cf->GetStateKey().c_str(), KEY_ALL_ACCESS);
-  channel.SetMultiInstall(false);
-  channel.Write(&cf_key);
+  SetUninstallArguments(root, cf, single_uninstall_cmd);
+  SetInstalledVersion(root, cf, L"1.2.3.4");
   EXPECT_EQ(1U, package->GetMultiInstallDependencyCount());
 
   // "install" Chrome Frame with multi-install.
-  channel.SetMultiInstall(true);
-  channel.Write(&cf_key);
+  SetUninstallArguments(root, cf, multi_uninstall_cmd);
   EXPECT_EQ(2U, package->GetMultiInstallDependencyCount());
 }
 

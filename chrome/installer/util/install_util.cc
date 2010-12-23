@@ -87,12 +87,14 @@ Version* InstallUtil::GetChromeVersion(BrowserDistribution* dist,
   HKEY reg_root = (system_install) ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   if (!key.Open(reg_root, dist->GetVersionKey().c_str(), KEY_READ) ||
       !key.ReadValue(google_update::kRegVersionField, &version_str)) {
-    VLOG(1) << "No existing Chrome install found.";
+    VLOG(1) << "No existing " << dist->GetApplicationName()
+            << " install found.";
     key.Close();
     return NULL;
   }
   key.Close();
-  VLOG(1) << "Existing Chrome version found " << version_str;
+  VLOG(1) << "Existing " << dist->GetApplicationName()
+          << " version found " << version_str;
   return Version::GetVersionFromString(version_str);
 }
 

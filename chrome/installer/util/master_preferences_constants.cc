@@ -11,6 +11,7 @@ namespace master_preferences {
   const char kCeee[] = "ceee";
   const char kChrome[] = "chrome";
   const char kChromeFrame[] = "chrome_frame";
+  const char kChromeFrameReadyMode[] = "ready_mode";
   const char kChromeShortcutIconIndex[] = "chrome_shortcut_icon_index";
   const char kCreateAllShortcuts[] = "create_all_shortcuts";
   const char kDisableLogging[] = "disable_logging";

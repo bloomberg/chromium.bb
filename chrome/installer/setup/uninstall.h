@@ -30,7 +30,8 @@ bool DeleteChromeRegistrationKeys(BrowserDistribution* dist, HKEY root,
 // uninstalls/reinstalls to update.
 void RemoveLegacyRegistryKeys(BrowserDistribution* dist);
 
-// This function uninstalls Chrome.
+// This function uninstalls a product.  Hence we came up with this awesome
+// name for it.
 //
 // setup_path: Path to the executable (setup.exe) as it will be copied
 //           to temp folder before deleting Chrome folder.
@@ -40,7 +41,7 @@ void RemoveLegacyRegistryKeys(BrowserDistribution* dist);
 //                  any checks for Chrome running.
 // cmd_line: CommandLine that contains information about the command that
 //           was used to launch current uninstaller.
-installer::InstallStatus UninstallChrome(
+installer::InstallStatus UninstallProduct(
     const FilePath& setup_path, const Product& dist, bool remove_all,
     bool force_uninstall, const CommandLine& cmd_line);
 

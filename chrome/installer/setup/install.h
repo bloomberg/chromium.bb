@@ -18,6 +18,7 @@
 
 class DictionaryValue;
 class FilePath;
+class WorkItemList;
 
 namespace installer {
 
@@ -40,7 +41,7 @@ class Package;
 //
 // Note: since caller unpacks Chrome to install_temp_path\source, the caller
 // is responsible for cleaning up install_temp_path.
-installer::InstallStatus InstallOrUpdateChrome(
+installer::InstallStatus InstallOrUpdateProduct(
     const FilePath& setup_path, const FilePath& archive_path,
     const FilePath& install_temp_path, const FilePath& prefs_path,
     const installer::MasterPreferences& prefs, const Version& new_version,
@@ -59,6 +60,18 @@ bool RegisterComDllList(const FilePath& dll_folder,
                         bool system_level,
                         bool do_register,
                         bool rollback_on_failure);
+
+// Called for either installation or uninstallation. This method updates the
+// registry according to Chrome Frame specific options for the current
+// installation.  This includes handling of the ready-mode option.
+void AddChromeFrameWorkItems(bool install, const FilePath& setup_path,
+                             const Version& new_version, const Product& product,
+                             WorkItemList* list);
+
+// Removes the ChromeFrameReadyMode flag from the registry, updates Chrome's
+// uninstallation commands to only uninstall Chrome, and adds an entry to the
+// Add/Remove Programs list for GCF.
+InstallStatus ChromeFrameReadyModeOptIn(const CommandLine& cmd_line);
 
 }  // namespace installer
 

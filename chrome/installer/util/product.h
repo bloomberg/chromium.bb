@@ -60,6 +60,14 @@ class Product : public base::RefCounted<Product> {
     return package().system_level();
   }
 
+  bool is_chrome() const {
+    return distribution_->GetType() == BrowserDistribution::CHROME_BROWSER;
+  }
+
+  bool is_chrome_frame() const {
+    return distribution_->GetType() == BrowserDistribution::CHROME_FRAME;
+  }
+
   // Returns the path to the directory that holds the user data.  This is always
   // inside "Users\<user>\Local Settings".  Note that this is the default user
   // data directory and does not take into account that it can be overriden with
@@ -94,6 +102,10 @@ class Product : public base::RefCounted<Product> {
   // Google Update registry key. Returns the version or NULL if no version is
   // found.  The returned Version object is owned by |this| Product instance.
   const Version* GetInstalledVersion() const;
+
+  // Returns true if setup should create an entry in the Add/Remove list
+  // of installed applications.
+  bool ShouldCreateUninstallEntry() const;
 
   // Returns true if the product is already installed.
   bool IsInstalled() const;

@@ -11,6 +11,7 @@
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/delete_tree_work_item.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/master_preferences.h"
@@ -200,19 +201,9 @@ size_t Package::GetMultiInstallDependencyCount() const {
     if (!version_key.Valid()) {
       VLOG(1) << "Product not installed: " << dist->GetApplicationName();
     } else {
-      RegKey key(root_key, dist->GetStateKey().c_str(), KEY_READ);
-      ChannelInfo channel_info;
-      if (channel_info.Initialize(key)) {
-        if (channel_info.IsMultiInstall()) {
-          VLOG(1) << "Product dependency: " << dist->GetApplicationName();
-          ret++;
-        } else {
-          VLOG(1) << "Product is installed, but not multi: "
-                  << dist->GetApplicationName();
-        }
-      } else {
-        LOG(INFO) << "Product missing 'ap' value: "
-                  << dist->GetApplicationName();
+      if (installer::IsInstalledAsMulti(system_level_, dist)) {
+        VLOG(1) << "Product dependency: " << dist->GetApplicationName();
+        ++ret;
       }
     }
   }

@@ -17,6 +17,7 @@
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/master_preferences.h"
+#include "chrome/installer/util/master_preferences_constants.h"
 
 #include "installer_util_strings.h"  // NOLINT
 
@@ -26,9 +27,11 @@ const wchar_t kChromeFrameGuid[] = L"{8BA986DA-5100-405E-AA35-86F34A02ACBF}";
 
 ChromeFrameDistribution::ChromeFrameDistribution(
     const installer::MasterPreferences& prefs)
-        : BrowserDistribution(prefs) {
+        : BrowserDistribution(prefs), ceee_(prefs.install_ceee()),
+          ready_mode_(false) {
   type_ = BrowserDistribution::CHROME_FRAME;
-  ceee_ = prefs.install_ceee();
+  prefs.GetBool(installer::master_preferences::kChromeFrameReadyMode,
+                &ready_mode_);
 }
 
 std::wstring ChromeFrameDistribution::GetAppGuid() {
@@ -137,9 +140,17 @@ std::vector<FilePath> ChromeFrameDistribution::GetComDllList() {
 void ChromeFrameDistribution::AppendUninstallCommandLineFlags(
     CommandLine* cmd_line) {
   DCHECK(cmd_line);
-  cmd_line->AppendSwitch(installer::switches::kDeleteProfile);
   cmd_line->AppendSwitch(installer::switches::kChromeFrame);
-  if (ceee_) {
+
+  if (ceee_)
     cmd_line->AppendSwitch(installer::switches::kCeee);
-  }
+
+  if (ready_mode_)
+    cmd_line->AppendSwitch(installer::switches::kChromeFrameReadyMode);
+}
+
+bool ChromeFrameDistribution::ShouldCreateUninstallEntry() {
+  // If Chrome Frame is being installed in ready mode, then we will not
+  // add an entry to the add/remove dialog.
+  return !ready_mode_;
 }

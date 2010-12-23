@@ -62,6 +62,8 @@ class ChromeFrameDistribution : public BrowserDistribution {
 
   virtual void AppendUninstallCommandLineFlags(CommandLine* cmd_line);
 
+  virtual bool ShouldCreateUninstallEntry();
+
  protected:
   friend class BrowserDistribution;
 
@@ -72,6 +74,9 @@ class ChromeFrameDistribution : public BrowserDistribution {
   // Determines whether this Chrome Frame distribution is being used to work
   // with CEEE bits as well.
   bool ceee_;
+
+  // True when Chrome Frame is installed in ready mode (users have to opt in).
+  bool ready_mode_;
 };
 
 #endif  // CHROME_INSTALLER_UTIL_CHROME_FRAME_DISTRIBUTION_H_

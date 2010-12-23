@@ -20,11 +20,11 @@
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
-#include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/logging_installer.h"
+#include "chrome/installer/util/package_properties.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 
@@ -32,7 +32,6 @@
 #include "registered_dlls.h"  // NOLINT
 
 using base::win::RegKey;
-using installer::ChannelInfo;
 using installer::InstallStatus;
 
 namespace installer {
@@ -135,8 +134,7 @@ bool CurrentUserHasDefaultBrowser(const Product& product) {
 // to remove the alternate desktop shortcut. Only one of them should be
 // present in a given install but at this point we don't know which one.
 void DeleteChromeShortcuts(const Product& product) {
-  if (product.distribution()->GetType() !=
-      BrowserDistribution::CHROME_BROWSER) {
+  if (!product.is_chrome()) {
     VLOG(1) << __FUNCTION__ " called for non-CHROME distribution";
     return;
   }
@@ -251,8 +249,7 @@ DeleteResult DeleteLocalState(const Product& product) {
   if (!file_util::Delete(user_local_state, true)) {
     LOG(ERROR) << "Failed to delete user profile dir: "
                << user_local_state.value();
-    if (product.distribution()->GetType() ==
-        BrowserDistribution::CHROME_FRAME) {
+    if (product.is_chrome_frame()) {
       ScheduleDirectoryForDeletion(user_local_state.value().c_str());
       result = DELETE_REQUIRES_REBOOT;
     } else {
@@ -279,7 +276,9 @@ bool MoveSetupOutOfInstallFolder(const Package& package,
   if (!file_util::CreateTemporaryFile(&temp_file)) {
     LOG(ERROR) << "Failed to create temporary file for setup.exe.";
   } else {
+    VLOG(1) << "Attempting to move setup to: " << temp_file.value();
     ret = file_util::Move(setup_exe, temp_file);
+    LOG_IF(ERROR, !ret) << "Failed to move setup to " << temp_file.value();
   }
   return ret;
 }
@@ -371,8 +370,7 @@ bool ShouldDeleteProfile(const CommandLine& cmd_line, InstallStatus status,
   // UI to prompt otherwise and the profile stores no useful data anyway)
   // unless they are managed by MSI. MSI uninstalls will explicitly include
   // the --delete-profile flag to distinguish them from MSI upgrades.
-  if (product.distribution()->GetType() !=
-      BrowserDistribution::CHROME_BROWSER && !product.IsMsi()) {
+  if (!product.is_chrome() && !product.IsMsi()) {
     should_delete = true;
   } else {
     should_delete =
@@ -478,11 +476,23 @@ const wchar_t kChromeExtProgId[] = L"ChromiumExt";
   }
 }
 
-InstallStatus UninstallChrome(const FilePath& setup_path,
-                              const Product& product,
-                              bool remove_all,
-                              bool force_uninstall,
-                              const CommandLine& cmd_line) {
+bool ProcessChromeFrameWorkItems(const FilePath& setup_path,
+                                 const Product& product) {
+  if (!product.is_chrome_frame())
+    return false;
+
+  const Version* version = product.GetInstalledVersion();
+  scoped_ptr<WorkItemList> item_list(WorkItem::CreateWorkItemList());
+  AddChromeFrameWorkItems(false, setup_path, *version, product,
+                          item_list.get());
+  return item_list->Do();
+}
+
+InstallStatus UninstallProduct(const FilePath& setup_path,
+                               const Product& product,
+                               bool remove_all,
+                               bool force_uninstall,
+                               const CommandLine& cmd_line) {
   InstallStatus status = installer::UNINSTALL_CONFIRMED;
   std::wstring suffix;
   if (!ShellUtil::GetUserSpecificDefaultBrowserSuffix(product.distribution(),
@@ -490,21 +500,9 @@ InstallStatus UninstallChrome(const FilePath& setup_path,
     suffix = L"";
 
   BrowserDistribution* browser_dist = product.distribution();
-  bool is_chrome = (browser_dist->GetType() ==
-                    BrowserDistribution::CHROME_BROWSER);
+  bool is_chrome = product.is_chrome();
 
-  VLOG(1) << "UninstallChrome: " << browser_dist->GetApplicationName();
-
-  // Stash away information about the channel which the product is currently
-  // installed on.  We'll need this later to determine if we should delete
-  // the binaries or not.
-  ChannelInfo channel_info;
-  {
-    HKEY root_key = product.system_level() ? HKEY_LOCAL_MACHINE :
-                                             HKEY_CURRENT_USER;
-    RegKey key(root_key, browser_dist->GetStateKey().c_str(), KEY_READ);
-    channel_info.Initialize(key);
-  }
+  VLOG(1) << "UninstallProduct: " << browser_dist->GetApplicationName();
 
   if (force_uninstall) {
     // Since --force-uninstall command line option is used, we are going to
@@ -543,9 +541,6 @@ InstallStatus UninstallChrome(const FilePath& setup_path,
     }
   }
 
-  // Get the version of installed Chrome (if any)
-  const Version* installed_version = product.GetInstalledVersion();
-
   // Chrome is not in use so lets uninstall Chrome by deleting various files
   // and registry entries. Here we will just make best effort and keep going
   // in case of errors.
@@ -576,6 +571,9 @@ InstallStatus UninstallChrome(const FilePath& setup_path,
   InstallStatus ret = installer::UNKNOWN_STATUS;
   DeleteChromeRegistrationKeys(product.distribution(), reg_root, suffix, ret);
 
+  if (!is_chrome)
+    ProcessChromeFrameWorkItems(setup_path, product);
+
   // For user level install also we end up creating some keys in HKLM if user
   // sets Chrome as default browser. So delete those as well (needs admin).
   if (remove_all && !product.system_level() &&
@@ -583,6 +581,9 @@ InstallStatus UninstallChrome(const FilePath& setup_path,
     DeleteChromeRegistrationKeys(product.distribution(), HKEY_LOCAL_MACHINE,
                                  suffix, ret);
   }
+
+  // Get the version of the installed product (if any)
+  const Version* installed_version = product.GetInstalledVersion();
 
   // Delete shared registry keys as well (these require admin rights) if
   // remove_all option is specified.
@@ -610,7 +611,7 @@ InstallStatus UninstallChrome(const FilePath& setup_path,
   }
 
   // Close any Chrome Frame helper processes that may be running.
-  if (product.distribution()->GetType() == BrowserDistribution::CHROME_FRAME) {
+  if (product.is_chrome_frame()) {
     VLOG(1) << "Closing the Chrome Frame helper process";
     CloseChromeFrameHelperProcess();
   }
@@ -623,33 +624,37 @@ InstallStatus UninstallChrome(const FilePath& setup_path,
   bool delete_profile = ShouldDeleteProfile(cmd_line, status, product);
   ret = installer::UNINSTALL_SUCCESSFUL;
 
-  // In order to be able to remove the folder in which we're running, we
-  // need to move setup.exe out of the install folder.
-  // TODO(tommi): What if the temp folder is on a different volume?
-  MoveSetupOutOfInstallFolder(product.package(), setup_path,
-                              *installed_version);
-
-  FilePath backup_state_file(BackupLocalStateFile(
-      GetLocalStateFolder(product)));
-
   // When deleting files, we must make sure that we're either a "single"
   // (aka non-multi) installation or, in the case of multi, that no other
   // "multi" products share the binaries we are about to delete.
 
   bool can_delete_files;
-  if (channel_info.IsMultiInstall()) {
+  if (product.package().multi_install()) {
     can_delete_files =
         (product.package().GetMultiInstallDependencyCount() == 0);
     LOG(INFO) << (can_delete_files ? "Shared binaries will be deleted." :
                                      "Shared binaries still in use.");
+    PackageProperties* props = product.package().properties();
+    if (can_delete_files && props->ReceivesUpdates()) {
+      InstallUtil::DeleteRegistryKey(key, props->GetVersionKey());
+    }
   } else {
     can_delete_files = true;
   }
 
+  FilePath backup_state_file(BackupLocalStateFile(
+      GetLocalStateFolder(product)));
+
   DeleteResult delete_result = DELETE_SUCCEEDED;
-  if (can_delete_files)
+  if (can_delete_files) {
+    // In order to be able to remove the folder in which we're running, we
+    // need to move setup.exe out of the install folder.
+    // TODO(tommi): What if the temp folder is on a different volume?
+    MoveSetupOutOfInstallFolder(product.package(), setup_path,
+                                *installed_version);
     delete_result = DeleteFilesAndFolders(product.package(),
                                           *installed_version);
+  }
 
   if (delete_profile)
     DeleteLocalState(product);

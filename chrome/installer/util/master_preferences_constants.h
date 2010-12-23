@@ -27,6 +27,8 @@ extern const char kCeee[];
 extern const char kChrome[];
 // Boolean. This is to be a Chrome Frame install.
 extern const char kChromeFrame[];
+// Boolean. Chrome Frame is to be installed in ready-mode.
+extern const char kChromeFrameReadyMode[];
 // Integer. Icon index from chrome.exe to use for shortcuts.
 extern const char kChromeShortcutIconIndex[];
 // Boolean. Create Desktop and QuickLaunch shortcuts. Cmd line override present.

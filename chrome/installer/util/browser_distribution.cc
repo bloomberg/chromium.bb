@@ -232,3 +232,7 @@ void BrowserDistribution::AppendUninstallCommandLineFlags(
   DCHECK(cmd_line);
   cmd_line->AppendSwitch(installer::switches::kChrome);
 }
+
+bool BrowserDistribution::ShouldCreateUninstallEntry() {
+  return true;
+}

@@ -117,8 +117,7 @@ bool Product::IsMsi() const {
   if ((cache_state_ & MSI_STATE) == 0) {
     msi_ = false;  // Covers failure cases below.
 
-    const MasterPreferences& prefs =
-        installer::MasterPreferences::ForCurrentProcess();
+    const MasterPreferences& prefs = MasterPreferences::ForCurrentProcess();
 
     bool is_msi = false;
     prefs.GetBool(installer::master_preferences::kMsi, &is_msi);
@@ -177,6 +176,15 @@ bool Product::IsInstalled() const {
   return GetInstalledVersion() != NULL;
 }
 
+bool Product::ShouldCreateUninstallEntry() const {
+  if (IsMsi()) {
+    // MSI installations will manage their own uninstall shortcuts.
+    return false;
+  }
+
+  return distribution_->ShouldCreateUninstallEntry();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 ProductPackageMapping::ProductPackageMapping(bool multi_install,
                                              bool system_level)
@@ -202,7 +210,22 @@ bool ProductPackageMapping::AddDistribution(BrowserDistribution* distribution) {
   // Each product type can be added exactly once.
   DCHECK(FindProduct(products_, distribution->GetType()) == NULL);
 
-  FilePath install_package(GetChromeInstallPath(system_level_, distribution));
+  FilePath install_package;
+  if (distribution->GetType() == BrowserDistribution::CHROME_BROWSER) {
+    install_package = GetChromeInstallPath(system_level_, distribution);
+  } else {
+    DCHECK_EQ(BrowserDistribution::CHROME_FRAME, distribution->GetType());
+    install_package = GetChromeFrameInstallPath(multi_install_, system_level_,
+                                                distribution);
+  }
+
+  if (install_package.empty()) {
+    LOG(ERROR) << "Got an empty installation path for "
+               << distribution->GetApplicationName()
+               << ".  It's likely that there's a conflicting "
+                  "installation present";
+    return false;
+  }
 
   scoped_refptr<Package> target_package;
   for (size_t i = 0; i < packages_.size(); ++i) {
@@ -234,7 +257,7 @@ bool ProductPackageMapping::AddDistribution(BrowserDistribution* distribution) {
 
 bool ProductPackageMapping::AddDistribution(
     BrowserDistribution::Type type,
-    const installer::MasterPreferences& prefs) {
+    const MasterPreferences& prefs) {
   BrowserDistribution* distribution =
       BrowserDistribution::GetSpecificDistribution(type, prefs);
   if (!distribution) {

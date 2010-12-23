@@ -124,6 +124,10 @@ class BrowserDistribution {
   // for this distribution will require.
   virtual void AppendUninstallCommandLineFlags(CommandLine* cmd_line);
 
+  // Returns true if install should create an uninstallation entry in the
+  // Add/Remove Programs dialog for this distribution.
+  virtual bool ShouldCreateUninstallEntry();
+
  protected:
   explicit BrowserDistribution(const installer::MasterPreferences& prefs);
 
