@@ -40,6 +40,7 @@
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/notifications/balloon.h"
@@ -2041,6 +2042,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   handler_map["OmniboxMovePopupSelection"] =
       &TestingAutomationProvider::OmniboxMovePopupSelection;
 
+  handler_map["GetInstantInfo"] = &TestingAutomationProvider::GetInstantInfo;
+
   handler_map["LoadSearchEngineInfo"] =
       &TestingAutomationProvider::LoadSearchEngineInfo;
   handler_map["GetSearchEngineInfo"] =
@@ -2969,6 +2972,32 @@ void TestingAutomationProvider::OmniboxAcceptInput(
   notification_observer_list_.AddObserver(observer);
 
   browser->window()->GetLocationBar()->AcceptInput();
+}
+
+// Sample json input: { "command": "GetInstantInfo" }
+void TestingAutomationProvider::GetInstantInfo(Browser* browser,
+                                               DictionaryValue* args,
+                                               IPC::Message* reply_message) {
+  DictionaryValue* info = new DictionaryValue;
+  if (browser->instant()) {
+    InstantController* instant = browser->instant();
+    info->SetBoolean("enabled", true);
+    info->SetBoolean("showing", instant->IsShowingInstant());
+    info->SetBoolean("active", instant->is_active());
+    info->SetBoolean("current", instant->IsCurrent());
+    if (instant->GetPreviewContents() &&
+        instant->GetPreviewContents()->tab_contents()) {
+      TabContents* contents = instant->GetPreviewContents()->tab_contents();
+      info->SetBoolean("loading", contents->is_loading());
+      info->SetString("location", contents->GetURL().spec());
+      info->SetString("title", contents->GetTitle());
+    }
+  } else {
+    info->SetBoolean("enabled", false);
+  }
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  return_value->Set("instant", info);
+  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
 }
 
 // Sample json input: { "command": "GetInitialLoadTimes" }

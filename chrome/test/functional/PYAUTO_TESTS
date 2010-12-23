@@ -48,6 +48,7 @@
       'history',
       'imports',
       'infobars',
+      'instant',
       'navigation',
       'notifications',
       # crbug.com/66072

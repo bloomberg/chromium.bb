@@ -540,6 +540,12 @@ class TestingAutomationProvider : public AutomationProvider,
                           DictionaryValue* args,
                           IPC::Message* reply_message);
 
+  // Generate dictionary info about instant tab.
+  // Uses the JSON interface for input/output.
+  void GetInstantInfo(Browser* browser,
+                      DictionaryValue* args,
+                      IPC::Message* reply_message);
+
   // Save the contents of a tab into a file.
   // Uses the JSON interface for input/output.
   void SaveTabContents(Browser* browser,
