@@ -70,8 +70,6 @@ class ConfigurationPolicyPrefKeeper
     const char* preference_path;  // A DictionaryValue path, not a file path.
   };
 
-  typedef std::set<const char*> ProxyPreferenceSet;
-
   // Returns the map entry that corresponds to |policy| in the map.
   const PolicyToPreferenceMapEntry* FindPolicyInMap(
       ConfigurationPolicyType policy,
