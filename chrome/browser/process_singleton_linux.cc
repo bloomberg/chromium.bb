@@ -315,7 +315,7 @@ bool IsChromeProcess(pid_t pid) {
   FilePath other_chrome_path(base::GetProcessExecutablePath(pid));
   return (!other_chrome_path.empty() &&
           other_chrome_path.BaseName() ==
-          FilePath::FromWStringHack(chrome::kBrowserProcessExecutableName));
+          FilePath(chrome::kBrowserProcessExecutableName));
 }
 
 // Return true if the given pid is one of our child processes.

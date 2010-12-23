@@ -51,8 +51,8 @@ enum BrowserType {
 
 
 MemoryDetails::MemoryDetails() {
-  static const std::wstring google_browser_name =
-      l10n_util::GetString(IDS_PRODUCT_NAME);
+  static const std::string google_browser_name =
+      l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);
   // (Human and process) names of browsers; should match the ordering for
   // |BrowserProcess| (i.e., |BrowserType|).
   // TODO(viettrungluu): The current setup means that we can't detect both
@@ -60,21 +60,21 @@ MemoryDetails::MemoryDetails() {
   // TODO(viettrungluu): Get localized browser names for other browsers
   // (crbug.com/25779).
   struct {
-    const wchar_t* name;
-    const wchar_t* process_name;
+    const char* name;
+    const char* process_name;
   } process_template[MAX_BROWSERS] = {
     { google_browser_name.c_str(), chrome::kBrowserProcessExecutableName, },
-    { L"Safari", L"Safari", },
-    { L"Firefox", L"firefox-bin", },
-    { L"Camino", L"Camino", },
-    { L"Opera", L"Opera", },
-    { L"OmniWeb", L"OmniWeb", },
+    { "Safari", "Safari", },
+    { "Firefox", "firefox-bin", },
+    { "Camino", "Camino", },
+    { "Opera", "Opera", },
+    { "OmniWeb", "OmniWeb", },
   };
 
   for (size_t index = 0; index < MAX_BROWSERS; ++index) {
     ProcessData process;
-    process.name = process_template[index].name;
-    process.process_name = process_template[index].process_name;
+    process.name = UTF8ToUTF16(process_template[index].name);
+    process.process_name = UTF8ToUTF16(process_template[index].process_name);
     process_data_.push_back(process);
   }
 }
@@ -104,8 +104,8 @@ void MemoryDetails::CollectProcessData(
   std::vector<base::ProcessId> pids_by_browser[MAX_BROWSERS];
   std::vector<base::ProcessId> all_pids;
   for (size_t index = CHROME_BROWSER; index < MAX_BROWSERS; index++) {
-    base::NamedProcessIterator process_it(process_data_[index].process_name,
-                                          NULL);
+    base::NamedProcessIterator process_it(
+        UTF16ToUTF8(process_data_[index].process_name), NULL);
 
     while (const base::ProcessEntry* entry = process_it.NextProcessEntry()) {
       pids_by_browser[index].push_back(entry->pid());
@@ -158,7 +158,7 @@ void MemoryDetails::CollectProcessData(
         info.version = version_info->product_version();
       } else {
         info.product_name = process_data_[index].name;
-        info.version = L"";
+        info.version = string16();
       }
 
       // Memory info.
@@ -202,11 +202,11 @@ void MemoryDetails::CollectProcessDataChrome(
 
   chrome::VersionInfo version_info;
   if (version_info.is_valid()) {
-    info.product_name = ASCIIToWide(version_info.Name());
-    info.version = ASCIIToWide(version_info.Version());
+    info.product_name = ASCIIToUTF16(version_info.Name());
+    info.version = ASCIIToUTF16(version_info.Version());
   } else {
     info.product_name = process_data_[CHROME_BROWSER].name;
-    info.version = L"";
+    info.version = string16();
   }
 
   // Check if this is one of the child processes whose data we collected

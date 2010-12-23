@@ -92,7 +92,7 @@ std::wstring TrimToBreakpadMax(const std::wstring& str) {
 google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& dll_path,
                                                  const std::wstring& type) {
   scoped_ptr<FileVersionInfo>
-      version_info(FileVersionInfo::CreateFileVersionInfo(dll_path));
+      version_info(FileVersionInfo::CreateFileVersionInfo(FilePath(dll_path)));
 
   std::wstring version, product;
   if (version_info.get()) {

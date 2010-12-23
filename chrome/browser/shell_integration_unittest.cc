@@ -150,7 +150,7 @@ TEST(ShellIntegrationTest, GetDesktopShortcutFilename) {
     { FPL("http___.._.desktop"), "http://../../../../" },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); i++) {
-    EXPECT_EQ(WideToASCII(chrome::kBrowserProcessExecutableName) + "-" +
+    EXPECT_EQ(std::string(chrome::kBrowserProcessExecutableName) + "-" +
               test_cases[i].path,
               ShellIntegration::GetDesktopShortcutFilename(
                   GURL(test_cases[i].url)).value()) <<

@@ -88,12 +88,7 @@ InProcessBrowserTest::InProcessBrowserTest()
   FilePath chrome_path;
   CHECK(PathService::Get(base::FILE_EXE, &chrome_path));
   chrome_path = chrome_path.DirName();
-#if defined(OS_WIN)
   chrome_path = chrome_path.Append(chrome::kBrowserProcessExecutablePath);
-#elif defined(OS_POSIX)
-  chrome_path = chrome_path.Append(
-      WideToASCII(chrome::kBrowserProcessExecutablePath));
-#endif
   CHECK(PathService::Override(base::FILE_EXE, chrome_path));
 
   test_server_.reset(new net::TestServer(

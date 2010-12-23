@@ -135,7 +135,7 @@ class StartupTest : public UIPerfTest {
         ASSERT_TRUE(PathService::Get(chrome::DIR_APP, &dir_app));
 
         FilePath chrome_exe(dir_app.Append(
-            FilePath::FromWStringHack(chrome::kBrowserProcessExecutablePath)));
+            chrome::kBrowserProcessExecutablePath));
         ASSERT_TRUE(EvictFileFromSystemCacheWrapper(chrome_exe));
 #if defined(OS_WIN)
         // chrome.dll is windows specific.

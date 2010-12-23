@@ -158,7 +158,8 @@ class PageLoadTest : public testing::Test {
     // Check file version info for chrome dll.
     scoped_ptr<FileVersionInfo> file_info;
 #if defined(OS_WIN)
-    file_info.reset(FileVersionInfo::CreateFileVersionInfo(kChromeDll));
+    file_info.reset(
+        FileVersionInfo::CreateFileVersionInfo(FilePath(kChromeDll)));
 #elif defined(OS_LINUX) || defined(OS_MACOSX)
     // TODO(fmeawad): the version retrieved here belongs to the test module and
     // not the chrome binary, need to be changed to chrome binary instead.

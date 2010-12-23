@@ -293,7 +293,7 @@ bool ShellIntegration::GetDesktopShortcutTemplate(
 FilePath ShellIntegration::GetDesktopShortcutFilename(const GURL& url) {
   // Use a prefix, because xdg-desktop-menu requires it.
   std::string filename =
-      WideToUTF8(chrome::kBrowserProcessExecutableName) + "-" + url.spec();
+      std::string(chrome::kBrowserProcessExecutableName) + "-" + url.spec();
   file_util::ReplaceIllegalCharactersInPath(&filename, '_');
 
   FilePath desktop_path;

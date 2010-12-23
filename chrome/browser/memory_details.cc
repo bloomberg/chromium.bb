@@ -4,6 +4,7 @@
 
 #include "chrome/browser/memory_details.h"
 
+#include "app/l10n_util.h"
 #include "base/file_version_info.h"
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
 
 #if defined(OS_LINUX)
 #include "chrome/browser/zygote_host_linux.h"
@@ -88,7 +90,7 @@ void MemoryDetails::CollectChildInfoOnIOThread() {
       continue;
 
     info.type = iter->type();
-    info.titles.push_back(iter->name());
+    info.titles.push_back(WideToUTF16Hack(iter->name()));
     child_info.push_back(info);
   }
 
@@ -149,9 +151,9 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
           contents = host->delegate()->GetAsTabContents();
         if (!contents)
           continue;
-        std::wstring title = UTF16ToWideHack(contents->GetTitle());
+        string16 title = contents->GetTitle();
         if (!title.length())
-          title = L"Untitled";
+          title = l10n_util::GetStringUTF16(IDS_DEFAULT_TAB_TITLE);
         process.titles.push_back(title);
 
         // We need to check the pending entry as well as the virtual_url to

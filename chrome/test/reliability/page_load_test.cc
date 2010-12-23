@@ -163,7 +163,8 @@ class PageLoadTest : public UITest {
 #if defined(OS_WIN)
     // Check file version info for chrome dll.
     scoped_ptr<FileVersionInfo> file_info;
-    file_info.reset(FileVersionInfo::CreateFileVersionInfo(kChromeDll));
+    file_info.reset(
+        FileVersionInfo::CreateFileVersionInfo(FilePath(kChromeDll)));
     last_change = WideToASCII(file_info->last_change());
 #elif defined(OS_LINUX) || defined(OS_MACOSX)
     // TODO(fmeawad): On Mac, the version retrieved here belongs to the test

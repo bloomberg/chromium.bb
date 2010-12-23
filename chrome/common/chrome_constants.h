@@ -16,9 +16,9 @@ extern const char kChromeVersion[];
 
 extern const char kChromeVersionEnvVar[];
 
-extern const wchar_t kBrowserProcessExecutableName[];
-extern const wchar_t kHelperProcessExecutableName[];
-extern const wchar_t kBrowserProcessExecutablePath[];
+extern const FilePath::CharType kBrowserProcessExecutableName[];
+extern const FilePath::CharType kHelperProcessExecutableName[];
+extern const FilePath::CharType kBrowserProcessExecutablePath[];
 extern const FilePath::CharType kHelperProcessExecutablePath[];
 #if defined(OS_MACOSX)
 extern const FilePath::CharType kFrameworkName[];

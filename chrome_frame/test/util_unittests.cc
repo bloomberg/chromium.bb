@@ -58,7 +58,7 @@ TEST_F(UtilTests, GetModuleVersionTest) {
 
   // Use the method that goes to disk
   scoped_ptr<FileVersionInfo> base_info(
-      FileVersionInfo::CreateFileVersionInfo(path));
+      FileVersionInfo::CreateFileVersionInfo(FilePath(path)));
   EXPECT_TRUE(base_info.get() != NULL);
 
   // Use the method that doesn't go to disk

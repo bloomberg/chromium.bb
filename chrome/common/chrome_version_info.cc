@@ -32,19 +32,19 @@ bool VersionInfo::is_valid() const {
 std::string VersionInfo::Name() const {
   if (!is_valid())
     return std::string();
-  return WideToASCII(version_info_->product_name());
+  return UTF16ToASCII(version_info_->product_name());
 }
 
 std::string VersionInfo::Version() const {
   if (!is_valid())
     return std::string();
-  return WideToASCII(version_info_->product_version());
+  return UTF16ToASCII(version_info_->product_version());
 }
 
 std::string VersionInfo::LastChange() const {
   if (!is_valid())
     return std::string();
-  return WideToASCII(version_info_->last_change());
+  return UTF16ToASCII(version_info_->last_change());
 }
 
 bool VersionInfo::IsOfficialBuild() const {

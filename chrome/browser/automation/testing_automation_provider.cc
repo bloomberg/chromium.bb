@@ -2339,11 +2339,11 @@ void TestingAutomationProvider::GetBrowserInfo(
   DictionaryValue* properties = new DictionaryValue;
   properties->SetString("ChromeVersion", chrome::kChromeVersion);
   properties->SetString("BrowserProcessExecutableName",
-                        WideToUTF16Hack(chrome::kBrowserProcessExecutableName));
+                        chrome::kBrowserProcessExecutableName);
   properties->SetString("HelperProcessExecutableName",
-                        WideToUTF16Hack(chrome::kHelperProcessExecutableName));
+                        chrome::kHelperProcessExecutableName);
   properties->SetString("BrowserProcessExecutablePath",
-                        WideToUTF16Hack(chrome::kBrowserProcessExecutablePath));
+                        chrome::kBrowserProcessExecutablePath);
   properties->SetString("HelperProcessExecutablePath",
                         chrome::kHelperProcessExecutablePath);
   properties->SetString("command_line_string",

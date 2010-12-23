@@ -756,7 +756,7 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
                                      bool wait,
                                      base::ProcessHandle* process) {
   FilePath command = browser_directory_.Append(
-      FilePath::FromWStringHack(chrome::kBrowserProcessExecutablePath));
+      chrome::kBrowserProcessExecutablePath);
 
   CommandLine command_line(command);
 

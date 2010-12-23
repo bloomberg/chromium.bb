@@ -118,7 +118,7 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
   // Try to kill any orphaned testserver processes that may be running.
   OrphanedTestServerFilter filter(testserver_path.value(),
                                   base::IntToString(host_port_pair_.port()));
-  if (!base::KillProcesses(L"python", -1, &filter)) {
+  if (!base::KillProcesses("python", -1, &filter)) {
     LOG(WARNING) << "Failed to clean up older orphaned testserver instances.";
   }
 

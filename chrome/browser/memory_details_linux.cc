@@ -240,8 +240,8 @@ void MemoryDetails::CollectProcessData(
   GetAllChildren(processes, getpid(), zygote, &current_browser_processes);
   ProcessData current_browser;
   GetProcessDataMemoryInformation(current_browser_processes, &current_browser);
-  current_browser.name = chrome::kBrowserAppName;
-  current_browser.process_name = L"chrome";
+  current_browser.name = WideToUTF16(chrome::kBrowserAppName);
+  current_browser.process_name = ASCIIToUTF16("chrome");
   process_data_.push_back(current_browser);
 
   // For each browser process, collect a list of its children and get the
@@ -258,7 +258,7 @@ void MemoryDetails::CollectProcessData(
       if (j->pid == *i) {
         BrowserType type = GetBrowserType(j->name);
         if (type != MAX_BROWSERS)
-          browser.name = ASCIIToWide(kBrowserPrettyNames[type]);
+          browser.name = ASCIIToUTF16(kBrowserPrettyNames[type]);
         break;
       }
     }

@@ -61,7 +61,7 @@ class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
     FilePath browser_directory;
     PathService::Get(chrome::DIR_APP, &browser_directory);
     CommandLine command_line(browser_directory.Append(
-        FilePath::FromWStringHack(chrome::kBrowserProcessExecutablePath)));
+        chrome::kBrowserProcessExecutablePath));
 
     command_line.AppendSwitchPath(switches::kUserDataDir, user_data_dir_);
 

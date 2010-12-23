@@ -836,7 +836,7 @@ void AboutMemoryHandler::BindProcessMetrics(DictionaryValue* data,
   data->SetInteger("comm_map", static_cast<int>(info->committed.mapped));
   data->SetInteger("comm_image", static_cast<int>(info->committed.image));
   data->SetInteger("pid", info->pid);
-  data->SetString("version", WideToUTF16Hack(info->version));
+  data->SetString("version", info->version);
   data->SetInteger("processes", info->num_processes);
 }
 
@@ -858,7 +858,7 @@ void AboutMemoryHandler::AppendProcess(ListValue* child_data,
   ListValue* titles = new ListValue();
   child->Set("titles", titles);
   for (size_t i = 0; i < info->titles.size(); ++i)
-    titles->Append(new StringValue(WideToUTF16Hack(info->titles[i])));
+    titles->Append(new StringValue(info->titles[i]));
 }
 
 
@@ -897,15 +897,14 @@ void AboutMemoryHandler::OnDetailsAvailable() {
     }
     DictionaryValue* browser_data = new DictionaryValue();
     browsers->Append(browser_data);
-    browser_data->SetString("name",
-                            WideToUTF16Hack(browser_processes[index].name));
+    browser_data->SetString("name", browser_processes[index].name);
 
     BindProcessMetrics(browser_data, &aggregate);
 
     // We log memory info as we record it.
     if (log_string.length() > 0)
       log_string.append(L", ");
-    log_string.append(browser_processes[index].name);
+    log_string.append(UTF16ToWide(browser_processes[index].name));
     log_string.append(L", ");
     log_string.append(UTF8ToWide(
         base::Int64ToString(aggregate.working_set.priv)));
@@ -926,7 +925,7 @@ void AboutMemoryHandler::OnDetailsAvailable() {
   root.Set("child_data", child_data);
 
   ProcessData process = browser_processes[0];  // Chrome is the first browser.
-  root.SetString("current_browser_name", WideToUTF16Hack(process.name));
+  root.SetString("current_browser_name", process.name);
 
   for (size_t index = 0; index < process.processes.size(); index++) {
     if (process.processes[index].type == ChildProcessInfo::BROWSER_PROCESS)

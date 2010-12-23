@@ -11,10 +11,8 @@
 #if defined(OS_MACOSX)
 #if defined(GOOGLE_CHROME_BUILD)
 #define PRODUCT_STRING "Google Chrome"
-#define PRODUCT_STRING_W L"Google Chrome"
 #elif defined(CHROMIUM_BUILD)
 #define PRODUCT_STRING "Chromium"
-#define PRODUCT_STRING_W L"Chromium"
 #else
 #error Unknown branding
 #endif
@@ -27,26 +25,27 @@ const char kChromeVersionEnvVar[] = "CHROME_VERSION";
 // The following should not be used for UI strings; they are meant
 // for system strings only. UI changes should be made in the GRD.
 #if defined(OS_WIN)
-const wchar_t kBrowserProcessExecutableName[] = L"chrome.exe";
-const wchar_t kHelperProcessExecutableName[] = L"chrome.exe";
+const FilePath::CharType kBrowserProcessExecutableName[] = FPL("chrome.exe");
+const FilePath::CharType kHelperProcessExecutableName[] = FPL("chrome.exe");
 #elif defined(OS_LINUX)
-const wchar_t kBrowserProcessExecutableName[] = L"chrome";
+const FilePath::CharType kBrowserProcessExecutableName[] = FPL("chrome");
 // Helper processes end up with a name of "exe" due to execing via
 // /proc/self/exe.  See bug 22703.
-const wchar_t kHelperProcessExecutableName[] = L"exe";
+const FilePath::CharType kHelperProcessExecutableName[] = FPL("exe");
 #elif defined(OS_MACOSX)
-const wchar_t kBrowserProcessExecutableName[] = PRODUCT_STRING_W;
-const wchar_t kHelperProcessExecutableName[] = PRODUCT_STRING_W L" Helper";
+const FilePath::CharType kBrowserProcessExecutableName[] = FPL(PRODUCT_STRING);
+const FilePath::CharType kHelperProcessExecutableName[] =
+    FPL(PRODUCT_STRING " Helper");
 #endif  // OS_*
 #if defined(OS_WIN)
-const wchar_t kBrowserProcessExecutablePath[] = L"chrome.exe";
+const FilePath::CharType kBrowserProcessExecutablePath[] = FPL("chrome.exe");
 const FilePath::CharType kHelperProcessExecutablePath[] = FPL("chrome.exe");
 #elif defined(OS_LINUX)
-const wchar_t kBrowserProcessExecutablePath[] = L"chrome";
+const FilePath::CharType kBrowserProcessExecutablePath[] = FPL("chrome");
 const FilePath::CharType kHelperProcessExecutablePath[] = FPL("chrome");
 #elif defined(OS_MACOSX)
-const wchar_t kBrowserProcessExecutablePath[] =
-    PRODUCT_STRING_W L".app/Contents/MacOS/" PRODUCT_STRING_W;
+const FilePath::CharType kBrowserProcessExecutablePath[] =
+    FPL(PRODUCT_STRING ".app/Contents/MacOS/" PRODUCT_STRING);
 const FilePath::CharType kHelperProcessExecutablePath[] =
     FPL(PRODUCT_STRING " Helper.app/Contents/MacOS/" PRODUCT_STRING " Helper");
 #endif  // OS_*
