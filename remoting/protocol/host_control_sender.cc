@@ -5,7 +5,7 @@
 // This stub is thread safe because of the use of BufferedSocketWriter.
 // BufferedSocketWriter buffers messages and send them on them right thread.
 
-#include "remoting/protocol/client_control_sender.h"
+#include "remoting/protocol/host_control_sender.h"
 
 #include "base/task.h"
 #include "remoting/protocol/buffered_socket_writer.h"
@@ -16,25 +16,25 @@
 namespace remoting {
 namespace protocol {
 
-ClientControlSender::ClientControlSender(net::Socket* socket)
+HostControlSender::HostControlSender(net::Socket* socket)
     : buffered_writer_(new BufferedSocketWriter()) {
   buffered_writer_->Init(socket, NULL);
 }
 
-ClientControlSender::~ClientControlSender() {
+HostControlSender::~HostControlSender() {
 }
 
-void ClientControlSender::NotifyResolution(
-    const NotifyResolutionRequest* msg, Task* done) {
+void HostControlSender::SuggestResolution(
+    const SuggestResolutionRequest* msg, Task* done) {
   protocol::ControlMessage message;
-  message.mutable_notify_resolution()->CopyFrom(*msg);
+  message.mutable_suggest_resolution()->CopyFrom(*msg);
   buffered_writer_->Write(SerializeAndFrameMessage(message), done);
 }
 
-void ClientControlSender::BeginSessionResponse(const LocalLoginStatus* msg,
-                                               Task* done) {
+void HostControlSender::BeginSessionRequest(const LocalLoginCredentials* msg,
+                                            Task* done) {
   protocol::ControlMessage message;
-  message.mutable_begin_session_response()->mutable_login_status()->CopyFrom(
+  message.mutable_begin_session_request()->mutable_credentials()->CopyFrom(
       *msg);
   buffered_writer_->Write(SerializeAndFrameMessage(message), done);
 }

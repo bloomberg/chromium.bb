@@ -17,6 +17,7 @@ namespace remoting {
 namespace protocol {
 
 class SuggestResolutionRequest;
+class LocalLoginCredentials;
 
 class HostStub {
  public:
@@ -25,6 +26,8 @@ class HostStub {
 
   virtual void SuggestResolution(
       const SuggestResolutionRequest* msg, Task* done) = 0;
+  virtual void BeginSessionRequest(
+      const LocalLoginCredentials* credentials, Task* done) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostStub);

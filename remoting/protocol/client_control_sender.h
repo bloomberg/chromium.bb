@@ -35,6 +35,9 @@ class ClientControlSender : public ClientStub {
 
   virtual void NotifyResolution(const NotifyResolutionRequest* msg,
                                 Task* done);
+  virtual void BeginSessionResponse(const LocalLoginStatus* msg,
+                                    Task* done);
+
  private:
   // Buffered socket writer holds the serialized message and send it on the
   // right thread.

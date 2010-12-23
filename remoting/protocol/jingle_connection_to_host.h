@@ -37,6 +37,7 @@ class VideoPacket;
 
 namespace protocol {
 
+class ClientMessageDispatcher;
 class VideoReader;
 class VideoStub;
 
@@ -62,11 +63,11 @@ class JingleConnectionToHost : public ConnectionToHost,
 
   // Callback for chromotocol SessionManager.
   void OnNewSession(
-      protocol::Session* connection,
-      protocol::SessionManager::IncomingSessionResponse* response);
+      Session* connection,
+      SessionManager::IncomingSessionResponse* response);
 
   // Callback for chromotocol Session.
-  void OnSessionStateChange(protocol::Session::State state);
+  void OnSessionStateChange(Session::State state);
 
  private:
   // The message loop for the jingle thread this object works on.
@@ -75,9 +76,6 @@ class JingleConnectionToHost : public ConnectionToHost,
   // Called on the jingle thread after we've successfully to XMPP server. Starts
   // P2P connection to the host.
   void InitSession();
-
-  // Callback for |control_reader_|.
-  void OnControlMessage(ControlMessage* msg);
 
   // Callback for |video_reader_|.
   void OnVideoPacket(VideoPacket* packet);
@@ -90,8 +88,8 @@ class JingleConnectionToHost : public ConnectionToHost,
   JingleThread* thread_;
 
   scoped_refptr<JingleClient> jingle_client_;
-  scoped_refptr<protocol::SessionManager> session_manager_;
-  scoped_refptr<protocol::Session> session_;
+  scoped_refptr<SessionManager> session_manager_;
+  scoped_refptr<Session> session_;
 
   MessageReader control_reader_;
   scoped_ptr<VideoReader> video_reader_;
@@ -100,6 +98,8 @@ class JingleConnectionToHost : public ConnectionToHost,
   VideoStub* video_stub_;
 
   std::string host_jid_;
+
+  scoped_ptr<ClientMessageDispatcher> dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleConnectionToHost);
 };

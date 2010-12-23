@@ -17,6 +17,7 @@ class Task;
 namespace remoting {
 namespace protocol {
 
+class LocalLoginStatus;
 class NotifyResolutionRequest;
 
 class ClientStub {
@@ -26,6 +27,8 @@ class ClientStub {
 
   virtual void NotifyResolution(const NotifyResolutionRequest* msg,
                                 Task* done) = 0;
+  virtual void BeginSessionResponse(const LocalLoginStatus* msg,
+                                    Task* done) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ClientStub);

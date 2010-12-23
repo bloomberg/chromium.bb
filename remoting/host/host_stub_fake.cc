@@ -13,4 +13,10 @@ void HostStubFake::SuggestResolution(
   delete done;
 }
 
+void HostStubFake::BeginSessionRequest(
+    const protocol::LocalLoginCredentials* credentials, Task* done) {
+  done->Run();
+  delete done;
+}
+
 }  // namespace remoting

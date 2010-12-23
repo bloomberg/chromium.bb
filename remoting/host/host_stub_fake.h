@@ -19,6 +19,8 @@ class HostStubFake : public protocol::HostStub {
 
   virtual void SuggestResolution(
       const protocol::SuggestResolutionRequest* msg, Task* done);
+  virtual void BeginSessionRequest(
+      const protocol::LocalLoginCredentials* credentials, Task* done);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostStubFake);

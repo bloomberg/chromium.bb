@@ -217,9 +217,13 @@ void ChromotingClient::Initialize() {
 ////////////////////////////////////////////////////////////////////////////
 // ClientStub control channel interface.
 void ChromotingClient::NotifyResolution(
-    const protocol::NotifyResolutionRequest* msg,
-    Task* done) {
-  // TODO(garykac): Implement this.
+    const protocol::NotifyResolutionRequest* msg, Task* done) {
+  NOTIMPLEMENTED();
+}
+
+void ChromotingClient::BeginSessionResponse(
+    const protocol::LocalLoginStatus* msg, Task* done) {
+  NOTIMPLEMENTED();
 }
 
 }  // namespace remoting

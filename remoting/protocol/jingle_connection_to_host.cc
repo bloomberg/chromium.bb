@@ -9,6 +9,7 @@
 #include "remoting/base/constants.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/proto/auth.pb.h"
+#include "remoting/protocol/client_message_dispatcher.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/input_sender.h"
 #include "remoting/protocol/jingle_session_manager.h"
@@ -21,7 +22,8 @@ namespace protocol {
 
 JingleConnectionToHost::JingleConnectionToHost(JingleThread* thread)
     : thread_(thread),
-      event_callback_(NULL) {
+      event_callback_(NULL),
+      dispatcher_(new ClientMessageDispatcher()) {
 }
 
 JingleConnectionToHost::~JingleConnectionToHost() {
@@ -34,6 +36,7 @@ void JingleConnectionToHost::Connect(const std::string& username,
                                      ClientStub* client_stub,
                                      VideoStub* video_stub) {
   event_callback_ = event_callback;
+  client_stub_ = client_stub;
   video_stub_ = video_stub;
 
   // Initialize |jingle_client_|.
@@ -65,18 +68,12 @@ void JingleConnectionToHost::Disconnect() {
   }
 }
 
-void JingleConnectionToHost::OnControlMessage(ControlMessage* msg) {
-  // TODO(sergeyu): Remove this method and pass ClientStub to the control
-  // stream dispatcher.
-  delete msg;
-}
-
 void JingleConnectionToHost::InitSession() {
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
   // Initialize chromotocol |session_manager_|.
-  protocol::JingleSessionManager* session_manager =
-      new protocol::JingleSessionManager(thread_);
+  JingleSessionManager* session_manager =
+      new JingleSessionManager(thread_);
   // TODO(ajwong): Make this a command switch when we're more stable.
   session_manager->set_allow_local_ips(true);
   session_manager->Init(
@@ -144,35 +141,33 @@ void JingleConnectionToHost::OnStateChange(JingleClient* client,
   }
 }
 
-void JingleConnectionToHost::OnNewSession(protocol::Session* session,
-    protocol::SessionManager::IncomingSessionResponse* response) {
+void JingleConnectionToHost::OnNewSession(Session* session,
+    SessionManager::IncomingSessionResponse* response) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   // Client always rejects incoming sessions.
-  *response = protocol::SessionManager::DECLINE;
+  *response = SessionManager::DECLINE;
 }
 
 void JingleConnectionToHost::OnSessionStateChange(
-    protocol::Session::State state) {
+    Session::State state) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK(event_callback_);
 
   switch (state) {
-    case protocol::Session::FAILED:
+    case Session::FAILED:
       event_callback_->OnConnectionFailed(this);
       break;
 
-    case protocol::Session::CLOSED:
+    case Session::CLOSED:
       event_callback_->OnConnectionClosed(this);
       break;
 
-    case protocol::Session::CONNECTED:
+    case Session::CONNECTED:
       // Initialize reader and writer.
-      control_reader_.Init<ControlMessage>(
-          session_->control_channel(),
-          NewCallback(this, &JingleConnectionToHost::OnControlMessage));
       video_reader_.reset(VideoReader::Create(session_->config()));
       video_reader_->Init(session_, video_stub_);
       input_stub_.reset(new InputSender(session_->event_channel()));
+      dispatcher_->Initialize(session_.get(), client_stub_);
       event_callback_->OnConnectionOpened(this);
       break;
 

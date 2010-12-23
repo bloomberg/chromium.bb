@@ -22,6 +22,7 @@ class MessageLoop;
 namespace remoting {
 
 namespace protocol {
+class LocalLoginStatus;
 class NotifyResolutionRequest;
 }  // namespace protocol
 
@@ -67,6 +68,8 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
   // ClientStub implementation.
   virtual void NotifyResolution(const protocol::NotifyResolutionRequest* msg,
                                 Task* done);
+  virtual void BeginSessionResponse(const protocol::LocalLoginStatus* msg,
+                                    Task* done);
 
   // VideoStub implementation.
   virtual void ProcessVideoPacket(const VideoPacket* packet, Task* done);

@@ -59,6 +59,8 @@ class MockHostStub : public HostStub {
 
   MOCK_METHOD2(SuggestResolution, void(const SuggestResolutionRequest* msg,
                                        Task* done));
+  MOCK_METHOD2(BeginSessionRequest,
+               void(const LocalLoginCredentials* credentials, Task* done));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockHostStub);

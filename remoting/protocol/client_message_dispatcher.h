@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_HOST_MESSAGE_DISPATCHER_H_
-#define REMOTING_PROTOCOL_HOST_MESSAGE_DISPATCHER_H_
+#ifndef REMOTING_PROTOCOL_CLIENT_MESSAGE_DISPATCHER_H_
+#define REMOTING_PROTOCOL_CLIENT_MESSAGE_DISPATCHER_H_
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
@@ -15,10 +15,10 @@ class EventMessage;
 
 namespace protocol {
 
+class ClientStub;
 class ControlMessage;
-class HostStub;
-class MessageReader;
 class InputStub;
+class MessageReader;
 class Session;
 
 // A message dispatcher used to listen for messages received in
@@ -29,43 +29,33 @@ class Session;
 // communications channels into protocol buffer messages.
 // EventStreamReader is registered with protocol::Session given to it.
 //
-// Object of this class is owned by ConnectionToClient to dispatch messages
-// to itself.
-class HostMessageDispatcher {
+// Object of this class is owned by ConnectionToHost.
+class ClientMessageDispatcher {
  public:
   // Construct a message dispatcher.
-  HostMessageDispatcher();
-  virtual ~HostMessageDispatcher();
+  ClientMessageDispatcher();
+  virtual ~ClientMessageDispatcher();
 
   // Initialize the message dispatcher with the given connection and
   // message handlers.
-  void Initialize(protocol::Session* session,
-                  HostStub* host_stub, InputStub* input_stub);
+  void Initialize(protocol::Session* session, ClientStub* client_stub);
 
  private:
-  // This method is called by |control_channel_reader_| when a control
-  // message is received.
   void OnControlMessageReceived(ControlMessage* message);
 
-  // This method is called by |event_channel_reader_| when a event
-  // message is received.
-  void OnEventMessageReceived(EventMessage* message);
-
   // MessageReader that runs on the control channel. It runs a loop
-  // that parses data on the channel and then delegates the message to this
-  // class.
+  // that parses data on the channel and then calls the corresponding handler
+  // in this class.
   scoped_ptr<MessageReader> control_message_reader_;
 
-  // MessageReader that runs on the event channel.
-  scoped_ptr<MessageReader> event_message_reader_;
-
-  // Stubs for host and input. These objects are not owned.
+  // Stubs for client and input. These objects are not owned.
   // They are called on the thread there data is received, i.e. jingle thread.
-  HostStub* host_stub_;
-  InputStub* input_stub_;
+  ClientStub* client_stub_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClientMessageDispatcher);
 };
 
 }  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_HOST_MESSAGE_DISPATCHER_H_
+#endif  // REMOTING_PROTOCOL_CLIENT_MESSAGE_DISPATCHER_H_
