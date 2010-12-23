@@ -1266,8 +1266,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
     *error = errors::kInvalidVersion;
     return false;
   }
-  version_.reset(
-      Version::GetVersionFromString(version_str));
+  version_.reset(Version::GetVersionFromString(version_str));
   if (!version_.get() ||
       version_->components().size() > 4) {
     *error = errors::kInvalidVersion;

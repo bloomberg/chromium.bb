@@ -96,7 +96,7 @@ class DetectUpgradeTask : public Task {
     }
 #elif defined(OS_MACOSX)
     installed_version.reset(
-        Version::GetVersionFromString(UTF16ToWideHack(
+        Version::GetVersionFromString(UTF16ToASCII(
             keystone_glue::CurrentlyInstalledVersion())));
 #elif defined(OS_POSIX)
     // POSIX but not Mac OS X: Linux, etc.

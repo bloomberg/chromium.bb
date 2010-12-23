@@ -39,8 +39,8 @@ TEST_F(PackageTest, Basic) {
   EXPECT_TRUE(package->IsEqual(test_dir_.path()));
   EXPECT_EQ(0U, package->products().size());
 
-  const wchar_t kOldVersion[] = L"1.2.3.4";
-  const wchar_t kNewVersion[] = L"2.3.4.5";
+  const char kOldVersion[] = "1.2.3.4";
+  const char kNewVersion[] = "2.3.4.5";
 
   scoped_ptr<Version> new_version(Version::GetVersionFromString(kNewVersion));
   scoped_ptr<Version> old_version(Version::GetVersionFromString(kOldVersion));
@@ -110,7 +110,7 @@ TEST_F(PackageTest, WithProduct) {
   EXPECT_EQ(1U, package->products().size());
   EXPECT_EQ(system_level, package->system_level());
 
-  const wchar_t kCurrentVersion[] = L"1.2.3.4";
+  const char kCurrentVersion[] = "1.2.3.4";
   scoped_ptr<Version> current_version(
       Version::GetVersionFromString(kCurrentVersion));
 

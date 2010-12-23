@@ -109,7 +109,7 @@ TEST_F(SetupHelperTest, Delete) {
   CreateTextFile(chrome_dll_4.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(chrome_dll_4));
 
-  scoped_ptr<Version> latest_version(Version::GetVersionFromString(L"1.0.4.0"));
+  scoped_ptr<Version> latest_version(Version::GetVersionFromString("1.0.4.0"));
   ChromePackageProperties properties;
   scoped_refptr<Package> package(new Package(false, true, chrome_dir,
                                              &properties));
@@ -185,7 +185,7 @@ TEST_F(SetupHelperTest, DeleteInUsed) {
   CreateTextFile(chrome_dll_4.value(), text_content_1);
   ASSERT_TRUE(file_util::PathExists(chrome_dll_4));
 
-  scoped_ptr<Version> latest_version(Version::GetVersionFromString(L"1.0.4.0"));
+  scoped_ptr<Version> latest_version(Version::GetVersionFromString("1.0.4.0"));
   ChromePackageProperties properties;
   scoped_refptr<Package> install_path(new Package(false, true, chrome_dir,
                                                   &properties));

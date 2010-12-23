@@ -6,6 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/channel_info.h"
@@ -125,7 +126,8 @@ Version* Package::GetCurrentVersion() const {
       chrome_key.ReadValue(google_update::kRegVersionField, &version);
 
     if (!version.empty()) {
-      scoped_ptr<Version> this_version(Version::GetVersionFromString(version));
+      scoped_ptr<Version> this_version(Version::GetVersionFromString(
+                                           WideToASCII(version)));
       if (this_version.get()) {
         if (!current_version.get() ||
             (current_version->CompareTo(*this_version) > 0)) {
@@ -155,7 +157,8 @@ void Package::RemoveOldVersionDirectories(
     file_util::FileEnumerator::FindInfo find_data = {0};
     version_enum.GetFindInfo(&find_data);
     VLOG(1) << "directory found: " << find_data.cFileName;
-    version.reset(Version::GetVersionFromString(find_data.cFileName));
+    version.reset(Version::GetVersionFromString(
+                      WideToASCII(find_data.cFileName)));
     if (version.get() && (latest_version.CompareTo(*version) > 0)) {
       std::vector<FilePath> key_files;
       for (Products::const_iterator it = products_.begin();

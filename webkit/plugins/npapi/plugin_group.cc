@@ -182,7 +182,7 @@ bool PluginGroup::Match(const WebPluginInfo& plugin) const {
 
   // There's at least one version range, the plugin's version must be in it.
   scoped_ptr<Version> plugin_version(
-      Version::GetVersionFromString(UTF16ToWide(plugin.version)));
+      Version::GetVersionFromString(UTF16ToASCII(plugin.version)));
   if (plugin_version.get() == NULL) {
     // No version could be extracted, assume we don't match the range.
     return false;
@@ -208,7 +208,7 @@ Version* PluginGroup::CreateVersionFromString(const string16& version_string) {
   std::replace(version.begin(), version.end(), ',', '.');
   std::replace(version.begin(), version.end(), '(', '.');
 
-  return Version::GetVersionFromString(version);
+  return Version::GetVersionFromString(WideToASCII(version));
 }
 
 void PluginGroup::UpdateActivePlugin(const WebPluginInfo& plugin) {

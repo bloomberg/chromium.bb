@@ -95,7 +95,7 @@ Version* InstallUtil::GetChromeVersion(BrowserDistribution* dist,
   key.Close();
   VLOG(1) << "Existing " << dist->GetApplicationName()
           << " version found " << version_str;
-  return Version::GetVersionFromString(version_str);
+  return Version::GetVersionFromString(WideToASCII(version_str));
 }
 
 bool InstallUtil::IsOSSupported() {

@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/shared_memory.h"
+#include "base/string_util.h"
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
@@ -247,7 +248,7 @@ Version* DllRedirector::GetCurrentModuleVersion() {
   Version* current_version = NULL;
   if (file_version_info.get()) {
      current_version = Version::GetVersionFromString(
-        file_version_info->file_version());
+         WideToASCII(file_version_info->file_version()));
     DCHECK(current_version);
   }
 

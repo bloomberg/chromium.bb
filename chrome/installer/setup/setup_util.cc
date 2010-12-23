@@ -8,6 +8,7 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/util_constants.h"
 #include "courgette/courgette.h"
@@ -45,7 +46,7 @@ Version* installer::GetVersionFromArchiveDir(const FilePath& chrome_path) {
     file_util::FileEnumerator::FindInfo find_data = {0};
     version_enum.GetFindInfo(&find_data);
     VLOG(1) << "directory found: " << find_data.cFileName;
-    version = Version::GetVersionFromString(find_data.cFileName);
+    version = Version::GetVersionFromString(WideToASCII(find_data.cFileName));
     if (version)
       break;
   }
