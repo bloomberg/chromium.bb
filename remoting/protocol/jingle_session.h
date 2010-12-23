@@ -44,9 +44,7 @@ class JingleSession : public protocol::Session,
 
   // Create a JingleSession used in client mode. A server certificate is
   // required.
-  static JingleSession* CreateClientSession(
-      JingleSessionManager* manager,
-      scoped_refptr<net::X509Certificate> certificate);
+  static JingleSession* CreateClientSession(JingleSessionManager* manager);
 
   // Create a JingleSession used in server mode. A server certificate and
   // private key is provided. |key| is copied in the constructor.
@@ -91,6 +89,7 @@ class JingleSession : public protocol::Session,
 
   // Called by JingleSessionManager.
   void set_candidate_config(const CandidateSessionConfig* candidate_config);
+  scoped_refptr<net::X509Certificate> server_certificate() const;
   void Init(cricket::Session* cricket_session);
 
   // Close all the channels and terminate the session.

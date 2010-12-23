@@ -68,9 +68,8 @@ net::SSLClientSocket* CreateSSLClientSocket(
 
 // static
 JingleSession* JingleSession::CreateClientSession(
-    JingleSessionManager* manager,
-    scoped_refptr<net::X509Certificate> certificate) {
-  return new JingleSession(manager, certificate, NULL);
+    JingleSessionManager* manager) {
+  return new JingleSession(manager, NULL, NULL);
 }
 
 // static
@@ -249,6 +248,10 @@ void JingleSession::set_candidate_config(
   candidate_config_.reset(candidate_config);
 }
 
+scoped_refptr<net::X509Certificate> JingleSession::server_certificate() const {
+  return server_cert_;
+}
+
 const SessionConfig* JingleSession::config() {
   DCHECK(config_.get());
   return config_.get();
@@ -414,6 +417,9 @@ void JingleSession::OnAccept() {
 
     const protocol::ContentDescription* content_description =
         static_cast<const protocol::ContentDescription*>(content->description);
+    server_cert_ = content_description->certificate();
+    CHECK(server_cert_);
+
     SessionConfig* config = content_description->config()->GetFinalConfig();
 
     // Terminate the session if the config we received is invalid.

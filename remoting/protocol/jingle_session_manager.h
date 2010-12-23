@@ -37,7 +37,8 @@ namespace protocol {
 class ContentDescription : public cricket::ContentDescription {
  public:
   explicit ContentDescription(const CandidateSessionConfig* config,
-                              const std::string& auth_token);
+                              const std::string& auth_token,
+                              scoped_refptr<net::X509Certificate> certificate);
   ~ContentDescription();
 
   const CandidateSessionConfig* config() const {
@@ -46,12 +47,18 @@ class ContentDescription : public cricket::ContentDescription {
 
   const std::string& auth_token() const { return auth_token_; }
 
+  scoped_refptr<net::X509Certificate> certificate() const {
+    return certificate_;
+  }
+
  private:
   scoped_ptr<const CandidateSessionConfig> candidate_config_;
 
   // This may contain the initiating, or the accepting token depending on
   // context.
   std::string auth_token_;
+
+  scoped_refptr<net::X509Certificate> certificate_;
 };
 
 // This class implements SessionClient for Chromoting sessions. It acts as a
@@ -94,15 +101,6 @@ class JingleSessionManager
                             buzz::XmlElement** elem,
                             cricket::WriteError* error);
 
-  // The following two methods are used in unit tests only.
-  void set_server_cert(scoped_refptr<net::X509Certificate> server_cert) {
-    server_cert_ = server_cert;
-  }
-
-  void set_key(base::RSAPrivateKey* key) {
-    key_.reset(key);
-  }
-
  protected:
   virtual ~JingleSessionManager();
 
@@ -128,7 +126,8 @@ class JingleSessionManager
   // Creates outgoing session description for an incoming session.
   cricket::SessionDescription* CreateSessionDescription(
       const CandidateSessionConfig* candidate_config,
-      const std::string& auth_token);
+      const std::string& auth_token,
+      scoped_refptr<net::X509Certificate> certificate);
 
   std::string local_jid_;  // Full jid for the local side of the session.
   JingleThread* jingle_thread_;
@@ -137,9 +136,6 @@ class JingleSessionManager
   bool allow_local_ips_;
 
   bool closed_;
-
-  scoped_refptr<net::X509Certificate> server_cert_;
-  scoped_ptr<base::RSAPrivateKey> key_;
 
   std::list<scoped_refptr<JingleSession> > sessions_;
 
