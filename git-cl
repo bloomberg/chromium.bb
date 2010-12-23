@@ -4,23 +4,6 @@
 # found in the LICENSE file.
 
 base_dir=$(dirname "$0")
-repo="$base_dir/git_cl_repo"
-url="http://git.chromium.org/git/git-cl.git"
-cur_url=$(git config -f "$repo/.git/config" remote.origin.url)
 
 "$base_dir"/update_depot_tools
-
-if [ -e "$repo" -a "$cur_url" != "$url" ]; then
-  # Always override "origin"
-  (cd "$repo"; git remote set-url origin $url)
-fi
-
-if [ ! -f "$repo/git-cl" ]; then
-  git clone $url $repo -q
-elif [ ! -e "$repo/.git" ]; then
-  echo "$0: $repo does not appear to be a git repo"
-elif [ "X$DEPOT_TOOLS_UPDATE" != "X0" ]; then
-  (cd "$repo"; git pull -q)
-fi
-
-$repo/git-cl "$@"
+"$base_dir"/git_cl/git-cl "$@"

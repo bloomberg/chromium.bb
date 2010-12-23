@@ -1,0 +1,10 @@
+#!/usr/bin/python
+# git-cl -- a git-command for integrating reviews on Rietveld
+# Copyright (C) 2008 Evan Martin <martine@danga.com>
+
+import sys
+
+import git_cl
+
+if __name__ == '__main__':
+  sys.exit(git_cl.main(sys.argv[1:]))
