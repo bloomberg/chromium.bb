@@ -9,6 +9,10 @@
 
 #include <vector>
 
+#include "base/command_line.h"
+#include "base/file_path.h"
+#include "base/process_util.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 typedef testing::Test ProcessInfoSnapshotMacTest;
@@ -82,4 +86,25 @@ TEST_F(ProcessInfoSnapshotMacTest, FindPidSelfTest) {
   EXPECT_EQ(euid, proc_info.euid);  // under reasonable circumstances.
   // Can't say anything definite about its |rss|.
   EXPECT_GT(proc_info.vsize, 0u);   // Its |vsize| should be nonzero though.
+}
+
+TEST_F(ProcessInfoSnapshotMacTest, EffectiveVsRealUserIDTest) {
+  // Run top which has a uid of the caller and effective uid of 0.
+  base::ProcessHandle process_handle;
+  ASSERT_TRUE(base::LaunchApp(CommandLine(FilePath("/usr/bin/top")),
+                              false, false, &process_handle));
+
+  std::vector<base::ProcessId> pid_list;
+  pid_list.push_back(process_handle);
+  ProcessInfoSnapshot snapshot;
+  ASSERT_TRUE(snapshot.Sample(pid_list));
+
+  ProcessInfoSnapshot::ProcInfoEntry proc_info;
+  ASSERT_TRUE(snapshot.GetProcInfo(process_handle, &proc_info));
+  // Effective user ID should be 0 (root).
+  EXPECT_EQ(proc_info.euid, 0u);
+  // Real user ID should match the calling process's user id.
+  EXPECT_EQ(proc_info.uid, geteuid());
+
+  ASSERT_TRUE(base::KillProcess(process_handle, 0, true));
 }
