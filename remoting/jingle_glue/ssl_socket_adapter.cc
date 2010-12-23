@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "net/base/address_list.h"
+#include "net/base/cert_verifier.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/ssl_config_service.h"
@@ -24,6 +25,7 @@ SSLSocketAdapter* SSLSocketAdapter::Create(AsyncSocket* socket) {
 SSLSocketAdapter::SSLSocketAdapter(AsyncSocket* socket)
     : SSLAdapter(socket),
       ignore_bad_cert_(false),
+      cert_verifier_(new net::CertVerifier()),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           connected_callback_(this, &SSLSocketAdapter::OnConnected)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -70,7 +72,7 @@ int SSLSocketAdapter::BeginSSL() {
       net::ClientSocketFactory::GetDefaultFactory()->CreateSSLClientSocket(
           transport_socket_, net::HostPortPair(hostname_, 443), ssl_config,
           NULL /* ssl_host_info */,
-          NULL /* TODO(wtc): cert_verifier */));
+          cert_verifier_.get()));
 
   int result = ssl_socket_->Connect(&connected_callback_);
 
