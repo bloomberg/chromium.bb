@@ -13,17 +13,12 @@ AsynchronousPolicyProvider::AsynchronousPolicyProvider(
     scoped_refptr<AsynchronousPolicyLoader> loader)
     : ConfigurationPolicyProvider(policy_list),
       loader_(loader) {
-  // TODO(danno): This explicit registration of the provider shouldn't be
-  // necessary. Instead, the PrefStore should explicitly observe preference
-  // changes that are reported during the policy change.
-  loader_->SetProvider(this);
   loader_->Init();
 }
 
 AsynchronousPolicyProvider::~AsynchronousPolicyProvider() {
   DCHECK(CalledOnValidThread());
   loader_->Stop();
-  loader_->SetProvider(NULL);
 }
 
 bool AsynchronousPolicyProvider::Provide(
@@ -32,6 +27,16 @@ bool AsynchronousPolicyProvider::Provide(
   DCHECK(loader_->policy());
   DecodePolicyValueTree(loader_->policy(), store);
   return true;
+}
+
+void AsynchronousPolicyProvider::AddObserver(
+    ConfigurationPolicyProvider::Observer* observer) {
+  loader_->AddObserver(observer);
+}
+
+void AsynchronousPolicyProvider::RemoveObserver(
+    ConfigurationPolicyProvider::Observer* observer) {
+  loader_->RemoveObserver(observer);
 }
 
 scoped_refptr<AsynchronousPolicyLoader> AsynchronousPolicyProvider::loader() {

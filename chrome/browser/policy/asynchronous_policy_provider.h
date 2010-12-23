@@ -21,7 +21,6 @@ class AsynchronousPolicyLoader;
 // policy is handled by a delegate passed at construction time.
 class AsynchronousPolicyProvider
     : public ConfigurationPolicyProvider,
-      public base::SupportsWeakPtr<AsynchronousPolicyProvider>,
       public NonThreadSafe {
  public:
   // Must be implemented by subclasses of the asynchronous policy provider to
@@ -50,6 +49,10 @@ class AsynchronousPolicyProvider
   scoped_refptr<AsynchronousPolicyLoader> loader_;
 
  private:
+  // ConfigurationPolicyProvider overrides:
+  virtual void AddObserver(ConfigurationPolicyProvider::Observer* observer);
+  virtual void RemoveObserver(ConfigurationPolicyProvider::Observer* observer);
+
   DISALLOW_COPY_AND_ASSIGN(AsynchronousPolicyProvider);
 };
 

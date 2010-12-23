@@ -15,7 +15,7 @@ const int kSettleIntervalSeconds = 5;
 // delegate never reports a change to the ReloadObserver.
 const int kReloadIntervalMinutes = 15;
 
-}
+}  // namespace
 
 namespace policy {
 

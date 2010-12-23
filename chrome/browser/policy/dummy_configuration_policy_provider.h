@@ -21,6 +21,11 @@ class DummyConfigurationPolicyProvider : public ConfigurationPolicyProvider {
   virtual bool Provide(ConfigurationPolicyStoreInterface* store);
 
  private:
+  // ConfigurationPolicyProvider overrides:
+  virtual void AddObserver(ConfigurationPolicyProvider::Observer* observer) {}
+  virtual void RemoveObserver(
+      ConfigurationPolicyProvider::Observer* observer) {}
+
   DISALLOW_COPY_AND_ASSIGN(DummyConfigurationPolicyProvider);
 };
 

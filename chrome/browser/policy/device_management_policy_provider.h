@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/file_path.h"
+#include "base/observer_list.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "base/weak_ptr.h"
@@ -89,6 +90,10 @@ class DeviceManagementPolicyProvider
   // of initialization that requires the IOThread.
   void InitializeAfterIOThreadExists();
 
+  // ConfigurationPolicyProvider overrides:
+  virtual void AddObserver(ConfigurationPolicyProvider::Observer* observer);
+  virtual void RemoveObserver(ConfigurationPolicyProvider::Observer* observer);
+
   // Sends a request to the device manager backend to fetch policy if one isn't
   // already outstanding.
   void SendPolicyRequest();
@@ -105,8 +110,8 @@ class DeviceManagementPolicyProvider
 
   void StopWaitingForInitialPolicies();
 
-  // Send a CLOUD_POLICY_UPDATE notification.
-  void NotifyCloudPolicyUpdate() const;
+  // Notify observers about a policy update.
+  void NotifyCloudPolicyUpdate();
 
   // The path of the device token file.
   FilePath GetTokenPath();
@@ -128,6 +133,7 @@ class DeviceManagementPolicyProvider
   scoped_ptr<DeviceManagementPolicyCache> cache_;
   scoped_refptr<DeviceTokenFetcher> token_fetcher_;
   DeviceTokenFetcher::ObserverRegistrar registrar_;
+  ObserverList<ConfigurationPolicyProvider::Observer, true> observer_list_;
   FilePath storage_dir_;
   bool policy_request_pending_;
   bool refresh_task_pending_;

@@ -440,7 +440,7 @@ class SearchTermsDataForValidation : public SearchTermsData {
   DISALLOW_COPY_AND_ASSIGN(SearchTermsDataForValidation);
 };
 
-}  // namepsace
+}  // namespace
 
 void ConfigurationPolicyPrefKeeper::FinalizeDefaultSearchPolicySettings() {
   bool enabled = true;
@@ -708,7 +708,7 @@ ConfigurationPolicyProviderKeeper::CreateRecommendedProvider() {
 #endif
 }
 
-}
+}  // namespace
 
 ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(
     ConfigurationPolicyProvider* provider)
@@ -717,10 +717,8 @@ ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(
   // Read initial policy.
   policy_keeper_.reset(new ConfigurationPolicyPrefKeeper(provider));
 
-  // TODO(mnissler): Remove after provider has proper observer interface.
-  registrar_.Add(this,
-                 NotificationType(NotificationType::POLICY_CHANGED),
-                 NotificationService::AllSources());
+  registrar_.Init(provider_);
+  registrar_.AddObserver(this);
 }
 
 ConfigurationPolicyPrefStore::~ConfigurationPolicyPrefStore() {
@@ -743,6 +741,10 @@ PrefStore::ReadResult
 ConfigurationPolicyPrefStore::GetValue(const std::string& key,
                                        Value** value) const {
   return policy_keeper_->GetValue(key, value);
+}
+
+void ConfigurationPolicyPrefStore::OnUpdatePolicy() {
+  Refresh();
 }
 
 // static
@@ -875,13 +877,6 @@ ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
     entries + arraysize(entries),
   };
   return &policy_list;
-}
-
-void ConfigurationPolicyPrefStore::Observe(NotificationType type,
-                                           const NotificationSource& source,
-                                           const NotificationDetails& details) {
-  if (type == NotificationType::POLICY_CHANGED)
-    Refresh();
 }
 
 void ConfigurationPolicyPrefStore::Refresh() {

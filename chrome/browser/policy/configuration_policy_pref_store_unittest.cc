@@ -40,13 +40,6 @@ class ConfigurationPolicyPrefStoreTestBase : public TESTBASE {
       : provider_(),
         store_(&provider_) {}
 
-  void RefreshPolicy() {
-    NotificationService::current()->Notify(
-        NotificationType::POLICY_CHANGED,
-        Source<ConfigurationPolicyProvider>(&provider_),
-        NotificationService::NoDetails());
-  }
-
   MockConfigurationPolicyProvider provider_;
   ConfigurationPolicyPrefStore store_;
 };
@@ -67,7 +60,7 @@ TEST_P(ConfigurationPolicyPrefStoreListTest, SetValue) {
   in_value->Append(Value::CreateStringValue("test1"));
   in_value->Append(Value::CreateStringValue("test2,"));
   provider_.AddPolicy(GetParam().type(), in_value);
-  RefreshPolicy();
+  store_.OnUpdatePolicy();
   Value* value;
   EXPECT_EQ(PrefStore::READ_OK,
             store_.GetValue(GetParam().pref_name(), &value));
@@ -101,7 +94,7 @@ TEST_P(ConfigurationPolicyPrefStoreStringTest, GetDefault) {
 TEST_P(ConfigurationPolicyPrefStoreStringTest, SetValue) {
   provider_.AddPolicy(GetParam().type(),
                       Value::CreateStringValue("http://chromium.org"));
-  RefreshPolicy();
+  store_.OnUpdatePolicy();
   Value* value;
   EXPECT_EQ(PrefStore::READ_OK,
             store_.GetValue(GetParam().pref_name(), &value));
@@ -140,7 +133,7 @@ TEST_P(ConfigurationPolicyPrefStoreBooleanTest, GetDefault) {
 
 TEST_P(ConfigurationPolicyPrefStoreBooleanTest, SetValue) {
   provider_.AddPolicy(GetParam().type(), Value::CreateBooleanValue(false));
-  RefreshPolicy();
+  store_.OnUpdatePolicy();
   Value* value;
   bool result = true;
   EXPECT_EQ(PrefStore::READ_OK,
@@ -148,7 +141,7 @@ TEST_P(ConfigurationPolicyPrefStoreBooleanTest, SetValue) {
   EXPECT_TRUE(FundamentalValue(false).Equals(value));
 
   provider_.AddPolicy(GetParam().type(), Value::CreateBooleanValue(true));
-  RefreshPolicy();
+  store_.OnUpdatePolicy();
   result = false;
   EXPECT_EQ(PrefStore::READ_OK,
             store_.GetValue(GetParam().pref_name(), &value));
@@ -216,7 +209,7 @@ TEST_P(ConfigurationPolicyPrefStoreIntegerTest, GetDefault) {
 
 TEST_P(ConfigurationPolicyPrefStoreIntegerTest, SetValue) {
   provider_.AddPolicy(GetParam().type(), Value::CreateIntegerValue(2));
-  RefreshPolicy();
+  store_.OnUpdatePolicy();
   Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
             store_.GetValue(GetParam().pref_name(), &value));
@@ -546,7 +539,7 @@ TEST_F(ConfigurationPolicyPrefStoreSyncTest, Default) {
 
 TEST_F(ConfigurationPolicyPrefStoreSyncTest, Enabled) {
   provider_.AddPolicy(kPolicySyncDisabled, Value::CreateBooleanValue(false));
-  RefreshPolicy();
+  store_.OnUpdatePolicy();
   // Enabling Sync should not set the pref.
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
             store_.GetValue(prefs::kSyncManaged, NULL));
@@ -554,10 +547,11 @@ TEST_F(ConfigurationPolicyPrefStoreSyncTest, Enabled) {
 
 TEST_F(ConfigurationPolicyPrefStoreSyncTest, Disabled) {
   provider_.AddPolicy(kPolicySyncDisabled, Value::CreateBooleanValue(true));
-  RefreshPolicy();
+  store_.OnUpdatePolicy();
   // Sync should be flagged as managed.
   Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK, store_.GetValue(prefs::kSyncManaged, &value));
+  ASSERT_TRUE(value != NULL);
   EXPECT_TRUE(FundamentalValue(true).Equals(value));
 }
 
@@ -573,7 +567,7 @@ TEST_F(ConfigurationPolicyPrefStoreAutoFillTest, Default) {
 
 TEST_F(ConfigurationPolicyPrefStoreAutoFillTest, Enabled) {
   provider_.AddPolicy(kPolicyAutoFillEnabled, Value::CreateBooleanValue(true));
-  RefreshPolicy();
+  store_.OnUpdatePolicy();
   // Enabling AutoFill should not set the pref.
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
             store_.GetValue(prefs::kSyncManaged, NULL));
@@ -581,7 +575,7 @@ TEST_F(ConfigurationPolicyPrefStoreAutoFillTest, Enabled) {
 
 TEST_F(ConfigurationPolicyPrefStoreAutoFillTest, Disabled) {
   provider_.AddPolicy(kPolicyAutoFillEnabled, Value::CreateBooleanValue(false));
-  RefreshPolicy();
+  store_.OnUpdatePolicy();
   // Disabling AutoFill should switch the pref to managed.
   Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
@@ -612,19 +606,19 @@ TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Refresh) {
   EXPECT_CALL(observer_, OnPrefValueChanged(prefs::kHomePage)).Times(1);
   provider_.AddPolicy(kPolicyHomePage,
                       Value::CreateStringValue("http://www.chromium.org"));
-  RefreshPolicy();
+  store_.OnUpdatePolicy();
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_EQ(PrefStore::READ_OK,
             store_.GetValue(prefs::kHomePage, &value));
   EXPECT_TRUE(StringValue("http://www.chromium.org").Equals(value));
 
   EXPECT_CALL(observer_, OnPrefValueChanged(_)).Times(0);
-  RefreshPolicy();
+  store_.OnUpdatePolicy();
   Mock::VerifyAndClearExpectations(&observer_);
 
   EXPECT_CALL(observer_, OnPrefValueChanged(prefs::kHomePage)).Times(1);
   provider_.RemovePolicy(kPolicyHomePage);
-  RefreshPolicy();
+  store_.OnUpdatePolicy();
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
             store_.GetValue(prefs::kHomePage, NULL));
@@ -638,7 +632,7 @@ TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Initialization) {
   provider_.SetInitializationComplete(true);
   EXPECT_FALSE(store_.IsInitializationComplete());
 
-  RefreshPolicy();
+  store_.OnUpdatePolicy();
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_TRUE(store_.IsInitializationComplete());
 }

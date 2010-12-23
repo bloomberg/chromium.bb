@@ -21,6 +21,12 @@ namespace policy {
 // etc.) should implement a subclass of this class.
 class ConfigurationPolicyProvider {
  public:
+  class Observer {
+   public:
+    virtual ~Observer() {}
+    virtual void OnUpdatePolicy() = 0;
+  };
+
   // Used for static arrays of policy values that is used to initialize an
   // instance of the ConfigurationPolicyProvider.
   struct PolicyDefinitionList {
@@ -51,11 +57,6 @@ class ConfigurationPolicyProvider {
   // need to do asynchronous operations for initialization.
   virtual bool IsInitializationComplete() const { return true; }
 
-  // Called by the subclass provider at any time to indicate that the currently
-  // applied policy is not longer current. A policy refresh will be initiated as
-  // soon as possible.
-  virtual void NotifyStoreOfPolicyChange();
-
  protected:
   // Decodes the value tree and writes the configuration to the given |store|.
   void DecodePolicyValueTree(const DictionaryValue* policies,
@@ -66,12 +67,34 @@ class ConfigurationPolicyProvider {
   }
 
  private:
+  friend class ConfigurationPolicyObserverRegistrar;
+
+  virtual void AddObserver(ConfigurationPolicyProvider::Observer* observer) = 0;
+  virtual void RemoveObserver(
+      ConfigurationPolicyProvider::Observer* observer) = 0;
+
   // Contains the default mapping from policy values to the actual names.
   const ConfigurationPolicyProvider::PolicyDefinitionList*
       policy_definition_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyProvider);
+};
+
+// Manages observers for a ConfigurationPolicyProvider. Is used to register
+// observers, and automatically removes them upon destruction.
+class ConfigurationPolicyObserverRegistrar {
+ public:
+  ConfigurationPolicyObserverRegistrar();
+  ~ConfigurationPolicyObserverRegistrar();
+  void Init(ConfigurationPolicyProvider* provider);
+  void AddObserver(ConfigurationPolicyProvider::Observer* observer);
+  void RemoveObserver(ConfigurationPolicyProvider::Observer* observer);
+  void RemoveAll();
+ private:
+  ConfigurationPolicyProvider* provider_;
+  std::vector<ConfigurationPolicyProvider::Observer*> observers_;
+  DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyObserverRegistrar);
 };
 
 }  // namespace policy

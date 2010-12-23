@@ -1297,19 +1297,6 @@ class NotificationType {
     // |webkit_glue::PasswordForm|s that were affected.
     LOGINS_CHANGED,
 
-    // Configuration Policy ----------------------------------------------------
-    // This notification is sent whenever the administrator changes policy.
-    // The detail of this notification is not used.
-    POLICY_CHANGED,
-
-    // This notification is sent whenever the device token becomes available
-    // that the policy subsystem uses to fetch policy from the cloud.
-    DEVICE_TOKEN_AVAILABLE,
-
-    // This notification is sent whenever cloud policies are fetched and
-    // updated. The detail of this notification is not used.
-    CLOUD_POLICY_UPDATE,
-
     // Count (must be last) ----------------------------------------------------
     // Used to determine the number of notification types.  Not valid as
     // a type parameter when registering for or posting notifications.

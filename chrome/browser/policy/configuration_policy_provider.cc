@@ -4,10 +4,44 @@
 
 #include "chrome/browser/policy/configuration_policy_provider.h"
 
+#include <algorithm>
+
 #include "base/values.h"
-#include "chrome/common/notification_service.h"
 
 namespace policy {
+
+ConfigurationPolicyObserverRegistrar::ConfigurationPolicyObserverRegistrar() {}
+
+ConfigurationPolicyObserverRegistrar::~ConfigurationPolicyObserverRegistrar() {
+  RemoveAll();
+}
+
+void ConfigurationPolicyObserverRegistrar::Init(
+    ConfigurationPolicyProvider* provider) {
+  provider_ = provider;
+}
+
+void ConfigurationPolicyObserverRegistrar::AddObserver(
+    ConfigurationPolicyProvider::Observer* observer) {
+  observers_.push_back(observer);
+  provider_->AddObserver(observer);
+}
+
+void ConfigurationPolicyObserverRegistrar::RemoveObserver(
+    ConfigurationPolicyProvider::Observer* observer) {
+  std::remove(observers_.begin(), observers_.end(), observer);
+  provider_->RemoveObserver(observer);
+}
+
+void ConfigurationPolicyObserverRegistrar::RemoveAll() {
+  for (std::vector<ConfigurationPolicyProvider::Observer*>::iterator it =
+       observers_.begin(); it != observers_.end(); ++it) {
+    provider_->RemoveObserver(*it);
+  }
+  observers_.clear();
+}
+
+// Class ConfigurationPolicyProvider.
 
 ConfigurationPolicyProvider::ConfigurationPolicyProvider(
     const PolicyDefinitionList* policy_list)
@@ -15,13 +49,6 @@ ConfigurationPolicyProvider::ConfigurationPolicyProvider(
 }
 
 ConfigurationPolicyProvider::~ConfigurationPolicyProvider() {}
-
-void ConfigurationPolicyProvider::NotifyStoreOfPolicyChange() {
-  NotificationService::current()->Notify(
-      NotificationType::POLICY_CHANGED,
-      Source<ConfigurationPolicyProvider>(this),
-      NotificationService::NoDetails());
-}
 
 void ConfigurationPolicyProvider::DecodePolicyValueTree(
     const DictionaryValue* policies,

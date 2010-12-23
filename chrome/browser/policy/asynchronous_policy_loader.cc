@@ -14,7 +14,6 @@ AsynchronousPolicyLoader::AsynchronousPolicyLoader(
     AsynchronousPolicyProvider::Delegate* delegate,
     int reload_interval_minutes)
     : delegate_(delegate),
-      provider_(NULL),
       reload_task_(NULL),
       reload_interval_(base::TimeDelta::FromMinutes(reload_interval_minutes)),
       origin_loop_(MessageLoop::current()),
@@ -45,15 +44,10 @@ void AsynchronousPolicyLoader::Stop() {
   }
 }
 
-void AsynchronousPolicyLoader::SetProvider(
-    AsynchronousPolicyProvider* provider) {
-  provider_ = provider;
-}
-
 AsynchronousPolicyLoader::~AsynchronousPolicyLoader() {
 }
 
-// Manages the life cycle of a new policy map during until it's life cycle is
+// Manages the life cycle of a new policy map during until its life cycle is
 // taken over by the policy loader.
 class UpdatePolicyTask : public Task {
  public:
@@ -77,6 +71,16 @@ void AsynchronousPolicyLoader::Reload() {
     DictionaryValue* new_policy = delegate_->Load();
     PostUpdatePolicyTask(new_policy);
   }
+}
+
+void AsynchronousPolicyLoader::AddObserver(
+    ConfigurationPolicyProvider::Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void AsynchronousPolicyLoader::RemoveObserver(
+    ConfigurationPolicyProvider::Observer* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 void AsynchronousPolicyLoader::CancelReloadTask() {
@@ -137,11 +141,9 @@ void AsynchronousPolicyLoader::UpdatePolicy(DictionaryValue* new_policy_raw) {
   DCHECK(policy_.get());
   if (!policy_->Equals(new_policy.get())) {
     policy_.reset(new_policy.release());
-    // TODO(danno): Change the notification between the provider and the
-    // PrefStore into a notification mechanism, removing the need for the
-    // WeakPtr for the provider.
-    if (provider_)
-      provider_->NotifyStoreOfPolicyChange();
+    FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
+                      observer_list_,
+                      OnUpdatePolicy());
   }
 }
 

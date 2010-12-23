@@ -30,9 +30,12 @@ class MockConfigurationPolicyProvider : public ConfigurationPolicyProvider {
   virtual bool Provide(ConfigurationPolicyStoreInterface* store);
   virtual bool IsInitializationComplete() const;
 
-  MOCK_METHOD0(NotifyStoreOfPolicyChange, void());
-
  private:
+  // ConfigurationPolicyProvider overrides:
+  virtual void AddObserver(ConfigurationPolicyProvider::Observer* observer) {}
+  virtual void RemoveObserver(
+      ConfigurationPolicyProvider::Observer* observer) {}
+
   typedef std::map<ConfigurationPolicyType, Value*> PolicyMap;
 
   PolicyMap policy_map_;

@@ -8,6 +8,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
+#include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/device_management_policy_cache.h"
 #include "chrome/browser/policy/device_management_policy_provider.h"
 #include "chrome/browser/policy/mock_configuration_policy_store.h"
@@ -18,6 +19,7 @@
 #include "chrome/common/policy_constants.h"
 #include "chrome/test/testing_device_token_fetcher.h"
 #include "chrome/test/testing_profile.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 const char kTestToken[] = "device_policy_provider_test_auth_token";
@@ -27,6 +29,12 @@ namespace policy {
 using ::testing::_;
 using ::testing::InSequence;
 using ::testing::Mock;
+
+class MockConfigurationPolicyObserver
+    : public ConfigurationPolicyProvider::Observer {
+ public:
+  MOCK_METHOD0(OnUpdatePolicy, void());
+};
 
 class DeviceManagementPolicyProviderTest : public testing::Test {
  public:
@@ -197,12 +205,11 @@ TEST_F(DeviceManagementPolicyProviderTest, SecondProvide) {
 // When policy is successfully fetched from the device management server, it
 // should force a policy refresh.
 TEST_F(DeviceManagementPolicyProviderTest, FetchTriggersRefresh) {
-  NotificationObserverMock observer;
-  NotificationRegistrar registrar;
-  registrar.Add(&observer,
-                NotificationType::POLICY_CHANGED,
-                NotificationService::AllSources());
-  EXPECT_CALL(observer, Observe(_, _, _)).Times(1);
+  MockConfigurationPolicyObserver observer;
+  ConfigurationPolicyObserverRegistrar registrar;
+  registrar.Init(provider_.get());
+  registrar.AddObserver(&observer);
+  EXPECT_CALL(observer, OnUpdatePolicy()).Times(1);
   SimulateSuccessfulInitialPolicyFetch();
 }
 

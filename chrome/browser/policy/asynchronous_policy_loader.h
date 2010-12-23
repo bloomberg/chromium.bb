@@ -7,13 +7,13 @@
 #pragma once
 
 #include "base/message_loop.h"
+#include "base/observer_list.h"
 #include "base/ref_counted.h"
 #include "base/values.h"
 #include "chrome/browser/policy/asynchronous_policy_provider.h"
+#include "chrome/browser/policy/configuration_policy_provider.h"
 
 namespace policy {
-
-class ConfigurationPolicyProvider;
 
 // Used by the implementation of asynchronous policy provider to manage the
 // tasks on the file thread that do the heavy lifting of loading policies.
@@ -34,9 +34,8 @@ class AsynchronousPolicyLoader
   // Stops any pending reload tasks.
   virtual void Stop();
 
-  // Associates a provider with the loader to allow the loader to notify the
-  // provider when policy changes.
-  void SetProvider(AsynchronousPolicyProvider* provider);
+  void AddObserver(ConfigurationPolicyProvider::Observer* observer);
+  void RemoveObserver(ConfigurationPolicyProvider::Observer* observer);
 
   const DictionaryValue* policy() const { return policy_.get(); }
 
@@ -83,9 +82,9 @@ class AsynchronousPolicyLoader
   void InitAfterFileThreadAvailable();
 
   // Replaces the existing policy to value map with a new one, sending
-  // notification to the provider if there is a policy change. Must be called on
-  // |origin_loop_| so that it's safe to call back into the provider, which is
-  // not thread-safe. Takes ownership of |new_policy|.
+  // notification to the observers if there is a policy change. Must be called
+  // on |origin_loop_| so that it's safe to call back into the provider, which
+  // is not thread-safe. Takes ownership of |new_policy|.
   void UpdatePolicy(DictionaryValue* new_policy);
 
   // Provides the low-level mechanics for loading policy.
@@ -93,10 +92,6 @@ class AsynchronousPolicyLoader
 
   // Current policy.
   scoped_ptr<DictionaryValue> policy_;
-
-  // The provider this loader is associated with. Access only on the thread that
-  // called the constructor. See |origin_loop_| below.
-  AsynchronousPolicyProvider* provider_;
 
   // The reload task. Access only on the file thread. Holds a reference to the
   // currently posted task, so we can cancel and repost it if necessary.
@@ -112,6 +107,8 @@ class AsynchronousPolicyLoader
 
   // True if Stop has been called.
   bool stopped_;
+
+  ObserverList<ConfigurationPolicyProvider::Observer, true> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(AsynchronousPolicyLoader);
 };

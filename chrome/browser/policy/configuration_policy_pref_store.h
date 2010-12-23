@@ -15,8 +15,6 @@
 #include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/configuration_policy_store_interface.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 #include "chrome/common/pref_store.h"
 
 class Profile;
@@ -27,8 +25,9 @@ class ConfigurationPolicyPrefKeeper;
 
 // An implementation of PrefStore that bridges policy settings as read from a
 // ConfigurationPolicyProvider to preferences.
-class ConfigurationPolicyPrefStore : public PrefStore,
-                                     public NotificationObserver {
+class ConfigurationPolicyPrefStore
+    : public PrefStore,
+      public ConfigurationPolicyProvider::Observer {
  public:
   // The ConfigurationPolicyPrefStore does not take ownership of the
   // passed-in |provider|.
@@ -36,10 +35,13 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   virtual ~ConfigurationPolicyPrefStore();
 
   // PrefStore methods:
-  virtual void AddObserver(Observer* observer);
-  virtual void RemoveObserver(Observer* observer);
+  virtual void AddObserver(PrefStore::Observer* observer);
+  virtual void RemoveObserver(PrefStore::Observer* observer);
   virtual bool IsInitializationComplete() const;
   virtual ReadResult GetValue(const std::string& key, Value** result) const;
+
+  // ConfigurationPolicyProvider::Observer methods:
+  virtual void OnUpdatePolicy();
 
   // Creates a ConfigurationPolicyPrefStore that reads managed platform policy.
   static ConfigurationPolicyPrefStore* CreateManagedPlatformPolicyPrefStore();
@@ -57,12 +59,6 @@ class ConfigurationPolicyPrefStore : public PrefStore,
       GetChromePolicyDefinitionList();
 
  private:
-  // TODO(mnissler): Remove after provider has proper observer interface.
-  // NotificationObserver overrides:
-  void Observe(NotificationType type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
-
   // Refreshes policy information, rereading policy from the provider and
   // sending out change notifications as appropriate.
   void Refresh();
@@ -80,10 +76,9 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   // Current policy preferences.
   scoped_ptr<ConfigurationPolicyPrefKeeper> policy_keeper_;
 
-  // TODO(mnissler): Remove after provider has proper observer interface.
-  NotificationRegistrar registrar_;
+  ObserverList<PrefStore::Observer, true> observers_;
 
-  ObserverList<Observer, true> observers_;
+  ConfigurationPolicyObserverRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyPrefStore);
 };
