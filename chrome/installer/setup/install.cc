@@ -6,8 +6,10 @@
 
 #include <shlobj.h>
 #include <time.h>
+#include <vector>
 
 #include "base/command_line.h"
+#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -383,30 +385,53 @@ bool CreateOrUpdateChromeShortcuts(const FilePath& setup_path,
   return ret;
 }
 
-bool RegisterComDlls(const Package& install,
-                     const Version* current_version,
+// Local helper to call RegisterComDllList for all DLLs in a set of products
+// managed by a given package.
+bool RegisterComDlls(const Package& package,
+                     const Version* old_version,
                      const Version& new_version) {
-  // TODO(tommi): setup.exe should always have at least one DLL to register.
-  // Currently we rely on scan_server_dlls.py to populate the array for us,
-  // but we might as well use an explicit static array of required components.
-  if (kNumDllsToRegister <= 0) {
-    NOTREACHED() << "no dlls to register";
-    return false;
+  // First collect the list of DLLs to be registered from each product.
+  const Products& products = package.products();
+  Products::const_iterator product_iter(products.begin());
+  std::vector<FilePath> com_dll_list;
+  for (; product_iter != products.end(); ++product_iter) {
+    BrowserDistribution* dist = product_iter->get()->distribution();
+    std::vector<FilePath> dist_dll_list(dist->GetComDllList());
+    std::copy(dist_dll_list.begin(), dist_dll_list.end(),
+              std::back_inserter(com_dll_list));
   }
 
-  // Unregister DLLs that were left from the old version that is being upgraded.
-  if (current_version) {
-    FilePath old_dll_path(install.path().Append(
-        UTF8ToWide(current_version->GetString())));
-    // Ignore failures to unregister old DLLs.
-    installer::RegisterComDllList(old_dll_path, install.system_level(), false,
-                                  false);
+  // Then, if we got some, attempt to unregister the DLLs from the old
+  // version directory and then re-register them in the new one.
+  // Note that if we are migrating the install directory then we will not
+  // successfully unregister the old DLLs.
+  // TODO(robertshield): See whether we need to fix the migration case.
+  // TODO(robertshield): If we ever remove a DLL from a product, this will
+  // not unregister it on update. We should build the unregistration list from
+  // saved state instead of assuming it is the same as the registration list.
+  bool success = true;
+  if (!com_dll_list.empty()) {
+    if (old_version) {
+      FilePath old_dll_path(
+          package.path().Append(UTF8ToWide(old_version->GetString())));
+
+      installer::RegisterComDllList(old_dll_path,
+                                    com_dll_list,
+                                    package.system_level(),
+                                    false,   // Unregister
+                                    false);  // Ignore failures
+    }
+
+    FilePath dll_path(
+        package.path().Append(UTF8ToWide(new_version.GetString())));
+    success = installer::RegisterComDllList(dll_path,
+                                            com_dll_list,
+                                            package.system_level(),
+                                            true,   // Register
+                                            true);  // Rollback on failure.
   }
 
-  FilePath dll_path(install.path().Append(
-      UTF8ToWide(new_version.GetString())));
-  return installer::RegisterComDllList(dll_path, install.system_level(), true,
-                                       true);
+  return success;
 }
 
 // After a successful copying of all the files, this function is called to
@@ -507,11 +532,9 @@ bool DoPostInstallTasks(bool multi_install,
     }
   }
 
-  if (FindProduct(products, BrowserDistribution::CHROME_FRAME)) {
-    if (!RegisterComDlls(package, current_version, new_version)) {
-      LOG(ERROR) << "RegisterComDlls failed.  Aborting.";
-      return false;
-    }
+  if (!RegisterComDlls(package, current_version, new_version)) {
+    LOG(ERROR) << "RegisterComDlls failed.  Aborting.";
+    return false;
   }
 
   // If we're told that we're an MSI install, make sure to set the marker
@@ -829,9 +852,16 @@ installer::InstallStatus InstallOrUpdateChrome(
   return result;
 }
 
-bool RegisterComDllList(const FilePath& dll_folder, bool system_level,
-                        bool do_register, bool rollback_on_failure) {
-  bool success = false;
+bool RegisterComDllList(const FilePath& dll_folder,
+                        const std::vector<FilePath>& dll_list,
+                        bool system_level,
+                        bool do_register,
+                        bool rollback_on_failure) {
+  if (dll_list.empty()) {
+    VLOG(1) << "No COM DLLs to register";
+    return true;
+  }
+
   scoped_ptr<WorkItemList> work_item_list;
   if (rollback_on_failure) {
     work_item_list.reset(WorkItem::CreateWorkItemList());
@@ -839,21 +869,20 @@ bool RegisterComDllList(const FilePath& dll_folder, bool system_level,
     work_item_list.reset(WorkItem::CreateNoRollbackWorkItemList());
   }
 
-  // TODO(robertshield): What if the list of old dlls and new ones isn't
-  // the same?  I (elmo) think we should start storing the list of DLLs
-  // somewhere.
-  if (InstallUtil::BuildDLLRegistrationList(dll_folder.value(), kDllsToRegister,
-                                            kNumDllsToRegister, do_register,
-                                            !system_level,
-                                            work_item_list.get())) {
-    // Ignore failures to unregister old DLLs.
-    success = work_item_list->Do();
-    if (!success && rollback_on_failure) {
-      work_item_list->Rollback();
-    }
+  std::vector<FilePath>::const_iterator dll_iter(dll_list.begin());
+  for (; dll_iter != dll_list.end(); ++dll_iter) {
+    FilePath dll_path = dll_folder.Append(*dll_iter);
+    work_item_list->AddSelfRegWorkItem(dll_path.value(),
+                                       do_register,
+                                       !system_level);
   }
 
+  bool success = work_item_list->Do();
+  if (!success && rollback_on_failure) {
+    work_item_list->Rollback();
+  }
   return success;
 }
+
 
 }  // namespace installer

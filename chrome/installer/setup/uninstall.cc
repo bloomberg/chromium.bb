@@ -598,15 +598,14 @@ InstallStatus UninstallChrome(const FilePath& setup_path,
       hklm_key.Close();
     }
 
-    // Unregister any dll servers that we may have registered for Chrome Frame
-    // and CEEE builds only.
-    // TODO(tommi): We should only do this when the folder itself is
-    // being removed and we know that the DLLs were previously registered.
-    // Simplest would be to always register them.
-    if (installed_version != NULL && !is_chrome) {
-      RegisterComDllList(product.package().path().Append(
-          UTF8ToWide(installed_version->GetString())), product.system_level(),
-          false, false);
+    // Unregister any dll servers that we may have registered for this
+    // product.
+    if (installed_version != NULL) {
+      std::vector<FilePath> com_dll_list(browser_dist->GetComDllList());
+      FilePath dll_folder = product.package().path().Append(
+          UTF8ToWide(installed_version->GetString()));
+      RegisterComDllList(dll_folder, com_dll_list, product.system_level(),
+                         false, false);
     }
   }
 

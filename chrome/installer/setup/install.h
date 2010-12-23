@@ -17,6 +17,7 @@
 #include "chrome/installer/util/util_constants.h"
 
 class DictionaryValue;
+class FilePath;
 
 namespace installer {
 
@@ -45,13 +46,19 @@ installer::InstallStatus InstallOrUpdateChrome(
     const installer::MasterPreferences& prefs, const Version& new_version,
     const Package& package);
 
-// Registers or unregisters COM DLLs in a specific folder as declared in
-// kDllsToRegister.
-// TODO(robertshield): What if the list of old dlls and new ones isn't
-// the same?  I think we should start storing the list of DLLs somewhere as
-// part of the installation data.
-bool RegisterComDllList(const FilePath& dll_folder, bool system_level,
-                        bool do_register, bool rollback_on_failure);
+// Registers or unregisters the COM DLLs whose file names are given in
+// |dll_files| and who reside in the path |dll_folder|.
+// |system_level| specifies whether to call the system or user level DLL
+// registration entry points.
+// |do_register| says whether to register or unregister.
+// |rollback_on_failure| says whether we should try to revert the registration
+// or unregistration by calling the opposite entry point on the DLLs if
+// something goes wrong.
+bool RegisterComDllList(const FilePath& dll_folder,
+                        const std::vector<FilePath>& dll_files,
+                        bool system_level,
+                        bool do_register,
+                        bool rollback_on_failure);
 
 }  // namespace installer
 
