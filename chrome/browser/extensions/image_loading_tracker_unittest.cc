@@ -160,10 +160,12 @@ TEST_F(ImageLoadingTrackerTest, DeleteExtensionWhileWaitingForCache) {
   EXPECT_EQ(0, image_loaded_count());
 
   // Send out notification the extension was uninstalled.
+  UnloadedExtensionInfo details(extension.get(),
+                                UnloadedExtensionInfo::UNINSTALL);
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_UNLOADED,
       NotificationService::AllSources(),
-      Details<const Extension>(extension.get()));
+      Details<UnloadedExtensionInfo>(&details));
 
   // Chuck the extension, that way if anyone tries to access it we should crash
   // or get valgrind errors.

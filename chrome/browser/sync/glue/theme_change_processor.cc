@@ -39,7 +39,12 @@ void ThemeChangeProcessor::Observe(NotificationType type,
                                    const NotificationDetails& details) {
   DCHECK(running());
   DCHECK(profile_);
-  const Extension* extension = Details<const Extension>(details).ptr();
+  const Extension* extension = NULL;
+  if (type == NotificationType::EXTENSION_UNLOADED) {
+    extension = Details<UnloadedExtensionInfo>(details)->extension;
+  } else {
+    extension = Details<const Extension>(details).ptr();
+  }
   std::string current_or_future_theme_id =
       profile_->GetThemeProvider()->GetThemeID();
   const Extension* current_theme = profile_->GetTheme();

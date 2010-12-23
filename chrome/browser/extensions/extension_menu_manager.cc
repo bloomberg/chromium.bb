@@ -453,7 +453,8 @@ void ExtensionMenuManager::Observe(NotificationType type,
     NOTREACHED();
     return;
   }
-  const Extension* extension = Details<const Extension>(details).ptr();
+  const Extension* extension =
+      Details<UnloadedExtensionInfo>(details)->extension;
   if (ContainsKey(context_items_, extension->id())) {
     RemoveAllContextItems(extension->id());
   }

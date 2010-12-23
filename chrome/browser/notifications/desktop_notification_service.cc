@@ -317,7 +317,8 @@ void DesktopNotificationService::Observe(NotificationType type,
   } else if (NotificationType::EXTENSION_UNLOADED == type) {
     // Remove all notifications currently shown or queued by the extension
     // which was unloaded.
-    Extension* extension = Details<Extension>(details).ptr();
+    const Extension* extension =
+        Details<UnloadedExtensionInfo>(details)->extension;
     if (extension)
       ui_manager_->CancelAllBySourceOrigin(extension->url());
   } else if (NotificationType::PROFILE_DESTROYED == type) {

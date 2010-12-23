@@ -22,8 +22,6 @@ ExtensionToolbarModel::ExtensionToolbarModel(ExtensionService* service)
                  Source<Profile>(service_->profile()));
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  Source<Profile>(service_->profile()));
-  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
-                 Source<Profile>(service_->profile()));
   registrar_.Add(this, NotificationType::EXTENSIONS_READY,
                  Source<Profile>(service_->profile()));
   registrar_.Add(this,
@@ -96,7 +94,12 @@ void ExtensionToolbarModel::Observe(NotificationType type,
   if (!service_->is_ready())
     return;
 
-  const Extension* extension = Details<const Extension>(details).ptr();
+  const Extension* extension = NULL;
+  if (type == NotificationType::EXTENSION_UNLOADED) {
+    extension = Details<UnloadedExtensionInfo>(details)->extension;
+  } else {
+    extension = Details<const Extension>(details).ptr();
+  }
   if (type == NotificationType::EXTENSION_LOADED) {
     // We don't want to add the same extension twice. It may have already been
     // added by EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED below, if the user
@@ -107,8 +110,7 @@ void ExtensionToolbarModel::Observe(NotificationType type,
     }
     if (service_->GetBrowserActionVisibility(extension))
       AddExtension(extension);
-  } else if (type == NotificationType::EXTENSION_UNLOADED ||
-             type == NotificationType::EXTENSION_UNLOADED_DISABLED) {
+  } else if (type == NotificationType::EXTENSION_UNLOADED) {
     RemoveExtension(extension);
   } else if (type ==
              NotificationType::EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED) {

@@ -129,7 +129,7 @@ void BackgroundModeManager::Observe(NotificationType type,
       break;
     case NotificationType::EXTENSION_UNLOADED:
       if (BackgroundApplicationListModel::IsBackgroundApp(
-              *Details<Extension>(details).ptr())) {
+              *Details<UnloadedExtensionInfo>(details)->extension)) {
         OnBackgroundAppUnloaded();
       }
       break;
@@ -377,4 +377,3 @@ bool BackgroundModeManager::IsBackgroundModeEnabled(
 
   return background_mode_enabled;
 }
-

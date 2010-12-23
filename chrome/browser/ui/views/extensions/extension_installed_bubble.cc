@@ -268,7 +268,8 @@ void ExtensionInstalledBubble::Observe(NotificationType type,
           &ExtensionInstalledBubble::ShowInternal));
     }
   } else if (type == NotificationType::EXTENSION_UNLOADED) {
-    const Extension* extension = Details<const Extension>(details).ptr();
+    const Extension* extension =
+        Details<UnloadedExtensionInfo>(details)->extension;
     if (extension == extension_)
       extension_ = NULL;
   } else {

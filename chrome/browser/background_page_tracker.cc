@@ -165,7 +165,7 @@ void BackgroundPageTracker::Observe(NotificationType type,
       break;
     }
     case NotificationType::EXTENSION_UNLOADED: {
-      std::string id = Details<const Extension>(details)->id();
+      std::string id = Details<UnloadedExtensionInfo>(details)->extension->id();
       OnExtensionUnloaded(id);
       break;
     }

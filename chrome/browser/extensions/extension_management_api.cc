@@ -267,7 +267,12 @@ void ExtensionManagementEventRouter::Observe(
         Details<UninstalledExtensionInfo>(details).ptr()->extension_id;
     args.Append(Value::CreateStringValue(extension_id));
   } else {
-    const Extension* extension = Details<const Extension>(details).ptr();
+    const Extension* extension = NULL;
+    if (event_name == events::kOnExtensionDisabled) {
+      extension = Details<UnloadedExtensionInfo>(details)->extension;
+    } else {
+      extension = Details<const Extension>(details).ptr();
+    }
     CHECK(extension);
     ExtensionService* service = profile->GetExtensionService();
     bool enabled = service->GetExtensionById(extension->id(), false) != NULL;

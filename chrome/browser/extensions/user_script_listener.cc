@@ -136,7 +136,7 @@ void UserScriptListener::Observe(NotificationType type,
 
     case NotificationType::EXTENSION_UNLOADED: {
       const Extension* unloaded_extension =
-          Details<const Extension>(details).ptr();
+          Details<UnloadedExtensionInfo>(details)->extension;
       if (unloaded_extension->content_scripts().empty())
         return;  // no patterns to delete for this extension.
 

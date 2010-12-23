@@ -49,8 +49,7 @@ void ExtensionChangeProcessor::Observe(NotificationType type,
       (type != NotificationType::EXTENSION_UNINSTALLED) &&
       (type != NotificationType::EXTENSION_LOADED) &&
       (type != NotificationType::EXTENSION_UPDATE_DISABLED) &&
-      (type != NotificationType::EXTENSION_UNLOADED) &&
-      (type != NotificationType::EXTENSION_UNLOADED_DISABLED)) {
+      (type != NotificationType::EXTENSION_UNLOADED)) {
     LOG(DFATAL) << "Received unexpected notification of type "
                 << type.value;
     return;
@@ -69,7 +68,12 @@ void ExtensionChangeProcessor::Observe(NotificationType type,
       RemoveServerData(traits_, id, profile_->GetProfileSyncService());
     }
   } else {
-    const Extension* extension = Details<const Extension>(details).ptr();
+    const Extension* extension = NULL;
+    if (type == NotificationType::EXTENSION_UNLOADED) {
+      extension = Details<UnloadedExtensionInfo>(details)->extension;
+    } else {
+      extension = Details<const Extension>(details).ptr();
+    }
     CHECK(extension);
     VLOG(1) << "Updating server data for extension " << extension->id()
             << " (notification type = " << type.value << ")";
@@ -176,9 +180,6 @@ void ExtensionChangeProcessor::StartObserving() {
 
   notification_registrar_.Add(
       this, NotificationType::EXTENSION_UNLOADED,
-      Source<Profile>(profile_));
-  notification_registrar_.Add(
-      this, NotificationType::EXTENSION_UNLOADED_DISABLED,
       Source<Profile>(profile_));
 }
 

@@ -70,7 +70,7 @@ class ExtensionDisabledInfobarDelegate
     // The user might re-enable the extension in other ways, so watch for that.
     registrar_.Add(this, NotificationType::EXTENSION_LOADED,
                    Source<Profile>(service->profile()));
-    registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
+    registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                    Source<Profile>(service->profile()));
   }
   virtual ~ExtensionDisabledInfobarDelegate() {
@@ -106,17 +106,24 @@ class ExtensionDisabledInfobarDelegate
                        const NotificationDetails& details) {
     // TODO(mpcomplete): RemoveInfoBar doesn't seem to always result in us
     // getting deleted.
+    const Extension* extension = NULL;
     switch (type.value) {
       case NotificationType::EXTENSION_LOADED:
-      case NotificationType::EXTENSION_UNLOADED_DISABLED: {
-        const Extension* extension = Details<const Extension>(details).ptr();
-        if (extension == extension_)
-          tab_contents_->RemoveInfoBar(this);
+        extension = Details<const Extension>(details).ptr();
+        break;
+      case NotificationType::EXTENSION_UNLOADED: {
+        UnloadedExtensionInfo* info =
+            Details<UnloadedExtensionInfo>(details).ptr();
+        if (info->reason == UnloadedExtensionInfo::DISABLE)
+          extension = info->extension;
         break;
       }
       default:
         NOTREACHED();
+        return;
     }
+    if (extension == extension_)
+      tab_contents_->RemoveInfoBar(this);
   }
 
  private:

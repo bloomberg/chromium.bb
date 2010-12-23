@@ -153,9 +153,6 @@ BackgroundApplicationListModel::BackgroundApplicationListModel(Profile* profile)
                  NotificationType::EXTENSION_UNLOADED,
                  Source<Profile>(profile));
   registrar_.Add(this,
-                 NotificationType::EXTENSION_UNLOADED_DISABLED,
-                 Source<Profile>(profile));
-  registrar_.Add(this,
                  NotificationType::EXTENSIONS_READY,
                  Source<Profile>(profile));
   ExtensionService* service = profile->GetExtensionService();
@@ -261,9 +258,7 @@ void BackgroundApplicationListModel::Observe(
       OnExtensionLoaded(Details<Extension>(details).ptr());
       break;
     case NotificationType::EXTENSION_UNLOADED:
-      // Handle extension unload uniformly, falling through to next case.
-    case NotificationType::EXTENSION_UNLOADED_DISABLED:
-      OnExtensionUnloaded(Details<Extension>(details).ptr());
+      OnExtensionUnloaded(Details<UnloadedExtensionInfo>(details)->extension);
       break;
     default:
       NOTREACHED() << "Received unexpected notification";
@@ -283,7 +278,8 @@ void BackgroundApplicationListModel::OnExtensionLoaded(Extension* extension) {
   Update();
 }
 
-void BackgroundApplicationListModel::OnExtensionUnloaded(Extension* extension) {
+void BackgroundApplicationListModel::OnExtensionUnloaded(
+    const Extension* extension) {
   if (!IsBackgroundApp(*extension))
     return;
   Update();

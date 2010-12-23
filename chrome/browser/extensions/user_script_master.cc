@@ -356,7 +356,8 @@ void UserScriptMaster::Observe(NotificationType type,
     }
     case NotificationType::EXTENSION_UNLOADED: {
       // Remove any content scripts.
-      const Extension* extension = Details<const Extension>(details).ptr();
+      const Extension* extension =
+          Details<UnloadedExtensionInfo>(details)->extension;
       UserScriptList new_lone_scripts;
       for (UserScriptList::iterator iter = lone_scripts_.begin();
            iter != lone_scripts_.end(); ++iter) {

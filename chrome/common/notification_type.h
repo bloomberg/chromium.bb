@@ -854,15 +854,12 @@ class NotificationType {
     EXTENSION_UNINSTALLED,
 
     // Sent when an extension is unloaded. This happens when an extension is
-    // uninstalled or disabled. The details are an Extension, and the source is
-    // a Profile.
+    // uninstalled or disabled. The details are an UnloadedExtensionInfo, and
+    // the source is a Profile.
     //
     // Note that when this notification is sent, ExtensionService has already
     // removed the extension from its internal state.
     EXTENSION_UNLOADED,
-
-    // Same as above, but for a disabled extension.
-    EXTENSION_UNLOADED_DISABLED,
 
     // Sent when an extension has updated its user scripts. The details are an
     // Extension, and the source is a Profile.

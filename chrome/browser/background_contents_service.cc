@@ -115,7 +115,8 @@ void BackgroundContentsService::Observe(NotificationType type,
       break;
     case NotificationType::EXTENSION_UNLOADED:
       ShutdownAssociatedBackgroundContents(
-          ASCIIToUTF16(Details<const Extension>(details)->id()));
+          ASCIIToUTF16(
+              Details<UnloadedExtensionInfo>(details)->extension->id()));
       break;
     default:
       NOTREACHED();

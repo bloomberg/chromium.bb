@@ -744,4 +744,22 @@ struct UninstalledExtensionInfo {
   GURL update_url;
 };
 
+struct UnloadedExtensionInfo {
+  enum Reason {
+    DISABLE,    // The extension is being disabled.
+    UPDATE,     // The extension is being updated to a newer version.
+    UNINSTALL,  // The extension is being uninstalled.
+  };
+
+  Reason reason;
+
+  // Was the extension already disabled?
+  bool already_disabled;
+
+  // The extension being unloaded - this should always be non-NULL.
+  const Extension* extension;
+
+  UnloadedExtensionInfo(const Extension* extension, Reason reason);
+};
+
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_H_

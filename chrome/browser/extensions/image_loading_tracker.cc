@@ -123,8 +123,6 @@ ImageLoadingTracker::ImageLoadingTracker(Observer* observer)
       next_id_(0) {
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
-                 NotificationService::AllSources());
 }
 
 ImageLoadingTracker::~ImageLoadingTracker() {
@@ -184,10 +182,10 @@ void ImageLoadingTracker::OnImageLoaded(
 void ImageLoadingTracker::Observe(NotificationType type,
                                   const NotificationSource& source,
                                   const NotificationDetails& details) {
-  DCHECK(type == NotificationType::EXTENSION_UNLOADED ||
-         type == NotificationType::EXTENSION_UNLOADED_DISABLED);
+  DCHECK(type == NotificationType::EXTENSION_UNLOADED);
 
-  const Extension* extension = Details<const Extension>(details).ptr();
+  const Extension* extension =
+      Details<UnloadedExtensionInfo>(details)->extension;
 
   // Remove all entries in the load_map_ referencing the extension. This ensures
   // we don't attempt to cache the image when the load completes.

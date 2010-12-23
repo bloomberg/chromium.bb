@@ -302,7 +302,8 @@ class ExtensionService
   void UpdateExternalPolicyExtensionProvider();
 
   // Unload the specified extension.
-  void UnloadExtension(const std::string& extension_id);
+  void UnloadExtension(const std::string& extension_id,
+                       UnloadedExtensionInfo::Reason reason);
 
   // Unload all extensions. This is currently only called on shutdown, and
   // does not send notifications.
@@ -480,7 +481,8 @@ class ExtensionService
   void NotifyExtensionLoaded(const Extension* extension);
 
   // Handles sending notification that |extension| was unloaded.
-  void NotifyExtensionUnloaded(const Extension* extension);
+  void NotifyExtensionUnloaded(const Extension* extension,
+                               UnloadedExtensionInfo::Reason reason);
 
   // Helper that updates the active extension list used for crash reporting.
   void UpdateActiveExtensionsInCrashReporter();

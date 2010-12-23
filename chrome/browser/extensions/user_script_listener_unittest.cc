@@ -164,7 +164,8 @@ class UserScriptListenerTest
 
   void UnloadTestExtension() {
     ASSERT_FALSE(service_->extensions()->empty());
-    service_->UnloadExtension(service_->extensions()->at(0)->id());
+    service_->UnloadExtension(service_->extensions()->at(0)->id(),
+                              UnloadedExtensionInfo::DISABLE);
   }
 
   scoped_refptr<UserScriptListener> listener_;

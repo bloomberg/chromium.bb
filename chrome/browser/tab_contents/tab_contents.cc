@@ -422,8 +422,6 @@ TabContents::TabContents(Profile* profile,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
-                 NotificationService::AllSources());
 
   // Listen for Google URL changes
   registrar_.Add(this, NotificationType::GOOGLE_URL_UPDATED,
@@ -3254,7 +3252,6 @@ void TabContents::Observe(NotificationType type,
       break;
 
     case NotificationType::EXTENSION_UNLOADED:
-    case NotificationType::EXTENSION_UNLOADED_DISABLED:
       break;
 
     case NotificationType::GOOGLE_URL_UPDATED:

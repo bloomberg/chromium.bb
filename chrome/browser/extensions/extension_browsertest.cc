@@ -183,7 +183,7 @@ void ExtensionBrowserTest::ReloadExtension(const std::string& extension_id) {
 
 void ExtensionBrowserTest::UnloadExtension(const std::string& extension_id) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
-  service->UnloadExtension(extension_id);
+  service->UnloadExtension(extension_id, UnloadedExtensionInfo::DISABLE);
 }
 
 void ExtensionBrowserTest::UninstallExtension(const std::string& extension_id) {

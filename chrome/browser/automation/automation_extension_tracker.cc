@@ -13,8 +13,6 @@ AutomationExtensionTracker::AutomationExtensionTracker(
     : AutomationResourceTracker<const Extension*>(automation) {
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
-                 NotificationService::AllSources());
 }
 
 AutomationExtensionTracker::~AutomationExtensionTracker() {
@@ -27,20 +25,18 @@ void AutomationExtensionTracker::RemoveObserver(const Extension* resource) {}
 void AutomationExtensionTracker::Observe(NotificationType type,
                                          const NotificationSource& source,
                                          const NotificationDetails& details) {
-  if (type != NotificationType::EXTENSION_UNLOADED &&
-      type != NotificationType::EXTENSION_UNLOADED_DISABLED)
+  if (type != NotificationType::EXTENSION_UNLOADED) {
+    NOTREACHED();
     return;
-
-  const Extension* extension = Details<const Extension>(details).ptr();
+  }
+  UnloadedExtensionInfo* info = Details<UnloadedExtensionInfo>(details).ptr();
+  const Extension* extension = info->extension;
   Profile* profile = Source<Profile>(source).ptr();
   if (profile) {
     ExtensionService* service = profile->GetExtensionService();
-    if (service) {
+    if (service && info->reason == UnloadedExtensionInfo::UNINSTALL) {
       // Remove this extension only if it is uninstalled, not just disabled.
-      // If it is being uninstalled, the extension will not be in the regular
-      // or disabled list.
-      if (!service->GetExtensionById(extension->id(), true))
-        CloseResource(extension);
+      CloseResource(extension);
     }
   }
 }

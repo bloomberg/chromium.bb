@@ -265,7 +265,7 @@ void ExtensionHost::Observe(NotificationType type,
       // sent. NULL it out so that dirty pointer issues don't arise in cases
       // when multiple ExtensionHost objects pointing to the same Extension are
       // present.
-      if (extension_ == Details<const Extension>(details).ptr())
+      if (extension_ == Details<UnloadedExtensionInfo>(details)->extension)
         extension_ = NULL;
       break;
     default:

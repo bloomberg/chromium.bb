@@ -119,8 +119,8 @@ class BackgroundApplicationListModel : public NotificationObserver {
   // Invoked by Observe for EXTENSION_LOADED notifications.
   void OnExtensionLoaded(Extension* extension);
 
-  // Invoked by Observe for EXTENSION_UNLOADED* notifications.
-  void OnExtensionUnloaded(Extension* extension);
+  // Invoked by Observe for EXTENSION_UNLOADED notifications.
+  void OnExtensionUnloaded(const Extension* extension);
 
   // Refresh the list of background applications and generates ApplicationAdded
   // and ApplicationRemoved events.

@@ -550,8 +550,6 @@ ExtensionUnloadNotificationObserver::ExtensionUnloadNotificationObserver()
     : did_receive_unload_notification_(false) {
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
-                 NotificationService::AllSources());
 }
 
 ExtensionUnloadNotificationObserver::~ExtensionUnloadNotificationObserver() {
@@ -560,8 +558,7 @@ ExtensionUnloadNotificationObserver::~ExtensionUnloadNotificationObserver() {
 void ExtensionUnloadNotificationObserver::Observe(
     NotificationType type, const NotificationSource& source,
     const NotificationDetails& details) {
-  if (type.value == NotificationType::EXTENSION_UNLOADED ||
-      type.value == NotificationType::EXTENSION_UNLOADED_DISABLED) {
+  if (type.value == NotificationType::EXTENSION_UNLOADED) {
     did_receive_unload_notification_ = true;
   } else {
     NOTREACHED();

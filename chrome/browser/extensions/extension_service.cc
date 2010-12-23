@@ -893,7 +893,7 @@ void ExtensionService::UninstallExtension(const std::string& extension_id,
 
   // Unload before doing more cleanup to ensure that nothing is hanging on to
   // any of these resources.
-  UnloadExtension(extension_id);
+  UnloadExtension(extension_id, UnloadedExtensionInfo::UNINSTALL);
 
   extension_prefs_->OnExtensionUninstalled(extension_id_copy, location,
                                            external_uninstall);
@@ -971,7 +971,7 @@ void ExtensionService::DisableExtension(const std::string& extension_id) {
   ExtensionDOMUI::UnregisterChromeURLOverrides(profile_,
       extension->GetChromeURLOverrides());
 
-  NotifyExtensionUnloaded(extension);
+  NotifyExtensionUnloaded(extension, UnloadedExtensionInfo::DISABLE);
   UpdateActiveExtensionsInCrashReporter();
 }
 
@@ -1238,11 +1238,13 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
       Details<const Extension>(extension));
 }
 
-void ExtensionService::NotifyExtensionUnloaded(const Extension* extension) {
+void ExtensionService::NotifyExtensionUnloaded(
+    const Extension* extension, UnloadedExtensionInfo::Reason reason) {
+  UnloadedExtensionInfo details(extension, reason);
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_UNLOADED,
       Source<Profile>(profile_),
-      Details<const Extension>(extension));
+      Details<UnloadedExtensionInfo>(&details));
 
   if (profile_) {
     profile_->UnregisterExtensionWithRequestContexts(extension);
@@ -1372,7 +1374,7 @@ void ExtensionService::UpdateExtensionBlacklist(
   // UnloadExtension will change the extensions_ list. So, we should
   // call it outside the iterator loop.
   for (unsigned int i = 0; i < to_be_removed.size(); ++i) {
-    UnloadExtension(to_be_removed[i]);
+    UnloadExtension(to_be_removed[i], UnloadedExtensionInfo::DISABLE);
   }
 }
 
@@ -1399,7 +1401,7 @@ void ExtensionService::CheckAdminBlacklist() {
   // UnloadExtension will change the extensions_ list. So, we should
   // call it outside the iterator loop.
   for (unsigned int i = 0; i < to_be_removed.size(); ++i)
-    UnloadExtension(to_be_removed[i]);
+    UnloadExtension(to_be_removed[i], UnloadedExtensionInfo::DISABLE);
 }
 
 bool ExtensionService::IsIncognitoEnabled(const Extension* extension) {
@@ -1421,7 +1423,7 @@ void ExtensionService::SetIsIncognitoEnabled(const Extension* extension,
   bool is_enabled = std::find(extensions_.begin(), extensions_.end(),
                               extension) != extensions_.end();
   if (is_enabled) {
-    NotifyExtensionUnloaded(extension);
+    NotifyExtensionUnloaded(extension, UnloadedExtensionInfo::DISABLE);
     NotifyExtensionLoaded(extension);
   }
 }
@@ -1480,7 +1482,9 @@ void ExtensionService::UpdateExternalPolicyExtensionProvider() {
               new RefCountedList(list_copy))));
 }
 
-void ExtensionService::UnloadExtension(const std::string& extension_id) {
+void ExtensionService::UnloadExtension(
+    const std::string& extension_id,
+    UnloadedExtensionInfo::Reason reason) {
   // Make sure the extension gets deleted after we return from this function.
   scoped_refptr<const Extension> extension(
       GetExtensionByIdInternal(extension_id, true, true));
@@ -1507,11 +1511,13 @@ void ExtensionService::UnloadExtension(const std::string& extension_id) {
                                            disabled_extensions_.end(),
                                            extension.get());
   if (iter != disabled_extensions_.end()) {
+    UnloadedExtensionInfo details(extension, reason);
+    details.already_disabled = true;
     disabled_extensions_.erase(iter);
     NotificationService::current()->Notify(
-        NotificationType::EXTENSION_UNLOADED_DISABLED,
+        NotificationType::EXTENSION_UNLOADED,
         Source<Profile>(profile_),
-        Details<const Extension>(extension.get()));
+        Details<UnloadedExtensionInfo>(&details));
     return;
   }
 
@@ -1520,7 +1526,7 @@ void ExtensionService::UnloadExtension(const std::string& extension_id) {
   // Remove the extension from our list.
   extensions_.erase(iter);
 
-  NotifyExtensionUnloaded(extension.get());
+  NotifyExtensionUnloaded(extension.get(), reason);
   UpdateActiveExtensionsInCrashReporter();
 }
 
@@ -1706,7 +1712,7 @@ void ExtensionService::DisableIfPrivilegeIncrease(const Extension* extension) {
 
     // To upgrade an extension in place, unload the old one and
     // then load the new one.
-    UnloadExtension(old->id());
+    UnloadExtension(old->id(), UnloadedExtensionInfo::UPDATE);
     old = NULL;
   }
 
@@ -1996,8 +2002,10 @@ void ExtensionService::Observe(NotificationType type,
       // We do it in a PostTask so that other handlers of this notification will
       // still have access to the Extension and ExtensionHost.
       MessageLoop::current()->PostTask(FROM_HERE,
-          NewRunnableMethod(this, &ExtensionService::UnloadExtension,
-                            host->extension()->id()));
+          NewRunnableMethod(this,
+                            &ExtensionService::UnloadExtension,
+                            host->extension()->id(),
+                            UnloadedExtensionInfo::DISABLE));
       break;
     }
 

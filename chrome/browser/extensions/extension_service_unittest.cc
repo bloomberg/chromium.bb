@@ -448,7 +448,8 @@ class ExtensionServiceTest
       }
 
       case NotificationType::EXTENSION_UNLOADED: {
-        const Extension* e = Details<const Extension>(details).ptr();
+        const Extension* e =
+            Details<UnloadedExtensionInfo>(details)->extension;
         unloaded_id_ = e->id();
         ExtensionList::iterator i =
             std::find(loaded_.begin(), loaded_.end(), e);
