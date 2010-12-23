@@ -210,11 +210,8 @@ TEST_F(PluginTest, DISABLED_MediaPlayerOld) {
   TestPlugin("wmp_old.html", action_max_timeout_ms(), false);
 }
 
-#if defined(NDEBUG)
-#define Real DISABLED_Real
-#endif
-// Disabled on Release bots - http://crbug.com/44673
-TEST_F(PluginTest, Real) {
+// Disabled - http://crbug.com/44673
+TEST_F(PluginTest, DISABLED_Real) {
   TestPlugin("real.html", action_max_timeout_ms(), false);
 }
 
