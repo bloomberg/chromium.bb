@@ -98,6 +98,8 @@ int NaClDescImcBoundDescAcceptConn(struct NaClDesc *vself,
           (uintptr_t) vself,
           self->h);
 
+  received_fd = NACL_INVALID_HANDLE;
+
   received = recvmsg(self->h, &accept_msg, 0);
   if (received != 1 || data_buf[0] != 'c') {
     NaClLog(LOG_ERROR,
@@ -108,7 +110,6 @@ int NaClDescImcBoundDescAcceptConn(struct NaClDesc *vself,
     goto cleanup;
   }
 
-  received_fd = NACL_INVALID_HANDLE;
   retval = 0;
   /*
    * If we got more than one fd in the message, we must clean up by
