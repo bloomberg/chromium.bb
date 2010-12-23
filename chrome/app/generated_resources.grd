@@ -6291,6 +6291,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Bad SSL client authentication certificate.
       </message>
 
+      <message name="IDS_ERRORPAGES_SUMMARY_TEMPORARILY_THROTTLED" desc="Summary in the error page when we temporarily stop sending requests to a server in order to avoid DDoS.">
+        It is likely that the server hosting the webpage has been overloaded or encountered an error. In order to avoid causing too much traffic and making the situation worse, <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph> has temporarily stopped allowing requests to the server.
+        <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
+        If you think this behavior is undesirable, for example, you are debugging your own website, you could disable it by restarting <ph name="PRODUCT_NAME">&lt;span jscontent="productName"&gt;&lt;/span&gt;<ex>Google Chrome</ex></ph> with the command line flag <ph name="COMMAND_LINE_FLAG">&lt;strong&gt;--disable-enforced-throttling&lt;/strong&gt;</ph>.
+      </message>
+      <message name="IDS_ERRORPAGES_DETAILS_TEMPORARILY_THROTTLED" desc="The error message displayed when we temporarily stop sending requests to a server in order to avoid DDoS.">
+        Requests to the server have been temporarily throttled.
+      </message>
+
       <message name="IDS_ERRORPAGES_HTTP_POST_WARNING" desc="The error message displayed when the user navigates back or forward to a page which would resubmit post data. They can hit reload to send POST data again and load the page.">
         This web page requires data that you entered earlier in order to be properly displayed. You can send this data again, but by doing so you will repeat any action this page previously performed. Press Reload to resend that data and display this page.
       </message>

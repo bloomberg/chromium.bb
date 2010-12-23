@@ -100,6 +100,7 @@
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_throttler_manager.h"
 
 #if defined(USE_LINUX_BREAKPAD)
 #include "base/linux_util.h"
@@ -584,6 +585,11 @@ void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
             switches::kMaxSpdySessionsPerDomain),
         &value);
     net::SpdySessionPool::set_max_sessions_per_domain(value);
+  }
+
+  if (parsed_command_line.HasSwitch(switches::kDisableEnforcedThrottling)) {
+    net::URLRequestThrottlerManager::GetInstance()->
+        set_enforce_throttling(false);
   }
 
   SetDnsCertProvenanceCheckerFactory(CreateChromeDnsCertProvenanceChecker);
