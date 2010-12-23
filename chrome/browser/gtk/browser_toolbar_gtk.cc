@@ -18,6 +18,7 @@
 #include "base/path_service.h"
 #include "base/singleton.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/background_page_tracker.h"
 #include "chrome/browser/gtk/accelerators_gtk.h"
 #include "chrome/browser/gtk/back_forward_button_gtk.h"
 #include "chrome/browser/gtk/browser_actions_toolbar_gtk.h"
@@ -100,6 +101,9 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
                  NotificationService::AllSources());
   registrar_.Add(this,
                  NotificationType::UPGRADE_RECOMMENDED,
+                 NotificationService::AllSources());
+  registrar_.Add(this,
+                 NotificationType::BACKGROUND_PAGE_TRACKER_CHANGED,
                  NotificationService::AllSources());
 }
 
@@ -311,16 +315,20 @@ void BrowserToolbarGtk::StoppedShowing() {
   gtk_chrome_button_set_hover_state(
       GTK_CHROME_BUTTON(wrench_menu_button_->widget()), 0.0);
   wrench_menu_button_->UnsetPaintOverride();
+
+  // Stop showing the BG page badge when we close the wrench menu.
+  BackgroundPageTracker::GetInstance()->AcknowledgeBackgroundPages();
 }
 
 GtkIconSet* BrowserToolbarGtk::GetIconSetForId(int idr) {
   return theme_provider_->GetIconSetForId(idr);
 }
 
-// Always show images because we desire that the upgrade icon always show when
-// an upgrade is available regardless of the system setting.
+// Always show images because we desire that some icons always show
+// regardless of the system setting.
 bool BrowserToolbarGtk::AlwaysShowIconForCmd(int command_id) const {
-  return command_id == IDC_UPGRADE_DIALOG;
+  return command_id == IDC_UPGRADE_DIALOG ||
+         command_id == IDC_VIEW_BACKGROUND_PAGES;
 }
 
 // menus::AcceleratorProvider
@@ -375,7 +383,9 @@ void BrowserToolbarGtk::Observe(NotificationType type,
     }
 
     UpdateRoundedness();
-  } else if (type == NotificationType::UPGRADE_RECOMMENDED) {
+  } else if (type == NotificationType::UPGRADE_RECOMMENDED ||
+             type == NotificationType::BACKGROUND_PAGE_TRACKER_CHANGED) {
+    // Redraw the wrench menu to update the badge.
     gtk_widget_queue_draw(wrench_menu_button_->widget());
   } else if (type == NotificationType::ZOOM_LEVEL_CHANGED) {
     // If our zoom level changed, we need to tell the menu to update its state,
@@ -626,19 +636,23 @@ bool BrowserToolbarGtk::ShouldOnlyShowLocation() const {
 
 gboolean BrowserToolbarGtk::OnWrenchMenuButtonExpose(GtkWidget* sender,
                                                      GdkEventExpose* expose) {
-  if (!UpgradeDetector::GetInstance()->notify_upgrade())
+  const SkBitmap* badge = NULL;
+  if (UpgradeDetector::GetInstance()->notify_upgrade()) {
+    badge = theme_provider_->GetBitmapNamed(IDR_UPDATE_BADGE);
+  } else if (BackgroundPageTracker::GetInstance()->
+             GetUnacknowledgedBackgroundPageCount()) {
+    badge = theme_provider_->GetBitmapNamed(IDR_BACKGROUND_BADGE);
+  } else {
     return FALSE;
-
-  const SkBitmap& badge =
-      *theme_provider_->GetBitmapNamed(IDR_UPDATE_BADGE);
+  }
 
   // Draw the chrome app menu icon onto the canvas.
   gfx::CanvasSkiaPaint canvas(expose, false);
   int x_offset = base::i18n::IsRTL() ? 0 :
-      sender->allocation.width - badge.width();
+      sender->allocation.width - badge->width();
   int y_offset = 0;
   canvas.DrawBitmapInt(
-      badge,
+      *badge,
       sender->allocation.x + x_offset,
       sender->allocation.y + y_offset);
 
