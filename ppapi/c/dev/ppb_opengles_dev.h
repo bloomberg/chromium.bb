@@ -8,6 +8,8 @@
 #ifndef PPAPI_C_DEV_PPB_OPENGLES_DEV_H_
 #define PPAPI_C_DEV_PPB_OPENGLES_DEV_H_
 
+#include "ppapi/c/pp_resource.h"
+
 #ifndef __gl2_h_
 typedef unsigned int GLenum;
 typedef void GLvoid;

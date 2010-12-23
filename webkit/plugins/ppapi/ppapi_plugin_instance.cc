@@ -45,8 +45,8 @@
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
+#include "webkit/plugins/ppapi/ppb_context_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
-#include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
 #include "webkit/plugins/ppapi/ppp_pdf.h"
@@ -441,8 +441,8 @@ bool PluginInstance::BindGraphics(PP_Resource graphics_id) {
 
   scoped_refptr<PPB_Graphics2D_Impl> graphics_2d =
       Resource::GetAs<PPB_Graphics2D_Impl>(graphics_id);
-  scoped_refptr<PPB_Graphics3D_Impl> graphics_3d =
-      Resource::GetAs<PPB_Graphics3D_Impl>(graphics_id);
+  scoped_refptr<PPB_Context3D_Impl> graphics_3d =
+      Resource::GetAs<PPB_Context3D_Impl>(graphics_id);
 
   if (graphics_2d) {
     if (!graphics_2d->BindToInstance(this))
@@ -1174,11 +1174,11 @@ PPB_Graphics2D_Impl* PluginInstance::bound_graphics_2d() const {
   return bound_graphics_->Cast<PPB_Graphics2D_Impl>();
 }
 
-PPB_Graphics3D_Impl* PluginInstance::bound_graphics_3d() const {
+PPB_Context3D_Impl* PluginInstance::bound_graphics_3d() const {
   if (bound_graphics_.get() == NULL)
     return NULL;
 
-  return bound_graphics_->Cast<PPB_Graphics3D_Impl>();
+  return bound_graphics_->Cast<PPB_Context3D_Impl>();
 }
 
 }  // namespace ppapi

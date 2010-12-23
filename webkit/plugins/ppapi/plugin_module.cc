@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "ppapi/c/dev/ppb_buffer_dev.h"
 #include "ppapi/c/dev/ppb_char_set_dev.h"
+#include "ppapi/c/dev/ppb_context_3d_dev.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/dev/ppb_directory_reader_dev.h"
 #include "ppapi/c/dev/ppb_file_io_dev.h"
@@ -83,7 +84,9 @@
 #include "webkit/plugins/ppapi/var_object_class.h"
 
 #ifdef ENABLE_GPU
+#include "webkit/plugins/ppapi/ppb_context_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
+#include "webkit/plugins/ppapi/ppb_opengles_impl.h"
 #endif  // ENABLE_GPU
 
 namespace webkit {
@@ -283,8 +286,10 @@ const void* GetInterface(const char* name) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch("disable-3d-apis")) {
     if (strcmp(name, PPB_GRAPHICS_3D_DEV_INTERFACE) == 0)
       return PPB_Graphics3D_Impl::GetInterface();
+    if (strcmp(name, PPB_CONTEXT_3D_DEV_INTERFACE) == 0)
+      return PPB_Context3D_Impl::GetInterface();
     if (strcmp(name, PPB_OPENGLES2_DEV_INTERFACE) == 0)
-      return PPB_Graphics3D_Impl::GetOpenGLES2Interface();
+      return PPB_OpenGLES_Impl::GetInterface();
   }
 #endif  // ENABLE_GPU
 

@@ -5271,6 +5271,8 @@ class GLGenerator(object):
         "// OpenGL ES interface.\n",
         3)
 
+    file.Write("#include \"ppapi/c/pp_resource.h\"\n\n")
+
     file.Write("#ifndef __gl2_h_\n")
     for (k, v) in _GL_TYPES.iteritems():
       file.Write("typedef %s %s;\n" % (v, k))
@@ -5301,10 +5303,11 @@ class GLGenerator(object):
     file.Write(_LICENSE)
     file.Write("// This file is auto-generated. DO NOT EDIT!\n\n")
 
-    file.Write("#include \"webkit/plugins/ppapi/ppb_graphics_3d_impl.h\"\n\n")
+    file.Write("#include \"webkit/plugins/ppapi/ppb_opengles_impl.h\"\n\n")
 
-    file.Write("#include \"gpu/command_buffer/client/gles2_implementation.h\"")
-    file.Write("\n#include \"ppapi/c/dev/ppb_opengles_dev.h\"\n\n")
+    file.Write("#include \"gpu/command_buffer/client/gles2_implementation.h\"\n")
+    file.Write("#include \"ppapi/c/dev/ppb_opengles_dev.h\"\n")
+    file.Write("#include \"webkit/plugins/ppapi/ppb_context_3d_impl.h\"\n\n")
 
     file.Write("namespace webkit {\n")
     file.Write("namespace ppapi {\n\n")
@@ -5315,19 +5318,19 @@ class GLGenerator(object):
         continue
 
       original_arg = func.MakeTypedOriginalArgString("")
-      context_arg = "PP_Resource context"
+      context_arg = "PP_Resource context_id"
       if len(original_arg):
         arg = context_arg + ", " + original_arg
       else:
         arg = context_arg
       file.Write("%s %s(%s) {\n" % (func.return_type, func.name, arg))
-
-      file.Write("""  scoped_refptr<PPB_Graphics3D_Impl> graphics_3d =
-      Resource::GetAs<PPB_Graphics3D_Impl>(context);
+      
+      file.Write("""  scoped_refptr<PPB_Context3D_Impl> context =
+      Resource::GetAs<PPB_Context3D_Impl>(context_id);
 """)
 
       return_str = "" if func.return_type == "void" else "return "
-      file.Write("  %sgraphics_3d->impl()->%s(%s);\n" %
+      file.Write("  %scontext->gles2_impl()->%s(%s);\n" %
                  (return_str, func.original_name,
                   func.MakeOriginalArgString("")))
       file.Write("}\n\n")
@@ -5342,7 +5345,7 @@ class GLGenerator(object):
     file.Write("}  // namespace\n")
 
     file.Write("""
-const PPB_OpenGLES2_Dev* PPB_Graphics3D_Impl::GetOpenGLES2Interface() {
+const PPB_OpenGLES2_Dev* PPB_OpenGLES_Impl::GetInterface() {
   return &ppb_opengles2;
 }
 

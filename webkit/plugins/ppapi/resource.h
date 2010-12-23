@@ -20,6 +20,7 @@ namespace ppapi {
   F(PPB_AudioConfig_Impl) \
   F(PPB_Audio_Impl) \
   F(PPB_Buffer_Impl) \
+  F(PPB_Context3D_Impl) \
   F(PPB_DirectoryReader_Impl) \
   F(PPB_FileChooser_Impl) \
   F(PPB_FileIO_Impl) \

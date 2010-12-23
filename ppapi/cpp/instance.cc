@@ -7,7 +7,7 @@
 #include "ppapi/c/dev/ppp_printing_dev.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/cpp/common.h"
-#include "ppapi/cpp/dev/graphics_3d_dev.h"
+#include "ppapi/cpp/dev/context_3d_dev.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/logging.h"
@@ -91,7 +91,7 @@ bool Instance::BindGraphics(const Graphics2D& graphics) {
       pp_instance(), graphics.pp_resource()));
 }
 
-bool Instance::BindGraphics(const Graphics3D_Dev& graphics) {
+bool Instance::BindGraphics(const Context3D_Dev& graphics) {
   if (!has_interface<PPB_Instance>())
     return false;
   return PPBoolToBool(get_interface<PPB_Instance>()->BindGraphics(

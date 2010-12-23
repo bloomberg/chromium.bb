@@ -53,7 +53,7 @@ class FullscreenContainer;
 class PluginDelegate;
 class PluginModule;
 class PPB_Graphics2D_Impl;
-class PPB_Graphics3D_Impl;
+class PPB_Context3D_Impl;
 class PPB_ImageData_Impl;
 class PPB_URLLoader_Impl;
 class Resource;
@@ -227,7 +227,7 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
 
   // Get the bound graphics context as a concrete 3D graphics context or returns
   // null if the context is not 3D.
-  PPB_Graphics3D_Impl* bound_graphics_3d() const;
+  PPB_Context3D_Impl* bound_graphics_3d() const;
 
   PluginDelegate* delegate_;
   scoped_refptr<PluginModule> module_;
