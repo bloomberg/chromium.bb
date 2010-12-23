@@ -155,7 +155,7 @@ const Experiment kExperiments[] = {
     "background-webapps",  // FLAGS:RECORD_UMA
     IDS_FLAGS_BACKGROUND_WEBAPPS_NAME,
     IDS_FLAGS_BACKGROUND_WEBAPPS_DESCRIPTION,
-    kOsMac | kOsLinux | kOsCrOS,  // Enabled by default on windows
+    kOsLinux,  // Enabled by default on windows and mac, not available on CrOS.
     SINGLE_VALUE_TYPE(switches::kEnableBackgroundMode)
   },
   {

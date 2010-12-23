@@ -368,9 +368,9 @@ bool BackgroundModeManager::IsBackgroundModeEnabled(
   bool background_mode_enabled =
       !command_line->HasSwitch(switches::kDisableBackgroundMode) &&
       !command_line->HasSwitch(switches::kDisableExtensions);
-#if !defined(OS_WIN)
-  // BackgroundMode is enabled by default on windows. On other platforms, it
-  // is enabled via about:flags.
+#if !(defined(OS_WIN) || defined(OS_MACOSX))
+  // BackgroundMode is enabled by default on windows and mac. On other
+  // platforms, it is enabled via about:flags.
   background_mode_enabled = background_mode_enabled &&
       command_line->HasSwitch(switches::kEnableBackgroundMode);
 #endif
