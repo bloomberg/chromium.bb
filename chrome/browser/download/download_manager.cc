@@ -87,8 +87,7 @@ void DownloadManager::Shutdown() {
 
   // Go through all downloads in downloads_.  Dangerous ones we need to
   // remove on disk, and in progress ones we need to cancel.
-  for (std::set<DownloadItem*>::iterator it = downloads_.begin();
-       it != downloads_.end();) {
+  for (DownloadSet::iterator it = downloads_.begin(); it != downloads_.end();) {
     DownloadItem* download = *it;
 
     // Save iterator from potential erases in this set done by called code.
@@ -121,6 +120,9 @@ void DownloadManager::Shutdown() {
 
   // And clear all non-owning containers.
   in_progress_.clear();
+#if !defined(NDEBUG)
+  save_page_as_downloads_.clear();
+#endif
 
   file_manager_ = NULL;
 
@@ -742,9 +744,8 @@ int DownloadManager::RemoveDownloadsBetween(const base::Time remove_begin,
   }
 
   // If we aren't deleting anything, we're done.
-  int num_deleted = static_cast<int>(pending_deletes.size());
-  if (num_deleted == 0)
-    return num_deleted;
+  if (pending_deletes.empty())
+    return 0;
 
   // Remove the chosen downloads from the main owning container.
   for (std::vector<DownloadItem*>::iterator it = pending_deletes.begin();
@@ -756,6 +757,8 @@ int DownloadManager::RemoveDownloadsBetween(const base::Time remove_begin,
   NotifyModelChanged();
 
   // Delete the download items themselves.
+  int num_deleted = static_cast<int>(pending_deletes.size());
+
   STLDeleteContainerPointers(pending_deletes.begin(), pending_deletes.end());
   pending_deletes.clear();
 
@@ -777,6 +780,9 @@ int DownloadManager::RemoveAllDownloads() {
 }
 
 void DownloadManager::SavePageAsDownloadStarted(DownloadItem* download_item) {
+#if !defined(NDEBUG)
+  save_page_as_downloads_.insert(download_item);
+#endif
   downloads_.insert(download_item);
 }
 
@@ -1007,18 +1013,48 @@ DownloadItem* DownloadManager::GetDownloadItem(int id) {
   return NULL;
 }
 
+// Confirm that everything in all maps is also in |downloads_|, and that
+// everything in |downloads_| is also in some other map.
 void DownloadManager::AssertContainersConsistent() const {
 #if !defined(NDEBUG)
-  // Confirm that everything in all maps is also in downloads_.
-  const DownloadMap* maps[] = {&in_progress_, &history_downloads_};
-  for (int i = 0; i < static_cast<int>(ARRAYSIZE_UNSAFE(maps)); i++) {
-    for (DownloadMap::const_iterator it = maps[i]->begin();
-         it != maps[i]->end(); it++) {
-      DCHECK_EQ(1u, downloads_.count(it->second));
+  // Turn everything into sets.
+  DownloadSet in_progress_set, history_set;
+  const DownloadMap* input_maps[] = {&in_progress_, &history_downloads_};
+  DownloadSet* local_sets[] = {&in_progress_set, &history_set};
+  DCHECK_EQ(ARRAYSIZE_UNSAFE(input_maps), ARRAYSIZE_UNSAFE(local_sets));
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_maps); i++) {
+    for (DownloadMap::const_iterator it = input_maps[i]->begin();
+         it != input_maps[i]->end(); it++) {
+      local_sets[i]->insert(&*it->second);
     }
   }
-  // Note that downloads_ also includes save page as downloads; that's not
-  // checked.
+
+  // Check if each set is fully present in downloads, and create a union.
+  const DownloadSet* all_sets[] = {&in_progress_set, &history_set,
+                                   &save_page_as_downloads_};
+  DownloadSet downloads_union;
+  for (int i = 0; i < static_cast<int>(ARRAYSIZE_UNSAFE(all_sets)); i++) {
+    DownloadSet remainder;
+    std::insert_iterator<DownloadSet> insert_it(remainder, remainder.begin());
+    std::set_difference(all_sets[i]->begin(), all_sets[i]->end(),
+                        downloads_.begin(), downloads_.end(),
+                        insert_it);
+    DCHECK(remainder.empty());
+    std::insert_iterator<DownloadSet>
+        insert_union(downloads_union, downloads_union.end());
+    std::set_union(downloads_union.begin(), downloads_union.end(),
+                   all_sets[i]->begin(), all_sets[i]->end(),
+                   insert_union);
+  }
+
+  // Is everything in downloads_ present in one of the other sets?
+  DownloadSet remainder;
+  std::insert_iterator<DownloadSet>
+      insert_remainder(remainder, remainder.begin());
+  std::set_difference(downloads_.begin(), downloads_.end(),
+                      downloads_union.begin(), downloads_union.end(),
+                      insert_remainder);
+  DCHECK(remainder.empty());
 #endif
 }
 
