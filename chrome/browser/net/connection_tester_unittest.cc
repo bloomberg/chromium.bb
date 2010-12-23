@@ -4,10 +4,21 @@
 
 #include "chrome/browser/net/connection_tester.h"
 
-#include "chrome/browser/io_thread.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/test/testing_pref_service.h"
+#include "net/base/cert_verifier.h"
+#include "net/base/cookie_monster.h"
+#include "net/base/dnsrr_resolver.h"
 #include "net/base/mock_host_resolver.h"
+#include "net/base/ssl_config_service_defaults.h"
+#include "net/ftp/ftp_network_layer.h"
+#include "net/http/http_auth_handler_factory.h"
+#include "net/http/http_network_layer.h"
+#include "net/proxy/proxy_config_service_fixed.h"
+#include "net/socket/client_socket_factory.h"
+#include "net/spdy/spdy_session_pool.h"
 #include "net/test/test_server.h"
+#include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -76,30 +87,63 @@ class ConnectionTesterTest : public PlatformTest {
   ConnectionTesterTest()
       : test_server_(net::TestServer::TYPE_HTTP,
             FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest"))),
+        client_socket_factory_(net::ClientSocketFactory::GetDefaultFactory()),
+        proxy_script_fetcher_context_(new URLRequestContext),
         message_loop_(MessageLoop::TYPE_IO),
-        pref_service(new TestingPrefService()),
-        io_thread_(pref_service.get(), NULL) {
-    scoped_refptr<net::RuleBasedHostResolverProc> catchall_resolver(
-        new net::RuleBasedHostResolverProc(NULL));
-
-    catchall_resolver->AddRule("*", "127.0.0.1");
-
-    scoped_host_resolver_proc_.Init(catchall_resolver);
+        io_thread_(BrowserThread::IO, &message_loop_) {
+    InitializeRequestContext();
   }
 
  protected:
-  net::ScopedDefaultHostResolverProc scoped_host_resolver_proc_;
   net::TestServer test_server_;
   ConnectionTesterDelegate test_delegate_;
+  net::ClientSocketFactory* const client_socket_factory_;
+  net::MockHostResolver host_resolver_;
+  net::CertVerifier cert_verifier_;
+  net::DnsRRResolver dnsrr_resolver_;
+  scoped_refptr<net::ProxyService> proxy_service_;
+  scoped_refptr<net::SSLConfigService> ssl_config_service_;
+  scoped_ptr<net::HttpTransactionFactory> http_transaction_factory_;
+  net::HttpAuthHandlerRegistryFactory http_auth_handler_factory_;
+  scoped_refptr<URLRequestContext> proxy_script_fetcher_context_;
+
+ private:
+  void InitializeRequestContext() {
+    proxy_script_fetcher_context_->set_host_resolver(&host_resolver_);
+    proxy_script_fetcher_context_->set_cert_verifier(&cert_verifier_);
+    proxy_script_fetcher_context_->set_dnsrr_resolver(&dnsrr_resolver_);
+    proxy_script_fetcher_context_->set_http_auth_handler_factory(
+        &http_auth_handler_factory_);
+    proxy_service_ = net::ProxyService::CreateDirect();
+    proxy_script_fetcher_context_->set_proxy_service(proxy_service_);
+    ssl_config_service_ = net::SSLConfigService::CreateSystemSSLConfigService();
+    proxy_script_fetcher_context_->set_http_transaction_factory(
+        new net::HttpNetworkLayer(
+            client_socket_factory_,
+            &host_resolver_,
+            &cert_verifier_,
+            &dnsrr_resolver_,
+            NULL /* DNS cert provenance checker */,
+            NULL /* ssl_host_info_factory */,
+            proxy_service_.get(),
+            ssl_config_service_,
+            new net::SpdySessionPool(ssl_config_service_),
+            &http_auth_handler_factory_,
+            NULL /* NetworkDelegate */,
+            NULL /* NetLog */));
+    // In-memory cookie store.
+    proxy_script_fetcher_context_->set_cookie_store(
+        new net::CookieMonster(NULL, NULL));
+  }
+
   MessageLoop message_loop_;
-  scoped_ptr<PrefService> pref_service;
-  IOThread io_thread_;  // Needed for creating ProxyScriptFetchers.
+  BrowserThread io_thread_;
 };
 
 TEST_F(ConnectionTesterTest, RunAllTests) {
   ASSERT_TRUE(test_server_.Start());
 
-  ConnectionTester tester(&test_delegate_, &io_thread_);
+  ConnectionTester tester(&test_delegate_, proxy_script_fetcher_context_);
 
   // Start the test suite on URL "echoall".
   // TODO(eroman): Is this URL right?
@@ -124,7 +168,7 @@ TEST_F(ConnectionTesterTest, DeleteWhileInProgress) {
   ASSERT_TRUE(test_server_.Start());
 
   scoped_ptr<ConnectionTester> tester(
-      new ConnectionTester(&test_delegate_, &io_thread_));
+      new ConnectionTester(&test_delegate_, proxy_script_fetcher_context_));
 
   // Start the test suite on URL "echoall".
   // TODO(eroman): Is this URL right?
@@ -153,4 +197,3 @@ TEST_F(ConnectionTesterTest, DeleteWhileInProgress) {
 }
 
 }  // namespace
-

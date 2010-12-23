@@ -120,36 +120,15 @@ class ChromeURLRequestContext : public URLRequestContext {
   void set_ssl_config_service(net::SSLConfigService* service) {
     ssl_config_service_ = service;
   }
-  void set_host_resolver(net::HostResolver* resolver) {
-    host_resolver_ = resolver;
-  }
-  void set_cert_verifier(net::CertVerifier* cert_verifier) {
-    cert_verifier_ = cert_verifier;
-  }
-  void set_dnsrr_resolver(net::DnsRRResolver* dnsrr_resolver) {
-    dnsrr_resolver_ = dnsrr_resolver;
-  }
   void set_dns_cert_checker(net::DnsCertProvenanceChecker* ctx) {
     dns_cert_checker_.reset(ctx);
-  }
-  void set_http_transaction_factory(net::HttpTransactionFactory* factory) {
-    http_transaction_factory_ = factory;
   }
   void set_ftp_transaction_factory(net::FtpTransactionFactory* factory) {
     ftp_transaction_factory_ = factory;
   }
-  void set_http_auth_handler_factory(net::HttpAuthHandlerFactory* factory) {
-    http_auth_handler_factory_ = factory;
-  }
-  void set_cookie_store(net::CookieStore* cookie_store) {
-    cookie_store_ = cookie_store;
-  }
   void set_cookie_policy(ChromeCookiePolicy* cookie_policy) {
     chrome_cookie_policy_ = cookie_policy;  // Take a strong reference.
     cookie_policy_ = cookie_policy;
-  }
-  void set_proxy_service(net::ProxyService* service) {
-    proxy_service_ = service;
   }
   void set_user_script_dir_path(const FilePath& path) {
     user_script_dir_path_ = path;
@@ -181,9 +160,6 @@ class ChromeURLRequestContext : public URLRequestContext {
   }
   void set_extension_info_map(ExtensionInfoMap* map) {
     extension_info_map_ = map;
-  }
-  void set_net_log(net::NetLog* net_log) {
-    net_log_ = net_log;
   }
   void set_network_delegate(
       net::HttpNetworkDelegate* network_delegate) {

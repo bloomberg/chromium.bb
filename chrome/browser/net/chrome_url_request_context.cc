@@ -33,7 +33,7 @@
 #include "net/http/http_network_layer.h"
 #include "net/http/http_util.h"
 #include "net/proxy/proxy_config_service_fixed.h"
-#include "net/proxy/proxy_script_fetcher.h"
+#include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request.h"
 #include "webkit/glue/webkit_glue.h"
@@ -95,8 +95,7 @@ net::ProxyService* CreateProxyService(
     net::NetLog* net_log,
     URLRequestContext* context,
     net::ProxyConfigService* proxy_config_service,
-    const CommandLine& command_line,
-    IOThread* io_thread) {
+    const CommandLine& command_line) {
   CheckCurrentlyOnIOThread();
 
   bool use_v8 = !command_line.HasSwitch(switches::kWinHttpProxyResolver);
@@ -127,7 +126,7 @@ net::ProxyService* CreateProxyService(
     return net::ProxyService::CreateUsingV8ProxyResolver(
         proxy_config_service,
         num_pac_threads,
-        io_thread->CreateAndRegisterProxyScriptFetcher(context),
+        new net::ProxyScriptFetcherImpl(context),
         context->host_resolver(),
         net_log);
   }
@@ -275,10 +274,9 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
 
   context->set_proxy_service(
       CreateProxyService(io_thread()->net_log(),
-                         context,
+                         io_thread_globals->proxy_script_fetcher_context.get(),
                          proxy_config_service_.release(),
-                         command_line,
-                         io_thread()));
+                         command_line));
 
   net::HttpCache::DefaultBackend* backend = new net::HttpCache::DefaultBackend(
       net::DISK_CACHE, disk_cache_path_, cache_size_,

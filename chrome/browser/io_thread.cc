@@ -37,10 +37,13 @@
 #include "net/base/net_util.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
+#include "net/http/http_network_layer.h"
 #if defined(USE_NSS)
 #include "net/ocsp/nss_ocsp.h"
 #endif  // defined(USE_NSS)
 #include "net/proxy/proxy_script_fetcher_impl.h"
+#include "net/socket/client_socket_factory.h"
+#include "net/spdy/spdy_session_pool.h"
 
 namespace {
 
@@ -174,35 +177,37 @@ class LoggingNetworkChangeObserver
   DISALLOW_COPY_AND_ASSIGN(LoggingNetworkChangeObserver);
 };
 
+scoped_refptr<URLRequestContext>
+ConstructProxyScriptFetcherContext(IOThread::Globals* globals,
+                                   net::NetLog* net_log) {
+  scoped_refptr<URLRequestContext> context(new URLRequestContext);
+  context->set_net_log(net_log);
+  context->set_host_resolver(globals->host_resolver.get());
+  context->set_cert_verifier(globals->cert_verifier.get());
+  context->set_dnsrr_resolver(globals->dnsrr_resolver.get());
+  context->set_http_auth_handler_factory(
+      globals->http_auth_handler_factory.get());
+  context->set_proxy_service(globals->proxy_script_fetcher_proxy_service.get());
+  context->set_http_transaction_factory(
+      new net::HttpNetworkLayer(
+          globals->client_socket_factory,
+          globals->host_resolver.get(),
+          globals->cert_verifier.get(),
+          globals->dnsrr_resolver.get(),
+          NULL /* dns_cert_checker */,
+          NULL /* ssl_host_info_factory */,
+          globals->proxy_script_fetcher_proxy_service.get(),
+          globals->ssl_config_service.get(),
+          new net::SpdySessionPool(globals->ssl_config_service.get()),
+          globals->http_auth_handler_factory.get(),
+          &globals->network_delegate,
+          net_log));
+  // In-memory cookie store.
+  context->set_cookie_store(new net::CookieMonster(NULL, NULL));
+  return context;
+}
+
 }  // namespace
-
-// This is a wrapper class around ProxyScriptFetcherImpl that will
-// keep track of live instances.
-class IOThread::ManagedProxyScriptFetcher
-    : public net::ProxyScriptFetcherImpl {
- public:
-  ManagedProxyScriptFetcher(URLRequestContext* context,
-                            IOThread* io_thread)
-      : net::ProxyScriptFetcherImpl(context),
-        io_thread_(io_thread) {
-    DCHECK(!ContainsKey(*fetchers(), this));
-    fetchers()->insert(this);
-  }
-
-  virtual ~ManagedProxyScriptFetcher() {
-    DCHECK(ContainsKey(*fetchers(), this));
-    fetchers()->erase(this);
-  }
-
- private:
-  ProxyScriptFetchers* fetchers() {
-    return &io_thread_->fetchers_;
-  }
-
-  IOThread* io_thread_;
-
-  DISALLOW_COPY_AND_ASSIGN(ManagedProxyScriptFetcher);
-};
 
 // The IOThread object must outlive any tasks posted to the IO thread before the
 // Quit task.
@@ -301,11 +306,6 @@ void IOThread::ChangedToOnTheRecord() {
           &IOThread::ChangedToOnTheRecordOnIOThread));
 }
 
-net::ProxyScriptFetcher* IOThread::CreateAndRegisterProxyScriptFetcher(
-    URLRequestContext* url_request_context) {
-  return new ManagedProxyScriptFetcher(url_request_context, this);
-}
-
 void IOThread::Init() {
 #if !defined(OS_CHROMEOS)
   // TODO(evan): test and enable this on all platforms.
@@ -331,12 +331,24 @@ void IOThread::Init() {
   network_change_observer_.reset(
       new LoggingNetworkChangeObserver(net_log_));
 
+  globals_->client_socket_factory =
+      net::ClientSocketFactory::GetDefaultFactory();
   globals_->host_resolver.reset(
       CreateGlobalHostResolver(net_log_));
   globals_->cert_verifier.reset(new net::CertVerifier);
   globals_->dnsrr_resolver.reset(new net::DnsRRResolver);
+  // TODO(willchan): Use the real SSLConfigService.
+  globals_->ssl_config_service =
+      net::SSLConfigService::CreateSystemSSLConfigService();
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(
       globals_->host_resolver.get()));
+  // For the ProxyScriptFetcher, we use a direct ProxyService.
+  globals_->proxy_script_fetcher_proxy_service =
+      net::ProxyService::CreateDirectWithNetLog(net_log_);
+
+  scoped_refptr<URLRequestContext> proxy_script_fetcher_context =
+      ConstructProxyScriptFetcherContext(globals_, net_log_);
+  globals_->proxy_script_fetcher_context = proxy_script_fetcher_context;
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePagePrerender)) {
@@ -354,23 +366,6 @@ void IOThread::CleanUp() {
 
   // Destroy all URLRequests started by URLFetchers.
   URLFetcher::CancelAll();
-
-  // Break any cycles between the ProxyScriptFetcher and URLRequestContext.
-  for (ProxyScriptFetchers::const_iterator it = fetchers_.begin();
-       it != fetchers_.end();) {
-    ManagedProxyScriptFetcher* fetcher = *it;
-    {
-      // Hang on to the context while cancelling to avoid problems
-      // with the cancellation causing the context to be destroyed
-      // (see http://crbug.com/63796 ).  Ideally, the IOThread would
-      // own the URLRequestContexts.
-      scoped_refptr<URLRequestContext> context(fetcher->GetRequestContext());
-      fetcher->Cancel();
-    }
-    // Any number of fetchers may have been deleted at this point, so
-    // use upper_bound instead of a simple increment.
-    it = fetchers_.upper_bound(fetcher);
-  }
 
   // If any child processes are still running, terminate them and
   // and delete the BrowserChildProcessHost instances to release whatever

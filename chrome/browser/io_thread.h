@@ -7,7 +7,6 @@
 #pragma once
 
 #include <list>
-#include <set>
 #include <string>
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
@@ -31,10 +30,13 @@ class Predictor;
 
 namespace net {
 class CertVerifier;
+class ClientSocketFactory;
 class DnsRRResolver;
 class HostResolver;
 class HttpAuthHandlerFactory;
 class ProxyScriptFetcher;
+class ProxyService;
+class SSLConfigService;
 class URLSecurityManager;
 }  // namespace net
 
@@ -44,12 +46,16 @@ class IOThread : public BrowserProcessSubThread {
     Globals();
     ~Globals();
 
+    net::ClientSocketFactory* client_socket_factory;
     scoped_ptr<net::HostResolver> host_resolver;
     scoped_ptr<net::CertVerifier> cert_verifier;
     scoped_ptr<net::DnsRRResolver> dnsrr_resolver;
+    scoped_refptr<net::SSLConfigService> ssl_config_service;
     scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory;
+    scoped_refptr<net::ProxyService> proxy_script_fetcher_proxy_service;
     scoped_ptr<net::URLSecurityManager> url_security_manager;
     ChromeNetworkDelegate network_delegate;
+    scoped_refptr<URLRequestContext> proxy_script_fetcher_context;
   };
 
   // |net_log| must either outlive the IOThread or be NULL.
@@ -93,22 +99,12 @@ class IOThread : public BrowserProcessSubThread {
   // IOThread's message loop.
   void ChangedToOnTheRecord();
 
-  // Creates a ProxyScriptFetcherImpl which will be automatically aborted
-  // during shutdown.
-  // This is used to avoid cycles between the ProxyScriptFetcher and the
-  // URLRequestContext that owns it (indirectly via the ProxyService).
-  net::ProxyScriptFetcher* CreateAndRegisterProxyScriptFetcher(
-      URLRequestContext* url_request_context);
-
  protected:
   virtual void Init();
   virtual void CleanUp();
   virtual void CleanUpAfterMessageLoopDestruction();
 
  private:
-  class ManagedProxyScriptFetcher;
-  typedef std::set<ManagedProxyScriptFetcher*> ProxyScriptFetchers;
-
   static void RegisterPrefs(PrefService* local_state);
 
   net::HttpAuthHandlerFactory* CreateDefaultAuthHandlerFactory(
@@ -159,9 +155,6 @@ class IOThread : public BrowserProcessSubThread {
   chrome_browser_net::ConnectInterceptor* speculative_interceptor_;
   chrome_browser_net::Predictor* predictor_;
   scoped_ptr<PrerenderInterceptor> prerender_interceptor_;
-
-  // List of live ProxyScriptFetchers.
-  ProxyScriptFetchers fetchers_;
 
   // Keeps track of all live ChromeURLRequestContextGetters, so the
   // ChromeURLRequestContexts can be released during

@@ -8,9 +8,9 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/importer/firefox_proxy_settings.h"
-#include "chrome/browser/io_thread.h"
 #include "chrome/common/chrome_switches.h"
 #include "net/base/cert_verifier.h"
 #include "net/base/cookie_monster.h"
@@ -27,6 +27,7 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
 #include "net/proxy/proxy_config_service_fixed.h"
+#include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
@@ -39,8 +40,8 @@ namespace {
 // to the specified "experiment".
 class ExperimentURLRequestContext : public URLRequestContext {
  public:
-  explicit ExperimentURLRequestContext(IOThread* io_thread)
-      : io_thread_(io_thread) {}
+  explicit ExperimentURLRequestContext(URLRequestContext* proxy_request_context)
+      : proxy_request_context_(proxy_request_context) {}
 
   int Init(const ConnectionTester::Experiment& experiment) {
     int rv;
@@ -129,10 +130,14 @@ class ExperimentURLRequestContext : public URLRequestContext {
   int CreateProxyConfigService(
       ConnectionTester::ProxySettingsExperiment experiment,
       scoped_ptr<net::ProxyConfigService>* config_service) {
+    scoped_ptr<base::ThreadRestrictions::ScopedAllowIO> allow_io;
     switch (experiment) {
       case ConnectionTester::PROXY_EXPERIMENT_USE_SYSTEM_SETTINGS:
         return CreateSystemProxyConfigService(config_service);
       case ConnectionTester::PROXY_EXPERIMENT_USE_FIREFOX_SETTINGS:
+        // http://crbug.com/67664: This call can lead to blocking IO on the IO
+        // thread.  This is a bug and should be fixed.
+        allow_io.reset(new base::ThreadRestrictions::ScopedAllowIO);
         return CreateFirefoxProxyConfigService(config_service);
       case ConnectionTester::PROXY_EXPERIMENT_USE_AUTO_DETECT:
         config_service->reset(new net::ProxyConfigServiceFixed(
@@ -170,7 +175,7 @@ class ExperimentURLRequestContext : public URLRequestContext {
     *proxy_service = net::ProxyService::CreateUsingV8ProxyResolver(
         config_service.release(),
         0u,
-        io_thread_->CreateAndRegisterProxyScriptFetcher(this),
+        new net::ProxyScriptFetcherImpl(proxy_request_context_),
         host_resolver(),
         NULL);
 
@@ -217,7 +222,7 @@ class ExperimentURLRequestContext : public URLRequestContext {
     return net::ERR_FAILED;
   }
 
-  IOThread* io_thread_;
+  const scoped_refptr<URLRequestContext> proxy_request_context_;
 };
 
 }  // namespace
@@ -305,7 +310,7 @@ void ConnectionTester::TestRunner::OnResponseCompleted(
 void ConnectionTester::TestRunner::Run(const Experiment& experiment) {
   // Try to create a URLRequestContext for this experiment.
   scoped_refptr<ExperimentURLRequestContext> context(
-      new ExperimentURLRequestContext(tester_->io_thread_));
+      new ExperimentURLRequestContext(tester_->proxy_request_context_));
   int rv = context->Init(experiment);
   if (rv != net::OK) {
     // Complete the experiment with a failure.
@@ -321,10 +326,11 @@ void ConnectionTester::TestRunner::Run(const Experiment& experiment) {
 
 // ConnectionTester ----------------------------------------------------------
 
-ConnectionTester::ConnectionTester(Delegate* delegate, IOThread* io_thread)
-    : delegate_(delegate), io_thread_(io_thread) {
+ConnectionTester::ConnectionTester(Delegate* delegate,
+                                   URLRequestContext* proxy_request_context)
+    : delegate_(delegate), proxy_request_context_(proxy_request_context) {
   DCHECK(delegate);
-  DCHECK(io_thread);
+  DCHECK(proxy_request_context);
 }
 
 ConnectionTester::~ConnectionTester() {

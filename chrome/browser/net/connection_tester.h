@@ -13,7 +13,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
 
-class IOThread;
+class URLRequestContext;
 
 // ConnectionTester runs a suite of tests (also called "experiments"),
 // to try and discover why loading a particular URL is failing with an error
@@ -125,7 +125,8 @@ class ConnectionTester {
   // Constructs a ConnectionTester that notifies test progress to |delegate|.
   // |delegate| is owned by the caller, and must remain valid for the lifetime
   // of ConnectionTester.
-  ConnectionTester(Delegate* delegate, IOThread* io_thread);
+  ConnectionTester(Delegate* delegate,
+                   URLRequestContext* proxy_request_context);
 
   // Note that destruction cancels any in-progress tests.
   ~ConnectionTester();
@@ -171,10 +172,9 @@ class ConnectionTester {
   // of the list is the one currently in progress.
   ExperimentList remaining_experiments_;
 
-  IOThread* io_thread_;
+  const scoped_refptr<URLRequestContext> proxy_request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionTester);
 };
 
 #endif  // CHROME_BROWSER_NET_CONNECTION_TESTER_H_
-
