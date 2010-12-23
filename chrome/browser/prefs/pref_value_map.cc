@@ -57,3 +57,51 @@ void PrefValueMap::Clear() {
   STLDeleteValues(&prefs_);
   prefs_.clear();
 }
+
+bool PrefValueMap::GetBoolean(const std::string& key,
+                              bool* value) const {
+  Value* stored_value = NULL;
+  return GetValue(key, &stored_value) && stored_value->GetAsBoolean(value);
+}
+
+bool PrefValueMap::GetString(const std::string& key,
+                             std::string* value) const {
+  Value* stored_value = NULL;
+  return GetValue(key, &stored_value) && stored_value->GetAsString(value);
+}
+
+void PrefValueMap::SetString(const std::string& key,
+                             const std::string& value) {
+  SetValue(key, Value::CreateStringValue(value));
+}
+
+void PrefValueMap::GetDifferingKeys(
+    const PrefValueMap* other,
+    std::vector<std::string>* differing_keys) const {
+  differing_keys->clear();
+
+  // Walk over the maps in lockstep, adding everything that is different.
+  Map::const_iterator this_pref(prefs_.begin());
+  Map::const_iterator other_pref(other->prefs_.begin());
+  while (this_pref != prefs_.end() && other_pref != other->prefs_.end()) {
+    const int diff = this_pref->first.compare(other_pref->first);
+    if (diff == 0) {
+      if (!this_pref->second->Equals(other_pref->second))
+        differing_keys->push_back(this_pref->first);
+      ++this_pref;
+      ++other_pref;
+    } else if (diff < 0) {
+      differing_keys->push_back(this_pref->first);
+      ++this_pref;
+    } else if (diff > 0) {
+      differing_keys->push_back(other_pref->first);
+      ++other_pref;
+    }
+  }
+
+  // Add the remaining entries.
+  for ( ; this_pref != prefs_.end(); ++this_pref)
+      differing_keys->push_back(this_pref->first);
+  for ( ; other_pref != other->prefs_.end(); ++other_pref)
+      differing_keys->push_back(other_pref->first);
+}

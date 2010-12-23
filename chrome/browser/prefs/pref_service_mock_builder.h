@@ -61,7 +61,6 @@ class PrefServiceMockBuilder {
   scoped_ptr<PrefStore> command_line_prefs_;
   scoped_ptr<PersistentPrefStore> user_prefs_;
   scoped_ptr<PrefStore> recommended_prefs_;
-  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefServiceMockBuilder);
 };

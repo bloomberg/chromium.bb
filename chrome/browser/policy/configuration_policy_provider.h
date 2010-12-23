@@ -38,24 +38,29 @@ class ConfigurationPolicyProvider {
 
   virtual ~ConfigurationPolicyProvider();
 
-  // Must be implemented by provider subclasses to specify the
-  // provider-specific policy decisions. The preference service
-  // invokes this |Provide| method when it needs a policy
-  // provider to specify its policy choices. In |Provide|,
-  // the |ConfigurationPolicyProvider| must make calls to the
-  // |Apply| method of |store| to apply specific policies.
-  // Returns true if the policy could be provided, otherwise false.
+  // Must be implemented by provider subclasses to specify the provider-specific
+  // policy decisions. The preference service invokes this |Provide| method when
+  // it needs a policy provider to specify its policy choices. In |Provide|, the
+  // |ConfigurationPolicyProvider| must make calls to the |Apply| method of
+  // |store| to apply specific policies. Returns true if the policy could be
+  // provided, otherwise false.
   virtual bool Provide(ConfigurationPolicyStoreInterface* store) = 0;
+
+  // Check whether this provider has completed initialization. This is used to
+  // detect whether initialization is done in case providers implementations
+  // need to do asynchronous operations for initialization.
+  virtual bool IsInitializationComplete() const { return true; }
 
   // Called by the subclass provider at any time to indicate that the currently
   // applied policy is not longer current. A policy refresh will be initiated as
   // soon as possible.
   virtual void NotifyStoreOfPolicyChange();
 
+ protected:
   // Decodes the value tree and writes the configuration to the given |store|.
   void DecodePolicyValueTree(const DictionaryValue* policies,
                              ConfigurationPolicyStoreInterface* store);
- protected:
+
   const PolicyDefinitionList* policy_definition_list() const {
     return policy_definition_list_;
   }

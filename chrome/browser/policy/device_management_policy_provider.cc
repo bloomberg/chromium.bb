@@ -10,10 +10,10 @@
 #include "base/rand_util.h"
 #include "base/task.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/policy/device_management_backend.h"
 #include "chrome/browser/policy/device_management_policy_cache.h"
 #include "chrome/browser/policy/proto/device_management_constants.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
@@ -115,6 +115,10 @@ bool DeviceManagementPolicyProvider::Provide(
   scoped_ptr<DictionaryValue> policies(cache_->GetPolicy());
   DecodePolicyValueTree(policies.get(), policy_store);
   return true;
+}
+
+bool DeviceManagementPolicyProvider::IsInitializationComplete() const {
+  return !waiting_for_initial_policies_;
 }
 
 void DeviceManagementPolicyProvider::HandlePolicyResponse(
@@ -320,7 +324,7 @@ void DeviceManagementPolicyProvider::StopWaitingForInitialPolicies() {
 }
 
 void DeviceManagementPolicyProvider::NotifyCloudPolicyUpdate() const {
-    NotificationService::current()->Notify(
+  NotificationService::current()->Notify(
        NotificationType::CLOUD_POLICY_UPDATE,
        Source<DeviceManagementPolicyProvider>(this),
        NotificationService::NoDetails());

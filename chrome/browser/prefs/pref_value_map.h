@@ -8,6 +8,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 
@@ -34,6 +35,23 @@ class PrefValueMap {
 
   // Clears the map.
   void Clear();
+
+  // Gets a boolean value for |key| and stores it in |value|. Returns true if
+  // the value was found and of the proper type.
+  bool GetBoolean(const std::string& key, bool* value) const;
+
+  // Gets a string value for |key| and stores it in |value|. Returns true if
+  // the value was found and of the proper type.
+  bool GetString(const std::string& key, std::string* value) const;
+
+  // Sets the value for |key| to the string |value|.
+  void SetString(const std::string& key, const std::string& value);
+
+  // Compares this value map against |other| and stores all key names that have
+  // different values in |differing_keys|. This includes keys that are present
+  // only in one of the maps.
+  void GetDifferingKeys(const PrefValueMap* other,
+                        std::vector<std::string>* differing_keys) const;
 
  private:
   typedef std::map<std::string, Value*> Map;

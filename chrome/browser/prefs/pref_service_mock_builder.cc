@@ -12,8 +12,7 @@
 #include "chrome/common/json_pref_store.h"
 
 PrefServiceMockBuilder::PrefServiceMockBuilder()
-  : user_prefs_(new TestingPrefStore),
-    profile_(NULL) {
+  : user_prefs_(new TestingPrefStore) {
 }
 
 PrefServiceMockBuilder&
@@ -98,10 +97,7 @@ PrefService* PrefServiceMockBuilder::Create() {
                       extension_prefs_.release(),
                       command_line_prefs_.release(),
                       user_prefs_.release(),
-                      recommended_prefs_.release(),
-                      profile_);
+                      recommended_prefs_.release());
   user_prefs_.reset(new TestingPrefStore);
-  profile_ = NULL;
-
   return pref_service;
 }

@@ -22,9 +22,13 @@ class MockConfigurationPolicyProvider : public ConfigurationPolicyProvider {
   virtual ~MockConfigurationPolicyProvider();
 
   void AddPolicy(ConfigurationPolicyType policy, Value* value);
+  void RemovePolicy(ConfigurationPolicyType policy);
+
+  void SetInitializationComplete(bool initialization_complete);
 
   // ConfigurationPolicyProvider method overrides.
   virtual bool Provide(ConfigurationPolicyStoreInterface* store);
+  virtual bool IsInitializationComplete() const;
 
   MOCK_METHOD0(NotifyStoreOfPolicyChange, void());
 
@@ -32,6 +36,7 @@ class MockConfigurationPolicyProvider : public ConfigurationPolicyProvider {
   typedef std::map<ConfigurationPolicyType, Value*> PolicyMap;
 
   PolicyMap policy_map_;
+  bool initialization_complete_;
 };
 
 }  // namespace policy

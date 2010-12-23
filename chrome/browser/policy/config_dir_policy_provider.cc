@@ -69,7 +69,7 @@ base::Time ConfigDirPolicyProviderDelegate::GetLastModification() {
        config_file = file_enumerator.Next()) {
     if (file_util::GetFileInfo(config_file, &file_info) &&
         !file_info.is_directory) {
-      last_modification = std::min(last_modification, file_info.last_modified);
+      last_modification = std::max(last_modification, file_info.last_modified);
     }
   }
 

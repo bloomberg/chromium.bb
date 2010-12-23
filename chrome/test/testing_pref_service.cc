@@ -19,7 +19,6 @@ TestingPrefService::TestingPrefService()
         NULL,
         NULL,
         user_prefs_ = new TestingPrefStore(),
-        NULL,
         NULL) {
 }
 

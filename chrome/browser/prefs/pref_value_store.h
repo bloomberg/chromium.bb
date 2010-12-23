@@ -11,25 +11,17 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 #include "chrome/common/pref_store.h"
 
 class FilePath;
 class PrefNotifier;
 class PrefStore;
 class Profile;
-
-// TODO(danno, mnissler): Remove after policy refresh cleanup.
-namespace policy {
-class ConfigurationPolicyPrefStore;
-}
 
 // The PrefValueStore manages various sources of values for Preferences
 // (e.g., configuration policies, extensions, and user settings). It returns
@@ -38,8 +30,7 @@ class ConfigurationPolicyPrefStore;
 //
 // Unless otherwise explicitly noted, all of the methods of this class must
 // be called on the UI thread.
-class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore>,
-                       public NotificationObserver {
+class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
  public:
   // In decreasing order of precedence:
   //   |managed_platform_prefs| contains all managed platform (non-cloud policy)
@@ -62,10 +53,6 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore>,
   // the policy pref stores for new ones, so the |profile| pointer needs to be
   // kept around for then. It is safe to pass a NULL pointer for local state
   // preferences.
-  //
-  // TODO(mnissler, danno): Refactor the pref store interface and refresh logic
-  // so refreshes can be handled by the pref store itself without swapping
-  // stores. This way we can get rid of the profile pointer here.
   PrefValueStore(PrefStore* managed_platform_prefs,
                  PrefStore* device_management_prefs,
                  PrefStore* extension_prefs,
@@ -73,8 +60,7 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore>,
                  PrefStore* user_prefs,
                  PrefStore* recommended_prefs,
                  PrefStore* default_prefs,
-                 PrefNotifier* pref_notifier,
-                 Profile* profile);
+                 PrefNotifier* pref_notifier);
   virtual ~PrefValueStore();
 
   // Gets the value for the given preference name that has a valid value type;
@@ -223,32 +209,6 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore>,
   // controlling the pref has changed.
   void NotifyPrefChanged(const char* path, PrefStoreType new_store);
 
-  // Called as a result of a notification of policy change. Triggers a reload of
-  // managed platform, device management and recommended preferences from policy
-  // from a Task on the FILE thread.
-  void RefreshPolicyPrefs();
-
-  // Called during policy refresh after ReadPrefs completes on the thread
-  // that initiated the policy refresh. RefreshPolicyPrefsCompletion takes
-  // ownership of the |callback| object.
-  void RefreshPolicyPrefsCompletion(
-      policy::ConfigurationPolicyPrefStore* new_managed_platform_pref_store,
-      policy::ConfigurationPolicyPrefStore* new_device_management_pref_store,
-      policy::ConfigurationPolicyPrefStore* new_recommended_pref_store);
-
-  // Called during policy refresh to do the ReadPrefs on the FILE thread.
-  // RefreshPolicyPrefsOnFileThread takes ownership of the |callback| object.
-  void RefreshPolicyPrefsOnFileThread(
-      BrowserThread::ID calling_thread_id,
-      policy::ConfigurationPolicyPrefStore* new_managed_platform_pref_store,
-      policy::ConfigurationPolicyPrefStore* new_device_management_pref_store,
-      policy::ConfigurationPolicyPrefStore* new_recommended_pref_store);
-
-  // NotificationObserver methods:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
   // Called from the PrefStoreKeeper implementation when a pref value for |key|
   // changed in the pref store for |type|.
   void OnPrefValueChanged(PrefStoreType type, const std::string& key);
@@ -283,14 +243,6 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore>,
 
   // A mapping of preference names to their registered types.
   PrefTypeMap pref_types_;
-
-  // The associated profile, in case this value store is associated with a
-  // profile pref service. Used for recreating the device management pref store
-  // upon policy refresh.
-  Profile* profile_;
-
-  // TODO(mnissler): Remove this after cleaning up policy refresh handling.
-  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefValueStore);
 };

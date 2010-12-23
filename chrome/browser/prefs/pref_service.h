@@ -230,8 +230,7 @@ class PrefService : public NonThreadSafe {
               PrefStore* extension_prefs,
               PrefStore* command_line_prefs,
               PersistentPrefStore* user_prefs,
-              PrefStore* recommended_prefs,
-              Profile* profile);
+              PrefStore* recommended_prefs);
 
   // The PrefNotifier handles registering and notifying preference observers.
   // It is created and owned by this PrefService. Subclasses may access it for

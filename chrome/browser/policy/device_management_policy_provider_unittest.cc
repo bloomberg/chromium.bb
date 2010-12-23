@@ -39,7 +39,7 @@ class DeviceManagementPolicyProviderTest : public testing::Test {
   virtual void SetUp() {
     profile_.reset(new TestingProfile);
     CreateNewProvider();
-    EXPECT_TRUE(provider_->waiting_for_initial_policies());
+    EXPECT_TRUE(waiting_for_initial_policies());
     loop_.RunAllPending();
   }
 
@@ -99,7 +99,7 @@ class DeviceManagementPolicyProviderTest : public testing::Test {
         MockDeviceManagementBackendSucceedBooleanPolicy(
             key::kDisableSpdy, true));
     SimulateSuccessfulLoginAndRunPending();
-    EXPECT_FALSE(provider_->waiting_for_initial_policies());
+    EXPECT_FALSE(waiting_for_initial_policies());
     EXPECT_CALL(store, Apply(kPolicyDisableSpdy, _)).Times(1);
     provider_->Provide(&store);
     ASSERT_EQ(1U, store.policy_map().size());
@@ -109,6 +109,10 @@ class DeviceManagementPolicyProviderTest : public testing::Test {
 
   virtual void TearDown() {
     loop_.RunAllPending();
+  }
+
+  bool waiting_for_initial_policies() const {
+    return provider_->waiting_for_initial_policies_;
   }
 
   MockDeviceManagementBackend* backend_;  // weak
@@ -136,14 +140,14 @@ TEST_F(DeviceManagementPolicyProviderTest, InitialProvideNoLogin) {
   EXPECT_CALL(store, Apply(_, _)).Times(0);
   provider_->Provide(&store);
   EXPECT_TRUE(store.policy_map().empty());
-  EXPECT_TRUE(provider_->waiting_for_initial_policies());
+  EXPECT_TRUE(waiting_for_initial_policies());
 }
 
 // If the login is successful and there's no previously-fetched policy, the
 // policy should be fetched from the server and should be available the first
 // time the Provide method is called.
 TEST_F(DeviceManagementPolicyProviderTest, InitialProvideWithLogin) {
-  EXPECT_TRUE(provider_->waiting_for_initial_policies());
+  EXPECT_TRUE(waiting_for_initial_policies());
   SimulateSuccessfulInitialPolicyFetch();
 }
 
@@ -305,7 +309,7 @@ TEST_F(DeviceManagementPolicyProviderTest, UnmanagedDevice) {
   // (2) On restart, the provider should detect that this is not the first
   // login.
   CreateNewProvider(1000*1000, 0, 0, 0, 0);
-  EXPECT_FALSE(provider_->waiting_for_initial_policies());
+  EXPECT_FALSE(waiting_for_initial_policies());
   EXPECT_CALL(*backend_, ProcessRegisterRequest(_, _, _, _)).WillOnce(
       MockDeviceManagementBackendSucceedRegister());
   EXPECT_CALL(*backend_, ProcessPolicyRequest(_, _, _, _)).WillOnce(

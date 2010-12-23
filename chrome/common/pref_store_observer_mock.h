@@ -10,8 +10,8 @@
 #include "chrome/common/pref_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-// A gmock-ified implementation of PrefStore::ObserverInterface.
-class PrefStoreObserverMock : public PrefStore::ObserverInterface {
+// A gmock-ified implementation of PrefStore::Observer.
+class PrefStoreObserverMock : public PrefStore::Observer {
  public:
   PrefStoreObserverMock() {}
   virtual ~PrefStoreObserverMock() {}

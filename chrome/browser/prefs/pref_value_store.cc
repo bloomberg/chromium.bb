@@ -4,10 +4,7 @@
 
 #include "chrome/browser/prefs/pref_value_store.h"
 
-#include "chrome/browser/browser_thread.h"
-#include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/prefs/pref_notifier.h"
-#include "chrome/common/notification_service.h"
 
 PrefValueStore::PrefStoreKeeper::PrefStoreKeeper()
     : pref_value_store_(NULL),
@@ -48,10 +45,8 @@ PrefValueStore::PrefValueStore(PrefStore* managed_platform_prefs,
                                PrefStore* user_prefs,
                                PrefStore* recommended_prefs,
                                PrefStore* default_prefs,
-                               PrefNotifier* pref_notifier,
-                               Profile* profile)
-    : pref_notifier_(pref_notifier),
-      profile_(profile) {
+                               PrefNotifier* pref_notifier)
+    : pref_notifier_(pref_notifier) {
   InitPrefStore(MANAGED_PLATFORM_STORE, managed_platform_prefs);
   InitPrefStore(DEVICE_MANAGEMENT_STORE, device_management_prefs);
   InitPrefStore(EXTENSION_STORE, extension_prefs);
@@ -59,11 +54,6 @@ PrefValueStore::PrefValueStore(PrefStore* managed_platform_prefs,
   InitPrefStore(USER_STORE, user_prefs);
   InitPrefStore(RECOMMENDED_STORE, recommended_prefs);
   InitPrefStore(DEFAULT_STORE, default_prefs);
-
-  // TODO(mnissler): Remove after policy refresh cleanup.
-  registrar_.Add(this,
-                 NotificationType(NotificationType::POLICY_CHANGED),
-                 NotificationService::AllSources());
 
   CheckInitializationCompleted();
 }
@@ -248,142 +238,6 @@ bool PrefValueStore::GetValueFromStore(const char* name,
   // No valid value found for the given preference name: set the return false.
   *out_value = NULL;
   return false;
-}
-
-void PrefValueStore::RefreshPolicyPrefsOnFileThread(
-    BrowserThread::ID calling_thread_id,
-    policy::ConfigurationPolicyPrefStore* new_managed_platform_pref_store,
-    policy::ConfigurationPolicyPrefStore* new_device_management_pref_store,
-    policy::ConfigurationPolicyPrefStore* new_recommended_pref_store) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  scoped_ptr<policy::ConfigurationPolicyPrefStore> managed_platform_pref_store(
-      new_managed_platform_pref_store);
-  scoped_ptr<policy::ConfigurationPolicyPrefStore> device_management_pref_store(
-      new_device_management_pref_store);
-  scoped_ptr<policy::ConfigurationPolicyPrefStore> recommended_pref_store(
-      new_recommended_pref_store);
-
-  BrowserThread::PostTask(
-      calling_thread_id, FROM_HERE,
-      NewRunnableMethod(this,
-                        &PrefValueStore::RefreshPolicyPrefsCompletion,
-                        managed_platform_pref_store.release(),
-                        device_management_pref_store.release(),
-                        recommended_pref_store.release()));
-}
-
-void PrefValueStore::RefreshPolicyPrefs() {
-  using policy::ConfigurationPolicyPrefStore;
-  // Because loading of policy information must happen on the FILE
-  // thread, it's not possible to just replace the contents of the
-  // managed and recommended stores in place due to possible
-  // concurrent access from the UI thread. Instead, new stores are
-  // created and the refreshed policy read into them. The new stores
-  // are swapped with the old from a Task on the UI thread after the
-  // load is complete.
-  ConfigurationPolicyPrefStore* new_managed_platform_pref_store(
-      ConfigurationPolicyPrefStore::CreateManagedPlatformPolicyPrefStore());
-  ConfigurationPolicyPrefStore* new_device_management_pref_store(
-      ConfigurationPolicyPrefStore::CreateDeviceManagementPolicyPrefStore(
-          profile_));
-  ConfigurationPolicyPrefStore* new_recommended_pref_store(
-      ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore());
-  BrowserThread::ID current_thread_id;
-  CHECK(BrowserThread::GetCurrentThreadIdentifier(&current_thread_id));
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this,
-                        &PrefValueStore::RefreshPolicyPrefsOnFileThread,
-                        current_thread_id,
-                        new_managed_platform_pref_store,
-                        new_device_management_pref_store,
-                        new_recommended_pref_store));
-}
-
-void PrefValueStore::RefreshPolicyPrefsCompletion(
-    policy::ConfigurationPolicyPrefStore* new_managed_platform_pref_store,
-    policy::ConfigurationPolicyPrefStore* new_device_management_pref_store,
-    policy::ConfigurationPolicyPrefStore* new_recommended_pref_store) {
-  // Determine the paths of all the changed preferences values in the three
-  // policy-related stores (managed platform, device management and
-  // recommended).
-  DictionaryValue* managed_platform_prefs_before(
-      static_cast<policy::ConfigurationPolicyPrefStore*>(
-          GetPrefStore(MANAGED_PLATFORM_STORE))->prefs());
-  DictionaryValue* managed_platform_prefs_after(
-      new_managed_platform_pref_store->prefs());
-  DictionaryValue* device_management_prefs_before(
-      static_cast<policy::ConfigurationPolicyPrefStore*>(
-          GetPrefStore(DEVICE_MANAGEMENT_STORE))->prefs());
-  DictionaryValue* device_management_prefs_after(
-      new_device_management_pref_store->prefs());
-  DictionaryValue* recommended_prefs_before(
-      static_cast<policy::ConfigurationPolicyPrefStore*>(
-          GetPrefStore(RECOMMENDED_STORE))->prefs());
-  DictionaryValue* recommended_prefs_after(new_recommended_pref_store->prefs());
-
-  std::vector<std::string> changed_managed_platform_paths;
-  managed_platform_prefs_before->GetDifferingPaths(
-      managed_platform_prefs_after,
-      &changed_managed_platform_paths);
-
-  std::vector<std::string> changed_device_management_paths;
-  device_management_prefs_before->GetDifferingPaths(
-      device_management_prefs_after,
-      &changed_device_management_paths);
-
-  std::vector<std::string> changed_recommended_paths;
-  recommended_prefs_before->GetDifferingPaths(
-      recommended_prefs_after,
-      &changed_recommended_paths);
-
-  // Merge all three vectors of changed value paths together, filtering
-  // duplicates in a post-processing step.
-  std::vector<std::string> all_changed_managed_platform_paths(
-      changed_managed_platform_paths.size() +
-      changed_device_management_paths.size());
-
-  std::vector<std::string>::iterator last_insert =
-      std::merge(changed_managed_platform_paths.begin(),
-                 changed_managed_platform_paths.end(),
-                 changed_device_management_paths.begin(),
-                 changed_device_management_paths.end(),
-                 all_changed_managed_platform_paths.begin());
-  all_changed_managed_platform_paths.resize(
-      last_insert - all_changed_managed_platform_paths.begin());
-
-  std::vector<std::string> changed_paths(
-      all_changed_managed_platform_paths.size() +
-      changed_recommended_paths.size());
-  last_insert = std::merge(all_changed_managed_platform_paths.begin(),
-                           all_changed_managed_platform_paths.end(),
-                           changed_recommended_paths.begin(),
-                           changed_recommended_paths.end(),
-                           changed_paths.begin());
-  changed_paths.resize(last_insert - changed_paths.begin());
-
-  last_insert = unique(changed_paths.begin(), changed_paths.end());
-  changed_paths.resize(last_insert - changed_paths.begin());
-
-  // Replace the old stores with the new and send notification of the changed
-  // preferences.
-  InitPrefStore(MANAGED_PLATFORM_STORE, new_managed_platform_pref_store);
-  InitPrefStore(DEVICE_MANAGEMENT_STORE, new_device_management_pref_store);
-  InitPrefStore(RECOMMENDED_STORE, new_recommended_pref_store);
-
-  std::vector<std::string>::const_iterator current;
-  for (current = changed_paths.begin();
-       current != changed_paths.end();
-       ++current) {
-    pref_notifier_->OnPreferenceChanged(current->c_str());
-  }
-}
-
-void PrefValueStore::Observe(NotificationType type,
-                             const NotificationSource& source,
-                             const NotificationDetails& details) {
-  if (type == NotificationType::POLICY_CHANGED)
-    RefreshPolicyPrefs();
 }
 
 void PrefValueStore::OnPrefValueChanged(PrefValueStore::PrefStoreType type,

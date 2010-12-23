@@ -11,7 +11,8 @@ namespace policy {
 
 MockConfigurationPolicyProvider::MockConfigurationPolicyProvider()
     : ConfigurationPolicyProvider(
-        ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList()) {
+          ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList()),
+      initialization_complete_(false) {
 }
 
 MockConfigurationPolicyProvider::~MockConfigurationPolicyProvider() {
@@ -24,6 +25,20 @@ void MockConfigurationPolicyProvider::AddPolicy(ConfigurationPolicyType policy,
   delete value;
 }
 
+void MockConfigurationPolicyProvider::RemovePolicy(
+    ConfigurationPolicyType policy) {
+  const PolicyMap::iterator entry = policy_map_.find(policy);
+  if (entry != policy_map_.end()) {
+    delete entry->second;
+    policy_map_.erase(entry);
+  }
+}
+
+void MockConfigurationPolicyProvider::SetInitializationComplete(
+    bool initialization_complete) {
+  initialization_complete_ = initialization_complete;
+}
+
 bool MockConfigurationPolicyProvider::Provide(
     ConfigurationPolicyStoreInterface* store) {
   for (PolicyMap::const_iterator current = policy_map_.begin();
@@ -31,6 +46,10 @@ bool MockConfigurationPolicyProvider::Provide(
     store->Apply(current->first, current->second->DeepCopy());
   }
   return true;
+}
+
+bool MockConfigurationPolicyProvider::IsInitializationComplete() const {
+  return initialization_complete_;
 }
 
 }

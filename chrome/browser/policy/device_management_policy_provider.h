@@ -41,6 +41,7 @@ class DeviceManagementPolicyProvider
 
   // ConfigurationPolicyProvider implementation:
   virtual bool Provide(ConfigurationPolicyStoreInterface* store);
+  virtual bool IsInitializationComplete() const;
 
   // DevicePolicyResponseDelegate implementation:
   virtual void HandlePolicyResponse(
@@ -51,14 +52,6 @@ class DeviceManagementPolicyProvider
   virtual void OnTokenSuccess();
   virtual void OnTokenError();
   virtual void OnNotManaged();
-
-  // True if a policy request has been sent to the device management backend
-  // server and no response or error has yet been received.
-  bool IsPolicyRequestPending() const { return policy_request_pending_; }
-
-  bool waiting_for_initial_policies() const {
-    return waiting_for_initial_policies_;
-  }
 
   // Tells the provider that the passed in token service reference is about to
   // become invalid.

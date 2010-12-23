@@ -26,7 +26,6 @@
 #include "chrome/browser/prefs/default_pref_store.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
 #include "chrome/browser/prefs/pref_value_store.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/notification_service.h"
 #include "grit/chromium_strings.h"
@@ -117,7 +116,7 @@ PrefService* PrefService::CreatePrefService(const FilePath& pref_filename,
       ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore();
 
   return new PrefService(managed, device_management, extension_prefs,
-                         command_line, user, recommended, profile);
+                         command_line, user, recommended);
 }
 
 PrefService::PrefService(PrefStore* managed_platform_prefs,
@@ -125,8 +124,7 @@ PrefService::PrefService(PrefStore* managed_platform_prefs,
                          PrefStore* extension_prefs,
                          PrefStore* command_line_prefs,
                          PersistentPrefStore* user_prefs,
-                         PrefStore* recommended_prefs,
-                         Profile* profile)
+                         PrefStore* recommended_prefs)
     : user_pref_store_(user_prefs) {
   pref_notifier_.reset(new PrefNotifierImpl(this));
   default_store_ = new DefaultPrefStore();
@@ -138,8 +136,7 @@ PrefService::PrefService(PrefStore* managed_platform_prefs,
                          user_pref_store_,
                          recommended_prefs,
                          default_store_,
-                         pref_notifier_.get(),
-                         profile);
+                         pref_notifier_.get());
   InitFromStorage();
 }
 
