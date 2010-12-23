@@ -8,37 +8,11 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_set_observer.h"
+#include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
-
-namespace {
-
-const bool kProxyPrefDefaultBoolean = false;
-const char kProxyPrefDefaultString[] = "";
-
-// Determines if a value of a proxy pref is set to its default. Default values
-// have a special role in the proxy pref system, because if all of the proxy
-// prefs are set to their defaults, then the system proxy settings are applied.
-// TODO(gfeher): Proxy preferences should be refactored to avoid the need
-// for such solutions. See crbug.com/65732
-bool IsDefaultValue(const Value* value) {
-  bool b = false;
-  std::string s;
-  if (value->IsType(Value::TYPE_BOOLEAN) &&
-      value->GetAsBoolean(&b)) {
-    return b == kProxyPrefDefaultBoolean;
-  } else if (value->IsType(Value::TYPE_STRING) &&
-             value->GetAsString(&s)) {
-    return s == kProxyPrefDefaultString;
-  } else {
-    NOTREACHED() << "Invalid type for a proxy preference.";
-    return false;
-  }
-}
-
-}  // namespace
 
 PrefProxyConfigTracker::PrefProxyConfigTracker(PrefService* pref_service)
     : pref_service_(pref_service) {
@@ -112,65 +86,62 @@ bool PrefProxyConfigTracker::ReadPrefConfig(net::ProxyConfig* config) {
   // Clear the configuration.
   *config = net::ProxyConfig();
 
-  // Scan for all "enable" type proxy switches.
-  static const char* proxy_prefs[] = {
-    prefs::kProxyPacUrl,
-    prefs::kProxyServer,
-    prefs::kProxyBypassList,
-    prefs::kProxyAutoDetect
-  };
-
-  // Check whether the preference system holds a valid proxy configuration. Note
-  // that preferences coming from a lower-priority source than the user settings
-  // are ignored. That's because chrome treats the system settings as the
-  // default values, which should apply if there's no explicit value forced by
-  // policy or the user.
-  // Preferences that are set to their default values are also ignored,
-  // regardless of their controlling source. This is because 'use system proxy
-  // settings' is currently encoded by all the preferences being set to their
-  // defaults. This will change when crbug.com/65732 is addressed.
-  bool found_enable_proxy_pref = false;
-  for (size_t i = 0; i < arraysize(proxy_prefs); i++) {
-    const PrefService::Preference* pref =
-        pref_service_->FindPreference(proxy_prefs[i]);
-    DCHECK(pref);
-    if (pref && (!pref->IsUserModifiable() || pref->HasUserSetting()) &&
-        !IsDefaultValue(pref->GetValue())) {
-      found_enable_proxy_pref = true;
-      break;
-    }
-  }
-
-  if (!found_enable_proxy_pref &&
-      !pref_service_->GetBoolean(prefs::kNoProxyServer)) {
+  ProxyPrefs::ProxyMode mode;
+  int proxy_mode = pref_service_->GetInteger(prefs::kProxyMode);
+  if (!ProxyPrefs::IntToProxyMode(proxy_mode, &mode)) {
+    // Fall back to system settings if the mode preference is invalid.
     return false;
   }
 
-  if (pref_service_->GetBoolean(prefs::kNoProxyServer)) {
-    // Ignore all the other proxy config preferences if the use of a proxy
-    // has been explicitly disabled.
-    return true;
+  switch (mode) {
+    case ProxyPrefs::MODE_SYSTEM:
+      // Use system settings.
+      return false;
+    case ProxyPrefs::MODE_DIRECT:
+      // Ignore all the other proxy config preferences if the use of a proxy
+      // has been explicitly disabled.
+      return true;
+    case ProxyPrefs::MODE_AUTO_DETECT:
+      config->set_auto_detect(true);
+      return true;
+    case ProxyPrefs::MODE_PAC_SCRIPT: {
+      if (!pref_service_->HasPrefPath(prefs::kProxyPacUrl)) {
+        LOG(ERROR) << "Proxy settings request PAC script but do not specify "
+                   << "its URL. Falling back to direct connection.";
+        return true;
+      }
+      std::string proxy_pac = pref_service_->GetString(prefs::kProxyPacUrl);
+      GURL proxy_pac_url(proxy_pac);
+      if (!proxy_pac_url.is_valid()) {
+        LOG(ERROR) << "Invalid proxy PAC url: " << proxy_pac;
+        return true;
+      }
+      config->set_pac_url(proxy_pac_url);
+      return true;
+    }
+    case ProxyPrefs::MODE_FIXED_SERVERS: {
+      if (!pref_service_->HasPrefPath(prefs::kProxyServer)) {
+        LOG(ERROR) << "Proxy settings request fixed proxy servers but do not "
+                   << "specify their URLs. Falling back to direct connection.";
+        return true;
+      }
+      std::string proxy_server =
+          pref_service_->GetString(prefs::kProxyServer);
+      config->proxy_rules().ParseFromString(proxy_server);
+
+      if (pref_service_->HasPrefPath(prefs::kProxyBypassList)) {
+        std::string proxy_bypass =
+            pref_service_->GetString(prefs::kProxyBypassList);
+        config->proxy_rules().bypass_rules.ParseFromString(proxy_bypass);
+      }
+      return true;
+    }
+    case ProxyPrefs::kModeCount: {
+      // Fall through to NOTREACHED().
+    }
   }
-
-  if (pref_service_->HasPrefPath(prefs::kProxyServer)) {
-    std::string proxy_server = pref_service_->GetString(prefs::kProxyServer);
-    config->proxy_rules().ParseFromString(proxy_server);
-  }
-
-  if (pref_service_->HasPrefPath(prefs::kProxyPacUrl)) {
-    std::string proxy_pac = pref_service_->GetString(prefs::kProxyPacUrl);
-    config->set_pac_url(GURL(proxy_pac));
-  }
-
-  config->set_auto_detect(pref_service_->GetBoolean(prefs::kProxyAutoDetect));
-
-  if (pref_service_->HasPrefPath(prefs::kProxyBypassList)) {
-    std::string proxy_bypass =
-        pref_service_->GetString(prefs::kProxyBypassList);
-    config->proxy_rules().bypass_rules.ParseFromString(proxy_bypass);
-  }
-
-  return true;
+  NOTREACHED() << "Unknown proxy mode, falling back to system settings.";
+  return false;
 }
 
 PrefProxyConfigService::PrefProxyConfigService(
@@ -258,14 +229,8 @@ void PrefProxyConfigService::RegisterObservers() {
 // static
 void PrefProxyConfigService::RegisterUserPrefs(
     PrefService* pref_service) {
-  pref_service->RegisterBooleanPref(prefs::kNoProxyServer,
-                                    kProxyPrefDefaultBoolean);
-  pref_service->RegisterBooleanPref(prefs::kProxyAutoDetect,
-                                    kProxyPrefDefaultBoolean);
-  pref_service->RegisterStringPref(prefs::kProxyServer,
-                                   kProxyPrefDefaultString);
-  pref_service->RegisterStringPref(prefs::kProxyPacUrl,
-                                   kProxyPrefDefaultString);
-  pref_service->RegisterStringPref(prefs::kProxyBypassList,
-                                   kProxyPrefDefaultString);
+  pref_service->RegisterIntegerPref(prefs::kProxyMode, ProxyPrefs::MODE_SYSTEM);
+  pref_service->RegisterStringPref(prefs::kProxyServer, "");
+  pref_service->RegisterStringPref(prefs::kProxyPacUrl, "");
+  pref_service->RegisterStringPref(prefs::kProxyBypassList, "");
 }

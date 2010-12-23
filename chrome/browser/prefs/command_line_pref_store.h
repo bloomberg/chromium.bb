@@ -45,6 +45,9 @@ class CommandLinePrefStore : public ValueMapPrefStore {
   // corresponding preferences in this pref store.
   void ApplySimpleSwitches();
 
+  // Determines the proxy mode preference from the given proxy switches.
+  void ApplyProxyMode();
+
   // Weak reference.
   const CommandLine* command_line_;
 

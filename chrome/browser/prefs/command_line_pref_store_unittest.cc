@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
+#include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 
@@ -21,6 +22,12 @@ class TestCommandLinePrefStore : public CommandLinePrefStore {
 
   bool ProxySwitchesAreValid() {
     return ValidateProxySwitches();
+  }
+
+  void VerifyIntPref(const std::string& path, int expected_value) {
+    Value* actual = NULL;
+    ASSERT_EQ(PrefStore::READ_OK, GetValue(path, &actual));
+    EXPECT_TRUE(FundamentalValue(expected_value).Equals(actual));
   }
 };
 
@@ -47,13 +54,9 @@ TEST(CommandLinePrefStoreTest, SimpleStringPref) {
 TEST(CommandLinePrefStoreTest, SimpleBooleanPref) {
   CommandLine cl(CommandLine::NO_PROGRAM);
   cl.AppendSwitch(switches::kNoProxyServer);
-  CommandLinePrefStore store(&cl);
+  TestCommandLinePrefStore store(&cl);
 
-  Value* actual = NULL;
-  ASSERT_EQ(PrefStore::READ_OK, store.GetValue(prefs::kNoProxyServer, &actual));
-  bool result;
-  EXPECT_TRUE(actual->GetAsBoolean(&result));
-  EXPECT_TRUE(result);
+  store.VerifyIntPref(prefs::kProxyMode, ProxyPrefs::MODE_DIRECT);
 }
 
 // Tests a command line with no recognized prefs.
@@ -76,15 +79,11 @@ TEST(CommandLinePrefStoreTest, MultipleSwitches) {
   cl.AppendSwitchASCII(switches::kProxyServer, "proxy");
   cl.AppendSwitchASCII(switches::kProxyBypassList, "list");
   cl.AppendSwitchASCII(unknown_bool, "a value");
-  CommandLinePrefStore store(&cl);
+  TestCommandLinePrefStore store(&cl);
 
   Value* actual = NULL;
   EXPECT_EQ(PrefStore::READ_NO_VALUE, store.GetValue(unknown_bool, &actual));
-  ASSERT_EQ(PrefStore::READ_OK,
-            store.GetValue(prefs::kProxyAutoDetect, &actual));
-  bool bool_result = false;
-  EXPECT_TRUE(actual->GetAsBoolean(&bool_result));
-  EXPECT_TRUE(bool_result);
+  store.VerifyIntPref(prefs::kProxyMode, ProxyPrefs::MODE_AUTO_DETECT);
 
   EXPECT_EQ(PrefStore::READ_NO_VALUE, store.GetValue(unknown_string, &actual));
   std::string string_result = "";
@@ -123,4 +122,17 @@ TEST(CommandLinePrefStoreTest, ProxySwitchValidation) {
   cl2.AppendSwitchASCII(switches::kProxyBypassList, "list");
   TestCommandLinePrefStore store4(&cl2);
   EXPECT_TRUE(store4.ProxySwitchesAreValid());
+}
+
+TEST(CommandLinePrefStoreTest, ManualProxyModeInference) {
+  CommandLine cl1(CommandLine::NO_PROGRAM);
+  cl1.AppendSwitch(unknown_string);
+  cl1.AppendSwitchASCII(switches::kProxyServer, "proxy");
+  TestCommandLinePrefStore store1(&cl1);
+  store1.VerifyIntPref(prefs::kProxyMode, ProxyPrefs::MODE_FIXED_SERVERS);
+
+  CommandLine cl2(CommandLine::NO_PROGRAM);
+  cl2.AppendSwitchASCII(switches::kProxyPacUrl, "proxy");
+  TestCommandLinePrefStore store2(&cl2);
+  store2.VerifyIntPref(prefs::kProxyMode, ProxyPrefs::MODE_PAC_SCRIPT);
 }

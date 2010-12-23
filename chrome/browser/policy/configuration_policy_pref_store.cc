@@ -8,10 +8,12 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/stl_util-inl.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #if defined(OS_WIN)
@@ -248,7 +250,7 @@ ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
       key::kDefaultSearchProviderIconURL },
     { kPolicyDefaultSearchProviderEncodings, Value::TYPE_STRING,
       key::kDefaultSearchProviderEncodings },
-    { kPolicyProxyServerMode, Value::TYPE_INTEGER, key::kProxyServerMode },
+    { kPolicyProxyMode, Value::TYPE_INTEGER, key::kProxyMode },
     { kPolicyProxyServer, Value::TYPE_STRING, key::kProxyServer },
     { kPolicyProxyPacUrl, Value::TYPE_STRING, key::kProxyPacUrl },
     { kPolicyProxyBypassList, Value::TYPE_STRING, key::kProxyBypassList },
@@ -331,17 +333,16 @@ ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
 ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(
     ConfigurationPolicyProvider* provider)
     : provider_(provider),
-      prefs_(new DictionaryValue()),
-      lower_priority_proxy_settings_overridden_(false),
-      proxy_disabled_(false),
-      proxy_configuration_specified_(false),
-      use_system_proxy_(false) {
+      prefs_(new DictionaryValue()) {
   if (!provider_->Provide(this))
     LOG(WARNING) << "Failed to get policy from provider.";
+  FinalizeProxyPolicySettings();
   FinalizeDefaultSearchPolicySettings();
 }
 
-ConfigurationPolicyPrefStore::~ConfigurationPolicyPrefStore() {}
+ConfigurationPolicyPrefStore::~ConfigurationPolicyPrefStore() {
+  DCHECK(proxy_policies_.empty());
+}
 
 PrefStore::ReadResult ConfigurationPolicyPrefStore::GetValue(
     const std::string& key,
@@ -415,17 +416,6 @@ ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore() {
       g_configuration_policy_provider_keeper.Get().recommended_provider());
 }
 
-// static
-void ConfigurationPolicyPrefStore::GetProxyPreferenceSet(
-    ProxyPreferenceSet* proxy_pref_set) {
-  proxy_pref_set->clear();
-  for (size_t current = 0; current < arraysize(kProxyPolicyMap); ++current) {
-    proxy_pref_set->insert(kProxyPolicyMap[current].preference_path);
-  }
-  proxy_pref_set->insert(prefs::kNoProxyServer);
-  proxy_pref_set->insert(prefs::kProxyAutoDetect);
-}
-
 const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry*
 ConfigurationPolicyPrefStore::FindPolicyInMap(
     ConfigurationPolicyType policy,
@@ -469,108 +459,152 @@ bool ConfigurationPolicyPrefStore::ApplyPolicyFromMap(
 bool ConfigurationPolicyPrefStore::ApplyProxyPolicy(
     ConfigurationPolicyType policy,
     Value* value) {
-  bool result = false;
-  bool warn_about_proxy_disable_config = false;
-  bool warn_about_proxy_system_config = false;
+  // We only collect the values until we have sufficient information when
+  // FinalizeProxyPolicySettings() is called to determine whether the presented
+  // values were correct and apply them in that case.
+  if (policy == kPolicyProxyMode ||
+      policy == kPolicyProxyServer ||
+      policy == kPolicyProxyPacUrl ||
+      policy == kPolicyProxyBypassList) {
+    delete proxy_policies_[policy];
+    proxy_policies_[policy] = value;
+    return true;
+  }
+  // We are not interested in this policy.
+  return false;
+}
 
-  const PolicyToPreferenceMapEntry* match_entry =
-      FindPolicyInMap(policy, kProxyPolicyMap, arraysize(kProxyPolicyMap));
+void ConfigurationPolicyPrefStore::FinalizeProxyPolicySettings() {
+  if (CheckProxySettings())
+    ApplyProxySettings();
 
-  // When the first proxy-related policy is applied, ALL proxy-related
-  // preferences that have been set by command-line switches, extensions,
-  // user preferences or any other mechanism are overridden. Otherwise
-  // it's possible for a user to interfere with proxy policy by setting
-  // proxy-related command-line switches or set proxy-related prefs in an
-  // extension that are related, but not identical, to the ones set through
-  // policy.
-  if (!lower_priority_proxy_settings_overridden_ &&
-      (match_entry ||
-       policy == kPolicyProxyServerMode)) {
-    ProxyPreferenceSet proxy_preference_set;
-    GetProxyPreferenceSet(&proxy_preference_set);
-    for (ProxyPreferenceSet::const_iterator i = proxy_preference_set.begin();
-         i != proxy_preference_set.end(); ++i) {
-      // We use values of TYPE_NULL to mark preferences for which
-      // READ_USE_DEFAULT should be returned by GetValue().
-      prefs_->Set(*i, Value::CreateNullValue());
-    }
-    lower_priority_proxy_settings_overridden_ = true;
+  STLDeleteContainerPairSecondPointers(proxy_policies_.begin(),
+                                       proxy_policies_.end());
+  proxy_policies_.clear();
+}
+
+bool ConfigurationPolicyPrefStore::HasProxyPolicy(
+    ConfigurationPolicyType policy) const {
+  std::map<ConfigurationPolicyType, Value*>::const_iterator iter;
+  iter = proxy_policies_.find(policy);
+  return iter != proxy_policies_.end() &&
+         iter->second && !iter->second->IsType(Value::TYPE_NULL);
+}
+
+bool ConfigurationPolicyPrefStore::CheckProxySettings() {
+  bool mode = HasProxyPolicy(kPolicyProxyMode);
+  bool server = HasProxyPolicy(kPolicyProxyServer);
+  bool pac_url = HasProxyPolicy(kPolicyProxyPacUrl);
+  bool bypass_list = HasProxyPolicy(kPolicyProxyBypassList);
+
+  if ((server || pac_url || bypass_list) && !mode) {
+    LOG(WARNING) << "A centrally-administered policy defines proxy setting"
+                 << " details without setting a proxy mode.";
+    return false;
   }
 
-  // Translate the proxy policy into preferences.
-  if (policy == kPolicyProxyServerMode) {
-    int int_value;
-    bool proxy_auto_detect = false;
-    if (value->GetAsInteger(&int_value)) {
-      result = true;
-      switch (int_value) {
-        case kPolicyNoProxyServerMode:
-          if (!proxy_disabled_) {
-            if (proxy_configuration_specified_)
-              warn_about_proxy_disable_config = true;
-            proxy_disabled_ = true;
-          }
-          break;
-        case kPolicyAutoDetectProxyMode:
-          proxy_auto_detect = true;
-          break;
-        case kPolicyManuallyConfiguredProxyMode:
-          break;
-        case kPolicyUseSystemProxyMode:
-          if (!use_system_proxy_) {
-            if (proxy_configuration_specified_)
-              warn_about_proxy_system_config = true;
-            use_system_proxy_ = true;
-          }
-          break;
-        default:
-          // Not a valid policy, don't assume ownership of |value|
-          result = false;
-          break;
+  if (!mode)
+    return true;
+
+  int mode_value;
+  if (!proxy_policies_[kPolicyProxyMode]->GetAsInteger(&mode_value)) {
+    LOG(WARNING) << "Invalid proxy mode value.";
+    return false;
+  }
+
+  switch (mode_value) {
+    case kPolicyNoProxyServerMode:
+      if (server || pac_url || bypass_list) {
+        LOG(WARNING) << "A centrally-administered policy disables the use of"
+                     << " a proxy but also specifies an explicit proxy"
+                     << " configuration.";
+        return false;
       }
-
-      if (int_value != kPolicyUseSystemProxyMode) {
-        prefs_->Set(prefs::kNoProxyServer,
-                    Value::CreateBooleanValue(proxy_disabled_));
-        prefs_->Set(prefs::kProxyAutoDetect,
-                    Value::CreateBooleanValue(proxy_auto_detect));
+      break;
+    case kPolicyAutoDetectProxyMode:
+      if (server || bypass_list) {
+        LOG(WARNING) << "A centrally-administered policy dictates that a proxy"
+                     << " shall be auto configured but specifies fixed proxy"
+                     << " servers or a by-pass list.";
+        return false;
       }
-    }
-  } else if (match_entry) {
-    // Determine if the applied proxy policy settings conflict and issue
-    // a corresponding warning if they do.
-    if (!proxy_configuration_specified_) {
-      if (proxy_disabled_)
-        warn_about_proxy_disable_config = true;
-      if (use_system_proxy_)
-        warn_about_proxy_system_config = true;
-      proxy_configuration_specified_ = true;
-    }
-    if (!use_system_proxy_ && !proxy_disabled_) {
-      prefs_->Set(match_entry->preference_path, value);
-      // The ownership of value has been passed on to |prefs_|,
-      // don't clean it up later.
-      value = NULL;
-    }
-    result = true;
+      break;
+    case kPolicyManuallyConfiguredProxyMode:
+      if (!server) {
+        LOG(WARNING) << "A centrally-administered policy dictates that the"
+                     << " system proxy settings should use fixed proxy servers"
+                     << " without specifying which ones.";
+        return false;
+      }
+      if (pac_url) {
+        LOG(WARNING) << "A centrally-administered policy dictates that the"
+                     << " system proxy settings should use fixed proxy servers"
+                     << " but also specifies a PAC script.";
+        return false;
+      }
+      break;
+    case kPolicyUseSystemProxyMode:
+      if (server || pac_url || bypass_list) {
+        LOG(WARNING) << "A centrally-administered policy dictates that the"
+                     << " system proxy settings should be used but also "
+                     << " specifies an explicit proxy configuration.";
+        return false;
+      }
+      break;
+    default:
+      LOG(WARNING) << "Invalid proxy mode " << mode_value;
+      return false;
   }
+  return true;
+}
 
-  if (warn_about_proxy_disable_config) {
-    LOG(WARNING) << "A centrally-administered policy disables the use of"
-                 << " a proxy but also specifies an explicit proxy"
-                 << " configuration.";
+void ConfigurationPolicyPrefStore::ApplyProxySettings() {
+  if (!HasProxyPolicy(kPolicyProxyMode))
+    return;
+
+  int int_mode;
+  CHECK(proxy_policies_[kPolicyProxyMode]->GetAsInteger(&int_mode));
+  ProxyPrefs::ProxyMode mode;
+  switch (int_mode) {
+    case kPolicyNoProxyServerMode:
+      mode = ProxyPrefs::MODE_DIRECT;
+      break;
+    case kPolicyAutoDetectProxyMode:
+      mode = ProxyPrefs::MODE_AUTO_DETECT;
+      if (HasProxyPolicy(kPolicyProxyPacUrl))
+        mode = ProxyPrefs::MODE_PAC_SCRIPT;
+      break;
+    case kPolicyManuallyConfiguredProxyMode:
+      mode = ProxyPrefs::MODE_FIXED_SERVERS;
+      break;
+    case kPolicyUseSystemProxyMode:
+      mode = ProxyPrefs::MODE_SYSTEM;
+      break;
+    default:
+      mode = ProxyPrefs::MODE_DIRECT;
+      NOTREACHED();
   }
+  prefs_->Set(prefs::kProxyMode, Value::CreateIntegerValue(mode));
 
-  if (warn_about_proxy_system_config) {
-    LOG(WARNING) << "A centrally-administered policy dictates that the"
-                 << " system proxy settings should be used but also specifies"
-                 << " an explicit proxy configuration.";
+  if (HasProxyPolicy(kPolicyProxyServer)) {
+    prefs_->Set(prefs::kProxyServer, proxy_policies_[kPolicyProxyServer]);
+    proxy_policies_[kPolicyProxyServer] = NULL;
+  } else {
+    prefs_->Set(prefs::kProxyServer, Value::CreateNullValue());
   }
-
-  // If the policy was a proxy policy, cleanup |value|.
-  if (result && value)
-    delete value;
-  return result;
+  if (HasProxyPolicy(kPolicyProxyPacUrl)) {
+    prefs_->Set(prefs::kProxyPacUrl, proxy_policies_[kPolicyProxyPacUrl]);
+    proxy_policies_[kPolicyProxyPacUrl] = NULL;
+  } else {
+    prefs_->Set(prefs::kProxyPacUrl, Value::CreateNullValue());
+  }
+  if (HasProxyPolicy(kPolicyProxyBypassList)) {
+    prefs_->Set(prefs::kProxyBypassList,
+                proxy_policies_[kPolicyProxyBypassList]);
+    proxy_policies_[kPolicyProxyBypassList] = NULL;
+  } else {
+    prefs_->Set(prefs::kProxyBypassList, Value::CreateNullValue());
+  }
 }
 
 bool ConfigurationPolicyPrefStore::ApplySyncPolicy(

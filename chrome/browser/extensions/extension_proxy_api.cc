@@ -7,6 +7,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/pref_names.h"
@@ -53,8 +54,8 @@ bool UseCustomProxySettingsFunction::RunImpl() {
   DictionaryValue* proxy_config;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &proxy_config));
 
-  bool auto_detect = false;
-  proxy_config->GetBoolean("autoDetect", &auto_detect);
+  std::string proxy_mode;
+  proxy_config->GetString("mode", &proxy_mode);
 
   DictionaryValue* pac_dict = NULL;
   proxy_config->GetDictionary("pacScript", &pac_dict);
@@ -62,7 +63,9 @@ bool UseCustomProxySettingsFunction::RunImpl() {
   DictionaryValue* proxy_rules = NULL;
   proxy_config->GetDictionary("rules", &proxy_rules);
 
-  return ApplyAutoDetect(auto_detect) &&
+  // TODO(battre,gfeher): Make sure all the preferences get always
+  // overwritten.
+  return ApplyMode(proxy_mode) &&
       ApplyPacScript(pac_dict) &&
       ApplyProxyRules(proxy_rules);
 }
@@ -75,13 +78,19 @@ bool UseCustomProxySettingsFunction::GetProxyServer(
   return true;
 }
 
-bool UseCustomProxySettingsFunction::ApplyAutoDetect(bool auto_detect) {
-  // We take control of the auto-detect preference even if none was specified,
-  // so that all proxy preferences are controlled by the same extension (if not
-  // by a higher-priority source).
-  SendNotification(prefs::kProxyAutoDetect,
-                   Value::CreateBooleanValue(auto_detect));
-  return true;
+bool UseCustomProxySettingsFunction::ApplyMode(const std::string& mode) {
+  // We take control of the mode preference even if none was specified, so that
+  // all proxy preferences are controlled by the same extension (if not by a
+  // higher-priority source).
+  bool result = true;
+  ProxyPrefs::ProxyMode mode_enum;
+  if (!ProxyPrefs::StringToProxyMode(mode, &mode_enum)) {
+    mode_enum = ProxyPrefs::MODE_SYSTEM;
+    LOG(WARNING) << "Invalid mode for proxy settings: " << mode;
+    result = false;
+  }
+  ApplyPreference(prefs::kProxyMode, Value::CreateIntegerValue(mode_enum));
+  return result;
 }
 
 bool UseCustomProxySettingsFunction::ApplyPacScript(DictionaryValue* pac_dict) {
@@ -92,14 +101,16 @@ bool UseCustomProxySettingsFunction::ApplyPacScript(DictionaryValue* pac_dict) {
   // We take control of the PAC preference even if none was specified, so that
   // all proxy preferences are controlled by the same extension (if not by a
   // higher-priority source).
-  SendNotification(prefs::kProxyPacUrl, Value::CreateStringValue(pac_url));
+  ApplyPreference(prefs::kProxyPacUrl, Value::CreateStringValue(pac_url));
   return true;
 }
 
 bool UseCustomProxySettingsFunction::ApplyProxyRules(
     DictionaryValue* proxy_rules) {
-  if (!proxy_rules)
+  if (!proxy_rules) {
+    ApplyPreference(prefs::kProxyServer, Value::CreateStringValue(""));
     return true;
+  }
 
   // Local data into which the parameters will be parsed. has_proxy describes
   // whether a setting was found for the scheme; proxy_dict holds the
@@ -153,12 +164,12 @@ bool UseCustomProxySettingsFunction::ApplyProxyRules(
     }
   }
 
-  SendNotification(prefs::kProxyServer, Value::CreateStringValue(proxy_pref));
+  ApplyPreference(prefs::kProxyServer, Value::CreateStringValue(proxy_pref));
   return true;
 }
 
-void UseCustomProxySettingsFunction::SendNotification(const char* pref_path,
-                                                      Value* pref_value) {
+void UseCustomProxySettingsFunction::ApplyPreference(const char* pref_path,
+                                                     Value* pref_value) {
   profile()->GetExtensionService()->extension_prefs()
       ->SetExtensionControlledPref(extension_id(), pref_path, pref_value);
 }

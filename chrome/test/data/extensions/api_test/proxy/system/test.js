@@ -3,13 +3,11 @@
 // found in the LICENSE file.
 
 // proxy api test
-// browser_tests.exe --gtest_filter=ExtensionApiTest.ProxyAutoSettings
+// browser_tests.exe --gtest_filter=ExtensionApiTest.ProxySystem
 
 chrome.test.runTests([
-  function setAutoSettings() {
-    var config = {
-      mode: "auto_detect",
-    };
+  function setSystemProxy() {
+    var config = { mode: "system" };
     chrome.experimental.proxy.useCustomProxySettings(config);
     chrome.test.succeed();
   }

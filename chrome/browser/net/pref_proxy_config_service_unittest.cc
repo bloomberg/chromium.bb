@@ -8,6 +8,7 @@
 #include "base/file_path.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
+#include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_pref_service.h"
@@ -114,6 +115,9 @@ TEST_F(PrefProxyConfigServiceTest, BaseConfiguration) {
 TEST_F(PrefProxyConfigServiceTest, DynamicPrefOverrides) {
   pref_service_->SetManagedPref(
       prefs::kProxyServer, Value::CreateStringValue("http://example.com:3128"));
+  pref_service_->SetManagedPref(
+      prefs::kProxyMode,
+      Value::CreateIntegerValue(ProxyPrefs::MODE_FIXED_SERVERS));
   loop_.RunAllPending();
 
   net::ProxyConfig actual_config;
@@ -126,7 +130,8 @@ TEST_F(PrefProxyConfigServiceTest, DynamicPrefOverrides) {
                                       net::ProxyServer::SCHEME_HTTP));
 
   pref_service_->SetManagedPref(
-      prefs::kProxyAutoDetect, Value::CreateBooleanValue(true));
+      prefs::kProxyMode,
+      Value::CreateIntegerValue(ProxyPrefs::MODE_AUTO_DETECT));
   loop_.RunAllPending();
 
   proxy_config_service_->GetLatestProxyConfig(&actual_config);
@@ -156,10 +161,20 @@ TEST_F(PrefProxyConfigServiceTest, Observers) {
   // Override configuration, this should trigger a notification.
   net::ProxyConfig pref_config;
   pref_config.set_pac_url(GURL(kFixedPacUrl));
+
   EXPECT_CALL(observer,
               OnProxyConfigChanged(ProxyConfigMatches(pref_config))).Times(1);
+
   pref_service_->SetManagedPref(prefs::kProxyPacUrl,
                                 Value::CreateStringValue(kFixedPacUrl));
+  // The above does not trigger a notification, because PrefProxyConfig still
+  // sees the mode as the default (ProxyPrefs::SYSTEM), so that it doesn't claim
+  // to have proxy config.
+  // TODO(battre): Remove this comment when http://crbug.com/65732 is
+  // resolved.
+  pref_service_->SetManagedPref(
+      prefs::kProxyMode,
+      Value::CreateIntegerValue(ProxyPrefs::MODE_PAC_SCRIPT));
   loop_.RunAllPending();
   Mock::VerifyAndClearExpectations(&observer);
 
@@ -175,6 +190,11 @@ TEST_F(PrefProxyConfigServiceTest, Observers) {
   // Clear the override should switch back to the fixed configuration.
   EXPECT_CALL(observer,
               OnProxyConfigChanged(ProxyConfigMatches(config3))).Times(1);
+  pref_service_->RemoveManagedPref(prefs::kProxyMode);
+  // The above switches the mode to the default (ProxyPrefs::SYSTEM), so the
+  // next removal won't bother PrefProxyConfigService.
+  // TODO(battre): Remove this comment when http://crbug.com/65732 is
+  // completed.
   pref_service_->RemoveManagedPref(prefs::kProxyPacUrl);
   loop_.RunAllPending();
   Mock::VerifyAndClearExpectations(&observer);
@@ -350,19 +370,16 @@ static const CommandLineTestParams kCommandLineTestParams[] = {
         "*.google.com,foo.com:99,1.2.3.4:22,127.0.0.1/8"),
   },
   {
-    "Pac URL with proxy bypass URLs",
+    "Pac URL",
     // Input
     {
       { switches::kProxyPacUrl, "http://wpad/wpad.dat" },
-      { switches::kProxyBypassList,
-        ".google.com, foo.com:99, 1.2.3.4:22, 127.0.0.1/8" },
     },
     // Expected result
     false,                                              // is_null
     false,                                              // auto_detect
     GURL("http://wpad/wpad.dat"),                       // pac_url
-    net::ProxyRulesExpectation::EmptyWithBypass(
-        "*.google.com,foo.com:99,1.2.3.4:22,127.0.0.1/8"),
+    net::ProxyRulesExpectation::Empty(),
   },
   {
     "Autodetect",

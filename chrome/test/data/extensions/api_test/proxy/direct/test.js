@@ -8,7 +8,7 @@
 chrome.test.runTests([
   function setAutoSettings() {
     var config = {
-      mode: "auto_detect",
+      mode: "direct",
     };
     chrome.experimental.proxy.useCustomProxySettings(config);
     chrome.test.succeed();

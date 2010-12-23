@@ -4,13 +4,46 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 
-// Tests auto-detect and PAC proxy settings.
+// Tests direct connection settings.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProxyDirectSettings) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+
+  ASSERT_TRUE(RunExtensionTest("proxy/direct")) << message_;
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension);
+
+  PrefService* pref_service = browser()->profile()->GetPrefs();
+
+  const PrefService::Preference* pref =
+      pref_service->FindPreference(prefs::kProxyMode);
+  ASSERT_TRUE(pref != NULL);
+  ASSERT_TRUE(pref->IsExtensionControlled());
+  int mode = pref_service->GetInteger(prefs::kProxyMode);
+  EXPECT_EQ(ProxyPrefs::MODE_DIRECT, mode);
+
+  // Other proxy prefs should also be set, so they're all controlled from one
+  // place.
+  pref = pref_service->FindPreference(prefs::kProxyPacUrl);
+  ASSERT_TRUE(pref != NULL);
+  EXPECT_TRUE(pref->IsExtensionControlled());
+  EXPECT_EQ("", pref_service->GetString(prefs::kProxyPacUrl));
+
+  // No manual proxy prefs were set.
+  pref = pref_service->FindPreference(prefs::kProxyServer);
+  ASSERT_TRUE(pref != NULL);
+  EXPECT_TRUE(pref->IsExtensionControlled());
+  EXPECT_EQ("", pref_service->GetString(prefs::kProxyServer));
+}
+
+// Tests auto-detect settings.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProxyAutoSettings) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
@@ -22,11 +55,37 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProxyAutoSettings) {
   PrefService* pref_service = browser()->profile()->GetPrefs();
 
   const PrefService::Preference* pref =
-      pref_service->FindPreference(prefs::kProxyAutoDetect);
+      pref_service->FindPreference(prefs::kProxyMode);
   ASSERT_TRUE(pref != NULL);
   ASSERT_TRUE(pref->IsExtensionControlled());
-  bool auto_detect = pref_service->GetBoolean(prefs::kProxyAutoDetect);
-  EXPECT_TRUE(auto_detect);
+  int mode = pref_service->GetInteger(prefs::kProxyMode);
+  EXPECT_EQ(ProxyPrefs::MODE_AUTO_DETECT, mode);
+
+  // Other proxy prefs should also be set, so they're all controlled from one
+  // place.
+  pref = pref_service->FindPreference(prefs::kProxyPacUrl);
+  ASSERT_TRUE(pref != NULL);
+  EXPECT_TRUE(pref->IsExtensionControlled());
+  EXPECT_EQ("", pref_service->GetString(prefs::kProxyPacUrl));
+}
+
+// Tests PAC proxy settings.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProxyPacScript) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+
+  ASSERT_TRUE(RunExtensionTest("proxy/pac")) << message_;
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension);
+
+  PrefService* pref_service = browser()->profile()->GetPrefs();
+
+  const PrefService::Preference* pref =
+      pref_service->FindPreference(prefs::kProxyMode);
+  ASSERT_TRUE(pref != NULL);
+  ASSERT_TRUE(pref->IsExtensionControlled());
+  int mode = pref_service->GetInteger(prefs::kProxyMode);
+  EXPECT_EQ(ProxyPrefs::MODE_PAC_SCRIPT, mode);
 
   pref = pref_service->FindPreference(prefs::kProxyPacUrl);
   ASSERT_TRUE(pref != NULL);
@@ -37,11 +96,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProxyAutoSettings) {
   // No manual proxy prefs were set.
   pref = pref_service->FindPreference(prefs::kProxyServer);
   ASSERT_TRUE(pref != NULL);
-  EXPECT_TRUE(pref->IsDefaultValue());
+  EXPECT_TRUE(pref->IsExtensionControlled());
+  EXPECT_EQ("", pref_service->GetString(prefs::kProxyServer));
 }
 
 // Tests setting a single proxy to cover all schemes.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProxyManualSingle) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProxyFixedSingle) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
@@ -64,10 +124,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProxyManualSingle) {
 
   // Other proxy prefs should also be set, so they're all controlled from one
   // place.
-  pref = pref_service->FindPreference(prefs::kProxyAutoDetect);
+  pref = pref_service->FindPreference(prefs::kProxyMode);
   ASSERT_TRUE(pref != NULL);
   EXPECT_TRUE(pref->IsExtensionControlled());
-  EXPECT_FALSE(pref_service->GetBoolean(prefs::kProxyAutoDetect));
+  EXPECT_EQ(ProxyPrefs::MODE_FIXED_SERVERS,
+            pref_service->GetInteger(prefs::kProxyMode));
 
   pref = pref_service->FindPreference(prefs::kProxyPacUrl);
   ASSERT_TRUE(pref != NULL);
@@ -75,8 +136,41 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProxyManualSingle) {
   EXPECT_EQ("", pref_service->GetString(prefs::kProxyPacUrl));
 }
 
+// Tests setting to use the system's proxy settings.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProxySystem) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+
+  ASSERT_TRUE(RunExtensionTest("proxy/system")) << message_;
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension);
+
+  PrefService* pref_service = browser()->profile()->GetPrefs();
+
+  // There should be no values superseding the extension-set proxy in this test.
+  const PrefService::Preference* pref =
+      pref_service->FindPreference(prefs::kProxyMode);
+  ASSERT_TRUE(pref != NULL);
+  ASSERT_TRUE(pref->IsExtensionControlled());
+  int proxy_server_mode = pref_service->GetInteger(prefs::kProxyMode);
+  EXPECT_EQ(ProxyPrefs::MODE_SYSTEM, proxy_server_mode);
+
+  // Other proxy prefs should also be set, so they're all controlled from one
+  // place.
+  pref = pref_service->FindPreference(prefs::kProxyPacUrl);
+  ASSERT_TRUE(pref != NULL);
+  EXPECT_TRUE(pref->IsExtensionControlled());
+  EXPECT_EQ("", pref_service->GetString(prefs::kProxyPacUrl));
+
+  // No manual proxy prefs were set.
+  pref = pref_service->FindPreference(prefs::kProxyServer);
+  ASSERT_TRUE(pref != NULL);
+  EXPECT_TRUE(pref->IsExtensionControlled());
+  EXPECT_EQ("", pref_service->GetString(prefs::kProxyServer));
+}
+
 // Tests setting separate proxies for each scheme.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProxyManualIndividual) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProxyFixedIndividual) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
@@ -100,10 +194,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProxyManualIndividual) {
 
   // Other proxy prefs should also be set, so they're all controlled from one
   // place.
-  pref = pref_service->FindPreference(prefs::kProxyAutoDetect);
+  pref = pref_service->FindPreference(prefs::kProxyMode);
   ASSERT_TRUE(pref != NULL);
   EXPECT_TRUE(pref->IsExtensionControlled());
-  EXPECT_FALSE(pref_service->GetBoolean(prefs::kProxyAutoDetect));
+  EXPECT_EQ(ProxyPrefs::MODE_FIXED_SERVERS,
+            pref_service->GetInteger(prefs::kProxyMode));
 
   pref = pref_service->FindPreference(prefs::kProxyPacUrl);
   ASSERT_TRUE(pref != NULL);

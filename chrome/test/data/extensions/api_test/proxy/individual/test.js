@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // proxy api test
-// browser_tests.exe --gtest_filter=ExtensionApiTest.ProxyManualIndividual
+// browser_tests.exe --gtest_filter=ExtensionApiTest.ProxyFixedIndividual
 
 chrome.test.runTests([
   function setIndividualProxies() {
@@ -31,7 +31,7 @@ chrome.test.runTests([
       socksProxy: socksProxy,
     };
 
-    var config = { rules: rules };
+    var config = { rules: rules, mode: "fixed_servers" };
     chrome.experimental.proxy.useCustomProxySettings(config);
     chrome.test.succeed();
   }

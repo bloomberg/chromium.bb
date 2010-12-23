@@ -133,8 +133,8 @@ class PrefValueStoreTest : public testing::Test {
                                               Value::TYPE_LIST);
     pref_value_store_->RegisterPreferenceType(prefs::kDefaultPref,
                                               Value::TYPE_INTEGER);
-    pref_value_store_->RegisterPreferenceType(prefs::kProxyAutoDetect,
-                                              Value::TYPE_BOOLEAN);
+    pref_value_store_->RegisterPreferenceType(prefs::kProxyMode,
+                                              Value::TYPE_INTEGER);
   }
 
   // Creates a new dictionary and stores some sample user preferences

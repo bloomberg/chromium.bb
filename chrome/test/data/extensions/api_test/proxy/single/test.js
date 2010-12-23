@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // proxy api test
-// browser_tests.exe --gtest_filter=ExtensionApiTest.ProxyManualSingle
+// browser_tests.exe --gtest_filter=ExtensionApiTest.ProxyFixedSingle
 
 chrome.test.runTests([
   function setSingleProxy() {
@@ -29,7 +29,7 @@ chrome.test.runTests([
       socksProxy: socksProxy,
     };
 
-    var config = { rules: rules };
+    var config = { rules: rules, mode: "fixed_servers" };
     chrome.experimental.proxy.useCustomProxySettings(config);
     chrome.test.succeed();
   }

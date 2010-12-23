@@ -7,6 +7,7 @@
 #include "app/app_switches.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 
@@ -25,8 +26,6 @@ const CommandLinePrefStore::StringSwitchToPreferenceMapEntry
 
 const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
     CommandLinePrefStore::boolean_switch_map_[] = {
-      { switches::kNoProxyServer, prefs::kNoProxyServer, true },
-      { switches::kProxyAutoDetect, prefs::kProxyAutoDetect, true },
       { switches::kDisableAuthNegotiateCnameLookup,
           prefs::kDisableAuthNegotiateCnameLookup, true },
       { switches::kEnableAuthNegotiatePort, prefs::kEnableAuthNegotiatePort,
@@ -37,6 +36,7 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
 CommandLinePrefStore::CommandLinePrefStore(const CommandLine* command_line)
     : command_line_(command_line) {
   ApplySimpleSwitches();
+  ApplyProxyMode();
   ValidateProxySwitches();
 }
 
@@ -72,4 +72,20 @@ bool CommandLinePrefStore::ValidateProxySwitches() {
     return false;
   }
   return true;
+}
+
+void CommandLinePrefStore::ApplyProxyMode() {
+  if (command_line_->HasSwitch(switches::kNoProxyServer)) {
+    SetValue(prefs::kProxyMode,
+             Value::CreateIntegerValue(ProxyPrefs::MODE_DIRECT));
+  } else if (command_line_->HasSwitch(switches::kProxyPacUrl)) {
+    SetValue(prefs::kProxyMode,
+             Value::CreateIntegerValue(ProxyPrefs::MODE_PAC_SCRIPT));
+  } else if (command_line_->HasSwitch(switches::kProxyAutoDetect)) {
+    SetValue(prefs::kProxyMode,
+             Value::CreateIntegerValue(ProxyPrefs::MODE_AUTO_DETECT));
+  } else if (command_line_->HasSwitch(switches::kProxyServer)) {
+    SetValue(prefs::kProxyMode,
+             Value::CreateIntegerValue(ProxyPrefs::MODE_FIXED_SERVERS));
+  }
 }

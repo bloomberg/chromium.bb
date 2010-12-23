@@ -7,6 +7,7 @@
 #include "base/file_path.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
+#include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/chrome_switches.h"
 
@@ -96,7 +97,7 @@ TEST_P(ConfigurationPolicyPrefStoreStringTest, GetDefault) {
 
 TEST_P(ConfigurationPolicyPrefStoreStringTest, SetValue) {
   store_.Apply(GetParam().type(),
-              Value::CreateStringValue("http://chromium.org"));
+               Value::CreateStringValue("http://chromium.org"));
   std::string result;
   EXPECT_TRUE(store_.prefs()->GetString(GetParam().pref_name(), &result));
   EXPECT_EQ(result, "http://chromium.org");
@@ -108,12 +109,6 @@ INSTANTIATE_TEST_CASE_P(
     testing::Values(
         TypeAndName(kPolicyHomePage,
                     prefs::kHomePage),
-        TypeAndName(kPolicyProxyServer,
-                    prefs::kProxyServer),
-        TypeAndName(kPolicyProxyPacUrl,
-                    prefs::kProxyPacUrl),
-        TypeAndName(kPolicyProxyBypassList,
-                    prefs::kProxyBypassList),
         TypeAndName(kPolicyApplicationLocale,
                     prefs::kApplicationLocale),
         TypeAndName(kPolicyApplicationLocale,
@@ -225,6 +220,44 @@ INSTANTIATE_TEST_CASE_P(
 
 // Test cases for the proxy policy settings.
 class ConfigurationPolicyPrefStoreProxyTest : public testing::Test {
+ protected:
+  // Verify that all the proxy prefs are set to the specified expected values.
+  static void VerifyProxyPrefs(
+      const ConfigurationPolicyPrefStore& store,
+      const std::string& expected_proxy_server,
+      const std::string& expected_proxy_pac_url,
+      const std::string& expected_proxy_bypass_list,
+      const ProxyPrefs::ProxyMode& expected_proxy_mode) {
+    std::string string_result;
+
+    if (expected_proxy_server.empty()) {
+      EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyServer,
+                                            &string_result));
+    } else {
+      EXPECT_TRUE(store.prefs()->GetString(prefs::kProxyServer,
+                                           &string_result));
+      EXPECT_EQ(expected_proxy_server, string_result);
+    }
+    if (expected_proxy_pac_url.empty()) {
+      EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyPacUrl,
+                                            &string_result));
+    } else {
+      EXPECT_TRUE(store.prefs()->GetString(prefs::kProxyPacUrl,
+                                           &string_result));
+      EXPECT_EQ(expected_proxy_pac_url, string_result);
+    }
+    if (expected_proxy_bypass_list.empty()) {
+      EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyBypassList,
+                                            &string_result));
+    } else {
+      EXPECT_TRUE(store.prefs()->GetString(prefs::kProxyBypassList,
+                  &string_result));
+      EXPECT_EQ(expected_proxy_bypass_list, string_result);
+    }
+    int int_result = -1;
+    EXPECT_TRUE(store.prefs()->GetInteger(prefs::kProxyMode, &int_result));
+    EXPECT_EQ(expected_proxy_mode, int_result);
+  }
 };
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, ManualOptions) {
@@ -232,140 +265,95 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, ManualOptions) {
       new MockConfigurationPolicyProvider());
   provider->AddPolicy(kPolicyProxyBypassList,
                       Value::CreateStringValue("http://chromium.org/override"));
-  provider->AddPolicy(kPolicyProxyPacUrl,
-                      Value::CreateStringValue("http://short.org/proxy.pac"));
   provider->AddPolicy(kPolicyProxyServer,
                       Value::CreateStringValue("chromium.org"));
-  provider->AddPolicy(kPolicyProxyServerMode,
+  provider->AddPolicy(kPolicyProxyMode,
                       Value::CreateIntegerValue(
                           kPolicyManuallyConfiguredProxyMode));
 
   ConfigurationPolicyPrefStore store(provider.get());
+  VerifyProxyPrefs(
+      store, "chromium.org", "", "http://chromium.org/override",
+      ProxyPrefs::MODE_FIXED_SERVERS);
+}
 
-  std::string string_result;
-  EXPECT_TRUE(store.prefs()->GetString(prefs::kProxyBypassList,
-                                       &string_result));
-  EXPECT_EQ("http://chromium.org/override", string_result);
-  EXPECT_TRUE(store.prefs()->GetString(prefs::kProxyPacUrl, &string_result));
-  EXPECT_EQ("http://short.org/proxy.pac", string_result);
-  EXPECT_TRUE(store.prefs()->GetString(prefs::kProxyServer, &string_result));
-  EXPECT_EQ("chromium.org", string_result);
-  bool bool_result;
-  EXPECT_TRUE(store.prefs()->GetBoolean(prefs::kNoProxyServer, &bool_result));
-  EXPECT_FALSE(bool_result);
-  EXPECT_TRUE(store.prefs()->GetBoolean(prefs::kProxyAutoDetect, &bool_result));
-  EXPECT_FALSE(bool_result);
+TEST_F(ConfigurationPolicyPrefStoreProxyTest, ManualOptionsReversedApplyOrder) {
+  scoped_ptr<MockConfigurationPolicyProvider> provider(
+      new MockConfigurationPolicyProvider());
+  provider->AddPolicy(kPolicyProxyMode,
+                      Value::CreateIntegerValue(
+                          kPolicyManuallyConfiguredProxyMode));
+  provider->AddPolicy(kPolicyProxyBypassList,
+                      Value::CreateStringValue("http://chromium.org/override"));
+  provider->AddPolicy(kPolicyProxyServer,
+                      Value::CreateStringValue("chromium.org"));
+
+  ConfigurationPolicyPrefStore store(provider.get());
+  VerifyProxyPrefs(
+      store, "chromium.org", "", "http://chromium.org/override",
+      ProxyPrefs::MODE_FIXED_SERVERS);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, NoProxy) {
   scoped_ptr<MockConfigurationPolicyProvider> provider(
       new MockConfigurationPolicyProvider());
-  provider->AddPolicy(kPolicyProxyBypassList,
-                      Value::CreateStringValue("http://chromium.org/override"));
-  provider->AddPolicy(kPolicyProxyServerMode,
-                      Value::CreateIntegerValue(
-                          kPolicyNoProxyServerMode));
+  provider->AddPolicy(kPolicyProxyMode,
+                      Value::CreateIntegerValue(kPolicyNoProxyServerMode));
 
   ConfigurationPolicyPrefStore store(provider.get());
-
-  std::string string_result;
-  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyBypassList,
-                                        &string_result));
-  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyPacUrl, &string_result));
-  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyServer, &string_result));
-  bool bool_result;
-  EXPECT_TRUE(store.prefs()->GetBoolean(prefs::kNoProxyServer, &bool_result));
-  EXPECT_TRUE(bool_result);
-  EXPECT_TRUE(store.prefs()->GetBoolean(prefs::kProxyAutoDetect, &bool_result));
-  EXPECT_FALSE(bool_result);
-}
-
-TEST_F(ConfigurationPolicyPrefStoreProxyTest, NoProxyReversedApplyOrder) {
-  scoped_ptr<MockConfigurationPolicyProvider> provider(
-      new MockConfigurationPolicyProvider());
-  provider->AddPolicy(kPolicyProxyServerMode,
-                      Value::CreateIntegerValue(
-                          kPolicyNoProxyServerMode));
-  provider->AddPolicy(kPolicyProxyBypassList,
-                      Value::CreateStringValue("http://chromium.org/override"));
-
-  ConfigurationPolicyPrefStore store(provider.get());
-
-  std::string string_result;
-  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyBypassList,
-                                        &string_result));
-  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyPacUrl, &string_result));
-  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyServer, &string_result));
-  bool bool_result;
-  EXPECT_TRUE(store.prefs()->GetBoolean(prefs::kNoProxyServer, &bool_result));
-  EXPECT_TRUE(bool_result);
-  EXPECT_TRUE(store.prefs()->GetBoolean(prefs::kProxyAutoDetect, &bool_result));
-  EXPECT_FALSE(bool_result);
+  VerifyProxyPrefs(store, "", "", "", ProxyPrefs::MODE_DIRECT);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, AutoDetect) {
   scoped_ptr<MockConfigurationPolicyProvider> provider(
       new MockConfigurationPolicyProvider());
-  provider->AddPolicy(kPolicyProxyServerMode,
-                      Value::CreateIntegerValue(
-                          kPolicyAutoDetectProxyMode));
+  provider->AddPolicy(kPolicyProxyMode,
+                      Value::CreateIntegerValue(kPolicyAutoDetectProxyMode));
 
   ConfigurationPolicyPrefStore store(provider.get());
+  VerifyProxyPrefs(store, "", "", "", ProxyPrefs::MODE_AUTO_DETECT);
+}
 
-  std::string string_result;
-  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyBypassList,
-                                        &string_result));
-  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyPacUrl, &string_result));
-  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyServer, &string_result));
-  bool bool_result;
-  EXPECT_TRUE(store.prefs()->GetBoolean(prefs::kNoProxyServer, &bool_result));
-  EXPECT_FALSE(bool_result);
-  EXPECT_TRUE(store.prefs()->GetBoolean(prefs::kProxyAutoDetect, &bool_result));
-  EXPECT_TRUE(bool_result);
+TEST_F(ConfigurationPolicyPrefStoreProxyTest, AutoDetectPac) {
+  scoped_ptr<MockConfigurationPolicyProvider> provider(
+      new MockConfigurationPolicyProvider());
+  provider->AddPolicy(kPolicyProxyPacUrl,
+                      Value::CreateStringValue("http://short.org/proxy.pac"));
+  provider->AddPolicy(kPolicyProxyMode,
+                      Value::CreateIntegerValue(kPolicyAutoDetectProxyMode));
+
+  ConfigurationPolicyPrefStore store(provider.get());
+  VerifyProxyPrefs(
+      store, "", "http://short.org/proxy.pac", "", ProxyPrefs::MODE_PAC_SCRIPT);
 }
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, UseSystem) {
   scoped_ptr<MockConfigurationPolicyProvider> provider(
       new MockConfigurationPolicyProvider());
-  provider->AddPolicy(kPolicyProxyBypassList,
-                      Value::CreateStringValue("http://chromium.org/override"));
-  provider->AddPolicy(kPolicyProxyServerMode,
-                      Value::CreateIntegerValue(
-                          kPolicyUseSystemProxyMode));
+  provider->AddPolicy(kPolicyProxyMode,
+                      Value::CreateIntegerValue(kPolicyUseSystemProxyMode));
 
   ConfigurationPolicyPrefStore store(provider.get());
-
-  std::string string_result;
-  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyBypassList,
-                                        &string_result));
-  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyPacUrl, &string_result));
-  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyServer, &string_result));
-  bool bool_result;
-  EXPECT_FALSE(store.prefs()->GetBoolean(prefs::kNoProxyServer, &bool_result));
-  EXPECT_FALSE(store.prefs()->GetBoolean(prefs::kProxyAutoDetect,
-                                         &bool_result));
+  VerifyProxyPrefs(store, "", "", "", ProxyPrefs::MODE_SYSTEM);
 }
 
-TEST_F(ConfigurationPolicyPrefStoreProxyTest, UseSystemReversedApplyOrder) {
-  scoped_ptr<MockConfigurationPolicyProvider> provider(
-      new MockConfigurationPolicyProvider());
-  provider->AddPolicy(kPolicyProxyServerMode,
-                      Value::CreateIntegerValue(
-                          kPolicyUseSystemProxyMode));
-  provider->AddPolicy(kPolicyProxyBypassList,
-                      Value::CreateStringValue("http://chromium.org/override"));
+TEST_F(ConfigurationPolicyPrefStoreProxyTest, ProxyInvalid) {
+  for (int i = 0; i < MODE_COUNT; ++i) {
+    scoped_ptr<MockConfigurationPolicyProvider> provider(
+        new MockConfigurationPolicyProvider());
+    provider->AddPolicy(kPolicyProxyMode, Value::CreateIntegerValue(i));
+    // No mode expects all three parameters being set.
+    provider->AddPolicy(kPolicyProxyPacUrl,
+                        Value::CreateStringValue("http://short.org/proxy.pac"));
+    provider->AddPolicy(kPolicyProxyBypassList,
+                        Value::CreateStringValue(
+                            "http://chromium.org/override"));
+    provider->AddPolicy(kPolicyProxyServer,
+                        Value::CreateStringValue("chromium.org"));
 
-  ConfigurationPolicyPrefStore store(provider.get());
-
-  std::string string_result;
-  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyBypassList,
-                                        &string_result));
-  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyPacUrl, &string_result));
-  EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyServer, &string_result));
-  bool bool_result;
-  EXPECT_FALSE(store.prefs()->GetBoolean(prefs::kNoProxyServer, &bool_result));
-  EXPECT_FALSE(store.prefs()->GetBoolean(prefs::kProxyAutoDetect,
-                                         &bool_result));
+    ConfigurationPolicyPrefStore store(provider.get());
+    EXPECT_FALSE(store.prefs()->HasKey(prefs::kProxyMode));
+  }
 }
 
 class ConfigurationPolicyPrefStoreDefaultSearchTest : public testing::Test {

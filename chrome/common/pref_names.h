@@ -411,8 +411,7 @@ extern const char kCloudPrintPrintSystemSettings[];
 extern const char kRemotingHasSetupCompleted[];
 extern const char kRemotingHostEnabled[];
 
-extern const char kNoProxyServer[];
-extern const char kProxyAutoDetect[];
+extern const char kProxyMode[];
 extern const char kProxyServer[];
 extern const char kProxyPacUrl[];
 extern const char kProxyBypassList[];

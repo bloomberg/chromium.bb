@@ -3636,8 +3636,12 @@
         "description": "An object encapsulating a complete proxy configuration.",
         "properties": {
           "rules": {"$ref": "ProxyRules", "optional": true, "description": "The proxy rules describing this configuration."},
-          "autoDetect": {"type": "boolean", "optional": true, "description": "True if the proxy settings sbould be detected automatically."},
-          "pacScript": {"$ref": "PacScript", "optional": true, "description": "The proxy auto-config (PAC) script for this configuration."}
+          "pacScript": {"$ref": "PacScript", "optional": true, "description": "The proxy auto-config (PAC) script for this configuration."},
+          "mode": {
+            "type": "string",
+            "enum": ["direct", "auto_detect", "pac_script", "fixed_servers", "system"],
+            "description": "'direct' = Never use a proxy<br>'auto_detect' = Auto detect proxy settings<br>'pac_script' = Use specified PAC script<br>'fixed_servers' = Manually specify proxy servers<br>'system' = Use system proxy settings"
+          }
         }
       }
     ],

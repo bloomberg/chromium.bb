@@ -56,10 +56,6 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   static const ConfigurationPolicyProvider::PolicyDefinitionList*
       GetChromePolicyDefinitionList();
 
-  // Returns the set of preference paths that can be affected by a proxy
-  // policy.
-  static void GetProxyPreferenceSet(ProxyPreferenceSet* proxy_pref_set);
-
  private:
   // Policies that map to a single preference are handled
   // by an automated converter. Each one of these policies
@@ -79,23 +75,11 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   ConfigurationPolicyProvider* provider_;
   scoped_ptr<DictionaryValue> prefs_;
 
-  // Set to false until the first proxy-relevant policy is applied. At that
-  // time, default values are provided for all proxy-relevant prefs
-  // to override any values set from stores with a lower priority.
-  bool lower_priority_proxy_settings_overridden_;
+  // Temporary cache that stores values until FinalizeProxyPolicySettings()
+  // is called.
+  std::map<ConfigurationPolicyType, Value*> proxy_policies_;
 
-  // The following are used to track what proxy-relevant policy has been applied
-  // accross calls to Apply to provide a warning if a policy specifies a
-  // contradictory proxy configuration. |proxy_disabled_| is set to true if and
-  // only if the kPolicyNoProxyServer has been applied,
-  // |proxy_configuration_specified_| is set to true if and only if any other
-  // proxy policy other than kPolicyNoProxyServer has been applied.
-  bool proxy_disabled_;
-  bool proxy_configuration_specified_;
-
-  // Set to true if a the proxy mode policy has been set to force Chrome
-  // to use the system proxy.
-  bool use_system_proxy_;
+  bool HasProxyPolicy(ConfigurationPolicyType policy) const;
 
   // Returns the map entry that corresponds to |policy| in the map.
   const PolicyToPreferenceMapEntry* FindPolicyInMap(
@@ -135,6 +119,19 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   // unspecified map entries.  Otherwise wipes all default search related
   // map entries from |prefs_|.
   void FinalizeDefaultSearchPolicySettings();
+
+  // If the required entries for the proxy settings are specified and valid,
+  // finalizes the policy-specified configuration by initializing the
+  // respective values in |prefs_|.
+  void FinalizeProxyPolicySettings();
+
+  // Returns true if the policy values stored in proxy_* represent a valid
+  // proxy configuration.
+  bool CheckProxySettings();
+
+  // Assumes CheckProxySettings returns true and applies the values stored
+  // in proxy_*.
+  void ApplyProxySettings();
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyPrefStore);
 };

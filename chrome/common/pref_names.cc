@@ -1135,11 +1135,10 @@ const char kCloudPrintPrintSystemSettings[] =
 // Used by the service process to determine if the remoting host is enabled.
 const char kRemotingHostEnabled[] = "remoting.host_enabled";
 
-// Boolean to disable proxy altogether. If true, other proxy
-// preferences are ignored.
-const char kNoProxyServer[] = "proxy.disabled";
-// Boolean specifying if proxy should be auto-detected.
-const char kProxyAutoDetect[] = "proxy.auto_detect";
+// Integer to specify the type of proxy settings.
+// See ProxyPrefs for possible values and interactions with the other proxy
+// preferences.
+const char kProxyMode[] = "proxy.mode";
 // String specifying the proxy server. For a specification of the expected
 // syntax see net::ProxyConfig::ProxyRules::ParseFromString().
 const char kProxyServer[] = "proxy.server";

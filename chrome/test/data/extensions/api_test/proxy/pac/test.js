@@ -3,12 +3,16 @@
 // found in the LICENSE file.
 
 // proxy api test
-// browser_tests.exe --gtest_filter=ExtensionApiTest.ProxyAutoSettings
+// browser_tests.exe --gtest_filter=ExtensionApiTest.ProxyPacScript
 
 chrome.test.runTests([
   function setAutoSettings() {
+    var pacScriptObject = {
+      url: "http://wpad/windows.pac"
+    };
     var config = {
-      mode: "auto_detect",
+      mode: "pac_script",
+      pacScript: pacScriptObject
     };
     chrome.experimental.proxy.useCustomProxySettings(config);
     chrome.test.succeed();

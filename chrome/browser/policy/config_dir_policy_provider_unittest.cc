@@ -259,8 +259,8 @@ INSTANTIATE_TEST_CASE_P(
             kPolicyDefaultSearchProviderEncodings,
             key::kDefaultSearchProviderEncodings),
         ValueTestParams::ForIntegerPolicy(
-            kPolicyProxyServerMode,
-            key::kProxyServerMode),
+            kPolicyProxyMode,
+            key::kProxyMode),
         ValueTestParams::ForStringPolicy(
             kPolicyProxyServer,
             key::kProxyServer),
