@@ -578,6 +578,14 @@ PAGE_CYCLER_DATABASE_TESTS("pseudo-random-transactions",
                            PseudoRandomTransactions);
 #endif
 
+#if defined(OS_WIN)
+#ifndef NDEBUG
+// Disabled in debug builds on Windows.
+// Bug http://code.google.com/p/chromium/issues/detail?id=67918
+#define BasicInsert DISABLED_BasicInsert
+#endif  // NDEBUG
+#endif  //  OS_WIN
+
 // Indexed DB tests.
 PAGE_CYCLER_IDB_TESTS("basic_insert", BasicInsert);
 
