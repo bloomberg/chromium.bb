@@ -26,8 +26,6 @@
 #include "chrome/test/webdriver/utility_functions.h"
 #include "chrome/test/webdriver/commands/create_session.h"
 #include "chrome/test/webdriver/commands/execute_command.h"
-#include "chrome/test/webdriver/commands/find_element_commands.h"
-#include "chrome/test/webdriver/commands/implicit_wait_command.h"
 #include "chrome/test/webdriver/commands/navigate_commands.h"
 #include "chrome/test/webdriver/commands/session_with_id.h"
 #include "chrome/test/webdriver/commands/source_command.h"
@@ -70,13 +68,6 @@ void InitCallbacks(struct mg_context* ctx) {
   SetCallback<URLCommand>(ctx,      "/session/*/url");
   SetCallback<SpeedCommand>(ctx,    "/session/*/speed");
 
-  // WebElement commands
-  SetCallback<ImplicitWaitCommand>(ctx, "/session/*/timeouts/implicit_wait");
-  SetCallback<FindOneElementCommand>(ctx,   "/session/*/element");
-  SetCallback<FindManyElementsCommand>(ctx, "/session/*/elements");
-  SetCallback<FindOneElementCommand>(ctx,   "/session/*/element/*/element");
-  SetCallback<FindManyElementsCommand>(ctx, "/session/*/elements/*/elements");
-
   // Since the /session/* is a wild card that would match the above URIs, this
   // line MUST be the last registered URI with the server.
   SetCallback<SessionWithID>(ctx, "/session/*");
@@ -89,7 +80,7 @@ void InitCallbacks(struct mg_context* ctx) {
 int main(int argc, char *argv[]) {
   struct mg_context *ctx;
   base::AtExitManager exit;
-  std::string port = "9515";
+  std::string port = "8080";
 #ifdef OS_POSIX
   CommandLine cmd_line = CommandLine(argc, argv);
 #elif OS_WIN
@@ -119,14 +110,14 @@ int main(int argc, char *argv[]) {
   session->SetIPAddress(port);
 
   // Initialize SHTTPD context.
-  // Listen on port 9515 or port specified on command line.
-  // TODO(jmikhail) Maybe add port 9516 as a secure connection.
+  // Listen on port 8080 or port specified on command line.
+  // TODO(jmikhail) Maybe add port 8081 as a secure connection.
   ctx = mg_start();
   mg_set_option(ctx, "ports", port.c_str());
 
   webdriver::InitCallbacks(ctx);
 
-  std::cout << "Starting server on port: " << port << std::endl;
+  std::cout << "Starting server" << std::endl;
   // The default behavior is to run this service forever.
   while (true)
     PlatformThread::Sleep(3600);

@@ -173,17 +173,6 @@ class WebDriver(object):
         resp = self._execute(Command.GET_TITLE)
         return resp['value']
 
-    def set_implicit_wait(self, wait):
-        """Set the amount of time the driver should wait when searching for
-        elements. When searching for a single element, the driver should poll
-        the page until an element is found or the timeout expires, whichever
-        occurs first. When searching for multiple elements, the driver should
-        poll the page until at least one element is found or the timeout
-        expires, at which point it should return an empty list. If this
-        command is never sent, the driver should default to an implicit wait
-        of 0ms."""
-        self._execute(Command.IMPLICIT_WAIT, {'ms': wait})
-
     def find_element_by_id(self, id_):
         """Finds element by id."""
         return self._find_element_by("id", id_)
