@@ -134,7 +134,7 @@ TEST_F(ExtensionTestSimpleApiCall, FLAKY_RunTest) {
   EXPECT_CALL(*mock_, OnForwardMessageToExternalHost(
       _, keys::kAutomationOrigin, keys::kAutomationRequestTarget))
       .WillOnce(DoAll(
-        SaveArg<1>(&message_received),
+        SaveArg<0>(&message_received),
         InvokeWithoutArgs(
             CreateFunctor(&loop_, &TimedMessageLoopRunner::Quit))));
 
@@ -285,7 +285,7 @@ TEST_F(ExtensionTestRoundtripApiCall, FLAKY_RunTest) {
   EXPECT_CALL(*mock_, OnForwardMessageToExternalHost(
     _, keys::kAutomationOrigin, keys::kAutomationRequestTarget))
     .Times(2)
-    .WillRepeatedly(WithArgs<1>(Invoke(
+    .WillRepeatedly(WithArgs<0>(Invoke(
         CreateFunctor(this,
             &ExtensionTestRoundtripApiCall::CheckAndSendResponse))));
 
@@ -472,7 +472,7 @@ TEST_F(ExtensionTestBrowserEvents, FLAKY_RunTest) {
 
   EXPECT_CALL(*mock_, OnForwardMessageToExternalHost(
     _, keys::kAutomationOrigin, _))
-    .WillRepeatedly(WithArgs<1, 2>(Invoke(
+    .WillRepeatedly(WithArgs<0, 2>(Invoke(
         CreateFunctor(this,
             &ExtensionTestBrowserEvents::HandleMessageFromChrome))));
 
