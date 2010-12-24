@@ -34,6 +34,7 @@ class ClientSocketFactory;
 class DnsRRResolver;
 class HostResolver;
 class HttpAuthHandlerFactory;
+class HttpTransactionFactory;
 class ProxyScriptFetcher;
 class ProxyService;
 class SSLConfigService;
@@ -53,6 +54,8 @@ class IOThread : public BrowserProcessSubThread {
     scoped_refptr<net::SSLConfigService> ssl_config_service;
     scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory;
     scoped_refptr<net::ProxyService> proxy_script_fetcher_proxy_service;
+    scoped_ptr<net::HttpTransactionFactory>
+        proxy_script_fetcher_http_transaction_factory;
     scoped_ptr<net::URLSecurityManager> url_security_manager;
     ChromeNetworkDelegate network_delegate;
     scoped_refptr<URLRequestContext> proxy_script_fetcher_context;

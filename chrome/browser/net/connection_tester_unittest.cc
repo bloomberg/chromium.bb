@@ -117,7 +117,7 @@ class ConnectionTesterTest : public PlatformTest {
     proxy_service_ = net::ProxyService::CreateDirect();
     proxy_script_fetcher_context_->set_proxy_service(proxy_service_);
     ssl_config_service_ = net::SSLConfigService::CreateSystemSSLConfigService();
-    proxy_script_fetcher_context_->set_http_transaction_factory(
+    http_transaction_factory_.reset(
         new net::HttpNetworkLayer(
             client_socket_factory_,
             &host_resolver_,
@@ -131,6 +131,8 @@ class ConnectionTesterTest : public PlatformTest {
             &http_auth_handler_factory_,
             NULL /* NetworkDelegate */,
             NULL /* NetLog */));
+    proxy_script_fetcher_context_->set_http_transaction_factory(
+        http_transaction_factory_.get());
     // In-memory cookie store.
     proxy_script_fetcher_context_->set_cookie_store(
         new net::CookieMonster(NULL, NULL));

@@ -189,19 +189,7 @@ ConstructProxyScriptFetcherContext(IOThread::Globals* globals,
       globals->http_auth_handler_factory.get());
   context->set_proxy_service(globals->proxy_script_fetcher_proxy_service.get());
   context->set_http_transaction_factory(
-      new net::HttpNetworkLayer(
-          globals->client_socket_factory,
-          globals->host_resolver.get(),
-          globals->cert_verifier.get(),
-          globals->dnsrr_resolver.get(),
-          NULL /* dns_cert_checker */,
-          NULL /* ssl_host_info_factory */,
-          globals->proxy_script_fetcher_proxy_service.get(),
-          globals->ssl_config_service.get(),
-          new net::SpdySessionPool(globals->ssl_config_service.get()),
-          globals->http_auth_handler_factory.get(),
-          &globals->network_delegate,
-          net_log));
+      globals->proxy_script_fetcher_http_transaction_factory.get());
   // In-memory cookie store.
   context->set_cookie_store(new net::CookieMonster(NULL, NULL));
   return context;
@@ -345,6 +333,20 @@ void IOThread::Init() {
   // For the ProxyScriptFetcher, we use a direct ProxyService.
   globals_->proxy_script_fetcher_proxy_service =
       net::ProxyService::CreateDirectWithNetLog(net_log_);
+  globals_->proxy_script_fetcher_http_transaction_factory.reset(
+      new net::HttpNetworkLayer(
+          globals_->client_socket_factory,
+          globals_->host_resolver.get(),
+          globals_->cert_verifier.get(),
+          globals_->dnsrr_resolver.get(),
+          NULL /* dns_cert_checker */,
+          NULL /* ssl_host_info_factory */,
+          globals_->proxy_script_fetcher_proxy_service.get(),
+          globals_->ssl_config_service.get(),
+          new net::SpdySessionPool(globals_->ssl_config_service.get()),
+          globals_->http_auth_handler_factory.get(),
+          &globals_->network_delegate,
+          net_log_));
 
   scoped_refptr<URLRequestContext> proxy_script_fetcher_context =
       ConstructProxyScriptFetcherContext(globals_, net_log_);
