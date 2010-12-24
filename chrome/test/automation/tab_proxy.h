@@ -48,7 +48,9 @@ class TabProxy : public AutomationResourceProxy,
  public:
   class TabProxyDelegate {
    public:
-    virtual bool OnMessageReceived(TabProxy* tab, const IPC::Message& msg) {}
+    virtual bool OnMessageReceived(TabProxy* tab, const IPC::Message& msg) {
+      return false;
+    }
     virtual void OnChannelError(TabProxy* tab) {}
 
    protected:
