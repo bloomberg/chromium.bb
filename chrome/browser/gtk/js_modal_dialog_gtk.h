@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_GTK_JS_MODAL_DIALOG_GTK_H_
 #pragma once
 
-#include <gtk/gtk.h>
-
 #include "app/gtk_signal.h"
-#include "base/logging.h"
+#include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 #include "gfx/native_widget_types.h"
+
+typedef struct _GtkWidget GtkWidget;
 
 class JavaScriptAppModalDialog;
 
@@ -31,9 +31,7 @@ class JSModalDialogGtk : public NativeAppModalDialog {
   virtual void CancelAppModalDialog();
 
  private:
-  void HandleDialogResponse(GtkDialog* dialog, gint response_id);
-  static void OnDialogResponse(GtkDialog* gtk_dialog, gint response_id,
-                               JSModalDialogGtk* dialog);
+  CHROMEGTK_CALLBACK_1(JSModalDialogGtk, void, OnDialogResponse, int);
 
   scoped_ptr<JavaScriptAppModalDialog> dialog_;
   GtkWidget* gtk_dialog_;
@@ -42,4 +40,3 @@ class JSModalDialogGtk : public NativeAppModalDialog {
 };
 
 #endif  // CHROME_BROWSER_GTK_JS_MODAL_DIALOG_GTK_H_
-

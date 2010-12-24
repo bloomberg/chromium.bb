@@ -135,8 +135,7 @@ JSModalDialogGtk::JSModalDialogGtk(JavaScriptAppModalDialog* dialog,
 
   gtk_dialog_set_default_response(GTK_DIALOG(gtk_dialog_), GTK_RESPONSE_OK);
   g_signal_connect(gtk_dialog_, "response",
-      G_CALLBACK(JSModalDialogGtk::OnDialogResponse),
-      reinterpret_cast<JSModalDialogGtk*>(this));
+                   G_CALLBACK(OnDialogResponseThunk), this);
 }
 
 JSModalDialogGtk::~JSModalDialogGtk() {
@@ -174,32 +173,33 @@ void JSModalDialogGtk::ActivateAppModalDialog() {
 
 void JSModalDialogGtk::CloseAppModalDialog() {
   DCHECK(gtk_dialog_);
-  HandleDialogResponse(GTK_DIALOG(gtk_dialog_), GTK_RESPONSE_DELETE_EVENT);
+  OnDialogResponse(gtk_dialog_, GTK_RESPONSE_DELETE_EVENT);
 }
 
 void JSModalDialogGtk::AcceptAppModalDialog() {
-  HandleDialogResponse(GTK_DIALOG(gtk_dialog_), GTK_RESPONSE_OK);
+  OnDialogResponse(gtk_dialog_, GTK_RESPONSE_OK);
 }
 
 void JSModalDialogGtk::CancelAppModalDialog() {
-  HandleDialogResponse(GTK_DIALOG(gtk_dialog_), GTK_RESPONSE_CANCEL);
+  OnDialogResponse(gtk_dialog_, GTK_RESPONSE_CANCEL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // JSModalDialogGtk, private:
 
-void JSModalDialogGtk::HandleDialogResponse(GtkDialog* dialog,
-                                            gint response_id) {
+void JSModalDialogGtk::OnDialogResponse(GtkWidget* dialog,
+                                        int response_id) {
   switch (response_id) {
     case GTK_RESPONSE_OK:
       // The first arg is the prompt text and the second is true if we want to
       // suppress additional popups from the page.
-      dialog_->OnAccept(GetPromptText(dialog), ShouldSuppressJSDialogs(dialog));
+      dialog_->OnAccept(GetPromptText(GTK_DIALOG(dialog)),
+                        ShouldSuppressJSDialogs(GTK_DIALOG(dialog)));
       break;
 
     case GTK_RESPONSE_CANCEL:
     case GTK_RESPONSE_DELETE_EVENT:   // User hit the X on the dialog.
-      dialog_->OnCancel(ShouldSuppressJSDialogs(dialog));
+      dialog_->OnCancel(ShouldSuppressJSDialogs(GTK_DIALOG(dialog)));
       break;
 
     default:
@@ -213,13 +213,6 @@ void JSModalDialogGtk::HandleDialogResponse(GtkDialog* dialog,
   delete this;
 }
 
-// static
-void JSModalDialogGtk::OnDialogResponse(GtkDialog* gtk_dialog,
-                                        gint response_id,
-                                        JSModalDialogGtk* dialog) {
-  dialog->HandleDialogResponse(gtk_dialog, response_id);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // NativeAppModalDialog, public:
 
@@ -229,5 +222,3 @@ NativeAppModalDialog* NativeAppModalDialog::CreateNativeJavaScriptPrompt(
     gfx::NativeWindow parent_window) {
   return new JSModalDialogGtk(dialog, parent_window);
 }
-
-
