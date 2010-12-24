@@ -1168,19 +1168,20 @@ bool ChromeFrameAutomationClient::ProcessUrlRequestMessage(TabProxy* tab,
 // kind of beings.
 // By default we marshal the IPC message to the main/GUI thread and from there
 // we safely invoke chrome_frame_delegate_->OnMessageReceived(msg).
-void ChromeFrameAutomationClient::OnMessageReceived(TabProxy* tab,
+bool ChromeFrameAutomationClient::OnMessageReceived(TabProxy* tab,
                                                     const IPC::Message& msg) {
   DCHECK(tab == tab_.get());
   // Quickly process network related messages.
   if (url_fetcher_ && ProcessUrlRequestMessage(tab, msg, false))
-    return;
+    return true;
 
   // Early check to avoid needless marshaling
   if (chrome_frame_delegate_ == NULL)
-    return;
+    return false;
 
   PostTask(FROM_HERE, NewRunnableMethod(this,
       &ChromeFrameAutomationClient::OnMessageReceivedUIThread, msg));
+  return true;
 }
 
 void ChromeFrameAutomationClient::OnChannelError(TabProxy* tab) {

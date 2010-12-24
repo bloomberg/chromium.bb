@@ -54,7 +54,7 @@ class TestSink : public IPC::Channel {
 
   // Used by the source of the messages to send the message to the sink. This
   // will make a copy of the message and store it in the list.
-  void OnMessageReceived(const Message& msg);
+  bool OnMessageReceived(const Message& msg);
 
   // Returns the number of messages in the queue.
   size_t message_count() const { return messages_.size(); }
