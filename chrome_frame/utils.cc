@@ -415,7 +415,7 @@ uint32 GetIEMajorVersion() {
     wchar_t exe_path[MAX_PATH];
     HMODULE mod = GetModuleHandle(NULL);
     GetModuleFileName(mod, exe_path, arraysize(exe_path) - 1);
-    std::wstring exe_name(file_util::GetFilenameFromPath(exe_path));
+    std::wstring exe_name = FilePath(exe_path).BaseName().value();
     if (!LowerCaseEqualsASCII(exe_name, kIEImageName)) {
       ie_major_version = 0;
     } else {
