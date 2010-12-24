@@ -4,8 +4,10 @@ HttpNetworkLayerTest.GET
 
 # TODO(timurrrr): investigate these
 ClientSocketPoolBaseTest.*
+CookieMonsterTest.GarbageCollectionTriggers
 SSLClientSocketTest.*
 ProxyResolverJS*
+ProxyResolverV8Test.*
 X509CertificateTest.*
 UrlToFilenameEncoderTest.*
 DirectoryListerTest.*
