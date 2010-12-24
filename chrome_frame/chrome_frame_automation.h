@@ -459,7 +459,7 @@ class ChromeFrameAutomationClient
   virtual void AutomationServerDied();
 
   // TabProxyDelegate implementation
-  virtual void OnMessageReceived(TabProxy* tab, const IPC::Message& msg);
+  virtual bool OnMessageReceived(TabProxy* tab, const IPC::Message& msg);
   virtual void OnChannelError(TabProxy* tab);
 
   void CreateExternalTab();
