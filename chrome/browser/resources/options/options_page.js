@@ -48,9 +48,26 @@ cr.define('options', function() {
    */
   OptionsPage.showPageByName = function(pageName) {
     var targetPage = this.registeredPages[pageName];
+
+    // Determine if the root page is 'sticky', meaning that it
+    // shouldn't change when showing a sub-page.  This can happen for special
+    // pages like Search.
+    var rootPage = null;
+    for (var name in this.registeredPages) {
+      var page = this.registeredPages[name];
+      if (page.visible && !page.parentPage) {
+        rootPage = page;
+        break;
+      }
+    }
+    var isRootPageLocked =
+        rootPage && rootPage.sticky && targetPage.parentPage;
+
     // Notify pages if they will be hidden.
     for (var name in this.registeredPages) {
       var page = this.registeredPages[name];
+      if (!page.parentPage && isRootPageLocked)
+        continue;
       if (page.willHidePage && name != pageName &&
           !page.isAncestorOfPage(targetPage))
         page.willHidePage();
@@ -59,6 +76,8 @@ cr.define('options', function() {
     // Update visibilities to show only the hierarchy of the target page.
     for (var name in this.registeredPages) {
       var page = this.registeredPages[name];
+      if (!page.parentPage && isRootPageLocked)
+        continue;
       page.visible = name == pageName ||
           (document.documentElement.getAttribute('hide-menu') != 'true' &&
            page.isAncestorOfPage(targetPage));
@@ -67,7 +86,10 @@ cr.define('options', function() {
     // Notify pages if they were shown.
     for (var name in this.registeredPages) {
       var page = this.registeredPages[name];
-      if (name == pageName && page.didShowPage)
+      if (!page.parentPage && isRootPageLocked)
+        continue;
+      if (page.didShowPage && (name == pageName ||
+          page.isAncestorOfPage(targetPage)))
         page.didShowPage();
     }
   };
@@ -215,12 +237,39 @@ cr.define('options', function() {
   };
 
   /**
-   * Registers a new Sub tab page.
-   * @param {OptionsPage} page Page to register.
+   * Find an enclosing section for an element if it exists.
+   * @param {Element} element Element to search.
+   * @return {OptionPage} The section element, or null.
+   * @private
    */
-  OptionsPage.registerSubPage = function(subPage, parentPage) {
+  OptionsPage.findSectionForNode_ = function(node) {
+    while (node = node.parentNode) {
+      if (node.nodeName == 'SECTION')
+        return node;
+    }
+    return null;
+  };
+
+  /**
+   * Registers a new Sub-page.
+   * @param {OptionsPage} subPage Sub-page to register.
+   * @param {OptionsPage} parentPage Associated parent page for this page.
+   * @param {Array} associatedControls Array of control elements that lead to
+   *     this sub-page.  The first item is typically a button in a root-level
+   *     page.  There may be additional buttons for nested sub-pages.
+   */
+  OptionsPage.registerSubPage = function(subPage,
+                                         parentPage,
+                                         associatedControls) {
     this.registeredPages[subPage.name] = subPage;
     subPage.parentPage = parentPage;
+    if (associatedControls) {
+      subPage.associatedControls = associatedControls;
+      if (associatedControls.length) {
+        subPage.associatedSection =
+            this.findSectionForNode_(associatedControls[0]);
+      }
+    }
     subPage.tab = undefined;
     subPage.initializePage();
   };
@@ -228,10 +277,19 @@ cr.define('options', function() {
   /**
    * Registers a new Overlay page.
    * @param {OptionsPage} page Page to register, must be a class derived from
-   * OptionsPage.
+   * @param {Array} associatedControls Array of control elements associated with
+   *   this page.
    */
-  OptionsPage.registerOverlay = function(page) {
+  OptionsPage.registerOverlay = function(page,
+                                         associatedControls) {
     this.registeredOverlayPages[page.name] = page;
+    if (associatedControls) {
+      page.associatedControls = associatedControls;
+      if (associatedControls.length) {
+        page.associatedSection =
+            this.findSectionForNode_(associatedControls[0]);
+      }
+    }
     page.tab = undefined;
     page.isOverlay = true;
     page.initializePage();
@@ -321,6 +379,20 @@ cr.define('options', function() {
     parentPage: null,
 
     /**
+     * The section on the parent page that is associated with this page.
+     * Can be null.
+     * @type {Element}
+     */
+    associatedSection: null,
+
+    /**
+     * An array of controls that are associated with this page.  The first
+     * control should be located on a top-level page.
+     * @type {OptionsPage}
+     */
+    associatedControls: null,
+
+    /**
      * Initializes page content.
      */
     initializePage: function() {},
@@ -406,8 +478,8 @@ cr.define('options', function() {
     },
 
     /**
-     * Gets the nesting level of this page.
-     * @return {number} The nesting level of this page (0 for top-level page)
+     * The nesting level of this page.
+     * @type {number} The nesting level of this page (0 for top-level page)
      */
     get nestingLevel() {
       var level = 0;
@@ -417,6 +489,15 @@ cr.define('options', function() {
         parent = parent.parentPage;
       }
       return level;
+    },
+
+    /**
+     * Whether the page is considered 'sticky', such that it will
+     * remain a top-level page even if sub-pages change.
+     * @type {boolean} True if this page is sticky.
+     */
+    get sticky() {
+      return false;
     },
 
     /**

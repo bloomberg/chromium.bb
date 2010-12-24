@@ -54,20 +54,25 @@ function load() {
 
   OptionsPage.register(BrowserOptions.getInstance());
   OptionsPage.registerSubPage(SearchEngineManager.getInstance(),
-                              BrowserOptions.getInstance());
+                              BrowserOptions.getInstance(),
+                              [$('defaultSearchManageEnginesButton')]);
   OptionsPage.registerSubPage(StartupPageManager.getInstance(),
-                              BrowserOptions.getInstance());
+                              BrowserOptions.getInstance(),
+                              [$('startupPageManagerButton')]);
   OptionsPage.register(PersonalOptions.getInstance());
   OptionsPage.registerSubPage(AutoFillOptions.getInstance(),
-                              PersonalOptions.getInstance());
+                              PersonalOptions.getInstance(),
+                              [$('autofill-settings')]);
   OptionsPage.registerSubPage(PasswordManager.getInstance(),
-                              PersonalOptions.getInstance());
+                              PersonalOptions.getInstance(),
+                              [$('manage-passwords')]);
   if (cr.isChromeOS) {
     OptionsPage.register(SystemOptions.getInstance());
     OptionsPage.registerSubPage(AboutPage.getInstance(),
                                 SystemOptions.getInstance());
     OptionsPage.registerSubPage(LanguageOptions.getInstance(),
-                                SystemOptions.getInstance());
+                                SystemOptions.getInstance(),
+                                [$('language-button')]);
     OptionsPage.registerSubPage(
         new OptionsPage('languageChewing',
                         localStrings.getString('languageChewingPage'),
@@ -92,16 +97,21 @@ function load() {
   }
   OptionsPage.register(AdvancedOptions.getInstance());
   OptionsPage.registerSubPage(ContentSettings.getInstance(),
-                              AdvancedOptions.getInstance());
+                              AdvancedOptions.getInstance(),
+                              [$('privacyContentSettingsButton')]);
   OptionsPage.registerSubPage(ContentSettingsExceptionsArea.getInstance(),
                               ContentSettings.getInstance());
   OptionsPage.registerSubPage(CookiesView.getInstance(),
-                              ContentSettings.getInstance());
+                              ContentSettings.getInstance(),
+                              [$('privacyContentSettingsButton'),
+                               $('show-cookies-button')]);
   OptionsPage.registerSubPage(FontSettings.getInstance(),
-                              AdvancedOptions.getInstance());
+                              AdvancedOptions.getInstance(),
+                              [$('fontSettingsCustomizeFontsButton')]);
   if (!cr.isWindows && !cr.isMac) {
     OptionsPage.registerSubPage(CertificateManager.getInstance(),
-                                AdvancedOptions.getInstance());
+                                AdvancedOptions.getInstance(),
+                                [$('show-cookies-button')]);
     OptionsPage.registerOverlay(CertificateRestoreOverlay.getInstance());
     OptionsPage.registerOverlay(CertificateBackupOverlay.getInstance());
     OptionsPage.registerOverlay(CertificateEditCaTrustOverlay.getInstance());
@@ -111,7 +121,8 @@ function load() {
   OptionsPage.registerOverlay(AlertOverlay.getInstance());
   OptionsPage.registerOverlay(AutoFillEditAddressOverlay.getInstance());
   OptionsPage.registerOverlay(AutoFillEditCreditCardOverlay.getInstance());
-  OptionsPage.registerOverlay(ClearBrowserDataOverlay.getInstance());
+  OptionsPage.registerOverlay(ClearBrowserDataOverlay.getInstance(),
+                              [$('privacyClearDataButton')]);
   OptionsPage.registerOverlay(EditSearchEngineOverlay.getInstance());
   OptionsPage.registerOverlay(ImportDataOverlay.getInstance());
   OptionsPage.registerOverlay(InstantConfirmOverlay.getInstance());
@@ -119,18 +130,19 @@ function load() {
   if (cr.isChromeOS) {
     OptionsPage.register(AccountsOptions.getInstance());
     OptionsPage.registerSubPage(ProxyOptions.getInstance(),
-                                AdvancedOptions.getInstance());
-    OptionsPage.registerOverlay(new OptionsPage(
-        'detailsInternetPage',
-        'detailsInternetPage',
-        'detailsInternetPage'));
-  }
+                                AdvancedOptions.getInstance(),
+                                [$('proxiesConfigureButton')]);
+    OptionsPage.registerOverlay(new OptionsPage('detailsInternetPage',
+                                                'detailsInternetPage',
+                                                'detailsInternetPage'));
 
-  var languageModifierKeysOverlay = new OptionsPage(
-      'languageCustomizeModifierKeysOverlay',
-      localStrings.getString('languageCustomizeModifierKeysOverlay'),
-      'languageCustomizeModifierKeysOverlay')
-  OptionsPage.registerOverlay(languageModifierKeysOverlay);
+    var languageModifierKeysOverlay = new OptionsPage(
+        'languageCustomizeModifierKeysOverlay',
+        localStrings.getString('languageCustomizeModifierKeysOverlay'),
+        'languageCustomizeModifierKeysOverlay')
+    OptionsPage.registerOverlay(languageModifierKeysOverlay,
+                                [$('modifier-keys-button')]);
+  }
 
   Preferences.getInstance().initialize();
   OptionsPage.initialize();

@@ -49,6 +49,13 @@ cr.define('options', function() {
     },
 
     /**
+     * @inheritDoc
+     */
+    get sticky() {
+      return true;
+    },
+
+    /**
      * Called after this page has shown.
      */
     didShowPage: function() {
@@ -91,21 +98,18 @@ cr.define('options', function() {
         }
       }
 
-      var page, length, childDiv;
       var pagesToSearch = this.getSearchablePages_();
       for (var key in pagesToSearch) {
         var page = pagesToSearch[key];
 
-        if (!active) {
+        if (!active)
           page.visible = false;
-          this.unhighlightMatches_(page.tab);
-          this.unhighlightMatches_(page.pageDiv);
-        }
 
         // Update the visible state of all top-level elements that are not
         // sections (ie titles, button strips).  We do this before changing
         // the page visibility to avoid excessive re-draw.
-        length = page.pageDiv.childNodes.length;
+        var length = page.pageDiv.childNodes.length;
+        var childDiv;
         for (var i = 0; i < length; i++) {
           childDiv = page.pageDiv.childNodes[i];
           if (childDiv.nodeType == document.ELEMENT_NODE) {
@@ -118,13 +122,16 @@ cr.define('options', function() {
           }
         }
 
-        // Toggle the visibility state of the page.
         if (active) {
           // When search is active, remove the 'hidden' tag.  This tag may have
           // been added by the OptionsPage.
           page.pageDiv.classList.remove('hidden');
         }
       }
+
+      // After hiding all page content, remove any highlighted matches.
+      if (!active)
+        this.unhighlightMatches_();
     },
 
     /**
@@ -134,6 +141,9 @@ cr.define('options', function() {
      */
     setSearchText_: function(text) {
       var foundMatches = false;
+
+      // Remove any highlighted matches.
+      this.unhighlightMatches_();
 
       // Generate search text by applying lowercase and escaping any characters
       // that would be problematic for regular expressions.
@@ -147,21 +157,20 @@ cr.define('options', function() {
 
       // Initialize all sections.  If the search string matches a title page,
       // show sections for that page.
+      var page, pageMatch, childDiv;
       var pagesToSearch = this.getSearchablePages_();
       for (var key in pagesToSearch) {
-        var page = pagesToSearch[key];
-        this.unhighlightMatches_(page.tab);
-        this.unhighlightMatches_(page.pageDiv);
-        var pageMatch = false;
+        page = pagesToSearch[key];
+        pageMatch = false;
         if (searchText.length) {
           pageMatch = this.performReplace_(regEx, replaceString, page.tab);
         }
         if (pageMatch)
           foundMatches = true;
         for (var i = 0; i < page.pageDiv.childNodes.length; i++) {
-          var childDiv = page.pageDiv.childNodes[i];
+          childDiv = page.pageDiv.childNodes[i];
           if (childDiv.nodeType == document.ELEMENT_NODE &&
-              childDiv.nodeName.toLowerCase() == 'section') {
+              childDiv.nodeName == 'SECTION') {
             if (pageMatch) {
               childDiv.classList.remove('search-hidden');
             } else {
@@ -171,14 +180,33 @@ cr.define('options', function() {
         }
       }
 
-      // Search all sections for anchored string matches.
       if (searchText.length) {
+        // Search all sub-pages, generating an array of top-level sections that
+        // we need to make visible.
+        var subPagesToSearch = this.getSearchableSubPages_();
+        var control, node;
+        for (var key in subPagesToSearch) {
+          page = subPagesToSearch[key];
+          if (this.performReplace_(regEx, replaceString, page.pageDiv)) {
+            section = page.associatedSection;
+            if (section)
+              section.classList.remove('search-hidden');
+            controls = page.associatedControls;
+            if (controls) {
+              // TODO(csilv): highlight each control.
+            }
+
+            foundMatches = true;
+          }
+        }
+
+        // Search all top-level sections for anchored string matches.
         for (var key in pagesToSearch) {
-          var page = pagesToSearch[key];
+          page = pagesToSearch[key];
           for (var i = 0; i < page.pageDiv.childNodes.length; i++) {
-            var childDiv = page.pageDiv.childNodes[i];
+            childDiv = page.pageDiv.childNodes[i];
             if (childDiv.nodeType == document.ELEMENT_NODE &&
-                childDiv.nodeName.toLowerCase() == 'section' &&
+                childDiv.nodeName == 'SECTION' &&
                 this.performReplace_(regEx, replaceString, childDiv)) {
               childDiv.classList.remove('search-hidden');
               foundMatches = true;
@@ -252,13 +280,12 @@ cr.define('options', function() {
     },
 
     /**
-     * Removes all search highlight tags from a container element.
-     * @param {Element} element An HTML container element.
+     * Removes all search highlight tags from the document.
      * @private
      */
-    unhighlightMatches_: function(element) {
+    unhighlightMatches_: function() {
       // Find all search highlight elements.
-      var elements = element.querySelectorAll('.search-highlighted');
+      var elements = document.querySelectorAll('.search-highlighted');
 
       // For each element, remove the highlighting.
       var node, parent, i, length = elements.length;
@@ -275,15 +302,40 @@ cr.define('options', function() {
     },
 
     /**
-     * Builds a list of pages to search.  Omits the search page.
+     * Builds a list of top-level pages to search.  Omits the search page and
+     * all sub-pages.
      * @returns {Array} An array of pages to search.
      * @private
      */
     getSearchablePages_: function() {
-      var pages = [];
-      for (var name in OptionsPage.registeredPages) {
-        if (name != this.name)
-          pages.push(OptionsPage.registeredPages[name]);
+      var name, page, pages = [];
+      for (name in OptionsPage.registeredPages) {
+        if (name != this.name) {
+          page = OptionsPage.registeredPages[name];
+          if (!page.parentPage)
+            pages.push(page);
+        }
+      }
+      return pages;
+    },
+
+    /**
+     * Builds a list of sub-pages (and overlay pages) to search.  Ignore pages
+     * that have no associated controls.
+     * @returns {Array} An array of pages to search.
+     * @private
+     */
+    getSearchableSubPages_: function() {
+      var name, pageInfo, page, pages = [];
+      for (name in OptionsPage.registeredPages) {
+        page = OptionsPage.registeredPages[name];
+        if (page.parentPage && page.associatedSection)
+          pages.push(page);
+      }
+      for (name in OptionsPage.registeredOverlayPages) {
+        page = OptionsPage.registeredOverlayPages[name];
+        if (page.associatedSection && page.pageDiv != undefined)
+          pages.push(page);
       }
       return pages;
     }
