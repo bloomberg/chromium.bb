@@ -168,7 +168,7 @@ def CheckChangeOnCommit(input_api, output_api):
   results.extend(input_api.canned_checks.CheckBuildbotPendingBuilds(
       input_api,
       output_api,
-      'http://build.chromium.org/buildbot/waterfall/json/builders?filter=1',
+      'http://build.chromium.org/p/chromium/json/builders?filter=1',
       6,
       IGNORED_BUILDERS))
   return results

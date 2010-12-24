@@ -38,7 +38,7 @@ BUILD_EXE_NAME = ''
 BUILD_VIEWVC_URL = 'http://src.chromium.org/viewvc/chrome?view=rev&revision=%d'
 
 # Changelogs URL
-CHANGELOG_URL = 'http://build.chromium.org/buildbot/' \
+CHANGELOG_URL = 'http://build.chromium.org/f/chromium/' \
                 'perf/dashboard/ui/changelog.html?url=/trunk/src&range=%d:%d'
 
 ###############################################################################
