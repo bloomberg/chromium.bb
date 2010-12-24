@@ -130,13 +130,13 @@ void ChromeMiniInstaller::InstallFullInstaller(bool over_install) {
 // Installs the Chrome mini-installer, checks the registry and shortcuts.
 void ChromeMiniInstaller::InstallMiniInstaller(bool over_install,
                                                const std::wstring& path) {
-  std::wstring exe_name = file_util::GetFilenameFromPath(path);
   printf("\nChrome will be installed at %ls level\n", install_type_.c_str());
   printf("\nWill proceed with the test only if this path exists: %ls\n\n",
          path.c_str());
-  ASSERT_TRUE(file_util::PathExists(FilePath(path))) << path
-                                                     << " does not exist.";
-  LaunchInstaller(path, exe_name.c_str());
+
+  FilePath exe_path(path);
+  ASSERT_TRUE(file_util::PathExists(exe_path)) << path << " does not exist.";
+  LaunchInstaller(path, exe_path.BaseName().value().c_str());
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   ASSERT_TRUE(CheckRegistryKey(dist->GetVersionKey())) << dist->GetVersionKey()
                                                        << " does not exist.";
