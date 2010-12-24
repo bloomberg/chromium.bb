@@ -321,6 +321,28 @@ class PpbURLRequestInfoRpcClient {
   void operator=(const PpbURLRequestInfoRpcClient);
 };  // class PpbURLRequestInfoRpcClient
 
+class PpbURLResponseInfoRpcClient {
+ public:
+  static NaClSrpcError PPB_URLResponseInfo_IsURLResponseInfo(
+      NaClSrpcChannel* channel,
+      int64_t resource,
+      int32_t* is_url_response_info);
+  static NaClSrpcError PPB_URLResponseInfo_GetProperty(
+      NaClSrpcChannel* channel,
+      int64_t response,
+      int32_t property,
+      nacl_abi_size_t* value_bytes, char* value);
+  static NaClSrpcError PPB_URLResponseInfo_GetBodyAsFileRef(
+      NaClSrpcChannel* channel,
+      int64_t response,
+      int64_t* file_ref);
+
+ private:
+  PpbURLResponseInfoRpcClient();
+  PpbURLResponseInfoRpcClient(const PpbURLResponseInfoRpcClient&);
+  void operator=(const PpbURLResponseInfoRpcClient);
+};  // class PpbURLResponseInfoRpcClient
+
 
 
 #endif  // GEN_PPAPI_PROXY_PPB_RPC_H_

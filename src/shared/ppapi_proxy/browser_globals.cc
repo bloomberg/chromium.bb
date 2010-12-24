@@ -140,6 +140,13 @@ const PPB_URLRequestInfo* PPBURLRequestInfoInterface() {
   return ppb;
 }
 
+const PPB_URLResponseInfo* PPBURLResponseInfoInterface() {
+  static const PPB_URLResponseInfo* ppb =
+      reinterpret_cast<const PPB_URLResponseInfo*>(
+          GetBrowserInterfaceSafe(PPB_URLRESPONSEINFO_INTERFACE));
+  return ppb;
+}
+
 const PPB_Var_Deprecated* PPBVarInterface() {
   static const PPB_Var_Deprecated* ppb =
       reinterpret_cast<const PPB_Var_Deprecated*>(

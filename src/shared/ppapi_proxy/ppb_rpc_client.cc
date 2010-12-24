@@ -740,4 +740,48 @@ NaClSrpcError PpbURLRequestInfoRpcClient::PPB_URLRequestInfo_AppendFileToBody(
   return retval;
 }
 
+NaClSrpcError PpbURLResponseInfoRpcClient::PPB_URLResponseInfo_IsURLResponseInfo(
+    NaClSrpcChannel* channel,
+    int64_t resource,
+    int32_t* is_url_response_info)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_URLResponseInfo_IsURLResponseInfo:l:i",
+      resource,
+      is_url_response_info
+  );
+  return retval;
+}
+
+NaClSrpcError PpbURLResponseInfoRpcClient::PPB_URLResponseInfo_GetProperty(
+    NaClSrpcChannel* channel,
+    int64_t response,
+    int32_t property,
+    nacl_abi_size_t* value_bytes, char* value)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_URLResponseInfo_GetProperty:li:C",
+      response,
+      property,
+      value_bytes, value
+  );
+  return retval;
+}
+
+NaClSrpcError PpbURLResponseInfoRpcClient::PPB_URLResponseInfo_GetBodyAsFileRef(
+    NaClSrpcChannel* channel,
+    int64_t response,
+    int64_t* file_ref)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_URLResponseInfo_GetBodyAsFileRef:l:l",
+      response,
+      file_ref
+  );
+  return retval;
+}
+
 

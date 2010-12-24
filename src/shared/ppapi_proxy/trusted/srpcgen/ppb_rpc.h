@@ -366,6 +366,31 @@ class PpbURLRequestInfoRpcServer {
   void operator=(const PpbURLRequestInfoRpcServer);
 };  // class PpbURLRequestInfoRpcServer
 
+class PpbURLResponseInfoRpcServer {
+ public:
+  static void PPB_URLResponseInfo_IsURLResponseInfo(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      int64_t resource,
+      int32_t* is_url_response_info);
+  static void PPB_URLResponseInfo_GetProperty(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      int64_t response,
+      int32_t property,
+      nacl_abi_size_t* value_bytes, char* value);
+  static void PPB_URLResponseInfo_GetBodyAsFileRef(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      int64_t response,
+      int64_t* file_ref);
+
+ private:
+  PpbURLResponseInfoRpcServer();
+  PpbURLResponseInfoRpcServer(const PpbURLResponseInfoRpcServer&);
+  void operator=(const PpbURLResponseInfoRpcServer);
+};  // class PpbURLResponseInfoRpcServer
+
 class PpbRpcs {
  public:
   static NaClSrpcHandlerDesc srpc_methods[];
