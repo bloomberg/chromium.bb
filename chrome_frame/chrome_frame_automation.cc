@@ -75,8 +75,8 @@ class ChromeFrameAutomationProxyImpl::TabProxyNotificationMessageFilter
         message.routing_id()));
     bool handled = false;
     if (tab) {
-      tab->OnMessageReceived(message);
-      handled = tab->Release();
+      handled = tab->OnMessageReceived(message);
+      tab->Release();
     } else {
       DLOG(ERROR) << "Failed to find TabProxy for tab:" << message.routing_id();
     }
