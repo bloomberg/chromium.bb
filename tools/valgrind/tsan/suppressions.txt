@@ -80,36 +80,6 @@
 }
 
 {
-  bug_64080
-  ThreadSanitizer:Race
-  ...
-  fun:chromeos::PulseAudioMixer::~PulseAudioMixer*
-  ...
-  fun:Singleton<chromeos::AudioHandler*>::OnExit*
-}
-
-{
-  bug_64186a
-  ThreadSanitizer:Race
-  fun:chromeos::CrosLibrary::Library*GetDefaultImpl*
-  fun:chromeos::CrosLibrary::GetSystemLibrary*
-}
-
-{
-  bug_64186b
-  ThreadSanitizer:Race
-  ...
-  fun:MetricsService::InitTask::Run*
-}
-
-{
-  bug_64188
-  ThreadSanitizer:Race
-  ...
-  fun:base::RefCounted<net::NetLog::EventParameters>::*
-}
-
-{
   bug_66994a
   ThreadSanitizer:Race
   fun:HistoryURLProvider::Stop*
@@ -124,21 +94,12 @@
 }
 
 {
-  bug_67546a
+  bug_67957
   ThreadSanitizer:Race
-  ...
-  fun:g_main_context_dispatch
-  fun:g_main_context_iterate
-  fun:g_main_context_iteration
-}
-
-{
-  bug_67546b
-  ThreadSanitizer:Race
-  ...
-  fun:g_cclosure_marshal_VOID__OBJECT
-  fun:g_type_class_meta_marshal
-  fun:g_closure_invoke
+  fun:Replace_memcpy
+  fun:memcpy
+  fun:Serialize*
+  fun:UserScriptMaster::ScriptReloader::RunScan*
 }
 
 ############################
