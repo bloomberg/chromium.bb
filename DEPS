@@ -192,7 +192,7 @@ deps = {
 deps_os = {
   "win": {
     "src/chrome/tools/test/reference_build/chrome":
-      "/trunk/deps/reference_builds/chrome@68691",
+      "/trunk/deps/reference_builds/chrome@70122",
 
     "src/third_party/cygwin":
       "/trunk/deps/third_party/cygwin@66844",
