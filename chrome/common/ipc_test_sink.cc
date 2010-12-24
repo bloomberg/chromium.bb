@@ -19,9 +19,8 @@ bool TestSink::Send(IPC::Message* message) {
   return true;
 }
 
-bool TestSink::OnMessageReceived(const Message& msg) {
+void TestSink::OnMessageReceived(const Message& msg) {
   messages_.push_back(Message(msg));
-  return true;
 }
 
 void TestSink::ClearMessages() {
