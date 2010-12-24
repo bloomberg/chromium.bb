@@ -238,14 +238,17 @@ void ServiceProcessControl::OnProcessLaunched() {
   launcher_ = NULL;
 }
 
-void ServiceProcessControl::OnMessageReceived(const IPC::Message& message) {
+bool ServiceProcessControl::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;;
   IPC_BEGIN_MESSAGE_MAP(ServiceProcessControl, message)
-      IPC_MESSAGE_HANDLER(ServiceHostMsg_GoodDay, OnGoodDay)
-      IPC_MESSAGE_HANDLER(ServiceHostMsg_CloudPrintProxy_IsEnabled,
-                          OnCloudPrintProxyIsEnabled)
-      IPC_MESSAGE_HANDLER(ServiceHostMsg_RemotingHost_HostInfo,
-                          OnRemotingHostInfo)
+    IPC_MESSAGE_HANDLER(ServiceHostMsg_GoodDay, OnGoodDay)
+    IPC_MESSAGE_HANDLER(ServiceHostMsg_CloudPrintProxy_IsEnabled,
+                        OnCloudPrintProxyIsEnabled)
+    IPC_MESSAGE_HANDLER(ServiceHostMsg_RemotingHost_HostInfo,
+                         OnRemotingHostInfo)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void ServiceProcessControl::OnChannelConnected(int32 peer_pid) {

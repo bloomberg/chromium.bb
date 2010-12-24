@@ -31,7 +31,7 @@ class CommandBufferStub : public IPC::Channel::Listener,
   virtual ~CommandBufferStub();
 
   // IPC::Channel::Listener implementation:
-  virtual void OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
   virtual void OnChannelError();
 
   // IPC::Message::Sender implementation:

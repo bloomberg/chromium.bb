@@ -254,7 +254,7 @@ class RenderThread : public RenderThreadBase,
                             int extension_group);
 
  private:
-  virtual void OnControlMessageReceived(const IPC::Message& msg);
+  virtual bool OnControlMessageReceived(const IPC::Message& msg);
 
   void Init();
 

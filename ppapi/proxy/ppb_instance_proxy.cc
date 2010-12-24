@@ -84,7 +84,8 @@ InterfaceID PPB_Instance_Proxy::GetInterfaceId() const {
   return INTERFACE_ID_PPB_INSTANCE;
 }
 
-void PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
+bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_Instance_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_GetWindowObject,
                         OnMsgGetWindowObject)
@@ -96,7 +97,9 @@ void PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgIsFullFrame)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_ExecuteScript,
                         OnMsgExecuteScript)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void PPB_Instance_Proxy::OnMsgGetWindowObject(

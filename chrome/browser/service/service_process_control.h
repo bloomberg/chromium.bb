@@ -77,7 +77,7 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   void Launch(Task* success_task, Task* failure_task);
 
   // IPC::Channel::Listener implementation.
-  virtual void OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
   virtual void OnChannelConnected(int32 peer_pid);
   virtual void OnChannelError();
 

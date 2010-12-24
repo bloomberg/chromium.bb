@@ -166,7 +166,7 @@ class TestRenderViewHost : public RenderViewHost {
 
   // Calls the RenderViewHosts' private OnMessageReceived function with the
   // given message.
-  void TestOnMessageReceived(const IPC::Message& msg);
+  bool TestOnMessageReceived(const IPC::Message& msg);
 
   // Calls OnMsgNavigate on the RenderViewHost with the given information,
   // setting the rest of the parameters in the message to the "typical" values.

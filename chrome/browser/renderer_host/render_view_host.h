@@ -446,7 +446,7 @@ class RenderViewHost : public RenderWidgetHost {
   // RenderWidgetHost public overrides.
   virtual void Shutdown();
   virtual bool IsRenderView() const;
-  virtual void OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg);
   virtual void GotFocus();
   virtual void LostCapture();
   virtual void ForwardMouseEvent(const WebKit::WebMouseEvent& mouse_event);

@@ -132,15 +132,17 @@ InterfaceID PPB_Audio_Proxy::GetInterfaceId() const {
   return INTERFACE_ID_PPB_AUDIO;
 }
 
-void PPB_Audio_Proxy::OnMessageReceived(const IPC::Message& msg) {
+bool PPB_Audio_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_Audio_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBAudio_Create, OnMsgCreate)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBAudio_StartOrStop,
                         OnMsgStartOrStop)
-
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBAudio_NotifyAudioStreamCreated,
                         OnMsgNotifyAudioStreamCreated)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void PPB_Audio_Proxy::OnMsgCreate(PP_Instance instance_id,

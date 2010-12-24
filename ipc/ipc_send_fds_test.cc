@@ -51,20 +51,20 @@ class MyChannelDescriptorListener : public IPC::Channel::Listener {
       : expected_inode_num_(expected_inode_num),
         num_fds_received_(0) {}
 
-  virtual void OnMessageReceived(const IPC::Message& message) {
+  virtual bool OnMessageReceived(const IPC::Message& message) {
     void* iter = NULL;
 
     ++num_fds_received_;
     base::FileDescriptor descriptor;
 
-    ASSERT_TRUE(
-        IPC::ParamTraits<base::FileDescriptor>::Read(
-            &message, &iter, &descriptor));
+    IPC::ParamTraits<base::FileDescriptor>::Read(
+            &message, &iter, &descriptor);
 
     VerifyAndCloseDescriptor(descriptor.fd, expected_inode_num_);
     if (num_fds_received_ == kNumFDsToSend) {
       MessageLoop::current()->Quit();
     }
+    return true;
   }
 
   virtual void OnChannelError() {

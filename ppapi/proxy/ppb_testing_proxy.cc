@@ -66,7 +66,8 @@ InterfaceID PPB_Testing_Proxy::GetInterfaceId() const {
   return INTERFACE_ID_PPB_TESTING;
 }
 
-void PPB_Testing_Proxy::OnMessageReceived(const IPC::Message& msg) {
+bool PPB_Testing_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_Testing_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTesting_ReadImageData,
                         OnMsgReadImageData)
@@ -76,7 +77,9 @@ void PPB_Testing_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgQuitMessageLoop)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBTesting_GetLiveObjectCount,
                         OnMsgGetLiveObjectCount)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void PPB_Testing_Proxy::OnMsgReadImageData(PP_Resource device_context_2d,

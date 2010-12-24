@@ -24,7 +24,7 @@ class ChromeFrameAutomationProvider : public AutomationProvider {
   explicit ChromeFrameAutomationProvider(Profile* profile);
 
   // IPC::Channel::Listener overrides.
-  virtual void OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
  protected:
   // This function is called when we receive an invalid message type.

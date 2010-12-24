@@ -59,7 +59,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual bool Send(IPC::Message* msg);
 
   // IPC::Channel::Listener via RenderProcessHost.
-  virtual void OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelConnected(int32 peer_pid);
 
   // Attaches the factory object so we can remove this object in its destructor

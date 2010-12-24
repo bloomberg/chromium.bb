@@ -74,7 +74,9 @@ class ChildThread : public IPC::Channel::Listener,
   // Called when the process refcount is 0.
   void OnProcessFinalRelease();
 
-  virtual void OnControlMessageReceived(const IPC::Message& msg) { }
+  virtual bool OnControlMessageReceived(const IPC::Message& msg) {
+    return false;
+  }
   virtual void OnAskBeforeShutdown();
   virtual void OnShutdown();
 
@@ -92,7 +94,7 @@ class ChildThread : public IPC::Channel::Listener,
   void Init();
 
   // IPC::Channel::Listener implementation:
-  virtual void OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelError();
 
   std::string channel_name_;

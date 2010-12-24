@@ -43,7 +43,7 @@ class WebWorkerProxy : public WebKit::WebWorker, private WebWorkerBase {
   virtual void clientDestroyed();
 
   // IPC::Channel::Listener implementation.
-  virtual void OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
  private:
   void CancelCreation();

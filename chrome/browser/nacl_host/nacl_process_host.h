@@ -32,7 +32,7 @@ class NaClProcessHost : public BrowserChildProcessHost {
               int socket_count,
               IPC::Message* reply_msg);
 
-  virtual void OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg);
 
   void OnProcessLaunchedByBroker(base::ProcessHandle handle);
 

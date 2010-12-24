@@ -70,7 +70,7 @@ class AutomationProxy : public IPC::Channel::Listener,
                          bool use_named_interface);
 
   // IPC callback
-  virtual void OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelError();
 
   // Close the automation IPC channel.

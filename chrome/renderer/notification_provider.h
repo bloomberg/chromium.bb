@@ -18,7 +18,8 @@ class WebNotificationPermissionCallback;
 
 // NotificationProvider class is owned by the RenderView.  Only
 // to be used on the UI thread.
-class NotificationProvider : public WebKit::WebNotificationPresenter {
+class NotificationProvider : public WebKit::WebNotificationPresenter,
+                             public IPC::Channel::Listener {
  public:
   explicit NotificationProvider(RenderView* view);
   virtual ~NotificationProvider();
@@ -32,7 +33,7 @@ class NotificationProvider : public WebKit::WebNotificationPresenter {
   virtual void requestPermission(const WebKit::WebSecurityOrigin& origin,
       WebKit::WebNotificationPermissionCallback* callback);
 
-  // IPC message handler called from RenderView.
+  // IPC::Channel::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message);
 
   // Called when the RenderView navigates.

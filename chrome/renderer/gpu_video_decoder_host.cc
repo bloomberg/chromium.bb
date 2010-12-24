@@ -32,7 +32,8 @@ void GpuVideoDecoderHost::OnChannelError() {
   ipc_sender_ = NULL;
 }
 
-void GpuVideoDecoderHost::OnMessageReceived(const IPC::Message& msg) {
+bool GpuVideoDecoderHost::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuVideoDecoderHost, msg)
     IPC_MESSAGE_HANDLER(GpuVideoDecoderHostMsg_CreateVideoDecoderDone,
                         OnCreateVideoDecoderDone)
@@ -54,8 +55,10 @@ void GpuVideoDecoderHost::OnMessageReceived(const IPC::Message& msg) {
                         OnAllocateVideoFrames)
     IPC_MESSAGE_HANDLER(GpuVideoDecoderHostMsg_ReleaseAllVideoFrames,
                         OnReleaseAllVideoFrames)
-    IPC_MESSAGE_UNHANDLED_ERROR()
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  DCHECK(handled);
+  return handled;
 }
 
 void GpuVideoDecoderHost::Initialize(

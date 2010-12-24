@@ -37,7 +37,7 @@ class GpuProcessHost : public BrowserChildProcessHost, public NonThreadSafe {
   virtual bool Send(IPC::Message* msg);
 
   // IPC::Channel::Listener implementation.
-  virtual void OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
   // Tells the GPU process to create a new channel for communication with a
   // renderer. Will asynchronously send message to object with given routing id
@@ -77,7 +77,7 @@ class GpuProcessHost : public BrowserChildProcessHost, public NonThreadSafe {
   bool EnsureInitialized();
   bool Init();
 
-  void OnControlMessageReceived(const IPC::Message& message);
+  bool OnControlMessageReceived(const IPC::Message& message);
 
   // Message handlers.
   void OnChannelEstablished(const IPC::ChannelHandle& channel_handle,

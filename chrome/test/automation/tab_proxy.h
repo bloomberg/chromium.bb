@@ -405,7 +405,7 @@ class TabProxy : public AutomationResourceProxy,
   // Calls delegates
   void AddObserver(TabProxyDelegate* observer);
   void RemoveObserver(TabProxyDelegate* observer);
-  void OnMessageReceived(const IPC::Message& message);
+  bool OnMessageReceived(const IPC::Message& message);
   void OnChannelError();
  protected:
   virtual ~TabProxy();

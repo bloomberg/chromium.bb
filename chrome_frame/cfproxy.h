@@ -148,9 +148,6 @@ class ChromeProxyDelegate : public IPC::Channel::Listener {
     CHANNEL_ERROR
   };
 
-  // IPC::Channel::Listener.
-  void OnMessageReceived(const IPC::Message& message) = 0;
-
   virtual void Connected(ChromeProxy* proxy) = 0;
   virtual void Disconnected() = 0;
   virtual void PeerLost(ChromeProxy* proxy, DisconnectReason reason) = 0;

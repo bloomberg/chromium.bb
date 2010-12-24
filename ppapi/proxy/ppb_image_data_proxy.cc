@@ -119,15 +119,18 @@ InterfaceID PPB_ImageData_Proxy::GetInterfaceId() const {
   return INTERFACE_ID_PPB_IMAGE_DATA;
 }
 
-void PPB_ImageData_Proxy::OnMessageReceived(const IPC::Message& msg) {
+bool PPB_ImageData_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_ImageData_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBImageData_GetNativeImageDataFormat,
                         OnMsgGetNativeImageDataFormat)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBImageData_IsImageDataFormatSupported,
                         OnMsgIsImageDataFormatSupported)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBImageData_Create, OnMsgCreate)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   // FIXME(brettw) handle bad messages!
+  return handled;
 }
 
 void PPB_ImageData_Proxy::OnMsgGetNativeImageDataFormat(int32* result) {

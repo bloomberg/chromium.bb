@@ -208,11 +208,11 @@ void CFProxy::Tab_RunUnloadHandlers(int tab) {
 }
 
 // IPC::Channel::Listener
-void CFProxy::OnMessageReceived(const IPC::Message& message) {
+bool CFProxy::OnMessageReceived(const IPC::Message& message) {
   // Handle sync message reply.
   bool done = sync_dispatcher_.OnReplyReceived(&message);
   if (done)
-    return;
+    return true;
 
   // Handle tab related message.
   ChromeProxyDelegate* d = Tab2Delegate(message.routing_id());
@@ -220,6 +220,7 @@ void CFProxy::OnMessageReceived(const IPC::Message& message) {
     return d->OnMessageReceived(message);
 
   DLOG(WARNING) << "Unknown message received!";
+  return false;
 }
 
 void CFProxy::OnChannelConnected(int32 peer_pid) {

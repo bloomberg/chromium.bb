@@ -132,13 +132,14 @@ bool GpuProcessHost::Send(IPC::Message* msg) {
   return BrowserChildProcessHost::Send(msg);
 }
 
-void GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
+bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
 
   if (message.routing_id() == MSG_ROUTING_CONTROL)
-    OnControlMessageReceived(message);
-  else
-    RouteOnUIThread(message);
+    return OnControlMessageReceived(message);
+
+  RouteOnUIThread(message);
+  return true;
 }
 
 void GpuProcessHost::EstablishGpuChannel(int renderer_id,
@@ -178,7 +179,7 @@ GpuProcessHost::SynchronizationRequest::SynchronizationRequest(
 
 GpuProcessHost::SynchronizationRequest::~SynchronizationRequest() {}
 
-void GpuProcessHost::OnControlMessageReceived(const IPC::Message& message) {
+bool GpuProcessHost::OnControlMessageReceived(const IPC::Message& message) {
   DCHECK(CalledOnValidThread());
 
   IPC_BEGIN_MESSAGE_MAP(GpuProcessHost, message)
@@ -202,6 +203,8 @@ void GpuProcessHost::OnControlMessageReceived(const IPC::Message& message) {
     // handle it.
     IPC_MESSAGE_UNHANDLED(RouteOnUIThread(message))
   IPC_END_MESSAGE_MAP()
+
+  return true;
 }
 
 void GpuProcessHost::OnChannelEstablished(

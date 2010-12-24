@@ -62,7 +62,7 @@ IPC::Channel::Listener* NPObjectStub::GetChannelListener() {
   return static_cast<IPC::Channel::Listener*>(this);
 }
 
-void NPObjectStub::OnMessageReceived(const IPC::Message& msg) {
+bool NPObjectStub::OnMessageReceived(const IPC::Message& msg) {
   child_process_logging::SetActiveURL(page_url_);
 
   if (!npobject_) {
@@ -74,9 +74,10 @@ void NPObjectStub::OnMessageReceived(const IPC::Message& msg) {
       Send(reply);
     }
 
-    return;
+    return true;
   }
 
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NPObjectStub, msg)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(NPObjectMsg_Release, OnRelease);
     IPC_MESSAGE_HANDLER(NPObjectMsg_HasMethod, OnHasMethod);
@@ -89,8 +90,10 @@ void NPObjectStub::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(NPObjectMsg_Enumeration, OnEnumeration);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(NPObjectMsg_Construct, OnConstruct);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(NPObjectMsg_Evaluate, OnEvaluate);
-    IPC_MESSAGE_UNHANDLED_ERROR()
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  DCHECK(handled);
+  return handled;
 }
 
 void NPObjectStub::OnChannelError() {

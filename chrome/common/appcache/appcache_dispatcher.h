@@ -9,20 +9,21 @@
 #include <string>
 #include <vector>
 #include "chrome/common/appcache/appcache_backend_proxy.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_channel.h"
 #include "webkit/appcache/appcache_frontend_impl.h"
 
 // Dispatches appcache related messages sent to a child process from the
 // main browser process. There is one instance per child process. Messages
 // are dispatched on the main child thread. The ChildThread base class
 // creates an instance and delegates calls to it.
-class AppCacheDispatcher {
+class AppCacheDispatcher : public IPC::Channel::Listener {
  public:
   explicit AppCacheDispatcher(IPC::Message::Sender* sender)
       : backend_proxy_(sender) {}
 
   AppCacheBackendProxy* backend_proxy() { return &backend_proxy_; }
 
+  // IPC::Channel::Listener implementation
   bool OnMessageReceived(const IPC::Message& msg);
 
  private:

@@ -200,7 +200,8 @@ InterfaceID PPP_Class_Proxy::GetInterfaceId() const {
   return INTERFACE_ID_PPP_CLASS;
 }
 
-void PPP_Class_Proxy::OnMessageReceived(const IPC::Message& msg) {
+bool PPP_Class_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPP_Class_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPClass_HasProperty,
                         OnMsgHasProperty)
@@ -218,7 +219,9 @@ void PPP_Class_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgConstruct)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPClass_Deallocate,
                         OnMsgDeallocate)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void PPP_Class_Proxy::OnMsgHasProperty(int64 ppp_class, int64 object,

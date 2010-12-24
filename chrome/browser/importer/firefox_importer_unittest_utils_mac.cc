@@ -94,11 +94,14 @@ class FFDecryptorServerChannelListener : public IPC::Channel::Listener {
       sender_->Send(new Msg_Decryptor_Quit());
   }
 
-  virtual void OnMessageReceived(const IPC::Message& msg) {
+  virtual bool OnMessageReceived(const IPC::Message& msg) {
+    bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(FFDecryptorServerChannelListener, msg)
       IPC_MESSAGE_HANDLER(Msg_Decryptor_InitReturnCode, OnInitDecryptorResponse)
       IPC_MESSAGE_HANDLER(Msg_Decryptor_Response, OnDecryptedTextResonse)
+      IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
+    return handled;
   }
 
   // If an error occured, just kill the message Loop.
@@ -231,12 +234,15 @@ class FFDecryptorClientChannelListener : public IPC::Channel::Listener {
     MessageLoop::current()->Quit();
   }
 
-  virtual void OnMessageReceived(const IPC::Message& msg) {
+  virtual bool OnMessageReceived(const IPC::Message& msg) {
+    bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(FFDecryptorClientChannelListener, msg)
       IPC_MESSAGE_HANDLER(Msg_Decryptor_Init, OnDecryptor_Init)
       IPC_MESSAGE_HANDLER(Msg_Decrypt, OnDecrypt)
       IPC_MESSAGE_HANDLER(Msg_Decryptor_Quit, OnQuitRequest)
+      IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
+    return handled;
   }
 
   virtual void OnChannelError() {

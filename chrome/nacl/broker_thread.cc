@@ -28,12 +28,15 @@ NaClBrokerThread* NaClBrokerThread::current() {
   return static_cast<NaClBrokerThread*>(ChildThread::current());
 }
 
-void NaClBrokerThread::OnControlMessageReceived(const IPC::Message& msg) {
+bool NaClBrokerThread::OnControlMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NaClBrokerThread, msg)
     IPC_MESSAGE_HANDLER(NaClProcessMsg_LaunchLoaderThroughBroker,
                         OnLaunchLoaderThroughBroker)
     IPC_MESSAGE_HANDLER(NaClProcessMsg_StopBroker, OnStopBroker)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void NaClBrokerThread::OnLaunchLoaderThroughBroker(

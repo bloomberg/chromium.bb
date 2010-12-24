@@ -59,7 +59,7 @@ class InterfaceProxy : public IPC::Channel::Listener,
   virtual InterfaceID GetInterfaceId() const = 0;
 
   // Sub-classes must implement IPC::Channel::Listener which contains this:
-  //virtual void OnMessageReceived(const IPC::Message& msg);
+  //virtual bool OnMessageReceived(const IPC::Message& msg);
 
  protected:
   uint32 SendCallback(PP_CompletionCallback callback);

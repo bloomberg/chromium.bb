@@ -52,8 +52,9 @@ void GpuThread::RemoveChannel(int renderer_id) {
   gpu_channels_.erase(renderer_id);
 }
 
-void GpuThread::OnControlMessageReceived(const IPC::Message& msg) {
+bool GpuThread::OnControlMessageReceived(const IPC::Message& msg) {
   bool msg_is_ok = true;
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(GpuThread, msg, msg_is_ok)
     IPC_MESSAGE_HANDLER(GpuMsg_EstablishChannel, OnEstablishChannel)
     IPC_MESSAGE_HANDLER(GpuMsg_CloseChannel, OnCloseChannel)
@@ -67,7 +68,9 @@ void GpuThread::OnControlMessageReceived(const IPC::Message& msg) {
 #endif
     IPC_MESSAGE_HANDLER(GpuMsg_Crash, OnCrash)
     IPC_MESSAGE_HANDLER(GpuMsg_Hang, OnHang)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
+  return handled;
 }
 
 void GpuThread::OnEstablishChannel(int renderer_id) {

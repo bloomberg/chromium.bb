@@ -131,11 +131,14 @@ InterfaceID PPB_Buffer_Proxy::GetInterfaceId() const {
   return INTERFACE_ID_PPB_BUFFER;
 }
 
-void PPB_Buffer_Proxy::OnMessageReceived(const IPC::Message& msg) {
+bool PPB_Buffer_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_Buffer_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBBuffer_Create, OnMsgCreate)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   // TODO(brettw) handle bad messages!
+  return handled;
 }
 
 void PPB_Buffer_Proxy::OnMsgCreate(PP_Module module,

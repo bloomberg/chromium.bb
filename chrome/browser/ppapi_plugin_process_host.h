@@ -23,7 +23,7 @@ class PpapiPluginProcessHost : public BrowserChildProcessHost {
   virtual bool CanShutdown();
   virtual void OnProcessLaunched();
 
-  virtual void OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelConnected(int32 peer_pid);
   virtual void OnChannelError();
 

@@ -107,13 +107,16 @@ InterfaceID PPB_AudioConfig_Proxy::GetInterfaceId() const {
   return INTERFACE_ID_PPB_AUDIO_CONFIG;
 }
 
-void PPB_AudioConfig_Proxy::OnMessageReceived(const IPC::Message& msg) {
+bool PPB_AudioConfig_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_AudioConfig_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBAudioConfig_Create,
                         OnMsgCreateStereo16Bit)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBAudioConfig_RecommendSampleFrameCount,
                         OnMsgRecommendSampleFrameCount)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void PPB_AudioConfig_Proxy::OnMsgCreateStereo16Bit(PP_Module module,

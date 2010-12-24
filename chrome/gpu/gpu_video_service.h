@@ -21,7 +21,7 @@ class GpuVideoService : public IPC::Channel::Listener {
   // IPC::Channel::Listener.
   virtual void OnChannelConnected(int32 peer_pid);
   virtual void OnChannelError();
-  virtual void OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
   // TODO(hclam): Remove return value.
   bool CreateVideoDecoder(GpuChannel* channel,

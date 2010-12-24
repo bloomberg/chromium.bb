@@ -248,7 +248,8 @@ InterfaceID PPB_URLLoader_Proxy::GetInterfaceId() const {
   return INTERFACE_ID_PPB_URL_LOADER;
 }
 
-void PPB_URLLoader_Proxy::OnMessageReceived(const IPC::Message& msg) {
+bool PPB_URLLoader_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_URLLoader_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBURLLoader_Create,
                         OnMsgCreate)
@@ -269,8 +270,10 @@ void PPB_URLLoader_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgUpdateProgress)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBURLLoader_ReadResponseBody_Ack,
                         OnMsgReadResponseBodyAck)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   // TODO(brettw) handle bad messages!
+  return handled;
 }
 
 void PPB_URLLoader_Proxy::OnMsgCreate(PP_Instance instance,
@@ -427,12 +430,15 @@ InterfaceID PPB_URLLoaderTrusted_Proxy::GetInterfaceId() const {
   return INTERFACE_ID_PPB_URL_LOADER_TRUSTED;
 }
 
-void PPB_URLLoaderTrusted_Proxy::OnMessageReceived(const IPC::Message& msg) {
+bool PPB_URLLoaderTrusted_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_URLLoaderTrusted_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBURLLoaderTrusted_GrantUniversalAccess,
                         OnMsgGrantUniversalAccess)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP();
   // TODO(brettw) handle bad messages!
+  return handled;
 }
 
 void PPB_URLLoaderTrusted_Proxy::OnMsgGrantUniversalAccess(PP_Resource loader) {

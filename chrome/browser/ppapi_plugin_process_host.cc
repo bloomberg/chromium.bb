@@ -69,11 +69,14 @@ bool PpapiPluginProcessHost::CanShutdown() {
 void PpapiPluginProcessHost::OnProcessLaunched() {
 }
 
-void PpapiPluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
+bool PpapiPluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PpapiPluginProcessHost, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PluginLoaded, OnPluginLoaded)
-    IPC_MESSAGE_UNHANDLED_ERROR();
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  DCHECK(handled);
+  return handled;
 }
 
 void PpapiPluginProcessHost::OnChannelConnected(int32 peer_pid) {

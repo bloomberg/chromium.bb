@@ -10,9 +10,10 @@ MessageRouter::MessageRouter() {
 MessageRouter::~MessageRouter() {
 }
 
-void MessageRouter::OnControlMessageReceived(const IPC::Message& msg) {
+bool MessageRouter::OnControlMessageReceived(const IPC::Message& msg) {
   NOTREACHED() <<
       "should override in subclass if you care about control messages";
+  return false;
 }
 
 bool MessageRouter::Send(IPC::Message* msg) {
@@ -30,12 +31,11 @@ void MessageRouter::RemoveRoute(int32 routing_id) {
   routes_.Remove(routing_id);
 }
 
-void MessageRouter::OnMessageReceived(const IPC::Message& msg) {
-  if (msg.routing_id() == MSG_ROUTING_CONTROL) {
-    OnControlMessageReceived(msg);
-  } else {
-    RouteMessage(msg);
-  }
+bool MessageRouter::OnMessageReceived(const IPC::Message& msg) {
+  if (msg.routing_id() == MSG_ROUTING_CONTROL)
+    return OnControlMessageReceived(msg);
+
+  return RouteMessage(msg);
 }
 
 bool MessageRouter::RouteMessage(const IPC::Message& msg) {

@@ -60,20 +60,19 @@ void AppCacheDispatcherHost::OnChannelConnected(int32 peer_pid) {
 bool AppCacheDispatcherHost::OnMessageReceived(const IPC::Message& message,
                                                bool* message_was_ok) {
   bool handled = true;
-
   IPC_BEGIN_MESSAGE_MAP_EX(AppCacheDispatcherHost, message, *message_was_ok)
-    IPC_MESSAGE_HANDLER(AppCacheMsg_RegisterHost, OnRegisterHost);
-    IPC_MESSAGE_HANDLER(AppCacheMsg_UnregisterHost, OnUnregisterHost);
-    IPC_MESSAGE_HANDLER(AppCacheMsg_GetResourceList, OnGetResourceList);
-    IPC_MESSAGE_HANDLER(AppCacheMsg_SelectCache, OnSelectCache);
+    IPC_MESSAGE_HANDLER(AppCacheMsg_RegisterHost, OnRegisterHost)
+    IPC_MESSAGE_HANDLER(AppCacheMsg_UnregisterHost, OnUnregisterHost)
+    IPC_MESSAGE_HANDLER(AppCacheMsg_GetResourceList, OnGetResourceList)
+    IPC_MESSAGE_HANDLER(AppCacheMsg_SelectCache, OnSelectCache)
     IPC_MESSAGE_HANDLER(AppCacheMsg_SelectCacheForWorker,
-                        OnSelectCacheForWorker);
+                        OnSelectCacheForWorker)
     IPC_MESSAGE_HANDLER(AppCacheMsg_SelectCacheForSharedWorker,
-                        OnSelectCacheForSharedWorker);
-    IPC_MESSAGE_HANDLER(AppCacheMsg_MarkAsForeignEntry, OnMarkAsForeignEntry);
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AppCacheMsg_GetStatus, OnGetStatus);
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AppCacheMsg_StartUpdate, OnStartUpdate);
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AppCacheMsg_SwapCache, OnSwapCache);
+                        OnSelectCacheForSharedWorker)
+    IPC_MESSAGE_HANDLER(AppCacheMsg_MarkAsForeignEntry, OnMarkAsForeignEntry)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AppCacheMsg_GetStatus, OnGetStatus)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AppCacheMsg_StartUpdate, OnStartUpdate)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AppCacheMsg_SwapCache, OnSwapCache)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 

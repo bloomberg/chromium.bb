@@ -56,7 +56,7 @@ class ProfileImportThread : public ChildThread {
 
  private:
   // IPC messages
-  virtual void OnControlMessageReceived(const IPC::Message& msg);
+  virtual bool OnControlMessageReceived(const IPC::Message& msg);
 
   // Creates the importer and launches it in a new thread. Import is run on
   // a separate thread so that this thread can receive messages from the

@@ -38,7 +38,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   virtual ~CommandBufferProxy();
 
   // IPC::Channel::Listener implementation:
-  virtual void OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
   virtual void OnChannelError();
 
   int route_id() const { return route_id_; }

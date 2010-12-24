@@ -182,7 +182,7 @@ static void Send(IPC::Message::Sender* sender, const char* text) {
 
 class MyChannelListener : public IPC::Channel::Listener {
  public:
-  virtual void OnMessageReceived(const IPC::Message& message) {
+  virtual bool OnMessageReceived(const IPC::Message& message) {
     IPC::MessageIterator iter(message);
 
     iter.NextInt();
@@ -196,6 +196,7 @@ class MyChannelListener : public IPC::Channel::Listener {
     } else {
       Send(sender_, "Foo");
     }
+    return true;
   }
 
   virtual void OnChannelError() {
@@ -291,7 +292,7 @@ class ChannelListenerWithOnConnectedSend : public IPC::Channel::Listener {
     SendNextMessage();
   }
 
-  virtual void OnMessageReceived(const IPC::Message& message) {
+  virtual bool OnMessageReceived(const IPC::Message& message) {
     IPC::MessageIterator iter(message);
 
     iter.NextInt();
@@ -299,6 +300,7 @@ class ChannelListenerWithOnConnectedSend : public IPC::Channel::Listener {
     const std::string big_string = iter.NextString();
     EXPECT_EQ(kLongMessageStringNumBytes - 1, big_string.length());
     SendNextMessage();
+    return true;
   }
 
   virtual void OnChannelError() {
@@ -402,7 +404,7 @@ class ChannelReflectorListener : public IPC::Channel::Listener {
     std::cout << "Client Latency: " << latency_messages_ << std::endl;
   }
 
-  virtual void OnMessageReceived(const IPC::Message& message) {
+  virtual bool OnMessageReceived(const IPC::Message& message) {
     count_messages_++;
     IPC::MessageIterator iter(message);
     int time = iter.NextInt();
@@ -421,6 +423,7 @@ class ChannelReflectorListener : public IPC::Channel::Listener {
     msg->WriteInt(msgid);
     msg->WriteString(payload);
     channel_->Send(msg);
+    return true;
   }
  private:
   IPC::Channel *channel_;
@@ -446,7 +449,7 @@ class ChannelPerfListener : public IPC::Channel::Listener {
     std::cout << "Server Latency: " << latency_messages_ << std::endl;
   }
 
-  virtual void OnMessageReceived(const IPC::Message& message) {
+  virtual bool OnMessageReceived(const IPC::Message& message) {
     count_messages_++;
     // decode the string so this gets counted in the total time
     IPC::MessageIterator iter(message);
@@ -467,7 +470,7 @@ class ChannelPerfListener : public IPC::Channel::Listener {
       msg->WriteString("quit");
       channel_->Send(msg);
       SetTimer(NULL, 1, 250, (TIMERPROC) PostQuitMessage);
-      return;
+      return true;
     }
 
     IPC::Message* msg = new IPC::Message(0,
@@ -477,6 +480,7 @@ class ChannelPerfListener : public IPC::Channel::Listener {
     msg->WriteInt(count_down_);
     msg->WriteString(payload_);
     channel_->Send(msg);
+    return true;
   }
 
  private:

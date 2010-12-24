@@ -96,14 +96,17 @@ InterfaceID PPB_Core_Proxy::GetInterfaceId() const {
   return INTERFACE_ID_PPB_CORE;
 }
 
-void PPB_Core_Proxy::OnMessageReceived(const IPC::Message& msg) {
+bool PPB_Core_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_Core_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBCore_AddRefResource,
                         OnMsgAddRefResource)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBCore_ReleaseResource,
                         OnMsgReleaseResource)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   // TODO(brettw) handle bad messages!
+  return handled;
 }
 
 void PPB_Core_Proxy::OnMsgAddRefResource(PP_Resource resource) {

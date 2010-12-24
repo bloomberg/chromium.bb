@@ -35,7 +35,7 @@ class WorkerThread : public ChildThread {
   }
 
  private:
-  virtual void OnControlMessageReceived(const IPC::Message& msg);
+  virtual bool OnControlMessageReceived(const IPC::Message& msg);
   virtual void OnChannelError();
 
   void OnCreateWorker(const WorkerProcessMsg_CreateWorker_Params& params);

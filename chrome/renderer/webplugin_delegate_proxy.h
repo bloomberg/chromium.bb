@@ -95,7 +95,7 @@ class WebPluginDelegateProxy
 #endif
 
   // IPC::Channel::Listener implementation:
-  virtual void OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelError();
 
   // IPC::Message::Sender implementation:

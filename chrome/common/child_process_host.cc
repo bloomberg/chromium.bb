@@ -155,13 +155,13 @@ ChildProcessHost::ListenerHook::ListenerHook(ChildProcessHost* host)
     : host_(host) {
 }
 
-void ChildProcessHost::ListenerHook::OnMessageReceived(
+bool ChildProcessHost::ListenerHook::OnMessageReceived(
     const IPC::Message& msg) {
 #ifdef IPC_MESSAGE_LOG_ENABLED
   IPC::Logging* logger = IPC::Logging::GetInstance();
   if (msg.type() == IPC_LOGGING_ID) {
     logger->OnReceivedLoggingMessage(msg);
-    return;
+    return true;
   }
 
   if (logger->Enabled())
@@ -183,12 +183,13 @@ void ChildProcessHost::ListenerHook::OnMessageReceived(
   }
 
   if (!handled)
-    host_->OnMessageReceived(msg);
+    handled = host_->OnMessageReceived(msg);
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
   if (logger->Enabled())
     logger->OnPostDispatchMessage(msg, host_->channel_id_);
 #endif
+  return handled;
 }
 
 void ChildProcessHost::ListenerHook::OnChannelConnected(int32 peer_pid) {

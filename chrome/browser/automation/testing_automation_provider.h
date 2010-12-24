@@ -33,7 +33,7 @@ class TestingAutomationProvider : public AutomationProvider,
   virtual void OnBrowserRemoved(const Browser* browser);
 
   // IPC::Channel::Listener implementation.
-  virtual void OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelError();
 
  private:

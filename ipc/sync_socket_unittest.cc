@@ -107,13 +107,14 @@ class SyncSocketServerListener : public IPC::Channel::Listener {
     chan_ = chan;
   }
 
-  virtual void OnMessageReceived(const IPC::Message& msg) {
+  virtual bool OnMessageReceived(const IPC::Message& msg) {
     if (msg.routing_id() == MSG_ROUTING_CONTROL) {
       IPC_BEGIN_MESSAGE_MAP(SyncSocketServerListener, msg)
         IPC_MESSAGE_HANDLER(MsgClassSetHandle, OnMsgClassSetHandle)
         IPC_MESSAGE_HANDLER(MsgClassShutdown, OnMsgClassShutdown)
       IPC_END_MESSAGE_MAP()
     }
+    return true;
   }
 
  private:
@@ -175,12 +176,13 @@ class SyncSocketClientListener : public IPC::Channel::Listener {
     chan_ = chan;
   }
 
-  virtual void OnMessageReceived(const IPC::Message& msg) {
+  virtual bool OnMessageReceived(const IPC::Message& msg) {
     if (msg.routing_id() == MSG_ROUTING_CONTROL) {
       IPC_BEGIN_MESSAGE_MAP(SyncSocketClientListener, msg)
         IPC_MESSAGE_HANDLER(MsgClassResponse, OnMsgClassResponse)
       IPC_END_MESSAGE_MAP()
     }
+    return true;
   }
 
  private:

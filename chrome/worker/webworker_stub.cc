@@ -60,10 +60,11 @@ const GURL& WebWorkerStub::url() const {
   return url_;
 }
 
-void WebWorkerStub::OnMessageReceived(const IPC::Message& message) {
+bool WebWorkerStub::OnMessageReceived(const IPC::Message& message) {
   if (!impl_)
-    return;
+    return false;
 
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebWorkerStub, message)
     IPC_MESSAGE_FORWARD(WorkerMsg_StartWorkerContext, impl_,
                         WebWorker::startWorkerContext)
@@ -72,7 +73,9 @@ void WebWorkerStub::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(WorkerMsg_PostMessage, OnPostMessage)
     IPC_MESSAGE_FORWARD(WorkerMsg_WorkerObjectDestroyed, impl_,
                         WebWorker::workerObjectDestroyed)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void WebWorkerStub::OnTerminateWorkerContext() {

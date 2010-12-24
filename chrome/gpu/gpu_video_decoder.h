@@ -102,7 +102,7 @@ class GpuVideoDecoder
   // IPC::Channel::Listener implementation.
   virtual void OnChannelConnected(int32 peer_pid);
   virtual void OnChannelError();
-  virtual void OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
   // VideoDecodeEngine::EventHandler implementation.
   virtual void OnInitializeComplete(const VideoCodecInfo& info);

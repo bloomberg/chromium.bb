@@ -153,25 +153,29 @@ void RenderWidget::CompleteInit(gfx::NativeViewId parent_hwnd) {
   Send(new ViewHostMsg_RenderViewReady(routing_id_));
 }
 
-IPC_DEFINE_MESSAGE_MAP(RenderWidget)
-  IPC_MESSAGE_HANDLER(ViewMsg_Close, OnClose)
-  IPC_MESSAGE_HANDLER(ViewMsg_CreatingNew_ACK, OnCreatingNewAck)
-  IPC_MESSAGE_HANDLER(ViewMsg_Resize, OnResize)
-  IPC_MESSAGE_HANDLER(ViewMsg_WasHidden, OnWasHidden)
-  IPC_MESSAGE_HANDLER(ViewMsg_WasRestored, OnWasRestored)
-  IPC_MESSAGE_HANDLER(ViewMsg_UpdateRect_ACK, OnUpdateRectAck)
-  IPC_MESSAGE_HANDLER(ViewMsg_HandleInputEvent, OnHandleInputEvent)
-  IPC_MESSAGE_HANDLER(ViewMsg_MouseCaptureLost, OnMouseCaptureLost)
-  IPC_MESSAGE_HANDLER(ViewMsg_SetFocus, OnSetFocus)
-  IPC_MESSAGE_HANDLER(ViewMsg_SetInputMethodActive, OnSetInputMethodActive)
-  IPC_MESSAGE_HANDLER(ViewMsg_ImeSetComposition, OnImeSetComposition)
-  IPC_MESSAGE_HANDLER(ViewMsg_ImeConfirmComposition, OnImeConfirmComposition)
-  IPC_MESSAGE_HANDLER(ViewMsg_PaintAtSize, OnMsgPaintAtSize)
-  IPC_MESSAGE_HANDLER(ViewMsg_Repaint, OnMsgRepaint)
-  IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
-  IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
-  IPC_MESSAGE_UNHANDLED_ERROR()
-IPC_END_MESSAGE_MAP()
+bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)
+    IPC_MESSAGE_HANDLER(ViewMsg_Close, OnClose)
+    IPC_MESSAGE_HANDLER(ViewMsg_CreatingNew_ACK, OnCreatingNewAck)
+    IPC_MESSAGE_HANDLER(ViewMsg_Resize, OnResize)
+    IPC_MESSAGE_HANDLER(ViewMsg_WasHidden, OnWasHidden)
+    IPC_MESSAGE_HANDLER(ViewMsg_WasRestored, OnWasRestored)
+    IPC_MESSAGE_HANDLER(ViewMsg_UpdateRect_ACK, OnUpdateRectAck)
+    IPC_MESSAGE_HANDLER(ViewMsg_HandleInputEvent, OnHandleInputEvent)
+    IPC_MESSAGE_HANDLER(ViewMsg_MouseCaptureLost, OnMouseCaptureLost)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetFocus, OnSetFocus)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetInputMethodActive, OnSetInputMethodActive)
+    IPC_MESSAGE_HANDLER(ViewMsg_ImeSetComposition, OnImeSetComposition)
+    IPC_MESSAGE_HANDLER(ViewMsg_ImeConfirmComposition, OnImeConfirmComposition)
+    IPC_MESSAGE_HANDLER(ViewMsg_PaintAtSize, OnMsgPaintAtSize)
+    IPC_MESSAGE_HANDLER(ViewMsg_Repaint, OnMsgRepaint)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
+    IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
 
 bool RenderWidget::Send(IPC::Message* message) {
   // Don't send any messages after the browser has told us to close.

@@ -48,7 +48,7 @@ class PluginChannelHost : public PluginChannelBase {
 
   static PluginChannelBase* ClassFactory() { return new PluginChannelHost(); }
 
-  virtual void OnControlMessageReceived(const IPC::Message& message);
+  virtual bool OnControlMessageReceived(const IPC::Message& message);
   void OnSetException(const std::string& message);
   void OnPluginShuttingDown(const IPC::Message& message);
 

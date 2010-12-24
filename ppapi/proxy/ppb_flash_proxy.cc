@@ -224,7 +224,8 @@ InterfaceID PPB_Flash_Proxy::GetInterfaceId() const {
   return INTERFACE_ID_PPB_FLASH;
 }
 
-void PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
+bool PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_Flash_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_SetInstanceAlwaysOnTop,
                         OnMsgSetInstanceAlwaysOnTop)
@@ -245,8 +246,10 @@ void PPB_Flash_Proxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_GetModuleLocalDirContents,
                         OnMsgGetModuleLocalDirContents)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFlash_NavigateToURL, OnMsgNavigateToURL)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   // TODO(brettw) handle bad messages!
+  return handled;
 }
 
 void PPB_Flash_Proxy::OnMsgSetInstanceAlwaysOnTop(

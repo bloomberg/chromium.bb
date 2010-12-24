@@ -108,7 +108,7 @@ class TestMessageReceiver {
     return true;
   }
 
-  void OnMessageReceived(const IPC::Message& msg) {
+  bool OnMessageReceived(const IPC::Message& msg) {
     IPC_BEGIN_MESSAGE_MAP(TestMessageReceiver, msg)
       IPC_MESSAGE_HANDLER(Msg_C_0_1, On_0_1)
       IPC_MESSAGE_HANDLER(Msg_C_0_2, On_0_2)
@@ -137,6 +137,7 @@ class TestMessageReceiver {
       IPC_MESSAGE_HANDLER(Msg_R_3_3, On_3_3)
       IPC_MESSAGE_HANDLER(Msg_R_3_4, On_3_4)
     IPC_END_MESSAGE_MAP()
+    return true;
   }
 
 };

@@ -593,13 +593,14 @@ void RenderThread::OnDOMStorageEvent(
       params.storage_type == DOM_STORAGE_LOCAL);
 }
 
-void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
+bool RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
   // Some messages are handled by delegates.
   if (appcache_dispatcher_->OnMessageReceived(msg))
-    return;
+    return true;
   if (indexed_db_dispatcher_->OnMessageReceived(msg))
-    return;
+    return true;
 
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderThread, msg)
     IPC_MESSAGE_HANDLER(ViewMsg_VisitedLink_NewTable, OnUpdateVisitedLinks)
     IPC_MESSAGE_HANDLER(ViewMsg_VisitedLink_Add, OnAddVisitedLinks)
@@ -660,7 +661,9 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetPhishingModel, OnSetPhishingModel)
     IPC_MESSAGE_HANDLER(ViewMsg_SpeechInput_SetFeatureEnabled,
                         OnSetSpeechInputEnabled)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void RenderThread::OnSetSpeechInputEnabled(bool enabled) {

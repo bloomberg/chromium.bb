@@ -181,7 +181,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   virtual bool IsRenderView() const;
 
   // IPC::Channel::Listener
-  virtual void OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg);
 
   // Sends a message to the corresponding object in the renderer.
   virtual bool Send(IPC::Message* msg);

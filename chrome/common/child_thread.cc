@@ -139,14 +139,14 @@ MessageLoop* ChildThread::message_loop() {
   return message_loop_;
 }
 
-void ChildThread::OnMessageReceived(const IPC::Message& msg) {
+bool ChildThread::OnMessageReceived(const IPC::Message& msg) {
   // Resource responses are sent to the resource dispatcher.
   if (resource_dispatcher_->OnMessageReceived(msg))
-    return;
+    return true;
   if (socket_stream_dispatcher_->OnMessageReceived(msg))
-    return;
+    return true;
   if (file_system_dispatcher_->OnMessageReceived(msg))
-    return;
+    return true;
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChildThread, msg)
@@ -160,13 +160,12 @@ void ChildThread::OnMessageReceived(const IPC::Message& msg) {
   IPC_END_MESSAGE_MAP()
 
   if (handled)
-    return;
+    return true;
 
-  if (msg.routing_id() == MSG_ROUTING_CONTROL) {
-    OnControlMessageReceived(msg);
-  } else {
-    router_.OnMessageReceived(msg);
-  }
+  if (msg.routing_id() == MSG_ROUTING_CONTROL)
+    return OnControlMessageReceived(msg);
+
+  return router_.OnMessageReceived(msg);
 }
 
 void ChildThread::OnAskBeforeShutdown() {

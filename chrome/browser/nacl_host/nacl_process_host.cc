@@ -282,8 +282,9 @@ void NaClProcessHost::SendStartMessage() {
   sockets_for_sel_ldr_.clear();
 }
 
-void NaClProcessHost::OnMessageReceived(const IPC::Message& msg) {
+bool NaClProcessHost::OnMessageReceived(const IPC::Message& msg) {
   NOTREACHED() << "Invalid message with type = " << msg.type();
+  return false;
 }
 
 bool NaClProcessHost::CanShutdown() {

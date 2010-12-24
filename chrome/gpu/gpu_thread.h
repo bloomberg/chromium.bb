@@ -33,7 +33,7 @@ class GpuThread : public ChildThread {
 
  private:
   // ChildThread overrides.
-  virtual void OnControlMessageReceived(const IPC::Message& msg);
+  virtual bool OnControlMessageReceived(const IPC::Message& msg);
 
   // Message handlers.
   void OnEstablishChannel(int renderer_id);

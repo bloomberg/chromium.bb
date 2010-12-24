@@ -77,14 +77,17 @@ WorkerThread* WorkerThread::current() {
   return lazy_tls.Pointer()->Get();
 }
 
-void WorkerThread::OnControlMessageReceived(const IPC::Message& msg) {
+bool WorkerThread::OnControlMessageReceived(const IPC::Message& msg) {
   // Appcache messages are handled by a delegate.
   if (appcache_dispatcher_->OnMessageReceived(msg))
-    return;
+    return true;
 
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WorkerThread, msg)
     IPC_MESSAGE_HANDLER(WorkerProcessMsg_CreateWorker, OnCreateWorker)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void WorkerThread::OnCreateWorker(

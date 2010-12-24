@@ -31,7 +31,7 @@ class PluginThread : public ChildThread {
   FilePath plugin_path() { return plugin_path_; }
 
  private:
-  virtual void OnControlMessageReceived(const IPC::Message& msg);
+  virtual bool OnControlMessageReceived(const IPC::Message& msg);
 
   // Callback for when a channel has been created.
   void OnCreateChannel(int renderer_id, bool off_the_record);

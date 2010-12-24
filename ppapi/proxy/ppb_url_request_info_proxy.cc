@@ -111,7 +111,8 @@ InterfaceID PPB_URLRequestInfo_Proxy::GetInterfaceId() const {
   return INTERFACE_ID_PPB_URL_REQUEST_INFO;
 }
 
-void PPB_URLRequestInfo_Proxy::OnMessageReceived(const IPC::Message& msg) {
+bool PPB_URLRequestInfo_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_URLRequestInfo_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBURLRequestInfo_Create, OnMsgCreate)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBURLRequestInfo_SetProperty,
@@ -120,8 +121,10 @@ void PPB_URLRequestInfo_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgAppendDataToBody)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBURLRequestInfo_AppendFileToBody,
                         OnMsgAppendFileToBody)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   // TODO(brettw): handle bad messages.
+  return handled;
 }
 
 void PPB_URLRequestInfo_Proxy::OnMsgCreate(

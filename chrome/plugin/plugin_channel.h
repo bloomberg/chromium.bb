@@ -33,7 +33,7 @@ class PluginChannel : public PluginChannelBase {
   virtual ~PluginChannel();
 
   virtual bool Send(IPC::Message* msg);
-  virtual void OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
   base::ProcessHandle renderer_handle() const { return renderer_handle_; }
   int renderer_id() { return renderer_id_; }
@@ -69,7 +69,7 @@ class PluginChannel : public PluginChannelBase {
   // Called on the plugin thread
   PluginChannel();
 
-  virtual void OnControlMessageReceived(const IPC::Message& msg);
+  virtual bool OnControlMessageReceived(const IPC::Message& msg);
 
   static PluginChannelBase* ClassFactory() { return new PluginChannel(); }
 

@@ -42,17 +42,16 @@ class AutomationMessageFilter : public IPC::ChannelProxy::MessageFilter {
   // the message be handled in the default way.
   virtual bool OnMessageReceived(const IPC::Message& message) {
     bool handled = true;
-
     IPC_BEGIN_MESSAGE_MAP(AutomationMessageFilter, message)
       IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_Hello,
-                                  OnAutomationHello(message));
+                                  OnAutomationHello(message))
       IPC_MESSAGE_HANDLER_GENERIC(
-        AutomationMsg_InitialLoadsComplete, server_->SignalInitialLoads());
+        AutomationMsg_InitialLoadsComplete, server_->SignalInitialLoads())
       IPC_MESSAGE_HANDLER(AutomationMsg_InitialNewTabUILoadComplete,
-                          NewTabLoaded);
+                          NewTabLoaded)
       IPC_MESSAGE_HANDLER_GENERIC(
-        AutomationMsg_InvalidateHandle, server_->InvalidateHandle(message));
-      IPC_MESSAGE_UNHANDLED(handled = false);
+        AutomationMsg_InvalidateHandle, server_->InvalidateHandle(message))
+      IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
 
     return handled;
@@ -379,10 +378,11 @@ void AutomationProxy::Disconnect() {
   channel_.reset();
 }
 
-void AutomationProxy::OnMessageReceived(const IPC::Message& msg) {
+bool AutomationProxy::OnMessageReceived(const IPC::Message& msg) {
   // This won't get called unless AutomationProxy is run from
   // inside a message loop.
   NOTREACHED();
+  return false;
 }
 
 void AutomationProxy::OnChannelError() {

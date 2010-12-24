@@ -195,7 +195,7 @@ class Worker : public Channel::Listener, public Message::Sender {
     listener_event->Signal();
   }
 
-  void OnMessageReceived(const Message& message) {
+  bool OnMessageReceived(const Message& message) {
     IPC_BEGIN_MESSAGE_MAP(Worker, message)
      IPC_MESSAGE_HANDLER_DELAY_REPLY(SyncChannelTestMsg_Double, OnDoubleDelay)
      IPC_MESSAGE_HANDLER_DELAY_REPLY(SyncChannelTestMsg_AnswerToLife,
@@ -203,6 +203,7 @@ class Worker : public Channel::Listener, public Message::Sender {
      IPC_MESSAGE_HANDLER_DELAY_REPLY(SyncChannelNestedTestMsg_String,
                                      OnNestedTestMsg)
     IPC_END_MESSAGE_MAP()
+    return true;
   }
 
   void StartThread(base::Thread* thread, MessageLoop::Type type) {

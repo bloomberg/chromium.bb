@@ -166,7 +166,8 @@ InterfaceID PPB_Graphics2D_Proxy::GetInterfaceId() const {
   return INTERFACE_ID_PPB_GRAPHICS_2D;
 }
 
-void PPB_Graphics2D_Proxy::OnMessageReceived(const IPC::Message& msg) {
+bool PPB_Graphics2D_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_Graphics2D_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics2D_Create,
                         OnMsgCreate)
@@ -181,8 +182,10 @@ void PPB_Graphics2D_Proxy::OnMessageReceived(const IPC::Message& msg) {
 
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBGraphics2D_FlushACK,
                         OnMsgFlushACK)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   // FIXME(brettw) handle bad messages!
+  return handled;
 }
 
 void PPB_Graphics2D_Proxy::OnMsgCreate(PP_Module module,

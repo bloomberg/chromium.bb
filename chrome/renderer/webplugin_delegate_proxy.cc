@@ -424,9 +424,10 @@ void WebPluginDelegateProxy::InstallMissingPlugin() {
   Send(new PluginMsg_InstallMissingPlugin(instance_id_));
 }
 
-void WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
+bool WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
   child_process_logging::SetActiveURL(page_url_);
 
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebPluginDelegateProxy, msg)
     IPC_MESSAGE_HANDLER(PluginHostMsg_SetWindow, OnSetWindow)
 #if defined(OS_WIN)
@@ -478,9 +479,10 @@ void WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
 #endif
     IPC_MESSAGE_HANDLER(PluginHostMsg_URLRedirectResponse,
                         OnURLRedirectResponse)
-
-    IPC_MESSAGE_UNHANDLED_ERROR()
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  DCHECK(handled);
+  return handled;
 }
 
 void WebPluginDelegateProxy::OnChannelError() {

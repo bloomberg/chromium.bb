@@ -151,7 +151,8 @@ bool RenderWidgetHost::IsRenderView() const {
   return false;
 }
 
-void RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
+bool RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
+  bool handled = true;
   bool msg_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(RenderWidgetHost, msg, msg_is_ok)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewReady, OnMsgRenderViewReady)
@@ -192,7 +193,7 @@ void RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_DestroyPluginContainer,
                         OnMsgDestroyPluginContainer)
 #endif
-    IPC_MESSAGE_UNHANDLED_ERROR()
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
   if (!msg_is_ok) {
@@ -200,6 +201,7 @@ void RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
     UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_RWH"));
     process()->ReceivedBadMessage();
   }
+  return handled;
 }
 
 bool RenderWidgetHost::Send(IPC::Message* msg) {

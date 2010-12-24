@@ -102,7 +102,7 @@ class NPObjectProxy : public IPC::Channel::Listener,
                 const GURL& page_url);
 
   // IPC::Channel::Listener implementation:
-  virtual void OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelError();
 
   static NPObject* NPAllocate(NPP, NPClass*);

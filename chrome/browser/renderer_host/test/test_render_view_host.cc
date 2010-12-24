@@ -70,8 +70,8 @@ bool TestRenderViewHost::IsRenderViewLive() const {
   return render_view_created_;
 }
 
-void TestRenderViewHost::TestOnMessageReceived(const IPC::Message& msg) {
-  OnMessageReceived(msg);
+bool TestRenderViewHost::TestOnMessageReceived(const IPC::Message& msg) {
+  return OnMessageReceived(msg);
 }
 
 void TestRenderViewHost::SendNavigate(int page_id, const GURL& url) {

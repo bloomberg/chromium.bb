@@ -101,7 +101,7 @@ class ExternalTabUITestMockClient : public AutomationProxy {
   gfx::NativeWindow host_window_;
 
   // Simple dispatcher to above OnXXX methods.
-  virtual void OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg);
   virtual void InvalidateHandle(const IPC::Message& message);
 };
 

@@ -87,28 +87,32 @@ bool Dispatcher::InitWithChannel(MessageLoop* ipc_message_loop,
   return true;
 }
 
-void Dispatcher::OnMessageReceived(const IPC::Message& msg) {
+bool Dispatcher::OnMessageReceived(const IPC::Message& msg) {
   // Control messages.
   if (msg.routing_id() == MSG_ROUTING_CONTROL) {
+    bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(Dispatcher, msg)
       IPC_MESSAGE_HANDLER(PpapiMsg_DeclareInterfaces,
                           OnMsgDeclareInterfaces)
       IPC_MESSAGE_HANDLER(PpapiMsg_SupportsInterface, OnMsgSupportsInterface)
       IPC_MESSAGE_FORWARD(PpapiMsg_ExecuteCallback, &callback_tracker_,
                           CallbackTracker::ReceiveExecuteSerializedCallback)
+      IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
-    return;
+    return handled;
   }
 
   // Interface-specific messages.
   if (msg.routing_id() > 0 && msg.routing_id() < INTERFACE_ID_COUNT) {
     InterfaceProxy* proxy = id_to_proxy_[msg.routing_id()];
     if (proxy)
-      proxy->OnMessageReceived(msg);
-    else
-      NOTREACHED();
+      return proxy->OnMessageReceived(msg);
+
+    NOTREACHED();
     // TODO(brettw): kill the plugin if it starts sending invalid messages?
   }
+
+  return false;
 }
 
 void Dispatcher::SetSerializationRules(

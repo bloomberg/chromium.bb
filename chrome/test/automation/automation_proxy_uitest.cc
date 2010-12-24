@@ -762,7 +762,8 @@ const AutomationURLResponse ExternalTabUITestMockClient::http_200(
     "",
     0);
 
-void ExternalTabUITestMockClient::OnMessageReceived(const IPC::Message& msg) {
+bool ExternalTabUITestMockClient::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExternalTabUITestMockClient, msg)
     IPC_MESSAGE_HANDLER(AutomationMsg_DidNavigate, OnDidNavigate)
     IPC_MESSAGE_HANDLER(AutomationMsg_ForwardMessageToExternalHost,
@@ -776,7 +777,9 @@ void ExternalTabUITestMockClient::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(AutomationMsg_OpenURL, OnOpenURL)
     IPC_MESSAGE_HANDLER(AutomationMsg_NavigationStateChanged,
                         OnNavigationStateChanged)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 scoped_refptr<TabProxy> ExternalTabUITestMockClient::CreateHostWindowAndTab(

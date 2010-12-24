@@ -88,7 +88,8 @@ InterfaceID PPB_CharSet_Proxy::GetInterfaceId() const {
   return INTERFACE_ID_PPB_CHAR_SET;
 }
 
-void PPB_CharSet_Proxy::OnMessageReceived(const IPC::Message& msg) {
+bool PPB_CharSet_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_CharSet_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBCharSet_UTF16ToCharSet,
                         OnMsgUTF16ToCharSet)
@@ -96,7 +97,9 @@ void PPB_CharSet_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgCharSetToUTF16)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBCharSet_GetDefaultCharSet,
                         OnMsgGetDefaultCharSet)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void PPB_CharSet_Proxy::OnMsgUTF16ToCharSet(const string16& utf16,

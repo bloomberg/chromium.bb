@@ -85,14 +85,17 @@ InterfaceID PPB_URLResponseInfo_Proxy::GetInterfaceId() const {
   return INTERFACE_ID_PPB_URL_RESPONSE_INFO;
 }
 
-void PPB_URLResponseInfo_Proxy::OnMessageReceived(const IPC::Message& msg) {
+bool PPB_URLResponseInfo_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_URLResponseInfo_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBURLResponseInfo_GetProperty,
                         OnMsgGetProperty)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBURLResponseInfo_GetBodyAsFileRef,
                         OnMsgGetBodyAsFileRef)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   // TODO(brettw): handle bad messages.
+  return handled;
 }
 
 void PPB_URLResponseInfo_Proxy::OnMsgGetProperty(

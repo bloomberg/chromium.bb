@@ -71,7 +71,7 @@ class RenderViewFakeResourcesTest : public ::testing::Test,
                                     public RenderViewVisitor {
  public:
   // IPC::Channel::Listener implementation.
-  virtual void OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
   // RenderViewVisitor implementation.
   virtual bool Visit(RenderView* render_view);

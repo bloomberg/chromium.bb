@@ -36,7 +36,7 @@ class GpuProcessHostUIShim : public IPC::Channel::Sender,
   // The GpuProcessHost causes this to be called on the UI thread to
   // dispatch the incoming messages from the GPU process, which are
   // actually received on the IO thread.
-  virtual void OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
   // See documentation on MessageRouter for AddRoute and RemoveRoute
   void AddRoute(int32 routing_id, IPC::Channel::Listener* listener);
@@ -72,7 +72,7 @@ class GpuProcessHostUIShim : public IPC::Channel::Sender,
   // Message handlers.
   void OnGraphicsInfoCollected(const GPUInfo& gpu_info);
   void OnScheduleComposite(int32 renderer_id, int32 render_view_id);
-  void OnControlMessageReceived(const IPC::Message& message);
+  bool OnControlMessageReceived(const IPC::Message& message);
 
   int last_routing_id_;
 

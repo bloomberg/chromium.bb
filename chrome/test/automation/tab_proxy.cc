@@ -790,10 +790,11 @@ void TabProxy::RemoveObserver(TabProxyDelegate* observer) {
 }
 
 // Called on Channel background thread, if TabMessages filter is installed.
-void TabProxy::OnMessageReceived(const IPC::Message& message) {
+bool TabProxy::OnMessageReceived(const IPC::Message& message) {
   AutoLock lock(list_lock_);
   FOR_EACH_OBSERVER(TabProxyDelegate, observers_list_,
                     OnMessageReceived(this, message));
+  return true;
 }
 
 void TabProxy::OnChannelError() {

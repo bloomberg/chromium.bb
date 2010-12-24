@@ -163,7 +163,7 @@ class CFProxy : public Interface2IPCMessage,
 
   //////////////////////////////////////////////////////////////////////////
   // IPC::Channel::Listener
-  virtual void OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
   virtual void OnChannelConnected(int32 peer_pid);
   virtual void OnChannelError();
 

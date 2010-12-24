@@ -97,7 +97,7 @@ class UtilityProcessHost : public BrowserChildProcessHost {
    private:
     friend class UtilityProcessHost;
 
-    void OnMessageReceived(const IPC::Message& message);
+    bool OnMessageReceived(const IPC::Message& message);
 
     DISALLOW_COPY_AND_ASSIGN(Client);
   };
@@ -149,7 +149,7 @@ class UtilityProcessHost : public BrowserChildProcessHost {
   bool StartProcess(const FilePath& exposed_dir);
 
   // IPC messages:
-  virtual void OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
   // BrowserChildProcessHost:
   virtual void OnProcessCrashed(int exit_code);

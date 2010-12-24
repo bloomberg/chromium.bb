@@ -358,14 +358,15 @@ void AutomationProvider::OnChannelConnected(int pid) {
     Send(new AutomationMsg_InitialLoadsComplete());
 }
 
-void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
+bool AutomationProvider::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(AutomationProvider, message)
 #if !defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WindowDrag,
                                     WindowSimulateDrag)
 #endif  // !defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(AutomationMsg_HandleUnused, HandleUnused)
-    IPC_MESSAGE_HANDLER(AutomationMsg_SetProxyConfig, SetProxyConfig);
+    IPC_MESSAGE_HANDLER(AutomationMsg_SetProxyConfig, SetProxyConfig)
     IPC_MESSAGE_HANDLER(AutomationMsg_PrintAsync, PrintAsync)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_Find, HandleFindRequest)
     IPC_MESSAGE_HANDLER(AutomationMsg_OverrideEncoding, OverrideEncoding)
@@ -429,8 +430,9 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_LoginWithUserAndPass,
                                     LoginWithUserAndPass)
 #endif  // defined(OS_CHROMEOS)
-    IPC_MESSAGE_UNHANDLED(OnUnhandledMessage())
+    IPC_MESSAGE_UNHANDLED(handled = false;OnUnhandledMessage())
   IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void AutomationProvider::OnUnhandledMessage() {

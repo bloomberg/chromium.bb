@@ -89,9 +89,10 @@ class SuicidalListener : public IPC::Channel::Listener {
     MessageLoop::current()->Quit();
   }
 
-  void OnMessageReceived(const IPC::Message& message) {
+  bool OnMessageReceived(const IPC::Message& message) {
     // We shouldn't receive any messages
-    ASSERT_TRUE(false);
+    NOTREACHED();
+    return false;
   }
 };
 

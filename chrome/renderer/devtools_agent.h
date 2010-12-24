@@ -11,11 +11,8 @@
 
 #include "base/basictypes.h"
 #include "chrome/common/devtools_messages.h"
+#include "ipc/ipc_channel.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgentClient.h"
-
-namespace IPC {
-class Message;
-}
 
 namespace WebKit {
 class WebDevToolsAgent;
@@ -28,14 +25,15 @@ struct DevToolsMessageData;
 // agents with the communication capabilities. All messages from/to Glue's
 // agents infrastructure are flowing through this comminucation agent.
 // There is a corresponding DevToolsClient object on the client side.
-class DevToolsAgent : public WebKit::WebDevToolsAgentClient {
+class DevToolsAgent : public WebKit::WebDevToolsAgentClient,
+                      public IPC::Channel::Listener {
  public:
   DevToolsAgent(int routing_id, RenderView* view);
   virtual ~DevToolsAgent();
 
   void OnNavigate();
 
-  // IPC message interceptor. Called on the Render thread.
+  // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message);
 
   // WebDevToolsAgentClient implementation

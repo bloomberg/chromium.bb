@@ -50,14 +50,17 @@ InterfaceID PPB_Fullscreen_Proxy::GetInterfaceId() const {
   return INTERFACE_ID_PPB_FULLSCREEN;
 }
 
-void PPB_Fullscreen_Proxy::OnMessageReceived(const IPC::Message& msg) {
+bool PPB_Fullscreen_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_Fullscreen_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFullscreen_IsFullscreen,
                         OnMsgIsFullscreen)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFullscreen_SetFullscreen,
                         OnMsgSetFullscreen)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   // TODO(brettw): handle bad messages!
+  return handled;
 }
 
 void PPB_Fullscreen_Proxy::OnMsgIsFullscreen(PP_Instance instance,

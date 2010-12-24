@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/common/speech_input_result.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_channel.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSpeechInputController.h"
 
 class GURL;
@@ -21,13 +21,13 @@ struct WebRect;
 
 // SpeechInputDispatcher is a delegate for speech input messages used by WebKit.
 // It's the complement of SpeechInputDispatcherHost (owned by RenderViewHost).
-class SpeechInputDispatcher : public WebKit::WebSpeechInputController {
+class SpeechInputDispatcher : public WebKit::WebSpeechInputController,
+                              public IPC::Channel::Listener {
  public:
   SpeechInputDispatcher(RenderView* render_view,
                         WebKit::WebSpeechInputListener* listener);
 
-  // Called to possibly handle the incoming IPC message. Returns true if
-  // handled. Called in render thread.
+  // IPC::Channel::Listener implementation.
   bool OnMessageReceived(const IPC::Message& msg);
 
   // WebKit::WebSpeechInputController.

@@ -35,7 +35,7 @@ class ChromeFrameDelegate {
   virtual void OnGetEnabledExtensionsComplete(
       void* user_data,
       const std::vector<FilePath>& extension_directories) = 0;
-  virtual void OnMessageReceived(const IPC::Message& msg) = 0;
+  virtual bool OnMessageReceived(const IPC::Message& msg) = 0;
   virtual void OnChannelError() = 0;
 
   // This remains in interface since we call it if Navigate()
@@ -76,7 +76,7 @@ class ChromeFrameDelegateImpl : public ChromeFrameDelegate {
       void* user_data,
       const std::vector<FilePath>& extension_directories) {}
   virtual void OnLoadFailed(int error_code, const std::string& url) {}
-  virtual void OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelError() {}
 
   static bool IsTabMessage(const IPC::Message& message);

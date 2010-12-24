@@ -23,13 +23,12 @@ struct ResourceResponseHead;
 // This class serves as a communication interface between the
 // ResourceDispatcherHost in the browser process and the ResourceLoaderBridge in
 // the child process.  It can be used from any child process.
-class ResourceDispatcher {
+class ResourceDispatcher : public IPC::Channel::Listener {
  public:
   explicit ResourceDispatcher(IPC::Message::Sender* sender);
   ~ResourceDispatcher();
 
-  // Called to possibly handle the incoming IPC message.  Returns true if
-  // handled, else false.
+  // IPC::Channel::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message);
 
   // Creates a ResourceLoaderBridge for this type of dispatcher, this is so

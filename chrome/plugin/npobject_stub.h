@@ -53,7 +53,7 @@ class NPObjectStub : public IPC::Channel::Listener,
 
  private:
   // IPC::Channel::Listener implementation:
-  virtual void OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
   virtual void OnChannelError();
 
   // message handlers

@@ -169,7 +169,8 @@ GpuCommandBufferStub::~GpuCommandBufferStub() {
 #endif  // defined(OS_WIN)
 }
 
-void GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
+bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuCommandBufferStub, message)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Initialize, OnInitialize);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_GetState, OnGetState);
@@ -187,8 +188,10 @@ void GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SetWindowSize, OnSetWindowSize);
 #endif  // defined(OS_MACOSX)
-    IPC_MESSAGE_UNHANDLED_ERROR()
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  DCHECK(handled);
+  return handled;
 }
 
 bool GpuCommandBufferStub::Send(IPC::Message* message) {

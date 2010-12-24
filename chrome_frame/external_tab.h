@@ -94,7 +94,7 @@ class ExternalTabProxy : public CWindowImpl<ExternalTabProxy>,
 #endif
 
   // IPC::Channel::Listener implementation.
-  void OnMessageReceived(const IPC::Message& message);
+  bool OnMessageReceived(const IPC::Message& message);
 
   //
   virtual void CreateTab(const CreateTabParams& create_params,

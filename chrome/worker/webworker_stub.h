@@ -22,7 +22,7 @@ class WebWorkerStub : public WebWorkerStubBase {
                 const WorkerAppCacheInitInfo& appcache_init_info);
 
   // IPC::Channel::Listener implementation.
-  virtual void OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
   virtual void OnChannelError();
 
   virtual const GURL& url() const;

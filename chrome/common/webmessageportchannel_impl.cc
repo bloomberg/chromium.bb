@@ -180,11 +180,14 @@ void WebMessagePortChannelImpl::Send(IPC::Message* message) {
   ChildThread::current()->Send(message);
 }
 
-void WebMessagePortChannelImpl::OnMessageReceived(const IPC::Message& message) {
+bool WebMessagePortChannelImpl::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebMessagePortChannelImpl, message)
     IPC_MESSAGE_HANDLER(WorkerProcessMsg_Message, OnMessage)
     IPC_MESSAGE_HANDLER(WorkerProcessMsg_MessagesQueued, OnMessagedQueued)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void WebMessagePortChannelImpl::OnMessage(

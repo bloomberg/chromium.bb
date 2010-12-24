@@ -285,22 +285,22 @@ void SyncChannel::SyncContext::Clear() {
   Context::Clear();
 }
 
-void SyncChannel::SyncContext::OnMessageReceived(const Message& msg) {
+bool SyncChannel::SyncContext::OnMessageReceived(const Message& msg) {
   // Give the filters a chance at processing this message.
   if (TryFilters(msg))
-    return;
+    return true;
 
   if (TryToUnblockListener(&msg))
-    return;
+    return true;
 
   if (msg.should_unblock()) {
     received_sync_msgs_->QueueMessage(msg, this);
-    return;
+    return true;
   }
 
   if (msg.is_reply()) {
     received_sync_msgs_->QueueReply(msg, this);
-    return;
+    return true;
   }
 
   return Context::OnMessageReceivedNoFilter(msg);

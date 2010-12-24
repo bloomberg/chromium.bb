@@ -35,7 +35,7 @@ PpapiThread::~PpapiThread() {
 // Note that this function is called only for messages from the channel to the
 // browser process. Messages from the renderer process are sent via a different
 // channel that ends up at Dispatcher::OnMessageReceived.
-void PpapiThread::OnMessageReceived(const IPC::Message& msg) {
+bool PpapiThread::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(PpapiThread, msg)
     IPC_MESSAGE_HANDLER(PpapiMsg_LoadPlugin, OnMsgLoadPlugin)
 
@@ -45,6 +45,7 @@ void PpapiThread::OnMessageReceived(const IPC::Message& msg) {
         dispatcher_->OnMessageReceived(msg)
     )*/
   IPC_END_MESSAGE_MAP()
+  return true;
 }
 
 void PpapiThread::OnMsgLoadPlugin(base::ProcessHandle host_process_handle,

@@ -104,8 +104,9 @@ void NPObjectProxy::NPDeallocate(NPObject* npObj) {
   delete obj;
 }
 
-void NPObjectProxy::OnMessageReceived(const IPC::Message& msg) {
+bool NPObjectProxy::OnMessageReceived(const IPC::Message& msg) {
   NOTREACHED();
+  return false;
 }
 
 void NPObjectProxy::OnChannelError() {

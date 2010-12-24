@@ -46,10 +46,13 @@ bool NaClBrokerHost::Init() {
   return true;
 }
 
-void NaClBrokerHost::OnMessageReceived(const IPC::Message& msg) {
+bool NaClBrokerHost::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NaClBrokerHost, msg)
     IPC_MESSAGE_HANDLER(NaClProcessMsg_LoaderLaunched, OnLoaderLaunched)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 bool NaClBrokerHost::LaunchLoader(

@@ -115,12 +115,14 @@ void PluginDataRemover::OnTimeout() {
   SignalDone();
 }
 
-void PluginDataRemover::OnMessageReceived(const IPC::Message& msg) {
+bool PluginDataRemover::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(PluginDataRemover, msg)
     IPC_MESSAGE_HANDLER(PluginHostMsg_ClearSiteDataResult,
                         OnClearSiteDataResult)
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
+
+  return true;
 }
 
 void PluginDataRemover::OnChannelError() {

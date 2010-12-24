@@ -109,7 +109,8 @@ InterfaceID PPP_Instance_Proxy::GetInterfaceId() const {
   return INTERFACE_ID_PPP_INSTANCE;
 }
 
-void PPP_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
+bool PPP_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPP_Instance_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPInstance_DidCreate,
                         OnMsgDidCreate)
@@ -125,7 +126,9 @@ void PPP_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgHandleDocumentLoad)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPInstance_GetInstanceObject,
                         OnMsgGetInstanceObject)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void PPP_Instance_Proxy::OnMsgDidCreate(

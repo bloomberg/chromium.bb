@@ -114,12 +114,15 @@ void PluginChannelHost::RemoveRoute(int route_id) {
   PluginChannelBase::RemoveRoute(route_id);
 }
 
-void PluginChannelHost::OnControlMessageReceived(const IPC::Message& message) {
+bool PluginChannelHost::OnControlMessageReceived(const IPC::Message& message) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PluginChannelHost, message)
     IPC_MESSAGE_HANDLER(PluginHostMsg_SetException, OnSetException)
     IPC_MESSAGE_HANDLER(PluginHostMsg_PluginShuttingDown, OnPluginShuttingDown)
-    IPC_MESSAGE_UNHANDLED_ERROR()
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  DCHECK(handled);
+  return handled;
 }
 
 void PluginChannelHost::OnSetException(const std::string& message) {

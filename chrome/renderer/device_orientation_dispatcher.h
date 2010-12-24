@@ -8,18 +8,20 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebDeviceOrientationClient.h"
 
 #include "base/scoped_ptr.h"
+#include "ipc/ipc_channel.h"
 
 class RenderView;
-namespace IPC { class Message; }
 namespace WebKit { class WebDeviceOrientation; }
 
 struct ViewMsg_DeviceOrientationUpdated_Params;
 
-class DeviceOrientationDispatcher : public WebKit::WebDeviceOrientationClient {
+class DeviceOrientationDispatcher : public WebKit::WebDeviceOrientationClient,
+                                    public IPC::Channel::Listener {
  public:
   explicit DeviceOrientationDispatcher(RenderView* render_view);
   virtual ~DeviceOrientationDispatcher();
 
+  // IPC::Channel::Implementation.
   bool OnMessageReceived(const IPC::Message& msg);
 
   // From WebKit::WebDeviceOrientationClient.

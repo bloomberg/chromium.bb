@@ -12,13 +12,13 @@
 ChromeFrameAutomationProvider::ChromeFrameAutomationProvider(Profile* profile)
     : AutomationProvider(profile) {}
 
-void ChromeFrameAutomationProvider::OnMessageReceived(
+bool ChromeFrameAutomationProvider::OnMessageReceived(
     const IPC::Message& message) {
-  if (IsValidMessage(message.type())) {
-    AutomationProvider::OnMessageReceived(message);
-  } else {
-    OnUnhandledMessage(message);
-  }
+  if (IsValidMessage(message.type()))
+    return AutomationProvider::OnMessageReceived(message);
+
+  OnUnhandledMessage(message);
+  return false;
 }
 
 void ChromeFrameAutomationProvider::OnUnhandledMessage(

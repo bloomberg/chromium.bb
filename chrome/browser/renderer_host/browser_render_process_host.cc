@@ -977,11 +977,11 @@ bool BrowserRenderProcessHost::Send(IPC::Message* msg) {
   return channel_->Send(msg);
 }
 
-void BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
+bool BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
   // If we're about to be deleted, we can no longer trust that our profile is
   // valid, so we ignore incoming messages.
   if (deleting_soon_)
-    return;
+    return false;
 
 #if defined(OS_CHROMEOS)
   // To troubleshoot crosbug.com/7327.
@@ -1018,7 +1018,7 @@ void BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
       UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_BRPH"));
       ReceivedBadMessage();
     }
-    return;
+    return true;
   }
 
   // Dispatch incoming messages to the appropriate RenderView/WidgetHost.
@@ -1031,9 +1031,9 @@ void BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
       reply->set_reply_error();
       Send(reply);
     }
-    return;
+    return true;
   }
-  listener->OnMessageReceived(msg);
+  return listener->OnMessageReceived(msg);
 }
 
 void BrowserRenderProcessHost::OnChannelConnected(int32 peer_pid) {

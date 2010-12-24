@@ -38,19 +38,18 @@ void GpuChannel::OnChannelConnected(int32 peer_pid) {
   }
 }
 
-void GpuChannel::OnMessageReceived(const IPC::Message& message) {
+bool GpuChannel::OnMessageReceived(const IPC::Message& message) {
   if (log_messages_) {
     VLOG(1) << "received message @" << &message << " on channel @" << this
             << " with type " << message.type();
   }
 
-  if (message.routing_id() == MSG_ROUTING_CONTROL) {
-    OnControlMessageReceived(message);
-  } else {
-    // Fail silently if the GPU process has destroyed while the IPC message was
-    // en-route.
-    router_.RouteMessage(message);
-  }
+  if (message.routing_id() == MSG_ROUTING_CONTROL)
+    return OnControlMessageReceived(message);
+
+  // Fail silently if the GPU process has destroyed while the IPC message was
+  // en-route.
+  return router_.RouteMessage(message);
 }
 
 void GpuChannel::OnChannelError() {
@@ -94,7 +93,8 @@ bool GpuChannel::IsRenderViewGone(int32 renderer_route_id) {
 }
 #endif
 
-void GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
+bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuChannel, msg)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateViewCommandBuffer,
         OnCreateViewCommandBuffer)
@@ -106,8 +106,10 @@ void GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
         OnCreateVideoDecoder)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyVideoDecoder,
         OnDestroyVideoDecoder)
-    IPC_MESSAGE_UNHANDLED_ERROR()
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  DCHECK(handled);
+  return handled;
 }
 
 int GpuChannel::GenerateRouteID() {

@@ -48,11 +48,11 @@ TestAutomationProvider::~TestAutomationProvider() {
   g_provider_instance_ = NULL;
 }
 
-void TestAutomationProvider::OnMessageReceived(const IPC::Message& msg) {
+bool TestAutomationProvider::OnMessageReceived(const IPC::Message& msg) {
   if (automation_resource_message_filter_->OnMessageReceived(msg))
-    return;  // Message handled by the filter.
+    return true;  // Message handled by the filter.
 
-  __super::OnMessageReceived(msg);
+  return __super::OnMessageReceived(msg);
 }
 
 // IPC override to grab the tab handle.

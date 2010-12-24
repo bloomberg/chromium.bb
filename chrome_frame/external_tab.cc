@@ -34,7 +34,8 @@ ExternalTabProxy::~ExternalTabProxy() {
   Destroy();
 }
 
-void ExternalTabProxy::OnMessageReceived(const IPC::Message& message) {
+bool ExternalTabProxy::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExternalTabProxy, message)
     IPC_MESSAGE_HANDLER(AutomationMsg_NavigationStateChanged,
                         OnNavigationStateChanged)
@@ -60,7 +61,9 @@ void ExternalTabProxy::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_RequestGoToHistoryEntryOffset,
                         OnGoToHistoryOffset)
     IPC_MESSAGE_HANDLER(AutomationMsg_CloseExternalTab, OnTabClosed)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void ExternalTabProxy::Init() {

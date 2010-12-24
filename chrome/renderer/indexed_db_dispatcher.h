@@ -8,7 +8,7 @@
 
 #include "base/id_map.h"
 #include "base/nullable_string16.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_channel.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebExceptionCode.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBCallbacks.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabase.h"
@@ -24,13 +24,12 @@ class WebIDBTransaction;
 }
 
 // Handle the indexed db related communication for this entire renderer.
-class IndexedDBDispatcher {
+class IndexedDBDispatcher : public IPC::Channel::Listener {
  public:
   IndexedDBDispatcher();
   ~IndexedDBDispatcher();
 
-  // Called to possibly handle the incoming IPC message. Returns true if
-  // handled.
+  // IPC::Channel::Listener implementation.
   bool OnMessageReceived(const IPC::Message& msg);
 
   void RequestIDBFactoryOpen(

@@ -45,7 +45,7 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
                         PluginChannel* channel);
 
   // IPC::Channel::Listener implementation:
-  virtual void OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg);
 
   // IPC::Message::Sender implementation:
   virtual bool Send(IPC::Message* msg);

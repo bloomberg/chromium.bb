@@ -32,7 +32,7 @@ class PpapiThread : public ChildThread {
 
  private:
   // ChildThread overrides.
-  virtual void OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg);
 
   // Message handlers.
   void OnMsgLoadPlugin(base::ProcessHandle renderer_handle,

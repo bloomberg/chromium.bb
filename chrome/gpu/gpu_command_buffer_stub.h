@@ -41,7 +41,7 @@ class GpuCommandBufferStub
   virtual ~GpuCommandBufferStub();
 
   // IPC::Channel::Listener implementation:
-  virtual void OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
   // IPC::Message::Sender implementation:
   virtual bool Send(IPC::Message* msg);

@@ -38,7 +38,7 @@ class UtilityThread : public ChildThread {
 
  private:
   // IPC messages
-  virtual void OnControlMessageReceived(const IPC::Message& msg);
+  virtual bool OnControlMessageReceived(const IPC::Message& msg);
   void OnUnpackExtension(const FilePath& extension_path);
 
   // IPC messages for web resource service.

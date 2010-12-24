@@ -118,13 +118,14 @@ bool ProfileImportProcessHost::StartProcess() {
   return true;
 }
 
-void ProfileImportProcessHost::OnMessageReceived(const IPC::Message& message) {
+bool ProfileImportProcessHost::OnMessageReceived(const IPC::Message& message) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(
       thread_id_, FROM_HERE,
       NewRunnableMethod(import_process_client_.get(),
                         &ImportProcessClient::OnMessageReceived,
                         message));
+  return true;
 }
 
 void ProfileImportProcessHost::OnProcessCrashed(int exit_code) {
@@ -144,8 +145,9 @@ ProfileImportProcessHost::ImportProcessClient::ImportProcessClient() {}
 
 ProfileImportProcessHost::ImportProcessClient::~ImportProcessClient() {}
 
-void ProfileImportProcessHost::ImportProcessClient::OnMessageReceived(
+bool ProfileImportProcessHost::ImportProcessClient::OnMessageReceived(
     const IPC::Message& message) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ProfileImportProcessHost, message)
     // Notification messages about the state of the import process.
     IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_Import_Started,
@@ -176,5 +178,7 @@ void ProfileImportProcessHost::ImportProcessClient::OnMessageReceived(
                         ImportProcessClient::OnPasswordFormImportReady)
     IPC_MESSAGE_HANDLER(ProfileImportProcessHostMsg_NotifyKeywordsReady,
                         ImportProcessClient::OnKeywordsImportReady)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
+  return handled;
 }

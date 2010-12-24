@@ -25,11 +25,12 @@ class GURL;
 // Dispatches and sends file system related messages sent to/from a child
 // process from/to the main browser process.  There is one instance
 // per child process.  Messages are dispatched on the main child thread.
-class FileSystemDispatcher {
+class FileSystemDispatcher : public IPC::Channel::Listener {
  public:
   FileSystemDispatcher();
   ~FileSystemDispatcher();
 
+  // IPC::Channel::Listener implementation.
   bool OnMessageReceived(const IPC::Message& msg);
 
   bool OpenFileSystem(const GURL& origin_url,

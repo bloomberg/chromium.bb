@@ -10,11 +10,9 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "ipc/ipc_channel.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsFrontendClient.h"
 
-namespace IPC {
-class Message;
-}
 class MessageLoop;
 class RenderView;
 
@@ -31,13 +29,13 @@ struct DevToolsMessageData;
 // corresponding DevToolsAgent object.
 // TODO(yurys): now the client is almost empty later it will delegate calls to
 // code in glue
-class DevToolsClient : public WebKit::WebDevToolsFrontendClient {
+class DevToolsClient : public WebKit::WebDevToolsFrontendClient,
+                       public IPC::Channel::Listener {
  public:
   explicit DevToolsClient(RenderView* view);
   virtual ~DevToolsClient();
 
-  // Called to possibly handle the incoming IPC message. Returns true if
-  // handled. Called in render thread.
+  // IPC::Channel::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message);
 
   // WebDevToolsFrontendClient implementation

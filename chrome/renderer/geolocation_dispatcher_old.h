@@ -12,7 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/id_map.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_channel.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebGeolocationService.h"
 
@@ -25,13 +25,13 @@ struct Geoposition;
 // It's the complement of GeolocationDispatcherHostOld (owned by
 // RenderViewHost).
 
-class GeolocationDispatcherOld : public WebKit::WebGeolocationService {
+class GeolocationDispatcherOld : public WebKit::WebGeolocationService,
+                                 public IPC::Channel::Listener {
  public:
   explicit GeolocationDispatcherOld(RenderView* render_view);
   virtual ~GeolocationDispatcherOld();
 
-  // Called to possibly handle the incoming IPC message. Returns true if
-  // handled. Called in render thread.
+  // IPC::Channel::Listener implementation
   bool OnMessageReceived(const IPC::Message& msg);
 
   // WebKit::WebGeolocationService.

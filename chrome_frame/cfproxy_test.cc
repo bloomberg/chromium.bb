@@ -1,3 +1,4 @@
+
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -28,7 +29,7 @@ struct MockFactory : public ChromeProxyFactory {
 };
 
 struct MockChromeProxyDelegate : public ChromeProxyDelegate {
-  MOCK_METHOD1(OnMessageReceived, void(const IPC::Message& message));
+  MOCK_METHOD1(OnMessageReceived, bool(const IPC::Message& message));
   MOCK_METHOD1(Connected, void(ChromeProxy* proxy));
   MOCK_METHOD2(PeerLost, void(ChromeProxy*, enum DisconnectReason reason));
   MOCK_METHOD0(Disconnected, void());

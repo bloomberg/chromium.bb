@@ -50,7 +50,7 @@ class GpuVideoDecoderHost : public media::VideoDecodeEngine,
   // IPC::Channel::Listener.
   virtual void OnChannelConnected(int32 peer_pid) {}
   virtual void OnChannelError();
-  virtual void OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
   // media::VideoDecodeEngine implementation.
   virtual void Initialize(MessageLoop* message_loop,

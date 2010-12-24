@@ -103,7 +103,7 @@ class Dispatcher : public IPC::Channel::Listener,
   virtual bool Send(IPC::Message* msg);
 
   // IPC::Channel::Listener implementation.
-  virtual void OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg);
 
   IPC::SyncChannel* channel() const {
     return channel_.get();

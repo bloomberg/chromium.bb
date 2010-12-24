@@ -80,7 +80,7 @@ class ServiceUtilityProcessHost : public ServiceChildProcessHost {
     friend class base::RefCountedThreadSafe<Client>;
     friend class ServiceUtilityProcessHost;
 
-    void OnMessageReceived(const IPC::Message& message);
+    bool OnMessageReceived(const IPC::Message& message);
     // Invoked when a metafile file is ready.
     void MetafileAvailable(const FilePath& metafile_path,
                            int highest_rendered_page_number);
@@ -122,7 +122,7 @@ class ServiceUtilityProcessHost : public ServiceChildProcessHost {
   bool StartProcess(bool no_sandbox, const FilePath& exposed_dir);
 
   // IPC messages:
-  virtual void OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
   // Called when at least one page in the specified PDF has been rendered
   // successfully into metafile_path_;
   void OnRenderPDFPagesToMetafileSucceeded(int highest_rendered_page_number);

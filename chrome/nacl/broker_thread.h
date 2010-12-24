@@ -26,7 +26,7 @@ class NaClBrokerThread : public ChildThread {
   virtual void OnChannelConnected(int32 peer_pid);
 
  private:
-  virtual void OnControlMessageReceived(const IPC::Message& msg);
+  virtual bool OnControlMessageReceived(const IPC::Message& msg);
   void OnLaunchLoaderThroughBroker(const std::wstring& loader_channel_id);
   void OnShareBrowserHandle(int browser_handle);
   void OnStopBroker();

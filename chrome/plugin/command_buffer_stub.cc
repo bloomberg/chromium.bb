@@ -27,7 +27,8 @@ CommandBufferStub::~CommandBufferStub() {
   channel_->RemoveRoute(route_id_);
 }
 
-void CommandBufferStub::OnMessageReceived(const IPC::Message& message) {
+bool CommandBufferStub::OnMessageReceived(const IPC::Message& message) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(CommandBufferStub, message)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_Initialize, OnInitialize);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_GetState, OnGetState);
@@ -43,8 +44,10 @@ void CommandBufferStub::OnMessageReceived(const IPC::Message& message) {
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SetWindowSize, OnSetWindowSize);
 #endif
-    IPC_MESSAGE_UNHANDLED_ERROR()
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  DCHECK(handled);
+  return handled;
 }
 
 void CommandBufferStub::OnChannelError() {

@@ -77,7 +77,8 @@ bool ServiceIPCServer::Send(IPC::Message* msg) {
   return channel_->Send(msg);
 }
 
-void ServiceIPCServer::OnMessageReceived(const IPC::Message& msg) {
+bool ServiceIPCServer::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceIPCServer, msg)
     IPC_MESSAGE_HANDLER(ServiceMsg_EnableCloudPrintProxy,
                         OnEnableCloudPrintProxy)
@@ -100,7 +101,9 @@ void ServiceIPCServer::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ServiceMsg_Hello, OnHello);
     IPC_MESSAGE_HANDLER(ServiceMsg_Shutdown, OnShutdown);
     IPC_MESSAGE_HANDLER(ServiceMsg_UpdateAvailable, OnUpdateAvailable);
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void ServiceIPCServer::OnEnableCloudPrintProxy(const std::string& lsid) {

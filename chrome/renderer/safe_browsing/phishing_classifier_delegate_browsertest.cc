@@ -59,13 +59,15 @@ class MockScorer : public Scorer {
 
 class PhishingClassifierDelegateTest : public RenderViewFakeResourcesTest {
  protected:
-  void OnMessageReceived(const IPC::Message& message) {
+  bool OnMessageReceived(const IPC::Message& message) {
+    bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(PhishingClassifierDelegateTest, message)
       IPC_MESSAGE_HANDLER(ViewHostMsg_DetectedPhishingSite,
                           OnDetectedPhishingSite)
       IPC_MESSAGE_UNHANDLED(
-          RenderViewFakeResourcesTest::OnMessageReceived(message))
+          handled = RenderViewFakeResourcesTest::OnMessageReceived(message))
     IPC_END_MESSAGE_MAP()
+    return handled;
   }
 
   void OnDetectedPhishingSite(GURL phishing_url,

@@ -80,7 +80,8 @@ InterfaceID PPB_CursorControl_Proxy::GetInterfaceId() const {
   return INTERFACE_ID_PPB_CURSORCONTROL;
 }
 
-void PPB_CursorControl_Proxy::OnMessageReceived(const IPC::Message& msg) {
+bool PPB_CursorControl_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_CursorControl_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBCursorControl_SetCursor,
                         OnMsgSetCursor)
@@ -92,8 +93,10 @@ void PPB_CursorControl_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgHasCursorLock)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBCursorControl_CanLockCursor,
                         OnMsgCanLockCursor)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   // TODO(brettw): handle bad messages!
+  return handled;
 }
 
 void PPB_CursorControl_Proxy::OnMsgSetCursor(PP_Instance instance,

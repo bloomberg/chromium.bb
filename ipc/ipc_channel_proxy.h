@@ -176,12 +176,12 @@ class ChannelProxy : public Message::Sender {
     virtual ~Context() { }
 
     // IPC::Channel::Listener methods:
-    virtual void OnMessageReceived(const Message& message);
+    virtual bool OnMessageReceived(const Message& message);
     virtual void OnChannelConnected(int32 peer_pid);
     virtual void OnChannelError();
 
     // Like OnMessageReceived but doesn't try the filters.
-    void OnMessageReceivedNoFilter(const Message& message);
+    bool OnMessageReceivedNoFilter(const Message& message);
 
     // Gives the filters a chance at processing |message|.
     // Returns true if the message was processed, false otherwise.

@@ -738,7 +738,7 @@ bool RenderViewHost::SuddenTerminationAllowed() const {
 ///////////////////////////////////////////////////////////////////////////////
 // RenderViewHost, IPC message handlers:
 
-void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
+bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
 #if defined(OS_WIN)
   // On Windows there's a potential deadlock with sync messsages going in
   // a circle from browser -> plugin -> renderer -> browser.
@@ -756,10 +756,11 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC::Message* reply = IPC::SyncMessage::GenerateReply(&msg);
     reply->set_reply_error();
     Send(reply);
-    return;
+    return true;
   }
 #endif
 
+  bool handled = true;
   bool msg_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(RenderViewHost, msg, msg_is_ok)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowView, OnMsgShowView)
@@ -917,7 +918,7 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_PagesReadyForPreview,
                         OnPagesReadyForPreview)
     // Have the super handle all other messages.
-    IPC_MESSAGE_UNHANDLED(RenderWidgetHost::OnMessageReceived(msg))
+    IPC_MESSAGE_UNHANDLED(handled = RenderWidgetHost::OnMessageReceived(msg))
   IPC_END_MESSAGE_MAP_EX()
 
   if (!msg_is_ok) {
@@ -926,6 +927,8 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     UserMetrics::RecordAction(UserMetricsAction("BadMessageTerminate_RVH"));
     process()->ReceivedBadMessage();
   }
+
+  return handled;
 }
 
 void RenderViewHost::Shutdown() {

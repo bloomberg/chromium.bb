@@ -33,7 +33,7 @@ class NaClBrokerHost : public BrowserChildProcessHost {
                         base::ProcessHandle handle);
 
   // IPC::Channel::Listener
-  virtual void OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg);
 
   bool stopping_;
 

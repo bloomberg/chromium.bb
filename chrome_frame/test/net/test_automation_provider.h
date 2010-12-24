@@ -36,7 +36,7 @@ class TestAutomationProvider
   virtual ~TestAutomationProvider();
 
   // AutomationProvider overrides.
-  virtual void OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg);
   virtual bool Send(IPC::Message* msg);
 
   // Protocol factory for handling http/https requests over automation.

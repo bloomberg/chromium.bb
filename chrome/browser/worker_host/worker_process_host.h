@@ -149,7 +149,7 @@ class WorkerProcessHost : public BrowserChildProcessHost {
 
   // IPC::Channel::Listener implementation:
   // Called when a message arrives from the worker process.
-  virtual void OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
   void OnWorkerContextClosed(int worker_route_id);
   void OnAllowDatabase(int worker_route_id,

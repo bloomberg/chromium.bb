@@ -80,7 +80,7 @@ class ChildProcessHost : public IPC::Channel::Listener,
   virtual void InstanceCreated();
 
   // IPC::Channel::Listener implementation:
-  virtual void OnMessageReceived(const IPC::Message& msg) { }
+  virtual bool OnMessageReceived(const IPC::Message& msg) { return false; }
   virtual void OnChannelConnected(int32 peer_pid) { }
   virtual void OnChannelError() { }
 
@@ -102,7 +102,7 @@ class ChildProcessHost : public IPC::Channel::Listener,
   class ListenerHook : public IPC::Channel::Listener {
    public:
     explicit ListenerHook(ChildProcessHost* host);
-    virtual void OnMessageReceived(const IPC::Message& msg);
+    virtual bool OnMessageReceived(const IPC::Message& msg);
     virtual void OnChannelConnected(int32 peer_pid);
     virtual void OnChannelError();
    private:

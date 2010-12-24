@@ -36,13 +36,14 @@ const int32 RenderViewFakeResourcesTest::kViewId = 5;
 RenderViewFakeResourcesTest::RenderViewFakeResourcesTest() {}
 RenderViewFakeResourcesTest::~RenderViewFakeResourcesTest() {}
 
-void RenderViewFakeResourcesTest::OnMessageReceived(
+bool RenderViewFakeResourcesTest::OnMessageReceived(
     const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(RenderViewFakeResourcesTest, message)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewReady, OnRenderViewReady)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestResource, OnRequestResource)
   IPC_END_MESSAGE_MAP()
+  return true;
 }
 
 bool RenderViewFakeResourcesTest::Visit(RenderView* render_view) {

@@ -203,8 +203,9 @@ void TestingAutomationProvider::Observe(NotificationType type,
   Release();
 }
 
-void TestingAutomationProvider::OnMessageReceived(
+bool TestingAutomationProvider::OnMessageReceived(
     const IPC::Message& message) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TestingAutomationProvider, message)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_CloseBrowser, CloseBrowser)
     IPC_MESSAGE_HANDLER(AutomationMsg_CloseBrowserRequestAsync,
@@ -389,8 +390,10 @@ void TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER(AutomationMsg_LoadBlockedPlugins, LoadBlockedPlugins)
     IPC_MESSAGE_HANDLER(AutomationMsg_ResetToDefaultTheme, ResetToDefaultTheme)
 
-    IPC_MESSAGE_UNHANDLED(AutomationProvider::OnMessageReceived(message));
+    IPC_MESSAGE_UNHANDLED(
+        handled = AutomationProvider::OnMessageReceived(message))
   IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void TestingAutomationProvider::OnChannelError() {

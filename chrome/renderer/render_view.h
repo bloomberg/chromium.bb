@@ -388,7 +388,7 @@ class RenderView : public RenderWidget,
 
   // IPC::Channel::Listener implementation -------------------------------------
 
-  virtual void OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg);
 
   // WebKit::WebWidgetClient implementation ------------------------------------
 

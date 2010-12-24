@@ -73,7 +73,7 @@ class ProfileImportProcessHost : public BrowserChildProcessHost {
         const std::vector<TemplateURL>& template_urls,
             int default_keyword_index, bool unique_on_host_and_path) {}
 
-    virtual void OnMessageReceived(const IPC::Message& message);
+    virtual bool OnMessageReceived(const IPC::Message& message);
 
    protected:
     friend class base::RefCountedThreadSafe<ImportProcessClient>;
@@ -122,7 +122,7 @@ class ProfileImportProcessHost : public BrowserChildProcessHost {
 
   // Called by the external importer process to send messages back to the
   // ImportProcessClient.
-  virtual void OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
   // Overridden from BrowserChildProcessHost:
   virtual void OnProcessCrashed(int exit_code);

@@ -1163,22 +1163,21 @@ LogFunctionMap g_log_function_mapping;
 // Prefer to use the IPC_BEGIN_MESSAGE_MAP_EX to the older macros since they
 // allow you to detect when a message could not be de-serialized. Usage:
 //
-//   void MyClass::OnMessageReceived(const IPC::Message& msg) {
+//   bool MyClass::OnMessageReceived(const IPC::Message& msg) {
+//     bool handled = true;
 //     bool msg_is_good = false;
 //     IPC_BEGIN_MESSAGE_MAP_EX(MyClass, msg, msg_is_good)
 //       IPC_MESSAGE_HANDLER(MsgClassOne, OnMsgClassOne)
 //       ...more handlers here ...
 //       IPC_MESSAGE_HANDLER(MsgClassTen, OnMsgClassTen)
+//       IPC_MESSAGE_UNHANDLED(handled = false)
 //     IPC_END_MESSAGE_MAP_EX()
 //     if (!msg_is_good) {
 //       // Signal error here or terminate offending process.
 //     }
+//     return handled;
 //   }
 
-
-#define IPC_DEFINE_MESSAGE_MAP(class_name) \
-void class_name::OnMessageReceived(const IPC::Message& msg) \
-  IPC_BEGIN_MESSAGE_MAP(class_name, msg)
 
 #define IPC_BEGIN_MESSAGE_MAP_EX(class_name, msg, msg_is_ok) \
   { \

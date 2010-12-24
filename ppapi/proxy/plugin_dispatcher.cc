@@ -70,21 +70,22 @@ bool PluginDispatcher::IsPlugin() const {
   return true;
 }
 
-void PluginDispatcher::OnMessageReceived(const IPC::Message& msg) {
+bool PluginDispatcher::OnMessageReceived(const IPC::Message& msg) {
   if (msg.routing_id() == MSG_ROUTING_CONTROL) {
     // Handle some plugin-specific control messages.
+    bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(PluginDispatcher, msg)
       IPC_MESSAGE_HANDLER(PpapiMsg_InitializeModule, OnMsgInitializeModule)
       IPC_MESSAGE_HANDLER(PpapiMsg_Shutdown, OnMsgShutdown)
 
       // Forward all other control messages to the superclass.
-      IPC_MESSAGE_UNHANDLED(Dispatcher::OnMessageReceived(msg))
+      IPC_MESSAGE_UNHANDLED(handled = Dispatcher::OnMessageReceived(msg))
     IPC_END_MESSAGE_MAP()
-    return;
+    return handled;
   }
 
   // All non-control messages get handled by the superclass.
-  Dispatcher::OnMessageReceived(msg);
+  return Dispatcher::OnMessageReceived(msg);
 }
 
 void PluginDispatcher::OnMsgInitializeModule(PP_Module pp_module,

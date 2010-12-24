@@ -187,7 +187,8 @@ InterfaceID PPB_Font_Proxy::GetInterfaceId() const {
   return INTERFACE_ID_PPB_FONT;
 }
 
-void PPB_Font_Proxy::OnMessageReceived(const IPC::Message& msg) {
+bool PPB_Font_Proxy::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_Font_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFont_Create,
                         OnMsgCreate)
@@ -199,7 +200,9 @@ void PPB_Font_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgCharacterOffsetForPixel)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFont_PixelOffsetForCharacter,
                         OnMsgPixelOffsetForCharacter)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void PPB_Font_Proxy::OnMsgCreate(

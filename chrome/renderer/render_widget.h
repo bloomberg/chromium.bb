@@ -92,7 +92,7 @@ class RenderWidget : public IPC::Channel::Listener,
   bool has_focus() const { return has_focus_; }
 
   // IPC::Channel::Listener
-  virtual void OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg);
 
   // IPC::Message::Sender
   virtual bool Send(IPC::Message* msg);

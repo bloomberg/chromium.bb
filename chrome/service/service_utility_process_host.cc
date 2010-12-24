@@ -128,7 +128,7 @@ void ServiceUtilityProcessHost::OnChildDied() {
   ServiceChildProcessHost::OnChildDied();
 }
 
-void ServiceUtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
+bool ServiceUtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
   bool msg_is_ok = false;
   IPC_BEGIN_MESSAGE_MAP_EX(ServiceUtilityProcessHost, message, msg_is_ok)
 #if defined(OS_WIN)  // This hack is Windows-specific.
@@ -138,6 +138,7 @@ void ServiceUtilityProcessHost::OnMessageReceived(const IPC::Message& message) {
                         OnRenderPDFPagesToMetafileSucceeded)
     IPC_MESSAGE_UNHANDLED(msg_is_ok__ = MessageForClient(message))
   IPC_END_MESSAGE_MAP_EX()
+  return true;
 }
 
 bool ServiceUtilityProcessHost::MessageForClient(const IPC::Message& message) {
@@ -172,8 +173,9 @@ void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafileSucceeded(
   waiting_for_reply_ = false;
 }
 
-void ServiceUtilityProcessHost::Client::OnMessageReceived(
+bool ServiceUtilityProcessHost::Client::OnMessageReceived(
     const IPC::Message& message) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceUtilityProcessHost, message)
     IPC_MESSAGE_HANDLER(UtilityHostMsg_RenderPDFPagesToMetafile_Failed,
                         Client::OnRenderPDFPagesToMetafileFailed)
@@ -181,7 +183,9 @@ void ServiceUtilityProcessHost::Client::OnMessageReceived(
                         Client::OnGetPrinterCapsAndDefaultsSucceeded)
     IPC_MESSAGE_HANDLER(UtilityHostMsg_GetPrinterCapsAndDefaults_Failed,
                         Client::OnGetPrinterCapsAndDefaultsFailed)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
+  return handled;
 }
 
 void ServiceUtilityProcessHost::Client::MetafileAvailable(

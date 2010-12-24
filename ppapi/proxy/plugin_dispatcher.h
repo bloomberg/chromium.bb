@@ -46,7 +46,7 @@ class PluginDispatcher : public Dispatcher {
   virtual bool IsPlugin() const;
 
   // IPC::Channel::Listener implementation.
-  virtual void OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg);
 
   // Returns the resource tracker for the plugin. In the browser process this
   // will return NULL.

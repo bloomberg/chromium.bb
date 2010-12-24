@@ -81,7 +81,7 @@ void MockRenderThread::SendCloseMessage() {
   widget_->OnMessageReceived(msg);
 }
 
-void MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
+bool MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
   // Save the message in the sink.
   sink_.OnMessageReceived(msg);
 
@@ -116,6 +116,7 @@ void MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
 #endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
+  return handled;
 }
 
 // The Widget expects to be returned valid route_id.

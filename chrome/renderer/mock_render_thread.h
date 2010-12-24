@@ -82,7 +82,7 @@ class MockRenderThread : public RenderThreadBase {
 
  private:
   // This function operates as a regular IPC listener.
-  void OnMessageReceived(const IPC::Message& msg);
+  bool OnMessageReceived(const IPC::Message& msg);
 
   // The Widget expects to be returned valid route_id.
   void OnMsgCreateWidget(int opener_id,

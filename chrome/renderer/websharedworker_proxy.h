@@ -41,7 +41,7 @@ class WebSharedWorkerProxy : public WebKit::WebSharedWorker,
   virtual void clientDestroyed();
 
   // IPC::Channel::Listener implementation.
-  virtual void OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
  private:
   void OnWorkerCreated();

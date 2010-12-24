@@ -276,7 +276,7 @@ bool WorkerProcessHost::FilterMessage(const IPC::Message& message,
 void WorkerProcessHost::OnProcessLaunched() {
 }
 
-void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
+bool WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
   bool msg_is_ok = true;
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(WorkerProcessHost, message, msg_is_ok)
@@ -293,7 +293,7 @@ void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
   }
 
   if (handled)
-    return;
+    return true;
 
   for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
     if (i->worker_route_id() == message.routing_id()) {
@@ -308,9 +308,10 @@ void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
         instances_.erase(i);
         UpdateTitle();
       }
-      break;
+      return true;
     }
   }
+  return false;
 }
 
 // Sent to notify the browser process when a worker context invokes close(), so

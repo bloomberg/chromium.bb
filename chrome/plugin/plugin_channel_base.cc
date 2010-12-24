@@ -140,19 +140,20 @@ int PluginChannelBase::Count() {
   return static_cast<int>(g_plugin_channels_.size());
 }
 
-void PluginChannelBase::OnMessageReceived(const IPC::Message& message) {
+bool PluginChannelBase::OnMessageReceived(const IPC::Message& message) {
   // This call might cause us to be deleted, so keep an extra reference to
   // ourself so that we can send the reply and decrement back in_dispatch_.
   lazy_plugin_channel_stack_.Pointer()->push(
       scoped_refptr<PluginChannelBase>(this));
 
+  bool handled;
   if (message.should_unblock())
     in_unblock_dispatch_++;
   if (message.routing_id() == MSG_ROUTING_CONTROL) {
-    OnControlMessageReceived(message);
+    handled = OnControlMessageReceived(message);
   } else {
-    bool routed = router_.RouteMessage(message);
-    if (!routed && message.is_sync()) {
+    handled = router_.RouteMessage(message);
+    if (!handled && message.is_sync()) {
       // The listener has gone away, so we must respond or else the caller will
       // hang waiting for a reply.
       IPC::Message* reply = IPC::SyncMessage::GenerateReply(&message);
@@ -164,6 +165,7 @@ void PluginChannelBase::OnMessageReceived(const IPC::Message& message) {
     in_unblock_dispatch_--;
 
   lazy_plugin_channel_stack_.Pointer()->pop();
+  return handled;
 }
 
 void PluginChannelBase::OnChannelConnected(int32 peer_pid) {
@@ -228,9 +230,10 @@ void PluginChannelBase::RemoveRoute(int route_id) {
   }
 }
 
-void PluginChannelBase::OnControlMessageReceived(const IPC::Message& msg) {
+bool PluginChannelBase::OnControlMessageReceived(const IPC::Message& msg) {
   NOTREACHED() <<
       "should override in subclass if you care about control messages";
+  return false;
 }
 
 void PluginChannelBase::OnChannelError() {

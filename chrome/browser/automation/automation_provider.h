@@ -148,7 +148,7 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // IPC implementations
   virtual bool Send(IPC::Message* msg);
   virtual void OnChannelConnected(int pid);
-  virtual void OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelError();
 
   IPC::Message* reply_message_release() {

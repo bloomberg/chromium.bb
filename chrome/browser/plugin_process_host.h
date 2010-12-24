@@ -66,7 +66,7 @@ class PluginProcessHost : public BrowserChildProcessHost,
   // Force the plugin process to shutdown (cleanly).
   virtual void ForceShutdown();
 
-  virtual void OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelConnected(int32 peer_pid);
   virtual void OnChannelError();
 

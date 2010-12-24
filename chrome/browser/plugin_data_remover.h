@@ -45,8 +45,8 @@ class PluginDataRemover : public base::RefCountedThreadSafe<PluginDataRemover>,
   virtual void OnChannelOpened(const IPC::ChannelHandle& handle);
   virtual void OnError();
 
-  // IPC::ChannelProxy::MessageFilter methods
-  virtual void OnMessageReceived(const IPC::Message& message);
+  // IPC::Channel::Listener methods
+  virtual bool OnMessageReceived(const IPC::Message& message);
   virtual void OnChannelError();
 
  private:

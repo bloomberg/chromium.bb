@@ -20,7 +20,7 @@ class NaClThread : public ChildThread {
   static NaClThread* current();
 
  private:
-  virtual void OnControlMessageReceived(const IPC::Message& msg);
+  virtual bool OnControlMessageReceived(const IPC::Message& msg);
   void OnStartSelLdr(std::vector<nacl::FileDescriptor> handles);
 
   int debug_enabled_;

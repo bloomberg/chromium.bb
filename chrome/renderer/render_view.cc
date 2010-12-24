@@ -944,31 +944,32 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
   render_thread_->AddFilter(audio_message_filter_);
 }
 
-void RenderView::OnMessageReceived(const IPC::Message& message) {
+bool RenderView::OnMessageReceived(const IPC::Message& message) {
   WebFrame* main_frame = webview() ? webview()->mainFrame() : NULL;
   if (main_frame)
     child_process_logging::SetActiveURL(main_frame->url());
 
   // If this is developer tools renderer intercept tools messages first.
   if (devtools_client_.get() && devtools_client_->OnMessageReceived(message))
-    return;
+    return true;
   if (devtools_agent_.get() && devtools_agent_->OnMessageReceived(message))
-    return;
+    return true;
   if (notification_provider_->OnMessageReceived(message))
-    return;
+    return true;
   if (geolocation_dispatcher_.get() &&
       geolocation_dispatcher_->OnMessageReceived(message)) {
-    return;
+    return true;
   }
   if (speech_input_dispatcher_.get() &&
       speech_input_dispatcher_->OnMessageReceived(message)) {
-    return;
+    return true;
   }
   if (device_orientation_dispatcher_.get() &&
       device_orientation_dispatcher_->OnMessageReceived(message)) {
-    return;
+    return true;
   }
 
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderView, message)
     IPC_MESSAGE_HANDLER(ViewMsg_CaptureThumbnail, OnCaptureThumbnail)
     IPC_MESSAGE_HANDLER(ViewMsg_CaptureSnapshot, OnCaptureSnapshot)
@@ -1102,8 +1103,9 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_PrintPreview, OnPrintPreview)
 
     // Have the super handle all other messages.
-    IPC_MESSAGE_UNHANDLED(RenderWidget::OnMessageReceived(message))
+    IPC_MESSAGE_UNHANDLED(handled = RenderWidget::OnMessageReceived(message))
   IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void RenderView::OnCaptureThumbnail() {

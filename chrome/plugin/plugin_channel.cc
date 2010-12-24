@@ -190,23 +190,26 @@ bool PluginChannel::Send(IPC::Message* msg) {
   return result;
 }
 
-void PluginChannel::OnMessageReceived(const IPC::Message& msg) {
+bool PluginChannel::OnMessageReceived(const IPC::Message& msg) {
   if (log_messages_) {
     VLOG(1) << "received message @" << &msg << " on channel @" << this
             << " with type " << msg.type();
   }
-  PluginChannelBase::OnMessageReceived(msg);
+  return PluginChannelBase::OnMessageReceived(msg);
 }
 
-void PluginChannel::OnControlMessageReceived(const IPC::Message& msg) {
+bool PluginChannel::OnControlMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PluginChannel, msg)
     IPC_MESSAGE_HANDLER(PluginMsg_CreateInstance, OnCreateInstance)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(PluginMsg_DestroyInstance,
                                     OnDestroyInstance)
     IPC_MESSAGE_HANDLER(PluginMsg_GenerateRouteID, OnGenerateRouteID)
     IPC_MESSAGE_HANDLER(PluginMsg_ClearSiteData, OnClearSiteData)
-    IPC_MESSAGE_UNHANDLED_ERROR()
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  DCHECK(handled);
+  return handled;
 }
 
 void PluginChannel::OnCreateInstance(const std::string& mime_type,

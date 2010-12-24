@@ -46,7 +46,7 @@ class GpuChannel : public IPC::Channel::Listener,
   }
 
   // IPC::Channel::Listener implementation:
-  virtual void OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelConnected(int32 peer_pid);
   virtual void OnChannelError();
 
@@ -62,7 +62,7 @@ class GpuChannel : public IPC::Channel::Listener,
 #endif
 
  private:
-  void OnControlMessageReceived(const IPC::Message& msg);
+  bool OnControlMessageReceived(const IPC::Message& msg);
 
   int GenerateRouteID();
 

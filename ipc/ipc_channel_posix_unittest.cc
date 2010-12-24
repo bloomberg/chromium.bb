@@ -43,10 +43,11 @@ class IPCChannelPosixTestListener : public IPC::Channel::Listener {
 
   virtual ~IPCChannelPosixTestListener() {}
 
-  virtual void OnMessageReceived(const IPC::Message& message) {
+  virtual bool OnMessageReceived(const IPC::Message& message) {
     EXPECT_EQ(message.type(), QUIT_MESSAGE);
     status_ = MESSAGE_RECEIVED;
     QuitRunLoop();
+    return true;
   }
 
   virtual void OnChannelConnected(int32 peer_pid) {
