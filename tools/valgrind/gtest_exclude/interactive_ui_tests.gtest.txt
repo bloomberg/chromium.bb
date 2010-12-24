@@ -12,3 +12,6 @@ NotificationsPermissionTest.TestUserGestureInfobar
 BrowserFocusTest.InterstitialFocus
 BrowserFocusTest.FindFocusTest
 BrowserFocusTest.FocusTraversalOnInterstitial
+
+# Don't run FAILS_ tests under Valgrind/TSan, see http://crbug.com/67959
+*.FAILS_*
