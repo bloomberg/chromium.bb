@@ -753,16 +753,13 @@ terminal_draw_contents(struct terminal *terminal)
 	int top_margin, side_margin;
 	int row, col;
 	union utf8_char *p_row;
-	struct utf8_chars {
-		union utf8_char c;
-		char null;
-	} toShow;
 	struct decoded_attr attr;
 	int text_x, text_y;
 	cairo_surface_t *surface;
 	double d;
-
-	toShow.null = 0;
+	int num_glyphs;
+	cairo_scaled_font_t *font;
+	cairo_glyph_t glyphs[256], *g;
 
 	window_get_child_allocation(terminal->window, &allocation);
 
@@ -824,9 +821,15 @@ terminal_draw_contents(struct terminal *terminal)
 				cairo_stroke(cr);
 			}
 			cairo_move_to(cr, text_x, text_y);
-			
-			toShow.c = p_row[col];
-			cairo_show_text(cr, (char *) toShow.c.byte);
+
+			g = glyphs;
+			num_glyphs = ARRAY_LENGTH(glyphs);
+			font = cairo_get_scaled_font (cr);
+			cairo_scaled_font_text_to_glyphs (font, text_x, text_y,
+							  (char *) p_row[col].byte, 4,
+							  &g, &num_glyphs,
+							  NULL, NULL, NULL);
+			cairo_show_glyphs (cr, g, num_glyphs);
 		}
 	}
 
