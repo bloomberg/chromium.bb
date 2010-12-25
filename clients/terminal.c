@@ -452,7 +452,8 @@ terminal_get_row(struct terminal *terminal, int row)
 }
 
 static struct attr*
-terminal_get_attr_row(struct terminal *terminal, int row) {
+terminal_get_attr_row(struct terminal *terminal, int row)
+{
 	int index;
 
 	index = (row + terminal->start) % terminal->height;
@@ -461,7 +462,8 @@ terminal_get_attr_row(struct terminal *terminal, int row) {
 }
 
 static struct attr
-terminal_get_attr(struct terminal *terminal, int row, int col) {
+terminal_get_attr(struct terminal *terminal, int row, int col)
+{
 	return terminal_get_attr_row(terminal, row)[col];
 }
 
@@ -723,7 +725,6 @@ terminal_draw_contents(struct terminal *terminal)
 			      terminal->color_scheme->border.b,
 			      terminal->color_scheme->border.a);
 	cairo_paint(cr);
-	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 
 	cairo_set_font_face(cr, terminal->font_normal);
 	cairo_set_font_size(cr, 14);
@@ -734,6 +735,55 @@ terminal_draw_contents(struct terminal *terminal)
 
 	cairo_set_line_width(cr, 1.0);
 
+	/* paint the background */
+	for (row = 0; row < terminal->height; row++) {
+		p_row = terminal_get_row(terminal, row);
+		for (col = 0; col < terminal->width; col++) {
+			/* get the attributes for this character cell */
+			attr = terminal_get_attr(terminal, row, col);
+			if ((attr.a & ATTRMASK_INVERSE) ||
+				((terminal->mode & MODE_SHOW_CURSOR) &&
+				terminal->focused && terminal->row == row &&
+				terminal->column == col))
+			{
+				foreground = attr.bg;
+				background = attr.fg;
+				if (attr.a & ATTRMASK_BOLD) {
+					if (foreground <= 16) foreground |= 0x08;
+					if (background <= 16) background &= 0x07;
+				}
+			} else {
+				foreground = attr.fg;
+				background = attr.bg;
+			}
+			if (terminal->mode & MODE_INVERSE) {
+				tmp = foreground;
+				foreground = background;
+				background = tmp;
+				if (attr.a & ATTRMASK_BOLD) {
+					if (foreground <= 16) foreground |= 0x08;
+					if (background <= 16) background &= 0x07;
+				}
+			}
+
+			cairo_set_source_rgba(cr,
+					      terminal->color_table[background].r,
+					      terminal->color_table[background].g,
+					      terminal->color_table[background].b,
+					      terminal->color_table[background].a);
+			cairo_move_to(cr, side_margin + (col * extents.max_x_advance),
+			      top_margin + (row * extents.height));
+			cairo_rel_line_to(cr, extents.max_x_advance, 0);
+			cairo_rel_line_to(cr, 0, extents.height);
+			cairo_rel_line_to(cr, -extents.max_x_advance, 0);
+			cairo_close_path(cr);
+			cairo_fill(cr);
+		}
+	}
+
+	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+
+	/* paint the foreground */
 	for (row = 0; row < terminal->height; row++) {
 		p_row = terminal_get_row(terminal, row);
 		for (col = 0; col < terminal->width; col++) {
@@ -766,21 +816,6 @@ terminal_draw_contents(struct terminal *terminal)
 			bold = attr.a & (ATTRMASK_BOLD | ATTRMASK_BLINK);
 			underline = attr.a & ATTRMASK_UNDERLINE;
 
-			/* paint the background */
-			cairo_set_source_rgba(cr,
-					      terminal->color_table[background].r,
-					      terminal->color_table[background].g,
-					      terminal->color_table[background].b,
-					      terminal->color_table[background].a);
-			cairo_move_to(cr, side_margin + (col * extents.max_x_advance),
-			      top_margin + (row * extents.height));
-			cairo_rel_line_to(cr, extents.max_x_advance, 0);
-			cairo_rel_line_to(cr, 0, extents.height);
-			cairo_rel_line_to(cr, -extents.max_x_advance, 0);
-			cairo_close_path(cr);
-			cairo_fill(cr);
-
-			/* paint the foreground */
 			if (bold)
 				cairo_set_font_face(cr, terminal->font_bold);
 			else
