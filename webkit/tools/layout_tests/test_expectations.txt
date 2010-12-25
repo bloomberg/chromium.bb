@@ -13,3 +13,4 @@ BUGCR67919 WIN LINUX MAC : fast/events/touch/touch-target.html = FAIL TIMEOUT
 BUGCR67919 WIN LINUX MAC : fast/css/box-shadow.html = FAIL TIMEOUT
 
 BUGCR67995 LINUX DEBUG : svg/batik/paints/gradientLimit.svg = TEXT CRASH
+BUGWK45991 LINUX DEBUG : canvas/philip/tests/2d.gradient.radial.cone.top.html = TEXT TIMEOUT
