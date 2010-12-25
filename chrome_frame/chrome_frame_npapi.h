@@ -133,13 +133,12 @@ END_MSG_MAP()
  protected:
   // Handler for accelerator messages passed on from the hosted chrome
   // instance.
-  virtual void OnAcceleratorPressed(int tab_handle, const MSG& accel_message);
-  virtual void OnTabbedOut(int tab_handle, bool reverse);
-  virtual void OnOpenURL(int tab_handle, const GURL& url,
-                         const GURL& referrer, int open_disposition);
-  virtual void OnLoad(int tab_handle, const GURL& url);
-  virtual void OnMessageFromChromeFrame(int tab_handle,
-                                        const std::string& message,
+  virtual void OnAcceleratorPressed(const MSG& accel_message);
+  virtual void OnTabbedOut(bool reverse);
+  virtual void OnOpenURL(const GURL& url, const GURL& referrer,
+                         int open_disposition);
+  virtual void OnLoad(const GURL& url);
+  virtual void OnMessageFromChromeFrame(const std::string& message,
                                         const std::string& origin,
                                         const std::string& target);
   // ChromeFrameDelegate overrides

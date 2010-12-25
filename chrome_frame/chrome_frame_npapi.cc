@@ -429,8 +429,7 @@ void ChromeFrameNPAPI::UrlNotify(const char* url, NPReason reason,
   url_fetcher_.UrlNotify(url, reason, notify_data);
 }
 
-void ChromeFrameNPAPI::OnAcceleratorPressed(int tab_handle,
-                                            const MSG& accel_message) {
+void ChromeFrameNPAPI::OnAcceleratorPressed(const MSG& accel_message) {
   DVLOG(1) << __FUNCTION__
            << " msg:" << base::StringPrintf("0x%04X", accel_message.message)
            << " key:" << accel_message.wParam;
@@ -460,7 +459,7 @@ void ChromeFrameNPAPI::OnAcceleratorPressed(int tab_handle,
   }
 }
 
-void ChromeFrameNPAPI::OnTabbedOut(int tab_handle, bool reverse) {
+void ChromeFrameNPAPI::OnTabbedOut(bool reverse) {
   DVLOG(1) << __FUNCTION__;
 
   ignore_setfocus_ = true;
@@ -477,8 +476,7 @@ void ChromeFrameNPAPI::OnTabbedOut(int tab_handle, bool reverse) {
   ignore_setfocus_ = false;
 }
 
-void ChromeFrameNPAPI::OnOpenURL(int tab_handle,
-                                 const GURL& url,
+void ChromeFrameNPAPI::OnOpenURL(const GURL& url,
                                  const GURL& referrer,
                                  int open_disposition) {
   std::string target;
@@ -805,7 +803,7 @@ void ChromeFrameNPAPI::OnBlur() {
   DVLOG(1) << __FUNCTION__;
 }
 
-void ChromeFrameNPAPI::OnLoad(int, const GURL& gurl) {
+void ChromeFrameNPAPI::OnLoad(const GURL& gurl) {
   DVLOG(1) << "Firing onload";
   FireEvent("load", gurl.spec());
 }
@@ -817,8 +815,7 @@ void ChromeFrameNPAPI::OnLoadFailed(int error_code, const std::string& url) {
   InvokeDefault(onerror_handler_, url, &result);
 }
 
-void ChromeFrameNPAPI::OnMessageFromChromeFrame(int tab_handle,
-                                                const std::string& message,
+void ChromeFrameNPAPI::OnMessageFromChromeFrame(const std::string& message,
                                                 const std::string& origin,
                                                 const std::string& target) {
   bool private_message = false;
