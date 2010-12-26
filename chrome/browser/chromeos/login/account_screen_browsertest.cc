@@ -81,9 +81,9 @@ static net::URLRequestJob* InspectorHook(net::URLRequest* request,
 IN_PROC_BROWSER_TEST_F(AccountScreenTest, DISABLED_TestSchemeInspector) {
   ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
       chrome::kCrosScheme);
-  URLRequestFilter::GetInstance()->AddHostnameHandler(chrome::kCrosScheme,
-                                                      "inspector",
-                                                      &InspectorHook);
+  net::URLRequestFilter::GetInstance()->AddHostnameHandler(chrome::kCrosScheme,
+                                                           "inspector",
+                                                            &InspectorHook);
   EXPECT_FALSE(inspector_called);
   ui_test_utils::RunMessageLoop();
   EXPECT_TRUE(inspector_called);

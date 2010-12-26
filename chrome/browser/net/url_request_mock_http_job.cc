@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,19 +20,19 @@ static const FilePath::CharType kMockHeaderFileSuffix[] =
 
 FilePath URLRequestMockHTTPJob::base_path_;
 
-/* static */
+// static
 net::URLRequestJob* URLRequestMockHTTPJob::Factory(net::URLRequest* request,
                                                    const std::string& scheme) {
   return new URLRequestMockHTTPJob(request,
                                    GetOnDiskPath(base_path_, request, scheme));
 }
 
-/* static */
+// static
 void URLRequestMockHTTPJob::AddUrlHandler(const FilePath& base_path) {
   base_path_ = base_path;
 
-  // Add kMockHostname to URLRequestFilter.
-  URLRequestFilter* filter = URLRequestFilter::GetInstance();
+  // Add kMockHostname to net::URLRequestFilter.
+  net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
   filter->AddHostnameHandler("http", kMockHostname,
                              URLRequestMockHTTPJob::Factory);
 }

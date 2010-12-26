@@ -417,7 +417,7 @@ void AutomationResourceMessageFilter::OnSetFilteredInet(bool enable) {
 
 void AutomationResourceMessageFilter::OnGetFilteredInetHitCount(
     int* hit_count) {
-  *hit_count = URLRequestFilter::GetInstance()->hit_count();
+  *hit_count = net::URLRequestFilter::GetInstance()->hit_count();
 }
 
 void AutomationResourceMessageFilter::OnRecordHistograms(

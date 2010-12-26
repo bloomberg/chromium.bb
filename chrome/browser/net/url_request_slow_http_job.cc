@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,8 +29,8 @@ net::URLRequestJob* URLRequestSlowHTTPJob::Factory(net::URLRequest* request,
 void URLRequestSlowHTTPJob::AddUrlHandler(const FilePath& base_path) {
   base_path_ = base_path;
 
-  // Add kMockHostname to URLRequestFilter.
-  URLRequestFilter* filter = URLRequestFilter::GetInstance();
+  // Add kMockHostname to net::URLRequestFilter.
+  net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
   filter->AddHostnameHandler("http", kMockHostname,
                              URLRequestSlowHTTPJob::Factory);
 }

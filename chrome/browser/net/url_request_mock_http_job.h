@@ -25,7 +25,7 @@ class URLRequestMockHTTPJob : public net::URLRequestFileJob {
 
   static net::URLRequest::ProtocolFactory Factory;
 
-  // Adds the testing URLs to the URLRequestFilter.
+  // Adds the testing URLs to the net::URLRequestFilter.
   static void AddUrlHandler(const FilePath& base_path);
 
   // Given the path to a file relative to base_path_, construct a mock URL.

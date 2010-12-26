@@ -154,7 +154,7 @@ TestShell::TestShell()
     navigation_controller_.reset(new TestNavigationController(this));
     notification_presenter_.reset(new TestNotificationPresenter(this));
 
-    URLRequestFilter* filter = URLRequestFilter::GetInstance();
+    net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
     filter->AddHostnameHandler("test-shell-resource", "inspector",
                                &URLRequestTestShellFileJob::InspectorFactory);
     url_util::AddStandardScheme("test-shell-resource");

@@ -43,7 +43,7 @@ RegistrationScreen::RegistrationScreen(WizardScreenDelegate* delegate)
 
   ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
       chrome::kCrosScheme);
-  URLRequestFilter::GetInstance()->AddHostnameHandler(
+  net::URLRequestFilter::GetInstance()->AddHostnameHandler(
       chrome::kCrosScheme,
       kRegistrationHostnameUrl,
       &RegistrationScreen::Factory);

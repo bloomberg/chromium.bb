@@ -76,7 +76,7 @@ class RegistrationScreen : public ViewScreen<RegistrationView>,
   // Sets the url for registration host page. Used in tests.
   static void set_registration_host_page_url(const GURL& url);
 
-  // Handler factory for URLRequestFilter::AddHostnameHandler.
+  // Handler factory for net::URLRequestFilter::AddHostnameHandler.
   static net::URLRequestJob* Factory(net::URLRequest* request,
                                      const std::string& scheme);
 

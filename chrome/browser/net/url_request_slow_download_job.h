@@ -37,7 +37,7 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
   static const char kKnownSizeUrl[];
   static const char kFinishDownloadUrl[];
 
-  // Adds the testing URLs to the URLRequestFilter.
+  // Adds the testing URLs to the net::URLRequestFilter.
   static void AddUrlHandler();
 
  private:

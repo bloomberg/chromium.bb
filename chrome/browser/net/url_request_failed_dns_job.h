@@ -22,7 +22,7 @@ class URLRequestFailedDnsJob : public net::URLRequestJob {
   // A test URL that can be used in UI tests.
   static const char kTestUrl[];
 
-  // Adds the testing URLs to the URLRequestFilter.
+  // Adds the testing URLs to the net::URLRequestFilter.
   static void AddUrlHandler();
 
  private:

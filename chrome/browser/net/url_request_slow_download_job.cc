@@ -33,9 +33,9 @@ void URLRequestSlowDownloadJob::Start() {
           &URLRequestSlowDownloadJob::StartAsync));
 }
 
-/* static */
+// static
 void URLRequestSlowDownloadJob::AddUrlHandler() {
-  URLRequestFilter* filter = URLRequestFilter::GetInstance();
+  net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
   filter->AddUrlHandler(GURL(kUnknownSizeUrl),
                         &URLRequestSlowDownloadJob::Factory);
   filter->AddUrlHandler(GURL(kKnownSizeUrl),

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,7 @@ void URLRequestMockNetErrorJob::AddMockedURL(const GURL& url,
 #endif
 
   url_mock_info_map_[url] = MockInfo(base, errors, ssl_cert);
-  URLRequestFilter::GetInstance()
+  net::URLRequestFilter::GetInstance()
       ->AddUrlHandler(url, &URLRequestMockNetErrorJob::Factory);
 }
 
@@ -53,7 +53,7 @@ void URLRequestMockNetErrorJob::RemoveMockedURL(const GURL& url) {
   URLMockInfoMap::iterator iter = url_mock_info_map_.find(url);
   DCHECK(iter != url_mock_info_map_.end());
   url_mock_info_map_.erase(iter);
-  URLRequestFilter::GetInstance()->RemoveUrlHandler(url);
+  net::URLRequestFilter::GetInstance()->RemoveUrlHandler(url);
 }
 
 // static
