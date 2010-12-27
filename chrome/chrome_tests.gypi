@@ -250,6 +250,17 @@
         'test/automated_ui_tests/automated_ui_tests.h',
       ],
       'conditions': [
+        ['OS=="win" and buildtype=="Official"', {
+          'configurations': {
+            'Release': {
+              'msvs_settings': {
+                'VCCLCompilerTool': {
+                  'WholeProgramOptimization': 'false',
+                },
+              },
+            },
+          },
+        },],
         ['OS=="linux"', {
           'dependencies': [
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
@@ -2405,6 +2416,17 @@
         'test/startup/startup_test.cc',
       ],
       'conditions': [
+        ['OS=="win" and buildtype=="Official"', {
+          'configurations': {
+            'Release': {
+              'msvs_settings': {
+                'VCCLCompilerTool': {
+                  'WholeProgramOptimization': 'false',
+                },
+              },
+            },
+          },
+        },],
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
@@ -2481,6 +2503,17 @@
         'test/reliability/run_all_unittests.cc',
       ],
       'conditions': [
+        ['OS=="win" and buildtype=="Official"', {
+          'configurations': {
+            'Release': {
+              'msvs_settings': {
+                'VCCLCompilerTool': {
+                  'WholeProgramOptimization': 'false',
+                },
+              },
+            },
+          },
+        },],
         ['OS=="win" and win_use_allocator_shim==1', {
           'dependencies': [
             '<(allocator_target)',
@@ -2521,6 +2554,17 @@
         'test/page_cycler/page_cycler_test.cc',
       ],
       'conditions': [
+        ['OS=="win" and buildtype=="Official"', {
+          'configurations': {
+            'Release': {
+              'msvs_settings': {
+                'VCCLCompilerTool': {
+                  'WholeProgramOptimization': 'false',
+                },
+              },
+            },
+          },
+        },],
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',

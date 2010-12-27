@@ -222,6 +222,17 @@
             }],
           ],
         }],
+        ['OS=="win" and buildtype=="Official"', {
+          'configurations': {
+            'Release': {
+              'msvs_settings': {
+                'VCCLCompilerTool': {
+                  'WholeProgramOptimization': 'false',
+                },
+              },
+            },
+          },
+        },],
         ['OS=="win"', {
           'link_settings': {
             'libraries': [
