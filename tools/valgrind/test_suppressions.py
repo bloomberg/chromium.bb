@@ -68,7 +68,7 @@ for f in sys.argv[1:]:
 
 reports_count = 0
 for r in all_reports:
-  if set([False]) == set([not re.search("%20Mac%20", url)\
+  if set([False]) == set([not re.search("%20Mac%20|mac_valgrind", url)\
                          for url in all_reports[r]]):
     # Include mac suppressions if the report is only present on Mac
     cur_supp = common_suppressions + mac_suppressions
