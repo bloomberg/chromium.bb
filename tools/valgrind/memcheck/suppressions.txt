@@ -3508,3 +3508,27 @@
    fun:_ZN19extension_file_util13LoadExtensionERK8FilePathN9Extension8LocationEbPSs
    fun:_ZN23ExtensionServiceBackend19LoadSingleExtensionERK8FilePath13scoped_refptrI16ExtensionServiceE
 }
+{
+   bug_68069a
+   Memcheck:Leak
+   ...
+   fun:_ZN3gfx15PixmapGLContext11MakeCurrentEv
+   fun:_ZN3gfx15PixmapGLContext10InitializeEPNS_9GLContextE
+   fun:_ZN3gfx9GLContext24CreateOffscreenGLContextEPS0_
+   fun:*19InitializeGLContextEv
+   fun:_ZN18gpu_info_collector19CollectGraphicsInfoEP7GPUInfo
+   fun:_ZN9GpuThread4InitERKN4base4TimeE
+   fun:_Z7GpuMainRK18MainFunctionParams
+   fun:*23RunNamedProcessTypeMainERKSsRK18MainFunctionParams
+}
+{
+   bug_68069b
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN3gfx9GLContext16InitializeOneOffEv
+   fun:_Z7GpuMainRK18MainFunctionParams
+   fun:*23RunNamedProcessTypeMainERKSsRK18MainFunctionParams
+   fun:ChromeMain
+   fun:main
+}

@@ -16,3 +16,6 @@ BrowserFocusTest.FocusTraversalOnInterstitial
 # Don't run FAILS_ tests under Valgrind/TSan, see http://crbug.com/67959
 # NB: Don't use FAILS_ or it will be turned into *.* by chrome_tests.py :)
 *.FAILS*
+
+# Fails under Valgrind, see http://crbug.com/68068
+DevToolsSanityTest.TestPauseWhenScriptIsRunning
