@@ -18,6 +18,7 @@
 #include "views/painter.h"
 #include "views/screen.h"
 #include "views/widget/widget.h"
+#include "views/widget/widget_gtk.h"
 
 namespace chromeos {
 
@@ -79,23 +80,38 @@ ThrobberHostView::~ThrobberHostView() {
 
 void ThrobberHostView::StartThrobber() {
   StopThrobber();
-  views::Widget* widget = host_view_->GetWidget();
-  if (widget) {
-    views::SmoothedThrobber* throbber = CreateDefaultSmoothedThrobber();
-    throbber->set_stop_delay_ms(0);
-    gfx::Rect throbber_bounds = CalculateThrobberBounds(throbber);
 
-    throbber_widget_ =
-        views::Widget::CreatePopupWidget(views::Widget::Transparent,
-                                         views::Widget::NotAcceptEvents,
-                                         views::Widget::DeleteOnDestroy,
-                                         views::Widget::DontMirrorOriginInRTL);
-    throbber_bounds.Offset(host_view_->GetScreenBounds().origin());
-    throbber_widget_->InitWithWidget(widget, throbber_bounds);
-    throbber_widget_->SetContentsView(throbber);
-    throbber_widget_->Show();
-    throbber->Start();
+  views::Widget* host_widget = host_view_->GetWidget();
+  if (!host_widget) {
+    LOG(WARNING) << "Failed to start the throbber: no Widget";
+    return;
   }
+
+  GtkWidget* host_gtk_window = host_widget->GetNativeView();
+  while (host_gtk_window && !GTK_IS_WINDOW(host_gtk_window))
+    host_gtk_window = gtk_widget_get_parent(host_gtk_window);
+  if (!host_gtk_window) {
+    LOG(WARNING) << "Failed to start the throbber: no GtkWindow";
+    return;
+  }
+
+  views::SmoothedThrobber* throbber = CreateDefaultSmoothedThrobber();
+  throbber->set_stop_delay_ms(0);
+  gfx::Rect throbber_bounds = CalculateThrobberBounds(throbber);
+
+  views::WidgetGtk* widget_gtk =
+      new views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW);
+  widget_gtk->make_transient_to_parent();
+  widget_gtk->MakeTransparent();
+  throbber_widget_ = widget_gtk;
+
+  throbber_bounds.Offset(host_view_->GetScreenBounds().origin());
+  throbber_widget_->Init(host_gtk_window, throbber_bounds);
+  throbber_widget_->SetContentsView(throbber);
+  throbber_widget_->Show();
+  // WM can ignore bounds before widget is shown.
+  throbber_widget_->SetBounds(throbber_bounds);
+  throbber->Start();
 }
 
 void ThrobberHostView::StopThrobber() {
