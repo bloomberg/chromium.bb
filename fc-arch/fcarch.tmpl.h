@@ -29,7 +29,7 @@
 @@@ use something reasonable and don't include any spaces
 @@@
 @@@ So far the differences boil down to: endianness, 32 vs 64 bit pointers,
-@@@ and on @@@ 32bit ones, whether double is aligned to one word or two words.
+@@@ and on 32bit ones, whether double is aligned to one word or two words.
 @@@ Those result in the 6 formats listed below.
 @@@
 @@@ ,name (endianness,pointer-size,double-alignment)

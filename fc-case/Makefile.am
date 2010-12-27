@@ -22,10 +22,6 @@
 # PERFORMANCE OF THIS SOFTWARE.
 #
 
-CC = @CC_FOR_BUILD@
-EXEEXT = @EXEEXT_FOR_BUILD@
-LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-
 INCLUDES=-I${top_srcdir}/src -I${top_srcdir} $(WARN_CFLAGS)
 
 TMPL=fccase.tmpl.h
@@ -44,12 +40,17 @@ fc_case_SRCS= \
 CASEFOLDING=CaseFolding.txt
 SCASEFOLDING=${top_srcdir}/fc-case/CaseFolding.txt
 
-EXTRA_DIST=$(TMPL) $(CASEFOLDING)
+EXTRA_DIST = $(TARG) $(TMPL) $(CASEFOLDING)
 
+if CROSS_COMPILING
+$(TARG): $(STMPL) fc-case.c $(SCASEFOLDING)
+	@echo Warning: cannot rebuild $(TARG) when cross-compiling
+else
 $(TARG): $(STMPL) fc-case$(EXEEXT) $(SCASEFOLDING)
 	$(AM_V_GEN) $(RM) $(TARG); \
 	./fc-case$(EXEEXT) $(SCASEFOLDING) < $(STMPL) > $(TARG).tmp && \
 	mv $(TARG).tmp $(TARG)
+endif
 
 ALIAS_FILES = fcalias.h fcaliastail.h
 
@@ -58,5 +59,6 @@ BUILT_SOURCES = $(ALIAS_FILES)
 $(ALIAS_FILES): 
 	touch $(ALIAS_FILES)
 
-CLEANFILES=$(TARG) $(ALIAS_FILES)
+CLEANFILES = $(ALIAS_FILES)
 
+MAINTAINERCLEANFILES = $(TARG)
