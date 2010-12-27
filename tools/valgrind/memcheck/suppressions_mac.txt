@@ -602,7 +602,20 @@
    fun:_ZN5media45AudioOutputControllerTest_CreateAndClose_Test8TestBodyEv
    fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
-
+{
+   bug_46186_e
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12HALCADClient19AddPropertyListenerEmPK26AudioObjectPropertyAddressPFlmmS2_PvES3_
+   fun:_ZN9HALSystem15InitializeShellEv
+   fun:_ZN9HALSystem16CheckOutInstanceEv
+   fun:AudioObjectGetPropertyData
+   fun:_ZN12_GLOBAL__N_116HasAudioHardwareEm
+   fun:_ZN15AudioManagerMac21HasAudioOutputDevicesEv
+   fun:_ZN5mediaL21HasAudioOutputDevicesEv
+   fun:_ZN5media45AudioOutputControllerTest_CreateAndClose_Test8TestBodyEv
+   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
+}
 {
    bug_47949
    Memcheck:Cond
@@ -661,8 +674,6 @@
    fun:CGLRestoreDispatchFunction
    fun:CGLCreateContext
    fun:_ZN8remoting11CapturerMac26ScreenConfigurationChangedEv
-   fun:_ZN8remoting15CapturerMacTest5SetUpEv
-   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
 {
    bug_50286
@@ -1214,4 +1225,55 @@
    fun:_Znw*
    ...
    fun:_ZN16ExtensionInfoMap12AddExtensionEPK9Extension
+}
+{
+   bug_68090
+   Memcheck:Cond
+   fun:_ZL10AddEncHashP12EncHashTablePKhij
+   fun:_Z16BuildMacEncTablev
+   fun:_ZN15TParsingContext13GetParseProcsEv
+   fun:_ZN19TSFNTParsingContext13GetParseProcsEv
+   fun:_ZN18TCIDParsingContext13GetParseProcsEv
+   fun:_ZN16TType1OTFCIDFont20ParseCFFCIDFontDictsERK19TType1CFFDescriptorP32Type1ProtectionEvaluationContextRVt
+   fun:_ZN16TType1OTFCIDFont15ParseCFFCIDFontERK19TType1CFFDescriptorP32Type1ProtectionEvaluationContext
+   fun:_ZN16TType1OTFCIDFontC2ERK19TType1CFFDescriptor
+   fun:_ZN10TType1Font7GetFontEPK5TFont
+   fun:_ZN12TType1StrikeC2EPK5TFontmPK13FontVariationRK15StrikeTransform
+   fun:_ZN12TType1Strike9GetStrikeERK18TStrikeDescription
+   fun:_Z19Type1GetStrikeSpecsmPK18TStrikeDescriptionP11StrikeSpecs
+   fun:_ZNK19TConcreteFontScaler14GetFontMetricsEv
+   fun:_ZNK19TConcreteFontScaler23GetATSCompatibleMetricsERiS0_S0_S0_S0_S0_S0_
+   fun:FPFontGetGlyphsForUnichars
+   fun:_ZNK9TBaseFont20CalculateFontMetricsEb
+   fun:_ZNK9TBaseFont15InitFontMetricsEv
+   fun:_ZNK9TBaseFont16GetStrikeMetricsEfPK17CGAffineTransformb
+   fun:_ZNK5TFont17InitStrikeMetricsEv
+   fun:CTFontGetAscent
+   fun:__NSFontInstanceInfoInitializeMetricsInfo
+}
+{
+   bug_68092
+   Memcheck:Addr1
+   fun:_CGSLockWindow
+   fun:CGSDeviceLock
+   fun:ripd_Lock
+   fun:ripl_BltShape
+   fun:ripc_Render
+   fun:ripc_DrawRects
+   fun:CGContextFillRects
+   fun:createTopShadowWindow
+   fun:MetalSheetProgress
+   fun:_NSMoveHelperTimerCallBack
+   fun:__CFRunLoopRun
+   fun:CFRunLoopRunSpecific
+   fun:CFRunLoopRunInMode
+   fun:-[NSMoveHelper _doAnimation]
+   fun:-[NSMoveHelper(NSSheets) _moveParent:andOpenSheet:]
+   fun:-[NSWindow(NSSheets) _orderFrontRelativeToWindow:]
+   fun:-[NSWindow _reallyDoOrderWindow:relativeTo:findKey:forCounter:force:isModal:]
+   fun:-[NSApplication _orderFrontModalWindow:relativeToWindow:]
+   fun:-[NSApplication _commonBeginModalSessionForWindow:relativeToWindow:modalDelegate:didEndSelector:contextInfo:]
+   fun:-[AutoFillDialogController editSelection:]
+   fun:_ZN12_GLOBAL__N_154AutoFillDialogControllerTest_AutoFillDataMutation_Test8TestBodyEv
+   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
