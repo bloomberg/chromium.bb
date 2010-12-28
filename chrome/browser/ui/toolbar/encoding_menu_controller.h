@@ -42,7 +42,7 @@ class EncodingMenuController {
   // Fills in a list of menu items in the order they should appear in the menu.
   // Items whose ids are 0 are separators.
   void GetEncodingMenuItems(Profile* profile,
-                            EncodingMenuItemList* menuItems);
+                            EncodingMenuItemList* menu_items);
 
  private:
   // List of all valid encoding GUI IDs.

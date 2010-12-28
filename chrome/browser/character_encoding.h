@@ -25,14 +25,14 @@ class CharacterEncoding {
     // l10n_util::SortVectorWithStringKey to sort the encoding menu items
     // by current locale character sequence. We need to keep the order within
     // encoding category name, that's why we use category name as key.
-    const std::wstring& GetStringKey() const { return encoding_category_name; }
+    const string16& GetStringKey() const { return encoding_category_name; }
 
     // Encoding command id.
     int encoding_id;
     // Encoding display name.
-    std::wstring encoding_display_name;
+    string16 encoding_display_name;
     // Encoding category name.
-    std::wstring encoding_category_name;
+    string16 encoding_category_name;
   };
 
   // Return canonical encoding name according to the command ID.

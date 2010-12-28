@@ -15,8 +15,7 @@ namespace gfx {
 int GetLocalizedContentsWidthForFont(int col_resource_id,
                                      const gfx::Font& font) {
   double chars = 0;
-  base::StringToDouble(WideToUTF8(l10n_util::GetString(col_resource_id)),
-                       &chars);
+  base::StringToDouble(l10n_util::GetStringUTF8(col_resource_id), &chars);
   int width = font.GetExpectedTextWidth(static_cast<int>(chars));
   DCHECK_GT(width, 0);
   return width;
@@ -25,8 +24,7 @@ int GetLocalizedContentsWidthForFont(int col_resource_id,
 int GetLocalizedContentsHeightForFont(int row_resource_id,
                                       const gfx::Font& font) {
   double lines = 0;
-  base::StringToDouble(WideToUTF8(l10n_util::GetString(row_resource_id)),
-                       &lines);
+  base::StringToDouble(l10n_util::GetStringUTF8(row_resource_id), &lines);
   int height = static_cast<int>(font.GetHeight() * lines);
   DCHECK_GT(height, 0);
   return height;

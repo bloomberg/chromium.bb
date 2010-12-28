@@ -212,11 +212,11 @@ TEST(InputMethodUtilTest, GetKeyboardOverlayId) {
 }
 
 TEST(InputMethodUtilTest, GetLanguageDisplayNameFromCode) {
-  EXPECT_EQ(L"Finnish", GetLanguageDisplayNameFromCode("fi"));
+  EXPECT_EQ(UTF8ToUTF16("Finnish"), GetLanguageDisplayNameFromCode("fi"));
 }
 
 TEST(InputMethodUtilTest, GetLanguageNativeDisplayNameFromCode) {
-  EXPECT_EQ(L"suomi", GetLanguageNativeDisplayNameFromCode("fi"));
+  EXPECT_EQ(UTF8ToUTF16("suomi"), GetLanguageNativeDisplayNameFromCode("fi"));
 }
 
 TEST(InputMethodUtilTest, SortLanguageCodesByNames) {

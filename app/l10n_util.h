@@ -25,6 +25,10 @@
 #include "app/l10n_util_mac.h"
 #endif  // OS_MACOSX
 
+// http://crbug.com/9911 . Any functions bracketed by this define are going
+// away; this define exists to allow compiler assistance in removing their use.
+#define CRBUG_9911_OBSOLETE_GOING_AWAY 1
+
 namespace l10n_util {
 
 // This method is responsible for determining the locale as defined below. In
@@ -80,7 +84,9 @@ bool IsValidLocaleSyntax(const std::string& locale);
 //
 
 // Pulls resource string from the string bundle and returns it.
+#if CRBUG_9911_OBSOLETE_GOING_AWAY
 std::wstring GetString(int message_id);
+#endif
 std::string GetStringUTF8(int message_id);
 string16 GetStringUTF16(int message_id);
 
@@ -100,6 +106,7 @@ string16 GetStringFUTF16(int message_id,
                          const string16& b,
                          const string16& c,
                          const string16& d);
+#if CRBUG_9911_OBSOLETE_GOING_AWAY
 #if defined(WCHAR_T_IS_UTF16)
 inline std::wstring GetStringF(int message_id,
                                const std::wstring& a) {
@@ -139,6 +146,7 @@ std::wstring GetStringF(int message_id,
                         const std::wstring& c,
                         const std::wstring& d);
 #endif
+#endif
 std::string GetStringFUTF8(int message_id,
                            const string16& a);
 std::string GetStringFUTF8(int message_id,
@@ -158,6 +166,7 @@ std::string GetStringFUTF8(int message_id,
 // vector based version returns offsets ordered by parameter. For example if
 // invoked with a and b offsets[0] gives the offset for a and offsets[1] the
 // offset of b regardless of where the parameters end up in the string.
+#if CRBUG_9911_OBSOLETE_GOING_AWAY
 std::wstring GetStringF(int message_id,
                         const std::wstring& a,
                         size_t* offset);
@@ -165,6 +174,7 @@ std::wstring GetStringF(int message_id,
                         const std::wstring& a,
                         const std::wstring& b,
                         std::vector<size_t>* offsets);
+#endif
 string16 GetStringFUTF16(int message_id,
                          const string16& a,
                          size_t* offset);
@@ -174,8 +184,12 @@ string16 GetStringFUTF16(int message_id,
                          std::vector<size_t>* offsets);
 
 // Convenience formatters for a single number.
+#if CRBUG_9911_OBSOLETE_GOING_AWAY
 std::wstring GetStringF(int message_id, int a);
 std::wstring GetStringF(int message_id, int64 a);
+#endif
+string16 GetStringFUTF16(int message_id, int a);
+string16 GetStringFUTF16(int message_id, int64 a);
 
 // Truncates the string to length characters. This breaks the string at
 // the first word break before length, adding the horizontal ellipsis
@@ -189,10 +203,6 @@ string16 ToLower(const string16& string);
 
 // Returns the upper case equivalent of string.
 string16 ToUpper(const string16& string);
-
-// In place sorting of std::wstring strings using collation rules for |locale|.
-void SortStrings(const std::string& locale,
-                 std::vector<std::wstring>* strings);
 
 // In place sorting of string16 strings using collation rules for |locale|.
 void SortStrings16(const std::string& locale,

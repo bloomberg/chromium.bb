@@ -54,7 +54,7 @@ TableColumn::TableColumn(int id, Alignment alignment, int width)
       percent(0),
       min_visible_width(0),
       sortable(false) {
-  title = l10n_util::GetString(id);
+  title = UTF16ToWide(l10n_util::GetStringUTF16(id));
 }
 
 TableColumn::TableColumn(int id, Alignment alignment, int width, float percent)
@@ -64,7 +64,7 @@ TableColumn::TableColumn(int id, Alignment alignment, int width, float percent)
       percent(percent),
       min_visible_width(0),
       sortable(false) {
-  title = l10n_util::GetString(id);
+  title = UTF16ToWide(l10n_util::GetStringUTF16(id));
 }
 
 // TableModel -----------------------------------------------------------------

@@ -331,9 +331,9 @@ void NetworkSelectionView::Init() {
 
 void NetworkSelectionView::UpdateLocalizedStrings() {
   languages_menubutton_->SetText(
-      delegate_->language_switch_menu()->GetCurrentLocaleName());
+      UTF16ToWide(delegate_->language_switch_menu()->GetCurrentLocaleName()));
   keyboards_menubutton_->SetText(
-      delegate_->keyboard_switch_menu()->GetCurrentKeyboardName());
+      UTF16ToWide(delegate_->keyboard_switch_menu()->GetCurrentKeyboardName()));
   welcome_label_->SetText(l10n_util::GetString(IDS_NETWORK_SELECTION_TITLE));
   select_language_label_->SetText(
       l10n_util::GetString(IDS_LANGUAGE_SELECTION_SELECT));

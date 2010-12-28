@@ -293,9 +293,9 @@ std::string GetEncodingCategoryStringByCommandId(int id) {
 
 CharacterEncoding::EncodingInfo::EncodingInfo(int id)
     : encoding_id(id) {
-  encoding_category_name = UTF8ToWide(GetEncodingCategoryStringByCommandId(id));
-  encoding_display_name = UTF16ToWideHack(
-      GetCanonicalEncodingDisplayNameByCommandId(id));
+  encoding_category_name =
+      UTF8ToUTF16(GetEncodingCategoryStringByCommandId(id));
+  encoding_display_name = GetCanonicalEncodingDisplayNameByCommandId(id);
 }
 
 // Static.

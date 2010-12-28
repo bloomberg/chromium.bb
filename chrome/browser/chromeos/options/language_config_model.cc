@@ -38,7 +38,7 @@ string16 AddLanguageComboboxModel::GetItemAt(int index) {
     return l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_LANGUAGE_COMBOBOX);
   }
-  return WideToUTF16Hack(GetLanguageNameAt(GetLanguageIndex(index)));
+  return GetLanguageNameAt(GetLanguageIndex(index));
 }
 
 int AddLanguageComboboxModel::GetLanguageIndex(int index) const {

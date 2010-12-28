@@ -105,14 +105,13 @@ std::string GetInputMethodDisplayNameFromId(const std::string& input_method_id);
 // internally.
 // Examples: "fi"    => "Finnish"
 //           "en-US" => "English (United States)"
-std::wstring GetLanguageDisplayNameFromCode(const std::string& language_code);
+string16 GetLanguageDisplayNameFromCode(const std::string& language_code);
 
 // Converts a language code to a language native display name.
 // MaybeRewriteLanguageName() is called internally.
 // Examples: "fi"    => "suomi" (rather than Finnish)
 //           "en-US" => "English (United States)"
-std::wstring GetLanguageNativeDisplayNameFromCode(
-    const std::string& language_code);
+string16 GetLanguageNativeDisplayNameFromCode(const std::string& language_code);
 
 // Sorts the given language codes by their corresponding language names,
 // using the unicode string comparator. Uses unstable sorting.

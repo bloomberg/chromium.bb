@@ -35,7 +35,7 @@ class KeyboardSwitchMenu : public InputMethodMenu {
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
 
   // Returns current keyboard name to be placed on the keyboard menu-button.
-  std::wstring GetCurrentKeyboardName() const;
+  string16 GetCurrentKeyboardName() const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KeyboardSwitchMenu);

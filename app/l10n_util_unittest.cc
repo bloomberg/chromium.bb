@@ -32,11 +32,11 @@ namespace {
 
 class StringWrapper {
  public:
-  explicit StringWrapper(const std::wstring& string) : string_(string) {}
-  const std::wstring& string() const { return string_; }
+  explicit StringWrapper(const string16& string) : string_(string) {}
+  const string16& string() const { return string_; }
 
  private:
-  std::wstring string_;
+  string16 string_;
 
   DISALLOW_COPY_AND_ASSIGN(StringWrapper);
 };
@@ -49,14 +49,16 @@ class L10nUtilTest : public PlatformTest {
 #if defined(OS_WIN)
 // TODO(beng): disabled until app strings move to app.
 TEST_F(L10nUtilTest, DISABLED_GetString) {
-  std::wstring s = l10n_util::GetString(IDS_SIMPLE);
-  EXPECT_EQ(std::wstring(L"Hello World!"), s);
+  std::string s = l10n_util::GetStringUTF8(IDS_SIMPLE);
+  EXPECT_EQ(std::string("Hello World!"), s);
 
-  s = l10n_util::GetStringF(IDS_PLACEHOLDERS, L"chrome", L"10");
-  EXPECT_EQ(std::wstring(L"Hello, chrome. Your number is 10."), s);
+  s = l10n_util::GetStringFUTF8(IDS_PLACEHOLDERS,
+                                UTF8ToUTF16("chrome"),
+                                UTF8ToUTF16("10"));
+  EXPECT_EQ(std::string("Hello, chrome. Your number is 10."), s);
 
-  s = l10n_util::GetStringF(IDS_PLACEHOLDERS_2, 20);
-  EXPECT_EQ(std::wstring(L"You owe me $20."), s);
+  string16 s16 = l10n_util::GetStringFUTF16(IDS_PLACEHOLDERS_2, 20);
+  EXPECT_EQ(UTF8ToUTF16("You owe me $20."), s16);
 }
 #endif  // defined(OS_WIN)
 
@@ -285,15 +287,17 @@ TEST_F(L10nUtilTest, GetAppLocale) {
 
 TEST_F(L10nUtilTest, SortStringsUsingFunction) {
   std::vector<StringWrapper*> strings;
-  strings.push_back(new StringWrapper(L"C"));
-  strings.push_back(new StringWrapper(L"d"));
-  strings.push_back(new StringWrapper(L"b"));
-  strings.push_back(new StringWrapper(L"a"));
-  l10n_util::SortStringsUsingMethod(L"en-US", &strings, &StringWrapper::string);
-  ASSERT_TRUE(L"a" == strings[0]->string());
-  ASSERT_TRUE(L"b" == strings[1]->string());
-  ASSERT_TRUE(L"C" == strings[2]->string());
-  ASSERT_TRUE(L"d" == strings[3]->string());
+  strings.push_back(new StringWrapper(UTF8ToUTF16("C")));
+  strings.push_back(new StringWrapper(UTF8ToUTF16("d")));
+  strings.push_back(new StringWrapper(UTF8ToUTF16("b")));
+  strings.push_back(new StringWrapper(UTF8ToUTF16("a")));
+  l10n_util::SortStringsUsingMethod("en-US",
+                                    &strings,
+                                    &StringWrapper::string);
+  ASSERT_TRUE(UTF8ToUTF16("a") == strings[0]->string());
+  ASSERT_TRUE(UTF8ToUTF16("b") == strings[1]->string());
+  ASSERT_TRUE(UTF8ToUTF16("C") == strings[2]->string());
+  ASSERT_TRUE(UTF8ToUTF16("d") == strings[3]->string());
   STLDeleteElements(&strings);
 }
 

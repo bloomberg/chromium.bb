@@ -28,8 +28,8 @@ UCollationResult CompareString16WithCollator(const icu::Collator* collator,
 // operator (), comparing the string results using a collator.
 template <class T, class Method>
 class StringMethodComparatorWithCollator
-    : public std::binary_function<const std::wstring&,
-                                  const std::wstring&,
+    : public std::binary_function<const string16&,
+                                  const string16&,
                                   bool> {
  public:
   StringMethodComparatorWithCollator(icu::Collator* collator, Method method)
@@ -38,8 +38,8 @@ class StringMethodComparatorWithCollator
 
   // Returns true if lhs preceeds rhs.
   bool operator() (T* lhs_t, T* rhs_t) {
-    return CompareStringWithCollator(collator_, (lhs_t->*method_)(),
-                                     (rhs_t->*method_)()) == UCOL_LESS;
+    return CompareString16WithCollator(collator_, (lhs_t->*method_)(),
+                                       (rhs_t->*method_)()) == UCOL_LESS;
   }
 
  private:
@@ -50,8 +50,8 @@ class StringMethodComparatorWithCollator
 // Used by SortStringsUsingMethod. Invokes a method on the objects passed to
 // operator (), comparing the string results using <.
 template <class T, class Method>
-class StringMethodComparator : public std::binary_function<const std::wstring&,
-                                                           const std::wstring&,
+class StringMethodComparator : public std::binary_function<const string16&,
+                                                           const string16&,
                                                            bool> {
  public:
   explicit StringMethodComparator(Method method) : method_(method) { }
@@ -69,11 +69,11 @@ class StringMethodComparator : public std::binary_function<const std::wstring&,
 // a string. Sorting is done using a collator, unless a collator can not be
 // found in which case the strings are sorted using the operator <.
 template <class T, class Method>
-void SortStringsUsingMethod(const std::wstring& locale,
+void SortStringsUsingMethod(const std::string& locale,
                             std::vector<T*>* elements,
                             Method method) {
   UErrorCode error = U_ZERO_ERROR;
-  icu::Locale loc(WideToUTF8(locale).c_str());
+  icu::Locale loc(locale.c_str());
   scoped_ptr<icu::Collator> collator(icu::Collator::createInstance(loc, error));
   if (U_FAILURE(error)) {
     sort(elements->begin(), elements->end(),
@@ -88,7 +88,7 @@ void SortStringsUsingMethod(const std::wstring& locale,
 // Compares two elements' string keys and returns true if the first element's
 // string key is less than the second element's string key. The Element must
 // have a method like the follow format to return the string key.
-// const std::wstring& GetStringKey() const;
+// const string16& GetStringKey() const;
 // This uses the locale specified in the constructor.
 template <class Element>
 class StringComparator : public std::binary_function<const Element&,
@@ -100,28 +100,21 @@ class StringComparator : public std::binary_function<const Element&,
 
   // Returns true if lhs precedes rhs.
   bool operator()(const Element& lhs, const Element& rhs) {
-    const std::wstring& lhs_string_key = lhs.GetStringKey();
-    const std::wstring& rhs_string_key = rhs.GetStringKey();
+    const string16& lhs_string_key = lhs.GetStringKey();
+    const string16& rhs_string_key = rhs.GetStringKey();
 
-    return StringComparator<std::wstring>(collator_)(lhs_string_key,
-                                                     rhs_string_key);
+    return StringComparator<string16>(collator_)(lhs_string_key,
+                                                 rhs_string_key);
   }
 
  private:
   icu::Collator* collator_;
 };
 
-// Specialization of operator() method for std::wstring version.
-template <>
-bool StringComparator<std::wstring>::operator()(const std::wstring& lhs,
-                                                const std::wstring& rhs);
-
-#if !defined(WCHAR_T_IS_UTF16)
 // Specialization of operator() method for string16 version.
 template <>
 bool StringComparator<string16>::operator()(const string16& lhs,
                                             const string16& rhs);
-#endif // !defined(WCHAR_T_IS_UTF16)
 
 // In place sorting of |elements| of a vector according to the string key of
 // each element in the vector by using collation rules for |locale|.

@@ -50,14 +50,14 @@ void LanguageList::InitNativeNames(
     string16 name_native =
         l10n_util::GetDisplayNameForLocale(locale_code, locale_code, false);
 
-    locale_names_.push_back(UTF16ToWideHack(name_in_current_ui));
-    native_names_[UTF16ToWideHack(name_in_current_ui)] = LocaleData(
-        UTF16ToWideHack(name_native), locale_codes[i]);
+    locale_names_.push_back(name_in_current_ui);
+    native_names_[name_in_current_ui] =
+        LocaleData(name_native, locale_codes[i]);
   }
 
   // Sort using locale specific sorter.
-  l10n_util::SortStrings(g_browser_process->GetApplicationLocale(),
-                         &locale_names_);
+  l10n_util::SortStrings16(g_browser_process->GetApplicationLocale(),
+                           &locale_names_);
 }
 
 void LanguageList::CopySpecifiedLanguagesUp(const std::string& locale_codes) {
@@ -76,7 +76,7 @@ int LanguageList::get_languages_count() const {
   return static_cast<int>(locale_names_.size());
 }
 
-std::wstring LanguageList::GetLanguageNameAt(int index) const {
+string16 LanguageList::GetLanguageNameAt(int index) const {
   DCHECK(static_cast<int>(locale_names_.size()) > index);
   LocaleDataMap::const_iterator it =
       native_names_.find(locale_names_[index]);
@@ -90,24 +90,25 @@ std::wstring LanguageList::GetLanguageNameAt(int index) const {
   // We must add directionality formatting to both the native name and the
   // locale name in order to avoid text rendering problems such as misplaced
   // parentheses or languages appearing in the wrong order.
-  std::wstring locale_name = locale_names_[index];
+  string16 locale_name = locale_names_[index];
   base::i18n::AdjustStringForLocaleDirection(&locale_name);
 
-  std::wstring native_name = it->second.native_name;
+  string16 native_name = it->second.native_name;
   base::i18n::AdjustStringForLocaleDirection(&native_name);
 
   // We used to have a localizable template here, but none of translators
   // changed the format. We also want to switch the order of locale_name
   // and native_name without going back to translators.
-  std::wstring formatted_item;
-  base::SStringPrintf(&formatted_item, L"%ls - %ls", locale_name.c_str(),
-                      native_name.c_str());
+  std::string formatted_item;
+  base::SStringPrintf(&formatted_item, "%s - %s",
+                      UTF16ToUTF8(locale_name).c_str(),
+                      UTF16ToUTF8(native_name).c_str());
   if (base::i18n::IsRTL())
     // Somehow combo box (even with LAYOUTRTL flag) doesn't get this
     // right so we add RTL BDO (U+202E) to set the direction
     // explicitly.
-    formatted_item.insert(0, L"\x202E");
-  return formatted_item;
+    formatted_item.insert(0, "\xE2\x80\xAE");  // U+202E = UTF-8 0xE280AE
+  return UTF8ToUTF16(formatted_item);
 }
 
 // Return the locale for the given index.  E.g., may return pt-BR.
@@ -152,7 +153,7 @@ int LanguageComboboxModel::GetItemCount() {
 }
 
 string16 LanguageComboboxModel::GetItemAt(int index) {
-  return WideToUTF16Hack(GetLanguageNameAt(index));
+  return GetLanguageNameAt(index);
 }
 
 // Returns the index of the language currently specified in the user's

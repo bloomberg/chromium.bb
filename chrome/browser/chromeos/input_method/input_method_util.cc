@@ -349,11 +349,11 @@ struct CompareLanguageCodesByLanguageName
   // efficient, but acceptable as the function is cheap, and the language
   // list is short (about 40 at most).
   bool operator()(const std::string& s1, const std::string& s2) const {
-    const std::wstring key1 =
+    const string16 key1 =
         chromeos::input_method::GetLanguageDisplayNameFromCode(s1);
-    const std::wstring key2 =
+    const string16 key2 =
         chromeos::input_method::GetLanguageDisplayNameFromCode(s2);
-    return l10n_util::StringComparator<std::wstring>(collator_)(key1, key2);
+    return l10n_util::StringComparator<string16>(collator_)(key1, key2);
   }
 
  private:
@@ -578,18 +578,17 @@ std::string GetInputMethodDisplayNameFromId(
       kDefaultDisplayName : iter->second;
 }
 
-std::wstring GetLanguageDisplayNameFromCode(const std::string& language_code) {
+string16 GetLanguageDisplayNameFromCode(const std::string& language_code) {
   if (!g_browser_process) {
-    return L"";
+    return string16();
   }
-  return UTF16ToWide(l10n_util::GetDisplayNameForLocale(
-      language_code, g_browser_process->GetApplicationLocale(), true));
+  return l10n_util::GetDisplayNameForLocale(
+      language_code, g_browser_process->GetApplicationLocale(), true);
 }
 
-std::wstring GetLanguageNativeDisplayNameFromCode(
+string16 GetLanguageNativeDisplayNameFromCode(
     const std::string& language_code) {
-  return UTF16ToWide(l10n_util::GetDisplayNameForLocale(
-      language_code, language_code, true));
+  return l10n_util::GetDisplayNameForLocale(language_code, language_code, true);
 }
 
 void SortLanguageCodesByNames(std::vector<std::string>* language_codes) {

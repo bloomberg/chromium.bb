@@ -102,16 +102,16 @@ bool EncodingMenuController::IsItemChecked(
 }
 
 void EncodingMenuController::GetEncodingMenuItems(Profile* profile,
-    EncodingMenuItemList* menuItems) {
+    EncodingMenuItemList* menu_items) {
 
-  DCHECK(menuItems);
+  DCHECK(menu_items);
   EncodingMenuItem separator(0, string16());
 
-  menuItems->clear();
-  menuItems->push_back(
+  menu_items->clear();
+  menu_items->push_back(
       EncodingMenuItem(IDC_ENCODING_AUTO_DETECT,
                        l10n_util::GetStringUTF16(IDS_ENCODING_AUTO_DETECT)));
-  menuItems->push_back(separator);
+  menu_items->push_back(separator);
 
   // Create current display encoding list.
   const std::vector<CharacterEncoding::EncodingInfo>* encodings;
@@ -130,12 +130,11 @@ void EncodingMenuController::GetEncodingMenuItems(Profile* profile,
   std::vector<CharacterEncoding::EncodingInfo>::const_iterator it;
   for (it = encodings->begin(); it != encodings->end(); ++it) {
     if (it->encoding_id) {
-      std::wstring encoding = it->encoding_display_name;
+      string16 encoding = it->encoding_display_name;
       base::i18n::AdjustStringForLocaleDirection(&encoding);
-      menuItems->push_back(EncodingMenuItem(it->encoding_id,
-                                            WideToUTF16(encoding)));
+      menu_items->push_back(EncodingMenuItem(it->encoding_id, encoding));
     } else {
-      menuItems->push_back(separator);
+      menu_items->push_back(separator);
     }
   }
 }

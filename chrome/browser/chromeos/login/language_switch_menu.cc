@@ -47,8 +47,7 @@ void LanguageSwitchMenu::InitLanguageMenu() {
 
   // Fill menu items with updated items.
   for (int line = 0; line != kLanguageMainMenuSize; line++) {
-    menu_model_.AddItem(
-        line, WideToUTF16(language_list_->GetLanguageNameAt(line)));
+    menu_model_.AddItem(line, language_list_->GetLanguageNameAt(line));
   }
   menu_model_.AddSeparator();
   menu_model_.AddSubMenuWithStringId(kMoreLanguagesSubMenu,
@@ -57,14 +56,14 @@ void LanguageSwitchMenu::InitLanguageMenu() {
   for (int line = kLanguageMainMenuSize;
        line != language_list_->get_languages_count(); line++) {
     menu_model_submenu_.AddItem(
-        line, WideToUTF16(language_list_->GetLanguageNameAt(line)));
+        line, language_list_->GetLanguageNameAt(line));
   }
 
   // Initialize menu here so it appears fast when called.
   menu_.reset(new views::Menu2(&menu_model_));
 }
 
-std::wstring LanguageSwitchMenu::GetCurrentLocaleName() const {
+string16 LanguageSwitchMenu::GetCurrentLocaleName() const {
   DCHECK(g_browser_process);
   const std::string locale = g_browser_process->GetApplicationLocale();
   int index = language_list_->GetIndexFromLocale(locale);

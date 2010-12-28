@@ -287,7 +287,8 @@ void NewUserView::UpdateLocalizedStrings() {
         l10n_util::GetString(IDS_BROWSE_WITHOUT_SIGNING_IN_BUTTON));
   }
   delegate_->ClearErrors();
-  languages_menubutton_->SetText(language_switch_menu_.GetCurrentLocaleName());
+  languages_menubutton_->SetText(
+      UTF16ToWide(language_switch_menu_.GetCurrentLocaleName()));
 }
 
 void NewUserView::OnLocaleChanged() {

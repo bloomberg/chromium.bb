@@ -239,8 +239,8 @@ void LanguageConfigView::OnSelectionChanged() {
 std::wstring LanguageConfigView::GetText(int row, int column_id) {
   if (row >= 0 && row < static_cast<int>(
           model_.num_preferred_language_codes())) {
-    return input_method::GetLanguageDisplayNameFromCode(
-        model_.preferred_language_code_at(row));
+    return UTF16ToWide(input_method::GetLanguageDisplayNameFromCode(
+        model_.preferred_language_code_at(row)));
   }
   NOTREACHED();
   return L"";

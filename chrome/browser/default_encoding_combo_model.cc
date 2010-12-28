@@ -33,7 +33,7 @@ int DefaultEncodingComboboxModel::GetItemCount() {
 
 string16 DefaultEncodingComboboxModel::GetItemAt(int index) {
   DCHECK(index >= 0 && index < GetItemCount());
-  return WideToUTF16Hack(sorted_encoding_list_[index].encoding_display_name);
+  return sorted_encoding_list_[index].encoding_display_name;
 }
 
 std::string DefaultEncodingComboboxModel::GetEncodingCharsetByIndex(int index) {

@@ -24,13 +24,13 @@ class LanguageList {
  public:
   struct LocaleData {
     LocaleData() { }
-    LocaleData(const std::wstring& name, const std::string& code)
+    LocaleData(const string16& name, const std::string& code)
         : native_name(name), locale_code(code) { }
 
-    std::wstring native_name;
+    string16 native_name;
     std::string locale_code;  // E.g., en-us.
   };
-  typedef std::map<std::wstring, LocaleData> LocaleDataMap;
+  typedef std::map<string16, LocaleData> LocaleDataMap;
 
   LanguageList();
 
@@ -44,7 +44,7 @@ class LanguageList {
 
   int get_languages_count() const;
 
-  std::wstring GetLanguageNameAt(int index) const;
+  string16 GetLanguageNameAt(int index) const;
 
   // Return the locale for the given index.  E.g., may return pt-BR.
   std::string GetLocaleFromIndex(int index) const;
@@ -55,7 +55,7 @@ class LanguageList {
 
  private:
   // The names of all the locales in the current application locale.
-  std::vector<std::wstring> locale_names_;
+  std::vector<string16> locale_names_;
 
   // A map of some extra data (LocaleData) keyed off the name of the locale.
   LocaleDataMap native_names_;
