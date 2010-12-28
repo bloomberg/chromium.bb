@@ -113,6 +113,11 @@ class AdvancedOptionsHandler
   // Setup the enabled or disabled state of the cloud print proxy
   // management UI.
   void SetupCloudPrintProxySection();
+
+  // Remove cloud print proxy section if cloud print proxy management UI is
+  // disabled.
+  void RemoveCloudPrintProxySection();
+
 #endif
 
   // Setup the checked state for the metrics reporting checkbox.

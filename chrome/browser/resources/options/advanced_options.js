@@ -251,9 +251,10 @@ var OptionsPage = options.OptionsPage;
     }
   };
 
-  AdvancedOptions.HideCloudPrintProxySection = function() {
+  AdvancedOptions.RemoveCloudPrintProxySection = function() {
     if (!cr.isChromeOS) {
-      $('cloud-print-proxy-section').style.display = 'none';
+      var proxySectionElm = $('cloud-print-proxy-section');
+      proxySectionElm.parentNode.removeChild(proxySectionElm);
     }
   };
 

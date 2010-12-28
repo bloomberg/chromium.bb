@@ -205,6 +205,8 @@ void AdvancedOptionsHandler::Initialize() {
   if (cloud_print_proxy_ui_enabled_) {
     SetupCloudPrintProxySection();
     RefreshCloudPrintStatusFromService();
+  } else {
+    RemoveCloudPrintProxySection();
   }
 #endif
   banner_handler_.reset(
@@ -470,8 +472,7 @@ void AdvancedOptionsHandler::RefreshCloudPrintStatusFromService() {
 void AdvancedOptionsHandler::SetupCloudPrintProxySection() {
   if (NULL == dom_ui_->GetProfile()->GetCloudPrintProxyService()) {
     cloud_print_proxy_ui_enabled_ = false;
-    dom_ui_->CallJavascriptFunction(
-        L"options.AdvancedOptions.HideCloudPrintProxySection");
+    RemoveCloudPrintProxySection();
     return;
   }
 
@@ -495,6 +496,12 @@ void AdvancedOptionsHandler::SetupCloudPrintProxySection() {
       L"options.AdvancedOptions.SetupCloudPrintProxySection",
       disabled, label);
 }
+
+void AdvancedOptionsHandler::RemoveCloudPrintProxySection() {
+  dom_ui_->CallJavascriptFunction(
+      L"options.AdvancedOptions.RemoveCloudPrintProxySection");
+}
+
 #endif
 
 void AdvancedOptionsHandler::SetupMetricsReportingCheckbox() {
