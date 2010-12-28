@@ -22,7 +22,7 @@
  */
 
 #include "fcint.h"
-#include "../fc-arch/fcarch.h"
+#include "fcarch.h"
 #include <stdio.h>
 #include <fcntl.h>
 #include <dirent.h>
@@ -40,6 +40,7 @@
 #ifndef O_BINARY
 #define O_BINARY 0
 #endif
+
 
 struct MD5Context {
         FcChar32 buf[4];

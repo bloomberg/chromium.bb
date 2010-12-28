@@ -32,7 +32,7 @@
 #endif
 
 #include <fontconfig/fontconfig.h>
-#include "../fc-arch/fcarch.h"
+#include "../src/fcarch.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

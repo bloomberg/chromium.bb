@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "../fc-arch/fcarch.h"
+#include "../src/fcarch.h"
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>

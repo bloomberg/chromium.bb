@@ -56,7 +56,7 @@ AC_SUBST(LIBT_CURRENT_MINUS_AGE)
 
 dnl ==========================================================================
 
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS(config.h)
 
 AC_PROG_CC
 AC_PROG_INSTALL
@@ -98,59 +98,12 @@ AM_CONDITIONAL(CROSS_COMPILING, test $cross_compiling = yes)
 
 dnl ==========================================================================
 
-# Setup for compiling build tools (fc-glyphname, etc)
-AC_MSG_CHECKING([for a C compiler for build tools])
-if test $cross_compiling = yes; then
-  AC_CHECK_PROGS(CC_FOR_BUILD, gcc cc)
-else
-  CC_FOR_BUILD=$CC
-fi
-AC_MSG_RESULT([$CC_FOR_BUILD])
-AC_SUBST(CC_FOR_BUILD)
-
-AC_MSG_CHECKING([for suffix of executable build tools])
-if test $cross_compiling = yes; then
-  cat >conftest.c <<\_______EOF
-int
-main ()
-{
-  exit (0);
-}
-_______EOF
-  for i in .exe ""; do
-    compile="$CC_FOR_BUILD conftest.c -o conftest$i"
-    if AC_TRY_EVAL(compile); then
-      if (./conftest) 2>&AC_FD_CC; then
-	EXEEXT_FOR_BUILD=$i
-	break
-      fi
-    fi
-  done
-  rm -f conftest*
-  if test "${EXEEXT_FOR_BUILD+set}" != set; then
-    AC_MSG_ERROR([Cannot determine suffix of executable build tools])
-  fi
-else
-  EXEEXT_FOR_BUILD=$EXEEXT
-fi
-AC_MSG_RESULT([$EXEEXT_FOR_BUILD])
-AC_SUBST(EXEEXT_FOR_BUILD)
-
-dnl ==========================================================================
-
 AC_ARG_WITH(arch,      [  --with-arch=ARCH      Force architecture to ARCH], arch="$withval", arch=auto)
 
-if test $cross_compiling = yes; then
-	case "$arch" in
-	auto)
-		AC_MSG_ERROR([Cannot autodetect architecture in cross compile environment]
-			     [Use --with-arch=ARCH to specify architecture])
-		;;
-	esac
+if test "x$arch" != xauto; then
+	AC_DEFINE_UNQUOTED([FC_ARCHITECTURE], "$arch", [Architecture prefix to use for cache file names])
 fi
 
-ARCHITECTURE=$arch
-AC_SUBST(ARCHITECTURE)
 
 dnl ==========================================================================
 
@@ -529,13 +482,20 @@ fi
 AC_SUBST(DOCSRC)
 AC_SUBST(DOCMAN3)
 
+
+dnl Figure out what cache format suffix to use for this architecture
+AC_C_BIGENDIAN
+AC_CHECK_SIZEOF([void *])
+AC_CHECK_ALIGNOF([double])
+
+
+
 AC_OUTPUT([
-Makefile 
+Makefile
 fontconfig/Makefile
 fc-lang/Makefile
 fc-glyphname/Makefile
 fc-case/Makefile
-fc-arch/Makefile
 src/Makefile
 conf.d/Makefile
 fc-cache/Makefile

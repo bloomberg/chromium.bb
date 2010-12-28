@@ -107,6 +107,10 @@
 
 #define FC_MEM_NUM	    30
 
+#define _FC_ASSERT_STATIC1(_line, _cond) typedef int _static_assert_on_line_##_line##_failed[(_cond)?1:-1]
+#define _FC_ASSERT_STATIC0(_line, _cond) _FC_ASSERT_STATIC1 (_line, (_cond))
+#define FC_ASSERT_STATIC(_cond) _FC_ASSERT_STATIC0 (__LINE__, (_cond))
+
 #define FC_MIN(a,b) ((a) < (b) ? (a) : (b))
 #define FC_MAX(a,b) ((a) > (b) ? (a) : (b))
 #define FC_ABS(a)   ((a) < 0 ? -(a) : (a))
