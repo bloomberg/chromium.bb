@@ -680,7 +680,8 @@ void LocationBarViewMac::Layout() {
     std::wstring label(toolbar_model_->GetEVCertName());
     ev_bubble_decoration_->SetFullLabel(base::SysWideToNSString(label));
   } else if (!keyword.empty() && is_keyword_hint) {
-    keyword_hint_decoration_->SetKeyword(short_name, is_extension_keyword);
+    keyword_hint_decoration_->SetKeyword(WideToUTF16Hack(short_name),
+                                         is_extension_keyword);
     keyword_hint_decoration_->SetVisible(true);
   }
 

@@ -27,7 +27,7 @@ void DownloadItemModel::CancelTask() {
   download_->Cancel(true /* update history service */);
 }
 
-std::wstring DownloadItemModel::GetStatusText() {
+string16 DownloadItemModel::GetStatusText() {
   int64 size = download_->received_bytes();
   int64 total = download_->total_bytes();
 
@@ -89,7 +89,7 @@ std::wstring DownloadItemModel::GetStatusText() {
       NOTREACHED();
   }
 
-  return UTF16ToWideHack(status_text);
+  return status_text;
 }
 
 // -----------------------------------------------------------------------------
@@ -104,23 +104,23 @@ void SavePageModel::CancelTask() {
   save_->Cancel(true);
 }
 
-std::wstring SavePageModel::GetStatusText() {
+string16 SavePageModel::GetStatusText() {
   int64 size = download_->received_bytes();
   int64 total_size = download_->total_bytes();
 
-  std::wstring status_text;
+  string16 status_text;
   switch (download_->state()) {
     case DownloadItem::IN_PROGRESS:
-      status_text = l10n_util::GetStringF(
+      status_text = l10n_util::GetStringFUTF16(
           IDS_SAVE_PAGE_PROGRESS,
-          UTF16ToWide(base::FormatNumber(size)),
-          UTF16ToWide(base::FormatNumber(total_size)));
+          base::FormatNumber(size),
+          base::FormatNumber(total_size));
       break;
     case DownloadItem::COMPLETE:
-      status_text = l10n_util::GetString(IDS_SAVE_PAGE_STATUS_COMPLETED);
+      status_text = l10n_util::GetStringUTF16(IDS_SAVE_PAGE_STATUS_COMPLETED);
       break;
     case DownloadItem::CANCELLED:
-      status_text = l10n_util::GetString(IDS_SAVE_PAGE_STATUS_CANCELED);
+      status_text = l10n_util::GetStringUTF16(IDS_SAVE_PAGE_STATUS_CANCELED);
       break;
     case DownloadItem::REMOVING:
       break;

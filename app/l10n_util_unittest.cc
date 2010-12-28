@@ -57,7 +57,7 @@ TEST_F(L10nUtilTest, DISABLED_GetString) {
                                 UTF8ToUTF16("10"));
   EXPECT_EQ(std::string("Hello, chrome. Your number is 10."), s);
 
-  string16 s16 = l10n_util::GetStringFUTF16(IDS_PLACEHOLDERS_2, 20);
+  string16 s16 = l10n_util::GetStringFUTF16Int(IDS_PLACEHOLDERS_2, 20);
   EXPECT_EQ(UTF8ToUTF16("You owe me $20."), s16);
 }
 #endif  // defined(OS_WIN)

@@ -15,10 +15,10 @@
 #include "net/base/net_errors.h"
 #include "net/base/ssl_info.h"
 
-SSLErrorInfo::SSLErrorInfo(const std::wstring& title,
-                           const std::wstring& details,
-                           const std::wstring& short_description,
-                           const std::vector<std::wstring>& extra_info)
+SSLErrorInfo::SSLErrorInfo(const string16& title,
+                           const string16& details,
+                           const string16& short_description,
+                           const std::vector<string16>& extra_info)
     : title_(title),
       details_(details),
       short_description_(short_description),
@@ -29,11 +29,12 @@ SSLErrorInfo::SSLErrorInfo(const std::wstring& title,
 SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
                                        net::X509Certificate* cert,
                                        const GURL& request_url) {
-  std::wstring title, details, short_description;
-  std::vector<std::wstring> extra_info;
+  string16 title, details, short_description;
+  std::vector<string16> extra_info;
   switch (error_type) {
     case CERT_COMMON_NAME_INVALID: {
-      title = l10n_util::GetString(IDS_CERT_ERROR_COMMON_NAME_INVALID_TITLE);
+      title =
+          l10n_util::GetStringUTF16(IDS_CERT_ERROR_COMMON_NAME_INVALID_TITLE);
       // If the certificate contains multiple DNS names, we choose the most
       // representative one -- either the DNS name that's also in the subject
       // field, or the first one.  If this heuristic turns out to be
@@ -51,135 +52,138 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
       if (i == dns_names.size())
         i = 0;
       details =
-          l10n_util::GetStringF(IDS_CERT_ERROR_COMMON_NAME_INVALID_DETAILS,
-                                UTF8ToWide(request_url.host()),
-                                UTF8ToWide(dns_names[i]),
-                                UTF8ToWide(request_url.host()));
-      short_description =
-          l10n_util::GetString(IDS_CERT_ERROR_COMMON_NAME_INVALID_DESCRIPTION);
+          l10n_util::GetStringFUTF16(IDS_CERT_ERROR_COMMON_NAME_INVALID_DETAILS,
+                                     UTF8ToUTF16(request_url.host()),
+                                     UTF8ToUTF16(dns_names[i]),
+                                     UTF8ToUTF16(request_url.host()));
+      short_description = l10n_util::GetStringUTF16(
+          IDS_CERT_ERROR_COMMON_NAME_INVALID_DESCRIPTION);
       extra_info.push_back(
-          l10n_util::GetString(IDS_CERT_ERROR_EXTRA_INFO_1));
+          l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXTRA_INFO_1));
       extra_info.push_back(
-          l10n_util::GetStringF(
+          l10n_util::GetStringFUTF16(
               IDS_CERT_ERROR_COMMON_NAME_INVALID_EXTRA_INFO_2,
-              UTF8ToWide(cert->subject().common_name),
-              UTF8ToWide(request_url.host())));
+              UTF8ToUTF16(cert->subject().common_name),
+              UTF8ToUTF16(request_url.host())));
       break;
     }
     case CERT_DATE_INVALID:
       extra_info.push_back(
-          l10n_util::GetString(IDS_CERT_ERROR_EXTRA_INFO_1));
+          l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXTRA_INFO_1));
       if (cert->HasExpired()) {
-        title = l10n_util::GetString(IDS_CERT_ERROR_EXPIRED_TITLE);
-        details = l10n_util::GetStringF(IDS_CERT_ERROR_EXPIRED_DETAILS,
-                                        UTF8ToWide(request_url.host()),
-                                        UTF8ToWide(request_url.host()));
+        title = l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXPIRED_TITLE);
+        details = l10n_util::GetStringFUTF16(IDS_CERT_ERROR_EXPIRED_DETAILS,
+                                        UTF8ToUTF16(request_url.host()),
+                                        UTF8ToUTF16(request_url.host()));
         short_description =
-            l10n_util::GetString(IDS_CERT_ERROR_EXPIRED_DESCRIPTION);
-        extra_info.push_back(
-            l10n_util::GetString(IDS_CERT_ERROR_EXPIRED_DETAILS_EXTRA_INFO_2));
+            l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXPIRED_DESCRIPTION);
+        extra_info.push_back(l10n_util::GetStringUTF16(
+            IDS_CERT_ERROR_EXPIRED_DETAILS_EXTRA_INFO_2));
       } else {
         // Then it must be not yet valid.  We don't check that it is not yet
         // valid as there is still a very unlikely chance that the cert might
         // have become valid since the error occurred.
-        title = l10n_util::GetString(IDS_CERT_ERROR_NOT_YET_VALID_TITLE);
-        details = l10n_util::GetStringF(IDS_CERT_ERROR_NOT_YET_VALID_DETAILS,
-                                        UTF8ToWide(request_url.host()),
-                                        UTF8ToWide(request_url.host()));
+        title = l10n_util::GetStringUTF16(IDS_CERT_ERROR_NOT_YET_VALID_TITLE);
+        details = l10n_util::GetStringFUTF16(
+            IDS_CERT_ERROR_NOT_YET_VALID_DETAILS,
+            UTF8ToUTF16(request_url.host()),
+            UTF8ToUTF16(request_url.host()));
         short_description =
-            l10n_util::GetString(IDS_CERT_ERROR_NOT_YET_VALID_DESCRIPTION);
+            l10n_util::GetStringUTF16(IDS_CERT_ERROR_NOT_YET_VALID_DESCRIPTION);
         extra_info.push_back(
-            l10n_util::GetString(
+            l10n_util::GetStringUTF16(
                 IDS_CERT_ERROR_NOT_YET_VALID_DETAILS_EXTRA_INFO_2));
       }
       break;
     case CERT_AUTHORITY_INVALID:
-      title = l10n_util::GetString(IDS_CERT_ERROR_AUTHORITY_INVALID_TITLE);
-      details = l10n_util::GetStringF(IDS_CERT_ERROR_AUTHORITY_INVALID_DETAILS,
-                                      UTF8ToWide(request_url.host()));
-      short_description =
-          l10n_util::GetString(IDS_CERT_ERROR_AUTHORITY_INVALID_DESCRIPTION);
+      title = l10n_util::GetStringUTF16(IDS_CERT_ERROR_AUTHORITY_INVALID_TITLE);
+      details = l10n_util::GetStringFUTF16(
+          IDS_CERT_ERROR_AUTHORITY_INVALID_DETAILS,
+          UTF8ToUTF16(request_url.host()));
+      short_description = l10n_util::GetStringUTF16(
+          IDS_CERT_ERROR_AUTHORITY_INVALID_DESCRIPTION);
       extra_info.push_back(
-          l10n_util::GetString(IDS_CERT_ERROR_EXTRA_INFO_1));
-      extra_info.push_back(
-          l10n_util::GetStringF(IDS_CERT_ERROR_AUTHORITY_INVALID_EXTRA_INFO_2,
-                                UTF8ToWide(request_url.host()),
-                                UTF8ToWide(request_url.host())));
-      extra_info.push_back(
-          l10n_util::GetString(IDS_CERT_ERROR_AUTHORITY_INVALID_EXTRA_INFO_3));
+          l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXTRA_INFO_1));
+      extra_info.push_back(l10n_util::GetStringFUTF16(
+          IDS_CERT_ERROR_AUTHORITY_INVALID_EXTRA_INFO_2,
+          UTF8ToUTF16(request_url.host()),
+          UTF8ToUTF16(request_url.host())));
+      extra_info.push_back(l10n_util::GetStringUTF16(
+          IDS_CERT_ERROR_AUTHORITY_INVALID_EXTRA_INFO_3));
       break;
     case CERT_CONTAINS_ERRORS:
-      title = l10n_util::GetString(IDS_CERT_ERROR_CONTAINS_ERRORS_TITLE);
-      details = l10n_util::GetStringF(IDS_CERT_ERROR_CONTAINS_ERRORS_DETAILS,
-                                      UTF8ToWide(request_url.host()));
+      title = l10n_util::GetStringUTF16(IDS_CERT_ERROR_CONTAINS_ERRORS_TITLE);
+      details = l10n_util::GetStringFUTF16(
+          IDS_CERT_ERROR_CONTAINS_ERRORS_DETAILS,
+          UTF8ToUTF16(request_url.host()));
       short_description =
-          l10n_util::GetString(IDS_CERT_ERROR_CONTAINS_ERRORS_DESCRIPTION);
+          l10n_util::GetStringUTF16(IDS_CERT_ERROR_CONTAINS_ERRORS_DESCRIPTION);
       extra_info.push_back(
-          l10n_util::GetStringF(IDS_CERT_ERROR_EXTRA_INFO_1,
-                                UTF8ToWide(request_url.host())));
-      extra_info.push_back(
-          l10n_util::GetString(IDS_CERT_ERROR_CONTAINS_ERRORS_EXTRA_INFO_2));
+          l10n_util::GetStringFUTF16(IDS_CERT_ERROR_EXTRA_INFO_1,
+                                     UTF8ToUTF16(request_url.host())));
+      extra_info.push_back(l10n_util::GetStringUTF16(
+          IDS_CERT_ERROR_CONTAINS_ERRORS_EXTRA_INFO_2));
       break;
     case CERT_NO_REVOCATION_MECHANISM:
-      title =
-          l10n_util::GetString(IDS_CERT_ERROR_NO_REVOCATION_MECHANISM_TITLE);
-      details =
-          l10n_util::GetString(IDS_CERT_ERROR_NO_REVOCATION_MECHANISM_DETAILS);
-      short_description = l10n_util::GetString(
+      title = l10n_util::GetStringUTF16(
+          IDS_CERT_ERROR_NO_REVOCATION_MECHANISM_TITLE);
+      details = l10n_util::GetStringUTF16(
+          IDS_CERT_ERROR_NO_REVOCATION_MECHANISM_DETAILS);
+      short_description = l10n_util::GetStringUTF16(
           IDS_CERT_ERROR_NO_REVOCATION_MECHANISM_DESCRIPTION);
       break;
     case CERT_UNABLE_TO_CHECK_REVOCATION:
-      title =
-          l10n_util::GetString(IDS_CERT_ERROR_UNABLE_TO_CHECK_REVOCATION_TITLE);
-      details = l10n_util::GetString(
+      title = l10n_util::GetStringUTF16(
+          IDS_CERT_ERROR_UNABLE_TO_CHECK_REVOCATION_TITLE);
+      details = l10n_util::GetStringUTF16(
           IDS_CERT_ERROR_UNABLE_TO_CHECK_REVOCATION_DETAILS);
-      short_description = l10n_util::GetString(
+      short_description = l10n_util::GetStringUTF16(
           IDS_CERT_ERROR_UNABLE_TO_CHECK_REVOCATION_DESCRIPTION);
       break;
     case CERT_REVOKED:
-      title = l10n_util::GetString(IDS_CERT_ERROR_REVOKED_CERT_TITLE);
-      details = l10n_util::GetStringF(IDS_CERT_ERROR_REVOKED_CERT_DETAILS,
-                                      UTF8ToWide(request_url.host()));
+      title = l10n_util::GetStringUTF16(IDS_CERT_ERROR_REVOKED_CERT_TITLE);
+      details = l10n_util::GetStringFUTF16(IDS_CERT_ERROR_REVOKED_CERT_DETAILS,
+                                           UTF8ToUTF16(request_url.host()));
       short_description =
-          l10n_util::GetString(IDS_CERT_ERROR_REVOKED_CERT_DESCRIPTION);
+          l10n_util::GetStringUTF16(IDS_CERT_ERROR_REVOKED_CERT_DESCRIPTION);
       extra_info.push_back(
-          l10n_util::GetString(IDS_CERT_ERROR_EXTRA_INFO_1));
+          l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXTRA_INFO_1));
       extra_info.push_back(
-          l10n_util::GetString(IDS_CERT_ERROR_REVOKED_CERT_EXTRA_INFO_2));
+          l10n_util::GetStringUTF16(IDS_CERT_ERROR_REVOKED_CERT_EXTRA_INFO_2));
       break;
     case CERT_INVALID:
-      title = l10n_util::GetString(IDS_CERT_ERROR_INVALID_CERT_TITLE);
-      details = l10n_util::GetString(IDS_CERT_ERROR_INVALID_CERT_DETAILS);
+      title = l10n_util::GetStringUTF16(IDS_CERT_ERROR_INVALID_CERT_TITLE);
+      details = l10n_util::GetStringUTF16(IDS_CERT_ERROR_INVALID_CERT_DETAILS);
       short_description =
-          l10n_util::GetString(IDS_CERT_ERROR_INVALID_CERT_DESCRIPTION);
+          l10n_util::GetStringUTF16(IDS_CERT_ERROR_INVALID_CERT_DESCRIPTION);
       break;
     case CERT_WEAK_SIGNATURE_ALGORITHM:
-      title =
-          l10n_util::GetString(IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_TITLE);
-      details = l10n_util::GetStringF(
+      title = l10n_util::GetStringUTF16(
+          IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_TITLE);
+      details = l10n_util::GetStringFUTF16(
           IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_DETAILS,
-          UTF8ToWide(request_url.host()));
-      short_description = l10n_util::GetString(
+          UTF8ToUTF16(request_url.host()));
+      short_description = l10n_util::GetStringUTF16(
           IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_DESCRIPTION);
       extra_info.push_back(
-          l10n_util::GetString(IDS_CERT_ERROR_EXTRA_INFO_1));
+          l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXTRA_INFO_1));
       extra_info.push_back(
-          l10n_util::GetString(
+          l10n_util::GetStringUTF16(
               IDS_CERT_ERROR_WEAK_SIGNATURE_ALGORITHM_EXTRA_INFO_2));
       break;
     case CERT_NOT_IN_DNS:
-      title = l10n_util::GetString(IDS_CERT_ERROR_NOT_IN_DNS_TITLE);
-      details = l10n_util::GetString(IDS_CERT_ERROR_NOT_IN_DNS_DETAILS);
-      short_description = l10n_util::GetString(
+      title = l10n_util::GetStringUTF16(IDS_CERT_ERROR_NOT_IN_DNS_TITLE);
+      details = l10n_util::GetStringUTF16(IDS_CERT_ERROR_NOT_IN_DNS_DETAILS);
+      short_description = l10n_util::GetStringUTF16(
           IDS_CERT_ERROR_NOT_IN_DNS_DESCRIPTION);
       extra_info.push_back(
-          l10n_util::GetString(IDS_CERT_ERROR_NOT_IN_DNS_EXTRA_INFO));
+          l10n_util::GetStringUTF16(IDS_CERT_ERROR_NOT_IN_DNS_EXTRA_INFO));
       break;
     case UNKNOWN:
-      title = l10n_util::GetString(IDS_CERT_ERROR_UNKNOWN_ERROR_TITLE);
-      details = l10n_util::GetString(IDS_CERT_ERROR_UNKNOWN_ERROR_DETAILS);
+      title = l10n_util::GetStringUTF16(IDS_CERT_ERROR_UNKNOWN_ERROR_TITLE);
+      details = l10n_util::GetStringUTF16(IDS_CERT_ERROR_UNKNOWN_ERROR_DETAILS);
       short_description =
-          l10n_util::GetString(IDS_CERT_ERROR_UNKNOWN_ERROR_DESCRIPTION);
+          l10n_util::GetStringUTF16(IDS_CERT_ERROR_UNKNOWN_ERROR_DESCRIPTION);
       break;
     default:
       NOTREACHED();

@@ -184,8 +184,7 @@ void PrintWebViewHelper::DidFinishPrinting(bool success) {
 
     render_view_->runModalAlertDialog(
         web_view->mainFrame(),
-        WideToUTF16Hack(
-            l10n_util::GetString(IDS_PRINT_SPOOL_FAILED_ERROR_TEXT)));
+        l10n_util::GetStringUTF16(IDS_PRINT_SPOOL_FAILED_ERROR_TEXT));
   }
 
   if (print_web_view_) {

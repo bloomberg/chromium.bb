@@ -353,7 +353,7 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
     ClearDangerousMode();
   }
 
-  std::wstring status_text = model_->GetStatusText();
+  string16 status_text = model_->GetStatusText();
   switch (download_->state()) {
     case DownloadItem::IN_PROGRESS:
       download_->is_paused() ? StopDownloadProgress() : StartDownloadProgress();
@@ -384,7 +384,7 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
       NOTREACHED();
   }
 
-  status_text_ = status_text;
+  status_text_ = UTF16ToWideHack(status_text);
   UpdateAccessibleName();
 
   // We use the parent's (DownloadShelfView's) SchedulePaint, since there

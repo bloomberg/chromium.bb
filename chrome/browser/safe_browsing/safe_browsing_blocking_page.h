@@ -96,11 +96,11 @@ class SafeBrowsingBlockingPage : public InterstitialPage {
   // A helper method used by the Populate methods above used to populate common
   // fields.
   void PopulateStringDictionary(DictionaryValue* strings,
-                                const std::wstring& title,
-                                const std::wstring& headline,
-                                const std::wstring& description1,
-                                const std::wstring& description2,
-                                const std::wstring& description3);
+                                const string16& title,
+                                const string16& headline,
+                                const string16& description1,
+                                const string16& description2,
+                                const string16& description3);
 
   // Records a user action for this interstitial, using the form
   // SBInterstitial[Phishing|Malware|Multiple][Show|Proceed|DontProceed].

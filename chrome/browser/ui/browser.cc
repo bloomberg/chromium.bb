@@ -2664,8 +2664,7 @@ void Browser::TabSelectedAt(TabContentsWrapper* old_contents,
     status_bubble->Hide();
 
     // Show the loading state (if any).
-    status_bubble->SetStatus(WideToUTF16Hack(
-        GetSelectedTabContents()->GetStatusText()));
+    status_bubble->SetStatus(GetSelectedTabContents()->GetStatusText());
   }
 
   if (HasFindBarController()) {
@@ -2831,8 +2830,7 @@ void Browser::LoadingStateChanged(TabContents* source) {
   if (source == selected_contents) {
     UpdateReloadStopState(source->is_loading(), false);
     if (GetStatusBubble()) {
-      GetStatusBubble()->SetStatus(WideToUTF16(
-          GetSelectedTabContents()->GetStatusText()));
+      GetStatusBubble()->SetStatus(GetSelectedTabContents()->GetStatusText());
     }
 
     if (!source->is_loading() &&
@@ -3787,7 +3785,7 @@ void Browser::ProcessPendingUIUpdates() {
 
       // Updating the URL happens synchronously in ScheduleUIUpdate.
       if (flags & TabContents::INVALIDATE_LOAD && GetStatusBubble())
-        GetStatusBubble()->SetStatus(WideToUTF16(contents->GetStatusText()));
+        GetStatusBubble()->SetStatus(contents->GetStatusText());
 
       if (flags & (TabContents::INVALIDATE_TAB |
                    TabContents::INVALIDATE_TITLE)) {

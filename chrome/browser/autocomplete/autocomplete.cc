@@ -958,18 +958,19 @@ void AutocompleteController::AddHistoryContentsShortcut() {
   if (history_contents_provider_->db_match_count() ==
       history_contents_provider_->kMaxMatchCount) {
     // History contents searcher has maxed out.
-    match.contents = l10n_util::GetStringF(IDS_OMNIBOX_RECENT_HISTORY_MANY,
-                                           input_.text(),
-                                           &keyword_offset);
+    match.contents = UTF16ToWideHack(
+        l10n_util::GetStringFUTF16(IDS_OMNIBOX_RECENT_HISTORY_MANY,
+                                   WideToUTF16Hack(input_.text()),
+                                   &keyword_offset));
   } else {
     // We can report exact matches when there aren't too many.
     std::vector<size_t> content_param_offsets;
-    match.contents = l10n_util::GetStringF(
+    match.contents = UTF16ToWideHack(l10n_util::GetStringFUTF16(
         IDS_OMNIBOX_RECENT_HISTORY,
-        UTF16ToWide(base::FormatNumber(history_contents_provider_->
-                                           db_match_count())),
-        input_.text(),
-        &content_param_offsets);
+        base::FormatNumber(history_contents_provider_->
+                               db_match_count()),
+        WideToUTF16Hack(input_.text()),
+        &content_param_offsets));
 
     // content_param_offsets is ordered based on supplied params, we expect
     // that the second one contains the query (first is the number).

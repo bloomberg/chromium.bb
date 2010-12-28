@@ -779,11 +779,11 @@ std::wstring GetStringF(int message_id, int64 a) {
 }
 #endif
 
-string16 GetStringFUTF16(int message_id, int a) {
+string16 GetStringFUTF16Int(int message_id, int a) {
   return GetStringFUTF16(message_id, UTF8ToUTF16(base::IntToString(a)));
 }
 
-string16 GetStringFUTF16(int message_id, int64 a) {
+string16 GetStringFUTF16Int(int message_id, int64 a) {
   return GetStringFUTF16(message_id, UTF8ToUTF16(base::Int64ToString(a)));
 }
 

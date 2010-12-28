@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/string16.h"
 
 class DownloadItem;
 class SavePackage;
@@ -25,7 +26,7 @@ class BaseDownloadItemModel {
   virtual void CancelTask() = 0;
 
   // Get the status text to display.
-  virtual std::wstring GetStatusText() = 0;
+  virtual string16 GetStatusText() = 0;
 
   DownloadItem* download() { return download_; }
 
@@ -45,7 +46,7 @@ class DownloadItemModel : public BaseDownloadItemModel {
   virtual void CancelTask();
 
   // Get downloading status text.
-  virtual std::wstring GetStatusText();
+  virtual string16 GetStatusText();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadItemModel);
@@ -63,7 +64,7 @@ class SavePageModel : public BaseDownloadItemModel {
   virtual void CancelTask();
 
   // Get page saving status text.
-  virtual std::wstring GetStatusText();
+  virtual string16 GetStatusText();
 
  private:
   // Saving page management.

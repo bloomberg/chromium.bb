@@ -7,7 +7,9 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
+#include "base/string16.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/browser/tab_contents/interstitial_page.h"
 
@@ -53,7 +55,7 @@ class SSLBlockingPage : public InterstitialPage {
   // ssl_error.html files.
   // Note: there can be up to 5 strings in |extra_info|.
   static void SetExtraInfo(DictionaryValue* strings,
-                           const std::vector<std::wstring>& extra_info);
+                           const std::vector<string16>& extra_info);
 
  protected:
   // InterstitialPage implementation.

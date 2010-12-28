@@ -401,10 +401,9 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
     return;
   }
 
-  std::wstring status_text = download_model_->GetStatusText();
-  status_text_ = WideToUTF8(status_text);
+  status_text_ = UTF16ToUTF8(download_model_->GetStatusText());
   // Remove the status text label.
-  if (status_text.empty()) {
+  if (status_text_.empty()) {
     gtk_widget_destroy(status_label_);
     return;
   }

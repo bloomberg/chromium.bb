@@ -183,13 +183,13 @@ string16 GetStringFUTF16(int message_id,
                          const string16& b,
                          std::vector<size_t>* offsets);
 
-// Convenience formatters for a single number.
+// Convenience functions to get a string with a single number as a parameter.
 #if CRBUG_9911_OBSOLETE_GOING_AWAY
 std::wstring GetStringF(int message_id, int a);
 std::wstring GetStringF(int message_id, int64 a);
 #endif
-string16 GetStringFUTF16(int message_id, int a);
-string16 GetStringFUTF16(int message_id, int64 a);
+string16 GetStringFUTF16Int(int message_id, int a);
+string16 GetStringFUTF16Int(int message_id, int64 a);
 
 // Truncates the string to length characters. This breaks the string at
 // the first word break before length, adding the horizontal ellipsis

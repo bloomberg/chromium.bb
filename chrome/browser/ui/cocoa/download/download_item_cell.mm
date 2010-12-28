@@ -237,14 +237,14 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
   // Set the name of the download.
   downloadPath_ = downloadModel->download()->GetFileNameToReportUser();
 
-  std::wstring statusText = downloadModel->GetStatusText();
+  string16 statusText = downloadModel->GetStatusText();
   if (statusText.empty()) {
     // Remove the status text label.
     [self hideSecondaryTitle];
     isStatusTextVisible_ = NO;
   } else {
     // Set status text.
-    NSString* statusString = base::SysWideToNSString(statusText);
+    NSString* statusString = base::SysUTF16ToNSString(statusText);
     [self setSecondaryTitle:statusString];
     isStatusTextVisible_ = YES;
   }

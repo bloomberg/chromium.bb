@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/string16.h"
 #include "gfx/native_widget_types.h"
 
 #if defined(TOOLKIT_VIEWS)
@@ -157,7 +158,7 @@ void DragDownload(const DownloadItem* download,
 DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id);
 
 // Get the localized status text for an in-progress download.
-std::wstring GetProgressStatusText(DownloadItem* download);
+string16 GetProgressStatusText(DownloadItem* download);
 
 // Update the application icon to indicate overall download progress.
 // |download_count| is the number of downloads currently in progress. If

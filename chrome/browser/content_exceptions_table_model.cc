@@ -110,13 +110,17 @@ std::wstring ContentExceptionsTableModel::GetText(int row, int column_id) {
     case IDS_EXCEPTIONS_ACTION_HEADER:
       switch (entry.second) {
         case CONTENT_SETTING_ALLOW:
-          return l10n_util::GetString(IDS_EXCEPTIONS_ALLOW_BUTTON);
+          return UTF16ToWideHack(
+              l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ALLOW_BUTTON));
         case CONTENT_SETTING_BLOCK:
-          return l10n_util::GetString(IDS_EXCEPTIONS_BLOCK_BUTTON);
+          return UTF16ToWideHack(
+              l10n_util::GetStringUTF16(IDS_EXCEPTIONS_BLOCK_BUTTON));
         case CONTENT_SETTING_ASK:
-          return l10n_util::GetString(IDS_EXCEPTIONS_ASK_BUTTON);
+          return UTF16ToWideHack(
+              l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ASK_BUTTON));
         case CONTENT_SETTING_SESSION_ONLY:
-          return l10n_util::GetString(IDS_EXCEPTIONS_SESSION_ONLY_BUTTON);
+          return UTF16ToWideHack(
+              l10n_util::GetStringUTF16(IDS_EXCEPTIONS_SESSION_ONLY_BUTTON));
         default:
           NOTREACHED();
       }

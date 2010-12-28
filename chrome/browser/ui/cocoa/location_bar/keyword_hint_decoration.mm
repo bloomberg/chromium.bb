@@ -34,10 +34,10 @@ const CGFloat kHintAvailableRatio = 2.0 / 3.0;
 
 // Helper to convert |s| to an |NSString|, trimming whitespace at
 // ends.
-NSString* TrimAndConvert(const std::wstring& s) {
-  std::wstring output;
+NSString* TrimAndConvert(const string16& s) {
+  string16 output;
   TrimWhitespace(s, TRIM_ALL, &output);
-  return base::SysWideToNSString(output);
+  return base::SysUTF16ToNSString(output);
 }
 
 }  // namespace
@@ -65,7 +65,7 @@ NSImage* KeywordHintDecoration::GetHintImage() {
   return hint_image_;
 }
 
-void KeywordHintDecoration::SetKeyword(const std::wstring& short_name,
+void KeywordHintDecoration::SetKeyword(const string16& short_name,
                                        bool is_extension_keyword) {
   // KEYWORD_HINT is a message like "Press [tab] to search <site>".
   // [tab] is a parameter to be replaced by an image.  "<site>" is
@@ -73,10 +73,10 @@ void KeywordHintDecoration::SetKeyword(const std::wstring& short_name,
   std::vector<size_t> content_param_offsets;
   int message_id = is_extension_keyword ?
       IDS_OMNIBOX_EXTENSION_KEYWORD_HINT : IDS_OMNIBOX_KEYWORD_HINT;
-  const std::wstring keyword_hint(
-      l10n_util::GetStringF(message_id,
-                            std::wstring(), short_name,
-                            &content_param_offsets));
+  const string16 keyword_hint(
+      l10n_util::GetStringFUTF16(message_id,
+                                 string16(), short_name,
+                                 &content_param_offsets));
 
   // Should always be 2 offsets, see the comment in
   // location_bar_view.cc after IDS_OMNIBOX_KEYWORD_HINT fetch.

@@ -719,40 +719,41 @@ bool TabContents::ShouldDisplayFavIcon() {
   return true;
 }
 
-std::wstring TabContents::GetStatusText() const {
+string16 TabContents::GetStatusText() const {
   if (!is_loading() || load_state_ == net::LOAD_STATE_IDLE)
-    return std::wstring();
+    return string16();
 
   switch (load_state_) {
     case net::LOAD_STATE_WAITING_FOR_CACHE:
-      return l10n_util::GetString(IDS_LOAD_STATE_WAITING_FOR_CACHE);
+      return l10n_util::GetStringUTF16(IDS_LOAD_STATE_WAITING_FOR_CACHE);
     case net::LOAD_STATE_ESTABLISHING_PROXY_TUNNEL:
-      return l10n_util::GetString(IDS_LOAD_STATE_ESTABLISHING_PROXY_TUNNEL);
+      return
+          l10n_util::GetStringUTF16(IDS_LOAD_STATE_ESTABLISHING_PROXY_TUNNEL);
     case net::LOAD_STATE_RESOLVING_PROXY_FOR_URL:
-      return l10n_util::GetString(IDS_LOAD_STATE_RESOLVING_PROXY_FOR_URL);
+      return l10n_util::GetStringUTF16(IDS_LOAD_STATE_RESOLVING_PROXY_FOR_URL);
     case net::LOAD_STATE_RESOLVING_HOST:
-      return l10n_util::GetString(IDS_LOAD_STATE_RESOLVING_HOST);
+      return l10n_util::GetStringUTF16(IDS_LOAD_STATE_RESOLVING_HOST);
     case net::LOAD_STATE_CONNECTING:
-      return l10n_util::GetString(IDS_LOAD_STATE_CONNECTING);
+      return l10n_util::GetStringUTF16(IDS_LOAD_STATE_CONNECTING);
     case net::LOAD_STATE_SSL_HANDSHAKE:
-      return l10n_util::GetString(IDS_LOAD_STATE_SSL_HANDSHAKE);
+      return l10n_util::GetStringUTF16(IDS_LOAD_STATE_SSL_HANDSHAKE);
     case net::LOAD_STATE_SENDING_REQUEST:
       if (upload_size_)
-        return l10n_util::GetStringF(
+        return l10n_util::GetStringFUTF16Int(
                     IDS_LOAD_STATE_SENDING_REQUEST_WITH_PROGRESS,
                     static_cast<int>((100 * upload_position_) / upload_size_));
       else
-        return l10n_util::GetString(IDS_LOAD_STATE_SENDING_REQUEST);
+        return l10n_util::GetStringUTF16(IDS_LOAD_STATE_SENDING_REQUEST);
     case net::LOAD_STATE_WAITING_FOR_RESPONSE:
-      return l10n_util::GetStringF(IDS_LOAD_STATE_WAITING_FOR_RESPONSE,
-                                   load_state_host_);
+      return l10n_util::GetStringFUTF16(IDS_LOAD_STATE_WAITING_FOR_RESPONSE,
+                                        load_state_host_);
     // Ignore net::LOAD_STATE_READING_RESPONSE and net::LOAD_STATE_IDLE
     case net::LOAD_STATE_IDLE:
     case net::LOAD_STATE_READING_RESPONSE:
       break;
   }
 
-  return std::wstring();
+  return string16();
 }
 
 void TabContents::AddNavigationObserver(WebNavigationObserver* observer) {
@@ -3076,8 +3077,8 @@ void TabContents::LoadStateChanged(const GURL& url,
   std::wstring languages =
       UTF8ToWide(profile()->GetPrefs()->GetString(prefs::kAcceptLanguages));
   std::string host = url.host();
-  load_state_host_ =
-      net::IDNToUnicode(host.c_str(), host.size(), languages, NULL);
+  load_state_host_ = WideToUTF16Hack(
+      net::IDNToUnicode(host.c_str(), host.size(), languages, NULL));
   if (load_state_ == net::LOAD_STATE_READING_RESPONSE)
     SetNotWaitingForResponse();
   if (is_loading())

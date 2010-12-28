@@ -11,6 +11,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 
 #import "base/scoped_nsobject.h"
+#include "base/string16.h"
 
 // Draws the keyword hint, "Press [tab] to search <site>".
 
@@ -21,7 +22,7 @@ class KeywordHintDecoration : public LocationBarDecoration {
 
   // Calculates the message to display and where to place the [tab]
   // image.
-  void SetKeyword(const std::wstring& keyword, bool is_extension_keyword);
+  void SetKeyword(const string16& keyword, bool is_extension_keyword);
 
   // Implement |LocationBarDecoration|.
   virtual void DrawInFrame(NSRect frame, NSView* control_view);

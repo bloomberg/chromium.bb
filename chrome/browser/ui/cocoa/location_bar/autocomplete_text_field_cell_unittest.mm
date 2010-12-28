@@ -6,6 +6,7 @@
 
 #include "app/resource_bundle.h"
 #include "base/scoped_nsobject.h"
+#include "base/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
@@ -133,7 +134,7 @@ TEST_F(AutocompleteTextFieldCellTest, DISABLED_FocusedDisplay) {
 
   KeywordHintDecoration keyword_hint_decoration([view_ font]);
   keyword_hint_decoration.SetVisible(true);
-  keyword_hint_decoration.SetKeyword(std::wstring(L"google"), false);
+  keyword_hint_decoration.SetKeyword(ASCIIToUTF16("google"), false);
   [cell addRightDecoration:&keyword_hint_decoration];
   EXPECT_NE(keyword_hint_decoration.GetWidthForSpace(kVeryWide),
             LocationBarDecoration::kOmittedWidth);

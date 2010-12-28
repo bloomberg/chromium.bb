@@ -6,6 +6,7 @@
 
 #import "chrome/browser/ui/cocoa/location_bar/keyword_hint_decoration.h"
 
+#include "base/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,7 +23,7 @@ class KeywordHintDecorationTest : public CocoaTest {
 
 TEST_F(KeywordHintDecorationTest, GetWidthForSpace) {
   decoration_.SetVisible(true);
-  decoration_.SetKeyword(std::wstring(L"Google"), false);
+  decoration_.SetKeyword(ASCIIToUTF16("google"), false);
 
   const CGFloat kVeryWide = 1000.0;
   const CGFloat kFairlyWide = 100.0;  // Estimate for full hint space.

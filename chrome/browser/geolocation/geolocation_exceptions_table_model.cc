@@ -152,24 +152,29 @@ std::wstring GeolocationExceptionsTableModel::GetText(int row,
       // origin "embedded on any other site", so this row will never appear.  If
       // we add the ability to add/edit exceptions, we'll need to decide when to
       // display this and how "removing" it will function.
-      return indent +
-          l10n_util::GetString(IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ANY_OTHER);
+      return indent + UTF16ToWideHack(l10n_util::GetStringUTF16(
+          IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ANY_OTHER));
     }
-    return indent + l10n_util::GetStringF(
+    return indent + UTF16ToWideHack(l10n_util::GetStringFUTF16(
         IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ON_HOST,
-        content_settings_helper::OriginToWString(entry.embedding_origin));
+        WideToUTF16Hack(
+          content_settings_helper::OriginToWString(entry.embedding_origin))));
   }
 
   if (column_id == IDS_EXCEPTIONS_ACTION_HEADER) {
     switch (entry.setting) {
       case CONTENT_SETTING_ALLOW:
-        return l10n_util::GetString(IDS_EXCEPTIONS_ALLOW_BUTTON);
+        return UTF16ToWideHack(
+            l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ALLOW_BUTTON));
       case CONTENT_SETTING_BLOCK:
-        return l10n_util::GetString(IDS_EXCEPTIONS_BLOCK_BUTTON);
+        return UTF16ToWideHack(
+            l10n_util::GetStringUTF16(IDS_EXCEPTIONS_BLOCK_BUTTON));
       case CONTENT_SETTING_ASK:
-        return l10n_util::GetString(IDS_EXCEPTIONS_ASK_BUTTON);
+        return UTF16ToWideHack(
+            l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ASK_BUTTON));
       case CONTENT_SETTING_DEFAULT:
-        return l10n_util::GetString(IDS_EXCEPTIONS_NOT_SET_BUTTON);
+        return UTF16ToWideHack(
+            l10n_util::GetStringUTF16(IDS_EXCEPTIONS_NOT_SET_BUTTON));
       default:
         break;
     }

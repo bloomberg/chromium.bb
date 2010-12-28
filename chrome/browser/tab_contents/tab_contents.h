@@ -14,6 +14,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
+#include "base/string16.h"
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
 #include "chrome/browser/download/save_package.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
@@ -260,7 +261,7 @@ class TabContents : public PageNavigator,
   virtual bool ShouldDisplayFavIcon();
 
   // Returns a human-readable description the tab's loading state.
-  virtual std::wstring GetStatusText() const;
+  virtual string16 GetStatusText() const;
 
   // Add and remove observers for page navigation notifications. Adding or
   // removing multiple times has no effect. The order in which notifications
@@ -1179,7 +1180,7 @@ class TabContents : public PageNavigator,
 
   // The current load state and the URL associated with it.
   net::LoadState load_state_;
-  std::wstring load_state_host_;
+  string16 load_state_host_;
   // Upload progress, for displaying in the status bar.
   // Set to zero when there is no significant upload happening.
   uint64 upload_size_;

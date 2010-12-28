@@ -186,12 +186,14 @@ void GenerateFileName(const GURL& url,
                       const std::string& referrer_charset,
                       const std::string& mime_type,
                       FilePath* generated_name) {
-  std::wstring default_name =
-      l10n_util::GetString(IDS_DEFAULT_DOWNLOAD_FILENAME);
 #if defined(OS_WIN)
-  FilePath default_file_path(default_name);
+  FilePath default_file_path(
+      l10n_util::GetStringUTF16(IDS_DEFAULT_DOWNLOAD_FILENAME));
 #elif defined(OS_POSIX)
-  FilePath default_file_path(base::SysWideToNativeMB(default_name));
+  std::string default_file =
+      l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME);
+  FilePath default_file_path(
+      base::SysWideToNativeMB(base::SysUTF8ToWide(default_file)));
 #endif
 
   *generated_name = net::GetSuggestedFilename(GURL(url),
@@ -511,7 +513,7 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
     }
 
     file_value->SetString("progress_status_text",
-       WideToUTF16Hack(GetProgressStatusText(download)));
+       GetProgressStatusText(download));
 
     file_value->SetInteger("percent",
         static_cast<int>(download->PercentComplete()));
@@ -533,13 +535,12 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
   return file_value;
 }
 
-std::wstring GetProgressStatusText(DownloadItem* download) {
+string16 GetProgressStatusText(DownloadItem* download) {
   int64 total = download->total_bytes();
   int64 size = download->received_bytes();
   DataUnits amount_units = GetByteDisplayUnits(size);
-  std::wstring received_size = UTF16ToWideHack(FormatBytes(size, amount_units,
-                                                           true));
-  std::wstring amount = received_size;
+  string16 received_size = FormatBytes(size, amount_units, true);
+  string16 amount = received_size;
 
   // Adjust both strings for the locale direction since we don't yet know which
   // string we'll end up using for constructing the final progress string.
@@ -547,21 +548,19 @@ std::wstring GetProgressStatusText(DownloadItem* download) {
 
   if (total) {
     amount_units = GetByteDisplayUnits(total);
-    std::wstring total_text =
-        UTF16ToWideHack(FormatBytes(total, amount_units, true));
+    string16 total_text = FormatBytes(total, amount_units, true);
     base::i18n::AdjustStringForLocaleDirection(&total_text);
 
     base::i18n::AdjustStringForLocaleDirection(&received_size);
-    amount = l10n_util::GetStringF(IDS_DOWNLOAD_TAB_PROGRESS_SIZE,
-                                   received_size,
-                                   total_text);
+    amount = l10n_util::GetStringFUTF16(IDS_DOWNLOAD_TAB_PROGRESS_SIZE,
+                                        received_size,
+                                        total_text);
   } else {
     amount.assign(received_size);
   }
   int64 current_speed = download->CurrentSpeed();
   amount_units = GetByteDisplayUnits(current_speed);
-  std::wstring speed_text = UTF16ToWideHack(FormatSpeed(current_speed,
-                                                        amount_units, true));
+  string16 speed_text = FormatSpeed(current_speed, amount_units, true);
   base::i18n::AdjustStringForLocaleDirection(&speed_text);
 
   base::TimeDelta remaining;
@@ -573,11 +572,11 @@ std::wstring GetProgressStatusText(DownloadItem* download) {
 
   if (time_remaining.empty()) {
     base::i18n::AdjustStringForLocaleDirection(&amount);
-    return l10n_util::GetStringF(IDS_DOWNLOAD_TAB_PROGRESS_STATUS_TIME_UNKNOWN,
-                                 speed_text, amount);
+    return l10n_util::GetStringFUTF16(
+        IDS_DOWNLOAD_TAB_PROGRESS_STATUS_TIME_UNKNOWN, speed_text, amount);
   }
-  return l10n_util::GetStringF(IDS_DOWNLOAD_TAB_PROGRESS_STATUS, speed_text,
-                               amount, UTF16ToWideHack(time_remaining));
+  return l10n_util::GetStringFUTF16(IDS_DOWNLOAD_TAB_PROGRESS_STATUS,
+                                    speed_text, amount, time_remaining);
 }
 
 #if !defined(OS_MACOSX)
