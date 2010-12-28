@@ -31,6 +31,7 @@ namespace ppapi {
   F(PPB_Graphics3D_Impl) \
   F(PPB_ImageData_Impl) \
   F(PPB_Scrollbar_Impl) \
+  F(PPB_Surface3D_Impl) \
   F(PPB_Transport_Impl) \
   F(PPB_URLLoader_Impl) \
   F(PPB_URLRequestInfo_Impl) \

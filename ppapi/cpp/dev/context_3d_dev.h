@@ -12,7 +12,7 @@
 
 namespace pp {
 
-class CompletionCallback;
+class Surface3D_Dev;
 
 class Context3D_Dev : public Resource {
  public:
@@ -24,8 +24,8 @@ class Context3D_Dev : public Resource {
                 const Context3D_Dev& share_context,
                 const int32_t* attrib_list);
 
-  // TODO(alokp): Move to Surface3D.
-  int32_t SwapBuffers() const;
+  int32_t BindSurfaces(const Surface3D_Dev& draw,
+                       const Surface3D_Dev& read);
 
  protected:
   explicit Context3D_Dev(PP_Resource resource_id) : Resource(resource_id) {}

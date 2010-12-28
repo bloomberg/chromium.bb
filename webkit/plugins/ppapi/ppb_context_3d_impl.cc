@@ -5,9 +5,9 @@
 #include "webkit/plugins/ppapi/ppb_context_3d_impl.h"
 
 #include "gpu/command_buffer/common/command_buffer.h"
-#include "ppapi/c/dev/ppb_graphics_3d_dev.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppb_surface_3d_impl.h"
 
 namespace webkit {
 namespace ppapi {
@@ -31,8 +31,8 @@ PP_Resource Create(PP_Instance instance_id,
     return 0;
 
   scoped_refptr<PPB_Context3D_Impl> context(
-      new PPB_Context3D_Impl(instance->module()));
-  if (!context->Init(instance, config, share_context, attrib_list))
+      new PPB_Context3D_Impl(instance));
+  if (!context->Init(config, share_context, attrib_list))
     return 0;
 
   return context->GetReference();
@@ -49,11 +49,25 @@ int32_t GetAttrib(PP_Resource context,
   return 0;
 }
 
-int32_t BindSurfaces(PP_Resource context,
+int32_t BindSurfaces(PP_Resource context_id,
                      PP_Resource draw,
                      PP_Resource read) {
-  // TODO(alokp): Implement me.
-  return 0;
+  scoped_refptr<PPB_Context3D_Impl> context(
+      Resource::GetAs<PPB_Context3D_Impl>(context_id));
+  if (!context.get())
+    return PP_ERROR_BADRESOURCE;
+
+  scoped_refptr<PPB_Surface3D_Impl> draw_surface(
+      Resource::GetAs<PPB_Surface3D_Impl>(draw));
+  if (!draw_surface.get())
+    return PP_ERROR_BADRESOURCE;
+
+  scoped_refptr<PPB_Surface3D_Impl> read_surface(
+      Resource::GetAs<PPB_Surface3D_Impl>(read));
+  if (!read_surface.get())
+    return PP_ERROR_BADRESOURCE;
+
+  return context->BindSurfaces(draw_surface.get(), read_surface.get());
 }
 
 int32_t GetBoundSurfaces(PP_Resource context,
@@ -63,28 +77,22 @@ int32_t GetBoundSurfaces(PP_Resource context,
   return 0;
 }
 
-int32_t SwapBuffers(PP_Resource context_id,
-                    PP_CompletionCallback callback) {
-  scoped_refptr<PPB_Context3D_Impl> context(
-      Resource::GetAs<PPB_Context3D_Impl>(context_id));
-  return context->SwapBuffers();
-}
-
 const PPB_Context3D_Dev ppb_context3d = {
   &Create,
   &IsContext3D,
   &GetAttrib,
   &BindSurfaces,
   &GetBoundSurfaces,
-  &SwapBuffers
 };
 
 }  // namespace
 
-PPB_Context3D_Impl::PPB_Context3D_Impl(PluginModule* module)
-    : Resource(module),
-      bound_instance_(NULL),
-      gles2_impl_(NULL) {
+PPB_Context3D_Impl::PPB_Context3D_Impl(PluginInstance* instance)
+    : Resource(instance->module()),
+      instance_(instance),
+      gles2_impl_(NULL),
+      draw_surface_(NULL),
+      read_surface_(NULL) {
 }
 
 PPB_Context3D_Impl::~PPB_Context3D_Impl() {
@@ -99,13 +107,11 @@ PPB_Context3D_Impl* PPB_Context3D_Impl::AsPPB_Context3D_Impl() {
   return this;
 }
 
-bool PPB_Context3D_Impl::Init(PluginInstance* instance,
-                              PP_Config3D_Dev config,
+bool PPB_Context3D_Impl::Init(PP_Config3D_Dev config,
                               PP_Resource share_context,
                               const int32_t* attrib_list) {
-  DCHECK(instance);
   // Create and initialize the objects required to issue GLES2 calls.
-  platform_context_.reset(instance->delegate()->CreateContext3D());
+  platform_context_.reset(instance()->delegate()->CreateContext3D());
   if (!platform_context_.get()) {
     Destroy();
     return false;
@@ -121,58 +127,33 @@ bool PPB_Context3D_Impl::Init(PluginInstance* instance,
   return true;
 }
 
-bool PPB_Context3D_Impl::BindToInstance(PluginInstance* new_instance) {
-  if (bound_instance_ == new_instance)
-    return true;  // Rebinding the same device, nothing to do.
-  if (bound_instance_ && new_instance)
-    return false;  // Can't change a bound device.
+int32_t PPB_Context3D_Impl::BindSurfaces(PPB_Surface3D_Impl* draw,
+                                         PPB_Surface3D_Impl* read) {
+  // TODO(alokp): Support separate draw-read surfaces.
+  DCHECK_EQ(draw, read);
+  if (draw != read)
+    return PP_GRAPHICS3DERROR_BAD_MATCH;
 
-  if (new_instance) {
-    // Resize the backing texture to the size of the instance when it is bound.
-    platform_context_->ResizeBackingTexture(new_instance->position().size());
+  if (draw == draw_surface_)
+    return PP_OK;
 
-    // This is a temporary hack. The SwapBuffers is issued to force the resize
-    // to take place before any subsequent rendering. This might lead to a
-    // partially rendered frame being displayed. It is also not thread safe
-    // since the SwapBuffers is written to the command buffer and that command
-    // buffer might be written to by another thread.
-    // TODO(apatrick): Figure out the semantics of binding and resizing.
-    platform_context_->SwapBuffers();
-  }
+  if (draw && draw->context())
+    return PP_GRAPHICS3DERROR_BAD_ACCESS;
 
-  bound_instance_ = new_instance;
-  return true;
-}
+  if (draw_surface_)
+    draw_surface_->BindToContext(NULL);
+  if (draw && !draw->BindToContext(platform_context_.get()))
+    return PP_ERROR_NOMEMORY;
 
-bool PPB_Context3D_Impl::SwapBuffers() {
-  if (!platform_context_.get())
-    return false;
-
-  return platform_context_->SwapBuffers();
-}
-
-void PPB_Context3D_Impl::SetSwapBuffersCallback(Callback0::Type* callback) {
-  if (!platform_context_.get())
-    return;
-
-  platform_context_->SetSwapBuffersCallback(callback);
-}
-
-unsigned int PPB_Context3D_Impl::GetBackingTextureId() {
-  if (!platform_context_.get())
-    return 0;
-
-  return platform_context_->GetBackingTextureId();
-}
-
-void PPB_Context3D_Impl::ResizeBackingTexture(const gfx::Size& size) {
-  if (!platform_context_.get())
-    return;
-
-  platform_context_->ResizeBackingTexture(size);
+  draw_surface_ = draw;
+  read_surface_ = read;
+  return PP_OK;
 }
 
 void PPB_Context3D_Impl::Destroy() {
+  if (draw_surface_)
+    draw_surface_->BindToContext(NULL);
+
   gles2_impl_ = NULL;
   platform_context_.reset();
 }

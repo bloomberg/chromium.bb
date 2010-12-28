@@ -4,9 +4,8 @@
 
 #include "ppapi/cpp/dev/context_3d_dev.h"
 
-#include "ppapi/c/pp_completion_callback.h"
-#include "ppapi/c/dev/ppb_opengles_dev.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/cpp/dev/surface_3d_dev.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module_impl.h"
 
@@ -16,10 +15,6 @@ namespace {
 
 template <> const char* interface_name<PPB_Context3D_Dev>() {
   return PPB_CONTEXT_3D_DEV_INTERFACE;
-}
-
-template <> const char* interface_name<PPB_OpenGLES2_Dev>() {
-  return PPB_OPENGLES2_DEV_INTERFACE;
 }
 
 }  // namespace
@@ -36,8 +31,7 @@ Context3D_Dev::Context3D_Dev(const Instance& instance,
                              PP_Config3D_Dev config,
                              const Context3D_Dev& share_context,
                              const int32_t* attrib_list) {
-  if (has_interface<PPB_Context3D_Dev>() &&
-      has_interface<PPB_OpenGLES2_Dev>()) {
+  if (has_interface<PPB_Context3D_Dev>()) {
     PassRefFromConstructor(get_interface<PPB_Context3D_Dev>()->Create(
         instance.pp_instance(),
         config,
@@ -46,13 +40,13 @@ Context3D_Dev::Context3D_Dev(const Instance& instance,
   }
 }
 
-int32_t Context3D_Dev::SwapBuffers() const {
+int32_t Context3D_Dev::BindSurfaces(const Surface3D_Dev& draw,
+                                    const Surface3D_Dev& read) {
   if (!has_interface<PPB_Context3D_Dev>())
     return PP_ERROR_NOINTERFACE;
 
-  return get_interface<PPB_Context3D_Dev>()->SwapBuffers(
-      pp_resource(),
-      PP_BlockUntilComplete());
+  return get_interface<PPB_Context3D_Dev>()->BindSurfaces(
+      pp_resource(), draw.pp_resource(), read.pp_resource());
 }
 
 }  // namespace pp

@@ -92,7 +92,7 @@ struct PPB_Context3D_Dev {
   // - PP_GRAPHICS3DERROR_BAD_CONTEXT: if context is not a valid context.
   // - PP_GRAPHICS3DERROR_BAD_SURFACE: if either draw or read are not valid
   //   surfaces.
-  // - PP_GRAPHICS3DERROR_BAD_MATCH:fIf draw and read cannot fit into
+  // - PP_GRAPHICS3DERROR_BAD_MATCH: if draw and read cannot fit into
   //   graphics memory simultaneously.
   // - PP_ERROR_NOMEMORY: if the ancillary buffers for draw and read cannot
   //   be allocated.
@@ -119,10 +119,6 @@ struct PPB_Context3D_Dev {
   int32_t (*GetBoundSurfaces)(PP_Resource context,
                               PP_Resource* draw,
                               PP_Resource* read);
-
-  // TODO(alokp): Move to PPB_Surface3D_Dev
-  int32_t (*SwapBuffers)(PP_Resource context,
-                         struct PP_CompletionCallback callback);
 };
 
 #endif  // PPAPI_C_DEV_PPB_CONTEXT_3D_DEV_H_

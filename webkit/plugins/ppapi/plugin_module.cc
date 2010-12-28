@@ -87,6 +87,7 @@
 #include "webkit/plugins/ppapi/ppb_context_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_opengles_impl.h"
+#include "webkit/plugins/ppapi/ppb_surface_3d_impl.h"
 #endif  // ENABLE_GPU
 
 namespace webkit {
@@ -290,6 +291,8 @@ const void* GetInterface(const char* name) {
       return PPB_Context3D_Impl::GetInterface();
     if (strcmp(name, PPB_OPENGLES2_DEV_INTERFACE) == 0)
       return PPB_OpenGLES_Impl::GetInterface();
+    if (strcmp(name, PPB_SURFACE_3D_DEV_INTERFACE) == 0)
+      return PPB_Surface3D_Impl::GetInterface();
   }
 #endif  // ENABLE_GPU
 

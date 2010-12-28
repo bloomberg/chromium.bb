@@ -13,6 +13,7 @@
 #include "ppapi/cpp/size.h"
 #include "ppapi/cpp/dev/context_3d_dev.h"
 #include "ppapi/cpp/dev/graphics_3d_dev.h"
+#include "ppapi/cpp/dev/surface_3d_dev.h"
 #include "ppapi/lib/gl/gles2/gl2ext_ppapi.h"
 
 namespace gpu {
@@ -50,13 +51,17 @@ class PluginInstance : public pp::Instance {
       if (context_.is_null())
         return;
 
-      if (!pp::Instance::BindGraphics(context_))
-        return;
-
       glSetCurrentContextPPAPI(context_.pp_resource());
       demo_->InitGL();
       glSetCurrentContextPPAPI(0);
+    } else {
+      // Need to recreate surface. Unbind existing surface.
+      pp::Instance::BindGraphics(pp::Surface3D_Dev());
+      context_.BindSurfaces(pp::Surface3D_Dev(), pp::Surface3D_Dev());
     }
+    surface_ = pp::Surface3D_Dev(*this, 0, NULL);
+    context_.BindSurfaces(surface_, surface_);
+    pp::Instance::BindGraphics(surface_);
 
     if (demo_->IsAnimated())
       Animate(0);
@@ -67,7 +72,7 @@ class PluginInstance : public pp::Instance {
   void Paint() {
     glSetCurrentContextPPAPI(context_.pp_resource());
     demo_->Draw();
-    context_.SwapBuffers();
+    surface_.SwapBuffers();
     glSetCurrentContextPPAPI(0);
   }
 
@@ -81,6 +86,7 @@ class PluginInstance : public pp::Instance {
   pp::Module* module_;
   Demo* demo_;
   pp::Context3D_Dev context_;
+  pp::Surface3D_Dev surface_;
   pp::Size size_;
   pp::CompletionCallbackFactory<PluginInstance> callback_factory_;
 };

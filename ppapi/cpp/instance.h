@@ -26,12 +26,12 @@ struct PP_InputEvent;
 namespace pp {
 
 class Graphics2D;
-class Context3D_Dev;
 class ImageData;
 class Point;
 class Rect;
 class Rect;
 class Resource;
+class Surface3D_Dev;
 class URLLoader;
 class Var;
 class Widget_Dev;
@@ -89,8 +89,7 @@ class Instance {
   bool BindGraphics(const Graphics2D& graphics);
 
   /** See PPB_Instance.BindGraphics. */
-  // TODO(alokp): Change it to Surface3D.
-  bool BindGraphics(const Context3D_Dev& graphics);
+  bool BindGraphics(const Surface3D_Dev& graphics);
 
   /** See PPB_Instance.IsFullFrame. */
   bool IsFullFrame();

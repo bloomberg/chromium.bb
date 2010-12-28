@@ -45,9 +45,9 @@
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
-#include "webkit/plugins/ppapi/ppb_context_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
+#include "webkit/plugins/ppapi/ppb_surface_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
 #include "webkit/plugins/ppapi/ppp_pdf.h"
 #include "webkit/plugins/ppapi/string.h"
@@ -430,8 +430,7 @@ bool PluginInstance::BindGraphics(PP_Resource graphics_id) {
       if (bound_graphics_2d()) {
         bound_graphics_2d()->BindToInstance(NULL);
       } else if (bound_graphics_.get()) {
-        bound_graphics_3d()->SetSwapBuffersCallback(NULL);
-        bound_graphics_3d()->BindToInstance(NULL);
+        bound_graphics_3d()->BindToInstance(false);
       }
       InvalidateRect(gfx::Rect());
     }
@@ -441,8 +440,8 @@ bool PluginInstance::BindGraphics(PP_Resource graphics_id) {
 
   scoped_refptr<PPB_Graphics2D_Impl> graphics_2d =
       Resource::GetAs<PPB_Graphics2D_Impl>(graphics_id);
-  scoped_refptr<PPB_Context3D_Impl> graphics_3d =
-      Resource::GetAs<PPB_Context3D_Impl>(graphics_id);
+  scoped_refptr<PPB_Surface3D_Impl> graphics_3d =
+      Resource::GetAs<PPB_Surface3D_Impl>(graphics_id);
 
   if (graphics_2d) {
     if (!graphics_2d->BindToInstance(this))
@@ -470,12 +469,14 @@ bool PluginInstance::BindGraphics(PP_Resource graphics_id) {
     bound_graphics_ = graphics_2d;
     // BindToInstance will have invalidated the plugin if necessary.
   } else if (graphics_3d) {
-    if (!graphics_3d->BindToInstance(this))
+    // Make sure graphics can only be bound to the instance it is
+    // associated with.
+    if (graphics_3d->instance() != this)
+      return false;
+    if (!graphics_3d->BindToInstance(true))
       return false;
 
     bound_graphics_ = graphics_3d;
-    bound_graphics_3d()->SetSwapBuffersCallback(
-        NewCallback(this, &PluginInstance::CommitBackingTexture));
   }
 
   return true;
@@ -585,15 +586,6 @@ PP_Var PluginInstance::GetInstanceObject() {
 
 void PluginInstance::ViewChanged(const gfx::Rect& position,
                                  const gfx::Rect& clip) {
-  if (position.size() != position_.size() && bound_graphics_3d()) {
-    // TODO(apatrick): This is a hack to force the back buffer to resize.
-    // It is obviously wrong to call SwapBuffers when a partial frame has
-    // potentially been rendered. Plan is to embed resize commands in the
-    // command buffer just before ViewChanged is called.
-    bound_graphics_3d()->ResizeBackingTexture(position.size());
-    bound_graphics_3d()->SwapBuffers();
-  }
-
   position_ = position;
 
   if (clip.IsEmpty()) {
@@ -1174,11 +1166,11 @@ PPB_Graphics2D_Impl* PluginInstance::bound_graphics_2d() const {
   return bound_graphics_->Cast<PPB_Graphics2D_Impl>();
 }
 
-PPB_Context3D_Impl* PluginInstance::bound_graphics_3d() const {
+PPB_Surface3D_Impl* PluginInstance::bound_graphics_3d() const {
   if (bound_graphics_.get() == NULL)
     return NULL;
 
-  return bound_graphics_->Cast<PPB_Context3D_Impl>();
+  return bound_graphics_->Cast<PPB_Surface3D_Impl>();
 }
 
 }  // namespace ppapi
