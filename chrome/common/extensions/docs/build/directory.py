@@ -640,6 +640,8 @@ class Sample(dict):
         old_zip_file = zipfile.ZipFile(zip_path, 'r')
       except IOError, msg:
         raise Exception("Could not read zip at %s: %s" % (zip_path, msg))
+      except zipfile.BadZipfile, msg:
+        raise Exception("File at %s is not a zip file: %s" % (zip_path, msg))
 
       try:
         info = old_zip_file.getinfo(zip_manifest_path)
