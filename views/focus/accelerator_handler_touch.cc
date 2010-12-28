@@ -172,8 +172,10 @@ bool DispatchXEvent(XEvent* xev) {
         }
       }
 
-      case KeyRelease:
-        return root->ProcessKeyEvent(KeyEvent(xev));
+      case KeyRelease: {
+        KeyEvent keyev(xev);
+        return root->ProcessKeyEvent(keyev);
+      }
 
       case ButtonPress:
       case ButtonRelease: {
