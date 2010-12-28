@@ -9,3 +9,5 @@ BUGCR64371 WIN RELEASE : http/tests/appcache/online-whitelist.html = TEXT
 BUGPKASTING WIN MAC DEBUG SLOW: fast/encoding/parser-tests.html = PASS
 BUGCR68046 LINUX DEBUG SLOW: fast/encoding/parser-tests.html = TEXT
 BUGCR67463 MAC : editing/selection/caret-mode-paragraph-keys-navigation.html = TEXT
+
+BUGCR68173 WIN DEBUG : http/tests/inspector/extensions-resources-redirect.html = CRASH TIMEOUT PASS
