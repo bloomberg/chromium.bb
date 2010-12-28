@@ -63,14 +63,20 @@ class UsernameField : public chromeos::TextfieldWithMargin {
 
   // views::Textfield overrides:
   virtual void WillLoseFocus() {
-    if (!text().empty()) {
-      std::string username = UTF16ToUTF8(text());
+    string16 user_input;
+    bool was_trim = TrimWhitespace(text(), TRIM_ALL, &user_input) != TRIM_NONE;
+    if (!user_input.empty()) {
+      std::string username = UTF16ToUTF8(user_input);
 
       if (username.find('@') == std::string::npos) {
         username += kDefaultDomain;
         SetText(UTF8ToUTF16(username));
+        was_trim = false;
       }
     }
+
+    if (was_trim)
+      SetText(user_input);
   }
 
   // Overridden from views::View:
