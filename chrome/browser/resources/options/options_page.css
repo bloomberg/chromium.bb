@@ -75,13 +75,17 @@ html[hide-menu=true] .close-subpage {
 }
 
 .action-area {
-  -webkit-box-orient: horizontal;
   -webkit-box-align: center;
+  -webkit-box-orient: horizontal;
+  bottom: 0;
+  display: -webkit-box;
   padding: 12px;
   position: absolute;
-  right: 0px;
-  bottom: 0px;
-  display: -webkit-box;
+  right: 0;
+}
+
+html[dir='rtl'] .action-area {
+  left: 0;
 }
 
 .button-strip {
@@ -352,7 +356,7 @@ label.radio {
 }
 
 select {
-  margin: 0px;
+  margin: 0;
 }
 
 .link-button {
@@ -368,10 +372,6 @@ select {
   border-color: transparent;
 }
 
-#contentSettingsPage :invalid {
-  background-color: pink;
-}
-
 .settings-list {
   border: 1px solid #d9d9d9;
   border-radius: 2px;
@@ -381,7 +381,7 @@ list > * {
   -webkit-box-align: center;
   -webkit-transition: .15s background-color;
   box-sizing: border-box;
-  border-radius: 0px;
+  border-radius: 0;
   display: -webkit-box;
   height: 32px;
   border: none;
@@ -484,8 +484,8 @@ html[dir=rtl].option-name {
 }
 
 list .favicon-cell {
-  -webkit-padding-start: 33px;
-  background-position: 7px;
+  -webkit-margin-start: 7px;
+  -webkit-padding-start: 26px;
   display: block;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -493,9 +493,6 @@ list .favicon-cell {
 }
 
 html[dir=rtl] list .favicon-cell {
-  /* TODO(stuartmorgan): position this 7px from the right (and remove the
-     padding override) once the CSS support is available */
-  -webkit-padding-start: 26px;
   background-position: right;
 }
 

@@ -4,53 +4,59 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 */
 
-.exceptionPattern {
+.exception-pattern {
+  -webkit-box-flex: 1;
+  -webkit-margin-end: 10px;
+  -webkit-margin-start: 14px;
   display: -webkit-box;
   margin-right: 4px;
   overflow: hidden;
-  -webkit-box-flex: 1;
   white-space: nowrap;
 }
 
-.exceptionSetting {
+.exception-setting {
+  -webkit-margin-end: 20px;
   display: inline-block;
   width: 100px;
-  margin-right: 20px;
 }
 
-select.exceptionSetting {
+select.exception-setting {
   vertical-align: middle;
 }
 
 /* Hacks to make the <select> align better with the <input>. */
-html[toolkit=gtk] select.exceptionSetting {
+html[toolkit=gtk] select.exception-setting {
   height: 22px;
   margin-top: 1px;
 }
 
-#exceptionColumnHeaders {
+#exception-column-headers {
+  -webkit-margin-start: 17px;
   display: -webkit-box;
   margin-top: 17px;
-  -webkit-margin-start: 3px;
 }
 
-#exceptionColumnHeaders > div {
+#exception-column-headers > div {
   font-weight: bold;
 }
 
-#exceptionPatternColumn {
+#exception-pattern-column {
   -webkit-box-flex: 1;
 }
 
-#exceptionBehaviorColumn {
+#exception-behavior-column {
   width: 140px;
 }
 
-.otr_explanation {
+.otr-explanation {
   font-style: italic;
 }
 
-#contentSettingsExceptionsArea list {
+#content-settings-exceptions-area list {
   margin-bottom: 10px;
   margin-top: 4px;
+}
+
+#content-settings-exceptions-area input:invalid {
+  background-color: pink;
 }

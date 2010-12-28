@@ -39,7 +39,7 @@ function load() {
   cr.ui.decorate('select[pref]', options.PrefSelect);
   cr.ui.decorate('input[pref][type=text]', options.PrefTextField);
   cr.ui.decorate('input[pref][type=url]', options.PrefTextField);
-  cr.ui.decorate('#contentSettingsPage input[type=radio]',
+  cr.ui.decorate('#content-settings-page input[type=radio]',
       options.ContentSettingsRadio);
   cr.ui.decorate('#fontSettingsMinimumSizeSelector',
       options.MinimumFontSizeSelect);

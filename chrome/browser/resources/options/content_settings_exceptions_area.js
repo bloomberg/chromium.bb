@@ -44,13 +44,13 @@ cr.define('options.contentSettings', function() {
       if (this.pattern) {
         var patternLabel = cr.doc.createElement('span');
         patternLabel.textContent = this.pattern;
-        patternLabel.className = 'exceptionPattern';
+        patternLabel.className = 'exception-pattern';
         this.contentElement.appendChild(patternLabel);
         this.patternLabel = patternLabel;
 
         var settingLabel = cr.doc.createElement('span');
         settingLabel.textContent = this.settingForDisplay();
-        settingLabel.className = 'exceptionSetting';
+        settingLabel.className = 'exception-setting';
         this.contentElement.appendChild(settingLabel);
         this.settingLabel = settingLabel;
       }
@@ -59,7 +59,7 @@ cr.define('options.contentSettings', function() {
       var input = cr.doc.createElement('input');
       input.type = 'text';
       this.contentElement.appendChild(input);
-      input.className = 'exceptionPattern hidden';
+      input.className = 'exception-pattern hidden';
 
       var select = cr.doc.createElement('select');
       var optionAllow = cr.doc.createElement('option');
@@ -85,7 +85,7 @@ cr.define('options.contentSettings', function() {
       select.appendChild(optionBlock);
 
       this.contentElement.appendChild(select);
-      select.className = 'exceptionSetting hidden';
+      select.className = 'exception-setting hidden';
 
       // Used to track whether the URL pattern in the input is valid.
       // This will be true if the browser process has informed us that the
@@ -547,7 +547,7 @@ cr.define('options.contentSettings', function() {
    */
   function ContentSettingsExceptionsArea() {
     OptionsPage.call(this, 'contentExceptions',
-                     '', 'contentSettingsExceptionsArea');
+                     '', 'content-settings-exceptions-area');
   }
 
   cr.addSingletonGetter(ContentSettingsExceptionsArea);

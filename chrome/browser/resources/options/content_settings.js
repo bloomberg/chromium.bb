@@ -16,7 +16,7 @@ cr.define('options', function() {
   function ContentSettings() {
     this.activeNavTab = null;
     OptionsPage.call(this, 'content', templateData.contentSettingsPage,
-                     'contentSettingsPage');
+                     'content-settings-page');
   }
 
   cr.addSingletonGetter(ContentSettings);
@@ -30,7 +30,7 @@ cr.define('options', function() {
       chrome.send('getContentFilterSettings');
 
       var exceptionsButtons =
-          this.pageDiv.querySelectorAll('.exceptionsListButton');
+          this.pageDiv.querySelectorAll('.exceptions-list-button');
       for (var i = 0; i < exceptionsButtons.length; i++) {
         exceptionsButtons[i].onclick = function(event) {
           ContentSettingsExceptionsArea.getInstance().showList(
