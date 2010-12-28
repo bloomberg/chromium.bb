@@ -307,7 +307,9 @@ class SafeBrowsingService
   void OnHandleGetHashResults(SafeBrowsingCheck* check,
                               const std::vector<SBFullHashResult>& full_hashes);
 
-  void HandleOneCheck(SafeBrowsingCheck* check,
+  // Run one check against |full_hashes|.  Returns |true| if the check
+  // finds a match in |full_hashes|.
+  bool HandleOneCheck(SafeBrowsingCheck* check,
                       const std::vector<SBFullHashResult>& full_hashes);
 
   // Invoked on the UI thread to show the blocking page.

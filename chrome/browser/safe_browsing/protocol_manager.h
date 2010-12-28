@@ -158,6 +158,37 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
     return additional_query_;
   }
 
+  // Enumerate failures for histogramming purposes.  DO NOT CHANGE THE
+  // ORDERING OF THESE VALUES.
+  enum ResultType {
+    // 200 response code means that the server recognized the hash
+    // prefix, while 204 is an empty response indicating that the
+    // server did not recognize it.
+    GET_HASH_STATUS_200,
+    GET_HASH_STATUS_204,
+
+    // Subset of successful responses which returned no full hashes.
+    // This includes the 204 case, and also 200 responses for stale
+    // prefixes (deleted at the server but yet deleted on the client).
+    GET_HASH_FULL_HASH_EMPTY,
+
+    // Subset of successful responses for which one or more of the
+    // full hashes matched (should lead to an interstitial).
+    GET_HASH_FULL_HASH_HIT,
+
+    // Subset of successful responses which weren't empty and have no
+    // matches.  It means that there was a prefix collision which was
+    // cleared up by the full hashes.
+    GET_HASH_FULL_HASH_MISS,
+
+    // Memory space for histograms is determined by the max.  ALWAYS
+    // ADD NEW VALUES BEFORE THIS ONE.
+    GET_HASH_RESULT_MAX
+  };
+
+  // Record a GetHash result.
+  static void RecordGetHashResult(ResultType result_type);
+
  protected:
   // Constructs a SafeBrowsingProtocolManager for |sb_service| that issues
   // network requests using |request_context_getter|. When |disable_auto_update|

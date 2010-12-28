@@ -125,6 +125,12 @@ SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
     version_ = version_info.Version();
 }
 
+// static
+void SafeBrowsingProtocolManager::RecordGetHashResult(ResultType result_type) {
+  UMA_HISTOGRAM_ENUMERATION("SB2.GetHashResult", result_type,
+                            GET_HASH_RESULT_MAX);
+}
+
 SafeBrowsingProtocolManager::~SafeBrowsingProtocolManager() {
   // Delete in-progress SafeBrowsing requests.
   STLDeleteContainerPairFirstPointers(hash_requests_.begin(),
@@ -225,9 +231,9 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
       // For tracking our GetHash false positive (204) rate, compared to real
       // (200) responses.
       if (response_code == 200)
-        UMA_HISTOGRAM_COUNTS("SB2.GetHash200", 1);
+        RecordGetHashResult(GET_HASH_STATUS_200);
       else
-        UMA_HISTOGRAM_COUNTS("SB2.GetHash204", 1);
+        RecordGetHashResult(GET_HASH_STATUS_204);
       can_cache = true;
       gethash_error_count_ = 0;
       gethash_back_off_mult_ = 1;
