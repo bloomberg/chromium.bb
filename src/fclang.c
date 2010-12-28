@@ -71,6 +71,20 @@ FcLangSetBitGet (const FcLangSet *ls,
   return ((ls->map[bucket] >> (id & 0x1f)) & 1) ? FcTrue : FcFalse;
 }
 
+static void
+FcLangSetBitReset (FcLangSet    *ls,
+		   unsigned int  id)
+{
+  int bucket;
+
+  id = fcLangCharSetIndices[id];
+  bucket = id >> 5;
+  if (bucket >= ls->map_size)
+    return; /* shouldn't happen really */
+
+  ls->map[bucket] &= ~((FcChar32) 1 << (id & 0x1f));
+}
+
 FcLangSet *
 FcFreeTypeLangSet (const FcCharSet  *charset,
 		   const FcChar8    *exclusiveLang)
@@ -398,6 +412,23 @@ FcLangSetAdd (FcLangSet *ls, const FcChar8 *lang)
 	    return FcFalse;
     }
     return FcStrSetAdd (ls->extra, lang);
+}
+
+FcBool
+FcLangSetDel (FcLangSet *ls, const FcChar8 *lang)
+{
+    int	id;
+
+    id = FcLangSetIndex (lang);
+    if (id >= 0)
+    {
+	FcLangSetBitReset (ls, id);
+    }
+    else if (ls->extra)
+    {
+	FcStrSetDel (ls->extra, lang);
+    }
+    return FcTrue;
 }
 
 FcLangResult
@@ -816,6 +847,37 @@ FcLangSetGetLangs (const FcLangSet *ls)
     }
 
     return langs;
+}
+
+static FcLangSet *
+FcLangSetOperate(const FcLangSet	*a,
+		 const FcLangSet	*b,
+		 FcBool			(*func) (FcLangSet 	*ls,
+						 const FcChar8	*s))
+{
+    FcLangSet	*langset = FcLangSetCopy (a);
+    FcStrList	*sl = FcStrListCreate (FcLangSetGetLangs (b));
+    FcChar8	*str;
+
+    while ((str = FcStrListNext (sl)))
+    {
+	func (langset, str);
+    }
+    FcStrListDone (sl);
+
+    return langset;
+}
+
+FcLangSet *
+FcLangSetUnion (const FcLangSet *a, const FcLangSet *b)
+{
+    return FcLangSetOperate(a, b, FcLangSetAdd);
+}
+
+FcLangSet *
+FcLangSetSubtract (const FcLangSet *a, const FcLangSet *b)
+{
+    return FcLangSetOperate(a, b, FcLangSetDel);
 }
 
 #define __fclang__

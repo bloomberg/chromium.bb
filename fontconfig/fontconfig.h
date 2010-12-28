@@ -584,6 +584,9 @@ FcLangSetCopy (const FcLangSet *ls);
 FcPublic FcBool
 FcLangSetAdd (FcLangSet *ls, const FcChar8 *lang);
 
+FcPublic FcBool
+FcLangSetDel (FcLangSet *ls, const FcChar8 *lang);
+
 FcPublic FcLangResult
 FcLangSetHasLang (const FcLangSet *ls, const FcChar8 *lang);
 
@@ -601,6 +604,12 @@ FcLangSetHash (const FcLangSet *ls);
 
 FcPublic FcStrSet *
 FcLangSetGetLangs (const FcLangSet *ls);
+
+FcLangSet *
+FcLangSetUnion (const FcLangSet *a, const FcLangSet *b);
+
+FcLangSet *
+FcLangSetSubtract (const FcLangSet *a, const FcLangSet *b);
 
 /* fclist.c */
 FcPublic FcObjectSet *

@@ -160,8 +160,10 @@ FcOpPrint (FcOp op)
     case FcOpDouble: printf ("Double"); break;
     case FcOpString: printf ("String"); break;
     case FcOpMatrix: printf ("Matrix"); break;
+    case FcOpRange: printf ("Range"); break;
     case FcOpBool: printf ("Bool"); break;
     case FcOpCharSet: printf ("CharSet"); break;
+    case FcOpLangSet: printf ("LangSet"); break;
     case FcOpField: printf ("Field"); break;
     case FcOpConst: printf ("Const"); break;
     case FcOpAssign: printf ("Assign"); break;
@@ -210,8 +212,14 @@ FcExprPrint (const FcExpr *expr)
 			      expr->u.mval->xy,
 			      expr->u.mval->yx,
 			      expr->u.mval->yy); break;
+    case FcOpRange: break;
     case FcOpBool: printf ("%s", expr->u.bval ? "true" : "false"); break;
     case FcOpCharSet: printf ("charset\n"); break;
+    case FcOpLangSet:
+	printf ("langset:");
+	FcLangSetPrint(expr->u.lval);
+	printf ("\n");
+	break;
     case FcOpNil: printf ("nil\n"); break;
     case FcOpField: printf ("%s", FcObjectName(expr->u.object)); break;
     case FcOpConst: printf ("%s", expr->u.constant); break;

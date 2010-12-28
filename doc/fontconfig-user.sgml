@@ -432,6 +432,18 @@ instead of -.5).
 This element holds the four <literal>&lt;double&gt;</literal> elements of an affine
 transformation.
   </para></refsect2>
+  <refsect2><title><literal>&lt;range&gt;</literal></title><para>
+This element holds the two <literal>&lt;int&gt;</literal> elements of a range
+representation.
+  </para></refsect2>
+  <refsect2><title><literal>&lt;charset&gt;</literal></title><para>
+This element holds at least one <literal>&lt;int&gt;</literal> element of
+an Unicode code point or more.
+  </para></refsect2>
+  <refsect2><title><literal>&lt;langset&gt;</literal></title><para>
+This element holds at least one <literal>&lt;string&gt;</literal> element of
+a RFC-3066-style languages or more.
+  </para></refsect2>
   <refsect2><title><literal>&lt;name&gt;</literal></title><para>
 Holds a property name.  Evaluates to the first value from the property of
 the font, not the pattern.
