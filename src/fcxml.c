@@ -1148,10 +1148,13 @@ FcParseBlank (FcConfigParse *parse)
 		goto bail;
 	    break;
 	case FcVStackRange:
-	    for (i = v->u.range.begin; i <= v->u.range.end; i++)
+	    if (v->u.range.begin <= v->u.range.end)
 	    {
-		if (!FcBlanksAdd (parse->config->blanks, i))
-		    goto bail;
+	      for (i = v->u.range.begin; i <= v->u.range.end; i++)
+	      {
+		  if (!FcBlanksAdd (parse->config->blanks, i))
+		      goto bail;
+	      }
 	    }
 	    break;
 	default:
@@ -1428,14 +1431,17 @@ FcParseCharSet (FcConfigParse *parse)
 		n++;
 	    break;
 	case FcVStackRange:
-	    for (i = vstack->u.range.begin; i <= vstack->u.range.end; i++)
+	    if (vstack->u.range.begin <= vstack->u.range.end)
 	    {
-		if (!FcCharSetAddChar (charset, i))
-		{
-		    FcConfigMessage (parse, FcSevereWarning, "invalid character: 0x%04x", i);
-		}
-		else
-		    n++;
+	      for (i = vstack->u.range.begin; i <= vstack->u.range.end; i++)
+	      {
+		  if (!FcCharSetAddChar (charset, i))
+		  {
+		      FcConfigMessage (parse, FcSevereWarning, "invalid character: 0x%04x", i);
+		  }
+		  else
+		      n++;
+	      }
 	    }
 	    break;
 	default:
