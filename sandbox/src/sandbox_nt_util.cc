@@ -473,7 +473,7 @@ NTSTATUS AutoProtectMemory::ChangeProtection(void* address, size_t bytes,
   if (NT_SUCCESS(ret)) {
     changed_ = true;
     address_ = address;
-    bytes_ = bytes;
+    bytes_ = new_bytes;
   }
 
   return ret;
