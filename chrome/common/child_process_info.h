@@ -32,6 +32,19 @@ class ChildProcessInfo {
     PPAPI_PLUGIN_PROCESS
   };
 
+  // NOTE: Do not remove or reorder the elements in this enum, and only add new
+  // items at the end. We depend on these specific values in a histogram.
+  enum RendererProcessType {
+    RENDERER_UNKNOWN = 0,
+    RENDERER_NORMAL,
+    RENDERER_CHROME,        // DOMUI (chrome:// URL)
+    RENDERER_EXTENSION,     // chrome-extension://
+    RENDERER_DEVTOOLS,      // Web inspector
+    RENDERER_INTERSTITIAL,  // malware/phishing interstitial
+    RENDERER_NOTIFICATION,  // HTML notification bubble
+    RENDERER_BACKGROUND_APP // hosted app background page
+  };
+
   ChildProcessInfo(const ChildProcessInfo& original);
   virtual ~ChildProcessInfo();
 
@@ -39,6 +52,10 @@ class ChildProcessInfo {
 
   // Returns the type of the process.
   ProcessType type() const { return type_; }
+
+  // Returns the renderer subtype of this process.
+  // Only valid if the type() is RENDER_PROCESS.
+  RendererProcessType renderer_type() const { return renderer_type_; }
 
   // Returns the name of the process.  i.e. for plugins it might be Flash, while
   // for workers it might be the domain that it's from.
@@ -60,7 +77,10 @@ class ChildProcessInfo {
 
   // Returns an English name of the process type, should only be used for non
   // user-visible strings, or debugging pages like about:memory.
+  static std::string GetFullTypeNameInEnglish(ProcessType type,
+                                              RendererProcessType rtype);
   static std::string GetTypeNameInEnglish(ProcessType type);
+  static std::string GetRendererTypeNameInEnglish(RendererProcessType type);
 
   // Returns a localized title for the child process.  For example, a plugin
   // process would be "Plug-in: Flash" when name is "Flash".
@@ -99,12 +119,14 @@ class ChildProcessInfo {
   ChildProcessInfo(ProcessType type, int id);
 
   void set_type(ProcessType type) { type_ = type; }
+  void set_renderer_type(RendererProcessType type) { renderer_type_ = type; }
   void set_name(const std::wstring& name) { name_ = name; }
   void set_version(const std::wstring& ver) { version_ = ver; }
   void set_handle(base::ProcessHandle handle) { process_.set_handle(handle); }
 
  private:
   ProcessType type_;
+  RendererProcessType renderer_type_;
   std::wstring name_;
   std::wstring version_;
   int id_;

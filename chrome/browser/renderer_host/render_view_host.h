@@ -152,7 +152,7 @@ class RenderViewHost : public RenderWidgetHost {
   // Returns whether navigation messages are currently suspended for this
   // RenderViewHost.  Only true during a cross-site navigation, while waiting
   // for the onbeforeunload handler.
-  bool are_navigations_suspended() { return navigations_suspended_; }
+  bool are_navigations_suspended() const { return navigations_suspended_; }
 
   // Suspends (or unsuspends) any navigation messages from being sent from this
   // RenderViewHost.  This is called when a pending RenderViewHost is created
@@ -349,10 +349,10 @@ class RenderViewHost : public RenderWidgetHost {
 
   // Returns a bitwise OR of bindings types that have been enabled for this
   // RenderView. See BindingsPolicy for details.
-  int enabled_bindings() { return enabled_bindings_; }
+  int enabled_bindings() const { return enabled_bindings_; }
 
   // See variable comment.
-  bool is_extension_process() { return is_extension_process_; }
+  bool is_extension_process() const { return is_extension_process_; }
   void set_is_extension_process(bool is_extension_process) {
     is_extension_process_ = is_extension_process;
   }
