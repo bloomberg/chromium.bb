@@ -62,7 +62,7 @@ two or three letter language from ISO 639 and Tt is a territory from ISO
 @FUNC@		FcLangSetDel
 @TYPE1@		FcLangSet *			@ARG1@		ls
 @TYPE2@		const FcChar8 *			@ARG2@		lang
-@PURPOSE@	remove a language from a langset
+@PURPOSE@	delete a language from a langset
 @DESC@
 <parameter>lang</parameter> is removed from <parameter>ls</parameter>.
 <parameter>lang</parameter> should be of the form Ll-Tt where Ll is a
@@ -85,7 +85,7 @@ Returns a set including only those languages found in either <parameter>ls_a</pa
 @TYPE2@		const FcLangSet *		@ARG2@		ls_b
 @PURPOSE@	Subtract langsets
 @DESC@
-Returns a set including only those languages found in <parameter>ls_a</parameter> but not <parameter>ls_b</parameter>.
+Returns a set including only those languages found in <parameter>ls_a</parameter> but not in <parameter>ls_b</parameter>.
 @@
 
 @RET@		FcLangResult
