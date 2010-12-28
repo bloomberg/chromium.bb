@@ -44,14 +44,11 @@ class BookmarkBarGtk : public AnimationDelegate,
                        public NotificationObserver,
                        public BookmarkBarInstructionsGtk::Delegate,
                        public BookmarkContextMenuControllerDelegate {
-  FRIEND_TEST_ALL_PREFIXES(BookmarkBarGtkUnittest, DisplaysHelpMessageOnEmpty);
-  FRIEND_TEST_ALL_PREFIXES(BookmarkBarGtkUnittest,
-                           HidesHelpMessageWithBookmark);
-  FRIEND_TEST_ALL_PREFIXES(BookmarkBarGtkUnittest, BuildsButtons);
  public:
-  explicit BookmarkBarGtk(BrowserWindowGtk* window,
-                          Profile* profile, Browser* browser,
-                          TabstripOriginProvider* tabstrip_origin_provider);
+  BookmarkBarGtk(BrowserWindowGtk* window,
+                 Profile* profile,
+                 Browser* browser,
+                 TabstripOriginProvider* tabstrip_origin_provider);
   virtual ~BookmarkBarGtk();
 
   // Resets the profile. This removes any buttons for the current profile and
@@ -115,6 +112,11 @@ class BookmarkBarGtk : public AnimationDelegate,
   virtual void CloseMenu();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(BookmarkBarGtkUnittest, DisplaysHelpMessageOnEmpty);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkBarGtkUnittest,
+                           HidesHelpMessageWithBookmark);
+  FRIEND_TEST_ALL_PREFIXES(BookmarkBarGtkUnittest, BuildsButtons);
+
   // Helper function which generates GtkToolItems for |bookmark_toolbar_|.
   void CreateAllBookmarkButtons();
 

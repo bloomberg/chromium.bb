@@ -75,13 +75,6 @@ const int kInstructionsPadding = 6;
 const int kOtherBookmarksPaddingHorizontal = 2;
 const int kOtherBookmarksPaddingVertical = 1;
 
-// Middle color of the separator gradient.
-const double kSeparatorColor[] =
-    { 194.0 / 255.0, 205.0 / 255.0, 212.0 / 212.0 };
-// Top color of the separator gradient.
-const double kTopBorderColor[] =
-    { 222.0 / 255.0, 234.0 / 255.0, 248.0 / 255.0 };
-
 // The targets accepted by the toolbar and folder buttons for DnD.
 const int kDestTargetList[] = { gtk_dnd_util::CHROME_BOOKMARK_ITEM,
                                 gtk_dnd_util::CHROME_NAMED_URL,
