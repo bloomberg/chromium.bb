@@ -2463,7 +2463,51 @@ void Browser::DuplicateContentsAt(int index) {
   TabContentsWrapper* contents = GetTabContentsWrapperAt(index);
   CHECK(contents);
   TabContentsWrapper* contents_dupe = contents->Clone();
-  InsertContentsDupe(contents, contents_dupe);
+  TabContents* new_contents = contents_dupe->tab_contents();
+
+  bool pinned = false;
+  if (CanSupportWindowFeature(FEATURE_TABSTRIP)) {
+    // If this is a tabbed browser, just create a duplicate tab inside the same
+    // window next to the tab being duplicated.
+    int index = tab_handler_->GetTabStripModel()->
+        GetIndexOfTabContents(contents);
+    pinned = tab_handler_->GetTabStripModel()->IsTabPinned(index);
+    int add_types = TabStripModel::ADD_SELECTED |
+        TabStripModel::ADD_INHERIT_GROUP |
+        (pinned ? TabStripModel::ADD_PINNED : 0);
+    tab_handler_->GetTabStripModel()->InsertTabContentsAt(index + 1,
+                                                          contents_dupe,
+                                                          add_types);
+  } else {
+    Browser* browser = NULL;
+    if (type_ & TYPE_APP) {
+      CHECK((type_ & TYPE_POPUP) == 0);
+      CHECK(type_ != TYPE_APP_PANEL);
+      browser = Browser::CreateForApp(app_name_, gfx::Size(), profile_,
+                                      false);
+    } else if (type_ == TYPE_POPUP) {
+      browser = Browser::CreateForType(TYPE_POPUP, profile_);
+    }
+
+    // Preserve the size of the original window. The new window has already
+    // been given an offset by the OS, so we shouldn't copy the old bounds.
+    BrowserWindow* new_window = browser->window();
+    new_window->SetBounds(gfx::Rect(new_window->GetRestoredBounds().origin(),
+                          window()->GetRestoredBounds().size()));
+
+    // We need to show the browser now. Otherwise ContainerWin assumes the
+    // TabContents is invisible and won't size it.
+    browser->window()->Show();
+
+    // The page transition below is only for the purpose of inserting the tab.
+    browser->AddTab(contents_dupe, PageTransition::LINK);
+  }
+
+  if (profile_->HasSessionService()) {
+    SessionService* session_service = profile_->GetSessionService();
+    if (session_service)
+      session_service->TabRestored(&new_contents->controller(), pinned);
+  }
 }
 
 void Browser::CloseFrameAfterDragSession() {
@@ -4177,39 +4221,21 @@ void Browser::ViewSource(TabContentsWrapper* contents) {
   active_entry->set_virtual_url(url);
   // Do not restore title, derive it from the url.
   active_entry->set_title(string16());
-  InsertContentsDupe(contents, view_source_contents);
-}
 
-void Browser::InsertContentsDupe(
-    TabContentsWrapper* contents,
-    TabContentsWrapper* contents_dupe) {
-  CHECK(contents);
-
-  TabContents* new_contents = contents_dupe->tab_contents();
-  bool pinned = false;
+  // Now show view-source entry.
 
   if (CanSupportWindowFeature(FEATURE_TABSTRIP)) {
     // If this is a tabbed browser, just create a duplicate tab inside the same
     // window next to the tab being duplicated.
     int index = tab_handler_->GetTabStripModel()->
         GetIndexOfTabContents(contents);
-    pinned = tab_handler_->GetTabStripModel()->IsTabPinned(index);
     int add_types = TabStripModel::ADD_SELECTED |
-        TabStripModel::ADD_INHERIT_GROUP |
-        (pinned ? TabStripModel::ADD_PINNED : 0);
+        TabStripModel::ADD_INHERIT_GROUP;
     tab_handler_->GetTabStripModel()->InsertTabContentsAt(index + 1,
-                                                          contents_dupe,
+                                                          view_source_contents,
                                                           add_types);
   } else {
-    Browser* browser = NULL;
-    if (type_ & TYPE_APP) {
-      CHECK((type_ & TYPE_POPUP) == 0);
-      CHECK(type_ != TYPE_APP_PANEL);
-      browser = Browser::CreateForApp(app_name_, gfx::Size(), profile_,
-                                      false);
-    } else if (type_ == TYPE_POPUP) {
-      browser = Browser::CreateForType(TYPE_POPUP, profile_);
-    }
+    Browser* browser = Browser::CreateForType(TYPE_NORMAL, profile_);
 
     // Preserve the size of the original window. The new window has already
     // been given an offset by the OS, so we shouldn't copy the old bounds.
@@ -4222,12 +4248,12 @@ void Browser::InsertContentsDupe(
     browser->window()->Show();
 
     // The page transition below is only for the purpose of inserting the tab.
-    browser->AddTab(contents_dupe, PageTransition::LINK);
+    browser->AddTab(view_source_contents, PageTransition::LINK);
   }
 
   if (profile_->HasSessionService()) {
     SessionService* session_service = profile_->GetSessionService();
     if (session_service)
-      session_service->TabRestored(&new_contents->controller(), pinned);
+      session_service->TabRestored(&view_source_contents->controller(), false);
   }
 }

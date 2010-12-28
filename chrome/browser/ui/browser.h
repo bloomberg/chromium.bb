@@ -996,12 +996,6 @@ class Browser : public TabHandlerDelegate,
   // Opens view-source tab for given tab contents.
   void ViewSource(TabContentsWrapper* tab);
 
-  // Inserts contents dupe next to the original contents. This method is used
-  // to insert duplicate tab and view source tab next to the original tab.
-  void InsertContentsDupe(
-      TabContentsWrapper* original_content,
-      TabContentsWrapper* clone_content);
-
   // Data members /////////////////////////////////////////////////////////////
 
   NotificationRegistrar registrar_;
