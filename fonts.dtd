@@ -63,7 +63,7 @@
     the set of valid Unicode chars.  This idea
     was borrowed from Mozilla
  -->
-<!ELEMENT blank (int)*>
+<!ELEMENT blank (int|range)*>
 
 <!--
     Aliases are just a special case for multiple match elements
