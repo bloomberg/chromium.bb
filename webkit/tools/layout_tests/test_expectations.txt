@@ -9,3 +9,6 @@ BUGCR64371 WIN RELEASE : http/tests/appcache/online-whitelist.html = TEXT
 BUGPKASTING WIN MAC DEBUG SLOW: fast/encoding/parser-tests.html = PASS
 BUGCR68046 LINUX DEBUG SLOW: fast/encoding/parser-tests.html = TEXT
 BUGCR67463 MAC : editing/selection/caret-mode-paragraph-keys-navigation.html = TEXT
+
+// WebKit roll 74708:74711
+BUGCR68165 WIN DEBUG : inspector/styles-source-lines.html = TEXT
