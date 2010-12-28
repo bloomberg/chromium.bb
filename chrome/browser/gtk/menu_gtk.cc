@@ -803,7 +803,6 @@ void MenuGtk::SetMenuItemInfo(GtkWidget* widget, gpointer userdata) {
 
     if (model->IsVisibleAt(id)) {
       // Update the menu item label if it is dynamic.
-      // TODO(atwilson): Update the icon as well (http://crbug.com/66508).
       if (model->IsItemDynamicAt(id)) {
         std::string label =
             gfx::ConvertAcceleratorsFromWindowsStyle(
@@ -814,6 +813,17 @@ void MenuGtk::SetMenuItemInfo(GtkWidget* widget, gpointer userdata) {
 #else
         gtk_label_set_label(GTK_LABEL(GTK_BIN(widget)->child), label.c_str());
 #endif
+        if (GTK_IS_IMAGE_MENU_ITEM(widget)) {
+          SkBitmap icon;
+          if (model->GetIconAt(id, &icon)) {
+            GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&icon);
+            gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(widget),
+                                          gtk_image_new_from_pixbuf(pixbuf));
+            g_object_unref(pixbuf);
+          } else {
+            gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(widget), NULL);
+          }
+        }
       }
 
       gtk_widget_show(widget);
