@@ -12,6 +12,8 @@
 #include "webkit/glue/webthemeengine_impl_win.h"
 #elif defined(OS_LINUX)
 #include "webkit/glue/webthemeengine_impl_linux.h"
+#elif defined(OS_MACOSX)
+#include "webkit/glue/webthemeengine_impl_mac.h"
 #endif
 
 
@@ -86,7 +88,7 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   double shared_timer_fire_time_;
   int shared_timer_suspended_;  // counter
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
   WebThemeEngineImpl theme_engine_;
 #endif
 };

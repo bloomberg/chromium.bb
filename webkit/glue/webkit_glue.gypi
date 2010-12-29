@@ -422,6 +422,7 @@
         'websocketstreamhandle_impl.cc',
         'websocketstreamhandle_impl.h',
         'webthemeengine_impl_linux.cc',
+        'webthemeengine_impl_mac.cc',
         'webthemeengine_impl_win.cc',
         'weburlloader_impl.cc',
         'weburlloader_impl.h',
@@ -465,6 +466,9 @@
         }],
         ['OS!="mac"', {
           'sources/': [['exclude', '_mac\\.(cc|mm)$']],
+          'sources!': [
+            'webthemeengine_impl_mac.cc',
+          ],          
         }, {  # else: OS=="mac"
           'sources/': [['exclude', 'plugin_(lib|list)_posix\\.cc$']],
           'link_settings': {
