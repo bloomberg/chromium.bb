@@ -15,14 +15,15 @@ namespace ppapi_proxy {
 const int foo = 5;
 
 void DebugPrintf(const char* format, ...) {
-  static int printf_enabled = -1;
-  if (printf_enabled == -1) {
-    printf_enabled = (getenv("PPAPI_BROWSER_DEBUG") != NULL);
-  }
-  if (printf_enabled == 1) {
+  static bool printf_enabled = (getenv("NACL_PPAPI_PROXY_DEBUG") != NULL);
+  if (printf_enabled) {
     va_list argptr;
     va_start(argptr, format);
-    fprintf(stdout, "ppapi_proxy: ");
+#ifdef __native_client__
+    fprintf(stdout, "PPAPI_PROXY_PLUGIN : ");
+#else
+    fprintf(stdout, "PPAPI_PROXY_BROWSER: ");
+#endif
     vfprintf(stdout, format, argptr);
     va_end(argptr);
     fflush(stdout);

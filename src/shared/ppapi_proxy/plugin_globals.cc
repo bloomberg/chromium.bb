@@ -52,7 +52,7 @@ PP_Module LookupModuleIdForSrpcChannel(NaClSrpcChannel* channel) {
 const void* GetBrowserInterfaceSafe(const char* interface_name) {
   const void* ppb_interface = GetBrowserInterface(interface_name);
   if (ppb_interface == NULL)
-    DebugPrintf("Plugin::PPB_GetInterface: %s not found\n", interface_name);
+    DebugPrintf("PPB_GetInterface: %s not found\n", interface_name);
   CHECK(ppb_interface);
   return ppb_interface;
 }

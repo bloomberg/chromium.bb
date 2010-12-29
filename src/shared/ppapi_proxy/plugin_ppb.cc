@@ -61,7 +61,7 @@ const InterfaceMapElement interface_map[] = {
 }  // namespace
 
 const void* GetBrowserInterface(const char* interface_name) {
-  DebugPrintf("Plugin::PPB_GetInterface('%s')\n", interface_name);
+  DebugPrintf("PPB_GetInterface('%s')\n", interface_name);
   int32_t exports_interface_name;
   NaClSrpcError retval =
       PpbRpcClient::PPB_GetInterface(GetMainSrpcChannel(),

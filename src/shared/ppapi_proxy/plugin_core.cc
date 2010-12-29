@@ -36,32 +36,32 @@ bool main_thread_marked = false;
 // Resource's reference count goes to zero, the destructor should make sure
 // the browser reference is returned.
 void AddRefResource(PP_Resource resource) {
-  DebugPrintf("Plugin::PPB_Core::AddRefResource: resource=%"NACL_PRIu64"\n",
+  DebugPrintf("PPB_Core::AddRefResource: resource=%"NACL_PRIu64"\n",
               resource);
   if (ppapi_proxy::PluginResourceTracker::Get()->AddRefResource(resource))
-    DebugPrintf("Plugin::PPB_Core::AddRefResource: nonexistent resource");
+    DebugPrintf("PPB_Core::AddRefResource: nonexistent resource");
 }
 
 void ReleaseResource(PP_Resource resource) {
-  DebugPrintf("Plugin::PPB_Core::ReleaseResource: resource=%"NACL_PRIu64"\n",
+  DebugPrintf("PPB_Core::ReleaseResource: resource=%"NACL_PRIu64"\n",
               resource);
   if (ppapi_proxy::PluginResourceTracker::Get()->UnrefResource(resource))
-    DebugPrintf("Plugin::PPB_Core::ReleaseRefResource: nonexistent resource");
+    DebugPrintf("PPB_Core::ReleaseRefResource: nonexistent resource");
 }
 
 void* MemAlloc(size_t num_bytes) {
-  DebugPrintf("Plugin::PPB_Core::MemAlloc: num_bytes=%"NACL_PRIuS"\n",
+  DebugPrintf("PPB_Core::MemAlloc: num_bytes=%"NACL_PRIuS"\n",
               num_bytes);
   return malloc(num_bytes);
 }
 
 void MemFree(void* ptr) {
-  DebugPrintf("Plugin::PPB_Core::MemFree: ptr=%p\n", ptr);
+  DebugPrintf("PPB_Core::MemFree: ptr=%p\n", ptr);
   free(ptr);
 }
 
 PP_TimeTicks GetTime() {
-  DebugPrintf("Plugin::PPB_Core::GetTime\n");
+  DebugPrintf("PPB_Core::GetTime\n");
   NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
   double time;
   NaClSrpcError retval = PpbCoreRpcClient::PPB_Core_GetTime(channel, &time);
@@ -73,7 +73,7 @@ PP_TimeTicks GetTime() {
 }
 
 PP_TimeTicks GetTimeTicks() {
-  DebugPrintf("Plugin::PPB_Core::GetTime\n");
+  DebugPrintf("PPB_Core::GetTime\n");
   NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
   double time;
   // TODO(sehr): implement time ticks.
@@ -89,7 +89,7 @@ void CallOnMainThread(int32_t delay_in_milliseconds,
                       PP_CompletionCallback callback,
                       int32_t result) {
   UNREFERENCED_PARAMETER(callback);
-  DebugPrintf("Plugin::PPB_Core::CallOnMainThread: delay=%" NACL_PRIu32
+  DebugPrintf("PPB_Core::CallOnMainThread: delay=%" NACL_PRIu32
               ", result=%" NACL_PRIu32 "\n",
               delay_in_milliseconds,
               result);
@@ -99,7 +99,7 @@ void CallOnMainThread(int32_t delay_in_milliseconds,
 }
 
 PP_Bool IsMainThread() {
-  DebugPrintf("Plugin::PPB_Core::IsMainThread\n");
+  DebugPrintf("PPB_Core::IsMainThread\n");
 #ifdef __native_client__
   return pp::BoolToPPBool(is_main_thread);
 #else

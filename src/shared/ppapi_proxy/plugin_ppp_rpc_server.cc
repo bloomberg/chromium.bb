@@ -87,17 +87,17 @@ void PppRpcServer::PPP_InitializeModule(
     int32_t* success) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  DebugPrintf("Plugin::PPP_InitializeModule: %s\n", service_description);
+  DebugPrintf("PPP_InitializeModule: %s\n", service_description);
   // Set up the service for calling back into the browser.
   if (!StartMainSrpcChannel(const_cast<const char*>(service_description),
                             rpc->channel)) {
-    DebugPrintf("Plugin::PPP_InitializeModule: "
+    DebugPrintf("PPP_InitializeModule: "
                 "failed to export service on main channel\n");
     return;
   }
   // Set up the upcall channel for calling back into the browser.
   if (!StartUpcallSrpcChannel(upcall_channel_desc)) {
-    DebugPrintf("Plugin::PPP_InitializeModule: "
+    DebugPrintf("PPP_InitializeModule: "
                 "failed to construct upcall channel\n");
     StopMainSrpcChannel();
     return;
@@ -112,7 +112,7 @@ void PppRpcServer::PPP_ShutdownModule(NaClSrpcRpc* rpc,
                                       NaClSrpcClosure* done) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  DebugPrintf("Plugin::PPP_ShutdownModule\n");
+  DebugPrintf("PPP_ShutdownModule\n");
   ::PPP_ShutdownModule();
   ppapi_proxy::UnsetModuleIdForSrpcChannel(rpc->channel);
   StopUpcallSrpcChannel();
@@ -126,7 +126,7 @@ void PppRpcServer::PPP_GetInterface(NaClSrpcRpc* rpc,
                                     int32_t* exports_interface_name) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  DebugPrintf("Plugin::PPP_GetInterface(%s)\n", interface_name);
+  DebugPrintf("PPP_GetInterface(%s)\n", interface_name);
   // Since the proxy will make calls to proxied interfaces, we need simply
   // to know whether the plugin exports a given interface.
   const void* plugin_interface = ::PPP_GetInterface(interface_name);

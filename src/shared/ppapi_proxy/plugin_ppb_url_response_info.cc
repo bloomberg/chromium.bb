@@ -21,7 +21,7 @@ namespace ppapi_proxy {
 namespace {
 
 PP_Bool IsURLResponseInfo(PP_Resource resource) {
-  DebugPrintf("Plugin::PPB_UrlResponseInfo::IsURLResponseInfo: resource=%"
+  DebugPrintf("PPB_URLResponseInfo::IsURLResponseInfo: resource=%"
               NACL_PRIx64"\n", resource);
   NACL_UNTESTED();
 
@@ -36,7 +36,7 @@ PP_Bool IsURLResponseInfo(PP_Resource resource) {
 }
 
 PP_Var GetProperty(PP_Resource response, PP_URLResponseProperty property) {
-  DebugPrintf("Plugin::PPB_UrlResponseInfo::GetProperty: response=%"
+  DebugPrintf("PPB_URLResponseInfo::GetProperty: response=%"
               NACL_PRIx64"\n", response);
   NACL_UNTESTED();
   NaClSrpcChannel* channel = GetMainSrpcChannel();
@@ -58,7 +58,7 @@ PP_Var GetProperty(PP_Resource response, PP_URLResponseProperty property) {
 }
 
 PP_Resource GetBodyAsFileRef(PP_Resource response) {
-  DebugPrintf("Plugin::PPB_UrlResponseInfo::IsURLResponseInfo: response=%"
+  DebugPrintf("PPB_URLResponseInfo::IsURLResponseInfo: response=%"
               NACL_PRIx64"\n", response);
   NACL_UNTESTED();
 

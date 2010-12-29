@@ -70,7 +70,7 @@ PP_Bool DidCreate(PP_Instance instance,
                   uint32_t argc,
                   const char* argn[],
                   const char* argv[]) {
-  DebugPrintf("Browser::PPP_Instance::DidCreate(%"NACL_PRId64")\n", instance);
+  DebugPrintf("PPP_Instance::DidCreate(%"NACL_PRId64")\n", instance);
   uint32_t argn_size;
   scoped_array<char> argn_serial(ArgArraySerialize(argc, argn, &argn_size));
   if (argn_serial.get() == NULL) {
@@ -100,7 +100,7 @@ PP_Bool DidCreate(PP_Instance instance,
 }
 
 void DidDestroy(PP_Instance instance) {
-  DebugPrintf("Browser::PPP_Instance::Delete(%"NACL_PRId64")\n", instance);
+  DebugPrintf("PPP_Instance::Delete(%"NACL_PRId64")\n", instance);
   NaClSrpcChannel* channel = LookupBrowserPppForInstance(instance)->channel();
   (void) PppInstanceRpcClient::PPP_Instance_DidDestroy(channel, instance);
 }
@@ -108,7 +108,7 @@ void DidDestroy(PP_Instance instance) {
 void DidChangeView(PP_Instance instance,
                    const PP_Rect* position,
                    const PP_Rect* clip) {
-  DebugPrintf("Browser::PPP_Instance::DidChangeView(%"NACL_PRId64")\n",
+  DebugPrintf("PPP_Instance::DidChangeView(%"NACL_PRId64")\n",
               instance);
   NaClSrpcChannel* channel = LookupBrowserPppForInstance(instance)->channel();
   int32_t position_array[4];
@@ -132,7 +132,7 @@ void DidChangeView(PP_Instance instance,
 }
 
 void DidChangeFocus(PP_Instance instance, PP_Bool has_focus) {
-  DebugPrintf("Browser::PPP_Instance::DidChangeFocus(%"NACL_PRId64")\n",
+  DebugPrintf("PPP_Instance::DidChangeFocus(%"NACL_PRId64")\n",
               instance);
   NaClSrpcChannel* channel = LookupBrowserPppForInstance(instance)->channel();
   // DidChangeFocus() always succeeds, no need to check the SRPC return value.
@@ -141,7 +141,7 @@ void DidChangeFocus(PP_Instance instance, PP_Bool has_focus) {
 }
 
 PP_Bool HandleInputEvent(PP_Instance instance, const PP_InputEvent* event) {
-  DebugPrintf("Browser::PPP_Instance::HandleInputEvent(%"NACL_PRId64")\n",
+  DebugPrintf("PPP_Instance::HandleInputEvent(%"NACL_PRId64")\n",
               instance);
   NaClSrpcChannel* channel = LookupBrowserPppForInstance(instance)->channel();
   int32_t success;
@@ -159,7 +159,7 @@ PP_Bool HandleInputEvent(PP_Instance instance, const PP_InputEvent* event) {
 }
 
 PP_Bool HandleDocumentLoad(PP_Instance instance, PP_Resource url_loader) {
-  DebugPrintf("Browser::PPP_Instance::HandleDocumentLoad(%"NACL_PRId64")\n",
+  DebugPrintf("PPP_Instance::HandleDocumentLoad(%"NACL_PRId64")\n",
               instance);
   // TODO(sehr): implement HandleDocumentLoad.
   UNREFERENCED_PARAMETER(instance);
@@ -168,7 +168,7 @@ PP_Bool HandleDocumentLoad(PP_Instance instance, PP_Resource url_loader) {
 }
 
 PP_Var GetInstanceObject(PP_Instance instance) {
-  DebugPrintf("Browser::PPP_Instance::GetInstanceObject(%"NACL_PRId64")\n",
+  DebugPrintf("PPP_Instance::GetInstanceObject(%"NACL_PRId64")\n",
               instance);
   NaClSrpcChannel* channel = LookupBrowserPppForInstance(instance)->channel();
   ObjectCapability capability;

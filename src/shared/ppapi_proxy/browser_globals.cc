@@ -104,7 +104,7 @@ const void* GetBrowserInterface(const char* interface_name) {
 const void* GetBrowserInterfaceSafe(const char* interface_name) {
   const void* ppb_interface = (*get_interface)(interface_name);
   if (ppb_interface == NULL)
-    DebugPrintf("Browser::PPB_GetInterface: %s not found\n", interface_name);
+    DebugPrintf("PPB_GetInterface: %s not found\n", interface_name);
   CHECK(ppb_interface != NULL);
   return ppb_interface;
 }

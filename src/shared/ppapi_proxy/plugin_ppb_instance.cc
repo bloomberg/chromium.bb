@@ -22,7 +22,7 @@ namespace ppapi_proxy {
 namespace {
 
 PP_Var GetWindowObject(PP_Instance instance) {
-  DebugPrintf("Plugin::PPB_Instance::GetWindowObject: instance=%"
+  DebugPrintf("PPB_Instance::GetWindowObject: instance=%"
               NACL_PRIx64"\n", instance);
   NACL_UNTESTED();
   NaClSrpcChannel* channel = GetMainSrpcChannel();
@@ -43,7 +43,7 @@ PP_Var GetWindowObject(PP_Instance instance) {
 }
 
 PP_Var GetOwnerElementObject(PP_Instance instance) {
-  DebugPrintf("Plugin::PPB_Instance::GetOwnerElementObject: instance=%"
+  DebugPrintf("PPB_Instance::GetOwnerElementObject: instance=%"
               NACL_PRIx64 "\n", instance);
   NACL_UNTESTED();
   NaClSrpcChannel* channel = GetMainSrpcChannel();
@@ -64,7 +64,7 @@ PP_Var GetOwnerElementObject(PP_Instance instance) {
 }
 
 PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) {
-  DebugPrintf("Plugin::PPB_Instance::BindGraphicsDeviceContext: instance=%"
+  DebugPrintf("PPB_Instance::BindGraphicsDeviceContext: instance=%"
               NACL_PRIx64 ", device=%" NACL_PRIu64 "\n", instance, device);
   NACL_UNTESTED();
   int32_t success = 0;
@@ -82,7 +82,7 @@ PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) {
 }
 
 PP_Bool IsFullFrame(PP_Instance instance) {
-  DebugPrintf("Plugin::PPB_Instance::IsFullFrame: instance=%" NACL_PRIx64 "\n",
+  DebugPrintf("PPB_Instance::IsFullFrame: instance=%" NACL_PRIx64 "\n",
               instance);
   NACL_UNTESTED();
   int32_t is_full_frame = 0;
@@ -99,7 +99,7 @@ PP_Bool IsFullFrame(PP_Instance instance) {
 }
 
 PP_Var ExecuteScript(PP_Instance instance, PP_Var script, PP_Var* exception) {
-  DebugPrintf("Plugin::PPB_Instance::ExecuteScript: instance=%"
+  DebugPrintf("PPB_Instance::ExecuteScript: instance=%"
               NACL_PRIx64"\n", instance);
   NACL_UNTESTED();
   NaClSrpcChannel* channel = GetMainSrpcChannel();

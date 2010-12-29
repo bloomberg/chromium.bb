@@ -23,7 +23,7 @@ namespace ppapi_proxy {
 namespace {
 
 PP_Resource Create(PP_Module module) {
-  DebugPrintf("Plugin::PPB_UrlRequestInfo::Create: module=%"
+  DebugPrintf("PPB_UrlRequestInfo::Create: module=%"
               NACL_PRIx64"\n", module);
   NACL_UNTESTED();
 
@@ -40,7 +40,7 @@ PP_Resource Create(PP_Module module) {
 }
 
 PP_Bool IsURLRequestInfo(PP_Resource resource) {
-  DebugPrintf("Plugin::PPB_UrlRequestInfo::IsURLRequestInfo: resource=%"
+  DebugPrintf("PPB_UrlRequestInfo::IsURLRequestInfo: resource=%"
               NACL_PRIx64"\n", resource);
   NACL_UNTESTED();
 
@@ -59,7 +59,7 @@ PP_Bool IsURLRequestInfo(PP_Resource resource) {
 PP_Bool SetProperty(PP_Resource request,
                     PP_URLRequestProperty property,
                     struct PP_Var value) {
-  DebugPrintf("Plugin::PPB_UrlRequestInfo::SetProperty: request=%"
+  DebugPrintf("PPB_UrlRequestInfo::SetProperty: request=%"
               NACL_PRIx64"\n", request);
   NACL_UNTESTED();
 
@@ -81,7 +81,7 @@ PP_Bool SetProperty(PP_Resource request,
 }
 
 PP_Bool AppendDataToBody(PP_Resource request, const char* data, uint32_t len) {
-  DebugPrintf("Plugin::PPB_UrlRequestInfo::AppendDataToBody: request=%"
+  DebugPrintf("PPB_UrlRequestInfo::AppendDataToBody: request=%"
               NACL_PRIx64"\n", request);
   NACL_UNTESTED();
 
@@ -104,7 +104,7 @@ PP_Bool AppendFileToBody(PP_Resource request,
                          int64_t start_offset,
                          int64_t number_of_bytes,
                          PP_Time expected_last_modified_time) {
-  DebugPrintf("Plugin::PPB_UrlRequestInfo::AppendFileToBody: request=%"
+  DebugPrintf("PPB_UrlRequestInfo::AppendFileToBody: request=%"
               NACL_PRIx64"\n", request);
   NACL_UNTESTED();
 
