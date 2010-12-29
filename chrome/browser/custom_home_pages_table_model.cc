@@ -142,10 +142,9 @@ SkBitmap CustomHomePagesTableModel::GetIcon(int row) {
 }
 
 std::wstring CustomHomePagesTableModel::GetTooltip(int row) {
-  return entries_[row].title.empty() ? std::wstring() : UTF16ToWideHack(
-      l10n_util::GetStringFUTF16(IDS_OPTIONS_STARTUP_PAGE_TOOLTIP,
-                                 WideToUTF16Hack(entries_[row].title),
-                                 WideToUTF16Hack(FormattedURL(row))));
+  return entries_[row].title.empty() ? std::wstring() :
+      l10n_util::GetStringF(IDS_OPTIONS_STARTUP_PAGE_TOOLTIP,
+                            entries_[row].title, FormattedURL(row));
 }
 
 void CustomHomePagesTableModel::SetObserver(TableModelObserver* observer) {

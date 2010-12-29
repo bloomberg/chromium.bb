@@ -611,8 +611,8 @@ void ExtensionsDOMHandler::HandlePackMessage(const ListValue* args) {
 
 void ExtensionsDOMHandler::OnPackSuccess(const FilePath& crx_file,
                                          const FilePath& pem_file) {
-  ShowAlert(UTF16ToUTF8(PackExtensionJob::StandardSuccessMessage(crx_file,
-                                                                 pem_file)));
+  ShowAlert(WideToUTF8(PackExtensionJob::StandardSuccessMessage(crx_file,
+                                                                pem_file)));
 
   ListValue results;
   dom_ui_->CallJavascriptFunction(L"hidePackDialog", results);

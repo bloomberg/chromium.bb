@@ -87,11 +87,9 @@ std::wstring PluginExceptionsTableModel::GetText(int row, int column_id) {
     case IDS_EXCEPTIONS_ACTION_HEADER:
       switch (entry.setting) {
         case CONTENT_SETTING_ALLOW:
-          return UTF16ToWideHack(
-              l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ALLOW_BUTTON));
+          return l10n_util::GetString(IDS_EXCEPTIONS_ALLOW_BUTTON);
         case CONTENT_SETTING_BLOCK:
-          return UTF16ToWideHack(
-              l10n_util::GetStringUTF16(IDS_EXCEPTIONS_BLOCK_BUTTON));
+          return l10n_util::GetString(IDS_EXCEPTIONS_BLOCK_BUTTON);
         default:
           NOTREACHED();
       }
