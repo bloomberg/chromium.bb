@@ -136,8 +136,11 @@ class ExistingUserController : public WmMessageListener::Observer,
   views::Widget* background_window_;
   BackgroundView* background_view_;
 
-  // The set of UserControllers.
+  // The set of visible UserControllers.
   std::vector<UserController*> controllers_;
+
+  // The set of invisible UserControllers.
+  std::vector<UserController*> invisible_controllers_;
 
   // Used to execute login operations.
   scoped_ptr<LoginPerformer> login_performer_;

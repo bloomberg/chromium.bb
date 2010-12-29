@@ -48,7 +48,10 @@ namespace {
 
 // Max number of users we'll show. The true max is the min of this and the
 // number of windows that fit on the screen.
-const size_t kMaxUsers = 5;
+const size_t kMaxUsers = 6;
+
+// Minimum number of users we'll show (including Guest and New User pods).
+const size_t kMinUsers = 3;
 
 // Used to indicate no user has been selected.
 const size_t kNotSelected = -1;
@@ -131,36 +134,39 @@ ExistingUserController::ExistingUserController(
   if (delete_scheduled_instance_)
     delete_scheduled_instance_->Delete();
 
-  // Caclulate the max number of users from available screen size.
+  // Calculate the max number of users from available screen size.
+  bool show_guest = UserCrosSettingsProvider::cached_allow_guest();
+  bool show_new_user = true;
   if (UserCrosSettingsProvider::cached_show_users_on_signin()) {
     size_t max_users = kMaxUsers;
     int screen_width = background_bounds.width();
     if (screen_width > 0) {
-      max_users = std::max(static_cast<size_t>(2), std::min(kMaxUsers,
-          static_cast<size_t>((screen_width - login::kUserImageSize)
-                              / (UserController::kUnselectedSize +
-                                 UserController::kPadding))));
+      size_t users_per_screen = (screen_width - login::kUserImageSize)
+          / (UserController::kUnselectedSize + UserController::kPadding);
+      max_users = std::max(kMinUsers, std::min(kMaxUsers, users_per_screen));
     }
 
-    size_t visible_users_count = std::min(users.size(), max_users - 1);
+    size_t visible_users_count = std::min(users.size(), max_users -
+        static_cast<int>(show_guest) - static_cast<int>(show_new_user));
     for (size_t i = 0; i < users.size(); ++i) {
-      if (controllers_.size() == visible_users_count)
-        break;
-
       // TODO(xiyuan): Clean user profile whose email is not in whitelist.
       if (UserCrosSettingsProvider::cached_allow_new_user() ||
           UserCrosSettingsProvider::IsEmailInCachedWhitelist(
               users[i].email())) {
-        controllers_.push_back(new UserController(this, users[i]));
+        UserController* user_controller = new UserController(this, users[i]);
+        if (controllers_.size() < visible_users_count)
+          controllers_.push_back(user_controller);
+        else
+          invisible_controllers_.push_back(user_controller);
       }
     }
   }
 
-  if (!controllers_.empty() && UserCrosSettingsProvider::cached_allow_guest())
+  if (!controllers_.empty() && show_guest)
     controllers_.push_back(new UserController(this, true));
 
-  // Add the view representing the new user.
-  controllers_.push_back(new UserController(this, false));
+  if (show_new_user)
+    controllers_.push_back(new UserController(this, false));
 }
 
 void ExistingUserController::Init() {
@@ -240,6 +246,7 @@ ExistingUserController::~ExistingUserController() {
   WmMessageListener::GetInstance()->RemoveObserver(this);
 
   STLDeleteElements(&controllers_);
+  STLDeleteElements(&invisible_controllers_);
 }
 
 void ExistingUserController::Delete() {
@@ -387,6 +394,33 @@ void ExistingUserController::RemoveUser(UserController* source) {
   new RemoveAttempt(source->user().email());
   // We need to unmap entry windows, the windows will be unmapped in destructor.
   delete source;
+
+  // Nothing to insert.
+  if (invisible_controllers_.empty())
+    return;
+
+  // Insert just before guest or add new user pods if any.
+  int insert_position = new_size;
+  while (insert_position > 0 &&
+         (controllers_[insert_position - 1]->is_new_user() ||
+          controllers_[insert_position - 1]->is_guest()))
+    --insert_position;
+
+  controllers_.insert(controllers_.begin() + insert_position,
+                      invisible_controllers_[0]);
+  invisible_controllers_.erase(invisible_controllers_.begin());
+
+  // Update counts for exiting pods.
+  new_size = static_cast<int>(controllers_.size());
+  for (int i = 0; i < new_size; ++i) {
+    if (i != insert_position)
+      controllers_[i]->UpdateUserCount(i, new_size);
+  }
+
+  // And initialize new one that was invisible.
+  controllers_[insert_position]->Init(insert_position, new_size, false);
+
+  EnableTooltipsIfNeeded(controllers_);
 }
 
 void ExistingUserController::SelectUser(int index) {
