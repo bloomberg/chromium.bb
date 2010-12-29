@@ -170,7 +170,8 @@ void CloudPrintSetupFlow::OnCloseContents(TabContents* source,
 }
 
 std::wstring CloudPrintSetupFlow::GetDialogTitle() const {
-  return l10n_util::GetString(IDS_CLOUD_PRINT_SETUP_DIALOG_TITLE);
+  return UTF16ToWideHack(
+      l10n_util::GetStringUTF16(IDS_CLOUD_PRINT_SETUP_DIALOG_TITLE));
 }
 
 bool CloudPrintSetupFlow::IsDialogModal() const {
@@ -270,10 +271,11 @@ void CloudPrintSetupFlow::ShowGaiaFailed(const GoogleServiceAuthError& error) {
 
 void CloudPrintSetupFlow::ShowSetupDone() {
   setup_done_ = true;
-  std::wstring product_name = l10n_util::GetString(IDS_PRODUCT_NAME);
-  std::wstring message = l10n_util::GetStringF(IDS_CLOUD_PRINT_SETUP_DONE,
-                                               product_name,
-                                               UTF8ToWide(login_));
+  string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+  std::wstring message =
+      UTF16ToWideHack(l10n_util::GetStringFUTF16(IDS_CLOUD_PRINT_SETUP_DONE,
+                                                 product_name,
+                                                 UTF8ToUTF16(login_)));
   std::wstring javascript = L"cloudprint.setMessage('" + message + L"');";
   ExecuteJavascriptInIFrame(kDoneIframeXPath, javascript);
 

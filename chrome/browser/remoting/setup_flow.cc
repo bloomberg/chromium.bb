@@ -155,8 +155,9 @@ void SetupFlow::OnCloseContents(TabContents* source,
                                 bool* out_close_dialog) {
 }
 
-std::wstring  SetupFlow::GetDialogTitle() const {
-  return l10n_util::GetString(IDS_REMOTING_SETUP_DIALOG_TITLE);
+std::wstring SetupFlow::GetDialogTitle() const {
+  return UTF16ToWideHack(
+      l10n_util::GetStringUTF16(IDS_REMOTING_SETUP_DIALOG_TITLE));
 }
 
 bool SetupFlow::IsDialogModal() const {

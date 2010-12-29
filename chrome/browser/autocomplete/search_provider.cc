@@ -161,12 +161,14 @@ void SearchProvider::Start(const AutocompleteInput& input,
     if (default_provider) {
       AutocompleteMatch match;
       match.provider = this;
-      match.contents.assign(l10n_util::GetString(IDS_EMPTY_KEYWORD_VALUE));
+      match.contents.assign(UTF16ToWideHack(
+          l10n_util::GetStringUTF16(IDS_EMPTY_KEYWORD_VALUE)));
       match.contents_class.push_back(
           ACMatchClassification(0, ACMatchClassification::NONE));
-      match.description.assign(l10n_util::GetStringF(
+      match.description.assign(UTF16ToWideHack(l10n_util::GetStringFUTF16(
           IDS_AUTOCOMPLETE_SEARCH_DESCRIPTION,
-          default_provider->AdjustedShortNameForLocaleDirection()));
+          WideToUTF16Hack(
+            default_provider->AdjustedShortNameForLocaleDirection()))));
       match.description_class.push_back(
           ACMatchClassification(0, ACMatchClassification::DIM));
       matches_.push_back(match);
@@ -729,9 +731,9 @@ void SearchProvider::AddMatchToMap(const std::wstring& query_string,
     match.contents.assign(query_string);
     match.contents_class.push_back(
         ACMatchClassification(0, ACMatchClassification::NONE));
-    match.description.assign(l10n_util::GetStringF(
+    match.description.assign(UTF16ToWideHack(l10n_util::GetStringFUTF16(
         IDS_AUTOCOMPLETE_SEARCH_DESCRIPTION,
-        provider.AdjustedShortNameForLocaleDirection()));
+        WideToUTF16Hack(provider.AdjustedShortNameForLocaleDirection()))));
     match.description_class.push_back(
         ACMatchClassification(0, ACMatchClassification::DIM));
   }

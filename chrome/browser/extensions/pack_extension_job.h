@@ -10,6 +10,7 @@
 
 #include "base/file_path.h"
 #include "base/ref_counted.h"
+#include "base/string16.h"
 #include "chrome/browser/browser_thread.h"
 
 
@@ -41,8 +42,8 @@ class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
   void ClearClient();
 
   // The standard packing success message.
-  static std::wstring StandardSuccessMessage(const FilePath& crx_file,
-                                             const FilePath& key_file);
+  static string16 StandardSuccessMessage(const FilePath& crx_file,
+                                         const FilePath& key_file);
 
   void set_asynchronous(bool async) { asynchronous_ = async; }
 

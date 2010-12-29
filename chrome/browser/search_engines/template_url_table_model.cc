@@ -188,9 +188,12 @@ std::wstring TemplateURLTableModel::GetText(int row, int col_id) {
       // since those should always be displayed LTR. Please refer to
       // http://crbug.com/6726 for more information.
       base::i18n::AdjustStringForLocaleDirection(&url_short_name);
-      return (template_url_model_->GetDefaultSearchProvider() == &url) ?
-          l10n_util::GetStringF(IDS_SEARCH_ENGINES_EDITOR_DEFAULT_ENGINE,
-                                url_short_name) : url_short_name;
+      if (template_url_model_->GetDefaultSearchProvider() == &url) {
+        return UTF16ToWideHack(
+            l10n_util::GetStringFUTF16(IDS_SEARCH_ENGINES_EDITOR_DEFAULT_ENGINE,
+                                       WideToUTF16Hack(url_short_name)));
+      }
+      return url_short_name;
     }
 
     case IDS_SEARCH_ENGINES_EDITOR_KEYWORD_COLUMN: {
@@ -223,14 +226,14 @@ TemplateURLTableModel::Groups TemplateURLTableModel::GetGroups() {
   Groups groups;
 
   Group search_engine_group;
-  search_engine_group.title =
-      l10n_util::GetString(IDS_SEARCH_ENGINES_EDITOR_MAIN_SEPARATOR);
+  search_engine_group.title = UTF16ToWideHack(
+      l10n_util::GetStringUTF16(IDS_SEARCH_ENGINES_EDITOR_MAIN_SEPARATOR));
   search_engine_group.id = kMainGroupID;
   groups.push_back(search_engine_group);
 
   Group other_group;
-  other_group.title =
-      l10n_util::GetString(IDS_SEARCH_ENGINES_EDITOR_OTHER_SEPARATOR);
+  other_group.title = UTF16ToWideHack(
+      l10n_util::GetStringUTF16(IDS_SEARCH_ENGINES_EDITOR_OTHER_SEPARATOR));
   other_group.id = kOtherGroupID;
   groups.push_back(other_group);
 

@@ -33,15 +33,15 @@ static std::wstring GetTitle(Profile* profile,
       extension = extensions_service->GetExtensionByWebExtent(frame_url);
 
     if (extension && (extension->location() == Extension::COMPONENT)) {
-      return l10n_util::GetString(IDS_PRODUCT_NAME);
+      return UTF16ToWideHack(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
     } else if (extension && !extension->name().empty()) {
       return UTF8ToWide(extension->name());
     }
   }
   if (!frame_url.has_host()) {
-    return l10n_util::GetString(
+    return UTF16ToWideHack(l10n_util::GetStringUTF16(
         is_alert ? IDS_JAVASCRIPT_ALERT_DEFAULT_TITLE
-                 : IDS_JAVASCRIPT_MESSAGEBOX_DEFAULT_TITLE);
+                 : IDS_JAVASCRIPT_MESSAGEBOX_DEFAULT_TITLE));
   }
 
   // TODO(brettw) it should be easier than this to do the correct language
@@ -78,11 +78,16 @@ void RunJavascriptMessageBox(Profile* profile,
 void RunBeforeUnloadDialog(TabContents* tab_contents,
                            const std::wstring& message_text,
                            IPC::Message* reply_msg) {
-  std::wstring full_message =
-      message_text + L"\n\n" +
-      l10n_util::GetString(IDS_BEFOREUNLOAD_MESSAGEBOX_FOOTER);
+  std::wstring full_message = message_text + L"\n\n" + UTF16ToWideHack(
+      l10n_util::GetStringUTF16(IDS_BEFOREUNLOAD_MESSAGEBOX_FOOTER));
   AppModalDialogQueue::GetInstance()->AddDialog(new JavaScriptAppModalDialog(
-      tab_contents, l10n_util::GetString(IDS_BEFOREUNLOAD_MESSAGEBOX_TITLE),
-      MessageBoxFlags::kIsJavascriptConfirm, message_text, std::wstring(),
-      false, true, reply_msg));
+      tab_contents,
+      UTF16ToWideHack(
+          l10n_util::GetStringUTF16(IDS_BEFOREUNLOAD_MESSAGEBOX_TITLE)),
+      MessageBoxFlags::kIsJavascriptConfirm,
+      message_text,
+      std::wstring(),
+      false,
+      true,
+      reply_msg));
 }
