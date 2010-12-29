@@ -192,14 +192,16 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
       "license_link_0" : "license_link_1",
       l10n_util::GetStringUTF16(IDS_CHROMIUM_PROJECT_URL));
 
-  // The Open Source link within the main text of the dialog.
+  // The Open Source link within the main text of the dialog.  We need to use
+  // the chrome:// variant instead of about:credits; the latter will get
+  // rewritten to about:blank.
   localized_strings->SetString(chromium_url_appears_first ?
       "license_link_content_1" : "license_link_content_0",
       WideToUTF16Hack(StringSubRange(text,
           text.find(kBeginLinkOss) + wcslen(kBeginLinkOss),
           text.find(kEndLinkOss))));
   localized_strings->SetString(chromium_url_appears_first ?
-      "license_link_1" : "license_link_0", chrome::kAboutCreditsURL);
+      "license_link_1" : "license_link_0", chrome::kChromeUIAboutCreditsURL);
 
   // webkit
 

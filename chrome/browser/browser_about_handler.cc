@@ -1080,14 +1080,8 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
   if (chrome_about_handler::WillHandle(*url))
     return false;
 
-  // Anything else requires our special handler, make sure its initialized.
-  // We only need to register the AboutSource once and it is kept globally.
-  // There is currently no way to remove a data source.
-  static bool initialized = false;
-  if (!initialized) {
-    about_source = new AboutSource();
-    initialized = true;
-  }
+  // Anything else requires our special handler; make sure it's initialized.
+  InitializeAboutDataSource();
 
   // Special case about:memory to go through a redirect before ending up on
   // the final page. See GetAboutMemoryRedirectResponse above for why.
@@ -1103,6 +1097,16 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
   about_url.append(url->path());
   *url = GURL(about_url);
   return true;
+}
+
+void InitializeAboutDataSource() {
+  // We only need to register the AboutSource once and it is kept globally.
+  // There is currently no way to remove a data source.
+  static bool initialized = false;
+  if (!initialized) {
+    about_source = new AboutSource();
+    initialized = true;
+  }
 }
 
 // This function gets called with the fixed-up chrome: URLs, so we have to

@@ -72,6 +72,7 @@ const char kAboutVersionURL[] = "about:version";
 const char kAboutBrowserCrash[] = "about:inducebrowsercrashforrealz";
 
 const char kChromeUIAboutAboutURL[] = "chrome://about/about";
+const char kChromeUIAboutCreditsURL[] = "chrome://about/credits";
 const char kChromeUIAboutURL[] = "chrome://settings/about";
 const char kChromeUIAppLauncherURL[] = "chrome://newtab/#mode=app-launcher";
 const char kChromeUIBookmarksURL[] = "chrome://bookmarks/";
