@@ -92,6 +92,7 @@ void BookmarkBubbleView::Show(views::Window* parent,
       parent->GetClientView()->GetWidget(), bounds, BubbleBorder::TOP_RIGHT,
       bubble_, bubble_);
   bubble_->set_info_bubble(info_bubble);
+  info_bubble->SizeToContents();
   GURL url_ptr(url);
   NotificationService::current()->Notify(
       NotificationType::BOOKMARK_BUBBLE_SHOWN,
