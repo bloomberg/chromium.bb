@@ -95,17 +95,18 @@ bool SSLManager::DeserializeSecurityInfo(const std::string& state,
 }
 
 // static
-std::wstring SSLManager::GetEVCertName(const net::X509Certificate& cert) {
+string16 SSLManager::GetEVCertName(const net::X509Certificate& cert) {
   // EV are required to have an organization name and country.
   if (cert.subject().organization_names.empty() ||
       cert.subject().country_name.empty()) {
     NOTREACHED();
-    return std::wstring();
+    return string16();
   }
 
-  return l10n_util::GetStringF(IDS_SECURE_CONNECTION_EV,
-                               UTF8ToWide(cert.subject().organization_names[0]),
-                               UTF8ToWide(cert.subject().country_name));
+  return l10n_util::GetStringFUTF16(
+      IDS_SECURE_CONNECTION_EV,
+      UTF8ToUTF16(cert.subject().organization_names[0]),
+      UTF8ToUTF16(cert.subject().country_name));
 }
 
 SSLManager::SSLManager(NavigationController* controller)

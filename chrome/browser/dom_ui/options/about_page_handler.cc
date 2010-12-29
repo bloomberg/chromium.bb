@@ -43,20 +43,20 @@ namespace {
 
 // These are used as placeholder text around the links in the text in the
 // license.
-const wchar_t kBeginLink[] = L"BEGIN_LINK";
-const wchar_t kEndLink[] = L"END_LINK";
-const wchar_t kBeginLinkChr[] = L"BEGIN_LINK_CHR";
-const wchar_t kBeginLinkOss[] = L"BEGIN_LINK_OSS";
-const wchar_t kEndLinkChr[] = L"END_LINK_CHR";
-const wchar_t kEndLinkOss[] = L"END_LINK_OSS";
+const char kBeginLink[] = "BEGIN_LINK";
+const char kEndLink[] = "END_LINK";
+const char kBeginLinkChr[] = "BEGIN_LINK_CHR";
+const char kBeginLinkOss[] = "BEGIN_LINK_OSS";
+const char kEndLinkChr[] = "END_LINK_CHR";
+const char kEndLinkOss[] = "END_LINK_OSS";
 #if defined(OS_CHROMEOS)
-const wchar_t kBeginLinkCrosOss[] = L"BEGIN_LINK_CROS_OSS";
-const wchar_t kEndLinkCrosOss[] = L"END_LINK_CROS_OSS";
+const char kBeginLinkCrosOss[] = "BEGIN_LINK_CROS_OSS";
+const char kEndLinkCrosOss[] = "END_LINK_CROS_OSS";
 #endif
 
 // Returns a substring [start, end) from |text|.
-std::wstring StringSubRange(const std::wstring& text, size_t start,
-                            size_t end) {
+std::string StringSubRange(const std::string& text, size_t start,
+                           size_t end) {
   DCHECK(end > start);
   return text.substr(start, end - start);
 }
@@ -164,34 +164,32 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 
   // license
 
-  std::wstring text = l10n_util::GetString(IDS_ABOUT_VERSION_LICENSE);
+  std::string text = l10n_util::GetStringUTF8(IDS_ABOUT_VERSION_LICENSE);
 
   bool chromium_url_appears_first =
       text.find(kBeginLinkChr) < text.find(kBeginLinkOss);
 
   size_t link1 = text.find(kBeginLink);
-  DCHECK(link1 != std::wstring::npos);
+  DCHECK(link1 != std::string::npos);
   size_t link1_end = text.find(kEndLink, link1);
-  DCHECK(link1_end != std::wstring::npos);
+  DCHECK(link1_end != std::string::npos);
   size_t link2 = text.find(kBeginLink, link1_end);
-  DCHECK(link2 != std::wstring::npos);
+  DCHECK(link2 != std::string::npos);
   size_t link2_end = text.find(kEndLink, link2);
-  DCHECK(link2_end != std::wstring::npos);
+  DCHECK(link2_end != std::string::npos);
 
-  localized_strings->SetString("license_content_0",
-      WideToUTF16Hack(text.substr(0, link1)));
+  localized_strings->SetString("license_content_0", text.substr(0, link1));
   localized_strings->SetString("license_content_1",
-      WideToUTF16Hack(StringSubRange(text, link1_end + wcslen(kEndLinkOss),
-                                     link2)));
+      StringSubRange(text, link1_end + strlen(kEndLinkOss), link2));
   localized_strings->SetString("license_content_2",
-      WideToUTF16Hack(text.substr(link2_end + wcslen(kEndLinkOss))));
+      text.substr(link2_end + strlen(kEndLinkOss)));
 
   // The Chromium link within the main text of the dialog.
   localized_strings->SetString(chromium_url_appears_first ?
       "license_link_content_0" : "license_link_content_1",
-      WideToUTF16Hack(StringSubRange(text,
-                      text.find(kBeginLinkChr) + wcslen(kBeginLinkChr),
-                      text.find(kEndLinkChr))));
+      StringSubRange(text,
+                     text.find(kBeginLinkChr) + strlen(kBeginLinkChr),
+                     text.find(kEndLinkChr)));
   localized_strings->SetString(chromium_url_appears_first ?
       "license_link_0" : "license_link_1",
       l10n_util::GetStringUTF16(IDS_CHROMIUM_PROJECT_URL));
@@ -201,28 +199,28 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   // rewritten to about:blank.
   localized_strings->SetString(chromium_url_appears_first ?
       "license_link_content_1" : "license_link_content_0",
-      WideToUTF16Hack(StringSubRange(text,
-          text.find(kBeginLinkOss) + wcslen(kBeginLinkOss),
-          text.find(kEndLinkOss))));
+      StringSubRange(text,
+                     text.find(kBeginLinkOss) + strlen(kBeginLinkOss),
+                     text.find(kEndLinkOss)));
   localized_strings->SetString(chromium_url_appears_first ?
       "license_link_1" : "license_link_0", chrome::kChromeUIAboutCreditsURL);
 
 #if defined(OS_CHROMEOS)
-  std::wstring cros_text = l10n_util::GetString(IDS_ABOUT_CROS_VERSION_LICENSE);
+  std::string cros_text =
+      l10n_util::GetStringUTF8(IDS_ABOUT_CROS_VERSION_LICENSE);
 
   size_t cros_link = cros_text.find(kBeginLinkCrosOss);
-  DCHECK(cros_link != std::wstring::npos);
+  DCHECK(cros_link != std::string::npos);
   size_t cros_link_end = cros_text.find(kEndLinkCrosOss, cros_link);
-  DCHECK(cros_link_end != std::wstring::npos);
+  DCHECK(cros_link_end != std::string::npos);
 
   localized_strings->SetString("cros_license_content_0",
-      WideToUTF16Hack(cros_text.substr(0, cros_link)));
+      cros_text.substr(0, cros_link));
   localized_strings->SetString("cros_license_content_1",
-      WideToUTF16Hack(
-          cros_text.substr(cros_link_end + wcslen(kEndLinkCrosOss))));
+      cros_text.substr(cros_link_end + strlen(kEndLinkCrosOss)));
   localized_strings->SetString("cros_license_link_content_0",
-      WideToUTF16Hack(StringSubRange(cros_text,
-          cros_link + wcslen(kBeginLinkCrosOss), cros_link_end)));
+      StringSubRange(cros_text, cros_link + strlen(kBeginLinkCrosOss),
+                     cros_link_end));
   localized_strings->SetString("cros_license_link_0",
       chrome::kChromeUIAboutOSCreditsURL);
 #endif
@@ -358,9 +356,8 @@ void AboutPageHandler::UpdateStatus(
       int progress = static_cast<int>(status.download_progress * 100.0);
       if (progress != progress_) {
         progress_ = progress;
-        // TODO(viettrungluu): need UTF-16 convenience form to eliminate hack.
-        message = WideToUTF16Hack(
-            l10n_util::GetStringF(IDS_UPDATE_DOWNLOADING, progress_));
+        message = l10n_util::GetStringFUTF16Int(IDS_UPDATE_DOWNLOADING,
+                                                progress_);
       }
       started_ = true;
     }

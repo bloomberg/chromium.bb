@@ -117,7 +117,7 @@ std::wstring ToolbarModel::GetEVCertName() const {
   // the security level would be NONE.
   CertStore::GetInstance()->RetrieveCert(
       GetNavigationController()->GetActiveEntry()->ssl().cert_id(), &cert);
-  return SSLManager::GetEVCertName(*cert);
+  return UTF16ToWideHack(SSLManager::GetEVCertName(*cert));
 }
 
 NavigationController* ToolbarModel::GetNavigationController() const {

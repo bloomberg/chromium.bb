@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
+#include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/task.h"
 #include "chrome/browser/extensions/extension_creator.h"
@@ -80,20 +81,18 @@ void PackExtensionJob::ReportFailureOnClientThread(const std::string& error) {
 }
 
 // static
-std::wstring PackExtensionJob::StandardSuccessMessage(const FilePath& crx_file,
-                                                      const FilePath& key_file)
-{
-  // TODO(isherman): we should use string16 instead of wstring.
-  // See crbug.com/23581 and crbug.com/24672
-  std::wstring message;
-  if (key_file.empty()) {
-    return l10n_util::GetStringF(
+string16 PackExtensionJob::StandardSuccessMessage(const FilePath& crx_file,
+                                                  const FilePath& key_file) {
+  string16 crx_file_string = WideToUTF16(crx_file.ToWStringHack());
+  string16 key_file_string = WideToUTF16(key_file.ToWStringHack());
+  if (key_file_string.empty()) {
+    return l10n_util::GetStringFUTF16(
         IDS_EXTENSION_PACK_DIALOG_SUCCESS_BODY_UPDATE,
-        crx_file.ToWStringHack());
+        crx_file_string);
   } else {
-    return l10n_util::GetStringF(
+    return l10n_util::GetStringFUTF16(
         IDS_EXTENSION_PACK_DIALOG_SUCCESS_BODY_NEW,
-        crx_file.ToWStringHack(),
-        key_file.ToWStringHack());
+        crx_file_string,
+        key_file_string);
   }
 }

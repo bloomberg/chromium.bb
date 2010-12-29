@@ -171,12 +171,11 @@ TaskManager::Resource::Type TaskManagerTabContentsResource::GetType() const {
 
 std::wstring TaskManagerTabContentsResource::GetTitle() const {
   // Fall back on the URL if there's no title.
-  std::wstring tab_title(UTF16ToWideHack(tab_contents_->GetTitle()));
+  string16 tab_title = tab_contents_->GetTitle();
   if (tab_title.empty()) {
-    tab_title = UTF8ToWide(tab_contents_->GetURL().spec());
+    tab_title = UTF8ToUTF16(tab_contents_->GetURL().spec());
     // Force URL to be LTR.
-    tab_title = UTF16ToWide(base::i18n::GetDisplayStringInLTRDirectionality(
-        WideToUTF16(tab_title)));
+    tab_title = base::i18n::GetDisplayStringInLTRDirectionality(tab_title);
   } else {
     // Since the tab_title will be concatenated with
     // IDS_TASK_MANAGER_TAB_PREFIX, we need to explicitly set the tab_title to
@@ -196,7 +195,7 @@ std::wstring TaskManagerTabContentsResource::GetTitle() const {
       extensions_service->IsInstalledApp(tab_contents_->GetURL()),
       tab_contents_->HostsExtension(),
       tab_contents_->profile()->IsOffTheRecord());
-  return l10n_util::GetStringF(message_id, tab_title);
+  return UTF16ToWideHack(l10n_util::GetStringFUTF16(message_id, tab_title));
 }
 
 SkBitmap TaskManagerTabContentsResource::GetIcon() const {
@@ -415,15 +414,16 @@ TaskManagerBackgroundContentsResource::~TaskManagerBackgroundContentsResource(
 }
 
 std::wstring TaskManagerBackgroundContentsResource::GetTitle() const {
-  std::wstring title = application_name_;
+  string16 title = WideToUTF16Hack(application_name_);
 
   if (title.empty()) {
     // No title (can't locate the parent app for some reason) so just display
     // the URL (properly forced to be LTR).
-    title = UTF16ToWide(base::i18n::GetDisplayStringInLTRDirectionality(
-        UTF8ToUTF16(background_contents_->GetURL().spec())));
+    title = base::i18n::GetDisplayStringInLTRDirectionality(
+        UTF8ToUTF16(background_contents_->GetURL().spec()));
   }
-  return l10n_util::GetStringF(IDS_TASK_MANAGER_BACKGROUND_PREFIX, title);
+  return UTF16ToWideHack(
+      l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_BACKGROUND_PREFIX, title));
 }
 
 
@@ -881,12 +881,13 @@ TaskManagerExtensionProcessResource::TaskManagerExtensionProcessResource(
   }
   process_handle_ = extension_host_->render_process_host()->GetHandle();
   pid_ = base::GetProcId(process_handle_);
-  std::wstring extension_name(UTF8ToWide(GetExtension()->name()));
+  string16 extension_name = UTF8ToUTF16(GetExtension()->name());
   DCHECK(!extension_name.empty());
 
   int message_id = GetMessagePrefixID(GetExtension()->is_app(), true,
       extension_host_->profile()->IsOffTheRecord());
-  title_ = l10n_util::GetStringF(message_id, extension_name);
+  title_ = UTF16ToWideHack(l10n_util::GetStringFUTF16(message_id,
+                                                      extension_name));
 }
 
 TaskManagerExtensionProcessResource::~TaskManagerExtensionProcessResource() {
@@ -1263,7 +1264,8 @@ TaskManagerBrowserProcessResource::~TaskManagerBrowserProcessResource() {
 // TaskManagerResource methods:
 std::wstring TaskManagerBrowserProcessResource::GetTitle() const {
   if (title_.empty()) {
-    title_ = l10n_util::GetString(IDS_TASK_MANAGER_WEB_BROWSER_CELL_TEXT);
+    title_ = UTF16ToWideHack(
+        l10n_util::GetStringUTF16(IDS_TASK_MANAGER_WEB_BROWSER_CELL_TEXT));
   }
   return title_;
 }

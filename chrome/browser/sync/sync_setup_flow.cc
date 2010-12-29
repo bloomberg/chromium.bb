@@ -390,7 +390,8 @@ void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
 }
 
 std::wstring SyncSetupFlow::GetDialogTitle() const {
-  return l10n_util::GetString(IDS_SYNC_MY_BOOKMARKS_LABEL);
+  return UTF16ToWideHack(
+      l10n_util::GetStringUTF16(IDS_SYNC_MY_BOOKMARKS_LABEL));
 }
 
 bool SyncSetupFlow::IsDialogModal() const {

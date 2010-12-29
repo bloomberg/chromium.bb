@@ -21,9 +21,10 @@ void ExtensionsStartupUtil::OnPackSuccess(
     const FilePath& crx_path,
     const FilePath& output_private_key_path) {
   pack_job_succeeded_ = true;
-  ShowPackExtensionMessage(L"Extension Packaging Success",
-                           PackExtensionJob::StandardSuccessMessage(
-                               crx_path, output_private_key_path));
+  ShowPackExtensionMessage(
+      L"Extension Packaging Success",
+      UTF16ToWideHack(PackExtensionJob::StandardSuccessMessage(
+          crx_path, output_private_key_path)));
 }
 
 void ExtensionsStartupUtil::OnPackFailure(const std::string& error_message) {

@@ -110,8 +110,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
   // Check that the third entry is a tab contents resource whose title starts
   // starts with "Tab:".
   ASSERT_TRUE(model()->GetResourceTabContents(2) != NULL);
-  string16 prefix = WideToUTF16Hack(l10n_util::GetStringF(
-      IDS_TASK_MANAGER_TAB_PREFIX, L""));
+  string16 prefix = l10n_util::GetStringFUTF16(
+      IDS_TASK_MANAGER_TAB_PREFIX, string16());
   ASSERT_TRUE(StartsWith(model()->GetResourceTitle(2), prefix, true));
 
   // Close the tab and verify that we notice.
@@ -193,8 +193,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionTabs) {
   ASSERT_EQ(TaskManager::Resource::EXTENSION, model()->GetResourceType(2));
   ASSERT_TRUE(model()->GetResourceTabContents(2) == NULL);
   ASSERT_TRUE(model()->GetResourceExtension(2) != NULL);
-  string16 prefix = WideToUTF16Hack(l10n_util::GetStringF(
-      IDS_TASK_MANAGER_EXTENSION_PREFIX, L""));
+  string16 prefix = l10n_util::GetStringFUTF16(
+      IDS_TASK_MANAGER_EXTENSION_PREFIX, string16());
   ASSERT_TRUE(StartsWith(model()->GetResourceTitle(2), prefix, true));
 
   // Check that the fourth entry (page.html) is of type extension and has both
@@ -233,8 +233,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTabs) {
   ASSERT_EQ(TaskManager::Resource::EXTENSION, model()->GetResourceType(2));
   ASSERT_TRUE(model()->GetResourceTabContents(2) != NULL);
   ASSERT_TRUE(model()->GetResourceExtension(2) != NULL);
-  string16 prefix = WideToUTF16Hack(l10n_util::GetStringF(
-      IDS_TASK_MANAGER_APP_PREFIX, L""));
+  string16 prefix = l10n_util::GetStringFUTF16(
+      IDS_TASK_MANAGER_APP_PREFIX, string16());
   ASSERT_TRUE(StartsWith(model()->GetResourceTitle(2), prefix, true));
 
   // Unload extension to avoid crash on Windows.

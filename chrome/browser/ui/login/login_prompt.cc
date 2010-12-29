@@ -385,14 +385,16 @@ class LoginDialogTask : public Task {
     password_manager->PasswordFormsFound(v);
     handler_->SetPasswordManager(password_manager);
 
-    std::wstring explanation = auth_info_->realm.empty() ?
-        l10n_util::GetStringF(IDS_LOGIN_DIALOG_DESCRIPTION_NO_REALM,
-                              auth_info_->host_and_port) :
-        l10n_util::GetStringF(IDS_LOGIN_DIALOG_DESCRIPTION,
-                              auth_info_->host_and_port,
-                              auth_info_->realm);
+    string16 host_and_port_hack16 = WideToUTF16Hack(auth_info_->host_and_port);
+    string16 realm_hack16 = WideToUTF16Hack(auth_info_->realm);
+    string16 explanation = realm_hack16.empty() ?
+        l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION_NO_REALM,
+                                   host_and_port_hack16) :
+        l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION,
+                                   host_and_port_hack16,
+                                   realm_hack16);
     handler_->BuildViewForPasswordManager(password_manager,
-                                          explanation);
+                                          UTF16ToWideHack(explanation));
   }
 
  private:
