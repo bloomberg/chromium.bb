@@ -163,6 +163,11 @@ void WmIpc::SetLoggedInProperty(bool logged_in) {
                  values);
 }
 
+void WmIpc::NotifyAboutSignout() {
+  Message msg(chromeos::WM_IPC_MESSAGE_WM_NOTIFY_SIGNING_OUT);
+  SendMessage(msg);
+}
+
 WmIpc::WmIpc() {
   scoped_array<char*> names(new char*[kNumAtoms]);
   scoped_array<Atom> atoms(new Atom[kNumAtoms]);

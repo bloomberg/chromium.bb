@@ -872,6 +872,7 @@ void ScreenLocker::EnableInput() {
 void ScreenLocker::Signout() {
   if (!error_info_) {
     UserMetrics::RecordAction(UserMetricsAction("ScreenLocker_Signout"));
+    WmIpc::instance()->NotifyAboutSignout();
     if (CrosLibrary::Get()->EnsureLoaded()) {
       CrosLibrary::Get()->GetLoginLibrary()->StopSession("");
     }

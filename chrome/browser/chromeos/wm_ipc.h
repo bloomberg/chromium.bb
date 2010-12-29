@@ -115,6 +115,9 @@ class WmIpc {
   // the user is currently logged in or not.
   void SetLoggedInProperty(bool logged_in);
 
+  // Sends a message to the window manager notifying it that we're signing out.
+  void NotifyAboutSignout();
+
  private:
   friend struct base::DefaultLazyInstanceTraits<WmIpc>;
 

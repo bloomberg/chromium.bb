@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
+#include "chrome/browser/chromeos/wm_ipc.h"
 #endif
 
 namespace {
@@ -189,6 +190,7 @@ void BrowserList::NotifyAndTerminate() {
                                          NotificationService::AllSources(),
                                          NotificationService::NoDetails());
 #if defined(OS_CHROMEOS)
+  chromeos::WmIpc::instance()->NotifyAboutSignout();
   if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
     chromeos::CrosLibrary::Get()->GetLoginLibrary()->StopSession("");
     return;
