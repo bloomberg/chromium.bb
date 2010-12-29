@@ -9,7 +9,7 @@
 #include <windows.h>
 #include <shellapi.h>
 
-#include "base/scoped_handle_win.h"
+#include "base/win/scoped_gdi_object.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/status_icons/status_icon.h"
 
@@ -54,7 +54,7 @@ class StatusIconWin : public StatusIcon {
   UINT message_id_;
 
   // The currently-displayed icon for the window.
-  ScopedHICON icon_;
+  base::win::ScopedHICON icon_;
 
   // Context menu associated with this icon (if any).
   scoped_ptr<views::Menu2> context_menu_;

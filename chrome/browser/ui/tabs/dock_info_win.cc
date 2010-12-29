@@ -129,7 +129,7 @@ class TopMostFinder : public BaseWindowFinder {
   // in ShouldStopIterating if target_ is passed in.
   bool is_top_most_;
 
-  ScopedRegion tmp_region_;
+  base::win::ScopedRegion tmp_region_;
 
   DISALLOW_COPY_AND_ASSIGN(TopMostFinder);
 };

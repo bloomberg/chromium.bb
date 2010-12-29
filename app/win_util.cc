@@ -24,6 +24,7 @@
 #include "base/scoped_handle_win.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
+#include "base/win/scoped_gdi_object.h"
 #include "base/win/windows_version.h"
 #include "gfx/codec/png_codec.h"
 #include "gfx/gdi_util.h"
@@ -548,7 +549,7 @@ gfx::Font GetWindowTitleFont() {
   NONCLIENTMETRICS ncm;
   win_util::GetNonClientMetrics(&ncm);
   l10n_util::AdjustUIFont(&(ncm.lfCaptionFont));
-  ScopedHFONT caption_font(CreateFontIndirect(&(ncm.lfCaptionFont)));
+  base::win::ScopedHFONT caption_font(CreateFontIndirect(&(ncm.lfCaptionFont)));
   return gfx::Font(caption_font);
 }
 

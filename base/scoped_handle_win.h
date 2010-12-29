@@ -13,7 +13,4 @@
 using base::win::ScopedBitmap;
 using base::win::ScopedHandle;
 using base::win::ScopedHDC;
-using base::win::ScopedHFONT;
 using base::win::ScopedHGlobal;
-using base::win::ScopedHICON;
-using base::win::ScopedRegion;

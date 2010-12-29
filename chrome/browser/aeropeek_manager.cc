@@ -13,6 +13,7 @@
 #include "base/scoped_handle_win.h"
 #include "base/scoped_native_library.h"
 #include "base/waitable_event.h"
+#include "base/win/scoped_gdi_object.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/app_icon_win.h"
 #include "chrome/browser/browser_list.h"
@@ -682,7 +683,7 @@ class AeroPeekWindow : public gfx::WindowImpl {
 
   // The favicon for this tab.
   SkBitmap favicon_bitmap_;
-  ScopedHICON favicon_;
+  base::win::ScopedHICON favicon_;
 
   // The icon used by the frame window.
   // This icon is used when this tab doesn't have a favicon.

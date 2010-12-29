@@ -12,7 +12,6 @@
 #include "app/drag_drop_types.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/scoped_handle.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/path.h"
@@ -26,6 +25,7 @@
 #include "views/window/window.h"
 
 #if defined(OS_WIN)
+#include "base/win/scoped_gdi_object.h"
 #include "views/accessibility/view_accessibility.h"
 #endif
 #if defined(OS_LINUX)
@@ -450,11 +450,12 @@ bool View::HitTest(const gfx::Point& l) const {
     if (HasHitTestMask()) {
       gfx::Path mask;
       GetHitTestMask(&mask);
-      ScopedRegion rgn(mask.CreateNativeRegion());
       // TODO: can this use SkRegion's contains instead?
 #if defined(OS_WIN)
+      base::win::ScopedRegion rgn(mask.CreateNativeRegion());
       return !!PtInRegion(rgn, l.x(), l.y());
 #elif defined(TOOLKIT_USES_GTK)
+      ScopedRegion rgn(mask.CreateNativeRegion());
       return gdk_region_point_in(rgn.Get(), l.x(), l.y());
 #endif
     }
