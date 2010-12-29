@@ -823,6 +823,14 @@ nacl_libraries_nocpp: ALWAYS
 	    --mode=nacl_extra_sdk extra_sdk_update \
 	    nocpp=yes targetplatform=x86-64 --verbose ) ;
 
+##################################################################
+# nacl_libraries:
+# Injects nacl-specific libraries in toolchain.
+##################################################################
+# TODO(khim): make npapi headers in the Chrome repository to be compilable under
+#             __native_client__ or remove them.
+# TODO(khim): factor out {n,p}papi headers and libraries out of the toolchain.
+#             Add them to SDK during the SDK build.
 nacl_libraries: ALWAYS
 	cd .. && \
 	  (./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
@@ -835,7 +843,8 @@ nacl_libraries: ALWAYS
 	    targetplatform=x86-64 --verbose ) ;
 	chmod a-x "$(DESTDIR)$(SDKROOT)/"{nacl,"$(CROSSARCH)"}/lib/*.a
 	rm -f "$(DESTDIR)$(SDKROOT)/"{nacl,"$(CROSSARCH)"}/lib/*.la
-	printf -- "--- $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/nacl/npapi_extensions.h\n\
+	if ! grep -q '#include <nacl/npapi.h>' "$(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/nacl/npapi_extensions.h" ; then \
+	  printf -- "--- $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/nacl/npapi_extensions.h\n\
 	+++ $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/nacl/npapi_extensions.h\n\
 	@@ -9,3 +9 @@\n\
 	-// Use the shorter include path here so that this file can be used in non-\n\
@@ -854,7 +863,8 @@ nacl_libraries: ALWAYS
 	-#include <npapi_extensions.h>\n\
 	+#include <nacl/npapi.h>\n\
 	+#include <nacl/npapi_extensions.h>\n" |\
-	patch -p0 -N
+	  patch -p0;\
+	fi
 
 sdk_minimal_test: ALWAYS
 	cd .. && \
