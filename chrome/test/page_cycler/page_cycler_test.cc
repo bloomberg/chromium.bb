@@ -246,14 +246,23 @@ class PageCyclerTest : public UIPerfTest {
     ASSERT_TRUE(tab->GetCookieByName(test_url, "__pc_pages", &cookie));
     pages->assign(UTF8ToWide(cookie));
     ASSERT_FALSE(pages->empty());
-    ASSERT_TRUE(tab->GetCookieByName(test_url, "__pc_timings", &cookie));
 
+    // Get the timing cookie value from the DOM automation.
     std::wstring wcookie;
     ASSERT_TRUE(tab->ExecuteAndExtractString(L"",
           L"window.domAutomationController.send("
           L"JSON.stringify(__get_timings()));",
           &wcookie));
     cookie = base::SysWideToNativeMB(wcookie);
+
+    // JSON.stringify() encapsulates the returned string in quotes, strip them.
+    std::string::size_type start_idx = cookie.find("\"");
+    std::string::size_type end_idx = cookie.find_last_of("\"");
+    if (start_idx != std::string::npos &&
+        end_idx != std::string::npos &&
+        start_idx < end_idx) {
+      cookie = cookie.substr(start_idx+1, end_idx-start_idx-1);
+    }
 
     timings->assign(cookie);
     ASSERT_FALSE(timings->empty());
