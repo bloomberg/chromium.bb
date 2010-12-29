@@ -424,8 +424,13 @@ bool ProfileSyncServiceHarness::AwaitStatusChangeWithTimeout(
       timeout_milliseconds);
   loop->Run();
   loop->SetNestableTasksAllowed(did_allow_nestable_tasks);
-  LogClientInfo("AwaitStatusChangeWithTimeout succeeded");
-  return timeout_signal->Abort();
+  if (timeout_signal->Abort()) {
+    LogClientInfo("AwaitStatusChangeWithTimeout succeeded");
+    return true;
+  } else {
+    LogClientInfo("AwaitStatusChangeWithTimeout timed out");
+    return false;
+  }
 }
 
 ProfileSyncService::Status ProfileSyncServiceHarness::GetStatus() {
