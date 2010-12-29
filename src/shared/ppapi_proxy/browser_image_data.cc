@@ -44,37 +44,34 @@ void PpbImageDataRpcServer::PPB_ImageData_IsImageDataFormatSupported(
 void PpbImageDataRpcServer::PPB_ImageData_Create(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
-    int64_t module,
+    PP_Module module,
     int32_t format,
     nacl_abi_size_t size_bytes, int32_t* size,
     int32_t init_to_zero,
-    int64_t* resource) {
+    PP_Resource* resource) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   if (size_bytes != sizeof(struct PP_Size)) {
     return;
   }
-  PP_Resource pp_resource =
-      ppapi_proxy::PPBImageDataInterface()->Create(
-          static_cast<PP_Module>(module),
-          static_cast<PP_ImageDataFormat>(format),
-          static_cast<const struct PP_Size*>(
-              reinterpret_cast<struct PP_Size*>(size)),
-          (init_to_zero ? PP_TRUE : PP_FALSE));
-  *resource = static_cast<int64_t>(pp_resource);
+  *resource = ppapi_proxy::PPBImageDataInterface()->Create(
+      module,
+      static_cast<PP_ImageDataFormat>(format),
+      static_cast<const struct PP_Size*>(
+          reinterpret_cast<struct PP_Size*>(size)),
+      (init_to_zero ? PP_TRUE : PP_FALSE));
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
 void PpbImageDataRpcServer::PPB_ImageData_IsImageData(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
-    int64_t resource,
+    PP_Resource resource,
     int32_t* success) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   PP_Bool pp_success =
-      ppapi_proxy::PPBImageDataInterface()->IsImageData(
-          static_cast<PP_Resource>(resource));
+      ppapi_proxy::PPBImageDataInterface()->IsImageData(resource);
   *success = (pp_success == PP_TRUE);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -82,7 +79,7 @@ void PpbImageDataRpcServer::PPB_ImageData_IsImageData(
 void PpbImageDataRpcServer::PPB_ImageData_Describe(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
-    int64_t resource,
+    PP_Resource resource,
     nacl_abi_size_t* desc_bytes, int32_t* desc,
     int32_t* success) {
   NaClSrpcClosureRunner runner(done);
@@ -92,8 +89,7 @@ void PpbImageDataRpcServer::PPB_ImageData_Describe(
   }
   PP_Bool pp_success =
       ppapi_proxy::PPBImageDataInterface()->Describe(
-          static_cast<PP_Resource>(resource),
-          reinterpret_cast<struct PP_ImageDataDesc*>(desc));
+          resource, reinterpret_cast<struct PP_ImageDataDesc*>(desc));
   *success = (pp_success == PP_TRUE);
   rpc->result = NACL_SRPC_RESULT_OK;
 }

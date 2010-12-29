@@ -14,6 +14,9 @@
 #include "native_client/src/include/portability.h"
 #endif  // __native_client__
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_module.h"
+#include "ppapi/c/pp_resource.h"
 class ObjectStubRpcClient {
  public:
   static NaClSrpcError HasProperty(
@@ -102,7 +105,7 @@ class PppRpcClient {
   static NaClSrpcError PPP_InitializeModule(
       NaClSrpcChannel* channel,
       int32_t pid,
-      int64_t module,
+      PP_Module module,
       NaClSrpcImcDescType upcall_channel_desc,
       char* service_description,
       int32_t* nacl_pid,
@@ -124,7 +127,7 @@ class PppAudioDevRpcClient {
  public:
   static NaClSrpcError PPP_Audio_Dev_StreamCreated(
       NaClSrpcChannel* channel,
-      int64_t instance,
+      PP_Instance instance,
       NaClSrpcImcDescType out_shm,
       int32_t out_shm_size,
       NaClSrpcImcDescType out_socket);
@@ -139,36 +142,36 @@ class PppInstanceRpcClient {
  public:
   static NaClSrpcError PPP_Instance_DidCreate(
       NaClSrpcChannel* channel,
-      int64_t instance,
+      PP_Instance instance,
       int32_t argc,
       nacl_abi_size_t argn_bytes, char* argn,
       nacl_abi_size_t argv_bytes, char* argv,
       int32_t* success);
   static NaClSrpcError PPP_Instance_DidDestroy(
       NaClSrpcChannel* channel,
-      int64_t instance);
+      PP_Instance instance);
   static NaClSrpcError PPP_Instance_DidChangeView(
       NaClSrpcChannel* channel,
-      int64_t instance,
+      PP_Instance instance,
       nacl_abi_size_t position_bytes, int32_t* position,
       nacl_abi_size_t clip_bytes, int32_t* clip);
   static NaClSrpcError PPP_Instance_DidChangeFocus(
       NaClSrpcChannel* channel,
-      int64_t instance,
+      PP_Instance instance,
       bool has_focus);
   static NaClSrpcError PPP_Instance_HandleInputEvent(
       NaClSrpcChannel* channel,
-      int64_t instance,
+      PP_Instance instance,
       nacl_abi_size_t event_data_bytes, char* event_data,
       int32_t* success);
   static NaClSrpcError PPP_Instance_HandleDocumentLoad(
       NaClSrpcChannel* channel,
-      int64_t instance,
-      int64_t url_loader,
+      PP_Instance instance,
+      PP_Resource url_loader,
       int32_t* success);
   static NaClSrpcError PPP_Instance_GetInstanceObject(
       NaClSrpcChannel* channel,
-      int64_t instance,
+      PP_Instance instance,
       nacl_abi_size_t* capability_bytes, char* capability);
 
  private:

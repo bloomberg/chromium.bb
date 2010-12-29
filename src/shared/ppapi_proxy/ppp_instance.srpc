@@ -12,7 +12,7 @@
           # action requested.
           # Sets the instance's parameters.
           {'name': 'PPP_Instance_DidCreate',
-           'inputs': [['instance', 'int64_t'],  # PP_Instance
+           'inputs': [['instance', 'PP_Instance'],  # PP_Instance
                       ['argc', 'int32_t'],  # uint32_t
                       ['argn', 'char[]'],  # char*[]
                       ['argv', 'char[]'],  # char*[]
@@ -22,13 +22,13 @@
           },
           # Deletes an instance of a plugin.
           {'name': 'PPP_Instance_DidDestroy',
-           'inputs': [['instance', 'int64_t'],  # PP_Instance
+           'inputs': [['instance', 'PP_Instance'],  # PP_Instance
                      ],
            'outputs': []
           },
           # Changes the position, size, or clipping rectangle of the instance.
           {'name': 'PPP_Instance_DidChangeView',
-           'inputs': [['instance', 'int64_t'],  # PP_Instance
+           'inputs': [['instance', 'PP_Instance'],  # PP_Instance
                       ['position', 'int32_t[]'],  # PP_Rect*
                       ['clip', 'int32_t[]'],  # PP_Rect*
                      ],
@@ -36,14 +36,14 @@
           },
           # Processes a bool indicating that the instance gained or lost focus.
           {'name': 'PPP_Instance_DidChangeFocus',
-           'inputs': [['instance', 'int64_t'],  # PP_Instance
+           'inputs': [['instance', 'PP_Instance'],  # PP_Instance
                       ['has_focus', 'bool'],  # PP_Bool
                       ],
            'outputs': []
           },
           # Processes an event sent to an instance.
           {'name': 'PPP_Instance_HandleInputEvent',
-           'inputs': [['instance', 'int64_t'],  # PP_Instance
+           'inputs': [['instance', 'PP_Instance'],  # PP_Instance
                       ['event_data', 'char[]'],  # PP_InputEvent*
                       ],
            'outputs': [['success', 'int32_t']  # PP_Bool
@@ -51,15 +51,15 @@
           },
           # Passes URL information to a full-frame instance.
           {'name': 'PPP_Instance_HandleDocumentLoad',
-           'inputs': [['instance', 'int64_t'],  # PP_Instance
-                      ['url_loader', 'int64_t'],  # PP_Resource
+           'inputs': [['instance', 'PP_Instance'],  # PP_Instance
+                      ['url_loader', 'PP_Resource'],  # PP_Resource
                       ],
            'outputs': [['success', 'int32_t'],  # PP_Bool
                       ]
           },
           # Gets the instance's scriptable object.
           {'name': 'PPP_Instance_GetInstanceObject',
-           'inputs': [['instance', 'int64_t'],  # PP_Instance
+           'inputs': [['instance', 'PP_Instance'],  # PP_Instance
                      ],
            'outputs': [['capability', 'char[]'],  # PP_Var
                       ]

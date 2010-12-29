@@ -74,7 +74,7 @@ void PppInstanceRpcServer::PPP_Instance_DidCreate(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     // inputs
-    int64_t instance,
+    PP_Instance instance,
     int32_t argc,
     uint32_t argn_bytes, char* argn,
     uint32_t argv_bytes, char* argv,
@@ -108,7 +108,7 @@ void PppInstanceRpcServer::PPP_Instance_DidDestroy(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     // inputs
-    int64_t instance) {
+    PP_Instance instance) {
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NaClSrpcClosureRunner runner(done);
   const PPP_Instance* instance_interface = GetInstanceInterface();
@@ -124,7 +124,7 @@ void PppInstanceRpcServer::PPP_Instance_DidChangeView(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     // inputs
-    int64_t instance,
+    PP_Instance instance,
     uint32_t position_count, int32_t* position,
     uint32_t clip_count, int32_t* clip) {
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
@@ -150,7 +150,7 @@ void PppInstanceRpcServer::PPP_Instance_DidChangeFocus(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     // inputs
-    int64_t instance,
+    PP_Instance instance,
     bool has_focus) {
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   NaClSrpcClosureRunner runner(done);
@@ -169,7 +169,7 @@ void PppInstanceRpcServer::PPP_Instance_HandleInputEvent(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     // inputs
-    int64_t instance,
+    PP_Instance instance,
     uint32_t event_data_bytes, char* event_data,
     // outputs
     int32_t* success) {
@@ -193,8 +193,8 @@ void PppInstanceRpcServer::PPP_Instance_HandleDocumentLoad(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     // inputs
-    int64_t instance,
-    int64_t url_loader,
+    PP_Instance instance,
+    PP_Resource url_loader,
     // outputs
     int32_t* success) {
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
@@ -215,7 +215,7 @@ void PppInstanceRpcServer::PPP_Instance_GetInstanceObject(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     // inputs
-    int64_t instance,
+    PP_Instance instance,
     // outputs
     uint32_t* capability_bytes, char* capability) {
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;

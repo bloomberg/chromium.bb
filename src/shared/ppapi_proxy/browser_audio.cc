@@ -95,9 +95,9 @@ void StreamCreatedCallback(void* user_data, int32_t result) {
 void PpbAudioDevRpcServer::PPB_Audio_Dev_Create(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
-    int64_t instance,
-    int64_t config,
-    int64_t* resource) {
+    PP_Instance instance,
+    PP_Resource config,
+    PP_Resource* resource) {
   NaClSrpcClosureRunner runner(done);
   const PPB_AudioTrusted_Dev* audio = GetAudioTrustedInterface();
   PP_Resource audio_id;
@@ -110,11 +110,10 @@ void PpbAudioDevRpcServer::PPB_Audio_Dev_Create(
   if (NULL == audio)
     return;
   *resource = audio->CreateTrusted(instance);
-  audio_id = static_cast<PP_Resource>(*resource);
+  audio_id = *resource;
   if (ppapi_proxy::kInvalidResourceId == audio_id)
     return;
-  data = new StreamCreatedCallbackData(
-      static_cast<PP_Instance>(instance), audio_id);
+  data = new StreamCreatedCallbackData(instance, audio_id);
   callback = PP_MakeCompletionCallback(StreamCreatedCallback, data);
   r = audio->Open(audio_id, config, callback);
   // if the Open() call failed, pass failure code and explicitly
@@ -129,7 +128,7 @@ void PpbAudioDevRpcServer::PPB_Audio_Dev_Create(
 void PpbAudioDevRpcServer::PPB_Audio_Dev_StartPlayback(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
-    int64_t resource,
+    PP_Resource resource,
     int32_t* out_bool) {
   NaClSrpcClosureRunner runner(done);
   const PPB_Audio_Dev* audio = GetAudioInterface();
@@ -145,7 +144,7 @@ void PpbAudioDevRpcServer::PPB_Audio_Dev_StartPlayback(
 void PpbAudioDevRpcServer::PPB_Audio_Dev_StopPlayback(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
-    int64_t resource,
+    PP_Resource resource,
     int32_t* out_bool) {
   NaClSrpcClosureRunner runner(done);
   const PPB_Audio_Dev* audio = GetAudioInterface();
@@ -161,7 +160,7 @@ void PpbAudioDevRpcServer::PPB_Audio_Dev_StopPlayback(
 void PpbAudioDevRpcServer::PPB_Audio_Dev_IsAudio(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
-    int64_t resource,
+    PP_Resource resource,
     int32_t* out_bool) {
   NaClSrpcClosureRunner runner(done);
   const PPB_Audio_Dev* audio = GetAudioInterface();
@@ -177,8 +176,8 @@ void PpbAudioDevRpcServer::PPB_Audio_Dev_IsAudio(
 void PpbAudioDevRpcServer::PPB_Audio_Dev_GetCurrentConfig(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
-    int64_t resource,
-    int64_t* config) {
+    PP_Resource resource,
+    PP_Resource* config) {
   NaClSrpcClosureRunner runner(done);
   const PPB_Audio_Dev* audio = GetAudioInterface();
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;

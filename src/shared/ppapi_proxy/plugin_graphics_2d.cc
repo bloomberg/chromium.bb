@@ -37,17 +37,17 @@ PP_Resource Create(PP_Module module,
   int32_t* size_as_int_ptr =
       reinterpret_cast<int32_t*>(const_cast<struct PP_Size*>(size));
   int32_t is_always_opaque_as_int = static_cast<int32_t>(is_always_opaque);
-  int64_t resource;
+  PP_Resource resource;
   NaClSrpcError retval =
       PpbGraphics2DRpcClient::PPB_Graphics2D_Create(
           GetMainSrpcChannel(),
-          static_cast<int64_t>(module),
+          module,
           kPpSizeBytes,
           size_as_int_ptr,
           is_always_opaque_as_int,
           &resource);
   if (retval == NACL_SRPC_RESULT_OK) {
-    return static_cast<PP_Resource>(resource);
+    return resource;
   } else {
     return kInvalidResourceId;
   }
@@ -67,7 +67,7 @@ PP_Bool Describe(PP_Resource graphics_2d,
   NaClSrpcError retval =
       PpbGraphics2DRpcClient::PPB_Graphics2D_Describe(
           GetMainSrpcChannel(),
-          static_cast<int64_t>(graphics_2d),
+          graphics_2d,
           &size_ret,
           reinterpret_cast<int32_t*>(size),
           &is_always_opaque_as_int,
@@ -88,8 +88,8 @@ void PaintImageData(PP_Resource graphics_2d,
   // interface design other than crash.  Let's find one.
   (void) PpbGraphics2DRpcClient::PPB_Graphics2D_PaintImageData(
       GetMainSrpcChannel(),
-      static_cast<int64_t>(graphics_2d),
-      static_cast<int64_t>(image),
+      graphics_2d,
+      image,
       kPpPointBytes,
       reinterpret_cast<int32_t*>(const_cast<struct PP_Point*>(top_left)),
       kPpRectBytes,
@@ -103,7 +103,7 @@ void Scroll(PP_Resource graphics_2d,
   // interface design other than crash.  Let's find one.
   (void) PpbGraphics2DRpcClient::PPB_Graphics2D_Scroll(
       GetMainSrpcChannel(),
-      static_cast<int64_t>(graphics_2d),
+      graphics_2d,
       kPpRectBytes,
       reinterpret_cast<int32_t*>(const_cast<struct PP_Rect*>(clip_rect)),
       kPpPointBytes,
@@ -112,9 +112,7 @@ void Scroll(PP_Resource graphics_2d,
 
 void ReplaceContents(PP_Resource graphics_2d, PP_Resource image) {
   (void) PpbGraphics2DRpcClient::PPB_Graphics2D_ReplaceContents(
-      GetMainSrpcChannel(),
-      static_cast<int64_t>(graphics_2d),
-      static_cast<int64_t>(image));
+      GetMainSrpcChannel(), graphics_2d, image);
 }
 
 int32_t Flush(PP_Resource graphics_2d,

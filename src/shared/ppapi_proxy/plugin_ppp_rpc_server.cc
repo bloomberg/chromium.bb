@@ -80,7 +80,7 @@ void PppRpcServer::PPP_InitializeModule(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     int32_t pid,
-    int64_t module,
+    PP_Module module,
     NaClSrpcImcDescType upcall_channel_desc,
     char* service_description,
     int32_t* nacl_pid,

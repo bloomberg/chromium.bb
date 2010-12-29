@@ -29,7 +29,7 @@ const char* const kEventsPropertyName = "events";
 // since the last request for "events".
 class EventHandler : public pp::deprecated::ScriptableObject {
  public:
-  explicit EventHandler(int64_t instance)
+  explicit EventHandler(PP_Instance instance)
       : instance_(instance),
         events_() {
     std::printf("EventHandler created.\n");
@@ -178,7 +178,7 @@ class EventHandler : public pp::deprecated::ScriptableObject {
  private:
   // The resource number of the pp::Instance that created us (for use in
   // output).
-  int64_t instance_;
+  PP_Instance instance_;
   // A string representing input events, exposed to JavaScript as "events".
   // It contains a description of each input event that has happened since the
   // last time the "events" JavaScript property was accessed.

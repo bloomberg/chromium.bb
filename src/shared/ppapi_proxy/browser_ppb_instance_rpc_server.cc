@@ -13,7 +13,7 @@ void PpbInstanceRpcServer::PPB_Instance_GetWindowObject(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     // inputs
-    int64_t instance,
+    PP_Instance instance,
     // outputs
     nacl_abi_size_t* window_size, char* window_bytes) {
   NACL_UNTESTED();
@@ -21,8 +21,7 @@ void PpbInstanceRpcServer::PPB_Instance_GetWindowObject(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   PP_Var window =
-      ppapi_proxy::PPBInstanceInterface()->GetWindowObject(
-          static_cast<PP_Instance>(instance));
+      ppapi_proxy::PPBInstanceInterface()->GetWindowObject(instance);
   if (!ppapi_proxy::SerializeTo(&window, window_bytes, window_size))
     return;
 
@@ -33,7 +32,7 @@ void PpbInstanceRpcServer::PPB_Instance_GetOwnerElementObject(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     // inputs
-    int64_t instance,
+    PP_Instance instance,
     // outputs
     nacl_abi_size_t* owner_size, char* owner_bytes) {
   NACL_UNTESTED();
@@ -41,8 +40,7 @@ void PpbInstanceRpcServer::PPB_Instance_GetOwnerElementObject(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   PP_Var owner =
-      ppapi_proxy::PPBInstanceInterface()->GetOwnerElementObject(
-          static_cast<PP_Instance>(instance));
+      ppapi_proxy::PPBInstanceInterface()->GetOwnerElementObject(instance);
   if (!ppapi_proxy::SerializeTo(&owner, owner_bytes, owner_size))
     return;
 
@@ -53,8 +51,8 @@ void PpbInstanceRpcServer::PPB_Instance_BindGraphics(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     // inputs
-    int64_t instance,
-    int64_t graphics_device,
+    PP_Instance instance,
+    PP_Resource graphics_device,
     // outputs
     int32_t* success) {
   NACL_UNTESTED();
@@ -63,8 +61,8 @@ void PpbInstanceRpcServer::PPB_Instance_BindGraphics(
 
   PP_Bool pp_success =
       ppapi_proxy::PPBInstanceInterface()->BindGraphics(
-          static_cast<PP_Instance>(instance),
-          static_cast<PP_Resource>(graphics_device));
+        instance,
+        graphics_device);
   *success = (pp_success == PP_TRUE);
 
   rpc->result = NACL_SRPC_RESULT_OK;
@@ -74,7 +72,7 @@ void PpbInstanceRpcServer::PPB_Instance_IsFullFrame(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     // inputs
-    int64_t instance,
+    PP_Instance instance,
     // outputs
     int32_t* is_full_frame) {
   NACL_UNTESTED();
@@ -82,8 +80,7 @@ void PpbInstanceRpcServer::PPB_Instance_IsFullFrame(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   PP_Bool pp_is_full_frame =
-      ppapi_proxy::PPBInstanceInterface()->IsFullFrame(
-          static_cast<PP_Instance>(instance));
+      ppapi_proxy::PPBInstanceInterface()->IsFullFrame(instance);
   *is_full_frame = (pp_is_full_frame == PP_TRUE);
 
   rpc->result = NACL_SRPC_RESULT_OK;
@@ -93,7 +90,7 @@ void PpbInstanceRpcServer::PPB_Instance_ExecuteScript(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     // inputs
-    int64_t instance,
+    PP_Instance instance,
     nacl_abi_size_t script_size, char* script_bytes,
     nacl_abi_size_t exception_in_size, char* exception_in_bytes,
     // outputs
@@ -113,9 +110,7 @@ void PpbInstanceRpcServer::PPB_Instance_ExecuteScript(
     return;
   PP_Var result =
       ppapi_proxy::PPBInstanceInterface()->ExecuteScript(
-          static_cast<PP_Instance>(instance),
-          script,
-          &exception);
+          instance, script, &exception);
   if (!ppapi_proxy::SerializeTo(&result, result_bytes, result_size))
     return;
   if (!ppapi_proxy::SerializeTo(&exception, exception_bytes, exception_size))

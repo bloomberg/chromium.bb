@@ -11,36 +11,36 @@
           # Implements a call to create an audio resource.
           # Returns descriptors for memory window, sync socket.
           {'name': 'PPB_Audio_Dev_Create',
-           'inputs': [['instance', 'int64_t'],
-                      ['config', 'int64_t'],
+           'inputs': [['instance', 'PP_Instance'],
+                      ['config', 'PP_Resource'],
                      ],
-           'outputs': [['out_resource', 'int64_t'],
+           'outputs': [['out_resource', 'PP_Resource'],
                       ]
           },
           # Implements a call to determine IsAudio.
           {'name': 'PPB_Audio_Dev_IsAudio',
-           'inputs': [['resource', 'int64_t'],
+           'inputs': [['resource', 'PP_Resource'],
                      ],
            'outputs': [['out_bool', 'int32_t'],
                       ]
           },
           # Implements a call to get current config as resource.
           {'name': 'PPB_Audio_Dev_GetCurrentConfig',
-           'inputs': [['resource', 'int64_t'],
+           'inputs': [['resource', 'PP_Resource'],
                      ],
-           'outputs': [['out_resource', 'int64_t'],
+           'outputs': [['out_resource', 'PP_Resource'],
                       ]
           },
           # Implements a call to stop playback.
           {'name': 'PPB_Audio_Dev_StopPlayback',
-           'inputs': [['resource', 'int64_t'],
+           'inputs': [['resource', 'PP_Resource'],
                      ],
            'outputs': [['out_bool', 'int32_t'],
                       ]
           },
           # Implements a call to start playback.
           {'name': 'PPB_Audio_Dev_StartPlayback',
-           'inputs': [['resource', 'int64_t'],
+           'inputs': [['resource', 'PP_Resource'],
                      ],
            'outputs': [['out_bool', 'int32_t'],
                       ]

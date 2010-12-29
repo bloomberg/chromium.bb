@@ -9,19 +9,19 @@
  'name': 'PpbURLRequestInfoRpc',
  'rpcs': [
           {'name': 'PPB_URLRequestInfo_Create',
-           'inputs': [['module', 'int64_t'],  # PP_Module
+           'inputs': [['module', 'PP_Module'],  # PP_Module
                      ],
-           'outputs': [['resource', 'int64_t'],  # PP_Resource
+           'outputs': [['resource', 'PP_Resource'],  # PP_Resource
                       ]
           },
           {'name': 'PPB_URLRequestInfo_IsURLRequestInfo',
-           'inputs': [['resource', 'int64_t'],  # PP_Resource
+           'inputs': [['resource', 'PP_Resource'],  # PP_Resource
                      ],
            'outputs': [['is_url_request_info', 'int32_t'],  # PP_Bool
                       ]
           },
           {'name': 'PPB_URLRequestInfo_SetProperty',
-           'inputs': [['request', 'int64_t'],  # PP_Resource
+           'inputs': [['request', 'PP_Resource'],  # PP_Resource
                       ['property', 'int32_t'],  # PP_URLRequestProperty
                       ['value', 'char[]'],  # PP_Var
                      ],
@@ -29,18 +29,18 @@
                       ]
           },
           {'name': 'PPB_URLRequestInfo_AppendDataToBody',
-           'inputs': [['request', 'int64_t'],  # PP_Resource
+           'inputs': [['request', 'PP_Resource'],  # PP_Resource
                       ['data', 'char[]'],  # char* + uint32_t
                      ],
-           'outputs': [['success', 'int32_t'],  # PP_Bool 
+           'outputs': [['success', 'int32_t'],  # PP_Bool
                       ]
           },
           {'name': 'PPB_URLRequestInfo_AppendFileToBody',
-           'inputs': [['request', 'int64_t'],  # PP_Resource
-                      ['file_ref', 'int64_t'],   # PP_Resource
+           'inputs': [['request', 'PP_Resource'],  # PP_Resource
+                      ['file_ref', 'PP_Resource'],   # PP_Resource
                       ['start_offset', 'int64_t'],  # int64_t
                       ['number_of_bytes', 'int64_t'],  # int64_t
-		      ['expected_last_modified_time', 'double'],  # PP_Time
+                      ['expected_last_modified_time', 'double'],  # PP_Time
                      ],
            'outputs': [['success', 'int32_t'],  # PP_Bool
                       ]

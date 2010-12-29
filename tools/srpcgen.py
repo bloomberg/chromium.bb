@@ -95,8 +95,20 @@ types = {'bool': ['b', 'bool', 'u.bval', ''],
          'int32_t[]': ['I', 'int32_t*', 'arrays.iarr', 'u.count'],
          'int64_t': ['l', 'int64_t', 'u.lval', ''],
          'int64_t[]': ['L', 'int64_t', 'arrays.larr', 'u.count'],
+         'PP_Instance': ['l', 'PP_Instance', 'u.lval', ''],
+         'PP_Module': ['l', 'PP_Module', 'u.lval', ''],
+         'PP_Resource': ['l', 'PP_Resource', 'u.lval', ''],
          'string': ['s', 'char*', 'arrays.str', ''],
         }
+
+
+def AddHeader(name):
+  """Adds a header to both the .cc and .h files."""
+  global HEADER_START
+  global SOURCE_FILE_INCLUDES
+
+  HEADER_START += "#include \"%s\"\n" % name
+  SOURCE_FILE_INCLUDES += "#include \"%s\"\n" % name
 
 
 def CountName(name):
@@ -324,12 +336,13 @@ def MakePath(name):
 
 
 def main(argv):
-  usage = 'Usage: srpcgen.py <-c | -s> [--include=<name>] <iname> <gname>'
-  usage = usage + ' <.h> <.cc> <specs>'
+  usage = 'Usage: srpcgen.py <-c | -s> [--include=<name>] [--ppapi]'
+  usage = usage + ' <iname> <gname> <.h> <.cc> <specs>'
 
   mode = None
+  ppapi = False
   try:
-    long_opts = ['include=']
+    long_opts = ['include=', 'ppapi']
     opts, pargs = getopt.getopt(argv[1:], 'cs', long_opts)
   except getopt.error, e:
     print >>sys.stderr, 'Illegal option:', str(e)
@@ -359,6 +372,13 @@ def main(argv):
       mode = 'server'
     elif opt == '--include':
       h_file_name = val
+    elif opt == '--ppapi':
+      ppapi = True
+
+  if ppapi:
+    AddHeader("ppapi/c/pp_instance.h")
+    AddHeader("ppapi/c/pp_module.h")
+    AddHeader("ppapi/c/pp_resource.h")
 
   # Convert to forward slash paths if needed
   h_file_name = "/".join(h_file_name.split("\\"))

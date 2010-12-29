@@ -14,6 +14,9 @@
 #include "native_client/src/include/portability.h"
 #endif  // __native_client__
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_module.h"
+#include "ppapi/c/pp_resource.h"
 class ObjectStubRpcServer {
  public:
   static void HasProperty(
@@ -113,7 +116,7 @@ class PppRpcServer {
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       int32_t pid,
-      int64_t module,
+      PP_Module module,
       NaClSrpcImcDescType upcall_channel_desc,
       char* service_description,
       int32_t* nacl_pid,
@@ -138,7 +141,7 @@ class PppAudioDevRpcServer {
   static void PPP_Audio_Dev_StreamCreated(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
-      int64_t instance,
+      PP_Instance instance,
       NaClSrpcImcDescType out_shm,
       int32_t out_shm_size,
       NaClSrpcImcDescType out_socket);
@@ -154,7 +157,7 @@ class PppInstanceRpcServer {
   static void PPP_Instance_DidCreate(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
-      int64_t instance,
+      PP_Instance instance,
       int32_t argc,
       nacl_abi_size_t argn_bytes, char* argn,
       nacl_abi_size_t argv_bytes, char* argv,
@@ -162,34 +165,34 @@ class PppInstanceRpcServer {
   static void PPP_Instance_DidDestroy(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
-      int64_t instance);
+      PP_Instance instance);
   static void PPP_Instance_DidChangeView(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
-      int64_t instance,
+      PP_Instance instance,
       nacl_abi_size_t position_bytes, int32_t* position,
       nacl_abi_size_t clip_bytes, int32_t* clip);
   static void PPP_Instance_DidChangeFocus(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
-      int64_t instance,
+      PP_Instance instance,
       bool has_focus);
   static void PPP_Instance_HandleInputEvent(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
-      int64_t instance,
+      PP_Instance instance,
       nacl_abi_size_t event_data_bytes, char* event_data,
       int32_t* success);
   static void PPP_Instance_HandleDocumentLoad(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
-      int64_t instance,
-      int64_t url_loader,
+      PP_Instance instance,
+      PP_Resource url_loader,
       int32_t* success);
   static void PPP_Instance_GetInstanceObject(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
-      int64_t instance,
+      PP_Instance instance,
       nacl_abi_size_t* capability_bytes, char* capability);
 
  private:

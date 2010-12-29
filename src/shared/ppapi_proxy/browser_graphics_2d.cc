@@ -18,36 +18,34 @@
 
 void PpbGraphics2DRpcServer::PPB_Graphics2D_Create(NaClSrpcRpc* rpc,
                                                    NaClSrpcClosure* done,
-                                                   int64_t module,
+                                                   PP_Module module,
                                                    nacl_abi_size_t size_bytes,
                                                    int32_t* size,
                                                    int32_t is_always_opaque,
-                                                   int64_t* resource) {
+                                                   PP_Resource* resource) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   *resource = ppapi_proxy::kInvalidResourceId;
   if (size_bytes != sizeof(struct PP_Size)) {
     return;
   }
-  PP_Resource pp_resource = ppapi_proxy::PPBGraphics2DInterface()->Create(
-      static_cast<PP_Module>(module),
+  *resource = ppapi_proxy::PPBGraphics2DInterface()->Create(
+      module,
       const_cast<const struct PP_Size*>(
           reinterpret_cast<struct PP_Size*>(size)),
       (is_always_opaque ? PP_TRUE : PP_FALSE));
-  *resource = static_cast<int64_t>(pp_resource);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
 void PpbGraphics2DRpcServer::PPB_Graphics2D_IsGraphics2D(NaClSrpcRpc* rpc,
                                                          NaClSrpcClosure* done,
-                                                         int64_t resource,
+                                                         PP_Resource resource,
                                                          int32_t* success) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   *success = 0;
   PP_Bool pp_success =
-      ppapi_proxy::PPBGraphics2DInterface()->IsGraphics2D(
-          static_cast<PP_Resource>(resource));
+      ppapi_proxy::PPBGraphics2DInterface()->IsGraphics2D(resource);
   *success = (pp_success == PP_TRUE);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -55,7 +53,7 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_IsGraphics2D(NaClSrpcRpc* rpc,
 void PpbGraphics2DRpcServer::PPB_Graphics2D_Describe(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
-    int64_t graphics_2d,
+    PP_Resource graphics_2d,
     nacl_abi_size_t* size_bytes,
     int32_t* size,
     int32_t* is_always_opaque,
@@ -68,9 +66,7 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_Describe(
   }
   PP_Bool is_opaque;
   PP_Bool pp_success = ppapi_proxy::PPBGraphics2DInterface()->Describe(
-      static_cast<PP_Resource>(graphics_2d),
-      reinterpret_cast<struct PP_Size*>(size),
-      &is_opaque);
+      graphics_2d, reinterpret_cast<struct PP_Size*>(size), &is_opaque);
   *is_always_opaque = (is_opaque == PP_TRUE);
   *success = (pp_success == PP_TRUE);
   rpc->result = NACL_SRPC_RESULT_OK;
@@ -79,8 +75,8 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_Describe(
 void PpbGraphics2DRpcServer::PPB_Graphics2D_PaintImageData(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
-    int64_t graphics_2d,
-    int64_t image,
+    PP_Resource graphics_2d,
+    PP_Resource image,
     nacl_abi_size_t top_left_bytes,
     int32_t* top_left,
     nacl_abi_size_t src_rect_bytes,
@@ -92,8 +88,8 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_PaintImageData(
     return;
   }
   ppapi_proxy::PPBGraphics2DInterface()->PaintImageData(
-      static_cast<PP_Resource>(graphics_2d),
-      static_cast<PP_Resource>(image),
+      graphics_2d,
+      image,
       const_cast<const struct PP_Point*>(
           reinterpret_cast<struct PP_Point*>(top_left)),
       const_cast<const struct PP_Rect*>(
@@ -104,7 +100,7 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_PaintImageData(
 void PpbGraphics2DRpcServer::PPB_Graphics2D_Scroll(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
-    int64_t graphics_2d,
+    PP_Resource graphics_2d,
     nacl_abi_size_t clip_rect_bytes,
     int32_t* clip_rect,
     nacl_abi_size_t amount_bytes,
@@ -116,7 +112,7 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_Scroll(
     return;
   }
   ppapi_proxy::PPBGraphics2DInterface()->Scroll(
-      static_cast<PP_Resource>(graphics_2d),
+      graphics_2d,
       const_cast<const struct PP_Rect*>(
           reinterpret_cast<struct PP_Rect*>(clip_rect)),
       const_cast<const struct PP_Point*>(
@@ -127,13 +123,11 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_Scroll(
 void PpbGraphics2DRpcServer::PPB_Graphics2D_ReplaceContents(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
-    int64_t graphics_2d,
-    int64_t image) {
+    PP_Resource graphics_2d,
+    PP_Resource image) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  ppapi_proxy::PPBGraphics2DInterface()->ReplaceContents(
-      static_cast<PP_Resource>(graphics_2d),
-      static_cast<PP_Resource>(image));
+  ppapi_proxy::PPBGraphics2DInterface()->ReplaceContents(graphics_2d, image);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 

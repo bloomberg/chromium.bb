@@ -18,10 +18,10 @@ static const PPB_AudioConfig_Dev* GetAudioConfigInterface() {
 void PpbAudioConfigDevRpcServer::PPB_AudioConfig_Dev_CreateStereo16Bit(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
-    int64_t module,
+    PP_Module module,
     int32_t sample_rate,
     int32_t sample_frame_count,
-    int64_t* resource) {
+    PP_Resource* resource) {
   NaClSrpcClosureRunner runner(done);
   const PPB_AudioConfig_Dev* audio = GetAudioConfigInterface();
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
@@ -55,7 +55,7 @@ void PpbAudioConfigDevRpcServer::PPB_AudioConfig_Dev_RecommendSampleFrameCount(
 void PpbAudioConfigDevRpcServer::PPB_AudioConfig_Dev_IsAudioConfig(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
-    int64_t resource,
+    PP_Resource resource,
     int32_t* bool_out) {
   NaClSrpcClosureRunner runner(done);
   const PPB_AudioConfig_Dev* audio = GetAudioConfigInterface();
@@ -70,7 +70,7 @@ void PpbAudioConfigDevRpcServer::PPB_AudioConfig_Dev_IsAudioConfig(
 void PpbAudioConfigDevRpcServer::PPB_AudioConfig_Dev_GetSampleRate(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
-    int64_t resource,
+    PP_Resource resource,
     int32_t* sample_rate) {
   NaClSrpcClosureRunner runner(done);
   const PPB_AudioConfig_Dev* audio = GetAudioConfigInterface();
@@ -91,7 +91,7 @@ void PpbAudioConfigDevRpcServer::PPB_AudioConfig_Dev_GetSampleRate(
 void PpbAudioConfigDevRpcServer::PPB_AudioConfig_Dev_GetSampleFrameCount(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
-    int64_t resource,
+    PP_Resource resource,
     int32_t* sample_frame_count) {
   NaClSrpcClosureRunner runner(done);
   const PPB_AudioConfig_Dev* audio = GetAudioConfigInterface();

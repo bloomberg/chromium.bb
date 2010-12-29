@@ -10,7 +10,7 @@
  'rpcs': [
           # Stream Created
           {'name': 'PPP_Audio_Dev_StreamCreated',
-           'inputs': [['instance', 'int64_t'],
+           'inputs': [['instance', 'PP_Instance'],
                       ['out_shm', 'handle'],
                       ['out_shm_size', 'int32_t'],
                       ['out_socket', 'handle'],

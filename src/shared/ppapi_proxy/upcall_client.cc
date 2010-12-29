@@ -17,6 +17,9 @@
 #include "native_client/src/include/portability.h"
 #endif  // __native_client__
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "ppapi/c/pp_instance.h"
+#include "ppapi/c/pp_module.h"
+#include "ppapi/c/pp_resource.h"
 
 NaClSrpcError PppUpcallRpcClient::PPB_Core_CallOnMainThread(
     NaClSrpcChannel* channel,

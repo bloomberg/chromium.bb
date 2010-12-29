@@ -1254,7 +1254,8 @@ def AliasSrpc(env, alias, is_client, build_dir, srpc_files,
 
   # Build the base command-line
   gen_args = ['${PYTHON}', '${SOURCE_ROOT}/native_client/tools/srpcgen.py',
-              '--include=' + include, direction, name, guard, h_file, cc_file]
+              '--ppapi --include=' + include,direction, name, guard,
+              h_file, cc_file]
 
   # Add the srpc_files
   for name in srpc_files:

@@ -8,32 +8,32 @@
  'name': 'PpbInstanceRpc',
  'rpcs': [
           {'name': 'PPB_Instance_GetWindowObject',
-           'inputs': [['instance', 'int64_t'],  # PP_Instance
+           'inputs': [['instance', 'PP_Instance'],  # PP_Instance
                      ],
            'outputs': [['window', 'char[]'],  # PP_Var
                       ]
           },
           {'name': 'PPB_Instance_GetOwnerElementObject',
-           'inputs': [['instance', 'int64_t'],  # PP_Instance
+           'inputs': [['instance', 'PP_Instance'],  # PP_Instance
                      ],
            'outputs': [['owner', 'char[]'],  # PP_Var
                       ]
           },
           {'name': 'PPB_Instance_BindGraphics',
-           'inputs': [['instance', 'int64_t'],  # PP_Instance
-                      ['graphics_device', 'int64_t'],  # PP_Resource
+           'inputs': [['instance', 'PP_Instance'],  # PP_Instance
+                      ['graphics_device', 'PP_Resource'],  # PP_Resource
                      ],
            'outputs': [['success', 'int32_t'],  # PP_Bool
                       ]
           },
           {'name': 'PPB_Instance_IsFullFrame',
-           'inputs': [['instance', 'int64_t'],  # PP_Instance
+           'inputs': [['instance', 'PP_Instance'],  # PP_Instance
                      ],
            'outputs': [['is_full_frame', 'int32_t'],  # PP_Bool
                       ]
           },
           {'name': 'PPB_Instance_ExecuteScript',
-           'inputs': [['instance', 'int64_t'],  # PP_Instance
+           'inputs': [['instance', 'PP_Instance'],  # PP_Instance
                       ['script', 'char[]' ],  # PP_Var
                       ['exception_in', 'char[]'],  # PP_Var*
                      ],

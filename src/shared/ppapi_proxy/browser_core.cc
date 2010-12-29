@@ -12,7 +12,7 @@
 
 void PpbCoreRpcServer::PPB_Core_AddRefResource(NaClSrpcRpc* rpc,
                                                NaClSrpcClosure* done,
-                                               int64_t resource) {
+                                               PP_Resource resource) {
   NaClSrpcClosureRunner runner(done);
   ppapi_proxy::PPBCoreInterface()->AddRefResource(resource);
   rpc->result = NACL_SRPC_RESULT_OK;
@@ -20,7 +20,7 @@ void PpbCoreRpcServer::PPB_Core_AddRefResource(NaClSrpcRpc* rpc,
 
 void PpbCoreRpcServer::PPB_Core_ReleaseResource(NaClSrpcRpc* rpc,
                                                 NaClSrpcClosure* done,
-                                                int64_t resource) {
+                                                PP_Resource resource) {
   NaClSrpcClosureRunner runner(done);
   ppapi_proxy::PPBCoreInterface()->ReleaseResource(resource);
   rpc->result = NACL_SRPC_RESULT_OK;
@@ -40,7 +40,7 @@ void PpbCoreRpcServer::PPB_Core_GetTime(NaClSrpcRpc* rpc,
 // Release multiple references at once.
 void PpbCoreRpcServer::ReleaseResourceMultipleTimes(NaClSrpcRpc* rpc,
                                                     NaClSrpcClosure* done,
-                                                    int64_t resource,
+                                                    PP_Resource resource,
                                                     int32_t count) {
   NaClSrpcClosureRunner runner(done);
   while (count--)

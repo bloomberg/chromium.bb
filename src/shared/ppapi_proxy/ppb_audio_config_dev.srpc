@@ -10,16 +10,16 @@
  'rpcs': [
           # Implements a call to create an audio configuration for stereo output.
           {'name': 'PPB_AudioConfig_Dev_CreateStereo16Bit',
-           'inputs': [['module', 'int64_t'],
+           'inputs': [['module', 'PP_Module'],
                       ['sample_rate', 'int32_t'],
                       ['sample_frame_count', 'int32_t'],
                      ],
-           'outputs': [['resource', 'int64_t'],
+           'outputs': [['resource', 'PP_Resource'],
                       ]
           },
           # Implements a call to check if this is an AudioConfig.
           {'name': 'PPB_AudioConfig_Dev_IsAudioConfig',
-           'inputs': [['resource', 'int64_t'],
+           'inputs': [['resource', 'PP_Resource'],
                      ],
            'outputs': [['out_bool', 'int32_t']
                       ]
@@ -33,14 +33,14 @@
           },
           # Implements a call to get the sample rate.
           {'name': 'PPB_AudioConfig_Dev_GetSampleRate',
-           'inputs': [['resource', 'int64_t'],
+           'inputs': [['resource', 'PP_Resource'],
                      ],
            'outputs': [['sample_rate', 'int32_t']
                       ]
           },
           # Implements a call to get the obtained sample frame count.
           {'name': 'PPB_AudioConfig_Dev_GetSampleFrameCount',
-           'inputs': [['resource', 'int64_t'],
+           'inputs': [['resource', 'PP_Resource'],
                      ],
            'outputs': [['sample_frame_count', 'int32_t'],
                       ]

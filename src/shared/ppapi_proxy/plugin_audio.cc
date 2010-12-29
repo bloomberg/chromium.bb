@@ -222,9 +222,6 @@ PP_Resource Create(PP_Instance instance,
   NaClSrpcError retval = NACL_SRPC_RESULT_OK;
   NaClSrpcChannel* channel = NULL;
   AudioProxy* audio = NULL;
-  int64_t audioResource64 = 0;
-  int64_t instance64 = static_cast<int64_t>(instance);
-  int64_t config64 = static_cast<int64_t>(config);
   // TODO(audio): remove check below when & if we support
   // multiple simultanious audio devices from same untrusted instance
   if (NULL != GetCurrentAudio()) {
@@ -234,10 +231,9 @@ PP_Resource Create(PP_Instance instance,
   channel = ppapi_proxy::GetMainSrpcChannel();
   retval = PpbAudioDevRpcClient::PPB_Audio_Dev_Create(
       channel,
-      instance64,
-      config64,
-      &audioResource64);
-  audioResource = static_cast<PP_Resource>(audioResource64);
+      instance,
+      config,
+      &audioResource);
   if (NACL_SRPC_RESULT_OK != retval) {
     return kInvalidResourceId;
   }
@@ -274,7 +270,7 @@ PP_Bool IsAudio(PP_Resource resource) {
 
 PP_Resource GetCurrentConfig(PP_Resource audio) {
   NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
-  int64_t out_resource;
+  PP_Resource out_resource;
   NaClSrpcError retval =
       PpbAudioDevRpcClient::PPB_Audio_Dev_GetCurrentConfig(
           channel,
@@ -283,7 +279,7 @@ PP_Resource GetCurrentConfig(PP_Resource audio) {
   if (NACL_SRPC_RESULT_OK != retval) {
     return kInvalidResourceId;
   }
-  return static_cast<PP_Resource>(out_resource);
+  return out_resource;
 }
 
 PP_Bool StartPlayback(PP_Resource audioResource) {
@@ -363,12 +359,11 @@ const PPB_Audio_Dev* PluginAudio::GetInterface() {
 void PppAudioDevRpcServer::PPP_Audio_Dev_StreamCreated(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
-    int64_t audioResource64,
+    PP_Resource audioResource,
     NaClSrpcImcDescType shm,
     int32_t shm_size,
     NaClSrpcImcDescType sync_socket) {
   NaClSrpcClosureRunner runner(done);
-  PP_Resource audioResource = static_cast<PP_Resource>(audioResource64);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   ppapi_proxy::AudioProxy* audio = ppapi_proxy::GetBoundAudio(audioResource);
   if (NULL == audio) {

@@ -9,13 +9,13 @@
  'rpcs': [
           # Implements calls to increment the reference count on a resource.
           {'name': 'PPB_Core_AddRefResource',
-           'inputs': [['resource', 'int64_t'],
+           'inputs': [['resource', 'PP_Resource'],
                      ],
            'outputs': []
           },
           # Implements calls to decrement the reference count on a resource.
           {'name': 'PPB_Core_ReleaseResource',
-           'inputs': [['resource', 'int64_t'],
+           'inputs': [['resource', 'PP_Resource'],
                      ],
            'outputs': []
           },
@@ -23,7 +23,7 @@
           # resource. This does not exist in PPB_Core, we implement it as an
           # optimization.
           {'name': 'ReleaseResourceMultipleTimes',
-           'inputs': [['resource', 'int64_t'],
+           'inputs': [['resource', 'PP_Resource'],
                       ['count', 'int32_t']
                      ],
            'outputs': []

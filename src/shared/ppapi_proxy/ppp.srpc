@@ -11,7 +11,7 @@
           # It is effectively a class initializer for the plugin type.
           {'name': 'PPP_InitializeModule',
            'inputs': [['pid', 'int32_t'],
-                      ['module', 'int64_t'],
+                      ['module', 'PP_Module'],
                       ['upcall_channel_desc', 'handle'],
                       ['service_description', 'string'],
                      ],

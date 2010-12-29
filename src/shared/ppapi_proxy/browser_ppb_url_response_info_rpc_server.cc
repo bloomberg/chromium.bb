@@ -14,7 +14,7 @@ void PpbURLResponseInfoRpcServer::PPB_URLResponseInfo_IsURLResponseInfo(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
     // inputs
-    int64_t resource,
+    PP_Resource resource,
     // outputs
     int32_t* is_url_response_info) {
   NACL_UNTESTED();
@@ -29,7 +29,7 @@ void PpbURLResponseInfoRpcServer::PPB_URLResponseInfo_GetProperty(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       // inputs
-      int64_t response,
+      PP_Resource response,
       int32_t property,
       // outputs
       nacl_abi_size_t* value_size, char* value_bytes) {
@@ -49,9 +49,9 @@ void PpbURLResponseInfoRpcServer::PPB_URLResponseInfo_GetBodyAsFileRef(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       // inputs
-      int64_t response,
+      PP_Resource response,
       // outputs
-      int64_t* file_ref) {
+      PP_Resource* file_ref) {
   NACL_UNTESTED();
   NaClSrpcClosureRunner runner(done);
   *file_ref =

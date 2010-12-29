@@ -53,18 +53,18 @@ PP_Resource Create(PP_Module module,
                    PP_ImageDataFormat format,
                    const struct PP_Size* size,
                    PP_Bool init_to_zero) {
-  int64_t resource;
+  PP_Resource resource;
   NaClSrpcError retval =
       PpbImageDataRpcClient::PPB_ImageData_Create(
           GetMainSrpcChannel(),
-          static_cast<int64_t>(module),
+          module,
           static_cast<int32_t>(format),
           static_cast<nacl_abi_size_t>(sizeof(struct PP_Size)),
           reinterpret_cast<int32_t*>(const_cast<struct PP_Size*>(size)),
           (init_to_zero == PP_TRUE),
           &resource);
   if (retval == NACL_SRPC_RESULT_OK) {
-    return static_cast<PP_Resource>(resource);
+    return resource;
   } else {
     return kInvalidResourceId;
   }
@@ -82,7 +82,7 @@ PP_Bool Describe(PP_Resource resource,
   NaClSrpcError retval =
       PpbImageDataRpcClient::PPB_ImageData_Describe(
           GetMainSrpcChannel(),
-          static_cast<int64_t>(resource),
+          resource,
           &desc_size,
           reinterpret_cast<int32_t*>(desc),
           &result);
