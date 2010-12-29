@@ -527,24 +527,24 @@ bool ConfigurationPolicyPrefKeeper::CheckProxySettings() {
       }
       break;
     case kPolicyAutoDetectProxyMode:
-      if (server || bypass_list) {
+      if (server || bypass_list || pac_url) {
         LOG(WARNING) << "A centrally-administered policy dictates that a proxy"
                      << " shall be auto configured but specifies fixed proxy"
-                     << " servers or a by-pass list.";
+                     << " servers, a by-pass list or a .pac script URL.";
         return false;
       }
       break;
     case kPolicyManuallyConfiguredProxyMode:
-      if (!server) {
+      if (server && pac_url) {
         LOG(WARNING) << "A centrally-administered policy dictates that the"
-                     << " system proxy settings should use fixed proxy servers"
-                     << " without specifying which ones.";
+                     << " system proxy settings should use both a fixed"
+                     << " proxy server and a .pac url.";
         return false;
       }
-      if (pac_url) {
+      if (!server && !pac_url) {
         LOG(WARNING) << "A centrally-administered policy dictates that the"
-                     << " system proxy settings should use fixed proxy servers"
-                     << " but also specifies a PAC script.";
+                     << " system proxy settings should use either a fixed"
+                     << " proxy server or a .pac url, but specifies neither.";
         return false;
       }
       break;
@@ -576,11 +576,11 @@ void ConfigurationPolicyPrefKeeper::ApplyProxySettings() {
       break;
     case kPolicyAutoDetectProxyMode:
       mode = ProxyPrefs::MODE_AUTO_DETECT;
-      if (HasProxyPolicy(kPolicyProxyPacUrl))
-        mode = ProxyPrefs::MODE_PAC_SCRIPT;
       break;
     case kPolicyManuallyConfiguredProxyMode:
       mode = ProxyPrefs::MODE_FIXED_SERVERS;
+      if (HasProxyPolicy(kPolicyProxyPacUrl))
+        mode = ProxyPrefs::MODE_PAC_SCRIPT;
       break;
     case kPolicyUseSystemProxyMode:
       mode = ProxyPrefs::MODE_SYSTEM;

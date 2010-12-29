@@ -318,8 +318,9 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, AutoDetectPac) {
   MockConfigurationPolicyProvider provider;
   provider.AddPolicy(kPolicyProxyPacUrl,
                      Value::CreateStringValue("http://short.org/proxy.pac"));
-  provider.AddPolicy(kPolicyProxyMode,
-                     Value::CreateIntegerValue(kPolicyAutoDetectProxyMode));
+  provider.AddPolicy(
+      kPolicyProxyMode,
+      Value::CreateIntegerValue(kPolicyManuallyConfiguredProxyMode));
 
   ConfigurationPolicyPrefStore store(&provider);
   VerifyProxyPrefs(

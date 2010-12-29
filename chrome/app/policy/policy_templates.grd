@@ -857,12 +857,6 @@ templates and will be translated for each locale. -->
 
       It starts with <ph name="CHROMIUM_KEY">Software\Policies\Chromium</ph> for Chromium policies and with <ph name="GOOGLE_CHROME_KEY">Software\Policies\Google\Chrome</ph> for Google Chrome policies.
     </message>
-    <message name="IDS_POLICY_DOC_NOTE"
-             desc="Warning notice for policies in the generated policy documentation">
-      NOTE: there are some issues about this policy, visit
-      <ph name="POLICY_TEMPLATE_DOWNLOAD_URL">$6<ex>
-        http://www.chromium.org/administrators/policy-list-3/serious-problem</ex></ph> for more details.
-    </message>
     <message name="IDS_POLICY_DOC_BACK_TO_TOP"
              desc="Text of a link in the generated policy documentation, that takes the user to the top of the page">
       Back to top
