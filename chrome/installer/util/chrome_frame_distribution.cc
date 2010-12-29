@@ -14,6 +14,7 @@
 #include "base/string_util.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/master_preferences.h"
@@ -32,6 +33,36 @@ ChromeFrameDistribution::ChromeFrameDistribution(
   type_ = BrowserDistribution::CHROME_FRAME;
   prefs.GetBool(installer::master_preferences::kChromeFrameReadyMode,
                 &ready_mode_);
+
+  bool system_install = false;
+  prefs.GetBool(installer::master_preferences::kSystemLevel, &system_install);
+
+  // See if Chrome Frame is already installed.  If so, we must make sure that
+  // the ceee and ready mode flags match.
+  CommandLine uninstall(CommandLine::NO_PROGRAM);
+  if (installer::GetUninstallSwitches(system_install, this, &uninstall)) {
+    if (!ceee_ && uninstall.HasSwitch(installer::switches::kCeee)) {
+      LOG(INFO) << "CEEE is not specified on the command line but CEEE is "
+                   "already installed. Implicitly enabling CEEE.";
+      ceee_ = true;
+    }
+
+    // If the user has already opted in to CF, we shouldn't set the ready-mode
+    // flag.  If we don't do this, we might have two entries in the Add/Remove
+    // Programs list that can uninstall GCF.  Also, we can only enable
+    // ready-mode if Chrome is also being installed.  Without it, there's no way
+    // to uninstall Chrome Frame.
+    if (ready_mode_) {
+      if (!uninstall.HasSwitch(installer::switches::kChromeFrameReadyMode)) {
+        LOG(INFO) << "Ready mode was specified on the command line but GCF "
+                     "is already fully installed.  Ignoring command line.";
+        ready_mode_ = false;
+      } else if (!prefs.install_chrome()) {
+        LOG(WARNING) << "Cannot enable ready mode without installing Chrome.";
+        ready_mode_ = false;
+      }
+    }
+  }
 }
 
 std::wstring ChromeFrameDistribution::GetAppGuid() {

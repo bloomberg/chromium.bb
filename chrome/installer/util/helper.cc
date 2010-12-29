@@ -41,18 +41,38 @@ namespace installer {
 
 bool IsInstalledAsMulti(bool system_install, BrowserDistribution* dist) {
   bool installed_as_multi = false;
-  HKEY root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  RegKey key(root, dist->GetStateKey().c_str(), KEY_READ);
-  if (key.Valid()) {
-    std::wstring args;
-    key.ReadValue(installer::kUninstallArgumentsField, &args);
-    if (!args.empty()) {
-      args.insert(0, L"fake.exe ");
-      CommandLine cmd(CommandLine::FromString(args));
-      installed_as_multi = cmd.HasSwitch(installer::switches::kMultiInstall);
+  CommandLine cmd(CommandLine::NO_PROGRAM);
+  if (GetUninstallSwitches(system_install, dist, &cmd))
+    installed_as_multi = cmd.HasSwitch(installer::switches::kMultiInstall);
+  return installed_as_multi;
+}
+
+bool GetUninstallSwitches(bool system_install, BrowserDistribution* dist,
+                          CommandLine* cmd_line_switches) {
+  scoped_ptr<Version> installed(InstallUtil::GetChromeVersion(dist,
+                                                              system_install));
+  if (installed.get()) {
+    HKEY root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+    RegKey key(root, dist->GetStateKey().c_str(), KEY_READ);
+    if (key.Valid()) {
+      std::wstring args;
+      key.ReadValue(installer::kUninstallArgumentsField, &args);
+      if (!args.empty()) {
+        args.insert(0, L"foo.exe ");
+        *cmd_line_switches = CommandLine::FromString(args);
+      } else {
+        LOG(ERROR) << "No uninstallation arguments for "
+                   << dist->GetApplicationName();
+        installed.reset();
+      }
+    } else {
+      LOG(ERROR) << "Product looks to be installed but we can't access the "
+                    "state key: " << dist->GetApplicationName();
+      installed.reset();
     }
   }
-  return installed_as_multi;
+
+  return installed.get() != NULL;
 }
 
 FilePath GetChromeInstallPath(bool system_install, BrowserDistribution* dist) {

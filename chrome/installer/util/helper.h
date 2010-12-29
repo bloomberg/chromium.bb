@@ -9,12 +9,21 @@
 #pragma once
 
 class BrowserDistribution;
+class CommandLine;
 class FilePath;
 
 namespace installer {
 
 // Checks if a distribution is currently installed as part of a multi-install.
 bool IsInstalledAsMulti(bool system_install, BrowserDistribution* dist);
+
+// Retrieves the command line switches for uninstalling the distribution.
+// Note that the returned CommandLine object does not include a "program".
+// Only the switches should be used.
+// Returns true if the product is installed and the uninstall switches
+// were successfully retrieved, otherwise false.
+bool GetUninstallSwitches(bool system_install, BrowserDistribution* dist,
+                          CommandLine* cmd_line_switches);
 
 // This function returns the install path for Chrome depending on whether its
 // system wide install or user specific install.

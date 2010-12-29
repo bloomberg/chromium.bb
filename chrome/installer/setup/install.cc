@@ -289,10 +289,7 @@ bool CreateOrUpdateChromeShortcuts(const FilePath& setup_path,
                                    bool create_all_shortcut,
                                    bool alt_shortcut) {
   // TODO(tommi): Change this function to use WorkItemList.
-#ifndef NDEBUG
-  const MasterPreferences& prefs = MasterPreferences::ForCurrentProcess();
-  DCHECK(prefs.install_chrome());
-#endif
+  DCHECK(product.is_chrome());
 
   FilePath shortcut_path;
   int dir_enum = product.system_level() ?
@@ -938,10 +935,16 @@ void AddChromeFrameWorkItems(bool install,
     return;
   }
 
-  const MasterPreferences& prefs = MasterPreferences::ForCurrentProcess();
-  bool ready_mode = false;
-  prefs.GetBool(installer::master_preferences::kChromeFrameReadyMode,
-                &ready_mode);
+  // TODO(tommi): This assumes we know exactly how ShouldCreateUninstallEntry
+  // is implemented.  Since there is logic in ChromeFrameDistribution for how
+  // to determine when this is enabled, this is how we have to figure out if
+  // this feature is enabled right now, but it's a hack and we need a cleaner
+  // way to figure this out.
+  // Note that we cannot just check the master preferences for
+  // kChromeFrameReadyMode, since there are other things that need to be correct
+  // in the environment in order to enable this feature.
+  bool ready_mode = !product.distribution()->ShouldCreateUninstallEntry();
+
   HKEY root = product.package().system_level() ? HKEY_LOCAL_MACHINE :
                                                  HKEY_CURRENT_USER;
   bool update_chrome_uninstall_command = false;
@@ -996,6 +999,7 @@ void AddChromeFrameWorkItems(bool install,
     // Chrome is not a part of this installation run, so we have to explicitly
     // check if Chrome is installed, and if so, update its uninstallation
     // command lines.
+    const MasterPreferences& prefs = MasterPreferences::ForCurrentProcess();
     BrowserDistribution* chrome_dist =
         BrowserDistribution::GetSpecificDistribution(
             BrowserDistribution::CHROME_BROWSER, prefs);
@@ -1017,6 +1021,8 @@ InstallStatus ChromeFrameReadyModeOptIn(const CommandLine& cmd_line) {
   prefs.GetBool(master_preferences::kSystemLevel, &system_install);
   BrowserDistribution* cf = BrowserDistribution::GetSpecificDistribution(
       BrowserDistribution::CHROME_FRAME, prefs);
+  DCHECK(cf->ShouldCreateUninstallEntry())
+      << "Opting into CF should create an uninstall entry";
   BrowserDistribution* chrome = BrowserDistribution::GetSpecificDistribution(
       BrowserDistribution::CHROME_BROWSER, prefs);
 

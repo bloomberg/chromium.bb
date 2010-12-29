@@ -704,13 +704,40 @@ bool PopulateInstallations(const MasterPreferences& prefs,
                            ProductPackageMapping* installations) {
   DCHECK(installations);
   bool success = true;
-  if (prefs.install_chrome()) {
+
+  bool implicit_chrome_install = false;
+  bool implicit_gcf_install = false;
+
+  if (prefs.is_multi_install()) {
+    // See what products are already installed in multi mode.
+    // When we do multi installs, we must upgrade all installations
+    // in sync since they share the binaries.
+    struct CheckInstall {
+      bool* installed;
+      BrowserDistribution::Type type;
+    } product_checks[] = {
+      {&implicit_chrome_install, BrowserDistribution::CHROME_BROWSER},
+      {&implicit_gcf_install, BrowserDistribution::CHROME_FRAME},
+    };
+
+    for (size_t i = 0; i < arraysize(product_checks); ++i) {
+      BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
+          product_checks[i].type, prefs);
+      *product_checks[i].installed = installer::IsInstalledAsMulti(
+          installations->system_level(), dist);
+      LOG_IF(INFO, *product_checks[i].installed)
+          << "Product already installed and must be included: "
+          << dist->GetApplicationName();
+    }
+  }
+
+  if (prefs.install_chrome() || implicit_chrome_install) {
     VLOG(1) << "Install distribution: Chrome";
     success = installations->AddDistribution(
         BrowserDistribution::CHROME_BROWSER, prefs);
   }
 
-  if (success && prefs.install_chrome_frame()) {
+  if (success && (prefs.install_chrome_frame() || implicit_gcf_install)) {
     VLOG(1) << "Install distribution: Chrome Frame";
     success = installations->AddDistribution(
         BrowserDistribution::CHROME_FRAME, prefs);
