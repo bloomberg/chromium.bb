@@ -21,7 +21,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/win/scoped_comptr.h"
-#include "base/win/rgs_helper.h"
+#include "ceee/ie/common/rgs_helper.h"
 #include "ceee/ie/plugin/toolband/resource.h"
 
 #include "chrome_tab.h"  // NOLINT

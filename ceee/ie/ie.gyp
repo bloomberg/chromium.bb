@@ -54,6 +54,7 @@
         'common/extension_manifest_unittest.cc',
         'common/ie_util_unittest.cc',
         'common/metrics_util_unittest.cc',
+        'common/rgs_helper.h',
         'plugin/bho/browser_helper_object_unittest.cc',
         'plugin/bho/cookie_accountant_unittest.cc',
         'plugin/bho/cookie_events_funnel_unittest.cc',

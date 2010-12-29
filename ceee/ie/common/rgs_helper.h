@@ -16,8 +16,8 @@
 //
 // You can then refer to the names above in your RGS file as
 // variables %NAME% and %CLSID%, respectively.
-#ifndef BASE_WIN_RGS_HELPER_H_
-#define BASE_WIN_RGS_HELPER_H_
+#ifndef CEEE_IE_COMMON_RGS_HELPER_H_
+#define CEEE_IE_COMMON_RGS_HELPER_H_
 
 #include "base/string_util.h"
 
@@ -86,4 +86,4 @@ struct ATLRegmapEntryHelper : public _ATL_REGMAP_ENTRY {
                                                         _GetRegistryMap());\
   }
 
-#endif  // BASE_WIN_RGS_HELPER_H_
+#endif  // CEEE_IE_COMMON_RGS_HELPER_H_

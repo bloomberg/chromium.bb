@@ -11,8 +11,8 @@
 #include <atlbase.h>
 #include <atlcom.h>
 
-#include "base/win/rgs_helper.h"
 #include "ceee/ie/broker/resource.h"
+#include "ceee/ie/common/rgs_helper.h"
 
 #include "broker_lib.h"  // NOLINT
 

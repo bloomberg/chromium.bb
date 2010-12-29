@@ -15,7 +15,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "base/win/rgs_helper.h"
+#include "ceee/ie/common/rgs_helper.h"
 #include "ceee/ie/plugin/bho/infobar_manager.h"
 #include "ceee/ie/plugin/toolband/resource.h"
 
