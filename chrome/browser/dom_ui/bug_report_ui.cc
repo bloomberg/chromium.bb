@@ -653,6 +653,11 @@ void BugReportHandler::HandleRefreshSavedScreenshots(const ListValue*) {
 
 
 void BugReportHandler::HandleSendReport(const ListValue* list_value) {
+  if (!bug_report_) {
+    LOG(ERROR) << "Bug report hasn't been intialized yet.";
+    return;
+  }
+
   ListValue::const_iterator i = list_value->begin();
   if (i == list_value->end()) {
     LOG(ERROR) << "Incorrect data passed to sendReport.";
