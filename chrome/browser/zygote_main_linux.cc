@@ -42,6 +42,7 @@
 #include "chrome/common/process_watcher.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/common/sandbox_methods_linux.h"
+#include "chrome/common/set_process_title.h"
 #include "chrome/common/unix_domain_socket_posix.h"
 #include "media/base/media.h"
 #include "seccompsandbox/sandbox.h"
@@ -394,7 +395,12 @@ class Zygote {
       CommandLine::Reset();
       CommandLine::Init(0, NULL);
       CommandLine::ForCurrentProcess()->InitFromArgv(args);
-      CommandLine::SetProcTitle();
+
+      // Update the process title. The argv was already cached by the call to
+      // SetProcessTitleFromCommandLine in ChromeMain, so we can pass NULL here
+      // (we don't have the original argv at this point).
+      SetProcessTitleFromCommandLine(NULL);
+
       // The fork() request is handled further up the call stack.
       return true;
     } else if (child < 0) {

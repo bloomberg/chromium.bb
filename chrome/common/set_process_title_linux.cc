@@ -37,7 +37,7 @@
 // this position within the glibc project, leaving applications caught in the
 // middle. (Also, only a very few applications need or want this anyway.)
 
-#include "base/setproctitle_linux.h"
+#include "chrome/common/set_process_title_linux.h"
 
 #include <stdarg.h>
 #include <stdint.h>

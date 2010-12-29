@@ -11,13 +11,6 @@
 
 // Main function for starting the PPAPI plugin process.
 int PpapiPluginMain(const MainFunctionParams& parameters) {
-#if defined(OS_LINUX)
-  // On Linux we exec ourselves from /proc/self/exe, but that makes the
-  // process name that shows up in "ps" etc. for this process show as
-  // "exe" instead of "chrome" or something reasonable. Try to fix it.
-  CommandLine::SetProcTitle();
-#endif
-
   const CommandLine& command_line = parameters.command_line_;
   if (command_line.HasSwitch(switches::kPpapiStartupDialog)) {
     ChildProcess::WaitForDebugger(L"Ppapi");

@@ -33,6 +33,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/sandbox_init_wrapper.h"
+#include "chrome/common/set_process_title.h"
 #include "chrome/common/url_constants.h"
 #include "ipc/ipc_switches.h"
 
@@ -903,6 +904,10 @@ int ChromeMain(int argc, char** argv) {
   // TODO(mdm): look into calling CommandLine::SetProcTitle() here instead of
   // in each relevant main() function below, to fix /proc/self/exe showing up
   // as our process name since we exec() via that to be update-safe.
+#endif
+
+#if defined(OS_POSIX)
+  SetProcessTitleFromCommandLine(argv);
 #endif
 
   int exit_code = RunNamedProcessTypeMain(process_type, main_params);

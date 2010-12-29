@@ -99,10 +99,6 @@ int PluginMain(const MainFunctionParams& parameters) {
   const CommandLine& parsed_command_line = parameters.command_line_;
 
 #if defined(OS_LINUX)
-  // On Linux we exec ourselves from /proc/self/exe, but that makes the
-  // process name that shows up in "ps" etc. for plugins show as "exe"
-  // instead of "chrome" or something reasonable. Try to fix it.
-  CommandLine::SetProcTitle();
 
 #if defined(ARCH_CPU_64_BITS)
   WorkaroundFlashLAHF();
