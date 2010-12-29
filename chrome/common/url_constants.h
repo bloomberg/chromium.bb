@@ -86,6 +86,7 @@ extern const char kChromeUISettingsURL[];
 extern const char kChromeUITextfieldsURL[];
 
 #if defined(OS_CHROMEOS)
+extern const char kChromeUIAboutOSCreditsURL[];
 extern const char kChromeUIFileBrowseURL[];
 extern const char kChromeUIImageBurnerURL[];
 extern const char kChromeUIKeyboardOverlayURL[];

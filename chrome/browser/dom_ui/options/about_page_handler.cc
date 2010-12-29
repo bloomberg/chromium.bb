@@ -49,6 +49,10 @@ const wchar_t kBeginLinkChr[] = L"BEGIN_LINK_CHR";
 const wchar_t kBeginLinkOss[] = L"BEGIN_LINK_OSS";
 const wchar_t kEndLinkChr[] = L"END_LINK_CHR";
 const wchar_t kEndLinkOss[] = L"END_LINK_OSS";
+#if defined(OS_CHROMEOS)
+const wchar_t kBeginLinkCrosOss[] = L"BEGIN_LINK_CROS_OSS";
+const wchar_t kEndLinkCrosOss[] = L"END_LINK_CROS_OSS";
+#endif
 
 // Returns a substring [start, end) from |text|.
 std::wstring StringSubRange(const std::wstring& text, size_t start,
@@ -172,7 +176,7 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   size_t link2 = text.find(kBeginLink, link1_end);
   DCHECK(link2 != std::wstring::npos);
   size_t link2_end = text.find(kEndLink, link2);
-  DCHECK(link1_end != std::wstring::npos);
+  DCHECK(link2_end != std::wstring::npos);
 
   localized_strings->SetString("license_content_0",
       WideToUTF16Hack(text.substr(0, link1)));
@@ -202,6 +206,26 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
           text.find(kEndLinkOss))));
   localized_strings->SetString(chromium_url_appears_first ?
       "license_link_1" : "license_link_0", chrome::kChromeUIAboutCreditsURL);
+
+#if defined(OS_CHROMEOS)
+  std::wstring cros_text = l10n_util::GetString(IDS_ABOUT_CROS_VERSION_LICENSE);
+
+  size_t cros_link = cros_text.find(kBeginLinkCrosOss);
+  DCHECK(cros_link != std::wstring::npos);
+  size_t cros_link_end = cros_text.find(kEndLinkCrosOss, cros_link);
+  DCHECK(cros_link_end != std::wstring::npos);
+
+  localized_strings->SetString("cros_license_content_0",
+      WideToUTF16Hack(cros_text.substr(0, cros_link)));
+  localized_strings->SetString("cros_license_content_1",
+      WideToUTF16Hack(
+          cros_text.substr(cros_link_end + wcslen(kEndLinkCrosOss))));
+  localized_strings->SetString("cros_license_link_content_0",
+      WideToUTF16Hack(StringSubRange(cros_text,
+          cros_link + wcslen(kBeginLinkCrosOss), cros_link_end)));
+  localized_strings->SetString("cros_license_link_0",
+      chrome::kChromeUIAboutOSCreditsURL);
+#endif
 
   // webkit
 

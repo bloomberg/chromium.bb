@@ -95,6 +95,7 @@ const char kChromeUISettingsURL[] = "chrome://settings/";
 const char kChromeUITextfieldsURL[] = "chrome://textfields/";
 
 #if defined(OS_CHROMEOS)
+const char kChromeUIAboutOSCreditsURL[] = "chrome://about/os-credits";
 const char kChromeUIFileBrowseURL[] = "chrome://filebrowse/";
 const char kChromeUIImageBurnerURL[] = "chrome://imageburner/";
 const char kChromeUIKeyboardOverlayURL[] = "chrome://keyboardoverlay/";
