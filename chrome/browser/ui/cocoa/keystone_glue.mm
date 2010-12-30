@@ -17,7 +17,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
-#include "base/worker_pool.h"
+#include "base/threading/worker_pool.h"
 #include "chrome/browser/ui/cocoa/authorization_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "grit/chromium_strings.h"
@@ -104,7 +104,7 @@ class PerformBridge : public base::RefCountedThreadSafe<PerformBridge> {
     DCHECK(sel);
 
     scoped_refptr<PerformBridge> op = new PerformBridge(target, sel, arg);
-    WorkerPool::PostTask(
+    base::WorkerPool::PostTask(
         FROM_HERE, NewRunnableMethod(op.get(), &PerformBridge::Run), true);
   }
 

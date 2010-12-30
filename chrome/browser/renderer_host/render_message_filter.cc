@@ -12,9 +12,9 @@
 #include "base/process_util.h"
 #include "base/shared_memory.h"
 #include "base/sys_string_conversions.h"
+#include "base/threading/worker_pool.h"
 #include "base/thread.h"
 #include "base/utf_string_conversions.h"
-#include "base/worker_pool.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
@@ -1352,7 +1352,7 @@ void RenderMessageFilter::OnKeygen(uint32 key_size_index,
 
   VLOG(1) << "Dispatching keygen task to worker pool.";
   // Dispatch to worker pool, so we do not block the IO thread.
-  if (!WorkerPool::PostTask(
+  if (!base::WorkerPool::PostTask(
            FROM_HERE,
            NewRunnableMethod(
                this, &RenderMessageFilter::OnKeygenOnWorkerThread,

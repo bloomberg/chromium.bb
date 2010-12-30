@@ -2,17 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/watchdog.h"
+#include "base/threading/watchdog.h"
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/platform_thread.h"
 
-using base::TimeDelta;
-using base::TimeTicks;
-
-//------------------------------------------------------------------------------
-// Public API methods.
+namespace base {
 
 // Start thread running in a Disarmed state.
 Watchdog::Watchdog(const TimeDelta& duration,
@@ -144,3 +140,5 @@ Lock Watchdog::static_lock_;  // Lock for access of static data...
 TimeTicks Watchdog::last_debugged_alarm_time_ = TimeTicks();
 // static
 TimeDelta Watchdog::last_debugged_alarm_delay_;
+
+}  // namespace base

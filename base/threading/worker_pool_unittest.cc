@@ -4,13 +4,13 @@
 
 #include "base/task.h"
 #include "base/waitable_event.h"
-#include "base/worker_pool.h"
+#include "base/threading/worker_pool.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-using base::WaitableEvent;
-
 typedef PlatformTest WorkerPoolTest;
+
+namespace base {
 
 namespace {
 
@@ -27,6 +27,8 @@ class PostTaskTestTask : public Task {
   WaitableEvent* event_;
 };
 
+}  // namespace
+
 TEST_F(WorkerPoolTest, PostTask) {
   WaitableEvent test_event(false, false);
   WaitableEvent long_test_event(false, false);
@@ -41,4 +43,4 @@ TEST_F(WorkerPoolTest, PostTask) {
   EXPECT_TRUE(signaled);
 }
 
-} // namespace
+}  // namespace base

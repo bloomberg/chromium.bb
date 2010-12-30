@@ -9,7 +9,7 @@
 
 #include "app/gfx/gl/gl_context.h"
 #include "base/command_line.h"
-#include "base/worker_pool.h"
+#include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/child_process_logging.h"
@@ -34,7 +34,7 @@ void GpuThread::Init(const base::Time& process_start_time) {
 #if defined(OS_WIN)
   // Asynchronously collect the DirectX diagnostics because this can take a
   // couple of seconds.
-  if (!WorkerPool::PostTask(
+  if (!base::WorkerPool::PostTask(
       FROM_HERE,
       NewRunnableFunction(&GpuThread::CollectDxDiagnostics, this),
       true)) {

@@ -13,9 +13,9 @@
 #include "base/metrics/stats_counters.h"
 #include "base/ref_counted.h"
 #include "base/string_util.h"
+#include "base/threading/watchdog.h"
 #include "base/thread.h"
 #include "base/time.h"
-#include "base/watchdog.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
@@ -55,7 +55,7 @@ const bool kPlaySounds = false;
 //------------------------------------------------------------------------------
 // Provide a special watchdog to make it easy to set the breakpoint on this
 // class only.
-class JankWatchdog : public Watchdog {
+class JankWatchdog : public base::Watchdog {
  public:
   JankWatchdog(const TimeDelta& duration,
                const std::string& thread_watched_name,

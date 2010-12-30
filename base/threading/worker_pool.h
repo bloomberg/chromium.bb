@@ -1,14 +1,16 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_WORKER_POOL_H_
-#define BASE_WORKER_POOL_H_
+#ifndef BASE_THREADING_WORKER_POOL_H_
+#define BASE_THREADING_WORKER_POOL_H_
 #pragma once
 
 #include "base/tracked.h"
 
 class Task;
+
+namespace base {
 
 // This is a facility that runs tasks that don't require a specific thread or
 // a message loop.
@@ -28,4 +30,6 @@ class WorkerPool {
                        Task* task, bool task_is_slow);
 };
 
-#endif  // BASE_WORKER_POOL_H_
+}  // namespace base
+
+#endif  // BASE_THREADING_WORKER_POOL_H_

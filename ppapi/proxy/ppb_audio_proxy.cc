@@ -4,7 +4,7 @@
 
 #include "ppapi/proxy/ppb_audio_proxy.h"
 
-#include "base/simple_thread.h"
+#include "base/threading/simple_thread.h"
 #include "ppapi/c/dev/ppb_audio_dev.h"
 #include "ppapi/c/dev/ppb_audio_trusted_dev.h"
 #include "ppapi/c/pp_errors.h"

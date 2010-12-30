@@ -4,8 +4,8 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/simple_thread.h"
 #include "base/test/test_file_util.h"
+#include "base/threading/simple_thread.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "net/test/test_server.h"

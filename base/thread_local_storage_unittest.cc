@@ -7,7 +7,7 @@
 #include <process.h>
 #endif
 
-#include "base/simple_thread.h"
+#include "base/threading/simple_thread.h"
 #include "base/thread_local_storage.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,8 +15,8 @@
 // a second thread, and their methods call (Arm() and Disarm()) return very
 // quickly.
 
-#ifndef BASE_WATCHDOG_H__
-#define BASE_WATCHDOG_H__
+#ifndef BASE_THREADING_WATCHDOG_H_
+#define BASE_THREADING_WATCHDOG_H_
 #pragma once
 
 #include <string>
@@ -25,6 +25,8 @@
 #include "base/lock.h"
 #include "base/platform_thread.h"
 #include "base/time.h"
+
+namespace base {
 
 class Watchdog {
  public:
@@ -91,4 +93,6 @@ class Watchdog {
   DISALLOW_COPY_AND_ASSIGN(Watchdog);
 };
 
-#endif  // BASE_WATCHDOG_H__
+}  // namespace base
+
+#endif  // BASE_THREADING_WATCHDOG_H_

@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/worker_pool.h"
-#include "base/worker_pool_posix.h"
+#include "base/threading/worker_pool_posix.h"
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -11,6 +10,9 @@
 #include "base/ref_counted.h"
 #include "base/stringprintf.h"
 #include "base/task.h"
+#include "base/threading/worker_pool.h"
+
+namespace base {
 
 namespace {
 
@@ -32,8 +34,9 @@ class WorkerPoolImpl {
 };
 
 WorkerPoolImpl::WorkerPoolImpl()
-    : pool_(new base::PosixDynamicThreadPool(
-        "WorkerPool", kIdleSecondsBeforeExit)) {}
+    : pool_(new base::PosixDynamicThreadPool("WorkerPool",
+                                             kIdleSecondsBeforeExit)) {
+}
 
 WorkerPoolImpl::~WorkerPoolImpl() {
   pool_->Terminate();
@@ -89,8 +92,6 @@ bool WorkerPool::PostTask(const tracked_objects::Location& from_here,
   g_lazy_worker_pool.Pointer()->PostTask(from_here, task, task_is_slow);
   return true;
 }
-
-namespace base {
 
 PosixDynamicThreadPool::PosixDynamicThreadPool(
     const std::string& name_prefix,

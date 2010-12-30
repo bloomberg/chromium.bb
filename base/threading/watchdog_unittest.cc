@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Tests for Watchdog class.
-
-#include "base/watchdog.h"
+#include "base/threading/watchdog.h"
 
 #include "base/logging.h"
 #include "base/platform_thread.h"
@@ -12,8 +10,7 @@
 #include "base/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::TimeDelta;
-using base::TimeTicks;
+namespace base {
 
 namespace {
 
@@ -50,6 +47,7 @@ class WatchdogTest : public testing::Test {
   }
 };
 
+}  // namespace
 
 //------------------------------------------------------------------------------
 // Actual tests
@@ -139,4 +137,4 @@ TEST_F(WatchdogTest, DisarmTest) {
   EXPECT_EQ(1, watchdog.alarm_counter());
 }
 
-}  // namespace
+}  // namespace base

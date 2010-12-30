@@ -6,9 +6,9 @@
 #define PPAPI_SHARED_IMPL_AUDIO_IMPL_H_
 
 #include "base/scoped_ptr.h"
-#include "base/simple_thread.h"
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
+#include "base/threading/simple_thread.h"
 #include "ppapi/c/dev/ppb_audio_dev.h"
 
 namespace pp {

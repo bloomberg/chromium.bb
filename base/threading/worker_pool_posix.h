@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -21,8 +21,8 @@
 // implementation of WorkerPool.  No one else should be using these classes.
 // These symbols are exported in a header purely for testing purposes.
 
-#ifndef BASE_WORKER_POOL_POSIX_H_
-#define BASE_WORKER_POOL_POSIX_H_
+#ifndef BASE_THREADING_WORKER_POOL_POSIX_H_
+#define BASE_THREADING_WORKER_POOL_POSIX_H_
 #pragma once
 
 #include <queue>
@@ -86,4 +86,4 @@ class PosixDynamicThreadPool
 
 }  // namespace base
 
-#endif  // BASE_WORKER_POOL_POSIX_H_
+#endif  // BASE_THREADING_WORKER_POOL_POSIX_H_

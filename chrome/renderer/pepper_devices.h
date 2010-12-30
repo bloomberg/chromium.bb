@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
-#include "base/simple_thread.h"
+#include "base/threading/simple_thread.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/audio_message_filter.h"
 #include "gfx/rect.h"

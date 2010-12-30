@@ -6,7 +6,7 @@
 #include "base/logging.h"
 #include "base/non_thread_safe.h"
 #include "base/scoped_ptr.h"
-#include "base/simple_thread.h"
+#include "base/threading/simple_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #ifndef NDEBUG

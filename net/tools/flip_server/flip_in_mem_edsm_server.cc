@@ -19,7 +19,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/simple_thread.h"
+#include "base/threading/simple_thread.h"
 #include "base/timer.h"
 #include "base/lock.h"
 #include "net/spdy/spdy_frame_builder.h"
