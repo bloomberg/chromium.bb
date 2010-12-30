@@ -99,6 +99,11 @@ class PepperWidget : public WebWidget {
     return false;
   }
 
+  virtual bool confirmComposition(const WebString& text) {
+    NOTIMPLEMENTED();
+    return false;
+  }
+
   virtual WebTextInputType textInputType() {
     NOTIMPLEMENTED();
     return WebKit::WebTextInputTypeNone;
