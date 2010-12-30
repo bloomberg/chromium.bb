@@ -17,7 +17,7 @@ public:
   }
 };
 
-IN_PROC_BROWSER_TEST_F(GeolocationApiTest, ExtensionGeolocationAccessFail) {
+IN_PROC_BROWSER_TEST_F(GeolocationApiTest, FLAKY_ExtensionGeolocationAccessFail) {
   // Test that geolocation cannot be accessed from extension without permission.
   ASSERT_TRUE(RunExtensionTest("geolocation/no_permission")) << message_;
 }
