@@ -12,11 +12,9 @@
 
 #include <string>
 
-#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
-#include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
-#include "chrome/browser/worker_host/worker_service.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_status.h"
+#include "webkit/glue/resource_type.h"
 
 namespace net {
 class URLRequest;

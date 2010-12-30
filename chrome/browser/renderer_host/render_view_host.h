@@ -26,6 +26,7 @@
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/window_open_disposition.h"
 
+class ChildProcessSecurityPolicy;
 class FilePath;
 class GURL;
 class ListValue;
@@ -538,6 +539,12 @@ class RenderViewHost : public RenderWidgetHost {
   bool is_waiting_for_unload_ack() { return is_waiting_for_unload_ack_; }
 #endif
 
+  // Checks that the given renderer can request |url|, if not it sets it to an
+  // empty url.
+  static void FilterURL(ChildProcessSecurityPolicy* policy,
+                        int renderer_id,
+                        GURL* url);
+
  protected:
   // RenderWidgetHost protected overrides.
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
@@ -572,28 +579,11 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgScreenshot(const SkBitmap& bitmap);
   void OnMsgClose();
   void OnMsgRequestMove(const gfx::Rect& pos);
-  void OnMsgDidRedirectProvisionalLoad(int32 page_id,
-                                       const GURL& source_url,
-                                       const GURL& target_url);
   void OnMsgDidStartLoading();
   void OnMsgDidStopLoading();
   void OnMsgDidChangeLoadProgress(double load_progress);
   void OnMsgDocumentAvailableInMainFrame();
   void OnMsgDocumentOnLoadCompletedInMainFrame(int32 page_id);
-  void OnMsgDidLoadResourceFromMemoryCache(const GURL& url,
-                                           const std::string& frame_origin,
-                                           const std::string& main_frame_origin,
-                                           const std::string& security_info);
-  void OnMsgDidDisplayInsecureContent();
-  void OnMsgDidRunInsecureContent(const std::string& security_origin);
-  void OnMsgDidStartProvisionalLoadForFrame(int64 frame_id,
-                                            bool main_frame,
-                                            const GURL& url);
-  void OnMsgDidFailProvisionalLoadWithError(int64 frame_id,
-                                            bool main_frame,
-                                            int error_code,
-                                            const GURL& url,
-                                            bool showing_repost_interstitial);
   void OnMsgFindReply(int request_id,
                       int number_of_matches,
                       const gfx::Rect& selection_rect,
@@ -617,8 +607,6 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgForwardMessageToExternalHost(const std::string& message,
                                          const std::string& origin,
                                          const std::string& target);
-  void OnMsgDocumentLoadedInFrame(int64 frame_id);
-  void OnMsgDidFinishLoad(int64 frame_id);
   void OnMsgGoToEntryAtOffset(int offset);
   void OnMsgSetTooltipText(const std::wstring& tooltip_text,
                            WebKit::WebTextDirection text_direction_hint);

@@ -30,10 +30,6 @@ RenderViewHostDelegate::GetBrowserIntegrationDelegate() {
   return NULL;
 }
 
-RenderViewHostDelegate::Resource*
-RenderViewHostDelegate::GetResourceDelegate() {
-  return NULL;
-}
 
 RenderViewHostDelegate::ContentSettings*
 RenderViewHostDelegate::GetContentSettingsDelegate() {
@@ -82,6 +78,10 @@ RenderViewHostDelegate::GetFileSelectDelegate() {
 AutomationResourceRoutingDelegate*
 RenderViewHostDelegate::GetAutomationResourceRoutingDelegate() {
   return NULL;
+}
+
+bool RenderViewHostDelegate::OnMessageReceived(const IPC::Message& message) {
+  return false;
 }
 
 const GURL& RenderViewHostDelegate::GetURL() const {

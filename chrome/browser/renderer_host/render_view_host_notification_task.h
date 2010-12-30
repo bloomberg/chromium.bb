@@ -70,31 +70,6 @@ inline void CallRenderViewHostHelper(int render_process_id, int render_view_id,
                                                          params));
 }
 
-// For proxying calls to RenderViewHostDelegate::Resource
-
-class RenderViewHostToResourceDelegate {
- public:
-  typedef RenderViewHostDelegate::Resource MappedType;
-  static MappedType* Map(RenderViewHost* rvh) {
-    return rvh ? rvh->delegate()->GetResourceDelegate() : NULL;
-  }
-};
-
-template <typename Method, typename Params>
-inline void CallRenderViewHostResourceDelegateHelper(int render_process_id,
-                                                     int render_view_id,
-                                                     Method method,
-                                                     const Params& params) {
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      new RenderViewHostNotificationTask<
-          Method, Params, RenderViewHostToResourceDelegate>(render_process_id,
-                                                            render_view_id,
-                                                            method,
-                                                            params));
-}
-
 // For proxying calls to RenderViewHostDelegate::ContentSettings
 
 class RenderViewHostToContentSettingsDelegate {
@@ -210,42 +185,6 @@ inline void CallRenderViewHost(int render_process_id,
                                      render_view_id,
                                      method,
                                      MakeTuple(a, b));
-}
-
-// ----------------------------------------------------------------------------
-// Proxy calls to the specified RenderViewHost's Resource delegate.
-
-template <typename Method>
-inline void CallRenderViewHostResourceDelegate(int render_process_id,
-                                               int render_view_id,
-                                               Method method) {
-  internal::CallRenderViewHostResourceDelegateHelper(render_process_id,
-                                                     render_view_id,
-                                                     method,
-                                                     MakeTuple());
-}
-
-template <typename Method, typename A>
-inline void CallRenderViewHostResourceDelegate(int render_process_id,
-                                               int render_view_id,
-                                               Method method,
-                                               const A& a) {
-  internal::CallRenderViewHostResourceDelegateHelper(render_process_id,
-                                                     render_view_id,
-                                                     method,
-                                                     MakeTuple(a));
-}
-
-template <typename Method, typename A, typename B>
-inline void CallRenderViewHostResourceDelegate(int render_process_id,
-                                               int render_view_id,
-                                               Method method,
-                                               const A& a,
-                                               const B& b) {
-  internal::CallRenderViewHostResourceDelegateHelper(render_process_id,
-                                                     render_view_id,
-                                                     method,
-                                                     MakeTuple(a, b));
 }
 
 // ----------------------------------------------------------------------------

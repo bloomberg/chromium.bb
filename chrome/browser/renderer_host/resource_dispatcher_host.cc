@@ -54,6 +54,7 @@
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/worker_host/worker_service.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/common/url_constants.h"
@@ -1571,10 +1572,14 @@ void ResourceDispatcherHost::NotifyResponseStarted(net::URLRequest* request,
     return;
 
   // Notify the observers on the UI thread.
-  CallRenderViewHostResourceDelegate(
-      render_process_id, render_view_id,
-      &RenderViewHostDelegate::Resource::DidStartReceivingResourceResponse,
-      ResourceRequestDetails(request, GetCertID(request, child_id)));
+  ResourceRequestDetails* detail = new ResourceRequestDetails(
+      request, GetCertID(request, child_id));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableFunction(
+          &ResourceDispatcherHost::NotifyOnUI<ResourceRequestDetails>,
+          NotificationType::RESOURCE_RESPONSE_STARTED,
+          render_process_id, render_view_id, detail));
 }
 
 void ResourceDispatcherHost::NotifyResponseCompleted(net::URLRequest* request,
@@ -1596,10 +1601,29 @@ void ResourceDispatcherHost::NotifyReceivedRedirect(net::URLRequest* request,
     return;
 
   // Notify the observers on the UI thread.
-  CallRenderViewHostResourceDelegate(
-      render_process_id, render_view_id,
-      &RenderViewHostDelegate::Resource::DidRedirectResource,
-      ResourceRedirectDetails(request, GetCertID(request, child_id), new_url));
+  ResourceRedirectDetails* detail = new ResourceRedirectDetails(
+      request, GetCertID(request, child_id), new_url);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      NewRunnableFunction(
+          &ResourceDispatcherHost::NotifyOnUI<ResourceRedirectDetails>,
+          NotificationType::RESOURCE_RECEIVED_REDIRECT,
+          render_process_id, render_view_id, detail));
+}
+
+template <class T>
+void ResourceDispatcherHost::NotifyOnUI(NotificationType type,
+                                        int render_process_id,
+                                        int render_view_id,
+                                        T* detail) {
+  RenderViewHost* rvh =
+      RenderViewHost::FromID(render_process_id, render_view_id);
+  if (!rvh)
+    return;
+  RenderViewHostDelegate* rvhd = rvh->delegate();
+  NotificationService::current()->Notify(
+      type, Source<RenderViewHostDelegate>(rvhd), Details<T>(detail));
+  delete detail;
 }
 
 namespace {

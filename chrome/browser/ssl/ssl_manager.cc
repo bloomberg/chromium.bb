@@ -11,12 +11,15 @@
 #include "chrome/browser/net/url_request_tracking.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/renderer_host/resource_request_details.h"
+#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/browser/ssl/ssl_cert_error_handler.h"
 #include "chrome/browser/ssl/ssl_policy.h"
 #include "chrome/browser/ssl/ssl_request_info.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/provisional_load_details.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
@@ -119,9 +122,9 @@ SSLManager::SSLManager(NavigationController* controller)
   registrar_.Add(this, NotificationType::FAIL_PROVISIONAL_LOAD_WITH_ERROR,
                  Source<NavigationController>(controller_));
   registrar_.Add(this, NotificationType::RESOURCE_RESPONSE_STARTED,
-                 Source<NavigationController>(controller_));
+                 Source<RenderViewHostDelegate>(controller_->tab_contents()));
   registrar_.Add(this, NotificationType::RESOURCE_RECEIVED_REDIRECT,
-                 Source<NavigationController>(controller_));
+                 Source<RenderViewHostDelegate>(controller_->tab_contents()));
   registrar_.Add(this, NotificationType::LOAD_FROM_MEMORY_CACHE,
                  Source<NavigationController>(controller_));
   registrar_.Add(this, NotificationType::SSL_INTERNAL_STATE_CHANGED,
@@ -205,8 +208,6 @@ void SSLManager::Observe(NotificationType type,
 }
 
 void SSLManager::DidLoadFromMemoryCache(LoadFromMemoryCacheDetails* details) {
-  DCHECK(details);
-
   // Simulate loading this resource through the usual path.
   // Note that we specify SUB_RESOURCE as the resource type as WebCore only
   // caches sub-resources.
@@ -226,8 +227,6 @@ void SSLManager::DidLoadFromMemoryCache(LoadFromMemoryCacheDetails* details) {
 }
 
 void SSLManager::DidStartResourceResponse(ResourceRequestDetails* details) {
-  DCHECK(details);
-
   scoped_refptr<SSLRequestInfo> info(new SSLRequestInfo(
       details->url(),
       details->resource_type(),

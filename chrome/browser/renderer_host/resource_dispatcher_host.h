@@ -23,6 +23,7 @@
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/common/child_process_info.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/browser/renderer_host/resource_queue.h"
 #include "ipc/ipc_message.h"
 #include "net/url_request/url_request.h"
@@ -32,6 +33,7 @@ class CrossSiteResourceHandler;
 class DownloadFileManager;
 class DownloadRequestLimiter;
 class LoginHandler;
+class NotificationDetails;
 class PluginService;
 class ResourceDispatcherHostRequestInfo;
 class ResourceHandler;
@@ -419,6 +421,14 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
   // Determine request priority based on how critical this resource typically
   // is to user-perceived page load performance.
   static net::RequestPriority DetermineRequestPriority(ResourceType::Type type);
+
+  // Sends the given notification on the UI thread.  The RenderViewHost's
+  // controller is used as the source.
+  template <class T>
+  static void NotifyOnUI(NotificationType type,
+                         int render_process_id,
+                         int render_view_id,
+                         T* detail);
 
   PendingRequestList pending_requests_;
 

@@ -138,13 +138,13 @@ class NotificationType {
     FAIL_PROVISIONAL_LOAD_WITH_ERROR,
 
     // A response has been received for a resource request.  The source will be
-    // a Source<NavigationController> corresponding to the tab in which the
+    // a Source<RenderViewHostDelegate> corresponding to the tab in which the
     // request was issued.  Details in the form of a ResourceRequestDetails
     // object are provided.
     RESOURCE_RESPONSE_STARTED,
 
     // A redirect was received while requesting a resource.  The source will be
-    // a Source<NavigationController> corresponding to the tab in which the
+    // a Source<RenderViewHostDelegate> corresponding to the tab in which the
     // request was issued.  Details in the form of a ResourceRedirectDetails
     // are provided.
     RESOURCE_RECEIVED_REDIRECT,

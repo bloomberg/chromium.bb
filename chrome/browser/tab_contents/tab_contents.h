@@ -51,10 +51,6 @@ namespace printing {
 class PrintViewManager;
 }
 
-namespace IPC {
-class Message;
-}
-
 namespace webkit_glue {
 struct PasswordForm;
 }
@@ -94,7 +90,6 @@ class TabContents : public PageNavigator,
                     public NotificationObserver,
                     public RenderViewHostDelegate,
                     public RenderViewHostDelegate::BrowserIntegration,
-                    public RenderViewHostDelegate::Resource,
                     public RenderViewHostManager::Delegate,
                     public JavaScriptAppModalDialogDelegate,
                     public ImageLoadingTracker::Observer,
@@ -785,6 +780,27 @@ class TabContents : public PageNavigator,
   // Used to access RVH Delegates.
   friend class PrerenderManager;
 
+  // Message handlers.
+  void OnDidStartProvisionalLoadForFrame(int64 frame_id,
+                                         bool main_frame,
+                                         const GURL& url);
+  void OnDidRedirectProvisionalLoad(int32 page_id,
+                                    const GURL& source_url,
+                                    const GURL& target_url);
+  void OnDidFailProvisionalLoadWithError(int64 frame_id,
+                                         bool main_frame,
+                                         int error_code,
+                                         const GURL& url,
+                                         bool showing_repost_interstitial);
+  void OnDidLoadResourceFromMemoryCache(const GURL& url,
+                                        const std::string& frame_origin,
+                                        const std::string& main_frame_origin,
+                                        const std::string& security_info);
+  void OnDidDisplayInsecureContent();
+  void OnDidRunInsecureContent(const std::string& security_origin);
+  void OnDocumentLoadedInFrame(int64 frame_id);
+  void OnDidFinishLoad(int64 frame_id);
+
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished
   // (but can be null if not applicable). Can be overridden.
@@ -920,43 +936,12 @@ class TabContents : public PageNavigator,
                                 const std::vector<std::string>& suggestions);
   virtual void OnInstantSupportDetermined(int32 page_id, bool result);
 
-  // RenderViewHostDelegate::Resource implementation.
-  virtual void DidStartProvisionalLoadForFrame(RenderViewHost* render_view_host,
-                                               int64 frame_id,
-                                               bool is_main_frame,
-                                               bool is_error_page,
-                                               const GURL& url);
-  virtual void DidStartReceivingResourceResponse(
-      const ResourceRequestDetails& details);
-  virtual void DidRedirectProvisionalLoad(int32 page_id,
-                                          const GURL& source_url,
-                                          const GURL& target_url);
-  virtual void DidRedirectResource(
-      const ResourceRedirectDetails& details);
-  virtual void DidLoadResourceFromMemoryCache(
-      const GURL& url,
-      const std::string& frame_origin,
-      const std::string& main_frame_origin,
-      const std::string& security_info);
-  virtual void DidDisplayInsecureContent();
-  virtual void DidRunInsecureContent(const std::string& security_origin);
-  virtual void DidFailProvisionalLoadWithError(
-      RenderViewHost* render_view_host,
-      int64 frame_id,
-      bool is_main_frame,
-      int error_code,
-      const GURL& url,
-      bool showing_repost_interstitial);
-  virtual void DocumentLoadedInFrame(int64 frame_id);
-  virtual void DidFinishLoad(int64 frame_id);
-
   // RenderViewHostDelegate implementation.
   virtual RenderViewHostDelegate::View* GetViewDelegate();
   virtual RenderViewHostDelegate::RendererManagement*
       GetRendererManagementDelegate();
   virtual RenderViewHostDelegate::BrowserIntegration*
       GetBrowserIntegrationDelegate();
-  virtual RenderViewHostDelegate::Resource* GetResourceDelegate();
   virtual RenderViewHostDelegate::ContentSettings* GetContentSettingsDelegate();
   virtual RenderViewHostDelegate::Save* GetSaveDelegate();
   virtual RenderViewHostDelegate::Printing* GetPrintingDelegate();
@@ -968,6 +953,7 @@ class TabContents : public PageNavigator,
   virtual AutomationResourceRoutingDelegate*
       GetAutomationResourceRoutingDelegate();
   virtual TabContents* GetAsTabContents();
+  virtual bool OnMessageReceived(const IPC::Message& message);
   virtual ViewType::Type GetRenderViewType() const;
   virtual int GetBrowserWindowID() const;
   virtual void RenderViewCreated(RenderViewHost* render_view_host);

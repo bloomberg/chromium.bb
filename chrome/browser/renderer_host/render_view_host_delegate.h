@@ -18,6 +18,7 @@
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/view_types.h"
 #include "chrome/common/window_container_type.h"
+#include "ipc/ipc_channel.h"
 #include "net/base/load_states.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
@@ -94,7 +95,7 @@ struct PasswordForm;
 //  exposing a more generic Send function on RenderViewHost and a response
 //  listener here to serve that need.
 //
-class RenderViewHostDelegate {
+class RenderViewHostDelegate : public IPC::Channel::Listener {
  public:
   // View ----------------------------------------------------------------------
   // Functions that can be routed directly to a view-specific class.
@@ -320,71 +321,6 @@ class RenderViewHostDelegate {
 
    protected:
     virtual ~BrowserIntegration() {}
-  };
-
-  // Resource ------------------------------------------------------------------
-  // Notifications of resource loading events.
-
-  class Resource {
-   public:
-    // The RenderView is starting a provisional load.
-    virtual void DidStartProvisionalLoadForFrame(
-        RenderViewHost* render_view_host,
-        int64 frame_id,
-        bool is_main_frame,
-        bool is_error_page,
-        const GURL& url) = 0;
-
-    // Notification by the resource loading system (not the renderer) that it
-    // has started receiving a resource response. This is different than
-    // DidStartProvisionalLoadForFrame above because this is called for every
-    // resource (images, automatically loaded subframes, etc.) and provisional
-    // loads are only for user-initiated navigations.
-    virtual void DidStartReceivingResourceResponse(
-        const ResourceRequestDetails& details) = 0;
-
-    // Sent when a provisional load is redirected.
-    virtual void DidRedirectProvisionalLoad(int32 page_id,
-                                            const GURL& source_url,
-                                            const GURL& target_url) = 0;
-
-    // Notification by the resource loading system (not the renderer) that a
-    // resource was redirected. This is different than
-    // DidRedirectProvisionalLoad above because this is called for every
-    // resource (images, automatically loaded subframes, etc.) and provisional
-    // loads are only for user-initiated navigations.
-    virtual void DidRedirectResource(
-        const ResourceRedirectDetails& details) = 0;
-
-    // The RenderView loaded a resource from an in-memory cache.
-    // |security_info| contains the security info if this resource was
-    // originally loaded over a secure connection.
-    virtual void DidLoadResourceFromMemoryCache(
-        const GURL& url,
-        const std::string& frame_origin,
-        const std::string& main_frame_origin,
-        const std::string& security_info) = 0;
-
-    virtual void DidDisplayInsecureContent() = 0;
-    virtual void DidRunInsecureContent(const std::string& security_origin) = 0;
-
-    // The RenderView failed a provisional load with an error.
-    virtual void DidFailProvisionalLoadWithError(
-        RenderViewHost* render_view_host,
-        int64 frame_id,
-        bool is_main_frame,
-        int error_code,
-        const GURL& url,
-        bool showing_repost_interstitial) = 0;
-
-    // Notification that a document has been loaded in a frame.
-    virtual void DocumentLoadedInFrame(int64 frame_id) = 0;
-
-    // Notification that a frame finished loading.
-    virtual void DidFinishLoad(int64 frame_id) = 0;
-
-   protected:
-    virtual ~Resource() {}
   };
 
   // ContentSettings------------------------------------------------------------
@@ -672,7 +608,6 @@ class RenderViewHostDelegate {
   virtual View* GetViewDelegate();
   virtual RendererManagement* GetRendererManagementDelegate();
   virtual BrowserIntegration* GetBrowserIntegrationDelegate();
-  virtual Resource* GetResourceDelegate();
   virtual ContentSettings* GetContentSettingsDelegate();
   virtual Save* GetSaveDelegate();
   virtual Printing* GetPrintingDelegate();
@@ -687,6 +622,10 @@ class RenderViewHostDelegate {
   // routing.
   virtual AutomationResourceRoutingDelegate*
       GetAutomationResourceRoutingDelegate();
+
+  // IPC::Channel::Listener implementation.
+  // This is used to give the delegate a chance to filter IPC messages.
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
   // Gets the URL that is currently being displayed, if there is one.
   virtual const GURL& GetURL() const;
