@@ -49,7 +49,7 @@ class ConditionVariable;
 // can be validated (and not asynchronously changing) during the method calls.
 class ConditionVariableEvent {
  private:
-  friend ConditionVariable;
+  friend class ConditionVariable;
 
   HANDLE handle_;
   ConditionVariableEvent* next_;  // Doubly linked list.
