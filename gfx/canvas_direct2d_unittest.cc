@@ -7,6 +7,7 @@
 #include <vsstyle.h>
 #include <vssym32.h>
 
+#include "app/win/window_impl.h"
 #include "base/command_line.h"
 #include "base/ref_counted_memory.h"
 #include "base/resource_util.h"
@@ -16,7 +17,6 @@
 #include "gfx/canvas_skia.h"
 #include "gfx/codec/png_codec.h"
 #include "gfx/native_theme_win.h"
-#include "gfx/window_impl.h"
 #include "gfx/win_util.h"
 #include "grit/gfx_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,7 +26,7 @@ namespace {
 
 const char kVisibleModeFlag[] = "d2d-canvas-visible";
 
-class TestWindow : public gfx::WindowImpl {
+class TestWindow : public app::win::WindowImpl {
  public:
   static const int kWindowSize = 500;
   static const int kWindowPosition = 10;

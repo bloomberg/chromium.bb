@@ -17,6 +17,7 @@
       'dependencies': [
         'gfx',
         'gfx_resources',
+        '../app/app.gyp:app_base',
         '../base/base.gyp:test_support_base',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
@@ -149,8 +150,6 @@
             'icon_util.h',
             'native_theme_win.cc',
             'native_theme_win.h',
-            'window_impl.cc',
-            'window_impl.h',
             'win_util.cc',
             'win_util.h',
           ],

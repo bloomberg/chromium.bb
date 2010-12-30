@@ -7,9 +7,9 @@
 #include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
+#include "app/win/hwnd_util.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
-#include "base/win_util.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/font.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -56,7 +56,7 @@ class NativeMenuWin::MenuHostWindow {
     RegisterClass();
     hwnd_ = CreateWindowEx(l10n_util::GetExtendedStyles(), kWindowClassName,
                            L"", 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
-    win_util::SetWindowUserData(hwnd_, this);
+    app::win::SetWindowUserData(hwnd_, this);
   }
 
   ~MenuHostWindow() {
@@ -275,7 +275,7 @@ class NativeMenuWin::MenuHostWindow {
                                              WPARAM w_param,
                                              LPARAM l_param) {
     MenuHostWindow* host =
-        reinterpret_cast<MenuHostWindow*>(win_util::GetWindowUserData(window));
+        reinterpret_cast<MenuHostWindow*>(app::win::GetWindowUserData(window));
     // host is null during initial construction.
     LRESULT l_result = 0;
     if (!host || !host->ProcessWindowMessage(window, message, w_param, l_param,

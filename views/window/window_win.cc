@@ -9,9 +9,9 @@
 
 #include "app/keyboard_code_conversion_win.h"
 #include "app/theme_provider.h"
+#include "app/win/hwnd_util.h"
 #include "app/win_util.h"
 #include "base/i18n/rtl.h"
-#include "base/win_util.h"
 #include "base/win/windows_version.h"
 #include "gfx/canvas_skia_paint.h"
 #include "gfx/font.h"
@@ -546,7 +546,7 @@ void WindowWin::Init(HWND parent, const gfx::Rect& bounds) {
     set_window_ex_style(CalculateWindowExStyle());
 
   WidgetWin::Init(parent, bounds);
-  win_util::SetWindowUserData(GetNativeView(), this);
+  app::win::SetWindowUserData(GetNativeView(), this);
 
   // Create the ClientView, add it to the NonClientView and add the
   // NonClientView to the RootView. This will cause everything to be parented.

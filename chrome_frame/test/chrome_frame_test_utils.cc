@@ -566,7 +566,7 @@ bool DetectRunningCrashService(int timeout_ms) {
         break;
       default:
         DLOG(WARNING) << "Unexpected error while checking crash_service.exe's "
-                      << "pipe: " << win_util::FormatLastWin32Error();
+                      << ::GetLastError();
         // Go ahead and wait in case it clears up.
         break;
     }

@@ -18,7 +18,7 @@ ScopedProp::ScopedProp(HWND hwnd, const std::wstring& key, HANDLE data)
   // is going to ask for the property and get NULL. So, rather than crash later
   // on when someone expects a non-NULL value we crash here in hopes of
   // diagnosing the failure.
-  CHECK(result) << win_util::FormatLastWin32Error();
+  CHECK(result) << ::GetLastError();
 }
 
 ScopedProp::~ScopedProp() {

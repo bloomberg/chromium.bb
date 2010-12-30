@@ -13,9 +13,9 @@
 #include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
 #include "app/table_model.h"
+#include "app/win/hwnd_util.h"
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
-#include "base/win_util.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/favicon_size.h"
 #include "gfx/font.h"
@@ -835,14 +835,14 @@ HWND TableView::CreateNativeControl(HWND parent_container) {
     DCHECK(header);
     SetWindowLongPtr(header, GWLP_USERDATA,
         reinterpret_cast<LONG_PTR>(&table_view_wrapper_));
-    header_original_handler_ = win_util::SetWindowProc(header,
+    header_original_handler_ = app::win::SetWindowProc(header,
         &TableView::TableHeaderWndProc);
   }
 
   SetWindowLongPtr(list_view_, GWLP_USERDATA,
       reinterpret_cast<LONG_PTR>(&table_view_wrapper_));
   original_handler_ =
-      win_util::SetWindowProc(list_view_, &TableView::TableWndProc);
+      app::win::SetWindowProc(list_view_, &TableView::TableWndProc);
 
   // Bug 964884: detach the IME attached to this window.
   // We should attach IMEs only when we need to input CJK strings.

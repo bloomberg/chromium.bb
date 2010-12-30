@@ -8,8 +8,8 @@
 #include <string>
 
 #include "app/keyboard_codes.h"
+#include "app/win/window_impl.h"
 #include "base/message_loop.h"
-#include "gfx/window_impl.h"
 #include "views/controls/scrollbar/native_scroll_bar.h"
 #include "views/controls/scrollbar/scroll_bar.h"
 #include "views/widget/widget.h"
@@ -24,7 +24,7 @@ namespace views {
 // use instances of this class to wrap native scrollbars.
 //
 /////////////////////////////////////////////////////////////////////////////
-class ScrollBarContainer : public gfx::WindowImpl {
+class ScrollBarContainer : public app::win::WindowImpl {
  public:
   explicit ScrollBarContainer(ScrollBar* parent)
       : parent_(parent),

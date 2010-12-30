@@ -8,9 +8,9 @@
 #include "app/l10n_util_win.h"
 #include "app/system_monitor.h"
 #include "app/view_prop.h"
+#include "app/win/hwnd_util.h"
 #include "app/win_util.h"
 #include "base/string_util.h"
-#include "base/win_util.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/native_theme_win.h"
 #include "gfx/path.h"
@@ -78,7 +78,7 @@ WidgetWin* WidgetWin::GetWidget(HWND hwnd) {
   //                 WindowImpl).
   if (!WindowImpl::IsWindowImpl(hwnd))
     return NULL;
-  return reinterpret_cast<WidgetWin*>(win_util::GetWindowUserData(hwnd));
+  return reinterpret_cast<WidgetWin*>(app::win::GetWindowUserData(hwnd));
 }
 
 // static
@@ -1105,7 +1105,7 @@ Window* WidgetWin::GetWindowImpl(HWND hwnd) {
   HWND parent = hwnd;
   while (parent) {
     WidgetWin* widget =
-        reinterpret_cast<WidgetWin*>(win_util::GetWindowUserData(parent));
+        reinterpret_cast<WidgetWin*>(app::win::GetWindowUserData(parent));
     if (widget && widget->is_window_)
       return static_cast<WindowWin*>(widget);
     parent = ::GetParent(parent);

@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gfx/window_impl.h"
+#include "app/win/window_impl.h"
 
 #include <list>
 
+#include "app/win/hwnd_util.h"
 #include "base/singleton.h"
 #include "base/string_number_conversions.h"
-#include "base/win_util.h"
 
-namespace gfx {
+namespace app {
+namespace win {
 
 static const DWORD kWindowDefaultChildStyle =
     WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
@@ -149,7 +150,7 @@ void WindowImpl::Init(HWND parent, const gfx::Rect& bounds) {
   DCHECK(hwnd_);
 
   // The window procedure should have set the data for us.
-  DCHECK(win_util::GetWindowUserData(hwnd_) == this);
+  DCHECK(app::win::GetWindowUserData(hwnd_) == this);
 }
 
 HICON WindowImpl::GetDefaultWindowIcon() const {
@@ -186,13 +187,13 @@ LRESULT CALLBACK WindowImpl::WndProc(HWND hwnd,
     CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(l_param);
     WindowImpl* window = reinterpret_cast<WindowImpl*>(cs->lpCreateParams);
     DCHECK(window);
-    win_util::SetWindowUserData(hwnd, window);
+    app::win::SetWindowUserData(hwnd, window);
     window->hwnd_ = hwnd;
     return TRUE;
   }
 
   WindowImpl* window = reinterpret_cast<WindowImpl*>(
-      win_util::GetWindowUserData(hwnd));
+      app::win::GetWindowUserData(hwnd));
   if (!window)
     return 0;
 
@@ -227,4 +228,5 @@ std::wstring WindowImpl::GetWindowClassName() {
   return name;
 }
 
-}  // namespace gfx
+}  // namespace win
+}  // namespace app

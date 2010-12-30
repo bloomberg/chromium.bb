@@ -4,7 +4,7 @@
 
 #include "chrome/browser/views/status_icons/status_tray_win.h"
 
-#include "base/win_util.h"
+#include "app/win/hwnd_util.h"
 #include "chrome/browser/views/status_icons/status_icon_win.h"
 #include "chrome/common/chrome_constants.h"
 
@@ -25,7 +25,7 @@ StatusTrayWin::StatusTrayWin()
   // Create an offscreen window for handling messages for the status icons.
   window_ = CreateWindow(chrome::kStatusTrayWindowClass,
                          0, 0, 0, 0, 0, 0, HWND_MESSAGE, 0, hinst, 0);
-  win_util::SetWindowUserData(window_, this);
+  app::win::SetWindowUserData(window_, this);
 }
 
 LRESULT CALLBACK StatusTrayWin::WndProcStatic(HWND hwnd,

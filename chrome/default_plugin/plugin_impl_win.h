@@ -8,10 +8,10 @@
 
 #include <string>
 
+#include "app/win/window_impl.h"
 #include "chrome/default_plugin/install_dialog.h"
 #include "chrome/default_plugin/plugin_database_handler.h"
 #include "chrome/default_plugin/plugin_install_job_monitor.h"
-#include "gfx/window_impl.h"
 #include "third_party/npapi/bindings/npapi.h"
 
 // Possible plugin installer states.
@@ -34,7 +34,7 @@ class PluginDatabaseHandler;
 // Provides the plugin installation functionality. This class is
 // instantiated with the information like the mime type of the
 // target plugin, the display mode, etc.
-class PluginInstallerImpl : public gfx::WindowImpl {
+class PluginInstallerImpl : public app::win::WindowImpl {
  public:
   static const int kRefreshPluginsMessage  = WM_APP + 1;
 

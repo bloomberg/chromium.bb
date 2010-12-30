@@ -70,30 +70,6 @@ bool GetUserSidString(std::wstring* user_sid) {
   return true;
 }
 
-#pragma warning(push)
-#pragma warning(disable:4312 4244)
-WNDPROC SetWindowProc(HWND hwnd, WNDPROC proc) {
-  // The reason we don't return the SetwindowLongPtr() value is that it returns
-  // the orignal window procedure and not the current one. I don't know if it is
-  // a bug or an intended feature.
-  WNDPROC oldwindow_proc =
-      reinterpret_cast<WNDPROC>(GetWindowLongPtr(hwnd, GWLP_WNDPROC));
-  SetWindowLongPtr(hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(proc));
-  return oldwindow_proc;
-}
-
-void* SetWindowUserData(HWND hwnd, void* user_data) {
-  return
-      reinterpret_cast<void*>(SetWindowLongPtr(hwnd, GWLP_USERDATA,
-          reinterpret_cast<LONG_PTR>(user_data)));
-}
-
-void* GetWindowUserData(HWND hwnd) {
-  return reinterpret_cast<void*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-}
-
-#pragma warning(pop)
-
 bool IsShiftPressed() {
   return (::GetKeyState(VK_SHIFT) & 0x8000) == 0x8000;
 }
@@ -104,27 +80,6 @@ bool IsCtrlPressed() {
 
 bool IsAltPressed() {
   return (::GetKeyState(VK_MENU) & 0x8000) == 0x8000;
-}
-
-std::wstring GetClassName(HWND window) {
-  // GetClassNameW will return a truncated result (properly null terminated) if
-  // the given buffer is not large enough.  So, it is not possible to determine
-  // that we got the entire class name if the result is exactly equal to the
-  // size of the buffer minus one.
-  DWORD buffer_size = MAX_PATH;
-  while (true) {
-    std::wstring output;
-    DWORD size_ret =
-        GetClassNameW(window, WriteInto(&output, buffer_size), buffer_size);
-    if (size_ret == 0)
-      break;
-    if (size_ret < (buffer_size - 1)) {
-      output.resize(size_ret);
-      return output;
-    }
-    buffer_size *= 2;
-  }
-  return std::wstring();  // error
 }
 
 bool UserAccountControlIsEnabled() {
@@ -142,28 +97,6 @@ bool UserAccountControlIsEnabled() {
   // Users can set the EnableLUA value to something arbitrary, like 2, which
   // Vista will treat as UAC enabled, so we make sure it is not set to 0.
   return (uac_enabled != 0);
-}
-
-std::wstring FormatMessage(unsigned messageid) {
-  wchar_t* string_buffer = NULL;
-  unsigned string_length = ::FormatMessage(
-      FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
-      FORMAT_MESSAGE_IGNORE_INSERTS, NULL, messageid, 0,
-      reinterpret_cast<wchar_t *>(&string_buffer), 0, NULL);
-
-  std::wstring formatted_string;
-  if (string_buffer) {
-    formatted_string = string_buffer;
-    LocalFree(reinterpret_cast<HLOCAL>(string_buffer));
-  } else {
-    // The formating failed. simply convert the message value into a string.
-    base::SStringPrintf(&formatted_string, L"message number %d", messageid);
-  }
-  return formatted_string;
-}
-
-std::wstring FormatLastWin32Error() {
-  return FormatMessage(GetLastError());
 }
 
 bool SetAppIdForPropertyStore(IPropertyStore* property_store,

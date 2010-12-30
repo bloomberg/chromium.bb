@@ -10,8 +10,8 @@
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/table_model.h"
+#include "app/win/hwnd_util.h"
 #include "base/logging.h"
-#include "base/win_util.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/favicon_size.h"
 #include "gfx/icon_util.h"
@@ -408,12 +408,12 @@ void NativeTableWin::CreateNativeControl() {
     DCHECK(header);
     SetWindowLongPtr(header, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
     header_original_handler_ =
-        win_util::SetWindowProc(header, &NativeTableWin::TableHeaderWndProc);
+        app::win::SetWindowProc(header, &NativeTableWin::TableHeaderWndProc);
   }
 
   SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
   original_handler_ =
-      win_util::SetWindowProc(hwnd, &NativeTableWin::TableWndProc);
+      app::win::SetWindowProc(hwnd, &NativeTableWin::TableWndProc);
 
   // Bug 964884: detach the IME attached to this window.
   // We should attach IMEs only when we need to input CJK strings.

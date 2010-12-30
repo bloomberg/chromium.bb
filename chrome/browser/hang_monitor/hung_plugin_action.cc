@@ -7,8 +7,8 @@
 #include "chrome/browser/hang_monitor/hung_plugin_action.h"
 
 #include "app/l10n_util.h"
+#include "app/win/hwnd_util.h"
 #include "app/win_util.h"
-#include "base/win_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/common/logging_chrome.h"
 #include "grit/generated_resources.h"
@@ -133,7 +133,7 @@ bool HungPluginAction::GetPluginName(HWND plugin_window,
 
 // static
 BOOL CALLBACK HungPluginAction::DismissMessageBox(HWND window, LPARAM ignore) {
-  std::wstring class_name = win_util::GetClassNameW(window);
+  string16 class_name = app::win::GetClassName(window);
   // #32770 is the dialog window class which is the window class of
   // the message box being displayed.
   if (class_name == L"#32770") {

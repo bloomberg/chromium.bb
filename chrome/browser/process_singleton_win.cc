@@ -5,6 +5,7 @@
 #include "chrome/browser/process_singleton.h"
 
 #include "app/l10n_util.h"
+#include "app/win/hwnd_util.h"
 #include "app/win_util.h"
 #include "base/base_paths.h"
 #include "base/command_line.h"
@@ -12,7 +13,6 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/scoped_handle.h"
-#include "base/win_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extensions_startup.h"
 #include "chrome/browser/platform_util.h"
@@ -192,7 +192,7 @@ bool ProcessSingleton::Create() {
                          0, 0, 0, 0, 0, HWND_MESSAGE, 0, hinst, 0);
   DCHECK(window_);
 
-  win_util::SetWindowUserData(window_, this);
+  app::win::SetWindowUserData(window_, this);
   return true;
 }
 

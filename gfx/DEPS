@@ -2,4 +2,7 @@ include_rules = [
   "+base",
   "+grit/gfx_resources.h",
   "+skia",
+
+  # Allow the unit tests to use window_impl to pop up windows.
+  "+app/win/window_impl.h",
 ]

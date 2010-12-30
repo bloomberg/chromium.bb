@@ -1,10 +1,10 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "webkit/tools/test_shell/webview_host.h"
 
-#include "base/win_util.h"
+#include "app/win/hwnd_util.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
 #include "skia/ext/platform_canvas.h"
@@ -40,7 +40,7 @@ WebViewHost* WebViewHost::Create(HWND parent_view,
                              WS_CHILD|WS_CLIPCHILDREN|WS_CLIPSIBLINGS, 0, 0,
                              0, 0, parent_view, NULL,
                              GetModuleHandle(NULL), NULL);
-  win_util::SetWindowUserData(host->view_, host);
+  app::win::SetWindowUserData(host->view_, host);
 
   host->webwidget_ = WebView::create(delegate, dev_tools_client);
   prefs.Apply(host->webview());
