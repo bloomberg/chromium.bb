@@ -6,10 +6,11 @@
 #define VIEWS_EXAMPLES_TABLE2_EXAMPLE_H_
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "app/table_model.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/table/table_view_observer.h"
@@ -51,10 +52,14 @@ class Table2Example
     container->SetLayoutManager(layout);
 
     std::vector<TableColumn> columns;
-    columns.push_back(TableColumn(0, L"Fruit", TableColumn::LEFT, 100));
-    columns.push_back(TableColumn(1, L"Color", TableColumn::LEFT, 100));
-    columns.push_back(TableColumn(2, L"Origin", TableColumn::LEFT, 100));
-    columns.push_back(TableColumn(3, L"Price", TableColumn::LEFT, 100));
+    columns.push_back(TableColumn(0, ASCIIToUTF16("Fruit"), TableColumn::LEFT,
+        100));
+    columns.push_back(TableColumn(1, ASCIIToUTF16("Color"), TableColumn::LEFT,
+        100));
+    columns.push_back(TableColumn(2, ASCIIToUTF16("Origin"), TableColumn::LEFT,
+        100));
+    columns.push_back(TableColumn(3, ASCIIToUTF16("Price"), TableColumn::LEFT,
+        100));
     const int options = (views::TableView2::SINGLE_SELECTION |
                          views::TableView2::RESIZABLE_COLUMNS |
                          views::TableView2::AUTOSIZE_COLUMNS |
@@ -102,15 +107,15 @@ class Table2Example
     return 10;
   }
 
-  virtual std::wstring GetText(int row, int column_id) {
-    std::wstring cells[5][5] = {
-      { L"Orange", L"Orange", L"South america", L"$5" },
-      { L"Apple", L"Green", L"Canada", L"$3" },
-      { L"Blue berries", L"Blue", L"Mexico", L"$10.3" },
-      { L"Strawberries", L"Red", L"California", L"$7" },
-      { L"Cantaloupe", L"Orange", L"South america", L"$5" },
+  virtual string16 GetText(int row, int column_id) {
+    const char* const cells[5][4] = {
+      { "Orange", "Orange", "South america", "$5" },
+      { "Apple", "Green", "Canada", "$3" },
+      { "Blue berries", "Blue", "Mexico", "$10.3" },
+      { "Strawberries", "Red", "California", "$7" },
+      { "Cantaloupe", "Orange", "South america", "$5" }
     };
-    return cells[row % 5][column_id];
+    return ASCIIToUTF16(cells[row % 5][column_id]);
   }
 
   virtual SkBitmap GetIcon(int row) {
