@@ -5,8 +5,8 @@
 // This file defines a service that collects information about the user
 // experience in order to help improve future versions of the app.
 
-#ifndef CHROME_FRAME_METRICS_METRICS_SERVICE_H_
-#define CHROME_FRAME_METRICS_METRICS_SERVICE_H_
+#ifndef CHROME_FRAME_METRICS_SERVICE_H_
+#define CHROME_FRAME_METRICS_SERVICE_H_
 
 #include <map>
 #include <string>
@@ -17,7 +17,7 @@
 #include "base/metrics/histogram.h"
 #include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
-#include "base/thread_local.h"
+#include "base/threading/thread_local.h"
 #include "chrome/common/metrics_helpers.h"
 
 // TODO(ananta)
@@ -153,4 +153,4 @@ class MetricsService : public MetricsServiceBase {
   DISALLOW_COPY_AND_ASSIGN(MetricsService);
 };
 
-#endif  // CHROME_FRAME_METRICS_METRICS_SERVICE_H_
+#endif  // CHROME_FRAME_METRICS_SERVICE_H_

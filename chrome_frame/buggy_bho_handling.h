@@ -11,7 +11,7 @@
 
 #include <vector>
 
-#include "base/thread_local.h"
+#include "base/threading/thread_local.h"
 
 namespace buggy_bho {
 
@@ -84,4 +84,3 @@ class BuggyBhoTls {
 }  // end namespace buggy_bho
 
 #endif  // CHROME_FRAME_BUGGY_BHO_HANDLING_H_
-

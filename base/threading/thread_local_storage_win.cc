@@ -1,12 +1,14 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/thread_local_storage.h"
+#include "base/threading/thread_local_storage.h"
 
 #include <windows.h>
 
 #include "base/logging.h"
+
+namespace base {
 
 // In order to make TLS destructors work, we need to keep function
 // pointers to the destructor for each TLS that we allocate.
@@ -122,6 +124,8 @@ void ThreadLocalStorage::ThreadExit() {
   TlsSetValue(tls_key_, NULL);
 }
 
+}  // namespace base
+
 // Thread Termination Callbacks.
 // Windows doesn't support a per-thread destructor with its
 // TLS primitives.  So, we build it manually by inserting a
@@ -150,7 +154,7 @@ void NTAPI OnThreadExit(PVOID module, DWORD reason, PVOID reserved) {
   // On XP SP0 & SP1, the DLL_PROCESS_ATTACH is never seen. It is sent on SP2+
   // and on W2K and W2K3. So don't assume it is sent.
   if (DLL_THREAD_DETACH == reason || DLL_PROCESS_DETACH == reason)
-    ThreadLocalStorage::ThreadExit();
+    base::ThreadLocalStorage::ThreadExit();
 }
 
 // .CRT$XLA to .CRT$XLZ is an array of PIMAGE_TLS_CALLBACK pointers that are

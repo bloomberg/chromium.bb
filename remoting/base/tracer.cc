@@ -14,7 +14,7 @@
 #include "base/ref_counted.h"
 #include "base/stl_util-inl.h"
 #include "base/thread.h"
-#include "base/thread_local.h"
+#include "base/threading/thread_local.h"
 #include "base/time.h"
 
 namespace remoting {

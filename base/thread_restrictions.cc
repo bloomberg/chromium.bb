@@ -9,7 +9,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/thread_local.h"
+#include "base/threading/thread_local.h"
 
 namespace base {
 

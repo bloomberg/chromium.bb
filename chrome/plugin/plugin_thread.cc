@@ -18,7 +18,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/process_util.h"
-#include "base/thread_local.h"
+#include "base/threading/thread_local.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/chrome_switches.h"

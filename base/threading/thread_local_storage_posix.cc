@@ -1,10 +1,12 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/thread_local_storage.h"
+#include "base/threading/thread_local_storage.h"
 
 #include "base/logging.h"
+
+namespace base {
 
 ThreadLocalStorage::Slot::Slot(TLSDestructorFunc destructor)
     : initialized_(false) {
@@ -42,3 +44,5 @@ void ThreadLocalStorage::Slot::Set(void* value) {
   if (error)
     NOTREACHED();
 }
+
+}  // namespace base

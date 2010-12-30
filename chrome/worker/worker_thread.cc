@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "base/thread_local.h"
+#include "base/threading/thread_local.h"
 #include "chrome/common/appcache/appcache_dispatcher.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/db_message_filter.h"

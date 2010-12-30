@@ -5,7 +5,7 @@
 #include "webkit/plugins/ppapi/ppb_transport_impl.h"
 
 #include "base/singleton.h"
-#include "base/thread_local.h"
+#include "base/threading/thread_local.h"
 #include "ppapi/c/dev/ppb_transport_dev.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_module.h"

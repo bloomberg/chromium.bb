@@ -20,7 +20,7 @@
 #include "base/shared_memory.h"
 #include "base/string_util.h"
 #include "base/task.h"
-#include "base/thread_local.h"
+#include "base/threading/thread_local.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/appcache/appcache_dispatcher.h"

@@ -45,8 +45,8 @@
 //     return Singleton<ThreadLocalPointer<MyClass> >::get()->Get();
 //   }
 
-#ifndef BASE_THREAD_LOCAL_H_
-#define BASE_THREAD_LOCAL_H_
+#ifndef BASE_THREADING_THREAD_LOCAL_H_
+#define BASE_THREADING_THREAD_LOCAL_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -124,4 +124,4 @@ class ThreadLocalBoolean {
 
 }  // namespace base
 
-#endif  // BASE_THREAD_LOCAL_H_
+#endif  // BASE_THREADING_THREAD_LOCAL_H_

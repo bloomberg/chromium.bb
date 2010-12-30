@@ -6,8 +6,8 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/thread_local.h"
 #include "base/message_loop.h"
+#include "base/threading/thread_local.h"
 #include "base/waitable_event.h"
 #include "base/waitable_event_watcher.h"
 #include "ipc/ipc_sync_message.h"

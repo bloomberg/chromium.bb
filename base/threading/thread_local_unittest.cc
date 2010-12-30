@@ -4,9 +4,11 @@
 
 #include "base/logging.h"
 #include "base/threading/simple_thread.h"
-#include "base/thread_local.h"
+#include "base/threading/thread_local.h"
 #include "base/waitable_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace base {
 
 namespace {
 
@@ -157,3 +159,5 @@ TEST(ThreadLocalTest, Boolean) {
     EXPECT_FALSE(tlb.Get());
   }
 }
+
+}  // namespace base

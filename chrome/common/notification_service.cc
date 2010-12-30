@@ -5,7 +5,7 @@
 #include "chrome/common/notification_service.h"
 
 #include "base/lazy_instance.h"
-#include "base/thread_local.h"
+#include "base/threading/thread_local.h"
 #include "chrome/common/notification_observer.h"
 
 static base::LazyInstance<base::ThreadLocalPointer<NotificationService> >

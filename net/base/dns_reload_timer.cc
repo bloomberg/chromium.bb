@@ -6,7 +6,7 @@
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD)
 #include "base/lazy_instance.h"
-#include "base/thread_local_storage.h"
+#include "base/threading/thread_local_storage.h"
 #include "base/time.h"
 
 namespace {
@@ -72,14 +72,15 @@ class DnsReloadTimer {
 
   // We use thread local storage to identify which base::TimeTicks to
   // interact with.
-  static ThreadLocalStorage::Slot tls_index_ ;
+  static base::ThreadLocalStorage::Slot tls_index_ ;
 
   DISALLOW_COPY_AND_ASSIGN(DnsReloadTimer);
 };
 
 // A TLS slot to the TimeTicks for the current thread.
 // static
-ThreadLocalStorage::Slot DnsReloadTimer::tls_index_(base::LINKER_INITIALIZED);
+base::ThreadLocalStorage::Slot DnsReloadTimer::tls_index_(
+    base::LINKER_INITIALIZED);
 
 base::LazyInstance<DnsReloadTimer,
                    base::LeakyLazyInstanceTraits<DnsReloadTimer> >

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #endif
 
 #include "base/threading/simple_thread.h"
-#include "base/thread_local_storage.h"
+#include "base/threading/thread_local_storage.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
@@ -17,11 +17,14 @@
 #pragma warning(disable : 4311 4312)
 #endif
 
+namespace base {
+
+namespace {
+
 const int kInitialTlsValue = 0x5555;
-static ThreadLocalStorage::Slot tls_slot(base::LINKER_INITIALIZED);
+static ThreadLocalStorage::Slot tls_slot(LINKER_INITIALIZED);
 
-
-class ThreadLocalStorageRunner : public base::DelegateSimpleThread::Delegate {
+class ThreadLocalStorageRunner : public DelegateSimpleThread::Delegate {
  public:
   explicit ThreadLocalStorageRunner(int* tls_value_ptr)
       : tls_value_ptr_(tls_value_ptr) {}
@@ -54,6 +57,7 @@ void ThreadLocalStorageCleanup(void *value) {
     *ptr = kInitialTlsValue;
 }
 
+}  // namespace
 
 TEST(ThreadLocalStorageTest, Basics) {
   ThreadLocalStorage::Slot slot;
@@ -69,7 +73,7 @@ TEST(ThreadLocalStorageTest, TLSDestructors) {
   const int kNumThreads = 5;
   int values[kNumThreads];
   ThreadLocalStorageRunner* thread_delegates[kNumThreads];
-  base::DelegateSimpleThread* threads[kNumThreads];
+  DelegateSimpleThread* threads[kNumThreads];
 
   tls_slot.Initialize(ThreadLocalStorageCleanup);
 
@@ -77,8 +81,8 @@ TEST(ThreadLocalStorageTest, TLSDestructors) {
   for (int index = 0; index < kNumThreads; index++) {
     values[index] = kInitialTlsValue;
     thread_delegates[index] = new ThreadLocalStorageRunner(&values[index]);
-    threads[index] = new base::DelegateSimpleThread(thread_delegates[index],
-                                                    "tls thread");
+    threads[index] = new DelegateSimpleThread(thread_delegates[index],
+                                              "tls thread");
     threads[index]->Start();
   }
 
@@ -92,3 +96,5 @@ TEST(ThreadLocalStorageTest, TLSDestructors) {
     EXPECT_EQ(values[index], kInitialTlsValue);
   }
 }
+
+}  // namespace base
