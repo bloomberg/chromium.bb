@@ -791,7 +791,6 @@ private:
   BOOL visible = [[tabStripView_ window] isVisible];
 
   CGFloat offset = [self indentForControls];
-  NSUInteger i = 0;
   bool hasPlaceholderGap = false;
   for (TabController* tab in tabArray_.get()) {
     // Ignore a tab that is going through a close animation.
@@ -811,9 +810,8 @@ private:
     // If the tab is hidden, we consider it a new tab. We make it visible
     // and animate it in.
     BOOL newTab = [[tab view] isHidden];
-    if (newTab) {
+    if (newTab)
       [[tab view] setHidden:NO];
-    }
 
     if (isPlaceholder) {
       // Move the current tab to the correct location instantly.
@@ -896,7 +894,6 @@ private:
       offset += NSWidth(tabFrame);
       offset -= kTabOverlap;
     }
-    i++;
   }
 
   // Hide the new tab button if we're explicitly told to. It may already
@@ -909,10 +906,8 @@ private:
     // We've already ensured there's enough space for the new tab button
     // so we don't have to check it against the available space. We do need
     // to make sure we put it after any placeholder.
-    newTabNewFrame.origin = NSMakePoint(offset, 0);
-    newTabNewFrame.origin.x = MAX(newTabNewFrame.origin.x,
-                                  NSMaxX(placeholderFrame_)) +
-                                      kNewTabButtonOffset;
+    CGFloat maxTabX = MAX(offset, NSMaxX(placeholderFrame_) - kTabOverlap);
+    newTabNewFrame.origin = NSMakePoint(maxTabX + kNewTabButtonOffset, 0);
     if ([tabContentsArray_ count])
       [newTabButton_ setHidden:NO];
 
