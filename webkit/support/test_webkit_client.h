@@ -68,7 +68,7 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
       const WebKit::WebString& keyPath,
       WebKit::WebVector<WebKit::WebIDBKey>& keys_out);
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   void SetThemeEngine(WebKit::WebThemeEngine* engine);
   virtual WebKit::WebThemeEngine *themeEngine();
 #endif
@@ -98,7 +98,7 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
   WebURLLoaderMockFactory url_loader_factory_;
   bool unit_test_mode_;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   WebKit::WebThemeEngine* active_theme_engine_;
 #endif
   DISALLOW_COPY_AND_ASSIGN(TestWebKitClient);

@@ -146,7 +146,7 @@ void ClearAllDatabases();
 void SetAcceptAllCookies(bool accept);
 
 // - Theme engine
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 void SetThemeEngine(WebKit::WebThemeEngine* engine);
 WebKit::WebThemeEngine* GetThemeEngine();
 #endif

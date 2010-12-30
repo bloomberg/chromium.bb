@@ -331,7 +331,7 @@ void TestWebKitClient::createIDBKeysFromSerializedValuesAndKeyPath(
   keys_out.swap(keys);
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 void TestWebKitClient::SetThemeEngine(WebKit::WebThemeEngine* engine) {
   active_theme_engine_ = engine ? engine : WebKitClientImpl::themeEngine();
 }

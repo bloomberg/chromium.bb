@@ -125,7 +125,7 @@ class TestEnvironment {
 
   TestWebKitClient* webkit_client() const { return webkit_client_.get(); }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   void set_theme_engine(WebKit::WebThemeEngine* engine) {
     DCHECK(webkit_client_ != 0);
     webkit_client_->SetThemeEngine(engine);
@@ -490,7 +490,7 @@ void SetAcceptAllCookies(bool accept) {
 }
 
 // Theme engine
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 
 void SetThemeEngine(WebKit::WebThemeEngine* engine) {
   DCHECK(test_environment);
