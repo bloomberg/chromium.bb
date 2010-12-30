@@ -69,7 +69,7 @@ class Mutex : public IMutex {
     }
   }
 
-  void Mutex::Unlock() {
+  void Unlock() {
     (void) ReleaseMutex(handle_);
   }
 
