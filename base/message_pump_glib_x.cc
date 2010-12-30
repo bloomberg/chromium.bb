@@ -84,6 +84,9 @@ MessagePumpGlibX::~MessagePumpGlibX() {
 
 bool MessagePumpGlibX::RunOnce(GMainContext* context, bool block) {
   GdkDisplay* gdisp = gdk_display_get_default();
+  if (!gdisp)
+    return MessagePumpForUI::RunOnce(context, block);
+
   Display* display = GDK_DISPLAY_XDISPLAY(gdisp);
   bool should_quit = false;
 
@@ -189,6 +192,9 @@ void MessagePumpGlibX::InitializeEventsToCapture(void) {
 #if defined(HAVE_XINPUT2)
 void MessagePumpGlibX::InitializeXInput2(void) {
   GdkDisplay* display = gdk_display_get_default();
+  if (!display)
+    return;
+
   Display* xdisplay = GDK_DISPLAY_XDISPLAY(display);
   int event, err;
 
