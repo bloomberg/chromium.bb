@@ -407,5 +407,12 @@ UNINITIALIZED READ
 ...
 *!vp8_*
 
+# http://crbug.com/68307
+LEAK
+...
+*!PrintDlgExMock
+...
+*!PrintingContextTest_PrintAll_Test::TestBody
+
 # Empty line at EOF - workaround for
 # http://code.google.com/p/drmemory/issues/detail?id=41
