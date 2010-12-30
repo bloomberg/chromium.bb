@@ -14,6 +14,9 @@
 namespace chromeos {
 class LoginStatusConsumer;
 
+// static
+const char Authenticator::kSpecialCaseDomain[] = "gmail.com";
+
 Authenticator::Authenticator(LoginStatusConsumer* consumer)
     : consumer_(consumer) {
 }
@@ -26,7 +29,11 @@ std::string Authenticator::Canonicalize(const std::string& email_address) {
   char at = '@';
   base::SplitString(email_address, at, &parts);
   DCHECK_EQ(parts.size(), 2U) << "email_address should have only one @";
-  RemoveChars(parts[0], ".", &parts[0]);
+  if (parts[1] == kSpecialCaseDomain)  // only strip '.' for gmail accounts.
+    RemoveChars(parts[0], ".", &parts[0]);
+  // Technically the '+' handling here could be removed, as the google
+  // account servers do not tolerate them, so we don't need to either.
+  // TODO(cmasone): remove this, unless this code becomes obsolete altogether.
   if (parts[0].find('+') != std::string::npos)
     parts[0].erase(parts[0].find('+'));
   std::string new_email = StringToLowerASCII(JoinString(parts, at));

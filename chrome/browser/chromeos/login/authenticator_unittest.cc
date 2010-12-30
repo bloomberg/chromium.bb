@@ -23,19 +23,29 @@ TEST(AuthenticatorTest, EmailAddressIgnoreDomainCaps) {
             Authenticator::Canonicalize("UsEr@what.COM"));
 }
 
-TEST(AuthenticatorTest, EmailAddressIgnoreOneUsernameDot) {
-  EXPECT_EQ(Authenticator::Canonicalize("us.er@what.com"),
+TEST(AuthenticatorTest, EmailAddressRejectOneUsernameDot) {
+  EXPECT_NE(Authenticator::Canonicalize("u.ser@what.com"),
             Authenticator::Canonicalize("UsEr@what.com"));
 }
 
-TEST(AuthenticatorTest, EmailAddressIgnoreManyUsernameDots) {
+TEST(AuthenticatorTest, EmailAddressMatchWithOneUsernameDot) {
   EXPECT_EQ(Authenticator::Canonicalize("u.ser@what.com"),
-            Authenticator::Canonicalize("Us.E.r@what.com"));
+            Authenticator::Canonicalize("U.sEr@what.com"));
+}
+
+TEST(AuthenticatorTest, EmailAddressIgnoreOneUsernameDot) {
+  EXPECT_EQ(Authenticator::Canonicalize("us.er@gmail.com"),
+            Authenticator::Canonicalize("UsEr@gmail.com"));
+}
+
+TEST(AuthenticatorTest, EmailAddressIgnoreManyUsernameDots) {
+  EXPECT_EQ(Authenticator::Canonicalize("u.ser@gmail.com"),
+            Authenticator::Canonicalize("Us.E.r@gmail.com"));
 }
 
 TEST(AuthenticatorTest, EmailAddressIgnoreConsecutiveUsernameDots) {
-  EXPECT_EQ(Authenticator::Canonicalize("use.r@what.com"),
-            Authenticator::Canonicalize("Us....E.r@what.com"));
+  EXPECT_EQ(Authenticator::Canonicalize("use.r@gmail.com"),
+            Authenticator::Canonicalize("Us....E.r@gmail.com"));
 }
 
 TEST(AuthenticatorTest, EmailAddressDifferentOnesRejected) {
