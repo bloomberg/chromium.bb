@@ -42,7 +42,7 @@
         ['OS=="win"', {
           'sources': [
             # TODO(brettw) re-enable this when the dependencies on WindowImpl are fixed!
-            #'canvas_direct2d_unittest.cc',
+            'canvas_direct2d_unittest.cc',
             'icon_util_unittest.cc',
             'native_theme_win_unittest.cc',
           ],
