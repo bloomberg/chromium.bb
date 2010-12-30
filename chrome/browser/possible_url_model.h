@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "app/table_model.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/history/history.h"
 
 class SkBitmap;
@@ -32,17 +33,8 @@ class PossibleURLModel : public TableModel {
   void OnHistoryQueryComplete(HistoryService::Handle h,
                               history::QueryResults* result);
 
-  virtual int RowCount();
-
   const GURL& GetURL(int row);
-
   const std::wstring& GetTitle(int row);
-
-  virtual std::wstring GetText(int row, int col_id);
-
-  virtual SkBitmap GetIcon(int row);
-
-  virtual int CompareValues(int row1, int row2, int column_id);
 
   virtual void OnFavIconAvailable(FaviconService::Handle h,
                                   bool fav_icon_available,
@@ -50,7 +42,12 @@ class PossibleURLModel : public TableModel {
                                   bool expired,
                                   GURL icon_url);
 
-  virtual void SetObserver(TableModelObserver* observer);
+  // TableModel overrides
+  virtual int RowCount() OVERRIDE;
+  virtual string16 GetText(int row, int col_id) OVERRIDE;
+  virtual SkBitmap GetIcon(int row) OVERRIDE;
+  virtual int CompareValues(int row1, int row2, int column_id) OVERRIDE;
+  virtual void SetObserver(TableModelObserver* observer) OVERRIDE;
 
  private:
   // The current profile.

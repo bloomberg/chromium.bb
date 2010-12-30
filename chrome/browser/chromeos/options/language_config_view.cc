@@ -236,14 +236,14 @@ void LanguageConfigView::OnSelectionChanged() {
   right_container_->Layout();
 }
 
-std::wstring LanguageConfigView::GetText(int row, int column_id) {
+string16 LanguageConfigView::GetText(int row, int column_id) {
   if (row >= 0 && row < static_cast<int>(
           model_.num_preferred_language_codes())) {
-    return UTF16ToWide(input_method::GetLanguageDisplayNameFromCode(
-        model_.preferred_language_code_at(row)));
+    return input_method::GetLanguageDisplayNameFromCode(
+        model_.preferred_language_code_at(row));
   }
   NOTREACHED();
-  return L"";
+  return string16();
 }
 
 void LanguageConfigView::SetObserver(TableModelObserver* observer) {
@@ -413,7 +413,7 @@ views::View* LanguageConfigView::CreateContentsOnLeft() {
   // Create the language table.
   std::vector<TableColumn> columns;
   TableColumn column(0,
-                     l10n_util::GetString(
+                     l10n_util::GetStringUTF16(
                          IDS_OPTIONS_SETTINGS_LANGUAGES_LANGUAGES),
                      TableColumn::LEFT, -1, 0);
   columns.push_back(column);

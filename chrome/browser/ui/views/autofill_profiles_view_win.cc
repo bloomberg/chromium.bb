@@ -1266,14 +1266,14 @@ int AutoFillProfilesView::ContentListTableModel::RowCount() {
   return profiles_->size() + credit_cards_->size();
 }
 
-std::wstring AutoFillProfilesView::ContentListTableModel::GetText(
+string16 AutoFillProfilesView::ContentListTableModel::GetText(
     int row, int column_id) {
   DCHECK(row < static_cast<int>(profiles_->size() + credit_cards_->size()));
   if (row < static_cast<int>(profiles_->size())) {
-    return profiles_->at(row).address.Label();
+    return WideToUTF16Hack(profiles_->at(row).address.Label());
   } else {
     row -= profiles_->size();
-    return credit_cards_->at(row).credit_card.PreviewSummary();
+    return WideToUTF16Hack(credit_cards_->at(row).credit_card.PreviewSummary());
   }
 }
 

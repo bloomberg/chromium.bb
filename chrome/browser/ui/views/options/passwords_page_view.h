@@ -10,6 +10,7 @@
 
 #include "app/table_model.h"
 #include "app/text_elider.h"
+#include "base/compiler_specific.h"
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/password_manager/password_store.h"
@@ -69,10 +70,10 @@ class PasswordsTableModel : public TableModel,
   virtual ~PasswordsTableModel();
 
   // TableModel methods.
-  virtual int RowCount();
-  virtual std::wstring GetText(int row, int column);
-  virtual int CompareValues(int row1, int row2, int column_id);
-  virtual void SetObserver(TableModelObserver* observer);
+  virtual int RowCount() OVERRIDE;
+  virtual string16 GetText(int row, int column) OVERRIDE;
+  virtual int CompareValues(int row1, int row2, int column_id) OVERRIDE;
+  virtual void SetObserver(TableModelObserver* observer) OVERRIDE;
 
   // Delete the PasswordForm at specified row from the database (and remove
   // from view).

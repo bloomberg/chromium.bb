@@ -599,14 +599,14 @@ void GeneralPageGtk::SaveStartupPref() {
 void GeneralPageGtk::SetColumnValues(int row, GtkTreeIter* iter) {
   SkBitmap bitmap = startup_custom_pages_table_model_->GetIcon(row);
   GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&bitmap);
-  std::wstring text = startup_custom_pages_table_model_->GetText(row, 0);
+  string16 text = startup_custom_pages_table_model_->GetText(row, 0);
   std::string tooltip =
-      WideToUTF8(startup_custom_pages_table_model_->GetTooltip(row));
+      UTF16ToUTF8(startup_custom_pages_table_model_->GetTooltip(row));
   gchar* escaped_tooltip = g_markup_escape_text(tooltip.c_str(),
                                                 tooltip.size());
   gtk_list_store_set(startup_custom_pages_store_, iter,
                      COL_FAVICON, pixbuf,
-                     COL_URL, WideToUTF8(text).c_str(),
+                     COL_URL, UTF16ToUTF8(text).c_str(),
                      COL_TOOLTIP, escaped_tooltip,
                      -1);
   g_object_unref(pixbuf);

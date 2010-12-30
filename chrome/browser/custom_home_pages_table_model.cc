@@ -30,7 +30,7 @@ struct CustomHomePagesTableModel::Entry {
   GURL url;
 
   // Page title.  If this is empty, we'll display the URL as the entry.
-  std::wstring title;
+  string16 title;
 
   // Icon for the page.
   SkBitmap icon;
@@ -130,7 +130,7 @@ int CustomHomePagesTableModel::RowCount() {
   return static_cast<int>(entries_.size());
 }
 
-std::wstring CustomHomePagesTableModel::GetText(int row, int column_id) {
+string16 CustomHomePagesTableModel::GetText(int row, int column_id) {
   DCHECK(column_id == 0);
   DCHECK(row >= 0 && row < RowCount());
   return entries_[row].title.empty() ? FormattedURL(row) : entries_[row].title;
@@ -141,11 +141,10 @@ SkBitmap CustomHomePagesTableModel::GetIcon(int row) {
   return entries_[row].icon.isNull() ? *default_favicon_ : entries_[row].icon;
 }
 
-std::wstring CustomHomePagesTableModel::GetTooltip(int row) {
-  return entries_[row].title.empty() ? std::wstring() : UTF16ToWideHack(
+string16 CustomHomePagesTableModel::GetTooltip(int row) {
+  return entries_[row].title.empty() ? string16() :
       l10n_util::GetStringFUTF16(IDS_OPTIONS_STARTUP_PAGE_TOOLTIP,
-                                 WideToUTF16Hack(entries_[row].title),
-                                 WideToUTF16Hack(FormattedURL(row))));
+                                 entries_[row].title, FormattedURL(row));
 }
 
 void CustomHomePagesTableModel::SetObserver(TableModelObserver* observer) {
@@ -182,7 +181,7 @@ void CustomHomePagesTableModel::OnGotTitle(HistoryService::Handle handle,
   }
   entry->title_handle = 0;
   if (found_url && !row->title().empty()) {
-    entry->title = UTF16ToWide(row->title());
+    entry->title = row->title();
     if (observer_)
       observer_->OnItemsChanged(static_cast<int>(entry_index), 1);
   }
@@ -233,10 +232,10 @@ CustomHomePagesTableModel::Entry*
   return NULL;
 }
 
-std::wstring CustomHomePagesTableModel::FormattedURL(int row) const {
+string16 CustomHomePagesTableModel::FormattedURL(int row) const {
   std::string languages =
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
   string16 url = net::FormatUrl(entries_[row].url, languages);
   url = base::i18n::GetDisplayStringInLTRDirectionality(url);
-  return UTF16ToWide(url);
+  return url;
 }

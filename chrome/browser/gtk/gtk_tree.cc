@@ -220,7 +220,7 @@ void TableAdapter::OnModelChanged() {
                          COL_WEIGHT_SET,
                          TRUE,
                          COL_TITLE,
-                         WideToUTF8(it->title).c_str(),
+                         UTF16ToUTF8(it->title).c_str(),
                          COL_IS_HEADER,
                          TRUE,
                          -1);

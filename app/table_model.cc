@@ -21,7 +21,7 @@ TableColumn::TableColumn()
       sortable(false) {
 }
 
-TableColumn::TableColumn(int id, const std::wstring& title,
+TableColumn::TableColumn(int id, const string16& title,
                          Alignment alignment,
                          int width)
     : id(id),
@@ -33,7 +33,7 @@ TableColumn::TableColumn(int id, const std::wstring& title,
       sortable(false) {
 }
 
-TableColumn::TableColumn(int id, const std::wstring& title,
+TableColumn::TableColumn(int id, const string16& title,
                          Alignment alignment, int width, float percent)
     : id(id),
       title(title),
@@ -54,7 +54,7 @@ TableColumn::TableColumn(int id, Alignment alignment, int width)
       percent(0),
       min_visible_width(0),
       sortable(false) {
-  title = UTF16ToWide(l10n_util::GetStringUTF16(id));
+  title = l10n_util::GetStringUTF16(id);
 }
 
 TableColumn::TableColumn(int id, Alignment alignment, int width, float percent)
@@ -64,7 +64,7 @@ TableColumn::TableColumn(int id, Alignment alignment, int width, float percent)
       percent(percent),
       min_visible_width(0),
       sortable(false) {
-  title = UTF16ToWide(l10n_util::GetStringUTF16(id));
+  title = l10n_util::GetStringUTF16(id);
 }
 
 // TableModel -----------------------------------------------------------------
@@ -76,8 +76,8 @@ SkBitmap TableModel::GetIcon(int row) {
   return SkBitmap();
 }
 
-std::wstring TableModel::GetTooltip(int row) {
-  return std::wstring();
+string16 TableModel::GetTooltip(int row) {
+  return string16();
 }
 
 bool TableModel::ShouldIndent(int row) {
@@ -105,12 +105,12 @@ int TableModel::GetGroupID(int row) {
 int TableModel::CompareValues(int row1, int row2, int column_id) {
   DCHECK(row1 >= 0 && row1 < RowCount() &&
          row2 >= 0 && row2 < RowCount());
-  std::wstring value1 = GetText(row1, column_id);
-  std::wstring value2 = GetText(row2, column_id);
+  string16 value1 = GetText(row1, column_id);
+  string16 value2 = GetText(row2, column_id);
   icu::Collator* collator = GetCollator();
 
   if (collator)
-    return l10n_util::CompareStringWithCollator(collator, value1, value2);
+    return l10n_util::CompareString16WithCollator(collator, value1, value2);
 
   NOTREACHED();
   return 0;

@@ -100,27 +100,23 @@ int ContentExceptionsTableModel::RowCount() {
   return static_cast<int>(entries_.size() + off_the_record_entries_.size());
 }
 
-std::wstring ContentExceptionsTableModel::GetText(int row, int column_id) {
+string16 ContentExceptionsTableModel::GetText(int row, int column_id) {
   HostContentSettingsMap::PatternSettingPair entry = entry_at(row);
 
   switch (column_id) {
     case IDS_EXCEPTIONS_PATTERN_HEADER:
-      return UTF8ToWide(entry.first.AsString());
+      return UTF8ToUTF16(entry.first.AsString());
 
     case IDS_EXCEPTIONS_ACTION_HEADER:
       switch (entry.second) {
         case CONTENT_SETTING_ALLOW:
-          return UTF16ToWideHack(
-              l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ALLOW_BUTTON));
+          return l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ALLOW_BUTTON);
         case CONTENT_SETTING_BLOCK:
-          return UTF16ToWideHack(
-              l10n_util::GetStringUTF16(IDS_EXCEPTIONS_BLOCK_BUTTON));
+          return l10n_util::GetStringUTF16(IDS_EXCEPTIONS_BLOCK_BUTTON);
         case CONTENT_SETTING_ASK:
-          return UTF16ToWideHack(
-              l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ASK_BUTTON));
+          return l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ASK_BUTTON);
         case CONTENT_SETTING_SESSION_ONLY:
-          return UTF16ToWideHack(
-              l10n_util::GetStringUTF16(IDS_EXCEPTIONS_SESSION_ONLY_BUTTON));
+          return l10n_util::GetStringUTF16(IDS_EXCEPTIONS_SESSION_ONLY_BUTTON);
         default:
           NOTREACHED();
       }
@@ -130,7 +126,7 @@ std::wstring ContentExceptionsTableModel::GetText(int row, int column_id) {
       NOTREACHED();
   }
 
-  return std::wstring();
+  return string16();
 }
 
 void ContentExceptionsTableModel::SetObserver(TableModelObserver* observer) {

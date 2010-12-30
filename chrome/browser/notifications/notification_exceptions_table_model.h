@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_EXCEPTIONS_TABLE_MODEL_H_
 #pragma once
 
-#include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/remove_rows_table_model.h"
 #include "chrome/common/notification_observer.h"
@@ -26,9 +26,9 @@ class NotificationExceptionsTableModel : public RemoveRowsTableModel,
   virtual void RemoveAll();
 
   // Overridden from TableModel:
-  virtual int RowCount();
-  virtual std::wstring GetText(int row, int column_id);
-  virtual void SetObserver(TableModelObserver* observer);
+  virtual int RowCount() OVERRIDE;
+  virtual string16 GetText(int row, int column_id) OVERRIDE;
+  virtual void SetObserver(TableModelObserver* observer) OVERRIDE;
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,

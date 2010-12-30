@@ -7,8 +7,6 @@
 #include "app/l10n_util.h"
 #include "app/table_model_observer.h"
 #include "base/auto_reset.h"
-// TODO(avi): remove when conversions not needed any more
-#include "base/utf_string_conversions.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_helper.h"
 #include "chrome/common/content_settings_types.h"
@@ -72,28 +70,26 @@ int NotificationExceptionsTableModel::RowCount() {
   return static_cast<int>(entries_.size());
 }
 
-std::wstring NotificationExceptionsTableModel::GetText(int row,
-                                                       int column_id) {
+string16 NotificationExceptionsTableModel::GetText(int row,
+                                                   int column_id) {
   const Entry& entry = entries_[row];
   if (column_id == IDS_EXCEPTIONS_HOSTNAME_HEADER) {
-    return content_settings_helper::OriginToWString(entry.origin);
+    return content_settings_helper::OriginToString16(entry.origin);
   }
 
   if (column_id == IDS_EXCEPTIONS_ACTION_HEADER) {
     switch (entry.setting) {
       case CONTENT_SETTING_ALLOW:
-        return UTF16ToWideHack(
-            l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ALLOW_BUTTON));
+        return l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ALLOW_BUTTON);
       case CONTENT_SETTING_BLOCK:
-        return UTF16ToWideHack(
-            l10n_util::GetStringUTF16(IDS_EXCEPTIONS_BLOCK_BUTTON));
+        return l10n_util::GetStringUTF16(IDS_EXCEPTIONS_BLOCK_BUTTON);
       default:
         break;
     }
   }
 
   NOTREACHED();
-  return std::wstring();
+  return string16();
 }
 
 void NotificationExceptionsTableModel::SetObserver(

@@ -39,12 +39,12 @@ void LanguageOrderTableModel::SetObserver(TableModelObserver* observer) {
   observer_ = observer;
 }
 
-std::wstring LanguageOrderTableModel::GetText(int row, int column_id) {
+string16 LanguageOrderTableModel::GetText(int row, int column_id) {
   DCHECK(row >= 0 && row < RowCount());
   const std::string app_locale = g_browser_process->GetApplicationLocale();
-  return UTF16ToWide(l10n_util::GetDisplayNameForLocale(languages_.at(row),
-                                                        app_locale,
-                                                        true));
+  return l10n_util::GetDisplayNameForLocale(languages_.at(row),
+                                            app_locale,
+                                            true);
 }
 
 bool LanguageOrderTableModel::Add(const std::string& language) {

@@ -233,9 +233,9 @@ void KeywordEditorView::SetColumnValues(int model_row, GtkTreeIter* iter) {
       // has an effect.  So we just set it to normal.
       COL_WEIGHT, PANGO_WEIGHT_NORMAL,
       COL_WEIGHT_SET, TRUE,
-      COL_TITLE, WideToUTF8(table_model_->GetText(
+      COL_TITLE, UTF16ToUTF8(table_model_->GetText(
           model_row, IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_COLUMN)).c_str(),
-      COL_KEYWORD, WideToUTF8(table_model_->GetText(
+      COL_KEYWORD, UTF16ToUTF8(table_model_->GetText(
           model_row, IDS_SEARCH_ENGINES_EDITOR_KEYWORD_COLUMN)).c_str(),
       -1);
   g_object_unref(pixbuf);
@@ -311,7 +311,7 @@ void KeywordEditorView::OnModelChanged() {
       list_store_, &iter,
       COL_WEIGHT, PANGO_WEIGHT_BOLD,
       COL_WEIGHT_SET, TRUE,
-      COL_TITLE, WideToUTF8(groups[0].title).c_str(),
+      COL_TITLE, UTF16ToUTF8(groups[0].title).c_str(),
       COL_IS_HEADER, TRUE,
       -1);
   // First group separator.
@@ -334,7 +334,7 @@ void KeywordEditorView::OnModelChanged() {
       list_store_, &iter,
       COL_WEIGHT, PANGO_WEIGHT_BOLD,
       COL_WEIGHT_SET, TRUE,
-      COL_TITLE, WideToUTF8(groups[1].title).c_str(),
+      COL_TITLE, UTF16ToUTF8(groups[1].title).c_str(),
       COL_IS_HEADER, TRUE,
       -1);
   // Second group separator.

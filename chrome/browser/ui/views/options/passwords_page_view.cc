@@ -70,24 +70,23 @@ int PasswordsTableModel::RowCount() {
   return static_cast<int>(saved_signons_.size());
 }
 
-std::wstring PasswordsTableModel::GetText(int row,
-                                          int col_id) {
+string16 PasswordsTableModel::GetText(int row,
+                                      int col_id) {
   switch (col_id) {
     case IDS_PASSWORDS_PAGE_VIEW_SITE_COLUMN: {  // Site.
       // Force URL to have LTR directionality.
       std::wstring url(saved_signons_[row]->display_url.display_url());
-      url = UTF16ToWide(base::i18n::GetDisplayStringInLTRDirectionality(
-          WideToUTF16(url)));
-      return url;
+      return base::i18n::GetDisplayStringInLTRDirectionality(
+          WideToUTF16Hack(url));
     }
     case IDS_PASSWORDS_PAGE_VIEW_USERNAME_COLUMN: {  // Username.
       std::wstring username = GetPasswordFormAt(row)->username_value;
       base::i18n::AdjustStringForLocaleDirection(&username);
-      return username;
+      return WideToUTF16Hack(username);
     }
     default:
       NOTREACHED() << "Invalid column.";
-      return std::wstring();
+      return string16();
   }
 }
 

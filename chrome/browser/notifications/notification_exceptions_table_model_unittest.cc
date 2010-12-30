@@ -74,34 +74,29 @@ TEST_F(NotificationExceptionsTableModelTest, AlphabeticalOrder) {
   FillData();
   EXPECT_EQ(5, model_->RowCount());
 
-  EXPECT_EQ(L"allowed.com",
+  EXPECT_EQ(ASCIIToUTF16("allowed.com"),
             model_->GetText(0, IDS_EXCEPTIONS_HOSTNAME_HEADER));
-  EXPECT_EQ(UTF16ToWideHack(
-              l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ALLOW_BUTTON)),
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ALLOW_BUTTON),
             model_->GetText(0, IDS_EXCEPTIONS_ACTION_HEADER));
 
-  EXPECT_EQ(L"denied.com",
+  EXPECT_EQ(ASCIIToUTF16("denied.com"),
             model_->GetText(1, IDS_EXCEPTIONS_HOSTNAME_HEADER));
-  EXPECT_EQ(UTF16ToWideHack(
-              l10n_util::GetStringUTF16(IDS_EXCEPTIONS_BLOCK_BUTTON)),
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXCEPTIONS_BLOCK_BUTTON),
             model_->GetText(1, IDS_EXCEPTIONS_ACTION_HEADER));
 
-  EXPECT_EQ(L"denied2.com",
+  EXPECT_EQ(ASCIIToUTF16("denied2.com"),
             model_->GetText(2, IDS_EXCEPTIONS_HOSTNAME_HEADER));
-  EXPECT_EQ(UTF16ToWideHack(
-              l10n_util::GetStringUTF16(IDS_EXCEPTIONS_BLOCK_BUTTON)),
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXCEPTIONS_BLOCK_BUTTON),
             model_->GetText(2, IDS_EXCEPTIONS_ACTION_HEADER));
 
-  EXPECT_EQ(L"e-allowed2.com",
+  EXPECT_EQ(ASCIIToUTF16("e-allowed2.com"),
             model_->GetText(3, IDS_EXCEPTIONS_HOSTNAME_HEADER));
-  EXPECT_EQ(UTF16ToWideHack(
-              l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ALLOW_BUTTON)),
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ALLOW_BUTTON),
             model_->GetText(3, IDS_EXCEPTIONS_ACTION_HEADER));
 
-  EXPECT_EQ(L"f-denied3.com",
+  EXPECT_EQ(ASCIIToUTF16("f-denied3.com"),
             model_->GetText(4, IDS_EXCEPTIONS_HOSTNAME_HEADER));
-  EXPECT_EQ(UTF16ToWideHack(
-              l10n_util::GetStringUTF16(IDS_EXCEPTIONS_BLOCK_BUTTON)),
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXCEPTIONS_BLOCK_BUTTON),
             model_->GetText(4, IDS_EXCEPTIONS_ACTION_HEADER));
 }
 

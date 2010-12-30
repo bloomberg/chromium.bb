@@ -83,7 +83,7 @@ static NSString* const kGroupID = @"_group_id";
     for (TableModel::Groups::const_iterator it = groups.begin();
          it != groups.end(); ++it) {
       NSDictionary* group = [NSDictionary dictionaryWithObjectsAndKeys:
-          base::SysWideToNSString(it->title), groupTitle_.get(),
+          base::SysUTF16ToNSString(it->title), groupTitle_.get(),
           [NSNumber numberWithBool:YES], kIsGroupRow,
           nil];
       [self addObject:group];
@@ -191,8 +191,8 @@ static NSString* const kGroupID = @"_group_id";
   }
   for (NSString* identifier in columns_.get()) {
     int column_id = [[columns_ objectForKey:identifier] intValue];
-    std::wstring text = model_->GetText(row, column_id);
-    [dict setObject:base::SysWideToNSString(text) forKey:identifier];
+    string16 text = model_->GetText(row, column_id);
+    [dict setObject:base::SysUTF16ToNSString(text) forKey:identifier];
   }
   return dict;
 }

@@ -6,7 +6,11 @@
 #define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_TABLE_MODEL_H_
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include "app/table_model.h"
+#include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
 
@@ -38,13 +42,13 @@ class TemplateURLTableModel : public TableModel,
   void Reload();
 
   // TableModel overrides.
-  virtual int RowCount();
-  virtual std::wstring GetText(int row, int column);
-  virtual SkBitmap GetIcon(int row);
-  virtual void SetObserver(TableModelObserver* observer);
-  virtual bool HasGroups();
-  virtual Groups GetGroups();
-  virtual int GetGroupID(int row);
+  virtual int RowCount() OVERRIDE;
+  virtual string16 GetText(int row, int column) OVERRIDE;
+  virtual SkBitmap GetIcon(int row) OVERRIDE;
+  virtual void SetObserver(TableModelObserver* observer) OVERRIDE;
+  virtual bool HasGroups() OVERRIDE;
+  virtual Groups GetGroups() OVERRIDE;
+  virtual int GetGroupID(int row) OVERRIDE;
 
   // Removes the entry at the specified index.
   void Remove(int index);

@@ -275,9 +275,9 @@ void LanguagesPageGtk::Init() {
 }
 
 void LanguagesPageGtk::SetColumnValues(int row, GtkTreeIter* iter) {
-  std::wstring lang = language_order_table_model_->GetText(row, 0);
+  string16 lang = language_order_table_model_->GetText(row, 0);
   gtk_list_store_set(language_order_store_, iter,
-                     COL_LANG, WideToUTF8(lang).c_str(),
+                     COL_LANG, UTF16ToUTF8(lang).c_str(),
                      -1);
 }
 

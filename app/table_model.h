@@ -6,9 +6,9 @@
 #define APP_TABLE_MODEL_H_
 #pragma once
 
-#include <string>
 #include <vector>
 
+#include "base/string16.h"
 #include "unicode/coll.h"
 
 class SkBitmap;
@@ -21,7 +21,7 @@ class TableModel {
   // See HasGroups, get GetGroupID for details as to how this is used.
   struct Group {
     // The title text for the group.
-    std::wstring title;
+    string16 title;
 
     // Unique id for the group.
     int id;
@@ -32,7 +32,7 @@ class TableModel {
   virtual int RowCount() = 0;
 
   // Returns the value at a particular location in text.
-  virtual std::wstring GetText(int row, int column_id) = 0;
+  virtual string16 GetText(int row, int column_id) = 0;
 
   // Returns the small icon (16x16) that should be displayed in the first
   // column before the text. This is only used when the TableView was created
@@ -43,7 +43,7 @@ class TableModel {
   // Returns the tooltip, if any, to show for a particular row.  If there are
   // multiple columns in the row, this will only be shown when hovering over
   // column zero.
-  virtual std::wstring GetTooltip(int row);
+  virtual string16 GetTooltip(int row);
 
   // If true, this row should be indented.
   virtual bool ShouldIndent(int row);
@@ -93,9 +93,9 @@ struct TableColumn {
   };
 
   TableColumn();
-  TableColumn(int id, const std::wstring& title,
+  TableColumn(int id, const string16& title,
               Alignment alignment, int width);
-  TableColumn(int id, const std::wstring& title,
+  TableColumn(int id, const string16& title,
               Alignment alignment, int width, float percent);
 
   // It's common (but not required) to use the title's IDS_* tag as the column
@@ -108,7 +108,7 @@ struct TableColumn {
   int id;
 
   // The title for the column.
-  std::wstring title;
+  string16 title;
 
   // Alignment for the content.
   Alignment alignment;

@@ -48,7 +48,7 @@ class HungPagesTableModel : public views::GroupTableModel {
 
   // Overridden from views::GroupTableModel:
   virtual int RowCount();
-  virtual std::wstring GetText(int row, int column_id);
+  virtual string16 GetText(int row, int column_id);
   virtual SkBitmap GetIcon(int row);
   virtual void SetObserver(TableModelObserver* observer);
   virtual void GetGroupRangeForItem(int item, views::GroupRange* range);
@@ -89,11 +89,11 @@ int HungPagesTableModel::RowCount() {
   return static_cast<int>(tab_contentses_.size());
 }
 
-std::wstring HungPagesTableModel::GetText(int row, int column_id) {
+string16 HungPagesTableModel::GetText(int row, int column_id) {
   DCHECK(row >= 0 && row < RowCount());
-  std::wstring title = UTF16ToWideHack(tab_contentses_[row]->GetTitle());
+  string16 title = tab_contentses_[row]->GetTitle();
   if (title.empty())
-    title = UTF16ToWideHack(TabContents::GetDefaultTitle());
+    title = TabContents::GetDefaultTitle();
   // TODO(xji): Consider adding a special case if the title text is a URL,
   // since those should always have LTR directionality. Please refer to
   // http://crbug.com/6726 for more information.

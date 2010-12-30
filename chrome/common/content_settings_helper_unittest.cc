@@ -4,10 +4,11 @@
 
 #include "chrome/common/content_settings_helper.h"
 
+#include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST(ContentSettingsHelperTest, OriginToWString) {
+TEST(ContentSettingsHelperTest, OriginToString16) {
   // Urls with "http":
   const GURL kUrl0("http://www.foo.com/bar");
   const GURL kUrl1("http://foo.com/bar");
@@ -23,20 +24,24 @@ TEST(ContentSettingsHelperTest, OriginToWString) {
   const GURL kUrl7("https://foo.com:81/bar");
 
   // Now check the first group of urls with just "http":
-  EXPECT_EQ(L"www.foo.com", content_settings_helper::OriginToWString(kUrl0));
-  EXPECT_EQ(L"foo.com", content_settings_helper::OriginToWString(kUrl1));
+  EXPECT_EQ(ASCIIToUTF16("www.foo.com"),
+            content_settings_helper::OriginToString16(kUrl0));
+  EXPECT_EQ(ASCIIToUTF16("foo.com"),
+            content_settings_helper::OriginToString16(kUrl1));
 
-  EXPECT_EQ(L"www.foo.com:81", content_settings_helper::OriginToWString(kUrl2));
-  EXPECT_EQ(L"foo.com:81", content_settings_helper::OriginToWString(kUrl3));
+  EXPECT_EQ(ASCIIToUTF16("www.foo.com:81"),
+            content_settings_helper::OriginToString16(kUrl2));
+  EXPECT_EQ(ASCIIToUTF16("foo.com:81"),
+            content_settings_helper::OriginToString16(kUrl3));
 
   // Now check the second group of urls with "https":
-  EXPECT_EQ(L"https://www.foo.com",
-            content_settings_helper::OriginToWString(kUrl4));
-  EXPECT_EQ(L"https://foo.com",
-            content_settings_helper::OriginToWString(kUrl5));
+  EXPECT_EQ(ASCIIToUTF16("https://www.foo.com"),
+            content_settings_helper::OriginToString16(kUrl4));
+  EXPECT_EQ(ASCIIToUTF16("https://foo.com"),
+            content_settings_helper::OriginToString16(kUrl5));
 
-  EXPECT_EQ(L"https://www.foo.com:81",
-            content_settings_helper::OriginToWString(kUrl6));
-  EXPECT_EQ(L"https://foo.com:81",
-            content_settings_helper::OriginToWString(kUrl7));
+  EXPECT_EQ(ASCIIToUTF16("https://www.foo.com:81"),
+            content_settings_helper::OriginToString16(kUrl6));
+  EXPECT_EQ(ASCIIToUTF16("https://foo.com:81"),
+            content_settings_helper::OriginToString16(kUrl7));
 }

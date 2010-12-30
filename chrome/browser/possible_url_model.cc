@@ -125,14 +125,14 @@ const std::wstring& PossibleURLModel::GetTitle(int row) {
   return results_[row].title;
 }
 
-std::wstring PossibleURLModel::GetText(int row, int col_id) {
+string16 PossibleURLModel::GetText(int row, int col_id) {
   if (row < 0 || row >= RowCount()) {
     NOTREACHED();
-    return std::wstring();
+    return string16();
   }
 
   if (col_id == IDS_ASI_PAGE_COLUMN) {
-    std::wstring title = GetTitle(row);
+    string16 title = WideToUTF16Hack(GetTitle(row));
     // TODO(xji): Consider adding a special case if the title text is a URL,
     // since those should always have LTR directionality. Please refer to
     // http://crbug.com/6726 for more information.
@@ -143,7 +143,7 @@ std::wstring PossibleURLModel::GetText(int row, int col_id) {
   // TODO(brettw): this should probably pass the GURL up so the URL elider
   // can be used at a higher level when we know the width.
   string16 url = results_[row].display_url.display_url();
-  return UTF16ToWide(base::i18n::GetDisplayStringInLTRDirectionality(url));
+  return base::i18n::GetDisplayStringInLTRDirectionality(url);
 }
 
 SkBitmap PossibleURLModel::GetIcon(int row) {

@@ -6,6 +6,7 @@
 
 #include "app/table_model.h"
 #include "app/table_model_observer.h"
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -47,10 +48,10 @@ class TestTableModel : public TableModel {
   void ChangeRow(int row, int c1_value, int c2_value);
 
   // TableModel
-  virtual int RowCount();
-  virtual std::wstring GetText(int row, int column_id);
-  virtual void SetObserver(TableModelObserver* observer);
-  virtual int CompareValues(int row1, int row2, int column_id);
+  virtual int RowCount() OVERRIDE;
+  virtual string16 GetText(int row, int column_id) OVERRIDE;
+  virtual void SetObserver(TableModelObserver* observer) OVERRIDE;
+  virtual int CompareValues(int row1, int row2, int column_id) OVERRIDE;
 
  private:
   TableModelObserver* observer_;
@@ -69,9 +70,9 @@ class GroupTestTableModel : public TestTableModel {
   virtual Groups GetGroups() {
     Groups groups;
     Group group1, group2;
-    group1.title = L"Group 1";
+    group1.title = ASCIIToUTF16("Group 1");
     group1.id = 0;
-    group2.title = L"Group 2";
+    group2.title = ASCIIToUTF16("Group 2");
     group2.id = 0;
     groups.push_back(group1);
     groups.push_back(group2);
@@ -116,8 +117,8 @@ int TestTableModel::RowCount() {
   return static_cast<int>(rows_.size());
 }
 
-std::wstring TestTableModel::GetText(int row, int column_id) {
-  return UTF8ToWide(base::IntToString(rows_[row][column_id]));
+string16 TestTableModel::GetText(int row, int column_id) {
+  return UTF8ToUTF16(base::IntToString(rows_[row][column_id]));
 }
 
 void TestTableModel::SetObserver(TableModelObserver* observer) {

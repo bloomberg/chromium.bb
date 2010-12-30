@@ -157,13 +157,13 @@ SimpleContentExceptionsWindow::~SimpleContentExceptionsWindow() {}
 
 void SimpleContentExceptionsWindow::SetColumnValues(int row,
                                                     GtkTreeIter* iter) {
-  std::wstring hostname = model_->GetText(row, IDS_EXCEPTIONS_HOSTNAME_HEADER);
+  string16 hostname = model_->GetText(row, IDS_EXCEPTIONS_HOSTNAME_HEADER);
   gtk_list_store_set(list_store_, iter, gtk_tree::TableAdapter::COL_TITLE,
-                     WideToUTF8(hostname).c_str(), -1);
+                     UTF16ToUTF8(hostname).c_str(), -1);
 
-  std::wstring action = model_->GetText(row, IDS_EXCEPTIONS_ACTION_HEADER);
+  string16 action = model_->GetText(row, IDS_EXCEPTIONS_ACTION_HEADER);
   gtk_list_store_set(list_store_, iter, COL_ACTION,
-                     WideToUTF8(action).c_str(), -1);
+                     UTF16ToUTF8(action).c_str(), -1);
 }
 
 void SimpleContentExceptionsWindow::OnAnyModelUpdateStart() {

@@ -11,6 +11,7 @@
 #include <string>
 
 #include "app/table_model.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/options/language_config_model.h"
 #include "chrome/browser/views/options/options_page_view.h"
 #include "views/controls/button/native_button.h"
@@ -64,9 +65,9 @@ class LanguageConfigView : public TableModel,
   // LanguageConfigView class, rather than a separate class.
   // TODO(satorux): Implement TableModel as a separate class once the bug
   // is fixed.
-  virtual std::wstring GetText(int row, int column_id);
-  virtual void SetObserver(TableModelObserver* observer);
-  virtual int RowCount();
+  virtual string16 GetText(int row, int column_id) OVERRIDE;
+  virtual void SetObserver(TableModelObserver* observer) OVERRIDE;
+  virtual int RowCount() OVERRIDE;
 
   // views::Combobox::Listener overrides:
   virtual void ItemChanged(views::Combobox* combobox,

@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/views/options/options_page_view.h"
 #include "chrome/browser/views/options/passwords_page_view.h"
 #include "views/controls/table/table_view_observer.h"
@@ -22,8 +23,8 @@ class ExceptionsTableModel : public PasswordsTableModel {
   virtual ~ExceptionsTableModel();
 
   // TableModel methods.
-  virtual std::wstring GetText(int row, int column);
-  virtual int CompareValues(int row1, int row2, int col_id);
+  virtual string16 GetText(int row, int column) OVERRIDE;
+  virtual int CompareValues(int row1, int row2, int col_id) OVERRIDE;
 
   // PasswordStoreConsumer implementation.
   virtual void OnPasswordStoreRequestDone(

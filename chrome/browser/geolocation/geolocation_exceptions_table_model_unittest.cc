@@ -127,17 +127,17 @@ TEST_F(GeolocationExceptionsTableModelTest, GetText) {
   CreateAllowedSamples();
 
   // Ensure the parent doesn't have any indentation.
-  std::wstring text(model_->GetText(0, IDS_EXCEPTIONS_HOSTNAME_HEADER));
-  EXPECT_EQ(content_settings_helper::OriginToWString(kUrl0), text);
+  string16 text = model_->GetText(0, IDS_EXCEPTIONS_HOSTNAME_HEADER);
+  EXPECT_EQ(content_settings_helper::OriginToString16(kUrl0), text);
 
   // Ensure there's some indentation on the children nodes.
   text = model_->GetText(1, IDS_EXCEPTIONS_HOSTNAME_HEADER);
-  EXPECT_NE(content_settings_helper::OriginToWString(kUrl1), text);
-  EXPECT_NE(std::wstring::npos,
-            text.find(content_settings_helper::OriginToWString(kUrl1)));
+  EXPECT_NE(content_settings_helper::OriginToString16(kUrl1), text);
+  EXPECT_NE(string16::npos,
+            text.find(content_settings_helper::OriginToString16(kUrl1)));
 
   text = model_->GetText(2, IDS_EXCEPTIONS_HOSTNAME_HEADER);
-  EXPECT_NE(content_settings_helper::OriginToWString(kUrl2), text);
-  EXPECT_NE(std::wstring::npos,
-            text.find(content_settings_helper::OriginToWString(kUrl2)));
+  EXPECT_NE(content_settings_helper::OriginToString16(kUrl2), text);
+  EXPECT_NE(string16::npos,
+            text.find(content_settings_helper::OriginToString16(kUrl2)));
 }

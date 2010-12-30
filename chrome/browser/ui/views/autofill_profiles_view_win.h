@@ -12,6 +12,7 @@
 
 #include "app/combobox_model.h"
 #include "app/table_model.h"
+#include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "chrome/browser/autofill/autofill_dialog.h"
 #include "chrome/browser/autofill/autofill_profile.h"
@@ -398,12 +399,12 @@ class AutoFillProfilesView : public views::View,
     void UpdateItem(int index);
 
     // TableModel members:
-    virtual int RowCount();
-    virtual std::wstring GetText(int row, int column_id);
-    virtual bool HasGroups() { return true; }
-    virtual TableModel::Groups GetGroups();
-    virtual int GetGroupID(int row);
-    virtual void SetObserver(TableModelObserver* observer);
+    virtual int RowCount() OVERRIDE;
+    virtual string16 GetText(int row, int column_id) OVERRIDE;
+    virtual bool HasGroups() OVERRIDE { return true; }
+    virtual TableModel::Groups GetGroups() OVERRIDE;
+    virtual int GetGroupID(int row) OVERRIDE;
+    virtual void SetObserver(TableModelObserver* observer) OVERRIDE;
 
    private:
     std::vector<EditableSetInfo>* profiles_;

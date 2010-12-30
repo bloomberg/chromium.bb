@@ -9,6 +9,7 @@
 #include <string>
 
 #include "app/table_model.h"
+#include "base/compiler_specific.h"
 #include "base/ref_counted.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
@@ -53,9 +54,9 @@ class ContentExceptionsTableModel : public TableModel {
                                 bool is_off_the_record);
 
   // TableModel overrides:
-  virtual int RowCount();
-  virtual std::wstring GetText(int row, int column_id);
-  virtual void SetObserver(TableModelObserver* observer);
+  virtual int RowCount() OVERRIDE;
+  virtual string16 GetText(int row, int column_id) OVERRIDE;
+  virtual void SetObserver(TableModelObserver* observer) OVERRIDE;
 
  private:
   HostContentSettingsMap* map(bool is_off_the_record) {

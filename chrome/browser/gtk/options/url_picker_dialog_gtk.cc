@@ -208,12 +208,12 @@ std::string UrlPickerDialogGtk::GetURLForPath(GtkTreePath* path) const {
 void UrlPickerDialogGtk::SetColumnValues(int row, GtkTreeIter* iter) {
   SkBitmap bitmap = url_table_model_->GetIcon(row);
   GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&bitmap);
-  std::wstring title = url_table_model_->GetText(row, IDS_ASI_PAGE_COLUMN);
-  std::wstring url = url_table_model_->GetText(row, IDS_ASI_URL_COLUMN);
+  string16 title = url_table_model_->GetText(row, IDS_ASI_PAGE_COLUMN);
+  string16 url = url_table_model_->GetText(row, IDS_ASI_URL_COLUMN);
   gtk_list_store_set(history_list_store_, iter,
                      COL_FAVICON, pixbuf,
-                     COL_TITLE, WideToUTF8(title).c_str(),
-                     COL_DISPLAY_URL, WideToUTF8(url).c_str(),
+                     COL_TITLE, UTF16ToUTF8(title).c_str(),
+                     COL_DISPLAY_URL, UTF16ToUTF8(url).c_str(),
                      -1);
   g_object_unref(pixbuf);
 }

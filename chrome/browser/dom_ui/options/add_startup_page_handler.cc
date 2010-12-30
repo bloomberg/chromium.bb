@@ -75,10 +75,9 @@ void AddStartupPageHandler::OnModelChanged() {
   ListValue pages;
   for (int i = 0; i < url_table_model_->RowCount(); ++i) {
     DictionaryValue* dict = new DictionaryValue();
-    dict->SetString("title", WideToUTF16Hack(url_table_model_->GetText(
-        i, IDS_ASI_PAGE_COLUMN)));
-    dict->SetString("displayURL", WideToUTF16Hack(url_table_model_->GetText(
-        i, IDS_ASI_URL_COLUMN)));
+    dict->SetString("title", url_table_model_->GetText(i, IDS_ASI_PAGE_COLUMN));
+    dict->SetString("displayURL",
+                    url_table_model_->GetText(i, IDS_ASI_URL_COLUMN));
     dict->SetString("url", url_table_model_->GetURL(i).spec());
     pages.Append(dict);
   }

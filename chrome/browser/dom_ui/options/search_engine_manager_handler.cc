@@ -156,7 +156,7 @@ DictionaryValue* SearchEngineManagerHandler::CreateDictionaryForHeading(
   TableModel::Groups groups = list_controller_->table_model()->GetGroups();
 
   DictionaryValue* dict = new DictionaryValue();
-  dict->SetString("heading", WideToUTF16Hack(groups[group_index].title));
+  dict->SetString("heading", groups[group_index].title);
   return dict;
 }
 
@@ -165,10 +165,10 @@ DictionaryValue* SearchEngineManagerHandler::CreateDictionaryForEngine(
   TemplateURLTableModel* table_model = list_controller_->table_model();
 
   DictionaryValue* dict = new DictionaryValue();
-  dict->SetString("name", WideToUTF16Hack(table_model->GetText(
-    index, IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_COLUMN)));
-  dict->SetString("keyword", WideToUTF16Hack(table_model->GetText(
-    index, IDS_SEARCH_ENGINES_EDITOR_KEYWORD_COLUMN)));
+  dict->SetString("name", table_model->GetText(
+    index, IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_COLUMN));
+  dict->SetString("keyword", table_model->GetText(
+    index, IDS_SEARCH_ENGINES_EDITOR_KEYWORD_COLUMN));
   const TemplateURL* template_url = list_controller_->GetTemplateURL(index);
   GURL icon_url = template_url->GetFavIconURL();
   if (icon_url.is_valid())

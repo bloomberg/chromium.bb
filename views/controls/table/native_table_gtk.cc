@@ -278,7 +278,7 @@ void NativeTableGtk::CreateNativeControl() {
 void NativeTableGtk::InsertTextColumn(const TableColumn& column, int index) {
   GtkCellRenderer* renderer = gtk_cell_renderer_text_new();
   gtk_tree_view_insert_column_with_attributes(tree_view_, -1,
-                                              WideToUTF8(column.title).c_str(),
+                                              UTF16ToUTF8(column.title).c_str(),
                                               renderer, "text", index, NULL);
 }
 
@@ -290,7 +290,7 @@ void NativeTableGtk::InsertIconAndTextColumn(const TableColumn& column,
       " at this point.";
 
   GtkTreeViewColumn* gtk_column = gtk_tree_view_column_new();
-  gtk_tree_view_column_set_title(gtk_column, WideToUTF8(column.title).c_str());
+  gtk_tree_view_column_set_title(gtk_column, UTF16ToUTF8(column.title).c_str());
   GtkCellRenderer* renderer = gtk_cell_renderer_pixbuf_new();
   gtk_tree_view_column_pack_start(gtk_column, renderer, FALSE);
   // First we set the icon renderer at index 0.
@@ -315,8 +315,8 @@ void NativeTableGtk::SetRowData(int row_index, GtkTreeIter* iter) {
   for (size_t i = 0; i < table_->GetVisibleColumnCount();
        ++i, ++gtk_column_index) {
     std::string text =
-        WideToUTF8(table_->model()->GetText(row_index,
-                                            table_->GetVisibleColumnAt(i).id));
+        UTF16ToUTF8(table_->model()->GetText(row_index,
+                                             table_->GetVisibleColumnAt(i).id));
     gtk_list_store_set(gtk_model_, iter, gtk_column_index, text.c_str(), -1);
   }
 }

@@ -184,13 +184,13 @@ ContentExceptionsWindowGtk::ContentExceptionsWindowGtk(
 }
 
 void ContentExceptionsWindowGtk::SetColumnValues(int row, GtkTreeIter* iter) {
-  std::wstring pattern = model_->GetText(row, IDS_EXCEPTIONS_PATTERN_HEADER);
+  string16 pattern = model_->GetText(row, IDS_EXCEPTIONS_PATTERN_HEADER);
   gtk_list_store_set(list_store_, iter, COL_PATTERN,
-                     WideToUTF8(pattern).c_str(), -1);
+                     UTF16ToUTF8(pattern).c_str(), -1);
 
-  std::wstring action = model_->GetText(row, IDS_EXCEPTIONS_ACTION_HEADER);
+  string16 action = model_->GetText(row, IDS_EXCEPTIONS_ACTION_HEADER);
   gtk_list_store_set(list_store_, iter, COL_ACTION,
-                     WideToUTF8(action).c_str(), -1);
+                     UTF16ToUTF8(action).c_str(), -1);
 
   bool is_off_the_record = model_->entry_is_off_the_record(row);
   PangoStyle style =

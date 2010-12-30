@@ -281,11 +281,10 @@ void BrowserOptionsHandler::OnModelChanged() {
   std::vector<GURL> urls = startup_custom_pages_table_model_->GetURLs();
   for (int i = 0; i < page_count; ++i) {
     DictionaryValue* entry = new DictionaryValue();
-    entry->SetString("title", WideToUTF16Hack(
-        startup_custom_pages_table_model_->GetText(i, 0)));
+    entry->SetString("title", startup_custom_pages_table_model_->GetText(i, 0));
     entry->SetString("url", urls[i].spec());
-    entry->SetString("tooltip", WideToUTF16Hack(
-        startup_custom_pages_table_model_->GetTooltip(i)));
+    entry->SetString("tooltip",
+                     startup_custom_pages_table_model_->GetTooltip(i));
     startup_pages.Append(entry);
   }
 

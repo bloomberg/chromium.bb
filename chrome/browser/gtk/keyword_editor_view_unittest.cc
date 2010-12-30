@@ -68,9 +68,9 @@ class KeywordEditorViewTest : public testing::Test {
                          KeywordEditorView::COL_TITLE, &name,
                          KeywordEditorView::COL_IS_HEADER, &is_header,
                          -1);
-      if (name && WideToUTF8(groups[0].title) == name)
+      if (name && UTF16ToUTF8(groups[0].title) == name)
         parts.push_back("!");
-      else if (name && WideToUTF8(groups[1].title) == name)
+      else if (name && UTF16ToUTF8(groups[1].title) == name)
         parts.push_back("@");
       else if (is_header)
         parts.push_back("_");

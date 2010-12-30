@@ -29,7 +29,7 @@ ExceptionsTableModel::ExceptionsTableModel(Profile* profile)
 ExceptionsTableModel::~ExceptionsTableModel() {
 }
 
-std::wstring ExceptionsTableModel::GetText(int row, int col_id) {
+string16 ExceptionsTableModel::GetText(int row, int col_id) {
   DCHECK_EQ(col_id, IDS_PASSWORDS_PAGE_VIEW_SITE_COLUMN);
   return PasswordsTableModel::GetText(row, col_id);
 }

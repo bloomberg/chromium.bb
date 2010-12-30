@@ -11,6 +11,7 @@
 
 #include "app/table_model.h"
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 
 class TableModelObserver;
 
@@ -43,9 +44,9 @@ class LanguageOrderTableModel : public TableModel {
   std::string GetLanguageList();
 
   // TableModel overrides:
-  virtual int RowCount();
-  virtual std::wstring GetText(int row, int column_id);
-  virtual void SetObserver(TableModelObserver* observer);
+  virtual int RowCount() OVERRIDE;
+  virtual string16 GetText(int row, int column_id) OVERRIDE;
+  virtual void SetObserver(TableModelObserver* observer) OVERRIDE;
 
  private:
   // Set of entries we're showing.

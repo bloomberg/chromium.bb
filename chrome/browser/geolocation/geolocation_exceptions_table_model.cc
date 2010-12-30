@@ -138,50 +138,45 @@ int GeolocationExceptionsTableModel::RowCount() {
   return entries_.size();
 }
 
-std::wstring GeolocationExceptionsTableModel::GetText(int row,
-                                                      int column_id) {
+string16 GeolocationExceptionsTableModel::GetText(int row,
+                                                  int column_id) {
   const Entry& entry = entries_[row];
   if (column_id == IDS_EXCEPTIONS_HOSTNAME_HEADER) {
     if (entry.origin == entry.embedding_origin) {
-      return content_settings_helper::OriginToWString(entry.origin);
+      return content_settings_helper::OriginToString16(entry.origin);
     }
-    std::wstring indent(L"    ");
+    string16 indent(ASCIIToUTF16("    "));
     if (entry.embedding_origin.is_empty()) {
       // NOTE: As long as the user cannot add/edit entries from the exceptions
       // dialog, it's impossible to actually have a non-default setting for some
       // origin "embedded on any other site", so this row will never appear.  If
       // we add the ability to add/edit exceptions, we'll need to decide when to
       // display this and how "removing" it will function.
-      return indent + UTF16ToWideHack(l10n_util::GetStringUTF16(
-          IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ANY_OTHER));
+      return indent + l10n_util::GetStringUTF16(
+          IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ANY_OTHER);
     }
-    return indent + UTF16ToWideHack(l10n_util::GetStringFUTF16(
+    return indent + l10n_util::GetStringFUTF16(
         IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ON_HOST,
-        WideToUTF16Hack(
-          content_settings_helper::OriginToWString(entry.embedding_origin))));
+        content_settings_helper::OriginToString16(entry.embedding_origin));
   }
 
   if (column_id == IDS_EXCEPTIONS_ACTION_HEADER) {
     switch (entry.setting) {
       case CONTENT_SETTING_ALLOW:
-        return UTF16ToWideHack(
-            l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ALLOW_BUTTON));
+        return l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ALLOW_BUTTON);
       case CONTENT_SETTING_BLOCK:
-        return UTF16ToWideHack(
-            l10n_util::GetStringUTF16(IDS_EXCEPTIONS_BLOCK_BUTTON));
+        return l10n_util::GetStringUTF16(IDS_EXCEPTIONS_BLOCK_BUTTON);
       case CONTENT_SETTING_ASK:
-        return UTF16ToWideHack(
-            l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ASK_BUTTON));
+        return l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ASK_BUTTON);
       case CONTENT_SETTING_DEFAULT:
-        return UTF16ToWideHack(
-            l10n_util::GetStringUTF16(IDS_EXCEPTIONS_NOT_SET_BUTTON));
+        return l10n_util::GetStringUTF16(IDS_EXCEPTIONS_NOT_SET_BUTTON);
       default:
         break;
     }
   }
 
   NOTREACHED();
-  return std::wstring();
+  return string16();
 }
 
 void GeolocationExceptionsTableModel::SetObserver(
@@ -228,7 +223,7 @@ int GeolocationExceptionsTableModel::CompareValues(int row1,
   // The entries are at the same "scope".  If we're sorting by action, then do
   // that now.
   if (column_id == IDS_EXCEPTIONS_ACTION_HEADER) {
-    int compare_text = l10n_util::CompareStringWithCollator(
+    int compare_text = l10n_util::CompareString16WithCollator(
         GetCollator(), GetText(row1, column_id), GetText(row2, column_id));
     if (compare_text != 0)
       return compare_text;
