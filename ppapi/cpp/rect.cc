@@ -34,13 +34,6 @@ void Rect::Offset(int32_t horizontal, int32_t vertical) {
   rect_.point.y += vertical;
 }
 
-void Rect::swap(Rect& other) {
-  std::swap(rect_.point.x, other.rect_.point.x);
-  std::swap(rect_.point.y, other.rect_.point.y);
-  std::swap(rect_.size.width, other.rect_.size.width);
-  std::swap(rect_.size.height, other.rect_.size.height);
-}
-
 bool Rect::Contains(int32_t point_x, int32_t point_y) const {
   return (point_x >= x()) && (point_x < right()) &&
          (point_y >= y()) && (point_y < bottom());

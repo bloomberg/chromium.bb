@@ -5,6 +5,7 @@
 #include "chrome/browser/views/constrained_window_win.h"
 
 #include "app/resource_bundle.h"
+#include "app/win/hwnd_util.h"
 #include "app/win_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -197,7 +198,7 @@ class ConstrainedWindowFrameView
 
   SkColor GetTitleColor() const {
     return (container_->owner()->profile()->IsOffTheRecord() ||
-        !win_util::ShouldUseVistaFrame()) ? SK_ColorWHITE : SK_ColorBLACK;
+        !app::win::ShouldUseVistaFrame()) ? SK_ColorWHITE : SK_ColorBLACK;
   }
 
   // Loads the appropriate set of WindowResources for the frame view.
@@ -534,7 +535,7 @@ gfx::Rect ConstrainedWindowFrameView::CalculateClientAreaBounds(
 }
 
 void ConstrainedWindowFrameView::InitWindowResources() {
-  resources_.reset(win_util::ShouldUseVistaFrame() ?
+  resources_.reset(app::win::ShouldUseVistaFrame() ?
     static_cast<views::WindowResources*>(new VistaWindowResources) :
     new XPWindowResources);
 }

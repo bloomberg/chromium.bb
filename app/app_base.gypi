@@ -240,6 +240,8 @@
         'win/iat_patch_function.h',
         'win/scoped_prop.cc',
         'win/scoped_prop.h',
+        'win/shell.cc',
+        'win/shell.h',
         'win/window_impl.cc',
         'win/window_impl.h',
         'x11_util.cc',

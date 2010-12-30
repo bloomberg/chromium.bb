@@ -111,35 +111,6 @@ bool IsDoubleClick(const POINT& origin,
 // would be considered a drag.
 bool IsDrag(const POINT& origin, const POINT& current);
 
-// Returns true if we are on Windows Vista and composition is enabled
-bool ShouldUseVistaFrame();
-
-// Open or run a file via the Windows shell. In the event that there is no
-// default application registered for the file specified by 'full_path',
-// ask the user, via the Windows "Open With" dialog.
-// Returns 'true' on successful open, 'false' otherwise.
-bool OpenItemViaShell(const FilePath& full_path);
-
-// The download manager now writes the alternate data stream with the
-// zone on all downloads. This function is equivalent to OpenItemViaShell
-// without showing the zone warning dialog.
-bool OpenItemViaShellNoZoneCheck(const FilePath& full_path);
-
-// Ask the user, via the Windows "Open With" dialog, for an application to use
-// to open the file specified by 'full_path'.
-// Returns 'true' on successful open, 'false' otherwise.
-bool OpenItemWithExternalApp(const std::wstring& full_path);
-
-// If the window does not fit on the default monitor, it is moved and possibly
-// resized appropriately.
-void AdjustWindowToFit(HWND hwnd);
-
-// Sizes the window to have a client or window size (depending on the value of
-// |pref_is_client|) of pref, then centers the window over parent, ensuring the
-// window fits on screen.
-void CenterAndSizeWindow(HWND parent, HWND window, const SIZE& pref,
-                         bool pref_is_client);
-
 // Returns true if edge |edge| (one of ABE_LEFT, TOP, RIGHT, or BOTTOM) of
 // monitor |monitor| has an auto-hiding taskbar that's always-on-top.
 bool EdgeHasTopmostAutoHideTaskbar(UINT edge, HMONITOR monitor);
@@ -152,25 +123,11 @@ HANDLE GetSectionFromProcess(HANDLE section, HANDLE process, bool read_only);
 // process. Returns the new valid handle or NULL on failure.
 HANDLE GetSectionForProcess(HANDLE section, HANDLE process, bool read_only);
 
-// Returns true if the specified window is the current active top window or one
-// of its children.
-bool DoesWindowBelongToActiveWindow(HWND window);
-
 // Adjusts the value of |child_rect| if necessary to ensure that it is
 // completely visible within |parent_rect|.
 void EnsureRectIsVisibleInRect(const gfx::Rect& parent_rect,
                                gfx::Rect* child_rect,
                                int padding);
-
-// Ensures that the child window stays within the boundaries of the parent
-// before setting its bounds. If |parent_window| is NULL, the bounds of the
-// parent are assumed to be the bounds of the monitor that |child_window| is
-// nearest to. If |child_window| isn't visible yet and |insert_after_window|
-// is non-NULL and visible, the monitor |insert_after_window| is on is used
-// as the parent bounds instead.
-void SetChildBounds(HWND child_window, HWND parent_window,
-                    HWND insert_after_window, const gfx::Rect& bounds,
-                    int padding, unsigned long flags);
 
 // Returns the bounds for the monitor that contains the largest area of
 // intersection with the specified rectangle.
@@ -195,10 +152,6 @@ bool IsWindowActive(HWND hwnd);
 // desktop.ini and thumbs.db which have special meaning to the windows shell.
 bool IsReservedName(const std::wstring& filename);
 
-// Returns whether the specified extension is automatically integrated into the
-// windows shell.
-bool IsShellIntegratedExtension(const std::wstring& eextension);
-
 // A wrapper around Windows' MessageBox function. Using a Chrome specific
 // MessageBox function allows us to control certain RTL locale flags so that
 // callers don't have to worry about adding these flags when running in a
@@ -213,11 +166,6 @@ gfx::Font GetWindowTitleFont();
 
 // The thickness of an auto-hide taskbar in pixels.
 extern const int kAutoHideTaskbarThicknessPx;
-
-// Sets the application id given as the Application Model ID for the window
-// specified.  This method is used to insure that different web applications
-// do not group together on the Win7 task bar.
-void SetAppIdForWindow(const std::wstring& app_id, HWND hwnd);
 
 }  // namespace win_util
 

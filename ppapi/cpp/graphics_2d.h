@@ -32,7 +32,6 @@ class Graphics2D : public Resource {
   virtual ~Graphics2D();
 
   Graphics2D& operator=(const Graphics2D& other);
-  void swap(Graphics2D& other);
 
   const Size& size() const { return size_; }
 

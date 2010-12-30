@@ -18,7 +18,6 @@ class Resource {
   virtual ~Resource();
 
   Resource& operator=(const Resource& other);
-  void swap(Resource& other);
 
   // Returns true if the given resource is invalid or uninitialized.
   bool is_null() const { return !pp_resource_; }

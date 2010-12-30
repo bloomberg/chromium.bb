@@ -25,13 +25,12 @@ Resource::~Resource() {
 }
 
 Resource& Resource::operator=(const Resource& other) {
-  Resource copy(other);
-  swap(copy);
+  if (!is_null())
+    Module::Get()->core()->ReleaseResource(pp_resource_);
+  pp_resource_ = other.pp_resource_;
+  if (!is_null())
+    Module::Get()->core()->AddRefResource(pp_resource_);
   return *this;
-}
-
-void Resource::swap(Resource& other) {
-  std::swap(pp_resource_, other.pp_resource_);
 }
 
 PP_Resource Resource::detach() {

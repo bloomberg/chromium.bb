@@ -7,7 +7,7 @@
 #include "app/resource_bundle.h"
 
 #if defined(OS_WIN)
-#include "app/win_util.h"
+#include "app/win/hwnd_util.h"
 #endif
 
 namespace views {
@@ -18,7 +18,7 @@ SkBitmap* DefaultThemeProvider::GetBitmapNamed(int id) const {
 
 bool DefaultThemeProvider::ShouldUseNativeFrame() const {
 #if defined(OS_WIN)
-  return win_util::ShouldUseVistaFrame();
+  return app::win::ShouldUseVistaFrame();
 #else
   return false;
 #endif

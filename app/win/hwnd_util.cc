@@ -4,10 +4,48 @@
 
 #include "app/win/hwnd_util.h"
 
+#include <dwmapi.h>
+
 #include "base/string_util.h"
+#include "base/win/windows_version.h"
+#include "gfx/rect.h"
+#include "gfx/size.h"
+
+#pragma comment(lib, "dwmapi.lib")
 
 namespace app {
 namespace win {
+
+namespace {
+
+// Adjust the window to fit, returning true if the window was resized or moved.
+bool AdjustWindowToFit(HWND hwnd, const RECT& bounds) {
+  // Get the monitor.
+  HMONITOR hmon = MonitorFromRect(&bounds, MONITOR_DEFAULTTONEAREST);
+  if (!hmon) {
+    NOTREACHED() << "Unable to find default monitor";
+    // No monitor available.
+    return false;
+  }
+
+  MONITORINFO mi;
+  mi.cbSize = sizeof(mi);
+  GetMonitorInfo(hmon, &mi);
+  gfx::Rect window_rect(bounds);
+  gfx::Rect monitor_rect(mi.rcWork);
+  gfx::Rect new_window_rect = window_rect.AdjustToFit(monitor_rect);
+  if (!new_window_rect.Equals(window_rect)) {
+    // Window doesn't fit on monitor, move and possibly resize.
+    SetWindowPos(hwnd, 0, new_window_rect.x(), new_window_rect.y(),
+                 new_window_rect.width(), new_window_rect.height(),
+                 SWP_NOACTIVATE | SWP_NOZORDER);
+    return true;
+  } else {
+    return false;
+  }
+}
+
+}  // namespace
 
 string16 GetClassName(HWND window) {
   // GetClassNameW will return a truncated result (properly null terminated) if
@@ -54,6 +92,92 @@ void* GetWindowUserData(HWND hwnd) {
 }
 
 #pragma warning(pop)
+
+bool DoesWindowBelongToActiveWindow(HWND window) {
+  DCHECK(window);
+  HWND top_window = ::GetAncestor(window, GA_ROOT);
+  if (!top_window)
+    return false;
+
+  HWND active_top_window = ::GetAncestor(::GetForegroundWindow(), GA_ROOT);
+  return (top_window == active_top_window);
+}
+
+void CenterAndSizeWindow(HWND parent,
+                         HWND window,
+                         const gfx::Size& pref,
+                         bool pref_is_client) {
+  DCHECK(window && pref.width() > 0 && pref.height() > 0);
+
+  // Calculate the ideal bounds.
+  RECT window_bounds;
+  RECT center_bounds = {0};
+  if (parent) {
+    // If there is a parent, center over the parents bounds.
+    ::GetWindowRect(parent, &center_bounds);
+  } else {
+    // No parent. Center over the monitor the window is on.
+    HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONEAREST);
+    if (monitor) {
+      MONITORINFO mi = {0};
+      mi.cbSize = sizeof(mi);
+      GetMonitorInfo(monitor, &mi);
+      center_bounds = mi.rcWork;
+    } else {
+      NOTREACHED() << "Unable to get default monitor";
+    }
+  }
+  window_bounds.left = center_bounds.left +
+      (center_bounds.right - center_bounds.left - pref.width()) / 2;
+  window_bounds.right = window_bounds.left + pref.width();
+  window_bounds.top = center_bounds.top +
+      (center_bounds.bottom - center_bounds.top - pref.height()) / 2;
+  window_bounds.bottom = window_bounds.top + pref.height();
+
+  // If we're centering a child window, we are positioning in client
+  // coordinates, and as such we need to offset the target rectangle by the
+  // position of the parent window.
+  if (::GetWindowLong(window, GWL_STYLE) & WS_CHILD) {
+    DCHECK(parent && ::GetParent(window) == parent);
+    POINT topleft = { window_bounds.left, window_bounds.top };
+    ::MapWindowPoints(HWND_DESKTOP, parent, &topleft, 1);
+    window_bounds.left = topleft.x;
+    window_bounds.top = topleft.y;
+    window_bounds.right = window_bounds.left + pref.width();
+    window_bounds.bottom = window_bounds.top + pref.height();
+  }
+
+  // Get the WINDOWINFO for window. We need the style to calculate the size
+  // for the window.
+  WINDOWINFO win_info = {0};
+  win_info.cbSize = sizeof(WINDOWINFO);
+  GetWindowInfo(window, &win_info);
+
+  // Calculate the window size needed for the content size.
+
+  if (!pref_is_client ||
+      AdjustWindowRectEx(&window_bounds, win_info.dwStyle, FALSE,
+                         win_info.dwExStyle)) {
+    if (!AdjustWindowToFit(window, window_bounds)) {
+      // The window fits, reset the bounds.
+      SetWindowPos(window, 0, window_bounds.left, window_bounds.top,
+                   window_bounds.right - window_bounds.left,
+                   window_bounds.bottom - window_bounds.top,
+                   SWP_NOACTIVATE | SWP_NOZORDER);
+    }  // else case, AdjustWindowToFit set the bounds for us.
+  } else {
+    NOTREACHED() << "Unable to adjust window to fit";
+  }
+}
+
+bool ShouldUseVistaFrame() {
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return false;
+  // If composition is not enabled, we behave like on XP.
+  BOOL f;
+  DwmIsCompositionEnabled(&f);
+  return !!f;
+}
 
 }  // namespace win
 }  // namespace app

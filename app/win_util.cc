@@ -5,9 +5,7 @@
 #include "app/win_util.h"
 
 #include <commdlg.h>
-#include <dwmapi.h>
 #include <shellapi.h>
-#include <shlobj.h>
 
 #include <algorithm>
 
@@ -18,34 +16,17 @@
 #include "base/file_util.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "base/native_library.h"
-#include "base/scoped_comptr_win.h"
 #include "base/scoped_handle.h"
 #include "base/scoped_handle_win.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
 #include "base/win/scoped_gdi_object.h"
-#include "base/win/windows_version.h"
 #include "gfx/codec/png_codec.h"
 #include "gfx/gdi_util.h"
-
-// Ensure that we pick up this link library.
-#pragma comment(lib, "dwmapi.lib")
 
 namespace win_util {
 
 const int kAutoHideTaskbarThicknessPx = 2;
-
-namespace {
-
-const wchar_t kShell32[] = L"shell32.dll";
-const char kSHGetPropertyStoreForWindow[] = "SHGetPropertyStoreForWindow";
-
-// Define the type of SHGetPropertyStoreForWindow is SHGPSFW.
-typedef DECLSPEC_IMPORT HRESULT (STDAPICALLTYPE *SHGPSFW)(HWND hwnd,
-                                                          REFIID riid,
-                                                          void** ppv);
-}  // namespace
 
 std::wstring FormatSystemTime(const SYSTEMTIME& time,
                               const std::wstring& format) {
@@ -100,155 +81,6 @@ bool IsDrag(const POINT& origin, const POINT& current) {
          (abs(current.y - origin.y) > (GetSystemMetrics(SM_CYDRAG) / 2));
 }
 
-bool ShouldUseVistaFrame() {
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return false;
-  // If composition is not enabled, we behave like on XP.
-  BOOL f;
-  DwmIsCompositionEnabled(&f);
-  return !!f;
-}
-
-// Open an item via a shell execute command. Error code checking and casting
-// explanation: http://msdn2.microsoft.com/en-us/library/ms647732.aspx
-bool OpenItemViaShell(const FilePath& full_path) {
-  HINSTANCE h = ::ShellExecuteW(
-      NULL, NULL, full_path.value().c_str(), NULL,
-      full_path.DirName().value().c_str(), SW_SHOWNORMAL);
-
-  LONG_PTR error = reinterpret_cast<LONG_PTR>(h);
-  if (error > 32)
-    return true;
-
-  if ((error == SE_ERR_NOASSOC))
-    return OpenItemWithExternalApp(full_path.value());
-
-  return false;
-}
-
-bool OpenItemViaShellNoZoneCheck(const FilePath& full_path) {
-  SHELLEXECUTEINFO sei = { sizeof(sei) };
-  sei.fMask = SEE_MASK_NOZONECHECKS | SEE_MASK_FLAG_DDEWAIT;
-  sei.nShow = SW_SHOWNORMAL;
-  sei.lpVerb = NULL;
-  sei.lpFile = full_path.value().c_str();
-  if (::ShellExecuteExW(&sei))
-    return true;
-  LONG_PTR error = reinterpret_cast<LONG_PTR>(sei.hInstApp);
-  if ((error == SE_ERR_NOASSOC))
-    return OpenItemWithExternalApp(full_path.value());
-  return false;
-}
-
-// Show the Windows "Open With" dialog box to ask the user to pick an app to
-// open the file with.
-bool OpenItemWithExternalApp(const std::wstring& full_path) {
-  SHELLEXECUTEINFO sei = { sizeof(sei) };
-  sei.fMask = SEE_MASK_FLAG_DDEWAIT;
-  sei.nShow = SW_SHOWNORMAL;
-  sei.lpVerb = L"openas";
-  sei.lpFile = full_path.c_str();
-  return (TRUE == ::ShellExecuteExW(&sei));
-}
-
-// Adjust the window to fit, returning true if the window was resized or moved.
-static bool AdjustWindowToFit(HWND hwnd, const RECT& bounds) {
-  // Get the monitor.
-  HMONITOR hmon = MonitorFromRect(&bounds, MONITOR_DEFAULTTONEAREST);
-  if (!hmon) {
-    NOTREACHED() << "Unable to find default monitor";
-    // No monitor available.
-    return false;
-  }
-
-  MONITORINFO mi;
-  mi.cbSize = sizeof(mi);
-  GetMonitorInfo(hmon, &mi);
-  gfx::Rect window_rect(bounds);
-  gfx::Rect monitor_rect(mi.rcWork);
-  gfx::Rect new_window_rect = window_rect.AdjustToFit(monitor_rect);
-  if (!new_window_rect.Equals(window_rect)) {
-    // Window doesn't fit on monitor, move and possibly resize.
-    SetWindowPos(hwnd, 0, new_window_rect.x(), new_window_rect.y(),
-                 new_window_rect.width(), new_window_rect.height(),
-                 SWP_NOACTIVATE | SWP_NOZORDER);
-    return true;
-  } else {
-    return false;
-  }
-}
-
-void AdjustWindowToFit(HWND hwnd) {
-  // Get the window bounds.
-  RECT r;
-  GetWindowRect(hwnd, &r);
-  AdjustWindowToFit(hwnd, r);
-}
-
-void CenterAndSizeWindow(HWND parent, HWND window, const SIZE& pref,
-                         bool pref_is_client) {
-  DCHECK(window && pref.cx > 0 && pref.cy > 0);
-  // Calculate the ideal bounds.
-  RECT window_bounds;
-  RECT center_bounds = {0};
-  if (parent) {
-    // If there is a parent, center over the parents bounds.
-    ::GetWindowRect(parent, &center_bounds);
-  } else {
-    // No parent. Center over the monitor the window is on.
-    HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONEAREST);
-    if (monitor) {
-      MONITORINFO mi = {0};
-      mi.cbSize = sizeof(mi);
-      GetMonitorInfo(monitor, &mi);
-      center_bounds = mi.rcWork;
-    } else {
-      NOTREACHED() << "Unable to get default monitor";
-    }
-  }
-  window_bounds.left = center_bounds.left +
-                       (center_bounds.right - center_bounds.left - pref.cx) / 2;
-  window_bounds.right = window_bounds.left + pref.cx;
-  window_bounds.top = center_bounds.top +
-                      (center_bounds.bottom - center_bounds.top - pref.cy) / 2;
-  window_bounds.bottom = window_bounds.top + pref.cy;
-
-  // If we're centering a child window, we are positioning in client
-  // coordinates, and as such we need to offset the target rectangle by the
-  // position of the parent window.
-  if (::GetWindowLong(window, GWL_STYLE) & WS_CHILD) {
-    DCHECK(parent && ::GetParent(window) == parent);
-    POINT topleft = { window_bounds.left, window_bounds.top };
-    ::MapWindowPoints(HWND_DESKTOP, parent, &topleft, 1);
-    window_bounds.left = topleft.x;
-    window_bounds.top = topleft.y;
-    window_bounds.right = window_bounds.left + pref.cx;
-    window_bounds.bottom = window_bounds.top + pref.cy;
-  }
-
-  // Get the WINDOWINFO for window. We need the style to calculate the size
-  // for the window.
-  WINDOWINFO win_info = {0};
-  win_info.cbSize = sizeof(WINDOWINFO);
-  GetWindowInfo(window, &win_info);
-
-  // Calculate the window size needed for the content size.
-
-  if (!pref_is_client ||
-      AdjustWindowRectEx(&window_bounds, win_info.dwStyle, FALSE,
-                         win_info.dwExStyle)) {
-    if (!AdjustWindowToFit(window, window_bounds)) {
-      // The window fits, reset the bounds.
-      SetWindowPos(window, 0, window_bounds.left, window_bounds.top,
-                   window_bounds.right - window_bounds.left,
-                   window_bounds.bottom - window_bounds.top,
-                   SWP_NOACTIVATE | SWP_NOZORDER);
-    }  // else case, AdjustWindowToFit set the bounds for us.
-  } else {
-    NOTREACHED() << "Unable to adjust window to fit";
-  }
-}
-
 bool EdgeHasTopmostAutoHideTaskbar(UINT edge, HMONITOR monitor) {
   APPBARDATA taskbar_data = { 0 };
   taskbar_data.cbSize = sizeof APPBARDATA;
@@ -278,16 +110,6 @@ HANDLE GetSectionForProcess(HANDLE section, HANDLE process, bool read_only) {
   DuplicateHandle(GetCurrentProcess(), section, process, &valid_section, access,
                   FALSE, 0);
   return valid_section;
-}
-
-bool DoesWindowBelongToActiveWindow(HWND window) {
-  DCHECK(window);
-  HWND top_window = ::GetAncestor(window, GA_ROOT);
-  if (!top_window)
-    return false;
-
-  HWND active_top_window = ::GetAncestor(::GetForegroundWindow(), GA_ROOT);
-  return (top_window == active_top_window);
 }
 
 void EnsureRectIsVisibleInRect(const gfx::Rect& parent_rect,
@@ -325,48 +147,6 @@ void EnsureRectIsVisibleInRect(const gfx::Rect& parent_rect,
     child_rect->set_y(parent_rect.bottom() - child_rect->height() - padding);
   if (child_rect->right() > parent_rect.right())
     child_rect->set_x(parent_rect.right() - child_rect->width() - padding);
-}
-
-void SetChildBounds(HWND child_window, HWND parent_window,
-                    HWND insert_after_window, const gfx::Rect& bounds,
-                    int padding, unsigned long flags) {
-  DCHECK(IsWindow(child_window));
-
-  // First figure out the bounds of the parent.
-  RECT parent_rect = {0};
-  if (parent_window) {
-    GetClientRect(parent_window, &parent_rect);
-  } else {
-    // If there is no parent, we consider the bounds of the monitor the window
-    // is on to be the parent bounds.
-
-    // If the child_window isn't visible yet and we've been given a valid,
-    // visible insert after window, use that window to locate the correct
-    // monitor instead.
-    HWND window = child_window;
-    if (!IsWindowVisible(window) && IsWindow(insert_after_window) &&
-        IsWindowVisible(insert_after_window))
-      window = insert_after_window;
-
-    POINT window_point = { bounds.x(), bounds.y() };
-    HMONITOR monitor = MonitorFromPoint(window_point,
-                                        MONITOR_DEFAULTTONEAREST);
-    if (monitor) {
-      MONITORINFO mi = {0};
-      mi.cbSize = sizeof(mi);
-      GetMonitorInfo(monitor, &mi);
-      parent_rect = mi.rcWork;
-    } else {
-      NOTREACHED() << "Unable to get default monitor";
-    }
-  }
-
-  gfx::Rect actual_bounds = bounds;
-  EnsureRectIsVisibleInRect(gfx::Rect(parent_rect), &actual_bounds, padding);
-
-  SetWindowPos(child_window, insert_after_window, actual_bounds.x(),
-               actual_bounds.y(), actual_bounds.width(),
-               actual_bounds.height(), flags);
 }
 
 gfx::Rect GetMonitorBoundsForRect(const gfx::Rect& rect) {
@@ -495,31 +275,6 @@ bool IsReservedName(const std::wstring& filename) {
   return false;
 }
 
-bool IsShellIntegratedExtension(const std::wstring& extension) {
-  std::wstring extension_lower = StringToLowerASCII(extension);
-
-  static const wchar_t* const integrated_extensions[] = {
-    // See <http://msdn.microsoft.com/en-us/library/ms811694.aspx>.
-    L"local",
-    // Right-clicking on shortcuts can be magical.
-    L"lnk",
-  };
-
-  for (int i = 0; i < arraysize(integrated_extensions); ++i) {
-    if (extension_lower == integrated_extensions[i])
-      return true;
-  }
-
-  // See <http://www.juniper.net/security/auto/vulnerabilities/vuln2612.html>.
-  // That vulnerability report is not exactly on point, but files become magical
-  // if their end in a CLSID.  Here we block extensions that look like CLSIDs.
-  if (extension_lower.size() > 0 && extension_lower.at(0) == L'{' &&
-      extension_lower.at(extension_lower.length() - 1) == L'}')
-    return true;
-
-  return false;
-}
-
 // In addition to passing the RTL flags to ::MessageBox if we are running in an
 // RTL locale, we need to make sure that LTR strings are rendered correctly by
 // adding the appropriate Unicode directionality marks.
@@ -551,44 +306,6 @@ gfx::Font GetWindowTitleFont() {
   l10n_util::AdjustUIFont(&(ncm.lfCaptionFont));
   base::win::ScopedHFONT caption_font(CreateFontIndirect(&(ncm.lfCaptionFont)));
   return gfx::Font(caption_font);
-}
-
-void SetAppIdForWindow(const std::wstring& app_id, HWND hwnd) {
-  // This functionality is only available on Win7+.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-
-  // Load Shell32.dll into memory.
-  // TODO(brg): Remove this mechanism when the Win7 SDK is available in trunk.
-  std::wstring shell32_filename(kShell32);
-  FilePath shell32_filepath(shell32_filename);
-  base::NativeLibrary shell32_library = base::LoadNativeLibrary(
-      shell32_filepath);
-
-  if (!shell32_library)
-    return;
-
-  // Get the function pointer for SHGetPropertyStoreForWindow.
-  void* function = base::GetFunctionPointerFromNativeLibrary(
-      shell32_library,
-      kSHGetPropertyStoreForWindow);
-
-  if (!function) {
-    base::UnloadNativeLibrary(shell32_library);
-    return;
-  }
-
-  // Set the application's name.
-  ScopedComPtr<IPropertyStore> pps;
-  SHGPSFW SHGetPropertyStoreForWindow = static_cast<SHGPSFW>(function);
-  HRESULT result = SHGetPropertyStoreForWindow(
-      hwnd, __uuidof(*pps), reinterpret_cast<void**>(pps.Receive()));
-  if (S_OK == result) {
-    SetAppIdForPropertyStore(pps, app_id.c_str());
-  }
-
-  // Cleanup.
-  base::UnloadNativeLibrary(shell32_library);
 }
 
 }  // namespace win_util

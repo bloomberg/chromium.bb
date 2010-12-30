@@ -33,7 +33,6 @@ class ImageData : public Resource {
             bool init_to_zero);
 
   ImageData& operator=(const ImageData& other);
-  void swap(ImageData& other);
 
   // Returns the browser's preferred format for images. Using this format
   // guarantees no extra conversions will occur when painting.

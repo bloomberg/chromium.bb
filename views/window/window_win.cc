@@ -47,6 +47,55 @@ bool GetMonitorAndRects(const RECT& rect,
   return true;
 }
 
+// Ensures that the child window stays within the boundaries of the parent
+// before setting its bounds. If |parent_window| is NULL, the bounds of the
+// parent are assumed to be the bounds of the monitor that |child_window| is
+// nearest to. If |child_window| isn't visible yet and |insert_after_window|
+// is non-NULL and visible, the monitor |insert_after_window| is on is used
+// as the parent bounds instead.
+void SetChildBounds(HWND child_window, HWND parent_window,
+                    HWND insert_after_window, const gfx::Rect& bounds,
+                    int padding, unsigned long flags) {
+  DCHECK(IsWindow(child_window));
+
+  // First figure out the bounds of the parent.
+  RECT parent_rect = {0};
+  if (parent_window) {
+    GetClientRect(parent_window, &parent_rect);
+  } else {
+    // If there is no parent, we consider the bounds of the monitor the window
+    // is on to be the parent bounds.
+
+    // If the child_window isn't visible yet and we've been given a valid,
+    // visible insert after window, use that window to locate the correct
+    // monitor instead.
+    HWND window = child_window;
+    if (!IsWindowVisible(window) && IsWindow(insert_after_window) &&
+        IsWindowVisible(insert_after_window))
+      window = insert_after_window;
+
+    POINT window_point = { bounds.x(), bounds.y() };
+    HMONITOR monitor = MonitorFromPoint(window_point,
+                                        MONITOR_DEFAULTTONEAREST);
+    if (monitor) {
+      MONITORINFO mi = {0};
+      mi.cbSize = sizeof(mi);
+      GetMonitorInfo(monitor, &mi);
+      parent_rect = mi.rcWork;
+    } else {
+      NOTREACHED() << "Unable to get default monitor";
+    }
+  }
+
+  gfx::Rect actual_bounds = bounds;
+  win_util::EnsureRectIsVisibleInRect(gfx::Rect(parent_rect), &actual_bounds,
+                                      padding);
+
+  SetWindowPos(child_window, insert_after_window, actual_bounds.x(),
+               actual_bounds.y(), actual_bounds.width(),
+               actual_bounds.height(), flags);
+}
+
 }  // namespace
 
 namespace views {
@@ -133,8 +182,8 @@ gfx::Rect WindowWin::GetNormalBounds() const {
 
 void WindowWin::SetBounds(const gfx::Rect& bounds,
                           gfx::NativeWindow other_window) {
-  win_util::SetChildBounds(GetNativeView(), GetParent(), other_window, bounds,
-                           kMonitorEdgePadding, 0);
+  SetChildBounds(GetNativeView(), GetParent(), other_window, bounds,
+                 kMonitorEdgePadding, 0);
 }
 
 void WindowWin::Show(int show_state) {
@@ -491,7 +540,7 @@ gfx::NativeWindow WindowWin::GetNativeWindow() const {
 bool WindowWin::ShouldUseNativeFrame() const {
   ThemeProvider* tp = GetThemeProvider();
   if (!tp)
-    return win_util::ShouldUseVistaFrame();
+    return app::win::ShouldUseVistaFrame();
   return tp->ShouldUseNativeFrame();
 }
 
@@ -565,8 +614,8 @@ void WindowWin::Init(HWND parent, const gfx::Rect& bounds) {
 }
 
 void WindowWin::SizeWindowToDefault() {
-  win_util::CenterAndSizeWindow(owning_window(), GetNativeView(),
-                                non_client_view_->GetPreferredSize().ToSIZE(),
+  app::win::CenterAndSizeWindow(owning_window(), GetNativeView(),
+                                non_client_view_->GetPreferredSize(),
                                 false);
 }
 

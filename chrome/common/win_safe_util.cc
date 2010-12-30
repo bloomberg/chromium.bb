@@ -7,7 +7,7 @@
 
 #include "chrome/common/win_safe_util.h"
 
-#include "app/win_util.h"
+#include "app/win/shell.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -33,7 +33,7 @@ bool SaferOpenItemViaShell(HWND hwnd, const std::wstring& window_title,
       NOTREACHED();
       return false;
     }
-    return OpenItemViaShell(full_path);
+    return app::win::OpenItemViaShell(full_path);
   }
 
   // This GUID is associated with any 'don't ask me again' settings that the
@@ -81,7 +81,7 @@ bool SaferOpenItemViaShell(HWND hwnd, const std::wstring& window_title,
       return false;
     }
   }
-  return OpenItemViaShellNoZoneCheck(full_path);
+  return app::win::OpenItemViaShellNoZoneCheck(full_path);
 }
 
 bool SetInternetZoneIdentifier(const FilePath& full_path) {

@@ -50,14 +50,9 @@ Graphics2D::~Graphics2D() {
 }
 
 Graphics2D& Graphics2D::operator=(const Graphics2D& other) {
-  Graphics2D copy(other);
-  swap(copy);
+  Resource::operator=(other);
+  size_ = other.size_;
   return *this;
-}
-
-void Graphics2D::swap(Graphics2D& other) {
-  Resource::swap(other);
-  size_.swap(other.size_);
 }
 
 void Graphics2D::PaintImageData(const ImageData& image,

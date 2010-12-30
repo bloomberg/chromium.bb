@@ -42,7 +42,7 @@
 #include <commctrl.h>
 #include <dwmapi.h>
 
-#include "app/win_util.h"
+#include "app/win/hwnd_util.h"
 #include "base/win/scoped_gdi_object.h"
 #endif
 
@@ -1106,7 +1106,7 @@ void AutocompletePopupContentsView::MakeContentsPath(
 void AutocompletePopupContentsView::UpdateBlurRegion() {
 #if defined(OS_WIN)
   // We only support background blurring on Vista with Aero-Glass enabled.
-  if (!win_util::ShouldUseVistaFrame() || !GetWidget())
+  if (!app::win::ShouldUseVistaFrame() || !GetWidget())
     return;
 
   // Provide a blurred background effect within the contents region of the

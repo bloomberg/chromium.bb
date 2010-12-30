@@ -9,6 +9,7 @@
 #include <shellapi.h>
 #include <shlobj.h>
 
+#include "app/win/shell.h"
 #include "app/win_util.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -89,7 +90,7 @@ void ShowItemInFolder(const FilePath& full_path) {
 }
 
 void OpenItem(const FilePath& full_path) {
-  win_util::OpenItemViaShell(full_path);
+  app::win::OpenItemViaShell(full_path);
 }
 
 void OpenExternal(const GURL& url) {

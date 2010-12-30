@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
+#include "app/win/hwnd_util.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/views/event_utils.h"
@@ -243,7 +244,7 @@ void InfoBar::AnimateClose() {
   // Do not restore focus (and active state with it) on Windows if some other
   // top-level window became active.
   if (GetWidget() &&
-      !win_util::DoesWindowBelongToActiveWindow(GetWidget()->GetNativeView())) {
+      !app::win::DoesWindowBelongToActiveWindow(GetWidget()->GetNativeView())) {
     restore_focus = false;
   }
 #endif  // defined(OS_WIN)

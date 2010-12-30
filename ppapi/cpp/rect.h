@@ -147,8 +147,6 @@ class Rect {
     return rect_.size.width == 0 && rect_.size.height == 0;
   }
 
-  void swap(Rect& other);
-
   // Returns true if the point identified by point_x and point_y falls inside
   // this rectangle.  The point (x, y) is inside the rectangle, but the
   // point (x + width, y + height) is not.

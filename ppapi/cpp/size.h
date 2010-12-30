@@ -76,15 +76,6 @@ class Size {
     set_height(height() + h);
   }
 
-  void swap(Size& other) {
-    int32_t w = size_.width;
-    int32_t h = size_.height;
-    size_.width = other.size_.width;
-    size_.height = other.size_.height;
-    other.size_.width = w;
-    other.size_.height = h;
-  }
-
   bool IsEmpty() const {
     // Size doesn't allow negative dimensions, so testing for 0 is enough.
     return (width() == 0) || (height() == 0);

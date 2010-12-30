@@ -92,6 +92,39 @@ static const int kCompleteAnimationCycles = 5;
 // Also used by code that cleans up said files.
 static const int kMaxUniqueFiles = 100;
 
+namespace {
+
+#if defined(OS_WIN)
+// Returns whether the specified extension is automatically integrated into the
+// windows shell.
+bool IsShellIntegratedExtension(const string16& extension) {
+  string16 extension_lower = StringToLowerASCII(extension);
+
+  static const wchar_t* const integrated_extensions[] = {
+    // See <http://msdn.microsoft.com/en-us/library/ms811694.aspx>.
+    L"local",
+    // Right-clicking on shortcuts can be magical.
+    L"lnk",
+  };
+
+  for (int i = 0; i < arraysize(integrated_extensions); ++i) {
+    if (extension_lower == integrated_extensions[i])
+      return true;
+  }
+
+  // See <http://www.juniper.net/security/auto/vulnerabilities/vuln2612.html>.
+  // That vulnerability report is not exactly on point, but files become magical
+  // if their end in a CLSID.  Here we block extensions that look like CLSIDs.
+  if (extension_lower.size() > 0 && extension_lower.at(0) == L'{' &&
+      extension_lower.at(extension_lower.length() - 1) == L'}')
+    return true;
+
+  return false;
+}
+#endif  // OS_WIN
+
+}  // namespace
+
 // Download temporary file creation --------------------------------------------
 
 class DefaultDownloadDirectory {
@@ -157,7 +190,7 @@ void GenerateExtension(const FilePath& file_name,
       FILE_PATH_LITERAL("download");
 
   // Rename shell-integrated extensions.
-  if (win_util::IsShellIntegratedExtension(extension))
+  if (IsShellIntegratedExtension(extension))
     extension.assign(default_extension);
 #endif
 

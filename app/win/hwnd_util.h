@@ -10,6 +10,10 @@
 
 #include "base/string16.h"
 
+namespace gfx {
+class Size;
+}
+
 namespace app {
 namespace win {
 
@@ -24,6 +28,22 @@ WNDPROC SetWindowProc(HWND hwnd, WNDPROC wndproc);
 // Returns the previously set value.
 void* SetWindowUserData(HWND hwnd, void* user_data);
 void* GetWindowUserData(HWND hwnd);
+
+// Returns true if the specified window is the current active top window or one
+// of its children.
+bool DoesWindowBelongToActiveWindow(HWND window);
+
+// Sizes the window to have a client or window size (depending on the value of
+// |pref_is_client|) of pref, then centers the window over parent, ensuring the
+// window fits on screen.
+void CenterAndSizeWindow(HWND parent,
+                         HWND window,
+                         const gfx::Size& pref,
+                         bool pref_is_client);
+
+// Returns true if we are on Windows Vista or greater and composition is
+// enabled.
+bool ShouldUseVistaFrame();
 
 }  // namespace win
 }  // namespace app

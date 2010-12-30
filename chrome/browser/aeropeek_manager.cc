@@ -7,8 +7,9 @@
 #include <dwmapi.h>
 #include <shobjidl.h>
 
+#include "app/win/hwnd_util.h"
 #include "app/win/window_impl.h"
-#include "app/win_util.h"
+#include "app/win/shell.h"
 #include "base/command_line.h"
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_handle_win.h"
@@ -251,7 +252,7 @@ class RegisterThumbnailTask : public Task {
     // browser icon in the taskbar.
     // TODO(mattm): This should use ShellIntegration::GetChromiumAppId to work
     // properly with multiple profiles.
-    win_util::SetAppIdForWindow(
+    app::win::SetAppIdForWindow(
         BrowserDistribution::GetDistribution()->GetBrowserAppId(), window_);
 
     // Register this place-holder window to the taskbar as a child of
@@ -1013,7 +1014,7 @@ bool AeroPeekManager::Enabled() {
   // flooding users with tab thumbnails.
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   return base::win::GetVersion() >= base::win::VERSION_WIN7 &&
-      win_util::ShouldUseVistaFrame() &&
+      app::win::ShouldUseVistaFrame() &&
       !command_line->HasSwitch(switches::kApp) &&
       command_line->HasSwitch(switches::kEnableAeroPeekTabs);
 }

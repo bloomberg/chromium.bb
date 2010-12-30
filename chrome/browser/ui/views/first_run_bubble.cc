@@ -7,7 +7,7 @@
 #include "app/gfx/font_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/win_util.h"
+#include "app/win/hwnd_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
@@ -350,7 +350,7 @@ gfx::Size FirstRunOEMBubbleView::GetPreferredSize() {
   // now, we force Vista to show a correctly-sized box by taking account of
   // the difference in font size calculation. The coefficient should not be
   // stored in a variable because it's a hack and should go away.
-  if (win_util::ShouldUseVistaFrame()) {
+  if (app::win::ShouldUseVistaFrame()) {
     size.set_width(static_cast<int>(size.width() * 0.85));
     size.set_height(static_cast<int>(size.height() * 0.85));
   }

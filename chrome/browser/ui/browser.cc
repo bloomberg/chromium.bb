@@ -116,7 +116,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "app/win_util.h"
+#include "app/win/shell.h"
 #include "chrome/browser/autofill/autofill_ie_toolbar_import_win.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/download/save_package.h"
@@ -379,7 +379,7 @@ void Browser::CreateBrowserWindow() {
 
     // Set the app user model id for this application to that of the application
     // name.  See http://crbug.com/7028.
-    win_util::SetAppIdForWindow(
+    app::win::SetAppIdForWindow(
         type_ & TYPE_APP ?
         ShellIntegration::GetAppId(UTF8ToWide(app_name_), profile_->GetPath()) :
         ShellIntegration::GetChromiumAppId(profile_->GetPath()),

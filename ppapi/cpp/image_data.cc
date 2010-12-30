@@ -58,15 +58,10 @@ ImageData::ImageData(PP_ImageDataFormat format,
 }
 
 ImageData& ImageData::operator=(const ImageData& other) {
-  ImageData copy(other);
-  swap(copy);
+  Resource::operator=(other);
+  desc_ = other.desc_;
+  data_ = other.data_;
   return *this;
-}
-
-void ImageData::swap(ImageData& other) {
-  Resource::swap(other);
-  std::swap(desc_, other.desc_);
-  std::swap(data_, other.data_);
 }
 
 const uint32_t* ImageData::GetAddr32(const Point& coord) const {
