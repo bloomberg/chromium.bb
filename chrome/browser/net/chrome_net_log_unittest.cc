@@ -5,7 +5,7 @@
 #include "chrome/browser/net/chrome_net_log.h"
 
 #include "base/waitable_event.h"
-#include "base/simple_thread.h"
+#include "base/threading/simple_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
