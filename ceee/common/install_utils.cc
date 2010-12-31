@@ -15,10 +15,11 @@
 
 namespace installer {
   namespace switches {
-    // TODO(joi@chromium.org) Move to chrome/installer/util_constants.h
+    // TODO(joi): Move to chrome/installer/util_constants.h
     // when we refactor this logic to be in the installer rather than
     // on the registration entrypoints.
-    const char kEnableCeee[] = "enable-ceee";
+    const char kEnableCeee[] = "ceee";
+    // TODO(joi): The installer supports only "ceee".
     const char kEnableFfCeee[] = "enable-ff-ceee";
   }
 }
@@ -35,7 +36,7 @@ bool ShouldRegisterImpl(bool check_firefox) {
   }
 
   // Failing that, it's some kind of install scenario, so the
-  // --enable-ceee flag must be provided. It should be ignored
+  // --ceee flag must be provided. It should be ignored
   // unless --chrome-frame is also specified, so we check for
   // both.
   //

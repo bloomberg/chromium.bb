@@ -45,7 +45,7 @@ TEST(ShouldRegisterCeee, TrueIfBothFlagsPresent) {
   testing::MockKernel32 kernel32;
   EXPECT_CALL(kernel32, GetCommandLine()).WillOnce(
       Return(const_cast<wchar_t*>(
-          L"mini_installer.exe --enable-ceee --chrome-frame")));
+          L"mini_installer.exe --ceee --chrome-frame")));
   ASSERT_TRUE(ceee_install_utils::ShouldRegisterCeee());
 }
 
@@ -53,7 +53,7 @@ TEST(ShouldRegisterFfCeee, TrueIfAllFlagsPresent) {
   testing::MockKernel32 kernel32;
   EXPECT_CALL(kernel32, GetCommandLine()).Times(2).WillRepeatedly(
       Return(const_cast<wchar_t*>(
-          L"mini_installer.exe --enable-ceee --chrome-frame "
+          L"mini_installer.exe --ceee --chrome-frame "
           L"--enable-ff-ceee")));
   EXPECT_TRUE(ceee_install_utils::ShouldRegisterFfCeee());
   // Check this as well just in case.
@@ -64,7 +64,7 @@ TEST(ShouldRegisterCeee, FalseIfOneFlagPresent) {
   testing::MockKernel32 kernel32;
   EXPECT_CALL(kernel32, GetCommandLine())
     .WillOnce(Return(const_cast<wchar_t*>(
-        L"mini_installer.exe --enable-ceee")))
+        L"mini_installer.exe --ceee")))
     .WillOnce(Return(const_cast<wchar_t*>(
         L"mini_installer.exe --chrome-frame")));
   ASSERT_FALSE(ceee_install_utils::ShouldRegisterCeee());
@@ -75,11 +75,11 @@ TEST(ShouldRegisterFfCeee, FalseIfOnlyTwoFlagsPresent) {
   testing::MockKernel32 kernel32;
   EXPECT_CALL(kernel32, GetCommandLine())
     .WillOnce(Return(const_cast<wchar_t*>(
-        L"mini_installer.exe --enable-ceee --chrome-frame")))
+        L"mini_installer.exe --ceee --chrome-frame")))
     .WillOnce(Return(const_cast<wchar_t*>(
         L"mini_installer.exe --chrome-frame --enable-ff-ceee")))
     .WillOnce(Return(const_cast<wchar_t*>(
-        L"mini_installer.exe --enable-ceee --enable-ff-ceee")));
+        L"mini_installer.exe --ceee --enable-ff-ceee")));
   ASSERT_FALSE(ceee_install_utils::ShouldRegisterFfCeee());
   ASSERT_FALSE(ceee_install_utils::ShouldRegisterFfCeee());
   ASSERT_FALSE(ceee_install_utils::ShouldRegisterFfCeee());
@@ -97,7 +97,7 @@ TEST(ShouldRegisterFfCeee, FalseIfInvertedFlagPresent) {
   testing::MockKernel32 kernel32;
   EXPECT_CALL(kernel32, GetCommandLine()).WillOnce(
     Return(const_cast<wchar_t*>(
-        L"mini_installer.exe --enable-ceee --noenable-ff-ceee "
+        L"mini_installer.exe --ceee --noenable-ff-ceee "
         L"--chrome-frame")));
   ASSERT_FALSE(ceee_install_utils::ShouldRegisterFfCeee());
 }
@@ -114,7 +114,7 @@ TEST(ShouldRegisterFfCeee, FalseIfBogusFlagPresent) {
   testing::MockKernel32 kernel32;
   EXPECT_CALL(kernel32, GetCommandLine()).WillOnce(
     Return(const_cast<wchar_t*>(
-        L"mini_installer.exe --enable-ceee --enable-ff-ceeez "
+        L"mini_installer.exe --ceee --enable-ff-ceeez "
         L"--chrome-frame")));
   ASSERT_FALSE(ceee_install_utils::ShouldRegisterFfCeee());
 }

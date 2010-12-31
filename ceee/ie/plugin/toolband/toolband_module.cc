@@ -269,7 +269,7 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) {
 //
 // This is not the actual entrypoint; see the define right below this
 // function, which keeps us safe from ever forgetting to check for
-// the --enable-ceee flag.
+// the --ceee flag.
 STDAPI DllRegisterServerImpl(void) {
   // Registers objects.
   HRESULT hr = module.DllRegisterServer();
@@ -280,7 +280,7 @@ CEEE_DEFINE_DLL_REGISTER_SERVER()
 
 // DllUnregisterServer - Removes entries from the system registry
 STDAPI DllUnregisterServer(void) {
-  // We always allow unregistration, even if no --enable-ceee install flag.
+  // We always allow unregistration, even if no --ceee install flag.
   HRESULT hr = module.DllUnregisterServer();
   return hr;
 }
