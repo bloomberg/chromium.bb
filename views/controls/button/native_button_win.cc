@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "base/win/scoped_comptr.h"
-#include "base/win_util.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/button/native_button.h"
@@ -41,7 +41,7 @@ void NativeButtonWin::UpdateLabel() {
   // update the button text so Windows can lay out the shield icon and the
   // button text correctly.
   if (base::win::GetVersion() >= base::win::VERSION_VISTA &&
-      win_util::UserAccountControlIsEnabled()) {
+      base::win::UserAccountControlIsEnabled()) {
     Button_SetElevationRequiredState(native_view(),
                                      native_button_->need_elevation());
   }

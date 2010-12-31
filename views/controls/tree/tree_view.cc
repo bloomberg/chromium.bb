@@ -14,7 +14,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
-#include "base/win_util.h"
+#include "base/win/win_util.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/canvas_skia_paint.h"
 #include "gfx/favicon_size.h"
@@ -463,9 +463,9 @@ bool TreeView::OnKeyDown(app::KeyboardCode virtual_key_code) {
     Widget* widget = GetWidget();
     DCHECK(widget);
     Accelerator accelerator(Accelerator(virtual_key_code,
-                                        win_util::IsShiftPressed(),
-                                        win_util::IsCtrlPressed(),
-                                        win_util::IsAltPressed()));
+                                        base::win::IsShiftPressed(),
+                                        base::win::IsCtrlPressed(),
+                                        base::win::IsAltPressed()));
     GetFocusManager()->ProcessAccelerator(accelerator);
     return true;
   }

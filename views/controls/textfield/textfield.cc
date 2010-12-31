@@ -22,7 +22,7 @@
 #include "app/keyboard_code_conversion_gtk.h"
 #elif defined(OS_WIN)
 #include "app/win_util.h"
-#include "base/win_util.h"
+#include "base/win/win_util.h"
 // TODO(beng): this should be removed when the OS_WIN hack from
 // ViewHierarchyChanged is removed.
 #include "views/controls/textfield/native_textfield_win.h"
@@ -364,11 +364,11 @@ app::KeyboardCode Textfield::Keystroke::GetKeyboardCode() const {
 
 #if defined(OS_WIN)
 bool Textfield::Keystroke::IsControlHeld() const {
-  return win_util::IsCtrlPressed();
+  return base::win::IsCtrlPressed();
 }
 
 bool Textfield::Keystroke::IsShiftHeld() const {
-  return win_util::IsShiftPressed();
+  return base::win::IsShiftPressed();
 }
 #else
 bool Textfield::Keystroke::IsControlHeld() const {

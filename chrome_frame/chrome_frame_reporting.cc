@@ -6,7 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/file_version_info.h"
-#include "base/win_util.h"
+#include "base/win/win_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome_frame/chrome_frame_reporting.h"
@@ -79,7 +79,7 @@ bool InitializeCrashReporting() {
   // Per-user install: "NamedPipe\GoogleCrashServices\<user SID>"
   std::wstring user_sid;
   if (InstallUtil::IsPerUserInstall(dll_path)) {
-    if (!win_util::GetUserSidString(&user_sid)) {
+    if (!base::win::GetUserSidString(&user_sid)) {
       return false;
     }
   } else {

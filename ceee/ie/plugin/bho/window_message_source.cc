@@ -8,7 +8,6 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/win_util.h"
 #include "ceee/common/window_utils.h"
 #include "ceee/common/windows_constants.h"
 #include "ceee/ie/common/ceee_module_util.h"

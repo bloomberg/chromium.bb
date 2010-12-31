@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "base/win_util.h"
+#include "base/win/win_util.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/font.h"
 
@@ -164,7 +164,7 @@ void PlatformFontWin::InitWithFontNameAndSize(const std::wstring& font_name,
 PlatformFontWin::HFontRef* PlatformFontWin::GetBaseFontRef() {
   if (base_font_ref_ == NULL) {
     NONCLIENTMETRICS metrics;
-    win_util::GetNonClientMetrics(&metrics);
+    base::win::GetNonClientMetrics(&metrics);
 
     if (adjust_font_callback)
       adjust_font_callback(&metrics.lfMessageFont);

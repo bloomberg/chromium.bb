@@ -12,7 +12,7 @@
 #include "base/scoped_handle_win.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
-#include "base/win_util.h"
+#include "base/win/win_util.h"
 #include "chrome/common/chrome_switches.h"
 
 namespace {
@@ -122,7 +122,7 @@ bool ServiceProcessState::AddToAutoRun() {
                                switches::kServiceProcess);
     // We need a unique name for the command per user-date-dir. Just use the
     // channel name.
-    return win_util::AddCommandToAutoRun(
+    return base::win::AddCommandToAutoRun(
         HKEY_CURRENT_USER,
         UTF8ToWide(GetAutoRunKey()),
         cmd_line.command_line_string());
@@ -131,7 +131,7 @@ bool ServiceProcessState::AddToAutoRun() {
 }
 
 bool ServiceProcessState::RemoveFromAutoRun() {
-  return win_util::RemoveCommandFromAutoRun(
+  return base::win::RemoveCommandFromAutoRun(
       HKEY_CURRENT_USER, UTF8ToWide(GetAutoRunKey()));
 }
 

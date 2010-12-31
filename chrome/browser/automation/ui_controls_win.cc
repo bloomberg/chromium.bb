@@ -8,7 +8,6 @@
 #include "app/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/win_util.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "views/view.h"

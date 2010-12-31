@@ -38,7 +38,7 @@
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_WIN)
-#include "base/win_util.h"
+#include "base/win/win_util.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
 #include "gfx/icon_util.h"

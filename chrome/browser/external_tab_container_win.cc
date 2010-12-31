@@ -12,7 +12,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "base/win_util.h"
+#include "base/win/win_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/automation/automation_provider.h"
@@ -527,7 +527,7 @@ gfx::NativeWindow ExternalTabContainer::GetFrameNativeWindow() {
 bool ExternalTabContainer::TakeFocus(bool reverse) {
   if (automation_) {
     automation_->Send(new AutomationMsg_TabbedOut(tab_handle_,
-        win_util::IsShiftPressed()));
+        base::win::IsShiftPressed()));
   }
 
   return true;
@@ -844,7 +844,7 @@ bool ExternalTabContainer::ProcessUnhandledKeyStroke(HWND window,
   if (!automation_) {
     return false;
   }
-  if ((wparam == VK_TAB) && !win_util::IsCtrlPressed()) {
+  if ((wparam == VK_TAB) && !base::win::IsCtrlPressed()) {
     // Tabs are handled separately (except if this is Ctrl-Tab or
     // Ctrl-Shift-Tab)
     return false;

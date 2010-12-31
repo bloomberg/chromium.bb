@@ -9,7 +9,6 @@
 #include "app/win/hwnd_util.h"
 #include "app/view_prop.h"
 #include "base/auto_reset.h"
-#include "base/win_util.h"
 
 using app::ViewProp;
 

@@ -347,7 +347,7 @@ HRESULT SetupRunOnce() {
 // started at next boot.
 void SetupUserLevelHelper() {
   // Remove existing run-at-startup entry.
-  win_util::RemoveCommandFromAutoRun(HKEY_CURRENT_USER, kRunKeyName);
+  base::win::RemoveCommandFromAutoRun(HKEY_CURRENT_USER, kRunKeyName);
 
   // Build the chrome_frame_helper command line.
   FilePath module_path;
@@ -373,7 +373,7 @@ void SetupUserLevelHelper() {
 
   if (file_util::PathExists(helper_path)) {
     // Add new run-at-startup entry.
-    win_util::AddCommandToAutoRun(HKEY_CURRENT_USER, kRunKeyName,
+    base::win::AddCommandToAutoRun(HKEY_CURRENT_USER, kRunKeyName,
                                   helper_path.value());
 
     // Start new instance.
@@ -510,7 +510,7 @@ STDAPI CustomRegistration(UINT reg_flags, BOOL reg, bool is_system) {
         // that during updates we don't have a time window with no running
         // helper. Uninstalls and updates will explicitly kill the helper from
         // within the installer. Unregister existing run-at-startup entry.
-        win_util::RemoveCommandFromAutoRun(HKEY_CURRENT_USER, kRunKeyName);
+        base::win::RemoveCommandFromAutoRun(HKEY_CURRENT_USER, kRunKeyName);
       }
     }
   }

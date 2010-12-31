@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/event_recorder.h"
 #include "base/resource_util.h"
-#include "base/win_util.h"
+#include "base/win/win_util.h"
 #include "gfx/native_theme_win.h"
 #include "webkit/tools/test_shell/foreground_helper.h"
 #include "webkit/tools/test_shell/test_shell.h"
@@ -95,7 +95,7 @@ bool TestShellPlatformDelegate::CheckLayoutTestSystemDependencies() {
 
   // Check that we're using the default system fonts
   NONCLIENTMETRICS metrics;
-  win_util::GetNonClientMetrics(&metrics);
+  base::win::GetNonClientMetrics(&metrics);
   LOGFONTW* system_fonts[] =
   { &metrics.lfStatusFont, &metrics.lfMenuFont, &metrics.lfSmCaptionFont };
 

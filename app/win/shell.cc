@@ -12,7 +12,7 @@
 #include "base/string_util.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
-#include "base/win_util.h"
+#include "base/win/win_util.h"
 
 namespace app {
 namespace win {
@@ -102,7 +102,7 @@ void SetAppIdForWindow(const string16& app_id, HWND hwnd) {
   HRESULT result = SHGetPropertyStoreForWindow(
       hwnd, __uuidof(*pps), reinterpret_cast<void**>(pps.Receive()));
   if (S_OK == result)
-    win_util::SetAppIdForPropertyStore(pps, app_id.c_str());
+    base::win::SetAppIdForPropertyStore(pps, app_id.c_str());
 
   // Cleanup.
   base::UnloadNativeLibrary(shell32_library);

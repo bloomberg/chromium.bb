@@ -8,7 +8,6 @@
 #include "app/resource_bundle.h"
 #if defined(OS_WIN)
 #include "app/win_util.h"
-#include "base/win_util.h"
 #endif
 #include "gfx/canvas.h"
 #include "gfx/font.h"

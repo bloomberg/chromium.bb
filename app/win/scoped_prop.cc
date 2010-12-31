@@ -4,8 +4,6 @@
 
 #include "app/win/scoped_prop.h"
 
-#include "base/win_util.h"
-
 namespace app {
 
 namespace win {

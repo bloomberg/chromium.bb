@@ -11,7 +11,6 @@
 
 #include "app/win/hwnd_util.h"
 #include "app/win_util.h"
-#include "base/win_util.h"
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/browser_list.h"

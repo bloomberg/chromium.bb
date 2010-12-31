@@ -17,7 +17,6 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
-#include "base/win_util.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_thread.h"

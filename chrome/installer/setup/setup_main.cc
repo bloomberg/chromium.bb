@@ -21,7 +21,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "base/win_util.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
 #include "chrome/common/chrome_switches.h"
@@ -797,7 +797,7 @@ google_breakpad::ExceptionHandler* InitializeCrashReporting(
   std::wstring user_sid = kSystemPrincipalSid;
 
   if (!system_install) {
-    if (!win_util::GetUserSidString(&user_sid)) {
+    if (!base::win::GetUserSidString(&user_sid)) {
       return NULL;
     }
   }

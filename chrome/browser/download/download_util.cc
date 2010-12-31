@@ -74,7 +74,6 @@
 #include "app/win_util.h"
 #include "app/win/drag_source.h"
 #include "base/win/scoped_comptr.h"
-#include "base/win_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #endif

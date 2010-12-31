@@ -6,33 +6,12 @@
 
 #include "base/basictypes.h"
 #include "base/string_util.h"
-#include "base/win_util.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// The test is somewhat silly, because the Vista bots some have UAC enabled
-// and some have it disabled. At least we check that it does not crash.
-TEST(BaseWinUtilTest, TestIsUACEnabled) {
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    win_util::UserAccountControlIsEnabled();
-  } else {
-    EXPECT_TRUE(win_util::UserAccountControlIsEnabled());
-  }
-}
-
-TEST(BaseWinUtilTest, TestGetUserSidString) {
-  std::wstring user_sid;
-  EXPECT_TRUE(win_util::GetUserSidString(&user_sid));
-  EXPECT_TRUE(!user_sid.empty());
-}
-
-TEST(BaseWinUtilTest, TestGetNonClientMetrics) {
-  NONCLIENTMETRICS metrics = {0};
-  win_util::GetNonClientMetrics(&metrics);
-  EXPECT_TRUE(metrics.cbSize > 0);
-  EXPECT_TRUE(metrics.iScrollWidth > 0);
-  EXPECT_TRUE(metrics.iScrollHeight > 0);
-}
+namespace base {
+namespace win {
 
 namespace {
 
@@ -50,3 +29,30 @@ class ThreadLocaleSaver {
 };
 
 }  // namespace
+
+// The test is somewhat silly, because the Vista bots some have UAC enabled
+// and some have it disabled. At least we check that it does not crash.
+TEST(BaseWinUtilTest, TestIsUACEnabled) {
+  if (GetVersion() >= base::win::VERSION_VISTA) {
+    UserAccountControlIsEnabled();
+  } else {
+    EXPECT_TRUE(UserAccountControlIsEnabled());
+  }
+}
+
+TEST(BaseWinUtilTest, TestGetUserSidString) {
+  std::wstring user_sid;
+  EXPECT_TRUE(GetUserSidString(&user_sid));
+  EXPECT_TRUE(!user_sid.empty());
+}
+
+TEST(BaseWinUtilTest, TestGetNonClientMetrics) {
+  NONCLIENTMETRICS metrics = {0};
+  GetNonClientMetrics(&metrics);
+  EXPECT_TRUE(metrics.cbSize > 0);
+  EXPECT_TRUE(metrics.iScrollWidth > 0);
+  EXPECT_TRUE(metrics.iScrollHeight > 0);
+}
+
+}  // namespace win
+}  // namespace base

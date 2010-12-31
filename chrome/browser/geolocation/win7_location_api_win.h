@@ -12,7 +12,6 @@
 #include <Windows.h>
 
 #include "base/time.h"
-#include "base/win_util.h"
 
 struct Geoposition;
 

@@ -32,11 +32,6 @@
 #include "views/standard_layout.h"
 #include "views/window/window.h"
 
-
-#if defined(OS_WIN)
-#include "base/win_util.h"
-#endif  // defined(OS_WIN)
-
 namespace {
 
 const int kAppIconSize = 32;

@@ -6,7 +6,6 @@
 
 #include "app/keyboard_code_conversion_win.h"
 #include "app/keyboard_codes.h"
-#include "base/win_util.h"
 #include "views/event.h"
 #include "views/focus/focus_manager.h"
 

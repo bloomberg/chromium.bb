@@ -17,7 +17,6 @@
 #include "base/process_util.h"
 #include "base/scoped_comptr_win.h"
 #include "base/thread.h"
-#include "base/win_util.h"
 #include "base/win/scoped_gdi_object.h"
 #include "chrome/browser/accessibility/browser_accessibility_win.h"
 #include "chrome/browser/accessibility/browser_accessibility_manager.h"

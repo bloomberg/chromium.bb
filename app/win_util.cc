@@ -19,9 +19,9 @@
 #include "base/scoped_handle.h"
 #include "base/scoped_handle_win.h"
 #include "base/string_util.h"
-#include "base/win_util.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
+#include "base/win/win_util.h"
 #include "gfx/codec/png_codec.h"
 #include "gfx/gdi_util.h"
 
@@ -303,7 +303,7 @@ int MessageBox(HWND hwnd,
 
 gfx::Font GetWindowTitleFont() {
   NONCLIENTMETRICS ncm;
-  win_util::GetNonClientMetrics(&ncm);
+  base::win::GetNonClientMetrics(&ncm);
   l10n_util::AdjustUIFont(&(ncm.lfCaptionFont));
   base::win::ScopedHFONT caption_font(CreateFontIndirect(&(ncm.lfCaptionFont)));
   return gfx::Font(caption_font);

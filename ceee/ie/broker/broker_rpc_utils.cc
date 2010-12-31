@@ -8,7 +8,7 @@
 
 #include <algorithm>
 
-#include "base/win_util.h"
+#include "base/win/win_util.h"
 #include "ceee/common/process_utils_win.h"
 
 // Local interprocess communication only.
@@ -24,7 +24,7 @@ std::wstring GetRpcEndpointAddress() {
   if (running_as_admin)
     endpoint += L"ADMIN-";
   std::wstring sid;
-  win_util::GetUserSidString(&sid);
+  base::win::GetUserSidString(&sid);
   endpoint += sid;
   endpoint += L"-B4630D08-4621-41A1-A8D0-F1E98DA460D6";
   // XP does not accept endpoints longer than 52.

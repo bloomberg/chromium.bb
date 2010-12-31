@@ -44,7 +44,7 @@
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_WIN)
-#include "base/win_util.h"
+#include "base/win/win_util.h"
 #include "chrome/browser/views/restart_message_box.h"
 #include "chrome/installer/util/install_util.h"
 #endif  // defined(OS_WIN)
@@ -533,7 +533,7 @@ void AboutChromeView::ViewHierarchyChanged(bool is_add,
       // for Vista is another option.
       int service_pack_major = 0, service_pack_minor = 0;
       base::win::GetServicePackLevel(&service_pack_major, &service_pack_minor);
-      if (win_util::UserAccountControlIsEnabled() ||
+      if (base::win::UserAccountControlIsEnabled() ||
           base::win::GetVersion() == base::win::VERSION_XP ||
           (base::win::GetVersion() == base::win::VERSION_VISTA &&
            service_pack_major >= 1) ||

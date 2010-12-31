@@ -9,10 +9,8 @@
 #include <atlwin.h>
 
 #include "base/string_number_conversions.h"
-#include "base/win_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
-
 #include "chrome_frame/infobars/infobar_content.h"
 #include "chrome_frame/infobars/internal/displaced_window_manager.h"
 #include "chrome_frame/infobars/internal/host_window_manager.h"

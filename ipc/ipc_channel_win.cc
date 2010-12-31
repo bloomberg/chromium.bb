@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/non_thread_safe.h"
 #include "base/utf_string_conversions.h"
-#include "base/win_util.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message_utils.h"
 

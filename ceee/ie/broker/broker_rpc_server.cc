@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/process_util.h"
-#include "base/win_util.h"
 #include "broker_rpc_lib.h"  // NOLINT
 #include "ceee/common/com_utils.h"
 #include "ceee/ie/broker/broker_module_util.h"

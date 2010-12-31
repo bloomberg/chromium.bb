@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/ref_counted.h"
-#include "base/win_util.h"
+#include "base/win/win_util.h"
 #include "chrome_frame/chrome_frame_automation.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -234,7 +234,7 @@ END_MSG_MAP()
       HWND chrome_window = automation_client_->tab_window();
       if (tab && ::IsWindow(chrome_window)) {
         DVLOG(1) << "Setting initial focus";
-        tab->SetInitialFocus(win_util::IsShiftPressed(), restore_focus_to_view);
+        tab->SetInitialFocus(base::win::IsShiftPressed(), restore_focus_to_view);
       }
     }
   }

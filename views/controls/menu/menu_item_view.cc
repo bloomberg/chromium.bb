@@ -17,7 +17,7 @@
 #include "views/controls/menu/submenu_view.h"
 
 #if defined(OS_WIN)
-#include "base/win_util.h"
+#include "base/win/win_util.h"
 #endif
 
 namespace views {
@@ -162,7 +162,7 @@ void MenuItemView::RunMenuAt(gfx::NativeWindow parent,
   // We don't currently need this on gtk as showing the menu gives focus to the
   // button first.
   if (!show_mnemonics)
-    show_mnemonics = win_util::IsAltPressed();
+    show_mnemonics = base::win::IsAltPressed();
 #endif
   PrepareForRun(has_mnemonics, show_mnemonics);
   int mouse_event_flags;

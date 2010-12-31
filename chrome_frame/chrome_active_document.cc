@@ -29,6 +29,7 @@
 #include "base/threading/thread_local.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_variant.h"
+#include "base/win/win_util.h"
 #include "grit/generated_resources.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -639,8 +640,8 @@ bool IsFindAccelerator(const MSG& msg) {
   // TODO(robertshield): This may not stand up to localization. Fix if this
   // is the case.
   return msg.message == WM_KEYDOWN && msg.wParam == 'F' &&
-         win_util::IsCtrlPressed() &&
-         !(win_util::IsAltPressed() || win_util::IsShiftPressed());
+         base::win::IsCtrlPressed() &&
+         !(base::win::IsAltPressed() || base::win::IsShiftPressed());
 }
 
 void ChromeActiveDocument::OnAcceleratorPressed(const MSG& accel_message) {

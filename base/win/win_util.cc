@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/win_util.h"
+#include "base/win/win_util.h"
 
 #include <aclapi.h>
 #include <shobjidl.h>  // Must be before propkey.
@@ -20,7 +20,8 @@
 #include "base/thread_restrictions.h"
 #include "base/win/windows_version.h"
 
-namespace win_util {
+namespace base {
+namespace win {
 
 #define SIZEOF_STRUCT_WITH_SPECIFIED_LAST_MEMBER(struct_name, member) \
     offsetof(struct_name, member) + \
@@ -135,7 +136,8 @@ bool RemoveCommandFromAutoRun(HKEY root_key, const string16& name) {
   return autorun_key.DeleteValue(name.c_str());
 }
 
-}  // namespace win_util
+}  // namespace win
+}  // namespace base
 
 #ifdef _MSC_VER
 //
