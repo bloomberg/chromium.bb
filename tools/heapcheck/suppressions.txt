@@ -721,7 +721,7 @@
    fun:std::string::_Rep::_S_create
    fun:std::string::_Rep::_M_clone
    fun:std::string::reserve
-   fun:bool ::InitCanonical
+   fun:*InitCanonical
    fun:GURL
    fun:net::::IOThread::Init
    fun:base::Thread::ThreadMain
@@ -1193,12 +1193,6 @@
 {
    bug_68304
    Heapcheck:Leak
-   fun:__gnu_cxx::new_allocator::allocate
-   fun:std::string::_Rep::_S_create
-   fun:std::string::_M_mutate
-   fun:std::string::_M_replace_safe
-   fun:std::string::assign
-   fun:Pickle::ReadString
    ...
    fun:IPC::ParamTraits::Read
    fun:IPC::ReadParam
