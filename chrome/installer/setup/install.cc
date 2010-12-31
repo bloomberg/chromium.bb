@@ -991,7 +991,11 @@ void AddChromeFrameWorkItems(bool install,
       // Chrome is not a part of this installation run, so we have to explicitly
       // check if Chrome is installed, and if so, update its uninstallation
       // command lines.
-      update_chrome_uninstall_command = true;
+      BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
+          BrowserDistribution::CHROME_BROWSER,
+          MasterPreferences::ForCurrentProcess());
+      update_chrome_uninstall_command =
+          IsInstalledAsMulti(product.system_level(), dist);
     }
   }
 
