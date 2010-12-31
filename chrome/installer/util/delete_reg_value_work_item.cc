@@ -32,8 +32,25 @@ bool DeleteRegValueWorkItem::Do() {
     return false;
   }
 
-  RegKey key;
   status_ = VALUE_UNCHANGED;
+
+  // A big flaw in the RegKey implementation is that all error information
+  // (besides success/failure) is lost in the translation from LSTATUS to bool.
+  // So, we resort to direct API calls here. :-/
+  HKEY raw_key = NULL;
+  LSTATUS err = RegOpenKeyEx(predefined_root_, key_path_.c_str(), 0,
+                             KEY_READ, &raw_key);
+  if (err != ERROR_SUCCESS) {
+    if (err == ERROR_FILE_NOT_FOUND) {
+      LOG(INFO) << "(delete value) can not open " << key_path_;
+      status_ = VALUE_NOT_FOUND;
+      return true;
+    }
+  } else {
+    ::RegCloseKey(raw_key);
+  }
+
+  RegKey key;
   bool result = false;
   if (!key.Open(predefined_root_, key_path_.c_str(), KEY_READ | KEY_WRITE)) {
     LOG(ERROR) << "can not open " << key_path_;
@@ -52,7 +69,6 @@ bool DeleteRegValueWorkItem::Do() {
     LOG(ERROR) << "failed to read/delete value " << value_name_;
   }
 
-  key.Close();
   return result;
 }
 
