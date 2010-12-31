@@ -364,16 +364,14 @@ bool BackgroundModeManager::IsBackgroundModeEnabled(
     const CommandLine* command_line) {
 
   // Background mode is disabled if the appropriate flag is passed, or if
-  // extensions are disabled.
+  // extensions are disabled. It's always disabled on chromeos since chrome
+  // is always running on that platform, making it superfluous.
+#if defined(OS_CHROMEOS)
+  return false;
+#else
   bool background_mode_enabled =
       !command_line->HasSwitch(switches::kDisableBackgroundMode) &&
       !command_line->HasSwitch(switches::kDisableExtensions);
-#if !(defined(OS_WIN) || defined(OS_MACOSX))
-  // BackgroundMode is enabled by default on windows and mac. On other
-  // platforms, it is enabled via about:flags.
-  background_mode_enabled = background_mode_enabled &&
-      command_line->HasSwitch(switches::kEnableBackgroundMode);
-#endif
-
   return background_mode_enabled;
+#endif
 }

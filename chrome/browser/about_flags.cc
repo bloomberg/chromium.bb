@@ -152,13 +152,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableXSSAuditor)
   },
   {
-    "background-webapps",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_BACKGROUND_WEBAPPS_NAME,
-    IDS_FLAGS_BACKGROUND_WEBAPPS_DESCRIPTION,
-    kOsLinux,  // Enabled by default on windows and mac, not available on CrOS.
-    SINGLE_VALUE_TYPE(switches::kEnableBackgroundMode)
-  },
-  {
     "conflicting-modules-check",  // FLAGS:RECORD_UMA
     IDS_FLAGS_CONFLICTS_CHECK_NAME,
     IDS_FLAGS_CONFLICTS_CHECK_DESCRIPTION,

@@ -21,7 +21,6 @@ class BackgroundModeManagerTest : public testing::Test {
   ~BackgroundModeManagerTest() {}
   void SetUp() {
     command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
-    command_line_->AppendSwitch(switches::kEnableBackgroundMode);
   }
   scoped_ptr<CommandLine> command_line_;
 };

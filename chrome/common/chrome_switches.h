@@ -124,7 +124,6 @@ extern const char kEnableAcceleratedLayers[];
 extern const char kEnableAccessibility[];
 extern const char kEnableAeroPeekTabs[];
 extern const char kEnableAuthNegotiatePort[];
-extern const char kEnableBackgroundMode[];
 extern const char kEnableBenchmarking[];
 extern const char kEnableBlockContentAnimation[];
 extern const char kEnableClientSidePhishingDetection[];

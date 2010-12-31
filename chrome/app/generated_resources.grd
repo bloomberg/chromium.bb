@@ -4114,12 +4114,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_XSS_AUDITOR_DESCRIPTION" desc="Description of the 'XSS Auditor' lab.">
         Enables WebKit's XSS Auditor (cross-site scripting protection). This feature aims to protect you from certain attacks of malicious web sites. It improves your security, but it might not be compatible with all web sites.
       </message>
-      <message name="IDS_FLAGS_BACKGROUND_WEBAPPS_NAME" desc="Name of the 'Background WebApps' lab.">
-        Background WebApps
-      </message>
-      <message name="IDS_FLAGS_BACKGROUND_WEBAPPS_DESCRIPTION" desc="Description of the 'Background WebApps' lab.">
-        Allows installed web apps to run in the background at system startup and continue running after all windows are closed.
-      </message>
       <message name="IDS_FLAGS_CLOUD_PRINT_PROXY_NAME" desc="Title of the Cloud Print Proxy lab">
         Cloud Print Proxy
       </message>
