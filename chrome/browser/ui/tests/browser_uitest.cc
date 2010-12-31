@@ -166,7 +166,7 @@ TEST_F(BrowserTest, MAYBE_OtherRedirectsDontForkProcess) {
 
   // Make sure that a new tab but not new process has been created.
   ASSERT_TRUE(tab->NavigateToURLAsync(dont_fork_url));
-  PlatformThread::Sleep(sleep_timeout_ms());
+  base::PlatformThread::Sleep(sleep_timeout_ms());
   ASSERT_EQ(orig_process_count, GetBrowserProcessCount());
   int new_tab_count = -1;
   ASSERT_TRUE(window->GetTabCount(&new_tab_count));
@@ -181,7 +181,7 @@ TEST_F(BrowserTest, MAYBE_OtherRedirectsDontForkProcess) {
 
   // Make sure that no new process has been created.
   ASSERT_TRUE(tab->NavigateToURLAsync(dont_fork_url2));
-  PlatformThread::Sleep(sleep_timeout_ms());
+  base::PlatformThread::Sleep(sleep_timeout_ms());
   ASSERT_EQ(orig_process_count, GetBrowserProcessCount());
 }
 

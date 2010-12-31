@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/lock_impl.h"
-#include "base/platform_thread.h"
+#include "base/threading/platform_thread.h"
 
 // A convenient wrapper for an OS specific critical section.  The only real
 // intelligence in this class is in debug mode for the support for the
@@ -80,7 +80,7 @@ class Lock {
   // Determines validity of owning_thread_id_.  Needed as we don't have
   // a null owning_thread_id_ value.
   bool owned_by_thread_;
-  PlatformThreadId owning_thread_id_;
+  base::PlatformThreadId owning_thread_id_;
 #endif  // NDEBUG
 
   LockImpl lock_;  // Platform specific underlying lock implementation.

@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/platform_thread.h"
+#include "base/threading/platform_thread.h"
 
 #include "base/logging.h"
 #include "base/thread_restrictions.h"
 #include "base/win/windows_version.h"
+
+namespace base {
 
 namespace {
 
@@ -141,3 +143,5 @@ void PlatformThread::Join(PlatformThreadHandle thread_handle) {
 
   CloseHandle(thread_handle);
 }
+
+}  // namespace base

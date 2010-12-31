@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/thread_checker.h"
+#include "base/threading/thread_checker.h"
 
 // This code is only done in debug builds.
 #ifndef NDEBUG
+
+namespace base {
 
 ThreadChecker::ThreadChecker() : valid_thread_id_(kInvalidThreadId) {
   EnsureThreadIdAssigned();
@@ -30,5 +32,7 @@ void ThreadChecker::EnsureThreadIdAssigned() const {
     return;
   valid_thread_id_ = PlatformThread::CurrentId();
 }
+
+}  // namespace base
 
 #endif  // NDEBUG

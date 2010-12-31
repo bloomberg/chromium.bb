@@ -46,6 +46,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/test/test_file_util.h"
+#include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -214,9 +215,9 @@ class PageLoadTest : public UITest {
                 // This used to be settable but the flag went away.
                 int sleep_time_ms = 2000;
                 window->SimulateOSKeyPress(app::VKEY_NEXT, 0);
-                PlatformThread::Sleep(sleep_time_ms);
+                base::PlatformThread::Sleep(sleep_time_ms);
                 window->SimulateOSKeyPress(app::VKEY_NEXT, 0);
-                PlatformThread::Sleep(sleep_time_ms);
+                base::PlatformThread::Sleep(sleep_time_ms);
               }
             }
           }

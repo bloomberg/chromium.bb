@@ -16,8 +16,8 @@
 #include "base/scoped_handle.h"
 #include "base/stack_container.h"
 #include "base/task.h"
-#include "base/timer.h"
 #include "base/thread.h"
+#include "base/timer.h"
 #include "chrome/common/page_zoom.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
@@ -251,12 +251,12 @@ class AutomationProxyCacheEntry
     return thread_->message_loop();
   }
 
-  bool IsSameThread(PlatformThreadId id) const {
+  bool IsSameThread(base::PlatformThreadId id) const {
     return thread_->thread_id() == id;
   }
 
   ChromeFrameAutomationProxyImpl* proxy() const {
-    DCHECK(IsSameThread(PlatformThread::CurrentId()));
+    DCHECK(IsSameThread(base::PlatformThread::CurrentId()));
     return proxy_.get();
   }
 
@@ -509,7 +509,7 @@ class ChromeFrameAutomationClient
   }
 
   HWND parent_window_;
-  PlatformThreadId ui_thread_id_;
+  base::PlatformThreadId ui_thread_id_;
 
   void* automation_server_id_;
   ChromeFrameAutomationProxy* automation_server_;

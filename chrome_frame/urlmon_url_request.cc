@@ -12,6 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
+#include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome_frame/bind_context_info.h"
 #include "chrome_frame/chrome_frame_activex_base.h"
@@ -47,8 +48,8 @@ std::string UrlmonUrlRequest::me() const {
 
 bool UrlmonUrlRequest::Start() {
   DVLOG(1) << __FUNCTION__ << me() << url();
-  DCHECK(thread_ == 0 || thread_ == PlatformThread::CurrentId());
-  thread_ = PlatformThread::CurrentId();
+  DCHECK(thread_ == 0 || thread_ == base::PlatformThread::CurrentId());
+  thread_ = base::PlatformThread::CurrentId();
   status_.Start();
   // The UrlmonUrlRequest instance can get destroyed in the context of
   // StartAsyncDownload if BindToStorage finishes synchronously with an error.
@@ -64,7 +65,7 @@ bool UrlmonUrlRequest::Start() {
 }
 
 void UrlmonUrlRequest::Stop() {
-  DCHECK_EQ(thread_, PlatformThread::CurrentId());
+  DCHECK_EQ(thread_, base::PlatformThread::CurrentId());
   DCHECK((status_.get_state() != Status::DONE) == (binding_ != NULL));
   Status::State state = status_.get_state();
   delegate_ = NULL;
@@ -92,7 +93,7 @@ void UrlmonUrlRequest::Stop() {
 }
 
 bool UrlmonUrlRequest::Read(int bytes_to_read) {
-  DCHECK_EQ(thread_, PlatformThread::CurrentId());
+  DCHECK_EQ(thread_, base::PlatformThread::CurrentId());
   DCHECK_GE(bytes_to_read, 0);
   DCHECK_EQ(0, calling_delegate_);
   DVLOG(1) << __FUNCTION__ << me();
@@ -136,8 +137,8 @@ HRESULT UrlmonUrlRequest::InitPending(const GURL& url, IMoniker* moniker,
   DCHECK(bind_context_ == NULL);
   DCHECK(moniker_ == NULL);
   DCHECK(cache_ == NULL);
-  DCHECK(thread_ == 0 || thread_ == PlatformThread::CurrentId());
-  thread_ = PlatformThread::CurrentId();
+  DCHECK(thread_ == 0 || thread_ == base::PlatformThread::CurrentId());
+  thread_ = base::PlatformThread::CurrentId();
   bind_context_ = bind_context;
   moniker_ = moniker;
   enable_frame_busting_ = enable_frame_busting;
@@ -156,7 +157,7 @@ HRESULT UrlmonUrlRequest::InitPending(const GURL& url, IMoniker* moniker,
 }
 
 void UrlmonUrlRequest::TerminateBind(TerminateBindCallback* callback) {
-  DCHECK_EQ(thread_, PlatformThread::CurrentId());
+  DCHECK_EQ(thread_, base::PlatformThread::CurrentId());
   DVLOG(1) << __FUNCTION__ << me();
   cleanup_transaction_ = false;
   if (status_.get_state() == Status::DONE) {
@@ -190,7 +191,7 @@ void UrlmonUrlRequest::TerminateBind(TerminateBindCallback* callback) {
 }
 
 size_t UrlmonUrlRequest::SendDataToDelegate(size_t bytes_to_read) {
-  DCHECK_EQ(thread_, PlatformThread::CurrentId());
+  DCHECK_EQ(thread_, base::PlatformThread::CurrentId());
   DCHECK_NE(id(), -1);
   DCHECK_GT(bytes_to_read, 0U);
   size_t bytes_copied = 0;
@@ -242,7 +243,7 @@ size_t UrlmonUrlRequest::SendDataToDelegate(size_t bytes_to_read) {
 
 STDMETHODIMP UrlmonUrlRequest::OnStartBinding(DWORD reserved,
                                               IBinding* binding) {
-  DCHECK_EQ(thread_, PlatformThread::CurrentId());
+  DCHECK_EQ(thread_, base::PlatformThread::CurrentId());
   binding_ = binding;
   if (pending_) {
     response_headers_ = GetHttpHeadersFromBinding(binding_);
@@ -264,7 +265,7 @@ STDMETHODIMP UrlmonUrlRequest::OnLowResource(DWORD reserved) {
 
 STDMETHODIMP UrlmonUrlRequest::OnProgress(ULONG progress, ULONG max_progress,
     ULONG status_code, LPCWSTR status_text) {
-  DCHECK_EQ(thread_, PlatformThread::CurrentId());
+  DCHECK_EQ(thread_, base::PlatformThread::CurrentId());
 
   if (status_.get_state() != Status::WORKING)
     return S_OK;
@@ -341,7 +342,7 @@ STDMETHODIMP UrlmonUrlRequest::OnProgress(ULONG progress, ULONG max_progress,
 }
 
 STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
-  DCHECK_EQ(thread_, PlatformThread::CurrentId());
+  DCHECK_EQ(thread_, base::PlatformThread::CurrentId());
   DVLOG(1) << __FUNCTION__ << me()
            << "- Request stopped, Result: " << std::hex << result;
   DCHECK(status_.get_state() == Status::WORKING ||
@@ -485,7 +486,7 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
 STDMETHODIMP UrlmonUrlRequest::OnDataAvailable(DWORD flags, DWORD size,
                                                FORMATETC* formatetc,
                                                STGMEDIUM* storage) {
-  DCHECK_EQ(thread_, PlatformThread::CurrentId());
+  DCHECK_EQ(thread_, base::PlatformThread::CurrentId());
   DVLOG(1) << __FUNCTION__ << me() << "bytes available: " << size;
 
   if (terminate_requested()) {
@@ -538,7 +539,7 @@ STDMETHODIMP UrlmonUrlRequest::OnObjectAvailable(REFIID iid, IUnknown* object) {
 STDMETHODIMP UrlmonUrlRequest::BeginningTransaction(const wchar_t* url,
     const wchar_t* current_headers, DWORD reserved,
     wchar_t** additional_headers) {
-  DCHECK_EQ(thread_, PlatformThread::CurrentId());
+  DCHECK_EQ(thread_, base::PlatformThread::CurrentId());
   if (!additional_headers) {
     NOTREACHED();
     return E_POINTER;
@@ -614,7 +615,7 @@ STDMETHODIMP UrlmonUrlRequest::BeginningTransaction(const wchar_t* url,
 STDMETHODIMP UrlmonUrlRequest::OnResponse(DWORD dwResponseCode,
     const wchar_t* response_headers, const wchar_t* request_headers,
     wchar_t** additional_headers) {
-  DCHECK_EQ(thread_, PlatformThread::CurrentId());
+  DCHECK_EQ(thread_, base::PlatformThread::CurrentId());
   DVLOG(1) << __FUNCTION__ << me() << "headers: \n" << response_headers;
 
   if (!delegate_) {
@@ -829,7 +830,7 @@ HRESULT UrlmonUrlRequest::StartAsyncDownload() {
 }
 
 void UrlmonUrlRequest::NotifyDelegateAndDie() {
-  DCHECK_EQ(thread_, PlatformThread::CurrentId());
+  DCHECK_EQ(thread_, base::PlatformThread::CurrentId());
   DVLOG(1) << __FUNCTION__ << me();
 
   PluginUrlRequestDelegate* delegate = delegate_;

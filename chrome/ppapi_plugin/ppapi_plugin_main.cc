@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
+#include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/chrome_switches.h"
@@ -17,7 +18,7 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
   }
 
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);
-  PlatformThread::SetName("CrPPAPIMain");
+  base::PlatformThread::SetName("CrPPAPIMain");
 
   ChildProcess ppapi_process;
   ppapi_process.set_main_thread(new PpapiThread());

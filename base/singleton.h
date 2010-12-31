@@ -8,8 +8,8 @@
 
 #include "base/at_exit.h"
 #include "base/atomicops.h"
-#include "base/platform_thread.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
+#include "base/threading/platform_thread.h"
 #include "base/thread_restrictions.h"
 
 // Default traits for Singleton<Type>. Calls operator new and operator delete on
@@ -243,7 +243,7 @@ class Singleton {
       value = base::subtle::NoBarrier_Load(&instance_);
       if (value != kBeingCreatedMarker)
         break;
-      PlatformThread::YieldCurrentThread();
+      base::PlatformThread::YieldCurrentThread();
     }
 
     // See the corresponding HAPPENS_BEFORE above.

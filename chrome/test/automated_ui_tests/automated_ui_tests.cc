@@ -16,6 +16,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -383,7 +384,7 @@ bool AutomatedUITest::DoAction(const std::string& action) {
     did_complete_action = true;
   } else if (LowerCaseEqualsASCII(action, "sleep")) {
     // This is for debugging, it probably shouldn't be used real tests.
-    PlatformThread::Sleep(kDebuggingTimeoutMsec);
+    base::PlatformThread::Sleep(kDebuggingTimeoutMsec);
     did_complete_action = true;
   } else if (LowerCaseEqualsASCII(action, "star")) {
     did_complete_action = StarPage();
@@ -428,7 +429,7 @@ bool AutomatedUITest::DoAction(const std::string& action) {
   xml_writer_.EndElement();
 
   if (post_action_delay_)
-    PlatformThread::Sleep(1000 * post_action_delay_);
+    base::PlatformThread::Sleep(1000 * post_action_delay_);
 
   return did_complete_action;
 }

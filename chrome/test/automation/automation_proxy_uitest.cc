@@ -1556,7 +1556,7 @@ TEST_F(AutomationProxyTest5, TestLifetimeOfDomAutomationController) {
             tab->NavigateToURL(net::FilePathToFileURL(filename)));
 
   // Allow some time for the popup to show up and close.
-  PlatformThread::Sleep(sleep_timeout_ms());
+  base::PlatformThread::Sleep(sleep_timeout_ms());
 
   std::wstring expected(L"string");
   std::wstring jscript = CreateJSString(L"\"" + expected + L"\"");

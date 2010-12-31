@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
-
 //------------------------------------------------------------------------------
 // Description of the life cycle of a instance of MetricsService.
 //
@@ -164,6 +162,7 @@
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/thread.h"
+#include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -1904,10 +1903,10 @@ void MetricsService::RecordCurrentState(PrefService* pref) {
 }
 
 static bool IsSingleThreaded() {
-  static PlatformThreadId thread_id = 0;
+  static base::PlatformThreadId thread_id = 0;
   if (!thread_id)
-    thread_id = PlatformThread::CurrentId();
-  return PlatformThread::CurrentId() == thread_id;
+    thread_id = base::PlatformThread::CurrentId();
+  return base::PlatformThread::CurrentId() == thread_id;
 }
 
 #if defined(OS_CHROMEOS)

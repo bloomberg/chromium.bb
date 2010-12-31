@@ -35,7 +35,7 @@ class SleepSome : public Task {
   explicit SleepSome(int msec) : msec_(msec) {
   }
   virtual void Run() {
-    PlatformThread::Sleep(msec_);
+    base::PlatformThread::Sleep(msec_);
   }
  private:
   int msec_;
@@ -47,7 +47,7 @@ class SleepInsideInitThread : public Thread {
   virtual ~SleepInsideInitThread() { }
 
   virtual void Init() {
-    PlatformThread::Sleep(500);
+    base::PlatformThread::Sleep(500);
     init_called_ = true;
   }
   bool InitCalled() { return init_called_; }
@@ -178,7 +178,7 @@ TEST_F(ThreadTest, StartWithOptions_StackSize) {
   // instead to avoid busy waiting, but this is sufficient for
   // testing purposes).
   for (int i = 100; i >= 0 && !was_invoked; --i) {
-    PlatformThread::Sleep(10);
+    base::PlatformThread::Sleep(10);
   }
   EXPECT_TRUE(was_invoked);
 }

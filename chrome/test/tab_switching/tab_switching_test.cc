@@ -7,8 +7,8 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
+#include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -112,7 +112,7 @@ class TabSwitchingUITest : public UIPerfTest {
         log_has_been_dumped = file_util::ReadFileToString(log_file_name_,
                                                           &contents);
         if (!log_has_been_dumped)
-          PlatformThread::Sleep(100);
+          base::PlatformThread::Sleep(100);
       } while (!log_has_been_dumped && max_tries--);
       ASSERT_TRUE(log_has_been_dumped) << "Failed to read the log file";
 

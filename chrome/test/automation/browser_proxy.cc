@@ -8,7 +8,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/platform_thread.h"
+#include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/automation_messages.h"
@@ -206,7 +206,7 @@ bool BrowserProxy::WaitForTabToBecomeActive(int tab,
   const TimeTicks start = TimeTicks::Now();
   const TimeDelta timeout = TimeDelta::FromMilliseconds(wait_timeout);
   while (TimeTicks::Now() - start < timeout) {
-    PlatformThread::Sleep(automation::kSleepTime);
+    base::PlatformThread::Sleep(automation::kSleepTime);
     int active_tab;
     if (GetActiveTabIndex(&active_tab) && active_tab == tab)
       return true;

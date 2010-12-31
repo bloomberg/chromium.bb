@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -148,7 +149,7 @@ class MemoryTest : public UIPerfTest {
       SCOPED_TRACE(url);
 
       if (url == "<PAUSE>") {  // Special command to delay on this page
-        PlatformThread::Sleep(2000);
+        base::PlatformThread::Sleep(2000);
         continue;
       }
 
@@ -197,7 +198,7 @@ class MemoryTest : public UIPerfTest {
 
         // A new window will not load a url if requested too soon. The window
         // stays on the new tab page instead.
-        PlatformThread::Sleep(200);
+        base::PlatformThread::Sleep(200);
 
         active_window = window_count - 1;
         window = automation()->GetBrowserWindow(active_window);
@@ -224,7 +225,7 @@ class MemoryTest : public UIPerfTest {
       // TODO(mbelshe): Bug 2953
       // The automation crashes periodically if we cycle too quickly.
       // To make these tests more reliable, slowing them down a bit.
-      PlatformThread::Sleep(100);
+      base::PlatformThread::Sleep(100);
     }
 
     size_t stop_size = base::GetSystemCommitCharge();

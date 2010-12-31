@@ -6,8 +6,7 @@
 #define BASE_NON_THREAD_SAFE_H_
 #pragma once
 
-#include "base/platform_thread.h"
-#include "base/thread_checker.h"
+#include "base/threading/thread_checker.h"
 
 // A helper class used to help verify that methods of a class are
 // called from the same thread.  One can inherit from this class and use
@@ -43,7 +42,7 @@ class NonThreadSafe {
   void DetachFromThread();
 
  private:
-  ThreadChecker thread_checker_;
+  base::ThreadChecker thread_checker_;
 };
 #else
 // Do nothing in release mode.

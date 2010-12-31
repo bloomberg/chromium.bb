@@ -6,8 +6,12 @@
 
 #include <stdlib.h>
 
-#include "base/platform_thread.h"
+#include "base/threading/platform_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using base::kNullThreadHandle;
+using base::PlatformThread;
+using base::PlatformThreadHandle;
 
 typedef testing::Test LockTest;
 

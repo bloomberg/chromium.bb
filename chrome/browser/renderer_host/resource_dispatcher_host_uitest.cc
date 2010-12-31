@@ -216,7 +216,7 @@ TEST_F(ResourceDispatcherTest, CrossSiteAfterCrash) {
 #endif
   ASSERT_TRUE(tab->NavigateToURLAsync(GURL(chrome::kAboutCrashURL)));
   // Wait for browser to notice the renderer crash.
-  PlatformThread::Sleep(sleep_timeout_ms());
+  base::PlatformThread::Sleep(sleep_timeout_ms());
 
   // Navigate to a new cross-site page.  The browser should not wait around for
   // the old renderer's on{before}unload handlers to run.

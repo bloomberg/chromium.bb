@@ -11,6 +11,7 @@
 
 #include "base/eintr_wrapper.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/platform_thread.h"
 #include "net/base/net_util.h"
 #include "testing/platform_test.h"
 
@@ -160,7 +161,7 @@ bool DevToolsRemoteListenSocketTester::NextAction(int timeout) {
     return false;
   while (true) {
     int result = sem_trywait(semaphore_);
-    PlatformThread::Sleep(1);  // 1MS sleep
+    base::PlatformThread::Sleep(1);  // 1MS sleep
     timeout--;
     if (timeout <= 0)
       return false;
@@ -193,7 +194,7 @@ int DevToolsRemoteListenSocketTester::ClearTestSocket() {
     if (len == SOCKET_ERROR) {
       if (errno == EWOULDBLOCK || errno == EAGAIN) {
 #endif
-        PlatformThread::Sleep(1);
+        base::PlatformThread::Sleep(1);
         time_out++;
         if (time_out > 10)
           break;
@@ -261,7 +262,7 @@ void DevToolsRemoteListenSocketTester::TestClientSend() {
   {
     ASSERT_TRUE(Send(test_socket_, kSimpleMessagePart1));
     // sleep for 10ms to test message split between \r and \n
-    PlatformThread::Sleep(10);
+    base::PlatformThread::Sleep(10);
     ASSERT_TRUE(Send(test_socket_, kSimpleMessagePart2));
     ASSERT_TRUE(NextAction(TestTimeouts::action_timeout_ms()));
     ASSERT_EQ(ACTION_READ_MESSAGE, last_action_.type());
@@ -312,7 +313,7 @@ void DevToolsRemoteListenSocketTester::TestServerSend() {
   // of the time.  I could fix this by making the socket blocking, but then
   // this test might hang in the case of errors.  It would be nice to do
   // something that felt more reliable here.
-  PlatformThread::Sleep(10);  // sleep for 10ms
+  base::PlatformThread::Sleep(10);  // sleep for 10ms
   const int buf_len = 200;
   char buf[buf_len+1];
   int recv_len = HANDLE_EINTR(recv(test_socket_, buf, buf_len, 0));

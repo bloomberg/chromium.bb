@@ -4,9 +4,10 @@
 
 #include <atlbase.h>
 
+#include "base/command_line.h"
 #include "base/process_util.h"
 #include "base/test/test_suite.h"
-#include "base/command_line.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/chrome_frame_ui_test_utils.h"
@@ -32,7 +33,7 @@ void PureCall() {
 
 int main(int argc, char **argv) {
   base::EnableTerminationOnHeapCorruption();
-  PlatformThread::SetName("ChromeFrame tests");
+  base::PlatformThread::SetName("ChromeFrame tests");
 
   _set_purecall_handler(PureCall);
 

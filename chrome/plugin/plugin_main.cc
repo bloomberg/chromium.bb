@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -91,7 +92,7 @@ int PluginMain(const MainFunctionParams& parameters) {
   InitializeChromeApplication();
 #endif
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);
-  PlatformThread::SetName("CrPluginMain");
+  base::PlatformThread::SetName("CrPluginMain");
 
   SystemMonitor system_monitor;
   HighResolutionTimerManager high_resolution_timer_manager;

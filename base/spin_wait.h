@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,11 +12,11 @@
 // We provide a simple one argument spin wait (for 1 second), and a generic
 // spin wait (for longer periods of time).
 
-#ifndef BASE_SPIN_WAIT_H__
-#define BASE_SPIN_WAIT_H__
+#ifndef BASE_SPIN_WAIT_H_
+#define BASE_SPIN_WAIT_H_
 #pragma once
 
-#include "base/platform_thread.h"
+#include "base/threading/platform_thread.h"
 #include "base/time.h"
 
 // Provide a macro that will wait no longer than 1 second for an asynchronous
@@ -44,8 +44,8 @@
                 kTimeout.InMilliseconds()) << "Timed out"; \
         break; \
       } \
-      PlatformThread::Sleep(50); \
+      base::PlatformThread::Sleep(50); \
     } \
   } while (0)
 
-#endif  // BASE_SPIN_WAIT_H__
+#endif  // BASE_SPIN_WAIT_H_

@@ -12,6 +12,7 @@
 #include "app/system_monitor.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
+#include "base/platform_thread.h"
 #include "base/string_util.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/chrome_constants.h"
@@ -36,7 +37,7 @@
 int NaClBrokerMain(const MainFunctionParams& parameters) {
   // The main thread of the broker.
   MessageLoopForIO main_message_loop;
-  PlatformThread::SetName("CrNaClBrokerMain");
+  base::PlatformThread::SetName("CrNaClBrokerMain");
 
   SystemMonitor system_monitor;
   HighResolutionTimerManager hi_res_timer_manager;
@@ -100,7 +101,7 @@ int NaClMain(const MainFunctionParams& parameters) {
 
   // The main thread of the plugin services IO.
   MessageLoopForIO main_message_loop;
-  PlatformThread::SetName("CrNaClMain");
+  base::PlatformThread::SetName("CrNaClMain");
 
   SystemMonitor system_monitor;
   HighResolutionTimerManager hi_res_timer_manager;

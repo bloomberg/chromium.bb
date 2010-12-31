@@ -10,6 +10,7 @@
 #include "base/condition_variable.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
+#include "base/platform_thread.h"
 #include "base/rand_util.h"
 #include "base/ref_counted.h"
 #include "base/stl_util-inl.h"
@@ -135,7 +136,7 @@ void Tracer::PrintString(const std::string& s) {
 
   // Take the pointer for the current messageloop as identifying for the
   // current thread.
-  record->set_thread_id(static_cast<uint64>(PlatformThread::CurrentId()));
+  record->set_thread_id(static_cast<uint64>(base::PlatformThread::CurrentId()));
 }
 
 Tracer::~Tracer() {

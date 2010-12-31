@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
-#include "base/platform_thread.h"
+#include "base/threading/platform_thread.h"
 #include "base/waitable_event.h"
 #include "base/waitable_event_watcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -81,7 +81,7 @@ void RunTest_CancelAfterSet(MessageLoop::Type message_loop_type) {
   event.Signal();
 
   // Let the background thread do its business
-  PlatformThread::Sleep(30);
+  base::PlatformThread::Sleep(30);
 
   watcher.StopWatching();
 

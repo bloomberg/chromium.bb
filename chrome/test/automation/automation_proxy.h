@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_AUTOMATION_AUTOMATION_PROXY_H__
-#define CHROME_TEST_AUTOMATION_AUTOMATION_PROXY_H__
+#ifndef CHROME_TEST_AUTOMATION_AUTOMATION_PROXY_H_
+#define CHROME_TEST_AUTOMATION_AUTOMATION_PROXY_H_
 #pragma once
 
 #include <string>
@@ -12,6 +12,7 @@
 #include "app/message_box_flags.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/threading/platform_thread.h"
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
@@ -301,9 +302,9 @@ class AutomationProxy : public IPC::Channel::Listener,
   // Delay to let the browser execute the command.
   base::TimeDelta command_execution_timeout_;
 
-  PlatformThreadId listener_thread_id_;
+  base::PlatformThreadId listener_thread_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationProxy);
 };
 
-#endif  // CHROME_TEST_AUTOMATION_AUTOMATION_PROXY_H__
+#endif  // CHROME_TEST_AUTOMATION_AUTOMATION_PROXY_H_

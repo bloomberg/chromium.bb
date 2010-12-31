@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/string_number_conversions.h"
+#include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "third_party/webdriver/atoms.h"
@@ -100,7 +101,7 @@ void FindElementCommand::ExecutePost(Response* const response) {
 
     int64 elapsed_time = (base::Time::Now() - start_time).InMilliseconds();
     done = done || elapsed_time > session_->implicit_wait();
-    PlatformThread::Sleep(50);  // Prevent a busy loop that eats the cpu.
+    base::PlatformThread::Sleep(50);  // Prevent a busy loop that eats the cpu.
   }
 
   response->set_value(result);

@@ -19,6 +19,7 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 
 #include "chrome/test/webdriver/dispatch.h"
@@ -129,7 +130,7 @@ int main(int argc, char *argv[]) {
   std::cout << "Starting server on port: " << port << std::endl;
   // The default behavior is to run this service forever.
   while (true)
-    PlatformThread::Sleep(3600);
+    base::PlatformThread::Sleep(3600);
 
   // We should not reach here since the service should never quit.
   // TODO(jmikhail): register a listener for SIGTERM and break the

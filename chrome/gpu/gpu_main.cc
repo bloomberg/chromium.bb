@@ -10,6 +10,7 @@
 #include "base/environment.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
+#include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -74,7 +75,7 @@ int GpuMain(const MainFunctionParams& parameters) {
 #endif
 
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);
-  PlatformThread::SetName("CrGpuMain");
+  base::PlatformThread::SetName("CrGpuMain");
 
 #if defined(OS_WIN)
   win_util::ScopedCOMInitializer com_initializer;

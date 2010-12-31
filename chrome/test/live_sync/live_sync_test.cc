@@ -11,10 +11,10 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/platform_thread.h"
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/platform_thread.h"
 #include "base/values.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/browser_thread.h"
@@ -398,7 +398,7 @@ bool LiveSyncTest::WaitForTestServerToStart(int time_ms, int intervals) {
   for (int i = 0; i < intervals; ++i) {
     if (IsTestServerRunning())
       return true;
-    PlatformThread::Sleep(time_ms / intervals);
+    base::PlatformThread::Sleep(time_ms / intervals);
   }
   return false;
 }

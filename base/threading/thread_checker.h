@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_THREAD_CHECKER_H_
-#define BASE_THREAD_CHECKER_H_
+#ifndef BASE_THREADING_THREAD_CHECKER_H_
+#define BASE_THREADING_THREAD_CHECKER_H_
 #pragma once
 
 #ifndef NDEBUG
 #include "base/lock.h"
-#include "base/platform_thread.h"
+#include "base/threading/platform_thread.h"
 #endif // NDEBUG
+
+namespace base {
 
 // Before using this class, please consider using NonThreadSafe as it
 // makes it much easier to determine the nature of your class.
@@ -66,4 +68,6 @@ class ThreadChecker {
 };
 #endif  // NDEBUG
 
-#endif  // BASE_THREAD_CHECKER_H_
+}  // namespace base
+
+#endif  // BASE_THREADING_THREAD_CHECKER_H_

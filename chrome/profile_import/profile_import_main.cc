@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -16,7 +17,7 @@
 int ProfileImportMain(const MainFunctionParams& parameters) {
   // The main message loop of the profile import process.
   MessageLoop main_message_loop;
-  PlatformThread::SetName("CrProfileImportMain");
+  base::PlatformThread::SetName("CrProfileImportMain");
 
   ChildProcess profile_import_process;
   profile_import_process.set_main_thread(new ProfileImportThread());

@@ -1,8 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/string_util.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "chrome/browser/net/url_request_failed_dns_job.h"
@@ -15,7 +16,7 @@ class ErrorPageTest : public UITest {
     for (int i = 0; i < 10; ++i) {
       if (GetActiveTabTitle() == title)
         return true;
-      PlatformThread::Sleep(sleep_timeout_ms());
+      base::PlatformThread::Sleep(sleep_timeout_ms());
     }
     EXPECT_EQ(title, GetActiveTabTitle());
     return false;

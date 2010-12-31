@@ -168,7 +168,7 @@ class CFProxy : public Interface2IPCMessage,
   virtual void OnChannelError();
 
   bool CalledOnIpcThread() const {
-    return PlatformThread::CurrentId() == ipc_thread_.thread_id();
+    return base::PlatformThread::CurrentId() == ipc_thread_.thread_id();
   }
 
   base::Thread ipc_thread_;

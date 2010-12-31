@@ -4,6 +4,7 @@
 
 #include "chrome/test/automation/proxy_launcher.h"
 
+#include "base/threading/platform_thread.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/test/automation/automation_proxy.h"
@@ -37,7 +38,7 @@ void NamedProxyLauncher::InitializeConnection(UITestBase* ui_test_base) const {
     // Wait for browser to be ready for connections.
     struct stat file_info;
     while (stat(kInterfacePath, &file_info))
-      PlatformThread::Sleep(automation::kSleepTime);
+      base::PlatformThread::Sleep(automation::kSleepTime);
   }
 
   ui_test_base->ConnectToRunningBrowser();

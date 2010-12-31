@@ -11,6 +11,9 @@
 #include "base/lock.h"
 #include "base/logging.h"
 
+using base::PlatformThread;
+using base::PlatformThreadId;
+
 Lock::Lock() : lock_() {
   owned_by_thread_ = false;
   owning_thread_id_ = static_cast<PlatformThreadId>(0);

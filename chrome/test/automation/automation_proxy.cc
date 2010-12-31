@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/platform_thread.h"
+#include "base/threading/platform_thread.h"
 #include "base/process_util.h"
 #include "base/ref_counted.h"
 #include "base/waitable_event.h"
@@ -105,7 +105,7 @@ AutomationProxy::AutomationProxy(int command_execution_timeout_ms,
   // Zero also seems unreasonable, since we need to wait for IPC, but at
   // least it is legal... ;-)
   DCHECK_GE(command_execution_timeout_ms, 0);
-  listener_thread_id_ = PlatformThread::CurrentId();
+  listener_thread_id_ = base::PlatformThread::CurrentId();
   InitializeHandleTracker();
   InitializeThread();
 }

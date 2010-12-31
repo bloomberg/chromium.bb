@@ -6,10 +6,10 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/platform_thread.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/installer/util/logging_installer.h"
@@ -36,7 +36,7 @@ void MiniInstallerTestUtil::CloseProcesses(
   while ((base::GetProcessCount(executable_name, NULL) > 0) &&
          (timer < 20000)) {
     base::KillProcesses(executable_name, 1, NULL);
-    PlatformThread::Sleep(200);
+    base::PlatformThread::Sleep(200);
     timer = timer + 200;
   }
   ASSERT_EQ(0, base::GetProcessCount(executable_name, NULL));
@@ -49,7 +49,7 @@ bool MiniInstallerTestUtil::CloseWindow(const wchar_t* window_name,
   HWND hndl = FindWindow(NULL, window_name);
   while (hndl == NULL && (timer < 60000)) {
     hndl = FindWindow(NULL, window_name);
-    PlatformThread::Sleep(200);
+    base::PlatformThread::Sleep(200);
     timer = timer + 200;
   }
   if (hndl != NULL) {
@@ -274,7 +274,7 @@ void MiniInstallerTestUtil::VerifyProcessLaunch(
 
   while ((base::GetProcessCount(process_name, NULL) == 0) &&
          (timer < wait_time)) {
-    PlatformThread::Sleep(200);
+    base::PlatformThread::Sleep(200);
     timer = timer + 200;
   }
 
@@ -291,7 +291,7 @@ bool MiniInstallerTestUtil::VerifyProcessClose(
     VLOG(1) << "Waiting for this process to end: " << process_name;
     while ((base::GetProcessCount(process_name, NULL) > 0) &&
            (timer < TestTimeouts::large_test_timeout_ms())) {
-      PlatformThread::Sleep(200);
+      base::PlatformThread::Sleep(200);
       timer = timer + 200;
     }
   } else {

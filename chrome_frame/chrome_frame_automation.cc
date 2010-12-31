@@ -256,7 +256,7 @@ void AutomationProxyCacheEntry::StartSendUmaInterval(
 
 void AutomationProxyCacheEntry::CreateProxy(ChromeFrameLaunchParams* params,
                                             LaunchDelegate* delegate) {
-  DCHECK(IsSameThread(PlatformThread::CurrentId()));
+  DCHECK(IsSameThread(base::PlatformThread::CurrentId()));
   DCHECK(delegate);
   DCHECK(params);
   DCHECK(proxy_.get() == NULL);
@@ -378,7 +378,7 @@ void AutomationProxyCacheEntry::CreateProxy(ChromeFrameLaunchParams* params,
 void AutomationProxyCacheEntry::RemoveDelegate(LaunchDelegate* delegate,
                                                base::WaitableEvent* done,
                                                bool* was_last_delegate) {
-  DCHECK(IsSameThread(PlatformThread::CurrentId()));
+  DCHECK(IsSameThread(base::PlatformThread::CurrentId()));
   DCHECK(delegate);
   DCHECK(done);
   DCHECK(was_last_delegate);
@@ -412,7 +412,7 @@ void AutomationProxyCacheEntry::RemoveDelegate(LaunchDelegate* delegate,
 }
 
 void AutomationProxyCacheEntry::AddDelegate(LaunchDelegate* delegate) {
-  DCHECK(IsSameThread(PlatformThread::CurrentId()));
+  DCHECK(IsSameThread(base::PlatformThread::CurrentId()));
   DCHECK(std::find(launch_delegates_.begin(),
                    launch_delegates_.end(),
                    delegate) == launch_delegates_.end())
@@ -424,7 +424,7 @@ void AutomationProxyCacheEntry::AddDelegate(LaunchDelegate* delegate) {
 }
 
 void AutomationProxyCacheEntry::OnChannelError() {
-  DCHECK(IsSameThread(PlatformThread::CurrentId()));
+  DCHECK(IsSameThread(base::PlatformThread::CurrentId()));
   launch_result_ = AUTOMATION_SERVER_CRASHED;
   LaunchDelegates::const_iterator it = launch_delegates_.begin();
   for (; it != launch_delegates_.end(); ++it) {
@@ -433,7 +433,7 @@ void AutomationProxyCacheEntry::OnChannelError() {
 }
 
 void AutomationProxyCacheEntry::SendUMAData() {
-  DCHECK(IsSameThread(PlatformThread::CurrentId()));
+  DCHECK(IsSameThread(base::PlatformThread::CurrentId()));
   DCHECK(snapshots_);
   // IE uses the chrome frame provided UMA data uploading scheme. NPAPI
   // continues to use Chrome to upload UMA data.
@@ -509,7 +509,7 @@ void ProxyFactory::GetAutomationServer(
   }
 
   DCHECK(automation_server_id != NULL);
-  DCHECK(!entry->IsSameThread(PlatformThread::CurrentId()));
+  DCHECK(!entry->IsSameThread(base::PlatformThread::CurrentId()));
 
   *automation_server_id = entry;
 }
@@ -530,7 +530,7 @@ bool ProxyFactory::ReleaseAutomationServer(void* server_id,
                                                  proxies_.container().end(),
                                                  entry);
   DCHECK(it != proxies_.container().end());
-  DCHECK(!entry->IsSameThread(PlatformThread::CurrentId()));
+  DCHECK(!entry->IsSameThread(base::PlatformThread::CurrentId()));
 
   lock_.Release();
 #endif
@@ -613,7 +613,7 @@ bool ChromeFrameAutomationClient::Initialize(
 
   chrome_launch_params_ = chrome_launch_params;
 
-  ui_thread_id_ = PlatformThread::CurrentId();
+  ui_thread_id_ = base::PlatformThread::CurrentId();
 #ifndef NDEBUG
   // In debug mode give more time to work with a debugger.
   if (IsDebuggerPresent()) {
@@ -868,7 +868,7 @@ void ChromeFrameAutomationClient::InstallExtensionComplete(
     const FilePath& crx_path,
     void* user_data,
     AutomationMsg_ExtensionResponseValues res) {
-  DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
+  DCHECK_EQ(base::PlatformThread::CurrentId(), ui_thread_id_);
 
   if (chrome_frame_delegate_) {
     chrome_frame_delegate_->OnExtensionInstalled(crx_path, user_data, res);
@@ -894,7 +894,7 @@ void ChromeFrameAutomationClient::GetEnabledExtensions(void* user_data) {
 void ChromeFrameAutomationClient::GetEnabledExtensionsComplete(
     void* user_data,
     std::vector<FilePath>* extension_directories) {
-  DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
+  DCHECK_EQ(base::PlatformThread::CurrentId(), ui_thread_id_);
 
   if (chrome_frame_delegate_) {
     chrome_frame_delegate_->OnGetEnabledExtensionsComplete(
@@ -1064,7 +1064,7 @@ void ChromeFrameAutomationClient::AutomationServerDied() {
 
 void ChromeFrameAutomationClient::InitializeComplete(
     AutomationLaunchResult result) {
-  DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
+  DCHECK_EQ(base::PlatformThread::CurrentId(), ui_thread_id_);
   if (result != AUTOMATION_SUCCESS) {
     DLOG(WARNING) << "InitializeComplete: failure " << result;
     ReleaseAutomationServer();
@@ -1197,14 +1197,14 @@ void ChromeFrameAutomationClient::OnChannelError(TabProxy* tab) {
 
 void ChromeFrameAutomationClient::OnMessageReceivedUIThread(
     const IPC::Message& msg) {
-  DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
+  DCHECK_EQ(base::PlatformThread::CurrentId(), ui_thread_id_);
   // Forward to the delegate.
   if (chrome_frame_delegate_)
     chrome_frame_delegate_->OnMessageReceived(msg);
 }
 
 void ChromeFrameAutomationClient::OnChannelErrorUIThread() {
-  DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
+  DCHECK_EQ(base::PlatformThread::CurrentId(), ui_thread_id_);
 
   // Report a metric that something went wrong unexpectedly.
   CrashMetricsReporter::GetInstance()->IncrementMetric(
@@ -1221,7 +1221,7 @@ void ChromeFrameAutomationClient::ReportNavigationError(
   if (!chrome_frame_delegate_)
     return;
 
-  if (ui_thread_id_ == PlatformThread::CurrentId()) {
+  if (ui_thread_id_ == base::PlatformThread::CurrentId()) {
     chrome_frame_delegate_->OnLoadFailed(error_code, url);
   } else {
     PostTask(FROM_HERE, NewRunnableMethod(this,

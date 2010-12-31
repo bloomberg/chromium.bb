@@ -12,6 +12,7 @@
 #include "base/eintr_wrapper.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/common/chrome_switches.h"
@@ -70,7 +71,7 @@ void SIGTERMHandler(int signal) {
   GracefulShutdownHandler(signal);
 }
 
-class ShutdownDetector : public PlatformThread::Delegate {
+class ShutdownDetector : public base::PlatformThread::Delegate {
  public:
   explicit ShutdownDetector(int shutdown_fd);
 
@@ -88,7 +89,7 @@ ShutdownDetector::ShutdownDetector(int shutdown_fd)
 }
 
 void ShutdownDetector::ThreadMain() {
-  PlatformThread::SetName("CrShutdownDetector");
+  base::PlatformThread::SetName("CrShutdownDetector");
 
   int signal;
   size_t bytes_read = 0;
@@ -211,9 +212,9 @@ void BrowserMainPartsPosix::PostMainMessageLoopStart() {
     const size_t kShutdownDetectorThreadStackSize = 4096;
     // TODO(viettrungluu,willchan): crbug.com/29675 - This currently leaks, so
     // if you change this, you'll probably need to change the suppression.
-    if (!PlatformThread::CreateNonJoinable(
-        kShutdownDetectorThreadStackSize,
-        new ShutdownDetector(g_shutdown_pipe_read_fd))) {
+    if (!base::PlatformThread::CreateNonJoinable(
+            kShutdownDetectorThreadStackSize,
+            new ShutdownDetector(g_shutdown_pipe_read_fd))) {
       LOG(DFATAL) << "Failed to create shutdown detector task.";
     }
   }

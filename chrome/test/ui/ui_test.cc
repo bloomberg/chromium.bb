@@ -21,13 +21,13 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/platform_thread.h"
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/test/test_file_util.h"
+#include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -212,7 +212,7 @@ void UITestBase::WaitForBrowserLaunch() {
   if (wait_for_initial_loads_)
     ASSERT_TRUE(automation_proxy_->WaitForInitialLoads());
   else
-    PlatformThread::Sleep(sleep_timeout_ms());
+    base::PlatformThread::Sleep(sleep_timeout_ms());
 
   EXPECT_TRUE(automation()->SetFilteredInet(ShouldFilterInet()));
 }
@@ -1021,7 +1021,7 @@ bool UITest::EvictFileFromSystemCacheWrapper(const FilePath& path) {
   for (int i = 0; i < 10; i++) {
     if (file_util::EvictFileFromSystemCache(path))
       return true;
-    PlatformThread::Sleep(sleep_timeout_ms() / 10);
+    base::PlatformThread::Sleep(sleep_timeout_ms() / 10);
   }
   return false;
 }
@@ -1046,7 +1046,7 @@ void UITest::WaitForGeneratedFileAndCheck(
       file_util::GetFileInfo(generated_file, &previous);
       exist = true;
     }
-    PlatformThread::Sleep(sleep_timeout_ms() / kCycles);
+    base::PlatformThread::Sleep(sleep_timeout_ms() / kCycles);
   }
   EXPECT_TRUE(exist);
 

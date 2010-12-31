@@ -228,7 +228,7 @@ template <class T>
 struct RunnableMethodTraits {
   RunnableMethodTraits() {
 #ifndef NDEBUG
-    origin_thread_id_ = PlatformThread::CurrentId();
+    origin_thread_id_ = base::PlatformThread::CurrentId();
 #endif
   }
 
@@ -236,7 +236,7 @@ struct RunnableMethodTraits {
 #ifndef NDEBUG
     // If destroyed on a separate thread, then we had better have been using
     // thread-safe reference counting!
-    if (origin_thread_id_ != PlatformThread::CurrentId())
+    if (origin_thread_id_ != base::PlatformThread::CurrentId())
       DCHECK(T::ImplementsThreadSafeReferenceCounting());
 #endif
   }
@@ -258,7 +258,7 @@ struct RunnableMethodTraits {
 
  private:
 #ifndef NDEBUG
-  PlatformThreadId origin_thread_id_;
+  base::PlatformThreadId origin_thread_id_;
 #endif
 };
 

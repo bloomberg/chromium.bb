@@ -4,12 +4,14 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/thread_checker.h"
 #include "base/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "base/threading/simple_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #ifndef NDEBUG
+
+namespace base {
 
 // Simple class to exersice the basics of ThreadChecker.
 // Both the destructor and DoStuff should verify that they were
@@ -138,5 +140,7 @@ TEST(ThreadCheckerDeathTest, DetachFromThread) {
 }
 
 #endif  // GTEST_HAS_DEATH_TEST
+
+}  // namespace base
 
 #endif  // NDEBUG

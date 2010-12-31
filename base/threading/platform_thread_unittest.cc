@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/platform_thread.h"
+#include "base/threading/platform_thread.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-typedef testing::Test PlatformThreadTest;
+namespace base {
 
 // Trivial tests that thread runs and doesn't crash on create and join ---------
 
@@ -26,7 +26,7 @@ class TrivialThread : public PlatformThread::Delegate {
   DISALLOW_COPY_AND_ASSIGN(TrivialThread);
 };
 
-TEST_F(PlatformThreadTest, Trivial) {
+TEST(PlatformThreadTest, Trivial) {
   TrivialThread thread;
   PlatformThreadHandle handle = kNullThreadHandle;
 
@@ -36,7 +36,7 @@ TEST_F(PlatformThreadTest, Trivial) {
   ASSERT_TRUE(thread.did_run());
 }
 
-TEST_F(PlatformThreadTest, TrivialTimesTen) {
+TEST(PlatformThreadTest, TrivialTimesTen) {
   TrivialThread thread[10];
   PlatformThreadHandle handle[arraysize(thread)];
 
@@ -72,7 +72,7 @@ class FunctionTestThread : public TrivialThread {
   DISALLOW_COPY_AND_ASSIGN(FunctionTestThread);
 };
 
-TEST_F(PlatformThreadTest, Function) {
+TEST(PlatformThreadTest, Function) {
   PlatformThreadId main_thread_id = PlatformThread::CurrentId();
 
   FunctionTestThread thread;
@@ -85,7 +85,7 @@ TEST_F(PlatformThreadTest, Function) {
   EXPECT_NE(thread.thread_id(), main_thread_id);
 }
 
-TEST_F(PlatformThreadTest, FunctionTimesTen) {
+TEST(PlatformThreadTest, FunctionTimesTen) {
   PlatformThreadId main_thread_id = PlatformThread::CurrentId();
 
   FunctionTestThread thread[10];
@@ -102,3 +102,5 @@ TEST_F(PlatformThreadTest, FunctionTimesTen) {
     EXPECT_NE(thread[n].thread_id(), main_thread_id);
   }
 }
+
+}  // namespace base

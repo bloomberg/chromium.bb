@@ -25,6 +25,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/string_split.h"
+#include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -452,7 +453,7 @@ class SafeBrowsingServiceTestHelper
       // Wait and try again if last fetch was failed. The loop will hit the
       // timeout in OutOfProcTestRunner if the fetch can not get success
       // response.
-      PlatformThread::Sleep(TestTimeouts::action_timeout_ms());
+      base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms());
     }
   }
 

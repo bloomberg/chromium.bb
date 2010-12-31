@@ -10,16 +10,18 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/perftimer.h"
-#include "base/thread.h"
-#if defined(OS_WIN)
-#include "base/win/registry.h"
-#endif
 #include "base/string_util.h"
+#include "base/thread.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/common/chrome_counters.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "webkit/plugins/npapi/plugin_list.h"
+
+#if defined(OS_WIN)
+#include "base/win/registry.h"
+#endif
 
 using base::TimeDelta;
 
@@ -39,7 +41,7 @@ static PluginMap* g_loaded_libs;
 
 // The thread plugins are loaded and used in, lazily initialized upon
 // the first creation call.
-static PlatformThreadId g_plugin_thread_id = 0;
+static base::PlatformThreadId g_plugin_thread_id = 0;
 static MessageLoop* g_plugin_thread_loop = NULL;
 
 static bool IsSingleProcessMode() {
@@ -58,7 +60,7 @@ ChromePluginLib* ChromePluginLib::Create(const FilePath& filename,
   // Keep a map of loaded plugins to ensure we only load each library once.
   if (!g_loaded_libs) {
     g_loaded_libs = new PluginMap();
-    g_plugin_thread_id = PlatformThread::CurrentId();
+    g_plugin_thread_id = base::PlatformThread::CurrentId();
     g_plugin_thread_loop = MessageLoop::current();
   }
   DCHECK(IsPluginThread());
@@ -97,7 +99,7 @@ void ChromePluginLib::Destroy(const FilePath& filename) {
 
 // static
 bool ChromePluginLib::IsPluginThread() {
-  return PlatformThread::CurrentId() == g_plugin_thread_id;
+  return base::PlatformThread::CurrentId() == g_plugin_thread_id;
 }
 
 // static

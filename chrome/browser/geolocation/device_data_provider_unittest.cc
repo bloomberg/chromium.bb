@@ -4,6 +4,7 @@
 
 #include "chrome/browser/geolocation/device_data_provider.h"
 
+#include "base/threading/platform_thread.h"
 #include "chrome/browser/geolocation/wifi_data_provider_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,12 +28,12 @@ TEST(GeolocationDeviceDataProviderWifiData, CreateDestroy) {
   for (int i = 0; i < 10; i++) {
     DeviceDataProvider<WifiData>::Register(&listener);
     for (int j = 0; j < 10; j++) {
-      PlatformThread::Sleep(0);
+      base::PlatformThread::Sleep(0);
       main_message_loop.RunAllPending();  // See comment above
     }
     DeviceDataProvider<WifiData>::Unregister(&listener);
     for (int j = 0; j < 10; j++) {
-      PlatformThread::Sleep(0);
+      base::PlatformThread::Sleep(0);
       main_message_loop.RunAllPending();  // See comment above
     }
   }

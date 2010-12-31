@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/threading/platform_thread.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/test/automation/automation_proxy.h"
@@ -66,7 +67,7 @@ bool AutocompleteEditProxy::WaitForQuery(int wait_timeout_ms) const {
   while (TimeTicks::Now() - start < timeout) {
     if (IsQueryInProgress(&query_in_progress) && !query_in_progress)
       return true;
-    PlatformThread::Sleep(automation::kSleepTime);
+    base::PlatformThread::Sleep(automation::kSleepTime);
   }
   // If we get here the query is still in progress.
   return false;

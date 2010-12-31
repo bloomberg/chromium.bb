@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/string16.h"
+#include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/json_value_serializer.h"
@@ -363,7 +364,7 @@ bool TabProxy::WaitForChildWindowCountToChange(int count, int* new_count,
                                                int wait_timeout) {
   int intervals = std::max(wait_timeout / automation::kSleepTime, 1);
   for (int i = 0; i < intervals; ++i) {
-    PlatformThread::Sleep(automation::kSleepTime);
+    base::PlatformThread::Sleep(automation::kSleepTime);
     bool succeeded = GetConstrainedWindowCount(new_count);
     if (!succeeded)
       return false;
@@ -391,7 +392,7 @@ bool TabProxy::WaitForBlockedPopupCountToChangeTo(int target_count,
                                                   int wait_timeout) {
   int intervals = std::max(wait_timeout / automation::kSleepTime, 1);
   for (int i = 0; i < intervals; ++i) {
-    PlatformThread::Sleep(automation::kSleepTime);
+    base::PlatformThread::Sleep(automation::kSleepTime);
     int new_count = -1;
     bool succeeded = GetBlockedPopupCount(&new_count);
     if (!succeeded)

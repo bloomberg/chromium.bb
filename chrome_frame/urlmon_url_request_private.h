@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/threading/platform_thread.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_status.h"
@@ -233,7 +234,7 @@ class UrlmonUrlRequest
   ScopedComPtr<IStream> pending_data_;
 
   size_t pending_read_size_;
-  PlatformThreadId thread_;
+  base::PlatformThreadId thread_;
   HWND parent_window_;
   bool headers_received_;
   int calling_delegate_;  // re-entrancy protection.

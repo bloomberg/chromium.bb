@@ -11,6 +11,7 @@
 
 #include "chrome_tab.h"  // Generated from chrome_tab.idl.
 
+#include "base/debug/trace_event_win.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -18,11 +19,11 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/threading/platform_thread.h"
 #include "base/time.h"
-#include "base/debug/trace_event_win.h"
 #include "base/utf_string_conversions.h"
-#include "base/win/event_trace_controller.h"
 #include "base/win/event_trace_consumer.h"
+#include "base/win/event_trace_controller.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_comptr.h"
@@ -32,7 +33,6 @@
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/test/chrome_process_util.h"
 #include "chrome/test/ui/ui_perf_test.h"
-
 #include "chrome_frame/test_utils.h"
 #include "chrome_frame/utils.h"
 
@@ -343,7 +343,7 @@ class ChromeFrameStartupTest : public ChromeFramePerfTestBase {
 
       // TODO(beng): Can't shut down so quickly. Figure out why, and fix. If we
       // do, we crash.
-      PlatformThread::Sleep(50);
+      base::PlatformThread::Sleep(50);
     }
 
     std::string times;
@@ -810,7 +810,7 @@ class ChromeFrameActiveXMemoryTest : public MemoryTestBase {
     PrintResults(test_name_.c_str());
 
     CoFreeUnusedLibraries();
-    PlatformThread::Sleep(100);
+    base::PlatformThread::Sleep(100);
   }
 
   void NavigateImpl(const std::string& url) {

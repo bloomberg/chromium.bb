@@ -22,8 +22,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/eintr_wrapper.h"
-#include "base/platform_thread.h"
 #include "base/string_number_conversions.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/browser/debugger/devtools_remote.h"
 #include "chrome/browser/debugger/devtools_remote_message.h"
 
@@ -252,7 +252,7 @@ void DevToolsRemoteListenSocket::SendInternal(const char* bytes, int len) {
       send_buf += sent;
       len_left -= sent;
     }
-    PlatformThread::YieldCurrentThread();
+    base::PlatformThread::YieldCurrentThread();
   }
 }
 

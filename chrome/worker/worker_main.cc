@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -23,7 +24,7 @@
 int WorkerMain(const MainFunctionParams& parameters) {
   // The main message loop of the worker process.
   MessageLoop main_message_loop;
-  PlatformThread::SetName("CrWorkerMain");
+  base::PlatformThread::SetName("CrWorkerMain");
 
   SystemMonitor system_monitor;
   HighResolutionTimerManager hi_res_timer_manager;

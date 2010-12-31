@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,14 +11,16 @@
 #include "base/condition_variable.h"
 #include "base/lock.h"
 #include "base/logging.h"
-#include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
 #include "base/spin_wait.h"
+#include "base/threading/platform_thread.h"
 #include "base/thread_collision_warner.h"
 #include "base/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+using base::PlatformThread;
+using base::PlatformThreadHandle;
 using base::TimeDelta;
 using base::TimeTicks;
 

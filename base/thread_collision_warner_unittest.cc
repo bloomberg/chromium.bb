@@ -1,11 +1,11 @@
-// Copyright (c) 2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/compiler_specific.h"
 #include "base/lock.h"
-#include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "base/thread_collision_warner.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -190,7 +190,7 @@ TEST(ThreadCollisionTest, MTScopedBookCriticalSectionTest) {
 
     void push(int value) {
       DFAKE_SCOPED_LOCK(push_pop_);
-      PlatformThread::Sleep(5000);
+      base::PlatformThread::Sleep(5000);
     }
 
     int pop() {
@@ -248,7 +248,7 @@ TEST(ThreadCollisionTest, MTSynchedScopedBookCriticalSectionTest) {
 
     void push(int value) {
       DFAKE_SCOPED_LOCK(push_pop_);
-      PlatformThread::Sleep(2000);
+      base::PlatformThread::Sleep(2000);
     }
 
     int pop() {
@@ -318,7 +318,7 @@ TEST(ThreadCollisionTest, MTSynchedScopedRecursiveBookCriticalSectionTest) {
     void push(int) {
       DFAKE_SCOPED_RECURSIVE_LOCK(push_pop_);
       bar();
-      PlatformThread::Sleep(2000);
+      base::PlatformThread::Sleep(2000);
     }
 
     int pop() {

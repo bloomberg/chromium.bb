@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome_frame/bind_context_info.h"
 #include "chrome_frame/exception_barrier.h"
@@ -213,7 +214,7 @@ BSCBStorageBind::~BSCBStorageBind() {
 
 HRESULT BSCBStorageBind::Initialize(IMoniker* moniker, IBindCtx* bind_ctx) {
   DVLOG(1) << __FUNCTION__ << me()
-           << base::StringPrintf(" tid=%i", PlatformThread::CurrentId());
+           << base::StringPrintf(" tid=%i", base::PlatformThread::CurrentId());
 
   std::wstring url = GetActualUrlFromMoniker(moniker, bind_ctx,
                                              std::wstring());
@@ -239,7 +240,8 @@ STDMETHODIMP BSCBStorageBind::OnProgress(ULONG progress, ULONG progress_max,
                                     ULONG status_code, LPCWSTR status_text) {
   DVLOG(1) << __FUNCTION__ << me()
            << base::StringPrintf(" status=%i tid=%i %ls", status_code,
-                                 PlatformThread::CurrentId(), status_text);
+                                 base::PlatformThread::CurrentId(),
+                                 status_text);
   // Report all crashes in the exception handler if we wrap the callback.
   // Note that this avoids having the VEH report a crash if an SEH earlier in
   // the chain handles the exception.
@@ -273,7 +275,7 @@ STDMETHODIMP BSCBStorageBind::OnDataAvailable(DWORD flags, DWORD size,
                                               FORMATETC* format_etc,
                                               STGMEDIUM* stgmed) {
   DVLOG(1) << __FUNCTION__
-           << base::StringPrintf(" tid=%i", PlatformThread::CurrentId());
+           << base::StringPrintf(" tid=%i", base::PlatformThread::CurrentId());
   // Report all crashes in the exception handler if we wrap the callback.
   // Note that this avoids having the VEH report a crash if an SEH earlier in
   // the chain handles the exception.
@@ -316,7 +318,7 @@ STDMETHODIMP BSCBStorageBind::OnDataAvailable(DWORD flags, DWORD size,
 
 STDMETHODIMP BSCBStorageBind::OnStopBinding(HRESULT hresult, LPCWSTR error) {
   DVLOG(1) << __FUNCTION__
-           << base::StringPrintf(" tid=%i", PlatformThread::CurrentId());
+           << base::StringPrintf(" tid=%i", base::PlatformThread::CurrentId());
   // Report all crashes in the exception handler if we wrap the callback.
   // Note that this avoids having the VEH report a crash if an SEH earlier in
   // the chain handles the exception.
