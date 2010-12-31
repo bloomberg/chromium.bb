@@ -5635,19 +5635,28 @@ void RenderView::OnPageTranslated() {
   autofill_helper_->FrameContentsAvailable(frame);
 }
 
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
 WebKit::WebGeolocationClient* RenderView::geolocationClient() {
+#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
   if (!geolocation_dispatcher_.get())
     geolocation_dispatcher_.reset(new GeolocationDispatcher(this));
   return geolocation_dispatcher_.get();
-}
 #else
+  // TODO(jknotten): Remove once building with ENABLE_CLIENT_BASED_GEOLOCATION.
+  NOTREACHED();
+  return 0;
+#endif
+}
+
 WebKit::WebGeolocationService* RenderView::geolocationService() {
+#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
+  NOTREACHED();
+  return 0;
+#else
   if (!geolocation_dispatcher_.get())
     geolocation_dispatcher_.reset(new GeolocationDispatcherOld(this));
   return geolocation_dispatcher_.get();
-}
 #endif
+}
 
 WebKit::WebSpeechInputController* RenderView::speechInputController(
     WebKit::WebSpeechInputListener* listener) {

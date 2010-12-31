@@ -497,11 +497,9 @@ class RenderView : public RenderWidget,
   virtual void didClearAutoFillSelection(const WebKit::WebNode& node);
   virtual void didAcceptAutocompleteSuggestion(
       const WebKit::WebInputElement& element);
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
+  // TODO(jknotten): Remove once building with ENABLE_CLIENT_BASED_GEOLOCATION.
   virtual WebKit::WebGeolocationClient* geolocationClient();
-#else
   virtual WebKit::WebGeolocationService* geolocationService();
-#endif
   virtual WebKit::WebSpeechInputController* speechInputController(
       WebKit::WebSpeechInputListener* listener);
   virtual WebKit::WebDeviceOrientationClient* deviceOrientationClient();
@@ -1395,10 +1393,11 @@ class RenderView : public RenderWidget,
 
   scoped_refptr<AudioMessageFilter> audio_message_filter_;
 
-  // The geolocation dispatcher attached to this view, lazily initialized.
-#if ENABLE_CLIENT_BASED_GEOLOCATION
+#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
+  // the geolocation dispatcher attached to this view, lazily initialized.
   scoped_ptr<GeolocationDispatcher> geolocation_dispatcher_;
 #else
+  // TODO(jknotten): Remove once building with ENABLE_CLIENT_BASED_GEOLOCATION.
   scoped_ptr<GeolocationDispatcherOld> geolocation_dispatcher_;
 #endif
 

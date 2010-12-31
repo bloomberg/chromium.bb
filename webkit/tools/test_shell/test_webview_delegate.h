@@ -140,11 +140,12 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   virtual void focusAccessibilityObject(
       const WebKit::WebAccessibilityObject& object);
   virtual WebKit::WebNotificationPresenter* notificationPresenter();
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
-    WebKit::WebGeolocationClient* geolocationClient();
-#else
+
+  virtual WebKit::WebGeolocationClient* geolocationClient();
+
+  // TODO(jknotten): Remove once building with ENABLE_CLIENT_BASED_GEOLOCATION.
   virtual WebKit::WebGeolocationService* geolocationService();
-#endif
+
   virtual WebKit::WebDeviceOrientationClient* deviceOrientationClient();
   virtual WebKit::WebSpeechInputController* speechInputController(
       WebKit::WebSpeechInputListener*);
@@ -466,9 +467,8 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   // The mock spellchecker used in TestWebViewDelegate::spellCheck().
   MockSpellCheck mock_spellcheck_;
 
-#if !defined(ENABLE_CLIENT_BASED_GEOLOCATION)
+  // TODO(jknotten): Remove once building with ENABLE_CLIENT_BASED_GEOLOCATION.
   scoped_ptr<TestGeolocationService> test_geolocation_service_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(TestWebViewDelegate);
 };

@@ -655,15 +655,25 @@ WebNotificationPresenter* TestWebViewDelegate::notificationPresenter() {
   return shell_->notification_presenter();
 }
 
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
 WebKit::WebGeolocationClient* TestWebViewDelegate::geolocationClient() {
+#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
   return shell_->geolocation_client_mock();
-}
 #else
-WebKit::WebGeolocationService* TestWebViewDelegate::geolocationService() {
-  return GetTestGeolocationService();
-}
+  // TODO(jknotten): Remove once building with ENABLE_CLIENT_BASED_GEOLOCATION.
+  NOTREACHED();
+  return 0;
 #endif
+}
+
+WebKit::WebGeolocationService* TestWebViewDelegate::geolocationService() {
+#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
+  NOTREACHED();
+  return 0;
+#else
+  return GetTestGeolocationService();
+#endif
+}
+
 
 WebKit::WebDeviceOrientationClient*
 TestWebViewDelegate::deviceOrientationClient() {
