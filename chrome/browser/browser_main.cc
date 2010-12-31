@@ -129,7 +129,7 @@
 #include <shellapi.h>
 
 #include "app/l10n_util_win.h"
-#include "app/win_util.h"
+#include "app/win/scoped_com_initializer.h"
 #include "chrome/browser/browser_trial.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/url_fixer_upper.h"
@@ -1487,7 +1487,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
       preconnect_enabled);
 
 #if defined(OS_WIN)
-  win_util::ScopedCOMInitializer com_initializer;
+  app::win::ScopedCOMInitializer com_initializer;
 
 #if defined(GOOGLE_CHROME_BUILD)
   // Init the RLZ library. This just binds the dll and schedules a task on the

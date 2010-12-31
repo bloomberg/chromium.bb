@@ -21,10 +21,6 @@
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
 
-#if defined(OS_WIN)
-#include "app/win_util.h"
-#endif
-
 class Profile;
 
 namespace {

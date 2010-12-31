@@ -12,7 +12,7 @@
 
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
-#include "app/win_util.h"
+#include "app/win/win_util.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/i18n/rtl.h"
@@ -57,7 +57,7 @@ void WarnAboutMinimumSystemRequirements() {
     const std::wstring text =
         l10n_util::GetString(IDS_UNSUPPORTED_OS_PRE_WIN_XP);
     const std::wstring caption = l10n_util::GetString(IDS_PRODUCT_NAME);
-    win_util::MessageBox(NULL, text, caption,
+    app::win::MessageBox(NULL, text, caption,
                          MB_OK | MB_ICONWARNING | MB_TOPMOST);
   }
 }
@@ -75,7 +75,7 @@ void ShowCloseBrowserFirstMessageBox() {
   const std::wstring text = l10n_util::GetString(IDS_UNINSTALL_CLOSE_APP);
   const std::wstring caption = l10n_util::GetString(IDS_PRODUCT_NAME);
   const UINT flags = MB_OK | MB_ICONWARNING | MB_TOPMOST;
-  win_util::MessageBox(NULL, text, caption, flags);
+  app::win::MessageBox(NULL, text, caption, flags);
 }
 
 int DoUninstallTasks(bool chrome_still_running) {
@@ -167,7 +167,7 @@ int HandleIconsCommands(const CommandLine &parsed_command_line) {
                                                    cp_applet);
     const std::wstring caption = l10n_util::GetString(IDS_PRODUCT_NAME);
     const UINT flags = MB_OKCANCEL | MB_ICONWARNING | MB_TOPMOST;
-    if (IDOK == win_util::MessageBox(NULL, msg, caption, flags))
+    if (IDOK == app::win::MessageBox(NULL, msg, caption, flags))
       ShellExecute(NULL, NULL, L"appwiz.cpl", NULL, NULL, SW_SHOWNORMAL);
     return ResultCodes::NORMAL_EXIT;  // Exit as we are not launching browser.
   }
@@ -194,7 +194,7 @@ bool CheckMachineLevelInstall() {
           l10n_util::GetString(IDS_MACHINE_LEVEL_INSTALL_CONFLICT);
       const std::wstring caption = l10n_util::GetString(IDS_PRODUCT_NAME);
       const UINT flags = MB_OK | MB_ICONERROR | MB_TOPMOST;
-      win_util::MessageBox(NULL, text, caption, flags);
+      app::win::MessageBox(NULL, text, caption, flags);
       FilePath uninstall_path(InstallUtil::GetChromeUninstallCmd(false, dist));
       CommandLine uninstall_cmd(uninstall_path);
       if (!uninstall_cmd.GetProgram().value().empty()) {

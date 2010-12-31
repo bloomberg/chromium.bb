@@ -8,7 +8,6 @@
 
 #include "app/l10n_util.h"
 #include "app/win/hwnd_util.h"
-#include "app/win_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/common/logging_chrome.h"
 #include "grit/generated_resources.h"

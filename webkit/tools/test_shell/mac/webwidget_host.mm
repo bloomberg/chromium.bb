@@ -41,7 +41,7 @@ WebWidgetHost* WebWidgetHost::Create(NSView* parent_view,
   host->view_ = [[NSView alloc] initWithFrame:content_rect];
   [parent_view addSubview:host->view_];
 
-  // win_util::SetWindowUserData(host->hwnd_, host);
+  // app::win::SetWindowUserData(host->hwnd_, host);
 
   host->webwidget_ = WebPopupMenu::create(client);
   host->webwidget_->resize(WebSize(content_rect.size.width,
@@ -154,7 +154,7 @@ WebWidgetHost::WebWidgetHost()
 }
 
 WebWidgetHost::~WebWidgetHost() {
-  // win_util::SetWindowUserData(hwnd_, 0);
+  // app::win::SetWindowUserData(hwnd_, 0);
 
   webwidget_->close();
 }

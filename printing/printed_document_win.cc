@@ -1,10 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "printing/printed_document.h"
 
-#include "app/win_util.h"
+#include "app/win/win_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -121,9 +121,9 @@ void PrintedDocument::Immutable::SetDocumentDate() {
   SYSTEMTIME systemtime;
   GetLocalTime(&systemtime);
   date_ =
-      WideToUTF16Hack(win_util::FormatSystemDate(systemtime, std::wstring()));
+      WideToUTF16Hack(app::win::FormatSystemDate(systemtime, std::wstring()));
   time_ =
-      WideToUTF16Hack(win_util::FormatSystemTime(systemtime, std::wstring()));
+      WideToUTF16Hack(app::win::FormatSystemTime(systemtime, std::wstring()));
 }
 
 void PrintedDocument::DrawHeaderFooter(gfx::NativeDrawingContext context,

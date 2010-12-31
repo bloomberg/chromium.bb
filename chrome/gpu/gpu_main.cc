@@ -7,6 +7,7 @@
 #include "app/app_switches.h"
 #include "app/gfx/gl/gl_context.h"
 #include "app/gfx/gl/gl_implementation.h"
+#include "app/win/scoped_com_initializer.h"
 #include "base/environment.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
@@ -28,10 +29,6 @@
 #if defined(OS_MACOSX)
 #include "chrome/common/chrome_application_mac.h"
 #include "chrome/common/sandbox_mac.h"
-#endif
-
-#if defined(OS_WIN)
-#include "app/win_util.h"
 #endif
 
 #if defined(USE_X11)
@@ -77,9 +74,7 @@ int GpuMain(const MainFunctionParams& parameters) {
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);
   base::PlatformThread::SetName("CrGpuMain");
 
-#if defined(OS_WIN)
-  win_util::ScopedCOMInitializer com_initializer;
-#endif
+  app::win::ScopedCOMInitializer com_initializer;
 
 #if defined(USE_X11)
   // The X11 port of the command buffer code assumes it can access the X

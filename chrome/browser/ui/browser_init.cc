@@ -72,10 +72,6 @@
 #include "chrome/browser/ui/cocoa/keystone_infobar.h"
 #endif
 
-#if defined(OS_WIN)
-#include "app/win_util.h"
-#endif
-
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/gtk/gtk_util.h"
 #endif

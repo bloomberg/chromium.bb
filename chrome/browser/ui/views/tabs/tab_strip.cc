@@ -28,7 +28,7 @@
 #include "views/window/window.h"
 
 #if defined(OS_WIN)
-#include "app/win_util.h"
+#include "app/win/win_util.h"
 #include "views/widget/widget_win.h"
 #elif defined(OS_LINUX)
 #include "views/widget/widget_gtk.h"
@@ -687,7 +687,7 @@ gfx::Rect TabStrip::GetDropBounds(int drop_index,
 
   // If the rect doesn't fit on the monitor, push the arrow to the bottom.
 #if defined(OS_WIN)
-  gfx::Rect monitor_bounds = win_util::GetMonitorBoundsForRect(drop_bounds);
+  gfx::Rect monitor_bounds = app::win::GetMonitorBoundsForRect(drop_bounds);
   *is_beneath = (monitor_bounds.IsEmpty() ||
                  !monitor_bounds.Contains(drop_bounds));
 #else

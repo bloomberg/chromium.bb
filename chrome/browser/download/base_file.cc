@@ -13,6 +13,7 @@
 #include "chrome/browser/download/download_util.h"
 
 #if defined(OS_WIN)
+#include "app/win/win_util.h"
 #include "chrome/common/win_safe_util.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/file_metadata.h"

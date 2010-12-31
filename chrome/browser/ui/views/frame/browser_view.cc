@@ -83,7 +83,7 @@
 
 #if defined(OS_WIN)
 #include "app/view_prop.h"
-#include "app/win_util.h"
+#include "app/win/win_util.h"
 #include "chrome/browser/aeropeek_manager.h"
 #include "chrome/browser/jumplist_win.h"
 #elif defined(OS_LINUX)
@@ -1128,7 +1128,7 @@ void BrowserView::ShowProfileErrorDialog(int message_id) {
 #if defined(OS_WIN)
   std::wstring title = l10n_util::GetString(IDS_PRODUCT_NAME);
   std::wstring message = l10n_util::GetString(message_id);
-  win_util::MessageBox(GetNativeHandle(), message, title,
+  app::win::MessageBox(GetNativeHandle(), message, title,
                        MB_OK | MB_ICONWARNING | MB_TOPMOST);
 #elif defined(OS_LINUX)
   std::string title = l10n_util::GetStringUTF8(IDS_PRODUCT_NAME);

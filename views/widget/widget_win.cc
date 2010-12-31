@@ -9,7 +9,7 @@
 #include "app/system_monitor.h"
 #include "app/view_prop.h"
 #include "app/win/hwnd_util.h"
-#include "app/win_util.h"
+#include "app/win/win_util.h"
 #include "base/string_util.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/native_theme_win.h"
@@ -389,7 +389,7 @@ bool WidgetWin::IsVisible() const {
 }
 
 bool WidgetWin::IsActive() const {
-  return win_util::IsWindowActive(hwnd());
+  return app::win::IsWindowActive(hwnd());
 }
 
 bool WidgetWin::IsAccessibleWidget() const {

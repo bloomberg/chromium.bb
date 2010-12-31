@@ -12,7 +12,6 @@
 #include "views/window/window.h"
 
 #if defined(OS_WIN)
-#include "app/win_util.h"
 #include "views/widget/widget_win.h"
 #endif
 

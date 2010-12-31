@@ -6,7 +6,7 @@
 
 #include "app/resource_bundle.h"
 #include "app/win/hwnd_util.h"
-#include "app/win_util.h"
+#include "app/win/win_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -544,7 +544,7 @@ void ConstrainedWindowFrameView::InitWindowResources() {
 void ConstrainedWindowFrameView::InitClass() {
   static bool initialized = false;
   if (!initialized) {
-    title_font_ = new gfx::Font(win_util::GetWindowTitleFont());
+    title_font_ = new gfx::Font(app::win::GetWindowTitleFont());
     initialized = true;
   }
 }

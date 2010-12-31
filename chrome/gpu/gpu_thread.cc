@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "app/gfx/gl/gl_context.h"
+#include "app/win/scoped_com_initializer.h"
 #include "base/command_line.h"
 #include "base/threading/worker_pool.h"
 #include "build/build_config.h"
@@ -16,10 +17,6 @@
 #include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_info_collector.h"
 #include "ipc/ipc_channel_handle.h"
-
-#if defined(OS_WIN)
-#include "app/win_util.h"
-#endif
 
 GpuThread::GpuThread() {
 }
@@ -159,7 +156,7 @@ void GpuThread::OnHang() {
 // Runs on a worker thread. The GpuThread never terminates voluntarily so it is
 // safe to assume that its message loop is valid.
 void GpuThread::CollectDxDiagnostics(GpuThread* thread) {
-  win_util::ScopedCOMInitializer com_initializer;
+  app::win::ScopedCOMInitializer com_initializer;
 
   DxDiagNode node;
   gpu_info_collector::GetDxDiagnostics(&node);

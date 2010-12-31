@@ -71,8 +71,8 @@
 
 #if defined(OS_WIN)
 #include "app/os_exchange_data_provider_win.h"
-#include "app/win_util.h"
 #include "app/win/drag_source.h"
+#include "app/win/win_util.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/views/frame/browser_view.h"
@@ -248,7 +248,7 @@ void GenerateSafeFileName(const std::string& mime_type, FilePath* file_name) {
   // Prepend "_" to the file name if it's a reserved name
   FilePath::StringType leaf_name = file_name->BaseName().value();
   DCHECK(!leaf_name.empty());
-  if (win_util::IsReservedName(leaf_name)) {
+  if (app::win::IsReservedName(leaf_name)) {
     leaf_name = FilePath::StringType(FILE_PATH_LITERAL("_")) + leaf_name;
     *file_name = file_name->DirName();
     if (file_name->value() == FilePath::kCurrentDirectory) {

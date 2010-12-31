@@ -6,14 +6,7 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_WIN)
-#include "app/win_util.h"
-#endif
 #include "base/lazy_instance.h"
-#if defined(OS_MACOSX)
-#include "base/mac_util.h"
-#include "base/mac/scoped_cftyperef.h"
-#endif
 #include "base/scoped_handle.h"
 #include "base/shared_memory.h"
 #include "build/build_config.h"
@@ -24,17 +17,22 @@
 #include "chrome/plugin/npobject_util.h"
 #include "chrome/plugin/plugin_channel.h"
 #include "chrome/plugin/plugin_thread.h"
-#if defined(OS_MACOSX)
-#include "chrome/plugin/webplugin_accelerated_surface_proxy_mac.h"
-#endif
 #include "gfx/blit.h"
 #include "gfx/canvas.h"
-#if defined(OS_WIN)
-#include "gfx/gdi_util.h"
-#endif
 #include "skia/ext/platform_device.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac_util.h"
+#include "base/mac/scoped_cftyperef.h"
+#include "chrome/plugin/webplugin_accelerated_surface_proxy_mac.h"
+#endif
+
+#if defined(OS_WIN)
+#include "app/win/win_util.h"
+#include "gfx/gdi_util.h"
+#endif
 
 #if defined(USE_X11)
 #include "app/x11_util_internal.h"
@@ -538,7 +536,7 @@ void WebPluginProxy::SetWindowlessBuffer(
           window_rect.width(),
           window_rect.height(),
           true,
-          win_util::GetSectionFromProcess(windowless_buffer,
+          app::win::GetSectionFromProcess(windowless_buffer,
               channel_->renderer_handle(), false))) {
     windowless_canvas_.reset();
     background_canvas_.reset();
@@ -551,7 +549,7 @@ void WebPluginProxy::SetWindowlessBuffer(
             window_rect.width(),
             window_rect.height(),
             true,
-            win_util::GetSectionFromProcess(background_buffer,
+            app::win::GetSectionFromProcess(background_buffer,
                 channel_->renderer_handle(), false))) {
       windowless_canvas_.reset();
       background_canvas_.reset();

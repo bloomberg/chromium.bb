@@ -32,13 +32,6 @@
             'tree_node_model.h',
         ],
         'conditions': [
-          ['OS=="win"', {
-            'sources': [
-              'win_util.cc',
-              'win_util.h',
-              'win_util_path.cc',
-            ],
-          }],
           ['OS!="linux" and OS!="freebsd" and OS!="openbsd"', {
             'sources!': [
               'gtk_dnd_util.cc',
@@ -238,12 +231,16 @@
         'win/hwnd_util.h',
         'win/iat_patch_function.cc',
         'win/iat_patch_function.h',
+        'win/scoped_co_mem.h',
+        'win/scoped_com_initializer.h',
         'win/scoped_prop.cc',
         'win/scoped_prop.h',
         'win/shell.cc',
         'win/shell.h',
         'win/window_impl.cc',
         'win/window_impl.h',
+        'win/win_util.cc',
+        'win/win_util.h',
         'x11_util.cc',
         'x11_util.h',
         'x11_util_internal.h',

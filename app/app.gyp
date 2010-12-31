@@ -58,7 +58,7 @@
         'tree_node_iterator_unittest.cc',
         'tree_node_model_unittest.cc',
         'view_prop_unittest.cc',
-        'win_util_unittest.cc',
+        'win/win_util_unittest.cc',
       ],
       'include_dirs': [
         '..',

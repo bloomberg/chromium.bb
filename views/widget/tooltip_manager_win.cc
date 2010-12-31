@@ -8,7 +8,7 @@
 #include <limits>
 
 #include "app/l10n_util_win.h"
-#include "app/win_util.h"
+#include "app/win/win_util.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -228,7 +228,7 @@ bool TooltipManagerWin::SetTooltipPosition(int text_x, int text_y) {
   // doesn't, return false so that windows positions the tooltip at the
   // default location.
   gfx::Rect monitor_bounds =
-      win_util::GetMonitorBoundsForRect(gfx::Rect(bounds.left,bounds.right,
+      app::win::GetMonitorBoundsForRect(gfx::Rect(bounds.left,bounds.right,
                                                   0, 0));
   if (!monitor_bounds.Contains(gfx::Rect(bounds))) {
     return false;
@@ -356,7 +356,7 @@ void TooltipManagerWin::ShowKeyboardTooltip(View* focused_view) {
                       screen_point.y() + focused_bounds.height() +
                       line_count * tooltip_height_ };
   gfx::Rect monitor_bounds =
-      win_util::GetMonitorBoundsForRect(gfx::Rect(rect_bounds));
+      app::win::GetMonitorBoundsForRect(gfx::Rect(rect_bounds));
   rect_bounds = gfx::Rect(rect_bounds).AdjustToFit(monitor_bounds).ToRECT();
   ::SetWindowPos(keyboard_tooltip_hwnd_, NULL, rect_bounds.left,
                  rect_bounds.top, 0, 0,

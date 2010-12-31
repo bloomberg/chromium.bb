@@ -21,7 +21,7 @@
 #if defined(OS_LINUX)
 #include "app/keyboard_code_conversion_gtk.h"
 #elif defined(OS_WIN)
-#include "app/win_util.h"
+#include "app/win/win_util.h"
 #include "base/win/win_util.h"
 // TODO(beng): this should be removed when the OS_WIN hack from
 // ViewHierarchyChanged is removed.
@@ -279,7 +279,7 @@ bool Textfield::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
   // We don't translate accelerators for ALT + NumPad digit on Windows, they are
   // used for entering special characters.  We do translate alt-home.
   if (e.IsAltDown() && (key != app::VKEY_HOME) &&
-      win_util::IsNumPadDigit(key, e.IsExtendedKey()))
+      app::win::IsNumPadDigit(key, e.IsExtendedKey()))
     return true;
 #endif
   return false;

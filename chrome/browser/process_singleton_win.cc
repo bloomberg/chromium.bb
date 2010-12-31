@@ -6,7 +6,6 @@
 
 #include "app/l10n_util.h"
 #include "app/win/hwnd_util.h"
-#include "app/win_util.h"
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/file_path.h"

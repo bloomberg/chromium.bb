@@ -8,7 +8,7 @@
 #include <wintrust.h>
 
 #include "app/l10n_util.h"
-#include "app/win_util.h"
+#include "app/win/win_util.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/file_path.h"
@@ -219,7 +219,7 @@ static void GenerateHash(const std::string& input, std::string* output) {
 // static
 void ModuleEnumerator::NormalizeModule(Module* module) {
   string16 path = module->location;
-  if (!win_util::ConvertToLongPath(path, &module->location))
+  if (!app::win::ConvertToLongPath(path, &module->location))
     module->location = path;
 
   module->location = l10n_util::ToLower(module->location);

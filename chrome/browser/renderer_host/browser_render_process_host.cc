@@ -95,7 +95,8 @@
 #include "webkit/plugins/plugin_switches.h"
 
 #if defined(OS_WIN)
-#include "app/win_util.h"
+#include <objbase.h>
+#include "app/win/win_util.h"
 #endif
 
 using WebKit::WebCache;
@@ -910,7 +911,7 @@ TransportDIB* BrowserRenderProcessHost::MapTransportDIB(
     TransportDIB::Id dib_id) {
 #if defined(OS_WIN)
   // On Windows we need to duplicate the handle from the remote process
-  HANDLE section = win_util::GetSectionFromProcess(
+  HANDLE section = app::win::GetSectionFromProcess(
       dib_id.handle, GetHandle(), false /* read write */);
   return TransportDIB::Map(section);
 #elif defined(OS_MACOSX)

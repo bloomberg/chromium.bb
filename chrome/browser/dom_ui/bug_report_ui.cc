@@ -41,7 +41,7 @@
 #elif defined(OS_MACOSX)
 #include "base/mac_util.h"
 #elif defined(OS_WIN)
-#include "app/win_util.h"
+#include "app/win/win_util.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -175,7 +175,7 @@ void RefreshLastScreenshot(NSWindow* window) {
 #elif defined(OS_MACOSX)
   mac_util::GrabWindowSnapshot(window, last_screenshot_png, &width, &height);
 #elif defined(OS_WIN)
-  win_util::GrabWindowSnapshot(window, last_screenshot_png);
+  app::win::GrabWindowSnapshot(window, last_screenshot_png);
 #endif
 
   screen_size.set_width(width);

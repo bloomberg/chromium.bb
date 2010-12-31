@@ -48,10 +48,6 @@
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 
-#if defined(OS_WIN)
-#include "app/win_util.h"
-#endif
-
 DownloadManager::DownloadManager(DownloadStatusUpdater* status_updater)
     : shutdown_needed_(false),
       profile_(NULL),

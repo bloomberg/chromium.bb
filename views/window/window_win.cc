@@ -10,7 +10,7 @@
 #include "app/keyboard_code_conversion_win.h"
 #include "app/theme_provider.h"
 #include "app/win/hwnd_util.h"
-#include "app/win_util.h"
+#include "app/win/win_util.h"
 #include "base/i18n/rtl.h"
 #include "base/win/windows_version.h"
 #include "gfx/canvas_skia_paint.h"
@@ -88,7 +88,7 @@ void SetChildBounds(HWND child_window, HWND parent_window,
   }
 
   gfx::Rect actual_bounds = bounds;
-  win_util::EnsureRectIsVisibleInRect(gfx::Rect(parent_rect), &actual_bounds,
+  app::win::EnsureRectIsVisibleInRect(gfx::Rect(parent_rect), &actual_bounds,
                                       padding);
 
   SetWindowPos(child_window, insert_after_window, actual_bounds.x(),
@@ -843,9 +843,9 @@ LRESULT WindowWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
         return 0;
       }
     }
-    if (win_util::EdgeHasTopmostAutoHideTaskbar(ABE_LEFT, monitor))
-      client_rect->left += win_util::kAutoHideTaskbarThicknessPx;
-    if (win_util::EdgeHasTopmostAutoHideTaskbar(ABE_TOP, monitor)) {
+    if (app::win::EdgeHasTopmostAutoHideTaskbar(ABE_LEFT, monitor))
+      client_rect->left += app::win::kAutoHideTaskbarThicknessPx;
+    if (app::win::EdgeHasTopmostAutoHideTaskbar(ABE_TOP, monitor)) {
       if (GetNonClientView()->UseNativeFrame()) {
         // Tricky bit.  Due to a bug in DwmDefWindowProc()'s handling of
         // WM_NCHITTEST, having any nonclient area atop the window causes the
@@ -858,13 +858,13 @@ LRESULT WindowWin::OnNCCalcSize(BOOL mode, LPARAM l_param) {
         // be no better solution.
         --client_rect->bottom;
       } else {
-        client_rect->top += win_util::kAutoHideTaskbarThicknessPx;
+        client_rect->top += app::win::kAutoHideTaskbarThicknessPx;
       }
     }
-    if (win_util::EdgeHasTopmostAutoHideTaskbar(ABE_RIGHT, monitor))
-      client_rect->right -= win_util::kAutoHideTaskbarThicknessPx;
-    if (win_util::EdgeHasTopmostAutoHideTaskbar(ABE_BOTTOM, monitor))
-      client_rect->bottom -= win_util::kAutoHideTaskbarThicknessPx;
+    if (app::win::EdgeHasTopmostAutoHideTaskbar(ABE_RIGHT, monitor))
+      client_rect->right -= app::win::kAutoHideTaskbarThicknessPx;
+    if (app::win::EdgeHasTopmostAutoHideTaskbar(ABE_BOTTOM, monitor))
+      client_rect->bottom -= app::win::kAutoHideTaskbarThicknessPx;
 
     // We cannot return WVR_REDRAW when there is nonclient area, or Windows
     // exhibits bugs where client pixels and child HWNDs are mispositioned by

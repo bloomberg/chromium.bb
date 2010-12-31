@@ -26,10 +26,6 @@
 #include "grit/theme_resources.h"
 #include "views/controls/button/image_button.h"
 
-#ifdef WIN32
-#include "app/win_util.h"
-#endif
-
 // How long the pulse throb takes.
 static const int kPulseDurationMs = 200;
 

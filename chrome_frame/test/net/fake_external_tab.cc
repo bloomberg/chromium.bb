@@ -10,7 +10,7 @@
 
 #include "app/app_paths.h"
 #include "app/resource_bundle.h"
-#include "app/win_util.h"
+#include "app/win/scoped_com_initializer.h"
 #include "base/command_line.h"
 #include "base/debug_util.h"
 #include "base/file_util.h"
@@ -269,7 +269,7 @@ void CFUrlRequestUnittestRunner::StartChromeFrameInHostBrowser() {
   if (!ShouldLaunchBrowser())
     return;
 
-  win_util::ScopedCOMInitializer com;
+  app::win::ScopedCOMInitializer com;
   chrome_frame_test::CloseAllIEWindows();
 
   test_http_server_.reset(new test_server::SimpleWebServer(kTestServerPort));
@@ -291,7 +291,7 @@ void CFUrlRequestUnittestRunner::StartChromeFrameInHostBrowser() {
 
 void CFUrlRequestUnittestRunner::ShutDownHostBrowser() {
   if (ShouldLaunchBrowser()) {
-    win_util::ScopedCOMInitializer com;
+    app::win::ScopedCOMInitializer com;
     chrome_frame_test::CloseAllIEWindows();
   }
 }

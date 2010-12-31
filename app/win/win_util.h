@@ -2,103 +2,45 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_WIN_UTIL_H_
-#define APP_WIN_UTIL_H_
+#ifndef APP_WIN_WIN_UTIL_H_
+#define APP_WIN_WIN_UTIL_H_
 #pragma once
 
-#include <objbase.h>
+#include <windows.h>
 
-#include <string>
 #include <vector>
 
-#include "base/fix_wp64.h"
-#include "base/scoped_handle.h"
-#include "gfx/font.h"
-#include "gfx/rect.h"
+#include "base/string16.h"
 
 class FilePath;
 
-namespace win_util {
+namespace gfx {
+class Font;
+class Rect;
+}
 
-// Import ScopedHandle and friends into this namespace for backwards
-// compatibility.  TODO(darin): clean this up!
-using ::ScopedHandle;
-using ::ScopedBitmap;
-
-// Simple scoped memory releaser class for COM allocated memory.
-// Example:
-//   CoMemReleaser<ITEMIDLIST> file_item;
-//   SHGetSomeInfo(&file_item, ...);
-//   ...
-//   return;  <-- memory released
-template<typename T>
-class CoMemReleaser {
- public:
-  explicit CoMemReleaser() : mem_ptr_(NULL) {}
-
-  ~CoMemReleaser() {
-    if (mem_ptr_)
-      CoTaskMemFree(mem_ptr_);
-  }
-
-  T** operator&() {  // NOLINT
-    return &mem_ptr_;
-  }
-
-  operator T*() {
-    return mem_ptr_;
-  }
-
- private:
-  T* mem_ptr_;
-
-  DISALLOW_COPY_AND_ASSIGN(CoMemReleaser);
-};
-
-// Initializes COM in the constructor (STA), and uninitializes COM in the
-// destructor.
-class ScopedCOMInitializer {
- public:
-  ScopedCOMInitializer() : hr_(CoInitialize(NULL)) {
-  }
-
-  ScopedCOMInitializer::~ScopedCOMInitializer() {
-    if (SUCCEEDED(hr_))
-      CoUninitialize();
-  }
-
-  // Returns the error code from CoInitialize(NULL)
-  // (called in constructor)
-  inline HRESULT error_code() const {
-    return hr_;
-  }
-
- protected:
-  HRESULT hr_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedCOMInitializer);
-};
+namespace app {
+namespace win {
 
 // Creates a string interpretation of the time of day represented by the given
 // SYSTEMTIME that's appropriate for the user's default locale.
 // Format can be an empty string (for the default format), or a "format picture"
 // as specified in the Windows documentation for GetTimeFormat().
-std::wstring FormatSystemTime(const SYSTEMTIME& time,
-                              const std::wstring& format);
+string16 FormatSystemTime(const SYSTEMTIME& time,
+                          const string16& format);
 
 // Creates a string interpretation of the date represented by the given
 // SYSTEMTIME that's appropriate for the user's default locale.
 // Format can be an empty string (for the default format), or a "format picture"
 // as specified in the Windows documentation for GetDateFormat().
-std::wstring FormatSystemDate(const SYSTEMTIME& date,
-                              const std::wstring& format);
+string16 FormatSystemDate(const SYSTEMTIME& date,
+                          const string16& format);
 
 // Returns the long path name given a short path name. A short path name
 // is a path that follows the 8.3 convention and has ~x in it. If the
 // path is already a long path name, the function returns the current
 // path without modification.
-bool ConvertToLongPath(const std::wstring& short_path, std::wstring* long_path);
+bool ConvertToLongPath(const string16& short_path, string16* long_path);
 
 // Returns true if the current point is close enough to the origin point in
 // space and time that it would be considered a double click.
@@ -149,15 +91,15 @@ bool IsWindowActive(HWND hwnd);
 // Returns whether the specified file name is a reserved name on windows.
 // This includes names like "com2.zip" (which correspond to devices) and
 // desktop.ini and thumbs.db which have special meaning to the windows shell.
-bool IsReservedName(const std::wstring& filename);
+bool IsReservedName(const string16& filename);
 
 // A wrapper around Windows' MessageBox function. Using a Chrome specific
 // MessageBox function allows us to control certain RTL locale flags so that
 // callers don't have to worry about adding these flags when running in a
 // right-to-left locale.
 int MessageBox(HWND hwnd,
-               const std::wstring& text,
-               const std::wstring& caption,
+               const string16& text,
+               const string16& caption,
                UINT flags);
 
 // Returns the system set window title font.
@@ -166,6 +108,7 @@ gfx::Font GetWindowTitleFont();
 // The thickness of an auto-hide taskbar in pixels.
 extern const int kAutoHideTaskbarThicknessPx;
 
-}  // namespace win_util
+}  // namespace win
+}  // namespace app
 
-#endif  // APP_WIN_UTIL_H_
+#endif  // APP_WIN_WIN_UTIL_H_

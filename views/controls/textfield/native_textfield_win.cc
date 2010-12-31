@@ -11,7 +11,7 @@
 #include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
-#include "app/win_util.h"
+#include "app/win/win_util.h"
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -644,7 +644,7 @@ void NativeTextfieldWin::OnLButtonDown(UINT keys, const CPoint& point) {
   // double_click_time_ from the current message's time even if the timer has
   // wrapped in between.
   const bool is_triple_click = tracking_double_click_ &&
-      win_util::IsDoubleClick(double_click_point_, point,
+      app::win::IsDoubleClick(double_click_point_, point,
                               GetCurrentMessage()->time - double_click_time_);
   tracking_double_click_ = false;
 

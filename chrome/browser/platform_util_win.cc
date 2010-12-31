@@ -9,8 +9,9 @@
 #include <shellapi.h>
 #include <shlobj.h>
 
+#include "app/win/scoped_co_mem.h"
 #include "app/win/shell.h"
-#include "app/win_util.h"
+#include "app/win/win_util.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -68,14 +69,14 @@ void ShowItemInFolder(const FilePath& full_path) {
   if (FAILED(hr))
     return;
 
-  win_util::CoMemReleaser<ITEMIDLIST> dir_item;
+  app::win::ScopedCoMem<ITEMIDLIST> dir_item;
   hr = desktop->ParseDisplayName(NULL, NULL,
                                  const_cast<wchar_t *>(dir.value().c_str()),
                                  NULL, &dir_item, NULL);
   if (FAILED(hr))
     return;
 
-  win_util::CoMemReleaser<ITEMIDLIST> file_item;
+  app::win::ScopedCoMem<ITEMIDLIST> file_item;
   hr = desktop->ParseDisplayName(NULL, NULL,
       const_cast<wchar_t *>(full_path.value().c_str()),
       NULL, &file_item, NULL);
@@ -161,13 +162,13 @@ bool IsVisible(gfx::NativeView view) {
 void SimpleErrorBox(gfx::NativeWindow parent,
                     const string16& title,
                     const string16& message) {
-  win_util::MessageBox(parent, message, title, MB_OK | MB_SETFOREGROUND);
+  app::win::MessageBox(parent, message, title, MB_OK | MB_SETFOREGROUND);
 }
 
 bool SimpleYesNoBox(gfx::NativeWindow parent,
                     const string16& title,
                     const string16& message) {
-  return win_util::MessageBox(parent, message.c_str(), title.c_str(),
+  return app::win::MessageBox(parent, message.c_str(), title.c_str(),
       MB_YESNO | MB_ICONWARNING | MB_SETFOREGROUND) == IDYES;
 }
 

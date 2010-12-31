@@ -29,7 +29,7 @@
 
 // TODO(port): Port these files.
 #if defined(OS_WIN)
-#include "app/win_util.h"
+#include "app/win/win_util.h"
 #include "chrome/browser/views/importer_lock_view.h"
 #include "views/window/window.h"
 #elif defined(OS_MACOSX)
@@ -211,7 +211,7 @@ void ImporterHost::StartImportSettings(
   // credentials.
   if (profile_info.browser_type == importer::GOOGLE_TOOLBAR5) {
     if (!toolbar_importer_utils::IsGoogleGAIACookieInstalled()) {
-      win_util::MessageBox(
+      app::win::MessageBox(
           NULL,
           l10n_util::GetString(IDS_IMPORTER_GOOGLE_LOGIN_TEXT).c_str(),
           L"",

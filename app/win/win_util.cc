@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/win_util.h"
+#include "app/win/win_util.h"
 
 #include <commdlg.h>
 #include <shellapi.h>
@@ -23,14 +23,15 @@
 #include "base/win/scoped_hdc.h"
 #include "base/win/win_util.h"
 #include "gfx/codec/png_codec.h"
+#include "gfx/font.h"
 #include "gfx/gdi_util.h"
 
-namespace win_util {
+namespace app {
+namespace win {
 
 const int kAutoHideTaskbarThicknessPx = 2;
 
-std::wstring FormatSystemTime(const SYSTEMTIME& time,
-                              const std::wstring& format) {
+string16 FormatSystemTime(const SYSTEMTIME& time, const string16& format) {
   // If the format string is empty, just use the default format.
   LPCTSTR format_ptr = NULL;
   if (!format.empty())
@@ -39,15 +40,14 @@ std::wstring FormatSystemTime(const SYSTEMTIME& time,
   int buffer_size = GetTimeFormat(LOCALE_USER_DEFAULT, NULL, &time, format_ptr,
                                   NULL, 0);
 
-  std::wstring output;
+  string16 output;
   GetTimeFormat(LOCALE_USER_DEFAULT, NULL, &time, format_ptr,
                 WriteInto(&output, buffer_size), buffer_size);
 
   return output;
 }
 
-std::wstring FormatSystemDate(const SYSTEMTIME& date,
-                              const std::wstring& format) {
+string16 FormatSystemDate(const SYSTEMTIME& date, const string16& format) {
   // If the format string is empty, just use the default format.
   LPCTSTR format_ptr = NULL;
   if (!format.empty())
@@ -56,11 +56,24 @@ std::wstring FormatSystemDate(const SYSTEMTIME& date,
   int buffer_size = GetDateFormat(LOCALE_USER_DEFAULT, NULL, &date, format_ptr,
                                   NULL, 0);
 
-  std::wstring output;
+  string16 output;
   GetDateFormat(LOCALE_USER_DEFAULT, NULL, &date, format_ptr,
                 WriteInto(&output, buffer_size), buffer_size);
 
   return output;
+}
+
+bool ConvertToLongPath(const string16& short_path,
+                       string16* long_path) {
+  wchar_t long_path_buf[MAX_PATH];
+  DWORD return_value = GetLongPathName(short_path.c_str(), long_path_buf,
+                                       MAX_PATH);
+  if (return_value != 0 && return_value < MAX_PATH) {
+    *long_path = long_path_buf;
+    return true;
+  }
+
+  return false;
 }
 
 bool IsDoubleClick(const POINT& origin,
@@ -241,7 +254,7 @@ bool IsWindowActive(HWND hwnd) {
          ((info.dwWindowStatus & WS_ACTIVECAPTION) != 0);
 }
 
-bool IsReservedName(const std::wstring& filename) {
+bool IsReservedName(const string16& filename) {
   // This list is taken from the MSDN article "Naming a file"
   // http://msdn2.microsoft.com/en-us/library/aa365247(VS.85).aspx
   // I also added clock$ because GetSaveFileName seems to consider it as a
@@ -251,14 +264,14 @@ bool IsReservedName(const std::wstring& filename) {
     L"com6", L"com7", L"com8", L"com9", L"lpt1", L"lpt2", L"lpt3", L"lpt4",
     L"lpt5", L"lpt6", L"lpt7", L"lpt8", L"lpt9", L"clock$"
   };
-  std::wstring filename_lower = StringToLowerASCII(filename);
+  string16 filename_lower = StringToLowerASCII(filename);
 
   for (int i = 0; i < arraysize(known_devices); ++i) {
     // Exact match.
     if (filename_lower == known_devices[i])
       return true;
     // Starts with "DEVICE.".
-    if (filename_lower.find(std::wstring(known_devices[i]) + L".") == 0)
+    if (filename_lower.find(string16(known_devices[i]) + L".") == 0)
       return true;
   }
 
@@ -280,8 +293,8 @@ bool IsReservedName(const std::wstring& filename) {
 // RTL locale, we need to make sure that LTR strings are rendered correctly by
 // adding the appropriate Unicode directionality marks.
 int MessageBox(HWND hwnd,
-               const std::wstring& text,
-               const std::wstring& caption,
+               const string16& text,
+               const string16& caption,
                UINT flags) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoMessageBox))
     return IDOK;
@@ -290,11 +303,11 @@ int MessageBox(HWND hwnd,
   if (base::i18n::IsRTL())
     actual_flags |= MB_RIGHT | MB_RTLREADING;
 
-  std::wstring localized_text = text;
+  string16 localized_text = text;
   base::i18n::AdjustStringForLocaleDirection(&localized_text);
   const wchar_t* text_ptr = localized_text.c_str();
 
-  std::wstring localized_caption = caption;
+  string16 localized_caption = caption;
   base::i18n::AdjustStringForLocaleDirection(&localized_caption);
   const wchar_t* caption_ptr = localized_caption.c_str();
 
@@ -309,4 +322,5 @@ gfx::Font GetWindowTitleFont() {
   return gfx::Font(caption_font);
 }
 
-}  // namespace win_util
+}  // namespace win
+}  // namespace app

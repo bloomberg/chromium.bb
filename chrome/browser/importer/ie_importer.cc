@@ -16,7 +16,8 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "app/win_util.h"
+#include "app/win/scoped_co_mem.h"
+#include "app/win/scoped_com_initializer.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/scoped_comptr_win.h"
@@ -78,7 +79,7 @@ void IEImporter::StartImport(const ProfileInfo& profile_info,
   bridge_->NotifyStarted();
 
   // Some IE settings (such as Protected Storage) are obtained via COM APIs.
-  win_util::ScopedCOMInitializer com_initializer;
+  app::win::ScopedCOMInitializer com_initializer;
 
   if ((items & importer::HOME_PAGE) && !cancelled())
     ImportHomepage();  // Doesn't have a UI item.
@@ -552,7 +553,7 @@ void IEImporter::ParseFavoritesFolder(const FavoritesInfo& info,
 }
 
 std::wstring IEImporter::ResolveInternetShortcut(const std::wstring& file) {
-  win_util::CoMemReleaser<wchar_t> url;
+  app::win::ScopedCoMem<wchar_t> url;
   ScopedComPtr<IUniformResourceLocator> url_locator;
   HRESULT result = url_locator.CreateInstance(CLSID_InternetShortcut, NULL,
                                               CLSCTX_INPROC_SERVER);

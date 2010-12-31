@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "app/win_util.h"
+#include "app/win/win_util.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/debug/trace_event.h"
@@ -200,9 +200,15 @@ bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
   FilePath app_dir;
   if (!PathService::Get(chrome::DIR_APP, &app_dir))
     return false;
-  std::wstring debug_message;
-  if (!win_util::ConvertToLongPath(app_dir.value(), &debug_message))
+
+  wchar_t long_path_buf[MAX_PATH];
+  DWORD long_path_return_value = GetLongPathName(app_dir.value().c_str(),
+                                                 long_path_buf,
+                                                 MAX_PATH);
+  if (long_path_return_value == 0 || long_path_return_value >= MAX_PATH)
     return false;
+
+  string16 debug_message(long_path_buf);
   file_util::AppendToPath(&debug_message, L"debug_message.exe");
   result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_PROCESS,
                            sandbox::TargetPolicy::PROCESS_MIN_EXEC,

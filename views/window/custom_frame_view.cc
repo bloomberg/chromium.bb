@@ -6,9 +6,6 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#if defined(OS_WIN)
-#include "app/win_util.h"
-#endif
 #include "gfx/canvas.h"
 #include "gfx/font.h"
 #include "gfx/path.h"
@@ -16,10 +13,15 @@
 #include "grit/app_strings.h"
 #include "views/window/client_view.h"
 #include "views/window/window_shape.h"
+#include "views/window/window_delegate.h"
+
 #if defined(OS_LINUX)
 #include "views/window/hit_test.h"
 #endif
-#include "views/window/window_delegate.h"
+
+#if defined(OS_WIN)
+#include "app/win/win_util.h"
+#endif
 
 namespace views {
 
@@ -566,7 +568,7 @@ void CustomFrameView::InitClass() {
   static bool initialized = false;
   if (!initialized) {
 #if defined(OS_WIN)
-    title_font_ = new gfx::Font(win_util::GetWindowTitleFont());
+    title_font_ = new gfx::Font(app::win::GetWindowTitleFont());
 #elif defined(OS_LINUX)
     // TODO(ben): need to resolve what font this is.
     title_font_ = new gfx::Font();

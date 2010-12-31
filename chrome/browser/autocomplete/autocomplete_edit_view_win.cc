@@ -18,10 +18,10 @@
 #include "app/l10n_util_win.h"
 #include "app/os_exchange_data.h"
 #include "app/os_exchange_data_provider_win.h"
-#include "app/win_util.h"
 #include "app/win/drag_source.h"
 #include "app/win/drop_target.h"
 #include "app/win/iat_patch_function.h"
+#include "app/win/win_util.h"
 #include "base/auto_reset.h"
 #include "base/basictypes.h"
 #include "base/i18n/rtl.h"
@@ -924,7 +924,7 @@ bool AutocompleteEditViewWin::SkipDefaultKeyEventProcessing(
   // We don't process ALT + numpad digit as accelerators, they are used for
   // entering special characters.  We do translate alt-home.
   if (e.IsAltDown() && (key != app::VKEY_HOME) &&
-      win_util::IsNumPadDigit(key, e.IsExtendedKey()))
+      app::win::IsNumPadDigit(key, e.IsExtendedKey()))
     return true;
 
   // Skip accelerators for key combinations omnibox wants to crack. This list
@@ -1477,7 +1477,7 @@ void AutocompleteEditViewWin::OnLButtonDown(UINT keys, const CPoint& point) {
   // double_click_time_ from the current message's time even if the timer has
   // wrapped in between.
   const bool is_triple_click = tracking_double_click_ &&
-      win_util::IsDoubleClick(double_click_point_, point,
+      app::win::IsDoubleClick(double_click_point_, point,
                               GetCurrentMessage()->time - double_click_time_);
   tracking_double_click_ = false;
 
@@ -1577,7 +1577,7 @@ void AutocompleteEditViewWin::OnMouseMove(UINT keys, const CPoint& point) {
     return;
   }
 
-  if (tracking_click_[kLeft] && !win_util::IsDrag(click_point_[kLeft], point))
+  if (tracking_click_[kLeft] && !app::win::IsDrag(click_point_[kLeft], point))
     return;
 
   tracking_click_[kLeft] = false;
@@ -2395,7 +2395,7 @@ ITextDocument* AutocompleteEditViewWin::GetTextObjectModel() const {
 }
 
 void AutocompleteEditViewWin::StartDragIfNecessary(const CPoint& point) {
-  if (initiated_drag_ || !win_util::IsDrag(click_point_[kLeft], point))
+  if (initiated_drag_ || !app::win::IsDrag(click_point_[kLeft], point))
     return;
 
   OSExchangeData data;
@@ -2551,7 +2551,7 @@ void AutocompleteEditViewWin::SelectAllIfNecessary(MouseButton button,
                                                    const CPoint& point) {
   // When the user has clicked and released to give us focus, select all.
   if (tracking_click_[button] &&
-      !win_util::IsDrag(click_point_[button], point)) {
+      !app::win::IsDrag(click_point_[button], point)) {
     // Select all in the reverse direction so as not to scroll the caret
     // into view and shift the contents jarringly.
     SelectAll(true);

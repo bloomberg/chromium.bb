@@ -4,7 +4,7 @@
 #include <atlbase.h>
 #include <atlcom.h>
 
-#include "app/win_util.h"
+#include "app/win/scoped_com_initializer.h"
 #include "chrome_frame/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -73,7 +73,7 @@ TEST(UrlmonUrlRequestTest, Simple1) {
       chrome_frame_test::GetTestDataFolder());
   mock_server.ExpectAndServeAnyRequests(CFInvocation(CFInvocation::NONE));
 
-  win_util::ScopedCOMInitializer init_com;
+  app::win::ScopedCOMInitializer init_com;
   CComObjectStackEx<UrlmonUrlRequest> request;
 
   request.AddRef();
@@ -121,7 +121,7 @@ TEST(UrlmonUrlRequestTest, Head) {
   test_server::SimpleResponse head_response("/head", "");
   server.AddResponse(&head_response);
 
-  win_util::ScopedCOMInitializer init_com;
+  app::win::ScopedCOMInitializer init_com;
   CComObjectStackEx<UrlmonUrlRequest> request;
 
   request.AddRef();
@@ -157,7 +157,7 @@ TEST(UrlmonUrlRequestTest, Head) {
 TEST(UrlmonUrlRequestTest, UnreachableUrl) {
   MockUrlDelegate mock;
   chrome_frame_test::TimedMsgLoop loop;
-  win_util::ScopedCOMInitializer init_com;
+  app::win::ScopedCOMInitializer init_com;
   CComObjectStackEx<UrlmonUrlRequest> request;
 
   testing::StrictMock<MockWebServer> mock_server(1337, L"127.0.0.1",
@@ -202,7 +202,7 @@ TEST(UrlmonUrlRequestTest, ZeroLengthResponse) {
       chrome_frame_test::GetTestDataFolder());
   mock_server.ExpectAndServeAnyRequests(CFInvocation(CFInvocation::NONE));
 
-  win_util::ScopedCOMInitializer init_com;
+  app::win::ScopedCOMInitializer init_com;
   CComObjectStackEx<UrlmonUrlRequest> request;
 
   request.AddRef();
