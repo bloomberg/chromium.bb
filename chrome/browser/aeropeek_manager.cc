@@ -16,6 +16,7 @@
 #include "base/scoped_native_library.h"
 #include "base/waitable_event.h"
 #include "base/win/scoped_gdi_object.h"
+#include "base/win/scoped_hdc.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/app_icon_win.h"
 #include "chrome/browser/browser_list.h"
@@ -340,7 +341,7 @@ class SendThumbnailTask : public Task {
     // Create a DIB, copy the resized image, and send the DIB to Windows.
     // We can delete this DIB after sending it to Windows since Windows creates
     // a copy of the DIB and use it.
-    ScopedHDC hdc(CreateCompatibleDC(NULL));
+    base::win::ScopedHDC hdc(CreateCompatibleDC(NULL));
     if (!hdc.Get()) {
       LOG(ERROR) << "cannot create a memory DC: " << GetLastError();
       return;
@@ -454,7 +455,7 @@ class SendLivePreviewTask : public Task {
     // tab image into the DIB, and send it to Windows.
     // We don't need to paste this tab image onto the frame image since Windows
     // automatically pastes it for us.
-    ScopedHDC hdc(CreateCompatibleDC(NULL));
+    base::win::ScopedHDC hdc(CreateCompatibleDC(NULL));
     if (!hdc.Get()) {
       LOG(ERROR) << "cannot create a memory DC: " << GetLastError();
       return;

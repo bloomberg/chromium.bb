@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "base/scoped_handle_win.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
+#include "base/win/scoped_hdc.h"
 #include "printing/printing_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -120,7 +121,8 @@ TEST_F(EmfPrintingTest, Enumerate) {
 
 // Disabled if no "UnitTest printer" exists.
 TEST_F(EmfPrintingTest, PageBreak) {
-  ScopedHDC dc(CreateDC(L"WINSPOOL", L"UnitTest Printer", NULL, NULL));
+  base::win::ScopedHDC dc(
+      CreateDC(L"WINSPOOL", L"UnitTest Printer", NULL, NULL));
   if (!dc.Get())
     return;
   printing::Emf emf;

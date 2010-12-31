@@ -21,6 +21,7 @@
 #include "base/string_util.h"
 #include "base/win_util.h"
 #include "base/win/scoped_gdi_object.h"
+#include "base/win/scoped_hdc.h"
 #include "gfx/codec/png_codec.h"
 #include "gfx/gdi_util.h"
 
@@ -184,7 +185,7 @@ void GrabWindowSnapshot(HWND window_handle,
                         std::vector<unsigned char>* png_representation) {
   // Create a memory DC that's compatible with the window.
   HDC window_hdc = GetWindowDC(window_handle);
-  ScopedHDC mem_hdc(CreateCompatibleDC(window_hdc));
+  base::win::ScopedHDC mem_hdc(CreateCompatibleDC(window_hdc));
 
   // Create a DIB that's the same size as the window.
   RECT content_rect = {0, 0, 0, 0};

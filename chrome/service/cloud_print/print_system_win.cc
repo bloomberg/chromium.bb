@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_comptr.h"
+#include "base/win/scoped_hdc.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/service_process.h"
 #include "chrome/service/service_utility_process_host.h"
@@ -508,7 +509,7 @@ class PrintSystemWin : public PrintSystem {
       PlatformJobId job_id_;
       PrintSystem::JobSpooler::Delegate* delegate_;
       int saved_dc_;
-      ScopedHDC printer_dc_;
+      base::win::ScopedHDC printer_dc_;
       FilePath print_data_file_path_;
       DISALLOW_COPY_AND_ASSIGN(JobSpoolerWin::Core);
     };

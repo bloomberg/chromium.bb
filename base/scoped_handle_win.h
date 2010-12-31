@@ -12,5 +12,4 @@
 
 using base::win::ScopedBitmap;
 using base::win::ScopedHandle;
-using base::win::ScopedHDC;
 using base::win::ScopedHGlobal;
