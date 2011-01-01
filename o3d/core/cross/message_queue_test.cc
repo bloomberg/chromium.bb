@@ -42,10 +42,10 @@
 #include "core/cross/types.h"
 #include "core/cross/renderer.h"
 #include "tests/common/win/testing_common.h"
-#include "base/condition_variable.h"
-#include "base/lock.h"
 #include "base/platform_thread.h"
 #include "base/time.h"
+#include "base/synchronization/condition_variable.h"
+#include "base/synchronization/lock.h"
 
 using ::base::Time;
 using ::base::TimeDelta;
@@ -81,8 +81,8 @@ class WallClockTimeSource : public TimeSource {
 // of times, this indicates one failure mode of the test.
 class TestWatchdog {
  private:
-  Lock lock_;
-  ConditionVariable condition_;
+  base::Lock lock_;
+  base::ConditionVariable condition_;
   int expected_num_signals_;
   TimeDelta time_to_run_;
   TimeSource* time_source_;
@@ -98,7 +98,7 @@ class TestWatchdog {
         time_source_(time_source) {}
 
   void Signal() {
-    AutoLock locker(lock_);
+    base::AutoLock locker(lock_);
     ASSERT_GE(expected_num_signals_, 0);
     --expected_num_signals_;
     condition_.Broadcast();
@@ -107,7 +107,7 @@ class TestWatchdog {
   // Pause the current thread briefly waiting for a signal so we don't
   // consume all CPU
   void WaitBrieflyForSignal() {
-    AutoLock locker(lock_);
+    base::AutoLock locker(lock_);
     condition_.TimedWait(TimeDelta::FromMilliseconds(5));
   }
 

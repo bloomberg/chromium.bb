@@ -1,22 +1,22 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/condition_variable.h"
+#include "base/synchronization/condition_variable.h"
 
 #include <stack>
 
-#include "base/lock.h"
 #include "base/logging.h"
+#include "base/synchronization/lock.h"
 #include "base/time.h"
 
-using base::TimeDelta;
+namespace base {
 
 ConditionVariable::ConditionVariable(Lock* user_lock)
-  : user_lock_(*user_lock),
-    run_state_(RUNNING),
-    allocation_counter_(0),
-    recycling_list_size_(0) {
+    : user_lock_(*user_lock),
+      run_state_(RUNNING),
+      allocation_counter_(0),
+      recycling_list_size_(0) {
   DCHECK(user_lock);
 }
 
@@ -443,3 +443,5 @@ put so many assertions (DCHECKs) into the container class that it is trivial to
 code review and validate its correctness.
 
 */
+
+}  // namespace base

@@ -159,14 +159,14 @@ class ThreadTester : public EventListener<TestEvent>,
   };
 
   struct ThreadArgs {
-    ConditionVariable* thread_running_cond;
-    Lock* thread_running_mutex;
+    base::ConditionVariable* thread_running_cond;
+    base::Lock* thread_running_mutex;
     bool thread_running;
   };
 
   void Go() {
-    Lock thread_running_mutex;
-    ConditionVariable thread_running_cond(&thread_running_mutex);
+    base::Lock thread_running_mutex;
+    base::ConditionVariable thread_running_cond(&thread_running_mutex);
     ThreadArgs args;
     ThreadInfo info;
     args.thread_running_cond = &(thread_running_cond);
@@ -225,10 +225,10 @@ class ThreadTester : public EventListener<TestEvent>,
   }
 
   Pair* pair_;
-  ConditionVariable remove_event_;
-  Lock remove_event_mutex_;
+  base::ConditionVariable remove_event_;
+  base::Lock remove_event_mutex_;
   bool remove_event_bool_;
-  Lock completed_mutex_;
+  base::Lock completed_mutex_;
   bool completed_;
   std::vector<ThreadInfo> threads_;
   ThreadArgs args_;

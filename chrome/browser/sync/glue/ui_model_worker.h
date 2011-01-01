@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/callback.h"
-#include "base/condition_variable.h"
-#include "base/lock.h"
+#include "base/synchronization/lock.h"
+#include "base/synchronization/condition_variable.h"
 #include "base/task.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
@@ -119,14 +119,14 @@ class UIModelWorker : public browser_sync::ModelSafeWorker {
   // barrier permits instructions to be reordered by compiler optimizations.
   // Possible or not, that route makes for very fragile code due to existence
   // of theoretical races.
-  Lock lock_;
+  base::Lock lock_;
 
   // Used as a barrier at shutdown to ensure the SyncerThread terminates before
   // we allow the UI thread to return from Stop(). This gets signalled whenever
   // one of two events occur: a new pending_work_ task was scheduled, or the
   // SyncerThread has terminated. We only care about (1) when we are in Stop(),
   // because we have to manually Run() the task.
-  ConditionVariable syncapi_event_;
+  base::ConditionVariable syncapi_event_;
 
   DISALLOW_COPY_AND_ASSIGN(UIModelWorker);
 };

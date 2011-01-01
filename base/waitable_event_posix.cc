@@ -1,11 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/waitable_event.h"
 
-#include "base/condition_variable.h"
-#include "base/lock.h"
+#include "base/synchronization/condition_variable.h"
+#include "base/synchronization/lock.h"
 #include "base/message_loop.h"
 
 // -----------------------------------------------------------------------------
@@ -42,12 +42,12 @@ WaitableEvent::~WaitableEvent() {
 }
 
 void WaitableEvent::Reset() {
-  AutoLock locked(kernel_->lock_);
+  base::AutoLock locked(kernel_->lock_);
   kernel_->signaled_ = false;
 }
 
 void WaitableEvent::Signal() {
-  AutoLock locked(kernel_->lock_);
+  base::AutoLock locked(kernel_->lock_);
 
   if (kernel_->signaled_)
     return;
@@ -64,7 +64,7 @@ void WaitableEvent::Signal() {
 }
 
 bool WaitableEvent::IsSignaled() {
-  AutoLock locked(kernel_->lock_);
+  base::AutoLock locked(kernel_->lock_);
 
   const bool result = kernel_->signaled_;
   if (result && !kernel_->manual_reset_)
@@ -89,7 +89,7 @@ class SyncWaiter : public WaitableEvent::Waiter {
   }
 
   bool Fire(WaitableEvent* signaling_event) {
-    AutoLock locked(lock_);
+    base::AutoLock locked(lock_);
 
     if (fired_)
       return false;
@@ -134,19 +134,19 @@ class SyncWaiter : public WaitableEvent::Waiter {
     fired_ = true;
   }
 
-  Lock* lock() {
+  base::Lock* lock() {
     return &lock_;
   }
 
-  ConditionVariable* cv() {
+  base::ConditionVariable* cv() {
     return &cv_;
   }
 
  private:
   bool fired_;
   WaitableEvent* signaling_event_;  // The WaitableEvent which woke us
-  Lock lock_;
-  ConditionVariable cv_;
+  base::Lock lock_;
+  base::ConditionVariable cv_;
 };
 
 bool WaitableEvent::TimedWait(const TimeDelta& max_time) {

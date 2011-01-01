@@ -6,9 +6,9 @@
 
 #include <Security/SecBase.h>
 
-#include "base/lock.h"
 #include "base/logging.h"
 #include "base/singleton.h"
+#include "base/synchronization/lock.h"
 #include "base/sys_string_conversions.h"
 
 // When writing crypto code for Mac OS X, you may find the following
@@ -92,7 +92,7 @@ class SecurityServicesSingleton {
 
   ~SecurityServicesSingleton() {}
 
-  Lock& lock() { return lock_; }
+  base::Lock& lock() { return lock_; }
 
  private:
   friend class Singleton<SecurityServicesSingleton>;
@@ -100,7 +100,7 @@ class SecurityServicesSingleton {
 
   SecurityServicesSingleton() {}
 
-  Lock lock_;
+  base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(SecurityServicesSingleton);
 };
@@ -154,7 +154,7 @@ void LogCSSMError(const char *fn_name, CSSM_RETURN err) {
   }
 }
 
-Lock& GetMacSecurityServicesLock() {
+base::Lock& GetMacSecurityServicesLock() {
   return SecurityServicesSingleton::GetInstance()->lock();
 }
 

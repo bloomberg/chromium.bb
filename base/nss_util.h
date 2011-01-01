@@ -10,7 +10,6 @@
 
 #if defined(USE_NSS)
 class FilePath;
-class Lock;
 #endif  // defined(USE_NSS)
 
 // This file specifically doesn't depend on any NSS or NSPR headers because it
@@ -18,6 +17,7 @@ class Lock;
 // initialization functions.
 namespace base {
 
+class Lock;
 class Time;
 
 // Initialize NRPR if it isn't already initialized.  This function is

@@ -17,11 +17,11 @@
 #endif
 
 #include "base/basictypes.h"
-#include "base/condition_variable.h"
-#include "base/lock.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/synchronization/condition_variable.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "net/base/listen_socket.h"
 #include "net/base/net_util.h"
@@ -116,8 +116,8 @@ class ListenSocketTester :
   SOCKET test_socket_;
   static const int kTestPort;
 
-  Lock lock_;  // protects |queue_| and wraps |cv_|
-  ConditionVariable cv_;
+  base::Lock lock_;  // protects |queue_| and wraps |cv_|
+  base::ConditionVariable cv_;
   std::deque<ListenSocketTestAction> queue_;
 };
 

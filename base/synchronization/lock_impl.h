@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_LOCK_IMPL_H_
-#define BASE_LOCK_IMPL_H_
+#ifndef BASE_SYNCHRONIZATION_LOCK_IMPL_H_
+#define BASE_SYNCHRONIZATION_LOCK_IMPL_H_
 #pragma once
 
 #include "build/build_config.h"
@@ -15,6 +15,9 @@
 #endif
 
 #include "base/basictypes.h"
+
+namespace base {
+namespace internal {
 
 // This class implements the underlying platform-specific spin-lock mechanism
 // used for the Lock class.  Most users should not use LockImpl directly, but
@@ -54,5 +57,7 @@ class LockImpl {
   DISALLOW_COPY_AND_ASSIGN(LockImpl);
 };
 
+}  // namespace internal
+}  // namespace base
 
-#endif  // BASE_LOCK_IMPL_H_
+#endif  // BASE_SYNCHRONIZATION_LOCK_IMPL_H_

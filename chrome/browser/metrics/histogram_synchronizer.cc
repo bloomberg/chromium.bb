@@ -57,7 +57,7 @@ void HistogramSynchronizer::FetchRendererHistogramsSynchronously(
   TimeTicks end_time = start + wait_time;
   int unresponsive_renderer_count;
   {
-    AutoLock auto_lock(lock_);
+    base::AutoLock auto_lock(lock_);
     while (synchronous_renderers_pending_ > 0 && TimeTicks::Now() < end_time) {
       wait_time = end_time - TimeTicks::Now();
       received_all_renderer_histograms_.TimedWait(wait_time);
@@ -154,7 +154,7 @@ void HistogramSynchronizer::DecrementPendingRenderers(int sequence_number) {
   bool asynchronous_completed = false;
 
   {
-    AutoLock auto_lock(lock_);
+    base::AutoLock auto_lock(lock_);
     if (sequence_number == async_sequence_number_) {
       if (--async_renderers_pending_ <= 0)
         asynchronous_completed = true;
@@ -179,7 +179,7 @@ void HistogramSynchronizer::SetCallbackTaskAndThread(
   int unresponsive_renderers;
   const TimeTicks now = TimeTicks::Now();
   {
-    AutoLock auto_lock(lock_);
+    base::AutoLock auto_lock(lock_);
     old_task = callback_task_;
     callback_task_ = callback_task;
     old_thread = callback_thread_;
@@ -202,7 +202,7 @@ void HistogramSynchronizer::ForceHistogramSynchronizationDoneCallback(
   TimeTicks started;
   int unresponsive_renderers;
   {
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     if (sequence_number != async_sequence_number_)
       return;
     task = callback_task_;
@@ -233,7 +233,7 @@ void HistogramSynchronizer::InternalPostTask(MessageLoop* thread, Task* task,
 int HistogramSynchronizer::GetNextAvailableSequenceNumber(
     RendererHistogramRequester requester,
     int renderer_count) {
-  AutoLock auto_lock(lock_);
+  base::AutoLock auto_lock(lock_);
   ++last_used_sequence_number_;
   // Watch out for wrapping to a negative number.
   if (last_used_sequence_number_ < 0) {

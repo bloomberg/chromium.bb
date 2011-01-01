@@ -20,10 +20,13 @@
 
 // Authenticates a Chromium OS user against the Google Accounts ClientLogin API.
 
-class Lock;
 class Profile;
 class GoogleServiceAuthError;
 class LoginFailure;
+
+namespace base {
+class Lock;
+}
 
 namespace chromeos {
 
@@ -194,8 +197,8 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
   bool try_again_;  // True if we're willing to retry the login attempt.
 
   std::string localaccount_;
-  bool checked_for_localaccount_;  // needed because empty localaccount_ is ok.
-  Lock localaccount_lock_;  // a lock around checked_for_localaccount_.
+  bool checked_for_localaccount_;  // Needed because empty localaccount_ is ok.
+  base::Lock localaccount_lock_;  // A lock around checked_for_localaccount_.
 
   friend class GoogleAuthenticatorTest;
   FRIEND_TEST_ALL_PREFIXES(GoogleAuthenticatorTest, SaltToAscii);

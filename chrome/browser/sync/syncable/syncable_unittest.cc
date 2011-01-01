@@ -386,7 +386,7 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsMetahandlesToPurge) {
   dir_->PurgeEntriesWithTypeIn(to_purge);
 
   Directory::SaveChangesSnapshot snapshot1;
-  AutoLock scoped_lock(dir_->kernel_->save_changes_mutex);
+  base::AutoLock scoped_lock(dir_->kernel_->save_changes_mutex);
   dir_->TakeSnapshotForSaveChanges(&snapshot1);
   EXPECT_TRUE(expected_purges == snapshot1.metahandles_to_purge);
 
@@ -415,7 +415,7 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsAllDirtyHandlesTest) {
   // Fake SaveChanges() and make sure we got what we expected.
   {
     Directory::SaveChangesSnapshot snapshot;
-    AutoLock scoped_lock(dir_->kernel_->save_changes_mutex);
+    base::AutoLock scoped_lock(dir_->kernel_->save_changes_mutex);
     dir_->TakeSnapshotForSaveChanges(&snapshot);
     // Make sure there's an entry for each new metahandle.  Make sure all
     // entries are marked dirty.
@@ -448,7 +448,7 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsAllDirtyHandlesTest) {
   // Fake SaveChanges() and make sure we got what we expected.
   {
     Directory::SaveChangesSnapshot snapshot;
-    AutoLock scoped_lock(dir_->kernel_->save_changes_mutex);
+    base::AutoLock scoped_lock(dir_->kernel_->save_changes_mutex);
     dir_->TakeSnapshotForSaveChanges(&snapshot);
     // Make sure there's an entry for each new metahandle.  Make sure all
     // entries are marked dirty.
@@ -588,7 +588,7 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsOnlyDirtyHandlesTest) {
   // Fake SaveChanges() and make sure we got what we expected.
   {
     Directory::SaveChangesSnapshot snapshot;
-    AutoLock scoped_lock(dir_->kernel_->save_changes_mutex);
+    base::AutoLock scoped_lock(dir_->kernel_->save_changes_mutex);
     dir_->TakeSnapshotForSaveChanges(&snapshot);
     // Make sure there are no dirty_metahandles.
     EXPECT_EQ(0u, snapshot.dirty_metas.size());
@@ -614,7 +614,7 @@ TEST_F(SyncableDirectoryTest, TakeSnapshotGetsOnlyDirtyHandlesTest) {
   // Fake SaveChanges() and make sure we got what we expected.
   {
     Directory::SaveChangesSnapshot snapshot;
-    AutoLock scoped_lock(dir_->kernel_->save_changes_mutex);
+    base::AutoLock scoped_lock(dir_->kernel_->save_changes_mutex);
     dir_->TakeSnapshotForSaveChanges(&snapshot);
     // Make sure there's an entry for each changed metahandle.  Make sure all
     // entries are marked dirty.
@@ -1389,8 +1389,8 @@ TEST(SyncableDirectoryManager, ThreadOpenTest) {
 struct Step {
   Step() : condvar(&mutex), number(0) {}
 
-  Lock mutex;
-  ConditionVariable condvar;
+  base::Lock mutex;
+  base::ConditionVariable condvar;
   int number;
   int64 metahandle;
 };
@@ -1409,7 +1409,7 @@ class ThreadBugDelegate : public base::PlatformThread::Delegate {
   // PlatformThread::Delegate methods:
   virtual void ThreadMain() {
     const std::string dirname = "ThreadBug1";
-    AutoLock scoped_lock(step_->mutex);
+    base::AutoLock scoped_lock(step_->mutex);
 
     while (step_->number < 3) {
       while (step_->number % 2 != role_) {
@@ -1482,7 +1482,7 @@ class DirectoryKernelStalenessBugDelegate : public ThreadBugDelegate {
   virtual void ThreadMain() {
     const char test_bytes[] = "test data";
     const std::string dirname = "DirectoryKernelStalenessBug";
-    AutoLock scoped_lock(step_->mutex);
+    base::AutoLock scoped_lock(step_->mutex);
     const Id jeff_id = TestIdFactory::FromNumber(100);
 
     while (step_->number < 4) {

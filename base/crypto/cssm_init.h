@@ -10,9 +10,9 @@
 
 #include "base/scoped_ptr.h"
 
-class Lock;
-
 namespace base {
+
+class Lock;
 
 // Initialize CSSM if it isn't already initialized.  This must be called before
 // any other CSSM functions.  This function is thread-safe, and CSSM will only

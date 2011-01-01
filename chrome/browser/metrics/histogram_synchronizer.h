@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/condition_variable.h"
-#include "base/lock.h"
 #include "base/ref_counted.h"
+#include "base/synchronization/condition_variable.h"
+#include "base/synchronization/lock.h"
 #include "base/time.h"
 
 class MessageLoop;
@@ -120,11 +120,11 @@ class HistogramSynchronizer : public
       int unresponsive_renderers, const base::TimeTicks& started);
 
   // This lock_ protects access to all members.
-  Lock lock_;
+  base::Lock lock_;
 
   // This condition variable is used to block caller of the synchronous request
   // to update histograms, and to signal that thread when updates are completed.
-  ConditionVariable received_all_renderer_histograms_;
+  base::ConditionVariable received_all_renderer_histograms_;
 
   // When a request is made to asynchronously update the histograms, we store
   // the task and thread we use to post a completion notification in

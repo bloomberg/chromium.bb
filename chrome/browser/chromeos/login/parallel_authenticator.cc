@@ -9,11 +9,11 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/lock.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/sha2.h"
 #include "base/string_util.h"
+#include "base/synchronization/lock.h"
 #include "base/third_party/nss/blapi.h"
 #include "base/third_party/nss/sha256.h"
 #include "chrome/browser/browser_thread.h"
@@ -139,7 +139,7 @@ void ParallelAuthenticator::OnLoginSuccess(
       NotificationService::AllSources(),
       Details<AuthenticationNotificationDetails>(&details));
   {
-    AutoLock for_this_block(success_lock_);
+    base::AutoLock for_this_block(success_lock_);
     already_reported_success_ = true;
   }
   consumer_->OnLoginSuccess(current_state_->username,
@@ -167,7 +167,7 @@ void ParallelAuthenticator::OnPasswordChangeDetected(
 
 void ParallelAuthenticator::CheckLocalaccount(const LoginFailure& error) {
   {
-    AutoLock for_this_block(localaccount_lock_);
+    base::AutoLock for_this_block(localaccount_lock_);
     VLOG(2) << "Checking localaccount";
     if (!checked_for_localaccount_) {
       BrowserThread::PostDelayedTask(
@@ -335,7 +335,7 @@ void ParallelAuthenticator::Resolve() {
       // the 'changed password' path when we know doing so won't succeed.
     case NEED_NEW_PW:
       {
-        AutoLock for_this_block(success_lock_);
+        base::AutoLock for_this_block(success_lock_);
         if (!already_reported_success_) {
           // This allows us to present the same behavior for "online:
           // fail, offline: ok", regardless of the order in which we
@@ -548,7 +548,7 @@ void ParallelAuthenticator::LoadSystemSalt() {
 void ParallelAuthenticator::LoadLocalaccount(const std::string& filename) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   {
-    AutoLock for_this_block(localaccount_lock_);
+    base::AutoLock for_this_block(localaccount_lock_);
     if (checked_for_localaccount_)
       return;
   }
@@ -570,7 +570,7 @@ void ParallelAuthenticator::LoadLocalaccount(const std::string& filename) {
 void ParallelAuthenticator::SetLocalaccount(const std::string& new_name) {
   localaccount_ = new_name;
   {  // extra braces for clarity about AutoLock scope.
-    AutoLock for_this_block(localaccount_lock_);
+    base::AutoLock for_this_block(localaccount_lock_);
     checked_for_localaccount_ = true;
   }
 }

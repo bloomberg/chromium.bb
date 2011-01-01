@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,11 +9,11 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "base/condition_variable.h"
-#include "base/lock.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/port.h"
+#include "base/synchronization/condition_variable.h"
+#include "base/synchronization/lock.h"
 #include "chrome/common/deprecated/event_sys.h"
 
 // How to use Channels:
@@ -65,9 +65,9 @@ class CallbackWaiters {
   ~CallbackWaiters() {
     DCHECK_EQ(0, waiter_count_);
   }
-  void WaitForCallbackToComplete(Lock* listeners_mutex) {
+  void WaitForCallbackToComplete(base::Lock* listeners_mutex) {
     {
-      AutoLock lock(mutex_);
+      base::AutoLock lock(mutex_);
       waiter_count_ += 1;
       listeners_mutex->Release();
       while (!callback_done_)
@@ -80,7 +80,7 @@ class CallbackWaiters {
   }
 
   void Signal() {
-    AutoLock lock(mutex_);
+    base::AutoLock lock(mutex_);
     callback_done_ = true;
     condvar_.Broadcast();
   }
@@ -88,8 +88,8 @@ class CallbackWaiters {
  protected:
   int waiter_count_;
   bool callback_done_;
-  Lock mutex_;
-  ConditionVariable condvar_;
+  base::Lock mutex_;
+  base::ConditionVariable condvar_;
 };
 
 template <typename EventTraitsType, typename NotifyLock,
@@ -119,7 +119,7 @@ class EventChannel {
     // Make sure all the listeners have been disconnected. Otherwise, they
     // will try to call RemoveListener() at a later date.
 #if defined(DEBUG)
-    AutoLock lock(listeners_mutex_);
+    base::AutoLock lock(listeners_mutex_);
     for (typename Listeners::iterator i = listeners_.begin();
          i != listeners_.end(); ++i) {
       DCHECK(i->second) << "Listener not disconnected";
@@ -131,7 +131,7 @@ class EventChannel {
   //
   // Thread safe.
   void AddListener(Listener* listener) {
-    AutoLock lock(listeners_mutex_);
+    base::AutoLock lock(listeners_mutex_);
     typename Listeners::iterator found = listeners_.find(listener);
     if (found == listeners_.end()) {
       listeners_.insert(std::make_pair(listener,
@@ -209,7 +209,7 @@ class EventChannel {
   // Remove while in callback. Owned and closed by the thread calling Remove().
   CallbackWaiters* callback_waiters_;
 
-  Lock listeners_mutex_;  // Protects all members above.
+  base::Lock listeners_mutex_;  // Protects all members above.
   const EventType shutdown_event_;
   NotifyLock notify_lock_;
 

@@ -9,11 +9,11 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/lock.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/sha2.h"
 #include "base/string_util.h"
+#include "base/synchronization/lock.h"
 #include "base/third_party/nss/blapi.h"
 #include "base/third_party/nss/sha256.h"
 #include "chrome/browser/browser_thread.h"
@@ -315,7 +315,7 @@ void GoogleAuthenticator::CheckOffline(const LoginFailure& error) {
 
 void GoogleAuthenticator::CheckLocalaccount(const LoginFailure& error) {
   {
-    AutoLock for_this_block(localaccount_lock_);
+    base::AutoLock for_this_block(localaccount_lock_);
     VLOG(1) << "Checking localaccount";
     if (!checked_for_localaccount_) {
       BrowserThread::PostDelayedTask(
@@ -401,7 +401,7 @@ void GoogleAuthenticator::LoadSystemSalt() {
 void GoogleAuthenticator::LoadLocalaccount(const std::string& filename) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   {
-    AutoLock for_this_block(localaccount_lock_);
+    base::AutoLock for_this_block(localaccount_lock_);
     if (checked_for_localaccount_)
       return;
   }
@@ -423,7 +423,7 @@ void GoogleAuthenticator::LoadLocalaccount(const std::string& filename) {
 void GoogleAuthenticator::SetLocalaccount(const std::string& new_name) {
   localaccount_ = new_name;
   {  // extra braces for clarity about AutoLock scope.
-    AutoLock for_this_block(localaccount_lock_);
+    base::AutoLock for_this_block(localaccount_lock_);
     checked_for_localaccount_ = true;
   }
 }

@@ -1,19 +1,14 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/lock.h"
-
 #include <stdlib.h>
 
+#include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::kNullThreadHandle;
-using base::PlatformThread;
-using base::PlatformThreadHandle;
-
-typedef testing::Test LockTest;
+namespace base {
 
 // Basic test to make sure that Acquire()/Release()/Try() don't crash ----------
 
@@ -51,7 +46,7 @@ class BasicLockTestThread : public PlatformThread::Delegate {
   DISALLOW_COPY_AND_ASSIGN(BasicLockTestThread);
 };
 
-TEST_F(LockTest, Basic) {
+TEST(LockTest, Basic) {
   Lock lock;
   BasicLockTestThread thread(&lock);
   PlatformThreadHandle handle = kNullThreadHandle;
@@ -111,7 +106,7 @@ class TryLockTestThread : public PlatformThread::Delegate {
   DISALLOW_COPY_AND_ASSIGN(TryLockTestThread);
 };
 
-TEST_F(LockTest, TryLock) {
+TEST(LockTest, TryLock) {
   Lock lock;
 
   ASSERT_TRUE(lock.Try());
@@ -176,7 +171,7 @@ class MutexLockTestThread : public PlatformThread::Delegate {
   DISALLOW_COPY_AND_ASSIGN(MutexLockTestThread);
 };
 
-TEST_F(LockTest, MutexTwoThreads) {
+TEST(LockTest, MutexTwoThreads) {
   Lock lock;
   int value = 0;
 
@@ -192,7 +187,7 @@ TEST_F(LockTest, MutexTwoThreads) {
   EXPECT_EQ(2 * 40, value);
 }
 
-TEST_F(LockTest, MutexFourThreads) {
+TEST(LockTest, MutexFourThreads) {
   Lock lock;
   int value = 0;
 
@@ -215,3 +210,5 @@ TEST_F(LockTest, MutexFourThreads) {
 
   EXPECT_EQ(4 * 40, value);
 }
+
+}  // namespace base

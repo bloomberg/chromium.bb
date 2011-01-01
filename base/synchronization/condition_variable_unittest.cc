@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/condition_variable.h"
+#include "base/synchronization/condition_variable.h"
 #include "base/lock.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
@@ -19,10 +19,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-using base::PlatformThread;
-using base::PlatformThreadHandle;
-using base::TimeDelta;
-using base::TimeTicks;
+namespace base {
 
 namespace {
 //------------------------------------------------------------------------------
@@ -39,12 +36,12 @@ class ConditionVariableTest : public PlatformTest {
   const TimeDelta kOneHundredMs;
 
   explicit ConditionVariableTest()
-    : kZeroMs(TimeDelta::FromMilliseconds(0)),
-      kTenMs(TimeDelta::FromMilliseconds(10)),
-      kThirtyMs(TimeDelta::FromMilliseconds(30)),
-      kFortyFiveMs(TimeDelta::FromMilliseconds(45)),
-      kSixtyMs(TimeDelta::FromMilliseconds(60)),
-      kOneHundredMs(TimeDelta::FromMilliseconds(100)) {
+      : kZeroMs(TimeDelta::FromMilliseconds(0)),
+        kTenMs(TimeDelta::FromMilliseconds(10)),
+        kThirtyMs(TimeDelta::FromMilliseconds(30)),
+        kFortyFiveMs(TimeDelta::FromMilliseconds(45)),
+        kSixtyMs(TimeDelta::FromMilliseconds(60)),
+        kOneHundredMs(TimeDelta::FromMilliseconds(100)) {
   }
 };
 
@@ -198,7 +195,7 @@ TEST_F(ConditionVariableTest, MultiThreadConsumerTest) {
 
   const int kTaskCount = 10;  // Number of tasks in each mini-test here.
 
-  base::Time start_time;  // Used to time task processing.
+  Time start_time;  // Used to time task processing.
 
   {
     AutoLock auto_lock(*queue.lock());
@@ -226,7 +223,7 @@ TEST_F(ConditionVariableTest, MultiThreadConsumerTest) {
     queue.SetWorkTime(kThirtyMs);
     queue.SetAllowHelp(false);
 
-    start_time = base::Time::Now();
+    start_time = Time::Now();
   }
 
   queue.work_is_available()->Signal();  // Start up one thread.
@@ -241,7 +238,7 @@ TEST_F(ConditionVariableTest, MultiThreadConsumerTest) {
     // The last of the tasks *might* still be running, but... all but one should
     // be done by now, since tasks are being done serially.
     EXPECT_LE(queue.GetWorkTime().InMilliseconds() * (kTaskCount - 1),
-              (base::Time::Now() - start_time).InMilliseconds());
+              (Time::Now() - start_time).InMilliseconds());
 
     EXPECT_EQ(1, queue.GetNumThreadsTakingAssignments());
     EXPECT_EQ(1, queue.GetNumThreadsCompletingTasks());
@@ -270,7 +267,7 @@ TEST_F(ConditionVariableTest, MultiThreadConsumerTest) {
     queue.SetWorkTime(kThirtyMs);
     queue.SetAllowHelp(true);
 
-    start_time = base::Time::Now();
+    start_time = Time::Now();
   }
 
   queue.work_is_available()->Signal();  // But each worker can signal another.
@@ -749,3 +746,5 @@ void WorkQueue::ThreadMain() {
 }
 
 }  // namespace
+
+}  // namespace base

@@ -1,12 +1,15 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/lock_impl.h"
+#include "base/synchronization/lock_impl.h"
 
 #include <errno.h>
 
 #include "base/logging.h"
+
+namespace base {
+namespace internal {
 
 LockImpl::LockImpl() {
 #ifndef NDEBUG
@@ -46,3 +49,6 @@ void LockImpl::Unlock() {
   int rv = pthread_mutex_unlock(&os_lock_);
   DCHECK_EQ(rv, 0);
 }
+
+}  // namespace internal
+}  // namespace base

@@ -17,14 +17,13 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/condition_variable.h"
 #include "base/environment.h"
-#include "base/lock.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/string_split.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -207,7 +206,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
 
   void UpdateSafeBrowsingStatus() {
     ASSERT_TRUE(safe_browsing_service_);
-    AutoLock lock(update_status_mutex_);
+    base::AutoLock lock(update_status_mutex_);
     is_initial_request_ =
         safe_browsing_service_->protocol_manager_->is_initial_request();
     last_update_ = safe_browsing_service_->protocol_manager_->last_update();
@@ -221,14 +220,14 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   }
 
   void CheckIsDatabaseReady() {
-    AutoLock lock(update_status_mutex_);
+    base::AutoLock lock(update_status_mutex_);
     is_database_ready_ =
         !safe_browsing_service_->database_update_in_progress_;
   }
 
   void CheckUrl(SafeBrowsingService::Client* helper, const GURL& url) {
     ASSERT_TRUE(safe_browsing_service_);
-    AutoLock lock(update_status_mutex_);
+    base::AutoLock lock(update_status_mutex_);
     if (safe_browsing_service_->CheckBrowseUrl(url, helper)) {
       is_checked_url_in_db_ = false;
       is_checked_url_safe_ = true;
@@ -241,37 +240,37 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   }
 
   bool is_checked_url_in_db() {
-    AutoLock l(update_status_mutex_);
+    base::AutoLock l(update_status_mutex_);
     return is_checked_url_in_db_;
   }
 
   void set_is_checked_url_safe(bool safe) {
-    AutoLock l(update_status_mutex_);
+    base::AutoLock l(update_status_mutex_);
     is_checked_url_safe_ = safe;
   }
 
   bool is_checked_url_safe() {
-    AutoLock l(update_status_mutex_);
+    base::AutoLock l(update_status_mutex_);
     return is_checked_url_safe_;
   }
 
   bool is_database_ready() {
-    AutoLock l(update_status_mutex_);
+    base::AutoLock l(update_status_mutex_);
     return is_database_ready_;
   }
 
   bool is_initial_request() {
-    AutoLock l(update_status_mutex_);
+    base::AutoLock l(update_status_mutex_);
     return is_initial_request_;
   }
 
   base::Time last_update() {
-    AutoLock l(update_status_mutex_);
+    base::AutoLock l(update_status_mutex_);
     return last_update_;
   }
 
   bool is_update_scheduled() {
-    AutoLock l(update_status_mutex_);
+    base::AutoLock l(update_status_mutex_);
     return is_update_scheduled_;
   }
 
@@ -316,7 +315,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
 
   // Protects all variables below since they are read on UI thread
   // but updated on IO thread or safebrowsing thread.
-  Lock update_status_mutex_;
+  base::Lock update_status_mutex_;
 
   // States associated with safebrowsing service updates.
   bool is_database_ready_;

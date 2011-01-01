@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,11 +8,10 @@
 
 #if !defined(NDEBUG)
 
-#include "base/lock.h"
+#include "base/synchronization/lock.h"
 #include "base/logging.h"
 
-using base::PlatformThread;
-using base::PlatformThreadId;
+namespace base {
 
 Lock::Lock() : lock_() {
   owned_by_thread_ = false;
@@ -36,5 +35,7 @@ void Lock::CheckUnheldAndMark() {
   owned_by_thread_ = true;
   owning_thread_id_ = PlatformThread::CurrentId();
 }
+
+}  // namespace base
 
 #endif  // NDEBUG

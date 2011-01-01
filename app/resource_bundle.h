@@ -26,13 +26,15 @@
 namespace app {
 class DataPack;
 }
+namespace base {
+class Lock;
+}
 #if defined(USE_X11)
 typedef struct _GdkPixbuf GdkPixbuf;
 #endif
 namespace gfx {
 class Font;
 }
-class Lock;
 class SkBitmap;
 typedef uint32 SkColor;
 namespace base {
@@ -244,7 +246,7 @@ class ResourceBundle {
 
   // Class level lock.  Used to protect internal data structures that may be
   // accessed from other threads (e.g., skia_images_).
-  scoped_ptr<Lock> lock_;
+  scoped_ptr<base::Lock> lock_;
 
   // Handles for data sources.
   DataHandle resources_data_;

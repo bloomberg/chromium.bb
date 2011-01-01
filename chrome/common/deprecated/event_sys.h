@@ -9,8 +9,10 @@
 // TODO: This class should be removed or moved to Notifier code.
 // See Bug 42450 (http://code.google.com/p/chromium/issues/detail?id=42450).
 
+namespace base {
 class AutoLock;
 class Lock;
+}
 
 // An abstract base class for listening to events.
 //
@@ -27,8 +29,8 @@ class EventListener {
 
 // See the -inl.h for details about the following.
 
-template <typename EventTraits, typename NotifyLock = Lock,
-          typename ScopedNotifyLocker = AutoLock>
+template <typename EventTraits, typename NotifyLock = base::Lock,
+          typename ScopedNotifyLocker = base::AutoLock>
 class EventChannel;
 
 class EventListenerHookup;

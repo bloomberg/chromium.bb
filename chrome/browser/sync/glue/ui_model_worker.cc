@@ -32,7 +32,7 @@ void UIModelWorker::DoWorkAndWaitUntilDone(Callback0::Type* work) {
     // We lock only to avoid PostTask'ing a NULL pending_work_ (because it
     // could get Run() in Stop() and call OnTaskCompleted before we post).
     // The task is owned by the message loop as per usual.
-    AutoLock lock(lock_);
+    base::AutoLock lock(lock_);
     DCHECK(!pending_work_);
     pending_work_ = new CallDoWorkAndSignalTask(work, &work_done, this);
     ui_loop_->PostTask(FROM_HERE, pending_work_);
@@ -54,7 +54,7 @@ UIModelWorker::~UIModelWorker() {
 }
 
 void UIModelWorker::OnSyncerShutdownComplete() {
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   // The SyncerThread has terminated and we are no longer needed by syncapi.
   // The UI loop initiated shutdown and is (or will be) waiting in Stop().
   // We could either be WORKING or RUNNING_MANUAL_SHUTDOWN_PUMP, depending
@@ -69,7 +69,7 @@ void UIModelWorker::OnSyncerShutdownComplete() {
 void UIModelWorker::Stop() {
   DCHECK_EQ(MessageLoop::current(), ui_loop_);
 
-  AutoLock lock(lock_);
+  base::AutoLock lock(lock_);
   DCHECK_EQ(state_, WORKING);
 
   // We're on our own now, the beloved UI MessageLoop is no longer running.

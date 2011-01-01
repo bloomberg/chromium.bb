@@ -24,9 +24,12 @@
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 
 class GaiaAuthFetcher;
-class Lock;
 class LoginFailure;
 class Profile;
+
+namespace base {
+class Lock;
+}
 
 namespace chromeos {
 
@@ -256,12 +259,12 @@ class ParallelAuthenticator : public Authenticator,
   // This allows us to present the same behavior to the caller, regardless
   // of the order in which we receive these results.
   bool already_reported_success_;
-  Lock success_lock_;  // a lock around already_reported_success_.
+  base::Lock success_lock_;  // A lock around already_reported_success_.
 
   // Status relating to the local "backdoor" account.
   std::string localaccount_;
-  bool checked_for_localaccount_;  // needed because empty localaccount_ is ok.
-  Lock localaccount_lock_;  // a lock around checked_for_localaccount_.
+  bool checked_for_localaccount_;  // Needed because empty localaccount_ is ok.
+  base::Lock localaccount_lock_;  // A lock around checked_for_localaccount_.
 
   friend class ResolveChecker;
   friend class ParallelAuthenticatorTest;

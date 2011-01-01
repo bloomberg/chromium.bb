@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,8 +62,8 @@
 // For a discussion of the many very subtle implementation details, see the FAQ
 // at the end of condition_variable_win.cc.
 
-#ifndef BASE_CONDITION_VARIABLE_H_
-#define BASE_CONDITION_VARIABLE_H_
+#ifndef BASE_SYNCHRONIZATION_CONDITION_VARIABLE_H_
+#define BASE_SYNCHRONIZATION_CONDITION_VARIABLE_H_
 #pragma once
 
 #include "build/build_config.h"
@@ -78,8 +78,8 @@
 #include "base/lock.h"
 
 namespace base {
-  class TimeDelta;
-}
+
+class TimeDelta;
 
 class ConditionVariable {
  public:
@@ -91,7 +91,7 @@ class ConditionVariable {
   // Wait() releases the caller's critical section atomically as it starts to
   // sleep, and the reacquires it when it is signaled.
   void Wait();
-  void TimedWait(const base::TimeDelta& max_time);
+  void TimedWait(const TimeDelta& max_time);
 
   // Broadcast() revives all waiting threads.
   void Broadcast();
@@ -184,4 +184,6 @@ class ConditionVariable {
   DISALLOW_COPY_AND_ASSIGN(ConditionVariable);
 };
 
-#endif  // BASE_CONDITION_VARIABLE_H_
+}  // namespace base
+
+#endif  // BASE_SYNCHRONIZATION_CONDITION_VARIABLE_H_
