@@ -12,7 +12,6 @@
 #include "app/data_pack.h"
 #include "base/base_paths.h"
 #include "base/basictypes.h"
-#include "base/debug_on_start.h"
 #include "base/debug/debugger.h"
 #include "base/file_path.h"
 #include "base/file_util.h"

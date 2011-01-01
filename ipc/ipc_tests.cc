@@ -19,7 +19,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/debug_on_start.h"
+#include "base/debug/debug_on_start_win.h"
 #include "base/perftimer.h"
 #include "base/test/perf_test_suite.h"
 #include "base/test/test_suite.h"

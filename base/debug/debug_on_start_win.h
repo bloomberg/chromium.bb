@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,18 +6,23 @@
 // line argument. When the command line argument is detected, it invokes the
 // debugger, if no system-wide debugger is registered, a debug break is done.
 
-#ifndef BASE_DEBUG_ON_START_H_
-#define BASE_DEBUG_ON_START_H_
+#ifndef BASE_DEBUG_DEBUG_ON_START_WIN_H_
+#define BASE_DEBUG_DEBUG_ON_START_WIN_H_
 #pragma once
 
 #include "base/basictypes.h"
+#include "build/build_config.h"
 
-// This only works on Windows.
+// This only works on Windows. It's legal to include on other platforms, but
+// will be a NOP.
 #if defined(OS_WIN)
 
 #ifndef DECLSPEC_SELECTANY
 #define DECLSPEC_SELECTANY  __declspec(selectany)
 #endif
+
+namespace base {
+namespace debug {
 
 // Debug on start functions and data.
 class DebugOnStart {
@@ -63,6 +68,10 @@ DECLSPEC_SELECTANY DebugOnStart::PIFV debug_on_start = &DebugOnStart::Init;
 #pragma data_seg(pop)
 
 #endif  // _WIN64
+
+}  // namespace debug
+}  // namespace base
+
 #endif  // defined(OS_WIN)
 
-#endif  // BASE_DEBUG_ON_START_H_
+#endif  // BASE_DEBUG_DEBUG_ON_START_WIN_H_

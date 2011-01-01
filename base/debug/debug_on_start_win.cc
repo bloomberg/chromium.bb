@@ -1,14 +1,17 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <windows.h>
+#include "base/debug/debug_on_start_win.h"
 
-#include "base/debug_on_start.h"
+#include <windows.h>
 
 #include "base/base_switches.h"
 #include "base/basictypes.h"
 #include "base/debug/debugger.h"
+
+namespace base {
+namespace debug {
 
 // Minimalist implementation to try to find a command line argument. We can use
 // kernel32 exported functions but not the CRT functions because we're too early
@@ -66,3 +69,6 @@ int __cdecl DebugOnStart::Init() {
   }
   return 0;
 }
+
+}  // namespace debug
+}  // namespace base
