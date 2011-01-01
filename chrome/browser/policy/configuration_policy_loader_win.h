@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_LOADER_WIN_H_
 #pragma once
 
-#include "base/object_watcher.h"
 #include "base/waitable_event.h"
+#include "base/win/object_watcher.h"
 #include "chrome/browser/policy/asynchronous_policy_loader.h"
 
 namespace policy {
@@ -16,7 +16,7 @@ namespace policy {
 // reload when Group Policy changes.
 class ConfigurationPolicyLoaderWin
     : public AsynchronousPolicyLoader,
-      public base::ObjectWatcher::Delegate,
+      public base::win::ObjectWatcher::Delegate,
       public MessageLoop::DestructionObserver {
  public:
   ConfigurationPolicyLoaderWin(
@@ -44,8 +44,8 @@ class ConfigurationPolicyLoaderWin
 
   base::WaitableEvent user_policy_changed_event_;
   base::WaitableEvent machine_policy_changed_event_;
-  base::ObjectWatcher user_policy_watcher_;
-  base::ObjectWatcher machine_policy_watcher_;
+  base::win::ObjectWatcher user_policy_watcher_;
+  base::win::ObjectWatcher machine_policy_watcher_;
   bool user_policy_watcher_failed_;
   bool machine_policy_watcher_failed_;
 

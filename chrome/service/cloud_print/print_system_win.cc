@@ -8,9 +8,9 @@
 #include <winspool.h>
 
 #include "base/file_path.h"
-#include "base/object_watcher.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/object_watcher.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_hdc.h"
@@ -110,8 +110,7 @@ HRESULT PrintTicketToDevMode(const std::string& printer_name,
 
 namespace cloud_print {
 
-class PrintSystemWatcherWin
-    : public base::ObjectWatcher::Delegate {
+class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
  public:
   PrintSystemWatcherWin()
       : printer_(NULL),
@@ -224,7 +223,7 @@ class PrintSystemWatcherWin
   }
 
  private:
-  base::ObjectWatcher watcher_;
+  base::win::ObjectWatcher watcher_;
   HANDLE printer_;            // The printer being watched
   HANDLE printer_change_;     // Returned by FindFirstPrinterChangeNotifier
   Delegate* delegate_;        // Delegate to notify

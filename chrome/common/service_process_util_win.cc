@@ -7,11 +7,11 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/object_watcher.h"
 #include "base/path_service.h"
 #include "base/scoped_handle_win.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/object_watcher.h"
 #include "base/win/win_util.h"
 #include "chrome/common/chrome_switches.h"
 
@@ -27,7 +27,8 @@ string16 GetServiceProcessShutdownEventName() {
       GetServiceProcessScopedVersionedName("_service_shutdown_evt"));
 }
 
-class ServiceProcessShutdownMonitor : public base::ObjectWatcher::Delegate {
+class ServiceProcessShutdownMonitor
+    : public base::win::ObjectWatcher::Delegate {
  public:
   explicit ServiceProcessShutdownMonitor(Task* shutdown_task)
       : shutdown_task_(shutdown_task) {
@@ -47,7 +48,7 @@ class ServiceProcessShutdownMonitor : public base::ObjectWatcher::Delegate {
 
  private:
   ScopedHandle shutdown_event_;
-  base::ObjectWatcher watcher_;
+  base::win::ObjectWatcher watcher_;
   scoped_ptr<Task> shutdown_task_;
 };
 

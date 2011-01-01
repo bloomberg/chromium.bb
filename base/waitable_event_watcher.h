@@ -9,7 +9,7 @@
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
-#include "base/object_watcher.h"
+#include "base/win/object_watcher.h"
 #else
 #include "base/message_loop.h"
 #include "base/waitable_event.h"
@@ -124,7 +124,7 @@ class WaitableEventWatcher
   // called Delegate (at least on Windows). Thus this object exists to proxy
   // the callback function
   // ---------------------------------------------------------------------------
-  class ObjectWatcherHelper : public ObjectWatcher::Delegate {
+  class ObjectWatcherHelper : public win::ObjectWatcher::Delegate {
    public:
     ObjectWatcherHelper(WaitableEventWatcher* watcher);
 
@@ -140,7 +140,7 @@ class WaitableEventWatcher
   void OnObjectSignaled();
 
   ObjectWatcherHelper helper_;
-  ObjectWatcher watcher_;
+  win::ObjectWatcher watcher_;
 #else
   // ---------------------------------------------------------------------------
   // Implementation of MessageLoop::DestructionObserver

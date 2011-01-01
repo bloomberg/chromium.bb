@@ -19,7 +19,7 @@
 #endif
 #include <string>
 #if defined(OS_WIN)
-#include "base/object_watcher.h"
+#include "base/win/object_watcher.h"
 #elif defined(OS_POSIX)
 #include "base/message_loop.h"
 #endif
@@ -35,7 +35,7 @@ typedef int SOCKET;
 // Implements a raw socket interface
 class ListenSocket : public base::RefCountedThreadSafe<ListenSocket>,
 #if defined(OS_WIN)
-                     public base::ObjectWatcher::Delegate
+                     public base::win::ObjectWatcher::Delegate
 #elif defined(OS_POSIX)
                      public MessageLoopForIO::Watcher
 #endif
@@ -107,7 +107,7 @@ class ListenSocket : public base::RefCountedThreadSafe<ListenSocket>,
 #if defined(OS_WIN)
   // ObjectWatcher delegate
   virtual void OnObjectSignaled(HANDLE object);
-  base::ObjectWatcher watcher_;
+  base::win::ObjectWatcher watcher_;
   HANDLE socket_event_;
 #elif defined(OS_POSIX)
   WaitState wait_state_;

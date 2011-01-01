@@ -16,13 +16,13 @@
 #include "app/resource_bundle.h"
 #include "base/environment.h"
 #include "base/file_util.h"
-#include "base/object_watcher.h"
 #include "base/path_service.h"
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/object_watcher.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -321,7 +321,7 @@ namespace {
 // process has ended and what was the result of the operation as reported by
 // the process exit code. This class executes in the context of the main chrome
 // process.
-class ImportProcessRunner : public base::ObjectWatcher::Delegate {
+class ImportProcessRunner : public base::win::ObjectWatcher::Delegate {
  public:
   // The constructor takes the importer process to watch and then it does a
   // message loop blocking wait until the process ends. This object now owns
@@ -350,7 +350,7 @@ class ImportProcessRunner : public base::ObjectWatcher::Delegate {
   }
 
  private:
-  base::ObjectWatcher watcher_;
+  base::win::ObjectWatcher watcher_;
   base::ProcessHandle import_process_;
   DWORD exit_code_;
 };

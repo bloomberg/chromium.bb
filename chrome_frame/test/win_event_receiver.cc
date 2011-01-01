@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/object_watcher.h"
+#include "base/win/object_watcher.h"
 #include "base/string_util.h"
 
 #include "chrome_frame/function_stub.h"
@@ -78,7 +78,7 @@ void WinEventReceiver::WinEventHook(WinEventReceiver* me, HWINEVENTHOOK hook,
 // Notification is always delivered via a message loop task in the message loop
 // that is active when the instance is constructed.
 class WindowWatchdog::ProcessExitObserver
-    : public base::ObjectWatcher::Delegate {
+    : public base::win::ObjectWatcher::Delegate {
  public:
   // Initiates the process watch. Will always return without notifying the
   // watchdog.
@@ -94,7 +94,7 @@ class WindowWatchdog::ProcessExitObserver
   HWND hwnd_;
 
   ScopedRunnableMethodFactory<ProcessExitObserver> method_task_factory_;
-  base::ObjectWatcher object_watcher_;
+  base::win::ObjectWatcher object_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessExitObserver);
 };

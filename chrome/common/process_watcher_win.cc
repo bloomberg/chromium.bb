@@ -7,7 +7,7 @@
 #include "base/scoped_ptr.h"
 #include "base/environment.h"
 #include "base/message_loop.h"
-#include "base/object_watcher.h"
+#include "base/win/object_watcher.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/result_codes.h"
 
@@ -16,7 +16,8 @@ static const int kWaitInterval = 2000;
 
 namespace {
 
-class TimerExpiredTask : public Task, public base::ObjectWatcher::Delegate {
+class TimerExpiredTask : public Task,
+                         public base::win::ObjectWatcher::Delegate {
  public:
   explicit TimerExpiredTask(base::ProcessHandle process) : process_(process) {
     watcher_.StartWatching(process_, this);
@@ -72,7 +73,7 @@ class TimerExpiredTask : public Task, public base::ObjectWatcher::Delegate {
   // The process that we are watching.
   base::ProcessHandle process_;
 
-  base::ObjectWatcher watcher_;
+  base::win::ObjectWatcher watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(TimerExpiredTask);
 };

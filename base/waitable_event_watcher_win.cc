@@ -5,8 +5,8 @@
 #include "base/waitable_event_watcher.h"
 
 #include "base/compiler_specific.h"
-#include "base/object_watcher.h"
 #include "base/waitable_event.h"
+#include "base/win/object_watcher.h"
 
 namespace base {
 

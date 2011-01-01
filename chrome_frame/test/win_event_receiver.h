@@ -12,7 +12,7 @@
 #include <utility>
 
 #include "base/linked_ptr.h"
-#include "base/object_watcher.h"
+#include "base/win/object_watcher.h"
 
 struct FunctionStub;
 
@@ -106,8 +106,8 @@ class WindowWatchdog : public WinEventListener {
   // The Delegate object is actually a ProcessExitObserver, but declaring
   // it as such would require fully declaring the ProcessExitObserver class
   // here in order for linked_ptr to access its destructor.
-  typedef std::pair<HWND, linked_ptr<base::ObjectWatcher::Delegate> >
-    OpenWindowEntry;
+  typedef std::pair<HWND, linked_ptr<base::win::ObjectWatcher::Delegate> >
+      OpenWindowEntry;
   typedef std::vector<OpenWindowEntry> OpenWindowList;
 
   struct ObserverEntry {
@@ -121,7 +121,7 @@ class WindowWatchdog : public WinEventListener {
 
   // WinEventListener implementation.
   virtual void OnEventReceived(
-    DWORD event, HWND hwnd, LONG object_id, LONG child_id);
+      DWORD event, HWND hwnd, LONG object_id, LONG child_id);
 
   static std::string GetWindowCaption(HWND hwnd);
 

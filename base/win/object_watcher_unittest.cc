@@ -1,23 +1,26 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <process.h>
 
 #include "base/message_loop.h"
-#include "base/object_watcher.h"
+#include "base/win/object_watcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace base {
+namespace win {
 
 namespace {
 
-class QuitDelegate : public base::ObjectWatcher::Delegate {
+class QuitDelegate : public ObjectWatcher::Delegate {
  public:
   virtual void OnObjectSignaled(HANDLE object) {
     MessageLoop::current()->Quit();
   }
 };
 
-class DecrementCountDelegate : public base::ObjectWatcher::Delegate {
+class DecrementCountDelegate : public ObjectWatcher::Delegate {
  public:
   explicit DecrementCountDelegate(int* counter) : counter_(counter) {
   }
@@ -28,12 +31,10 @@ class DecrementCountDelegate : public base::ObjectWatcher::Delegate {
   int* counter_;
 };
 
-}  // namespace
-
 void RunTest_BasicSignal(MessageLoop::Type message_loop_type) {
   MessageLoop message_loop(message_loop_type);
 
-  base::ObjectWatcher watcher;
+  ObjectWatcher watcher;
   EXPECT_EQ(NULL, watcher.GetWatchedObject());
 
   // A manual-reset event that is not yet signaled.
@@ -55,7 +56,7 @@ void RunTest_BasicSignal(MessageLoop::Type message_loop_type) {
 void RunTest_BasicCancel(MessageLoop::Type message_loop_type) {
   MessageLoop message_loop(message_loop_type);
 
-  base::ObjectWatcher watcher;
+  ObjectWatcher watcher;
 
   // A manual-reset event that is not yet signaled.
   HANDLE event = CreateEvent(NULL, TRUE, FALSE, NULL);
@@ -73,7 +74,7 @@ void RunTest_BasicCancel(MessageLoop::Type message_loop_type) {
 void RunTest_CancelAfterSet(MessageLoop::Type message_loop_type) {
   MessageLoop message_loop(message_loop_type);
 
-  base::ObjectWatcher watcher;
+  ObjectWatcher watcher;
 
   int counter = 1;
   DecrementCountDelegate delegate(&counter);
@@ -105,7 +106,7 @@ void RunTest_OutlivesMessageLoop(MessageLoop::Type message_loop_type) {
   // people use the Singleton pattern or atexit.
   HANDLE event = CreateEvent(NULL, TRUE, FALSE, NULL);  // not signaled
   {
-    base::ObjectWatcher watcher;
+    ObjectWatcher watcher;
     {
       MessageLoop message_loop(message_loop_type);
 
@@ -115,6 +116,8 @@ void RunTest_OutlivesMessageLoop(MessageLoop::Type message_loop_type) {
   }
   CloseHandle(event);
 }
+
+}  // namespace
 
 //-----------------------------------------------------------------------------
 
@@ -141,3 +144,6 @@ TEST(ObjectWatcherTest, OutlivesMessageLoop) {
   RunTest_OutlivesMessageLoop(MessageLoop::TYPE_IO);
   RunTest_OutlivesMessageLoop(MessageLoop::TYPE_UI);
 }
+
+}  // namespace win
+}  // namespace base

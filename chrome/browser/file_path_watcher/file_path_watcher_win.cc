@@ -7,14 +7,14 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/object_watcher.h"
 #include "base/ref_counted.h"
 #include "base/time.h"
+#include "base/win/object_watcher.h"
 
 namespace {
 
 class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
-                            public base::ObjectWatcher::Delegate {
+                            public base::win::ObjectWatcher::Delegate {
  public:
   FilePathWatcherImpl() : delegate_(NULL), handle_(INVALID_HANDLE_VALUE) {}
 
@@ -49,7 +49,7 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
   HANDLE handle_;
 
   // ObjectWatcher to watch handle_ for events.
-  base::ObjectWatcher watcher_;
+  base::win::ObjectWatcher watcher_;
 
   // Keep track of the last modified time of the file.  We use nulltime
   // to represent the file not existing.
