@@ -454,6 +454,10 @@ int main() {
       "scons_tests",
       deps=glibc_toolchain_deps + ["nacl_libs_glibc_32"],
       scons_args=["--nacl_glibc", "small_tests", "-k"])
+  AddSconsModule(
+      "scons_tests_static",
+      deps=glibc_toolchain_deps + ["nacl_libs_glibc_32"],
+      scons_args=["--nacl_glibc", "small_tests", "-k", "nacl_static_link=1"])
 
   # Check that all the Scons tests build, including those that do not
   # yet run successfully.
