@@ -5,7 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/logging.h"  // for NOTREACHED()
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #import "chrome/browser/ui/cocoa/animatable_view.h"
@@ -101,7 +101,7 @@ const float kAnimateCloseDuration = 0.12;
 - (id)initWithDelegate:(InfoBarDelegate*)delegate {
   DCHECK(delegate);
   if ((self = [super initWithNibName:@"InfoBar"
-                              bundle:mac_util::MainAppBundle()])) {
+                              bundle:base::mac::MainAppBundle()])) {
     delegate_ = delegate;
   }
   return self;

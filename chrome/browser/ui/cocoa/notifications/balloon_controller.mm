@@ -8,7 +8,7 @@
 #include "app/mac/nsimage_cache.h"
 #include "app/resource_bundle.h"
 #import "base/mac/cocoa_protocols.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #import "base/scoped_nsobject.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/notifications/balloon.h"
@@ -43,7 +43,7 @@ const int kRightMargin = 2;
 
 - (id)initWithBalloon:(Balloon*)balloon {
   NSString* nibpath =
-      [mac_util::MainAppBundle() pathForResource:@"Notification"
+      [base::mac::MainAppBundle() pathForResource:@"Notification"
                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     balloon_ = balloon;

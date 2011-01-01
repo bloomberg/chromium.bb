@@ -5,7 +5,7 @@
 #import "chrome/browser/autofill/autofill_address_sheet_controller_mac.h"
 
 #include "app/l10n_util.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/autofill/autofill_address_model_mac.h"
 #import "chrome/browser/autofill/autofill_dialog_controller_mac.h"
@@ -18,7 +18,7 @@
 
 - (id)initWithProfile:(const AutoFillProfile&)profile
                  mode:(AutoFillAddressMode)mode {
-  NSString* nibPath = [mac_util::MainAppBundle()
+  NSString* nibPath = [base::mac::MainAppBundle()
                           pathForResource:@"AutoFillAddressSheet"
                                    ofType:@"nib"];
   self = [super initWithWindowNibPath:nibPath owner:self];

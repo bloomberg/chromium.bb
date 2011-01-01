@@ -6,7 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_model_observer_for_cocoa.h"
@@ -20,7 +20,7 @@
                       node:(const BookmarkNode*)node
                     parent:(const BookmarkNode*)parent
                   newIndex:(int)newIndex {
-  NSString* nibpath = [mac_util::MainAppBundle()
+  NSString* nibpath = [base::mac::MainAppBundle()
                         pathForResource:@"BookmarkNameFolder"
                         ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {

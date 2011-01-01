@@ -8,7 +8,7 @@
 
 #include "app/surface/transport_dib.h"
 #include "base/logging.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/sys_info.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -69,7 +69,7 @@ void BackingStoreMac::PaintToBackingStore(
 
   base::mac::ScopedCFTypeRef<CGImageRef> bitmap_image(
       CGImageCreate(bitmap_rect.width(), bitmap_rect.height(), 8, 32,
-          4 * bitmap_rect.width(), mac_util::GetSystemColorSpace(),
+          4 * bitmap_rect.width(), base::mac::GetSystemColorSpace(),
           kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host,
           data_provider, NULL, false, kCGRenderingIntentDefault));
 
@@ -233,7 +233,7 @@ CGContextRef BackingStoreMac::CreateCGBitmapContext() {
   CGContextRef context = CGBitmapContextCreate(NULL,
                                                size().width(), size().height(),
                                                8, size().width() * 4,
-                                               mac_util::GetSystemColorSpace(),
+                                               base::mac::GetSystemColorSpace(),
                                                kCGImageAlphaPremultipliedFirst |
                                                    kCGBitmapByteOrder32Host);
   DCHECK(context);

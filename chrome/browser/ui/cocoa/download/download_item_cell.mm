@@ -6,7 +6,6 @@
 
 #include "app/l10n_util.h"
 #include "app/text_elider.h"
-#include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"

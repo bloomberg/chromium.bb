@@ -25,7 +25,7 @@
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 
 #if defined(OS_MACOSX)
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #endif
 
@@ -249,7 +249,8 @@ PPB_Graphics2D_Impl* PPB_Graphics2D_Impl::AsPPB_Graphics2D_Impl() {
   return this;
 }
 
-PP_Bool PPB_Graphics2D_Impl::Describe(PP_Size* size, PP_Bool* is_always_opaque) {
+PP_Bool PPB_Graphics2D_Impl::Describe(PP_Size* size,
+                                      PP_Bool* is_always_opaque) {
   size->width = image_data_->width();
   size->height = image_data_->height();
   *is_always_opaque = PP_FALSE;  // TODO(brettw) implement this.
@@ -497,7 +498,7 @@ void PPB_Graphics2D_Impl::Paint(WebKit::WebCanvas* canvas,
       CGImageCreate(
           backing_bitmap.width(), backing_bitmap.height(),
           8, 32, backing_bitmap.rowBytes(),
-          mac_util::GetSystemColorSpace(),
+          base::mac::GetSystemColorSpace(),
           kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host,
           data_provider, NULL, false, kCGRenderingIntentDefault));
 

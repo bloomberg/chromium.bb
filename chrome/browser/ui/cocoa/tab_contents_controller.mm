@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/tab_contents_controller.h"
 
-#include "base/mac_util.h"
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"

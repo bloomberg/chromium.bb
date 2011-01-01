@@ -8,7 +8,7 @@
 
 #include "base/base_paths.h"
 #include "base/logging.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_constants.h"
 
@@ -45,7 +45,7 @@ bool GetChromeFrameUserDataDirectory(FilePath* result) {
 }
 
 bool GetUserDocumentsDirectory(FilePath* result) {
-  return mac_util::GetUserDirectory(NSDocumentDirectory, result);
+  return base::mac::GetUserDirectory(NSDocumentDirectory, result);
 }
 
 void GetUserCacheDirectory(const FilePath& profile_dir, FilePath* result) {
@@ -71,11 +71,11 @@ void GetUserCacheDirectory(const FilePath& profile_dir, FilePath* result) {
 }
 
 bool GetUserDownloadsDirectory(FilePath* result) {
-  return mac_util::GetUserDirectory(NSDownloadsDirectory, result);
+  return base::mac::GetUserDirectory(NSDownloadsDirectory, result);
 }
 
 bool GetUserDesktop(FilePath* result) {
-  return mac_util::GetUserDirectory(NSDesktopDirectory, result);
+  return base::mac::GetUserDirectory(NSDesktopDirectory, result);
 }
 
 FilePath GetVersionedDirectory() {
@@ -90,7 +90,7 @@ FilePath GetVersionedDirectory() {
   path = path.DirName().DirName();
   DCHECK_EQ(path.BaseName().value(), "Contents");
 
-  if (mac_util::IsBackgroundOnlyProcess()) {
+  if (base::mac::IsBackgroundOnlyProcess()) {
     // path identifies the helper .app's Contents directory in the browser
     // .app's versioned directory.  Go up two steps to get to the browser
     // .app's versioned directory.
@@ -128,7 +128,7 @@ FilePath GetFrameworkBundlePath() {
 }
 
 bool GetLocalLibraryDirectory(FilePath* result) {
-  return mac_util::GetLocalDirectory(NSLibraryDirectory, result);
+  return base::mac::GetLocalDirectory(NSLibraryDirectory, result);
 }
 
 }  // namespace chrome

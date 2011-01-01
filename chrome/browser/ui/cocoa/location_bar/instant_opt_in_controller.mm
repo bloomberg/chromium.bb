@@ -4,13 +4,13 @@
 
 #import "chrome/browser/ui/cocoa/location_bar/instant_opt_in_controller.h"
 
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 
 @implementation InstantOptInController
 
 - (id)initWithDelegate:(InstantOptInControllerDelegate*)delegate {
   if ((self = [super initWithNibName:@"InstantOptIn"
-                     bundle:mac_util::MainAppBundle()])) {
+                     bundle:base::mac::MainAppBundle()])) {
     delegate_ = delegate;
   }
   return self;

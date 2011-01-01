@@ -6,7 +6,7 @@
 
 #include <time.h>
 
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/ref_counted.h"
 #include "skia/ext/bitmap_platform_device_data.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -28,7 +28,7 @@ static CGContextRef CGContextForData(void* data, int width, int height) {
   // recommends these flags for improved CG performance.
   CGContextRef context =
       CGBitmapContextCreate(data, width, height, 8, width * 4,
-                            mac_util::GetSystemColorSpace(),
+                            base::mac::GetSystemColorSpace(),
                             kCGImageAlphaPremultipliedFirst |
                                 kCGBitmapByteOrder32Host);
 #else

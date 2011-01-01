@@ -23,7 +23,7 @@
 #include "chrome/browser/password_manager/ie7_password.h"
 #endif
 #if defined(OS_MACOSX)
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "chrome/browser/importer/safari_importer.h"
 #endif
 
@@ -46,7 +46,7 @@ void DetectIEProfiles(std::vector<importer::ProfileInfo*>* profiles) {
 #if defined(OS_MACOSX)
 void DetectSafariProfiles(std::vector<importer::ProfileInfo*>* profiles) {
   uint16 items = importer::NONE;
-  if (!SafariImporter::CanImport(mac_util::GetUserLibraryPath(), &items))
+  if (!SafariImporter::CanImport(base::mac::GetUserLibraryPath(), &items))
     return;
 
   importer::ProfileInfo* safari = new importer::ProfileInfo();
@@ -133,7 +133,7 @@ Importer* ImporterList::CreateImporterByType(importer::ProfileType type) {
       return new Toolbar5Importer();
 #if defined(OS_MACOSX)
     case importer::SAFARI:
-      return new SafariImporter(mac_util::GetUserLibraryPath());
+      return new SafariImporter(base::mac::GetUserLibraryPath());
 #endif  // OS_MACOSX
     case importer::NO_PROFILE_TYPE:
       NOTREACHED();

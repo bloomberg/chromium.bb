@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/previewable_contents_controller.h"
 
 #include "base/logging.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 
 @implementation PreviewableContentsController
@@ -14,7 +14,7 @@
 
 - (id)init {
   if ((self = [super initWithNibName:@"PreviewableContents"
-                              bundle:mac_util::MainAppBundle()])) {
+                              bundle:base::mac::MainAppBundle()])) {
   }
   return self;
 }

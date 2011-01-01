@@ -6,7 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
@@ -80,7 +80,7 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
                    browser:(Browser*)browser
                       icon:(SkBitmap)icon {
   NSString* nibPath =
-      [mac_util::MainAppBundle() pathForResource:@"ExtensionInstalledBubble"
+      [base::mac::MainAppBundle() pathForResource:@"ExtensionInstalledBubble"
                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
     DCHECK(parentWindow);

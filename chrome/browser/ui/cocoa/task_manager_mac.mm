@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "app/l10n_util_mac.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #import "chrome/browser/ui/cocoa/window_size_autosaver.h"
@@ -103,7 +103,7 @@ class SortHelper {
 @implementation TaskManagerWindowController
 
 - (id)initWithTaskManagerObserver:(TaskManagerMac*)taskManagerObserver {
-  NSString* nibpath = [mac_util::MainAppBundle()
+  NSString* nibpath = [base::mac::MainAppBundle()
                         pathForResource:@"TaskManager"
                                  ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {

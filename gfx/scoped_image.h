@@ -14,7 +14,7 @@
 #if defined(OS_LINUX)
 #include <glib-object.h>
 #elif defined(OS_MACOSX)
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #endif
 
 namespace gfx {
@@ -106,7 +106,7 @@ class ScopedImage<NSImage> : public gfx::internal::ScopedImage<NSImage> {
   }
 
   virtual void Free() {
-    mac_util::NSObjectRelease(image_);
+    base::mac::NSObjectRelease(image_);
     image_ = NULL;
   }
 

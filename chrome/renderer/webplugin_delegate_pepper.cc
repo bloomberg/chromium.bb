@@ -16,7 +16,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #if defined(OS_MACOSX)
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #endif
 #include "base/md5.h"
 #include "base/message_loop.h"
@@ -1749,7 +1749,7 @@ void WebPluginDelegatePepper::DrawSkBitmapToCanvas(
       CGImageCreate(
           bitmap.width(), bitmap.height(),
           8, 32, bitmap.rowBytes(),
-          mac_util::GetSystemColorSpace(),
+          base::mac::GetSystemColorSpace(),
           kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host,
           data_provider, NULL, false, kCGRenderingIntentDefault));
 

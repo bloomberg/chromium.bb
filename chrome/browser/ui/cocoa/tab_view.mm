@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/tab_view.h"
 
 #include "base/logging.h"
-#import "base/mac_util.h"
+#import "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
@@ -988,14 +988,14 @@ const CGFloat kRapidCloseDist = 2.5;
     DCHECK(CFGetTypeID(dict) == CFDictionaryGetTypeID());
 
     // Sanity check the ID.
-    CFNumberRef otherIDRef = (CFNumberRef)mac_util::GetValueFromDictionary(
+    CFNumberRef otherIDRef = (CFNumberRef)base::mac::GetValueFromDictionary(
         dict, kCGWindowNumber, CFNumberGetTypeID());
     CGWindowID otherID;
     if (otherIDRef &&
         CFNumberGetValue(otherIDRef, kCGWindowIDCFNumberType, &otherID) &&
         otherID == windowID) {
       // And then get the workspace.
-      CFNumberRef workspaceRef = (CFNumberRef)mac_util::GetValueFromDictionary(
+      CFNumberRef workspaceRef = (CFNumberRef)base::mac::GetValueFromDictionary(
           dict, kCGWindowWorkspace, CFNumberGetTypeID());
       if (!workspaceRef ||
           !CFNumberGetValue(workspaceRef, kCFNumberIntType, &workspace)) {

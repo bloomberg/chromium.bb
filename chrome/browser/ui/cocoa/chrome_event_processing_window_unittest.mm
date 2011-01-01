@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <Carbon/Carbon.h>
+
 #include "base/debug/debugger.h"
 #include "base/scoped_nsobject.h"
 #include "chrome/app/chrome_command_ids.h"

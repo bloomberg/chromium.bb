@@ -16,7 +16,6 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "base/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #endif
 

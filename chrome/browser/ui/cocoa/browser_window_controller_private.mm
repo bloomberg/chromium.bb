@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
 
-#include "base/mac_util.h"
 #import "base/scoped_nsobject.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"

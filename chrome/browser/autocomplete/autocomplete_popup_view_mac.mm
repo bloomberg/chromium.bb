@@ -8,7 +8,6 @@
 
 #include "app/resource_bundle.h"
 #include "app/text_elider.h"
-#include "base/mac_util.h"
 #include "base/stl_util-inl.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"

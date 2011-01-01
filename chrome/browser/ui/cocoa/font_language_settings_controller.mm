@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/font_language_settings_controller.h"
 
 #import <Cocoa/Cocoa.h>
-#import "base/mac_util.h"
+#import "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/fonts_languages_window.h"
@@ -33,7 +33,7 @@ void ShowFontsLanguagesWindow(gfx::NativeWindow window,
 
 - (id)initWithProfile:(Profile*)profile {
   DCHECK(profile);
-  NSString* nibpath = [mac_util::MainAppBundle()
+  NSString* nibpath = [base::mac::MainAppBundle()
                         pathForResource:@"FontLanguageSettings"
                                  ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {

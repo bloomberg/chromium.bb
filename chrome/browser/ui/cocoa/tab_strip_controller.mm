@@ -12,7 +12,6 @@
 #include "app/l10n_util.h"
 #include "app/mac/nsimage_cache.h"
 #include "app/resource_bundle.h"
-#include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete.h"

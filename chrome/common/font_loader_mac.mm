@@ -10,7 +10,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 
 // static
@@ -50,7 +50,7 @@ bool FontLoader::LoadFontIntoBuffer(NSFont* font_to_encode,
     LOG(ERROR) << "Failed to find font file for " << font_name;
     return false;
   }
-  FilePath font_path = FilePath(mac_util::PathFromFSRef(font_fsref));
+  FilePath font_path = FilePath(base::mac::PathFromFSRef(font_fsref));
 
   // Load file into shared memory buffer.
   int64 font_file_size_64 = -1;

@@ -4,7 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -42,7 +42,7 @@ const float kFindBarCloseDuration = 0.15;
 
 - (id)init {
   if ((self = [super initWithNibName:@"FindBar"
-                              bundle:mac_util::MainAppBundle()])) {
+                              bundle:base::mac::MainAppBundle()])) {
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(findPboardUpdated:)

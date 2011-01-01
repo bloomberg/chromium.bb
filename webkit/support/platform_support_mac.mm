@@ -12,7 +12,7 @@
 #include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/path_service.h"
 #include "base/string16.h"
 #include "grit/webkit_resources.h"
@@ -104,7 +104,7 @@ void AfterInitialize(bool unit_test_mode) {
   // Load a data pack.
   g_resource_data_pack = new app::DataPack;
   NSString* resource_path =
-      [mac_util::MainAppBundle() pathForResource:@"DumpRenderTree"
+      [base::mac::MainAppBundle() pathForResource:@"DumpRenderTree"
                                           ofType:@"pak"];
   FilePath resources_pak_path([resource_path fileSystemRepresentation]);
   if (!g_resource_data_pack->Load(resources_pak_path)) {
@@ -177,7 +177,7 @@ string16 GetLocalizedString(int message_id) {
 static FilePath GetResourcesFilePath() {
   FilePath path;
   // We assume the application is bundled.
-  if (!mac_util::AmIBundled()) {
+  if (!base::mac::AmIBundled()) {
     LOG(FATAL) << "Failed to locate resources. The applicaiton is not bundled.";
   }
   PathService::Get(base::DIR_EXE, &path);

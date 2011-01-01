@@ -8,7 +8,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/mac_util.h"
 #include "base/path_service.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
 #import "base/scoped_nsobject.h"

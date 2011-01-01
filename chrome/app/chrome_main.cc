@@ -48,8 +48,8 @@
 
 #if defined(OS_MACOSX)
 #include "app/l10n_util_mac.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/os_crash_dumps.h"
-#include "base/mac_util.h"
 #include "base/mach_ipc_mac.h"
 #include "chrome/app/breakpad_mac.h"
 #include "chrome/browser/mach_broker_mac.h"
@@ -411,7 +411,7 @@ void SetMacProcessName(const std::string& process_type) {
   }
   if (name_id) {
     NSString* app_name = l10n_util::GetNSString(name_id);
-    mac_util::SetProcessName(reinterpret_cast<CFStringRef>(app_name));
+    base::mac::SetProcessName(reinterpret_cast<CFStringRef>(app_name));
   }
 }
 
@@ -641,7 +641,7 @@ int ChromeMain(int argc, char** argv) {
       command_line.GetSwitchValueASCII(switches::kProcessType);
 
 #if defined(OS_MACOSX)
-  mac_util::SetOverrideAppBundlePath(chrome::GetFrameworkBundlePath());
+  base::mac::SetOverrideAppBundlePath(chrome::GetFrameworkBundlePath());
 #endif  // OS_MACOSX
 
   // If we are in diagnostics mode this is the end of the line. After the
@@ -747,7 +747,7 @@ int ChromeMain(int argc, char** argv) {
   //    Browser process in release mode.
   if (!command_line.HasSwitch(switches::kDisableBreakpad)) {
     bool disable_apple_crash_reporter = is_debug_build
-                                        || mac_util::IsBackgroundOnlyProcess();
+                                        || base::mac::IsBackgroundOnlyProcess();
     if (!IsCrashReporterEnabled() && disable_apple_crash_reporter) {
       base::mac::DisableOSCrashDumps();
     }
@@ -760,11 +760,11 @@ int ChromeMain(int argc, char** argv) {
   // the helper should always have a --type switch.
   //
   // This check is done this late so there is already a call to
-  // mac_util::IsBackgroundOnlyProcess(), so there is no change in
+  // base::mac::IsBackgroundOnlyProcess(), so there is no change in
   // startup/initialization order.
 
   // The helper's Info.plist marks it as a background only app.
-  if (mac_util::IsBackgroundOnlyProcess()) {
+  if (base::mac::IsBackgroundOnlyProcess()) {
     CHECK(command_line.HasSwitch(switches::kProcessType))
         << "Helper application requires --type.";
   } else {

@@ -7,7 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/file_util.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
@@ -32,7 +32,7 @@ void GetPluginCommonDirectory(std::vector<FilePath>* plugin_dirs,
   if (err)
     return;
 
-  plugin_dirs->push_back(FilePath(mac_util::PathFromFSRef(ref)));
+  plugin_dirs->push_back(FilePath(base::mac::PathFromFSRef(ref)));
 }
 
 // Returns true if the plugin should be prevented from loading.

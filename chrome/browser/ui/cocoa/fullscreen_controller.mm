@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#import "base/mac/mac_util.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
@@ -102,7 +103,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 
 // Returns |kFullScreenModeHideAll| when the overlay is hidden and
 // |kFullScreenModeHideDock| when the overlay is shown.
-- (mac_util::FullScreenMode)desiredFullscreenMode;
+- (base::mac::FullScreenMode)desiredFullscreenMode;
 
 // Change the overlay to the given fraction, with or without animation. Only
 // guaranteed to work properly with |fraction == 0| or |fraction == 1|. This
@@ -166,7 +167,7 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 - (id)initWithBrowserController:(BrowserWindowController*)controller {
   if ((self == [super init])) {
     browserController_ = controller;
-    currentFullscreenMode_ = mac_util::kFullScreenModeNormal;
+    currentFullscreenMode_ = base::mac::kFullScreenModeNormal;
   }
 
   // Let the world know what we're up to.
@@ -315,12 +316,12 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 - (void)changeFloatingBarShownFraction:(CGFloat)fraction {
   [browserController_ setFloatingBarShownFraction:fraction];
 
-  mac_util::FullScreenMode desiredMode = [self desiredFullscreenMode];
+  base::mac::FullScreenMode desiredMode = [self desiredFullscreenMode];
   if (desiredMode != currentFullscreenMode_ && [self shouldToggleMenuBar]) {
-    if (currentFullscreenMode_ == mac_util::kFullScreenModeNormal)
-      mac_util::RequestFullScreen(desiredMode);
+    if (currentFullscreenMode_ == base::mac::kFullScreenModeNormal)
+      base::mac::RequestFullScreen(desiredMode);
     else
-      mac_util::SwitchFullScreenModes(currentFullscreenMode_, desiredMode);
+      base::mac::SwitchFullScreenModes(currentFullscreenMode_, desiredMode);
     currentFullscreenMode_ = desiredMode;
   }
 }
@@ -405,10 +406,10 @@ const CGFloat kFloatingBarVerticalOffset = 22;
          [[browserController_ window] isMainWindow];
 }
 
-- (mac_util::FullScreenMode)desiredFullscreenMode {
+- (base::mac::FullScreenMode)desiredFullscreenMode {
   if ([browserController_ floatingBarShownFraction] >= 1.0)
-    return mac_util::kFullScreenModeHideDock;
-  return mac_util::kFullScreenModeHideAll;
+    return base::mac::kFullScreenModeHideDock;
+  return base::mac::kFullScreenModeHideAll;
 }
 
 - (void)changeOverlayToFraction:(CGFloat)fraction
@@ -608,13 +609,13 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 }
 
 - (void)showActiveWindowUI {
-  DCHECK_EQ(currentFullscreenMode_, mac_util::kFullScreenModeNormal);
-  if (currentFullscreenMode_ != mac_util::kFullScreenModeNormal)
+  DCHECK_EQ(currentFullscreenMode_, base::mac::kFullScreenModeNormal);
+  if (currentFullscreenMode_ != base::mac::kFullScreenModeNormal)
     return;
 
   if ([self shouldToggleMenuBar]) {
-    mac_util::FullScreenMode desiredMode = [self desiredFullscreenMode];
-    mac_util::RequestFullScreen(desiredMode);
+    base::mac::FullScreenMode desiredMode = [self desiredFullscreenMode];
+    base::mac::RequestFullScreen(desiredMode);
     currentFullscreenMode_ = desiredMode;
   }
 
@@ -622,9 +623,9 @@ const CGFloat kFloatingBarVerticalOffset = 22;
 }
 
 - (void)hideActiveWindowUI {
-  if (currentFullscreenMode_ != mac_util::kFullScreenModeNormal) {
-    mac_util::ReleaseFullScreen(currentFullscreenMode_);
-    currentFullscreenMode_ = mac_util::kFullScreenModeNormal;
+  if (currentFullscreenMode_ != base::mac::kFullScreenModeNormal) {
+    base::mac::ReleaseFullScreen(currentFullscreenMode_);
+    currentFullscreenMode_ = base::mac::kFullScreenModeNormal;
   }
 
   // TODO(rohitrao): Remove the Exit Fullscreen button.  http://crbug.com/35956

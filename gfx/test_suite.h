@@ -6,18 +6,18 @@
 #define GFX_TEST_SUITE_H_
 #pragma once
 
-#include "build/build_config.h"
-
 #include <string>
 
 #include "gfx/gfx_paths.h"
 #include "base/file_path.h"
 #include "base/path_service.h"
-#if defined(OS_MACOSX)
-#include "base/mac_util.h"
-#endif
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/test/test_suite.h"
+#include "build/build_config.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
 
 class GfxTestSuite : public base::TestSuite {
  public:
@@ -47,13 +47,13 @@ class GfxTestSuite : public base::TestSuite {
 #else
 #error Unknown branding
 #endif
-    mac_util::SetOverrideAppBundlePath(path);
+    base::mac::SetOverrideAppBundlePath(path);
 #endif  // OS_MACOSX
   }
 
   virtual void Shutdown() {
 #if defined(OS_MACOSX)
-    mac_util::SetOverrideAppBundle(NULL);
+    base::mac::SetOverrideAppBundle(NULL);
 #endif
     TestSuite::Shutdown();
   }

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/platform_util.h"
 
+#include <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 #import <CoreServices/CoreServices.h>
 
@@ -11,7 +12,6 @@
 #include "app/l10n_util_mac.h"
 #include "base/file_path.h"
 #include "base/logging.h"
-#include "base/mac_util.h"
 #include "base/mac/scoped_aedesc.h"
 #include "base/sys_string_conversions.h"
 #include "googleurl/src/gurl.h"

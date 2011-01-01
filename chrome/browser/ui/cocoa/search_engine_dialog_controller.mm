@@ -8,7 +8,7 @@
 
 #include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
 #include "chrome/browser/profiles/profile.h"
@@ -68,7 +68,7 @@ void SearchEngineDialogControllerBridge::OnTemplateURLModelChanged() {
 
 - (id)init {
   NSString* nibpath =
-      [mac_util::MainAppBundle() pathForResource:@"SearchEngineDialog"
+      [base::mac::MainAppBundle() pathForResource:@"SearchEngineDialog"
                                           ofType:@"nib"];
   self = [super initWithWindowNibPath:nibpath owner:self];
   if (self != nil) {

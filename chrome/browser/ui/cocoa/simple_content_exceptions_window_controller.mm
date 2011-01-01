@@ -7,7 +7,7 @@
 #include "app/l10n_util_mac.h"
 #include "app/table_model_observer.h"
 #include "base/logging.h"
-#import "base/mac_util.h"
+#import "base/mac/mac_util.h"
 #import "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "grit/generated_resources.h"
@@ -36,7 +36,7 @@ SimpleContentExceptionsWindowController* g_exceptionWindow = nil;
 }
 
 - (id)initWithTableModel:(RemoveRowsTableModel*)model {
-  NSString* nibpath = [mac_util::MainAppBundle()
+  NSString* nibpath = [base::mac::MainAppBundle()
       pathForResource:@"SimpleContentExceptionsWindow"
                ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {

@@ -11,12 +11,14 @@
 #include "app/app_paths.h"
 #include "app/resource_bundle.h"
 #include "base/path_service.h"
-#if defined(OS_MACOSX)
-#include "base/mac_util.h"
-#include "base/test/mock_chrome_application_mac.h"
-#endif
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/test/test_suite.h"
+#include "build/build_config.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#include "base/test/mock_chrome_application_mac.h"
+#endif
 
 class AppTestSuite : public base::TestSuite {
  public:
@@ -50,7 +52,7 @@ class AppTestSuite : public base::TestSuite {
 #else
 #error Unknown branding
 #endif
-    mac_util::SetOverrideAppBundlePath(path);
+    base::mac::SetOverrideAppBundlePath(path);
 #elif defined(OS_POSIX)
     FilePath pak_dir;
     PathService::Get(base::DIR_MODULE, &pak_dir);
@@ -69,7 +71,7 @@ class AppTestSuite : public base::TestSuite {
     ResourceBundle::CleanupSharedInstance();
 
 #if defined(OS_MACOSX)
-    mac_util::SetOverrideAppBundle(NULL);
+    base::mac::SetOverrideAppBundle(NULL);
 #endif
     TestSuite::Shutdown();
   }

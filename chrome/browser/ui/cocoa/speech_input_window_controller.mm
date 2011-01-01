@@ -7,9 +7,7 @@
 #include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
 #include "base/logging.h"
-#include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
-
 #include "chrome/browser/ui/cocoa/info_bubble_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"

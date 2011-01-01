@@ -27,7 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_MACOSX)
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/path_service.h"
 #endif
 
@@ -54,7 +54,7 @@ class TestShellTestSuite : public base::TestSuite {
     FilePath path;
     PathService::Get(base::DIR_EXE, &path);
     path = path.AppendASCII("TestShell.app");
-    mac_util::SetOverrideAppBundlePath(path);
+    base::mac::SetOverrideAppBundlePath(path);
 #endif
 
     base::TestSuite::Initialize();

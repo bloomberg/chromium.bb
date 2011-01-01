@@ -57,7 +57,7 @@
 #elif defined(OS_LINUX)
 #include "third_party/WebKit/WebKit/chromium/public/linux/WebThemeEngine.h"
 #elif defined(OS_MACOSX)
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #endif
 
 using WebKit::WebScriptController;
@@ -88,7 +88,7 @@ TestWebKitClient::TestWebKitClient(bool unit_test_mode)
   FilePath module_path;
   if (PathService::Get(base::DIR_MODULE, &module_path)) {
 #if defined(OS_MACOSX)
-    if (mac_util::AmIBundled())
+    if (base::mac::AmIBundled())
       module_path = module_path.DirName().DirName().DirName();
 #endif
     if (media::InitializeMediaLibrary(module_path))

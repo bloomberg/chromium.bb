@@ -6,7 +6,7 @@
 #import <QuartzCore/QuartzCore.h>
 
 #include "base/logging.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/confirm_quit_panel_controller.h"
 
@@ -29,7 +29,7 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
 
 - (id)initInternal {
   NSString* nibPath =
-      [mac_util::MainAppBundle() pathForResource:@"ConfirmQuitPanel"
+      [base::mac::MainAppBundle() pathForResource:@"ConfirmQuitPanel"
                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
   }

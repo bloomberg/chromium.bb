@@ -6,7 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
@@ -83,7 +83,7 @@ const NSTimeInterval kAutoCloseDelaySeconds = 5;
 - (id)initWithBrowser:(Browser*)browser
        resizeDelegate:(id<ViewResizer>)resizeDelegate {
   if ((self = [super initWithNibName:@"DownloadShelf"
-                              bundle:mac_util::MainAppBundle()])) {
+                              bundle:base::mac::MainAppBundle()])) {
     resizeDelegate_ = resizeDelegate;
     maxShelfHeight_ = NSHeight([[self view] bounds]);
     currentShelfHeight_ = maxShelfHeight_;

@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/plugin_process_host.h"
 #include "chrome/common/plugin_messages.h"
@@ -44,8 +44,8 @@ void PluginProcessHost::OnPluginShowWindow(uint32 window_id,
     // otherwise our refcounting can get skewed).
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableFunction(mac_util::RequestFullScreen,
-                            mac_util::kFullScreenModeHideAll));
+        NewRunnableFunction(base::mac::RequestFullScreen,
+                            base::mac::kFullScreenModeHideAll));
   }
 }
 
@@ -55,10 +55,10 @@ void PluginProcessHost::OnPluginShowWindow(uint32 window_id,
 static void ReleasePluginFullScreen(pid_t plugin_pid) {
   // Releasing full screen only works if we are the frontmost process; grab
   // focus, but give it back to the plugin process if requested.
-  mac_util::ActivateProcess(base::GetCurrentProcId());
-  mac_util::ReleaseFullScreen(mac_util::kFullScreenModeHideAll);
+  base::mac::ActivateProcess(base::GetCurrentProcId());
+  base::mac::ReleaseFullScreen(base::mac::kFullScreenModeHideAll);
   if (plugin_pid != -1) {
-    mac_util::ActivateProcess(plugin_pid);
+    base::mac::ActivateProcess(plugin_pid);
   }
 }
 
@@ -83,7 +83,7 @@ void PluginProcessHost::OnPluginHideWindow(uint32 window_id,
   if (browser_needs_activation) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableFunction(mac_util::ActivateProcess,
+        NewRunnableFunction(base::mac::ActivateProcess,
                             base::GetCurrentProcId()));
   }
 }
@@ -96,7 +96,7 @@ void PluginProcessHost::OnAppActivation() {
   if (!plugin_modal_windows_set_.empty()) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableFunction(mac_util::ActivateProcess, handle()));
+        NewRunnableFunction(base::mac::ActivateProcess, handle()));
   }
 }
 
@@ -105,7 +105,7 @@ void PluginProcessHost::OnPluginSetCursorVisibility(bool visible) {
     plugin_cursor_visible_ = visible;
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableFunction(mac_util::SetCursorVisibility,
+        NewRunnableFunction(base::mac::SetCursorVisibility,
                             visible));
   }
 }

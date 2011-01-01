@@ -9,7 +9,7 @@
 
 #include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
-#import "base/mac_util.h"
+#import "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/profiles/profile.h"
@@ -168,7 +168,7 @@ bool CookiesTreeModelObserverBridge::HasCocoaModel() {
        appcacheHelper:(BrowsingDataAppCacheHelper*)appcacheHelper
       indexedDBHelper:(BrowsingDataIndexedDBHelper*)indexedDBHelper {
   DCHECK(profile);
-  NSString* nibpath = [mac_util::MainAppBundle() pathForResource:@"Cookies"
+  NSString* nibpath = [base::mac::MainAppBundle() pathForResource:@"Cookies"
                                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     profile_ = profile;

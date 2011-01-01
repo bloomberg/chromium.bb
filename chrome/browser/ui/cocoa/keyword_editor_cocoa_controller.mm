@@ -6,7 +6,7 @@
 
 #import "chrome/browser/ui/cocoa/keyword_editor_cocoa_controller.h"
 
-#import "base/mac_util.h"
+#import "base/mac/mac_util.h"
 #include "base/lazy_instance.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -146,7 +146,7 @@ static base::LazyInstance<ProfileControllerMap> g_profile_controller_map(
 
 - (id)initWithProfile:(Profile*)profile {
   DCHECK(profile);
-  NSString* nibpath = [mac_util::MainAppBundle()
+  NSString* nibpath = [base::mac::MainAppBundle()
                         pathForResource:@"KeywordEditor"
                                  ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {

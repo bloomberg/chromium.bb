@@ -8,7 +8,7 @@
 
 #include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
-#import "base/mac_util.h"
+#import "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -137,7 +137,7 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
   tabContents_ = tabContents;
 
   NSString* nibpath =
-      [mac_util::MainAppBundle() pathForResource:@"CollectedCookies"
+      [base::mac::MainAppBundle() pathForResource:@"CollectedCookies"
                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     [self loadTreeModelFromTabContents];

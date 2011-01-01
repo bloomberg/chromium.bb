@@ -8,7 +8,7 @@
 
 #include "base/file_path.h"
 #include "base/logging.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
@@ -120,7 +120,7 @@ void Clipboard::WriteBitmap(const char* pixel_data, const char* size_data) {
                     8,
                     32,
                     size->width()*4,
-                    mac_util::GetSRGBColorSpace(),  // TODO(avi): do better
+                    base::mac::GetSRGBColorSpace(),  // TODO(avi): do better
                     kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host,
                     data_provider,
                     NULL,

@@ -9,7 +9,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/cocoa_protocols.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 
 @class BrowserWindowController;
@@ -69,7 +69,7 @@
   // (which can happen when a fullscreen window is closed).  Used to track the
   // current state and make sure we properly restore the menu bar when this
   // controller is destroyed.
-  mac_util::FullScreenMode currentFullscreenMode_;
+  base::mac::FullScreenMode currentFullscreenMode_;
 }
 
 @property(readonly, nonatomic) BOOL isFullscreen;

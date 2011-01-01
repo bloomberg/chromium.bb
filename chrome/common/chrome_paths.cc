@@ -15,7 +15,7 @@
 #include "chrome/common/chrome_switches.h"
 
 #if defined(OS_MACOSX)
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #endif
 
 namespace {
@@ -39,7 +39,7 @@ bool GetInternalPluginsDirectory(FilePath* result) {
 #if defined(OS_MACOSX)
   // If called from Chrome, get internal plugins from a subdirectory of the
   // framework.
-  if (mac_util::AmIBundled()) {
+  if (base::mac::AmIBundled()) {
     *result = chrome::GetFrameworkBundlePath();
     DCHECK(!result->empty());
     *result = result->Append("Internet Plug-Ins");
@@ -79,7 +79,7 @@ bool PathProvider(int key, FilePath* result) {
 #if defined(OS_MACOSX)
       if (!PathService::Get(base::DIR_EXE, result))
         return false;
-      if (mac_util::AmIBundled()) {
+      if (base::mac::AmIBundled()) {
         // If we're called from chrome, dump it beside the app (outside the
         // app bundle), if we're called from a unittest, we'll already
         // outside the bundle so use the exe dir.
@@ -145,7 +145,7 @@ bool PathProvider(int key, FilePath* result) {
       break;
     case chrome::DIR_RESOURCES:
 #if defined(OS_MACOSX)
-      cur = mac_util::MainAppBundlePath();
+      cur = base::mac::MainAppBundlePath();
       cur = cur.Append(FILE_PATH_LITERAL("Resources"));
 #else
       if (!PathService::Get(chrome::DIR_APP, &cur))
@@ -253,8 +253,8 @@ bool PathProvider(int key, FilePath* result) {
       break;
     case chrome::FILE_RESOURCES_PACK:
 #if defined(OS_MACOSX)
-      if (mac_util::AmIBundled()) {
-        cur = mac_util::MainAppBundlePath();
+      if (base::mac::AmIBundled()) {
+        cur = base::mac::MainAppBundlePath();
         cur = cur.Append(FILE_PATH_LITERAL("Resources"))
                  .Append(FILE_PATH_LITERAL("resources.pak"));
         break;

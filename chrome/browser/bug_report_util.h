@@ -9,18 +9,16 @@
 #include <string>
 
 #include "base/basictypes.h"
-#if defined(OS_MACOSX)
-#include "base/mac_util.h"
-#include "base/sys_info.h"
-#elif defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
 #include "chrome/browser/userfeedback/proto/common.pb.h"
 #include "chrome/browser/userfeedback/proto/extension.pb.h"
 #include "chrome/browser/userfeedback/proto/math.pb.h"
 #include "gfx/rect.h"
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_MACOSX)
+#include "base/sys_info.h"
+#elif defined(OS_WIN)
+#include "base/win/windows_version.h"
+#elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/syslogs_library.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #endif

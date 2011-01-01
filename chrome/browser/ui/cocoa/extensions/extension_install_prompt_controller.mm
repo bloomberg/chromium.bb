@@ -6,7 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -67,11 +67,11 @@ void OffsetControlVertically(NSControl* control, CGFloat amount) {
   // We use a different XIB in the case of no warnings, that is a little bit
   // more nicely laid out.
   if (warnings.empty()) {
-    nibpath = [mac_util::MainAppBundle()
+    nibpath = [base::mac::MainAppBundle()
                pathForResource:@"ExtensionInstallPromptNoWarnings"
                         ofType:@"nib"];
   } else {
-   nibpath = [mac_util::MainAppBundle()
+   nibpath = [base::mac::MainAppBundle()
               pathForResource:@"ExtensionInstallPrompt"
                        ofType:@"nib"];
   }

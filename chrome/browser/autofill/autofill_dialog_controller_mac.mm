@@ -6,7 +6,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/lazy_instance.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/autofill/autofill_address_model_mac.h"
 #import "chrome/browser/autofill/autofill_address_sheet_controller_mac.h"
@@ -664,7 +664,7 @@ class PreferenceObserver : public NotificationObserver {
   DCHECK(profile);
   // Use initWithWindowNibPath: instead of initWithWindowNibName: so we
   // can override it in a unit test.
-  NSString* nibpath = [mac_util::MainAppBundle()
+  NSString* nibpath = [base::mac::MainAppBundle()
                        pathForResource:@"AutoFillDialog"
                        ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {

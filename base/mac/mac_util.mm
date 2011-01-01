@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -13,13 +13,14 @@
 #include "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 
-using base::mac::ScopedCFTypeRef;
+namespace base {
+namespace mac {
 
 namespace {
 
 // a count of currently outstanding requests for full screen mode from browser
 // windows, plugins, etc.
-int g_full_screen_requests[mac_util::kNumFullScreenModes] = { 0, 0, 0};
+int g_full_screen_requests[kNumFullScreenModes] = { 0, 0, 0};
 
 // Sets the appropriate SystemUIMode based on the current full screen requests.
 // Since only one SystemUIMode can be active at a given time, full screen
@@ -39,12 +40,12 @@ void SetUIMode() {
   // HideDock.
   SystemUIMode desired_mode = kUIModeNormal;
   SystemUIOptions desired_options = 0;
-  if (g_full_screen_requests[mac_util::kFullScreenModeAutoHideAll] > 0) {
+  if (g_full_screen_requests[kFullScreenModeAutoHideAll] > 0) {
     desired_mode = kUIModeAllHidden;
     desired_options = kUIOptionAutoShowMenuBar;
-  } else if (g_full_screen_requests[mac_util::kFullScreenModeHideDock] > 0) {
+  } else if (g_full_screen_requests[kFullScreenModeHideDock] > 0) {
     desired_mode = kUIModeContentHidden;
-  } else if (g_full_screen_requests[mac_util::kFullScreenModeHideAll] > 0) {
+  } else if (g_full_screen_requests[kFullScreenModeHideAll] > 0) {
     desired_mode = kUIModeAllHidden;
   }
 
@@ -56,16 +57,16 @@ bool WasLaunchedAsLoginItem() {
   ProcessSerialNumber psn = { 0, kCurrentProcess };
 
   scoped_nsobject<NSDictionary> process_info(
-      mac_util::CFToNSCast(ProcessInformationCopyDictionary(&psn,
-                               kProcessDictionaryIncludeAllInformationMask)));
+      CFToNSCast(ProcessInformationCopyDictionary(&psn,
+                     kProcessDictionaryIncludeAllInformationMask)));
 
   long long temp = [[process_info objectForKey:@"ParentPSN"] longLongValue];
   ProcessSerialNumber parent_psn =
       { (temp >> 32) & 0x00000000FFFFFFFFLL, temp & 0x00000000FFFFFFFFLL };
 
   scoped_nsobject<NSDictionary> parent_info(
-      mac_util::CFToNSCast(ProcessInformationCopyDictionary(&parent_psn,
-                               kProcessDictionaryIncludeAllInformationMask)));
+      CFToNSCast(ProcessInformationCopyDictionary(&parent_psn,
+                     kProcessDictionaryIncludeAllInformationMask)));
 
   // Check that creator process code is that of loginwindow.
   BOOL result =
@@ -87,7 +88,7 @@ LSSharedFileListItemRef GetLoginItemForApp() {
   }
 
   scoped_nsobject<NSArray> login_items_array(
-      mac_util::CFToNSCast(LSSharedFileListCopySnapshot(login_items, NULL)));
+      CFToNSCast(LSSharedFileListCopySnapshot(login_items, NULL)));
 
   NSURL* url = [NSURL fileURLWithPath:[[NSBundle mainBundle] bundlePath]];
 
@@ -125,9 +126,7 @@ bool IsHiddenLoginItem(LSSharedFileListItemRef item) {
   return hidden && hidden == kCFBooleanTrue;
 }
 
-}  // end namespace
-
-namespace mac_util {
+}  // namespace
 
 std::string PathFromFSRef(const FSRef& ref) {
   ScopedCFTypeRef<CFURLRef> url(
@@ -713,4 +712,5 @@ void NSObjectRelease(void* obj) {
   [nsobj release];
 }
 
-}  // namespace mac_util
+}  // namespace mac
+}  // namespace base

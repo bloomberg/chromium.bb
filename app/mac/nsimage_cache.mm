@@ -7,7 +7,7 @@
 #import <AppKit/AppKit.h>
 
 #include "base/logging.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 
 // When C++ exceptions are disabled, the C++ library defines |try| and
 // |catch| so as to allow exception-expecting C++ code to build properly when
@@ -39,7 +39,7 @@ NSImage* GetCachedImageWithName(NSString* name) {
     DVLOG_IF(1, [[name pathExtension] length] == 0) << "Suggest including the "
         "extension in the image name";
 
-    NSString* path = [mac_util::MainAppBundle() pathForImageResource:name];
+    NSString* path = [base::mac::MainAppBundle() pathForImageResource:name];
     if (path) {
       @try {
         result = [[[NSImage alloc] initWithContentsOfFile:path] autorelease];

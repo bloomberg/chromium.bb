@@ -12,7 +12,7 @@
 #include "app/l10n_util.h"
 #import "app/l10n_util_mac.h"
 #include "base/logging.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/sys_string_conversions.h"
 #include "base/ref_counted.h"
@@ -438,9 +438,9 @@ NSString* const kBrandKey = @"KSBrandID";
     return NO;
 
   // Load the KeystoneRegistration framework bundle if present.  It lives
-  // inside the framework, so use mac_util::MainAppBundle();
+  // inside the framework, so use base::mac::MainAppBundle();
   NSString* ksrPath =
-      [[mac_util::MainAppBundle() privateFrameworksPath]
+      [[base::mac::MainAppBundle() privateFrameworksPath]
           stringByAppendingPathComponent:@"KeystoneRegistration.framework"];
   NSBundle* ksrBundle = [NSBundle bundleWithPath:ksrPath];
   [ksrBundle load];
@@ -722,7 +722,7 @@ NSString* const kBrandKey = @"KSBrandID";
   // to files and directories.
   NSFileManager* fileManager = [NSFileManager defaultManager];
   NSString* executablePath = [[NSBundle mainBundle] executablePath];
-  NSString* frameworkPath = [mac_util::MainAppBundle() bundlePath];
+  NSString* frameworkPath = [base::mac::MainAppBundle() bundlePath];
   return ![fileManager isWritableFileAtPath:appPath_] ||
          ![fileManager isWritableFileAtPath:executablePath] ||
          ![fileManager isWritableFileAtPath:frameworkPath];
@@ -809,7 +809,7 @@ NSString* const kBrandKey = @"KSBrandID";
   // However, preflight operation (and promotion) should only be asynchronous
   // if the synchronous parameter is NO.
   NSString* preflightPath =
-      [mac_util::MainAppBundle() pathForResource:@"keystone_promote_preflight"
+      [base::mac::MainAppBundle() pathForResource:@"keystone_promote_preflight"
                                           ofType:@"sh"];
   const char* preflightPathC = [preflightPath fileSystemRepresentation];
   const char* userBrandFile = NULL;
@@ -895,7 +895,7 @@ NSString* const kBrandKey = @"KSBrandID";
 
   SEL selector = @selector(changePermissionsForPromotionWithTool:);
   NSString* toolPath =
-      [mac_util::MainAppBundle() pathForResource:@"keystone_promote_postflight"
+      [base::mac::MainAppBundle() pathForResource:@"keystone_promote_postflight"
                                           ofType:@"sh"];
 
   PerformBridge::PostPerform(self, selector, toolPath);

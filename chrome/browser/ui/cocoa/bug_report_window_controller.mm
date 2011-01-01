@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/bug_report_window_controller.h"
 
 #include "app/l10n_util_mac.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bug_report_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -26,7 +26,7 @@
 
 - (id)initWithTabContents:(TabContents*)currentTab
                   profile:(Profile*)profile {
-  NSString* nibpath = [mac_util::MainAppBundle() pathForResource:@"ReportBug"
+  NSString* nibpath = [base::mac::MainAppBundle() pathForResource:@"ReportBug"
                                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     currentTab_ = currentTab;
@@ -62,7 +62,7 @@
       [self setPageURL:base::SysUTF8ToNSString(
           currentTab_->controller().GetActiveEntry()->url().spec())];
       [self setPageTitle:base::SysUTF16ToNSString(currentTab_->GetTitle())];
-      mac_util::GrabWindowSnapshot(
+      base::mac::GrabWindowSnapshot(
           currentTab_->view()->GetTopLevelNativeWindow(), &pngData_,
           &pngWidth_, &pngHeight_);
     } else {

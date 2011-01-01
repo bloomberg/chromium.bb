@@ -7,7 +7,6 @@
 #import "importer_lock_dialog.h"
 
 #include "app/l10n_util_mac.h"
-#include "base/mac_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/importer/importer.h"

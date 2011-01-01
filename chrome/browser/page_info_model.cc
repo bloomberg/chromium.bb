@@ -26,7 +26,7 @@
 #include "net/base/x509_certificate.h"
 
 #if defined(OS_MACOSX)
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #endif
 
 PageInfoModel::PageInfoModel(Profile* profile,
@@ -277,7 +277,7 @@ PageInfoModel::~PageInfoModel() {
   // Release the NSImages.
   for (std::vector<gfx::NativeImage>::iterator it = icons_.begin();
        it != icons_.end(); ++it) {
-    mac_util::NSObjectRelease(*it);
+    base::mac::NSObjectRelease(*it);
   }
 #endif
 }
@@ -355,7 +355,7 @@ gfx::NativeImage PageInfoModel::GetBitmapNamed(int resource_id) {
 #if defined(OS_MACOSX)
   // Unlike other platforms, the Mac ResourceBundle does not keep a shared image
   // cache. These are released in the dtor.
-  mac_util::NSObjectRetain(image);
+  base::mac::NSObjectRetain(image);
 #endif
   return image;
 }

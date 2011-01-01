@@ -4,7 +4,7 @@
 
 #include "app/l10n_util.h"
 #include "base/command_line.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "chrome/browser/background_mode_manager.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/common/app_mode_common_mac.h"
@@ -40,18 +40,18 @@ void DisableLaunchOnStartupTask::Run() {
   // Check if Chrome is not a login Item, or is a Login Item but w/o 'hidden'
   // flag - most likely user has modified the setting, don't override it.
   bool is_hidden = false;
-  if (!mac_util::CheckLoginItemStatus(&is_hidden) || !is_hidden)
+  if (!base::mac::CheckLoginItemStatus(&is_hidden) || !is_hidden)
     return;
 
-  mac_util::RemoveFromLoginItems();
+  base::mac::RemoveFromLoginItems();
 }
 
 void EnableLaunchOnStartupTask::Run() {
   // Return if Chrome is already a Login Item (avoid overriding user choice).
-  if (mac_util::CheckLoginItemStatus(NULL))
+  if (base::mac::CheckLoginItemStatus(NULL))
     return;
 
-  mac_util::AddToLoginItems(true);  // Hide on startup.
+  base::mac::AddToLoginItems(true);  // Hide on startup.
   CFPreferencesSetAppValue(kLaunchOnStartupResetAllowedPrefsKey,
                            kCFBooleanTrue,
                            app_mode::kAppPrefsID);

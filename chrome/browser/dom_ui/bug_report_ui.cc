@@ -39,7 +39,7 @@
 #if defined(USE_X11)
 #include "app/x11_util.h"
 #elif defined(OS_MACOSX)
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #elif defined(OS_WIN)
 #include "app/win/win_util.h"
 #endif
@@ -173,7 +173,7 @@ void RefreshLastScreenshot(NSWindow* window) {
 #if defined(USE_X11)
   x11_util::GrabWindowSnapshot(window, last_screenshot_png);
 #elif defined(OS_MACOSX)
-  mac_util::GrabWindowSnapshot(window, last_screenshot_png, &width, &height);
+  base::mac::GrabWindowSnapshot(window, last_screenshot_png, &width, &height);
 #elif defined(OS_WIN)
   app::win::GrabWindowSnapshot(window, last_screenshot_png);
 #endif

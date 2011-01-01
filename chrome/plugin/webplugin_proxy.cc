@@ -24,7 +24,7 @@
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 
 #if defined(OS_MACOSX)
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "chrome/plugin/webplugin_accelerated_surface_proxy_mac.h"
 #endif
@@ -573,7 +573,7 @@ void WebPluginProxy::SetWindowlessBuffer(
       window_rect.width(),
       window_rect.height(),
       8, 4 * window_rect.width(),
-      mac_util::GetSystemColorSpace(),
+      base::mac::GetSystemColorSpace(),
       kCGImageAlphaPremultipliedFirst |
       kCGBitmapByteOrder32Host));
   CGContextTranslateCTM(windowless_context_, 0, window_rect.height());
@@ -584,7 +584,7 @@ void WebPluginProxy::SetWindowlessBuffer(
         window_rect.width(),
         window_rect.height(),
         8, 4 * window_rect.width(),
-        mac_util::GetSystemColorSpace(),
+        base::mac::GetSystemColorSpace(),
         kCGImageAlphaPremultipliedFirst |
         kCGBitmapByteOrder32Host));
     CGContextTranslateCTM(background_context_, 0, window_rect.height());

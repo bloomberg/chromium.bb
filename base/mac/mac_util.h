@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MAC_UTIL_H_
-#define BASE_MAC_UTIL_H_
+#ifndef BASE_MAC_MAC_UTIL_H_
+#define BASE_MAC_MAC_UTIL_H_
 #pragma once
 
 #include <Carbon/Carbon.h>
@@ -34,7 +34,8 @@ typedef unsigned int NSSearchPathDirectory;
 typedef unsigned int NSSearchPathDomainMask;
 #endif
 
-namespace mac_util {
+namespace base {
+namespace mac {
 
 // Full screen modes, in increasing order of priority.  More permissive modes
 // take predecence.
@@ -242,6 +243,7 @@ CF_TO_NS_CAST(CFWriteStreamRef, NSOutputStream);
 
 #endif  // __OBJC__
 
-}  // namespace mac_util
+}  // namespace mac
+}  // namespace base
 
-#endif  // BASE_MAC_UTIL_H_
+#endif  // BASE_MAC_MAC_UTIL_H_

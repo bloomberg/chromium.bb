@@ -42,7 +42,7 @@
 #include "sandbox/src/dep.h"
 
 #if defined(OS_MACOSX)
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #endif
 
 #if defined(OS_WIN)
@@ -78,7 +78,7 @@ InProcessBrowserTest::InProcessBrowserTest()
       tab_closeable_state_watcher_enabled_(false),
       original_single_process_(false) {
 #if defined(OS_MACOSX)
-  mac_util::SetOverrideAmIBundled(true);
+  base::mac::SetOverrideAmIBundled(true);
 #endif
 
   // Before we run the browser, we have to hack the path to the exe to match

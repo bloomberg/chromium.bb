@@ -9,7 +9,7 @@
 
 #include "base/file_path.h"
 #include "base/logging.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "googleurl/src/gurl.h"
 
@@ -98,7 +98,7 @@ void AddOriginMetadataToFile(const FilePath& file, const GURL& source,
 void AddQuarantineMetadataToFile(const FilePath& file, const GURL& source,
                                  const GURL& referrer) {
   FSRef file_ref;
-  if (!mac_util::FSRefFromPath(file.value(), &file_ref))
+  if (!base::mac::FSRefFromPath(file.value(), &file_ref))
     return;
 
   NSMutableDictionary* quarantine_properties = nil;

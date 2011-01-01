@@ -7,7 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
 #include "base/logging.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/message_loop.h"
 #import "base/scoped_nsobject.h"
 #import "base/sys_string_conversions.h"
@@ -57,7 +57,7 @@ NSString* keyForImportItem(importer::ImportItem item) {
                   observer:(ImportObserver*)observer
               itemsEnabled:(int16)items {
   NSString* nib_path =
-      [mac_util::MainAppBundle() pathForResource:@"ImportProgressDialog"
+      [base::mac::MainAppBundle() pathForResource:@"ImportProgressDialog"
                                           ofType:@"nib"];
   self = [super initWithWindowNibPath:nib_path owner:self];
   if (self != nil) {

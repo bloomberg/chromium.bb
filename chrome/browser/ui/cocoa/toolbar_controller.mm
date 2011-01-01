@@ -12,7 +12,7 @@
 #include "app/menus/accelerator_cocoa.h"
 #include "app/menus/menu_model.h"
 #include "app/resource_bundle.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/singleton.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -170,7 +170,7 @@ class NotificationBridge : public NotificationObserver {
        nibFileNamed:(NSString*)nibName {
   DCHECK(model && commands && profile && [nibName length]);
   if ((self = [super initWithNibName:nibName
-                              bundle:mac_util::MainAppBundle()])) {
+                              bundle:base::mac::MainAppBundle()])) {
     toolbarModel_ = model;
     commands_ = commands;
     profile_ = profile;

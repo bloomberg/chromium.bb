@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/animatable_image.h"
 
 #include "base/logging.h"
-#import "base/mac_util.h"
+#import "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
@@ -131,7 +131,7 @@
 // rasterize PDF resources.
 - (void)setLayerContents:(CALayer*)layer {
   base::mac::ScopedCFTypeRef<CGImageRef> image(
-      mac_util::CopyNSImageToCGImage(image_.get()));
+      base::mac::CopyNSImageToCGImage(image_.get()));
   // Create the layer that will be animated.
   [layer setContents:(id)image.get()];
 }

@@ -6,7 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/lazy_instance.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -98,7 +98,7 @@ static base::LazyInstance<ProfileControllerMap> g_profile_controller_map(
   DCHECK(profile);
   // Use initWithWindowNibPath:: instead of initWithWindowNibName: so we
   // can override it in a unit test.
-  NSString *nibpath = [mac_util::MainAppBundle()
+  NSString *nibpath = [base::mac::MainAppBundle()
                         pathForResource:@"ClearBrowsingData"
                                  ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {

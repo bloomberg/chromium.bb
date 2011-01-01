@@ -6,6 +6,7 @@
 
 #include "base/debug/debugger.h"
 #include "base/logging.h"
+#include "base/mac/mac_util.h"
 #include "base/test/test_timeouts.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
 
@@ -79,7 +80,7 @@ void CocoaTest::BootstrapCocoa() {
   FilePath path;
   PathService::Get(base::DIR_EXE, &path);
   path = path.Append(chrome::kFrameworkName);
-  mac_util::SetOverrideAppBundlePath(path);
+  base::mac::SetOverrideAppBundlePath(path);
 
   // Bootstrap Cocoa. It's very unhappy without this.
   [CrApplication sharedApplication];
@@ -131,7 +132,8 @@ void CocoaTest::TearDown() {
            (spins < kCloseSpins || one_more_time)) {
       // Check the timeout before pumping events, so that we'll spin
       // the loop once after the timeout.
-      one_more_time = ([start_date timeIntervalSinceNow] > -kCloseTimeoutSeconds);
+      one_more_time =
+          ([start_date timeIntervalSinceNow] > -kCloseTimeoutSeconds);
 
       // Autorelease anything thrown up by the event loop.
       {

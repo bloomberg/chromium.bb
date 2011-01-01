@@ -22,7 +22,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #if defined(OS_MACOSX)
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #endif
 
 namespace history {
@@ -53,11 +53,11 @@ sql::InitStatus ThumbnailDatabase::Init(
 
 #if defined(OS_MACOSX)
   // Exclude the thumbnails file and its journal from backups.
-  mac_util::SetFileBackupExclusion(db_name, true);
+  base::mac::SetFileBackupExclusion(db_name, true);
   FilePath::StringType db_name_string(db_name.value());
   db_name_string += "-journal";
   FilePath db_journal_name(db_name_string);
-  mac_util::SetFileBackupExclusion(db_journal_name, true);
+  base::mac::SetFileBackupExclusion(db_journal_name, true);
 #endif
 
   // Create the tables.

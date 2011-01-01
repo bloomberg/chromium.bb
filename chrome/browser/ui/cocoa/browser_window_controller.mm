@@ -10,7 +10,7 @@
 #include "app/l10n_util_mac.h"
 #include "app/mac/scoped_nsdisable_screen_updates.h"
 #include "app/mac/nsimage_cache.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #import "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
@@ -219,7 +219,7 @@
 - (id)initWithBrowser:(Browser*)browser takeOwnership:(BOOL)ownIt {
   // Use initWithWindowNibPath:: instead of initWithWindowNibName: so we
   // can override it in a unit test.
-  NSString* nibpath = [mac_util::MainAppBundle()
+  NSString* nibpath = [base::mac::MainAppBundle()
                         pathForResource:@"BrowserWindow"
                                  ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {

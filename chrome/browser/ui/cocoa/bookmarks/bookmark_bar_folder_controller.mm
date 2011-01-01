@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_controller.h"
 
 #include "app/mac/nsimage_cache.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -114,7 +114,7 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
           parentController:(BookmarkBarFolderController*)parentController
              barController:(BookmarkBarController*)barController {
   NSString* nibPath =
-      [mac_util::MainAppBundle() pathForResource:@"BookmarkBarFolderWindow"
+      [base::mac::MainAppBundle() pathForResource:@"BookmarkBarFolderWindow"
                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
     parentButton_.reset([button retain]);

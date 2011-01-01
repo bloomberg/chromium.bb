@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/instant_confirm_window_controller.h"
 
 #include "base/logging.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/profiles/profile.h"
@@ -31,7 +31,7 @@ void ShowInstantConfirmDialog(gfx::NativeWindow parent, Profile* profile) {
 @implementation InstantConfirmWindowController
 
 - (id)initWithProfile:(Profile*)profile {
-  NSString* nibPath = [mac_util::MainAppBundle()
+  NSString* nibPath = [base::mac::MainAppBundle()
                         pathForResource:@"InstantConfirm"
                                  ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {

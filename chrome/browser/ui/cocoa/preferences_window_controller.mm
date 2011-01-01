@@ -10,7 +10,7 @@
 #include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
 #include "base/logging.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_aedesc.h"
 #include "base/string16.h"
 #include "base/string_util.h"
@@ -489,7 +489,7 @@ class ManagedPrefsBannerState : public policy::ManagedPrefsBannerBase {
   DCHECK(profile);
   // Use initWithWindowNibPath:: instead of initWithWindowNibName: so we
   // can override it in a unit test.
-  NSString* nibPath = [mac_util::MainAppBundle()
+  NSString* nibPath = [base::mac::MainAppBundle()
                         pathForResource:@"Preferences"
                                  ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
@@ -675,9 +675,10 @@ class ManagedPrefsBannerState : public policy::ManagedPrefsBannerBase {
   verticalShift += AutoSizeGroup(basicsGroupDefaultBrowser_,
                                  kAutoSizeGroupBehaviorVerticalFirstToFit,
                                  verticalShift);
-  verticalShift += AutoSizeGroup(basicsGroupSearchEngine_,
-                                 kAutoSizeGroupBehaviorFirstTwoAsRowVerticalToFit,
-                                 verticalShift);
+  verticalShift += AutoSizeGroup(
+      basicsGroupSearchEngine_,
+      kAutoSizeGroupBehaviorFirstTwoAsRowVerticalToFit,
+      verticalShift);
   verticalShift += AutoSizeGroup(basicsGroupToolbar_,
                                  kAutoSizeGroupBehaviorVerticalToFit,
                                  verticalShift);

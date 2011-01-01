@@ -13,7 +13,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #import "base/logging.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
 #include "base/path_service.h"
@@ -55,8 +55,8 @@ void InitCrashReporter() {
   // Helper processes may not have access to the disk or to the same data as
   // the browser process, so the browser passes the decision to them on the
   // command line.
-  NSBundle* main_bundle = mac_util::MainAppBundle();
-  bool is_browser = !mac_util::IsBackgroundOnlyProcess();
+  NSBundle* main_bundle = base::mac::MainAppBundle();
+  bool is_browser = !base::mac::IsBackgroundOnlyProcess();
   bool enable_breakpad = false;
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 

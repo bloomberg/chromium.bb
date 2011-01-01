@@ -62,10 +62,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebGeolocationClientMock.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "base/mac_util.h"
-#endif
-
 using WebKit::WebCanvas;
 using WebKit::WebFrame;
 using WebKit::WebNavigationPolicy;

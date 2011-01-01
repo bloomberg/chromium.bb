@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/first_run_dialog.h"
 
 #include "app/l10n_util_mac.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "grit/locale_settings.h"
@@ -58,7 +58,7 @@ void FirstRunShowBridge::ShowDialog() {
 
 - (id)init {
   NSString* nibpath =
-      [mac_util::MainAppBundle() pathForResource:@"FirstRunDialog"
+      [base::mac::MainAppBundle() pathForResource:@"FirstRunDialog"
                                           ofType:@"nib"];
   self = [super initWithWindowNibPath:nibpath owner:self];
   if (self != nil) {

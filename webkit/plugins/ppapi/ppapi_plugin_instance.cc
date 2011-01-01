@@ -54,7 +54,7 @@
 #include "webkit/plugins/ppapi/var.h"
 
 #if defined(OS_MACOSX)
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #endif
 
@@ -1139,7 +1139,7 @@ void PluginInstance::DrawSkBitmapToCanvas(
       CGImageCreate(
           bitmap.width(), bitmap.height(),
           8, 32, bitmap.rowBytes(),
-          mac_util::GetSystemColorSpace(),
+          base::mac::GetSystemColorSpace(),
           kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host,
           data_provider, NULL, false, kCGRenderingIntentDefault));
 

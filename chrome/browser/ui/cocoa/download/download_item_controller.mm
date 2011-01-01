@@ -7,7 +7,7 @@
 #include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
 #include "app/text_elider.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/metrics/histogram.h"
 #include "base/string16.h"
 #include "base/string_util.h"
@@ -98,7 +98,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 - (id)initWithModel:(BaseDownloadItemModel*)downloadModel
               shelf:(DownloadShelfController*)shelf {
   if ((self = [super initWithNibName:@"DownloadItem"
-                              bundle:mac_util::MainAppBundle()])) {
+                              bundle:base::mac::MainAppBundle()])) {
     // Must be called before [self view], so that bridge_ is set in awakeFromNib
     bridge_.reset(new DownloadItemMac(downloadModel, self));
     menuBridge_.reset(new DownloadShelfContextMenuMac(downloadModel));

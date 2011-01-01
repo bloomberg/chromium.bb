@@ -5,7 +5,7 @@
 #import <Cocoa/Cocoa.h>
 #include <vector>
 
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -16,7 +16,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-namespace mac_util {
+namespace base {
+namespace mac {
 
 namespace {
 
@@ -151,7 +152,7 @@ TEST_F(MacUtilTest, TestExcludeFileFromBackups) {
 }
 
 TEST_F(MacUtilTest, TestGetValueFromDictionary) {
-  base::mac::ScopedCFTypeRef<CFMutableDictionaryRef> dict(
+  ScopedCFTypeRef<CFMutableDictionaryRef> dict(
       CFDictionaryCreateMutable(0, 0,
                                 &kCFTypeDictionaryKeyCallBacks,
                                 &kCFTypeDictionaryValueCallBacks));
@@ -175,8 +176,7 @@ TEST_F(MacUtilTest, CopyNSImageToCGImage) {
   NSRectFill(rect);
   [nsImage unlockFocus];
 
-  base::mac::ScopedCFTypeRef<CGImageRef> cgImage(
-      mac_util::CopyNSImageToCGImage(nsImage.get()));
+  ScopedCFTypeRef<CGImageRef> cgImage(CopyNSImageToCGImage(nsImage.get()));
   EXPECT_TRUE(cgImage.get());
 }
 
@@ -184,13 +184,14 @@ TEST_F(MacUtilTest, NSObjectRetainRelease) {
   scoped_nsobject<NSArray> array([[NSArray alloc] initWithObjects:@"foo", nil]);
   EXPECT_EQ(1U, [array retainCount]);
 
-  mac_util::NSObjectRetain(array);
+  NSObjectRetain(array);
   EXPECT_EQ(2U, [array retainCount]);
 
-  mac_util::NSObjectRelease(array);
+  NSObjectRelease(array);
   EXPECT_EQ(1U, [array retainCount]);
 }
 
 }  // namespace
 
-}  // namespace mac_util
+}  // namespace mac
+}  // namespace base

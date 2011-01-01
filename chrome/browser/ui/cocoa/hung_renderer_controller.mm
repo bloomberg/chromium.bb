@@ -8,7 +8,7 @@
 
 #include "app/resource_bundle.h"
 #include "app/l10n_util_mac.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/process_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_list.h"
@@ -35,7 +35,7 @@ HungRendererController* g_instance = NULL;
 @implementation HungRendererController
 
 - (id)initWithWindowNibName:(NSString*)nibName {
-  NSString* nibpath = [mac_util::MainAppBundle() pathForResource:nibName
+  NSString* nibpath = [base::mac::MainAppBundle() pathForResource:nibName
                                                           ofType:@"nib"];
   self = [super initWithWindowNibPath:nibpath owner:self];
   if (self) {

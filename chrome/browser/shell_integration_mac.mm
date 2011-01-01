@@ -4,13 +4,13 @@
 
 #include "chrome/browser/shell_integration.h"
 
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #import "third_party/mozilla/NSWorkspace+Utils.h"
 
 // Sets Chromium as default browser (only for current user). Returns false if
 // this operation fails (which we can't check for).
 bool ShellIntegration::SetAsDefaultBrowser() {
-  // We really do want the main bundle here, not mac_util::MainAppBundle(),
+  // We really do want the main bundle here, not base::mac::MainAppBundle(),
   // which is the bundle for the framework.
   NSString* identifier = [[NSBundle mainBundle] bundleIdentifier];
   [[NSWorkspace sharedWorkspace] setDefaultBrowserWithIdentifier:identifier];

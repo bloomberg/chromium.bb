@@ -40,7 +40,7 @@
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_MACOSX)
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #elif defined(OS_WIN)
 #include "app/win/iat_patch_function.h"
 #endif
@@ -182,7 +182,7 @@ RenderProcessImpl::RenderProcessImpl()
 #endif
 
 #if defined(OS_MACOSX)
-  FilePath bundle_path = mac_util::MainAppBundlePath();
+  FilePath bundle_path = base::mac::MainAppBundlePath();
 
   initialized_media_library_ =
      media::InitializeMediaLibrary(bundle_path.Append("Libraries"));

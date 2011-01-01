@@ -6,7 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/logging.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/scoped_nsobject.h"
 #include "base/string_util.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
@@ -54,7 +54,7 @@ class Bridge : public NotificationObserver {
 - (id)initWithWindowNibPath:(NSString*)nibPath
                parentWindow:(NSWindow*)parentWindow
                  anchoredAt:(NSPoint)anchoredAt {
-  nibPath = [mac_util::MainAppBundle() pathForResource:nibPath
+  nibPath = [base::mac::MainAppBundle() pathForResource:nibPath
                                                 ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
     parentWindow_ = parentWindow;

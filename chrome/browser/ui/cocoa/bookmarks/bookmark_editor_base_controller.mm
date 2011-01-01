@@ -9,7 +9,7 @@
 #include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
 #include "base/logging.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
@@ -161,7 +161,7 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
                    profile:(Profile*)profile
                     parent:(const BookmarkNode*)parent
              configuration:(BookmarkEditor::Configuration)configuration {
-  NSString* nibpath = [mac_util::MainAppBundle()
+  NSString* nibpath = [base::mac::MainAppBundle()
                         pathForResource:nibName
                                  ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {

@@ -12,7 +12,7 @@
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/file_path.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/nss_util.h"
 #include "base/path_service.h"
 #include "base/scoped_nsobject.h"
@@ -70,7 +70,7 @@ class BrowserMainPartsMac : public BrowserMainPartsPosix {
   virtual void PreEarlyInitialization() {
     BrowserMainPartsPosix::PreEarlyInitialization();
 
-    if (mac_util::WasLaunchedAsHiddenLoginItem()) {
+    if (base::mac::WasLaunchedAsHiddenLoginItem()) {
       CommandLine* singleton_command_line = CommandLine::ForCurrentProcess();
       singleton_command_line->AppendSwitch(switches::kNoStartupWindow);
     }
@@ -113,7 +113,7 @@ class BrowserMainPartsMac : public BrowserMainPartsPosix {
     // Now load the nib (from the right bundle).
     scoped_nsobject<NSNib>
         nib([[NSNib alloc] initWithNibNamed:@"MainMenu"
-                                     bundle:mac_util::MainAppBundle()]);
+                                     bundle:base::mac::MainAppBundle()]);
     // TODO(viettrungluu): crbug.com/20504 - This currently leaks, so if you
     // change this, you'll probably need to change the Valgrind suppression.
     [nib instantiateNibWithOwner:NSApp topLevelObjects:nil];

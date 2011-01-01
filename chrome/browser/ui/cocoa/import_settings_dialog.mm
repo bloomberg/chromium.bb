@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/import_settings_dialog.h"
 
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/importer_list.h"
@@ -140,7 +140,7 @@ bool importSettingsDialogVisible = false;
 
 - (id)initWithProfiles:(NSArray*)profiles {
   NSString* nibpath =
-      [mac_util::MainAppBundle() pathForResource:@"ImportSettingsDialog"
+      [base::mac::MainAppBundle() pathForResource:@"ImportSettingsDialog"
                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     sourceBrowsersList_.reset([profiles retain]);

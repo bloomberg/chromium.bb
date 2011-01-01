@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bubble_controller.h"
 
 #include "app/l10n_util_mac.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"  // TODO(viettrungluu): remove
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -88,7 +88,7 @@ void BookmarkBubbleNotificationBridge::Observe(
                       node:(const BookmarkNode*)node
      alreadyBookmarked:(BOOL)alreadyBookmarked {
   NSString* nibPath =
-      [mac_util::MainAppBundle() pathForResource:@"BookmarkBubble"
+      [base::mac::MainAppBundle() pathForResource:@"BookmarkBubble"
                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
     parentWindow_ = parentWindow;

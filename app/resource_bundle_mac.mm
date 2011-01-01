@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
 
@@ -21,12 +21,12 @@ FilePath GetResourcesPakFilePath(NSString* name, NSString* mac_locale) {
   // as the already-running browser instead of using what NSBundle might pick
   // based on values at helper launch time.
   if ([mac_locale length]) {
-    resource_path = [mac_util::MainAppBundle() pathForResource:name
+    resource_path = [base::mac::MainAppBundle() pathForResource:name
                                                         ofType:@"pak"
                                                    inDirectory:@""
                                                forLocalization:mac_locale];
   } else {
-    resource_path = [mac_util::MainAppBundle() pathForResource:name
+    resource_path = [base::mac::MainAppBundle() pathForResource:name
                                                         ofType:@"pak"];
   }
   if (!resource_path)

@@ -18,7 +18,7 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#import "base/mac_util.h"
+#import "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/ui/cocoa/authorization_util.h"
 #include "chrome/browser/ui/cocoa/scoped_authorizationref.h"
@@ -409,7 +409,7 @@ bool MaybeInstallFromDiskImage() {
   }
 
   NSString* installer_path =
-      [mac_util::MainAppBundle() pathForResource:@"install" ofType:@"sh"];
+      [base::mac::MainAppBundle() pathForResource:@"install" ofType:@"sh"];
   if (!installer_path) {
     VLOG(1) << "Could not locate install.sh";
     return false;

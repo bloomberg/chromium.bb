@@ -8,7 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "base/command_line.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #import "chrome/browser/content_settings/content_settings_details.h"
 #import "chrome/browser/content_settings/host_content_settings_map.h"
 #import "chrome/browser/geolocation/geolocation_content_settings_map.h"
@@ -145,7 +145,7 @@ class PrefObserverDisabler {
 - (id)initWithProfile:(Profile*)profile {
   DCHECK(profile);
   NSString* nibpath =
-      [mac_util::MainAppBundle() pathForResource:@"ContentSettings"
+      [base::mac::MainAppBundle() pathForResource:@"ContentSettings"
                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     profile_ = profile;

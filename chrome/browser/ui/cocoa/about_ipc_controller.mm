@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
@@ -86,7 +86,7 @@ AboutIPCController* gSharedController = nil;
 }
 
 - (id)init {
-  NSString* nibpath = [mac_util::MainAppBundle() pathForResource:@"AboutIPC"
+  NSString* nibpath = [base::mac::MainAppBundle() pathForResource:@"AboutIPC"
                                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     // Default to all on

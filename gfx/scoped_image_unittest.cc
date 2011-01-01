@@ -10,7 +10,7 @@
 #if defined(OS_LINUX)
 #include "gfx/gtk_util.h"
 #elif defined(OS_MACOSX)
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "skia/ext/skia_utils_mac.h"
 #endif
 
@@ -30,7 +30,7 @@ class ScopedImageTest : public testing::Test {
     scoped_ptr<SkBitmap> bitmap(CreateBitmap());
 #if defined(OS_MACOSX)
     NSImage* image = gfx::SkBitmapToNSImage(*(bitmap.get()));
-    mac_util::NSObjectRetain(image);
+    base::mac::NSObjectRetain(image);
     return image;
 #elif defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
     return gfx::GdkPixbufFromSkBitmap(bitmap.get());

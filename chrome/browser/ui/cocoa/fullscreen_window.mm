@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/fullscreen_window.h"
 
-#include "base/mac_util.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 

@@ -48,7 +48,7 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "chrome/common/plugin_carbon_interpose_constants_mac.h"
 #include "gfx/rect.h"
 #endif
@@ -148,22 +148,22 @@ PluginProcessHost::~PluginProcessHost() {
        window_index != plugin_fullscreen_windows_set_.end();
        window_index++) {
     if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      mac_util::ReleaseFullScreen(mac_util::kFullScreenModeHideAll);
+      base::mac::ReleaseFullScreen(base::mac::kFullScreenModeHideAll);
     } else {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          NewRunnableFunction(mac_util::ReleaseFullScreen,
-                              mac_util::kFullScreenModeHideAll));
+          NewRunnableFunction(base::mac::ReleaseFullScreen,
+                              base::mac::kFullScreenModeHideAll));
     }
   }
   // If the plugin hid the cursor, reset that.
   if (!plugin_cursor_visible_) {
     if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      mac_util::SetCursorVisibility(true);
+      base::mac::SetCursorVisibility(true);
     } else {
       BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableFunction(mac_util::SetCursorVisibility,
+        NewRunnableFunction(base::mac::SetCursorVisibility,
                             true));
     }
   }

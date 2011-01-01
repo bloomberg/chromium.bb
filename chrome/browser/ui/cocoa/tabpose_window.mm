@@ -7,7 +7,7 @@
 #import <QuartzCore/QuartzCore.h>
 
 #include "app/resource_bundle.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/scoped_callback_factory.h"
 #include "base/sys_string_conversions.h"
@@ -1020,7 +1020,7 @@ void AnimateCALayerOpacityFromTo(
     nsFavicon = defaultFavIcon;
   }
   base::mac::ScopedCFTypeRef<CGImageRef> favicon(
-      mac_util::CopyNSImageToCGImage(nsFavicon));
+      base::mac::CopyNSImageToCGImage(nsFavicon));
 
   CALayer* faviconLayer = [CALayer layer];
   if (showZoom) {

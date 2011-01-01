@@ -17,7 +17,7 @@
 #include "chrome/common/chrome_switches.h"
 
 #if defined(OS_MACOSX)
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #endif
 
 namespace history {
@@ -99,11 +99,11 @@ sql::InitStatus HistoryDatabase::Init(const FilePath& history_name,
 
 #if defined(OS_MACOSX)
   // Exclude the history file and its journal from backups.
-  mac_util::SetFileBackupExclusion(history_name, true);
+  base::mac::SetFileBackupExclusion(history_name, true);
   FilePath::StringType history_name_string(history_name.value());
   history_name_string += "-journal";
   FilePath history_journal_name(history_name_string);
-  mac_util::SetFileBackupExclusion(history_journal_name, true);
+  base::mac::SetFileBackupExclusion(history_journal_name, true);
 #endif
 
   // Prime the cache.

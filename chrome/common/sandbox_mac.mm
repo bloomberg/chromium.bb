@@ -17,7 +17,7 @@ extern "C" {
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/rand_util_c.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -196,8 +196,8 @@ void Sandbox::SandboxWarmup(SandboxProcessType sandbox_type) {
                                   kCGBitmapByteOrder32Host));
 
     // Load in the color profiles we'll need (as a side effect).
-    (void) mac_util::GetSRGBColorSpace();
-    (void) mac_util::GetSystemColorSpace();
+    (void) base::mac::GetSRGBColorSpace();
+    (void) base::mac::GetSystemColorSpace();
 
     // CGColorSpaceCreateSystemDefaultCMYK - 10.6
     base::mac::ScopedCFTypeRef<CGColorSpaceRef> cmyk_colorspace(
@@ -360,7 +360,7 @@ NSString* LoadSandboxTemplate(Sandbox::SandboxProcessType sandbox_type) {
 
   // Read in the sandbox profile and the common prefix file.
   NSString* common_sandbox_prefix_path =
-      [mac_util::MainAppBundle() pathForResource:@"common"
+      [base::mac::MainAppBundle() pathForResource:@"common"
                                           ofType:@"sb"];
   NSString* common_sandbox_prefix_data =
       [NSString stringWithContentsOfFile:common_sandbox_prefix_path
@@ -374,7 +374,7 @@ NSString* LoadSandboxTemplate(Sandbox::SandboxProcessType sandbox_type) {
   }
 
   NSString* sandbox_profile_path =
-      [mac_util::MainAppBundle() pathForResource:sandbox_config_filename
+      [base::mac::MainAppBundle() pathForResource:sandbox_config_filename
                                           ofType:@"sb"];
   NSString* sandbox_data =
       [NSString stringWithContentsOfFile:sandbox_profile_path

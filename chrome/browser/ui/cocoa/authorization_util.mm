@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/eintr_wrapper.h"
 #include "base/logging.h"
-#import "base/mac_util.h"
+#import "base/mac/mac_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/ui/cocoa/scoped_authorizationref.h"
@@ -41,14 +41,14 @@ AuthorizationRef AuthorizationCreateToRunAsRoot(CFStringRef prompt) {
   // product_logo_32.png is used instead of app.icns because Authorization
   // Services can't deal with .icns files.
   NSString* icon_path =
-      [mac_util::MainAppBundle() pathForResource:@"product_logo_32"
+      [base::mac::MainAppBundle() pathForResource:@"product_logo_32"
                                           ofType:@"png"];
   const char* icon_path_c = [icon_path fileSystemRepresentation];
   size_t icon_path_length = icon_path_c ? strlen(icon_path_c) : 0;
 
   // The OS will append " Type an administrator's name and password to allow
   // <CFBundleDisplayName> to make changes."
-  NSString* prompt_ns = mac_util::CFToNSCast(prompt);
+  NSString* prompt_ns = base::mac::CFToNSCast(prompt);
   const char* prompt_c = [prompt_ns UTF8String];
   size_t prompt_length = prompt_c ? strlen(prompt_c) : 0;
 

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/sad_tab_controller.h"
 
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #import "chrome/browser/ui/cocoa/sad_tab_view.h"
 
 @implementation SadTabController
@@ -12,7 +12,7 @@
 - (id)initWithTabContents:(TabContents*)someTabContents
                 superview:(NSView*)superview {
   if ((self = [super initWithNibName:@"SadTab"
-                              bundle:mac_util::MainAppBundle()])) {
+                              bundle:base::mac::MainAppBundle()])) {
     tabContents_ = someTabContents;
 
     NSView* view = [self view];

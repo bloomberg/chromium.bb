@@ -8,7 +8,7 @@
 #include "app/l10n_util_mac.h"
 #include "app/table_model_observer.h"
 #include "base/command_line.h"
-#import "base/mac_util.h"
+#import "base/mac/mac_util.h"
 #import "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/content_exceptions_table_model.h"
@@ -151,7 +151,7 @@ static ContentExceptionsWindowController*
        settingsMap:(HostContentSettingsMap*)settingsMap
     otrSettingsMap:(HostContentSettingsMap*)otrSettingsMap {
   NSString* nibpath =
-      [mac_util::MainAppBundle() pathForResource:@"ContentExceptionsWindow"
+      [base::mac::MainAppBundle() pathForResource:@"ContentExceptionsWindow"
                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     settingsType_ = settingsType;

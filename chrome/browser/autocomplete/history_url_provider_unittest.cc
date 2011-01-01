@@ -13,9 +13,6 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#if defined(OS_MACOSX)
-#include "base/mac_util.h"
-#endif
 
 using base::Time;
 using base::TimeDelta;

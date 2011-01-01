@@ -41,7 +41,7 @@
 #include "app/x11_util.h"
 #elif defined(OS_MACOSX)
 #include "app/l10n_util.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
 #include "grit/chromium_strings.h"
@@ -100,7 +100,7 @@ PluginThread::PluginThread()
     base::mac::ScopedCFTypeRef<CFStringRef> process_name(
         CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("%@ (%@)"),
                                  plugin_name.get(), app_name.get()));
-    mac_util::SetProcessName(process_name);
+    base::mac::SetProcessName(process_name);
 #endif
   }
 

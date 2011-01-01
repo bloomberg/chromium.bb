@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "base/mac_util.h"
+#include "base/mac/mac_util.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #import "chrome/browser/ui/cocoa/animatable_view.h"
@@ -71,7 +71,7 @@ class InfoBarNotificationObserver : public NotificationObserver {
 - (id)initWithResizeDelegate:(id<ViewResizer>)resizeDelegate {
   DCHECK(resizeDelegate);
   if ((self = [super initWithNibName:@"InfoBarContainer"
-                              bundle:mac_util::MainAppBundle()])) {
+                              bundle:base::mac::MainAppBundle()])) {
     resizeDelegate_ = resizeDelegate;
     infoBarObserver_.reset(new InfoBarNotificationObserver(self));
 
