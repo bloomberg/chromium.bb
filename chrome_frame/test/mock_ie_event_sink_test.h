@@ -14,6 +14,7 @@
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/object_watcher.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/chrome_frame_ui_test_utils.h"
 #include "chrome_frame/test/ie_event_sink.h"
@@ -206,9 +207,9 @@ class MockPropertyNotifySinkListener : public PropertyNotifySinkListener {
 };
 
 // Allows tests to observe when processes exit.
-class MockObjectWatcherDelegate : public base::ObjectWatcher::Delegate {
+class MockObjectWatcherDelegate : public base::win::ObjectWatcher::Delegate {
  public:
-  // base::ObjectWatcher::Delegate implementation
+  // base::win::ObjectWatcher::Delegate implementation
   MOCK_METHOD1(OnObjectSignaled, void (HANDLE process_handle));  // NOLINT
 
   virtual ~MockObjectWatcherDelegate() {
@@ -242,7 +243,7 @@ class MockObjectWatcherDelegate : public base::ObjectWatcher::Delegate {
 
  private:
   std::vector<HANDLE> process_handles_;
-  base::ObjectWatcher object_watcher_;
+  base::win::ObjectWatcher object_watcher_;
 };
 
 // Mocks a window observer so that tests can detect new windows.
