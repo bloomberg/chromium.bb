@@ -11,7 +11,7 @@
 #include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/task.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/browser_thread.h"

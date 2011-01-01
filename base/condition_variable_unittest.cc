@@ -14,7 +14,7 @@
 #include "base/scoped_ptr.h"
 #include "base/spin_wait.h"
 #include "base/threading/platform_thread.h"
-#include "base/thread_collision_warner.h"
+#include "base/threading/thread_collision_warner.h"
 #include "base/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

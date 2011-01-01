@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop_proxy.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/sync/glue/http_bridge.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"

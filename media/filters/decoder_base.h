@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/stl_util-inl.h"
 #include "base/task.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "media/base/buffers.h"
 #include "media/base/callback.h"
 #include "media/base/filters.h"

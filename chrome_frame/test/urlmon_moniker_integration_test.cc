@@ -6,7 +6,7 @@
 #include <atlcom.h>
 
 #include "base/scoped_comptr_win.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "chrome_frame/bho.h"
 //#include "chrome_frame/urlmon_moniker.h"
 #include "chrome_frame/test/test_server.h"

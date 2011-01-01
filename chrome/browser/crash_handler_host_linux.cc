@@ -22,7 +22,7 @@
 #include "base/singleton.h"
 #include "base/string_util.h"
 #include "base/task.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "breakpad/src/client/linux/handler/exception_handler.h"
 #include "breakpad/src/client/linux/minidump_writer/linux_dumper.h"
 #include "breakpad/src/client/linux/minidump_writer/minidump_writer.h"

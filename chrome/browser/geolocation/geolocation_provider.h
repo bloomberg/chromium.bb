@@ -8,7 +8,7 @@
 
 #include <map>
 
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "chrome/browser/geolocation/geolocation_observer.h"
 #include "chrome/common/geoposition.h"
 #include "googleurl/src/gurl.h"

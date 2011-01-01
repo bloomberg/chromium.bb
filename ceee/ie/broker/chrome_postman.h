@@ -9,7 +9,7 @@
 #define CEEE_IE_BROKER_CHROME_POSTMAN_H_
 
 #include "base/singleton.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "ceee/ie/common/chrome_frame_host.h"
 
 #include "broker_lib.h"  // NOLINT

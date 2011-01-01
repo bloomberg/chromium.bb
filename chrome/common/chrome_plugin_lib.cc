@@ -11,7 +11,7 @@
 #include "base/path_service.h"
 #include "base/perftimer.h"
 #include "base/string_util.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/common/chrome_counters.h"
 #include "chrome/common/chrome_switches.h"

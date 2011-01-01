@@ -31,7 +31,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/time.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"

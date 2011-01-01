@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/message_loop.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/waitable_event.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"

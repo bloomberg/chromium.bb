@@ -19,7 +19,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #import "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
-#include "base/thread_restrictions.h"
+#include "base/threading/thread_restrictions.h"
 #include "grit/generated_resources.h"
 
 static const int kFileTypePopupTag = 1234;

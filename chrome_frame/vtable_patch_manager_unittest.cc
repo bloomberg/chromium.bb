@@ -5,7 +5,7 @@
 #include "chrome_frame/vtable_patch_manager.h"
 #include <unknwn.h>
 #include "base/message_loop.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/scoped_handle.h"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"

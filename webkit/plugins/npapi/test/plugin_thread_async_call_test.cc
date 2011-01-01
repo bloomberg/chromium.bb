@@ -6,7 +6,7 @@
 
 #include "base/at_exit.h"
 #include "base/message_loop.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "webkit/plugins/npapi/test/plugin_client.h"
 
 namespace NPAPIClient {

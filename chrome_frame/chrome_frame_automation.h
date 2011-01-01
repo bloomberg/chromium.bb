@@ -16,7 +16,7 @@
 #include "base/scoped_handle.h"
 #include "base/stack_container.h"
 #include "base/task.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/timer.h"
 #include "chrome/common/page_zoom.h"
 #include "chrome/test/automation/automation_proxy.h"

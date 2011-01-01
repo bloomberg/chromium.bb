@@ -17,7 +17,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/time.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"

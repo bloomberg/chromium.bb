@@ -16,7 +16,7 @@
 #include "base/lock.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/win/scoped_comptr.h"
 #include "gfx/rect.h"
 #include "googleurl/src/gurl.h"

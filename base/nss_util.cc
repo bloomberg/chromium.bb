@@ -22,7 +22,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
-#include "base/thread_restrictions.h"
+#include "base/threading/thread_restrictions.h"
 
 // USE_NSS means we use NSS for everything crypto-related.  If USE_NSS is not
 // defined, such as on Mac and Windows, we use NSS for SSL only -- we don't

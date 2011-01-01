@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/pickle.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/waitable_event.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"

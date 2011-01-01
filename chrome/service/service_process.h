@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/waitable_event.h"
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
 #include "chrome/service/remoting/chromoting_host_manager.h"

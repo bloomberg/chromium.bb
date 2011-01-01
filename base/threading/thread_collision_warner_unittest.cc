@@ -7,7 +7,7 @@
 #include "base/scoped_ptr.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
-#include "base/thread_collision_warner.h"
+#include "base/threading/thread_collision_warner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // '' : local class member function does not have a body

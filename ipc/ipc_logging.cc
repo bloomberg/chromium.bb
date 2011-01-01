@@ -14,7 +14,7 @@
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/time.h"
 #include "ipc/ipc_switches.h"
 #include "ipc/ipc_sync_message.h"

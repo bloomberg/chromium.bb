@@ -18,7 +18,7 @@
 #include "base/md5.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"

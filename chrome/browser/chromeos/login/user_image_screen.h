@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_USER_IMAGE_SCREEN_H_
 #pragma once
 
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "chrome/browser/chromeos/login/camera.h"
 #include "chrome/browser/chromeos/login/user_image_view.h"
 #include "chrome/browser/chromeos/login/view_screen.h"

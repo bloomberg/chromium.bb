@@ -11,7 +11,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "chrome/renderer/safe_browsing/client_model.pb.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "testing/gmock/include/gmock/gmock.h"

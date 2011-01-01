@@ -5,7 +5,7 @@
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/timer.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/sync/glue/database_model_worker.h"

@@ -13,7 +13,7 @@
 #include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/message_loop_proxy.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/time.h"
 #include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
 #include "chrome/service/cloud_print/job_status_updater.h"

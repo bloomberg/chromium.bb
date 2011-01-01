@@ -12,7 +12,7 @@
 #include <string>
 
 #include "base/lock.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "chrome_frame/plugin_url_request.h"
 #include "chrome_frame/urlmon_moniker.h"
 #include "chrome_frame/utils.h"

@@ -5,7 +5,7 @@
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/ui_model_worker.h"

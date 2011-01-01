@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/extension_rlz_module.h"
 
 #include "base/scoped_ptr.h"
-#include "base/thread_restrictions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
 #include "rlz/win/lib/lib_values.h"

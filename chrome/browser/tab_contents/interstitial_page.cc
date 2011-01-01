@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"

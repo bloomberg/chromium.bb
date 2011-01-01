@@ -13,7 +13,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "chrome/browser/geolocation/device_data_provider.h"
 #include "chrome/browser/geolocation/location_provider.h"
 #include "chrome/browser/geolocation/network_location_request.h"

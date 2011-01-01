@@ -12,7 +12,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
-#include "base/thread_restrictions.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"

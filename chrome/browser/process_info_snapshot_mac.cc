@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 
 // Implementation for the Mac; calls '/bin/ps' for information when
 // |Sample()| is called.

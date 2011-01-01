@@ -10,7 +10,7 @@
 #include "base/message_loop.h"
 #include "base/spin_wait.h"
 #include "base/time.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

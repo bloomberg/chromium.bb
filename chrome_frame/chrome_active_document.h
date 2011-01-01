@@ -17,7 +17,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/scoped_comptr_win.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 
 #include "chrome_frame/chrome_frame_activex_base.h"
 #include "chrome_frame/com_type_info_holder.h"

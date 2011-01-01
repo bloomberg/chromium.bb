@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/string_util.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/chrome_url_request_context.h"

@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

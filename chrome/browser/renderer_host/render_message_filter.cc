@@ -13,7 +13,7 @@
 #include "base/shared_memory.h"
 #include "base/sys_string_conversions.h"
 #include "base/threading/worker_pool.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/browser_process.h"

@@ -14,7 +14,7 @@
 #include "base/ref_counted.h"
 #include "base/string_util.h"
 #include "base/threading/watchdog.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"

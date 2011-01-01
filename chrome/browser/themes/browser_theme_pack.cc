@@ -8,7 +8,7 @@
 #include "app/resource_bundle.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
-#include "base/thread_restrictions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"

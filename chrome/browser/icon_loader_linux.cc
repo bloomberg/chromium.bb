@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/mime_util.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/string_util.h"
 #include "gfx/codec/png_codec.h"
 #include "gfx/gtk_util.h"

@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
-#include "base/thread_restrictions.h"
+#include "base/threading/thread_restrictions.h"
 
 // Friendly names for the well-known threads.
 static const char* browser_thread_names[BrowserThread::ID_COUNT] = {

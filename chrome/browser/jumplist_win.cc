@@ -19,7 +19,7 @@
 #include "base/path_service.h"
 #include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_thread.h"

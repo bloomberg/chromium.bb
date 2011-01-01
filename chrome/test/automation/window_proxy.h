@@ -14,7 +14,7 @@
 
 #include "app/keyboard_codes.h"
 #include "base/string16.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "chrome/test/automation/automation_handle_tracker.h"
 
 class BrowserProxy;

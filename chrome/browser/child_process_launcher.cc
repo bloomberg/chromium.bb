@@ -10,7 +10,7 @@
 #include "base/lock.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/common/chrome_descriptors.h"
 #include "chrome/common/chrome_switches.h"

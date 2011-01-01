@@ -8,7 +8,7 @@
 
 #include "base/process.h"
 #include "base/process_util.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_thread.h"

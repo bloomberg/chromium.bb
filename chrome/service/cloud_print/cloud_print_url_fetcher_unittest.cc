@@ -5,7 +5,7 @@
 #include "base/command_line.h"
 #include "base/message_loop_proxy.h"
 #include "base/ref_counted.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/waitable_event.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/service/service_process.h"

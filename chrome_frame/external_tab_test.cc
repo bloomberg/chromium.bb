@@ -4,7 +4,7 @@
 
 #include "chrome_frame/external_tab.h"
 #include "base/task.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/tracked.h"
 
 // #include "base/waitable_event.h"

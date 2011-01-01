@@ -9,7 +9,7 @@
 #include <windows.h>
 
 #include "base/logging.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/ref_counted.h"
 
 // Provides the plugin installation job monitoring functionality.

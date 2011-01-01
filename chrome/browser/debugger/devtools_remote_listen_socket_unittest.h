@@ -20,12 +20,12 @@
 #include <arpa/inet.h>
 #endif
 
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "chrome/browser/debugger/devtools_remote.h"
 #include "chrome/browser/debugger/devtools_remote_listen_socket.h"
 #include "chrome/browser/debugger/devtools_remote_message.h"

@@ -14,7 +14,7 @@
 #include "base/mac_util.h"
 #include "base/string_util.h"
 #include "base/process_util.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/browser_thread.h"

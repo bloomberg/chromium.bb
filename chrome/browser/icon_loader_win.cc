@@ -8,7 +8,7 @@
 #include <shellapi.h>
 
 #include "base/message_loop.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "gfx/icon_util.h"
 #include "gfx/size.h"
 

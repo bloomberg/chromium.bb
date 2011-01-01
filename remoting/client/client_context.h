@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 
 namespace remoting {

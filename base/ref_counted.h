@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/atomic_ref_count.h"
-#include "base/thread_collision_warner.h"
+#include "base/threading/thread_collision_warner.h"
 
 namespace base {
 

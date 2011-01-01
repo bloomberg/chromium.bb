@@ -13,7 +13,7 @@
 #include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
 #include "base/task.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/installer/util/browser_distribution.h"

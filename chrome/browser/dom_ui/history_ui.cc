@@ -16,7 +16,7 @@
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"

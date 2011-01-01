@@ -26,7 +26,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/nss_util.h"
 #include "base/path_service.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "media/base/media.h"
 #include "remoting/base/tracer.h"
 #include "remoting/host/capturer_fake.h"

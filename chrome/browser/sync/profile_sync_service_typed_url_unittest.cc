@@ -8,7 +8,7 @@
 
 #include "base/ref_counted.h"
 #include "base/string16.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/time.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_notifications.h"

@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/thread_restrictions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/importer/firefox_proxy_settings.h"
 #include "chrome/common/chrome_switches.h"

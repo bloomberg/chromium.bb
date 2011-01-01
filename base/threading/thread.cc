@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/thread.h"
+#include "base/threading/thread.h"
 
 #include "base/lazy_instance.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"

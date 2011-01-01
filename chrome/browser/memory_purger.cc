@@ -6,7 +6,7 @@
 
 #include <set>
 
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history.h"

@@ -4,7 +4,7 @@
 
 #include "base/callback.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "testing/gtest/include/gtest/gtest.h"

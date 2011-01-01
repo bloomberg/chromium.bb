@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop_proxy.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/waitable_event.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_plugin_lib.h"

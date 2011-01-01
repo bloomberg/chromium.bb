@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_THREAD_RESTRICTIONS_H_
-#define BASE_THREAD_RESTRICTIONS_H_
+#ifndef BASE_THREADING_THREAD_RESTRICTIONS_H_
+#define BASE_THREADING_THREAD_RESTRICTIONS_H_
 
 #include "base/basictypes.h"
 
@@ -97,4 +97,4 @@ class ThreadRestrictions {
 
 }  // namespace base
 
-#endif  // BASE_THREAD_RESTRICTIONS_H_
+#endif  // BASE_THREADING_THREAD_RESTRICTIONS_H_

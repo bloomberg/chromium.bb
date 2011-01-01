@@ -14,7 +14,7 @@
 #include "base/lock.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/timer.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/sync/engine/syncapi.h"

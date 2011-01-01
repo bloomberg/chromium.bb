@@ -25,7 +25,7 @@
 #include "base/process_util.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_local.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_variant.h"

@@ -11,7 +11,7 @@
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/child_thread.h"
 #include "grit/chromium_strings.h"

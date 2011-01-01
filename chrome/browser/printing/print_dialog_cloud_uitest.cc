@@ -11,7 +11,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/singleton.h"
-#include "base/thread_restrictions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_thread.h"

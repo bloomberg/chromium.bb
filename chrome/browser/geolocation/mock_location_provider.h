@@ -9,7 +9,7 @@
 
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "chrome/browser/geolocation/location_provider.h"
 #include "chrome/common/geoposition.h"
 #include "googleurl/src/gurl.h"

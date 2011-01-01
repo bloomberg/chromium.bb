@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/task.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 
 class WorkerThreadTicker::TimerTask : public Task {
  public:

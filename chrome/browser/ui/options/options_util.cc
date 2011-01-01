@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/options/options_util.h"
 
-#include "base/thread_restrictions.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_prefs.h"

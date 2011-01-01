@@ -7,7 +7,7 @@
 
 #include "base/file_path.h"
 #include "base/message_loop.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "webkit/appcache/appcache_backend_impl.h"
 #include "webkit/appcache/appcache_frontend_impl.h"
 #include "webkit/appcache/appcache_service.h"

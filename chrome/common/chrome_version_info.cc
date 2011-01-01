@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 #include "base/file_version_info.h"
 #include "base/string_util.h"
-#include "base/thread_restrictions.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 
 namespace chrome {

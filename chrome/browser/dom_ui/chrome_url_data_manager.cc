@@ -12,7 +12,7 @@
 #include "base/ref_counted_memory.h"
 #include "base/singleton.h"
 #include "base/string_util.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/values.h"
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

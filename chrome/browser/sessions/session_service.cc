@@ -14,7 +14,7 @@
 #include "base/metrics/histogram.h"
 #include "base/pickle.h"
 #include "base/scoped_vector.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/prefs/session_startup_pref.h"

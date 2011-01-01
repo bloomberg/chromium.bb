@@ -22,7 +22,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/time.h"
 #include "chrome/browser/browser_thread.h"
 #include "gfx/size.h"

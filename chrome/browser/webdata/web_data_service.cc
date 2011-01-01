@@ -7,7 +7,7 @@
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
 #include "base/task.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/search_engines/template_url.h"

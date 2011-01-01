@@ -18,7 +18,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/time.h"
 #include "base/waitable_event.h"
 #if defined(OS_LINUX)

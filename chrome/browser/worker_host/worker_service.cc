@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/singleton.h"
 #include "base/sys_info.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/worker_host/worker_message_filter.h"
 #include "chrome/browser/worker_host/worker_process_host.h"

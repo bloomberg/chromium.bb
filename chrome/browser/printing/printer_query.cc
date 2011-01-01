@@ -5,7 +5,7 @@
 #include "chrome/browser/printing/printer_query.h"
 
 #include "base/message_loop.h"
-#include "base/thread_restrictions.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/printing/print_job_worker.h"
 
 namespace printing {

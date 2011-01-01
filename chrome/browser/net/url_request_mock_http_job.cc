@@ -7,7 +7,7 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "base/thread_restrictions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/net_util.h"

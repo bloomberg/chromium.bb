@@ -22,7 +22,7 @@
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/sys_string_conversions.h"
-#include "base/thread_restrictions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/windows_version.h"

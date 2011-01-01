@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_split.h"
-#include "base/thread_restrictions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile.h"

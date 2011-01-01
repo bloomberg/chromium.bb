@@ -13,7 +13,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"

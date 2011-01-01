@@ -8,7 +8,7 @@
 
 #include "app/resource_bundle.h"
 #include "base/singleton.h"
-#include "base/thread_restrictions.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/io_thread.h"

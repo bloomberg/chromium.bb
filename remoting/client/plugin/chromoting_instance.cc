@@ -9,7 +9,7 @@
 
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/rect.h"

@@ -10,7 +10,7 @@
 #include "base/scoped_handle.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "net/base/file_stream.h"

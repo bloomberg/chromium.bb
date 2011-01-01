@@ -4,7 +4,7 @@
 
 #include "net/base/ssl_config_service_win.h"
 
-#include "base/thread_restrictions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/win/registry.h"
 
 using base::TimeDelta;

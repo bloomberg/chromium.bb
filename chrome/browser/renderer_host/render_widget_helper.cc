@@ -5,7 +5,7 @@
 #include "chrome/browser/renderer_host/render_widget_helper.h"
 
 #include "base/eintr_wrapper.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"

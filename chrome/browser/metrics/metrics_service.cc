@@ -161,7 +161,7 @@
 #include "base/md5.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"

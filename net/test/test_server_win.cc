@@ -15,7 +15,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/test/test_timeouts.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 
 #pragma comment(lib, "crypt32.lib")

@@ -22,7 +22,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "net/base/listen_socket.h"
 #include "net/base/net_util.h"
 #include "net/base/winsock_init.h"

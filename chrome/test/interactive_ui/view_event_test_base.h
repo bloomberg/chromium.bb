@@ -8,7 +8,7 @@
 
 #include "base/message_loop.h"
 #include "base/task.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/window/window_delegate.h"
 

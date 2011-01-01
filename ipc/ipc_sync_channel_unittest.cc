@@ -17,7 +17,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/waitable_event.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sync_message_filter.h"

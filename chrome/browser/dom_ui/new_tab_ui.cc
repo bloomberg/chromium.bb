@@ -15,7 +15,7 @@
 #include "base/metrics/histogram.h"
 #include "base/singleton.h"
 #include "base/string_number_conversions.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_ui/app_launcher_handler.h"

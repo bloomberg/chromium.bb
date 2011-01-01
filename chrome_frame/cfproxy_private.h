@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 #include "chrome_frame/cfproxy.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 // Since we can't forward declare IPC::Message::Sender or IPC::Channel::Listener
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_channel.h"

@@ -22,7 +22,7 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "app/x11_util_internal.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"

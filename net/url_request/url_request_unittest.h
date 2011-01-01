@@ -17,7 +17,7 @@
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include "base/string16.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/cert_verifier.h"

@@ -7,7 +7,7 @@
 #import <AppKit/AppKit.h>
 
 #include "base/message_loop.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/sys_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkBitmap.h"

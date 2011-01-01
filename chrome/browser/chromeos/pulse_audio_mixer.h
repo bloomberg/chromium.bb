@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/lock.h"
 #include "base/scoped_ptr.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 
 struct pa_context;
 struct pa_cvolume;

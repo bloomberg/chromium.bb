@@ -14,7 +14,7 @@
 #include "base/eintr_wrapper.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"

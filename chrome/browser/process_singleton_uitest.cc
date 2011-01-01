@@ -18,7 +18,7 @@
 #include "base/process_util.h"
 #include "base/ref_counted.h"
 #include "base/scoped_temp_dir.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/waitable_event.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_constants.h"

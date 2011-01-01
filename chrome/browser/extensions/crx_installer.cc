@@ -16,7 +16,7 @@
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "base/task.h"
-#include "base/thread_restrictions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"

@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/lock.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 
 // This class provides the following functionality:
 // It invokes a set of registered handlers at periodic intervals in

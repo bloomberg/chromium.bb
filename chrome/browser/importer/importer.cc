@@ -5,7 +5,7 @@
 #include "chrome/browser/importer/importer.h"
 
 #include "app/l10n_util.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_list.h"

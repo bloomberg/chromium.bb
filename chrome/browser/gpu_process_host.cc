@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/string_piece.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/gpu_blacklist.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"

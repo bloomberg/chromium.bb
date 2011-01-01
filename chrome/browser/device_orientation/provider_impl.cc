@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/task.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "chrome/browser/device_orientation/orientation.h"
 #include "chrome/browser/device_orientation/provider_impl.h"
 

@@ -11,7 +11,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "media/base/callback.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media.h"

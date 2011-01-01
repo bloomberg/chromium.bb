@@ -12,7 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/task.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "chrome/browser/geolocation/device_data_provider.h"
 
 // Converts a MAC address stored as an array of uint8 to a string.

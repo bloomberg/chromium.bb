@@ -19,7 +19,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_tokenizer.h"
-#include "base/thread_restrictions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/nix/xdg_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"

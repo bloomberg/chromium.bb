@@ -7,7 +7,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/ref_counted.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"

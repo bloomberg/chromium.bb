@@ -9,7 +9,7 @@
 #include "base/path_service.h"
 #include "base/ref_counted_memory.h"
 #include "base/task.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/common/chrome_paths.h"

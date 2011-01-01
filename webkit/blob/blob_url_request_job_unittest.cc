@@ -9,7 +9,7 @@
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
 #include "base/task.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/time.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"

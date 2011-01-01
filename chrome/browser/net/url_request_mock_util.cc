@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/path_service.h"
-#include "base/thread_restrictions.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/net/url_request_failed_dns_job.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"

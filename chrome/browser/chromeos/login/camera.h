@@ -11,7 +11,7 @@
 
 #include "base/lock.h"
 #include "base/ref_counted.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class Task;

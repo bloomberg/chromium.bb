@@ -22,7 +22,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/tracked_objects.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/about_flags.h"

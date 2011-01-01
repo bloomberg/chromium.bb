@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "printing/backend/print_backend.h"
 
 class CloudPrintProxyService;

@@ -13,7 +13,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/thread.h"
+#include "base/threading/thread.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "ceee/common/initializing_coclass.h"

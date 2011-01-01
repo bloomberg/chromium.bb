@@ -13,7 +13,7 @@
 #include "base/lazy_instance.h"
 #include "base/lock.h"
 #include "base/logging.h"
-#include "base/thread_restrictions.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_thread.h"

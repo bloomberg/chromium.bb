@@ -5,7 +5,7 @@
 #include "chrome/browser/geolocation/geolocation_provider.h"
 
 #include "base/singleton.h"
-#include "base/thread_restrictions.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/geolocation/location_arbitrator.h"
 
 // This class is guaranteed to outlive its internal thread, so ref counting
