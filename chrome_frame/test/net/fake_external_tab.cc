@@ -20,6 +20,7 @@
 #include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -358,7 +359,7 @@ void CFUrlRequestUnittestRunner::StartTests() {
 
 // static
 DWORD CFUrlRequestUnittestRunner::RunAllUnittests(void* param) {
-  PlatformThread::SetName("CFUrlRequestUnittestRunner");
+  base::PlatformThread::SetName("CFUrlRequestUnittestRunner");
   // Needed for some url request tests like the intercept job tests, etc.
   NotificationService service;
   CFUrlRequestUnittestRunner* me =
