@@ -13,8 +13,8 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "base/non_thread_safe.h"
 #include "base/scoped_callback_factory.h"
+#include "base/threading/non_thread_safe.h"
 #include "base/weak_ptr.h"
 
 namespace invalidation {
@@ -52,7 +52,7 @@ class CacheInvalidationPacketHandler {
 
   void HandleInboundPacket(const std::string& packet);
 
-  NonThreadSafe non_thread_safe_;
+  base::NonThreadSafe non_thread_safe_;
   base::ScopedCallbackFactory<CacheInvalidationPacketHandler>
       scoped_callback_factory_;
 

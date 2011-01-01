@@ -11,7 +11,7 @@
 #include <set>
 
 #include "base/basictypes.h"
-#include "base/non_thread_safe.h"
+#include "base/threading/non_thread_safe.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/x509_certificate.h"
 
@@ -23,7 +23,7 @@
 // from the SSLManager because this state is shared across many navigation
 // controllers.
 
-class SSLHostState : public NonThreadSafe {
+class SSLHostState : public base::NonThreadSafe {
  public:
   SSLHostState();
   ~SSLHostState();

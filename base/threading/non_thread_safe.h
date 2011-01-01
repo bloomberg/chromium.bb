@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_NON_THREAD_SAFE_H_
-#define BASE_NON_THREAD_SAFE_H_
+#ifndef BASE_THREADING_NON_THREAD_SAFE_H_
+#define BASE_THREADING_NON_THREAD_SAFE_H_
 #pragma once
 
 #include "base/threading/thread_checker.h"
+
+namespace base {
 
 // A helper class used to help verify that methods of a class are
 // called from the same thread.  One can inherit from this class and use
@@ -16,7 +18,7 @@
 // aren't.  For example, a service or a singleton like the preferences system.
 //
 // Example:
-// class MyClass : public NonThreadSafe {
+// class MyClass : public base::NonThreadSafe {
 //  public:
 //   void Foo() {
 //     DCHECK(CalledOnValidThread());
@@ -42,7 +44,7 @@ class NonThreadSafe {
   void DetachFromThread();
 
  private:
-  base::ThreadChecker thread_checker_;
+  ThreadChecker thread_checker_;
 };
 #else
 // Do nothing in release mode.
@@ -56,5 +58,7 @@ class NonThreadSafe {
   void DetachFromThread() {}
 };
 #endif  // NDEBUG
+
+}  // namespace base
 
 #endif  // BASE_NON_THREAD_SAFE_H_

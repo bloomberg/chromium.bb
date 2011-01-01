@@ -11,8 +11,8 @@
 #include <string>
 
 #include "app/theme_provider.h"
-#include "base/non_thread_safe.h"
 #include "base/ref_counted.h"
+#include "base/threading/non_thread_safe.h"
 
 namespace color_utils {
   struct HSL;
@@ -32,7 +32,7 @@ class ResourceBundle;
 extern "C" NSString* const kBrowserThemeDidChangeNotification;
 #endif  // __OBJC__
 
-class BrowserThemeProvider : public NonThreadSafe,
+class BrowserThemeProvider : public base::NonThreadSafe,
                              public ThemeProvider {
  public:
   // Public constants used in BrowserThemeProvider and its subclasses:

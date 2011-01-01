@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/non_thread_safe.h"
 #include "base/scoped_ptr.h"
+#include "base/threading/non_thread_safe.h"
 #include "chrome/service/cloud_print/cloud_print_proxy_backend.h"
 
 class ServiceProcessPrefs;
@@ -18,7 +18,7 @@ class ServiceProcessPrefs;
 // CloudPrintProxy is the layer between the service process UI thread
 // and the cloud print proxy backend.
 class CloudPrintProxy : public CloudPrintProxyFrontend,
-                        public NonThreadSafe {
+                        public base::NonThreadSafe {
  public:
   class Client {
    public:

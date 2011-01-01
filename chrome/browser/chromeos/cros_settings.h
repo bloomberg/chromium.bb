@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/hash_tables.h"
-#include "base/non_thread_safe.h"
 #include "base/observer_list.h"
 #include "base/singleton.h"
+#include "base/threading/non_thread_safe.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/common/notification_observer.h"
 
@@ -27,7 +27,7 @@ namespace chromeos {
 class CrosSettingsProvider;
 
 // A class manages per-device/global settings.
-class CrosSettings : public NonThreadSafe {
+class CrosSettings : public base::NonThreadSafe {
  public:
   // Class factory.
   static CrosSettings* Get();

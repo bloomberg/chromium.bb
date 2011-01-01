@@ -9,8 +9,8 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/non_thread_safe.h"
 #include "base/scoped_ptr.h"
+#include "base/threading/non_thread_safe.h"
 #include "base/weak_ptr.h"
 #include "talk/base/sigslot.h"
 #include "talk/xmpp/xmppengine.h"
@@ -84,7 +84,7 @@ class XmppConnection : public sigslot::has_slots<> {
 
   void ClearClient();
 
-  NonThreadSafe non_thread_safe_;
+  base::NonThreadSafe non_thread_safe_;
   scoped_ptr<TaskPump> task_pump_;
   base::WeakPtr<WeakXmppClient> weak_xmpp_client_;
   bool on_connect_called_;

@@ -15,7 +15,7 @@
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
-#include "base/non_thread_safe.h"
+#include "base/threading/non_thread_safe.h"
 #include "base/timer.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/browser_process.h"
@@ -36,7 +36,7 @@ class TabCloseableStateWatcher;
 
 // Real implementation of BrowserProcess that creates and returns the services.
 class BrowserProcessImpl : public BrowserProcess,
-                           public NonThreadSafe,
+                           public base::NonThreadSafe,
                            public NotificationObserver {
  public:
   explicit BrowserProcessImpl(const CommandLine& command_line);

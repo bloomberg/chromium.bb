@@ -53,8 +53,8 @@
 #pragma once
 
 #include "base/logging.h"
-#include "base/non_thread_safe.h"
 #include "base/ref_counted.h"
+#include "base/threading/non_thread_safe.h"
 
 namespace base {
 
@@ -64,7 +64,7 @@ namespace internal {
 
 class WeakReference {
  public:
-  class Flag : public RefCounted<Flag>, public NonThreadSafe {
+  class Flag : public RefCounted<Flag>, public base::NonThreadSafe {
    public:
     Flag(Flag** handle);
     ~Flag();
@@ -74,7 +74,7 @@ class WeakReference {
     void Invalidate() { handle_ = NULL; }
     bool is_valid() const { return handle_ != NULL; }
 
-    void DetachFromThread() { NonThreadSafe::DetachFromThread(); }
+    void DetachFromThread() { base::NonThreadSafe::DetachFromThread(); }
 
    private:
     Flag** handle_;

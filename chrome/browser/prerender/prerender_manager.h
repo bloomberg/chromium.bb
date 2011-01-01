@@ -8,8 +8,8 @@
 
 #include <list>
 
-#include "base/non_thread_safe.h"
 #include "base/scoped_ptr.h"
+#include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 
@@ -19,7 +19,7 @@ class TabContents;
 
 // PrerenderManager is responsible for initiating and keeping prerendered
 // views of webpages.
-class PrerenderManager : NonThreadSafe {
+class PrerenderManager : base::NonThreadSafe {
  public:
   // Owned by a Profile object for the lifetime of the profile.
   explicit PrerenderManager(Profile* profile);

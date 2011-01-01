@@ -11,7 +11,7 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/non_thread_safe.h"
+#include "base/threading/non_thread_safe.h"
 #include "base/weak_ptr.h"
 #include "talk/xmpp/xmppclient.h"
 
@@ -43,7 +43,7 @@ class WeakXmppClient : public buzz::XmppClient {
   virtual void Stop();
 
  private:
-  NonThreadSafe non_thread_safe_;
+  base::NonThreadSafe non_thread_safe_;
   // We use our own WeakPtrFactory instead of inheriting from
   // SupportsWeakPtr since we want to invalidate in other places
   // besides the destructor.

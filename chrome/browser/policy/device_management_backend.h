@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/non_thread_safe.h"
+#include "base/threading/non_thread_safe.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 
 namespace policy {
@@ -20,7 +20,7 @@ namespace em = enterprise_management;
 // server, which provides services to register Chrome installations and CrOS
 // devices for the purpose of fetching centrally-administered policy from the
 // cloud.
-class DeviceManagementBackend : NonThreadSafe {
+class DeviceManagementBackend : base::NonThreadSafe {
  public:
   enum ErrorCode {
     // Request payload invalid.

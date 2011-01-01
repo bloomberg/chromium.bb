@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/non_thread_safe.h"
 #include "base/ref_counted.h"
+#include "base/threading/non_thread_safe.h"
 #include "chrome/common/chrome_plugin_api.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -41,7 +41,7 @@ struct ScopableCPRequest : public CPRequest {
 // the plugin unloads.  This object also verifies that it is created and
 // destroyed on the same thread.
 class PluginHelper : public NotificationObserver,
-                     public NonThreadSafe {
+                     public base::NonThreadSafe {
  public:
   static void DestroyAllHelpersForPlugin(ChromePluginLib* plugin);
 

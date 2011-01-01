@@ -12,7 +12,7 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "base/non_thread_safe.h"
+#include "base/threading/non_thread_safe.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "google/cacheinvalidation/invalidation-client.h"
 
@@ -54,7 +54,7 @@ class RegistrationManager {
 
   void OnRegister(const invalidation::RegistrationUpdateResult& result);
 
-  NonThreadSafe non_thread_safe_;
+  base::NonThreadSafe non_thread_safe_;
   // Weak pointer.
   invalidation::InvalidationClient* invalidation_client_;
   RegistrationStatusMap registration_status_;

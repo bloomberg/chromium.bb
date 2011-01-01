@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/hash_tables.h"
-#include "base/non_thread_safe.h"
 #include "base/observer_list.h"
+#include "base/threading/non_thread_safe.h"
 #include "chrome/browser/prefs/pref_notifier.h"
 
 class PrefService;
@@ -18,7 +18,7 @@ class NotificationObserver;
 
 // The PrefNotifier implementation used by the PrefService.
 class PrefNotifierImpl : public PrefNotifier,
-                         public NonThreadSafe {
+                         public base::NonThreadSafe {
  public:
   explicit PrefNotifierImpl(PrefService* pref_service);
   virtual ~PrefNotifierImpl();

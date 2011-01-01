@@ -21,9 +21,9 @@
 #include "base/crypto/encryptor.h"
 #include "base/crypto/symmetric_key.h"
 #include "base/lazy_instance.h"
-#include "base/non_thread_safe.h"
 #include "base/pickle.h"
 #include "base/scoped_ptr.h"
+#include "base/threading/non_thread_safe.h"
 #include "net/base/completion_callback.h"
 #include "net/base/dns_util.h"
 #include "net/base/dnsrr_resolver.h"
@@ -85,7 +85,7 @@ static base::LazyInstance<DnsCertLimits> g_dns_cert_limits(
 
 // DnsCertProvenanceCheck performs the DNS lookup of the certificate. This
 // class is self-deleting.
-class DnsCertProvenanceCheck : public NonThreadSafe {
+class DnsCertProvenanceCheck : public base::NonThreadSafe {
  public:
   DnsCertProvenanceCheck(
       const std::string& hostname,

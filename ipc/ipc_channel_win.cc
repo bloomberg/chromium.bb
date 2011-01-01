@@ -11,7 +11,7 @@
 #include "base/auto_reset.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/non_thread_safe.h"
+#include "base/threading/non_thread_safe.h"
 #include "base/utf_string_conversions.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message_utils.h"
@@ -250,7 +250,7 @@ bool Channel::ChannelImpl::Connect() {
   DLOG_IF(WARNING, thread_check_.get()) << "Connect called more than once";
 
   if (!thread_check_.get())
-    thread_check_.reset(new NonThreadSafe());
+    thread_check_.reset(new base::NonThreadSafe());
 
   if (pipe_ == INVALID_HANDLE_VALUE)
     return false;

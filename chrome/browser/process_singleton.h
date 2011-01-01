@@ -14,8 +14,8 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/non_thread_safe.h"
 #include "base/ref_counted.h"
+#include "base/threading/non_thread_safe.h"
 #include "gfx/native_widget_types.h"
 
 #if defined(OS_POSIX)
@@ -40,7 +40,7 @@ class FilePath;
 // - the Windows implementation uses an invisible global message window;
 // - the Linux implementation uses a Unix domain socket in the user data dir.
 
-class ProcessSingleton : public NonThreadSafe {
+class ProcessSingleton : public base::NonThreadSafe {
  public:
   enum NotifyResult {
     PROCESS_NONE,

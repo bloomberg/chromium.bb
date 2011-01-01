@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_POLICY_ASYNCHRONOUS_POLICY_PROVIDER_H_
 #pragma once
 
-#include "base/non_thread_safe.h"
 #include "base/ref_counted.h"
+#include "base/threading/non_thread_safe.h"
 #include "base/weak_ptr.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 
@@ -21,7 +21,7 @@ class AsynchronousPolicyLoader;
 // policy is handled by a delegate passed at construction time.
 class AsynchronousPolicyProvider
     : public ConfigurationPolicyProvider,
-      public NonThreadSafe {
+      public base::NonThreadSafe {
  public:
   // Must be implemented by subclasses of the asynchronous policy provider to
   // provide the implementation details of how policy is loaded.

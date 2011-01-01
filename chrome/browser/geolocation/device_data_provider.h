@@ -29,11 +29,11 @@
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
-#include "base/non_thread_safe.h"
 #include "base/ref_counted.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/task.h"
+#include "base/threading/non_thread_safe.h"
 
 // The following data structures are used to store cell radio data and wifi
 // data. See the Geolocation API design document at
@@ -264,7 +264,7 @@ typedef DeviceDataProviderImplBase<WifiData> WifiDataProviderImplBase;
 // location providers. These location providers access the instance through the
 // Register and Unregister methods.
 template<typename DataType>
-class DeviceDataProvider : public NonThreadSafe {
+class DeviceDataProvider : public base::NonThreadSafe {
  public:
   // Interface to be implemented by listeners to a device data provider.
   class ListenerInterface {

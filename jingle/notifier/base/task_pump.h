@@ -5,8 +5,8 @@
 #ifndef JINGLE_NOTIFIER_BASE_TASK_PUMP_H_
 #define JINGLE_NOTIFIER_BASE_TASK_PUMP_H_
 
-#include "base/non_thread_safe.h"
 #include "base/task.h"
+#include "base/threading/non_thread_safe.h"
 #include "talk/base/taskrunner.h"
 
 namespace notifier {
@@ -24,7 +24,7 @@ class TaskPump : public talk_base::TaskRunner {
  private:
   void CheckAndRunTasks();
 
-  NonThreadSafe non_thread_safe_;
+  base::NonThreadSafe non_thread_safe_;
   ScopedRunnableMethodFactory<TaskPump> scoped_runnable_method_factory_;
   bool posted_wake_;
 

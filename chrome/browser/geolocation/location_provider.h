@@ -15,8 +15,8 @@
 #pragma once
 
 #include <map>
-#include "base/non_thread_safe.h"
 #include "base/string16.h"
+#include "base/threading/non_thread_safe.h"
 
 class AccessTokenStore;
 struct Geoposition;
@@ -24,7 +24,7 @@ class GURL;
 class URLRequestContextGetter;
 
 // The base class used by all location providers.
-class LocationProviderBase : public NonThreadSafe {
+class LocationProviderBase : public base::NonThreadSafe {
  public:
   // Clients of the location provider must implement this interface. All call-
   // backs to this interface will happen in the context of the thread on which

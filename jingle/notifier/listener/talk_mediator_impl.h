@@ -13,8 +13,8 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/non_thread_safe.h"
 #include "base/scoped_ptr.h"
+#include "base/threading/non_thread_safe.h"
 #include "jingle/notifier/listener/mediator_thread.h"
 #include "jingle/notifier/listener/talk_mediator.h"
 #include "talk/xmpp/xmppclientsettings.h"
@@ -70,7 +70,7 @@ class TalkMediatorImpl
     unsigned int subscribed : 1;   // Subscribed to the xmpp receiving channel.
   };
 
-  NonThreadSafe non_thread_safe_;
+  base::NonThreadSafe non_thread_safe_;
 
   // Delegate, which we don't own.  May be NULL.
   TalkMediator::Delegate* delegate_;

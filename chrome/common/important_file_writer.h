@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/non_thread_safe.h"
 #include "base/ref_counted.h"
+#include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "base/timer.h"
 
@@ -36,7 +36,7 @@ class Thread;
 //
 // If you want to know more about this approach and ext3/ext4 fsync issues, see
 // http://valhenson.livejournal.com/37921.html
-class ImportantFileWriter : public NonThreadSafe {
+class ImportantFileWriter : public base::NonThreadSafe {
  public:
   // Used by ScheduleSave to lazily provide the data to be saved. Allows us
   // to also batch data serializations.

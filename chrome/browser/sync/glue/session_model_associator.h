@@ -13,6 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
 #include "base/scoped_vector.h"
+#include "base/threading/non_thread_safe.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sync/engine/syncapi.h"
@@ -44,8 +45,10 @@ static const char kSessionsTag[] = "google_chrome_sessions";
 // that gets overwritten everytime there is an update. From it, we build a new
 // foreign session windows list each time |GetSessionData| is called by the
 // ForeignSessionHandler.
-class SessionModelAssociator : public PerDataTypeAssociatorInterface<
-    sync_pb::SessionSpecifics, std::string>, public NonThreadSafe {
+class SessionModelAssociator
+    : public PerDataTypeAssociatorInterface<sync_pb::SessionSpecifics,
+                                            std::string>,
+      public base::NonThreadSafe {
  public:
 
   // Does not take ownership of sync_service.
@@ -60,7 +63,7 @@ class SessionModelAssociator : public PerDataTypeAssociatorInterface<
 
   // Dummy method, we do everything all-at-once in UpdateFromSyncModel.
   virtual void Associate(const sync_pb::SessionSpecifics* specifics,
-    int64 sync_id) {
+      int64 sync_id) {
   }
 
   // Updates the sync model with the local client data. (calls

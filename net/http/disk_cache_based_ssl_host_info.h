@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/lock.h"
-#include "base/non_thread_safe.h"
 #include "base/scoped_ptr.h"
+#include "base/threading/non_thread_safe.h"
 #include "base/weak_ptr.h"
 #include "net/base/completion_callback.h"
 #include "net/disk_cache/disk_cache.h"
@@ -25,7 +25,7 @@ struct SSLConfig;
 // standard disk cache. Since the information is defined to be non-sensitive,
 // it's ok for us to keep it on disk.
 class DiskCacheBasedSSLHostInfo : public SSLHostInfo,
-                                  public NonThreadSafe {
+                                  public base::NonThreadSafe {
  public:
   DiskCacheBasedSSLHostInfo(const std::string& hostname,
                             const SSLConfig& ssl_config,

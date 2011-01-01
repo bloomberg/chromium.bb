@@ -9,8 +9,8 @@
 #include <queue>
 
 #include "base/basictypes.h"
-#include "base/non_thread_safe.h"
 #include "base/ref_counted.h"
+#include "base/threading/non_thread_safe.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "gfx/native_widget_types.h"
 
@@ -29,7 +29,8 @@ struct ChannelHandle;
 class Message;
 }
 
-class GpuProcessHost : public BrowserChildProcessHost, public NonThreadSafe {
+class GpuProcessHost : public BrowserChildProcessHost,
+                       public base::NonThreadSafe {
  public:
   // Getter for the singleton. This will return NULL on failure.
   static GpuProcessHost* Get();

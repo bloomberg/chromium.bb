@@ -12,9 +12,9 @@
 // shuttling messages between the browser and GPU processes.
 
 #include "base/callback.h"
-#include "base/non_thread_safe.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
+#include "base/threading/non_thread_safe.h"
 #include "chrome/common/gpu_info.h"
 #include "chrome/common/message_router.h"
 #include "ipc/ipc_channel.h"
@@ -22,7 +22,7 @@
 
 class GpuProcessHostUIShim : public IPC::Channel::Sender,
                              public IPC::Channel::Listener,
-                             public NonThreadSafe {
+                             public base::NonThreadSafe {
  public:
   // Getter for the singleton. This will return NULL on failure.
   static GpuProcessHostUIShim* GetInstance();
