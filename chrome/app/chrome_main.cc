@@ -8,7 +8,6 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
-#include "base/debug_util.h"
 #include "base/i18n/icu_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop.h"
@@ -49,6 +48,7 @@
 
 #if defined(OS_MACOSX)
 #include "app/l10n_util_mac.h"
+#include "base/mac/os_crash_dumps.h"
 #include "base/mac_util.h"
 #include "base/mach_ipc_mac.h"
 #include "chrome/app/breakpad_mac.h"
@@ -749,7 +749,7 @@ int ChromeMain(int argc, char** argv) {
     bool disable_apple_crash_reporter = is_debug_build
                                         || mac_util::IsBackgroundOnlyProcess();
     if (!IsCrashReporterEnabled() && disable_apple_crash_reporter) {
-      DebugUtil::DisableOSCrashDumps();
+      base::mac::DisableOSCrashDumps();
     }
   }
 

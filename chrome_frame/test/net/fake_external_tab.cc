@@ -12,7 +12,7 @@
 #include "app/resource_bundle.h"
 #include "app/win/scoped_com_initializer.h"
 #include "base/command_line.h"
-#include "base/debug_util.h"
+#include "base/debug/debugger.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/i18n/icu_util.h"
@@ -309,7 +309,7 @@ void CFUrlRequestUnittestRunner::Initialize() {
   base::Time::EnableHighResolutionTimer(true);
 
   SuppressErrorDialogs();
-  DebugUtil::SuppressDialogs();
+  base::debug::SetSuppressDebugUI(true);
 #if !defined(PURIFY)
   logging::SetLogAssertHandler(UnitTestAssertHandler);
 #endif  // !defined(PURIFY)

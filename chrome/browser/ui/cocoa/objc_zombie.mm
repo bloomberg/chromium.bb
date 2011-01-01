@@ -205,7 +205,7 @@ void ZombieObjectCrash(id object, SEL aSelector, SEL viaSelector) {
   LOG(ERROR) << [aString UTF8String];
 
   // This is how about:crash is implemented.  Using instead of
-  // |DebugUtil::BreakDebugger()| or |LOG(FATAL)| to make the top of
+  // |baes::debug::BreakDebugger()| or |LOG(FATAL)| to make the top of
   // stack more immediately obvious in crash dumps.
   int* zero = NULL;
   *zero = 0;

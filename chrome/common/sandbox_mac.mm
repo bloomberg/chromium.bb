@@ -4,8 +4,6 @@
 
 #include "chrome/common/sandbox_mac.h"
 
-#include "base/debug_util.h"
-
 #import <Cocoa/Cocoa.h>
 #import <OpenGL/OpenGL.h>
 
