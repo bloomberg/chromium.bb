@@ -529,6 +529,7 @@
         'common/logging_chrome_uitest.cc',
         'renderer/external_extension_uitest.cc',
         'test/automation/automation_proxy_uitest.cc',
+        'test/automation/automation_proxy_uitest.h',
         'test/automation/extension_proxy_uitest.cc',
         'test/automated_ui_tests/automated_ui_test_test.cc',
         'test/chrome_process_util_uitest.cc',

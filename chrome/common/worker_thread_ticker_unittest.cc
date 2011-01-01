@@ -5,7 +5,7 @@
 #include "chrome/common/worker_thread_ticker.h"
 
 #include "base/message_loop.h"
-#include "base/platform_thread.h"
+#include "base/threading/platform_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -32,7 +32,7 @@ class TestCallback : public WorkerThreadTicker::Callback {
 class LongCallback : public WorkerThreadTicker::Callback {
  public:
   virtual void OnTick() {
-    PlatformThread::Sleep(1500);
+    base::PlatformThread::Sleep(1500);
   }
 };
 

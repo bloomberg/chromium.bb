@@ -10,10 +10,10 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/platform_thread.h"
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/installer/util/work_item.h"
 #include "chrome/installer/util/copy_tree_work_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -478,7 +478,7 @@ TEST_F(CopyTreeWorkItemTest, NewNameAndCopyTest) {
       temp_dir_.ToWStringHack(), WorkItem::NEW_NAME_IF_IN_USE,
       alternate_to.ToWStringHack()));
   if (IsFileInUse(file_name_to))
-    PlatformThread::Sleep(2000);
+    base::PlatformThread::Sleep(2000);
   // If file is still in use, the rest of the test will fail.
   ASSERT_FALSE(IsFileInUse(file_name_to));
   EXPECT_TRUE(work_item->Do());

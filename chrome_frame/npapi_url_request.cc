@@ -5,6 +5,7 @@
 #include "chrome_frame/npapi_url_request.h"
 
 #include "base/string_number_conversions.h"
+#include "base/threading/platform_thread.h"
 #include "chrome_frame/np_browser_functions.h"
 #include "chrome_frame/np_utils.h"
 #include "net/base/net_errors.h"
@@ -44,7 +45,7 @@ class NPAPIUrlRequest : public PluginUrlRequest {
   size_t pending_read_size_;
   URLRequestStatus status_;
 
-  PlatformThreadId thread_;
+  base::PlatformThreadId thread_;
   static int instance_count_;
   DISALLOW_COPY_AND_ASSIGN(NPAPIUrlRequest);
 };
@@ -55,7 +56,7 @@ NPAPIUrlRequest::NPAPIUrlRequest(NPP instance)
     : ref_count_(0), instance_(instance), stream_(NULL),
       pending_read_size_(0),
       status_(URLRequestStatus::FAILED, net::ERR_FAILED),
-      thread_(PlatformThread::CurrentId()) {
+      thread_(base::PlatformThread::CurrentId()) {
   DVLOG(1) << "Created request. Count: " << ++instance_count_;
 }
 
@@ -187,13 +188,13 @@ int NPAPIUrlRequest::OnWrite(void* buffer, int len) {
 }
 
 STDMETHODIMP_(ULONG) NPAPIUrlRequest::AddRef() {
-  DCHECK_EQ(PlatformThread::CurrentId(), thread_);
+  DCHECK_EQ(base::PlatformThread::CurrentId(), thread_);
   ++ref_count_;
   return ref_count_;
 }
 
 STDMETHODIMP_(ULONG) NPAPIUrlRequest::Release() {
-  DCHECK_EQ(PlatformThread::CurrentId(), thread_);
+  DCHECK_EQ(base::PlatformThread::CurrentId(), thread_);
   unsigned long ret = --ref_count_;
   if (!ret)
     delete this;

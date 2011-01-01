@@ -10,7 +10,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/platform_thread.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/pref_value_store.h"
@@ -99,7 +99,7 @@ TEST_F(MetricsServiceTest, CrashRenderers) {
   }
 
   // Give the browser a chance to notice the crashed tab.
-  PlatformThread::Sleep(sleep_timeout_ms());
+  base::PlatformThread::Sleep(sleep_timeout_ms());
 
   QuitBrowser();
 

@@ -11,6 +11,7 @@
 #include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/task.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
@@ -171,7 +172,7 @@ void TabContentsDragWin::StartBackgroundDragging(
     const std::string& page_encoding,
     const SkBitmap& image,
     const gfx::Point& image_offset) {
-  drag_drop_thread_id_ = PlatformThread::CurrentId();
+  drag_drop_thread_id_ = base::PlatformThread::CurrentId();
 
   DoDragging(drop_data, ops, page_url, page_encoding, image, image_offset);
   BrowserThread::PostTask(
@@ -345,7 +346,7 @@ void TabContentsDragWin::CloseThread() {
 }
 
 void TabContentsDragWin::OnWaitForData() {
-  DCHECK(drag_drop_thread_id_ == PlatformThread::CurrentId());
+  DCHECK(drag_drop_thread_id_ == base::PlatformThread::CurrentId());
 
   // When the left button is release and we start to wait for the data, end
   // the dragging before DoDragDrop returns. This makes the page leave the drag
@@ -356,7 +357,7 @@ void TabContentsDragWin::OnWaitForData() {
 }
 
 void TabContentsDragWin::OnDataObjectDisposed() {
-  DCHECK(drag_drop_thread_id_ == PlatformThread::CurrentId());
+  DCHECK(drag_drop_thread_id_ == base::PlatformThread::CurrentId());
 
   // The drag-and-drop thread is only closed after OLE is done with
   // DataObjectImpl.

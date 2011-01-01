@@ -15,8 +15,8 @@
 #include "base/lazy_instance.h"
 #include "base/lock.h"
 #include "base/metrics/histogram.h"
-#include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread_local.h"
 #include "chrome/common/metrics_helpers.h"
 
@@ -139,7 +139,7 @@ class MetricsService : public MetricsServiceBase {
   // A number that identifies the how many times the app has been launched.
   int session_id_;
 
-  PlatformThreadId thread_;
+  base::PlatformThreadId thread_;
 
   // Indicates if this is the first uma upload from this instance.
   bool initial_uma_upload_;

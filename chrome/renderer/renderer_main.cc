@@ -17,9 +17,9 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_counters.h"
 #include "base/path_service.h"
-#include "base/platform_thread.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_counters.h"
 #include "chrome/common/chrome_switches.h"
@@ -78,7 +78,7 @@ void SIGTERMHandler(int signal) {
   RAW_LOG(INFO, "Wrote signal to shutdown pipe.");
 }
 
-class ShutdownDetector : public PlatformThread::Delegate {
+class ShutdownDetector : public base::PlatformThread::Delegate {
  public:
   explicit ShutdownDetector(int shutdown_fd) : shutdown_fd_(shutdown_fd) {
     CHECK(shutdown_fd_ != -1);
@@ -193,9 +193,9 @@ int RendererMain(const MainFunctionParams& parameters) {
     int shutdown_pipe_read_fd = pipefd[0];
     g_shutdown_pipe_write_fd = pipefd[1];
     const size_t kShutdownDetectorThreadStackSize = 4096;
-    if (!PlatformThread::CreateNonJoinable(
-        kShutdownDetectorThreadStackSize,
-        new ShutdownDetector(shutdown_pipe_read_fd))) {
+    if (!base::PlatformThread::CreateNonJoinable(
+            kShutdownDetectorThreadStackSize,
+            new ShutdownDetector(shutdown_pipe_read_fd))) {
       LOG(DFATAL) << "Failed to create shutdown detector task.";
     }
   }
@@ -238,7 +238,7 @@ int RendererMain(const MainFunctionParams& parameters) {
               MessageLoop::TYPE_UI : MessageLoop::TYPE_DEFAULT);
 #endif
 
-  PlatformThread::SetName("CrRendererMain");
+  base::PlatformThread::SetName("CrRendererMain");
 
   SystemMonitor system_monitor;
   HighResolutionTimerManager hi_res_timer_manager;

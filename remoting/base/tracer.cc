@@ -10,11 +10,11 @@
 #include "base/condition_variable.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
-#include "base/platform_thread.h"
 #include "base/rand_util.h"
 #include "base/ref_counted.h"
 #include "base/stl_util-inl.h"
 #include "base/threading/thread.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread_local.h"
 #include "base/time.h"
 

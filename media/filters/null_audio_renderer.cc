@@ -6,6 +6,7 @@
 #include <cmath>
 
 #include "base/logging.h"
+#include "base/threading/platform_thread.h"
 #include "media/base/filter_host.h"
 #include "media/filters/null_audio_renderer.h"
 
@@ -20,12 +21,12 @@ NullAudioRenderer::NullAudioRenderer()
     : AudioRendererBase(),
       bytes_per_millisecond_(0),
       buffer_size_(0),
-      thread_(kNullThreadHandle),
+      thread_(base::kNullThreadHandle),
       shutdown_(false) {
 }
 
 NullAudioRenderer::~NullAudioRenderer() {
-  DCHECK_EQ(kNullThreadHandle, thread_);
+  DCHECK_EQ(base::kNullThreadHandle, thread_);
 }
 
 void NullAudioRenderer::SetVolume(float volume) {
@@ -54,7 +55,8 @@ void NullAudioRenderer::ThreadMain() {
     }
 
     // Sleep for at least one millisecond so we don't spin the CPU.
-    PlatformThread::Sleep(std::max(1, static_cast<int>(sleep_in_milliseconds)));
+    base::PlatformThread::Sleep(
+        std::max(1, static_cast<int>(sleep_in_milliseconds)));
   }
 }
 
@@ -76,14 +78,14 @@ bool NullAudioRenderer::OnInitialize(const MediaFormat& media_format) {
 
   // It's safe to start the thread now because it simply sleeps when playback
   // rate is 0.0f.
-  return PlatformThread::Create(0, this, &thread_);
+  return base::PlatformThread::Create(0, this, &thread_);
 }
 
 void NullAudioRenderer::OnStop() {
   shutdown_ = true;
   if (thread_) {
-    PlatformThread::Join(thread_);
-    thread_ = kNullThreadHandle;
+    base::PlatformThread::Join(thread_);
+    thread_ = base::kNullThreadHandle;
   }
 }
 

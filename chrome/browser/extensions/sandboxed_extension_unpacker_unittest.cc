@@ -4,7 +4,6 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/platform_thread.h"
 #include "base/ref_counted.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"

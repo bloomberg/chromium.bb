@@ -7,13 +7,13 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/common/notification_service.h"
-#include "base/platform_thread.h"
 
 namespace {
 
-void CheckCalledOnValidThread(PlatformThreadId thread_id) {
-  PlatformThreadId current_thread_id = PlatformThread::CurrentId();
+void CheckCalledOnValidThread(base::PlatformThreadId thread_id) {
+  base::PlatformThreadId current_thread_id = base::PlatformThread::CurrentId();
   CHECK(current_thread_id == thread_id) << "called on invalid thread: "
                                         << thread_id << " vs. "
                                         << current_thread_id;
@@ -27,7 +27,7 @@ struct NotificationRegistrar::Record {
   NotificationObserver* observer;
   NotificationType type;
   NotificationSource source;
-  PlatformThreadId thread_id;
+  base::PlatformThreadId thread_id;
 };
 
 bool NotificationRegistrar::Record::operator==(const Record& other) const {
@@ -49,7 +49,7 @@ void NotificationRegistrar::Add(NotificationObserver* observer,
                                 const NotificationSource& source) {
   DCHECK(!IsRegistered(observer, type, source)) << "Duplicate registration.";
 
-  Record record = { observer, type, source, PlatformThread::CurrentId() };
+  Record record = { observer, type, source, base::PlatformThread::CurrentId() };
   registered_.push_back(record);
 
   NotificationService::current()->AddObserver(observer, type, source);

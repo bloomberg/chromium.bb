@@ -7,9 +7,9 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mach_ipc_mac.h"
-#include "base/platform_thread.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -54,7 +54,7 @@ class RegisterNotificationTask : public Task {
   DISALLOW_COPY_AND_ASSIGN(RegisterNotificationTask);
 };
 
-class MachListenerThreadDelegate : public PlatformThread::Delegate {
+class MachListenerThreadDelegate : public base::PlatformThread::Delegate {
  public:
   MachListenerThreadDelegate(MachBroker* broker) : broker_(broker) {
     DCHECK(broker_);
@@ -136,7 +136,8 @@ void MachBroker::PrepareForFork() {
         BrowserThread::UI, FROM_HERE, new RegisterNotificationTask(this));
 
     // Intentional leak.  This thread is never joined or reaped.
-    PlatformThread::CreateNonJoinable(0, new MachListenerThreadDelegate(this));
+    base::PlatformThread::CreateNonJoinable(
+        0, new MachListenerThreadDelegate(this));
   }
 }
 

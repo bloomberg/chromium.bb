@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "media/base/callback.h"
 #include "media/base/filter_collection.h"
@@ -124,7 +125,7 @@ bool InitPipeline(MessageLoop* message_loop,
 
   // Wait until the pipeline is fully initialized.
   while (true) {
-    PlatformThread::Sleep(100);
+    base::PlatformThread::Sleep(100);
     if ((*pipeline)->IsInitialized())
       break;
     if ((*pipeline)->GetError() != media::PIPELINE_OK) {

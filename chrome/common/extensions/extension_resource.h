@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/file_path.h"
-#include "base/platform_thread.h"
 
 // Represents a resource inside an extension. For example, an image, or a
 // JavaScript file. This is more complicated than just a simple FilePath

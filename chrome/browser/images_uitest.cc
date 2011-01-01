@@ -4,7 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/platform_thread.h"
+#include "base/threading/platform_thread.h"
 #include "net/base/net_util.h"
 #include "chrome/test/ui/ui_test.h"
 
@@ -16,7 +16,7 @@ TEST_F(ImagesTest, AnimatedGIFs) {
   NavigateToURL(net::FilePathToFileURL(test_file));
 
   // Let the GIFs fully animate.
-  PlatformThread::Sleep(sleep_timeout_ms());
+  base::PlatformThread::Sleep(sleep_timeout_ms());
 
   std::wstring page_title = L"animated gif test";
   EXPECT_EQ(page_title, GetActiveTabTitle());

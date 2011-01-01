@@ -4,7 +4,6 @@
 
 #include "chrome/browser/net/url_request_slow_http_job.h"
 
-#include "base/platform_thread.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "net/url_request/url_request_filter.h"

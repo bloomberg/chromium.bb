@@ -7,9 +7,9 @@
 #pragma once
 
 #include "app/os_exchange_data_provider_win.h"
-#include "base/platform_thread.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/threading/platform_thread.h"
 #include "gfx/point.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
@@ -71,7 +71,7 @@ class TabContentsDragWin
   void CloseThread();
 
   // For debug check only. Access only on drag-and-drop thread.
-  PlatformThreadId drag_drop_thread_id_;
+  base::PlatformThreadId drag_drop_thread_id_;
 
   // All the member variables below are accessed on UI thread.
 

@@ -5,7 +5,7 @@
 #include "sandbox/src/broker_services.h"
 
 #include "base/logging.h"
-#include "base/platform_thread.h"
+#include "base/threading/platform_thread.h"
 #include "sandbox/src/sandbox_policy_base.h"
 #include "sandbox/src/sandbox.h"
 #include "sandbox/src/target_process.h"
@@ -138,7 +138,7 @@ DWORD WINAPI BrokerServicesBase::TargetEventsThread(PVOID param) {
   if (NULL == param)
     return 1;
 
-  PlatformThread::SetName("BrokerEvent");
+  base::PlatformThread::SetName("BrokerEvent");
 
   BrokerServicesBase* broker = reinterpret_cast<BrokerServicesBase*>(param);
   HANDLE port = broker->job_port_;

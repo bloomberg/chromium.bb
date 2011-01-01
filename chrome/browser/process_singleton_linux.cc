@@ -64,7 +64,6 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/platform_thread.h"
 #include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/safe_strerror_posix.h"
@@ -72,9 +71,10 @@
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/sys_string_conversions.h"
-#include "base/utf_string_conversions.h"
+#include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #if defined(TOOLKIT_GTK)
@@ -818,7 +818,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
       return PROCESS_NONE;
     }
 
-    PlatformThread::Sleep(1000 /* ms */);
+    base::PlatformThread::Sleep(1000 /* ms */);
   }
 
   timeval timeout = {timeout_seconds, 0};

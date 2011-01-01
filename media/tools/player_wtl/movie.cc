@@ -5,6 +5,7 @@
 #include "media/tools/player_wtl/movie.h"
 
 #include "base/singleton.h"
+#include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "media/base/filter_collection.h"
 #include "media/base/pipeline_impl.h"
@@ -80,7 +81,7 @@ bool Movie::Open(const wchar_t* url, WtlVideoRenderer* video_renderer) {
   // Create and start our pipeline.
   pipeline_->Start(collection.release(), WideToUTF8(std::wstring(url)), NULL);
   while (true) {
-    PlatformThread::Sleep(100);
+    base::PlatformThread::Sleep(100);
     if (pipeline_->IsInitialized())
       break;
     if (pipeline_->GetError() != media::PIPELINE_OK)

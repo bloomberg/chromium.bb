@@ -23,10 +23,10 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/syncable/directory_backing_store.h"
@@ -1356,7 +1356,7 @@ TEST(SyncableDirectoryManager, TestFileRelease) {
   ASSERT_TRUE(file_util::Delete(dm.GetSyncDataDatabasePath(), true));
 }
 
-class ThreadOpenTestDelegate : public PlatformThread::Delegate {
+class ThreadOpenTestDelegate : public base::PlatformThread::Delegate {
  public:
   explicit ThreadOpenTestDelegate(DirectoryManager* dm)
       : directory_manager_(dm) {}
@@ -1373,10 +1373,10 @@ class ThreadOpenTestDelegate : public PlatformThread::Delegate {
 
 TEST(SyncableDirectoryManager, ThreadOpenTest) {
   DirectoryManager dm(FilePath(FILE_PATH_LITERAL(".")));
-  PlatformThreadHandle thread_handle;
+  base::PlatformThreadHandle thread_handle;
   ThreadOpenTestDelegate test_delegate(&dm);
-  ASSERT_TRUE(PlatformThread::Create(0, &test_delegate, &thread_handle));
-  PlatformThread::Join(thread_handle);
+  ASSERT_TRUE(base::PlatformThread::Create(0, &test_delegate, &thread_handle));
+  base::PlatformThread::Join(thread_handle);
   {
     ScopedDirLookup dir(&dm, "Open");
     ASSERT_TRUE(dir.good());
@@ -1395,7 +1395,7 @@ struct Step {
   int64 metahandle;
 };
 
-class ThreadBugDelegate : public PlatformThread::Delegate {
+class ThreadBugDelegate : public base::PlatformThread::Delegate {
  public:
   // a role is 0 or 1, meaning this thread does the odd or event steps.
   ThreadBugDelegate(int role, Step* step, DirectoryManager* dirman)
@@ -1457,14 +1457,16 @@ TEST(SyncableDirectoryManager, ThreadBug1) {
   ThreadBugDelegate thread_delegate_1(0, &step, &dirman);
   ThreadBugDelegate thread_delegate_2(1, &step, &dirman);
 
-  PlatformThreadHandle thread_handle_1;
-  PlatformThreadHandle thread_handle_2;
+  base::PlatformThreadHandle thread_handle_1;
+  base::PlatformThreadHandle thread_handle_2;
 
-  ASSERT_TRUE(PlatformThread::Create(0, &thread_delegate_1, &thread_handle_1));
-  ASSERT_TRUE(PlatformThread::Create(0, &thread_delegate_2, &thread_handle_2));
+  ASSERT_TRUE(
+      base::PlatformThread::Create(0, &thread_delegate_1, &thread_handle_1));
+  ASSERT_TRUE(
+      base::PlatformThread::Create(0, &thread_delegate_2, &thread_handle_2));
 
-  PlatformThread::Join(thread_handle_1);
-  PlatformThread::Join(thread_handle_2);
+  base::PlatformThread::Join(thread_handle_1);
+  base::PlatformThread::Join(thread_handle_2);
 }
 
 
@@ -1552,17 +1554,19 @@ TEST(SyncableDirectoryManager, DirectoryKernelStalenessBug) {
   DirectoryKernelStalenessBugDelegate thread_delegate_1(0, &step, &dirman);
   DirectoryKernelStalenessBugDelegate thread_delegate_2(1, &step, &dirman);
 
-  PlatformThreadHandle thread_handle_1;
-  PlatformThreadHandle thread_handle_2;
+  base::PlatformThreadHandle thread_handle_1;
+  base::PlatformThreadHandle thread_handle_2;
 
-  ASSERT_TRUE(PlatformThread::Create(0, &thread_delegate_1, &thread_handle_1));
-  ASSERT_TRUE(PlatformThread::Create(0, &thread_delegate_2, &thread_handle_2));
+  ASSERT_TRUE(
+      base::PlatformThread::Create(0, &thread_delegate_1, &thread_handle_1));
+  ASSERT_TRUE(
+      base::PlatformThread::Create(0, &thread_delegate_2, &thread_handle_2));
 
-  PlatformThread::Join(thread_handle_1);
-  PlatformThread::Join(thread_handle_2);
+  base::PlatformThread::Join(thread_handle_1);
+  base::PlatformThread::Join(thread_handle_2);
 }
 
-class StressTransactionsDelegate : public PlatformThread::Delegate {
+class StressTransactionsDelegate : public base::PlatformThread::Delegate {
  public:
   StressTransactionsDelegate(DirectoryManager* dm,
                              const std::string& dirname,
@@ -1588,7 +1592,7 @@ class StressTransactionsDelegate : public PlatformThread::Delegate {
       if (rand_action < 4 && !path_name.empty()) {
         ReadTransaction trans(dir, __FILE__, __LINE__);
         CHECK(1 == CountEntriesWithName(&trans, trans.root_id(), path_name));
-        PlatformThread::Sleep(rand() % 10);
+        base::PlatformThread::Sleep(rand() % 10);
       } else {
         std::string unique_name = StringPrintf("%d.%d", thread_number_,
                                                entry_count++);
@@ -1596,7 +1600,7 @@ class StressTransactionsDelegate : public PlatformThread::Delegate {
         WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
         MutableEntry e(&trans, CREATE, trans.root_id(), path_name);
         CHECK(e.good());
-        PlatformThread::Sleep(rand() % 20);
+        base::PlatformThread::Sleep(rand() % 20);
         e.Put(IS_UNSYNCED, true);
         if (e.Put(ID, TestIdFactory::FromNumber(rand())) &&
             e.Get(ID).ServerKnows() && !e.Get(ID).IsRoot()) {
@@ -1616,18 +1620,18 @@ TEST(SyncableDirectory, StressTransactions) {
   dirman.Open(dirname);
 
   const int kThreadCount = 7;
-  PlatformThreadHandle threads[kThreadCount];
+  base::PlatformThreadHandle threads[kThreadCount];
   scoped_ptr<StressTransactionsDelegate> thread_delegates[kThreadCount];
 
   for (int i = 0; i < kThreadCount; ++i) {
     thread_delegates[i].reset(
         new StressTransactionsDelegate(&dirman, dirname, i));
-    ASSERT_TRUE(
-        PlatformThread::Create(0, thread_delegates[i].get(), &threads[i]));
+    ASSERT_TRUE(base::PlatformThread::Create(
+        0, thread_delegates[i].get(), &threads[i]));
   }
 
   for (int i = 0; i < kThreadCount; ++i) {
-    PlatformThread::Join(threads[i]);
+    base::PlatformThread::Join(threads[i]);
   }
 
   dirman.Close(dirname);

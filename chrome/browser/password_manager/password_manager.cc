@@ -6,8 +6,8 @@
 
 #include <vector>
 
-#include "base/platform_thread.h"
 #include "base/stl_util-inl.h"
+#include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
@@ -35,8 +35,9 @@ void PasswordManager::RegisterUserPrefs(PrefService* prefs) {
 // avoid needing to lock (a static boolean flag is then sufficient to
 // guarantee running only once).
 static void ReportMetrics(bool password_manager_enabled) {
-  static PlatformThreadId initial_thread_id = PlatformThread::CurrentId();
-  DCHECK(initial_thread_id == PlatformThread::CurrentId());
+  static base::PlatformThreadId initial_thread_id =
+      base::PlatformThread::CurrentId();
+  DCHECK(initial_thread_id == base::PlatformThread::CurrentId());
 
   static bool ran_once = false;
   if (ran_once)

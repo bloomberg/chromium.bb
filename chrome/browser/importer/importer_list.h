@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/platform_thread.h"
 #include "base/ref_counted.h"
 #include "base/scoped_vector.h"
 #include "build/build_config.h"

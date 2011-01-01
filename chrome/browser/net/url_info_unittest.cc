@@ -7,7 +7,7 @@
 #include <time.h>
 #include <string>
 
-#include "base/platform_thread.h"
+#include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "chrome/browser/net/url_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,7 +67,7 @@ TEST(UrlHostInfoTest, StateChangeTest) {
   info.SetAssignedState();
   EXPECT_FALSE(info.NeedsDnsUpdate());
   // Greater than minimal expected network latency on DNS lookup.
-  PlatformThread::Sleep(25);
+  base::PlatformThread::Sleep(25);
   before_resolution_complete = TimeTicks::Now();
   info.SetNoSuchNameState();
   // "Immediately" check to see if we need an update yet (we shouldn't).
@@ -78,7 +78,7 @@ TEST(UrlHostInfoTest, StateChangeTest) {
     return;
   }
   // Wait over 300ms, so it should definately be considered out of cache.
-  PlatformThread::Sleep(kMockExpirationTime + 20);
+  base::PlatformThread::Sleep(kMockExpirationTime + 20);
   EXPECT_TRUE(info.NeedsDnsUpdate()) << "expiration time not honored";
 }
 

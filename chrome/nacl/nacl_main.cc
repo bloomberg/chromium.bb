@@ -12,7 +12,6 @@
 #include "app/system_monitor.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
-#include "base/platform_thread.h"
 #include "base/string_util.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/chrome_constants.h"

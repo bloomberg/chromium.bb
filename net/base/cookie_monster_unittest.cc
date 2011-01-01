@@ -7,11 +7,11 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/platform_thread.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/cookie_monster.h"
@@ -1023,7 +1023,7 @@ TEST(CookieMonsterTest, TestLastAccess) {
   EXPECT_TRUE(last_access_date == GetFirstCookieAccessDate(cm));
 
   // Reading after a short wait should update the access date.
-  PlatformThread::Sleep(kLastAccessThresholdMilliseconds + 20);
+  base::PlatformThread::Sleep(kLastAccessThresholdMilliseconds + 20);
   EXPECT_EQ("A=B", cm->GetCookies(url_google));
   EXPECT_FALSE(last_access_date == GetFirstCookieAccessDate(cm));
 }
@@ -1201,7 +1201,7 @@ TEST(CookieMonsterTest, GetAllCookiesForURL) {
 
   const Time last_access_date(GetFirstCookieAccessDate(cm));
 
-  PlatformThread::Sleep(kLastAccessThresholdMilliseconds + 20);
+  base::PlatformThread::Sleep(kLastAccessThresholdMilliseconds + 20);
 
   // Check cookies for url.
   net::CookieList cookies = cm->GetAllCookiesForURL(url_google);

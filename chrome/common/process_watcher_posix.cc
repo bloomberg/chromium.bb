@@ -11,7 +11,7 @@
 
 #include "base/eintr_wrapper.h"
 #include "base/logging.h"
-#include "base/platform_thread.h"
+#include "base/threading/platform_thread.h"
 
 // Return true if the given child is dead. This will also reap the process.
 // Doesn't block.
@@ -30,7 +30,7 @@ static bool IsChildDead(pid_t child) {
 
 // A thread class which waits for the given child to exit and reaps it.
 // If the child doesn't exit within a couple of seconds, kill it.
-class BackgroundReaper : public PlatformThread::Delegate {
+class BackgroundReaper : public base::PlatformThread::Delegate {
  public:
   explicit BackgroundReaper(pid_t child, unsigned timeout)
       : child_(child),
@@ -58,7 +58,7 @@ class BackgroundReaper : public PlatformThread::Delegate {
 
     // Wait for 2 * timeout_ 500 milliseconds intervals.
     for (unsigned i = 0; i < 2 * timeout_; ++i) {
-      PlatformThread::Sleep(500);  // 0.5 seconds
+      base::PlatformThread::Sleep(500);  // 0.5 seconds
       if (IsChildDead(child_))
         return;
     }
@@ -91,7 +91,7 @@ void ProcessWatcher::EnsureProcessTerminated(base::ProcessHandle process) {
 
   const unsigned timeout = 2;  // seconds
   BackgroundReaper* reaper = new BackgroundReaper(process, timeout);
-  PlatformThread::CreateNonJoinable(0, reaper);
+  base::PlatformThread::CreateNonJoinable(0, reaper);
 }
 
 // static
@@ -101,5 +101,5 @@ void ProcessWatcher::EnsureProcessGetsReaped(base::ProcessHandle process) {
     return;
 
   BackgroundReaper* reaper = new BackgroundReaper(process, 0);
-  PlatformThread::CreateNonJoinable(0, reaper);
+  base::PlatformThread::CreateNonJoinable(0, reaper);
 }

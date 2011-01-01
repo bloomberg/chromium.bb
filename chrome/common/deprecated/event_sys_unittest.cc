@@ -9,8 +9,8 @@
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
-#include "base/platform_thread.h"
 #include "base/port.h"
+#include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -140,7 +140,7 @@ TEST(EventSys, Basic) {
 // This goes pretty far beyond the normal use pattern, so don't use
 // ThreadTester as an example of what to do.
 class ThreadTester : public EventListener<TestEvent>,
-                     public PlatformThread::Delegate {
+                     public base::PlatformThread::Delegate {
  public:
   explicit ThreadTester(Pair* pair)
     : pair_(pair), remove_event_(&remove_event_mutex_),
@@ -150,12 +150,12 @@ class ThreadTester : public EventListener<TestEvent>,
   ~ThreadTester() {
     pair_->event_channel()->RemoveListener(this);
     for (size_t i = 0; i < threads_.size(); i++) {
-      PlatformThread::Join(threads_[i].thread);
+      base::PlatformThread::Join(threads_[i].thread);
     }
   }
 
   struct ThreadInfo {
-    PlatformThreadHandle thread;
+    base::PlatformThreadHandle thread;
   };
 
   struct ThreadArgs {
@@ -173,7 +173,7 @@ class ThreadTester : public EventListener<TestEvent>,
     args.thread_running_mutex = &(thread_running_mutex);
     args.thread_running = false;
     args_ = args;
-    ASSERT_TRUE(PlatformThread::Create(0, this, &info.thread));
+    ASSERT_TRUE(base::PlatformThread::Create(0, this, &info.thread));
     thread_running_mutex.Acquire();
     while ((args_.thread_running) == false) {
       thread_running_cond.Wait();
@@ -216,7 +216,7 @@ class ThreadTester : public EventListener<TestEvent>,
     remove_event_.Broadcast();
     remove_event_mutex_.Release();
 
-    PlatformThread::YieldCurrentThread();
+    base::PlatformThread::YieldCurrentThread();
 
     completed_mutex_.Acquire();
     if (completed_)

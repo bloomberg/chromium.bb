@@ -21,7 +21,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
-#include "base/platform_thread.h"
+#include "base/threading/platform_thread.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
@@ -480,7 +480,7 @@ void BrowserMainParts::MainMessageLoopStart() {
 
 void BrowserMainParts::InitializeMainThread() {
   const char* kThreadName = "CrBrowserMain";
-  PlatformThread::SetName(kThreadName);
+  base::PlatformThread::SetName(kThreadName);
   main_message_loop().set_thread_name(kThreadName);
 
   // Register the main thread by instantiating it, but don't call any methods.

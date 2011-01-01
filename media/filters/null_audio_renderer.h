@@ -19,15 +19,16 @@
 
 #include <deque>
 
-#include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
+#include "base/threading/platform_thread.h"
 #include "media/base/buffers.h"
 #include "media/base/filters.h"
 #include "media/filters/audio_renderer_base.h"
 
 namespace media {
 
-class NullAudioRenderer : public AudioRendererBase, PlatformThread::Delegate {
+class NullAudioRenderer : public AudioRendererBase,
+                          public base::PlatformThread::Delegate {
  public:
   NullAudioRenderer();
   virtual ~NullAudioRenderer();
@@ -54,7 +55,7 @@ class NullAudioRenderer : public AudioRendererBase, PlatformThread::Delegate {
   size_t buffer_size_;
 
   // Separate thread used to throw away data.
-  PlatformThreadHandle thread_;
+  base::PlatformThreadHandle thread_;
 
   // Shutdown flag.
   bool shutdown_;

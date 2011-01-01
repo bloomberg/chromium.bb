@@ -4,7 +4,6 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
-#include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/install_util.h"

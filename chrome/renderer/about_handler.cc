@@ -4,7 +4,7 @@
 
 #include "chrome/renderer/about_handler.h"
 
-#include "base/platform_thread.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/common/about_handler.h"
 #include "googleurl/src/gurl.h"
 
@@ -46,13 +46,13 @@ void AboutHandler::AboutCrash() {
 // static
 void AboutHandler::AboutHang() {
   for (;;) {
-    PlatformThread::Sleep(1000);
+    base::PlatformThread::Sleep(1000);
   }
 }
 
 // static
 void AboutHandler::AboutShortHang() {
-  PlatformThread::Sleep(20000);
+  base::PlatformThread::Sleep(20000);
 }
 
 // static

@@ -12,11 +12,11 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "base/waitable_event.h"
 #include "ipc/ipc_message.h"
@@ -1011,7 +1011,7 @@ class NestedTask : public Task {
   explicit NestedTask(Worker* server) : server_(server) { }
   void Run() {
     // Sleep a bit so that we wake up after the reply has been received.
-    PlatformThread::Sleep(250);
+    base::PlatformThread::Sleep(250);
     server_->SendAnswerToLife(true, base::kNoTimeout, true);
   }
 

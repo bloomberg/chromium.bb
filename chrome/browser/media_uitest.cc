@@ -5,8 +5,8 @@
 #include "app/gfx/gl/gl_implementation.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/platform_thread.h"
 #include "base/string_util.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/test_launcher_utils.h"
 #include "chrome/test/ui/ui_layout_test.h"
@@ -46,7 +46,7 @@ class MediaTest : public UITest {
     const std::wstring kFailed = L"FAILED";
     const std::wstring kError = L"ERROR";
     for (int i = 0; i < 10; ++i) {
-      PlatformThread::Sleep(sleep_timeout_ms());
+      base::PlatformThread::Sleep(sleep_timeout_ms());
       const std::wstring& title = GetActiveTabTitle();
       if (title == kPlaying || title == kFailed ||
           StartsWith(title, kError, true))

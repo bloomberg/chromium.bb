@@ -7,8 +7,8 @@
 #include <sstream>
 
 #include "base/message_loop.h"
-#include "base/platform_thread.h"
 #include "base/process_util.h"
+#include "base/threading/platform_thread.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message_utils.h"
@@ -288,7 +288,7 @@ TEST_F(IPCFuzzingTest, SanityTest) {
                     &listener);
   base::ProcessHandle server_process = SpawnChild(FUZZER_SERVER, &chan);
   ASSERT_TRUE(server_process);
-  PlatformThread::Sleep(1000);
+  base::PlatformThread::Sleep(1000);
   ASSERT_TRUE(chan.Connect());
   listener.Init(&chan);
 
@@ -318,7 +318,7 @@ TEST_F(IPCFuzzingTest, MsgBadPayloadShort) {
                     &listener);
   base::ProcessHandle server_process = SpawnChild(FUZZER_SERVER, &chan);
   ASSERT_TRUE(server_process);
-  PlatformThread::Sleep(1000);
+  base::PlatformThread::Sleep(1000);
   ASSERT_TRUE(chan.Connect());
   listener.Init(&chan);
 
@@ -348,7 +348,7 @@ TEST_F(IPCFuzzingTest, MsgBadPayloadArgs) {
                     &listener);
   base::ProcessHandle server_process = SpawnChild(FUZZER_SERVER, &chan);
   ASSERT_TRUE(server_process);
-  PlatformThread::Sleep(1000);
+  base::PlatformThread::Sleep(1000);
   ASSERT_TRUE(chan.Connect());
   listener.Init(&chan);
 

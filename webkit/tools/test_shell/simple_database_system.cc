@@ -7,7 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
-#include "base/platform_thread.h"
+#include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDatabase.h"

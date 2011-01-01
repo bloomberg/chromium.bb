@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/platform_thread.h"
+#include "base/threading/platform_thread.h"
 #include "chrome_frame/utils.h"
 #include "third_party/xulrunner-sdk/win/include/xpcom/nscore.h"
 #include "third_party/xulrunner-sdk/win/include/xpcom/nsid.h"
@@ -19,15 +19,15 @@ template<class Derived>
 class NsISupportsImplBase {
  public:
   NsISupportsImplBase() : nsiimpl_ref_count_(0) {
-    nsiimpl_thread_id_ = PlatformThread::CurrentId();
+    nsiimpl_thread_id_ = base::PlatformThread::CurrentId();
   }
 
   virtual ~NsISupportsImplBase() {
-    DCHECK(nsiimpl_thread_id_ == PlatformThread::CurrentId());
+    DCHECK(nsiimpl_thread_id_ == base::PlatformThread::CurrentId());
   }
 
   NS_IMETHOD QueryInterface(REFNSIID iid, void** ptr) {
-    DCHECK(nsiimpl_thread_id_ == PlatformThread::CurrentId());
+    DCHECK(nsiimpl_thread_id_ == base::PlatformThread::CurrentId());
     nsresult res = NS_NOINTERFACE;
 
     if (memcmp(&iid, &__uuidof(nsISupports), sizeof(nsIID)) == 0) {
@@ -40,13 +40,13 @@ class NsISupportsImplBase {
   }
 
   NS_IMETHOD_(nsrefcnt) AddRef() {
-    DCHECK(nsiimpl_thread_id_ == PlatformThread::CurrentId());
+    DCHECK(nsiimpl_thread_id_ == base::PlatformThread::CurrentId());
     nsiimpl_ref_count_++;
     return nsiimpl_ref_count_;
   }
 
   NS_IMETHOD_(nsrefcnt) Release() {
-    DCHECK(nsiimpl_thread_id_ == PlatformThread::CurrentId());
+    DCHECK(nsiimpl_thread_id_ == base::PlatformThread::CurrentId());
     nsiimpl_ref_count_--;
 
     if (!nsiimpl_ref_count_) {

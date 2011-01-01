@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/message_loop.h"
-#include "base/platform_thread.h"
 #include "base/time.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/ui/ui_test.h"

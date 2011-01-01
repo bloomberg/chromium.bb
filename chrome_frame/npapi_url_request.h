@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 
-#include "base/platform_thread.h"
 #include "chrome_frame/plugin_url_request.h"
 #include "third_party/npapi/bindings/npapi.h"
 

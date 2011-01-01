@@ -16,7 +16,6 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_table.h"
 #include "base/path_service.h"
-#include "base/platform_thread.h"
 #include "base/singleton.h"
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"

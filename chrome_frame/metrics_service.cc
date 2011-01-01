@@ -251,12 +251,12 @@ class ChromeFrameMetricsDataUploader
   ChromeFrameMetricsDataUploader()
       : fetcher_(NULL) {
     DVLOG(1) << __FUNCTION__;
-    creator_thread_id_ = PlatformThread::CurrentId();
+    creator_thread_id_ = base::PlatformThread::CurrentId();
   }
 
   ~ChromeFrameMetricsDataUploader() {
     DVLOG(1) << __FUNCTION__;
-    DCHECK(creator_thread_id_ == PlatformThread::CurrentId());
+    DCHECK(creator_thread_id_ == base::PlatformThread::CurrentId());
   }
 
   virtual void OnFinalMessage(HWND wnd) {
@@ -350,7 +350,7 @@ class ChromeFrameMetricsDataUploader
 
  private:
   URLFetcher* fetcher_;
-  PlatformThreadId creator_thread_id_;
+  base::PlatformThreadId creator_thread_id_;
 };
 
 MetricsService* MetricsService::GetInstance() {
@@ -383,7 +383,7 @@ MetricsService::~MetricsService() {
 void MetricsService::InitializeMetricsState() {
   DCHECK(state_ == INITIALIZED);
 
-  thread_ = PlatformThread::CurrentId();
+  thread_ = base::PlatformThread::CurrentId();
 
   user_permits_upload_ = GoogleUpdateSettings::GetCollectStatsConsent();
   // Update session ID
@@ -480,7 +480,7 @@ void CALLBACK MetricsService::TransmissionTimerProc(HWND window,
 void MetricsService::SetReporting(bool enable) {
   static const int kChromeFrameMetricsTimerId = 0xFFFFFFFF;
 
-  DCHECK_EQ(thread_, PlatformThread::CurrentId());
+  DCHECK_EQ(thread_, base::PlatformThread::CurrentId());
   if (reporting_active_ != enable) {
     reporting_active_ = enable;
     if (reporting_active_) {
@@ -498,7 +498,7 @@ void MetricsService::SetReporting(bool enable) {
 // Recording control methods
 
 void MetricsService::StartRecording() {
-  DCHECK_EQ(thread_, PlatformThread::CurrentId());
+  DCHECK_EQ(thread_, base::PlatformThread::CurrentId());
   if (current_log_)
     return;
 
@@ -509,7 +509,7 @@ void MetricsService::StartRecording() {
 }
 
 void MetricsService::StopRecording(bool save_log) {
-  DCHECK_EQ(thread_, PlatformThread::CurrentId());
+  DCHECK_EQ(thread_, base::PlatformThread::CurrentId());
   if (!current_log_)
     return;
 
@@ -527,7 +527,7 @@ void MetricsService::StopRecording(bool save_log) {
 }
 
 void MetricsService::MakePendingLog() {
-  DCHECK_EQ(thread_, PlatformThread::CurrentId());
+  DCHECK_EQ(thread_, base::PlatformThread::CurrentId());
   if (pending_log())
     return;
 
@@ -556,7 +556,7 @@ bool MetricsService::TransmissionPermitted() const {
 }
 
 std::string MetricsService::PrepareLogSubmissionString() {
-  DCHECK_EQ(thread_, PlatformThread::CurrentId());
+  DCHECK_EQ(thread_, base::PlatformThread::CurrentId());
 
   MakePendingLog();
   DCHECK(pending_log());
@@ -572,7 +572,7 @@ std::string MetricsService::PrepareLogSubmissionString() {
 }
 
 bool MetricsService::UploadData() {
-  DCHECK_EQ(thread_, PlatformThread::CurrentId());
+  DCHECK_EQ(thread_, base::PlatformThread::CurrentId());
 
   if (!GetInstance()->TransmissionPermitted())
     return false;

@@ -12,7 +12,6 @@
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/path_service.h"
-#include "base/platform_thread.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/stl_util-inl.h"

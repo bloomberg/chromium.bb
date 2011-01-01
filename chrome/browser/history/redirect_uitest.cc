@@ -8,11 +8,11 @@
 // the case of redirects. It may also mean problems with the history system.
 
 #include "base/file_util.h"
-#include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/string16.h"
+#include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/test/automation/browser_proxy.h"
@@ -210,7 +210,7 @@ TEST_F(RedirectTest, ClientServerServer) {
   NavigateToURL(first_url);
 
   for (int i = 0; i < 10; ++i) {
-    PlatformThread::Sleep(sleep_timeout_ms());
+    base::PlatformThread::Sleep(sleep_timeout_ms());
     scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
     ASSERT_TRUE(tab_proxy.get());
     ASSERT_TRUE(tab_proxy->GetRedirectsFrom(first_url, &redirects));
@@ -316,7 +316,7 @@ TEST_F(RedirectTest,
   std::wstring final_url_title = UTF8ToWide("Title Of Awesomeness");
   // Wait till the final page has been loaded.
   for (int i = 0; i < 10; ++i) {
-    PlatformThread::Sleep(sleep_timeout_ms());
+    base::PlatformThread::Sleep(sleep_timeout_ms());
     scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
     ASSERT_TRUE(tab_proxy.get());
     ASSERT_TRUE(tab_proxy->GetTabTitle(&tab_title));
