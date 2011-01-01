@@ -26,6 +26,9 @@ libwayland_client_la_SOURCES =			\
 	wayland-protocol.c			\
 	wayland-client.c
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = wayland-client.pc wayland-server.pc
+
 INCLUDES = $(FFI_CFLAGS)
 AM_CFLAGS = $(GCC_CFLAGS)
 
