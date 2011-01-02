@@ -1,5 +1,6 @@
 /*
  * Copyright © 2002 Keith Packard
+ * Copyright © 2010 Behdad Esfahbod
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -55,7 +56,7 @@ FC_ASSERT_STATIC (SIZEOF_VOID_P == sizeof (FcStrSet *));
 FC_ASSERT_STATIC (SIZEOF_VOID_P == sizeof (FcCharLeaf **));
 FC_ASSERT_STATIC (SIZEOF_VOID_P == sizeof (FcChar16 *));
 
-FC_ASSERT_STATIC (0x08 + 1*SIZEOF_VOID_P == sizeof (FcValue));
+FC_ASSERT_STATIC (0x08 + 1*ALIGNOF_DOUBLE == sizeof (FcValue));
 FC_ASSERT_STATIC (0x00 + 2*SIZEOF_VOID_P == sizeof (FcPatternElt));
 FC_ASSERT_STATIC (0x08 + 2*SIZEOF_VOID_P == sizeof (FcPattern));
 FC_ASSERT_STATIC (0x08 + 2*SIZEOF_VOID_P == sizeof (FcCharSet));
