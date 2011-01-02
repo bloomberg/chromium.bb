@@ -2,5 +2,5 @@
 # This file is in a simple "key=value" format so that the commit IDs
 # can easily be read from either Python or a shell script or makefile.
 
-NACL_GLIBC_COMMIT=5bb528b6d5eceb1c062b2184b2e2a1b673a82d7d
+NACL_GLIBC_COMMIT=85d93e3c0b0373e6e520f16fd124b805bc4423e7
 LINUX_HEADERS_FOR_NACL_COMMIT=0014b8d2e052dd3bf4cdc4be999d17e123c50dc2
