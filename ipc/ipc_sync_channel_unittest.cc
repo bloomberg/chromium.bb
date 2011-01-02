@@ -18,7 +18,7 @@
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "ipc/ipc_sync_message_unittest.h"

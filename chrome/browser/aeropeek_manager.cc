@@ -14,7 +14,7 @@
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_handle_win.h"
 #include "base/scoped_native_library.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/windows_version.h"

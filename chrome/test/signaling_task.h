@@ -8,7 +8,7 @@
 #define CHROME_TEST_SIGNALING_TASK_H_
 #pragma once
 
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 
 using base::WaitableEvent;
 

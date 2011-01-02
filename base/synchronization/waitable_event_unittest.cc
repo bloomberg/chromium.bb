@@ -1,18 +1,13 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/time.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::TimeDelta;
-using base::WaitableEvent;
-
-namespace {
-typedef testing::Test WaitableEventTest;
-}
+namespace base {
 
 TEST(WaitableEventTest, ManualBasics) {
   WaitableEvent event(true, false);
@@ -74,7 +69,7 @@ TEST(WaitableEventTest, WaitManyShortcut) {
     delete ev[i];
 }
 
-class WaitableEventSignaler : public base::PlatformThread::Delegate {
+class WaitableEventSignaler : public PlatformThread::Delegate {
  public:
   WaitableEventSignaler(double seconds, WaitableEvent* ev)
       : seconds_(seconds),
@@ -82,7 +77,7 @@ class WaitableEventSignaler : public base::PlatformThread::Delegate {
   }
 
   void ThreadMain() {
-    base::PlatformThread::Sleep(static_cast<int>(seconds_ * 1000));
+    PlatformThread::Sleep(static_cast<int>(seconds_ * 1000));
     ev_->Signal();
   }
 
@@ -97,13 +92,15 @@ TEST(WaitableEventTest, WaitMany) {
     ev[i] = new WaitableEvent(false, false);
 
   WaitableEventSignaler signaler(0.1, ev[2]);
-  base::PlatformThreadHandle thread;
-  base::PlatformThread::Create(0, &signaler, &thread);
+  PlatformThreadHandle thread;
+  PlatformThread::Create(0, &signaler, &thread);
 
   EXPECT_EQ(WaitableEvent::WaitMany(ev, 5), 2u);
 
-  base::PlatformThread::Join(thread);
+  PlatformThread::Join(thread);
 
   for (unsigned i = 0; i < 5; ++i)
     delete ev[i];
 }
+
+}  // namespace base

@@ -1,15 +1,14 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/synchronization/waitable_event_watcher.h"
 #include "base/threading/platform_thread.h"
-#include "base/waitable_event.h"
-#include "base/waitable_event_watcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::WaitableEvent;
-using base::WaitableEventWatcher;
+namespace base {
 
 namespace {
 
@@ -162,3 +161,5 @@ TEST(WaitableEventWatcherTest, MAYBE_DeleteUnder) {
   RunTest_DeleteUnder(MessageLoop::TYPE_IO);
   RunTest_DeleteUnder(MessageLoop::TYPE_UI);
 }
+
+}  // namespace base

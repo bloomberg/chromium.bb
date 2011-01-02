@@ -6,7 +6,7 @@
 
 #include "base/file_path.h"
 #include "base/string_util.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/extensions/extension_bookmarks_module.h"

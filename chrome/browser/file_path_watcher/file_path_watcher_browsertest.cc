@@ -15,7 +15,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/stl_util-inl.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_MACOSX)

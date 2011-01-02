@@ -14,7 +14,7 @@
 #include "base/process.h"
 #include "base/ref_counted.h"
 #include "base/lock.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/common/window_container_type.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 

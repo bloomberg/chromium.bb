@@ -5,7 +5,7 @@
 #include "remoting/client/chromoting_view.h"
 
 #include "base/message_loop.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "remoting/base/tracer.h"
 
 namespace remoting {

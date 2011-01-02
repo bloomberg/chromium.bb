@@ -13,7 +13,7 @@
 #include "base/time.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"

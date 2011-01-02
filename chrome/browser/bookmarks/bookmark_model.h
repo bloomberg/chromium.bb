@@ -15,7 +15,7 @@
 #include "base/lock.h"
 #include "base/observer_list.h"
 #include "base/string16.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_service.h"
 #include "chrome/browser/cancelable_request.h"

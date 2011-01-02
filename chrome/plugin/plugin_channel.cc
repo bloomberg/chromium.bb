@@ -8,7 +8,7 @@
 #include "base/lock.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/plugin_messages.h"

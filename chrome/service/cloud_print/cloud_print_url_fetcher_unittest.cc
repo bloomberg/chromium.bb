@@ -6,7 +6,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/ref_counted.h"
 #include "base/threading/thread.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/service/service_process.h"
 #include "chrome/service/cloud_print/cloud_print_url_fetcher.h"

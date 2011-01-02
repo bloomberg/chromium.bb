@@ -7,7 +7,7 @@
 
 #include "base/message_loop.h"
 #include "base/tracked_objects.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "third_party/libjingle/source/talk/base/messagequeue.h"
 #include "third_party/libjingle/source/talk/base/taskrunner.h"
 #include "third_party/libjingle/source/talk/base/thread.h"

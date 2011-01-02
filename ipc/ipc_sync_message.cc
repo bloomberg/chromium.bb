@@ -11,7 +11,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/logging.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "ipc/ipc_sync_message.h"
 
 namespace IPC {

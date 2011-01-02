@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/crypto/rsa_private_key.h"
 #include "base/message_loop.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/service/service_process.h"
 #include "remoting/host/host_key_pair.h"
 #include "testing/gmock/include/gmock/gmock.h"

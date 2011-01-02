@@ -44,7 +44,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "base/threading/thread.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "net/base/cookie_store.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"

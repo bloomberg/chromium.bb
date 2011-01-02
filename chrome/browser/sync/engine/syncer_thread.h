@@ -20,7 +20,7 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/model_type.h"

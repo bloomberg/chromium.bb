@@ -8,8 +8,8 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/threading/thread_local.h"
-#include "base/waitable_event.h"
-#include "base/waitable_event_watcher.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/synchronization/waitable_event_watcher.h"
 #include "ipc/ipc_sync_message.h"
 
 using base::TimeDelta;

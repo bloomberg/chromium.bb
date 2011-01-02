@@ -16,7 +16,7 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/autofill/autofill_common_test.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"

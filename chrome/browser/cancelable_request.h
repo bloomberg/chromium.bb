@@ -92,12 +92,12 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/cancellation_flag.h"
 #include "base/lock.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/synchronization/cancellation_flag.h"
 #include "base/task.h"
 #include "build/build_config.h"
 
@@ -148,7 +148,7 @@ class CancelableRequestProvider {
 
   friend class CancelableRequestBase;
 
-  Lock pending_request_lock_;
+  base::Lock pending_request_lock_;
 
   // Lists all outstanding requests. Protected by the |lock_|.
   CancelableRequestMap pending_requests_;

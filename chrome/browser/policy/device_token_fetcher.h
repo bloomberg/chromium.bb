@@ -12,7 +12,7 @@
 #include "base/file_path.h"
 #include "base/observer_list.h"
 #include "base/ref_counted.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/policy/device_management_backend.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"

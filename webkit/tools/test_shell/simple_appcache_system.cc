@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/task.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "webkit/appcache/appcache_interceptor.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"

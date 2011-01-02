@@ -5,7 +5,7 @@
 
 #include <string>
 #include "base/file_path.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome_frame/cfproxy_private.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -22,7 +22,7 @@
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/threading/worker_pool.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "net/base/net_errors.h"
 
 // We cast back and forth, so make sure it's the size we're expecting.

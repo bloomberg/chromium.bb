@@ -6,7 +6,7 @@
 #include "base/lazy_instance.h"
 #include "base/tracked.h"
 #include "base/task.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome_frame/chrome_frame_delegate.h"
 #include "chrome_frame/utils.h"

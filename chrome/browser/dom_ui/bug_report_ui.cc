@@ -51,7 +51,7 @@
 #if defined(OS_CHROMEOS)
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/syslogs_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"

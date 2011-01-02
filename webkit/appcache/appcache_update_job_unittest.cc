@@ -6,7 +6,7 @@
 
 #include "base/stl_util-inl.h"
 #include "base/threading/thread.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_error_job.h"

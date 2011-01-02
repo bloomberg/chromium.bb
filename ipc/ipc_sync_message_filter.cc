@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "ipc/ipc_sync_message.h"
 
 namespace IPC {

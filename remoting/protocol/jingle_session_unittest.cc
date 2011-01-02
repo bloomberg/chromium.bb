@@ -7,7 +7,7 @@
 #include "base/nss_util.h"
 #include "base/path_service.h"
 #include "base/time.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"

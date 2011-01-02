@@ -1,12 +1,13 @@
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #ifndef CHROME_FRAME_CUSTOM_SYNC_CALL_CONTEXT_H_
 #define CHROME_FRAME_CUSTOM_SYNC_CALL_CONTEXT_H_
 
 #include <vector>
 #include "base/ref_counted.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome_frame/sync_msg_reply_dispatcher.h"
 #include "chrome_frame/chrome_frame_automation.h"
 #include "ipc/ipc_sync_message.h"
@@ -150,5 +151,3 @@ class UnloadContext
 };
 
 #endif  // CHROME_FRAME_CUSTOM_SYNC_CALL_CONTEXT_H_
-
-

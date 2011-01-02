@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 
 namespace browser_sync {
 

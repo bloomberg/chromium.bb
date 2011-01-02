@@ -13,7 +13,7 @@
 #include "base/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/io_thread.h"

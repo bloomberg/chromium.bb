@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_CANCELLATION_FLAG_H_
-#define BASE_CANCELLATION_FLAG_H_
+#ifndef BASE_SYNCHRONIZATION_CANCELLATION_FLAG_H_
+#define BASE_SYNCHRONIZATION_CANCELLATION_FLAG_H_
 #pragma once
 
 #include "base/atomicops.h"
@@ -40,4 +40,4 @@ class CancellationFlag {
 
 }  // namespace base
 
-#endif  // BASE_CANCELLATION_FLAG_H_
+#endif  // BASE_SYNCHRONIZATION_CANCELLATION_FLAG_H_

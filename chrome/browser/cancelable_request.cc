@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,7 @@ CancelableRequestProvider::~CancelableRequestProvider() {
   // deleted, or do other bad things. This can occur on shutdown (or profile
   // destruction) when a request is scheduled, completed (but not dispatched),
   // then the Profile is deleted.
-  AutoLock lock(pending_request_lock_);
+  base::AutoLock lock(pending_request_lock_);
   while (!pending_requests_.empty())
     CancelRequestLocked(pending_requests_.begin());
 }
@@ -23,7 +23,7 @@ CancelableRequestProvider::Handle CancelableRequestProvider::AddRequest(
     CancelableRequestConsumerBase* consumer) {
   Handle handle;
   {
-    AutoLock lock(pending_request_lock_);
+    base::AutoLock lock(pending_request_lock_);
 
     handle = next_handle_;
     pending_requests_[next_handle_] = request;
@@ -37,7 +37,7 @@ CancelableRequestProvider::Handle CancelableRequestProvider::AddRequest(
 }
 
 void CancelableRequestProvider::CancelRequest(Handle handle) {
-  AutoLock lock(pending_request_lock_);
+  base::AutoLock lock(pending_request_lock_);
   CancelRequestLocked(pending_requests_.find(handle));
 }
 
@@ -57,7 +57,7 @@ void CancelableRequestProvider::CancelRequestLocked(
 void CancelableRequestProvider::RequestCompleted(Handle handle) {
   CancelableRequestConsumerBase* consumer = NULL;
   {
-    AutoLock lock(pending_request_lock_);
+    base::AutoLock lock(pending_request_lock_);
 
     CancelableRequestMap::iterator i = pending_requests_.find(handle);
     if (i == pending_requests_.end()) {

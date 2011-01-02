@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/threading/thread.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 
 class ChildThread;
 

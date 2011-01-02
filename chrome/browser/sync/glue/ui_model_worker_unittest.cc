@@ -6,7 +6,7 @@
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/threading/thread.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/ui_model_worker.h"
 #include "testing/gtest/include/gtest/gtest.h"

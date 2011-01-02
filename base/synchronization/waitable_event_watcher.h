@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_WAITABLE_EVENT_WATCHER_H_
-#define BASE_WAITABLE_EVENT_WATCHER_H_
+#ifndef BASE_SYNCHRONIZATION_WAITABLE_EVENT_WATCHER_H_
+#define BASE_SYNCHRONIZATION_WAITABLE_EVENT_WATCHER_H_
 #pragma once
 
 #include "build/build_config.h"
@@ -12,7 +12,7 @@
 #include "base/win/object_watcher.h"
 #else
 #include "base/message_loop.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #endif
 
 namespace base {
@@ -159,4 +159,4 @@ class WaitableEventWatcher
 
 }  // namespace base
 
-#endif  // BASE_WAITABLE_EVENT_WATCHER_H_
+#endif  // BASE_SYNCHRONIZATION_WAITABLE_EVENT_WATCHER_H_

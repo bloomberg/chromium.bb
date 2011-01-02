@@ -19,7 +19,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_temp_dir.h"
 #include "base/threading/thread.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"

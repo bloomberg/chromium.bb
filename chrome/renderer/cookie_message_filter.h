@@ -6,7 +6,7 @@
 #define CHROME_RENDERER_COOKIE_MESSAGE_FILTER_H_
 #pragma once
 
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "ipc/ipc_channel_proxy.h"
 
 // This class maintains a WaitableEvent that is signaled when an IPC to query

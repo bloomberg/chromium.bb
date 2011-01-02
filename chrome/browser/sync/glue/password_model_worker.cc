@@ -7,7 +7,7 @@
 #include "base/callback.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
-#include "base/waitable_event.h"
+#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/password_manager/password_store.h"
 
 using base::WaitableEvent;
