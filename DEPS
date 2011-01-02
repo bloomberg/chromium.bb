@@ -4,7 +4,7 @@ vars = {
   "googlecode_url": "http://%s.googlecode.com/svn",
   "webkit_trunk": "http://svn.webkit.org/repository/webkit/trunk",
   "nacl_trunk": "http://src.chromium.org/native_client/trunk",
-  "webkit_revision": "74854",
+  "webkit_revision": "74857",
   "skia_revision": "636",
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "69281",
@@ -75,8 +75,8 @@ deps = {
   "src/third_party/WebKit/LayoutTests":
     Var("webkit_trunk") + "/LayoutTests@" + Var("webkit_revision"),
 
-  "src/third_party/WebKit/JavaScriptCore":
-    Var("webkit_trunk") + "/JavaScriptCore@" + Var("webkit_revision"),
+  "src/third_party/WebKit/Source/JavaScriptCore":
+    Var("webkit_trunk") + "/Source/JavaScriptCore@" + Var("webkit_revision"),
 
   "src/third_party/WebKit/WebCore":
     Var("webkit_trunk") + "/WebCore@" + Var("webkit_revision"),
