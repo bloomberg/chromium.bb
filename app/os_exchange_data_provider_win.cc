@@ -13,6 +13,7 @@
 #include "base/scoped_handle.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_hglobal.h"
 #include "googleurl/src/gurl.h"
 #include "grit/app_strings.h"
 #include "net/base/net_util.h"
@@ -400,7 +401,7 @@ bool OSExchangeDataProviderWin::GetPickledData(CLIPFORMAT format,
   STGMEDIUM medium;
   if (SUCCEEDED(source_object_->GetData(&format_etc, &medium))) {
     if (medium.tymed & TYMED_HGLOBAL) {
-      ScopedHGlobal<char> c_data(medium.hGlobal);
+      base::win::ScopedHGlobal<char> c_data(medium.hGlobal);
       DCHECK(c_data.Size() > 0);
       // Need to subtract 1 as SetPickledData adds an extra byte to the end.
       *data = Pickle(c_data.get(), static_cast<int>(c_data.Size() - 1));
@@ -787,7 +788,7 @@ ULONG DataObjectImpl::Release() {
 
 static STGMEDIUM* GetStorageForBytes(const char* data, size_t bytes) {
   HANDLE handle = GlobalAlloc(GPTR, static_cast<int>(bytes));
-  ScopedHGlobal<char> scoped(handle);
+  base::win::ScopedHGlobal<char> scoped(handle);
   size_t allocated = static_cast<size_t>(GlobalSize(handle));
   memcpy(scoped.get(), data, allocated);
 
@@ -864,7 +865,7 @@ static STGMEDIUM* GetStorageForFileName(const std::wstring& full_path) {
       kDropSize + (full_path.length() + 2) * sizeof(wchar_t);
   HANDLE hdata = GlobalAlloc(GMEM_MOVEABLE, kTotalBytes);
 
-  ScopedHGlobal<DROPFILES> locked_mem(hdata);
+  base::win::ScopedHGlobal<DROPFILES> locked_mem(hdata);
   DROPFILES* drop_files = locked_mem.get();
   drop_files->pFiles = sizeof(DROPFILES);
   drop_files->fWide = TRUE;

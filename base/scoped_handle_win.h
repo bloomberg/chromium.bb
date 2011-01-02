@@ -12,4 +12,3 @@
 
 using base::win::ScopedBitmap;
 using base::win::ScopedHandle;
-using base::win::ScopedHGlobal;

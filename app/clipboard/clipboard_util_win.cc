@@ -13,6 +13,7 @@
 #include "base/scoped_handle.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_hglobal.h"
 
 namespace {
 
@@ -72,7 +73,7 @@ bool GetFileUrl(IDataObject* data_object, std::wstring* url,
     bool success = false;
     {
       // filename using unicode
-      ScopedHGlobal<wchar_t> data(store.hGlobal);
+      base::win::ScopedHGlobal<wchar_t> data(store.hGlobal);
       if (data.get() && data.get()[0] &&
           (PathFileExists(data.get()) || PathIsUNC(data.get()))) {
         wchar_t file_url[INTERNET_MAX_URL_LENGTH];
@@ -95,7 +96,7 @@ bool GetFileUrl(IDataObject* data_object, std::wstring* url,
     bool success = false;
     {
       // filename using ascii
-      ScopedHGlobal<char> data(store.hGlobal);
+      base::win::ScopedHGlobal<char> data(store.hGlobal);
       if (data.get() && data.get()[0] && (PathFileExistsA(data.get()) ||
                                           PathIsUNCA(data.get()))) {
         char file_url[INTERNET_MAX_URL_LENGTH];
@@ -247,7 +248,7 @@ bool ClipboardUtil::GetUrl(IDataObject* data_object,
       SUCCEEDED(data_object->GetData(GetUrlWFormat(), &store))) {
     {
       // Mozilla URL format or unicode URL
-      ScopedHGlobal<wchar_t> data(store.hGlobal);
+      base::win::ScopedHGlobal<wchar_t> data(store.hGlobal);
       SplitUrlAndTitle(data.get(), url, title);
     }
     ReleaseStgMedium(&store);
@@ -257,7 +258,7 @@ bool ClipboardUtil::GetUrl(IDataObject* data_object,
   if (SUCCEEDED(data_object->GetData(GetUrlFormat(), &store))) {
     {
       // URL using ascii
-      ScopedHGlobal<char> data(store.hGlobal);
+      base::win::ScopedHGlobal<char> data(store.hGlobal);
       SplitUrlAndTitle(UTF8ToWide(data.get()), url, title);
     }
     ReleaseStgMedium(&store);
@@ -311,7 +312,7 @@ bool ClipboardUtil::GetPlainText(IDataObject* data_object,
   if (SUCCEEDED(data_object->GetData(GetPlainTextWFormat(), &store))) {
     {
       // Unicode text
-      ScopedHGlobal<wchar_t> data(store.hGlobal);
+      base::win::ScopedHGlobal<wchar_t> data(store.hGlobal);
       plain_text->assign(data.get());
     }
     ReleaseStgMedium(&store);
@@ -321,7 +322,7 @@ bool ClipboardUtil::GetPlainText(IDataObject* data_object,
   if (SUCCEEDED(data_object->GetData(GetPlainTextFormat(), &store))) {
     {
       // ascii text
-      ScopedHGlobal<char> data(store.hGlobal);
+      base::win::ScopedHGlobal<char> data(store.hGlobal);
       plain_text->assign(UTF8ToWide(data.get()));
     }
     ReleaseStgMedium(&store);
@@ -343,7 +344,7 @@ bool ClipboardUtil::GetHtml(IDataObject* data_object,
       SUCCEEDED(data_object->GetData(GetHtmlFormat(), &store))) {
     {
       // MS CF html
-      ScopedHGlobal<char> data(store.hGlobal);
+      base::win::ScopedHGlobal<char> data(store.hGlobal);
 
       std::string html_utf8;
       CFHtmlToHtml(std::string(data.get(), data.Size()), &html_utf8, base_url);
@@ -361,7 +362,7 @@ bool ClipboardUtil::GetHtml(IDataObject* data_object,
 
   {
     // text/html
-    ScopedHGlobal<wchar_t> data(store.hGlobal);
+    base::win::ScopedHGlobal<wchar_t> data(store.hGlobal);
     html->assign(data.get());
   }
   ReleaseStgMedium(&store);
@@ -380,7 +381,7 @@ bool ClipboardUtil::GetFileContents(IDataObject* data_object,
   // |data_object|.
   if (SUCCEEDED(data_object->GetData(GetFileContentFormatZero(), &content))) {
     if (TYMED_HGLOBAL == content.tymed) {
-      ScopedHGlobal<char> data(content.hGlobal);
+      base::win::ScopedHGlobal<char> data(content.hGlobal);
       file_contents->assign(data.get(), data.Size());
     }
     ReleaseStgMedium(&content);
@@ -390,7 +391,7 @@ bool ClipboardUtil::GetFileContents(IDataObject* data_object,
   if (SUCCEEDED(data_object->GetData(GetFileDescriptorFormat(),
                                      &description))) {
     {
-      ScopedHGlobal<FILEGROUPDESCRIPTOR> fgd(description.hGlobal);
+      base::win::ScopedHGlobal<FILEGROUPDESCRIPTOR> fgd(description.hGlobal);
       // We expect there to be at least one file in here.
       DCHECK_GE(fgd->cItems, 1u);
       filename->assign(fgd->fgd[0].cFileName);

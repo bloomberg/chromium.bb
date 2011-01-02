@@ -10,6 +10,7 @@
 #include "base/scoped_handle.h"
 #include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_hglobal.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -57,7 +58,7 @@ TEST(OSExchangeDataTest, StringDataAccessViaCOM) {
   STGMEDIUM medium;
   EXPECT_EQ(S_OK, com_data->GetData(&format_etc, &medium));
   std::wstring output =
-      ScopedHGlobal<wchar_t>(medium.hGlobal).get();
+      base::win::ScopedHGlobal<wchar_t>(medium.hGlobal).get();
   EXPECT_EQ(input, output);
   ReleaseStgMedium(&medium);
 }
@@ -79,7 +80,7 @@ TEST(OSExchangeDataTest, StringDataWritingViaCOM) {
   HGLOBAL glob = GlobalAlloc(GPTR, sizeof(wchar_t) * (input.size() + 1));
   size_t stringsz = input.size();
   SIZE_T sz = GlobalSize(glob);
-  ScopedHGlobal<wchar_t> global_lock(glob);
+  base::win::ScopedHGlobal<wchar_t> global_lock(glob);
   wchar_t* buffer_handle = global_lock.get();
   wcscpy_s(buffer_handle, input.size() + 1, input.c_str());
   medium.hGlobal = glob;
@@ -112,7 +113,7 @@ TEST(OSExchangeDataTest, URLDataAccessViaCOM) {
   STGMEDIUM medium;
   EXPECT_EQ(S_OK, com_data->GetData(&format_etc, &medium));
   std::wstring output =
-      ScopedHGlobal<wchar_t>(medium.hGlobal).get();
+      base::win::ScopedHGlobal<wchar_t>(medium.hGlobal).get();
   EXPECT_EQ(url.spec(), WideToUTF8(output));
   ReleaseStgMedium(&medium);
 }
@@ -139,7 +140,7 @@ TEST(OSExchangeDataTest, MultipleFormatsViaCOM) {
   STGMEDIUM medium;
   EXPECT_EQ(S_OK, com_data->GetData(&url_format_etc, &medium));
   std::wstring output_url =
-      ScopedHGlobal<wchar_t>(medium.hGlobal).get();
+      base::win::ScopedHGlobal<wchar_t>(medium.hGlobal).get();
   EXPECT_EQ(url.spec(), WideToUTF8(output_url));
   ReleaseStgMedium(&medium);
 
@@ -147,7 +148,7 @@ TEST(OSExchangeDataTest, MultipleFormatsViaCOM) {
   // |text|! This is because the URL is added first and thus takes precedence!
   EXPECT_EQ(S_OK, com_data->GetData(&text_format_etc, &medium));
   std::wstring output_text =
-      ScopedHGlobal<wchar_t>(medium.hGlobal).get();
+      base::win::ScopedHGlobal<wchar_t>(medium.hGlobal).get();
   EXPECT_EQ(url_spec, WideToUTF8(output_text));
   ReleaseStgMedium(&medium);
 }
@@ -275,7 +276,7 @@ TEST(OSExchangeDataTest, TestURLExchangeFormats) {
 
     STGMEDIUM medium;
     EXPECT_EQ(S_OK, com_data->GetData(&format_etc, &medium));
-    ScopedHGlobal<char> glob(medium.hGlobal);
+    base::win::ScopedHGlobal<char> glob(medium.hGlobal);
     std::string output(glob.get(), glob.Size());
     std::string file_contents = "[InternetShortcut]\r\nURL=";
     file_contents += url_spec;
@@ -347,7 +348,7 @@ TEST(OSExchangeDataTest, Html) {
   IDataObject* data_object = OSExchangeDataProviderWin::GetIDataObject(data);
   EXPECT_EQ(S_OK,
             data_object->GetData(ClipboardUtil::GetHtmlFormat(), &medium));
-  ScopedHGlobal<char> glob(medium.hGlobal);
+  base::win::ScopedHGlobal<char> glob(medium.hGlobal);
   std::string output(glob.get(), glob.Size());
   EXPECT_EQ(expected_cf_html, output);
   ReleaseStgMedium(&medium);
