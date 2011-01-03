@@ -191,8 +191,8 @@ HRESULT NativeTheme::PaintMenuArrow(ThemeName theme,
       // the region with GDI's StretchBlt.
       Rect r(*rect);
       base::win::ScopedHDC mem_dc(CreateCompatibleDC(hdc));
-      ScopedBitmap mem_bitmap(CreateCompatibleBitmap(hdc, r.width(),
-                                                     r.height()));
+      base::win::ScopedBitmap mem_bitmap(CreateCompatibleBitmap(hdc, r.width(),
+                                                                r.height()));
       HGDIOBJ old_bitmap = SelectObject(mem_dc, mem_bitmap);
       // Copy and horizontally mirror the background from hdc into mem_dc. Use
       // a negative-width source rect, starting at the rightmost pixel.
@@ -751,7 +751,7 @@ HRESULT NativeTheme::PaintFrameControl(HDC hdc,
   const int height = rect->bottom - rect->top;
 
   // DrawFrameControl for menu arrow/check wants a monochrome bitmap.
-  ScopedBitmap mask_bitmap(CreateBitmap(width, height, 1, 1, NULL));
+  base::win::ScopedBitmap mask_bitmap(CreateBitmap(width, height, 1, 1, NULL));
 
   if (mask_bitmap == NULL)
     return E_OUTOFMEMORY;

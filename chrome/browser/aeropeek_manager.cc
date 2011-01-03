@@ -352,12 +352,13 @@ class SendThumbnailTask : public Task {
                             &header);
 
     void* bitmap_data = NULL;
-    ScopedBitmap bitmap(CreateDIBSection(hdc,
-                                         reinterpret_cast<BITMAPINFO*>(&header),
-                                         DIB_RGB_COLORS,
-                                         &bitmap_data,
-                                         NULL,
-                                         0));
+    base::win::ScopedBitmap bitmap(
+        CreateDIBSection(hdc,
+                         reinterpret_cast<BITMAPINFO*>(&header),
+                         DIB_RGB_COLORS,
+                         &bitmap_data,
+                         NULL,
+                         0));
 
     if (!bitmap.Get() || !bitmap_data) {
       LOG(ERROR) << "cannot create a bitmap: " << GetLastError();
@@ -466,10 +467,11 @@ class SendLivePreviewTask : public Task {
                             &header);
 
     void* bitmap_data = NULL;
-    ScopedBitmap bitmap(CreateDIBSection(hdc.Get(),
-                                         reinterpret_cast<BITMAPINFO*>(&header),
-                                         DIB_RGB_COLORS, &bitmap_data,
-                                         NULL, 0));
+    base::win::ScopedBitmap bitmap(
+        CreateDIBSection(hdc.Get(),
+                         reinterpret_cast<BITMAPINFO*>(&header),
+                         DIB_RGB_COLORS, &bitmap_data,
+                         NULL, 0));
     if (!bitmap.Get() || !bitmap_data) {
       LOG(ERROR) << "cannot create a bitmap: " << GetLastError();
       return;

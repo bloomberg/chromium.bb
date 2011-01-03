@@ -10,5 +10,4 @@
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_hglobal.h"
 
-using base::win::ScopedBitmap;
 using base::win::ScopedHandle;

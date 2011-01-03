@@ -209,11 +209,12 @@ void GrabWindowSnapshot(HWND window_handle,
   BITMAPINFOHEADER hdr;
   gfx::CreateBitmapHeader(width, height, &hdr);
   unsigned char *bit_ptr = NULL;
-  ScopedBitmap bitmap(CreateDIBSection(mem_hdc,
-                                       reinterpret_cast<BITMAPINFO*>(&hdr),
-                                       DIB_RGB_COLORS,
-                                       reinterpret_cast<void **>(&bit_ptr),
-                                       NULL, 0));
+  base::win::ScopedBitmap bitmap(
+      CreateDIBSection(mem_hdc,
+                       reinterpret_cast<BITMAPINFO*>(&hdr),
+                       DIB_RGB_COLORS,
+                       reinterpret_cast<void **>(&bit_ptr),
+                       NULL, 0));
 
   SelectObject(mem_hdc, bitmap);
   // Clear the bitmap to white (so that rounded corners on windows
