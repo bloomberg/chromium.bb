@@ -7,6 +7,7 @@
 #include <assert.h>
 
 #include <algorithm>
+#include <iterator>
 #include <vector>
 
 #if NACL_OSX
