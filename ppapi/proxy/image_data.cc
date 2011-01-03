@@ -45,7 +45,6 @@ void* ImageData::Map() {
   mapped_data_ = memory;
   return mapped_data_;
 #else
-  return NULL;
   int shmkey = handle_;
   void* address = shmat(shmkey, NULL, 0);
   // Mark for deletion in case we crash so the kernel will clean it up.
