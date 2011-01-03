@@ -1304,7 +1304,7 @@ pre_base_env.AddMethod(UntrustedSrpc)
 def GetPrintableCommandName(cmd):
   """Look at the first few elements of cmd to derive a suitable command name."""
   cmd_tokens = cmd.split()
-  if "python" in cmd_tokens[0]:
+  if "python" in cmd_tokens[0] and len(cmd_tokens) >= 2:
     cmd_name = cmd_tokens[1]
   else:
     cmd_name = cmd_tokens[0].split('(')[0]
@@ -1431,6 +1431,7 @@ base_env.Append(
     'src/trusted/perf_counter/build.scons',
     'src/trusted/platform_qualify/build.scons',
     'src/trusted/plugin/build.scons',
+    'src/trusted/python_bindings/build.scons',
     'src/trusted/sandbox/build.scons',
     'src/trusted/sel_universal/build.scons',
     'src/trusted/service_runtime/build.scons',
