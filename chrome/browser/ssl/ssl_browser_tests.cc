@@ -239,7 +239,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestOKHTTPS) {
 }
 
 // Visits a page with https error and proceed:
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndProceed) {
+// Disabled, http://crbug.com/68448.
+IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestHTTPSExpiredCertAndProceed) {
   ASSERT_TRUE(https_server_expired_.Start());
 
   ui_test_utils::NavigateToURL(browser(),
