@@ -228,18 +228,14 @@ if test_env.Bit('target_x86_32'):
   test_env.AddNodeToTestSuite(node, ['small_tests', 'validator_tests'])
 
 # ======================================================================
-if test_env.Bit('target_x86_32'):
-  nacl_cpuid = test_env.ComponentProgram('nacl_cpuid',
-                                         ['nacl_cpuid_test.c'],
-                                         EXTRA_LIBS=['ncvalidate'])
-  test_env.Requires(nacl_cpuid, crt)
-
-
-  node = test_env.CommandTest(
-      'nacl_cpuid_test.out',
-      [nacl_cpuid])
-
-  test_env.AddNodeToTestSuite(node, ['large_tests'])
+nacl_cpuid = test_env.ComponentProgram('nacl_cpuid',
+                                       ['nacl_cpuid_test.c'],
+                                       EXTRA_LIBS=['ncvalidate'])
+test_env.Requires(nacl_cpuid, crt)
+node = test_env.CommandTest(
+    'nacl_cpuid_test.out',
+    [nacl_cpuid])
+test_env.AddNodeToTestSuite(node, ['large_tests'])
 
 # ======================================================================
 # Helper functions for getting automated tests from the corresponding
