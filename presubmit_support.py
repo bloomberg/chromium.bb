@@ -211,8 +211,8 @@ class InputApi(object):
       # All caps files like README and LICENCE.
       r".*\b[A-Z0-9_]+$",
       # SCM (can happen in dual SCM configuration). (Slightly over aggressive)
-      r".*\.git[\\\/].*",
-      r".*\.svn[\\\/].*",
+      r"(|.*[\\\/])\.git[\\\/].*",
+      r"(|.*[\\\/])\.svn[\\\/].*",
   )
 
   def __init__(self, change, presubmit_path, is_committing):
@@ -405,6 +405,7 @@ class AffectedFile(object):
     self._local_root = repository_root
     self._is_directory = None
     self._properties = {}
+    logging.debug('%s(%s)' % (self.__class__.__name__, self._path))
 
   def ServerPath(self):
     """Returns a path string that identifies the file in the SCM system.
@@ -802,6 +803,7 @@ def ListRelevantPresubmitFiles(files, root):
     if os.path.isfile(p):
       results.append(p)
 
+  logging.debug('Presubmit files: %s' % ','.join(results))
   return results
 
 
@@ -917,7 +919,9 @@ class PresubmitExecuter(object):
       function_name = 'CheckChangeOnUpload'
     if function_name in context:
       context['__args'] = (input_api, OutputApi())
+      logging.debug('Running %s in %s' % (function_name, presubmit_path))
       result = eval(function_name + '(*__args)', context)
+      logging.debug('Running %s done.' % function_name)
       if not (isinstance(result, types.TupleType) or
               isinstance(result, types.ListType)):
         raise exceptions.RuntimeError(

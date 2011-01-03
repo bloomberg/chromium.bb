@@ -21,15 +21,27 @@ UNIT_TESTS = [
 
 def CommonChecks(input_api, output_api):
   output = []
+  # Verify that LocalPath() is local, e.g.:
+  #   os.path.join(PresubmitLocalPath(), LocalPath()) == AbsoluteLocalPath()
+  for i in input_api.AffectedFiles():
+    if (input_api.os_path.join(input_api.PresubmitLocalPath(), i.LocalPath()) !=
+        i.AbsoluteLocalPath()):
+      output.append(output_api.PresubmitError('Path inconsistency'))
+      # Return right away because it needs to be fixed first.
+      return output
+
   output.extend(input_api.canned_checks.RunPythonUnitTests(
       input_api,
       output_api,
       UNIT_TESTS))
   output.extend(WasGitClUploadHookModified(input_api, output_api))
 
-  white_list = [r'.*\.py$', r'.*git-try$']
+  white_list = [r'.*\.py$', r'^git-try$']
   black_list = list(input_api.DEFAULT_BLACK_LIST) + [
-      r'.*cpplint\.py$', r'.*git_cl\/.*']
+      r'^cpplint\.py$',
+      r'^git_cl[\/\\].*',
+      r'^git_cl_repo[\/\\].*',
+      r'^git_cl[\/\\]test[\/\\]rietveld.*']
   output.extend(input_api.canned_checks.RunPylint(
       input_api,
       output_api,

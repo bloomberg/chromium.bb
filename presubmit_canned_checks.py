@@ -450,6 +450,34 @@ def RunPythonUnitTests(input_api, output_api, unit_tests):
   return []
 
 
+def _FetchAllFiles(input_api, white_list, black_list):
+  """Hack to fetch all files."""
+  # We cannot use AffectedFiles here because we want to test every python
+  # file on each single python change. It's because a change in a python file
+  # can break another unmodified file.
+  # Use code similar to InputApi.FilterSourceFile()
+  def Find(filepath, filters):
+    for item in filters:
+      if input_api.re.match(item, filepath):
+        return True
+    return False
+
+  import os
+  files = []
+  path_len = len(input_api.PresubmitLocalPath())
+  for dirpath, dirnames, filenames in os.walk(input_api.PresubmitLocalPath()):
+    # Passes dirnames in black list to speed up search.
+    for item in dirnames[:]:
+      filepath = input_api.os_path.join(dirpath, item)[path_len + 1:]
+      if Find(filepath, black_list):
+        dirnames.remove(item)
+    for item in filenames:
+      filepath = input_api.os_path.join(dirpath, item)[path_len + 1:]
+      if Find(filepath, white_list) and not Find(filepath, black_list):
+        files.append(filepath)
+  return files
+
+
 def RunPylint(input_api, output_api, white_list=None, black_list=None):
   """Run pylint on python files.
 
@@ -468,28 +496,9 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None):
   import warnings
   warnings.filterwarnings('ignore', category=DeprecationWarning)
   try:
-    # We cannot use AffectedFiles here because we want to test every python
-    # file on each single python change. It's because a change in a python file
-    # can break another unmodified file.
-    # Use code similar to InputApi.FilterSourceFile()
-    def Find(filepath, filters):
-      for item in filters:
-        if input_api.re.match(item, filepath):
-          return True
-      return False
-
-    import os
-    files = []
-    for dirpath, dirnames, filenames in os.walk(input_api.PresubmitLocalPath()):
-      # Passes dirnames in black list to speed up search.
-      for item in dirnames[:]:
-        if Find(input_api.os_path.join(dirpath, item), black_list):
-          dirnames.remove(item)
-      for item in filenames:
-        filepath = input_api.os_path.join(dirpath, item)
-        if Find(filepath, white_list) and not Find(filepath, black_list):
-          files.append(filepath)
-
+    files = _FetchAllFiles(input_api, white_list, black_list)
+    if not files:
+      return []
     # Now that at least one python file was modified and all the python files
     # were listed, try to run pylint.
     try:
@@ -509,7 +518,11 @@ def RunPylint(input_api, output_api, white_list=None, black_list=None):
           'sudo easy_install pylint"\n'
           'Cannot do static analysis of python files.')]
     if result:
-      return [output_api.PresubmitPromptWarning('Fix pylint errors first.')]
+      if input_api.is_committing:
+        error_type = output_api.PresubmitError
+      else:
+        error_type = output_api.PresubmitPromptWarning
+      return [error_type('Fix pylint errors first.')]
     return []
   finally:
     warnings.filterwarnings('default', category=DeprecationWarning)
