@@ -36,7 +36,7 @@ static const size_t kMaxPaintRects = 5;
 
 // If the combined area of paint rects divided by the area of the union of all
 // paint rects exceeds this threshold, then we will combine the paint rects.
-static const float kMaxPaintRectsAreaRatio = 0.3f;
+static const float kMaxPaintRectsAreaRatio = 0.7f;
 
 PaintAggregator::PendingUpdate::PendingUpdate() {}
 
