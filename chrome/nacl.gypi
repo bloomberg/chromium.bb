@@ -82,6 +82,14 @@
           '<@(nacl_defines)',
         ],
       },
+      'conditions': [
+        ['OS=="mac"', {
+          'dependencies': [
+            # TODO(abarth): We should build ppGoogleNaClPluginChrome on all platforms.
+            '../native_client/src/trusted/plugin/plugin.gyp:ppGoogleNaClPluginChrome',
+          ],
+        }]
+      ],
     },
   ],
   'conditions': [
