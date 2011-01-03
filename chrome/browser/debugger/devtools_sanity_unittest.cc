@@ -274,7 +274,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestEnableResourcesTab) {
 #endif  // defined(OS_LINUX)
 
 // Tests profiler panel.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestProfilerTab) {
+// Disabled, http://crbug.com/68447.
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestProfilerTab) {
   RunTest("testProfilerTab", kJsPage);
 }
 
