@@ -232,6 +232,13 @@
   obj:*ipc_tests
 }
 
+{
+  bug_68481 [test-only race on bool]
+  ThreadSanitizer:Race
+  fun:tracked_objects::ThreadData::StartTracking*
+  fun:tracked_objects::TrackedObjectsTest_MinimalStartupShutdown_Test::TestBody*
+}
+
 # TODO(timurrrr): bug item
 {
   Data race on bool in AssertReporter [test-only]
