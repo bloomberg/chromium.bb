@@ -10,7 +10,7 @@ vars = {
   "chrome_rev": "69602",
   "nacl_breakpad_gyp_rev": "1806",
   "gyp_rev": "856",
-  "gtest_rev": "267",
+  "gtest_rev": "364",
   "tools_rev": "4058",
   "python_26_rev": "53573",
   "wix_rev": "153",
