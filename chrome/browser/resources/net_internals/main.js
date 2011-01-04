@@ -306,15 +306,19 @@ BrowserBridge.prototype.setLogLevel = function(logLevel) {
 // Messages received from the browser
 //------------------------------------------------------------------------------
 
-BrowserBridge.prototype.receivedLogEntry = function(logEntry) {
-  // Assign unique ID, if needed.
-  if (logEntry.source.id == 0) {
-    logEntry.source.id = this.nextSourcelessEventId_;
-    --this.nextSourcelessEventId_;
+BrowserBridge.prototype.receivedLogEntries = function(logEntries) {
+  for (var e = 0; e < logEntries.length; ++e) {
+    var logEntry = logEntries[e];
+
+    // Assign unique ID, if needed.
+    if (logEntry.source.id == 0) {
+      logEntry.source.id = this.nextSourcelessEventId_;
+      --this.nextSourcelessEventId_;
+    }
+    this.capturedEvents_.push(logEntry);
+    for (var i = 0; i < this.logObservers_.length; ++i)
+      this.logObservers_[i].onLogEntryAdded(logEntry);
   }
-  this.capturedEvents_.push(logEntry);
-  for (var i = 0; i < this.logObservers_.length; ++i)
-    this.logObservers_[i].onLogEntryAdded(logEntry);
 };
 
 BrowserBridge.prototype.receivedLogEventTypeConstants = function(constantsMap) {
@@ -395,16 +399,13 @@ BrowserBridge.prototype.receivedPassiveLogEntries = function(entries) {
     this.deleteAllEvents();
 
   this.numPassivelyCapturedEvents_ = entries.length;
-  for (var i = 0; i < entries.length; ++i) {
-    var entry = entries[i];
-    entry.wasPassivelyCaptured = true;
-    this.receivedLogEntry(entry);
-  }
+  for (var i = 0; i < entries.length; ++i)
+    entries[i].wasPassivelyCaptured = true;
+  this.receivedLogEntries(entries);
 
   // Add back early actively captured events, if any.
-  for (var i = 0; i < earlyActivelyCapturedEvents.length; ++i) {
-    this.receivedLogEntry(earlyActivelyCapturedEvents[i]);
-  }
+  if (earlyActivelyCapturedEvents.length)
+    this.receivedLogEntries(earlyActivelyCapturedEvents);
 };
 
 

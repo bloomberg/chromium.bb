@@ -54,6 +54,11 @@
 
 namespace {
 
+// Delay between when an event occurs and when it is passed to the Javascript
+// page.  All events that occur during this period are grouped together and
+// sent to the page at once, which reduces context switching and CPU usage.
+const int kNetLogEventDelayMilliseconds = 100;
+
 // Returns the HostCache for |context|'s primary HostResolver, or NULL if
 // there is none.
 net::HostCache* GetHostResolverCache(URLRequestContext* context) {
@@ -245,8 +250,18 @@ class NetInternalsMessageHandler::IOThreadImpl
   // Helper that executes |function_name| in the attached renderer.
   // The function takes ownership of |arg|.  Note that this can be called from
   // any thread.
-  void CallJavascriptFunction(const std::wstring& function_name,
-                              Value* arg);
+  void CallJavascriptFunction(const std::wstring& function_name, Value* arg);
+
+  // Adds |entry| to the queue of pending log entries to be sent to the page via
+  // Javascript.  Must be called on the IO Thread.  Also creates a delayed task
+  // that will call PostPendingEntries, if there isn't one already.
+  void AddEntryToQueue(Value* entry);
+
+  // Sends all pending entries to the page via Javascript, and clears the list
+  // of pending entries.  Sending multiple entries at once results in a
+  // significant reduction of CPU usage when a lot of events are happening.
+  // Must be called on the IO Thread.
+  void PostPendingEntries();
 
   // Pointer to the UI-thread message handler. Only access this from
   // the UI thread.
@@ -271,6 +286,11 @@ class NetInternalsMessageHandler::IOThreadImpl
   // True if we have attached an observer to the NetLog already.
   bool is_observing_log_;
   friend class base::RefCountedThreadSafe<IOThreadImpl>;
+
+  // Log entries that have yet to be passed along to Javascript page.  Non-NULL
+  // when and only when there is a pending delayed task to call
+  // PostPendingEntries.  Read and written to exclusively on the IO Thread.
+  scoped_ptr<ListValue> pending_entries_;
 };
 
 // Helper class for a DOMUI::MessageCallback which when excuted calls
@@ -951,10 +971,31 @@ void NetInternalsMessageHandler::IOThreadImpl::OnAddEntry(
     const net::NetLog::Source& source,
     net::NetLog::EventPhase phase,
     net::NetLog::EventParameters* params) {
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          this, &IOThreadImpl::AddEntryToQueue,
+          net::NetLog::EntryToDictionaryValue(type, time, source, phase,
+                                              params, false)));
+}
+
+void NetInternalsMessageHandler::IOThreadImpl::AddEntryToQueue(Value* entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!pending_entries_.get()) {
+    pending_entries_.reset(new ListValue());
+    BrowserThread::PostDelayedTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableMethod(this, &IOThreadImpl::PostPendingEntries),
+        kNetLogEventDelayMilliseconds);
+  }
+  pending_entries_->Append(entry);
+}
+
+void NetInternalsMessageHandler::IOThreadImpl::PostPendingEntries() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   CallJavascriptFunction(
-      L"g_browser.receivedLogEntry",
-      net::NetLog::EntryToDictionaryValue(type, time, source, phase, params,
-                                          false));
+      L"g_browser.receivedLogEntries",
+      pending_entries_.release());
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnStartConnectionTestSuite() {
