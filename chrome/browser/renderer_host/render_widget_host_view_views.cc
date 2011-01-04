@@ -504,9 +504,22 @@ bool RenderWidgetHostViewViews::OnMouseWheel(const views::MouseWheelEvent& e) {
 bool RenderWidgetHostViewViews::OnKeyPressed(const views::KeyEvent &e) {
   // Send key event to input method.
   // TODO host_view->im_context_->ProcessKeyEvent(event);
-  NativeWebKeyboardEvent wke;
 
-  wke.type = WebKit::WebInputEvent::KeyDown;
+  // This is how it works:
+  // (1) If a RawKeyDown event is an accelerator for a reserved command (see
+  //     Browser::IsReservedCommand), then the command is executed. Otherwise,
+  //     the event is first sent off to the renderer. The renderer is also
+  //     notified whether the event would trigger an accelerator in the browser.
+  // (2) A Char event is then sent to the renderer.
+  // (3) If the renderer does not process the event in step (1), and the event
+  //     triggers an accelerator, then it will ignore the event in step (2). The
+  //     renderer also sends back notification to the browser for both steps (1)
+  //     and (2) about whether the events were processed or not. If the event
+  //     for (1) is not processed by the renderer, then it is processed by the
+  //     browser, and (2) is ignored.
+
+  NativeWebKeyboardEvent wke;
+  wke.type = WebKit::WebInputEvent::RawKeyDown;
   wke.windowsKeyCode = e.GetKeyCode();
   wke.setKeyIdentifierFromWindowsKeyCode();
 
@@ -520,11 +533,7 @@ bool RenderWidgetHostViewViews::OnKeyPressed(const views::KeyEvent &e) {
 
   // send the keypress event
   wke.type = WebKit::WebInputEvent::Char;
-
-  // TODO(anicolao): fear this comment from GTK land
-  // We return TRUE because we did handle the event. If it turns out webkit
-  // can't handle the event, we'll deal with it in
-  // RenderView::UnhandledKeyboardEvent().
+  ForwardKeyboardEvent(wke);
 
   return TRUE;
 }

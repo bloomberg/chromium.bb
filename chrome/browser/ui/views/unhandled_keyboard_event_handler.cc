@@ -8,9 +8,7 @@
 #include "views/focus/focus_manager.h"
 
 UnhandledKeyboardEventHandler::UnhandledKeyboardEventHandler() {
-#if defined(OS_WIN)
   ignore_next_char_event_ = false;
-#endif
 }
 
 UnhandledKeyboardEventHandler::~UnhandledKeyboardEventHandler() {
@@ -23,7 +21,6 @@ void UnhandledKeyboardEventHandler::HandleKeyboardEvent(
     NOTREACHED();
     return;
   }
-#if defined(OS_WIN)
   // Previous calls to TranslateMessage can generate Char events as well as
   // RawKeyDown events, even if the latter triggered an accelerator.  In these
   // cases, we discard the Char events.
@@ -34,7 +31,6 @@ void UnhandledKeyboardEventHandler::HandleKeyboardEvent(
   // It's necessary to reset this flag, because a RawKeyDown event may not
   // always generate a Char event.
   ignore_next_char_event_ = false;
-#endif
 
   if (event.type == WebKit::WebInputEvent::RawKeyDown) {
     views::Accelerator accelerator(
@@ -46,23 +42,19 @@ void UnhandledKeyboardEventHandler::HandleKeyboardEvent(
         (event.modifiers & NativeWebKeyboardEvent::AltKey) ==
             NativeWebKeyboardEvent::AltKey);
 
-#if defined(OS_WIN)
     // This is tricky: we want to set ignore_next_char_event_ if
     // ProcessAccelerator returns true. But ProcessAccelerator might delete
     // |this| if the accelerator is a "close tab" one. So we speculatively
     // set the flag and fix it if no event was handled.
     ignore_next_char_event_ = true;
-#endif
 
     if (focus_manager->ProcessAccelerator(accelerator)) {
       return;
     }
 
-#if defined(OS_WIN)
     // ProcessAccelerator didn't handle the accelerator, so we know both
     // that |this| is still valid, and that we didn't want to set the flag.
     ignore_next_char_event_ = false;
-#endif
   }
 
 #if defined(OS_WIN)

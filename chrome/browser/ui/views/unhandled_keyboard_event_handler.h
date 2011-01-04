@@ -24,7 +24,6 @@ class UnhandledKeyboardEventHandler {
                            views::FocusManager* focus_manager);
 
  private:
-#if defined(OS_WIN)
   // Whether to ignore the next Char keyboard event.
   // If a RawKeyDown event was handled as a shortcut key, then we're done
   // handling it and should eat any Char event that the translate phase may
@@ -32,7 +31,6 @@ class UnhandledKeyboardEventHandler {
   // such as a beep if DefWindowProc() has no default handling for the given
   // Char.)
   bool ignore_next_char_event_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(UnhandledKeyboardEventHandler);
 };
