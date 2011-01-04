@@ -288,8 +288,8 @@ BrowserActionView::BrowserActionView(const Extension* extension,
   button_->SetDragController(panel_);
   AddChildView(button_);
   button_->UpdateState();
-  SetAccessibleName(
-      l10n_util::GetString(IDS_ACCNAME_EXTENSIONS_BROWSER_ACTION));
+  SetAccessibleName(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_ACCNAME_EXTENSIONS_BROWSER_ACTION)));
 }
 
 BrowserActionView::~BrowserActionView() {
@@ -368,18 +368,20 @@ BrowserActionsContainer::BrowserActionsContainer(Browser* browser,
 
   resize_animation_.reset(new SlideAnimation(this));
   resize_area_ = new views::ResizeArea(this);
-  resize_area_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_SEPARATOR));
+  resize_area_->SetAccessibleName(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_SEPARATOR)));
   AddChildView(resize_area_);
 
   chevron_ = new views::MenuButton(NULL, std::wstring(), this, false);
   chevron_->set_border(NULL);
   chevron_->EnableCanvasFlippingForRTLUI(true);
   chevron_->SetAccessibleName(
-      l10n_util::GetString(IDS_ACCNAME_EXTENSIONS_CHEVRON));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_EXTENSIONS_CHEVRON)));
   chevron_->SetVisible(false);
   AddChildView(chevron_);
 
-  SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_EXTENSIONS));
+  SetAccessibleName(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_EXTENSIONS)));
 }
 
 BrowserActionsContainer::~BrowserActionsContainer() {

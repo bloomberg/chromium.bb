@@ -5,6 +5,7 @@
 #include "chrome/browser/views/bookmark_bar_instructions_view.h"
 
 #include "app/l10n_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "grit/generated_resources.h"
@@ -22,12 +23,12 @@ BookmarkBarInstructionsView::BookmarkBarInstructionsView(Delegate* delegate)
       baseline_(-1),
       updated_colors_(false) {
   instructions_ = new views::Label(
-      l10n_util::GetString(IDS_BOOKMARKS_NO_ITEMS));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOKMARKS_NO_ITEMS)));
   AddChildView(instructions_);
 
   if (browser_defaults::kShowImportOnBookmarkBar) {
     import_link_ = new views::Link(
-        l10n_util::GetString(IDS_BOOKMARK_BAR_IMPORT_LINK));
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_IMPORT_LINK)));
     // We don't want the link to alter tab navigation.
     import_link_->SetFocusable(false);
     import_link_->SetController(this);

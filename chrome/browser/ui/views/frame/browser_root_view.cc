@@ -7,6 +7,7 @@
 #include "app/drag_drop_types.h"
 #include "app/l10n_util.h"
 #include "app/os_exchange_data.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
@@ -22,7 +23,7 @@ BrowserRootView::BrowserRootView(BrowserView* browser_view,
     : views::RootView(widget),
       browser_view_(browser_view),
       forwarding_to_tab_strip_(false) {
-  SetAccessibleName(l10n_util::GetString(IDS_PRODUCT_NAME));
+  SetAccessibleName(UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 }
 
 bool BrowserRootView::GetDropFormats(

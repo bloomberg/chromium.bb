@@ -9,6 +9,7 @@
 #include "app/resource_bundle.h"
 #include "base/string16.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -181,27 +182,28 @@ void BookmarkBubbleView::Init() {
     initialized = true;
   }
 
-  remove_link_ = new Link(l10n_util::GetString(
-      IDS_BOOMARK_BUBBLE_REMOVE_BOOKMARK));
+  remove_link_ = new Link(UTF16ToWide(l10n_util::GetStringUTF16(
+      IDS_BOOMARK_BUBBLE_REMOVE_BOOKMARK)));
   remove_link_->SetController(this);
 
   edit_button_ = new NativeButton(
-      this, l10n_util::GetString(IDS_BOOMARK_BUBBLE_OPTIONS));
+      this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOMARK_BUBBLE_OPTIONS)));
 
-  close_button_ = new NativeButton(this, l10n_util::GetString(IDS_DONE));
+  close_button_ =
+      new NativeButton(this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_DONE)));
   close_button_->SetIsDefault(true);
 
   Label* combobox_label = new Label(
-      l10n_util::GetString(IDS_BOOMARK_BUBBLE_FOLDER_TEXT));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOMARK_BUBBLE_FOLDER_TEXT)));
 
   parent_combobox_ = new Combobox(&parent_model_);
   parent_combobox_->SetSelectedItem(parent_model_.node_parent_index());
   parent_combobox_->set_listener(this);
   parent_combobox_->SetAccessibleName(combobox_label->GetText());
 
-  Label* title_label = new Label(l10n_util::GetString(
+  Label* title_label = new Label(UTF16ToWide(l10n_util::GetStringUTF16(
       newly_bookmarked_ ? IDS_BOOMARK_BUBBLE_PAGE_BOOKMARKED :
-                          IDS_BOOMARK_BUBBLE_PAGE_BOOKMARK));
+                          IDS_BOOMARK_BUBBLE_PAGE_BOOKMARK)));
   title_label->SetFont(
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont));
   title_label->SetColor(kTitleColor);
@@ -244,8 +246,8 @@ void BookmarkBubbleView::Init() {
 
   layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
   layout->StartRow(0, 2);
-  layout->AddView(
-      new Label(l10n_util::GetString(IDS_BOOMARK_BUBBLE_TITLE_TEXT)));
+  layout->AddView(new Label(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_BOOMARK_BUBBLE_TITLE_TEXT))));
   title_tf_ = new views::Textfield();
   title_tf_->SetText(GetTitle());
   layout->AddView(title_tf_);
@@ -328,7 +330,8 @@ bool BookmarkBubbleView::CloseOnEscape() {
 }
 
 std::wstring BookmarkBubbleView::accessible_name() {
-  return l10n_util::GetString(IDS_BOOMARK_BUBBLE_ADD_BOOKMARK);
+  return UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_BOOMARK_BUBBLE_ADD_BOOKMARK));
 }
 
 void BookmarkBubbleView::Close() {

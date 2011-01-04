@@ -114,7 +114,8 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
   : warning_icon_(NULL),
     download_(download),
     parent_(parent),
-    status_text_(l10n_util::GetString(IDS_DOWNLOAD_STATUS_STARTING)),
+    status_text_(UTF16ToWide(
+        l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_STARTING))),
     show_status_text_(true),
     body_state_(NORMAL),
     drop_down_state_(NORMAL),
@@ -245,12 +246,13 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     drop_down_state_ = DANGEROUS;
 
     warning_icon_ = rb.GetBitmapNamed(IDR_WARNING);
-    save_button_ = new views::NativeButton(this, l10n_util::GetString(
-        download->is_extension_install() ?
-            IDS_CONTINUE_EXTENSION_DOWNLOAD : IDS_SAVE_DOWNLOAD));
+    save_button_ = new views::NativeButton(this,
+        UTF16ToWide(l10n_util::GetStringUTF16(
+            download->is_extension_install() ?
+                IDS_CONTINUE_EXTENSION_DOWNLOAD : IDS_SAVE_DOWNLOAD)));
     save_button_->set_ignore_minimum_size(true);
     discard_button_ = new views::NativeButton(
-        this, l10n_util::GetString(IDS_DISCARD_DOWNLOAD));
+        this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD)));
     discard_button_->set_ignore_minimum_size(true);
     AddChildView(save_button_);
     AddChildView(discard_button_);
@@ -282,8 +284,8 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
 
     // The dangerous download label text is different for an extension file.
     if (download->is_extension_install()) {
-      dangerous_download_label_ = new views::Label(
-          l10n_util::GetString(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION));
+      dangerous_download_label_ = new views::Label(UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION)));
     } else {
       gfx::ElideString(rootname,
                        kFileNameMaxLength - extension.length(),
@@ -291,8 +293,9 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
       std::wstring filename = rootname + L"." + extension;
       filename = UTF16ToWide(base::i18n::GetDisplayStringInLTRDirectionality(
           WideToUTF16(filename)));
-      dangerous_download_label_ = new views::Label(
-          l10n_util::GetStringF(IDS_PROMPT_DANGEROUS_DOWNLOAD, filename));
+      dangerous_download_label_ = new views::Label(UTF16ToWide(
+          l10n_util::GetStringFUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD,
+                                     WideToUTF16(filename))));
     }
     dangerous_download_label_->SetMultiLine(true);
     dangerous_download_label_->SetHorizontalAlignment(
@@ -609,9 +612,8 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
                                     font_, kTextWidth);
     } else {
       // First, Calculate the download status opening string width.
-      std::wstring empty_string;
-      std::wstring status_string =
-          l10n_util::GetStringF(IDS_DOWNLOAD_STATUS_OPENING, empty_string);
+      std::wstring status_string = UTF16ToWide(
+          l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_OPENING, string16()));
       int status_string_width = font_.GetStringWidth(status_string);
       // Then, elide the file name.
       string16 filename_string =

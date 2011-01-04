@@ -8,6 +8,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "gfx/canvas_skia.h"
 #include "grit/generated_resources.h"
@@ -51,9 +52,12 @@ FullscreenExitBubble::FullscreenExitView::FullscreenExitView(
     const std::wstring& accelerator) {
   link_.set_parent_owned(false);
 #if !defined(OS_CHROMEOS)
-  link_.SetText(l10n_util::GetStringF(IDS_EXIT_FULLSCREEN_MODE, accelerator));
+  link_.SetText(
+      UTF16ToWide(l10n_util::GetStringFUTF16(IDS_EXIT_FULLSCREEN_MODE,
+                                             WideToUTF16(accelerator))));
 #else
-  link_.SetText(l10n_util::GetString(IDS_EXIT_FULLSCREEN_MODE));
+  link_.SetText(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_EXIT_FULLSCREEN_MODE)));
 #endif
   link_.SetController(bubble);
   link_.SetFont(ResourceBundle::GetSharedInstance().GetFont(

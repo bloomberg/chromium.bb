@@ -10,6 +10,7 @@
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
@@ -102,8 +103,8 @@ void DownloadShelfView::Init() {
   arrow_image_->SetImage(rb.GetBitmapNamed(IDR_DOWNLOADS_FAVICON));
   AddChildView(arrow_image_);
 
-  show_all_view_ =
-      new views::Link(l10n_util::GetString(IDS_SHOW_ALL_DOWNLOADS));
+  show_all_view_ = new views::Link(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_SHOW_ALL_DOWNLOADS)));
   show_all_view_->SetController(this);
   AddChildView(show_all_view_);
 
@@ -114,7 +115,8 @@ void DownloadShelfView::Init() {
                           rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
   close_button_->SetImage(views::CustomButton::BS_PUSHED,
                           rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
-  close_button_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_CLOSE));
+  close_button_->SetAccessibleName(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE)));
   UpdateButtonColors();
   AddChildView(close_button_);
 

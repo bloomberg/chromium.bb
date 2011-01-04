@@ -17,6 +17,7 @@
 #include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/utf_string_conversions.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/font.h"
 #include "grit/app_strings.h"
@@ -129,7 +130,7 @@ void DialogClientView::ShowDialogButtons() {
     std::wstring label =
         dd->GetDialogButtonLabel(MessageBoxFlags::DIALOGBUTTON_OK);
     if (label.empty())
-      label = l10n_util::GetString(IDS_APP_OK);
+      label = UTF16ToWide(l10n_util::GetStringUTF16(IDS_APP_OK));
     bool is_default_button =
         (dd->GetDefaultDialogButton() & MessageBoxFlags::DIALOGBUTTON_OK) != 0;
     ok_button_ = new DialogButton(this, window(),
@@ -148,9 +149,9 @@ void DialogClientView::ShowDialogButtons() {
         dd->GetDialogButtonLabel(MessageBoxFlags::DIALOGBUTTON_CANCEL);
     if (label.empty()) {
       if (buttons & MessageBoxFlags::DIALOGBUTTON_OK) {
-        label = l10n_util::GetString(IDS_APP_CANCEL);
+        label = UTF16ToWide(l10n_util::GetStringUTF16(IDS_APP_CANCEL));
       } else {
-        label = l10n_util::GetString(IDS_APP_CLOSE);
+        label = UTF16ToWide(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
       }
     }
     bool is_default_button =

@@ -976,13 +976,15 @@ void LocationBarViewGtk::SetKeywordLabel(const std::wstring& keyword) {
       GetKeywordShortName(keyword, &is_extension_keyword);
   int message_id = is_extension_keyword ?
       IDS_OMNIBOX_EXTENSION_KEYWORD_TEXT : IDS_OMNIBOX_KEYWORD_TEXT;
-  std::wstring full_name(l10n_util::GetStringF(message_id, short_name));
-  std::wstring partial_name(l10n_util::GetStringF(
-      message_id, location_bar_util::CalculateMinString(short_name)));
+  string16 full_name = l10n_util::GetStringFUTF16(message_id,
+                                                  WideToUTF16Hack(short_name));
+  string16 partial_name = l10n_util::GetStringFUTF16(
+      message_id,
+      WideToUTF16Hack(location_bar_util::CalculateMinString(short_name)));
   gtk_label_set_text(GTK_LABEL(tab_to_search_full_label_),
-                     WideToUTF8(full_name).c_str());
+                     UTF16ToUTF8(full_name).c_str());
   gtk_label_set_text(GTK_LABEL(tab_to_search_partial_label_),
-                     WideToUTF8(partial_name).c_str());
+                     UTF16ToUTF8(partial_name).c_str());
 
   if (last_keyword_ != keyword) {
     last_keyword_ = keyword;
@@ -1017,17 +1019,20 @@ void LocationBarViewGtk::SetKeywordHintLabel(const std::wstring& keyword) {
   int message_id = is_extension_keyword ?
       IDS_OMNIBOX_EXTENSION_KEYWORD_HINT : IDS_OMNIBOX_KEYWORD_HINT;
   std::vector<size_t> content_param_offsets;
-  const std::wstring keyword_hint(l10n_util::GetStringF(
-      message_id, std::wstring(), short_name, &content_param_offsets));
+  const string16 keyword_hint = l10n_util::GetStringFUTF16(
+      message_id,
+      string16(),
+      WideToUTF16Hack(short_name),
+      &content_param_offsets);
   if (content_param_offsets.size() != 2) {
     // See comments on an identical NOTREACHED() in search_provider.cc.
     NOTREACHED();
     return;
   }
 
-  std::string leading(WideToUTF8(
+  std::string leading(UTF16ToUTF8(
       keyword_hint.substr(0, content_param_offsets.front())));
-  std::string trailing(WideToUTF8(
+  std::string trailing(UTF16ToUTF8(
       keyword_hint.substr(content_param_offsets.front())));
   gtk_label_set_text(GTK_LABEL(tab_to_search_hint_leading_label_),
                      leading.c_str());

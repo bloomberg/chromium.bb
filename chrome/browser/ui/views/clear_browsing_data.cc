@@ -86,42 +86,48 @@ void ClearBrowsingDataView::Init() {
   throbber_->SetVisible(false);
 
   status_label_ = new views::Label(
-      l10n_util::GetString(IDS_CLEAR_DATA_DELETING));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_CLEAR_DATA_DELETING)));
   status_label_->SetVisible(false);
 
   // Regular view controls we draw by ourself. First, we add the dialog label.
   delete_all_label_ = new views::Label(
-      l10n_util::GetString(IDS_CLEAR_BROWSING_DATA_LABEL));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_CLEAR_BROWSING_DATA_LABEL)));
   AddChildView(delete_all_label_);
 
   // Add all the check-boxes.
   del_history_checkbox_ =
-      AddCheckbox(l10n_util::GetString(IDS_DEL_BROWSING_HISTORY_CHKBOX),
+      AddCheckbox(UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_DEL_BROWSING_HISTORY_CHKBOX)),
       profile_->GetPrefs()->GetBoolean(prefs::kDeleteBrowsingHistory));
 
   del_downloads_checkbox_ =
-      AddCheckbox(l10n_util::GetString(IDS_DEL_DOWNLOAD_HISTORY_CHKBOX),
+      AddCheckbox(UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_DEL_DOWNLOAD_HISTORY_CHKBOX)),
       profile_->GetPrefs()->GetBoolean(prefs::kDeleteDownloadHistory));
 
   del_cache_checkbox_ =
-      AddCheckbox(l10n_util::GetString(IDS_DEL_CACHE_CHKBOX),
+      AddCheckbox(UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_DEL_CACHE_CHKBOX)),
       profile_->GetPrefs()->GetBoolean(prefs::kDeleteCache));
 
   del_cookies_checkbox_ =
-      AddCheckbox(l10n_util::GetString(IDS_DEL_COOKIES_CHKBOX),
+      AddCheckbox(UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_DEL_COOKIES_CHKBOX)),
       profile_->GetPrefs()->GetBoolean(prefs::kDeleteCookies));
 
   del_passwords_checkbox_ =
-      AddCheckbox(l10n_util::GetString(IDS_DEL_PASSWORDS_CHKBOX),
+      AddCheckbox(UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_DEL_PASSWORDS_CHKBOX)),
       profile_->GetPrefs()->GetBoolean(prefs::kDeletePasswords));
 
   del_form_data_checkbox_ =
-      AddCheckbox(l10n_util::GetString(IDS_DEL_FORM_DATA_CHKBOX),
+      AddCheckbox(UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_DEL_FORM_DATA_CHKBOX)),
       profile_->GetPrefs()->GetBoolean(prefs::kDeleteFormData));
 
   // Add a label which appears before the combo box for the time period.
-  time_period_label_ = new views::Label(
-      l10n_util::GetString(IDS_CLEAR_BROWSING_DATA_TIME_LABEL));
+  time_period_label_ = new views::Label(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_CLEAR_BROWSING_DATA_TIME_LABEL)));
   AddChildView(time_period_label_);
 
   // Add the combo box showing how far back in time we want to delete.
@@ -247,8 +253,9 @@ std::wstring ClearBrowsingDataView::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   DCHECK((button == MessageBoxFlags::DIALOGBUTTON_OK) ||
          (button == MessageBoxFlags::DIALOGBUTTON_CANCEL));
-  return l10n_util::GetString((button == MessageBoxFlags::DIALOGBUTTON_OK) ?
-      IDS_CLEAR_BROWSING_DATA_COMMIT : IDS_CANCEL);
+  return UTF16ToWide(l10n_util::GetStringUTF16(
+      (button == MessageBoxFlags::DIALOGBUTTON_OK) ?
+          IDS_CLEAR_BROWSING_DATA_COMMIT : IDS_CANCEL));
 }
 
 bool ClearBrowsingDataView::IsDialogButtonEnabled(
@@ -289,7 +296,7 @@ bool ClearBrowsingDataView::IsModal() const {
 }
 
 std::wstring ClearBrowsingDataView::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_CLEAR_BROWSING_DATA_TITLE);
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_CLEAR_BROWSING_DATA_TITLE));
 }
 
 bool ClearBrowsingDataView::Accept() {
@@ -324,8 +331,8 @@ views::View* ClearBrowsingDataView::GetInitiallyFocusedView() {
 
 views::ClientView* ClearBrowsingDataView::CreateClientView(
     views::Window* window) {
-  views::Link* flash_link =
-      new views::Link(l10n_util::GetString(IDS_FLASH_STORAGE_SETTINGS));
+  views::Link* flash_link = new views::Link(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_FLASH_STORAGE_SETTINGS)));
   flash_link->SetController(this);
 
   views::View* settings_view = new views::View();

@@ -298,16 +298,17 @@ bool ParseLockPath(const FilePath& path,
 void DisplayProfileInUseError(const std::string& lock_path,
                               const std::string& hostname,
                               int pid) {
-  std::wstring error = l10n_util::GetStringF(IDS_PROFILE_IN_USE_LINUX,
-        UTF8ToWide(base::IntToString(pid)),
-        ASCIIToWide(hostname),
-        base::SysNativeMBToWide(lock_path),
-        l10n_util::GetString(IDS_PRODUCT_NAME));
-  LOG(ERROR) << base::SysWideToNativeMB(error).c_str();
+  string16 error = l10n_util::GetStringFUTF16(
+      IDS_PROFILE_IN_USE_LINUX,
+      base::IntToString16(pid),
+      ASCIIToUTF16(hostname),
+      WideToUTF16(base::SysNativeMBToWide(lock_path)),
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+  LOG(ERROR) << base::SysWideToNativeMB(UTF16ToWide(error)).c_str();
 #if defined(TOOLKIT_GTK)
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kNoProcessSingletonDialog))
-    ProcessSingletonDialog::ShowAndRun(WideToUTF8(error));
+    ProcessSingletonDialog::ShowAndRun(UTF16ToUTF8(error));
 #endif
 }
 

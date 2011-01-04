@@ -915,7 +915,7 @@ void BookmarkBarView::Init() {
 
   bookmarks_separator_view_ = new ButtonSeparatorView();
   bookmarks_separator_view_->SetAccessibleName(
-      l10n_util::GetString(IDS_ACCNAME_SEPARATOR));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_SEPARATOR)));
   AddChildView(bookmarks_separator_view_);
 
   instructions_ = new BookmarkBarInstructionsView(this);
@@ -928,14 +928,16 @@ void BookmarkBarView::Init() {
 
 MenuButton* BookmarkBarView::CreateOtherBookmarkedButton() {
   MenuButton* button = new BookmarkFolderButton(
-      this, l10n_util::GetString(IDS_BOOMARK_BAR_OTHER_BOOKMARKED), this,
+      this,
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_OTHER_BOOKMARKED)),
+      this,
       false);
   button->SetID(VIEW_ID_OTHER_BOOKMARKS);
   button->SetIcon(GetGroupIcon());
   button->SetContextMenuController(this);
   button->set_tag(kOtherFolderButtonTag);
   button->SetAccessibleName(
-      l10n_util::GetString(IDS_BOOMARK_BAR_OTHER_BOOKMARKED));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_OTHER_BOOKMARKED)));
   return button;
 }
 
@@ -957,7 +959,7 @@ MenuButton* BookmarkBarView::CreateOverflowButton() {
   button->SetVisible(false);
   // Set accessibility name.
   button->SetAccessibleName(
-      l10n_util::GetString(IDS_ACCNAME_BOOKMARKS_CHEVRON));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_BOOKMARKS_CHEVRON)));
   return button;
 }
 
@@ -1725,16 +1727,16 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
 
 views::TextButton* BookmarkBarView::CreateSyncErrorButton() {
   views::TextButton* sync_error_button =
-      new views::TextButton(this,
-              l10n_util::GetString(IDS_SYNC_BOOKMARK_BAR_ERROR));
+      new views::TextButton(this, UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_SYNC_BOOKMARK_BAR_ERROR)));
   sync_error_button->set_tag(kSyncErrorButtonTag);
 
   // The tooltip is the only way we have to display text explaining the error
   // to the user.
   sync_error_button->SetTooltipText(
-      l10n_util::GetString(IDS_SYNC_BOOKMARK_BAR_ERROR_DESC));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_SYNC_BOOKMARK_BAR_ERROR_DESC)));
   sync_error_button->SetAccessibleName(
-      l10n_util::GetString(IDS_ACCNAME_SYNC_ERROR_BUTTON));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_SYNC_ERROR_BUTTON)));
   sync_error_button->SetIcon(
       *ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING));
   return sync_error_button;

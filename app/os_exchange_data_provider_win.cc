@@ -846,7 +846,8 @@ static void CreateValidFileNameFromTitle(const GURL& url,
           url, std::string(), std::string(), FilePath()).ToWStringHack();
     } else {
       // Nothing else can be done, just use a default.
-      *validated = l10n_util::GetString(IDS_APP_UNTITLED_SHORTCUT_FILE_NAME);
+      *validated =
+          l10n_util::GetStringUTF16(IDS_APP_UNTITLED_SHORTCUT_FILE_NAME);
     }
   } else {
     *validated = title;

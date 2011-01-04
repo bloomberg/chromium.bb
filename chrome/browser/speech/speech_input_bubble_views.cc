@@ -66,7 +66,7 @@ ContentView::ContentView(SpeechInputBubbleDelegate* delegate)
   const gfx::Font& font = rb.GetFont(ResourceBundle::MediumFont);
 
   heading_ = new views::Label(
-      l10n_util::GetString(IDS_SPEECH_INPUT_BUBBLE_HEADING));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_BUBBLE_HEADING)));
   heading_->SetFont(font);
   heading_->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
   AddChildView(heading_);
@@ -83,12 +83,14 @@ ContentView::ContentView(SpeechInputBubbleDelegate* delegate)
   icon_->SetHorizontalAlignment(views::ImageView::CENTER);
   AddChildView(icon_);
 
-  cancel_ = new views::NativeButton(this, l10n_util::GetString(IDS_CANCEL));
+  cancel_ = new views::NativeButton(
+      this,
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_CANCEL)));
   AddChildView(cancel_);
 
   try_again_ = new views::NativeButton(
       this,
-      l10n_util::GetString(IDS_SPEECH_INPUT_TRY_AGAIN));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_TRY_AGAIN)));
   AddChildView(try_again_);
 }
 
@@ -103,11 +105,13 @@ void ContentView::UpdateLayout(SpeechInputBubbleBase::DisplayMode mode,
   if (mode == SpeechInputBubbleBase::DISPLAY_MODE_MESSAGE) {
     message_->SetText(UTF16ToWideHack(message_text));
   } else if (mode == SpeechInputBubbleBase::DISPLAY_MODE_RECORDING) {
-    heading_->SetText(l10n_util::GetString(IDS_SPEECH_INPUT_BUBBLE_HEADING));
+    heading_->SetText(UTF16ToWide(
+        l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_BUBBLE_HEADING)));
     icon_->SetImage(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_SPEECH_INPUT_MIC_EMPTY));
   } else {
-    heading_->SetText(l10n_util::GetString(IDS_SPEECH_INPUT_BUBBLE_WORKING));
+    heading_->SetText(UTF16ToWide(
+        l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_BUBBLE_WORKING)));
   }
 }
 

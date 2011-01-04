@@ -289,35 +289,36 @@ class DownloadInProgressConfirmDialogDelegate : public views::DialogDelegate,
  public:
   explicit DownloadInProgressConfirmDialogDelegate(Browser* browser)
       : browser_(browser),
-        product_name_(l10n_util::GetString(IDS_PRODUCT_NAME)) {
+        product_name_(
+            UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME))) {
     int download_count = browser->profile()->GetDownloadManager()->
         in_progress_count();
 
     std::wstring warning_text;
     std::wstring explanation_text;
     if (download_count == 1) {
-      warning_text =
-          l10n_util::GetStringF(IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_WARNING,
-                                product_name_);
-      explanation_text =
-          l10n_util::GetStringF(IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION,
-                                product_name_);
-      ok_button_text_ = l10n_util::GetString(
-          IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL);
-      cancel_button_text_ = l10n_util::GetString(
-          IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL);
+      warning_text = UTF16ToWide(l10n_util::GetStringFUTF16(
+          IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_WARNING,
+          WideToUTF16(product_name_)));
+      explanation_text = UTF16ToWide(l10n_util::GetStringFUTF16(
+          IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION,
+          WideToUTF16(product_name_)));
+      ok_button_text_ = UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL));
+      cancel_button_text_ = UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL));
     } else {
-      warning_text =
-          l10n_util::GetStringF(IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_WARNING,
-                                product_name_,
-                                UTF8ToWide(base::IntToString(download_count)));
-      explanation_text =
-          l10n_util::GetStringF(
-              IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION, product_name_);
-      ok_button_text_ = l10n_util::GetString(
-          IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_OK_BUTTON_LABEL);
-      cancel_button_text_ = l10n_util::GetString(
-          IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL);
+      warning_text = UTF16ToWide(l10n_util::GetStringFUTF16(
+          IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_WARNING,
+          WideToUTF16(product_name_),
+          UTF8ToUTF16(base::IntToString(download_count))));
+      explanation_text = UTF16ToWide(l10n_util::GetStringFUTF16(
+          IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION,
+          WideToUTF16(product_name_)));
+      ok_button_text_ = UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_OK_BUTTON_LABEL));
+      cancel_button_text_ = UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL));
     }
 
     // There are two lines of text: the bold warning label and the text
@@ -1566,8 +1567,9 @@ std::wstring BrowserView::GetWindowTitle() const {
 
 std::wstring BrowserView::GetAccessibleWindowTitle() const {
   if (IsOffTheRecord()) {
-    return l10n_util::GetStringF(
-        IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT, GetWindowTitle());
+    return UTF16ToWide(l10n_util::GetStringFUTF16(
+        IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT,
+        WideToUTF16(GetWindowTitle())));
   }
   return GetWindowTitle();
 }
@@ -1868,7 +1870,8 @@ void BrowserView::InitTabStrip(TabStripModel* model) {
   else
     tabstrip_ = new TabStrip(tabstrip_controller);
 
-  tabstrip_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_TABSTRIP));
+  tabstrip_->SetAccessibleName(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_TABSTRIP)));
   AddChildView(tabstrip_);
 
   tabstrip_controller->InitFromModel(tabstrip_);
@@ -1894,14 +1897,15 @@ void BrowserView::Init() {
   }
 
   LoadAccelerators();
-  SetAccessibleName(l10n_util::GetString(IDS_PRODUCT_NAME));
+  SetAccessibleName(UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 
   InitTabStrip(browser_->tabstrip_model());
 
   toolbar_ = new ToolbarView(browser_.get());
   AddChildView(toolbar_);
   toolbar_->Init(browser_->profile());
-  toolbar_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_TOOLBAR));
+  toolbar_->SetAccessibleName(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_TOOLBAR)));
 
   infobar_container_ = new InfoBarContainer(this);
   AddChildView(infobar_container_);
@@ -1925,8 +1929,8 @@ void BrowserView::Init() {
         sidebar_container_,
         views::SingleSplitView::HORIZONTAL_SPLIT);
     sidebar_split_->SetID(VIEW_ID_SIDE_BAR_SPLIT);
-    sidebar_split_->
-        SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_SIDE_BAR));
+    sidebar_split_->SetAccessibleName(
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_SIDE_BAR)));
     sidebar_split_->set_background(
         views::Background::CreateSolidBackground(bg_color));
   }
@@ -1945,8 +1949,8 @@ void BrowserView::Init() {
       devtools_container_,
       views::SingleSplitView::VERTICAL_SPLIT);
   contents_split_->SetID(VIEW_ID_CONTENTS_SPLIT);
-  contents_split_->
-      SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_WEB_CONTENTS));
+  contents_split_->SetAccessibleName(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_WEB_CONTENTS)));
   contents_split_->set_background(
       views::Background::CreateSolidBackground(bg_color));
   AddChildView(contents_split_);
@@ -2024,8 +2028,8 @@ bool BrowserView::MaybeShowBookmarkBar(TabContentsWrapper* contents) {
       bookmark_bar_view_->SetProfile(contents->profile());
     }
     bookmark_bar_view_->SetPageNavigator(contents->tab_contents());
-    bookmark_bar_view_->
-        SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_BOOKMARKS));
+    bookmark_bar_view_->SetAccessibleName(
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_BOOKMARKS)));
     new_bookmark_bar_view = bookmark_bar_view_.get();
   }
   return UpdateChildViewAndLayout(new_bookmark_bar_view, &active_bookmark_bar_);
@@ -2499,8 +2503,8 @@ BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
   BrowserView* view = new BrowserView(browser);
   BrowserFrame::Create(view, browser->profile());
 
-  view->GetWindow()->GetNonClientView()->
-      SetAccessibleName(l10n_util::GetString(IDS_PRODUCT_NAME));
+  view->GetWindow()->GetNonClientView()->SetAccessibleName(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 
   return view;
 }

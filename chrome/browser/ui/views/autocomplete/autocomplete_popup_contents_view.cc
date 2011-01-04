@@ -200,8 +200,8 @@ class AutocompletePopupContentsView::InstantOptInView
         bg_painter_(views::Painter::CreateVerticalGradient(
                         SkColorSetRGB(255, 242, 183),
                         SkColorSetRGB(250, 230, 145))) {
-    views::Label* label =
-        new views::Label(l10n_util::GetString(IDS_INSTANT_OPT_IN_LABEL));
+    views::Label* label = new views::Label(
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_INSTANT_OPT_IN_LABEL)));
     label->SetFont(label_font);
 
     views::GridLayout* layout = new views::GridLayout(this);
@@ -252,7 +252,7 @@ class AutocompletePopupContentsView::InstantOptInView
     // TODO: these buttons look crap. Figure out the right border/background to
     // use.
     views::TextButton* button =
-        new views::TextButton(this, l10n_util::GetString(id));
+        new views::TextButton(this, UTF16ToWide(l10n_util::GetStringUTF16(id)));
     button->set_border(new OptInButtonBorder());
     button->SetNormalHasBorder(true);
     button->set_tag(id);
@@ -458,8 +458,8 @@ void AutocompleteResultView::Paint(gfx::Canvas* canvas) {
   // would also let us use a more properly-localizable string than we get with
   // just the IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR.
   if (!match_.description.empty()) {
-    std::wstring separator =
-        l10n_util::GetString(IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR);
+    std::wstring separator = UTF16ToWide(l10n_util::GetStringUTF16(
+        IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR));
     ACMatchClassifications classifications;
     classifications.push_back(
         ACMatchClassification(0, ACMatchClassification::NONE));

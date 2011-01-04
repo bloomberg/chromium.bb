@@ -123,9 +123,9 @@ bool NeedOverrideDefaultUIFont(std::wstring* override_font_family,
     ui_font_size_scaler_id = IDS_UI_FONT_SIZE_SCALER_XP;
   }
 
-  std::wstring ui_font_family = GetString(ui_font_family_id);
+  std::wstring ui_font_family = GetStringUTF16(ui_font_family_id);
   int scaler100;
-  if (!base::StringToInt(l10n_util::GetString(ui_font_size_scaler_id),
+  if (!base::StringToInt(l10n_util::GetStringUTF16(ui_font_size_scaler_id),
                          &scaler100))
     return false;
 

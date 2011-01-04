@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "grit/app_strings.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/widget/widget.h"
@@ -165,7 +166,7 @@ void ButtonDropDown::ShowDropDownMenu(gfx::NativeView window) {
 ////////////////////////////////////////////////////////////////////////////////
 
 std::wstring ButtonDropDown::GetAccessibleDefaultAction() {
-  return l10n_util::GetString(IDS_APP_ACCACTION_PRESS);
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_APP_ACCACTION_PRESS));
 }
 
 AccessibilityTypes::Role ButtonDropDown::GetAccessibleRole() {

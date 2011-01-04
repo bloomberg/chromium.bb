@@ -7,6 +7,7 @@
 #include "app/drag_drop_types.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/utf_string_conversions.h"
 #include "gfx/canvas.h"
 #include "grit/app_strings.h"
 #include "grit/app_resources.h"
@@ -256,7 +257,7 @@ void MenuButton::OnMouseExited(const MouseEvent& event) {
 ////////////////////////////////////////////////////////////////////////////////
 
 std::wstring MenuButton::GetAccessibleDefaultAction() {
-  return l10n_util::GetString(IDS_APP_ACCACTION_PRESS);
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_APP_ACCACTION_PRESS));
 }
 
 AccessibilityTypes::Role MenuButton::GetAccessibleRole() {

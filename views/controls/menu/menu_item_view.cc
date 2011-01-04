@@ -34,7 +34,8 @@ class EmptyMenuMenuItem : public MenuItemView {
  public:
   explicit EmptyMenuMenuItem(MenuItemView* parent)
       : MenuItemView(parent, 0, NORMAL) {
-    SetTitle(l10n_util::GetString(IDS_APP_MENU_EMPTY_SUBMENU));
+    SetTitle(UTF16ToWide(
+        l10n_util::GetStringUTF16(IDS_APP_MENU_EMPTY_SUBMENU)));
     // Set this so that we're not identified as a normal menu item.
     SetID(kEmptyMenuItemViewID);
     SetEnabled(false);

@@ -102,7 +102,8 @@ FindBarView::FindBarView(FindBarHost* host)
   find_text_->SetFont(rb.GetFont(ResourceBundle::BaseFont));
   find_text_->set_default_width_in_chars(kDefaultCharWidth);
   find_text_->SetController(this);
-  find_text_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_FIND));
+  find_text_->SetAccessibleName(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_FIND)));
   AddChildView(find_text_);
 
   match_count_text_ = new views::Label();
@@ -124,10 +125,10 @@ FindBarView::FindBarView(FindBarHost* host)
       rb.GetBitmapNamed(IDR_FINDINPAGE_PREV_H));
   find_previous_button_->SetImage(views::CustomButton::BS_DISABLED,
       rb.GetBitmapNamed(IDR_FINDINPAGE_PREV_P));
-  find_previous_button_->SetTooltipText(
-      l10n_util::GetString(IDS_FIND_IN_PAGE_PREVIOUS_TOOLTIP));
+  find_previous_button_->SetTooltipText(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_PREVIOUS_TOOLTIP)));
   find_previous_button_->SetAccessibleName(
-      l10n_util::GetString(IDS_ACCNAME_PREVIOUS));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_PREVIOUS)));
   AddChildView(find_previous_button_);
 
   find_next_button_ = new views::ImageButton(this);
@@ -140,8 +141,9 @@ FindBarView::FindBarView(FindBarHost* host)
   find_next_button_->SetImage(views::CustomButton::BS_DISABLED,
       rb.GetBitmapNamed(IDR_FINDINPAGE_NEXT_P));
   find_next_button_->SetTooltipText(
-      l10n_util::GetString(IDS_FIND_IN_PAGE_NEXT_TOOLTIP));
-  find_next_button_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_NEXT));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_NEXT_TOOLTIP)));
+  find_next_button_->SetAccessibleName(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_NEXT)));
   AddChildView(find_next_button_);
 
   close_button_ = new views::ImageButton(this);
@@ -154,8 +156,9 @@ FindBarView::FindBarView(FindBarHost* host)
   close_button_->SetImage(views::CustomButton::BS_PUSHED,
                           rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
   close_button_->SetTooltipText(
-      l10n_util::GetString(IDS_FIND_IN_PAGE_CLOSE_TOOLTIP));
-  close_button_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_CLOSE));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_FIND_IN_PAGE_CLOSE_TOOLTIP)));
+  close_button_->SetAccessibleName(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE)));
   AddChildView(close_button_);
 
   if (kDialog_left == NULL) {
@@ -209,10 +212,10 @@ void FindBarView::UpdateForResult(const FindNotificationDetails& result,
   }
 
   if (!find_text.empty() && have_valid_range) {
-    match_count_text_->SetText(
-        l10n_util::GetStringF(IDS_FIND_IN_PAGE_COUNT,
-            UTF8ToWide(base::IntToString(result.active_match_ordinal())),
-            UTF8ToWide(base::IntToString(result.number_of_matches()))));
+    match_count_text_->SetText(UTF16ToWide(
+        l10n_util::GetStringFUTF16(IDS_FIND_IN_PAGE_COUNT,
+            base::IntToString16(result.active_match_ordinal()),
+            base::IntToString16(result.number_of_matches()))));
 
     UpdateMatchCountAppearance(result.number_of_matches() == 0 &&
                                result.final_update());

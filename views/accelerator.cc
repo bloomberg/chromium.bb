@@ -68,7 +68,7 @@ std::wstring Accelerator::GetShortcutText() const {
       break;
   }
 
-  std::wstring shortcut;
+  string16 shortcut;
   if (!string_id) {
 #if defined(OS_WIN)
     // Our fallback is to try translate the key code to a regular character
@@ -95,20 +95,20 @@ std::wstring Accelerator::GetShortcutText() const {
     }
     if (name) {
       if (name[0] != 0 && name[1] == 0)
-        shortcut += static_cast<wchar_t>(g_ascii_toupper(name[0]));
+        shortcut += static_cast<string16::value_type>(g_ascii_toupper(name[0]));
       else
-        shortcut += UTF8ToWide(name);
+        shortcut += UTF8ToUTF16(name);
     }
 #endif
   } else {
-    shortcut = l10n_util::GetString(string_id);
+    shortcut = l10n_util::GetStringUTF16(string_id);
   }
 
   // Checking whether the character used for the accelerator is alphanumeric.
   // If it is not, then we need to adjust the string later on if the locale is
   // right-to-left. See below for more information of why such adjustment is
   // required.
-  std::wstring shortcut_rtl;
+  string16 shortcut_rtl;
   bool adjust_shortcut_for_rtl = false;
   if (base::i18n::IsRTL() && shortcut.length() == 1 &&
       !IsAsciiAlpha(shortcut.at(0)) && !IsAsciiDigit(shortcut.at(0))) {
@@ -117,15 +117,15 @@ std::wstring Accelerator::GetShortcutText() const {
   }
 
   if (IsShiftDown())
-    shortcut = l10n_util::GetStringF(IDS_APP_SHIFT_MODIFIER, shortcut);
+    shortcut = l10n_util::GetStringFUTF16(IDS_APP_SHIFT_MODIFIER, shortcut);
 
   // Note that we use 'else-if' in order to avoid using Ctrl+Alt as a shortcut.
   // See http://blogs.msdn.com/oldnewthing/archive/2004/03/29/101121.aspx for
   // more information.
   if (IsCtrlDown())
-    shortcut = l10n_util::GetStringF(IDS_APP_CONTROL_MODIFIER, shortcut);
+    shortcut = l10n_util::GetStringFUTF16(IDS_APP_CONTROL_MODIFIER, shortcut);
   else if (IsAltDown())
-    shortcut = l10n_util::GetStringF(IDS_APP_ALT_MODIFIER, shortcut);
+    shortcut = l10n_util::GetStringFUTF16(IDS_APP_ALT_MODIFIER, shortcut);
 
   // For some reason, menus in Windows ignore standard Unicode directionality
   // marks (such as LRE, PDF, etc.). On RTL locales, we use RTL menus and
@@ -150,14 +150,14 @@ std::wstring Accelerator::GetShortcutText() const {
   if (adjust_shortcut_for_rtl) {
     int key_length = static_cast<int>(shortcut_rtl.length());
     DCHECK_GT(key_length, 0);
-    shortcut_rtl.append(L"+");
+    shortcut_rtl.append(ASCIIToUTF16("+"));
 
     // Subtracting the size of the shortcut key and 1 for the '+' sign.
     shortcut_rtl.append(shortcut, 0, shortcut.length() - key_length - 1);
     shortcut.swap(shortcut_rtl);
   }
 
-  return shortcut;
+  return UTF16ToWide(shortcut);
 }
 
 }  // namespace views

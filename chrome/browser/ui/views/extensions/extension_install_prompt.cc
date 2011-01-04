@@ -45,9 +45,9 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
     icon_->SetImage(*icon);
     AddChildView(icon_);
 
-    heading_ = new views::Label(
-        l10n_util::GetStringF(ExtensionInstallUI::kHeadingIds[type_],
-                              UTF8ToWide(extension->name())));
+    heading_ = new views::Label(UTF16ToWide(
+        l10n_util::GetStringFUTF16(ExtensionInstallUI::kHeadingIds[type_],
+                                   UTF8ToUTF16(extension->name()))));
     heading_->SetMultiLine(true);
     heading_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     AddChildView(heading_);
@@ -59,9 +59,10 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
       MessageBoxFlags::DialogButton button) const {
     switch (button) {
       case MessageBoxFlags::DIALOGBUTTON_OK:
-        return l10n_util::GetString(ExtensionInstallUI::kButtonIds[type_]);
+        return UTF16ToWide(
+            l10n_util::GetStringUTF16(ExtensionInstallUI::kButtonIds[type_]));
       case MessageBoxFlags::DIALOGBUTTON_CANCEL:
-        return l10n_util::GetString(IDS_CANCEL);
+        return UTF16ToWide(l10n_util::GetStringUTF16(IDS_CANCEL));
       default:
         NOTREACHED();
         return L"";
@@ -85,7 +86,8 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
   // WindowDelegate
   virtual bool IsModal() const { return true; }
   virtual std::wstring GetWindowTitle() const {
-    return l10n_util::GetString(ExtensionInstallUI::kTitleIds[type_]);
+    return UTF16ToWide(
+        l10n_util::GetStringUTF16(ExtensionInstallUI::kTitleIds[type_]));
   }
   virtual views::View* GetContentsView() { return this; }
 

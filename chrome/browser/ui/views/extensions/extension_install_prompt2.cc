@@ -135,9 +135,9 @@ InstallDialogContent2::InstallDialogContent2(
   icon_->SetVerticalAlignment(views::ImageView::CENTER);
   AddChildView(icon_);
 
-  heading_ = new views::Label(
-      l10n_util::GetStringF(IDS_EXTENSION_INSTALL_PROMPT_HEADING,
-                            UTF8ToWide(extension->name())));
+  heading_ = new views::Label(UTF16ToWide(
+      l10n_util::GetStringFUTF16(IDS_EXTENSION_INSTALL_PROMPT_HEADING,
+                                 UTF8ToUTF16(extension->name()))));
   heading_->SetFont(heading_->font().DeriveFont(kHeadingFontSizeDelta,
                                                 gfx::Font::BOLD));
   heading_->SetMultiLine(true);
@@ -148,8 +148,8 @@ InstallDialogContent2::InstallDialogContent2(
     right_column_width_ = kNoPermissionsRightColumnWidth;
   } else {
     right_column_width_ = kPermissionBoxWidth;
-    will_have_access_to_ = new views::Label(
-        l10n_util::GetString(IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO));
+    will_have_access_to_ = new views::Label(UTF16ToWide(
+        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO)));
     will_have_access_to_->SetMultiLine(true);
     will_have_access_to_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     AddChildView(will_have_access_to_);
@@ -176,9 +176,10 @@ std::wstring InstallDialogContent2::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   switch (button) {
     case MessageBoxFlags::DIALOGBUTTON_OK:
-      return l10n_util::GetString(IDS_EXTENSION_PROMPT_INSTALL_BUTTON);
+      return UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_INSTALL_BUTTON));
     case MessageBoxFlags::DIALOGBUTTON_CANCEL:
-      return l10n_util::GetString(IDS_CANCEL);
+      return UTF16ToWide(l10n_util::GetStringUTF16(IDS_CANCEL));
     default:
       NOTREACHED();
       return L"";
@@ -204,7 +205,8 @@ bool InstallDialogContent2::IsModal() const {
 }
 
 std::wstring InstallDialogContent2::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_EXTENSION_INSTALL_PROMPT_TITLE);
+  return UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALL_PROMPT_TITLE));
 }
 
 views::View* InstallDialogContent2::GetContentsView() {

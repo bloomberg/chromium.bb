@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/notification_service.h"
@@ -73,7 +74,8 @@ void BookmarkContextMenu::CloseMenu() {
 }
 
 void BookmarkContextMenu::AddItemWithStringId(int command_id, int string_id) {
-  menu_->AppendMenuItemWithLabel(command_id, l10n_util::GetString(string_id));
+  menu_->AppendMenuItemWithLabel(
+      command_id, UTF16ToWide(l10n_util::GetStringUTF16(string_id)));
 }
 
 void BookmarkContextMenu::AddSeparator() {
@@ -81,7 +83,8 @@ void BookmarkContextMenu::AddSeparator() {
 }
 
 void BookmarkContextMenu::AddCheckboxItem(int command_id, int string_id) {
-  menu_->AppendMenuItem(command_id, l10n_util::GetString(string_id),
+  menu_->AppendMenuItem(command_id,
+                        UTF16ToWide(l10n_util::GetStringUTF16(string_id)),
                         views::MenuItemView::CHECKBOX);
 }
 

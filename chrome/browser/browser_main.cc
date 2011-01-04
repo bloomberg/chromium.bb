@@ -1315,8 +1315,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
       case ProcessSingleton::PROCESS_NOTIFIED:
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-        printf("%s\n", base::SysWideToNativeMB(
-                   l10n_util::GetString(IDS_USED_EXISTING_BROWSER)).c_str());
+        printf("%s\n", base::SysWideToNativeMB(UTF16ToWide(
+            l10n_util::GetStringUTF16(IDS_USED_EXISTING_BROWSER))).c_str());
 #endif
         return ResultCodes::NORMAL_EXIT;
 

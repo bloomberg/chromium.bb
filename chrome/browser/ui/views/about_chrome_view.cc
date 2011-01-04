@@ -203,7 +203,7 @@ void AboutChromeView::Init() {
 
   // Add the dialog labels.
   about_title_label_ = new views::Label(
-      l10n_util::GetString(IDS_PRODUCT_NAME));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
   about_title_label_->SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::BaseFont).DeriveFont(18));
   about_title_label_->SetColor(SK_ColorBLACK);
@@ -233,14 +233,15 @@ void AboutChromeView::Init() {
 
   // The copyright URL portion of the main label.
   copyright_label_ = new views::Label(
-      l10n_util::GetString(IDS_ABOUT_VERSION_COPYRIGHT));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_COPYRIGHT)));
   copyright_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(copyright_label_);
 
   main_text_label_ = new views::Label(L"");
 
   // Figure out what to write in the main label of the About box.
-  std::wstring text = l10n_util::GetString(IDS_ABOUT_VERSION_LICENSE);
+  std::wstring text =
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_LICENSE));
 
   chromium_url_appears_first_ =
       text.find(kBeginLinkChr) < text.find(kBeginLinkOss);
@@ -564,14 +565,14 @@ void AboutChromeView::ViewHierarchyChanged(bool is_add,
 std::wstring AboutChromeView::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
-    return l10n_util::GetString(IDS_RESTART_AND_UPDATE);
+    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_RESTART_AND_UPDATE));
   } else if (button == MessageBoxFlags::DIALOGBUTTON_CANCEL) {
     if (restart_button_visible_)
-      return l10n_util::GetString(IDS_NOT_NOW);
+      return UTF16ToWide(l10n_util::GetStringUTF16(IDS_NOT_NOW));
     // The OK button (which is the default button) has been re-purposed to be
     // 'Restart Now' so we want the Cancel button should have the label
     // OK but act like a Cancel button in all other ways.
-    return l10n_util::GetString(IDS_OK);
+    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_OK));
   }
 
   NOTREACHED();
@@ -579,7 +580,7 @@ std::wstring AboutChromeView::GetDialogButtonLabel(
 }
 
 std::wstring AboutChromeView::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_ABOUT_CHROME_TITLE);
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_ABOUT_CHROME_TITLE));
 }
 
 bool AboutChromeView::IsDialogButtonEnabled(

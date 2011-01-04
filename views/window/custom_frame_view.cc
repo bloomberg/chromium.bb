@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/utf_string_conversions.h"
 #include "gfx/canvas.h"
 #include "gfx/font.h"
 #include "gfx/path.h"
@@ -76,13 +77,14 @@ CustomFrameView::CustomFrameView(Window* frame)
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
-  close_button_->SetAccessibleName(l10n_util::GetString(IDS_APP_ACCNAME_CLOSE));
+  close_button_->SetAccessibleName(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE)));
 
   // Close button images will be set in LayoutWindowControls().
   AddChildView(close_button_);
 
   restore_button_->SetAccessibleName(
-      l10n_util::GetString(IDS_APP_ACCNAME_RESTORE));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_APP_ACCNAME_RESTORE)));
   restore_button_->SetImage(CustomButton::BS_NORMAL,
                             rb.GetBitmapNamed(IDR_RESTORE));
   restore_button_->SetImage(CustomButton::BS_HOT,
@@ -92,7 +94,7 @@ CustomFrameView::CustomFrameView(Window* frame)
   AddChildView(restore_button_);
 
   maximize_button_->SetAccessibleName(
-    l10n_util::GetString(IDS_APP_ACCNAME_MAXIMIZE));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MAXIMIZE)));
   maximize_button_->SetImage(CustomButton::BS_NORMAL,
                              rb.GetBitmapNamed(IDR_MAXIMIZE));
   maximize_button_->SetImage(CustomButton::BS_HOT,
@@ -102,7 +104,7 @@ CustomFrameView::CustomFrameView(Window* frame)
   AddChildView(maximize_button_);
 
   minimize_button_->SetAccessibleName(
-      l10n_util::GetString(IDS_APP_ACCNAME_MINIMIZE));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MINIMIZE)));
   minimize_button_->SetImage(CustomButton::BS_NORMAL,
                              rb.GetBitmapNamed(IDR_MINIMIZE));
   minimize_button_->SetImage(CustomButton::BS_HOT,
