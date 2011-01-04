@@ -432,7 +432,7 @@
         "background.html", 
         "manifest.json"
       ], 
-      "source_hash": "1b31479059ce12d6114247574513fd4c00c624bc", 
+      "source_hash": "37dd43080094bbe459b0429f1a2b995c33bab7c3", 
       "zip_path": "examples/extensions/chrome_search.zip"
     }, 
     {
