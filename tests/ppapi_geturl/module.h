@@ -10,6 +10,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb.h"
 #include "ppapi/c/ppb_core.h"
+#include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_instance.h"
@@ -25,9 +26,9 @@ class Module {
 
   const void* GetPluginInterface(const char* interface_name);
   const void* GetBrowserInterface(const char* interface_name);
-  const PPB_Var_Deprecated* var_interface() const;
-  PP_Module module_id();
-  const PPB_Core* core_interface();
+  PP_Module module_id() { return module_id_; }
+  const PPB_Core* ppb_core_interface() { return ppb_core_interface_; }
+  const PPB_Var_Deprecated* ppb_var_interface() { return ppb_var_interface_; }
 
   static char* VarToCStr(const PP_Var& var);
   static std::string VarToStr(const PP_Var& var);
@@ -44,11 +45,12 @@ class Module {
  private:
   PP_Module module_id_;
   PPB_GetInterface get_browser_interface_;
-  const PPB_Core* core_interface_;
-  const PPB_Var_Deprecated* var_interface_;
+  const PPB_Core* ppb_core_interface_;
+  const PPB_Instance* ppb_instance_interface_;
+  const PPB_Var_Deprecated* ppb_var_interface_;
 
   Module(PP_Module module_id, PPB_GetInterface get_browser_interface);
-  ~Module();
+  ~Module() { }
   Module(const Module&);
   void operator=(const Module&);
 };

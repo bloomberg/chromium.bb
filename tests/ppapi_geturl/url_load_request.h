@@ -29,9 +29,18 @@ class UrlLoadRequest {
   bool Load(bool stream_as_file, std::string url);
 
   void OpenCallback(int32_t pp_error);
-  void FinishStreamingToFileCallback(int32_t pp_error);
+  // Loading/reading via response includes the following asynchronous steps:
+  // 1) URLLoader::Open
+  // 2) URLLoader::ReadResponseBody (in a loop until EOF)
   void ReadResponseBodyCallback(int32_t pp_error_or_bytes);
-  void ReadFileBodyCallback(int32_t pp_error);
+  // Loading/reading via file includes the following asynchronous steps:
+  // 1) URLLoader::Open
+  // 2) URLLoader::FinishStreamingToFile
+  // 3) FileIO::Open
+  // 4) FileIO::Read (in a loop until EOF)
+  void FinishStreamingToFileCallback(int32_t pp_error);
+  void OpenFileBodyCallback(int32_t pp_error);
+  void ReadFileBodyCallback(int32_t pp_error_or_bytes);
 
   void set_delete_this_after_report() { delete_this_after_report = true; }
 
@@ -61,15 +70,10 @@ class UrlLoadRequest {
   const PPB_URLResponseInfo* response_interface_;
   const PPB_URLLoader* loader_interface_;
   const PPB_FileIO_Dev* fileio_interface_;
-#if __native_client__
-  // TODO(polina): when proxy supports FileIO_NaCl, add it here.
-#else
-  const PPB_FileIOTrusted_Dev* fileio_trusted_interface_;
-#endif
 
   char buffer_[1024];
   std::string url_body_;
-
+  int32_t read_offset_;
 };
 
 #endif  // TESTS_PPAPI_GETURL_URL_LOAD_REQUEST_H_

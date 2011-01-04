@@ -35,10 +35,16 @@ void ReadResponseBodyCallback(void* user_data, int32_t pp_error_or_bytes) {
     obj->ReadResponseBodyCallback(pp_error_or_bytes);
 }
 
-void ReadFileBodyCallback(void* user_data, int32_t pp_error) {
+void OpenFileBodyCallback(void* user_data, int32_t pp_error) {
   UrlLoadRequest* obj = reinterpret_cast<UrlLoadRequest*>(user_data);
   if (NULL != obj)
-    obj->ReadFileBodyCallback(pp_error);
+    obj->OpenFileBodyCallback(pp_error);
+}
+
+void ReadFileBodyCallback(void* user_data, int32_t pp_error_or_bytes) {
+  UrlLoadRequest* obj = reinterpret_cast<UrlLoadRequest*>(user_data);
+  if (NULL != obj)
+    obj->ReadFileBodyCallback(pp_error_or_bytes);
 }
 
 }  // namespace
@@ -52,13 +58,8 @@ UrlLoadRequest::UrlLoadRequest(PP_Instance instance)
       loader_(0),
       request_interface_(NULL),
       loader_interface_(NULL),
-#if __native_client__
-      fileio_interface_(NULL) {
-      // TODO(polina): when proxy supports FileIO_NaCl, add it here.
-#else
       fileio_interface_(NULL),
-      fileio_trusted_interface_(NULL) {
-#endif
+      read_offset_(0) {
 }
 
 UrlLoadRequest::~UrlLoadRequest() {
@@ -68,11 +69,11 @@ UrlLoadRequest::~UrlLoadRequest() {
 void UrlLoadRequest::Clear() {
   Module* module = Module::Get();
   if (0 != request_) {
-    module->core_interface()->ReleaseResource(request_);
+    module->ppb_core_interface()->ReleaseResource(request_);
     request_ = 0;
   }
   if (0 != loader_) {
-    module->core_interface()->ReleaseResource(loader_);
+    module->ppb_core_interface()->ReleaseResource(loader_);
     loader_ = 0;
   }
   url_body_.clear();
@@ -167,6 +168,7 @@ bool UrlLoadRequest::GetRequiredInterfaces(std::string* error) {
     return false;
   }
 
+#if !defined(__native_client__)
   fileio_interface_ = static_cast<const PPB_FileIO_Dev*>(
       module->GetBrowserInterface(PPB_FILEIO_DEV_INTERFACE));
   if (NULL == fileio_interface_) {
@@ -176,17 +178,6 @@ bool UrlLoadRequest::GetRequiredInterfaces(std::string* error) {
   fileio_ = fileio_interface_->Create(module->module_id());
   if (0 == fileio_) {
     *error = "PPB_FileIO_Dev::Create: failed";
-    return false;
-  }
-
-#if __native_client__
-  NACL_UNIMPLEMENTED();  // TODO(polina): support FileIO_NaCl interface
-#else
-  fileio_trusted_interface_ = static_cast<const PPB_FileIOTrusted_Dev*>(
-      module->GetBrowserInterface(PPB_FILEIOTRUSTED_DEV_INTERFACE));
-  if (NULL == fileio_trusted_interface_) {
-    *error = "Failed to get browser interface '";
-    error->append(PPB_FILEIOTRUSTED_DEV_INTERFACE);
     return false;
   }
 #endif
@@ -208,20 +199,16 @@ void UrlLoadRequest::ReadResponseBody() {
 }
 
 void UrlLoadRequest::ReadFileBody() {
-  PP_Resource fileref = response_interface_->GetBodyAsFileRef(response_);
-  if (0 == fileref) {
-    ReportFailure("UrlLoadRequest::ReadFileBody: null file");
-    return;
-  }
-
-  int32_t pp_error = fileio_interface_->Open(
+  int32_t pp_error_or_bytes = fileio_interface_->Read(
       fileio_,
-      fileref,
-      PP_FILEOPENFLAG_READ,
+      read_offset_,
+      buffer_,
+      sizeof(buffer_),
       PP_MakeCompletionCallback(::ReadFileBodyCallback, this));
-  CHECK(pp_error != PP_OK);  // Open() never succeeds synchronously.
-  if (pp_error != PP_ERROR_WOULDBLOCK)  {  // Async failure.
-    ReportFailure("PPB_FileIO_Dev::Open: ", pp_error);
+  if (pp_error_or_bytes >= PP_OK) {  // Synchronous read, callback ignored.
+    ReadFileBodyCallback(pp_error_or_bytes);
+  } else if (pp_error_or_bytes != PP_ERROR_WOULDBLOCK) {  // Asynch failure.
+    ReportFailure("PPB_FILEIO::Read: ", pp_error_or_bytes);
   }
 }
 
@@ -276,7 +263,20 @@ void UrlLoadRequest::FinishStreamingToFileCallback(int32_t pp_error) {
     ReportFailure("UrlLoadRequest::FinishStreamingToFileCallback: ", pp_error);
     return;
   }
-  ReadFileBody();
+  PP_Resource fileref = response_interface_->GetBodyAsFileRef(response_);
+  if (0 == fileref) {
+    ReportFailure("UrlLoadRequest::FinishStreamingToFileCallback: null file");
+    return;
+  }
+  pp_error = fileio_interface_->Open(
+      fileio_,
+      fileref,
+      PP_FILEOPENFLAG_READ,
+      PP_MakeCompletionCallback(::OpenFileBodyCallback, this));
+  CHECK(pp_error != PP_OK);  // Open() never succeeds synchronously.
+  if (pp_error != PP_ERROR_WOULDBLOCK)  {  // Async failure.
+    ReportFailure("PPB_FileIO::Open: ", pp_error);
+  }
 }
 
 void UrlLoadRequest::ReadResponseBodyCallback(int32_t pp_error_or_bytes) {
@@ -293,27 +293,26 @@ void UrlLoadRequest::ReadResponseBodyCallback(int32_t pp_error_or_bytes) {
   }
 }
 
-void UrlLoadRequest::ReadFileBodyCallback(int32_t pp_error) {
+void UrlLoadRequest::ReadFileBodyCallback(int32_t pp_error_or_bytes) {
   printf("--- UrlLoadRequest::ReadFileBodyCallback\n");
+  if (pp_error_or_bytes < PP_OK) {
+    ReportFailure("UrlLoadRequest::ReadFileBodyCallback: ",
+                  pp_error_or_bytes);
+  } else if (pp_error_or_bytes == PP_OK) {  // Reached EOF.
+    ReportSuccess();
+  } else {  // Partial read, so copy out the buffer and continue reading.
+    for (int32_t i = 0; i < pp_error_or_bytes; i++)
+      url_body_.push_back(buffer_[i]);
+    read_offset_ += pp_error_or_bytes;
+    ReadFileBody();
+  }
+}
+
+void UrlLoadRequest::OpenFileBodyCallback(int32_t pp_error) {
+  printf("--- UrlLoadRequest::OpenFileBodyCallback\n");
   if (pp_error != PP_OK) {
-    ReportFailure("UrlLoadRequest::ReadFileBodyCallback: ", pp_error);
+    ReportFailure("UrlLoadRequest::OpenFileBodyCallback: ", pp_error);
     return;
   }
-
-#if __native_client__
-  NACL_UNIMPLEMENTED();  // No support for FileIO_NaCl::GetOSFileDescriptor.
-#elif NACL_WINDOWS
-  NACL_UNIMPLEMENTED();  // No support for Windows handles.
-#else
-
-  int32_t file_desc = fileio_trusted_interface_->GetOSFileDescriptor(fileio_);
-  FILE* file = fdopen(file_desc, "rb");
-  CHECK(file != NULL);
-  size_t byte_count = fread(buffer_, sizeof(char), sizeof(buffer_), file);
-  CHECK(byte_count != 0);
-  CHECK(ferror(file) == 0);
-  url_body_ = buffer_;
-  ReportSuccess();
-  // We leak the file_stream, but that's ok since this is just a test.
-#endif
+  ReadFileBody();
 }

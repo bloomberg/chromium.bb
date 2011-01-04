@@ -11,12 +11,11 @@
 #include "native_client/tests/ppapi_geturl/scriptable_object.h"
 
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/dev/ppp_class_deprecated.h"
 
 namespace {
 PPP_Instance instance_interface;
-Module* singeton_ = NULL;
+Module* singleton_ = NULL;
 }
 
 PP_Bool Instance_DidCreate(PP_Instance /*pp_instance*/,
@@ -52,41 +51,42 @@ PP_Bool Instance_HandleDocumentLoad(PP_Instance /*pp_instance*/,
 
 PP_Var Instance_GetInstanceObject(PP_Instance pp_instance) {
   printf("--- Instance_GetInstanceObject\n");
-  PP_Var v = PP_MakeUndefined();
   Module* module = Module::Get();
-  if (module) {
-    const PPB_Var_Deprecated* var_interface = module->var_interface();
-    if (var_interface) {
+  if (NULL != module) {
+    const PPB_Var_Deprecated* ppb_var_interface = module->ppb_var_interface();
+    if (NULL != ppb_var_interface) {
       ScriptableObject* obj = new ScriptableObject(pp_instance);
-      v = var_interface->CreateObject(
-          module->module_id(),
-          obj->ppp_class(),
-          obj);
+      return ppb_var_interface->CreateObject(module->module_id(),
+                                             obj->ppp_class(),
+                                             obj);
     }
   }
-  return v;
+  return PP_MakeUndefined();
 }
 
 Module* Module::Create(PP_Module module_id,
                        PPB_GetInterface get_browser_interface) {
-  if (NULL == singeton_) {
-    singeton_ = new Module(module_id, get_browser_interface);
+  if (NULL == singleton_) {
+    singleton_ = new Module(module_id, get_browser_interface);
   }
-  return singeton_;
+  return singleton_;
+}
+
+Module* Module::Get() {
+  return singleton_;
 }
 
 void Module::Free() {
-  if (NULL != singeton_) {
-    delete singeton_;
-    singeton_ = NULL;
-  }
+  delete singleton_;
+  singleton_ = NULL;
 }
 
 Module::Module(PP_Module module_id, PPB_GetInterface get_browser_interface)
   : module_id_(module_id),
     get_browser_interface_(get_browser_interface),
-    core_interface_(NULL),
-    var_interface_(NULL) {
+    ppb_core_interface_(NULL),
+    ppb_instance_interface_(NULL),
+    ppb_var_interface_(NULL) {
   printf("--- Module::Module\n");
   memset(&instance_interface, 0, sizeof(instance_interface));
   instance_interface.DidCreate = Instance_DidCreate;
@@ -96,31 +96,15 @@ Module::Module(PP_Module module_id, PPB_GetInterface get_browser_interface)
   instance_interface.HandleInputEvent = Instance_HandleInputEvent;
   instance_interface.HandleDocumentLoad = Instance_HandleDocumentLoad;
   instance_interface.GetInstanceObject = Instance_GetInstanceObject;
-  core_interface_ =
+  ppb_core_interface_ =
       reinterpret_cast<const PPB_Core*>(
           GetBrowserInterface(PPB_CORE_INTERFACE));
-  var_interface_ =
+  ppb_instance_interface_ =
+      reinterpret_cast<const PPB_Instance*>(
+          GetBrowserInterface(PPB_INSTANCE_INTERFACE));
+  ppb_var_interface_ =
       reinterpret_cast<const PPB_Var_Deprecated*>(
           GetBrowserInterface(PPB_VAR_DEPRECATED_INTERFACE));
-}
-
-Module::~Module() {
-}
-
-Module* Module::Get() {
-  return singeton_;
-}
-
-const PPB_Var_Deprecated* Module::var_interface() const {
-  return var_interface_;
-}
-
-PP_Module Module::module_id() {
-  return module_id_;
-}
-
-const PPB_Core* Module::core_interface() {
-  return core_interface_;
 }
 
 const void* Module::GetPluginInterface(const char* interface_name) {
@@ -140,11 +124,11 @@ char* Module::VarToCStr(const PP_Var& var) {
   Module* module = Get();
   if (NULL == module)
     return NULL;
-  const PPB_Var_Deprecated* vi = module->var_interface();
-  if (NULL == vi)
+  const PPB_Var_Deprecated* ppb_var = module->ppb_var_interface();
+  if (NULL == ppb_var)
     return NULL;
   uint32_t len = 0;
-  const char* pp_str = vi->VarToUtf8(var, &len);
+  const char* pp_str = ppb_var->VarToUtf8(var, &len);
   if (NULL == pp_str)
     return NULL;
   char* str = static_cast<char*>(malloc(len + 1));
@@ -158,7 +142,7 @@ char* Module::VarToCStr(const PP_Var& var) {
 std::string Module::VarToStr(const PP_Var& var) {
   std::string str;
   char* cstr = VarToCStr(var);
-  if (cstr) {
+  if (NULL != cstr) {
     str = cstr;
     free(cstr);
   }
@@ -169,9 +153,9 @@ PP_Var Module::StrToVar(const char* str) {
   Module* module = Get();
   if (NULL == module)
     return PP_MakeUndefined();
-  const PPB_Var_Deprecated* vi = module->var_interface();
-  if (NULL != vi)
-    return vi->VarFromUtf8(module->module_id(), str, strlen(str));
+  const PPB_Var_Deprecated* ppb_var = module->ppb_var_interface();
+  if (NULL != ppb_var)
+    return ppb_var->VarFromUtf8(module->module_id(), str, strlen(str));
   return PP_MakeUndefined();
 }
 
@@ -209,21 +193,19 @@ void Module::ReportResult(PP_Instance pp_instance,
                           bool success) {
   printf("--- ReportResult('%s', as_file=%d, '%s', success=%d)\n",
          url, as_file, text, success);
-  const PPB_Instance* ppb_instance =
-      static_cast<const PPB_Instance*>(Get()->GetBrowserInterface(
-          PPB_INSTANCE_INTERFACE));
-  if (NULL == ppb_instance) {
+  const PPB_Instance* ppb_instance_interface = Get()->ppb_instance_interface_;
+  if (NULL == ppb_instance_interface) {
     printf("--- GetBrowserInterface("PPB_INSTANCE_INTERFACE") failed\n");
     return;
   }
-  const PPB_Var_Deprecated* ppb_var_interface = Get()->var_interface();
+  const PPB_Var_Deprecated* ppb_var_interface = Get()->ppb_var_interface_;
   if (NULL == ppb_var_interface) {
-    printf("--- Module::var_interface() failed\n");
+    printf("--- GetBrowserInterface("PPB_VAR_DEPRECATED_INTERFACE") failed\n");
     return;
   }
-  PP_Var window_var = ppb_instance->GetWindowObject(pp_instance);
+  PP_Var window_var = ppb_instance_interface->GetWindowObject(pp_instance);
   if (PP_VARTYPE_OBJECT != window_var.type) {
-    printf("--- ppb_instance->GetWindowObject() failed\n");
+    printf("--- PPB_Instance::GetWindowObject() failed\n");
     return;
   }
   PP_Var method_name_var = Module::StrToVar("ReportResult");
@@ -238,7 +220,6 @@ void Module::ReportResult(PP_Instance pp_instance,
                           sizeof(args) / sizeof(args[0]),
                           args,
                           &exception_var);
-
   ppb_var_interface->Release(method_name_var);
   ppb_var_interface->Release(args[0]);
   ppb_var_interface->Release(args[2]);
