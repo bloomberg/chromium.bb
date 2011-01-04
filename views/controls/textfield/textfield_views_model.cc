@@ -196,14 +196,13 @@ bool TextfieldViewsModel::MoveCursorTo(size_t pos, bool select) {
 
 gfx::Rect TextfieldViewsModel::GetCursorBounds(const gfx::Font& font) const {
   string16 text = GetVisibleText();
-  int x = font.GetStringWidth(UTF16ToWide(text.substr(0U, cursor_pos_)));
+  int x = font.GetStringWidth(text.substr(0U, cursor_pos_));
   int h = font.GetHeight();
   DCHECK(x >= 0);
   if (text.length() == cursor_pos_) {
     return gfx::Rect(x, 0, 0, h);
   } else {
-    int x_end =
-        font.GetStringWidth(UTF16ToWide(text.substr(0U, cursor_pos_ + 1U)));
+    int x_end = font.GetStringWidth(text.substr(0U, cursor_pos_ + 1U));
     return gfx::Rect(x, 0, x_end - x, h);
   }
 }

@@ -430,7 +430,7 @@ void StatusBubbleViews::StatusView::Paint(gfx::Canvas* canvas) {
   // is aligned to the right on RTL UIs, we mirror the text bounds if the
   // locale is RTL.
   int text_width = std::min(
-      views::Label::font().GetStringWidth(UTF16ToWide(text_)),
+      views::Label::font().GetStringWidth(text_),
       width - (kShadowThickness * 2) - kTextPositionX - kTextHorizPadding);
   int text_height = height - (kShadowThickness * 2);
   gfx::Rect body_bounds(kShadowThickness + kTextPositionX,
@@ -805,7 +805,7 @@ void StatusBubbleViews::ExpandBubble() {
   url_text_ = gfx::ElideUrl(url_, view_->Label::font(),
       max_status_bubble_width, UTF16ToWideHack(languages_));
   int expanded_bubble_width =std::max(GetStandardStatusBubbleWidth(),
-      std::min(view_->Label::font().GetStringWidth(UTF16ToWide(url_text_)) +
+      std::min(view_->Label::font().GetStringWidth(url_text_) +
                    (kShadowThickness * 2) + kTextPositionX +
                    kTextHorizPadding + 1,
                max_status_bubble_width));

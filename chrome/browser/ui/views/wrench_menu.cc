@@ -525,11 +525,13 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
 
       int step = (max_percent - min_percent) / 10;
       for (int i = min_percent; i <= max_percent; i += step) {
-        int w = font.GetStringWidth(l10n_util::GetStringF(IDS_ZOOM_PERCENT, i));
+        int w = font.GetStringWidth(
+            l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, i));
         max_w = std::max(w, max_w);
       }
     } else {
-      max_w = font.GetStringWidth(l10n_util::GetStringF(IDS_ZOOM_PERCENT, 100));
+      max_w = font.GetStringWidth(
+          l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, 100));
     }
 
     return max_w + insets.width();

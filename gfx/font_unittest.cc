@@ -1,9 +1,10 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "gfx/font.h"
 
+#include "base/utf_string_conversions.h"
 #if defined(OS_WIN)
 #include "gfx/platform_font_win.h"
 #endif  // defined(OS_WIN)
@@ -82,10 +83,13 @@ TEST_F(FontTest, AvgWidths) {
 
 TEST_F(FontTest, Widths) {
   Font cf(L"Arial", 16);
-  ASSERT_EQ(cf.GetStringWidth(L""), 0);
-  ASSERT_GT(cf.GetStringWidth(L"a"), cf.GetStringWidth(L""));
-  ASSERT_GT(cf.GetStringWidth(L"ab"), cf.GetStringWidth(L"a"));
-  ASSERT_GT(cf.GetStringWidth(L"abc"), cf.GetStringWidth(L"ab"));
+  ASSERT_EQ(cf.GetStringWidth(ASCIIToUTF16("")), 0);
+  ASSERT_GT(cf.GetStringWidth(ASCIIToUTF16("a")),
+            cf.GetStringWidth(ASCIIToUTF16("")));
+  ASSERT_GT(cf.GetStringWidth(ASCIIToUTF16("ab")),
+            cf.GetStringWidth(ASCIIToUTF16("a")));
+  ASSERT_GT(cf.GetStringWidth(ASCIIToUTF16("abc")),
+            cf.GetStringWidth(ASCIIToUTF16("ab")));
 }
 
 #if defined(OS_WIN)

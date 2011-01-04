@@ -150,7 +150,7 @@ void SadTabView::InitClass() {
     sad_tab_bitmap_ = rb.GetBitmapNamed(IDR_SAD_TAB);
 
     title_ = l10n_util::GetString(IDS_SAD_TAB_TITLE);
-    title_width_ = title_font_->GetStringWidth(title_);
+    title_width_ = title_font_->GetStringWidth(WideToUTF16Hack(title_));
     message_ = l10n_util::GetString(IDS_SAD_TAB_MESSAGE);
 
     initialized = true;

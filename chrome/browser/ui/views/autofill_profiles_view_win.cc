@@ -1152,11 +1152,11 @@ void AutoFillProfilesView::EditableSetViewContents::InitLayoutGrid(
   // The sizes: 4 characters for drop down icon + 2 for a month or 4 for a year.
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                         0, views::GridLayout::FIXED,
-                        font.GetStringWidth(std::wstring(L"000000")), 0);
+                        font.GetStringWidth(ASCIIToUTF16("000000")), 0);
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                         0, views::GridLayout::FIXED,
-                        font.GetStringWidth(std::wstring(L"00000000")), 0);
+                        font.GetStringWidth(ASCIIToUTF16("00000000")), 0);
 
   column_set = layout->AddColumnSet(three_column_header_);
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,

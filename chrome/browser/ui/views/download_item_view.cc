@@ -612,8 +612,8 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
                                     font_, kTextWidth);
     } else {
       // First, Calculate the download status opening string width.
-      std::wstring status_string = UTF16ToWide(
-          l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_OPENING, string16()));
+      string16 status_string =
+          l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_OPENING, string16());
       int status_string_width = font_.GetStringWidth(status_string);
       // Then, elide the file name.
       string16 filename_string =

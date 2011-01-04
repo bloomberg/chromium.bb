@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/ref_counted.h"
+#include "base/string16.h"
 #include "gfx/native_widget_types.h"
 
 namespace gfx {
@@ -73,7 +74,7 @@ class Font {
 
   // Returns the number of horizontal pixels needed to display the specified
   // string.
-  int GetStringWidth(const std::wstring& text) const;
+  int GetStringWidth(const string16& text) const;
 
   // Returns the expected number of horizontal pixels needed to display the
   // specified length of characters. Call GetStringWidth() to retrieve the

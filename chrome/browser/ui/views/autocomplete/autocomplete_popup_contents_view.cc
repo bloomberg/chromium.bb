@@ -422,7 +422,7 @@ AutocompleteResultView::AutocompleteResultView(
       model_index_(model_index),
       normal_font_(font),
       bold_font_(bold_font),
-      ellipsis_width_(font.GetStringWidth(kEllipsis)),
+      ellipsis_width_(font.GetStringWidth(WideToUTF16(kEllipsis))),
       mirroring_context_(new MirroringContext()),
       match_(NULL, 0, false, AutocompleteMatch::URL_WHAT_YOU_TYPED) {
   CHECK(model_index >= 0);
@@ -614,7 +614,8 @@ int AutocompleteResultView::DrawString(
       else
         current_data->color = GetColor(state, force_dim ? DIMMED_TEXT : TEXT);
       current_data->pixel_width =
-          current_data->font->GetStringWidth(current_data->text);
+          current_data->font->GetStringWidth(
+              WideToUTF16Hack(current_data->text));
       current_run->pixel_width += current_data->pixel_width;
     }
     DCHECK(!current_run->classifications.empty());
@@ -740,7 +741,7 @@ void AutocompleteResultView::Elide(Runs* runs, int remaining_width) const {
              (prior_classification->font == &normal_font_)))
           j->font = &normal_font_;
 
-        j->pixel_width = j->font->GetStringWidth(elided_text);
+        j->pixel_width = j->font->GetStringWidth(WideToUTF16Hack(elided_text));
 
         // Erase any other classifications that come after the elided one.
         i->classifications.erase(j.base(), i->classifications.end());

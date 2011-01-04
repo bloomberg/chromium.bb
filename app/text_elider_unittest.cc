@@ -44,7 +44,8 @@ void RunTest(Testcase* testcases, size_t num_testcases) {
     // Should we test with non-empty language list?
     // That's kinda redundant with net_util_unittests.
     EXPECT_EQ(WideToUTF16(testcases[i].output),
-              ElideUrl(url, font, font.GetStringWidth(testcases[i].output),
+              ElideUrl(url, font,
+                       font.GetStringWidth(WideToUTF16(testcases[i].output)),
                        std::wstring()));
   }
 }
@@ -183,7 +184,7 @@ TEST(TextEliderTest, TestFilenameEliding) {
     expected = base::i18n::GetDisplayStringInLTRDirectionality(expected);
     EXPECT_EQ(expected, ElideFilename(filepath,
         font,
-        font.GetStringWidth(testcases[i].output)));
+        font.GetStringWidth(WideToUTF16(testcases[i].output))));
   }
 }
 
@@ -212,14 +213,13 @@ TEST(TextEliderTest, ElideTextLongStrings) {
   };
 
   const gfx::Font font;
-  int ellipsis_width = font.GetStringWidth(UTF16ToWideHack(kEllipsisStr));
+  int ellipsis_width = font.GetStringWidth(kEllipsisStr);
   for (size_t i = 0; i < arraysize(testcases_end); ++i) {
     // Compare sizes rather than actual contents because if the test fails,
     // output is rather long.
     EXPECT_EQ(testcases_end[i].output.size(),
               ElideText(testcases_end[i].input, font,
-                        font.GetStringWidth(UTF16ToWideHack(
-                            testcases_end[i].output)),
+                        font.GetStringWidth(testcases_end[i].output),
                         false).size());
     EXPECT_EQ(kEllipsisStr,
               ElideText(testcases_end[i].input, font, ellipsis_width, false));
@@ -243,8 +243,7 @@ TEST(TextEliderTest, ElideTextLongStrings) {
     // output is rather long.
     EXPECT_EQ(testcases_middle[i].output.size(),
               ElideText(testcases_middle[i].input, font,
-                        font.GetStringWidth(UTF16ToWideHack(
-                            testcases_middle[i].output)),
+                        font.GetStringWidth(testcases_middle[i].output),
                         false).size());
     EXPECT_EQ(kEllipsisStr,
               ElideText(testcases_middle[i].input, font, ellipsis_width,

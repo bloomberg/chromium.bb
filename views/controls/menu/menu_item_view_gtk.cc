@@ -5,6 +5,7 @@
 #include "views/controls/menu/menu_item_view.h"
 
 #include "app/resource_bundle.h"
+#include "base/utf_string_conversions.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/favicon_size.h"
 #include "grit/app_resources.h"
@@ -30,8 +31,8 @@ gfx::Size MenuItemView::GetPreferredSize() {
   // kFavIconSize if we're showing icons.
   int content_height = std::max(kFavIconSize, font.GetHeight());
   return gfx::Size(
-      font.GetStringWidth(title_) + label_start_ + item_right_margin_ +
-          GetChildPreferredWidth(),
+      font.GetStringWidth(WideToUTF16Hack(title_)) + label_start_ +
+          item_right_margin_ + GetChildPreferredWidth(),
       content_height + GetBottomMargin() + GetTopMargin());
 }
 

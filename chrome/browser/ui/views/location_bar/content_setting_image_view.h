@@ -8,6 +8,7 @@
 
 #include "app/linear_animation.h"
 #include "base/scoped_ptr.h"
+#include "base/string16.h"
 #include "chrome/browser/views/info_bubble.h"
 #include "chrome/common/content_settings_types.h"
 #include "views/controls/image_view.h"
@@ -67,7 +68,7 @@ class ContentSettingImageView : public views::ImageView,
   // The currently shown info bubble if any.
   InfoBubble* info_bubble_;
 
-  std::wstring animated_text_;
+  string16 animated_text_;
   bool animation_in_progress_;
   int text_size_;
   int visible_text_size_;

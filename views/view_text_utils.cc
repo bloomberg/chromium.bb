@@ -116,7 +116,7 @@ void DrawTextStartingFrom(gfx::Canvas* canvas,
     else
       word = text;  // Draw the whole text at once.
 
-    int w = font.GetStringWidth(word), h = font.GetHeight();
+    int w = font.GetStringWidth(WideToUTF16Hack(word)), h = font.GetHeight();
     gfx::CanvasSkia::SizeStringInt(WideToUTF16Hack(word), font, &w, &h, flags);
 
     // If we exceed the boundaries, we need to wrap.
@@ -130,8 +130,9 @@ void DrawTextStartingFrom(gfx::Canvas* canvas,
       // draw the trailing space (if one exists after the LTR text) to the
       // left of the LTR string.
       if (ltr_within_rtl && word[word.size() - 1] == L' ') {
-        int space_w = font.GetStringWidth(L" "), space_h = font.GetHeight();
-        gfx::CanvasSkia::SizeStringInt(UTF8ToUTF16(" "), font, &space_w,
+        int space_w = font.GetStringWidth(ASCIIToUTF16(" "));
+        int space_h = font.GetHeight();
+        gfx::CanvasSkia::SizeStringInt(ASCIIToUTF16(" "), font, &space_w,
                                        &space_h, flags);
         x += space_w;
       }

@@ -58,16 +58,16 @@ void TooltipManager::TrimTooltipToFit(std::wstring* text,
   std::wstring result;
   for (std::vector<std::wstring>::iterator i = lines.begin(); i != lines.end();
        ++i) {
-    std::wstring elided_text = UTF16ToWideHack(gfx::ElideText(WideToUTF16Hack(
-        *i), font, available_width, false));
+    string16 elided_text = gfx::ElideText(WideToUTF16Hack(*i),
+                                          font, available_width, false);
     *max_width = std::max(*max_width, font.GetStringWidth(elided_text));
     if (i == lines.begin() && i + 1 == lines.end()) {
-      *text = elided_text;
+      *text = UTF16ToWideHack(elided_text);
       return;
     }
     if (!result.empty())
       result.append(GetLineSeparator());
-    result.append(elided_text);
+    result.append(UTF16ToWideHack(elided_text));
   }
   *text = result;
 }

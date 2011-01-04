@@ -291,10 +291,9 @@ bool BaseTab::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   if (data_.title.empty())
     return false;
 
-  std::wstring title = UTF16ToWide(data_.title);
   // Only show the tooltip if the title is truncated.
-  if (font_->GetStringWidth(title) > title_bounds().width()) {
-    *tooltip = title;
+  if (font_->GetStringWidth(data_.title) > title_bounds().width()) {
+    *tooltip = UTF16ToWide(data_.title);
     return true;
   }
   return false;

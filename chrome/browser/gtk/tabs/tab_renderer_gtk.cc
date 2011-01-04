@@ -562,8 +562,8 @@ void TabRendererGtk::Observe(NotificationType type,
 ////////////////////////////////////////////////////////////////////////////////
 // TabRendererGtk, protected:
 
-std::wstring TabRendererGtk::GetTitle() const {
-  return UTF16ToWideHack(data_.title);
+string16 TabRendererGtk::GetTitle() const {
+  return data_.title;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

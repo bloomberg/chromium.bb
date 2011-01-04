@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/canvas_skia.h"
@@ -32,7 +33,7 @@ ThemeInstallBubbleView::ThemeInstallBubbleView(TabContents* tab_contents)
   if (!tab_contents)
     Close();
 
-  text_ = l10n_util::GetString(IDS_THEME_LOADING_TITLE);
+  text_ = l10n_util::GetStringUTF16(IDS_THEME_LOADING_TITLE);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   gfx::Font font(rb.GetFont(ResourceBundle::LargeFont));
   SetFont(font);
@@ -134,8 +135,12 @@ void ThemeInstallBubbleView::Paint(gfx::Canvas* canvas) {
   body_bounds.set_x(MirroredLeftPointForRect(body_bounds));
 
   SkColor text_color = SK_ColorWHITE;
-  canvas->DrawStringInt(text_, views::Label::font(), text_color,
-                        body_bounds.x(), body_bounds.y(), body_bounds.width(),
+  canvas->DrawStringInt(UTF16ToWideHack(text_),
+                        views::Label::font(),
+                        text_color,
+                        body_bounds.x(),
+                        body_bounds.y(),
+                        body_bounds.width(),
                         body_bounds.height());
 }
 

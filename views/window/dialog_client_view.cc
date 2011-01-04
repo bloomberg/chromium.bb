@@ -447,7 +447,8 @@ int DialogClientView::GetButtonWidth(int button) const {
   DialogDelegate* dd = GetDialogDelegate();
   std::wstring button_label = dd->GetDialogButtonLabel(
       static_cast<MessageBoxFlags::DialogButton>(button));
-  int string_width = dialog_button_font_->GetStringWidth(button_label);
+  int string_width = dialog_button_font_->GetStringWidth(
+      WideToUTF16Hack(button_label));
   return std::max(string_width + kDialogButtonLabelSpacing,
                   kDialogMinButtonWidth);
 }

@@ -58,8 +58,8 @@ int Font::GetAverageCharacterWidth() const {
   return platform_font_->GetAverageCharacterWidth();
 }
 
-int Font::GetStringWidth(const std::wstring& text) const {
-  return platform_font_->GetStringWidth(WideToUTF16Hack(text));
+int Font::GetStringWidth(const string16& text) const {
+  return platform_font_->GetStringWidth(text);
 }
 
 int Font::GetExpectedTextWidth(int length) const {

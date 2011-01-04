@@ -613,7 +613,7 @@ void StatusBubbleMac::ExpandBubble() {
 
   // Scale width from gfx::Font in view coordinates to window coordinates.
   int required_width_for_string =
-      font_chr.GetStringWidth(UTF16ToWide(expanded_url)) +
+      font_chr.GetStringWidth(expanded_url) +
           kTextPadding * 2 + kBubbleViewTextPositionX;
   NSSize scaled_width = NSMakeSize(required_width_for_string, 0);
   scaled_width = [[parent_ contentView] convertSize:scaled_width toView:nil];

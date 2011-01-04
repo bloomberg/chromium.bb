@@ -186,7 +186,8 @@ bool Label::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
 
   // Show the full text if the text does not fit.
   if (!is_multi_line_ &&
-      (font_.GetStringWidth(text_) > GetAvailableRect().width())) {
+      (font_.GetStringWidth(WideToUTF16Hack(text_)) >
+           GetAvailableRect().width())) {
     *tooltip = text_;
     return true;
   }
@@ -237,8 +238,10 @@ void Label::SizeToFit(int max_width) {
 
   int label_width = 0;
   for (std::vector<std::wstring>::const_iterator iter = lines.begin();
-       iter != lines.end(); ++iter)
-    label_width = std::max(label_width, font_.GetStringWidth(*iter));
+       iter != lines.end(); ++iter) {
+    label_width = std::max(label_width,
+                           font_.GetStringWidth(WideToUTF16Hack(*iter)));
+  }
 
   label_width += GetInsets().width();
 

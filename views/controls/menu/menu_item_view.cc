@@ -429,7 +429,7 @@ void MenuItemView::Layout() {
 }
 
 int MenuItemView::GetAcceleratorTextWidth() {
-  std::wstring text = GetAcceleratorText();
+  string16 text = WideToUTF16Hack(GetAcceleratorText());
   return text.empty() ? 0 : MenuConfig::instance().font.GetStringWidth(text);
 }
 

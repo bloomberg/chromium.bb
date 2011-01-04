@@ -328,7 +328,7 @@ void NativeTextfieldViews::UpdateCursorBoundsAndTextOffset() {
 
   // TODO(oshima): bidi
   const gfx::Font& font = GetFont();
-  int full_width = font.GetStringWidth(UTF16ToWide(model_->GetVisibleText()));
+  int full_width = font.GetStringWidth(model_->GetVisibleText());
   cursor_bounds_ = model_->GetCursorBounds(font);
   cursor_bounds_.set_y(cursor_bounds_.y() + insets.top());
 
@@ -381,7 +381,7 @@ void NativeTextfieldViews::PaintTextAndCursor(gfx::Canvas* canvas) {
     string16 text = model_->GetVisibleText((*iter).begin, (*iter).end);
     // TODO(oshima): This does not give the accurate position due to
     // kerning. Figure out how webkit does this with skia.
-    int width = GetFont().GetStringWidth(UTF16ToWide(text));
+    int width = GetFont().GetStringWidth(text);
 
     if ((*iter).selected) {
       canvas->FillRectInt(selection_color, x_offset, y, width, text_height);
@@ -601,7 +601,7 @@ size_t NativeTextfieldViews::FindCursorPosition(const gfx::Point& point) const {
   // TODO(oshima): BIDI/i18n support.
   gfx::Font font = GetFont();
   gfx::Insets insets = GetInsets();
-  std::wstring text = UTF16ToWide(model_->GetVisibleText());
+  string16 text = model_->GetVisibleText();
   int left = 0;
   int left_pos = 0;
   int right = font.GetStringWidth(text);

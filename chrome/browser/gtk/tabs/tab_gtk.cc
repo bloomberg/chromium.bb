@@ -21,7 +21,7 @@
 namespace {
 
 // Returns the width of the title for the current font, in pixels.
-int GetTitleWidth(gfx::Font* font, std::wstring title) {
+int GetTitleWidth(gfx::Font* font, string16 title) {
   DCHECK(font);
   if (title.empty())
     return 0;
@@ -338,7 +338,7 @@ void TabGtk::ContextMenuClosed() {
 void TabGtk::UpdateTooltipState() {
   // Only show the tooltip if the title is truncated.
   if (title_width_ > title_bounds().width()) {
-    gtk_widget_set_tooltip_text(widget(), WideToUTF8(GetTitle()).c_str());
+    gtk_widget_set_tooltip_text(widget(), UTF16ToUTF8(GetTitle()).c_str());
   } else {
     gtk_widget_set_has_tooltip(widget(), FALSE);
   }

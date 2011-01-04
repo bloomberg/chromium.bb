@@ -184,7 +184,8 @@ void PrintedDocument::PrintHeaderFooter(gfx::NativeDrawingContext context,
     // May happen if document name or url is empty.
     return;
   }
-  const gfx::Size string_size(font.GetStringWidth(output), font.GetHeight());
+  const gfx::Size string_size(font.GetStringWidth(WideToUTF16Hack(output)),
+                              font.GetHeight());
   gfx::Rect bounding;
   bounding.set_height(string_size.height());
   const gfx::Rect& overlay_area(

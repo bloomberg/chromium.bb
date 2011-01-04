@@ -225,7 +225,7 @@ class TabRendererGtk : public AnimationDelegate,
   const gfx::Rect& close_button_bounds() const { return close_button_bounds_; }
 
   // Returns the title of the Tab.
-  std::wstring GetTitle() const;
+  string16 GetTitle() const;
 
   // enter-notify-event handler that signals when the mouse enters the tab.
   CHROMEGTK_CALLBACK_1(TabRendererGtk, gboolean, OnEnterNotifyEvent,
