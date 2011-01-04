@@ -471,6 +471,11 @@ def Compilable(filename):
   return False
 
 
+def Linkable(filename):
+  """Return true if the file is linkable (should be on the link line)."""
+  return filename.endswith('.o')
+
+
 def Target(filename):
   """Translate a compilable filename to its .o target."""
   return os.path.splitext(filename)[0] + '.o'
@@ -886,8 +891,8 @@ class MakefileWriter:
         includes = map(Sourceify, map(self.Absolutify, includes))
       self.WriteList(includes, 'INCS_%s' % configname, prefix='-I')
 
-    sources = filter(Compilable, sources)
-    objs = map(self.Objectify, map(self.Absolutify, map(Target, sources)))
+    compilable = filter(Compilable, sources)
+    objs = map(self.Objectify, map(self.Absolutify, map(Target, compilable)))
     self.WriteList(objs, 'OBJS')
 
     self.WriteLn('# Add to the list of files we specially track '
@@ -928,6 +933,10 @@ class MakefileWriter:
                    "$(INCS_$(BUILDTYPE)) "
                    "$(CFLAGS_$(BUILDTYPE)) "
                    "$(CFLAGS_CC_$(BUILDTYPE))")
+
+    # If there are any object files in our input file list, link them into our
+    # output.
+    extra_link_deps += filter(Linkable, sources)
 
     self.WriteLn()
 
