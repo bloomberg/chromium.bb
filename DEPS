@@ -11,7 +11,7 @@ vars = {
   "nacl_breakpad_gyp_rev": "1806",
   "gyp_rev": "856",
   "gtest_rev": "267",
-  "tools_rev": "3851",
+  "tools_rev": "4058",
   "python_26_rev": "53573",
   "wix_rev": "153",
   "lcov_rev": "54822",
@@ -70,6 +70,9 @@ deps = {
     Var("chromium_trunk") + "/src/ppapi@" + Var("chrome_rev"),
   "third_party/lcov":
     Var("chromium_trunk") + "/src/third_party/lcov@" + Var("lcov_rev"),
+  "native_client/src/third_party/valgrind/bin":
+    Var("native_client_trunk") + "/src/third_party/valgrind/bin@" +
+    Var("tools_rev"),
 }
 
 deps_os = {
