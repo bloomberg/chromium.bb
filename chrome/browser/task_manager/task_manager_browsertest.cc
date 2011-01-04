@@ -332,17 +332,21 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
 }
 
 // Regression test for http://crbug.com/18693.
-// Crashy, http://crbug.com/42315.
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DISABLED_ReloadExtension) {
+//
+// This test has been crashy in the past, and is re-enabled temporarily to
+// gather more diagnostic information. See http://crbug.com/42315.
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, ReloadExtension) {
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
   browser()->window()->ShowTaskManager();
 
+  LOG(INFO) << "loading extension";
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("common").AppendASCII("background_page")));
 
   // Wait until we see the loaded extension in the task manager (the three
   // resources are: the browser process, New Tab Page, and the extension).
+  LOG(INFO) << "waiting for resource change";
   WaitForResourceChange(3);
 
   EXPECT_TRUE(model()->GetResourceExtension(0) == NULL);
@@ -350,17 +354,23 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DISABLED_ReloadExtension) {
   ASSERT_TRUE(model()->GetResourceExtension(2) != NULL);
 
   const Extension* extension = model()->GetResourceExtension(2);
+  ASSERT_TRUE(extension != NULL);
 
   // Reload the extension a few times and make sure our resource count
   // doesn't increase.
+  LOG(INFO) << "First extension reload";
   ReloadExtension(extension->id());
   WaitForResourceChange(3);
   extension = model()->GetResourceExtension(2);
+  ASSERT_TRUE(extension != NULL);
 
+  LOG(INFO) << "Second extension reload";
   ReloadExtension(extension->id());
   WaitForResourceChange(3);
   extension = model()->GetResourceExtension(2);
+  ASSERT_TRUE(extension != NULL);
 
+  LOG(INFO) << "Third extension reload";
   ReloadExtension(extension->id());
   WaitForResourceChange(3);
 }
