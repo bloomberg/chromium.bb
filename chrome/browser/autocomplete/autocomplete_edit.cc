@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -186,6 +186,13 @@ bool AutocompleteEditModel::UseVerbatimInstant() {
     return true;
 #endif
 
+  // The value of input.initial_prevent_inline_autocomplete() is determined by
+  // following conditions:
+  // 1. If the caret is at the end of the text (checked below).
+  // 2. If it's in IME composition mode.
+  // As we use a separated widget for displaying the instant suggest, it won't
+  // interfere with IME composition, so we don't need to care about the value of
+  // input.initial_prevent_inline_autocomplete() here.
   if (view_->DeleteAtEndPressed() || (popup_->selected_line() != 0) ||
       just_deleted_text_)
     return true;
