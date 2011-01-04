@@ -401,7 +401,7 @@
         "options.html", 
         "popup.html"
       ], 
-      "source_hash": "a6ad5cd2a77ef54c0d96b4c5da014cfac34487db", 
+      "source_hash": "ad985dc5b3e2b40826042be1d7b77c07fadfcc68", 
       "zip_path": "examples/extensions/buildbot.zip"
     }, 
     {
@@ -432,7 +432,7 @@
         "background.html", 
         "manifest.json"
       ], 
-      "source_hash": "027409688a677867e3f2fcbc530ceac904ccedea", 
+      "source_hash": "1b31479059ce12d6114247574513fd4c00c624bc", 
       "zip_path": "examples/extensions/chrome_search.zip"
     }, 
     {

@@ -1,7 +1,6 @@
 {
   "background_page": "background.html",
   "description": "Add support to the omnibox to search the Chromium source code.",
-  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDRx0y4f/CuomPPeGxcVMo7yfYZ1apxD+9e3ItNtPRBi8WMmzG0xhjnqvm03LTfTljbzA1L93s31HkjS5Bd12qM8SSZxOOizsZveK1tdpX0QelikSUaz1wwIyjatoC/jJy7vuuk0j5kPeLkNAhYGJTqN3H/Pqt0lFF1VFX4+fCEvQIDAQAB",
   "name": "Chromium Search",
   "omnibox": { "keyword" : "src" },
   "permissions": [ "tabs", "http://www.google.com/" ],
