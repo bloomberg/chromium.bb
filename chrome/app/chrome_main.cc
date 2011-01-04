@@ -531,7 +531,8 @@ int RunZygote(const MainFunctionParams& main_function_params) {
   // The StatsTable must be initialized in each process; we already
   // initialized for the browser process, now we need to initialize
   // within the new processes as well.
-  pid_t browser_pid = base::GetParentProcessId(base::GetCurrentProcId());
+  pid_t browser_pid = base::GetParentProcessId(
+      base::GetParentProcessId(base::GetCurrentProcId()));
   InitializeStatsTable(browser_pid, command_line);
 
   MainFunctionParams main_params(command_line,
