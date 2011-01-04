@@ -36,7 +36,7 @@
 #define O3D_IMPORT_CROSS_MAIN_THREAD_ARCHIVE_CALLBACK_CLIENT_H_
 
 #include "base/basictypes.h"
-#include "base/threading/thread.h"
+#include "base/thread.h"
 #include "import/cross/archive_processor.h"
 #include "import/cross/memory_stream.h"
 

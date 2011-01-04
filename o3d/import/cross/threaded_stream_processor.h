@@ -37,7 +37,7 @@
 #define O3D_IMPORT_CROSS_THREADED_STREAM_PROCESSOR_H_
 
 #include "base/basictypes.h"
-#include "base/threading/thread.h"
+#include "base/thread.h"
 #include "import/cross/memory_stream.h"
 
 namespace o3d {
