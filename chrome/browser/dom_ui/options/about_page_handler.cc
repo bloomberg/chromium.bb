@@ -17,6 +17,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/url_constants.h"
@@ -190,9 +191,10 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
       StringSubRange(text,
                      text.find(kBeginLinkChr) + strlen(kBeginLinkChr),
                      text.find(kEndLinkChr)));
+  GURL url = google_util::AppendGoogleLocaleParam(
+      GURL(chrome::kChromiumProjectURL));
   localized_strings->SetString(chromium_url_appears_first ?
-      "license_link_0" : "license_link_1",
-      l10n_util::GetStringUTF16(IDS_CHROMIUM_PROJECT_URL));
+      "license_link_0" : "license_link_1", url.spec());
 
   // The Open Source link within the main text of the dialog.  We need to use
   // the chrome:// variant instead of about:credits; the latter will get

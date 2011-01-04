@@ -13,6 +13,7 @@
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
@@ -78,8 +79,9 @@ void OnLinkButtonClick(GtkWidget* button, const char* url) {
 }
 
 const char* GetChromiumUrl() {
-  static std::string url(l10n_util::GetStringUTF8(IDS_CHROMIUM_PROJECT_URL));
-  return url.c_str();
+  static GURL url = google_util::AppendGoogleLocaleParam(
+      GURL(chrome::kChromiumProjectURL));
+  return url.spec().c_str();
 }
 
 gboolean OnEventBoxExpose(GtkWidget* event_box,

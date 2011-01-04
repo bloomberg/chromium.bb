@@ -20,6 +20,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -646,14 +647,16 @@ views::View* AboutChromeView::GetContentsView() {
 void AboutChromeView::LinkActivated(views::Link* source,
                                     int event_flags) {
   GURL url;
-  if (source == terms_of_service_url_)
+  if (source == terms_of_service_url_) {
     url = GURL(chrome::kAboutTermsURL);
-  else if (source == chromium_url_)
-    url = GURL(l10n_util::GetStringUTF16(IDS_CHROMIUM_PROJECT_URL));
-  else if (source == open_source_url_)
+  } else if (source == chromium_url_) {
+    url = google_util::AppendGoogleLocaleParam(
+      GURL(chrome::kChromiumProjectURL));
+  } else if (source == open_source_url_) {
     url = GURL(chrome::kAboutCreditsURL);
-  else
+  } else {
     NOTREACHED() << "Unknown link source";
+  }
 
   Browser* browser = BrowserList::GetLastActive();
 #if defined(OS_CHROMEOS)

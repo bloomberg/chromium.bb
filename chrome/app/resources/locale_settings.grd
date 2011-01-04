@@ -544,11 +544,6 @@
         52
       </message>
 
-      <!-- The URL for Chromium project used in About dialog. -->
-      <message name="IDS_CHROMIUM_PROJECT_URL" translateable="false">
-        http://code.google.com/chromium/?hl=[GRITLANGCODE]
-      </message>
-
       <!-- The URL for the themes gallery. -->
       <message name="IDS_THEMES_GALLERY_URL" translateable="false">
         https://tools.google.com/chrome/intl/[GRITLANGCODE]/themes/index.html

@@ -14,6 +14,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/platform_util.h"
 #import "chrome/browser/ui/cocoa/background_tile_view.h"
 #import "chrome/browser/ui/cocoa/keystone_glue.h"
@@ -660,7 +661,9 @@ static BOOL recentShownUserActionFailedStatus = NO;
   NSString* kEndLinkChr = @"END_LINK_CHR";
   NSString* kEndLinkOss = @"END_LINK_OSS";
   // The CHR link should go to here
-  NSString* kChromiumProject = l10n_util::GetNSString(IDS_CHROMIUM_PROJECT_URL);
+  GURL url = google_util::AppendGoogleLocaleParam(
+      GURL(chrome::kChromiumProjectURL));
+  NSString* kChromiumProject = base::SysUTF8ToNSString(url.spec());
   // The OSS link should go to here
   NSString* kAcknowledgements =
       [NSString stringWithUTF8String:chrome::kAboutCreditsURL];
