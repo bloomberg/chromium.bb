@@ -348,8 +348,9 @@ PluginModule::EntryPoints::EntryPoints()
 
 // PluginModule ----------------------------------------------------------------
 
-PluginModule::PluginModule()
-    : callback_tracker_(new CallbackTracker),
+PluginModule::PluginModule(PluginDelegate::ModuleLifetime* lifetime_delegate)
+    : lifetime_delegate_(lifetime_delegate),
+      callback_tracker_(new CallbackTracker),
       library_(NULL) {
   pp_module_ = ResourceTracker::Get()->AddModule(this);
   GetMainThreadMessageLoop();  // Initialize the main thread message loop.
@@ -383,6 +384,7 @@ PluginModule::~PluginModule() {
     base::UnloadNativeLibrary(library_);
 
   ResourceTracker::Get()->ModuleDeleted(pp_module_);
+  lifetime_delegate_->PluginModuleDestroyed(this);
 }
 
 bool PluginModule::InitAsInternalPlugin(const EntryPoints& entry_points) {

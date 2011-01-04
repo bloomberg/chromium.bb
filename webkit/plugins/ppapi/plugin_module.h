@@ -68,9 +68,13 @@ class PluginModule : public base::RefCounted<PluginModule>,
     PPP_ShutdownModuleFunc shutdown_module;  // Optional, may be NULL.
   };
 
-  // You must call one of the Init functions to create a module of the type
-  // you desire.
-  PluginModule();
+  // You must call one of the Init functions after the constructor to create a
+  // module of the type you desire.
+  //
+  // The module lifetime delegate is a non-owning pointer that must outlive
+  // all plugin modules. In practice it will be a global singleton that
+  // tracks which modules are alive.
+  PluginModule(PluginDelegate::ModuleLifetime* lifetime_delegate);
 
   ~PluginModule();
 
@@ -141,6 +145,8 @@ class PluginModule : public base::RefCounted<PluginModule>,
   // set and the plugin must not be out of process (we don't maintain
   // entrypoints in that case).
   bool InitializeModule();
+
+  PluginDelegate::ModuleLifetime* lifetime_delegate_;
 
   // Tracker for completion callbacks, used mainly to ensure that all callbacks
   // are properly aborted on module shutdown.

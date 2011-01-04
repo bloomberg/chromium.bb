@@ -87,7 +87,7 @@ void PpapiUnittest::SetUp() {
   delegate_.reset(new MockPluginDelegate);
 
   // Initialize the mock module.
-  module_ = new PluginModule;
+  module_ = new PluginModule(this);
   PluginModule::EntryPoints entry_points;
   entry_points.get_interface = &MockGetInterface;
   entry_points.initialize_module = &MockInitializeModule;
@@ -113,6 +113,10 @@ void PpapiUnittest::ShutdownModule() {
   instance_ = NULL;
   DCHECK(module_->HasOneRef());
   module_ = NULL;
+}
+
+void PpapiUnittest::PluginModuleDestroyed(PluginModule* destroyed_module) {
+  // Nothing needed (this is necessary to make the module compile).
 }
 
 }  // namespace ppapi

@@ -370,9 +370,16 @@ PepperPluginDelegateImpl::~PepperPluginDelegateImpl() {
 
 scoped_refptr<webkit::ppapi::PluginModule>
 PepperPluginDelegateImpl::CreatePepperPlugin(const FilePath& path) {
-  // Easy case is in-process plugins.
+  // See if a module has already been loaded for this plugin.
+  scoped_refptr<webkit::ppapi::PluginModule> module =
+      PepperPluginRegistry::GetInstance()->GetModule(path);
+  if (module)
+    return module;
+
+  // In-process plugins will have always been created up-front to avoid the
+  // sandbox restrictions.
   if (!PepperPluginRegistry::GetInstance()->RunOutOfProcessForPlugin(path))
-    return PepperPluginRegistry::GetInstance()->GetModule(path);
+    return module;  // Return the NULL module.
 
   // Out of process: have the browser start the plugin process for us.
   base::ProcessHandle plugin_process_handle = NULL;
@@ -386,8 +393,7 @@ PepperPluginDelegateImpl::CreatePepperPlugin(const FilePath& path) {
 
   // Create a new HostDispatcher for the proxying, and hook it to a new
   // PluginModule.
-  scoped_refptr<webkit::ppapi::PluginModule> module(
-      new webkit::ppapi::PluginModule);
+  module = new webkit::ppapi::PluginModule(PepperPluginRegistry::GetInstance());
   scoped_ptr<DispatcherWrapper> dispatcher(new DispatcherWrapper);
   if (!dispatcher->Init(
           plugin_process_handle, channel_handle,
@@ -395,6 +401,7 @@ PepperPluginDelegateImpl::CreatePepperPlugin(const FilePath& path) {
           webkit::ppapi::PluginModule::GetLocalGetInterfaceFunc()))
     return scoped_refptr<webkit::ppapi::PluginModule>();
   module->InitAsProxied(dispatcher.release());
+  PepperPluginRegistry::GetInstance()->AddLiveModule(path, module);
   return module;
 }
 

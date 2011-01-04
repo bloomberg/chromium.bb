@@ -9,6 +9,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/plugins/ppapi/plugin_delegate.h"
 
 namespace webkit {
 namespace ppapi {
@@ -17,7 +18,8 @@ class MockPluginDelegate;
 class PluginInstance;
 class PluginModule;
 
-class PpapiUnittest : public testing::Test {
+class PpapiUnittest : public testing::Test,
+                      public webkit::ppapi::PluginDelegate::ModuleLifetime {
  public:
   PpapiUnittest();
   virtual ~PpapiUnittest();
@@ -41,6 +43,9 @@ class PpapiUnittest : public testing::Test {
   // Note: module must be declared first since we want it to get destroyed last.
   scoped_refptr<PluginModule> module_;
   scoped_refptr<PluginInstance> instance_;
+
+  // ModuleLifetime implementation.
+  virtual void PluginModuleDestroyed(PluginModule* destroyed_module);
 
   DISALLOW_COPY_AND_ASSIGN(PpapiUnittest);
 };

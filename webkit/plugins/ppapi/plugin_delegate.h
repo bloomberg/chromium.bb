@@ -63,12 +63,31 @@ namespace ppapi {
 
 class FileIO;
 class PluginInstance;
+class PluginModule;
 class FullscreenContainer;
 
 // Virtual interface that the browser implements to implement features for
 // PPAPI plugins.
 class PluginDelegate {
  public:
+  // This interface is used for the PluginModule to tell the code in charge of
+  // re-using modules which modules currently exist.
+  //
+  // It is different than the other interfaces, which are scoped to the
+  // lifetime of the plugin instance. The implementor of this interface must
+  // outlive all plugin modules, and is in practice a singleton
+  // (PepperPluginRegistry). This requirement means we can't do the obvious
+  // thing and just have a PluginDelegate call for this purpose (when the
+  // module is being deleted, we know there are no more PluginInstances that
+  // have PluginDelegates).
+  class ModuleLifetime {
+   public:
+    // Notification that the given plugin object has been deleted. This is
+    // called from the module's destructor, so you should not dereference the
+    // given pointer.
+    virtual void PluginModuleDestroyed(PluginModule* destroyed_module) = 0;
+  };
+
   // This class is implemented by the PluginDelegate implementation and is
   // designed to manage the lifetime and communicatin with the proxy's
   // HostDispatcher for out-of-process PPAPI plugins.
