@@ -466,8 +466,8 @@ ProfileImpl::~ProfileImpl() {
 
   // DownloadManager is lazily created, so check before accessing it.
   if (download_manager_.get()) {
-    // The download manager queries the history system and should be shutdown
-    // before the history is shutdown so it can properly cancel all requests.
+    // The download manager queries the history system and should be shut down
+    // before the history is shut down so it can properly cancel all requests.
     download_manager_->Shutdown();
     download_manager_ = NULL;
   }
@@ -923,7 +923,7 @@ void ProfileImpl::CreatePasswordStore() {
 #elif defined(OS_POSIX)
   // On POSIX systems, we try to use the "native" password management system of
   // the desktop environment currently running, allowing GNOME Keyring in XFCE.
-  // (In all cases we fall back on the default store in case of failure.)
+  // (In all cases we fall back on the basic store in case of failure.)
   base::nix::DesktopEnvironment desktop_env;
   std::string store_type =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -932,16 +932,13 @@ void ProfileImpl::CreatePasswordStore() {
     desktop_env = base::nix::DESKTOP_ENVIRONMENT_KDE4;
   } else if (store_type == "gnome") {
     desktop_env = base::nix::DESKTOP_ENVIRONMENT_GNOME;
-  } else if (store_type == "detect") {
+  } else if (store_type == "basic") {
+    desktop_env = base::nix::DESKTOP_ENVIRONMENT_OTHER;
+  } else {  // Detect the store to use automatically.
     scoped_ptr<base::Environment> env(base::Environment::Create());
     desktop_env = base::nix::GetDesktopEnvironment(env.get());
     VLOG(1) << "Password storage detected desktop environment: "
             << base::nix::GetDesktopEnvironmentName(desktop_env);
-  } else {
-    // TODO(mdm): If the flag is not given, or has an unknown value, use the
-    // default store for now. Once we're confident in the other stores, we can
-    // default to detecting the desktop environment instead.
-    desktop_env = base::nix::DESKTOP_ENVIRONMENT_OTHER;
   }
 
   scoped_ptr<PasswordStoreX::NativeBackend> backend;
@@ -964,9 +961,11 @@ void ProfileImpl::CreatePasswordStore() {
       backend.reset();
 #endif  // defined(USE_GNOME_KEYRING)
   }
-  // TODO(mdm): this can change to a WARNING when we detect by default.
-  if (!backend.get())
-    VLOG(1) << "Using default (unencrypted) store for password storage.";
+  if (!backend.get()) {
+    LOG(WARNING) << "Using basic (unencrypted) store for password storage. "
+        "See http://code.google.com/p/chromium/wiki/LinuxPasswordStorage for "
+        "more information about password storage options.";
+  }
 
   ps = new PasswordStoreX(login_db, this,
                           GetWebDataService(Profile::IMPLICIT_ACCESS),
