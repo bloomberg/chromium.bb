@@ -195,6 +195,8 @@ class Track
 
 public:
     Segment* const m_pSegment;
+    const long long m_element_start;
+    const long long m_element_size;
     virtual ~Track();
 
     long long GetType() const;
@@ -237,7 +239,11 @@ public:
     virtual long Seek(long long time_ns, const BlockEntry*&) const = 0;
 
 protected:
-    Track(Segment*, const Info&);
+    Track(
+        Segment*,
+        const Info&,
+        long long element_start,
+        long long element_size);
     const Info m_info;
 
     class EOSBlock : public BlockEntry
@@ -263,7 +269,11 @@ class VideoTrack : public Track
     VideoTrack& operator=(const VideoTrack&);
 
 public:
-    VideoTrack(Segment*, const Info&);
+    VideoTrack(
+        Segment*,
+        const Info&,
+        long long element_start,
+        long long element_size);
     long long GetWidth() const;
     long long GetHeight() const;
     double GetFrameRate() const;
@@ -285,7 +295,11 @@ class AudioTrack : public Track
     AudioTrack& operator=(const AudioTrack&);
 
 public:
-    AudioTrack(Segment*, const Info&);
+    AudioTrack(
+        Segment*,
+        const Info&,
+        long long element_start,
+        long long element_size);
     double GetSamplingRate() const;
     long long GetChannels() const;
     long long GetBitDepth() const;
@@ -308,8 +322,15 @@ public:
     Segment* const m_pSegment;
     const long long m_start;
     const long long m_size;
+    const long long m_element_start;
+    const long long m_element_size;
 
-    Tracks(Segment*, long long start, long long size);
+    Tracks(
+        Segment*,
+        long long start,
+        long long size,
+        long long element_start,
+        long long element_size);
     virtual ~Tracks();
 
     const Track* GetTrackByNumber(unsigned long tn) const;
@@ -319,7 +340,12 @@ private:
     Track** m_trackEntries;
     Track** m_trackEntriesEnd;
 
-    void ParseTrackEntry(long long, long long, Track*&);
+    void ParseTrackEntry(
+        long long,
+        long long,
+        Track*&,
+        long long element_start,
+        long long element_size);
 
 public:
     unsigned long GetTracksCount() const;
@@ -335,8 +361,15 @@ public:
     Segment* const m_pSegment;
     const long long m_start;
     const long long m_size;
+    const long long m_element_start;
+    const long long m_element_size;
 
-    SegmentInfo(Segment*, long long start, long long size);
+    SegmentInfo(
+        Segment*,
+        long long start,
+        long long size,
+        long long element_start,
+        long long element_size);
     ~SegmentInfo();
     long long GetTimeCodeScale() const;
     long long GetDuration() const;  //scaled
@@ -364,6 +397,9 @@ class CuePoint
     CuePoint& operator=(const CuePoint&);
 
 public:
+    long long m_element_start;
+    long long m_element_size;
+
     void Load(IMkvReader*);
 
     long long GetTimeCode() const;      //absolute but unscaled
@@ -396,7 +432,12 @@ class Cues
 {
     friend class Segment;
 
-    Cues(Segment*, long long start, long long size);
+    Cues(
+        Segment*,
+        long long start,
+        long long size,
+        long long element_start,
+        long long element_size);
     ~Cues();
 
     Cues(const Cues&);
@@ -406,6 +447,8 @@ public:
     Segment* const m_pSegment;
     const long long m_start;
     const long long m_size;
+    const long long m_element_start;
+    const long long m_element_size;
 
     bool Find(  //lower bound of time_ns
         long long time_ns,
@@ -451,7 +494,12 @@ public:
     Segment* const m_pSegment;
 
 public:
-    static Cluster* Parse(Segment*, long, long long off);
+    static Cluster* Parse(
+        Segment*,
+        long,
+        long long off,
+        long long element_start,
+        long long element_size);
 
     Cluster();  //EndOfStream
     ~Cluster();
@@ -475,13 +523,20 @@ public:
     static bool HasBlockEntries(const Segment*, long long);
 
 protected:
-    Cluster(Segment*, long, long long off);
+    Cluster(
+        Segment*,
+        long,
+        long long off,
+        long long element_start,
+        long long element_size);
 
 public:
     //TODO: these should all be private, with public selector functions
     long m_index;
     mutable long long m_pos;
     mutable long long m_size;
+    const long long m_element_start;
+    const long long m_element_size;
 
 private:
     mutable long long m_timecode;

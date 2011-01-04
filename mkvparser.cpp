@@ -911,6 +911,7 @@ long long Segment::ParseHeaders()
     while (m_pos < stop)
     {
         long long pos = m_pos;
+        const long long element_start = pos;
 
         long len;
         long long result = GetUIntLength(m_pReader, pos, len);
@@ -954,6 +955,8 @@ long long Segment::ParseHeaders()
 
         pos += len;  //consume length of size of element
 
+        const long long element_size = size + pos - element_start;
+
         //Pos now points to start of payload
 
         if ((pos + size) > stop)
@@ -968,21 +971,33 @@ long long Segment::ParseHeaders()
         {
             assert(m_pInfo == NULL);
 
-            m_pInfo = new SegmentInfo(this, pos, size);
+            m_pInfo = new SegmentInfo(this,
+                                      pos,
+                                      size,
+                                      element_start,
+                                      element_size);
             assert(m_pInfo);  //TODO
         }
         else if (id == 0x0654AE6B)  //Tracks ID
         {
             assert(m_pTracks == NULL);
 
-            m_pTracks = new Tracks(this, pos, size);
+            m_pTracks = new Tracks(this,
+                                   pos,
+                                   size,
+                                   element_start,
+                                   element_size);
             assert(m_pTracks);  //TODO
         }
         else if (id == 0x0C53BB6B)  //Cues ID
         {
             if (m_pCues == NULL)
             {
-                m_pCues = new Cues(this, pos, size);
+                m_pCues = new Cues(this,
+                                   pos,
+                                   size,
+                                   element_start,
+                                   element_size);
                 assert(m_pCues);  //TODO
             }
         }
@@ -1229,7 +1244,11 @@ bool Segment::AddCluster(long long off, long long pos)
 
     if (off >= 0)
     {
-        Cluster* const pCluster = Cluster::Parse(this, m_clusterCount, off);
+        Cluster* const pCluster = Cluster::Parse(this,
+                                                 m_clusterCount,
+                                                 off,
+                                                 0,
+                                                 0);
         assert(pCluster);
 
         AppendCluster(pCluster);
@@ -1294,6 +1313,8 @@ long Segment::LoadCluster(
 
         pos += len;  //consume length of size of element
 
+        const long long element_size = size + pos - idpos;
+
         if (size == 0)  //weird
         {
             m_pos = pos;
@@ -1322,7 +1343,11 @@ long Segment::LoadCluster(
         {
             if (m_pCues == NULL)
             {
-                m_pCues = new Cues(this, pos, size);
+                m_pCues = new Cues(this,
+                                   pos,
+                                   size,
+                                   idpos,
+                                   element_size);
                 assert(m_pCues);  //TODO
             }
 
@@ -1371,7 +1396,11 @@ long Segment::LoadCluster(
 
         if (Cluster::HasBlockEntries(this, idoff))
         {
-            Cluster* const pCluster = Cluster::Parse(this, idx, idoff);
+            Cluster* const pCluster = Cluster::Parse(this,
+                                                      idx,
+                                                      idoff,
+                                                      idpos,
+                                                      element_size);
             assert(pCluster);
 
             AppendCluster(pCluster);
@@ -1560,6 +1589,7 @@ long Segment::Load()
     while (m_pos < stop)
     {
         long long pos = m_pos;
+        const long long element_start = pos;
 
         long len;
 
@@ -1595,6 +1625,8 @@ long Segment::Load()
 
         pos += len;  //consume length of size of element
 
+        const long long element_size = size + pos - element_start;
+
         //Pos now points to start of payload
 
         if ((pos + size) > stop)
@@ -1607,7 +1639,11 @@ long Segment::Load()
 
             if (Cluster::HasBlockEntries(this, off))
             {
-                Cluster* const pCluster = Cluster::Parse(this, idx, off);
+                Cluster* const pCluster = Cluster::Parse(this,
+                                                         idx,
+                                                         off,
+                                                         element_start,
+                                                         element_size);
                 assert(pCluster);
 
                 AppendCluster(pCluster);
@@ -1620,21 +1656,29 @@ long Segment::Load()
         {
             assert(m_pCues == NULL);
 
-            m_pCues = new Cues(this, pos, size);
+            m_pCues = new Cues(this, pos, size, element_start, element_size);
             assert(m_pCues);  //TODO
         }
         else if (id == 0x0549A966)  //SegmentInfo ID
         {
             assert(m_pInfo == NULL);
 
-            m_pInfo = new  SegmentInfo(this, pos, size);
+            m_pInfo = new SegmentInfo(this,
+                                      pos,
+                                      size,
+                                      element_start,
+                                      element_size);
             assert(m_pInfo);
         }
         else if (id == 0x0654AE6B)  //Tracks ID
         {
             assert(m_pTracks == NULL);
 
-            m_pTracks = new Tracks(this, pos, size);
+            m_pTracks = new Tracks(this,
+                                   pos,
+                                   size,
+                                   element_start,
+                                   element_size);
             assert(m_pTracks);  //TODO
         }
 
@@ -1702,6 +1746,7 @@ void Segment::ParseCues(long long off)
     //os << "Segment::ParseCues (begin)" << endl;
 
     long long pos = m_start + off;
+    const long long element_start = pos;
     const long long stop = m_start + m_size;
 
     long len;
@@ -1730,9 +1775,11 @@ void Segment::ParseCues(long long off)
     pos += len;  //consume length of size of element
     assert((pos + size) <= stop);
 
+    const long long element_size = size + pos - element_start;
+
     //Pos now points to start of payload
 
-    m_pCues = new Cues(this, pos, size);
+    m_pCues = new Cues(this, pos, size, element_start, element_size);
     assert(m_pCues);  //TODO
 
     //os << "Segment::ParseCues (end)" << endl;
@@ -1798,14 +1845,21 @@ void Segment::ParseSeekEntry(
 }
 
 
-Cues::Cues(Segment* pSegment, long long start_, long long size_) :
+Cues::Cues(
+    Segment* pSegment,
+    long long start_,
+    long long size_,
+    long long element_start,
+    long long element_size) :
     m_pSegment(pSegment),
     m_start(start_),
     m_size(size_),
     m_cue_points(NULL),
     m_count(0),
     m_preload_count(0),
-    m_pos(start_)
+    m_pos(start_),
+    m_element_start(element_start),
+    m_element_size(element_size)
 {
 }
 
@@ -1827,7 +1881,6 @@ Cues::~Cues()
 
     delete[] m_cue_points;
 }
-
 
 void Cues::Init() const
 {
@@ -2253,7 +2306,7 @@ const BlockEntry* Segment::GetBlock(
     assert(i == j);
     assert(Cluster::HasBlockEntries(this, tp.m_pos));
 
-    Cluster* const pCluster = Cluster::Parse(this, -1, tp.m_pos);
+    Cluster* const pCluster = Cluster::Parse(this, -1, tp.m_pos, 0, 0);
     assert(pCluster);
 
     const ptrdiff_t idx = i - m_clusters;
@@ -2269,6 +2322,8 @@ const BlockEntry* Segment::GetBlock(
 
 
 CuePoint::CuePoint(size_t idx, long long pos) :
+    m_element_start(0),
+    m_element_size(0),
     m_index(idx),
     m_timecode(-1 * pos),
     m_track_positions(NULL),
@@ -2296,6 +2351,7 @@ void CuePoint::Load(IMkvReader* pReader)
     assert(m_track_positions_count == 0);
 
     long long pos_ = -m_timecode;
+    const long long element_start = pos_;
 
     long long stop;
 
@@ -2319,6 +2375,8 @@ void CuePoint::Load(IMkvReader* pReader)
 
         stop = pos_ + size;
     }
+
+    const long long element_size = stop - element_start;
 
     long long pos = pos_;
 
@@ -2393,6 +2451,9 @@ void CuePoint::Load(IMkvReader* pReader)
     }
 
     assert(size_t(p - m_track_positions) == m_track_positions_count);
+
+    m_element_start = element_start;
+    m_element_size = element_size;
 }
 
 
@@ -2596,6 +2657,8 @@ const Cluster* Segment::GetNext(const Cluster* pCurr)
     }
 
     long long off_next = 0;
+    long long element_start_next = 0;
+    long long element_size_next = 0;
 
     while (pos < stop)
     {
@@ -2623,6 +2686,8 @@ const Cluster* Segment::GetNext(const Cluster* pCurr)
         pos += len;  //consume length of size of element
         assert((pos + size) <= stop);  //TODO
 
+        const long long element_size = size + pos - idpos;
+
         //Pos now points to start of payload
 
         if (size == 0)  //weird
@@ -2635,6 +2700,8 @@ const Cluster* Segment::GetNext(const Cluster* pCurr)
             if (Cluster::HasBlockEntries(this, off_next_))
             {
                 off_next = off_next_;
+                element_start_next = idpos;
+                element_size_next = element_size;
                 break;
             }
         }
@@ -2680,7 +2747,11 @@ const Cluster* Segment::GetNext(const Cluster* pCurr)
 
     assert(i == j);
 
-    Cluster* const pNext = Cluster::Parse(this, -1, off_next);
+    Cluster* const pNext = Cluster::Parse(this,
+                                          -1,
+                                          off_next,
+                                          element_start_next,
+                                          element_size_next);
     assert(pNext);
 
     const ptrdiff_t idx_next = i - m_clusters;  //insertion position
@@ -2954,13 +3025,20 @@ long long Segment::GetDuration() const
 }
 
 
-SegmentInfo::SegmentInfo(Segment* pSegment, long long start, long long size_) :
+SegmentInfo::SegmentInfo(
+    Segment* pSegment,
+    long long start,
+    long long size_,
+    long long element_start,
+    long long element_size) :
     m_pSegment(pSegment),
     m_start(start),
     m_size(size_),
     m_pMuxingAppAsUTF8(NULL),
     m_pWritingAppAsUTF8(NULL),
-    m_pTitleAsUTF8(NULL)
+    m_pTitleAsUTF8(NULL),
+    m_element_start(element_start),
+    m_element_size(element_size)
 {
     IMkvReader* const pReader = m_pSegment->m_pReader;
 
@@ -3067,9 +3145,15 @@ const char* SegmentInfo::GetTitleAsUTF8() const
     return m_pTitleAsUTF8;
 }
 
-Track::Track(Segment* pSegment, const Info& i) :
+Track::Track(
+    Segment* pSegment,
+    const Info& i,
+    long long element_start,
+    long long element_size) :
     m_pSegment(pSegment),
-    m_info(i)
+    m_info(i),
+    m_element_start(element_start),
+    m_element_size(element_size)
 {
 }
 
@@ -3090,7 +3174,6 @@ Track::Info::Info():
     codecNameAsUTF8(NULL)
 {
 }
-
 
 void Track::Info::Clear()
 {
@@ -3339,8 +3422,12 @@ bool Track::EOSBlock::IsBFrame() const
 }
 
 
-VideoTrack::VideoTrack(Segment* pSegment, const Info& i) :
-    Track(pSegment, i),
+VideoTrack::VideoTrack(
+    Segment* pSegment,
+    const Info& i,
+    long long element_start,
+    long long element_size) :
+    Track(pSegment, i, element_start, element_size),
     m_width(-1),
     m_height(-1),
     m_rate(-1)
@@ -3523,8 +3610,12 @@ double VideoTrack::GetFrameRate() const
 }
 
 
-AudioTrack::AudioTrack(Segment* pSegment, const Info& i) :
-    Track(pSegment, i),
+AudioTrack::AudioTrack(
+    Segment* pSegment,
+    const Info& i,
+    long long element_start,
+    long long element_size) :
+    Track(pSegment, i, element_start, element_size),
     m_rate(0.0),
     m_channels(0),
     m_bitDepth(-1)
@@ -3695,12 +3786,19 @@ long long AudioTrack::GetBitDepth() const
     return m_bitDepth;
 }
 
-Tracks::Tracks(Segment* pSegment, long long start, long long size_) :
+Tracks::Tracks(
+    Segment* pSegment,
+    long long start,
+    long long size_,
+    long long element_start,
+    long long element_size) :
     m_pSegment(pSegment),
     m_start(start),
     m_size(size_),
     m_trackEntries(NULL),
-    m_trackEntriesEnd(NULL)
+    m_trackEntriesEnd(NULL),
+    m_element_start(element_start),
+    m_element_size(element_size)
 {
     long long stop = m_start + m_size;
     IMkvReader* const pReader = m_pSegment->m_pReader;
@@ -3746,6 +3844,8 @@ Tracks::Tracks(Segment* pSegment, long long start, long long size_) :
         assert(id >= 0);
         assert((pos + len) <= stop);
 
+        const long long element_start = pos;
+
         pos += len;  //consume id
 
         const long long size1 = ReadUInt(pReader, pos, len);
@@ -3756,10 +3856,12 @@ Tracks::Tracks(Segment* pSegment, long long start, long long size_) :
 
         //pos now desinates start of element
 
+        const long long element_size = size1 + pos - element_start;
+
         if (id == 0x2E)  //TrackEntry ID
         {
             Track*& pTrack = *m_trackEntriesEnd;
-            ParseTrackEntry(pos, size1, pTrack);
+            ParseTrackEntry(pos, size1, pTrack, element_start, element_size);
 
             if (pTrack)
                 ++m_trackEntriesEnd;
@@ -3783,7 +3885,9 @@ unsigned long Tracks::GetTracksCount() const
 void Tracks::ParseTrackEntry(
     long long start,
     long long size,
-    Track*& pTrack)
+    Track*& pTrack,
+    long long element_start,
+    long long element_size)
 {
     IMkvReader* const pReader = m_pSegment->m_pReader;
 
@@ -3902,7 +4006,11 @@ void Tracks::ParseTrackEntry(
 
         i.settings = videoSettings;
 
-        VideoTrack* const t = new VideoTrack(m_pSegment, i);
+        VideoTrack* const t = new VideoTrack(
+            m_pSegment,
+            i,
+            element_start,
+            element_size);
         assert(t);  //TODO
         pTrack = t;
     }
@@ -3913,7 +4021,11 @@ void Tracks::ParseTrackEntry(
 
         i.settings = audioSettings;
 
-        AudioTrack* const t = new  AudioTrack(m_pSegment, i);
+        AudioTrack* const t = new  AudioTrack(
+            m_pSegment,
+            i,
+            element_start,
+            element_size);
         assert(t);  //TODO
         pTrack = t;
     }
@@ -3943,7 +4055,6 @@ Tracks::~Tracks()
 
     delete[] m_trackEntries;
 }
-
 
 const Track* Tracks::GetTrackByNumber(unsigned long tn_) const
 {
@@ -4057,7 +4168,9 @@ void Cluster::Load() const
 Cluster* Cluster::Parse(
     Segment* pSegment,
     long idx,
-    long long off)
+    long long off,
+    long long element_start,
+    long long element_size)
 {
     assert(pSegment);
     assert(off >= 0);
@@ -4066,7 +4179,11 @@ Cluster* Cluster::Parse(
     //if (!HasBlockEntries(pSegment, off))
     //    return NULL;
 
-    Cluster* const pCluster = new Cluster(pSegment, idx, -off);
+    Cluster* const pCluster = new Cluster(pSegment,
+                                          idx,
+                                          -off,
+                                          element_start,
+                                          element_size);
     assert(pCluster);
 
     return pCluster;
@@ -4078,6 +4195,8 @@ Cluster::Cluster() :
     m_index(0),
     m_pos(0),
     m_size(0),
+    m_element_start(0),
+    m_element_size(0),
     m_timecode(0),
     m_entries(NULL),
     m_entries_count(0)  //means "no entries"
@@ -4088,10 +4207,14 @@ Cluster::Cluster() :
 Cluster::Cluster(
     Segment* pSegment,
     long idx,
-    long long off) :
+    long long off,
+    long long element_start,
+    long long element_size) :
     m_pSegment(pSegment),
     m_index(idx),
     m_pos(off),
+    m_element_start(element_start),
+    m_element_size(element_size),
     m_size(-1),
     m_timecode(-1),
     m_entries(NULL),
