@@ -3,6 +3,7 @@
   "name": "Virtual Keyboard",
   "version": "0.1",
   "description": "Virtual Keyboard",
+  "incognito" : "split",
   "permissions": [
     "experimental"
   ],
