@@ -8,6 +8,9 @@
       'target_name': 'harfbuzz',
       'type': '<(library)',
       'sources': [
+        'contrib/harfbuzz-freetype.c',
+        'contrib/harfbuzz-unicode.c',
+        'contrib/harfbuzz-unicode-tables.c',
         'src/harfbuzz-buffer.c',
         'src/harfbuzz-stream.c',
         'src/harfbuzz-dump.c',
@@ -27,32 +30,13 @@
         'src/harfbuzz-thai.c',
       ],
       'include_dirs': [
-        'src',
-      ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          'src',
-        ],
-      },
-      'dependencies': [
-        '../../build/linux/system.gyp:freetype2',
-      ],
-    },
-    {
-      'target_name': 'harfbuzz_interface',
-      'type': '<(library)',
-      'sources': [
-        'contrib/harfbuzz-freetype.c',
-        'contrib/harfbuzz-unicode.c',
-        'contrib/harfbuzz-unicode-tables.c',
-      ],
-      'include_dirs': [
-        'src',
         'contrib',
+        'src',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
           'contrib',
+          'src',
         ],
       },
       'dependencies': [
