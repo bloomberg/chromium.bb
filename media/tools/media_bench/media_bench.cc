@@ -349,8 +349,8 @@ int main(int argc, const char** argv) {
   // Initialize our codec.
   if (avcodec_open(codec_context, codec) < 0) {
     std::cerr << "Error: Could not open codec "
-              << codec_context->codec->name << " for "
-              << in_path.value() << std::endl;
+              << (codec_context->codec ? codec_context->codec->name : "(NULL)")
+              << " for " << in_path.value() << std::endl;
     return 1;
   }
 
