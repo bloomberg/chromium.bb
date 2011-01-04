@@ -417,7 +417,7 @@
    fun:new_sem_from_pool
    fun:_pthread_cond_wait
    fun:pthread_cond_wait$UNIX2003
-   fun:_ZN17ConditionVariable4WaitEv
+   fun:_ZN4base17ConditionVariable4WaitEv
    fun:_ZN4base13WaitableEvent9TimedWaitERKNS_9TimeDeltaE
    fun:_ZN4base13WaitableEvent4WaitEv
    fun:_ZN4base6Thread16StartWithOptionsERKNS0_7OptionsE
