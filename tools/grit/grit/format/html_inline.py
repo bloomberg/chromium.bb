@@ -9,8 +9,7 @@ This is a small script that takes a HTML file, looks for src attributes
 and inlines the specified file, producing one HTML file with no external
 dependencies.
 
-This does not inline CSS styles, nor does it inline anything referenced
-from an inlined file.
+This does not inline anything referenced from an inlined file.
 """
 
 import os
@@ -173,7 +172,7 @@ def InlineFile(input_filename, output_filename, grd_node):
                      ReadFile(input_filename))
 
   flat_text = re.sub(
-      '<link rel="stylesheet".+?href="(?P<filename>[^"\']*)".*?>',
+      '<link rel="stylesheet".+?href="(?P<filename>[^"]*)".*?>',
       InlineCSSFile,
       flat_text)
 
