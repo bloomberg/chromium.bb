@@ -18,26 +18,97 @@ void DefaultApps::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kAppsPromoCounter, 0);
 }
 
-DefaultApps::DefaultApps(PrefService* prefs)
-    : prefs_(prefs) {
-#if !defined(OS_CHROMEOS)
+DefaultApps::DefaultApps(PrefService* prefs,
+                         const std::string& application_locale)
+    : prefs_(prefs), application_locale_(application_locale) {
   // Poppit, Entanglement
   ids_.insert("mcbkbpnkkkipelfledbfocopglifcfmi");
   ids_.insert("aciahcmjmecflokailenpkdchphgkefd");
-#endif  // OS_CHROMEOS
 }
 
 DefaultApps::~DefaultApps() {}
 
-const ExtensionIdSet* DefaultApps::GetAppsToInstall() const {
-  if (GetDefaultAppsInstalled())
-    return NULL;
-  else
-    return &ids_;
+const ExtensionIdSet& DefaultApps::default_apps() const {
+  return ids_;
 }
 
-const ExtensionIdSet* DefaultApps::GetDefaultApps() const {
-  return &ids_;
+bool DefaultApps::DefaultAppSupported() {
+  // On Chrome OS the default apps are installed via a different mechanism.
+#if defined(OS_CHROMEOS)
+  return false;
+#else
+  return DefaultAppsSupportedForLanguage();
+#endif
+}
+
+bool DefaultApps::DefaultAppsSupportedForLanguage() {
+  return application_locale_ == "en-US";
+}
+
+bool DefaultApps::ShouldInstallDefaultApps(
+    const ExtensionIdSet& installed_ids) {
+  if (!DefaultAppSupported())
+    return false;
+
+  if (GetDefaultAppsInstalled())
+    return false;
+
+  // If there are any non-default apps installed, we should never try to install
+  // the default apps again, even if the non-default apps are later removed.
+  if (NonDefaultAppIsInstalled(installed_ids)) {
+    SetDefaultAppsInstalled(true);
+    return false;
+  }
+
+  return true;
+}
+
+bool DefaultApps::ShouldShowAppLauncher(const ExtensionIdSet& installed_ids) {
+  // On Chrome OS the default apps are installed via a separate mechanism that
+  // is always enabled. Therefore we always show the launcher.
+#if defined(OS_CHROME)
+  return true;
+#else
+  // The app store only supports en-us at the moment, so we don't show the apps
+  // section by default for users in other locales. But we do show it if a user
+  // from a non-supported locale somehow installs an app (eg by navigating
+  // directly to the store).
+  if (!DefaultAppsSupportedForLanguage())
+    return !installed_ids.empty();
+
+  // For supported locales, we need to wait for all the default apps to be
+  // installed before showing the apps section. We also show it if any
+  // non-default app is installed (eg because the user installed the app in a
+  // previous version of Chrome).
+  if (GetDefaultAppsInstalled() || NonDefaultAppIsInstalled(installed_ids))
+    return true;
+  else
+    return false;
+#endif
+}
+
+bool DefaultApps::ShouldShowPromo(const ExtensionIdSet& installed_ids) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceAppsPromoVisible)) {
+    return true;
+  }
+
+  if (!DefaultAppSupported())
+    return false;
+
+  if (GetDefaultAppsInstalled() && GetPromoCounter() < kAppsPromoCounterMax) {
+    // If we have the exact set of default apps, show the promo. If we don't
+    // have the exact set of default apps, this means that the user manually
+    // installed or uninstalled one. The promo doesn't make sense if it shows
+    // apps the user manually installed, so expire it immediately in that
+    // situation.
+    if (installed_ids == ids_)
+      return true;
+    else
+      SetPromoHidden();
+  }
+
+  return false;
 }
 
 void DefaultApps::DidInstallApp(const ExtensionIdSet& installed_ids) {
@@ -50,30 +121,6 @@ void DefaultApps::DidInstallApp(const ExtensionIdSet& installed_ids) {
                     ids_.begin(), ids_.end())) {
     SetDefaultAppsInstalled(true);
   }
-}
-
-bool DefaultApps::CheckShouldShowPromo(const ExtensionIdSet& installed_ids) {
-#if defined(OS_CHROMEOS)
-  // Don't show the promo at all on Chrome OS.
-  return false;
-#endif
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceAppsPromoVisible)) {
-    return true;
-  }
-
-  if (GetDefaultAppsInstalled() && GetPromoCounter() < kAppsPromoCounterMax) {
-    // If we have the exact set of default apps, show the promo. If we don't
-    // have the exact set of default apps, this means that the user manually
-    // installed one. The promo doesn't make sense if it shows apps the user
-    // manually installed, so expire it immediately in that situation.
-    if (installed_ids == ids_)
-      return true;
-    else
-      SetPromoHidden();
-  }
-
-  return false;
 }
 
 void DefaultApps::DidShowPromo() {
@@ -97,6 +144,17 @@ void DefaultApps::DidShowPromo() {
   } else {
     SetPromoHidden();
   }
+}
+
+bool DefaultApps::NonDefaultAppIsInstalled(
+    const ExtensionIdSet& installed_ids) const {
+  for (ExtensionIdSet::const_iterator iter = installed_ids.begin();
+       iter != installed_ids.end(); ++iter) {
+    if (ids_.find(*iter) == ids_.end())
+      return true;
+  }
+
+  return false;
 }
 
 void DefaultApps::SetPromoHidden() {

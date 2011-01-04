@@ -193,15 +193,10 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
   dictionary->SetBoolean("disableCreateAppShortcut", true);
 #endif
 
-  // We always show the launcher on Chrome OS. On Desktop Chrome, only show it
-  // if we've installed our default apps.
-#if defined(OS_CHROMEOS)
-  dictionary->SetBoolean("showLauncher", true);
-#else
   dictionary->SetBoolean(
       "showLauncher",
-      extensions_service_->default_apps()->GetDefaultAppsInstalled());
-#endif
+      extensions_service_->default_apps()->ShouldShowAppLauncher(
+          extensions_service_->GetAppIds()));
 }
 
 void AppLauncherHandler::HandleGetApps(const ListValue* args) {
@@ -217,7 +212,7 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
   // b) Conceptually, it doesn't really make sense to count a
   //    prefchange-triggered refresh as a promo 'view'.
   DefaultApps* default_apps = extensions_service_->default_apps();
-  if (default_apps->CheckShouldShowPromo(extensions_service_->GetAppIds())) {
+  if (default_apps->ShouldShowPromo(extensions_service_->GetAppIds())) {
     dictionary.SetBoolean("showPromo", true);
     default_apps->DidShowPromo();
     promo_active_ = true;
@@ -335,12 +330,11 @@ void AppLauncherHandler::HandleHideAppsPromo(const ListValue* args) {
   UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppsPromoHistogram,
                             extension_misc::PROMO_CLOSE,
                             extension_misc::PROMO_BUCKET_BOUNDARY);
-  DefaultApps* default_apps = extensions_service_->default_apps();
-  const ExtensionIdSet* app_ids = default_apps->GetDefaultApps();
-  DCHECK(*app_ids == extensions_service_->GetAppIds());
 
-  for (ExtensionIdSet::const_iterator iter = app_ids->begin();
-       iter != app_ids->end(); ++iter) {
+  DefaultApps* default_apps = extensions_service_->default_apps();
+  const ExtensionIdSet& app_ids = default_apps->default_apps();
+  for (ExtensionIdSet::const_iterator iter = app_ids.begin();
+       iter != app_ids.end(); ++iter) {
     if (extensions_service_->GetExtensionById(*iter, true))
       extensions_service_->UninstallExtension(*iter, false);
   }
