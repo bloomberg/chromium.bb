@@ -35,7 +35,7 @@ namespace notifier {
 
 class ChromeAsyncSocket : public buzz::AsyncSocket {
  public:
-  // Takes ownership of |client_socket_factory| but not |cert_verifier| and
+  // Takes ownership of |client_socket_factory| but not |cert_verifier| nor
   // |net_log|.  |cert_verifier| may not be NULL.  |net_log| may be NULL.
   ChromeAsyncSocket(net::ClientSocketFactory* client_socket_factory,
                     const net::SSLConfig& ssl_config,
@@ -189,7 +189,7 @@ class ChromeAsyncSocket : public buzz::AsyncSocket {
 
   scoped_ptr<net::ClientSocketFactory> client_socket_factory_;
   const net::SSLConfig ssl_config_;
-  net::CertVerifier* cert_verifier_;
+  net::CertVerifier* const cert_verifier_;
   net::BoundNetLog bound_net_log_;
 
   // buzz::AsyncSocket state.

@@ -77,8 +77,8 @@ class LoginSettings {
  private:
   bool try_ssltcp_first_;
 
-  net::HostResolver* host_resolver_;
-  net::CertVerifier* cert_verifier_;
+  net::HostResolver* const host_resolver_;
+  net::CertVerifier* const cert_verifier_;
   talk_base::scoped_array<ServerInformation> server_list_;
   int server_count_;
   // Used to handle redirects

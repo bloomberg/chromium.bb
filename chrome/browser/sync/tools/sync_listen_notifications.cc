@@ -299,7 +299,6 @@ int main(int argc, char* argv[]) {
   xmpp_client_settings.set_server(addr);
 
   net::CertVerifier cert_verifier;
-
   MessageLoopForIO message_loop;
 
   // Connect and listen.
