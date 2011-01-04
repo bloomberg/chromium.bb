@@ -485,7 +485,8 @@ char16 NativeTextfieldViews::GetPrintableChar(const KeyEvent& key_event) {
   // TODO(oshima): IME, i18n support.
   // This only works for UCS-2 characters.
   app::KeyboardCode key_code = key_event.GetKeyCode();
-  bool shift = key_event.IsShiftDown() ^ key_event.IsCapsLockDown();
+  bool shift = key_event.IsShiftDown();
+  bool upper = shift ^ key_event.IsCapsLockDown();
   // TODO(oshima): We should have a utility function
   // under app to convert a KeyboardCode to a printable character,
   // probably in keyboard_code_conversion{.h, _x
@@ -569,7 +570,7 @@ char16 NativeTextfieldViews::GetPrintableChar(const KeyEvent& key_event) {
     case app::VKEY_X:
     case app::VKEY_Y:
     case app::VKEY_Z:
-      return (shift ? 'A' : 'a') + (key_code - app::VKEY_A);
+      return (upper ? 'A' : 'a') + (key_code - app::VKEY_A);
     case app::VKEY_OEM_1:
       return shift ? ':' : ';';
     case app::VKEY_OEM_PLUS:

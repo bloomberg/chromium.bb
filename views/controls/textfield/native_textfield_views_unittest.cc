@@ -73,11 +73,19 @@ class NativeTextfieldViewsTest : public ::testing::Test,
 
   bool SendKeyEventToTextfieldViews(app::KeyboardCode key_code,
                                     bool shift,
-                                    bool control) {
+                                    bool control,
+                                    bool capslock) {
     int flags = (shift ? KeyEvent::EF_SHIFT_DOWN : 0) |
-        (control ? KeyEvent::EF_CONTROL_DOWN : 0);
+        (control ? KeyEvent::EF_CONTROL_DOWN : 0) |
+        (capslock ? KeyEvent::EF_CAPS_LOCK_DOWN : 0);
     KeyEvent event(KeyEvent::ET_KEY_PRESSED, key_code, flags, 1, 0);
     return textfield_view_->OnKeyPressed(event);
+  }
+
+  bool SendKeyEventToTextfieldViews(app::KeyboardCode key_code,
+                                    bool shift,
+                                    bool control) {
+    return SendKeyEventToTextfieldViews(key_code, shift, control, false);
   }
 
   bool SendKeyEventToTextfieldViews(app::KeyboardCode key_code) {
@@ -140,6 +148,15 @@ TEST_F(NativeTextfieldViewsTest, KeyTest) {
   SendKeyEventToTextfieldViews(app::VKEY_R, false, false);
   EXPECT_STR_EQ("Cr", textfield_->text());
   EXPECT_STR_EQ("Cr", last_contents_);
+
+  textfield_->SetText(ASCIIToUTF16(""));
+  SendKeyEventToTextfieldViews(app::VKEY_C, true, false, true);
+  SendKeyEventToTextfieldViews(app::VKEY_C, false, false, true);
+  SendKeyEventToTextfieldViews(app::VKEY_1, false, false, true);
+  SendKeyEventToTextfieldViews(app::VKEY_1, true, false, true);
+  SendKeyEventToTextfieldViews(app::VKEY_1, true, false, false);
+  EXPECT_STR_EQ("cC1!!", textfield_->text());
+  EXPECT_STR_EQ("cC1!!", last_contents_);
 }
 
 TEST_F(NativeTextfieldViewsTest, ControlAndSelectTest) {
