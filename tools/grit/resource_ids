@@ -14,7 +14,7 @@
   "chrome/browser/browser_resources.grd": {
     "includes": [500],
   },
-  "chrome/browser/resources/bookmark_manager_resources.grd": {
+  "chrome/browser/resources/component_extension_resources.grd": {
     "includes": [1000],
   },
   "chrome/browser/resources/net_internals_resources.grd": {

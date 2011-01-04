@@ -59,7 +59,7 @@
       # These resources end up in resources.pak because they are resources
       # used by internal pages.  Putting them in a spearate pak file makes
       # it easier for us to reference them internally.
-      'browser/resources/bookmark_manager_resources.grd',
+      'browser/resources/component_extension_resources.grd',
       'browser/resources/net_internals_resources.grd',
       'browser/resources/shared_resources.grd'
     ],
@@ -481,6 +481,9 @@
             }],
             ['use_titlecase_in_grd_files==1', {
               'action': ['-D', 'use_titlecase'],
+            }],
+            ['touchui==1', {
+              'action': ['-D', 'touchui'],
             }],
           ],
           'message': 'Generating resources from <(RULE_INPUT_PATH)',
@@ -1542,7 +1545,7 @@
               'action_name': 'repack_resources',
               'variables': {
                 'pak_inputs': [
-                  '<(grit_out_dir)/bookmark_manager_resources.pak',
+                  '<(grit_out_dir)/component_extension_resources.pak',
                   '<(grit_out_dir)/net_internals_resources.pak',
                   '<(grit_out_dir)/shared_resources.pak',
                 ],
