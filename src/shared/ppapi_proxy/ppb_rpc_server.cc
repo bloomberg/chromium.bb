@@ -29,7 +29,6 @@ static void HasPropertyDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   ObjectStubRpcServer::HasProperty(
       rpc,
       done,
@@ -47,7 +46,6 @@ static void HasMethodDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   ObjectStubRpcServer::HasMethod(
       rpc,
       done,
@@ -65,7 +63,6 @@ static void GetPropertyDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   ObjectStubRpcServer::GetProperty(
       rpc,
       done,
@@ -83,7 +80,6 @@ static void GetAllPropertyNamesDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   ObjectStubRpcServer::GetAllPropertyNames(
       rpc,
       done,
@@ -101,7 +97,6 @@ static void SetPropertyDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   ObjectStubRpcServer::SetProperty(
       rpc,
       done,
@@ -119,7 +114,6 @@ static void RemovePropertyDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   ObjectStubRpcServer::RemoveProperty(
       rpc,
       done,
@@ -136,7 +130,6 @@ static void CallDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   ObjectStubRpcServer::Call(
       rpc,
       done,
@@ -156,7 +149,6 @@ static void ConstructDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   ObjectStubRpcServer::Construct(
       rpc,
       done,
@@ -176,7 +168,6 @@ static void DeallocateDispatcher(
     NaClSrpcClosure* done
 ) {
   UNREFERENCED_PARAMETER(outputs);
-  UNREFERENCED_PARAMETER(done);
   ObjectStubRpcServer::Deallocate(
       rpc,
       done,
@@ -190,7 +181,6 @@ static void PPB_GetInterfaceDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbRpcServer::PPB_GetInterface(
       rpc,
       done,
@@ -205,7 +195,6 @@ static void PPB_Audio_Dev_CreateDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbAudioDevRpcServer::PPB_Audio_Dev_Create(
       rpc,
       done,
@@ -221,7 +210,6 @@ static void PPB_Audio_Dev_IsAudioDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbAudioDevRpcServer::PPB_Audio_Dev_IsAudio(
       rpc,
       done,
@@ -236,7 +224,6 @@ static void PPB_Audio_Dev_GetCurrentConfigDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbAudioDevRpcServer::PPB_Audio_Dev_GetCurrentConfig(
       rpc,
       done,
@@ -251,7 +238,6 @@ static void PPB_Audio_Dev_StopPlaybackDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbAudioDevRpcServer::PPB_Audio_Dev_StopPlayback(
       rpc,
       done,
@@ -266,7 +252,6 @@ static void PPB_Audio_Dev_StartPlaybackDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbAudioDevRpcServer::PPB_Audio_Dev_StartPlayback(
       rpc,
       done,
@@ -281,7 +266,6 @@ static void PPB_AudioConfig_Dev_CreateStereo16BitDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbAudioConfigDevRpcServer::PPB_AudioConfig_Dev_CreateStereo16Bit(
       rpc,
       done,
@@ -298,7 +282,6 @@ static void PPB_AudioConfig_Dev_IsAudioConfigDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbAudioConfigDevRpcServer::PPB_AudioConfig_Dev_IsAudioConfig(
       rpc,
       done,
@@ -313,7 +296,6 @@ static void PPB_AudioConfig_Dev_RecommendSampleFrameCountDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbAudioConfigDevRpcServer::PPB_AudioConfig_Dev_RecommendSampleFrameCount(
       rpc,
       done,
@@ -328,7 +310,6 @@ static void PPB_AudioConfig_Dev_GetSampleRateDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbAudioConfigDevRpcServer::PPB_AudioConfig_Dev_GetSampleRate(
       rpc,
       done,
@@ -343,7 +324,6 @@ static void PPB_AudioConfig_Dev_GetSampleFrameCountDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbAudioConfigDevRpcServer::PPB_AudioConfig_Dev_GetSampleFrameCount(
       rpc,
       done,
@@ -359,7 +339,6 @@ static void PPB_Core_AddRefResourceDispatcher(
     NaClSrpcClosure* done
 ) {
   UNREFERENCED_PARAMETER(outputs);
-  UNREFERENCED_PARAMETER(done);
   PpbCoreRpcServer::PPB_Core_AddRefResource(
       rpc,
       done,
@@ -374,7 +353,6 @@ static void PPB_Core_ReleaseResourceDispatcher(
     NaClSrpcClosure* done
 ) {
   UNREFERENCED_PARAMETER(outputs);
-  UNREFERENCED_PARAMETER(done);
   PpbCoreRpcServer::PPB_Core_ReleaseResource(
       rpc,
       done,
@@ -389,7 +367,6 @@ static void ReleaseResourceMultipleTimesDispatcher(
     NaClSrpcClosure* done
 ) {
   UNREFERENCED_PARAMETER(outputs);
-  UNREFERENCED_PARAMETER(done);
   PpbCoreRpcServer::ReleaseResourceMultipleTimes(
       rpc,
       done,
@@ -405,7 +382,6 @@ static void PPB_Core_GetTimeDispatcher(
     NaClSrpcClosure* done
 ) {
   UNREFERENCED_PARAMETER(inputs);
-  UNREFERENCED_PARAMETER(done);
   PpbCoreRpcServer::PPB_Core_GetTime(
       rpc,
       done,
@@ -419,7 +395,6 @@ static void PPB_Graphics2D_CreateDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbGraphics2DRpcServer::PPB_Graphics2D_Create(
       rpc,
       done,
@@ -436,7 +411,6 @@ static void PPB_Graphics2D_IsGraphics2DDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbGraphics2DRpcServer::PPB_Graphics2D_IsGraphics2D(
       rpc,
       done,
@@ -451,7 +425,6 @@ static void PPB_Graphics2D_DescribeDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbGraphics2DRpcServer::PPB_Graphics2D_Describe(
       rpc,
       done,
@@ -469,7 +442,6 @@ static void PPB_Graphics2D_PaintImageDataDispatcher(
     NaClSrpcClosure* done
 ) {
   UNREFERENCED_PARAMETER(outputs);
-  UNREFERENCED_PARAMETER(done);
   PpbGraphics2DRpcServer::PPB_Graphics2D_PaintImageData(
       rpc,
       done,
@@ -487,7 +459,6 @@ static void PPB_Graphics2D_ScrollDispatcher(
     NaClSrpcClosure* done
 ) {
   UNREFERENCED_PARAMETER(outputs);
-  UNREFERENCED_PARAMETER(done);
   PpbGraphics2DRpcServer::PPB_Graphics2D_Scroll(
       rpc,
       done,
@@ -504,7 +475,6 @@ static void PPB_Graphics2D_ReplaceContentsDispatcher(
     NaClSrpcClosure* done
 ) {
   UNREFERENCED_PARAMETER(outputs);
-  UNREFERENCED_PARAMETER(done);
   PpbGraphics2DRpcServer::PPB_Graphics2D_ReplaceContents(
       rpc,
       done,
@@ -520,7 +490,6 @@ static void PPB_ImageData_GetNativeImageDataFormatDispatcher(
     NaClSrpcClosure* done
 ) {
   UNREFERENCED_PARAMETER(inputs);
-  UNREFERENCED_PARAMETER(done);
   PpbImageDataRpcServer::PPB_ImageData_GetNativeImageDataFormat(
       rpc,
       done,
@@ -534,7 +503,6 @@ static void PPB_ImageData_IsImageDataFormatSupportedDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbImageDataRpcServer::PPB_ImageData_IsImageDataFormatSupported(
       rpc,
       done,
@@ -549,7 +517,6 @@ static void PPB_ImageData_CreateDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbImageDataRpcServer::PPB_ImageData_Create(
       rpc,
       done,
@@ -567,7 +534,6 @@ static void PPB_ImageData_IsImageDataDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbImageDataRpcServer::PPB_ImageData_IsImageData(
       rpc,
       done,
@@ -582,7 +548,6 @@ static void PPB_ImageData_DescribeDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbImageDataRpcServer::PPB_ImageData_Describe(
       rpc,
       done,
@@ -598,7 +563,6 @@ static void PPB_Instance_GetWindowObjectDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbInstanceRpcServer::PPB_Instance_GetWindowObject(
       rpc,
       done,
@@ -613,7 +577,6 @@ static void PPB_Instance_GetOwnerElementObjectDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbInstanceRpcServer::PPB_Instance_GetOwnerElementObject(
       rpc,
       done,
@@ -628,7 +591,6 @@ static void PPB_Instance_BindGraphicsDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbInstanceRpcServer::PPB_Instance_BindGraphics(
       rpc,
       done,
@@ -644,7 +606,6 @@ static void PPB_Instance_IsFullFrameDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbInstanceRpcServer::PPB_Instance_IsFullFrame(
       rpc,
       done,
@@ -659,7 +620,6 @@ static void PPB_Instance_ExecuteScriptDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbInstanceRpcServer::PPB_Instance_ExecuteScript(
       rpc,
       done,
@@ -677,7 +637,6 @@ static void PPB_URLRequestInfo_CreateDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_Create(
       rpc,
       done,
@@ -692,7 +651,6 @@ static void PPB_URLRequestInfo_IsURLRequestInfoDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_IsURLRequestInfo(
       rpc,
       done,
@@ -707,7 +665,6 @@ static void PPB_URLRequestInfo_SetPropertyDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_SetProperty(
       rpc,
       done,
@@ -724,7 +681,6 @@ static void PPB_URLRequestInfo_AppendDataToBodyDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_AppendDataToBody(
       rpc,
       done,
@@ -740,7 +696,6 @@ static void PPB_URLRequestInfo_AppendFileToBodyDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_AppendFileToBody(
       rpc,
       done,
@@ -759,7 +714,6 @@ static void PPB_URLResponseInfo_IsURLResponseInfoDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbURLResponseInfoRpcServer::PPB_URLResponseInfo_IsURLResponseInfo(
       rpc,
       done,
@@ -774,7 +728,6 @@ static void PPB_URLResponseInfo_GetPropertyDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbURLResponseInfoRpcServer::PPB_URLResponseInfo_GetProperty(
       rpc,
       done,
@@ -790,7 +743,6 @@ static void PPB_URLResponseInfo_GetBodyAsFileRefDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PpbURLResponseInfoRpcServer::PPB_URLResponseInfo_GetBodyAsFileRef(
       rpc,
       done,

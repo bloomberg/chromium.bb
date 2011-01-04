@@ -29,7 +29,6 @@ static void HasPropertyDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   ObjectStubRpcServer::HasProperty(
       rpc,
       done,
@@ -47,7 +46,6 @@ static void HasMethodDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   ObjectStubRpcServer::HasMethod(
       rpc,
       done,
@@ -65,7 +63,6 @@ static void GetPropertyDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   ObjectStubRpcServer::GetProperty(
       rpc,
       done,
@@ -83,7 +80,6 @@ static void GetAllPropertyNamesDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   ObjectStubRpcServer::GetAllPropertyNames(
       rpc,
       done,
@@ -101,7 +97,6 @@ static void SetPropertyDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   ObjectStubRpcServer::SetProperty(
       rpc,
       done,
@@ -119,7 +114,6 @@ static void RemovePropertyDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   ObjectStubRpcServer::RemoveProperty(
       rpc,
       done,
@@ -136,7 +130,6 @@ static void CallDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   ObjectStubRpcServer::Call(
       rpc,
       done,
@@ -156,7 +149,6 @@ static void ConstructDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   ObjectStubRpcServer::Construct(
       rpc,
       done,
@@ -176,7 +168,6 @@ static void DeallocateDispatcher(
     NaClSrpcClosure* done
 ) {
   UNREFERENCED_PARAMETER(outputs);
-  UNREFERENCED_PARAMETER(done);
   ObjectStubRpcServer::Deallocate(
       rpc,
       done,
@@ -191,7 +182,6 @@ static void InvokeCompletionCallbackDispatcher(
     NaClSrpcClosure* done
 ) {
   UNREFERENCED_PARAMETER(outputs);
-  UNREFERENCED_PARAMETER(done);
   CompletionCallbackRpcServer::InvokeCompletionCallback(
       rpc,
       done,
@@ -206,7 +196,6 @@ static void PPP_InitializeModuleDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PppRpcServer::PPP_InitializeModule(
       rpc,
       done,
@@ -227,7 +216,6 @@ static void PPP_ShutdownModuleDispatcher(
 ) {
   UNREFERENCED_PARAMETER(inputs);
   UNREFERENCED_PARAMETER(outputs);
-  UNREFERENCED_PARAMETER(done);
   PppRpcServer::PPP_ShutdownModule(
       rpc,
       done
@@ -240,7 +228,6 @@ static void PPP_GetInterfaceDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PppRpcServer::PPP_GetInterface(
       rpc,
       done,
@@ -256,7 +243,6 @@ static void PPP_Audio_Dev_StreamCreatedDispatcher(
     NaClSrpcClosure* done
 ) {
   UNREFERENCED_PARAMETER(outputs);
-  UNREFERENCED_PARAMETER(done);
   PppAudioDevRpcServer::PPP_Audio_Dev_StreamCreated(
       rpc,
       done,
@@ -273,7 +259,6 @@ static void PPP_Instance_DidCreateDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PppInstanceRpcServer::PPP_Instance_DidCreate(
       rpc,
       done,
@@ -292,7 +277,6 @@ static void PPP_Instance_DidDestroyDispatcher(
     NaClSrpcClosure* done
 ) {
   UNREFERENCED_PARAMETER(outputs);
-  UNREFERENCED_PARAMETER(done);
   PppInstanceRpcServer::PPP_Instance_DidDestroy(
       rpc,
       done,
@@ -307,7 +291,6 @@ static void PPP_Instance_DidChangeViewDispatcher(
     NaClSrpcClosure* done
 ) {
   UNREFERENCED_PARAMETER(outputs);
-  UNREFERENCED_PARAMETER(done);
   PppInstanceRpcServer::PPP_Instance_DidChangeView(
       rpc,
       done,
@@ -324,7 +307,6 @@ static void PPP_Instance_DidChangeFocusDispatcher(
     NaClSrpcClosure* done
 ) {
   UNREFERENCED_PARAMETER(outputs);
-  UNREFERENCED_PARAMETER(done);
   PppInstanceRpcServer::PPP_Instance_DidChangeFocus(
       rpc,
       done,
@@ -339,7 +321,6 @@ static void PPP_Instance_HandleInputEventDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PppInstanceRpcServer::PPP_Instance_HandleInputEvent(
       rpc,
       done,
@@ -355,7 +336,6 @@ static void PPP_Instance_HandleDocumentLoadDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PppInstanceRpcServer::PPP_Instance_HandleDocumentLoad(
       rpc,
       done,
@@ -371,7 +351,6 @@ static void PPP_Instance_GetInstanceObjectDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PppInstanceRpcServer::PPP_Instance_GetInstanceObject(
       rpc,
       done,

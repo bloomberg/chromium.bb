@@ -30,7 +30,6 @@ static void PPB_Core_CallOnMainThreadDispatcher(
     NaClSrpcClosure* done
 ) {
   UNREFERENCED_PARAMETER(outputs);
-  UNREFERENCED_PARAMETER(done);
   PppUpcallRpcServer::PPB_Core_CallOnMainThread(
       rpc,
       done,
@@ -45,7 +44,6 @@ static void PPB_Graphics2D_FlushDispatcher(
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
-  UNREFERENCED_PARAMETER(done);
   PppUpcallRpcServer::PPB_Graphics2D_Flush(
       rpc,
       done,
