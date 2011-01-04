@@ -475,6 +475,7 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
     if (text_changed || cursor_changed) {
       UpdateCursorBoundsAndTextOffset();
       SchedulePaint();
+      return true;
     }
   }
   return false;

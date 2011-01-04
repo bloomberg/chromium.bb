@@ -71,17 +71,17 @@ class NativeTextfieldViewsTest : public ::testing::Test,
     model_ = textfield_view_->model_.get();
   }
 
-  void SendKeyEventToTextfieldViews(app::KeyboardCode key_code,
+  bool SendKeyEventToTextfieldViews(app::KeyboardCode key_code,
                                     bool shift,
                                     bool control) {
     int flags = (shift ? KeyEvent::EF_SHIFT_DOWN : 0) |
         (control ? KeyEvent::EF_CONTROL_DOWN : 0);
     KeyEvent event(KeyEvent::ET_KEY_PRESSED, key_code, flags, 1, 0);
-    textfield_view_->OnKeyPressed(event);
+    return textfield_view_->OnKeyPressed(event);
   }
 
-  void SendKeyEventToTextfieldViews(app::KeyboardCode key_code) {
-    SendKeyEventToTextfieldViews(key_code, false, false);
+  bool SendKeyEventToTextfieldViews(app::KeyboardCode key_code) {
+    return SendKeyEventToTextfieldViews(key_code, false, false);
   }
 
  protected:
@@ -221,6 +221,15 @@ TEST_F(NativeTextfieldViewsTest, PasswordTest) {
   // the actual text instead of "*".
   EXPECT_STR_EQ("my password", textfield_->text());
   EXPECT_STR_EQ("my password", last_contents_);
+}
+
+TEST_F(NativeTextfieldViewsTest, TestOnKeyPressReturnValue) {
+  InitTextfield(Textfield::STYLE_DEFAULT);
+  EXPECT_TRUE(SendKeyEventToTextfieldViews(app::VKEY_A));
+  // F24, up/down key won't be handled.
+  EXPECT_FALSE(SendKeyEventToTextfieldViews(app::VKEY_F24));
+  EXPECT_FALSE(SendKeyEventToTextfieldViews(app::VKEY_UP));
+  EXPECT_FALSE(SendKeyEventToTextfieldViews(app::VKEY_DOWN));
 }
 
 }  // namespace views
