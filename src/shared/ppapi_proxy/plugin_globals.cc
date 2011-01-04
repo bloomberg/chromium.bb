@@ -6,7 +6,10 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_core.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_var.h"
+#include "native_client/src/shared/ppapi_proxy/ppruntime.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
+#include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "srpcgen/ppp_rpc.h"
 
 namespace ppapi_proxy {
 
@@ -65,6 +68,20 @@ const PPB_Core* PPBCoreInterface() {
 const PPB_Var_Deprecated* PPBVarInterface() {
   return reinterpret_cast<const PPB_Var_Deprecated*>(
       GetBrowserInterfaceSafe(PPB_VAR_DEPRECATED_INTERFACE));
+}
+
+int PluginMain() {
+  if (!NaClSrpcModuleInit()) {
+    return 1;
+  }
+  // Designate this as the main thread for PPB_Core::IsMainThread().
+  ppapi_proxy::PluginCore::MarkMainThread();
+  if (!NaClSrpcAcceptClientConnection(PppRpcs::srpc_methods)) {
+    return 1;
+  }
+  NaClSrpcModuleFini();
+
+  return 0;
 }
 
 }  // namespace ppapi_proxy

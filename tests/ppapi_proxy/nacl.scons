@@ -12,7 +12,7 @@ env.FilterOut(CFLAGS=['-pedantic'])
 env.FilterOut(CCFLAGS=['-pedantic'])
 
 ppapi_basic_object_inputs = [
-  'basic_object.cc',
+  env.ComponentObject('basic_object.cc'),
 ]
 
 basic_object_nexe = env.ComponentProgram('ppapi_basic_object.nexe',
@@ -26,7 +26,26 @@ basic_object_nexe = env.ComponentProgram('ppapi_basic_object.nexe',
 
 # Note that the html is required to run this program.
 env.Publish('ppapi_basic_object.nexe', 'run',
-            [env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js')])
+            [env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
+             'basic_object.html'])
+
+ppapi_user_main_inputs = ppapi_basic_object_inputs + [
+  'user_main.cc',
+]
+
+basic_object_nexe = env.ComponentProgram('ppapi_user_main.nexe',
+                                         ppapi_user_main_inputs,
+                                         EXTRA_LIBS=['ppruntime',
+                                                     'google_nacl_imc',
+                                                     'google_nacl_platform',
+                                                     'gio',
+                                                     'pthread',
+                                                     'srpc'])
+
+# Note that the html is required to run this program.
+env.Publish('ppapi_user_main.nexe', 'run',
+            [env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
+             'basic_object.html'])
 
 
 ppapi_event_example_inputs = [

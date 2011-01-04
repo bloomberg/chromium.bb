@@ -91,4 +91,8 @@ env.ComponentLibrary('ppruntime',
                       ])
 
 env.Depends('ppruntime', 'srpc_untrusted')
+header_install = env.AddHeaderToSdk(['ppruntime.h'])
 env.AddLibraryToSdk(['ppruntime'])
+
+# Clients that overload main() will use ppruntime.h.
+env.Requires('ppruntime', header_install)
