@@ -1857,9 +1857,9 @@ views::LayoutManager* BrowserView::CreateLayoutManager() const {
 
 void BrowserView::InitTabStrip(TabStripModel* model) {
   // Throw away the existing tabstrip if we're switching display modes.
+  scoped_ptr<BaseTabStrip> old_strip(tabstrip_);
   if (tabstrip_) {
     tabstrip_->GetParent()->RemoveChildView(tabstrip_);
-    delete tabstrip_;
   }
 
   BrowserTabStripController* tabstrip_controller =

@@ -54,11 +54,8 @@ class BrowserTabStripController::TabContextMenuContents
   }
 
   void RunMenuAt(const gfx::Point& point) {
-    BrowserTabStripController* controller = controller_;
     menu_->RunMenuAt(point, views::Menu2::ALIGN_TOPLEFT);
     // We could be gone now. Assume |this| is junk!
-    if (controller)
-      controller->tabstrip_->StopAllHighlighting();
   }
 
   // Overridden from menus::SimpleMenuModel::Delegate:
@@ -88,6 +85,10 @@ class BrowserTabStripController::TabContextMenuContents
     controller_->StartHighlightTabsForCommand(last_command_, tab_);
   }
   virtual void ExecuteCommand(int command_id) {
+    // Executing the command destroys |this|, and can also end up destroying
+    // |controller_| (e.g. for |CommandUseVerticalTabs|). So stop the highlights
+    // before executing the command.
+    controller_->tabstrip_->StopAllHighlighting();
     controller_->ExecuteCommandForTab(
         static_cast<TabStripModel::ContextMenuCommand>(command_id),
         tab_);
