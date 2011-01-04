@@ -126,7 +126,7 @@
 {
    Heapcheck sanity test (ToolsSanityTest.MemoryLeak).
    Heapcheck:Leak
-   fun:ToolsSanityTest_MemoryLeak_Test::TestBody
+   fun:base::ToolsSanityTest_MemoryLeak_Test::TestBody
 }
 {
    Intentional leak in BrowserThreadTest.NotReleasedIfTargetThreadNonExistent

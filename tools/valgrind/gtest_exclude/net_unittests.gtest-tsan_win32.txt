@@ -29,8 +29,8 @@ CookieMonsterTest.GarbageCollectionTriggers
 CertVerifierTest.*
 X509CertificateTest.IntermediateCARequireExplicitPolicy
 
-# Times out, see http://crbug.com/68482
-SSLServerSocketTest.Handshake
+# Time out, see http://crbug.com/68482
+SSLServerSocketTest.*
 
 #########################################
 # These tests fail if you don't have our SSL certificate installed.
