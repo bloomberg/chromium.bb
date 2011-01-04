@@ -66,9 +66,14 @@ bool SelfRegWorkItem::RegisterDll(bool do_register) {
 }
 
 bool SelfRegWorkItem::Do() {
-  return RegisterDll(do_register_);
+  bool success = RegisterDll(do_register_);
+  if (ignore_failure_)
+    success = true;
+  return success;
 }
 
 void SelfRegWorkItem::Rollback() {
-  RegisterDll(!do_register_);
+  if (!ignore_failure_) {
+    RegisterDll(!do_register_);
+  }
 }

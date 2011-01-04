@@ -605,8 +605,18 @@ InstallStatus UninstallProduct(const FilePath& setup_path,
       std::vector<FilePath> com_dll_list(browser_dist->GetComDllList());
       FilePath dll_folder = product.package().path().Append(
           UTF8ToWide(installed_version->GetString()));
-      RegisterComDllList(dll_folder, com_dll_list, product.system_level(),
-                         false, false);
+
+      scoped_ptr<WorkItemList> unreg_work_item_list(
+          WorkItem::CreateWorkItemList());
+
+
+      AddRegisterComDllWorkItems(dll_folder,
+                                 com_dll_list,
+                                 product.system_level(),
+                                 false,  // Unregister
+                                 true,   // May fail
+                                 unreg_work_item_list.get());
+      unreg_work_item_list->Do();
     }
   }
 

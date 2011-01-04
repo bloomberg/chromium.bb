@@ -21,6 +21,7 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
+#include "chrome/installer/util/conditional_work_item_list.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -223,7 +224,8 @@ void AddUninstallShortcutWorkItems(const FilePath& setup_path,
 // If so, try and remove any existing uninstallation shortcuts, as we want the
 // uninstall to be managed entirely by the MSI machinery (accessible via the
 // Add/Remove programs dialog).
-void DeleteUninstallShortcutsForMSI(const Product& product) {
+void AddDeleteUninstallShortcutsForMSIWorkItems(const Product& product,
+                                                WorkItemList* work_item_list) {
   DCHECK(product.IsMsi()) << "This must only be called for MSI installations!";
 
   // First attempt to delete the old installation's ARP dialog entry.
@@ -231,7 +233,10 @@ void DeleteUninstallShortcutsForMSI(const Product& product) {
                                            HKEY_CURRENT_USER;
   base::win::RegKey root_key(reg_root, L"", KEY_ALL_ACCESS);
   std::wstring uninstall_reg(product.distribution()->GetUninstallRegPath());
-  InstallUtil::DeleteRegistryKey(root_key, uninstall_reg);
+
+  WorkItem* delete_reg_key = work_item_list->AddDeleteRegKeyWorkItem(
+      reg_root, uninstall_reg);
+  delete_reg_key->set_ignore_failure(true);
 
   // Then attempt to delete the old installation's start menu shortcut.
   FilePath uninstall_link;
@@ -250,8 +255,11 @@ void DeleteUninstallShortcutsForMSI(const Product& product) {
         product.distribution()->GetUninstallLinkName() + L".lnk");
     VLOG(1) << "Deleting old uninstall shortcut (if present): "
             << uninstall_link.value();
-    if (!file_util::Delete(uninstall_link, true))
-      VLOG(1) << "Failed to delete old uninstall shortcut.";
+    WorkItem* delete_link = work_item_list->AddDeleteTreeWorkItem(
+        uninstall_link);
+    delete_link->set_ignore_failure(true);
+    delete_link->set_log_message(
+        "Failed to delete old uninstall shortcut.");
   }
 }
 
@@ -402,11 +410,12 @@ bool CreateOrUpdateChromeShortcuts(const FilePath& setup_path,
   return ret;
 }
 
-// Local helper to call RegisterComDllList for all DLLs in a set of products
-// managed by a given package.
-bool RegisterComDlls(const Package& package,
-                     const Version* old_version,
-                     const Version& new_version) {
+// Local helper to call AddRegisterComDllWorkItems for all DLLs in a set of
+// products managed by a given package.
+void AddRegisterComDllWorkItemsForPackage(const Package& package,
+                                          const Version* old_version,
+                                          const Version& new_version,
+                                          WorkItemList* work_item_list) {
   // First collect the list of DLLs to be registered from each product.
   const Products& products = package.products();
   Products::const_iterator product_iter(products.begin());
@@ -414,8 +423,8 @@ bool RegisterComDlls(const Package& package,
   for (; product_iter != products.end(); ++product_iter) {
     BrowserDistribution* dist = product_iter->get()->distribution();
     std::vector<FilePath> dist_dll_list(dist->GetComDllList());
-    std::copy(dist_dll_list.begin(), dist_dll_list.end(),
-              std::back_inserter(com_dll_list));
+    com_dll_list.insert(com_dll_list.end(), dist_dll_list.begin(),
+                        dist_dll_list.end());
   }
 
   // Then, if we got some, attempt to unregister the DLLs from the old
@@ -426,29 +435,28 @@ bool RegisterComDlls(const Package& package,
   // TODO(robertshield): If we ever remove a DLL from a product, this will
   // not unregister it on update. We should build the unregistration list from
   // saved state instead of assuming it is the same as the registration list.
-  bool success = true;
   if (!com_dll_list.empty()) {
     if (old_version) {
       FilePath old_dll_path(
           package.path().Append(UTF8ToWide(old_version->GetString())));
 
-      installer::RegisterComDllList(old_dll_path,
-                                    com_dll_list,
-                                    package.system_level(),
-                                    false,   // Unregister
-                                    false);  // Ignore failures
+      installer::AddRegisterComDllWorkItems(old_dll_path,
+                                            com_dll_list,
+                                            package.system_level(),
+                                            false,  // Unregister
+                                            true,   // May fail
+                                            work_item_list);
     }
 
     FilePath dll_path(
         package.path().Append(UTF8ToWide(new_version.GetString())));
-    success = installer::RegisterComDllList(dll_path,
-                                            com_dll_list,
-                                            package.system_level(),
-                                            true,   // Register
-                                            true);  // Rollback on failure.
+    installer::AddRegisterComDllWorkItems(dll_path,
+                                          com_dll_list,
+                                          package.system_level(),
+                                          true,   // Register
+                                          false,  // Must succeed.
+                                          work_item_list);
   }
-
-  return success;
 }
 
 // After a successful copying of all the files, this function is called to
@@ -460,26 +468,28 @@ bool RegisterComDlls(const Package& package,
 //   it if not.
 // If these operations are successful, the function returns true, otherwise
 // false.
-bool DoPostInstallTasks(bool multi_install,
-                        const FilePath& setup_path,
-                        const FilePath& new_chrome_exe,
-                        const Version* current_version,
-                        const Version& new_version,
-                        const Package& package) {
+bool AppendPostInstallTasks(bool multi_install,
+                            const FilePath& setup_path,
+                            const FilePath& new_chrome_exe,
+                            const Version* current_version,
+                            const Version& new_version,
+                            const Package& package,
+                            WorkItemList* post_install_task_list) {
+  DCHECK(post_install_task_list);
   HKEY root = package.system_level() ? HKEY_LOCAL_MACHINE :
                                        HKEY_CURRENT_USER;
   const Products& products = package.products();
 
-  if (file_util::PathExists(new_chrome_exe)) {
-    // Looks like this was in use update. So make sure we update the 'opv' key
-    // with the current version that is active and 'cmd' key with the rename
-    // command to run.
-    if (!current_version) {
-      LOG(ERROR) << "New chrome.exe exists but current version is NULL!";
-      return false;
-    }
 
-    scoped_ptr<WorkItemList> inuse_list(WorkItem::CreateWorkItemList());
+  // Append work items that will only be executed if this was an update.
+  // We update the 'opv' key with the current version that is active and 'cmd'
+  // key with the rename command to run.
+  {
+    scoped_ptr<WorkItemList> in_use_update_work_items(
+        WorkItem::CreateConditionalWorkItemList(
+            new ConditionRunIfFileExists(new_chrome_exe)));
+    in_use_update_work_items->set_log_message("InUseUpdateWorkItemList");
+
     FilePath installer_path(package.GetInstallerDirectory(new_version)
         .Append(setup_path.BaseName()));
 
@@ -498,75 +508,83 @@ bool DoPostInstallTasks(bool multi_install,
     for (size_t i = 0; i < products.size(); ++i) {
       BrowserDistribution* dist = products[i]->distribution();
       version_key = dist->GetVersionKey();
-      inuse_list->AddSetRegValueWorkItem(root, version_key,
-          google_update::kRegOldVersionField,
-          UTF8ToWide(current_version->GetString()), true);
+
+      if (current_version != NULL) {
+        in_use_update_work_items->AddSetRegValueWorkItem(root, version_key,
+            google_update::kRegOldVersionField,
+            UTF8ToWide(current_version->GetString()), true);
+      }
 
       // Adding this registry entry for all products is overkill.
       // However, as it stands, we don't have a way to know which distribution
       // will check the key and run the command, so we add it for all.
       // After the first run, the subsequent runs should just be noops.
       // (see Upgrade::SwapNewChromeExeIfPresent).
-      inuse_list->AddSetRegValueWorkItem(root, version_key,
-                                         google_update::kRegRenameCmdField,
-                                         rename.command_line_string(), true);
+      in_use_update_work_items->AddSetRegValueWorkItem(
+          root,
+          version_key,
+          google_update::kRegRenameCmdField,
+          rename.command_line_string(),
+          true);
     }
 
     if (multi_install) {
       PackageProperties* props = package.properties();
-      if (props->ReceivesUpdates()) {
-        inuse_list->AddSetRegValueWorkItem(root, props->GetVersionKey(),
+      if (props->ReceivesUpdates() && current_version != NULL) {
+        in_use_update_work_items->AddSetRegValueWorkItem(
+            root,
+            props->GetVersionKey(),
             google_update::kRegOldVersionField,
-            UTF8ToWide(current_version->GetString()), true);
-        // TODO(tommi): We should move the rename command here.  We also need to
+            UTF8ToWide(current_version->GetString()),
+            true);
+        // TODO(tommi): We should move the rename command here. We also need to
         // update Upgrade::SwapNewChromeExeIfPresent.
       }
     }
 
-    if (!inuse_list->Do()) {
-      LOG(ERROR) << "Couldn't write opv/cmd values to registry.";
-      inuse_list->Rollback();
-      return false;
-    }
-  } else {
+    post_install_task_list->AddWorkItem(in_use_update_work_items.release());
+  }
+
+
+  // Append work items that will be executed if this was NOT an in-use update.
+  {
+    scoped_ptr<WorkItemList> regular_update_work_items(
+        WorkItem::CreateConditionalWorkItemList(
+            new Not(new ConditionRunIfFileExists(new_chrome_exe))));
+    regular_update_work_items->set_log_message(
+        "RegularUpdateWorkItemList");
+
     // Since this was not an in-use-update, delete 'opv' and 'cmd' keys.
-    scoped_ptr<WorkItemList> inuse_list(WorkItem::CreateWorkItemList());
     for (size_t i = 0; i < products.size(); ++i) {
       BrowserDistribution* dist = products[i]->distribution();
       std::wstring version_key(dist->GetVersionKey());
-      inuse_list->AddDeleteRegValueWorkItem(root, version_key,
+      regular_update_work_items->AddDeleteRegValueWorkItem(root, version_key,
                                             google_update::kRegOldVersionField,
                                             true);
-      inuse_list->AddDeleteRegValueWorkItem(root, version_key,
+      regular_update_work_items->AddDeleteRegValueWorkItem(root, version_key,
                                             google_update::kRegRenameCmdField,
                                             true);
     }
 
-    if (!inuse_list->Do()) {
-      LOG(ERROR) << "Couldn't delete opv/cmd values from registry.";
-      inuse_list->Rollback();
-      return false;
-    }
+    post_install_task_list->AddWorkItem(regular_update_work_items.release());
   }
 
-  if (!RegisterComDlls(package, current_version, new_version)) {
-    LOG(ERROR) << "RegisterComDlls failed.  Aborting.";
-    return false;
-  }
+  AddRegisterComDllWorkItemsForPackage(package, current_version, new_version,
+                                       post_install_task_list);
 
   for (size_t i = 0; i < products.size(); ++i) {
     const Product* product = products[i];
     // If we're told that we're an MSI install, make sure to set the marker
     // in the client state key so that future updates do the right thing.
     if (product->IsMsi()) {
-      if (!product->SetMsiMarker(true))
-        return false;
+      AddSetMsiMarkerWorkItem(*product, true, post_install_task_list);
 
       // We want MSI installs to take over the Add/Remove Programs shortcut.
       // Make a best-effort attempt to delete any shortcuts left over from
       // previous non-MSI installations for the same type of install (system or
       // per user).
-      DeleteUninstallShortcutsForMSI(*product);
+      AddDeleteUninstallShortcutsForMSIWorkItems(*product,
+                                                 post_install_task_list);
     }
   }
 
@@ -781,10 +799,16 @@ installer::InstallStatus InstallNewVersion(
   // each product.
   AddProductSpecificWorkItems(true, setup_path, new_version, package,
                               install_list.get());
+  // Append the tasks that run after the installation.
+  AppendPostInstallTasks(multi_install,
+                         setup_path,
+                         new_chrome_exe,
+                         current_version->get(),
+                         new_version,
+                         package,
+                         install_list.get());
 
-  if (!install_list->Do() ||
-      !DoPostInstallTasks(multi_install, setup_path, new_chrome_exe,
-                          current_version->get(), new_version, package)) {
+  if (!install_list->Do()) {
     installer::InstallStatus result =
         file_util::PathExists(new_chrome_exe) && current_version->get() &&
         new_version.Equals(**current_version) ?
@@ -892,36 +916,41 @@ installer::InstallStatus InstallOrUpdateProduct(
   return result;
 }
 
-bool RegisterComDllList(const FilePath& dll_folder,
-                        const std::vector<FilePath>& dll_list,
-                        bool system_level,
-                        bool do_register,
-                        bool rollback_on_failure) {
+void AddRegisterComDllWorkItems(const FilePath& dll_folder,
+                                const std::vector<FilePath>& dll_list,
+                                bool system_level,
+                                bool do_register,
+                                bool ignore_failures,
+                                WorkItemList* work_item_list) {
+  DCHECK(work_item_list);
   if (dll_list.empty()) {
     VLOG(1) << "No COM DLLs to register";
-    return true;
-  }
-
-  scoped_ptr<WorkItemList> work_item_list;
-  if (rollback_on_failure) {
-    work_item_list.reset(WorkItem::CreateWorkItemList());
   } else {
-    work_item_list.reset(WorkItem::CreateNoRollbackWorkItemList());
+    std::vector<FilePath>::const_iterator dll_iter(dll_list.begin());
+    for (; dll_iter != dll_list.end(); ++dll_iter) {
+      FilePath dll_path = dll_folder.Append(*dll_iter);
+      WorkItem* work_item = work_item_list->AddSelfRegWorkItem(
+          dll_path.value(), do_register, !system_level);
+      DCHECK(work_item);
+      work_item->set_ignore_failure(ignore_failures);
+    }
   }
+}
 
-  std::vector<FilePath>::const_iterator dll_iter(dll_list.begin());
-  for (; dll_iter != dll_list.end(); ++dll_iter) {
-    FilePath dll_path = dll_folder.Append(*dll_iter);
-    work_item_list->AddSelfRegWorkItem(dll_path.value(),
-                                       do_register,
-                                       !system_level);
-  }
-
-  bool success = work_item_list->Do();
-  if (!success && rollback_on_failure) {
-    work_item_list->Rollback();
-  }
-  return success;
+void AddSetMsiMarkerWorkItem(const Product& product,
+                             bool set,
+                             WorkItemList* work_item_list) {
+  DCHECK(work_item_list);
+  BrowserDistribution* dist = product.distribution();
+  HKEY reg_root = product.system_level() ? HKEY_LOCAL_MACHINE :
+                                           HKEY_CURRENT_USER;
+  DWORD msi_value = set ? 1 : 0;
+  WorkItem* set_msi_work_item = work_item_list->AddSetRegValueWorkItem(
+      reg_root, dist->GetStateKey(), google_update::kRegMSIField,
+      msi_value, true);
+  DCHECK(set_msi_work_item);
+  set_msi_work_item->set_ignore_failure(true);
+  set_msi_work_item->set_log_message("Could not write MSI marker!");
 }
 
 void AddChromeFrameWorkItems(bool install,

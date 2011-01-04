@@ -47,19 +47,25 @@ installer::InstallStatus InstallOrUpdateProduct(
     const installer::MasterPreferences& prefs, const Version& new_version,
     const Package& package);
 
-// Registers or unregisters the COM DLLs whose file names are given in
-// |dll_files| and who reside in the path |dll_folder|.
+// Appends registration or unregistration work items to |work_item_list| for the
+// COM DLLs whose file names are given in |dll_files| and which reside in the
+// path |dll_folder|.
 // |system_level| specifies whether to call the system or user level DLL
 // registration entry points.
 // |do_register| says whether to register or unregister.
-// |rollback_on_failure| says whether we should try to revert the registration
-// or unregistration by calling the opposite entry point on the DLLs if
-// something goes wrong.
-bool RegisterComDllList(const FilePath& dll_folder,
-                        const std::vector<FilePath>& dll_files,
-                        bool system_level,
-                        bool do_register,
-                        bool rollback_on_failure);
+// |may_fail| states whether this is best effort or not. If |may_fail| is true
+// then |work_item_list| will still succeed if the registration fails and
+// no registration rollback will be performed.
+void AddRegisterComDllWorkItems(const FilePath& dll_folder,
+                                const std::vector<FilePath>& dll_files,
+                                bool system_level,
+                                bool do_register,
+                                bool ignore_failures,
+                                WorkItemList* work_item_list);
+
+void AddSetMsiMarkerWorkItem(const Product& product,
+                             bool set,
+                             WorkItemList* work_item_list);
 
 // Called for either installation or uninstallation. This method updates the
 // registry according to Chrome Frame specific options for the current

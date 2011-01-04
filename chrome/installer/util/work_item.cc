@@ -4,17 +4,19 @@
 
 #include "chrome/installer/util/work_item.h"
 
+#include "chrome/installer/util/conditional_work_item_list.h"
 #include "chrome/installer/util/copy_tree_work_item.h"
 #include "chrome/installer/util/create_dir_work_item.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
 #include "chrome/installer/util/delete_tree_work_item.h"
+#include "chrome/installer/util/delete_reg_key_work_item.h"
 #include "chrome/installer/util/delete_reg_value_work_item.h"
 #include "chrome/installer/util/move_tree_work_item.h"
 #include "chrome/installer/util/self_reg_work_item.h"
 #include "chrome/installer/util/set_reg_value_work_item.h"
 #include "chrome/installer/util/work_item_list.h"
 
-WorkItem::WorkItem() {
+WorkItem::WorkItem() : ignore_failure_(false) {
 }
 
 WorkItem::~WorkItem() {
@@ -37,6 +39,11 @@ CreateDirWorkItem* WorkItem::CreateCreateDirWorkItem(const FilePath& path) {
 CreateRegKeyWorkItem* WorkItem::CreateCreateRegKeyWorkItem(
     HKEY predefined_root, const std::wstring& path) {
   return new CreateRegKeyWorkItem(predefined_root, path);
+}
+
+DeleteRegKeyWorkItem* WorkItem::CreateDeleteRegKeyWorkItem(
+    HKEY predefined_root, const std::wstring& path) {
+  return new DeleteRegKeyWorkItem(predefined_root, path);
 }
 
 DeleteRegValueWorkItem* WorkItem::CreateDeleteRegValueWorkItem(
@@ -92,4 +99,8 @@ WorkItemList* WorkItem::CreateWorkItemList() {
 // static
 WorkItemList* WorkItem::CreateNoRollbackWorkItemList() {
   return new NoRollbackWorkItemList();
+}
+
+WorkItemList* WorkItem::CreateConditionalWorkItemList(Condition* condition) {
+  return new ConditionalWorkItemList(condition);
 }
