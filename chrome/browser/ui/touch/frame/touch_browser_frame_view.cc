@@ -116,16 +116,16 @@ void TouchBrowserFrameView::Observe(NotificationType type,
   if (type == NotificationType::FOCUS_CHANGED_IN_PAGE) {
     // Only modify the keyboard state if the currently active tab sent the
     // notification.
-    if (browser->GetSelectedTabContents()->render_view_host() ==
-        Source<RenderViewHost>(source).ptr()) {
+    const TabContents* tab_contents = browser->GetSelectedTabContents();
+    if (tab_contents &&
+        tab_contents->render_view_host() ==
+            Source<RenderViewHost>(source).ptr())
       UpdateKeyboardAndLayout(*Details<const bool>(details).ptr());
-    }
   } else if (type == NotificationType::NAV_ENTRY_COMMITTED) {
     Browser* source_browser = Browser::GetBrowserForController(
         Source<NavigationController>(source).ptr(), NULL);
     // If the Browser for the keyboard has navigated, hide the keyboard.
-    if (source_browser == browser) {
+    if (source_browser == browser)
       UpdateKeyboardAndLayout(false);
-    }
   }
 }
