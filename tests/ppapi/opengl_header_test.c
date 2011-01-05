@@ -9,8 +9,4 @@
  */
 
 #include <GLES2/gl2.h>
-/* TODO(dspringer): Uncomment this #include when the toolchain actually
- * includes gl2ext.h.  See bug:
- * http://code.google.com/p/nativeclient/issues/detail?id=1273
- */
-/* #include <GLES2/gl2ext.h> */
+#include <GLES2/gl2ext.h>
