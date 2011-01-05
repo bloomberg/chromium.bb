@@ -54,9 +54,9 @@ void RecordBreakpadStatusUMA(MetricsService* metrics) {
 void WarnAboutMinimumSystemRequirements() {
   if (base::win::GetVersion() < base::win::VERSION_XP) {
     // Display a warning message if the user is running chrome on Windows 2000.
-    const std::wstring text =
-        l10n_util::GetString(IDS_UNSUPPORTED_OS_PRE_WIN_XP);
-    const std::wstring caption = l10n_util::GetString(IDS_PRODUCT_NAME);
+    const string16 text =
+        l10n_util::GetStringUTF16(IDS_UNSUPPORTED_OS_PRE_WIN_XP);
+    const string16 caption = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
     app::win::MessageBox(NULL, text, caption,
                          MB_OK | MB_ICONWARNING | MB_TOPMOST);
   }
@@ -72,8 +72,8 @@ int AskForUninstallConfirmation() {
 }
 
 void ShowCloseBrowserFirstMessageBox() {
-  const std::wstring text = l10n_util::GetString(IDS_UNINSTALL_CLOSE_APP);
-  const std::wstring caption = l10n_util::GetString(IDS_PRODUCT_NAME);
+  const string16 text = l10n_util::GetStringUTF16(IDS_UNINSTALL_CLOSE_APP);
+  const string16 caption = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
   const UINT flags = MB_OK | MB_ICONWARNING | MB_TOPMOST;
   app::win::MessageBox(NULL, text, caption, flags);
 }
@@ -153,7 +153,7 @@ void PrepareRestartOnCrashEnviroment(const CommandLine &parsed_command_line) {
 // functionality so we just ask the users if they want to uninstall Chrome.
 int HandleIconsCommands(const CommandLine &parsed_command_line) {
   if (parsed_command_line.HasSwitch(switches::kHideIcons)) {
-    std::wstring cp_applet;
+    string16 cp_applet;
     base::win::Version version = base::win::GetVersion();
     if (version >= base::win::VERSION_VISTA) {
       cp_applet.assign(L"Programs and Features");  // Windows Vista and later.
@@ -163,9 +163,9 @@ int HandleIconsCommands(const CommandLine &parsed_command_line) {
       return ResultCodes::UNSUPPORTED_PARAM;  // Not supported
     }
 
-    const std::wstring msg = l10n_util::GetStringF(IDS_HIDE_ICONS_NOT_SUPPORTED,
-                                                   cp_applet);
-    const std::wstring caption = l10n_util::GetString(IDS_PRODUCT_NAME);
+    const string16 msg =
+        l10n_util::GetStringFUTF16(IDS_HIDE_ICONS_NOT_SUPPORTED, cp_applet);
+    const string16 caption = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
     const UINT flags = MB_OKCANCEL | MB_ICONWARNING | MB_TOPMOST;
     if (IDOK == app::win::MessageBox(NULL, msg, caption, flags))
       ShellExecute(NULL, NULL, L"appwiz.cpl", NULL, NULL, SW_SHOWNORMAL);
@@ -190,9 +190,9 @@ bool CheckMachineLevelInstall() {
     std::wstring exe = exe_path.value();
     FilePath user_exe_path(installer::GetChromeInstallPath(false, dist));
     if (FilePath::CompareEqualIgnoreCase(exe, user_exe_path.value())) {
-      const std::wstring text =
-          l10n_util::GetString(IDS_MACHINE_LEVEL_INSTALL_CONFLICT);
-      const std::wstring caption = l10n_util::GetString(IDS_PRODUCT_NAME);
+      const string16 text =
+          l10n_util::GetStringUTF16(IDS_MACHINE_LEVEL_INSTALL_CONFLICT);
+      const string16 caption = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
       const UINT flags = MB_OK | MB_ICONERROR | MB_TOPMOST;
       app::win::MessageBox(NULL, text, caption, flags);
       FilePath uninstall_path(InstallUtil::GetChromeUninstallCmd(false, dist));

@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
@@ -373,7 +374,7 @@ void LoginPerformer::ResolveLockNetworkAuthFailure() {
       << "ScreenLocker instance doesn't exist.";
   DCHECK(last_login_failure_.reason() == LoginFailure::NETWORK_AUTH_FAILED);
 
-  std::wstring msg;
+  string16 msg;
   bool sign_out_only = false;
 
   DVLOG(1) << "auth_error: " << last_login_failure_.error().state();
@@ -392,22 +393,22 @@ void LoginPerformer::ResolveLockNetworkAuthFailure() {
       return;
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
       // Password change detected.
-      msg = l10n_util::GetString(IDS_LOGIN_ERROR_PASSWORD_CHANGED);
+      msg = l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_PASSWORD_CHANGED);
       break;
     case GoogleServiceAuthError::USER_NOT_SIGNED_UP:
     case GoogleServiceAuthError::ACCOUNT_DELETED:
     case GoogleServiceAuthError::ACCOUNT_DISABLED:
       // Access not granted. User has to sign out.
       // Show error message using existing screen lock.
-      msg = l10n_util::GetString(IDS_LOGIN_ERROR_RESTRICTED);
+      msg = l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_RESTRICTED);
       sign_out_only = true;
       break;
     case GoogleServiceAuthError::CAPTCHA_REQUIRED:
       // User is requested to enter CAPTCHA challenge.
-      msg = l10n_util::GetString(IDS_LOGIN_ERROR_PASSWORD_CHANGED);
+      msg = l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_PASSWORD_CHANGED);
       ScreenLocker::default_screen_locker()->ShowCaptchaAndErrorMessage(
           last_login_failure_.error().captcha().image_url,
-          msg);
+          UTF16ToWide(msg));
       return;
     default:
       // Unless there's new GoogleServiceAuthError state has been added.
@@ -415,7 +416,8 @@ void LoginPerformer::ResolveLockNetworkAuthFailure() {
       break;
   }
 
-  ScreenLocker::default_screen_locker()->ShowErrorMessage(msg, sign_out_only);
+  ScreenLocker::default_screen_locker()->ShowErrorMessage(UTF16ToWide(msg),
+                                                          sign_out_only);
 }
 
 void LoginPerformer::ResolveScreenLocked() {

@@ -489,13 +489,13 @@ gfx::NativeWindow ExistingUserController::GetNativeWindow() const {
 void ExistingUserController::ShowError(int error_id,
                                        const std::string& details) {
   ClearErrors();
-  std::wstring error_text;
+  string16 error_text;
   // GetStringF fails on debug build if there's no replacement in the string.
   if (error_id == IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED) {
-    error_text = l10n_util::GetStringF(
-        error_id, l10n_util::GetString(IDS_PRODUCT_OS_NAME));
+    error_text = l10n_util::GetStringFUTF16(
+        error_id, l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME));
   } else {
-    error_text = l10n_util::GetString(error_id);
+    error_text = l10n_util::GetStringUTF16(error_id);
   }
   // TODO(dpolukhin): show detailed error info. |details| string contains
   // low level error info that is not localized and even is not user friendly.
@@ -512,11 +512,11 @@ void ExistingUserController::ShowError(int error_id,
     bounds.set_width(kCursorOffset * 2);
     arrow = BubbleBorder::BOTTOM_LEFT;
   }
-  std::wstring help_link;
+  string16 help_link;
   if (error_id == IDS_LOGIN_ERROR_AUTHENTICATING_HOSTED) {
-    help_link = l10n_util::GetString(IDS_LEARN_MORE);
+    help_link = l10n_util::GetStringUTF16(IDS_LEARN_MORE);
   } else if (num_login_attempts_ > static_cast<size_t>(1)) {
-    help_link = l10n_util::GetString(IDS_CANT_ACCESS_ACCOUNT_BUTTON);
+    help_link = l10n_util::GetStringUTF16(IDS_CANT_ACCESS_ACCOUNT_BUTTON);
   }
 
   bubble_ = MessageBubble::Show(
@@ -524,8 +524,8 @@ void ExistingUserController::ShowError(int error_id,
       bounds,
       arrow,
       ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING),
-      error_text,
-      help_link,
+      UTF16ToWide(error_text),
+      UTF16ToWide(help_link),
       this);
 }
 

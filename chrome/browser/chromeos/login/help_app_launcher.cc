@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
@@ -73,7 +74,8 @@ void HelpAppLauncher::ShowHelpTopicDialog(const GURL& topic_url) {
     dialog_.reset(new LoginHtmlDialog(
         this,
         parent_window_,
-        l10n_util::GetString(IDS_LOGIN_OOBE_HELP_DIALOG_TITLE),
+        UTF16ToWide(
+            l10n_util::GetStringUTF16(IDS_LOGIN_OOBE_HELP_DIALOG_TITLE)),
         topic_url,
         LoginHtmlDialog::STYLE_BUBBLE));
   } else {

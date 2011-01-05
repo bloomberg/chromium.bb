@@ -34,7 +34,7 @@ enum {
 
 MemoryDetails::MemoryDetails() {
   static const std::wstring google_browser_name =
-      l10n_util::GetString(IDS_PRODUCT_NAME);
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   struct {
     const wchar_t* name;
     const wchar_t* process_name;

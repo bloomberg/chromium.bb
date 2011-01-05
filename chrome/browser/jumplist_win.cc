@@ -293,7 +293,7 @@ HRESULT UpdateCategory(ScopedComPtr<ICustomDestinationList> list,
   if (data.empty() || !max_slots)
     return S_OK;
 
-  std::wstring category = l10n_util::GetString(category_id);
+  std::wstring category = UTF16ToWide(l10n_util::GetStringUTF16(category_id));
 
   // Create an EnumerableObjectCollection object.
   // We once add the given items to this collection object and add this
@@ -348,7 +348,8 @@ HRESULT UpdateTaskCategory(ScopedComPtr<ICustomDestinationList> list,
   // We remove '&' characters from this string so we can share it with our
   // system menu.
   scoped_refptr<ShellLinkItem> chrome(new ShellLinkItem);
-  std::wstring chrome_title(l10n_util::GetString(IDS_NEW_WINDOW));
+  std::wstring chrome_title =
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_NEW_WINDOW));
   ReplaceSubstringsAfterOffset(&chrome_title, 0, L"&", L"");
   chrome->SetTitle(chrome_title);
   chrome->SetIcon(chrome_path, 0, false);
@@ -360,7 +361,8 @@ HRESULT UpdateTaskCategory(ScopedComPtr<ICustomDestinationList> list,
   scoped_refptr<ShellLinkItem> incognito(new ShellLinkItem);
   incognito->SetArguments(
       ASCIIToWide(std::string("--") + switches::kIncognito));
-  std::wstring incognito_title(l10n_util::GetString(IDS_NEW_INCOGNITO_WINDOW));
+  std::wstring incognito_title =
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_NEW_INCOGNITO_WINDOW));
   ReplaceSubstringsAfterOffset(&incognito_title, 0, L"&", L"");
   incognito->SetTitle(incognito_title);
   incognito->SetIcon(chrome_path, 0, false);

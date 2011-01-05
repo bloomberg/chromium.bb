@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/scoped_handle.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extensions_startup.h"
 #include "chrome/browser/platform_util.h"
@@ -142,8 +143,10 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
 
   // If there is a visible browser window, ask the user before killing it.
   if (visible_window) {
-    std::wstring text = l10n_util::GetString(IDS_BROWSER_HUNGBROWSER_MESSAGE);
-    std::wstring caption = l10n_util::GetString(IDS_PRODUCT_NAME);
+    std::wstring text =
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_BROWSER_HUNGBROWSER_MESSAGE));
+    std::wstring caption =
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
     if (!platform_util::SimpleYesNoBox(NULL, caption, text)) {
       // The user denied. Quit silently.
       return PROCESS_NOTIFIED;

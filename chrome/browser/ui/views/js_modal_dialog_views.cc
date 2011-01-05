@@ -7,6 +7,7 @@
 #include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "app/message_box_flags.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/views/window.h"
 #include "grit/generated_resources.h"
@@ -27,8 +28,8 @@ JSModalDialogViews::JSModalDialogViews(
   message_box_view_->AddAccelerator(
       views::Accelerator(app::VKEY_C, false, true, false));
   if (parent->display_suppress_checkbox()) {
-    message_box_view_->SetCheckBoxLabel(
-        l10n_util::GetString(IDS_JAVASCRIPT_MESSAGEBOX_SUPPRESS_OPTION));
+    message_box_view_->SetCheckBoxLabel(UTF16ToWide(
+        l10n_util::GetStringUTF16(IDS_JAVASCRIPT_MESSAGEBOX_SUPPRESS_OPTION)));
   }
 }
 
@@ -119,10 +120,11 @@ std::wstring JSModalDialogViews::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   if (parent_->is_before_unload_dialog()) {
     if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
-      return l10n_util::GetString(IDS_BEFOREUNLOAD_MESSAGEBOX_OK_BUTTON_LABEL);
+      return UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_BEFOREUNLOAD_MESSAGEBOX_OK_BUTTON_LABEL));
     } else if (button == MessageBoxFlags::DIALOGBUTTON_CANCEL) {
-      return l10n_util::GetString(
-          IDS_BEFOREUNLOAD_MESSAGEBOX_CANCEL_BUTTON_LABEL);
+      return UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_BEFOREUNLOAD_MESSAGEBOX_CANCEL_BUTTON_LABEL));
     }
   }
   return DialogDelegate::GetDialogButtonLabel(button);

@@ -295,7 +295,7 @@ void ImageBurnHandler::UpdateBurnProgress(int64 total_burnt,
                                           chromeos::BurnEventType event) {
   DictionaryValue progress_value;
   progress_value.SetString("progress_status_text",
-      WideToUTF16Hack(GetBurnProgressText(total_burnt, image_size)));
+      GetBurnProgressText(total_burnt, image_size));
   if (event == chromeos::BURN_UPDATED)
     progress_value.SetString("state", "IN_PROGRESS");
   else if (event == chromeos::BURN_CANCELED)
@@ -309,26 +309,24 @@ void ImageBurnHandler::UpdateBurnProgress(int64 total_burnt,
   dom_ui_->CallJavascriptFunction(L"burnProgressUpdated", progress_value);
 }
 
-std::wstring ImageBurnHandler::GetBurnProgressText(int64 total_burnt,
-                                                   int64 image_size) {
+string16 ImageBurnHandler::GetBurnProgressText(int64 total_burnt,
+                                               int64 image_size) {
   DataUnits amount_units = GetByteDisplayUnits(total_burnt);
-  std::wstring burnt_size =
-      UTF16ToWideHack(FormatBytes(total_burnt, amount_units, true));
+  string16 burnt_size = FormatBytes(total_burnt, amount_units, true);
 
   base::i18n::AdjustStringForLocaleDirection(&burnt_size);
 
   if (image_size) {
     amount_units = GetByteDisplayUnits(image_size);
-    std::wstring total_text =
-        UTF16ToWideHack(FormatBytes(image_size, amount_units, true));
+    string16 total_text = FormatBytes(image_size, amount_units, true);
     base::i18n::AdjustStringForLocaleDirection(&total_text);
 
-    return l10n_util::GetStringF(IDS_IMAGEBURN_BURN_PROGRESS,
-                                 burnt_size,
-                                 total_text);
+    return l10n_util::GetStringFUTF16(IDS_IMAGEBURN_BURN_PROGRESS,
+                                      burnt_size,
+                                      total_text);
   } else {
-    return l10n_util::GetStringF(IDS_IMAGEBURN_BURN_PROGRESS_SIZE_UNKNOWN,
-                                  burnt_size);
+    return l10n_util::GetStringFUTF16(IDS_IMAGEBURN_BURN_PROGRESS_SIZE_UNKNOWN,
+                                      burnt_size);
   }
 }
 

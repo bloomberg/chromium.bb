@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -61,8 +62,12 @@ void KeywordHintView::SetKeyword(const std::wstring& keyword) {
       GetKeywordShortName(keyword, &is_extension_keyword);
   int message_id = is_extension_keyword ?
       IDS_OMNIBOX_EXTENSION_KEYWORD_HINT : IDS_OMNIBOX_KEYWORD_HINT;
-  const std::wstring keyword_hint(l10n_util::GetStringF(
-      message_id, std::wstring(), short_name, &content_param_offsets));
+  const std::wstring keyword_hint =
+      UTF16ToWide(l10n_util::GetStringFUTF16(
+          message_id,
+          string16(),
+          WideToUTF16(short_name),
+          &content_param_offsets));
   if (content_param_offsets.size() == 2) {
     leading_label_->SetText(
         keyword_hint.substr(0, content_param_offsets.front()));

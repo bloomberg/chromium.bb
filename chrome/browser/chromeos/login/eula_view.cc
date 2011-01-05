@@ -104,7 +104,8 @@ class TpmInfoView : public views::View,
 
   // views::View overrides:
   virtual std::wstring GetWindowTitle() const {
-    return l10n_util::GetString(IDS_EULA_SYSTEM_SECURITY_SETTING);
+    return UTF16ToWide(
+        l10n_util::GetStringUTF16(IDS_EULA_SYSTEM_SECURITY_SETTING));
   }
 
   gfx::Size GetPreferredSize() {
@@ -135,16 +136,16 @@ void TpmInfoView::Init() {
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                         views::GridLayout::USE_PREF, 0, 0);
   layout->StartRow(0, 0);
-  views::Label* label = new views::Label(
-      l10n_util::GetString(IDS_EULA_SYSTEM_SECURITY_SETTING_DESCRIPTION));
+  views::Label* label = new views::Label(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_EULA_SYSTEM_SECURITY_SETTING_DESCRIPTION)));
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   layout->AddView(label);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, 0);
-  label = new views::Label(
-      l10n_util::GetString(IDS_EULA_SYSTEM_SECURITY_SETTING_DESCRIPTION_KEY));
+  label = new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
+      IDS_EULA_SYSTEM_SECURITY_SETTING_DESCRIPTION_KEY)));
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   layout->AddView(label);
@@ -181,7 +182,8 @@ void TpmInfoView::Init() {
   throbber_ = chromeos::CreateDefaultThrobber();
   throbber_->Start();
   layout->AddView(throbber_);
-  busy_label_ = new views::Label(l10n_util::GetString(IDS_EULA_TPM_BUSY));
+  busy_label_ = new views::Label(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_EULA_TPM_BUSY)));
   layout->AddView(busy_label_);
   layout->AddPaddingRow(0, kRelatedControlHorizontalSpacing);
 
@@ -414,26 +416,26 @@ void EulaView::UpdateLocalizedStrings() {
   // Set tooltip for usage statistics checkbox if the metric is unmanaged.
   if (!usage_statistics_checkbox_->IsEnabled()) {
     usage_statistics_checkbox_->SetTooltipText(
-        l10n_util::GetString(IDS_OPTION_DISABLED_BY_POLICY));
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTION_DISABLED_BY_POLICY)));
   }
 
   // Set tooltip for system security settings link if TPM is disabled.
   if (!system_security_settings_link_->IsEnabled()) {
     system_security_settings_link_->SetTooltipText(
-        l10n_util::GetString(IDS_EULA_TPM_DISABLED));
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_EULA_TPM_DISABLED)));
   }
 
   // Load other labels from resources.
   usage_statistics_checkbox_->SetLabel(
-      l10n_util::GetString(IDS_EULA_CHECKBOX_ENABLE_LOGGING));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_EULA_CHECKBOX_ENABLE_LOGGING)));
   learn_more_link_->SetText(
-      l10n_util::GetString(IDS_LEARN_MORE));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_LEARN_MORE)));
   system_security_settings_link_->SetText(
-      l10n_util::GetString(IDS_EULA_SYSTEM_SECURITY_SETTING));
-  continue_button_->SetLabel(
-      l10n_util::GetString(IDS_EULA_ACCEPT_AND_CONTINUE_BUTTON));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_EULA_SYSTEM_SECURITY_SETTING)));
+  continue_button_->SetLabel(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_EULA_ACCEPT_AND_CONTINUE_BUTTON)));
   back_button_->SetLabel(
-      l10n_util::GetString(IDS_EULA_BACK_BUTTON));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_EULA_BACK_BUTTON)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -53,19 +53,22 @@ ClearDataView::ClearDataView(Profile* profile)
 void ClearDataView::Init() {
   tabs_ = new views::TabbedPane;
 
-  tabs_->SetAccessibleName(l10n_util::GetStringF(IDS_OPTIONS_DIALOG_TITLE,
-                           l10n_util::GetString(IDS_OPTIONS_DIALOG_TITLE)));
+  tabs_->SetAccessibleName(
+      UTF16ToWide(l10n_util::GetStringFUTF16(IDS_OPTIONS_DIALOG_TITLE,
+          l10n_util::GetStringUTF16(IDS_OPTIONS_DIALOG_TITLE))));
   AddChildView(tabs_);
 
   int tab_index = 0;
   clear_browsing_data_tab_ = new ClearBrowsingDataView2(profile_, this);
-  tabs_->AddTabAtIndex(tab_index++,
-                       l10n_util::GetString(IDS_CLEAR_CHROME_DATA_TAB_LABEL),
-                       clear_browsing_data_tab_, false);
+  tabs_->AddTabAtIndex(
+      tab_index++,
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_CLEAR_CHROME_DATA_TAB_LABEL)),
+      clear_browsing_data_tab_, false);
   clear_server_data_tab_ = new ClearServerDataView(profile_, this);
-  tabs_->AddTabAtIndex(tab_index++,
-                       l10n_util::GetString(IDS_CLEAR_OTHER_DATA_TAB_LABEL),
-                       clear_server_data_tab_, false);
+  tabs_->AddTabAtIndex(
+      tab_index++,
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_CLEAR_OTHER_DATA_TAB_LABEL)),
+      clear_server_data_tab_, false);
 
   tabs_->SelectTabAt(static_cast<int>(0));
 }
@@ -126,7 +129,7 @@ int ClearDataView::GetDefaultDialogButton() const {
 std::wstring ClearDataView::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   DCHECK(button == MessageBoxFlags::DIALOGBUTTON_CANCEL);
-  return l10n_util::GetString(IDS_CANCEL);
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_CANCEL));
 }
 
 int ClearDataView::GetDialogButtons() const {
@@ -161,7 +164,7 @@ bool ClearDataView::IsModal() const {
 }
 
 std::wstring ClearDataView::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_CLEAR_BROWSING_DATA_TITLE);
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_CLEAR_BROWSING_DATA_TITLE));
 }
 
 views::View* ClearDataView::GetContentsView() {

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/guest_user_view.h"
 
 #include "app/l10n_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/user_controller.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "grit/generated_resources.h"
@@ -64,7 +65,7 @@ void GuestUserView::RecreateFields() {
   submit_button_ = new UserEntryButton(
       this,
       user_controller_,
-      l10n_util::GetString(IDS_ENTER_GUEST_SESSION_BUTTON));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ENTER_GUEST_SESSION_BUTTON)));
   AddChildView(submit_button_);
   Layout();
   SchedulePaint();

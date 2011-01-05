@@ -123,7 +123,7 @@ void IEImporter::ImportFavorites() {
 
   if (!bookmarks.empty() && !cancelled()) {
     const std::wstring& first_folder_name =
-        l10n_util::GetString(IDS_BOOKMARK_GROUP_FROM_IE);
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOKMARK_GROUP_FROM_IE));
     int options = 0;
     if (import_to_bookmark_bar())
       options = ProfileWriter::IMPORT_TO_BOOKMARK_BAR;
@@ -488,7 +488,8 @@ bool IEImporter::GetFavoritesInfo(IEImporter::FavoritesInfo *info) {
 
 void IEImporter::ParseFavoritesFolder(const FavoritesInfo& info,
                                       BookmarkVector* bookmarks) {
-  std::wstring ie_folder = l10n_util::GetString(IDS_BOOKMARK_GROUP_FROM_IE);
+  std::wstring ie_folder =
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOKMARK_GROUP_FROM_IE));
   BookmarkVector toolbar_bookmarks;
   FilePath file;
   std::vector<FilePath::StringType> file_list;

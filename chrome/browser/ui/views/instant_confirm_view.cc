@@ -5,6 +5,7 @@
 #include "chrome/browser/views/instant_confirm_view.h"
 
 #include "app/l10n_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/instant/instant_controller.h"
@@ -23,12 +24,12 @@
 
 InstantConfirmView::InstantConfirmView(Profile* profile) : profile_(profile) {
   views::Label* description_label = new views::Label(
-      l10n_util::GetString(IDS_INSTANT_OPT_IN_MESSAGE));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_INSTANT_OPT_IN_MESSAGE)));
   description_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   description_label->SetMultiLine(true);
 
   views::Link* learn_more_link = new views::Link(
-      l10n_util::GetString(IDS_LEARN_MORE));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_LEARN_MORE)));
   learn_more_link->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   learn_more_link->SetController(this);
 
@@ -63,7 +64,7 @@ views::View* InstantConfirmView::GetContentsView() {
 }
 
 std::wstring InstantConfirmView::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_INSTANT_OPT_IN_TITLE);
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_INSTANT_OPT_IN_TITLE));
 }
 
 gfx::Size InstantConfirmView::GetPreferredSize() {

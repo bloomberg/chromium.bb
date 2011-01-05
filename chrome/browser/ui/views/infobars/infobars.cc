@@ -96,10 +96,12 @@ InfoBar::InfoBar(InfoBarDelegate* delegate)
 
   switch (delegate->GetInfoBarType()) {
     case InfoBarDelegate::WARNING_TYPE:
-      SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_INFOBAR_WARNING));
+      SetAccessibleName(UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_ACCNAME_INFOBAR_WARNING)));
       break;
     case InfoBarDelegate::PAGE_ACTION_TYPE:
-      SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_INFOBAR_PAGE_ACTION));
+      SetAccessibleName(UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_ACCNAME_INFOBAR_PAGE_ACTION)));
       break;
     default:
       NOTREACHED();
@@ -113,7 +115,8 @@ InfoBar::InfoBar(InfoBarDelegate* delegate)
                           rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
   close_button_->SetImage(views::CustomButton::BS_PUSHED,
                           rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
-  close_button_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_CLOSE));
+  close_button_->SetAccessibleName(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE)));
   AddChildView(close_button_);
 
   animation_.reset(new SlideAnimation(this));

@@ -845,8 +845,8 @@ GURL EnumerateModulesModel::ConstructHelpCenterUrl(
   GenerateHash(WideToUTF8(module.description), &description);
   GenerateHash(WideToUTF8(module.digital_signer), &signer);
 
-  string16 url = l10n_util::GetStringF(IDS_HELP_CENTER_VIEW_CONFLICTS,
-      ASCIIToWide(filename), ASCIIToWide(location),
-      ASCIIToWide(description), ASCIIToWide(signer));
-  return GURL(WideToUTF8(url));
+  string16 url = l10n_util::GetStringFUTF16(IDS_HELP_CENTER_VIEW_CONFLICTS,
+      ASCIIToUTF16(filename), ASCIIToUTF16(location),
+      ASCIIToUTF16(description), ASCIIToUTF16(signer));
+  return GURL(UTF16ToUTF8(url));
 }

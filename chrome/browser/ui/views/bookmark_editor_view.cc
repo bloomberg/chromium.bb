@@ -106,7 +106,7 @@ bool BookmarkEditorView::CanResize() const {
 }
 
 std::wstring BookmarkEditorView::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_BOOMARK_EDITOR_TITLE);
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOMARK_EDITOR_TITLE));
 }
 
 bool BookmarkEditorView::Accept() {
@@ -271,12 +271,13 @@ void BookmarkEditorView::Init() {
   if (details_.type == EditDetails::EXISTING_NODE)
     title = details_.existing_node->GetTitle();
   else if (details_.type == EditDetails::NEW_FOLDER)
-    title = l10n_util::GetString(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME);
+    title = UTF16ToWide(
+        l10n_util::GetStringUTF16(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME));
   title_tf_.SetText(title);
   title_tf_.SetController(this);
 
   title_label_ = new views::Label(
-      l10n_util::GetString(IDS_BOOMARK_EDITOR_NAME_LABEL));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOMARK_EDITOR_NAME_LABEL)));
   title_tf_.SetAccessibleName(title_label_->GetText());
 
   string16 url_text;
@@ -295,13 +296,15 @@ void BookmarkEditorView::Init() {
   url_tf_.SetController(this);
 
   url_label_ = new views::Label(
-      l10n_util::GetString(IDS_BOOMARK_EDITOR_URL_LABEL));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_BOOMARK_EDITOR_URL_LABEL)));
   url_tf_.SetAccessibleName(url_label_->GetText());
 
   if (show_tree_) {
     tree_view_ = new views::TreeView();
     new_group_button_.reset(new views::NativeButton(
-        this, l10n_util::GetString(IDS_BOOMARK_EDITOR_NEW_FOLDER_BUTTON)));
+        this,
+        UTF16ToWide(l10n_util::GetStringUTF16(
+            IDS_BOOMARK_EDITOR_NEW_FOLDER_BUTTON))));
     new_group_button_->set_parent_owned(false);
     tree_view_->SetContextMenuController(this);
 

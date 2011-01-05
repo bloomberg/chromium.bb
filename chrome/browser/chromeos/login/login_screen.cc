@@ -124,7 +124,7 @@ void LoginScreen::AppendStartUrlToCmdline() {
 
 void LoginScreen::ShowError(int error_id, const std::string& details) {
   ClearErrors();
-  std::wstring error_text = l10n_util::GetString(error_id);
+  std::wstring error_text = UTF16ToWide(l10n_util::GetStringUTF16(error_id));
   // TODO(dpolukhin): show detailed error info. |details| string contains
   // low level error info that is not localized and even is not user friendly.
   // For now just ignore it because error_text contains all required information

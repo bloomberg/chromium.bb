@@ -33,7 +33,7 @@ namespace {
 void DetectIEProfiles(std::vector<importer::ProfileInfo*>* profiles) {
     // IE always exists and doesn't have multiple profiles.
   ProfileInfo* ie = new ProfileInfo();
-  ie->description = l10n_util::GetString(IDS_IMPORT_FROM_IE);
+  ie->description = UTF16ToWide(l10n_util::GetStringUTF16(IDS_IMPORT_FROM_IE));
   ie->browser_type = importer::MS_IE;
   ie->source_path.clear();
   ie->app_path.clear();

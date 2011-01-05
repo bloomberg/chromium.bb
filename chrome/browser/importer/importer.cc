@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/threading/thread.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_list.h"
@@ -213,7 +214,8 @@ void ImporterHost::StartImportSettings(
     if (!toolbar_importer_utils::IsGoogleGAIACookieInstalled()) {
       app::win::MessageBox(
           NULL,
-          l10n_util::GetString(IDS_IMPORTER_GOOGLE_LOGIN_TEXT).c_str(),
+          UTF16ToWide(l10n_util::GetStringUTF16(
+              IDS_IMPORTER_GOOGLE_LOGIN_TEXT)).c_str(),
           L"",
           MB_OK | MB_TOPMOST);
 

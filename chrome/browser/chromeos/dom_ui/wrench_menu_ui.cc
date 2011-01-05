@@ -37,12 +37,12 @@ class WrenchMenuSourceDelegate : public chromeos::MenuSourceDelegate {
     config->SetInteger("IDC_ZOOM_PLUS", IDC_ZOOM_PLUS);
     config->SetInteger("IDC_FULLSCREEN", IDC_FULLSCREEN);
 
-    config->SetString("IDS_EDIT2", WideToUTF8(l10n_util::GetString(IDS_EDIT2)));
+    config->SetString("IDS_EDIT2", l10n_util::GetStringUTF8(IDS_EDIT2));
     config->SetString("IDS_ZOOM_MENU2",
-                      WideToUTF8(l10n_util::GetString(IDS_ZOOM_MENU2)));
-    config->SetString("IDS_CUT", WideToUTF8(l10n_util::GetString(IDS_CUT)));
-    config->SetString("IDS_COPY", WideToUTF8(l10n_util::GetString(IDS_COPY)));
-    config->SetString("IDS_PASTE", WideToUTF8(l10n_util::GetString(IDS_PASTE)));
+                      l10n_util::GetStringUTF8(IDS_ZOOM_MENU2));
+    config->SetString("IDS_CUT", l10n_util::GetStringUTF8(IDS_CUT));
+    config->SetString("IDS_COPY", l10n_util::GetStringUTF8(IDS_COPY));
+    config->SetString("IDS_PASTE", l10n_util::GetStringUTF8(IDS_PASTE));
   }
 };
 
