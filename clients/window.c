@@ -536,8 +536,13 @@ display_get_pointer_surface(struct display *display, int pointer,
 	cairo_surface_t *surface;
 
 	surface = display->pointer_surfaces[pointer];
+#if HAVE_CAIRO_GL
 	*width = cairo_gl_surface_get_width(surface);
 	*height = cairo_gl_surface_get_height(surface);
+#else
+	*width = cairo_image_surface_get_width(surface);
+	*height = cairo_image_surface_get_height(surface);
+#endif
 	*hotspot_x = pointer_images[pointer].hotspot_x;
 	*hotspot_y = pointer_images[pointer].hotspot_y;
 
