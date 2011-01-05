@@ -268,6 +268,9 @@ class SearchProvider : public AutocompleteProvider,
   // Updates the value of |done_| from the internal state.
   void UpdateDone();
 
+  // Updates the description/description_class of the first search match.
+  void UpdateFirstSearchMatchDescription();
+
   // Should we query for suggest results immediately? This is normally false,
   // but may be set to true during testing.
   static bool query_suggest_immediately_;
