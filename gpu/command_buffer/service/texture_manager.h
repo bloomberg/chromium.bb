@@ -105,6 +105,10 @@ class TextureManager {
         GLenum format,
         GLenum type) const;
 
+    bool IsValid() const {
+      return target() && !IsDeleted();
+    }
+
    private:
     friend class TextureManager;
     friend class base::RefCounted<TextureInfo>;
@@ -209,6 +213,9 @@ class TextureManager {
 
     // Whether or not this texture is non-power-of-two
     bool npot_;
+
+    // Whether this texture has ever been bound.
+    bool has_been_bound_;
 
     DISALLOW_COPY_AND_ASSIGN(TextureInfo);
   };
@@ -332,4 +339,3 @@ class TextureManager {
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_TEXTURE_MANAGER_H_
-

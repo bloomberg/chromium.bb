@@ -26,6 +26,7 @@ class RenderbufferManager {
     explicit RenderbufferInfo(GLuint service_id)
         : service_id_(service_id),
           cleared_(false),
+          has_been_bound_(false),
           samples_(0),
           internal_format_(GL_RGBA4),
           width_(0),
@@ -69,8 +70,16 @@ class RenderbufferManager {
       cleared_ = false;
     }
 
-    bool IsDeleted() {
+    bool IsDeleted() const {
       return service_id_ == 0;
+    }
+
+    void MarkAsValid() {
+      has_been_bound_ = true;
+    }
+
+    bool IsValid() const {
+      return has_been_bound_ && !IsDeleted();
     }
 
    private:
@@ -88,6 +97,9 @@ class RenderbufferManager {
 
     // Whether this renderbuffer has been cleared
     bool cleared_;
+
+    // Whether this renderbuffer has ever been bound.
+    bool has_been_bound_;
 
     // Number of samples (for multi-sampled renderbuffers)
     GLsizei samples_;

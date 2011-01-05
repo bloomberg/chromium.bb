@@ -52,8 +52,12 @@ class BufferManager {
     // Returns a pointer to shadowed data.
     const void* GetRange(GLintptr offset, GLsizeiptr size) const;
 
-    bool IsDeleted() {
+    bool IsDeleted() const {
       return service_id_ == 0;
+    }
+
+    bool IsValid() const {
+      return target() && !IsDeleted();
     }
 
    private:
@@ -182,5 +186,3 @@ class BufferManager {
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_BUFFER_MANAGER_H_
-
-

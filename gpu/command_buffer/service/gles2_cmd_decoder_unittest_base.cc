@@ -136,16 +136,7 @@ void GLES2DecoderTestBase::InitDecoder(const char* extensions) {
       .RetiresOnSaturation();
   GenHelper<GenBuffersImmediate>(client_element_buffer_id_);
 
-  {
-    EXPECT_CALL(*gl_, CreateProgram())
-        .Times(1)
-        .WillOnce(Return(kServiceProgramId))
-        .RetiresOnSaturation();
-    CreateProgram cmd;
-    cmd.Init(client_program_id_);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  }
-
+  DoCreateProgram(client_program_id_, kServiceProgramId);
   DoCreateShader(GL_VERTEX_SHADER, client_shader_id_, kServiceShaderId);
 
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -184,6 +175,45 @@ void GLES2DecoderTestBase::DoCreateShader(
       .RetiresOnSaturation();
   CreateShader cmd;
   cmd.Init(shader_type, client_id);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
+bool GLES2DecoderTestBase::DoIsShader(GLuint client_id) {
+  return IsObjectHelper<IsShader, IsShader::Result>(client_id);
+}
+
+void GLES2DecoderTestBase::DoDeleteShader(
+    GLuint client_id, GLuint service_id) {
+  EXPECT_CALL(*gl_, DeleteShader(service_id))
+      .Times(1)
+      .RetiresOnSaturation();
+  DeleteShader cmd;
+  cmd.Init(client_id);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
+void GLES2DecoderTestBase::DoCreateProgram(
+    GLuint client_id, GLuint service_id) {
+  EXPECT_CALL(*gl_, CreateProgram())
+      .Times(1)
+      .WillOnce(Return(service_id))
+      .RetiresOnSaturation();
+  CreateProgram cmd;
+  cmd.Init(client_id);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
+bool GLES2DecoderTestBase::DoIsProgram(GLuint client_id) {
+  return IsObjectHelper<IsProgram, IsProgram::Result>(client_id);
+}
+
+void GLES2DecoderTestBase::DoDeleteProgram(
+    GLuint client_id, GLuint service_id) {
+  EXPECT_CALL(*gl_, DeleteProgram(service_id))
+      .Times(1)
+      .RetiresOnSaturation();
+  DeleteProgram cmd;
+  cmd.Init(client_id);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
@@ -316,6 +346,10 @@ void GLES2DecoderTestBase::DoBindBuffer(
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
+bool GLES2DecoderTestBase::DoIsBuffer(GLuint client_id) {
+  return IsObjectHelper<IsBuffer, IsBuffer::Result>(client_id);
+}
+
 void GLES2DecoderTestBase::DoDeleteBuffer(
     GLuint client_id, GLuint service_id) {
   EXPECT_CALL(*gl_, DeleteBuffersARB(1, Pointee(service_id)))
@@ -337,6 +371,21 @@ void GLES2DecoderTestBase::DoBindFramebuffer(
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
+bool GLES2DecoderTestBase::DoIsFramebuffer(GLuint client_id) {
+  return IsObjectHelper<IsFramebuffer, IsFramebuffer::Result>(client_id);
+}
+
+void GLES2DecoderTestBase::DoDeleteFramebuffer(
+    GLuint client_id, GLuint service_id) {
+  EXPECT_CALL(*gl_, DeleteFramebuffersEXT(1, Pointee(service_id)))
+      .Times(1)
+      .RetiresOnSaturation();
+  DeleteFramebuffers cmd;
+  cmd.Init(1, shared_memory_id_, shared_memory_offset_);
+  memcpy(shared_memory_address_, &client_id, sizeof(client_id));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
 void GLES2DecoderTestBase::DoBindRenderbuffer(
     GLenum target, GLuint client_id, GLuint service_id) {
   EXPECT_CALL(*gl_, BindRenderbufferEXT(target, service_id))
@@ -347,6 +396,21 @@ void GLES2DecoderTestBase::DoBindRenderbuffer(
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
+bool GLES2DecoderTestBase::DoIsRenderbuffer(GLuint client_id) {
+  return IsObjectHelper<IsRenderbuffer, IsRenderbuffer::Result>(client_id);
+}
+
+void GLES2DecoderTestBase::DoDeleteRenderbuffer(
+    GLuint client_id, GLuint service_id) {
+  EXPECT_CALL(*gl_, DeleteRenderbuffersEXT(1, Pointee(service_id)))
+      .Times(1)
+      .RetiresOnSaturation();
+  DeleteRenderbuffers cmd;
+  cmd.Init(1, shared_memory_id_, shared_memory_offset_);
+  memcpy(shared_memory_address_, &client_id, sizeof(client_id));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
 void GLES2DecoderTestBase::DoBindTexture(
     GLenum target, GLuint client_id, GLuint service_id) {
   EXPECT_CALL(*gl_, BindTexture(target, service_id))
@@ -354,6 +418,21 @@ void GLES2DecoderTestBase::DoBindTexture(
       .RetiresOnSaturation();
   BindTexture cmd;
   cmd.Init(target, client_id);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
+bool GLES2DecoderTestBase::DoIsTexture(GLuint client_id) {
+  return IsObjectHelper<IsTexture, IsTexture::Result>(client_id);
+}
+
+void GLES2DecoderTestBase::DoDeleteTexture(
+    GLuint client_id, GLuint service_id) {
+  EXPECT_CALL(*gl_, DeleteTextures(1, Pointee(service_id)))
+      .Times(1)
+      .RetiresOnSaturation();
+  DeleteTextures cmd;
+  cmd.Init(1, shared_memory_id_, shared_memory_offset_);
+  memcpy(shared_memory_address_, &client_id, sizeof(client_id));
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
@@ -628,16 +707,6 @@ void GLES2DecoderWithShaderTestBase::DoBufferSubData(
   memcpy(shared_memory_address_, data, size);
   BufferSubData cmd;
   cmd.Init(target, offset, size, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-}
-
-void GLES2DecoderWithShaderTestBase::DoDeleteProgram(
-    GLuint client_id, GLuint service_id) {
-  EXPECT_CALL(*gl_, DeleteProgram(service_id))
-      .Times(1)
-      .RetiresOnSaturation();
-  DeleteProgram cmd;
-  cmd.Init(client_id);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 

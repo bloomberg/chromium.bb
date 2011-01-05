@@ -2570,6 +2570,54 @@ TEST_F(GLES2DecoderTest, FramebufferRenderbufferClearStencil) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
+TEST_F(GLES2DecoderTest, IsBuffer) {
+  EXPECT_EQ(false, DoIsBuffer(client_buffer_id_));
+  DoBindBuffer(GL_ARRAY_BUFFER, client_buffer_id_, kServiceBufferId);
+  EXPECT_EQ(true, DoIsBuffer(client_buffer_id_));
+  DoDeleteBuffer(client_buffer_id_, kServiceBufferId);
+  EXPECT_EQ(false, DoIsBuffer(client_buffer_id_));
+}
+
+TEST_F(GLES2DecoderTest, IsFramebuffer) {
+  EXPECT_EQ(false, DoIsFramebuffer(client_framebuffer_id_));
+  DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
+                    kServiceFramebufferId);
+  EXPECT_EQ(true, DoIsFramebuffer(client_framebuffer_id_));
+  DoDeleteFramebuffer(client_framebuffer_id_, kServiceFramebufferId);
+  EXPECT_EQ(false, DoIsFramebuffer(client_framebuffer_id_));
+}
+
+TEST_F(GLES2DecoderTest, IsProgram) {
+  // IsProgram is true as soon as the program is created.
+  EXPECT_EQ(true, DoIsProgram(client_program_id_));
+  DoDeleteProgram(client_program_id_, kServiceProgramId);
+  EXPECT_EQ(false, DoIsProgram(client_program_id_));
+}
+
+TEST_F(GLES2DecoderTest, IsRenderbuffer) {
+  EXPECT_EQ(false, DoIsRenderbuffer(client_renderbuffer_id_));
+  DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
+                    kServiceRenderbufferId);
+  EXPECT_EQ(true, DoIsRenderbuffer(client_renderbuffer_id_));
+  DoDeleteRenderbuffer(client_renderbuffer_id_, kServiceRenderbufferId);
+  EXPECT_EQ(false, DoIsRenderbuffer(client_renderbuffer_id_));
+}
+
+TEST_F(GLES2DecoderTest, IsShader) {
+  // IsShader is true as soon as the program is created.
+  EXPECT_EQ(true, DoIsShader(client_shader_id_));
+  DoDeleteShader(client_shader_id_, kServiceShaderId);
+  EXPECT_EQ(false, DoIsShader(client_shader_id_));
+}
+
+TEST_F(GLES2DecoderTest, IsTexture) {
+  EXPECT_EQ(false, DoIsTexture(client_texture_id_));
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  EXPECT_EQ(true, DoIsTexture(client_texture_id_));
+  DoDeleteTexture(client_texture_id_, kServiceTextureId);
+  EXPECT_EQ(false, DoIsTexture(client_texture_id_));
+}
+
 #if 0  // Turn this test on once we allow GL_DEPTH_STENCIL_ATTACHMENT
 TEST_F(GLES2DecoderTest, FramebufferRenderbufferClearDepthStencil) {
   DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
@@ -2644,5 +2692,3 @@ TEST_F(GLES2DecoderTest, FramebufferRenderbufferClearDepthStencil) {
 
 }  // namespace gles2
 }  // namespace gpu
-
-

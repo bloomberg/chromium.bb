@@ -60,8 +60,16 @@ class FramebufferManager {
 
     const Attachment* GetAttachment(GLenum attachment) const;
 
-    bool IsDeleted() {
+    bool IsDeleted() const {
       return service_id_ == 0;
+    }
+
+    void MarkAsValid() {
+      has_been_bound_ = true;
+    }
+
+    bool IsValid() const {
+      return has_been_bound_ && !IsDeleted();
     }
 
    private:
@@ -77,6 +85,9 @@ class FramebufferManager {
 
     // Service side framebuffer id.
     GLuint service_id_;
+
+    // Whether this framebuffer has ever been bound.
+    bool has_been_bound_;
 
     // A map of attachments.
     typedef std::map<GLenum, Attachment::Ref> AttachmentMap;

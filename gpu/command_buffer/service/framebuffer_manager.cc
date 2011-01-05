@@ -142,7 +142,8 @@ void FramebufferManager::CreateFramebufferInfo(
 }
 
 FramebufferManager::FramebufferInfo::FramebufferInfo(GLuint service_id)
-    : service_id_(service_id) {
+    : service_id_(service_id)
+    , has_been_bound_(false) {
 }
 
 FramebufferManager::FramebufferInfo::~FramebufferInfo() {}

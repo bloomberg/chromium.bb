@@ -2688,6 +2688,7 @@ void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint client_id) {
     } else {
       service_id = info->service_id();
     }
+    info->MarkAsValid();
   } else {
     service_id = context_->GetBackingFrameBufferObject();
   }
@@ -2723,6 +2724,7 @@ void GLES2DecoderImpl::DoBindRenderbuffer(GLenum target, GLuint client_id) {
     } else {
       service_id = info->service_id();
     }
+    info->MarkAsValid();
   }
   bound_renderbuffer_ = info;
   glBindRenderbufferEXT(target, service_id);
@@ -4357,27 +4359,37 @@ error::Error GLES2DecoderImpl::HandleGetShaderInfoLog(
 }
 
 bool GLES2DecoderImpl::DoIsBuffer(GLuint client_id) {
-  return GetBufferInfo(client_id) != NULL;
+  const BufferManager::BufferInfo* info = GetBufferInfo(client_id);
+  return info && info->IsValid();
 }
 
 bool GLES2DecoderImpl::DoIsFramebuffer(GLuint client_id) {
-  return GetFramebufferInfo(client_id) != NULL;
+  const FramebufferManager::FramebufferInfo* info =
+      GetFramebufferInfo(client_id);
+  return info && info->IsValid();
 }
 
 bool GLES2DecoderImpl::DoIsProgram(GLuint client_id) {
+  // IsProgram is true for programs as soon as they are created, until they are
+  // deleted and no longer in use.
   return GetProgramInfo(client_id) != NULL;
 }
 
 bool GLES2DecoderImpl::DoIsRenderbuffer(GLuint client_id) {
-  return GetRenderbufferInfo(client_id) != NULL;
+  const RenderbufferManager::RenderbufferInfo* info =
+      GetRenderbufferInfo(client_id);
+  return info && info->IsValid();
 }
 
 bool GLES2DecoderImpl::DoIsShader(GLuint client_id) {
+  // IsShader is true for shaders as soon as they are created, until they
+  // are deleted and not attached to any programs.
   return GetShaderInfo(client_id) != NULL;
 }
 
 bool GLES2DecoderImpl::DoIsTexture(GLuint client_id) {
-  return GetTextureInfo(client_id) != NULL;
+  const TextureManager::TextureInfo* info = GetTextureInfo(client_id);
+  return info && info->IsValid();
 }
 
 void GLES2DecoderImpl::DoAttachShader(

@@ -163,6 +163,7 @@ class GLES2DecoderTestBase : public testing::Test {
     return group_->program_manager()->GetProgramInfo(service_id);
   }
 
+  void DoCreateProgram(GLuint client_id, GLuint service_id);
   void DoCreateShader(GLenum shader_type, GLuint client_id, GLuint service_id);
 
   void SetBucketAsCString(uint32 bucket_id, const char* str);
@@ -209,7 +210,21 @@ class GLES2DecoderTestBase : public testing::Test {
   void DoBindFramebuffer(GLenum target, GLuint client_id, GLuint service_id);
   void DoBindRenderbuffer(GLenum target, GLuint client_id, GLuint service_id);
   void DoBindTexture(GLenum target, GLuint client_id, GLuint service_id);
+
+  bool DoIsBuffer(GLuint client_id);
+  bool DoIsFramebuffer(GLuint client_id);
+  bool DoIsProgram(GLuint client_id);
+  bool DoIsRenderbuffer(GLuint client_id);
+  bool DoIsShader(GLuint client_id);
+  bool DoIsTexture(GLuint client_id);
+
   void DoDeleteBuffer(GLuint client_id, GLuint service_id);
+  void DoDeleteFramebuffer(GLuint client_id, GLuint service_id);
+  void DoDeleteProgram(GLuint client_id, GLuint service_id);
+  void DoDeleteRenderbuffer(GLuint client_id, GLuint service_id);
+  void DoDeleteShader(GLuint client_id, GLuint service_id);
+  void DoDeleteTexture(GLuint client_id, GLuint service_id);
+
   void DoTexImage2D(GLenum target, GLint level, GLenum internal_format,
                     GLsizei width, GLsizei height, GLint border,
                     GLenum format, GLenum type,
@@ -233,6 +248,17 @@ class GLES2DecoderTestBase : public testing::Test {
 
   GLvoid* BufferOffset(unsigned i) {
     return static_cast<int8 *>(NULL)+(i);
+  }
+
+  template <typename Command, typename Result>
+  bool IsObjectHelper(GLuint client_id) {
+    Result* result = static_cast<Result*>(shared_memory_address_);
+    Command cmd;
+    cmd.Init(client_id, kSharedMemoryId, kSharedMemoryOffset);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    bool isObject = static_cast<bool>(*result);
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    return isObject;
   }
 
   // Use StrictMock to make 100% sure we know how GL will be called.
@@ -367,8 +393,6 @@ class GLES2DecoderWithShaderTestBase : public GLES2DecoderTestBase {
   void DoBufferSubData(
       GLenum target, GLint offset, GLsizei size, const void* data);
 
-  void DoDeleteProgram(GLuint client_id, GLuint service_id);
-
   void SetupVertexBuffer();
 
   void SetupIndexBuffer();
@@ -385,4 +409,3 @@ class GLES2DecoderWithShaderTestBase : public GLES2DecoderTestBase {
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_BASE_H_
-
