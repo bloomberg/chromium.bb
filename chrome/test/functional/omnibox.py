@@ -315,12 +315,13 @@ class OmniboxTest(pyauto.PyUITest):
     for site in sites:
       self.NavigateToURL(self.GetFileURLForPath(site))
     old_matches = self._GetOmniboxMatchesFor(search_text)
-    # Using max timeout as 60 seconds, since expected page only shows up
-    # after 60 seconds and default timeout is less than that.
+    # Using max timeout as 120 seconds, since expected page only shows up
+    # after > 60 seconds on some machines and default timeout is less than that.
     # TODO (Nirnimesh): design an api using which we can push history changes to
     # omnibox results.
     self.assertTrue(self.WaitUntil(
-        lambda: self._GotNewMatches(len(old_matches), search_text), timeout=60))
+        lambda: self._GotNewMatches(len(old_matches), search_text),
+        timeout=120))
     matches = self._GetOmniboxMatchesFor(search_text)
     matches_description = [x for x in matches if x['type'] ==
                            'open-history-page']
