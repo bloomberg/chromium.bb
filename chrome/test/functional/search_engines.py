@@ -155,6 +155,32 @@ class SearchEnginesTest(pyauto.PyUITest):
       self.OmniboxAcceptInput()
       self.assertTrue(re.search(keyword, self.GetActiveTabURL().spec()))
 
+  def testSearchEngineSpecialChars(self):
+    """Test add/edit/delete a search engine's properties using special chars."""
+    # Add a search engine with special chars.
+    self.AddSearchEngine(title='testspecial@#',
+                         keyword='testspecial@#.com',
+                         url='http://127.0.0.1/?q=%s')
+    self.SetOmniboxText('testspecial@#.com foobar')
+    self.OmniboxAcceptInput()
+    self.assertEqual('http://127.0.0.1/?q=foobar',
+                     self.GetActiveTabURL().spec())
+    # Edit a search engine with special chars.
+    self.EditSearchEngine(keyword='testspecial@#.com',
+                          new_title='Title Edited',
+                          new_keyword='testspecial@!%^*#.com',
+                          new_url='http://127.0.0.1/?edited=true&q=%s')
+    self.assertTrue(self._GetSearchEngineWithKeyword('testspecial@!%^*#.com'))
+    self.assertFalse(self._GetSearchEngineWithKeyword('testspecial@#.com'))
+    self.SetOmniboxText('testspecial@!%^*#.com foobar')
+    self.OmniboxAcceptInput()
+    self.assertEqual('http://127.0.0.1/?edited=true&q=foobar',
+                     self.GetActiveTabURL().spec())
+    # Delete a search engine.
+    self.assertTrue(self._GetSearchEngineWithKeyword('testspecial@!%^*#.com'))
+    self.DeleteSearchEngine('testspecial@!%^*#.com')
+    self.assertFalse(self._GetSearchEngineWithKeyword('testspecial@!%^*#.com'))
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
