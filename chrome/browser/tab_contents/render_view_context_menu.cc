@@ -1394,16 +1394,6 @@ bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
   if (active_entry->url().SchemeIs(chrome::kGearsScheme))
     return false;
 
-#if defined NDEBUG
-  bool debug_mode = false;
-#else
-  bool debug_mode = true;
-#endif
-  // Don't inspect new tab UI, etc.
-  if (active_entry->url().SchemeIs(chrome::kChromeUIScheme) && !debug_mode &&
-      active_entry->url().host() != chrome::kChromeUIDevToolsHost)
-    return false;
-
   // Don't inspect about:network, about:memory, etc.
   // However, we do want to inspect about:blank, which is often
   // used by ordinary web pages.
