@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -351,6 +351,7 @@
       'dependencies': [
         'test_shell_common',
         '<(DEPTH)/base/base.gyp:test_support_base',
+        '<(DEPTH)/media/media.gyp:media_test_support',
         '<(DEPTH)/net/net.gyp:net_test_support',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/testing/gmock.gyp:gmock',

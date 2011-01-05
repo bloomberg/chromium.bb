@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -24,7 +24,6 @@
         'command_buffer/common/cmd_buffer_common.h',
         'command_buffer/common/cmd_buffer_common.cc',
         'command_buffer/common/command_buffer.h',
-        'command_buffer/common/command_buffer_mock.h',
         'command_buffer/common/constants.h',
         'command_buffer/common/gles2_cmd_ids_autogen.h',
         'command_buffer/common/gles2_cmd_ids.h',
@@ -36,7 +35,6 @@
         'command_buffer/common/id_allocator.cc',
         'command_buffer/common/id_allocator.h',
         'command_buffer/common/logging.h',
-        'command_buffer/common/mocks.h',
         'command_buffer/common/thread_local.h',
         'command_buffer/common/types.h',
       ],
@@ -229,6 +227,8 @@
         'command_buffer/client/mapped_memory_unittest.cc',
         'command_buffer/client/ring_buffer_test.cc',
         'command_buffer/common/bitfield_helpers_test.cc',
+        'command_buffer/common/command_buffer_mock.cc',
+        'command_buffer/common/command_buffer_mock.h',
         'command_buffer/common/gl_mock.h',
         'command_buffer/common/gl_mock.cc',
         'command_buffer/common/gles2_cmd_format_test.cc',
@@ -261,6 +261,8 @@
         'command_buffer/service/gles2_cmd_decoder_unittest_2.cc',
         'command_buffer/service/gles2_cmd_decoder_unittest_2_autogen.h',
         'command_buffer/service/id_manager_unittest.cc',
+        'command_buffer/service/mocks.cc',
+        'command_buffer/service/mocks.h',
         'command_buffer/service/program_manager_unittest.cc',
         'command_buffer/service/renderbuffer_manager_unittest.cc',
         'command_buffer/service/shader_manager_unittest.cc',

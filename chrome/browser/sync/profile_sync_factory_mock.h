@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,10 +18,11 @@ class ChangeProcessor;
 
 class ProfileSyncFactoryMock : public ProfileSyncFactory {
  public:
-  ProfileSyncFactoryMock() {}
+  ProfileSyncFactoryMock();
   ProfileSyncFactoryMock(
       browser_sync::AssociatorInterface* bookmark_model_associator,
       browser_sync::ChangeProcessor* bookmark_change_processor);
+  virtual ~ProfileSyncFactoryMock();
 
   MOCK_METHOD1(CreateProfileSyncService,
                ProfileSyncService*(const std::string&));

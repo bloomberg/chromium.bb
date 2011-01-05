@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,9 @@
 
 class ProfileMock : public TestingProfile {
  public:
+  ProfileMock();
+  virtual ~ProfileMock();
+
   MOCK_METHOD0(GetBookmarkModel, BookmarkModel*());
   MOCK_METHOD1(GetHistoryService, HistoryService*(ServiceAccessType access));
   MOCK_METHOD0(GetHistoryServiceWithoutCreating, HistoryService*());

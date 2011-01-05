@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,9 @@ namespace policy {
 class DeviceRegisterResponseDelegateMock
     : public DeviceManagementBackend::DeviceRegisterResponseDelegate {
  public:
+  DeviceRegisterResponseDelegateMock();
+  virtual ~DeviceRegisterResponseDelegateMock();
+
   MOCK_METHOD1(HandleRegisterResponse, void(const em::DeviceRegisterResponse&));
   MOCK_METHOD1(OnError, void(DeviceManagementBackend::ErrorCode error));
 };
@@ -22,6 +25,9 @@ class DeviceRegisterResponseDelegateMock
 class DeviceUnregisterResponseDelegateMock
     : public DeviceManagementBackend::DeviceUnregisterResponseDelegate {
  public:
+  DeviceUnregisterResponseDelegateMock();
+  virtual ~DeviceUnregisterResponseDelegateMock();
+
   MOCK_METHOD1(HandleUnregisterResponse,
                void(const em::DeviceUnregisterResponse&));
   MOCK_METHOD1(OnError, void(DeviceManagementBackend::ErrorCode error));
@@ -30,6 +36,9 @@ class DeviceUnregisterResponseDelegateMock
 class DevicePolicyResponseDelegateMock
     : public DeviceManagementBackend::DevicePolicyResponseDelegate {
  public:
+  DevicePolicyResponseDelegateMock();
+  virtual ~DevicePolicyResponseDelegateMock();
+
   MOCK_METHOD1(HandlePolicyResponse, void(const em::DevicePolicyResponse&));
   MOCK_METHOD1(OnError, void(DeviceManagementBackend::ErrorCode error));
 };

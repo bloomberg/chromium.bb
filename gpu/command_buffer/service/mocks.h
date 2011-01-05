@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,10 +23,8 @@ namespace gpu {
 // Mocks an AsyncAPIInterface, using GMock.
 class AsyncAPIMock : public AsyncAPIInterface {
  public:
-  AsyncAPIMock() {
-    testing::DefaultValue<error::Error>::Set(
-        error::kNoError);
-  }
+  AsyncAPIMock();
+  virtual ~AsyncAPIMock();
 
   // Predicate that matches args passed to DoCommand, by looking at the values.
   class IsArgs {
@@ -65,14 +63,8 @@ class AsyncAPIMock : public AsyncAPIInterface {
   // Forwards the SetToken commands to the engine.
   void SetToken(unsigned int command,
                 unsigned int arg_count,
-                const void* _args) {
-    DCHECK(engine_);
-    DCHECK_EQ(1u, command);
-    DCHECK_EQ(1u, arg_count);
-    const CommandBufferEntry* args =
-        static_cast<const CommandBufferEntry*>(_args);
-    engine_->set_token(args[0].value_uint32);
-  }
+                const void* _args);
+
  private:
   CommandBufferEngine *engine_;
 };
@@ -81,7 +73,8 @@ namespace gles2 {
 
 class MockShaderTranslator : public ShaderTranslatorInterface {
  public:
-  virtual ~MockShaderTranslator() { }
+  MockShaderTranslator();
+  virtual ~MockShaderTranslator();
 
   MOCK_METHOD4(Init, bool(
       ShShaderType shader_type,

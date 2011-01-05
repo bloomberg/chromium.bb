@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,8 +39,8 @@ MATCHER_P3(PrefValueMatches, prefs, pref_name, value, "") {
 // A mock for testing preference notifications and easy setup of expectations.
 class PrefObserverMock : public NotificationObserver {
  public:
-  PrefObserverMock() {}
-  virtual ~PrefObserverMock() {}
+  PrefObserverMock();
+  virtual ~PrefObserverMock();
 
   MOCK_METHOD3(Observe, void(NotificationType type,
                              const NotificationSource& source,
@@ -48,13 +48,7 @@ class PrefObserverMock : public NotificationObserver {
 
   void Expect(const PrefService* prefs,
               const std::string& pref_name,
-              const Value* value) {
-    EXPECT_CALL(*this, Observe(NotificationType(NotificationType::PREF_CHANGED),
-                               Source<PrefService>(prefs),
-                               Property(&Details<std::string>::ptr,
-                                        Pointee(pref_name))))
-        .With(PrefValueMatches(prefs, pref_name, value));
-  }
+              const Value* value);
 };
 
 #endif  // CHROME_BROWSER_PREFS_PREF_OBSERVER_MOCK_H_
