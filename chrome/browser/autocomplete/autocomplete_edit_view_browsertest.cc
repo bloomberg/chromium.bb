@@ -110,6 +110,14 @@ std::string GetPrimarySelectionText() {
   g_free(selection_text);
   return result;
 }
+
+// Stores the given text to clipboard.
+void SetClipboardText(const char* text) {
+  GtkClipboard* clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
+  DCHECK(clipboard);
+
+  gtk_clipboard_set_text(clipboard, text, -1);
+}
 #endif
 
 }  // namespace
@@ -296,13 +304,9 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
 
 // Test if ctrl-* accelerators are workable in omnibox.
 // See http://crbug.com/19193: omnibox blocks ctrl-* commands
-// Sometimes times out on Windows: http://crbug.com/57965
-#if defined(OS_WIN)
-#define MAYBE_BrowserAccelerators DISABLED_BrowserAccelerators
-#else
-#define MAYBE_BrowserAccelerators BrowserAccelerators
-#endif
-IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, MAYBE_BrowserAccelerators) {
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, BrowserAccelerators) {
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
   browser()->FocusLocationBar();
   AutocompleteEditView* edit_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
@@ -355,13 +359,9 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, MAYBE_BrowserAccelerators) {
 #endif
 }
 
-// Sometimes times out on Windows: http://crbug.com/57965
-#if defined(OS_WIN)
-#define MAYBE_PopupAccelerators DISABLED_PopupAccelerators
-#else
-#define MAYBE_PopupAccelerators PopupAccelerators
-#endif
-IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, MAYBE_PopupAccelerators) {
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, PopupAccelerators) {
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
   // Create a popup.
   Browser* popup = CreateBrowserForPopup(browser()->profile());
   AutocompleteEditView* edit_view = NULL;
@@ -408,13 +408,9 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, MAYBE_PopupAccelerators) {
 #endif
 }
 
-// Sometimes times out on Windows: http://crbug.com/57965
-#if defined(OS_WIN)
-#define MAYBE_BackspaceInKeywordMode DISABLED_BackspaceInKeywordMode
-#else
-#define MAYBE_BackspaceInKeywordMode BackspaceInKeywordMode
-#endif
-IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, MAYBE_BackspaceInKeywordMode) {
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, BackspaceInKeywordMode) {
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
   ASSERT_NO_FATAL_FAILURE(SetupComponents());
   browser()->FocusLocationBar();
 
@@ -466,13 +462,9 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, MAYBE_BackspaceInKeywordMode) {
             WideToUTF8(edit_view->GetText()));
 }
 
-// Sometimes times out on Windows: http://crbug.com/57965
-#if defined(OS_WIN)
-#define MAYBE_Escape DISABLED_Escape
-#else
-#define MAYBE_Escape Escape
-#endif
-IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, MAYBE_Escape) {
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, Escape) {
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
   ASSERT_NO_FATAL_FAILURE(SetupComponents());
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIHistoryURL));
   browser()->FocusLocationBar();
@@ -494,13 +486,9 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, MAYBE_Escape) {
   EXPECT_TRUE(edit_view->IsSelectAll());
 }
 
-// Sometimes times out on Windows: http://crbug.com/57965
-#if defined(OS_WIN)
-#define MAYBE_DesiredTLD DISABLED_DesiredTLD
-#else
-#define MAYBE_DesiredTLD DesiredTLD
-#endif
-IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, MAYBE_DesiredTLD) {
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DesiredTLD) {
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
   ASSERT_NO_FATAL_FAILURE(SetupComponents());
   browser()->FocusLocationBar();
 
@@ -520,13 +508,9 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, MAYBE_DesiredTLD) {
   EXPECT_STREQ(kDesiredTLDHostname, url.host().c_str());
 }
 
-// Sometimes times out on Windows: http://crbug.com/57965
-#if defined(OS_WIN)
-#define MAYBE_AltEnter DISABLED_AltEnter
-#else
-#define MAYBE_AltEnter AltEnter
-#endif
-IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, MAYBE_AltEnter) {
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, AltEnter) {
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
   ASSERT_NO_FATAL_FAILURE(SetupComponents());
   browser()->FocusLocationBar();
 
@@ -540,13 +524,9 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, MAYBE_AltEnter) {
   ASSERT_NO_FATAL_FAILURE(WaitForTabOpenOrClose(tab_count + 1));
 }
 
-// Sometimes times out on Windows: http://crbug.com/57965
-#if defined(OS_WIN)
-#define MAYBE_EnterToSearch DISABLED_EnterToSearch
-#else
-#define MAYBE_EnterToSearch EnterToSearch
-#endif
-IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, MAYBE_EnterToSearch) {
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, EnterToSearch) {
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
   ASSERT_NO_FATAL_FAILURE(SetupHostResolver());
   ASSERT_NO_FATAL_FAILURE(SetupSearchEngine());
   browser()->FocusLocationBar();
@@ -590,13 +570,9 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, MAYBE_EnterToSearch) {
 
 // See http://crbug.com/20934: Omnibox keyboard behavior wrong for
 // "See recent pages in history"
-// Sometimes times out on Windows: http://crbug.com/57965
-#if defined(OS_WIN)
-#define MAYBE_EnterToOpenHistoryPage DISABLED_EnterToOpenHistoryPage
-#else
-#define MAYBE_EnterToOpenHistoryPage EnterToOpenHistoryPage
-#endif
-IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, MAYBE_EnterToOpenHistoryPage) {
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, EnterToOpenHistoryPage) {
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
   ASSERT_NO_FATAL_FAILURE(SetupComponents());
   browser()->FocusLocationBar();
 
@@ -633,13 +609,9 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, MAYBE_EnterToOpenHistoryPage) {
   EXPECT_STREQ(kHistoryPageURL, url.spec().c_str());
 }
 
-// Sometimes times out on Windows: http://crbug.com/57965
-#if defined(OS_WIN)
-#define MAYBE_EscapeToDefaultMatch DISABLED_EscapeToDefaultMatch
-#else
-#define MAYBE_EscapeToDefaultMatch EscapeToDefaultMatch
-#endif
-IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, MAYBE_EscapeToDefaultMatch) {
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, EscapeToDefaultMatch) {
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
   ASSERT_NO_FATAL_FAILURE(SetupComponents());
   browser()->FocusLocationBar();
 
@@ -678,13 +650,9 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, MAYBE_EscapeToDefaultMatch) {
   EXPECT_EQ(old_selected_line, popup_model->selected_line());
 }
 
-// Sometimes times out on Windows: http://crbug.com/57965
-#if defined(OS_WIN)
-#define MAYBE_BasicTextOperations DISABLED_BasicTextOperations
-#else
-#define MAYBE_BasicTextOperations BasicTextOperations
-#endif
-IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, MAYBE_BasicTextOperations) {
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, BasicTextOperations) {
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
   ASSERT_NO_FATAL_FAILURE(SetupComponents());
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutBlankURL));
   browser()->FocusLocationBar();
@@ -745,6 +713,8 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, MAYBE_BasicTextOperations) {
 
 #if defined(OS_LINUX)
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, UndoRedoLinux) {
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
   ASSERT_NO_FATAL_FAILURE(SetupComponents());
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kAboutBlankURL));
   browser()->FocusLocationBar();
@@ -810,6 +780,8 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, UndoRedoLinux) {
 
 // See http://crbug.com/63860
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, PrimarySelection) {
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
   browser()->FocusLocationBar();
   AutocompleteEditView* edit_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
@@ -837,6 +809,8 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, PrimarySelection) {
 // See http://crosbug.com/10306
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest,
                        BackspaceDeleteHalfWidthKatakana) {
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
   browser()->FocusLocationBar();
   AutocompleteEditView* edit_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
@@ -849,5 +823,28 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest,
   // Backspace should delete one character.
   ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_BACK, false, false, false));
   EXPECT_EQ(UTF8ToWide("\357\276\200"), edit_view->GetText());
+}
+
+// http://crbug.com/12316
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, PasteReplacingAll) {
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+
+  ASSERT_NO_FATAL_FAILURE(SetupComponents());
+  browser()->FocusLocationBar();
+
+  AutocompleteEditView* edit_view = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
+  AutocompletePopupModel* popup_model = edit_view->model()->popup_model();
+  ASSERT_TRUE(popup_model);
+
+  SetClipboardText(kSearchText);
+
+  // Paste text.
+  ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_V, true, false, false));
+  ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
+  ASSERT_TRUE(popup_model->IsOpen());
+
+  // Inline autocomplete shouldn't be triggered.
+  ASSERT_EQ(L"abc", edit_view->GetText());
 }
 #endif

@@ -689,12 +689,6 @@ void AutocompleteEditViewGtk::OnRevertTemporaryText() {
 }
 
 void AutocompleteEditViewGtk::OnBeforePossibleChange() {
-  // This method will be called in HandleKeyPress() method just before
-  // handling a key press event. So we should prevent it from being called
-  // when handling the key press event.
-  if (handling_key_press_)
-    return;
-
   // If this change is caused by a paste clipboard action and all text is
   // selected, then call model_->on_paste_replacing_all() to prevent inline
   // autocomplete.
@@ -703,6 +697,12 @@ void AutocompleteEditViewGtk::OnBeforePossibleChange() {
     if (IsSelectAll())
       model_->on_paste_replacing_all();
   }
+
+  // This method will be called in HandleKeyPress() method just before
+  // handling a key press event. So we should prevent it from being called
+  // when handling the key press event.
+  if (handling_key_press_)
+    return;
 
   // Record our state.
   text_before_change_ = GetText();
