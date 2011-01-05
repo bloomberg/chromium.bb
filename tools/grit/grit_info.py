@@ -6,6 +6,7 @@
 '''Tool to determine inputs and outputs of a grit file.
 '''
 
+import optparse
 import os
 import posixpath
 import types
@@ -14,8 +15,8 @@ from grit import grd_reader
 from grit import util
 
 
-def Outputs(filename):
-  grd = grd_reader.Parse(filename)
+def Outputs(filename, defines):
+  grd = grd_reader.Parse(filename, defines=defines)
 
   target = []
   lang_folders = {}
@@ -45,8 +46,8 @@ def Outputs(filename):
   return [t.replace('\\', '/') for t in target]
 
 
-def Inputs(filename):
-  grd = grd_reader.Parse(filename, debug=False)
+def Inputs(filename, defines):
+  grd = grd_reader.Parse(filename, debug=False, defines=defines)
   files = []
   for node in grd:
     if (node.name == 'structure' or node.name == 'skeleton' or
@@ -72,22 +73,45 @@ def Inputs(filename):
   return [f.replace('\\', '/') for f in files]
 
 
+def PrintUsage():
+  print 'USAGE: ./grit_info.py --inputs [-D foo] <grd-files>..'
+  print '       ./grit_info.py --outputs [-D foo] <out-prefix> <grd-files>..'
+
+
 def main(argv):
-  if len(argv) >= 3 and argv[1] == '--inputs':
-    for f in argv[2:]:
-      inputs = Inputs(f)
+  parser = optparse.OptionParser()
+  parser.add_option("--inputs", action="store_true", dest="inputs")
+  parser.add_option("--outputs", action="store_true", dest="outputs")
+  parser.add_option("-D", action="append", dest="defines", default=[])
+
+  options, args = parser.parse_args()
+
+  if not len(args):
+    PrintUsage()
+    return 1
+
+  defines = {}
+  for define in options.defines:
+    defines[define] = 1
+
+  if options.inputs:
+    for filename in args:
+      inputs = Inputs(filename, defines)
       # Include grd file as second input (works around gyp expecting it).
-      inputs = [inputs[0], f] + inputs[1:]
+      inputs = [inputs[0], filename] + inputs[1:]
       print '\n'.join(inputs)
-    return 0
-  if len(argv) >= 4 and argv[1] == '--outputs':
-    for f in argv[3:]:
-      outputs = [posixpath.join(argv[2], f) for f in Outputs(f)]
+  elif options.outputs:
+    if len(args) < 2:
+      PrintUsage()
+      return 1
+
+    for f in args[1:]:
+      outputs = [posixpath.join(args[0], f) for f in Outputs(f, defines)]
       print '\n'.join(outputs)
-    return 0
-  print 'USAGE: ./grit_info.py --inputs <grd-files>..'
-  print '       ./grit_info.py --outputs <out-prefix> <grd-files>..'
-  return 1
+  else:
+    PringUsage()
+    return 1
+  return 0
 
 
 if __name__ == '__main__':
