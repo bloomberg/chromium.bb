@@ -1,0 +1,46 @@
+<?xml version="1.0" ?>
+<!DOCTYPE translationbundle>
+<translationbundle lang="no">
+<translation id="1018817853520605763"><!--We use /n here to separate lines manually because NativeCheckboxGtk currently does not support multi-line. -->
+        Valgfritt: bidra til å forbedre Chromium ved automatisk å sende inn bruksstatistikk og feilrapporter\ntil Google</translation>
+<translation id="1065751875103714394">Opprett snarveier til Chromium på disse plasseringene:</translation>
+<translation id="1068718416870990145">Chromium vil utføre disse oppgavene:</translation>
+<translation id="1105130903706696483">Chromium avsluttet ikke som den skulle. Klikk Gjenopprett for å åpne sidene som var åpne sist.</translation>
+<translation id="1185134272377778587">Om Chromium</translation>
+<translation id="1708666629004767631">En ny og tryggere versjon av Chromium er tilgjengelig.</translation>
+<translation id="2484334055677766392">Språkvalg for Chromium:</translation>
+<translation id="2485422356828889247">Avinstaller</translation>
+<translation id="2558235863893655150">Skal Chromium huske dette passordet?</translation>
+<translation id="2572494885440352020">Chromium hjelp</translation>
+<translation id="263863604136125912">Start Chromium</translation>
+<translation id="2712549016134575851">Det har blitt oppdaget en konflikt med et annet installert program.</translation>
+<translation id="2770231113462710648">Endre standard nettleser til:</translation>
+<translation id="3289786827957973841">Endrer språket som Chromium bruker i menyer, dialogvinduer og verktøytips.</translation>
+<translation id="3555616473548901994">Avinstallering fullført.</translation>
+<translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
+<translation id="3911984803452407990">Chromium svarer ikke. Starte på nytt?</translation>
+<translation id="4025332521918829306">Chromium er klar til å fullføre installasjonen.</translation>
+<translation id="4179848566211676653">Avslutt Chromium</translation>
+<translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
+<translation id="4932687624772039103">Chromium støtter ikke <ph name="OS_NAME"/>.</translation>
+<translation id="5398878173008909840">En ny versjon av Chromium er tilgjengelig.</translation>
+<translation id="5820394555380036790">Chromium OS</translation>
+<translation id="5862307444128926510">Velkommen til Chromium</translation>
+<translation id="6248213926982192922">Gjør Chromium til standard nettleser</translation>
+<translation id="6373523479360886564">Ønsker du å avinstallere Chromium?</translation>
+<translation id="6510925080656968729">Avinstaller Chromium</translation>
+<translation id="6676384891291319759">Bruk internett</translation>
+<translation id="6757767188268205357">Ikke forstyrr meg</translation>
+<translation id="6953661834318318668">Chromium verktøylinje</translation>
+<translation id="7196020411877309443">Hvorfor vises dette?</translation>
+<translation id="7337881442233988129">Chromium</translation>
+<translation id="7421823331379285070">Chromium krever Windows XP eller nyere. Det kan hende noen funksjoner ikke vil fungere.</translation>
+<translation id="7641113255207688324">Chromium er ikke din standard nettleser.</translation>
+<translation id="8453117565092476964">Installasjonsfilen er ugyldig. Vennligst last ned Chromium på nytt.</translation>
+<translation id="8738921060445980047">Ukjent versjon.</translation>
+<translation id="8770560772173120024">Chromium importerer nå Favoritter/Bokmerker.</translation>
+<translation id="8860251088736138354">Aiai! Chromium kræsjet. Starte på nytt nå?</translation>
+<translation id="8865765905101981392">Nettleser</translation>
+<translation id="911206726377975832">Slette dine brukerdata også?</translation>
+<translation id="985602178874221306">Chromium-utviklerne</translation>
+</translationbundle>
