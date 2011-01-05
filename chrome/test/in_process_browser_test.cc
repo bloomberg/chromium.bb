@@ -323,6 +323,9 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
   // browser.
   MessageLoopForUI::current()->RunAllPending();
 
+  SetUpOnMainThread();
+  pool.Recycle();
+
   RunTestOnMainThread();
   pool.Recycle();
 
