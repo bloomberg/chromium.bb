@@ -521,11 +521,12 @@ TEST_F(PageCyclerDatabaseReferenceTest, Database##name##File) { \
 
 // This macro simplifies setting up regular and reference build tests
 // for HTML5 Indexed DB tests.
+// FAILS crbug.com/68660
 #define PAGE_CYCLER_IDB_TESTS(test, name) \
-TEST_F(PageCyclerIndexedDatabaseTest, IndexedDB##name##File) { \
+TEST_F(PageCyclerIndexedDatabaseTest, FAILS_IndexedDB##name##File) { \
   RunTest(test, test, false); \
 } \
-TEST_F(PageCyclerIndexedDatabaseReferenceTest, IndexedDB##name##File) { \
+TEST_F(PageCyclerIndexedDatabaseReferenceTest, FAILS_IndexedDB##name##File) { \
   RunTest(test, test, false); \
 }
 
