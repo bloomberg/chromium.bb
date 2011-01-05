@@ -80,16 +80,7 @@ html[dir=rtl] .remove-user-button {
 
 #ownerOnlyWarning {
   margin-bottom: 10px;
-}
-
-#ownerOnlyWarning > * {
-  vertical-align: middle;
-}
-
-#warningIcon {
-  width: 17px;
-  height: 17px;
-  display: inline-block;
+  -webkit-padding-start: 20px;
   background-repeat: no-repeat;
   background-image: url('warning.png');
 }
