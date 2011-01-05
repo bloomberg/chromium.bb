@@ -227,18 +227,9 @@
    fun:_CFRuntimeCreateInstance
    fun:__CFDictionaryInit
    fun:utOpenActivateAllSelectedIMInDoc
+   ...
    fun:MyActivateTSMDocument
    fun:ActivateTSMDocument
-   fun:CallMyActivateTSMDocument
-   fun:CFRunLoopRunSpecific
-   fun:CFRunLoopRunInMode
-   fun:RunCurrentEventLoopInMode
-   fun:ReceiveNextEventCommon
-   fun:BlockUntilNextEventMatchingListInMode
-   fun:_DPSNextEvent
-   fun:-[NSApplication nextEventMatchingMask:untilDate:inMode:dequeue:]
-   fun:_ZN9CocoaTest8TearDownEv
-   fun:_ZN7testingL35HandleExceptionsInMethodIfSupportedINS_4TestEvEET0_PT_MS3_FS2_vEPKc
 }
 
 # 3. Suppressions for real chromium bugs that are not yet fixed.
