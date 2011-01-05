@@ -148,7 +148,13 @@ parser.add_option(
     '--file',
     default=[],
     action='append',
-    help='')
+    help='files to be served by the temporary httpd server')
+
+parser.add_option(
+    '--env',
+    default=[],
+    action='append',
+    help='environment vars to be set before the selenium launch')
 
 ######################################################################
 # logging
@@ -572,8 +578,15 @@ def RunTest(session, url, max_wait):
 def main(options):
   logging.info('browser list is %s:', options.browser)
   logging.debug('env is:')
+
+  for o in options.env:
+    tag, value = o.split('=', 1)
+    logging.info("adding env var [%s=%s]", tag, value)
+    os.putenv(tag, value)
+
+  # NOTE: this does not show the modifications with putenv above
   for t in os.environ.items():
-    logging.debug('%s=%s' % t)
+    logging.debug('[%s=%s]' % t)
   # install a cleanup handler if possible
   try:
     import signal
