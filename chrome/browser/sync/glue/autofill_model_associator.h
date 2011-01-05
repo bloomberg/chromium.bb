@@ -173,8 +173,6 @@ class AutofillModelAssociator
   // user requested an abort.
   bool IsAbortPending();
 
-  bool MigrationLoggingEnabled();
-
   ProfileSyncService* sync_service_;
   WebDatabase* web_database_;
   PersonalDataManager* personal_data_;

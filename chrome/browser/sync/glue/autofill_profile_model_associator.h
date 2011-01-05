@@ -161,9 +161,8 @@ class AutofillProfileModelAssociator
 
   int64 FindSyncNodeWithProfile(sync_api::WriteTransaction* trans,
       const sync_api::BaseNode& autofill_root,
-      const AutoFillProfile& profile);
-
-  bool MigrationLoggingEnabled();
+      const AutoFillProfile& profile,
+      std::set<std::string>* current_profiles);
 
   ProfileSyncService* sync_service_;
   WebDatabase* web_database_;
