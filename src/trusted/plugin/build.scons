@@ -57,7 +57,6 @@ if env.Bit('windows'):
         CCFLAGS = ['/EHsc',],
         CPPDEFINES = ['XP_WIN', 'WIN32', '_WINDOWS'],
     )
-    plugin_env.Tool('atlmfc_vc80')
 
 # Both the NPAPI and PPAPI plugins depend upon the code that is in the
 # top (plugin) directory and on a large set of libraries.

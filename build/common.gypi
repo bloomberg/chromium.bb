@@ -752,7 +752,6 @@
         ],
         'msvs_system_include_dirs': [
           '<(DEPTH)/third_party/platformsdk_win7/files/Include',
-          '$(VSInstallDir)/VC/atlmfc/include',
         ],
         'msvs_cygwin_dirs': ['../third_party/cygwin'],
         'msvs_disabled_warnings': [4396, 4503, 4819],

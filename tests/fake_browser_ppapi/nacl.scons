@@ -48,7 +48,6 @@ if trusted_env.Bit('windows'):
         CCFLAGS = ['/EHsc',],
         CPPDEFINES = ['WIN32', '_WINDOWS'],
     )
-    trusted_env.Tool('atlmfc_vc80')
 
 
 trusted_env.Append(LIBS=['ppapi_browser', 'ppapi_plugin', 'platform', 'gio'])

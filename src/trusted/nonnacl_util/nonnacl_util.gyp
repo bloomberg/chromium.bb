@@ -230,5 +230,3 @@
 #        CCFLAGS = ['/EHsc'],
 #        CPPDEFINES = ['XP_WIN', 'WIN32', '_WINDOWS'],
 #    )
-#    env.Tool('atlmfc_vc80')
-#
