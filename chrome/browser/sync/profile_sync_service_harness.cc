@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/sync/profile_sync_service_harness.h"
+
+#include <algorithm>
+#include <vector>
+
 #include "base/message_loop.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
-#include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -90,8 +94,7 @@ ProfileSyncServiceHarness::ProfileSyncServiceHarness(
     : wait_state_(INITIAL_WAIT_STATE),
       profile_(profile),
       service_(NULL),
-      last_timestamp_(0),
-      min_timestamp_needed_(kMinTimestampNeededNone),
+      timestamp_match_partner_(NULL),
       username_(username),
       password_(password),
       id_(id) {
@@ -263,11 +266,14 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
     }
     case WAITING_FOR_UPDATES: {
       LogClientInfo("WAITING_FOR_UPDATES");
-      if (!IsSynced() || GetUpdatedTimestamp() < min_timestamp_needed_) {
-        // The client is not yet fully synced. Continue waiting until the client
-        // is at the required minimum timestamp.
+      DCHECK(timestamp_match_partner_);
+      if (!MatchesOtherClient(timestamp_match_partner_)) {
+        // The client is not yet fully synced; keep waiting until we converge.
         break;
       }
+      timestamp_match_partner_->service()->RemoveObserver(this);
+      timestamp_match_partner_ = NULL;
+
       SignalStateCompleteWithNextState(FULLY_SYNCED);
       break;
     }
@@ -353,7 +359,7 @@ bool ProfileSyncServiceHarness::AwaitMutualSyncCycleCompletion(
   LogClientInfo("AwaitMutualSyncCycleCompletion");
   if (!AwaitSyncCycleCompletion("Sync cycle completion on active client."))
     return false;
-  return partner->WaitUntilTimestampIsAtLeast(last_timestamp_,
+  return partner->WaitUntilTimestampMatches(this,
       "Sync cycle completion on passive client.");
 }
 
@@ -367,7 +373,7 @@ bool ProfileSyncServiceHarness::AwaitGroupSyncCycleCompletion(
       partners.begin(); it != partners.end(); ++it) {
     if ((this != *it) && ((*it)->wait_state_ != SYNC_DISABLED)) {
       return_value = return_value &&
-          (*it)->WaitUntilTimestampIsAtLeast(last_timestamp_,
+          (*it)->WaitUntilTimestampMatches(this,
           "Sync cycle completion on partner client.");
     }
   }
@@ -388,20 +394,21 @@ bool ProfileSyncServiceHarness::AwaitQuiescence(
   return return_value;
 }
 
-bool ProfileSyncServiceHarness::WaitUntilTimestampIsAtLeast(
-    int64 timestamp, const std::string& reason) {
-  LogClientInfo("WaitUntilTimestampIsAtLeast");
+bool ProfileSyncServiceHarness::WaitUntilTimestampMatches(
+    ProfileSyncServiceHarness* partner, const std::string& reason) {
+  LogClientInfo("WaitUntilTimestampMatches");
   if (wait_state_ == SYNC_DISABLED) {
     LOG(ERROR) << "Sync disabled for Client " << id_ << ".";
     return false;
   }
-  min_timestamp_needed_ = timestamp;
-  if (GetUpdatedTimestamp() < min_timestamp_needed_) {
-    wait_state_ = WAITING_FOR_UPDATES;
-    return AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs, reason);
-  } else {
+  DCHECK(!timestamp_match_partner_);
+  if (MatchesOtherClient(partner))
     return true;
-  }
+
+  timestamp_match_partner_ = partner;
+  partner->service()->AddObserver(this);
+  wait_state_ = WAITING_FOR_UPDATES;
+  return AwaitStatusChangeWithTimeout(kLiveSyncOperationTimeoutMs, reason);
 }
 
 bool ProfileSyncServiceHarness::AwaitStatusChangeWithTimeout(
@@ -452,6 +459,27 @@ bool ProfileSyncServiceHarness::IsSynced() {
           !service()->backend()->HasUnsyncedItems() &&
           !snap->has_more_to_sync &&
           snap->unsynced_count == 0);
+}
+
+bool ProfileSyncServiceHarness::MatchesOtherClient(
+    ProfileSyncServiceHarness* partner) {
+  if (!IsSynced())
+    return false;
+
+  // Only look for a match if we have at least one enabled datatype in
+  // common with the partner client.
+  syncable::ModelTypeSet types, other_types, intersection_types;
+  service()->GetPreferredDataTypes(&types);
+  partner->service()->GetPreferredDataTypes(&other_types);
+  std::set_intersection(types.begin(), types.end(), other_types.begin(),
+                        other_types.end(),
+                        inserter(intersection_types,
+                                 intersection_types.begin()));
+  if (intersection_types.empty()) {
+    return true;
+  }
+  return partner->IsSynced() &&
+      partner->GetUpdatedTimestamp() == GetUpdatedTimestamp();
 }
 
 const SyncSessionSnapshot*
@@ -544,9 +572,7 @@ void ProfileSyncServiceHarness::DisableSyncForAllDatatypes() {
 int64 ProfileSyncServiceHarness::GetUpdatedTimestamp() {
   const SyncSessionSnapshot* snap = GetLastSessionSnapshot();
   DCHECK(snap != NULL) << "GetUpdatedTimestamp(): Sync snapshot is NULL.";
-  DCHECK_LE(last_timestamp_, snap->max_local_timestamp);
-  last_timestamp_ = snap->max_local_timestamp;
-  return last_timestamp_;
+  return snap->max_local_timestamp;
 }
 
 void ProfileSyncServiceHarness::LogClientInfo(std::string message) {

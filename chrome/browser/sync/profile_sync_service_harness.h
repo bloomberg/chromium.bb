@@ -59,8 +59,9 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   bool AwaitSyncCycleCompletion(const std::string& reason);
 
   // Blocks the caller until this harness has observed that the sync engine
-  // has "synced" up to at least the specified local timestamp.
-  bool WaitUntilTimestampIsAtLeast(int64 timestamp, const std::string& reason);
+  // has downloaded all the changes seen by the |partner| harness's client.
+  bool WaitUntilTimestampMatches(
+      ProfileSyncServiceHarness* partner, const std::string& reason);
 
   // Calling this acts as a barrier and blocks the caller until |this| and
   // |partner| have both completed a sync cycle.  When calling this method,
@@ -72,10 +73,9 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   bool AwaitMutualSyncCycleCompletion(ProfileSyncServiceHarness* partner);
 
   // Blocks the caller until |this| completes its ongoing sync cycle and every
-  // other client in |partners| has a timestamp that is greater than or equal to
-  // the timestamp of |this|. Note: Use this method when exactly one client
-  // makes local change(s), and more than one client is waiting to receive those
-  // changes.
+  // other client in |partners| have achieved identical download progresses.
+  // Note: Use this method when exactly one client makes local change(s),
+  // and more than one client is waiting to receive those changes.
   bool AwaitGroupSyncCycleCompletion(
       std::vector<ProfileSyncServiceHarness*>& partners);
 
@@ -168,11 +168,14 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   // Returns true if the sync client has no unsynced items.
   bool IsSynced();
 
+  // Returns true if this client has downloaded all the items that the
+  // other client has.
+  bool MatchesOtherClient(ProfileSyncServiceHarness* partner);
+
   // Logs message with relevant info about client's sync state (if available).
   void LogClientInfo(std::string message);
 
-  // Updates |last_timestamp_| with the timestamp of the current sync session.
-  // Returns the new value of |last_timestamp_|.
+  // Gets the current progress indicator of the current sync session.
   int64 GetUpdatedTimestamp();
 
   WaitState wait_state_;
@@ -180,15 +183,9 @@ class ProfileSyncServiceHarness : public ProfileSyncServiceObserver {
   Profile* profile_;
   ProfileSyncService* service_;
 
-  // This value tracks the max sync timestamp (e.g. synced-to revision) inside
-  // the sync engine.  It gets updated when a sync cycle ends and the session
-  // snapshot implies syncing is "done".
-  int64 last_timestamp_;
-
-  // The minimum value of the 'max_local_timestamp' member of a
-  // SyncSessionSnapshot we need to wait to observe in OnStateChanged when told
-  // to WaitUntilTimestampIsAtLeast(...).
-  int64 min_timestamp_needed_;
+  // The harness of the client whose update progress marker we're expecting
+  // eventually match.
+  ProfileSyncServiceHarness* timestamp_match_partner_;
 
   // Credentials used for GAIA authentication.
   std::string username_;
