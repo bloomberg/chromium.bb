@@ -224,7 +224,8 @@ void InstantController::DestroyPreviewContents() {
   }
 
   // ReleasePreviewContents sets is_active_ to false, but we need to set it
-  // beore notifying the delegate so.
+  // before notifying the delegate, otherwise if the delegate asks for the state
+  // we'll still be active.
   is_active_ = false;
   delegate_->HideInstant();
   delete ReleasePreviewContents(INSTANT_COMMIT_DESTROY);

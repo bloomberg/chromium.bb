@@ -4170,9 +4170,11 @@ bool Browser::OpenInstant(WindowOpenDisposition disposition) {
     return true;
   }
   if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB) {
-    HideInstant();
     TabContentsWrapper* preview_contents = instant()->ReleasePreviewContents(
         INSTANT_COMMIT_PRESSED_ENTER);
+    // HideInstant is invoked after release so that InstantController is not
+    // active when HideInstant asks it for its state.
+    HideInstant();
     preview_contents->controller().PruneAllButActive();
     tab_handler_->GetTabStripModel()->AddTabContents(
         preview_contents,
