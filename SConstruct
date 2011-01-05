@@ -2328,7 +2328,7 @@ doc_env = pre_base_env.Clone(
 environment_list.append(doc_env)
 doc_env.Append(
   BUILD_SCONSCRIPTS = [
-    'documentation',
+#    'documentation',  # Doxygen files removed from this directory in rev 4062
     ],
 )
 
