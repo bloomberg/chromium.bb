@@ -2074,14 +2074,8 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   // SpellCheckerPlatform::CheckSpelling remembers the last tag and
   // SpellCheckerPlatform::IgnoreWord assumes that is the correct tag.
   NSString* wordToIgnore = [sender stringValue];
-  if (wordToIgnore != nil) {
+  if (wordToIgnore != nil)
     SpellCheckerPlatform::IgnoreWord(base::SysNSStringToUTF16(wordToIgnore));
-
-    // Strangely, the spellingPanel doesn't send checkSpelling after a word is
-    // ignored, so we have to explicitly call AdvanceToNextMisspelling here.
-    RenderWidgetHostViewMac* thisHostView = [self renderWidgetHostViewMac];
-    thisHostView->GetRenderWidgetHost()->AdvanceToNextMisspelling();
-  }
 }
 
 - (void)showGuessPanel:(id)sender {
