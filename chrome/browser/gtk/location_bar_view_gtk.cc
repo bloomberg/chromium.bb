@@ -316,11 +316,11 @@ void LocationBarViewGtk::BuildSiteTypeArea() {
   gtk_widget_set_name(security_info_label_,
                       "chrome-location-bar-security-info-label");
 
-  GtkWidget* site_type_hbox = gtk_hbox_new(FALSE, 2);
+  GtkWidget* site_type_hbox = gtk_hbox_new(FALSE, 1);
   gtk_box_pack_start(GTK_BOX(site_type_hbox), icon_alignment,
                      FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(site_type_hbox), security_info_label_,
-                     FALSE, FALSE, 1);
+                     FALSE, FALSE, 2);
 
   site_type_event_box_ = gtk_event_box_new();
   gtk_widget_modify_bg(site_type_event_box_, GTK_STATE_NORMAL,
