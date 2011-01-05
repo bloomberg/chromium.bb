@@ -61,14 +61,7 @@ static void NavigateTabHelper(TabContents* contents, const GURL& url) {
   EXPECT_EQ(url, contents->controller().GetLastCommittedEntry()->url());
 }
 
-#if defined(OS_WIN)
-// AppProcess sometimes hangs on Windows
-// http://crbug.com/58810
-#define MAYBE_AppProcess DISABLED_AppProcess
-#else
-#define MAYBE_AppProcess AppProcess
-#endif
-IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcess) {
+IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
 
@@ -144,4 +137,52 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcess) {
       L"window.domAutomationController.send(window.opener != null)",
       &windowOpenerValid));
   ASSERT_TRUE(windowOpenerValid);
+}
+
+// Tests that app process switching works properly in the following scenario:
+// 1. navigate to a page1 in the app
+// 2. page1 redirects to a page2 outside the app extent (ie, "/server-redirect")
+// 3. page2 redirects back to a page in the app
+// The final navigation should end up in the app process.
+// See http://crbug.com/61757
+IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessRedirectBack) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisablePopupBlocking);
+
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app_process")));
+
+  // Open two tabs in the app.
+  GURL base_url = test_server()->GetURL(
+      "files/extensions/api_test/app_process/");
+
+  // The app under test acts on URLs whose host is "localhost",
+  // so the URLs we navigate to must have host "localhost".
+  GURL::Replacements replace_host;
+  std::string host_str("localhost");  // must stay in scope with replace_host
+  replace_host.SetHostStr(host_str);
+  base_url = base_url.ReplaceComponents(replace_host);
+
+  browser()->NewTab();
+  ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path1/empty.html"));
+  browser()->NewTab();
+  ui_test_utils::NavigateToURL(browser(),
+                               base_url.Resolve("path1/redirect.html"));
+
+  // Wait until the second tab finishes its redirect train (2 hops).
+  NavigationController& controller =
+      browser()->GetSelectedTabContents()->controller();
+  while (controller.GetActiveEntry()->url().path() !=
+         "/files/extensions/api_test/app_process/path1/empty.html") {
+    ui_test_utils::WaitForNavigation(&controller);
+  }
+
+  // 3 tabs, including the initial about:blank. The last 2 should be the same
+  // process.
+  ASSERT_EQ(3, browser()->tab_count());
+  RenderViewHost* host = browser()->GetTabContentsAt(1)->render_view_host();
+  EXPECT_EQ(host->process(),
+            browser()->GetTabContentsAt(2)->render_view_host()->process());
 }
