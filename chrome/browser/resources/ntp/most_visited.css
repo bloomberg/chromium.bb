@@ -100,9 +100,8 @@
 
   /* We need background-color as well to get the fade out animation correct */
   background-color: hsl(213, 66%, 57%);
-  background-image: -webkit-gradient(linear, left top, left bottom,
-                                     from(hsl(213, 87%, 67%)),
-                                     to(hsl(213, 66%, 57%)));
+  background-image: -webkit-linear-gradient(hsl(213, 87%, 67%),
+                                            hsl(213, 66%, 57%));
 }
 
 .edit-bar > .spacer {
@@ -198,11 +197,9 @@ html[dir=rtl] .thumbnail-container > .title > div {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
 
-  background-image: -webkit-gradient(linear, left top, left bottom,
-    from(hsla(0, 0%, 0%, 0)),
-    color-stop(0.85, hsla(0, 0%, 47%, 0)),
-    to(hsla(0, 0%, 47%, 0.2))
-    );
+  background-image: -webkit-linear-gradient(hsla(0, 0%, 0%, 0),
+                                            hsla(0, 0%, 47%, 0) 85%,
+                                            hsla(0, 0%, 47%, 0.2));
 
   /* delay border radius transition as much as the edit bar slide delay */
   -webkit-transition-delay: 0, 0, 0, .5s, .5s, 0;

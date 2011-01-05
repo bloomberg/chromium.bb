@@ -4,7 +4,7 @@ menu {
   border: 1px solid rgba(0, 0, 0, .50);
   -webkit-box-shadow: 0px 2px 4px rgba(0, 0, 0, .50);
   color: black;
-  background: -webkit-gradient(linear, 0 0, 0 100%, from(#fff), to(#eee));
+  background: -webkit-linear-gradient(#fff, #eee);
   left: 0;
   white-space: nowrap;
   padding: 8px 0;
@@ -34,8 +34,9 @@ menu > :not(hr) {
 }
 
 menu > hr {
-  background: -webkit-gradient(linear, 0 0, 96% 0, from(rgba(0, 0, 0, .10)),
-                               to(rgba(0, 0, 0, .02)));
+  background: -webkit-linear-gradient(left,
+                                      rgba(0, 0, 0, .10),
+                                      rgba(0, 0, 0, .02) 96%);
   border: 0;
   height: 1px;
   margin: 8px 0;

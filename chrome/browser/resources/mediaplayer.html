@@ -25,11 +25,7 @@ body {
   height: 8px;
   opacity: .4;
   position: absolute;
-  background: -webkit-gradient(linear,
-                               left bottom,
-                               left top,
-                               from(white),
-                               to(transparent));
+  background: -webkit-linear-gradient(transparent, white);
 }
 
 .audiotitle {
@@ -61,11 +57,7 @@ body {
   opacity: .9;
   right: 0;
   position: absolute;
-  background: -webkit-gradient(linear,
-                               left top,
-                               left bottom,
-                               from(#323232),
-                               to(#070707));
+  background: -webkit-linear-gradient(#323232, #070707);
 }
 
 .sliderback {
@@ -75,11 +67,7 @@ body {
   height: 5px;
   position: absolute;
   border-radius: 3px;
-  background: -webkit-gradient(linear,
-                               left top,
-                               left bottom,
-                               from(#ced9fa),
-                               to(#e8ecf9));
+  background: -webkit-linear-gradient(#ced9fa, #e8ecf9);
   border: 1px solid #ffffff;
 }
 
@@ -91,11 +79,7 @@ body {
   border-radius: 3px;
   border: 1px solid #9ca5b7;
   position: absolute;
-  background: -webkit-gradient(linear,
-                               left top,
-                               left bottom,
-                               from(#4a5d84),
-                               to(#232c3d));
+  background: -webkit-linear-gradient(#4a5d84, #232c3d);
 }
 
 .sliderloaded {
@@ -117,11 +101,7 @@ body {
   opacity: .9;
   right: 0;
   position: absolute;
-  background: -webkit-gradient(linear,
-                               left top,
-                               left bottom,
-                               from(#323232),
-                               to(#070707));
+  background: -webkit-linear-gradient(#323232, #070707);
 }
 
 .soundbutton {
@@ -154,11 +134,7 @@ body {
   right: 30px;
   z-index: 99999;
   background: black;
-  background: -webkit-gradient(linear,
-                               left top,
-                               left bottom,
-                               from(#323232),
-                               to(#070707));
+  background: -webkit-linear-gradient(#323232, #070707);
 }
 
 .fullscreen {
@@ -286,11 +262,7 @@ body {
 }
 
 .controlbutton:hover {
-  background: -webkit-gradient(linear,
-                               left top,
-                               left bottom,
-                               from(#6a7eac),
-                               to(#000000));
+  background: -webkit-linear-gradient(#6a7eac, #000);
 }
 
 .icon {
@@ -358,7 +330,7 @@ function onLoadedProgress(e) {
 
 function onMediaError(e) {
   console.log('Got new error' + e);
-  chrome.send('playbackError', ['Error playing back', 
+  chrome.send('playbackError', ['Error playing back',
       currentPlaylist[currentItem].path]);
   if (currentPlaylist.length == 1) {
     $('error').textContent = localStrings.getString('errorstring');

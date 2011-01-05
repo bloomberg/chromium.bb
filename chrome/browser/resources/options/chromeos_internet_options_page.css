@@ -53,8 +53,8 @@
 }
 
 .network-item[connected] {
-  background-image: -webkit-gradient(linear, left top, left bottom,
-      from(rgba(255,255,255,0.8)), to(rgba(255,255,255,0)));
+  background-image: -webkit-linear-gradient(rgba(255, 255, 255, 0.8),
+                                            rgba(255, 255, 255, 0));
   background-color: hsl(214,91%,89%);
   border-color: hsl(214, 91%, 65%);
 }

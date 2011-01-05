@@ -118,17 +118,8 @@ html[toolkit=views] .button-strip {
 
 #navbar-container {
   -webkit-border-end: 1px solid #c6c9ce;
-  background: -webkit-gradient(linear,
-                               left top,
-                               left bottom,
-                               from(rgba(234, 238, 243, 0)),
-                               to(#eaeef3)),
-              -webkit-gradient(linear,
-                               left top,
-                               right top,
-                               from(#eaeef3),
-                               color-stop(0.97, #eaeef3),
-                               to(#d3d7db));
+  background: -webkit-linear-gradient(rgba(234, 238, 243, 0), #eaeef3),
+              -webkit-linear-gradient(left, #eaeef3, #eaeef3 97%, #d3d7db);
   bottom: 0;
   cursor: pointer;
   display: none;
@@ -140,18 +131,10 @@ html[toolkit=views] .button-strip {
 }
 
 html[dir='rtl'] #navbar-container {
-  background: -webkit-gradient(linear,
-                               left top,
-                               left bottom,
-                               from(rgba(255, 255, 255, 0)),
-                               color-stop(0.7, rgba(255, 255, 255, 0)),
-                               to(white)),
-              -webkit-gradient(linear,
-                               right top,
-                               left top,
-                               from(white),
-                               color-stop(0.8, white),
-                               to(#f3f3f3));
+  background: -webkit-linear-gradient(rgba(255, 255, 255, 0)),
+                                      rgba(255, 255, 255, 0) 70%,
+                                      white),
+              -webkit-linear-gradient(right, white, white 80%, #f3f3f3);
   left: auto;
   right: 0;
 }
@@ -255,12 +238,7 @@ html[hide-menu=true] #mainview {
 }
 
 #managed-prefs-banner {
-  background: -webkit-gradient(linear,
-                               left top,
-                               left bottom,
-                               from(#fff2b7),
-                               color-stop(0.97, #fae691),
-                               to(#878787));
+  background: -webkit-linear-gradient(#fff2b7, #fae691 97%, #878787);
   height: 31px;
   width: 100%;
 }

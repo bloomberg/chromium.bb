@@ -1,8 +1,7 @@
 body {
-  background: -webkit-gradient(
-    radial, 50% 50%, 5, 50% 50%, 1000,
-    from(darkblue), to(black)
-  );
+  background: -webkit-radial-gradient(circle contain,
+                                      darkblue 5px,
+                                      black 1000px);
   font-family: 'Times New Roman';
   font-size: 15px;
 }

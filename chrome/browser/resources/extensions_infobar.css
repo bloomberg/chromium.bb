@@ -3,8 +3,7 @@
  */
 
 body {
-  background: -webkit-gradient(linear, left top, left bottom,
-              from(#DAE7F9), to(#B5CBE8));
+  background: -webkit-linear-gradient(#DAE7F9, #B5CBE8);
   font-family: Segoe UI, Tahoma;
   font-size: 11px;
   height: 36px; /* Infobars are limited to 36-72px */

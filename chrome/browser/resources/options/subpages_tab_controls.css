@@ -51,11 +51,7 @@ html[dir=rtl] .subpages-nav-tabs .inactive-tab-label {
 .subpages-nav-tabs {
   padding: 4px;
   border-bottom: 1px solid #A0A0A0;  /* light gray */
-  background: -webkit-gradient(linear,
-                               left top,
-                               left bottom,
-                               from(white),
-                               to(#F3F3F3));  /* very light gray */
+  background: -webkit-linear-gradient(white, #F3F3F3);  /* very light gray */
   margin-bottom: 15px;
 }
 

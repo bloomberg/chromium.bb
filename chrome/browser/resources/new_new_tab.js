@@ -516,23 +516,22 @@ function updateMask(maxiview, visibleHeightPx) {
   var third = fourth - gradientHeightPx / window.innerHeight;
 
   var gradientArguments = [
-    'linear',
-    '0 0',
-    '0 100%',
-    'from(transparent)',
+    'transparent',
     getColorStopString(first, 'transparent'),
     getColorStopString(second, gradientDestination),
     getColorStopString(third, gradientDestination),
     getColorStopString(fourth, 'transparent'),
-    'to(transparent)'
+    'transparent'
   ];
 
-  var gradient = '-webkit-gradient(' + gradientArguments.join(', ') + ')';
+  var gradient = '-webkit-linear-gradient(' + gradientArguments.join(',') + ')';
   maxiview.style.WebkitMaskImage = gradient;
 }
 
 function getColorStopString(height, color) {
-  return 'color-stop(' + height + ', ' + color + ')';
+  // TODO(arv): The CSS3 gradient syntax allows px units so we should simplify
+  // this to use pixels instead.
+  return color + ' ' + height * 100 + '%';
 }
 
 window.addEventListener('resize', handleWindowResize);

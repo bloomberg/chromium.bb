@@ -206,9 +206,7 @@ html[dir=rtl] .item {
   border: 1px solid rgb(118, 118, 118);
   border-radius: 3px;
   padding: 0 3px;
-  background: -webkit-gradient(linear, left top, left bottom,
-                               from(white),
-                               to(rgb(228, 229, 240)));
+  background: -webkit-linear-gradient(white, rgb(228, 229, 240));
   width: auto;
   max-width: 300px;
 }

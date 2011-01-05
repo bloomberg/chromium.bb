@@ -1,7 +1,5 @@
 body {
-  background: -webkit-gradient(linear, left top, left bottom,
-                               from(white),
-                               to(#EEE));
+  background: -webkit-linear-gradient(white, #EEE);
   cursor: default;
   margin: 0;
   -webkit-user-select: none;
@@ -47,8 +45,9 @@ body {
 }
 
 .separator {
-  background: -webkit-gradient(linear, 0 0, 96% 0, from(rgba(0, 0, 0, .10)),
-                               to(rgba(0, 0, 0, .02)));
+  background: -webkit-linear-gradient(left,
+                                      rgba(0, 0, 0, .10),
+                                      rgba(0, 0, 0, .02) 96%);
   border: 0;
   height: 1px;
   margin: 4px 0;
@@ -91,4 +90,3 @@ body {
 .hidden {
   display: none;
 }
-

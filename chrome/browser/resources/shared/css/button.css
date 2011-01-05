@@ -3,13 +3,11 @@ button {
   border: 1px solid rgba(0, 0, 0, .50);
   border-radius: 3px;
   -webkit-box-shadow: 1px 1px 0px rgba(0, 0, 0, .10);
-  background: -webkit-gradient(linear, 0 50%, 0 100%,
-                               from(#ffffff), to(#e3e3e3));
+  background: -webkit-linear-gradient(#fff 50%, #e3e3e3);
 }
 
 button:active {
-  background: -webkit-gradient(linear, 0 4%, 0 100%,
-                               from(#c3c3c3), to(#f5f5f5));
+  background: -webkit-linear-gradient(#c3c3c3 4%, #f5f5f5);
 }
 
 button:focus {
@@ -23,8 +21,7 @@ button.action {
   border: 1px solid #2e4987;
   font-weight: bold;
   color: #ffffff;
-  background: -webkit-gradient(linear, 0 0, 0 100%,
-                               from(#6391de), to(#426dc9));
+  background: -webkit-linear-gradient(#6391de, #426dc9);
 }
 
 button.action:focus {
@@ -35,13 +32,11 @@ button.action:focus {
 
 /* make sure we do not use active when disabled */
 button.action:active:not(:disabled) {
-  background: -webkit-gradient(linear, 0 0, 0 100%,
-                               from(#426dc9), to(#6391de));
+  background: -webkit-linear-gradient(#426dc9, #6391de);
 }
 
 button:disabled {
   border: 1px solid rgba(0, 0, 0, .35);
   color: rgba(0, 0, 0, .30);
-  background: -webkit-gradient(linear, 0 0, 0 100%,
-                               from(#ffffff), to(#e3e3e3));
+  background: -webkit-linear-gradient(#fff, #e3e3e3);
 }

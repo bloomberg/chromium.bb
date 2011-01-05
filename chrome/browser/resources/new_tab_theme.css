@@ -52,9 +52,9 @@ body {
 .thumbnail-container:focus .edit-bar,
 .thumbnail-container:hover .edit-bar {
   background-color: $6; /* COLOR_NTP_HEADER */
-  background-image: -webkit-gradient(linear, left top, left bottom,
-                                     from($7), /* color_header_gradient_light */
-                                     to($6)); /* COLOR_NTP_HEADER */
+  background-image: -webkit-linear-gradient(
+                        $7, /* COLOR_HEADER_GRADIENT_LIGHT */
+                        $6); /* COLOR_NTP_HEADER */
 }
 .thumbnail-container:hover > .edit-mode-border {
   background-color: $6; /* COLOR_NTP_HEADER */

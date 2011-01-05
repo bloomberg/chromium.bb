@@ -4,19 +4,15 @@
 <meta charset=UTF-8">
 <title i18n-content="title"></title>
 <style>
-body {  
+body {
   -webkit-user-select: none;
 }
-  
+
 h1 {
   border-bottom: 1px solid #7289E2;
   padding: 8px;
   height: 32px;
-  background-image: -webkit-gradient(linear,
-                                     left top,
-                                     left bottom,
-                                     from(#D0DAF8),
-                                     to(#A6BAF7));
+  background-image: -webkit-linear-gradient(#D0DAF8, #A6BAF7);
   border: 1px solid #999;
   border-top: 0;
   color: black;
@@ -25,13 +21,9 @@ h1 {
 html[dir='rtl'] h1 {
   left: auto;
   right: 0;
-  background-image: -webkit-gradient(linear,
-                                     right top,
-                                     right bottom,
-                                     from(#D0DAF8),
-                                     to(#A6BAF7));
+  background-image: -webkit-linear-gradient(#D0DAF8, #A6BAF7);
 }
- 
+
 .rowlink {
   height: 100%;
   -webkit-margin-end: 2px;
@@ -161,7 +153,7 @@ progress {
 }
 
 #statusColumn:not(.burningColumn) {
-  height: 50%; 
+  height: 50%;
   border-top: 1px solid #7289E2;
 }
 </style>
@@ -196,11 +188,11 @@ function burnSuccessful() {
 function burnUnsuccessful(){
   alert(localStrings.getString('burnUnsuccessfulMessage'));
 }
-  
+
 function rootsChanged(){
   chrome.send('getRoots', []);
 }
-  
+
 function browseFileResult(info, results) {
   var path = info.path;
   var list = $('rootsList');
@@ -240,12 +232,12 @@ function createProgressElement(id) {
   var statusDiv = document.createElement('div');
   statusDiv.id = id;
   statusDiv.className = 'statusDiv';
-  
+
   var statusText = document.createElement('div');
   statusText.id = id + 'StatusText';
   statusText.className = 'statusText';
   statusDiv.appendChild(statusText);
-  
+
   var progressBar = document.createElement('progress');
   progressBar.id = id + 'ProgressBar';
   progressBar.className = 'progressBar';
@@ -255,7 +247,7 @@ function createProgressElement(id) {
   progressText.id = id + 'ProgressText';
   progressText.className = 'progressText'
   statusDiv.appendChild(progressText);
-  
+
   return statusDiv;
 }
 
@@ -275,21 +267,21 @@ function setProgressElementFinalValues(element, statuses, event) {
         progressTextDiv = element.children[i];
         break;
     }
-  }  
+  }
   if (event == 'COMPLETE')
     statusTextDiv.textContent = statuses['finished'];
   else
       statusTextDiv.textContent = statuses['canceled'];
-      
+
   var progressBarParent = progressBarDiv.parentNode;
-  progressBarParent.removeChild(progressBarDiv); 
-  
+  progressBarParent.removeChild(progressBarDiv);
+
   var progressTextParent = progressTextDiv.parentNode;
   progressTextParent.removeChild(progressTextDiv);
   return element;
 }
 
-function setProgressElementValues(element, statuses, amountFinished, 
+function setProgressElementValues(element, statuses, amountFinished,
                                   amountTotal, progressText){
   var statusTextDiv;
   var progressBarDiv;
@@ -306,10 +298,10 @@ function setProgressElementValues(element, statuses, amountFinished,
         progressTextDiv = element.children[i];
         break;
     }
-  }  
- 
+  }
+
   if (!(amountFinished > 0)) {
-    amountFinished = 0; 
+    amountFinished = 0;
     statusTextDiv.textContent = statuses["start"];
     progressTextDiv.textContent = "";
   } else {
@@ -320,7 +312,7 @@ function setProgressElementValues(element, statuses, amountFinished,
     amountFinished = amountTotal;
   progressBarDiv.value = amountFinished;
   if (amountTotal)
-    progressBarDiv.max = amountTotal;  
+    progressBarDiv.max = amountTotal;
   return element;
 }
 
@@ -333,20 +325,20 @@ function updateProgressElement(progressType, progressInfo) {
   }
   var errorOccurred = (progressInfo.state == 'CANCELLED');
   if (progressInfo.state == 'IN_PROGRESS') {
-    setProgressElementValues(element, statusMessages[progressType],  
-        progressInfo.received, progressInfo.total, 
-        progressInfo.progress_status_text); 
+    setProgressElementValues(element, statusMessages[progressType],
+        progressInfo.received, progressInfo.total,
+        progressInfo.progress_status_text);
   } else {
     setProgressElementFinalValues(element, statusMessages[progressType],
                                   progressInfo.state);
-  }   
+  }
 }
 
-function downloadUpdated(result) { 
+function downloadUpdated(result) {
   updateProgressElement('download', result);
 }
 
-function burnProgressUpdated(result) { 
+function burnProgressUpdated(result) {
   if (!burnStarted) {
     $('rootsList').style.display = 'none';
     $('rootsListTitle').textContent = result.path;
@@ -398,26 +390,26 @@ function clearList(list) {
     list.removeChild(list.firstChild);
   }
 }
-  
+
 document.addEventListener('DOMContentLoaded', function() {
-  localStrings = new LocalStrings();    
+  localStrings = new LocalStrings();
   burnStarted = false;
   chrome.send("getRoots", []);
 
-  // Initialize messages that will be displayed as download 
+  // Initialize messages that will be displayed as download
   // or burn progress is updated.
   statusMessages = [];
-  
+
   var downloadStatuses = [];
   downloadStatuses['start'] = localStrings.getString('downloadStatusStart');
-  downloadStatuses['inProgress'] = 
+  downloadStatuses['inProgress'] =
       localStrings.getString('downloadStatusInProgress');
-  downloadStatuses['finished'] = 
+  downloadStatuses['finished'] =
       localStrings.getString('downloadStatusComplete');
-  downloadStatuses['canceled'] = 
+  downloadStatuses['canceled'] =
       localStrings.getString('downloadStatusCanceled');
   statusMessages['download'] = downloadStatuses;
-  
+
   var burnStatuses = [];
   burnStatuses['start'] = localStrings.getString('burnStatusStart');
   burnStatuses['inProgress'] = localStrings.getString('burnStatusInProgress');
@@ -430,12 +422,12 @@ document.addEventListener('DOMContentLoaded', function() {
 <body>
   <div id="main" class="fullcontainer">
     <div id="rootsColumn" class="columnlist">
-      <h1 id="rootsListTitle" class="title" i18n-content="listTitle"></h1>  
+      <h1 id="rootsListTitle" class="title" i18n-content="listTitle"></h1>
       <div id="rootsList"></div>
     </div>
     <div id="statusColumn" class="columnlist">
       <div id="statusList"></div>
-    </div>  
+    </div>
   </div>
 </body>
 </html>

@@ -9,7 +9,7 @@ body {
   overflow: hidden;
   background: black;
 }
-                                   
+
 #glow {
   left: 0;
   right: 0;
@@ -17,11 +17,7 @@ body {
   height: 8px;
   opacity: .4;
   position: absolute;
-  background: -webkit-gradient(linear,
-                               left bottom,
-                               left top,
-                               from(white),
-                               to(transparent));
+  background: -webkit-linear-gradient(transparent, white);
 }
 
 #main {
@@ -45,11 +41,7 @@ body {
   -webkit-box-pack: center;
   display: -webkit-box;
   position: absolute;
-  background: -webkit-gradient(linear,
-                               left top,
-                               left bottom,
-                               from(#323232),
-                               to(#070707));
+  background: -webkit-linear-gradient(#323232, #070707);
 }
 
 #prevbutton > div {
@@ -103,11 +95,7 @@ button {
 }
 
 button:hover {
-  background: -webkit-gradient(linear,
-                               left top,
-                               left bottom,
-                               from(#6a7eac),
-                               to(#000000));
+  background: -webkit-linear-gradient(#6a7eac, #000000);
 }
 
 </style>

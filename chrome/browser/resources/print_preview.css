@@ -39,11 +39,7 @@ body {
 }
 
 #separator {
-  background: -webkit-gradient(linear,
-                               left top,
-                               right top,
-                               from(#a4a4a4),
-                               to(#ccc));
+  background: -webkit-linear-gradient(left, #a4a4a4, #ccc);
   height: 100%;
   width: 6px;
 }

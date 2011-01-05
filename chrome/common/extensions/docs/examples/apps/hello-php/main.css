@@ -11,8 +11,8 @@ nav {
   margin-bottom: 10px;
   padding: 10px;
   border-bottom: 1px solid #C6D2EB;
-  background: -moz-linear-gradient(top, #fff, #EEF1F9 60%, #EEF1F9);
-  background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#fff), to(#EEF1F9), color-stop(.6, #EEF1F9));
+  background: -moz-linear-gradient(#fff, #EEF1F9 60%, #EEF1F9);
+  background: -webkit-linear-gradient(#fff, #EEF1F9 60%, #EEF1F9);
   text-shadow: 1px 1px 1px #fff;
 }
 
@@ -87,4 +87,3 @@ li {
 #license-server-response span.no {
   color: red;
 }
-
