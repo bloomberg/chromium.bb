@@ -13,7 +13,6 @@
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/app_resources.h"
 #include "net/base/net_util.h"
@@ -78,7 +77,7 @@ void NavigationEntry::set_site_instance(SiteInstance* site_instance) {
 }
 
 const string16& NavigationEntry::GetTitleForDisplay(
-    const NavigationController* navigation_controller) {
+    const std::string& languages) {
   // Most pages have real titles. Don't even bother caching anything if this is
   // the case.
   if (!title_.empty())
@@ -90,12 +89,6 @@ const string16& NavigationEntry::GetTitleForDisplay(
     return cached_display_title_;
 
   // Use the virtual URL first if any, and fall back on using the real URL.
-  std::string languages;
-  if (navigation_controller) {
-    languages = navigation_controller->profile()->GetPrefs()->
-        GetString(prefs::kAcceptLanguages);
-  }
-
   string16 title;
   std::wstring elided_title;
   if (!virtual_url_.is_empty()) {

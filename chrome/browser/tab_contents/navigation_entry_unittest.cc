@@ -53,18 +53,18 @@ TEST_F(NavigationEntryTest, NavigationEntryURLs) {
 
   EXPECT_EQ(GURL(), entry1_.get()->url());
   EXPECT_EQ(GURL(), entry1_.get()->virtual_url());
-  EXPECT_TRUE(entry1_.get()->GetTitleForDisplay(NULL).empty());
+  EXPECT_TRUE(entry1_.get()->GetTitleForDisplay("").empty());
 
   // Setting URL affects virtual_url and GetTitleForDisplay
   entry1_.get()->set_url(GURL("http://www.google.com"));
   EXPECT_EQ(GURL("http://www.google.com"), entry1_.get()->url());
   EXPECT_EQ(GURL("http://www.google.com"), entry1_.get()->virtual_url());
   EXPECT_EQ(ASCIIToUTF16("www.google.com"),
-            entry1_.get()->GetTitleForDisplay(NULL));
+            entry1_.get()->GetTitleForDisplay(""));
 
   // Title affects GetTitleForDisplay
   entry1_.get()->set_title(ASCIIToUTF16("Google"));
-  EXPECT_EQ(ASCIIToUTF16("Google"), entry1_.get()->GetTitleForDisplay(NULL));
+  EXPECT_EQ(ASCIIToUTF16("Google"), entry1_.get()->GetTitleForDisplay(""));
 
   // Setting virtual_url doesn't affect URL
   entry2_.get()->set_virtual_url(GURL("display:url"));
@@ -73,7 +73,7 @@ TEST_F(NavigationEntryTest, NavigationEntryURLs) {
   EXPECT_EQ(GURL("display:url"), entry2_.get()->virtual_url());
 
   // Having a title set in constructor overrides virtual URL
-  EXPECT_EQ(ASCIIToUTF16("title"), entry2_.get()->GetTitleForDisplay(NULL));
+  EXPECT_EQ(ASCIIToUTF16("title"), entry2_.get()->GetTitleForDisplay(""));
 
   // User typed URL is independent of the others
   EXPECT_EQ(GURL(), entry1_.get()->user_typed_url());

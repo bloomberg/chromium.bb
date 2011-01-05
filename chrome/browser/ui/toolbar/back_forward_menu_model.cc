@@ -14,7 +14,10 @@
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -77,7 +80,8 @@ string16 BackForwardMenuModel::GetLabelAt(int index) const {
   // super long.
   NavigationEntry* entry = GetNavigationEntry(index);
   string16 menu_text(entry->GetTitleForDisplay(
-      &GetTabContents()->controller()));
+      GetTabContents()->profile()->GetPrefs()->
+          GetString(prefs::kAcceptLanguages)));
   menu_text = gfx::ElideText(menu_text, gfx::Font(), kMaxWidth, false);
 
   for (size_t i = menu_text.find('&'); i != string16::npos;

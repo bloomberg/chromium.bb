@@ -651,9 +651,10 @@ const string16& TabContents::GetTitle() const {
   // Transient entries take precedence. They are used for interstitial pages
   // that are shown on top of existing pages.
   NavigationEntry* entry = controller_.GetTransientEntry();
-  if (entry)
-    return entry->GetTitleForDisplay(&controller_);
-
+  if (entry) {
+    return entry->GetTitleForDisplay(profile()->GetPrefs()->
+        GetString(prefs::kAcceptLanguages));
+  }
   DOMUI* our_dom_ui = render_manager_.pending_dom_ui() ?
       render_manager_.pending_dom_ui() : render_manager_.dom_ui();
   if (our_dom_ui) {
@@ -672,8 +673,10 @@ const string16& TabContents::GetTitle() const {
   // keep the old page's title until the new load has committed and we get a new
   // title.
   entry = controller_.GetLastCommittedEntry();
-  if (entry)
-    return entry->GetTitleForDisplay(&controller_);
+  if (entry) {
+    return entry->GetTitleForDisplay(profile()->GetPrefs()->
+        GetString(prefs::kAcceptLanguages));
+  }
   return EmptyString16();
 }
 

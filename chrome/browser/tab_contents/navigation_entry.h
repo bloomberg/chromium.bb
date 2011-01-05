@@ -16,7 +16,6 @@
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-class NavigationController;
 class SiteInstance;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -322,12 +321,10 @@ class NavigationEntry {
   // Page-related helpers ------------------------------------------------------
 
   // Returns the title to be displayed on the tab. This could be the title of
-  // the page if it is available or the URL.
-  //
-  // The NavigationController corresponding to this entry must be given so we
-  // can get the preferences so we can optionally format a URL for display. It
-  // may be NULL if you don't need proper URL formatting (e.g. unit tests).
-  const string16& GetTitleForDisplay(const NavigationController* controller);
+  // the page if it is available or the URL. |languages| is the list of
+  // accpeted languages (e.g., prefs::kAcceptLanguages) or empty if proper
+  // URL formatting isn't needed (e.g., unit tests).
+  const string16& GetTitleForDisplay(const std::string& languages);
 
   // Returns true if the current tab is in view source mode. This will be false
   // if there is no navigation.
