@@ -820,16 +820,16 @@ void RenderView::DidDownloadApplicationIcon(ImageResourceFetcher* fetcher,
   // some alternative way to transmit the icon data to the browser process.
   //
   // See also: bug 63729.
-  const int kMaxIconSize = 1024 * 128;
-  int actual_icon_size = 0;
+  const size_t kMaxIconSize = 1024 * 128;
+  size_t actual_icon_size = 0;
   for (size_t i = 0; i < pending_app_info_->icons.size(); ++i) {
-    actual_icon_size += pending_app_info_->icons[i].data.getSize();
-  }
-
-  if (actual_icon_size > kMaxIconSize) {
-    AddErrorToRootConsole(ASCIIToUTF16(
+    size_t current_size = pending_app_info_->icons[i].data.getSize();
+    if (current_size > kMaxIconSize - actual_icon_size) {
+      AddErrorToRootConsole(ASCIIToUTF16(
         "Icons are too large. Maximum total size for app icons is 128 KB."));
-    return;
+      return;
+    }
+    actual_icon_size += current_size;
   }
 
   Send(new ViewHostMsg_InstallApplication(routing_id_, *pending_app_info_));
