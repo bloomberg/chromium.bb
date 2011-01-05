@@ -580,6 +580,11 @@ bool PbufferGLContext::Initialize(GLContext* shared_context) {
   // Create a 1 x 1 pbuffer suitable for use with the device. This is just
   // a stepping stone towards creating a frame buffer object. It doesn't
   // matter what size it is.
+  if (!wglCreatePbufferARB) {
+    LOG(ERROR) << "wglCreatePbufferARB not available.";
+    Destroy();
+    return false;
+  }
   const int kNoAttributes[] = { 0 };
   pbuffer_ = wglCreatePbufferARB(display_device_context,
                                  g_regular_pixel_format,
