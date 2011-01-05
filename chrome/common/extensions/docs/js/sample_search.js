@@ -25,6 +25,7 @@ function filterSamples() {
     return;
   } else {
     currentfilter = searchtext;
+    window.location.hash = searchinput.value;
   }
 
   noresults.style.display = 'none';
@@ -77,7 +78,13 @@ function initSearch() {
   }
 
   if (window.location.hash.length > 1) {
-    setFilter(window.location.hash.substring(1));
+    var hash = window.location.hash.substring(1);
+    var elem = document.getElementById(hash);
+    if (elem) {
+      elem.scrollIntoView();
+    } else {
+      setFilter(hash);
+    }
   }
 };
 

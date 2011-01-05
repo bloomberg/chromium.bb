@@ -83,7 +83,7 @@
   <img jsdisplay="icon != null" class="icon" jsvalues="src:path + icon" />
   <img jsdisplay="icon == null" class="icon" src="images/sample-default-icon.png" />
   <h2 class="name">
-    <a jscontent="name" jsvalues="href:'http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/' + path" target="_blank"></a>
+    <a jscontent="name" jsvalues="href:'#'+$this.id"></a>
   </h2>
   <p jsdisplay="features.length > 0" class="metadata features" jseval="$total=features.length">Uses
     <span jsselect="features">
@@ -106,7 +106,10 @@
       </li>
     </ul>
   </div>
-  <div><a jsvalues="href:$this.zip_path">Download .zip</a></li></div>
+  <div>
+    <a jsvalues="href:'http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/' + path" target="_blank">Browse source</a>
+    - <a jsvalues="href:$this.zip_path">Download source</a>
+  </div>
 </div>
 
 <div id="noresults" style="display:none">
