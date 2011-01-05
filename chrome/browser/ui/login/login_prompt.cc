@@ -116,7 +116,9 @@ TabContents* LoginHandler::GetTabContentsForLogin() const {
 
 void LoginHandler::SetAuth(const std::wstring& username,
                            const std::wstring& password) {
-  if (WasAuthHandled(true))
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (TestAndSetAuthHandled())
     return;
 
   // Tell the password manager the credentials were submitted / accepted.
@@ -126,13 +128,17 @@ void LoginHandler::SetAuth(const std::wstring& username,
     password_manager_->ProvisionallySavePassword(password_form_);
   }
 
+  // Calling NotifyAuthSupplied() directly instead of posting a task
+  // allows other LoginHandler instances to queue their
+  // CloseContentsDeferred() before ours.  Closing dialogs in the
+  // opposite order as they were created avoids races where remaining
+  // dialogs in the same tab may be briefly displayed to the user
+  // before they are removed.
+  NotifyAuthSupplied(username, password);
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &LoginHandler::CloseContentsDeferred));
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          this, &LoginHandler::NotifyAuthSupplied, username, password));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(
@@ -140,15 +146,21 @@ void LoginHandler::SetAuth(const std::wstring& username,
 }
 
 void LoginHandler::CancelAuth() {
-  if (WasAuthHandled(true))
+  if (TestAndSetAuthHandled())
     return;
+
+  // Similar to how we deal with notifications above in SetAuth()
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    NotifyAuthCancelled();
+  } else {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &LoginHandler::NotifyAuthCancelled));
+  }
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(this, &LoginHandler::CloseContentsDeferred));
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &LoginHandler::NotifyAuthCancelled));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       NewRunnableMethod(this, &LoginHandler::CancelAuthDeferred));
@@ -196,16 +208,16 @@ void LoginHandler::Observe(NotificationType type,
   if (!requesting_contents)
     return;
 
-  NavigationController* this_controller = &requesting_contents->controller();
-  NavigationController* that_controller =
-      Source<NavigationController>(source).ptr();
-
-  // Only handle notifications from other handlers.
-  if (this_controller == that_controller)
+  // Break out early if we aren't interested in the notification.
+  if (WasAuthHandled())
     return;
 
   LoginNotificationDetails* login_details =
       Details<LoginNotificationDetails>(details).ptr();
+
+  // WasAuthHandled() should always test positive before we publish
+  // AUTH_SUPPLIED or AUTH_CANCELLED notifications.
+  DCHECK(login_details->handler() != this);
 
   // Only handle notification for the identical auth info.
   if (*login_details->handler()->auth_info() != *auth_info())
@@ -236,7 +248,7 @@ void LoginHandler::SetDialog(ConstrainedWindow* dialog) {
 
 void LoginHandler::NotifyAuthNeeded() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (WasAuthHandled(false))
+  if (WasAuthHandled())
     return;
 
   TabContents* requesting_contents = GetTabContentsForLogin();
@@ -254,7 +266,7 @@ void LoginHandler::NotifyAuthNeeded() {
 
 void LoginHandler::NotifyAuthCancelled() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(WasAuthHandled(false));
+  DCHECK(WasAuthHandled());
 
   TabContents* requesting_contents = GetTabContentsForLogin();
   if (!requesting_contents)
@@ -272,7 +284,7 @@ void LoginHandler::NotifyAuthCancelled() {
 void LoginHandler::NotifyAuthSupplied(const std::wstring& username,
                                       const std::wstring& password) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(WasAuthHandled(false));
+  DCHECK(WasAuthHandled());
 
   TabContents* requesting_contents = GetTabContentsForLogin();
   if (!requesting_contents)
@@ -288,7 +300,7 @@ void LoginHandler::NotifyAuthSupplied(const std::wstring& username,
 }
 
 void LoginHandler::ReleaseSoon() {
-  if (!WasAuthHandled(true)) {
+  if (!TestAndSetAuthHandled()) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         NewRunnableMethod(this, &LoginHandler::CancelAuthDeferred));
@@ -306,12 +318,17 @@ void LoginHandler::ReleaseSoon() {
 }
 
 // Returns whether authentication had been handled (SetAuth or CancelAuth).
-// If |set_handled| is true, it will mark authentication as handled.
-bool LoginHandler::WasAuthHandled(bool set_handled) {
+bool LoginHandler::WasAuthHandled() const {
   AutoLock lock(handled_auth_lock_);
   bool was_handled = handled_auth_;
-  if (set_handled)
-    handled_auth_ = true;
+  return was_handled;
+}
+
+// Marks authentication as handled and returns the previous handled state.
+bool LoginHandler::TestAndSetAuthHandled() {
+  AutoLock lock(handled_auth_lock_);
+  bool was_handled = handled_auth_;
+  handled_auth_ = true;
   return was_handled;
 }
 
@@ -365,7 +382,7 @@ class LoginDialogTask : public Task {
 
   void Run() {
     TabContents* parent_contents = handler_->GetTabContentsForLogin();
-    if (!parent_contents) {
+    if (!parent_contents || handler_->WasAuthHandled()) {
       // The request may have been cancelled, or it may be for a renderer
       // not hosted by a tab (e.g. an extension). Cancel just in case
       // (cancelling twice is a no-op).

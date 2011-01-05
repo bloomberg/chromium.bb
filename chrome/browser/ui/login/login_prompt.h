@@ -70,6 +70,12 @@ class LoginHandler : public base::RefCountedThreadSafe<LoginHandler>,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // Who/where/what asked for the authentication.
+  const net::AuthChallengeInfo* auth_info() const { return auth_info_.get(); }
+
+  // Returns whether authentication had been handled (SetAuth or CancelAuth).
+  bool WasAuthHandled() const;
+
  protected:
   void SetModel(LoginModel* model);
 
@@ -80,9 +86,6 @@ class LoginHandler : public base::RefCountedThreadSafe<LoginHandler>,
 
   // Performs necessary cleanup before deletion.
   void ReleaseSoon();
-
-  // Who/where/what asked for the authentication.
-  net::AuthChallengeInfo* auth_info() const { return auth_info_.get(); }
 
  private:
   // Starts observing notifications from other LoginHandlers.
@@ -98,9 +101,9 @@ class LoginHandler : public base::RefCountedThreadSafe<LoginHandler>,
   // Notify observers that authentication is cancelled.
   void NotifyAuthCancelled();
 
-  // Returns whether authentication had been handled (SetAuth or CancelAuth).
-  // If |set_handled| is true, it will mark authentication as handled.
-  bool WasAuthHandled(bool set_handled);
+  // Marks authentication as handled and returns the previous handled
+  // state.
+  bool TestAndSetAuthHandled();
 
   // Calls SetAuth from the IO loop.
   void SetAuthDeferred(const std::wstring& username,
@@ -114,7 +117,7 @@ class LoginHandler : public base::RefCountedThreadSafe<LoginHandler>,
 
   // True if we've handled auth (SetAuth or CancelAuth has been called).
   bool handled_auth_;
-  Lock handled_auth_lock_;
+  mutable Lock handled_auth_lock_;
 
   // The ConstrainedWindow that is hosting our LoginView.
   // This should only be accessed on the UI loop.
