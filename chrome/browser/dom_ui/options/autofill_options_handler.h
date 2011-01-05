@@ -36,16 +36,23 @@ class AutoFillOptionsHandler : public OptionsPageUIHandler,
   // Loads AutoFill addresses and credit cards using the PersonalDataManager.
   void LoadAutoFillData();
 
-  // Removes either an address or a credit card, depending on the type of the
-  // profile.
-  // |args| - A string, the GUID of the profile to remove.
-  void RemoveAutoFillProfile(const ListValue* args);
+  // Removes an address from the PersonalDataManager.
+  // |args| - A string, the GUID of the address to remove.
+  void RemoveAddress(const ListValue* args);
 
-  // Requests profile data for a specific profile. Calls into DOMUI with the
-  // loaded profile data to open the appropriate editor, depending on the type
-  // of the profile.
-  // |args| - A string, the GUID of the profile to load.
-  void LoadProfileEditor(const ListValue* args);
+  // Removes a credit card from the PersonalDataManager.
+  // |args| - A string, the GUID of the credit card to remove.
+  void RemoveCreditCard(const ListValue* args);
+
+  // Requests profile data for a specific address. Calls into DOMUI with the
+  // loaded profile data to open the address editor.
+  // |args| - A string, the GUID of the address to load.
+  void LoadAddressEditor(const ListValue* args);
+
+  // Requests profile data for a specific credit card. Calls into DOMUI with the
+  // loaded profile data to open the credit card editor.
+  // |args| - A string, the GUID of the credit card to load.
+  void LoadCreditCardEditor(const ListValue* args);
 
   // Adds or updates an address, depending on the GUID of the profile. If the
   // GUID is empty, a new address is added to the WebDatabase; otherwise, the
@@ -60,14 +67,6 @@ class AutoFillOptionsHandler : public OptionsPageUIHandler,
   // |args| - an array containing the GUID of the credit card followed by the
   // credit card data.
   void SetCreditCard(const ListValue* args);
-
-  // Loads the data from an address and sends this data back to the DOMUI to
-  // show in the address editor. |guid| is the GUID of the profile to load.
-  void EditAddress(const std::string& guid);
-
-  // Loads the data from a credit card and sends this data back to the DOMUI to
-  // show in the credit card editor. |guid| is the GUID of the profile to load.
-  void EditCreditCard(const std::string& guid);
 
   // The personal data manager, used to load AutoFill profiles and credit cards.
   // Unowned pointer, may not be NULL.

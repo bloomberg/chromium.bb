@@ -31,18 +31,6 @@ const AutoFillFieldType kAutoFillCreditCardTypes[] = {
 
 const int kAutoFillCreditCardLength = arraysize(kAutoFillCreditCardTypes);
 
-// These values must match the values in WebKitClientImpl in webkit/glue. We
-// send these strings to WK, which then asks WebKitClientImpl to load the image
-// data.
-const char* const kAmericanExpressCard = "americanExpressCC";
-const char* const kDinersCard = "dinersCC";
-const char* const kDiscoverCard = "discoverCC";
-const char* const kGenericCard = "genericCC";
-const char* const kJCBCard = "jcbCC";
-const char* const kMasterCard = "masterCardCC";
-const char* const kSoloCard = "soloCC";
-const char* const kVisaCard = "visaCC";
-
 std::string GetCreditCardType(const string16& number) {
   // Credit card number specifications taken from:
   // http://en.wikipedia.org/wiki/Credit_card_numbers and
@@ -643,3 +631,15 @@ std::ostream& operator<<(std::ostream& os, const CreditCard& credit_card) {
       << UTF16ToUTF8(credit_card.GetFieldText(
              AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR)));
 }
+
+// These values must match the values in WebKitClientImpl in webkit/glue. We
+// send these strings to WK, which then asks WebKitClientImpl to load the image
+// data.
+const char* const kAmericanExpressCard = "americanExpressCC";
+const char* const kDinersCard = "dinersCC";
+const char* const kDiscoverCard = "discoverCC";
+const char* const kGenericCard = "genericCC";
+const char* const kJCBCard = "jcbCC";
+const char* const kMasterCard = "masterCardCC";
+const char* const kSoloCard = "soloCC";
+const char* const kVisaCard = "visaCC";

@@ -152,4 +152,14 @@ class CreditCard : public FormGroup {
 // So we can compare CreditCards with EXPECT_EQ().
 std::ostream& operator<<(std::ostream& os, const CreditCard& credit_card);
 
+// The string identifiers for credit card icon resources.
+extern const char* const kAmericanExpressCard;
+extern const char* const kDinersCard;
+extern const char* const kDiscoverCard;
+extern const char* const kGenericCard;
+extern const char* const kJCBCard;
+extern const char* const kMasterCard;
+extern const char* const kSoloCard;
+extern const char* const kVisaCard;
+
 #endif  // CHROME_BROWSER_AUTOFILL_CREDIT_CARD_H_

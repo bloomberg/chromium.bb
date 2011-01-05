@@ -64,7 +64,7 @@ cr.define('options', function() {
      */
     createAddressList_: function() {
       this.addressList_ = $('address-list');
-      options.autoFillOptions.AutoFillList.decorate(this.addressList_);
+      options.autoFillOptions.AutoFillAddressList.decorate(this.addressList_);
       this.addressList_.selectionModel = new ListSingleSelectionModel;
       this.addressList_.autoExpands = true;
     },
@@ -75,7 +75,8 @@ cr.define('options', function() {
      */
     createCreditCardList_: function() {
       this.creditCardList_ = $('creditcard-list');
-      options.autoFillOptions.AutoFillList.decorate(this.creditCardList_);
+      options.autoFillOptions.AutoFillCreditCardList.decorate(
+          this.creditCardList_);
       this.creditCardList_.selectionModel = new ListSingleSelectionModel;
       this.creditCardList_.autoExpands = true;
     },
@@ -125,24 +126,43 @@ cr.define('options', function() {
     },
 
     /**
-     * Removes the AutoFill profile represented by |guid|.
-     * @param {String} guid The GUID of the profile to remove.
+     * Removes the AutoFill address represented by |guid|.
+     * @param {String} guid The GUID of the address to remove.
      * @private
      */
-    removeAutoFillProfile_: function(guid) {
-      chrome.send('removeAutoFillProfile', [guid]);
+    removeAddress_: function(guid) {
+      chrome.send('removeAddress', [guid]);
     },
 
     /**
-     * Requests profile data for the profile represented by |guid| from the
-     * PersonalDataManager. Once the data is loaded, the AutoFillOptionsHandler
-     * calls showEdit[Address,CreditCard]Overlay(), depending on the type of the
-     * profile.
-     * @param {String} guid The GUID of the profile to edit.
+     * Removes the AutoFill credit card represented by |guid|.
+     * @param {String} guid The GUID of the credit card to remove.
      * @private
      */
-    loadProfileEditor_: function(guid) {
-      chrome.send('loadProfileEditor', [guid]);
+    removeCreditCard_: function(guid) {
+      chrome.send('removeCreditCard', [guid]);
+    },
+
+    /**
+     * Requests profile data for the address represented by |guid| from the
+     * PersonalDataManager. Once the data is loaded, the AutoFillOptionsHandler
+     * calls showEditAddressOverlay().
+     * @param {String} guid The GUID of the address to edit.
+     * @private
+     */
+    loadAddressEditor_: function(guid) {
+      chrome.send('loadAddressEditor', [guid]);
+    },
+
+    /**
+     * Requests profile data for the credit card represented by |guid| from the
+     * PersonalDataManager. Once the data is loaded, the AutoFillOptionsHandler
+     * calls showEditCreditCardOverlay().
+     * @param {String} guid The GUID of the credit card to edit.
+     * @private
+     */
+    loadCreditCardEditor_: function(guid) {
+      chrome.send('loadCreditCardEditor', [guid]);
     },
 
     /**
@@ -180,12 +200,20 @@ cr.define('options', function() {
     AutoFillOptions.getInstance().setCreditCardList_(entries);
   };
 
-  AutoFillOptions.removeAutoFillProfile = function(guid) {
-    AutoFillOptions.getInstance().removeAutoFillProfile_(guid);
+  AutoFillOptions.removeAddress = function(guid) {
+    AutoFillOptions.getInstance().removeAddress_(guid);
   };
 
-  AutoFillOptions.loadProfileEditor = function(guid) {
-    AutoFillOptions.getInstance().loadProfileEditor_(guid);
+  AutoFillOptions.removeCreditCard = function(guid) {
+    AutoFillOptions.getInstance().removeCreditCard_(guid);
+  };
+
+  AutoFillOptions.loadAddressEditor = function(guid) {
+    AutoFillOptions.getInstance().loadAddressEditor_(guid);
+  };
+
+  AutoFillOptions.loadCreditCardEditor = function(guid) {
+    AutoFillOptions.getInstance().loadCreditCardEditor_(guid);
   };
 
   AutoFillOptions.editAddress = function(address) {

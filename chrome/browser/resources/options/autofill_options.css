@@ -1,5 +1,11 @@
 .autofill-list-item {
+  -webkit-box-flex: 1;
   -webkit-padding-start: 8px;
+}
+
+.autofill-list-item + img {
+  -webkit-padding-end: 20px;
+  vertical-align: middle;
 }
 
 #autofill-options > div:last-child {
