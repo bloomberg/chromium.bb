@@ -17,9 +17,14 @@
       var initialEventsString = module.events;
     }
 
+    function $(id) {
+     return document.getElementById(id);
+    }
+
     function getEvents() {
       try {
-        alert(module.events);
+        var event_dump = document.getElementById('event_dump');
+        event_dump.firstChild.nodeValue = module.events;
       } catch(e) {
         alert(e.message);
       }
@@ -28,9 +33,6 @@
 </head>
 <body>
 <h1>InputEvent Handling Example</h1>
-  <form name="event_form" action="" method="get">
-  <input type="button" value="Get Events" onclick="getEvents()"/>
-  </form>
   <embed name="nacl_module"
          id="event_module"
          width=400 height=400
@@ -42,10 +44,17 @@
 This example demonstrates input events in ppapi.  Each time an input event
 happens in the context of the gray box, the embedded NaCl module prints a
 message describing the event to the shell where you started your Browser.
-Alternatively, you can click the "Get Events" button to pop up a dialog box
-showing all input events that have happened since the last time you clicked the
+Alternatively, you can click the "Get Events" button to display
+all input events that have happened since the last time you clicked the
 button.
 </p>
+<form name="event_form" action="" method="get">
+  <input type="button" value="Get Events" onclick="getEvents()"/>
+</form>
+
+<h2>Recent Events (press button to update):</h2>
+<pre id=event_dump>
+no events
+</pre>
 </body>
 </html>
-
