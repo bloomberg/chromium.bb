@@ -49,7 +49,10 @@ class PPB_Surface3D_Impl : public Resource {
 
   unsigned int GetBackingTextureId();
 
-  bool SwapBuffers();
+  bool SwapBuffers(PP_CompletionCallback callback);
+
+  void ViewInitiatedPaint();
+  void ViewFlushedPaint();
 
  private:
   // Called when SwapBuffers is complete.
@@ -58,6 +61,10 @@ class PPB_Surface3D_Impl : public Resource {
   // Plugin instance this surface is associated with.
   PluginInstance* instance_;
   bool bound_to_instance_;
+
+  // True when the page's SwapBuffers has been issued but not returned yet.
+  bool swap_initiated_;
+  PP_CompletionCallback swap_callback_;
 
   // The context this surface is currently bound to.
   PluginDelegate::PlatformContext3D* context_;

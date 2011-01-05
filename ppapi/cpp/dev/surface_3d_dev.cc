@@ -38,13 +38,13 @@ Surface3D_Dev::Surface3D_Dev(const Instance& instance,
   }
 }
 
-int32_t Surface3D_Dev::SwapBuffers() const {
+int32_t Surface3D_Dev::SwapBuffers(const CompletionCallback& cc) const {
   if (!has_interface<PPB_Surface3D_Dev>())
     return PP_ERROR_NOINTERFACE;
 
   return get_interface<PPB_Surface3D_Dev>()->SwapBuffers(
       pp_resource(),
-      PP_BlockUntilComplete());
+      cc.pp_completion_callback());
 }
 
 }  // namespace pp

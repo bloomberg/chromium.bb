@@ -24,7 +24,9 @@ class PluginInstance : public pp::Instance {
   PluginInstance(PP_Instance instance, pp::Module* module)
       : pp::Instance(instance),
         module_(module),
-        demo_(CreateDemo()) {
+        demo_(CreateDemo()),
+        swap_pending_(false),
+        paint_needed_(false) {
     // Set the callback object outside of the initializer list to avoid a
     // compiler warning about using "this" in an initializer list.
     callback_factory_.Initialize(this);
@@ -63,24 +65,30 @@ class PluginInstance : public pp::Instance {
     context_.BindSurfaces(surface_, surface_);
     pp::Instance::BindGraphics(surface_);
 
-    if (demo_->IsAnimated())
-      Animate(0);
-    else
-      Paint();
+    Paint();
   }
 
   void Paint() {
+    if (swap_pending_) {
+      // A swap is pending. Delay paint until swap finishes.
+      paint_needed_ = true;
+      return;
+    }
     glSetCurrentContextPPAPI(context_.pp_resource());
     demo_->Draw();
-    surface_.SwapBuffers();
+    swap_pending_ = true;
+    surface_.SwapBuffers(
+        callback_factory_.NewCallback(&PluginInstance::OnSwap));
     glSetCurrentContextPPAPI(0);
   }
 
  private:
-  void Animate(int delay) {
-    Paint();
-    module_->core()->CallOnMainThread(delay,
-        callback_factory_.NewCallback(&PluginInstance::Animate), delay);
+  void OnSwap(int32_t) {
+    swap_pending_ = false;
+    if (paint_needed_ || demo_->IsAnimated()) {
+      paint_needed_ = false;
+      Paint();
+    }
   }
 
   pp::Module* module_;
@@ -88,6 +96,8 @@ class PluginInstance : public pp::Instance {
   pp::Context3D_Dev context_;
   pp::Surface3D_Dev surface_;
   pp::Size size_;
+  bool swap_pending_;
+  bool paint_needed_;
   pp::CompletionCallbackFactory<PluginInstance> callback_factory_;
 };
 

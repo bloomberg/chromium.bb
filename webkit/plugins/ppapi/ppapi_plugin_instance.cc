@@ -631,11 +631,15 @@ void PluginInstance::SetContentAreaFocus(bool has_focus) {
 void PluginInstance::ViewInitiatedPaint() {
   if (bound_graphics_2d())
     bound_graphics_2d()->ViewInitiatedPaint();
+  if (bound_graphics_3d())
+    bound_graphics_3d()->ViewInitiatedPaint();
 }
 
 void PluginInstance::ViewFlushedPaint() {
   if (bound_graphics_2d())
     bound_graphics_2d()->ViewFlushedPaint();
+  if (bound_graphics_3d())
+    bound_graphics_3d()->ViewFlushedPaint();
 }
 
 bool PluginInstance::GetBitmapForOptimizedPluginPaint(

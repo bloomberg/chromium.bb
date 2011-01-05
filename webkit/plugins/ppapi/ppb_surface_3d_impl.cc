@@ -51,7 +51,7 @@ int32_t SwapBuffers(PP_Resource surface_id,
                     PP_CompletionCallback callback) {
   scoped_refptr<PPB_Surface3D_Impl> surface(
       Resource::GetAs<PPB_Surface3D_Impl>(surface_id));
-  return surface->SwapBuffers();
+  return surface->SwapBuffers(callback);
 }
 
 const PPB_Surface3D_Dev ppb_surface3d = {
@@ -68,6 +68,8 @@ PPB_Surface3D_Impl::PPB_Surface3D_Impl(PluginInstance* instance)
     : Resource(instance->module()),
       instance_(instance),
       bound_to_instance_(false),
+      swap_initiated_(false),
+      swap_callback_(PP_BlockUntilComplete()),
       context_(NULL) {
 }
 
@@ -121,8 +123,35 @@ bool PPB_Surface3D_Impl::BindToContext(
   return true;
 }
 
-bool PPB_Surface3D_Impl::SwapBuffers() {
-  return context_ && context_->SwapBuffers();
+bool PPB_Surface3D_Impl::SwapBuffers(PP_CompletionCallback callback) {
+  if (!context_)
+    return false;
+
+  if (swap_callback_.func) {
+    // Already a pending SwapBuffers that hasn't returned yet.
+    return false;
+  }
+
+  swap_callback_ = callback;
+  return context_->SwapBuffers();
+}
+
+void PPB_Surface3D_Impl::ViewInitiatedPaint() {
+  if (swap_callback_.func) {
+    swap_initiated_ = true;
+  }
+}
+
+void PPB_Surface3D_Impl::ViewFlushedPaint() {
+  if (swap_initiated_ && swap_callback_.func) {
+    // We must clear swap_callback_ before issuing the callback. It will be
+    // common for the plugin to issue another SwapBuffers in response to the
+    // callback, and we don't want to think that a callback is already pending.
+    PP_CompletionCallback callback = PP_BlockUntilComplete();
+    std::swap(callback, swap_callback_);
+    swap_initiated_ = false;
+    PP_RunCompletionCallback(&callback, PP_OK);
+  }
 }
 
 unsigned int PPB_Surface3D_Impl::GetBackingTextureId() {

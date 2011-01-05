@@ -7,6 +7,7 @@
 
 #include "ppapi/c/dev/ppb_surface_3d_dev.h"
 
+#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/resource.h"
 
@@ -23,8 +24,7 @@ class Surface3D_Dev : public Resource {
                 PP_Config3D_Dev config,
                 const int32_t* attrib_list);
 
-  // TODO(alokp): Add completion callback.
-  int32_t SwapBuffers() const;
+  int32_t SwapBuffers(const CompletionCallback& cc) const;
 
  protected:
   explicit Surface3D_Dev(PP_Resource resource_id) : Resource(resource_id) {}

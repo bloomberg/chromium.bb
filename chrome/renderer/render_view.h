@@ -670,13 +670,14 @@ class RenderView : public RenderWidget,
   // appropriate section, add it there. If not, there are some random functions
   // nearer to the top you can add it to.
 
+  virtual void DidFlushPaint();
+
  protected:
   // RenderWidget overrides:
   virtual void Close();
   virtual void OnResize(const gfx::Size& new_size,
                         const gfx::Rect& resizer_rect);
   virtual void DidInitiatePaint();
-  virtual void DidFlushPaint();
   virtual webkit::ppapi::PluginInstance* GetBitmapForOptimizedPluginPaint(
       const gfx::Rect& paint_bounds,
       TransportDIB** dib,
