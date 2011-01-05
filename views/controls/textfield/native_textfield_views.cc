@@ -472,6 +472,10 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
       if (controller)
         controller->ContentsChanged(textfield_, GetText());
     }
+    if (cursor_changed) {
+      is_cursor_visible_ = true;
+      RepaintCursor();
+    }
     if (text_changed || cursor_changed) {
       UpdateCursorBoundsAndTextOffset();
       SchedulePaint();

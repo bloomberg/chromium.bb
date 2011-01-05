@@ -132,27 +132,28 @@ void TextfieldViewsModel::MoveCursorToPreviousWord(bool select) {
   DCHECK(success);
   if (!success)
     return;
-  int prev = 0;
+  int last = 0;
   while (iter.Advance()) {
     if (iter.IsWord()) {
       size_t begin = iter.pos() - iter.GetString().length();
       if (begin == cursor_pos_) {
         // The cursor is at the beginning of a word.
         // Move to previous word.
-        cursor_pos_ = prev;
+        break;
       } else if(iter.pos() >= cursor_pos_) {
         // The cursor is in the middle or at the end of a word.
         // Move to the top of current word.
-        cursor_pos_ = begin;
+        last = begin;
+        break;
       } else {
-        prev = iter.pos() - iter.GetString().length();
-        continue;
+        last = iter.pos() - iter.GetString().length();
       }
-      if (!select)
-        ClearSelection();
-      break;
     }
   }
+
+  cursor_pos_ = last;
+  if (!select)
+    ClearSelection();
 }
 
 void TextfieldViewsModel::MoveCursorToNextWord(bool select) {
@@ -161,14 +162,16 @@ void TextfieldViewsModel::MoveCursorToNextWord(bool select) {
   DCHECK(success);
   if (!success)
     return;
+  size_t pos = 0;
   while (iter.Advance()) {
-    if (iter.IsWord() && iter.pos() > cursor_pos_) {
-      cursor_pos_ = iter.pos();
-      if (!select)
-        ClearSelection();
+    pos = iter.pos();
+    if (iter.IsWord() && pos > cursor_pos_) {
       break;
     }
   }
+  cursor_pos_ = pos;
+  if (!select)
+    ClearSelection();
 }
 
 void TextfieldViewsModel::MoveCursorToStart(bool select) {

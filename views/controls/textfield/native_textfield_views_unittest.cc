@@ -249,4 +249,54 @@ TEST_F(NativeTextfieldViewsTest, TestOnKeyPressReturnValue) {
   EXPECT_FALSE(SendKeyEventToTextfieldViews(app::VKEY_DOWN));
 }
 
+TEST_F(NativeTextfieldViewsTest, CursorMovement) {
+  InitTextfield(Textfield::STYLE_DEFAULT);
+
+  // Test with trailing whitespace.
+  textfield_->SetText(ASCIIToUTF16("one two hre "));
+
+  // Send the cursor at the end.
+  SendKeyEventToTextfieldViews(app::VKEY_END);
+
+  // Ctrl+Left should move the cursor just before the last word.
+  SendKeyEventToTextfieldViews(app::VKEY_LEFT, false, true);
+  SendKeyEventToTextfieldViews(app::VKEY_T);
+  EXPECT_STR_EQ("one two thre ", textfield_->text());
+  EXPECT_STR_EQ("one two thre ", last_contents_);
+
+  // Ctrl+Right should move the cursor to the end of the last word.
+  SendKeyEventToTextfieldViews(app::VKEY_RIGHT, false, true);
+  SendKeyEventToTextfieldViews(app::VKEY_E);
+  EXPECT_STR_EQ("one two three ", textfield_->text());
+  EXPECT_STR_EQ("one two three ", last_contents_);
+
+  // Ctrl+Right again should move the cursor to the end.
+  SendKeyEventToTextfieldViews(app::VKEY_RIGHT, false, true);
+  SendKeyEventToTextfieldViews(app::VKEY_BACK);
+  EXPECT_STR_EQ("one two three", textfield_->text());
+  EXPECT_STR_EQ("one two three", last_contents_);
+
+  // Test with leading whitespace.
+  textfield_->SetText(ASCIIToUTF16(" ne two"));
+
+  // Send the cursor at the beginning.
+  SendKeyEventToTextfieldViews(app::VKEY_HOME);
+
+  // Ctrl+Right, then Ctrl+Left should move the cursor to the beginning of the
+  // first word.
+  SendKeyEventToTextfieldViews(app::VKEY_RIGHT, false, true);
+  SendKeyEventToTextfieldViews(app::VKEY_LEFT, false, true);
+  SendKeyEventToTextfieldViews(app::VKEY_O);
+  EXPECT_STR_EQ(" one two", textfield_->text());
+  EXPECT_STR_EQ(" one two", last_contents_);
+
+  // Ctrl+Left to move the cursor to the beginning of the first word.
+  SendKeyEventToTextfieldViews(app::VKEY_LEFT, false, true);
+  // Ctrl+Left again should move the cursor back to the very beginning.
+  SendKeyEventToTextfieldViews(app::VKEY_LEFT, false, true);
+  SendKeyEventToTextfieldViews(app::VKEY_DELETE);
+  EXPECT_STR_EQ("one two", textfield_->text());
+  EXPECT_STR_EQ("one two", last_contents_);
+}
+
 }  // namespace views
