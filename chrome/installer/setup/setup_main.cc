@@ -191,7 +191,7 @@ bool CheckPreInstallConditions(const InstallationState& original_state,
   const Products& products = installation.products();
   DCHECK(products.size());
 
-  bool is_first_install;
+  bool is_first_install = true;
   const bool system_level = installation.system_level();
 
   for (size_t i = 0; i < products.size(); ++i) {
