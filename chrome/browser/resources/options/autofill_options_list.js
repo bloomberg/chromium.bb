@@ -84,6 +84,20 @@ cr.define('options.autoFillOptions', function() {
   AutoFillAddressList.prototype = {
     __proto__: DeletableItemList.prototype,
 
+    decorate: function() {
+      DeletableItemList.prototype.decorate.call(this);
+
+      this.addEventListener('blur', this.onBlur_);
+    },
+
+    /**
+     * When the list loses focus, unselect all items in the list.
+     * @private
+     */
+    onBlur_: function() {
+      this.selectionModel.unselectAll();
+    },
+
     /** @inheritDoc */
     createItem: function(entry) {
       return new AddressListItem(entry);
@@ -109,6 +123,20 @@ cr.define('options.autoFillOptions', function() {
 
   AutoFillCreditCardList.prototype = {
     __proto__: DeletableItemList.prototype,
+
+    decorate: function() {
+      DeletableItemList.prototype.decorate.call(this);
+
+      this.addEventListener('blur', this.onBlur_);
+    },
+
+    /**
+     * When the list loses focus, unselect all items in the list.
+     * @private
+     */
+    onBlur_: function() {
+      this.selectionModel.unselectAll();
+    },
 
     /** @inheritDoc */
     createItem: function(entry) {
