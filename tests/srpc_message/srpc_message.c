@@ -380,7 +380,7 @@ int main(int argc, char* argv[]) {
 /*
  * Mocked versions of imc_sendmsg and imc_recvmsg using a queue of MessageList.
  */
-ssize_t imc_sendmsg(int desc, struct NaClImcMsgHdr const* header, int flags) {
+int imc_sendmsg(int desc, struct NaClImcMsgHdr const* header, int flags) {
   size_t i;
   size_t offset = 0;
   struct MessageList* elt;
@@ -417,7 +417,7 @@ ssize_t imc_sendmsg(int desc, struct NaClImcMsgHdr const* header, int flags) {
   return offset;
 }
 
-ssize_t imc_recvmsg(int desc, struct NaClImcMsgHdr* header, int flags) {
+int imc_recvmsg(int desc, struct NaClImcMsgHdr* header, int flags) {
   size_t i;
   size_t offset = 0;
   struct MessageList* elt;
