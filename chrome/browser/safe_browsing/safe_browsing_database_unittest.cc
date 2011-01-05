@@ -36,6 +36,155 @@ SBFullHash Sha256Hash(const std::string& str) {
   return hash;
 }
 
+// Same as InsertAddChunkHostPrefixUrl, but with pre-computed
+// prefix values.
+void InsertAddChunkHostPrefixValue(SBChunk* chunk,
+                                   int chunk_number,
+                                   const SBPrefix& host_prefix,
+                                   const SBPrefix& url_prefix) {
+  chunk->chunk_number = chunk_number;
+  chunk->is_add = true;
+  SBChunkHost host;
+  host.host = host_prefix;
+  host.entry = SBEntry::Create(SBEntry::ADD_PREFIX, 1);
+  host.entry->set_chunk_id(chunk->chunk_number);
+  host.entry->SetPrefixAt(0, url_prefix);
+  chunk->hosts.push_back(host);
+}
+
+// A helper function that appends one AddChunkHost to chunk with
+// one url for prefix.
+void InsertAddChunkHostPrefixUrl(SBChunk* chunk,
+                                 int chunk_number,
+                                 const std::string& host_name,
+                                 const std::string& url) {
+  InsertAddChunkHostPrefixValue(chunk, chunk_number,
+                                Sha256Prefix(host_name),
+                                Sha256Prefix(url));
+}
+
+// Same as InsertAddChunkHostPrefixUrl, but with two urls for prefixes.
+void InsertAddChunkHost2PrefixUrls(SBChunk* chunk,
+                                   int chunk_number,
+                                   const std::string& host_name,
+                                   const std::string& url1,
+                                   const std::string& url2) {
+  chunk->chunk_number = chunk_number;
+  chunk->is_add = true;
+  SBChunkHost host;
+  host.host = Sha256Prefix(host_name);
+  host.entry = SBEntry::Create(SBEntry::ADD_PREFIX, 2);
+  host.entry->set_chunk_id(chunk->chunk_number);
+  host.entry->SetPrefixAt(0, Sha256Prefix(url1));
+  host.entry->SetPrefixAt(1, Sha256Prefix(url2));
+  chunk->hosts.push_back(host);
+}
+
+// Same as InsertAddChunkHost2PrefixUrls, but with full hashes.
+void InsertAddChunkHost2FullHashes(SBChunk* chunk,
+                                   int chunk_number,
+                                   const std::string& host_name,
+                                   const std::string& url1,
+                                   const std::string& url2) {
+  chunk->chunk_number = chunk_number;
+  chunk->is_add = true;
+  SBChunkHost host;
+  host.host = Sha256Prefix(host_name);
+  host.entry = SBEntry::Create(SBEntry::ADD_FULL_HASH, 2);
+  host.entry->set_chunk_id(chunk->chunk_number);
+  host.entry->SetFullHashAt(0, Sha256Hash(url1));
+  host.entry->SetFullHashAt(1, Sha256Hash(url2));
+  chunk->hosts.push_back(host);
+}
+
+// Same as InsertSubChunkHostPrefixUrl, but with pre-computed
+// prefix values.
+void InsertSubChunkHostPrefixValue(SBChunk* chunk,
+                                   int chunk_number,
+                                   int chunk_id_to_sub,
+                                   const SBPrefix& host_prefix,
+                                   const SBPrefix& url_prefix) {
+  chunk->chunk_number = chunk_number;
+  chunk->is_add = false;
+  SBChunkHost host;
+  host.host = host_prefix;
+  host.entry = SBEntry::Create(SBEntry::SUB_PREFIX, 1);
+  host.entry->set_chunk_id(chunk->chunk_number);
+  host.entry->SetChunkIdAtPrefix(0, chunk_id_to_sub);
+  host.entry->SetPrefixAt(0, url_prefix);
+  chunk->hosts.push_back(host);
+}
+
+// A helper function that adds one SubChunkHost to chunk with
+// one url for prefix.
+void InsertSubChunkHostPrefixUrl(SBChunk* chunk,
+                                 int chunk_number,
+                                 int chunk_id_to_sub,
+                                 const std::string& host_name,
+                                 const std::string& url) {
+  InsertSubChunkHostPrefixValue(chunk, chunk_number,
+                                chunk_id_to_sub,
+                                Sha256Prefix(host_name),
+                                Sha256Prefix(url));
+}
+
+// Same as InsertSubChunkHostPrefixUrl, but with two urls for prefixes.
+void InsertSubChunkHost2PrefixUrls(SBChunk* chunk,
+                                   int chunk_number,
+                                   int chunk_id_to_sub,
+                                   const std::string& host_name,
+                                   const std::string& url1,
+                                   const std::string& url2) {
+  chunk->chunk_number = chunk_number;
+  chunk->is_add = false;
+  SBChunkHost host;
+  host.host = Sha256Prefix(host_name);
+  host.entry = SBEntry::Create(SBEntry::SUB_PREFIX, 2);
+  host.entry->set_chunk_id(chunk->chunk_number);
+  host.entry->SetPrefixAt(0, Sha256Prefix(url1));
+  host.entry->SetChunkIdAtPrefix(0, chunk_id_to_sub);
+  host.entry->SetPrefixAt(1, Sha256Prefix(url2));
+  host.entry->SetChunkIdAtPrefix(1, chunk_id_to_sub);
+  chunk->hosts.push_back(host);
+}
+
+// Same as InsertSubChunkHost2PrefixUrls, but with full hashes.
+void InsertSubChunkHost2FullHashes(SBChunk* chunk,
+                                   int chunk_number,
+                                   int chunk_id_to_sub,
+                                   const std::string& host_name,
+                                   const std::string& url1,
+                                   const std::string& url2) {
+  chunk->chunk_number = chunk_number;
+  chunk->is_add = false;
+  SBChunkHost host;
+  host.host = Sha256Prefix(host_name);
+  host.entry = SBEntry::Create(SBEntry::SUB_FULL_HASH, 2);
+  host.entry->set_chunk_id(chunk->chunk_number);
+  host.entry->SetFullHashAt(0, Sha256Hash(url1));
+  host.entry->SetChunkIdAtPrefix(0, chunk_id_to_sub);
+  host.entry->SetFullHashAt(1, Sha256Hash(url2));
+  host.entry->SetChunkIdAtPrefix(1, chunk_id_to_sub);
+  chunk->hosts.push_back(host);
+}
+
+// Same as InsertSubChunkHost2PrefixUrls, but with full hashes.
+void InsertSubChunkHostFullHash(SBChunk* chunk,
+                                int chunk_number,
+                                int chunk_id_to_sub,
+                                const std::string& host_name,
+                                const std::string& url) {
+  chunk->chunk_number = chunk_number;
+  chunk->is_add = false;
+  SBChunkHost host;
+  host.host = Sha256Prefix(host_name);
+  host.entry = SBEntry::Create(SBEntry::SUB_FULL_HASH, 2);
+  host.entry->set_chunk_id(chunk->chunk_number);
+  host.entry->SetFullHashAt(0, Sha256Hash(url));
+  host.entry->SetChunkIdAtPrefix(0, chunk_id_to_sub);
+  chunk->hosts.push_back(host);
+}
+
 // Prevent DCHECK from killing tests.
 // TODO(shess): Pawel disputes the use of this, so the test which uses
 // it is DISABLED.  http://crbug.com/56448
@@ -179,43 +328,26 @@ class SafeBrowsingDatabaseTest : public PlatformTest {
 // Tests retrieving list name information.
 TEST_F(SafeBrowsingDatabaseTest, ListNameForBrowse) {
   SBChunkList chunks;
-
-  // Insert some malware add chunks.
-  SBChunkHost host;
-  host.host = Sha256Prefix("www.evil.com/");
-  host.entry = SBEntry::Create(SBEntry::ADD_PREFIX, 1);
-  host.entry->set_chunk_id(1);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.evil.com/malware.html"));
   SBChunk chunk;
-  chunk.chunk_number = 1;
-  chunk.is_add = true;
-  chunk.hosts.push_back(host);
+
+  InsertAddChunkHostPrefixUrl(&chunk, 1, "www.evil.com/",
+                              "www.evil.com/malware.html");
   chunks.clear();
   chunks.push_back(chunk);
   std::vector<SBListChunkRanges> lists;
   EXPECT_TRUE(database_->UpdateStarted(&lists));
   database_->InsertChunks(safe_browsing_util::kMalwareList, chunks);
 
-  host.host = Sha256Prefix("www.foo.com/");
-  host.entry = SBEntry::Create(SBEntry::ADD_PREFIX, 1);
-  host.entry->set_chunk_id(2);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.foo.com/malware.html"));
-  chunk.chunk_number = 2;
-  chunk.is_add = true;
   chunk.hosts.clear();
-  chunk.hosts.push_back(host);
+  InsertAddChunkHostPrefixUrl(&chunk, 2, "www.foo.com/",
+                              "www.foo.com/malware.html");
   chunks.clear();
   chunks.push_back(chunk);
   database_->InsertChunks(safe_browsing_util::kMalwareList, chunks);
 
-  host.host = Sha256Prefix("www.whatever.com/");
-  host.entry = SBEntry::Create(SBEntry::ADD_PREFIX, 1);
-  host.entry->set_chunk_id(3);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.whatever.com/malware.html"));
-  chunk.chunk_number = 3;
-  chunk.is_add = true;
   chunk.hosts.clear();
-  chunk.hosts.push_back(host);
+  InsertAddChunkHostPrefixUrl(&chunk, 3, "www.whatever.com/",
+                              "www.whatever.com/malware.html");
   chunks.clear();
   chunks.push_back(chunk);
   database_->InsertChunks(safe_browsing_util::kMalwareList, chunks);
@@ -227,15 +359,9 @@ TEST_F(SafeBrowsingDatabaseTest, ListNameForBrowse) {
   EXPECT_TRUE(lists[0].subs.empty());
 
   // Insert a malware sub chunk.
-  host.host = Sha256Prefix("www.subbed.com/");
-  host.entry = SBEntry::Create(SBEntry::SUB_PREFIX, 1);
-  host.entry->set_chunk_id(7);
-  host.entry->SetChunkIdAtPrefix(0, 19);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.subbed.com/notevil1.html"));
-  chunk.chunk_number = 7;
-  chunk.is_add = false;
   chunk.hosts.clear();
-  chunk.hosts.push_back(host);
+  InsertSubChunkHostPrefixUrl(&chunk, 7, 19, "www.subbed.com/",
+                              "www.subbed.com/noteveil1.html");
   chunks.clear();
   chunks.push_back(chunk);
 
@@ -257,42 +383,25 @@ TEST_F(SafeBrowsingDatabaseTest, ListNameForBrowse) {
   }
 
   // Add a phishing add chunk.
-  host.host = Sha256Prefix("www.evil.com/");
-  host.entry = SBEntry::Create(SBEntry::ADD_PREFIX, 1);
-  host.entry->set_chunk_id(47);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.evil.com/phishing.html"));
-  chunk.chunk_number = 47;
-  chunk.is_add = true;
   chunk.hosts.clear();
-  chunk.hosts.push_back(host);
+  InsertAddChunkHostPrefixUrl(&chunk, 47, "www.evil.com/",
+                              "www.evil.com/phishing.html");
   chunks.clear();
   chunks.push_back(chunk);
   EXPECT_TRUE(database_->UpdateStarted(&lists));
   database_->InsertChunks(safe_browsing_util::kPhishingList, chunks);
 
   // Insert some phishing sub chunks.
-  host.host = Sha256Prefix("www.phishy.com/");
-  host.entry = SBEntry::Create(SBEntry::SUB_PREFIX, 1);
-  host.entry->set_chunk_id(200);
-  host.entry->SetChunkIdAtPrefix(0, 1999);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.phishy.com/notevil1.html"));
-  chunk.chunk_number = 200;
-  chunk.is_add = false;
   chunk.hosts.clear();
-  chunk.hosts.push_back(host);
+  InsertSubChunkHostPrefixUrl(&chunk, 200, 1999, "www.phishy.com/",
+                              "www.phishy.com/notevil1.html");
   chunks.clear();
   chunks.push_back(chunk);
   database_->InsertChunks(safe_browsing_util::kPhishingList, chunks);
 
-  host.host = Sha256Prefix("www.phishy2.com/");
-  host.entry = SBEntry::Create(SBEntry::SUB_PREFIX, 1);
-  host.entry->set_chunk_id(201);
-  host.entry->SetChunkIdAtPrefix(0, 1999);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.phishy2.com/notevil1.html"));
-  chunk.chunk_number = 201;
-  chunk.is_add = false;
   chunk.hosts.clear();
-  chunk.hosts.push_back(host);
+  InsertSubChunkHostPrefixUrl(&chunk, 201, 1999, "www.phishy2.com/",
+                              "www.phishy2.com/notevil1.html");
   chunks.clear();
   chunks.push_back(chunk);
   database_->InsertChunks(safe_browsing_util::kPhishingList, chunks);
@@ -316,56 +425,34 @@ TEST_F(SafeBrowsingDatabaseTest, ListNameForBrowseAndDownload) {
   database_->Init(database_filename_);
 
   SBChunkList chunks;
+  SBChunk chunk;
 
   // Insert malware, phish, binurl and bindownload add chunks.
-  SBChunkHost host;
-  host.host = Sha256Prefix("www.evil.com/");
-  host.entry = SBEntry::Create(SBEntry::ADD_PREFIX, 1);
-  host.entry->set_chunk_id(1);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.evil.com/malware.html"));
-  SBChunk chunk;
-  chunk.chunk_number = 1;
-  chunk.is_add = true;
-  chunk.hosts.push_back(host);
-  chunks.clear();
+  InsertAddChunkHostPrefixUrl(&chunk, 1, "www.evil.com/",
+                              "www.evil.com/malware.html");
   chunks.push_back(chunk);
-  std::vector<SBListChunkRanges> lists;
 
+  std::vector<SBListChunkRanges> lists;
   EXPECT_TRUE(database_->UpdateStarted(&lists));
   database_->InsertChunks(safe_browsing_util::kMalwareList, chunks);
 
-  host.host = Sha256Prefix("www.foo.com/");
-  host.entry = SBEntry::Create(SBEntry::ADD_PREFIX, 1);
-  host.entry->set_chunk_id(2);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.foo.com/malware.html"));
-  chunk.chunk_number = 2;
-  chunk.is_add = true;
   chunk.hosts.clear();
-  chunk.hosts.push_back(host);
+  InsertAddChunkHostPrefixUrl(&chunk, 2, "www.foo.com/",
+                              "www.foo.com/malware.html");
   chunks.clear();
   chunks.push_back(chunk);
   database_->InsertChunks(safe_browsing_util::kPhishingList, chunks);
 
-  host.host = Sha256Prefix("www.whatever.com/");
-  host.entry = SBEntry::Create(SBEntry::ADD_PREFIX, 1);
-  host.entry->set_chunk_id(3);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.whatever.com/download.html"));
-  chunk.chunk_number = 3;
-  chunk.is_add = true;
   chunk.hosts.clear();
-  chunk.hosts.push_back(host);
+  InsertAddChunkHostPrefixUrl(&chunk, 3, "www.whatever.com/",
+                              "www.whatever.com/download.html");
   chunks.clear();
   chunks.push_back(chunk);
   database_->InsertChunks(safe_browsing_util::kBinUrlList, chunks);
 
-  host.host = Sha256Prefix("www.forhash.com/");
-  host.entry = SBEntry::Create(SBEntry::ADD_PREFIX, 1);
-  host.entry->set_chunk_id(4);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.forhash.com/download.html"));
-  chunk.chunk_number = 4;
-  chunk.is_add = true;
   chunk.hosts.clear();
-  chunk.hosts.push_back(host);
+  InsertAddChunkHostPrefixUrl(&chunk, 4, "www.forhash.com/",
+                              "www.forhash.com/download.html");
   chunks.clear();
   chunks.push_back(chunk);
   database_->InsertChunks(safe_browsing_util::kBinHashList, chunks);
@@ -392,60 +479,32 @@ TEST_F(SafeBrowsingDatabaseTest, ListNameForBrowseAndDownload) {
 // Checks database reading and writing for browse.
 TEST_F(SafeBrowsingDatabaseTest, BrowseDatabase) {
   SBChunkList chunks;
+  SBChunk chunk;
 
   // Add a simple chunk with one hostkey.
-  SBChunkHost host;
-  host.host = Sha256Prefix("www.evil.com/");
-  host.entry = SBEntry::Create(SBEntry::ADD_PREFIX, 2);
-  host.entry->set_chunk_id(1);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.evil.com/phishing.html"));
-  host.entry->SetPrefixAt(1, Sha256Prefix("www.evil.com/malware.html"));
-
-  SBChunk chunk;
-  chunk.chunk_number = 1;
-  chunk.is_add = true;
-  chunk.hosts.push_back(host);
-
-  chunks.clear();
+  InsertAddChunkHost2PrefixUrls(&chunk, 1, "www.evil.com/",
+                                "www.evil.com/phishing.html",
+                                "www.evil.com/malware.html");
   chunks.push_back(chunk);
   std::vector<SBListChunkRanges> lists;
   EXPECT_TRUE(database_->UpdateStarted(&lists));
   database_->InsertChunks(safe_browsing_util::kMalwareList, chunks);
 
-  // Add another chunk with two different hostkeys.
-  host.host = Sha256Prefix("www.evil.com/");
-  host.entry = SBEntry::Create(SBEntry::ADD_PREFIX, 2);
-  host.entry->set_chunk_id(2);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.evil.com/notevil1.html"));
-  host.entry->SetPrefixAt(1, Sha256Prefix("www.evil.com/notevil2.html"));
-
-  chunk.chunk_number = 2;
   chunk.hosts.clear();
-  chunk.hosts.push_back(host);
-
-  host.host = Sha256Prefix("www.good.com/");
-  host.entry = SBEntry::Create(SBEntry::ADD_PREFIX, 2);
-  host.entry->set_chunk_id(2);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.good.com/good1.html"));
-  host.entry->SetPrefixAt(1, Sha256Prefix("www.good.com/good2.html"));
-
-  chunk.hosts.push_back(host);
-
+  InsertAddChunkHost2PrefixUrls(&chunk, 2, "www.evil.com/",
+                                "www.evil.com/notevil1.html",
+                                "www.evil.com/notevil2.html");
+  InsertAddChunkHost2PrefixUrls(&chunk, 2, "www.good.com/",
+                                "www.good.com/good1.html",
+                                "www.good.com/good2.html");
   chunks.clear();
   chunks.push_back(chunk);
-
   database_->InsertChunks(safe_browsing_util::kMalwareList, chunks);
 
   // and a chunk with an IP-based host
-  host.host = Sha256Prefix("192.168.0.1/");
-  host.entry = SBEntry::Create(SBEntry::ADD_PREFIX, 1);
-  host.entry->set_chunk_id(3);
-  host.entry->SetPrefixAt(0, Sha256Prefix("192.168.0.1/malware.html"));
-
-  chunk.chunk_number = 3;
   chunk.hosts.clear();
-  chunk.hosts.push_back(host);
-
+  InsertAddChunkHostPrefixUrl(&chunk, 3, "192.168.0.1/",
+                              "192.168.0.1/malware.html");
   chunks.clear();
   chunks.push_back(chunk);
   database_->InsertChunks(safe_browsing_util::kMalwareList, chunks);
@@ -509,21 +568,12 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseDatabase) {
       &matching_list, &prefix_hits,
       &full_hashes, now));
 
-
-
   // Attempt to re-add the first chunk (should be a no-op).
   // see bug: http://code.google.com/p/chromium/issues/detail?id=4522
-  host.host = Sha256Prefix("www.evil.com/");
-  host.entry = SBEntry::Create(SBEntry::ADD_PREFIX, 2);
-  host.entry->set_chunk_id(1);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.evil.com/phishing.html"));
-  host.entry->SetPrefixAt(1, Sha256Prefix("www.evil.com/malware.html"));
-
-  chunk.chunk_number = 1;
-  chunk.is_add = true;
   chunk.hosts.clear();
-  chunk.hosts.push_back(host);
-
+  InsertAddChunkHost2PrefixUrls(&chunk, 1, "www.evil.com/",
+                                "www.evil.com/phishing.html",
+                                "www.evil.com/malware.html");
   chunks.clear();
   chunks.push_back(chunk);
   EXPECT_TRUE(database_->UpdateStarted(&lists));
@@ -535,24 +585,15 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseDatabase) {
   EXPECT_EQ(lists[0].adds, "1-3");
   EXPECT_TRUE(lists[0].subs.empty());
 
-
   // Test removing a single prefix from the add chunk.
-  host.host = Sha256Prefix("www.evil.com/");
-  host.entry = SBEntry::Create(SBEntry::SUB_PREFIX, 1);
-  host.entry->set_chunk_id(2);
-  host.entry->SetChunkIdAtPrefix(0, 2);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.evil.com/notevil1.html"));
-
-  chunk.is_add = false;
-  chunk.chunk_number = 4;
   chunk.hosts.clear();
-  chunk.hosts.push_back(host);
-
+  InsertSubChunkHostPrefixUrl(&chunk, 4, 2, "www.evil.com/",
+                              "www.evil.com/notevil1.html");
   chunks.clear();
   chunks.push_back(chunk);
-
   EXPECT_TRUE(database_->UpdateStarted(&lists));
   database_->InsertChunks(safe_browsing_util::kMalwareList, chunks);
+
   database_->UpdateFinished(true);
 
   EXPECT_TRUE(database_->ContainsBrowseUrl(
@@ -589,17 +630,9 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseDatabase) {
 
   // Test the same sub chunk again.  This should be a no-op.
   // see bug: http://code.google.com/p/chromium/issues/detail?id=4522
-  host.host = Sha256Prefix("www.evil.com/");
-  host.entry = SBEntry::Create(SBEntry::SUB_PREFIX, 1);
-  host.entry->set_chunk_id(2);
-  host.entry->SetChunkIdAtPrefix(0, 2);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.evil.com/notevil1.html"));
-
-  chunk.is_add = false;
-  chunk.chunk_number = 4;
   chunk.hosts.clear();
-  chunk.hosts.push_back(host);
-
+  InsertSubChunkHostPrefixUrl(&chunk, 4, 2, "www.evil.com/",
+                              "www.evil.com/notevil1.html");
   chunks.clear();
   chunks.push_back(chunk);
 
@@ -639,16 +672,9 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseDatabase) {
   // The adddel command exposed a bug in the transaction code where any
   // transaction after it would fail.  Add a dummy entry and remove it to
   // make sure the transcation works fine.
-  host.host = Sha256Prefix("www.redherring.com/");
-  host.entry = SBEntry::Create(SBEntry::ADD_PREFIX, 1);
-  host.entry->set_chunk_id(1);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.redherring.com/index.html"));
-
-  chunk.is_add = true;
-  chunk.chunk_number = 44;
   chunk.hosts.clear();
-  chunk.hosts.push_back(host);
-
+  InsertAddChunkHostPrefixUrl(&chunk, 44, "www.redherring.com/",
+                              "www.redherring.com/index.html");
   chunks.clear();
   chunks.push_back(chunk);
   EXPECT_TRUE(database_->UpdateStarted(&lists));
@@ -668,19 +694,11 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseDatabase) {
   EXPECT_EQ(lists[0].subs, "");
 
   // Test a sub command coming in before the add.
-  host.host = Sha256Prefix("www.notevilanymore.com/");
-  host.entry = SBEntry::Create(SBEntry::SUB_PREFIX, 2);
-  host.entry->set_chunk_id(10);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.notevilanymore.com/index.html"));
-  host.entry->SetChunkIdAtPrefix(0, 10);
-  host.entry->SetPrefixAt(1, Sha256Prefix("www.notevilanymore.com/good.html"));
-  host.entry->SetChunkIdAtPrefix(1, 10);
-
-  chunk.is_add = false;
-  chunk.chunk_number = 5;
   chunk.hosts.clear();
-  chunk.hosts.push_back(host);
-
+  InsertSubChunkHost2PrefixUrls(&chunk, 5, 10,
+                                "www.notevilanymore.com/",
+                                "www.notevilanymore.com/index.html",
+                                "www.notevilanymore.com/good.html");
   chunks.clear();
   chunks.push_back(chunk);
   EXPECT_TRUE(database_->UpdateStarted(&lists));
@@ -691,17 +709,12 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseDatabase) {
       GURL("http://www.notevilanymore.com/index.html"),
       &matching_list, &prefix_hits, &full_hashes, now));
 
-  // Now insert the tardy add chunk.
-  host.host = Sha256Prefix("www.notevilanymore.com/");
-  host.entry = SBEntry::Create(SBEntry::ADD_PREFIX, 2);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.notevilanymore.com/index.html"));
-  host.entry->SetPrefixAt(1, Sha256Prefix("www.notevilanymore.com/good.html"));
-
-  chunk.is_add = true;
-  chunk.chunk_number = 10;
+  // Now insert the tardy add chunk and we don't expect them to appear
+  // in database because of the previous sub chunk.
   chunk.hosts.clear();
-  chunk.hosts.push_back(host);
-
+  InsertAddChunkHost2PrefixUrls(&chunk, 10, "www.notevilanymore.com/",
+                                "www.notevilanymore.com/index.html",
+                                "www.notevilanymore.com/good.html");
   chunks.clear();
   chunks.push_back(chunk);
   EXPECT_TRUE(database_->UpdateStarted(&lists));
@@ -721,31 +734,19 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseDatabase) {
 // Test adding zero length chunks to the database.
 TEST_F(SafeBrowsingDatabaseTest, ZeroSizeChunk) {
   SBChunkList chunks;
+  SBChunk chunk;
 
   // Populate with a couple of normal chunks.
-  SBChunkHost host;
-  host.host = Sha256Prefix("www.test.com/");
-  host.entry = SBEntry::Create(SBEntry::ADD_PREFIX, 2);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.test.com/test1.html"));
-  host.entry->SetPrefixAt(1, Sha256Prefix("www.test.com/test2.html"));
-  host.entry->set_chunk_id(1);
-
-  SBChunk chunk;
-  chunk.is_add = true;
-  chunk.chunk_number = 1;
-  chunk.hosts.push_back(host);
-
+  InsertAddChunkHost2PrefixUrls(&chunk, 1, "www.test.com/",
+                                "www.test.com/test1.html",
+                                "www.test.com/test2.html");
   chunks.clear();
   chunks.push_back(chunk);
 
-  host.host = Sha256Prefix("www.random.com/");
-  host.entry = SBEntry::Create(SBEntry::ADD_PREFIX, 2);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.random.com/random1.html"));
-  host.entry->SetPrefixAt(1, Sha256Prefix("www.random.com/random2.html"));
-  host.entry->set_chunk_id(10);
-  chunk.chunk_number = 10;
   chunk.hosts.clear();
-  chunk.hosts.push_back(host);
+  InsertAddChunkHost2PrefixUrls(&chunk, 10, "www.random.com/",
+                                "www.random.com/random1.html",
+                                "www.random.com/random2.html");
   chunks.push_back(chunk);
 
   std::vector<SBListChunkRanges> lists;
@@ -777,14 +778,9 @@ TEST_F(SafeBrowsingDatabaseTest, ZeroSizeChunk) {
 
   // Add an empty chunk along with a couple that contain data. This should
   // result in the chunk range being reduced in size.
-  host.host = Sha256Prefix("www.notempty.com/");
-  host.entry = SBEntry::Create(SBEntry::ADD_PREFIX, 1);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.notempty.com/full1.html"));
-  host.entry->set_chunk_id(20);
-  empty_chunk.chunk_number = 20;
-  empty_chunk.is_add = true;
   empty_chunk.hosts.clear();
-  empty_chunk.hosts.push_back(host);
+  InsertAddChunkHostPrefixUrl(&empty_chunk, 20, "www.notempy.com/",
+                              "www.notempty.com/full1.html");
   chunks.clear();
   chunks.push_back(empty_chunk);
 
@@ -793,14 +789,9 @@ TEST_F(SafeBrowsingDatabaseTest, ZeroSizeChunk) {
   empty_chunk.hosts.clear();
   chunks.push_back(empty_chunk);
 
-  host.host = Sha256Prefix("www.notempty.com/");
-  host.entry = SBEntry::Create(SBEntry::ADD_PREFIX, 1);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.notempty.com/full2.html"));
-  host.entry->set_chunk_id(22);
   empty_chunk.hosts.clear();
-  empty_chunk.hosts.push_back(host);
-  empty_chunk.chunk_number = 22;
-  empty_chunk.is_add = true;
+  InsertAddChunkHostPrefixUrl(&empty_chunk, 22, "www.notempy.com/",
+                              "www.notempty.com/full2.html");
   chunks.push_back(empty_chunk);
 
   EXPECT_TRUE(database_->UpdateStarted(&lists));
@@ -844,22 +835,15 @@ TEST_F(SafeBrowsingDatabaseTest, ZeroSizeChunk) {
 
 // Utility function for setting up the database for the caching test.
 void SafeBrowsingDatabaseTest::PopulateDatabaseForCacheTest() {
-  // Add a simple chunk with one hostkey and cache it.
-  SBChunkHost host;
-  host.host = Sha256Prefix("www.evil.com/");
-  host.entry = SBEntry::Create(SBEntry::ADD_PREFIX, 2);
-  host.entry->set_chunk_id(1);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.evil.com/phishing.html"));
-  host.entry->SetPrefixAt(1, Sha256Prefix("www.evil.com/malware.html"));
-
-  SBChunk chunk;
-  chunk.chunk_number = 1;
-  chunk.is_add = true;
-  chunk.hosts.push_back(host);
-
   SBChunkList chunks;
-  std::vector<SBListChunkRanges> lists;
+  SBChunk chunk;
+  // Add a simple chunk with one hostkey and cache it.
+  InsertAddChunkHost2PrefixUrls(&chunk, 1, "www.evil.com/",
+                                "www.evil.com/phishing.html",
+                                "www.evil.com/malware.html");
   chunks.push_back(chunk);
+
+  std::vector<SBListChunkRanges> lists;
   EXPECT_TRUE(database_->UpdateStarted(&lists));
   database_->InsertChunks(safe_browsing_util::kMalwareList, chunks);
   database_->UpdateFinished(true);
@@ -912,19 +896,10 @@ TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
   full_hashes.clear();
 
   // Test removing a prefix via a sub chunk.
-  SBChunkHost host;
-  host.host = Sha256Prefix("www.evil.com/");
-  host.entry = SBEntry::Create(SBEntry::SUB_PREFIX, 1);
-  host.entry->set_chunk_id(1);
-  host.entry->SetChunkIdAtPrefix(0, 1);
-  host.entry->SetPrefixAt(0, Sha256Prefix("www.evil.com/phishing.html"));
-
   SBChunk chunk;
-  chunk.chunk_number = 2;
-  chunk.is_add = false;
-  chunk.hosts.clear();
-  chunk.hosts.push_back(host);
   SBChunkList chunks;
+  InsertSubChunkHostPrefixUrl(&chunk, 2, 1, "www.evil.com/",
+                              "www.evil.com/phishing.html");
   chunks.push_back(chunk);
 
   std::vector<SBListChunkRanges> lists;
@@ -939,7 +914,6 @@ TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
   EXPECT_EQ(full_hashes.size(), 1U);
   EXPECT_TRUE(SBFullHashEq(full_hashes[0].hash,
                            Sha256Hash("www.evil.com/malware.html")));
-
   prefixes.clear();
   full_hashes.clear();
 
@@ -1038,16 +1012,10 @@ TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
   full_hashes.clear();
 
   // Test receiving a full add chunk.
-  host.host = Sha256Prefix("www.fullevil.com/");
-  host.entry = SBEntry::Create(SBEntry::ADD_FULL_HASH, 2);
-  host.entry->set_chunk_id(20);
-  host.entry->SetFullHashAt(0, Sha256Hash("www.fullevil.com/bad1.html"));
-  host.entry->SetFullHashAt(1, Sha256Hash("www.fullevil.com/bad2.html"));
-
-  chunk.chunk_number = 20;
-  chunk.is_add = true;
   chunk.hosts.clear();
-  chunk.hosts.push_back(host);
+  InsertAddChunkHost2FullHashes(&chunk, 20, "www.fullevil.com/",
+                                "www.fullevil.com/bad1.html",
+                                "www.fullevil.com/bad2.html");
   chunks.clear();
   chunks.push_back(chunk);
   EXPECT_TRUE(database_->UpdateStarted(&lists));
@@ -1075,16 +1043,10 @@ TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
   full_hashes.clear();
 
   // Test receiving a full sub chunk, which will remove one of the full adds.
-  host.host = Sha256Prefix("www.fullevil.com/");
-  host.entry = SBEntry::Create(SBEntry::SUB_FULL_HASH, 1);
-  host.entry->set_chunk_id(200);
-  host.entry->SetChunkIdAtPrefix(0, 20);
-  host.entry->SetFullHashAt(0, Sha256Hash("www.fullevil.com/bad1.html"));
-
-  chunk.chunk_number = 200;
-  chunk.is_add = false;
   chunk.hosts.clear();
-  chunk.hosts.push_back(host);
+  InsertSubChunkHostFullHash(&chunk, 200, 20,
+                             "www.fullevil.com/",
+                             "www.fullevil.com/bad1.html");
   chunks.clear();
   chunks.push_back(chunk);
   EXPECT_TRUE(database_->UpdateStarted(&lists));
@@ -1289,18 +1251,10 @@ TEST_F(SafeBrowsingDatabaseTest, ContainsDownloadUrl) {
   const char kEvil1Url2[] = "www.evil1.com/download2.html";
 
   SBChunkList chunks;
-  // Add a simple chunk with one hostkey for download url list.
-  SBChunkHost host;
-  host.host = Sha256Prefix(kEvil1Host);
-  host.entry = SBEntry::Create(SBEntry::ADD_PREFIX, 2);
-  host.entry->set_chunk_id(1);
-  host.entry->SetPrefixAt(0, Sha256Prefix(kEvil1Url1));
-  host.entry->SetPrefixAt(1, Sha256Prefix(kEvil1Url2));
   SBChunk chunk;
-  chunk.chunk_number = 1;
-  chunk.is_add = true;
-  chunk.hosts.push_back(host);
-  chunks.clear();
+  // Add a simple chunk with one hostkey for download url list.
+  InsertAddChunkHost2PrefixUrls(&chunk, 1, kEvil1Host,
+                                kEvil1Url1, kEvil1Url2);
   chunks.push_back(chunk);
   std::vector<SBListChunkRanges> lists;
   EXPECT_TRUE(database_->UpdateStarted(&lists));
