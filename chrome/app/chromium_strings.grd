@@ -403,6 +403,12 @@ be available for now. -->
       <message name="IDS_INSTALL_DIR_IN_USE" desc="Error during install if Chromium version is missing from registry but the installation directory exists and can not be deleted.">
         Chromium installation directory seems to be in use. Please reboot your computer and try again.
       </message>
+      <message name="IDS_INSTALL_NON_MULTI_INSTALLATION_EXISTS" desc="Error during install if a single-install Chromium or Chromium Frame is present, thereby preventing the installation of a multi-install Chromium or Chromium Frame.">
+        A conflicting installation of Chromium or Chromium Frame was found on the system. Please uninstall it and try again.
+      </message>
+      <message name="IDS_INSTALL_MULTI_INSTALLATION_EXISTS" desc="Error during install if a multi-install Chromium or Chromium Frame is present, thereby preventing the installation of a single-install Chromium or Chromium Frame.">
+        A conflicting installation of Chromium or Chromium Frame was found on the system. Please uninstall it and try again.
+      </message>
       <!-- Options Dialog -->
       <!--TODO(kmadhusu): Remove "IDS_OPTIONS_DISABLE_SERVICES" after platform-specific dialogs are removed.-->
       <message name="IDS_OPTIONS_DISABLE_SERVICES" desc="The text in the options panel that describes how we use web services to improve browsing experience.">

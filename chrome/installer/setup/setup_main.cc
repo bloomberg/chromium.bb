@@ -881,17 +881,15 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   if (!PopulateInstallations(prefs, &installations)) {
     // Currently this can only fail if one of the installations is a multi and
     // a pre-existing single installation exists or vice versa.
-    installer::InstallStatus status;
-    if (prefs.is_multi_install()) {
-      // TODO(grt): create a new string for this condition.
-      status = installer::NON_MULTI_INSTALLATION_EXISTS;
-    } else {
-      // TODO(grt): create a new string for this condition.
+    installer::InstallStatus status = installer::NON_MULTI_INSTALLATION_EXISTS;
+    int string_id = IDS_INSTALL_NON_MULTI_INSTALLATION_EXISTS_BASE;
+    if (!prefs.is_multi_install()) {
       status = installer::MULTI_INSTALLATION_EXISTS;
+      string_id = IDS_INSTALL_MULTI_INSTALLATION_EXISTS_BASE;
     }
     LOG(ERROR) << "Failed to populate installations: " << status;
     InstallUtil::WriteInstallerResult(system_install,
-        installer_state.state_key(), status, NULL, NULL);
+        installer_state.state_key(), status, string_id, NULL);
     return status;
   }
 
