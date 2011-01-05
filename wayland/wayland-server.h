@@ -227,6 +227,17 @@ wl_input_device_set_keyboard_focus(struct wl_input_device *device,
 				   struct wl_surface *surface,
 				   uint32_t time);
 
+void
+wl_input_device_end_grab(struct wl_input_device *device, uint32_t time);
+void
+wl_input_device_start_grab(struct wl_input_device *device,
+			   struct wl_grab *grab,
+			   uint32_t button, uint32_t time);
+int
+wl_input_device_update_grab(struct wl_input_device *device,
+			    struct wl_grab *grab,
+			    struct wl_surface *surface, uint32_t time);
+
 int
 wl_compositor_init(struct wl_compositor *compositor,
 		   const struct wl_compositor_interface *interface,

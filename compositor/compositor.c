@@ -499,56 +499,6 @@ wlsc_input_device_set_pointer_image(struct wlsc_input_device *device,
 				 pointer_images[type].hotspot_y);
 }
 
-static void
-wl_input_device_end_grab(struct wl_input_device *device, uint32_t time);
-
-static void
-lose_grab_surface(struct wl_listener *listener,
-		  struct wl_surface *surface, uint32_t time)
-{
-	struct wl_input_device *device =
-		container_of(listener,
-			     struct wl_input_device, grab_listener);
-
-	wl_input_device_end_grab(device, time);
-}
-
-static void
-wl_input_device_start_grab(struct wl_input_device *device,
-			   struct wl_grab *grab,
-			   uint32_t button, uint32_t time)
-{
-	struct wl_surface *focus = device->pointer_focus;
-
-	device->grab = grab;
-	device->grab_button = button;
-	device->grab_time = time;
-	device->grab_x = device->x;
-	device->grab_y = device->y;
-
-	device->grab_listener.func = lose_grab_surface;
-	wl_list_insert(focus->destroy_listener_list.prev,
-		       &device->grab_listener.link);
-
-	grab->input_device = device;
-}
-
-static int
-wl_input_device_update_grab(struct wl_input_device *device,
-			    struct wl_grab *grab,
-			    struct wl_surface *surface, uint32_t time)
-{
-	if (device->grab != &device->motion_grab ||
-	    device->grab_time != time ||
-	    device->pointer_focus != surface)
-		return -1;
-
-	device->grab = grab;
-	grab->input_device = device;
-
-	return 0;
-}
-
 struct wlsc_move_grab {
 	struct wl_grab grab;
 	int32_t dx, dy;
@@ -931,25 +881,6 @@ notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 	wlsc_surface_update_matrix(wd->sprite);
 
 	wlsc_compositor_schedule_repaint(ec);
-}
-
-static void
-wl_input_device_end_grab(struct wl_input_device *device, uint32_t time)
-{
-	struct wlsc_surface *es;
-	const struct wl_grab_interface *interface;
-	int32_t sx, sy;
-
-	interface = device->grab->interface;
-	interface->end(device->grab, time);
-	device->grab->input_device = NULL;
-	device->grab = NULL;
-
-	wl_list_remove(&device->grab_listener.link);
-	es = pick_surface(device, &sx, &sy);
-	wl_input_device_set_pointer_focus(device,
-					  &es->surface, time,
-					  device->x, device->y, sx, sy);
 }
 
 void
