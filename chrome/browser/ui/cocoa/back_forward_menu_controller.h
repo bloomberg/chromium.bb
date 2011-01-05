@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 
-@class DelayedMenuButton;
+@class MenuButton;
 
 typedef BackForwardMenuModel::ModelType BackForwardMenuType;
 const BackForwardMenuType BACK_FORWARD_MENU_TYPE_BACK =
@@ -26,7 +26,7 @@ const BackForwardMenuType BACK_FORWARD_MENU_TYPE_FORWARD =
 @interface BackForwardMenuController : NSObject {
  @private
   BackForwardMenuType type_;
-  DelayedMenuButton* button_;           // Weak; comes from nib.
+  MenuButton* button_;  // Weak; comes from nib.
   scoped_ptr<BackForwardMenuModel> model_;
   scoped_nsobject<NSMenu> backForwardMenu_;
 }
@@ -36,7 +36,7 @@ const BackForwardMenuType BACK_FORWARD_MENU_TYPE_FORWARD =
 
 - (id)initWithBrowser:(Browser*)browser
             modelType:(BackForwardMenuType)type
-               button:(DelayedMenuButton*)button;
+               button:(MenuButton*)button;
 
 @end  // @interface BackForwardMenuController
 

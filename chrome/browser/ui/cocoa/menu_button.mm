@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,15 +9,14 @@
 #import "chrome/browser/ui/cocoa/clickhold_button_cell.h"
 
 @interface MenuButton (Private)
-
-- (void)resetToDefaults;
 - (void)showMenu:(BOOL)isDragging;
 - (void)clickShowMenu:(id)sender;
 - (void)dragShowMenu:(id)sender;
-
 @end  // @interface MenuButton (Private)
 
 @implementation MenuButton
+
+@synthesize openMenuOnClick = openMenuOnClick_;
 
 // Overrides:
 
@@ -27,25 +26,57 @@
 
 - (id)init {
   if ((self = [super init]))
-    [self resetToDefaults];
+    [self configureCell];
   return self;
 }
 
 - (id)initWithCoder:(NSCoder*)decoder {
   if ((self = [super initWithCoder:decoder]))
-    [self resetToDefaults];
+    [self configureCell];
   return self;
 }
 
 - (id)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect]))
-    [self resetToDefaults];
+    [self configureCell];
   return self;
+}
+
+- (void)dealloc {
+  self.attachedMenu = nil;
+  [super dealloc];
+}
+
+- (void)awakeFromNib {
+  [self configureCell];
+}
+
+- (void)setCell:(NSCell*)cell {
+  [super setCell:cell];
+  [self configureCell];
 }
 
 // Accessors and mutators:
 
-@synthesize attachedMenu = attachedMenu_;
+- (NSMenu*)attachedMenu {
+  return attachedMenu_.get();
+}
+
+- (void)setAttachedMenu:(NSMenu*)menu {
+  attachedMenu_.reset([menu retain]);
+  [[self cell] setEnableClickHold:(menu != nil)];
+}
+
+- (void)setOpenMenuOnClick:(BOOL)enabled {
+  openMenuOnClick_ = enabled;
+  if (enabled) {
+    [[self cell] setClickHoldTimeout:0.0];  // Make menu trigger immediately.
+    [[self cell] setAction:@selector(clickShowMenu:)];
+    [[self cell] setTarget:self];
+  } else {
+    [[self cell] setClickHoldTimeout:0.25];  // Default value.
+  }
+}
 
 @end  // @implementation MenuButton
 
@@ -53,15 +84,12 @@
 
 // Reset various settings of the button and its associated |ClickHoldButtonCell|
 // to the standard state which provides reasonable defaults.
-- (void)resetToDefaults {
+- (void)configureCell {
   ClickHoldButtonCell* cell = [self cell];
   DCHECK([cell isKindOfClass:[ClickHoldButtonCell class]]);
-  [cell setEnableClickHold:YES];
-  [cell setClickHoldTimeout:0.0];       // Make menu trigger immediately.
-  [cell setAction:@selector(clickShowMenu:)];
-  [cell setTarget:self];
   [cell setClickHoldAction:@selector(dragShowMenu:)];
   [cell setClickHoldTarget:self];
+  [cell setEnableClickHold:([self attachedMenu] != nil)];
 }
 
 // Actually show the menu (in the correct location). |isDragging| indicates
@@ -79,8 +107,11 @@
     return;
   }
 
-  // TODO(viettrungluu): Remove silly fudge factors (same ones as in
-  // delayedmenu_button.mm).
+  // TODO(viettrungluu): We have some fudge factors below to make things line up
+  // (approximately). I wish I knew how to get rid of them. (Note that our view
+  // is flipped, and that frame should be in our coordinates.) The y/height is
+  // very odd, since it doesn't seem to respond to changes the way that it
+  // should. I don't understand it.
   NSRect frame = [self convertRect:[self frame]
                           fromView:[self superview]];
   frame.origin.x -= 2.0;
@@ -111,11 +142,16 @@
 // Called when the button is clicked and released. (Shouldn't happen with
 // timeout of 0, though there may be some strange pointing devices out there.)
 - (void)clickShowMenu:(id)sender {
+  // This should only be called if openMenuOnClick has been set (which hooks
+  // up this target-action).
+  DCHECK(openMenuOnClick_);
   [self showMenu:NO];
 }
 
 // Called when the button is clicked and dragged/held.
 - (void)dragShowMenu:(id)sender {
+  // We shouldn't get here unless the menu is enabled.
+  DCHECK([self attachedMenu]);
   [self showMenu:YES];
 }
 

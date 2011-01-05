@@ -2752,8 +2752,6 @@
         'browser/ui/cocoa/cookies_window_controller.mm',
         'browser/ui/cocoa/custom_home_pages_model.h',
         'browser/ui/cocoa/custom_home_pages_model.mm',
-        'browser/ui/cocoa/delayedmenu_button.h',
-        'browser/ui/cocoa/delayedmenu_button.mm',
         'browser/ui/cocoa/dev_tools_controller.h',
         'browser/ui/cocoa/dev_tools_controller.mm',
         'browser/ui/cocoa/dock_icon.h',

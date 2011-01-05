@@ -1477,7 +1477,6 @@
         'browser/ui/cocoa/cookie_details_unittest.mm',
         'browser/ui/cocoa/cookie_details_view_controller_unittest.mm',
         'browser/ui/cocoa/custom_home_pages_model_unittest.mm',
-        'browser/ui/cocoa/delayedmenu_button_unittest.mm',
         'browser/ui/cocoa/download/download_item_button_unittest.mm',
         'browser/ui/cocoa/download/download_shelf_mac_unittest.mm',
         'browser/ui/cocoa/download/download_shelf_view_unittest.mm',

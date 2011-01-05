@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,6 @@
 #include "base/scoped_ptr.h"
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/command_observer_bridge.h"
-#import "chrome/browser/ui/cocoa/delayedmenu_button.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 #import "chrome/browser/ui/cocoa/view_resizer.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -23,7 +22,6 @@
 class Browser;
 @class BrowserActionsController;
 class CommandUpdater;
-@class DelayedMenuButton;
 class LocationBar;
 class LocationBarViewMac;
 @class MenuButton;
@@ -49,8 +47,8 @@ class WrenchMenuModel;
   // The ordering is important for unit tests. If new items are added or the
   // ordering is changed, make sure to update |-toolbarViews| and the
   // corresponding enum in the unit tests.
-  IBOutlet DelayedMenuButton* backButton_;
-  IBOutlet DelayedMenuButton* forwardButton_;
+  IBOutlet MenuButton* backButton_;
+  IBOutlet MenuButton* forwardButton_;
   IBOutlet ReloadButton* reloadButton_;
   IBOutlet NSButton* homeButton_;
   IBOutlet MenuButton* wrenchButton_;

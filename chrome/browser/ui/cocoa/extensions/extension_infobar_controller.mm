@@ -138,6 +138,7 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver,
   if ((self = [super initWithDelegate:delegate])) {
     window_ = window;
     dropdownButton_.reset([[MenuButton alloc] init]);
+    [dropdownButton_ setOpenMenuOnClick:YES];
 
     ExtensionHost* extensionHost = delegate_->AsExtensionInfoBarDelegate()->
         extension_host();

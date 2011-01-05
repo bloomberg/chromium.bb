@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/sys_string_conversions.h"
-#import "chrome/browser/ui/cocoa/delayedmenu_button.h"
 #import "chrome/browser/ui/cocoa/event_utils.h"
+#import "chrome/browser/ui/cocoa/menu_button.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -26,7 +26,7 @@ using gfx::SkBitmapToNSImage;
 
 - (id)initWithBrowser:(Browser*)browser
             modelType:(BackForwardMenuType)type
-               button:(DelayedMenuButton*)button {
+               button:(MenuButton*)button {
   if ((self = [super init])) {
     type_ = type;
     button_ = button;
@@ -37,7 +37,7 @@ using gfx::SkBitmapToNSImage;
     [backForwardMenu_ setDelegate:self];
 
     [button_ setAttachedMenu:backForwardMenu_];
-    [button_ setAttachedMenuEnabled:YES];
+    [button_ setOpenMenuOnClick:NO];
   }
   return self;
 }
