@@ -3632,7 +3632,7 @@ each locale. -->
         Your physical location
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT" desc="Permisson string for access to extension management.">
-        Manage themes, extensions, and apps
+        Your list of installed apps, extensions, and themes
       </message>
 
       <!-- Extension/App error messages -->
