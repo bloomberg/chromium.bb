@@ -118,7 +118,10 @@ void ShowSpellingPanel(bool show) {
 void UpdateSpellingPanelWithMisspelledWord(const string16& word) {
   NSString * word_to_display = base::SysUTF16ToNSString(word);
   [[NSSpellChecker sharedSpellChecker]
-          updateSpellingPanelWithMisspelledWord:word_to_display];
+      performSelectorOnMainThread:
+        @selector(updateSpellingPanelWithMisspelledWord:)
+                       withObject:word_to_display
+                    waitUntilDone:YES];
 }
 
 void Init() {
