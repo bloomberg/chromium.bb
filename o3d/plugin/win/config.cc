@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, Google Inc.
+ * Copyright 2011, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -71,7 +71,7 @@ bool CheckOSVersion(NPP npp) {
       if (!AskUser(npp, error)) return false;
     }
   } else if (version.dwMajorVersion > 5 ||
-	         (version.dwMajorVersion == 5 && version.dwMinorVersion >= 2)) {
+             (version.dwMajorVersion == 5 && version.dwMinorVersion >= 2)) {
     // 6.0 is Vista or Server 2008; it's now worth a try.
   } else {
     std::string error = std::string("Unsupported Windows version.");
@@ -85,7 +85,8 @@ bool CheckUserAgent(NPP npp, const std::string &user_agent) {
   if (user_agent.find("Firefox") == user_agent.npos &&
       user_agent.find("Chrome") == user_agent.npos &&
       user_agent.find("MSIE") == user_agent.npos &&
-      user_agent.find("Safari") == user_agent.npos) {
+      user_agent.find("Safari") == user_agent.npos &&
+      user_agent.find("Opera") == user_agent.npos) {
     std::string error = std::string("Unsupported user agent: ") + user_agent;
     return AskUser(npp, error);
   }
