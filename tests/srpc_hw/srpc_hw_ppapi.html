@@ -9,32 +9,41 @@
         onunload="nacllib.cleanUp();" >
 <script type="text/javascript">
 //<![CDATA[
+function $(id) {
+  return document.getElementById(id);
+}
+
+function setStatus(message) {
+    var status = $("status");
+    status.firstChild.nodeValue = message;
+}
+
 function fortytwo() {
   var result = "";
   try {
-    result = document.getElementById('pluginobj').fortytwo();
+    result = document.getElementById("pluginobj").fortytwo();
   } catch(e) {
     result = "ERROR: " + e;
   }
-  alert("" + result);
+  setStatus(result);
 }
 
 function helloworld() {
   var result = "";
   try {
-    result = document.getElementById('pluginobj').helloworld();
+    result = document.getElementById("pluginobj").helloworld();
   } catch(e) {
     result = "ERROR: " + e;
   }
-  alert("" + result);
+  setStatus(result);
 }
 //]]>
 </script>
 
 <h1>Native Client SRPC Simple Plug-in</h1>
 <p>
-  <button onclick='fortytwo()'>Call fortytwo()</button>
-  <button onclick='helloworld()'>Call helloworld()</button>
+  <button onclick="fortytwo()">Call fortytwo()</button>
+  <button onclick="helloworld()">Call helloworld()</button>
 
   <embed name="nacl_module"
          id="pluginobj"
@@ -63,7 +72,7 @@ nacllib.test = function() {
     return "expected 42";
   }
 
-  if ('hello, world.' != plugin.helloworld()) {
+  if ("hello, world." != plugin.helloworld()) {
     return "expected 'hello, world.'";
   }
 
