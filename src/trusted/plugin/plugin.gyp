@@ -114,36 +114,6 @@
             }],
           ],
         },
-        {
-          'target_name': 'ppGoogleNaClPlugin',
-          'type': 'shared_library',
-          'variables': {
-            'target_base': 'ppNaClPlugin',
-          },
-          'dependencies': [
-            '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
-            '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c',
-            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
-            '<(DEPTH)/native_client/src/shared/ppapi/ppapi.gyp:ppapi_cpp',
-            '<(DEPTH)/native_client/src/shared/ppapi_proxy/ppapi_proxy.gyp:nacl_ppapi_browser',
-            '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
-            '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
-            '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
-            '<(DEPTH)/native_client/src/trusted/expiration/expiration.gyp:expiration',
-            '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util',
-            '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
-            '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc',
-          ],
-# TODO(noelallen) We will need to put this back in with a new .def file once we need to export symbols
-# to support the plugin as a sandboxed DLL.
-#          'conditions': [
-#            ['OS=="win"', {
-#              'sources': [
-#                'win/nacl_plugin.def',
-#              ],
-#            }],
-#          ],
-        },
       ],
     }],
     ['OS=="win"', {
@@ -178,6 +148,39 @@
           },
         },
       ],
+    }],
+    ['nacl_standalone==1', {
+      'targets': [
+        {
+          'target_name': 'ppGoogleNaClPlugin',
+          'type': 'shared_library',
+          'variables': {
+            'target_base': 'ppNaClPlugin',
+          },
+          'dependencies': [
+            '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
+            '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c',
+            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
+            '<(DEPTH)/native_client/src/shared/ppapi/ppapi.gyp:ppapi_cpp',
+            '<(DEPTH)/native_client/src/shared/ppapi_proxy/ppapi_proxy.gyp:nacl_ppapi_browser',
+            '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
+            '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
+            '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
+            '<(DEPTH)/native_client/src/trusted/expiration/expiration.gyp:expiration',
+            '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util',
+            '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
+            '<(DEPTH)/native_client/src/trusted/gio/gio_wrapped_desc.gyp:gio_wrapped_desc',
+          ],
+# TODO(noelallen) We will need to put this back in with a new .def file once we need to export symbols
+# to support the plugin as a sandboxed DLL.
+#        'conditions': [
+#          ['OS=="win"', {
+#            'sources': [
+#              'win/nacl_plugin.def',
+#            ],
+#          }],
+#        ],
+      }],
     }],
     ['nacl_standalone==0', {
       'targets': [
