@@ -9,12 +9,9 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
-#include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/delete_tree_work_item.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/helper.h"
-#include "chrome/installer/util/install_util.h"
-#include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/package_properties.h"
 #include "chrome/installer/util/product.h"
@@ -22,34 +19,7 @@
 #include "chrome/installer/util/work_item_list.h"
 
 using base::win::RegKey;
-using installer::ChannelInfo;
 using installer::MasterPreferences;
-
-namespace {
-
-void AddInstallerResult(HKEY root,
-                        const std::wstring& key,
-                        int installer_result,
-                        installer::InstallStatus status,
-                        const std::wstring& msg,
-                        const std::wstring* const launch_cmd,
-                        WorkItemList* install_list) {
-  install_list->AddCreateRegKeyWorkItem(root, key);
-  install_list->AddSetRegValueWorkItem(root, key, installer::kInstallerResult,
-                                       installer_result, true);
-  install_list->AddSetRegValueWorkItem(root, key, installer::kInstallerError,
-                                       status, true);
-  if (!msg.empty()) {
-    install_list->AddSetRegValueWorkItem(root, key,
-        installer::kInstallerResultUIString, msg, true);
-  }
-  if (launch_cmd != NULL && !launch_cmd->empty()) {
-    install_list->AddSetRegValueWorkItem(root, key,
-        installer::kInstallerSuccessLaunchCmdLine, *launch_cmd, true);
-  }
-}
-
-}  // namespace
 
 namespace installer {
 
@@ -212,32 +182,6 @@ size_t Package::GetMultiInstallDependencyCount() const {
   }
 
   return ret;
-}
-
-void Package::WriteInstallerResult(installer::InstallStatus status,
-                                   int string_resource_id,
-                                   const std::wstring* const launch_cmd) const {
-  HKEY root = system_level() ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  int installer_result = InstallUtil::GetInstallReturnCode(status) == 0 ? 0 : 1;
-  std::wstring msg;
-  scoped_ptr<WorkItemList> install_list(WorkItem::CreateWorkItemList());
-
-  if (string_resource_id != 0)
-    msg = installer::GetLocalizedString(string_resource_id);
-
-  for (Products::const_iterator scan = products_.begin(), end = products_.end();
-       scan != end; ++scan) {
-    const Product& product = *(scan->get());
-    AddInstallerResult(root, product.distribution()->GetStateKey(),
-                       installer_result, status, msg, launch_cmd,
-                       install_list.get());
-  }
-  if (multi_install_ && properties_->ReceivesUpdates()) {
-    AddInstallerResult(root, properties_->GetStateKey(), installer_result,
-                       status, msg, launch_cmd, install_list.get());
-  }
-  if (!install_list->Do())
-    LOG(ERROR) << "Failed to record installer error information in registry.";
 }
 
 }  // namespace installer

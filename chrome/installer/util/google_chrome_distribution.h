@@ -65,8 +65,9 @@ class GoogleChromeDistribution : public BrowserDistribution {
 
   virtual std::wstring GetVersionKey();
 
-  virtual void UpdateDiffInstallStatus(bool system_install,
-      bool incremental_install, installer::InstallStatus install_status);
+  virtual void UpdateInstallStatus(bool system_install,
+      bool incremental_install, bool multi_install,
+      installer::InstallStatus install_status);
 
   virtual void LaunchUserExperiment(installer::InstallStatus status,
       const Version& version,
@@ -80,6 +81,8 @@ class GoogleChromeDistribution : public BrowserDistribution {
       const installer::Product& installation);
 
   const std::wstring& product_guid() { return product_guid_; }
+
+  virtual bool SetChannelFlags(bool set, installer::ChannelInfo* channel_info);
 
  protected:
   void set_product_guid(const std::wstring& guid) { product_guid_ = guid; }

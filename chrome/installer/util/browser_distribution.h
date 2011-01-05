@@ -23,10 +23,9 @@
 class CommandLine;
 
 namespace installer {
-class Product;
-}
-namespace installer {
+class ChannelInfo;
 class MasterPreferences;
+class Product;
 }
 
 class BrowserDistribution {
@@ -91,8 +90,9 @@ class BrowserDistribution {
 
   virtual bool GetChromeChannel(std::wstring* channel);
 
-  virtual void UpdateDiffInstallStatus(bool system_install,
-      bool incremental_install, installer::InstallStatus install_status);
+  virtual void UpdateInstallStatus(bool system_install,
+      bool incremental_install, bool multi_install,
+      installer::InstallStatus install_status);
 
   // After an install or upgrade the user might qualify to participate in an
   // experiment. This function determines if the user qualifies and if so it
@@ -127,6 +127,10 @@ class BrowserDistribution {
   // Returns true if install should create an uninstallation entry in the
   // Add/Remove Programs dialog for this distribution.
   virtual bool ShouldCreateUninstallEntry();
+
+  // Adds or removes product-specific flags in |channel_info|.  Returns true if
+  // |channel_info| is modified.
+  virtual bool SetChannelFlags(bool set, installer::ChannelInfo* channel_info);
 
  protected:
   explicit BrowserDistribution(const installer::MasterPreferences& prefs);

@@ -161,21 +161,6 @@ bool Product::SetMsiMarker(bool set) const {
   return success;
 }
 
-const Version* Product::GetInstalledVersion() const {
-  if ((cache_state_ & VERSION) == 0) {
-    DCHECK(installed_version_.get() == NULL);
-    installed_version_.reset(InstallUtil::GetChromeVersion(distribution_,
-                                                           system_level()));
-    cache_state_ |= VERSION;
-  }
-
-  return installed_version_.get();
-}
-
-bool Product::IsInstalled() const {
-  return GetInstalledVersion() != NULL;
-}
-
 bool Product::ShouldCreateUninstallEntry() const {
   if (IsMsi()) {
     // MSI installations will manage their own uninstall shortcuts.
@@ -188,11 +173,7 @@ bool Product::ShouldCreateUninstallEntry() const {
 ///////////////////////////////////////////////////////////////////////////////
 ProductPackageMapping::ProductPackageMapping(bool multi_install,
                                              bool system_level)
-#if defined(GOOGLE_CHROME_BUILD)
-    : package_properties_(new ChromePackageProperties()),
-#else
-    : package_properties_(new ChromiumPackageProperties()),
-#endif
+    : package_properties_(new ActivePackageProperties()),
       multi_install_(multi_install),
       system_level_(system_level) {
 }

@@ -649,6 +649,7 @@ int WMain(HMODULE module) {
   // any errors here and we try to set the suffix for user level unless
   // --system-level is on the command line in which case we set it for system
   // level instead. This only applies to the Google Chrome distribution.
+  // TODO(grt): also add -multifail if --multi-install.
   SetFullInstallerFlag();
 #endif
 

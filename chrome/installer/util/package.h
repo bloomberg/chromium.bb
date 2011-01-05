@@ -71,12 +71,6 @@ class Package : public base::RefCounted<Package> {
   // system_level() value.
   size_t GetMultiInstallDependencyCount() const;
 
-  // Sets installer error information in registry so that Google Update can read
-  // it and display it to the user.
-  void WriteInstallerResult(installer::InstallStatus status,
-                            int string_resource_id,
-                            const std::wstring* const launch_cmd) const;
-
  protected:
   bool multi_install_;
   bool system_level_;

@@ -22,6 +22,8 @@ class WorkItemList;
 
 namespace installer {
 
+class InstallationState;
+class InstallerState;
 class Package;
 
 // This function installs or updates a new version of Chrome. It returns
@@ -41,7 +43,9 @@ class Package;
 //
 // Note: since caller unpacks Chrome to install_temp_path\source, the caller
 // is responsible for cleaning up install_temp_path.
-installer::InstallStatus InstallOrUpdateProduct(
+InstallStatus InstallOrUpdateProduct(
+    const InstallationState& original_state,
+    const InstallerState& installer_state,
     const FilePath& setup_path, const FilePath& archive_path,
     const FilePath& install_temp_path, const FilePath& prefs_path,
     const installer::MasterPreferences& prefs, const Version& new_version,
@@ -77,7 +81,8 @@ void AddChromeFrameWorkItems(bool install, const FilePath& setup_path,
 // Removes the ChromeFrameReadyMode flag from the registry, updates Chrome's
 // uninstallation commands to only uninstall Chrome, and adds an entry to the
 // Add/Remove Programs list for GCF.
-InstallStatus ChromeFrameReadyModeOptIn(const CommandLine& cmd_line);
+InstallStatus ChromeFrameReadyModeOptIn(const InstallerState& installer_state,
+                                        const CommandLine& cmd_line);
 
 }  // namespace installer
 

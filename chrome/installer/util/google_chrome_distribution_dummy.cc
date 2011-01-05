@@ -100,8 +100,9 @@ std::wstring GoogleChromeDistribution::GetVersionKey() {
   return std::wstring();
 }
 
-void GoogleChromeDistribution::UpdateDiffInstallStatus(bool system_install,
-      bool incremental_install, installer::InstallStatus install_status) {
+void GoogleChromeDistribution::UpdateInstallStatus(bool system_install,
+    bool incremental_install, bool multi_install,
+    installer::InstallStatus install_status) {
   NOTREACHED();
 }
 
@@ -134,3 +135,9 @@ bool GoogleChromeDistribution::BuildUninstallMetricsString(
   return false;
 }
 
+bool GoogleChromeDistribution::SetChannelFlags(
+    bool set,
+    installer::ChannelInfo* channel_info) {
+  NOTREACHED();
+  return false;
+}

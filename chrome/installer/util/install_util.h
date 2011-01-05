@@ -54,6 +54,16 @@ class InstallUtil {
   // This function checks if the current OS is supported for Chromium.
   static bool IsOSSupported();
 
+  // This function sets installer error information in registry so that Google
+  // Update can read it and display to the user.  |state_key| should be
+  // obtained via the state_key method of an InstallerState instance created
+  // before the machine state is modified by the installer.
+  static void WriteInstallerResult(bool system_install,
+                                   const std::wstring& state_key,
+                                   installer::InstallStatus status,
+                                   int string_resource_id,
+                                   const std::wstring* const launch_cmd);
+
   // Returns true if this installation path is per user, otherwise returns
   // false (per machine install, meaning: the exe_path contains path to
   // Program Files).

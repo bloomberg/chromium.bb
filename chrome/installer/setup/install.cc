@@ -27,6 +27,8 @@
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
+#include "chrome/installer/util/installation_state.h"
+#include "chrome/installer/util/installer_state.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/package.h"
@@ -43,6 +45,8 @@
 
 using base::win::RegKey;
 using installer::ChannelInfo;
+using installer::InstallerState;
+using installer::InstallationState;
 using installer::MasterPreferences;
 using installer::Products;
 using installer::Product;
@@ -217,6 +221,89 @@ void AddUninstallShortcutWorkItems(const FilePath& setup_path,
                                            buffer, false);
     }
   }
+}
+
+// Adds work items that make registry adjustments for Google Update.  When a
+// product is installed (including overinstall), Google Update will write the
+// channel ("ap") value into either Chrome or Chrome Frame's ClientState key.
+// In the multi-install case, this value is used as the basis upon which the
+// package's channel value is built (by adding the ordered list of installed
+// products and their options).
+void AddGoogleUpdateWorkItems(const InstallationState& original_state,
+                              const InstallerState& installer_state,
+                              const Package& package,
+                              WorkItemList* install_list) {
+  // Is a multi-install product being installed or over-installed?
+  if (installer_state.operation() != InstallerState::MULTI_INSTALL)
+    return;
+
+  const HKEY reg_root = package.system_level() ? HKEY_LOCAL_MACHINE :
+                                                 HKEY_CURRENT_USER;
+  const std::wstring key_path = installer_state.state_key();
+  ChannelInfo channel_info;
+
+  // Update the "ap" value for the product being installed/updated.
+  // It is completely acceptable for there to be no "ap" value or even no
+  // ClientState key.  Note that we check the registry rather than
+  // original_state since on a fresh install the "ap" value will be present
+  // sans "pv" value.
+  channel_info.Initialize(RegKey(reg_root, key_path.c_str(), KEY_QUERY_VALUE));
+
+  // This is a multi-install product.
+  bool modified = channel_info.SetMultiInstall(true);
+
+  // Add the appropriate modifiers for all products and their options.
+  Products::const_iterator scan = package.products().begin();
+  const Products::const_iterator end = package.products().end();
+  for (; scan != end; ++scan) {
+    modified |= scan->get()->distribution()->SetChannelFlags(true,
+                                                             &channel_info);
+  }
+
+  // Write the results if needed.
+  if (modified) {
+    install_list->AddSetRegValueWorkItem(reg_root, key_path,
+                                         google_update::kRegApField,
+                                         channel_info.value(), true);
+  }
+
+  // Synchronize the other products and the package with this one.
+  std::wstring other_key;
+  std::vector<std::wstring> keys;
+
+  keys.reserve(package.products().size());
+  other_key = package.properties()->GetStateKey();
+  if (other_key != key_path)
+    keys.push_back(other_key);
+  scan = package.products().begin();
+  for (; scan != end; ++scan) {
+    other_key = scan->get()->distribution()->GetStateKey();
+    if (other_key != key_path)
+      keys.push_back(other_key);
+  }
+
+  RegKey key;
+  ChannelInfo other_info;
+  std::vector<std::wstring>::const_iterator kscan = keys.begin();
+  std::vector<std::wstring>::const_iterator kend = keys.end();
+  for (; kscan != kend; ++kscan) {
+    // Handle the case where the ClientState key doesn't exist by creating it.
+    // This takes care of the multi-installer's package key, which is not
+    // created by Google Update for us.
+    if (!key.Open(reg_root, kscan->c_str(), KEY_QUERY_VALUE) ||
+        !other_info.Initialize(key)) {
+      other_info.set_value(std::wstring());
+    }
+    if (!other_info.Equals(channel_info)) {
+      if (!key.Valid())
+        install_list->AddCreateRegKeyWorkItem(reg_root, *kscan);
+      install_list->AddSetRegValueWorkItem(reg_root, *kscan,
+                                           google_update::kRegApField,
+                                           channel_info.value(), true);
+    }
+  }
+  // TODO(grt): check for other keys/values we should put in the package's
+  // ClientState and/or Clients key.
 }
 
 // This is called when an MSI installation is run. It may be that a user is
@@ -693,6 +780,8 @@ void AddProductSpecificWorkItems(bool install,
 // (typical new install), the function creates package during install
 // and removes the whole directory during rollback.
 installer::InstallStatus InstallNewVersion(
+    const InstallationState& original_state,
+    const InstallerState& installer_state,
     bool multi_install,
     const FilePath& setup_path,
     const FilePath& archive_path,
@@ -799,6 +888,10 @@ installer::InstallStatus InstallNewVersion(
   // each product.
   AddProductSpecificWorkItems(true, setup_path, new_version, package,
                               install_list.get());
+
+  AddGoogleUpdateWorkItems(original_state, installer_state, package,
+                           install_list.get());
+
   // Append the tasks that run after the installation.
   AppendPostInstallTasks(multi_install,
                          setup_path,
@@ -852,6 +945,8 @@ installer::InstallStatus InstallNewVersion(
 namespace installer {
 
 installer::InstallStatus InstallOrUpdateProduct(
+    const InstallationState& original_state,
+    const InstallerState& installer_state,
     const FilePath& setup_path, const FilePath& archive_path,
     const FilePath& install_temp_path, const FilePath& prefs_path,
     const installer::MasterPreferences& prefs, const Version& new_version,
@@ -860,9 +955,9 @@ installer::InstallStatus InstallOrUpdateProduct(
   src_path = src_path.Append(kInstallSourceDir).Append(kInstallSourceChromeDir);
 
   scoped_ptr<Version> existing_version;
-  installer::InstallStatus result = InstallNewVersion(prefs.is_multi_install(),
-      setup_path, archive_path, src_path, install_temp_path, new_version,
-      &existing_version, install);
+  installer::InstallStatus result = InstallNewVersion(original_state,
+      installer_state, prefs.is_multi_install(), setup_path, archive_path,
+      src_path, install_temp_path, new_version, &existing_version, install);
 
   if (!InstallUtil::GetInstallReturnCode(result)) {
     if (result == installer::FIRST_INSTALL_SUCCESS && !prefs_path.empty())
@@ -1007,9 +1102,12 @@ void AddChromeFrameWorkItems(bool install,
     // uninstallation command line does not include the --chrome-frame switch
     // so that uninstalling Chrome will no longer uninstall Chrome Frame.
 
-    list->AddDeleteRegValueWorkItem(root,
-        product.package().properties()->GetStateKey(),
-        installer::kChromeFrameReadyModeField, false);
+    if (RegKey(root, product.package().properties()->GetStateKey().c_str(),
+               KEY_QUERY_VALUE).Valid()) {
+      list->AddDeleteRegValueWorkItem(root,
+          product.package().properties()->GetStateKey(),
+          installer::kChromeFrameReadyModeField, false);
+    }
 
     const Product* chrome = installer::FindProduct(product.package().products(),
         BrowserDistribution::CHROME_BROWSER);
@@ -1045,7 +1143,8 @@ void AddChromeFrameWorkItems(bool install,
   }
 }
 
-InstallStatus ChromeFrameReadyModeOptIn(const CommandLine& cmd_line) {
+InstallStatus ChromeFrameReadyModeOptIn(const InstallerState& installer_state,
+                                        const CommandLine& cmd_line) {
   VLOG(1) << "Opting into Chrome Frame";
   InstallStatus status = INSTALL_REPAIRED;
 
@@ -1059,11 +1158,7 @@ InstallStatus ChromeFrameReadyModeOptIn(const CommandLine& cmd_line) {
   BrowserDistribution* chrome = BrowserDistribution::GetSpecificDistribution(
       BrowserDistribution::CHROME_BROWSER, prefs);
 
-#if defined(GOOGLE_CHROME_BUILD)
-  ChromePackageProperties package_properties;
-#else
-  ChromiumPackageProperties package_properties;
-#endif
+  ActivePackageProperties package_properties;
 
   // Remove ChromeFrameReadyMode, update Chrome's uninstallation commands to
   // only uninstall Chrome, and add an entry to the Add/Remove Programs
@@ -1074,21 +1169,28 @@ InstallStatus ChromeFrameReadyModeOptIn(const CommandLine& cmd_line) {
     LOG(ERROR) << "Conflicting installations";
     status = NON_MULTI_INSTALLATION_EXISTS;
   } else {
+    InstallationState original_state;
+    original_state.Initialize(prefs);
+
     scoped_refptr<Package> package(new Package(prefs.is_multi_install(),
         system_install, path, &package_properties));
     scoped_refptr<Product> cf_product(new Product(cf, package));
     DCHECK(cf_product->ShouldCreateUninstallEntry() || cf_product->IsMsi());
     scoped_refptr<Product> chrome_product(new Product(chrome, package));
-
-    const Version* version = cf_product->GetInstalledVersion();
+    const ProductState* product_state =
+        original_state.GetProductState(system_install, cf->GetType());
+    if (product_state == NULL) {
+      LOG(ERROR) << "No Chrome Frame installation found for opt-in.";
+      return CHROME_NOT_INSTALLED;
+    }
     scoped_ptr<WorkItemList> item_list(WorkItem::CreateWorkItemList());
 
     // This creates the uninstallation entry for GCF.
-    AddUninstallShortcutWorkItems(cmd_line.GetProgram(), *version,
-        item_list.get(), *cf_product.get());
+    AddUninstallShortcutWorkItems(cmd_line.GetProgram(),
+        product_state->version(), item_list.get(), *cf_product.get());
     // This updates the Chrome uninstallation entries.
-    AddUninstallShortcutWorkItems(cmd_line.GetProgram(), *version,
-        item_list.get(), *chrome_product.get());
+    AddUninstallShortcutWorkItems(cmd_line.GetProgram(),
+        product_state->version(), item_list.get(), *chrome_product.get());
 
     // Add a work item to delete the ChromeFrameReadyMode registry value.
     HKEY root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;

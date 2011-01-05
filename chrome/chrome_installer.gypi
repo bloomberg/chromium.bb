@@ -87,6 +87,7 @@
             'installer/util/google_chrome_distribution_unittest.cc',
             'installer/util/google_update_settings_unittest.cc',
             'installer/util/helper_unittest.cc',
+            'installer/util/install_util_unittest.cc',
             'installer/util/installer_util_unittests.rc',
             'installer/util/installer_util_unittests_resource.h',
             'installer/util/language_selector_unittest.cc',

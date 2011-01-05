@@ -33,7 +33,6 @@ namespace {
 // The BrowserDistribution objects are never freed.
 BrowserDistribution* g_browser_distribution = NULL;
 BrowserDistribution* g_chrome_frame_distribution = NULL;
-BrowserDistribution* g_ceee_distribution = NULL;
 
 // Returns true if currently running in npchrome_frame.dll
 bool IsChromeFrameModule() {
@@ -203,8 +202,9 @@ bool BrowserDistribution::GetChromeChannel(std::wstring* channel) {
   return false;
 }
 
-void BrowserDistribution::UpdateDiffInstallStatus(bool system_install,
-    bool incremental_install, installer::InstallStatus install_status) {
+void BrowserDistribution::UpdateInstallStatus(bool system_install,
+    bool incremental_install, bool multi_install,
+    installer::InstallStatus install_status) {
 }
 
 void BrowserDistribution::LaunchUserExperiment(
@@ -235,4 +235,10 @@ void BrowserDistribution::AppendUninstallCommandLineFlags(
 
 bool BrowserDistribution::ShouldCreateUninstallEntry() {
   return true;
+}
+
+bool BrowserDistribution::SetChannelFlags(
+    bool set,
+    installer::ChannelInfo* channel_info) {
+  return false;
 }

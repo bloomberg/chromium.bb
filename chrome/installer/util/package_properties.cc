@@ -54,11 +54,15 @@ const std::wstring& PackagePropertiesImpl::GetVersionKey() {
   return version_key_;
 }
 
-void PackagePropertiesImpl::UpdateDiffInstallStatus(bool system_level,
-                                                    bool incremental_install,
-                                                    InstallStatus status) {
-  GoogleUpdateSettings::UpdateDiffInstallStatus(system_level,
-      incremental_install, InstallUtil::GetInstallReturnCode(status), guid_);
+void PackagePropertiesImpl::UpdateInstallStatus(bool system_level,
+                                                bool incremental_install,
+                                                bool multi_install,
+                                                InstallStatus status) {
+  if (ReceivesUpdates()) {
+    GoogleUpdateSettings::UpdateInstallStatus(system_level,
+        incremental_install, multi_install,
+        InstallUtil::GetInstallReturnCode(status), guid_);
+  }
 }
 
 ChromiumPackageProperties::ChromiumPackageProperties()

@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/string_util.h"
+#include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/helper.h"
@@ -141,11 +142,14 @@ bool ChromeFrameDistribution::CanSetAsDefault() {
   return false;
 }
 
-void ChromeFrameDistribution::UpdateDiffInstallStatus(bool system_install,
-    bool incremental_install, installer::InstallStatus install_status) {
-  GoogleUpdateSettings::UpdateDiffInstallStatus(system_install,
-      incremental_install, InstallUtil::GetInstallReturnCode(install_status),
-      kChromeFrameGuid);
+void ChromeFrameDistribution::UpdateInstallStatus(bool system_install,
+    bool incremental_install, bool multi_install,
+    installer::InstallStatus install_status) {
+#if defined(GOOGLE_CHROME_BUILD)
+  GoogleUpdateSettings::UpdateInstallStatus(system_install,
+      incremental_install, multi_install,
+      InstallUtil::GetInstallReturnCode(install_status), kChromeFrameGuid);
+#endif
 }
 
 std::vector<FilePath> ChromeFrameDistribution::GetKeyFiles() {
@@ -184,4 +188,24 @@ bool ChromeFrameDistribution::ShouldCreateUninstallEntry() {
   // If Chrome Frame is being installed in ready mode, then we will not
   // add an entry to the add/remove dialog.
   return !ready_mode_;
+}
+
+bool ChromeFrameDistribution::SetChannelFlags(
+    bool set,
+    installer::ChannelInfo* channel_info) {
+#if defined(GOOGLE_CHROME_BUILD)
+  DCHECK(channel_info);
+  bool modified = channel_info->SetChromeFrame(set);
+
+  // Always remove the options if we're called to remove flags.
+  if (!set || ceee_)
+    modified |= channel_info->SetCeee(set);
+
+  if (!set || ready_mode_)
+    modified |= channel_info->SetReadyMode(set);
+
+  return modified;
+#else
+  return false;
+#endif
 }

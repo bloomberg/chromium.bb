@@ -90,10 +90,22 @@ class GoogleUpdateSettings {
   // on success, channel contains one of "", "unknown", "dev" or "beta".
   static bool GetChromeChannel(bool system_install, std::wstring* channel);
 
-  static void UpdateDiffInstallStatus(bool system_install,
-                                      bool incremental_install,
-                                      int install_return_code,
-                                      const std::wstring& product_guid);
+  // This method changes the Google Update "ap" value to move the installation
+  // on to or off of one of the recovery channels.
+  // - If incremental installer fails we append a magic string ("-full"), if
+  // it is not present already, so that Google Update server next time will send
+  // full installer to update Chrome on the local machine
+  // - If we are currently running full installer, we remove this magic
+  // string (if it is present) regardless of whether installer failed or not.
+  // There is no fall-back for full installer :)
+  // - If multi-install fails we append -multifail; otherwise, we remove it
+  // (i.e., success or single-install).
+  // |state_key| should be obtained via InstallerState::state_key().
+  static void UpdateInstallStatus(bool system_install,
+                                  bool incremental_install,
+                                  bool multi_install,
+                                  int install_return_code,
+                                  const std::wstring& product_guid);
 
   // This method updates the value for Google Update "ap" key for Chrome
   // based on whether we are doing incremental install (or not) and whether
@@ -109,6 +121,7 @@ class GoogleUpdateSettings {
   // value: current value of Google Update "ap" key.
   // Returns true if |value| is modified.
   static bool UpdateGoogleUpdateApKey(bool diff_install,
+                                      bool multi_install,
                                       int install_return_code,
                                       installer::ChannelInfo* value);
 

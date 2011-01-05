@@ -13,44 +13,44 @@ namespace installer {
 
 // Return status of installer
 enum InstallStatus {
-  FIRST_INSTALL_SUCCESS, // 0. Successfully installed Chrome for the first time
-  INSTALL_REPAIRED,      // 1. Same version reinstalled for repair
-  NEW_VERSION_UPDATED,   // 2. Chrome successfully updated to new version
+  FIRST_INSTALL_SUCCESS,  // 0. Successfully installed Chrome for the first time
+  INSTALL_REPAIRED,       // 1. Same version reinstalled for repair
+  NEW_VERSION_UPDATED,    // 2. Chrome successfully updated to new version
   EXISTING_VERSION_LAUNCHED,  // 3. No work done, just launched existing chrome
-  HIGHER_VERSION_EXISTS, // 4. Higher version of Chrome already exists
-  USER_LEVEL_INSTALL_EXISTS, // 5. User level install already exists
-  SYSTEM_LEVEL_INSTALL_EXISTS, // 6. Machine level install already exists
-  INSTALL_FAILED,        // 7. Install/update failed
-  SETUP_PATCH_FAILED,    // 8. Failed to patch setup.exe
-  OS_NOT_SUPPORTED,      // 9. Current OS not supported
-  OS_ERROR,              // 10. OS API call failed
-  TEMP_DIR_FAILED,       // 11. Unable to get Temp directory
-  UNCOMPRESSION_FAILED,  // 12. Failed to uncompress Chrome archive
-  INVALID_ARCHIVE,       // 13. Something wrong with the installer archive
-  INSUFFICIENT_RIGHTS,   // 14. User trying system level install is not Admin
-  CHROME_NOT_INSTALLED,  // 15. Chrome not installed (returned in case of
-                         // uninstall)
-  CHROME_RUNNING,        // 16. Chrome currently running (when trying to
-                         // uninstall)
-  UNINSTALL_CONFIRMED,   // 17. User has confirmed Chrome uninstall
+  HIGHER_VERSION_EXISTS,  // 4. Higher version of Chrome already exists
+  USER_LEVEL_INSTALL_EXISTS,  // 5. User level install already exists
+  SYSTEM_LEVEL_INSTALL_EXISTS,  // 6. Machine level install already exists
+  INSTALL_FAILED,         // 7. Install/update failed
+  SETUP_PATCH_FAILED,     // 8. Failed to patch setup.exe
+  OS_NOT_SUPPORTED,       // 9. Current OS not supported
+  OS_ERROR,               // 10. OS API call failed
+  TEMP_DIR_FAILED,        // 11. Unable to get Temp directory
+  UNCOMPRESSION_FAILED,   // 12. Failed to uncompress Chrome archive
+  INVALID_ARCHIVE,        // 13. Something wrong with the installer archive
+  INSUFFICIENT_RIGHTS,    // 14. User trying system level install is not Admin
+  CHROME_NOT_INSTALLED,   // 15. Chrome not installed (returned in case of
+                          // uninstall)
+  CHROME_RUNNING,         // 16. Chrome currently running (when trying to
+                          // uninstall)
+  UNINSTALL_CONFIRMED,    // 17. User has confirmed Chrome uninstall
   UNINSTALL_DELETE_PROFILE, // 18. User confirmed uninstall and profile deletion
-  UNINSTALL_SUCCESSFUL,  // 19. Chrome successfully uninstalled
-  UNINSTALL_FAILED,      // 20. Chrome uninstallation failed
-  UNINSTALL_CANCELLED,   // 21. User cancelled Chrome uninstallation
-  UNKNOWN_STATUS,        // 22. Unknown status (this should never happen)
-  RENAME_SUCCESSFUL,     // 23. Rename of new_chrome.exe to chrome.exe worked
-  RENAME_FAILED,         // 24. Rename of new_chrome.exe failed
-  EULA_REJECTED,         // 25. EULA dialog was not accepted by user.
-  EULA_ACCEPTED,         // 26. EULA dialog was accepted by user.
-  EULA_ACCEPTED_OPT_IN,  // 27. EULA accepted wtih the crash optin selected.
-  INSTALL_DIR_IN_USE,    // 28. Installation directory is in use by another
-                         // process
-  UNINSTALL_REQUIRES_REBOOT, // 29. Uninstallation required a reboot.
-  IN_USE_UPDATED,        // 30. Chrome successfully updated but old version
-                         // running
-  SAME_VERSION_REPAIR_FAILED, // 31. Chrome repair failed as Chrome was running
-  REENTRY_SYS_UPDATE,    // 32. Setup has been re-launched as the interactive
-                         // user
+  UNINSTALL_SUCCESSFUL,   // 19. Chrome successfully uninstalled
+  UNINSTALL_FAILED,       // 20. Chrome uninstallation failed
+  UNINSTALL_CANCELLED,    // 21. User cancelled Chrome uninstallation
+  UNKNOWN_STATUS,         // 22. Unknown status (this should never happen)
+  RENAME_SUCCESSFUL,      // 23. Rename of new_chrome.exe to chrome.exe worked
+  RENAME_FAILED,          // 24. Rename of new_chrome.exe failed
+  EULA_REJECTED,          // 25. EULA dialog was not accepted by user.
+  EULA_ACCEPTED,          // 26. EULA dialog was accepted by user.
+  EULA_ACCEPTED_OPT_IN,   // 27. EULA accepted wtih the crash optin selected.
+  INSTALL_DIR_IN_USE,     // 28. Installation directory is in use by another
+                          // process
+  UNINSTALL_REQUIRES_REBOOT,  // 29. Uninstallation required a reboot.
+  IN_USE_UPDATED,         // 30. Chrome successfully updated but old version
+                          // running
+  SAME_VERSION_REPAIR_FAILED,  // 31. Chrome repair failed as Chrome was running
+  REENTRY_SYS_UPDATE,     // 32. Setup has been re-launched as the interactive
+                          // user
   SXS_OPTION_NOT_SUPPORTED,  // 33. The chrome-sxs option provided does not work
                              // with other command line options.
   NON_MULTI_INSTALLATION_EXISTS,  // 34. We tried to do a multi-install but
@@ -129,7 +129,7 @@ extern const wchar_t kUninstallInstallationDate[];
 extern const char kUninstallMetricsName[];
 extern const wchar_t kUninstallStringField[];
 
-// Used by ProductInstall::WriteInstallerResult.
+// Used by InstallUtil::WriteInstallerResult.
 extern const wchar_t kInstallerResult[];
 extern const wchar_t kInstallerError[];
 extern const wchar_t kInstallerResultUIString[];

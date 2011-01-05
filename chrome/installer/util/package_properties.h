@@ -39,8 +39,8 @@ class PackageProperties {
   virtual const std::wstring& GetStateKey() = 0;
   virtual const std::wstring& GetStateMediumKey() = 0;
   virtual const std::wstring& GetVersionKey() = 0;
-  virtual void UpdateDiffInstallStatus(bool system_level,
-      bool incremental_install, installer::InstallStatus status) = 0;
+  virtual void UpdateInstallStatus(bool system_level, bool incremental_install,
+      bool multi_install, installer::InstallStatus status) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PackageProperties);
@@ -57,8 +57,8 @@ class PackagePropertiesImpl : public PackageProperties {
   virtual const std::wstring& GetStateKey();
   virtual const std::wstring& GetStateMediumKey();
   virtual const std::wstring& GetVersionKey();
-  virtual void UpdateDiffInstallStatus(bool system_level,
-      bool incremental_install, installer::InstallStatus status);
+  virtual void UpdateInstallStatus(bool system_level, bool incremental_install,
+      bool multi_install, installer::InstallStatus status);
 
  protected:
   std::wstring guid_;
@@ -95,6 +95,12 @@ class ChromePackageProperties : public PackagePropertiesImpl {
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromePackageProperties);
 };  // class ChromePackageProperties
+
+#if defined(GOOGLE_CHROME_BUILD)
+typedef ChromePackageProperties ActivePackageProperties;
+#else
+typedef ChromiumPackageProperties ActivePackageProperties;
+#endif
 
 }  // namespace installer
 

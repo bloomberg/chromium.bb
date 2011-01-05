@@ -29,24 +29,7 @@ TEST_F(PackagePropertiesTest, Basic) {
     EXPECT_FALSE(state_key.empty());
     std::wstring version_key(props[i]->GetVersionKey());
     EXPECT_FALSE(version_key.empty());
-    if (props[i]->ReceivesUpdates()) {
-      HKEY roots[] = { HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE };
-      for (size_t j = 0; j < arraysize(roots); ++j) {
-        {
-          TempRegKeyOverride override(roots[j], L"props");
-          RegKey key;
-          EXPECT_TRUE(key.Create(roots[j], state_key.c_str(), KEY_ALL_ACCESS));
-          EXPECT_TRUE(key.WriteValue(google_update::kRegApField, L""));
-          props[i]->UpdateDiffInstallStatus(roots[j] == HKEY_LOCAL_MACHINE,
-                                            true,
-                                            installer::INSTALL_FAILED);
-          std::wstring value;
-          key.ReadValue(google_update::kRegApField, &value);
-          EXPECT_FALSE(value.empty());
-        }
-        TempRegKeyOverride::DeleteAllTempKeys();
-      }
-    } else {
+    if (!props[i]->ReceivesUpdates()) {
       TempRegKeyOverride override(HKEY_CURRENT_USER, L"props");
       RegKey key;
       EXPECT_TRUE(key.Create(HKEY_CURRENT_USER, state_key.c_str(),

@@ -15,8 +15,12 @@ namespace {
 const wchar_t kChannelBeta[] = L"beta";
 const wchar_t kChannelDev[] = L"dev";
 const wchar_t kModCeee[] = L"-CEEE";
-const wchar_t kModFullInstall[] = L"-full";
+const wchar_t kModChrome[] = L"-chrome";
+const wchar_t kModChromeFrame[] = L"-chromeframe";
 const wchar_t kModMultiInstall[] = L"-multi";
+const wchar_t kModReadyMode[] = L"-readymode";
+const wchar_t kSfxFull[] = L"-full";
+const wchar_t kSfxMultiFail[] = L"-multifail";
 
 const wchar_t* const kChannels[] = {
   kChannelBeta,
@@ -24,43 +28,92 @@ const wchar_t* const kChannels[] = {
 };
 
 const wchar_t* const kModifiers[] = {
+  kModMultiInstall,
+  kModChrome,
+  kModChromeFrame,
   kModCeee,
-  kModFullInstall,
-  kModMultiInstall
+  kModReadyMode,
+  kSfxMultiFail,
+  kSfxFull
 };
 
-}  // namespace
+enum ModifierIndex {
+  MOD_MULTI_INSTALL,
+  MOD_CHROME,
+  MOD_CHROME_FRAME,
+  MOD_CEEE,
+  MOD_READY_MODE,
+  SFX_MULTI_FAIL,
+  SFX_FULL,
+  NUM_MODIFIERS
+};
 
-namespace installer {
+COMPILE_ASSERT(NUM_MODIFIERS == arraysize(kModifiers),
+    kModifiers_disagrees_with_ModifierIndex_comma_they_must_match_bang);
 
-// static
-bool ChannelInfo::HasModifier(const wchar_t* modifier,
-                              const std::wstring& ap_value) {
-  DCHECK(modifier);
-  return ap_value.find(modifier) != std::wstring::npos;
+// Returns true if the modifier is found, in which case |position| holds the
+// location at which the modifier was found.
+bool FindModifier(ModifierIndex index,
+                  const std::wstring& ap_value,
+                  std::wstring::size_type* position) {
+  DCHECK(position != NULL);
+  std::wstring::size_type mod_length =
+      std::wstring::traits_type::length(kModifiers[index]);
+  for (std::wstring::size_type pos = 0; ; ) {
+    *position = ap_value.find(kModifiers[index], pos, mod_length);
+    if (*position == std::wstring::npos)
+      break;
+    // The modifier must be either at the end of the string or followed by -.
+    pos = *position + mod_length;
+    if (pos == ap_value.size() || ap_value[pos] == L'-')
+      return true;
+  }
+  return false;
+}
+
+bool HasModifier(ModifierIndex index, const std::wstring& ap_value) {
+  DCHECK(index >= 0 && index < NUM_MODIFIERS);
+  std::wstring::size_type position;
+  return FindModifier(index, ap_value, &position);
+}
+
+std::wstring::size_type FindInsertionPoint(ModifierIndex index,
+                                           const std::wstring& ap_value) {
+  // Return the location of the next modifier.
+  std::wstring::size_type result;
+
+  for (int scan = index + 1; scan < NUM_MODIFIERS; ++scan) {
+    if (FindModifier(static_cast<ModifierIndex>(scan), ap_value, &result))
+      return result;
+  }
+
+  return ap_value.size();
 }
 
 // Returns true if |ap_value| is modified.
-// static
-bool ChannelInfo::SetModifier(const wchar_t* modifier,
-                              bool set,
-                              std::wstring* ap_value) {
-  DCHECK(modifier);
+bool SetModifier(ModifierIndex index, bool set, std::wstring* ap_value) {
+  DCHECK(index >= 0 && index < NUM_MODIFIERS);
   DCHECK(ap_value);
-  std::wstring::size_type position = ap_value->find(modifier);
+  std::wstring::size_type position;
+  bool have_modifier = FindModifier(index, *ap_value, &position);
   if (set) {
-    if (position == std::wstring::npos) {
-      ap_value->append(modifier);
+    if (!have_modifier) {
+      ap_value->insert(FindInsertionPoint(index, *ap_value), kModifiers[index]);
       return true;
     }
   } else {
-    if (position != std::wstring::npos) {
-      ap_value->erase(position, std::wstring::traits_type::length(modifier));
+    if (have_modifier) {
+      ap_value->erase(position,
+                      std::wstring::traits_type::length(kModifiers[index]));
       return true;
     }
   }
   return false;
 }
+
+}  // namespace
+
+namespace installer {
 
 bool ChannelInfo::Initialize(const RegKey& key) {
   return key.ReadValue(google_update::kRegApField, &value_);
@@ -87,10 +140,8 @@ bool ChannelInfo::GetChannelName(std::wstring* channel_name) const {
     // There may be modifiers present.  Strip them off and see if we're left
     // with the empty string (stable channel).
     std::wstring tmp_value = value_;
-    for (const wchar_t* const* scan = &kModifiers[0],
-             *const *end = &kModifiers[arraysize(kModifiers)]; scan != end;
-         ++scan) {
-      SetModifier(*scan, false, &tmp_value);
+    for (int i = 0; i != NUM_MODIFIERS; ++i) {
+      SetModifier(static_cast<ModifierIndex>(i), false, &tmp_value);
     }
     if (tmp_value.empty()) {
       channel_name->erase();
@@ -102,27 +153,59 @@ bool ChannelInfo::GetChannelName(std::wstring* channel_name) const {
 }
 
 bool ChannelInfo::IsCeee() const {
-  return HasModifier(kModCeee, value_);
+  return HasModifier(MOD_CEEE, value_);
 }
 
 bool ChannelInfo::SetCeee(bool value) {
-  return SetModifier(kModCeee, value, &value_);
+  return SetModifier(MOD_CEEE, value, &value_);
 }
 
-bool ChannelInfo::IsFullInstall() const {
-  return HasModifier(kModFullInstall, value_);
+bool ChannelInfo::IsChrome() const {
+  return HasModifier(MOD_CHROME, value_);
 }
 
-bool ChannelInfo::SetFullInstall(bool value) {
-  return SetModifier(kModFullInstall, value, &value_);
+bool ChannelInfo::SetChrome(bool value) {
+  return SetModifier(MOD_CHROME, value, &value_);
+}
+
+bool ChannelInfo::IsChromeFrame() const {
+  return HasModifier(MOD_CHROME_FRAME, value_);
+}
+
+bool ChannelInfo::SetChromeFrame(bool value) {
+  return SetModifier(MOD_CHROME_FRAME, value, &value_);
 }
 
 bool ChannelInfo::IsMultiInstall() const {
-  return HasModifier(kModMultiInstall, value_);
+  return HasModifier(MOD_MULTI_INSTALL, value_);
 }
 
 bool ChannelInfo::SetMultiInstall(bool value) {
-  return SetModifier(kModMultiInstall, value, &value_);
+  return SetModifier(MOD_MULTI_INSTALL, value, &value_);
+}
+
+bool ChannelInfo::IsReadyMode() const {
+  return HasModifier(MOD_READY_MODE, value_);
+}
+
+bool ChannelInfo::SetReadyMode(bool value) {
+  return SetModifier(MOD_READY_MODE, value, &value_);
+}
+
+bool ChannelInfo::HasFullSuffix() const {
+  return HasModifier(SFX_FULL, value_);
+}
+
+bool ChannelInfo::SetFullSuffix(bool value) {
+  return SetModifier(SFX_FULL, value, &value_);
+}
+
+bool ChannelInfo::HasMultiFailSuffix() const {
+  return HasModifier(SFX_MULTI_FAIL, value_);
+}
+
+bool ChannelInfo::SetMultiFailSuffix(bool value) {
+  return SetModifier(SFX_MULTI_FAIL, value, &value_);
 }
 
 }  // namespace installer

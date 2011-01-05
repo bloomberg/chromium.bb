@@ -237,8 +237,8 @@ bool GoogleUpdateSettings::GetChromeChannel(bool system_install,
   return true;
 }
 
-void GoogleUpdateSettings::UpdateDiffInstallStatus(bool system_install,
-    bool incremental_install, int install_return_code,
+void GoogleUpdateSettings::UpdateInstallStatus(bool system_install,
+    bool incremental_install, bool multi_install, int install_return_code,
     const std::wstring& product_guid) {
   HKEY reg_root = (system_install) ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
 
@@ -247,54 +247,70 @@ void GoogleUpdateSettings::UpdateDiffInstallStatus(bool system_install,
   std::wstring reg_key(google_update::kRegPathClientState);
   reg_key.append(L"\\");
   reg_key.append(product_guid);
-  if (!key.Open(reg_root, reg_key.c_str(), KEY_ALL_ACCESS) ||
+  if (!key.Open(reg_root, reg_key.c_str(), KEY_QUERY_VALUE | KEY_SET_VALUE) ||
       !channel_info.Initialize(key)) {
     VLOG(1) << "Application key not found.";
-    if (!incremental_install || !install_return_code) {
+    if (!incremental_install && !multi_install || !install_return_code) {
       VLOG(1) << "Returning without changing application key.";
-      key.Close();
       return;
     } else if (!key.Valid()) {
       reg_key.assign(google_update::kRegPathClientState);
-      if (!key.Open(reg_root, reg_key.c_str(), KEY_ALL_ACCESS) ||
-          !key.CreateKey(product_guid.c_str(), KEY_ALL_ACCESS)) {
+      if (!key.Open(reg_root, reg_key.c_str(), KEY_CREATE_SUB_KEY) ||
+          !key.CreateKey(product_guid.c_str(), KEY_SET_VALUE)) {
         LOG(ERROR) << "Failed to create application key.";
-        key.Close();
         return;
       }
     }
   }
 
-  if (UpdateGoogleUpdateApKey(incremental_install, install_return_code,
-                              &channel_info) &&
+  if (UpdateGoogleUpdateApKey(incremental_install, multi_install,
+                              install_return_code, &channel_info) &&
       !channel_info.Write(&key)) {
     LOG(ERROR) << "Failed to write value " << channel_info.value()
                << " to the registry field " << google_update::kRegApField;
   }
-  key.Close();
 }
 
 bool GoogleUpdateSettings::UpdateGoogleUpdateApKey(
-    bool diff_install, int install_return_code,
+    bool diff_install, bool multi_install, int install_return_code,
     installer::ChannelInfo* value) {
+  bool modified = false;
+
   if (!diff_install || !install_return_code) {
-    if (value->SetFullInstall(false)) {
-      VLOG(1) << "Removed incremental installer failure key; new value: "
+    if (value->SetFullSuffix(false)) {
+      VLOG(1) << "Removed incremental installer failure key; "
+                 "switching to channel: "
               << value->value();
-      return true;
+      modified = true;
     }
-  } else if (diff_install && install_return_code) {
-    if (value->SetFullInstall(true)) {
-      VLOG(1) << "Incremental installer failed, setting failure key; "
-                 "new value: "
+  } else {
+    if (value->SetFullSuffix(true)) {
+      VLOG(1) << "Incremental installer failed; switching to channel: "
               << value->value();
-      return true;
+      modified = true;
     } else {
-      VLOG(1) << "Incremental installer failure key already set.";
+      VLOG(1) << "Incremental installer failure; already on channel: "
+              << value->value();
     }
   }
 
-  return false;
+  if (!multi_install || !install_return_code) {
+    if (value->SetMultiFailSuffix(false)) {
+      VLOG(1) << "Removed multi-install failure key; switching to channel: "
+              << value->value();
+      modified = true;
+    }
+  } else {
+    if (value->SetMultiFailSuffix(true)) {
+      VLOG(1) << "Multi-install failed; switching to channel: "
+              << value->value();
+      modified = true;
+    } else {
+      VLOG(1) << "Multi-install failed; already on channel: " << value->value();
+    }
+  }
+
+  return modified;
 }
 
 int GoogleUpdateSettings::DuplicateGoogleUpdateSystemClientKey() {

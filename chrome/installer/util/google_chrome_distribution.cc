@@ -26,6 +26,7 @@
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/result_codes.h"
+#include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/product.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/l10n_string_util.h"
@@ -500,11 +501,12 @@ std::wstring GoogleChromeDistribution::GetVersionKey() {
 // - If we are currently running full installer, we remove this magic
 // string (if it is present) regardless of whether installer failed or not.
 // There is no fall-back for full installer :)
-void GoogleChromeDistribution::UpdateDiffInstallStatus(bool system_install,
-    bool incremental_install, installer::InstallStatus install_status) {
-  GoogleUpdateSettings::UpdateDiffInstallStatus(system_install,
-      incremental_install, InstallUtil::GetInstallReturnCode(install_status),
-      product_guid().c_str());
+void GoogleChromeDistribution::UpdateInstallStatus(bool system_install,
+    bool incremental_install, bool multi_install,
+    installer::InstallStatus install_status) {
+  GoogleUpdateSettings::UpdateInstallStatus(system_install,
+      incremental_install, multi_install,
+      InstallUtil::GetInstallReturnCode(install_status), product_guid());
 }
 
 // The functions below are not used by the 64-bit Windows binary -
@@ -686,3 +688,10 @@ void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
   base::LaunchApp(cmd, false, false, NULL);
 }
 #endif
+
+bool GoogleChromeDistribution::SetChannelFlags(
+    bool set,
+    installer::ChannelInfo* channel_info) {
+  DCHECK(channel_info);
+  return channel_info->SetChrome(set);
+}

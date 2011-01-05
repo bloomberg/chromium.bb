@@ -16,8 +16,8 @@ class RegKey;
 
 namespace installer {
 
-// A helper class for parsing and modifying the Omaha additional parameter
-// ("ap") client state value for a product.
+// A helper class for parsing and modifying the Google Update additional
+// parameter ("ap") client state value for a product.
 class ChannelInfo {
  public:
 
@@ -31,6 +31,9 @@ class ChannelInfo {
 
   const std::wstring& value() const { return value_; }
   void set_value(const std::wstring& value) { value_ = value; }
+  bool Equals(const ChannelInfo& other) const {
+    return value_ == other.value_;
+  }
 
   // Determines the update channel for the value.  Possible |channel_name|
   // results are the empty string (stable channel), "beta", and "dev".  Returns
@@ -45,12 +48,19 @@ class ChannelInfo {
   // modified.
   bool SetCeee(bool value);
 
-  // Returns true if the -full modifier is present in the value.
-  bool IsFullInstall() const;
+  // Returns true if the -chrome modifier is present in the value.
+  bool IsChrome() const;
 
-  // Adds or removes the -full modifier, returning true if the value is
+  // Adds or removes the -chrome modifier, returning true if the value is
   // modified.
-  bool SetFullInstall(bool value);
+  bool SetChrome(bool value);
+
+  // Returns true if the -chromeframe modifier is present in the value.
+  bool IsChromeFrame() const;
+
+  // Adds or removes the -chromeframe modifier, returning true if the value is
+  // modified.
+  bool SetChromeFrame(bool value);
 
   // Returns true if the -multi modifier is present in the value.
   bool IsMultiInstall() const;
@@ -59,12 +69,28 @@ class ChannelInfo {
   // modified.
   bool SetMultiInstall(bool value);
 
- private:
-  static bool HasModifier(const wchar_t* modifier,
-                          const std::wstring& ap_value);
-  static bool SetModifier(const wchar_t* modifier, bool set,
-                          std::wstring* ap_value);
+  // Returns true if the -readymode modifier is present in the value.
+  bool IsReadyMode() const;
 
+  // Adds or removes the -readymode modifier, returning true if the value is
+  // modified.
+  bool SetReadyMode(bool value);
+
+  // Returns true if the -full suffix is present in the value.
+  bool HasFullSuffix() const;
+
+  // Adds or removes the -full suffix, returning true if the value is
+  // modified.
+  bool SetFullSuffix(bool value);
+
+  // Returns true if the -multifail suffix is present in the value.
+  bool HasMultiFailSuffix() const;
+
+  // Adds or removes the -multifail suffix, returning true if the value is
+  // modified.
+  bool SetMultiFailSuffix(bool value);
+
+ private:
   std::wstring value_;
 };  // class ChannelInfo
 
