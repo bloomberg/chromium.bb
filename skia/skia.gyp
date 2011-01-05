@@ -623,12 +623,6 @@
             '../third_party/skia/src/ports/SkFontHost_FreeType_Subpixel.cpp',
             '../third_party/skia/src/core/SkFontHost.cpp',
           ],
-          # Export harfbuzz include paths to all downstream users of
-          # this library.  TODO(evan): this is a temporary change
-          # until I get the dependencies fixed in WebKit.
-          'export_dependent_settings': [
-            '../third_party/harfbuzz/harfbuzz.gyp:harfbuzz',
-          ],
           'defines': [
             'SK_SUPPORT_LCDTEXT',
           ],
