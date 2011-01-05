@@ -126,7 +126,7 @@ void AutoFillHelper::SuggestionsReceived(int query_id,
   }
 
   // Send to WebKit for display.
-  if (!v.empty()) {
+  if (!v.empty() && autofill_query_node_.hasNonEmptyBoundingBox()) {
     web_view->applyAutoFillSuggestions(
         autofill_query_node_, v, l, i, ids, separator_index);
   }
