@@ -12,6 +12,9 @@ window.onresizecalls = 0;
 
 var searchBox = window.chrome.searchBox || {};
 
+window.beforeLoadSearchBox = {};
+for (var prop in searchBox) window.beforeLoadSearchBox[prop] = searchBox[prop];
+
 window.chrome.searchBox.onsubmit = function() {
   searchBox.setSuggestions(["abcdef"]);
   window.onsubmitcalls++;

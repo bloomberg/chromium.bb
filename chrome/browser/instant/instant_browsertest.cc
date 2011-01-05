@@ -100,7 +100,8 @@ class InstantTest : public InProcessBrowserTest {
 
     // When the page loads, the initial searchBox values are set and only a
     // resize will have been sent.
-    ASSERT_EQ("true 0 0 0 1 a false", GetSearchStateAsString(preview_));
+    ASSERT_EQ("true 0 0 0 1 a false a false",
+        GetSearchStateAsString(preview_));
   }
 
   void SetLocationBarText(const std::wstring& text) {
@@ -147,8 +148,13 @@ class InstantTest : public InProcessBrowserTest {
 
   // Returns the state of the search box as a string. This consists of the
   // following:
-  // window.chrome.sv window.onsubmitcalls window.oncancelcalls
-  // window.onchangecalls window.onresizecalls
+  // window.chrome.sv
+  // window.onsubmitcalls
+  // window.oncancelcalls
+  // window.onchangecalls
+  // window.onresizecalls
+  // window.beforeLoadSearchBox.value
+  // window.beforeLoadSearchBox.verbatim
   // window.chrome.searchBox.value
   // window.chrome.searchBox.verbatim
   // If determining any of the values fails, the value is 'fail'.
@@ -158,6 +164,8 @@ class InstantTest : public InProcessBrowserTest {
     int oncancelcalls = 0;
     int onchangecalls = 0;
     int onresizecalls = 0;
+    std::string before_load_value;
+    bool before_load_verbatim = false;
     std::string value;
     bool verbatim = false;
 
@@ -170,6 +178,12 @@ class InstantTest : public InProcessBrowserTest {
                               &onchangecalls) ||
         !GetIntFromJavascript(tab_contents, "window.onresizecalls",
                               &onresizecalls) ||
+        !GetStringFromJavascript(
+            tab_contents, "window.beforeLoadSearchBox.value",
+            &before_load_value) ||
+        !GetBoolFromJavascript(
+            tab_contents, "window.beforeLoadSearchBox.verbatim",
+            &before_load_verbatim) ||
         !GetStringFromJavascript(tab_contents, "window.chrome.searchBox.value",
                                  &value) ||
         !GetBoolFromJavascript(tab_contents, "window.chrome.searchBox.verbatim",
@@ -177,9 +191,15 @@ class InstantTest : public InProcessBrowserTest {
       return "fail";
     }
 
-    return StringPrintf("%s %d %d %d %d %s %s",
-                        sv ? "true" : "false", onsubmitcalls, oncancelcalls,
-                        onchangecalls, onresizecalls, value.c_str(),
+    return StringPrintf("%s %d %d %d %d %s %s %s %s",
+                        sv ? "true" : "false",
+                        onsubmitcalls,
+                        oncancelcalls,
+                        onchangecalls,
+                        onresizecalls,
+                        before_load_value.c_str(),
+                        before_load_verbatim ? "true" : "false",
+                        value.c_str(),
                         verbatim ? "true" : "false");
   }
 
@@ -242,7 +262,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnChangeEvent) {
   ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
 
   // Check that the value is reflected and onchange is called.
-  EXPECT_EQ("true 0 0 1 1 abc false", GetSearchStateAsString(preview_));
+  EXPECT_EQ("true 0 0 1 1 a false abc false",
+      GetSearchStateAsString(preview_));
 }
 
 // Verify instant preview is shown correctly for a non-search query.
@@ -399,25 +420,26 @@ IN_PROC_BROWSER_TEST_F(InstantTest, NonSearchToSearchDoesntSupportInstant) {
 }
 
 // Verifies the page was told a non-zero height.
-// TODO: when we nuke the old api and fix 66104, this test should load
-// search.html.
 IN_PROC_BROWSER_TEST_F(InstantTest, ValidHeight) {
   ASSERT_TRUE(test_server()->Start());
-  ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("old_api.html"));
-  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"a"));
-  // The preview should be active.
-  ASSERT_TRUE(browser()->instant()->is_displayable());
-  // And the height should be valid.
-  TabContents* tab = browser()->instant()->GetPreviewContents()->tab_contents();
-  ASSERT_NO_FATAL_FAILURE(
-      CheckBoolValueFromJavascript(true, "window.validHeight", tab));
+  ASSERT_NO_FATAL_FAILURE(SetupInstantProvider("search.html"));
+  ASSERT_NO_FATAL_FAILURE(SetupLocationBar());
+  ASSERT_NO_FATAL_FAILURE(SetupPreview());
 
-  // Check that searchbox height was also set.
-  std::wstring script =
-      L"window.domAutomationController.send(window.chrome.searchBox.height)";
+  ASSERT_NO_FATAL_FAILURE(SetLocationBarText(L"abc"));
+
   int height;
-  ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractInt(
-                  tab->render_view_host(), std::wstring(), script, &height));
+
+  // searchBox height is not yet set during initial load.
+  ASSERT_TRUE(GetIntFromJavascript(preview_,
+      "window.beforeLoadSearchBox.height",
+      &height));
+  EXPECT_EQ(0, height);
+
+  // searchBox height is available by the time the page loads.
+  ASSERT_TRUE(GetIntFromJavascript(preview_,
+      "window.chrome.searchBox.height",
+      &height));
   EXPECT_GT(height, 0);
 }
 
@@ -467,7 +489,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnSubmitEvent) {
   ASSERT_TRUE(contents);
 
   // Check that the value is reflected and onsubmit is called.
-  EXPECT_EQ("true 1 0 1 1 abc true", GetSearchStateAsString(preview_));
+  EXPECT_EQ("true 1 0 1 1 a false abc true",
+      GetSearchStateAsString(preview_));
 }
 
 // Verify that the oncancel event is dispatched upon losing focus.
@@ -490,7 +513,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, OnCancelEvent) {
   ASSERT_TRUE(contents);
 
   // Check that the value is reflected and oncancel is called.
-  EXPECT_EQ("true 0 1 1 1 abc false", GetSearchStateAsString(preview_));
+  EXPECT_EQ("true 0 1 1 1 a false abc false",
+      GetSearchStateAsString(preview_));
 }
 
 #if !defined(OS_MACOSX)
@@ -514,7 +538,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_TabKey) {
 
   ASSERT_EQ(L"abcdef", location_bar_->location_entry()->GetText());
 
-  EXPECT_EQ("true 0 0 2 2 abcdef false", GetSearchStateAsString(preview_));
+  EXPECT_EQ("true 0 0 2 2 a false abcdef false",
+      GetSearchStateAsString(preview_));
 
   // Pressing tab again to accept the current instant preview.
   ASSERT_NO_FATAL_FAILURE(SendKey(app::VKEY_TAB));
@@ -526,5 +551,6 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_TabKey) {
   ASSERT_TRUE(contents);
 
   // Check that the value is reflected and onsubmit is called.
-  EXPECT_EQ("true 1 0 2 2 abcdef true", GetSearchStateAsString(preview_));
+  EXPECT_EQ("true 1 0 2 2 a false abcdef true",
+      GetSearchStateAsString(preview_));
 }

@@ -565,6 +565,8 @@ void InstantLoader::Update(TabContentsWrapper* tab_contents,
         instant_url = GURL(cl->GetSwitchValueASCII(switches::kInstantURL));
       preview_contents_->controller().LoadURL(
           instant_url, GURL(), transition_type);
+      preview_contents_->render_view_host()->SearchBoxChange(
+          user_text_, verbatim, 0, 0);
       frame_load_observer_.reset(
           new FrameLoadObserver(this,
                                 preview_contents()->tab_contents(),
