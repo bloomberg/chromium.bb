@@ -1,9 +1,21 @@
 <div id="pageData-name" class="pageData">Permission Warnings</div>
 <div id="pageData-showTOC" class="pageData">true</div>
 
+<!--
+NOTE: When this doc is updated, the online help should also be updated:
+http://www.google.com/support/chrome/bin/answer.py?hl=en&answer=186213
+
+We should periodically look at 
+http://src.chromium.org/viewvc/chrome/trunk/src/chrome/app/generated_resources.grd?view=markup
+to make sure that we're covering all messages. Search for
+IDS_EXTENSION_PROMPT_WARNING
+(e.g. IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY).
+-->
+
 <p>
 To use most chrome.* APIs and extension capabilities,
-your extension must declare its intent in the manifest,
+your extension must declare its intent in the
+<a href="manifest.html">manifest</a>,
 often in the "permissions" field.
 Some of these declarations
 result in a warning when
@@ -28,8 +40,8 @@ that a user might see when installing an extension:
 </p>
 
 <img src="images/perms-hw1.png"
-  width="387" height="162"
-  alt="Permission warning: 'This extension can access: Your data on api.flickr.com'"
+  width="410" height="193"
+  alt="Permission warning: 'It can access: Your data on api.flickr.com'"
   />
 
 <p>
@@ -87,8 +99,8 @@ brings up the following warning:
 </p>
 
 <img src="images/perms-hw2.png"
-  width="387" height="190"
-  alt="Permission warning: 'This extension can access: Your data on api.flickr.com and flickr.com; Your browsing history'"
+  width="412" height="220"
+  alt="Permission warning: 'It can access: Your data on api.flickr.com and flickr.com; Your browsing history'"
   />
 
 
@@ -100,8 +112,7 @@ results in the seemingly unrelated warning
 that the extension can access your browsing history.
 The reason for the warning is that
 although the <code>chrome.tabs</code> API
-might be used only to open new tabs
-(<a href="tabs.html#method-create"><code>chrome.tabs.create()</code></a>),
+might be used only to open new tabs,
 it can also be used to see the URL that's associated
 with every newly opened tab
 (using their <a href="tabs.html#type-Tab">Tab</a> objects).
@@ -111,13 +122,14 @@ with every newly opened tab
 <b>Note:</b>
 As of Google Chrome 7,
 you no longer need to specify the "tabs" permission
-just to call <code>chrome.tabs.create()</code>.
+just to call <code>chrome.tabs.create()</code>
+or <code>chrome.tabs.update()</code>.
 </p>
 
 <p>
 The following table lists the warning messages
 that users can see,
-along with the <a href="manifest.html">manifest</a> entries
+along with the manifest entries
 that trigger them.
 </p>
 
@@ -129,7 +141,7 @@ that trigger them.
 
 <tr>
   <td style="font-weight:bold">
-    <!-- IDS_EXTENSION_PROMPT2_WARNING_FULL_ACCESS -->
+    <!-- IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS -->
     All data on your computer and the websites you visit
   </td>
   <td>
@@ -143,7 +155,7 @@ that trigger them.
 
 <tr>
   <td style="font-weight:bold">
-    <!-- IDS_EXTENSION_PROMPT2_WARNING_BOOKMARKS -->
+    <!-- IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS -->
     Your bookmarks
   </td>
   <td>
@@ -157,7 +169,7 @@ that trigger them.
 
 <tr>
   <td style="font-weight:bold">
-    <!-- IDS_EXTENSION_PROMPT2_WARNING_BROWSING_HISTORY -->
+    <!-- IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY -->
     Your browsing history
   </td>
   <td>
@@ -184,7 +196,7 @@ that trigger them.
 
 <tr>
   <td style="font-weight:bold">
-    <!-- IDS_EXTENSION_PROMPT2_WARNING_ALL_HOSTS -->
+    <!-- IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS -->
     Your data on all websites
   </td>
   <td>
@@ -217,8 +229,8 @@ that trigger them.
 </tr>
 <tr>
   <td style="font-weight:bold">
-    <!-- IDS_EXTENSION_PROMPT2_WARNING_?_HOST -->
-    <!-- IDS_EXTENSION_PROMPT2_WARNING_4_OR_MORE_HOSTS -->
+    <!-- IDS_EXTENSION_PROMPT_WARNING_?_HOST -->
+    <!-- IDS_EXTENSION_PROMPT_WARNING_4_OR_MORE_HOSTS -->
     Your data on <em>{list of websites}</em>
   </td>
   <td>
@@ -251,7 +263,29 @@ that trigger them.
 
 <tr>
   <td style="font-weight:bold">
-    <!-- IDS_EXTENSION_PROMPT2_WARNING_GEOLOCATION -->
+    <!-- IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT -->
+    Your list of installed apps, extensions, and themes
+    <br />
+    <span style="font-weight:normal; font-style:italic">or</span>
+    <br />
+    Manage themes, extensions, and apps
+
+    <!-- PENDING: remove "Manage...apps" alternative message
+    once the fix is out on stable channel -->
+    <!-- See http://crbug.com/67859 -->
+  </td>
+  <td>
+    "management" permission
+  </td>
+  <td>
+    The "management" permission is required by the
+    <a href="management.html"><code>chrome.management</code></a> module.
+  </td>
+</tr>
+
+<tr>
+  <td style="font-weight:bold">
+    <!-- IDS_EXTENSION_PROMPT_WARNING_GEOLOCATION -->
     Your physical location
   </td>
   <td>
