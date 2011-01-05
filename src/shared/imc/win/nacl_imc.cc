@@ -12,8 +12,6 @@
                   // <windows.h>.
 #endif
 
-#include <atlbase.h>
-#include <atlconv.h>
 #include <algorithm>
 #include <ctype.h>
 #include <limits.h>
@@ -61,9 +59,7 @@ struct ControlHeader {
 // TODO(gregoryd): a similar function exists in Chrome's base, but we cannot
 // use it here since it cannot be built with scons.
 std::wstring ASCIIToWide(const char* ascii) {
-  USES_CONVERSION;
-  std::wstring wide_string(A2CW(ascii));
-  return wide_string;
+  return std::wstring(ascii, &ascii[strlen(ascii)]);
 }
 
 bool GetSocketName(const SocketAddress* address, char* name) {
