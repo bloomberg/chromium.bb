@@ -714,13 +714,11 @@ void RenderWidgetHost::ImeSetComposition(
 }
 
 void RenderWidgetHost::ImeConfirmComposition(const string16& text) {
-  Send(new ViewMsg_ImeSetComposition(routing_id(),
-            text, std::vector<WebKit::WebCompositionUnderline>(), 0, 0));
-  Send(new ViewMsg_ImeConfirmComposition(routing_id()));
+  Send(new ViewMsg_ImeConfirmComposition(routing_id(), text));
 }
 
 void RenderWidgetHost::ImeConfirmComposition() {
-  Send(new ViewMsg_ImeConfirmComposition(routing_id()));
+  Send(new ViewMsg_ImeConfirmComposition(routing_id(), string16()));
 }
 
 void RenderWidgetHost::ImeCancelComposition() {

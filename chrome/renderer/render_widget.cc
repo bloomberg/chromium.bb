@@ -810,9 +810,9 @@ void RenderWidget::OnImeSetComposition(
   }
 }
 
-void RenderWidget::OnImeConfirmComposition() {
+void RenderWidget::OnImeConfirmComposition(const string16& text) {
   if (webwidget_)
-    webwidget_->confirmComposition();
+    webwidget_->confirmComposition(text);
 }
 
 // This message causes the renderer to render an image of the

@@ -188,7 +188,7 @@ class RenderWidget : public IPC::Channel::Listener,
       const std::vector<WebKit::WebCompositionUnderline>& underlines,
       int selection_start,
       int selection_end);
-  void OnImeConfirmComposition();
+  void OnImeConfirmComposition(const string16& text);
   void OnMsgPaintAtSize(const TransportDIB::Handle& dib_id,
                         int tag,
                         const gfx::Size& page_size,

@@ -530,7 +530,8 @@ IPC_MESSAGE_ROUTED4(
     int /* selection_end */)
 
 // This message confirms an ongoing composition.
-IPC_MESSAGE_ROUTED0(ViewMsg_ImeConfirmComposition)
+IPC_MESSAGE_ROUTED1(ViewMsg_ImeConfirmComposition,
+                    string16 /* text */)
 
 // This passes a set of webkit preferences down to the renderer.
 IPC_MESSAGE_ROUTED1(ViewMsg_UpdateWebPreferences, WebPreferences)

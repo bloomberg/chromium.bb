@@ -248,9 +248,7 @@ TEST_F(RenderViewTest, ImeComposition) {
     {IME_SETCOMPOSITION, false, 3, 3, L"nih", L"nih"},
     {IME_SETCOMPOSITION, false, 4, 4, L"niha", L"niha"},
     {IME_SETCOMPOSITION, false, 5, 5, L"nihao", L"nihao"},
-    {IME_SETCOMPOSITION, false, 2, 2, L"\x4F60\x597D", L"\x4F60\x597D"},
-    {IME_CONFIRMCOMPOSITION, false, -1, -1, NULL, L"\x4F60\x597D"},
-    {IME_CANCELCOMPOSITION, false, -1, -1, L"", L"\x4F60\x597D"},
+    {IME_CONFIRMCOMPOSITION, false, -1, -1, L"\x4F60\x597D", L"\x4F60\x597D"},
     // Scenario 2: input a Japanese word with Microsoft IME (on Vista).
     {IME_INITIALIZE, true, 0, 0, NULL, NULL},
     {IME_SETINPUTMODE, true, 0, 0, NULL, NULL},
@@ -264,7 +262,7 @@ TEST_F(RenderViewTest, ImeComposition) {
      L"\x304B\x3093\x3058"},
     {IME_SETCOMPOSITION, false, 0, 2, L"\x611F\x3058", L"\x611F\x3058"},
     {IME_SETCOMPOSITION, false, 0, 2, L"\x6F22\x5B57", L"\x6F22\x5B57"},
-    {IME_CONFIRMCOMPOSITION, false, -1, -1, NULL, L"\x6F22\x5B57"},
+    {IME_CONFIRMCOMPOSITION, false, -1, -1, L"", L"\x6F22\x5B57"},
     {IME_CANCELCOMPOSITION, false, -1, -1, L"", L"\x6F22\x5B57"},
     // Scenario 3: input a Korean word with Microsot IME (on Vista).
     {IME_INITIALIZE, true, 0, 0, NULL, NULL},
@@ -273,13 +271,13 @@ TEST_F(RenderViewTest, ImeComposition) {
     {IME_SETCOMPOSITION, false, 0, 1, L"\x3147", L"\x3147"},
     {IME_SETCOMPOSITION, false, 0, 1, L"\xC544", L"\xC544"},
     {IME_SETCOMPOSITION, false, 0, 1, L"\xC548", L"\xC548"},
-    {IME_CONFIRMCOMPOSITION, false, -1, -1, NULL, L"\xC548"},
+    {IME_CONFIRMCOMPOSITION, false, -1, -1, L"", L"\xC548"},
     {IME_SETCOMPOSITION, false, 0, 1, L"\x3134", L"\xC548\x3134"},
     {IME_SETCOMPOSITION, false, 0, 1, L"\xB140", L"\xC548\xB140"},
     {IME_SETCOMPOSITION, false, 0, 1, L"\xB155", L"\xC548\xB155"},
     {IME_CANCELCOMPOSITION, false, -1, -1, L"", L"\xC548"},
     {IME_SETCOMPOSITION, false, 0, 1, L"\xB155", L"\xC548\xB155"},
-    {IME_CONFIRMCOMPOSITION, false, -1, -1, NULL, L"\xC548\xB155"},
+    {IME_CONFIRMCOMPOSITION, false, -1, -1, L"", L"\xC548\xB155"},
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kImeMessages); i++) {
@@ -320,7 +318,8 @@ TEST_F(RenderViewTest, ImeComposition) {
         break;
 
       case IME_CONFIRMCOMPOSITION:
-        view_->OnImeConfirmComposition();
+        view_->OnImeConfirmComposition(
+            WideToUTF16Hack(ime_message->ime_string));
         break;
 
       case IME_CANCELCOMPOSITION:
