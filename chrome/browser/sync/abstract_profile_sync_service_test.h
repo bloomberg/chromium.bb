@@ -15,6 +15,7 @@
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
+#include "chrome/browser/sync/glue/autofill_profile_model_associator.h"
 #include "chrome/browser/sync/glue/password_model_associator.h"
 #include "chrome/browser/sync/glue/preference_model_associator.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
@@ -64,6 +65,9 @@ class ProfileSyncServiceTestHelper {
     switch (model_type) {
       case syncable::AUTOFILL:
         tag_name = browser_sync::kAutofillTag;
+        break;
+      case syncable::AUTOFILL_PROFILE:
+        tag_name = browser_sync::kAutofillProfileTag;
         break;
       case syncable::PREFERENCES:
         tag_name = browser_sync::kPreferencesTag;

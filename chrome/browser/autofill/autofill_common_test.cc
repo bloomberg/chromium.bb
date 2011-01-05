@@ -55,6 +55,19 @@ void SetProfileInfo(AutoFillProfile* profile,
   check_and_set(profile, PHONE_FAX_WHOLE_NUMBER, fax);
 }
 
+void SetProfileInfoWithGuid(AutoFillProfile* profile,
+    const char* guid, const char* first_name, const char* middle_name,
+    const char* last_name, const char* email, const char* company,
+    const char* address1, const char* address2, const char* city,
+    const char* state, const char* zipcode, const char* country,
+    const char* phone, const char* fax) {
+  if (guid)
+    profile->set_guid(guid);
+  SetProfileInfo(profile, NULL, first_name, middle_name, last_name, email,
+                 company, address1, address2, city, state, zipcode, country,
+                 phone, fax);
+}
+
 void SetCreditCardInfo(CreditCard* credit_card,
     const char* label, const char* name_on_card, const char* card_number,
     const char* expiration_month, const char* expiration_year) {

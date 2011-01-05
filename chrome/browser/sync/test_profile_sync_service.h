@@ -112,6 +112,12 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
     }
   }
 
+  virtual void ConfigureDataTypes(const syncable::ModelTypeSet& types,
+      CancelableTask* ready_task) {
+    SetAutofillMigrationState(syncable::MIGRATED);
+    SyncBackendHost::ConfigureDataTypes(types, ready_task);
+  }
+
   virtual void HandleInitializationCompletedOnFrontendLoop() {
     set_syncapi_initialized();  // Need to do this asap so task below works.
 

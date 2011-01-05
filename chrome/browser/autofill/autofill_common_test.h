@@ -34,6 +34,13 @@ void SetProfileInfo(AutoFillProfile* profile,
     const char* state, const char* zipcode, const char* country,
     const char* phone, const char* fax);
 
+void SetProfileInfoWithGuid(AutoFillProfile* profile,
+    const char* guid, const char* first_name, const char* middle_name,
+    const char* last_name, const char* email, const char* company,
+    const char* address1, const char* address2, const char* city,
+    const char* state, const char* zipcode, const char* country,
+    const char* phone, const char* fax);
+
 // A unit testing utility that is common to a number of the AutoFill unit
 // tests.  |SetCreditCardInfo| provides a quick way to populate a credit card
 // with c-strings.
