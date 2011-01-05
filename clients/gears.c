@@ -222,10 +222,13 @@ allocate_buffer(struct gears *gears)
 	window_draw(gears->window);
 
 	gears->surface[gears->current] = window_get_surface(gears->window);
-
+#ifdef HAVE_CAIRO_GL
 	image = display_get_image_for_drm_surface(gears->display,
 						  gears->surface[gears->current]);
-
+#else /* XXX: hack to make Wayland compile, even if this example doesn't run */
+	die("gears cannot allocate buffer: it was compiled without cairo-gl");
+	return;
+#endif
 	if (!eglMakeCurrent(gears->display, NULL, NULL, gears->context))
 		die("faile to make context current\n");
 
