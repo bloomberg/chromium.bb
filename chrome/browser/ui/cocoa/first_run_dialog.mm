@@ -8,6 +8,10 @@
 #include "base/mac/mac_util.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
+#include "base/sys_string_conversions.h"
+#include "chrome/browser/google/google_util.h"
+#include "chrome/common/url_constants.h"
+#include "googleurl/src/gurl.h"
 #include "grit/locale_settings.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
@@ -187,7 +191,9 @@ void FirstRunShowBridge::ShowDialog() {
 }
 
 - (IBAction)learnMore:(id)sender {
-  NSString* urlStr = l10n_util::GetNSString(IDS_LEARN_MORE_REPORTING_URL);
+  GURL url = google_util::AppendGoogleLocaleParam(
+      GURL(chrome::kLearnMoreReportingURL));
+  NSString* urlStr = base::SysUTF8ToNSString(url.spec());;
   NSURL* learnMoreUrl = [NSURL URLWithString:urlStr];
   [[NSWorkspace sharedWorkspace] openURL:learnMoreUrl];
 }

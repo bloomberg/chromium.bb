@@ -213,6 +213,9 @@ const char kPrivacyLearnMoreURL[] =
 
 const char kChromiumProjectURL[] = "http://code.google.com/chromium/";
 
+const char kLearnMoreReportingURL[] =
+    "http://www.google.com/support/chrome/bin/answer.py?answer=96817&amp;";
+
 void RegisterChromeSchemes() {
   // Don't need "chrome-internal" which was used in old versions of Chrome for
   // the new tab page.

@@ -194,6 +194,10 @@ extern const char kPrivacyLearnMoreURL[];
 // The URL for the Chromium project used in the About dialog.
 extern const char kChromiumProjectURL[];
 
+// The URL for the "Learn more" page for the usage/crash reporting option in the
+// first run dialog.
+extern const char kLearnMoreReportingURL[];
+
 // Call near the beginning of startup to register Chrome's internal URLs that
 // should be parsed as "standard" with the googleurl library.
 void RegisterChromeSchemes();

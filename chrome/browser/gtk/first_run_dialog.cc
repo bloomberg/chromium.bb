@@ -12,6 +12,7 @@
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_floating_container.h"
 #include "chrome/browser/gtk/gtk_util.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -410,8 +412,8 @@ void FirstRunDialog::OnResponseDialog(GtkWidget* widget, int response) {
 }
 
 void FirstRunDialog::OnLearnMoreLinkClicked(GtkButton* button) {
-  platform_util::OpenExternal(GURL(
-      l10n_util::GetStringUTF8(IDS_LEARN_MORE_REPORTING_URL)));
+  platform_util::OpenExternal(google_util::AppendGoogleLocaleParam(
+      GURL(chrome::kLearnMoreReportingURL)));
 }
 
 void FirstRunDialog::FirstRunDone() {
