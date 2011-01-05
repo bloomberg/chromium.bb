@@ -100,11 +100,11 @@ class PluginsTest(pyauto.PyUITest):
           lambda: self._GetPluginPID(plugin_name) is None),
           msg='Expected %s plugin to die after killing' % plugin_name)
       self.GetBrowserWindow(0).GetTab(0).Reload()
-      pid_reload = self._GetPluginPID(plugin_name)
-      self.assertTrue(pid_reload,
-                      'No plugin process for %s after reloading' % plugin_name)
+      self.assertTrue(self.WaitUntil(
+          lambda: self._GetPluginPID(plugin_name)),
+          msg='No plugin process for %s after reloading' % plugin_name)
       # Verify that it's in fact a new process.
-      self.assertNotEqual(pid, pid_reload,
+      self.assertNotEqual(pid, self._GetPluginPID(plugin_name),
                           'Did not get new pid for %s after reloading' %
                           plugin_name)
 
