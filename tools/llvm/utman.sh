@@ -477,18 +477,30 @@ hg-pull-common() {
 
 hg-checkout() {
   StepBanner "HG-CHECKOUT"
-  mkdir -p "${TC_SRC}"
+  hg-checkout-llvm-gcc
+  hg-checkout-llvm
+  hg-checkout-binutils
+  hg-checkout-newlib
+}
 
+hg-checkout-llvm-gcc() {
+  hg-checkout-common ${REPO_LLVM_GCC} ${TC_SRC_LLVM_GCC} ${LLVM_GCC_REV}
+}
+
+hg-checkout-llvm() {
+  hg-checkout-common ${REPO_LLVM}     ${TC_SRC_LLVM}     ${LLVM_REV}
+}
+
+hg-checkout-binutils() {
+  hg-checkout-common ${REPO_BINUTILS} ${TC_SRC_BINUTILS} ${BINUTILS_REV}
+}
+
+hg-checkout-newlib() {
   local add_headers=false
   if [ ! -d "${TC_SRC_NEWLIB}" ]; then
     add_headers=true
   fi
-
-  hg-checkout-common ${REPO_LLVM_GCC} ${TC_SRC_LLVM_GCC} ${LLVM_GCC_REV}
-  hg-checkout-common ${REPO_LLVM}     ${TC_SRC_LLVM}     ${LLVM_REV}
-  hg-checkout-common ${REPO_BINUTILS} ${TC_SRC_BINUTILS} ${BINUTILS_REV}
   hg-checkout-common ${REPO_NEWLIB}   ${TC_SRC_NEWLIB}   ${NEWLIB_REV}
-
   if ${add_headers}; then
     newlib-nacl-headers
   fi
@@ -498,6 +510,8 @@ hg-checkout-common() {
   local repo=$1
   local dest=$2
   local rev=$3
+
+  mkdir -p "${TC_SRC}"
 
   if [ ! -d ${dest} ] ; then
     StepBanner "HG-CHECKOUT" "Checking out new repository for ${repo} @ ${rev}"
@@ -515,14 +529,13 @@ hg-checkout-common() {
   else
     StepBanner "HG-CHECKOUT" "Using existing source for ${repo} in ${dest}"
   fi
-
 }
 
 hg-update-common() {
   local dir="$1"
 
   assert-dir "$dir" \
-    "Repository $(basename "${dir}") doesn't exist. First do 'hg-checkout'"
+    "HG repository $(basename "${dir}") doesn't exist. First do 'hg-checkout'"
 
   spushd "${dir}"
   if [ $# == 2 ]; then
