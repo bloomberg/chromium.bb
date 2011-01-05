@@ -10,7 +10,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/net/url_request_context_getter.h"
-#include "third_party/speex/include/speex/speex.h"
+#include "third_party/speex/speex.h"
 
 using media::AudioInputController;
 using std::list;
