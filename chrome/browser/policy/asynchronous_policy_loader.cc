@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,6 +38,9 @@ void AsynchronousPolicyLoader::Stop() {
   if (!stopped_) {
     stopped_ = true;
     delegate_.reset();
+    FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
+                      observer_list_,
+                      OnProviderGoingAway());
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         NewRunnableMethod(this, &AsynchronousPolicyLoader::StopOnFileThread));

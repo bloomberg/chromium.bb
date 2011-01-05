@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,6 +48,10 @@ class WaitableEvent;
 namespace printing {
 class PrintJobManager;
 class PrintPreviewTabController;
+}
+
+namespace policy {
+class ConfigurationPolicyProviderKeeper;
 }
 
 // NOT THREAD SAFE, call only from the main thread.
@@ -106,6 +110,9 @@ class BrowserProcess {
   // This method is only included for uniformity.
   virtual base::Thread* background_x11_thread() = 0;
 #endif
+
+  virtual policy::ConfigurationPolicyProviderKeeper*
+      configuration_policy_provider_keeper() = 0;
 
   virtual IconManager* icon_manager() = 0;
 

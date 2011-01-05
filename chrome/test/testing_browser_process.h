@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,10 @@
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_url_tracker.h"
+#include "chrome/browser/policy/configuration_policy_pref_store.h"
+#include "chrome/browser/policy/configuration_policy_provider.h"
+#include "chrome/browser/policy/configuration_policy_provider_keeper.h"
+#include "chrome/browser/policy/dummy_configuration_policy_provider.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/notification_service.h"
 
@@ -31,7 +35,8 @@ class TestingBrowserProcess : public BrowserProcess {
       : shutdown_event_(new base::WaitableEvent(true, false)),
         module_ref_count_(0),
         app_locale_("en"),
-        pref_service_(NULL) {
+        pref_service_(NULL),
+        created_configuration_policy_provider_keeper_(false) {
   }
 
   virtual ~TestingBrowserProcess() {
@@ -76,6 +81,23 @@ class TestingBrowserProcess : public BrowserProcess {
 
   virtual PrefService* local_state() {
     return pref_service_;
+  }
+
+  virtual policy::ConfigurationPolicyProviderKeeper*
+      configuration_policy_provider_keeper() {
+    if (!created_configuration_policy_provider_keeper_) {
+      DCHECK(configuration_policy_provider_keeper_.get() == NULL);
+      created_configuration_policy_provider_keeper_ = true;
+      const policy::ConfigurationPolicyProvider::PolicyDefinitionList*
+          policy_list = policy::ConfigurationPolicyPrefStore::
+              GetChromePolicyDefinitionList();
+      configuration_policy_provider_keeper_.reset(
+          new policy::ConfigurationPolicyProviderKeeper(
+              new policy::DummyConfigurationPolicyProvider(policy_list),
+              new policy::DummyConfigurationPolicyProvider(policy_list),
+              new policy::DummyConfigurationPolicyProvider(policy_list)));
+    }
+    return configuration_policy_provider_keeper_.get();
   }
 
   virtual IconManager* icon_manager() {
@@ -192,6 +214,9 @@ class TestingBrowserProcess : public BrowserProcess {
   std::string app_locale_;
 
   PrefService* pref_service_;
+  bool created_configuration_policy_provider_keeper_;
+  scoped_ptr<policy::ConfigurationPolicyProviderKeeper>
+      configuration_policy_provider_keeper_;
   scoped_ptr<GoogleURLTracker> google_url_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingBrowserProcess);

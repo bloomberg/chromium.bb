@@ -1,45 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/policy/configuration_policy_provider.h"
 
-#include <algorithm>
-
 #include "base/values.h"
 
 namespace policy {
-
-ConfigurationPolicyObserverRegistrar::ConfigurationPolicyObserverRegistrar() {}
-
-ConfigurationPolicyObserverRegistrar::~ConfigurationPolicyObserverRegistrar() {
-  RemoveAll();
-}
-
-void ConfigurationPolicyObserverRegistrar::Init(
-    ConfigurationPolicyProvider* provider) {
-  provider_ = provider;
-}
-
-void ConfigurationPolicyObserverRegistrar::AddObserver(
-    ConfigurationPolicyProvider::Observer* observer) {
-  observers_.push_back(observer);
-  provider_->AddObserver(observer);
-}
-
-void ConfigurationPolicyObserverRegistrar::RemoveObserver(
-    ConfigurationPolicyProvider::Observer* observer) {
-  std::remove(observers_.begin(), observers_.end(), observer);
-  provider_->RemoveObserver(observer);
-}
-
-void ConfigurationPolicyObserverRegistrar::RemoveAll() {
-  for (std::vector<ConfigurationPolicyProvider::Observer*>::iterator it =
-       observers_.begin(); it != observers_.end(); ++it) {
-    provider_->RemoveObserver(*it);
-  }
-  observers_.clear();
-}
 
 // Class ConfigurationPolicyProvider.
 
@@ -63,6 +30,33 @@ void ConfigurationPolicyProvider::DecodePolicyValueTree(
 
   // TODO(mnissler): Handle preference overrides once |ConfigurationPolicyStore|
   // supports it.
+}
+
+// Class ConfigurationPolicyObserverRegistrar.
+
+ConfigurationPolicyObserverRegistrar::ConfigurationPolicyObserverRegistrar() {}
+
+ConfigurationPolicyObserverRegistrar::~ConfigurationPolicyObserverRegistrar() {
+  if (provider_)
+    provider_->RemoveObserver(this);
+}
+
+void ConfigurationPolicyObserverRegistrar::Init(
+    ConfigurationPolicyProvider* provider,
+    ConfigurationPolicyProvider::Observer* observer) {
+  provider_ = provider;
+  observer_ = observer;
+  provider_->AddObserver(this);
+}
+
+void ConfigurationPolicyObserverRegistrar::OnUpdatePolicy() {
+  observer_->OnUpdatePolicy();
+}
+
+void ConfigurationPolicyObserverRegistrar::OnProviderGoingAway() {
+  observer_->OnProviderGoingAway();
+  provider_->RemoveObserver(this);
+  provider_ = NULL;
 }
 
 }  // namespace policy

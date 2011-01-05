@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_POLICY_DUMMY_CONFIGURATION_POLICY_PROVIDER_H_
 #pragma once
 
+#include "base/observer_list.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 
 namespace policy {
@@ -22,9 +23,10 @@ class DummyConfigurationPolicyProvider : public ConfigurationPolicyProvider {
 
  private:
   // ConfigurationPolicyProvider overrides:
-  virtual void AddObserver(ConfigurationPolicyProvider::Observer* observer) {}
-  virtual void RemoveObserver(
-      ConfigurationPolicyProvider::Observer* observer) {}
+  virtual void AddObserver(ConfigurationPolicyProvider::Observer* observer);
+  virtual void RemoveObserver(ConfigurationPolicyProvider::Observer* observer);
+
+  ObserverList<ConfigurationPolicyProvider::Observer, true> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(DummyConfigurationPolicyProvider);
 };

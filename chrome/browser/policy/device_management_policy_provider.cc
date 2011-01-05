@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -108,7 +108,11 @@ DeviceManagementPolicyProvider::DeviceManagementPolicyProvider(
              unmanaged_device_refresh_rate_ms);
 }
 
-DeviceManagementPolicyProvider::~DeviceManagementPolicyProvider() {}
+DeviceManagementPolicyProvider::~DeviceManagementPolicyProvider() {
+  FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
+                    observer_list_,
+                    OnProviderGoingAway());
+}
 
 bool DeviceManagementPolicyProvider::Provide(
     ConfigurationPolicyStoreInterface* policy_store) {
@@ -181,12 +185,6 @@ void DeviceManagementPolicyProvider::OnNotManaged() {
   cache_->SetDeviceUnmanaged(true);
   ScheduleRefreshTask(unmanaged_device_refresh_rate_ms_);
   StopWaitingForInitialPolicies();
-}
-
-void DeviceManagementPolicyProvider::Shutdown() {
-  profile_ = NULL;
-  if (token_fetcher_)
-    token_fetcher_->Shutdown();
 }
 
 void DeviceManagementPolicyProvider::AddObserver(

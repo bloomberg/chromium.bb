@@ -1,9 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -11,29 +12,21 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/path_service.h"
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
-#if defined(OS_WIN)
-#include "chrome/browser/policy/configuration_policy_provider_win.h"
-#elif defined(OS_MACOSX)
-#include "chrome/browser/policy/configuration_policy_provider_mac.h"
-#elif defined(OS_POSIX)
-#include "chrome/browser/policy/config_dir_policy_provider.h"
-#endif
+#include "chrome/browser/policy/configuration_policy_provider_keeper.h"
 #include "chrome/browser/policy/device_management_policy_provider.h"
-#include "chrome/browser/policy/dummy_configuration_policy_provider.h"
 #include "chrome/browser/policy/profile_policy_context.h"
 #include "chrome/browser/prefs/pref_value_map.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/policy_constants.h"
@@ -620,94 +613,6 @@ bool ConfigurationPolicyPrefKeeper::HasProxyPolicy(
          iter->second && !iter->second->IsType(Value::TYPE_NULL);
 }
 
-namespace {
-
-// Manages the lifecycle of the shared platform-specific policy providers for
-// managed platform, device management and recommended policy. Instantiated as a
-// Singleton.
-class ConfigurationPolicyProviderKeeper {
- public:
-  ConfigurationPolicyProviderKeeper()
-      : managed_platform_provider_(CreateManagedPlatformProvider()),
-        device_management_provider_(CreateDeviceManagementProvider()),
-        recommended_provider_(CreateRecommendedProvider()) {}
-  virtual ~ConfigurationPolicyProviderKeeper() {}
-
-  ConfigurationPolicyProvider* managed_platform_provider() const {
-    return managed_platform_provider_.get();
-  }
-
-  ConfigurationPolicyProvider* device_management_provider() const {
-    return device_management_provider_.get();
-  }
-
-  ConfigurationPolicyProvider* recommended_provider() const {
-    return recommended_provider_.get();
-  }
-
- private:
-  scoped_ptr<ConfigurationPolicyProvider> managed_platform_provider_;
-  scoped_ptr<ConfigurationPolicyProvider> device_management_provider_;
-  scoped_ptr<ConfigurationPolicyProvider> recommended_provider_;
-
-  static ConfigurationPolicyProvider* CreateManagedPlatformProvider();
-  static ConfigurationPolicyProvider* CreateDeviceManagementProvider();
-  static ConfigurationPolicyProvider* CreateRecommendedProvider();
-
-  DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyProviderKeeper);
-};
-
-static base::LazyInstance<ConfigurationPolicyProviderKeeper>
-    g_configuration_policy_provider_keeper(base::LINKER_INITIALIZED);
-
-ConfigurationPolicyProvider*
-ConfigurationPolicyProviderKeeper::CreateManagedPlatformProvider() {
-  const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list =
-      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
-#if defined(OS_WIN)
-  return new ConfigurationPolicyProviderWin(policy_list);
-#elif defined(OS_MACOSX)
-  return new ConfigurationPolicyProviderMac(policy_list);
-#elif defined(OS_POSIX)
-  FilePath config_dir_path;
-  if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
-    return new ConfigDirPolicyProvider(
-        policy_list,
-        config_dir_path.Append(FILE_PATH_LITERAL("managed")));
-  } else {
-    return new DummyConfigurationPolicyProvider(policy_list);
-  }
-#else
-  return new DummyConfigurationPolicyProvider(policy_list);
-#endif
-}
-
-ConfigurationPolicyProvider*
-ConfigurationPolicyProviderKeeper::CreateDeviceManagementProvider() {
-  return new DummyConfigurationPolicyProvider(
-      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList());
-}
-
-ConfigurationPolicyProvider*
-ConfigurationPolicyProviderKeeper::CreateRecommendedProvider() {
-  const ConfigurationPolicyProvider::PolicyDefinitionList* policy_list =
-      ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList();
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  FilePath config_dir_path;
-  if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
-    return new ConfigDirPolicyProvider(
-        policy_list,
-        config_dir_path.Append(FILE_PATH_LITERAL("recommended")));
-  } else {
-    return new DummyConfigurationPolicyProvider(policy_list);
-  }
-#else
-  return new DummyConfigurationPolicyProvider(policy_list);
-#endif
-}
-
-}  // namespace
-
 ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(
     ConfigurationPolicyProvider* provider)
     : provider_(provider),
@@ -715,8 +620,7 @@ ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(
   // Read initial policy.
   policy_keeper_.reset(new ConfigurationPolicyPrefKeeper(provider));
 
-  registrar_.Init(provider_);
-  registrar_.AddObserver(this);
+  registrar_.Init(provider_, this);
 }
 
 ConfigurationPolicyPrefStore::~ConfigurationPolicyPrefStore() {
@@ -745,11 +649,16 @@ void ConfigurationPolicyPrefStore::OnUpdatePolicy() {
   Refresh();
 }
 
+void ConfigurationPolicyPrefStore::OnProviderGoingAway() {
+  provider_ = NULL;
+}
+
 // static
 ConfigurationPolicyPrefStore*
 ConfigurationPolicyPrefStore::CreateManagedPlatformPolicyPrefStore() {
-  return new ConfigurationPolicyPrefStore(
-      g_configuration_policy_provider_keeper.Get().managed_platform_provider());
+  ConfigurationPolicyProviderKeeper* keeper =
+      g_browser_process->configuration_policy_provider_keeper();
+  return new ConfigurationPolicyPrefStore(keeper->managed_platform_provider());
 }
 
 // static
@@ -757,7 +666,7 @@ ConfigurationPolicyPrefStore*
 ConfigurationPolicyPrefStore::CreateDeviceManagementPolicyPrefStore(
     Profile* profile) {
   ConfigurationPolicyProviderKeeper* keeper =
-      g_configuration_policy_provider_keeper.Pointer();
+      g_browser_process->configuration_policy_provider_keeper();
   ConfigurationPolicyProvider* provider = NULL;
   if (profile)
     provider = profile->GetPolicyContext()->GetDeviceManagementPolicyProvider();
@@ -769,8 +678,9 @@ ConfigurationPolicyPrefStore::CreateDeviceManagementPolicyPrefStore(
 // static
 ConfigurationPolicyPrefStore*
 ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore() {
-  return new ConfigurationPolicyPrefStore(
-      g_configuration_policy_provider_keeper.Get().recommended_provider());
+  ConfigurationPolicyProviderKeeper* keeper =
+      g_browser_process->configuration_policy_provider_keeper();
+  return new ConfigurationPolicyPrefStore(keeper->recommended_provider());
 }
 
 /* static */
@@ -878,6 +788,9 @@ ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
 }
 
 void ConfigurationPolicyPrefStore::Refresh() {
+  if (!provider_)
+    return;
+
   // Construct a new keeper, determine what changed and swap the keeper in.
   scoped_ptr<ConfigurationPolicyPrefKeeper> new_keeper(
       new ConfigurationPolicyPrefKeeper(provider_));

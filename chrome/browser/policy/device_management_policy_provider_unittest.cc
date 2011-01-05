@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,6 +34,7 @@ class MockConfigurationPolicyObserver
     : public ConfigurationPolicyProvider::Observer {
  public:
   MOCK_METHOD0(OnUpdatePolicy, void());
+  void OnProviderGoingAway() {}
 };
 
 class DeviceManagementPolicyProviderTest : public testing::Test {
@@ -207,8 +208,7 @@ TEST_F(DeviceManagementPolicyProviderTest, SecondProvide) {
 TEST_F(DeviceManagementPolicyProviderTest, FetchTriggersRefresh) {
   MockConfigurationPolicyObserver observer;
   ConfigurationPolicyObserverRegistrar registrar;
-  registrar.Init(provider_.get());
-  registrar.AddObserver(&observer);
+  registrar.Init(provider_.get(), &observer);
   EXPECT_CALL(observer, OnUpdatePolicy()).Times(1);
   SimulateSuccessfulInitialPolicyFetch();
 }

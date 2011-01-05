@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,8 +39,6 @@ void ProfilePolicyContext::Initialize() {
 void ProfilePolicyContext::Shutdown() {
   if (device_management_service_.get())
     device_management_service_->Shutdown();
-  if (device_management_policy_provider_.get())
-    device_management_policy_provider_->Shutdown();
 }
 
 DeviceManagementPolicyProvider*

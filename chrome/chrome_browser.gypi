@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -1982,11 +1982,11 @@
         'browser/policy/configuration_policy_pref_store.cc',
         'browser/policy/configuration_policy_pref_store.h',
         'browser/policy/configuration_policy_provider.cc',
-        'browser/policy/configuration_policy_provider.cc',
-        'browser/policy/configuration_policy_provider.h',
         'browser/policy/configuration_policy_provider.h',
         'browser/policy/configuration_policy_provider_delegate_win.cc',
         'browser/policy/configuration_policy_provider_delegate_win.h',
+        'browser/policy/configuration_policy_provider_keeper.cc',
+        'browser/policy/configuration_policy_provider_keeper.h',
         'browser/policy/configuration_policy_provider_mac.cc',
         'browser/policy/configuration_policy_provider_mac.h',
         'browser/policy/configuration_policy_provider_win.cc',

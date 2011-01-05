@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
@@ -25,6 +24,7 @@ class ConfigurationPolicyProvider {
    public:
     virtual ~Observer() {}
     virtual void OnUpdatePolicy() = 0;
+    virtual void OnProviderGoingAway() = 0;
   };
 
   // Used for static arrays of policy values that is used to initialize an
@@ -83,17 +83,25 @@ class ConfigurationPolicyProvider {
 
 // Manages observers for a ConfigurationPolicyProvider. Is used to register
 // observers, and automatically removes them upon destruction.
-class ConfigurationPolicyObserverRegistrar {
+// Implementation detail: to avoid duplicate bookkeeping of registered
+// observers, this registrar class acts as a proxy for notifications (since it
+// needs to register itself anyway to get OnProviderGoingAway notifications).
+class ConfigurationPolicyObserverRegistrar
+    : ConfigurationPolicyProvider::Observer {
  public:
   ConfigurationPolicyObserverRegistrar();
   ~ConfigurationPolicyObserverRegistrar();
-  void Init(ConfigurationPolicyProvider* provider);
-  void AddObserver(ConfigurationPolicyProvider::Observer* observer);
-  void RemoveObserver(ConfigurationPolicyProvider::Observer* observer);
-  void RemoveAll();
+  void Init(ConfigurationPolicyProvider* provider,
+            ConfigurationPolicyProvider::Observer* observer);
+
+  // ConfigurationPolicyProvider::Observer implementation:
+  virtual void OnUpdatePolicy();
+  virtual void OnProviderGoingAway();
+
  private:
   ConfigurationPolicyProvider* provider_;
-  std::vector<ConfigurationPolicyProvider::Observer*> observers_;
+  ConfigurationPolicyProvider::Observer* observer_;
+
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyObserverRegistrar);
 };
 

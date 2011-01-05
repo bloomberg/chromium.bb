@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,6 +40,7 @@
 #include "chrome/browser/plugin_data_remover.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/plugin_updater.h"
+#include "chrome/browser/policy/configuration_policy_provider_keeper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
@@ -100,6 +101,7 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
       created_debugger_wrapper_(false),
       created_devtools_manager_(false),
       created_sidebar_manager_(false),
+      created_configuration_policy_provider_keeper_(false),
       created_notification_ui_manager_(false),
       created_safe_browsing_detection_service_(false),
       module_ref_count_(0),
@@ -174,6 +176,10 @@ BrowserProcessImpl::~BrowserProcessImpl() {
     // Cancel pending requests and prevent new requests.
     resource_dispatcher_host()->Shutdown();
   }
+
+  // The policy providers managed by |configuration_policy_provider_keeper_|
+  // need to shut down while the file thread is still alive.
+  configuration_policy_provider_keeper_.reset();
 
 #if defined(USE_X11)
   // The IO thread must outlive the BACKGROUND_X11 thread.
@@ -412,6 +418,18 @@ NotificationUIManager* BrowserProcessImpl::notification_ui_manager() {
   if (!created_notification_ui_manager_)
     CreateNotificationUIManager();
   return notification_ui_manager_.get();
+}
+
+policy::ConfigurationPolicyProviderKeeper*
+    BrowserProcessImpl::configuration_policy_provider_keeper() {
+  DCHECK(CalledOnValidThread());
+  if (!created_configuration_policy_provider_keeper_) {
+    DCHECK(configuration_policy_provider_keeper_.get() == NULL);
+    created_configuration_policy_provider_keeper_ = true;
+    configuration_policy_provider_keeper_.reset(
+        new policy::ConfigurationPolicyProviderKeeper());
+  }
+  return configuration_policy_provider_keeper_.get();
 }
 
 IconManager* BrowserProcessImpl::icon_manager() {
