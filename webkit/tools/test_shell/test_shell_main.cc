@@ -117,7 +117,7 @@ int main(int argc, char* argv[]) {
       parsed_command_line.HasSwitch(test_shell::kGenericTheme);
 #else
   // Stop compiler warnings about unused variables.
-  ux_theme = ux_theme;
+  static_cast<void>(ux_theme);
 #endif
 
   bool enable_gp_fault_error_box = false;
