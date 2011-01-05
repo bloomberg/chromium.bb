@@ -48,8 +48,9 @@ class NativeTextfieldViewsTest : public ::testing::Test,
     last_contents_ = new_contents;
   }
 
-  virtual bool HandleKeystroke(Textfield* sender,
-                               const Textfield::Keystroke& keystroke) {
+  virtual bool HandleKeyEvent(Textfield* sender,
+                              const KeyEvent& key_event) {
+
     // TODO(oshima): figure out how to test the keystroke.
     return false;
   }

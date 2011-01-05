@@ -77,8 +77,8 @@ class ContentView : public views::View,
   // views::Textfield::Controller overrides:
   virtual void ContentsChanged(views::Textfield* sender,
                                const std::wstring& new_contents);
-  virtual bool HandleKeystroke(views::Textfield*,
-                               const views::Textfield::Keystroke&) {
+  virtual bool HandleKeyEvent(views::Textfield*,
+                              const views::KeyEvent&) {
     return false;
   }
 

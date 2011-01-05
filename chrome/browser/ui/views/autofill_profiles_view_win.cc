@@ -873,8 +873,8 @@ void AutoFillProfilesView::EditableSetViewContents::ContentsChanged(
   }
 }
 
-bool AutoFillProfilesView::EditableSetViewContents::HandleKeystroke(
-    views::Textfield* sender, const views::Textfield::Keystroke& keystroke) {
+bool AutoFillProfilesView::EditableSetViewContents::HandleKeyEvent(
+    views::Textfield* sender, const views::KeyEvent& key_event) {
   if (sender == text_fields_[TEXT_CC_NUMBER] &&
       !has_credit_card_number_been_edited_) {
     // You cannot edit obfuscated number, you must retype it anew.

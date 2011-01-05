@@ -114,9 +114,9 @@ void EditSearchEngineDialog::ContentsChanged(Textfield* sender,
   UpdateImageViews();
 }
 
-bool EditSearchEngineDialog::HandleKeystroke(
+bool EditSearchEngineDialog::HandleKeyEvent(
     Textfield* sender,
-    const views::Textfield::Keystroke& key) {
+    const views::KeyEvent& key_event) {
   return false;
 }
 

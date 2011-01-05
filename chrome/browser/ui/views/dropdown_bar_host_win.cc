@@ -4,6 +4,7 @@
 
 #include "chrome/browser/views/dropdown_bar_host.h"
 
+#include "app/keyboard_code_conversion_win.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
@@ -14,10 +15,11 @@
 
 NativeWebKeyboardEvent DropdownBarHost::GetKeyboardEvent(
      const TabContents* contents,
-     const views::Textfield::Keystroke& key_stroke) {
+     const views::KeyEvent& key_event) {
   HWND hwnd = contents->GetContentNativeView();
-  return NativeWebKeyboardEvent(
-      hwnd, key_stroke.message(), key_stroke.key(), 0);
+  WORD key = WindowsKeyCodeForKeyboardCode(key_event.GetKeyCode());
+
+  return NativeWebKeyboardEvent(hwnd, key_event.message(), key, 0);
 }
 
 views::Widget* DropdownBarHost::CreateHost() {

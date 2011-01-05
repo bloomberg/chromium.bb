@@ -102,10 +102,9 @@ bool ExistingUserView::AcceleratorPressed(
   return false;
 }
 
-bool ExistingUserView::HandleKeystroke(
-    views::Textfield* sender,
-    const views::Textfield::Keystroke& keystroke) {
-  if (keystroke.GetKeyboardCode() == app::VKEY_RETURN) {
+bool ExistingUserView::HandleKeyEvent(views::Textfield* sender,
+                                      const views::KeyEvent& key_event) {
+  if (key_event.GetKeyCode() == app::VKEY_RETURN) {
     if (!password_field_->text().empty())
       user_controller_->OnLogin("", UTF16ToUTF8(password_field_->text()));
   } else {

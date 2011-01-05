@@ -144,11 +144,11 @@ void CookiesView::ContentsChanged(views::Textfield* sender,
           &CookiesView::UpdateSearchResults), kSearchFilterDelayMs);
 }
 
-bool CookiesView::HandleKeystroke(views::Textfield* sender,
-                                  const views::Textfield::Keystroke& key) {
-  if (key.GetKeyboardCode() == app::VKEY_ESCAPE) {
+bool CookiesView::HandleKeyEvent(views::Textfield* sender,
+                                 const views::KeyEvent& key_event) {
+  if (key_event.GetKeyCode() == app::VKEY_ESCAPE) {
     ResetSearchQuery();
-  } else if (key.GetKeyboardCode() == app::VKEY_RETURN) {
+  } else if (key_event.GetKeyCode() == app::VKEY_RETURN) {
     search_update_factory_.RevokeAll();
     UpdateSearchResults();
   }

@@ -287,8 +287,8 @@ class AutoFillProfilesView : public views::View,
     // views::Textfield::Controller methods:
     virtual void ContentsChanged(views::Textfield* sender,
                                  const string16& new_contents);
-    virtual bool HandleKeystroke(views::Textfield* sender,
-                                 const views::Textfield::Keystroke& keystroke);
+    virtual bool HandleKeyEvent(views::Textfield* sender,
+                                const views::KeyEvent& keystroke);
 
     // views::Combobox::Listener methods:
     virtual void ItemChanged(views::Combobox* combo_box,

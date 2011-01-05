@@ -39,14 +39,14 @@ FindBarHost::FindBarHost(BrowserView* browser_view)
 FindBarHost::~FindBarHost() {
 }
 
-bool FindBarHost::MaybeForwardKeystrokeToWebpage(
-    const views::Textfield::Keystroke& key_stroke) {
-  if (!ShouldForwardKeystrokeToWebpageNative(key_stroke)) {
+bool FindBarHost::MaybeForwardKeyEventToWebpage(
+    const views::KeyEvent& key_event) {
+  if (!ShouldForwardKeyEventToWebpageNative(key_event)) {
     // Native implementation says not to forward these events.
     return false;
   }
 
-  switch (key_stroke.GetKeyboardCode()) {
+  switch (key_event.GetKeyCode()) {
     case app::VKEY_DOWN:
     case app::VKEY_UP:
     case app::VKEY_PRIOR:
@@ -54,7 +54,7 @@ bool FindBarHost::MaybeForwardKeystrokeToWebpage(
       break;
     case app::VKEY_HOME:
     case app::VKEY_END:
-      if (key_stroke.IsControlHeld())
+      if (key_event.IsControlDown())
         break;
     // Fall through.
     default:
@@ -70,7 +70,7 @@ bool FindBarHost::MaybeForwardKeystrokeToWebpage(
   // Make sure we don't have a text field element interfering with keyboard
   // input. Otherwise Up and Down arrow key strokes get eaten. "Nom Nom Nom".
   render_view_host->ClearFocusedNode();
-  NativeWebKeyboardEvent event = GetKeyboardEvent(contents, key_stroke);
+  NativeWebKeyboardEvent event = GetKeyboardEvent(contents, key_event);
   render_view_host->ForwardKeyboardEvent(event);
   return true;
 }

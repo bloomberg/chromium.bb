@@ -75,8 +75,8 @@ class TextfieldExample : public ExampleBase,
   }
 
   // Let the control handle keystrokes.
-  virtual bool HandleKeystroke(Textfield* sender,
-                               const Textfield::Keystroke& keystroke) {
+  virtual bool HandleKeyEvent(Textfield* sender,
+                              const views::KeyEvent& key_event) {
     return false;
   }
 
@@ -109,4 +109,3 @@ class TextfieldExample : public ExampleBase,
 }  // namespace examples
 
 #endif  // VIEWS_EXAMPLES_TEXTFIELD_EXAMPLE_H_
-

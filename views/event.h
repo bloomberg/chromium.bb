@@ -332,12 +332,20 @@ class KeyEvent : public Event {
            int event_flags,
            int repeat_count,
            int message_flags);
+
+#if defined(OS_WIN)
+  KeyEvent(EventType type,
+           app::KeyboardCode key_code,
+           int event_flags,
+           int repeat_count,
+           int message_flags,
+           UINT message);
+#endif
 #if defined(OS_LINUX)
   explicit KeyEvent(const GdkEventKey* event);
 
   const GdkEventKey* native_event() const { return native_event_; }
 #endif
-
 #if defined(TOUCH_UI)
   // Create a key event from an X key event.
   explicit KeyEvent(XEvent* xevent);
@@ -353,6 +361,10 @@ class KeyEvent : public Event {
 
 #if defined(OS_WIN)
   bool IsExtendedKey() const;
+
+  UINT message() const {
+    return message_;
+  }
 #endif
 
   int GetRepeatCount() const {
@@ -360,7 +372,6 @@ class KeyEvent : public Event {
   }
 
 #if defined(OS_WIN)
-  // Returns the current state of the KeyState.
   static int GetKeyStateFlags();
 #endif
 
@@ -369,7 +380,9 @@ class KeyEvent : public Event {
   app::KeyboardCode key_code_;
   int repeat_count_;
   int message_flags_;
-#if defined(OS_LINUX)
+#if defined(OS_WIN)
+  UINT message_;
+#elif defined(OS_LINUX)
   const GdkEventKey* native_event_;
 #endif
   DISALLOW_COPY_AND_ASSIGN(KeyEvent);

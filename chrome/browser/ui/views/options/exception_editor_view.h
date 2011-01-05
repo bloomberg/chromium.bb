@@ -76,8 +76,8 @@ class ExceptionEditorView : public views::View,
   // valid.
   virtual void ContentsChanged(views::Textfield* sender,
                                const std::wstring& new_contents);
-  virtual bool HandleKeystroke(views::Textfield* sender,
-                               const views::Textfield::Keystroke& key);
+  virtual bool HandleKeyEvent(views::Textfield* sender,
+                              const views::KeyEvent& key_event);
 
  private:
   void Init();

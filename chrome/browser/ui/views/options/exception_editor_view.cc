@@ -95,9 +95,8 @@ void ExceptionEditorView::ContentsChanged(views::Textfield* sender,
       UTF16ToUTF8(pattern_tf_->text())), incognito_cb_->checked()));
 }
 
-bool ExceptionEditorView::HandleKeystroke(
-    views::Textfield* sender,
-    const views::Textfield::Keystroke& key) {
+bool ExceptionEditorView::HandleKeyEvent(views::Textfield* sender,
+                                         const views::KeyEvent& key_event) {
   return false;
 }
 

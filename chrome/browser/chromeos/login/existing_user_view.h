@@ -33,8 +33,8 @@ class ExistingUserView : public ThrobberHostView,
   // Overriden from Textfield::Controller:
   virtual void ContentsChanged(views::Textfield* sender,
                                const string16& new_contents);
-  virtual bool HandleKeystroke(views::Textfield* sender,
-                               const views::Textfield::Keystroke& keystroke);
+  virtual bool HandleKeyEvent(views::Textfield* sender,
+                              const views::KeyEvent& keystroke);
 
   // Overriden from UserInput:
   virtual void EnableInputControls(bool enabled);

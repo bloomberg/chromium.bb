@@ -323,8 +323,8 @@ void GeneralPageView::ContentsChanged(views::Textfield* sender,
   }
 }
 
-bool GeneralPageView::HandleKeystroke(views::Textfield* sender,
-                                      const views::Textfield::Keystroke&) {
+bool GeneralPageView::HandleKeyEvent(views::Textfield* sender,
+                                     const views::KeyEvent& key_event) {
   return false;
 }
 

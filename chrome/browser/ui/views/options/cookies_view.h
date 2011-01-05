@@ -77,8 +77,8 @@ class CookiesView : public CookiesTreeModel::Observer,
   // views::Textfield::Controller implementation.
   virtual void ContentsChanged(views::Textfield* sender,
                                const std::wstring& new_contents);
-  virtual bool HandleKeystroke(views::Textfield* sender,
-                               const views::Textfield::Keystroke& key);
+  virtual bool HandleKeyEvent(views::Textfield* sender,
+                              const views::KeyEvent& key);
 
   // views::WindowDelegate implementation.
   virtual int GetDialogButtons() const {

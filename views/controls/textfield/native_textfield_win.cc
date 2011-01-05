@@ -9,6 +9,7 @@
 #include "app/clipboard/clipboard.h"
 #include "app/clipboard/scoped_clipboard_writer.h"
 #include "app/keyboard_codes.h"
+#include "app/keyboard_code_conversion_win.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/win/win_util.h"
@@ -876,8 +877,27 @@ void NativeTextfieldWin::HandleKeystroke(UINT message,
   Textfield::Controller* controller = textfield_->GetController();
   bool handled = false;
   if (controller) {
-    handled = controller->HandleKeystroke(textfield_,
-        Textfield::Keystroke(message, key, repeat_count, flags));
+    Event::EventType type;
+    switch (message) {
+      case WM_KEYDOWN:
+      case WM_CHAR:
+        type = Event::ET_KEY_PRESSED;
+        break;
+      case WM_KEYUP:
+        type = Event::ET_KEY_RELEASED;
+        break;
+      default:
+        NOTREACHED() << "Unknown message:" << message;
+        // Passing through to avoid crash on release build.
+        type = Event::ET_KEY_PRESSED;
+    }
+    KeyEvent key_event(type,
+                       app::KeyboardCodeForWindowsKeyCode(key),
+                       KeyEvent::GetKeyStateFlags(),
+                       repeat_count,
+                       flags,
+                       message);
+    handled = controller->HandleKeyEvent(textfield_, key_event);
   }
 
   if (!handled) {

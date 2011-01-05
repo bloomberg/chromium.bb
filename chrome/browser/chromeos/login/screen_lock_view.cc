@@ -187,11 +187,11 @@ void ScreenLockView::OnSignout() {
   screen_locker_->Signout();
 }
 
-bool ScreenLockView::HandleKeystroke(
+bool ScreenLockView::HandleKeyEvent(
     views::Textfield* sender,
-    const views::Textfield::Keystroke& keystroke) {
+    const views::KeyEvent& key_event) {
   screen_locker_->ClearErrors();
-  if (keystroke.GetKeyboardCode() == app::VKEY_RETURN) {
+  if (key_event.GetKeyCode() == app::VKEY_RETURN) {
     screen_locker_->Authenticate(password_field_->text());
     return true;
   }

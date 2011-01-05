@@ -522,12 +522,12 @@ gfx::Rect NewUserView::GetUsernameBounds() const {
   return username_field_->GetScreenBounds();
 }
 
-bool NewUserView::HandleKeystroke(views::Textfield* s,
-    const views::Textfield::Keystroke& keystroke) {
+bool NewUserView::HandleKeyEvent(views::Textfield* sender,
+                                 const views::KeyEvent& key_event) {
   if (!CrosLibrary::Get()->EnsureLoaded() || login_in_process_)
     return false;
 
-  if (keystroke.GetKeyboardCode() == app::VKEY_RETURN) {
+  if (key_event.GetKeyCode() == app::VKEY_RETURN) {
     if (!username_field_->text().empty() && !password_field_->text().empty())
       Login();
     // Return true so that processing ends

@@ -30,23 +30,22 @@ void DropdownBarHost::SetWidgetPositionNative(const gfx::Rect& new_pos,
 
 NativeWebKeyboardEvent DropdownBarHost::GetKeyboardEvent(
      const TabContents* contents,
-     const views::Textfield::Keystroke& key_stroke) {
+     const views::KeyEvent& key_event) {
 #if defined(TOUCH_UI)
   // TODO(oshima): This is a copy from
   // RenderWidgetHostViewViews::OnKeyPressed().
   // Refactor and eliminate the dup code.
-  const views::KeyEvent& e = key_stroke.key_event();
   NativeWebKeyboardEvent wke;
   wke.type = WebKit::WebInputEvent::KeyDown;
-  wke.windowsKeyCode = e.GetKeyCode();
+  wke.windowsKeyCode = key_event.GetKeyCode();
   wke.setKeyIdentifierFromWindowsKeyCode();
 
   wke.text[0] = wke.unmodifiedText[0] =
     static_cast<unsigned short>(gdk_keyval_to_unicode(
-          app::GdkKeyCodeForWindowsKeyCode(e.GetKeyCode(),
-              e.IsShiftDown() ^ e.IsCapsLockDown())));
+          app::GdkKeyCodeForWindowsKeyCode(key_event.GetKeyCode(),
+              key_event.IsShiftDown() ^ key_event.IsCapsLockDown())));
   return wke;
 #else
-  return NativeWebKeyboardEvent(key_stroke.event());
+  return NativeWebKeyboardEvent(key_event.native_event());
 #endif
 }

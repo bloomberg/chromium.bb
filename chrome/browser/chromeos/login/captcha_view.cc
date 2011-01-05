@@ -120,10 +120,10 @@ void CaptchaView::ViewHierarchyChanged(bool is_add,
     captcha_textfield_->RequestFocus();
 }
 
-bool CaptchaView::HandleKeystroke(views::Textfield* sender,
-    const views::Textfield::Keystroke& keystroke) {
+bool CaptchaView::HandleKeyEvent(views::Textfield* sender,
+                                 const views::KeyEvent& key_event) {
   if (sender == captcha_textfield_ &&
-      keystroke.GetKeyboardCode() == app::VKEY_RETURN) {
+      key_event.GetKeyCode() == app::VKEY_RETURN) {
     if (is_standalone_) {
       Accept();
     } else {

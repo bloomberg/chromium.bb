@@ -142,7 +142,7 @@ class DropdownBarHost : public views::AcceleratorTarget,
   // Returns a keyboard event suitable for forwarding.
   NativeWebKeyboardEvent GetKeyboardEvent(
       const TabContents* contents,
-      const views::Textfield::Keystroke& key_stroke);
+      const views::KeyEvent& key_event);
 
   // Returns the animation for the dropdown.
   SlideAnimation* animation() {

@@ -98,10 +98,8 @@ void NativeTextfieldViews::OnMouseReleased(const views::MouseEvent& e,
 bool NativeTextfieldViews::OnKeyPressed(const views::KeyEvent& e) {
   Textfield::Controller* controller = textfield_->GetController();
   bool handled = false;
-  if (controller) {
-    Textfield::Keystroke ks(&e);
-    handled = controller->HandleKeystroke(textfield_, ks);
-  }
+  if (controller)
+    handled = controller->HandleKeyEvent(textfield_, e);
   return handled || HandleKeyEvent(e);
 }
 

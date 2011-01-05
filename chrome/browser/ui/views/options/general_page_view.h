@@ -58,8 +58,8 @@ class GeneralPageView : public OptionsPageView,
   // views::Textfield::Controller implementation:
   virtual void ContentsChanged(views::Textfield* sender,
                                const std::wstring& new_contents);
-  virtual bool HandleKeystroke(views::Textfield* sender,
-                               const views::Textfield::Keystroke& key);
+  virtual bool HandleKeyEvent(views::Textfield* sender,
+                              const views::KeyEvent& key_event);
 
   // OptionsPageView implementation:
   virtual void InitControlLayout();

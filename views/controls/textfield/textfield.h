@@ -31,6 +31,8 @@
 
 namespace views {
 
+class KeyEvent;
+
 class NativeTextfieldWrapper;
 
 // This class implements a ChromeView that wraps a native text (edit) field.
@@ -38,50 +40,6 @@ class Textfield : public View {
  public:
   // The button's class name.
   static const char kViewClassName[];
-
-  // Keystroke provides a platform-dependent way to send keystroke events.
-  // Cross-platform code can use IsKeystrokeEnter/Escape to check for these
-  // two common key events.
-  // TODO(brettw) this should be cleaned up to be more cross-platform.
-  class Keystroke {
-   public:
-#if defined(OS_WIN)
-    const Keystroke(unsigned int m,
-              wchar_t k,
-              int r,
-              unsigned int f)
-        : message_(m),
-          key_(k),
-          repeat_count_(r),
-          flags_(f) {
-    }
-    unsigned int message() const { return message_; }
-    wchar_t key() const { return key_; }
-    int repeat_count() const { return repeat_count_; }
-    unsigned int flags() const { return flags_; }
-#else
-    explicit Keystroke(const KeyEvent* event)
-        : event_(event) {
-    }
-    const KeyEvent& key_event() const { return *event_;};
-    const GdkEventKey* event() const { return event_->native_event(); }
-#endif
-    app::KeyboardCode GetKeyboardCode() const;
-    bool IsControlHeld() const;
-    bool IsShiftHeld() const;
-
-   private:
-#if defined(OS_WIN)
-    unsigned int message_;
-    wchar_t key_;
-    int repeat_count_;
-    unsigned int flags_;
-#else
-    const KeyEvent* event_;
-#endif
-
-    DISALLOW_COPY_AND_ASSIGN(Keystroke);
-  };
 
   // This defines the callback interface for other code to be notified of
   // changes in the state of a text field.
@@ -94,8 +52,8 @@ class Textfield : public View {
     // This method is called to get notified about keystrokes in the edit.
     // This method returns true if the message was handled and should not be
     // processed further. If it returns false the processing continues.
-    virtual bool HandleKeystroke(Textfield* sender,
-                                 const Textfield::Keystroke& keystroke) = 0;
+    virtual bool HandleKeyEvent(Textfield* sender,
+                                const KeyEvent& key_event) = 0;
   };
 
   enum StyleFlags {

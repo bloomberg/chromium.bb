@@ -99,8 +99,8 @@ class BookmarkEditorView : public BookmarkEditor,
   // Textfield::Controller methods.
   virtual void ContentsChanged(views::Textfield* sender,
                                const std::wstring& new_contents);
-  virtual bool HandleKeystroke(views::Textfield* sender,
-                               const views::Textfield::Keystroke&) {
+  virtual bool HandleKeyEvent(views::Textfield* sender,
+                              const views::KeyEvent& key_event) {
     return false;
   }
 

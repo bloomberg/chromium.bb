@@ -354,30 +354,4 @@ std::string Textfield::GetClassName() const {
   return kViewClassName;
 }
 
-app::KeyboardCode Textfield::Keystroke::GetKeyboardCode() const {
-#if defined(OS_WIN)
-  return static_cast<app::KeyboardCode>(key_);
-#else
-  return event_->GetKeyCode();
-#endif
-}
-
-#if defined(OS_WIN)
-bool Textfield::Keystroke::IsControlHeld() const {
-  return base::win::IsCtrlPressed();
-}
-
-bool Textfield::Keystroke::IsShiftHeld() const {
-  return base::win::IsShiftPressed();
-}
-#else
-bool Textfield::Keystroke::IsControlHeld() const {
-  return event_->IsControlDown();
-}
-
-bool Textfield::Keystroke::IsShiftHeld() const {
-  return event_->IsShiftDown();
-}
-#endif
-
 }  // namespace views

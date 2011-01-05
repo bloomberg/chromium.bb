@@ -40,12 +40,11 @@ class FindBarHost : public DropdownBarHost,
   explicit FindBarHost(BrowserView* browser_view);
   virtual ~FindBarHost();
 
-  // Forwards selected keystrokes to the renderer. This is useful to make sure
+  // Forwards selected key events to the renderer. This is useful to make sure
   // that arrow keys and PageUp and PageDown result in scrolling, instead of
   // being eaten because the FindBar has focus. Returns true if the keystroke
   // was forwarded, false if not.
-  bool MaybeForwardKeystrokeToWebpage(
-      const views::Textfield::Keystroke& key_stroke);
+  bool MaybeForwardKeyEventToWebpage(const views::KeyEvent& key_event);
 
   // FindBar implementation:
   virtual FindBarController* GetFindBarController() const;
@@ -116,9 +115,9 @@ class FindBarHost : public DropdownBarHost,
   // Allows implementation to tweak widget position.
   void GetWidgetPositionNative(gfx::Rect* avoid_overlapping_rect);
 
-  // Allows native implementation to prevent keystrokes from being forwarded.
-  bool ShouldForwardKeystrokeToWebpageNative(
-      const views::Textfield::Keystroke& key_stroke);
+  // Allows native implementation to prevent key events from being forwarded.
+  bool ShouldForwardKeyEventToWebpageNative(
+      const views::KeyEvent& key_event);
 
   // Returns the FindBarView.
   FindBarView* find_bar_view();

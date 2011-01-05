@@ -503,23 +503,23 @@ void FindBarView::ContentsChanged(views::Textfield* sender,
   }
 }
 
-bool FindBarView::HandleKeystroke(views::Textfield* sender,
-                                  const views::Textfield::Keystroke& key) {
+bool FindBarView::HandleKeyEvent(views::Textfield* sender,
+                                 const views::KeyEvent& key_event) {
   // If the dialog is not visible, there is no reason to process keyboard input.
   if (!host()->IsVisible())
     return false;
 
-  if (find_bar_host()->MaybeForwardKeystrokeToWebpage(key))
+  if (find_bar_host()->MaybeForwardKeyEventToWebpage(key_event))
     return true;  // Handled, we are done!
 
-  if (key.GetKeyboardCode() == app::VKEY_RETURN) {
+  if (key_event.GetKeyCode() == app::VKEY_RETURN) {
     // Pressing Return/Enter starts the search (unless text box is empty).
     string16 find_string = find_text_->text();
     if (!find_string.empty()) {
       // Search forwards for enter, backwards for shift-enter.
       find_bar_host()->GetFindBarController()->tab_contents()->StartFinding(
           find_string,
-          !key.IsShiftHeld(),
+          !key_event.IsShiftDown(),
           false);  // Not case sensitive.
     }
   }

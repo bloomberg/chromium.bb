@@ -24,7 +24,7 @@ void FindBarHost::GetWidgetPositionNative(gfx::Rect* avoid_overlapping_rect) {
   avoid_overlapping_rect->Offset(0, webcontents_rect.y() - frame_rect.y());
 }
 
-bool FindBarHost::ShouldForwardKeystrokeToWebpageNative(
-    const views::Textfield::Keystroke& key_stroke) {
+bool FindBarHost::ShouldForwardKeyEventToWebpageNative(
+    const views::KeyEvent& key_event) {
   return true;
 }

@@ -26,8 +26,8 @@ void FindBarHost::GetWidgetPositionNative(gfx::Rect* avoid_overlapping_rect) {
   avoid_overlapping_rect->Offset(0, webcontents_rect.top - frame_rect.top);
 }
 
-bool FindBarHost::ShouldForwardKeystrokeToWebpageNative(
-    const views::Textfield::Keystroke& key_stroke) {
+bool FindBarHost::ShouldForwardKeyEventToWebpageNative(
+    const views::KeyEvent& key_event) {
   // We specifically ignore WM_CHAR. See http://crbug.com/10509.
-  return key_stroke.message() == WM_KEYDOWN || key_stroke.message() == WM_KEYUP;
+  return key_event.message() == WM_KEYDOWN || key_event.message() == WM_KEYUP;
 }

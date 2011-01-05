@@ -8,6 +8,16 @@
 
 namespace views {
 
+KeyEvent::KeyEvent(EventType type, app::KeyboardCode key_code,
+                   int event_flags, int repeat_count, int message_flags,
+                   UINT message)
+    : Event(type, event_flags),
+      key_code_(key_code),
+      repeat_count_(repeat_count),
+      message_flags_(message_flags),
+      message_(message) {
+}
+
 int Event::GetWindowsFlags() const {
   // TODO: need support for x1/x2.
   int result = 0;
