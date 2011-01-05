@@ -4,12 +4,14 @@
 
 #include "chrome/browser/autofill/phone_field.h"
 
+#include "app/l10n_util.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_field.h"
+#include "grit/autofill_resources.h"
 
 // static
 PhoneField* PhoneField::Parse(std::vector<AutoFillField*>::const_iterator* iter,
@@ -30,13 +32,15 @@ PhoneField* PhoneField::Parse(std::vector<AutoFillField*>::const_iterator* iter,
   // Some pages, such as BloomingdalesShipping.html, have a field labeled
   // "Area Code and Phone"; we want to parse this as a phone number field so
   // we look for "phone" before we look for "area code".
-  if (ParseText(&q, ASCIIToUTF16("phone"), &phone)) {
+  if (ParseText(&q, l10n_util::GetStringUTF16(IDS_AUTOFILL_PHONE_RE), &phone)) {
     area_code = false;
   } else {
-    if (!ParseText(&q, ASCIIToUTF16("area code"), &phone))
+    if (!ParseText(&q,
+                   l10n_util::GetStringUTF16(IDS_AUTOFILL_AREA_CODE_RE),
+                   &phone))
       return NULL;
     area_code = true;
-    ParseText(&q, ASCIIToUTF16("phone"), &phone2);
+    ParseText(&q, l10n_util::GetStringUTF16(IDS_AUTOFILL_PHONE_RE), &phone2);
   }
 
   // Sometimes phone number fields are separated by "-" (e.g. test page
@@ -48,11 +52,15 @@ PhoneField* PhoneField::Parse(std::vector<AutoFillField*>::const_iterator* iter,
   // uk/Furniture123-1.html) have several phone numbers in succession and we
   // don't want those to be parsed as components of a single phone number.
   if (phone2 == NULL)
-    ParseText(&q, ASCIIToUTF16("^-$|\\)$|prefix"), &phone2);
+    ParseText(&q,
+              l10n_util::GetStringUTF16(IDS_AUTOFILL_PHONE_PREFIX_RE),
+              &phone2);
 
   // Look for a third text box.
   if (phone2)
-    ParseText(&q, ASCIIToUTF16("^-$|suffix"), &phone3);
+    ParseText(&q,
+              l10n_util::GetStringUTF16(IDS_AUTOFILL_PHONE_SUFFIX_RE),
+              &phone3);
 
   // Now we have one, two, or three phone number text fields.  Package them
   // up into a PhoneField object.
@@ -73,7 +81,9 @@ PhoneField* PhoneField::Parse(std::vector<AutoFillField*>::const_iterator* iter,
   }
 
   // Now look for an extension.
-  ParseText(&q, ASCIIToUTF16("ext"), &phone_field->extension_);
+  ParseText(&q,
+            l10n_util::GetStringUTF16(IDS_AUTOFILL_PHONE_EXTENSION_RE),
+            &phone_field->extension_);
 
   *iter = q;
   return phone_field.release();

@@ -4,10 +4,12 @@
 
 #include "chrome/browser/autofill/credit_card_field.h"
 
+#include "app/l10n_util.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_field.h"
+#include "grit/autofill_resources.h"
 
 bool CreditCardField::GetFieldInfo(FieldTypeMap* field_type_map) const {
   bool ok = Add(field_type_map, number_, AutoFillType(CREDIT_CARD_NUMBER));
@@ -64,9 +66,11 @@ CreditCardField* CreditCardField::Parse(
       } else {
         if (fields == 0 || credit_card_field->expiration_month_) {
           // at beginning or end
-          name_pattern = ASCIIToUTF16("card holder|name on card|nameoncard");
+          name_pattern = l10n_util::GetStringUTF16(
+              IDS_AUTOFILL_NAME_ON_CARD_RE);
         } else {
-          name_pattern = ASCIIToUTF16("name");
+          name_pattern = l10n_util::GetStringUTF16(
+              IDS_AUTOFILL_NAME_ON_CARD_CONTEXTUAL_RE);
         }
       }
 
@@ -96,8 +100,7 @@ CreditCardField* CreditCardField::Parse(
     if (is_ecml) {
       pattern = GetEcmlPattern(kEcmlCardVerification);
     } else {
-      pattern = ASCIIToUTF16("verification|card identification|cvn|"
-                             "security code|cvv code|cvc");
+      pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_CVC_RE);
     }
 
     if (credit_card_field->verification_ == NULL &&
@@ -109,7 +112,7 @@ CreditCardField* CreditCardField::Parse(
     if (is_ecml)
       pattern = GetEcmlPattern(kEcmlCardNumber);
     else
-      pattern = ASCIIToUTF16("number|card #|card no.|card_number|card number");
+      pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_NUMBER_RE);
 
     if (credit_card_field->number_ == NULL && ParseText(&q, pattern,
         &credit_card_field->number_))
@@ -130,7 +133,7 @@ CreditCardField* CreditCardField::Parse(
     if (is_ecml)
       pattern = GetEcmlPattern(kEcmlCardExpireMonth);
     else
-      pattern = ASCIIToUTF16("expir|exp.*month|exp date|ccmonth");
+      pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_EXPIRATION_MONTH_RE);
 
     if ((!credit_card_field->expiration_month_ ||
         credit_card_field->expiration_month_->IsEmpty()) &&
@@ -138,7 +141,7 @@ CreditCardField* CreditCardField::Parse(
       if (is_ecml)
         pattern = GetEcmlPattern(kEcmlCardExpireYear);
       else
-        pattern = ASCIIToUTF16("|exp|^/|ccyear|year");
+        pattern = l10n_util::GetStringUTF16(IDS_AUTOFILL_EXPIRATION_DATE_RE);
 
       if (!ParseText(&q, pattern, &credit_card_field->expiration_year_))
         return NULL;
@@ -154,7 +157,7 @@ CreditCardField* CreditCardField::Parse(
     // We also ignore any other fields within a credit card block that
     // start with "card", under the assumption that they are related to
     // the credit card section being processed but are uninteresting to us.
-    if (ParseText(&q, ASCIIToUTF16("^card")))
+    if (ParseText(&q, l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_IGNORED_RE)))
       continue;
 
     break;

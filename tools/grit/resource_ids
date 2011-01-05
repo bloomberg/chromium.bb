@@ -123,4 +123,8 @@
     "structures": [19000],
     "messages": [19010],
   },
+
+  "chrome/browser/autofill/autofill_resources.grd": {
+    "messages": [19500],
+  },
 }

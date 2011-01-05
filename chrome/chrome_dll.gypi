@@ -111,6 +111,7 @@
                 # but that causes errors in other targets when
                 # resulting .res files get referenced multiple times.
                 '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/chrome/autofill_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
@@ -326,6 +327,7 @@
                   'action_name': 'repack_chrome',
                   'variables': {
                     'pak_inputs': [
+                      '<(grit_out_dir)/autofill_resources.pak',
                       '<(grit_out_dir)/browser_resources.pak',
                       '<(grit_out_dir)/common_resources.pak',
                       '<(grit_out_dir)/default_plugin_resources/default_plugin_resources.pak',
@@ -584,6 +586,7 @@
             # but that causes errors in other targets when
             # resulting .res files get referenced multiple times.
             '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/autofill_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
 
             # TODO(sgk):  left-over from pre-gyp build, figure out
