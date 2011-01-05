@@ -61,18 +61,19 @@ div.header {
                                      from(#D0DAF8),
                                      to(#A6BAF7));
 }
+.deleteYesNoContainer {
+  display: -webkit-box;
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+}
 .deleteYes {
-  width: 40px;
-  height: 30px;
-  float: left;
+  margin: 4px;
   text-decoration: underline;
   color: blue;
 }
 
 .deleteNo {
-  width: 40px;
-  height: 30px;
-  float: left;
+  margin: 4px;
   text-decoration: underline;
   color: blue;
 }
@@ -81,7 +82,7 @@ div.header {
   text-align: center;
   border: 1px solid rgba(0, 0, 0, 0.25);
   border-radius: 2px;
-  height: 36px;
+  min-height: 36px;
   padding: 4px;
 }
 
@@ -541,7 +542,7 @@ div.fullcontainer {
 .menu {
   top: 14px;
   right: 2px;
-  width: 100px;
+  width: 180px;
   -webkit-box-shadow: rgba(0, 0, 0, 0.3) 0px 3px 3px;
   border-bottom-left-radius: 4px 4px;
   border-bottom-right-radius: 4px 4px;
@@ -1111,6 +1112,8 @@ function deleteFileConfirm(path) {
   var askingDiv = document.createElement('div');
   askingDiv.className = 'confirmdelete';
   askingDiv.textContent = localStrings.getString('confirmdelete');
+  yesNoDiv = document.createElement('div');
+  yesNoDiv.className = 'deleteYesNoContainer';
   var yes = document.createElement('div');
   yes.className = 'deleteYes';
   yes.textContent = localStrings.getString('confirmyes');
@@ -1119,8 +1122,9 @@ function deleteFileConfirm(path) {
   no.onclick = partial(removeDeleteConfirm, path);
   no.textContent = localStrings.getString('confirmcancel');
   no.className = 'deleteNo';
-  askingDiv.appendChild(yes);
-  askingDiv.appendChild(no);
+  yesNoDiv.appendChild(yes);
+  yesNoDiv.appendChild(no);
+  askingDiv.appendChild(yesNoDiv);
   element.firstChild.appendChild(askingDiv);
   askingDiv.scrollIntoView();
   window.event.stopPropagation();
