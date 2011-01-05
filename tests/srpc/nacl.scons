@@ -144,7 +144,6 @@ node = env.BrowserTester(
             env.File('srpc_basic.html'),
             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
             ],
-     browser='*firefox',
      )
 env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_srpc_basic_browser_test')
 
@@ -156,7 +155,6 @@ node = env.BrowserTester(
             env.File('srpc_plugin.html'),
             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
             ],
-     browser='*firefox',
      )
 env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_srpc_plugin_browser_test')
 
@@ -167,7 +165,6 @@ node = env.BrowserTester(
             env.File('srpc_sockaddr.html'),
             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
             ],
-     browser='*firefox',
      )
 env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_srpc_sockaddr_browser_test')
 
@@ -178,7 +175,6 @@ node = env.BrowserTester(
             env.File('srpc_shm.html'),
             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
             ],
-     browser='*firefox',
      )
 env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_srpc_shm_browser_test')
 
@@ -196,7 +192,6 @@ if 0:
               env.File('srpc_nrd_xfer.html'),
               env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
               ],
-       browser='*firefox',
        )
   env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_srpc_nrd_xfer_browser_test')
 
@@ -208,7 +203,6 @@ node = env.BrowserTester(
             env.File('srpc_url_as_nacl_desc_success.html'),
             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
             ],
-     browser='*firefox',
      )
 env.AddNodeToTestSuite(node, BROWSER_TESTS,
                        'run_srpc_url_as_nacl_desc_browser_test')

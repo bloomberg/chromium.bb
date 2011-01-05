@@ -21,8 +21,9 @@ env.AddPrebuiltBinaryToRepository(nexe)
 
 
 # TODO(dpolukhin): enable for x86-64 ASAP.
+is_broken = False
 if env.Bit('target_x86_64'):
-  Return()
+  is_broken = True
 
 node = env.BrowserTester(
      'srpc_hw_browser_test.out',
@@ -31,6 +32,8 @@ node = env.BrowserTester(
             env.File('srpc_hw.html'),
             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
             ],
-     browser='*firefox',
      )
-env.AddNodeToTestSuite(node, ['browser_tests'], 'run_srpc_hw_browser_test')
+env.AddNodeToTestSuite(node,
+                       ['browser_tests'],
+                       'run_srpc_hw_browser_test',
+                       is_broken=is_broken)

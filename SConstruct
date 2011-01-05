@@ -958,10 +958,10 @@ def BrowserTester(env,
                 target,
                 url,
                 files,
-                browser,
                 log_verbosity=2,
                 args=[]):
 
+  browser = '*firefox'
   # NOTE: hack to enable chrome testing - only works with Linux so far
   if ARGUMENTS.get('chrome_browser_path'):
     browser = env.subst('"*googlechrome '

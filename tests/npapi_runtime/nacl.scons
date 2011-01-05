@@ -24,9 +24,9 @@ env.Publish('npapi_runtime.nexe', 'run',
 
 
 # TODO(robertm): this may work already
+is_broken = False
 if env.Bit('target_arm'):
-  Return()
-
+  is_broken = True
 
 # Run the example tests under Selenium.
 BROWSER_TESTS = ['browser_tests']
@@ -37,6 +37,8 @@ node = env.BrowserTester(
             env.File('npapi_runtime.html'),
             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
             ],
-     browser='*firefox',
      )
-env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_npapi_runtime_browser_test')
+env.AddNodeToTestSuite(node,
+                       ['browser_tests'],
+                       'run_npapi_runtime_browser_test',
+                       is_broken=is_broken)

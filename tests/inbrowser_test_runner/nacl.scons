@@ -28,7 +28,7 @@ env.Alias('test_runner.html', dest_copy)
 node = env.BrowserTester(
     'my_browser_test.out', url='test_runner.html',
     files=[env.File('test_runner.html')] + test_executables,
-    browser='*firefox')
+    )
 # Disabling test on mac, see:
 #   http://code.google.com/p/nativeclient/issues/detail?id=1170
 if 'TRUSTED_ENV' in env and not env['TRUSTED_ENV'].Bit('mac'):

@@ -10,7 +10,6 @@ node = env.BrowserTester(
      'selenium_self_test.out',
      url='self.test.html',
      files=[],
-     browser='*firefox',
      )
 env.AddNodeToTestSuite(node, ['browser_tests'], 'run_selenium_self_test')
 
@@ -20,6 +19,5 @@ node = env.BrowserTester(
      'selenium_self_test2.out',
      url='simple.html',
      files=[env.File('simple.html')],
-     browser='*firefox',
      )
 env.AddNodeToTestSuite(node, ['browser_tests'])

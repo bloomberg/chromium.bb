@@ -37,6 +37,5 @@ node = env.BrowserTester(
             env.File('npapi_geturl_success.html'),
             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
             ],
-     browser='*firefox',
      )
 env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_npapi_geturl_browser_test')
