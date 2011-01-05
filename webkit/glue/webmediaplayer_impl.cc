@@ -737,6 +737,8 @@ void WebMediaPlayerImpl::OnPipelineError() {
     case media::PIPELINE_ERROR_ABORT:
     case media::PIPELINE_ERROR_OUT_OF_MEMORY:
     case media::PIPELINE_ERROR_AUDIO_HARDWARE:
+    case media::PIPELINE_ERROR_OPERATION_PENDING:
+    case media::PIPELINE_ERROR_INVALID_STATE:
       // Decode error.
       SetNetworkState(WebMediaPlayer::DecodeError);
       break;
