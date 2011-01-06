@@ -110,8 +110,9 @@ TEST_F(FramedBrowserWindowTest, WindowWidgetLocation) {
   windowBounds.origin = NSZeroPoint;
   EXPECT_EQ(NSMaxY(closeBoxFrame),
             NSMaxY(windowBounds) -
-            kFramedWindowButtonsWithoutTabStripOffsetFromTop);
-  EXPECT_EQ(NSMinX(closeBoxFrame), kFramedWindowButtonsOffsetFromLeft);
+                kFramedWindowButtonsWithoutTabStripOffsetFromTop);
+  EXPECT_EQ(NSMinX(closeBoxFrame),
+            kFramedWindowButtonsWithoutTabStripOffsetFromLeft);
 
   NSCell* miniaturizeCell = [window_ accessibilityAttributeValue:
                              NSAccessibilityMinimizeButtonAttribute];
@@ -120,7 +121,7 @@ TEST_F(FramedBrowserWindowTest, WindowWidgetLocation) {
   NSRect miniaturizeFrame = [miniaturizeControl frame];
   EXPECT_EQ(NSMaxY(miniaturizeFrame),
             NSMaxY(windowBounds) -
-            kFramedWindowButtonsWithoutTabStripOffsetFromTop);
+                kFramedWindowButtonsWithoutTabStripOffsetFromTop);
   EXPECT_EQ(NSMinX(miniaturizeFrame),
             NSMaxX(closeBoxFrame) + kFramedWindowButtonsInterButtonSpacing);
 
@@ -144,8 +145,9 @@ TEST_F(FramedBrowserWindowTest, WindowWidgetLocation) {
   windowBounds.origin = NSZeroPoint;
   EXPECT_EQ(NSMaxY(closeBoxFrame),
             NSMaxY(windowBounds) -
-            kFramedWindowButtonsWithTabStripOffsetFromTop);
-  EXPECT_EQ(NSMinX(closeBoxFrame), kFramedWindowButtonsOffsetFromLeft);
+                kFramedWindowButtonsWithTabStripOffsetFromTop);
+  EXPECT_EQ(NSMinX(closeBoxFrame),
+            kFramedWindowButtonsWithTabStripOffsetFromLeft);
 
   miniaturizeCell = [window_ accessibilityAttributeValue:
                      NSAccessibilityMinimizeButtonAttribute];
@@ -154,7 +156,7 @@ TEST_F(FramedBrowserWindowTest, WindowWidgetLocation) {
   miniaturizeFrame = [miniaturizeControl frame];
   EXPECT_EQ(NSMaxY(miniaturizeFrame),
             NSMaxY(windowBounds) -
-            kFramedWindowButtonsWithTabStripOffsetFromTop);
+                kFramedWindowButtonsWithTabStripOffsetFromTop);
   EXPECT_EQ(NSMinX(miniaturizeFrame),
             NSMaxX(closeBoxFrame) + kFramedWindowButtonsInterButtonSpacing);
   [window_ setWindowController:nil];
