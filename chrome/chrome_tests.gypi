@@ -1963,14 +1963,6 @@
             ['exclude', '^browser/importer/'],
           ],
         }],
-        # We are migrating to client-based geolocation. Once the migration
-        # has finished, ENABLE_CLIENT_BASED_GEOLOCATION will disappear.
-        # See bugs:
-        #     https://bugs.webkit.org/show_bug.cgi?id=45752 and
-        #     http://code.google.com/p/chromium/issues/detail?id=59907
-        ['"ENABLE_CLIENT_BASED_GEOLOCATION=1" in feature_defines', {
-          'defines': [ 'ENABLE_CLIENT_BASED_GEOLOCATION=1' ]
-        }],
       ],
     },
     {

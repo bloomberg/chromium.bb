@@ -73,8 +73,6 @@
         'plain_text_controller.cc',
         'plain_text_controller.h',
         'resource.h',
-        'test_geolocation_service.cc',
-        'test_geolocation_service.h',
         'test_navigation_controller.cc',
         'test_navigation_controller.h',
         'test_shell.cc',
@@ -159,9 +157,6 @@
             'drag_delegate.cc',
             'drop_delegate.cc',
           ],
-        }],
-        ['"ENABLE_CLIENT_BASED_GEOLOCATION=1" in feature_defines', {
-          'defines': [ 'ENABLE_CLIENT_BASED_GEOLOCATION=1' ]
         }],
       ],
     },

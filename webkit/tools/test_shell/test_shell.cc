@@ -58,10 +58,6 @@
 #include "webkit/tools/test_shell/test_shell_switches.h"
 #include "webkit/tools/test_shell/test_webview_delegate.h"
 
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
-#include "third_party/WebKit/WebKit/chromium/public/WebGeolocationClientMock.h"
-#endif
-
 using WebKit::WebCanvas;
 using WebKit::WebFrame;
 using WebKit::WebNavigationPolicy;
@@ -651,10 +647,8 @@ void TestShell::ResetTestController() {
   event_sending_controller_->Reset();
   notification_presenter_->Reset();
   delegate_->Reset();
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
   if (geolocation_client_mock_.get())
     geolocation_client_mock_->resetMock();
-#endif
 }
 
 void TestShell::LoadFile(const FilePath& file) {
@@ -794,7 +788,6 @@ TestShell::speech_input_controller_mock() {
   return speech_input_controller_mock_.get();
 }
 
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
 WebKit::WebGeolocationClientMock* TestShell::geolocation_client_mock() {
   if (!geolocation_client_mock_.get()) {
     geolocation_client_mock_.reset(
@@ -802,7 +795,6 @@ WebKit::WebGeolocationClientMock* TestShell::geolocation_client_mock() {
   }
   return geolocation_client_mock_.get();
 }
-#endif
 
 //-----------------------------------------------------------------------------
 

@@ -26,11 +26,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
 #include "third_party/WebKit/WebKit/chromium/public/WebGeolocationClientMock.h"
-#else
-#include "third_party/WebKit/WebKit/chromium/public/WebGeolocationServiceMock.h"
-#endif
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScriptSource.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityPolicy.h"
@@ -61,10 +57,6 @@ using WebKit::WebSecurityPolicy;
 using WebKit::WebSize;
 using WebKit::WebString;
 using WebKit::WebURL;
-
-#if !defined(ENABLE_CLIENT_BASED_GEOLOCATION)
-using WebKit::WebGeolocationServiceMock;
-#endif
 
 TestShell* LayoutTestController::shell_ = NULL;
 // Most of these flags need to be cleared in Reset() so that they get turned
@@ -1500,12 +1492,8 @@ void LayoutTestController::setGeolocationPermission(const CppArgumentList& args,
                                                     CppVariant* result) {
   if (args.size() < 1 || !args[0].isBool())
     return;
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
   shell_->geolocation_client_mock()->setPermission(
       args[0].ToBoolean());
-#else
-  shell_->delegate()->SetGeolocationPermission(args[0].ToBoolean());
-#endif
 }
 
 void LayoutTestController::setMockGeolocationPosition(
@@ -1513,26 +1501,16 @@ void LayoutTestController::setMockGeolocationPosition(
   if (args.size() < 3 ||
       !args[0].isNumber() || !args[1].isNumber() || !args[2].isNumber())
     return;
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
   shell_->geolocation_client_mock()->setPosition(
       args[0].ToDouble(), args[1].ToDouble(), args[2].ToDouble());
-#else
-  WebGeolocationServiceMock::setMockGeolocationPosition(
-      args[0].ToDouble(), args[1].ToDouble(), args[2].ToDouble());
-#endif
 }
 
 void LayoutTestController::setMockGeolocationError(const CppArgumentList& args,
                                                    CppVariant* result) {
   if (args.size() < 2 || !args[0].isNumber() || !args[1].isString())
     return;
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
   shell_->geolocation_client_mock()->setError(
       args[0].ToInt32(), WebString::fromUTF8(args[1].ToString()));
-#else
-  WebGeolocationServiceMock::setMockGeolocationError(
-      args[0].ToInt32(), WebString::fromUTF8(args[1].ToString()));
-#endif
 }
 
 void LayoutTestController::markerTextForListItem(const CppArgumentList& args,

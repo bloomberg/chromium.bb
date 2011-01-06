@@ -439,29 +439,14 @@ void GeolocationPermissionContext::StartUpdatingRequested(
   // Note we cannot store the arbitrator as a member as it is not thread safe.
   GeolocationProvider* provider = GeolocationProvider::GetInstance();
 
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
   // Client-based Geolocation uses a preemptive permission model, so permission
   // ought to have been requested and granted before the controller requests
   // the client to start updating.
   DCHECK(provider->HasPermissionBeenGranted());
-#else
-  // WebKit will not request permission until it has received a valid
-  // location, but the google network location provider will not give a
-  // valid location until the user has granted permission. So we cut the Gordian
-  // Knot by reusing the the 'start updating' request to also trigger
-  // a 'permission request' should the provider still be awaiting permission.
-  if (!provider->HasPermissionBeenGranted()) {
-    RequestGeolocationPermission(render_process_id, render_view_id, bridge_id,
-                                 requesting_frame);
-  }
-#endif
 }
 
 void GeolocationPermissionContext::StopUpdatingRequested(
     int render_process_id, int render_view_id, int bridge_id) {
-#if !defined(ENABLE_CLIENT_BASED_GEOLOCATION)
-  CancelPendingInfoBarRequest(render_process_id, render_view_id, bridge_id);
-#endif
 }
 
 void GeolocationPermissionContext::NotifyPermissionSet(

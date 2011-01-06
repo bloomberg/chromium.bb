@@ -168,12 +168,10 @@ void GeolocationDispatcherHostImpl::OnStartUpdating(
     int bridge_id,
     const GURL& requesting_frame,
     bool enable_high_accuracy) {
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
   // StartUpdating() can be invoked as a result of high-accuracy mode
   // being enabled / disabled. No need to register the dispatcher again.
   if (!geolocation_renderer_ids_.count(render_view_id))
     OnRegisterDispatcher(render_view_id);
-#endif
   // WebKit sends the startupdating request before checking permissions, to
   // optimize the no-location-available case and reduce latency in the success
   // case (location lookup happens in parallel with the permission request).
@@ -197,9 +195,7 @@ void GeolocationDispatcherHostImpl::OnStopUpdating(int render_view_id,
     RefreshGeolocationObserverOptions();
   geolocation_permission_context_->StopUpdatingRequested(
       render_process_id_, render_view_id, bridge_id);
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
   OnUnregisterDispatcher(render_view_id);
-#endif
 }
 
 void GeolocationDispatcherHostImpl::OnSuspend(int render_view_id,

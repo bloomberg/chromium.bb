@@ -290,36 +290,6 @@ TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
           requesting_frame_1, requesting_frame_0));
 }
 
-// TODO(jknotten): Remove this test once we have completely
-// switched over to client-based geolocation.
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
-#define MAYBE_StopUpdating DISABLED_StopUpdating
-#else
-#define MAYBE_StopUpdating StopUpdating
-#endif
-TEST_F(GeolocationPermissionContextTests, MAYBE_StopUpdating) {
-  GURL requesting_frame("http://www.example.com/geolocation");
-  NavigateAndCommit(requesting_frame);
-  EXPECT_EQ(0, contents()->infobar_delegate_count());
-  geolocation_permission_context_->RequestGeolocationPermission(
-      process_id(), render_id(), bridge_id(), requesting_frame);
-  EXPECT_EQ(1, contents()->infobar_delegate_count());
-  ConfirmInfoBarDelegate* infobar_0 =
-      contents()->GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
-  ASSERT_TRUE(infobar_0);
-
-  geolocation_permission_context_->StopUpdatingRequested(
-      process_id(), render_id(), bridge_id());
-  EXPECT_EQ(infobar_0,
-            tab_contents_with_pending_infobar_->removed_infobar_delegate_);
-  infobar_0->InfoBarClosed();
-  EXPECT_EQ(0, contents()->infobar_delegate_count());
-  EXPECT_EQ(
-      CONTENT_SETTING_ASK,
-      profile()->GetGeolocationContentSettingsMap()->GetContentSetting(
-          requesting_frame, requesting_frame));
-}
-
 TEST_F(GeolocationPermissionContextTests, InvalidURL) {
   GURL invalid_embedder;
   GURL requesting_frame("about:blank");

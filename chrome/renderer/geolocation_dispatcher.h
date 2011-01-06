@@ -6,8 +6,6 @@
 #define CHROME_RENDERER_GEOLOCATION_DISPATCHER_H_
 #pragma once
 
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
-
 #include "base/scoped_ptr.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebGeolocationClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebGeolocationController.h"
@@ -70,6 +68,5 @@ class GeolocationDispatcher : public WebKit::WebGeolocationClient {
   bool enable_high_accuracy_;
   bool updating_;
 };
-#endif // ENABLE_CLIENT_BASED_GEOLOCATION
 
-#endif // CHROME_RENDERER_GEOLOCATION_DISPATCHER_H_
+#endif  // CHROME_RENDERER_GEOLOCATION_DISPATCHER_H_

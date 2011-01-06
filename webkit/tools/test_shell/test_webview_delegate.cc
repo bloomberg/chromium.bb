@@ -33,6 +33,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFileError.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebGeolocationClientMock.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKitClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
@@ -69,14 +70,9 @@
 #include "webkit/tools/test_shell/notification_presenter.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
 #include "webkit/tools/test_shell/simple_file_system.h"
-#include "webkit/tools/test_shell/test_geolocation_service.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 #include "webkit/tools/test_shell/test_shell.h"
 #include "webkit/tools/test_shell/test_web_worker.h"
-
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
-#include "third_party/WebKit/WebKit/chromium/public/WebGeolocationClientMock.h"
-#endif
 
 #if defined(OS_WIN)
 // TODO(port): make these files work everywhere.
@@ -656,24 +652,8 @@ WebNotificationPresenter* TestWebViewDelegate::notificationPresenter() {
 }
 
 WebKit::WebGeolocationClient* TestWebViewDelegate::geolocationClient() {
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
   return shell_->geolocation_client_mock();
-#else
-  // TODO(jknotten): Remove once building with ENABLE_CLIENT_BASED_GEOLOCATION.
-  NOTREACHED();
-  return 0;
-#endif
 }
-
-WebKit::WebGeolocationService* TestWebViewDelegate::geolocationService() {
-#if defined(ENABLE_CLIENT_BASED_GEOLOCATION)
-  NOTREACHED();
-  return 0;
-#else
-  return GetTestGeolocationService();
-#endif
-}
-
 
 WebKit::WebDeviceOrientationClient*
 TestWebViewDelegate::deviceOrientationClient() {
@@ -1220,12 +1200,6 @@ void TestWebViewDelegate::WaitForPolicyDelegate() {
   policy_delegate_should_notify_done_ = true;
 }
 
-#if !defined(ENABLE_CLIENT_BASED_GEOLOCATION)
-void TestWebViewDelegate::SetGeolocationPermission(bool allowed) {
-  GetTestGeolocationService()->SetGeolocationPermission(allowed);
-}
-#endif
-
 // Private methods -----------------------------------------------------------
 
 void TestWebViewDelegate::UpdateAddressBar(WebView* webView) {
@@ -1345,14 +1319,6 @@ std::wstring TestWebViewDelegate::GetFrameDescription(WebFrame* webframe) {
       return L"frame (anonymous)";
   }
 }
-
-#if !defined(ENABLE_CLIENT_BASED_GEOLOCATION)
-TestGeolocationService* TestWebViewDelegate::GetTestGeolocationService() {
-  if (!test_geolocation_service_.get())
-    test_geolocation_service_.reset(new TestGeolocationService);
-  return test_geolocation_service_.get();
-}
-#endif
 
 void TestWebViewDelegate::set_fake_window_rect(const WebRect& rect) {
   fake_rect_ = rect;
