@@ -97,6 +97,9 @@ bool GpuProcessHost::EnsureInitialized() {
   if (!initialized_) {
     initialized_ = true;
     initialized_successfully_ = Init();
+    if (initialized_successfully_) {
+      Send(new GpuMsg_Initialize());
+    }
   }
   return initialized_successfully_;
 }
@@ -228,10 +231,13 @@ void GpuProcessHost::OnChannelEstablished(
 }
 
 void GpuProcessHost::OnSynchronizeReply() {
-  const SynchronizationRequest& request =
-      queued_synchronization_replies_.front();
-  SendSynchronizationReply(request.reply, request.filter);
-  queued_synchronization_replies_.pop();
+  // Guard against race conditions in abrupt GPU process termination.
+  if (queued_synchronization_replies_.size() > 0) {
+    const SynchronizationRequest& request =
+        queued_synchronization_replies_.front();
+    SendSynchronizationReply(request.reply, request.filter);
+    queued_synchronization_replies_.pop();
+  }
 }
 
 #if defined(OS_LINUX)
@@ -480,11 +486,26 @@ void GpuProcessHost::SendSynchronizationReply(
   filter->Send(reply);
 }
 
+void GpuProcessHost::SendOutstandingReplies() {
+  // First send empty channel handles for all EstablishChannel requests.
+  while (!sent_requests_.empty()) {
+    const ChannelRequest& request = sent_requests_.front();
+    SendEstablishChannelReply(IPC::ChannelHandle(), GPUInfo(), request.filter);
+    sent_requests_.pop();
+  }
+
+  // Now unblock all renderers waiting for synchronization replies.
+  while (!queued_synchronization_replies_.empty()) {
+    OnSynchronizeReply();
+  }
+}
+
 bool GpuProcessHost::CanShutdown() {
   return true;
 }
 
 void GpuProcessHost::OnChildDied() {
+  SendOutstandingReplies();
   // Located in OnChildDied because OnProcessCrashed suffers from a race
   // condition on Linux. The GPU process will only die if it crashes.
   UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLifetimeEvents",
@@ -493,6 +514,7 @@ void GpuProcessHost::OnChildDied() {
 }
 
 void GpuProcessHost::OnProcessCrashed(int exit_code) {
+  SendOutstandingReplies();
   if (++g_gpu_crash_count >= kGpuMaxCrashCount) {
     // The gpu process is too unstable to use. Disable it for current session.
     RenderViewHostDelegateHelper::set_gpu_enabled(false);
