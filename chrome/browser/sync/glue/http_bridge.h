@@ -60,10 +60,6 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
           URLRequestContext::GetUserAgent(url) : user_agent_;
     }
 
-    virtual bool AllowSendingCookies(const net::URLRequest* request) const {
-      return false;
-    }
-
    private:
     // The destructor MUST be called on the IO thread.
     ~RequestContext();

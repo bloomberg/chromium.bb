@@ -193,6 +193,7 @@ void HttpBridge::MakeAsynchronousPost() {
   url_poster_->set_request_context(context_getter_for_request_);
   url_poster_->set_upload_data(content_type_, request_content_);
   url_poster_->set_extra_request_headers(extra_headers_);
+  url_poster_->set_load_flags(net::LOAD_DO_NOT_SEND_COOKIES);
   url_poster_->Start();
 }
 
