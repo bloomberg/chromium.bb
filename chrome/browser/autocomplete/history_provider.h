@@ -20,6 +20,9 @@ class URLRow;
 // This class is a base class for the history autocomplete providers and
 // provides functions useful to all derived classes.
 class HistoryProvider : public AutocompleteProvider {
+ public:
+  virtual void DeleteMatch(const AutocompleteMatch& match) OVERRIDE;
+
  protected:
   enum MatchType {
     NORMAL,
@@ -30,8 +33,6 @@ class HistoryProvider : public AutocompleteProvider {
   HistoryProvider(ACProviderListener* listener,
                   Profile* profile,
                   const char* name);
-
-  virtual void DeleteMatch(const AutocompleteMatch& match) OVERRIDE;
 
   // Fixes up user URL input to make it more possible to match against.  Among
   // many other things, this takes care of the following:

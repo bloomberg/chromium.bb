@@ -43,9 +43,9 @@ void HistoryProvider::DeleteMatch(const AutocompleteMatch& match) {
   for (ACMatches::iterator i(matches_.begin()); i != matches_.end(); ++i) {
     if (i->destination_url == selected_url && i->type == match.type) {
       found = true;
-      if (i->is_history_what_you_typed_match) {
-        // We can't get rid of the What You Typed match, but we can make it
-        // look like it has no backing data.
+      if (i->is_history_what_you_typed_match || i->starred) {
+        // We can't get rid of What-You-Typed or Bookmarked matches,
+        // but we can make them look like they have no backing data.
         i->deletable = false;
         i->description.clear();
         i->description_class.clear();

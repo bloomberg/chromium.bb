@@ -90,8 +90,10 @@ class HistoryContentsProviderTest : public testing::Test,
 
   // ACProviderListener
   virtual void OnProviderUpdate(bool updated_matches) {
-    // When we quit, the test will get back control.
-    MessageLoop::current()->Quit();
+    // We must quit the message loop (if running) to return control to the test.
+    // Note, calling Quit() directly will checkfail if the loop isn't running,
+    // so we post a task, which is safe for either case.
+    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
   }
 
   MessageLoopForUI message_loop_;
@@ -184,7 +186,7 @@ TEST_F(HistoryContentsProviderTest, Bookmarks) {
   // Run the message loop (needed for async history results).
   MessageLoop::current()->Run();
 
-  // We should two urls now, bookmark_url and http://www.google.com/3.
+  // We should have two urls now, bookmark_url and http://www.google.com/3.
   const ACMatches& m3 = matches();
   ASSERT_EQ(2U, m3.size());
   if (bookmark_url == m3[0].destination_url) {
@@ -193,6 +195,51 @@ TEST_F(HistoryContentsProviderTest, Bookmarks) {
     EXPECT_EQ(bookmark_url, m3[1].destination_url);
     EXPECT_EQ("http://www.google.com/3", m3[0].destination_url.spec());
   }
+}
+
+// Tests that history is deleted properly.
+TEST_F(HistoryContentsProviderTest, DeleteMatch) {
+  AutocompleteInput input(L"bar", std::wstring(), true, false, true, false);
+  RunQuery(input, false);
+
+  // Query; the result should be the third page.
+  const ACMatches& m = matches();
+  ASSERT_EQ(1U, m.size());
+  EXPECT_EQ(test_entries[2].url, m[0].destination_url.spec());
+
+  // Now delete the match and ensure it was removed.
+  provider()->DeleteMatch(m[0]);
+  EXPECT_EQ(0U, matches().size());
+}
+
+// Tests deleting starred results from history, not affecting bookmarks/matches.
+TEST_F(HistoryContentsProviderTest, DeleteStarredMatch) {
+  profile()->CreateBookmarkModel(false);
+  profile()->BlockUntilBookmarkModelLoaded();
+
+  // Bookmark a history item.
+  GURL bookmark_url(test_entries[2].url);
+  profile()->GetBookmarkModel()->SetURLStarred(bookmark_url,
+                                               ASCIIToUTF16("bar"), true);
+
+  // Get the match to delete its history
+  AutocompleteInput input(L"bar", std::wstring(), true, false, true, false);
+  RunQuery(input, false);
+  const ACMatches& m = matches();
+  ASSERT_EQ(1U, m.size());
+
+  // Now delete the match and ensure it was *not* removed.
+  provider()->DeleteMatch(m[0]);
+  EXPECT_EQ(1U, matches().size());
+
+  // Run a query that would only match history (but the history is deleted)
+  AutocompleteInput you_input(L"you", std::wstring(), true, false, true, false);
+  RunQuery(you_input, false);
+  EXPECT_EQ(0U, matches().size());
+
+  // Run a query that matches the bookmark
+  RunQuery(input, false);
+  EXPECT_EQ(1U, matches().size());
 }
 
 }  // namespace
