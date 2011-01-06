@@ -9,7 +9,8 @@
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
 
-CoreLocationProviderMac::CoreLocationProviderMac() {
+CoreLocationProviderMac::CoreLocationProviderMac()
+    : is_updating_(false) {
   data_provider_ = new CoreLocationDataProviderMac();
   data_provider_->AddRef();
 }
@@ -20,12 +21,19 @@ CoreLocationProviderMac::~CoreLocationProviderMac() {
 }
 
 bool CoreLocationProviderMac::StartProvider(bool high_accuracy) {
-  data_provider_->StartUpdating(this);
+  // StartProvider maybe called multiple times. For example, to update the high
+  // accuracy hint.
+  // TODO(jknotten): Support high_accuracy hint in underlying data provider.
+  if (is_updating_)
+    return true;
+
+  is_updating_ = data_provider_->StartUpdating(this);
   return true;
 }
 
 void CoreLocationProviderMac::StopProvider() {
   data_provider_->StopUpdating();
+  is_updating_ = false;
 }
 
 void CoreLocationProviderMac::GetPosition(Geoposition* position) {
@@ -43,8 +51,8 @@ void CoreLocationProviderMac::SetPosition(Geoposition* position) {
 }
 
 LocationProviderBase* NewSystemLocationProvider() {
-  if(CommandLine::ForCurrentProcess()
-     ->HasSwitch(switches::kExperimentalLocationFeatures)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kExperimentalLocationFeatures)) {
     return new CoreLocationProviderMac;
   }
   return NULL;

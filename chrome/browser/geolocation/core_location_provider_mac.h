@@ -29,6 +29,7 @@ class CoreLocationProviderMac : public LocationProviderBase {
   void SetPosition(Geoposition* position);
 
  private:
+  bool is_updating_;
   CoreLocationDataProviderMac* data_provider_;
   Geoposition position_;
 };

@@ -47,7 +47,6 @@ class CoreLocationDataProviderMac
   scoped_nsobject<CoreLocationWrapperMac> wrapper_;
   // The LocationProviderBase class that should receive position data
   CoreLocationProviderMac* provider_;
-  BrowserThread::ID origin_thread_id_;
 };
 
 #endif

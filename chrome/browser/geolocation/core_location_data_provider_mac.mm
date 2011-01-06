@@ -11,6 +11,7 @@
 
 #include "chrome/browser/geolocation/core_location_data_provider_mac.h"
 #include "chrome/browser/geolocation/core_location_provider_mac.h"
+#include "chrome/browser/geolocation/geolocation_provider.h"
 #include "base/logging.h"
 #include "base/time.h"
 
@@ -41,7 +42,7 @@ enum {
 - (void)stopUpdatingLocation;
 @end
 
-@interface CLLocation : NSObject <NSCopying, NSCoding>
+@interface CLLocation : NSObject<NSCopying, NSCoding>
 @property(readonly) CLLocationCoordinate2D coordinate;
 @property(readonly) CLLocationDistance altitude;
 @property(readonly) CLLocationAccuracy horizontalAccuracy;
@@ -64,9 +65,9 @@ enum {
 //       CLLocationManager.  The location manaager's start and stop updating
 //       methods must be called from a thread that has an active run loop (which
 //       seems to only be the UI thread)
-@interface CoreLocationWrapperMac : NSObject <CLLocationManagerDelegate>
+@interface CoreLocationWrapperMac : NSObject<CLLocationManagerDelegate>
 {
-@private
+ @private
   NSBundle* bundle_;
   Class locationManagerClass_;
   id locationManager_;
@@ -119,8 +120,8 @@ enum {
 }
 
 - (void)startLocation {
-  if([self locationDataAvailable]) {
-    if(!locationManager_) {
+  if ([self locationDataAvailable]) {
+    if (!locationManager_) {
       locationManager_ = [[locationManagerClass_ alloc] init];
       [locationManager_ setDelegate:self];
     }
@@ -151,7 +152,7 @@ enum {
 - (void)locationManager:(CLLocationManager*)manager
        didFailWithError:(NSError*)error {
   Geoposition position;
-  switch([error code]) {
+  switch ([error code]) {
     case kCLErrorLocationUnknown:
       position.error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
       break;
@@ -166,10 +167,10 @@ enum {
 }
 
 - (BOOL)loadCoreLocationBundle {
-  if(!bundle_) {
+  if (!bundle_) {
     bundle_ = [[NSBundle alloc]
         initWithPath:@"/System/Library/Frameworks/CoreLocation.framework"];
-    if(!bundle_) {
+    if (!bundle_) {
       DLOG(WARNING) << "Couldn't load CoreLocation Framework";
       return NO;
     }
@@ -183,9 +184,11 @@ enum {
 @end
 
 CoreLocationDataProviderMac::CoreLocationDataProviderMac() {
-  if(!BrowserThread::GetCurrentThreadIdentifier(&origin_thread_id_))
-    NOTREACHED() <<
-         "CoreLocation data provider must be created in a valid BrowserThread.";
+  if (MessageLoop::current() !=
+      GeolocationProvider::GetInstance()->message_loop()) {
+    NOTREACHED() << "CoreLocation data provider must be created on "
+        "the Geolocation thread.";
+  }
   provider_ = NULL;
   wrapper_.reset([[CoreLocationWrapperMac alloc] initWithDataProvider:this]);
 }
@@ -200,7 +203,7 @@ bool CoreLocationDataProviderMac::
     StartUpdating(CoreLocationProviderMac* provider) {
   DCHECK(provider);
   DCHECK(!provider_) << "StartUpdating called twice";
-  if(![wrapper_ locationDataAvailable]) return false;
+  if (![wrapper_ locationDataAvailable]) return false;
   provider_ = provider;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
      NewRunnableMethod(this, &CoreLocationDataProviderMac::StartUpdatingTask));
@@ -216,7 +219,7 @@ void CoreLocationDataProviderMac::StopUpdating() {
 }
 
 void CoreLocationDataProviderMac::UpdatePosition(Geoposition *position) {
-  BrowserThread::PostTask(origin_thread_id_, FROM_HERE,
+  GeolocationProvider::GetInstance()->message_loop()->PostTask(FROM_HERE,
               NewRunnableMethod(this,
                                &CoreLocationDataProviderMac::PositionUpdated,
                                *position));
@@ -235,7 +238,8 @@ void CoreLocationDataProviderMac::StopUpdatingTask() {
 }
 
 void CoreLocationDataProviderMac::PositionUpdated(Geoposition position) {
-  DCHECK(BrowserThread::CurrentlyOn(origin_thread_id_));
-  if(provider_)
+  DCHECK(MessageLoop::current() ==
+         GeolocationProvider::GetInstance()->message_loop());
+  if (provider_)
     provider_->SetPosition(&position);
 }
