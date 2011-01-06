@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,9 +83,9 @@ class PrintJobWorker : public base::Thread {
   // context.
   void OnFailure();
 
-#if defined(OS_POSIX)
   // Asks the user for print settings. Must be called on the UI thread.
-  // Mac and Linux-only since Windows can display UI from non-main threads.
+  // Required on Mac and Linux. Windows can display UI from non-main threads,
+  // but sticks with this for consistency.
   void GetSettingsWithUI(gfx::NativeView parent_view,
                          int document_page_count,
                          bool has_selection);
@@ -94,7 +94,6 @@ class PrintJobWorker : public base::Thread {
   // object that the print settings are set.  This is needed in order to bounce
   // back into the IO thread for GetSettingsDone().
   void GetSettingsWithUIDone(PrintingContext::Result result);
-#endif  // defined(OS_POSIX)
 
   // Reports settings back to owner_.
   void GetSettingsDone(PrintingContext::Result result);
