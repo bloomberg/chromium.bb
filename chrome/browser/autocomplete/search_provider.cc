@@ -584,11 +584,24 @@ void SearchProvider::AddHistoryResultsToMap(const HistoryResults& results,
                                             bool is_keyword,
                                             int did_not_accept_suggestion,
                                             MatchMap* map) {
+  int last_relevance = 0;
   for (HistoryResults::const_iterator i(results.begin()); i != results.end();
        ++i) {
+    // History returns results sorted for us. We force the relevance to decrease
+    // so that the sort from history is honored. We should never end up with a
+    // match having a relevance greater than the previous, but they might be
+    // equal. If we didn't force the relevance to decrease and we ended up in a
+    // situation where the relevance was equal, then which was shown first would
+    // be random.
+    // This uses >= to handle the case where 3 or more results have the same
+    // relevance.
+    int relevance = CalculateRelevanceForHistory(i->time, is_keyword);
+    if (i != results.begin() && relevance >= last_relevance)
+      relevance = last_relevance - 1;
+    last_relevance = relevance;
     AddMatchToMap(UTF16ToWide(i->term),
                   is_keyword ? keyword_input_text_ : input_.text(),
-                  CalculateRelevanceForHistory(i->time, is_keyword),
+                  relevance,
                   AutocompleteMatch::SEARCH_HISTORY, did_not_accept_suggestion,
                   is_keyword, input_.initial_prevent_inline_autocomplete(),
                   map);
