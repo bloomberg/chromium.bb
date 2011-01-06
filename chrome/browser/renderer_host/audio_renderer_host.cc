@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -368,7 +368,8 @@ void AudioRendererHost::OnSetVolume(const IPC::Message& msg, int stream_id,
   }
 
   // Make sure the volume is valid.
-  CHECK(volume >= 0 && volume <= 1.0);
+  if (volume < 0 || volume > 1.0)
+      return;
   entry->controller->SetVolume(volume);
 }
 
