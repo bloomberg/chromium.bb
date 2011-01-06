@@ -210,7 +210,7 @@ class SessionModelAssociator
       session_tab_ = const_cast<SessionTab*>(session_tab);
     }
 
-    inline const int64 sync_id() const { return sync_id_; }
+    inline int64 sync_id() const { return sync_id_; }
     inline const SessionTab* session_tab() const { return session_tab_; }
     inline const TabContents* tab() const { return tab_; }
    private:
