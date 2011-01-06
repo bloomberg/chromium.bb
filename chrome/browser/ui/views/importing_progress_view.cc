@@ -5,6 +5,7 @@
 #include "chrome/browser/views/importing_progress_view.h"
 
 #include "app/l10n_util.h"
+#include "base/utf_string_conversions.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -28,16 +29,16 @@ ImportingProgressView::ImportingProgressView(const std::wstring& source_name,
       state_passwords_(new views::CheckmarkThrobber),
       state_history_(new views::CheckmarkThrobber),
       state_cookies_(new views::CheckmarkThrobber),
-      label_bookmarks_(new views::Label(
-          l10n_util::GetString(IDS_IMPORT_PROGRESS_STATUS_BOOKMARKS))),
-      label_searches_(new views::Label(
-          l10n_util::GetString(IDS_IMPORT_PROGRESS_STATUS_SEARCH))),
-      label_passwords_(new views::Label(
-          l10n_util::GetString(IDS_IMPORT_PROGRESS_STATUS_PASSWORDS))),
-      label_history_(new views::Label(
-          l10n_util::GetString(IDS_IMPORT_PROGRESS_STATUS_HISTORY))),
-      label_cookies_(new views::Label(
-          l10n_util::GetString(IDS_IMPORT_PROGRESS_STATUS_COOKIES))),
+      label_bookmarks_(new views::Label(UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_STATUS_BOOKMARKS)))),
+      label_searches_(new views::Label(UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_STATUS_SEARCH)))),
+      label_passwords_(new views::Label(UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_STATUS_PASSWORDS)))),
+      label_history_(new views::Label(UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_STATUS_HISTORY)))),
+      label_cookies_(new views::Label(UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_STATUS_COOKIES)))),
       parent_window_(parent_window),
       coordinator_(coordinator),
       import_observer_(observer),
@@ -45,8 +46,10 @@ ImportingProgressView::ImportingProgressView(const std::wstring& source_name,
       importing_(true),
       bookmarks_import_(bookmarks_import) {
   std::wstring info_text = bookmarks_import ?
-      l10n_util::GetString(IDS_IMPORT_BOOKMARKS) :
-      l10n_util::GetStringF(IDS_IMPORT_PROGRESS_INFO, source_name);
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_IMPORT_BOOKMARKS)) :
+      UTF16ToWide(l10n_util::GetStringFUTF16(
+          IDS_IMPORT_PROGRESS_INFO,
+          WideToUTF16(source_name)));
   label_info_ = new views::Label(info_text);
   coordinator_->SetObserver(this);
   label_info_->SetMultiLine(true);
@@ -188,7 +191,8 @@ int ImportingProgressView::GetDialogButtons() const {
 std::wstring ImportingProgressView::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   DCHECK(button == MessageBoxFlags::DIALOGBUTTON_CANCEL);
-  return l10n_util::GetString(IDS_IMPORT_PROGRESS_STATUS_CANCEL);
+  return UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_STATUS_CANCEL));
 }
 
 bool ImportingProgressView::IsModal() const {
@@ -196,7 +200,7 @@ bool ImportingProgressView::IsModal() const {
 }
 
 std::wstring ImportingProgressView::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_IMPORT_PROGRESS_TITLE);
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_IMPORT_PROGRESS_TITLE));
 }
 
 bool ImportingProgressView::Cancel() {

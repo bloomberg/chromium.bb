@@ -5,8 +5,9 @@
 #include "chrome/browser/views/generic_info_view.h"
 
 #include "app/l10n_util.h"
-#include "gfx/color_utils.h"
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
+#include "gfx/color_utils.h"
 #include "views/grid_layout.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
@@ -24,7 +25,7 @@ GenericInfoView::GenericInfoView(
 }
 
 void GenericInfoView::SetNameByStringId(int row, int name_string_id) {
-  SetName(row, l10n_util::GetString(name_string_id));
+  SetName(row, UTF16ToWide(l10n_util::GetStringUTF16(name_string_id)));
 }
 
 void GenericInfoView::SetName(int row, const string16& name) {

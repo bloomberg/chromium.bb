@@ -35,7 +35,8 @@ DatabaseInfoView::~DatabaseInfoView() {
 void DatabaseInfoView::SetDatabaseInfo(
     const BrowsingDataDatabaseHelper::DatabaseInfo& database_info) {
   name_value_field_->SetText(database_info.database_name.empty() ?
-      l10n_util::GetString(IDS_COOKIES_WEB_DATABASE_UNNAMED_NAME) :
+      UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_COOKIES_WEB_DATABASE_UNNAMED_NAME)) :
       UTF8ToWide(database_info.database_name));
   description_value_field_->SetText(UTF8ToWide(database_info.description));
   size_value_field_->SetText(
@@ -82,16 +83,19 @@ void DatabaseInfoView::Init() {
   set_border(border);
 
   views::Label* name_label = new views::Label(
-      l10n_util::GetString(IDS_COOKIES_COOKIE_NAME_LABEL));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_NAME_LABEL)));
   name_value_field_ = new views::Textfield;
   views::Label* description_label = new views::Label(
-      l10n_util::GetString(IDS_COOKIES_WEB_DATABASE_DESCRIPTION_LABEL));
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_COOKIES_WEB_DATABASE_DESCRIPTION_LABEL)));
   description_value_field_ = new views::Textfield;
   views::Label* size_label = new views::Label(
-      l10n_util::GetString(IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL));
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL)));
   size_value_field_ = new views::Textfield;
   views::Label* last_modified_label = new views::Label(
-      l10n_util::GetString(IDS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL));
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL)));
   last_modified_value_field_ = new views::Textfield;
 
   using views::GridLayout;

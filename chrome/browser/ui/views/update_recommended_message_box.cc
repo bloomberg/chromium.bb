@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/message_box_flags.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -55,12 +56,12 @@ std::wstring UpdateRecommendedMessageBox::GetDialogButtonLabel(
   DCHECK(button == MessageBoxFlags::DIALOGBUTTON_OK ||
          button == MessageBoxFlags::DIALOGBUTTON_CANCEL);
   return button == MessageBoxFlags::DIALOGBUTTON_OK ?
-      l10n_util::GetString(IDS_RESTART_AND_UPDATE) :
-      l10n_util::GetString(IDS_NOT_NOW);
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_RESTART_AND_UPDATE)) :
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_NOT_NOW));
 }
 
 std::wstring UpdateRecommendedMessageBox::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_PRODUCT_NAME);
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
 }
 
 void UpdateRecommendedMessageBox::DeleteDelegate() {
@@ -82,14 +83,16 @@ UpdateRecommendedMessageBox::UpdateRecommendedMessageBox(
     gfx::NativeWindow parent_window) {
   const int kDialogWidth = 400;
 #if defined(OS_CHROMEOS)
-  const std::wstring product_name = l10n_util::GetString(IDS_PRODUCT_OS_NAME);
+  const int kProductNameId = IDS_PRODUCT_OS_NAME;
 #else
-  const std::wstring product_name = l10n_util::GetString(IDS_PRODUCT_NAME);
+  const int kProductNameId = IDS_PRODUCT_NAME;
 #endif
+  const string16 product_name = l10n_util::GetStringUTF16(kProductNameId);
   // Also deleted when the window closes.
   message_box_view_ = new MessageBoxView(
       MessageBoxFlags::kFlagHasMessage | MessageBoxFlags::kFlagHasOKButton,
-      l10n_util::GetStringF(IDS_UPDATE_RECOMMENDED, product_name),
+      UTF16ToWide(l10n_util::GetStringFUTF16(IDS_UPDATE_RECOMMENDED,
+                                             product_name)),
       std::wstring(),
       kDialogWidth);
   browser::CreateViewsWindow(parent_window, gfx::Rect(), this)->Show();

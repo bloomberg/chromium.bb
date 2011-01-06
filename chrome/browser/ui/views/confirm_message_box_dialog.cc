@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/message_box_flags.h"
+#include "base/utf_string_conversions.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "views/standard_layout.h"
@@ -53,10 +54,10 @@ ConfirmMessageBoxDialog::ConfirmMessageBoxDialog(
       preferred_size_(gfx::Size(views::Window::GetLocalizedContentsSize(
           IDS_CONFIRM_MESSAGE_BOX_DEFAULT_WIDTH_CHARS,
           IDS_CONFIRM_MESSAGE_BOX_DEFAULT_HEIGHT_LINES))),
-      confirm_label_(l10n_util::GetString(
-          IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL)),
-      reject_label_(l10n_util::GetString(
-          IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL)) {
+      confirm_label_(UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL))),
+      reject_label_(UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL))) {
   message_label_ = new views::Label(message_text);
   message_label_->SetMultiLine(true);
   message_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);

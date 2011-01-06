@@ -51,7 +51,7 @@ void IndexedDBInfoView::EnableIndexedDBDisplay(bool enabled) {
 
 void IndexedDBInfoView::ClearIndexedDBDisplay() {
   std::wstring no_cookie_string =
-      l10n_util::GetString(IDS_COOKIES_COOKIE_NONESELECTED);
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_NONESELECTED));
   origin_value_field_->SetText(no_cookie_string);
   size_value_field_->SetText(no_cookie_string);
   last_modified_value_field_->SetText(no_cookie_string);
@@ -77,14 +77,15 @@ void IndexedDBInfoView::Init() {
       kIndexedDBInfoViewBorderSize, border_color);
   set_border(border);
 
-  views::Label* origin_label = new views::Label(
-      l10n_util::GetString(IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL));
+  views::Label* origin_label = new views::Label(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL)));
   origin_value_field_ = new views::Textfield;
-  views::Label* size_label = new views::Label(
-      l10n_util::GetString(IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL));
+  views::Label* size_label = new views::Label(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL)));
   size_value_field_ = new views::Textfield;
-  views::Label* last_modified_label = new views::Label(
-      l10n_util::GetString(IDS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL));
+  views::Label* last_modified_label = new views::Label(UTF16ToWide(
+      l10n_util::GetStringUTF16(
+          IDS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL)));
   last_modified_value_field_ = new views::Textfield;
 
   using views::GridLayout;

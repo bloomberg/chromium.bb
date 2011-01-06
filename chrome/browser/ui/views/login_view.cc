@@ -9,6 +9,7 @@
 #include "app/l10n_util.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "grit/generated_resources.h"
 #include "views/grid_layout.h"
 #include "views/controls/label.h"
@@ -28,10 +29,10 @@ LoginView::LoginView(const std::wstring& explanation,
                      bool focus_view)
     : username_field_(new views::Textfield),
       password_field_(new views::Textfield(views::Textfield::STYLE_PASSWORD)),
-      username_label_(new views::Label(
-          l10n_util::GetString(IDS_LOGIN_DIALOG_USERNAME_FIELD))),
-      password_label_(new views::Label(
-          l10n_util::GetString(IDS_LOGIN_DIALOG_PASSWORD_FIELD))),
+      username_label_(new views::Label(UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_USERNAME_FIELD)))),
+      password_label_(new views::Label(UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_PASSWORD_FIELD)))),
       message_label_(new views::Label(explanation)),
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)),
       login_model_(NULL),

@@ -13,6 +13,7 @@
 #include "base/i18n/rtl.h"
 #include "base/rand_util.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/search_engine_type.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -53,7 +54,9 @@ const int kLabelPadding = 25;
 SearchEngineChoice::SearchEngineChoice(views::ButtonListener* listener,
                                        const TemplateURL* search_engine,
                                        bool use_small_logos)
-    : NativeButton(listener, l10n_util::GetString(IDS_FR_SEARCH_CHOOSE)),
+    : NativeButton(
+          listener,
+          UTF16ToWide(l10n_util::GetStringUTF16(IDS_FR_SEARCH_CHOOSE))),
       is_image_label_(false),
       search_engine_(search_engine),
       slot_(0) {
@@ -293,8 +296,8 @@ void FirstRunSearchEngineView::SetupControls() {
   int label_width = GetPreferredSize().width() - 2 * kPanelHorizMargin;
 
   // Add title and text asking the user to choose a search engine:
-  title_label_ = new Label(l10n_util::GetString(
-      IDS_FR_SEARCH_MAIN_LABEL));
+  title_label_ = new Label(UTF16ToWide(l10n_util::GetStringUTF16(
+      IDS_FR_SEARCH_MAIN_LABEL)));
   title_label_->SetColor(SK_ColorBLACK);
   title_label_->SetFont(title_label_->font().DeriveFont(3, gfx::Font::BOLD));
   title_label_->SetMultiLine(true);
@@ -302,8 +305,9 @@ void FirstRunSearchEngineView::SetupControls() {
   title_label_->SizeToFit(label_width);
   AddChildView(title_label_);
 
-  text_label_ = new Label(l10n_util::GetStringF(IDS_FR_SEARCH_TEXT,
-      l10n_util::GetString(IDS_PRODUCT_NAME)));
+  text_label_ = new Label(UTF16ToWide(l10n_util::GetStringFUTF16(
+      IDS_FR_SEARCH_TEXT,
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME))));
   text_label_->SetColor(SK_ColorBLACK);
   text_label_->SetFont(text_label_->font().DeriveFont(1, gfx::Font::NORMAL));
   text_label_->SetMultiLine(true);
@@ -426,5 +430,5 @@ AccessibilityTypes::Role FirstRunSearchEngineView::GetAccessibleRole() {
 }
 
 std::wstring FirstRunSearchEngineView::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_FIRSTRUN_DLG_TITLE);
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_FIRSTRUN_DLG_TITLE));
 }

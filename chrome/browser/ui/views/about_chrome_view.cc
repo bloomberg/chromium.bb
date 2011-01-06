@@ -719,13 +719,15 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
     case UPGRADE_STARTED:
       UserMetrics::RecordAction(UserMetricsAction("Upgrade_Started"), profile_);
       show_throbber = true;
-      update_label_.SetText(l10n_util::GetString(IDS_UPGRADE_STARTED));
+      update_label_.SetText(
+          UTF16ToWide(l10n_util::GetStringUTF16(IDS_UPGRADE_STARTED)));
       break;
     case UPGRADE_CHECK_STARTED:
       UserMetrics::RecordAction(UserMetricsAction("UpgradeCheck_Started"),
                                 profile_);
       show_throbber = true;
-      update_label_.SetText(l10n_util::GetString(IDS_UPGRADE_CHECK_STARTED));
+      update_label_.SetText(
+          UTF16ToWide(l10n_util::GetStringUTF16(IDS_UPGRADE_CHECK_STARTED)));
       break;
     case UPGRADE_IS_AVAILABLE:
       UserMetrics::RecordAction(
@@ -760,14 +762,14 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
         UserMetrics::RecordAction(
             UserMetricsAction("UpgradeCheck_AlreadyUpToDate"), profile_);
 #if defined(OS_CHROMEOS)
-        std::wstring update_label_text =
-            l10n_util::GetStringF(IDS_UPGRADE_ALREADY_UP_TO_DATE,
-                                  l10n_util::GetString(IDS_PRODUCT_NAME));
+        std::wstring update_label_text = UTF16ToWide(l10n_util::GetStringFUTF16(
+            IDS_UPGRADE_ALREADY_UP_TO_DATE,
+            l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 #else
-        std::wstring update_label_text =
-            l10n_util::GetStringF(IDS_UPGRADE_ALREADY_UP_TO_DATE,
-                                  l10n_util::GetString(IDS_PRODUCT_NAME),
-                                  ASCIIToUTF16(current_version_));
+        std::wstring update_label_text = l10n_util::GetStringFUTF16(
+            IDS_UPGRADE_ALREADY_UP_TO_DATE,
+            l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+            ASCIIToUTF16(current_version_));
 #endif
         if (base::i18n::IsRTL()) {
           update_label_text.push_back(
@@ -790,8 +792,9 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
                                   profile_);
       restart_button_visible_ = true;
       const std::wstring& update_string =
-          l10n_util::GetStringF(IDS_UPGRADE_SUCCESSFUL_RESTART,
-                                l10n_util::GetString(IDS_PRODUCT_NAME));
+          UTF16ToWide(l10n_util::GetStringFUTF16(
+              IDS_UPGRADE_SUCCESSFUL_RESTART,
+              l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
       update_label_.SetText(update_string);
       show_success_indicator = true;
       break;
@@ -800,8 +803,8 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
       UserMetrics::RecordAction(UserMetricsAction("UpgradeCheck_Error"),
                                 profile_);
       restart_button_visible_ = false;
-      update_label_.SetText(l10n_util::GetStringF(IDS_UPGRADE_ERROR,
-          UTF8ToWide(base::IntToString(error_code))));
+      update_label_.SetText(UTF16ToWide(
+          l10n_util::GetStringFUTF16Int(IDS_UPGRADE_ERROR, error_code)));
       show_timeout_indicator = true;
       break;
     default:

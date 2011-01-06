@@ -88,7 +88,7 @@ UrlPicker::UrlPicker(UrlPickerDelegate* delegate,
   layout->StartRow(0, labels_column_set_id);
   views::Label* url_label = new views::Label();
   url_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  url_label->SetText(l10n_util::GetString(IDS_ASI_URL));
+  url_label->SetText(UTF16ToWide(l10n_util::GetStringUTF16(IDS_ASI_URL)));
   layout->AddView(url_label);
 
   url_field_ = new views::Textfield();
@@ -100,7 +100,8 @@ UrlPicker::UrlPicker(UrlPickerDelegate* delegate,
   layout->StartRow(0, single_column_view_set_id);
   views::Label* description_label = new views::Label();
   description_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  description_label->SetText(l10n_util::GetString(IDS_ASI_DESCRIPTION));
+  description_label->SetText(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ASI_DESCRIPTION)));
   description_label->SetFont(
       description_label->font().DeriveFont(0, gfx::Font::BOLD));
   layout->AddView(description_label);
@@ -133,7 +134,7 @@ void UrlPicker::Close() {
 }
 
 std::wstring UrlPicker::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_ASI_ADD_TITLE);
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_ASI_ADD_TITLE));
 }
 
 bool UrlPicker::IsModal() const {
@@ -143,7 +144,7 @@ bool UrlPicker::IsModal() const {
 std::wstring UrlPicker::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK)
-    return l10n_util::GetString(IDS_ASI_ADD);
+    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_ASI_ADD));
   return std::wstring();
 }
 

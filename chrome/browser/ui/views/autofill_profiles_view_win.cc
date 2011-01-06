@@ -301,7 +301,7 @@ views::View* AutoFillProfilesView::GetExtraView() {
                         views::GridLayout::USE_PREF, 0, 0);
   layout->StartRow(0, 0);
   views::Link* link = new views::Link(
-      l10n_util::GetString(IDS_AUTOFILL_LEARN_MORE));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_AUTOFILL_LEARN_MORE)));
   link->SetController(this);
   layout->AddView(link);
 
@@ -323,7 +323,7 @@ bool AutoFillProfilesView::IsDialogButtonEnabled(
 
 
 std::wstring AutoFillProfilesView::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_AUTOFILL_OPTIONS_TITLE);
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS_TITLE));
 }
 
 void AutoFillProfilesView::WindowClosing() {
@@ -448,7 +448,7 @@ void AutoFillProfilesView::Init() {
   GetData();
 
   enable_auto_fill_button_ = new views::Checkbox(
-      l10n_util::GetString(IDS_OPTIONS_AUTOFILL_ENABLE));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTIONS_AUTOFILL_ENABLE)));
   enable_auto_fill_button_->set_listener(this);
 
   table_model_.reset(new ContentListTableModel(&profiles_set_,
@@ -460,13 +460,13 @@ void AutoFillProfilesView::Init() {
   scroll_view_->SetObserver(this);
 
   add_address_button_ = new views::NativeButton(this,
-      l10n_util::GetString(IDS_AUTOFILL_ADD_ADDRESS_BUTTON));
-  add_credit_card_button_ = new views::NativeButton(this,
-      l10n_util::GetString(IDS_AUTOFILL_ADD_CREDITCARD_BUTTON));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_AUTOFILL_ADD_ADDRESS_BUTTON)));
+  add_credit_card_button_ = new views::NativeButton(this, UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_ADD_CREDITCARD_BUTTON)));
   edit_button_ = new views::NativeButton(this,
-      l10n_util::GetString(IDS_AUTOFILL_EDIT_BUTTON));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_AUTOFILL_EDIT_BUTTON)));
   remove_button_ = new views::NativeButton(this,
-      l10n_util::GetString(IDS_AUTOFILL_DELETE_BUTTON));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_AUTOFILL_DELETE_BUTTON)));
 
   views::GridLayout* layout = CreatePanelGridLayout(this);
   SetLayoutManager(layout);
@@ -746,7 +746,7 @@ AutoFillProfilesView::EditableSetViewContents::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   switch (button) {
   case MessageBoxFlags::DIALOGBUTTON_OK:
-    return l10n_util::GetString(IDS_AUTOFILL_DIALOG_SAVE);
+    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SAVE));
   case MessageBoxFlags::DIALOGBUTTON_CANCEL:
     return std::wstring();
   default:
@@ -812,7 +812,7 @@ AutoFillProfilesView::EditableSetViewContents::GetWindowTitle() const {
     string_id = new_item_ ? IDS_AUTOFILL_ADD_CREDITCARD_CAPTION :
                             IDS_AUTOFILL_EDIT_CREDITCARD_CAPTION;
   }
-  return l10n_util::GetString(string_id);
+  return UTF16ToWide(l10n_util::GetStringUTF16(string_id));
 }
 
 void AutoFillProfilesView::EditableSetViewContents::WindowClosing() {
@@ -942,16 +942,16 @@ void AutoFillProfilesView::EditableSetViewContents::InitAddressFields(
 
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, double_column_leading_view_set_id_);
-  layout->AddView(new views::Label(l10n_util::GetString(
-                  IDS_AUTOFILL_DIALOG_ADDRESS_LINE_1)));
+  layout->AddView(new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
+                  IDS_AUTOFILL_DIALOG_ADDRESS_LINE_1))));
 
   layout->StartRow(0, double_column_fill_view_set_id_);
   layout->AddView(text_fields_[TEXT_ADDRESS_LINE_1]);
 
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, double_column_leading_view_set_id_);
-  layout->AddView(new views::Label(l10n_util::GetString(
-                  IDS_AUTOFILL_DIALOG_ADDRESS_LINE_2)));
+  layout->AddView(new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
+                  IDS_AUTOFILL_DIALOG_ADDRESS_LINE_2))));
 
   layout->StartRow(0, double_column_fill_view_set_id_);
   layout->AddView(text_fields_[TEXT_ADDRESS_LINE_2]);
@@ -1172,7 +1172,8 @@ void AutoFillProfilesView::EditableSetViewContents::InitLayoutGrid(
 views::Label*
 AutoFillProfilesView::EditableSetViewContents::CreateLeftAlignedLabel(
     int label_id) {
-  views::Label* label = new views::Label(l10n_util::GetString(label_id));
+  views::Label* label =
+      new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(label_id)));
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   return label;
 }
@@ -1281,12 +1282,14 @@ TableModel::Groups AutoFillProfilesView::ContentListTableModel::GetGroups() {
   TableModel::Groups groups;
 
   TableModel::Group profile_group;
-  profile_group.title = l10n_util::GetString(IDS_AUTOFILL_ADDRESSES_GROUP_NAME);
+  profile_group.title =
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESSES_GROUP_NAME);
   profile_group.id = kAddressGroup;
   groups.push_back(profile_group);
 
   Group cc_group;
-  cc_group.title = l10n_util::GetString(IDS_AUTOFILL_CREDITCARDS_GROUP_NAME);
+  cc_group.title =
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_CREDITCARDS_GROUP_NAME);
   cc_group.id = kCreditCardGroup;
   groups.push_back(cc_group);
 

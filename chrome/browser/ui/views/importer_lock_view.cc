@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/importer/importer.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -22,7 +23,7 @@ ImporterLockView::ImporterLockView(ImporterHost* host)
     : description_label_(NULL),
       importer_host_(host) {
   description_label_ = new views::Label(
-      l10n_util::GetString(IDS_IMPORTER_LOCK_TEXT));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_TEXT)));
   description_label_->SetMultiLine(true);
   description_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(description_label_);
@@ -46,9 +47,9 @@ void ImporterLockView::Layout() {
 std::wstring ImporterLockView::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
-    return l10n_util::GetString(IDS_IMPORTER_LOCK_OK);
+    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_OK));
   } else if (button == MessageBoxFlags::DIALOGBUTTON_CANCEL) {
-    return l10n_util::GetString(IDS_IMPORTER_LOCK_CANCEL);
+    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_CANCEL));
   }
   return std::wstring();
 }
@@ -58,7 +59,7 @@ bool ImporterLockView::IsModal() const {
 }
 
 std::wstring ImporterLockView::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_IMPORTER_LOCK_TITLE);
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_IMPORTER_LOCK_TITLE));
 }
 
 bool ImporterLockView::Accept() {

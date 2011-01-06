@@ -126,7 +126,8 @@ bool KeywordEditorView::CanResize() const {
 }
 
 std::wstring KeywordEditorView::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_SEARCH_ENGINES_EDITOR_WINDOW_TITLE);
+  return UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_SEARCH_ENGINES_EDITOR_WINDOW_TITLE));
 }
 
 std::wstring KeywordEditorView::GetWindowName() const {
@@ -165,19 +166,19 @@ void KeywordEditorView::Init() {
       views::ICON_AND_TEXT, false, true, true);
   table_view_->SetObserver(this);
 
-  add_button_ = new views::NativeButton(
-      this, l10n_util::GetString(IDS_SEARCH_ENGINES_EDITOR_NEW_BUTTON));
+  add_button_ = new views::NativeButton(this, UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_SEARCH_ENGINES_EDITOR_NEW_BUTTON)));
   add_button_->SetEnabled(controller_->loaded());
   add_button_->AddAccelerator(
       views::Accelerator(app::VKEY_A, false, false, true));
   add_button_->SetAccessibleKeyboardShortcut(L"A");
 
-  edit_button_ = new views::NativeButton(
-      this, l10n_util::GetString(IDS_SEARCH_ENGINES_EDITOR_EDIT_BUTTON));
+  edit_button_ = new views::NativeButton(this, UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_SEARCH_ENGINES_EDITOR_EDIT_BUTTON)));
   edit_button_->SetEnabled(false);
 
-  remove_button_ = new views::NativeButton(
-      this, l10n_util::GetString(IDS_SEARCH_ENGINES_EDITOR_REMOVE_BUTTON));
+  remove_button_ = new views::NativeButton(this, UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_SEARCH_ENGINES_EDITOR_REMOVE_BUTTON)));
   remove_button_->SetEnabled(false);
   remove_button_->AddAccelerator(
       views::Accelerator(app::VKEY_R, false, false, true));
@@ -185,7 +186,8 @@ void KeywordEditorView::Init() {
 
   make_default_button_ = new views::NativeButton(
       this,
-      l10n_util::GetString(IDS_SEARCH_ENGINES_EDITOR_MAKE_DEFAULT_BUTTON));
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_SEARCH_ENGINES_EDITOR_MAKE_DEFAULT_BUTTON)));
   make_default_button_->SetEnabled(false);
 
   InitLayoutManager();

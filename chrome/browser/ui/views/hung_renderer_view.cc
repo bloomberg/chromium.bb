@@ -267,7 +267,8 @@ void HungRendererDialogView::EndForTabContents(TabContents* contents) {
 // HungRendererDialogView, views::DialogDelegate implementation:
 
 std::wstring HungRendererDialogView::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_BROWSER_HANGMONITOR_RENDERER_TITLE);
+  return UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_TITLE));
 }
 
 void HungRendererDialogView::WindowClosing() {
@@ -288,7 +289,8 @@ int HungRendererDialogView::GetDialogButtons() const {
 std::wstring HungRendererDialogView::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK)
-    return l10n_util::GetString(IDS_BROWSER_HANGMONITOR_RENDERER_WAIT);
+    return UTF16ToWide(
+        l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_WAIT));
   return std::wstring();
 }
 
@@ -344,7 +346,7 @@ void HungRendererDialogView::Init() {
   frozen_icon_view_->SetImage(frozen_icon_);
 
   info_label_ = new views::Label(
-      l10n_util::GetString(IDS_BROWSER_HANGMONITOR_RENDERER));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER)));
   info_label_->SetMultiLine(true);
   info_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
 
@@ -387,8 +389,8 @@ void HungRendererDialogView::Init() {
 }
 
 void HungRendererDialogView::CreateKillButtonView() {
-  kill_button_ = new views::NativeButton(
-      this, l10n_util::GetString(IDS_BROWSER_HANGMONITOR_RENDERER_END));
+  kill_button_ = new views::NativeButton(this, UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_RENDERER_END)));
 
   kill_button_container_ = new ButtonContainer;
 

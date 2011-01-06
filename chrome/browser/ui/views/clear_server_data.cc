@@ -80,35 +80,36 @@ void ClearServerDataView::Init() {
       rb.GetFont(ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
 
   flash_title_label_ = new views::Label(
-      l10n_util::GetString(IDS_CLEAR_DATA_ADOBE_FLASH_TITLE));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_CLEAR_DATA_ADOBE_FLASH_TITLE)));
   flash_title_label_->SetFont(title_font);
 
-  flash_description_label_= new views::Label(
-      l10n_util::GetString(IDS_CLEAR_DATA_ADOBE_FLASH_DESCRIPTION));
-  flash_link_ =
-      new views::Link(l10n_util::GetString(IDS_FLASH_STORAGE_SETTINGS));
+  flash_description_label_= new views::Label(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_CLEAR_DATA_ADOBE_FLASH_DESCRIPTION)));
+  flash_link_ = new views::Link(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_FLASH_STORAGE_SETTINGS)));
   flash_link_->SetController(this);
 
   chrome_sync_title_label_= new views::Label(
-      l10n_util::GetString(IDS_CLEAR_DATA_CHROME_SYNC_TITLE));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_CLEAR_DATA_CHROME_SYNC_TITLE)));
   chrome_sync_title_label_->SetFont(title_font);
 
-  chrome_sync_description_label_ = new views::Label(
-    l10n_util::GetString(IDS_CLEAR_DATA_CLEAR_SERVER_DATA_DESCRIPTION));
+  chrome_sync_description_label_ = new views::Label(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_CLEAR_DATA_CLEAR_SERVER_DATA_DESCRIPTION)));
 
   clear_server_data_button_= new views::NativeButton(
-      this, l10n_util::GetString(IDS_CLEAR_DATA_CLEAR_BUTTON));
+      this,
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_CLEAR_DATA_CLEAR_BUTTON)));
 
   dashboard_label_ = new views::Label(
-      l10n_util::GetString(IDS_CLEAR_DASHBOARD_DESCRIPTION));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_CLEAR_DASHBOARD_DESCRIPTION)));
 
   dashboard_link_ = new views::Link();
   dashboard_link_->SetController(this);
-  dashboard_link_->SetText(
-      l10n_util::GetString(IDS_SYNC_PRIVACY_DASHBOARD_LINK_LABEL));
+  dashboard_link_->SetText(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_SYNC_PRIVACY_DASHBOARD_LINK_LABEL)));
 
   status_label_ = new views::Label(
-      l10n_util::GetString(IDS_CLEAR_DATA_DELETING));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_CLEAR_DATA_DELETING)));
   throbber_ = new views::Throbber(50, true);
 }
 
@@ -234,8 +235,8 @@ void ClearServerDataView::ButtonPressed(
       ConfirmMessageBoxDialog::Run(
           GetWindow()->GetNativeWindow(),
           this,
-          l10n_util::GetString(IDS_CONFIRM_CLEAR_DESCRIPTION),
-          l10n_util::GetString(IDS_CONFIRM_CLEAR_TITLE));
+          UTF16ToWide(l10n_util::GetStringUTF16(IDS_CONFIRM_CLEAR_DESCRIPTION)),
+          UTF16ToWide(l10n_util::GetStringUTF16(IDS_CONFIRM_CLEAR_TITLE)));
       }
   }
 
@@ -303,14 +304,16 @@ void ClearServerDataView::UpdateControlEnabledState() {
     case ProfileSyncService::CLEAR_CLEARING:
         // Clearing buttons on all tabs are disabled at this
         // point, throbber is going
-        status_label_->SetText(l10n_util::GetString(IDS_CLEAR_DATA_SENDING));
+        status_label_->SetText(
+            UTF16ToWide(l10n_util::GetStringUTF16(IDS_CLEAR_DATA_SENDING)));
         status_label_->SetVisible(true);
         delete_in_progress = true;
       break;
     case ProfileSyncService::CLEAR_FAILED:
         // Show an error and reallow clearing
         clear_data_parent_window_->FailedClearingServerData();
-        status_label_->SetText(l10n_util::GetString(IDS_CLEAR_DATA_ERROR));
+        status_label_->SetText(
+            UTF16ToWide(l10n_util::GetStringUTF16(IDS_CLEAR_DATA_ERROR)));
         status_label_->SetVisible(true);
         delete_in_progress = false;
       break;

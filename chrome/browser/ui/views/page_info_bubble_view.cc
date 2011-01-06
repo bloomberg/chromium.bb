@@ -154,8 +154,8 @@ void PageInfoBubbleView::LayoutSections() {
 
   // Then add the help center link at the bottom.
   layout->StartRow(0, 1);
-  help_center_link_ =
-      new views::Link(l10n_util::GetString(IDS_PAGE_INFO_HELP_CENTER_LINK));
+  help_center_link_ = new views::Link(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_PAGE_INFO_HELP_CENTER_LINK)));
   help_center_link_->SetController(this);
   layout->AddView(help_center_link_);
 }
@@ -254,7 +254,7 @@ Section::Section(PageInfoBubbleView* owner,
 
   if (info_.type == PageInfoModel::SECTION_INFO_IDENTITY && show_cert) {
     link_ = new views::Link(
-        l10n_util::GetString(IDS_PAGEINFO_CERT_INFO_BUTTON));
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON)));
     link_->SetController(this);
     AddChildView(link_);
   }

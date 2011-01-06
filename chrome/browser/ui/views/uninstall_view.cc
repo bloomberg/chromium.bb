@@ -47,7 +47,8 @@ void UninstallView::SetupControls() {
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
   layout->StartRow(0, column_set_id);
-  confirm_label_ = new views::Label(l10n_util::GetString(IDS_UNINSTALL_VERIFY));
+  confirm_label_ = new views::Label(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_UNINSTALL_VERIFY)));
   confirm_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   layout->AddView(confirm_label_);
 
@@ -61,7 +62,7 @@ void UninstallView::SetupControls() {
                         GridLayout::USE_PREF, 0, 0);
   layout->StartRow(0, column_set_id);
   delete_profile_ = new views::Checkbox(
-      l10n_util::GetString(IDS_UNINSTALL_DELETE_PROFILE));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_UNINSTALL_DELETE_PROFILE)));
   layout->AddView(delete_profile_);
 
   // Set default browser combo box
@@ -82,8 +83,8 @@ void UninstallView::SetupControls() {
       column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                             GridLayout::USE_PREF, 0, 0);
       layout->StartRow(0, column_set_id);
-      change_default_browser_ = new views::Checkbox(
-          l10n_util::GetString(IDS_UNINSTALL_SET_DEFAULT_BROWSER));
+      change_default_browser_ = new views::Checkbox(UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_UNINSTALL_SET_DEFAULT_BROWSER)));
       change_default_browser_->set_listener(this);
       layout->AddView(change_default_browser_);
       browsers_combo_ = new views::Combobox(this);
@@ -119,7 +120,7 @@ std::wstring UninstallView::GetDialogButtonLabel(
   // button remains same.
   std::wstring label = L"";
   if (button == MessageBoxFlags::DIALOGBUTTON_OK)
-    label = l10n_util::GetString(IDS_UNINSTALL_BUTTON_TEXT);
+    label = UTF16ToWide(l10n_util::GetStringUTF16(IDS_UNINSTALL_BUTTON_TEXT));
   return label;
 }
 
@@ -133,7 +134,7 @@ void UninstallView::ButtonPressed(
 }
 
 std::wstring UninstallView::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_UNINSTALL_CHROME);
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_UNINSTALL_CHROME));
 }
 
 views::View* UninstallView::GetContentsView() {

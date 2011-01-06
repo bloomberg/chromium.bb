@@ -104,7 +104,8 @@ std::wstring FormatFilterForExtensions(
     const std::vector<std::wstring>& ext_desc,
     bool include_all_files) {
   const std::wstring all_ext = L"*.*";
-  const std::wstring all_desc = l10n_util::GetString(IDS_APP_SAVEAS_ALL_FILES);
+  const std::wstring all_desc =
+      l10n_util::GetStringUTF16(IDS_APP_SAVEAS_ALL_FILES);
 
   DCHECK(file_ext.size() >= ext_desc.size());
 
@@ -141,9 +142,9 @@ std::wstring FormatFilterForExtensions(
         // based on the unknown extension type (i.e. if the extension is .qqq,
         // the we create a description "QQQ File (.qqq)").
         include_all_files = true;
-        desc = l10n_util::GetStringF(IDS_APP_SAVEAS_EXTENSION_FORMAT,
-                                     l10n_util::ToUpper(ext_name),
-                                     ext_name);
+        desc = l10n_util::GetStringFUTF16(IDS_APP_SAVEAS_EXTENSION_FORMAT,
+                                          l10n_util::ToUpper(ext_name),
+                                          ext_name);
       }
       if (desc.empty())
         desc = L"*." + ext_name;
