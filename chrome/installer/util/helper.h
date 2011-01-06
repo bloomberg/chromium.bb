@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -7,6 +7,8 @@
 #ifndef CHROME_INSTALLER_UTIL_HELPER_H_
 #define CHROME_INSTALLER_UTIL_HELPER_H_
 #pragma once
+
+#include <string>
 
 class BrowserDistribution;
 class CommandLine;
@@ -50,6 +52,10 @@ FilePath GetChromeUserDataPath(BrowserDistribution* dist);
 // system default installation folders.
 FilePath GetChromeFrameInstallPath(bool multi_install, bool system_install,
                                    BrowserDistribution* dist);
+
+// Returns the app guid under which the current process receives updates from
+// Google Update.
+std::wstring GetAppGuidForUpdates(bool system_install);
 
 }  // namespace installer
 

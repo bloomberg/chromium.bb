@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -231,7 +231,6 @@ void GoogleUpdate::CheckForUpdate(bool install_if_newer, Window* window) {
 bool GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
                                              Window* window,
                                              MessageLoop* main_loop) {
-
   FilePath chrome_exe_path;
   if (!PathService::Get(base::DIR_EXE, &chrome_exe_path)) {
     NOTREACHED();
@@ -261,6 +260,8 @@ bool GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
 
   ScopedComPtr<IGoogleUpdate> on_demand;
 
+  bool system_level = false;
+
   if (InstallUtil::IsPerUserInstall(chrome_exe.c_str())) {
     hr = on_demand.CreateInstance(CLSID_OnDemandUserAppsClass);
   } else {
@@ -279,16 +280,19 @@ bool GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
           IID_IGoogleUpdate, foreground_hwnd,
           reinterpret_cast<void**>(on_demand.Receive()));
     }
+    system_level = true;
   }
 
   if (hr != S_OK)
     return ReportFailure(hr, GOOGLE_UPDATE_ONDEMAND_CLASS_NOT_FOUND, main_loop);
 
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  std::wstring app_guid = installer::GetAppGuidForUpdates(system_level);
+  DCHECK(!app_guid.empty());
+
   if (!install_if_newer)
-    hr = on_demand->CheckForUpdate(dist->GetAppGuid().c_str(), job_observer);
+    hr = on_demand->CheckForUpdate(app_guid.c_str(), job_observer);
   else
-    hr = on_demand->Update(dist->GetAppGuid().c_str(), job_observer);
+    hr = on_demand->Update(app_guid.c_str(), job_observer);
 
   if (hr != S_OK)
     return ReportFailure(hr, GOOGLE_UPDATE_ONDEMAND_CLASS_REPORTED_ERROR,

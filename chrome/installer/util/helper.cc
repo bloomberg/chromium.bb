@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/master_preferences.h"
+#include "chrome/installer/util/package_properties.h"
 
 using base::win::RegKey;
 
@@ -124,6 +125,16 @@ FilePath GetChromeFrameInstallPath(bool multi_install, bool system_install,
       BrowserDistribution::GetSpecificDistribution(
           BrowserDistribution::CHROME_BROWSER, prefs);
   return GetChromeInstallPath(system_install, chrome);
+}
+
+std::wstring GetAppGuidForUpdates(bool system_install) {
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+
+  // If we're part of a multi-install, we need to poll using the multi-installer
+  // package's app guid rather than the browser's or Chrome Frame's app guid.
+  return IsInstalledAsMulti(system_install, dist) ?
+      ActivePackageProperties().GetAppGuid() :
+      dist->GetAppGuid();
 }
 
 }  // namespace installer.

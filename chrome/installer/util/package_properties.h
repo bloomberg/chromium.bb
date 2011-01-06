@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,6 +36,7 @@ class PackageProperties {
   virtual bool ReceivesUpdates() const = 0;
 
   // Equivalent to BrowserDistribution::GetAppGuid()
+  virtual const std::wstring& GetAppGuid() = 0;
   virtual const std::wstring& GetStateKey() = 0;
   virtual const std::wstring& GetStateMediumKey() = 0;
   virtual const std::wstring& GetVersionKey() = 0;
@@ -54,6 +55,7 @@ class PackagePropertiesImpl : public PackageProperties {
                                  const std::wstring& version_key);
   virtual ~PackagePropertiesImpl();
 
+  virtual const std::wstring& GetAppGuid();
   virtual const std::wstring& GetStateKey();
   virtual const std::wstring& GetStateMediumKey();
   virtual const std::wstring& GetVersionKey();
