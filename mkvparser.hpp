@@ -56,6 +56,7 @@ struct EBMLHeader
     long long m_docTypeReadVersion;
 
     long long Parse(IMkvReader*, long long&);
+    void Init();
 };
 
 

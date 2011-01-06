@@ -592,14 +592,32 @@ bool mkvparser::Match(
 namespace mkvparser
 {
 
-EBMLHeader::EBMLHeader():
+EBMLHeader::EBMLHeader() :
     m_docType(NULL)
 {
+    Init();
 }
 
 EBMLHeader::~EBMLHeader()
 {
     delete[] m_docType;
+}
+
+void EBMLHeader::Init()
+{
+    m_version = 1;
+    m_readVersion = 1;
+    m_maxIdLength = 4;
+    m_maxSizeLength = 8;
+
+    if (m_docType)
+    {
+        delete[] m_docType;
+        m_docType = NULL;
+    }
+
+    m_docTypeVersion = 1;
+    m_docTypeReadVersion = 1;
 }
 
 long long EBMLHeader::Parse(
@@ -700,13 +718,8 @@ long long EBMLHeader::Parse(
         return pos + result;
 
     end = pos + result;
-
-    m_version = 1;
-    m_readVersion = 1;
-    m_maxIdLength = 4;
-    m_maxSizeLength = 8;
-    m_docTypeVersion = 1;
-    m_docTypeReadVersion = 1;
+    
+    Init();
 
     while (pos < end)
     {
