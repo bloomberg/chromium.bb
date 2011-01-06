@@ -466,6 +466,15 @@ digraph {
     BuildIt(["--allow-overwrite"])
     self.assertFalse(os.path.exists(os.path.join(src.dest_path, "new-file")))
 
+  @Quieten
+  def test_build_with_jobs_option(self):
+    src = btarget.SourceTarget("src", self.MakeTempDir(), GetExample("minimal"))
+    input_prefix = btarget.UnionDir("input", self.MakeTempDir(), [])
+    install = btarget.AutoconfModule(
+        "bld", self.MakeTempDir(), self.MakeTempDir(), input_prefix, src)
+    # Just test that the build succeeds when -j is used.
+    btarget.BuildMain([install], ["-b", "-j2"], open(os.devnull, "w"))
+
 
 if __name__ == "__main__":
   unittest.main()

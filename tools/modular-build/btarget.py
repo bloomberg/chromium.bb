@@ -32,6 +32,20 @@ class BuildOptions(object):
   check_for_manual_change = True
   allow_overwrite = False
 
+  def __init__(self):
+    # Try to pick a sensible default for the number of concurrent jobs
+    # to tell Make/Scons to use: use the number of CPUs/cores.  It is
+    # a pity that Make, Scons or the OS will not do this for us.  This
+    # default may not be good if the system is overly-hyperthreaded or
+    # has too little memory, so we provide a "-j" override option.
+    try:
+      self.concurrent_jobs = os.sysconf("SC_NPROCESSORS_ONLN")
+    # AttributeError is for non-POSIX systems where os.sysconf() does
+    # not exist.  ValueError is just in case the sysconf argument is
+    # not recognised.
+    except (AttributeError, ValueError):
+      self.concurrent_jobs = 1
+
 
 class TargetState(object):
 
@@ -366,7 +380,8 @@ def AutoconfModule(name, install_dir, build_dir, prefix_obj, src,
           [os.path.join(src.dest_path, "configure"),
            "--prefix=%s" % prefix_dir] + configure_opts,
           cwd=build_dir)
-    subprocess.check_call(prefix_cmd + make_cmd + ["-j2"], cwd=build_dir)
+    subprocess.check_call(prefix_cmd + make_cmd +
+                          ["-j%i" % opts.concurrent_jobs], cwd=build_dir)
 
     if use_install_root:
       install_dir_tmp = install_dir + ".tmp"
@@ -418,7 +433,8 @@ def SconsBuild(name, dest_dir, build_dir, src_dir, prefix_obj,
     if pristine:
       ResetDir(build_dir)
     ResetDir(dest_dir)
-    subprocess.check_call(scons_cmd + ["--verbose"],
+    subprocess.check_call(scons_cmd
+                          + ["--verbose", "-j%i" % opts.concurrent_jobs],
                           cwd=os.path.join(src_dir.dest_path, "native_client"))
     return {"pristine": pristine}
   return BuildTarget(name, dest_dir, DoBuild,
@@ -594,6 +610,10 @@ def BuildMain(root_targets, args, stream):
                     help="If a target's contents do not match what we "
                     "previously built, allow the target to be clobbered. "
                     "This could lose manual changes to the target.")
+  parser.add_option("-j", "--jobs", type="int", dest="concurrent_jobs",
+                    help="Specifies the number of concurrent jobs to tell "
+                    "Make/Scons to use.  This defaults to the number of "
+                    "CPUs the system has.")
   options, args = parser.parse_args(args)
 
   do_graph = False
@@ -604,6 +624,8 @@ def BuildMain(root_targets, args, stream):
   opts = BuildOptions()
   opts.allow_non_pristine = options.non_pristine
   opts.allow_overwrite = options.allow_overwrite
+  if options.concurrent_jobs is not None:
+    opts.concurrent_jobs = options.concurrent_jobs
   if len(args) > 0:
     root_targets = SubsetTargets(root_targets, args)
   if do_graph:
