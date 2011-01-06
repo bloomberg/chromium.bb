@@ -29,9 +29,6 @@ IPC_MESSAGE_CONTROL0(ServiceMsg_DisableCloudPrintProxy)
 // enabled.
 IPC_MESSAGE_CONTROL0(ServiceMsg_IsCloudPrintProxyEnabled)
 
-// This message is for testing purpose.
-IPC_MESSAGE_CONTROL0(ServiceMsg_Hello)
-
 // Set credentials used by the RemotingHost.
 IPC_MESSAGE_CONTROL2(ServiceMsg_SetRemotingHostCredentials,
                      std::string, /* username */
@@ -65,6 +62,3 @@ IPC_MESSAGE_CONTROL2(ServiceHostMsg_CloudPrintProxy_IsEnabled,
 
 IPC_MESSAGE_CONTROL1(ServiceHostMsg_RemotingHost_HostInfo,
                      remoting::ChromotingHostInfo /* host_info */)
-
-// Sent from the service process in response to a Hello message.
-IPC_MESSAGE_CONTROL0(ServiceHostMsg_GoodDay)

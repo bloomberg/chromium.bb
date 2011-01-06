@@ -112,11 +112,8 @@ void SetupFlowDoneStep::DoStart() {
   ExecuteJavascriptInIFrame(kDoneIframeXPath, L"onPageShown();");
 }
 
-SetupFlowContext::SetupFlowContext() {
-}
-
-SetupFlowContext::~SetupFlowContext() {
-}
+SetupFlowContext::SetupFlowContext() { }
+SetupFlowContext::~SetupFlowContext() { }
 
 SetupFlow::SetupFlow(const std::string& args, Profile* profile,
                      SetupFlowStep* first_step)

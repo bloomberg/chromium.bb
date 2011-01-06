@@ -8307,6 +8307,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_REMOTING_SERVICE_PROCESS_FAILED_MESSAGE" desc="Message shown during remoting host setup if there was an error starting service process.">
         Unable to start service process.
       </message>
+      <message name="IDS_REMOTING_REGISTRATION_FAILED_MESSAGE" desc="Message shown during remoting host setup if there was an error registering the host.">
+        Failed to register this computer for remote access.
+      </message>
       <message name="IDS_REMOTING_RETRY_BUTTON_TEXT" desc="Text for retry button">
         Retry
       </message>

@@ -13,8 +13,7 @@
 #include "chrome/test/ui_test_utils.h"
 
 class ServiceProcessControlBrowserTest
-    : public InProcessBrowserTest,
-      public ServiceProcessControl::MessageHandler {
+    : public InProcessBrowserTest {
  public:
   ServiceProcessControlBrowserTest()
       : service_process_handle_(base::kNullProcessHandle) {
@@ -46,10 +45,16 @@ class ServiceProcessControlBrowserTest
     ui_test_utils::RunMessageLoop();
   }
 
-  void SayHelloAndWait() {
-    // Send a hello message to the service process and wait for a reply.
-    process()->SendHello();
+  // Send a remoting host status request and wait reply from the service.
+  void SendRequestAndWait() {
+    process()->GetCloudPrintProxyStatus(NewCallback(
+        this, &ServiceProcessControlBrowserTest::CloudPrintStatusCallback));
     ui_test_utils::RunMessageLoop();
+  }
+
+  void CloudPrintStatusCallback(
+      bool enabled, std::string email) {
+    MessageLoop::current()->Quit();
   }
 
   void Disconnect() {
@@ -72,7 +77,6 @@ class ServiceProcessControlBrowserTest
         service_pid,
         base::kProcessAccessWaitForTermination,
         &service_process_handle_));
-    process()->AddMessageHandler(this);
     // Quit the current message. Post a QuitTask instead of just calling Quit()
     // because this can get invoked in the context of a Launch() call and we
     // may not be in Run() yet.
@@ -83,15 +87,6 @@ class ServiceProcessControlBrowserTest
     ADD_FAILURE();
     // Quit the current message.
     MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
-  }
-
-  // ServiceProcessControl::MessageHandler implementations.
-  virtual void OnGoodDay() {
-    MessageLoop::current()->Quit();
-  }
-
-  virtual void OnRemotingHostInfo(
-      const remoting::ChromotingHostInfo& host_info) {
   }
 
   ServiceProcessControl* process() { return process_; }
@@ -109,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchAndIPC) {
 
   // Make sure we are connected to the service process.
   EXPECT_TRUE(process()->is_connected());
-  SayHelloAndWait();
+  SendRequestAndWait();
 
   // And then shutdown the service process.
   EXPECT_TRUE(process()->Shutdown());
@@ -123,12 +118,12 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchTwice) {
 
   // Make sure we are connected to the service process.
   EXPECT_TRUE(process()->is_connected());
-  SayHelloAndWait();
+  SendRequestAndWait();
 
   // Launch the service process again.
   LaunchServiceProcessControl();
   EXPECT_TRUE(process()->is_connected());
-  SayHelloAndWait();
+  SendRequestAndWait();
 
   // And then shutdown the service process.
   EXPECT_TRUE(process()->Shutdown());

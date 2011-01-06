@@ -54,7 +54,6 @@ class ServiceIPCServer : public IPC::Channel::Listener,
   void OnGetRemotingHostInfo();
 #endif  // defined(ENABLE_REMOTING)
 
-  void OnHello();
   void OnShutdown();
   void OnUpdateAvailable();
 

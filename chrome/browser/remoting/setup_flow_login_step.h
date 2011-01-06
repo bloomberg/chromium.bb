@@ -24,8 +24,7 @@ class SetupFlowLoginStep : public SetupFlowStepBase, public GaiaAuthConsumer {
   // GaiaAuthConsumer implementation.
   virtual void OnClientLoginSuccess(
       const GaiaAuthConsumer::ClientLoginResult& credentials);
-  virtual void OnClientLoginFailure(
-      const GoogleServiceAuthError& error);
+  virtual void OnClientLoginFailure(const GoogleServiceAuthError& error);
   virtual void OnIssueAuthTokenSuccess(const std::string& service,
                                        const std::string& auth_token);
   virtual void OnIssueAuthTokenFailure(const std::string& service,

@@ -98,7 +98,6 @@ bool ServiceIPCServer::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ServiceMsg_GetRemotingHostInfo,
                         OnGetRemotingHostInfo)
 #endif  // defined(ENABLE_REMOTING)
-    IPC_MESSAGE_HANDLER(ServiceMsg_Hello, OnHello);
     IPC_MESSAGE_HANDLER(ServiceMsg_Shutdown, OnShutdown);
     IPC_MESSAGE_HANDLER(ServiceMsg_UpdateAvailable, OnUpdateAvailable);
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -148,10 +147,6 @@ void ServiceIPCServer:: OnGetRemotingHostInfo() {
 
 void ServiceIPCServer::OnDisableCloudPrintProxy() {
   g_service_process->GetCloudPrintProxy()->DisableForUser();
-}
-
-void ServiceIPCServer::OnHello() {
-  channel_->Send(new ServiceHostMsg_GoodDay());
 }
 
 void ServiceIPCServer::OnShutdown() {

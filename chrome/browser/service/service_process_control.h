@@ -49,10 +49,6 @@ class ServiceProcessControl : public IPC::Channel::Sender,
    public:
     virtual ~MessageHandler() {}
 
-    // This is a test signal sent from the service process. This can be used
-    // the healthiness of the service.
-    virtual void OnGoodDay() = 0;
-
     // Called when we receive reply to remoting host status request.
     virtual void OnRemotingHostInfo(
         const remoting::ChromotingHostInfo& host_info) = 0;
@@ -96,13 +92,8 @@ class ServiceProcessControl : public IPC::Channel::Sender,
                        const NotificationDetails& details);
 
   // Message handlers
-  void OnGoodDay();
   void OnCloudPrintProxyIsEnabled(bool enabled, std::string email);
   void OnRemotingHostInfo(remoting::ChromotingHostInfo host_info);
-
-  // Send a hello message to the service process for testing purpose.
-  // Return true if the message was sent.
-  bool SendHello();
 
   // Send a shutdown message to the service process. IPC channel will be
   // destroyed after calling this method.

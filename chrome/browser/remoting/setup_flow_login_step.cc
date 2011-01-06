@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "chrome/browser/dom_ui/dom_ui_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/remoting/setup_flow_get_status_step.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 
@@ -97,7 +98,7 @@ void SetupFlowLoginStep::OnIssueAuthTokenSuccess(
   flow()->context()->talk_token = auth_token;
   authenticator_.reset();
 
-  FinishStep(new SetupFlowDoneStep());
+  FinishStep(new SetupFlowGetStatusStep());
 }
 
 void SetupFlowLoginStep::OnIssueAuthTokenFailure(const std::string& service,

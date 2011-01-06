@@ -238,9 +238,8 @@ void ServiceProcessControl::OnProcessLaunched() {
 }
 
 bool ServiceProcessControl::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;;
+  bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceProcessControl, message)
-    IPC_MESSAGE_HANDLER(ServiceHostMsg_GoodDay, OnGoodDay)
     IPC_MESSAGE_HANDLER(ServiceHostMsg_CloudPrintProxy_IsEnabled,
                         OnCloudPrintProxyIsEnabled)
     IPC_MESSAGE_HANDLER(ServiceHostMsg_RemotingHost_HostInfo,
@@ -277,14 +276,6 @@ void ServiceProcessControl::Observe(NotificationType type,
   }
 }
 
-void ServiceProcessControl::OnGoodDay() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  for (std::set<MessageHandler*>::iterator it = message_handlers_.begin();
-       it != message_handlers_.end(); ++it) {
-    (*it)->OnGoodDay();
-  }
-}
-
 void ServiceProcessControl::OnCloudPrintProxyIsEnabled(bool enabled,
                                                        std::string email) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -308,10 +299,6 @@ bool ServiceProcessControl::GetCloudPrintProxyStatus(
   DCHECK(cloud_print_status_callback);
   cloud_print_status_callback_.reset(cloud_print_status_callback);
   return Send(new ServiceMsg_IsCloudPrintProxyEnabled);
-}
-
-bool ServiceProcessControl::SendHello() {
-  return Send(new ServiceMsg_Hello());
 }
 
 bool ServiceProcessControl::Shutdown() {
