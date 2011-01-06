@@ -229,7 +229,6 @@
    fun:utOpenActivateAllSelectedIMInDoc
    ...
    fun:MyActivateTSMDocument
-   fun:ActivateTSMDocument
 }
 
 # 3. Suppressions for real chromium bugs that are not yet fixed.
