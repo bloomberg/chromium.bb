@@ -1560,6 +1560,13 @@ void BrowserWindowGtk::InitWidgets() {
   gtk_container_add(GTK_CONTAINER(render_area_floating_container_),
                     render_area_vbox_);
 
+  GtkWidget* location_icon = toolbar_->GetLocationBarView()->
+      location_icon_widget();
+  g_signal_connect(location_icon, "size-allocate",
+                   G_CALLBACK(OnLocationIconSizeAllocateThunk), this);
+  g_signal_connect_after(location_icon, "expose-event",
+                         G_CALLBACK(OnExposeDrawInfobarBitsThunk), this);
+
   toolbar_border_ = gtk_event_box_new();
   gtk_box_pack_start(GTK_BOX(render_area_vbox_),
                      toolbar_border_, FALSE, FALSE, 0);
@@ -1803,6 +1810,12 @@ int BrowserWindowGtk::GetXPositionOfLocationIcon(GtkWidget* relative_to) {
     x += relative_to->allocation.x;
 
   return x;
+}
+
+void BrowserWindowGtk::OnLocationIconSizeAllocate(GtkWidget* sender,
+                                                  GtkAllocation* allocation) {
+  // The position of the arrow may have changed, so we'll have to redraw it.
+  InvalidateInfoBarBits();
 }
 
 gboolean BrowserWindowGtk::OnExposeDrawInfobarBits(GtkWidget* sender,

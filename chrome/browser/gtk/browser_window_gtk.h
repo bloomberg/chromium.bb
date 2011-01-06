@@ -314,6 +314,10 @@ class BrowserWindowGtk : public BrowserWindow,
   // has changed.
   void InvalidateInfoBarBits();
 
+  // When the location icon moves, we have to redraw the arrow.
+  CHROMEGTK_CALLBACK_1(BrowserWindowGtk, void, OnLocationIconSizeAllocate,
+                       GtkAllocation*);
+
   // Used to draw the infobar arrow and drop shadow. This is connected to
   // multiple widgets' expose events because it overlaps several widgets.
   CHROMEGTK_CALLBACK_1(BrowserWindowGtk, gboolean, OnExposeDrawInfobarBits,
