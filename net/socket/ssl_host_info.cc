@@ -7,6 +7,8 @@
 #include "base/metrics/histogram.h"
 #include "base/pickle.h"
 #include "base/string_piece.h"
+#include "net/base/dns_util.h"
+#include "net/base/dnsrr_resolver.h"
 #include "net/base/ssl_config_service.h"
 #include "net/base/x509_certificate.h"
 #include "net/socket/ssl_client_socket.h"
@@ -40,11 +42,31 @@ SSLHostInfo::SSLHostInfo(
       verifier_(cert_verifier),
       callback_(new CancelableCompletionCallback<SSLHostInfo>(
                         ALLOW_THIS_IN_INITIALIZER_LIST(this),
-                        &SSLHostInfo::VerifyCallback)) {
+                        &SSLHostInfo::VerifyCallback)),
+      dnsrr_resolver_(NULL),
+      dns_callback_(NULL),
+      dns_handle_(DnsRRResolver::kInvalidHandle) {
   state_.npn_valid = false;
 }
 
-SSLHostInfo::~SSLHostInfo() {}
+SSLHostInfo::~SSLHostInfo() {
+  if (dns_handle_ != DnsRRResolver::kInvalidHandle) {
+    dnsrr_resolver_->CancelResolve(dns_handle_);
+    delete dns_callback_;
+  }
+}
+
+void SSLHostInfo::StartDnsLookup(DnsRRResolver* dnsrr_resolver) {
+#if defined(OS_LINUX)
+  dnsrr_resolver_ = dnsrr_resolver;
+  dns_callback_ = NewCallback(this, &SSLHostInfo::DnsComplete);
+  dns_lookup_start_time_ = base::TimeTicks::Now();
+
+  dns_handle_ = dnsrr_resolver->Resolve(
+      hostname_, kDNS_CAA, DnsRRResolver::FLAG_WANT_DNSSEC, dns_callback_,
+      &dns_response_, 0, BoundNetLog());
+#endif
+}
 
 const SSLHostInfo::State& SSLHostInfo::state() const {
   return state_;
@@ -194,6 +216,15 @@ void SSLHostInfo::VerifyCallback(int rv) {
     cert_verification_callback_ = NULL;
     callback->Run(rv);
   }
+}
+
+void SSLHostInfo::DnsComplete(int rv) {
+  dns_handle_ = DnsRRResolver::kInvalidHandle;
+  dns_callback_ = NULL;
+
+  const base::TimeTicks now = base::TimeTicks::Now();
+  const base::TimeDelta elapsed = now - dns_lookup_start_time_;
+  UMA_HISTOGRAM_TIMES("Net.SSLHostInfoDNSLookup", elapsed);
 }
 
 SSLHostInfoFactory::~SSLHostInfoFactory() {}
