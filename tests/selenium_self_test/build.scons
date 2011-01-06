@@ -11,7 +11,9 @@ node = env.BrowserTester(
      url='self.test.html',
      files=[],
      )
-env.AddNodeToTestSuite(node, ['browser_tests'], 'run_selenium_self_test')
+env.AddNodeToTestSuite(node,
+                       ['browser_tests', 'pepper_browser_tests'],
+                       'run_selenium_self_test')
 
 
 # Use an external page for testing
@@ -20,4 +22,5 @@ node = env.BrowserTester(
      url='simple.html',
      files=[env.File('simple.html')],
      )
-env.AddNodeToTestSuite(node, ['browser_tests'])
+env.AddNodeToTestSuite(node,
+                       ['browser_tests', 'pepper_browser_tests'])

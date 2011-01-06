@@ -86,8 +86,10 @@ ACCEPTABLE_ARGUMENTS = set([
     'SILENT',
     # set build platform
     'buildplatform',
-    # used for browser_tests
+    # used for browser_tests: path to the browser
     'chrome_browser_path',
+    # used for browser_tests: which plugin to use (npapi,ppapi,internal)
+    'chrome_plugin_type',
     # where should we store extrasdk libraries
     'extra_sdk_lib_destination',
     # where should we store extrasdk headers
@@ -436,7 +438,10 @@ MAJOR_TEST_SUITES = set([
   'small_tests',
   'medium_tests',
   'large_tests',
+  # Tests using the firefox plugin, usually only run on firefox
   'browser_tests',
+  # Tests using the pepper plugin, only run with chrome
+  'pepper_browser_tests',
   'huge_tests',
 ])
 
@@ -568,6 +573,7 @@ Alias('small_tests', [])
 Alias('medium_tests', [])
 Alias('large_tests', [])
 Alias('browser_tests', [])
+Alias('pepper_browser_tests', [])
 
 Alias('unit_tests', 'small_tests')
 Alias('smoke_tests', ['small_tests', 'medium_tests'])
@@ -955,20 +961,17 @@ EXTRA_ENV = [('XAUTHORITY', None),
 SELENIUM_TEST_SCRIPT = '${SCONSTRUCT_DIR}/tools/selenium_tester.py'
 
 def BrowserTester(env,
-                target,
-                url,
-                files,
-                log_verbosity=2,
-                args=[]):
-
+                  target,
+                  url,
+                  files,
+                  log_verbosity=2,
+                  args=[]):
   browser = '*firefox'
   # NOTE: hack to enable chrome testing - only works with Linux so far
   if ARGUMENTS.get('chrome_browser_path'):
     browser = env.subst('"*googlechrome '
                         '${SOURCE_ROOT}/native_client/tools/'
                         'google-chrome-wrapper.py"')
-    # this env affects the behavior of google-chrome-wrapper.py
-    env['ENV']['CHROME_BROWSER_EXE'] = ARGUMENTS.get('chrome_browser_path')
 
   deps = [SELENIUM_TEST_SCRIPT] + files
   command = ['${SOURCES[0].abspath}', '--url', url, '--browser', browser]
@@ -983,6 +986,27 @@ def BrowserTester(env,
     command.append(env.subst('${SOURCE_ROOT}/third_party/selenium/'
                              'selenium-server-2.0a1/'
                              'selenium-server-standalone.jar'))
+    # this env affects the behavior of google-chrome-wrapper.py
+    command.append('--env')
+    command.append('CHROME_BROWSER_EXE=' + ARGUMENTS.get('chrome_browser_path'))
+    # BrowserTester() is called with an untrusted env, but the plugin is
+    # built in the corresponding trusted env
+
+    plugin = ARGUMENTS.get('chrome_plugin_type', 'npapi')
+    if plugin == 'ppapi':
+      # TODO(robertm): this plugin dependency is not properly modeled in scons
+      #                this also needs more work for non linux systems
+      trusted_env = env['TRUSTED_ENV']
+      plugin = trusted_env.subst('${STAGING_DIR}/libppNaClPlugin.so')
+    command.append('--env')
+    command.append('CHROME_PLUGIN_TYPE=' + plugin)
+
+    # These are here mostly for reference, the selenium infrastructure
+    # seems to swallow stdout from the browser and module
+    command.append('--env')
+    command.append('PPAPI_BROWSER_DEBUG=1')
+    command.append('--env')
+    command.append('NACL_PLUGIN_DEBUG=1')
 
   # NOTE: setting the PYTHONPATH is currently not necessary as the test
   #       script sets its own path

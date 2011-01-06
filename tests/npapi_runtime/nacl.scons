@@ -23,13 +23,10 @@ env.Publish('npapi_runtime.nexe', 'run',
              env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 
 
-# TODO(robertm): this may work already
 is_broken = False
 if env.Bit('target_arm'):
   is_broken = True
 
-# Run the example tests under Selenium.
-BROWSER_TESTS = ['browser_tests']
 node = env.BrowserTester(
     'npapi_runtime_browser_test.out',
      url='npapi_runtime.html',

@@ -30,8 +30,7 @@ UNAME = platform.uname()
 ######################################################################
 # Common Functions
 ######################################################################
-def StartChrome(default_exe, argv, extra_args):
-  chrome_browser_exe = os.getenv('CHROME_BROWSER_EXE', default_exe)
+def StartChrome(chrome_browser_exe, argv, extra_args):
   if not os.access(chrome_browser_exe, os.X_OK):
     logging.fatal('cannot find chrome exe %s', chrome_browser_exe)
     sys.exit(-1)
@@ -49,33 +48,41 @@ def StartChrome(default_exe, argv, extra_args):
 ######################################################################
 # Linux Specific Definitions and Functions
 ######################################################################
-CHROME_LINUX_DEFAULT_EXE = '/opt/google/chrome/chrome'
-CHROME_LINUX_EXTRA_ARGS  = ['--internal-nacl',
-                            '--internal-pepper',
-                            '--enable-gpu-plugin']
-
-# Currently not used.
-CHROME_LINUX_EXTRA_LD_LIBRARY_PATH = []
-CHROME_LINUX_EXTRA_PATH = '/opt/google/chrome/'
+PPAPI_MIME_TYPE = 'application/x-ppapi-nacl-srpc'
 
 def StartChromeLinux(argv):
-  StartChrome(CHROME_LINUX_DEFAULT_EXE, argv, CHROME_LINUX_EXTRA_ARGS)
+  browser = os.getenv('CHROME_BROWSER_EXE', None)
+  plugin =  os.getenv('CHROME_PLUGIN_TYPE', None)
+  if plugin == 'npapi':
+    extra = ['--internal-nacl',
+             '--internal-pepper',
+             '--enable-gpu-plugin']
+  elif plugin == 'internal':
+    # not yet supported
+    extra = []
+    assert 0
+  else:
+    extra = [
+        '--register-pepper-plugins=%s;%s' % (plugin, PPAPI_MIME_TYPE)
+        ]
+  StartChrome(browser, argv, extra)
 
 
 ######################################################################
 # Mac Specific Definitions and Functions
 ######################################################################
-CHROME_MAC_DEFAULT_EXE = ('/Applications/Google Chrome.app/Contents/MacOS'
-                          '/Google Chrome')
-CHROME_MAC_EXTRA_ARGS  = ['--internal-nacl',
-                          '--internal-pepper',
-                          '--enable-gpu-plugin']
-# Currently not used.
-CHROME_MAC_EXTRA_LD_LIBRARY_PATH = []
-CHROME_MAC_EXTRA_PATH = ''
+# TODO(robertm): mac needs more work
+# CHROME_MAC_DEFAULT_EXE = ('/Applications/Google Chrome.app/Contents/MacOS'
+#                           '/Google Chrome')
+# CHROME_MAC_EXTRA_ARGS  = ['--internal-nacl',
+#                           '--internal-pepper',
+#                           '--enable-gpu-plugin']
+# # Currently not used.
+# CHROME_MAC_EXTRA_LD_LIBRARY_PATH = []
+# CHROME_MAC_EXTRA_PATH = ''
 
-def StartChromeMac(argv):
-  StartChrome(CHROME_MAC_DEFAULT_EXE, argv, CHROME_MAC_EXTRA_ARGS)
+# def StartChromeMac(argv):
+#   StartChrome(CHROME_MAC_DEFAULT_EXE, argv, CHROME_MAC_EXTRA_ARGS)
 
 
 ######################################################################
@@ -85,8 +92,9 @@ def main(argv):
   logging.info('chrome wrapper started on %s', repr(UNAME))
   if UNAME[0] == 'Linux':
     StartChromeLinux(argv)
-  elif UNAME[0] == 'Darwin':
-    StartChromeMac(argv)
+# TODO(robertm): mac needs more work
+#  elif UNAME[0] == 'Darwin':
+#    StartChromeMac(argv)
   else:
     logging.fatal('unsupport platform')
 

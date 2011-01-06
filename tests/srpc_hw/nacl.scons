@@ -37,3 +37,16 @@ env.AddNodeToTestSuite(node,
                        ['browser_tests'],
                        'run_srpc_hw_browser_test',
                        is_broken=is_broken)
+
+node = env.BrowserTester(
+     'srpc_hw_ppapi_browser_test.out',
+     url='srpc_hw_ppapi.html',
+     files=[nexe,
+            env.File('srpc_hw_ppapi.html'),
+            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
+            ],
+     )
+
+env.AddNodeToTestSuite(node,
+                       ['pepper_browser_tests'],
+                       'run_srpc_hw_ppapi_browser_test')

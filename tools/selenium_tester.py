@@ -7,6 +7,7 @@
 # You should be able to self test the selenium setup using:
 # ./selenium_tester.py  --url self.test.html
 
+import atexit
 import logging
 import optparse
 import os
@@ -634,7 +635,6 @@ def main(options):
     logging.info('shutdown delay active')
     time.sleep(options.shutdown_delay)
 
-  Cleanup()
   return result
 
 
@@ -642,4 +642,12 @@ if __name__ == '__main__':
   options, args = parser.parse_args()
   assert not args
   logging.getLogger().setLevel(int(options.log_level))
-  sys.exit(main(options))
+  # We intentionally overdo the Cleanup here as we have had lot of
+  # problems with zombie processes
+  atexit.register(Cleanup)
+  try:
+    result = main(options)
+  except:
+    result = -1
+  Cleanup()
+  sys.exit(result)
