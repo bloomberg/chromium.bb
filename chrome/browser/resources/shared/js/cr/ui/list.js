@@ -482,8 +482,9 @@ cr.define('cr.ui', function() {
      * @return {number} The index of the list item, or -1 if not found.
      */
     getIndexOfListItem: function(item) {
+      var paddingTop = parseFloat(getComputedStyle(this).paddingTop);
       var cs = getComputedStyle(item);
-      var top = item.offsetTop - parseFloat(cs.marginTop);
+      var top = item.offsetTop - parseFloat(cs.marginTop) - paddingTop;
       var index = Math.floor(top / this.getItemHeight_());
       var childIndex = index - this.firstIndex_ + 1;
       if (childIndex >= 0 && childIndex < this.children.length &&
