@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,7 @@ class ResourceRequestDetails {
   bool has_upload() const { return has_upload_; }
   int load_flags() const { return load_flags_; }
   int origin_child_id() const { return origin_child_id_; }
-  const URLRequestStatus& status() const { return status_; }
+  const net::URLRequestStatus& status() const { return status_; }
   int ssl_cert_id() const { return ssl_cert_id_; }
   int ssl_cert_status() const { return ssl_cert_status_; }
   ResourceType::Type resource_type() const { return resource_type_; }
@@ -51,7 +51,7 @@ class ResourceRequestDetails {
   bool has_upload_;
   int load_flags_;
   int origin_child_id_;
-  URLRequestStatus status_;
+  net::URLRequestStatus status_;
   int ssl_cert_id_;
   int ssl_cert_status_;
   ResourceType::Type resource_type_;

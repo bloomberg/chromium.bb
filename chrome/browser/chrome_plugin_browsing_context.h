@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,9 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
+namespace net {
 class URLRequestContext;
+}  // namespace net
 
 // This class manages the mapping between CPBrowsingContexts and
 // URLRequestContexts.  It observes when URLRequestContexts go away, and
@@ -33,16 +35,16 @@ class CPBrowsingContextManager : public NotificationObserver {
   // Generate a new unique CPBrowsingContext ID from the given
   // URLRequestContext.  Multiple CPBrowsingContexts can map to the same
   // URLRequestContext.
-  CPBrowsingContext Allocate(URLRequestContext* context);
+  CPBrowsingContext Allocate(net::URLRequestContext* context);
 
   // Return the URLRequestContext that this CPBrowsingContext refers to, or NULL
   // if not found.
-  URLRequestContext* ToURLRequestContext(CPBrowsingContext id);
+  net::URLRequestContext* ToURLRequestContext(CPBrowsingContext id);
 
   // Return a CPBrowsingContext ID that corresponds to the given
   // URLRequestContext. This function differs from Allocate in that calling
   // this multiple times with the same argument gives the same ID.
-  CPBrowsingContext Lookup(URLRequestContext* context);
+  CPBrowsingContext Lookup(net::URLRequestContext* context);
 
  private:
   // NotificationObserver
@@ -50,8 +52,8 @@ class CPBrowsingContextManager : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  typedef IDMap<URLRequestContext> Map;
-  typedef std::map<URLRequestContext*, CPBrowsingContext> ReverseMap;
+  typedef IDMap<net::URLRequestContext> Map;
+  typedef std::map<net::URLRequestContext*, CPBrowsingContext> ReverseMap;
 
   NotificationRegistrar registrar_;
 

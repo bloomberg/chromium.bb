@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,11 +19,11 @@
 
 namespace net {
 class IOBuffer;
-}
+class URLRequestStatus;
+}  // namespace net
 
 struct ResourceResponse;
 class GURL;
-class URLRequestStatus;
 
 // The resource dispatcher host uses this interface to push load events to the
 // renderer, allowing for differences in the types of IPC messages generated.
@@ -73,7 +73,7 @@ class ResourceHandler
   // The response is complete.  The final response status is given.
   // Returns false if the handler is deferring the call to a later time.
   virtual bool OnResponseCompleted(int request_id,
-                                   const URLRequestStatus& status,
+                                   const net::URLRequestStatus& status,
                                    const std::string& security_info) = 0;
 
   // Signals that the request is closed (i.e. finished successfully, cancelled).

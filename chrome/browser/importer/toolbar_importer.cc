@@ -135,7 +135,7 @@ void Toolbar5Importer::Cancel() {
 void Toolbar5Importer::OnURLFetchComplete(
     const URLFetcher* source,
     const GURL& url,
-    const URLRequestStatus& status,
+    const net::URLRequestStatus& status,
     int response_code,
     const ResponseCookies& cookies,
     const std::string& data) {

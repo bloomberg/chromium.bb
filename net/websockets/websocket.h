@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -74,7 +74,7 @@ class WebSocket : public base::RefCountedThreadSafe<WebSocket>,
     Request(const GURL& url, const std::string protocol,
             const std::string origin, const std::string location,
             ProtocolVersion version,
-            URLRequestContext* context)
+            net::URLRequestContext* context)
         : url_(url),
           protocol_(protocol),
           origin_(origin),
@@ -90,7 +90,7 @@ class WebSocket : public base::RefCountedThreadSafe<WebSocket>,
     const std::string& origin() const { return origin_; }
     const std::string& location() const { return location_; }
     ProtocolVersion version() const { return version_; }
-    URLRequestContext* context() const { return context_; }
+    net::URLRequestContext* context() const { return context_; }
 
     // Sets an alternative HostResolver. For testing purposes only.
     void SetHostResolver(HostResolver* host_resolver) {
@@ -113,7 +113,7 @@ class WebSocket : public base::RefCountedThreadSafe<WebSocket>,
     std::string origin_;
     std::string location_;
     ProtocolVersion version_;
-    scoped_refptr<URLRequestContext> context_;
+    scoped_refptr<net::URLRequestContext> context_;
 
     HostResolver* host_resolver_;
     ClientSocketFactory* client_socket_factory_;

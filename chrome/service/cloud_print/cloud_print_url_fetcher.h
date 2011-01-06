@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,10 @@
 
 class DictionaryValue;
 class GURL;
+
+namespace net {
 class URLRequestStatus;
+}  // namespace net
 
 // A wrapper around URLFetcher for CloudPrint. URLFetcher applies retry logic
 // only on HTTP response codes >= 500. In the cloud print case, we want to
@@ -36,12 +39,13 @@ class CloudPrintURLFetcher
     // error checking is done before this method is called. If the delegate
     // returns CONTINUE_PROCESSING, we will then check for network
     // errors. Most implementations will not override this.
-    virtual ResponseAction HandleRawResponse(const URLFetcher* source,
-                                             const GURL& url,
-                                             const URLRequestStatus& status,
-                                             int response_code,
-                                             const ResponseCookies& cookies,
-                                             const std::string& data) {
+    virtual ResponseAction HandleRawResponse(
+        const URLFetcher* source,
+        const GURL& url,
+        const net::URLRequestStatus& status,
+        int response_code,
+        const ResponseCookies& cookies,
+        const std::string& data) {
       return CONTINUE_PROCESSING;
     }
     // This will be invoked only if HandleRawResponse returns
@@ -87,7 +91,7 @@ class CloudPrintURLFetcher
 
   // URLFetcher::Delegate implementation.
   virtual void OnURLFetchComplete(const URLFetcher* source, const GURL& url,
-                                  const URLRequestStatus& status,
+                                  const net::URLRequestStatus& status,
                                   int response_code,
                                   const ResponseCookies& cookies,
                                   const std::string& data);

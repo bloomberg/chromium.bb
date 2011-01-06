@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,6 @@ class ChromeURLRequestContextGetter;
 class ListValue;
 class PrefService;
 class PrerenderInterceptor;
-class URLRequestContext;
 
 namespace chrome_browser_net {
 class ConnectInterceptor;
@@ -38,6 +37,7 @@ class HttpTransactionFactory;
 class ProxyScriptFetcher;
 class ProxyService;
 class SSLConfigService;
+class URLRequestContext;
 class URLSecurityManager;
 }  // namespace net
 
@@ -58,7 +58,7 @@ class IOThread : public BrowserProcessSubThread {
         proxy_script_fetcher_http_transaction_factory;
     scoped_ptr<net::URLSecurityManager> url_security_manager;
     ChromeNetworkDelegate network_delegate;
-    scoped_refptr<URLRequestContext> proxy_script_fetcher_context;
+    scoped_refptr<net::URLRequestContext> proxy_script_fetcher_context;
   };
 
   // |net_log| must either outlive the IOThread or be NULL.

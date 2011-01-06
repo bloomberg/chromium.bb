@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,7 +56,8 @@ class NPAPIUrlRequestManager : public PluginUrlRequestManager,
       const char* headers, int size, base::Time last_modified,
       const std::string& redirect_url, int redirect_status);
   virtual void OnReadComplete(int request_id, const std::string& data);
-  virtual void OnResponseEnd(int request_id, const URLRequestStatus& status);
+  virtual void OnResponseEnd(int request_id,
+                             const net::URLRequestStatus& status);
   virtual void OnCookiesRetrieved(bool success, const GURL& url,
       const std::string& cookie_string, int cookie_id);
 

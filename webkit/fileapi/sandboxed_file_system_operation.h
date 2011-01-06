@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,7 +47,7 @@ class SandboxedFileSystemOperation : public FileSystemOperation {
   virtual void ReadDirectory(const FilePath& path);
   virtual void Remove(const FilePath& path, bool recursive);
   virtual void Write(
-      scoped_refptr<URLRequestContext> url_request_context,
+      scoped_refptr<net::URLRequestContext> url_request_context,
       const FilePath& path, const GURL& blob_url, int64 offset);
   virtual void Truncate(const FilePath& path, int64 length);
   virtual void TouchFile(const FilePath& path,

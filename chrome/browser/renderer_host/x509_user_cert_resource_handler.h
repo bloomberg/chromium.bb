@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,10 +14,10 @@
 
 namespace net {
 class URLRequest;
+class URLRequestStatus;
 }  // namespace net
 
 class ResourceDispatcherHost;
-class URLRequestStatus;
 struct DownloadBuffer;
 
 // This class handles the "application/x-x509-user-cert" mime-type
@@ -51,7 +51,7 @@ class X509UserCertResourceHandler : public ResourceHandler {
 
   // Done downloading the certificate.
   virtual bool OnResponseCompleted(int request_id,
-                                   const URLRequestStatus& urs,
+                                   const net::URLRequestStatus& urs,
                                    const std::string& sec_info);
 
   virtual void OnRequestClosed();

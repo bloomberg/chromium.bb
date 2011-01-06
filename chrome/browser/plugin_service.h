@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,8 +40,10 @@ class Message;
 class MessageLoop;
 class Profile;
 class ResourceDispatcherHost;
-class URLRequestContext;
 
+namespace net {
+class URLRequestContext;
+}  // namespace net
 
 namespace webkit {
 namespace npapi {

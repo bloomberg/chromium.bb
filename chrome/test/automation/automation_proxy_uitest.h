@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,7 @@ class ExternalTabUITestMockClient : public AutomationProxy {
   MOCK_METHOD2(OnRequestRead, void(int request_id,
       int bytes_to_read));
   MOCK_METHOD2(OnRequestEnd, void(int request_id,
-      const URLRequestStatus& status));
+      const net::URLRequestStatus& status));
   MOCK_METHOD2(OnSetCookieAsync, void(const GURL& url,
       const std::string& cookie));
   MOCK_METHOD1(HandleClosed, void(int handle));
@@ -67,7 +67,9 @@ class ExternalTabUITestMockClient : public AutomationProxy {
                     int tab_handle, int request_id);
   void ReplyData(const std::string* data, int tab_handle, int request_id);
   void ReplyEOF(int tab_handle, int request_id);
-  void ReplyEnd(const URLRequestStatus& status, int tab_handle, int request_id);
+  void ReplyEnd(const net::URLRequestStatus& status,
+                int tab_handle,
+                int request_id);
   void Reply404(int tab_handle, int request_id);
 
   // Test setup helpers

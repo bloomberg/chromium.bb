@@ -386,7 +386,8 @@ void SimpleAppCacheSystem::InitOnUIThread(const FilePath& cache_directory) {
   cache_directory_ = cache_directory;
 }
 
-void SimpleAppCacheSystem::InitOnIOThread(URLRequestContext* request_context) {
+void SimpleAppCacheSystem::InitOnIOThread(
+    net::URLRequestContext* request_context) {
   if (!is_initailized_on_ui_thread())
     return;
 

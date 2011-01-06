@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,7 @@ namespace chromeos {
 class MockAuthResponseHandler : public AuthResponseHandler {
  public:
   MockAuthResponseHandler(const GURL& url,
-                          const URLRequestStatus& status,
+                          const net::URLRequestStatus& status,
                           const int code,
                           const std::string& data);
   virtual ~MockAuthResponseHandler() {}
@@ -41,13 +41,13 @@ class MockAuthResponseHandler : public AuthResponseHandler {
 
  private:
   const GURL remote_;
-  const URLRequestStatus status_;
+  const net::URLRequestStatus status_;
   const int http_response_code_;
   const std::string data_;
 
   static void CompleteFetch(URLFetcher::Delegate* delegate,
                             const GURL remote,
-                            const URLRequestStatus status,
+                            const net::URLRequestStatus status,
                             const int http_response_code,
                             const std::string data);
 

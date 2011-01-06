@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,9 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
 
+namespace net {
 class URLRequestContext;
+}  // namespace net
 
 // ConnectionTester runs a suite of tests (also called "experiments"),
 // to try and discover why loading a particular URL is failing with an error
@@ -126,7 +128,7 @@ class ConnectionTester {
   // |delegate| is owned by the caller, and must remain valid for the lifetime
   // of ConnectionTester.
   ConnectionTester(Delegate* delegate,
-                   URLRequestContext* proxy_request_context);
+                   net::URLRequestContext* proxy_request_context);
 
   // Note that destruction cancels any in-progress tests.
   ~ConnectionTester();
@@ -172,7 +174,7 @@ class ConnectionTester {
   // of the list is the one currently in progress.
   ExperimentList remaining_experiments_;
 
-  const scoped_refptr<URLRequestContext> proxy_request_context_;
+  const scoped_refptr<net::URLRequestContext> proxy_request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionTester);
 };

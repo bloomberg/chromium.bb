@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,8 +23,11 @@ class HostContentSettingsMap;
 class Profile;
 class Receiver;
 class RenderMessageFilter;
-class URLRequestContext;
 class URLRequestContextGetter;
+
+namespace net {
+class URLRequestContext;
+}  // namespace net
 
 namespace fileapi {
 class SandboxedFileSystemContext;
@@ -93,7 +96,7 @@ class FileSystemDispatcherHost : public BrowserMessageFilter {
   // This holds the URLRequestContextGetter until Init() can be called from the
   // IO thread, which will extract the URLRequestContext from it.
   scoped_refptr<URLRequestContextGetter> request_context_getter_;
-  scoped_refptr<URLRequestContext> request_context_;
+  scoped_refptr<net::URLRequestContext> request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemDispatcherHost);
 };

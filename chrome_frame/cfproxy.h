@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,13 +32,16 @@ enum AutomationPageFontSize {
 class ChromeProxyDelegate;
 class ChromeProxyFactory;
 class GURL;
-class URLRequestStatus;
 struct AttachExternalTabParams;
 struct AutomationURLRequest;
 struct ExternalTabSettings;
 struct MiniContextMenuParams;
 struct NavigationInfo;
 struct ProxyParams;
+
+namespace net {
+class URLRequestStatus;
+}  // namespace net
 
 // Some callers of synchronous messages wants a context to be passed back
 // in order to identify the call they made. Presumably one can make

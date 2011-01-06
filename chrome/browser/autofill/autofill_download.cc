@@ -188,12 +188,13 @@ bool AutoFillDownloadManager::StartRequest(
   return true;
 }
 
-void AutoFillDownloadManager::OnURLFetchComplete(const URLFetcher* source,
-                                                 const GURL& url,
-                                                 const URLRequestStatus& status,
-                                                 int response_code,
-                                                 const ResponseCookies& cookies,
-                                                 const std::string& data) {
+void AutoFillDownloadManager::OnURLFetchComplete(
+    const URLFetcher* source,
+    const GURL& url,
+    const net::URLRequestStatus& status,
+    int response_code,
+    const ResponseCookies& cookies,
+    const std::string& data) {
   std::map<URLFetcher *, FormRequestData>::iterator it =
       url_fetchers_.find(const_cast<URLFetcher*>(source));
   if (it == url_fetchers_.end()) {

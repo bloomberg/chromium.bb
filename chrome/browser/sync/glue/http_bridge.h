@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,13 +41,13 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   // 2) avoids ifdefs for now
   // 3) not sure we want to strictly follow settings for cookie policy,
   //    accept lang/charset, since changing these could break syncing.
-  class RequestContext : public URLRequestContext {
+  class RequestContext : public net::URLRequestContext {
    public:
     // |baseline_context| is used to obtain the accept-language,
     // accept-charsets, and proxy service information for bridged requests.
     // Typically |baseline_context| should be the URLRequestContext of the
     // currently active profile.
-    explicit RequestContext(URLRequestContext* baseline_context);
+    explicit RequestContext(net::URLRequestContext* baseline_context);
 
     // Set the user agent for requests using this context. The default is
     // the browser's UA string.
@@ -57,7 +57,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
       // If the user agent is set explicitly return that, otherwise call the
       // base class method to return default value.
       return user_agent_.empty() ?
-          URLRequestContext::GetUserAgent(url) : user_agent_;
+          net::URLRequestContext::GetUserAgent(url) : user_agent_;
     }
 
    private:
@@ -65,7 +65,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     ~RequestContext();
 
     std::string user_agent_;
-    URLRequestContext* baseline_context_;
+    net::URLRequestContext* baseline_context_;
 
     DISALLOW_COPY_AND_ASSIGN(RequestContext);
   };
@@ -80,7 +80,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     bool is_user_agent_set() const { return !user_agent_.empty(); }
 
     // URLRequestContextGetter implementation.
-    virtual URLRequestContext* GetURLRequestContext();
+    virtual net::URLRequestContext* GetURLRequestContext();
     virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const;
 
    private:
@@ -117,8 +117,9 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
       const std::string& name) const;
 
   // URLFetcher::Delegate implementation.
-  virtual void OnURLFetchComplete(const URLFetcher* source, const GURL& url,
-                                  const URLRequestStatus& status,
+  virtual void OnURLFetchComplete(const URLFetcher* source,
+                                  const GURL& url,
+                                  const net::URLRequestStatus& status,
                                   int response_code,
                                   const ResponseCookies& cookies,
                                   const std::string& data);

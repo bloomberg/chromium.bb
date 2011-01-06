@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,11 +12,11 @@
 #include "net/socket_stream/socket_stream.h"
 
 class GURL;
-class URLRequestContext;
 
 namespace net {
 class SocketStreamJob;
-}
+class URLRequestContext;
+}  // namespace net
 
 // Host of SocketStreamHandle.
 // Each SocketStreamHandle will have an unique socket_id assigned by
@@ -37,7 +37,7 @@ class SocketStreamHost {
   int socket_id() const { return socket_id_; }
 
   // Starts to open connection to |url|.
-  void Connect(const GURL& url, URLRequestContext* request_context);
+  void Connect(const GURL& url, net::URLRequestContext* request_context);
 
   // Sends |data| over the socket stream.
   // socket stream must be open to send data.

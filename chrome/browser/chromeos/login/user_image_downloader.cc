@@ -57,12 +57,13 @@ UserImageDownloader::UserImageDownloader(const std::string& username,
 UserImageDownloader::~UserImageDownloader() {
 }
 
-void UserImageDownloader::OnURLFetchComplete(const URLFetcher* source,
-                                             const GURL& url,
-                                             const URLRequestStatus& status,
-                                             int response_code,
-                                             const ResponseCookies& cookies,
-                                             const std::string& data) {
+void UserImageDownloader::OnURLFetchComplete(
+    const URLFetcher* source,
+    const GURL& url,
+    const net::URLRequestStatus& status,
+    int response_code,
+    const ResponseCookies& cookies,
+    const std::string& data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (response_code != 200) {
     LOG(ERROR) << "Response code is " << response_code;

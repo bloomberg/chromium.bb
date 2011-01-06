@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,7 @@ class ChromeURLRequestContextFactory;
 //
 // All methods of this class must be called from the IO thread,
 // including the constructor and destructor.
-class ChromeURLRequestContext : public URLRequestContext {
+class ChromeURLRequestContext : public net::URLRequestContext {
  public:
   ChromeURLRequestContext();
 
@@ -214,7 +214,7 @@ class ChromeURLRequestContextGetter : public URLRequestContextGetter,
   // GetIOMessageLoopProxy however can be called from any thread.
   //
   // URLRequestContextGetter implementation.
-  virtual URLRequestContext* GetURLRequestContext();
+  virtual net::URLRequestContext* GetURLRequestContext();
   virtual net::CookieStore* GetCookieStore();
   virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const;
 
@@ -301,7 +301,7 @@ class ChromeURLRequestContextGetter : public URLRequestContextGetter,
   // NULL if not yet initialized. Otherwise, it is the URLRequestContext
   // instance that was lazilly created by GetURLRequestContext.
   // Access only from the IO thread.
-  scoped_refptr<URLRequestContext> url_request_context_;
+  scoped_refptr<net::URLRequestContext> url_request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeURLRequestContextGetter);
 };

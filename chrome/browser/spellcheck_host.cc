@@ -255,7 +255,7 @@ void SpellCheckHost::WriteWordToCustomDictionary(const std::string& word) {
 
 void SpellCheckHost::OnURLFetchComplete(const URLFetcher* source,
                                         const GURL& url,
-                                        const URLRequestStatus& status,
+                                        const net::URLRequestStatus& status,
                                         int response_code,
                                         const ResponseCookies& cookies,
                                         const std::string& data) {

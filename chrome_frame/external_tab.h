@@ -22,14 +22,15 @@
 
 class Task;
 class CancelableTask;
+
 namespace base {
-  class TimeDelta;
-  class WaitableEvent;
+class TimeDelta;
+class WaitableEvent;
 }
 
 namespace IPC {
-  struct NavigationInfo;
-  struct MiniContextMenuParams;
+struct NavigationInfo;
+struct MiniContextMenuParams;
 }
 
 // This is the delegate/callback interface that has to be implemented
@@ -150,7 +151,7 @@ class ExternalTabProxy : public CWindowImpl<ExternalTabProxy>,
   virtual void OnNetwork_Start(
       int request_id, const AutomationURLRequest& request_info);
   virtual void OnNetwork_Read(int request_id, int bytes_to_read);
-  virtual void OnNetwork_End(int request_id, const URLRequestStatus& s);
+  virtual void OnNetwork_End(int request_id, const net::URLRequestStatus& s);
   virtual void OnNetwork_DownloadInHost(int request_id);
   virtual void OnGetCookies(const GURL& url, int cookie_id);
   virtual void OnSetCookie(const GURL& url, const std::string& cookie);

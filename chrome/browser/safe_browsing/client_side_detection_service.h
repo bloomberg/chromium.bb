@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -35,7 +35,10 @@
 
 class SkBitmap;
 class URLRequestContextGetter;
+
+namespace net {
 class URLRequestStatus;
+}  // namespace net
 
 namespace safe_browsing {
 
@@ -58,7 +61,7 @@ class ClientSideDetectionService : public URLFetcher::Delegate {
   // From the URLFetcher::Delegate interface.
   virtual void OnURLFetchComplete(const URLFetcher* source,
                                   const GURL& url,
-                                  const URLRequestStatus& status,
+                                  const net::URLRequestStatus& status,
                                   int response_code,
                                   const ResponseCookies& cookies,
                                   const std::string& data);
@@ -149,7 +152,7 @@ class ClientSideDetectionService : public URLFetcher::Delegate {
   // model.
   void HandleModelResponse(const URLFetcher* source,
                            const GURL& url,
-                           const URLRequestStatus& status,
+                           const net::URLRequestStatus& status,
                            int response_code,
                            const ResponseCookies& cookies,
                            const std::string& data);
@@ -158,7 +161,7 @@ class ClientSideDetectionService : public URLFetcher::Delegate {
   // sending the client-side phishing request.
   void HandlePhishingVerdict(const URLFetcher* source,
                              const GURL& url,
-                             const URLRequestStatus& status,
+                             const net::URLRequestStatus& status,
                              int response_code,
                              const ResponseCookies& cookies,
                              const std::string& data);

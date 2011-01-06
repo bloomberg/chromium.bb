@@ -1,9 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_TEST_TEST_URL_REQUEST_CONTEXT_GETTER_H_
 #define CHROME_TEST_TEST_URL_REQUEST_CONTEXT_GETTER_H_
+#pragma once
 
 #include "base/ref_counted.h"
 #include "chrome/browser/browser_thread.h"
@@ -17,7 +18,7 @@
 // special trait that deletes it on the IO thread.
 class TestURLRequestContextGetter : public URLRequestContextGetter {
  public:
-  virtual URLRequestContext* GetURLRequestContext() {
+  virtual net::URLRequestContext* GetURLRequestContext() {
     if (!context_)
       context_ = new TestURLRequestContext();
     return context_.get();
@@ -27,7 +28,7 @@ class TestURLRequestContextGetter : public URLRequestContextGetter {
   }
 
  private:
-  scoped_refptr<URLRequestContext> context_;
+  scoped_refptr<net::URLRequestContext> context_;
 };
 
 #endif  // CHROME_TEST_TEST_URL_REQUEST_CONTEXT_GETTER_H_

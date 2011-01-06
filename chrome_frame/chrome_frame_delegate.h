@@ -1,9 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_FRAME_CHROME_FRAME_DELEGATE_H_
 #define CHROME_FRAME_CHROME_FRAME_DELEGATE_H_
+#pragma once
 
 #include <atlbase.h>
 #include <atlwin.h>
@@ -107,7 +108,8 @@ class ChromeFrameDelegateImpl : public ChromeFrameDelegate {
   virtual void OnRequestStart(
       int request_id, const AutomationURLRequest& request) {}
   virtual void OnRequestRead(int request_id, int bytes_to_read) {}
-  virtual void OnRequestEnd(int request_id, const URLRequestStatus& status) {}
+  virtual void OnRequestEnd(int request_id,
+                            const net::URLRequestStatus& status) {}
   virtual void OnDownloadRequestInHost(int request_id) {}
   virtual void OnSetCookieAsync(const GURL& url, const std::string& cookie) {}
   virtual void OnAttachExternalTab(

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@ class CrossSiteResourceHandler : public ResourceHandler {
                           int min_size);
   virtual bool OnReadCompleted(int request_id, int* bytes_read);
   virtual bool OnResponseCompleted(int request_id,
-                                   const URLRequestStatus& status,
+                                   const net::URLRequestStatus& status,
                                    const std::string& security_info);
   virtual void OnRequestClosed();
 
@@ -60,7 +60,7 @@ class CrossSiteResourceHandler : public ResourceHandler {
   bool in_cross_site_transition_;
   int request_id_;
   bool completed_during_transition_;
-  URLRequestStatus completed_status_;
+  net::URLRequestStatus completed_status_;
   std::string completed_security_info_;
   ResourceResponse* response_;
   ResourceDispatcherHost* rdh_;

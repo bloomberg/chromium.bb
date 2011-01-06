@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,7 @@ PluginDownloadUrlHelper::~PluginDownloadUrlHelper() {
 }
 
 void PluginDownloadUrlHelper::InitiateDownload(
-    URLRequestContext* request_context) {
+    net::URLRequestContext* request_context) {
   download_file_request_ = new net::URLRequest(GURL(download_url_), this);
   chrome_browser_net::SetOriginProcessUniqueIDForRequest(
       download_source_child_unique_id_, download_file_request_);

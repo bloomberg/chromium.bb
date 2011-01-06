@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 // This class simulates what wininet does when a dns lookup fails.
@@ -83,7 +83,7 @@ class URLRequestAutomationJob : public net::URLRequestJob {
   // IPC message handlers.
   void OnRequestStarted(int id, const AutomationURLResponse& response);
   void OnDataAvailable(int id, const std::string& bytes);
-  void OnRequestEnd(int id, const URLRequestStatus& status);
+  void OnRequestEnd(int id, const net::URLRequestStatus& status);
 
  private:
   virtual ~URLRequestAutomationJob();

@@ -1,6 +1,7 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #ifndef CHROME_FRAME_TEST_AUTOMATION_CLIENT_MOCK_H_
 #define CHROME_FRAME_TEST_AUTOMATION_CLIENT_MOCK_H_
 
@@ -53,7 +54,7 @@ struct MockCFDelegate : public ChromeFrameDelegateImpl {
       const AutomationURLRequest& request));
   MOCK_METHOD2(OnRequestRead, void(int request_id, int bytes_to_read));
   MOCK_METHOD2(OnRequestEnd, void(int request_id,
-      const URLRequestStatus& status));
+      const net::URLRequestStatus& status));
   MOCK_METHOD2(OnSetCookieAsync, void(const GURL& url,
       const std::string& cookie));
 
@@ -71,13 +72,13 @@ struct MockCFDelegate : public ChromeFrameDelegateImpl {
     request_delegate_->OnReadComplete(request_id, *data);
   }
 
-  void Reply(const URLRequestStatus& status, int request_id) {
+  void Reply(const net::URLRequestStatus& status, int request_id) {
     request_delegate_->OnResponseEnd(request_id, status);
   }
 
   void Reply404(int request_id) {
     ReplyStarted(request_id, "HTTP/1.1 404\r\n\r\n");
-    Reply(URLRequestStatus(), request_id);
+    Reply(net::URLRequestStatus(), request_id);
   }
 
   PluginUrlRequestDelegate* request_delegate_;
@@ -180,6 +181,4 @@ class CFACMockTest : public testing::Test {
   }
 };
 
-
 #endif  // CHROME_FRAME_TEST_AUTOMATION_CLIENT_MOCK_H_
-

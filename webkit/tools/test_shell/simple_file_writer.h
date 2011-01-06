@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,9 @@
 #include "base/weak_ptr.h"
 #include "webkit/fileapi/webfilewriter_base.h"
 
+namespace net {
 class URLRequestContext;
-
+}  // namespace net
 
 // An implementation of WebFileWriter for use in test_shell and DRT.
 class SimpleFileWriter : public fileapi::WebFileWriterBase,
@@ -22,7 +23,7 @@ class SimpleFileWriter : public fileapi::WebFileWriterBase,
 
   // Called by SimpleResourceLoaderBridge when the context is
   // created and destroyed.
-  static void InitializeOnIOThread(URLRequestContext* request_context) {
+  static void InitializeOnIOThread(net::URLRequestContext* request_context) {
     request_context_ = request_context;
   }
   static void CleanupOnIOThread() {
@@ -39,7 +40,7 @@ class SimpleFileWriter : public fileapi::WebFileWriterBase,
  private:
   class IOThreadProxy;
   scoped_refptr<IOThreadProxy> io_thread_proxy_;
-  static URLRequestContext* request_context_;
+  static net::URLRequestContext* request_context_;
 };
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_SIMPLE_FILE_WRITER_H_

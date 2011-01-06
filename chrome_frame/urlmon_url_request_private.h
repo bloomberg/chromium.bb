@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -164,7 +164,7 @@ class UrlmonUrlRequest
     // Assumes binding_->Abort() will be called!
     void SetRedirected(int http_code, const std::string& utf8_url) {
       DCHECK_EQ(state_, WORKING);
-      DCHECK_EQ(result_.status(), URLRequestStatus::SUCCESS);
+      DCHECK_EQ(result_.status(), net::URLRequestStatus::SUCCESS);
       redirect_.utf8_url = utf8_url;
 
       // At times we receive invalid redirect codes like 0, 200, etc. We
@@ -176,7 +176,7 @@ class UrlmonUrlRequest
       state_ = ABORTING;
     }
 
-    // Set the result as URLRequestStatus::CANCELED.
+    // Set the result as net::URLRequestStatus::CANCELED.
     // Switch to [ABORTING] state (if not already in that state).
     void Cancel() {
       if (state_ == DONE)
@@ -190,7 +190,7 @@ class UrlmonUrlRequest
         redirect_.utf8_url.clear();
       }
 
-      set_result(URLRequestStatus::CANCELED, 0);
+      set_result(net::URLRequestStatus::CANCELED, 0);
     }
 
     void Done() {
@@ -205,25 +205,25 @@ class UrlmonUrlRequest
       return redirect_;
     }
 
-    const URLRequestStatus& get_result() const {
+    const net::URLRequestStatus& get_result() const {
       return result_;
     }
 
-    void set_result(URLRequestStatus::Status status, int os_error) {
+    void set_result(net::URLRequestStatus::Status status, int os_error) {
       result_.set_status(status);
       result_.set_os_error(os_error);
     }
 
     void set_result(HRESULT hr) {
-      result_.set_status(FAILED(hr)? URLRequestStatus::FAILED:
-                                     URLRequestStatus::SUCCESS);
+      result_.set_status(FAILED(hr)? net::URLRequestStatus::FAILED:
+                                     net::URLRequestStatus::SUCCESS);
       result_.set_os_error(HresultToNetError(hr));
     }
 
    private:
     Redirection redirect_;
     State state_;
-    URLRequestStatus result_;
+    net::URLRequestStatus result_;
   };
 
   Status status_;

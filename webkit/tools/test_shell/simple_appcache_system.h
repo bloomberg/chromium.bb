@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,9 +23,8 @@ class SimpleFrontendProxy;
 
 namespace net {
 class URLRequest;
-}  // namespace net
-
 class URLRequestContext;
+}  // namespace net
 
 // A class that composes the constituent parts of an appcache system
 // together for use in a single process with two relavant threads,
@@ -50,7 +49,7 @@ class SimpleAppCacheSystem {
   // at a time, but after IO thread termination a new one can be
   // started on which this method should be called. The instance
   // is assumed to outlive the IO thread.
-  static void InitializeOnIOThread(URLRequestContext* request_context) {
+  static void InitializeOnIOThread(net::URLRequestContext* request_context) {
     if (instance_)
       instance_->InitOnIOThread(request_context);
   }
@@ -116,7 +115,7 @@ class SimpleAppCacheSystem {
 
   // Instance methods called by our static public methods
   void InitOnUIThread(const FilePath& cache_directory);
-  void InitOnIOThread(URLRequestContext* request_context);
+  void InitOnIOThread(net::URLRequestContext* request_context);
   void CleanupIOThread();
   WebKit::WebApplicationCacheHost* CreateCacheHostForWebKit(
       WebKit::WebApplicationCacheHostClient* client);

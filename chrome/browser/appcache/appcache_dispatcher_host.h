@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,8 +18,11 @@
 #include "webkit/appcache/appcache_backend_impl.h"
 
 class ChromeAppCacheService;
-class URLRequestContext;
 class URLRequestContextGetter;
+
+namespace net {
+class URLRequestContext;
+}  // namespace net
 
 // Handles appcache related messages sent to the main browser process from
 // its child processes. There is a distinct host for each child process.
@@ -28,7 +31,7 @@ class URLRequestContextGetter;
 class AppCacheDispatcherHost : public BrowserMessageFilter {
  public:
   // Constructor for use on the IO thread.
-  AppCacheDispatcherHost(URLRequestContext* request_context,
+  AppCacheDispatcherHost(net::URLRequestContext* request_context,
                          int process_id);
 
   // Constructor for use on the UI thread.
@@ -77,7 +80,7 @@ class AppCacheDispatcherHost : public BrowserMessageFilter {
 
   // Temporary until OnChannelConnected() can be called from the IO thread,
   // which will extract the AppCacheService from the URLRequestContext.
-  scoped_refptr<URLRequestContext> request_context_;
+  scoped_refptr<net::URLRequestContext> request_context_;
   scoped_refptr<URLRequestContextGetter> request_context_getter_;
 
   scoped_ptr<appcache::GetStatusCallback> get_status_callback_;

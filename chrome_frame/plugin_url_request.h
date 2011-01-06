@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,7 +29,7 @@ class DECLSPEC_NOVTABLE PluginUrlRequestDelegate {  // NOLINT
     const std::string& redirect_url, int redirect_status) = 0;
   virtual void OnReadComplete(int request_id, const std::string& data) = 0;
   virtual void OnResponseEnd(int request_id,
-                             const URLRequestStatus& status) = 0;
+                             const net::URLRequestStatus& status) = 0;
   virtual void AddPrivacyDataForUrl(const std::string& url,
                                     const std::string& policy_ref,
                                     int32 flags) {}
@@ -77,7 +77,7 @@ class DECLSPEC_NOVTABLE PluginUrlRequestManager {  // NOLINT
     ReadRequest(request_id, bytes_to_read);
   }
 
-  void EndUrlRequest(int request_id, const URLRequestStatus& s) {
+  void EndUrlRequest(int request_id, const net::URLRequestStatus& s) {
     EndRequest(request_id);
   }
 

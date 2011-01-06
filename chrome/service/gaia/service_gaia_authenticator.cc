@@ -72,9 +72,12 @@ void ServiceGaiaAuthenticator::DoPost(const GURL& post_url,
 
 // URLFetcher::Delegate implementation
 void ServiceGaiaAuthenticator::OnURLFetchComplete(
-    const URLFetcher *source, const GURL &url, const URLRequestStatus &status,
-    int response_code, const ResponseCookies &cookies,
-    const std::string &data) {
+    const URLFetcher* source,
+    const GURL& url,
+    const net::URLRequestStatus& status,
+    int response_code,
+    const ResponseCookies& cookies,
+    const std::string& data) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   http_response_code_ = response_code;
   response_data_ = data;

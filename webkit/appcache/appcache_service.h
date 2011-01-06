@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,10 @@
 #include "webkit/appcache/appcache_storage.h"
 
 class FilePath;
+
+namespace net {
 class URLRequestContext;
+}  // namespace net
 
 namespace base {
 class MessageLoopProxy;
@@ -74,8 +77,8 @@ class AppCacheService {
   // on the IO thread. We do NOT add a reference to the request context,
   // it is the callers responsibility to ensure that the pointer
   // remains valid while set.
-  URLRequestContext* request_context() const { return request_context_; }
-  void set_request_context(URLRequestContext* context) {
+  net::URLRequestContext* request_context() const { return request_context_; }
+  void set_request_context(net::URLRequestContext* context) {
     request_context_ = context;
   }
 
@@ -110,7 +113,8 @@ class AppCacheService {
   scoped_ptr<AppCacheStorage> storage_;
   PendingAsyncHelpers pending_helpers_;
   BackendMap backends_;  // One 'backend' per child process.
-  URLRequestContext* request_context_;  // Context for use during cache updates.
+  // Context for use during cache updates.
+  net::URLRequestContext* request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheService);
 };

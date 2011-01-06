@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,10 @@
 
 class ChromeURLRequestContext;
 class ResourceDispatcherHost;
+
+namespace net {
 class URLRequestContext;
+}  // namespace net
 
 // This class filters out incoming IPC messages for network requests and
 // processes them on the IPC thread.  As a result, network requests are not
@@ -27,7 +30,7 @@ class ResourceMessageFilter : public BrowserMessageFilter {
    public:
     URLRequestContextOverride() {}
 
-    virtual URLRequestContext* GetRequestContext(
+    virtual net::URLRequestContext* GetRequestContext(
         uint32 request_id, ResourceType::Type resource_type) = 0;
 
    protected:

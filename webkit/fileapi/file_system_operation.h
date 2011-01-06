@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,10 +22,10 @@ class Time;
 
 namespace net {
 class URLRequest;
+class URLRequestContext;
 }  // namespace net
 
 class GURL;
-class URLRequestContext;
 
 namespace fileapi {
 
@@ -68,7 +68,7 @@ class FileSystemOperation {
 
   virtual void Remove(const FilePath& path, bool recursive);
 
-  virtual void Write(scoped_refptr<URLRequestContext> url_request_context,
+  virtual void Write(scoped_refptr<net::URLRequestContext> url_request_context,
                      const FilePath& path,
                      const GURL& blob_url,
                      int64 offset);

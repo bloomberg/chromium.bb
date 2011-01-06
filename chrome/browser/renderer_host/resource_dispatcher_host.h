@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,12 +42,15 @@ class SafeBrowsingService;
 class SaveFileManager;
 class SSLClientAuthHandler;
 class UserScriptListener;
-class URLRequestContext;
 class WebKitThread;
 struct DownloadSaveInfo;
 struct GlobalRequestID;
 struct ViewHostMsg_Resource_Request;
 struct ViewMsg_ClosePage_Params;
+
+namespace net {
+class URLRequestContext;
+}  // namespace net
 
 namespace webkit_blob {
 class DeletableFileReference;
@@ -91,7 +94,7 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
                      bool prompt_for_save_location,
                      int process_unique_id,
                      int route_id,
-                     URLRequestContext* request_context);
+                     net::URLRequestContext* request_context);
 
   // Initiates a save file from the browser process (as opposed to a resource
   // request from the renderer or another child process).
@@ -99,7 +102,7 @@ class ResourceDispatcherHost : public net::URLRequest::Delegate {
                      const GURL& referrer,
                      int process_unique_id,
                      int route_id,
-                     URLRequestContext* request_context);
+                     net::URLRequestContext* request_context);
 
   // Cancels the given request if it still exists. We ignore cancels from the
   // renderer in the event of a download.

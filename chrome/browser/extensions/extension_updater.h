@@ -204,18 +204,18 @@ class ExtensionUpdater
   // URLFetcher::Delegate interface.
   virtual void OnURLFetchComplete(const URLFetcher* source,
                                   const GURL& url,
-                                  const URLRequestStatus& status,
+                                  const net::URLRequestStatus& status,
                                   int response_code,
                                   const ResponseCookies& cookies,
                                   const std::string& data);
 
   // These do the actual work when a URL fetch completes.
   virtual void OnManifestFetchComplete(const GURL& url,
-                                       const URLRequestStatus& status,
+                                       const net::URLRequestStatus& status,
                                        int response_code,
                                        const std::string& data);
   virtual void OnCRXFetchComplete(const GURL& url,
-                                  const URLRequestStatus& status,
+                                  const net::URLRequestStatus& status,
                                   int response_code,
                                   const std::string& data);
 
