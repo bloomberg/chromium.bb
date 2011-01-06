@@ -59,6 +59,7 @@ InputWindowDialogGtk::InputWindowDialogGtk(GtkWindow* parent,
       delegate_(delegate) {
   gtk_dialog_set_default_response(GTK_DIALOG(dialog_), GTK_RESPONSE_ACCEPT);
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog_), FALSE);
+  gtk_window_set_resizable(GTK_WINDOW(dialog_), FALSE);
 
   GtkWidget* content_area = GTK_DIALOG(dialog_)->vbox;
   gtk_box_set_spacing(GTK_BOX(content_area), 18);
