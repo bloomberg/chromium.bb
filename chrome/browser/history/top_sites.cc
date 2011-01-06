@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -220,7 +220,7 @@ void TopSites::GetMostVisitedURLs(CancelableRequestConsumer* consumer,
   // WARNING: this may be invoked on any thread.
   scoped_refptr<CancelableRequest<GetTopSitesCallback> > request(
       new CancelableRequest<GetTopSitesCallback>(callback));
-  // This ensures cancelation of requests when either the consumer or the
+  // This ensures cancellation of requests when either the consumer or the
   // provider is deleted. Deletion of requests is also guaranteed.
   AddRequest(request, consumer);
   MostVisitedURLList filtered_urls;
