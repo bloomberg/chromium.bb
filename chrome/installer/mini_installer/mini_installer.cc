@@ -67,8 +67,8 @@ class RegKey {
   // ERROR_SUCCESS or some other error.
   LONG Open(HKEY key, const wchar_t* sub_key, REGSAM access);
 
-  // Returns true if the is open.
-  bool IsOpen() const { return key_ != NULL; }
+  // Returns true if a key is open.
+  bool is_valid() const { return key_ != NULL; }
 
   // Read a REG_SZ value from the registry into the memory indicated by |value|
   // (of |value_size| wchar_t units).  Returns ERROR_SUCCESS,
@@ -178,7 +178,7 @@ bool SafeStrCat(wchar_t* dest, size_t dest_size, const wchar_t* src) {
 
 // Function to check if a string (specified by str) ends with another string
 // (specified by end_str).
-bool StrEndsWith(const wchar_t *str, const wchar_t *end_str) {
+bool StrEndsWith(const wchar_t* str, const wchar_t* end_str) {
   if (str == NULL || end_str == NULL)
     return false;
 
@@ -192,7 +192,7 @@ bool StrEndsWith(const wchar_t *str, const wchar_t *end_str) {
 
 // Function to check if a string (specified by str) starts with another string
 // (specified by start_str).
-bool StrStartsWith(const wchar_t *str, const wchar_t *start_str) {
+bool StrStartsWith(const wchar_t* str, const wchar_t* start_str) {
   if (str == NULL || start_str == NULL)
     return false;
 
@@ -202,6 +202,26 @@ bool StrStartsWith(const wchar_t *str, const wchar_t *start_str) {
   }
 
   return true;
+}
+
+// Searches for |tag| within |str|.  Returns true if |tag| is found and is
+// immediately followed by '-' or is at the end of the string.  If |position|
+// is non-NULL, the location of the tag is returned in |*position| on success.
+bool FindTagInStr(const wchar_t* str,
+                  const wchar_t* tag,
+                  const wchar_t** position) {
+  int tag_length = ::lstrlen(tag);
+  const wchar_t* scan = str;
+  for (const wchar_t* tag_start = StrStrI(scan, tag); tag_start != NULL;
+       tag_start = StrStrI(scan, tag)) {
+    scan = tag_start + tag_length;
+    if (*scan == L'-' || *scan == L'\0') {
+      if (position != NULL)
+        *position = tag_start;
+      return true;
+    }
+  }
+  return false;
 }
 
 // Helper function to read a value from registry. Returns true if value
@@ -231,7 +251,7 @@ bool OpenClientStateKey(HKEY root_key, const wchar_t* app_guid, REGSAM access,
 }
 
 // TODO(grt): Write a unit test for this that uses registry virtualization.
-void SetFullInstallerFlagHelper(int args_num, const wchar_t* const* args) {
+void SetInstallerFlagsHelper(int args_num, const wchar_t* const* args) {
   bool multi_install = false;
   RegKey key;
   const REGSAM key_access = KEY_QUERY_VALUE | KEY_SET_VALUE;
@@ -268,19 +288,20 @@ void SetFullInstallerFlagHelper(int args_num, const wchar_t* const* args) {
       // The app is installed.  See if it's a single-install.
       ret = key.ReadValue(kApRegistryValueName, value, _countof(value));
       if (ret != ERROR_FILE_NOT_FOUND &&
-          (ret != ERROR_SUCCESS || StrStr(value, kMultiInstallTag) != NULL)) {
-        // Error or case 2: add "-full" to the multi-installer's value.
+          (ret != ERROR_SUCCESS ||
+           FindTagInStr(value, kMultiInstallTag, NULL))) {
+        // Error or case 2: modify the multi-installer's value.
         key.Close();
         app_guid = google_update::kMultiInstallAppGuid;
-      }  // else case 3: add "-full" to this value.
+      }  // else case 3: modify this value.
     } else {
-      // case 1 or 2: add "-full" to the multi-installer's value.
+      // case 1 or 2: modify the multi-installer's value.
       key.Close();
       app_guid = google_update::kMultiInstallAppGuid;
     }
   }
 
-  if (!key.IsOpen()) {
+  if (!key.is_valid()) {
     if (!OpenClientStateKey(root_key, app_guid, key_access, &key))
       return;
 
@@ -288,14 +309,28 @@ void SetFullInstallerFlagHelper(int args_num, const wchar_t* const* args) {
   }
 
   // The conditions below are handling two cases:
-  // 1. When ap key is present, we want to make sure it doesn't already end
-  //    in -full and then append -full to it.
-  // 2. When ap key is missing, we are going to create it with value -full.
+  // 1. When ap key is present, we want to add the required tags only if they
+  //    are not present.
+  // 2. When ap key is missing, we are going to create it with the required
+  //    tags.
   if ((ret == ERROR_SUCCESS) || (ret == ERROR_FILE_NOT_FOUND)) {
     if (ret == ERROR_FILE_NOT_FOUND)
       value[0] = L'\0';
 
-    if (!StrEndsWith(value, kFullInstallerSuffix) &&
+    bool success = true;
+
+    if (multi_install &&
+        !FindTagInStr(value, kMultifailInstallerSuffix, NULL)) {
+      // We want -multifail to immediately precede -full.  Chop off the latter
+      // if it's already present so that we can simply do two appends.
+      if (StrEndsWith(value, kFullInstallerSuffix)) {
+        int suffix_len = ::lstrlen(kFullInstallerSuffix);
+        int value_len = ::lstrlen(value);
+        value[value_len - suffix_len] = L'\0';
+      }
+      success = SafeStrCat(value, _countof(value), kMultifailInstallerSuffix);
+    }
+    if (success && !StrEndsWith(value, kFullInstallerSuffix) &&
         (SafeStrCat(value, _countof(value), kFullInstallerSuffix)))
       key.WriteValue(kApRegistryValueName, value);
   }
@@ -306,12 +341,12 @@ void SetFullInstallerFlagHelper(int args_num, const wchar_t* const* args) {
 // flag is cleared by setup.exe at the end of install. The flag will by default
 // be written to HKCU, but if --system-level is included in the command line,
 // it will be written to HKLM instead.
-void SetFullInstallerFlag() {
+void SetInstallerFlags() {
   int args_num;
   wchar_t* cmd_line = ::GetCommandLine();
   wchar_t** args = ::CommandLineToArgvW(cmd_line, &args_num);
 
-  SetFullInstallerFlagHelper(args_num, args);
+  SetInstallerFlagsHelper(args_num, args);
 
   ::LocalFree(args);
 }
@@ -649,8 +684,7 @@ int WMain(HMODULE module) {
   // any errors here and we try to set the suffix for user level unless
   // --system-level is on the command line in which case we set it for system
   // level instead. This only applies to the Google Chrome distribution.
-  // TODO(grt): also add -multifail if --multi-install.
-  SetFullInstallerFlag();
+  SetInstallerFlags();
 #endif
 
   wchar_t archive_path[MAX_PATH] = {0};
@@ -672,6 +706,7 @@ int WMain(HMODULE module) {
 
   return exit_code;
 }
+
 }  // namespace mini_installer
 
 

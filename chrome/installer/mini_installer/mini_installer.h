@@ -28,6 +28,9 @@ const wchar_t kTempPrefix[] = L"CR_";
 // Google Update will use the full installer if this suffix is found in the ap
 // value.
 const wchar_t kFullInstallerSuffix[] = L"-full";
+// Google Update will use the single-install configuration if this suffix is
+// found in the ap value.
+const wchar_t kMultifailInstallerSuffix[] = L"-multifail";
 // ap value tag for a multi-install product.
 const wchar_t kMultiInstallTag[] = L"-multi";
 
