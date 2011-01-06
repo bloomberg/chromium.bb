@@ -121,17 +121,29 @@ SpeechInputManager* SpeechInputDispatcherHost::manager() {
 bool SpeechInputDispatcherHost::OnMessageReceived(
     const IPC::Message& message, bool* message_was_ok) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(SpeechInputDispatcherHost, message, *message_was_ok)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SpeechInput_StartRecognition,
-                        OnStartRecognition)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SpeechInput_CancelRecognition,
-                        OnCancelRecognition)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SpeechInput_StopRecording,
-                        OnStopRecording)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
+
+  uint32 message_type = message.type();
+  if (message_type == ViewHostMsg_SpeechInput_StartRecognition::ID ||
+      message_type == ViewHostMsg_SpeechInput_CancelRecognition::ID ||
+      message_type == ViewHostMsg_SpeechInput_StopRecording::ID) {
+    if (!SpeechInputManager::IsFeatureEnabled()) {
+      *message_was_ok = false;
+      return true;
+    }
+
+    IPC_BEGIN_MESSAGE_MAP_EX(SpeechInputDispatcherHost, message,
+                             *message_was_ok)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_SpeechInput_StartRecognition,
+                          OnStartRecognition)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_SpeechInput_CancelRecognition,
+                          OnCancelRecognition)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_SpeechInput_StopRecording,
+                          OnStopRecording)
+    IPC_END_MESSAGE_MAP()
+    return true;
+  }
+
+  return false;
 }
 
 void SpeechInputDispatcherHost::OnStartRecognition(
