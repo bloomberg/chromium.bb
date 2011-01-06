@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/command_line.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "build/build_config.h"
@@ -22,15 +21,12 @@ namespace IPC {
 struct ChannelHandle;
 }
 
-class GpuWatchdogThread;
-
 class GpuThread : public ChildThread {
  public:
-  explicit GpuThread(const CommandLine& command_line);
+  GpuThread();
   ~GpuThread();
 
   void Init(const base::Time& process_start_time);
-  void StopWatchdog();
 
   // Remove the channel for a particular renderer.
   void RemoveChannel(int renderer_id);
@@ -40,7 +36,6 @@ class GpuThread : public ChildThread {
   virtual bool OnControlMessageReceived(const IPC::Message& msg);
 
   // Message handlers.
-  void OnInitialize();
   void OnEstablishChannel(int renderer_id);
   void OnCloseChannel(const IPC::ChannelHandle& channel_handle);
   void OnSynchronize();
@@ -57,10 +52,6 @@ class GpuThread : public ChildThread {
   static void CollectDxDiagnostics(GpuThread* thread);
   static void SetDxDiagnostics(GpuThread* thread, const DxDiagNode& node);
 #endif
-
-  CommandLine command_line_;
-  base::Time process_start_time_;
-  scoped_refptr<GpuWatchdogThread> watchdog_thread_;
 
   typedef base::hash_map<int, scoped_refptr<GpuChannel> > GpuChannelMap;
   GpuChannelMap gpu_channels_;
