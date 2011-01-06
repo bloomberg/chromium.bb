@@ -11,17 +11,15 @@
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/chrome_browser_window.h"
 
-// Offset from the top of the window frame to the top of the window controls
-// (zoom, close, miniaturize) for a window with a tabstrip.
-const NSInteger kFramedWindowButtonsWithTabStripOffsetFromTop = 6;
+// Offsets from the top/left of the window frame to the top of the window
+// controls (zoom, close, miniaturize) for a window with a tabstrip.
+const NSInteger kFramedWindowButtonsWithTabStripOffsetFromTop = 10;
+const NSInteger kFramedWindowButtonsWithTabStripOffsetFromLeft = 10;
 
-// Offset from the top of the window frame to the top of the window controls
-// (zoom, close, miniaturize) for a window without a tabstrip.
+// Offsets from the top/left of the window frame to the top of the window
+// controls (zoom, close, miniaturize) for a window without a tabstrip.
 const NSInteger kFramedWindowButtonsWithoutTabStripOffsetFromTop = 4;
-
-// Offset from the left of the window frame to the top of the window controls
-// (zoom, close, miniaturize).
-const NSInteger kFramedWindowButtonsOffsetFromLeft = 8;
+const NSInteger kFramedWindowButtonsWithoutTabStripOffsetFromLeft = 8;
 
 // Offset between the window controls (zoom, close, miniaturize).
 const NSInteger kFramedWindowButtonsInterButtonSpacing = 7;
