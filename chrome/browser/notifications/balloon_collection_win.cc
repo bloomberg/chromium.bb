@@ -62,6 +62,27 @@ bool BalloonCollectionImpl::IsCursorInBalloonCollection() const {
   return bounds.Contains(cursor);
 }
 
+void BalloonCollectionImpl::SetPositionPreference(
+    PositionPreference position) {
+  if (position == DEFAULT_POSITION)
+    position = LOWER_RIGHT;
+
+  // All positioning schemes are vertical, and windows
+  // uses the normal screen orientation.
+  if (position == UPPER_RIGHT)
+    layout_.set_placement(Layout::VERTICALLY_FROM_TOP_RIGHT);
+  else if (position == UPPER_LEFT)
+    layout_.set_placement(Layout::VERTICALLY_FROM_TOP_LEFT);
+  else if (position == LOWER_LEFT)
+    layout_.set_placement(Layout::VERTICALLY_FROM_BOTTOM_LEFT);
+  else if (position == LOWER_RIGHT)
+    layout_.set_placement(Layout::VERTICALLY_FROM_BOTTOM_RIGHT);
+  else
+    NOTREACHED();
+
+  PositionBalloons(true);
+}
+
 // static
 BalloonCollection* BalloonCollection::Create() {
   return new BalloonCollectionImpl();

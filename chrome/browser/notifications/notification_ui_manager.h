@@ -13,10 +13,12 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/balloon_collection.h"
+#include "chrome/browser/prefs/pref_member.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
 class Notification;
+class PrefService;
 class Profile;
 class QueuedNotification;
 class SiteInstance;
@@ -27,21 +29,20 @@ class NotificationUIManager
     : public BalloonCollection::BalloonSpaceChangeListener,
       public NotificationObserver {
  public:
-  NotificationUIManager();
+  explicit NotificationUIManager(PrefService* local_state);
   virtual ~NotificationUIManager();
 
   // Creates an initialized UI manager with a new balloon collection
   // and the listener relationship setup.
   // Except for unit tests, this is the way to construct the object.
-  static NotificationUIManager* Create();
+  static NotificationUIManager* Create(PrefService* local_state);
+
+  // Registers preferences.
+  static void RegisterPrefs(PrefService* prefs);
 
   // Initializes the UI manager with a balloon collection; this object
   // takes ownership of the balloon collection.
-  void Initialize(BalloonCollection* balloon_collection) {
-    DCHECK(!balloon_collection_.get());
-    DCHECK(balloon_collection);
-    balloon_collection_.reset(balloon_collection);
-  }
+  void Initialize(BalloonCollection* balloon_collection);
 
   // Adds a notification to be displayed. Virtual for unit test override.
   virtual void Add(const Notification& notification,
@@ -64,6 +65,13 @@ class NotificationUIManager
   BalloonCollection* balloon_collection() {
     return balloon_collection_.get();
   }
+
+  // Gets the preference indicating where notifications should be placed.
+  BalloonCollection::PositionPreference GetPositionPreference();
+
+  // Sets the preference that indicates where notifications should
+  // be placed on the screen.
+  void SetPositionPreference(BalloonCollection::PositionPreference preference);
 
   // NotificationObserver interface (the event signaling kind of notifications)
   virtual void Observe(NotificationType type,
@@ -94,6 +102,9 @@ class NotificationUIManager
 
   // Registrar for the other kind of notifications (event signaling).
   NotificationRegistrar registrar_;
+
+  // Prefs listener for the position preference.
+  IntegerPrefMember position_pref_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationUIManager);
 };

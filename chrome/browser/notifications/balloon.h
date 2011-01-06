@@ -68,6 +68,8 @@ class Balloon {
   const gfx::Size& content_size() const { return content_size_; }
   void set_content_size(const gfx::Size& size) { content_size_ = size; }
 
+  const BalloonCollection* collection() const { return collection_; }
+
   const gfx::Size& min_scrollbar_size() const { return min_scrollbar_size_; }
   void set_min_scrollbar_size(const gfx::Size& size) {
     min_scrollbar_size_ = size;

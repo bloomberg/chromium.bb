@@ -211,6 +211,7 @@ extern const char kShowOmniboxSearchHint[];
 extern const char kDesktopNotificationDefaultContentSetting[];
 extern const char kDesktopNotificationAllowedOrigins[];
 extern const char kDesktopNotificationDeniedOrigins[];
+extern const char kDesktopNotificationPosition[];
 extern const char kDefaultContentSettings[];
 extern const char kPerHostContentSettings[];  // OBSOLETE
 extern const char kContentSettingsVersion[];

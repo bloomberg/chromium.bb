@@ -7,6 +7,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/render_messages_params.h"
+#include "chrome/test/testing_pref_service.h"
 
 namespace chromeos {
 
@@ -77,7 +78,8 @@ DesktopNotificationsTest::~DesktopNotificationsTest() {
 void DesktopNotificationsTest::SetUp() {
   profile_.reset(new TestingProfile());
   balloon_collection_ = new MockBalloonCollection();
-  ui_manager_.reset(new NotificationUIManager());
+  ui_manager_.reset(
+      new NotificationUIManager(profile_->GetTestingPrefService()));
   ui_manager_->Initialize(balloon_collection_);
   balloon_collection_->set_space_change_listener(ui_manager_.get());
   service_.reset(new DesktopNotificationService(profile(), ui_manager_.get()));
@@ -86,8 +88,8 @@ void DesktopNotificationsTest::SetUp() {
 
 void DesktopNotificationsTest::TearDown() {
   service_.reset(NULL);
-  profile_.reset(NULL);
   ui_manager_.reset(NULL);
+  profile_.reset(NULL);
 }
 
 ViewHostMsg_ShowNotification_Params

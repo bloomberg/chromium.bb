@@ -28,20 +28,14 @@ const int kRepositionDelay = 300;
 
 }  // namespace
 
-// static
-// Note that on MacOS, since the coordinate system is inverted vertically from
-// the others, this actually produces notifications coming from the TOP right,
-// which is what is desired.
-BalloonCollectionImpl::Layout::Placement
-    BalloonCollectionImpl::Layout::placement_ =
-        Layout::VERTICALLY_FROM_BOTTOM_RIGHT;
-
 BalloonCollectionImpl::BalloonCollectionImpl()
 #if USE_OFFSETS
     : ALLOW_THIS_IN_INITIALIZER_LIST(reposition_factory_(this)),
       added_as_message_loop_observer_(false)
 #endif
 {
+
+  SetPositionPreference(BalloonCollection::DEFAULT_POSITION);
 }
 
 BalloonCollectionImpl::~BalloonCollectionImpl() {
@@ -221,25 +215,26 @@ void BalloonCollectionImpl::Layout::GetMaxLinearSize(int* max_balloon_size,
                                                      int* total_size) const {
   DCHECK(max_balloon_size && total_size);
 
-  switch (placement_) {
-    case VERTICALLY_FROM_TOP_RIGHT:
-    case VERTICALLY_FROM_BOTTOM_RIGHT:
-      *total_size = work_area_.height();
-      *max_balloon_size = max_balloon_height();
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
+  // All placement schemes are vertical, so we only care about height.
+  *total_size = work_area_.height();
+  *max_balloon_size = max_balloon_height();
 }
 
 gfx::Point BalloonCollectionImpl::Layout::GetLayoutOrigin() const {
   int x = 0;
   int y = 0;
   switch (placement_) {
+    case VERTICALLY_FROM_TOP_LEFT:
+      x = work_area_.x() + HorizontalEdgeMargin();
+      y = work_area_.y() + VerticalEdgeMargin();
+      break;
     case VERTICALLY_FROM_TOP_RIGHT:
       x = work_area_.right() - HorizontalEdgeMargin();
       y = work_area_.y() + VerticalEdgeMargin();
+      break;
+    case VERTICALLY_FROM_BOTTOM_LEFT:
+      x = work_area_.x() + HorizontalEdgeMargin();
+      y = work_area_.bottom() - VerticalEdgeMargin();
       break;
     case VERTICALLY_FROM_BOTTOM_RIGHT:
       x = work_area_.right() - HorizontalEdgeMargin();
@@ -260,11 +255,23 @@ gfx::Point BalloonCollectionImpl::Layout::NextPosition(
   int x = 0;
   int y = 0;
   switch (placement_) {
+    case VERTICALLY_FROM_TOP_LEFT:
+      x = position_iterator->x();
+      y = position_iterator->y();
+      position_iterator->set_y(position_iterator->y() + balloon_size.height() +
+                               InterBalloonMargin());
+      break;
     case VERTICALLY_FROM_TOP_RIGHT:
       x = position_iterator->x() - balloon_size.width();
       y = position_iterator->y();
       position_iterator->set_y(position_iterator->y() + balloon_size.height() +
                                InterBalloonMargin());
+      break;
+    case VERTICALLY_FROM_BOTTOM_LEFT:
+      position_iterator->set_y(position_iterator->y() - balloon_size.height() -
+                               InterBalloonMargin());
+      x = position_iterator->x();
+      y = position_iterator->y();
       break;
     case VERTICALLY_FROM_BOTTOM_RIGHT:
       position_iterator->set_y(position_iterator->y() - balloon_size.height() -
@@ -283,9 +290,17 @@ gfx::Point BalloonCollectionImpl::Layout::OffScreenLocation() const {
   int x = 0;
   int y = 0;
   switch (placement_) {
+    case VERTICALLY_FROM_TOP_LEFT:
+      x = work_area_.x() + HorizontalEdgeMargin();
+      y = work_area_.y() + kBalloonMaxHeight + VerticalEdgeMargin();
+      break;
     case VERTICALLY_FROM_TOP_RIGHT:
       x = work_area_.right() - kBalloonMaxWidth - HorizontalEdgeMargin();
       y = work_area_.y() + kBalloonMaxHeight + VerticalEdgeMargin();
+      break;
+    case VERTICALLY_FROM_BOTTOM_LEFT:
+      x = work_area_.x() + HorizontalEdgeMargin();
+      y = work_area_.bottom() + kBalloonMaxHeight + VerticalEdgeMargin();
       break;
     case VERTICALLY_FROM_BOTTOM_RIGHT:
       x = work_area_.right() - kBalloonMaxWidth - HorizontalEdgeMargin();

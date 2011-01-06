@@ -770,7 +770,8 @@ void BrowserProcessImpl::CreateIntranetRedirectDetector() {
 
 void BrowserProcessImpl::CreateNotificationUIManager() {
   DCHECK(notification_ui_manager_.get() == NULL);
-  notification_ui_manager_.reset(NotificationUIManager::Create());
+  notification_ui_manager_.reset(NotificationUIManager::Create(local_state()));
+
   created_notification_ui_manager_ = true;
 }
 

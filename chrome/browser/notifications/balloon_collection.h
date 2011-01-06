@@ -34,6 +34,18 @@ class BalloonCollection {
     virtual void OnBalloonSpaceChanged() = 0;
   };
 
+  // Do not change existing values without migration path; these
+  // are stored as integers in user preferences.
+  enum PositionPreference {
+    UPPER_RIGHT        = 0,
+    LOWER_RIGHT        = 1,
+    UPPER_LEFT         = 2,
+    LOWER_LEFT         = 3,
+
+    // The default position is different on different platforms.
+    DEFAULT_POSITION   = -1
+  };
+
   static BalloonCollection* Create();
 
   BalloonCollection()
@@ -62,6 +74,9 @@ class BalloonCollection {
 
   // Request the resizing of a balloon.
   virtual void ResizeBalloon(Balloon* balloon, const gfx::Size& size) = 0;
+
+  // Set the position preference for the collection.
+  virtual void SetPositionPreference(PositionPreference position) = 0;
 
   // Update for new screen dimensions.
   virtual void DisplayChanged() = 0;

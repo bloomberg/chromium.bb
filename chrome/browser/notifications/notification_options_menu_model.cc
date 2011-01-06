@@ -7,10 +7,14 @@
 #include "app/l10n_util.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -27,6 +31,89 @@
 const int kTogglePermissionCommand = 0;
 const int kToggleExtensionCommand = 1;
 const int kOpenContentSettingsCommand = 2;
+const int kCornerSelectionSubMenu = 3;
+
+const int kCornerGroupId = 10;
+const int kCornerUpperLeft = 11;
+const int kCornerUpperRight = 12;
+const int kCornerLowerLeft = 13;
+const int kCornerLowerRight = 14;
+const int kCornerDefault = 20;
+
+CornerSelectionMenuModel::CornerSelectionMenuModel(Balloon* balloon)
+    : ALLOW_THIS_IN_INITIALIZER_LIST(menus::SimpleMenuModel(this)),
+      balloon_(balloon) {
+  AddRadioItem(kCornerDefault,
+               l10n_util::GetStringUTF16(IDS_NOTIFICATION_POSITION_DEFAULT),
+               kCornerGroupId);
+  AddSeparator();
+  AddRadioItem(kCornerUpperLeft,
+               l10n_util::GetStringUTF16(IDS_NOTIFICATION_POSITION_UPPER_LEFT),
+               kCornerGroupId);
+  AddRadioItem(kCornerUpperRight,
+               l10n_util::GetStringUTF16(IDS_NOTIFICATION_POSITION_UPPER_RIGHT),
+               kCornerGroupId);
+  AddRadioItem(kCornerLowerLeft,
+               l10n_util::GetStringUTF16(IDS_NOTIFICATION_POSITION_LOWER_LEFT),
+               kCornerGroupId);
+  AddRadioItem(kCornerLowerRight,
+               l10n_util::GetStringUTF16(IDS_NOTIFICATION_POSITION_LOWER_RIGHT),
+               kCornerGroupId);
+}
+
+CornerSelectionMenuModel::~CornerSelectionMenuModel() {
+}
+
+bool CornerSelectionMenuModel::IsCommandIdChecked(int command_id) const {
+  NotificationUIManager* ui = g_browser_process->notification_ui_manager();
+  BalloonCollection::PositionPreference current = ui->GetPositionPreference();
+
+  LOG(INFO) << "Current position preference: " << current;
+
+  if (command_id == kCornerUpperLeft)
+    return (current == BalloonCollection::UPPER_LEFT);
+  else if (command_id == kCornerUpperRight)
+    return (current == BalloonCollection::UPPER_RIGHT);
+  else if (command_id == kCornerLowerLeft)
+    return (current == BalloonCollection::LOWER_LEFT);
+  else if (command_id == kCornerLowerRight)
+    return (current == BalloonCollection::LOWER_RIGHT);
+  else if (command_id == kCornerDefault)
+    return (current == BalloonCollection::DEFAULT_POSITION);
+
+  NOTREACHED();
+  return false;
+}
+
+bool CornerSelectionMenuModel::IsCommandIdEnabled(int command_id) const {
+  // All the menu options are always enabled.
+  return true;
+}
+
+bool CornerSelectionMenuModel::GetAcceleratorForCommandId(
+    int command_id, menus::Accelerator* accelerator) {
+  // Currently no accelerators.
+  return false;
+}
+
+void CornerSelectionMenuModel::ExecuteCommand(int command_id) {
+  NotificationUIManager* ui = g_browser_process->notification_ui_manager();
+
+  LOG(INFO) << "Executing command: " << command_id;
+
+  if (command_id == kCornerUpperLeft)
+    ui->SetPositionPreference(BalloonCollection::UPPER_LEFT);
+  else if (command_id == kCornerUpperRight)
+    ui->SetPositionPreference(BalloonCollection::UPPER_RIGHT);
+  else if (command_id == kCornerLowerLeft)
+    ui->SetPositionPreference(BalloonCollection::LOWER_LEFT);
+  else if (command_id == kCornerLowerRight)
+    ui->SetPositionPreference(BalloonCollection::LOWER_RIGHT);
+  else if (command_id == kCornerDefault)
+    ui->SetPositionPreference(BalloonCollection::DEFAULT_POSITION);
+  else
+    NOTREACHED();
+}
 
 NotificationOptionsMenuModel::NotificationOptionsMenuModel(Balloon* balloon)
     : ALLOW_THIS_IN_INITIALIZER_LIST(menus::SimpleMenuModel(this)),
@@ -49,6 +136,11 @@ NotificationOptionsMenuModel::NotificationOptionsMenuModel(Balloon* balloon)
   const string16 settings_label = l10n_util::GetStringUTF16(
       IDS_NOTIFICATIONS_SETTINGS_BUTTON);
   AddItem(kOpenContentSettingsCommand, settings_label);
+
+  corner_menu_model_.reset(new CornerSelectionMenuModel(balloon));
+  AddSubMenu(kCornerSelectionSubMenu,
+             l10n_util::GetStringUTF16(IDS_NOTIFICATION_CHOOSE_POSITION),
+             corner_menu_model_.get());
 }
 
 NotificationOptionsMenuModel::~NotificationOptionsMenuModel() {

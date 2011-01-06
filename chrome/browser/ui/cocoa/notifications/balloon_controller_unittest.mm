@@ -34,8 +34,9 @@ class MockBalloonCollection : public BalloonCollection {
   virtual bool RemoveBySourceOrigin(const GURL& origin) { return false; }
   virtual void RemoveAll() {}
   virtual bool HasSpace() const { return true; }
-  virtual void ResizeBalloon(Balloon* balloon, const gfx::Size& size) {};
+  virtual void ResizeBalloon(Balloon* balloon, const gfx::Size& size) {}
   virtual void DisplayChanged() {}
+  virtual void SetPositionPreference(PositionPreference preference) {}
   virtual void OnBalloonClosed(Balloon* source) {};
   virtual const Balloons& GetActiveBalloons() {
     NOTREACHED();

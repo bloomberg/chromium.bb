@@ -9,6 +9,28 @@
 #include "app/menus/simple_menu_model.h"
 #include "chrome/browser/notifications/balloon.h"
 
+// Model for the corner-selection submenu.
+class CornerSelectionMenuModel : public menus::SimpleMenuModel,
+                                 public menus::SimpleMenuModel::Delegate {
+ public:
+  explicit CornerSelectionMenuModel(Balloon* balloon);
+  virtual ~CornerSelectionMenuModel();
+
+  // Overridden from menus::SimpleMenuModel::Delegate:
+  virtual bool IsCommandIdChecked(int command_id) const;
+  virtual bool IsCommandIdEnabled(int command_id) const;
+  virtual bool GetAcceleratorForCommandId(int command_id,
+                                          menus::Accelerator* accelerator);
+  virtual void ExecuteCommand(int command_id);
+
+ private:
+  // Not owned.
+  Balloon* balloon_;
+
+  DISALLOW_COPY_AND_ASSIGN(CornerSelectionMenuModel);
+};
+
+// Model for the notification options menu itself.
 class NotificationOptionsMenuModel : public menus::SimpleMenuModel,
                                      public menus::SimpleMenuModel::Delegate {
  public:
@@ -28,6 +50,8 @@ class NotificationOptionsMenuModel : public menus::SimpleMenuModel,
 
  private:
   Balloon* balloon_; // Not owned.
+
+  scoped_ptr<CornerSelectionMenuModel> corner_menu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationOptionsMenuModel);
 };

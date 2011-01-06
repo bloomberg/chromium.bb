@@ -556,6 +556,10 @@ const char kDesktopNotificationAllowedOrigins[] =
 const char kDesktopNotificationDeniedOrigins[] =
     "profile.notification_denied_sites";
 
+// The preferred position (which corner of screen) for desktop notifications.
+const char kDesktopNotificationPosition[] =
+    "browser.desktop_notification_position";
+
 // Dictionary of content settings applied to all hosts by default.
 const char kDefaultContentSettings[] = "profile.default_content_settings";
 

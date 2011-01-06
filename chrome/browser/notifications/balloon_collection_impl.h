@@ -47,6 +47,7 @@ class BalloonCollectionImpl : public BalloonCollection
   virtual void RemoveAll();
   virtual bool HasSpace() const;
   virtual void ResizeBalloon(Balloon* balloon, const gfx::Size& size);
+  virtual void SetPositionPreference(PositionPreference position);
   virtual void DisplayChanged();
   virtual void OnBalloonClosed(Balloon* source);
   virtual const Balloons& GetActiveBalloons() { return base_.balloons(); }
@@ -68,6 +69,15 @@ class BalloonCollectionImpl : public BalloonCollection
    public:
     Layout();
 
+    // These enumerations all are based on a screen orientation where
+    // the origin is the top-left.
+    enum Placement {
+      VERTICALLY_FROM_TOP_LEFT,
+      VERTICALLY_FROM_TOP_RIGHT,
+      VERTICALLY_FROM_BOTTOM_LEFT,
+      VERTICALLY_FROM_BOTTOM_RIGHT
+    };
+
     // Refresh the work area and balloon placement.
     void OnDisplaySettingsChanged();
 
@@ -79,6 +89,8 @@ class BalloonCollectionImpl : public BalloonCollection
 
     // Utility function constrains the input rectangle to the min and max sizes.
     static gfx::Size ConstrainToSizeLimits(const gfx::Size& rect);
+
+    void set_placement(Placement placement) { placement_ = placement; }
 
     // Returns both the total space available and the maximum
     // allowed per balloon.
@@ -109,11 +121,6 @@ class BalloonCollectionImpl : public BalloonCollection
     gfx::Point OffScreenLocation() const;
 
    private:
-    enum Placement {
-      VERTICALLY_FROM_TOP_RIGHT,
-      VERTICALLY_FROM_BOTTOM_RIGHT
-    };
-
     // Layout parameters
     int VerticalEdgeMargin() const;
     int HorizontalEdgeMargin() const;
@@ -125,7 +132,7 @@ class BalloonCollectionImpl : public BalloonCollection
     static const int kBalloonMinHeight = 24;
     static const int kBalloonMaxHeight = 160;
 
-    static Placement placement_;
+    Placement placement_;
     gfx::Rect work_area_;
     DISALLOW_COPY_AND_ASSIGN(Layout);
   };

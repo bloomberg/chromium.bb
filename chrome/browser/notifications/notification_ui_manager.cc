@@ -7,11 +7,14 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/common/pref_names.h"
 
 // A class which represents a notification waiting to be shown.
 class QueuedNotification {
@@ -38,10 +41,11 @@ class QueuedNotification {
   DISALLOW_COPY_AND_ASSIGN(QueuedNotification);
 };
 
-NotificationUIManager::NotificationUIManager()
+NotificationUIManager::NotificationUIManager(PrefService* local_state)
     : balloon_collection_(NULL) {
   registrar_.Add(this, NotificationType::APP_TERMINATING,
                  NotificationService::AllSources());
+  position_pref_.Init(prefs::kDesktopNotificationPosition, local_state, this);
 }
 
 NotificationUIManager::~NotificationUIManager() {
@@ -49,12 +53,28 @@ NotificationUIManager::~NotificationUIManager() {
 }
 
 // static
-NotificationUIManager* NotificationUIManager::Create() {
+NotificationUIManager* NotificationUIManager::Create(PrefService* local_state) {
   BalloonCollection* balloons = BalloonCollection::Create();
-  NotificationUIManager* instance = new NotificationUIManager();
+  NotificationUIManager* instance = new NotificationUIManager(local_state);
   instance->Initialize(balloons);
   balloons->set_space_change_listener(instance);
   return instance;
+}
+
+// static
+void NotificationUIManager::RegisterPrefs(PrefService* prefs) {
+  prefs->RegisterIntegerPref(prefs::kDesktopNotificationPosition,
+                             BalloonCollection::DEFAULT_POSITION);
+}
+
+void NotificationUIManager::Initialize(
+    BalloonCollection* balloon_collection) {
+  DCHECK(!balloon_collection_.get());
+  DCHECK(balloon_collection);
+  balloon_collection_.reset(balloon_collection);
+  balloon_collection_->SetPositionPreference(
+      static_cast<BalloonCollection::PositionPreference>(
+          position_pref_.GetValue()));
 }
 
 void NotificationUIManager::Add(const Notification& notification,
@@ -157,11 +177,33 @@ bool NotificationUIManager::TryReplacement(const Notification& notification) {
   return false;
 }
 
+BalloonCollection::PositionPreference
+NotificationUIManager::GetPositionPreference() {
+  LOG(INFO) << "Current position preference: " << position_pref_.GetValue();
+
+  return static_cast<BalloonCollection::PositionPreference>(
+      position_pref_.GetValue());
+}
+
+void NotificationUIManager::SetPositionPreference(
+    BalloonCollection::PositionPreference preference) {
+  LOG(INFO) << "Setting position preference: " << preference;
+  position_pref_.SetValue(static_cast<int>(preference));
+  balloon_collection_->SetPositionPreference(preference);
+}
+
 void NotificationUIManager::Observe(NotificationType type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
-  if (type == NotificationType::APP_TERMINATING)
+  if (type == NotificationType::APP_TERMINATING) {
     CancelAll();
-  else
+  } else if (type == NotificationType::PREF_CHANGED) {
+    std::string* name = Details<std::string>(details).ptr();
+    if (*name == prefs::kDesktopNotificationPosition)
+      balloon_collection_->SetPositionPreference(
+          static_cast<BalloonCollection::PositionPreference>(
+              position_pref_.GetValue()));
+  } else {
     NOTREACHED();
+  }
 }

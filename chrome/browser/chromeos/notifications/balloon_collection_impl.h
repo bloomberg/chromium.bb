@@ -66,6 +66,7 @@ class BalloonCollectionImpl : public BalloonCollection,
   virtual void RemoveAll();
   virtual bool HasSpace() const;
   virtual void ResizeBalloon(Balloon* balloon, const gfx::Size& size);
+  virtual void SetPositionPreference(PositionPreference position) {}
   virtual void DisplayChanged() {}
   virtual void OnBalloonClosed(Balloon* source);
   virtual const Balloons& GetActiveBalloons() { return base_.balloons(); }
