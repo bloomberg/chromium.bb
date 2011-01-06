@@ -755,7 +755,7 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
       scoped_ptr<Version> running_version(
           Version::GetVersionFromString(current_version_));
       if (!installed_version.get() ||
-          (installed_version->CompareTo(*running_version) < 0)) {
+          (installed_version->CompareTo(*running_version) <= 0)) {
 #endif
         UserMetrics::RecordAction(
             UserMetricsAction("UpgradeCheck_AlreadyUpToDate"), profile_);
