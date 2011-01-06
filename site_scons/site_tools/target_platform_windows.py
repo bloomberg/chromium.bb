@@ -404,7 +404,9 @@ def generate(env):
           '/MT',     # link with LIBCMT.LIB (multi-threaded, static linked crt)
           '/GS',     # enable security checks
       ],
-      LINKFLAGS_OPTIMIZED=['/PDBPATH:none'],
+      # Omit the absolute pathname of the .pdb debugging info file
+      # from the executable, and just use a relative pathname.
+      LINKFLAGS_OPTIMIZED=['/PDBALTPATH:%_PDB%'],
 
       # Settings for component_builders
       COMPONENT_LIBRARY_LINK_SUFFIXES=['.lib'],
