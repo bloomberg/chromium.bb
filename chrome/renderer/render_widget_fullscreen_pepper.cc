@@ -245,10 +245,10 @@ RenderWidgetFullscreenPepper::GetBitmapForOptimizedPluginPaint(
 void RenderWidgetFullscreenPepper::OnResize(const gfx::Size& size,
                                             const gfx::Rect& resizer_rect) {
   if (context_) {
+    gpu::gles2::GLES2Implementation* gl = ggl::GetImplementation(context_);
 #if defined(OS_MACOSX)
     ggl::ResizeOnscreenContext(context_, size);
 #else
-    gpu::gles2::GLES2Implementation* gl = ggl::GetImplementation(context_);
     gl->ResizeCHROMIUM(size.width(), size.height());
 #endif
     gl->Viewport(0, 0, size.width(), size.height());
