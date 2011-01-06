@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -15,12 +15,7 @@ See also:
   chrome/browser/user_metrics.h
   http://wiki.corp.google.com/twiki/bin/view/Main/ChromeUserExperienceMetrics
 
-Run it from the chrome/tools directory like:
-  export PYTHONPATH=../../tools/python  # for google.path_utils
-  extract_actions.py
-or
-  extract_actions.py --hash
-  which will update the chromeactions.txt
+If run with a "--hash" argument, chromeactions.txt will be updated.
 """
 
 __author__ = 'evanm (Evan Martin)'
@@ -30,6 +25,7 @@ import re
 import sys
 import hashlib
 
+sys.path.insert(1, os.path.join(sys.path[0], '..', '..', 'tools', 'python'))
 from google import path_utils
 
 # Files that are known to use UserMetrics::RecordComputedAction(), which means
@@ -225,14 +221,16 @@ def main(argv):
     hash_output = True
   else:
     hash_output = False
-    print >>sys.stderr, "WARNING: if you added new UMA tags, you need to" + \
-           " override the chromeactions.txt file and use the --hash option"
+    print >>sys.stderr, "WARNING: If you added new UMA tags, you must" + \
+           " use the --hash option to update chromeactions.txt."
   # if we do a hash output, we want to only append NEW actions, and we know
   # the file we want to work on
   actions = set()
 
+  chromeactions_path = os.path.join(path_utils.ScriptDir(), "chromeactions.txt")
+
   if hash_output:
-    f = open("chromeactions.txt")
+    f = open(chromeactions_path)
     for line in f:
       part = line.rpartition("\t")
       part = part[2].strip()
@@ -258,7 +256,7 @@ def main(argv):
   AddClosedSourceActions(actions)
 
   if hash_output:
-    f = open("chromeactions.txt", "w")
+    f = open(chromeactions_path, "w")
 
 
   # Print out the actions as a sorted list.
