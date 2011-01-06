@@ -91,7 +91,7 @@ bool PluginAudio::InitFromBrowserResource(PP_Resource resource) {
 void* PluginAudio::AudioThread(void* self) {
   PluginAudio* audio = static_cast<PluginAudio*>(self);
   while (true) {
-    int32_t an_int32;
+    int32_t sync_value;
     ssize_t r;
     // invoke user callback, get next buffer of audio data
     audio->user_callback_(
@@ -101,8 +101,9 @@ void* PluginAudio::AudioThread(void* self) {
     // block on socket read
     r = syscall_read(
         audio->socket_,
-        &an_int32, sizeof(an_int32));
-    if (sizeof(an_int32) != r)
+        &sync_value, sizeof(sync_value));
+    // StopPlayback() will send a value of -1 over the sync_socket
+    if ((sizeof(sync_value) != r) || (-1 == sync_value))
       break;
   }
   return NULL;
