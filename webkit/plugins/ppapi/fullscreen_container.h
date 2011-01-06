@@ -5,6 +5,8 @@
 #ifndef WEBKIT_PLUGINS_PPAPI_PPB_FULLSCREEN_CONTAINER_IMPL_H_
 #define WEBKIT_PLUGINS_PPAPI_PPB_FULLSCREEN_CONTAINER_IMPL_H_
 
+#include "webkit/plugins/ppapi/plugin_delegate.h"
+
 namespace WebKit {
 struct WebRect;
 }  // namespace WebKit
@@ -30,6 +32,8 @@ class FullscreenContainer {
   // Destroys the fullscreen window. This also destroys the FullscreenContainer
   // instance.
   virtual void Destroy() = 0;
+
+  virtual PluginDelegate::PlatformContext3D* CreateContext3D() = 0;
 };
 
 }  // namespace ppapi

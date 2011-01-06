@@ -5,11 +5,15 @@
 #include "chrome/renderer/render_widget_fullscreen_pepper.h"
 
 #include "chrome/common/render_messages.h"
+#include "chrome/renderer/ggl/ggl.h"
+#include "chrome/renderer/gpu_channel_host.h"
+#include "chrome/renderer/pepper_platform_context_3d_impl.h"
 #include "chrome/renderer/render_thread.h"
+#include "gpu/command_buffer/client/gles2_implementation.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebWidget.h"
-#include "webkit/plugins/ppapi/fullscreen_container.h"
+#include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 using WebKit::WebCanvas;
@@ -48,9 +52,8 @@ class PepperWidget : public WebWidget {
   virtual void resize(const WebSize& size) {
     size_ = size;
     WebRect plugin_rect(0, 0, size_.width, size_.height);
-    // TODO(piman): transparently scale the plugin instead of resizing it.
     plugin_->ViewChanged(plugin_rect, plugin_rect);
-    widget_->GenerateFullRepaint();
+    widget_->Invalidate();
   }
 
   virtual void clearCurrentAnimationTime() {
@@ -67,7 +70,13 @@ class PepperWidget : public WebWidget {
   }
 
   virtual void composite(bool finish) {
-    NOTIMPLEMENTED();
+    ggl::Context* context = widget_->context();
+    DCHECK(context);
+    gpu::gles2::GLES2Implementation* gl = ggl::GetImplementation(context);
+    unsigned int texture = plugin_->GetBackingTextureId();
+    gl->BindTexture(GL_TEXTURE_2D, texture);
+    gl->DrawArrays(GL_TRIANGLES, 0, 3);
+    ggl::SwapBuffers(context);
   }
 
   virtual void themeChanged() {
@@ -122,8 +131,8 @@ class PepperWidget : public WebWidget {
   }
 
   virtual bool isAcceleratedCompositingActive() const {
-    // TODO(piman): see if supporting accelerated compositing makes sense.
-    return false;
+    return widget_->context() && plugin_ &&
+        (plugin_->GetBackingTextureId() != 0);
   }
 
  private:
@@ -133,39 +142,6 @@ class PepperWidget : public WebWidget {
   WebCursorInfo cursor_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperWidget);
-};
-
-
-// A FullscreenContainer that forwards the API calls to the
-// RenderWidgetFullscreenPepper.
-class WidgetFullscreenContainer
-    : public webkit::ppapi::FullscreenContainer {
- public:
-  explicit WidgetFullscreenContainer(RenderWidgetFullscreenPepper* widget)
-      : widget_(widget) {
-  }
-  virtual ~WidgetFullscreenContainer() { }
-
-  virtual void Invalidate() {
-    widget_->GenerateFullRepaint();
-  }
-
-  virtual void InvalidateRect(const WebKit::WebRect& rect) {
-    widget_->didInvalidateRect(rect);
-  }
-
-  virtual void ScrollRect(int dx, int dy, const WebKit::WebRect& rect) {
-    widget_->didScrollRect(dx, dy, rect);
-  }
-
-  virtual void Destroy() {
-    widget_->SendClose();
-  }
-
- private:
-  RenderWidgetFullscreenPepper* widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(WidgetFullscreenContainer);
 };
 
 }  // anonymous namespace
@@ -186,22 +162,54 @@ RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
     webkit::ppapi::PluginInstance* plugin)
     : RenderWidgetFullscreen(render_thread, WebKit::WebPopupTypeSelect),
       plugin_(plugin),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          container_(new WidgetFullscreenContainer(this))) {
+#if defined(OS_MACOSX)
+      plugin_handle_(NULL),
+#endif
+      context_(NULL),
+      buffer_(0),
+      program_(0) {
 }
 
 RenderWidgetFullscreenPepper::~RenderWidgetFullscreenPepper() {
+  DestroyContext();
 }
 
-WebWidget* RenderWidgetFullscreenPepper::CreateWebWidget() {
-  return new PepperWidget(plugin_, this);
+void RenderWidgetFullscreenPepper::Invalidate() {
+  InvalidateRect(gfx::Rect(size_.width(), size_.height()));
 }
 
-void RenderWidgetFullscreenPepper::Close() {
-  // If the fullscreen window is closed (e.g. user pressed escape), reset to
-  // normal mode.
-  if (plugin_)
-    plugin_->SetFullscreen(false);
+void RenderWidgetFullscreenPepper::InvalidateRect(const WebKit::WebRect& rect) {
+  if (CheckCompositing()) {
+    scheduleComposite();
+  } else {
+    didInvalidateRect(rect);
+  }
+}
+
+void RenderWidgetFullscreenPepper::ScrollRect(
+    int dx, int dy, const WebKit::WebRect& rect) {
+  if (CheckCompositing()) {
+    scheduleComposite();
+  } else {
+    didScrollRect(dx, dy, rect);
+  }
+}
+
+void RenderWidgetFullscreenPepper::Destroy() {
+  // This function is called by the plugin instance as it's going away, so reset
+  // plugin_ to NULL to avoid calling into a dangling pointer e.g. on Close().
+  plugin_ = NULL;
+  Send(new ViewHostMsg_Close(routing_id_));
+}
+
+webkit::ppapi::PluginDelegate::PlatformContext3D*
+RenderWidgetFullscreenPepper::CreateContext3D() {
+  if (!context_) {
+    CreateContext();
+  }
+  if (!context_)
+    return NULL;
+  return new PlatformContext3DImpl(context_);
 }
 
 void RenderWidgetFullscreenPepper::DidInitiatePaint() {
@@ -214,15 +222,11 @@ void RenderWidgetFullscreenPepper::DidFlushPaint() {
     plugin_->ViewFlushedPaint();
 }
 
-void RenderWidgetFullscreenPepper::SendClose() {
-  // This function is called by the plugin instance as it's going away, so reset
-  // plugin_ to NULL to avoid calling into a dangling pointer e.g. on Close().
-  plugin_ = NULL;
-  Send(new ViewHostMsg_Close(routing_id_));
-}
-
-void RenderWidgetFullscreenPepper::GenerateFullRepaint() {
-  didInvalidateRect(gfx::Rect(size_.width(), size_.height()));
+void RenderWidgetFullscreenPepper::Close() {
+  // If the fullscreen window is closed (e.g. user pressed escape), reset to
+  // normal mode.
+  if (plugin_)
+    plugin_->SetFullscreen(false);
 }
 
 webkit::ppapi::PluginInstance*
@@ -236,4 +240,187 @@ RenderWidgetFullscreenPepper::GetBitmapForOptimizedPluginPaint(
                                                 location, clip))
     return plugin_;
   return NULL;
+}
+
+void RenderWidgetFullscreenPepper::OnResize(const gfx::Size& size,
+                                            const gfx::Rect& resizer_rect) {
+  if (context_) {
+#if defined(OS_MACOSX)
+    ggl::ResizeOnscreenContext(context_, size);
+#else
+    gpu::gles2::GLES2Implementation* gl = ggl::GetImplementation(context_);
+    gl->ResizeCHROMIUM(size.width(), size.height());
+#endif
+    gl->Viewport(0, 0, size.width(), size.height());
+  }
+  RenderWidget::OnResize(size, resizer_rect);
+}
+
+WebWidget* RenderWidgetFullscreenPepper::CreateWebWidget() {
+  return new PepperWidget(plugin_, this);
+}
+
+void RenderWidgetFullscreenPepper::CreateContext() {
+  DCHECK(!context_);
+  RenderThread* render_thread = RenderThread::current();
+  DCHECK(render_thread);
+  GpuChannelHost* host = render_thread->EstablishGpuChannelSync();
+  if (!host)
+    return;
+  gfx::NativeViewId view_id;
+#if !defined(OS_MACOSX)
+  view_id = host_window();
+#else
+  Send(new ViewHostMsg_AllocateFakePluginWindowHandle(
+        routing_id(), true, true, &plugin_handle_));
+  if (!plugin_handle_)
+    return;
+  view_id = static_cast<gfx::NativeViewId>(plugin_handle_);
+#endif
+  const int32 attribs[] = {
+    ggl::GGL_ALPHA_SIZE, 8,
+    ggl::GGL_DEPTH_SIZE, 0,
+    ggl::GGL_STENCIL_SIZE, 0,
+    ggl::GGL_SAMPLES, 0,
+    ggl::GGL_SAMPLE_BUFFERS, 0,
+    ggl::GGL_NONE,
+  };
+  context_ = ggl::CreateViewContext(
+      host,
+      view_id,
+      routing_id(),
+      "GL_OES_packed_depth_stencil GL_OES_depth24",
+      attribs);
+  if (!context_ || !InitContext()) {
+    DestroyContext();
+    return;
+  }
+  ggl::SetSwapBuffersCallback(
+      context_,
+      NewCallback(this, &RenderWidgetFullscreenPepper::DidFlushPaint));
+}
+
+void RenderWidgetFullscreenPepper::DestroyContext() {
+  if (context_) {
+    gpu::gles2::GLES2Implementation* gl = ggl::GetImplementation(context_);
+    if (program_) {
+      gl->DeleteProgram(program_);
+      program_ = 0;
+    }
+    if (buffer_) {
+      gl->DeleteBuffers(1, &buffer_);
+      buffer_ = 0;
+    }
+    ggl::DestroyContext(context_);
+    context_ = NULL;
+  }
+#if defined(OS_MACOSX)
+  if (plugin_handle_) {
+    Send(new ViewHostMsg_DestroyFakePluginWindowHandle(routing_id(),
+                                                       plugin_handle_));
+    plugin_handle_ = NULL;
+  }
+#endif
+}
+
+namespace {
+
+const char kVertexShader[] =
+    "attribute vec2 in_tex_coord;\n"
+    "varying vec2 tex_coord;\n"
+    "void main() {\n"
+    "  gl_Position = vec4(in_tex_coord.x * 2. - 1.,\n"
+    "                     in_tex_coord.y * 2. - 1.,\n"
+    "                     0.,\n"
+    "                     1.);\n"
+    "  tex_coord = vec2(in_tex_coord.x, 1. - in_tex_coord.y);\n"
+    "}\n";
+
+const char kFragmentShader[] =
+    "precision mediump float;\n"
+    "varying vec2 tex_coord;\n"
+    "uniform sampler2D in_texture;\n"
+    "void main() {\n"
+    "  gl_FragColor = texture2D(in_texture, tex_coord);\n"
+    "}\n";
+
+GLuint CreateShaderFromSource(gpu::gles2::GLES2Implementation* gl,
+                              GLenum type,
+                              const char* source) {
+    GLuint shader = gl->CreateShader(type);
+    gl->ShaderSource(shader, 1, &source, NULL);
+    gl->CompileShader(shader);
+    int status;
+    gl->GetShaderiv(shader, GL_COMPILE_STATUS, &status);
+    if (!status) {
+        int size = 0;
+        gl->GetShaderiv(shader, GL_INFO_LOG_LENGTH, &size);
+        scoped_array<char> log(new char[size]);
+        gl->GetShaderInfoLog(shader, size, NULL, log.get());
+        DLOG(ERROR) << "Compilation failed: " << log.get();
+        gl->DeleteShader(shader);
+        shader = 0;
+    }
+    return shader;
+}
+
+const float kTexCoords[] = {
+    0.f, 0.f,
+    0.f, 2.f,
+    2.f, 0.f,
+};
+
+}  // anonymous namespace
+
+bool RenderWidgetFullscreenPepper::InitContext() {
+  gpu::gles2::GLES2Implementation* gl = ggl::GetImplementation(context_);
+  program_ = gl->CreateProgram();
+
+  GLuint vertex_shader =
+      CreateShaderFromSource(gl, GL_VERTEX_SHADER, kVertexShader);
+  if (!vertex_shader)
+    return false;
+  gl->AttachShader(program_, vertex_shader);
+  gl->DeleteShader(vertex_shader);
+
+  GLuint fragment_shader =
+      CreateShaderFromSource(gl, GL_FRAGMENT_SHADER, kFragmentShader);
+  if (!fragment_shader)
+    return false;
+  gl->AttachShader(program_, fragment_shader);
+  gl->DeleteShader(fragment_shader);
+
+  gl->BindAttribLocation(program_, 0, "in_tex_coord");
+  gl->LinkProgram(program_);
+  int status;
+  gl->GetProgramiv(program_, GL_LINK_STATUS, &status);
+  if (!status) {
+    int size = 0;
+    gl->GetProgramiv(program_, GL_INFO_LOG_LENGTH, &size);
+    scoped_array<char> log(new char[size]);
+    gl->GetProgramInfoLog(program_, size, NULL, log.get());
+    DLOG(ERROR) << "Link failed: " << log.get();
+    return false;
+  }
+  gl->UseProgram(program_);
+  int texture_location = gl->GetUniformLocation(program_, "in_texture");
+  gl->Uniform1i(texture_location, 0);
+
+  gl->GenBuffers(1, &buffer_);
+  gl->BindBuffer(GL_ARRAY_BUFFER, buffer_);
+  gl->BufferData(GL_ARRAY_BUFFER,
+                 sizeof(kTexCoords),
+                 kTexCoords,
+                 GL_STATIC_DRAW);
+  gl->VertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+  gl->EnableVertexAttribArray(0);
+  return true;
+}
+
+bool RenderWidgetFullscreenPepper::CheckCompositing() {
+  bool compositing = webwidget_->isAcceleratedCompositingActive();
+  if (compositing != is_accelerated_compositing_active_) {
+    didActivateAcceleratedCompositing(compositing);
+  }
+  return compositing;
 }

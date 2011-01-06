@@ -2140,7 +2140,7 @@ RenderView::CreatePepperFullscreenContainer(
   RenderWidgetFullscreenPepper* widget =
       RenderWidgetFullscreenPepper::Create(routing_id_, render_thread_, plugin);
   widget->show(WebKit::WebNavigationPolicyIgnore);
-  return widget->container();
+  return widget;
 }
 
 WebStorageNamespace* RenderView::createSessionStorageNamespace(unsigned quota) {

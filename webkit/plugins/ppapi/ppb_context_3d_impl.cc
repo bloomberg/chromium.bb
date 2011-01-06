@@ -111,7 +111,7 @@ bool PPB_Context3D_Impl::Init(PP_Config3D_Dev config,
                               PP_Resource share_context,
                               const int32_t* attrib_list) {
   // Create and initialize the objects required to issue GLES2 calls.
-  platform_context_.reset(instance()->delegate()->CreateContext3D());
+  platform_context_.reset(instance()->CreateContext3D());
   if (!platform_context_.get()) {
     Destroy();
     return false;

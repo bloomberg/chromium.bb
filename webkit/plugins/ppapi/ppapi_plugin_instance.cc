@@ -402,7 +402,10 @@ unsigned PluginInstance::GetBackingTextureId() {
 }
 
 void PluginInstance::CommitBackingTexture() {
-  container_->commitBackingTexture();
+  if (fullscreen_container_)
+    fullscreen_container_->Invalidate();
+  else
+    container_->commitBackingTexture();
 }
 
 PP_Var PluginInstance::GetWindowObject() {
@@ -934,6 +937,13 @@ bool PluginInstance::NavigateToURL(const char* url, const char* target) {
   WebString target_str = WebString::fromUTF8(target);
   container_->loadFrameRequest(request, target_str, false, NULL);
   return true;
+}
+
+PluginDelegate::PlatformContext3D* PluginInstance::CreateContext3D() {
+  if (fullscreen_container_)
+    return fullscreen_container_->CreateContext3D();
+  else
+    return delegate_->CreateContext3D();
 }
 
 bool PluginInstance::PrintPDFOutput(PP_Resource print_output,

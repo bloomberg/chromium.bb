@@ -21,6 +21,7 @@
 #include "ppapi/c/pp_resource.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCanvas.h"
+#include "webkit/plugins/ppapi/plugin_delegate.h"
 
 struct PP_Var;
 struct PPB_Instance;
@@ -193,6 +194,8 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
 
   // Implementation of PPB_Flash.
   bool NavigateToURL(const char* url, const char* target);
+
+  PluginDelegate::PlatformContext3D* CreateContext3D();
 
  private:
   bool LoadFindInterface();
