@@ -32,4 +32,13 @@ size_t PlatformCanvas::StrideForWidth(unsigned width) {
   return 4 * width;
 }
 
+bool PlatformCanvas::initializeWithDevice(SkDevice* device) {
+  if (!device)
+    return false;
+
+  setDevice(device);
+  device->unref();  // Was created with refcount 1, and setDevice also refs.
+  return true;
+}
+
 }  // namespace skia

@@ -29,14 +29,8 @@ PlatformCanvas::~PlatformCanvas() {
 }
 bool PlatformCanvas::initialize(int width, int height, bool is_opaque,
                                 uint8_t* data) {
-  SkDevice* device =
-      BitmapPlatformDevice::Create(width, height, is_opaque, data);
-  if (!device)
-    return false;
-
-  setDevice(device);
-  device->unref(); // was created with refcount 1, and setDevice also refs
-  return true;
+  return initializeWithDevice(BitmapPlatformDevice::Create(
+      width, height, is_opaque, data));
 }
 
 cairo_t* PlatformCanvas::beginPlatformPaint() {

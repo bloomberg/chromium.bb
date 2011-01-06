@@ -47,6 +47,7 @@ class PlatformCanvas : public SkCanvas {
   PlatformCanvas(int width, int height, bool is_opaque, uint8_t* context);
 
   // For two-part init, call if you use the no-argument constructor above
+  bool initialize(CGContextRef context, int width, int height, bool is_opaque);
   bool initialize(int width, int height, bool is_opaque, uint8_t* data = NULL);
 
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || \
@@ -105,6 +106,9 @@ class PlatformCanvas : public SkCanvas {
   // with us and we will crash if somebody tries to draw into it with
   // CoreGraphics.
   virtual SkDevice* setBitmapDevice(const SkBitmap& bitmap);
+
+  // Helper method used internally by the initialize() methods.
+  bool initializeWithDevice(SkDevice* device);
 
   // Disallow copy and assign.
   PlatformCanvas(const PlatformCanvas&);

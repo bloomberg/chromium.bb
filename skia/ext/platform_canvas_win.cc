@@ -67,7 +67,7 @@ void CrashForBitmapAllocationFailure(int w, int h) {
 
 // Crashes the process. This is called when a bitmap allocation fails but
 // unlike its cousin CrashForBitmapAllocationFailure() it tries to detect if
-// the issue was a non-valid shared bitmap handle. 
+// the issue was a non-valid shared bitmap handle.
 void CrashIfInvalidSection(HANDLE shared_section) {
   DWORD handle_info = 0;
   CHECK(::GetHandleInformation(shared_section, &handle_info) == TRUE);
@@ -102,14 +102,8 @@ bool PlatformCanvas::initialize(int width,
                                int height,
                                bool is_opaque,
                                HANDLE shared_section) {
-  SkDevice* device = BitmapPlatformDevice::create(width, height,
-                                                  is_opaque, shared_section);
-  if (!device)
-    return false;
-
-  setDevice(device);
-  device->unref();  // was created with refcount 1, and setDevice also refs
-  return true;
+  return initializeWithDevice(BitmapPlatformDevice::create(
+      width, height, is_opaque, shared_section));
 }
 
 HDC PlatformCanvas::beginPlatformPaint() {

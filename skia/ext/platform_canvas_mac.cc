@@ -19,7 +19,7 @@ PlatformCanvas::PlatformCanvas(int width,
                                bool is_opaque,
                                CGContextRef context)
     : SkCanvas(SkNEW(BitmapPlatformDeviceFactory)) {
-  initialize(width, height, is_opaque);
+  initialize(context, width, height, is_opaque);
 }
 
 PlatformCanvas::PlatformCanvas(int width,
@@ -37,14 +37,16 @@ bool PlatformCanvas::initialize(int width,
                                 int height,
                                 bool is_opaque,
                                 uint8_t* data) {
-  SkDevice* device = BitmapPlatformDevice::CreateWithData(data, width, height,
-                                                          is_opaque);
-  if (!device)
-    return false;
+  return initializeWithDevice(BitmapPlatformDevice::CreateWithData(
+      data, width, height, is_opaque));
+}
 
-  setDevice(device);
-  device->unref();  // Was created with refcount 1, and setDevice also refs.
-  return true;
+bool PlatformCanvas::initialize(CGContextRef context,
+                                int width,
+                                int height,
+                                bool is_opaque) {
+  return initializeWithDevice(BitmapPlatformDevice::Create(
+      context, width, height, is_opaque));
 }
 
 CGContextRef PlatformCanvas::beginPlatformPaint() {
