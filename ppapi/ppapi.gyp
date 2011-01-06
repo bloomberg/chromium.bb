@@ -104,6 +104,7 @@
         'c/dev/ppp_zoom_dev.h',
 
         # Private interfaces.
+        'c/private/ppb_flash.h',
         'c/private/ppb_nacl_private.h',
 
         # Deprecated interfaces.

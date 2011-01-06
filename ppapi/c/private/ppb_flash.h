@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_PLUGINS_PEPPER_PPB_FLASH_H_
-#define WEBKIT_PLUGINS_PEPPER_PPB_FLASH_H_
+#ifndef PPAPI_C_PRIVATE_PPB_FLASH_H_
+#define PPAPI_C_PRIVATE_PPB_FLASH_H_
 
 #ifdef _WIN32
 #include <windows.h>
@@ -114,4 +114,4 @@ struct PPB_Flash {
                         const char* target);
 };
 
-#endif  // WEBKIT_GLUE_PLUGINS_PPB_FLASH_H_
+#endif  // PPAPI_C_PRIVATE_PPB_FLASH_H_

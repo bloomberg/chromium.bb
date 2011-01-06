@@ -6,7 +6,6 @@ include_rules = [
   # we need to use them for the proxy. Allow the code here to pull these
   # headers (which don't depend on anything else).
   "+webkit/plugins/ppapi/ppb_pdf.h",
-  "+webkit/plugins/ppapi/ppb_flash.h",
 
   # We don't want the proxy to depend on the C++ layer, which is appropriate
   # for plugins only. However, the completion callback factory is a very useful

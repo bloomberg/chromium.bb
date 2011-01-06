@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,11 +12,11 @@
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/dev/pp_file_info_dev.h"
 #include "ppapi/c/dev/ppb_file_io_dev.h"
+#include "ppapi/c/private/ppb_flash.h"
 #include "webkit/plugins/ppapi/error_util.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
-#include "webkit/plugins/ppapi/ppb_flash.h"
 #include "webkit/plugins/ppapi/var.h"
 
 namespace webkit {
