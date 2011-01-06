@@ -137,7 +137,7 @@ drm_create_buffer(struct wl_client *client, struct wl_drm *drm_base,
 	attribs[3] = height;
 	attribs[5] = stride / 4;
 	image = eglCreateImageKHR(compositor->display,
-				  compositor->context,
+				  EGL_NO_CONTEXT,
 				  EGL_DRM_BUFFER_MESA,
 				  (EGLClientBuffer) name, attribs);
 	if (image == NULL) {

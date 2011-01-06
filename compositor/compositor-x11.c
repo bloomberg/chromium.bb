@@ -436,7 +436,8 @@ x11_compositor_create_output(struct x11_compositor *c, int width, int height)
 	attribs[3] = reply->height;
 	attribs[5] = buffers[0].pitch / 4;
 	output->image =
-		eglCreateImageKHR(c->base.display, c->base.context,
+		eglCreateImageKHR(c->base.display,
+				  EGL_NO_CONTEXT,
 				  EGL_DRM_BUFFER_MESA,
 				  (EGLClientBuffer) buffers[0].name,
 				  attribs);
