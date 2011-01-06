@@ -230,6 +230,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Returns true if the SyncBackendHost has told us it's ready to accept
   // changes.
+  // [REMARK] - it is safe to call this function only from the ui thread.
+  // because the variable is not thread safe and should only be accessed from
+  // single thread. If we want multiple threads to access this(and there is
+  // currently no need to do so) we need to protect this with a lock.
   // TODO(timsteele): What happens if the bookmark model is loaded, a change
   // takes place, and the backend isn't initialized yet?
   bool sync_initialized() const { return backend_initialized_; }

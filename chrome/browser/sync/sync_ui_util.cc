@@ -322,6 +322,12 @@ void ConstructAboutInformation(ProfileSyncService* service,
       std::string location_str;
       loc.Write(true, true, &location_str);
       strings->SetString("unrecoverable_error_location", location_str);
+    } else if (!service->sync_initialized()) {
+      strings->SetString("summary", "Sync not yet initialized");
+    } else if (service->backend() == NULL) {
+      strings->SetString("summary",
+          "Unrecoverable error detected. Backend is null when it shouldnt be");
+      NOTREACHED();
     } else {
       browser_sync::ModelSafeRoutingInfo routes;
       service->backend()->GetModelSafeRoutingInfo(&routes);
