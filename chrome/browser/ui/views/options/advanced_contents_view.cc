@@ -573,7 +573,7 @@ void PrivacySection::InitControlLayout() {
   enable_safe_browsing_checkbox_->set_listener(this);
 #if defined(GOOGLE_CHROME_BUILD)
   reporting_enabled_checkbox_ = new views::Checkbox(
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTIONS_ENABLE_LOGGING));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTIONS_ENABLE_LOGGING)));
   reporting_enabled_checkbox_->SetMultiLine(true);
   reporting_enabled_checkbox_->set_listener(this);
   reporting_enabled_checkbox_->SetVisible(true);
