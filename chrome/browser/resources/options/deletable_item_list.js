@@ -61,7 +61,9 @@ cr.define('options', function() {
       this.closeButtonElement_ = this.ownerDocument.createElement('button');
       this.closeButtonElement_.className = 'close-button';
       this.closeButtonElement_.addEventListener('mousedown',
-                                                this.handleMouseDownOnClose_);
+                                                this.handleMouseDownUpOnClose_);
+      this.closeButtonElement_.addEventListener('mouseup',
+                                                this.handleMouseDownUpOnClose_);
       this.appendChild(this.closeButtonElement_);
     },
 
@@ -86,11 +88,11 @@ cr.define('options', function() {
 
     /**
      * Don't let the list have a crack at the event. We don't want clicking the
-     * close button to select the list.
-     * @param {Event} e The mouse down event object.
+     * close button to change the selection of the list.
+     * @param {Event} e The mouse down/up event object.
      * @private
      */
-    handleMouseDownOnClose_: function(e) {
+    handleMouseDownUpOnClose_: function(e) {
       if (!e.target.disabled)
         e.stopPropagation();
     },
@@ -119,8 +121,20 @@ cr.define('options', function() {
       var target = e.target;
       if (target.className == 'close-button') {
         var listItem = this.getListItemAncestor(target);
-        if (listItem)
-          this.deleteItemAtIndex(this.getIndexOfListItem(listItem));
+        var selected = this.selectionModel.selectedIndexes;
+
+        // Check if the list item that contains the close button being clicked
+        // is not in the list of selected items. Only delete this item in that
+        // case.
+        var idx = this.getIndexOfListItem(listItem);
+        if (selected.indexOf(idx) == -1) {
+          this.deleteItemAtIndex(idx);
+        } else {
+          // Reverse through the list of selected indexes to maintain the
+          // correct index values after deletion.
+          for (var j = selected.length - 1; j >= 0; j--)
+            this.deleteItemAtIndex(selected[j]);
+        }
       }
     },
 

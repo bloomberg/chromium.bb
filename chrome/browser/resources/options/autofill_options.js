@@ -5,7 +5,6 @@
 cr.define('options', function() {
   const OptionsPage = options.OptionsPage;
   const ArrayDataModel = cr.ui.ArrayDataModel;
-  const ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
 
   /////////////////////////////////////////////////////////////////////////////
   // AutoFillOptions class:
@@ -65,7 +64,6 @@ cr.define('options', function() {
     createAddressList_: function() {
       this.addressList_ = $('address-list');
       options.autoFillOptions.AutoFillAddressList.decorate(this.addressList_);
-      this.addressList_.selectionModel = new ListSingleSelectionModel;
       this.addressList_.autoExpands = true;
     },
 
@@ -77,7 +75,6 @@ cr.define('options', function() {
       this.creditCardList_ = $('creditcard-list');
       options.autoFillOptions.AutoFillCreditCardList.decorate(
           this.creditCardList_);
-      this.creditCardList_.selectionModel = new ListSingleSelectionModel;
       this.creditCardList_.autoExpands = true;
     },
 

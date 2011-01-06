@@ -141,13 +141,13 @@ cr.define('cr.ui', function() {
                                        (e.ctrlKey && !e.shiftKey))) {
           // Selection is handled at mouseUp on windows/linux, mouseDown on mac.
           if (cr.isMac? isDown : !isDown) {
-            // toggle the current one and make it anchor index
+            // Toggle the current one and make it anchor index.
             sm.setIndexSelected(index, !sm.getIndexSelected(index));
             sm.leadIndex = index;
             sm.anchorIndex = index;
           }
         } else if (e.shiftKey && anchorIndex != -1 && anchorIndex != index) {
-          // Shift is done in mousedown
+          // Shift is done in mousedown.
           if (isDown) {
             sm.unselectAll();
             sm.leadIndex = index;
@@ -157,7 +157,7 @@ cr.define('cr.ui', function() {
               sm.setIndexSelected(index, true);
           }
         } else {
-          // Right click for a context menu need to not clear the selection.
+          // Right click for a context menu needs to not clear the selection.
           var isRightClick = e.button == 2;
 
           // If the index is selected this is handled in mouseup.
@@ -176,7 +176,7 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Called by the view when it recieves a keydown event.
+     * Called by the view when it receives a keydown event.
      * @param {Event} e The keydown event.
      */
     handleKeyDown: function(e) {
@@ -246,7 +246,7 @@ cr.define('cr.ui', function() {
             sm.selectRange(anchorIndex, newIndex);
           }
         } else if (e.ctrlKey && !cr.isMac) {
-          // Setting the lead index is done above
+          // Setting the lead index is done above.
           // Mac does not allow you to change the lead.
         } else {
           if (sm.multiple)
