@@ -129,6 +129,7 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 		return NULL;
 
 	wl_list_init(&surface->surface.destroy_listener_list);
+	wl_list_init(&surface->link);
 
 	glGenTextures(1, &surface->texture);
 	glBindTexture(GL_TEXTURE_2D, surface->texture);
