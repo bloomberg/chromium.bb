@@ -198,7 +198,7 @@ deps_os = {
       "/trunk/deps/third_party/cygwin@66844",
 
     "src/third_party/python_26":
-      "/trunk/tools/third_party/python_26@67105",
+      "/trunk/tools/third_party/python_26@70627",
 
     "src/third_party/lighttpd":
       "/trunk/deps/third_party/lighttpd@33727",
