@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@ class CommandLine;
 
 // The chrome diagnostics system is a model-view-controller system. The Model
 // responsible for holding and running the individual tests and providing a
-// uniform interface for quering the outcome.
+// uniform interface for querying the outcome.
 // TODO(cpu): The view and the controller are not yet built.
 class DiagnosticsModel {
  public:
@@ -33,7 +33,7 @@ class DiagnosticsModel {
    public:
     virtual ~Observer() {}
     // Called once upon test start with |percent| = 0 and periodically as the
-    // test progresses. There is no cancelation method.
+    // test progresses. There is no cancellation method.
     virtual void OnProgress(int id, int percent, DiagnosticsModel* model) = 0;
     // Called if the test in question cannot be run.
     virtual void OnSkipped(int id, DiagnosticsModel* model) = 0;
@@ -62,7 +62,7 @@ class DiagnosticsModel {
   virtual int GetTestRunCount() = 0;
   // Returns how many tests are available. This value never changes.
   virtual int GetTestAvailableCount() =0;
-  // Runs all the availabe tests, the |observer| callbacks will be called as
+  // Runs all the available tests, the |observer| callbacks will be called as
   // the test progress and thus cannot be null.
   virtual void RunAll(DiagnosticsModel::Observer* observer) = 0;
   // Get the information for a particular test. Do not keep a pointer to the

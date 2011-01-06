@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,7 @@ class FilePath;
 // It also Implements the TestInfo interface providing the storage
 // for the outcome of the test.
 // Specific tests need (minimally) only to:
-// 1- override ExecuteImpl() to imnplement the test.
+// 1- override ExecuteImpl() to implement the test.
 // 2- call RecordStopFailure() or RecordFailure() or RecordSuccess()
 //    at the end of the test.
 // 3- Optionally call observer->OnProgress() if the test is long.
@@ -58,7 +58,7 @@ class DiagnosticTest : public DiagnosticsModel::TestInfo {
   static FilePath GetUserDefaultProfileDir();
 
  protected:
-  // The id needs to be overriden by derived classes and must uniquely
+  // The id needs to be overridden by derived classes and must uniquely
   // identify this test so other test can refer to it.
   virtual int GetId() = 0;
   // Derived classes override this method do perform the actual test.

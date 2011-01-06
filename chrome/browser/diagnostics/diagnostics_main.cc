@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -204,8 +204,13 @@ class TestWriter {
  public:
   // The |console| must be valid and properly initialized. This
   // class does not own it.
-  explicit TestWriter(SimpleConsole* console) : console_(console) {
+  explicit TestWriter(SimpleConsole* console)
+      : console_(console),
+        failures_(0) {
   }
+
+  // How many tests reported failure.
+  int failures() { return failures_; }
 
   // Write an informational line of text in white over black.
   bool WriteInfoText(const std::wstring& txt) {
@@ -224,6 +229,7 @@ class TestWriter {
     } else {
       console_->SetColor(SimpleConsole::RED);
       console_->Write(L"[FAIL] ");
+      failures_++;
     }
     WriteInfoText(name + L"\n");
     std::wstring second_line(L"   ");
@@ -234,6 +240,9 @@ class TestWriter {
  private:
 
   SimpleConsole* console_;
+
+  // Keeps track of how many tests reported failure.
+  int failures_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWriter);
 };
@@ -290,7 +299,12 @@ class TestController : public DiagnosticsModel::Observer {
   }
 
   virtual void OnDoneAll(DiagnosticsModel* model) {
-    writer_->WriteInfoText(L"DONE\n\n");
+    if (writer_->failures() > 0) {
+      writer_->WriteInfoText(StringPrintf(L"DONE. %d failure(s)\n\n",
+                             writer_->failures()));
+    } else {
+      writer_->WriteInfoText(L"DONE\n\n");
+    }
   }
 
  private:

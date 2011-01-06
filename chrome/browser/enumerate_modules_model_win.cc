@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,7 +126,8 @@ const ModuleEnumerator::BlacklistEntry ModuleEnumerator::kModuleBlacklist[] = {
       static_cast<RecommendedAction>(UPDATE | DISABLE) },
 
   // is3lsp.dll, "%commonprogramfiles%\\is3\\anti-spyware\\".
-  { "7ffbdce9", "bc5673f2", "", "", "", INVESTIGATING },
+  { "7ffbdce9", "bc5673f2", "", "", "",
+      static_cast<RecommendedAction>(UPDATE | DISABLE | SEE_LINK) },
 
   // jsi.dll, "%programfiles%\\profilecraze\\".
   { "f9555eea", "e3548061", "", "", "", kUninstallLink },
@@ -291,12 +292,13 @@ ModuleEnumerator::ModuleStatus ModuleEnumerator::Match(
       GenerateHash(WideToUTF8(module.digital_signer), &signer_hash);
       GenerateHash(WideToUTF8(module.description), &description_hash);
 
-      // If signatures match, we have a winner.
-      if (!desc_or_signer.empty() && signer_hash == desc_or_signer)
+      // If signatures match (or both are empty), then we have a winner.
+      if (signer_hash == desc_or_signer)
         return CONFIRMED_BAD;
 
-      // If description matches and location, then we also have a match.
-      if (!desc_or_signer.empty() && description_hash == desc_or_signer &&
+      // If descriptions match (or both are empty) and the locations match, then
+      // we also have a confirmed match.
+      if (description_hash == desc_or_signer &&
           !location_hash.empty() && location_hash == blacklisted.location) {
         return CONFIRMED_BAD;
       }
@@ -311,22 +313,31 @@ ModuleEnumerator::ModuleStatus ModuleEnumerator::Match(
 
 ModuleEnumerator::ModuleEnumerator(EnumerateModulesModel* observer)
     : observer_(observer),
+      limited_mode_(false),
       callback_thread_id_(BrowserThread::ID_COUNT) {
 }
 
 ModuleEnumerator::~ModuleEnumerator() {
 }
 
-void ModuleEnumerator::ScanNow(ModulesVector* list) {
-  CHECK(BrowserThread::GetCurrentThreadIdentifier(&callback_thread_id_));
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::FILE));
+void ModuleEnumerator::ScanNow(ModulesVector* list, bool limited_mode) {
   enumerated_modules_ = list;
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-          NewRunnableMethod(this, &ModuleEnumerator::ScanOnFileThread));
+
+  limited_mode_ = limited_mode;
+
+  if (!limited_mode_) {
+    CHECK(BrowserThread::GetCurrentThreadIdentifier(&callback_thread_id_));
+    DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+            NewRunnableMethod(this, &ModuleEnumerator::ScanImpl));
+  } else {
+    // Run it synchronously.
+    ScanImpl();
+  }
 }
 
-void ModuleEnumerator::ScanOnFileThread() {
+void ModuleEnumerator::ScanImpl() {
   base::TimeTicks start_time = base::TimeTicks::Now();
 
   enumerated_modules_->clear();
@@ -357,10 +368,15 @@ void ModuleEnumerator::ScanOnFileThread() {
   std::sort(enumerated_modules_->begin(),
             enumerated_modules_->end(), ModuleSort);
 
-  // Send a reply back on the UI thread.
-  BrowserThread::PostTask(
-      callback_thread_id_, FROM_HERE,
-      NewRunnableMethod(this, &ModuleEnumerator::ReportBack));
+  if (!limited_mode_) {
+    // Send a reply back on the UI thread.
+    BrowserThread::PostTask(
+        callback_thread_id_, FROM_HERE,
+        NewRunnableMethod(this, &ModuleEnumerator::ReportBack));
+  } else {
+    // We are on the main thread already.
+    ReportBack();
+  }
 
   HISTOGRAM_TIMES("Conflicts.EnumerationTotalTime",
                   base::TimeTicks::Now() - start_time);
@@ -584,7 +600,8 @@ void ModuleEnumerator::MatchAgainstBlacklist() {
 }
 
 void ModuleEnumerator::ReportBack() {
-  DCHECK(BrowserThread::CurrentlyOn(callback_thread_id_));
+  if (!limited_mode_)
+    DCHECK(BrowserThread::CurrentlyOn(callback_thread_id_));
   observer_->DoneScanning();
 }
 
@@ -694,7 +711,7 @@ void EnumerateModulesModel::ScanNow() {
   // ScanNow does not block.
   if (!module_enumerator_)
     module_enumerator_ = new ModuleEnumerator(this);
-  module_enumerator_->ScanNow(&enumerated_modules_);
+  module_enumerator_->ScanNow(&enumerated_modules_, limited_mode_);
 }
 
 ListValue* EnumerateModulesModel::GetModuleList() {
@@ -727,8 +744,10 @@ ListValue* EnumerateModulesModel::GetModuleList() {
       }
       // Must be one of the above type.
       DCHECK(!type_string.empty());
-      type_string += ASCIIToWide(" -- ");
-      type_string += l10n_util::GetStringUTF16(IDS_CONFLICTS_NOT_LOADED_YET);
+      if (!limited_mode_) {
+        type_string += ASCIIToWide(" -- ");
+        type_string += l10n_util::GetStringUTF16(IDS_CONFLICTS_NOT_LOADED_YET);
+      }
     }
     data->SetString("type_description", type_string);
     data->SetInteger("status", module->status);
@@ -739,40 +758,43 @@ ListValue* EnumerateModulesModel::GetModuleList() {
     data->SetString("version", module->version);
     data->SetString("digital_signer", module->digital_signer);
 
-    // Figure out the possible resolution help string.
-    string16 actions;
-    string16 separator = ASCIIToWide(" ") + l10n_util::GetStringUTF16(
-        IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_SEPERATOR) +
-        ASCIIToWide(" ");
+    if (!limited_mode_) {
+      // Figure out the possible resolution help string.
+      string16 actions;
+      string16 separator = ASCIIToWide(" ") + l10n_util::GetStringUTF16(
+          IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_SEPERATOR) +
+          ASCIIToWide(" ");
 
-    if (module->recommended_action & ModuleEnumerator::NONE) {
-      actions = l10n_util::GetStringUTF16(
-          IDS_CONFLICTS_CHECK_INVESTIGATING);
+      if (module->recommended_action & ModuleEnumerator::NONE) {
+        actions = l10n_util::GetStringUTF16(
+            IDS_CONFLICTS_CHECK_INVESTIGATING);
+      }
+      if (module->recommended_action & ModuleEnumerator::UNINSTALL) {
+        if (!actions.empty())
+          actions += separator;
+        actions = l10n_util::GetStringUTF16(
+            IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_UNINSTALL);
+      }
+      if (module->recommended_action & ModuleEnumerator::UPDATE) {
+        if (!actions.empty())
+          actions += separator;
+        actions += l10n_util::GetStringUTF16(
+            IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_UPDATE);
+      }
+      if (module->recommended_action & ModuleEnumerator::DISABLE) {
+        if (!actions.empty())
+          actions += separator;
+        actions += l10n_util::GetStringUTF16(
+            IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_DISABLE);
+      }
+      string16 possible_resolution = actions.empty() ? ASCIIToWide("") :
+          l10n_util::GetStringUTF16(IDS_CONFLICTS_CHECK_POSSIBLE_ACTIONS) +
+          ASCIIToWide(" ") +
+          actions;
+      data->SetString("possibleResolution", possible_resolution);
+      data->SetString("help_url",
+                      ConstructHelpCenterUrl(*module).spec().c_str());
     }
-    if (module->recommended_action & ModuleEnumerator::UNINSTALL) {
-      if (!actions.empty())
-        actions += separator;
-      actions = l10n_util::GetStringUTF16(
-          IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_UNINSTALL);
-    }
-    if (module->recommended_action & ModuleEnumerator::UPDATE) {
-      if (!actions.empty())
-        actions += separator;
-      actions += l10n_util::GetStringUTF16(
-          IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_UPDATE);
-    }
-    if (module->recommended_action & ModuleEnumerator::DISABLE) {
-      if (!actions.empty())
-        actions += separator;
-      actions += l10n_util::GetStringUTF16(
-          IDS_CONFLICTS_CHECK_POSSIBLE_ACTION_DISABLE);
-    }
-    string16 possible_resolution = actions.empty() ? ASCIIToWide("") :
-        l10n_util::GetStringUTF16(IDS_CONFLICTS_CHECK_POSSIBLE_ACTIONS) +
-        ASCIIToWide(" ") +
-        actions;
-    data->SetString("possibleResolution", possible_resolution);
-    data->SetString("help_url", ConstructHelpCenterUrl(*module).spec().c_str());
 
     list->Append(data);
   }
@@ -783,6 +805,7 @@ ListValue* EnumerateModulesModel::GetModuleList() {
 
 EnumerateModulesModel::EnumerateModulesModel()
     : scanning_(false),
+      limited_mode_(false),
       confirmed_bad_modules_detected_(0),
       suspected_bad_modules_detected_(0) {
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
@@ -819,17 +842,19 @@ void EnumerateModulesModel::DoneScanning() {
   HISTOGRAM_COUNTS_100("Conflicts.ConfirmedBadModules",
                        confirmed_bad_modules_detected_);
 
-  NotificationService::current()->Notify(
-      NotificationType::MODULE_LIST_ENUMERATED,
-      Source<EnumerateModulesModel>(this),
-      NotificationService::NoDetails());
-
-  if (suspected_bad_modules_detected_ || confirmed_bad_modules_detected_) {
-    bool found_confirmed_bad_modules = confirmed_bad_modules_detected_  > 0;
+  if (!limited_mode_) {
     NotificationService::current()->Notify(
-        NotificationType::MODULE_INCOMPATIBILITY_DETECTED,
+        NotificationType::MODULE_LIST_ENUMERATED,
         Source<EnumerateModulesModel>(this),
-        Details<bool>(&found_confirmed_bad_modules));
+        NotificationService::NoDetails());
+
+    if (suspected_bad_modules_detected_ || confirmed_bad_modules_detected_) {
+      bool found_confirmed_bad_modules = confirmed_bad_modules_detected_  > 0;
+      NotificationService::current()->Notify(
+          NotificationType::MODULE_INCOMPATIBILITY_DETECTED,
+          Source<EnumerateModulesModel>(this),
+          Details<bool>(&found_confirmed_bad_modules));
+    }
   }
 }
 

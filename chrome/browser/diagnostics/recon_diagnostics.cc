@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
+#include "chrome/browser/enumerate_modules_model_win.h"
 #include "chrome/installer/util/install_util.h"
 #endif
 
@@ -29,7 +30,7 @@
 // diagnostic tests. Here we check for the existence of critical files.
 // TODO(cpu): Define if it makes sense to localize strings.
 
-// TODO(cpu): There are a few maxium file sizes hardcoded in this file
+// TODO(cpu): There are a few maximum file sizes hardcoded in this file
 // that have little or no theoretical or experimental ground. Find a way
 // to justify them.
 
@@ -61,7 +62,7 @@ class OperatingSystemTest : public DiagnosticTest {
       return false;
     }
 #else
-    // TODO(port): define the OS criteria for linux and mac.
+    // TODO(port): define the OS criteria for Linux and Mac.
 #endif  // defined(OS_WIN)
     RecordSuccess(ASCIIToUTF16(StringPrintf("%s %s (%d [%d:%d])",
         base::SysInfo::OperatingSystemName().c_str(),
@@ -72,6 +73,60 @@ class OperatingSystemTest : public DiagnosticTest {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OperatingSystemTest);
+};
+
+// Check if any conflicting DLLs are loaded.
+class ConflictingDllsTest : public DiagnosticTest {
+ public:
+  ConflictingDllsTest() : DiagnosticTest(ASCIIToUTF16("Conflicting modules")) {}
+
+  virtual int GetId() { return 0; }
+
+  virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) {
+#if defined(OS_WIN)
+    EnumerateModulesModel* model = EnumerateModulesModel::GetInstance();
+    model->set_limited_mode(true);
+    model->ScanNow();
+    ListValue* list = model->GetModuleList();
+    if (!model->confirmed_bad_modules_detected() &&
+        !model->suspected_bad_modules_detected()) {
+      RecordSuccess(ASCIIToUTF16("No conflicting modules found"));
+      return true;
+    }
+
+    string16 failures = ASCIIToUTF16("Possibly conflicting modules:");
+    DictionaryValue* dictionary;
+    for (size_t i = 0; i < list->GetSize(); ++i) {
+      list->GetDictionary(i, &dictionary);
+      int status;
+      string16 location;
+      string16 name;
+      if (!dictionary->GetInteger("status", &status))
+        RecordFailure(ASCIIToUTF16("No 'status' field found"));
+      if (status < ModuleEnumerator::SUSPECTED_BAD)
+        continue;
+
+      if (!dictionary->GetString("location", &location)) {
+        RecordFailure(ASCIIToUTF16("No 'location' field found"));
+        return true;
+      }
+      if (!dictionary->GetString("name", &name)) {
+        RecordFailure(ASCIIToUTF16("No 'name' field found"));
+        return true;
+      }
+
+      failures += ASCIIToUTF16("\n") + location + name;
+    }
+    RecordFailure(failures);
+    return true;
+#else
+    RecordFailure(ASCIIToUTF16("Not implemented"));
+    return true;
+#endif  // defined(OS_WIN)
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ConflictingDllsTest);
 };
 
 // Check if it is system install or per-user install.
@@ -163,9 +218,9 @@ const TestPathInfo kPathsToTest[] = {
       true, false, false, 0}
 };
 
-// Check that the user's data directory exists and the paths are writeable.
-// If it is a systemwide install some paths are not expected to be writeable.
-// This test depends on |InstallTypeTest| having run succesfuly.
+// Check that the user's data directory exists and the paths are writable.
+// If it is a systemwide install some paths are not expected to be writable.
+// This test depends on |InstallTypeTest| having run successfully.
 class PathTest : public DiagnosticTest {
  public:
   explicit PathTest(const TestPathInfo& path_info)
@@ -227,7 +282,7 @@ class PathTest : public DiagnosticTest {
 };
 
 // Check that the disk space in the volume where the user data dir normally
-// lives is not dangerosly low.
+// lives is not dangerously low.
 class DiskSpaceTest : public DiagnosticTest {
  public:
   DiskSpaceTest() : DiagnosticTest(ASCIIToUTF16("Disk Space")) {}
@@ -335,6 +390,10 @@ DiagnosticTest* MakeDiskSpaceTest() {
 
 DiagnosticTest* MakeOperatingSystemTest() {
   return new OperatingSystemTest();
+}
+
+DiagnosticTest* MakeConflictingDllsTest() {
+  return new ConflictingDllsTest();
 }
 
 DiagnosticTest* MakeInstallTypeTest() {

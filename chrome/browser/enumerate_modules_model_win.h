@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -119,11 +119,15 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
   ~ModuleEnumerator();
 
   // Start scanning the loaded module list (if a scan is not already in
-  // progress). This function does not block while reading the module list, but
-  // will notify when done through the MODULE_LIST_ENUMERATED notification.
+  // progress). This function does not block while reading the module list
+  // (unless we are in limited_mode, see below), and will notify when done
+  // through the MODULE_LIST_ENUMERATED notification.
   // The process will also send MODULE_INCOMPATIBILITY_DETECTED if an
   // incompatible module was detected.
-  void ScanNow(ModulesVector* list);
+  // When in |limited_mode|, this function will not leverage the File thread
+  // to run asynchronously and will therefore block until scanning is done
+  // (and will also not send out any notifications).
+  void ScanNow(ModulesVector* list, bool limited_mode);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(EnumerateModulesTest, CollapsePath);
@@ -131,13 +135,14 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
   // The (currently) hard coded blacklist of known bad modules.
   static const BlacklistEntry kModuleBlacklist[];
 
-  // This function does the actual file scanning work on the FILE thread. It
-  // enumerates all loaded modules in the process and other modules of
-  // interest, such as the registered Winsock LSP modules and stores them in
-  // |enumerated_modules_|. It then normalizes the module info and matches
-  // them against a blacklist of known bad modules. Finally, it calls
-  // ReportBack to let the observer know we are done.
-  void ScanOnFileThread();
+  // This function does the actual file scanning work on the FILE thread (or
+  // block the main thread when in limited_mode). It enumerates all loaded
+  // modules in the process and other modules of interest, such as the
+  // registered Winsock LSP modules and stores them in |enumerated_modules_|.
+  // It then normalizes the module info and matches them against a blacklist
+  // of known bad modules. Finally, it calls ReportBack to let the observer
+  // know we are done.
+  void ScanImpl();
 
   // Enumerate all modules loaded into the Chrome process.
   void EnumerateLoadedModules();
@@ -200,6 +205,9 @@ class ModuleEnumerator : public base::RefCountedThreadSafe<ModuleEnumerator> {
   // The observer, who needs to be notified when we are done.
   EnumerateModulesModel* observer_;
 
+  // See limited_mode below.
+  bool limited_mode_;
+
   // The thread that we need to call back on to report that we are done.
   BrowserThread::ID callback_thread_id_;
 
@@ -235,8 +243,14 @@ class EnumerateModulesModel {
     return confirmed_bad_modules_detected_;
   }
 
-  // Asynchronously start the scan for the loaded module list.
-  // When the list is ready.
+  // Set to true when we the scanning process can not rely on certain Chrome
+  // services to exists.
+  void set_limited_mode(bool limited_mode) {
+    limited_mode_ = limited_mode;
+  }
+
+  // Asynchronously start the scan for the loaded module list, except when in
+  // limited_mode (in which case it blocks).
   void ScanNow();
 
   // Gets the whole module list as a ListValue.
@@ -267,6 +281,13 @@ class EnumerateModulesModel {
   // When this singleton object is constructed we go and fire off this timer to
   // start scanning for modules after a certain amount of time has passed.
   base::OneShotTimer<EnumerateModulesModel> check_modules_timer_;
+
+  // While normally |false|, this mode can be set to indicate that the scanning
+  // process should not rely on certain services normally available to Chrome,
+  // such as the resource bundle and the notification system, not to mention
+  // having multiple threads. This mode is useful during diagnostics, which
+  // runs without firing up all necessary Chrome services first.
+  bool limited_mode_;
 
   // True if we are currently scanning for modules.
   bool scanning_;

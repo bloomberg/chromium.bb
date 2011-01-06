@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,6 +78,12 @@ TEST_F(EnumerateModulesTest, NormalizeEntry) {
 const ModuleEnumerator::Module kStandardModule =
   { kType, kStatus, L"c:\\foo\\bar.dll", L"", L"Prod", L"Desc", L"1.0", L"Sig",
     ModuleEnumerator::NONE };
+const ModuleEnumerator::Module kStandardModuleNoDescription =
+  { kType, kStatus, L"c:\\foo\\bar.dll", L"", L"Prod", L"", L"1.0", L"Sig",
+    ModuleEnumerator::NONE };
+const ModuleEnumerator::Module kStandardModuleNoSignature =
+  { kType, kStatus, L"c:\\foo\\bar.dll", L"", L"Prod", L"Desc", L"1.0", L"",
+    ModuleEnumerator::NONE };
 
 // Name, location, description and signature are compared by hashing.
 static const char kMatchName[] = "88e8c9e0";             // "bar.dll".
@@ -118,6 +124,16 @@ const struct MatchingEntryList {
   }, {  // Matches: Name, location => Suspected match.
     ModuleEnumerator::SUSPECTED_BAD,
     kStandardModule,
+    { kMatchName, kMatchLocation, kEmpty, kEmpty, kEmpty,
+      ModuleEnumerator::SEE_LINK }
+  }, {  // Matches: Name, location, (description not given) => Confirmed match.
+    ModuleEnumerator::CONFIRMED_BAD,
+    kStandardModuleNoDescription,  // Note: No description.
+    { kMatchName, kMatchLocation, kEmpty, kEmpty, kEmpty,
+      ModuleEnumerator::SEE_LINK }
+  }, {  // Matches: Name, location, (signature not given) => Confirmed match.
+    ModuleEnumerator::CONFIRMED_BAD,
+    kStandardModuleNoSignature,  // Note: No signature.
     { kMatchName, kMatchLocation, kEmpty, kEmpty, kEmpty,
       ModuleEnumerator::SEE_LINK }
   }, {  // Matches: Name, location (not version) => Not a match.
