@@ -109,22 +109,32 @@ int main(int argc, char* argv[])
     printf("\t\tDuration\t\t: %lld\n", duration_ns);
 
     const double duration_sec = double(duration_ns) / 1000000000;
-    printf("\t\tDuration(secs)\t\t: %7.3f\n", duration_sec);
+    printf("\t\tDuration(secs)\t\t: %7.3lf\n", duration_sec);
 
     if (pTitle == NULL)
         printf("\t\tTrack Name\t\t: NULL\n");
     else
+    {
         printf("\t\tTrack Name\t\t: %ls\n", pTitle);
+        delete [] pTitle;
+    }
+
 
     if (pMuxingApp == NULL)
         printf("\t\tMuxing App\t\t: NULL\n");
     else
+    {
         printf("\t\tMuxing App\t\t: %ls\n", pMuxingApp);
+        delete [] pMuxingApp;
+    }
 
     if (pWritingApp == NULL)
         printf("\t\tWriting App\t\t: NULL\n");
     else
+    {
         printf("\t\tWriting App\t\t: %ls\n", pWritingApp);
+        delete [] pWritingApp;
+    }
 
     // pos of segment payload
     printf("\t\tPosition(Segment)\t: %lld\n", pSegment->m_start);
@@ -153,14 +163,17 @@ int main(int argc, char* argv[])
         const unsigned long long trackUid = pTrack->GetUid();
         const wchar_t* const pTrackName = utf8towcs(pTrack->GetNameAsUTF8());
 
-        printf("\t\tTrack Type\t\t: %ld\n", trackType);
-        printf("\t\tTrack Number\t\t: %ld\n", trackNumber);
+        printf("\t\tTrack Type\t\t: %lld\n", trackType);
+        printf("\t\tTrack Number\t\t: %lld\n", trackNumber);
         printf("\t\tTrack Uid\t\t: %lld\n", trackUid);
 
         if (pTrackName == NULL)
             printf("\t\tTrack Name\t\t: NULL\n");
         else
+        {
             printf("\t\tTrack Name\t\t: %ls \n", pTrackName);
+            delete [] pTrackName;
+        }
 
         const char* const pCodecId = pTrack->GetCodecId();
 
@@ -175,7 +188,10 @@ int main(int argc, char* argv[])
         if (pCodecName == NULL)
             printf("\t\tCodec Name\t\t: NULL\n");
         else
+        {
             printf("\t\tCodec Name\t\t: %ls\n", pCodecName);
+            delete [] pCodecName;
+        }
 
         if (trackType == VIDEO_TRACK)
         {
@@ -252,7 +268,7 @@ int main(int argc, char* argv[])
                 const Block::Frame& theFrame = pBlock->GetFrame(i);
                 const long size = theFrame.len;
                 const long long offset = theFrame.pos;
-                printf("\t\t\t %15ld,%15lx\n", size, offset);
+                printf("\t\t\t %15ld,%15llx\n", size, offset);
             }
 
             pBlockEntry = pCluster->GetNext(pBlockEntry);
