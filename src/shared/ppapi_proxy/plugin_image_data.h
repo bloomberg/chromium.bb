@@ -16,10 +16,21 @@ namespace ppapi_proxy {
 // Implements the plugin (i.e., .nexe) side of the PPB_ImageData interface.
 class PluginImageData : public PluginResource {
  public:
+  PluginImageData();
   static const PPB_ImageData* GetInterface();
+
+  bool InitFromBrowserResource(PP_Resource resource);
+  void* Map();
+  void Unmap();
+
+  const PP_ImageDataDesc& desc() const { return desc_; }
  private:
   IMPLEMENT_RESOURCE(PluginImageData);
   NACL_DISALLOW_COPY_AND_ASSIGN(PluginImageData);
+  PP_ImageDataDesc desc_;
+  int shm_fd_;
+  int32_t shm_size_;
+  void* addr_;
 };
 
 }  // namespace ppapi_proxy

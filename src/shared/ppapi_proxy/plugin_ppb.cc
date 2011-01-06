@@ -14,6 +14,7 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_graphics_2d.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_graphics_3d.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_image_data.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_instance.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_url_request_info.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_url_response_info.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_url_loader.h"
@@ -48,6 +49,8 @@ const InterfaceMapElement interface_map[] = {
     reinterpret_cast<GetInterfacePtr>(PluginGraphics3D::GetInterface) },
   { PPB_IMAGEDATA_INTERFACE,
     reinterpret_cast<GetInterfacePtr>(PluginImageData::GetInterface) },
+  { PPB_INSTANCE_INTERFACE,
+    reinterpret_cast<GetInterfacePtr>(PluginInstance::GetInterface) },
   { PPB_URLLOADER_INTERFACE,
     reinterpret_cast<GetInterfacePtr>(PluginURLLoader::GetInterface) },
   { PPB_URLREQUESTINFO_INTERFACE,

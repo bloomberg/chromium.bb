@@ -410,13 +410,13 @@ NaClSrpcError PpbCoreRpcClient::PPB_Core_GetTime(
 NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_Create(
     NaClSrpcChannel* channel,
     PP_Module module,
-    nacl_abi_size_t size_bytes, int32_t* size,
+    nacl_abi_size_t size_bytes, char* size,
     int32_t is_always_opaque,
     PP_Resource* resource)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Graphics2D_Create:lIi:l",
+      "PPB_Graphics2D_Create:lCi:l",
       module,
       size_bytes, size,
       is_always_opaque,
@@ -442,13 +442,13 @@ NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_IsGraphics2D(
 NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_Describe(
     NaClSrpcChannel* channel,
     PP_Resource graphics_2d,
-    nacl_abi_size_t* size_bytes, int32_t* size,
+    nacl_abi_size_t* size_bytes, char* size,
     int32_t* is_always_opaque,
     int32_t* success)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Graphics2D_Describe:l:Iii",
+      "PPB_Graphics2D_Describe:l:Cii",
       graphics_2d,
       size_bytes, size,
       is_always_opaque,
@@ -461,12 +461,12 @@ NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_PaintImageData(
     NaClSrpcChannel* channel,
     PP_Resource graphics_2d,
     PP_Resource image,
-    nacl_abi_size_t top_left_bytes, int32_t* top_left,
-    nacl_abi_size_t src_rect_bytes, int32_t* src_rect)  {
+    nacl_abi_size_t top_left_bytes, char* top_left,
+    nacl_abi_size_t src_rect_bytes, char* src_rect)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Graphics2D_PaintImageData:llII:",
+      "PPB_Graphics2D_PaintImageData:llCC:",
       graphics_2d,
       image,
       top_left_bytes, top_left,
@@ -478,12 +478,12 @@ NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_PaintImageData(
 NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_Scroll(
     NaClSrpcChannel* channel,
     PP_Resource graphics_2d,
-    nacl_abi_size_t clip_rect_bytes, int32_t* clip_rect,
-    nacl_abi_size_t amount_bytes, int32_t* amount)  {
+    nacl_abi_size_t clip_rect_bytes, char* clip_rect,
+    nacl_abi_size_t amount_bytes, char* amount)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Graphics2D_Scroll:lII:",
+      "PPB_Graphics2D_Scroll:lCC:",
       graphics_2d,
       clip_rect_bytes, clip_rect,
       amount_bytes, amount
@@ -535,13 +535,13 @@ NaClSrpcError PpbImageDataRpcClient::PPB_ImageData_Create(
     NaClSrpcChannel* channel,
     PP_Module module,
     int32_t format,
-    nacl_abi_size_t size_bytes, int32_t* size,
+    nacl_abi_size_t size_bytes, char* size,
     int32_t init_to_zero,
     PP_Resource* resource)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_ImageData_Create:liIi:l",
+      "PPB_ImageData_Create:liCi:l",
       module,
       format,
       size_bytes, size,
@@ -568,14 +568,18 @@ NaClSrpcError PpbImageDataRpcClient::PPB_ImageData_IsImageData(
 NaClSrpcError PpbImageDataRpcClient::PPB_ImageData_Describe(
     NaClSrpcChannel* channel,
     PP_Resource resource,
-    nacl_abi_size_t* desc_bytes, int32_t* desc,
+    nacl_abi_size_t* desc_bytes, char* desc,
+    NaClSrpcImcDescType* shm,
+    int32_t* shm_size,
     int32_t* success)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_ImageData_Describe:l:Ii",
+      "PPB_ImageData_Describe:l:Chii",
       resource,
       desc_bytes, desc,
+      shm,
+      shm_size,
       success
   );
   return retval;

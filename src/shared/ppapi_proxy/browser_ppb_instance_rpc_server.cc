@@ -55,7 +55,6 @@ void PpbInstanceRpcServer::PPB_Instance_BindGraphics(
     PP_Resource graphics_device,
     // outputs
     int32_t* success) {
-  NACL_UNTESTED();
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 

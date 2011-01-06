@@ -8,17 +8,18 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "srpcgen/ppb_rpc.h"
-#include "srpcgen/upcall.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_upcall.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-#include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_size.h"
+#include "ppapi/c/ppb_graphics_2d.h"
+#include "srpcgen/ppb_rpc.h"
+#include "srpcgen/upcall.h"
 
 namespace ppapi_proxy {
 
@@ -34,8 +35,8 @@ const nacl_abi_size_t kPpRectBytes =
 PP_Resource Create(PP_Module module,
                    const struct PP_Size* size,
                    PP_Bool is_always_opaque) {
-  int32_t* size_as_int_ptr =
-      reinterpret_cast<int32_t*>(const_cast<struct PP_Size*>(size));
+  char* size_as_char_ptr =
+      reinterpret_cast<char*>(const_cast<struct PP_Size*>(size));
   int32_t is_always_opaque_as_int = static_cast<int32_t>(is_always_opaque);
   PP_Resource resource;
   NaClSrpcError retval =
@@ -43,7 +44,7 @@ PP_Resource Create(PP_Module module,
           GetMainSrpcChannel(),
           module,
           kPpSizeBytes,
-          size_as_int_ptr,
+          size_as_char_ptr,
           is_always_opaque_as_int,
           &resource);
   if (retval == NACL_SRPC_RESULT_OK) {
@@ -69,7 +70,7 @@ PP_Bool Describe(PP_Resource graphics_2d,
           GetMainSrpcChannel(),
           graphics_2d,
           &size_ret,
-          reinterpret_cast<int32_t*>(size),
+          reinterpret_cast<char*>(size),
           &is_always_opaque_as_int,
           &result);
   if (retval == NACL_SRPC_RESULT_OK || size_ret != kPpSizeBytes) {
@@ -91,9 +92,9 @@ void PaintImageData(PP_Resource graphics_2d,
       graphics_2d,
       image,
       kPpPointBytes,
-      reinterpret_cast<int32_t*>(const_cast<struct PP_Point*>(top_left)),
+      reinterpret_cast<char*>(const_cast<struct PP_Point*>(top_left)),
       kPpRectBytes,
-      reinterpret_cast<int32_t*>(const_cast<struct PP_Rect*>(src_rect)));
+      reinterpret_cast<char*>(const_cast<struct PP_Rect*>(src_rect)));
 }
 
 void Scroll(PP_Resource graphics_2d,
@@ -105,9 +106,9 @@ void Scroll(PP_Resource graphics_2d,
       GetMainSrpcChannel(),
       graphics_2d,
       kPpRectBytes,
-      reinterpret_cast<int32_t*>(const_cast<struct PP_Rect*>(clip_rect)),
+      reinterpret_cast<char*>(const_cast<struct PP_Rect*>(clip_rect)),
       kPpPointBytes,
-      reinterpret_cast<int32_t*>(const_cast<struct PP_Point*>(amount)));
+      reinterpret_cast<char*>(const_cast<struct PP_Point*>(amount)));
 }
 
 void ReplaceContents(PP_Resource graphics_2d, PP_Resource image) {
@@ -117,9 +118,14 @@ void ReplaceContents(PP_Resource graphics_2d, PP_Resource image) {
 
 int32_t Flush(PP_Resource graphics_2d,
               struct PP_CompletionCallback callback) {
+  // The PPAPI spec says that all potentially blocking calls from the main
+  // thread must have a non-NULL callback.  If the callback is NULL, they
+  // are to return an error immediately.
+  if (PPBCoreInterface()->IsMainThread() && (callback.func == NULL)) {
+    return PP_ERROR_BADARGUMENT;
+  }
   UNREFERENCED_PARAMETER(graphics_2d);
-  UNREFERENCED_PARAMETER(callback);
-  // TODO(sehr): implement the call on the upcall channel once the completion
+  // TODO(neb): implement the call on the upcall channel once the completion
   // callback implementation is in place.
   NACL_UNIMPLEMENTED();
   return PP_ERROR_BADRESOURCE;

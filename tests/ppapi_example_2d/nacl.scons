@@ -1,0 +1,26 @@
+# -*- python -*-
+# Copyright 2010 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+# This is a pepper 2d example from examples/2d.
+
+# Warning! This is work in progress, 2d is not implemented yet!
+# TODO(neb): Make this example work and add it's scons file to SConstruct.
+
+Import('env')
+
+env.Prepend(CPPDEFINES=['XP_UNIX'])
+
+ppapi_example_2d_nexe = env.ComponentProgram('ppapi_example_2d.nexe',
+    [ '$SOURCE_ROOT/ppapi/examples/2d/graphics_2d_example.c' ],
+    EXTRA_LIBS=['ppruntime',
+                'google_nacl_imc',
+                'google_nacl_platform',
+                'gio',
+                'pthread',
+                'srpc'])
+
+# Note that the html is required to run this program.
+env.Publish('ppapi_example_2d.nexe', 'run',
+            ['ppapi_example_2d.html' ])

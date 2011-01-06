@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <sys/mman.h>
 #include "srpcgen/ppb_rpc.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_globals.h"
@@ -18,9 +19,6 @@
 namespace ppapi_proxy {
 
 namespace {
-
-const nacl_abi_size_t kPpImageDataDescBytes =
-      static_cast<nacl_abi_size_t>(sizeof(struct PP_ImageDataDesc));
 
 PP_ImageDataFormat GetNativeImageDataFormat() {
   int32_t format;
@@ -60,14 +58,17 @@ PP_Resource Create(PP_Module module,
           module,
           static_cast<int32_t>(format),
           static_cast<nacl_abi_size_t>(sizeof(struct PP_Size)),
-          reinterpret_cast<int32_t*>(const_cast<struct PP_Size*>(size)),
+          reinterpret_cast<char*>(const_cast<struct PP_Size*>(size)),
           (init_to_zero == PP_TRUE),
           &resource);
   if (retval == NACL_SRPC_RESULT_OK) {
-    return resource;
-  } else {
-    return kInvalidResourceId;
+    scoped_refptr<PluginImageData> image_data =
+        PluginResource::AdoptAs<PluginImageData>(resource);
+    if (image_data.get()) {
+      return resource;
+    }
   }
+  return kInvalidResourceId;
 }
 
 PP_Bool IsImageData(PP_Resource resource) {
@@ -77,50 +78,83 @@ PP_Bool IsImageData(PP_Resource resource) {
 
 PP_Bool Describe(PP_Resource resource,
                  struct PP_ImageDataDesc* desc) {
-  int32_t result;
-  nacl_abi_size_t desc_size = kPpImageDataDescBytes;
-  NaClSrpcError retval =
-      PpbImageDataRpcClient::PPB_ImageData_Describe(
-          GetMainSrpcChannel(),
-          resource,
-          &desc_size,
-          reinterpret_cast<int32_t*>(desc),
-          &result);
-  if (retval == NACL_SRPC_RESULT_OK) {
-    return (result ? PP_TRUE : PP_FALSE);
-  } else {
+  scoped_refptr<PluginImageData> imagedata =
+      PluginResource::GetAs<PluginImageData>(resource);
+  if (!imagedata.get()) {
     return PP_FALSE;
   }
+
+  *desc = imagedata->desc();
+  return PP_TRUE;
 }
 
-void* Map(PP_Resource resource) {
-  UNREFERENCED_PARAMETER(resource);
-  NACL_UNIMPLEMENTED();
-  // TODO(sehr): add the implementation once we have a shared memory
-  // descriptor for the resource.
-  return NULL;
+void* DoMap(PP_Resource resource) {
+  scoped_refptr<PluginImageData> imagedata =
+      PluginResource::GetAs<PluginImageData>(resource);
+
+  return imagedata.get() ? imagedata->Map() : NULL;
 }
 
-void Unmap(PP_Resource resource) {
-  UNREFERENCED_PARAMETER(resource);
-  NACL_UNIMPLEMENTED();
-  // TODO(sehr): add the implementation once we have a shared memory
-  // descriptor for the resource.
+void DoUnmap(PP_Resource resource) {
+  scoped_refptr<PluginImageData> imagedata =
+      PluginResource::GetAs<PluginImageData>(resource);
+  if (imagedata.get())
+    imagedata->Unmap();
 }
 
 }  // namespace
 
 const PPB_ImageData* PluginImageData::GetInterface() {
   static const PPB_ImageData intf = {
-    GetNativeImageDataFormat,
-    IsImageDataFormatSupported,
-    Create,
-    IsImageData,
-    Describe,
-    Map,
-    Unmap,
+    &GetNativeImageDataFormat,
+    &IsImageDataFormatSupported,
+    &Create,
+    &IsImageData,
+    &Describe,
+    &DoMap,
+    &DoUnmap,
   };
   return &intf;
+}
+
+PluginImageData::PluginImageData()
+    : shm_size_(0),
+      addr_(NULL) {
+}
+
+bool PluginImageData::InitFromBrowserResource(PP_Resource resource) {
+  nacl_abi_size_t desc_size = static_cast<nacl_abi_size_t>(sizeof(desc_));
+  int32_t success = PP_FALSE;
+
+  NaClSrpcError result =
+      PpbImageDataRpcClient::PPB_ImageData_Describe(
+          GetMainSrpcChannel(),
+          static_cast<int64_t>(resource),
+          &desc_size,
+          reinterpret_cast<char*>(&desc_),
+          &shm_fd_,
+          &shm_size_,
+          &success);
+  return (NACL_SRPC_RESULT_OK == result) && (PP_TRUE == success);
+}
+
+void* PluginImageData::Map() {
+  if (NULL != addr_) {
+    return addr_;
+  }
+  if (!shm_size_) {
+    return NULL;
+  }
+
+  addr_ = mmap(0, shm_size_, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd_, 0);
+  return addr_;
+}
+
+void PluginImageData::Unmap() {
+  if (addr_) {
+    munmap(addr_, shm_size_);
+    addr_ = NULL;
+  }
 }
 
 }  // namespace ppapi_proxy

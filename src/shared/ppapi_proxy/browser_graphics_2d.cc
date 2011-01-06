@@ -20,7 +20,7 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_Create(NaClSrpcRpc* rpc,
                                                    NaClSrpcClosure* done,
                                                    PP_Module module,
                                                    nacl_abi_size_t size_bytes,
-                                                   int32_t* size,
+                                                   char* size,
                                                    int32_t is_always_opaque,
                                                    PP_Resource* resource) {
   NaClSrpcClosureRunner runner(done);
@@ -55,7 +55,7 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_Describe(
     NaClSrpcClosure* done,
     PP_Resource graphics_2d,
     nacl_abi_size_t* size_bytes,
-    int32_t* size,
+    char* size,
     int32_t* is_always_opaque,
     int32_t* success) {
   NaClSrpcClosureRunner runner(done);
@@ -78,9 +78,9 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_PaintImageData(
     PP_Resource graphics_2d,
     PP_Resource image,
     nacl_abi_size_t top_left_bytes,
-    int32_t* top_left,
+    char* top_left,
     nacl_abi_size_t src_rect_bytes,
-    int32_t* src_rect) {
+    char* src_rect) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   if (top_left_bytes != sizeof(struct PP_Point) ||
@@ -102,9 +102,9 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_Scroll(
     NaClSrpcClosure* done,
     PP_Resource graphics_2d,
     nacl_abi_size_t clip_rect_bytes,
-    int32_t* clip_rect,
+    char* clip_rect,
     nacl_abi_size_t amount_bytes,
-    int32_t* amount) {
+    char* amount) {
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
   if (clip_rect_bytes != sizeof(struct PP_Rect) ||

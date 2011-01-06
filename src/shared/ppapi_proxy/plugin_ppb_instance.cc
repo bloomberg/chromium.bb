@@ -66,7 +66,6 @@ PP_Var GetOwnerElementObject(PP_Instance instance) {
 PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) {
   DebugPrintf("PPB_Instance::BindGraphicsDeviceContext: instance=%"
               NACL_PRIx64 ", device=%" NACL_PRIu64 "\n", instance, device);
-  NACL_UNTESTED();
   int32_t success = 0;
 
   NaClSrpcError srpc_result =

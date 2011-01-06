@@ -399,7 +399,7 @@ static void PPB_Graphics2D_CreateDispatcher(
       rpc,
       done,
       inputs[0]->u.lval,
-      inputs[1]->u.count, inputs[1]->arrays.iarr,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
       inputs[2]->u.ival,
       &(outputs[0]->u.lval)
   );
@@ -429,7 +429,7 @@ static void PPB_Graphics2D_DescribeDispatcher(
       rpc,
       done,
       inputs[0]->u.lval,
-      &(outputs[0]->u.count), outputs[0]->arrays.iarr,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr,
       &(outputs[1]->u.ival),
       &(outputs[2]->u.ival)
   );
@@ -447,8 +447,8 @@ static void PPB_Graphics2D_PaintImageDataDispatcher(
       done,
       inputs[0]->u.lval,
       inputs[1]->u.lval,
-      inputs[2]->u.count, inputs[2]->arrays.iarr,
-      inputs[3]->u.count, inputs[3]->arrays.iarr
+      inputs[2]->u.count, inputs[2]->arrays.carr,
+      inputs[3]->u.count, inputs[3]->arrays.carr
   );
 }
 
@@ -463,8 +463,8 @@ static void PPB_Graphics2D_ScrollDispatcher(
       rpc,
       done,
       inputs[0]->u.lval,
-      inputs[1]->u.count, inputs[1]->arrays.iarr,
-      inputs[2]->u.count, inputs[2]->arrays.iarr
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      inputs[2]->u.count, inputs[2]->arrays.carr
   );
 }
 
@@ -522,7 +522,7 @@ static void PPB_ImageData_CreateDispatcher(
       done,
       inputs[0]->u.lval,
       inputs[1]->u.ival,
-      inputs[2]->u.count, inputs[2]->arrays.iarr,
+      inputs[2]->u.count, inputs[2]->arrays.carr,
       inputs[3]->u.ival,
       &(outputs[0]->u.lval)
   );
@@ -552,8 +552,10 @@ static void PPB_ImageData_DescribeDispatcher(
       rpc,
       done,
       inputs[0]->u.lval,
-      &(outputs[0]->u.count), outputs[0]->arrays.iarr,
-      &(outputs[1]->u.ival)
+      &(outputs[0]->u.count), outputs[0]->arrays.carr,
+      &(outputs[1]->u.hval),
+      &(outputs[2]->u.ival),
+      &(outputs[3]->u.ival)
   );
 }
 
@@ -778,17 +780,17 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_Core_ReleaseResource:l:", PPB_Core_ReleaseResourceDispatcher },
   { "ReleaseResourceMultipleTimes:li:", ReleaseResourceMultipleTimesDispatcher },
   { "PPB_Core_GetTime::d", PPB_Core_GetTimeDispatcher },
-  { "PPB_Graphics2D_Create:lIi:l", PPB_Graphics2D_CreateDispatcher },
+  { "PPB_Graphics2D_Create:lCi:l", PPB_Graphics2D_CreateDispatcher },
   { "PPB_Graphics2D_IsGraphics2D:l:i", PPB_Graphics2D_IsGraphics2DDispatcher },
-  { "PPB_Graphics2D_Describe:l:Iii", PPB_Graphics2D_DescribeDispatcher },
-  { "PPB_Graphics2D_PaintImageData:llII:", PPB_Graphics2D_PaintImageDataDispatcher },
-  { "PPB_Graphics2D_Scroll:lII:", PPB_Graphics2D_ScrollDispatcher },
+  { "PPB_Graphics2D_Describe:l:Cii", PPB_Graphics2D_DescribeDispatcher },
+  { "PPB_Graphics2D_PaintImageData:llCC:", PPB_Graphics2D_PaintImageDataDispatcher },
+  { "PPB_Graphics2D_Scroll:lCC:", PPB_Graphics2D_ScrollDispatcher },
   { "PPB_Graphics2D_ReplaceContents:ll:", PPB_Graphics2D_ReplaceContentsDispatcher },
   { "PPB_ImageData_GetNativeImageDataFormat::i", PPB_ImageData_GetNativeImageDataFormatDispatcher },
   { "PPB_ImageData_IsImageDataFormatSupported:i:i", PPB_ImageData_IsImageDataFormatSupportedDispatcher },
-  { "PPB_ImageData_Create:liIi:l", PPB_ImageData_CreateDispatcher },
+  { "PPB_ImageData_Create:liCi:l", PPB_ImageData_CreateDispatcher },
   { "PPB_ImageData_IsImageData:l:i", PPB_ImageData_IsImageDataDispatcher },
-  { "PPB_ImageData_Describe:l:Ii", PPB_ImageData_DescribeDispatcher },
+  { "PPB_ImageData_Describe:l:Chii", PPB_ImageData_DescribeDispatcher },
   { "PPB_Instance_GetWindowObject:l:C", PPB_Instance_GetWindowObjectDispatcher },
   { "PPB_Instance_GetOwnerElementObject:l:C", PPB_Instance_GetOwnerElementObjectDispatcher },
   { "PPB_Instance_BindGraphics:ll:i", PPB_Instance_BindGraphicsDispatcher },

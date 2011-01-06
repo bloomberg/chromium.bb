@@ -127,6 +127,13 @@ const PPB_ImageData* PPBImageDataInterface() {
   return ppb;
 }
 
+const PPB_ImageDataTrusted* PPBImageDataTrustedInterface() {
+  static const PPB_ImageDataTrusted* ppb =
+      reinterpret_cast<const PPB_ImageDataTrusted*>(
+      GetBrowserInterfaceSafe(PPB_IMAGEDATA_TRUSTED_INTERFACE));
+  return ppb;
+}
+
 const PPB_Instance* PPBInstanceInterface() {
   static const PPB_Instance* ppb = reinterpret_cast<const PPB_Instance*>(
       GetBrowserInterfaceSafe(PPB_INSTANCE_INTERFACE));
@@ -155,3 +162,4 @@ const PPB_Var_Deprecated* PPBVarInterface() {
 }
 
 }  // namespace ppapi_proxy
+
