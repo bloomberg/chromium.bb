@@ -603,12 +603,15 @@ SkBitmap Tab::DrawHoverGlowBitmap(int width_input, int height_input) {
       NULL,
       2,
       SkShader::kClamp_TileMode);
-  paint.setShader(shader);
-  shader->unref();
-  hover_canvas.DrawRectInt(hover_point_.x() - radius,
-                           hover_point_.y() - radius,
-                           radius * 2, radius * 2, paint);
-
+  // Shader can end up null when radius = 0.
+  // If so, this results in default full tab glow behavior.
+  if (shader) {
+    paint.setShader(shader);
+    shader->unref();
+    hover_canvas.DrawRectInt(hover_point_.x() - radius,
+                             hover_point_.y() - radius,
+                             radius * 2, radius * 2, paint);
+  }
   return hover_canvas.ExtractBitmap();
 }
 
