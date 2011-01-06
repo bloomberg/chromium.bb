@@ -169,6 +169,12 @@ ACTION_P2(AccDoDefaultActionInRenderer, mock, matcher) {
                     mock->event_sink()->GetRendererWindow());
 }
 
+ACTION_P3(DelayAccDoDefaultActionInRenderer, mock, matcher, delay) {
+  SleepEx(delay, false);
+  AccInWindow<void>(AccDoDefaultAction(matcher),
+                    mock->event_sink()->GetRendererWindow());
+}
+
 ACTION_P2(AccLeftClickInBrowser, mock, matcher) {
   AccInWindow<void>(AccLeftClick(matcher),
                     mock->event_sink()->GetBrowserWindow());

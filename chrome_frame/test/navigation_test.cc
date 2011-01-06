@@ -1171,4 +1171,85 @@ TEST_P(FullTabNavigationTest, RefreshContentsUATest) {
   LaunchIEAndNavigate(src_url);
 }
 
+// Link navigations in the same domain specified with the noreferrer flag
+// should be opened in the host browser.
+TEST_F(FullTabNavigationTest, JavascriptWindowOpenNoReferrerOpensInHost) {
+  // Please see http://code.google.com/p/chromium/issues/detail?id=60987
+  // for more information on why this test is disabled for Vista with IE7.
+  if (base::win::GetVersion() == base::win::VERSION_VISTA &&
+      GetInstalledIEVersion() == IE_7) {
+    LOG(INFO) << "Not running test on Vista with IE7";
+    return;
+  }
+
+  MockAccEventObserver acc_observer;
+
+  testing::StrictMock<MockIEEventSink> new_window_mock;
+  testing::StrictMock<MockIEEventSink>
+      no_referrer_target_opener_window_mock;
+
+  std::wstring initial_url =
+      GetTestUrl(L"window_open.html?open_href_target_no_referrer.html");
+
+  std::wstring parent_url = GetTestUrl(
+      L"open_href_target_no_referrer.html");
+
+  std::wstring new_window_url = GetSimplePageUrl();
+
+  ie_mock_.ExpectNavigation(false, initial_url);
+  EXPECT_CALL(ie_mock_, OnLoad(false, StrEq(initial_url)));
+
+  EXPECT_CALL(acc_observer, OnAccDocLoad(_))
+      .WillOnce(AccLeftClick(AccObjectMatcher()))
+      .WillRepeatedly(testing::Return());
+
+  ie_mock_.ExpectNewWindow(&no_referrer_target_opener_window_mock);
+
+  no_referrer_target_opener_window_mock.ExpectNavigation(true, parent_url);
+
+  server_mock_.ExpectAndServeRequest(CFInvocation::MetaTag(), parent_url);
+  server_mock_.ExpectAndServeRequest(CFInvocation::None(), new_window_url);
+  server_mock_.ExpectAndServeRequest(CFInvocation::None(), initial_url);
+
+  EXPECT_CALL(no_referrer_target_opener_window_mock,
+      OnLoad(false, StrEq(parent_url)))
+      .Times(testing::AnyNumber());
+
+  EXPECT_CALL(no_referrer_target_opener_window_mock,
+      OnLoad(true, StrEq(parent_url)))
+      .WillOnce(DelayAccDoDefaultActionInRenderer(
+          &no_referrer_target_opener_window_mock,
+          AccObjectMatcher(L"", L"link"), 1000));
+
+  // The parent window is in CF and opens a child window with the no referrer
+  // flag in which case it should open in IE.
+  no_referrer_target_opener_window_mock.ExpectNewWindow(&new_window_mock);
+  new_window_mock.ExpectNavigation(false, new_window_url);
+
+  EXPECT_CALL(new_window_mock, OnFileDownload(_, _))
+      .Times(testing::AnyNumber());
+
+  EXPECT_CALL(new_window_mock,
+              OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
+                                              testing::HasSubstr(L"attach")),
+                                _, _, _, _, _));
+  EXPECT_CALL(new_window_mock,
+              OnNavigateComplete2(_, testing::Field(&VARIANT::bstrVal,
+                                              testing::HasSubstr(L"attach"))))
+      .Times(testing::AtMost(1));
+
+  EXPECT_CALL(new_window_mock, OnLoad(false, StrEq(new_window_url)))
+      .WillOnce(CloseBrowserMock(&new_window_mock));
+
+  EXPECT_CALL(new_window_mock, OnQuit())
+      .WillOnce(CloseBrowserMock(
+          &no_referrer_target_opener_window_mock));
+
+  EXPECT_CALL(no_referrer_target_opener_window_mock, OnQuit())
+      .WillOnce(CloseBrowserMock(&ie_mock_));
+
+  LaunchIENavigateAndLoop(initial_url,
+                          kChromeFrameLongNavigationTimeoutInSeconds);
+}
+
 }  // namespace chrome_frame_test

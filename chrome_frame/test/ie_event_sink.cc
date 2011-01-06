@@ -266,14 +266,18 @@ HWND IEEventSink::GetRendererWindow() {
       ole_window->GetWindow(&activex_window);
       EXPECT_TRUE(IsWindow(activex_window));
 
+      wchar_t class_name[MAX_PATH] = {0};
+      HWND child_window = NULL;
       // chrome tab window is the first (and the only) child of activex
       for (HWND first_child = activex_window; ::IsWindow(first_child);
            first_child = ::GetWindow(first_child, GW_CHILD)) {
-        renderer_window = first_child;
+        child_window = first_child;
+        GetClassName(child_window, class_name, arraysize(class_name));
+        if (!_wcsicmp(class_name, L"Chrome_RenderWidgetHostHWND")) {
+          renderer_window = child_window;
+          break;
+        }
       }
-      wchar_t class_name[MAX_PATH] = {0};
-      GetClassName(renderer_window, class_name, arraysize(class_name));
-      EXPECT_EQ(0, _wcsicmp(class_name, L"Chrome_RenderWidgetHostHWND"));
     }
   } else {
     DCHECK(web_browser2_);

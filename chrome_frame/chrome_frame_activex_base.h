@@ -1224,8 +1224,21 @@ END_MSG_MAP()
       http_headers.Set(referrer_header.c_str());
     }
 
-    web_browser2->Navigate2(url.AsInput(), &flags, &empty, &empty,
-                            http_headers.AsInput());
+    HRESULT hr = web_browser2->Navigate2(url.AsInput(), &flags, &empty, &empty,
+                                         http_headers.AsInput());
+    // If the current window is a popup window then attempting to open a new
+    // tab for the navigation will fail. We attempt to issue the navigation in
+    // a new window in this case.
+    // http://msdn.microsoft.com/en-us/library/aa752133(v=vs.85).aspx
+    if (FAILED(hr) && V_I4(&flags) != navOpenInNewWindow) {
+      V_I4(&flags) = navOpenInNewWindow;
+      hr = web_browser2->Navigate2(url.AsInput(), &flags, &empty, &empty,
+                                   http_headers.AsInput());
+
+      DLOG_IF(ERROR, FAILED(hr))
+          << "Navigate2 failed with error: "
+          << base::StringPrintf("0x%08X", hr);
+    }
   }
 
   void InitializeAutomationSettings() {
