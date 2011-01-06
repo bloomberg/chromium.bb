@@ -380,15 +380,15 @@ void TaskManagerView::Init() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kPurgeMemoryButton)) {
     purge_memory_button_ = new views::NativeButton(this,
-        l10n_util::GetString(IDS_TASK_MANAGER_PURGE_MEMORY));
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_TASK_MANAGER_PURGE_MEMORY)));
   }
   kill_button_ = new views::NativeButton(
-      this, l10n_util::GetString(IDS_TASK_MANAGER_KILL));
+      this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_TASK_MANAGER_KILL)));
   kill_button_->AddAccelerator(views::Accelerator(app::VKEY_E,
                                                   false, false, false));
   kill_button_->SetAccessibleKeyboardShortcut(L"E");
-  about_memory_link_ = new views::Link(
-      l10n_util::GetString(IDS_TASK_MANAGER_ABOUT_MEMORY_LINK));
+  about_memory_link_ = new views::Link(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_TASK_MANAGER_ABOUT_MEMORY_LINK)));
   about_memory_link_->SetController(this);
 
   // Makes sure our state is consistent.
@@ -561,7 +561,7 @@ bool TaskManagerView::ExecuteWindowsCommand(int command_id) {
 }
 
 std::wstring TaskManagerView::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_TASK_MANAGER_TITLE);
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_TASK_MANAGER_TITLE));
 }
 
 std::wstring TaskManagerView::GetWindowName() const {
@@ -619,7 +619,7 @@ void TaskManagerView::ShowContextMenu(views::View* source,
       this, views::Menu::TOPLEFT, source->GetWidget()->GetNativeView()));
   for (std::vector<TableColumn>::iterator i =
        columns_.begin(); i != columns_.end(); ++i) {
-    menu->AppendMenuItem(i->id, l10n_util::GetString(i->id),
+    menu->AppendMenuItem(i->id, l10n_util::GetStringUTF16(i->id),
         views::Menu::CHECKBOX);
   }
   menu->RunMenuAt(p.x(), p.y());
@@ -652,7 +652,8 @@ void TaskManagerView::ActivateFocusedTab() {
 
 void TaskManagerView::AddAlwaysOnTopSystemMenuItem() {
   // The Win32 API requires that we own the text.
-  always_on_top_menu_text_ = l10n_util::GetString(IDS_ALWAYS_ON_TOP);
+  always_on_top_menu_text_ =
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ALWAYS_ON_TOP));
 
   // Let's insert a menu to the window.
   HMENU system_menu = ::GetSystemMenu(GetWindow()->GetNativeWindow(), FALSE);

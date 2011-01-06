@@ -1127,8 +1127,8 @@ void BrowserView::ShowCollectedCookiesDialog(TabContents* tab_contents) {
 
 void BrowserView::ShowProfileErrorDialog(int message_id) {
 #if defined(OS_WIN)
-  std::wstring title = l10n_util::GetString(IDS_PRODUCT_NAME);
-  std::wstring message = l10n_util::GetString(message_id);
+  string16 title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+  string16 message = l10n_util::GetStringUTF16(message_id);
   app::win::MessageBox(GetNativeHandle(), message, title,
                        MB_OK | MB_ICONWARNING | MB_TOPMOST);
 #elif defined(OS_LINUX)

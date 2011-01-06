@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "app/l10n_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/views/options/content_exceptions_table_view.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -112,15 +113,16 @@ void ExceptionsView::ViewHierarchyChanged(bool is_add,
 std::wstring ExceptionsView::GetWindowTitle() const {
   switch (model_.content_type()) {
     case CONTENT_SETTINGS_TYPE_COOKIES:
-      return l10n_util::GetString(IDS_COOKIE_EXCEPTION_TITLE);
+      return UTF16ToWide(l10n_util::GetStringUTF16(IDS_COOKIE_EXCEPTION_TITLE));
     case CONTENT_SETTINGS_TYPE_IMAGES:
-      return l10n_util::GetString(IDS_IMAGES_EXCEPTION_TITLE);
+      return UTF16ToWide(l10n_util::GetStringUTF16(IDS_IMAGES_EXCEPTION_TITLE));
     case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
-      return l10n_util::GetString(IDS_JS_EXCEPTION_TITLE);
+      return UTF16ToWide(l10n_util::GetStringUTF16(IDS_JS_EXCEPTION_TITLE));
     case CONTENT_SETTINGS_TYPE_PLUGINS:
-      return l10n_util::GetString(IDS_PLUGINS_EXCEPTION_TITLE);
+      return UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_PLUGINS_EXCEPTION_TITLE));
     case CONTENT_SETTINGS_TYPE_POPUPS:
-      return l10n_util::GetString(IDS_POPUP_EXCEPTION_TITLE);
+      return UTF16ToWide(l10n_util::GetStringUTF16(IDS_POPUP_EXCEPTION_TITLE));
     default:
       NOTREACHED();
   }
@@ -177,16 +179,18 @@ void ExceptionsView::Init() {
   table_->SetObserver(this);
 
   add_button_ = new views::NativeButton(
-      this, l10n_util::GetString(IDS_EXCEPTIONS_ADD_BUTTON));
+      this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ADD_BUTTON)));
   add_button_->set_tag(IDS_EXCEPTIONS_ADD_BUTTON);
   edit_button_ = new views::NativeButton(
-      this, l10n_util::GetString(IDS_EXCEPTIONS_EDIT_BUTTON));
+      this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_EXCEPTIONS_EDIT_BUTTON)));
   edit_button_->set_tag(IDS_EXCEPTIONS_EDIT_BUTTON);
   remove_button_ = new views::NativeButton(
-      this, l10n_util::GetString(IDS_EXCEPTIONS_REMOVE_BUTTON));
+      this,
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_EXCEPTIONS_REMOVE_BUTTON)));
   remove_button_->set_tag(IDS_EXCEPTIONS_REMOVE_BUTTON);
   remove_all_button_ = new views::NativeButton(
-      this, l10n_util::GetString(IDS_EXCEPTIONS_REMOVEALL_BUTTON));
+      this,
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_EXCEPTIONS_REMOVEALL_BUTTON)));
   remove_all_button_->set_tag(IDS_EXCEPTIONS_REMOVEALL_BUTTON);
 
   View* parent = GetParent();
@@ -212,8 +216,8 @@ void ExceptionsView::Init() {
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   if (allow_off_the_record_) {
-    views::Label* label = new views::Label(l10n_util::GetString(
-        IDS_EXCEPTIONS_OTR_IN_ITALICS));
+    views::Label* label = new views::Label(
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_EXCEPTIONS_OTR_IN_ITALICS)));
     label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     layout->StartRow(0, single_column_layout_id);
     layout->AddView(label, 1, 1, GridLayout::LEADING, GridLayout::CENTER);

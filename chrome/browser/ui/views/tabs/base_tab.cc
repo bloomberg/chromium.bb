@@ -138,8 +138,10 @@ BaseTab::BaseTab(TabController* controller)
                           rb.GetBitmapNamed(IDR_TAB_CLOSE_H));
   close_button_->SetImage(views::CustomButton::BS_PUSHED,
                           rb.GetBitmapNamed(IDR_TAB_CLOSE_P));
-  close_button_->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_CLOSE_TAB));
-  close_button_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_CLOSE));
+  close_button_->SetTooltipText(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_TOOLTIP_CLOSE_TAB)));
+  close_button_->SetAccessibleName(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE)));
   // Disable animation so that the red danger sign shows up immediately
   // to help avoid mis-clicks.
   close_button_->SetAnimationDuration(0);

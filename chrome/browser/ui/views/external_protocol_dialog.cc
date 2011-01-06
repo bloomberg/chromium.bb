@@ -62,13 +62,15 @@ int ExternalProtocolDialog::GetDefaultDialogButton() const {
 std::wstring ExternalProtocolDialog::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK)
-    return l10n_util::GetString(IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT);
+    return UTF16ToWide(
+        l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT));
   else
-    return l10n_util::GetString(IDS_EXTERNAL_PROTOCOL_CANCEL_BUTTON_TEXT);
+    return UTF16ToWide(
+        l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CANCEL_BUTTON_TEXT));
 }
 
 std::wstring ExternalProtocolDialog::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_EXTERNAL_PROTOCOL_TITLE);
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_TITLE));
 }
 
 void ExternalProtocolDialog::DeleteDelegate() {
@@ -127,22 +129,24 @@ ExternalProtocolDialog::ExternalProtocolDialog(TabContents* tab_contents,
                    kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
   gfx::ElideString(command, kMaxCommandSize, &elided_command);
 
-  std::wstring message_text = l10n_util::GetStringF(
+  std::wstring message_text = UTF16ToWide(l10n_util::GetStringFUTF16(
       IDS_EXTERNAL_PROTOCOL_INFORMATION,
-      ASCIIToWide(url.scheme() + ":"),
-      elided_url_without_scheme) + L"\n\n";
+      ASCIIToUTF16(url.scheme() + ":"),
+      elided_url_without_scheme) + ASCIIToUTF16("\n\n"));
 
-  message_text += l10n_util::GetStringF(
-      IDS_EXTERNAL_PROTOCOL_APPLICATION_TO_LAUNCH, elided_command) + L"\n\n";
+  message_text += UTF16ToWide(l10n_util::GetStringFUTF16(
+      IDS_EXTERNAL_PROTOCOL_APPLICATION_TO_LAUNCH,
+      elided_command) + ASCIIToUTF16("\n\n"));
 
-  message_text += l10n_util::GetString(IDS_EXTERNAL_PROTOCOL_WARNING);
+  message_text +=
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_WARNING));
 
   message_box_view_ = new MessageBoxView(MessageBoxFlags::kIsConfirmMessageBox,
                                          message_text,
                                          std::wstring(),
                                          kMessageWidth);
-  message_box_view_->SetCheckBoxLabel(
-      l10n_util::GetString(IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT));
+  message_box_view_->SetCheckBoxLabel(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT)));
 
   HWND root_hwnd;
   if (tab_contents_) {

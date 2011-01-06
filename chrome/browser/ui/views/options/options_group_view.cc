@@ -9,6 +9,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/string_number_conversions.h"
 #include "gfx/canvas.h"
 #include "gfx/font.h"
 #include "gfx/native_theme_win.h"
@@ -103,10 +104,11 @@ void OptionsGroupView::Init() {
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   const gfx::Font& font = rb.GetFont(ResourceBundle::BaseFont);
-  std::wstring left_column_chars =
-      l10n_util::GetString(IDS_OPTIONS_DIALOG_LEFT_COLUMN_WIDTH_CHARS);
-  int left_column_width =
-      font.GetExpectedTextWidth(_wtoi(left_column_chars.c_str()));
+  int left_column_chars = 0;
+  base::StringToInt(
+      l10n_util::GetStringUTF16(IDS_OPTIONS_DIALOG_LEFT_COLUMN_WIDTH_CHARS),
+      &left_column_chars);
+  int left_column_width = font.GetExpectedTextWidth(left_column_chars);
 
   const int two_column_layout_id = 0;
   ColumnSet* column_set = layout->AddColumnSet(two_column_layout_id);

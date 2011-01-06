@@ -56,7 +56,8 @@ SadTabView::SadTabView(TabContents* tab_contents)
   InitClass();
 
   if (tab_contents != NULL) {
-    learn_more_link_ = new views::Link(l10n_util::GetString(IDS_LEARN_MORE));
+    learn_more_link_ =
+        new views::Link(UTF16ToWide(l10n_util::GetStringUTF16(IDS_LEARN_MORE)));
     learn_more_link_->SetFont(*message_font_);
     learn_more_link_->SetNormalColor(kLinkColor);
     learn_more_link_->SetController(this);
@@ -149,9 +150,9 @@ void SadTabView::InitClass() {
         rb.GetFont(ResourceBundle::BaseFont).DeriveFont(kMessageFontSizeDelta));
     sad_tab_bitmap_ = rb.GetBitmapNamed(IDR_SAD_TAB);
 
-    title_ = l10n_util::GetString(IDS_SAD_TAB_TITLE);
+    title_ = UTF16ToWide(l10n_util::GetStringUTF16(IDS_SAD_TAB_TITLE));
     title_width_ = title_font_->GetStringWidth(WideToUTF16Hack(title_));
-    message_ = l10n_util::GetString(IDS_SAD_TAB_MESSAGE);
+    message_ = UTF16ToWide(l10n_util::GetStringUTF16(IDS_SAD_TAB_MESSAGE));
 
     initialized = true;
   }

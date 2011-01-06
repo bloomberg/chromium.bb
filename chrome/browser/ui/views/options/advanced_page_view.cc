@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/message_box_flags.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/options/options_util.h"
 #include "chrome/browser/ui/views/options/advanced_contents_view.h"
@@ -40,9 +41,11 @@ class ResetDefaultsConfirmBox : public views::DialogDelegate {
       MessageBoxFlags::DialogButton button) const {
     switch (button) {
       case MessageBoxFlags::DIALOGBUTTON_OK:
-        return l10n_util::GetString(IDS_OPTIONS_RESET_OKLABEL);
+        return UTF16ToWide(
+            l10n_util::GetStringUTF16(IDS_OPTIONS_RESET_OKLABEL));
       case MessageBoxFlags::DIALOGBUTTON_CANCEL:
-        return l10n_util::GetString(IDS_OPTIONS_RESET_CANCELLABEL);
+        return UTF16ToWide(
+            l10n_util::GetStringUTF16(IDS_OPTIONS_RESET_CANCELLABEL));
       default:
         break;
     }
@@ -50,7 +53,7 @@ class ResetDefaultsConfirmBox : public views::DialogDelegate {
     return std::wstring();
   }
   virtual std::wstring GetWindowTitle() const {
-    return l10n_util::GetString(IDS_PRODUCT_NAME);
+    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   }
   virtual bool Accept() {
     advanced_page_view_->ResetToDefaults();
@@ -69,7 +72,8 @@ class ResetDefaultsConfirmBox : public views::DialogDelegate {
     // Also deleted when the window closes.
     message_box_view_ = new MessageBoxView(
         MessageBoxFlags::kFlagHasMessage | MessageBoxFlags::kFlagHasOKButton,
-        l10n_util::GetString(IDS_OPTIONS_RESET_MESSAGE).c_str(),
+        UTF16ToWide(
+            l10n_util::GetStringUTF16(IDS_OPTIONS_RESET_MESSAGE)).c_str(),
         std::wstring(),
         dialog_width);
     views::Window::CreateChromeWindow(parent_hwnd, gfx::Rect(), this)->Show();
@@ -118,7 +122,7 @@ void AdvancedPageView::ButtonPressed(
 
 void AdvancedPageView::InitControlLayout() {
   reset_to_default_button_ = new views::NativeButton(
-      this, l10n_util::GetString(IDS_OPTIONS_RESET));
+      this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTIONS_RESET)));
   advanced_scroll_view_ = new AdvancedScrollViewContainer(profile());
 
   using views::GridLayout;

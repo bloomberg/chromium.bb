@@ -477,8 +477,8 @@ PrivacySection::PrivacySection(Profile* profile)
       enable_safe_browsing_checkbox_(NULL),
       reporting_enabled_checkbox_(NULL),
       learn_more_link_(NULL),
-      AdvancedSection(profile,
-          l10n_util::GetString(IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY)) {
+      AdvancedSection(profile, UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY))) {
 }
 
 void PrivacySection::ButtonPressed(
@@ -548,31 +548,38 @@ void PrivacySection::InitControlLayout() {
   AdvancedSection::InitControlLayout();
 
   content_settings_button_ = new views::NativeButton(
-      this, l10n_util::GetString(IDS_OPTIONS_PRIVACY_CONTENT_SETTINGS_BUTTON));
+      this,
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_PRIVACY_CONTENT_SETTINGS_BUTTON)));
   clear_data_button_ =  new views::NativeButton(
-      this, l10n_util::GetString(IDS_OPTIONS_PRIVACY_CLEAR_DATA_BUTTON));
+      this,
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_PRIVACY_CLEAR_DATA_BUTTON)));
   section_description_label_ = new views::Label(
-    l10n_util::GetString(IDS_OPTIONS_DISABLE_SERVICES));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTIONS_DISABLE_SERVICES)));
   enable_link_doctor_checkbox_ = new views::Checkbox(
-      l10n_util::GetString(IDS_OPTIONS_LINKDOCTOR_PREF));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTIONS_LINKDOCTOR_PREF)));
   enable_link_doctor_checkbox_->set_listener(this);
   enable_suggest_checkbox_ = new views::Checkbox(
-      l10n_util::GetString(IDS_OPTIONS_SUGGEST_PREF));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTIONS_SUGGEST_PREF)));
   enable_suggest_checkbox_->set_listener(this);
   enable_dns_prefetching_checkbox_ = new views::Checkbox(
-      l10n_util::GetString(IDS_NETWORK_DNS_PREFETCH_ENABLED_DESCRIPTION));
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_NETWORK_DNS_PREFETCH_ENABLED_DESCRIPTION)));
   enable_dns_prefetching_checkbox_->set_listener(this);
   enable_safe_browsing_checkbox_ = new views::Checkbox(
-      l10n_util::GetString(IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION));
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION)));
   enable_safe_browsing_checkbox_->set_listener(this);
 #if defined(GOOGLE_CHROME_BUILD)
   reporting_enabled_checkbox_ = new views::Checkbox(
-      l10n_util::GetString(IDS_OPTIONS_ENABLE_LOGGING));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTIONS_ENABLE_LOGGING));
   reporting_enabled_checkbox_->SetMultiLine(true);
   reporting_enabled_checkbox_->set_listener(this);
   reporting_enabled_checkbox_->SetVisible(true);
 #endif
-  learn_more_link_ = new views::Link(l10n_util::GetString(IDS_LEARN_MORE));
+  learn_more_link_ = new views::Link(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_LEARN_MORE)));
   learn_more_link_->SetController(this);
 
   GridLayout* layout = new GridLayout(contents_);
@@ -702,8 +709,8 @@ WebContentSection::WebContentSection(Profile* profile)
       change_content_fonts_button_(NULL),
       gears_label_(NULL),
       gears_settings_button_(NULL),
-      AdvancedSection(profile,
-          l10n_util::GetString(IDS_OPTIONS_ADVANCED_SECTION_TITLE_CONTENT)) {
+      AdvancedSection(profile, UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_ADVANCED_SECTION_TITLE_CONTENT))) {
 }
 
 void WebContentSection::ButtonPressed(
@@ -723,26 +730,28 @@ void WebContentSection::InitControlLayout() {
   AdvancedSection::InitControlLayout();
 
   if (!base::i18n::IsRTL()) {
-    gears_label_ = new views::Label(
-        l10n_util::GetString(IDS_OPTIONS_GEARSSETTINGS_GROUP_NAME));
+    gears_label_ = new views::Label(UTF16ToWide(
+        l10n_util::GetStringUTF16(IDS_OPTIONS_GEARSSETTINGS_GROUP_NAME)));
   } else {
     // Add an RTL mark so that
     // ":" in "Google Gears:" in Hebrew Chrome is displayed left-most.
-    std::wstring gearssetting_group_name =
-        l10n_util::GetString(IDS_OPTIONS_GEARSSETTINGS_GROUP_NAME);
+    std::wstring gearssetting_group_name = UTF16ToWide(
+        l10n_util::GetStringUTF16(IDS_OPTIONS_GEARSSETTINGS_GROUP_NAME));
     gearssetting_group_name.push_back(
         static_cast<wchar_t>(base::i18n::kRightToLeftMark));
     gears_label_ = new views::Label(gearssetting_group_name);
   }
   gears_settings_button_ = new views::NativeButton(
       this,
-      l10n_util::GetString(IDS_OPTIONS_GEARSSETTINGS_CONFIGUREGEARS_BUTTON));
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_GEARSSETTINGS_CONFIGUREGEARS_BUTTON)));
   fonts_and_languages_label_ = new views::Label(
-      l10n_util::GetString(IDS_OPTIONS_FONTSETTINGS_INFO));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTIONS_FONTSETTINGS_INFO)));
 
   change_content_fonts_button_ = new views::NativeButton(
       this,
-      l10n_util::GetString(IDS_OPTIONS_FONTSETTINGS_CONFIGUREFONTS_BUTTON));
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_FONTSETTINGS_CONFIGUREFONTS_BUTTON)));
 
   GridLayout* layout = new GridLayout(contents_);
   contents_->SetLayoutManager(layout);
@@ -803,8 +812,8 @@ SecuritySection::SecuritySection(Profile* profile)
       check_for_cert_revocation_checkbox_(NULL),
       manage_certificates_label_(NULL),
       manage_certificates_button_(NULL),
-      AdvancedSection(profile,
-          l10n_util::GetString(IDS_OPTIONS_ADVANCED_SECTION_TITLE_SECURITY)) {
+      AdvancedSection(profile, UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_ADVANCED_SECTION_TITLE_SECURITY))) {
 }
 
 void SecuritySection::ButtonPressed(
@@ -847,21 +856,23 @@ void SecuritySection::ButtonPressed(
 void SecuritySection::InitControlLayout() {
   AdvancedSection::InitControlLayout();
 
-  ssl_info_label_ = new views::Label(
-      l10n_util::GetString(IDS_OPTIONS_SSL_GROUP_DESCRIPTION));
+  ssl_info_label_ = new views::Label(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SSL_GROUP_DESCRIPTION)));
   enable_ssl3_checkbox_ = new views::Checkbox(
-      l10n_util::GetString(IDS_OPTIONS_SSL_USESSL3));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTIONS_SSL_USESSL3)));
   enable_ssl3_checkbox_->set_listener(this);
   enable_tls1_checkbox_ = new views::Checkbox(
-      l10n_util::GetString(IDS_OPTIONS_SSL_USETLS1));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTIONS_SSL_USETLS1)));
   enable_tls1_checkbox_->set_listener(this);
   check_for_cert_revocation_checkbox_ = new views::Checkbox(
-      l10n_util::GetString(IDS_OPTIONS_SSL_CHECKREVOCATION));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTIONS_SSL_CHECKREVOCATION)));
   check_for_cert_revocation_checkbox_->set_listener(this);
   manage_certificates_label_ = new views::Label(
-      l10n_util::GetString(IDS_OPTIONS_CERTIFICATES_LABEL));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTIONS_CERTIFICATES_LABEL)));
   manage_certificates_button_ = new views::NativeButton(
-      this, l10n_util::GetString(IDS_OPTIONS_CERTIFICATES_MANAGE_BUTTON));
+      this,
+      UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_OPTIONS_CERTIFICATES_MANAGE_BUTTON)));
 
   GridLayout* layout = new GridLayout(contents_);
   contents_->SetLayoutManager(layout);
@@ -975,8 +986,8 @@ class NetworkSection : public AdvancedSection,
 NetworkSection::NetworkSection(Profile* profile)
     : change_proxies_label_(NULL),
       change_proxies_button_(NULL),
-      AdvancedSection(profile,
-          l10n_util::GetString(IDS_OPTIONS_ADVANCED_SECTION_TITLE_NETWORK)) {
+      AdvancedSection(profile, UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_ADVANCED_SECTION_TITLE_NETWORK))) {
 }
 
 void NetworkSection::ButtonPressed(
@@ -993,9 +1004,10 @@ void NetworkSection::InitControlLayout() {
   AdvancedSection::InitControlLayout();
 
   change_proxies_label_ = new views::Label(
-      l10n_util::GetString(IDS_OPTIONS_PROXIES_LABEL));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTIONS_PROXIES_LABEL)));
   change_proxies_button_ = new views::NativeButton(
-      this, l10n_util::GetString(IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON));
+      this, UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON)));
 
   GridLayout* layout = new GridLayout(contents_);
   contents_->SetLayoutManager(layout);
@@ -1086,15 +1098,15 @@ DownloadSection::DownloadSection(Profile* profile)
           select_file_dialog_(SelectFileDialog::Create(this))),
       reset_file_handlers_label_(NULL),
       reset_file_handlers_button_(NULL),
-      AdvancedSection(profile,
-          l10n_util::GetString(IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME)) {
+      AdvancedSection(profile, UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME))) {
 }
 
 void DownloadSection::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (sender == download_browse_button_) {
-    const std::wstring dialog_title =
-       l10n_util::GetString(IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_TITLE);
+    const std::wstring dialog_title = UTF16ToWide(
+        l10n_util::GetStringUTF16(IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_TITLE));
     select_file_dialog_->SelectFile(SelectFileDialog::SELECT_FOLDER,
                                     dialog_title,
                                     profile()->GetPrefs()->GetFilePath(
@@ -1140,20 +1152,25 @@ void DownloadSection::InitControlLayout() {
   AdvancedSection::InitControlLayout();
 
   // Layout the download components.
-  download_file_location_label_ = new views::Label(
-      l10n_util::GetString(IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_TITLE));
+  download_file_location_label_ = new views::Label(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_TITLE)));
   download_default_download_location_display_ = new FileDisplayArea;
   download_browse_button_ = new views::NativeButton(
-      this, l10n_util::GetString(IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_BUTTON));
+      this,
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_BUTTON)));
 
   download_ask_for_save_location_checkbox_ = new views::Checkbox(
-      l10n_util::GetString(IDS_OPTIONS_DOWNLOADLOCATION_ASKFORSAVELOCATION));
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_DOWNLOADLOCATION_ASKFORSAVELOCATION)));
   download_ask_for_save_location_checkbox_->set_listener(this);
   download_ask_for_save_location_checkbox_->SetMultiLine(true);
   reset_file_handlers_label_ = new views::Label(
-      l10n_util::GetString(IDS_OPTIONS_AUTOOPENFILETYPES_INFO));
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_AUTOOPENFILETYPES_INFO)));
   reset_file_handlers_button_ = new views::NativeButton(
-      this, l10n_util::GetString(IDS_OPTIONS_AUTOOPENFILETYPES_RESETTODEFAULT));
+      this, UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_AUTOOPENFILETYPES_RESETTODEFAULT)));
 
   GridLayout* layout = new GridLayout(contents_);
   contents_->SetLayoutManager(layout);
@@ -1252,8 +1269,8 @@ class TranslateSection : public AdvancedSection,
 
 TranslateSection::TranslateSection(Profile* profile)
     : enable_translate_checkbox_(NULL),
-      AdvancedSection(profile,
-          l10n_util::GetString(IDS_OPTIONS_ADVANCED_SECTION_TITLE_TRANSLATE)) {
+      AdvancedSection(profile, UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_ADVANCED_SECTION_TITLE_TRANSLATE))) {
 }
 
 void TranslateSection::ButtonPressed(
@@ -1275,8 +1292,8 @@ void TranslateSection::InitControlLayout() {
 
   AddIndentedColumnSet(layout, 0);
 
-  enable_translate_checkbox_ = new views::Checkbox(
-      l10n_util::GetString(IDS_OPTIONS_TRANSLATE_ENABLE_TRANSLATE));
+  enable_translate_checkbox_ = new views::Checkbox(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_OPTIONS_TRANSLATE_ENABLE_TRANSLATE)));
   enable_translate_checkbox_->set_listener(this);
   AddWrappingCheckboxRow(layout, enable_translate_checkbox_, 0, false);
 
@@ -1332,8 +1349,8 @@ CloudPrintProxySection::CloudPrintProxySection(Profile* profile)
       manage_printer_button_(NULL),
       factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       AdvancedSection(profile,
-                      l10n_util::GetString(
-                          IDS_OPTIONS_ADVANCED_SECTION_TITLE_CLOUD_PRINT)) {
+                      UTF16ToWide(l10n_util::GetStringUTF16(
+                          IDS_OPTIONS_ADVANCED_SECTION_TITLE_CLOUD_PRINT))) {
 }
 
 void CloudPrintProxySection::ButtonPressed(views::Button* sender,
@@ -1350,8 +1367,8 @@ void CloudPrintProxySection::ButtonPressed(views::Button* sender,
       // We open a new browser window so the Options dialog doesn't
       // get lost behind other windows.
       enable_disable_button_->SetEnabled(false);
-      enable_disable_button_->SetLabel(
-          l10n_util::GetString(IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLING_BUTTON));
+      enable_disable_button_->SetLabel(UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLING_BUTTON)));
       enable_disable_button_->InvalidateLayout();
       Layout();
       CloudPrintSetupFlow::OpenDialog(profile(), this,
@@ -1372,8 +1389,8 @@ void CloudPrintProxySection::OnDialogClosed() {
   // If the dialog is canceled, the preference won't change, and so we
   // have to revert the button text back to the disabled state.
   if (!Enabled()) {
-    enable_disable_button_->SetLabel(
-        l10n_util::GetString(IDS_OPTIONS_CLOUD_PRINT_PROXY_DISABLED_BUTTON));
+    enable_disable_button_->SetLabel(UTF16ToWide(l10n_util::GetStringUTF16(
+        IDS_OPTIONS_CLOUD_PRINT_PROXY_DISABLED_BUTTON)));
     enable_disable_button_->InvalidateLayout();
     Layout();
   }
@@ -1383,12 +1400,14 @@ void CloudPrintProxySection::InitControlLayout() {
   AdvancedSection::InitControlLayout();
 
   section_description_label_ = new views::Label(
-      l10n_util::GetString(IDS_OPTIONS_CLOUD_PRINT_PROXY_DISABLED_LABEL));
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_CLOUD_PRINT_PROXY_DISABLED_LABEL)));
   enable_disable_button_ = new views::NativeButton(this,
-      l10n_util::GetString(IDS_OPTIONS_CLOUD_PRINT_PROXY_DISABLED_BUTTON));
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_CLOUD_PRINT_PROXY_DISABLED_BUTTON)));
   manage_printer_button_ = new views::NativeButton(this,
-      l10n_util::GetString(
-          IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLED_MANAGE_BUTTON));
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLED_MANAGE_BUTTON)));
 
   GridLayout* layout = new GridLayout(contents_);
   contents_->SetLayoutManager(layout);
@@ -1430,19 +1449,20 @@ void CloudPrintProxySection::NotifyPrefChanged(const std::string* pref_name) {
       if (profile()->GetPrefs()->HasPrefPath(prefs::kCloudPrintEmail))
         email = profile()->GetPrefs()->GetString(prefs::kCloudPrintEmail);
 
-      section_description_label_->SetText(
-          l10n_util::GetStringF(IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLED_LABEL,
-                                UTF8ToWide(email)));
-      enable_disable_button_->SetLabel(
-          l10n_util::GetString(IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLED_BUTTON));
+      section_description_label_->SetText(UTF16ToWide(
+          l10n_util::GetStringFUTF16(
+              IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLED_LABEL,
+              UTF8ToUTF16(email))));
+      enable_disable_button_->SetLabel(UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLED_BUTTON)));
       enable_disable_button_->InvalidateLayout();
       manage_printer_button_->SetVisible(true);
       manage_printer_button_->InvalidateLayout();
     } else {
-      section_description_label_->SetText(
-          l10n_util::GetString(IDS_OPTIONS_CLOUD_PRINT_PROXY_DISABLED_LABEL));
-      enable_disable_button_->SetLabel(
-          l10n_util::GetString(IDS_OPTIONS_CLOUD_PRINT_PROXY_DISABLED_BUTTON));
+      section_description_label_->SetText(UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_CLOUD_PRINT_PROXY_DISABLED_LABEL)));
+      enable_disable_button_->SetLabel(UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_CLOUD_PRINT_PROXY_DISABLED_BUTTON)));
       enable_disable_button_->InvalidateLayout();
       manage_printer_button_->SetVisible(false);
     }

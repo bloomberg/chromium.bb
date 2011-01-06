@@ -49,12 +49,12 @@ class LoginHandlerWin : public LoginHandler,
   virtual std::wstring GetDialogButtonLabel(
       MessageBoxFlags::DialogButton button) const {
     if (button == MessageBoxFlags::DIALOGBUTTON_OK)
-      return l10n_util::GetString(IDS_LOGIN_DIALOG_OK_BUTTON_LABEL);
+      return l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_OK_BUTTON_LABEL);
     return DialogDelegate::GetDialogButtonLabel(button);
   }
 
   virtual std::wstring GetWindowTitle() const {
-    return l10n_util::GetString(IDS_LOGIN_DIALOG_TITLE);
+    return l10n_util::GetStringUTF16(IDS_LOGIN_DIALOG_TITLE);
   }
 
   virtual void WindowClosing() {

@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/stl_util-inl.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/views/options/advanced_page_view.h"
@@ -87,7 +88,7 @@ void ContentSettingsWindowView::ShowContentSettingsTab(
 // ContentSettingsWindowView, views::DialogDelegate implementation:
 
 std::wstring ContentSettingsWindowView::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_CONTENT_SETTINGS_TITLE);
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_CONTENT_SETTINGS_TITLE));
 }
 
 void ContentSettingsWindowView::WindowClosing() {

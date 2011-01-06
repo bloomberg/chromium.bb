@@ -5,6 +5,7 @@
 #include "chrome/browser/views/options/fonts_languages_window_view.h"
 
 #include "app/l10n_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/views/options/fonts_page_view.h"
@@ -49,7 +50,8 @@ bool FontsLanguagesWindowView::Accept() {
 // FontsLanguagesWindowView, views::WindowDelegate implementation:
 
 std::wstring FontsLanguagesWindowView::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_FONT_LANGUAGE_SETTING_WINDOWS_TITLE);
+  return UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_FONT_LANGUAGE_SETTING_WINDOWS_TITLE));
 }
 
 void FontsLanguagesWindowView::WindowClosing() {
@@ -109,12 +111,12 @@ void FontsLanguagesWindowView::Init() {
   AddChildView(tabs_);
 
   fonts_page_ = new FontsPageView(profile_);
-  tabs_->AddTab(l10n_util::GetString(
-      IDS_FONT_LANGUAGE_SETTING_FONT_TAB_TITLE), fonts_page_);
+  tabs_->AddTab(UTF16ToWide(l10n_util::GetStringUTF16(
+      IDS_FONT_LANGUAGE_SETTING_FONT_TAB_TITLE)), fonts_page_);
 
   languages_page_ = new LanguagesPageView(profile_);
-  tabs_->AddTab(l10n_util::GetString(
-      IDS_FONT_LANGUAGE_SETTING_LANGUAGES_TAB_TITLE), languages_page_);
+  tabs_->AddTab(UTF16ToWide(l10n_util::GetStringUTF16(
+      IDS_FONT_LANGUAGE_SETTING_LANGUAGES_TAB_TITLE)), languages_page_);
 }
 
 void ShowFontsLanguagesWindow(gfx::NativeWindow window,

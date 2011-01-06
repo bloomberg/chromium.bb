@@ -267,8 +267,8 @@ void FontsPageView::InitControlLayout() {
   column_set->AddColumn(GridLayout::FILL, GridLayout::LEADING, 1,
                         GridLayout::USE_PREF, 0, 0);
   fonts_group_title_ = new views::Label(
-      l10n_util::GetString(
-          IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_FONT_TITLE));
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_FONT_TITLE)));
   EmbellishTitle(fonts_group_title_);
   fonts_group_title_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   layout->StartRow(0, single_column_view_set_id);
@@ -281,8 +281,8 @@ void FontsPageView::InitControlLayout() {
 
   // Encoding group.
   encoding_group_title_ = new views::Label(
-      l10n_util::GetString(
-          IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_ENCODING_TITLE));
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_ENCODING_TITLE)));
   EmbellishTitle(encoding_group_title_);
   encoding_group_title_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   layout->StartRow(0, single_column_view_set_id);
@@ -319,36 +319,36 @@ void FontsPageView::InitFontLayout() {
   fixed_width_font_display_view_ = new FontDisplayView;
   fixed_width_font_change_page_button_ = new views::NativeButton(
       this,
-      l10n_util::GetString(
-          IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_BUTTON_LABEL));
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_BUTTON_LABEL)));
 
   fixed_width_font_label_ = new views::Label(
-      l10n_util::GetString(
-          IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_FIXED_WIDTH_LABEL));
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_FIXED_WIDTH_LABEL)));
   fixed_width_font_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
 
   // Serif font.
   serif_font_display_view_ = new FontDisplayView;
   serif_font_change_page_button_ = new views::NativeButton(
       this,
-      l10n_util::GetString(
-          IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_BUTTON_LABEL));
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_BUTTON_LABEL)));
 
   serif_font_label_ = new views::Label(
-      l10n_util::GetString(
-          IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SERIF_LABEL));
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SERIF_LABEL)));
   serif_font_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
 
   // Sans Serif font.
   sans_serif_font_display_view_ = new FontDisplayView;
   sans_serif_font_change_page_button_ = new views::NativeButton(
       this,
-      l10n_util::GetString(
-          IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_BUTTON_LABEL));
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_BUTTON_LABEL)));
 
   sans_serif_font_label_ = new views::Label(
-      l10n_util::GetString(
-          IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SANS_SERIF_LABEL));
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SANS_SERIF_LABEL)));
   sans_serif_font_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
 
   // Now add the views.
@@ -398,8 +398,8 @@ void FontsPageView::InitFontLayout() {
 
 void FontsPageView::InitEncodingLayout() {
   default_encoding_combobox_label_ = new views::Label(
-      l10n_util::GetString(
-          IDS_FONT_LANGUAGE_SETTING_FONT_DEFAULT_ENCODING_SELECTOR_LABEL));
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_FONT_LANGUAGE_SETTING_FONT_DEFAULT_ENCODING_SELECTOR_LABEL)));
   default_encoding_combobox_model_.reset(new DefaultEncodingComboboxModel);
   default_encoding_combobox_ = new views::Combobox(
       default_encoding_combobox_model_.get());

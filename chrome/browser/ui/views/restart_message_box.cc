@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/message_box_flags.h"
+#include "base/utf_string_conversions.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "views/controls/message_box_view.h"
@@ -27,11 +28,11 @@ int RestartMessageBox::GetDialogButtons() const {
 std::wstring RestartMessageBox::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   DCHECK(button == MessageBoxFlags::DIALOGBUTTON_OK);
-  return l10n_util::GetString(IDS_OK);
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_OK));
 }
 
 std::wstring RestartMessageBox::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_PRODUCT_NAME);
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
 }
 
 void RestartMessageBox::DeleteDelegate() {
@@ -54,7 +55,8 @@ RestartMessageBox::RestartMessageBox(gfx::NativeWindow parent_window) {
   // Also deleted when the window closes.
   message_box_view_ = new MessageBoxView(
       MessageBoxFlags::kFlagHasMessage | MessageBoxFlags::kFlagHasOKButton,
-      l10n_util::GetString(IDS_OPTIONS_RESTART_REQUIRED).c_str(),
+      UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_OPTIONS_RESTART_REQUIRED)).c_str(),
       std::wstring(),
       kDialogWidth);
   views::Window::CreateChromeWindow(parent_window, gfx::Rect(), this)->Show();

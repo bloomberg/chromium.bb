@@ -185,7 +185,7 @@ void LocationBarView::Init() {
   location_entry_view_->set_focus_view(this);
   location_entry_view_->Attach(location_entry_->GetNativeView());
   location_entry_view_->SetAccessibleName(
-      l10n_util::GetString(IDS_ACCNAME_LOCATION));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_LOCATION)));
 
   selected_keyword_view_ = new SelectedKeywordView(
       kSelectedKeywordBackgroundImages, IDR_KEYWORD_SEARCH_MAGNIFIER,
@@ -221,7 +221,8 @@ void LocationBarView::Init() {
   // AutocompleteEditView to close its popup.
   SetNotifyWhenVisibleBoundsInRootChanges(true);
 
-  SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_LOCATION));
+  SetAccessibleName(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_LOCATION)));
 
   // Initialize the location entry. We do this to avoid a black flash which is
   // visible when the location entry has just been initialized.

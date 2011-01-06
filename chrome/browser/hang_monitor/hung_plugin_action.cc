@@ -42,18 +42,18 @@ bool HungPluginAction::OnHungWindowDetected(HWND hung_window,
       NOTREACHED() << "Terminated a hung plugin process.";
       *action = HungWindowNotification::HUNG_WINDOW_TERMINATE_PROCESS;
     } else {
-      std::wstring plugin_name;
+      string16 plugin_name;
       GetPluginName(hung_window,
                     top_level_window_process_id,
                     &plugin_name);
       if (plugin_name.empty()) {
-        plugin_name = l10n_util::GetString(IDS_UNKNOWN_PLUGIN_NAME);
+        plugin_name = l10n_util::GetStringUTF16(IDS_UNKNOWN_PLUGIN_NAME);
       }
-      std::wstring msg = l10n_util::GetStringF(IDS_BROWSER_HANGMONITOR,
-                                               plugin_name);
-      std::wstring title = l10n_util::GetString(IDS_BROWSER_HANGMONITOR_TITLE);
-      // Before displaying the message box,invoke SendMessageCallback on the
-      // hung window. If the callback ever hits,the window is not hung anymore
+      string16 msg = l10n_util::GetStringFUTF16(IDS_BROWSER_HANGMONITOR,
+                                                plugin_name);
+      string16 title = l10n_util::GetStringUTF16(IDS_BROWSER_HANGMONITOR_TITLE);
+      // Before displaying the message box, invoke SendMessageCallback on the
+      // hung window. If the callback ever hits, the window is not hung anymore
       // and we can dismiss the message box.
       SendMessageCallback(hung_window,
                           WM_NULL,

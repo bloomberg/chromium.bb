@@ -127,8 +127,9 @@ void OptionsWindowView::ShowOptionsPage(OptionsPage page,
 // OptionsWindowView, views::DialogDelegate implementation:
 
 std::wstring OptionsWindowView::GetWindowTitle() const {
-  return l10n_util::GetStringF(IDS_OPTIONS_DIALOG_TITLE,
-                               l10n_util::GetString(IDS_PRODUCT_NAME));
+  return UTF16ToWide(
+      l10n_util::GetStringFUTF16(IDS_OPTIONS_DIALOG_TITLE,
+                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 }
 
 std::wstring OptionsWindowView::GetWindowName() const {
@@ -196,26 +197,30 @@ void OptionsWindowView::ViewHierarchyChanged(bool is_add,
 
 void OptionsWindowView::Init() {
   tabs_ = new views::TabbedPane;
-  tabs_->SetAccessibleName(l10n_util::GetStringF(IDS_OPTIONS_DIALOG_TITLE,
-                           l10n_util::GetString(IDS_PRODUCT_NAME)));
+  tabs_->SetAccessibleName(UTF16ToWide(
+      l10n_util::GetStringFUTF16(IDS_OPTIONS_DIALOG_TITLE,
+                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME))));
   tabs_->SetListener(this);
   AddChildView(tabs_);
 
   int tab_index = 0;
   GeneralPageView* general_page = new GeneralPageView(profile_);
-  tabs_->AddTabAtIndex(tab_index++,
-                       l10n_util::GetString(IDS_OPTIONS_GENERAL_TAB_LABEL),
-                       general_page, false);
+  tabs_->AddTabAtIndex(
+      tab_index++,
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTIONS_GENERAL_TAB_LABEL)),
+      general_page, false);
 
   ContentPageView* content_page = new ContentPageView(profile_);
-  tabs_->AddTabAtIndex(tab_index++,
-                       l10n_util::GetString(IDS_OPTIONS_CONTENT_TAB_LABEL),
-                       content_page, false);
+  tabs_->AddTabAtIndex(
+      tab_index++,
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTIONS_CONTENT_TAB_LABEL)),
+      content_page, false);
 
   AdvancedPageView* advanced_page = new AdvancedPageView(profile_);
-  tabs_->AddTabAtIndex(tab_index++,
-                       l10n_util::GetString(IDS_OPTIONS_ADVANCED_TAB_LABEL),
-                       advanced_page, false);
+  tabs_->AddTabAtIndex(
+      tab_index++,
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTIONS_ADVANCED_TAB_LABEL)),
+      advanced_page, false);
 
   DCHECK(tabs_->GetTabCount() == OPTIONS_PAGE_COUNT);
 }

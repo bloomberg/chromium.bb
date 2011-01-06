@@ -10,6 +10,7 @@
 #include "app/resource_bundle.h"
 #include "base/compiler_specific.h"
 #include "base/stl_util-inl.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
 #include "chrome/browser/ui/browser.h"
@@ -147,7 +148,8 @@ void TabStrip::InitTabStripButtons() {
                                       views::ImageButton::ALIGN_BOTTOM);
   }
   LoadNewTabButtonImage();
-  newtab_button_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_NEWTAB));
+  newtab_button_->SetAccessibleName(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_NEWTAB)));
   AddChildView(newtab_button_);
 }
 

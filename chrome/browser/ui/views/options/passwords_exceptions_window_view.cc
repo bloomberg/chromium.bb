@@ -5,6 +5,7 @@
 #include "chrome/browser/views/options/passwords_exceptions_window_view.h"
 
 #include "app/l10n_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/views/options/passwords_page_view.h"
 #include "chrome/browser/views/options/exceptions_page_view.h"
 #include "grit/generated_resources.h"
@@ -81,7 +82,8 @@ int PasswordsExceptionsWindowView::GetDialogButtons() const {
 }
 
 std::wstring PasswordsExceptionsWindowView::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_PASSWORDS_EXCEPTIONS_WINDOW_TITLE);
+  return UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_PASSWORDS_EXCEPTIONS_WINDOW_TITLE));
 }
 
 void PasswordsExceptionsWindowView::WindowClosing() {
@@ -102,10 +104,10 @@ void PasswordsExceptionsWindowView::Init() {
   AddChildView(tabs_);
 
   passwords_page_view_ = new PasswordsPageView(profile_);
-  tabs_->AddTab(l10n_util::GetString(
-      IDS_PASSWORDS_SHOW_PASSWORDS_TAB_TITLE), passwords_page_view_);
+  tabs_->AddTab(UTF16ToWide(l10n_util::GetStringUTF16(
+      IDS_PASSWORDS_SHOW_PASSWORDS_TAB_TITLE)), passwords_page_view_);
 
   exceptions_page_view_ = new ExceptionsPageView(profile_);
-  tabs_->AddTab(l10n_util::GetString(
-      IDS_PASSWORDS_EXCEPTIONS_TAB_TITLE), exceptions_page_view_);
+  tabs_->AddTab(UTF16ToWide(l10n_util::GetStringUTF16(
+      IDS_PASSWORDS_EXCEPTIONS_TAB_TITLE)), exceptions_page_view_);
 }

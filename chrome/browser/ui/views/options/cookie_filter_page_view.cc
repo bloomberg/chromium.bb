@@ -42,8 +42,8 @@ void CookieFilterPageView::InitControlLayout() {
   const int single_column_set_id = 0;
   layout->AddPaddingRow(0, kUnrelatedControlLargeVerticalSpacing);
 
-  block_3rdparty_check_ = new views::Checkbox(
-      l10n_util::GetString(IDS_COOKIES_BLOCK_3RDPARTY_CHKBOX));
+  block_3rdparty_check_ = new views::Checkbox(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_COOKIES_BLOCK_3RDPARTY_CHKBOX)));
   block_3rdparty_check_->set_listener(this);
 
   layout->StartRow(0, single_column_set_id);
@@ -55,8 +55,8 @@ void CookieFilterPageView::InitControlLayout() {
   block_3rdparty_check_->SetChecked(
       profile()->GetHostContentSettingsMap()->BlockThirdPartyCookies());
 
-  clear_on_close_check_ = new views::Checkbox(
-      l10n_util::GetString(IDS_COOKIES_CLEAR_WHEN_CLOSE_CHKBOX));
+  clear_on_close_check_ = new views::Checkbox(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_COOKIES_CLEAR_WHEN_CLOSE_CHKBOX)));
   clear_on_close_check_->SetMultiLine(true);
   clear_on_close_check_->set_listener(this);
 
@@ -65,7 +65,7 @@ void CookieFilterPageView::InitControlLayout() {
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   show_cookies_button_ = new views::NativeButton(this,
-      l10n_util::GetString(IDS_COOKIES_SHOW_COOKIES_BUTTON));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_COOKIES_SHOW_COOKIES_BUTTON)));
 
   layout->StartRow(0, single_column_set_id);
   layout->AddView(show_cookies_button_, 1, 1, GridLayout::LEADING,
@@ -73,7 +73,7 @@ void CookieFilterPageView::InitControlLayout() {
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   views::Link* flash_settings_link = new views::Link(
-      l10n_util::GetString(IDS_FLASH_STORAGE_SETTINGS));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_FLASH_STORAGE_SETTINGS)));
   flash_settings_link->SetController(this);
 
   layout->StartRow(0, single_column_set_id);
@@ -119,6 +119,7 @@ void CookieFilterPageView::ButtonPressed(views::Button* sender,
 // CookieFilterPageView, views::LinkController implementation:
 
 void CookieFilterPageView::LinkActivated(views::Link* source, int event_flags) {
-  browser::ShowOptionsURL(profile(),
-                          GURL(l10n_util::GetString(IDS_FLASH_STORAGE_URL)));
+  browser::ShowOptionsURL(
+      profile(),
+      GURL(l10n_util::GetStringUTF8(IDS_FLASH_STORAGE_URL)));
 }

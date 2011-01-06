@@ -91,7 +91,7 @@ STDMETHODIMP AutocompleteAccessibility::get_accName(VARIANT var_id,
     return E_INVALIDARG;
   }
 
-  std::wstring temp_name = l10n_util::GetString(IDS_ACCNAME_LOCATION);
+  string16 temp_name = l10n_util::GetStringUTF16(IDS_ACCNAME_LOCATION);
 
   if (!temp_name.empty()) {
     // Return name retrieved.

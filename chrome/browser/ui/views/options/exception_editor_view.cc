@@ -56,8 +56,11 @@ bool ExceptionEditorView::IsModal() const {
 }
 
 std::wstring ExceptionEditorView::GetWindowTitle() const {
-  return is_new() ? l10n_util::GetString(IDS_EXCEPTION_EDITOR_NEW_TITLE) :
-                    l10n_util::GetString(IDS_EXCEPTION_EDITOR_TITLE);
+  if (is_new())
+    return UTF16ToWide(
+        l10n_util::GetStringUTF16(IDS_EXCEPTION_EDITOR_NEW_TITLE));
+
+  return UTF16ToWide(l10n_util::GetStringUTF16(IDS_EXCEPTION_EDITOR_TITLE));
 }
 
 bool ExceptionEditorView::IsDialogButtonEnabled(
@@ -117,7 +120,7 @@ void ExceptionEditorView::Init() {
     action_cb_->SetSelectedItem(cb_model_.IndexForSetting(setting_));
 
   incognito_cb_ = new views::Checkbox(
-      l10n_util::GetString(IDS_EXCEPTION_EDITOR_OTR_TITLE));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_EXCEPTION_EDITOR_OTR_TITLE)));
   incognito_cb_->SetChecked(is_off_the_record_);
 
   GridLayout* layout = CreatePanelGridLayout(this);
@@ -151,7 +154,8 @@ void ExceptionEditorView::Init() {
 }
 
 views::Label* ExceptionEditorView::CreateLabel(int message_id) {
-  views::Label* label = new views::Label(l10n_util::GetString(message_id));
+  views::Label* label =
+        new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(message_id)));
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   return label;
 }

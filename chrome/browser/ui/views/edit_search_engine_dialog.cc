@@ -77,9 +77,9 @@ bool EditSearchEngineDialog::IsModal() const {
 }
 
 std::wstring EditSearchEngineDialog::GetWindowTitle() const {
-  return l10n_util::GetString(controller_->template_url() ?
+  return UTF16ToWide(l10n_util::GetStringUTF16(controller_->template_url() ?
       IDS_SEARCH_ENGINES_EDITOR_EDIT_WINDOW_TITLE :
-      IDS_SEARCH_ENGINES_EDITOR_NEW_WINDOW_TITLE);
+      IDS_SEARCH_ENGINES_EDITOR_NEW_WINDOW_TITLE));
 }
 
 bool EditSearchEngineDialog::IsDialogButtonEnabled(
@@ -204,8 +204,8 @@ void EditSearchEngineDialog::Init() {
   // In order to fix this problem we transform the substring "%s" so that it
   // is displayed correctly when rendered in an RTL context.
   layout->StartRowWithPadding(0, 2, 0, unrelated_y);
-  std::wstring description =
-      l10n_util::GetString(IDS_SEARCH_ENGINES_EDITOR_URL_DESCRIPTION_LABEL);
+  std::wstring description = UTF16ToWide(l10n_util::GetStringUTF16(
+      IDS_SEARCH_ENGINES_EDITOR_URL_DESCRIPTION_LABEL));
   if (base::i18n::IsRTL()) {
     const std::wstring reversed_percent(L"s%");
     std::wstring::size_type percent_index =
@@ -224,7 +224,8 @@ void EditSearchEngineDialog::Init() {
 }
 
 views::Label* EditSearchEngineDialog::CreateLabel(int message_id) {
-  views::Label* label = new views::Label(l10n_util::GetString(message_id));
+  views::Label* label =
+      new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(message_id)));
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   return label;
 }
@@ -258,7 +259,8 @@ void EditSearchEngineDialog::UpdateImageView(ImageView* image_view,
         ResourceBundle::GetSharedInstance().GetBitmapNamed(
             IDR_INPUT_GOOD));
   } else {
-    image_view->SetTooltipText(l10n_util::GetString(invalid_message_id));
+    image_view->SetTooltipText(
+        UTF16ToWide(l10n_util::GetStringUTF16(invalid_message_id)));
     image_view->SetImage(
         ResourceBundle::GetSharedInstance().GetBitmapNamed(
             IDR_INPUT_ALERT));

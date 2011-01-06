@@ -176,14 +176,18 @@ PasswordsPageView::PasswordsPageView(Profile* profile)
     : OptionsPageView(profile),
       ALLOW_THIS_IN_INITIALIZER_LIST(show_button_(
           this,
-          l10n_util::GetString(IDS_PASSWORDS_PAGE_VIEW_SHOW_BUTTON),
-          l10n_util::GetString(IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON))),
+          UTF16ToWide(l10n_util::GetStringUTF16(
+              IDS_PASSWORDS_PAGE_VIEW_SHOW_BUTTON)),
+          UTF16ToWide(l10n_util::GetStringUTF16(
+              IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON)))),
       ALLOW_THIS_IN_INITIALIZER_LIST(remove_button_(
           this,
-          l10n_util::GetString(IDS_PASSWORDS_PAGE_VIEW_REMOVE_BUTTON))),
+          UTF16ToWide(l10n_util::GetStringUTF16(
+              IDS_PASSWORDS_PAGE_VIEW_REMOVE_BUTTON)))),
       ALLOW_THIS_IN_INITIALIZER_LIST(remove_all_button_(
           this,
-          l10n_util::GetString(IDS_PASSWORDS_PAGE_VIEW_REMOVE_ALL_BUTTON))),
+          UTF16ToWide(l10n_util::GetStringUTF16(
+              IDS_PASSWORDS_PAGE_VIEW_REMOVE_ALL_BUTTON)))),
       table_model_(profile),
       table_view_(NULL),
       current_selected_password_(NULL) {
@@ -211,8 +215,8 @@ void PasswordsPageView::OnSelectionChanged() {
 
   if (selected != current_selected_password_) {
     // Reset the password related views.
-    show_button_.SetLabel(
-        l10n_util::GetString(IDS_PASSWORDS_PAGE_VIEW_SHOW_BUTTON));
+    show_button_.SetLabel(UTF16ToWide(
+        l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_SHOW_BUTTON)));
     show_button_.SetEnabled(has_selection);
     password_label_.SetText(std::wstring());
 
@@ -227,9 +231,10 @@ void PasswordsPageView::ButtonPressed(
     ConfirmMessageBoxDialog::Run(
         GetWindow()->GetNativeWindow(),
         this,
-        l10n_util::GetString(IDS_PASSWORDS_PAGE_VIEW_TEXT_DELETE_ALL_PASSWORDS),
-        l10n_util::GetString(
-            IDS_PASSWORDS_PAGE_VIEW_CAPTION_DELETE_ALL_PASSWORDS));
+        UTF16ToWide(l10n_util::GetStringUTF16(
+            IDS_PASSWORDS_PAGE_VIEW_TEXT_DELETE_ALL_PASSWORDS)),
+        UTF16ToWide(l10n_util::GetStringUTF16(
+            IDS_PASSWORDS_PAGE_VIEW_CAPTION_DELETE_ALL_PASSWORDS)));
     return;
   }
 
@@ -246,8 +251,8 @@ void PasswordsPageView::ButtonPressed(
     if (password_label_.GetText().length() == 0 &&
         allow_show_passwords_.GetValue()) {
       password_label_.SetText(selected->password_value);
-      show_button_.SetLabel(
-          l10n_util::GetString(IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON));
+      show_button_.SetLabel(UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON)));
     } else {
       HidePassword();
     }
@@ -348,8 +353,8 @@ void PasswordsPageView::SetupTable() {
 
 void PasswordsPageView::HidePassword() {
   password_label_.SetText(L"");
-  show_button_.SetLabel(
-      l10n_util::GetString(IDS_PASSWORDS_PAGE_VIEW_SHOW_BUTTON));
+  show_button_.SetLabel(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_SHOW_BUTTON)));
 }
 
 void PasswordsPageView::NotifyPrefChanged(const std::string* pref_name) {

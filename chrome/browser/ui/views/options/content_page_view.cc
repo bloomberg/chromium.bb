@@ -128,11 +128,14 @@ void ContentPageView::ButtonPressed(
       ConfirmMessageBoxDialog::RunWithCustomConfiguration(
           GetWindow()->GetNativeWindow(),
           this,
-          l10n_util::GetStringF(IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL,
-              l10n_util::GetString(IDS_PRODUCT_NAME)),
-          l10n_util::GetString(IDS_SYNC_STOP_SYNCING_DIALOG_TITLE),
-          l10n_util::GetString(IDS_SYNC_STOP_SYNCING_CONFIRM_BUTTON_LABEL),
-          l10n_util::GetString(IDS_CANCEL),
+          UTF16ToWide(l10n_util::GetStringFUTF16(
+              IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL,
+              l10n_util::GetStringUTF16(IDS_PRODUCT_NAME))),
+          UTF16ToWide(l10n_util::GetStringUTF16(
+              IDS_SYNC_STOP_SYNCING_DIALOG_TITLE)),
+          UTF16ToWide(l10n_util::GetStringUTF16(
+              IDS_SYNC_STOP_SYNCING_CONFIRM_BUTTON_LABEL)),
+          UTF16ToWide(l10n_util::GetStringUTF16(IDS_CANCEL)),
           gfx::Size(views::Window::GetLocalizedContentsSize(
               IDS_CONFIRM_STOP_SYNCING_DIALOG_WIDTH_CHARS,
               IDS_CONFIRM_STOP_SYNCING_DIALOG_HEIGHT_LINES)));
@@ -276,17 +279,18 @@ void ContentPageView::OnStateChanged() {
 
 void ContentPageView::InitPasswordSavingGroup() {
   passwords_asktosave_radio_ = new views::RadioButton(
-      l10n_util::GetString(IDS_OPTIONS_PASSWORDS_ASKTOSAVE),
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_ASKTOSAVE)),
       kPasswordSavingRadioGroup);
   passwords_asktosave_radio_->set_listener(this);
   passwords_asktosave_radio_->SetMultiLine(true);
   passwords_neversave_radio_ = new views::RadioButton(
-      l10n_util::GetString(IDS_OPTIONS_PASSWORDS_NEVERSAVE),
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_NEVERSAVE)),
       kPasswordSavingRadioGroup);
   passwords_neversave_radio_->set_listener(this);
   passwords_neversave_radio_->SetMultiLine(true);
   show_passwords_button_ = new views::NativeButton(
-      this, l10n_util::GetString(IDS_OPTIONS_PASSWORDS_SHOWPASSWORDS));
+      this, UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_SHOWPASSWORDS)));
 
   using views::GridLayout;
   using views::ColumnSet;
@@ -312,13 +316,15 @@ void ContentPageView::InitPasswordSavingGroup() {
   layout->AddView(show_passwords_button_);
 
   passwords_group_ = new OptionsGroupView(
-      contents, l10n_util::GetString(IDS_OPTIONS_PASSWORDS_GROUP_NAME), L"",
+      contents,
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_GROUP_NAME)),
+      L"",
       true);
 }
 
 void ContentPageView::InitFormAutofillGroup() {
   change_autofill_settings_button_ = new views::NativeButton(
-      this, l10n_util::GetString(IDS_AUTOFILL_OPTIONS));
+      this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS)));
 
   using views::GridLayout;
   using views::ColumnSet;
@@ -340,15 +346,17 @@ void ContentPageView::InitFormAutofillGroup() {
   layout->AddView(change_autofill_settings_button_);
 
   form_autofill_group_ = new OptionsGroupView(
-      contents, l10n_util::GetString(IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME),
+      contents,
+      UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME)),
       L"", true);
 }
 
 void ContentPageView::InitThemesGroup() {
   themes_reset_button_ = new views::NativeButton(this,
-      l10n_util::GetString(IDS_THEMES_RESET_BUTTON));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_THEMES_RESET_BUTTON)));
   themes_gallery_link_ = new views::Link(
-      l10n_util::GetString(IDS_THEMES_GALLERY_BUTTON));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_THEMES_GALLERY_BUTTON)));
   themes_gallery_link_->SetController(this);
 
   using views::GridLayout;
@@ -371,13 +379,13 @@ void ContentPageView::InitThemesGroup() {
   layout->AddView(themes_gallery_link_);
 
   themes_group_ = new OptionsGroupView(
-      contents, l10n_util::GetString(IDS_THEMES_GROUP_NAME),
+      contents, UTF16ToWide(l10n_util::GetStringUTF16(IDS_THEMES_GROUP_NAME)),
       L"", false);
 }
 
 void ContentPageView::InitBrowsingDataGroup() {
   import_button_ = new views::NativeButton(this,
-      l10n_util::GetString(IDS_OPTIONS_IMPORT_DATA_BUTTON));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTIONS_IMPORT_DATA_BUTTON)));
 
   using views::GridLayout;
   using views::ColumnSet;
@@ -395,7 +403,9 @@ void ContentPageView::InitBrowsingDataGroup() {
   layout->AddView(import_button_);
 
   browsing_data_group_ = new OptionsGroupView(
-      contents, l10n_util::GetString(IDS_OPTIONS_BROWSING_DATA_GROUP_NAME),
+      contents,
+      UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_OPTIONS_BROWSING_DATA_GROUP_NAME)),
       L"", true);
 }
 
@@ -416,8 +426,8 @@ void ContentPageView::InitSyncGroup() {
   privacy_dashboard_link_ = new views::Link();
   privacy_dashboard_link_->set_collapse_when_hidden(true);
   privacy_dashboard_link_->SetController(this);
-  privacy_dashboard_link_->SetText(
-      l10n_util::GetString(IDS_SYNC_PRIVACY_DASHBOARD_LINK_LABEL));
+  privacy_dashboard_link_->SetText(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_SYNC_PRIVACY_DASHBOARD_LINK_LABEL)));
 
   sync_start_stop_button_ = new views::NativeButton(this, std::wstring());
   sync_customize_button_ = new views::NativeButton(this, std::wstring());
@@ -450,8 +460,10 @@ void ContentPageView::InitSyncGroup() {
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(privacy_dashboard_link_, 3, 1);
 
-  sync_group_ = new OptionsGroupView(contents,
-      l10n_util::GetString(IDS_SYNC_OPTIONS_GROUP_NAME), std::wstring(), true);
+  sync_group_ = new OptionsGroupView(
+      contents,
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_SYNC_OPTIONS_GROUP_NAME)),
+      std::wstring(), true);
 }
 
 void ContentPageView::UpdateSyncControls() {
@@ -459,25 +471,26 @@ void ContentPageView::UpdateSyncControls() {
   std::wstring status_label;
   std::wstring link_label;
   std::wstring customize_button_label;
-  std::wstring button_label;
+  string16 button_label;
   bool managed = sync_service_->IsManaged();
   bool sync_setup_completed = sync_service_->HasSyncSetupCompleted();
   bool status_has_error = sync_ui_util::GetStatusLabels(sync_service_,
       &status_label, &link_label) == sync_ui_util::SYNC_ERROR;
   customize_button_label =
-    l10n_util::GetString(IDS_SYNC_CUSTOMIZE_BUTTON_LABEL);
+    UTF16ToWide(l10n_util::GetStringUTF16(IDS_SYNC_CUSTOMIZE_BUTTON_LABEL));
   if (sync_setup_completed) {
-    button_label = l10n_util::GetString(IDS_SYNC_STOP_SYNCING_BUTTON_LABEL);
+    button_label =
+        l10n_util::GetStringUTF16(IDS_SYNC_STOP_SYNCING_BUTTON_LABEL);
   } else if (sync_service_->SetupInProgress()) {
-    button_label = l10n_util::GetString(IDS_SYNC_NTP_SETUP_IN_PROGRESS);
+    button_label = l10n_util::GetStringUTF16(IDS_SYNC_NTP_SETUP_IN_PROGRESS);
   } else {
-    button_label = l10n_util::GetString(IDS_SYNC_START_SYNC_BUTTON_LABEL);
+    button_label = l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL);
   }
 
   sync_status_label_->SetText(status_label);
   sync_start_stop_button_->SetEnabled(
       !sync_service_->WizardIsVisible() && !managed);
-  sync_start_stop_button_->SetLabel(button_label);
+  sync_start_stop_button_->SetLabel(UTF16ToWide(button_label));
   sync_customize_button_->SetLabel(customize_button_label);
   sync_customize_button_->SetVisible(sync_setup_completed && !status_has_error);
   sync_customize_button_->SetEnabled(!managed);

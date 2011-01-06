@@ -1012,7 +1012,7 @@ bool AutocompleteEditViewWin::IsItemForCommandIdDynamic(int command_id) const {
 std::wstring AutocompleteEditViewWin::GetLabelForCommandId(
     int command_id) const {
   DCHECK(command_id == IDS_PASTE_AND_GO);
-  return l10n_util::GetString(model_->is_paste_and_search() ?
+  return l10n_util::GetStringUTF16(model_->is_paste_and_search() ?
       IDS_PASTE_AND_SEARCH : IDS_PASTE_AND_GO);
 }
 
