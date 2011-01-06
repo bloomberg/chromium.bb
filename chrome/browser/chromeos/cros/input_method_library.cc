@@ -63,6 +63,9 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
         should_change_input_method_(false),
         ibus_daemon_process_id_(0),
         candidate_window_process_id_(0) {
+    // TODO(yusukes): Using both CreateFallbackInputMethodDescriptors and
+    // chromeos::GetHardwareKeyboardLayoutName doesn't look clean. Probably
+    // we should unify these APIs.
     scoped_ptr<InputMethodDescriptors> input_method_descriptors(
         CreateFallbackInputMethodDescriptors());
     current_input_method_ = input_method_descriptors->at(0);
@@ -148,19 +151,22 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     return false;
   }
 
-  bool GetImeConfig(const char* section, const char* config_name,
+  bool GetImeConfig(const std::string& section, const std::string& config_name,
                     ImeConfigValue* out_value) {
     bool success = false;
     if (EnsureLoadedAndStarted()) {
       success = chromeos::GetImeConfig(input_method_status_connection_,
-                                       section, config_name, out_value);
+                                       section.c_str(),
+                                       config_name.c_str(),
+                                       out_value);
     }
     return success;
   }
 
-  bool SetImeConfig(const char* section, const char* config_name,
+  bool SetImeConfig(const std::string& section, const std::string& config_name,
                     const ImeConfigValue& value) {
-    MaybeStartOrStopInputMethodProcesses(section, config_name, value);
+    // Before calling FlushImeConfig(), start input method process if necessary.
+    MaybeStartInputMethodProcesses(section, config_name, value);
 
     const ConfigKeyType key = std::make_pair(section, config_name);
     current_config_values_[key] = value;
@@ -168,6 +174,9 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
       pending_config_requests_[key] = value;
       FlushImeConfig();
     }
+
+    // Stop input method process if necessary.
+    MaybeStopInputMethodProcesses(section, config_name, value);
     return pending_config_requests_.empty();
   }
 
@@ -183,24 +192,52 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   }
 
  private:
-  // Starts or stops the input method processes based on the current state.
-  void MaybeStartOrStopInputMethodProcesses(
-      const char* section,
-      const char* config_name,
-      const ImeConfigValue& value) {
-    if (!strcmp(language_prefs::kGeneralSectionName, section) &&
-        !strcmp(language_prefs::kPreloadEnginesConfigName, config_name)) {
+  // Starts input method processes based on the |defer_ime_startup_| flag and
+  // input method configuration being updated. |section| is a section name of
+  // the input method configuration (e.g. "general", "general/hotkey").
+  // |config_name| is a name of the configuration (e.g. "preload_engines",
+  // "previous_engine"). |value| is the configuration value to be set.
+  void MaybeStartInputMethodProcesses(const std::string& section,
+                                      const std::string& config_name,
+                                      const ImeConfigValue& value) {
+    if (section == language_prefs::kGeneralSectionName &&
+        config_name == language_prefs::kPreloadEnginesConfigName) {
       if (EnsureLoadedAndStarted()) {
-        // If there are no input methods other than one for the hardware
-        // keyboard, we'll stop the input method processes.
+        const std::string hardware_layout_name =
+            chromeos::GetHardwareKeyboardLayoutName();  // e.g. "xkb:us::eng"
+        if (!(value.type == ImeConfigValue::kValueTypeStringList &&
+              value.string_list_value.size() == 1 &&
+              value.string_list_value[0] == hardware_layout_name) &&
+            !defer_ime_startup_) {
+          // If there are no input methods other than one for the hardware
+          // keyboard, we don't start the input method processes.
+          // When |defer_ime_startup_| is true, we don't start it either.
+          StartInputMethodProcesses();
+        }
+        chromeos::SetActiveInputMethods(input_method_status_connection_, value);
+      }
+    }
+  }
+
+  // Stops input method processes based on the |enable_auto_ime_shutdown_| flag
+  // and input method configuration being updated.
+  // See also: MaybeStartInputMethodProcesses().
+  void MaybeStopInputMethodProcesses(const std::string& section,
+                                     const std::string& config_name,
+                                     const ImeConfigValue& value) {
+    if (section == language_prefs::kGeneralSectionName &&
+        config_name == language_prefs::kPreloadEnginesConfigName) {
+      if (EnsureLoadedAndStarted()) {
+        const std::string hardware_layout_name =
+            chromeos::GetHardwareKeyboardLayoutName();  // e.g. "xkb:us::eng"
         if (value.type == ImeConfigValue::kValueTypeStringList &&
             value.string_list_value.size() == 1 &&
-            value.string_list_value[0] ==
-            chromeos::GetHardwareKeyboardLayoutName()) {
-          if (enable_auto_ime_shutdown_)
-            StopInputMethodProcesses();
-        } else if (!defer_ime_startup_) {
-          StartInputMethodProcesses();
+            value.string_list_value[0] == hardware_layout_name &&
+            enable_auto_ime_shutdown_) {
+          // If there are no input methods other than one for the hardware
+          // keyboard, and |enable_auto_ime_shutdown_| is true, we'll stop the
+          // input method processes.
+          StopInputMethodProcesses();
         }
         chromeos::SetActiveInputMethods(input_method_status_connection_, value);
       }
@@ -304,7 +341,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
       const chromeos::InputMethodDescriptor& current_input_method) {
     // The handler is called when the input method method change is
     // notified via a DBus connection. Since the DBus notificatiosn are
-    // handled in the UI thread, we can assume that this functionalways
+    // handled in the UI thread, we can assume that this function always
     // runs on the UI thread, but just in case.
     if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
       LOG(ERROR) << "Not on UI thread";
@@ -586,6 +623,8 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
   // If true, we'll defer the startup until a non-default method is
   // activated.
   bool defer_ime_startup_;
+  // True if we should stop input method processes when there are no input
+  // methods other than one for the hardware keyboard.
   bool enable_auto_ime_shutdown_;
   // The ID of the current input method (ex. "mozc").
   std::string current_input_method_id_;
@@ -637,14 +676,14 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
     return true;
   }
 
-  bool GetImeConfig(const char* section,
-                    const char* config_name,
+  bool GetImeConfig(const std::string& section,
+                    const std::string& config_name,
                     ImeConfigValue* out_value) {
     return false;
   }
 
-  bool SetImeConfig(const char* section,
-                    const char* config_name,
+  bool SetImeConfig(const std::string& section,
+                    const std::string& config_name,
                     const ImeConfigValue& value) {
     return false;
   }
