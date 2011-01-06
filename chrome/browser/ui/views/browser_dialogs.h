@@ -85,9 +85,6 @@ void ShowPasswordsExceptionsWindowView(Profile* profile);
 // Shows the keyword editor. See KeywordEditorView.
 void ShowKeywordEditorView(Profile* profile);
 
-// Shows the "new profile" dialog box. See NewProfileDialog.
-void ShowNewProfileDialog();
-
 // Shows the Task Manager.
 void ShowTaskManager();
 

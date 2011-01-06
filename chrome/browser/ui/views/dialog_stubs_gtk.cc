@@ -44,11 +44,6 @@ void ShowKeywordEditorView(Profile* profile) {
   KeywordEditorView::Show(profile);
 }
 
-void ShowNewProfileDialog() {
-  // Hasn't been implemented yet on linux.
-  NOTIMPLEMENTED();
-}
-
 void ShowTaskManager() {
   TaskManagerGtk::Show();
 }
