@@ -81,7 +81,7 @@ function getAppsCallback(data) {
   $('apps-promo-link').setAttribute('ping', appsPromoPing);
   maybeDoneLoading();
 
-  if (data.apps.length > 0 && isDoneLoading()) {
+  if (isDoneLoading()) {
     if (!apps.showPromo && data.apps.length >= MAX_APPS_PER_ROW[layoutMode])
       webStoreEntry.classList.add('loner');
     else
