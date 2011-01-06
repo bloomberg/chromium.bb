@@ -72,7 +72,7 @@ class ServiceProcessControlBrowserTest
         service_pid,
         base::kProcessAccessWaitForTermination,
         &service_process_handle_));
-    process()->SetMessageHandler(this);
+    process()->AddMessageHandler(this);
     // Quit the current message. Post a QuitTask instead of just calling Quit()
     // because this can get invoked in the context of a Launch() call and we
     // may not be in Run() yet.
@@ -88,6 +88,10 @@ class ServiceProcessControlBrowserTest
   // ServiceProcessControl::MessageHandler implementations.
   virtual void OnGoodDay() {
     MessageLoop::current()->Quit();
+  }
+
+  virtual void OnRemotingHostInfo(
+      const remoting::ChromotingHostInfo& host_info) {
   }
 
   ServiceProcessControl* process() { return process_; }

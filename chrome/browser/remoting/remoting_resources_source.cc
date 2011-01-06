@@ -39,6 +39,7 @@ void RemotingResourcesSource::StartDataRequest(const std::string& path_raw,
   const char kRemotingGaiaLoginPath[] = "gaialogin";
   const char kRemotingSetupFlowPath[] = "setup";
   const char kRemotingSetupDonePath[] = "setupdone";
+  const char kRemotingSetupErrorPath[] = "setuperror";
 
   std::string response;
   if (path_raw == kRemotingGaiaLoginPath) {
@@ -93,11 +94,22 @@ void RemotingResourcesSource::StartDataRequest(const std::string& path_raw,
   } else if (path_raw == kRemotingSetupDonePath) {
     DictionaryValue localized_strings;
     localized_strings.SetString("success",
-        l10n_util::GetStringUTF16(IDS_SYNC_SUCCESS));
+        l10n_util::GetStringUTF16(IDS_REMOTING_SUCCESS_TITLE));
     localized_strings.SetString("okay",
-        l10n_util::GetStringUTF16(IDS_SYNC_SETUP_OK_BUTTON_LABEL));
+        l10n_util::GetStringUTF16(IDS_OK));
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_REMOTING_SETUP_DONE_HTML));
+    SetFontAndTextDirection(&localized_strings);
+    response = jstemplate_builder::GetI18nTemplateHtml(
+        html, &localized_strings);
+  } else if (path_raw == kRemotingSetupErrorPath) {
+    DictionaryValue localized_strings;
+    localized_strings.SetString("close",
+        l10n_util::GetStringUTF16(IDS_CLOSE));
+    localized_strings.SetString("retry",
+        l10n_util::GetStringUTF16(IDS_REMOTING_RETRY_BUTTON_TEXT));
+    static const base::StringPiece html(ResourceBundle::GetSharedInstance()
+        .GetRawDataResource(IDR_REMOTING_SETUP_ERROR_HTML));
     SetFontAndTextDirection(&localized_strings);
     response = jstemplate_builder::GetI18nTemplateHtml(
         html, &localized_strings);

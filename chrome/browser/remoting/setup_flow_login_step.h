@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,8 +18,7 @@ class SetupFlowLoginStep : public SetupFlowStepBase, public GaiaAuthConsumer {
   virtual ~SetupFlowLoginStep();
 
   // SetupFlowStep implementation.
-  virtual void HandleMessage(const std::string& message,
-                             const ListValue* args);
+  virtual void HandleMessage(const std::string& message, const Value* arg);
   virtual void Cancel();
 
   // GaiaAuthConsumer implementation.
@@ -46,9 +45,6 @@ class SetupFlowLoginStep : public SetupFlowStepBase, public GaiaAuthConsumer {
 
   // Fetcher to obtain the Chromoting Directory token.
   scoped_ptr<GaiaAuthFetcher> authenticator_;
-  std::string login_;
-  std::string remoting_token_;
-  std::string talk_token_;
 
   DISALLOW_COPY_AND_ASSIGN(SetupFlowLoginStep);
 };

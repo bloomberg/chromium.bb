@@ -3,10 +3,6 @@
 <title></title>
 <link rel="stylesheet" type="text/css" href="remoting_setup_flow.css" />
 <script>
-  function setShowFirstTimeSetupSummary() {
-    document.getElementById("summary").innerHTML =
-      templateData['firsttimesetupsummary'];
-  }
   function setMessage(msg) {
     document.getElementById('msgContent').innerHTML = msg;
   }
@@ -16,13 +12,11 @@
 </script>
 </head>
 <body i18n-values=".style.fontFamily:fontfamily">
-  <div class="remoting-header" i18n-content="success"></div>
-  <div class="remoting-success-image">
-    <img src="../../sync/resources/success-large.png" />
-  </div>
   <div id="msgContent"></div>
   <div class="remoting-footer">
-    <input id="close" type="submit" i18n-values="value:okay"
+    <input id="retry" type="submit" i18n-values="value:retry"
+           onclick='chrome.send("RemotingSetup", ["Retry"])' />
+    <input id="close" type="submit" i18n-values="value:close"
            onclick='chrome.send("DialogClose", [""])' />
   </div>
 </body>

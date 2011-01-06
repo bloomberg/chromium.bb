@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,6 +27,7 @@
 namespace remoting {
 
 static const wchar_t kDoneIframeXPath[] = L"//iframe[@id='done']";
+static const wchar_t kErrorIframeXPath[] = L"//iframe[@id='error']";
 
 SetupFlowStep::SetupFlowStep() { }
 SetupFlowStep::~SetupFlowStep() { }
@@ -63,22 +64,58 @@ void SetupFlowStepBase::FinishStep(SetupFlowStep* next_step) {
   done_callback_->Run();
 }
 
-SetupFlowDoneStep::SetupFlowDoneStep() { }
+SetupFlowErrorStepBase::SetupFlowErrorStepBase() { }
+SetupFlowErrorStepBase::~SetupFlowErrorStepBase() { }
+
+void SetupFlowErrorStepBase::HandleMessage(const std::string& message,
+                                           const Value* arg) {
+  if (message == "Retry") {
+    Retry();
+  }
+}
+
+void SetupFlowErrorStepBase::Cancel() { }
+
+void SetupFlowErrorStepBase::DoStart() {
+  std::wstring javascript =
+      L"setMessage('" + UTF16ToWide(GetErrorMessage()) + L"');";
+  ExecuteJavascriptInIFrame(kErrorIframeXPath, javascript);
+
+  flow()->dom_ui()->CallJavascriptFunction(L"showError");
+
+  ExecuteJavascriptInIFrame(kErrorIframeXPath, L"onPageShown();");
+}
+
+SetupFlowDoneStep::SetupFlowDoneStep() {
+  message_ = l10n_util::GetStringUTF16(IDS_REMOTING_SUCCESS_MESSAGE);
+}
+
+SetupFlowDoneStep::SetupFlowDoneStep(const string16& message)
+    : message_(message) {
+}
+
 SetupFlowDoneStep::~SetupFlowDoneStep() { }
 
 void SetupFlowDoneStep::HandleMessage(const std::string& message,
-                                      const ListValue* args) {
+                                      const Value* arg) {
 }
 
 void SetupFlowDoneStep::Cancel() { }
 
 void SetupFlowDoneStep::DoStart() {
-  std::wstring javascript = L"setMessage('You are all set!');";
+  std::wstring javascript =
+      L"setMessage('" + UTF16ToWide(message_) + L"');";
   ExecuteJavascriptInIFrame(kDoneIframeXPath, javascript);
 
   flow()->dom_ui()->CallJavascriptFunction(L"showSetupDone");
 
   ExecuteJavascriptInIFrame(kDoneIframeXPath, L"onPageShown();");
+}
+
+SetupFlowContext::SetupFlowContext() {
+}
+
+SetupFlowContext::~SetupFlowContext() {
 }
 
 SetupFlow::SetupFlow(const std::string& args, Profile* profile,
@@ -175,12 +212,42 @@ DOMMessageHandler* SetupFlow::Attach(DOMUI* dom_ui) {
 }
 
 void SetupFlow::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("SubmitAuth",
-      NewCallback(this, &SetupFlow::HandleSubmitAuth));
+  dom_ui_->RegisterMessageCallback(
+      "SubmitAuth", NewCallback(this, &SetupFlow::HandleSubmitAuth));
+  dom_ui_->RegisterMessageCallback(
+      "RemotingSetup", NewCallback(this, &SetupFlow::HandleUIMessage));
 }
 
 void SetupFlow::HandleSubmitAuth(const ListValue* args) {
-  current_step_->HandleMessage("SubmitAuth", args);
+  Value* first_arg = NULL;
+  if (!args->Get(0, &first_arg)) {
+    NOTREACHED();
+    return;
+  }
+
+  current_step_->HandleMessage("SubmitAuth", first_arg);
+}
+
+void SetupFlow::HandleUIMessage(const ListValue* args) {
+  std::string message;
+  Value* message_value;
+  if (!args->Get(0, &message_value) ||
+      !message_value->GetAsString(&message)) {
+    NOTREACHED();
+    return;
+  }
+
+  // Message argument is optional and set to NULL if it is not
+  // provided by the sending page.
+  Value* arg_value = NULL;
+  if (args->GetSize() >= 2) {
+    if (!args->Get(1, &arg_value)) {
+      NOTREACHED();
+      return;
+    }
+  }
+
+  current_step_->HandleMessage(message, arg_value);
 }
 
 void SetupFlow::StartCurrentStep() {
@@ -188,7 +255,16 @@ void SetupFlow::StartCurrentStep() {
 }
 
 void SetupFlow::OnStepDone() {
-  current_step_.reset(current_step_->GetNextStep());
+  SetupFlowStep* next_step = current_step_->GetNextStep();
+
+  if (current_step_.get()) {
+    // Can't destroy current step here. Schedule it to be destroyed later.
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        new DeleteTask<SetupFlowStep>(current_step_.release()));
+  }
+
+  current_step_.reset(next_step);
   StartCurrentStep();
 }
 

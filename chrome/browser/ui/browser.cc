@@ -112,7 +112,7 @@
 #include "webkit/glue/window_open_disposition.h"
 
 #if defined(ENABLE_REMOTING)
-#include "chrome/browser/remoting/remoting_setup_flow.h"
+#include "chrome/browser/remoting/setup_flow.h"
 #endif
 
 #if defined(OS_WIN)
@@ -1853,7 +1853,7 @@ void Browser::OpenSyncMyBookmarksDialog() {
 
 #if defined(ENABLE_REMOTING)
 void Browser::OpenRemotingSetupDialog() {
-  RemotingSetupFlow::OpenDialog(profile_);
+  remoting::SetupFlow::OpenSetupDialog(profile_);
 }
 #endif
 

@@ -8298,7 +8298,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_REMOTING_SETUP_DIALOG_TITLE" desc="Title of the remoting setup dialog.">
         Set up remoting
       </message>
-
+      <message name="IDS_REMOTING_SUCCESS_TITLE" desc="Header of the page that is shown when remoting configuration is finished.">
+        Success!
+      </message>
+      <message name="IDS_REMOTING_SUCCESS_MESSAGE" desc="Message shown during remoting host setup after the host is successfully initialized.">
+        Remoting was started successfully. Now you should be able to connect to this computer remotely.
+      </message>
+      <message name="IDS_REMOTING_SERVICE_PROCESS_FAILED_MESSAGE" desc="Message shown during remoting host setup if there was an error starting service process.">
+        Unable to start service process.
+      </message>
+      <message name="IDS_REMOTING_RETRY_BUTTON_TEXT" desc="Text for retry button">
+        Retry
+      </message>
 
       <!-- Sync strings -->
 

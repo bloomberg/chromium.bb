@@ -96,8 +96,7 @@ class ServiceProcessControl::Launcher
 
 // ServiceProcessControl implementation.
 ServiceProcessControl::ServiceProcessControl(Profile* profile)
-    : profile_(profile),
-      message_handler_(NULL) {
+    : profile_(profile) {
 }
 
 ServiceProcessControl::~ServiceProcessControl() {
@@ -279,10 +278,11 @@ void ServiceProcessControl::Observe(NotificationType type,
 }
 
 void ServiceProcessControl::OnGoodDay() {
-  if (!message_handler_)
-    return;
-
-  message_handler_->OnGoodDay();
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  for (std::set<MessageHandler*>::iterator it = message_handlers_.begin();
+       it != message_handlers_.end(); ++it) {
+    (*it)->OnGoodDay();
+  }
 }
 
 void ServiceProcessControl::OnCloudPrintProxyIsEnabled(bool enabled,
@@ -297,9 +297,9 @@ void ServiceProcessControl::OnCloudPrintProxyIsEnabled(bool enabled,
 void ServiceProcessControl::OnRemotingHostInfo(
     remoting::ChromotingHostInfo host_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (remoting_host_status_callback_ != NULL) {
-    remoting_host_status_callback_->Run(host_info);
-    remoting_host_status_callback_.reset();
+  for (std::set<MessageHandler*>::iterator it = message_handlers_.begin();
+       it != message_handlers_.end(); ++it) {
+    (*it)->OnRemotingHostInfo(host_info);
   }
 }
 
@@ -335,11 +335,18 @@ bool ServiceProcessControl::DisableRemotingHost() {
   return Send(new ServiceMsg_DisableRemotingHost());
 }
 
-bool ServiceProcessControl::GetRemotingHostStatus(
-    GetRemotingHostStatusCallback* status_callback) {
-  DCHECK(status_callback);
-  remoting_host_status_callback_.reset(status_callback);
+bool ServiceProcessControl::RequestRemotingHostStatus() {
   return Send(new ServiceMsg_GetRemotingHostInfo);
+}
+
+void ServiceProcessControl::AddMessageHandler(
+    MessageHandler* message_handler) {
+  message_handlers_.insert(message_handler);
+}
+
+void ServiceProcessControl::RemoveMessageHandler(
+    MessageHandler* message_handler) {
+  message_handlers_.erase(message_handler);
 }
 
 DISABLE_RUNNABLE_METHOD_REFCOUNT(ServiceProcessControl);

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,10 @@
 #include "base/callback.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
+#include "chrome/common/remoting/chromoting_host_info.h"
 
 class ListValue;
+class ServiceProcessControl;
 
 namespace remoting {
 
@@ -30,9 +32,9 @@ class SetupFlowStep {
   // The callback must be called on the same thread as Start().
   virtual void Start(SetupFlow* flow, DoneCallback* done_callback) = 0;
 
-  // Called to handle |message| received from UI.
-  virtual void HandleMessage(const std::string& message,
-                             const ListValue* args) = 0;
+  // Called to handle |message| received from UI. |args| may be set to
+  // NULL.
+  virtual void HandleMessage(const std::string& message, const Value* arg) = 0;
 
   // Called if user closes the dialog.
   virtual void Cancel() = 0;
@@ -81,27 +83,84 @@ class SetupFlowStepBase : public SetupFlowStep {
   DISALLOW_COPY_AND_ASSIGN(SetupFlowStepBase);
 };
 
+// Base class for error steps. It shows the error message returned by
+// GetErrorMessage() and Retry button.
+class SetupFlowErrorStepBase : public SetupFlowStepBase {
+ public:
+  SetupFlowErrorStepBase();
+  virtual ~SetupFlowErrorStepBase();
+
+  // SetupFlowStep implementation.
+  virtual void HandleMessage(const std::string& message, const Value* arg);
+  virtual void Cancel();
+
+ protected:
+  virtual void DoStart();
+
+  // Returns error message that is shown to the user.
+  virtual string16 GetErrorMessage() = 0;
+
+  // Called when user clicks Retry button. Normally this methoud just
+  // calls FinishStep() with an appropriate next step.
+  virtual void Retry() = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SetupFlowErrorStepBase);
+};
+
 // The last step in the setup flow. This step never finishes, user is
 // expected to close dialog after that.
 class SetupFlowDoneStep : public SetupFlowStepBase {
  public:
   SetupFlowDoneStep();
+  explicit SetupFlowDoneStep(const string16& message);
   virtual ~SetupFlowDoneStep();
 
   // SetupFlowStep implementation.
-  virtual void HandleMessage(const std::string& message, const ListValue* args);
+  virtual void HandleMessage(const std::string& message, const Value* arg);
   virtual void Cancel();
 
  protected:
   void DoStart();
 
  private:
+  string16 message_;
+
   DISALLOW_COPY_AND_ASSIGN(SetupFlowDoneStep);
+};
+
+// SetupFlowContext stores data that needs to be passed between
+// different setup flow steps.
+struct SetupFlowContext {
+  SetupFlowContext();
+  ~SetupFlowContext();
+
+  std::string login;
+  std::string remoting_token;
+  std::string talk_token;
+
+  ChromotingHostInfo host_info;
 };
 
 // This class is responsible for showing a remoting setup dialog and
 // perform operations to fill the content of the dialog and handle
 // user actions in the dialog.
+//
+// Each page in the setup flow may send message to the current
+// step. In order to do that it must use send a RemotingSetup message
+// and specify message name as the first value in the argument
+// list. For example the following code sends Retry message to the
+// current step:
+//
+//     chrome.send("RemotingSetup", ["Retry"])
+//
+// Assitional message parameters may be provided via send value in the
+// arguments list, e.g.:
+//
+//     chrome.send("RemotingSetup", ["SubmitAuth", auth_data])
+//
+// In this case auth_data would be passed in
+// SetupFlowStep::HandleMessage().
 class SetupFlow : public DOMMessageHandler,
                   public HtmlDialogUIDelegate {
  public:
@@ -111,6 +170,7 @@ class SetupFlow : public DOMMessageHandler,
 
   DOMUI* dom_ui() { return dom_ui_; }
   Profile* profile() { return profile_; }
+  SetupFlowContext* context() { return &context_; }
 
  private:
   explicit SetupFlow(const std::string& args, Profile* profile,
@@ -132,7 +192,9 @@ class SetupFlow : public DOMMessageHandler,
   virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
 
+  // Message handlers for the messages we receive from UI.
   void HandleSubmitAuth(const ListValue* args);
+  void HandleUIMessage(const ListValue* args);
 
   void StartCurrentStep();
   void OnStepDone();
@@ -144,6 +206,8 @@ class SetupFlow : public DOMMessageHandler,
   // The args to pass to the initial page.
   std::string dialog_start_args_;
   Profile* profile_;
+
+  SetupFlowContext context_;
 
   scoped_ptr<SetupFlowStep> current_step_;
 
