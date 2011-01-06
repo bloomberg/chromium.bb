@@ -148,7 +148,7 @@ function renderForeignSessions() {
 
   // For each client, create entries and append the lists together.
   sessionItems.forEach(function(item, i) {
-    // TODO(zea): Get real client names. See issue 59672
+    // TODO(zea): Get real client names. See crbug/59672.
     var name = 'Client ' + i;
     parentSessionElement.appendChild(createForeignSession(item, name));
   });
@@ -172,28 +172,51 @@ function layoutForeignSessions() {
 function createForeignSession(client, name) {
   // Vertically stack the windows in a client.
   var stack = document.createElement('div');
-  stack.className = 'foreign-session-client';
+  stack.className = 'foreign-session-client item link';
   stack.textContent = name;
+  stack.sessionTag = client[0].sessionTag;
 
-  client.forEach(function(win) {
-    // We know these are lists of multiple tabs, don't need the special case for
-    // single url + favicon.
-    var el = document.createElement('p');
-    el.className = 'item link window';
-    el.tabItems = win.tabs;
-    el.tabIndex = 0;
-    el.textContent = formatTabsText(win.tabs.length);
+  client.forEach(function(win, i) {
+    // Create a window entry.
+    var winSpan = document.createElement('span');
+    var winEl = document.createElement('p');
+    winEl.className = 'item link window';
+    winEl.tabItems = win.tabs;
+    winEl.tabIndex = 0;
+    winEl.textContent = formatTabsText(win.tabs.length);
+    winEl.xtitle = win.title;
+    winEl.sessionTag = win.sessionTag;
+    winEl.winNum = i;
+    winEl.addEventListener('click', maybeOpenForeignWindow);
+    winEl.addEventListener('keydown',
+                           handleIfEnterKey(maybeOpenForeignWindow));
+    winSpan.appendChild(winEl);
 
-    el.sessionId = win.sessionId;
-    el.xtitle = win.title;
-    el.sessionTag = win.sessionTag;
+    // Sort tabs by MRU order
+    win.tabs.sort(function(a, b) {
+      return a.timestamp < b.timestamp;
+    })
 
-    // Add the actual tab listing.
-    stack.appendChild(el);
+    // Create individual tab information.
+    win.tabs.forEach(function(data) {
+        var tabEl = document.createElement('a');
+        tabEl.className = 'item link tab';
+        tabEl.href = data.timestamp;
+        tabEl.style.backgroundImage = url('chrome://favicon/' + data.url);
+        tabEl.dir = data.direction;
+        tabEl.textContent = data.title;
+        tabEl.sessionTag = win.sessionTag;
+        tabEl.winNum = i;
+        tabEl.sessionId = data.sessionId;
+        tabEl.addEventListener('click', maybeOpenForeignTab);
+        tabEl.addEventListener('keydown',
+                               handleIfEnterKey(maybeOpenForeignTab));
 
-    // TODO(zea): Should there be a clickHandler as well? We appear to be
-    // breaking windowTooltip's hide: removeEventListener(onMouseOver) when we
-    // click.
+        winSpan.appendChild(tabEl);
+    })
+
+    // Append the window.
+    stack.appendChild(winSpan);
   });
   return stack;
 }
@@ -1040,13 +1063,42 @@ function maybeReopenTab(e) {
   }
 }
 
-function maybeReopenSession(e) {
+// Note that the openForeignSession calls can fail, resulting this method to
+// not have any action (hence the maybe).
+function maybeOpenForeignSession(e) {
   var el = findAncestor(e.target, function(el) {
-    return el.sessionId;
+    return el.sessionTag !== undefined;
   });
   if (el) {
-    chrome.send('reopenForeignSession', [String(el.sessionTag)]);
+    chrome.send('openForeignSession', [String(el.sessionTag)]);
+    e.stopPropagation();
+    e.preventDefault();
+    setWindowTooltipTimeout();
+  }
+}
 
+function maybeOpenForeignWindow(e) {
+  var el = findAncestor(e.target, function(el) {
+    return el.winNum !== undefined;
+  });
+  if (el) {
+    chrome.send('openForeignSession', [String(el.sessionTag),
+        String(el.winNum)]);
+    e.stopPropagation();
+    e.preventDefault();
+    setWindowTooltipTimeout();
+  }
+}
+
+function maybeOpenForeignTab(e) {
+  var el = findAncestor(e.target, function(el) {
+    return el.sessionId !== undefined;
+  });
+  if (el) {
+    chrome.send('openForeignSession', [String(el.sessionTag), String(el.winNum),
+        String(el.sessionId)]);
+    e.stopPropagation();
+    e.preventDefault();
     setWindowTooltipTimeout();
   }
 }
@@ -1083,9 +1135,10 @@ recentlyClosedElement.addEventListener('focus', maybeShowWindowTooltip, true);
 
 var foreignSessionElement = $('foreign-sessions');
 
-foreignSessionElement.addEventListener('click', maybeReopenSession);
+foreignSessionElement.addEventListener('click', maybeOpenForeignSession);
 foreignSessionElement.addEventListener('keydown',
-                                       handleIfEnterKey(maybeReopenSession));
+                                       handleIfEnterKey(
+                                           maybeOpenForeignSession));
 
 foreignSessionElement.addEventListener('mouseover', maybeShowWindowTooltip);
 foreignSessionElement.addEventListener('focus', maybeShowWindowTooltip, true);

@@ -37,21 +37,20 @@ class ForeignSessionHandler : public DOMMessageHandler,
   // Returns a pointer to the current session model associator or NULL.
   SessionModelAssociator* GetModelAssociator();
 
+  // Determines which session is to be opened, and then calls
+  // OpenForeignSession, to begin the process of opening a new browser window.
+  // This is a javascript callback handler.
+  void HandleOpenForeignSession(const ListValue* args);
+
   // Determines whether foreign sessions should be obtained from the sync model.
   // This is a javascript callback handler, and it is also called when the sync
   // model has changed and the new tab page needs to reflect the changes.
   void HandleGetForeignSessions(const ListValue* args);
 
-  // Helper for reopening a foreign session in a new browser window.
-  void OpenForeignSession(SessionModelAssociator* associator, int64 id);
-
-  // Helper for listing the foreign sessions on the new tab page.
-  void GetForeignSessions(SessionModelAssociator* associator);
-
-  // Determines which session is to be opened, and then calls
-  // OpenForeignSession, to begin the process of opening a new browser window.
-  // This is a javascript callback handler.
-  void HandleReopenForeignSession(const ListValue* args);
+  // Helper methods to create JSON compatible objects from Session objects.
+  bool SessionTabToValue(const SessionTab& tab, DictionaryValue* dictionary);
+  bool SessionWindowToValue(const SessionWindow& window,
+                            DictionaryValue* dictionary);
 
   // The Registrar used to register ForeignSessionHandler for notifications.
   NotificationRegistrar registrar_;

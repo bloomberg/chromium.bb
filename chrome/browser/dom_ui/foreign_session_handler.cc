@@ -4,23 +4,30 @@
 
 #include "chrome/browser/dom_ui/foreign_session_handler.h"
 
+#include <algorithm>
 #include <string>
-
+#include <vector>
 #include "base/scoped_vector.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/dom_ui/value_helper.h"
+#include "base/values.h"
+#include "chrome/browser/dom_ui/new_tab_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_restore.h"
-#include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/url_constants.h"
 
 namespace browser_sync {
 
+// Maximum number of session we're going to display on the NTP
 static const int kMaxSessionsToShow = 10;
+
+// Invalid value, used to note that we don't have a tab or window number.
+static const int kInvalidId = -1;
 
 ForeignSessionHandler::ForeignSessionHandler() {
   Init();
@@ -30,9 +37,9 @@ void ForeignSessionHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("getForeignSessions",
       NewCallback(this,
       &ForeignSessionHandler::HandleGetForeignSessions));
-  dom_ui_->RegisterMessageCallback("reopenForeignSession",
+  dom_ui_->RegisterMessageCallback("openForeignSession",
       NewCallback(this,
-      &ForeignSessionHandler::HandleReopenForeignSession));
+      &ForeignSessionHandler::HandleOpenForeignSession));
 }
 
 void ForeignSessionHandler::Init() {
@@ -81,71 +88,34 @@ SessionModelAssociator* ForeignSessionHandler::GetModelAssociator() {
 
 void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
   SessionModelAssociator* associator = GetModelAssociator();
-  if (associator)
-    GetForeignSessions(associator);
-}
+  std::vector<const ForeignSession*> sessions;
 
-void ForeignSessionHandler::HandleReopenForeignSession(
-    const ListValue* args) {
-  // Extract the machine tag and use it to obtain the id for the node we are
-  // looking for.  Send it along with a valid associator to OpenForeignSessions.
-  std::string session_string_value = WideToUTF8(ExtractStringValue(args));
-  SessionModelAssociator* associator = GetModelAssociator();
-  if (associator && !session_string_value.empty()) {
-    int64 id = associator->GetSyncIdFromChromeId(session_string_value);
-    OpenForeignSession(associator, id);
+  if (associator == NULL) {
+    // Called before associator created, exit.
+    return;
   }
-}
 
-void ForeignSessionHandler::OpenForeignSession(
-    SessionModelAssociator* associator, int64 id) {
-  // Obtain the session windows for the foreign session.
-  // We don't have a ForeignSessionHandler in off the record mode, so we
-  // expect the ProfileSyncService to exist.
-  sync_api::ReadTransaction trans(dom_ui_->GetProfile()->
-      GetProfileSyncService()->backend()->GetUserShareHandle());
-  ScopedVector<ForeignSession> session;
-  associator->AppendForeignSessionWithID(id, &session.get(), &trans);
-
-  DCHECK_EQ(1U, session.size());
-  std::vector<SessionWindow*> windows = (*session.begin())->windows;
-  SessionRestore::RestoreForeignSessionWindows(dom_ui_->GetProfile(), &windows);
-}
-
-void ForeignSessionHandler::GetForeignSessions(
-    SessionModelAssociator* associator) {
-  ScopedVector<ForeignSession> clients;
-  if (!associator->GetSessionData(&clients.get())) {
+  // Note: we don't own the ForeignSessions themselves.
+  if (!associator->GetAllForeignSessions(&sessions)) {
     LOG(ERROR) << "ForeignSessionHandler failed to get session data from"
         "SessionModelAssociator.";
     return;
   }
   int added_count = 0;
-  ListValue client_list;
-  for (std::vector<ForeignSession*>::const_iterator i =
-      clients->begin(); i != clients->end() &&
+  ListValue session_list;
+  for (std::vector<const ForeignSession*>::const_iterator i =
+      sessions.begin(); i != sessions.end() &&
       added_count < kMaxSessionsToShow; ++i) {
-    ForeignSession* foreign_session = *i;
-    std::vector<TabRestoreService::Entry*> entries;
-    dom_ui_->GetProfile()->GetTabRestoreService()->CreateEntriesFromWindows(
-        &foreign_session->windows, &entries);
+    const ForeignSession* foreign_session = *i;
     scoped_ptr<ListValue> window_list(new ListValue());
-    for (std::vector<TabRestoreService::Entry*>::const_iterator it =
-        entries.begin(); it != entries.end(); ++it) {
-      TabRestoreService::Entry* entry = *it;
+    for (std::vector<SessionWindow*>::const_iterator it =
+        foreign_session->windows.begin(); it != foreign_session->windows.end();
+        ++it) {
+      SessionWindow* window = *it;
       scoped_ptr<DictionaryValue> window_data(new DictionaryValue());
-      if (entry->type == TabRestoreService::WINDOW &&
-          ValueHelper::WindowToValue(
-              *static_cast<TabRestoreService::Window*>(entry),
-              window_data.get())) {
-        // The javascript checks if the session id is a valid session id,
-        // when rendering session information to the new tab page, and it
-        // sends the sessionTag back when we need to restore a session.
-
-        // TODO(zea): sessionTag is per client, it might be better per window.
+      if (SessionWindowToValue(*window, window_data.get())) {
         window_data->SetString("sessionTag",
             foreign_session->foreign_session_tag);
-        window_data->SetInteger("sessionId", entry->id);
 
         // Give ownership to |list_value|.
         window_list->Append(window_data.release());
@@ -153,10 +123,121 @@ void ForeignSessionHandler::GetForeignSessions(
     }
     added_count++;
 
-    // Give ownership to |client_list|
-    client_list.Append(window_list.release());
+    // Give ownership to |session_list|
+    session_list.Append(window_list.release());
   }
-  dom_ui_->CallJavascriptFunction(L"foreignSessions", client_list);
+  dom_ui_->CallJavascriptFunction(L"foreignSessions", session_list);
+}
+
+void ForeignSessionHandler::HandleOpenForeignSession(
+    const ListValue* args) {
+  size_t num_args = args->GetSize();
+  if (num_args > 3U || num_args == 0) {
+    LOG(ERROR) << "openForeignWindow called with only " << args->GetSize()
+               << " arguments.";
+    return;
+  }
+
+  // Extract the machine tag (always provided)
+  std::string session_string_value;
+  if (!args->GetString(0, &session_string_value)) {
+    LOG(ERROR) << "Failed to extract session tag.";
+    return;
+  }
+
+  // Extract window number.
+  std::string window_num_str;
+  int window_num = kInvalidId;
+  if (num_args >= 2 && (!args->GetString(1, &window_num_str) ||
+      !base::StringToInt(window_num_str, &window_num))) {
+    LOG(ERROR) << "Failed to extract window number.";
+    return;
+  }
+
+  // Extract tab id.
+  std::string tab_id_str;
+  SessionID::id_type tab_id = kInvalidId;
+  if (num_args == 3 && (!args->GetString(2, &tab_id_str) ||
+      !base::StringToInt(tab_id_str, &tab_id))) {
+    LOG(ERROR) << "Failed to extract tab SessionID.";
+    return;
+  }
+
+  SessionModelAssociator* associator = GetModelAssociator();
+
+  if (tab_id != kInvalidId) {
+    // We don't actually care about |window_num|, this is just a sanity check.
+    DCHECK_LT(kInvalidId, window_num);
+    const SessionTab* tab;
+    if (!associator->GetForeignTab(session_string_value, tab_id, &tab)) {
+      LOG(ERROR) << "Failed to load foreign tab.";
+      return;
+    }
+    SessionRestore::RestoreForeignSessionTab(dom_ui_->GetProfile(), *tab);
+  } else {
+    std::vector<SessionWindow*> windows;
+    // Note: we don't own the ForeignSessions themselves.
+    if (!associator->GetForeignSession(session_string_value, &windows)) {
+      LOG(ERROR) << "ForeignSessionHandler failed to get session data from"
+          "SessionModelAssociator.";
+      return;
+    }
+    std::vector<SessionWindow*>::const_iterator iter_begin = windows.begin() +
+        ((window_num == kInvalidId) ? 0 : window_num);
+    std::vector<SessionWindow*>::const_iterator iter_end =
+        ((window_num == kInvalidId) ?
+        std::vector<SessionWindow*>::const_iterator(windows.end()) :
+        iter_begin+1);
+    SessionRestore::RestoreForeignSessionWindows(dom_ui_->GetProfile(),
+                                                 iter_begin,
+                                                 iter_end);
+  }
+}
+
+bool ForeignSessionHandler::SessionTabToValue(
+    const SessionTab& tab,
+    DictionaryValue* dictionary) {
+  if (tab.navigations.empty())
+    return false;
+  int selected_index = tab.current_navigation_index;
+  selected_index = std::max(
+      0,
+      std::min(selected_index,
+               static_cast<int>(tab.navigations.size() - 1)));
+  const TabNavigation& current_navigation =
+      tab.navigations.at(selected_index);
+  if (current_navigation.virtual_url() == GURL(chrome::kChromeUINewTabURL))
+    return false;
+  NewTabUI::SetURLTitleAndDirection(dictionary, current_navigation.title(),
+                                    current_navigation.virtual_url());
+  dictionary->SetString("type", "tab");
+  dictionary->SetReal("timestamp",
+                      static_cast<double>(tab.timestamp.ToInternalValue()));
+  dictionary->SetInteger("sessionId", tab.tab_id.id());
+  return true;
+}
+
+bool ForeignSessionHandler::SessionWindowToValue(
+    const SessionWindow& window,
+    DictionaryValue* dictionary) {
+  if (window.tabs.empty()) {
+    NOTREACHED();
+    return false;
+  }
+  scoped_ptr<ListValue> tab_values(new ListValue());
+  for (size_t i = 0; i < window.tabs.size(); ++i) {
+    scoped_ptr<DictionaryValue> tab_value(new DictionaryValue());
+    if (SessionTabToValue(*window.tabs[i], tab_value.get()))
+      tab_values->Append(tab_value.release());
+  }
+  if (tab_values->GetSize() == 0)
+    return false;
+  dictionary->SetString("type", "window");
+  dictionary->SetReal("timestamp",
+                      static_cast<double>(window.timestamp.ToInternalValue()));
+  dictionary->SetInteger("sessionId", window.window_id.id());
+  dictionary->Set("tabs", tab_values.release());
+  return true;
 }
 
 }  // namespace browser_sync

@@ -38,8 +38,15 @@ class SessionRestore {
 
   // Specifically used in the restoration of a foreign session.  This method
   // restores the given session windows to a browser.
-  static void RestoreForeignSessionWindows(Profile* profile,
-      std::vector<SessionWindow*>* windows);
+  static void RestoreForeignSessionWindows(
+      Profile* profile,
+      std::vector<SessionWindow*>::const_iterator begin,
+      std::vector<SessionWindow*>::const_iterator end);
+
+  // Specifically used in the restoration of a foreign session.  This method
+  // restores the given session tab to a browser.
+  static void RestoreForeignSessionTab(Profile* profile,
+      const SessionTab& tab);
 
   // Synchronously restores the last session. At least one tabbed browser is
   // created, even if there is an error in restoring.

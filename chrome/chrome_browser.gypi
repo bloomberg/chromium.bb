@@ -2439,6 +2439,8 @@
         'browser/sync/glue/extension_sync_traits.h',
         'browser/sync/glue/extension_util.cc',
         'browser/sync/glue/extension_util.h',
+        'browser/sync/glue/foreign_session_tracker.cc',
+        'browser/sync/glue/foreign_session_tracker.h',
         'browser/sync/glue/history_model_worker.cc',
         'browser/sync/glue/history_model_worker.h',
         'browser/sync/glue/http_bridge.cc',

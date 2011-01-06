@@ -216,6 +216,10 @@ int64 BaseNode::GetId() const {
   return GetEntry()->Get(syncable::META_HANDLE);
 }
 
+int64 BaseNode::GetModificationTime() const {
+  return GetEntry()->Get(syncable::MTIME);
+}
+
 bool BaseNode::GetIsFolder() const {
   return GetEntry()->Get(syncable::IS_DIR);
 }

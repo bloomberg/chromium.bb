@@ -10,9 +10,10 @@
 
 #include "base/logging.h"
 #include "base/scoped_vector.h"
-#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
+#include "chrome/browser/tab_contents/navigation_controller.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
@@ -40,18 +41,95 @@ void SessionChangeProcessor::Observe(NotificationType type,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(running());
   DCHECK(profile_);
+
+  // Track which windows and/or tabs are modified.
+  std::vector<TabContents*> modified_tabs;
+  bool windows_changed = false;
   switch (type.value) {
-    case NotificationType::SESSION_SERVICE_SAVED: {
-      std::string tag = session_model_associator_->GetCurrentMachineTag();
-      DCHECK_EQ(Source<Profile>(source).ptr(), profile_);
-      session_model_associator_->UpdateSyncModelDataFromClient();
+    case NotificationType::BROWSER_OPENED: {
+      Browser* browser = Source<Browser>(source).ptr();
+      if (browser->profile() != profile_) {
+        return;
+      }
+
+      windows_changed = true;
+      break;
+    }
+
+    case NotificationType::TAB_PARENTED: {
+      NavigationController* controller =
+          Source<NavigationController>(source).ptr();
+      if (controller->profile() != profile_) {
+        return;
+      }
+      windows_changed = true;
+      modified_tabs.push_back(controller->tab_contents());
+      break;
+    }
+
+    case NotificationType::TAB_CLOSED: {
+      NavigationController* controller =
+          Source<NavigationController>(source).ptr();
+      if (controller->profile() != profile_) {
+        return;
+      }
+      windows_changed = true;
+      modified_tabs.push_back(controller->tab_contents());
+      break;
+    }
+
+    case NotificationType::NAV_LIST_PRUNED: {
+      NavigationController* controller =
+          Source<NavigationController>(source).ptr();
+      if (controller->profile() != profile_) {
+        return;
+      }
+      modified_tabs.push_back(controller->tab_contents());
+      break;
+    }
+
+    case NotificationType::NAV_ENTRY_CHANGED: {
+      NavigationController* controller =
+          Source<NavigationController>(source).ptr();
+      if (controller->profile() != profile_) {
+        return;
+      }
+      modified_tabs.push_back(controller->tab_contents());
+      break;
+    }
+
+    case NotificationType::NAV_ENTRY_COMMITTED: {
+      NavigationController* controller =
+          Source<NavigationController>(source).ptr();
+      if (controller->profile() != profile_) {
+        return;
+      }
+      modified_tabs.push_back(controller->tab_contents());
+      break;
+    }
+
+    case NotificationType::TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED: {
+      TabContents* tab_contents = Source<TabContents>(source).ptr();
+      DCHECK(tab_contents);
+      if (tab_contents->profile() != profile_) {
+        return;
+      }
+      if (tab_contents->extension_app()) {
+        modified_tabs.push_back(tab_contents);
+      }
       break;
     }
     default:
-      LOG(DFATAL) << "Received unexpected notification of type "
+      LOG(ERROR) << "Received unexpected notification of type "
                   << type.value;
       break;
   }
+
+  // Associate windows first to ensure tabs have homes.
+  if (windows_changed)
+    session_model_associator_->ReassociateWindows(false);
+  if (!modified_tabs.empty())
+    session_model_associator_->ReassociateTabs(modified_tabs);
 }
 
 void SessionChangeProcessor::ApplyChangesFromSyncModel(
@@ -65,10 +143,50 @@ void SessionChangeProcessor::ApplyChangesFromSyncModel(
 
   StopObserving();
 
-  // This currently ignores the tracked changes and rebuilds the sessions from
-  // all the session sync nodes.
-  // TODO(zea): Make use of |changes| to adjust only modified sessions.
-  session_model_associator_->UpdateFromSyncModel(trans);
+  sync_api::ReadNode root(trans);
+  if (!root.InitByTagLookup(kSessionsTag)) {
+    error_handler()->OnUnrecoverableError(FROM_HERE,
+        "Sessions root node lookup failed.");
+    return;
+  }
+
+  for (int i = 0; i < change_count; ++i) {
+    const sync_api::SyncManager::ChangeRecord& change = changes[i];
+    sync_api::SyncManager::ChangeRecord::Action action(change.action);
+    if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE == action) {
+      // Deletions should only be for a foreign client itself, and hence affect
+      // the header node, never a tab node.
+      sync_api::ReadNode node(trans);
+      if (!node.InitByIdLookup(change.id)) {
+        error_handler()->OnUnrecoverableError(FROM_HERE,
+                                              "Session node lookup failed.");
+        return;
+      }
+      DCHECK_EQ(node.GetModelType(), syncable::SESSIONS);
+      const sync_pb::SessionSpecifics& specifics = node.GetSessionSpecifics();
+      session_model_associator_->DisassociateForeignSession(
+          specifics.session_tag());
+      continue;
+    }
+
+    // Handle an update or add.
+    sync_api::ReadNode sync_node(trans);
+    if (!sync_node.InitByIdLookup(change.id)) {
+      error_handler()->OnUnrecoverableError(FROM_HERE,
+          "Session node lookup failed.");
+      return;
+    }
+
+    // Check that the changed node is a child of the session folder.
+    DCHECK(root.GetId() == sync_node.GetParentId());
+    DCHECK(syncable::SESSIONS == sync_node.GetModelType());
+
+    const sync_pb::SessionSpecifics& specifics(
+        sync_node.GetSessionSpecifics());
+    const int64 mtime = sync_node.GetModificationTime();
+    // Model associator handles foreign session update and add the same.
+    session_model_associator_->AssociateForeignSpecifics(specifics, mtime);
+  }
 
   // Notify foreign session handlers that there are new sessions.
   NotificationService::current()->Notify(
@@ -96,9 +214,21 @@ void SessionChangeProcessor::StopImpl() {
 void SessionChangeProcessor::StartObserving() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(profile_);
-  notification_registrar_.Add(
-      this, NotificationType::SESSION_SERVICE_SAVED,
-      Source<Profile>(profile_));
+  notification_registrar_.Add(this, NotificationType::TAB_PARENTED,
+      NotificationService::AllSources());
+  notification_registrar_.Add(this, NotificationType::TAB_CLOSED,
+      NotificationService::AllSources());
+  notification_registrar_.Add(this, NotificationType::NAV_LIST_PRUNED,
+      NotificationService::AllSources());
+  notification_registrar_.Add(this, NotificationType::NAV_ENTRY_CHANGED,
+      NotificationService::AllSources());
+  notification_registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+      NotificationService::AllSources());
+  notification_registrar_.Add(this, NotificationType::BROWSER_OPENED,
+      NotificationService::AllSources());
+  notification_registrar_.Add(this,
+      NotificationType::TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
+      NotificationService::AllSources());
 }
 
 void SessionChangeProcessor::StopObserving() {

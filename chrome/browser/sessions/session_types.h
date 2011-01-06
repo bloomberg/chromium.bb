@@ -11,6 +11,7 @@
 
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
+#include "base/time.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/common/page_transition_types.h"
 #include "gfx/rect.h"
@@ -121,6 +122,10 @@ struct SessionTab {
   // NOTE: when the service is creating SessionTabs, initially this
   // corresponds to TabNavigation.index, not the index in navigations. When done
   // creating though, this is set to the index in navigations.
+  //
+  // NOTE 2: this value can be larger than the size of |navigations|, due to
+  // only valid url's being stored (ie chrome://newtab is not stored). Bounds
+  // checking must be performed before indexing into |navigations|.
   int current_navigation_index;
 
   // True if the tab is pinned.
@@ -128,6 +133,9 @@ struct SessionTab {
 
   // If non-empty, this tab is an app tab and this is the id of the extension.
   std::string extension_app_id;
+
+  // Timestamp for when this tab was last modified.
+  base::Time timestamp;
 
   std::vector<TabNavigation> navigations;
 
@@ -167,6 +175,9 @@ struct SessionWindow {
   // Currently SessionService prunes all constrained windows so that session
   // restore does not attempt to restore them.
   bool is_constrained;
+
+  // Timestamp for when this window was last modified.
+  base::Time timestamp;
 
   // The tabs, ordered by visual order.
   std::vector<SessionTab*> tabs;

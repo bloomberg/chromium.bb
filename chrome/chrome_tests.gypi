@@ -1393,6 +1393,7 @@
         'browser/sync/glue/http_bridge_unittest.cc',
         'browser/sync/glue/preference_data_type_controller_unittest.cc',
         'browser/sync/glue/preference_model_associator_unittest.cc',
+        'browser/sync/glue/session_model_associator_unittest.cc',
         'browser/sync/glue/sync_backend_host_mock.cc',
         'browser/sync/glue/sync_backend_host_mock.h',
         'browser/sync/glue/theme_data_type_controller_unittest.cc',

@@ -170,16 +170,9 @@ TEST_F(ProfileSyncServiceSessionTest, WriteSessionToNode) {
   bool has_nodes;
   ASSERT_TRUE(model_associator_->SyncModelHasUserCreatedNodes(&has_nodes));
   ASSERT_TRUE(has_nodes);
-  ASSERT_TRUE(model_associator_->ChromeModelHasUserCreatedNodes(&has_nodes));
-  ASSERT_TRUE(has_nodes);
   std::string machine_tag = model_associator_->GetCurrentMachineTag();
-  int64 sync_id;
-  ASSERT_TRUE(model_associator_->GetSyncIdForTaggedNode(&machine_tag,
-      &sync_id));
-  ASSERT_EQ(model_associator_->GetSyncIdFromChromeId(machine_tag), sync_id);
-  scoped_ptr<const sync_pb::SessionSpecifics> sync_specifics(
-      model_associator_->GetChromeNodeFromSyncId(sync_id));
-  ASSERT_TRUE(sync_specifics != NULL);
+  int64 sync_id = model_associator_->GetSyncIdFromSessionTag(machine_tag);
+  ASSERT_NE(sync_api::kInvalidId, sync_id);
 
   // Check that we can get the correct session specifics back from the node.
   sync_api::ReadTransaction trans(sync_service_->
@@ -188,8 +181,10 @@ TEST_F(ProfileSyncServiceSessionTest, WriteSessionToNode) {
   ASSERT_TRUE(node.InitByClientTagLookup(syncable::SESSIONS,
       machine_tag));
   const sync_pb::SessionSpecifics& specifics(node.GetSessionSpecifics());
-  ASSERT_EQ(sync_specifics->session_tag(), specifics.session_tag());
   ASSERT_EQ(machine_tag, specifics.session_tag());
+  ASSERT_TRUE(specifics.has_header());
+  const sync_pb::SessionHeader& header_s = specifics.header();
+  ASSERT_EQ(0, header_s.window_size());
 }
 
 // Test that we can fill this machine's session, write it to a node,
@@ -208,51 +203,35 @@ TEST_F(ProfileSyncServiceSessionTest, WriteFilledSessionToNode) {
   AddTab(browser(), GURL("http://bar/1"));
   NavigateAndCommitActiveTab(GURL("http://bar/2"));
 
-  // Report a saved session, thus causing the ChangeProcessor to write to a
-  // node.
-  NotificationService::current()->Notify(
-      NotificationType::SESSION_SERVICE_SAVED,
-      Source<Profile>(profile()),
-      NotificationService::NoDetails());
+  ASSERT_TRUE(model_associator_->SyncModelHasUserCreatedNodes(&has_nodes));
+  ASSERT_TRUE(has_nodes);
   std::string machine_tag = model_associator_->GetCurrentMachineTag();
-  int64 sync_id;
-  ASSERT_TRUE(model_associator_->GetSyncIdForTaggedNode(&machine_tag,
-      &sync_id));
-  ASSERT_EQ(model_associator_->GetSyncIdFromChromeId(machine_tag), sync_id);
-  scoped_ptr<const sync_pb::SessionSpecifics> sync_specifics(
-      model_associator_->GetChromeNodeFromSyncId(sync_id));
-  ASSERT_TRUE(sync_specifics != NULL);
+  int64 sync_id = model_associator_->GetSyncIdFromSessionTag(machine_tag);
+  ASSERT_NE(sync_api::kInvalidId, sync_id);
 
   // Check that this machine's data is not included in the foreign windows.
-  ScopedVector<ForeignSession> foreign_sessions;
-  model_associator_->GetSessionData(&foreign_sessions.get());
+  std::vector<const ForeignSession*> foreign_sessions;
+  model_associator_->GetAllForeignSessions(&foreign_sessions);
   ASSERT_EQ(foreign_sessions.size(), 0U);
 
-  // Get the windows for this machine from the node and check that they were
+  // Get the tabs for this machine from the node and check that they were
   // filled.
-  sync_api::ReadTransaction trans(sync_service_->
-      backend()->GetUserShareHandle());
-  sync_api::ReadNode node(&trans);
-  ASSERT_TRUE(node.InitByClientTagLookup(syncable::SESSIONS,
-      machine_tag));
-  model_associator_->AppendForeignSessionWithID(sync_id,
-      &foreign_sessions.get(), &trans);
-  ASSERT_EQ(foreign_sessions.size(), 1U);
-  ASSERT_EQ(1U,  foreign_sessions[0]->windows.size());
-  ASSERT_EQ(2U, foreign_sessions[0]->windows[0]->tabs.size());
-  ASSERT_EQ(2U, foreign_sessions[0]->windows[0]->tabs[0]->navigations.size());
-  ASSERT_EQ(GURL("http://bar/1"),
-      foreign_sessions[0]->windows[0]->tabs[0]->navigations[0].virtual_url());
-  ASSERT_EQ(GURL("http://bar/2"),
-      foreign_sessions[0]->windows[0]->tabs[0]->navigations[1].virtual_url());
-  ASSERT_EQ(2U, foreign_sessions[0]->windows[0]->tabs[1]->navigations.size());
-  ASSERT_EQ(GURL("http://foo/1"),
-      foreign_sessions[0]->windows[0]->tabs[1]->navigations[0].virtual_url());
-  ASSERT_EQ(GURL("http://foo/2"),
-      foreign_sessions[0]->windows[0]->tabs[1]->navigations[1].virtual_url());
-  const sync_pb::SessionSpecifics& specifics(node.GetSessionSpecifics());
-  ASSERT_EQ(sync_specifics->session_tag(), specifics.session_tag());
-  ASSERT_EQ(machine_tag, specifics.session_tag());
+  SessionModelAssociator::TabLinksMap tab_map = model_associator_->tab_map_;
+  ASSERT_EQ(2U, tab_map.size());
+  // Tabs are ordered by sessionid in tab_map, so should be able to traverse
+  // the tree based on order of tabs created
+  SessionModelAssociator::TabLinksMap::iterator iter = tab_map.begin();
+  ASSERT_EQ(2, iter->second.tab()->controller().entry_count());
+  ASSERT_EQ(GURL("http://foo/1"), iter->second.tab()->controller().
+          GetEntryAtIndex(0)->virtual_url());
+  ASSERT_EQ(GURL("http://foo/2"), iter->second.tab()->controller().
+          GetEntryAtIndex(1)->virtual_url());
+  iter++;
+  ASSERT_EQ(2, iter->second.tab()->controller().entry_count());
+  ASSERT_EQ(GURL("http://bar/1"), iter->second.tab()->controller().
+      GetEntryAtIndex(0)->virtual_url());
+  ASSERT_EQ(GURL("http://bar/2"), iter->second.tab()->controller().
+      GetEntryAtIndex(1)->virtual_url());
 }
 
 // Test that we fail on a failed model association.
@@ -273,13 +252,18 @@ TEST_F(ProfileSyncServiceSessionTest, WriteForeignSessionToNode) {
   ASSERT_TRUE(has_nodes);
 
   // Fill an instance of session specifics with a foreign session's data.
-  sync_pb::SessionSpecifics specifics;
+  sync_pb::SessionSpecifics meta_specifics;
   std::string machine_tag = "session_sync123";
-  specifics.set_session_tag(machine_tag);
-  sync_pb::SessionWindow* window = specifics.add_session_window();
-  window->set_selected_tab_index(1);
-  window->set_browser_type(sync_pb::SessionWindow_BrowserType_TYPE_NORMAL);
-  sync_pb::SessionTab* tab = window->add_session_tab();
+  meta_specifics.set_session_tag(machine_tag);
+  sync_pb::SessionHeader* header_s = meta_specifics.mutable_header();
+  sync_pb::SessionWindow* window_s = header_s->add_window();
+  window_s->add_tab(0);
+  window_s->set_browser_type(sync_pb::SessionWindow_BrowserType_TYPE_NORMAL);
+  window_s->set_selected_tab_index(1);
+
+  sync_pb::SessionSpecifics tab_specifics;
+  tab_specifics.set_session_tag(machine_tag);
+  sync_pb::SessionTab* tab = tab_specifics.mutable_tab();
   tab->set_tab_visual_index(13);
   tab->set_current_navigation_index(3);
   tab->set_pinned(true);
@@ -293,25 +277,15 @@ TEST_F(ProfileSyncServiceSessionTest, WriteForeignSessionToNode) {
 
   // Update the server with the session specifics.
   {
-    sync_api::WriteTransaction trans(sync_service_->
-        backend()->GetUserShareHandle());
-    sync_api::ReadNode root(&trans);
-    ASSERT_TRUE(root.InitByTagLookup(kSessionsTag));
-    model_associator_->UpdateSyncModel(&specifics, &trans, &root);
-    model_associator_->UpdateFromSyncModel(&trans);
+    model_associator_->AssociateForeignSpecifics(meta_specifics, 0);
+    model_associator_->AssociateForeignSpecifics(tab_specifics, 0);
   }
 
-  // Check that the foreign session was written to a node and retrieve the data.
-  int64 sync_id;
-  ASSERT_TRUE(model_associator_->GetSyncIdForTaggedNode(&machine_tag,
-      &sync_id));
-  ASSERT_EQ(model_associator_->GetSyncIdFromChromeId(machine_tag), sync_id);
-  scoped_ptr<const sync_pb::SessionSpecifics> sync_specifics(
-      model_associator_->GetChromeNodeFromSyncId(sync_id));
-  ASSERT_TRUE(sync_specifics != NULL);
-  ScopedVector<ForeignSession> foreign_sessions;
-  model_associator_->GetSessionData(&foreign_sessions.get());
+  // Check that the foreign session was associated and retrieve the data.
+  std::vector<const ForeignSession*> foreign_sessions;
+  model_associator_->GetAllForeignSessions(&foreign_sessions);
   ASSERT_EQ(1U, foreign_sessions.size());
+  ASSERT_EQ(machine_tag, foreign_sessions[0]->foreign_session_tag);
   ASSERT_EQ(1U,  foreign_sessions[0]->windows.size());
   ASSERT_EQ(1U, foreign_sessions[0]->windows[0]->tabs.size());
   ASSERT_EQ(1U, foreign_sessions[0]->windows[0]->tabs[0]->navigations.size());
@@ -334,14 +308,6 @@ TEST_F(ProfileSyncServiceSessionTest, WriteForeignSessionToNode) {
       foreign_sessions[0]->windows[0]->tabs[0]->navigations[0].transition());
   ASSERT_EQ(GURL("http://foo/1"),
       foreign_sessions[0]->windows[0]->tabs[0]->navigations[0].virtual_url());
-  sync_api::WriteTransaction trans(sync_service_->
-      backend()->GetUserShareHandle());
-  sync_api::ReadNode node(&trans);
-  ASSERT_TRUE(node.InitByClientTagLookup(syncable::SESSIONS,
-      machine_tag));
-  const sync_pb::SessionSpecifics& specifics_(node.GetSessionSpecifics());
-  ASSERT_EQ(sync_specifics->session_tag(), specifics_.session_tag());
-  ASSERT_EQ(machine_tag, specifics_.session_tag());
 }
 
 // Test the DataTypeController on update.
@@ -349,7 +315,7 @@ TEST_F(ProfileSyncServiceSessionTest, UpdatedSyncNodeActionUpdate) {
   CreateRootTask task(this);
   ASSERT_TRUE(StartSyncService(&task, false));
   ASSERT_TRUE(task.success());
-  int64 node_id = model_associator_->GetSyncIdFromChromeId(
+  int64 node_id = model_associator_->GetSyncIdFromSessionTag(
       model_associator_->GetCurrentMachineTag());
   scoped_ptr<SyncManager::ChangeRecord> record(new SyncManager::ChangeRecord);
   record->action = SyncManager::ChangeRecord::ACTION_UPDATE;
@@ -368,7 +334,7 @@ TEST_F(ProfileSyncServiceSessionTest, UpdatedSyncNodeActionAdd) {
   ASSERT_TRUE(StartSyncService(&task, false));
   ASSERT_TRUE(task.success());
 
-  int64 node_id = model_associator_->GetSyncIdFromChromeId(
+  int64 node_id = model_associator_->GetSyncIdFromSessionTag(
       model_associator_->GetCurrentMachineTag());
   scoped_ptr<SyncManager::ChangeRecord> record(new SyncManager::ChangeRecord);
   record->action = SyncManager::ChangeRecord::ACTION_ADD;
@@ -387,7 +353,7 @@ TEST_F(ProfileSyncServiceSessionTest, UpdatedSyncNodeActionDelete) {
   ASSERT_TRUE(StartSyncService(&task, false));
   ASSERT_TRUE(task.success());
 
-  int64 node_id = model_associator_->GetSyncIdFromChromeId(
+  int64 node_id = model_associator_->GetSyncIdFromSessionTag(
       model_associator_->GetCurrentMachineTag());
   scoped_ptr<SyncManager::ChangeRecord> record(new SyncManager::ChangeRecord);
   record->action = SyncManager::ChangeRecord::ACTION_DELETE;
@@ -398,6 +364,64 @@ TEST_F(ProfileSyncServiceSessionTest, UpdatedSyncNodeActionDelete) {
     change_processor_->ApplyChangesFromSyncModel(&trans, record.get(), 1);
   }
   ASSERT_TRUE(notified_of_update_);
+}
+// Test the TabNodePool when it starts off empty.
+TEST_F(ProfileSyncServiceSessionTest, TabNodePoolEmpty) {
+  CreateRootTask task(this);
+  ASSERT_TRUE(StartSyncService(&task, false));
+  ASSERT_TRUE(task.success());
+
+  std::vector<int64> node_ids;
+  ASSERT_EQ(0U, model_associator_->tab_pool_.capacity());
+  ASSERT_TRUE(model_associator_->tab_pool_.empty());
+  ASSERT_TRUE(model_associator_->tab_pool_.full());
+  const size_t num_ids = 10;
+  for (size_t i = 0; i < num_ids; ++i) {
+    int64 id = model_associator_->tab_pool_.GetFreeTabNode();
+    ASSERT_GT(id, -1);
+    node_ids.push_back(id);
+  }
+  ASSERT_EQ(num_ids, model_associator_->tab_pool_.capacity());
+  ASSERT_TRUE(model_associator_->tab_pool_.empty());
+  ASSERT_FALSE(model_associator_->tab_pool_.full());
+  for (size_t i = 0; i < num_ids; ++i) {
+    model_associator_->tab_pool_.FreeTabNode(node_ids[i]);
+  }
+  ASSERT_EQ(num_ids, model_associator_->tab_pool_.capacity());
+  ASSERT_FALSE(model_associator_->tab_pool_.empty());
+  ASSERT_TRUE(model_associator_->tab_pool_.full());
+}
+
+// Test the TabNodePool when it starts off with nodes
+TEST_F(ProfileSyncServiceSessionTest, TabNodePoolNonEmpty) {
+  CreateRootTask task(this);
+  ASSERT_TRUE(StartSyncService(&task, false));
+  ASSERT_TRUE(task.success());
+
+  const size_t num_starting_nodes = 3;
+  for (size_t i = 0; i < num_starting_nodes; ++i) {
+    model_associator_->tab_pool_.AddTabNode(i);
+  }
+
+  std::vector<int64> node_ids;
+  ASSERT_EQ(num_starting_nodes, model_associator_->tab_pool_.capacity());
+  ASSERT_FALSE(model_associator_->tab_pool_.empty());
+  ASSERT_TRUE(model_associator_->tab_pool_.full());
+  const size_t num_ids = 10;
+  for (size_t i = 0; i < num_ids; ++i) {
+    int64 id = model_associator_->tab_pool_.GetFreeTabNode();
+    ASSERT_GT(id, -1);
+    node_ids.push_back(id);
+  }
+  ASSERT_EQ(num_ids, model_associator_->tab_pool_.capacity());
+  ASSERT_TRUE(model_associator_->tab_pool_.empty());
+  ASSERT_FALSE(model_associator_->tab_pool_.full());
+  for (size_t i = 0; i < num_ids; ++i) {
+    model_associator_->tab_pool_.FreeTabNode(node_ids[i]);
+  }
+  ASSERT_EQ(num_ids, model_associator_->tab_pool_.capacity());
+  ASSERT_FALSE(model_associator_->tab_pool_.empty());
+  ASSERT_TRUE(model_associator_->tab_pool_.full());
 }
 
 }  // namespace browser_sync

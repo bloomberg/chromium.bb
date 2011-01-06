@@ -10,6 +10,9 @@
 
 class NavigationController;
 class SessionService;
+namespace browser_sync {
+  class SessionModelAssociator;
+}
 
 // Uniquely identifies a tab or window for the duration of a session.
 class SessionID {
@@ -25,6 +28,7 @@ class SessionID {
  private:
   friend class NavigationController;
   friend class SessionService;
+  friend class browser_sync::SessionModelAssociator;
 
   explicit SessionID(id_type id) : id_(id) {}
 

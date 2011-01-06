@@ -21,8 +21,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest, SingleClientChanged) {
   GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1));
 
   // Get foreign session data from client 1.
-  ScopedVector<ForeignSession> sessions1;
-  ASSERT_TRUE(GetSessionData(1, &sessions1.get()));
+  std::vector<const ForeignSession*> sessions1;
+  ASSERT_TRUE(GetSessionData(1, &sessions1));
 
   // Verify client 1's foreign session matches client 0 current window.
   ASSERT_EQ(1U, sessions1.size());
@@ -47,10 +47,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest, BothChanged) {
   ASSERT_TRUE(AwaitQuiescence());
 
   // Get foreign session data from client 0 and 1.
-  ScopedVector<ForeignSession> sessions0;
-  ScopedVector<ForeignSession> sessions1;
-  ASSERT_TRUE(GetSessionData(0, &sessions0.get()));
-  ASSERT_TRUE(GetSessionData(1, &sessions1.get()));
+  std::vector<const ForeignSession*> sessions0;
+  std::vector<const ForeignSession*> sessions1;
+  ASSERT_TRUE(GetSessionData(0, &sessions0));
+  ASSERT_TRUE(GetSessionData(1, &sessions1));
 
   // Verify client 1's foreign session matches client 0's current window and
   // vice versa.
@@ -59,4 +59,3 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveSessionsSyncTest, BothChanged) {
   ASSERT_TRUE(WindowsMatch(sessions1[0]->windows, *client0_windows));
   ASSERT_TRUE(WindowsMatch(sessions0[0]->windows, *client1_windows));
 }
-

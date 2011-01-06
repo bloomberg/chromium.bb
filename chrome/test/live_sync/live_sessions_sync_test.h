@@ -92,24 +92,25 @@ class TestSessionService
   // Internal method used in the callback to obtain the current session.
   // Lives on and called from backend thread (file_thread).
   // We don't own windows so need to make a deep copy.
+  // In this case, we only copy those values compared against in WindowsMatch
+  // (number of windows, number of tabs, and navigations within tabs).
   void OnGotSession(int handle, std::vector<SessionWindow*>* windows) {
-    // Hacky. We need to make a deep copy of the session windows. One way to do
-    // this is to use the session model associators functionality to create
-    // foreign sessions, which themselves wrap a SessionWindow vector. We just
-    // need to make sure to destroy all the foreign sessions we created when
-    // we're done. That's what the foreign_sessions_ ScopedVector is for.
-    sync_pb::SessionSpecifics session;
-    profile_->GetProfileSyncService()->
-        GetSessionModelAssociator()->
-        FillSpecificsFromSessions(windows, &session);
-
-    std::vector<ForeignSession*> foreign_sessions;
-    profile_->GetProfileSyncService()->
-        GetSessionModelAssociator()->
-        AppendForeignSessionFromSpecifics(&session, &foreign_sessions);
-    ASSERT_EQ(foreign_sessions.size(), 1U);
-    foreign_sessions_.push_back(foreign_sessions[0]);
-    windows_ = &foreign_sessions[0]->windows;
+    scoped_ptr<ForeignSession> foreign_session(new ForeignSession());
+    for (size_t w = 0; w < windows->size(); ++w) {
+      const SessionWindow& window = *windows->at(w);
+      scoped_ptr<SessionWindow> new_window(new SessionWindow());
+      for (size_t t = 0; t < window.tabs.size(); ++t) {
+        const SessionTab& tab = *window.tabs.at(t);
+        scoped_ptr<SessionTab> new_tab(new SessionTab());
+        new_tab->navigations.resize(tab.navigations.size());
+        std::copy(tab.navigations.begin(), tab.navigations.end(),
+                  new_tab->navigations.begin());
+        new_window->tabs.push_back(new_tab.release());
+      }
+      foreign_session->windows.push_back(new_window.release());
+    }
+    windows_ = &(foreign_session->windows);
+    foreign_sessions_.push_back(foreign_session.release());
     got_windows_.Signal();
   }
 
@@ -240,19 +241,19 @@ class LiveSessionsSyncTest : public LiveSyncTest {
 
   // Returns number of foreign sessions for a profile.
   int GetNumForeignSessions(int index) {
-    ScopedVector<ForeignSession> sessions;
+    std::vector<const ForeignSession*> sessions;
     if (!GetProfile(index)->GetProfileSyncService()->
-        GetSessionModelAssociator()->GetSessionData(&sessions.get()))
+        GetSessionModelAssociator()->GetAllForeignSessions(&sessions))
         return 0;
     return sessions.size();
   }
 
   // Fills the sessions vector with the model associator's foreign session data.
-  // Caller owns sessions.
-  bool GetSessionData(int index, std::vector<ForeignSession*>* sessions)
+  // Caller owns |sessions|, but not ForeignSession objects within.
+  bool GetSessionData(int index, std::vector<const ForeignSession*>* sessions)
       WARN_UNUSED_RESULT {
     if (!GetProfile(index)->GetProfileSyncService()->
-        GetSessionModelAssociator()->GetSessionData(sessions))
+        GetSessionModelAssociator()->GetAllForeignSessions(sessions))
       return false;
     SortForeignSessions(sessions);
     return true;
@@ -284,7 +285,9 @@ class LiveSessionsSyncTest : public LiveSyncTest {
 
   // Compares a foreign session based on the first session window.
   // Returns true based on the comparison of the session windows.
-  static bool CompareForeignSessions(ForeignSession* lhs, ForeignSession* rhs) {
+  static bool CompareForeignSessions(
+      const ForeignSession* lhs,
+      const ForeignSession* rhs) {
     if (!lhs ||
         !rhs ||
         lhs->windows.size() < 1 ||
@@ -297,18 +300,33 @@ class LiveSessionsSyncTest : public LiveSyncTest {
   }
 
   // Sort a foreign session vector using our custom foreign session comparator.
-  void SortForeignSessions(std::vector<ForeignSession*>* sessions) {
+  void SortForeignSessions(std::vector<const ForeignSession*>* sessions) {
     std::sort(sessions->begin(), sessions->end(),
         LiveSessionsSyncTest::CompareForeignSessions);
+  }
+
+  // Compares two tab navigations base on the parameters we sync.
+  // (Namely, we don't sync state or type mask)
+  bool NavigationEquals(const TabNavigation& expected,
+                        const TabNavigation& actual) {
+    if (expected.virtual_url() != actual.virtual_url())
+      return false;
+    if (expected.referrer() != actual.referrer())
+      return false;
+    if (expected.title() != actual.title())
+      return false;
+    if (expected.transition() != actual.transition())
+      return false;
+    return true;
   }
 
   // Verifies that two SessionWindows match.
   // Returns:
   //  - true if all the following match:
-  //    1. number of SessionWindows per vector,
+  //    1. number of SessionWindows,
   //    2. number of tabs per SessionWindow,
-  //    3. number of tab navigations per nab,
-  //    4. actual tab navigations
+  //    3. number of tab navigations per tab,
+  //    4. actual tab navigations contents
   // - false otherwise.
   bool WindowsMatch(const std::vector<SessionWindow*> &win1,
       const std::vector<SessionWindow*> &win2) WARN_UNUSED_RESULT {
@@ -323,8 +341,10 @@ class LiveSessionsSyncTest : public LiveSyncTest {
         client0_tab = win1[i]->tabs[j];
         client1_tab = win2[i]->tabs[j];
         for (size_t k = 0; k < client0_tab->navigations.size(); ++k) {
-          GetHelper(0)->AssertNavigationEquals(client0_tab->navigations[k],
-                                               client1_tab->navigations[k]);
+          if (!NavigationEquals(client0_tab->navigations[k],
+                                client1_tab->navigations[k])) {
+            return false;
+          }
         }
       }
     }
@@ -339,14 +359,14 @@ class LiveSessionsSyncTest : public LiveSyncTest {
   bool CheckForeignSessionsAgainst(int index,
       const std::vector<std::vector<SessionWindow*>* >& windows)
       WARN_UNUSED_RESULT {
-    ScopedVector<ForeignSession> sessions;
-    if (!GetSessionData(index, &sessions.get()))
+    std::vector<const ForeignSession*> sessions;
+    if (!GetSessionData(index, &sessions))
       return false;
     if ((size_t)(num_clients()-1) != sessions.size())
       return false;
 
     int window_index = 0;
-    for (size_t j = 0; j < sessions->size(); ++j, ++window_index) {
+    for (size_t j = 0; j < sessions.size(); ++j, ++window_index) {
       if (window_index == index)
         window_index++;  // Skip self.
       if (!WindowsMatch(sessions[j]->windows, *windows[window_index]))
