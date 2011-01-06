@@ -13,6 +13,7 @@
 #include "base/string_tokenizer.h"
 #include "base/nix/xdg_util.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_thread.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/process_watcher.h"
 
@@ -33,8 +34,12 @@ struct ProxyConfigCommand {
   const char** argv;
 };
 
-static bool SearchPATH(ProxyConfigCommand* commands, size_t ncommands,
-                       size_t* index) {
+namespace {
+
+// Search $PATH to find one of the commands. Store the full path to
+// it in the |binary| field and the command array index in in |index|.
+bool SearchPATH(ProxyConfigCommand* commands, size_t ncommands, size_t* index) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   const char* path = getenv("PATH");
   if (!path)
     return false;
@@ -56,7 +61,21 @@ static bool SearchPATH(ProxyConfigCommand* commands, size_t ncommands,
   return false;
 }
 
-static void StartProxyConfigUtil(const ProxyConfigCommand& command) {
+// Show the proxy config URL in the given tab.
+void ShowLinuxProxyConfigUrl(TabContents* tab_contents) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  const char* name = base::nix::GetDesktopEnvironmentName(env.get());
+  if (name)
+    LOG(ERROR) << "Could not find " << name << " network settings in $PATH";
+  tab_contents->OpenURL(GURL(kLinuxProxyConfigUrl), GURL(),
+                        NEW_FOREGROUND_TAB, PageTransition::LINK);
+}
+
+// Start the given proxy configuration utility.
+void StartProxyConfigUtil(TabContents* tab_contents,
+                          const ProxyConfigCommand& command) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   std::vector<std::string> argv;
   argv.push_back(command.binary);
   for (size_t i = 1; command.argv[i]; i++)
@@ -65,16 +84,17 @@ static void StartProxyConfigUtil(const ProxyConfigCommand& command) {
   base::ProcessHandle handle;
   if (!base::LaunchApp(argv, no_files, false, &handle)) {
     LOG(ERROR) << "StartProxyConfigUtil failed to start " << command.binary;
-    BrowserList::GetLastActive()->
-        OpenURL(GURL(kLinuxProxyConfigUrl), GURL(), NEW_FOREGROUND_TAB,
-                PageTransition::LINK);
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        NewRunnableFunction(&ShowLinuxProxyConfigUrl, tab_contents));
     return;
   }
   ProcessWatcher::EnsureProcessGetsReaped(handle);
 }
 
-void AdvancedOptionsUtilities::ShowNetworkProxySettings(
-      TabContents* tab_contents) {
+// Detect, and if possible, start the appropriate proxy config utility. On
+// failure to do so, show the Linux proxy config URL in a new tab instead.
+void DetectAndStartProxyConfigUtil(TabContents* tab_contents) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   scoped_ptr<base::Environment> env(base::Environment::Create());
 
   ProxyConfigCommand command;
@@ -107,14 +127,19 @@ void AdvancedOptionsUtilities::ShowNetworkProxySettings(
   }
 
   if (found_command) {
-    StartProxyConfigUtil(command);
+    StartProxyConfigUtil(tab_contents, command);
   } else {
-    const char* name = base::nix::GetDesktopEnvironmentName(env.get());
-    if (name)
-      LOG(ERROR) << "Could not find " << name << " network settings in $PATH";
-    tab_contents->OpenURL(GURL(kLinuxProxyConfigUrl), GURL(),
-                          NEW_FOREGROUND_TAB, PageTransition::LINK);
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        NewRunnableFunction(&ShowLinuxProxyConfigUrl, tab_contents));
   }
+}
+
+}  // anonymous namespace
+
+void AdvancedOptionsUtilities::ShowNetworkProxySettings(
+    TabContents* tab_contents) {
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+      NewRunnableFunction(&DetectAndStartProxyConfigUtil, tab_contents));
 }
 
 #endif  // !defined(OS_CHROMEOS)

@@ -19,7 +19,6 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_tokenizer.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/nix/xdg_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
@@ -365,6 +364,11 @@ class NetworkSection : public OptionsPageBase {
   // The callback functions for invoking the proxy config dialog.
   static void OnChangeProxiesButtonClicked(GtkButton *button,
                                            NetworkSection* section);
+  // Detect, and if possible, start the appropriate proxy config utility. On
+  // failure to do so, show the Linux proxy config URL in a new tab instead.
+  static void DetectAndStartProxyConfigUtil(Profile* profile);
+  // Show the proxy config URL in a new tab.
+  static void ShowLinuxProxyConfigUrl(Profile* profile);
   // Search $PATH to find one of the commands. Store the full path to
   // it in the |binary| field and the command array index in in |index|.
   static bool SearchPATH(ProxyConfigCommand* commands, size_t ncommands,
@@ -422,15 +426,8 @@ void NetworkSection::NotifyPrefChanged(const std::string* pref_name) {
 }
 
 // static
-void NetworkSection::OnChangeProxiesButtonClicked(GtkButton *button,
-                                                  NetworkSection* section) {
-  // Changing proxy settings searches the disk for the proxy configuration
-  // binary.  Temporarily allow IO for now, see http://crbug.com/63690
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-
-  section->UserMetricsRecordAction(UserMetricsAction("Options_ChangeProxies"),
-                                   NULL);
-
+void NetworkSection::DetectAndStartProxyConfigUtil(Profile* profile) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   scoped_ptr<base::Environment> env(base::Environment::Create());
 
   ProxyConfigCommand command;
@@ -463,18 +460,37 @@ void NetworkSection::OnChangeProxiesButtonClicked(GtkButton *button,
   }
 
   if (found_command) {
-    StartProxyConfigUtil(section->profile(), command);
+    StartProxyConfigUtil(profile, command);
   } else {
-    const char* name = base::nix::GetDesktopEnvironmentName(env.get());
-    if (name)
-      LOG(ERROR) << "Could not find " << name << " network settings in $PATH";
-    browser::ShowOptionsURL(section->profile(), GURL(kLinuxProxyConfigUrl));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        NewRunnableFunction(&NetworkSection::ShowLinuxProxyConfigUrl, profile));
   }
+}
+
+// static
+void NetworkSection::ShowLinuxProxyConfigUrl(Profile* profile) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  const char* name = base::nix::GetDesktopEnvironmentName(env.get());
+  if (name)
+    LOG(ERROR) << "Could not find " << name << " network settings in $PATH";
+  browser::ShowOptionsURL(profile, GURL(kLinuxProxyConfigUrl));
+}
+
+// static
+void NetworkSection::OnChangeProxiesButtonClicked(GtkButton *button,
+                                                  NetworkSection* section) {
+  section->UserMetricsRecordAction(UserMetricsAction("Options_ChangeProxies"),
+                                   NULL);
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+      NewRunnableFunction(&NetworkSection::DetectAndStartProxyConfigUtil,
+                          section->profile()));
 }
 
 // static
 bool NetworkSection::SearchPATH(ProxyConfigCommand* commands, size_t ncommands,
                                 size_t* index) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   const char* path = getenv("PATH");
   if (!path)
     return false;
@@ -499,6 +515,7 @@ bool NetworkSection::SearchPATH(ProxyConfigCommand* commands, size_t ncommands,
 // static
 void NetworkSection::StartProxyConfigUtil(Profile* profile,
                                           const ProxyConfigCommand& command) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   std::vector<std::string> argv;
   argv.push_back(command.binary);
   for (size_t i = 1; command.argv[i]; i++)
@@ -507,7 +524,8 @@ void NetworkSection::StartProxyConfigUtil(Profile* profile,
   base::ProcessHandle handle;
   if (!base::LaunchApp(argv, no_files, false, &handle)) {
     LOG(ERROR) << "StartProxyConfigUtil failed to start " << command.binary;
-    browser::ShowOptionsURL(profile, GURL(kLinuxProxyConfigUrl));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+        NewRunnableFunction(&NetworkSection::ShowLinuxProxyConfigUrl, profile));
     return;
   }
   ProcessWatcher::EnsureProcessGetsReaped(handle);
