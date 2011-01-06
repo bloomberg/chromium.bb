@@ -160,21 +160,21 @@ class SearchEnginesTest(pyauto.PyUITest):
     # Add a search engine with special chars.
     self.AddSearchEngine(title='testspecial@#',
                          keyword='testspecial@#.com',
-                         url='http://127.0.0.1/?q=%s')
+                         url=self._localhost_prefix + '?q=%s')
     self.SetOmniboxText('testspecial@#.com foobar')
     self.OmniboxAcceptInput()
-    self.assertEqual('http://127.0.0.1/?q=foobar',
+    self.assertEqual(self._localhost_prefix + '?q=foobar',
                      self.GetActiveTabURL().spec())
     # Edit a search engine with special chars.
     self.EditSearchEngine(keyword='testspecial@#.com',
                           new_title='Title Edited',
                           new_keyword='testspecial@!%^*#.com',
-                          new_url='http://127.0.0.1/?edited=true&q=%s')
+                          new_url=self._localhost_prefix + '?edited=true&q=%s')
     self.assertTrue(self._GetSearchEngineWithKeyword('testspecial@!%^*#.com'))
     self.assertFalse(self._GetSearchEngineWithKeyword('testspecial@#.com'))
     self.SetOmniboxText('testspecial@!%^*#.com foobar')
     self.OmniboxAcceptInput()
-    self.assertEqual('http://127.0.0.1/?edited=true&q=foobar',
+    self.assertEqual(self._localhost_prefix + '?edited=true&q=foobar',
                      self.GetActiveTabURL().spec())
     # Delete a search engine.
     self.assertTrue(self._GetSearchEngineWithKeyword('testspecial@!%^*#.com'))
