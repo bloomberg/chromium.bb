@@ -920,15 +920,15 @@ function showNotification(message, actionText, opt_f, opt_delay) {
   notification.classList.remove('first-run');
   notification.classList.remove('promo');
 
-  var notificationNode = notificationElement.firstElementChild;
-  notificationNode.removeChild(notificationNode.firstChild);
-
+  var messageContainer = notificationElement.firstElementChild;
   var actionLink = notificationElement.querySelector('.link-color');
 
-  if (typeof message == 'string')
-    notificationElement.firstElementChild.textContent = message;
-  else
-    notificationElement.firstElementChild.appendChild(message);
+  if (typeof message == 'string') {
+    messageContainer.textContent = message;
+  } else {
+    messageContainer.textContent = '';  // Remove all children.
+    messageContainer.appendChild(message);
+  }
 
   actionLink.textContent = actionText;
 
