@@ -846,8 +846,10 @@ void LocationBarView::OnAutocompleteAccept(
     }
   }
 
-  if (delegate_->GetInstant())
+  if (delegate_->GetInstant() &&
+      !location_entry_->model()->popup_model()->IsOpen()) {
     delegate_->GetInstant()->DestroyPreviewContents();
+  }
 
   update_instant_ = true;
 }

@@ -509,7 +509,7 @@ void LocationBarViewGtk::OnAutocompleteAccept(const GURL& url,
     }
   }
 
-  if (browser_->instant())
+  if (browser_->instant() && !location_entry_->model()->popup_model()->IsOpen())
     browser_->instant()->DestroyPreviewContents();
 
   update_instant_ = true;

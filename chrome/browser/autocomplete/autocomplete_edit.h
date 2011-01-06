@@ -44,6 +44,8 @@ class AutocompleteEditController {
       gfx::NativeView view_gaining_focus) = 0;
 
   // Sent prior to OnAutoCompleteAccept and before the model has been reverted.
+  // This is only invoked if the popup is closed before invoking
+  // OnAutoCompleteAccept.
   virtual void OnAutocompleteWillAccept() = 0;
 
   // Commits the suggested text. |typed_text| is the current text showing in the
@@ -138,7 +140,8 @@ class AutocompleteEditModel : public NotificationObserver {
 
   void SetPopupModel(AutocompletePopupModel* popup_model);
 
-  // It should only be used by testing code.
+  // TODO: The edit and popup should be siblings owned by the LocationBarView,
+  // making this accessor unnecessary.
   AutocompletePopupModel* popup_model() const { return popup_; }
 
   // Invoked when the profile has changed.

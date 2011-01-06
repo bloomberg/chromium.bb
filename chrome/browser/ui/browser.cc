@@ -4143,14 +4143,18 @@ TabContentsWrapper* Browser::TabContentsFactory(
 }
 
 bool Browser::OpenInstant(WindowOpenDisposition disposition) {
-  if (!instant() || !instant()->is_active() || !instant()->IsCurrent())
+  if (!instant() || !instant()->is_active() || !instant()->IsCurrent() ||
+      disposition == NEW_BACKGROUND_TAB) {
+    // NEW_BACKGROUND_TAB results in leaving the omnibox open, so we don't
+    // attempt to use the instant preview.
     return false;
+  }
 
   if (disposition == CURRENT_TAB) {
     instant()->CommitCurrentPreview(INSTANT_COMMIT_PRESSED_ENTER);
     return true;
   }
-  if (disposition == NEW_FOREGROUND_TAB || disposition == NEW_BACKGROUND_TAB) {
+  if (disposition == NEW_FOREGROUND_TAB) {
     TabContentsWrapper* preview_contents = instant()->ReleasePreviewContents(
         INSTANT_COMMIT_PRESSED_ENTER);
     // HideInstant is invoked after release so that InstantController is not

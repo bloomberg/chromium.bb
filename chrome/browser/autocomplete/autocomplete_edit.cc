@@ -429,10 +429,10 @@ void AutocompleteEditModel::OpenURL(const GURL& url,
     // search engine, if applicable; see comments in template_url.h.
   }
 
-  controller_->OnAutocompleteWillAccept();
-
-  if (disposition != NEW_BACKGROUND_TAB)
+  if (disposition != NEW_BACKGROUND_TAB) {
+    controller_->OnAutocompleteWillAccept();
     view_->RevertAll();  // Revert the box to its unedited state
+  }
   controller_->OnAutocompleteAccept(url, disposition, transition,
                                     alternate_nav_url);
 }
