@@ -190,6 +190,7 @@ class ChromeFrameUploadRequestContext : public URLRequestContext {
                                              http_auth_handler_factory_,
                                              network_delegate_,
                                              NULL),
+        NULL /* net_log */,
         net::HttpCache::DefaultBackend::InMemory(0));
   }
 

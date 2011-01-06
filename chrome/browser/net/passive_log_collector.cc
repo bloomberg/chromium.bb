@@ -70,6 +70,7 @@ PassiveLogCollector::PassiveLogCollector()
   trackers_[net::NetLog::SOURCE_HOST_RESOLVER_IMPL_REQUEST] =
       &dns_request_tracker_;
   trackers_[net::NetLog::SOURCE_HOST_RESOLVER_IMPL_JOB] = &dns_job_tracker_;
+  trackers_[net::NetLog::SOURCE_DISK_CACHE_ENTRY] = &disk_cache_entry_tracker_;
   // Make sure our mapping is up-to-date.
   for (size_t i = 0; i < arraysize(trackers_); ++i)
     DCHECK(trackers_[i]) << "Unhandled SourceType: " << i;
@@ -559,4 +560,29 @@ PassiveLogCollector::DNSJobTracker::DoAddEntry(const ChromeNetLog::Entry& entry,
   } else {
     return ACTION_NONE;
   }
+}
+
+//----------------------------------------------------------------------------
+// DiskCacheEntryTracker
+//----------------------------------------------------------------------------
+
+const size_t PassiveLogCollector::DiskCacheEntryTracker::kMaxNumSources = 100;
+const size_t PassiveLogCollector::DiskCacheEntryTracker::kMaxGraveyardSize = 25;
+
+PassiveLogCollector::DiskCacheEntryTracker::DiskCacheEntryTracker()
+    : SourceTracker(kMaxNumSources, kMaxGraveyardSize, NULL) {
+}
+
+PassiveLogCollector::SourceTracker::Action
+PassiveLogCollector::DiskCacheEntryTracker::DoAddEntry(
+    const ChromeNetLog::Entry& entry, SourceInfo* out_info) {
+  AddEntryToSourceInfo(entry, out_info);
+
+  // If the request has ended, move it to the graveyard.
+  if (entry.type == net::NetLog::TYPE_DISK_CACHE_ENTRY &&
+      entry.phase == net::NetLog::PHASE_END) {
+    return ACTION_MOVE_TO_GRAVEYARD;
+  }
+
+  return ACTION_NONE;
 }

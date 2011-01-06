@@ -49,10 +49,9 @@ function addSourceEntry_(node, sourceEntry) {
 function canCollapseBeginWithEnd(beginEntry) {
   return beginEntry &&
          beginEntry.isBegin() &&
-         !beginEntry.orig.params &&
          beginEntry.end &&
          beginEntry.end.index == beginEntry.index + 1 &&
-         !beginEntry.end.orig.params &&
+         (!beginEntry.orig.params || !beginEntry.end.orig.params) &&
          beginEntry.orig.wasPassivelyCaptured ==
              beginEntry.end.orig.wasPassivelyCaptured;
 }
@@ -70,43 +69,43 @@ PrintSourceEntriesAsText = function(sourceEntries, doSecurityStripping) {
   for (var i = 0; i < entries.length; ++i) {
     var entry = entries[i];
 
-    // Avoid printing the END for a BEGIN that was immediately before.
-    if (entry.isEnd() && canCollapseBeginWithEnd(entry.begin))
-      continue;
+    // Avoid printing the END for a BEGIN that was immediately before, unless
+    // both have extra parameters.
+    if (!entry.isEnd() || !canCollapseBeginWithEnd(entry.begin)) {
+      tablePrinter.addRow();
 
-    tablePrinter.addRow();
+      // Annotate this entry with "(P)" if it was passively captured.
+      tablePrinter.addCell(entry.orig.wasPassivelyCaptured ? '(P) ' : '');
 
-    // Annotate this entry with "(P)" if it was passively captured.
-    tablePrinter.addCell(entry.orig.wasPassivelyCaptured ? '(P) ' : '');
+      tablePrinter.addCell('t=');
+      var date = g_browser.convertTimeTicksToDate(entry.orig.time) ;
+      var tCell = tablePrinter.addCell(date.getTime());
+      tCell.alignRight = true;
+      tablePrinter.addCell(' [st=');
+      var stCell = tablePrinter.addCell(date.getTime() - startTime);
+      stCell.alignRight = true;
+      tablePrinter.addCell('] ');
 
-    tablePrinter.addCell('t=');
-    var date = g_browser.convertTimeTicksToDate(entry.orig.time) ;
-    var tCell = tablePrinter.addCell(date.getTime());
-    tCell.alignRight = true;
-    tablePrinter.addCell(' [st=');
-    var stCell = tablePrinter.addCell(date.getTime() - startTime);
-    stCell.alignRight = true;
-    tablePrinter.addCell('] ');
+      var indentationStr = makeRepeatedString(' ', entry.getDepth() * 3);
+      var mainCell =
+          tablePrinter.addCell(indentationStr + getTextForEvent(entry));
+      tablePrinter.addCell('  ');
 
-    var indentationStr = makeRepeatedString(' ', entry.getDepth() * 3);
-    var mainCell =
-        tablePrinter.addCell(indentationStr + getTextForEvent(entry));
-    tablePrinter.addCell('  ');
+      // Get the elapsed time.
+      if (entry.isBegin()) {
+        tablePrinter.addCell('[dt=');
+        var dt = '?';
+        // Definite time.
+        if (entry.end) {
+          dt = entry.end.orig.time - entry.orig.time;
+        }
+        var dtCell = tablePrinter.addCell(dt);
+        dtCell.alignRight = true;
 
-    // Get the elapsed time.
-    if (entry.isBegin()) {
-      tablePrinter.addCell('[dt=');
-      var dt = '?';
-      // Definite time.
-      if (entry.end) {
-        dt = entry.end.orig.time - entry.orig.time;
+        tablePrinter.addCell(']');
+      } else {
+        mainCell.allowOverflow = true;
       }
-      var dtCell = tablePrinter.addCell(dt);
-      dtCell.alignRight = true;
-
-      tablePrinter.addCell(']');
-    } else {
-      mainCell.allowOverflow = true;
     }
 
     // Output the extra parameters.
