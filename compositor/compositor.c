@@ -578,17 +578,17 @@ resize_grab_motion(struct wl_grab *grab,
 	struct wl_surface *surface = device->pointer_focus;
 	int32_t width, height;
 
-	if (resize->edges & WLSC_DEVICE_GRAB_RESIZE_LEFT) {
+	if (resize->edges & WL_GRAB_RESIZE_LEFT) {
 		width = device->grab_x - x + resize->width;
-	} else if (resize->edges & WLSC_DEVICE_GRAB_RESIZE_RIGHT) {
+	} else if (resize->edges & WL_GRAB_RESIZE_RIGHT) {
 		width = x - device->grab_x + resize->width;
 	} else {
 		width = resize->width;
 	}
 
-	if (resize->edges & WLSC_DEVICE_GRAB_RESIZE_TOP) {
+	if (resize->edges & WL_GRAB_RESIZE_TOP) {
 		height = device->grab_y - y + resize->height;
-	} else if (resize->edges & WLSC_DEVICE_GRAB_RESIZE_BOTTOM) {
+	} else if (resize->edges & WL_GRAB_RESIZE_BOTTOM) {
 		height = y - device->grab_y + resize->height;
 	} else {
 		height = resize->height;
@@ -645,28 +645,28 @@ shell_resize(struct wl_client *client, struct wl_shell *shell,
 		return;
 
 	switch (edges) {
-	case WLSC_DEVICE_GRAB_RESIZE_TOP:
+	case WL_GRAB_RESIZE_TOP:
 		pointer = WLSC_POINTER_TOP;
 		break;
-	case WLSC_DEVICE_GRAB_RESIZE_BOTTOM:
+	case WL_GRAB_RESIZE_BOTTOM:
 		pointer = WLSC_POINTER_BOTTOM;
 		break;
-	case WLSC_DEVICE_GRAB_RESIZE_LEFT:
+	case WL_GRAB_RESIZE_LEFT:
 		pointer = WLSC_POINTER_LEFT;
 		break;
-	case WLSC_DEVICE_GRAB_RESIZE_TOP_LEFT:
+	case WL_GRAB_RESIZE_TOP_LEFT:
 		pointer = WLSC_POINTER_TOP_LEFT;
 		break;
-	case WLSC_DEVICE_GRAB_RESIZE_BOTTOM_LEFT:
+	case WL_GRAB_RESIZE_BOTTOM_LEFT:
 		pointer = WLSC_POINTER_BOTTOM_LEFT;
 		break;
-	case WLSC_DEVICE_GRAB_RESIZE_RIGHT:
+	case WL_GRAB_RESIZE_RIGHT:
 		pointer = WLSC_POINTER_RIGHT;
 		break;
-	case WLSC_DEVICE_GRAB_RESIZE_TOP_RIGHT:
+	case WL_GRAB_RESIZE_TOP_RIGHT:
 		pointer = WLSC_POINTER_TOP_RIGHT;
 		break;
-	case WLSC_DEVICE_GRAB_RESIZE_BOTTOM_RIGHT:
+	case WL_GRAB_RESIZE_BOTTOM_RIGHT:
 		pointer = WLSC_POINTER_BOTTOM_RIGHT;
 		break;
 	}
@@ -917,7 +917,7 @@ notify_button(struct wl_input_device *device,
 		shell_resize(NULL,
 			     (struct wl_shell *) &compositor->shell,
 			     &surface->surface, device, time,
-			     WLSC_DEVICE_GRAB_RESIZE_BOTTOM_RIGHT);
+			     WL_GRAB_RESIZE_BOTTOM_RIGHT);
 
 	device->grab->interface->button(device->grab, time, button, state);
 
