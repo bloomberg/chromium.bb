@@ -168,20 +168,16 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessRedirectBack) {
   browser()->NewTab();
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path1/empty.html"));
   browser()->NewTab();
-  ui_test_utils::NavigateToURL(browser(),
-                               base_url.Resolve("path1/redirect.html"));
-
   // Wait until the second tab finishes its redirect train (2 hops).
-  NavigationController& controller =
-      browser()->GetSelectedTabContents()->controller();
-  while (controller.GetActiveEntry()->url().path() !=
-         "/files/extensions/api_test/app_process/path1/empty.html") {
-    ui_test_utils::WaitForNavigation(&controller);
-  }
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(), base_url.Resolve("path1/redirect.html"), 2);
 
   // 3 tabs, including the initial about:blank. The last 2 should be the same
   // process.
   ASSERT_EQ(3, browser()->tab_count());
+  EXPECT_EQ("/files/extensions/api_test/app_process/path1/empty.html",
+            browser()->GetTabContentsAt(2)->controller().
+                GetLastCommittedEntry()->url().path());
   RenderViewHost* host = browser()->GetTabContentsAt(1)->render_view_host();
   EXPECT_EQ(host->process(),
             browser()->GetTabContentsAt(2)->render_view_host()->process());
