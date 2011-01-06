@@ -52,9 +52,6 @@ class NotificationOptionsMenuModel;
 
   // The host for the renderer of the HTML contents.
   scoped_ptr<BalloonViewHost> htmlContents_;
-
-  // The psn of the front application process.
-  ProcessSerialNumber frontProcessNum_;
 }
 
 // Initialize with a balloon object containing the notification data.
@@ -86,9 +83,6 @@ class NotificationOptionsMenuModel;
 
 // The BalloonHost
 - (BalloonViewHost*)getHost;
-
-// Handle the event if it is for the balloon.
-- (BOOL)handleEvent:(NSEvent*)event;
 @end
 
 @interface BalloonController (UnitTesting)

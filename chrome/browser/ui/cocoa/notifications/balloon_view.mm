@@ -37,16 +37,6 @@ const int kRoundedCornerSize = 6;
 - (BOOL)canBecomeMainWindow {
   return NO;
 }
-
-- (void)sendEvent:(NSEvent*)event {
-  // We do not want to bring chrome window to foreground when we click on close
-  // or option button. To do this, we have to intercept the event.
-  BalloonController* delegate =
-      static_cast<BalloonController*>([self delegate]);
-  if (![delegate handleEvent:event]) {
-    [super sendEvent:event];
-  }
-}
 @end
 
 @implementation BalloonShelfViewCocoa
@@ -80,5 +70,23 @@ const int kRoundedCornerSize = 6;
   [[NSColor whiteColor] set];
   [path setLineWidth:3];
   [path stroke];
+}
+@end
+
+@implementation BalloonOverlayViewCocoa
+
+// We do not want to bring chrome window to foreground when we click on any
+// part of the notification balloon. To do this, we first postpone the window
+// reorder here (shouldDelayWindowOrderingForEvent is called during mouseDown)
+// and then complete canceling the reorder by [NSApp preventWindowOrdering] in
+// mouseDown handler of this view.
+- (BOOL)shouldDelayWindowOrderingForEvent:(NSEvent*)theEvent {
+  return YES;
+}
+
+- (void)mouseDown:(NSEvent*)event {
+  [NSApp preventWindowOrdering];
+  // Continue bubbling the event up the chain of responders.
+  [super mouseDown:event];
 }
 @end

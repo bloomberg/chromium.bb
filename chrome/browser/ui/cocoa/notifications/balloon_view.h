@@ -24,5 +24,12 @@
 }
 @end
 
+// This view overlays the notification balloon on top. It is used to intercept
+// mouse input to prevent reordering of the other browser windows when clicking
+// on the notification balloon.
+@interface BalloonOverlayViewCocoa : NSView {
+}
+@end
+
 
 #endif  // CHROME_BROWSER_UI_COCOA_NOTIFICATIONS_BALLOON_VIEW_H_
