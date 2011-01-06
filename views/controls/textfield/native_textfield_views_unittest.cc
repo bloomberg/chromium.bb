@@ -10,6 +10,7 @@
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_views_model.h"
 #include "views/event.h"
+#include "views/focus/focus_manager.h"
 #include "views/widget/widget.h"
 
 namespace views {
@@ -56,6 +57,10 @@ class NativeTextfieldViewsTest : public ::testing::Test,
   }
 
   void InitTextfield(Textfield::StyleFlags style) {
+    InitTextfields(style, 1);
+  }
+
+  void InitTextfields(Textfield::StyleFlags style, int count) {
     ASSERT_FALSE(textfield_);
     textfield_ = new Textfield(style);
     textfield_->SetController(this);
@@ -65,13 +70,25 @@ class NativeTextfieldViewsTest : public ::testing::Test,
         Widget::DeleteOnDestroy,
         Widget::DontMirrorOriginInRTL);
     widget_->Init(NULL, gfx::Rect());
-    widget_->SetContentsView(textfield_);
+
+    View* container = new View();
+    widget_->SetContentsView(container);
+    container->AddChildView(textfield_);
     textfield_view_
         = static_cast<NativeTextfieldViews*>(textfield_->native_wrapper());
+    textfield_->SetID(1);
+
+    for (int i = 1; i < count; i++) {
+      Textfield* textfield = new Textfield(style);
+      container->AddChildView(textfield);
+      textfield->SetID(i + 1);
+    }
+
     DCHECK(textfield_view_);
     model_ = textfield_view_->model_.get();
   }
 
+ protected:
   bool SendKeyEventToTextfieldViews(app::KeyboardCode key_code,
                                     bool shift,
                                     bool control,
@@ -80,7 +97,7 @@ class NativeTextfieldViewsTest : public ::testing::Test,
         (control ? KeyEvent::EF_CONTROL_DOWN : 0) |
         (capslock ? KeyEvent::EF_CAPS_LOCK_DOWN : 0);
     KeyEvent event(KeyEvent::ET_KEY_PRESSED, key_code, flags, 1, 0);
-    return textfield_view_->OnKeyPressed(event);
+    return textfield_->OnKeyPressed(event);
   }
 
   bool SendKeyEventToTextfieldViews(app::KeyboardCode key_code,
@@ -93,7 +110,10 @@ class NativeTextfieldViewsTest : public ::testing::Test,
     return SendKeyEventToTextfieldViews(key_code, false, false);
   }
 
- protected:
+  View* GetFocusedView() {
+    return widget_->GetFocusManager()->GetFocusedView();
+  }
+
   // We need widget to populate wrapper class.
   Widget* widget_;
 
@@ -241,7 +261,7 @@ TEST_F(NativeTextfieldViewsTest, PasswordTest) {
   EXPECT_STR_EQ("my password", last_contents_);
 }
 
-TEST_F(NativeTextfieldViewsTest, TestOnKeyPressReturnValue) {
+TEST_F(NativeTextfieldViewsTest, OnKeyPressReturnValueTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   EXPECT_TRUE(SendKeyEventToTextfieldViews(app::VKEY_A));
   // F24, up/down key won't be handled.
@@ -298,6 +318,34 @@ TEST_F(NativeTextfieldViewsTest, CursorMovement) {
   SendKeyEventToTextfieldViews(app::VKEY_DELETE);
   EXPECT_STR_EQ("one two", textfield_->text());
   EXPECT_STR_EQ("one two", last_contents_);
+}
+
+TEST_F(NativeTextfieldViewsTest, FocusTraversalTest) {
+  InitTextfields(Textfield::STYLE_DEFAULT, 3);
+  textfield_->RequestFocus();
+
+  EXPECT_EQ(1, GetFocusedView()->GetID());
+  widget_->GetFocusManager()->AdvanceFocus(false);
+  EXPECT_EQ(2, GetFocusedView()->GetID());
+  widget_->GetFocusManager()->AdvanceFocus(false);
+  EXPECT_EQ(3, GetFocusedView()->GetID());
+  // Cycle back to the first textfield.
+  widget_->GetFocusManager()->AdvanceFocus(false);
+  EXPECT_EQ(1, GetFocusedView()->GetID());
+
+  widget_->GetFocusManager()->AdvanceFocus(true);
+  EXPECT_EQ(3, GetFocusedView()->GetID());
+  widget_->GetFocusManager()->AdvanceFocus(true);
+  EXPECT_EQ(2, GetFocusedView()->GetID());
+  widget_->GetFocusManager()->AdvanceFocus(true);
+  EXPECT_EQ(1, GetFocusedView()->GetID());
+  // Cycle back to the last textfield.
+  widget_->GetFocusManager()->AdvanceFocus(true);
+  EXPECT_EQ(3, GetFocusedView()->GetID());
+
+  // Request focus should still work.
+  textfield_->RequestFocus();
+  EXPECT_EQ(1, GetFocusedView()->GetID());
 }
 
 }  // namespace views

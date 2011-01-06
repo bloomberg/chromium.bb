@@ -22,9 +22,9 @@
 
 namespace views {
 
+class Menu2;
 class NativeViewHost;
 class Textfield;
-class Menu2;
 
 static const int kDefaultEditStyle = WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN |
     WS_CLIPSIBLINGS;
@@ -62,10 +62,15 @@ class NativeTextfieldWin
   virtual gfx::Insets CalculateInsets();
   virtual void UpdateHorizontalMargins();
   virtual void UpdateVerticalMargins();
-  virtual void SetFocus();
+  virtual bool SetFocus();
   virtual View* GetView();
   virtual gfx::NativeView GetTestingHandle() const;
   virtual bool IsIMEComposing() const;
+  virtual bool HandleKeyPressed(const views::KeyEvent& e);
+  virtual bool HandleKeyReleased(const views::KeyEvent& e);
+  virtual void HandleWillGainFocus();
+  virtual void HandleDidGainFocus();
+  virtual void HandleWillLoseFocus();
 
   // Overridden from menus::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const;

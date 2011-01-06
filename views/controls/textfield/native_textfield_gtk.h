@@ -41,18 +41,25 @@ class NativeTextfieldGtk : public NativeControlGtk,
   virtual void UpdateFont();
   virtual void UpdateIsPassword();
   virtual void UpdateEnabled();
-  virtual bool IsPassword();
   virtual gfx::Insets CalculateInsets();
   virtual void UpdateHorizontalMargins();
   virtual void UpdateVerticalMargins();
-  virtual void SetFocus();
+  virtual bool SetFocus();
   virtual View* GetView();
   virtual gfx::NativeView GetTestingHandle() const;
   virtual bool IsIMEComposing() const;
+  virtual bool HandleKeyPressed(const views::KeyEvent& e);
+  virtual bool HandleKeyReleased(const views::KeyEvent& e);
+  virtual void HandleWillGainFocus();
+  virtual void HandleDidGainFocus();
+  virtual void HandleWillLoseFocus();
 
   // Overridden from NativeControlGtk:
   virtual void CreateNativeControl();
   virtual void NativeControlCreated(GtkWidget* widget);
+
+  // Returns true if the textfield is for password.
+  bool IsPassword();
 
  private:
   Textfield* textfield_;

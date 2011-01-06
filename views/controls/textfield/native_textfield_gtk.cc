@@ -257,10 +257,6 @@ void NativeTextfieldGtk::UpdateEnabled() {
   SetEnabled(textfield_->IsEnabled());
 }
 
-bool NativeTextfieldGtk::IsPassword() {
-  return textfield_->IsPassword();
-}
-
 gfx::Insets NativeTextfieldGtk::CalculateInsets() {
   if (!native_view())
     return gfx::Insets();
@@ -329,8 +325,9 @@ void NativeTextfieldGtk::UpdateVerticalMargins() {
   }
 }
 
-void NativeTextfieldGtk::SetFocus() {
+bool NativeTextfieldGtk::SetFocus() {
   Focus();
+  return true;
 }
 
 View* NativeTextfieldGtk::GetView() {
@@ -343,6 +340,23 @@ gfx::NativeView NativeTextfieldGtk::GetTestingHandle() const {
 
 bool NativeTextfieldGtk::IsIMEComposing() const {
   return false;
+}
+
+bool NativeTextfieldGtk::HandleKeyPressed(const views::KeyEvent& e) {
+  return false;
+}
+
+bool NativeTextfieldGtk::HandleKeyReleased(const views::KeyEvent& e) {
+  return false;
+}
+
+void NativeTextfieldGtk::HandleWillGainFocus() {
+}
+
+void NativeTextfieldGtk::HandleDidGainFocus() {
+}
+
+void NativeTextfieldGtk::HandleWillLoseFocus() {
 }
 
 // static
@@ -442,6 +456,10 @@ void NativeTextfieldGtk::NativeControlCreated(GtkWidget* widget) {
   // In order to properly trigger Accelerators bound to VKEY_RETURN, we need to
   // send an event when the widget gets the activate signal.
   g_signal_connect(widget, "activate", G_CALLBACK(OnActivateHandler), this);
+}
+
+bool NativeTextfieldGtk::IsPassword() {
+  return textfield_->IsPassword();
 }
 
 }  // namespace views

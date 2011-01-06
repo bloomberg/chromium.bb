@@ -202,6 +202,11 @@ class Textfield : public View {
   virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& e);
   virtual void SetEnabled(bool enabled);
   virtual void PaintFocusBorder(gfx::Canvas* canvas);
+  virtual bool OnKeyPressed(const views::KeyEvent& e);
+  virtual bool OnKeyReleased(const views::KeyEvent& e);
+  virtual void WillGainFocus();
+  virtual void DidGainFocus();
+  virtual void WillLoseFocus();
 
   // Accessibility accessors, overridden from View:
   virtual AccessibilityTypes::Role GetAccessibleRole();

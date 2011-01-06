@@ -275,10 +275,11 @@ void NativeTextfieldWin::UpdateVerticalMargins() {
   NOTIMPLEMENTED();
 }
 
-void NativeTextfieldWin::SetFocus() {
+bool NativeTextfieldWin::SetFocus() {
   // Focus the associated HWND.
   //container_view_->Focus();
   ::SetFocus(m_hWnd);
+  return true;
 }
 
 View* NativeTextfieldWin::GetView() {
@@ -301,6 +302,23 @@ bool NativeTextfieldWin::IsIMEComposing() const {
                                                        NULL, 0);
   ImmReleaseContext(m_hWnd, imm_context);
   return composition_size > 0;
+}
+
+bool NativeTextfieldWin::HandleKeyPressed(const views::KeyEvent& e) {
+  return false;
+}
+
+bool NativeTextfieldWin::HandleKeyReleased(const views::KeyEvent& e) {
+  return false;
+}
+
+void NativeTextfieldWin::HandleWillGainFocus() {
+}
+
+void NativeTextfieldWin::HandleDidGainFocus() {
+}
+
+void NativeTextfieldWin::HandleWillLoseFocus() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////

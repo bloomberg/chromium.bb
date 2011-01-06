@@ -57,7 +57,6 @@ NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
       insert_(true),
       is_cursor_visible_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(cursor_timer_(this)) {
-  SetFocusable(true);
   set_border(text_border_);
 
   // Multiline is not supported.
@@ -73,7 +72,7 @@ NativeTextfieldViews::~NativeTextfieldViews() {
 // NativeTextfieldViews, View overrides:
 
 bool NativeTextfieldViews::OnMousePressed(const views::MouseEvent& e) {
-  RequestFocus();
+  textfield_->RequestFocus();
   size_t pos = FindCursorPosition(e.location());
   if (model_->MoveCursorTo(pos, false)) {
     UpdateCursorBoundsAndTextOffset();
@@ -96,50 +95,41 @@ void NativeTextfieldViews::OnMouseReleased(const views::MouseEvent& e,
 }
 
 bool NativeTextfieldViews::OnKeyPressed(const views::KeyEvent& e) {
-  Textfield::Controller* controller = textfield_->GetController();
-  bool handled = false;
-  if (controller)
-    handled = controller->HandleKeyEvent(textfield_, e);
-  return handled || HandleKeyEvent(e);
+  // OnKeyPressed/OnKeyReleased/WillGainFocus/DidGainFocus/WillLoseFocus
+  // will never be invoked on NativeTextfieldViews as it will never
+  // gain focus.
+  NOTREACHED();
+  return false;
 }
 
 bool NativeTextfieldViews::OnKeyReleased(const views::KeyEvent& e) {
-  return true;
+  NOTREACHED();
+  return false;
 }
 
 void NativeTextfieldViews::Paint(gfx::Canvas* canvas) {
-  text_border_->set_has_focus(HasFocus());
+  text_border_->set_has_focus(textfield_->HasFocus());
   PaintBackground(canvas);
   PaintTextAndCursor(canvas);
   if (textfield_->draw_border())
     PaintBorder(canvas);
 }
 
+void NativeTextfieldViews::DidChangeBounds(const gfx::Rect& previous,
+                                           const gfx::Rect& current) {
+  UpdateCursorBoundsAndTextOffset();
+}
+
 void NativeTextfieldViews::WillGainFocus() {
+  NOTREACHED();
 }
 
 void NativeTextfieldViews::DidGainFocus() {
-  is_cursor_visible_ = true;
-  SchedulePaint();
-  // Start blinking cursor.
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      cursor_timer_.NewRunnableMethod(&NativeTextfieldViews::UpdateCursor),
-      kCursorVisibleTimeMs);
+  NOTREACHED();
 }
 
 void NativeTextfieldViews::WillLoseFocus() {
-  // Stop blinking cursor.
-  cursor_timer_.RevokeAll();
-  if (is_cursor_visible_) {
-    is_cursor_visible_ = false;
-    RepaintCursor();
-  }
-}
-
-void NativeTextfieldViews::DidChangeBounds(const gfx::Rect& previous,
-                                          const gfx::Rect& current) {
-  UpdateCursorBoundsAndTextOffset();
+  NOTREACHED();
 }
 
 /////////////////////////////////////////////////////////////////
@@ -223,13 +213,8 @@ void NativeTextfieldViews::UpdateIsPassword() {
 }
 
 void NativeTextfieldViews::UpdateEnabled() {
+  SetEnabled(textfield_->IsEnabled());
   SchedulePaint();
-}
-
-bool NativeTextfieldViews::IsPassword() {
-  // looks unnecessary. should we remove?
-  NOTREACHED();
-  return false;
 }
 
 gfx::Insets NativeTextfieldViews::CalculateInsets() {
@@ -256,8 +241,8 @@ void NativeTextfieldViews::UpdateVerticalMargins() {
   UpdateCursorBoundsAndTextOffset();
 }
 
-void NativeTextfieldViews::SetFocus() {
-  RequestFocus();
+bool NativeTextfieldViews::SetFocus() {
+  return false;
 }
 
 View* NativeTextfieldViews::GetView() {
@@ -271,6 +256,41 @@ gfx::NativeView NativeTextfieldViews::GetTestingHandle() const {
 
 bool NativeTextfieldViews::IsIMEComposing() const {
   return false;
+}
+
+bool NativeTextfieldViews::HandleKeyPressed(const views::KeyEvent& e) {
+  Textfield::Controller* controller = textfield_->GetController();
+  bool handled = false;
+  if (controller) {
+    handled = controller->HandleKeyEvent(textfield_, e);
+  }
+  return handled || HandleKeyEvent(e);
+}
+
+bool NativeTextfieldViews::HandleKeyReleased(const views::KeyEvent& e) {
+  return true;
+}
+
+void NativeTextfieldViews::HandleWillGainFocus() {
+}
+
+void NativeTextfieldViews::HandleDidGainFocus() {
+  is_cursor_visible_ = true;
+  SchedulePaint();
+  // Start blinking cursor.
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      cursor_timer_.NewRunnableMethod(&NativeTextfieldViews::UpdateCursor),
+      kCursorVisibleTimeMs);
+}
+
+void NativeTextfieldViews::HandleWillLoseFocus() {
+  // Stop blinking cursor.
+  cursor_timer_.RevokeAll();
+  if (is_cursor_visible_) {
+    is_cursor_visible_ = false;
+    RepaintCursor();
+  }
 }
 
 // static
@@ -368,7 +388,8 @@ void NativeTextfieldViews::PaintTextAndCursor(gfx::Canvas* canvas) {
   int y = insets.top();
   int text_height = height() - insets.height();
   SkColor selection_color =
-      HasFocus() ? kFocusedSelectionColor : kUnfocusedSelectionColor;
+      textfield_->HasFocus() ?
+      kFocusedSelectionColor : kUnfocusedSelectionColor;
   SkColor text_color =
       textfield_->read_only() ? kReadonlyTextColor : GetTextColor();
 

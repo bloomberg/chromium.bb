@@ -46,11 +46,11 @@ class NativeTextfieldViews : public views::View,
   virtual bool OnKeyPressed(const views::KeyEvent& e);
   virtual bool OnKeyReleased(const views::KeyEvent& e);
   virtual void Paint(gfx::Canvas* canvas);
+  virtual void DidChangeBounds(const gfx::Rect& previous,
+                               const gfx::Rect& current);
   virtual void WillGainFocus();
   virtual void DidGainFocus();
   virtual void WillLoseFocus();
-  virtual void DidChangeBounds(const gfx::Rect& previous,
-                               const gfx::Rect& current);
 
   // NativeTextfieldWrapper overrides:
   virtual string16 GetText() const;
@@ -66,14 +66,18 @@ class NativeTextfieldViews : public views::View,
   virtual void UpdateFont();
   virtual void UpdateIsPassword();
   virtual void UpdateEnabled();
-  virtual bool IsPassword();
   virtual gfx::Insets CalculateInsets();
   virtual void UpdateHorizontalMargins();
   virtual void UpdateVerticalMargins();
-  virtual void SetFocus();
+  virtual bool SetFocus();
   virtual View* GetView();
   virtual gfx::NativeView GetTestingHandle() const;
   virtual bool IsIMEComposing() const;
+  virtual bool HandleKeyPressed(const views::KeyEvent& e);
+  virtual bool HandleKeyReleased(const views::KeyEvent& e);
+  virtual void HandleWillGainFocus();
+  virtual void HandleDidGainFocus();
+  virtual void HandleWillLoseFocus();
 
   // class name of internal
   static const char kViewClassName[];
