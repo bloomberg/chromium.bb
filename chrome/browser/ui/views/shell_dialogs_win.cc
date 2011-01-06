@@ -238,7 +238,7 @@ bool SaveFileAsWithFilter(HWND owner,
   // Having an empty filter makes for a bad user experience. We should always
   // specify a filter when saving.
   DCHECK(!filter.empty());
-  std::wstring file_part = file_util::GetFilenameFromPath(suggested_name);
+  std::wstring file_part = FilePath(suggested_name).BaseName().value();
 
   // The size of the in/out buffer in number of characters we pass to win32
   // GetSaveFileName.  From MSDN "The buffer must be large enough to store the
