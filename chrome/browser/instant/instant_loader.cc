@@ -203,8 +203,24 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
 
   void set_user_typed_before_load() { user_typed_before_load_ = true; }
 
+  // Sets the last URL that will be added to history when CommitHistory is
+  // invoked and removes all but the first navigation.
+  void SetLastHistoryURLAndPrune(const GURL& url) {
+    if (add_page_vector_.empty())
+      return;
+
+    history::HistoryAddPageArgs* args = add_page_vector_.front().get();
+    args->url = url;
+    args->redirects.clear();
+    args->redirects.push_back(url);
+
+    // Prune all but the first entry.
+    add_page_vector_.erase(add_page_vector_.begin() + 1,
+                           add_page_vector_.end());
+  }
+
   // Commits the currently buffered history.
-  void CommitHistory() {
+  void CommitHistory(bool supports_instant) {
     TabContents* tab = loader_->preview_contents()->tab_contents();
     if (tab->profile()->IsOffTheRecord())
       return;
@@ -234,6 +250,15 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
       favicon_service->SetFavicon(active_entry->url(),
                                   active_entry->favicon().url(),
                                   image_data);
+      if (supports_instant && !add_page_vector_.empty()) {
+        // If we're using the instant API, then we've tweaked the url that is
+        // going to be added to history. We need to also set the favicon for the
+        // url we're adding to history (see comment in ReleasePreviewContents
+        // for details).
+        favicon_service->SetFavicon(add_page_vector_.back()->url,
+                                    active_entry->favicon().url(),
+                                    image_data);
+      }
     }
   }
 
@@ -523,8 +548,6 @@ void InstantLoader::Update(TabContentsWrapper* tab_contents,
   if (created_preview_contents)
     CreatePreviewContents(tab_contents);
 
-  preview_tab_contents_delegate_->PrepareForNewLoad();
-
   if (template_url) {
     DCHECK(template_url_id_ == template_url->id());
     if (!created_preview_contents) {
@@ -549,6 +572,8 @@ void InstantLoader::Update(TabContentsWrapper* tab_contents,
             complete_suggested_text_.substr(user_text_.size());
       }
     } else {
+      preview_tab_contents_delegate_->PrepareForNewLoad();
+
       // Load the instant URL. We don't reflect the url we load in url() as
       // callers expect that we're loading the URL they tell us to.
       //
@@ -575,6 +600,7 @@ void InstantLoader::Update(TabContentsWrapper* tab_contents,
     }
   } else {
     DCHECK(template_url_id_ == 0);
+    preview_tab_contents_delegate_->PrepareForNewLoad();
     frame_load_observer_.reset(NULL);
     preview_contents_->controller().LoadURL(url_, GURL(), transition_type);
   }
@@ -624,12 +650,20 @@ TabContentsWrapper* InstantLoader::ReleasePreviewContents(
   }
   omnibox_bounds_ = gfx::Rect();
   last_omnibox_bounds_ = gfx::Rect();
-  url_ = GURL();
+  GURL url;
+  url.Swap(&url_);
   user_text_.clear();
   complete_suggested_text_.clear();
   if (preview_contents_.get()) {
-    if (type != INSTANT_COMMIT_DESTROY)
-      preview_tab_contents_delegate_->CommitHistory();
+    if (type != INSTANT_COMMIT_DESTROY) {
+      if (template_url_id_) {
+        // The URL used during instant is mostly gibberish, and not something
+        // we'll parse and match as a past search. Set it to something we can
+        // parse.
+        preview_tab_contents_delegate_->SetLastHistoryURLAndPrune(url);
+      }
+      preview_tab_contents_delegate_->CommitHistory(template_url_id_ != 0);
+    }
     // Destroy the paint observer.
     // RenderWidgetHostView may be null during shutdown.
     if (preview_contents_->tab_contents()->GetRenderWidgetHostView()) {
