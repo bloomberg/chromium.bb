@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,9 +26,6 @@ namespace file_util {
 // Use the FilePath versions instead.
 FILE* OpenFile(const std::string& filename, const char* mode);
 FILE* OpenFile(const std::wstring& filename, const char* mode);
-
-// Use FilePath::BaseName instead.
-std::wstring GetFilenameFromPath(const std::wstring& path);
 
 // Returns the directory component of a path, without the trailing
 // path separator, or an empty string on error. The function does not
