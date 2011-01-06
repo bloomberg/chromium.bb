@@ -120,6 +120,14 @@ class AdvancedOptionsHandler
 
 #endif
 
+#if defined(ENABLE_REMOTING)
+  // Removes remoting section. Called if remoting is not enabled.
+  void RemoveRemotingSection();
+
+  // Callback for Setup Remoting button.
+  void ShowRemotingSetupDialog(const ListValue* args);
+#endif
+
   // Setup the checked state for the metrics reporting checkbox.
   void SetupMetricsReportingCheckbox();
 

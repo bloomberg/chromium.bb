@@ -435,12 +435,6 @@ void WrenchMenuModel::Build() {
                          tools_menu_model_.get());
 
   AddSeparator();
-#if defined(ENABLE_REMOTING)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableRemoting)) {
-    AddItem(IDC_REMOTING_SETUP,
-            l10n_util::GetStringUTF16(IDS_REMOTING_SETUP_LABEL));
-  }
-#endif
   AddItemWithStringId(IDC_SHOW_BOOKMARK_MANAGER, IDS_BOOKMARK_MANAGER);
   AddItemWithStringId(IDC_SHOW_HISTORY, IDS_SHOW_HISTORY);
   AddItemWithStringId(IDC_SHOW_DOWNLOADS, IDS_SHOW_DOWNLOADS);

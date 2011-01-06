@@ -23,6 +23,7 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_setup_flow.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_url.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/remoting/setup_flow.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/ui/options/options_util.h"
@@ -181,6 +182,12 @@ void AdvancedOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("cloudPrintProxyEnablingButton",
       l10n_util::GetStringUTF16(IDS_OPTIONS_CLOUD_PRINT_PROXY_ENABLING_BUTTON));
 #endif
+#if defined(ENABLE_REMOTING)
+  localized_strings->SetString("advancedSectionTitleRemoting",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_ADVANCED_SECTION_TITLE_REMOTING));
+  localized_strings->SetString("remotingSetupButton",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_REMOTING_SETUP_BUTTON));
+#endif
   localized_strings->SetString("enableLogging",
       l10n_util::GetStringUTF16(IDS_OPTIONS_ENABLE_LOGGING));
   localized_strings->SetString("improveBrowsingExperience",
@@ -209,6 +216,13 @@ void AdvancedOptionsHandler::Initialize() {
     RemoveCloudPrintProxySection();
   }
 #endif
+#if defined(ENABLE_REMOTING)
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableRemoting)) {
+    RemoveRemotingSection();
+  }
+#endif
+
   banner_handler_.reset(
       new OptionsManagedBannerHandler(dom_ui_,
                                       ASCIIToUTF16("AdvancedOptions"),
@@ -281,7 +295,11 @@ void AdvancedOptionsHandler::RegisterMessages() {
       NewCallback(this,
                   &AdvancedOptionsHandler::ShowNetworkProxySettings));
 #endif
-
+#if defined(ENABLE_REMOTING)
+  dom_ui_->RegisterMessageCallback("showRemotingSetupDialog",
+      NewCallback(this,
+                  &AdvancedOptionsHandler::ShowRemotingSetupDialog));
+#endif
 #if defined(OS_WIN)
   // Setup Windows specific callbacks.
   dom_ui_->RegisterMessageCallback("checkRevocationCheckboxAction",
@@ -502,6 +520,17 @@ void AdvancedOptionsHandler::RemoveCloudPrintProxySection() {
       L"options.AdvancedOptions.RemoveCloudPrintProxySection");
 }
 
+#endif
+
+#if defined(ENABLE_REMOTING)
+void AdvancedOptionsHandler::RemoveRemotingSection() {
+  dom_ui_->CallJavascriptFunction(
+      L"options.AdvancedOptions.RemoveRemotingSection");
+}
+
+void AdvancedOptionsHandler::ShowRemotingSetupDialog(const ListValue* args) {
+  remoting::SetupFlow::OpenSetupDialog(dom_ui_->GetProfile());
+}
 #endif
 
 void AdvancedOptionsHandler::SetupMetricsReportingCheckbox() {

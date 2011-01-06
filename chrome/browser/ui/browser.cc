@@ -111,10 +111,6 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/window_open_disposition.h"
 
-#if defined(ENABLE_REMOTING)
-#include "chrome/browser/remoting/setup_flow.h"
-#endif
-
 #if defined(OS_WIN)
 #include "app/win/shell.h"
 #include "chrome/browser/autofill/autofill_ie_toolbar_import_win.h"
@@ -1115,12 +1111,6 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
   command_updater_.UpdateCommandEnabled(IDC_SYNC_BOOKMARKS,
       show_main_ui && profile_->IsSyncAccessible());
 
-#if defined(ENABLE_REMOTING)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableRemoting)) {
-    command_updater_.UpdateCommandEnabled(IDC_REMOTING_SETUP, show_main_ui);
-  }
-#endif
-
   command_updater_.UpdateCommandEnabled(IDC_OPTIONS, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_EDIT_SEARCH_ENGINES, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_VIEW_PASSWORDS, show_main_ui);
@@ -1851,12 +1841,6 @@ void Browser::OpenSyncMyBookmarksDialog() {
       profile_, ProfileSyncService::START_FROM_WRENCH);
 }
 
-#if defined(ENABLE_REMOTING)
-void Browser::OpenRemotingSetupDialog() {
-  remoting::SetupFlow::OpenSetupDialog(profile_);
-}
-#endif
-
 void Browser::OpenAboutChromeDialog() {
   UserMetrics::RecordAction(UserMetricsAction("AboutChrome"), profile_);
 #if defined(OS_CHROMEOS)
@@ -2244,9 +2228,6 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_SHOW_DOWNLOADS:        ShowDownloadsTab();               break;
     case IDC_MANAGE_EXTENSIONS:     ShowExtensionsTab();              break;
     case IDC_SYNC_BOOKMARKS:        OpenSyncMyBookmarksDialog();      break;
-#if defined(ENABLE_REMOTING)
-    case IDC_REMOTING_SETUP:        OpenRemotingSetupDialog();        break;
-#endif
     case IDC_OPTIONS:               OpenOptionsDialog();              break;
     case IDC_EDIT_SEARCH_ENGINES:   OpenKeywordEditor();              break;
     case IDC_VIEW_PASSWORDS:        OpenPasswordManager();            break;
