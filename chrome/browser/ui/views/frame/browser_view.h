@@ -506,6 +506,12 @@ class BrowserView : public BrowserBubbleHost,
   // Initialize the hung plugin detector.
   void InitHangMonitor();
 
+  // Possibly records a user metrics action corresponding to the passed-in
+  // accelerator.  Only implemented for Chrome OS, where we're interested in
+  // learning about how frequently the top-row keys are used.
+  void UpdateAcceleratorMetrics(const views::Accelerator& accelerator,
+                                int command_id);
+
   // Invoked from TabSelectedAt or when instant is made active.  Is
   // |change_tab_contents| is true, |new_contents| is added to the view
   // hierarchy, if |change_tab_contents| is false, it's assumed |new_contents|

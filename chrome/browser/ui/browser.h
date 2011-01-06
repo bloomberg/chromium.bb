@@ -191,6 +191,7 @@ class Browser : public TabHandlerDelegate,
   ToolbarModel* toolbar_model() { return &toolbar_model_; }
   const SessionID& session_id() const { return session_id_; }
   CommandUpdater* command_updater() { return &command_updater_; }
+  bool block_command_execution() const { return block_command_execution_; }
 
   // Get the FindBarController for this browser, creating it if it does not
   // yet exist.

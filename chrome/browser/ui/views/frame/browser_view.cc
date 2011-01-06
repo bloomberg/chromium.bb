@@ -25,6 +25,7 @@
 #include "chrome/browser/dom_ui/bug_report_ui.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/instant/instant_controller.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/ntp_background_util.h"
 #include "chrome/browser/page_info_window.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -607,8 +608,10 @@ bool BrowserView::AcceleratorPressed(const views::Accelerator& accelerator) {
   std::map<views::Accelerator, int>::const_iterator iter =
       accelerator_table_.find(accelerator);
   DCHECK(iter != accelerator_table_.end());
-
   int command_id = iter->second;
+
+  if (!browser_->block_command_execution())
+    UpdateAcceleratorMetrics(accelerator, command_id);
   return browser_->ExecuteCommandIfEnabled(command_id);
 }
 
@@ -1277,11 +1280,13 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
 
   // Executing the command may cause |this| object to be destroyed.
 #if defined(OS_LINUX) && !defined(TOUCH_UI)
-  if (browser_->IsReservedCommand(id) && !event.match_edit_command)
+  if (browser_->IsReservedCommand(id) && !event.match_edit_command) {
 #else
-  if (browser_->IsReservedCommand(id))
+  if (browser_->IsReservedCommand(id)) {
 #endif
+    UpdateAcceleratorMetrics(accelerator, id);
     return browser_->ExecuteCommandIfEnabled(id);
+  }
 
   DCHECK(is_keyboard_shortcut != NULL);
   *is_keyboard_shortcut = true;
@@ -2456,6 +2461,67 @@ void BrowserView::InitHangMonitor() {
                              plugin_message_response_timeout);
     pref_service->SetInteger(prefs::kHungPluginDetectFrequency,
                              hung_plugin_detect_freq);
+  }
+#endif
+}
+
+void BrowserView::UpdateAcceleratorMetrics(
+    const views::Accelerator& accelerator, int command_id) {
+#if defined(OS_CHROMEOS)
+  // Collect information about the relative popularity of various accelerators
+  // on Chrome OS.
+  const app::KeyboardCode key_code = accelerator.GetKeyCode();
+  switch (command_id) {
+    case IDC_BACK:
+      if (key_code == app::VKEY_BACK)
+        UserMetrics::RecordAction(UserMetricsAction("Accel_Back_Backspace"));
+      else if (key_code == app::VKEY_F1)
+        UserMetrics::RecordAction(UserMetricsAction("Accel_Back_F1"));
+      else if (key_code == app::VKEY_LEFT)
+        UserMetrics::RecordAction(UserMetricsAction("Accel_Back_Left"));
+      break;
+    case IDC_FORWARD:
+      if (key_code == app::VKEY_BACK)
+        UserMetrics::RecordAction(UserMetricsAction("Accel_Forward_Backspace"));
+      else if (key_code == app::VKEY_F2)
+        UserMetrics::RecordAction(UserMetricsAction("Accel_Forward_F2"));
+      else if (key_code == app::VKEY_LEFT)
+        UserMetrics::RecordAction(UserMetricsAction("Accel_Forward_Right"));
+      break;
+    case IDC_RELOAD:
+    case IDC_RELOAD_IGNORING_CACHE:
+      if (key_code == app::VKEY_R)
+        UserMetrics::RecordAction(UserMetricsAction("Accel_Reload_R"));
+      else if (key_code == app::VKEY_F3)
+        UserMetrics::RecordAction(UserMetricsAction("Accel_Reload_F3"));
+      break;
+    case IDC_FULLSCREEN:
+      if (key_code == app::VKEY_F4)
+        UserMetrics::RecordAction(UserMetricsAction("Accel_Fullscreen_F4"));
+      break;
+    case IDC_NEW_TAB:
+      if (key_code == app::VKEY_T)
+        UserMetrics::RecordAction(UserMetricsAction("Accel_NewTab_T"));
+      break;
+    case IDC_SEARCH:
+      if (key_code == app::VKEY_LWIN)
+        UserMetrics::RecordAction(UserMetricsAction("Accel_Search_LWin"));
+      break;
+    case IDC_FOCUS_LOCATION:
+      if (key_code == app::VKEY_D)
+        UserMetrics::RecordAction(UserMetricsAction("Accel_FocusLocation_D"));
+      else if (key_code == app::VKEY_L)
+        UserMetrics::RecordAction(UserMetricsAction("Accel_FocusLocation_L"));
+      break;
+    case IDC_FOCUS_SEARCH:
+      if (key_code == app::VKEY_E)
+        UserMetrics::RecordAction(UserMetricsAction("Accel_FocusSearch_E"));
+      else if (key_code == app::VKEY_K)
+        UserMetrics::RecordAction(UserMetricsAction("Accel_FocusSearch_K"));
+      break;
+    default:
+      // Do nothing.
+      break;
   }
 #endif
 }

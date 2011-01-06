@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/audio_handler.h"
 #include "chrome/browser/chromeos/brightness_bubble.h"
 #include "chrome/browser/chromeos/volume_bubble.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "third_party/cros/chromeos_wm_ipc_enums.h"
 
 namespace chromeos {
@@ -89,14 +90,20 @@ GdkFilterReturn SystemKeyEventListener::GdkEventFilter(GdkXEvent* gxevent,
       if (!(xevent->xkey.state & (Mod1Mask | ShiftMask | ControlMask))) {
         if ((keycode == listener->key_f8_) ||
             (keycode == listener->key_volume_mute_)) {
+          if (keycode == listener->key_f8_)
+            UserMetrics::RecordAction(UserMetricsAction("Accel_VolumeMute_F8"));
           listener->OnVolumeMute();
           return GDK_FILTER_REMOVE;
         } else if ((keycode == listener->key_f9_) ||
                     keycode == listener->key_volume_down_) {
+          if (keycode == listener->key_f9_)
+            UserMetrics::RecordAction(UserMetricsAction("Accel_VolumeDown_F9"));
           listener->OnVolumeDown();
           return GDK_FILTER_REMOVE;
         } else if ((keycode == listener->key_f10_) ||
                    (keycode == listener->key_volume_up_)) {
+          if (keycode == listener->key_f10_)
+            UserMetrics::RecordAction(UserMetricsAction("Accel_VolumeUp_F10"));
           listener->OnVolumeUp();
           return GDK_FILTER_REMOVE;
         }
