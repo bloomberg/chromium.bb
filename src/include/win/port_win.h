@@ -116,9 +116,6 @@ EXTERN_C_END
 
 /************************************************************/
 
-/* missing from Windows <errno.h> */
-#define EDQUOT 122 /* Quota exceeded */
-
 
 /* from linux/limits.h, via sys/param.h */
 #define PATH_MAX 4096

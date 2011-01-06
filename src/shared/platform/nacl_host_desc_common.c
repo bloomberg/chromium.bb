@@ -64,7 +64,9 @@ int NaClXlateErrno(int errnum) {
     MAP(EPIPE);
     MAP(ENAMETOOLONG);
     MAP(ENOSYS);
+#ifdef  EDQUOT
     MAP(EDQUOT);
+#endif
     MAP(EDOM);
     MAP(ERANGE);
 #ifdef  ENOMSG
