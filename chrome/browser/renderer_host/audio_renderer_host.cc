@@ -369,7 +369,7 @@ void AudioRendererHost::OnSetVolume(const IPC::Message& msg, int stream_id,
 
   // Make sure the volume is valid.
   if (volume < 0 || volume > 1.0)
-      return;
+    return;
   entry->controller->SetVolume(volume);
 }
 
