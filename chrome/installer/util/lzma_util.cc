@@ -158,23 +158,20 @@ DWORD LzmaUtil::UnPack(const std::wstring& location,
       break;
     }
 
-    // Append location to the file path in archive, to get full path.
-    std::wstring wfileName(location);
-    file_util::AppendToPath(&wfileName, UTF8ToWide(f->Name));
+    FilePath file_path = FilePath(location).Append(UTF8ToWide(f->Name));
     if (output_file)
-      *output_file = wfileName;
+      *output_file = file_path.value();
 
     // If archive entry is directory create it and move on to the next entry.
     if (f->IsDirectory) {
-      file_util::CreateDirectory(FilePath(wfileName));
+      file_util::CreateDirectory(file_path);
       continue;
     }
 
-    HANDLE hFile;
-    std::wstring directory = file_util::GetDirectoryFromPath(wfileName);
-    file_util::CreateDirectory(FilePath(directory));
+    file_util::CreateDirectory(file_path.DirName());
 
-    hFile = CreateFile(wfileName.c_str(), GENERIC_WRITE, 0, NULL,
+    HANDLE hFile;
+    hFile = CreateFile(file_path.value().c_str(), GENERIC_WRITE, 0, NULL,
                        CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hFile == INVALID_HANDLE_VALUE)  {
       ret = GetLastError();

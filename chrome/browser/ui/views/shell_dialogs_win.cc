@@ -270,7 +270,7 @@ bool SaveFileAsWithFilter(HWND owner,
   save_as.nMaxFileTitle = 0;
 
   // Set up the initial directory for the dialog.
-  std::wstring directory = file_util::GetDirectoryFromPath(suggested_name);
+  std::wstring directory = FilePath(suggested_name).DirName().value();
   save_as.lpstrInitialDir = directory.c_str();
   save_as.lpstrTitle = NULL;
   save_as.Flags = OFN_OVERWRITEPROMPT | OFN_EXPLORER | OFN_ENABLESIZING |

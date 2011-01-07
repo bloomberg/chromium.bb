@@ -785,7 +785,7 @@ bool ShellUtil::UpdateChromeShortcut(BrowserDistribution* dist,
                                      const std::wstring& shortcut,
                                      const std::wstring& description,
                                      bool create_new) {
-  std::wstring chrome_path = file_util::GetDirectoryFromPath(chrome_exe);
+  std::wstring chrome_path = FilePath(chrome_exe).DirName().value();
 
   FilePath prefs_path(chrome_path);
   prefs_path = prefs_path.AppendASCII(installer::kDefaultMasterPrefs);
