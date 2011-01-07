@@ -1004,6 +1004,7 @@
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
+        '../ui/ui.gyp:ui_base',
       ],
       'include_dirs': [
         '..',

@@ -52,6 +52,7 @@
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
+        '../ui/ui.gyp:ui_base',
       ],
       'sources': [
         # All .cc, .h under views, except unittests
