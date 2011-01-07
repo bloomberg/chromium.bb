@@ -326,7 +326,7 @@ bool MasterSM::DoInit() {
                                             FilePath::FromWStringHack(path_), 0,
                                             false,
                                             cache_thread_.message_loop_proxy(),
-                                            NULL, &cache, &cb);
+                                            &cache, &cb);
     if (cb.GetResult(rv) != net::OK) {
       printf("Unable to initialize new files\n");
       return false;
@@ -607,7 +607,7 @@ SlaveSM::SlaveSM(const std::wstring& path, HANDLE channel)
                                           FilePath::FromWStringHack(path), 0,
                                           false,
                                           cache_thread_.message_loop_proxy(),
-                                          NULL, &cache, &cb);
+                                          &cache, &cb);
   if (cb.GetResult(rv) != net::OK) {
     printf("Unable to open cache files\n");
     return;

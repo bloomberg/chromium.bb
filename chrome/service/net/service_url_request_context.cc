@@ -135,7 +135,6 @@ ServiceURLRequestContext::ServiceURLRequestContext(
                                            http_auth_handler_factory_,
                                            NULL /* network_delegate */,
                                            NULL /* net_log */),
-      NULL /* net_log */,
       net::HttpCache::DefaultBackend::InMemory(0));
   // In-memory cookie store.
   cookie_store_ = new net::CookieMonster(NULL, NULL);

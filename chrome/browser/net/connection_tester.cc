@@ -71,7 +71,6 @@ class ExperimentURLRequestContext : public URLRequestContext {
             dnsrr_resolver_, NULL /* dns_cert_checker */,
             NULL /* ssl_host_info_factory */, proxy_service_,
             ssl_config_service_, http_auth_handler_factory_, NULL, NULL),
-        NULL /* net_log */,
         net::HttpCache::DefaultBackend::InMemory(0));
     // In-memory cookie store.
     cookie_store_ = new net::CookieMonster(NULL, NULL);
