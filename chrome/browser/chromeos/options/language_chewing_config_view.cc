@@ -115,14 +115,14 @@ int LanguageChewingConfigView::GetDialogButtons() const {
 std::wstring LanguageChewingConfigView::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
-    return l10n_util::GetString(IDS_OK);
+    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_OK));
   }
   return L"";
 }
 
 std::wstring LanguageChewingConfigView::GetWindowTitle() const {
-  return l10n_util::GetString(
-      IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTINGS_TITLE);
+  return UTF16ToWide(l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTINGS_TITLE));
 }
 
 gfx::Size LanguageChewingConfigView::GetPreferredSize() {
@@ -153,8 +153,8 @@ void LanguageChewingConfigView::InitControlLayout() {
 
   for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
     chewing_boolean_checkboxes_[i] = new views::Checkbox(
-        l10n_util::GetString(
-            language_prefs::kChewingBooleanPrefs[i].message_id));
+        UTF16ToWide(l10n_util::GetStringUTF16(
+            language_prefs::kChewingBooleanPrefs[i].message_id)));
     chewing_boolean_checkboxes_[i]->set_listener(this);
     chewing_boolean_checkboxes_[i]->set_tag(i);
   }
@@ -185,8 +185,8 @@ void LanguageChewingConfigView::InitControlLayout() {
   for (size_t i = 0; i < language_prefs::kNumChewingIntegerPrefs; ++i) {
     layout->StartRow(0, kColumnSetId);
     layout->AddView(new views::Label(
-        l10n_util::GetString(
-            language_prefs::kChewingIntegerPrefs[i].message_id)));
+        UTF16ToWide(l10n_util::GetStringUTF16(
+            language_prefs::kChewingIntegerPrefs[i].message_id))));
     layout->AddView(chewing_integer_sliders_[i]);
   }
   NotifyPrefChanged();

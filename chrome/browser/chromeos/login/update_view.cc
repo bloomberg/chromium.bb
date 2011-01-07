@@ -8,6 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/update_screen.h"
@@ -105,12 +106,15 @@ void UpdateView::Reset() {
 }
 
 void UpdateView::UpdateLocalizedStrings() {
-  installing_updates_label_->SetText(
-      l10n_util::GetStringF(IDS_INSTALLING_UPDATE,
-                            l10n_util::GetString(IDS_PRODUCT_OS_NAME)));
-  reboot_label_->SetText(l10n_util::GetString(IDS_INSTALLING_UPDATE_DESC));
-  manual_reboot_label_->SetText(l10n_util::GetString(IDS_UPDATE_COMPLETED));
-  checking_label_->SetText(l10n_util::GetString(IDS_CHECKING_FOR_UPDATES));
+  installing_updates_label_->SetText(UTF16ToWide(l10n_util::GetStringFUTF16(
+      IDS_INSTALLING_UPDATE,
+      l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME))));
+  reboot_label_->SetText(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_INSTALLING_UPDATE_DESC)));
+  manual_reboot_label_->SetText(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_UPDATE_COMPLETED)));
+  checking_label_->SetText(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_CHECKING_FOR_UPDATES)));
 }
 
 void UpdateView::AddProgress(int ticks) {

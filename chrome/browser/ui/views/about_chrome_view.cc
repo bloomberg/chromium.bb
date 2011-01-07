@@ -312,8 +312,8 @@ void AboutChromeView::Init() {
   main_label_chunk5_ = text.substr(url_offsets[0]);
 
   // The Terms of Service URL at the bottom.
-  terms_of_service_url_ =
-      new views::Link(l10n_util::GetString(IDS_TERMS_OF_SERVICE));
+  terms_of_service_url_ = new views::Link(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_TERMS_OF_SERVICE)));
   AddChildView(terms_of_service_url_);
   terms_of_service_url_->SetController(this);
 

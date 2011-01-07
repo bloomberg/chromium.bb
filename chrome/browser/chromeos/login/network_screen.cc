@@ -157,10 +157,12 @@ void NetworkScreen::OnConnectionTimeout() {
         network_control->GetScreenBounds(),
         BubbleBorder::LEFT_TOP,
         ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING),
-        l10n_util::GetStringF(IDS_NETWORK_SELECTION_ERROR,
-                              l10n_util::GetString(IDS_PRODUCT_OS_NAME),
-                              UTF16ToWide(network_id_)),
-        l10n_util::GetString(IDS_NETWORK_SELECTION_ERROR_HELP),
+        UTF16ToWide(l10n_util::GetStringFUTF16(
+            IDS_NETWORK_SELECTION_ERROR,
+            l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME),
+            network_id_)),
+        UTF16ToWide(
+            l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_ERROR_HELP)),
         this);
     network_control->RequestFocus();
   }

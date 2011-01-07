@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/user_controller.h"
 
 #include "app/l10n_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -13,11 +14,11 @@ namespace chromeos {
 
 TEST(UserControllerTest, GetNameTooltip) {
   UserController guest_user_controller(NULL, false);
-  EXPECT_EQ(l10n_util::GetString(IDS_ADD_USER),
+  EXPECT_EQ(UTF16ToWide(l10n_util::GetStringUTF16(IDS_ADD_USER)),
             guest_user_controller.GetNameTooltip());
 
   UserController new_user_controller(NULL, true);
-  EXPECT_EQ(l10n_util::GetString(IDS_GO_INCOGNITO_BUTTON),
+  EXPECT_EQ(UTF16ToWide(l10n_util::GetStringUTF16(IDS_GO_INCOGNITO_BUTTON)),
             new_user_controller.GetNameTooltip());
 
   UserManager::User existing_user;

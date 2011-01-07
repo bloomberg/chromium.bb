@@ -407,7 +407,7 @@ void MenuWin::AddMenuItemInternal(int index,
   if (label.empty() && !delegate()) {
     // No label and no delegate; don't add an empty menu.
     // It appears under some circumstance we're getting an empty label
-    // (l10n_util::GetString(IDS_TASK_MANAGER) returns ""). This shouldn't
+    // (l10n_util::GetStringUTF16(IDS_TASK_MANAGER) returns ""). This shouldn't
     // happen, but I'm working over the crash here.
     NOTREACHED();
     return;

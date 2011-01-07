@@ -179,28 +179,28 @@ void NetworkSection::AddNetwork(int id, const SkBitmap& icon,
 
     if (button_flags & FORGET_BUTTON) {
       views::NativeButton* button = new views::NativeButton(this,
-          l10n_util::GetString(IDS_OPTIONS_SETTINGS_FORGET));
+          UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_FORGET)));
       button->set_tag(id + kButtonIdOffset * FORGET_BUTTON);
       layout_->AddView(button, 1, 2);
     }
 
     if (button_flags & DISCONNECT_BUTTON) {
-      views::NativeButton* button = new views::NativeButton(this,
-          l10n_util::GetString(IDS_OPTIONS_SETTINGS_DISCONNECT));
+      views::NativeButton* button = new views::NativeButton(this, UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_DISCONNECT)));
       button->set_tag(id + kButtonIdOffset * DISCONNECT_BUTTON);
       layout_->AddView(button, 1, 2);
     }
 
     if (button_flags & CONNECT_BUTTON) {
       views::NativeButton* button = new views::NativeButton(this,
-          l10n_util::GetString(IDS_OPTIONS_SETTINGS_CONNECT));
+          UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_CONNECT)));
       button->set_tag(id + kButtonIdOffset * CONNECT_BUTTON);
       layout_->AddView(button, 1, 2);
     }
 
     if (button_flags & OPTIONS_BUTTON) {
       views::NativeButton* button = new views::NativeButton(this,
-          l10n_util::GetString(IDS_OPTIONS_SETTINGS_OPTIONS));
+          UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OPTIONS)));
       button->set_tag(id + kButtonIdOffset * OPTIONS_BUTTON);
       layout_->AddView(button, 1, 2);
     }
@@ -254,8 +254,8 @@ void WiredSection::InitSection() {
         *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED));
   }
 
-  std::wstring name =
-      l10n_util::GetString(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
+  std::wstring name = UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET));
 
   int s = IDS_STATUSBAR_NETWORK_DEVICE_DISABLED;
   if (cros->ethernet_connecting())
@@ -264,7 +264,7 @@ void WiredSection::InitSection() {
     s = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED;
   else if (cros->ethernet_enabled())
     s = IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED;
-  std::wstring status = l10n_util::GetString(s);
+  std::wstring status = UTF16ToWide(l10n_util::GetStringUTF16(s));
 
   int flags = cros->ethernet_connected() ? OPTIONS_BUTTON : 0;
   bool bold = cros->ethernet_connected() ? true : false;
@@ -399,7 +399,7 @@ void WirelessSection::AddWirelessNetwork(int id, const SkBitmap& icon,
     s = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING;
   else if (connected)
     s = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED;
-  std::wstring status = l10n_util::GetString(s);
+  std::wstring status = UTF16ToWide(l10n_util::GetStringUTF16(s));
 
   int flags = 0;
   if (connected) {

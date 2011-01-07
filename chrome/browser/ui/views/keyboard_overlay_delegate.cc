@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/ui/browser.h"
@@ -16,7 +17,7 @@
 void KeyboardOverlayDelegate::ShowDialog(gfx::NativeWindow owning_window) {
   Browser* browser = BrowserList::GetLastActive();
   KeyboardOverlayDelegate* delegate = new KeyboardOverlayDelegate(
-      l10n_util::GetString(IDS_KEYBOARD_OVERLAY_TITLE));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_TITLE)));
   DCHECK(browser);
   browser->BrowserShowHtmlDialog(delegate, owning_window);
 }

@@ -334,15 +334,16 @@ void NetworkSelectionView::UpdateLocalizedStrings() {
       UTF16ToWide(delegate_->language_switch_menu()->GetCurrentLocaleName()));
   keyboards_menubutton_->SetText(
       UTF16ToWide(delegate_->keyboard_switch_menu()->GetCurrentKeyboardName()));
-  welcome_label_->SetText(l10n_util::GetString(IDS_NETWORK_SELECTION_TITLE));
+  welcome_label_->SetText(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_TITLE)));
   select_language_label_->SetText(
-      l10n_util::GetString(IDS_LANGUAGE_SELECTION_SELECT));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_LANGUAGE_SELECTION_SELECT)));
   select_keyboard_label_->SetText(
-      l10n_util::GetString(IDS_KEYBOARD_SELECTION_SELECT));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_KEYBOARD_SELECTION_SELECT)));
   select_network_label_->SetText(
-      l10n_util::GetString(IDS_NETWORK_SELECTION_SELECT));
-  proxy_settings_link_->SetText(
-      l10n_util::GetString(IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_SELECT)));
+  proxy_settings_link_->SetText(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON)));
   RecreateNativeControls();
   UpdateConnectingNetworkLabel();
   network_dropdown_->Refresh();
@@ -448,13 +449,14 @@ void NetworkSelectionView::RecreateNativeControls() {
   delete continue_button_;
   continue_button_ = new login::WideButton(
       delegate_,
-      l10n_util::GetString(IDS_NETWORK_SELECTION_CONTINUE_BUTTON));
+      UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_CONTINUE_BUTTON)));
   continue_button_->SetEnabled(is_continue_enabled);
 }
 
 void NetworkSelectionView::UpdateConnectingNetworkLabel() {
-  connecting_network_label_->SetText(l10n_util::GetStringF(
-      IDS_NETWORK_SELECTION_CONNECTING, UTF16ToWide(network_id_)));
+  connecting_network_label_->SetText(UTF16ToWide(l10n_util::GetStringFUTF16(
+      IDS_NETWORK_SELECTION_CONNECTING, network_id_)));
 }
 
 }  // namespace chromeos

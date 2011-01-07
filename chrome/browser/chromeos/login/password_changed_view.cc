@@ -59,7 +59,8 @@ views::View* PasswordChangedView::GetInitiallyFocusedView() {
 }
 
 std::wstring PasswordChangedView::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_LOGIN_PASSWORD_CHANGED_DIALOG_BOX_TITLE);
+  return UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_CHANGED_DIALOG_BOX_TITLE));
 }
 
 gfx::Size PasswordChangedView::GetPreferredSize() {
@@ -86,22 +87,26 @@ void PasswordChangedView::Init() {
   // Create controls
   title_label_ = new Label();
   title_label_->SetFont(title_font);
-  title_label_->SetText(l10n_util::GetString(IDS_LOGIN_PASSWORD_CHANGED_TITLE));
+  title_label_->SetText(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_CHANGED_TITLE)));
   title_label_->SetHorizontalAlignment(Label::ALIGN_LEFT);
 
   description_label_ = new Label();
   description_label_->SetText(
-      l10n_util::GetString(IDS_LOGIN_PASSWORD_CHANGED_DESC));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_CHANGED_DESC)));
   description_label_->SetMultiLine(true);
   description_label_->SetHorizontalAlignment(Label::ALIGN_LEFT);
 
   full_sync_radio_ = new RadioButton(
-      l10n_util::GetString(IDS_LOGIN_PASSWORD_CHANGED_RESET), 0);
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_CHANGED_RESET)),
+      0);
   full_sync_radio_->set_listener(this);
   full_sync_radio_->SetMultiLine(true);
 
   delta_sync_radio_ = new RadioButton(
-      l10n_util::GetString(IDS_LOGIN_PASSWORD_CHANGED_MIGRATE), 0);
+      UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD_CHANGED_MIGRATE)),
+      0);
   delta_sync_radio_->set_listener(this);
   delta_sync_radio_->SetMultiLine(true);
 

@@ -56,8 +56,8 @@ TEST_F(GenericInfoViewTest, GenericInfoView) {
   GenericInfoView* view2 = new GenericInfoView(ARRAYSIZE(kNameIds), kNameIds);
   root_view->AddChildView(view2);
 
-  string16 product_name = l10n_util::GetString(IDS_PRODUCT_NAME);
-  string16 product_desc = l10n_util::GetString(IDS_PRODUCT_DESCRIPTION);
+  string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+  string16 product_desc = l10n_util::GetStringUTF16(IDS_PRODUCT_DESCRIPTION);
   EXPECT_EQ(product_name, view2->name_views_[0]->GetText());
   EXPECT_EQ(product_desc, view2->name_views_[1]->GetText());
   window->CloseNow();

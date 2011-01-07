@@ -9,6 +9,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
@@ -87,7 +88,7 @@ class CameraImageView : public views::ImageView {
 
   void SetErrorState() {
     HideThrobber();
-    SetMessage(l10n_util::GetString(IDS_USER_IMAGE_NO_VIDEO));
+    SetMessage(UTF16ToWide(l10n_util::GetStringUTF16(IDS_USER_IMAGE_NO_VIDEO)));
     SetImage(
         ResourceBundle::GetSharedInstance().GetBitmapNamed(
             IDR_USER_IMAGE_NO_VIDEO));
@@ -168,8 +169,8 @@ void UserImageView::Init() {
       &BorderDefinition::kScreenBorder);
   set_background(views::Background::CreateBackgroundPainter(true, painter));
 
-  title_label_ =
-      new views::Label(l10n_util::GetString(IDS_USER_IMAGE_SCREEN_TITLE));
+  title_label_ = new views::Label(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_USER_IMAGE_SCREEN_TITLE)));
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   title_label_->SetMultiLine(true);
   CorrectLabelFontSize(title_label_);
@@ -188,10 +189,12 @@ void UserImageView::Init() {
                              ResourceBundle::GetSharedInstance().GetBitmapNamed(
                                  IDR_USER_IMAGE_CAPTURE_DISABLED));
 
-  ok_button_ = new login::WideButton(this, l10n_util::GetString(IDS_OK));
+  ok_button_ = new login::WideButton(
+      this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_OK)));
   ok_button_->SetEnabled(!is_capturing_);
 
-  skip_button_ = new login::WideButton(this, l10n_util::GetString(IDS_SKIP));
+  skip_button_ = new login::WideButton(
+      this, UTF16ToWide(l10n_util::GetStringUTF16(IDS_SKIP)));
   skip_button_->SetEnabled(true);
 
   InitLayout();

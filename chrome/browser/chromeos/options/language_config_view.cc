@@ -180,14 +180,14 @@ void LanguageConfigView::ButtonPressed(
 std::wstring LanguageConfigView::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
-    return l10n_util::GetString(IDS_DONE);
+    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_DONE));
   }
   return L"";
 }
 
 std::wstring LanguageConfigView::GetWindowTitle() const {
-  return l10n_util::GetString(
-      IDS_OPTIONS_SETTINGS_LANGUAGES_DIALOG_TITLE);
+  return UTF16ToWide(l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_LANGUAGES_DIALOG_TITLE));
 }
 
 void LanguageConfigView::Layout() {
@@ -466,8 +466,8 @@ views::View* LanguageConfigView::CreateContentsOnBottom() {
 
   // Create the remove button.
   remove_language_button_ = new views::NativeButton(
-      this, l10n_util::GetString(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_REMOVE_BUTTON));
+      this, UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_REMOVE_BUTTON)));
   remove_language_button_->set_tag(kRemoveLanguageButton);
 
   // Add the add and remove buttons.
@@ -530,14 +530,14 @@ void LanguageConfigView::AddUiLanguageSection(const std::string& language_code,
   if (application_locale == language_code) {
     layout->AddView(
         new views::Label(
-            l10n_util::GetStringF(
+            UTF16ToWide(l10n_util::GetStringFUTF16(
                 IDS_OPTIONS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE,
-                l10n_util::GetString(IDS_PRODUCT_OS_NAME))));
+                l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME)))));
   } else {
     UiLanguageButton* button = new UiLanguageButton(
-      this, l10n_util::GetStringF(
+      this, UTF16ToWide(l10n_util::GetStringFUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE,
-          l10n_util::GetString(IDS_PRODUCT_OS_NAME)),
+          l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME))),
       language_code);
     button->set_tag(kChangeUiLanguageButton);
     layout->AddView(button);
@@ -549,8 +549,8 @@ void LanguageConfigView::AddInputMethodSection(
     views::GridLayout* layout) {
   // Create the input method title label.
   views::Label* input_method_title_label = new views::Label(
-      l10n_util::GetString(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD));
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD)));
   input_method_title_label->SetFont(
       input_method_title_label->font().DeriveFont(0, gfx::Font::BOLD));
 
@@ -587,7 +587,8 @@ void LanguageConfigView::AddInputMethodSection(
     if (input_method_config_view_map_.count(input_method_id) > 0) {
       InputMethodButton* button = new InputMethodButton(
           this,
-          l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_CONFIGURE),
+          UTF16ToWide(l10n_util::GetStringUTF16(
+              IDS_OPTIONS_SETTINGS_LANGUAGES_CONFIGURE)),
           input_method_id);
       button->set_tag(kConfigureInputMethodButton);
       layout->AddView(button);

@@ -213,7 +213,7 @@ void SelectFileDialogImpl::SelectFile(
         NOTREACHED();
         return;
     }
-    title_string = l10n_util::GetString(string_id);
+    title_string = UTF16ToWide(l10n_util::GetStringUTF16(string_id));
   } else {
     title_string = UTF16ToWide(title);
   }

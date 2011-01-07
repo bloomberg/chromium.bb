@@ -137,7 +137,7 @@ void WifiConfigView::UpdateErrorLabel(bool failed) {
     id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_CREDENTIALS;
   }
   if (id != kNoError) {
-    error_label_->SetText(l10n_util::GetString(id));
+    error_label_->SetText(UTF16ToWide(l10n_util::GetStringUTF16(id)));
     error_label_->SetVisible(true);
   } else {
     error_label_->SetVisible(false);
@@ -299,8 +299,8 @@ void WifiConfigView::Init() {
 
   // SSID input
   layout->StartRow(0, column_view_set_id);
-  layout->AddView(new views::Label(l10n_util::GetString(
-      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID)));
+  layout->AddView(new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID))));
   if (!wifi_.get()) {
     ssid_textfield_ = new views::Textfield(views::Textfield::STYLE_DEFAULT);
     ssid_textfield_->SetController(this);
@@ -325,8 +325,8 @@ void WifiConfigView::Init() {
   if (wifi_.get() && wifi_->encrypted() &&
       wifi_->encryption() == SECURITY_8021X) {
     layout->StartRow(0, column_view_set_id);
-    layout->AddView(new views::Label(l10n_util::GetString(
-        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY)));
+    layout->AddView(new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY))));
     identity_textfield_ = new views::Textfield(
         views::Textfield::STYLE_DEFAULT);
     identity_textfield_->SetController(this);
@@ -335,15 +335,15 @@ void WifiConfigView::Init() {
     layout->AddView(identity_textfield_);
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
     layout->StartRow(0, column_view_set_id);
-    layout->AddView(new views::Label(l10n_util::GetString(
-        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT)));
+    layout->AddView(new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
+        IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT))));
     if (!wifi_->cert_path().empty()) {
       certificate_path_ = wifi_->cert_path();
       certificate_loaded = wifi_->IsCertificateLoaded();
     }
     if (certificate_loaded) {
-      std::wstring label = l10n_util::GetString(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_INSTALLED);
+      std::wstring label = UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_INSTALLED));
       views::Label* cert_text = new views::Label(label);
       cert_text->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
       layout->AddView(cert_text);
@@ -352,8 +352,8 @@ void WifiConfigView::Init() {
       if (!certificate_path_.empty())
         label = UTF8ToWide(certificate_path_);
       else
-        label = l10n_util::GetString(
-            IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_BUTTON);
+        label = UTF16ToWide(l10n_util::GetStringUTF16(
+            IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_BUTTON));
       certificate_browse_button_ = new views::NativeButton(this, label);
       layout->AddView(certificate_browse_button_);
     }
@@ -363,8 +363,8 @@ void WifiConfigView::Init() {
   // Security select
   if (!wifi_.get()) {
     layout->StartRow(0, column_view_set_id);
-    layout->AddView(new views::Label(l10n_util::GetString(
-          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY)));
+    layout->AddView(new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY))));
     security_combobox_ = new views::Combobox(new SecurityComboboxModel());
     security_combobox_->set_listener(this);
     layout->AddView(security_combobox_);
@@ -380,7 +380,8 @@ void WifiConfigView::Init() {
   } else {
     label_text_id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE;
   }
-  layout->AddView(new views::Label(l10n_util::GetString(label_text_id)));
+  layout->AddView(new views::Label(
+      UTF16ToWide(l10n_util::GetStringUTF16(label_text_id))));
   passphrase_textfield_ = new views::Textfield(
       views::Textfield::STYLE_PASSWORD);
   passphrase_textfield_->SetController(this);

@@ -192,8 +192,8 @@ void DateTimeSection::InitContents(GridLayout* layout) {
   timezone_combobox_->set_listener(this);
 
   layout->StartRow(0, double_column_view_set_id());
-  layout->AddView(new views::Label(
-      l10n_util::GetString(IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION)));
+  layout->AddView(new views::Label(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION))));
   layout->AddView(timezone_combobox_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
@@ -265,8 +265,9 @@ void TouchpadSection::SliderValueChanged(views::Slider* sender) {
 }
 
 void TouchpadSection::InitContents(GridLayout* layout) {
-  enable_tap_to_click_checkbox_ = new views::Checkbox(l10n_util::GetString(
-      IDS_OPTIONS_SETTINGS_TAP_TO_CLICK_ENABLED_DESCRIPTION));
+  enable_tap_to_click_checkbox_ =
+      new views::Checkbox(UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_TAP_TO_CLICK_ENABLED_DESCRIPTION)));
   enable_tap_to_click_checkbox_->set_listener(this);
   enable_tap_to_click_checkbox_->SetMultiLine(true);
   // Create sensitivity slider with values between 1 and 5 step 1
@@ -277,8 +278,8 @@ void TouchpadSection::InitContents(GridLayout* layout) {
       this);
 
   layout->StartRow(0, double_column_view_set_id());
-  layout->AddView(new views::Label(
-      l10n_util::GetString(IDS_OPTIONS_SETTINGS_SENSITIVITY_DESCRIPTION)));
+  layout->AddView(new views::Label(UTF16ToWide(l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_SENSITIVITY_DESCRIPTION))));
   layout->AddView(sensitivity_slider_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id());
@@ -359,7 +360,8 @@ void LanguageSection::InitContents(GridLayout* layout) {
   layout->StartRow(0, double_column_view_set_id());
   views::NativeButton* customize_languages_button = new views::NativeButton(
       this,
-      l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_CUSTOMIZE));
+      UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_CUSTOMIZE)));
   customize_languages_button->set_tag(kCustomizeLanguagesButton);
 
   xkb_modifier_combobox_ = new views::Combobox(&xkb_modifier_combobox_model_);
@@ -474,8 +476,9 @@ AccessibilitySection::AccessibilitySection(Profile* profile)
 }
 
 void AccessibilitySection::InitContents(GridLayout* layout) {
-  accessibility_checkbox_ = new views::Checkbox(l10n_util::GetString(
-      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DESCRIPTION));
+  accessibility_checkbox_ =
+      new views::Checkbox(UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DESCRIPTION)));
   accessibility_checkbox_->set_listener(this);
   accessibility_checkbox_->SetMultiLine(true);
 

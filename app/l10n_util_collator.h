@@ -17,9 +17,6 @@
 namespace l10n_util {
 
 // Compares the two strings using the specified collator.
-UCollationResult CompareStringWithCollator(const icu::Collator* collator,
-                                           const std::wstring& lhs,
-                                           const std::wstring& rhs);
 UCollationResult CompareString16WithCollator(const icu::Collator* collator,
                                              const string16& lhs,
                                              const string16& rhs);

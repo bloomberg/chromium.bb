@@ -31,7 +31,8 @@ NetworkConfigView::NetworkConfigView(const WifiNetwork* wifi)
 
 NetworkConfigView::NetworkConfigView()
     : browser_mode_(true),
-      title_(l10n_util::GetString(IDS_OPTIONS_SETTINGS_OTHER_NETWORKS)),
+      title_(UTF16ToWide(
+          l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_NETWORKS))),
       wificonfig_view_(new WifiConfigView(this)),
       delegate_(NULL) {
 }
@@ -43,7 +44,7 @@ gfx::NativeWindow NetworkConfigView::GetNativeWindow() const {
 std::wstring NetworkConfigView::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK)
-    return l10n_util::GetString(IDS_OPTIONS_SETTINGS_CONNECT);
+    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_CONNECT));
   return std::wstring();
 }
 

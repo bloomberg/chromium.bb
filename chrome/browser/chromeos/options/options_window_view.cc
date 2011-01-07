@@ -213,8 +213,9 @@ void OptionsWindowView::ShowOptionsPage(OptionsPage page,
 // OptionsWindowView, views::DialogDelegate implementation:
 
 std::wstring OptionsWindowView::GetWindowTitle() const {
-  return l10n_util::GetStringF(IDS_OPTIONS_DIALOG_TITLE,
-                               l10n_util::GetString(IDS_PRODUCT_NAME));
+  return UTF16ToWide(
+      l10n_util::GetStringFUTF16(IDS_OPTIONS_DIALOG_TITLE,
+                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 }
 
 void OptionsWindowView::WindowClosing() {
@@ -300,30 +301,35 @@ void OptionsWindowView::Init() {
   system_page->set_background(views::Background::CreateSolidBackground(
       SK_ColorWHITE));
   tabs_->AddTabAtIndex(tab_index++,
-                       l10n_util::GetString(IDS_OPTIONS_SYSTEM_TAB_LABEL),
+                       UTF16ToWide(l10n_util::GetStringUTF16(
+                           IDS_OPTIONS_SYSTEM_TAB_LABEL)),
                        system_page, false);
 
   InternetPageView* internet_page = new InternetPageView(profile_);
   internet_page->set_background(views::Background::CreateSolidBackground(
       SK_ColorWHITE));
   tabs_->AddTabAtIndex(tab_index++,
-                       l10n_util::GetString(IDS_OPTIONS_INTERNET_TAB_LABEL),
+                       UTF16ToWide(l10n_util::GetStringUTF16(
+                           IDS_OPTIONS_INTERNET_TAB_LABEL)),
                        internet_page, false);
 
   tabs_->AddTabAtIndex(tab_index++,
-                       l10n_util::GetString(IDS_OPTIONS_GENERAL_TAB_LABEL),
+                       UTF16ToWide(l10n_util::GetStringUTF16(
+                           IDS_OPTIONS_GENERAL_TAB_LABEL)),
                        new GtkPreferencePageHost(
                            general_page_.get_page_widget()),
                        false);
 
   tabs_->AddTabAtIndex(tab_index++,
-                       l10n_util::GetString(IDS_OPTIONS_CONTENT_TAB_LABEL),
+                       UTF16ToWide(l10n_util::GetStringUTF16(
+                           IDS_OPTIONS_CONTENT_TAB_LABEL)),
                        new GtkPreferencePageHost(
                            content_page_.get_page_widget()),
                        false);
 
   tabs_->AddTabAtIndex(tab_index++,
-                       l10n_util::GetString(IDS_OPTIONS_ADVANCED_TAB_LABEL),
+                       UTF16ToWide(l10n_util::GetStringUTF16(
+                           IDS_OPTIONS_ADVANCED_TAB_LABEL)),
                        new GtkPreferencePageHost(
                            advanced_page_.get_page_widget()),
                        false);

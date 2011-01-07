@@ -51,7 +51,7 @@ class LanguageComboboxModel : public ComboboxModel {
   // Gets a label for the combobox like "Input mode". This function is NOT part
   // of the ComboboxModel interface.
   std::wstring GetLabel() const {
-    return l10n_util::GetString(pref_data_->label_message_id);
+    return UTF16ToWide(l10n_util::GetStringUTF16(pref_data_->label_message_id));
   }
 
   // Gets a config value for the ibus configuration daemon (e.g. "KUTEN_TOUTEN",

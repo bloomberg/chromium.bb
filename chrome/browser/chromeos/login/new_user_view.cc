@@ -277,20 +277,23 @@ void NewUserView::AddChildView(View* view) {
 }
 
 void NewUserView::UpdateLocalizedStrings() {
-  title_label_->SetText(l10n_util::GetString(IDS_LOGIN_TITLE));
-  title_hint_label_->SetText(l10n_util::GetString(IDS_LOGIN_TITLE_HINT));
+  title_label_->SetText(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_LOGIN_TITLE)));
+  title_hint_label_->SetText(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_LOGIN_TITLE_HINT)));
   username_field_->set_text_to_display_when_empty(
       l10n_util::GetStringUTF16(IDS_LOGIN_USERNAME));
   password_field_->set_text_to_display_when_empty(
       l10n_util::GetStringUTF16(IDS_LOGIN_PASSWORD));
-  sign_in_button_->SetLabel(l10n_util::GetString(IDS_LOGIN_BUTTON));
+  sign_in_button_->SetLabel(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_LOGIN_BUTTON)));
   if (need_create_account_) {
     create_account_link_->SetText(
-        l10n_util::GetString(IDS_CREATE_ACCOUNT_BUTTON));
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_CREATE_ACCOUNT_BUTTON)));
   }
   if (need_guest_link_) {
-    guest_link_->SetText(
-        l10n_util::GetString(IDS_BROWSE_WITHOUT_SIGNING_IN_BUTTON));
+    guest_link_->SetText(UTF16ToWide(
+        l10n_util::GetStringUTF16(IDS_BROWSE_WITHOUT_SIGNING_IN_BUTTON)));
   }
   delegate_->ClearErrors();
   languages_menubutton_->SetText(

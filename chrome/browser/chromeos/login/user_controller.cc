@@ -192,9 +192,9 @@ void UserController::StopThrobber() {
 
 std::wstring UserController::GetNameTooltip() const {
   if (is_new_user_)
-    return l10n_util::GetString(IDS_ADD_USER);
+    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_ADD_USER));
   if (is_guest_)
-    return l10n_util::GetString(IDS_GO_INCOGNITO_BUTTON);
+    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_GO_INCOGNITO_BUTTON));
 
   // Tooltip contains user's display name and his email domain to distinguish
   // this user from the other one with the same display name.
@@ -415,12 +415,12 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
           kUnselectedUsernameFontDelta, gfx::Font::BOLD);
   std::wstring text;
   if (is_guest_) {
-    text = l10n_util::GetString(IDS_GUEST);
+    text = UTF16ToWide(l10n_util::GetStringUTF16(IDS_GUEST));
   } else if (is_new_user_) {
     // Add user should have label only in activated state.
     // When new user is the only, label is not needed.
     if (type == WM_IPC_WINDOW_LOGIN_LABEL && index != 0)
-      text = l10n_util::GetString(IDS_ADD_USER);
+      text = UTF16ToWide(l10n_util::GetStringUTF16(IDS_ADD_USER));
   } else {
     text = UTF8ToWide(user_.GetDisplayName());
   }

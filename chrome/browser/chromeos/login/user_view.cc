@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/rounded_view.h"
@@ -75,12 +76,12 @@ class SignoutView : public views::View {
     const gfx::Font& font = rb.GetFont(ResourceBundle::SmallFont);
 
     active_user_label_ = new views::Label(
-        l10n_util::GetString(IDS_SCREEN_LOCK_ACTIVE_USER));
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_ACTIVE_USER)));
     active_user_label_->SetFont(font);
     active_user_label_->SetColor(kTextColor);
 
     signout_link_ = new views::Link(
-        l10n_util::GetString(IDS_SCREEN_LOCK_SIGN_OUT));
+        UTF16ToWide(l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_SIGN_OUT)));
     signout_link_->SetController(link_controller);
     signout_link_->SetFont(font);
     signout_link_->SetColor(kTextColor);
@@ -282,7 +283,7 @@ void UserView::Init(bool need_background) {
   remove_button_ = new RemoveButton(
       this,
       *rb.GetBitmapNamed(IDR_CLOSE_BAR_H),
-      l10n_util::GetString(IDS_LOGIN_REMOVE),
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_LOGIN_REMOVE)),
       gfx::Point(kUserImageSize - kRemoveButtonPadding, kRemoveButtonPadding));
   remove_button_->SetVisible(false);
   AddChildView(remove_button_);
@@ -332,7 +333,8 @@ void UserView::ButtonPressed(views::Button* sender, const views::Event& event) {
 }
 
 void UserView::OnLocaleChanged() {
-  remove_button_->SetText(l10n_util::GetString(IDS_LOGIN_REMOVE));
+  remove_button_->SetText(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_LOGIN_REMOVE)));
 }
 
 }  // namespace chromeos

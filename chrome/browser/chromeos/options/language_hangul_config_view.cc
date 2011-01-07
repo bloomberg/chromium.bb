@@ -111,14 +111,14 @@ int LanguageHangulConfigView::GetDialogButtons() const {
 std::wstring LanguageHangulConfigView::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
-    return l10n_util::GetString(IDS_OK);
+    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_OK));
   }
   return L"";
 }
 
 std::wstring LanguageHangulConfigView::GetWindowTitle() const {
-  return l10n_util::GetString(
-      IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_TITLE);
+  return UTF16ToWide(l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_TITLE));
 }
 
 gfx::Size LanguageHangulConfigView::GetPreferredSize() {
@@ -150,8 +150,8 @@ void LanguageHangulConfigView::InitControlLayout() {
   layout->StartRow(0, kColumnSetId);
 
   // Settings for the Hangul IME.
-  layout->AddView(new views::Label(
-      l10n_util::GetString(IDS_OPTIONS_SETTINGS_KEYBOARD_LAYOUT_TEXT)));
+  layout->AddView(new views::Label(UTF16ToWide(
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_KEYBOARD_LAYOUT_TEXT))));
 
   hangul_keyboard_combobox_
       = new views::Combobox(hangul_keyboard_combobox_model_.get());

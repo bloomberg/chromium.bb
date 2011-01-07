@@ -122,14 +122,14 @@ int LanguageMozcConfigView::GetDialogButtons() const {
 std::wstring LanguageMozcConfigView::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
-    return l10n_util::GetString(IDS_OK);
+    return UTF16ToWide(l10n_util::GetStringUTF16(IDS_OK));
   }
   return L"";
 }
 
 std::wstring LanguageMozcConfigView::GetWindowTitle() const {
-  return l10n_util::GetString(
-      IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SETTINGS_TITLE);
+  return UTF16ToWide(l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SETTINGS_TITLE));
 }
 
 gfx::Size LanguageMozcConfigView::GetPreferredSize() {
@@ -166,8 +166,9 @@ void LanguageMozcConfigView::InitControlLayout() {
 
   for (size_t i = 0; i < language_prefs::kNumMozcBooleanPrefs; ++i) {
     MozcPrefAndAssociatedCheckbox& current = prefs_and_checkboxes_[i];
-    current.checkbox = new views::Checkbox(
-        l10n_util::GetString(language_prefs::kMozcBooleanPrefs[i].message_id));
+    current.checkbox = new views::Checkbox(UTF16ToWide(
+        l10n_util::GetStringUTF16(
+            language_prefs::kMozcBooleanPrefs[i].message_id)));
     current.checkbox->set_listener(this);
     current.checkbox->set_tag(i);
   }
@@ -190,8 +191,8 @@ void LanguageMozcConfigView::InitControlLayout() {
   NotifyPrefChanged();  // Sync the comboboxes with current Chrome prefs.
 
   reset_to_defaults_button_ = new views::NativeButton(
-      this, l10n_util::GetString(
-          IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_RESET_TO_DEFAULTS_BUTTON));
+      this, UTF16ToWide(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_RESET_TO_DEFAULTS_BUTTON)));
   reset_to_defaults_button_->set_tag(kResetToDefaultsButton);
   layout->StartRow(0, kColumnSetId);
   layout->AddView(reset_to_defaults_button_);
@@ -213,8 +214,8 @@ void LanguageMozcConfigView::InitControlLayout() {
     const MozcPrefAndAssociatedSlider& current = prefs_and_sliders_[i];
     layout->StartRow(0, kColumnSetId);
     layout->AddView(new views::Label(
-        l10n_util::GetString(
-            language_prefs::kMozcIntegerPrefs[i].message_id)));
+        UTF16ToWide(l10n_util::GetStringUTF16(
+            language_prefs::kMozcIntegerPrefs[i].message_id))));
     layout->AddView(current.slider);
   }
   NotifyPrefChanged();  // Sync the slider with current Chrome prefs.

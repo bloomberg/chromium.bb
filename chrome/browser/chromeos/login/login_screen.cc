@@ -135,7 +135,7 @@ void LoginScreen::ShowError(int error_id, const std::string& details) {
       BubbleBorder::LEFT_TOP,
       ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING),
       error_text,
-      l10n_util::GetString(IDS_CANT_ACCESS_ACCOUNT_BUTTON),
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_CANT_ACCESS_ACCOUNT_BUTTON)),
       this);
 }
 

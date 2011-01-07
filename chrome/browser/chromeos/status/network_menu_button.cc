@@ -121,8 +121,8 @@ void NetworkMenuButton::SetNetworkIcon(NetworkLibrary* cros,
   if (!cros || !CrosLibrary::Get()->EnsureLoaded()) {
     SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0));
     SetBadge(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_WARNING));
-    SetTooltipText(l10n_util::GetString(
-        IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP));
+    SetTooltipText(UTF16ToWide(l10n_util::GetStringUTF16(
+        IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP)));
     return;
   }
 
@@ -130,8 +130,8 @@ void NetworkMenuButton::SetNetworkIcon(NetworkLibrary* cros,
     animation_connecting_.Stop();
     SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0));
     SetBadge(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED));
-    SetTooltipText(l10n_util::GetString(
-        IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP));
+    SetTooltipText(UTF16ToWide(l10n_util::GetStringUTF16(
+        IDS_STATUSBAR_NETWORK_NO_NETWORK_TOOLTIP)));
     return;
   }
 
@@ -150,11 +150,10 @@ void NetworkMenuButton::SetNetworkIcon(NetworkLibrary* cros,
       wireless = cros->cellular_network();
       SetBadge(BadgeForNetworkTechnology(cros->cellular_network()));
     }
-    SetTooltipText(
-        l10n_util::GetStringF(wireless->configuring() ?
-            IDS_STATUSBAR_NETWORK_CONFIGURING_TOOLTIP :
-            IDS_STATUSBAR_NETWORK_CONNECTING_TOOLTIP,
-            UTF8ToWide(wireless->name())));
+    SetTooltipText(UTF16ToWide(l10n_util::GetStringFUTF16(
+        wireless->configuring() ? IDS_STATUSBAR_NETWORK_CONFIGURING_TOOLTIP
+                                : IDS_STATUSBAR_NETWORK_CONNECTING_TOOLTIP,
+        UTF8ToUTF16(wireless->name()))));
   } else {
     // Stop connecting animation since we are not connecting.
     animation_connecting_.Stop();
@@ -164,24 +163,25 @@ void NetworkMenuButton::SetNetworkIcon(NetworkLibrary* cros,
         SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_WIRED));
         SetBadge(SkBitmap());
         SetTooltipText(
-            l10n_util::GetStringF(
+            UTF16ToWide(l10n_util::GetStringFUTF16(
                 IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
-                l10n_util::GetString(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET)));
+                l10n_util::GetStringUTF16(
+                    IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET))));
       } else if (network->type() == TYPE_WIFI) {
         const WifiNetwork* wifi = static_cast<const WifiNetwork*>(network);
         SetIcon(IconForNetworkStrength(wifi, false));
         SetBadge(SkBitmap());
-        SetTooltipText(l10n_util::GetStringF(
+        SetTooltipText(UTF16ToWide(l10n_util::GetStringFUTF16(
             IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
-            UTF8ToWide(wifi->name())));
+            UTF8ToUTF16(wifi->name()))));
       } else if (network->type() == TYPE_CELLULAR) {
         const CellularNetwork* cellular =
             static_cast<const CellularNetwork*>(network);
         SetIcon(IconForNetworkStrength(cellular, false));
         SetBadge(BadgeForNetworkTechnology(cellular));
-        SetTooltipText(l10n_util::GetStringF(
+        SetTooltipText(UTF16ToWide(l10n_util::GetStringFUTF16(
             IDS_STATUSBAR_NETWORK_CONNECTED_TOOLTIP,
-            UTF8ToWide(cellular->name())));
+            UTF8ToUTF16(cellular->name()))));
       }
     }
   }

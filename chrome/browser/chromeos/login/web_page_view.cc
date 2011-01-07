@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
@@ -116,7 +117,8 @@ void WebPageView::Init() {
   AddChildView(throbber_);
 
   connecting_label_ = new views::Label();
-  connecting_label_->SetText(l10n_util::GetString(IDS_LOAD_STATE_CONNECTING));
+  connecting_label_->SetText(
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_LOAD_STATE_CONNECTING)));
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   connecting_label_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
   connecting_label_->SetVisible(false);
