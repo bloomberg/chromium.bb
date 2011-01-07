@@ -56,6 +56,13 @@ static int option_fullscreen;
 #define MAX_RESPONSE		11
 #define MAX_ESCAPE		64
 
+/* Terminal modes */
+#define MODE_SHOW_CURSOR	0x00000001
+#define MODE_INVERSE		0x00000002
+#define MODE_AUTOWRAP		0x00000004
+#define MODE_AUTOREPEAT		0x00000008
+#define MODE_LF_NEWLINE		0x00000010
+
 union utf8_char {
 	unsigned char byte[4];
 	uint32_t ch;
@@ -185,13 +192,18 @@ struct terminal {
 	struct window *window;
 	struct display *display;
 	union utf8_char *data;
+	char *tab_ruler;
 	struct attr *data_attr;
 	struct attr curr_attr;
+	uint32_t mode;
 	char origin_mode;
+	char saved_origin_mode;
+	struct attr saved_attr;
 	union utf8_char last_char;
 	int margin_top, margin_bottom;
 	int data_pitch, attr_pitch;  /* The width in bytes of a line */
 	int width, height, start, row, column;
+	int saved_row, saved_column;
 	int fd, master;
 	GIOChannel *channel;
 	uint32_t modifiers;
@@ -209,14 +221,39 @@ struct terminal {
 	cairo_font_face_t *font_normal, *font_bold;
 };
 
+/* Create default tab stops, every 8 characters */
+static void
+terminal_init_tabs(struct terminal *terminal)
+{
+	int i = 0;
+	
+	while (i < terminal->width) {
+		if (i % 8 == 0)
+			terminal->tab_ruler[i] = 1;
+		else
+			terminal->tab_ruler[i] = 0;
+		i++;
+	}
+}
+
 static void
 terminal_init(struct terminal *terminal)
 {
 	terminal->curr_attr = terminal->color_scheme->default_attr;
 	terminal->origin_mode = 0;
+	terminal->mode = MODE_SHOW_CURSOR |
+			 MODE_AUTOREPEAT |
+			 MODE_AUTOWRAP;
 
 	terminal->row = 0;
 	terminal->column = 0;
+
+	terminal->saved_attr = terminal->curr_attr;
+	terminal->saved_origin_mode = terminal->origin_mode;
+	terminal->saved_row = terminal->row;
+	terminal->saved_column = terminal->column;
+
+	if (terminal->tab_ruler != NULL) terminal_init_tabs(terminal);
 }
 
 static void
@@ -362,6 +399,7 @@ terminal_resize(struct terminal *terminal, int width, int height)
 	size_t size;
 	union utf8_char *data;
 	struct attr *data_attr;
+	char *tab_ruler;
 	int data_pitch, attr_pitch;
 	int i, l, total_rows, start;
 	struct rectangle rectangle;
@@ -375,7 +413,9 @@ terminal_resize(struct terminal *terminal, int width, int height)
 	data = malloc(size);
 	attr_pitch = width * sizeof(struct attr);
 	data_attr = malloc(attr_pitch * height);
+	tab_ruler = malloc(width);
 	memset(data, 0, size);
+	memset(tab_ruler, 0, width);
 	attr_init(data_attr, terminal->curr_attr, width * height);
 	if (terminal->data && terminal->data_attr) {
 		if (width > terminal->width)
@@ -402,6 +442,7 @@ terminal_resize(struct terminal *terminal, int width, int height)
 
 		free(terminal->data);
 		free(terminal->data_attr);
+		free(terminal->tab_ruler);
 	}
 
 	terminal->data_pitch = data_pitch;
@@ -412,6 +453,8 @@ terminal_resize(struct terminal *terminal, int width, int height)
 		terminal->margin_bottom = terminal->height - 1;
 	terminal->data = data;
 	terminal->data_attr = data_attr;
+	terminal->tab_ruler = tab_ruler;
+	terminal_init_tabs(terminal);
 
 	if (terminal->row >= terminal->height)
 		terminal->row = terminal->height - 1;
@@ -473,7 +516,7 @@ terminal_draw_contents(struct terminal *terminal)
 		union utf8_char c;
 		char null;
 	} toShow;
-	int foreground, background, bold, underline;
+	int foreground, background, bold, underline, tmp;
 	int text_x, text_y;
 	cairo_surface_t *surface;
 	double d;
@@ -508,14 +551,20 @@ terminal_draw_contents(struct terminal *terminal)
 			/* get the attributes for this character cell */
 			attr = terminal_get_attr(terminal, row, col);
 			if ((attr.a & ATTRMASK_INVERSE) ||
-				(terminal->focused &&
-				terminal->row == row && terminal->column == col))
+				((terminal->mode & MODE_SHOW_CURSOR) &&
+				terminal->focused && terminal->row == row &&
+				terminal->column == col))
 			{
 				foreground = attr.bg;
 				background = attr.fg;
 			} else {
 				foreground = attr.fg;
 				background = attr.bg;
+			}
+			if (terminal->mode & MODE_INVERSE) {
+				tmp = foreground;
+				foreground = background;
+				background = tmp;
 			}
 			bold = attr.a & (ATTRMASK_BOLD | ATTRMASK_BLINK);
 			underline = attr.a & ATTRMASK_UNDERLINE;
@@ -559,7 +608,7 @@ terminal_draw_contents(struct terminal *terminal)
 		}
 	}
 
-	if (!terminal->focused) {
+	if ((terminal->mode & MODE_SHOW_CURSOR) && !terminal->focused) {
 		d = 0.5;
 
 		cairo_set_line_width(cr, 1);
@@ -626,8 +675,29 @@ handle_sgr(struct terminal *terminal, int code);
 static void
 handle_term_parameter(struct terminal *terminal, int code, int sr)
 {
+	int i;
+
 	if (terminal->qmark_flag) {
 		switch(code) {
+		case 3:  /* DECCOLM */
+			if (sr)
+				terminal_resize(terminal, 132, 24);
+			else
+				terminal_resize(terminal, 80, 24);
+			
+			/* set columns, but also home cursor and clear screen */
+			terminal->row = 0; terminal->column = 0;
+			for (i = 0; i < terminal->height; i++) {
+				memset(terminal_get_row(terminal, i),
+				    0, terminal->data_pitch);
+				attr_init(terminal_get_attr_row(terminal, i),
+				    terminal->curr_attr, terminal->width);
+			}
+			break;
+		case 5:  /* DECSCNM */
+			if (sr)	terminal->mode |=  MODE_INVERSE;
+			else	terminal->mode &= ~MODE_INVERSE;
+			break;
 		case 6:  /* DECOM */
 			terminal->origin_mode = sr;
 			if (terminal->origin_mode)
@@ -636,12 +706,28 @@ handle_term_parameter(struct terminal *terminal, int code, int sr)
 				terminal->row = 0;
 			terminal->column = 0;
 			break;
+		case 7:  /* DECAWM */
+			if (sr)	terminal->mode |=  MODE_AUTOWRAP;
+			else	terminal->mode &= ~MODE_AUTOWRAP;
+			break;
+		case 8:  /* DECARM */
+			if (sr)	terminal->mode |=  MODE_AUTOREPEAT;
+			else	terminal->mode &= ~MODE_AUTOREPEAT;
+			break;
+		case 25:
+			if (sr)	terminal->mode |=  MODE_SHOW_CURSOR;
+			else	terminal->mode &= ~MODE_SHOW_CURSOR;
+			break;
 		default:
 			fprintf(stderr, "Unknown parameter: ?%d\n", code);
 			break;
 		}
 	} else {
 		switch(code) {
+		case 20: /* LNM */
+			if (sr)	terminal->mode |=  MODE_LF_NEWLINE;
+			else	terminal->mode &= ~MODE_LF_NEWLINE;
+			break;
 		default:
 			fprintf(stderr, "Unknown parameter: %d\n", code);
 			break;
@@ -655,8 +741,9 @@ handle_escape(struct terminal *terminal)
 	union utf8_char *row;
 	struct attr *attr_row;
 	char *p;
-	int i, count, top, bottom;
+	int i, count, x, y, top, bottom;
 	int args[10], set[10] = { 0, };
+	char response[MAX_RESPONSE] = {0, };
 
 	terminal->escape[terminal->escape_length++] = '\0';
 	i = 0;
@@ -676,64 +763,181 @@ handle_escape(struct terminal *terminal)
 	}
 	
 	switch (*p) {
-	case 'A':
+	case 'A':    /* CUU */
 		count = set[0] ? args[0] : 1;
-		if (terminal->row - count >= 0)
+		if (count == 0) count = 1;
+		if (terminal->row - count >= terminal->margin_top)
 			terminal->row -= count;
 		else
-			terminal->row = 0;
+			terminal->row = terminal->margin_top;
 		break;
-	case 'B':
+	case 'B':    /* CUD */
 		count = set[0] ? args[0] : 1;
-		if (terminal->row + count < terminal->height)
+		if (count == 0) count = 1;
+		if (terminal->row + count <= terminal->margin_bottom)
 			terminal->row += count;
 		else
-			terminal->row = terminal->height;
+			terminal->row = terminal->margin_bottom;
 		break;
-	case 'C':
+	case 'C':    /* CUF */
 		count = set[0] ? args[0] : 1;
-		if (terminal->column + count < terminal->width)
+		if (count == 0) count = 1;
+		if ((terminal->column + count) < terminal->width)
 			terminal->column += count;
 		else
-			terminal->column = terminal->width;
+			terminal->column = terminal->width - 1;
 		break;
-	case 'D':
+	case 'D':    /* CUB */
 		count = set[0] ? args[0] : 1;
-		if (terminal->column - count >= 0)
+		if (count == 0) count = 1;
+		if ((terminal->column - count) >= 0)
 			terminal->column -= count;
 		else
 			terminal->column = 0;
 		break;
-	case 'J':
+	case 'E':    /* CNL */
+		count = set[0] ? args[0] : 1;
+		if (terminal->row + count <= terminal->margin_bottom)
+			terminal->row += count;
+		else
+			terminal->row = terminal->margin_bottom;
+		terminal->column = 0;
+		break;
+	case 'F':    /* CPL */
+		count = set[0] ? args[0] : 1;
+		if (terminal->row - count >= terminal->margin_top)
+			terminal->row -= count;
+		else
+			terminal->row = terminal->margin_top;
+		terminal->column = 0;
+		break;
+	case 'G':    /* CHA */
+		y = set[0] ? args[0] : 1;
+		y = y <= 0 ? 1 : y > terminal->width ? terminal->width : y;
+		
+		terminal->column = y - 1;
+		break;
+	case 'f':    /* HVP */
+	case 'H':    /* CUP */
+		x = (set[1] ? args[1] : 1) - 1;
+		x = x < 0 ? 0 :
+		    (x >= terminal->width ? terminal->width - 1 : x);
+		
+		y = (set[0] ? args[0] : 1) - 1;
+		if (terminal->origin_mode) {
+			y += terminal->margin_top;
+			y = y < terminal->margin_top ? terminal->margin_top :
+			    (y > terminal->margin_bottom ? terminal->margin_bottom : y);
+		} else {
+			y = y < 0 ? 0 :
+			    (y >= terminal->height ? terminal->height - 1 : y);
+		}
+		
+		terminal->row = y;
+		terminal->column = x;
+		break;
+	case 'I':    /* CHT */
+		count = set[0] ? args[0] : 1;
+		if (count == 0) count = 1;
+		while (count > 0 && terminal->column < terminal->width) {
+			if (terminal->tab_ruler[terminal->column]) count--;
+			terminal->column++;
+		}
+		terminal->column--;
+		break;
+	case 'J':    /* ED */
 		row = terminal_get_row(terminal, terminal->row);
 		attr_row = terminal_get_attr_row(terminal, terminal->row);
-		memset(&row[terminal->column], 0, (terminal->width - terminal->column) * sizeof(union utf8_char));
-		attr_init(&attr_row[terminal->column], terminal->curr_attr, (terminal->width - terminal->column));
-		for (i = terminal->row + 1; i < terminal->height; i++) {
-			memset(terminal_get_row(terminal, i), 0, terminal->width * sizeof(union utf8_char));
-			attr_init(terminal_get_attr_row(terminal, i), terminal->curr_attr, terminal->width);
+		if (!set[0] || args[0] == 0 || args[0] > 2) {
+			memset(&row[terminal->column],
+			       0, (terminal->width - terminal->column) * sizeof(union utf8_char));
+			attr_init(&attr_row[terminal->column],
+			       terminal->curr_attr, terminal->width - terminal->column);
+			for (i = terminal->row + 1; i < terminal->height; i++) {
+				memset(terminal_get_row(terminal, i),
+				    0, terminal->data_pitch);
+				attr_init(terminal_get_attr_row(terminal, i),
+				    terminal->curr_attr, terminal->width);
+			}
+		} else if (args[0] == 1) {
+			memset(row, 0, (terminal->column+1) * sizeof(union utf8_char));
+			attr_init(attr_row, terminal->curr_attr, terminal->column+1);
+			for (i = 0; i < terminal->row; i++) {
+				memset(terminal_get_row(terminal, i),
+				    0, terminal->data_pitch);
+				attr_init(terminal_get_attr_row(terminal, i),
+				    terminal->curr_attr, terminal->width);
+			}
+		} else if (args[0] == 2) {
+			for (i = 0; i < terminal->height; i++) {
+				memset(terminal_get_row(terminal, i),
+				    0, terminal->data_pitch);
+				attr_init(terminal_get_attr_row(terminal, i),
+				    terminal->curr_attr, terminal->width);
+			}
 		}
 		break;
-	case 'G':
-		if (set[0])
-			terminal->column = args[0] - 1;
-		break;
-	case 'H':
-	case 'f':
-		terminal->row = set[0] ? args[0] - 1 : 0;
-		terminal->column = set[1] ? args[1] - 1 : 0;
-		break;
-	case 'K':
+	case 'K':    /* EL */
 		row = terminal_get_row(terminal, terminal->row);
 		attr_row = terminal_get_attr_row(terminal, terminal->row);
-		memset(&row[terminal->column], 0, (terminal->width - terminal->column) * sizeof(union utf8_char));
-		attr_init(&attr_row[terminal->column], terminal->curr_attr, (terminal->width - terminal->column));
+		if (!set[0] || args[0] == 0 || args[0] > 2) {
+			memset(&row[terminal->column], 0,
+			    (terminal->width - terminal->column) * sizeof(union utf8_char));
+			attr_init(&attr_row[terminal->column], terminal->curr_attr,
+			    terminal->width - terminal->column);
+		} else if (args[0] == 1) {
+			memset(row, 0, (terminal->column+1) * sizeof(union utf8_char));
+			attr_init(attr_row, terminal->curr_attr, terminal->column+1);
+		} else if (args[0] == 2) {
+			memset(row, 0, terminal->data_pitch);
+			attr_init(attr_row, terminal->curr_attr, terminal->width);
+		}
 		break;
 	case 'S':    /* SU */
 		terminal_scroll(terminal, set[0] ? args[0] : 1);
 		break;
 	case 'T':    /* SD */
 		terminal_scroll(terminal, 0 - (set[0] ? args[0] : 1));
+		break;
+	case 'Z':    /* CBT */
+		count = set[0] ? args[0] : 1;
+		if (count == 0) count = 1;
+		while (count > 0 && terminal->column >= 0) {
+			if (terminal->tab_ruler[terminal->column]) count--;
+			terminal->column--;
+		}
+		terminal->column++;
+		break;
+	case '`':    /* HPA */
+		y = set[0] ? args[0] : 1;
+		y = y <= 0 ? 1 : y > terminal->width ? terminal->width : y;
+		
+		terminal->column = y - 1;
+		break;
+	case 'b':    /* REP */
+		count = set[0] ? args[0] : 1;
+		if (count == 0) count = 1;
+		if (terminal->last_char.byte[0])
+			for (i = 0; i < count; i++)
+				handle_char(terminal, terminal->last_char);
+		terminal->last_char.byte[0] = 0;
+		break;
+	case 'c':    /* Primary DA */
+		write(terminal->master, "\e[?1;2c", 7);
+		sleep(1);
+		break;
+	case 'd':    /* VPA */
+		x = set[0] ? args[0] : 1;
+		x = x <= 0 ? 1 : x > terminal->height ? terminal->height : x;
+		
+		terminal->row = x - 1;
+		break;
+	case 'g':    /* TBC */
+		if (!set[0] || args[0] == 0) {
+			terminal->tab_ruler[terminal->column] = 0;
+		} else if (args[0] == 3) {
+			memset(terminal->tab_ruler, 0, terminal->width);
+		}
 		break;
 	case 'h':    /* SM */
 		for(i = 0; i < 10 && set[i]; i++) {
@@ -766,6 +970,19 @@ handle_escape(struct terminal *terminal)
 			}
 		}
 		break;
+	case 'n':    /* DSR */
+		i = set[0] ? args[0] : 0;
+		if (i == 0 || i == 5) {
+			write(terminal->master, "\e[0n", 4);
+		} else if (i == 6) {
+			snprintf(response, MAX_RESPONSE, "\e[%d;%dR",
+			         terminal->origin_mode ?
+				     terminal->row+terminal->margin_top : terminal->row+1,
+				 terminal->column+1);
+			write(terminal->master, response, strlen(response));
+		}
+		sleep(1);  /* is this required? why? */
+ 		break;
 	case 'r':
 		if(!set[0]) {
 			terminal->margin_top = 0;
@@ -792,6 +1009,14 @@ handle_escape(struct terminal *terminal)
 				terminal->row = 0;
 			terminal->column = 0;
 		}
+		break;
+	case 's':
+		terminal->saved_row = terminal->row;
+		terminal->saved_column = terminal->column;
+		break;
+	case 'u':
+		terminal->row = terminal->saved_row;
+		terminal->column = terminal->saved_column;
 		break;
 	default:
 		fprintf(stderr, "Unknown CSI escape: %c\n", *p);
@@ -820,6 +1045,24 @@ handle_non_csi_escape(struct terminal *terminal, char code)
 			terminal_scroll(terminal, +1);
 		}
 		break;
+	case 'c':    /* RIS */
+		terminal_init(terminal);
+		break;
+	case 'H':    /* HTS */
+		terminal->tab_ruler[terminal->column] = 1;
+		break;
+	case '7':    /* DECSC */
+		terminal->saved_row = terminal->row;
+		terminal->saved_column = terminal->column;
+		terminal->saved_attr = terminal->curr_attr;
+		terminal->saved_origin_mode = terminal->origin_mode;
+		break;
+	case '8':    /* DECRC */
+		terminal->row = terminal->saved_row;
+		terminal->column = terminal->saved_column;
+		terminal->curr_attr = terminal->saved_attr;
+		terminal->origin_mode = terminal->saved_origin_mode;
+		break;
 	default:
 		fprintf(stderr, "Unknown escape code: %c\n", code);
 		break;
@@ -829,6 +1072,25 @@ handle_non_csi_escape(struct terminal *terminal, char code)
 static void
 handle_special_escape(struct terminal *terminal, char special, char code)
 {
+	int i, numChars;
+
+	if (special == '#') {
+		switch(code) {
+		case '8':
+			/* fill with 'E', no cheap way to do this */
+			memset(terminal->data, 0, terminal->data_pitch * terminal->height);
+			numChars = terminal->width * terminal->height;
+			for(i = 0; i < numChars; i++) {
+				terminal->data[i].byte[0] = 'E';
+			}
+			break;
+		default:
+			fprintf(stderr, "Unknown HASH escape #%c\n", code);
+			break;
+		}
+	} else {
+		fprintf(stderr, "Unknown special escape %c%c\n", special, code);
+	}
 }
 
 static void
@@ -908,7 +1170,9 @@ handle_special_char(struct terminal *terminal, char c)
 		terminal->column = 0;
 		break;
 	case '\n':
-		terminal->column = 0;
+		if (terminal->mode & MODE_LF_NEWLINE) {
+			terminal->column = 0;
+		}
 		/* fallthrough */
 	case '\v':
 	case '\f':
@@ -920,13 +1184,32 @@ handle_special_char(struct terminal *terminal, char c)
 
 		break;
 	case '\t':
-		memset(&row[terminal->column], ' ', (-terminal->column & 7) * sizeof(union utf8_char));
-		attr_init(&attr_row[terminal->column], terminal->curr_attr, -terminal->column & 7);
-		terminal->column = (terminal->column + 7) & ~7;
+		while (terminal->column < terminal->width) {
+			if (terminal->tab_ruler[terminal->column]) break;
+			row[terminal->column].byte[0] = ' ';
+			row[terminal->column].byte[1] = '\0';
+			attr_row[terminal->column] = terminal->curr_attr;
+			terminal->column++;
+		}
+		if (terminal->column >= terminal->width) {
+			terminal->column = terminal->width - 1;
+		}
+
 		break;
 	case '\b':
-		if (terminal->column > 0)
+		if (terminal->column >= terminal->width) {
+			terminal->column = terminal->width - 2;
+		} else if (terminal->column > 0) {
 			terminal->column--;
+		} else if (terminal->mode & MODE_AUTOWRAP) {
+			terminal->column = terminal->width - 1;
+			terminal->row -= 1;
+			if (terminal->row < terminal->margin_top) {
+				terminal->row = terminal->margin_top;
+				terminal_scroll(terminal, -1);
+			}
+		}
+
 		break;
 	case '\a':
 		/* Bell */
@@ -961,8 +1244,17 @@ handle_char(struct terminal *terminal, union utf8_char utf8)
 	
 	/* handle right margin effects */
 	if (terminal->column >= terminal->width) {
-		terminal->column--;
-	}
+		if (terminal->mode & MODE_AUTOWRAP) {
+			terminal->column = 0;
+			terminal->row += 1;
+			if (terminal->row > terminal->margin_bottom) {
+				terminal->row = terminal->margin_bottom;
+				terminal_scroll(terminal, +1);
+			}
+		} else {
+			terminal->column--;
+ 		}
+ 	}
 	
 	row = terminal_get_row(terminal, terminal->row);
 	attr_row = terminal_get_attr_row(terminal, terminal->row);
@@ -1067,7 +1359,7 @@ key_handler(struct window *window, uint32_t key, uint32_t sym,
 	    uint32_t state, uint32_t modifiers, void *data)
 {
 	struct terminal *terminal = data;
-	char ch[2];
+	char ch[MAX_RESPONSE];
 	int len = 0;
 
 	switch (sym) {
@@ -1085,12 +1377,20 @@ key_handler(struct window *window, uint32_t key, uint32_t sym,
 	case XK_Tab:
 	case XK_Linefeed:
 	case XK_Clear:
-	case XK_Return:
 	case XK_Pause:
 	case XK_Scroll_Lock:
 	case XK_Sys_Req:
 	case XK_Escape:
 		ch[len++] = sym & 0x7f;
+		break;
+
+	case XK_Return:
+		if (terminal->mode & MODE_LF_NEWLINE) {
+			ch[len++] = 0x0D;
+			ch[len++] = 0x0A;
+		} else {
+			ch[len++] = 0x0D;
+		}
 		break;
 
 	case XK_Shift_L:
