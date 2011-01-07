@@ -23,6 +23,9 @@ class URLRequestJobMetrics {
   URLRequestJobMetrics();
   ~URLRequestJobMetrics();
 
+  // Append the text report of the frame loading to the input string.
+  void AppendText(std::wstring* text);
+
   // The original url the job has been created for.
   scoped_ptr<GURL> original_url_;
 
@@ -44,9 +47,6 @@ class URLRequestJobMetrics {
 
   // Final status of the job.
   bool success_;
-
-  // Append the text report of the frame loading to the input string.
-  void AppendText(std::wstring* text);
 };
 
 }  // namespace net

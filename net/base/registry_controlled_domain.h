@@ -204,6 +204,8 @@ class RegistryControlledDomainService {
   static RegistryControlledDomainService* GetInstance();
 
  protected:
+  typedef const struct DomainRule* (*FindDomainPtr)(const char *, unsigned int);
+
   // The entire protected API is only for unit testing.  I mean it.  Don't make
   // me come over there!
   RegistryControlledDomainService();
@@ -215,8 +217,6 @@ class RegistryControlledDomainService {
   // instance set by the most recent call to SetInstance.
   static RegistryControlledDomainService* SetInstance(
       RegistryControlledDomainService* instance);
-
-  typedef const struct DomainRule* (*FindDomainPtr)(const char *, unsigned int);
 
   // Used for unit tests, so that a different perfect hash map from the full
   // list is used.
