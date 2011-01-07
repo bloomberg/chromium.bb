@@ -51,6 +51,7 @@ typedef std::map<std::string, std::string> SubstitutionMap;
 
 class Value;
 class GPUInfo;
+struct PP_Flash_NetAddress;
 class SkBitmap;
 struct ThumbnailScore;
 class WebCursor;
@@ -1074,6 +1075,13 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SelectPopupMenuItem,
 // Indicate whether speech input API is enabled or not.
 IPC_MESSAGE_CONTROL1(ViewMsg_SpeechInput_SetFeatureEnabled,
                      bool /* enabled */)
+
+// The response to ViewHostMsg_PepperConnectTcp(Address).
+IPC_MESSAGE_ROUTED4(ViewMsg_PepperConnectTcpACK,
+                    int /* request_id */,
+                    IPC::PlatformFileForTransit /* socket */,
+                    PP_Flash_NetAddress /* local_addr */,
+                    PP_Flash_NetAddress /* remote_addr */)
 
 //-----------------------------------------------------------------------------
 // TabContents messages
@@ -2630,3 +2638,16 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_ScriptEvalResponse,
 // Updates the content restrictions, i.e. to disable print/copy.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateContentRestrictions,
                     int /* restrictions */)
+
+// Pepper-related messages -----------------------------------------------------
+
+IPC_MESSAGE_CONTROL4(ViewHostMsg_PepperConnectTcp,
+                     int /* routing_id */,
+                     int /* request_id */,
+                     std::string /* host */,
+                     uint16 /* port */)
+
+IPC_MESSAGE_CONTROL3(ViewHostMsg_PepperConnectTcpAddress,
+                     int /* routing_id */,
+                     int /* request_id */,
+                     PP_Flash_NetAddress /* addr */)

@@ -5,6 +5,7 @@
 #include "webkit/plugins/ppapi/mock_plugin_delegate.h"
 
 #include "base/message_loop_proxy.h"
+#include "ppapi/c/pp_errors.h"
 
 namespace webkit {
 namespace ppapi {
@@ -157,6 +158,19 @@ base::PlatformFileError MockPluginDelegate::GetModuleLocalDirContents(
 scoped_refptr<base::MessageLoopProxy>
 MockPluginDelegate::GetFileThreadMessageLoopProxy() {
   return scoped_refptr<base::MessageLoopProxy>();
+}
+
+int32_t MockPluginDelegate::ConnectTcp(
+    webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
+    const char* host,
+    uint16_t port) {
+  return PP_ERROR_FAILED;
+}
+
+int32_t MockPluginDelegate::ConnectTcpAddress(
+    webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
+    const struct PP_Flash_NetAddress* addr) {
+  return PP_ERROR_FAILED;
 }
 
 FullscreenContainer* MockPluginDelegate::CreateFullscreenContainer(

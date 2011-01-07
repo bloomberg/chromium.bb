@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,6 +35,7 @@
 #include "grit/locale_settings.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ppapi/c/dev/pp_video_dev.h"
+#include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserCompletion.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserParams.h"
@@ -45,6 +46,7 @@
 #include "webkit/plugins/ppapi/ppb_file_io_impl.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
+#include "webkit/plugins/ppapi/ppb_flash_impl.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/common/render_messages.h"
@@ -767,6 +769,7 @@ base::PlatformFileError PepperPluginDelegateImpl::QueryModuleLocalFile(
   }
   return error;
 }
+
 base::PlatformFileError PepperPluginDelegateImpl::GetModuleLocalDirContents(
       const std::string& module_name,
       const FilePath& path,
@@ -787,6 +790,50 @@ base::PlatformFileError PepperPluginDelegateImpl::GetModuleLocalDirContents(
 scoped_refptr<base::MessageLoopProxy>
 PepperPluginDelegateImpl::GetFileThreadMessageLoopProxy() {
   return RenderThread::current()->GetFileThreadMessageLoopProxy();
+}
+
+int32_t PepperPluginDelegateImpl::ConnectTcp(
+    webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
+    const char* host,
+    uint16_t port) {
+  int request_id = pending_connect_tcps_.Add(
+      new scoped_refptr<webkit::ppapi::PPB_Flash_NetConnector_Impl>(connector));
+  IPC::Message* msg =
+      new ViewHostMsg_PepperConnectTcp(render_view_->routing_id(),
+                                       request_id,
+                                       std::string(host),
+                                       port);
+  if (!render_view_->Send(msg))
+    return PP_ERROR_FAILED;
+
+  return PP_ERROR_WOULDBLOCK;
+}
+
+int32_t PepperPluginDelegateImpl::ConnectTcpAddress(
+    webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
+    const struct PP_Flash_NetAddress* addr) {
+  int request_id = pending_connect_tcps_.Add(
+      new scoped_refptr<webkit::ppapi::PPB_Flash_NetConnector_Impl>(connector));
+  IPC::Message* msg =
+      new ViewHostMsg_PepperConnectTcpAddress(render_view_->routing_id(),
+                                              request_id,
+                                              *addr);
+  if (!render_view_->Send(msg))
+    return PP_ERROR_FAILED;
+
+  return PP_ERROR_WOULDBLOCK;
+}
+
+void PepperPluginDelegateImpl::OnConnectTcpACK(
+    int request_id,
+    base::PlatformFile socket,
+    const PP_Flash_NetAddress& local_addr,
+    const PP_Flash_NetAddress& remote_addr) {
+  scoped_refptr<webkit::ppapi::PPB_Flash_NetConnector_Impl> connector =
+      *pending_connect_tcps_.Lookup(request_id);
+  pending_connect_tcps_.Remove(request_id);
+
+  connector->CompleteConnectTcp(socket, local_addr, remote_addr);
 }
 
 webkit::ppapi::FullscreenContainer*

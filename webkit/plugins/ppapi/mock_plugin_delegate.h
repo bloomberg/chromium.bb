@@ -83,6 +83,13 @@ class MockPluginDelegate : public PluginDelegate {
       DirContents* contents);
   virtual scoped_refptr<base::MessageLoopProxy>
       GetFileThreadMessageLoopProxy();
+  virtual int32_t ConnectTcp(
+      webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
+      const char* host,
+      uint16_t port);
+  virtual int32_t ConnectTcpAddress(
+      webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
+      const struct PP_Flash_NetAddress* addr);
   virtual FullscreenContainer* CreateFullscreenContainer(
       PluginInstance* instance);
   virtual std::string GetDefaultEncoding();

@@ -296,6 +296,11 @@ const void* GetInterface(const char* name) {
   }
 #endif  // ENABLE_GPU
 
+#ifdef ENABLE_FLAPPER_HACKS
+  if (strcmp(name, PPB_FLASH_NETCONNECTOR_INTERFACE) == 0)
+    return PPB_Flash_NetConnector_Impl::GetInterface();
+#endif  // ENABLE_FLAPPER_HACKS
+
   // Only support the testing interface when the command line switch is
   // specified. This allows us to prevent people from (ab)using this interface
   // in production code.

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,6 +81,7 @@ class SpeechInputDispatcher;
 class WebPluginDelegatePepper;
 class WebPluginDelegateProxy;
 struct ContextMenuMediaParams;
+struct PP_Flash_NetAddress;
 struct ThumbnailScore;
 struct ViewMsg_ClosePage_Params;
 struct ViewMsg_Navigate_Params;
@@ -834,6 +835,9 @@ class RenderView : public RenderWidget,
                              const WebKit::WebConsoleMessage::Level&);
   void OnAdvanceToNextMisspelling();
   void OnAllowScriptToClose(bool script_can_close);
+  void OnAsyncFileOpened(base::PlatformFileError error_code,
+                         IPC::PlatformFileForTransit file_for_transit,
+                         int message_id);
   void OnAutocompleteSuggestionsReturned(
       int query_id,
       const std::vector<string16>& suggestions,
@@ -849,6 +853,12 @@ class RenderView : public RenderWidget,
   void OnCancelDownload(int32 download_id);
   void OnClearFocusedNode();
   void OnClosePage(const ViewMsg_ClosePage_Params& params);
+#if defined(ENABLE_FLAPPER_HACKS)
+  void OnConnectTcpACK(int request_id,
+                       IPC::PlatformFileForTransit socket_for_transit,
+                       const PP_Flash_NetAddress& local_addr,
+                       const PP_Flash_NetAddress& remote_addr);
+#endif
   void OnCopy();
   void OnCopyImageAt(int x, int y);
 #if defined(OS_MACOSX)
@@ -977,10 +987,6 @@ class RenderView : public RenderWidget,
   void OnSelectPopupMenuItem(int selected_index);
 #endif
   void OnZoom(PageZoom::Function function);
-
-  void OnAsyncFileOpened(base::PlatformFileError error_code,
-                         IPC::PlatformFileForTransit file_for_transit,
-                         int message_id);
 
   // Adding a new message handler? Please add it in alphabetical order above
   // and put it in the same position in the .cc file.

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,6 +109,7 @@
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
+#include "ppapi/c/private/ppb_flash.h"
 #include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityCache.h"
@@ -1093,6 +1094,9 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_AccessibilityNotifications_ACK,
                         OnAccessibilityNotificationsAck)
     IPC_MESSAGE_HANDLER(ViewMsg_AsyncOpenFile_ACK, OnAsyncFileOpened)
+#if defined(ENABLE_FLAPPER_HACKS)
+    IPC_MESSAGE_HANDLER(ViewMsg_PepperConnectTcpACK, OnConnectTcpACK)
+#endif
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectPopupMenuItem, OnSelectPopupMenuItem)
 #endif
@@ -5752,3 +5756,17 @@ void RenderView::AddErrorToRootConsole(const string16& message) {
         WebConsoleMessage(WebConsoleMessage::LevelError, message));
   }
 }
+
+#if defined(ENABLE_FLAPPER_HACKS)
+void RenderView::OnConnectTcpACK(
+    int request_id,
+    IPC::PlatformFileForTransit socket_for_transit,
+    const PP_Flash_NetAddress& local_addr,
+    const PP_Flash_NetAddress& remote_addr) {
+  pepper_delegate_.OnConnectTcpACK(
+      request_id,
+      IPC::PlatformFileForTransitToPlatformFile(socket_for_transit),
+      local_addr,
+      remote_addr);
+}
+#endif

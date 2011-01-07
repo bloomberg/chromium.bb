@@ -61,7 +61,6 @@ struct ResourceLoadTimingInfo;
 struct ResourceResponseInfo;
 struct WebAccessibility;
 struct WebCookie;
-struct WebAccessibility;
 }
 
 namespace webkit {
@@ -79,6 +78,7 @@ class SkBitmap;
 class URLPattern;
 struct ContextMenuParams;
 struct EditCommand;
+struct PP_Flash_NetAddress;
 struct ResourceResponseHead;
 struct SyncLoadResult;
 struct RendererPreferences;
@@ -547,6 +547,14 @@ struct ParamTraits<AudioBuffersState> {
 template <>
 struct ParamTraits<speech_input::SpeechInputResultItem> {
   typedef speech_input::SpeechInputResultItem param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<PP_Flash_NetAddress> {
+  typedef PP_Flash_NetAddress param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

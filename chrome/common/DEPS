@@ -5,6 +5,7 @@ include_rules = [
   "+libxml",
   "+media/audio",
   "+media/base",
+  "+ppapi/c",  # For various types.
   "+remoting/client/plugin",
   "+sandbox/src",
   "+skia",

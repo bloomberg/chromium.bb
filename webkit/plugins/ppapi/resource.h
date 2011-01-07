@@ -26,6 +26,7 @@ namespace ppapi {
   F(PPB_FileIO_Impl) \
   F(PPB_FileRef_Impl) \
   F(PPB_FileSystem_Impl) \
+  F(PPB_Flash_NetConnector_Impl) \
   F(PPB_Font_Impl) \
   F(PPB_Graphics2D_Impl) \
   F(PPB_Graphics3D_Impl) \

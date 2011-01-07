@@ -141,6 +141,19 @@ class PepperPluginDelegateImpl
       const FilePath& path,
       webkit::ppapi::DirContents* contents);
   virtual scoped_refptr<base::MessageLoopProxy> GetFileThreadMessageLoopProxy();
+  virtual int32_t ConnectTcp(
+      webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
+      const char* host,
+      uint16_t port);
+  virtual int32_t ConnectTcpAddress(
+      webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
+      const struct PP_Flash_NetAddress* addr);
+  // This is the completion for both |ConnectTcp()| and |ConnectTcpAddress()|.
+  void OnConnectTcpACK(
+      int request_id,
+      base::PlatformFile socket,
+      const PP_Flash_NetAddress& local_addr,
+      const PP_Flash_NetAddress& remote_addr);
   virtual webkit::ppapi::FullscreenContainer*
       CreateFullscreenContainer(
           webkit::ppapi::PluginInstance* instance);
@@ -157,8 +170,13 @@ class PepperPluginDelegateImpl
 
   std::set<webkit::ppapi::PluginInstance*> active_instances_;
 
+  // TODO(viettrungluu): Get rid of |id_generator_| -- just use |IDMap::Add()|.
+  // Rename |messages_waiting_replies_| (to specify async open file).
   int id_generator_;
   IDMap<AsyncOpenFileCallback> messages_waiting_replies_;
+
+  IDMap<scoped_refptr<webkit::ppapi::PPB_Flash_NetConnector_Impl>,
+        IDMapOwnPointer> pending_connect_tcps_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPluginDelegateImpl);
 };

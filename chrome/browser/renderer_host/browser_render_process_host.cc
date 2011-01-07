@@ -54,6 +54,7 @@
 #include "chrome/browser/renderer_host/database_message_filter.h"
 #include "chrome/browser/renderer_host/file_utilities_message_filter.h"
 #include "chrome/browser/renderer_host/pepper_file_message_filter.h"
+#include "chrome/browser/renderer_host/pepper_message_filter.h"
 #include "chrome/browser/renderer_host/render_message_filter.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
@@ -452,6 +453,7 @@ void BrowserRenderProcessHost::CreateMessageFilters() {
       GeolocationDispatcherHost::New(
           id(), profile()->GetGeolocationPermissionContext()));
   channel_->AddFilter(new PepperFileMessageFilter(id(), profile()));
+  channel_->AddFilter(new PepperMessageFilter(profile()));
   channel_->AddFilter(new speech_input::SpeechInputDispatcherHost(id()));
   channel_->AddFilter(
       new SearchProviderInstallStateMessageFilter(id(), profile()));

@@ -52,6 +52,7 @@ class WebFileChooserCompletion;
 struct WebFileChooserParams;
 }
 
+struct PP_Flash_NetAddress;
 struct PP_VideoCompressedDataBuffer_Dev;
 struct PP_VideoDecoderConfig_Dev;
 struct PP_VideoUncompressedDataBuffer_Dev;
@@ -62,9 +63,10 @@ namespace webkit {
 namespace ppapi {
 
 class FileIO;
+class FullscreenContainer;
 class PluginInstance;
 class PluginModule;
-class FullscreenContainer;
+class PPB_Flash_NetConnector_Impl;
 
 // Virtual interface that the browser implements to implement features for
 // PPAPI plugins.
@@ -302,6 +304,14 @@ class PluginDelegate {
   // of the file thread in this renderer.
   virtual scoped_refptr<base::MessageLoopProxy>
       GetFileThreadMessageLoopProxy() = 0;
+
+  virtual int32_t ConnectTcp(
+      webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
+      const char* host,
+      uint16_t port) = 0;
+  virtual int32_t ConnectTcpAddress(
+      webkit::ppapi::PPB_Flash_NetConnector_Impl* connector,
+      const struct PP_Flash_NetAddress* addr) = 0;
 
   // Create a fullscreen container for a plugin instance. This effectively
   // switches the plugin to fullscreen.

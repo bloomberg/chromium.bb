@@ -2166,6 +2166,8 @@
         'browser/renderer_host/offline_resource_handler.h',
         'browser/renderer_host/pepper_file_message_filter.cc',
         'browser/renderer_host/pepper_file_message_filter.h',
+        'browser/renderer_host/pepper_message_filter.cc',
+        'browser/renderer_host/pepper_message_filter.h',
         'browser/renderer_host/redirect_to_file_resource_handler.cc',
         'browser/renderer_host/redirect_to_file_resource_handler.h',
         'browser/renderer_host/render_message_filter.cc',
