@@ -1,14 +1,14 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome_frame/dll_redirector.h"
 
-#include "base/scoped_handle.h"
 #include "base/shared_memory.h"
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
 #include "base/version.h"
+#include "base/win/scoped_handle.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "gtest/gtest.h"
 
@@ -26,8 +26,6 @@ const uint32 kSharedMemorySize = 128;
 // The maximum amount of time we are willing to let a test that Waits timeout
 // before failing.
 const uint32 kWaitTestTimeout = 20000;
-
-using base::win::ScopedHandle;
 
 class MockDllRedirector : public DllRedirector {
  public:
@@ -231,8 +229,8 @@ TEST_F(DllRedirectorTest, TestBeaconOwnershipHandoff) {
 }
 
 struct LockSquattingThreadParams {
-  ScopedHandle is_squatting;
-  ScopedHandle time_to_die;
+  base::win::ScopedHandle is_squatting;
+  base::win::ScopedHandle time_to_die;
 };
 
 DWORD WINAPI LockSquattingThread(void* in_params) {
@@ -268,7 +266,7 @@ TEST_F(DllRedirectorTest, LockSquatting) {
   params.is_squatting.Set(::CreateEvent(NULL, FALSE, FALSE, NULL));
   params.time_to_die.Set(::CreateEvent(NULL, FALSE, FALSE, NULL));
   DWORD tid = 0;
-  ScopedHandle lock_squat_thread(
+  base::win::ScopedHandle lock_squat_thread(
       ::CreateThread(NULL, 0, LockSquattingThread, &params, 0, &tid));
 
   // Make sure the squatter has started squatting.

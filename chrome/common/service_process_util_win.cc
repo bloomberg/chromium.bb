@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,10 +8,10 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/scoped_handle_win.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/object_watcher.h"
+#include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
 #include "chrome/common/chrome_switches.h"
 
@@ -47,7 +47,7 @@ class ServiceProcessShutdownMonitor
   }
 
  private:
-  ScopedHandle shutdown_event_;
+  base::win::ScopedHandle shutdown_event_;
   base::win::ObjectWatcher watcher_;
   scoped_ptr<Task> shutdown_task_;
 };
@@ -55,7 +55,7 @@ class ServiceProcessShutdownMonitor
 }  // namespace
 
 bool ForceServiceProcessShutdown(const std::string& version) {
-  ScopedHandle shutdown_event;
+  base::win::ScopedHandle shutdown_event;
   std::string versioned_name = version;
   versioned_name.append("_service_shutdown_evt");
   string16 event_name =
@@ -69,7 +69,7 @@ bool ForceServiceProcessShutdown(const std::string& version) {
 
 bool CheckServiceProcessReady() {
   string16 event_name = GetServiceProcessReadyEventName();
-  ScopedHandle event(
+  base::win::ScopedHandle event(
       OpenEvent(SYNCHRONIZE | READ_CONTROL, false, event_name.c_str()));
   if (!event.IsValid())
     return false;
@@ -79,7 +79,7 @@ bool CheckServiceProcessReady() {
 
 struct ServiceProcessState::StateData {
   // An event that is signaled when a service process is ready.
-  ScopedHandle ready_event;
+  base::win::ScopedHandle ready_event;
   scoped_ptr<ServiceProcessShutdownMonitor> shutdown_monitor;
 };
 
@@ -87,7 +87,7 @@ bool ServiceProcessState::TakeSingletonLock() {
   DCHECK(!state_);
   string16 event_name = GetServiceProcessReadyEventName();
   CHECK(event_name.length() <= MAX_PATH);
-  ScopedHandle service_process_ready_event;
+  base::win::ScopedHandle service_process_ready_event;
   service_process_ready_event.Set(
       CreateEvent(NULL, TRUE, FALSE, event_name.c_str()));
   DWORD error = GetLastError();

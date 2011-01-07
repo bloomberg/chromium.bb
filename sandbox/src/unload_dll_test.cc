@@ -1,13 +1,13 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/scoped_handle_win.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "base/win/scoped_handle.h"
 #include "sandbox/src/sandbox.h"
 #include "sandbox/src/sandbox_factory.h"
 #include "sandbox/src/target_services.h"
 #include "sandbox/tests/common/controller.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {
 
@@ -36,7 +36,7 @@ SBOX_TESTS_COMMAND int SimpleOpenEvent(int argc, wchar_t **argv) {
   if (argc != 1)
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 
-  ScopedHandle event_open(::OpenEvent(SYNCHRONIZE, FALSE, argv[0]));
+  base::win::ScopedHandle event_open(::OpenEvent(SYNCHRONIZE, FALSE, argv[0]));
   return event_open.Get() ? SBOX_TEST_SUCCEEDED : SBOX_TEST_FAILED;
 }
 
@@ -73,7 +73,8 @@ TEST(UnloadDllTest, FLAKY_UnloadAviCapDllWithPatching) {
   sandbox::TargetPolicy* policy = runner.GetPolicy();
   policy->AddDllToUnload(L"avicap32.dll");
 
-  ScopedHandle handle1(::CreateEvent(NULL, FALSE, FALSE, L"tst0001"));
+  base::win::ScopedHandle handle1(::CreateEvent(
+      NULL, FALSE, FALSE, L"tst0001"));
 
   // Add a couple of rules that ensures that the interception agent add EAT
   // patching on the client which makes sure that the unload dll record does

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #include "sandbox/src/filesystem_policy.h"
 
 #include "base/logging.h"
-#include "base/scoped_handle_win.h"
+#include "base/win/scoped_handle.h"
 #include "sandbox/src/ipc_tags.h"
 #include "sandbox/src/policy_engine_opcodes.h"
 #include "sandbox/src/policy_params.h"
@@ -363,7 +363,7 @@ bool FileSystemPolicy::SetInformationFileAction(
     return true;
   }
 
-  ScopedHandle handle(local_handle);
+  base::win::ScopedHandle handle(local_handle);
 
   FILE_INFORMATION_CLASS file_info_class =
       static_cast<FILE_INFORMATION_CLASS>(info_class);

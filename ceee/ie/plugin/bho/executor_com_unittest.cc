@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -8,6 +8,7 @@
 
 #include <shlobj.h>
 #include <atlbase.h>
+
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/message_loop.h"
@@ -15,6 +16,7 @@
 #include "base/process_util.h"
 #include "base/threading/thread.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "ceee/common/initializing_coclass.h"
 #include "ceee/ie/plugin/toolband/toolband_proxy.h"
@@ -159,7 +161,7 @@ class RemoteObjectHost {
   }
 
   void RunSync(Task* task) {
-    ScopedHandle event(::CreateEvent(NULL, TRUE, FALSE, NULL));
+    base::win::ScopedHandle event(::CreateEvent(NULL, TRUE, FALSE, NULL));
 
     remote_thread_.message_loop()->PostTask(FROM_HERE, task);
     remote_thread_.message_loop()->PostTask(FROM_HERE,

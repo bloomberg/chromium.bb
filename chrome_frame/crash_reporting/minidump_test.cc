@@ -1,6 +1,7 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include <windows.h>
 #include <objbase.h>
 #include <dbghelp.h>
@@ -11,7 +12,7 @@
 #include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/logging.h"
-#include "base/scoped_handle_win.h"
+#include "base/win/scoped_handle.h"
 #include "gtest/gtest.h"
 
 namespace {
@@ -277,8 +278,8 @@ class MinidumpTest: public testing::Test {
   }
 
  protected:
-  ScopedHandle dump_file_handle_;
-  ScopedHandle dump_file_mapping_;
+  base::win::ScopedHandle dump_file_handle_;
+  base::win::ScopedHandle dump_file_mapping_;
   void* dump_file_view_;
 
   FilePath dump_file_;

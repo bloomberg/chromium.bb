@@ -14,7 +14,6 @@
 #include "base/file_path.h"
 #include "base/file_version_info_win.h"
 #include "base/metrics/histogram.h"
-#include "base/scoped_handle.h"
 #include "base/sha2.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -23,6 +22,7 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_handle.h"
 #include "chrome/browser/net/service_providers_win.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -384,8 +384,8 @@ void ModuleEnumerator::ScanImpl() {
 
 void ModuleEnumerator::EnumerateLoadedModules() {
   // Get all modules in the current process.
-  ScopedHandle snap(::CreateToolhelp32Snapshot(TH32CS_SNAPMODULE,
-                    ::GetCurrentProcessId()));
+  base::win::ScopedHandle snap(::CreateToolhelp32Snapshot(TH32CS_SNAPMODULE,
+                               ::GetCurrentProcessId()));
   if (!snap.Get())
     return;
 

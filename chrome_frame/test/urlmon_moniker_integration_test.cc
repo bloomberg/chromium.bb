@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #include <atlcom.h>
 
 #include "base/scoped_comptr_win.h"
+#include "base/win/scoped_handle.h"
 #include "base/threading/thread.h"
 #include "chrome_frame/bho.h"
 //#include "chrome_frame/urlmon_moniker.h"
@@ -82,7 +83,7 @@ class RunTestServer : public base::Thread {
  protected:
   scoped_ptr<test_server::SimpleWebServer> server_;
   test_server::SimpleResponse default_response_;
-  ScopedHandle ready_;
+  base::win::ScopedHandle ready_;
 };
 
 // Helper class for running tests that rely on the NavigationManager.

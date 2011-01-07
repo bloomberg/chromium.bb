@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,12 +10,12 @@
 #include "base/at_exit.h"
 #include "base/environment.h"
 #include "base/message_loop.h"
-#include "base/scoped_handle.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_handle.h"
 #include "chrome_frame/crash_reporting/crash_dll.h"
 #include "gtest/gtest.h"
 
@@ -83,7 +83,7 @@ TEST(NtLoader, OwnsCriticalSection) {
   other.message_loop()->PostTask(
       FROM_HERE, NewRunnableFunction(::EnterCriticalSection, &cs));
 
-  ScopedHandle event(::CreateEvent(NULL, FALSE, FALSE, NULL));
+  base::win::ScopedHandle event(::CreateEvent(NULL, FALSE, FALSE, NULL));
   other.message_loop()->PostTask(
       FROM_HERE, NewRunnableFunction(::SetEvent, event.Get()));
 
@@ -125,8 +125,8 @@ TEST(NtLoader, OwnsLoaderLock) {
 
 TEST(NtLoader, GetLoaderEntry) {
   // Get all modules in the current process.
-  ScopedHandle snap(::CreateToolhelp32Snapshot(TH32CS_SNAPMODULE,
-                                               ::GetCurrentProcessId()));
+  base::win::ScopedHandle snap(
+      ::CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, ::GetCurrentProcessId()));
   EXPECT_TRUE(snap.Get() != NULL);
 
   // Walk them, while checking we get an entry for each, and that it

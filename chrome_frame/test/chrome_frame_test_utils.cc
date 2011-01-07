@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,12 +16,12 @@
 #include "base/file_version_info.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/scoped_handle.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "ceee/ie/common/ceee_util.h"
 #include "chrome/common/chrome_switches.h"
@@ -95,7 +95,8 @@ int CloseVisibleWindowsOnAllThreads(HANDLE process) {
     return 0;
   }
 
-  ScopedHandle snapshot(CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0));
+  base::win::ScopedHandle snapshot(
+      CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0));
   if (!snapshot.IsValid()) {
     NOTREACHED();
     return 0;
@@ -309,7 +310,7 @@ BOOL LowIntegrityToken::Impersonate() {
     return ok;
   }
 
-  ScopedHandle process_token(process_token_handle);
+  base::win::ScopedHandle process_token(process_token_handle);
   // Create impersonation low integrity token.
   HANDLE impersonation_token_handle = NULL;
   ok = ::DuplicateTokenEx(process_token,
@@ -322,7 +323,7 @@ BOOL LowIntegrityToken::Impersonate() {
 
   // TODO(stoyan): sandbox/src/restricted_token_utils.cc has
   // SetTokenIntegrityLevel function already.
-  ScopedHandle impersonation_token(impersonation_token_handle);
+  base::win::ScopedHandle impersonation_token(impersonation_token_handle);
   PSID integrity_sid = NULL;
   TOKEN_MANDATORY_LABEL tml = {0};
   ok = ::ConvertStringSidToSid(SDDL_ML_LOW, &integrity_sid);
@@ -540,7 +541,7 @@ CloseIeAtEndOfScope::~CloseIeAtEndOfScope() {
 bool DetectRunningCrashService(int timeout_ms) {
   // Wait for the crash_service.exe to be ready for clients.
   base::Time start = base::Time::Now();
-  ScopedHandle new_pipe;
+  base::win::ScopedHandle new_pipe;
 
   while (true) {
     new_pipe.Set(::CreateFile(kCrashServicePipeName,
