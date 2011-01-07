@@ -53,7 +53,7 @@ var chrome = chrome || {};
         if (validator.errors.length == 0)
           continue;
 
-        var message = "Invalid value for argument " + i + ". ";
+        var message = "Invalid value for argument " + (i + 1) + ". ";
         for (var i = 0, err; err = validator.errors[i]; i++) {
           if (err.path) {
             message += "Property '" + err.path + "': ";
@@ -67,7 +67,7 @@ var chrome = chrome || {};
 
         throw new Error(message);
       } else if (!schemas[i].optional) {
-        throw new Error("Parameter " + i + " is required.");
+        throw new Error("Parameter " + (i + 1) + " is required.");
       }
     }
   };
