@@ -386,6 +386,26 @@ bool URLDatabase::SetKeywordSearchTermsForURL(URLID url_id,
   return statement.Run();
 }
 
+bool URLDatabase::GetKeywordSearchTermRow(URLID url_id,
+                                          KeywordSearchTermRow* row) {
+  DCHECK(url_id);
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "SELECT keyword_id, term FROM keyword_search_terms WHERE url_id=?"));
+  if (!statement)
+    return false;
+
+  statement.BindInt64(0, url_id);
+  if (!statement.Step())
+    return false;
+
+  if (row) {
+    row->url_id = url_id;
+    row->keyword_id = statement.ColumnInt64(0);
+    row->term = statement.ColumnString16(1);
+  }
+  return true;
+}
+
 void URLDatabase::DeleteAllSearchTermsForKeyword(
     TemplateURLID keyword_id) {
   DCHECK(keyword_id);

@@ -136,21 +136,31 @@ TEST_F(URLDatabaseTest, KeywordSearchTermVisit) {
   ASSERT_TRUE(url_id != 0);
 
   // Add a keyword visit.
-  ASSERT_TRUE(SetKeywordSearchTermsForURL(url_id, 1, UTF8ToUTF16("visit")));
+  TemplateURLID keyword_id = 100;
+  string16 keyword = UTF8ToUTF16("visit");
+  ASSERT_TRUE(SetKeywordSearchTermsForURL(url_id, keyword_id, keyword));
 
   // Make sure we get it back.
   std::vector<KeywordSearchTermVisit> matches;
-  GetMostRecentKeywordSearchTerms(1, UTF8ToUTF16("visit"), 10, &matches);
+  GetMostRecentKeywordSearchTerms(keyword_id, keyword, 10, &matches);
   ASSERT_EQ(1U, matches.size());
-  ASSERT_EQ(UTF8ToUTF16("visit"), matches[0].term);
+  ASSERT_EQ(keyword, matches[0].term);
+
+  KeywordSearchTermRow keyword_search_term_row;
+  ASSERT_TRUE(GetKeywordSearchTermRow(url_id, &keyword_search_term_row));
+  EXPECT_EQ(keyword_id, keyword_search_term_row.keyword_id);
+  EXPECT_EQ(url_id, keyword_search_term_row.url_id);
+  EXPECT_EQ(keyword, keyword_search_term_row.term);
 
   // Delete the keyword visit.
-  DeleteAllSearchTermsForKeyword(1);
+  DeleteAllSearchTermsForKeyword(keyword_id);
 
   // Make sure we don't get it back when querying.
   matches.clear();
-  GetMostRecentKeywordSearchTerms(1, UTF8ToUTF16("visit"), 10, &matches);
+  GetMostRecentKeywordSearchTerms(keyword_id, keyword, 10, &matches);
   ASSERT_EQ(0U, matches.size());
+
+  ASSERT_FALSE(GetKeywordSearchTermRow(url_id, &keyword_search_term_row));
 }
 
 // Make sure deleting a URL also deletes a keyword visit.

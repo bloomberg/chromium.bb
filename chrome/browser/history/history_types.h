@@ -18,6 +18,7 @@
 #include "base/string16.h"
 #include "base/time.h"
 #include "chrome/browser/history/snippet.h"
+#include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/ref_counted_util.h"
 #include "chrome/common/thumbnail_score.h"
@@ -518,6 +519,23 @@ struct KeywordSearchTermVisit {
 
   // The time of the visit.
   base::Time time;
+
+  // The search term that was used.
+  string16 term;
+};
+
+// KeywordSearchTermRow --------------------------------------------------------
+
+// Used for URLs that have a search term associated with them.
+struct KeywordSearchTermRow {
+  KeywordSearchTermRow();
+  ~KeywordSearchTermRow();
+
+  // ID of the keyword.
+  TemplateURLID keyword_id;
+
+  // ID of the url.
+  URLID url_id;
 
   // The search term that was used.
   string16 term;

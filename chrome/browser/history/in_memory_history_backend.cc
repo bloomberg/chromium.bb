@@ -90,7 +90,8 @@ void InMemoryHistoryBackend::Observe(NotificationType type,
       PageTransition::Type primary_type =
           PageTransition::StripQualifier(visited_details->transition);
       if (visited_details->row.typed_count() > 0 ||
-          primary_type == PageTransition::KEYWORD) {
+          primary_type == PageTransition::KEYWORD ||
+          HasKeyword(visited_details->row.url())) {
         URLsModifiedDetails modified_details;
         modified_details.changed_urls.push_back(visited_details->row);
         OnTypedURLsModified(modified_details);
@@ -184,6 +185,14 @@ void InMemoryHistoryBackend::OnKeywordSearchTermUpdated(
   }
 
   db_->SetKeywordSearchTermsForURL(url_id, details.keyword_id, details.term);
+}
+
+bool InMemoryHistoryBackend::HasKeyword(const GURL& url) {
+  URLID id = db_->GetRowForURL(url, NULL);
+  if (!id)
+    return false;
+
+  return db_->GetKeywordSearchTermRow(id, NULL);
 }
 
 }  // namespace history

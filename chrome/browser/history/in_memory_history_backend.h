@@ -23,6 +23,7 @@
 #include "chrome/common/notification_registrar.h"
 
 class FilePath;
+class GURL;
 class HistoryDatabase;
 class Profile;
 
@@ -76,6 +77,9 @@ class InMemoryHistoryBackend : public NotificationObserver {
 
   // Handler for HISTORY_KEYWORD_SEARCH_TERM_UPDATED.
   void OnKeywordSearchTermUpdated(const KeywordSearchTermDetails& details);
+
+  // Returns true if there is a keyword associated with the specified url.
+  bool HasKeyword(const GURL& url);
 
   NotificationRegistrar registrar_;
 

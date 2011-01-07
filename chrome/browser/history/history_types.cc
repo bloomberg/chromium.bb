@@ -315,6 +315,12 @@ KeywordSearchTermVisit::KeywordSearchTermVisit() {}
 
 KeywordSearchTermVisit::~KeywordSearchTermVisit() {}
 
+// KeywordSearchTermRow --------------------------------------------------------
+
+KeywordSearchTermRow::KeywordSearchTermRow() : keyword_id(0), url_id(0) {}
+
+KeywordSearchTermRow::~KeywordSearchTermRow() {}
+
 // MostVisitedURL --------------------------------------------------------------
 
 MostVisitedURL::MostVisitedURL() {}

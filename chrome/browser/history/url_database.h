@@ -165,6 +165,10 @@ class URLDatabase {
                                    TemplateURLID keyword_id,
                                    const string16& term);
 
+  // Looks up a keyword search term given a url id. Fills row with the data.
+  // Returns true on success and false otherwise.
+  bool GetKeywordSearchTermRow(URLID url_id, KeywordSearchTermRow* row);
+
   // Deletes all search terms for the specified keyword that have been added by
   // way of SetKeywordSearchTermsForURL.
   void DeleteAllSearchTermsForKeyword(TemplateURLID keyword_id);
