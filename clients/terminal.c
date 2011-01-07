@@ -268,6 +268,8 @@ terminal_resize(struct terminal *terminal, int width, int height)
 	struct attr *data_attr;
 	int data_pitch, attr_pitch;
 	int i, l, total_rows, start;
+	struct rectangle rectangle;
+	struct winsize ws;
 
 	if (terminal->width == width && terminal->height == height)
 		return;
@@ -318,6 +320,22 @@ terminal_resize(struct terminal *terminal, int width, int height)
 	if (terminal->column >= terminal->width)
 		terminal->column = terminal->width - 1;
 	terminal->start = 0;
+	
+	if (!terminal->fullscreen) {
+		rectangle.width = terminal->width *
+			terminal->extents.max_x_advance + 2 * terminal->margin;
+		rectangle.height = terminal->height *
+			terminal->extents.height + 2 * terminal->margin;
+		window_set_child_size(terminal->window, &rectangle);
+	}
+
+	/* Update the window size */
+	ws.ws_row = terminal->height;
+	ws.ws_col = terminal->width;
+	window_get_child_rectangle(terminal->window, &rectangle);
+	ws.ws_xpixel = rectangle.width;
+	ws.ws_ypixel = rectangle.height;
+	ioctl(terminal->master, TIOCSWINSZ, &ws);
 }
 
 struct color_scheme DEFAULT_COLORS = {
@@ -479,14 +497,6 @@ terminal_draw(struct terminal *terminal)
 	height = (rectangle.height - 2 * terminal->margin) /
 		(int32_t) terminal->extents.height;
 	terminal_resize(terminal, width, height);
-
-	if (!terminal->fullscreen) {
-		rectangle.width = terminal->width *
-			terminal->extents.max_x_advance + 2 * terminal->margin;
-		rectangle.height = terminal->height *
-			terminal->extents.height + 2 * terminal->margin;
-		window_set_child_size(terminal->window, &rectangle);
-	}
 
 	window_draw(terminal->window);
 	terminal_draw_contents(terminal);
@@ -893,6 +903,7 @@ terminal_create(struct display *display, int fullscreen)
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
 
+	terminal_resize(terminal, 80, 24);
 	terminal_draw(terminal);
 
 	return terminal;
