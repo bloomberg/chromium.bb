@@ -47,6 +47,11 @@ static int option_fullscreen;
 #define MOD_ALT		0x02
 #define MOD_CTRL	0x04
 
+#define ATTRMASK_BOLD		0x01
+#define ATTRMASK_UNDERLINE	0x02
+#define ATTRMASK_BLINK		0x04
+#define ATTRMASK_INVERSE	0x08
+
 union utf8_char {
 	unsigned char byte[4];
 	uint32_t ch;
@@ -149,12 +154,37 @@ utf8_next_char(struct utf8_state_machine *machine, char c)
 	return machine->state;
 }
 
+struct terminal_color { double r, g, b, a; };
+struct attr {
+	unsigned char fg, bg;
+	char a;        /* attributes format:
+	                * 76543210
+			*     ilub */
+	char r;        /* reserved */
+};
+struct color_scheme {
+	struct terminal_color palette[16];
+	struct terminal_color border;
+	struct attr default_attr;
+};
+
+static void
+attr_init(struct attr *data_attr, struct attr attr, int n)
+{
+	int i;
+	for (i = 0; i < n; i++) {
+		data_attr[i] = attr;
+	}
+}
+
 struct terminal {
 	struct window *window;
 	struct display *display;
 	union utf8_char *data;
+	struct attr *data_attr;
+	struct attr curr_attr;
 	union utf8_char last_char;
-	int data_pitch;              /* The width in bytes of a line */
+	int data_pitch, attr_pitch;  /* The width in bytes of a line */
 	int width, height, start, row, column;
 	int fd, master;
 	GIOChannel *channel;
@@ -167,8 +197,44 @@ struct terminal {
 	int fullscreen;
 	int focused;
 	struct color_scheme *color_scheme;
+	struct terminal_color color_table[256];
 	cairo_font_extents_t extents;
+	cairo_font_face_t *font_normal, *font_bold;
 };
+
+static void
+terminal_init(struct terminal *terminal)
+{
+	terminal->curr_attr = terminal->color_scheme->default_attr;
+
+	terminal->row = 0;
+	terminal->column = 0;
+}
+
+static void
+init_color_table(struct terminal *terminal)
+{
+	int c, r;
+	struct terminal_color *color_table = terminal->color_table;
+
+	for (c = 0; c < 256; c ++) {
+		if (c < 16) {
+			color_table[c] = terminal->color_scheme->palette[c];
+		} else if (c < 232) {
+			r = c - 16;
+			color_table[c].b = ((double)(r % 6) / 6.0); r /= 6;
+			color_table[c].g = ((double)(r % 6) / 6.0); r /= 6;
+			color_table[c].r = ((double)(r % 6) / 6.0);
+			color_table[c].a = 1.0;
+		} else {
+			r = (c - 232) * 10 + 8;
+			color_table[c].r = ((double) r) / 256.0;
+			color_table[c].g = color_table[c].r;
+			color_table[c].b = color_table[c].r;
+			color_table[c].a = 1.0;
+		}
+	}
+}
 
 static union utf8_char *
 terminal_get_row(struct terminal *terminal, int row)
@@ -180,12 +246,27 @@ terminal_get_row(struct terminal *terminal, int row)
 	return &terminal->data[index * terminal->width];
 }
 
+static struct attr*
+terminal_get_attr_row(struct terminal *terminal, int row) {
+	int index;
+
+	index = (row + terminal->start) % terminal->height;
+
+	return &terminal->data_attr[index * terminal->width];
+}
+
+static struct attr
+terminal_get_attr(struct terminal *terminal, int row, int col) {
+	return terminal_get_attr_row(terminal, row)[col];
+}
+
 static void
 terminal_resize(struct terminal *terminal, int width, int height)
 {
 	size_t size;
 	union utf8_char *data;
-	int data_pitch;
+	struct attr *data_attr;
+	int data_pitch, attr_pitch;
 	int i, l, total_rows, start;
 
 	if (terminal->width == width && terminal->height == height)
@@ -194,8 +275,11 @@ terminal_resize(struct terminal *terminal, int width, int height)
 	data_pitch = width * sizeof(union utf8_char);
 	size = data_pitch * height;
 	data = malloc(size);
+	attr_pitch = width * sizeof(struct attr);
+	data_attr = malloc(attr_pitch * height);
 	memset(data, 0, size);
-	if (terminal->data) {
+	attr_init(data_attr, terminal->curr_attr, width * height);
+	if (terminal->data && terminal->data_attr) {
 		if (width > terminal->width)
 			l = terminal->width;
 		else
@@ -213,15 +297,21 @@ terminal_resize(struct terminal *terminal, int width, int height)
 			memcpy(&data[width * i],
 			       terminal_get_row(terminal, i),
 			       l * sizeof(union utf8_char));
+			memcpy(&data_attr[width * i],
+			       terminal_get_attr_row(terminal, i),
+			       l * sizeof(struct attr));
 		}
 
 		free(terminal->data);
+		free(terminal->data_attr);
 	}
 
 	terminal->data_pitch = data_pitch;
+	terminal->attr_pitch = attr_pitch;
 	terminal->width = width;
 	terminal->height = height;
 	terminal->data = data;
+	terminal->data_attr = data_attr;
 
 	if (terminal->row >= terminal->height)
 		terminal->row = terminal->height - 1;
@@ -230,9 +320,28 @@ terminal_resize(struct terminal *terminal, int width, int height)
 	terminal->start = 0;
 }
 
-struct color_scheme { struct { double r, g, b, a; } fg, bg; }
-	matrix_colors = { { 0, 0.7, 0, 1 }, { 0, 0, 0, 0.9 } },
-	jbarnes_colors = { { 1, 1, 1, 1 }, { 0, 0, 0, 1 } };
+struct color_scheme DEFAULT_COLORS = {
+	{
+		{0,    0,    0,    1}, /* black */
+		{0.66, 0,    0,    1}, /* red */
+		{0  ,  0.66, 0,    1}, /* green */
+		{0.66, 0.33, 0,    1}, /* orange (nicer than muddy yellow) */
+		{0  ,  0  ,  0.66, 1}, /* blue */
+		{0.66, 0  ,  0.66, 1}, /* magenta */
+		{0,    0.66, 0.66, 1}, /* cyan */
+		{0.66, 0.66, 0.66, 1}, /* light grey */
+		{0.22, 0.33, 0.33, 1}, /* dark grey */
+		{1,    0.33, 0.33, 1}, /* high red */
+		{0.33, 1,    0.33, 1}, /* high green */
+		{1,    1,    0.33, 1}, /* high yellow */
+		{0.33, 0.33, 1,    1}, /* high blue */
+		{1,    0.33, 1,    1}, /* high magenta */
+		{0.33, 1,    1,    1}, /* high cyan */
+		{1,    1,    1,    1}  /* white */
+	},
+	{0, 0, 0, 1},                  /* black border */
+	{7, 0, 0, }                    /* bg:black (0), fg:light gray (7)  */
+};
 
 static void
 terminal_draw_contents(struct terminal *terminal)
@@ -242,11 +351,13 @@ terminal_draw_contents(struct terminal *terminal)
 	cairo_font_extents_t extents;
 	int top_margin, side_margin;
 	int row, col;
+	struct attr attr;
 	union utf8_char *p_row;
 	struct utf8_chars {
 		union utf8_char c;
 		char null;
 	} toShow;
+	int foreground, background, bold, underline;
 	int text_x, text_y;
 	cairo_surface_t *surface;
 	double d;
@@ -259,33 +370,72 @@ terminal_draw_contents(struct terminal *terminal)
 	cr = cairo_create(surface);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr,
-			      terminal->color_scheme->bg.r,
-			      terminal->color_scheme->bg.g,
-			      terminal->color_scheme->bg.b,
-			      terminal->color_scheme->bg.a);
+			      terminal->color_scheme->border.r,
+			      terminal->color_scheme->border.g,
+			      terminal->color_scheme->border.b,
+			      terminal->color_scheme->border.a);
 	cairo_paint(cr);
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-	cairo_set_source_rgba(cr,
-			      terminal->color_scheme->fg.r,
-			      terminal->color_scheme->fg.g,
-			      terminal->color_scheme->fg.b,
-			      terminal->color_scheme->fg.a);
 
-	cairo_select_font_face (cr, "mono",
-				CAIRO_FONT_SLANT_NORMAL,
-				CAIRO_FONT_WEIGHT_NORMAL);
+	cairo_set_font_face(cr, terminal->font_normal);
 	cairo_set_font_size(cr, 14);
 
 	cairo_font_extents(cr, &extents);
 	side_margin = (rectangle.width - terminal->width * extents.max_x_advance) / 2;
 	top_margin = (rectangle.height - terminal->height * extents.height) / 2;
 
+	cairo_set_line_width(cr, 1.0);
+
 	for (row = 0; row < terminal->height; row++) {
 		p_row = terminal_get_row(terminal, row);
 		for (col = 0; col < terminal->width; col++) {
+			/* get the attributes for this character cell */
+			attr = terminal_get_attr(terminal, row, col);
+			if ((attr.a & ATTRMASK_INVERSE) ||
+				(terminal->focused &&
+				terminal->row == row && terminal->column == col))
+			{
+				foreground = attr.bg;
+				background = attr.fg;
+			} else {
+				foreground = attr.fg;
+				background = attr.bg;
+			}
+			bold = attr.a & (ATTRMASK_BOLD | ATTRMASK_BLINK);
+			underline = attr.a & ATTRMASK_UNDERLINE;
+
+			/* paint the background */
+			cairo_set_source_rgba(cr,
+					      terminal->color_table[background].r,
+					      terminal->color_table[background].g,
+					      terminal->color_table[background].b,
+					      terminal->color_table[background].a);
+			cairo_move_to(cr, side_margin + (col * extents.max_x_advance),
+			      top_margin + (row * extents.height));
+			cairo_rel_line_to(cr, extents.max_x_advance, 0);
+			cairo_rel_line_to(cr, 0, extents.height);
+			cairo_rel_line_to(cr, -extents.max_x_advance, 0);
+			cairo_close_path(cr);
+			cairo_fill(cr);
+
 			/* paint the foreground */
+			if (bold)
+				cairo_set_font_face(cr, terminal->font_bold);
+			else
+				cairo_set_font_face(cr, terminal->font_normal);
+			cairo_set_source_rgba(cr,
+					      terminal->color_table[foreground].r,
+					      terminal->color_table[foreground].g,
+					      terminal->color_table[foreground].b,
+					      terminal->color_table[foreground].a);
+
 			text_x = side_margin + col * extents.max_x_advance;
 			text_y = top_margin + extents.ascent + row * extents.height;
+			if (underline) {
+				cairo_move_to(cr, text_x, text_y + 2);
+				cairo_line_to(cr, text_x + extents.max_x_advance, text_y + 2);
+				cairo_stroke(cr);
+			}
 			cairo_move_to(cr, text_x, text_y);
 			
 			toShow.c = p_row[col];
@@ -293,20 +443,19 @@ terminal_draw_contents(struct terminal *terminal)
 		}
 	}
 
-	d = terminal->focused ? 0 : 0.5;
+	if (!terminal->focused) {
+		d = 0.5;
 
-	cairo_set_line_width(cr, 1);
-	cairo_move_to(cr, side_margin + terminal->column * extents.max_x_advance + d,
-		      top_margin + terminal->row * extents.height + d);
-	cairo_rel_line_to(cr, extents.max_x_advance - 2 * d, 0);
-	cairo_rel_line_to(cr, 0, extents.height - 2 * d);
-	cairo_rel_line_to(cr, -extents.max_x_advance + 2 * d, 0);
-	cairo_close_path(cr);
+		cairo_set_line_width(cr, 1);
+		cairo_move_to(cr, side_margin + terminal->column * extents.max_x_advance + d,
+			      top_margin + terminal->row * extents.height + d);
+		cairo_rel_line_to(cr, extents.max_x_advance - 2 * d, 0);
+		cairo_rel_line_to(cr, 0, extents.height - 2 * d);
+		cairo_rel_line_to(cr, -extents.max_x_advance + 2 * d, 0);
+		cairo_close_path(cr);
 
-	if (terminal->focused)
-		cairo_fill(cr);
-	else
 		cairo_stroke(cr);
+	}
 
 	cairo_destroy(cr);
 
@@ -359,9 +508,13 @@ static void
 terminal_data(struct terminal *terminal, const char *data, size_t length);
 
 static void
+handle_sgr(struct terminal *terminal, int code);
+
+static void
 handle_escape(struct terminal *terminal)
 {
 	union utf8_char *row;
+	struct attr *attr_row;
 	char *p;
 	int i, count;
 	int args[10], set[10] = { 0, };
@@ -371,6 +524,10 @@ handle_escape(struct terminal *terminal)
 	p = &terminal->escape[2];
 	while ((isdigit(*p) || *p == ';') && i < 10) {
 		if (*p == ';') {
+			if (!set[i]) {
+				args[i] = 0;
+				set[i] = 1;
+			}
 			p++;
 			i++;
 		} else {
@@ -410,9 +567,13 @@ handle_escape(struct terminal *terminal)
 		break;
 	case 'J':
 		row = terminal_get_row(terminal, terminal->row);
+		attr_row = terminal_get_attr_row(terminal, terminal->row);
 		memset(&row[terminal->column], 0, (terminal->width - terminal->column) * sizeof(union utf8_char));
-		for (i = terminal->row + 1; i < terminal->height; i++)
+		attr_init(&attr_row[terminal->column], terminal->curr_attr, (terminal->width - terminal->column));
+		for (i = terminal->row + 1; i < terminal->height; i++) {
 			memset(terminal_get_row(terminal, i), 0, terminal->width * sizeof(union utf8_char));
+			attr_init(terminal_get_attr_row(terminal, i), terminal->curr_attr, terminal->width);
+		}
 		break;
 	case 'G':
 		if (set[0])
@@ -425,10 +586,30 @@ handle_escape(struct terminal *terminal)
 		break;
 	case 'K':
 		row = terminal_get_row(terminal, terminal->row);
+		attr_row = terminal_get_attr_row(terminal, terminal->row);
 		memset(&row[terminal->column], 0, (terminal->width - terminal->column) * sizeof(union utf8_char));
+		attr_init(&attr_row[terminal->column], terminal->curr_attr, (terminal->width - terminal->column));
 		break;
-	case 'm':
-		/* color, blink, bold etc*/
+	case 'm':    /* SGR */
+		if (set[0] && set[1] && set[2] && args[1] == 5) {
+			if (args[0] == 38) {
+				handle_sgr(terminal, args[2] + 256);
+				break;
+			} else if (args[0] == 48) {
+				handle_sgr(terminal, args[2] + 512);
+				break;
+			}
+		}
+		for(i = 0; i < 10; i++) {
+			if(set[i]) {
+				handle_sgr(terminal, args[i]);
+			} else if(i == 0) {
+				handle_sgr(terminal, 0);
+				break;
+			} else {
+				break;
+			}
+		}
 		break;
 	case '?':
 		if (strcmp(p, "?25l") == 0) {
@@ -446,12 +627,75 @@ handle_escape(struct terminal *terminal)
 }
 
 static void
+handle_sgr(struct terminal *terminal, int code)
+{
+	switch(code) {
+	case 0:
+		terminal->curr_attr = terminal->color_scheme->default_attr;
+		break;
+	case 1:
+		terminal->curr_attr.a |= ATTRMASK_BOLD;
+		if (terminal->curr_attr.fg < 8)
+			terminal->curr_attr.fg += 8;
+		break;
+	case 4:
+		terminal->curr_attr.a |= ATTRMASK_UNDERLINE;
+		break;
+	case 5:
+		terminal->curr_attr.a |= ATTRMASK_BLINK;
+		break;
+	case 2:
+	case 21:
+	case 22:
+		terminal->curr_attr.a &= ~ATTRMASK_BOLD;
+		if (terminal->curr_attr.fg < 16 && terminal->curr_attr.fg >= 8)
+			terminal->curr_attr.fg -= 8;
+		break;
+	case 24:
+		terminal->curr_attr.a &= ~ATTRMASK_UNDERLINE;
+		break;
+	case 25:
+		terminal->curr_attr.a &= ~ATTRMASK_BLINK;
+		break;
+	case 7:
+	case 26:
+		terminal->curr_attr.a |= ATTRMASK_INVERSE;
+		break;
+	case 27:
+		terminal->curr_attr.a &= ~ATTRMASK_INVERSE;
+		break;
+	case 39:
+		terminal->curr_attr.fg = terminal->color_scheme->default_attr.fg;
+		break;
+	case 49:
+		terminal->curr_attr.bg = terminal->color_scheme->default_attr.bg;
+		break;
+	default:
+		if(code >= 30 && code <= 37) {
+			terminal->curr_attr.fg = code - 30;
+			if (terminal->curr_attr.a & ATTRMASK_BOLD)
+				terminal->curr_attr.fg += 8;
+		} else if(code >= 40 && code <= 47) {
+			terminal->curr_attr.bg = code - 40;
+		} else if(code >= 256 && code < 512) {
+			terminal->curr_attr.fg = code - 256;
+		} else if(code >= 512 && code < 768) {
+			terminal->curr_attr.bg = code - 512;
+		} else {
+			fprintf(stderr, "Unknown SGR code: %d\n", code);
+		}
+		break;
+	}
+}
+
+static void
 terminal_data(struct terminal *terminal, const char *data, size_t length)
 {
 	int i;
 	union utf8_char utf8;
 	enum utf8_state parser_state;
 	union utf8_char *row;
+	struct attr *attr_row;
 
 	for (i = 0; i < length; i++) {
 		parser_state =
@@ -472,6 +716,7 @@ terminal_data(struct terminal *terminal, const char *data, size_t length)
 		}
 
 		row = terminal_get_row(terminal, terminal->row);
+		attr_row = terminal_get_attr_row(terminal, terminal->row);
 
 		if (terminal->state == STATE_ESCAPE) {
 			terminal->escape[terminal->escape_length++] = utf8.byte[0];
@@ -503,11 +748,14 @@ terminal_data(struct terminal *terminal, const char *data, size_t length)
 					terminal->start = 0;
 				memset(terminal_get_row(terminal, terminal->row),
 				       0, terminal->width * sizeof(union utf8_char));
+				attr_init(terminal_get_attr_row(terminal, terminal->row),
+				          terminal->curr_attr, terminal->width);
 			}
 
 			break;
 		case '\t':
 			memset(&row[terminal->column], ' ', (-terminal->column & 7) * sizeof(union utf8_char));
+			attr_init(&attr_row[terminal->column], terminal->curr_attr, -terminal->column & 7);
 			terminal->column = (terminal->column + 7) & ~7;
 			break;
 		case '\e':
@@ -525,7 +773,8 @@ terminal_data(struct terminal *terminal, const char *data, size_t length)
 		default:
 			if (terminal->column < terminal->width)
 				if (utf8.byte[0] < 32) utf8.byte[0] += 64;
-			row[terminal->column++] = utf8;
+			row[terminal->column] = utf8;
+			attr_row[terminal->column++] = terminal->curr_attr;
 			break;
 		}
 	}
@@ -609,11 +858,13 @@ terminal_create(struct display *display, int fullscreen)
 
 	memset(terminal, 0, sizeof *terminal);
 	terminal->fullscreen = fullscreen;
-	terminal->color_scheme = &jbarnes_colors;
+	terminal->color_scheme = &DEFAULT_COLORS;
+	terminal_init(terminal);
 	terminal->window = window_create(display, "Wayland Terminal",
 					 500, 400);
 
 	init_state_machine(&terminal->state_machine);
+	init_color_table(terminal);
 
 	terminal->display = display;
 	terminal->margin = 5;
@@ -628,9 +879,15 @@ terminal_create(struct display *display, int fullscreen)
 
 	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 0, 0);
 	cr = cairo_create(surface);
-	cairo_select_font_face (cr, "mono",
-				CAIRO_FONT_SLANT_NORMAL,
-				CAIRO_FONT_WEIGHT_NORMAL);
+	terminal->font_bold = cairo_toy_font_face_create ("mono",
+	                      CAIRO_FONT_SLANT_NORMAL,
+	                      CAIRO_FONT_WEIGHT_BOLD);
+	cairo_font_face_reference(terminal->font_bold);
+	terminal->font_normal = cairo_toy_font_face_create ("mono",
+	                        CAIRO_FONT_SLANT_NORMAL,
+	                        CAIRO_FONT_WEIGHT_NORMAL);
+	cairo_font_face_reference(terminal->font_normal);
+	cairo_set_font_face(cr, terminal->font_normal);
 	cairo_set_font_size(cr, 14);
 	cairo_font_extents(cr, &terminal->extents);
 	cairo_destroy(cr);
