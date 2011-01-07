@@ -52,6 +52,10 @@ static int option_fullscreen;
 #define ATTRMASK_BLINK		0x04
 #define ATTRMASK_INVERSE	0x08
 
+/* Buffer sizes */
+#define MAX_RESPONSE		11
+#define MAX_ESCAPE		64
+
 union utf8_char {
 	unsigned char byte[4];
 	uint32_t ch;
@@ -189,9 +193,10 @@ struct terminal {
 	int fd, master;
 	GIOChannel *channel;
 	uint32_t modifiers;
-	char escape[64];
+	char escape[MAX_ESCAPE];
 	int escape_length;
 	int state;
+	int qmark_flag;
 	struct utf8_state_machine state_machine;
 	int margin;
 	int fullscreen;
@@ -513,9 +518,14 @@ redraw_handler(struct window *window, void *data)
 
 #define STATE_NORMAL 0
 #define STATE_ESCAPE 1
+#define STATE_ESCAPE_SPECIAL 2
+#define STATE_ESCAPE_CSI  3
 
 static void
 terminal_data(struct terminal *terminal, const char *data, size_t length);
+
+static void
+handle_char(struct terminal *terminal, union utf8_char utf8);
 
 static void
 handle_sgr(struct terminal *terminal, int code);
@@ -629,11 +639,19 @@ handle_escape(struct terminal *terminal)
 		}
 		break;
 	default:
-		terminal_data(terminal,
-			      terminal->escape + 1,
-			      terminal->escape_length - 2);
+		fprintf(stderr, "Unknown CSI escape: %c\n", *p);
 		break;
 	}	
+}
+
+static void
+handle_non_csi_escape(struct terminal *terminal, char code)
+{
+}
+
+static void
+handle_special_escape(struct terminal *terminal, char special, char code)
+{
 }
 
 static void
@@ -698,14 +716,99 @@ handle_sgr(struct terminal *terminal, int code)
 	}
 }
 
+/* Returns 1 if c was special, otherwise 0 */
+static int
+handle_special_char(struct terminal *terminal, char c)
+{
+	union utf8_char *row;
+	struct attr *attr_row;
+	
+	row = terminal_get_row(terminal, terminal->row);
+	attr_row = terminal_get_attr_row(terminal, terminal->row);
+	
+	switch(c) {
+	case '\r':
+		terminal->column = 0;
+		break;
+	case '\n':
+		terminal->column = 0;
+		/* fallthrough */
+	case '\v':
+	case '\f':
+		if (terminal->row + 1 < terminal->height) {
+			terminal->row++;
+		} else {
+			terminal->start++;
+			if (terminal->start == terminal->height)
+				terminal->start = 0;
+			memset(terminal_get_row(terminal, terminal->row),
+			       0, terminal->width * sizeof(union utf8_char));
+			attr_init(terminal_get_attr_row(terminal, terminal->row),
+				  terminal->curr_attr, terminal->width);
+		}
+
+		break;
+	case '\t':
+		memset(&row[terminal->column], ' ', (-terminal->column & 7) * sizeof(union utf8_char));
+		attr_init(&attr_row[terminal->column], terminal->curr_attr, -terminal->column & 7);
+		terminal->column = (terminal->column + 7) & ~7;
+		break;
+	case '\b':
+		if (terminal->column > 0)
+			terminal->column--;
+		break;
+	case '\a':
+		/* Bell */
+		break;
+	default:
+		return 0;
+	}
+	
+	return 1;
+}
+
+static void
+handle_char(struct terminal *terminal, union utf8_char utf8)
+{
+	union utf8_char *row;
+	struct attr *attr_row;
+	
+	if (handle_special_char(terminal, utf8.byte[0])) return;
+	
+	/* There are a whole lot of non-characters, control codes,
+	 * and formatting codes that should probably be ignored,
+	 * for example: */
+	if (strncmp((char*) utf8.byte, "\xEF\xBB\xBF", 3) == 0) {
+		/* BOM, ignore */
+		return;
+	} 
+	
+	/* Some of these non-characters should be translated, e.g.: */
+	if (utf8.byte[0] < 32) {
+		utf8.byte[0] = utf8.byte[0] + 64;
+	}
+	
+	/* handle right margin effects */
+	if (terminal->column >= terminal->width) {
+		terminal->column--;
+	}
+	
+	row = terminal_get_row(terminal, terminal->row);
+	attr_row = terminal_get_attr_row(terminal, terminal->row);
+	
+	row[terminal->column] = utf8;
+	attr_row[terminal->column++] = terminal->curr_attr;
+
+	if (utf8.ch != terminal->last_char.ch)
+		terminal->last_char = utf8;
+}
+
 static void
 terminal_data(struct terminal *terminal, const char *data, size_t length)
 {
 	int i;
 	union utf8_char utf8;
 	enum utf8_state parser_state;
-	union utf8_char *row;
-	struct attr *attr_row;
 
 	for (i = 0; i < length; i++) {
 		parser_state =
@@ -725,69 +828,65 @@ terminal_data(struct terminal *terminal, const char *data, size_t length)
 			continue;
 		}
 
-		row = terminal_get_row(terminal, terminal->row);
-		attr_row = terminal_get_attr_row(terminal, terminal->row);
-
+		/* assume escape codes never use non-ASCII characters */
 		if (terminal->state == STATE_ESCAPE) {
 			terminal->escape[terminal->escape_length++] = utf8.byte[0];
-			if (terminal->escape_length == 2 && utf8.byte[0] != '[') {
-				/* Bad escape sequence. */
+			if (utf8.byte[0] == '[') {
+				terminal->state = STATE_ESCAPE_CSI;
+				continue;
+			} else if (utf8.byte[0] == '#' || utf8.byte[0] == '(' ||
+				utf8.byte[0] == ')')
+			{
+				terminal->state = STATE_ESCAPE_SPECIAL;
+				continue;
+			} else {
 				terminal->state = STATE_NORMAL;
-				goto cancel_escape;
+				handle_non_csi_escape(terminal, utf8.byte[0]);
+				continue;
 			}
-
-			if (isalpha(utf8.byte[0])) {
+		} else if (terminal->state == STATE_ESCAPE_SPECIAL) {
+			terminal->escape[terminal->escape_length++] = utf8.byte[0];
+			terminal->state = STATE_NORMAL;
+			if (isdigit(utf8.byte[0]) || isalpha(utf8.byte[0])) {
+				handle_special_escape(terminal, terminal->escape[1],
+				                      utf8.byte[0]);
+				continue;
+			}
+		} else if (terminal->state == STATE_ESCAPE_CSI) {
+			if (handle_special_char(terminal, utf8.byte[0]) != 0) {
+				/* do nothing */
+			} else if (utf8.byte[0] == '?') {
+				terminal->qmark_flag = 1;
+			} else {
+				/* Don't overflow the buffer */
+				if (terminal->escape_length < MAX_ESCAPE)
+					terminal->escape[terminal->escape_length++] = utf8.byte[0];
+				if (terminal->escape_length >= MAX_ESCAPE)
+					terminal->state = STATE_NORMAL;
+			}
+			
+			if (isalpha(utf8.byte[0]) || utf8.byte[0] == '@' ||
+				utf8.byte[0] == '`')
+			{
 				terminal->state = STATE_NORMAL;
 				handle_escape(terminal);
-			} 
-			continue;
+				continue;
+			} else {
+				continue;
+			}
 		}
 
-	cancel_escape:
-		switch (utf8.byte[0]) {
-		case '\r':
-			terminal->column = 0;
-			break;
-		case '\n':
-			terminal->column = 0;
-			if (terminal->row + 1 < terminal->height) {
-				terminal->row++;
-			} else {
-				terminal->start++;
-				if (terminal->start == terminal->height)
-					terminal->start = 0;
-				memset(terminal_get_row(terminal, terminal->row),
-				       0, terminal->width * sizeof(union utf8_char));
-				attr_init(terminal_get_attr_row(terminal, terminal->row),
-				          terminal->curr_attr, terminal->width);
-			}
-
-			break;
-		case '\t':
-			memset(&row[terminal->column], ' ', (-terminal->column & 7) * sizeof(union utf8_char));
-			attr_init(&attr_row[terminal->column], terminal->curr_attr, -terminal->column & 7);
-			terminal->column = (terminal->column + 7) & ~7;
-			break;
-		case '\e':
+		/* this is valid, because ASCII characters are never used to
+		 * introduce a multibyte sequence in UTF-8 */
+		if (utf8.byte[0] == '\e') {
 			terminal->state = STATE_ESCAPE;
 			terminal->escape[0] = '\e';
 			terminal->escape_length = 1;
-			break;
-		case '\b':
-			if (terminal->column > 0)
-				terminal->column--;
-			break;
-		case '\a':
-			/* Bell */
-			break;
-		default:
-			if (terminal->column < terminal->width)
-				if (utf8.byte[0] < 32) utf8.byte[0] += 64;
-			row[terminal->column] = utf8;
-			attr_row[terminal->column++] = terminal->curr_attr;
-			break;
-		}
-	}
+			terminal->qmark_flag = 0;
+		} else {
+			handle_char(terminal, utf8);
+		} /* if */
+	} /* for */
 
 	window_schedule_redraw(terminal->window);
 }
