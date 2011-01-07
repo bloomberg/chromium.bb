@@ -327,12 +327,35 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
                    this, &InputMethodLibraryImpl::FlushImeConfig);
     }
 
+    // Notify the current input method and the number of active input methods to
+    // the UI so that the UI could determine e.g. if it should show/hide the
+    // input method indicator, etc. We have to call FOR_EACH_OBSERVER here since
+    // updating "preload_engine" does not necessarily trigger a DBus signal such
+    // as "global-engine-changed". For example,
+    // 1) If we change the preload_engine from "xkb:us:intl:eng" (i.e. the
+    //    indicator is hidden) to "xkb:us:intl:eng,mozc", we have to update UI
+    //    so it shows the indicator, but no signal is sent from ibus-daemon
+    //    because the current input method is not changed.
+    // 2) If we change the preload_engine from "xkb:us::eng,mozc" (i.e. the
+    //    indicator is shown and ibus-daemon is started) to "xkb:us::eng", we
+    //    have to update UI so it hides the indicator, but we should not expect
+    //    that ibus-daemon could send a DBus signal since the daemon is killed
+    //    right after this FlushImeConfig() call.
     if (active_input_methods_are_changed) {
+      scoped_ptr<InputMethodDescriptor> current_input_method(
+          chromeos::GetCurrentInputMethod(input_method_status_connection_));
+      // The |current_input_method_| member variable should not be used since
+      // the variable might be stale. SetImeConfig("preload_engine") call above
+      // might change the current input method in ibus-daemon, but the variable
+      // is not updated until InputMethodChangedHandler(), which is the handler
+      // for the global-engine-changed DBus signal, is called.
       const size_t num_active_input_methods = GetNumActiveInputMethods();
-      FOR_EACH_OBSERVER(Observer, observers_,
-                        ActiveInputMethodsChanged(this,
-                                                  current_input_method_,
-                                                  num_active_input_methods));
+      if (current_input_method.get()) {
+        FOR_EACH_OBSERVER(Observer, observers_,
+                          ActiveInputMethodsChanged(this,
+                                                    *current_input_method.get(),
+                                                    num_active_input_methods));
+      }
     }
   }
 
