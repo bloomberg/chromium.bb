@@ -347,6 +347,7 @@ static bool Check386CPU() {
 /* WARNING: This routine and subroutines it uses are not threadsafe.   */
 /* Caller is responsible for calling this exactly once.                */
 void GetCPUFeatures(CPUFeatures *cpuf) {
+  memset(cpuf, 0, sizeof(*cpuf));
   cpuf->f_386 = Check386CPU();
   if (cpuf->f_386 == 0) return;
 
