@@ -249,6 +249,9 @@ bool ImportCurrentUserProfiles(std::vector<AutoFillProfile>* profiles,
 }
 
 bool ImportAutofillDataWin(PersonalDataManager* pdm) {
+  // In incognito mode we do not have PDM - and we should not import anything.
+  if (!pdm)
+    return false;
   AutoFillImporter *importer = new AutoFillImporter(pdm);
   // importer will self delete.
   return importer->ImportProfiles();
