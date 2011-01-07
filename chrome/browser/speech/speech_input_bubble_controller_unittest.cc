@@ -5,6 +5,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/speech/speech_input_bubble_controller.h"
+#include "chrome/test/browser_with_test_window_test.h"
+#include "chrome/test/testing_profile.h"
 #include "gfx/rect.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,7 +24,10 @@ class MockSpeechInputBubble : public SpeechInputBubbleBase {
     BUBBLE_TEST_CLICK_TRY_AGAIN,
   };
 
-  MockSpeechInputBubble(TabContents*, Delegate* delegate, const gfx::Rect&) {
+  MockSpeechInputBubble(TabContents* tab_contents,
+                        Delegate* delegate,
+                        const gfx::Rect&)
+      : SpeechInputBubbleBase(tab_contents) {
     VLOG(1) << "MockSpeechInputBubble created";
     MessageLoop::current()->PostTask(
         FROM_HERE, NewRunnableFunction(&InvokeDelegate, delegate));
@@ -62,12 +67,11 @@ class MockSpeechInputBubble : public SpeechInputBubbleBase {
 // The test fixture.
 class SpeechInputBubbleControllerTest
     : public SpeechInputBubbleControllerDelegate,
-      public testing::Test {
+      public BrowserWithTestWindowTest {
  public:
   SpeechInputBubbleControllerTest()
-      : io_loop_(MessageLoop::TYPE_IO),
-        ui_thread_(BrowserThread::UI),  // constructs a new thread and loop
-        io_thread_(BrowserThread::IO, &io_loop_),  // resuses main thread loop
+      : BrowserWithTestWindowTest(),
+        io_thread_(BrowserThread::IO),  // constructs a new thread and loop
         cancel_clicked_(false),
         try_again_clicked_(false),
         focus_changed_(false),
@@ -91,26 +95,28 @@ class SpeechInputBubbleControllerTest
     } else if (button == SpeechInputBubble::BUTTON_TRY_AGAIN) {
       try_again_clicked_ = true;
     }
-    MessageLoop::current()->Quit();
+    message_loop()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
   }
 
   virtual void InfoBubbleFocusChanged(int caller_id) {
     VLOG(1) << "Received InfoBubbleFocusChanged";
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     focus_changed_ = true;
-    MessageLoop::current()->Quit();
+    message_loop()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
   }
 
   // testing::Test methods.
   virtual void SetUp() {
+    BrowserWithTestWindowTest::SetUp();
     SpeechInputBubble::set_factory(
         &SpeechInputBubbleControllerTest::CreateBubble);
-    ui_thread_.Start();
+    io_thread_.Start();
   }
 
   virtual void TearDown() {
     SpeechInputBubble::set_factory(NULL);
-    ui_thread_.Stop();
+    io_thread_.Stop();
+    BrowserWithTestWindowTest::TearDown();
   }
 
   static void ActivateBubble() {
@@ -132,14 +138,19 @@ class SpeechInputBubbleControllerTest
     // active.
     MessageLoop::current()->PostTask(FROM_HERE,
                                      NewRunnableFunction(&ActivateBubble));
+
+    // The |tab_contents| parameter would be NULL since the dummy caller id
+    // passed to CreateBubble would not have matched any active tab. So get a
+    // real TabContents pointer from the test fixture and pass that, because
+    // the bubble controller registers for tab close notifications which need
+    // a valid TabContents.
+    tab_contents = test_fixture_->browser()->GetSelectedTabContents();
     return new MockSpeechInputBubble(tab_contents, delegate, element_rect);
   }
 
  protected:
   // The main thread of the test is marked as the IO thread and we create a new
   // one for the UI thread.
-  MessageLoop io_loop_;
-  BrowserThread ui_thread_;
   BrowserThread io_thread_;
   bool cancel_clicked_;
   bool try_again_clicked_;

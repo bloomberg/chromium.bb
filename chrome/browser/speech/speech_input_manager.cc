@@ -139,7 +139,6 @@ class SpeechInputManagerImpl : public SpeechInputManager,
   // Starts/restarts recognition for an existing request.
   void StartRecognitionForRequest(int caller_id);
 
-  SpeechInputManagerDelegate* delegate_;
   typedef std::map<int, SpeechInputRequest> SpeechRecognizerMap;
   SpeechRecognizerMap requests_;
   int recording_caller_id_;

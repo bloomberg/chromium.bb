@@ -30,7 +30,6 @@ class SpeechInputBubbleImpl : public SpeechInputBubbleBase {
 
  private:
   scoped_nsobject<SpeechInputWindowController> window_;
-  TabContents* tab_contents_;
   Delegate* delegate_;
   gfx::Rect element_rect_;
 };
@@ -38,7 +37,7 @@ class SpeechInputBubbleImpl : public SpeechInputBubbleBase {
 SpeechInputBubbleImpl::SpeechInputBubbleImpl(TabContents* tab_contents,
                                              Delegate* delegate,
                                              const gfx::Rect& element_rect)
-    : tab_contents_(tab_contents),
+    : SpeechInputBubbleBase(tab_contents),
       delegate_(delegate),
       element_rect_(element_rect) {
 }
@@ -62,7 +61,7 @@ void SpeechInputBubbleImpl::Show() {
   // Find the screen coordinates for the given tab and position the bubble's
   // arrow anchor point inside that to point at the bottom-left of the html
   // input element rect.
-  gfx::NativeView view = tab_contents_->view()->GetNativeView();
+  gfx::NativeView view = tab_contents()->view()->GetNativeView();
   NSRect tab_bounds = [view bounds];
   NSPoint anchor = NSMakePoint(
       tab_bounds.origin.x + element_rect_.x() + kBubbleTargetOffsetX,
@@ -72,7 +71,7 @@ void SpeechInputBubbleImpl::Show() {
   anchor = [[view window] convertBaseToScreen:anchor];
 
   window_.reset([[SpeechInputWindowController alloc]
-      initWithParentWindow:tab_contents_->view()->GetTopLevelNativeWindow()
+      initWithParentWindow:tab_contents()->view()->GetTopLevelNativeWindow()
                   delegate:delegate_
                 anchoredAt:anchor]);
 

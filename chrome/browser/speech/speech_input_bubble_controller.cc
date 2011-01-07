@@ -7,13 +7,17 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_source.h"
+#include "chrome/common/notification_type.h"
 #include "gfx/rect.h"
 
 namespace speech_input {
 
 SpeechInputBubbleController::SpeechInputBubbleController(Delegate* delegate)
     : delegate_(delegate),
-      current_bubble_caller_id_(0) {
+      current_bubble_caller_id_(0),
+      registrar_(new NotificationRegistrar) {
 }
 
 SpeechInputBubbleController::~SpeechInputBubbleController() {
@@ -43,6 +47,8 @@ void SpeechInputBubbleController::CreateBubble(int caller_id,
     return;
 
   bubbles_[caller_id] = bubble;
+
+  UpdateTabContentsSubscription(caller_id, BUBBLE_ADDED);
 }
 
 void SpeechInputBubbleController::CloseBubble(int caller_id) {
@@ -68,6 +74,60 @@ void SpeechInputBubbleController::SetBubbleInputVolume(int caller_id,
 void SpeechInputBubbleController::SetBubbleMessage(int caller_id,
                                                    const string16& text) {
   ProcessRequestInUiThread(caller_id, REQUEST_SET_MESSAGE, text, 0);
+}
+
+void SpeechInputBubbleController::UpdateTabContentsSubscription(
+    int caller_id, ManageSubscriptionAction action) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // If there are any other bubbles existing for the same TabContents, we would
+  // have subscribed to tab close notifications on their behalf and we need to
+  // stay registered. So we don't change the subscription in such cases.
+  TabContents* tab_contents = bubbles_[caller_id]->tab_contents();
+  for (BubbleCallerIdMap::iterator iter = bubbles_.begin();
+       iter != bubbles_.end(); ++iter) {
+    if (iter->second->tab_contents() == tab_contents &&
+        iter->first != caller_id) {
+      // At least one other bubble exists for the same TabContents. So don't
+      // make any change to the subscription.
+      return;
+    }
+  }
+
+  if (action == BUBBLE_ADDED) {
+    registrar_->Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
+                    Source<TabContents>(tab_contents));
+  } else {
+    registrar_->Remove(this, NotificationType::TAB_CONTENTS_DESTROYED,
+                    Source<TabContents>(tab_contents));
+  }
+}
+
+void SpeechInputBubbleController::Observe(NotificationType type,
+                                          const NotificationSource& source,
+                                          const NotificationDetails& details) {
+  if (type == NotificationType::TAB_CONTENTS_DESTROYED) {
+    // Cancel all bubbles and active recognition sessions for this tab.
+    TabContents* tab_contents = Source<TabContents>(source).ptr();
+    BubbleCallerIdMap::iterator iter = bubbles_.begin();
+    while (iter != bubbles_.end()) {
+      if (iter->second->tab_contents() == tab_contents) {
+        BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+            NewRunnableMethod(
+                this,
+                &SpeechInputBubbleController::InvokeDelegateButtonClicked,
+                iter->first, SpeechInputBubble::BUTTON_CANCEL));
+        CloseBubble(iter->first);
+        // We expect to have a very small number of items in this map so
+        // redo-ing from start is ok.
+        iter = bubbles_.begin();
+      } else {
+        ++iter;
+      }
+    }
+  } else {
+    NOTREACHED() << "Unknown notification";
+  }
 }
 
 void SpeechInputBubbleController::ProcessRequestInUiThread(
@@ -109,6 +169,7 @@ void SpeechInputBubbleController::ProcessRequestInUiThread(
     case REQUEST_CLOSE:
       if (current_bubble_caller_id_ == caller_id)
         current_bubble_caller_id_ = 0;
+      UpdateTabContentsSubscription(caller_id, BUBBLE_REMOVED);
       delete bubble;
       bubbles_.erase(caller_id);
       break;

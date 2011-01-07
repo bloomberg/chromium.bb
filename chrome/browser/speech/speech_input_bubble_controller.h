@@ -11,10 +11,12 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/speech/speech_input_bubble.h"
+#include "chrome/common/notification_observer.h"
 
 namespace gfx {
 class Rect;
 }
+class NotificationRegistrar;
 
 namespace speech_input {
 
@@ -25,7 +27,8 @@ namespace speech_input {
 // that bubble are reported to the delegate.
 class SpeechInputBubbleController
     : public base::RefCountedThreadSafe<SpeechInputBubbleController>,
-      public SpeechInputBubbleDelegate {
+      public SpeechInputBubbleDelegate,
+      public NotificationObserver {
  public:
   // All methods of this delegate are called in the IO thread.
   class Delegate {
@@ -73,6 +76,11 @@ class SpeechInputBubbleController
   virtual void InfoBubbleButtonClicked(SpeechInputBubble::Button button);
   virtual void InfoBubbleFocusChanged();
 
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
  private:
   // The various calls received by this object and handled in the UI thread.
   enum RequestType {
@@ -83,6 +91,11 @@ class SpeechInputBubbleController
     REQUEST_CLOSE,
   };
 
+  enum ManageSubscriptionAction {
+    BUBBLE_ADDED,
+    BUBBLE_REMOVED
+  };
+
   void InvokeDelegateButtonClicked(int caller_id,
                                    SpeechInputBubble::Button button);
   void InvokeDelegateFocusChanged(int caller_id);
@@ -90,6 +103,14 @@ class SpeechInputBubbleController
                                 RequestType type,
                                 const string16& text,
                                 float volume);
+
+  // Called whenever a bubble was added to or removed from the list. If the
+  // bubble was being added, this method registers for close notifications with
+  // the TabContents if this was the first bubble for the tab. Similarly if the
+  // bubble was being removed, this method unregisters from TabContents if this
+  // was the last bubble associated with that tab.
+  void UpdateTabContentsSubscription(int caller_id,
+                                     ManageSubscriptionAction action);
 
   // Only accessed in the IO thread.
   Delegate* delegate_;
@@ -102,7 +123,10 @@ class SpeechInputBubbleController
 
   // Map of caller-ids to bubble objects. The bubbles are weak pointers owned by
   // this object and get destroyed by |CloseBubble|.
-  std::map<int, SpeechInputBubble*> bubbles_;
+  typedef std::map<int, SpeechInputBubble*> BubbleCallerIdMap;
+  BubbleCallerIdMap bubbles_;
+
+  scoped_ptr<NotificationRegistrar> registrar_;
 };
 
 // This typedef is to workaround the issue with certain versions of

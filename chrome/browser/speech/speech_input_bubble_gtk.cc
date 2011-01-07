@@ -54,7 +54,6 @@ class SpeechInputBubbleGtk
 
   Delegate* delegate_;
   InfoBubbleGtk* info_bubble_;
-  TabContents* tab_contents_;
   gfx::Rect element_rect_;
   bool did_invoke_close_;
 
@@ -68,9 +67,9 @@ class SpeechInputBubbleGtk
 SpeechInputBubbleGtk::SpeechInputBubbleGtk(TabContents* tab_contents,
                                            Delegate* delegate,
                                            const gfx::Rect& element_rect)
-    : delegate_(delegate),
+    : SpeechInputBubbleBase(tab_contents),
+      delegate_(delegate),
       info_bubble_(NULL),
-      tab_contents_(tab_contents),
       element_rect_(element_rect),
       did_invoke_close_(false),
       label_(NULL),
@@ -145,10 +144,10 @@ void SpeechInputBubbleGtk::Show() {
   gtk_container_add(GTK_CONTAINER(content), vbox);
 
   GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(
-      tab_contents_->profile());
+      tab_contents()->profile());
   gfx::Rect rect(element_rect_.x() + kBubbleTargetOffsetX,
                  element_rect_.y() + element_rect_.height(), 1, 1);
-  info_bubble_ = InfoBubbleGtk::Show(tab_contents_->GetNativeView(),
+  info_bubble_ = InfoBubbleGtk::Show(tab_contents()->GetNativeView(),
                                      &rect,
                                      content,
                                      InfoBubbleGtk::ARROW_LOCATION_TOP_LEFT,

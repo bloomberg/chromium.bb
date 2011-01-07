@@ -99,6 +99,9 @@ class SpeechInputBubble {
   // Updates the current captured audio volume displayed on screen.
   virtual void SetInputVolume(float volume) = 0;
 
+  // Returns the TabContents for which this bubble gets displayed.
+  virtual TabContents* tab_contents() = 0;
+
   // The horizontal distance between the start of the html widget and the speech
   // bubble's arrow.
   static const int kBubbleTargetOffsetX;
@@ -119,7 +122,7 @@ class SpeechInputBubbleBase : public SpeechInputBubble {
     DISPLAY_MODE_MESSAGE
   };
 
-  SpeechInputBubbleBase();
+  explicit SpeechInputBubbleBase(TabContents* tab_contents);
   virtual ~SpeechInputBubbleBase();
 
   // SpeechInputBubble methods
@@ -127,6 +130,7 @@ class SpeechInputBubbleBase : public SpeechInputBubble {
   virtual void SetRecognizingMode();
   virtual void SetMessage(const string16& text);
   virtual void SetInputVolume(float volume);
+  virtual TabContents* tab_contents() { return tab_contents_; }
 
  protected:
   // Updates the platform specific UI layout for the current display mode.
@@ -159,6 +163,8 @@ class SpeechInputBubbleBase : public SpeechInputBubble {
   scoped_ptr<SkBitmap> mic_image_;
   // A temporary buffer image used in creating the above mic image.
   scoped_ptr<SkBitmap> buffer_image_;
+  // TabContents in which this this bubble gets displayed.
+  TabContents* tab_contents_;
 
   static SkBitmap* mic_full_;  // Mic image with full volume.
   static SkBitmap* mic_empty_;  // Mic image with zero volume.
