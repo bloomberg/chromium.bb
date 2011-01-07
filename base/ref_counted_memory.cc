@@ -18,13 +18,6 @@ size_t RefCountedStaticMemory::size() const {
   return length_;
 }
 
-RefCountedBytes* RefCountedBytes::TakeVector(
-    std::vector<unsigned char>* to_destroy) {
-  RefCountedBytes* bytes = new RefCountedBytes;
-  bytes->data.swap(*to_destroy);
-  return bytes;
-}
-
 RefCountedBytes::RefCountedBytes() {
 }
 
@@ -32,7 +25,11 @@ RefCountedBytes::RefCountedBytes(const std::vector<unsigned char>& initializer)
     : data(initializer) {
 }
 
-RefCountedBytes::~RefCountedBytes() {
+RefCountedBytes* RefCountedBytes::TakeVector(
+    std::vector<unsigned char>* to_destroy) {
+  RefCountedBytes* bytes = new RefCountedBytes;
+  bytes->data.swap(*to_destroy);
+  return bytes;
 }
 
 const unsigned char* RefCountedBytes::front() const {
@@ -43,4 +40,7 @@ const unsigned char* RefCountedBytes::front() const {
 
 size_t RefCountedBytes::size() const {
   return data.size();
+}
+
+RefCountedBytes::~RefCountedBytes() {
 }

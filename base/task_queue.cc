@@ -15,6 +15,22 @@ TaskQueue::~TaskQueue() {
   STLDeleteElements(&queue_);
 }
 
+void TaskQueue::Push(Task* task) {
+  DCHECK(task);
+
+  // Add the task to the back of the queue.
+  queue_.push_back(task);
+}
+
+void TaskQueue::Clear() {
+  // Delete all the elements in the queue and clear the dead pointers.
+  STLDeleteElements(&queue_);
+}
+
+bool TaskQueue::IsEmpty() const {
+  return queue_.empty();
+}
+
 void TaskQueue::Run() {
   // Nothing to run if our queue is empty.
   if (queue_.empty())
@@ -30,20 +46,4 @@ void TaskQueue::Run() {
     (*task)->Run();
     delete (*task);
   }
-}
-
-void TaskQueue::Push(Task* task) {
-  DCHECK(task);
-
-  // Add the task to the back of the queue.
-  queue_.push_back(task);
-}
-
-void TaskQueue::Clear() {
-  // Delete all the elements in the queue and clear the dead pointers.
-  STLDeleteElements(&queue_);
-}
-
-bool TaskQueue::IsEmpty() const {
-  return queue_.empty();
 }
