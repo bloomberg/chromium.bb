@@ -221,12 +221,14 @@
    # CocoaTest::TearDown() still sees this window and deques events for it,
    # but one of those events creates this TSM Context that gets leaked.
    # See http://crbug.com/61816 for more details.
+   # ut*AllSelectedIMInDoc = fun:utOpenActivateAllSelectedIMInDoc or
+   #                         fun:utDeactivateAllSelectedIMInDoc
    Mac_Animated_Window_Close_ProcessNotification_Event
    Memcheck:Leak
    fun:malloc_zone_malloc
    fun:_CFRuntimeCreateInstance
    fun:__CFDictionaryInit
-   fun:utOpenActivateAllSelectedIMInDoc
+   fun:ut*AllSelectedIMInDoc
    ...
    fun:MyActivateTSMDocument
 }
