@@ -1021,12 +1021,12 @@ gfx::Point DraggedTabController::GetAttachedTabDragPoint(
   const gfx::Size& tab_size = attached_tab_->bounds().size();
 
   if (attached_tabstrip_->type() == BaseTabStrip::HORIZONTAL_TAB_STRIP) {
-    int max_x = attached_tabstrip_->bounds().right() - tab_size.width();
+    int max_x = attached_tabstrip_->width() - tab_size.width();
     x = std::min(std::max(x, 0), max_x);
     y = 0;
   } else {
     x = SideTabStrip::kTabStripInset;
-    int max_y = attached_tabstrip_->bounds().bottom() - tab_size.height();
+    int max_y = attached_tabstrip_->height() - tab_size.height();
     y = std::min(std::max(y, SideTabStrip::kTabStripInset), max_y);
   }
   return gfx::Point(x, y);
