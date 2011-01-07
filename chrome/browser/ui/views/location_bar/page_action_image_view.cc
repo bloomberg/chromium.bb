@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,13 +83,16 @@ void PageActionImageView::ExecuteAction(int button,
     View::ConvertPointToScreen(this, &origin);
     screen_bounds.set_origin(origin);
 
+    BubbleBorder::ArrowLocation arrow_location = base::i18n::IsRTL() ?
+        BubbleBorder::TOP_LEFT : BubbleBorder::TOP_RIGHT;
+
     popup_ = ExtensionPopup::Show(
         page_action_->GetPopupUrl(current_tab_id_),
         browser,
         browser->profile(),
         browser->window()->GetNativeHandle(),
         screen_bounds,
-        BubbleBorder::TOP_RIGHT,
+        arrow_location,
         true,  // Activate the popup window.
         inspect_with_devtools,
         ExtensionPopup::BUBBLE_CHROME,
