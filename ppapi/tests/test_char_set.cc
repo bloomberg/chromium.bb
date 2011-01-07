@@ -96,7 +96,7 @@ std::string TestCharSet::TestUTF16ToCharSet() {
   ASSERT_TRUE(!utf8result);
   ASSERT_TRUE(utf8result_len == 0);
 
-  return std::string();
+  PASS();
 }
 
 std::string TestCharSet::TestCharSetToUTF16() {
@@ -148,7 +148,7 @@ std::string TestCharSet::TestCharSetToUTF16() {
   ASSERT_TRUE(!utf16result);
   ASSERT_TRUE(utf16result_len == 0);
 
-  return std::string();
+  PASS();
 }
 
 std::vector<uint16_t> TestCharSet::UTF8ToUTF16(const std::string& utf8) {

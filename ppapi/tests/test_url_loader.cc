@@ -242,7 +242,7 @@ std::string TestURLLoader::TestStreamToFile() {
   if (file_descriptor < 0)
     return "FileIO::GetOSFileDescriptor() returned a bad file descriptor.";
 
-  return "";
+  PASS();
 }
 
 std::string TestURLLoader::TestSameOriginRestriction() {
@@ -265,7 +265,7 @@ std::string TestURLLoader::TestSameOriginRestriction() {
     }
   }
 
-  return "";
+  PASS();
 }
 
 // This test should cause a redirect and ensure that the loader runs

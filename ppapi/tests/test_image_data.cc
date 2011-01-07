@@ -37,7 +37,7 @@ std::string TestImageData::TestInvalidFormat() {
   if (!b.is_null())
     return "Negative image data format accepted";
 
-  return "";
+  PASS();
 }
 
 std::string TestImageData::TestInvalidSize() {
@@ -76,7 +76,7 @@ std::string TestImageData::TestInvalidSize() {
   if (rsrc)
     return "Negative width accepted";
 
-  return "";
+  PASS();
 }
 
 std::string TestImageData::TestHugeSize() {
@@ -84,7 +84,7 @@ std::string TestImageData::TestHugeSize() {
                           pp::Size(100000000, 100000000), true);
   if (!huge_size.is_null())
     return "31-bit overflow size accepted";
-  return "";
+  PASS();
 }
 
 std::string TestImageData::TestInitToZero() {
@@ -113,7 +113,7 @@ std::string TestImageData::TestInitToZero() {
     }
   }
 
-  return "";
+  PASS();
 }
 
 std::string TestImageData::TestIsImageData() {
@@ -138,5 +138,5 @@ std::string TestImageData::TestIsImageData() {
   if (!image_data_interface_->IsImageData(img.pp_resource()))
     return "Image data should be identified as an image";
 
-  return "";
+  PASS();
 }

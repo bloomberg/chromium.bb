@@ -40,7 +40,7 @@ std::string TestPaintAggregator::TestInitialState() {
   pp::PaintAggregator greg;
   if (greg.HasPendingUpdate())
     return "Pending update invalid";
-  return std::string();
+  PASS();
 }
 
 std::string TestPaintAggregator::TestSingleInvalidation() {
@@ -55,7 +55,7 @@ std::string TestPaintAggregator::TestSingleInvalidation() {
 
   ASSERT_TRUE(rect == greg.GetPendingUpdate().paint_rects[0]);
 
-  return std::string();
+  PASS();
 }
 
 std::string TestPaintAggregator::TestDoubleDisjointInvalidation() {
@@ -74,7 +74,7 @@ std::string TestPaintAggregator::TestDoubleDisjointInvalidation() {
   ASSERT_TRUE(2U == greg.GetPendingUpdate().paint_rects.size());
 
   ASSERT_TRUE(expected_bounds == greg.GetPendingUpdate().paint_bounds);
-  return std::string();
+  PASS();
 }
 
 std::string TestPaintAggregator::TestSingleScroll() {
@@ -93,7 +93,7 @@ std::string TestPaintAggregator::TestSingleScroll() {
   ASSERT_TRUE(2U == greg.GetPendingUpdate().paint_rects.size());
 
   ASSERT_TRUE(expected_bounds == greg.GetPendingUpdate().paint_bounds);
-  return std::string();
+  PASS();
 }
 
 std::string TestPaintAggregator::TestDoubleOverlappingScroll() {
@@ -119,7 +119,7 @@ std::string TestPaintAggregator::TestDoubleOverlappingScroll() {
   pp::Rect resulting_damage = greg.GetPendingUpdate().paint_rects[0];
   pp::Rect expected_damage(1, 2, 2, 4);
   ASSERT_TRUE(expected_damage == resulting_damage);
-  return std::string();
+  PASS();
 }
 
 std::string TestPaintAggregator::TestNegatingScroll() {
@@ -135,7 +135,7 @@ std::string TestPaintAggregator::TestNegatingScroll() {
   greg.ScrollRect(rect, delta2);
 
   ASSERT_FALSE(greg.HasPendingUpdate());
-  return std::string();
+  PASS();
 }
 
 std::string TestPaintAggregator::TestDiagonalScroll() {
@@ -153,7 +153,7 @@ std::string TestPaintAggregator::TestDiagonalScroll() {
   ASSERT_TRUE(1U == greg.GetPendingUpdate().paint_rects.size());
 
   ASSERT_TRUE(rect == greg.GetPendingUpdate().paint_rects[0]);
-  return std::string();
+  PASS();
 }
 
 std::string TestPaintAggregator::TestContainedPaintAfterScroll() {
@@ -174,7 +174,7 @@ std::string TestPaintAggregator::TestContainedPaintAfterScroll() {
 
   ASSERT_TRUE(scroll_rect == greg.GetPendingUpdate().scroll_rect);
   ASSERT_TRUE(paint_rect == greg.GetPendingUpdate().paint_rects[0]);
-  return std::string();
+  PASS();
 }
 
 std::string TestPaintAggregator::TestContainedPaintBeforeScroll() {
@@ -197,7 +197,7 @@ std::string TestPaintAggregator::TestContainedPaintBeforeScroll() {
 
   ASSERT_TRUE(scroll_rect == greg.GetPendingUpdate().scroll_rect);
   ASSERT_TRUE(paint_rect == greg.GetPendingUpdate().paint_rects[0]);
-  return std::string();
+  PASS();
 }
 
 std::string TestPaintAggregator::TestContainedPaintsBeforeAndAfterScroll() {
@@ -222,7 +222,7 @@ std::string TestPaintAggregator::TestContainedPaintsBeforeAndAfterScroll() {
 
   ASSERT_TRUE(scroll_rect == greg.GetPendingUpdate().scroll_rect);
   ASSERT_TRUE(expected_paint_rect == greg.GetPendingUpdate().paint_rects[0]);
-  return std::string();
+  PASS();
 }
 
 std::string TestPaintAggregator::TestLargeContainedPaintAfterScroll() {
@@ -240,7 +240,7 @@ std::string TestPaintAggregator::TestLargeContainedPaintAfterScroll() {
   ASSERT_TRUE(1U == greg.GetPendingUpdate().paint_rects.size());
 
   ASSERT_TRUE(scroll_rect == greg.GetPendingUpdate().paint_rects[0]);
-  return std::string();
+  PASS();
 }
 
 std::string TestPaintAggregator::TestLargeContainedPaintBeforeScroll() {
@@ -258,7 +258,7 @@ std::string TestPaintAggregator::TestLargeContainedPaintBeforeScroll() {
   ASSERT_TRUE(1U == greg.GetPendingUpdate().paint_rects.size());
 
   ASSERT_TRUE(scroll_rect == greg.GetPendingUpdate().paint_rects[0]);
-  return std::string();
+  PASS();
 }
 
 std::string TestPaintAggregator::TestOverlappingPaintBeforeScroll() {
@@ -278,7 +278,7 @@ std::string TestPaintAggregator::TestOverlappingPaintBeforeScroll() {
   ASSERT_TRUE(1U == greg.GetPendingUpdate().paint_rects.size());
 
   ASSERT_TRUE(expected_paint_rect == greg.GetPendingUpdate().paint_rects[0]);
-  return std::string();
+  PASS();
 }
 
 std::string TestPaintAggregator::TestOverlappingPaintAfterScroll() {
@@ -298,7 +298,7 @@ std::string TestPaintAggregator::TestOverlappingPaintAfterScroll() {
   ASSERT_TRUE(1U == greg.GetPendingUpdate().paint_rects.size());
 
   ASSERT_TRUE(expected_paint_rect == greg.GetPendingUpdate().paint_rects[0]);
-  return std::string();
+  PASS();
 }
 
 std::string TestPaintAggregator::TestDisjointPaintBeforeScroll() {
@@ -317,7 +317,7 @@ std::string TestPaintAggregator::TestDisjointPaintBeforeScroll() {
 
   ASSERT_TRUE(paint_rect == greg.GetPendingUpdate().paint_rects[0]);
   ASSERT_TRUE(scroll_rect == greg.GetPendingUpdate().scroll_rect);
-  return std::string();
+  PASS();
 }
 
 std::string TestPaintAggregator::TestDisjointPaintAfterScroll() {
@@ -336,7 +336,7 @@ std::string TestPaintAggregator::TestDisjointPaintAfterScroll() {
 
   ASSERT_TRUE(paint_rect == greg.GetPendingUpdate().paint_rects[0]);
   ASSERT_TRUE(scroll_rect == greg.GetPendingUpdate().scroll_rect);
-  return std::string();
+  PASS();
 }
 
 std::string TestPaintAggregator::TestContainedPaintTrimmedByScroll() {
@@ -358,7 +358,7 @@ std::string TestPaintAggregator::TestContainedPaintTrimmedByScroll() {
 
   ASSERT_TRUE(expected_paint_rect == greg.GetPendingUpdate().paint_rects[0]);
   ASSERT_TRUE(scroll_rect == greg.GetPendingUpdate().scroll_rect);
-  return std::string();
+  PASS();
 }
 
 std::string TestPaintAggregator::TestContainedPaintEliminatedByScroll() {
@@ -376,7 +376,7 @@ std::string TestPaintAggregator::TestContainedPaintEliminatedByScroll() {
   ASSERT_TRUE(1U == greg.GetPendingUpdate().paint_rects.size());
 
   ASSERT_TRUE(scroll_rect == greg.GetPendingUpdate().scroll_rect);
-  return std::string();
+  PASS();
 }
 
 std::string
@@ -400,7 +400,7 @@ TestPaintAggregator::TestContainedPaintAfterScrollTrimmedByScrollDamage() {
   ASSERT_TRUE(scroll_rect == greg.GetPendingUpdate().scroll_rect);
   ASSERT_TRUE(expected_scroll_damage == greg.GetPendingUpdate().paint_rects[1]);
   ASSERT_TRUE(expected_paint_rect == greg.GetPendingUpdate().paint_rects[0]);
-  return std::string();
+  PASS();
 }
 
 std::string
@@ -422,5 +422,5 @@ TestPaintAggregator::TestContainedPaintAfterScrollEliminatedByScrollDamage() {
 
   ASSERT_TRUE(scroll_rect == greg.GetPendingUpdate().scroll_rect);
   ASSERT_TRUE(expected_scroll_damage == greg.GetPendingUpdate().paint_rects[0]);
-  return std::string();
+  PASS();
 }

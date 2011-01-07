@@ -234,7 +234,7 @@ std::string TestGraphics2D::TestInvalidResource() {
                                         &zero_zero))
     return "ReadImageData succeeded with a NULL resource";
 
-  return "";
+  PASS();
 }
 
 std::string TestGraphics2D::TestInvalidSize() {
@@ -258,14 +258,14 @@ std::string TestGraphics2D::TestInvalidSize() {
   ASSERT_FALSE(!!graphics_2d_interface_->Create(
       pp::Module::Get()->pp_module(), &size, PP_FALSE));
 
-  return "";
+  PASS();
 }
 
 std::string TestGraphics2D::TestHumongous() {
   pp::Graphics2D a(instance_, pp::Size(100000, 100000), false);
   if (!a.is_null())
     return "Humongous device created";
-  return "";
+  PASS();
 }
 
 std::string TestGraphics2D::TestInitToZero() {
@@ -288,7 +288,7 @@ std::string TestGraphics2D::TestInitToZero() {
   if (!IsSquareInImage(image, 0, pp::Rect(0, 0, w, h), 0))
     return "Got a nonzero pixel";
 
-  return "";
+  PASS();
 }
 
 std::string TestGraphics2D::TestDescribe() {
@@ -307,7 +307,7 @@ std::string TestGraphics2D::TestDescribe() {
   if (size.width != w || size.height != h || is_always_opaque != PP_FALSE)
     return "Mismatch of data.";
 
-  return "";
+  PASS();
 }
 
 std::string TestGraphics2D::TestPaint() {
@@ -386,7 +386,7 @@ std::string TestGraphics2D::TestPaint() {
                     subset_color))
     return "Subset paint failed.";
 
-  return "";
+  PASS();
 }
 
 std::string TestGraphics2D::TestScroll() {
@@ -448,7 +448,7 @@ std::string TestGraphics2D::TestScroll() {
   if (!CompareImages(test_image, readback))
     return "TC2, Read back image is not the same as test image.";
 
-  return "";
+  PASS();
 }
 
 std::string TestGraphics2D::TestReplace() {
@@ -502,7 +502,7 @@ std::string TestGraphics2D::TestReplace() {
   if (!IsDCUniformColor(dc, swapped_color))
     return "Flushed color incorrect (or failure in readback).";
 
-  return "";
+  PASS();
 }
 
 std::string TestGraphics2D::TestFlush() {
@@ -544,5 +544,5 @@ std::string TestGraphics2D::TestFlush() {
       return "Second flush succeeded before callback ran.";
   }
 
-  return "";
+  PASS();
 }

@@ -30,7 +30,7 @@ std::string TestBuffer::TestInvalidSize() {
   if (!zero_size.is_null())
     return "Zero size accepted";
 
-  return "";
+  PASS();
 }
 
 std::string TestBuffer::TestInitToZero() {
@@ -48,7 +48,7 @@ std::string TestBuffer::TestInitToZero() {
       return "Buffer isn't entirely zero";
   }
 
-  return "";
+  PASS();
 }
 
 std::string TestBuffer::TestIsBuffer() {
@@ -72,6 +72,6 @@ std::string TestBuffer::TestIsBuffer() {
   if (!buffer_interface_->IsBuffer(buffer.pp_resource()))
     return "Buffer should be identified as a buffer";
 
-  return "";
+  PASS();
 }
 

@@ -65,7 +65,7 @@ std::string TestUrlUtil::TestCanonicalize() {
   ASSERT_TRUE(ComponentEquals(c.query, 0, -1));
   ASSERT_TRUE(ComponentEquals(c.ref, 0, -1));
 
-  return std::string();
+  PASS();
 }
 
 std::string TestUrlUtil::TestResolveRelative() {
@@ -92,7 +92,7 @@ std::string TestUrlUtil::TestResolveRelative() {
       ASSERT_TRUE(result.AsString() == test_cases[i].expected);
     }
   }
-  return std::string();
+  PASS();
 }
 
 std::string TestUrlUtil::TestIsSameSecurityOrigin() {
@@ -100,18 +100,18 @@ std::string TestUrlUtil::TestIsSameSecurityOrigin() {
                                            "http://example.com/"));
   ASSERT_TRUE(util_->IsSameSecurityOrigin("http://google.com/foo",
                                           "http://google.com/bar"));
-  return std::string();
+  PASS();
 }
 
 std::string TestUrlUtil::TestDocumentCanRequest() {
   // This is hard to test, but we can at least verify we can't request
   // some random domain.
   ASSERT_FALSE(util_->DocumentCanRequest(*instance_, "http://evil.com/"));
-  return std::string();
+  PASS();
 }
 
 std::string TestUrlUtil::TestDocumentCanAccessDocument() {
   // This is hard to test, but we can at least verify we can access ourselves.
   ASSERT_TRUE(util_->DocumentCanAccessDocument(*instance_, *instance_));
-  return std::string();
+  PASS();
 }

@@ -73,7 +73,7 @@ std::string TestVarDeprecated::TestBasicString() {
   ASSERT_TRUE(testing_interface_->GetLiveObjectCount(
       pp::Module::Get()->pp_module()) == before_object);
 
-  return std::string();
+  PASS();
 }
 
 std::string TestVarDeprecated::TestInvalidAndEmpty() {
@@ -101,7 +101,7 @@ std::string TestVarDeprecated::TestInvalidAndEmpty() {
   ASSERT_EQ(0, len);
   ASSERT_NE(NULL, result);
 
-  return std::string();
+  PASS();
 }
 
 std::string TestVarDeprecated::TestInvalidUtf8() {
@@ -111,7 +111,7 @@ std::string TestVarDeprecated::TestInvalidUtf8() {
   if (!sjis.is_null())
     return "Non-UTF8 string permitted.";
 
-  return "";
+  PASS();
 }
 
 std::string TestVarDeprecated::TestNullInputInUtf8Conversion() {
@@ -145,7 +145,7 @@ std::string TestVarDeprecated::TestNullInputInUtf8Conversion() {
     return "Expected NULL input to make an empty string Var.";
   }
 
-  return "";
+  PASS();
 }
 
 std::string TestVarDeprecated::TestValidUtf8() {
@@ -169,7 +169,7 @@ std::string TestVarDeprecated::TestValidUtf8() {
     return "String mismatches on conversion back from PP_Var.";
   }
 
-  return "";
+  PASS();
 }
 
 std::string TestVarDeprecated::TestUtf8WithEmbeddedNulls() {
@@ -193,7 +193,7 @@ std::string TestVarDeprecated::TestUtf8WithEmbeddedNulls() {
     return "String mismatches on conversion back from PP_Var.";
   }
 
-  return "";
+  PASS();
 }
 
 std::string TestVarDeprecated::TestVarToUtf8ForWrongType() {
@@ -247,7 +247,7 @@ std::string TestVarDeprecated::TestVarToUtf8ForWrongType() {
     return "Expected NULL on string conversion from Double var.";
   }
 
-  return "";
+  PASS();
 }
 
 std::string TestVarDeprecated::TestHasPropertyAndMethod() {
@@ -324,6 +324,6 @@ std::string TestVarDeprecated::TestHasPropertyAndMethod() {
   ASSERT_TRUE(testing_interface_->GetLiveObjectCount(
       pp::Module::Get()->pp_module()) == before_objects);
 
-  return std::string();
+  PASS();
 }
 

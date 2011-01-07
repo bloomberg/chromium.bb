@@ -92,7 +92,7 @@ std::string TestFileRef::TestGetFileSystemType() {
   if (file_ref_ext.GetFileSystemType() != PP_FILESYSTEMTYPE_EXTERNAL)
     return "file_ref_ext expected to be external.";
 
-  return "";
+  PASS();
 }
 
 std::string TestFileRef::TestGetName() {
@@ -142,7 +142,7 @@ std::string TestFileRef::TestGetName() {
   if (name == "")
     return ReportMismatch("FileRef::GetName", name, "<a temp file>");
 
-  return "";
+  PASS();
 }
 
 std::string TestFileRef::TestGetPath() {
@@ -185,7 +185,7 @@ std::string TestFileRef::TestGetPath() {
   if (!file_ref_ext.GetPath().is_undefined())
     return "The path of an external FileRef should be void.";
 
-  return "";
+  PASS();
 }
 
 std::string TestFileRef::TestGetParent() {
@@ -240,7 +240,7 @@ std::string TestFileRef::TestGetParent() {
   if (!file_ref_ext.GetParent().is_null())
     return "The parent of an external FileRef should be null.";
 
-  return "";
+  PASS();
 }
 
 std::string TestFileRef::TestMakeDirectory() {
@@ -324,7 +324,7 @@ std::string TestFileRef::TestMakeDirectory() {
            "should have failed.";
   }
 
-  return "";
+  PASS();
 }
 
 std::string TestFileRef::TestQueryAndTouchFile() {
@@ -408,7 +408,7 @@ std::string TestFileRef::TestQueryAndTouchFile() {
     return ReportError("FileSystem::Query", rv);
   }
 
-  return "";
+  PASS();
 }
 
 std::string TestFileRef::TestDeleteFileAndDirectory() {
@@ -492,7 +492,7 @@ std::string TestFileRef::TestDeleteFileAndDirectory() {
     return ReportError("FileSystem::Delete", rv);
   }
 
-  return "";
+  PASS();
 }
 
 std::string TestFileRef::TestRenameFileAndDirectory() {
@@ -574,5 +574,5 @@ std::string TestFileRef::TestRenameFileAndDirectory() {
     return ReportError("FileSystem::Rename", rv);
   }
 
-  return "";
+  PASS();
 }

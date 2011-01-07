@@ -32,5 +32,5 @@ void TestTransport::RunTest() {
 
 std::string TestTransport::TestFirstTransport() {
   // TODO(juberti): actual test
-  return "";
+  PASS();
 }

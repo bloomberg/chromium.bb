@@ -113,7 +113,7 @@ std::string TestFileIO::TestOpen() {
   if (rv != PP_ERROR_FILENOTFOUND)
     return ReportError("FileIO::Open", rv);
 
-  return "";
+  PASS();
 }
 
 std::string TestFileIO::TestReadWriteSetLength() {
@@ -227,7 +227,7 @@ std::string TestFileIO::TestReadWriteSetLength() {
     return ReportMismatch("FileIO::Read", read_buffer,
                           std::string("testtest\0\0\0\0", 12));
 
-  return "";
+  PASS();
 }
 
 std::string TestFileIO::TestTouchQuery() {
@@ -281,5 +281,5 @@ std::string TestFileIO::TestTouchQuery() {
       (info.last_modified_time != last_modified_time))
     return "FileSystem::Query() has returned bad data.";
 
-  return "";
+  PASS();
 }

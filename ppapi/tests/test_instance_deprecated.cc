@@ -118,5 +118,5 @@ std::string TestInstance::TestExecuteScript() {
   ASSERT_TRUE(ret.is_undefined());
   ASSERT_TRUE(exception.is_string());  // Don't know exactly what it will say.
 
-  return std::string();
+  PASS();
 }
