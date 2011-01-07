@@ -187,7 +187,9 @@ struct terminal {
 	union utf8_char *data;
 	struct attr *data_attr;
 	struct attr curr_attr;
+	char origin_mode;
 	union utf8_char last_char;
+	int margin_top, margin_bottom;
 	int data_pitch, attr_pitch;  /* The width in bytes of a line */
 	int width, height, start, row, column;
 	int fd, master;
@@ -211,6 +213,7 @@ static void
 terminal_init(struct terminal *terminal)
 {
 	terminal->curr_attr = terminal->color_scheme->default_attr;
+	terminal->origin_mode = 0;
 
 	terminal->row = 0;
 	terminal->column = 0;
@@ -266,6 +269,94 @@ terminal_get_attr(struct terminal *terminal, int row, int col) {
 }
 
 static void
+terminal_scroll_buffer(struct terminal *terminal, int d)
+{
+	int i;
+
+	d = d % (terminal->height + 1);
+	terminal->start = (terminal->start + d) % terminal->height;
+	if (terminal->start < 0) terminal->start = terminal->height + terminal->start;
+	if(d < 0) {
+		d = 0 - d;
+		for(i = 0; i < d; i++) {
+			memset(terminal_get_row(terminal, i), 0, terminal->data_pitch);
+			attr_init(terminal_get_attr_row(terminal, i),
+			    terminal->curr_attr, terminal->width);
+		}
+	} else {
+		for(i = terminal->height - d; i < terminal->height; i++) {
+			memset(terminal_get_row(terminal, i), 0, terminal->data_pitch);
+			attr_init(terminal_get_attr_row(terminal, i),
+			    terminal->curr_attr, terminal->width);
+		}
+	}
+}
+
+static void
+terminal_scroll_window(struct terminal *terminal, int d)
+{
+	int i;
+	int window_height;
+	int from_row, to_row;
+	struct attr *dup_attr;
+	
+	// scrolling range is inclusive
+	window_height = terminal->margin_bottom - terminal->margin_top + 1;
+	d = d % (window_height + 1);
+	if(d < 0) {
+		d = 0 - d;
+		to_row = terminal->margin_bottom;
+		from_row = terminal->margin_bottom - d;
+		
+		for (i = 0; i < (window_height - d); i++) {
+			memcpy(terminal_get_row(terminal, to_row - i),
+			       terminal_get_row(terminal, from_row - i),
+			       terminal->data_pitch);
+			memcpy(terminal_get_attr_row(terminal, to_row - i),
+			       terminal_get_attr_row(terminal, from_row - i),
+			       terminal->attr_pitch);
+		}
+		dup_attr = terminal_get_attr_row(terminal, terminal->margin_top);
+		for (i = terminal->margin_top; i < (terminal->margin_top + d); i++) {
+			memset(terminal_get_row(terminal, i), 0, terminal->data_pitch);
+			if (i > terminal->margin_top) {
+				memcpy(terminal_get_attr_row(terminal, i),
+				       dup_attr, terminal->attr_pitch);
+			}
+		}
+	} else {
+		to_row = terminal->margin_top;
+		from_row = terminal->margin_top + d;
+		
+		for (i = 0; i < (window_height - d); i++) {
+			memcpy(terminal_get_row(terminal, to_row + i),
+			       terminal_get_row(terminal, from_row + i),
+			       terminal->data_pitch);
+			memcpy(terminal_get_attr_row(terminal, to_row + i),
+			       terminal_get_attr_row(terminal, from_row + i),
+			       terminal->attr_pitch);
+		}
+		dup_attr = terminal_get_attr_row(terminal, terminal->margin_bottom);
+		for (i = terminal->margin_bottom - d + 1; i <= terminal->margin_bottom; i++) {
+			memset(terminal_get_row(terminal, i), 0, terminal->data_pitch);
+			if (i < terminal->margin_bottom) {
+				memcpy(terminal_get_attr_row(terminal, i),
+				       dup_attr, terminal->attr_pitch);
+			}
+		}
+	}
+}
+
+static void
+terminal_scroll(struct terminal *terminal, int d)
+{
+	if(terminal->margin_top == 0 && terminal->margin_bottom == terminal->height - 1)
+		terminal_scroll_buffer(terminal, d);
+	else
+		terminal_scroll_window(terminal, d);
+}
+
+static void
 terminal_resize(struct terminal *terminal, int width, int height)
 {
 	size_t size;
@@ -317,6 +408,8 @@ terminal_resize(struct terminal *terminal, int width, int height)
 	terminal->attr_pitch = attr_pitch;
 	terminal->width = width;
 	terminal->height = height;
+	if(terminal->margin_bottom >= terminal->height)
+		terminal->margin_bottom = terminal->height - 1;
 	terminal->data = data;
 	terminal->data_attr = data_attr;
 
@@ -531,12 +624,38 @@ static void
 handle_sgr(struct terminal *terminal, int code);
 
 static void
+handle_term_parameter(struct terminal *terminal, int code, int sr)
+{
+	if (terminal->qmark_flag) {
+		switch(code) {
+		case 6:  /* DECOM */
+			terminal->origin_mode = sr;
+			if (terminal->origin_mode)
+				terminal->row = terminal->margin_top;
+			else
+				terminal->row = 0;
+			terminal->column = 0;
+			break;
+		default:
+			fprintf(stderr, "Unknown parameter: ?%d\n", code);
+			break;
+		}
+	} else {
+		switch(code) {
+		default:
+			fprintf(stderr, "Unknown parameter: %d\n", code);
+			break;
+		}
+	}
+}
+
+static void
 handle_escape(struct terminal *terminal)
 {
 	union utf8_char *row;
 	struct attr *attr_row;
 	char *p;
-	int i, count;
+	int i, count, top, bottom;
 	int args[10], set[10] = { 0, };
 
 	terminal->escape[terminal->escape_length++] = '\0';
@@ -610,6 +729,22 @@ handle_escape(struct terminal *terminal)
 		memset(&row[terminal->column], 0, (terminal->width - terminal->column) * sizeof(union utf8_char));
 		attr_init(&attr_row[terminal->column], terminal->curr_attr, (terminal->width - terminal->column));
 		break;
+	case 'S':    /* SU */
+		terminal_scroll(terminal, set[0] ? args[0] : 1);
+		break;
+	case 'T':    /* SD */
+		terminal_scroll(terminal, 0 - (set[0] ? args[0] : 1));
+		break;
+	case 'h':    /* SM */
+		for(i = 0; i < 10 && set[i]; i++) {
+			handle_term_parameter(terminal, args[i], 1);
+		}
+		break;
+	case 'l':    /* RM */
+		for(i = 0; i < 10 && set[i]; i++) {
+			handle_term_parameter(terminal, args[i], 0);
+		}
+		break;
 	case 'm':    /* SGR */
 		if (set[0] && set[1] && set[2] && args[1] == 5) {
 			if (args[0] == 38) {
@@ -631,11 +766,31 @@ handle_escape(struct terminal *terminal)
 			}
 		}
 		break;
-	case '?':
-		if (strcmp(p, "?25l") == 0) {
-			/* hide cursor */
-		} else if (strcmp(p, "?25h") == 0) {
-			/* show cursor */
+	case 'r':
+		if(!set[0]) {
+			terminal->margin_top = 0;
+			terminal->margin_bottom = terminal->height-1;
+			terminal->row = 0;
+			terminal->column = 0;
+		} else {
+			top = (set[0] ? args[0] : 1) - 1;
+			top = top < 0 ? 0 :
+			      (top >= terminal->height ? terminal->height - 1 : top);
+			bottom = (set[1] ? args[1] : 1) - 1;
+			bottom = bottom < 0 ? 0 :
+			         (bottom >= terminal->height ? terminal->height - 1 : bottom);
+			if(bottom > top) {
+				terminal->margin_top = top;
+				terminal->margin_bottom = bottom;
+			} else {
+				terminal->margin_top = 0;
+				terminal->margin_bottom = terminal->height-1;
+			}
+			if(terminal->origin_mode)
+				terminal->row = terminal->margin_top;
+			else
+				terminal->row = 0;
+			terminal->column = 0;
 		}
 		break;
 	default:
@@ -647,6 +802,28 @@ handle_escape(struct terminal *terminal)
 static void
 handle_non_csi_escape(struct terminal *terminal, char code)
 {
+	switch(code) {
+	case 'M':    /* RI */
+		terminal->row -= 1;
+		if(terminal->row < terminal->margin_top) {
+			terminal->row = terminal->margin_top;
+			terminal_scroll(terminal, -1);
+		}
+		break;
+	case 'E':    /* NEL */
+		terminal->column = 0;
+		// fallthrough
+	case 'D':    /* IND */
+		terminal->row += 1;
+		if(terminal->row > terminal->margin_bottom) {
+			terminal->row = terminal->margin_bottom;
+			terminal_scroll(terminal, +1);
+		}
+		break;
+	default:
+		fprintf(stderr, "Unknown escape code: %c\n", code);
+		break;
+	}
 }
 
 static void
@@ -735,16 +912,10 @@ handle_special_char(struct terminal *terminal, char c)
 		/* fallthrough */
 	case '\v':
 	case '\f':
-		if (terminal->row + 1 < terminal->height) {
-			terminal->row++;
-		} else {
-			terminal->start++;
-			if (terminal->start == terminal->height)
-				terminal->start = 0;
-			memset(terminal_get_row(terminal, terminal->row),
-			       0, terminal->width * sizeof(union utf8_char));
-			attr_init(terminal_get_attr_row(terminal, terminal->row),
-				  terminal->curr_attr, terminal->width);
+		terminal->row++;
+		if(terminal->row > terminal->margin_bottom) {
+			terminal->row = terminal->margin_bottom;
+			terminal_scroll(terminal, +1);
 		}
 
 		break;
@@ -969,6 +1140,9 @@ terminal_create(struct display *display, int fullscreen)
 	terminal->fullscreen = fullscreen;
 	terminal->color_scheme = &DEFAULT_COLORS;
 	terminal_init(terminal);
+	terminal->margin_top = 0;
+	terminal->margin_bottom = 10000;  /* much too large, will be trimmed down
+	                                   * by terminal_resize */
 	terminal->window = window_create(display, "Wayland Terminal",
 					 500, 400);
 
