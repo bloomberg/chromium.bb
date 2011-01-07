@@ -4265,17 +4265,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CONFLICTS_NO_MODULES_LOADED" desc="Error message for when no modules were found in the process">
         Unable to detect any modules loaded.
       </message>
-      <message name="IDS_CONFLICTS_HEADER_SOFTWARE" desc="The 'Software:' header for each module item in the list">
+      <message name="IDS_CONFLICTS_HEADER_SOFTWARE" desc="The 'Software' header for each module item in the list">
         Software
       </message>
-      <message name="IDS_CONFLICTS_HEADER_SIGNED_BY" desc="The 'Signed by:' header for each module item in the list">
+      <message name="IDS_CONFLICTS_HEADER_SIGNED_BY" desc="The 'Signed by' header for each module item in the list">
         Signed by
       </message>
-      <message name="IDS_CONFLICTS_HEADER_LOCATION" desc="The 'Location:' header for each module item in the list">
+      <message name="IDS_CONFLICTS_HEADER_LOCATION" desc="The 'Location' header for each module item in the list">
         Location
       </message>
-      <message name="IDS_CONFLICTS_HEADER_WARNING" desc="The 'Warning:' header for each module item in the list">
-        Warning
+      <message name="IDS_CONFLICTS_HEADER_VERSION" desc="The 'Version' header for each module item in the list">
+        Version
       </message>
       <message name="IDS_CONFLICTS_HEADER_HELP_TIP" desc="The 'Help tip:' header for each module item in the list">
         Help tip

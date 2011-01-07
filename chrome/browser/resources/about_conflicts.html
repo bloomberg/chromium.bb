@@ -244,6 +244,16 @@ html[dir=rtl] .clearing {
       <tr class="module-loaded">
       <td valign="top">
         <table cellpadding="2" cellspacing="0" border="0">
+          <tr>
+            <td class="datacell"><span dir="ltr" i18n-content="headerSoftware"
+                    >SOFTWARE</span></td>
+            <td class="datacell"><span dir="ltr" i18n-content="headerSignedBy"
+                    >SIGNER</span></td>
+            <td class="datacell"><span dir="ltr" i18n-content="headerVersion"
+                    >VERSION</span></td>
+            <td class="datacell"><span dir="ltr" i18n-content="headerLocation"
+                    >LOCATION</span></td>
+          </tr>
           <tr jsselect="moduleList">
             <td valign="top" class="datacell">
               <span dir="ltr"
@@ -258,13 +268,15 @@ html[dir=rtl] .clearing {
                   <span jsdisplay="status == 3"
                         i18n-content="moduleConfirmedBad"
                         class="confirmed-bad">CONFIRMED_BAD</span>
+                </span>
+                <span class="clearing">
+                  <span jsdisplay="possibleResolution.length &gt; 0">
+                    <span jscontent="possibleResolution"
+                        >POSSIBLE_RESOLUTION</span>
+                  </span>
                   <a jsdisplay="help_url.length &gt; 0"
                      jsvalues=".href:help_url"
                      i18n-content="helpCenterLink">HELP_CENTER</a>
-                </span>
-                <span jsdisplay="possibleResolution.length &gt; 0">
-                  <span jscontent="possibleResolution" class="clearing"
-                      >POSSIBLE_RESOLUTION</span>
                 </span>
               </div>
             </td>

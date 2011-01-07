@@ -79,8 +79,8 @@ void ConflictsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetStringUTF16(IDS_CONFLICTS_HEADER_SIGNED_BY));
   localized_strings.SetString("headerLocation",
       l10n_util::GetStringUTF16(IDS_CONFLICTS_HEADER_LOCATION));
-  localized_strings.SetString("headerWarning",
-      l10n_util::GetStringUTF16(IDS_CONFLICTS_HEADER_WARNING));
+  localized_strings.SetString("headerVersion",
+      l10n_util::GetStringUTF16(IDS_CONFLICTS_HEADER_VERSION));
   localized_strings.SetString("headerHelpTip",
       l10n_util::GetStringUTF16(IDS_CONFLICTS_HEADER_HELP_TIP));
 
@@ -108,7 +108,7 @@ void ConflictsUIHTMLSource::StartDataRequest(const std::string& path,
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-// The handler for Javascript messages for the about:flags page.
+// The handler for JavaScript messages for the about:flags page.
 class ConflictsDOMHandler : public DOMMessageHandler,
                             public NotificationObserver {
  public:
