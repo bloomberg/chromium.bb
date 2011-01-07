@@ -42,19 +42,15 @@ void GeolocationDispatcher::geolocationDestroyed() {
 }
 
 void GeolocationDispatcher::startUpdating() {
-  // TODO(jknotten): Remove url and bridge_id from StartUpdating message
-  // once we have switched over to client-based geolocation.
   GURL url;
   render_view_->Send(new ViewHostMsg_Geolocation_StartUpdating(
-      render_view_->routing_id(), -1, url, enable_high_accuracy_));
+      render_view_->routing_id(), url, enable_high_accuracy_));
   updating_ = true;
 }
 
 void GeolocationDispatcher::stopUpdating() {
-  // TODO(jknotten): Remove url and bridge_id from StopUpdating message
-  // once we have switched over to client-based geolocation.
   render_view_->Send(new ViewHostMsg_Geolocation_StopUpdating(
-      render_view_->routing_id(), -1));
+      render_view_->routing_id()));
   updating_ = false;
 }
 

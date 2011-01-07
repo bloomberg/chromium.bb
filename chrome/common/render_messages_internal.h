@@ -2410,17 +2410,6 @@ IPC_SYNC_MESSAGE_CONTROL1_1(
 //---------------------------------------------------------------------------
 // Geolocation services messages
 
-// A GeolocationServiceBridgeImpl in the renderer process has been created.
-// This is used to lazily initialize the host dispatchers and related
-// Geolocation infrastructure in the browser process.
-IPC_MESSAGE_CONTROL1(ViewHostMsg_Geolocation_RegisterDispatcher,
-                     int /* render_view_id */)
-
-// A GeolocationServiceBridgeImpl has been destroyed.
-// This is used to let the Geolocation infrastructure do its cleanup.
-IPC_MESSAGE_CONTROL1(ViewHostMsg_Geolocation_UnregisterDispatcher,
-                     int /* render_view_id */)
-
 // The |render_view_id| and |bridge_id| representing |host| is requesting
 // permission to access geolocation position.
 // This will be replied by ViewMsg_Geolocation_PermissionSet.
@@ -2436,38 +2425,20 @@ IPC_MESSAGE_CONTROL3(ViewHostMsg_Geolocation_CancelPermissionRequest,
                      int /* bridge_id */,
                      GURL /* GURL of the frame */)
 
-// The |render_view_id| and |bridge_id| requests Geolocation service to start
-// updating.
+// The |render_view_id| requests Geolocation service to start updating.
 // This is an asynchronous call, and the browser process may eventually reply
 // with the updated geoposition, or an error (access denied, location
 // unavailable, etc.)
-IPC_MESSAGE_CONTROL4(ViewHostMsg_Geolocation_StartUpdating,
+IPC_MESSAGE_CONTROL3(ViewHostMsg_Geolocation_StartUpdating,
                      int /* render_view_id */,
-                     int /* bridge_id */,
                      GURL /* GURL of the frame requesting geolocation */,
                      bool /* enable_high_accuracy */)
 
-// The |render_view_id| and |bridge_id| requests Geolocation service to stop
-// updating.
+// The |render_view_id| requests Geolocation service to stop updating.
 // Note that the geolocation service may continue to fetch geolocation data
 // for other origins.
-IPC_MESSAGE_CONTROL2(ViewHostMsg_Geolocation_StopUpdating,
-                     int /* render_view_id */,
-                     int /* bridge_id */)
-
-// The |render_view_id| and |bridge_id| requests Geolocation service to
-// suspend.
-// Note that the geolocation service may continue to fetch geolocation data
-// for other origins.
-IPC_MESSAGE_CONTROL2(ViewHostMsg_Geolocation_Suspend,
-                     int /* render_view_id */,
-                     int /* bridge_id */)
-
-// The |render_view_id| and |bridge_id| requests Geolocation service to
-// resume.
-IPC_MESSAGE_CONTROL2(ViewHostMsg_Geolocation_Resume,
-                     int /* render_view_id */,
-                     int /* bridge_id */)
+IPC_MESSAGE_CONTROL1(ViewHostMsg_Geolocation_StopUpdating,
+                     int /* render_view_id */)
 
 // Updates the minimum/maximum allowed zoom percent for this tab from the
 // default values.  If |remember| is true, then the zoom setting is applied to

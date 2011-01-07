@@ -44,22 +44,6 @@ class GeolocationPermissionContext
       int render_process_id, int render_view_id, int bridge_id,
       const GURL& requesting_frame, bool allowed);
 
-  // Called when a geolocation object wants to start receiving location updates.
-  // This also applies global policy around which location providers may be
-  // enabled at a given time (e.g. prior to the user agreeing to any geolocation
-  // permission requests).
-  void StartUpdatingRequested(
-      int render_process_id, int render_view_id, int bridge_id,
-      const GURL& requesting_frame);
-
-  // Called when a geolocation object has stopped. Because we are
-  // short-circuiting permission request (see StartUpdatingRequested above), we
-  // cancel any pending permission in here, since WebKit doesn't know about the
-  // pending permission request and will never call
-  // CancelGeolocationPermissionRequest().
-  void StopUpdatingRequested(
-      int render_process_id, int render_view_id, int bridge_id);
-
  private:
   friend class base::RefCountedThreadSafe<GeolocationPermissionContext>;
   virtual ~GeolocationPermissionContext();

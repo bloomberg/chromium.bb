@@ -432,23 +432,6 @@ void GeolocationPermissionContext::CancelGeolocationPermissionRequest(
   CancelPendingInfoBarRequest(render_process_id, render_view_id, bridge_id);
 }
 
-void GeolocationPermissionContext::StartUpdatingRequested(
-    int render_process_id, int render_view_id, int bridge_id,
-    const GURL& requesting_frame) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  // Note we cannot store the arbitrator as a member as it is not thread safe.
-  GeolocationProvider* provider = GeolocationProvider::GetInstance();
-
-  // Client-based Geolocation uses a preemptive permission model, so permission
-  // ought to have been requested and granted before the controller requests
-  // the client to start updating.
-  DCHECK(provider->HasPermissionBeenGranted());
-}
-
-void GeolocationPermissionContext::StopUpdatingRequested(
-    int render_process_id, int render_view_id, int bridge_id) {
-}
-
 void GeolocationPermissionContext::NotifyPermissionSet(
     int render_process_id, int render_view_id, int bridge_id,
     const GURL& requesting_frame, bool allowed) {
