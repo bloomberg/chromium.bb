@@ -11,6 +11,7 @@
 using views::BoundsAnimator;
 using ui::Animation;
 using ui::SlideAnimation;
+using ui::TestAnimationDelegate;
 
 namespace {
 
