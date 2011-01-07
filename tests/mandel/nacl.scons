@@ -17,10 +17,17 @@ env.ComponentProgram('mandel.nexe', 'mandel.c',
 
 env.Publish('mandel.nexe', 'run', [])
 
+# http://code.google.com/p/nativeclient/issues/detail?id=1300
+is_broken = env.Bit('target_arm') and env.UsingEmulator()
 
-node = env.CommandSelLdrTestNacl('mandel_test.out',
-                                 command=[env.File('mandel.nexe')],
-                                 stdin=env.File('test.stdin'),
-                                 stdout_golden=env.File('test.stdout'),
-                                 sel_ldr_flags=['-E', 'NACL_SRPC_STANDALONE=1'])
-env.AddNodeToTestSuite(node, ['small_tests', 'sel_ldr_tests'], 'run_mandel')
+node = env.CommandSelLdrTestNacl(
+    'mandel_test.out',
+    loader='sel_universal',
+    command=[env.File('mandel.nexe')],
+    stdin=env.File('test.stdin'),
+    stdout_golden=env.File('test.stdout')
+    )
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_mandel',
+                       is_broken=is_broken)
