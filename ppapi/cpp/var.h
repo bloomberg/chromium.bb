@@ -54,13 +54,6 @@ class Var {
   // Takes ownership of the given pointer.
   Var(Instance* instance, deprecated::ScriptableObject* object);
 
-  // TODO(brettw) erase this! This is a temporary hack to keep the build
-  // going while we land the nacl side of this change. Calling this function
-  // will crash rather than break the compile.
-  Var(deprecated::ScriptableObject* /* object */) {
-    *(int*)0 = 3;
-  }
-
   Var(const Var& other);
 
   virtual ~Var();
