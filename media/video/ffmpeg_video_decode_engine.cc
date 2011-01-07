@@ -127,24 +127,29 @@ void FFmpegVideoDecodeEngine::Initialize(
   event_handler_->OnInitializeComplete(info);
 }
 
-// TODO(fbarchard): Find way to remove this memcpy of the entire image.
+// TODO(scherkus): Move this function to a utility class and unit test.
 static void CopyPlane(size_t plane,
                       scoped_refptr<VideoFrame> video_frame,
-                      const AVFrame* frame) {
+                      const AVFrame* frame,
+                      size_t source_height) {
   DCHECK_EQ(video_frame->width() % 2, 0u);
   const uint8* source = frame->data[plane];
   const size_t source_stride = frame->linesize[plane];
   uint8* dest = video_frame->data(plane);
   const size_t dest_stride = video_frame->stride(plane);
+
+  // Calculate amounts to copy and clamp to minium frame dimensions.
   size_t bytes_per_line = video_frame->width();
-  size_t copy_lines = video_frame->height();
+  size_t copy_lines = std::min(video_frame->height(), source_height);
   if (plane != VideoFrame::kYPlane) {
     bytes_per_line /= 2;
     if (video_frame->format() == VideoFrame::YV12) {
       copy_lines = (copy_lines + 1) / 2;
     }
   }
-  DCHECK(bytes_per_line <= source_stride && bytes_per_line <= dest_stride);
+  bytes_per_line = std::min(bytes_per_line, source_stride);
+
+  // Copy!
   for (size_t i = 0; i < copy_lines; ++i) {
     memcpy(dest, source, bytes_per_line);
     source += source_stride;
@@ -278,9 +283,10 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
     // Copy the frame data since FFmpeg reuses internal buffers for AVFrame
     // output, meaning the data is only valid until the next
     // avcodec_decode_video() call.
-    CopyPlane(VideoFrame::kYPlane, video_frame.get(), av_frame_.get());
-    CopyPlane(VideoFrame::kUPlane, video_frame.get(), av_frame_.get());
-    CopyPlane(VideoFrame::kVPlane, video_frame.get(), av_frame_.get());
+    size_t height = codec_context_->height;
+    CopyPlane(VideoFrame::kYPlane, video_frame.get(), av_frame_.get(), height);
+    CopyPlane(VideoFrame::kUPlane, video_frame.get(), av_frame_.get(), height);
+    CopyPlane(VideoFrame::kVPlane, video_frame.get(), av_frame_.get(), height);
   } else {
     // Get the VideoFrame from allocator which associate with av_frame_.
     video_frame = allocator_->DecodeDone(codec_context_, av_frame_.get());

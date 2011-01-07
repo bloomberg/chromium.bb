@@ -24,6 +24,23 @@ static const int kWidth = 320;
 static const int kHeight = 240;
 static const AVRational kTimeBase = { 1, 100 };
 
+static void InitializeFrame(uint8_t* data, int width, AVFrame* frame) {
+  frame->data[0] = data;
+  frame->data[1] = data;
+  frame->data[2] = data;
+  frame->linesize[0] = width;
+  frame->linesize[1] = width / 2;
+  frame->linesize[2] = width / 2;
+}
+
+ACTION_P(DecodeComplete, decoder) {
+  decoder->video_frame_ = arg0;
+}
+
+ACTION_P2(DemuxComplete, engine, buffer) {
+  engine->ConsumeVideoSample(buffer);
+}
+
 ACTION_P(SaveInitializeResult, engine) {
   engine->info_ = arg0;
 }
@@ -35,12 +52,7 @@ class FFmpegVideoDecodeEngineTest : public testing::Test,
     // Setup FFmpeg structures.
     frame_buffer_.reset(new uint8[kWidth * kHeight]);
     memset(&yuv_frame_, 0, sizeof(yuv_frame_));
-
-    // DecodeFrame will check these pointers as non-NULL value.
-    yuv_frame_.data[0] = yuv_frame_.data[1] = yuv_frame_.data[2]
-        = frame_buffer_.get();
-    yuv_frame_.linesize[0] = kWidth;
-    yuv_frame_.linesize[1] = yuv_frame_.linesize[2] = kWidth >> 1;
+    InitializeFrame(frame_buffer_.get(), kWidth, &yuv_frame_);
 
     memset(&codec_context_, 0, sizeof(codec_context_));
     codec_context_.width = kWidth;
@@ -94,6 +106,27 @@ class FFmpegVideoDecodeEngineTest : public testing::Test,
        .WillOnce(SaveInitializeResult(this));
     test_engine_->Initialize(MessageLoop::current(), this, NULL, config_);
     EXPECT_TRUE(info_.success);
+  }
+
+  void Decode() {
+    EXPECT_CALL(mock_ffmpeg_, AVInitPacket(_));
+    EXPECT_CALL(mock_ffmpeg_,
+                AVCodecDecodeVideo2(&codec_context_, &yuv_frame_, _, _))
+        .WillOnce(DoAll(SetArgumentPointee<2>(1),  // Simulate 1 byte frame.
+                        Return(0)));
+
+    EXPECT_CALL(*this, ProduceVideoSample(_))
+        .WillOnce(DemuxComplete(test_engine_.get(), buffer_));
+    EXPECT_CALL(*this, ConsumeVideoFrame(_))
+        .WillOnce(DecodeComplete(this));
+    test_engine_->ProduceVideoFrame(video_frame_);
+  }
+
+  void ChangeDimensions(int width, int height) {
+    frame_buffer_.reset(new uint8[width * height]);
+    InitializeFrame(frame_buffer_.get(), width, &yuv_frame_);
+    codec_context_.width = width;
+    codec_context_.height = height;
   }
 
  public:
@@ -193,14 +226,6 @@ TEST_F(FFmpegVideoDecodeEngineTest, Initialize_OpenDecoderFails) {
   EXPECT_FALSE(info_.success);
 }
 
-ACTION_P2(DemuxComplete, engine, buffer) {
-  engine->ConsumeVideoSample(buffer);
-}
-
-ACTION_P(DecodeComplete, decoder) {
-  decoder->video_frame_ = arg0;
-}
-
 TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_Normal) {
   Initialize();
 
@@ -211,18 +236,8 @@ TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_Normal) {
   yuv_frame_.repeat_pict = 1;
   yuv_frame_.reordered_opaque = kTimestamp.InMicroseconds();
 
-  // Expect a bunch of avcodec calls.
-  EXPECT_CALL(mock_ffmpeg_, AVInitPacket(_));
-  EXPECT_CALL(mock_ffmpeg_,
-              AVCodecDecodeVideo2(&codec_context_, &yuv_frame_, _, _))
-      .WillOnce(DoAll(SetArgumentPointee<2>(1),  // Simulate 1 byte frame.
-                      Return(0)));
-
-  EXPECT_CALL(*this, ProduceVideoSample(_))
-      .WillOnce(DemuxComplete(test_engine_.get(), buffer_));
-  EXPECT_CALL(*this, ConsumeVideoFrame(_))
-      .WillOnce(DecodeComplete(this));
-  test_engine_->ProduceVideoFrame(video_frame_);
+  // Simulate decoding a single frame.
+  Decode();
 
   // |video_frame_| timestamp is 0 because we set the timestamp based off
   // the buffer timestamp.
@@ -270,6 +285,30 @@ TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_DecodeError) {
   test_engine_->ProduceVideoFrame(video_frame_);
 
   EXPECT_FALSE(video_frame_.get());
+}
+
+TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_LargerWidth) {
+  Initialize();
+  ChangeDimensions(kWidth * 2, kHeight);
+  Decode();
+}
+
+TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_SmallerWidth) {
+  Initialize();
+  ChangeDimensions(kWidth / 2, kHeight);
+  Decode();
+}
+
+TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_LargerHeight) {
+  Initialize();
+  ChangeDimensions(kWidth, kHeight * 2);
+  Decode();
+}
+
+TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_SmallerHeight) {
+  Initialize();
+  ChangeDimensions(kWidth, kHeight / 2);
+  Decode();
 }
 
 TEST_F(FFmpegVideoDecodeEngineTest, GetSurfaceFormat) {
