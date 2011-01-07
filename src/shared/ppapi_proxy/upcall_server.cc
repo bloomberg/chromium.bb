@@ -34,30 +34,15 @@ static void PPB_Core_CallOnMainThreadDispatcher(
       rpc,
       done,
       inputs[0]->u.ival,
-      inputs[1]->u.ival
-  );
-}
-
-static void PPB_Graphics2D_FlushDispatcher(
-    NaClSrpcRpc* rpc,
-    NaClSrpcArg** inputs,
-    NaClSrpcArg** outputs,
-    NaClSrpcClosure* done
-) {
-  PppUpcallRpcServer::PPB_Graphics2D_Flush(
-      rpc,
-      done,
-      inputs[0]->u.lval,
       inputs[1]->u.ival,
-      &(outputs[0]->u.ival)
+      inputs[2]->u.ival
   );
 }
 
 }  // namespace
 
 NaClSrpcHandlerDesc PpbUpcalls::srpc_methods[] = {
-  { "PPB_Core_CallOnMainThread:ii:", PPB_Core_CallOnMainThreadDispatcher },
-  { "PPB_Graphics2D_Flush:li:i", PPB_Graphics2D_FlushDispatcher },
+  { "PPB_Core_CallOnMainThread:iii:", PPB_Core_CallOnMainThreadDispatcher },
   { NULL, NULL }
 };
 

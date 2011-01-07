@@ -246,6 +246,12 @@ class PpbGraphics2DRpcServer {
       NaClSrpcClosure* done,
       PP_Resource graphics_2d,
       PP_Resource image);
+  static void PPB_Graphics2D_Flush(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource graphics_2d,
+      int32_t callback_id,
+      int32_t* pp_error);
 
  private:
   PpbGraphics2DRpcServer();

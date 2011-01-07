@@ -23,29 +23,15 @@
 
 NaClSrpcError PppUpcallRpcClient::PPB_Core_CallOnMainThread(
     NaClSrpcChannel* channel,
-    int32_t closure_number,
-    int32_t delay_in_milliseconds)  {
+    int32_t delay_in_milliseconds,
+    int32_t callback_id,
+    int32_t result)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "PPB_Core_CallOnMainThread:ii:",
-      closure_number,
-      delay_in_milliseconds
-  );
-  return retval;
-}
-
-NaClSrpcError PppUpcallRpcClient::PPB_Graphics2D_Flush(
-    NaClSrpcChannel* channel,
-    int64_t device_context,
-    int32_t callback_index,
-    int32_t* result)  {
-  NaClSrpcError retval;
-  retval = NaClSrpcInvokeBySignature(
-      channel,
-      "PPB_Graphics2D_Flush:li:i",
-      device_context,
-      callback_index,
+      "PPB_Core_CallOnMainThread:iii:",
+      delay_in_milliseconds,
+      callback_id,
       result
   );
   return retval;

@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This file declares the RPC methods used to implement PPB_Core calls from
-# the plugin.  The functions are described in ppapi/c/ppb_core.h.
+# RPC methods used to implement PPB_Core interface.
+# See ppapi/c/ppb_core.h for interface details.
 {
  'name': 'PpbCoreRpc',
  'rpcs': [
@@ -28,13 +28,18 @@
                      ],
            'outputs': []
           },
+
           # MemAlloc and MemFree do not require RPCs to the browser.
+
           # Implements calls to get the time.
           {'name': 'PPB_Core_GetTime',
            'inputs': [],
            'outputs': [['time', 'double'],
                       ]
           },
-          # CallOnMainThread is done on a different channel.
+
+          # CallOnMainThread is handled on an upcall channel.
+
+          # IsMainThread does not require PRCs to the browser.
          ]
 }

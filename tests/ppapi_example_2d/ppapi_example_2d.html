@@ -6,11 +6,20 @@
     <META HTTP-EQUIV="Pragma" CONTENT="no-cache" />
     <META HTTP-EQUIV="Expires" CONTENT="-1" />
   </head>
+  <h1>Native Client PPAPI Graphics2D</h1>
   <body>
     <embed id="naclModule"
       name="naclModule"
       width=400 height=400
       src="ppapi_example_2d.nexe"
+      style="background-color:gray"
       type="application/x-ppapi-nacl-srpc" />
+    <br>Resize the window for repaint to trigger.<br>
+    <table>
+      <tr> <td align="center"> <em> Legend </em>
+      <tr> <td align="center" style="background-color:blue">Test passed
+      <tr> <td align="center" style="background-color:gray">Test failed
+    </table>
+
   </body>
 </html>

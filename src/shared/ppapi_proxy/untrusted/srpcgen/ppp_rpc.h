@@ -98,7 +98,7 @@ class ObjectStubRpcServer {
 
 class CompletionCallbackRpcServer {
  public:
-  static void InvokeCompletionCallback(
+  static void RunCompletionCallback(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       int32_t callback_id,

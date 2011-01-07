@@ -1,6 +1,18 @@
 // Copyright (c) 2010 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+//
+// This is an early draft of background thread support.
+// Until it is complete, we assume that all functions proxy functions
+// (but CallOnMainThread) are called on the main thread.
+//
+// WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+//
+// Support for "upcalls" -- RPCs to the browser that are done from other than
+// the main thread.  These calls are synchronized by the ppapi_proxy library
+// at the plugin end.
 
 #include "native_client/src/shared/ppapi_proxy/browser_upcall.h"
 
@@ -20,14 +32,8 @@
 #include "ppapi/c/ppb_core.h"
 #include "srpcgen/upcall.h"
 
-// Support for "upcalls" -- RPCs to the browser that are done from other than
-// the main thread.  These calls are synchronized by the ppapi_proxy library
-// at the plugin end.
-
 using nacl::DescWrapper;
 using nacl::DescWrapperFactory;
-using ppapi_proxy::RemoteCallbackInfo;
-using ppapi_proxy::InvokeRemoteCallback;
 
 namespace {
 
@@ -83,44 +89,3 @@ DescWrapper* BrowserUpcall::Start(struct NaClThread* nacl_thread,
 }
 
 }  // namespace ppapi_proxy
-
-// Implementation of the upcall RPC service.
-
-void PppUpcallRpcServer::PPB_Core_CallOnMainThread(
-    NaClSrpcRpc* rpc,
-    NaClSrpcClosure* done,
-    int32_t closure_number,
-    int32_t delay_in_milliseconds) {
-  NaClSrpcClosureRunner runner(done);
-  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  // The upcall channel's server_instance_data member is initialized to point
-  // to the main channel for this instance.  Here it is retrieved to use in
-  // constructing a RemoteCallbackInfo.
-  NaClSrpcChannel* main_srpc_channel =
-      reinterpret_cast<NaClSrpcChannel*>(rpc->channel->server_instance_data);
-  // Create a PP_CompletionCallback to place on the main thread.
-  // Ownership of user_data is transferred via the closure to the main thread.
-  RemoteCallbackInfo* remote_callback_info = new RemoteCallbackInfo;
-  remote_callback_info->main_srpc_channel = main_srpc_channel;
-  remote_callback_info->callback_index = static_cast<uint32_t>(closure_number);
-  PP_CompletionCallback completion_callback =
-      PP_MakeCompletionCallback(InvokeRemoteCallback, remote_callback_info);
-  // Enqueue the closure.
-  ppapi_proxy::PPBCoreInterface()->CallOnMainThread(delay_in_milliseconds,
-                                                    completion_callback,
-                                                    0);
-  rpc->result = NACL_SRPC_RESULT_OK;
-}
-
-void PppUpcallRpcServer::PPB_Graphics2D_Flush(NaClSrpcRpc* rpc,
-                                              NaClSrpcClosure* done,
-                                              int64_t device_context,
-                                              int32_t callback_index,
-                                              int32_t* result) {
-  NaClSrpcClosureRunner runner(done);
-  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  UNREFERENCED_PARAMETER(device_context);
-  UNREFERENCED_PARAMETER(callback_index);
-  UNREFERENCED_PARAMETER(result);
-  NACL_UNIMPLEMENTED();
-}

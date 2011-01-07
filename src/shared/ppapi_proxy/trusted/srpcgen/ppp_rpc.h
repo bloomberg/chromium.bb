@@ -89,7 +89,7 @@ class ObjectStubRpcClient {
 
 class CompletionCallbackRpcClient {
  public:
-  static NaClSrpcError InvokeCompletionCallback(
+  static NaClSrpcError RunCompletionCallback(
       NaClSrpcChannel* channel,
       int32_t callback_id,
       int32_t result);

@@ -285,7 +285,7 @@ NaClSrpcError PpbAudioDevRpcClient::PPB_Audio_Dev_StartPlayback(
 
 NaClSrpcError PpbAudioConfigDevRpcClient::PPB_AudioConfig_Dev_CreateStereo16Bit(
     NaClSrpcChannel* channel,
-    PP_Module module,
+    PP_Instance instance,
     int32_t sample_rate,
     int32_t sample_frame_count,
     PP_Resource* resource)  {
@@ -293,7 +293,7 @@ NaClSrpcError PpbAudioConfigDevRpcClient::PPB_AudioConfig_Dev_CreateStereo16Bit(
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_AudioConfig_Dev_CreateStereo16Bit:lii:l",
-      module,
+      instance,
       sample_rate,
       sample_frame_count,
       resource
@@ -409,7 +409,7 @@ NaClSrpcError PpbCoreRpcClient::PPB_Core_GetTime(
 
 NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_Create(
     NaClSrpcChannel* channel,
-    PP_Module module,
+    PP_Instance instance,
     nacl_abi_size_t size_bytes, char* size,
     int32_t is_always_opaque,
     PP_Resource* resource)  {
@@ -417,7 +417,7 @@ NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_Create(
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_Graphics2D_Create:lCi:l",
-      module,
+      instance,
       size_bytes, size,
       is_always_opaque,
       resource
@@ -505,6 +505,22 @@ NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_ReplaceContents(
   return retval;
 }
 
+NaClSrpcError PpbGraphics2DRpcClient::PPB_Graphics2D_Flush(
+    NaClSrpcChannel* channel,
+    PP_Resource graphics_2d,
+    int32_t callback_id,
+    int32_t* pp_error)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_Graphics2D_Flush:li:i",
+      graphics_2d,
+      callback_id,
+      pp_error
+  );
+  return retval;
+}
+
 NaClSrpcError PpbImageDataRpcClient::PPB_ImageData_GetNativeImageDataFormat(
     NaClSrpcChannel* channel,
     int32_t* format)  {
@@ -533,7 +549,7 @@ NaClSrpcError PpbImageDataRpcClient::PPB_ImageData_IsImageDataFormatSupported(
 
 NaClSrpcError PpbImageDataRpcClient::PPB_ImageData_Create(
     NaClSrpcChannel* channel,
-    PP_Module module,
+    PP_Instance instance,
     int32_t format,
     nacl_abi_size_t size_bytes, char* size,
     int32_t init_to_zero,
@@ -542,7 +558,7 @@ NaClSrpcError PpbImageDataRpcClient::PPB_ImageData_Create(
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_ImageData_Create:liCi:l",
-      module,
+      instance,
       format,
       size_bytes, size,
       init_to_zero,

@@ -19,8 +19,8 @@ namespace ppapi_proxy {
 
 class BrowserPpp {
  public:
-  explicit BrowserPpp(NaClSrpcChannel* channel)
-      : channel_(channel), plugin_pid_(0) {}
+  explicit BrowserPpp(NaClSrpcChannel* main_channel)
+      : main_channel_(main_channel), plugin_pid_(0) {}
   ~BrowserPpp() {}
 
   int32_t InitializeModule(PP_Module module_id,
@@ -29,12 +29,12 @@ class BrowserPpp {
   void ShutdownModule();
   const void* GetInterface(const char* interface_name);
 
-  NaClSrpcChannel* channel() const { return channel_; }
+  NaClSrpcChannel* main_channel() const { return main_channel_; }
   int plugin_pid() const { return plugin_pid_; }
 
  private:
-  // The SRPC channel used to communicate with the plugin.
-  NaClSrpcChannel* channel_;
+  // The "main" SRPC channel used to communicate with the plugin.
+  NaClSrpcChannel* main_channel_;
   // The PID of the plugin.
   int plugin_pid_;
   // The thread used to handle CallOnMainThread, etc.

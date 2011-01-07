@@ -21,13 +21,9 @@ class PppUpcallRpcClient {
  public:
   static NaClSrpcError PPB_Core_CallOnMainThread(
       NaClSrpcChannel* channel,
-      int32_t closure_number,
-      int32_t delay_in_milliseconds);
-  static NaClSrpcError PPB_Graphics2D_Flush(
-      NaClSrpcChannel* channel,
-      int64_t device_context,
-      int32_t callback_index,
-      int32_t* result);
+      int32_t delay_in_milliseconds,
+      int32_t callback_id,
+      int32_t result);
 
  private:
   PppUpcallRpcClient();

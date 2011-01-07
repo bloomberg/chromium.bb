@@ -1,12 +1,20 @@
 // Copyright (c) 2010 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-#include "native_client/src/include/portability.h"
-
+//
+// WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+//
+// This is an early draft of background thread support.
+// Until it is complete, we assume that all functions proxy functions
+// (but CallOnMainThread) are called on the main thread.
+//
+// WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+//
 // Support for "upcalls" -- RPCs to the browser that are done from other than
 // the PPAPI main thread.  These calls are synchronized by the ppapi_proxy
 // library at the plugin end.
+
+#include "native_client/src/include/portability.h"
 
 struct NaClSrpcChannel;
 struct NaClThread;

@@ -1,20 +1,25 @@
 // Copyright (c) 2010 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// SRPC-abstraction wrappers around PPB_Core functions.
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
+#include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/ppapi_proxy/browser_callback.h"
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
+#include "ppapi/c/pp_completion_callback.h"
 #include "srpcgen/ppb_rpc.h"
+#include "srpcgen/upcall.h"
 
-//
-// The following methods are the SRPC dispatchers for ppapi/c/ppb_core.h.
-//
+using ppapi_proxy::PPBCoreInterface;
 
 void PpbCoreRpcServer::PPB_Core_AddRefResource(NaClSrpcRpc* rpc,
                                                NaClSrpcClosure* done,
                                                PP_Resource resource) {
   NaClSrpcClosureRunner runner(done);
-  ppapi_proxy::PPBCoreInterface()->AddRefResource(resource);
+  PPBCoreInterface()->AddRefResource(resource);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -22,7 +27,7 @@ void PpbCoreRpcServer::PPB_Core_ReleaseResource(NaClSrpcRpc* rpc,
                                                 NaClSrpcClosure* done,
                                                 PP_Resource resource) {
   NaClSrpcClosureRunner runner(done);
-  ppapi_proxy::PPBCoreInterface()->ReleaseResource(resource);
+  PPBCoreInterface()->ReleaseResource(resource);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -33,7 +38,7 @@ void PpbCoreRpcServer::PPB_Core_GetTime(NaClSrpcRpc* rpc,
                                         NaClSrpcClosure* done,
                                         double* time) {
   NaClSrpcClosureRunner runner(done);
-  *time = ppapi_proxy::PPBCoreInterface()->GetTime();
+  *time = PPBCoreInterface()->GetTime();
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -44,13 +49,26 @@ void PpbCoreRpcServer::ReleaseResourceMultipleTimes(NaClSrpcRpc* rpc,
                                                     int32_t count) {
   NaClSrpcClosureRunner runner(done);
   while (count--)
-    ppapi_proxy::PPBCoreInterface()->ReleaseResource(resource);
+    PPBCoreInterface()->ReleaseResource(resource);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
+void PppUpcallRpcServer::PPB_Core_CallOnMainThread(
+    NaClSrpcRpc* rpc,
+    NaClSrpcClosure* done,
+    int32_t delay_in_milliseconds,
+    int32_t callback_id,
+    int32_t result) {
+  NACL_UNTESTED();
+  CHECK(!PPBCoreInterface()->IsMainThread());
+  NaClSrpcClosureRunner runner(done);
+  PP_CompletionCallback remote_callback_on_main =
+      ppapi_proxy::MakeRemoteCompletionCallback(
+          ppapi_proxy::GetMainSrpcChannel(rpc), callback_id);
+  PPBCoreInterface()->CallOnMainThread(
+      delay_in_milliseconds, remote_callback_on_main, result);
+  rpc->result = NACL_SRPC_RESULT_OK;
+}
 
-// CallOnMainThread is handled on the upcall thread, where another RPC service
-// is exported.
-//
 // IsMainThread is handled locally to the plugin, and does not need a browser
 // stub.

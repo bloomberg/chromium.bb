@@ -175,14 +175,14 @@ static void DeallocateDispatcher(
   );
 }
 
-static void InvokeCompletionCallbackDispatcher(
+static void RunCompletionCallbackDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
     NaClSrpcArg** outputs,
     NaClSrpcClosure* done
 ) {
   UNREFERENCED_PARAMETER(outputs);
-  CompletionCallbackRpcServer::InvokeCompletionCallback(
+  CompletionCallbackRpcServer::RunCompletionCallback(
       rpc,
       done,
       inputs[0]->u.ival,
@@ -371,7 +371,7 @@ NaClSrpcHandlerDesc PppRpcs::srpc_methods[] = {
   { "Call:CCiCC:CC", CallDispatcher },
   { "Construct:CiCC:CC", ConstructDispatcher },
   { "Deallocate:C:", DeallocateDispatcher },
-  { "InvokeCompletionCallback:ii:", InvokeCompletionCallbackDispatcher },
+  { "RunCompletionCallback:ii:", RunCompletionCallbackDispatcher },
   { "PPP_InitializeModule:ilhs:ii", PPP_InitializeModuleDispatcher },
   { "PPP_ShutdownModule::", PPP_ShutdownModuleDispatcher },
   { "PPP_GetInterface:s:i", PPP_GetInterfaceDispatcher },

@@ -17,6 +17,7 @@
 #include "ppapi/c/ppb_url_request_info.h"
 #include "ppapi/c/ppb_url_response_info.h"
 
+struct NaClSrpcRpc;
 struct NaClSrpcChannel;
 
 namespace ppapi_proxy {
@@ -48,6 +49,10 @@ void SetModuleIdForSrpcChannel(NaClSrpcChannel* channel, PP_Module module_id);
 void UnsetModuleIdForSrpcChannel(NaClSrpcChannel* channel);
 // Looks up the association with a given channel.
 PP_Module LookupModuleIdForSrpcChannel(NaClSrpcChannel* channel);
+
+// Helpers for getting a pointer to the "main channel" for a specific nexe.
+NaClSrpcChannel* GetMainSrpcChannel(NaClSrpcRpc* upcall_rpc);
+NaClSrpcChannel* GetMainSrpcChannel(PP_Instance);
 
 // Support for getting PPB_ browser interfaces.
 // Safe version CHECK's for NULL.

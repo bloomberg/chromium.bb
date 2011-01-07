@@ -197,14 +197,14 @@ NaClSrpcError ObjectStubRpcClient::Deallocate(
   return retval;
 }
 
-NaClSrpcError CompletionCallbackRpcClient::InvokeCompletionCallback(
+NaClSrpcError CompletionCallbackRpcClient::RunCompletionCallback(
     NaClSrpcChannel* channel,
     int32_t callback_id,
     int32_t result)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "InvokeCompletionCallback:ii:",
+      "RunCompletionCallback:ii:",
       callback_id,
       result
   );

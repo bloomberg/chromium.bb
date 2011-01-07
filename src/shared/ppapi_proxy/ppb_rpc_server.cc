@@ -483,6 +483,21 @@ static void PPB_Graphics2D_ReplaceContentsDispatcher(
   );
 }
 
+static void PPB_Graphics2D_FlushDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbGraphics2DRpcServer::PPB_Graphics2D_Flush(
+      rpc,
+      done,
+      inputs[0]->u.lval,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
 static void PPB_ImageData_GetNativeImageDataFormatDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -786,6 +801,7 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_Graphics2D_PaintImageData:llCC:", PPB_Graphics2D_PaintImageDataDispatcher },
   { "PPB_Graphics2D_Scroll:lCC:", PPB_Graphics2D_ScrollDispatcher },
   { "PPB_Graphics2D_ReplaceContents:ll:", PPB_Graphics2D_ReplaceContentsDispatcher },
+  { "PPB_Graphics2D_Flush:li:i", PPB_Graphics2D_FlushDispatcher },
   { "PPB_ImageData_GetNativeImageDataFormat::i", PPB_ImageData_GetNativeImageDataFormatDispatcher },
   { "PPB_ImageData_IsImageDataFormatSupported:i:i", PPB_ImageData_IsImageDataFormatSupportedDispatcher },
   { "PPB_ImageData_Create:liCi:l", PPB_ImageData_CreateDispatcher },

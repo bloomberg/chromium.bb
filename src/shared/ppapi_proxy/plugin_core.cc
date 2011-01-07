@@ -25,10 +25,9 @@ using ppapi_proxy::DebugPrintf;
 // so no locking is done.
 
 namespace {
-#ifdef __native_client__
+
 __thread bool is_main_thread = false;
 bool main_thread_marked = false;
-#endif  // __native_client__
 
 // Increment the reference count for a specified resource.  This only takes
 // care of the plugin's reference count - the Resource should obtain the
@@ -85,28 +84,22 @@ PP_TimeTicks GetTimeTicks() {
   }
 }
 
+PP_Bool IsMainThread() {
+  DebugPrintf("PPB_Core::IsMainThread\n");
+  return pp::BoolToPPBool(is_main_thread);
+}
+
 void CallOnMainThread(int32_t delay_in_milliseconds,
                       PP_CompletionCallback callback,
                       int32_t result) {
-  UNREFERENCED_PARAMETER(callback);
-  DebugPrintf("PPB_Core::CallOnMainThread: delay=%" NACL_PRIu32
-              ", result=%" NACL_PRIu32 "\n",
-              delay_in_milliseconds,
-              result);
+  NACL_UNTESTED();
+  CHECK(!IsMainThread());  // TODO(polina): define such behavior.
+  DebugPrintf("PPB_Core::CallOnMainThread: "
+              "delay=%"NACL_PRIu32" result=%"NACL_PRIu32 "\n",
+              delay_in_milliseconds, result);
   ppapi_proxy::PluginUpcallCoreCallOnMainThread(delay_in_milliseconds,
                                                 callback,
                                                 result);
-}
-
-PP_Bool IsMainThread() {
-  DebugPrintf("PPB_Core::IsMainThread\n");
-#ifdef __native_client__
-  return pp::BoolToPPBool(is_main_thread);
-#else
-  // TODO(polina): implement this for trusted clients if needed.
-  NACL_UNIMPLEMENTED();
-  return PP_TRUE;
-#endif  // __native_client__
 }
 
 }  // namespace
@@ -128,7 +121,6 @@ const PPB_Core* PluginCore::GetInterface() {
 }
 
 void PluginCore::MarkMainThread() {
-#ifdef __native_client__
   if (main_thread_marked) {
     // A main thread was already designated.  Fail.
     NACL_NOTREACHED();
@@ -139,7 +131,6 @@ void PluginCore::MarkMainThread() {
     // published before other threads might attempt to call it.
     main_thread_marked = true;
   }
-#endif  // __native_client__
 }
 
 

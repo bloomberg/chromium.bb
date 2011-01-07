@@ -34,7 +34,7 @@ int32_t BrowserPpp::InitializeModule(
   SetPPBGetInterface(get_browser_interface);
   SetBrowserPppForInstance(instance, this);
   nacl::scoped_ptr<nacl::DescWrapper> wrapper(
-      BrowserUpcall::Start(&upcall_thread_, channel_));
+      BrowserUpcall::Start(&upcall_thread_, main_channel_));
   if (wrapper.get() == NULL) {
     return PP_ERROR_FAILED;
   }
@@ -53,14 +53,14 @@ int32_t BrowserPpp::InitializeModule(
     return PP_ERROR_FAILED;
   }
   // Export the service on the channel.
-  channel_->server = service;
+  main_channel_->server = service;
   char* service_string = const_cast<char*>(service->service_string);
-  SetModuleIdForSrpcChannel(channel_, module_id);
+  SetModuleIdForSrpcChannel(main_channel_, module_id);
   // Do the RPC.
   int32_t browser_pid = static_cast<int32_t>(GETPID());
   int32_t success;
   NaClSrpcError retval =
-      PppRpcClient::PPP_InitializeModule(channel_,
+      PppRpcClient::PPP_InitializeModule(main_channel_,
                                          browser_pid,
                                          module_id,
                                          wrapper->desc(),
@@ -77,16 +77,16 @@ int32_t BrowserPpp::InitializeModule(
 
 void BrowserPpp::ShutdownModule() {
   DebugPrintf("PPP_ShutdownModule\n");
-  PppRpcClient::PPP_ShutdownModule(channel_);
+  PppRpcClient::PPP_ShutdownModule(main_channel_);
   NaClThreadJoin(&upcall_thread_);
-  UnsetModuleIdForSrpcChannel(channel_);
+  UnsetModuleIdForSrpcChannel(main_channel_);
 }
 
 const void* BrowserPpp::GetInterface(const char* interface_name) {
   DebugPrintf("PPP_GetInterface('%s')\n", interface_name);
   int32_t exports_interface_name;
   NaClSrpcError retval =
-      PppRpcClient::PPP_GetInterface(channel_,
+      PppRpcClient::PPP_GetInterface(main_channel_,
                                      const_cast<char*>(interface_name),
                                      &exports_interface_name);
   if (retval != NACL_SRPC_RESULT_OK || !exports_interface_name) {

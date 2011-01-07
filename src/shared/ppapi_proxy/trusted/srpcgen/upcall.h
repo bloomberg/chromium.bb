@@ -22,14 +22,9 @@ class PppUpcallRpcServer {
   static void PPB_Core_CallOnMainThread(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
-      int32_t closure_number,
-      int32_t delay_in_milliseconds);
-  static void PPB_Graphics2D_Flush(
-      NaClSrpcRpc* rpc,
-      NaClSrpcClosure* done,
-      int64_t device_context,
-      int32_t callback_index,
-      int32_t* result);
+      int32_t delay_in_milliseconds,
+      int32_t callback_id,
+      int32_t result);
 
  private:
   PppUpcallRpcServer();

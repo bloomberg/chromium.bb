@@ -8,30 +8,22 @@
 #include "native_client/src/include/portability.h"
 
 struct NaClSrpcChannel;
+struct PP_CompletionCallback;
 
 namespace ppapi_proxy {
 
-// Data used in the trusted-side of the wire to invoke a completion callback
-// on main thread of the untrusted (nexe) side.
-//
-// The channel will always be the "main channel", the one listened to by the
-// main thread of a nexe.  We need to remember the channel in this data
-// structure because (for the present at least) there is one nexe (and hence
-// one instance of sel_ldr and one channel) per embed tag.
+// Returns a PP_CompletionCallback that will call the remote implementation of
+// a callback by |callback_id| on the plugin side on |srpc_channel|.
+// Allocates data that will be deleted by the underlying callback function.
+// Returns NULL callback on failure.
+struct PP_CompletionCallback MakeRemoteCompletionCallback(
+    NaClSrpcChannel* srpc_channel,
+    int32_t callback_id);
 
-struct RemoteCallbackInfo {
- public:
-  NaClSrpcChannel* main_srpc_channel;
-  int32_t callback_index;
-};
-
-// Calls the remote implementation of a callback.  Callback_info is a pointer
-// to an instance of RemoteCallbackInfo, which is deleted when this is invoked.
-// This method parallels PP_RunCompletionCallback, and res is used to indicate
-// failure (if negative) or success (otherwise).
-void InvokeRemoteCallback(void* remote_callback_info, int32_t res);
+// If the callback won't be called, use this to clean up the data from
+// the function above.
+void DeleteRemoteCallbackInfo(struct PP_CompletionCallback callback);
 
 }  // namespace ppapi_proxy
 
 #endif  // NATIVE_CLIENT_SRC_SHARED_PPAPI_PROXY_BROWSER_CALLBACK_H_
-

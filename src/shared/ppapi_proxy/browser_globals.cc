@@ -7,8 +7,9 @@
 #include <map>
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_check.h"
+#include "native_client/src/shared/ppapi_proxy/browser_ppp.h"
 #include "native_client/src/shared/ppapi_proxy/utility.h"
-
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 
 namespace ppapi_proxy {
 
@@ -16,7 +17,6 @@ namespace ppapi_proxy {
 // thread.
 
 const PP_Resource kInvalidResourceId = 0;
-
 
 namespace {
 
@@ -91,6 +91,18 @@ PP_Module LookupModuleIdForSrpcChannel(NaClSrpcChannel* channel) {
     return NULL;
   }
   return (*channel_to_module_id_map)[channel];
+}
+
+NaClSrpcChannel* GetMainSrpcChannel(NaClSrpcRpc* upcall_rpc) {
+  // The upcall channel's server_instance_data member is initialized to point
+  // to the main channel for this instance.  Here it is retrieved to use in
+  // constructing a RemoteCallbackInfo.
+  return reinterpret_cast<NaClSrpcChannel*>(
+      upcall_rpc->channel->server_instance_data);
+}
+
+NaClSrpcChannel* GetMainSrpcChannel(PP_Instance instance) {
+  return LookupBrowserPppForInstance(instance)->main_channel();
 }
 
 void SetPPBGetInterface(PPB_GetInterface get_interface_function) {

@@ -2,14 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This file declares the RPC methods that support calls from the browser to
-# the module.
+# RPC method that supports invocation of plugin-side callbacks from the browser.
 {
  'name': 'CompletionCallbackRpc',
  'rpcs': [
-          # The ppapi_proxy plugin has already created a closure, and requests
-          # a callback from the browser on the PPAPI main thread.
-          {'name': 'InvokeCompletionCallback',
+          {'name': 'RunCompletionCallback',
            'inputs': [['callback_id', 'int32_t'],
                       ['result', 'int32_t'],
                      ],

@@ -78,12 +78,9 @@ void StreamCreatedCallback(void* user_data, int32_t result) {
       factory.ImportSyncSocketHandle(nacl_sync_handle));
   NaClDesc *nacl_shm = NaClDescRef(shm_wrapper->desc());
   NaClDesc *nacl_socket = NaClDescRef(socket_wrapper->desc());
-  ppapi_proxy::BrowserPpp* browser =
-      ppapi_proxy::LookupBrowserPppForInstance(data->instance_id);
-  NaClSrpcChannel* channel = browser->channel();
   int r;
   r = PppAudioDevRpcClient::PPP_Audio_Dev_StreamCreated(
-      channel,
+      ppapi_proxy::GetMainSrpcChannel(data->instance_id),
       data->audio_id,
       nacl_shm,
       shared_memory_size,
