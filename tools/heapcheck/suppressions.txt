@@ -1183,7 +1183,7 @@
    fun:ResourceDispatcherHost::OnResponseStarted
    fun:net::URLRequest::ResponseStarted
    fun:net::URLRequest*Job::NotifyHeadersComplete
-   fun:URLRequestTestJob::StartAsync
+   fun:net::URLRequestTestJob::StartAsync
    fun:void DispatchToMethod
    fun:RunnableMethod::Run
    fun:MessageLoop::RunTask
