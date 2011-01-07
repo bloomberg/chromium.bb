@@ -26,6 +26,7 @@
 #include "ui/base/animation/animation_delegate.h"
 #include "webkit/glue/window_open_disposition.h"
 
+class AccessibleWidgetHelper;
 class AutocompleteEditController;
 class AutocompleteEditModel;
 class AutocompletePopupView;
@@ -74,19 +75,15 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
                           CommandUpdater* command_updater,
                           bool popup_window_mode,
 #if defined(TOOLKIT_VIEWS)
-                          const views::View* location_bar);
+                          const views::View* location_bar
 #else
-                          GtkWidget* location_bar);
+                          GtkWidget* location_bar
 #endif
-  ~AutocompleteEditViewGtk();
+                          );
+  virtual ~AutocompleteEditViewGtk();
 
   // Initialize, create the underlying widgets, etc.
   void Init();
-
-  // Returns the width in pixels needed to display the current text. The
-  // returned value includes margins.
-  int TextWidth();
-
   // Returns the width in pixels needed to display the text from one character
   // before the caret to the end of the string. See comments in
   // LocationBarView::Layout as to why this uses -1.
@@ -146,6 +143,27 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   virtual bool OnAfterPossibleChange();
   virtual gfx::NativeView GetNativeView() const;
   virtual CommandUpdater* GetCommandUpdater();
+#if defined(TOOLKIT_VIEWS)
+  virtual views::View* AddToView(views::View* parent);
+  virtual bool CommitInstantSuggestion(const std::wstring& typed_text,
+                                       const std::wstring& suggested_text);
+  virtual void SetInstantSuggestion(const string16& suggestion);
+
+  // Enables accessibility on AutocompleteEditView.
+  void EnableAccessibility();
+
+  // A factory method to create an AutocompleteEditView instance initialized for
+  // linux_views.  This currently returns an instance of
+  // AutocompleteEditViewGtk only, but AutocompleteEditViewViews will
+  // be added as an option when TextfieldViews is enabled.
+  static AutocompleteEditView* Create(AutocompleteEditController* controller,
+                                      ToolbarModel* toolbar_model,
+                                      Profile* profile,
+                                      CommandUpdater* command_updater,
+                                      bool popup_window_mode,
+                                      const views::View* location_bar);
+#endif
+  virtual int TextWidth() const;
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
@@ -516,6 +534,10 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   GtkWidget* going_to_focus_;
 
   GtkSignalRegistrar signals_;
+
+#if defined(TOOLKIT_VIEWS)
+  scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteEditViewGtk);
 };

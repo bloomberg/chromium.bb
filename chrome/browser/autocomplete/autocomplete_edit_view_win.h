@@ -74,10 +74,6 @@ class AutocompleteEditViewWin
 
   views::View* parent_view() const { return parent_view_; }
 
-  // Returns the width in pixels needed to display the current text. The
-  // returned value includes margins.
-  int TextWidth();
-
   // Returns the width in pixels needed to display the text from one character
   // before the caret to the end of the string. See comments in
   // LocationBarView::Layout as to why this uses -1.
@@ -137,6 +133,12 @@ class AutocompleteEditViewWin
   virtual bool OnAfterPossibleChange();
   virtual gfx::NativeView GetNativeView() const;
   virtual CommandUpdater* GetCommandUpdater();
+  virtual views::View* AddToView(views::View* parent);
+  virtual bool CommitInstantSuggestion(const std::wstring& typed_text,
+                                       const std::wstring& suggested_text);
+  virtual void SetInstantSuggestion(const string16& suggestion);
+  virtual int TextWidth() const;
+
   int GetPopupMaxYCoordinate();
 
   // Exposes custom IAccessible implementation to the overall MSAA hierarchy.
@@ -401,10 +403,10 @@ class AutocompleteEditViewWin
   void TrackMousePosition(MouseButton button, const CPoint& point);
 
   // Returns the sum of the left and right margins.
-  int GetHorizontalMargin();
+  int GetHorizontalMargin() const;
 
   // Returns the width in pixels needed to display |text|.
-  int WidthNeededToDisplay(const std::wstring& text);
+  int WidthNeededToDisplay(const std::wstring& text) const;
 
   scoped_ptr<AutocompleteEditModel> model_;
 

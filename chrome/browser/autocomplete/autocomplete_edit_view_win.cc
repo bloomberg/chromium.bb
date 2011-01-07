@@ -498,10 +498,6 @@ AutocompleteEditViewWin::~AutocompleteEditViewWin() {
   g_paint_patcher.Pointer()->DerefPatch();
 }
 
-int AutocompleteEditViewWin::TextWidth() {
-  return WidthNeededToDisplay(GetText());
-}
-
 int AutocompleteEditViewWin::WidthOfTextAfterCursor() {
   CHARRANGE selection;
   GetSelection(selection);
@@ -911,6 +907,30 @@ gfx::NativeView AutocompleteEditViewWin::GetNativeView() const {
 
 CommandUpdater* AutocompleteEditViewWin::GetCommandUpdater() {
   return command_updater_;
+}
+
+views::View* AutocompleteEditViewWin::AddToView(views::View* parent) {
+  views::NativeViewHost* host = new views::NativeViewHost;
+  parent->AddChildView(host);
+  host->set_focus_view(parent);
+  host->Attach(GetNativeView());
+  return host;
+}
+
+bool AutocompleteEditViewWin::CommitInstantSuggestion(
+    const std::wstring& typed_text,
+    const std::wstring& suggested_text) {
+  model_->FinalizeInstantQuery(typed_text, suggested_text);
+  return true;
+}
+
+void AutocompleteEditViewWin::SetInstantSuggestion(const string16& suggestion) {
+  // Win shows the suggestion in LocationBarView.
+  NOTREACHED();
+}
+
+int AutocompleteEditViewWin::TextWidth() const {
+  return WidthNeededToDisplay(GetText());
 }
 
 void AutocompleteEditViewWin::PasteAndGo(const std::wstring& text) {
@@ -2570,7 +2590,7 @@ void AutocompleteEditViewWin::TrackMousePosition(MouseButton button,
   }
 }
 
-int AutocompleteEditViewWin::GetHorizontalMargin() {
+int AutocompleteEditViewWin::GetHorizontalMargin() const {
   RECT rect;
   GetRect(&rect);
   RECT client_rect;
@@ -2578,7 +2598,8 @@ int AutocompleteEditViewWin::GetHorizontalMargin() {
   return (rect.left - client_rect.left) + (client_rect.right - rect.right);
 }
 
-int AutocompleteEditViewWin::WidthNeededToDisplay(const std::wstring& text) {
+int AutocompleteEditViewWin::WidthNeededToDisplay(
+    const std::wstring& text) const {
   // Use font_.GetStringWidth() instead of
   // PosFromChar(location_entry_->GetTextLength()) because PosFromChar() is
   // apparently buggy. In both LTR UI and RTL UI with left-to-right layout,

@@ -162,28 +162,14 @@ void LocationBarView::Init() {
       GetWidget()->GetNativeView(), profile_, command_updater_,
       mode_ == POPUP, this));
 #else
-  location_entry_.reset(new AutocompleteEditViewGtk(this, model_, profile_,
-      command_updater_, mode_ == POPUP, this));
-  location_entry_->Init();
-  // Make all the children of the widget visible. NOTE: this won't display
-  // anything, it just toggles the visible flag.
-  gtk_widget_show_all(location_entry_->GetNativeView());
-  // Hide the widget. NativeViewHostGtk will make it visible again as
-  // necessary.
-  gtk_widget_hide(location_entry_->GetNativeView());
-
-  // Associate an accessible name with the location entry.
-  accessible_widget_helper_.reset(new AccessibleWidgetHelper(
-      location_entry_->text_view(), profile_));
-  accessible_widget_helper_->SetWidgetName(
-      location_entry_->text_view(),
-      l10n_util::GetStringUTF8(IDS_ACCNAME_LOCATION));
+  location_entry_.reset(
+      AutocompleteEditViewGtk::Create(
+          this, model_, profile_,
+          command_updater_, mode_ == POPUP, this));
 #endif
-  location_entry_view_ = new views::NativeViewHost;
+
+  location_entry_view_ = location_entry_->AddToView(this);
   location_entry_view_->SetID(VIEW_ID_AUTOCOMPLETE);
-  AddChildView(location_entry_view_);
-  location_entry_view_->set_focus_view(this);
-  location_entry_view_->Attach(location_entry_->GetNativeView());
   location_entry_view_->SetAccessibleName(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_LOCATION)));
 
@@ -785,17 +771,13 @@ bool LocationBarView::OnCommitSuggestedText(const std::wstring& typed_text) {
   InstantController* instant = delegate_->GetInstant();
   if (!instant)
     return false;
-
+  std::wstring suggestion;
 #if defined(OS_WIN)
   if (!HasValidSuggestText())
     return false;
-  location_entry_->model()->FinalizeInstantQuery(
-      typed_text,
-      suggested_text_view_->GetText());
-  return true;
-#else
-  return location_entry_->CommitInstantSuggestion();
+  suggestion = suggested_text_view_->GetText();
 #endif
+  return location_entry_->CommitInstantSuggestion(typed_text, suggestion);
 }
 
 bool LocationBarView::AcceptCurrentInstantPreview() {
@@ -847,9 +829,8 @@ void LocationBarView::OnAutocompleteAccept(
   }
 
   if (delegate_->GetInstant() &&
-      !location_entry_->model()->popup_model()->IsOpen()) {
+      !location_entry_->model()->popup_model()->IsOpen())
     delegate_->GetInstant()->DestroyPreviewContents();
-  }
 
   update_instant_ = true;
 }
@@ -1172,7 +1153,7 @@ void LocationBarView::SetSuggestedText(const string16& input) {
   Layout();
   SchedulePaint();
 #else
-  location_entry_->SetInstantSuggestion(UTF16ToUTF8(input));
+  location_entry_->SetInstantSuggestion(input);
 #endif
 }
 

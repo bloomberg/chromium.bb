@@ -25,9 +25,8 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/autocomplete/autocomplete_edit_view_win.h"
-#else
+#elif defined(OS_LINUX)
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
-#include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
 #endif
 
 class CommandUpdater;
@@ -330,7 +329,7 @@ class LocationBarView : public LocationBar,
 #if defined(OS_WIN)
   scoped_ptr<AutocompleteEditViewWin> location_entry_;
 #else
-  scoped_ptr<AutocompleteEditViewGtk> location_entry_;
+  scoped_ptr<AutocompleteEditView> location_entry_;
 #endif
 
   // The CommandUpdater for the Browser object that corresponds to this View.
@@ -364,8 +363,8 @@ class LocationBarView : public LocationBar,
   // A bubble displayed for EV HTTPS sites.
   EVBubbleView* ev_bubble_view_;
 
-  // Location_entry view wrapper
-  views::NativeViewHost* location_entry_view_;
+  // Location_entry view
+  views::View* location_entry_view_;
 
   // The following views are used to provide hints and remind the user as to
   // what is going in the edit. They are all added a children of the
@@ -408,10 +407,6 @@ class LocationBarView : public LocationBar,
   // because calling profile_->GetTemplateURLModel() in the destructor causes a
   // crash.
   TemplateURLModel* template_url_model_;
-
-#if defined(OS_LINUX)
-  scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
-#endif
 
   // Should instant be updated? This is set to false in OnAutocompleteWillAccept
   // and true in OnAutocompleteAccept. This is needed as prior to accepting an
