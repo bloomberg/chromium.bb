@@ -45,8 +45,12 @@ int __stdcall wWinMain(HINSTANCE instance, HINSTANCE, wchar_t* cmd_line,
   FilePath log_file = operating_dir.Append(kStandardLogFile);
 
   // Logging to a file with pid, tid and timestamp.
-  logging::InitLogging(log_file.value().c_str(), logging::LOG_ONLY_TO_FILE,
-                       logging::LOCK_LOG_FILE, logging::APPEND_TO_OLD_LOG_FILE);
+  logging::InitLogging(
+      log_file.value().c_str(),
+      logging::LOG_ONLY_TO_FILE,
+      logging::LOCK_LOG_FILE,
+      logging::APPEND_TO_OLD_LOG_FILE,
+      logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
   logging::SetLogItems(true, true, true, false);
 
   VLOG(1) << "session start. cmdline is [" << cmd_line << "]";
