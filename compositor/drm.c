@@ -121,9 +121,7 @@ drm_create_buffer(struct wl_client *client, struct wl_drm *drm_base,
 		EGL_NONE
 	};
 
-	if (visual != &compositor->compositor.argb_visual &&
-	    visual != &compositor->compositor.premultiplied_argb_visual &&
-	    visual != &compositor->compositor.rgb_visual) {
+	if (visual->object.interface != &wl_visual_interface) {
 		/* FIXME: Define a real exception event instead of
 		 * abusing this one */
 		wl_client_post_event(client,

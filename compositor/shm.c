@@ -92,9 +92,7 @@ shm_create_buffer(struct wl_client *client, struct wl_shm *shm,
 			     struct wlsc_compositor, shm);
 	struct wlsc_shm_buffer *buffer;
 
-	if (visual != &compositor->compositor.argb_visual &&
-	    visual != &compositor->compositor.premultiplied_argb_visual &&
-	    visual != &compositor->compositor.rgb_visual) {
+	if (visual->object.interface != &wl_visual_interface) {
 		/* FIXME: Define a real exception event instead of
 		 * abusing this one */
 		wl_client_post_event(client,
