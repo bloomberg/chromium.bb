@@ -188,8 +188,8 @@ bool ContentSettingDecoration::UpdateFromTabContents(
     bool has_animated_text =
         content_setting_image_model_->explanatory_string_id();
     // Check if the animation is enabled.
-    bool animation_enabled = CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableBlockContentAnimation);
+    bool animation_enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kDisableBlockContentAnimation);
     if (has_animated_text && animation_enabled && !animation_) {
       // Start animation, its timer will drive reflow. Note the text is
       // cached so it is not allowed to change during the animation.

@@ -95,8 +95,8 @@ void ContentSettingImageView::UpdateFromTabContents(TabContents* tab_contents) {
       content_setting_image_model_->explanatory_string_id();
   // Check if the animation is enabled and if the string for animation is
   // available.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableBlockContentAnimation) || !animated_string_id)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableBlockContentAnimation) || !animated_string_id)
     return;
 
   // Do not start animation if already in progress.
