@@ -11,6 +11,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/accessibility/browser_accessibility_state.h"
 #include "chrome/browser/background_page_tracker.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
@@ -732,6 +733,15 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
   }
   SkBitmap icon = *tp->GetBitmapNamed(id);
 
+#if defined(OS_WIN)
+  // Keep track of whether we were showing the badge before, so we don't send
+  // multiple UMA events for example when multiple Chrome windows are open.
+  static bool incompatibility_badge_showing = false;
+  // Save the old value before resetting it.
+  bool was_showing = incompatibility_badge_showing;
+  incompatibility_badge_showing = false;
+#endif
+
   bool add_badge = IsUpgradeRecommended() ||
                    ShouldShowIncompatibilityWarning() ||
                    ShouldShowBackgroundPageBadge();
@@ -753,7 +763,10 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
     badge = *tp->GetBitmapNamed(IDR_BACKGROUND_BADGE);
   } else if (ShouldShowIncompatibilityWarning()) {
 #if defined(OS_WIN)
+    if (!was_showing)
+      UserMetrics::RecordAction(UserMetricsAction("ConflictBadge"), profile_);
     badge = *tp->GetBitmapNamed(IDR_CONFLICT_BADGE);
+    incompatibility_badge_showing = true;
 #else
     NOTREACHED();
 #endif

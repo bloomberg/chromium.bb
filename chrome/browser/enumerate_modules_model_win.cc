@@ -842,19 +842,28 @@ void EnumerateModulesModel::DoneScanning() {
   HISTOGRAM_COUNTS_100("Conflicts.ConfirmedBadModules",
                        confirmed_bad_modules_detected_);
 
-  if (!limited_mode_) {
-    NotificationService::current()->Notify(
-        NotificationType::MODULE_LIST_ENUMERATED,
-        Source<EnumerateModulesModel>(this),
-        NotificationService::NoDetails());
+  // Notifications are not available in limited mode.
+  if (limited_mode_)
+    return;
 
-    if (suspected_bad_modules_detected_ || confirmed_bad_modules_detected_) {
-      bool found_confirmed_bad_modules = confirmed_bad_modules_detected_  > 0;
-      NotificationService::current()->Notify(
-          NotificationType::MODULE_INCOMPATIBILITY_DETECTED,
-          Source<EnumerateModulesModel>(this),
-          Details<bool>(&found_confirmed_bad_modules));
-    }
+  NotificationService::current()->Notify(
+      NotificationType::MODULE_LIST_ENUMERATED,
+      Source<EnumerateModulesModel>(this),
+      NotificationService::NoDetails());
+
+  // Command line flag must be enabled for the notification to get sent out.
+  // Otherwise we'd get the badge (while the feature is disabled) when we
+  // navigate to about:conflicts and find confirmed matches.
+  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+  if (!cmd_line.HasSwitch(switches::kConflictingModulesCheck))
+    return;
+
+  if (suspected_bad_modules_detected_ || confirmed_bad_modules_detected_) {
+    bool found_confirmed_bad_modules = confirmed_bad_modules_detected_  > 0;
+    NotificationService::current()->Notify(
+        NotificationType::MODULE_INCOMPATIBILITY_DETECTED,
+        Source<EnumerateModulesModel>(this),
+        Details<bool>(&found_confirmed_bad_modules));
   }
 }
 
