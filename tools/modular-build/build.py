@@ -421,7 +421,9 @@ int main() {
           "CFLAGS=-Dinhibit_libc -DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5"],
       make_cmd=["make", "all"])
 
-  glibc_toolchain_deps = [
+  # These are the dependencies for the nacl-glibc toolchain before
+  # NaCl-specific libraries are added.
+  base_glibc_toolchain_deps = [
       "binutils", "full-gcc-glibc", "glibc_32", "glibc_64",
       "dummy_libcrt_platform", "dummy_libnosys",
       "linker_scripts", "installed_linux_headers",
@@ -429,15 +431,17 @@ int main() {
   for arch_bits in subarches:
     AddSconsModule(
         "nacl_libs_glibc_%s" % arch_bits,
-        deps=glibc_toolchain_deps + ["libnacl_headers"],
+        deps=base_glibc_toolchain_deps + ["libnacl_headers"],
         scons_args=["MODE=nacl_extra_sdk", "--nacl_glibc",
                     "platform=x86-%s" % arch_bits,
                     "extra_sdk_update", "extra_sdk_update_header"],
         libdir=subarch_to_libdir[arch_bits])
+
+  full_glibc_toolchain_deps = \
+      (base_glibc_toolchain_deps +
+       ["nacl_libs_glibc_%s" % arch_bits for arch_bits in subarches])
   glibc_toolchain = MakeInstallPrefix(
-      "glibc_toolchain",
-      deps=glibc_toolchain_deps + ["nacl_libs_glibc_%s" % arch_bits 
-                                   for arch_bits in subarches])
+      "glibc_toolchain", deps=full_glibc_toolchain_deps)
 
   modules["hello_glibc"] = btarget.TestModule(
       "hello_glibc",
@@ -452,19 +456,21 @@ int main() {
 
   AddSconsModule(
       "scons_tests",
-      deps=glibc_toolchain_deps + ["nacl_libs_glibc_32"],
+      deps=full_glibc_toolchain_deps,
       scons_args=["--nacl_glibc", "small_tests", "-k"])
   AddSconsModule(
       "scons_tests_static",
-      deps=glibc_toolchain_deps + ["nacl_libs_glibc_32"],
+      deps=full_glibc_toolchain_deps,
       scons_args=["--nacl_glibc", "small_tests", "-k", "nacl_static_link=1"])
 
   # Check that all the Scons tests build, including those that do not
   # yet run successfully.
-  AddSconsModule(
-      "scons_compile_tests",
-      deps=glibc_toolchain_deps + ["nacl_libs_glibc_32"],
-      scons_args=["--nacl_glibc", "MODE=nacl"])
+  for arch_bits in subarches:
+    AddSconsModule(
+        "scons_compile_tests_%s" % arch_bits,
+        deps=full_glibc_toolchain_deps,
+        scons_args=["MODE=nacl", "--nacl_glibc",
+                    "platform=x86-%s" % arch_bits])
 
   return module_list
 
