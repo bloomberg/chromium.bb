@@ -232,6 +232,9 @@ SourceEntry.prototype.getDescription = function() {
     case LogSourceType.HOST_RESOLVER_IMPL_JOB:
       description = e.params.host;
       break;
+    case LogSourceType.DISK_CACHE_ENTRY:
+      description = e.params.key;
+      break;
     case LogSourceType.SPDY_SESSION:
       if (e.params.host)
         description = e.params.host + ' (' + e.params.proxy + ')';
