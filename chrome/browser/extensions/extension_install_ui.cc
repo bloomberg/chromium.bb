@@ -77,7 +77,22 @@ ExtensionInstallUI::ExtensionInstallUI(Profile* profile)
       extension_(NULL),
       delegate_(NULL),
       prompt_type_(NUM_PROMPT_TYPES),
-      ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)) {}
+      ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)) {
+  // Remember the current theme in case the user presses undo.
+  if (profile_) {
+    const Extension* previous_theme = profile_->GetTheme();
+    if (previous_theme)
+      previous_theme_id_ = previous_theme->id();
+#if defined(TOOLKIT_GTK)
+    // On Linux, we also need to take the user's system settings into account
+    // to undo theme installation.
+    previous_use_system_theme_ =
+        GtkThemeProvider::GetFrom(profile_)->UseGtkTheme();
+#else
+    DCHECK(!previous_use_system_theme_);
+#endif
+  }
+}
 
 ExtensionInstallUI::~ExtensionInstallUI() {
 }
@@ -92,20 +107,6 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
   // immediately installed, and then we show an infobar (see OnInstallSuccess)
   // to allow the user to revert if they don't like it.
   if (extension->is_theme()) {
-    // Remember the current theme in case the user pressed undo.
-    const Extension* previous_theme = profile_->GetTheme();
-    if (previous_theme)
-      previous_theme_id_ = previous_theme->id();
-
-#if defined(TOOLKIT_GTK)
-    // On Linux, we also need to take the user's system settings into account
-    // to undo theme installation.
-    previous_use_system_theme_ =
-        GtkThemeProvider::GetFrom(profile_)->UseGtkTheme();
-#else
-    DCHECK(!previous_use_system_theme_);
-#endif
-
     delegate->InstallUIProceed();
     return;
   }
