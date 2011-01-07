@@ -8,23 +8,86 @@
 #include <vector>
 
 #include "app/gfx/gl/gl_context.h"
+#include "app/gfx/gl/gl_implementation.h"
 #include "app/win/scoped_com_initializer.h"
 #include "base/command_line.h"
 #include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/child_process_logging.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_info_collector.h"
+#include "chrome/gpu/gpu_watchdog_thread.h"
 #include "ipc/ipc_channel_handle.h"
 
-GpuThread::GpuThread() {
+#if defined(OS_MACOSX)
+#include "chrome/common/sandbox_init_wrapper.h"
+#include "chrome/common/sandbox_mac.h"
+#endif
+
+const int kGpuTimeout = 10000;
+
+namespace {
+
+bool InitializeGpuSandbox() {
+#if defined(OS_MACOSX)
+  CommandLine* parsed_command_line = CommandLine::ForCurrentProcess();
+  SandboxInitWrapper sandbox_wrapper;
+  return sandbox_wrapper.InitializeSandbox(*parsed_command_line,
+                                           switches::kGpuProcess);
+#else
+  // TODO(port): Create GPU sandbox for linux and windows.
+  return true;
+#endif
 }
+
+}  // namespace
+
+GpuThread::GpuThread(const CommandLine& command_line)
+    : command_line_(command_line) {}
 
 GpuThread::~GpuThread() {
 }
 
 void GpuThread::Init(const base::Time& process_start_time) {
+  process_start_time_ = process_start_time;
+}
+
+void GpuThread::RemoveChannel(int renderer_id) {
+  gpu_channels_.erase(renderer_id);
+}
+
+bool GpuThread::OnControlMessageReceived(const IPC::Message& msg) {
+  bool msg_is_ok = true;
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP_EX(GpuThread, msg, msg_is_ok)
+    IPC_MESSAGE_HANDLER(GpuMsg_Initialize, OnInitialize)
+    IPC_MESSAGE_HANDLER(GpuMsg_EstablishChannel, OnEstablishChannel)
+    IPC_MESSAGE_HANDLER(GpuMsg_CloseChannel, OnCloseChannel)
+    IPC_MESSAGE_HANDLER(GpuMsg_Synchronize, OnSynchronize)
+    IPC_MESSAGE_HANDLER(GpuMsg_CollectGraphicsInfo, OnCollectGraphicsInfo)
+#if defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(GpuMsg_AcceleratedSurfaceBuffersSwappedACK,
+                        OnAcceleratedSurfaceBuffersSwappedACK)
+    IPC_MESSAGE_HANDLER(GpuMsg_DidDestroyAcceleratedSurface,
+                        OnDidDestroyAcceleratedSurface)
+#endif
+    IPC_MESSAGE_HANDLER(GpuMsg_Crash, OnCrash)
+    IPC_MESSAGE_HANDLER(GpuMsg_Hang, OnHang)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP_EX()
+  return handled;
+}
+
+void GpuThread::OnInitialize() {
+  // Load the GL implementation and locate the bindings before starting the GPU
+  // watchdog because this can take a lot of time and the GPU watchdog might
+  // terminate the GPU process.
+  if (!gfx::GLContext::InitializeOneOff()) {
+    MessageLoop::current()->Quit();
+    return;
+  }
   gpu_info_collector::CollectGraphicsInfo(&gpu_info_);
   child_process_logging::SetGpuInfo(gpu_info_);
 
@@ -42,32 +105,56 @@ void GpuThread::Init(const base::Time& process_start_time) {
 
   // Record initialization only after collecting the GPU info because that can
   // take a significant amount of time.
-  gpu_info_.SetInitializationTime(base::Time::Now() - process_start_time);
-}
+  gpu_info_.SetInitializationTime(base::Time::Now() - process_start_time_);
 
-void GpuThread::RemoveChannel(int renderer_id) {
-  gpu_channels_.erase(renderer_id);
-}
+  // Note that kNoSandbox will also disable the GPU sandbox.
+  bool no_gpu_sandbox = command_line_.HasSwitch(switches::kNoGpuSandbox);
+  if (!no_gpu_sandbox) {
+    if (!InitializeGpuSandbox()) {
+      LOG(ERROR) << "Failed to initialize the GPU sandbox";
+      MessageLoop::current()->Quit();
+      return;
+    }
+  } else {
+    LOG(ERROR) << "Running without GPU sandbox";
+  }
 
-bool GpuThread::OnControlMessageReceived(const IPC::Message& msg) {
-  bool msg_is_ok = true;
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(GpuThread, msg, msg_is_ok)
-    IPC_MESSAGE_HANDLER(GpuMsg_EstablishChannel, OnEstablishChannel)
-    IPC_MESSAGE_HANDLER(GpuMsg_CloseChannel, OnCloseChannel)
-    IPC_MESSAGE_HANDLER(GpuMsg_Synchronize, OnSynchronize)
-    IPC_MESSAGE_HANDLER(GpuMsg_CollectGraphicsInfo, OnCollectGraphicsInfo)
-#if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER(GpuMsg_AcceleratedSurfaceBuffersSwappedACK,
-                        OnAcceleratedSurfaceBuffersSwappedACK)
-    IPC_MESSAGE_HANDLER(GpuMsg_DidDestroyAcceleratedSurface,
-                        OnDidDestroyAcceleratedSurface)
+  // In addition to disabling the watchdog if the command line switch is
+  // present, disable it in two other cases. OSMesa is expected to run very
+  // slowly.  Also disable the watchdog on valgrind because the code is expected
+  // to run slowly in that case.
+  bool enable_watchdog =
+      !command_line_.HasSwitch(switches::kDisableGpuWatchdog) &&
+      gfx::GetGLImplementation() != gfx::kGLImplementationOSMesaGL &&
+      !RunningOnValgrind();
+
+  // Disable the watchdog in debug builds because they tend to only be run by
+  // developers who will not appreciate the watchdog killing the GPU process.
+#ifndef NDEBUG
+  enable_watchdog = false;
 #endif
-    IPC_MESSAGE_HANDLER(GpuMsg_Crash, OnCrash)
-    IPC_MESSAGE_HANDLER(GpuMsg_Hang, OnHang)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
-  return handled;
+
+  // Disable the watchdog for Windows. It tends to abort when the GPU process
+  // is not hung but still taking a long time to do something. Instead, the
+  // browser process displays a dialog when it notices that the child window
+  // is hung giving the user an opportunity to terminate it. This is the
+  // same mechanism used to abort hung plugins.
+#if defined(OS_WIN)
+  enable_watchdog = false;
+#endif
+
+  // Start the GPU watchdog only after anything that is expected to be time
+  // consuming has completed, otherwise the process is liable to be aborted.
+  if (enable_watchdog) {
+    watchdog_thread_ = new GpuWatchdogThread(kGpuTimeout);
+    watchdog_thread_->Start();
+  }
+}
+
+void GpuThread::StopWatchdog() {
+  if (watchdog_thread_.get()) {
+    watchdog_thread_->Stop();
+  }
 }
 
 void GpuThread::OnEstablishChannel(int renderer_id) {

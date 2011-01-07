@@ -107,6 +107,11 @@ class GpuProcessHost : public BrowserChildProcessHost,
   void SendSynchronizationReply(IPC::Message* reply,
                                 RenderMessageFilter* filter);
 
+  // Sends outstanding replies to renderer processes. This is only called
+  // in error situations like the GPU process crashing -- but is necessary
+  // to prevent the renderer process from hanging.
+  void SendOutstandingReplies();
+
   virtual bool CanShutdown();
   virtual void OnChildDied();
   virtual void OnProcessCrashed(int exit_code);
