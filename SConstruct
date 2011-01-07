@@ -1863,12 +1863,23 @@ nacl_env = pre_base_env.Clone(
       ['__STDC_FORMAT_MACROS', '1'],
       ],
 )
+
+# TODO(mseaborn): Make nacl-glibc-based static linking work with just
+# "-static", without specifying a linker script.
+# See http://code.google.com/p/nativeclient/issues/detail?id=1298
+def GetLinkerScriptBaseName(env):
+  if env.Bit('build_x86_64'):
+    return 'elf64_nacl'
+  else:
+    return 'elf_nacl'
+
 if nacl_env.Bit('nacl_glibc') and nacl_env.Bit('nacl_static_link'):
   # The "-lc" is necessary because libgcc_eh depends on libc but for
   # some reason nacl-gcc is not linking with "--start-group/--end-group".
-  nacl_env.Append(LINKFLAGS=['-static',
-                             '-T', 'ldscripts/elf_nacl.x.static',
-                             '-lc'])
+  nacl_env.Append(LINKFLAGS=[
+      '-static',
+      '-T', 'ldscripts/%s.x.static' % GetLinkerScriptBaseName(nacl_env),
+      '-lc'])
 
 def AddTargetRootSuffix(env, bit_name, suffix):
   """Add a suffix to the subdirectory of scons-out that we use.  This
