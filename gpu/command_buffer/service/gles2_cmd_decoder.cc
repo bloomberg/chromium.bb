@@ -4684,7 +4684,7 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
     return error::kNoError;
   }
   if (!validators_->vertex_attrib_size.IsValid(size)) {
-    SetGLError(GL_INVALID_ENUM,
+    SetGLError(GL_INVALID_VALUE,
                "glVertexAttribPointer: size GL_INVALID_VALUE");
     return error::kNoError;
   }
@@ -4708,9 +4708,14 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
     return error::kNoError;
   }
   GLsizei component_size =
-    GLES2Util::GetGLTypeSizeForTexturesAndBuffers(type);
+      GLES2Util::GetGLTypeSizeForTexturesAndBuffers(type);
   if (offset % component_size > 0) {
-    SetGLError(GL_INVALID_VALUE,
+    SetGLError(GL_INVALID_OPERATION,
+               "glVertexAttribPointer: offset not valid for type");
+    return error::kNoError;
+  }
+  if (stride % component_size > 0) {
+    SetGLError(GL_INVALID_OPERATION,
                "glVertexAttribPointer: stride not valid for type");
     return error::kNoError;
   }

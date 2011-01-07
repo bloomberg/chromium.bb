@@ -234,7 +234,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysInvalidCountFails) {
 
   // Try with stride > 8 (vec2 + vec2 byte)
   GLfloat f;
-  DoVertexAttribPointer(1, 2, GL_FLOAT, sizeof(f) * 2 + 1, 0);
+  DoVertexAttribPointer(1, 2, GL_FLOAT, sizeof(f) * 2 + sizeof(f), 0);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -2658,6 +2658,144 @@ TEST_F(GLES2DecoderTest, FramebufferRenderbufferClearDepthStencil) {
 }
 #endif
 
+TEST_F(GLES2DecoderWithShaderTest, VertexAttribPointer) {
+  SetupVertexBuffer();
+  static const GLenum types[] = {
+    GL_BYTE,
+    GL_UNSIGNED_BYTE,
+    GL_SHORT,
+    GL_UNSIGNED_SHORT,
+    GL_FLOAT,
+    GL_FIXED,
+    GL_INT,
+    GL_UNSIGNED_INT,
+  };
+  static const GLsizei sizes[] = {
+    1,
+    1,
+    2,
+    2,
+    4,
+    4,
+    4,
+    4,
+  };
+  static const GLuint indices[] = {
+    0,
+    1,
+    kNumVertexAttribs - 1,
+    kNumVertexAttribs,
+  };
+  static const GLsizei offset_mult[] = {
+    0,
+    0,
+    1,
+    1,
+    2,
+    1000,
+  };
+  static const GLsizei offset_offset[] = {
+    0,
+    1,
+    0,
+    1,
+    0,
+    0,
+  };
+  static const GLsizei stride_mult[] = {
+    -1,
+    0,
+    0,
+    1,
+    1,
+    2,
+    1000,
+  };
+  static const GLsizei stride_offset[] = {
+    0,
+    0,
+    1,
+    0,
+    1,
+    0,
+    0,
+  };
+  for (size_t tt = 0; tt < arraysize(types); ++tt) {
+    GLenum type = types[tt];
+    GLsizei num_bytes = sizes[tt];
+    for (size_t ii = 0; ii < arraysize(indices); ++ii) {
+      GLuint index = indices[ii];
+      for (GLint size = 0; size < 5; ++size) {
+        for (size_t oo = 0; oo < arraysize(offset_mult); ++oo) {
+          GLuint offset = num_bytes * offset_mult[oo] + offset_offset[oo];
+          for (size_t ss = 0; ss <= arraysize(stride_mult); ++ss) {
+            GLsizei stride = num_bytes * stride_mult[ss] + stride_offset[ss];
+            for (int normalize = 0; normalize < 2; ++normalize) {
+              bool index_good = index < static_cast<GLuint>(kNumVertexAttribs);
+              bool size_good = (size > 0 && size < 5);
+              bool offset_good = (offset % num_bytes == 0);
+              bool stride_good = (stride % num_bytes == 0) && stride >= 0 &&
+                                 stride <= 255;
+              bool type_good = (type != GL_INT && type != GL_UNSIGNED_INT &&
+                                type != GL_FIXED);
+              bool good = size_good && offset_good && stride_good &&
+                          type_good && index_good;
+              bool call = good && (type != GL_FIXED);
+              if (call) {
+                EXPECT_CALL(*gl_, VertexAttribPointer(
+                    index, size, type, normalize, stride,
+                    BufferOffset(offset)));
+              }
+              VertexAttribPointer cmd;
+              cmd.Init(index, size, type, normalize, stride, offset);
+              EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+              if (good) {
+                EXPECT_EQ(GL_NO_ERROR, GetGLError());
+              } else if (size_good &&
+                         offset_good &&
+                         stride_good &&
+                         type_good &&
+                         !index_good) {
+                EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+              } else if (size_good &&
+                         offset_good &&
+                         stride_good &&
+                         !type_good &&
+                         index_good) {
+                EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+              } else if (size_good &&
+                         offset_good &&
+                         !stride_good &&
+                         type_good &&
+                         index_good) {
+                if (stride < 0 || stride > 255) {
+                  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+                } else {
+                  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+                }
+              } else if (size_good &&
+                         !offset_good &&
+                         stride_good &&
+                         type_good &&
+                         index_good) {
+                EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+              } else if (!size_good &&
+                         offset_good &&
+                         stride_good &&
+                         type_good &&
+                         index_good) {
+                EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+              } else {
+                EXPECT_NE(GL_NO_ERROR, GetGLError());
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 // TODO(gman): BufferData
 
 // TODO(gman): BufferDataImmediate
@@ -2687,8 +2825,6 @@ TEST_F(GLES2DecoderTest, FramebufferRenderbufferClearDepthStencil) {
 // TODO(gman): UseProgram
 
 // TODO(gman): SwapBuffers
-
-// TODO(gman): VertexAttribPointer
 
 }  // namespace gles2
 }  // namespace gpu
