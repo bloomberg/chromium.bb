@@ -39,7 +39,7 @@ class SignedSettingsHelperTest : public ::testing::Test,
                                  public SignedSettingsHelper::TestDelegate {
  public:
   SignedSettingsHelperTest()
-      : fake_email_("fakey"),
+      : fake_email_("fakey@example.com"),
         fake_prop_("prop_name"),
         fake_value_("stub"),
         message_loop_(MessageLoop::TYPE_UI),

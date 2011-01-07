@@ -63,7 +63,7 @@ class DummyDelegate : public SignedSettings::Delegate<T> {
 class SignedSettingsTest : public ::testing::Test {
  public:
   SignedSettingsTest()
-      : fake_email_("fakey"),
+      : fake_email_("fakey@example.com"),
         fake_prop_("prop_name"),
         fake_value_("stub"),
         message_loop_(MessageLoop::TYPE_UI),

@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
+#include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/signed_settings_temp_storage.h"
 
@@ -108,7 +109,7 @@ SignedSettings* SignedSettings::CreateCheckWhitelistOp(
     const std::string& email,
     SignedSettings::Delegate<bool>* d) {
   DCHECK(d != NULL);
-  return new CheckWhitelistOp(email, d);
+  return new CheckWhitelistOp(Authenticator::Canonicalize(email), d);
 }
 
 // static
@@ -117,7 +118,9 @@ SignedSettings* SignedSettings::CreateWhitelistOp(
     bool add_to_whitelist,
     SignedSettings::Delegate<bool>* d) {
   DCHECK(d != NULL);
-  return new WhitelistOp(email, add_to_whitelist, d);
+  return new WhitelistOp(Authenticator::Canonicalize(email),
+                         add_to_whitelist,
+                         d);
 }
 
 // static
@@ -169,8 +172,10 @@ void CheckWhitelistOp::OnKeyOpComplete(
     return;
   }
   if (return_code == OwnerManager::SUCCESS) {
+    VLOG(2) << "Whitelist check was successful.";
     d_->OnSettingsOpCompleted(SUCCESS, true);
   } else {
+    VLOG(2) << "Whitelist check failed.";
     d_->OnSettingsOpCompleted(SignedSettings::MapKeyOpCode(return_code), false);
   }
 }
