@@ -85,7 +85,8 @@ void PrintBackendWin::EnumeratePrinters(PrinterList* printer_list) {
 bool PrintBackendWin::GetPrinterCapsAndDefaults(
     const std::string& printer_name,
     PrinterCapsAndDefaults* printer_info) {
-  if (!XPSModule::Init()) {
+  ScopedXPSInitializer xps_initializer;
+  if (!xps_initializer.initialized()) {
     // TODO(sanjeevr): Handle legacy proxy case (with no prntvpt.dll)
     return false;
   }

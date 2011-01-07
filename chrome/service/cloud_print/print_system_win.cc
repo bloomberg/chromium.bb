@@ -76,6 +76,11 @@ HRESULT PrintTicketToDevMode(const std::string& printer_name,
                              const std::string& print_ticket,
                              DevMode* dev_mode) {
   DCHECK(dev_mode);
+  printing::ScopedXPSInitializer xps_initializer;
+  if (!xps_initializer.initialized()) {
+    // TODO(sanjeevr): Handle legacy proxy case (with no prntvpt.dll)
+    return E_FAIL;
+  }
 
   ScopedComPtr<IStream> pt_stream;
   HRESULT hr = StreamFromPrintTicket(print_ticket, pt_stream.Receive());
@@ -383,10 +388,6 @@ class PrintSystemWin : public PrintSystem {
           return false;
         }
 
-        if (!printing::XPSModule::Init()) {
-          // TODO(sanjeevr): Handle legacy proxy case (with no prntvpt.dll)
-          return false;
-        }
         DevMode pt_dev_mode;
         HRESULT hr = PrintTicketToDevMode(printer_name, print_ticket,
                                           &pt_dev_mode);
@@ -394,6 +395,7 @@ class PrintSystemWin : public PrintSystem {
           NOTREACHED();
           return false;
         }
+
         HDC dc = CreateDC(L"WINSPOOL", UTF8ToWide(printer_name).c_str(),
                           NULL, pt_dev_mode.dm_);
         if (!dc) {
@@ -618,7 +620,8 @@ bool PrintSystemWin::IsValidPrinter(const std::string& printer_name) {
 bool PrintSystemWin::ValidatePrintTicket(
     const std::string& printer_name,
     const std::string& print_ticket_data) {
-  if (!printing::XPSModule::Init()) {
+  printing::ScopedXPSInitializer xps_initializer;
+  if (!xps_initializer.initialized()) {
     // TODO(sanjeevr): Handle legacy proxy case (with no prntvpt.dll)
     return false;
   }

@@ -58,6 +58,18 @@ class XPSModule {
   static bool InitImpl();
 };
 
+// See comments in cc file explaining why we need this.
+class ScopedXPSInitializer {
+ public:
+  ScopedXPSInitializer();
+  ~ScopedXPSInitializer();
+
+  bool initialized() const { return initialized_; }
+
+ private:
+  bool initialized_;
+};
+
 }  // namespace printing
 
 #endif  // PRINTING_BACKEND_WIN_HELPER_H_
