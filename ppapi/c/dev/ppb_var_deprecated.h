@@ -6,13 +6,14 @@
 #define PPAPI_C_PPB_VAR_DEPRECATED_H_
 
 #include "ppapi/c/dev/deprecated_bool.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
 struct PPP_Class_Deprecated;
 
-#define PPB_VAR_DEPRECATED_INTERFACE "PPB_Var(Deprecated);0.2"
+#define PPB_VAR_DEPRECATED_INTERFACE "PPB_Var(Deprecated);0.3"
 
 /**
  * @file
@@ -231,9 +232,16 @@ struct PPB_Var_Deprecated {
    *     return CreateObject(&point_class, new Point(x, y));
    *   }</pre>
    */
-  struct PP_Var (*CreateObject)(PP_Module module,
+  struct PP_Var (*CreateObject)(PP_Instance instance,
                                 const struct PPP_Class_Deprecated* object_class,
                                 void* object_data);
+
+  // Like CreateObject but takes a module. This will be deleted when all callers
+  // can be changed to use the PP_Instance CreateObject one.
+  struct PP_Var (*CreateObjectWithModuleDeprecated)(
+      PP_Module module,
+      const struct PPP_Class_Deprecated* object_class,
+      void* object_data);
 };
 
 /**

@@ -112,14 +112,15 @@ void ConvertImageData(PPB_ImageData_Impl* src_image, const SkIRect& src_rect,
   }
 }
 
-PP_Resource Create(PP_Module module_id,
+PP_Resource Create(PP_Instance instance_id,
                    const PP_Size* size,
                    PP_Bool is_always_opaque) {
-  PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
-  if (!module)
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance)
     return 0;
 
-  scoped_refptr<PPB_Graphics2D_Impl> context(new PPB_Graphics2D_Impl(module));
+  scoped_refptr<PPB_Graphics2D_Impl> context(new PPB_Graphics2D_Impl(
+      instance->module()));
   if (!context->Init(size->width, size->height, PPBoolToBool(is_always_opaque)))
     return 0;
   return context->GetReference();

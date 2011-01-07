@@ -17,7 +17,7 @@ namespace pp {
 class Audio_Dev : public Resource {
  public:
   Audio_Dev() {}
-  Audio_Dev(const Instance& instance,
+  Audio_Dev(Instance* instance,
             const AudioConfig_Dev& config,
             PPB_Audio_Callback callback,
             void* user_data);

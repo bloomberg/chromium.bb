@@ -19,11 +19,11 @@ namespace {
 
 uint32_t RecommendSampleFrameCount(uint32_t requested_sample_frame_count);
 
-PP_Resource CreateStereo16bit(PP_Module module_id,
+PP_Resource CreateStereo16bit(PP_Instance instance_id,
                               PP_AudioSampleRate_Dev sample_rate,
                               uint32_t sample_frame_count) {
-  PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
-  if (!module)
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance)
     return 0;
 
   // TODO(brettw): Currently we don't actually check what the hardware
@@ -38,7 +38,8 @@ PP_Resource CreateStereo16bit(PP_Module module_id,
     return 0;
 
   scoped_refptr<PPB_AudioConfig_Impl> config(
-      new PPB_AudioConfig_Impl(module, sample_rate, sample_frame_count));
+      new PPB_AudioConfig_Impl(instance->module(), sample_rate,
+                               sample_frame_count));
   return config->GetReference();
 }
 
@@ -102,7 +103,8 @@ PP_Bool IsAudio(PP_Resource resource) {
 }
 
 PP_Resource GetCurrentConfig(PP_Resource audio_id) {
-  scoped_refptr<PPB_Audio_Impl> audio = Resource::GetAs<PPB_Audio_Impl>(audio_id);
+  scoped_refptr<PPB_Audio_Impl> audio =
+      Resource::GetAs<PPB_Audio_Impl>(audio_id);
   return audio ? audio->GetCurrentConfig() : 0;
 }
 
@@ -132,7 +134,8 @@ PP_Resource CreateTrusted(PP_Instance instance_id) {
   PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
   if (!instance)
     return 0;
-  scoped_refptr<PPB_Audio_Impl> audio(new PPB_Audio_Impl(instance->module(), instance_id));
+  scoped_refptr<PPB_Audio_Impl> audio(
+      new PPB_Audio_Impl(instance->module(), instance_id));
   return audio->GetReference();
 }
 

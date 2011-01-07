@@ -4,6 +4,7 @@
 
 #include "ppapi/cpp/dev/audio_config_dev.h"
 
+#include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 
@@ -22,14 +23,15 @@ AudioConfig_Dev::AudioConfig_Dev()
       sample_frame_count_(0) {
 }
 
-AudioConfig_Dev::AudioConfig_Dev(PP_AudioSampleRate_Dev sample_rate,
+AudioConfig_Dev::AudioConfig_Dev(Instance* instance,
+                                 PP_AudioSampleRate_Dev sample_rate,
                                  uint32_t sample_frame_count)
     : sample_rate_(sample_rate),
       sample_frame_count_(sample_frame_count) {
   if (has_interface<PPB_AudioConfig_Dev>()) {
     PassRefFromConstructor(
         get_interface<PPB_AudioConfig_Dev>()->CreateStereo16Bit(
-        Module::Get()->pp_module(), sample_rate, sample_frame_count));
+        instance->pp_instance(), sample_rate, sample_frame_count));
   }
 }
 

@@ -29,7 +29,7 @@ pp::Var TestCase::GetTestObject() {
   if (test_object_.is_undefined()) {
     pp::deprecated::ScriptableObject* so = CreateTestObject();
     if (so)
-      test_object_ = pp::Var(so);  // Takes ownership.
+      test_object_ = pp::Var(instance_, so);  // Takes ownership.
   }
   return test_object_;
 }

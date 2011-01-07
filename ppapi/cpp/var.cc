@@ -12,6 +12,7 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/cpp/common.h"
+#include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/logging.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
@@ -92,10 +93,10 @@ Var::Var(const std::string& utf8_str) {
   needs_release_ = (var_.type == PP_VARTYPE_STRING);
 }
 
-Var::Var(ScriptableObject* object) {
+Var::Var(Instance* instance, ScriptableObject* object) {
   if (has_interface<PPB_Var_Deprecated>()) {
     var_ = get_interface<PPB_Var_Deprecated>()->CreateObject(
-        Module::Get()->pp_module(), object->GetClass(), object);
+        instance->pp_instance(), object->GetClass(), object);
     needs_release_ = true;
   } else {
     var_.type = PP_VARTYPE_NULL;

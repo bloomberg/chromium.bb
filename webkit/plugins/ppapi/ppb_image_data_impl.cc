@@ -33,15 +33,16 @@ PP_Bool IsImageDataFormatSupported(PP_ImageDataFormat format) {
   return BoolToPPBool(PPB_ImageData_Impl::IsImageDataFormatSupported(format));
 }
 
-PP_Resource Create(PP_Module module_id,
+PP_Resource Create(PP_Instance instance_id,
                    PP_ImageDataFormat format,
                    const PP_Size* size,
                    PP_Bool init_to_zero) {
-  PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
-  if (!module)
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance)
     return 0;
 
-  scoped_refptr<PPB_ImageData_Impl> data(new PPB_ImageData_Impl(module));
+  scoped_refptr<PPB_ImageData_Impl> data(
+      new PPB_ImageData_Impl(instance->module()));
   if (!data->Init(format,
                   size->width,
                   size->height,

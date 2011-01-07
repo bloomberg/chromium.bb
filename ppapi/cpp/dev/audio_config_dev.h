@@ -11,6 +11,8 @@
 
 namespace pp {
 
+class Instance;
+
 // Typical usage:
 //
 //   // Create an audio config with a supported frame count.
@@ -34,7 +36,8 @@ class AudioConfig_Dev : public Resource {
   // semple frame count.
   //
   // See PPB_AudioConfigDev.CreateStereo16Bit for more.
-  AudioConfig_Dev(PP_AudioSampleRate_Dev sample_rate,
+  AudioConfig_Dev(Instance* instance,
+                  PP_AudioSampleRate_Dev sample_rate,
                   uint32_t sample_frame_count);
 
   // Returns a supported frame count for use in the constructor.

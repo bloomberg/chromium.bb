@@ -9,6 +9,7 @@
 #include "ppapi/cpp/common.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/image_data.h"
+#include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
 #include "ppapi/cpp/point.h"
@@ -32,12 +33,14 @@ Graphics2D::Graphics2D(const Graphics2D& other)
       size_(other.size_) {
 }
 
-Graphics2D::Graphics2D(const Size& size, bool is_always_opaque)
+Graphics2D::Graphics2D(Instance* instance,
+                       const Size& size,
+                       bool is_always_opaque)
     : Resource() {
   if (!has_interface<PPB_Graphics2D>())
     return;
   PassRefFromConstructor(get_interface<PPB_Graphics2D>()->Create(
-      Module::Get()->pp_module(),
+      instance->pp_instance(),
       &size.pp_size(),
       BoolToPPBool(is_always_opaque)));
   if (!is_null()) {

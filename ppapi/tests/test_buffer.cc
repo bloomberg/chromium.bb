@@ -59,7 +59,7 @@ std::string TestBuffer::TestIsBuffer() {
 
   // Make another resource type and test it.
   const int w = 16, h = 16;
-  pp::Graphics2D device(pp::Size(w, h), true);
+  pp::Graphics2D device(instance_, pp::Size(w, h), true);
   if (device.is_null())
     return "Couldn't create device context";
   if (buffer_interface_->IsBuffer(device.pp_resource()))

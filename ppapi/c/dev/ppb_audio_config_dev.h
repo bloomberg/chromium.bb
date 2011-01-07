@@ -6,12 +6,12 @@
 #define PPAPI_C_DEV_PPB_AUDIO_CONFIG_DEV_H_
 
 #include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_macros.h"
-#include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_AUDIO_CONFIG_DEV_INTERFACE "PPB_AudioConfig(Dev);0.3"
+#define PPB_AUDIO_CONFIG_DEV_INTERFACE "PPB_AudioConfig(Dev);0.4"
 
 enum {
   PP_AUDIOMINSAMPLEFRAMECOUNT = 64,
@@ -52,7 +52,7 @@ struct PPB_AudioConfig_Dev {
    * buffer16[2 * (sample_frame_count - 1) + 1] is the last right channel sample
    * Data will always be in the native endian format of the platform.
    */
-  PP_Resource (*CreateStereo16Bit)(PP_Module module,
+  PP_Resource (*CreateStereo16Bit)(PP_Instance instance,
                                    PP_AudioSampleRate_Dev sample_rate,
                                    uint32_t sample_frame_count);
 

@@ -6,6 +6,7 @@
 #define PPAPI_C_PPB_GRAPHICS_2D_H_
 
 #include "ppapi/c/pp_bool.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
@@ -15,7 +16,7 @@ struct PP_Point;
 struct PP_Rect;
 struct PP_Size;
 
-#define PPB_GRAPHICS_2D_INTERFACE "PPB_Graphics2D;0.2"
+#define PPB_GRAPHICS_2D_INTERFACE "PPB_Graphics2D;0.3"
 
 /**
  * @file
@@ -28,10 +29,8 @@ struct PP_Size;
 /** {PENDING: describe PPB_Graphics2D. */
 struct PPB_Graphics2D {
   /**
-   * The returned graphics context will not be bound to any plugin instance on
-   * creation (call BindGraphics on the plugin instance to do that. The
-   * graphics context has a lifetime that can exceed that of the given plugin
-   * instance.
+   * The returned graphics context will not be bound to the plugin instance on
+   * creation (call BindGraphics on the plugin instance to do that).
    *
    * Set the is_always_opaque flag if you know that you will be painting only
    * opaque data to this context. This will disable blending when compositing
@@ -45,7 +44,7 @@ struct PPB_Graphics2D {
    *
    * If you aren't sure, it is always correct to specify that it it not opaque.
    */
-  PP_Resource (*Create)(PP_Module module,
+  PP_Resource (*Create)(PP_Instance instance,
                         const struct PP_Size* size,
                         PP_Bool is_always_opaque);
 

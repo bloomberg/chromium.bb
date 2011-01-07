@@ -183,7 +183,7 @@ pp::Var ChromotingInstance::GetInstanceObject() {
     object->Init();
 
     // The pp::Var takes ownership of object here.
-    instance_object_ = pp::Var(object);
+    instance_object_ = pp::Var(this, object);
   }
 
   return instance_object_;

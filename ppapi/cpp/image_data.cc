@@ -43,7 +43,8 @@ ImageData::ImageData(PassRef, PP_Resource resource)
   PassRefAndInitData(resource);
 }
 
-ImageData::ImageData(PP_ImageDataFormat format,
+ImageData::ImageData(Instance* instance,
+                     PP_ImageDataFormat format,
                      const Size& size,
                      bool init_to_zero)
     : data_(NULL) {
@@ -53,7 +54,7 @@ ImageData::ImageData(PP_ImageDataFormat format,
     return;
 
   PassRefAndInitData(get_interface<PPB_ImageData>()->Create(
-      Module::Get()->pp_module(), format, &size.pp_size(),
+      instance->pp_instance(), format, &size.pp_size(),
       BoolToPPBool(init_to_zero)));
 }
 

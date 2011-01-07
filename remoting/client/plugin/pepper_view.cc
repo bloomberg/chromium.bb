@@ -48,7 +48,7 @@ void PepperView::Paint() {
   // is wrong.
   if (is_static_fill_) {
     LOG(ERROR) << "Static filling " << static_fill_color_;
-    pp::ImageData image(pp::ImageData::GetNativeImageDataFormat(),
+    pp::ImageData image(instance_, pp::ImageData::GetNativeImageDataFormat(),
                         pp::Size(viewport_width_, viewport_height_),
                         false);
     if (image.is_null()) {
@@ -82,7 +82,7 @@ void PepperView::PaintFrame(media::VideoFrame* frame, UpdatedRects* rects) {
   TraceContext::tracer()->PrintString("Start Paint Frame.");
   // TODO(ajwong): We're assuming the native format is BGRA_PREMUL below. This
   // is wrong.
-  pp::ImageData image(pp::ImageData::GetNativeImageDataFormat(),
+  pp::ImageData image(instance_, pp::ImageData::GetNativeImageDataFormat(),
                       pp::Size(viewport_width_, viewport_height_),
                       false);
   if (image.is_null()) {
@@ -181,7 +181,8 @@ void PepperView::SetViewport(int x, int y, int width, int height) {
   viewport_width_ = width;
   viewport_height_ = height;
 
-  graphics2d_ = pp::Graphics2D(pp::Size(viewport_width_, viewport_height_),
+  graphics2d_ = pp::Graphics2D(instance_,
+                               pp::Size(viewport_width_, viewport_height_),
                                false);
   if (!instance_->BindGraphics(graphics2d_)) {
     LOG(ERROR) << "Couldn't bind the device context.";

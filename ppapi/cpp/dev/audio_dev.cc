@@ -16,14 +16,14 @@ template <> const char* interface_name<PPB_Audio_Dev>() {
 
 }  // namespace
 
-Audio_Dev::Audio_Dev(const Instance& instance,
+Audio_Dev::Audio_Dev(Instance* instance,
                      const AudioConfig_Dev& config,
                      PPB_Audio_Callback callback,
                      void* user_data)
     : config_(config) {
   if (has_interface<PPB_Audio_Dev>()) {
     PassRefFromConstructor(get_interface<PPB_Audio_Dev>()->Create(
-        instance.pp_instance(), config.pp_resource(), callback, user_data));
+        instance->pp_instance(), config.pp_resource(), callback, user_data));
   }
 }
 

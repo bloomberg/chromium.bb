@@ -600,9 +600,20 @@ bool IsInstanceOfDeprecated(PP_Var var,
                                     ppp_class, ppp_class_data);
 }
 
-PP_Var CreateObjectDeprecated(PP_Module module_id,
+PP_Var CreateObjectDeprecated(PP_Instance instance_id,
                               const PPP_Class_Deprecated* ppp_class,
                               void* ppp_class_data) {
+  PluginInstance* instance = ResourceTracker::Get()->GetInstance(instance_id);
+  if (!instance) {
+    DLOG(ERROR) << "Create object passed an invalid instance.";
+    return PP_MakeNull();
+  }
+  return PluginObject::Create(instance->module(), ppp_class, ppp_class_data);
+}
+
+PP_Var CreateObjectWithModuleDeprecated(PP_Module module_id,
+                                        const PPP_Class_Deprecated* ppp_class,
+                                        void* ppp_class_data) {
   PluginModule* module = ResourceTracker::Get()->GetModule(module_id);
   if (!module)
     return PP_MakeNull();
@@ -623,7 +634,8 @@ const PPB_Var_Deprecated var_deprecated_interface = {
   &CallDeprecated,
   &Construct,
   &IsInstanceOfDeprecated,
-  &CreateObjectDeprecated
+  &CreateObjectDeprecated,
+  &CreateObjectWithModuleDeprecated,
 };
 
 const PPB_Var var_interface = {

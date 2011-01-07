@@ -77,7 +77,7 @@ bool TestGraphics2D::ReadImageData(const pp::Graphics2D& dc,
 
 bool TestGraphics2D::IsDCUniformColor(const pp::Graphics2D& dc,
                                       uint32_t color) const {
-  pp::ImageData readback(PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+  pp::ImageData readback(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
                          dc.size(), false);
   if (readback.is_null())
     return false;
@@ -166,7 +166,7 @@ bool TestGraphics2D::IsSquareInDC(const pp::Graphics2D& dc,
                                   uint32_t background_color,
                                   const pp::Rect& square,
                                   uint32_t square_color) const {
-  pp::ImageData readback(PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+  pp::ImageData readback(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
                          dc.size(), false);
   if (readback.is_null())
     return false;
@@ -179,7 +179,8 @@ bool TestGraphics2D::IsSquareInDC(const pp::Graphics2D& dc,
 // a crash since the browser don't return a value.
 std::string TestGraphics2D::TestInvalidResource() {
   pp::Graphics2D null_context;
-  pp::ImageData image(PP_IMAGEDATAFORMAT_BGRA_PREMUL, pp::Size(16, 16), true);
+  pp::ImageData image(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+                      pp::Size(16, 16), true);
 
   // Describe.
   PP_Size size;
@@ -237,11 +238,11 @@ std::string TestGraphics2D::TestInvalidResource() {
 }
 
 std::string TestGraphics2D::TestInvalidSize() {
-  pp::Graphics2D a(pp::Size(16, 0), false);
+  pp::Graphics2D a(instance_, pp::Size(16, 0), false);
   if (!a.is_null())
     return "0 height accepted";
 
-  pp::Graphics2D b(pp::Size(0, 16), false);
+  pp::Graphics2D b(instance_, pp::Size(0, 16), false);
   if (!b.is_null())
     return "0 width accepted";
 
@@ -261,7 +262,7 @@ std::string TestGraphics2D::TestInvalidSize() {
 }
 
 std::string TestGraphics2D::TestHumongous() {
-  pp::Graphics2D a(pp::Size(100000, 100000), false);
+  pp::Graphics2D a(instance_, pp::Size(100000, 100000), false);
   if (!a.is_null())
     return "Humongous device created";
   return "";
@@ -269,13 +270,14 @@ std::string TestGraphics2D::TestHumongous() {
 
 std::string TestGraphics2D::TestInitToZero() {
   const int w = 15, h = 17;
-  pp::Graphics2D dc(pp::Size(w, h), false);
+  pp::Graphics2D dc(instance_, pp::Size(w, h), false);
   if (dc.is_null())
     return "Failure creating a boring device";
 
   // Make an image with nonzero data in it (so we can test that zeros were
   // actually read versus ReadImageData being a NOP).
-  pp::ImageData image(PP_IMAGEDATAFORMAT_BGRA_PREMUL, pp::Size(w, h), true);
+  pp::ImageData image(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+                      pp::Size(w, h), true);
   if (image.is_null())
     return "Failure to allocate an image";
   memset(image.data(), 0xFF, image.stride() * image.size().height() * 4);
@@ -291,7 +293,7 @@ std::string TestGraphics2D::TestInitToZero() {
 
 std::string TestGraphics2D::TestDescribe() {
   const int w = 15, h = 17;
-  pp::Graphics2D dc(pp::Size(w, h), false);
+  pp::Graphics2D dc(instance_, pp::Size(w, h), false);
   if (dc.is_null())
     return "Failure creating a boring device";
 
@@ -310,7 +312,7 @@ std::string TestGraphics2D::TestDescribe() {
 
 std::string TestGraphics2D::TestPaint() {
   const int w = 15, h = 17;
-  pp::Graphics2D dc(pp::Size(w, h), false);
+  pp::Graphics2D dc(instance_, pp::Size(w, h), false);
   if (dc.is_null())
     return "Failure creating a boring device";
 
@@ -320,8 +322,8 @@ std::string TestGraphics2D::TestPaint() {
 
   // Fill the backing store with white.
   const uint32_t background_color = 0xFFFFFFFF;
-  pp::ImageData background(PP_IMAGEDATAFORMAT_BGRA_PREMUL, pp::Size(w, h),
-                           false);
+  pp::ImageData background(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+                           pp::Size(w, h), false);
   FillRectInImage(&background, pp::Rect(0, 0, w, h), background_color);
   dc.PaintImageData(background, pp::Point(0, 0));
   if (!FlushAndWaitForDone(&dc))
@@ -329,8 +331,8 @@ std::string TestGraphics2D::TestPaint() {
 
   // Make an image to paint with that's opaque white and enqueue a paint.
   const int fill_w = 2, fill_h = 3;
-  pp::ImageData fill(PP_IMAGEDATAFORMAT_BGRA_PREMUL, pp::Size(fill_w, fill_h),
-                     true);
+  pp::ImageData fill(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+                     pp::Size(fill_w, fill_h), true);
   if (fill.is_null())
     return "Failure to allocate fill image";
   FillRectInImage(&fill, pp::Rect(fill.size()), background_color);
@@ -371,7 +373,8 @@ std::string TestGraphics2D::TestPaint() {
     return "Partially offscreen paint failed.";
 
   // Now repaint that top left pixel by doing a subset of the source image.
-  pp::ImageData subset(PP_IMAGEDATAFORMAT_BGRA_PREMUL, pp::Size(w, h), false);
+  pp::ImageData subset(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+                       pp::Size(w, h), false);
   uint32_t subset_color = 0x80808080;
   const int subset_x = 2, subset_y = 1;
   *subset.GetAddr32(pp::Point(subset_x, subset_y)) = subset_color;
@@ -388,7 +391,7 @@ std::string TestGraphics2D::TestPaint() {
 
 std::string TestGraphics2D::TestScroll() {
   const int w = 115, h = 117;
-  pp::Graphics2D dc(pp::Size(w, h), false);
+  pp::Graphics2D dc(instance_, pp::Size(w, h), false);
   if (dc.is_null())
     return "Failure creating a boring device.";
 
@@ -397,7 +400,7 @@ std::string TestGraphics2D::TestScroll() {
     return "Bad initial color.";
 
   const int image_w = 15, image_h = 23;
-  pp::ImageData test_image(PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+  pp::ImageData test_image(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
                            pp::Size(image_w, image_h), false);
   FillImageWithGradient(&test_image);
 
@@ -418,7 +421,7 @@ std::string TestGraphics2D::TestScroll() {
   image_x += dx;
   image_y += dy;
 
-  pp::ImageData readback(PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+  pp::ImageData readback(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
                          pp::Size(image_w, image_h), false);
   if (!ReadImageData(dc, &readback, pp::Point(image_x, image_y)))
     return "TC1, Couldn't read back image data.";
@@ -450,12 +453,12 @@ std::string TestGraphics2D::TestScroll() {
 
 std::string TestGraphics2D::TestReplace() {
   const int w = 15, h = 17;
-  pp::Graphics2D dc(pp::Size(w, h), false);
+  pp::Graphics2D dc(instance_, pp::Size(w, h), false);
   if (dc.is_null())
     return "Failure creating a boring device";
 
   // Replacing with a different size image should fail.
-  pp::ImageData weird_size(PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+  pp::ImageData weird_size(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
                            pp::Size(w - 1, h), true);
   if (weird_size.is_null())
     return "Failure allocating the weird sized image";
@@ -463,8 +466,8 @@ std::string TestGraphics2D::TestReplace() {
 
   // Fill the background with blue but don't flush yet.
   const int32_t background_color = 0xFF0000FF;
-  pp::ImageData background(PP_IMAGEDATAFORMAT_BGRA_PREMUL, pp::Size(w, h),
-                           true);
+  pp::ImageData background(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+                           pp::Size(w, h), true);
   if (background.is_null())
     return "Failure to allocate background image";
   FillRectInImage(&background, pp::Rect(0, 0, w, h), background_color);
@@ -472,7 +475,8 @@ std::string TestGraphics2D::TestReplace() {
 
   // Replace with a green background but don't flush yet.
   const int32_t swapped_color = 0xFF0000FF;
-  pp::ImageData swapped(PP_IMAGEDATAFORMAT_BGRA_PREMUL, pp::Size(w, h), true);
+  pp::ImageData swapped(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+                        pp::Size(w, h), true);
   if (swapped.is_null())
     return "Failure to allocate swapped image";
   FillRectInImage(&swapped, pp::Rect(0, 0, w, h), swapped_color);
@@ -505,13 +509,13 @@ std::string TestGraphics2D::TestFlush() {
   // Tests that synchronous flushes (NULL callback) fail on the main thread
   // (which is the current one).
   const int w = 15, h = 17;
-  pp::Graphics2D dc(pp::Size(w, h), false);
+  pp::Graphics2D dc(instance_, pp::Size(w, h), false);
   if (dc.is_null())
     return "Failure creating a boring device";
 
   // Fill the background with blue but don't flush yet.
-  pp::ImageData background(PP_IMAGEDATAFORMAT_BGRA_PREMUL, pp::Size(w, h),
-                           true);
+  pp::ImageData background(instance_, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+                           pp::Size(w, h), true);
   if (background.is_null())
     return "Failure to allocate background image";
   dc.PaintImageData(background, pp::Point(0, 0));
@@ -522,7 +526,7 @@ std::string TestGraphics2D::TestFlush() {
 
   // Test flushing with no operations still issues a callback.
   // (This may also hang if the browser never issues the callback).
-  pp::Graphics2D dc_nopaints(pp::Size(w, h), false);
+  pp::Graphics2D dc_nopaints(instance_, pp::Size(w, h), false);
   if (dc.is_null())
     return "Failure creating the nopaint device";
   if (!FlushAndWaitForDone(&dc_nopaints))

@@ -56,7 +56,7 @@ void PaintManager::SetSize(const Size& new_size) {
   if (new_size == graphics_.size())
     return;
 
-  graphics_ = Graphics2D(new_size, is_always_opaque_);
+  graphics_ = Graphics2D(instance_, new_size, is_always_opaque_);
   if (graphics_.is_null())
     return;
   instance_->BindGraphics(graphics_);

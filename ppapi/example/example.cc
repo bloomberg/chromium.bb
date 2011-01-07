@@ -44,6 +44,8 @@ void FillRect(pp::ImageData* image, int left, int top, int width, int height,
 
 class MyScriptableObject : public pp::deprecated::ScriptableObject {
  public:
+  explicit MyScriptableObject(pp::Instance* instance) : instance_(instance) {}
+
   virtual bool HasMethod(const pp::Var& method, pp::Var* exception) {
     return method.AsString() == "toString";
   }
@@ -56,7 +58,7 @@ class MyScriptableObject : public pp::deprecated::ScriptableObject {
 
   virtual pp::Var GetProperty(const pp::Var& name, pp::Var* exception) {
     if (name.is_string() && name.AsString() == "blah")
-      return new MyScriptableObject();
+      return pp::Var(instance_, new MyScriptableObject(instance_));
     return pp::Var();
   }
 
@@ -72,6 +74,9 @@ class MyScriptableObject : public pp::deprecated::ScriptableObject {
       return pp::Var("hello world");
     return pp::Var();
   }
+
+ private:
+  pp::Instance* instance_;
 };
 
 class MyFetcherClient {
@@ -191,11 +196,11 @@ class MyInstance : public pp::Instance, public MyFetcherClient {
   }
 
   virtual pp::Var GetInstanceObject() {
-    return new MyScriptableObject();
+    return pp::Var(this, new MyScriptableObject(this));
   }
 
   pp::ImageData PaintImage(int width, int height) {
-    pp::ImageData image(PP_IMAGEDATAFORMAT_BGRA_PREMUL,
+    pp::ImageData image(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
                         pp::Size(width, height), false);
     if (image.is_null()) {
       printf("Couldn't allocate the image data\n");
@@ -240,7 +245,7 @@ class MyInstance : public pp::Instance, public MyFetcherClient {
     width_ = position.size().width();
     height_ = position.size().height();
 
-    device_context_ = pp::Graphics2D(pp::Size(width_, height_), false);
+    device_context_ = pp::Graphics2D(this, pp::Size(width_, height_), false);
     if (!BindGraphics(device_context_)) {
       printf("Couldn't bind the device context\n");
       return;
@@ -348,7 +353,7 @@ class MyInstance : public pp::Instance, public MyFetcherClient {
     pp::Var doc = window.GetProperty("document");
     pp::Var body = doc.GetProperty("body");
 
-    pp::Var obj(new MyScriptableObject());
+    pp::Var obj(this, new MyScriptableObject(this));
 
     // Our object should have its toString method called.
     Log("Testing MyScriptableObject::toString():");
