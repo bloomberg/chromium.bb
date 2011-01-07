@@ -13,7 +13,7 @@
 namespace skia {
 
 PlatformDevice::PlatformDevice(const SkBitmap& bitmap)
-    : SkDevice(NULL, bitmap, /*isForLayer=*/false) {
+    : SkDevice(bitmap) {
 }
 
 // static

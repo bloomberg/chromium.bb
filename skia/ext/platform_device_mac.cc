@@ -32,8 +32,7 @@ bool constrain(int available_size, int* position, int *size) {
 
 } // namespace
 
-PlatformDevice::PlatformDevice(const SkBitmap& bitmap)
-    : SkDevice(NULL, bitmap, /*isForLayer=*/false) {
+PlatformDevice::PlatformDevice(const SkBitmap& bitmap) : SkDevice(bitmap) {
 }
 
 // Set up the CGContextRef for peaceful coexistence with Skia

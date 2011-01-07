@@ -15,8 +15,7 @@
 
 namespace skia {
 
-SkDevice* BitmapPlatformDeviceFactory::newDevice(SkCanvas* ignored,
-                                                 SkBitmap::Config config,
+SkDevice* BitmapPlatformDeviceFactory::newDevice(SkBitmap::Config config,
                                                  int width, int height,
                                                  bool isOpaque,
                                                  bool isForLayer) {

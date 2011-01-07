@@ -12,8 +12,7 @@
 
 namespace skia {
 
-SkDevice* VectorPlatformDeviceFactory::newDevice(SkCanvas* unused,
-                                                 SkBitmap::Config config,
+SkDevice* VectorPlatformDeviceFactory::newDevice(SkBitmap::Config config,
                                                  int width, int height,
                                                  bool isOpaque,
                                                  bool isForLayer) {
@@ -203,9 +202,7 @@ void VectorPlatformDevice::drawRect(const SkDraw& draw,
 
 void VectorPlatformDevice::drawPath(const SkDraw& draw,
                                     const SkPath& path,
-                                    const SkPaint& paint,
-                                    const SkMatrix* prePathMatrix,
-                                    bool pathIsMutable) {
+                                    const SkPaint& paint) {
   if (paint.getPathEffect()) {
     // Apply the path effect forehand.
     SkPath path_modified;
@@ -250,7 +247,6 @@ void VectorPlatformDevice::drawPath(const SkDraw& draw,
 
 void VectorPlatformDevice::drawBitmap(const SkDraw& draw,
                                       const SkBitmap& bitmap,
-                                      const SkIRect* srcRectOrNull,
                                       const SkMatrix& matrix,
                                       const SkPaint& paint) {
   // Load the temporary matrix. This is what will translate, rotate and resize

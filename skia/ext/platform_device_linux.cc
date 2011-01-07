@@ -6,8 +6,7 @@
 
 namespace skia {
 
-PlatformDevice::PlatformDevice(const SkBitmap& bitmap)
-    : SkDevice(NULL, bitmap, /*isForLayer=*/false) {
+PlatformDevice::PlatformDevice(const SkBitmap& bitmap) : SkDevice(bitmap) {
 }
 
 }  // namespace skia
