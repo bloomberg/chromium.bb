@@ -493,6 +493,8 @@
         'tests/test_c_includes.c',
         'tests/test_char_set.cc',
         'tests/test_char_set.h',
+        'tests/test_class.cc',
+        'tests/test_class.h',
         'tests/test_cpp_includes.cc',
         'tests/test_directory_reader.cc',
         'tests/test_directory_reader.h',
