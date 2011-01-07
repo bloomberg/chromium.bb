@@ -303,10 +303,10 @@ void AboutChromeView::Init() {
 
 #if defined(GOOGLE_CHROME_BUILD)
   std::vector<size_t> url_offsets;
-  text = l10n_util::GetStringF(IDS_ABOUT_TERMS_OF_SERVICE,
-                               std::wstring(),
-                               std::wstring(),
-                               &url_offsets);
+  text = UTF16ToWide(l10n_util::GetStringFUTF16(IDS_ABOUT_TERMS_OF_SERVICE,
+                                                string16(),
+                                                string16(),
+                                                &url_offsets));
 
   main_label_chunk4_ = text.substr(0, url_offsets[0]);
   main_label_chunk5_ = text.substr(url_offsets[0]);
