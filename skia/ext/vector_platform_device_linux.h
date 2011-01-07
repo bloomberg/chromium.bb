@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,11 +14,12 @@ namespace skia {
 
 class VectorPlatformDeviceFactory : public SkDeviceFactory {
  public:
-  virtual SkDevice* newDevice(SkBitmap::Config config, int width, int height,
-                              bool isOpaque, bool isForLayer);
-
   static SkDevice* CreateDevice(cairo_t* context, int width, int height,
                                 bool isOpaque);
+
+  // Overridden from SkDeviceFactory:
+  virtual SkDevice* newDevice(SkBitmap::Config config, int width, int height,
+                              bool isOpaque, bool isForLayer);
 };
 
 // This device is basically a wrapper that provides a surface for SkCanvas
@@ -28,17 +29,23 @@ class VectorPlatformDeviceFactory : public SkDeviceFactory {
 // meaningless.
 class VectorPlatformDevice : public PlatformDevice {
  public:
+  virtual ~VectorPlatformDevice();
+
   // Factory function. Ownership of |context| is not transferred.
   static VectorPlatformDevice* create(PlatformSurface context,
                                       int width, int height);
-  virtual ~VectorPlatformDevice();
 
+  // Clean up cached fonts. It is an error to call this while some
+  // VectorPlatformDevice callee is still using fonts created for it by this
+  // class.
+  static void ClearFontCache();
+
+  // Overridden from SkDevice (through PlatformDevice):
   virtual SkDeviceFactory* getDeviceFactory();
 
+  // Overridden from PlatformDevice:
   virtual bool IsVectorial();
   virtual PlatformSurface beginPlatformPaint();
-
-  // We translate following skia APIs into corresponding Cairo APIs.
   virtual void drawBitmap(const SkDraw& draw, const SkBitmap& bitmap,
                           const SkMatrix& matrix, const SkPaint& paint);
   virtual void drawDevice(const SkDraw& draw, SkDevice*, int x, int y,
@@ -68,11 +75,6 @@ class VectorPlatformDevice : public PlatformDevice {
                             const SkPaint& paint);
   virtual void setMatrixClip(const SkMatrix& transform,
                              const SkRegion& region);
-
-  // Clean up cached fonts. It is an error to call this while some
-  // VectorPlatformDevice callee is still using fonts created for it by this
-  // class.
-  static void ClearFontCache();
 
  protected:
   explicit VectorPlatformDevice(PlatformSurface context,

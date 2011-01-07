@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,12 +66,6 @@ class BitmapPlatformDevice : public PlatformDevice {
   class BitmapPlatformDeviceData;
 
  public:
-  static BitmapPlatformDevice* Create(int width, int height, bool is_opaque);
-
-  // This doesn't take ownership of |data|
-  static BitmapPlatformDevice* Create(int width, int height,
-                                      bool is_opaque, uint8_t* data);
-
   // Create a BitmapPlatformDeviceLinux from an already constructed bitmap;
   // you should probably be using Create(). This may become private later if
   // we ever have to share state between some native drawing UI and Skia, like
@@ -79,26 +73,29 @@ class BitmapPlatformDevice : public PlatformDevice {
   //
   // This object takes ownership of @data.
   BitmapPlatformDevice(const SkBitmap& other, BitmapPlatformDeviceData* data);
-  virtual ~BitmapPlatformDevice();
-  BitmapPlatformDevice& operator=(const BitmapPlatformDevice& other);
 
   // A stub copy constructor.  Needs to be properly implemented.
   BitmapPlatformDevice(const BitmapPlatformDevice& other);
 
-  virtual SkDeviceFactory* getDeviceFactory();
+  virtual ~BitmapPlatformDevice();
+
+  BitmapPlatformDevice& operator=(const BitmapPlatformDevice& other);
+
+  static BitmapPlatformDevice* Create(int width, int height, bool is_opaque);
+
+  // This doesn't take ownership of |data|
+  static BitmapPlatformDevice* Create(int width, int height,
+                                      bool is_opaque, uint8_t* data);
 
   virtual void makeOpaque(int x, int y, int width, int height);
 
-  // Bitmaps aren't vector graphics.
-  virtual bool IsVectorial();
-
-  // If someone wants to paint on a Cairo surface version of our
-  // buffer, then give them the surface we're already using.
-  virtual cairo_t* beginPlatformPaint();
-
-  // Loads the given transform and clipping region into the HDC. This is
-  // overridden from SkDevice.
+  // Overridden from SkDevice:
+  virtual SkDeviceFactory* getDeviceFactory();
   virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region);
+
+  // Overridden from PlatformDevice:
+  virtual bool IsVectorial();
+  virtual cairo_t* beginPlatformPaint();
 
  private:
   static BitmapPlatformDevice* Create(int width, int height, bool is_opaque,

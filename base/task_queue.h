@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,10 +18,6 @@ class TaskQueue : public Task {
   TaskQueue();
   ~TaskQueue();
 
-  // Run all the tasks in the queue.  New tasks pushed onto the queue during
-  // a run will be run next time |Run| is called.
-  virtual void Run();
-
   // Push the specified task onto the queue.  When the queue is run, the tasks
   // will be run in the order they are pushed.
   //
@@ -34,6 +30,10 @@ class TaskQueue : public Task {
 
   // Returns true if this queue contains no tasks.
   bool IsEmpty() const;
+
+  // Run all the tasks in the queue.  New tasks pushed onto the queue during
+  // a run will be run next time |Run| is called.
+  virtual void Run();
 
  private:
    // The list of tasks we are waiting to run.

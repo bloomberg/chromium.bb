@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,8 @@ namespace base {
 class GlobalDescriptors {
  public:
   typedef uint32_t Key;
+  typedef std::vector<std::pair<Key, int> > Mapping;
+
   // Often we want a canonical descriptor for a given Key. In this case, we add
   // the following constant to the key value:
   static const int kBaseDescriptor = 3;  // 0, 1, 2 are already taken.
@@ -46,10 +48,9 @@ class GlobalDescriptors {
 
   // Get a descriptor given a key. It is a fatal error if the key is not known.
   int Get(Key key) const;
+
   // Get a descriptor give a key. Returns -1 on error.
   int MaybeGet(Key key) const;
-
-  typedef std::vector<std::pair<Key, int> > Mapping;
 
   // Set the descriptor for the given key.
   void Set(Key key, int fd);
@@ -59,9 +60,9 @@ class GlobalDescriptors {
   }
 
  private:
+  friend struct DefaultSingletonTraits<GlobalDescriptors>;
   GlobalDescriptors();
   ~GlobalDescriptors();
-  friend struct DefaultSingletonTraits<GlobalDescriptors>;
 
   Mapping descriptors_;
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,32 +24,15 @@ class PlatformCanvas : public SkCanvas {
   // Set is_opaque if you are going to erase the bitmap and not use
   // transparency: this will enable some optimizations.
   PlatformCanvas(int width, int height, bool is_opaque);
-  virtual ~PlatformCanvas();
 
 #if defined(WIN32)
-  // Windows ------------------------------------------------------------------
-
   // The shared_section parameter is passed to gfx::PlatformDevice::create.
   // See it for details.
   PlatformCanvas(int width, int height, bool is_opaque, HANDLE shared_section);
-
-  // For two-part init, call if you use the no-argument constructor above. Note
-  // that we want this to optionally match the Linux initialize if you only
-  // pass 3 arguments, hence the evil default argument.
-  bool initialize(int width, int height, bool is_opaque,
-                  HANDLE shared_section = NULL);
-
 #elif defined(__APPLE__)
-  // Mac -----------------------------------------------------------------------
-
   PlatformCanvas(int width, int height, bool is_opaque,
                  CGContextRef context);
   PlatformCanvas(int width, int height, bool is_opaque, uint8_t* context);
-
-  // For two-part init, call if you use the no-argument constructor above
-  bool initialize(CGContextRef context, int width, int height, bool is_opaque);
-  bool initialize(int width, int height, bool is_opaque, uint8_t* data = NULL);
-
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || \
       defined(__Solaris__)
   // Linux ---------------------------------------------------------------------
@@ -57,11 +40,27 @@ class PlatformCanvas : public SkCanvas {
   // Construct a canvas from the given memory region. The memory is not cleared
   // first. @data must be, at least, @height * StrideForWidth(@width) bytes.
   PlatformCanvas(int width, int height, bool is_opaque, uint8_t* data);
+#endif
 
+  virtual ~PlatformCanvas();
+
+#if defined(WIN32)
+  // For two-part init, call if you use the no-argument constructor above. Note
+  // that we want this to optionally match the Linux initialize if you only
+  // pass 3 arguments, hence the evil default argument.
+  bool initialize(int width, int height, bool is_opaque,
+                  HANDLE shared_section = NULL);
+#elif defined(__APPLE__)
   // For two-part init, call if you use the no-argument constructor above
+  bool initialize(CGContextRef context, int width, int height, bool is_opaque);
   bool initialize(int width, int height, bool is_opaque, uint8_t* data = NULL);
 
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || \
+      defined(__Solaris__)
+  // For two-part init, call if you use the no-argument constructor above
+  bool initialize(int width, int height, bool is_opaque, uint8_t* data = NULL);
 #endif
+
   // Shared --------------------------------------------------------------------
 
   // These calls should surround calls to platform drawing routines, the
@@ -99,6 +98,9 @@ class PlatformCanvas : public SkCanvas {
   using SkCanvas::clipRect;
 
  private:
+  // Helper method used internally by the initialize() methods.
+  bool initializeWithDevice(SkDevice* device);
+
   // Unimplemented. This is to try to prevent people from calling this function
   // on SkCanvas. SkCanvas' version is not virtual, so we can't prevent this
   // 100%, but hopefully this will make people notice and not use the function.
@@ -106,9 +108,6 @@ class PlatformCanvas : public SkCanvas {
   // with us and we will crash if somebody tries to draw into it with
   // CoreGraphics.
   virtual SkDevice* setBitmapDevice(const SkBitmap& bitmap);
-
-  // Helper method used internally by the initialize() methods.
-  bool initializeWithDevice(SkDevice* device);
 
   // Disallow copy and assign.
   PlatformCanvas(const PlatformCanvas&);

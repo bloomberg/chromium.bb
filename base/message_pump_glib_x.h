@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,9 +22,6 @@ class MessagePumpGlibX : public MessagePumpForUI {
   MessagePumpGlibX();
   virtual ~MessagePumpGlibX();
 
-  // MessagePumpForUI implementation.
-  virtual bool RunOnce(GMainContext* context, bool block);
-
   // Indicates whether a GDK event was injected by chrome (when |true|) or if it
   // was captured and being processed by GDK (when |false|).
   bool IsDispatchingEvent(void) { return dispatching_event_; }
@@ -33,6 +30,9 @@ class MessagePumpGlibX : public MessagePumpForUI {
   // Setup an X Window for XInput2 events.
   void SetupXInput2ForXWindow(Window xid);
 #endif
+
+  // Overridden from MessagePumpForUI:
+  virtual bool RunOnce(GMainContext* context, bool block);
 
  private:
   static void EventDispatcherX(GdkEvent* event, gpointer data);

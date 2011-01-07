@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,6 +40,7 @@ class RefCountedStaticMemory : public RefCountedMemory {
   RefCountedStaticMemory(const unsigned char* data, size_t length)
       : data_(data), length_(length) {}
 
+  // Overriden from RefCountedMemory:
   virtual const unsigned char* front() const;
   virtual size_t size() const;
 
@@ -54,16 +55,17 @@ class RefCountedStaticMemory : public RefCountedMemory {
 // vector.
 class RefCountedBytes : public RefCountedMemory {
  public:
-  // Constructs a RefCountedBytes object by performing a swap. (To non
-  // destructively build a RefCountedBytes, use the constructor that takes a
-  // vector.)
-  static RefCountedBytes* TakeVector(std::vector<unsigned char>* to_destroy);
-
   RefCountedBytes();
 
   // Constructs a RefCountedBytes object by _copying_ from |initializer|.
   RefCountedBytes(const std::vector<unsigned char>& initializer);
 
+  // Constructs a RefCountedBytes object by performing a swap. (To non
+  // destructively build a RefCountedBytes, use the constructor that takes a
+  // vector.)
+  static RefCountedBytes* TakeVector(std::vector<unsigned char>* to_destroy);
+
+  // Overriden from RefCountedMemory:
   virtual const unsigned char* front() const;
   virtual size_t size() const;
 
