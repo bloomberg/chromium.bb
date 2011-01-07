@@ -296,10 +296,6 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
   virtual void LoadingStateChanged(TabContents* source) {}
   virtual void CloseContents(TabContents* source) {}
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos) {}
-  virtual void DetachContents(TabContents* source) {}
-  virtual bool IsPopup(const TabContents* source) const {
-    return false;
-  }
   virtual bool ShouldFocusConstrainedWindow() {
     // Return false so that constrained windows are not initially focused. If
     // we did otherwise the preview would prematurely get committed when focus
@@ -317,15 +313,6 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
   virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
   virtual void URLStarredChanged(TabContents* source, bool starred) {}
   virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
-  virtual void ContentsMouseEvent(
-      TabContents* source, const gfx::Point& location, bool motion) {}
-  virtual void ContentsZoomChange(bool zoom_in) {}
-  virtual void OnContentSettingsChange(TabContents* source) {}
-  virtual bool IsApplication() const { return false; }
-  virtual void ConvertContentsToApplication(TabContents* source) {}
-  virtual bool CanReloadContents(TabContents* source) const { return true; }
-  virtual void ShowHtmlDialog(HtmlDialogUIDelegate* delegate,
-                              gfx::NativeWindow parent_window) {}
   virtual bool ShouldSuppressDialogs() {
     // Any message shown during instant cancels instant, so we suppress them.
     return true;
@@ -333,48 +320,18 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
   virtual void BeforeUnloadFired(TabContents* tab,
                                  bool proceed,
                                  bool* proceed_to_fire_unload) {}
-  virtual void ForwardMessageToExternalHost(const std::string& message,
-                                            const std::string& origin,
-                                            const std::string& target) {}
-  virtual bool IsExternalTabContainer() const { return false; }
   virtual void SetFocusToLocationBar(bool select_all) {}
   virtual bool ShouldFocusPageAfterCrash() { return false; }
-  virtual void RenderWidgetShowing() {}
-  virtual bool TakeFocus(bool reverse) { return false; }
   virtual void LostCapture() {
     CommitFromMouseReleaseIfNecessary();
   }
-  virtual void SetTabContentBlocked(TabContents* contents, bool blocked) {}
-  virtual void TabContentsFocused(TabContents* tab_content) {
-  }
-  virtual int GetExtraRenderViewHeight() const { return 0; }
   virtual bool CanDownload(int request_id) { return false; }
-  virtual void OnStartDownload(DownloadItem* download, TabContents* tab) {}
-  virtual bool HandleContextMenu(const ContextMenuParams& params) {
-    return false;
-  }
-  virtual bool ExecuteContextMenuCommand(int command) {
-    return false;
-  }
-  virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
-                                        Profile* profile) {}
-  virtual void ShowPageInfo(Profile* profile,
-                            const GURL& url,
-                            const NavigationEntry::SSLStatus& ssl,
-                            bool show_history) {}
-  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut) {
-    return false;
-  }
   virtual void HandleMouseUp() {
     CommitFromMouseReleaseIfNecessary();
   }
   virtual void HandleMouseActivate() {
     is_mouse_down_from_activate_ = true;
   }
-  virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) {}
-  virtual void ShowContentSettingsWindow(ContentSettingsType content_type) {}
-  virtual void ShowCollectedCookiesDialog(TabContents* tab_contents) {}
   virtual bool OnGoToEntryOffset(int offset) { return false; }
   virtual bool ShouldAddNavigationToHistory(
       const history::HistoryAddPageArgs& add_page_args,
@@ -388,16 +345,6 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
     }
     return false;
   }
-  virtual void OnDidGetApplicationInfo(TabContents* tab_contents,
-                                       int32 page_id) {}
-  virtual gfx::NativeWindow GetFrameNativeWindow() {
-    return NULL;
-  }
-  virtual void TabContentsCreated(TabContents* new_contents) {}
-  virtual bool infobars_enabled() { return false; }
-  virtual bool ShouldEnablePreferredSizeNotifications() { return false; }
-  virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}
-  virtual void ContentTypeChanged(TabContents* source) {}
 
   virtual void OnSetSuggestions(int32 page_id,
                                 const std::vector<std::string>& suggestions) {
