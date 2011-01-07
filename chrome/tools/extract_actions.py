@@ -133,6 +133,16 @@ def AddComputedActions(actions):
     actions.add('LanguageOptions_UiLanguageChange_%s' % language_code)
     actions.add('LanguageOptions_SpellCheckLanguageChange_%s' % language_code)
 
+  # Actions sent by the Chrome OS window manager.
+  actions.add('Accel_NextWindow_Tab')
+  actions.add('Accel_PrevWindow_Tab')
+  actions.add('Accel_NextWindow_F5')
+  actions.add('Accel_PrevWindow_F5')
+
+  # Actions sent by the Chrome OS power manager.
+  actions.add('Accel_BrightnessDown_F6')
+  actions.add('Accel_BrightnessUp_F7')
+
 def AddWebKitEditorActions(actions):
   """Add editor actions from editor_client_impl.cc.
 
