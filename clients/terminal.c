@@ -495,7 +495,6 @@ terminal_scroll_window(struct terminal *terminal, int d)
 	int i;
 	int window_height;
 	int from_row, to_row;
-	struct attr *dup_attr;
 	
 	// scrolling range is inclusive
 	window_height = terminal->margin_bottom - terminal->margin_top + 1;
@@ -513,13 +512,10 @@ terminal_scroll_window(struct terminal *terminal, int d)
 			       terminal_get_attr_row(terminal, from_row - i),
 			       terminal->attr_pitch);
 		}
-		dup_attr = terminal_get_attr_row(terminal, terminal->margin_top);
 		for (i = terminal->margin_top; i < (terminal->margin_top + d); i++) {
 			memset(terminal_get_row(terminal, i), 0, terminal->data_pitch);
-			if (i > terminal->margin_top) {
-				memcpy(terminal_get_attr_row(terminal, i),
-				       dup_attr, terminal->attr_pitch);
-			}
+			attr_init(terminal_get_attr_row(terminal, i),
+				terminal->curr_attr, terminal->width);
 		}
 	} else {
 		to_row = terminal->margin_top;
@@ -533,13 +529,10 @@ terminal_scroll_window(struct terminal *terminal, int d)
 			       terminal_get_attr_row(terminal, from_row + i),
 			       terminal->attr_pitch);
 		}
-		dup_attr = terminal_get_attr_row(terminal, terminal->margin_bottom);
 		for (i = terminal->margin_bottom - d + 1; i <= terminal->margin_bottom; i++) {
 			memset(terminal_get_row(terminal, i), 0, terminal->data_pitch);
-			if (i < terminal->margin_bottom) {
-				memcpy(terminal_get_attr_row(terminal, i),
-				       dup_attr, terminal->attr_pitch);
-			}
+			attr_init(terminal_get_attr_row(terminal, i),
+				terminal->curr_attr, terminal->width);
 		}
 	}
 }
@@ -641,10 +634,10 @@ terminal_resize(struct terminal *terminal, int width, int height)
 
 	terminal->data_pitch = data_pitch;
 	terminal->attr_pitch = attr_pitch;
+	terminal->margin_bottom =
+		height - (terminal->height - terminal->margin_bottom);
 	terminal->width = width;
 	terminal->height = height;
-	if(terminal->margin_bottom >= terminal->height)
-		terminal->margin_bottom = terminal->height - 1;
 	terminal->data = data;
 	terminal->data_attr = data_attr;
 	terminal->tab_ruler = tab_ruler;
@@ -751,6 +744,10 @@ terminal_draw_contents(struct terminal *terminal)
 			{
 				foreground = attr.bg;
 				background = attr.fg;
+				if (attr.a & ATTRMASK_BOLD) {
+					if (foreground <= 16) foreground |= 0x08;
+					if (background <= 16) background &= 0x07;
+				}
 			} else {
 				foreground = attr.fg;
 				background = attr.bg;
@@ -759,6 +756,10 @@ terminal_draw_contents(struct terminal *terminal)
 				tmp = foreground;
 				foreground = background;
 				background = tmp;
+				if (attr.a & ATTRMASK_BOLD) {
+					if (foreground <= 16) foreground |= 0x08;
+					if (background <= 16) background &= 0x07;
+				}
 			}
 			bold = attr.a & (ATTRMASK_BOLD | ATTRMASK_BLINK);
 			underline = attr.a & ATTRMASK_UNDERLINE;
@@ -791,8 +792,8 @@ terminal_draw_contents(struct terminal *terminal)
 			text_x = side_margin + col * extents.max_x_advance;
 			text_y = top_margin + extents.ascent + row * extents.height;
 			if (underline) {
-				cairo_move_to(cr, text_x, text_y + 2);
-				cairo_line_to(cr, text_x + extents.max_x_advance, text_y + 2);
+				cairo_move_to(cr, text_x, (double)text_y + 1.5);
+				cairo_line_to(cr, text_x + extents.max_x_advance, (double) text_y + 1.5);
 				cairo_stroke(cr);
 			}
 			cairo_move_to(cr, text_x, text_y);
@@ -1192,7 +1193,6 @@ handle_escape(struct terminal *terminal)
 		break;
 	case 'c':    /* Primary DA */
 		write(terminal->master, "\e[?6c", 5);
-		sleep(1);
 		break;
 	case 'd':    /* VPA */
 		x = set[0] ? args[0] : 1;
@@ -1249,7 +1249,6 @@ handle_escape(struct terminal *terminal)
 				 terminal->column+1);
 			write(terminal->master, response, strlen(response));
 		}
-		sleep(1);  /* is this required? why? */
  		break;
 	case 'r':
 		if(!set[0]) {
@@ -1822,8 +1821,7 @@ terminal_create(struct display *display, int fullscreen)
 	terminal->color_scheme = &DEFAULT_COLORS;
 	terminal_init(terminal);
 	terminal->margin_top = 0;
-	terminal->margin_bottom = 10000;  /* much too large, will be trimmed down
-	                                   * by terminal_resize */
+	terminal->margin_bottom = -1;
 	terminal->window = window_create(display, "Wayland Terminal",
 					 500, 400);
 
@@ -1889,7 +1887,8 @@ terminal_run(struct terminal *terminal, const char *path)
 
 	pid = forkpty(&master, NULL, NULL, NULL);
 	if (pid == 0) {
-		setenv("TERM", "vt102", 1);
+		setenv("TERM", "xterm-256color", 1);
+		setenv("COLORTERM", "xterm-256color", 1);
 		if (execl(path, path, NULL)) {
 			printf("exec failed: %m\n");
 			exit(EXIT_FAILURE);
