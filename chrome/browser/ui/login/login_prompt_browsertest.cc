@@ -276,7 +276,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, MultipleRealmConfirmation) {
 
 // Testing for recovery from an incorrect password for the case where
 // there are multiple authenticated resources.
-IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, IncorrectConfirmation) {
+// Marked as flaky.  See crbug.com/68860
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, FLAKY_IncorrectConfirmation) {
   ASSERT_TRUE(test_server()->Start());
   GURL test_page = test_server()->GetURL(kSingleRealmTestPage);
 
