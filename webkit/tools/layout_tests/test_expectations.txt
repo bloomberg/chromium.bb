@@ -4,6 +4,3 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
-
-// Was flaky; started failing more consistently after the WebKit roll to r75216.
-BUG_SENORBLANCO DEBUG : transitions/suspend-transform-transition.html = IMAGE PASS
