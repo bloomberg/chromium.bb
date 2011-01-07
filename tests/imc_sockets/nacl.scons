@@ -18,6 +18,5 @@ env.ComponentProgram('socket_transfer_test.nexe', 'socket_transfer_test.c',
 
 node = env.CommandSelLdrTestNacl(
   'socket_transfer_test.out',
-  command=[env.File('socket_transfer_test.nexe')] + test_args,
-  sel_ldr_flags=['-X', '-1'])
+  command=[env.File('socket_transfer_test.nexe')] + test_args)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_socket_transfer_test')
