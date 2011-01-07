@@ -153,6 +153,33 @@ class PasswordTest(pyauto.PyUITest):
         tab_index=0, windex=1)
     test_utils.ClearPasswords(self)
 
+  def testInfoBarDisappearByNavigatingPage(self):
+    """Test that Password infobar is dismissed by navigating to
+       different page."""
+    creds = self.GetPrivateInfo()['test_google_account']
+    # Login to Google a/c
+    test_utils.GoogleAccountsLogin(self, creds['username'], creds['password'])
+    # Wait for the infobar to appear
+    self.assertTrue(self.WaitForInfobarCount(1))
+    self.assertTrue(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
+    self.NavigateToURL('chrome://history')
+    self.assertTrue(self.WaitForInfobarCount(0))
+    # To make sure user is navigated to History page.
+    self.assertEqual('History', self.GetActiveTabTitle())
+    self.assertFalse(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
+
+  def testInfoBarDisappearByReload(self):
+    """Test that Password infobar disappears by the page reload."""
+    creds = self.GetPrivateInfo()['test_google_account']
+    # Login to Google a/c
+    test_utils.GoogleAccountsLogin(self, creds['username'], creds['password'])
+    # Wait for the infobar to appear
+    self.assertTrue(self.WaitForInfobarCount(1))
+    self.assertTrue(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
+    self.GetBrowserWindow(0).GetTab(0).Reload()
+    self.assertTrue(self.WaitForInfobarCount(0))
+    self.assertFalse(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
