@@ -63,6 +63,8 @@ static int option_fullscreen;
 #define MODE_AUTOREPEAT		0x00000008
 #define MODE_LF_NEWLINE		0x00000010
 #define MODE_IRM		0x00000020
+#define MODE_DELETE_SENDS_DEL	0x00000040
+#define MODE_ALT_SENDS_ESC	0x00000080
 
 union utf8_char {
 	unsigned char byte[4];
@@ -229,6 +231,87 @@ apply_char_set(character_set cs, union utf8_char *utf8)
 	}
 }
 
+struct key_map {
+	int sym;
+	int num;
+	char escape;
+	char code;
+};
+/* Set last key_sub sym to NULL */
+typedef struct key_map *keyboard_mode;
+
+static struct key_map KM_NORMAL[] = {
+	{XK_Left,  1, '[', 'D'},
+	{XK_Right, 1, '[', 'C'},
+	{XK_Up,    1, '[', 'A'},
+	{XK_Down,  1, '[', 'B'},
+	{XK_Home,  1, '[', 'H'},
+	{XK_End,   1, '[', 'F'},
+	{0, 0, 0, 0}
+};
+static struct key_map KM_APPLICATION[] = {
+	{XK_Left,          1, 'O', 'D'},
+	{XK_Right,         1, 'O', 'C'},
+	{XK_Up,            1, 'O', 'A'},
+	{XK_Down,          1, 'O', 'B'},
+	{XK_Home,          1, 'O', 'H'},
+	{XK_End,           1, 'O', 'F'},
+	{XK_KP_Enter,      1, 'O', 'M'},
+	{XK_KP_Multiply,   1, 'O', 'j'},
+	{XK_KP_Add,        1, 'O', 'k'},
+	{XK_KP_Separator,  1, 'O', 'l'},
+	{XK_KP_Subtract,   1, 'O', 'm'},
+	{XK_KP_Divide,     1, 'O', 'o'},
+	{0, 0, 0, 0}
+};
+
+static int
+function_key_response(char escape, int num, uint32_t modifiers,
+		      char code, char *response)
+{
+	int mod_num = 0;
+	int len;
+
+	if (modifiers & WINDOW_MODIFIER_SHIFT) mod_num   |= 1;
+	if (modifiers & WINDOW_MODIFIER_ALT) mod_num     |= 2;
+	if (modifiers & WINDOW_MODIFIER_CONTROL) mod_num |= 4;
+
+	if (mod_num != 0)
+		len = snprintf(response, MAX_RESPONSE, "\e[%d;%d%c",
+			       num, mod_num + 1, code);
+	else if (code != '~')
+		len = snprintf(response, MAX_RESPONSE, "\e%c%c",
+			       escape, code);
+	else
+		len = snprintf(response, MAX_RESPONSE, "\e%c%d%c",
+			       escape, num, code);
+
+	if (len >= MAX_RESPONSE)	return MAX_RESPONSE - 1;
+	else				return len;
+}
+
+/* returns the number of bytes written into response,
+ * which must have room for MAX_RESPONSE bytes */
+static int
+apply_key_map(keyboard_mode mode, int sym, uint32_t modifiers, char *response)
+{
+	struct key_map map;
+	int len = 0;
+	int i = 0;
+	
+	while (mode[i].sym) {
+		map = mode[i++];
+		if (sym == map.sym) {
+			len = function_key_response(map.escape, map.num,
+						    modifiers, map.code,
+						    response);
+			break;
+		}
+	}
+	
+	return len;
+}
+
 struct terminal_color { double r, g, b, a; };
 struct attr {
 	unsigned char fg, bg;
@@ -267,6 +350,7 @@ struct terminal {
 	int margin_top, margin_bottom;
 	character_set cs, g0, g1;
 	character_set saved_cs, saved_g0, saved_g1;
+	keyboard_mode key_mode;
 	int data_pitch, attr_pitch;  /* The width in bytes of a line */
 	int width, height, start, row, column;
 	int saved_row, saved_column;
@@ -309,6 +393,7 @@ terminal_init(struct terminal *terminal)
 	terminal->origin_mode = 0;
 	terminal->mode = MODE_SHOW_CURSOR |
 			 MODE_AUTOREPEAT |
+			 MODE_ALT_SENDS_ESC |
 			 MODE_AUTOWRAP;
 
 	terminal->row = 0;
@@ -317,6 +402,7 @@ terminal_init(struct terminal *terminal)
 	terminal->g0 = CS_US;
 	terminal->g1 = CS_US;
 	terminal->cs = terminal->g0;
+	terminal->key_mode = KM_NORMAL;
 
 	terminal->saved_g0 = terminal->g0;
 	terminal->saved_g1 = terminal->g1;
@@ -787,6 +873,10 @@ handle_term_parameter(struct terminal *terminal, int code, int sr)
 
 	if (terminal->qmark_flag) {
 		switch(code) {
+		case 1:  /* DECCKM */
+			if (sr)	terminal->key_mode = KM_APPLICATION;
+			else	terminal->key_mode = KM_NORMAL;
+			break;
 		case 2:  /* DECANM */
 			/* No VT52 support yet */
 			terminal->g0 = CS_US;
@@ -831,6 +921,14 @@ handle_term_parameter(struct terminal *terminal, int code, int sr)
 		case 25:
 			if (sr)	terminal->mode |=  MODE_SHOW_CURSOR;
 			else	terminal->mode &= ~MODE_SHOW_CURSOR;
+			break;
+		case 1037:   /* deleteSendsDel */
+			if (sr)	terminal->mode |=  MODE_DELETE_SENDS_DEL;
+			else	terminal->mode &= ~MODE_DELETE_SENDS_DEL;
+			break;
+		case 1039:   /* altSendsEscape */
+			if (sr)	terminal->mode |=  MODE_ALT_SENDS_ESC;
+			else	terminal->mode &= ~MODE_ALT_SENDS_ESC;
 			break;
 		default:
 			fprintf(stderr, "Unknown parameter: ?%d\n", code);
@@ -1239,6 +1337,12 @@ handle_non_csi_escape(struct terminal *terminal, char code)
 		terminal->g0 = terminal->saved_g0;
 		terminal->g1 = terminal->saved_g1;
 		break;
+	case '=':    /* DECPAM */
+		terminal->key_mode = KM_APPLICATION;
+		break;
+	case '>':    /* DECPNM */
+		terminal->key_mode = KM_NORMAL;
+		break;
 	default:
 		fprintf(stderr, "Unknown escape code: %c\n", code);
 		break;
@@ -1583,8 +1687,6 @@ key_handler(struct window *window, uint32_t key, uint32_t sym,
 		window_schedule_redraw(terminal->window);
 		break;
 
-	case XK_Delete:
-		sym = 0x04;
 	case XK_BackSpace:
 	case XK_Tab:
 	case XK_Linefeed:
@@ -1613,11 +1715,78 @@ key_handler(struct window *window, uint32_t key, uint32_t sym,
 	case XK_Alt_R:
 		break;
 
+	case XK_Insert:
+		len = function_key_response('[', 2, modifiers, '~', ch);
+		break;
+	case XK_Delete:
+		if (terminal->mode & MODE_DELETE_SENDS_DEL) {
+			ch[len++] = '\x04';
+		} else {
+			len = function_key_response('[', 3, modifiers, '~', ch);
+		}
+		break;
+	case XK_Page_Up:
+		len = function_key_response('[', 5, modifiers, '~', ch);
+		break;
+	case XK_Page_Down:
+		len = function_key_response('[', 6, modifiers, '~', ch);
+		break;
+	case XK_F1:
+		len = function_key_response('O', 1, modifiers, 'P', ch);
+		break;
+	case XK_F2:
+		len = function_key_response('O', 1, modifiers, 'Q', ch);
+		break;
+	case XK_F3:
+		len = function_key_response('O', 1, modifiers, 'R', ch);
+		break;
+	case XK_F4:
+		len = function_key_response('O', 1, modifiers, 'S', ch);
+		break;
+	case XK_F5:
+		len = function_key_response('[', 15, modifiers, '~', ch);
+		break;
+	case XK_F6:
+		len = function_key_response('[', 17, modifiers, '~', ch);
+		break;
+	case XK_F7:
+		len = function_key_response('[', 18, modifiers, '~', ch);
+		break;
+	case XK_F8:
+		len = function_key_response('[', 19, modifiers, '~', ch);
+		break;
+	case XK_F9:
+		len = function_key_response('[', 20, modifiers, '~', ch);
+		break;
+	case XK_F10:
+		len = function_key_response('[', 21, modifiers, '~', ch);
+		break;
+	case XK_F12:
+		len = function_key_response('[', 24, modifiers, '~', ch);
+		break;
 	default:
-		if (modifiers & WINDOW_MODIFIER_CONTROL)
-			sym = sym & 0x1f;
-		else if (modifiers & WINDOW_MODIFIER_ALT)
+		/* Handle special keys with alternate mappings */
+		len = apply_key_map(terminal->key_mode, sym, modifiers, ch);
+		if (len != 0) break;
+		
+		if (modifiers & WINDOW_MODIFIER_CONTROL) {
+			if (sym >= '3' && sym <= '7')
+				sym = (sym & 0x1f) + 8;
+
+			if (!((sym >= '!' && sym <= '/') ||
+				(sym >= '8' && sym <= '?') ||
+				(sym >= '0' && sym <= '2'))) sym = sym & 0x1f;
+			else if (sym == '2') sym = 0x00;
+			else if (sym == '/') sym = 0x1F;
+			else if (sym == '8' || sym == '?') sym = 0x7F;
+		} else if ((terminal->mode & MODE_ALT_SENDS_ESC) && 
+			(modifiers & WINDOW_MODIFIER_ALT))
+		{
 			ch[len++] = 0x1b;
+		} else if (modifiers & WINDOW_MODIFIER_ALT) {
+			sym = sym | 0x80;
+		}
+
 		if (sym < 256)
 			ch[len++] = sym;
 		break;
