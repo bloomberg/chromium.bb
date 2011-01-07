@@ -68,7 +68,8 @@ bool IsContextValid(cairo_t* context) {
 
 namespace skia {
 
-SkDevice* VectorPlatformDeviceFactory::newDevice(SkBitmap::Config config,
+SkDevice* VectorPlatformDeviceFactory::newDevice(SkCanvas* ignored,
+                                                 SkBitmap::Config config,
                                                  int width, int height,
                                                  bool isOpaque,
                                                  bool isForLayer) {
@@ -139,6 +140,7 @@ PlatformDevice::PlatformSurface VectorPlatformDevice::beginPlatformPaint() {
 
 void VectorPlatformDevice::drawBitmap(const SkDraw& draw,
                                       const SkBitmap& bitmap,
+                                      const SkIRect* srcRectOrNull,
                                       const SkMatrix& matrix,
                                       const SkPaint& paint) {
   SkASSERT(bitmap.getConfig() == SkBitmap::kARGB_8888_Config);
@@ -185,7 +187,9 @@ void VectorPlatformDevice::drawPaint(const SkDraw& draw,
 
 void VectorPlatformDevice::drawPath(const SkDraw& draw,
                                     const SkPath& path,
-                                    const SkPaint& paint) {
+                                    const SkPaint& paint,
+                                    const SkMatrix* prePathMatrix,
+                                    bool pathIsMutable) {
   if (paint.getPathEffect()) {
     // Apply the path effect forehand.
     SkPath path_modified;

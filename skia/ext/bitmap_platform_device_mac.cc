@@ -49,7 +49,8 @@ static CGContextRef CGContextForData(void* data, int width, int height) {
 
 }  // namespace
 
-SkDevice* BitmapPlatformDeviceFactory::newDevice(SkBitmap::Config config,
+SkDevice* BitmapPlatformDeviceFactory::newDevice(SkCanvas* ignored,
+                                                 SkBitmap::Config config,
                                                  int width, int height,
                                                  bool isOpaque,
                                                  bool isForLayer) {

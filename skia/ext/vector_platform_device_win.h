@@ -6,6 +6,7 @@
 #define SKIA_EXT_VECTOR_PLATFORM_DEVICE_WIN_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "skia/ext/platform_device.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -14,8 +15,9 @@ namespace skia {
 
 class VectorPlatformDeviceFactory : public SkDeviceFactory {
  public:
-  virtual SkDevice* newDevice(SkBitmap::Config config, int width, int height,
-                              bool isOpaque, bool isForLayer);
+  virtual SkDevice* newDevice(SkCanvas* ignored, SkBitmap::Config config,
+                              int width, int height,
+                              bool isOpaque, bool isForLayer) OVERRIDE;
   static SkDevice* CreateDevice(int width, int height, bool isOpaque,
                                 HANDLE shared_section);
 };
@@ -40,33 +42,38 @@ class VectorPlatformDevice : public PlatformDevice {
     return hdc_;
   }
 
-  virtual void drawPaint(const SkDraw& draw, const SkPaint& paint);
+  virtual void drawPaint(const SkDraw& draw, const SkPaint& paint) OVERRIDE;
   virtual void drawPoints(const SkDraw& draw, SkCanvas::PointMode mode,
-                          size_t count, const SkPoint[], const SkPaint& paint);
+                          size_t count, const SkPoint[],
+                          const SkPaint& paint) OVERRIDE;
   virtual void drawRect(const SkDraw& draw, const SkRect& r,
-                        const SkPaint& paint);
+                        const SkPaint& paint) OVERRIDE;
   virtual void drawPath(const SkDraw& draw, const SkPath& path,
-                        const SkPaint& paint);
+                        const SkPaint& paint,
+                        const SkMatrix* prePathMatrix = NULL,
+                        bool pathIsMutable = false) OVERRIDE;
   virtual void drawBitmap(const SkDraw& draw, const SkBitmap& bitmap,
-                          const SkMatrix& matrix, const SkPaint& paint);
+                          const SkIRect* srcRectOrNull,
+                          const SkMatrix& matrix,
+                          const SkPaint& paint) OVERRIDE;
   virtual void drawSprite(const SkDraw& draw, const SkBitmap& bitmap,
-                          int x, int y, const SkPaint& paint);
+                          int x, int y, const SkPaint& paint) OVERRIDE;
   virtual void drawText(const SkDraw& draw, const void* text, size_t len,
-                        SkScalar x, SkScalar y, const SkPaint& paint);
+                        SkScalar x, SkScalar y, const SkPaint& paint) OVERRIDE;
   virtual void drawPosText(const SkDraw& draw, const void* text, size_t len,
                            const SkScalar pos[], SkScalar constY,
-                           int scalarsPerPos, const SkPaint& paint);
+                           int scalarsPerPos, const SkPaint& paint) OVERRIDE;
   virtual void drawTextOnPath(const SkDraw& draw, const void* text, size_t len,
                               const SkPath& path, const SkMatrix* matrix,
-                              const SkPaint& paint);
+                              const SkPaint& paint) OVERRIDE;
   virtual void drawVertices(const SkDraw& draw, SkCanvas::VertexMode,
                             int vertexCount,
                             const SkPoint verts[], const SkPoint texs[],
                             const SkColor colors[], SkXfermode* xmode,
                             const uint16_t indices[], int indexCount,
-                            const SkPaint& paint);
+                            const SkPaint& paint) OVERRIDE;
   virtual void drawDevice(const SkDraw& draw, SkDevice*, int x, int y,
-                          const SkPaint&);
+                          const SkPaint&) OVERRIDE;
 
 
   virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region);

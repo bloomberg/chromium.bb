@@ -14,7 +14,8 @@ namespace skia {
 
 class VectorPlatformDeviceFactory : public SkDeviceFactory {
  public:
-  virtual SkDevice* newDevice(SkBitmap::Config config, int width, int height,
+  virtual SkDevice* newDevice(SkCanvas* ignored, SkBitmap::Config config,
+                              int width, int height,
                               bool isOpaque, bool isForLayer);
 
   static SkDevice* CreateDevice(cairo_t* context, int width, int height,
@@ -40,12 +41,15 @@ class VectorPlatformDevice : public PlatformDevice {
 
   // We translate following skia APIs into corresponding Cairo APIs.
   virtual void drawBitmap(const SkDraw& draw, const SkBitmap& bitmap,
+                          const SkIRect* srcRectOrNull,
                           const SkMatrix& matrix, const SkPaint& paint);
   virtual void drawDevice(const SkDraw& draw, SkDevice*, int x, int y,
                           const SkPaint&);
   virtual void drawPaint(const SkDraw& draw, const SkPaint& paint);
   virtual void drawPath(const SkDraw& draw, const SkPath& path,
-                        const SkPaint& paint);
+                        const SkPaint& paint,
+                        const SkMatrix* prePathMatrix = NULL,
+                        bool pathIsMutable = false);
   virtual void drawPoints(const SkDraw& draw, SkCanvas::PointMode mode,
                           size_t count, const SkPoint[], const SkPaint& paint);
   virtual void drawPosText(const SkDraw& draw, const void* text, size_t len,
