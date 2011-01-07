@@ -220,6 +220,7 @@ void SSLHostInfo::VerifyCallback(int rv) {
 
 void SSLHostInfo::DnsComplete(int rv) {
   dns_handle_ = DnsRRResolver::kInvalidHandle;
+  delete dns_callback_;
   dns_callback_ = NULL;
 
   const base::TimeTicks now = base::TimeTicks::Now();
