@@ -15,6 +15,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
@@ -72,6 +73,10 @@ static const char* const kReportErrorCommand = "reportError";
 static const char* const kLearnMoreCommand = "learnMore";
 static const char* const kProceedCommand = "proceed";
 static const char* const kTakeMeBackCommand = "takeMeBack";
+static const char* const kDoReportCommand = "doReport";
+static const char* const kDontReportCommand = "dontReport";
+static const char* const kDisplayCheckBox = "displaycheckbox";
+static const char* const kBoxChecked = "boxchecked";
 
 // static
 SafeBrowsingBlockingPageFactory* SafeBrowsingBlockingPage::factory_ = NULL;
@@ -316,6 +321,27 @@ void SafeBrowsingBlockingPage::PopulateMalwareStringDictionary(
   strings->SetString("proceed_link",
       l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_PROCEED_LINK));
   strings->SetString("textdirection", base::i18n::IsRTL() ? "rtl" : "ltr");
+
+  if (!CanShowMalwareDetailsOption()) {
+    strings->SetBoolean(kDisplayCheckBox, false);
+  } else {
+    // Show the checkbox for sending malware details.
+    strings->SetBoolean(kDisplayCheckBox, true);
+    strings->SetString(
+        "confirm_text",
+        l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_REPORTING_AGREE));
+
+    const PrefService::Preference* pref =
+        tab()->profile()->GetPrefs()->FindPreference(
+            prefs::kSafeBrowsingReportingEnabled);
+
+    bool value;
+    if (pref && pref->GetValue()->GetAsBoolean(&value) && value) {
+      strings->SetString(kBoxChecked, "yes");
+    } else {
+      strings->SetString(kBoxChecked, "");
+    }
+  }
 }
 
 void SafeBrowsingBlockingPage::PopulatePhishingStringDictionary(
@@ -347,6 +373,16 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
   // The Jasonified response has quotes, remove them.
   if (command.length() > 1 && command[0] == '"') {
     command = command.substr(1, command.length() - 2);
+  }
+
+  if (command == kDoReportCommand) {
+    SetReportingPreference(true);
+    return;
+  }
+
+  if (command == kDontReportCommand) {
+    SetReportingPreference(false);
+    return;
   }
 
   if (command == kLearnMoreCommand) {
@@ -422,6 +458,11 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
   }
 
   NOTREACHED() << "Unexpected command: " << command;
+}
+
+void SafeBrowsingBlockingPage::SetReportingPreference(bool report) {
+  PrefService* pref = tab()->profile()->GetPrefs();
+  pref->SetBoolean(prefs::kSafeBrowsingReportingEnabled, report);
 }
 
 void SafeBrowsingBlockingPage::Proceed() {

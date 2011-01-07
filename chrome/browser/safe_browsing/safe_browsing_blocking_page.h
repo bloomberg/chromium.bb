@@ -66,6 +66,7 @@ class SafeBrowsingBlockingPage : public InterstitialPage {
 
   // InterstitialPage method:
   virtual std::string GetHTMLContents();
+  virtual void SetReportingPreference(bool report);
   virtual void Proceed();
   virtual void DontProceed();
 
@@ -106,7 +107,7 @@ class SafeBrowsingBlockingPage : public InterstitialPage {
   // SBInterstitial[Phishing|Malware|Multiple][Show|Proceed|DontProceed].
   void RecordUserAction(BlockingPageEvent event);
 
-  // See if we should even show the malware details option. For example, we
+  // Checks if we should even show the malware details option. For example, we
   // don't show it in incognito mode.
   bool CanShowMalwareDetailsOption();
 

@@ -297,19 +297,17 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
                        MalwareIframeReportDetails) {
-  // Enable reporting of malware details.
-  browser()->GetProfile()->GetPrefs()->SetBoolean(
-      prefs::kSafeBrowsingReportingEnabled, true);
-  EXPECT_TRUE(browser()->GetProfile()->GetPrefs()->GetBoolean(
-      prefs::kSafeBrowsingReportingEnabled));
-
   GURL url = test_server()->GetURL(kMalwarePage);
   GURL iframe_url = test_server()->GetURL(kMalwareIframe);
   AddURLResult(iframe_url, SafeBrowsingService::URL_MALWARE);
 
   ui_test_utils::NavigateToURL(browser(), url);
 
-  SendCommand("\"proceed\"");    // Simulate the user clicking "back"
+  SendCommand("\"doReport\"");  // Simulate the user checking the checkbox.
+  EXPECT_TRUE(browser()->GetProfile()->GetPrefs()->GetBoolean(
+      prefs::kSafeBrowsingReportingEnabled));
+
+  SendCommand("\"proceed\"");  // Simulate the user clicking "back"
   AssertNoInterstitial();  // Assert the interstitial is gone
 
   EXPECT_EQ(url, browser()->GetSelectedTabContents()->GetURL());

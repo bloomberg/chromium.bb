@@ -548,3 +548,35 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsDisabled) {
   EXPECT_EQ(0u, service_->GetDetails()->size());
   service_->GetDetails()->clear();
 }
+
+// Test setting the malware report preferance
+TEST_F(SafeBrowsingBlockingPageTest, MalwareReports) {
+  // Disable malware reports.
+  contents()->profile()->GetPrefs()->SetBoolean(
+      prefs::kSafeBrowsingReportingEnabled, false);
+
+  // Start a load.
+  controller().LoadURL(GURL(kBadURL), GURL(), PageTransition::TYPED);
+
+  // Simulate the load causing a safe browsing interstitial to be shown.
+  ShowInterstitial(ResourceType::MAIN_FRAME, kBadURL);
+  SafeBrowsingBlockingPage* sb_interstitial = GetSafeBrowsingBlockingPage();
+  ASSERT_TRUE(sb_interstitial);
+
+  MessageLoop::current()->RunAllPending();
+
+  EXPECT_FALSE(contents()->profile()->GetPrefs()->GetBoolean(
+      prefs::kSafeBrowsingReportingEnabled));
+
+  // Simulate the user check the report agreement checkbox.
+  sb_interstitial->SetReportingPreference(true);
+
+  EXPECT_TRUE(contents()->profile()->GetPrefs()->GetBoolean(
+      prefs::kSafeBrowsingReportingEnabled));
+
+  // Simulate the user uncheck the report agreement checkbox.
+  sb_interstitial->SetReportingPreference(false);
+
+  EXPECT_FALSE(contents()->profile()->GetPrefs()->GetBoolean(
+      prefs::kSafeBrowsingReportingEnabled));
+}
