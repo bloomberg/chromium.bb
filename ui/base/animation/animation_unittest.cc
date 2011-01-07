@@ -1,15 +1,17 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/animation_delegate.h"
-#include "app/linear_animation.h"
-#include "app/test_animation_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/linear_animation.h"
+#include "ui/base/animation/test_animation_delegate.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
+
+namespace ui {
 
 class AnimationTest: public testing::Test {
  private:
@@ -140,3 +142,5 @@ TEST_F(AnimationTest, ShouldRenderRichAnimation) {
   EXPECT_TRUE(Animation::ShouldRenderRichAnimation());
 #endif
 }
+
+}  // namespace ui

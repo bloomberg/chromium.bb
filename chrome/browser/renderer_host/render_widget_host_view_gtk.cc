@@ -1106,15 +1106,17 @@ void RenderWidgetHostViewGtk::ForwardKeyboardEvent(
   host_->ForwardKeyboardEvent(event);
 }
 
-void RenderWidgetHostViewGtk::AnimationEnded(const Animation* animation) {
+void RenderWidgetHostViewGtk::AnimationEnded(const ui::Animation* animation) {
   gtk_widget_queue_draw(view_.get());
 }
 
-void RenderWidgetHostViewGtk::AnimationProgressed(const Animation* animation) {
+void RenderWidgetHostViewGtk::AnimationProgressed(
+    const ui::Animation* animation) {
   gtk_widget_queue_draw(view_.get());
 }
 
-void RenderWidgetHostViewGtk::AnimationCanceled(const Animation* animation) {
+void RenderWidgetHostViewGtk::AnimationCanceled(
+    const ui::Animation* animation) {
   gtk_widget_queue_draw(view_.get());
 }
 

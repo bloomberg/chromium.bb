@@ -17,13 +17,15 @@
 
 #include <gtk/gtk.h>
 
-#include "app/animation_delegate.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/gtk/owned_widget_gtk.h"
+#include "ui/base/animation/animation_delegate.h"
 
+namespace ui {
 class SlideAnimation;
+}
 
-class SlideAnimatorGtk : public AnimationDelegate {
+class SlideAnimatorGtk : public ui::AnimationDelegate {
  public:
   class Delegate {
    public:
@@ -82,9 +84,9 @@ class SlideAnimatorGtk : public AnimationDelegate {
   // animation.
   bool IsAnimating();
 
-  // AnimationDelegate implementation.
-  virtual void AnimationProgressed(const Animation* animation);
-  virtual void AnimationEnded(const Animation* animation);
+  // ui::AnimationDelegate implementation.
+  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationEnded(const ui::Animation* animation);
 
   // Used during testing; disable or enable animations (default is enabled).
   static void SetAnimationsForTesting(bool enable);
@@ -94,7 +96,7 @@ class SlideAnimatorGtk : public AnimationDelegate {
                                   GtkAllocation* allocation,
                                   SlideAnimatorGtk* slider);
 
-  scoped_ptr<SlideAnimation> animation_;
+  scoped_ptr<ui::SlideAnimation> animation_;
 
   // The top level widget of the SlideAnimatorGtk. It is a GtkFixed.
   OwnedWidgetGtk widget_;

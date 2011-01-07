@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "app/gtk_dnd_util.h"
-#include "app/slide_animation.h"
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
@@ -46,6 +45,7 @@
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/animation/slide_animation.h"
 
 namespace {
 
@@ -277,7 +277,7 @@ void BookmarkBarGtk::Init(Profile* profile) {
 
   gtk_widget_set_size_request(event_box_.get(), -1, kBookmarkBarMinimumHeight);
 
-  slide_animation_.reset(new SlideAnimation(this));
+  slide_animation_.reset(new ui::SlideAnimation(this));
 
   ViewIDUtil::SetID(other_bookmarks_button_, VIEW_ID_OTHER_BOOKMARKS);
   ViewIDUtil::SetID(widget(), VIEW_ID_BOOKMARK_BAR);
@@ -772,7 +772,7 @@ bool BookmarkBarGtk::IsAlwaysShown() {
   return profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
 }
 
-void BookmarkBarGtk::AnimationProgressed(const Animation* animation) {
+void BookmarkBarGtk::AnimationProgressed(const ui::Animation* animation) {
   DCHECK_EQ(animation, slide_animation_.get());
 
   int max_height = ShouldBeFloating() ?
@@ -784,7 +784,7 @@ void BookmarkBarGtk::AnimationProgressed(const Animation* animation) {
   gtk_widget_set_size_request(event_box_.get(), -1, height);
 }
 
-void BookmarkBarGtk::AnimationEnded(const Animation* animation) {
+void BookmarkBarGtk::AnimationEnded(const ui::Animation* animation) {
   DCHECK_EQ(animation, slide_animation_.get());
 
   if (!slide_animation_->IsShowing()) {

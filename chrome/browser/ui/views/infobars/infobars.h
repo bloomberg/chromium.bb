@@ -6,15 +6,19 @@
 #define CHROME_BROWSER_UI_VIEWS_INFOBARS_INFOBARS_H_
 #pragma once
 
-#include "app/animation_delegate.h"
 #include "base/task.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "ui/base/animation/animation_delegate.h"
 #include "views/controls/button/button.h"
 #include "views/controls/link.h"
 #include "views/focus/focus_manager.h"
 
 class InfoBarContainer;
+
+namespace ui {
 class SlideAnimation;
+}
+
 namespace views {
 class ExternalFocusTracker;
 class ImageButton;
@@ -43,7 +47,7 @@ class InfoBarBackground : public views::Background {
 class InfoBar : public views::View,
                 public views::ButtonListener,
                 public views::FocusChangeListener,
-                public AnimationDelegate {
+                public ui::AnimationDelegate {
  public:
   explicit InfoBar(InfoBarDelegate* delegate);
   virtual ~InfoBar();
@@ -86,7 +90,7 @@ class InfoBar : public views::View,
 
   void set_target_height(double height) { target_height_ = height; }
 
-  SlideAnimation* animation() { return animation_.get(); }
+  ui::SlideAnimation* animation() { return animation_.get(); }
 
   // Returns a centered y-position of a control of height specified in
   // |prefsize| within the standard InfoBar height. Stable during an animation.
@@ -104,9 +108,9 @@ class InfoBar : public views::View,
   // Overridden from views::FocusChangeListener:
   virtual void FocusWillChange(View* focused_before, View* focused_now);
 
-  // Overridden from AnimationDelegate:
-  virtual void AnimationProgressed(const Animation* animation);
-  virtual void AnimationEnded(const Animation* animation);
+  // Overridden from ui::AnimationDelegate:
+  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationEnded(const ui::Animation* animation);
 
  private:
   friend class InfoBarContainer;
@@ -150,7 +154,7 @@ class InfoBar : public views::View,
   views::ImageButton* close_button_;
 
   // The animation that runs when the InfoBar is opened or closed.
-  scoped_ptr<SlideAnimation> animation_;
+  scoped_ptr<ui::SlideAnimation> animation_;
 
   // Tracks and stores the last focused view which is not the InfoBar or any of
   // its children. Used to restore focus once the InfoBar is closed.

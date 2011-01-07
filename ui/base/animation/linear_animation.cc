@@ -1,16 +1,18 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/linear_animation.h"
+#include "ui/base/animation/linear_animation.h"
 
 #include <math.h>
 
-#include "app/animation_container.h"
-#include "app/animation_delegate.h"
+#include "ui/base/animation/animation_container.h"
+#include "ui/base/animation/animation_delegate.h"
 
 using base::Time;
 using base::TimeDelta;
+
+namespace ui {
 
 static TimeDelta CalculateInterval(int frame_rate) {
   int timer_interval = 1000000 / frame_rate;
@@ -90,3 +92,5 @@ void LinearAnimation::AnimationStopped() {
 bool LinearAnimation::ShouldSendCanceledFromStop() {
   return state_ != 1;
 }
+
+}  // namespace ui

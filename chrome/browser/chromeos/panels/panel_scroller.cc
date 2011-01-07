@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "chrome/browser/chromeos/panels/panel_scroller.h"
 
@@ -27,7 +27,7 @@ PanelScroller::PanelScroller()
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)),
       animated_scroll_begin_(0),
       animated_scroll_end_(0) {
-  animation_.SetTweenType(Tween::EASE_IN_OUT);
+  animation_.SetTweenType(ui::Tween::EASE_IN_OUT);
   animation_.SetSlideDuration(300);
 
   Panel* panel = new Panel;
@@ -238,7 +238,7 @@ void PanelScroller::ScrollToPanel(int index) {
   animation_.Show();
 }
 
-void PanelScroller::AnimationProgressed(const Animation* animation) {
+void PanelScroller::AnimationProgressed(const ui::Animation* animation) {
   scroll_pos_ = static_cast<int>(
       static_cast<double>(animated_scroll_end_ - animated_scroll_begin_) *
       animation_.GetCurrentValue()) + animated_scroll_begin_;

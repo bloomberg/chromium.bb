@@ -8,7 +8,6 @@
 
 #include <algorithm>
 
-#include "app/slide_animation.h"
 #include "app/text_elider.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/gtk/rounded_window.h"
 #include "chrome/browser/gtk/slide_animator_gtk.h"
 #include "chrome/common/notification_service.h"
+#include "ui/base/animation/slide_animation.h"
 
 namespace {
 
@@ -315,8 +315,8 @@ void StatusBubbleGtk::SetFlipHorizontally(bool flip_horizontally) {
 
 void StatusBubbleGtk::ExpandURL() {
   start_width_ = label_->allocation.width;
-  expand_animation_.reset(new SlideAnimation(this));
-  expand_animation_->SetTweenType(Tween::LINEAR);
+  expand_animation_.reset(new ui::SlideAnimation(this));
+  expand_animation_->SetTweenType(ui::Tween::LINEAR);
   expand_animation_->Show();
 
   SetStatusTextToURL();
@@ -339,10 +339,10 @@ gboolean StatusBubbleGtk::HandleMotionNotify(GtkWidget* sender,
   return FALSE;
 }
 
-void StatusBubbleGtk::AnimationEnded(const Animation* animation) {
+void StatusBubbleGtk::AnimationEnded(const ui::Animation* animation) {
   UpdateLabelSizeRequest();
 }
 
-void StatusBubbleGtk::AnimationProgressed(const Animation* animation) {
+void StatusBubbleGtk::AnimationProgressed(const ui::Animation* animation) {
   UpdateLabelSizeRequest();
 }

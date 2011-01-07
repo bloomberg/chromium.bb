@@ -7,9 +7,9 @@
 
 #include <gtk/gtk.h>
 
-#include "app/animation_delegate.h"
-#include "app/slide_animation.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/slide_animation.h"
 
 namespace gfx {
 class Point;
@@ -19,7 +19,7 @@ class InfoBar;
 
 // A helper class that tracks the state of an infobar arrow and provides a
 // utility to draw it.
-class InfoBarArrowModel : public AnimationDelegate {
+class InfoBarArrowModel : public ui::AnimationDelegate {
  public:
   class Observer {
    public:
@@ -44,10 +44,10 @@ class InfoBarArrowModel : public AnimationDelegate {
              const gfx::Point& origin,
              const GdkColor& border_color);
 
-  // Overridden from AnimationDelegate.
-  virtual void AnimationEnded(const Animation* animation);
-  virtual void AnimationProgressed(const Animation* animation);
-  virtual void AnimationCanceled(const Animation* animation);
+  // Overridden from ui::AnimationDelegate.
+  virtual void AnimationEnded(const ui::Animation* animation);
+  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationCanceled(const ui::Animation* animation);
 
  private:
   // A pair of colors used to draw a gradient for an arrow.
@@ -65,7 +65,7 @@ class InfoBarArrowModel : public AnimationDelegate {
 
   // An animation that tracks the progress of the transition from the last color
   // to the new color.
-  SlideAnimation animation_;
+  ui::SlideAnimation animation_;
 
   // The color we are animating towards.
   InfoBarColors target_colors_;

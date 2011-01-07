@@ -4,7 +4,6 @@
 
 #include "chrome/browser/dom_ui/app_launcher_handler.h"
 
-#include "app/animation.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -32,6 +31,7 @@
 #include "gfx/rect.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
+#include "ui/base/animation/animation.h"
 
 namespace {
 
@@ -410,7 +410,7 @@ void AppLauncherHandler::AnimateAppIcon(const Extension* extension,
                                         const gfx::Rect& rect) {
   // We make this check for the case of minimized windows, unit tests, etc.
   if (platform_util::IsVisible(dom_ui_->tab_contents()->GetNativeView()) &&
-      Animation::ShouldRenderRichAnimation()) {
+      ui::Animation::ShouldRenderRichAnimation()) {
 #if defined(OS_WIN)
     AppLaunchedAnimation::Show(extension, rect);
 #else

@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_GTK_TRANSLATE_TRANSLATE_INFOBAR_BASE_GTK_H_
 #pragma once
 
-#include "app/animation_delegate.h"
 #include "chrome/browser/translate/translate_infobar_view.h"
 #include "chrome/browser/gtk/infobar_gtk.h"
+#include "ui/base/animation/animation_delegate.h"
 
 class MenuGtk;
 class OptionsMenuModel;
@@ -18,7 +18,7 @@ class TranslateInfoBarDelegate;
 // use.
 class TranslateInfoBarBase : public TranslateInfoBarView,
                              public InfoBar,
-                             public AnimationDelegate {
+                             public ui::AnimationDelegate {
  public:
   explicit TranslateInfoBarBase(TranslateInfoBarDelegate* delegate);
   virtual ~TranslateInfoBarBase();
@@ -37,8 +37,8 @@ class TranslateInfoBarBase : public TranslateInfoBarView,
   virtual void OriginalLanguageChanged() {}
   virtual void TargetLanguageChanged() {}
 
-  // Overridden from AnimationDelegate:
-  virtual void AnimationProgressed(const Animation* animation);
+  // Overridden from ui::AnimationDelegate:
+  virtual void AnimationProgressed(const ui::Animation* animation);
 
  protected:
   // Sub-classes that want to have the options menu button showing sould
@@ -81,7 +81,7 @@ class TranslateInfoBarBase : public TranslateInfoBarView,
   double background_error_percent_;
 
   // Changes the color of the background from normal to error color and back.
-  scoped_ptr<SlideAnimation> background_color_animation_;
+  scoped_ptr<ui::SlideAnimation> background_color_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateInfoBarBase);
 };

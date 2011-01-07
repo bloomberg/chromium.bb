@@ -224,7 +224,7 @@ class BaseTabStrip : public views::View,
 
   // Creates an AnimationDelegate that resets state after a remove animation
   // completes. The caller owns the returned object.
-  AnimationDelegate* CreateRemoveTabDelegate(BaseTab* tab);
+  ui::AnimationDelegate* CreateRemoveTabDelegate(BaseTab* tab);
 
   // Invoked from Layout if the size changes or layout is really needed.
   virtual void DoLayout();

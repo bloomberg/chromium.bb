@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_INFO_BUBBLE_H_
 #pragma once
 
-#include "app/animation_delegate.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/animation/animation_delegate.h"
 #include "views/accelerator.h"
 #include "views/view.h"
 #include "chrome/browser/views/bubble_border.h"
@@ -27,20 +27,22 @@
 // InfoBubble insets the contents for you, so the contents typically shouldn't
 // have any additional margins.
 
+#if defined(OS_WIN)
+class BorderWidget;
+#endif
 class InfoBubble;
-class SlideAnimation;
-
-namespace views {
-class Widget;
-}
 
 namespace gfx {
 class Path;
 }
 
-#if defined(OS_WIN)
-class BorderWidget;
-#endif
+namespace ui {
+class SlideAnimation;
+}
+
+namespace views {
+class Widget;
+}
 
 // This is used to paint the border of the InfoBubble.  Windows uses this via
 // BorderWidget (see below), while others can use it directly in the bubble.
@@ -182,7 +184,7 @@ class InfoBubble
     : public views::WidgetGtk,
 #endif
       public views::AcceleratorTarget,
-      public AnimationDelegate {
+      public ui::AnimationDelegate {
  public:
   // Shows the InfoBubble.  |parent| is set as the parent window, |contents| are
   // the contents shown in the bubble, and |position_relative_to| is a rect in
@@ -229,9 +231,9 @@ class InfoBubble
   // Overridden from WidgetWin:
   virtual void Close();
 
-  // Overridden from AnimationDelegate:
-  virtual void AnimationEnded(const Animation* animation);
-  virtual void AnimationProgressed(const Animation* animation);
+  // Overridden from ui::AnimationDelegate:
+  virtual void AnimationEnded(const ui::Animation* animation);
+  virtual void AnimationProgressed(const ui::Animation* animation);
 
   static const SkColor kBackgroundColor;
 
@@ -295,7 +297,7 @@ class InfoBubble
   InfoBubbleDelegate* delegate_;
 
   // The animation used to fade the bubble out.
-  scoped_ptr<SlideAnimation> animation_;
+  scoped_ptr<ui::SlideAnimation> animation_;
 
   // The current visibility status of the bubble.
   ShowStatus show_status_;

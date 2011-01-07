@@ -939,7 +939,7 @@ const SkBitmap* AutocompletePopupContentsView::GetSpecialIcon(
 // AutocompletePopupContentsView, AnimationDelegate implementation:
 
 void AutocompletePopupContentsView::AnimationProgressed(
-    const Animation* animation) {
+    const ui::Animation* animation) {
   // We should only be running the animation when the popup is already visible.
   DCHECK(popup_ != NULL);
   popup_->SetBounds(GetPopupBounds());

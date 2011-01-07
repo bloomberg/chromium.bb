@@ -12,8 +12,10 @@
 #include "chrome/browser/views/tabs/base_tab.h"
 #include "gfx/point.h"
 
+namespace ui {
 class MultiAnimation;
 class SlideAnimation;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -110,7 +112,7 @@ class Tab : public BaseTab {
   gfx::Point hover_point_;
 
   // Animation used when the title of an inactive mini tab changes.
-  scoped_ptr<MultiAnimation> mini_title_animation_;
+  scoped_ptr<ui::MultiAnimation> mini_title_animation_;
 
   struct TabImage {
     SkBitmap* image_l;

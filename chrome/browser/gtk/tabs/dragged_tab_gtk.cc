@@ -126,7 +126,7 @@ void DraggedTabGtk::AnimateToBounds(const gfx::Rect& bounds,
   animation_end_bounds_ = bounds;
 
   close_animation_.SetSlideDuration(kAnimateToBoundsDurationMs);
-  close_animation_.SetTweenType(Tween::EASE_OUT);
+  close_animation_.SetTweenType(ui::Tween::EASE_OUT);
   if (!close_animation_.IsShowing()) {
     close_animation_.Reset();
     close_animation_.Show();
@@ -134,9 +134,9 @@ void DraggedTabGtk::AnimateToBounds(const gfx::Rect& bounds,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DraggedTabGtk, AnimationDelegate implementation:
+// DraggedTabGtk, ui::AnimationDelegate implementation:
 
-void DraggedTabGtk::AnimationProgressed(const Animation* animation) {
+void DraggedTabGtk::AnimationProgressed(const ui::Animation* animation) {
   int delta_x = (animation_end_bounds_.x() - animation_start_bounds_.x());
   int x = animation_start_bounds_.x() +
       static_cast<int>(delta_x * animation->GetCurrentValue());
@@ -144,11 +144,11 @@ void DraggedTabGtk::AnimationProgressed(const Animation* animation) {
   gdk_window_move(container_->window, x, y);
 }
 
-void DraggedTabGtk::AnimationEnded(const Animation* animation) {
+void DraggedTabGtk::AnimationEnded(const ui::Animation* animation) {
   animation_callback_->Run();
 }
 
-void DraggedTabGtk::AnimationCanceled(const Animation* animation) {
+void DraggedTabGtk::AnimationCanceled(const ui::Animation* animation) {
   AnimationEnded(animation);
 }
 

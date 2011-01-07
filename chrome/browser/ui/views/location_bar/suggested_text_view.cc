@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/views/location_bar/suggested_text_view.h"
 
-#include "app/multi_animation.h"
 #include "chrome/browser/instant/instant_controller.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "gfx/canvas.h"
 #include "gfx/color_utils.h"
+#include "ui/base/animation/multi_animation.h"
 
 SuggestedTextView::SuggestedTextView(LocationBarView* location_bar)
     : location_bar_(location_bar),
@@ -49,11 +49,11 @@ void SuggestedTextView::PaintBackground(gfx::Canvas* canvas) {
   canvas->FillRectInt(bg_color_, 0, 2, width(), height() - 5);
 }
 
-void SuggestedTextView::AnimationEnded(const Animation* animation) {
+void SuggestedTextView::AnimationEnded(const ui::Animation* animation) {
   location_bar_->OnCommitSuggestedText();
 }
 
-void SuggestedTextView::AnimationProgressed(const Animation* animation) {
+void SuggestedTextView::AnimationProgressed(const ui::Animation* animation) {
   UpdateBackgroundColor();
 
   SkColor fg_color = LocationBarView::GetColor(
@@ -62,21 +62,21 @@ void SuggestedTextView::AnimationProgressed(const Animation* animation) {
       ToolbarModel::NONE, LocationBarView::SELECTED_TEXT);
   SetColor(color_utils::AlphaBlend(
       sel_fg_color, fg_color,
-      Tween::ValueBetween(animation->GetCurrentValue(), 0, 255)));
+      ui::Tween::ValueBetween(animation->GetCurrentValue(), 0, 255)));
 
   SchedulePaint();
 }
 
-void SuggestedTextView::AnimationCanceled(const Animation* animation) {
+void SuggestedTextView::AnimationCanceled(const ui::Animation* animation) {
 }
 
-Animation* SuggestedTextView::CreateAnimation() {
-  MultiAnimation::Parts parts;
-  parts.push_back(MultiAnimation::Part(
-      InstantController::kAutoCommitPauseTimeMS, Tween::ZERO));
-  parts.push_back(MultiAnimation::Part(
-      InstantController::kAutoCommitFadeInTimeMS, Tween::EASE_IN));
-  MultiAnimation* animation = new MultiAnimation(parts);
+ui::Animation* SuggestedTextView::CreateAnimation() {
+  ui::MultiAnimation::Parts parts;
+  parts.push_back(ui::MultiAnimation::Part(
+      InstantController::kAutoCommitPauseTimeMS, ui::Tween::ZERO));
+  parts.push_back(ui::MultiAnimation::Part(
+      InstantController::kAutoCommitFadeInTimeMS, ui::Tween::EASE_IN));
+  ui::MultiAnimation* animation = new ui::MultiAnimation(parts);
   animation->set_delegate(this);
   animation->set_continuous(false);
   return animation;
@@ -99,5 +99,5 @@ void SuggestedTextView::UpdateBackgroundColor() {
   SkColor s_color = SK_ColorLTGRAY;
 #endif
   bg_color_ = color_utils::AlphaBlend(s_color, bg_color,
-                                      Tween::ValueBetween(value, 0, 255));
+                                      ui::Tween::ValueBetween(value, 0, 255));
 }

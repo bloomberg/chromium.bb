@@ -6,7 +6,6 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/slide_animation.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/views/event_utils.h"
@@ -14,6 +13,7 @@
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/animation/slide_animation.h"
 #include "views/background.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/native_button.h"
@@ -119,8 +119,8 @@ InfoBar::InfoBar(InfoBarDelegate* delegate)
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE)));
   AddChildView(close_button_);
 
-  animation_.reset(new SlideAnimation(this));
-  animation_->SetTweenType(Tween::LINEAR);
+  animation_.reset(new ui::SlideAnimation(this));
+  animation_->SetTweenType(ui::Tween::LINEAR);
 }
 
 InfoBar::~InfoBar() {
@@ -210,14 +210,14 @@ void InfoBar::FocusWillChange(View* focused_before, View* focused_now) {
   }
 }
 
-// InfoBar, AnimationDelegate implementation: ----------------------------------
+// InfoBar, ui::AnimationDelegate implementation: ------------------------------
 
-void InfoBar::AnimationProgressed(const Animation* animation) {
+void InfoBar::AnimationProgressed(const ui::Animation* animation) {
   if (container_)
     container_->InfoBarAnimated(true);
 }
 
-void InfoBar::AnimationEnded(const Animation* animation) {
+void InfoBar::AnimationEnded(const ui::Animation* animation) {
   if (container_) {
     container_->InfoBarAnimated(false);
 

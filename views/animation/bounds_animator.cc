@@ -4,13 +4,18 @@
 
 #include "views/animation/bounds_animator.h"
 
-#include "app/animation_container.h"
-#include "app/slide_animation.h"
 #include "base/scoped_ptr.h"
+#include "ui/base/animation/animation_container.h"
+#include "ui/base/animation/slide_animation.h"
 #include "views/view.h"
 
 // Duration in milliseconds for animations.
 static const int kAnimationDuration = 200;
+
+using ui::Animation;
+using ui::AnimationContainer;
+using ui::SlideAnimation;
+using ui::Tween;
 
 namespace views {
 

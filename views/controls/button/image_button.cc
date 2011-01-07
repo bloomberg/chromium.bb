@@ -4,9 +4,9 @@
 
 #include "views/controls/button/image_button.h"
 
-#include "app/throb_animation.h"
 #include "gfx/canvas.h"
 #include "gfx/skbitmap_operations.h"
+#include "ui/base/animation/throb_animation.h"
 
 namespace views {
 

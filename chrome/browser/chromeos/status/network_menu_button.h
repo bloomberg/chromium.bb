@@ -8,11 +8,11 @@
 
 #include <string>
 
-#include "app/throb_animation.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/status/network_menu.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
+#include "ui/base/animation/throb_animation.h"
 
 namespace gfx {
 class Canvas;
@@ -55,8 +55,8 @@ class NetworkMenuButton : public StatusAreaButton,
   explicit NetworkMenuButton(StatusAreaHost* host);
   virtual ~NetworkMenuButton();
 
-  // AnimationDelegate implementation.
-  virtual void AnimationProgressed(const Animation* animation);
+  // ui::AnimationDelegate implementation.
+  virtual void AnimationProgressed(const ui::Animation* animation);
 
   // NetworkLibrary::NetworkManagerObserver implementation.
   virtual void OnNetworkManagerChanged(NetworkLibrary* cros);
@@ -93,7 +93,7 @@ class NetworkMenuButton : public StatusAreaButton,
   SkBitmap badge_;
 
   // The throb animation that does the wifi connecting animation.
-  ThrobAnimation animation_connecting_;
+  ui::ThrobAnimation animation_connecting_;
 
   // The duration of the icon throbbing in milliseconds.
   static const int kThrobDuration;

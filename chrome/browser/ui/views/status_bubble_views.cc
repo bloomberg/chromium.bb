@@ -6,8 +6,6 @@
 
 #include <algorithm>
 
-#include "app/animation_delegate.h"
-#include "app/linear_animation.h"
 #include "app/resource_bundle.h"
 #include "app/text_elider.h"
 #include "base/i18n/rtl.h"
@@ -24,6 +22,8 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRect.h"
+#include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/linear_animation.h"
 #include "views/controls/label.h"
 #include "views/controls/scrollbar/native_scroll_bar.h"
 #include "views/screen.h"
@@ -69,12 +69,12 @@ static const int kMaxExpansionStepDurationMS = 150;
 // StatusView manages the display of the bubble, applying text changes and
 // fading in or out the bubble as required.
 class StatusBubbleViews::StatusView : public views::Label,
-                                      public LinearAnimation,
-                                      public AnimationDelegate {
+                                      public ui::LinearAnimation,
+                                      public ui::AnimationDelegate {
  public:
   StatusView(StatusBubble* status_bubble, views::Widget* popup,
              ThemeProvider* theme_provider)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(LinearAnimation(kFramerate, this)),
+      : ALLOW_THIS_IN_INITIALIZER_LIST(ui::LinearAnimation(kFramerate, this)),
         stage_(BUBBLE_HIDDEN),
         style_(STYLE_STANDARD),
         ALLOW_THIS_IN_INITIALIZER_LIST(timer_factory_(this)),
@@ -304,7 +304,7 @@ void StatusBubbleViews::StatusView::StartShowing() {
 // Animation functions.
 double StatusBubbleViews::StatusView::GetCurrentOpacity() {
   return opacity_start_ + (opacity_end_ - opacity_start_) *
-         LinearAnimation::GetCurrentValue();
+         ui::LinearAnimation::GetCurrentValue();
 }
 
 void StatusBubbleViews::StatusView::SetOpacity(double opacity) {
@@ -317,7 +317,7 @@ void StatusBubbleViews::StatusView::AnimateToState(double state) {
 }
 
 void StatusBubbleViews::StatusView::AnimationEnded(
-    const Animation* animation) {
+    const ui::Animation* animation) {
   SetOpacity(opacity_end_);
 
   if (stage_ == BUBBLE_HIDING_FADE) {
@@ -460,12 +460,12 @@ void StatusBubbleViews::StatusView::Paint(gfx::Canvas* canvas) {
 // Manages the expansion and contraction of the status bubble as it accommodates
 // URLs too long to fit in the standard bubble. Changes are passed through the
 // StatusView to paint.
-class StatusBubbleViews::StatusViewExpander : public LinearAnimation,
-                                              public AnimationDelegate {
+class StatusBubbleViews::StatusViewExpander : public ui::LinearAnimation,
+                                              public ui::AnimationDelegate {
  public:
   StatusViewExpander(StatusBubbleViews* status_bubble,
                      StatusView* status_view)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(LinearAnimation(kFramerate, this)),
+      : ALLOW_THIS_IN_INITIALIZER_LIST(ui::LinearAnimation(kFramerate, this)),
         status_bubble_(status_bubble),
         status_view_(status_view),
         expansion_start_(0),
@@ -484,7 +484,7 @@ class StatusBubbleViews::StatusViewExpander : public LinearAnimation,
   int GetCurrentBubbleWidth();
   void SetBubbleWidth(int width);
   void AnimateToState(double state);
-  void AnimationEnded(const Animation* animation);
+  void AnimationEnded(const ui::Animation* animation);
 
   // Manager that owns us.
   StatusBubbleViews* status_bubble_;
@@ -505,7 +505,7 @@ void StatusBubbleViews::StatusViewExpander::AnimateToState(double state) {
 }
 
 void StatusBubbleViews::StatusViewExpander::AnimationEnded(
-    const Animation* animation) {
+    const ui::Animation* animation) {
   SetBubbleWidth(expansion_end_);
   status_view_->SetText(expanded_text_, false);
 }
@@ -525,7 +525,8 @@ void StatusBubbleViews::StatusViewExpander::StartExpansion(
 
 int StatusBubbleViews::StatusViewExpander::GetCurrentBubbleWidth() {
   return static_cast<int>(expansion_start_ +
-      (expansion_end_ - expansion_start_) * LinearAnimation::GetCurrentValue());
+      (expansion_end_ - expansion_start_) *
+          ui::LinearAnimation::GetCurrentValue());
 }
 
 void StatusBubbleViews::StatusViewExpander::SetBubbleWidth(int width) {

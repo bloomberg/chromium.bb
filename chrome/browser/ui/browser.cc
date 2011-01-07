@@ -12,7 +12,6 @@
 #include <algorithm>
 #include <string>
 
-#include "app/animation.h"
 #include "app/l10n_util.h"
 #include "base/base_paths.h"
 #include "base/command_line.h"
@@ -108,6 +107,7 @@
 #include "net/base/registry_controlled_domain.h"
 #include "net/base/static_cookie_policy.h"
 #include "net/url_request/url_request_context.h"
+#include "ui/base/animation/animation.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -3060,7 +3060,7 @@ void Browser::OnStartDownload(DownloadItem* download, TabContents* tab) {
   TabContents* current_tab = GetSelectedTabContents();
   // We make this check for the case of minimized windows, unit tests, etc.
   if (platform_util::IsVisible(current_tab->GetNativeView()) &&
-      Animation::ShouldRenderRichAnimation()) {
+      ui::Animation::ShouldRenderRichAnimation()) {
     DownloadStartedAnimation::Show(current_tab);
   }
 #endif

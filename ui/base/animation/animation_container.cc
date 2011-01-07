@@ -1,14 +1,16 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/animation_container.h"
+#include "ui/base/animation/animation_container.h"
 
-#include "app/animation_container_element.h"
-#include "app/animation_container_observer.h"
+#include "ui/base/animation/animation_container_element.h"
+#include "ui/base/animation/animation_container_observer.h"
 
 using base::TimeDelta;
 using base::TimeTicks;
+
+namespace ui {
 
 AnimationContainer::AnimationContainer()
     : last_tick_time_(TimeTicks::Now()),
@@ -98,3 +100,5 @@ TimeDelta AnimationContainer::GetMinInterval() {
   }
   return min;
 }
+
+}  // namespace ui

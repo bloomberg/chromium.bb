@@ -33,8 +33,8 @@ class TranslateInfoBarBase : public TranslateInfoBarView,
   virtual void PaintBackground(gfx::Canvas* canvas);
 
  protected:
-  // Overridden from AnimationDelegate:
-  virtual void AnimationProgressed(const Animation* animation);
+  // Overridden from ui::AnimationDelegate:
+  virtual void AnimationProgressed(const ui::Animation* animation);
 
   // Creates a label with the appropriate font and color for the translate
   // infobars.
@@ -57,7 +57,7 @@ class TranslateInfoBarBase : public TranslateInfoBarView,
 
   InfoBarBackground normal_background_;
   InfoBarBackground error_background_;
-  scoped_ptr<SlideAnimation> background_color_animation_;
+  scoped_ptr<ui::SlideAnimation> background_color_animation_;
 
  private:
   // Returns the background that should be displayed when not animating.

@@ -33,7 +33,7 @@ NetworkMenuButton::NetworkMenuButton(StatusAreaHost* host)
       host_(host),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)) {
   animation_connecting_.SetThrobDuration(kThrobDuration);
-  animation_connecting_.SetTweenType(Tween::EASE_IN_OUT);
+  animation_connecting_.SetTweenType(ui::Tween::EASE_IN_OUT);
   OnNetworkManagerChanged(CrosLibrary::Get()->GetNetworkLibrary());
   CrosLibrary::Get()->GetNetworkLibrary()->AddNetworkManagerObserver(this);
   CrosLibrary::Get()->GetNetworkLibrary()->AddCellularDataPlanObserver(this);
@@ -47,9 +47,9 @@ NetworkMenuButton::~NetworkMenuButton() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NetworkMenuButton, AnimationDelegate implementation:
+// NetworkMenuButton, ui::AnimationDelegate implementation:
 
-void NetworkMenuButton::AnimationProgressed(const Animation* animation) {
+void NetworkMenuButton::AnimationProgressed(const ui::Animation* animation) {
   if (animation == &animation_connecting_) {
     SetIcon(IconForNetworkConnecting(animation_connecting_.GetCurrentValue(),
                                      false));

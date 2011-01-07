@@ -6,10 +6,7 @@
 
 #include <limits>
 
-#include "app/multi_animation.h"
 #include "app/resource_bundle.h"
-#include "app/slide_animation.h"
-#include "app/throb_animation.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
@@ -22,6 +19,9 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/base/animation/multi_animation.h"
+#include "ui/base/animation/slide_animation.h"
+#include "ui/base/animation/throb_animation.h"
 #include "views/controls/button/image_button.h"
 #include "views/widget/tooltip_manager.h"
 #include "views/widget/widget.h"
@@ -114,18 +114,21 @@ Tab::~Tab() {
 
 void Tab::StartMiniTabTitleAnimation() {
   if (!mini_title_animation_.get()) {
-    MultiAnimation::Parts parts;
-    parts.push_back(MultiAnimation::Part(kMiniTitleChangeAnimationDuration1MS,
-                                         Tween::EASE_OUT));
-    parts.push_back(MultiAnimation::Part(kMiniTitleChangeAnimationDuration2MS,
-                                         Tween::ZERO));
-    parts.push_back(MultiAnimation::Part(kMiniTitleChangeAnimationDuration3MS,
-                                         Tween::EASE_IN));
+    ui::MultiAnimation::Parts parts;
+    parts.push_back(
+        ui::MultiAnimation::Part(kMiniTitleChangeAnimationDuration1MS,
+                                 ui::Tween::EASE_OUT));
+    parts.push_back(
+        ui::MultiAnimation::Part(kMiniTitleChangeAnimationDuration2MS,
+                                 ui::Tween::ZERO));
+    parts.push_back(
+        ui::MultiAnimation::Part(kMiniTitleChangeAnimationDuration3MS,
+                                 ui::Tween::EASE_IN));
     parts[0].start_time_ms = kMiniTitleChangeAnimationStart1MS;
     parts[0].end_time_ms = kMiniTitleChangeAnimationEnd1MS;
     parts[2].start_time_ms = kMiniTitleChangeAnimationStart3MS;
     parts[2].end_time_ms = kMiniTitleChangeAnimationEnd3MS;
-    mini_title_animation_.reset(new MultiAnimation(parts));
+    mini_title_animation_.reset(new ui::MultiAnimation(parts));
     mini_title_animation_->SetContainer(animation_container());
     mini_title_animation_->set_delegate(this);
   }
@@ -588,7 +591,7 @@ SkBitmap Tab::DrawHoverGlowBitmap(int width_input, int height_input) {
   SkPoint loc = { SkIntToScalar(hover_point_.x()),
                   SkIntToScalar(hover_point_.y()) };
   SkColor colors[2];
-  const SlideAnimation* hover_slide = hover_animation();
+  const ui::SlideAnimation* hover_slide = hover_animation();
   int hover_alpha = 0;
   if (hover_slide) {
     hover_alpha =

@@ -8,7 +8,6 @@
 #define CHROME_BROWSER_GTK_NOTIFICATIONS_BALLOON_VIEW_GTK_H_
 #pragma once
 
-#include "app/animation_delegate.h"
 #include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
@@ -20,6 +19,7 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
+#include "ui/base/animation/animation_delegate.h"
 
 class BalloonCollection;
 class CustomDrawButton;
@@ -28,14 +28,17 @@ class MenuGtk;
 class NotificationDetails;
 class NotificationOptionsMenuModel;
 class NotificationSource;
+
+namespace ui {
 class SlideAnimation;
+}
 
 // A balloon view is the UI component for desktop notification toasts.
 // It draws a border, and within the border an HTML renderer.
 class BalloonViewImpl : public BalloonView,
                         public MenuGtk::Delegate,
                         public NotificationObserver,
-                        public AnimationDelegate {
+                        public ui::AnimationDelegate {
  public:
   explicit BalloonViewImpl(BalloonCollection* collection);
   ~BalloonViewImpl();
@@ -54,8 +57,8 @@ class BalloonViewImpl : public BalloonView,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // AnimationDelegate interface.
-  virtual void AnimationProgressed(const Animation* animation);
+  // ui::AnimationDelegate interface.
+  virtual void AnimationProgressed(const ui::Animation* animation);
 
   // Do the delayed close work.
   void DelayedClose(bool by_user);
@@ -109,7 +112,7 @@ class BalloonViewImpl : public BalloonView,
   scoped_ptr<CustomDrawButton> close_button_;
 
   // An animation to move the balloon on the screen as its position changes.
-  scoped_ptr<SlideAnimation> animation_;
+  scoped_ptr<ui::SlideAnimation> animation_;
   gfx::Rect anim_frame_start_;
   gfx::Rect anim_frame_end_;
 

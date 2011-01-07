@@ -4,7 +4,6 @@
 
 #include "chrome/browser/download/download_started_animation.h"
 
-#include "app/linear_animation.h"
 #include "app/resource_bundle.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_details.h"
@@ -12,6 +11,7 @@
 #include "chrome/common/notification_source.h"
 #include "gfx/rect.h"
 #include "grit/theme_resources.h"
+#include "ui/base/animation/linear_animation.h"
 #include "views/controls/image_view.h"
 #include "views/widget/widget_win.h"
 
@@ -33,7 +33,7 @@ namespace {
 // provided on the constructor, while simultaneously fading it out.  To use,
 // simply call "new DownloadStartAnimation"; the class cleans itself up when it
 // finishes animating.
-class DownloadStartedAnimationWin : public LinearAnimation,
+class DownloadStartedAnimationWin : public ui::LinearAnimation,
                                     public NotificationObserver,
                                     public views::ImageView {
  public:
@@ -75,7 +75,7 @@ class DownloadStartedAnimationWin : public LinearAnimation,
 
 DownloadStartedAnimationWin::DownloadStartedAnimationWin(
     TabContents* tab_contents)
-    : LinearAnimation(kMoveTimeMs, kFrameRateHz, NULL),
+    : ui::LinearAnimation(kMoveTimeMs, kFrameRateHz, NULL),
       popup_(NULL),
       tab_contents_(tab_contents) {
   static SkBitmap* kDownloadImage = NULL;

@@ -5,7 +5,6 @@
 #include "chrome/browser/gtk/translate/translate_infobar_base_gtk.h"
 
 #include "app/l10n_util.h"
-#include "app/slide_animation.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/translate/options_menu_model.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
+#include "ui/base/animation/slide_animation.h"
 
 namespace {
 
@@ -35,8 +35,8 @@ TranslateInfoBarBase::TranslateInfoBarBase(TranslateInfoBarDelegate* delegate)
   TranslateInfoBarDelegate::BackgroundAnimationType animation =
       delegate->background_animation_type();
   if (animation != TranslateInfoBarDelegate::NONE) {
-    background_color_animation_.reset(new SlideAnimation(this));
-    background_color_animation_->SetTweenType(Tween::LINEAR);
+    background_color_animation_.reset(new ui::SlideAnimation(this));
+    background_color_animation_->SetTweenType(ui::Tween::LINEAR);
     background_color_animation_->SetSlideDuration(500);
     if (animation == TranslateInfoBarDelegate::NORMAL_TO_ERROR) {
       background_color_animation_->Show();
@@ -117,7 +117,7 @@ void TranslateInfoBarBase::GetBottomColor(InfoBarDelegate::Type type,
   }
 }
 
-void TranslateInfoBarBase::AnimationProgressed(const Animation* animation) {
+void TranslateInfoBarBase::AnimationProgressed(const ui::Animation* animation) {
   DCHECK(animation == background_color_animation_.get());
   background_error_percent_ = animation->GetCurrentValue();
   // Queue the info bar widget for redisplay so it repaints its background.

@@ -64,7 +64,7 @@ void HoverControllerGtk::Destroy() {
   delete this;
 }
 
-void HoverControllerGtk::AnimationProgressed(const Animation* animation) {
+void HoverControllerGtk::AnimationProgressed(const ui::Animation* animation) {
   if (!button_)
     return;
 
@@ -76,7 +76,7 @@ void HoverControllerGtk::AnimationProgressed(const Animation* animation) {
                                     animation->GetCurrentValue());
 }
 
-void HoverControllerGtk::AnimationEnded(const Animation* animation) {
+void HoverControllerGtk::AnimationEnded(const ui::Animation* animation) {
   if (!button_)
     return;
   if (animation != &throb_animation_)
@@ -86,7 +86,7 @@ void HoverControllerGtk::AnimationEnded(const Animation* animation) {
     gtk_chrome_button_set_hover_state(GTK_CHROME_BUTTON(button_), 0);
 }
 
-void HoverControllerGtk::AnimationCanceled(const Animation* animation) {
+void HoverControllerGtk::AnimationCanceled(const ui::Animation* animation) {
   AnimationEnded(animation);
 }
 

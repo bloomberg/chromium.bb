@@ -5,7 +5,7 @@
 #include "views/controls/button/custom_button.h"
 
 #include "app/keyboard_codes.h"
-#include "app/throb_animation.h"
+#include "ui/base/animation/throb_animation.h"
 #include "views/screen.h"
 
 namespace views {
@@ -120,7 +120,7 @@ CustomButton::CustomButton(ButtonListener* listener)
       is_throbbing_(false),
       triggerable_event_flags_(MouseEvent::EF_LEFT_BUTTON_DOWN),
       request_focus_on_press_(true) {
-  hover_animation_.reset(new ThrobAnimation(this));
+  hover_animation_.reset(new ui::ThrobAnimation(this));
   hover_animation_->SetSlideDuration(kHoverFadeDurationMs);
 }
 
@@ -262,9 +262,9 @@ void CustomButton::WillLoseFocus() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// CustomButton, AnimationDelegate implementation:
+// CustomButton, ui::AnimationDelegate implementation:
 
-void CustomButton::AnimationProgressed(const Animation* animation) {
+void CustomButton::AnimationProgressed(const ui::Animation* animation) {
   SchedulePaint();
 }
 

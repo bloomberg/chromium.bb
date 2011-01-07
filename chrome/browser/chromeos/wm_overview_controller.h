@@ -20,7 +20,6 @@ namespace views {
 class Widget;
 }
 
-class Animation;
 class Browser;
 class RenderWidgetHost;
 

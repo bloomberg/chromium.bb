@@ -4,7 +4,6 @@
 
 #include "chrome/browser/views/tabs/tab_strip.h"
 
-#include "app/animation_container.h"
 #include "app/drag_drop_types.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -23,6 +22,7 @@
 #include "gfx/size.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/animation/animation_container.h"
 #include "views/controls/image_view.h"
 #include "views/widget/default_theme_provider.h"
 #include "views/window/non_client_view.h"
@@ -120,7 +120,7 @@ TabStrip::TabStrip(TabStripController* controller)
       current_selected_width_(Tab::GetStandardSize().width()),
       available_width_for_tabs_(-1),
       in_tab_close_(false),
-      animation_container_(new AnimationContainer()) {
+      animation_container_(new ui::AnimationContainer()) {
   Init();
 }
 

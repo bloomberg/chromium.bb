@@ -4,14 +4,14 @@
 
 #include "chrome/browser/app_launched_animation.h"
 
-#include "app/animation.h"
-#include "app/animation_delegate.h"
-#include "app/slide_animation.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "gfx/rect.h"
+#include "ui/base/animation/animation.h"
+#include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/slide_animation.h"
 #include "views/controls/image_view.h"
 #include "views/widget/widget_win.h"
 
@@ -35,17 +35,17 @@ static const int kDelayMS = 100;
 // AppLaunchedAnimation creates an animation. It loads the icon for the
 // extension and once the image is loaded the animation starts. The icon fades
 // out after a short delay.
-class AppLaunchedAnimationWin : public AnimationDelegate,
+class AppLaunchedAnimationWin : public ui::AnimationDelegate,
                                 public ImageLoadingTracker::Observer,
                                 public views::ImageView {
  public:
   AppLaunchedAnimationWin(const Extension* extension, const gfx::Rect& rect);
 
  private:
-  // AnimationDelegate
-  virtual void AnimationProgressed(const Animation* animation);
-  virtual void AnimationCanceled(const Animation* animation);
-  virtual void AnimationEnded(const Animation* animation);
+  // ui::AnimationDelegate
+  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationCanceled(const ui::Animation* animation);
+  virtual void AnimationEnded(const ui::Animation* animation);
 
   // We use a HWND for the popup so that it may float above any HWNDs in our UI.
   views::WidgetWin* popup_;
@@ -61,7 +61,7 @@ class AppLaunchedAnimationWin : public AnimationDelegate,
                              int index);
 
   // Hover animation.
-  scoped_ptr<SlideAnimation> animation_;
+  scoped_ptr<ui::SlideAnimation> animation_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLaunchedAnimationWin);
 };
@@ -80,15 +80,17 @@ AppLaunchedAnimationWin::AppLaunchedAnimationWin(const Extension* extension,
       ImageLoadingTracker::DONT_CACHE);
 }
 
-void AppLaunchedAnimationWin::AnimationCanceled(const Animation* animation) {
+void AppLaunchedAnimationWin::AnimationCanceled(
+    const ui::Animation* animation) {
   AnimationEnded(animation);
 }
 
-void AppLaunchedAnimationWin::AnimationEnded(const Animation* animation) {
+void AppLaunchedAnimationWin::AnimationEnded(const ui::Animation* animation) {
   popup_->Close();
 }
 
-void AppLaunchedAnimationWin::AnimationProgressed(const Animation* animation) {
+void AppLaunchedAnimationWin::AnimationProgressed(
+    const ui::Animation* animation) {
   // GetCurrentValue goes from 1 to 0 since we are hiding.
   const double current_value = 1.0 - animation->GetCurrentValue();
   const double current_time = current_value * (kDelayMS + kDurationMS);
@@ -118,9 +120,9 @@ void AppLaunchedAnimationWin::OnImageLoaded(SkBitmap* image,
     popup_->Show();
 
     // Start animation.
-    animation_.reset(new SlideAnimation(this));
+    animation_.reset(new ui::SlideAnimation(this));
     animation_->SetSlideDuration(kDelayMS + kDurationMS);
-    animation_->SetTweenType(Tween::LINEAR);
+    animation_->SetTweenType(ui::Tween::LINEAR);
     animation_->Reset(1.0);
     animation_->Hide();
   }

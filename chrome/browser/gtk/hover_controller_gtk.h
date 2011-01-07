@@ -8,17 +8,17 @@
 
 #include <gtk/gtk.h>
 
-#include "app/animation_delegate.h"
 #include "app/gtk_signal.h"
 #include "app/gtk_signal_registrar.h"
-#include "app/slide_animation.h"
-#include "app/throb_animation.h"
+#include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/slide_animation.h"
+#include "ui/base/animation/throb_animation.h"
 
 // This class handles the "throbbing" of a GtkChromeButton. The visual effect
 // of throbbing is created by painting partially transparent hover effects. It
 // only works in non-gtk theme mode. This class mainly exists to glue an
 // AnimationDelegate (C++ class) to a GtkChromeButton* (GTK/c object).
-class HoverControllerGtk : public AnimationDelegate {
+class HoverControllerGtk : public ui::AnimationDelegate {
  public:
   virtual ~HoverControllerGtk();
 
@@ -42,10 +42,10 @@ class HoverControllerGtk : public AnimationDelegate {
  private:
   explicit HoverControllerGtk(GtkWidget* button);
 
-  // Overridden from AnimationDelegate.
-  virtual void AnimationProgressed(const Animation* animation);
-  virtual void AnimationEnded(const Animation* animation);
-  virtual void AnimationCanceled(const Animation* animation);
+  // Overridden from ui::AnimationDelegate.
+  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationEnded(const ui::Animation* animation);
+  virtual void AnimationCanceled(const ui::Animation* animation);
 
   CHROMEGTK_CALLBACK_1(HoverControllerGtk, gboolean, OnEnter,
                        GdkEventCrossing*);
@@ -55,8 +55,8 @@ class HoverControllerGtk : public AnimationDelegate {
                        GtkWidget*);
   CHROMEGTK_CALLBACK_0(HoverControllerGtk, void, OnDestroy);
 
-  ThrobAnimation throb_animation_;
-  SlideAnimation hover_animation_;
+  ui::ThrobAnimation throb_animation_;
+  ui::SlideAnimation hover_animation_;
   GtkWidget* button_;
 
   GtkSignalRegistrar signals_;

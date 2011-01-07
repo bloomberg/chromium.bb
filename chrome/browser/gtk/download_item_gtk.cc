@@ -6,7 +6,6 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/slide_animation.h"
 #include "app/text_elider.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -35,6 +34,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/animation/slide_animation.h"
 
 namespace {
 
@@ -245,7 +245,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
 
   get_download()->AddObserver(this);
 
-  new_item_animation_.reset(new SlideAnimation(this));
+  new_item_animation_.reset(new ui::SlideAnimation(this));
   new_item_animation_->SetSlideDuration(kNewItemAnimationDurationMs);
   gtk_widget_show_all(hbox_.get());
 
@@ -382,9 +382,9 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
       // Set up the widget as a drag source.
       DownloadItemDrag::SetSource(body_.get(), get_download(), icon_large_);
 
-      complete_animation_.reset(new SlideAnimation(this));
+      complete_animation_.reset(new ui::SlideAnimation(this));
       complete_animation_->SetSlideDuration(kCompleteAnimationDurationMs);
-      complete_animation_->SetTweenType(Tween::LINEAR);
+      complete_animation_->SetTweenType(ui::Tween::LINEAR);
       complete_animation_->Show();
       break;
     case DownloadItem::IN_PROGRESS:
@@ -411,7 +411,7 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
   UpdateStatusLabel(status_text_);
 }
 
-void DownloadItemGtk::AnimationProgressed(const Animation* animation) {
+void DownloadItemGtk::AnimationProgressed(const ui::Animation* animation) {
   if (animation == complete_animation_.get()) {
     gtk_widget_queue_draw(progress_area_.get());
   } else {

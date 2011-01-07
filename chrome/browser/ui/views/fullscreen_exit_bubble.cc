@@ -7,11 +7,11 @@
 #include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/slide_animation.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "gfx/canvas_skia.h"
 #include "grit/generated_resources.h"
+#include "ui/base/animation/slide_animation.h"
 #include "views/screen.h"
 #include "views/widget/root_view.h"
 #include "views/window/window.h"
@@ -143,7 +143,7 @@ FullscreenExitBubble::FullscreenExitBubble(
     : root_view_(frame->GetRootView()),
       delegate_(delegate),
       popup_(NULL),
-      size_animation_(new SlideAnimation(this)) {
+      size_animation_(new ui::SlideAnimation(this)) {
   size_animation_->Reset(1);
 
   // Create the contents view.
@@ -198,7 +198,7 @@ void FullscreenExitBubble::LinkActivated(views::Link* source, int event_flags) {
 }
 
 void FullscreenExitBubble::AnimationProgressed(
-    const Animation* animation) {
+    const ui::Animation* animation) {
   gfx::Rect popup_rect(GetPopupRect(false));
   if (popup_rect.IsEmpty()) {
     popup_->Hide();
@@ -213,7 +213,7 @@ void FullscreenExitBubble::AnimationProgressed(
   }
 }
 void FullscreenExitBubble::AnimationEnded(
-    const Animation* animation) {
+    const ui::Animation* animation) {
   AnimationProgressed(animation);
 }
 

@@ -635,7 +635,8 @@ void BrowserActionsToolbarGtk::ModelLoaded() {
   SetContainerWidth();
 }
 
-void BrowserActionsToolbarGtk::AnimationProgressed(const Animation* animation) {
+void BrowserActionsToolbarGtk::AnimationProgressed(
+    const ui::Animation* animation) {
   int width = start_width_ + (desired_width_ - start_width_) *
       animation->GetCurrentValue();
   gtk_widget_set_size_request(button_hbox_.get(), width, -1);
@@ -644,7 +645,7 @@ void BrowserActionsToolbarGtk::AnimationProgressed(const Animation* animation) {
     resize_animation_.Reset();
 }
 
-void BrowserActionsToolbarGtk::AnimationEnded(const Animation* animation) {
+void BrowserActionsToolbarGtk::AnimationEnded(const ui::Animation* animation) {
   gtk_widget_set_size_request(button_hbox_.get(), desired_width_, -1);
   UpdateChevronVisibility();
 }

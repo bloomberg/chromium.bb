@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_CONTENT_SETTING_IMAGE_VIEW_H_
 #pragma once
 
-#include "app/linear_animation.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/views/info_bubble.h"
 #include "chrome/common/content_settings_types.h"
+#include "ui/base/animation/linear_animation.h"
 #include "views/controls/image_view.h"
 
 class ContentSettingImageModel;
@@ -25,7 +25,7 @@ class MouseEvent;
 
 class ContentSettingImageView : public views::ImageView,
                                 public InfoBubbleDelegate,
-                                public LinearAnimation {
+                                public ui::LinearAnimation {
  public:
   ContentSettingImageView(ContentSettingsType content_type,
                           LocationBarView* parent,
@@ -54,7 +54,7 @@ class ContentSettingImageView : public views::ImageView,
   virtual bool CloseOnEscape();
   virtual bool FadeInOnShow() { return false; }
 
-  // LinearAnimation override:
+  // ui::LinearAnimation override:
   virtual void AnimateToState(double state);
 
   scoped_ptr<ContentSettingImageModel> content_setting_image_model_;

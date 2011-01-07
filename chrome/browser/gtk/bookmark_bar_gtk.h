@@ -10,7 +10,6 @@
 
 #include <vector>
 
-#include "app/animation_delegate.h"
 #include "app/gtk_signal.h"
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
@@ -25,6 +24,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "gfx/point.h"
 #include "gfx/size.h"
+#include "ui/base/animation/animation_delegate.h"
 
 class BookmarkMenuController;
 class Browser;
@@ -34,10 +34,13 @@ class GtkThemeProvider;
 class MenuGtk;
 class PageNavigator;
 class Profile;
-class SlideAnimation;
 class TabstripOriginProvider;
 
-class BookmarkBarGtk : public AnimationDelegate,
+namespace ui {
+class SlideAnimation;
+}
+
+class BookmarkBarGtk : public ui::AnimationDelegate,
                        public ProfileSyncServiceObserver,
                        public BookmarkModelObserver,
                        public MenuBarHelper::Delegate,
@@ -96,9 +99,9 @@ class BookmarkBarGtk : public AnimationDelegate,
   // Returns true if the bookmarks bar preference is set to 'always show'.
   bool IsAlwaysShown();
 
-  // AnimationDelegate implementation ------------------------------------------
-  virtual void AnimationProgressed(const Animation* animation);
-  virtual void AnimationEnded(const Animation* animation);
+  // ui::AnimationDelegate implementation --------------------------------------
+  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationEnded(const ui::Animation* animation);
 
   // MenuBarHelper::Delegate implementation ------------------------------------
   virtual void PopupForButton(GtkWidget* button);
@@ -367,7 +370,7 @@ class BookmarkBarGtk : public AnimationDelegate,
   // displayed yet.
   scoped_ptr<BookmarkMenuController> current_menu_;
 
-  scoped_ptr<SlideAnimation> slide_animation_;
+  scoped_ptr<ui::SlideAnimation> slide_animation_;
 
   // Whether we are currently configured as floating (detached from the
   // toolbar). This reflects our actual state, and can be out of sync with

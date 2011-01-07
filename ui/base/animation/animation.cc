@@ -1,17 +1,19 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/animation.h"
+#include "ui/base/animation/animation.h"
 
-#include "app/animation_container.h"
-#include "app/animation_delegate.h"
-#include "app/tween.h"
 #include "gfx/rect.h"
+#include "ui/base/animation/animation_container.h"
+#include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/tween.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
+
+namespace ui {
 
 Animation::Animation(base::TimeDelta timer_interval)
     : timer_interval_(timer_interval),
@@ -118,3 +120,5 @@ void Animation::SetStartTime(base::TimeTicks start_time) {
 base::TimeDelta Animation::GetTimerInterval() const {
   return timer_interval_;
 }
+
+}  // namespace ui

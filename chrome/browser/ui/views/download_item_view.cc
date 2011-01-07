@@ -8,7 +8,6 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/slide_animation.h"
 #include "app/text_elider.h"
 #include "base/callback.h"
 #include "base/file_path.h"
@@ -26,6 +25,7 @@
 #include "gfx/color_utils.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/animation/slide_animation.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/widget/root_view.h"
@@ -237,8 +237,8 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     drop_down_x_right_ = size.width();
   }
 
-  body_hover_animation_.reset(new SlideAnimation(this));
-  drop_hover_animation_.reset(new SlideAnimation(this));
+  body_hover_animation_.reset(new ui::SlideAnimation(this));
+  drop_hover_animation_.reset(new ui::SlideAnimation(this));
 
   if (download->safety_state() == DownloadItem::DANGEROUS) {
     tooltip_text_.clear();
@@ -367,9 +367,9 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
         return;
       }
       StopDownloadProgress();
-      complete_animation_.reset(new SlideAnimation(this));
+      complete_animation_.reset(new ui::SlideAnimation(this));
       complete_animation_->SetSlideDuration(kCompleteAnimationDurationMs);
-      complete_animation_->SetTweenType(Tween::LINEAR);
+      complete_animation_->SetTweenType(ui::Tween::LINEAR);
       complete_animation_->Show();
       if (status_text.empty())
         show_status_text_ = false;
@@ -942,7 +942,7 @@ AccessibilityTypes::State DownloadItemView::GetAccessibleState() {
   }
 }
 
-void DownloadItemView::AnimationProgressed(const Animation* animation) {
+void DownloadItemView::AnimationProgressed(const ui::Animation* animation) {
   // We don't care if what animation (body button/drop button/complete),
   // is calling back, as they all have to go through the same paint call.
   SchedulePaint();

@@ -33,7 +33,7 @@ NetworkDropdownButton::NetworkDropdownButton(bool browser_mode,
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)),
       parent_window_(parent_window) {
   animation_connecting_.SetThrobDuration(kThrobDuration);
-  animation_connecting_.SetTweenType(Tween::EASE_IN_OUT);
+  animation_connecting_.SetTweenType(ui::Tween::EASE_IN_OUT);
   CrosLibrary::Get()->GetNetworkLibrary()->AddNetworkManagerObserver(this);
   // The initial state will be updated on Refresh.
   // See network_selection_view.cc.
@@ -44,9 +44,10 @@ NetworkDropdownButton::~NetworkDropdownButton() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NetworkMenuButton, AnimationDelegate implementation:
+// NetworkMenuButton, ui::AnimationDelegate implementation:
 
-void NetworkDropdownButton::AnimationProgressed(const Animation* animation) {
+void NetworkDropdownButton::AnimationProgressed(
+    const ui::Animation* animation) {
   if (animation == &animation_connecting_) {
     SetIcon(IconForNetworkConnecting(animation_connecting_.GetCurrentValue(),
                                      true));

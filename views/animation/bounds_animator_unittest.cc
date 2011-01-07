@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/slide_animation.h"
-#include "app/test_animation_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/animation/slide_animation.h"
+#include "ui/base/animation/test_animation_delegate.h"
 #include "views/animation/bounds_animator.h"
 #include "views/view.h"
 
 using views::BoundsAnimator;
+using ui::Animation;
+using ui::SlideAnimation;
 
 namespace {
 

@@ -9,11 +9,9 @@
 #include <map>
 #include <string>
 
-#include "app/animation_delegate.h"
 #include "app/gtk_signal.h"
 #include "app/gtk_signal_registrar.h"
 #include "app/menus/simple_menu_model.h"
-#include "app/slide_animation.h"
 #include "base/linked_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
@@ -23,6 +21,8 @@
 #include "chrome/browser/gtk/owned_widget_gtk.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/slide_animation.h"
 
 class Browser;
 class BrowserActionButton;
@@ -34,7 +34,7 @@ typedef struct _GdkDragContext GdkDragContext;
 typedef struct _GtkWidget GtkWidget;
 
 class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
-                                 public AnimationDelegate,
+                                 public ui::AnimationDelegate,
                                  public MenuGtk::Delegate,
                                  public menus::SimpleMenuModel::Delegate,
                                  public NotificationObserver {
@@ -111,9 +111,9 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   virtual void BrowserActionMoved(const Extension* extension, int index);
   virtual void ModelLoaded();
 
-  // AnimationDelegate implementation.
-  virtual void AnimationProgressed(const Animation* animation);
-  virtual void AnimationEnded(const Animation* animation);
+  // ui::AnimationDelegate implementation.
+  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationEnded(const ui::Animation* animation);
 
   // SimpleMenuModel::Delegate implementation.
   // In our case, |command_id| is be the index into the model's extension list.
@@ -205,7 +205,7 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   ExtensionButtonMap extension_button_map_;
 
   // We use this animation for the smart resizing of the toolbar.
-  SlideAnimation resize_animation_;
+  ui::SlideAnimation resize_animation_;
   // This is the final width we are animating towards.
   int desired_width_;
   // This is the width we were at when we started animating.

@@ -14,7 +14,7 @@
 InfoBarArrowModel::InfoBarArrowModel(Observer* observer)
     : observer_(observer),
       animation_(this) {
-  animation_.SetTweenType(Tween::LINEAR);
+  animation_.SetTweenType(ui::Tween::LINEAR);
   animation_.Reset(1.0);
   target_colors_.top = target_colors_.bottom = SkColorSetARGB(0, 0, 0, 0);
   previous_colors_ = target_colors_;
@@ -111,14 +111,14 @@ void InfoBarArrowModel::Paint(GtkWidget* widget,
   canvas.drawPath(path, paint);
 }
 
-void InfoBarArrowModel::AnimationEnded(const Animation* animation) {
+void InfoBarArrowModel::AnimationEnded(const ui::Animation* animation) {
   observer_->PaintStateChanged();
 }
 
-void InfoBarArrowModel::AnimationProgressed(const Animation* animation) {
+void InfoBarArrowModel::AnimationProgressed(const ui::Animation* animation) {
   observer_->PaintStateChanged();
 }
 
-void InfoBarArrowModel::AnimationCanceled(const Animation* animation) {
+void InfoBarArrowModel::AnimationCanceled(const ui::Animation* animation) {
   observer_->PaintStateChanged();
 }

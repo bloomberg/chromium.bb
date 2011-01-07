@@ -8,15 +8,15 @@
 
 #include <gtk/gtk.h>
 
-#include "app/animation_delegate.h"
 #include "app/gtk_signal.h"
-#include "app/slide_animation.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/gtk/owned_widget_gtk.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "gfx/rect.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/slide_animation.h"
 
 class CairoCachedSurface;
 class GtkThemeProvider;
@@ -98,7 +98,7 @@ class CustomDrawButtonBase : public NotificationObserver {
 // of controlling the hover state of a button. The "hover state" refers to the
 // percent opacity of a button's PRELIGHT. The PRELIGHT is animated such that
 // when a user moves a mouse over a button the PRELIGHT fades in.
-class CustomDrawHoverController : public AnimationDelegate {
+class CustomDrawHoverController : public ui::AnimationDelegate {
  public:
   explicit CustomDrawHoverController(GtkWidget* widget);
   CustomDrawHoverController();
@@ -112,14 +112,14 @@ class CustomDrawHoverController : public AnimationDelegate {
   }
 
  private:
-  virtual void AnimationProgressed(const Animation* animation);
+  virtual void AnimationProgressed(const ui::Animation* animation);
 
   CHROMEGTK_CALLBACK_1(CustomDrawHoverController, gboolean, OnEnter,
                        GdkEventCrossing*);
   CHROMEGTK_CALLBACK_1(CustomDrawHoverController, gboolean, OnLeave,
                        GdkEventCrossing*);
 
-  SlideAnimation slide_animation_;
+  ui::SlideAnimation slide_animation_;
   GtkWidget* widget_;
 };
 

@@ -8,7 +8,6 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/slide_animation.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/download/download_item.h"
@@ -23,6 +22,7 @@
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/animation/slide_animation.h"
 #include "views/background.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/image_view.h"
@@ -120,10 +120,10 @@ void DownloadShelfView::Init() {
   UpdateButtonColors();
   AddChildView(close_button_);
 
-  new_item_animation_.reset(new SlideAnimation(this));
+  new_item_animation_.reset(new ui::SlideAnimation(this));
   new_item_animation_->SetSlideDuration(kNewItemAnimationDurationMs);
 
-  shelf_animation_.reset(new SlideAnimation(this));
+  shelf_animation_.reset(new ui::SlideAnimation(this));
   shelf_animation_->SetSlideDuration(kShelfAnimationDurationMs);
   Show();
 }
@@ -224,7 +224,7 @@ gfx::Size DownloadShelfView::GetPreferredSize() {
   return prefsize;
 }
 
-void DownloadShelfView::AnimationProgressed(const Animation *animation) {
+void DownloadShelfView::AnimationProgressed(const ui::Animation *animation) {
   if (animation == new_item_animation_.get()) {
     Layout();
     SchedulePaint();
@@ -239,7 +239,7 @@ void DownloadShelfView::AnimationProgressed(const Animation *animation) {
   }
 }
 
-void DownloadShelfView::AnimationEnded(const Animation *animation) {
+void DownloadShelfView::AnimationEnded(const ui::Animation *animation) {
   if (animation == shelf_animation_.get()) {
     parent_->SetDownloadShelfVisible(shelf_animation_->IsShowing());
     if (!shelf_animation_->IsShowing())

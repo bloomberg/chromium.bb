@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_UI_VIEWS_PAGE_INFO_BUBBLE_VIEW_H_
 #pragma once
 
-#include "app/animation_delegate.h"
-#include "app/slide_animation.h"
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/views/info_bubble.h"
+#include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/slide_animation.h"
 #include "views/controls/link.h"
 #include "views/view.h"
 
@@ -21,7 +21,7 @@ class PageInfoBubbleView : public views::View,
                            public PageInfoModel::PageInfoModelObserver,
                            public InfoBubbleDelegate,
                            public views::LinkController,
-                           public AnimationDelegate {
+                           public ui::AnimationDelegate {
  public:
   PageInfoBubbleView(gfx::NativeWindow parent_window,
                      Profile* profile,
@@ -51,9 +51,9 @@ class PageInfoBubbleView : public views::View,
   // LinkController methods:
   virtual void LinkActivated(views::Link* source, int event_flags);
 
-  // Overridden from AnimationDelegate.
-  virtual void AnimationEnded(const Animation* animation);
-  virtual void AnimationProgressed(const Animation* animation);
+  // Overridden from ui::AnimationDelegate.
+  virtual void AnimationEnded(const ui::Animation* animation);
+  virtual void AnimationProgressed(const ui::Animation* animation);
 
  private:
   // Layout the sections within the bubble.
@@ -74,7 +74,7 @@ class PageInfoBubbleView : public views::View,
   views::Link* help_center_link_;
 
   // Animation that helps us change size smoothly as more data comes in.
-  SlideAnimation resize_animation_;
+  ui::SlideAnimation resize_animation_;
 
   // The height of the info bubble at the start of the resize animation.
   int animation_start_height_;

@@ -8,8 +8,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/animation_delegate.h"
-#include "app/slide_animation.h"
 #include "base/callback.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
@@ -17,11 +15,13 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
+#include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/slide_animation.h"
 
 class TabContents;
 class TabRendererGtk;
 
-class DraggedTabGtk : public AnimationDelegate {
+class DraggedTabGtk : public ui::AnimationDelegate {
  public:
   DraggedTabGtk(TabContents* datasource,
                 const gfx::Point& mouse_tab_offset,
@@ -63,10 +63,10 @@ class DraggedTabGtk : public AnimationDelegate {
   GtkWidget* widget() const { return container_; }
 
  private:
-  // Overridden from AnimationDelegate:
-  virtual void AnimationProgressed(const Animation* animation);
-  virtual void AnimationEnded(const Animation* animation);
-  virtual void AnimationCanceled(const Animation* animation);
+  // Overridden from ui::AnimationDelegate:
+  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationEnded(const ui::Animation* animation);
+  virtual void AnimationCanceled(const ui::Animation* animation);
 
   // Arranges the contents of the dragged tab.
   void Layout();
@@ -132,7 +132,7 @@ class DraggedTabGtk : public AnimationDelegate {
   gfx::Size contents_size_;
 
   // The animation used to slide the attached tab to its final location.
-  SlideAnimation close_animation_;
+  ui::SlideAnimation close_animation_;
 
   // A callback notified when the animation is complete.
   scoped_ptr<Callback0::Type> animation_callback_;

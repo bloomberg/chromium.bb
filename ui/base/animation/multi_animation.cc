@@ -1,11 +1,13 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/multi_animation.h"
+#include "ui/base/animation/multi_animation.h"
 
-#include "app/animation_delegate.h"
 #include "base/logging.h"
+#include "ui/base/animation/animation_delegate.h"
+
+namespace ui {
 
 // Default interval, in ms.
 static const int kDefaultInterval = 20;
@@ -82,3 +84,5 @@ const MultiAnimation::Part& MultiAnimation::GetPart(int* time_ms,
   *part_index = 0;
   return parts_[0];
 }
+
+}  // namespace ui

@@ -8,14 +8,14 @@
 
 #include <vector>
 
-#include "app/animation_delegate.h"
-#include "app/slide_animation.h"
 #include "base/basictypes.h"
+#include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/slide_animation.h"
 #include "views/view.h"
 
 class PanelScrollerHeader;
 
-class PanelScroller : public views::View, public AnimationDelegate {
+class PanelScroller : public views::View, public ui::AnimationDelegate {
  public:
   PanelScroller();
   ~PanelScroller();
@@ -39,8 +39,8 @@ class PanelScroller : public views::View, public AnimationDelegate {
  private:
   struct Panel;
 
-  // AnimationDelegate overrides.
-  virtual void AnimationProgressed(const Animation* animation);
+  // ui::AnimationDelegate overrides.
+  virtual void AnimationProgressed(const ui::Animation* animation);
 
   // Scrolls to the panel at the given index. It will be moved to the top.
   void ScrollToPanel(int index);
@@ -56,7 +56,7 @@ class PanelScroller : public views::View, public AnimationDelegate {
   // The current scroll position.
   int scroll_pos_;
 
-  SlideAnimation animation_;
+  ui::SlideAnimation animation_;
 
   // When animating a scroll, these indicate the beginning and ending of the
   // scroll. The scroll_pos_ always indicates the current one.

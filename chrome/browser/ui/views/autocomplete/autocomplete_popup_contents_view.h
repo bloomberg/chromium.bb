@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_UI_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_CONTENTS_VIEW_H_
 #pragma once
 
-#include "app/animation_delegate.h"
-#include "app/slide_animation.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
 #include "gfx/font.h"
+#include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/slide_animation.h"
 #include "views/view.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -46,7 +46,7 @@ class AutocompleteResultViewModel {
 class AutocompletePopupContentsView : public views::View,
                                       public AutocompleteResultViewModel,
                                       public AutocompletePopupView,
-                                      public AnimationDelegate {
+                                      public ui::AnimationDelegate {
  public:
   AutocompletePopupContentsView(const gfx::Font& font,
                                 AutocompleteEditView* edit_view,
@@ -73,8 +73,8 @@ class AutocompletePopupContentsView : public views::View,
   virtual bool IsHoveredIndex(size_t index) const;
   virtual const SkBitmap* GetSpecialIcon(size_t index) const;
 
-  // Overridden from AnimationDelegate:
-  virtual void AnimationProgressed(const Animation* animation);
+  // Overridden from ui::AnimationDelegate:
+  virtual void AnimationProgressed(const ui::Animation* animation);
 
   // Overridden from views::View:
   virtual void Paint(gfx::Canvas* canvas);
@@ -165,7 +165,7 @@ class AutocompletePopupContentsView : public views::View,
 
   // The popup sizes vertically using an animation when the popup is getting
   // shorter (not larger, that makes it look "slow").
-  SlideAnimation size_animation_;
+  ui::SlideAnimation size_animation_;
   gfx::Rect start_bounds_;
   gfx::Rect target_bounds_;
 

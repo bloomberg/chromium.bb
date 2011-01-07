@@ -8,9 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/slide_animation.h"
 #include "app/theme_provider.h"
-#include "app/throb_animation.h"
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -24,6 +22,8 @@
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/animation/slide_animation.h"
+#include "ui/base/animation/throb_animation.h"
 #include "views/controls/button/image_button.h"
 
 // How long the pulse throb takes.
@@ -81,16 +81,16 @@ int BaseTab::font_height_ = 0;
 // FaviconCrashAnimation
 //
 //  A custom animation subclass to manage the favicon crash animation.
-class BaseTab::FavIconCrashAnimation : public LinearAnimation,
-                                       public AnimationDelegate {
+class BaseTab::FavIconCrashAnimation : public ui::LinearAnimation,
+                                       public ui::AnimationDelegate {
  public:
   explicit FavIconCrashAnimation(BaseTab* target)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(LinearAnimation(1000, 25, this)),
+      : ALLOW_THIS_IN_INITIALIZER_LIST(ui::LinearAnimation(1000, 25, this)),
         target_(target) {
   }
   virtual ~FavIconCrashAnimation() {}
 
-  // Animation overrides:
+  // ui::Animation overrides:
   virtual void AnimateToState(double state) {
     const double kHidingOffset = 27;
 
@@ -105,8 +105,8 @@ class BaseTab::FavIconCrashAnimation : public LinearAnimation,
     }
   }
 
-  // AnimationDelegate overrides:
-  virtual void AnimationCanceled(const Animation* animation) {
+  // ui::AnimationDelegate overrides:
+  virtual void AnimationCanceled(const ui::Animation* animation) {
     target_->SetFavIconHidingOffset(0);
   }
 
@@ -197,7 +197,7 @@ void BaseTab::UpdateLoadingAnimation(TabRendererData::NetworkState state) {
 
 void BaseTab::StartPulse() {
   if (!pulse_animation_.get()) {
-    pulse_animation_.reset(new ThrobAnimation(this));
+    pulse_animation_.reset(new ui::ThrobAnimation(this));
     pulse_animation_->SetSlideDuration(kPulseDurationMs);
     if (animation_container_.get())
       pulse_animation_->SetContainer(animation_container_.get());
@@ -224,16 +224,16 @@ bool BaseTab::IsCloseable() const {
 
 void BaseTab::OnMouseEntered(const views::MouseEvent& e) {
   if (!hover_animation_.get()) {
-    hover_animation_.reset(new SlideAnimation(this));
+    hover_animation_.reset(new ui::SlideAnimation(this));
     hover_animation_->SetContainer(animation_container_.get());
     hover_animation_->SetSlideDuration(kHoverDurationMs);
   }
-  hover_animation_->SetTweenType(Tween::EASE_OUT);
+  hover_animation_->SetTweenType(ui::Tween::EASE_OUT);
   hover_animation_->Show();
 }
 
 void BaseTab::OnMouseExited(const views::MouseEvent& e) {
-  hover_animation_->SetTweenType(Tween::EASE_IN);
+  hover_animation_->SetTweenType(ui::Tween::EASE_IN);
   hover_animation_->Hide();
 }
 
@@ -411,15 +411,15 @@ void BaseTab::PaintTitle(gfx::Canvas* canvas, SkColor title_color) {
                         title_bounds().width(), title_bounds().height());
 }
 
-void BaseTab::AnimationProgressed(const Animation* animation) {
+void BaseTab::AnimationProgressed(const ui::Animation* animation) {
   SchedulePaint();
 }
 
-void BaseTab::AnimationCanceled(const Animation* animation) {
+void BaseTab::AnimationCanceled(const ui::Animation* animation) {
   SchedulePaint();
 }
 
-void BaseTab::AnimationEnded(const Animation* animation) {
+void BaseTab::AnimationEnded(const ui::Animation* animation) {
   SchedulePaint();
 }
 

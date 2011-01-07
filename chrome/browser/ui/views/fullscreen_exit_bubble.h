@@ -6,11 +6,15 @@
 #define CHROME_BROWSER_UI_VIEWS_FULLSCREEN_EXIT_BUBBLE_H__
 #pragma once
 
-#include "app/animation_delegate.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/command_updater.h"
+#include "ui/base/animation/animation_delegate.h"
 #include "views/controls/link.h"
+
+namespace ui {
+class SlideAnimation;
+}
 
 #if defined(OS_LINUX)
 namespace views {
@@ -18,14 +22,12 @@ class WidgetGtk;
 }
 #endif
 
-class SlideAnimation;
-
 // FullscreenExitBubble is responsible for showing a bubble atop the screen in
 // fullscreen mode, telling users how to exit and providing a click target.
 // The bubble auto-hides, and re-shows when the user moves to the screen top.
 
 class FullscreenExitBubble : public views::LinkController,
-                             public AnimationDelegate {
+                             public ui::AnimationDelegate {
  public:
   explicit FullscreenExitBubble(
       views::Widget* frame,
@@ -48,9 +50,9 @@ class FullscreenExitBubble : public views::LinkController,
   // views::LinkController
   virtual void LinkActivated(views::Link* source, int event_flags);
 
-  // AnimationDelegate
-  virtual void AnimationProgressed(const Animation* animation);
-  virtual void AnimationEnded(const Animation* animation);
+  // ui::AnimationDelegate
+  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationEnded(const ui::Animation* animation);
 
   // Called repeatedly to get the current mouse position and animate the bubble
   // on or off the screen as appropriate.
@@ -84,7 +86,7 @@ class FullscreenExitBubble : public views::LinkController,
   FullscreenExitView* view_;
 
   // Animation controlling sliding into/out of the top of the screen.
-  scoped_ptr<SlideAnimation> size_animation_;
+  scoped_ptr<ui::SlideAnimation> size_animation_;
 
   // Timer to delay before allowing the bubble to hide after it's initially
   // shown.

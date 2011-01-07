@@ -8,7 +8,6 @@
 
 #include <set>
 
-#include "app/animation_delegate.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -16,13 +15,17 @@
 #include "chrome/browser/views/bookmark_menu_controller_views.h"
 #include "chrome/browser/views/detachable_toolbar_view.h"
 #include "chrome/common/notification_registrar.h"
+#include "ui/base/animation/animation_delegate.h"
 #include "views/controls/button/button.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
 class Browser;
 class PageNavigator;
 class PrefService;
+
+namespace ui {
 class SlideAnimation;
+}
 
 namespace views {
 class CustomButton;
@@ -46,7 +49,7 @@ class BookmarkBarView : public DetachableToolbarView,
                         public NotificationObserver,
                         public views::ContextMenuController,
                         public views::DragController,
-                        public AnimationDelegate,
+                        public ui::AnimationDelegate,
                         public BookmarkMenuController::Observer,
                         public BookmarkBarInstructionsView::Delegate {
   friend class ShowFolderMenuTask;
@@ -180,8 +183,8 @@ class BookmarkBarView : public DetachableToolbarView,
   bool is_animating();
 
   // SlideAnimationDelegate implementation.
-  void AnimationProgressed(const Animation* animation);
-  void AnimationEnded(const Animation* animation);
+  void AnimationProgressed(const ui::Animation* animation);
+  void AnimationEnded(const ui::Animation* animation);
 
   // BookmarkMenuController::Observer
   virtual void BookmarkMenuDeleted(BookmarkMenuController* controller);
@@ -491,7 +494,7 @@ class BookmarkBarView : public DetachableToolbarView,
   bool infobar_visible_;
 
   // Animation controlling showing and hiding of the bar.
-  scoped_ptr<SlideAnimation> size_animation_;
+  scoped_ptr<ui::SlideAnimation> size_animation_;
 
   // If the bookmark bubble is showing, this is the visible ancestor of the URL.
   // The visible ancestor is either the other_bookmarked_button_,

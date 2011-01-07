@@ -9,7 +9,6 @@
 #include <gtk/gtk.h>
 #include <map>
 
-#include "app/animation_delegate.h"
 #include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
@@ -21,6 +20,7 @@
 #include "gfx/font.h"
 #include "gfx/rect.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/animation/animation_delegate.h"
 
 namespace gfx {
 class Size;
@@ -28,12 +28,15 @@ class Size;
 
 class CustomDrawButton;
 class GtkThemeProvider;
-class SlideAnimation;
 class TabContents;
 class ThemeProvider;
-class ThrobAnimation;
 
-class TabRendererGtk : public AnimationDelegate,
+namespace ui {
+class SlideAnimation;
+class ThrobAnimation;
+}
+
+class TabRendererGtk : public ui::AnimationDelegate,
                        public NotificationObserver {
  public:
   // Possible animation states.
@@ -288,10 +291,10 @@ class TabRendererGtk : public AnimationDelegate,
     int y_offset;
   };
 
-  // Overridden from AnimationDelegate:
-  virtual void AnimationProgressed(const Animation* animation);
-  virtual void AnimationCanceled(const Animation* animation);
-  virtual void AnimationEnded(const Animation* animation);
+  // Overridden from ui::AnimationDelegate:
+  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationCanceled(const ui::Animation* animation);
+  virtual void AnimationEnded(const ui::Animation* animation);
 
   // Starts/Stops the crash animation.
   void StartCrashAnimation();
@@ -420,10 +423,10 @@ class TabRendererGtk : public AnimationDelegate,
   gfx::Rect requisition_;
 
   // Hover animation.
-  scoped_ptr<SlideAnimation> hover_animation_;
+  scoped_ptr<ui::SlideAnimation> hover_animation_;
 
   // Animation used when the title of an inactive mini-tab changes.
-  scoped_ptr<ThrobAnimation> mini_title_animation_;
+  scoped_ptr<ui::ThrobAnimation> mini_title_animation_;
 
   // Contains the loading animation state.
   LoadingAnimation loading_animation_;

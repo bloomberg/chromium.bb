@@ -10,7 +10,6 @@
 #include <algorithm>
 
 #include "app/l10n_util.h"
-#include "app/multi_animation.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -36,6 +35,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "third_party/undoview/undo_view.h"
+#include "ui/base/animation/multi_animation.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/views/autocomplete/autocomplete_popup_contents_view.h"
@@ -381,12 +381,12 @@ void AutocompleteEditViewGtk::Init() {
 
   AdjustVerticalAlignmentOfInstantView();
 
-  MultiAnimation::Parts parts;
-  parts.push_back(MultiAnimation::Part(
-      InstantController::kAutoCommitPauseTimeMS, Tween::ZERO));
-  parts.push_back(MultiAnimation::Part(
-      InstantController::kAutoCommitFadeInTimeMS, Tween::EASE_IN));
-  instant_animation_.reset(new MultiAnimation(parts));
+  ui::MultiAnimation::Parts parts;
+  parts.push_back(ui::MultiAnimation::Part(
+      InstantController::kAutoCommitPauseTimeMS, ui::Tween::ZERO));
+  parts.push_back(ui::MultiAnimation::Part(
+      InstantController::kAutoCommitFadeInTimeMS, ui::Tween::EASE_IN));
+  instant_animation_.reset(new ui::MultiAnimation(parts));
   instant_animation_->set_continuous(false);
 
 #if !defined(TOOLKIT_VIEWS)
@@ -798,15 +798,17 @@ void AutocompleteEditViewGtk::Observe(NotificationType type,
   SetBaseColor();
 }
 
-void AutocompleteEditViewGtk::AnimationEnded(const Animation* animation) {
+void AutocompleteEditViewGtk::AnimationEnded(const ui::Animation* animation) {
   controller_->OnCommitSuggestedText(GetText());
 }
 
-void AutocompleteEditViewGtk::AnimationProgressed(const Animation* animation) {
+void AutocompleteEditViewGtk::AnimationProgressed(
+    const ui::Animation* animation) {
   UpdateInstantViewColors();
 }
 
-void AutocompleteEditViewGtk::AnimationCanceled(const Animation* animation) {
+void AutocompleteEditViewGtk::AnimationCanceled(
+    const ui::Animation* animation) {
   UpdateInstantViewColors();
 }
 

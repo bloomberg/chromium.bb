@@ -6,30 +6,33 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_BASE_TAB_H_
 #pragma once
 
-#include "app/animation_container.h"
-#include "app/animation_delegate.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/views/tabs/tab_renderer_data.h"
+#include "ui/base/animation/animation_container.h"
+#include "ui/base/animation/animation_delegate.h"
 #include "views/controls/button/button.h"
 #include "views/view.h"
 
-class AnimationContainer;
 class BaseTab;
-class SlideAnimation;
 class TabController;
-class ThrobAnimation;
 
 namespace gfx {
 class Font;
-}  // namespace gfx
+}
+
+namespace ui {
+class AnimationContainer;
+class SlideAnimation;
+class ThrobAnimation;
+}
 
 namespace views {
 class ImageButton;
-}  // namespace views
+}
 
 // Base class for tab renderers.
-class BaseTab : public AnimationDelegate,
+class BaseTab : public ui::AnimationDelegate,
                 public views::ButtonListener,
                 public views::ContextMenuController,
                 public views::View {
@@ -59,10 +62,10 @@ class BaseTab : public AnimationDelegate,
   bool dragging() const { return dragging_; }
 
   // Sets the container all animations run from.
-  void set_animation_container(AnimationContainer* container) {
+  void set_animation_container(ui::AnimationContainer* container) {
     animation_container_ = container;
   }
-  AnimationContainer* animation_container() const {
+  ui::AnimationContainer* animation_container() const {
     return animation_container_.get();
   }
 
@@ -102,10 +105,10 @@ class BaseTab : public AnimationDelegate,
 
   // Returns the pulse animation. The pulse animation is non-null if StartPulse
   // has been invoked.
-  ThrobAnimation* pulse_animation() const { return pulse_animation_.get(); }
+  ui::ThrobAnimation* pulse_animation() const { return pulse_animation_.get(); }
 
   // Returns the hover animation. This may return null.
-  const SlideAnimation* hover_animation() const {
+  const ui::SlideAnimation* hover_animation() const {
     return hover_animation_.get();
   }
 
@@ -116,9 +119,9 @@ class BaseTab : public AnimationDelegate,
   void PaintTitle(gfx::Canvas* canvas, SkColor title_color);
 
   // Overridden from AnimationDelegate:
-  virtual void AnimationProgressed(const Animation* animation);
-  virtual void AnimationCanceled(const Animation* animation);
-  virtual void AnimationEnded(const Animation* animation);
+  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationCanceled(const ui::Animation* animation);
+  virtual void AnimationEnded(const ui::Animation* animation);
 
   // views::ButtonListener overrides:
   virtual void ButtonPressed(views::Button* sender,
@@ -168,15 +171,15 @@ class BaseTab : public AnimationDelegate,
   bool dragging_;
 
   // Pulse animation.
-  scoped_ptr<ThrobAnimation> pulse_animation_;
+  scoped_ptr<ui::ThrobAnimation> pulse_animation_;
 
   // Hover animation.
-  scoped_ptr<SlideAnimation> hover_animation_;
+  scoped_ptr<ui::SlideAnimation> hover_animation_;
 
   // Crash animation.
   scoped_ptr<FavIconCrashAnimation> crash_animation_;
 
-  scoped_refptr<AnimationContainer> animation_container_;
+  scoped_refptr<ui::AnimationContainer> animation_container_;
 
   views::ImageButton* close_button_;
 

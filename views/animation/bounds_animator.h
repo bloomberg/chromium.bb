@@ -8,13 +8,14 @@
 
 #include <map>
 
-#include "app/animation_container_observer.h"
-#include "app/animation_delegate.h"
 #include "base/ref_counted.h"
 #include "gfx/rect.h"
+#include "ui/base/animation/animation_container_observer.h"
+#include "ui/base/animation/animation_delegate.h"
 
-class AnimationContainer;
+namespace ui {
 class SlideAnimation;
+}
 
 namespace views {
 
@@ -37,12 +38,12 @@ class BoundsAnimatorObserver {
 // You can attach an AnimationDelegate to the individual animation for a view
 // by way of SetAnimationDelegate. Additionally you can attach an observer to
 // the BoundsAnimator that is notified when all animations are complete.
-class BoundsAnimator : public AnimationDelegate,
-                       public AnimationContainerObserver {
+class BoundsAnimator : public ui::AnimationDelegate,
+                       public ui::AnimationContainerObserver {
  public:
   // If |delete_when_done| is set to true in |SetAnimationDelegate| the
   // |AnimationDelegate| must subclass this class.
-  class OwnedAnimationDelegate : public AnimationDelegate {
+  class OwnedAnimationDelegate : public ui::AnimationDelegate {
    public:
     virtual ~OwnedAnimationDelegate() {}
   };
@@ -58,11 +59,11 @@ class BoundsAnimator : public AnimationDelegate,
 
   // Sets the animation for the specified view. BoundsAnimator takes ownership
   // of the specified animation.
-  void SetAnimationForView(View* view, SlideAnimation* animation);
+  void SetAnimationForView(View* view, ui::SlideAnimation* animation);
 
   // Returns the animation for the specified view. BoundsAnimator owns the
   // returned Animation.
-  const SlideAnimation* GetAnimationForView(View* view);
+  const ui::SlideAnimation* GetAnimationForView(View* view);
 
   // Stops animating the specified view. If the view was scheduled for deletion
   // it is deleted. This does nothing if |view| is not currently animating.
@@ -72,7 +73,7 @@ class BoundsAnimator : public AnimationDelegate,
   // |delete_when_done| is true the |delegate| is deleted when done and
   // |delegate| must subclass OwnedAnimationDelegate.
   void SetAnimationDelegate(View* view,
-                            AnimationDelegate* delegate,
+                            ui::AnimationDelegate* delegate,
                             bool delete_when_done);
 
   // Returns true if BoundsAnimator is animating the bounds of |view|.
@@ -91,7 +92,7 @@ class BoundsAnimator : public AnimationDelegate,
 
  protected:
   // Creates the animation to use for animating views.
-  virtual SlideAnimation* CreateAnimation();
+  virtual ui::SlideAnimation* CreateAnimation();
 
  private:
   // Tracks data about the view being animated.
@@ -111,10 +112,10 @@ class BoundsAnimator : public AnimationDelegate,
     gfx::Rect target_bounds;
 
     // The animation. We own this.
-    SlideAnimation* animation;
+    ui::SlideAnimation* animation;
 
     // Additional delegate for the animation, may be null.
-    AnimationDelegate* delegate;
+    ui::AnimationDelegate* delegate;
   };
 
   // Used by AnimationEndedOrCanceled.
@@ -125,7 +126,7 @@ class BoundsAnimator : public AnimationDelegate,
 
   typedef std::map<View*, Data> ViewToDataMap;
 
-  typedef std::map<const Animation*, View*> AnimationToViewMap;
+  typedef std::map<const ui::Animation*, View*> AnimationToViewMap;
 
   // Removes references to |view| and its animation. This does NOT delete the
   // animation or delegate.
@@ -138,20 +139,20 @@ class BoundsAnimator : public AnimationDelegate,
   // Used when changing the animation for a view. This resets the maps for
   // the animation used by view and returns the current animation. Ownership
   // of the returned animation passes to the caller.
-  Animation* ResetAnimationForView(View* view);
+  ui::Animation* ResetAnimationForView(View* view);
 
   // Invoked from AnimationEnded and AnimationCanceled.
-  void AnimationEndedOrCanceled(const Animation* animation,
+  void AnimationEndedOrCanceled(const ui::Animation* animation,
                                 AnimationEndType type);
 
-  // AnimationDelegate overrides.
-  virtual void AnimationProgressed(const Animation* animation);
-  virtual void AnimationEnded(const Animation* animation);
-  virtual void AnimationCanceled(const Animation* animation);
+  // ui::AnimationDelegate overrides.
+  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationEnded(const ui::Animation* animation);
+  virtual void AnimationCanceled(const ui::Animation* animation);
 
-  // AnimationContainerObserver overrides.
-  virtual void AnimationContainerProgressed(AnimationContainer* container);
-  virtual void AnimationContainerEmpty(AnimationContainer* container);
+  // ui::AnimationContainerObserver overrides.
+  virtual void AnimationContainerProgressed(ui::AnimationContainer* container);
+  virtual void AnimationContainerEmpty(ui::AnimationContainer* container);
 
   // Parent of all views being animated.
   View* parent_;
@@ -159,7 +160,7 @@ class BoundsAnimator : public AnimationDelegate,
   BoundsAnimatorObserver* observer_;
 
   // All animations we create up with the same container.
-  scoped_refptr<AnimationContainer> container_;
+  scoped_refptr<ui::AnimationContainer> container_;
 
   // Maps from view being animated to info about the view.
   ViewToDataMap data_;

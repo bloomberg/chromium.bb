@@ -48,7 +48,7 @@ ContentSettingImageView::ContentSettingImageView(
     ContentSettingsType content_type,
     LocationBarView* parent,
     Profile* profile)
-    : LinearAnimation(kMoveTimeMs, kFrameRateHz, NULL),
+    : ui::LinearAnimation(kMoveTimeMs, kFrameRateHz, NULL),
       content_setting_image_model_(
           ContentSettingImageModel::CreateContentSettingImageModel(
               content_type)),

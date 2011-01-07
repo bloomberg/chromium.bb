@@ -11,7 +11,6 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/slide_animation.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_list.h"
@@ -43,6 +42,7 @@
 #include "gfx/native_widget_types.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/animation/slide_animation.h"
 
 namespace {
 
@@ -163,11 +163,11 @@ void BalloonViewImpl::RepositionToBalloon() {
 
   anim_frame_start_ = gfx::Rect(start_x, start_y, start_w, start_h);
   anim_frame_end_ = gfx::Rect(end_x, end_y, end_w, end_h);
-  animation_.reset(new SlideAnimation(this));
+  animation_.reset(new ui::SlideAnimation(this));
   animation_->Show();
 }
 
-void BalloonViewImpl::AnimationProgressed(const Animation* animation) {
+void BalloonViewImpl::AnimationProgressed(const ui::Animation* animation) {
   DCHECK_EQ(animation, animation_.get());
 
   // Linear interpolation from start to end position.

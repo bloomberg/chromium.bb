@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_H_
 #pragma once
 
-#include "app/animation_container.h"
 #include "base/ref_counted.h"
 #include "base/timer.h"
 #include "chrome/browser/views/tabs/base_tab_strip.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
+#include "ui/base/animation/animation_container.h"
 #include "views/controls/button/image_button.h"
 #include "views/mouse_watcher.h"
 
@@ -271,7 +271,7 @@ class TabStrip : public BaseTabStrip,
 
   // To ensure all tabs pulse at the same time they share the same animation
   // container. This is that animation container.
-  scoped_refptr<AnimationContainer> animation_container_;
+  scoped_refptr<ui::AnimationContainer> animation_container_;
 
   // Used for stage 1 of new tab animation.
   base::OneShotTimer<TabStrip> new_tab_timer_;

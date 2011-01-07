@@ -6,24 +6,27 @@
 #define CHROME_BROWSER_UI_VIEWS_DOWNLOAD_SHELF_VIEW_H_
 #pragma once
 
-#include "app/animation_delegate.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/views/accessible_pane_view.h"
+#include "ui/base/animation/animation_delegate.h"
 #include "views/controls/button/button.h"
 #include "views/controls/link.h"
 #include "views/mouse_watcher.h"
-
-namespace views {
-class ImageButton;
-class ImageView;
-}
 
 class BaseDownloadItemModel;
 class Browser;
 class BrowserView;
 class DownloadAnimation;
 class DownloadItemView;
+
+namespace ui {
 class SlideAnimation;
+}
+
+namespace views {
+class ImageButton;
+class ImageView;
+}
 
 // DownloadShelfView is a view that contains individual views for each download,
 // as well as a close button and a link to show all downloads.
@@ -31,7 +34,7 @@ class SlideAnimation;
 // DownloadShelfView does not hold an infinite number of download views, rather
 // it'll automatically remove views once a certain point is reached.
 class DownloadShelfView : public AccessiblePaneView,
-                          public AnimationDelegate,
+                          public ui::AnimationDelegate,
                           public DownloadShelf,
                           public views::ButtonListener,
                           public views::LinkController,
@@ -48,9 +51,9 @@ class DownloadShelfView : public AccessiblePaneView,
   virtual void Layout();
   virtual void Paint(gfx::Canvas* canvas);
 
-  // Implementation of AnimationDelegate.
-  virtual void AnimationProgressed(const Animation* animation);
-  virtual void AnimationEnded(const Animation* animation);
+  // Implementation of ui::AnimationDelegate.
+  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationEnded(const ui::Animation* animation);
 
   // Implementation of LinkController.
   // Invoked when the user clicks the 'show all downloads' link button.
@@ -124,10 +127,10 @@ class DownloadShelfView : public AccessiblePaneView,
   Browser* browser_;
 
   // The animation for adding new items to the shelf.
-  scoped_ptr<SlideAnimation> new_item_animation_;
+  scoped_ptr<ui::SlideAnimation> new_item_animation_;
 
   // The show/hide animation for the shelf itself.
-  scoped_ptr<SlideAnimation> shelf_animation_;
+  scoped_ptr<ui::SlideAnimation> shelf_animation_;
 
   // The download views. These are also child Views, and deleted when
   // the DownloadShelfView is deleted.

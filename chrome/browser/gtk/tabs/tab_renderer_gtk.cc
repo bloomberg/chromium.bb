@@ -9,8 +9,6 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/slide_animation.h"
-#include "app/throb_animation.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/gtk/bookmark_utils_gtk.h"
@@ -28,6 +26,8 @@
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/animation/slide_animation.h"
+#include "ui/base/animation/throb_animation.h"
 
 namespace {
 
@@ -205,16 +205,16 @@ void TabRendererGtk::LoadingAnimation::Observe(
 // FaviconCrashAnimation
 //
 //  A custom animation subclass to manage the favicon crash animation.
-class TabRendererGtk::FavIconCrashAnimation : public LinearAnimation,
-                                              public AnimationDelegate {
+class TabRendererGtk::FavIconCrashAnimation : public ui::LinearAnimation,
+                                              public ui::AnimationDelegate {
  public:
   explicit FavIconCrashAnimation(TabRendererGtk* target)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(LinearAnimation(1000, 25, this)),
+      : ALLOW_THIS_IN_INITIALIZER_LIST(ui::LinearAnimation(1000, 25, this)),
         target_(target) {
   }
   virtual ~FavIconCrashAnimation() {}
 
-  // Animation overrides:
+  // ui::Animation overrides:
   virtual void AnimateToState(double state) {
     const double kHidingOffset = 27;
 
@@ -229,8 +229,8 @@ class TabRendererGtk::FavIconCrashAnimation : public LinearAnimation,
     }
   }
 
-  // AnimationDelegate overrides:
-  virtual void AnimationCanceled(const Animation* animation) {
+  // ui::AnimationDelegate overrides:
+  virtual void AnimationCanceled(const ui::Animation* animation) {
     target_->SetFavIconHidingOffset(0);
   }
 
@@ -263,7 +263,7 @@ TabRendererGtk::TabRendererGtk(ThemeProvider* theme_provider)
   close_button_.reset(MakeCloseButton());
   gtk_widget_show(tab_.get());
 
-  hover_animation_.reset(new SlideAnimation(this));
+  hover_animation_.reset(new ui::SlideAnimation(this));
   hover_animation_->SetSlideDuration(kHoverDurationMs);
 
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
@@ -520,7 +520,7 @@ gfx::Rect TabRendererGtk::GetRequisition() const {
 
 void TabRendererGtk::StartMiniTabTitleAnimation() {
   if (!mini_title_animation_.get()) {
-    mini_title_animation_.reset(new ThrobAnimation(this));
+    mini_title_animation_.reset(new ui::ThrobAnimation(this));
     mini_title_animation_->SetThrobDuration(kMiniTitleChangeThrobDuration);
   }
 
@@ -567,17 +567,17 @@ string16 TabRendererGtk::GetTitle() const {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// TabRendererGtk, AnimationDelegate implementation:
+// TabRendererGtk, ui::AnimationDelegate implementation:
 
-void TabRendererGtk::AnimationProgressed(const Animation* animation) {
+void TabRendererGtk::AnimationProgressed(const ui::Animation* animation) {
   gtk_widget_queue_draw(tab_.get());
 }
 
-void TabRendererGtk::AnimationCanceled(const Animation* animation) {
+void TabRendererGtk::AnimationCanceled(const ui::Animation* animation) {
   AnimationEnded(animation);
 }
 
-void TabRendererGtk::AnimationEnded(const Animation* animation) {
+void TabRendererGtk::AnimationEnded(const ui::Animation* animation) {
   gtk_widget_queue_draw(tab_.get());
 }
 
@@ -1052,14 +1052,14 @@ void TabRendererGtk::OnSizeAllocate(GtkWidget* widget,
 
 gboolean TabRendererGtk::OnEnterNotifyEvent(GtkWidget* widget,
                                             GdkEventCrossing* event) {
-  hover_animation_->SetTweenType(Tween::EASE_OUT);
+  hover_animation_->SetTweenType(ui::Tween::EASE_OUT);
   hover_animation_->Show();
   return FALSE;
 }
 
 gboolean TabRendererGtk::OnLeaveNotifyEvent(GtkWidget* widget,
                                             GdkEventCrossing* event) {
-  hover_animation_->SetTweenType(Tween::EASE_IN);
+  hover_animation_->SetTweenType(ui::Tween::EASE_IN);
   hover_animation_->Hide();
   return FALSE;
 }

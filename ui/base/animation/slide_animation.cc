@@ -1,10 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/slide_animation.h"
+#include "ui/base/animation/slide_animation.h"
 
 #include <math.h>
+
+namespace ui {
 
 // How many frames per second to target.
 static const int kDefaultFramerateHz = 50;
@@ -108,3 +110,5 @@ void SlideAnimation::AnimateToState(double state) {
     value_current_ = value_end_;
   }
 }
+
+}  // namespace ui

@@ -6,12 +6,15 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_CONTENTS_CONTAINER_H_
 #pragma once
 
-#include "app/animation_delegate.h"
 #include "base/scoped_ptr.h"
+#include "ui/base/animation/animation_delegate.h"
 #include "views/view.h"
 
-class SlideAnimation;
 class TabContents;
+
+namespace ui {
+class SlideAnimation;
+}
 
 namespace views {
 class Widget;
@@ -20,7 +23,7 @@ class Widget;
 // ContentsContainer is responsible for managing the TabContents views.
 // ContentsContainer has up to two children: one for the currently active
 // TabContents and one for instant's TabContents.
-class ContentsContainer : public views::View, public AnimationDelegate {
+class ContentsContainer : public views::View, public ui::AnimationDelegate {
  public:
   explicit ContentsContainer(views::View* active);
   virtual ~ContentsContainer();
@@ -54,8 +57,8 @@ class ContentsContainer : public views::View, public AnimationDelegate {
   // View overrides:
   virtual void Layout();
 
-  // AnimationDelegate overrides:
-  virtual void AnimationProgressed(const Animation* animation);
+  // ui::AnimationDelegate overrides:
+  virtual void AnimationProgressed(const ui::Animation* animation);
 
  private:
   class OverlayContentView;
@@ -80,7 +83,7 @@ class ContentsContainer : public views::View, public AnimationDelegate {
   OverlayContentView* overlay_view_;
 
   // Animation used to vary the opacity of active_overlay.
-  scoped_ptr<SlideAnimation> overlay_animation_;
+  scoped_ptr<ui::SlideAnimation> overlay_animation_;
 
   // The margin between the top and the active view. This is used to make the
   // preview overlap the bookmark bar on the new tab page.

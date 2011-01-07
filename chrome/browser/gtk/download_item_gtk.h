@@ -10,7 +10,6 @@
 
 #include <string>
 
-#include "app/animation_delegate.h"
 #include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/gtk/owned_widget_gtk.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "ui/base/animation/animation_delegate.h"
 
 class BaseDownloadItemModel;
 class DownloadShelfContextMenuGtk;
@@ -26,10 +26,13 @@ class DownloadShelfGtk;
 class GtkThemeProvider;
 class NineBox;
 class SkBitmap;
+
+namespace ui {
 class SlideAnimation;
+}
 
 class DownloadItemGtk : public DownloadItem::Observer,
-                        public AnimationDelegate,
+                        public ui::AnimationDelegate,
                         public NotificationObserver {
  public:
   // DownloadItemGtk takes ownership of |download_item_model|.
@@ -44,8 +47,8 @@ class DownloadItemGtk : public DownloadItem::Observer,
   virtual void OnDownloadFileCompleted(DownloadItem* download) { }
   virtual void OnDownloadOpened(DownloadItem* download) { }
 
-  // AnimationDelegate implementation.
-  virtual void AnimationProgressed(const Animation* animation);
+  // ui::AnimationDelegate implementation.
+  virtual void AnimationProgressed(const ui::Animation* animation);
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
@@ -189,13 +192,13 @@ class DownloadItemGtk : public DownloadItem::Observer,
   int dangerous_hbox_full_width_;
 
   // The animation when this item is first added to the shelf.
-  scoped_ptr<SlideAnimation> new_item_animation_;
+  scoped_ptr<ui::SlideAnimation> new_item_animation_;
 
   // Progress animation.
   base::RepeatingTimer<DownloadItemGtk> progress_timer_;
 
   // Animation for download complete.
-  scoped_ptr<SlideAnimation> complete_animation_;
+  scoped_ptr<ui::SlideAnimation> complete_animation_;
 
   // The file icon for the download. May be null. The small version is used
   // for display in the shelf; the large version is for use as a drag icon.

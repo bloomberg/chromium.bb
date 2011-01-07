@@ -7,13 +7,13 @@
 #include <vector>
 
 #include "app/keyboard_codes.h"
-#include "app/slide_animation.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/color_utils.h"
 #include "gfx/path.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "ui/base/animation/slide_animation.h"
 #include "views/fill_layout.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
@@ -282,7 +282,7 @@ void InfoBubble::Close() {
     DoClose(false);
 }
 
-void InfoBubble::AnimationEnded(const Animation* animation) {
+void InfoBubble::AnimationEnded(const ui::Animation* animation) {
   if (static_cast<int>(animation_->GetCurrentValue()) == 0) {
     // When fading out we just need to close the bubble at the end
     DoClose(false);
@@ -295,7 +295,7 @@ void InfoBubble::AnimationEnded(const Animation* animation) {
   }
 }
 
-void InfoBubble::AnimationProgressed(const Animation* animation) {
+void InfoBubble::AnimationProgressed(const ui::Animation* animation) {
 #if defined(OS_WIN)
   // Set the opacity for the main contents window.
   unsigned char opacity = static_cast<unsigned char>(
@@ -545,9 +545,9 @@ void InfoBubble::FadeOut() {
 }
 
 void InfoBubble::Fade(bool fade_in) {
-  animation_.reset(new SlideAnimation(this));
+  animation_.reset(new ui::SlideAnimation(this));
   animation_->SetSlideDuration(kHideFadeDurationMS);
-  animation_->SetTweenType(Tween::LINEAR);
+  animation_->SetTweenType(ui::Tween::LINEAR);
 
   animation_->Reset(fade_in ? 0.0 : 1.0);
   if (fade_in)

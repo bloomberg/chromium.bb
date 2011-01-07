@@ -4,9 +4,9 @@
 
 #include "chrome/browser/views/frame/contents_container.h"
 
-#include "app/slide_animation.h"
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/animation/slide_animation.h"
 #include "views/background.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
@@ -95,7 +95,7 @@ gfx::Rect ContentsContainer::GetPreviewBounds() {
 }
 
 void ContentsContainer::FadeActiveContents() {
-  if (active_overlay_ || !Animation::ShouldRenderRichAnimation())
+  if (active_overlay_ || !ui::Animation::ShouldRenderRichAnimation())
     return;
 
 #if !defined(OS_WIN)
@@ -104,7 +104,7 @@ void ContentsContainer::FadeActiveContents() {
   return;
 #endif
 
-  overlay_animation_.reset(new SlideAnimation(this));
+  overlay_animation_.reset(new ui::SlideAnimation(this));
   overlay_animation_->SetDuration(300);
   overlay_animation_->SetSlideDuration(300);
   overlay_animation_->Show();
@@ -113,7 +113,7 @@ void ContentsContainer::FadeActiveContents() {
 }
 
 void ContentsContainer::ShowFade() {
-  if (active_overlay_ || !Animation::ShouldRenderRichAnimation())
+  if (active_overlay_ || !ui::Animation::ShouldRenderRichAnimation())
     return;
 
   CreateOverlay(kMaxOpacity);
@@ -129,10 +129,10 @@ void ContentsContainer::RemoveFade() {
   }
 }
 
-void ContentsContainer::AnimationProgressed(const Animation* animation) {
+void ContentsContainer::AnimationProgressed(const ui::Animation* animation) {
   active_overlay_->SetOpacity(
-      Tween::ValueBetween(animation->GetCurrentValue(), kMinOpacity,
-                          kMaxOpacity));
+      ui::Tween::ValueBetween(animation->GetCurrentValue(), kMinOpacity,
+                              kMaxOpacity));
   active_overlay_->GetRootView()->SchedulePaint();
 }
 

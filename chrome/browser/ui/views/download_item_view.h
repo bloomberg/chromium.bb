@@ -19,7 +19,6 @@
 
 #include <string>
 
-#include "app/animation_delegate.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
@@ -29,24 +28,29 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/icon_manager.h"
 #include "gfx/font.h"
+#include "ui/base/animation/animation_delegate.h"
 #include "views/event.h"
 #include "views/controls/button/button.h"
 #include "views/view.h"
+
+class BaseDownloadItemModel;
+class DownloadShelfView;
+class SkBitmap;
+class DownloadShelfContextMenuWin;
+
+namespace ui {
+class SlideAnimation;
+}
 
 namespace views {
 class Label;
 class NativeButton;
 }
-class BaseDownloadItemModel;
-class DownloadShelfView;
-class SkBitmap;
-class DownloadShelfContextMenuWin;
-class SlideAnimation;
 
 class DownloadItemView : public views::ButtonListener,
                          public views::View,
                          public DownloadItem::Observer,
-                         public AnimationDelegate {
+                         public ui::AnimationDelegate {
  public:
   DownloadItemView(DownloadItem* download,
                    DownloadShelfView* parent,
@@ -75,8 +79,8 @@ class DownloadItemView : public views::ButtonListener,
   // ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
-  // AnimationDelegate implementation.
-  virtual void AnimationProgressed(const Animation* animation);
+  // ui::AnimationDelegate implementation.
+  virtual void AnimationProgressed(const ui::Animation* animation);
 
   // Timer callback for handling animations
   void UpdateDownloadProgress();
@@ -231,11 +235,11 @@ class DownloadItemView : public views::ButtonListener,
   scoped_ptr<BaseDownloadItemModel> model_;
 
   // Hover animations for our body and drop buttons.
-  scoped_ptr<SlideAnimation> body_hover_animation_;
-  scoped_ptr<SlideAnimation> drop_hover_animation_;
+  scoped_ptr<ui::SlideAnimation> body_hover_animation_;
+  scoped_ptr<ui::SlideAnimation> drop_hover_animation_;
 
   // Animation for download complete.
-  scoped_ptr<SlideAnimation> complete_animation_;
+  scoped_ptr<ui::SlideAnimation> complete_animation_;
 
   // Progress animation
   base::RepeatingTimer<DownloadItemView> progress_timer_;

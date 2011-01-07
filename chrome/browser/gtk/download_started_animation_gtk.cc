@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/linear_animation.h"
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -14,6 +13,7 @@
 #include "chrome/common/notification_source.h"
 #include "gfx/rect.h"
 #include "grit/theme_resources.h"
+#include "ui/base/animation/linear_animation.h"
 
 namespace {
 
@@ -28,7 +28,7 @@ const int kFrameRateHz = 60;
 // the frame.
 const double kMoveFraction = 1.0 / 3.0;
 
-class DownloadStartedAnimationGtk : public LinearAnimation,
+class DownloadStartedAnimationGtk : public ui::LinearAnimation,
                                     public NotificationObserver {
  public:
   explicit DownloadStartedAnimationGtk(TabContents* tab_contents);
@@ -78,7 +78,7 @@ class DownloadStartedAnimationGtk : public LinearAnimation,
 
 DownloadStartedAnimationGtk::DownloadStartedAnimationGtk(
     TabContents* tab_contents)
-    : LinearAnimation(kMoveTimeMs, kFrameRateHz, NULL),
+    : ui::LinearAnimation(kMoveTimeMs, kFrameRateHz, NULL),
       tab_contents_(tab_contents) {
   static GdkPixbuf* kDownloadImage = NULL;
   if (!kDownloadImage) {

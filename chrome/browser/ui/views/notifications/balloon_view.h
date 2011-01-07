@@ -8,7 +8,6 @@
 #define CHROME_BROWSER_UI_VIEWS_NOTIFICATIONS_BALLOON_VIEW_H_
 #pragma once
 
-#include "app/animation_delegate.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
@@ -19,6 +18,7 @@
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "gfx/size.h"
+#include "ui/base/animation/animation_delegate.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/label.h"
 #include "views/controls/menu/view_menu_delegate.h"
@@ -38,7 +38,10 @@ class BalloonCollection;
 class NotificationDetails;
 class NotificationOptionsMenuModel;
 class NotificationSource;
+
+namespace ui {
 class SlideAnimation;
+}
 
 // A balloon view is the UI component for a desktop notification toasts.
 // It draws a border, and within the border an HTML renderer.
@@ -48,7 +51,7 @@ class BalloonViewImpl : public BalloonView,
                         public views::WidgetDelegate,
                         public views::ButtonListener,
                         public NotificationObserver,
-                        public AnimationDelegate {
+                        public ui::AnimationDelegate {
  public:
   explicit BalloonViewImpl(BalloonCollection* collection);
   ~BalloonViewImpl();
@@ -83,8 +86,8 @@ class BalloonViewImpl : public BalloonView,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // AnimationDelegate interface.
-  virtual void AnimationProgressed(const Animation* animation);
+  // ui::AnimationDelegate interface.
+  virtual void AnimationProgressed(const ui::Animation* animation);
 
   // Launches the options menu at screen coordinates |pt|.
   void RunOptionsMenu(const gfx::Point& pt);
@@ -152,7 +155,7 @@ class BalloonViewImpl : public BalloonView,
   views::Label* source_label_;
 
   // An animation to move the balloon on the screen as its position changes.
-  scoped_ptr<SlideAnimation> animation_;
+  scoped_ptr<ui::SlideAnimation> animation_;
   gfx::Rect anim_frame_start_;
   gfx::Rect anim_frame_end_;
 

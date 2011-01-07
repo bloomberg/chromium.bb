@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/tween.h"
+#include "ui/base/animation/tween.h"
 
 #include <math.h>
 
@@ -12,6 +12,8 @@
 
 #include "base/logging.h"
 #include "gfx/rect.h"
+
+namespace ui {
 
 // static
 double Tween::CalculateValue(Tween::Type type, double state) {
@@ -80,3 +82,5 @@ gfx::Rect Tween::ValueBetween(double value,
                    ValueBetween(value, start_bounds.height(),
                                 target_bounds.height()));
 }
+
+}  // namespace ui

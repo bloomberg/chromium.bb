@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_CHROMEOS_SETTING_LEVEL_BUBBLE_H_
 #pragma once
 
-#include "app/animation_delegate.h"
-#include "app/slide_animation.h"
 #include "base/basictypes.h"
 #include "base/timer.h"
 #include "chrome/browser/views/info_bubble.h"
+#include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/slide_animation.h"
 
 class SkBitmap;
 
@@ -21,7 +21,7 @@ class SettingLevelBubbleView;
 // Singleton class controlling a bubble displaying a level-based setting like
 // volume or brightness.
 class SettingLevelBubble : public InfoBubbleDelegate,
-                           public AnimationDelegate {
+                           public ui::AnimationDelegate {
  public:
   void ShowBubble(int percent);
   void HideBubble();
@@ -41,9 +41,9 @@ class SettingLevelBubble : public InfoBubbleDelegate,
   virtual bool CloseOnEscape() { return true; }
   virtual bool FadeInOnShow() { return false; }
 
-  // Overridden from AnimationDelegate.
-  virtual void AnimationEnded(const Animation* animation);
-  virtual void AnimationProgressed(const Animation* animation);
+  // Overridden from ui::AnimationDelegate.
+  virtual void AnimationEnded(const ui::Animation* animation);
+  virtual void AnimationProgressed(const ui::Animation* animation);
 
   // Previous and current percentages, or -1 if not yet shown.
   int previous_percent_;
@@ -61,7 +61,7 @@ class SettingLevelBubble : public InfoBubbleDelegate,
   // Its contents view, owned by InfoBubble.
   SettingLevelBubbleView* view_;
 
-  SlideAnimation animation_;
+  ui::SlideAnimation animation_;
   base::OneShotTimer<SettingLevelBubble> timeout_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingLevelBubble);

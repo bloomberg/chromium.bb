@@ -213,11 +213,11 @@ void PageInfoBubbleView::LinkActivated(views::Link* source, int event_flags) {
   browser->OpenURL(url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
 }
 
-void PageInfoBubbleView::AnimationEnded(const Animation* animation) {
+void PageInfoBubbleView::AnimationEnded(const ui::Animation* animation) {
   info_bubble_->SizeToContents();
 }
 
-void PageInfoBubbleView::AnimationProgressed(const Animation* animation) {
+void PageInfoBubbleView::AnimationProgressed(const ui::Animation* animation) {
   info_bubble_->SizeToContents();
 }
 

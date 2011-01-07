@@ -5,13 +5,13 @@
 #include "chrome/browser/views/dropdown_bar_host.h"
 
 #include "app/keyboard_codes.h"
-#include "app/slide_animation.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/dropdown_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "gfx/path.h"
 #include "gfx/scrollbar_size.h"
+#include "ui/base/animation/slide_animation.h"
 #include "views/focus/external_focus_tracker.h"
 #include "views/focus/view_storage.h"
 #include "views/widget/widget.h"
@@ -68,7 +68,7 @@ void DropdownBarHost::Init(DropdownBarView* view) {
   }
 
   // Start the process of animating the opening of the widget.
-  animation_.reset(new SlideAnimation(this));
+  animation_.reset(new ui::SlideAnimation(this));
 }
 
 DropdownBarHost::~DropdownBarHost() {
@@ -150,9 +150,9 @@ void DropdownBarHost::FocusWillChange(views::View* focused_before,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DropdownBarHost, AnimationDelegate implementation:
+// DropdownBarHost, ui::AnimationDelegate implementation:
 
-void DropdownBarHost::AnimationProgressed(const Animation* animation) {
+void DropdownBarHost::AnimationProgressed(const ui::Animation* animation) {
   // First, we calculate how many pixels to slide the widget.
   gfx::Size pref_size = view_->GetPreferredSize();
   animation_offset_ = static_cast<int>((1.0 - animation_->GetCurrentValue()) *
@@ -169,7 +169,7 @@ void DropdownBarHost::AnimationProgressed(const Animation* animation) {
   view_->SchedulePaint();
 }
 
-void DropdownBarHost::AnimationEnded(const Animation* animation) {
+void DropdownBarHost::AnimationEnded(const ui::Animation* animation) {
   // Place the dropdown widget in its fully opened state.
   animation_offset_ = 0;
 

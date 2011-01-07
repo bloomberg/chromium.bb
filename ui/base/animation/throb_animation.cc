@@ -1,10 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/throb_animation.h"
+#include "ui/base/animation/throb_animation.h"
 
 #include <limits>
+
+namespace ui {
 
 static const int kDefaultThrobDurationMS = 400;
 
@@ -75,3 +77,5 @@ void ThrobAnimation::ResetForSlide() {
   cycles_remaining_ = 0;
   throbbing_ = false;
 }
+
+}  // namespace ui

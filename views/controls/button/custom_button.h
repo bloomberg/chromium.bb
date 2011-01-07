@@ -6,10 +6,12 @@
 #define VIEWS_CONTROLS_BUTTON_CUSTOM_BUTTON_H_
 #pragma once
 
-#include "app/animation_delegate.h"
 #include "views/controls/button/button.h"
+#include "ui/base/animation/animation_delegate.h"
 
+namespace ui {
 class ThrobAnimation;
+}
 
 namespace views {
 
@@ -19,7 +21,7 @@ namespace views {
 // part of the focus chain.  Call SetFocusable(true) to make it part of the
 // focus chain.
 class CustomButton : public Button,
-                     public AnimationDelegate {
+                     public ui::AnimationDelegate {
  public:
   // The menu button's class name.
   static const char kViewClassName[];
@@ -104,8 +106,8 @@ class CustomButton : public Button,
   virtual bool IsHotTracked() const;
   virtual void WillLoseFocus();
 
-  // Overridden from AnimationDelegate:
-  virtual void AnimationProgressed(const Animation* animation);
+  // Overridden from ui::AnimationDelegate:
+  virtual void AnimationProgressed(const ui::Animation* animation);
 
   // Returns true if the button should become pressed when the user
   // holds the mouse down over the button. For this implementation,
@@ -116,7 +118,7 @@ class CustomButton : public Button,
   ButtonState state_;
 
   // Hover animation.
-  scoped_ptr<ThrobAnimation> hover_animation_;
+  scoped_ptr<ui::ThrobAnimation> hover_animation_;
 
  private:
   // Should we animate when the state changes? Defaults to true.

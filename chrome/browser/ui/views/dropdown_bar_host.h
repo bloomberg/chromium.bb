@@ -6,18 +6,21 @@
 #define CHROME_BROWSER_UI_VIEWS_DROPDOWN_BAR_HOST_H_
 #pragma once
 
-#include "app/animation_delegate.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
+#include "ui/base/animation/animation_delegate.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/focus/focus_manager.h"
 
 class BrowserView;
 class DropdownBarView;
-class SlideAnimation;
 class TabContents;
+
+namespace ui {
+class SlideAnimation;
+}
 
 namespace views {
 class ExternalFocusTracker;
@@ -37,7 +40,7 @@ class Widget;
 ////////////////////////////////////////////////////////////////////////////////
 class DropdownBarHost : public views::AcceleratorTarget,
                         public views::FocusChangeListener,
-                        public AnimationDelegate {
+                        public ui::AnimationDelegate {
  public:
   explicit DropdownBarHost(BrowserView* browser_view);
   virtual ~DropdownBarHost();
@@ -74,9 +77,9 @@ class DropdownBarHost : public views::AcceleratorTarget,
   // Overridden from views::AcceleratorTarget:
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator) = 0;
 
-  // AnimationDelegate implementation:
-  virtual void AnimationProgressed(const Animation* animation);
-  virtual void AnimationEnded(const Animation* animation);
+  // ui::AnimationDelegate implementation:
+  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationEnded(const ui::Animation* animation);
 
   // During testing we can disable animations by setting this flag to true,
   // so that opening and closing the dropdown bar is shown instantly, instead of
@@ -145,7 +148,7 @@ class DropdownBarHost : public views::AcceleratorTarget,
       const views::KeyEvent& key_event);
 
   // Returns the animation for the dropdown.
-  SlideAnimation* animation() {
+  ui::SlideAnimation* animation() {
     return animation_.get();
   }
 
@@ -161,7 +164,7 @@ class DropdownBarHost : public views::AcceleratorTarget,
   int animation_offset_;
 
   // The animation class to use when opening the Dropdown widget.
-  scoped_ptr<SlideAnimation> animation_;
+  scoped_ptr<ui::SlideAnimation> animation_;
 
   // The focus manager we register with to keep track of focus changes.
   views::FocusManager* focus_manager_;

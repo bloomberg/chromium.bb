@@ -4,10 +4,9 @@
 
 #include "chrome/browser/gtk/slide_animator_gtk.h"
 
-#include "app/animation.h"
-#include "app/slide_animation.h"
-
 #include "chrome/browser/gtk/gtk_expanded_container.h"
+#include "ui/base/animation/animation.h"
+#include "ui/base/animation/slide_animation.h"
 
 namespace {
 
@@ -56,10 +55,10 @@ SlideAnimatorGtk::SlideAnimatorGtk(GtkWidget* child,
 
   child_needs_move_ = (direction == DOWN);
 
-  animation_.reset(new SlideAnimation(this));
+  animation_.reset(new ui::SlideAnimation(this));
   // Default tween type is EASE_OUT.
   if (linear)
-    animation_->SetTweenType(Tween::LINEAR);
+    animation_->SetTweenType(ui::Tween::LINEAR);
   if (duration != 0)
     animation_->SetSlideDuration(duration);
 }
@@ -113,7 +112,7 @@ bool SlideAnimatorGtk::IsAnimating() {
   return animation_->is_animating();
 }
 
-void SlideAnimatorGtk::AnimationProgressed(const Animation* animation) {
+void SlideAnimatorGtk::AnimationProgressed(const ui::Animation* animation) {
   GtkRequisition req;
   gtk_widget_size_request(child_, &req);
 
@@ -127,7 +126,7 @@ void SlideAnimatorGtk::AnimationProgressed(const Animation* animation) {
   gtk_widget_set_size_request(widget_.get(), -1, showing_height);
 }
 
-void SlideAnimatorGtk::AnimationEnded(const Animation* animation) {
+void SlideAnimatorGtk::AnimationEnded(const ui::Animation* animation) {
   if (!animation_->IsShowing()) {
     gtk_widget_hide(widget_.get());
     if (delegate_)

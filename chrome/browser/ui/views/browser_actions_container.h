@@ -10,8 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "app/animation_delegate.h"
-#include "app/tween.h"
 #include "base/task.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
@@ -21,6 +19,8 @@
 #include "chrome/browser/views/extensions/extension_popup.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/tween.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/controls/resize_area.h"
@@ -35,10 +35,13 @@ class ExtensionAction;
 class ExtensionPopup;
 class PrefService;
 class Profile;
-class SlideAnimation;
 
 namespace gfx {
 class CanvasSkia;
+}
+
+namespace ui {
+class SlideAnimation;
 }
 
 namespace views {
@@ -254,7 +257,7 @@ class BrowserActionsContainer
       public views::ViewMenuDelegate,
       public views::DragController,
       public views::ResizeArea::ResizeAreaDelegate,
-      public AnimationDelegate,
+      public ui::AnimationDelegate,
       public ExtensionToolbarModel::Observer,
       public BrowserActionOverflowMenuController::Observer,
       public ExtensionContextMenuModel::PopupDelegate,
@@ -345,9 +348,9 @@ class BrowserActionsContainer
   // Overridden from ResizeArea::ResizeAreaDelegate:
   virtual void OnResize(int resize_amount, bool done_resizing);
 
-  // Overridden from AnimationDelegate:
-  virtual void AnimationProgressed(const Animation* animation);
-  virtual void AnimationEnded(const Animation* animation);
+  // Overridden from ui::AnimationDelegate:
+  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationEnded(const ui::Animation* animation);
 
   // Overridden from BrowserActionOverflowMenuController::Observer:
   virtual void NotifyMenuDeleted(
@@ -439,7 +442,8 @@ class BrowserActionsContainer
   // Animate to the target size (unless testing, in which case we go straight to
   // the target size).  This also saves the target number of visible icons in
   // the pref if we're not off the record.
-  void SaveDesiredSizeAndAnimate(Tween::Type type, size_t num_visible_icons);
+  void SaveDesiredSizeAndAnimate(ui::Tween::Type type,
+                                 size_t num_visible_icons);
 
   // Returns true if this extension should be shown in this toolbar. This can
   // return false if we are in an incognito window and the extension is disabled
@@ -483,7 +487,7 @@ class BrowserActionsContainer
   BrowserActionOverflowMenuController* overflow_menu_;
 
   // The animation that happens when the container snaps to place.
-  scoped_ptr<SlideAnimation> resize_animation_;
+  scoped_ptr<ui::SlideAnimation> resize_animation_;
 
   // Don't show the chevron while animating.
   bool suppress_chevron_;

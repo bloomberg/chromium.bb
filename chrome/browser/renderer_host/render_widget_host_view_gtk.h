@@ -11,14 +11,14 @@
 #include <vector>
 #include <string>
 
-#include "app/animation_delegate.h"
-#include "app/slide_animation.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/gtk/owned_widget_gtk.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
+#include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/slide_animation.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/plugins/npapi/gtk_plugin_container_manager.h"
 
@@ -43,7 +43,7 @@ typedef struct _GtkSelectionData GtkSelectionData;
 // See comments in render_widget_host_view.h about this class and its members.
 // -----------------------------------------------------------------------------
 class RenderWidgetHostViewGtk : public RenderWidgetHostView,
-                                public AnimationDelegate {
+                                public ui::AnimationDelegate {
  public:
   explicit RenderWidgetHostViewGtk(RenderWidgetHost* widget);
   ~RenderWidgetHostViewGtk();
@@ -92,10 +92,10 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
   virtual void AcceleratedCompositingActivated(bool activated);
 
-  // AnimationDelegate implementation.
-  virtual void AnimationEnded(const Animation* animation);
-  virtual void AnimationProgressed(const Animation* animation);
-  virtual void AnimationCanceled(const Animation* animation);
+  // ui::AnimationDelegate implementation.
+  virtual void AnimationEnded(const ui::Animation* animation);
+  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationCanceled(const ui::Animation* animation);
 
   gfx::NativeView native_view() const { return view_.get(); }
 
@@ -179,7 +179,7 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView,
 
   // The animation used for the abovementioned shade effect. The animation's
   // value affects the alpha we use for |overlay_color_|.
-  SlideAnimation overlay_animation_;
+  ui::SlideAnimation overlay_animation_;
 
   // Variables used only for popups --------------------------------------------
   // Our parent widget.
