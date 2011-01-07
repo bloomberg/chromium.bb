@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,10 +38,6 @@
 #include "chrome/common/web_apps.h"
 #include "gfx/native_widget_types.h"
 #include "net/base/load_states.h"
-
-#if defined(OS_WIN)
-#include "base/win/scoped_handle.h"
-#endif
 
 namespace gfx {
 class Rect;
@@ -1284,7 +1280,7 @@ class TabContents : public PageNavigator,
   // Handle to an event that's set when the page is showing a message box (or
   // equivalent constrained window).  Plugin processes check this to know if
   // they should pump messages then.
-  base::win::ScopedHandle message_box_active_;
+  ScopedHandle message_box_active_;
 #endif
 
   // The time that the last javascript message was dismissed.

@@ -1,10 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "sandbox/src/registry_dispatcher.h"
 
-#include "base/win/scoped_handle.h"
+#include "base/scoped_handle_win.h"
 #include "base/win/windows_version.h"
 #include "sandbox/src/crosscall_client.h"
 #include "sandbox/src/interception.h"
@@ -74,7 +74,7 @@ bool RegistryDispatcher::SetupService(InterceptionManager* manager,
 bool RegistryDispatcher::NtCreateKey(
     IPCInfo* ipc, std::wstring* name, DWORD attributes, HANDLE root,
     DWORD desired_access, DWORD title_index, DWORD create_options) {
-  base::win::ScopedHandle root_handle;
+  ScopedHandle root_handle;
   std::wstring real_path = *name;
 
   // If there is a root directory, we need to duplicate the handle to make
@@ -120,7 +120,7 @@ bool RegistryDispatcher::NtCreateKey(
 bool RegistryDispatcher::NtOpenKey(IPCInfo* ipc, std::wstring* name,
                                    DWORD attributes, HANDLE root,
                                    DWORD desired_access) {
-  base::win::ScopedHandle root_handle;
+  ScopedHandle root_handle;
   std::wstring real_path = *name;
 
   // If there is a root directory, we need to duplicate the handle to make

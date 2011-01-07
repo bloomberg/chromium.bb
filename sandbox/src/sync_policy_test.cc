@@ -1,14 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/win/scoped_handle.h"
+#include "base/scoped_handle_win.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "sandbox/src/sandbox.h"
 #include "sandbox/src/sandbox_policy.h"
 #include "sandbox/src/sandbox_factory.h"
 #include "sandbox/src/nt_internals.h"
 #include "sandbox/tests/common/controller.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {
 
@@ -20,8 +20,7 @@ SBOX_TESTS_COMMAND int Event_Open(int argc, wchar_t **argv) {
   if (L'f' == argv[0][0])
     desired_access = EVENT_ALL_ACCESS;
 
-  base::win::ScopedHandle event_open(::OpenEvent(
-      desired_access, FALSE, argv[1]));
+  ScopedHandle event_open(::OpenEvent(desired_access, FALSE, argv[1]));
   DWORD error_open = ::GetLastError();
 
   if (event_open.Get())
@@ -49,10 +48,10 @@ SBOX_TESTS_COMMAND int Event_CreateOpen(int argc, wchar_t **argv) {
   if (L't' == argv[1][0])
     initial_state = TRUE;
 
-  base::win::ScopedHandle event_create(::CreateEvent(
-      NULL, manual_reset, initial_state, event_name));
+  ScopedHandle event_create(::CreateEvent(NULL, manual_reset, initial_state,
+                                          event_name));
   DWORD error_create = ::GetLastError();
-  base::win::ScopedHandle event_open;
+  ScopedHandle event_open;
   if (event_name)
     event_open.Set(::OpenEvent(EVENT_ALL_ACCESS, FALSE, event_name));
 
@@ -125,10 +124,10 @@ TEST(SyncPolicyTest, TestEventReadOnly) {
                              TargetPolicy::EVENTS_ALLOW_READONLY,
                              L"test6"));
 
-  base::win::ScopedHandle handle1(::CreateEvent(NULL, FALSE, FALSE, L"test1"));
-  base::win::ScopedHandle handle2(::CreateEvent(NULL, FALSE, FALSE, L"test2"));
-  base::win::ScopedHandle handle3(::CreateEvent(NULL, FALSE, FALSE, L"test3"));
-  base::win::ScopedHandle handle4(::CreateEvent(NULL, FALSE, FALSE, L"test4"));
+  ScopedHandle handle1(::CreateEvent(NULL, FALSE, FALSE, L"test1"));
+  ScopedHandle handle2(::CreateEvent(NULL, FALSE, FALSE, L"test2"));
+  ScopedHandle handle3(::CreateEvent(NULL, FALSE, FALSE, L"test3"));
+  ScopedHandle handle4(::CreateEvent(NULL, FALSE, FALSE, L"test4"));
 
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"Event_CreateOpen f f"));
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"Event_CreateOpen t f"));

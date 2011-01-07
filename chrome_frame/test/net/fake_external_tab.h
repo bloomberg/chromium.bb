@@ -1,22 +1,22 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_FRAME_TEST_NET_FAKE_EXTERNAL_TAB_H_
 #define CHROME_FRAME_TEST_NET_FAKE_EXTERNAL_TAB_H_
-#pragma once
 
 #include <string>
 
 #include "base/file_path.h"
 #include "base/message_loop.h"
-#include "base/win/scoped_handle.h"
+
 #include "chrome/app/scoped_ole_initializer.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome_frame/test/test_server.h"
 #include "chrome_frame/test/net/test_automation_provider.h"
 #include "chrome_frame/test/net/process_singleton_subclass.h"
+
 #include "net/base/net_test_suite.h"
 
 class ProcessSingleton;
@@ -87,7 +87,7 @@ class CFUrlRequestUnittestRunner
  protected:
 
  protected:
-  base::win::ScopedHandle test_thread_;
+  ScopedHandle test_thread_;
   DWORD test_thread_id_;
 
   scoped_ptr<test_server::SimpleWebServer> test_http_server_;

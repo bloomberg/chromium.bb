@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include "sandbox/src/restricted_token_utils.h"
 
 #include "base/logging.h"
-#include "base/win/scoped_handle.h"
+#include "base/scoped_handle_win.h"
 #include "base/win/windows_version.h"
 #include "sandbox/src/job.h"
 #include "sandbox/src/restricted_token.h"
@@ -166,7 +166,7 @@ DWORD StartRestrictedProcessInJob(wchar_t *command_line,
   if (ERROR_SUCCESS != err_code) {
     return err_code;
   }
-  base::win::ScopedHandle primary_token(primary_token_handle);
+  ScopedHandle primary_token(primary_token_handle);
 
   // Create the impersonation token (restricted) to be able to start the
   // process.
@@ -178,7 +178,7 @@ DWORD StartRestrictedProcessInJob(wchar_t *command_line,
   if (ERROR_SUCCESS != err_code) {
     return err_code;
   }
-  base::win::ScopedHandle impersonation_token(impersonation_token_handle);
+  ScopedHandle impersonation_token(impersonation_token_handle);
 
   // Start the process
   STARTUPINFO startup_info = {0};
@@ -198,8 +198,8 @@ DWORD StartRestrictedProcessInJob(wchar_t *command_line,
     return ::GetLastError();
   }
 
-  base::win::ScopedHandle thread_handle(process_info.hThread);
-  base::win::ScopedHandle process_handle(process_info.hProcess);
+  ScopedHandle thread_handle(process_info.hThread);
+  ScopedHandle process_handle(process_info.hProcess);
 
   // Change the token of the main thread of the new process for the
   // impersonation token with more rights.
@@ -335,9 +335,10 @@ DWORD SetProcessIntegrityLevel(IntegrityLevel integrity_level) {
                           &token_handle))
     return ::GetLastError();
 
-  base::win::ScopedHandle token(token_handle);
+  ScopedHandle token(token_handle);
 
   return SetTokenIntegrityLevel(token.Get(), integrity_level);
 }
+
 
 }  // namespace sandbox

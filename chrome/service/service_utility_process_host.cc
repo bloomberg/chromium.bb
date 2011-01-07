@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,10 +16,6 @@
 #include "ipc/ipc_switches.h"
 #include "printing/native_metafile.h"
 #include "printing/page_range.h"
-
-#if defined(OS_WIN)
-#include "base/win/scoped_handle.h"
-#endif
 
 ServiceUtilityProcessHost::ServiceUtilityProcessHost(
     Client* client, base::MessageLoopProxy* client_message_loop_proxy)
@@ -54,7 +50,7 @@ bool ServiceUtilityProcessHost::StartRenderPDFPagesToMetafile(
   if (!StartProcess(false, scratch_metafile_dir_->path()))
     return false;
 
-  base::win::ScopedHandle pdf_file(
+  ScopedHandle pdf_file(
       ::CreateFile(pdf_path.value().c_str(),
                    GENERIC_READ,
                    FILE_SHARE_READ | FILE_SHARE_WRITE,

@@ -1,14 +1,12 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome_frame/vtable_patch_manager.h"
-
 #include <unknwn.h>
-
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
-#include "base/win/scoped_handle.h"
+#include "base/scoped_handle.h"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
@@ -211,7 +209,7 @@ TEST_F(VtablePatchManagerTest, ThreadSafePatching) {
   base::Thread background("Background Test Thread");
 
   EXPECT_TRUE(background.Start());
-  base::win::ScopedHandle event(::CreateEvent(NULL, TRUE, FALSE, NULL));
+  ScopedHandle event(::CreateEvent(NULL, TRUE, FALSE, NULL));
 
   // Grab the patch lock.
   vtable_patch::patch_lock_.Acquire();

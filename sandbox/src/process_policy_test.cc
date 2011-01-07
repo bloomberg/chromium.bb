@@ -1,17 +1,17 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <memory>
 #include <string>
+#include <memory>
 
-#include "base/win/scoped_handle.h"
+#include "base/scoped_handle_win.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "sandbox/src/sandbox.h"
 #include "sandbox/src/sandbox_policy.h"
 #include "sandbox/src/sandbox_factory.h"
 #include "sandbox/src/sandbox_utils.h"
 #include "sandbox/tests/common/controller.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
@@ -178,14 +178,14 @@ SBOX_TESTS_COMMAND int Process_GetChildProcessToken(int argc, wchar_t **argv) {
       return SBOX_TEST_FAILED;
   }
 
-  base::win::ScopedHandle process(pi.hProcess);
-  base::win::ScopedHandle thread(pi.hThread);
+  ScopedHandle process(pi.hProcess);
+  ScopedHandle thread(pi.hThread);
 
   HANDLE token = NULL;
   BOOL result = ::OpenProcessToken(process.Get(), TOKEN_IMPERSONATE, &token);
   DWORD error = ::GetLastError();
 
-  base::win::ScopedHandle token_handle(token);
+  ScopedHandle token_handle(token);
 
   if (!::TerminateProcess(process.Get(), 0))
     return SBOX_TEST_FAILED;

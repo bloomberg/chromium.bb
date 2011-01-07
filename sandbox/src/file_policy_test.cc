@@ -1,14 +1,13 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 #include <algorithm>
 #include <cctype>
 
 #include <windows.h>
 #include <winioctl.h>
 
-#include "base/win/scoped_handle.h"
+#include "base/scoped_handle_win.h"
 #include "sandbox/src/nt_internals.h"
 #include "sandbox/src/sandbox.h"
 #include "sandbox/src/sandbox_factory.h"
@@ -36,20 +35,19 @@ SBOX_TESTS_COMMAND int File_Create(int argc, wchar_t **argv) {
   bool read = (_wcsicmp(argv[0], L"Read") == 0);
 
   if (read) {
-    base::win::ScopedHandle file1(CreateFile(
-        argv[1], GENERIC_READ, kSharing, NULL, OPEN_EXISTING, 0, NULL));
-    base::win::ScopedHandle file2(CreateFile(
-        argv[1], FILE_EXECUTE, kSharing, NULL, OPEN_EXISTING, 0, NULL));
+    ScopedHandle file1(CreateFile(argv[1], GENERIC_READ, kSharing, NULL,
+                       OPEN_EXISTING, 0, NULL));
+    ScopedHandle file2(CreateFile(argv[1], FILE_EXECUTE, kSharing, NULL,
+                       OPEN_EXISTING, 0, NULL));
 
     if (file1.Get() && file2.Get())
       return SBOX_TEST_SUCCEEDED;
     return SBOX_TEST_DENIED;
   } else {
-    base::win::ScopedHandle file1(CreateFile(
-        argv[1], GENERIC_ALL, kSharing, NULL, OPEN_EXISTING, 0, NULL));
-    base::win::ScopedHandle file2(CreateFile(
-        argv[1], GENERIC_READ | FILE_WRITE_DATA, kSharing, NULL, OPEN_EXISTING,
-        0, NULL));
+    ScopedHandle file1(CreateFile(argv[1], GENERIC_ALL, kSharing, NULL,
+                       OPEN_EXISTING, 0, NULL));
+    ScopedHandle file2(CreateFile(argv[1], GENERIC_READ | FILE_WRITE_DATA,
+                       kSharing, NULL, OPEN_EXISTING, 0, NULL));
 
     if (file1.Get() && file2.Get())
       return SBOX_TEST_SUCCEEDED;

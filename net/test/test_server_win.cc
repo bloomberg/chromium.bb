@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,7 +17,6 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
-#include "base/win/scoped_handle.h"
 
 #pragma comment(lib, "crypt32.lib")
 
@@ -26,7 +25,7 @@ namespace {
 bool LaunchTestServerAsJob(const CommandLine& cmdline,
                            bool start_hidden,
                            base::ProcessHandle* process_handle,
-                           base::win::ScopedHandle* job_handle) {
+                           ScopedHandle* job_handle) {
   // Launch test server process.
   STARTUPINFO startup_info = {0};
   startup_info.cb = sizeof(startup_info);
@@ -192,8 +191,8 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
 }
 
 bool TestServer::WaitToStart() {
-  base::win::ScopedHandle read_fd(child_read_fd_.Take());
-  base::win::ScopedHandle write_fd(child_write_fd_.Take());
+  ScopedHandle read_fd(child_read_fd_.Take());
+  ScopedHandle write_fd(child_write_fd_.Take());
 
   uint32 server_data_len = 0;
   if (!ReadData(read_fd.Get(), write_fd.Get(), sizeof(server_data_len),

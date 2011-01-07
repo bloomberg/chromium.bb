@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,11 +16,11 @@
 #include "base/file_version_info.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/scoped_handle_win.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
@@ -694,7 +694,7 @@ bool ShowRebootDialog() {
 
   // Use a ScopedHandle to keep track of and eventually close our handle.
   // TODO(robertshield): Add a Receive() method to base's ScopedHandle.
-  base::win::ScopedHandle scoped_handle(token);
+  ScopedHandle scoped_handle(token);
 
   // Get the LUID for the shutdown privilege.
   TOKEN_PRIVILEGES tkp = {0};

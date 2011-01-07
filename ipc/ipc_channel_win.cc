@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/utf_string_conversions.h"
-#include "base/win/scoped_handle.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message_utils.h"
 
@@ -30,7 +29,7 @@ bool GetLogonSessionOnlyDACL(SECURITY_DESCRIPTOR** security_descriptor) {
   HANDLE token = NULL;
   if (!::OpenProcessToken(::GetCurrentProcess(), TOKEN_QUERY, &token))
     return false;
-  base::win::ScopedHandle token_scoped(token);
+  ScopedHandle token_scoped(token);
 
   // Get the size of the TokenGroups structure.
   DWORD size = 0;

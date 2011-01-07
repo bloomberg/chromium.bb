@@ -1,9 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/memory_details.h"
-
 #include <psapi.h>
 
 #include "app/l10n_util.h"
@@ -11,7 +10,6 @@
 #include "base/file_version_info.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "base/win/scoped_handle.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/renderer_host/backing_store_manager.h"
@@ -76,8 +74,7 @@ void MemoryDetails::CollectProcessData(
   bool is_64bit_os =
       system_info.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64;
 
-  base::win::ScopedHandle snapshot(
-      ::CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0));
+  ScopedHandle snapshot(::CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0));
   PROCESSENTRY32 process_entry = {sizeof(PROCESSENTRY32)};
   if (!snapshot.Get()) {
     LOG(ERROR) << "CreateToolhelp32Snaphot failed: " << GetLastError();
@@ -89,7 +86,7 @@ void MemoryDetails::CollectProcessData(
   }
   do {
     base::ProcessId pid = process_entry.th32ProcessID;
-    base::win::ScopedHandle handle(::OpenProcess(
+    ScopedHandle handle(::OpenProcess(
         PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pid));
     if (!handle.Get())
       continue;

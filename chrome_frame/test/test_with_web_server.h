@@ -1,10 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_FRAME_TEST_TEST_WITH_WEB_SERVER_H_
 #define CHROME_FRAME_TEST_TEST_WITH_WEB_SERVER_H_
-#pragma once
 
 #include <windows.h>
 #include <string>
@@ -12,7 +11,6 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-#include "base/win/scoped_handle.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/http_server.h"
 #include "chrome_frame/test/test_server.h"
@@ -218,7 +216,7 @@ class ChromeFrameTestWithWebServer: public testing::Test {
 
   BrowserKind browser_;
   FilePath results_dir_;
-  base::win::ScopedHandle browser_handle_;
+  ScopedHandle browser_handle_;
   // The on-disk path to our html test files.
   FilePath test_file_path_;
 
