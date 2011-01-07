@@ -28,7 +28,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "chrome/browser/upgrade_detector.h"
-#include "chrome/common/badge_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
@@ -55,22 +54,6 @@
 #if defined(OS_WIN)
 #include "chrome/browser/enumerate_modules_model_win.h"
 #endif
-
-// The size of the font used for dynamic text overlays on menu items.
-const float kMenuBadgeFontSize = 12.0;
-
-namespace {
-SkBitmap GetBackgroundPageIcon() {
-  string16 pages = base::FormatNumber(
-      BackgroundPageTracker::GetInstance()->GetBackgroundPageCount());
-  return badge_util::DrawBadgeIconOverlay(
-      *ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_BACKGROUND_MENU),
-      kMenuBadgeFontSize,
-      pages,
-      l10n_util::GetStringUTF16(IDS_BACKGROUND_PAGE_BADGE_OVERFLOW));
-}
-
-}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // EncodingMenuModel
@@ -248,7 +231,8 @@ bool WrenchMenuModel::GetIconForCommandId(int command_id,
       int num_pages = BackgroundPageTracker::GetInstance()->
           GetUnacknowledgedBackgroundPageCount();
       if (num_pages > 0) {
-        *bitmap = GetBackgroundPageIcon();
+        *bitmap = *ResourceBundle::GetSharedInstance().GetBitmapNamed(
+            IDR_BACKGROUND_MENU);
         return true;
       } else {
         // No icon.

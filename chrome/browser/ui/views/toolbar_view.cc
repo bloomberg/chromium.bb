@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/upgrade_detector.h"
-#include "chrome/common/badge_util.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/canvas.h"
@@ -72,10 +71,6 @@ static const int kPulsateEveryMs = 8000;
 static const int kPopupTopSpacingNonGlass = 3;
 static const int kPopupBottomSpacingNonGlass = 2;
 static const int kPopupBottomSpacingGlass = 1;
-
-// The size of the font to use in the text overlay for the background page
-// badge.
-static const float kBadgeTextFontSize = 9.0;
 
 // Top margin for the wrench menu badges (badge is placed in the upper right
 // corner of the wrench menu).
@@ -755,7 +750,7 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
   if (IsUpgradeRecommended()) {
     badge = *tp->GetBitmapNamed(IDR_UPDATE_BADGE);
   } else if (ShouldShowBackgroundPageBadge()) {
-    badge = GetBackgroundPageBadge();
+    badge = *tp->GetBitmapNamed(IDR_BACKGROUND_BADGE);
   } else if (ShouldShowIncompatibilityWarning()) {
 #if defined(OS_WIN)
     badge = *tp->GetBitmapNamed(IDR_CONFLICT_BADGE);
@@ -770,16 +765,3 @@ SkBitmap ToolbarView::GetAppMenuIcon(views::CustomButton::ButtonState state) {
 
   return canvas->ExtractBitmap();
 }
-
-SkBitmap ToolbarView::GetBackgroundPageBadge() {
-  ThemeProvider* tp = GetThemeProvider();
-  SkBitmap* badge = tp->GetBitmapNamed(IDR_BACKGROUND_BADGE);
-  string16 badge_text = base::FormatNumber(
-      BackgroundPageTracker::GetInstance()->GetBackgroundPageCount());
-  return badge_util::DrawBadgeIconOverlay(
-      *badge,
-      kBadgeTextFontSize,
-      badge_text,
-      l10n_util::GetStringUTF16(IDS_BACKGROUND_PAGE_BADGE_OVERFLOW));
-}
-
