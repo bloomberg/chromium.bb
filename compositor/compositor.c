@@ -448,7 +448,7 @@ surface_map_toplevel(struct wl_client *client,
 	es->y = 10 + random() % 400;
 
 	wlsc_surface_update_matrix(es);
-	wl_list_insert(es->compositor->surface_list.prev, &es->link);
+	wl_list_insert(&es->compositor->surface_list, &es->link);
 	wlsc_compositor_schedule_repaint(es->compositor);
 	es->mapped = 1;
 }
