@@ -307,6 +307,14 @@ class OmniboxTest(pyauto.PyUITest):
     matches_description = [x for x in matches if x['destination_url'] == url]
     self.assertEqual(1, len(matches_description))
 
+  def _GotHistoryPageOption(self, search_text):
+    """Determines if omnibox returns an 'open history page' option for given
+       search text"""
+    matches = self._GetOmniboxMatchesFor(search_text)
+    matches_description = [x for x in matches if x['type'] ==
+                           'open-history-page']
+    return len(matches_description) != 0
+
   def testRecentPageHistory(self):
     """Verify that omnibox shows recent history option in the visited
        url list."""
@@ -314,18 +322,13 @@ class OmniboxTest(pyauto.PyUITest):
     sites = glob.glob(os.path.join(self.DataDir(), 'find_in_page', '*.html'))
     for site in sites:
       self.NavigateToURL(self.GetFileURLForPath(site))
-    old_matches = self._GetOmniboxMatchesFor(search_text)
     # Using max timeout as 120 seconds, since expected page only shows up
     # after > 60 seconds on some machines and default timeout is less than that.
     # TODO (Nirnimesh): design an api using which we can push history changes to
     # omnibox results.
     self.assertTrue(self.WaitUntil(
-        lambda: self._GotNewMatches(len(old_matches), search_text),
+        lambda: self._GotHistoryPageOption(search_text),
         timeout=120))
-    matches = self._GetOmniboxMatchesFor(search_text)
-    matches_description = [x for x in matches if x['type'] ==
-                           'open-history-page']
-    self.assertEqual(1, len(matches_description))
 
   def _VerifyHasBookmarkResult(self, matches):
     """Verify that we have a bookmark result."""
