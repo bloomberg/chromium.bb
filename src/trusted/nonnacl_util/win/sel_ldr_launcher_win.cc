@@ -37,11 +37,10 @@ SelLdrLauncher::~SelLdrLauncher() {
 
 nacl::string SelLdrLauncher::GetSelLdrPathName() {
   char buffer[FILENAME_MAX];
-#ifdef _WIN64
-  const char* const kSelLdrBasename = "\\sel_ldr64.exe";
-#else
+  // Currently only the Chrome build uses the gyp-generated binaries, and
+  // Chrome does not start sel_ldr by means of SelLdrLauncher.  So we only
+  // refer to sel_ldr.exe here.
   const char* const kSelLdrBasename = "\\sel_ldr.exe";
-#endif
   GetPluginDirectory(buffer, sizeof(buffer));
   return nacl::string(buffer) + kSelLdrBasename;
 }
