@@ -23,6 +23,7 @@
 #include "ppapi/c/dev/ppb_find_dev.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_fullscreen_dev.h"
+#include "ppapi/c/dev/ppb_gles_chromium_texture_mapping_dev.h"
 #include "ppapi/c/dev/ppb_graphics_3d_dev.h"
 #include "ppapi/c/dev/ppb_opengles_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
@@ -85,6 +86,7 @@
 
 #ifdef ENABLE_GPU
 #include "webkit/plugins/ppapi/ppb_context_3d_impl.h"
+#include "webkit/plugins/ppapi/ppb_gles_chromium_texture_mapping_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_opengles_impl.h"
 #include "webkit/plugins/ppapi/ppb_surface_3d_impl.h"
@@ -289,6 +291,8 @@ const void* GetInterface(const char* name) {
       return PPB_Graphics3D_Impl::GetInterface();
     if (strcmp(name, PPB_CONTEXT_3D_DEV_INTERFACE) == 0)
       return PPB_Context3D_Impl::GetInterface();
+    if (strcmp(name, PPB_GLES_CHROMIUM_TEXTURE_MAPPING_DEV_INTERFACE) == 0)
+      return PPB_GLESChromiumTextureMapping_Impl::GetInterface();
     if (strcmp(name, PPB_OPENGLES2_DEV_INTERFACE) == 0)
       return PPB_OpenGLES_Impl::GetInterface();
     if (strcmp(name, PPB_SURFACE_3D_DEV_INTERFACE) == 0)
