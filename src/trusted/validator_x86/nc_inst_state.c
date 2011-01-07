@@ -445,7 +445,7 @@ static Bool NaClConsumeModRm(NaClInstState* state) {
      * if applicable.
      */
     if (state->inst->flags & NACL_IFLAG(OpcodeInModRm)) {
-      NaClInst* inst = state->inst;
+      const NaClInst* inst = state->inst;
       if (modrm_opcode(state->modrm) != inst->opcode[inst->num_opcode_bytes]) {
         DEBUG(
             NaClLog(LOG_INFO,
@@ -738,10 +738,10 @@ static void NaClClearInstState(NaClInstState* state, uint8_t opcode_length) {
  *   opcode_length - The length (in bytes) of the opcode for the returned
  *       candidate opcodes.
  */
-static NaClInst* NaClGetNextInstCandidates(NaClInstState* state,
-                                            NaClInstPrefixDescriptor* desc,
-                                            uint8_t* opcode_length) {
-  NaClInst* cand_insts;
+static const NaClInst* NaClGetNextInstCandidates(
+    NaClInstState* state, NaClInstPrefixDescriptor* desc,
+    uint8_t* opcode_length) {
+  const NaClInst* cand_insts;
   if (desc->next_length_adjustment) {
     (*opcode_length) += desc->next_length_adjustment;
     desc->opcode_byte = state->mpc[*opcode_length - 1];
@@ -780,7 +780,7 @@ static NaClInst* NaClGetNextInstCandidates(NaClInstState* state,
 
 static Bool NaClConsumeOpcodeSequence(NaClInstState* state) {
   uint8_t next_byte;
-  NaClInstNode* root;
+  const NaClInstNode* root;
   uint8_t orig_length;
 
   /* Cut quick if first byte not applicable. */
@@ -826,7 +826,7 @@ static Bool NaClConsumeOpcodeSequence(NaClInstState* state) {
  */
 void NaClDecodeInst(NaClInstIter* iter, NaClInstState* state) {
   uint8_t opcode_length = 0;
-  NaClInst* cand_insts;
+  const NaClInst* cand_insts;
   Bool found_match = FALSE;
   /* Start by consuming the prefix bytes, and getting the possible
    * candidate opcode (instruction) patterns that can match, based
@@ -877,7 +877,7 @@ void NaClDecodeInst(NaClInstIter* iter, NaClInstState* state) {
                * and replace if found. Otherwise, let the default 0F0F lookup
                * act as the matching (invalid) instruction.
                */
-              NaClInst* cand_inst;
+              const NaClInst* cand_inst;
               uint8_t opcode_byte = state->mpc[state->first_imm_byte];
               DEBUG(NaClLog(LOG_INFO,
                             "NaClConsume immediate byte opcode char: %"
@@ -921,7 +921,7 @@ void NaClDecodeInst(NaClInstIter* iter, NaClInstState* state) {
   }
 }
 
-NaClInst* NaClInstStateInst(NaClInstState* state) {
+const NaClInst* NaClInstStateInst(NaClInstState* state) {
   return state->inst;
 }
 

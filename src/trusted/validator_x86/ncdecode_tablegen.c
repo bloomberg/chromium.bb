@@ -487,7 +487,7 @@ NaClInst* NaClGetDefInst() {
 static void NaClCheckIfERepeated(int index) {
   int i;
   for (i = 0; i < index; ++i) {
-    NaClOp* operand = &current_inst->operands[i];
+    const NaClOp* operand = &current_inst->operands[i];
     switch (operand->kind) {
       case Mmx_E_Operand:
       case Xmm_E_Operand:
@@ -526,7 +526,7 @@ static void NaClCheckIfOpcodeInModRm(int index) {
 static void NaClCheckIfGRepeated(int index) {
   int i;
   for (i = 0; i < index; ++i) {
-    NaClOp* operand = &current_inst->operands[i];
+    const NaClOp* operand = &current_inst->operands[i];
     switch (operand->kind) {
       case Mmx_G_Operand:
       case Xmm_G_Operand:
@@ -553,7 +553,7 @@ static void NaClCheckIfGRepeated(int index) {
 static void NaClCheckIfIRepeated(int index) {
   int i;
   for (i = 0; i < index; ++i) {
-    NaClOp* operand = &current_inst->operands[i];
+    const NaClOp* operand = &current_inst->operands[i];
     switch (operand->kind) {
       case I_Operand:
       case Ib_Operand:
@@ -593,7 +593,7 @@ NaClIFlags NaClOperandSizes(NaClInst* inst) {
  * specify any inconsistent flags.
  */
 static void NaClApplySanityChecksToOp(int index) {
-  NaClOp* operand = &current_inst->operands[index];
+  const NaClOp* operand = &current_inst->operands[index];
   const NaClIFlags operand_sizes = NaClOperandSizes(current_inst);
 
   if (!apply_sanity_checks) return;
@@ -837,14 +837,15 @@ static void NaClRemoveCurrentInstMrmFromInstTable() {
     if (current_inst == next) {
       /* Found - remove! */
       if (NULL == prev) {
-        NaClInstTable[opcode][current_inst->prefix] = next->next_rule;
+        NaClInstTable[opcode][current_inst->prefix] =
+            (NaClInst*) (next->next_rule);
       } else {
         prev->next_rule = next->next_rule;
       }
       return;
     } else  {
       prev = next;
-      next = next->next_rule;
+      next = (NaClInst*) (next->next_rule);
     }
   }
 }
@@ -1399,7 +1400,7 @@ static void NaClDefInstInternal(
     } else {
       NaClInst* next = NaClInstTable[opcode][current_opcode_prefix];
       while (NULL != next->next_rule) {
-        next = next->next_rule;
+        next = (NaClInst*) (next->next_rule);
       }
       next->next_rule = current_inst;
     }
@@ -1473,7 +1474,8 @@ static NaClInstNode* NaClInstallInstSeq(int index,
   if (*chars_left) {
     int byte = NaClExtractByte(chars_left, opcode_seq);
     return NaClInstallInstSeq(
-        index+1, opcode_seq, chars_left + 2, &(root->succs[byte]));
+        index+1, opcode_seq, chars_left + 2,
+        ((NaClInstNode**)(&(root->succs[byte]))));
   } else {
     return root;
   }
@@ -1684,7 +1686,7 @@ static int NaClInstListLength(NaClInst* next) {
   int count = 0;
   while (NULL != next) {
     ++count;
-    next = next->next_rule;
+    next = (NaClInst*) (next->next_rule);
   }
   return count;
 }
@@ -1786,7 +1788,7 @@ static void NaClSimplifyIfApplicable() {
         }
         /* Remove size only flags, since already compiled into tables. */
         next->flags &= ~(NACL_IFLAG(Opcode64Only) | NACL_IFLAG(Opcode32Only));
-        next = next->next_rule;
+        next = (NaClInst*) (next->next_rule);
       }
     }
   }
@@ -1833,7 +1835,7 @@ static void NaClOpFlagsPrintInternal(struct Gio* f, NaClOpFlags flags) {
 }
 
 /* Print out the opcode operand. */
-static void NaClOpPrintInternal(struct Gio* f, NaClOp* operand) {
+static void NaClOpPrintInternal(struct Gio* f, const NaClOp* operand) {
   gprintf(f, "{ %s, ", NaClOpKindName(operand->kind));
   NaClOpFlagsPrintInternal(f, operand->flags);
   gprintf(f, " },\n");
@@ -1847,7 +1849,8 @@ static void NaClOpPrintInternal(struct Gio* f, NaClOp* operand) {
  * assumed to be in an array static initializer.
  */
 static void NaClInstPrintInternal(struct Gio* f, Bool as_array_element,
-                                  int index, NaClInst* inst, int lookahead) {
+                                  int index, const NaClInst* inst,
+                                  int lookahead) {
   int i;
   gprintf(f, "  /* %d */\n", index);
   gprintf(f, "  { %s,", NaClInstPrefixName(inst->prefix));
@@ -1887,7 +1890,7 @@ static void NaClInstPrintInternal(struct Gio* f, Bool as_array_element,
  * the lookahead.
  */
 void NaClInstPrintTablegen(struct Gio* f, int index,
-                           NaClInst* inst, int lookahead) {
+                           const NaClInst* inst, int lookahead) {
   NaClInstPrintInternal(f, TRUE, index, inst, lookahead);
 }
 
@@ -1924,7 +1927,7 @@ static void NaClPrintPrefixTable(struct Gio* f) {
   gprintf(f, "\n};\n\n");
 }
 
-static int NaClCountInstSeqs(NaClInstNode* root) {
+static int NaClCountInstSeqs(const NaClInstNode* root) {
   if (root == NULL) {
     return 0;
   } else {
@@ -1938,7 +1941,7 @@ static int NaClCountInstSeqs(NaClInstNode* root) {
   }
 }
 
-static int NaClCountInstNodes(NaClInstNode* root) {
+static int NaClCountInstNodes(const NaClInstNode* root) {
   if (NULL == root) {
     return 0;
   } else {
@@ -1951,7 +1954,8 @@ static int NaClCountInstNodes(NaClInstNode* root) {
   }
 }
 
-static void NaClPrintInstTrieNode(NaClInstNode* root, int g_opcode_index,
+static void NaClPrintInstTrieNode(const NaClInstNode* root,
+                                  int g_opcode_index,
                                   int root_index, struct Gio* f) {
   if (NULL == root) {
     return;
@@ -1972,7 +1976,8 @@ static void NaClPrintInstTrieNode(NaClInstNode* root, int g_opcode_index,
         gprintf(f, "NULL");
       } else {
         gprintf(f, "g_OpcodeSeq + %d", next_index);
-        next_index += NaClCountInstNodes(root->succs[i]);
+        next_index +=
+            NaClCountInstNodes((NaClInstNode*) (root->succs[i]));
       }
       gprintf(f, ",\n");
     }
@@ -1990,19 +1995,19 @@ static void NaClPrintInstTrieNode(NaClInstNode* root, int g_opcode_index,
  * given file.
  */
 static void NaClPrintInstSeqTrie(int g_opcode_index,
-                                 NaClInstNode* root,
+                                 const NaClInstNode* root,
                                  struct Gio* f) {
   /* Make sure trie isn't empty, since empty arrays create warning messages. */
   int num_trie_nodes;
   if (root == NULL) root = NaClNewInstNode();
   num_trie_nodes = NaClCountInstNodes(root);
-  gprintf(f, "static NaClInstNode g_OpcodeSeq[%d] = {\n", num_trie_nodes);
+  gprintf(f, "static const NaClInstNode g_OpcodeSeq[%d] = {\n", num_trie_nodes);
   NaClPrintInstTrieNode(root, g_opcode_index, 0, f);
   gprintf(f, "};\n");
 }
 
 static void NaClPrintInstsInInstTrie(int current_index,
-                                     NaClInstNode* root,
+                                     const NaClInstNode* root,
                                      struct Gio* f) {
   int index;
   if (NULL == root) return;
@@ -2035,7 +2040,7 @@ static void NaClPrintDecodeTables(struct Gio* f) {
   int num_seq_opcodes = NaClCountInstSeqs(inst_node_root);
 
   gprintf(f,
-          "static NaClInst g_Opcodes[%d] = {\n",
+          "static const NaClInst g_Opcodes[%d] = {\n",
           num_opcodes + num_seq_opcodes);
   for (prefix = NoPrefix; prefix < NaClInstPrefixEnumSize; ++prefix) {
     for (i = 0; i < NCDTABLESIZE; ++i) {
@@ -2043,7 +2048,7 @@ static void NaClPrintDecodeTables(struct Gio* f) {
        * element in the list will always follow the current entry,
        * when added to the array.
        */
-      NaClInst* next = NaClInstTable[i][prefix];
+      const NaClInst* next = NaClInstTable[i][prefix];
       if (NULL == next) {
         lookup_index[i][prefix] = -1;
       } else {
@@ -2051,7 +2056,7 @@ static void NaClPrintDecodeTables(struct Gio* f) {
         lookup_index[i][prefix] = count;
         while (NULL != next) {
           NaClInstPrintTablegen(f, count, next, lookahead);
-          next = next->next_rule;
+          next = (NaClInst*) (next->next_rule);
           ++lookahead;
           ++count;
         }
@@ -2062,12 +2067,12 @@ static void NaClPrintDecodeTables(struct Gio* f) {
   gprintf(f, "};\n\n");
 
   /* Print out the undefined opcode */
-  gprintf(f, "static NaClInst g_Undefined_Opcode = \n");
+  gprintf(f, "static const NaClInst g_Undefined_Opcode = \n");
   NaClInstPrintInternal(f, FALSE, 0, undefined_inst, 0);
 
   /* Now print lookup table of rules. */
   gprintf(f,
-          "static NaClInst* "
+          "static const NaClInst* "
           "g_OpcodeTable[NaClInstPrefixEnumSize][NCDTABLESIZE] = {\n");
   for (prefix = NoPrefix; prefix < NaClInstPrefixEnumSize; ++prefix) {
     gprintf(f,"/* %s */\n", NaClInstPrefixName(prefix));
@@ -2077,7 +2082,7 @@ static void NaClPrintDecodeTables(struct Gio* f) {
        * the array of opcodes such that the next element in the list
        * will always follow the current entry.
        */
-      NaClInst* next = NaClInstTable[i][prefix];
+      const NaClInst* next = NaClInstTable[i][prefix];
       gprintf(f, "  /* %02x */ ", i);
       if (NULL == next) {
         gprintf(f, "NULL");
@@ -2111,7 +2116,7 @@ static void PrintInstructionSequence(
  * in the instruction sequence that is actually possible.
  */
 static void PrintHardCodedInstructionsNode(
-    struct Gio* f, NaClInstNode* node,
+    struct Gio* f, const NaClInstNode* node,
     uint8_t inst_sequence[NACL_MAX_BYTES_PER_X86_INSTRUCTION+1], int length) {
   int i;
   if (NULL == node) return;
@@ -2160,7 +2165,7 @@ static void NaClPrintInstructionSet(struct Gio* f) {
     gprintf(f, "\n");
     for (i = 0; i < NCDTABLESIZE; ++i) {
       Bool is_first = TRUE;
-      NaClInst* inst = NaClInstTable[i][prefix];
+      const NaClInst* inst = NaClInstTable[i][prefix];
       while (NULL != inst) {
         if (is_first) {
           gprintf(f, "  --- %02x ---\n", i);
@@ -2168,7 +2173,7 @@ static void NaClPrintInstructionSet(struct Gio* f) {
         }
         NaClInstPrint(f, inst);
         printed_rules = TRUE;
-        inst = inst->next_rule;
+        inst = (NaClInst*) (inst->next_rule);
       }
     }
     if (printed_rules) gprintf(f, "\n");
@@ -2226,12 +2231,12 @@ static void FillInTrieMissingOperandsDescs(NaClInstNode* node) {
   int i;
   NaClInst* inst;
   if (NULL == node) return;
-  inst = node->matching_inst;
+  inst = (NaClInst*) (node->matching_inst);
   if ((NULL != inst) && (NULL == inst->operands_desc)) {
     inst->operands_desc = NaClDefaultOperandsDesc(inst);
   }
   for (i = 0; i < NACL_NUM_BYTE_VALUES; ++i) {
-    FillInTrieMissingOperandsDescs(node->succs[i]);
+    FillInTrieMissingOperandsDescs((NaClInstNode*) (node->succs[i]));
   }
 }
 
@@ -2248,7 +2253,7 @@ static void FillInMissingOperandsDescs() {
         if (NULL == next->operands_desc) {
           next->operands_desc = NaClDefaultOperandsDesc(next);
         }
-        next = next->next_rule;
+        next = (NaClInst*) (next->next_rule);
       }
     }
   }

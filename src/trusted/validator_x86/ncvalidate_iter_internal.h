@@ -93,7 +93,7 @@ struct NaClValidatorState {
   /* Cached instruction. Only guaranteed to be defined when a NaClValidator is
    * called. When not defined, is NULL.
    */
-  NaClInst* cur_inst;
+  const NaClInst* cur_inst;
   /* Cached translation of instruction. Only guaranteed to be defined when a
    * NaClValidator is called. When not defined, is NULL.
    */

@@ -48,7 +48,7 @@ void NaClOpcodeHistogramMemoryDestroy(NaClValidatorState* state,
 void NaClOpcodeHistogramRecord(NaClValidatorState* state,
                                NaClInstIter* iter,
                                NaClOpcodeHistogram* histogram) {
-  NaClInst* inst = state->cur_inst;
+  const NaClInst* inst = state->cur_inst;
   if (inst->name != InstInvalid) {
     histogram->opcode_histogram[inst->opcode[inst->num_opcode_bytes - 1]]++;
   }

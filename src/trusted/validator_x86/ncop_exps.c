@@ -340,7 +340,7 @@ static void NaClPrintSegmentOverride(struct Gio* file,
  */
 static void NaClPrintDisassembled(struct Gio* file,
                                   NaClInstState* state,
-                                  NaClInst* inst) {
+                                  const NaClInst* inst) {
   uint32_t tree_index = 0;
   Bool is_first = TRUE;
   Bool not_printed_prefix_segment = TRUE;
@@ -384,7 +384,7 @@ static void NaClPrintDisassembled(struct Gio* file,
 
 void NaClInstStateInstPrint(struct Gio* file, NaClInstState* state) {
   int i;
-  NaClInst* inst;
+  const NaClInst* inst;
 
   /* Print out the address and the inst bytes. */
   int length = NaClInstStateLength(state);

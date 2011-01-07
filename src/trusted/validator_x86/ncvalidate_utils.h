@@ -27,7 +27,7 @@ extern const NaClOpFlags NaClOpSetOrUse;
  *   reg_1 - The register expected as the first argument
  *   reg_2 - The register expected as the second argument.
  */
-Bool NaClIsBinaryUsingRegisters(struct NaClInst* inst,
+Bool NaClIsBinaryUsingRegisters(const NaClInst* inst,
                                 NaClMnemonic name,
                                 struct NaClExpVector* vector,
                                 NaClOpKind reg_1,
@@ -45,7 +45,7 @@ Bool NaClIsBinaryUsingRegisters(struct NaClInst* inst,
  *   reg_use - The register whose value is used (along with reg_set) to generate
  *             the or value.
  */
-Bool NaClIsBinarySetUsingRegisters(struct NaClInst* opcode,
+Bool NaClIsBinarySetUsingRegisters(const NaClInst* opcode,
                                    NaClMnemonic name,
                                    struct NaClExpVector* vector,
                                    NaClOpKind reg_1,
@@ -60,7 +60,7 @@ Bool NaClIsBinarySetUsingRegisters(struct NaClInst* opcode,
  *   reg_set - The register set by the move.
  *   reg_use - The register whose value is used to define the set.
  */
-Bool NaClIsMovUsingRegisters(struct NaClInst* inst,
+Bool NaClIsMovUsingRegisters(const NaClInst* inst,
                              struct NaClExpVector* vector,
                              NaClOpKind reg_set,
                              NaClOpKind reg_use);

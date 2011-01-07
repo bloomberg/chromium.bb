@@ -134,7 +134,7 @@ void NaClBaseRegisterMemoryDestroy(NaClValidatorState* state,
  * where OP in { add , sub } and C is a 32 bit constant.
  */
 static Bool NaClIsAddOrSubBoundedConstFromEsp(NaClInstState* state) {
-  NaClInst* inst = NaClInstStateInst(state);
+  const NaClInst* inst = NaClInstStateInst(state);
   NaClExpVector* vector = NaClInstStateExpVector(state);
   return (InstAdd == inst->name || InstSub == inst->name) &&
       2 == NaClGetInstNumberOperands(inst) &&
@@ -157,7 +157,7 @@ static Bool NaClIsAddOrSubBoundedConstFromEsp(NaClInstState* state) {
 static Bool NaClIsLeaAddressRegPlusRbase(NaClValidatorState* state,
                                          NaClInstState* inst_state,
                                          NaClOpKind reg) {
-  NaClInst* inst = NaClInstStateInst(inst_state);
+  const NaClInst* inst = NaClInstStateInst(inst_state);
   assert((RegRSP == reg) || (RegRBP == reg));
   if (InstLea == inst->name &&
       2 == NaClGetInstNumberOperands(inst)) {
@@ -206,7 +206,7 @@ static Bool NaClIsLeaAddressRegPlusRbase(NaClValidatorState* state,
 
 static Bool NaClAcceptRegMoveLea32To64(struct NaClValidatorState* state,
                                        struct NaClInstIter* iter,
-                                       NaClInst* inst,
+                                       const NaClInst* inst,
                                        NaClOpKind reg) {
   NaClInstState* inst_state = state->cur_inst_state;
   assert((RegRSP == reg) || (RegRBP == reg));
@@ -287,7 +287,7 @@ static void NaClCheckRspAssignments(struct NaClValidatorState* state,
    * of lea to fill in the top 32 bits.
    */
   NaClInstState* inst_state = state->cur_inst_state;
-  NaClInst* inst = state->cur_inst;
+  const NaClInst* inst = state->cur_inst;
   NaClMnemonic inst_name = inst->name;
   NaClExpVector* vector = state->cur_inst_vector;
   switch (inst_name) {
@@ -411,7 +411,7 @@ static void NaClCheckRbpAssignments(struct NaClValidatorState* state,
    *     the index position.
    */
   NaClInstState* inst_state = state->cur_inst_state;
-  NaClInst* inst = state->cur_inst;
+  const NaClInst* inst = state->cur_inst;
   NaClMnemonic inst_name = inst->name;
   NaClExpVector* vector = state->cur_inst_vector;
   switch (inst_name) {

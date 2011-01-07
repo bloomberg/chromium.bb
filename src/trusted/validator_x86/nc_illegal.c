@@ -94,7 +94,7 @@ static void NaClCheckForPrefixIssues(NaClValidatorState* state,
                                      Bool* is_legal,
                                      NaClDisallowsFlags* disallows_flags) {
   NaClInstState* inst_state = state->cur_inst_state;
-  NaClInst* inst = state->cur_inst;
+  const NaClInst* inst = state->cur_inst;
   /* Don't allow more than one (non-REX) prefix. */
   int num_prefix_bytes = inst_state->num_prefix_bytes;
   if (inst_state->rexprefix) --num_prefix_bytes;

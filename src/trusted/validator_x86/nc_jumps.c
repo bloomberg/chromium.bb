@@ -302,8 +302,8 @@ static void NaClAddRegisterJumpIndirect64(NaClValidatorState* state,
   uint8_t mask;
   NaClInstState* and_state;
   NaClInstState* middle_state;
-  NaClInst* and_inst;
-  NaClInst* middle_inst;
+  const NaClInst* and_inst;
+  const NaClInst* middle_inst;
   int op_1, op_2;
   NaClOpKind and_reg, and_64_reg, jump_reg, middle_reg;
   NaClExpVector* nodes;
@@ -434,7 +434,7 @@ static void NaClAddRegisterJumpIndirect32(NaClValidatorState* state,
                                           ) {
   uint8_t mask;
   NaClInstState* and_state;
-  NaClInst* and_inst;
+  const NaClInst* and_inst;
   int op_1, op_2;
   NaClOpKind and_reg, jump_reg;
   NaClExpVector* nodes;

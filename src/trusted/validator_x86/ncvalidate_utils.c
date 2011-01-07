@@ -21,7 +21,7 @@
 
 const NaClOpFlags NaClOpSetOrUse = NACL_OPFLAG(OpSet) | NACL_OPFLAG(OpUse);
 
-Bool NaClIsBinaryUsingRegisters(NaClInst* inst,
+Bool NaClIsBinaryUsingRegisters(const NaClInst* inst,
                                 NaClMnemonic name,
                                 NaClExpVector* vector,
                                 NaClOpKind reg_1,
@@ -44,10 +44,10 @@ Bool NaClIsBinaryUsingRegisters(NaClInst* inst,
       reg_2 == NaClGetExpRegister(&vector->node[3]);
 }
 
-Bool NaClIsMovUsingRegisters(NaClInst* inst,
-                           NaClExpVector* vector,
-                           NaClOpKind reg_set,
-                           NaClOpKind reg_use) {
+Bool NaClIsMovUsingRegisters(const NaClInst* inst,
+                             NaClExpVector* vector,
+                             NaClOpKind reg_set,
+                             NaClOpKind reg_use) {
   return NaClIsBinaryUsingRegisters(inst, InstMov, vector, reg_set, reg_use) &&
       NACL_OPFLAG(OpSet) ==
       (NaClGetInstOperand(inst, 0)->flags & NaClOpSetOrUse) &&
@@ -55,11 +55,11 @@ Bool NaClIsMovUsingRegisters(NaClInst* inst,
       (NaClGetInstOperand(inst, 1)->flags & NaClOpSetOrUse);
 }
 
-Bool NaClIsBinarySetUsingRegisters(NaClInst* inst,
-                                 NaClMnemonic name,
-                                 NaClExpVector* vector,
-                                 NaClOpKind reg_1,
-                                 NaClOpKind reg_2) {
+Bool NaClIsBinarySetUsingRegisters(const NaClInst* inst,
+                                   NaClMnemonic name,
+                                   NaClExpVector* vector,
+                                   NaClOpKind reg_1,
+                                   NaClOpKind reg_2) {
   return NaClIsBinaryUsingRegisters(inst, name, vector, reg_1, reg_2) &&
       NaClOpSetOrUse == (NaClGetInstOperand(inst, 0)->flags & NaClOpSetOrUse) &&
       NACL_OPFLAG(OpUse) ==
@@ -67,7 +67,7 @@ Bool NaClIsBinarySetUsingRegisters(NaClInst* inst,
 }
 
 Bool NaClOperandOneIsRegisterSet(NaClInstState* inst,
-                               NaClOpKind reg_name) {
+                                 NaClOpKind reg_name) {
   /* Note: Since the vector contains a list of operand expressions, the
    * first operand reference is always at index zero, and its first child
    * (where the register would be defined) is at index 1.
@@ -91,7 +91,7 @@ Bool NaClOperandOneIsRegisterSet(NaClInstState* inst,
 
 Bool NaClOperandOneZeroExtends(NaClInstState* state) {
   Bool result = FALSE;
-  NaClInst* inst = NaClInstStateInst(state);
+  const NaClInst* inst = NaClInstStateInst(state);
   DEBUG(NaClLog(LOG_INFO, "->NaClOperandOneZeroExtends\n"));
   DEBUG(NaClInstPrint(NaClLogGetGio(), inst));
   result = (1 <= NaClGetInstNumberOperands(inst) &&

@@ -74,8 +74,10 @@ struct NaClInstState {
   /* The (opcode) instruction pattern used to match the instruction.
    * Note: If this value is NULL, we have not yet tried to match
    * the current instruction with the corresponding instruction iterator.
+   * Note: One can assume that two instructions use the same modeled
+   * NaClInst iff the pointers are equals.
    */
-  struct NaClInst* inst;
+  const NaClInst* inst;
   /* The corresponding expression tree denoted by the matched instruction. */
   NaClExpVector nodes;
 };

@@ -210,7 +210,7 @@ void NaClMemoryReferenceValidator(NaClValidatorState* state,
             if (NaClInstIterHasLookbackState(iter, 1)) {
               NaClInstState* prev_inst_state =
                   NaClInstIterGetLookbackState(iter, 1);
-              NaClInst* prev_inst = NaClInstStateInst(prev_inst_state);
+              const NaClInst* prev_inst = NaClInstStateInst(prev_inst_state);
               DEBUG(NaClLog(LOG_INFO, "look at previous\n"));
               if (InstLea == prev_inst->name) {
                 int seg_reg_index = NaClGetExpKidIndex(vector, i, 1);

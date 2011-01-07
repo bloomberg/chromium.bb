@@ -71,7 +71,6 @@ typedef struct NaClOp {
   NaClOpFlags flags;
 } NaClOp;
 
-
 /* Maximum number of operands in an x86 instruction (implicit and explicit). */
 #define NACL_MAX_NUM_OPERANDS 6
 
@@ -119,42 +118,43 @@ typedef struct NaClInst {
    * by NaClInstPrint to print out the corresponding description
    * of the operands.
    */
-  char* operands_desc;
+  const char* operands_desc;
   /* Pointer to the next pattern to try and match for the
    * given sequence of opcode bytes.
    */
-  struct NaClInst* next_rule;
+  const struct NaClInst* next_rule;
 } NaClInst;
 
 /* Implements trie nodes for selecting instructions that must match
  * a specific sequence of bytes. Used to handle NOP cases.
  */
 typedef struct NaClInstNode {
-  NaClInst* matching_inst;
-  struct NaClInstNode* succs[256];
+  const NaClInst* matching_inst;
+  const struct NaClInstNode* succs[256];
 } NaClInstNode;
 
 /* Returns the number of logical operands an instruction has. That is,
  * returns field num_operands unless the first operand is
  * a special encoding that extends the opcode.
  */
-uint8_t NaClGetInstNumberOperands(NaClInst* inst);
+uint8_t NaClGetInstNumberOperands(const NaClInst* inst);
 
 /* Returns the indexed logical operand for the instruction. That is,
  * returns the index-th operand unless the first operand is
  * a special encoding that extends the opcode. In the latter
  * case, the (index+1)-th operand is returned.
  */
-NaClOp* NaClGetInstOperand(NaClInst* inst, uint8_t index);
+const NaClOp* NaClGetInstOperand(const NaClInst* inst,
+                                       uint8_t index);
 
 /* Print out the given operand structure to the given file. */
-void NaClOpPrint(struct Gio* f, NaClOp* operand);
+void NaClOpPrint(struct Gio* f, const NaClOp* operand);
 
 /* Print out the given instruction to the given file. However, always
  * print the value NULL for next_rule, even if the value is non-null. This
  * function should be used to print out an individual opcode (instruction)
  * pattern.
  */
-void NaClInstPrint(struct Gio* f,  NaClInst* inst);
+void NaClInstPrint(struct Gio* f,  const NaClInst* inst);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCOPCODE_DESC_H_ */

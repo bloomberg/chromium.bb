@@ -36,7 +36,7 @@ NaClPcAddress NaClInstStateVpc(NaClInstState* state);
  * that matches the currently matched instruction of the corresponding
  * instruction iterator.
  */
-struct NaClInst* NaClInstStateInst(NaClInstState* state);
+const NaClInst* NaClInstStateInst(NaClInstState* state);
 
 /* Given an iterator state, return the corresponding expression tree
  * denoting the currently matched instruction of the corresponding

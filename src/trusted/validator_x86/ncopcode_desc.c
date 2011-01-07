@@ -19,11 +19,11 @@
 #include "gen/native_client/src/trusted/validator_x86/ncopcode_operand_kind_impl.h"
 #include "gen/native_client/src/trusted/validator_x86/ncopcode_operand_flag_impl.h"
 
-uint8_t NaClGetInstNumberOperands(NaClInst* inst) {
+uint8_t NaClGetInstNumberOperands(const NaClInst* inst) {
   return inst->num_operands;
 }
 
-NaClOp* NaClGetInstOperand(NaClInst* inst, uint8_t index) {
+const NaClOp* NaClGetInstOperand(const NaClInst* inst, uint8_t index) {
   assert(index < inst->num_operands);
   return &inst->operands[index];
 }
@@ -49,7 +49,7 @@ void NaClOpFlagsPrint(struct Gio* f, NaClOpFlags flags) {
 /* Print out the opcode operand in a simplified (i.e. more human readable)
  * form.
  */
-void NaClOpPrint(struct Gio* f, NaClOp* operand) {
+void NaClOpPrint(struct Gio* f, const NaClOp* operand) {
   gprintf(f, "%s", NaClOpKindName(operand->kind));
   if (operand->flags) {
     size_t i;
@@ -109,7 +109,7 @@ static const char* OpcodePrefixBytes(NaClInstPrefix prefix) {
   }
 }
 
-void NaClInstPrint(struct Gio* f, NaClInst* inst) {
+void NaClInstPrint(struct Gio* f, const NaClInst* inst) {
   int i;
   int count = 2;
   /* Add prefix bytes if defined by prefix. */
