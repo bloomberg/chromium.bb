@@ -201,11 +201,7 @@
             '<@(grit_cmd)',
             '-i', '<(input_path)', 'build',
             '-o', '<(grit_out_dir)',
-          ],
-          'conditions': [
-            ['use_titlecase_in_grd_files==1', {
-              'action': ['-D', 'use_titlecase'],
-            }],
+            '<@(grit_defines)',
           ],
           'message': 'Generating resources from <(input_path)',
         },

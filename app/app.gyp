@@ -105,16 +105,9 @@
             '>!@(<(apply_locales_cmd) \'<(grit_out_dir)/<(RULE_INPUT_ROOT)/<(RULE_INPUT_ROOT)_ZZLOCALE.pak\' <(locales))',
           ],
           'action': ['<@(grit_cmd)', '-i', '<(RULE_INPUT_PATH)',
-            'build', '-o', '<(grit_out_dir)/<(RULE_INPUT_ROOT)'],
+            'build', '-o', '<(grit_out_dir)/<(RULE_INPUT_ROOT)',
+            '<@(grit_defines)'],
           'message': 'Generating resources from <(RULE_INPUT_PATH)',
-          'conditions': [
-            ['use_titlecase_in_grd_files==1', {
-              'action': ['-D', 'use_titlecase'],
-            }],
-            ['chromeos==1', {
-              'action': ['-D', 'chromeos'],
-            }],
-          ],
         },
       ],
       'sources': [
@@ -150,12 +143,8 @@
           ],
           'action': ['<@(grit_cmd)',
                      '-i', '<(input_path)', 'build',
-                     '-o', '<(grit_out_dir)/app_resources'],
-          'conditions': [
-            ['toolkit_views==1', {
-              'action': ['-D', 'toolkit_views'],
-            }],
-          ],
+                     '-o', '<(grit_out_dir)/app_resources',
+                     '<@(grit_defines)' ],
           'message': 'Generating resources from <(input_path)',
         },
       ],

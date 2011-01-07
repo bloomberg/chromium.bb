@@ -79,12 +79,8 @@
           ],
           'action': ['<@(grit_cmd)',
                      '-i', '<(input_path)', 'build',
-                     '-o', '<(grit_out_dir)/default_plugin_resources'],
-          'conditions': [
-            ['toolkit_views==1', {
-              'action': ['-D', 'toolkit_views'],
-            }],
-          ],
+                     '-o', '<(grit_out_dir)/default_plugin_resources',
+                     '<@(grit_defines)'],
           'message': 'Generating resources from <(input_path)',
         },
       ],

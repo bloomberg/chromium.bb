@@ -202,17 +202,7 @@
             'build', '-o', '<(grit_out_dir)',
             '-D', '<(chrome_build)',
             '-E', '<(branded_env)',
-          ],
-          'conditions': [
-            ['chromeos==1', {
-              'action': ['-D', 'chromeos'],
-            }],
-            ['toolkit_views==1', {
-              'action': ['-D', 'toolkit_views'],
-            }],
-            ['use_titlecase_in_grd_files==1', {
-              'action': ['-D', 'use_titlecase'],
-            }],
+            '<@(grit_defines)',
           ],
           'message': 'Generating resources from <(RULE_INPUT_PATH)',
         },
@@ -289,15 +279,8 @@
           'action': ['<@(grit_cmd)', '-i',
                     '<(RULE_INPUT_PATH)',
                     'build', '-o', '<(grit_out_dir)',
-                    '-D', '<(chrome_build)'],
-          'conditions': [
-            ['chromeos==1', {
-              'action': ['-D', 'chromeos'],
-            }],
-            ['use_titlecase_in_grd_files==1', {
-              'action': ['-D', 'use_titlecase'],
-            }],
-          ],
+                    '-D', '<(chrome_build)',
+                    '<@(grit_defines)' ],
           'message': 'Generating resources from <(RULE_INPUT_PATH)',
         },
       ],
@@ -345,18 +328,8 @@
             '<@(grit_cmd)',
             '-i', '<(input_path)', 'build',
             '-o', '<(grit_out_dir)',
-            '-D', '<(chrome_build)'
-          ],
-          'conditions': [
-            ['chromeos==1', {
-              'action': ['-D', 'chromeos'],
-            }],
-            ['toolkit_views==1', {
-              'action': ['-D', 'toolkit_views'],
-            }],
-            ['use_titlecase_in_grd_files==1', {
-              'action': ['-D', 'use_titlecase'],
-            }],
+            '-D', '<(chrome_build)',
+            '<@(grit_defines)',
           ],
           'message': 'Generating resources from <(input_path)',
         },
@@ -403,15 +376,8 @@
             '<@(grit_cmd)',
             '-i', '<(input_path)', 'build',
             '-o', '<(grit_out_dir)',
-            '-D', '<(chrome_build)'
-          ],
-          'conditions': [
-            ['chromeos==1', {
-              'action': ['-D', 'chromeos'],
-            }],
-            ['use_titlecase_in_grd_files==1', {
-              'action': ['-D', 'use_titlecase'],
-            }],
+            '-D', '<(chrome_build)',
+            '<@(grit_defines)',
           ],
           'message': 'Generating resources from <(input_path)',
         },
@@ -475,17 +441,7 @@
             'build', '-o', '<(grit_out_dir)',
             '-D', '<(chrome_build)',
             '-E', '<(branded_env)',
-          ],
-          'conditions': [
-            ['chromeos==1', {
-              'action': ['-D', 'chromeos'],
-            }],
-            ['use_titlecase_in_grd_files==1', {
-              'action': ['-D', 'use_titlecase'],
-            }],
-            ['touchui==1', {
-              'action': ['-D', 'touchui'],
-            }],
+            '<@(grit_defines)',
           ],
           'message': 'Generating resources from <(RULE_INPUT_PATH)',
         },
