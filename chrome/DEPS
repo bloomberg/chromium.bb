@@ -29,4 +29,6 @@ include_rules = [
   "+third_party/npapi",     # NPAPI interface headers.
   "+third_party/tcmalloc",  # tcmallo
   "+third_party/GTM",       # Google Toolbox for Mac.
+
+  "+ui",
 ]
