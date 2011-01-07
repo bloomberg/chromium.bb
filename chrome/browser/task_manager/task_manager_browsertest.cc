@@ -333,9 +333,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
 
 // Regression test for http://crbug.com/18693.
 //
-// This test has been crashy in the past, and is re-enabled temporarily to
-// gather more diagnostic information. See http://crbug.com/42315.
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, ReloadExtension) {
+// This test is crashy. See http://crbug.com/42315.
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DISABLED_ReloadExtension) {
   // Show the task manager. This populates the model, and helps with debugging
   // (you see the task manager).
   browser()->window()->ShowTaskManager();
