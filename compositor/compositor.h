@@ -146,6 +146,7 @@ struct wlsc_surface {
 	struct wlsc_matrix matrix_inv;
 	struct wl_visual *visual;
 	struct wl_buffer *buffer;
+	int mapped;
 };
 
 void

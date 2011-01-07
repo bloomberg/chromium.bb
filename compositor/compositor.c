@@ -130,6 +130,7 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 
 	wl_list_init(&surface->surface.destroy_listener_list);
 	wl_list_init(&surface->link);
+	surface->mapped = 0;
 
 	glGenTextures(1, &surface->texture);
 	glBindTexture(GL_TEXTURE_2D, surface->texture);
@@ -440,12 +441,16 @@ surface_map_toplevel(struct wl_client *client,
 {
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 
+	if (es->mapped)
+		return;
+
 	es->x = 10 + random() % 400;
 	es->y = 10 + random() % 400;
 
 	wlsc_surface_update_matrix(es);
 	wl_list_insert(es->compositor->surface_list.prev, &es->link);
 	wlsc_compositor_schedule_repaint(es->compositor);
+	es->mapped = 1;
 }
 
 static void

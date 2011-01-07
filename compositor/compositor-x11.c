@@ -288,7 +288,7 @@ x11_compositor_present(struct wlsc_compositor *base)
 							XCB_DRI2_ATTACHMENT_BUFFER_FRONT_LEFT,
 							XCB_DRI2_ATTACHMENT_BUFFER_BACK_LEFT);
 		free(xcb_dri2_copy_region_reply(c->conn, cookie, NULL));
-	}	
+	}
 
 	gettimeofday(&tv, NULL);
 	msec = tv.tv_sec * 1000 + tv.tv_usec / 1000;
