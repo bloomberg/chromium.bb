@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">O Google Chrome está importando os Favoritos.</translation>
 <translation id="8970027151245482499">O Google Chrome não está instalado ou não foi possível localizar o diretório de instalação. Baixe o Google Chrome novamente.</translation>
 <translation id="2040709530900803995">Visualizador do Google Chrome</translation>
-<translation id="3044696659294460858">Está disponível uma nova versão do Google Chrome, que inclui extensões.</translation>
 <translation id="4281844954008187215">Termos de Serviço</translation>
 <translation id="3555616473548901994">Desinstalação concluída.</translation>
+<translation id="8556340503434111824">Há uma nova versão ainda mais rápida do Google Chrome disponível.</translation>
 <translation id="1826297811907343327">Se você cancelar agora, apenas parte dos itens será importada. Você pode importar novamente mais tarde no menu do Google Chrome.</translation>
 <translation id="4728575227883772061">Houve uma falha na instalação devido a um erro não-especificado. Se o Google Chrome estiver em execução no momento, feche-o e tente novamente.</translation>
 <translation id="4149882025268051530">Houve uma falha no instalador ao descompactar o arquivo. Baixe o Google Chrome novamente.</translation>
+<translation id="6989339256997917931">O Google Chrome foi atualizado, mas ele não é utilizado há pelo menos trinta dias.</translation>
 <translation id="5744005218040929396">Utilitário do Google Chrome</translation>
 <translation id="4343226815564935778">Aparentemente o diretório de instalação do Google Chrome está sendo utilizado. Reinicie o computador e tente novamente.</translation>
 <translation id="6817660909204164466">Enviar estatísticas de uso e relatórios de problemas automaticamente ao Google para ajudar a tornar o Google Chrome melhor.</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">O Google Chrome não está se comportando bem</translation>
 <translation id="3889417619312448367">Desinstalar o Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">Há uma versão nova e mais segura do Google Chrome disponível.</translation>
 <translation id="8810218179782551669">Idioma do Google Chrome:</translation>
 <translation id="7001386529596391893">Criar atalhos do Google Chrome nestes locais:</translation>
 <translation id="7461436095086637522">Importador de perfil do Google Chrome</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">O seu perfil não pode ser usado, pois ele é de uma versão mais recente do Google Chrome.\n\nAlguns recursos podem estar indisponíveis. Especifique um diretório de perfil diferente ou use uma versão mais recente do Chrome.</translation>
 <translation id="7214670531148488183">O Google Chrome pode usar serviços da web para melhorar a qualidade da sua navegação. Você pode desativar esses serviços.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">Opcional: Enviar estatísticas de uso e relatórios de problemas automaticamente ao Google para ajudar a melhorar\no Google Chrome</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">Excluir também dados de navegação?</translation>
 <translation id="2044287590254833138">Barra de ferramentas do Google Chrome</translation>
@@ -88,7 +89,6 @@ Se continuar, o Chrome não procurará nenhuma outra correspondência incorreta 
 <translation id="3335672657969596251">O Google Chrome não é compatível com o <ph name="OS_NAME"/>.</translation>
 <translation id="473183893665420670">Ao redefinir as opções do Google Chrome, todas as alterações feitas serão revertidas para as configurações padrão. Deseja redefinir as opções do Chrome?</translation>
 <translation id="3636771339108070045">Este computador já tem uma versão mais recente do Google Chrome. Se o software não estiver funcionando, desinstale o Google Chrome e baixe-o novamente.</translation>
-<translation id="4407807842708586359">Sistema operacional (OS) do Google Chrome</translation>
 <translation id="3360895254066713204">Auxiliar do Google Chrome</translation>
 <translation id="1001534784610492198">O arquivo do instalador está corrompido ou é inválido. Baixe o Google Chrome novamente.</translation>
 <translation id="6626317981028933585">Infelizmente, suas configurações do Mozilla Firefox não ficarão disponíveis enquanto esse navegador estiver sendo executado. Para importar essas configurações para o Google Chrome, salve o seu trabalho e feche todas as janelas do Firefox. Em seguida, clique em &quot;Continuar&quot;.</translation>

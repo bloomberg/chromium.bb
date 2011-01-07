@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
 <translation id="4519964825805946997">نصب افزونه از <ph name="URL"/> ناموفق بود</translation>
+<translation id="9186171386827445984">در حال بارگیری سند: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> صفحات...</translation>
 <translation id="1235745349614807883">پاک کردن جستجوهای اخیر</translation>
 <translation id="5048533449481078685">علامت گذار لیست</translation>
 <translation id="372362261556059955">افزونه دیگری مورد نیاز است</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">نصب افزونه انجام نشد</translation>
 <translation id="8141602879876242471">این نمایه قابل جستجو است. کلمات کلیدی جستجو را وارد کنید:</translation>
 <translation id="5650795167354946011">بعد از نصب افزونه، برای تازه کردن اینجا را کلیک کنید</translation>
+<translation id="370665806235115550">درحال بارگیری...</translation>
 <translation id="6845533974506654842">فشار دادن</translation>
 <translation id="8244226242650769279">نقشه تصویر</translation>
 <translation id="2548326553472216322">جستجوی جدیدی وجود ندارد</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">لطفاً تأیید کنید که مایلید افزونه <ph name="PLUGIN"/> نصب شود. فقط باید افزونه هایی را نصب کنید که به آنها اعتماد دارید.</translation>
 <translation id="6663448176199120256">جستجوهای جدید</translation>
 <translation id="2597378329261239068">این سند توسط رمز ورود محافظت می شود.  لطفاً یک رمز ورود وارد کنید.</translation>
-<translation id="6807599807928161586">حیطه وب</translation>
+<translation id="7740050170769002709">محتوای HTML</translation>
 <translation id="5939518447894949180">بازنشانی</translation>
 <translation id="1842960171412779397">انتخاب</translation>
 <translation id="7638452146404718955">برای دانلود کردن افزونه اینجا را کلیک کنید</translation>

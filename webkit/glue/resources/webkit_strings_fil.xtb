@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
 <translation id="4519964825805946997">Nabigong ma-install ang plug-in mula sa <ph name="URL"/></translation>
+<translation id="9186171386827445984">Nilo-load ang dokumento: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> (na) pahina...</translation>
 <translation id="1235745349614807883">Lisiman ang Kasalukuyang Mga Paghahanap</translation>
 <translation id="5048533449481078685">Ilista ang marker</translation>
 <translation id="372362261556059955">Kinakailangan ang karagdagang plug-in</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">Nabigo ang pag-install ng plug-in</translation>
 <translation id="8141602879876242471">Isa itong paghahanap ng index. Ipasok ang paghahanap sa mga keyword:</translation>
 <translation id="5650795167354946011">Pagkatapos i-install ng plug-in, mag-click dito upang mag-refresh</translation>
+<translation id="370665806235115550">Kumakarga...</translation>
 <translation id="6845533974506654842">pindutin</translation>
 <translation id="8244226242650769279">mapa ng imahe</translation>
 <translation id="2548326553472216322">Walang kamakailang mga paghahanap</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">Pakikumpirma na gusto mong i-install ang <ph name="PLUGIN"/> plug-in na ito. Dapat mong i-install lamang ang mga plug-in na iyong pinagkakatiwalaan.</translation>
 <translation id="6663448176199120256">Kasalukuyang Mga Paghahanap</translation>
 <translation id="2597378329261239068">Protektado ng password ang dokumentong ito.  Mangyaring magpasok ng password.</translation>
-<translation id="6807599807928161586">web area</translation>
+<translation id="7740050170769002709">HTML na nilalaman</translation>
 <translation id="5939518447894949180">I-reset</translation>
 <translation id="1842960171412779397">piliin</translation>
 <translation id="7638452146404718955">Mag-click dito upang ma-download ang plug-in</translation>

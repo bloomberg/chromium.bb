@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
 <translation id="4519964825805946997">Η εγκατάσταση της προσθήκης από τη διεύθυνση <ph name="URL"/> απέτυχε</translation>
+<translation id="9186171386827445984">Φόρτωση εγγράφου: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> σελίδες...</translation>
 <translation id="1235745349614807883">Εκκαθάριση πρόσφατων αναζητήσεων</translation>
 <translation id="5048533449481078685">δείκτης λίστας</translation>
 <translation id="372362261556059955">Απαιτείται επιπλέον προσθήκη</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">Η εγκατάσταση προσθήκης απέτυχε</translation>
 <translation id="8141602879876242471">Πρόκειται για ευρετήριο με δυνατότητα αναζήτησης. Πληκτρολογήστε λέξεις-κλειδιά αναζήτησης:</translation>
 <translation id="5650795167354946011">Μετά την εγκατάσταση της προσθήκης, κάντε κλικ εδώ για ανανέωση των δεδομένων</translation>
+<translation id="370665806235115550">Φόρτωση...</translation>
 <translation id="6845533974506654842">πατήστε</translation>
 <translation id="8244226242650769279">χάρτης εικόνας</translation>
 <translation id="2548326553472216322">Δεν υπάρχουν πρόσφατες αναζητήσεις</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">Επιβεβαιώστε ότι θέλετε να εγκαταστήσετε την προσθήκη <ph name="PLUGIN"/>. Πρέπει να εγκαθιστάτε μόνο προσθήκες που θεωρείτε αξιόπιστες.</translation>
 <translation id="6663448176199120256">Πρόσφατες αναζητήσεις</translation>
 <translation id="2597378329261239068">Αυτό το έγγραφο προστατεύεται με κωδικό πρόσβασης.  Πληκτρολογήστε έναν κωδικό πρόσβασης.</translation>
-<translation id="6807599807928161586">περιοχή ιστού</translation>
+<translation id="7740050170769002709">Περιεχόμενο HTML</translation>
 <translation id="5939518447894949180">Επαναφορά</translation>
 <translation id="1842960171412779397">επιλογή</translation>
 <translation id="7638452146404718955">Κάντε κλικ εδώ για να κάνετε λήψη της προσθήκης</translation>

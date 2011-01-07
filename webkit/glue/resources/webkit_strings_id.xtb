@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
 <translation id="4519964825805946997">Gagal memasang pengaya dari <ph name="URL"/></translation>
+<translation id="9186171386827445984">Memuat dokumen: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> halaman...</translation>
 <translation id="1235745349614807883">Hapus Penelusuran Barusan</translation>
 <translation id="5048533449481078685">penanda daftar</translation>
 <translation id="372362261556059955">Diperlukan pengaya tambahan</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">Pemasangan pengaya gagal</translation>
 <translation id="8141602879876242471">Terdapat indeks yang dapat dicari. Masukkan kata kunci penelusuran:</translation>
 <translation id="5650795167354946011">Setelah memasang pengaya, klik di sini untuk menyegarkan</translation>
+<translation id="370665806235115550">Membuka...</translation>
 <translation id="6845533974506654842">tekan</translation>
 <translation id="8244226242650769279">gambar peta</translation>
 <translation id="2548326553472216322">Tidak ada penelusuran terkini</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">Konfirmasikan bahwa Anda ingin memasang pengaya <ph name="PLUGIN"/>. Anda harus memasang pengaya yang Anda percayai saja.</translation>
 <translation id="6663448176199120256">Penelusuran Barusan</translation>
 <translation id="2597378329261239068">Dokumen ini dilindungi sandi. Masukkan sandi.</translation>
-<translation id="6807599807928161586">area Web</translation>
+<translation id="7740050170769002709">Konten HTML</translation>
 <translation id="5939518447894949180">Atur ulang</translation>
 <translation id="1842960171412779397">pilih</translation>
 <translation id="7638452146404718955">Klik di sini untuk mengunduh pengaya</translation>

@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">يقوم Google Chrome الآن باستيراد المفضلة/الإشارات.</translation>
 <translation id="8970027151245482499">لم يتم تثبيت Google Chrome، أو فشل البرنامج في العثور على دليل التثبيت. يُرجى تنزيل Google Chrome مرة أخرى.</translation>
 <translation id="2040709530900803995">عارض Google Chrome</translation>
-<translation id="3044696659294460858">يتوفر إصدار جديد من Google Chrome يتضمن الإضافات.</translation>
 <translation id="4281844954008187215">شروط الخدمة</translation>
 <translation id="3555616473548901994">تمت عملية الإزالة.</translation>
+<translation id="8556340503434111824">يتوفر إصدار جديد من Google Chrome، وهو أسرع بكثير من ذي قبل.</translation>
 <translation id="1826297811907343327">في حالة الإلغاء الآن، لن يتم استيراد جميع العناصر، ويمكنك الاستيراد مرة أخرى فيما بعد من القائمة &quot;Google Chrome&quot;.</translation>
 <translation id="4728575227883772061">فشلت عملية التثبيت بسبب خطأ غير محدد. إذا كان Google Chrome في حالة التشغيل حاليًا، يُرجى إغلاقه وإعادة المحاولة.</translation>
 <translation id="4149882025268051530">فشلت أداة المثبِّت في فك ضغط الأرشيف. يُرجى تنزيل Google Chrome مرة أخرى.</translation>
+<translation id="6989339256997917931">تم تحديث متصفح Google Chrome، ولكنك لم تستخدمه منذ أكثر من 30 يومًا.</translation>
 <translation id="5744005218040929396">أداة Google Chrome</translation>
 <translation id="4343226815564935778">يبدو أن دليل تثبيت Google Chrome قيد الاستخدام. الرجاء إعادة تشغيل الكمبيوتر والمحاولة من جديد.</translation>
 <translation id="6817660909204164466">المساعدة في تحسين Google Chrome بإرسال إحصائيات الاستخدام وتقارير الأعطال إلى Google تلقائيًا </translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">خلل في عمل Google Chrome</translation>
 <translation id="3889417619312448367">إزالة Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">يتوفر إصدار جديد وأكثر أمانًا لمتصفح Google Chrome.</translation>
 <translation id="8810218179782551669">لغة Google Chrome:</translation>
 <translation id="7001386529596391893">إنشاء اختصارات لـ Google Chrome في هذه الأماكن:</translation>
 <translation id="7461436095086637522">مستورد الملف الشخصي في Chrome</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">يتعذّر استخدام ملفّ تعريف الارتباط لأنهّ ينمتي إلى إصدار حديث من Google Chrome \n\ وقد ينقصه بعض الميزات المعيّنة. يرجى اختيار دليل آخر لتحديد ملّف التعريف أو استخدام إصدار أحدث من Chrome.</translation>
 <translation id="7214670531148488183">قد يستخدم Google Chrome خدمات الويب لتحسين تجربة التصفُّح لديك، ويمكنك حسب اختيارك تعطيل هذه الخدمات.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">اختياري: ساعد في تحسين Google Chrome عن طريق إرسال إحصاءات الاستخدام وتقارير الأعطال إلى Google تلقائيًا</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">هل تريد أيضًا حذف بيانات التصفح؟</translation>
 <translation id="2044287590254833138">شريط أدوات Google Chrome</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">لا يعمل Google Chrome بموجب نظام التشغيل <ph name="OS_NAME"/>.</translation>
 <translation id="473183893665420670">عند إعادة تعيين خيارات Google Chrome، تتم إعادة أية تغييرات قد أجريتها إلى الإعدادات الافتراضية. فهل تريد إعادة تعيين خيارات Chrome؟</translation>
 <translation id="3636771339108070045">توجد في جهاز الكمبيوتر نسخة أحدث من Google Chrome. إذا كان برنامج Google Chrome لا يعمل، يُرجى إلغاء تثبيت البرنامج، وتنزيله مرة أخرى.</translation>
-<translation id="4407807842708586359">نظام تشغيل Google Chrome</translation>
 <translation id="3360895254066713204">مساعد Chrome</translation>
 <translation id="1001534784610492198">أرشيف المثبت تالف أو غير صالح. يُرجى تنزيل Google Chrome مرة أخرى.</translation>
 <translation id="6626317981028933585">لا يمكن استيراد إعدادات موزيلا فايرفوكس أثناء تشغيل المتصفّح. لاستيراد الإعدادات إلى متصفّح Google Chrome، احفظ عملك وأغلق جميع نوافذ فايرفوكس، ثمّ انقر على زرّ المتابعة.</translation>

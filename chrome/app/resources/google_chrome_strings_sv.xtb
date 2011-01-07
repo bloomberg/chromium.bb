@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">Google Chrome importerar favoriter/bokmärken.</translation>
 <translation id="8970027151245482499">Google Chrome är inte installerat eller installationskatalogen gick inte att hitta. Hämta Google Chrome igen.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
-<translation id="3044696659294460858">Det finns en ny version av Google Chrome som inkluderar tillägg.</translation>
 <translation id="4281844954008187215">Användarvillkor</translation>
 <translation id="3555616473548901994">Avinstallation slutförd.</translation>
+<translation id="8556340503434111824">Det finns en ny version av Google Chrome och den är snabbare än någonsin.</translation>
 <translation id="1826297811907343327">Om du avbryter nu importeras inte alla objekt. Du kan importera igen senare från Google Chromes meny.</translation>
 <translation id="4728575227883772061">Installationen misslyckades på grund av ett ospecificerat fel. Stäng Google Chrome, om det är igång, och försök sedan igen.</translation>
 <translation id="4149882025268051530">Det gick inte att packa upp arkivet med installationsfilen. Hämta Google Chrome igen.</translation>
+<translation id="6989339256997917931">Chrome har uppdaterats men du har inte använt det på över 30 dagar.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Det verkar som om installationskatalogen för Google Chrome används. Starta om datorn och försök igen.</translation>
 <translation id="6817660909204164466">Hjälp till att göra Google Chrome bättre genom att automatiskt skicka användningsstatistik och felrapporter till Google</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google Chrome uppför sig inte</translation>
 <translation id="3889417619312448367">Avinstallera Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">Det finns en ny, ännu säkrare version av Google Chrome.</translation>
 <translation id="8810218179782551669">Språk för Google Chrome:</translation>
 <translation id="7001386529596391893">Skapa genvägar till Google Chrome på följande platser:</translation>
 <translation id="7461436095086637522">Chrome Profile Importer</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">Din profil kan inte användas eftersom den kommer från en nyare version av Google Chrome.\n\nEn del funktioner kan vara otillgängliga. Ange en annan profilkatalog eller använd en nyare version av Chrome.</translation>
 <translation id="7214670531148488183">Google Chrome kan använda webbtjänster för att förbättra din upplevelse när du surfar. Om du vill kan du inaktivera sådana tjänster.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">Valfritt: Hjälp till att göra Google Chrome bättre genom att automatiskt skicka användningsstatistik och felrapporter till Google</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">Vill du även ta bort din webbinformation?</translation>
 <translation id="2044287590254833138">Verktygsfältet Google Chrome</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">Google Chrome saknar stöd för <ph name="OS_NAME"/>.</translation>
 <translation id="473183893665420670">När du återställer alternativen för Google Chrome kommer alla ändringar som du gjort att återställas till standardinställningarna. Vill du återställa alternativen för Chrome?</translation>
 <translation id="3636771339108070045">Det finns redan en senare version av Google Chrome på den här datorn. Om programmet inte fungerar avinstallerar du Google Chrome och hämtar det igen.</translation>
-<translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">Arkivet för installationsfilen är skadat eller ogiltigt. Hämta Google Chrome igen.</translation>
 <translation id="6626317981028933585">Inställningarna för Mozilla Firefox är tyvärr inte tillgängliga medan webbläsaren körs. Om du vill importera dessa inställningar till Google Chrome måste du spara ditt arbete och stänga alla Firefox-fönster. Klicka sedan på Fortsätt.</translation>

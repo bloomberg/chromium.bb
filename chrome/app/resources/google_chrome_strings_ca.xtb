@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">En aquests moments, Google Chrome està important els preferits o les adreces d'interès.</translation>
 <translation id="8970027151245482499">Google Chrome no s'ha instal·lat o bé no ha pogut trobar el directori d'instal·lació. Torna a baixar Google Chrome.</translation>
 <translation id="2040709530900803995">Renderitzador de Google Chrome</translation>
-<translation id="3044696659294460858">Hi ha una versió nova de Google Chrome disponible que inclou extensions.</translation>
 <translation id="4281844954008187215">Condicions d'ús</translation>
 <translation id="3555616473548901994">S'ha completat la desinstal·lació.</translation>
+<translation id="8556340503434111824">Hi ha disponible una nova versió de Google Chrome, i és més ràpida que mai.</translation>
 <translation id="1826297811907343327">Si cancel·leu ara, no s'importaran tots els elements. Podeu tornar a importar més endavant des del menú de Google Chrome.</translation>
 <translation id="4728575227883772061">S'ha produït un error no especificat durant la instal·lació. Si Google Chrome s'està executant en aquests moments, tanca'l i torna-ho a provar.</translation>
 <translation id="4149882025268051530">L'instal·lador no ha pogut descomprimir el fitxer. Torna a baixar Google Chrome.</translation>
+<translation id="6989339256997917931">Google Chrome està actualitzat, però no l'heu utilitzat durant un mínim de 30 dies.</translation>
 <translation id="5744005218040929396">Utilitat de Google Chrome</translation>
 <translation id="4343226815564935778">Sembla que s'està utilitzant el directori d'instal·lació de Google Chrome. Reinicieu l'equip i torneu-ho a provar.</translation>
 <translation id="6817660909204164466">Per ajudar-nos a millorar Google Chrome, envia automàticament estadístiques d'ús i informes d'errors a Google</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google Chrome té un comportament estrany.</translation>
 <translation id="3889417619312448367">Desinstal·la Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">Hi ha disponible una nova versió més segura de Google Chrome.</translation>
 <translation id="8810218179782551669">L'idioma de Google Chrome:</translation>
 <translation id="7001386529596391893">Crea dreceres de Google Chrome en aquestes ubicacions:</translation>
 <translation id="7461436095086637522">Importador de perfils de Chrome</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">El vostre perfil no es pot utilitzar perquè es va crear amb una versió més recent de Google Chrome.\n\nÉs possible que algunes funcions no estiguin disponibles. Especifiqueu un altre directori de perfil o feu servir una versió actualitzada de Google Chrome.</translation>
 <translation id="7214670531148488183">És possible que Google Chrome utilitzi serveis web per millorar la vostra experiència de navegació. Si ho voleu, podeu desactivar aquests serveis.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">Opcional: ajudeu a millorar Google Chrome i envieu automàticament les estadístiques d'ús i els informes \nde fallades a Google</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">També voleu suprimir les dades de navegació?</translation>
 <translation id="2044287590254833138">Barra d'eines de Google Chrome</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">Google Chrome no és compatible amb <ph name="OS_NAME"/>.</translation>
 <translation id="473183893665420670">En restablir les opcions de Google Chrome, els canvis que hàgiu fet es revertiran a la configuració predeterminada. Voleu restablir les opcions de Google Chrome?</translation>
 <translation id="3636771339108070045">Aquest equip ja disposa d'una versió més recent de Google Chrome. Si el programari no funciona, desinstal·la Google Chrome i baixa'l de nou.</translation>
-<translation id="4407807842708586359">SO de Google Chrome</translation>
 <translation id="3360895254066713204">Aplicació auxiliar de Chrome</translation>
 <translation id="1001534784610492198">El fitxer d'instal·lació està malmès o no és vàlid. Torna a baixar Google Chrome.</translation>
 <translation id="6626317981028933585">Lamentablement, la vostra configuració de Mozilla Firefox no estarà disponible mentre aquest navegador s'estigui executant. Per importar aquesta configuració a Google Chrome, deseu la feina que hagueu fet i tanqueu totes les finestres de Firefox. Seguidament, feu clic a &quot;Continua&quot;.</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
 <translation id="4519964825805946997"><ph name="URL"/>-এর থেকে প্ল্যাগ-ইন ইনস্টল করতে ব্যর্থ হয়েছে</translation>
+<translation id="9186171386827445984">নথি লোড হচ্ছে: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> পৃষ্ঠা...</translation>
 <translation id="1235745349614807883">সাম্প্রতিক অনুসন্ধানগুলি সাফ করুন</translation>
 <translation id="5048533449481078685">তালিকা নির্দেশক</translation>
 <translation id="372362261556059955">অতিরিক্ত প্লাগ-ইন দরকার</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">প্লাগ-ইন ইনস্টলেশান ব্যর্থ হয়েছে</translation>
 <translation id="8141602879876242471">এটি অনুসন্ধানযোগ্য সূচি৷ অনুসন্ধানের মূলশব্দ প্রবেশ করান:</translation>
 <translation id="5650795167354946011">প্ল্যাগ-ইন ইনস্টল করার পরে, রিফ্রেশ করার জন্য এখানে ক্লিক করুন</translation>
+<translation id="370665806235115550">লোড হচ্ছে...</translation>
 <translation id="6845533974506654842">টিপুন</translation>
 <translation id="8244226242650769279">ছবি মানচিত্র</translation>
 <translation id="2548326553472216322">কোন সাম্প্রতিক অনুসন্ধান নেই</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">আপনি <ph name="PLUGIN"/> প্ল্যাগ-ইনটি ইনস্টল করতে চান কি না দয়া করে নিশ্চিত করুন৷ আপনার কেবল সেই প্ল্যাগ-ইনগুলি ইনস্টল করার উচিত যেগুলিকে আপনি বিশ্বাস করেন৷</translation>
 <translation id="6663448176199120256">সাম্প্রতিক অনুসন্ধানগুলি</translation>
 <translation id="2597378329261239068">এই দস্তাবেজটি পাসওয়ার্ড সুরক্ষিত৷  দয়া করে একটি পাসওয়ার্ড লিখুন৷</translation>
-<translation id="6807599807928161586">ওয়েব এলাকা</translation>
+<translation id="7740050170769002709">HTML সামগ্রী</translation>
 <translation id="5939518447894949180">রিসেট করুন</translation>
 <translation id="1842960171412779397">নির্বাচন করুন</translation>
 <translation id="7638452146404718955">প্ল্যাগ-ইন ডাউনলোড করার জন্য এখানে ক্লিক করুন</translation>

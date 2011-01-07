@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">Google Chrome тренутно увози ставке „Омиљено/обележивачи“.</translation>
 <translation id="8970027151245482499">Google Chrome није инсталиран или није нашао директоријум за инсталацију. Преузмите Google Chrome поново.</translation>
 <translation id="2040709530900803995">Google Chrome апликација за приказивање</translation>
-<translation id="3044696659294460858">Доступна је нова верзија Google Chrome прегледача која садржи додатке.</translation>
 <translation id="4281844954008187215">Услови коришћења услуге</translation>
 <translation id="3555616473548901994">Деинсталација је довршена.</translation>
+<translation id="8556340503434111824">Доступна је нова верзија Google Chrome прегледача, бржа него икад пре.</translation>
 <translation id="1826297811907343327">Уколико сада откажете, неће бити увезене све ставке. Касније можете поново да их увезете из менија Google Chrome прегледача.</translation>
 <translation id="4728575227883772061">Инсталација није успела због неодређене грешке. Ако је Google Chrome тренутно отворен, затворите га и покушајте поново.</translation>
 <translation id="4149882025268051530">Програм за инсталацију није успео да декомпримује архиву. Преузмите Google Chrome поново.</translation>
+<translation id="6989339256997917931">Google Chrome је ажуриран, али га нисте користили најмање 30 дана.</translation>
 <translation id="5744005218040929396">Google Chrome услужни програм</translation>
 <translation id="4343226815564935778">Изгледа да се инсталациони директоријум Google Chrome-а тренутно користи. Поново покрените рачунар и покушајте поново.</translation>
 <translation id="6817660909204164466">Помози унапређивање Google Chrome прегледача шаљући аутоматски корисничку статистику и извештаје о отказивању Google-у</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google Chrome има проблема у раду</translation>
 <translation id="3889417619312448367">Деинсталирај Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> – Google Chrome</translation>
+<translation id="3089968997497233615">Доступна је нова, безбеднија верзија Google Chrome прегледача.</translation>
 <translation id="8810218179782551669">Језик програма Google Chrome:</translation>
 <translation id="7001386529596391893">Направите пречице за Google Chrome на овим местима:</translation>
 <translation id="7461436095086637522">Chrome апликација за увоз профила</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">Ваш профил не може да се користи пошто припада новијој верзији програма Google Chrome.\n\nНеке функције можда нису доступне. Наведите други директоријум профила или користите новију верзију програма Chrome.</translation>
 <translation id="7214670531148488183">Google Chrome може да користи веб услуге да би побољшао искуство прегледања. Уколико желите, можете да онемогућите ове услуге.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">Опционално: Помозите да побољшамо Google Chrome тако што ћете Google-у аутоматски слати статистику о коришћењу и извештаје о \nотказивању</translation>
 <translation id="5008136264574452501">Google Chrome Canary верзија</translation>
 <translation id="911206726377975832">Желите ли да избришете и податке прегледања?</translation>
 <translation id="2044287590254833138">Google Chrome Toolbar</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">Google Chrome не подржава <ph name="OS_NAME"/>.</translation>
 <translation id="473183893665420670">Када Google Chrome опције вратите на подразумеване вредности, све промене које сте унели биће враћене на подразумевана подешавања. Желите ли да вратите Chrome опције на подразумеване вредности?</translation>
 <translation id="3636771339108070045">Овај рачунар већ има новију верзију програма Google Chrome. Уколико софтвер не ради, деинсталирајте Google Chrome и поново га преузмите.</translation>
-<translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3360895254066713204">Chrome помоћник</translation>
 <translation id="1001534784610492198">Архива програма за инсталацију је оштећена или неважећа. Преузмите Google Chrome поново.</translation>
 <translation id="6626317981028933585">Нажалост, није могуће приступити подешавањима за Mozilla Firefox док се тај прегледач користи. Да бисте увезли ова подешавања у Google Chrome, сачувајте оно што се урадили и затворите све прозоре Firefox прегледача. Затим кликните на „Настави“.</translation>

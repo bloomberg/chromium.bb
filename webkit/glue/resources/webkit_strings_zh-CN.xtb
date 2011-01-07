@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
 <translation id="4519964825805946997">无法从 <ph name="URL"/> 安装插件</translation>
+<translation id="9186171386827445984">正在载入文档：已载入 <ph name="PAGE_NUMBER"/> 页，共 <ph name="NUMBER_OF_PAGES"/> 页...</translation>
 <translation id="1235745349614807883">清除最近的搜索</translation>
 <translation id="5048533449481078685">列表标记</translation>
 <translation id="372362261556059955">需要其他插件</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">插件安装失败</translation>
 <translation id="8141602879876242471">这是一个可搜索的索引。请输入搜索关键字：</translation>
 <translation id="5650795167354946011">安装插件后，点击此处可刷新</translation>
+<translation id="370665806235115550">正在载入...</translation>
 <translation id="6845533974506654842">按</translation>
 <translation id="8244226242650769279">图片映射</translation>
 <translation id="2548326553472216322">最近未执行搜索</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">请确认您要安装 <ph name="PLUGIN"/> 插件。您应该只安装自己信任的插件。</translation>
 <translation id="6663448176199120256">近期搜索</translation>
 <translation id="2597378329261239068">本文档设置了密码保护，请输入密码。</translation>
-<translation id="6807599807928161586">网络区域</translation>
+<translation id="7740050170769002709">HTML 内容</translation>
 <translation id="5939518447894949180">重置</translation>
 <translation id="1842960171412779397">选中</translation>
 <translation id="7638452146404718955">点击此处可下载插件</translation>

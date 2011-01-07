@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
 <translation id="4519964825805946997">Inštalácia doplnku z adresy <ph name="URL"/> zlyhala</translation>
+<translation id="9186171386827445984">Prebieha načítavanie dokumentu: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> stránok...</translation>
 <translation id="1235745349614807883">Vyčistiť posledné vyhľadávania</translation>
 <translation id="5048533449481078685">ukazovateľ v zozname</translation>
 <translation id="372362261556059955">Vyžaduje sa ďalší doplnok</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">Inštalácia doplnku zlyhala</translation>
 <translation id="8141602879876242471">Tento index sa dá prehľadávať. Zadajte kľúčové slová na vyhľadanie:</translation>
 <translation id="5650795167354946011">Kliknutím sem po inštalácii doplnku obnovíte obsah</translation>
+<translation id="370665806235115550">Načítava sa...</translation>
 <translation id="6845533974506654842">stlačiť</translation>
 <translation id="8244226242650769279">mapa obrázka</translation>
 <translation id="2548326553472216322">Žiadne posledné vyhľadávania</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">Potvrďte, že chcete nainštalovať doplnok <ph name="PLUGIN"/>. Mali by ste inštalovať len doplnky, ktorým dôverujete.</translation>
 <translation id="6663448176199120256">Posledné vyhľadávania</translation>
 <translation id="2597378329261239068">Tento dokument je chránený heslom. Zadajte heslo.</translation>
-<translation id="6807599807928161586">webová oblasť</translation>
+<translation id="7740050170769002709">Obsah HTML</translation>
 <translation id="5939518447894949180">Vynulovať</translation>
 <translation id="1842960171412779397">vybrať</translation>
 <translation id="7638452146404718955">Kliknutím sem prevezmete doplnok</translation>

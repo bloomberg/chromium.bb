@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">Google Chrome выполняет импорт элементов &quot;Избранное/Закладки&quot;.</translation>
 <translation id="8970027151245482499">Не удалось найти каталог установки или браузер Google Chrome не установлен. Загрузите Google Chrome снова.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
-<translation id="3044696659294460858">Доступна новая версия Google Chrome с возможностью подключения расширений.</translation>
 <translation id="4281844954008187215">Условия предоставления услуг</translation>
 <translation id="3555616473548901994">Удаление завершено.</translation>
+<translation id="8556340503434111824">Доступна новая версия Google Chrome, которая стала еще быстрее.</translation>
 <translation id="1826297811907343327">Если вы отмените операцию сейчас, не все элементы будут импортированы. Вы сможете выполнить импорт позже через меню Google Chrome.</translation>
 <translation id="4728575227883772061">Установка не удалась из-за неизвестной ошибки. Закройте все окна Google Chrome и повторите попытку снова.</translation>
 <translation id="4149882025268051530">Программе установки не удалось выполнить извлечение файлов из архива. Загрузите Google Chrome снова.</translation>
+<translation id="6989339256997917931">Google Chrome был обновлен, однако вы не использовали его в течение последних 30 дней.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Похоже, что каталог для установки Google Chrome сейчас используется. Перезагрузите компьютер и повторите попытку.</translation>
 <translation id="6817660909204164466">Помочь улучшить Google Chrome, автоматически отправляя в Google статистику использования и отчеты о сбоях</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Неполадки в работе Google Chrome</translation>
 <translation id="3889417619312448367">Удалить Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">Доступна новая, более безопасная версия Google Chrome.</translation>
 <translation id="8810218179782551669">Язык Google Chrome:</translation>
 <translation id="7001386529596391893">Создать ярлыки Google Chrome в этих местоположениях:</translation>
 <translation id="7461436095086637522">Chrome Profile Importer</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">Невозможно использовать ваш профиль, так как он относится к более поздней версии Google Chrome.\n\nНекоторые функции могут быть недоступны. Укажите другой каталог с профилем или воспользуйтесь более поздней версией Chrome.</translation>
 <translation id="7214670531148488183">Для удобства пользователей в браузере Google Chrome могут использоваться различные веб-службы, облегчающие работу в Интернете. При желании эти службы можно отключить.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">Необязательно. Автоматически отправлять в Google статистику использования и отчеты об аварийном завершении Google Chrome</translation>
 <translation id="5008136264574452501">Google Chrome – версия &quot;Канарейка&quot;</translation>
 <translation id="911206726377975832">Также удалить данные о работе в браузере?</translation>
 <translation id="2044287590254833138">Панель инструментов Google Chrome</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">Google Chrome не поддерживает <ph name="OS_NAME"/>.</translation>
 <translation id="473183893665420670">При сбросе параметров Google Chrome будут отменены любые внесенные изменения и восстановлены настройки по умолчанию. Продолжить?</translation>
 <translation id="3636771339108070045">На этом компьютере уже установлена самая поздняя версия браузера Google Chrome. Если программа не работает, удалите браузер Google Chrome и загрузите его снова.</translation>
-<translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">Архив программы установки поврежден или имеет неправильный формат. Загрузите Google Chrome снова.</translation>
 <translation id="6626317981028933585">К сожалению, настройки Mozilla Firefox недоступны при открытом браузере. Чтобы импортировать настройки в Google Chrome, сохраните работу, закройте все окна Firefox и нажмите &quot;Далее&quot;.</translation>

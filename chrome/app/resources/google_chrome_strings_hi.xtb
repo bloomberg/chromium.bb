@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">Google Chrome अब फेवरेट्स/बुकमार्क्स को इम्पोर्ट कर रहा है.</translation>
 <translation id="8970027151245482499">Google Chrome इंस्टॉल नहीं है या यह इंस्टॉलेशन डायरेक्टरी को खोजने में असफल रहा. कृपया Google Chrome को दोबारा डाउनलोड करें.</translation>
 <translation id="2040709530900803995">Google Chrome रेंडरर</translation>
-<translation id="3044696659294460858">Google Chrome का एक नया संस्करण उपलब्ध है जिसमें एक्सटेंशन शामिल हैं.</translation>
 <translation id="4281844954008187215">सेवा की शर्तें</translation>
 <translation id="3555616473548901994">स्थापना रद्दीकरण पूर्ण हुआ.</translation>
+<translation id="8556340503434111824">Google Chrome का एक नया संस्‍करण उपलब्‍ध है, और यह अब तक का सबसे तेज़ है.</translation>
 <translation id="1826297811907343327">अगर आप अभी रद्द करते हैं, तो सभी आइटम आयात नहीं किए जाएंगे. आप बाद में Google Chrome मेनू से पुन: आयात कर सकते हैं.</translation>
 <translation id="4728575227883772061">अज्ञात कारण से इंस्टॉलेशन असफल रहा. यदि Google Chrome अभी खुला हुआ है, तो कृपया उसे बंद करें और दोबारा प्रयास करें.</translation>
 <translation id="4149882025268051530">इंस्टॉलर, आर्काइव को अनकंप्रेस करने में असफल हुआ. कृपया Google Chrome को दोबारा डाउनलोड करें.</translation>
+<translation id="6989339256997917931">Google Chrome को अपडेट कर दिया गया  है, लेकिन आपने इसका कम से कम 30 दिन से उपयोग नहीं किया है.</translation>
 <translation id="5744005218040929396">Google Chrome सुविधा</translation>
 <translation id="4343226815564935778">ऐसा प्रतीत होता है कि Google Chrome स्थापना निर्देशिका उपयोग में है. कृपया अपने कंप्यूटर को रीबूट करें और दोबारा प्रयास करें.</translation>
 <translation id="6817660909204164466">Google को प्रयोग के आँकड़े और क्रैश रिपोर्टें स्वत: ही भेजकर Google Chrome को बेहतर बनाने में मदद करें.</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google Chrome अनुचित व्यवहार कर रहा है</translation>
 <translation id="3889417619312448367">Google Chrome स्थापना रद्द करें</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">Google Chrome का एक नया, सुरक्षित संस्‍करण उपलब्‍ध है.</translation>
 <translation id="8810218179782551669">Google Chrome भाषा:</translation>
 <translation id="7001386529596391893">इन स्थानों पर Google Chrome शार्टकट बनाएँ :</translation>
 <translation id="7461436095086637522">Chrome प्रोफ़ाइल आयातक</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">आपका प्रोफ़ाइल प्रयोग में नहीं लाया जा सकता क्योंकि यह Google Chrome के नए रूपांतर में है.\n\n कुछ विशेषताएँ अनुपलब्ध हो सकती हैं. कृपया एक अलग प्रोफ़ाइल निर्देशिका तैयार करें या Chrome के नए रूपांतर का प्रयोग करें.</translation>
 <translation id="7214670531148488183">आपके ब्राउजिंग अनुभव को सुधारने के लिए Google Chrome वेब सेवा का उपयोग कर सकता है. आप इन सेवाओं को वैकल्पिक रूप से अक्षम कर सकते हैं.</translation>
 <translation id="1759842336958782510">क्रोम</translation>
-<translation id="5840402478666768335">वैकल्पिक: Google को स्वचालित रूप से उपयोग आंकड़े और क्रैश\nरिपोर्ट भेजकर Google Chrome को बेहतर बनाने में सहायता करें</translation>
 <translation id="5008136264574452501">Google Chrome कैनरी बिल्ड</translation>
 <translation id="911206726377975832">अपने ब्राउज़िंग डेटा भी हटाएं?</translation>
 <translation id="2044287590254833138">Google Chrome टूलबार</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">Google Chrome में <ph name="OS_NAME"/>समर्थित नहीं है.</translation>
 <translation id="473183893665420670">जब आप Google Chrome विकल्पों को रीसेट करते हैं तो आपके द्वारा किए गए कोई भी परिवर्तन डिफ़ॉल्ट सेटिंग पर वापस कर दिए जाएंगे. क्या आप Chrome विकल्पों को रीसेट करना चाहते हैं?</translation>
 <translation id="3636771339108070045">इस कंप्यूटर में Google Chrome का अधिक नवीन वर्ज़न पहले से ही है. यदि सॉफ्टवेयर काम नहीं कर रहा है, तो कृपया Google Chrome को अनइंस्टॉल करें और उसे दोबारा डाउनलोड करें.</translation>
-<translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3360895254066713204">Chrome सहायक</translation>
 <translation id="1001534784610492198">इंस्टॉलर आर्काइव करप्ट या अमान्य है. कृपया Google Chrome को दोबारा डाउनलोड करें.</translation>
 <translation id="6626317981028933585">खेद है, आपकी Mozilla फायरबॉक्स सेटिंग्स उपलब्ध नहीं हैं जबकि वह ब्राउजर चल रहा है. उन सेटिंग्स को Google Chrome पर इम्पोर्ट करने के लिए, अपने काम को सहेजें और सभी फायरबॉक्स विंडोज को बंद करें. फिर जारी रखें पर क्लिक करें.</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
 <translation id="4519964825805946997">無法從 <ph name="URL"/> 安裝外掛程式</translation>
+<translation id="9186171386827445984">正在載入文件：第 <ph name="PAGE_NUMBER"/> 頁，共 <ph name="NUMBER_OF_PAGES"/> 頁...</translation>
 <translation id="1235745349614807883">清除最近的搜尋記錄</translation>
 <translation id="5048533449481078685">清單標記</translation>
 <translation id="372362261556059955">需要其他外掛程式</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">外掛程式安裝不成功</translation>
 <translation id="8141602879876242471">這是可搜尋的索引，輸入搜尋關鍵字：</translation>
 <translation id="5650795167354946011">安裝外掛程式後，請按一下這裡重新整理</translation>
+<translation id="370665806235115550">載入中...</translation>
 <translation id="6845533974506654842">按下</translation>
 <translation id="8244226242650769279">影像地圖</translation>
 <translation id="2548326553472216322">沒有近期的搜尋</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">請確認您要安裝 <ph name="PLUGIN"/> 外掛程式，建議您僅安裝您所信任的外掛程式。</translation>
 <translation id="6663448176199120256">最近的搜尋</translation>
 <translation id="2597378329261239068">此文件受到密碼保護，請輸入密碼。</translation>
-<translation id="6807599807928161586">網頁範圍</translation>
+<translation id="7740050170769002709">HTML 內容</translation>
 <translation id="5939518447894949180">重設</translation>
 <translation id="1842960171412779397">選取</translation>
 <translation id="7638452146404718955">按一下這裡下載外掛程式</translation>

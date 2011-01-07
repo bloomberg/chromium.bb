@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
 <translation id="4519964825805946997">Error al instalar el complemento desde <ph name="URL"/></translation>
+<translation id="9186171386827445984">Cargando documento: páginas <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/>...</translation>
 <translation id="1235745349614807883">Eliminar búsquedas recientes</translation>
 <translation id="5048533449481078685">marcador de listas</translation>
 <translation id="372362261556059955">Se necesita un complemento adicional</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">Error de instalación del complemento</translation>
 <translation id="8141602879876242471">Se trata de un índice que admite búsquedas. Escribe las palabras clave de búsqueda:</translation>
 <translation id="5650795167354946011">Después de instalar el complemento, haz clic aquí para actualizar</translation>
+<translation id="370665806235115550">Cargando...</translation>
 <translation id="6845533974506654842">hacer clic</translation>
 <translation id="8244226242650769279">mapa de imágenes</translation>
 <translation id="2548326553472216322">No hay búsquedas recientes</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">Confirma que deseas instalar el complemento <ph name="PLUGIN"/>. Sólo deberías instalar los complementos confiables.</translation>
 <translation id="6663448176199120256">Búsquedas recientes</translation>
 <translation id="2597378329261239068">Este documento está protegido por contraseña. Ingresa una contraseña.</translation>
-<translation id="6807599807928161586">área web</translation>
+<translation id="7740050170769002709">Contenido HTML</translation>
 <translation id="5939518447894949180">Restablecer</translation>
 <translation id="1842960171412779397">seleccionar</translation>
 <translation id="7638452146404718955">Haz clic aquí para descargar el complemento</translation>

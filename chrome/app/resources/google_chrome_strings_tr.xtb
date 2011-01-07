@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">Google Chrome şu anda Sık Kullanılanları/Yer İmlerini içe aktarıyor.</translation>
 <translation id="8970027151245482499">Google Chrome yüklenmedi veya yükleme dizinini bulamadı. Lütfen Google Chrome'u yeniden indirin.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
-<translation id="3044696659294460858">Google Crome&amp;#39;un uzantıları içeren yeni bir sürümü kullanıma sunuldu.</translation>
 <translation id="4281844954008187215">Hizmet Şartları</translation>
 <translation id="3555616473548901994">Kaldırma işlemi tamamlandı.</translation>
+<translation id="8556340503434111824">Kullanabileceğiniz yeni bir Google Chrome sürümü var ve bu sürüm, her zamankinden daha hızlı.</translation>
 <translation id="1826297811907343327">Şimdi iptal ederseniz tüm öğeler içe aktarılmaz. Daha sonra Google Chrome menüsünden tekrar içe aktarabilirsiniz.</translation>
 <translation id="4728575227883772061">Belirlenemeyen bir hata nedeniyle yükleme başarısız oldu. Google Chrome şu anda çalışır durumdaysa, kapatıp yeniden deneyin.</translation>
 <translation id="4149882025268051530">Yükleyici arşivi açamadı. Lütfen Google Chrome'u yeniden indirin.</translation>
+<translation id="6989339256997917931">Google Chrome güncellendi, ancak programı en azından 30 gündür kullanmıyorsunuz.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Google Chrome kurulum dizininin kullanımda olduğu görülüyor. Lütfen bilgisayarınızı yeniden başlatın ve tekrar deneyin.</translation>
 <translation id="6817660909204164466">Google'a otomatik olarak kullanım istatistikleri ve sistem çökmesi raporları göndererek Google Chrome'un iyileştirilmesine katkıda bulunun.</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google Chrome hatalı çalışıyor</translation>
 <translation id="3889417619312448367">Google Chrome'u Kaldır</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">Google Chrome'un kullanabileceğiniz yeni, daha güvenli bir sürümü var.</translation>
 <translation id="8810218179782551669">Google Chrome dili:</translation>
 <translation id="7001386529596391893">Şu konumlarda Google Chrome kısayolları oluşturun:</translation>
 <translation id="7461436095086637522">Chrome Profile Importer</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">Profiliniz, Google Chrome'un daha yeni bir sürümünden olduğu için kullanılamıyor.\n\nBazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirtin veya Chrome'un daha yeni bir sürümünü kullanın.</translation>
 <translation id="7214670531148488183">Google Chrome, web'de gezinme deneyiminizi geliştirmek için web hizmetleri kullanabilir. İsterseniz bu hizmetleri devre dışı bırakabilirsiniz.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">İsteğe Bağlı: Kullanıcı istatistiklerini ve çökme raporlarını Google'a otomatik olarak göndererek\nGoogle Chrome'u iyileştirmemize yardımcı olun</translation>
 <translation id="5008136264574452501">Google Chrome Canary Yapısı</translation>
 <translation id="911206726377975832">Tarama verileriniz de silinsin mi?</translation>
 <translation id="2044287590254833138">Google Chrome Araç Çubuğu</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">Google Chrome, <ph name="OS_NAME"/> işletim sistemini desteklemez.</translation>
 <translation id="473183893665420670">Google Chrome seçeneklerini sıfırladığınızda, yaptığınız tüm değişiklikler varsayılan ayarlara geri döndürülür. Chrome seçeneklerini sıfırlamak istiyor musunuz?</translation>
 <translation id="3636771339108070045">Bu bilgisayarda Google Chrome'un daha yeni bir sürümü zaten var. Yazılım çalışmıyorsa, lütfen Google Chrome'u kaldırın ve yeniden indirin.</translation>
-<translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">Yükleyici arşivi bozuk veya geçersiz. Lütfen Google Chrome'u yeniden indirin.</translation>
 <translation id="6626317981028933585">Maalesef bu tarayıcı çalışırken Mozilla Firefox ayarlarınız kullanılamaz. Bu ayarları Google Chrome'a almak için çalışmanızı kaydedin ve tüm Firefox pencerelerini kapatın. Ardından Devam Et'i tıklayın.</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
 <translation id="4519964825805946997">Nije uspjela instalacija dodatka s adrese <ph name="URL"/></translation>
+<translation id="9186171386827445984">Učitavanje dokumenta: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> stranica...</translation>
 <translation id="1235745349614807883">Obriši najnovija pretraživanja</translation>
 <translation id="5048533449481078685">oznaka popisa</translation>
 <translation id="372362261556059955">Potreban je dodatni dodatak</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">Nije uspjela instalacija dodatka</translation>
 <translation id="8141602879876242471">Ovaj je indeks moguće pretraživati. Unesite ključne riječi za pretraživanje:</translation>
 <translation id="5650795167354946011">Nakon instalacije dodatka kliknite ovdje za osvježenje stranice</translation>
+<translation id="370665806235115550">Učitavanje...</translation>
 <translation id="6845533974506654842">pritisni</translation>
 <translation id="8244226242650769279">karta slika</translation>
 <translation id="2548326553472216322">Nema najnovijih pretraživanja</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">Potvrdite da želite instalirati dodatak <ph name="PLUGIN"/>. Instalirajte samo dodatke koje smatrate pouzdanima.</translation>
 <translation id="6663448176199120256">Najnovija pretraživanja</translation>
 <translation id="2597378329261239068">Ovaj je dokument zaštićen zaporkom. Unesite zaporku.</translation>
-<translation id="6807599807928161586">web područje</translation>
+<translation id="7740050170769002709">HTML sadržaj</translation>
 <translation id="5939518447894949180">Ponovno postavi</translation>
 <translation id="1842960171412779397">odaberi</translation>
 <translation id="7638452146404718955">Kliknite ovdje za preuzimanje dodatka</translation>

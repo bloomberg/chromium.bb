@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">Google Chrome hiện đang nhập Mục ưa thích/Dấu trang.</translation>
 <translation id="8970027151245482499">Google Chrome chưa được cài đặt hoặc không tìm được thư mục cài đặt. Vui lòng tải xuống lại Google Chrome.</translation>
 <translation id="2040709530900803995">Trình kết xuất của Google Chrome</translation>
-<translation id="3044696659294460858">Có sẵn phiên bản Google Chrome mới bao gồm các tiện ích mở rộng.</translation>
 <translation id="4281844954008187215">Điều khoản Dịch vụ</translation>
 <translation id="3555616473548901994">Quá trình gỡ cài đặt đã hoàn tất.</translation>
+<translation id="8556340503434111824">Hiện đã có phiên bản mới của Google Chrome và phiên bản này nhanh hơn bao giờ hết.</translation>
 <translation id="1826297811907343327">Nếu bạn huỷ bây giờ, không phải tất cả các mục sẽ được nhập. Bạn có thể nhập lại sau từ trình đơn của Google Chrome.</translation>
 <translation id="4728575227883772061">Không cài đặt được do lỗi chưa xác định. Nếu Google Chrome hiện đang chạy, vui lòng đóng Google Chrome và thử lại.</translation>
 <translation id="4149882025268051530">Trình cài đặt không thể giải nén lưu trữ được. Vui lòng tải xuống lại Google Chrome.</translation>
+<translation id="6989339256997917931">Google Chrome đã được cập nhật, nhưng bạn đã không sử dụng chương trình này ít nhất 30 ngày.</translation>
 <translation id="5744005218040929396">Tiện ích của Google Chrome</translation>
 <translation id="4343226815564935778">Thư mục cài đặt Google Chrome dường như đang được dùng. Hãy khởi động lại máy tính của bạn và thử lại.</translation>
 <translation id="6817660909204164466">Trợ giúp cải thiện Google Chrome bằng cách tự động gửi cho Google thống kê sử dụng và báo cáo sự cố.</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google Chrome hoạt động không đúng</translation>
 <translation id="3889417619312448367">Gỡ cài đặt Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">Đã có phiên bản Google Chrome mới và an toàn hơn.</translation>
 <translation id="8810218179782551669">Ngôn ngữ Google Chrome:</translation>
 <translation id="7001386529596391893">Tạo phím tắt Google Chrome tại các vị trí này:</translation>
 <translation id="7461436095086637522">Trình nhập Tiểu sử của Chrome</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">Không thể sử dụng hồ sơ của bạn vì hồ sơ được tạo từ phiên bản Google Chrome mới.\n\nMột số tính năng có thể không có sẵn. Vui lòng xác định thư mục hồ sơ khác hoặc sử dụng phiên bản Google Chrome mới.</translation>
 <translation id="7214670531148488183">Google Chrome có thể sử dụng các dịch vụ web để cải thiện trải nghiệm duyệt web của bạn. Bạn có thể tuỳ ý vô hiệu hoá các dịch vụ này.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">Tuỳ chọn: Giúp hoàn thiện Google Chrome bằng các tự động gửi thống kê sử dụng và báo cáo\nsự cố cho Google</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">Bạn cũng muốn xoá dữ liệu duyệt web của mình?</translation>
 <translation id="2044287590254833138">Thanh công cụ Google Chrome</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">Google Chrome không hỗ trợ <ph name="OS_NAME"/>.</translation>
 <translation id="473183893665420670">Khi bạn đặt lại các tuỳ chọn Google Chrome, tất cả các thay đổi mà bạn đã tạo sẽ được chuyển về cài đặt mặc định. Bạn có muốn đặt lại các tuỳ chọn của Chrome không?</translation>
 <translation id="3636771339108070045">Máy tính này đã cài phiên bản Google Chrome mới hơn. Nếu phần mềm không hoạt động, vui lòng gỡ cài đặt Google Chrome và tải xuống lại phần mềm.</translation>
-<translation id="4407807842708586359">Hệ điều hành Google Chrome</translation>
 <translation id="3360895254066713204">Trình trợ giúp của Chrome</translation>
 <translation id="1001534784610492198">Lưu trữ trình cài đặt bị lỗi hoặc không hợp lệ. Vui lòng tải xuống lại Google Chrome.</translation>
 <translation id="6626317981028933585">Thật đáng tiếc, cài đặt Mozilla Firefox của bạn không có sẵn khi trình duyệt đang chạy. Để nhập những cài đặt đó vào Google Chrome, hãy lưu công việc của bạn và đóng tất cả cửa sổ Firefox. Sau đó, nhấp Tiếp tục.</translation>

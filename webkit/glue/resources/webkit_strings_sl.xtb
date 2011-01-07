@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
 <translation id="4519964825805946997">Namestitev vtičnika z naslova <ph name="URL"/> ni bila uspešna</translation>
+<translation id="9186171386827445984">Nalaganje dokumenta: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> strani ...</translation>
 <translation id="1235745349614807883">Počisti zadnja iskanja</translation>
 <translation id="5048533449481078685">označevalnik seznama</translation>
 <translation id="372362261556059955">Potreben je dodaten vtičnik</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">Namestitev vtičnika ni bila uspešna</translation>
 <translation id="8141602879876242471">To je kazalo, ki omogoča iskanje. Vnesite ključne besede za iskanje:</translation>
 <translation id="5650795167354946011">Po namestitvi vtičnika, kliknite tu, da osvežite</translation>
+<translation id="370665806235115550">Nalagam ...</translation>
 <translation id="6845533974506654842">pritisni</translation>
 <translation id="8244226242650769279">slikovni zemljevid</translation>
 <translation id="2548326553472216322">Ni zadnjih iskanj</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">Potrdite, da želite namestiti ta <ph name="PLUGIN"/> vtičnik. Nameščajte le vtičnike, ki jim zaupate.</translation>
 <translation id="6663448176199120256">Zadnja iskanja</translation>
 <translation id="2597378329261239068">Dokument je zaščiten z geslom. Vnesite geslo.</translation>
-<translation id="6807599807928161586">spletno področje</translation>
+<translation id="7740050170769002709">Vsebina HTML</translation>
 <translation id="5939518447894949180">Ponastavi</translation>
 <translation id="1842960171412779397">izberi</translation>
 <translation id="7638452146404718955">Če želite prenesti vtičnik, kliknite tukaj</translation>

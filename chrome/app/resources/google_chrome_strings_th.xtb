@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">Google Chrome กำลังนำเข้ารายการโปรด/บุ๊คมาร์ค</translation>
 <translation id="8970027151245482499">ไม่มีการติดตั้ง Google Chrome หรือไม่สามารถหาไดเรกทอรีการติดตั้งได้ โปรดดาวน์โหลด Google Chrome อีกครั้ง</translation>
 <translation id="2040709530900803995">โปรแกรมแสดงภาพของ Google Chrome</translation>
-<translation id="3044696659294460858">มี Google Chrome รุ่นใหม่พร้อมส่วนขยายให้ดาวน์โหลดแล้ว</translation>
 <translation id="4281844954008187215">ข้อกำหนดในการให้บริการ</translation>
 <translation id="3555616473548901994">การถอนการติดตั้งเสร็จสมบูรณ์</translation>
+<translation id="8556340503434111824">มี Chrome รุ่นใหม่ให้ใช้งานแล้วและเร็วกว่าเดิม</translation>
 <translation id="1826297811907343327">หากคุณยกเลิกตอนนี้ รายการบางอย่างจะไม่ได้รับการนำเข้า คุณสามารถนำเข้าใหม่ในภายหลังได้จากเมนู Google Chrome</translation>
 <translation id="4728575227883772061">การติดตั้งล้มเหลวเนื่องจากมีข้อผิดพลาดที่ไม่ได้ระบุ หาก Google Chrome ทำงานอยู่ในขณะนี้ โปรดปิดและลองอีกครั้ง</translation>
 <translation id="4149882025268051530">โปรแกรมติดตั้งยกเลิกการบีบอัดการเก็บข้อมูลไม่ได้ โปรดดาวน์โหลด Google Chrome อีกครั้ง</translation>
+<translation id="6989339256997917931">อัปเดต Google Chrome แล้ว แต่คุณไม่ได้ใช้งานมาไม่ต่ำกว่า 30 วันแล้ว</translation>
 <translation id="5744005218040929396">ยูทิลิตีของ Google Chrome</translation>
 <translation id="4343226815564935778">ไดเรกทอรีการติดตั้ง Google Chrome ดูเหมือนกำลังใช้งานอยู่ โปรดรีบูตคอมพิวเตอร์และลองอีกครั้ง</translation>
 <translation id="6817660909204164466">ช่วยปรับปรุง Google Chrome ให้ดีขึ้นโดยการส่งสถิติการใช้งานและรายงานปัญหาไปยัง Google โดยอัตโนมัติ</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google Chrome กำลังทำงานผิดปกติ</translation>
 <translation id="3889417619312448367">ยกเลิกการติดตั้ง Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">Google Chrome มีรุ่นใหม่ที่ปลอดภัยกว่าให้ใช้งานแล้ว</translation>
 <translation id="8810218179782551669">ภาษาของ Google Chrome:</translation>
 <translation id="7001386529596391893">สร้างทางลัด Google Chrome ในที่ต่อไปนี้:</translation>
 <translation id="7461436095086637522">ตัวนำเข้าโปรไฟล์ของ Chrome</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">ไม่สามารถใช้โปรไฟล์ของคุณได้เนื่องจากโปรไฟล์ดังกล่าวมาจาก Google Chrome รุ่นที่ใหม่กว่า\n\nบางคุณสมบัติอาจไม่สามารถใช้งานได้ โปรดระบุไดเรกทอรีของโปรไฟล์อื่น หรือใช้ Chrome รุ่นใหม่กว่านี้</translation>
 <translation id="7214670531148488183">Google Chrome อาจใช้บริการเว็บเพื่อปรับปรุงการใช้งานการเรียกดูของคุณ คุณสามารถเลือกปิดการใช้งานบริการดังกล่าวได้</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">ตัวเลือก: ช่วยปรับปรุง Google Chrome ให้ดีขึ้นโดยการส่งสถิติการใช้งานและรายงาน\nปัญหาไปยัง Google โดยอัตโนมัติ</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">ลบข้อมูลการท่องเว็บด้วยหรือไม่</translation>
 <translation id="2044287590254833138">ดาวน์โหลดแถบเครื่องมือ Google Chrome</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">Google Chrome ไม่สนับสนุน <ph name="OS_NAME"/></translation>
 <translation id="473183893665420670">เมื่อคุณตั้งค่าตัวเลือก Google Chrome ใหม่ สิ่งที่คุณเปลี่ยนแปลงไว้จะถูกเปลี่ยนกลับไปเป็นค่าเริ่มต้น คุณต้องการตั้งค่าตัวเลือก Chrome ใหม่หรือไม่</translation>
 <translation id="3636771339108070045">คอมพิวเตอร์เครื่องนี้มี Google Chrome รุ่นล่าสุดอยู่แล้ว หากซอฟต์แวร์ไม่ทำงาน โปรดถอนการติดตั้ง Google Chrome และดาวน์โหลดอีกครั้ง</translation>
-<translation id="4407807842708586359">ระบบปฏิบัติการ Google Chrome</translation>
 <translation id="3360895254066713204">ตัวช่วยเหลือของ Chrome</translation>
 <translation id="1001534784610492198">การเก็บข้อมูลของโปรแกรมติดตั้งเสียหายหรือไม่ถูกต้อง โปรดดาวน์โหลด Google Chrome อีกครั้ง</translation>
 <translation id="6626317981028933585">ขออภัย เราไม่สามารถเรียกข้อมูลการตั้งค่าของ Mozilla Firefox ได้ขณะที่เบราว์เซอร์ยังทำงานอยู่ หากต้องการนำเข้าข้อมูลการตั้งค่ามาที่ Google Chrome โปรดบันทึกงานที่คุณทำอยู่แล้วปิดหน้าต่าง Firefox ทั้งหมด จากนั้นคลิกดำเนินการต่อ</translation>

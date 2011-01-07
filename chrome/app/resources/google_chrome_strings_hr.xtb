@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">Google Chrome trenutno uvozi favorite/oznake.</translation>
 <translation id="8970027151245482499">Google Chrome nije instaliran ili nije pronađen direktorij za instalaciju. Ponovno preuzmite program Google Chrome.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
-<translation id="3044696659294460858">Postoji nova verzija preglednika Google Chrome koja uključuje proširenja.</translation>
 <translation id="4281844954008187215">Uvjeti upotrebe usluge</translation>
 <translation id="3555616473548901994">Deinstalacija dovršena.</translation>
+<translation id="8556340503434111824">Dostupna je nova verzija preglednika Google Chrome, brža no ikad.</translation>
 <translation id="1826297811907343327">Ako sada odustanete, neće biti uvezene sve stavke. Uvoz možete pokrenuti kasnije iz Google Chrome izbornika.</translation>
 <translation id="4728575227883772061">Instalacija nije uspjela zbog nepoznate pogreške. Ako je program Google Chrome trenutno otvoren, zatvorite ga i pokušajte ponovno.</translation>
 <translation id="4149882025268051530">Program za instalaciju nije dekomprimirao arhivu. Ponovno preuzmite program Google Chrome.</translation>
+<translation id="6989339256997917931">Google Chrome je ažuriran, ali vi ga niste koristili barem 30 dana.</translation>
 <translation id="5744005218040929396">Uslužni program za Google Chrome</translation>
 <translation id="4343226815564935778">Čini se da je instalacijski direktorij preglednika Google Chrome u upotrebi. Ponovno pokrenite računalo i pokušajte još jednom.</translation>
 <translation id="6817660909204164466">Automatskim slanjem statistike o korištenju i izvješća o padu sustava u Google, pomognite nam da poboljšamo Google Chrome</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google Chrome se čudno ponaša.</translation>
 <translation id="3889417619312448367">Deinstaliranje preglednika Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">Dostupna je nova, sigurnija verzija preglednika Google Chrome.</translation>
 <translation id="8810218179782551669">Jezik programa Google Chrome:</translation>
 <translation id="7001386529596391893">Stvori prečace za Google Chrome na sljedećim mjestima:</translation>
 <translation id="7461436095086637522">Chrome Profile Importer</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">Vaš profil se ne može koristiti jer pripada novijoj verziji programa Google Chrome.\n\nNeke značajke možda neće biti dostupne. Navedite neki drugi direktorij profila ili koristite noviju verziju programa Chrome.</translation>
 <translation id="7214670531148488183">Google Chrome može koristiti web-usluge za poboljšavanje vašeg doživljaja pregledavanja. Te usluge po želji možete onemogućiti.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">Dodatno: Pomozite nam da poboljšamo Google Chrome automatskim slanjem statistike o korištenju i izvješća\no padu sustava Googleu</translation>
 <translation id="5008136264574452501">Međuverzija Google Chrome Canary</translation>
 <translation id="911206726377975832">Izbrisati i podatke o pregledavanju?</translation>
 <translation id="2044287590254833138">Alatna traka programa Google Chrome:</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">Google Chrome ne podržava sustav <ph name="OS_NAME"/>.</translation>
 <translation id="473183893665420670">Kada ponovno postavite opcije za Google Chrome, sve promjene koje ste napravili vratit će se na izvorne postavke. Želite li poništiti opcije za Chrome?</translation>
 <translation id="3636771339108070045">Ovo računalo već ima noviju verziju programa Google Chrome. Ako softver ne radi, deinstalirajte Google Chrome i ponovno ga preuzmite.</translation>
-<translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">Arhiva programa za instalaciju je oštećena ili nevažeća. Ponovno preuzmite program Google Chrome.</translation>
 <translation id="6626317981028933585">Na žalost postavke vašeg preglednika Mozilla Firefox nisu dostupne dok je preglednik otvoren. Da biste te postavke unijeli u Google Chrome, spremite svoj posao i zatvorite sve prozore preglednika Firefox. Zatim kliknite &quot;Nastavak&quot;.</translation>

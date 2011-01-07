@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">Ini-import ngayon ng Google Chrome ang Mga Paborito/Bookmark.</translation>
 <translation id="8970027151245482499">Hindi na-install o nabigong makahanap ng direktoryo sa pag-install ang Google Chrome. Paki-download muli ang Google Chrome.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
-<translation id="3044696659294460858">Meron nang bagong bersyon ng Google Chrome na kasama ang mga extension.</translation>
 <translation id="4281844954008187215">Mga Tuntunin ng Serbisyo</translation>
 <translation id="3555616473548901994">Kumpleto na ang pag-uninstall.</translation>
+<translation id="8556340503434111824">May available na bagong bersyon ng Google Chrome, at mas mabilis ito kaysa sa dati.</translation>
 <translation id="1826297811907343327">Kung kinansela mo ngayon, hindi maiimport ang lahat ng mga item. Maaari kang mag-import muli sa ibang pagkakataon mula sa menu ng Google Chrome.</translation>
 <translation id="4728575227883772061">Nabigo ang pag-install dahil sa hindi natukoy na error. Kung kasalukuyang tumatakbo ang Google Chrome, paki-sara ito at subukang muli.</translation>
 <translation id="4149882025268051530">Nabigo ang installer sa pag-uncompress ng archive. Paki-download muli ang Google Chrome.</translation>
+<translation id="6989339256997917931">Na-update na ang Google Chrome, ngunit hindi mo pa ito ginamit sa huling 30 araw.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Tila ginagamit ang direktoryo sa pag-install ng Google Chrome. Paki-reboot ang iyong computer at subukan ulit.</translation>
 <translation id="6817660909204164466">Tumulong na mapagbuti ang Google Chrome sa pamamagitan ng awtomatikong pagpapadala sa Google ng mga istatistika sa paggamit at mga ulat ng pag-crash</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Hindi kumikilos ng tama ang Google Chrome</translation>
 <translation id="3889417619312448367">I-uninstall ang Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">May available na bago, mas ligtas na bersyon ng Google Chrome.</translation>
 <translation id="8810218179782551669">Wika ng Google Chrome:</translation>
 <translation id="7001386529596391893">Lumikha ng mga shortcut sa Chrome sa mga lokasyon na ito:</translation>
 <translation id="7461436095086637522">Chrome Profile Importer</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">Ang iyong profile ay hindi magagamit dahil ito ay mula sa isang bagong bersyon ng Google Chrome.\n\nIlang mga tampok ay maaaring hindi magagamit. Mangyaring tukuyin ang isang kakaibang derektoryo ng profile o gamitin ang isan bagong bersyon ng Chrome.</translation>
 <translation id="7214670531148488183">Maaaring gumamit ang Google Chrome ng mga serbisyo sa web upang mapabuti ang iyong karanasan sa pagba-browse. Maaari mong opsyonal na hindi paganahin ang mga serbisyong ito. </translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">Opsyonal: Tumulong na gawing mas mahusay ang Google Chrome sa pamamagitan ng awtomatikong pagpapadala ng mga ulat ng mga istatistika at pag-crash\nsa Google</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">Tatanggalin din ang iyong data sa pag-browse?</translation>
 <translation id="2044287590254833138">Toolbar ng Google Chrome</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">Hindi suportado ng Google Chrome ang <ph name="OS_NAME"/>.</translation>
 <translation id="473183893665420670">Kapag i-reset mo ang mga pagpipilian ng Google Chrome, maibabalik ang anumang mga pagbabagong isinagawa mo sa default na mga setting. Nais mo bang i-reset ang mga pagpipilian ng Chrome?</translation>
 <translation id="3636771339108070045">Mayroon nang mas bagong bersyon ng Google Chrome ang computer na ito. Kung hindi gumagana ang software, paki-uninstall ang Google Chrome at i-download muli ito.</translation>
-<translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">Na-corrupt o hindi wasto ang installer archive. Paki-download muli ang Google Chrome.</translation>
 <translation id="6626317981028933585">Nakalulungkot, ang iyong mga setting ng Mozilla Firefox ay hindi magagamit habang tumatakbo ang browser. Upang mai-import ang mga setting sa Google Chrome, i-save ang iyong ginagawa at isara ang lahat ng mga window ng Firefox. Pagkatapos i-click ang Ipagpatuloy.</translation>

@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">Google Chrome आता मनपसंत/बुकमार्क् आयात करीत आहे.</translation>
 <translation id="8970027151245482499">Google Chrome स्थापित नाही किंवा तो इन्स्टॉलेशन निर्देशिका मिळवण्यास अयशस्वी आहे. कृपया Google Chrome पुन्हा डाउनलोड करा.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
-<translation id="3044696659294460858">Google Chrome च्या नवीन उपलब्ध आवृत्तीमध्ये विस्तार अंतर्भूत आहेत.</translation>
 <translation id="4281844954008187215">सेवा अटी</translation>
 <translation id="3555616473548901994">विस्थापन पूर्ण.</translation>
+<translation id="8556340503434111824">Google Chrome ची नवीन आवृत्ती उपलब्ध आहे, आणि ही नेहमीपेक्षा द्रुत आहे. </translation>
 <translation id="1826297811907343327">आपण त्वरित रद्द केल्यास, सर्व आयटम आयात केले जाणार नाहीत. आपण Google Chrome मेनूवरून नंतर पुन्हा आयात करू शकता.</translation>
 <translation id="4728575227883772061">अनिर्दिष्ट त्रुटीमुळे स्थापना अयशस्वी. जर Google Chrome सध्या चालू असेल तर, कृपया त्यास बंद करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="4149882025268051530">संग्रहणाचा असंक्षिप्त करण्यास इन्स्टॉलर अयशस्वी. कृपया Google Chrome पुन्हा डाउनलोड करा.</translation>
+<translation id="6989339256997917931">Google Chrome अद्यतनित केला गेला, परंतु आपण तो किमान 30 दिवसांपासून वापरलेला नाही.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Google Chrome स्थापना निर्देशिका कदाचित वापरात आहे. कृपया आपला संगणक रीबूट करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="6817660909204164466">वापरण्याची आकडेवारी आणि क्रॅश अहवाल Google कडे स्वयंचलितपणे पाठवून Google Chrome ला अधिक चांगले करण्यास मदत करा.</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google Chrome गैरवर्तन करीत आहे</translation>
 <translation id="3889417619312448367">Google Chrome विस्थापित करा</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> – Google Chrome</translation>
+<translation id="3089968997497233615">Google Chrome ची नवीन, सुरक्षित आवृत्ती उपलब्ध आहे.</translation>
 <translation id="8810218179782551669">Google Chrome भाषा:</translation>
 <translation id="7001386529596391893">या स्थानांवर Google Chrome शॉर्टकट तयार करा:</translation>
 <translation id="7461436095086637522">Chrome Profile Importer</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">आपले प्रोफाइल वापरले जाऊ शकत नाही कारण ते Google Chrome च्या एक नवीन आवृत्ती कडून आहे.\n\nकाही वैशिष्ट्ये अनुपलब्ध असू शकतात. कृपया एक वेगळी प्रोफाइल निर्देशिका निर्दिष्ट करा किंवा Chromeची नवीन आवृत्ती वापरा.</translation>
 <translation id="7214670531148488183">आपला वेब ब्राउझिंग अनुभव सुधारण्यासाठी Google Chrome वेब सेवा वापरू शकतो. आपण वैकल्पिकरित्या या सेवा अक्षम करू शकता.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">पर्यायी: Google कडे स्वयंचलितपणे उपयोग आकडेवारी आणि क्रॅश\nअहवाल पाठवून Google Chrome ला अधिक चांगले करण्यात मदत करा.</translation>
 <translation id="5008136264574452501">Google Chrome कॅनरी बिल्ड</translation>
 <translation id="911206726377975832">आपला ब्राउझिंग डेटा देखील हटवायचा?</translation>
 <translation id="2044287590254833138">Google Chrome टूलबार</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251"><ph name="OS_NAME"/> ला Google Chrome समर्थन देत नाही.</translation>
 <translation id="473183893665420670">आपण Google Chrome पर्याय रीसेट करता तेव्हा आपण केलेले कोणतेही बदल डीफॉल्ट सेटिंगकडे परत केले जातात. आपण Chrome पर्याय रीसेट करू इच्छिता?</translation>
 <translation id="3636771339108070045">या संगणकावर आधीपासूनच Google Chrome ची अधिक अलीकडील आवृत्ती आहे. जर सॉफ्टवेअर कार्य करत नसेल तर, कृपया Google Chrome  अनइन्स्टॉल करा आणि त्यास पुन्हा डाउनलोड करा.</translation>
-<translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3360895254066713204">Chrome मदतनीस</translation>
 <translation id="1001534784610492198">इन्स्टॉलर संग्रहण भ्रष्ट किंवा अवैध आहे. कृपया Google Chrome पुन्हा डाउनलोड करा.</translation>
 <translation id="6626317981028933585">दुर्दैवाने, तो ब्राउझर चालू असताना आपली Mozilla Firefox सेटिंग्ज उपलब्ध नाहीत. Google Chrome वर ती सेटिंग्ज आयात करण्यासाठी, आपले कार्य जतन करा आणि सर्व Firefox विंडो बंद करा. नंतर सुरू ठेवा क्लिक करा.</translation>

@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">Google Chrome importerer nu Foretrukne/Bogmærker.</translation>
 <translation id="8970027151245482499">Google Chrome er ikke installeret, eller programmet kunne ikke finde en installationsmappe. Download Google Chrome igen.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
-<translation id="3044696659294460858">Der findes en ny version af Google Chrome, som indeholder udvidelser.</translation>
 <translation id="4281844954008187215">Servicevilkår</translation>
 <translation id="3555616473548901994">Afinstallationen blev fuldført.</translation>
+<translation id="8556340503434111824">Der findes en ny version af Google Chrome, som er hurtigere end nogensinde før.</translation>
 <translation id="1826297811907343327">Hvis du annullerer nu, er der enheder, som ikke bliver importeret. Du kan importere dem igen senere via menuen i Google Chrome.</translation>
 <translation id="4728575227883772061">Installationen mislykkedes på grund af en ikke-specificeret fejl. Hvis Google Chrome kører, bedes du lukke programmet og prøve igen.</translation>
 <translation id="4149882025268051530">Installationsprogrammet kunne ikke pakke arkivet ud. Download Google Chrome igen.</translation>
+<translation id="6989339256997917931">Google Chrome er blevet opdateret, men du har ikke brugt den i 30 dage.</translation>
 <translation id="5744005218040929396">Google Chrome-værktøj</translation>
 <translation id="4343226815564935778">Google Chromes installationsmappe ser ud til at være i brug. Genstart din computer, og prøv igen.</translation>
 <translation id="6817660909204164466">Hjælp med at gøre Google Chrome bedre ved automatisk at sende forbrugsstatistikker og rapporter om nedbrud til Google</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google Chrome er uartig</translation>
 <translation id="3889417619312448367">Afinstaller Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> – Google Chrome</translation>
+<translation id="3089968997497233615">Der findes en ny, sikker version af Google Chrome.</translation>
 <translation id="8810218179782551669">Google Chrome-sprog:</translation>
 <translation id="7001386529596391893">Opret Google Chrome-genveje disse steder:</translation>
 <translation id="7461436095086637522">Chrome-profilimport</translation>
@@ -46,12 +48,11 @@
 <translation id="6008953001134414503">Log ud af Google Chrome OS, og log ind igen, så denne ændring kan træde i kraft.</translation>
 <translation id="6009537148180854585">Du forsøgte at kontakte &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men det certifikat, denne server viste, indeholder fejl. Google Chrome kan ikke bruge et certifikat med fejl og kan ikke bekræfte identiteten af det websted, du forsøger at skabe forbindelse til. Din forbindelse er ikke sikker, og du bør ikke fortsætte.</translation>
 <translation id="8738921060445980047">Ukendt version.</translation>
-<translation id="2485422356828889247">Afinstallation</translation>
+<translation id="2485422356828889247">Afinstaller</translation>
 <translation id="8899050679030089927">Luk alle Google Chrome-vinduer, og genstart, så denne ændring kan træde i kraft.</translation>
 <translation id="3324235665723428530">Din profil kan ikke bruges, da den stammer fra en nyere version af Google Chrome.\n\nNogle funktioner er måske utilgængelige. Angiv en anden profilmappe, eller anvend en nyere version af Chrome.</translation>
 <translation id="7214670531148488183">Google Chrome kan bruge webtjenester for at forbedre din browseroplevelse. Du kan deaktivere disse tjenester.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">Valgfrit: Hjælp med at gøre Google Chrome bedre ved automatisk at sende brugsstatistikker og rapporter\n om nedbrud til Google</translation>
 <translation id="5008136264574452501">Versionen Google Chrome Canary</translation>
 <translation id="911206726377975832">Slet også dine browsingdata?</translation>
 <translation id="2044287590254833138">Google Chrome-værktøjslinje</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">Google Chrome understøtter ikke <ph name="OS_NAME"/>.</translation>
 <translation id="473183893665420670">Når du nulstiller valgmulighederne i Chrome, bliver alle ændringer, du har foretaget, erstattet med standardindstillingerne. Ønsker du at nulstille valgmulighederne for Chrome?</translation>
 <translation id="3636771339108070045">Denne computer har allerede en nyere version af Google Chrome. Hvis programmet ikke virker, skal du afinstallere Google Chrome og downloade det igen.</translation>
-<translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3360895254066713204">Hjælp til Chrome</translation>
 <translation id="1001534784610492198">Installationsarkivet er beskadiget eller ugyldigt. Download Google Chrome igen.</translation>
 <translation id="6626317981028933585">Desværre er dine Mozilla Firefox-indstillinger ikke tilgængelige, mens browseren kører. Gem dit arbejde og luk alle Firefox-vinduer for at importere disse indstillinger til Google Chrome. Klik derefter på Fortsæt.</translation>

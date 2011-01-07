@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">Google Chrome હવે પસંદગીઓ/બુકમાર્ક્સ આયાત કરી રહ્યું છે.</translation>
 <translation id="8970027151245482499">Google Chrome ઇન્સ્ટોલ થયું નથી અથવા તે ઇન્સ્ટોલેશન ડાયરેક્ટરીએ મેળવવામાં નિષ્ફળ રહ્યું છે. કૃપા કરીને Google Chrome ફરીથી ડાઉનલોડ કરો.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
-<translation id="3044696659294460858">Google Chrome નું એક નવું સંસ્કરણ ઉપલબ્ધ છે જેમાં એક્સ્ટેંશન્સ શામેલ છે. </translation>
 <translation id="4281844954008187215">સેવાની શરતો</translation>
 <translation id="3555616473548901994">અનઇન્સ્ટોલેશન પૂર્ણ.</translation>
+<translation id="8556340503434111824">Google Chrome નું એક નવું સંસ્કરણ ઉપલબ્ધ છે અને તે પહેલાં કરતાંએ વધુ ઝડપી છે.</translation>
 <translation id="1826297811907343327">જો તમે અત્યારે રદ કરો છો, તો બધી આઇટમ્સ આયાત થશે નહીં. તમે પછીથી તેને Google Chrome મેનૂથી આયાત કરી શકો છો.</translation>
 <translation id="4728575227883772061">અનુલ્લેખિત ભૂલને કારણે ઇન્સ્ટોલેશન નિષ્ફળ રહ્યું. જો Google Chrome હાલમાં ચાલુ હોય, તો કૃપા કરીને તેને બંધ કરો અને તેનો ફરીથી પ્રયાસ કરો.</translation>
 <translation id="4149882025268051530">ઇન્સ્ટોલર આર્કાઇવને અસંક્ષિપ્ત કરવામાં નિષ્ફળ રહ્યું. કૃપા કરીને Google Chrome ફરીથી ડાઉનલોડ કરો.</translation>
+<translation id="6989339256997917931">Google Chrome અપડેટ કરવામાં આવ્યું હતું, પણ તમે તેનો 30 દિવસ સુધી ઉપયોગ કર્યો નથી.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Google Chrome ઇન્સ્ટોલેશન ડાયરેક્ટરી ઉપયોગમાં હોય તેવું લાગે છે. કૃપા કરી તમારા કમ્પ્યુટરને રિબૂટ કરીને ફરી પ્રયાસ કરો.</translation>
 <translation id="6817660909204164466">ઉપયોગનાં આંકડાઓ અને ક્રેશ રિપોર્ટ્સ આપમેળે Google ને મોકલીને Google Chrome ને વધુ સારુ બનાવવામાં સહાય કરો.</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google Chrome બરાબર વર્તતું નથી</translation>
 <translation id="3889417619312448367">Google Chrome ને અનઇન્સ્ટોલ કરો</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">Google Chrome નું નવું, સલામત સંસ્કરણ ઉપલબ્ધ છે.</translation>
 <translation id="8810218179782551669">Google Chrome ભાષા:</translation>
 <translation id="7001386529596391893">આ સ્થાનો પર Google Chrome શૉર્ટકટ્સ બનાવો:</translation>
 <translation id="7461436095086637522">Chrome Profile Importer</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">તમારી પ્રોફાઇલ ઉપયોગમાં લઈ શકાતી નથી કારણ કે તે Google Chrome ના નવા વર્ઝનમાંથી છે.\n\nકેટલીક સુવિધાઓ અનુપલબ્ધ હોઈ શકે છે. કૃપા કરીને એક અલગ પ્રોફાઇલ ડાયરેક્ટરીનો ઉલ્લેખ કરો અથવા Chrome ના નવા વર્ઝનનો ઉપયોગ કરો.</translation>
 <translation id="7214670531148488183">Google Chrome તમારા બ્રાઉઝિંગ અનુભવને વિકસાવવા માટે વેબ સેવાઓનો ઉપયોગ કરી શકે છે. તમે આ સેવાઓને વૈકલ્પિક રીતે અક્ષમ કરી શકો છો.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">વૈકલ્પિક: ઉપયોગનાં આંકડાઓ અને ક્રેશ\nરીપોર્ટ્સ આપમેળે Google ને મોકલીને Google Chrome ને વધુ સારુ બનાવવામાં સહાય કરો.</translation>
 <translation id="5008136264574452501">Google Chrome કૅનેરી બિલ્ડ</translation>
 <translation id="911206726377975832">તમારો બ્રાઉઝિંગ ડેટા પણ કાઢી નાખીએ?</translation>
 <translation id="2044287590254833138">Google Chrome ટૂલબાર</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">Google Chrome <ph name="OS_NAME"/> ને સપોર્ટ કરતું નથી.</translation>
 <translation id="473183893665420670">જ્યારે તમે Google Chrome વિકલ્પો ફરીથી સેટ કરો છો ત્યારે, તમે કરેલા કોઈપણ ફેરફારો ડિફૉલ્ટ સેટિંગ્સમાં ઉમેરાઇ જશે. શું તમે Chrome વિકલ્પોને ફરીથી સેટ કરવા માંગો છો?</translation>
 <translation id="3636771339108070045">આ કમ્પ્યુટર પર પહેલેથી જ Google Chrome નું સૌથી તાજેતરનું વર્ઝન છે. જો સૉફ્ટવેર કામ નથી કરતું, તો કૃપા કરીને Google Chrome ને અનઇન્સ્ટોલ કરો અને તેને ફરીથી ડાઉનલોડ કરો.</translation>
-<translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3360895254066713204">Chrome સહાયક</translation>
 <translation id="1001534784610492198">ઇન્સ્ટોલ આર્કાઇવ દૂષિત છે અથવા અમાન્ય છે. કૃપા કરીને Google Chrome ફરીથી ડાઉનલોડ કરો.</translation>
 <translation id="6626317981028933585">દુર્ભાગ્યે, બ્રાઉઝર ચાલતું હોય ત્યારે તમારી Mozilla Firefox સેટિંગ્સ ઉપલબ્ધ નથી. તે સેટિંગ્સને Google Chrome પર આયાત કરવા માટે, તમારું કાર્ય સાચવો અને બધી Firefox વિંડોઝ બંધ કરો. તે પછી ચાલુ રાખોને ક્લિક કરો.</translation>

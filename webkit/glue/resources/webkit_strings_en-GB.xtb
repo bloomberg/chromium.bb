@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
 <translation id="4519964825805946997">Failed to install plug-in from <ph name="URL"/></translation>
+<translation id="9186171386827445984">Loading document: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> pages...</translation>
 <translation id="1235745349614807883">Clear Recent Searches</translation>
 <translation id="5048533449481078685">list marker</translation>
 <translation id="372362261556059955">Additional plug-in needed</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">Plug-in installation failed</translation>
 <translation id="8141602879876242471">This is a searchable index. Enter search keywords:</translation>
 <translation id="5650795167354946011">After installing the plug-in, click here to refresh</translation>
+<translation id="370665806235115550">Loading...</translation>
 <translation id="6845533974506654842">press</translation>
 <translation id="8244226242650769279">image map</translation>
 <translation id="2548326553472216322">No recent searches</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">Please confirm that you would like to install the <ph name="PLUGIN"/> plug-in. You should only install plug-ins that you trust.</translation>
 <translation id="6663448176199120256">Recent Searches</translation>
 <translation id="2597378329261239068">This document is password-protected.  Please enter a password.</translation>
-<translation id="6807599807928161586">web area</translation>
+<translation id="7740050170769002709">HTML content</translation>
 <translation id="5939518447894949180">Reset</translation>
 <translation id="1842960171412779397">select</translation>
 <translation id="7638452146404718955">Click here to download plug-in</translation>

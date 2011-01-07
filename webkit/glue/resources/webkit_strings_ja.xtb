@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
 <translation id="4519964825805946997"><ph name="URL"/> からプラグインをインストールできませんでした</translation>
+<translation id="9186171386827445984">ドキュメントの読み込み中: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> ページ...</translation>
 <translation id="1235745349614807883">最近の検索履歴を消去</translation>
 <translation id="5048533449481078685">リスト マーカー</translation>
 <translation id="372362261556059955">追加のプラグインが必要です</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">プラグインをインストールできませんでした</translation>
 <translation id="8141602879876242471">このインデックスは検索できます。キーワードを入力してください:</translation>
 <translation id="5650795167354946011">プラグインをインストールした後は、ここをクリックして更新を行ってください</translation>
+<translation id="370665806235115550">読み込み中...</translation>
 <translation id="6845533974506654842">押す</translation>
 <translation id="8244226242650769279">イメージ マップ</translation>
 <translation id="2548326553472216322">最近の検索はありません</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">この <ph name="PLUGIN"/> プラグインをインストールしてもよいかご確認ください。信頼できるプラグインのみをインストールする必要があります。</translation>
 <translation id="6663448176199120256">最近の検索</translation>
 <translation id="2597378329261239068">このドキュメントはパスワードで保護されています。パスワードを入力してください。</translation>
-<translation id="6807599807928161586">ウェブ領域</translation>
+<translation id="7740050170769002709">HTML コンテンツ</translation>
 <translation id="5939518447894949180">リセット</translation>
 <translation id="1842960171412779397">選択</translation>
 <translation id="7638452146404718955">ここをクリックしてプラグインをダウンロード</translation>

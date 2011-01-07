@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="4519964825805946997">Installation des Plug-ins von <ph name="URL"/> fehlgeschlagen</translation>
+<translation id="9186171386827445984">Dokument wird geladen <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> Seiten...</translation>
 <translation id="1235745349614807883">Vor kurzem durchgeführte Suchanfragen löschen</translation>
 <translation id="5048533449481078685">Listenmarkierung</translation>
 <translation id="372362261556059955">Zusätzliches Plug-in erforderlich</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">Plug-in-Installation fehlgeschlagen</translation>
 <translation id="8141602879876242471">Dieser Index kann durchsucht werden. Geben Sie Suchbegriffe ein:</translation>
 <translation id="5650795167354946011">Klicken Sie nach der Installation des Plug-ins hier, um eine Aktualisierung durchzuführen.</translation>
+<translation id="370665806235115550">Wird geladen...</translation>
 <translation id="6845533974506654842">klicken</translation>
 <translation id="8244226242650769279">Imagemap</translation>
 <translation id="2548326553472216322">Keine vor kurzem durchgeführte Suchanfragen</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">Bitte bestätigen Sie, dass Sie das Plug-in <ph name="PLUGIN"/> installieren möchten. Installieren Sie nur Plug-ins, denen Sie vertrauen.</translation>
 <translation id="6663448176199120256">Vor kurzem durchgeführte Suchanfragen</translation>
 <translation id="2597378329261239068">Dieses Dokument ist passwortgeschützt. Geben Sie ein Passwort ein.</translation>
-<translation id="6807599807928161586">Webbereich</translation>
+<translation id="7740050170769002709">HTML-Inhalte</translation>
 <translation id="5939518447894949180">Zurücksetzen</translation>
 <translation id="1842960171412779397">auswählen</translation>
 <translation id="7638452146404718955">Hier klicken, um das Plug-in herunterzuladen</translation>

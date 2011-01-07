@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">Το Google Chrome πραγματοποιεί εισαγωγή Αγαπημένων/Σελιδοδεικτών.</translation>
 <translation id="8970027151245482499">Το Google Chrome δεν έχει εγκατασταθεί ή απέτυχε στην εύρεση καταλόγου εγκατάστασης.  Κάντε λήψη του Google Chrome ξανά.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
-<translation id="3044696659294460858">Υπάρχει μια νέα έκδοση του Google Chrome η οποία περιλαμβάνει επεκτάσεις.</translation>
 <translation id="4281844954008187215">Όροι Παροχής Υπηρεσιών</translation>
 <translation id="3555616473548901994">Η κατάργηση εγκατάστασης ολοκληρώθηκε.</translation>
+<translation id="8556340503434111824">Υπάρχει μια νέα έκδοση του Google Chrome και είναι ταχύτερη από ποτέ.</translation>
 <translation id="1826297811907343327">Εάν κάνετε ακύρωση τώρα, δεν θα γίνει εισαγωγή όλων των στοιχείων. Μπορείτε να κάνετε εισαγωγή ξανά αργότερα από το μενού του Google Chrome.</translation>
 <translation id="4728575227883772061">Η εγκατάσταση απέτυχε λόγω απροσδιόριστου σφάλματος. Αν το Google Chrome εκτελείται αυτήν τη στιγμή, κλείστε το και δοκιμάστε ξανά.</translation>
 <translation id="4149882025268051530">Η αποσυμπίεση του αρχείου από το πρόγραμμα εγκατάστασης απέτυχε. Κάντε λήψη του Google Chrome ξανά.</translation>
+<translation id="6989339256997917931">Το Google Chrome έχει ενημερωθεί, αλλά δεν το έχετε χρησιμοποιήσει για 30 ημέρες τουλάχιστον.</translation>
 <translation id="5744005218040929396">Βοηθητικό Πρόγραμμα του Google Chrome</translation>
 <translation id="4343226815564935778">Ο κατάλογος εγκατάστασης του Google Chrome φαίνεται να χρησιμοποιείται. Κάντε επανεκκίνηση του υπολογιστή σας και προσπαθήστε ξανά.</translation>
 <translation id="6817660909204164466">Συμβάλετε στη βελτίωση του Google Chrome στέλνοντας αυτόματα στην Google στατιστικά στοιχεία χρήσης και αναφορές σφαλμάτων</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Το Google Chrome παρουσιάζει εσφαλμένη συμπεριφορά</translation>
 <translation id="3889417619312448367">Κατάργηση εγκατάστασης Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">Υπάρχει μια νέα, ασφαλέστερη έκδοση του Google Chrome.</translation>
 <translation id="8810218179782551669">Γλώσσα του Google Chrome:</translation>
 <translation id="7001386529596391893">Δημιουργία συντομεύσεων του Google Chrome στα παρακάτω σημεία:</translation>
 <translation id="7461436095086637522">Chrome Profile Importer</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">Το προφίλ σας δεν μπορεί να χρησιμοποιηθεί διότι προέρχεται από νεότερη έκδοση του Google Chrome.\n\nΟρισμένες δυνατότητες δεν θα είναι διαθέσιμες. Καθορίστε έναν διαφορετικό κατάλογο προφίλ ή χρησιμοποιήστε νεότερη έκδοση του Chrome.</translation>
 <translation id="7214670531148488183">Το Google Chrome ενδέχεται να χρησιμοποιεί υπηρεσίες ιστού για να βελτιώσει την εμπειρία περιήγησής σας. Μπορείτε, εάν θέλετε, να απενεργοποιήσετε αυτές τις υπηρεσίες.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">Προαιρετικά: Συμβάλετε στη βελτίωση του Google Chrome με την αυτόματη αποστολή στατιστικών στοιχείων χρήσης και αναφορών\nσφαλμάτων στην Google</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">Να γίνει διαγραφή και των δεδομένων περιήγησης;</translation>
 <translation id="2044287590254833138">Γραμμή εργαλείων του Google Chrome</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">Το Google Chrome δεν υποστηρίζει το <ph name="OS_NAME"/>.</translation>
 <translation id="473183893665420670">Όταν πραγματοποιείτε επαναφορά των ρυθμίσεων του Google Chrome, θα γίνει αναίρεση τυχόν αλλαγών που έχετε κάνει στις προεπιλεγμένες ρυθμίσεις. Θέλετε να κάνετε επαναφορά των επιλογών του Chrome;</translation>
 <translation id="3636771339108070045">Αυτός ο υπολογιστής διαθέτει ήδη μια πιο πρόσφατη έκδοση του Google Chrome. Αν το λογισμικό δεν λειτουργεί, απεγκαταστήστε το Google Chrome και κάντε λήψη ξανά.</translation>
-<translation id="4407807842708586359">Λειτουργικό σύστημα Google Chrome</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">Το αρχείο του προγράμματος εγκατάστασης είναι κατεστραμμένο ή μη έγκυρο. Κάντε λήψη του Google Chrome ξανά.</translation>
 <translation id="6626317981028933585">Δυστυχώς, οι ρυθμίσεις του Mozilla Firefox δεν είναι διαθέσιμες, ενώ εκτελείται αυτό το πρόγραμμα περιήγησης. Για να εισαγάγετε αυτές τις ρυθμίσεις στο Google Chrome, αποθηκεύστε την εργασία σας και κλείστε όλα τα παράθυρα του Firefox. Έπειτα, κάντε κλικ στο κουμπί &quot;Συνέχεια&quot;.</translation>

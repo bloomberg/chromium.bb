@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
 <translation id="4519964825805946997">Neizdevās instalēt spraudni no <ph name="URL"/></translation>
+<translation id="9186171386827445984">Notiek dokumenta ielāde: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> lappuses...</translation>
 <translation id="1235745349614807883">Dzēst nesenos meklējumus</translation>
 <translation id="5048533449481078685">sarakstu marķieris</translation>
 <translation id="372362261556059955">Nepieciešams papildu spraudnis</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">Spraudņa instalēšana neizdevās</translation>
 <translation id="8141602879876242471">Šis ir indekss ar meklēšanas iespējām. Ievadīt meklēšanas atslēgvārdus:</translation>
 <translation id="5650795167354946011">Pēc spraudņa instalēšanas noklikšķiniet šeit, lai atsvaidzinātu</translation>
+<translation id="370665806235115550">Notiek ielāde...</translation>
 <translation id="6845533974506654842">nospiest</translation>
 <translation id="8244226242650769279">attēlu karte</translation>
 <translation id="2548326553472216322">Nav nesenu meklējumu</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">Lūdzu, apstipriniet, ka vēlaties instalēt <ph name="PLUGIN"/> spraudni. Jums ir jāinstalē tikai tie spraudņi, kuriem uzticaties.</translation>
 <translation id="6663448176199120256">Neseni meklējumi</translation>
 <translation id="2597378329261239068">Šis dokuments ir aizsargāts ar paroli. Lūdzu, ievadiet paroli.</translation>
-<translation id="6807599807928161586">tīmekļa apgabals</translation>
+<translation id="7740050170769002709">HTML saturs</translation>
 <translation id="5939518447894949180">Atiestatīt</translation>
 <translation id="1842960171412779397">Atlasiet</translation>
 <translation id="7638452146404718955">Noklikšķiniet šeit, lai lejupielādētu spraudni</translation>

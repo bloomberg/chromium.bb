@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">Google Chrome importerer nå favoritter/bokmerker.</translation>
 <translation id="8970027151245482499">Google Chrome er ikke installert, eller installasjonskatalogen ble ikke funnet. Last ned Google Chrome på nytt.</translation>
 <translation id="2040709530900803995">Google Chrome-gjengiver</translation>
-<translation id="3044696659294460858">Det er nå tilgjengelig en ny versjon av Google Chrome, som håndterer utvidelser.</translation>
 <translation id="4281844954008187215">Vilkår for bruk</translation>
 <translation id="3555616473548901994">Avinstallering fullført.</translation>
+<translation id="8556340503434111824">En ny versjon av Google Chrome er tilgjengelig, og den er nå raskere en noen sinne.</translation>
 <translation id="1826297811907343327">Hvis du avbryter nå, importeres ikke alle elementene. Du kan importere på nytt senere fra Google Chrome-menyen.</translation>
 <translation id="4728575227883772061">Installeringen mislyktes på grunn av en uspesifisert feil. Lukk Google Chrome hvis det kjører, og prøv på nytt.</translation>
 <translation id="4149882025268051530">Installasjonsprogrammet fikk ikke dekomprimert arkivet. Last ned Google Chrome på nytt.</translation>
+<translation id="6989339256997917931">Google Chrome har blitt oppdatert, men du har ikke brukt programmet på minst 30 dager.</translation>
 <translation id="5744005218040929396">Google Chromes verktøy</translation>
 <translation id="4343226815564935778">Det ser ut til at installasjonsmappen for Google Chrome er i bruk. Du må starte datamaskinen på nytt og prøve igjen.</translation>
 <translation id="6817660909204164466">Bidra til å gjøre Google Chrome bedre ved å sende brukerstatistikk og programstopprapporter til Google automatisk</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google Chrome oppfører seg galt</translation>
 <translation id="3889417619312448367">Avinstaller Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">En ny, sikrere versjon av Google Chrome er tilgjengelig</translation>
 <translation id="8810218179782551669">Google Chrome-språk:</translation>
 <translation id="7001386529596391893">Opprett snarveier til Google Chrome her:</translation>
 <translation id="7461436095086637522">Chromes profilimport</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">Profilen kan ikke brukes fordi den er fra en nyere versjon av Google Chrome.\n\nNoen funksjoner kan være utilgjengelige. Angi en annen profilkatalog eller bruk en nyere versjon av Chrome.</translation>
 <translation id="7214670531148488183">Google Chrome bruker nettjenester for å forbedre nettleseropplevelsen. Du kan deaktivere disse tjenestene om du ønsker.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">Valgfritt: Bidra til å gjøre Google Chrome bedre ved å sende brukerstatistikk og programstopp-\nrapporter automatisk til Google</translation>
 <translation id="5008136264574452501">Google Chrome Canary-delversjon</translation>
 <translation id="911206726377975832">Vil du slette all nettleserdata også?</translation>
 <translation id="2044287590254833138">Google Chrome-verktøyraden</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">Google Chrome støtter ikke <ph name="OS_NAME"/>.</translation>
 <translation id="473183893665420670">Når du tilbakestiller Google Chrome-alternativene, endres eventuelle endringer du har gjort, tilbake til standardinnstillingene. Vil du tilbakestille Chrome-alternativene?</translation>
 <translation id="3636771339108070045">Denne datamaskinen har allerede en nyere versjon av Google Chrome. Hvis programvaren ikke fungerer, må du avinstallere Google Chrome og laste det ned på nytt.</translation>
-<translation id="4407807842708586359">Google Chromes operativsystem</translation>
 <translation id="3360895254066713204">Chrome-hjelper</translation>
 <translation id="1001534784610492198">Installasjonsarkivet er ødelagt. Last ned Google Chrome på nytt.</translation>
 <translation id="6626317981028933585">Mozilla Firefox-innstillingene er dessverre ikke tilgjengelige når nettleseren kjører. Hvis du vil importere disse innstillingene til Google Chrome, kan du lagre arbeidet ditt og lukke alle Firefox-vinduer. Deretter klikker du Fortsett.</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
 <translation id="4519964825805946997">Échec de l'installation du plug-in depuis <ph name="URL"/></translation>
+<translation id="9186171386827445984">Chargement du document : <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> pages...</translation>
 <translation id="1235745349614807883">Effacer les recherches récentes</translation>
 <translation id="5048533449481078685">marqueur de liste</translation>
 <translation id="372362261556059955">Plug-in supplémentaire requis</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">Échec de l'installation du plug-in</translation>
 <translation id="8141602879876242471">Vous pouvez lancer des recherches dans cet index. Pour cela, entrez des mots clés de recherche :</translation>
 <translation id="5650795167354946011">Après l'installation du plug-in, cliquez ici pour actualiser.</translation>
+<translation id="370665806235115550">Chargement...</translation>
 <translation id="6845533974506654842">appuyer</translation>
 <translation id="8244226242650769279">image map</translation>
 <translation id="2548326553472216322">Aucune recherche récente</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">Merci de confirmer que vous souhaitez installer le plug-in <ph name="PLUGIN"/>. N'installez que les plug-ins que vous considérez fiables.</translation>
 <translation id="6663448176199120256">Recherches récentes</translation>
 <translation id="2597378329261239068">Ce document est protégé par mot de passe. Veuillez saisir ce dernier.</translation>
-<translation id="6807599807928161586">Zone Web</translation>
+<translation id="7740050170769002709">Contenu HTML</translation>
 <translation id="5939518447894949180">Réinitialiser</translation>
 <translation id="1842960171412779397">sélectionner</translation>
 <translation id="7638452146404718955">Cliquer ici pour télécharger le plug-in</translation>

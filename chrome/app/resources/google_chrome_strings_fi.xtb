@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">Google Chrome tuo suosikkeja/kirjanmerkkejä.</translation>
 <translation id="8970027151245482499">Google Chromea ei ole asennettu tai asennushakemistoa ei löytynyt. Lataa Google Chrome uudelleen.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
-<translation id="3044696659294460858">Google Chromesta on saatavilla uusi versio, joka sisältää laajennuksia.</translation>
 <translation id="4281844954008187215">Käyttöehdot</translation>
 <translation id="3555616473548901994">Poistaminen valmis.</translation>
+<translation id="8556340503434111824">Chromesta on saatavissa uusi versio, joka on entistäkin nopeampi.</translation>
 <translation id="1826297811907343327">Jos peruutat nyt, kaikki kohteita ei tuoda. Voit tuoda kohteita uudelleen myöhemmin Google Chrome -valikon kautta.</translation>
 <translation id="4728575227883772061">Asennus epäonnistui tuntemattoman virheen takia. Jos Google Chrome on tällä hetkellä käynnissä, sulje ohjelma ja yritä uudelleen.</translation>
 <translation id="4149882025268051530">Asennusohjelma ei pystynyt purkamaan arkistotiedostoa. Lataa Google Chrome uudelleen.</translation>
+<translation id="6989339256997917931">Google Chrome on päivitetty, mutta et ole käyttänyt sitä ainakaan 30 päivään.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Google Chromen asennushakemisto vaikuttaa olevan käytössä. Käynnistä tietokoneesi uudelleen ja yritä uudestaan.</translation>
 <translation id="6817660909204164466">Voit auttaa Google Chromen kehitystyössä lähettämällä automaattisesti käyttötilastoja ja virheraportteja Googlelle</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google Chrome käyttäytyy huonosti</translation>
 <translation id="3889417619312448367">Poista Google Chromen asennus</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">Google Chromesta on saatavillaa uusi, turvallisempi versio.</translation>
 <translation id="8810218179782551669">Google Chromen käyttökieli:</translation>
 <translation id="7001386529596391893">Luo Google Chrome-pikapainikkeita seuraaviin kohteisiin:</translation>
 <translation id="7461436095086637522">Chrome Profile Importer</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">Profiiliasi ei voida käyttää koska se on peräisin Google Chromen uudemmasta versiosta.\n\n Kaikki ominaisuudet eivät välttämättä toimi. Valitse toinen profiili tai käytä uudempaa Chrome-versiota.</translation>
 <translation id="7214670531148488183">Google Chrome voi käyttää verkkopalveluita selauskokemuksen parantamiseen. Voit halutessasi poistaa palvelut käytöstä.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">Valinnainen: lähetä automaattisesti käyttötilastoja ja virhe\nraportteja Google Chromen kehittämiseksi</translation>
 <translation id="5008136264574452501">Google Chromen Canary-versio</translation>
 <translation id="911206726377975832">Poistetaanko myös selailutiedot?</translation>
 <translation id="2044287590254833138">Google Chrome-työkalupalkki</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">Google Chrome ei tue <ph name="OS_NAME"/>-käyttöjärjestelmää</translation>
 <translation id="473183893665420670">Kun tyhjennät Google Chromen asetukset, kaikki tekemäsi muutokset palautetaan oletusasetuksiksi. Haluatko tyhjentää Google Chromen asetukset?</translation>
 <translation id="3636771339108070045">Tietokoneessa on jo uudempi Google Chromen versio. Jos ohjelma ei toimi, poista Google Chromen asennus ja lataa se uudelleen.</translation>
-<translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">Asennusohjelman arkistotiedosto on vioittunut tai se ei kelpaa. Lataa Google Chrome uudelleen.</translation>
 <translation id="6626317981028933585">Valitettavasti Mozilla Firefox-asetuksesi eivät ole käytettävissä kun kyseinen selain on toiminnassa. Tuodaksesi asetukset Google Chromeen, tallenna mahdolliset keskeneräiset työt ja sulje kaikki Firefox-ikkunat. Napsauta sitten Jatka.</translation>

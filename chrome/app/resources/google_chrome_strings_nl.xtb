@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">Google Chrome importeert momenteel favorieten/bladwijzers.</translation>
 <translation id="8970027151245482499">Google Chrome is niet geïnstalleerd of de installatiedirectory is niet gevonden. Download Google Chrome opnieuw.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
-<translation id="3044696659294460858">Er is een nieuwe versie van Google Chrome beschikbaar met extensies.</translation>
 <translation id="4281844954008187215">Servicevoorwaarden</translation>
 <translation id="3555616473548901994">Verwijdering voltooid.</translation>
+<translation id="8556340503434111824">Er is een nieuwe versie van Google Chrome en deze is sneller dan ooit.</translation>
 <translation id="1826297811907343327">Als u nu annuleert, worden niet alle items geïmporteerd. U kunt deze items later importeren via het menu van Google Chrome.</translation>
 <translation id="4728575227883772061">De installatie is mislukt wegens een onbekende fout. Als Google Chrome momenteel actief is, sluit u het programma af en probeert u het opnieuw.</translation>
 <translation id="4149882025268051530">Het installatieprogramma kan het archief niet uitpakken. Download Google Chrome opnieuw.</translation>
+<translation id="6989339256997917931">Google Chrome is bijgewerkt, maar u heeft het programma minstens 30 dagen niet gebruikt.</translation>
 <translation id="5744005218040929396">Google Chrome</translation>
 <translation id="4343226815564935778">De installatiedirectory voor Google Chrome lijkt in gebruik te zijn. Start uw computer opnieuw op en probeer het opnieuw.</translation>
 <translation id="6817660909204164466">Help Google Chrome beter te maken door automatisch gebruiksstatistieken en crashmeldingen naar Google te verzenden</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google Chrome doet moeilijk</translation>
 <translation id="3889417619312448367">Google Chrome verwijderen</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">Er is een nieuwere, veiligere versie van Google Chrome beschikbaar.</translation>
 <translation id="8810218179782551669">Taal van Google Chrome:</translation>
 <translation id="7001386529596391893">Maak snelkoppelingen voor Google Chrome op deze locaties:</translation>
 <translation id="7461436095086637522">Chrome Profile Importer</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">Chrome kan uw profiel niet gebruiken aangezien het van een nieuwere versie van Google Chrome is.\n\nSommige functies zijn misschien niet beschikbaar. Geef een andere profieldirectory aan of gebruik een nieuwere versie van Chrome.</translation>
 <translation id="7214670531148488183">Google Chrome kan webservices gebruiken om uw internetervaring te verbeteren. Als u wilt, kunt u deze services uitschakelen.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">Optioneel: help Google Chrome beter te maken door automatisch gebruiksstatistieken en\ncrashmeldingen naar Google te verzenden</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">Ook browsegegevens wissen?</translation>
 <translation id="2044287590254833138">Google Chrome Toolbar</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">Google Chrome ondersteunt <ph name="OS_NAME"/> niet.</translation>
 <translation id="473183893665420670">Wanneer u de opties van Google Chrome opnieuw instelt, worden de door u aangebrachte wijzigingen teruggezet naar de standaardinstellingen. Wilt u de opties van Google Chrome opnieuw instellen?</translation>
 <translation id="3636771339108070045">Er staat al een nieuwere versie van Google Chrome op deze computer. Als de software niet werkt, verwijdert u Google Chrome en downloadt u het programma opnieuw.</translation>
-<translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">Het archief van het installatieprogramma is beschadigd of ongeldig. Download Google Chrome opnieuw.</translation>
 <translation id="6626317981028933585">Uw instellingen voor Mozilla Firefox zijn helaas niet beschikbaar als deze browser is geopend. Sla uw werk op en sluit alle Firefox-vensters om de instellingen te kunnen importeren naar Google Chrome. Klik hierna op 'Doorgaan'.</translation>

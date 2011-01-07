@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
 <translation id="4519964825805946997">Falha ao instalar o plug-in de <ph name="URL"/></translation>
+<translation id="9186171386827445984">Carregando documento: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> páginas...</translation>
 <translation id="1235745349614807883">Limpar pesquisas recentes</translation>
 <translation id="5048533449481078685">marcador de lista</translation>
 <translation id="372362261556059955">Plug-in adicional necessário</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">Falha na instalação do plug-in</translation>
 <translation id="8141602879876242471">Este é um índice pesquisável. Insira palavras-chave de pesquisa:</translation>
 <translation id="5650795167354946011">Depois de instalar o plug-in, clique aqui para atualizar</translation>
+<translation id="370665806235115550">Carregando...</translation>
 <translation id="6845533974506654842">pressione</translation>
 <translation id="8244226242650769279">mapa de imagens</translation>
 <translation id="2548326553472216322">Nenhuma pesquisa recente</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">Confirme se você deseja instalar o plug-in do <ph name="PLUGIN"/>. Você deve instalar apenas plug-ins em que você confia.</translation>
 <translation id="6663448176199120256">Pesquisas recentes</translation>
 <translation id="2597378329261239068">Este documento está protegido por senha.  Digite a senha.</translation>
-<translation id="6807599807928161586">área da web</translation>
+<translation id="7740050170769002709">Conteúdo HTML</translation>
 <translation id="5939518447894949180">Redefinir</translation>
 <translation id="1842960171412779397">selecione</translation>
 <translation id="7638452146404718955">Clique aqui para fazer download do plug-in</translation>

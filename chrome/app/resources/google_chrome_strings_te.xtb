@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">Google Chrome ఇప్పుడు ఇష్టమైనవి/బుక్‌మార్క్‌లను దిగుమతి చేస్తోంది.</translation>
 <translation id="8970027151245482499">Google Chrome ఇన్‌స్టాల్ అవ్వలేదు లేదా ఇది ఇన్‌స్టాలేషన్ డైరక్టరీని కనుగొనడంలో విఫలమైంది. దయచేసి Google Chromeను మళ్ళీ డౌన్‌లోడ్ చెయ్యండి.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
-<translation id="3044696659294460858">పొడిగింపులను కలిగి ఉన్న Google Chrome యొక్క క్రొత్త సంస్కరణ అందుబాటులో ఉంది.</translation>
 <translation id="4281844954008187215">సేవా నిబంధనలు</translation>
 <translation id="3555616473548901994">వ్యవస్థాపన యొక్క తొలగింపు పూర్తయింది.</translation>
+<translation id="8556340503434111824">Google Chrome యొక్క క్రొత్త సంస్కరణ అందుబాటులో ఉంది, ఇది ఎప్పటి కంటే వేగంగా ఉంది.</translation>
 <translation id="1826297811907343327">మీరు ఇప్పుడు రద్దు చేస్తే, అన్ని అంశాలు దిగుమతి చేయబడవు. Google Chrome మెను నుండి మీరు తర్వాత మళ్ళీ దిగుమతి చేసుకోవచ్చు.</translation>
 <translation id="4728575227883772061">పేర్కొనబడని లోపం కారణంగా ఇన్‌స్టాలేషన్ విఫలమైంది. ప్రస్తుతం Google Chrome రన్ చేస్తున్నట్లయితే, దయచేసి దాన్ని మూసివేసి, మళ్ళీ ప్రయత్నించండి.</translation>
 <translation id="4149882025268051530">ఆర్కైవ్‌ను విస్తరించడంలో ఇన్‌స్టాలర్ విఫలమైంది. దయచేసి Google Chromeను మళ్ళీ డౌన్‌లోడ్ చెయ్యండి.</translation>
+<translation id="6989339256997917931">Google Chrome నవీకరింబడింది, కానీ మీరు దీన్ని కనీసం 30 రోజులు ఉయోగించలేరు.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Google Chrome ఇన్‌స్టాలేషన్ డైరెక్టరీ ఉపయోగంలో ఉన్నట్టుగా ఉంది. దయచేసి మీ కంప్యూటర్‌ను రీబూట్ చేసి మళ్ళీ ప్రయత్నించండి.</translation>
 <translation id="6817660909204164466">ఉపయోగ గణాంకాలు మరియు క్రాష్ రిపోర్ట్‌లను ఆటోమేటిక్‌గా Googleకు పంపించి Google Chromeను మరింత మెరుగుపరచడానికి సహాయం చెయ్యండి.</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google Chrome తప్పుగా ప్రవర్తిస్తోంది</translation>
 <translation id="3889417619312448367">Google Chromeను అన్ఇన్స్టాల్ చెయ్యి</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">Google Chrome యొక్క క్రొత్త సురక్షితమైన సంస్కరణ అందుబాటులో ఉంది.</translation>
 <translation id="8810218179782551669">Google Chrome భాష:</translation>
 <translation id="7001386529596391893">ఈ స్థానాల్లో Google Chrome సత్వర మార్గాలను సృష్టించు:</translation>
 <translation id="7461436095086637522">Chrome Profile Importer</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">మీ ప్రొఫైల్ Google Chrome యొక్క కొత్త వెర్షన్ కాబట్టి దాన్ని ఉపయోగించలేము. \n\nకొన్ని ఫీచర్లు అందుబాటులో ఉండకపోవచ్చు. దయచేసి వేరొక ప్రొఫైల్ డైరెక్టరీని పేర్కొనండి లేదా Chrome యొక్క కొత్త వెర్షన్‌ను ఉపయోగించండి.</translation>
 <translation id="7214670531148488183">Google Chrome మీ బ్రౌజింగ్ అనుభవాన్ని మెరుగుపర్చడానికి వెబ్ సేవలను ఉపయోగిస్తుంది. మీరు ఈ సేవలను ఇచ్ఛాపూరితంగా ఆపివేయవచ్చు.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">వైకల్పికం: ఉపయోగితా గణాంకాలు మరియు క్రాష్\nనివేదికలను Googleకు స్వయంచాలకంగా పంపడం ద్వారా Google Chromeను ఉత్తమంగా ఉంచడానికి సహాయం చేయండి</translation>
 <translation id="5008136264574452501">Google Chrome కెనరీ బిల్డ్</translation>
 <translation id="911206726377975832">మీ బ్రౌజింగ్ డేటాని కూడా తొలగించాలా?</translation>
 <translation id="2044287590254833138">Google Chrome ఉపకరణ పట్టీ</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">Google Chrome <ph name="OS_NAME"/>కు మద్దతు ఇవ్వదు.</translation>
 <translation id="473183893665420670">మీరు Google Chrome ఎంపికలను తిరిగి అమర్చినప్పుడు మీరు చేసిన ఏ మార్పులైనా డిఫాల్ట్ సెట్టింగులకు తిరిగి చేర్చబడతాయి. మీరు Chrome ఎంపికలను తిరిగి అమర్చాలనుకుంటున్నారా?</translation>
 <translation id="3636771339108070045">ఈ కంప్యూటర్లో ఇప్పటికే Google Chrome యొక్క తాజా వెర్షన్‌ ఉంది. సాఫ్ట్‌వేర్ పని చెయ్యకపోతే, దయచేసి Google Chromeను అన్‌ఇన్‌స్టాల్ చేసి, దాన్ని మళ్ళీ డౌన్‌లోడ్ చెయ్యండి.</translation>
-<translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3360895254066713204">Chrome సహాయకారుడు</translation>
 <translation id="1001534784610492198">ఇన్‌స్టాలర్ ఆర్కైవ్ పాడైంది లేదా చెల్లదు. దయచేసి Google Chromeను మళ్ళీ డౌన్‌లోడ్ చెయ్యండి.</translation>
 <translation id="6626317981028933585">పాపం, ఆ బ్రౌజర్ అమలులో ఉన్నప్పుడు మీ Mozilla Firefox సెట్టింగులు అందుబాటులో ఉండవు. Google Chromeకు ఆ సెట్టింగులను దిగుమతి చెయ్యడానికి, మీ పనిని సేవ్ చేసుకొని అన్ని Firefox విండోలను మూసివెయ్యండి. తర్వాత కొనసాగుపై క్లిక్ చెయ్యండి.</translation>

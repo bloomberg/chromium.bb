@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
 <translation id="4519964825805946997">Инсталирането на приставката от <ph name="URL"/> не бе успешно</translation>
+<translation id="9186171386827445984">Документът се зарежда: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> страници...</translation>
 <translation id="1235745349614807883">Изчистване на скорошните търсения</translation>
 <translation id="5048533449481078685">списъчен показалец</translation>
 <translation id="372362261556059955">Необходима е допълнителна приставка</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">Инсталирането на приставката не бе успешно</translation>
 <translation id="8141602879876242471">В този индекс може да се търси. Въведете ключови думи за търсене:</translation>
 <translation id="5650795167354946011">След инсталирането на приставката кликнете тук за опресняване</translation>
+<translation id="370665806235115550">Зарежда се...</translation>
 <translation id="6845533974506654842">натискане</translation>
 <translation id="8244226242650769279">карта с изображения</translation>
 <translation id="2548326553472216322">Няма скорошни търсения</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">Моля, потвърдете, че искате да инсталирате приставката <ph name="PLUGIN"/>. Трябва да инсталирате само приставки, на които имате доверие.</translation>
 <translation id="6663448176199120256">Скорошни търсения</translation>
 <translation id="2597378329261239068">Този документ е защитен с парола.  Моля, въведете я.</translation>
-<translation id="6807599807928161586">уеб зона</translation>
+<translation id="7740050170769002709">HTML съдържание</translation>
 <translation id="5939518447894949180">Повторно задаване</translation>
 <translation id="1842960171412779397">Избиране</translation>
 <translation id="7638452146404718955">Кликнете тук, за да изтеглите приставката</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
 <translation id="4519964825805946997"><ph name="URL"/> થી પ્લગ-ઇન ઇન્સ્ટોલ કરવામાં નિષ્ફળ રહ્યાં</translation>
+<translation id="9186171386827445984">દસ્તાવેજ લોડ કરી રહ્યું છે: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> પૃષ્ઠ...</translation>
 <translation id="1235745349614807883">હાલની શોધને સાફ કરો</translation>
 <translation id="5048533449481078685">સૂચિ માર્કર</translation>
 <translation id="372362261556059955">વધારાનું પ્લગ-ઇન આવશ્યક છે </translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">પ્લગ-ઇન ઇન્સ્ટોલેશન નિષ્ફળ ગયું</translation>
 <translation id="8141602879876242471">આ એક શોધસક્ષમ અનુક્રમણિકા છે. શોધ કીવર્ડ્સ દાખલ કરો:</translation>
 <translation id="5650795167354946011">પ્લગ-ઇન ઇન્સ્ટોલ કર્યા પછી, રીફ્રેશ કરવા અહીં ક્લિક કરો</translation>
+<translation id="370665806235115550">લોડ કરી રહ્યું છે...</translation>
 <translation id="6845533974506654842">દબાવો</translation>
 <translation id="8244226242650769279">છબી નકશો</translation>
 <translation id="2548326553472216322">હાલની શોધો નથી</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">કૃપા કરીને પુષ્ટી કરો કે તમે <ph name="PLUGIN"/> પ્લગ-ઇન ઇન્સ્ટોલ કરવાનું પસંદ કરશો. તમારે ફક્ત તે જ પ્લગ-ઇન્સ ઇન્સ્ટોલ કરવા જોઈએ જે વિશ્વસ્ત હોય.</translation>
 <translation id="6663448176199120256">તાજેતરની શોધ</translation>
 <translation id="2597378329261239068">આ દસ્તાવેજ પાસવર્ડ સુરક્ષિત છે. કૃપા કરીને પાસવર્ડ દાખલ કરો.</translation>
-<translation id="6807599807928161586">વેબ ક્ષેત્ર</translation>
+<translation id="7740050170769002709">HTML સામગ્રી</translation>
 <translation id="5939518447894949180">રીસેટ કરો</translation>
 <translation id="1842960171412779397">પસંદ કરો</translation>
 <translation id="7638452146404718955">પ્લગ-ઇન ડાઉનલોડ કરવા માટે અહીં ક્લિક કરો</translation>

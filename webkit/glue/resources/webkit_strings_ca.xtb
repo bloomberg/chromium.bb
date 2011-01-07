@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
 <translation id="4519964825805946997">S'ha produït un error en instal·lar el connector des de <ph name="URL"/></translation>
+<translation id="9186171386827445984">S'està carregant el document: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> pàgines...</translation>
 <translation id="1235745349614807883">Esborra les cerques recents</translation>
 <translation id="5048533449481078685">marcador de llistes</translation>
 <translation id="372362261556059955">Es necessita un connector addicional</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">S'ha produït un error en instal·lar el connector </translation>
 <translation id="8141602879876242471">És un índex on es poden realitzar cerques. Introdueix els termes de cerca:</translation>
 <translation id="5650795167354946011">Després d'instal·lar el connector, feu clic aquí per actualitzar</translation>
+<translation id="370665806235115550">S'està carregant...</translation>
 <translation id="6845533974506654842">prem</translation>
 <translation id="8244226242650769279">mapa d'imatges</translation>
 <translation id="2548326553472216322">No hi ha cerques recents</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">Confirmeu que voleu instal·lar el connector <ph name="PLUGIN"/>. Us recomanem que només instal·leu connectors de la vostra confiança.</translation>
 <translation id="6663448176199120256">Cerques recents</translation>
 <translation id="2597378329261239068">Aquest document està protegit mitjançant contrasenya. Introduïu una contrasenya.</translation>
-<translation id="6807599807928161586">àrea web</translation>
+<translation id="7740050170769002709">Contingut HTML</translation>
 <translation id="5939518447894949180">Restablir</translation>
 <translation id="1842960171412779397">selecciona</translation>
 <translation id="7638452146404718955">Feu clic aquí per baixar el connector</translation>

@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">Google Chrome にお気に入り/ブックマークをインポートしています。</translation>
 <translation id="8970027151245482499">Google Chrome がインストールされていないか、インストールされたディレクトリが見つかりません。Google Chrome をダウンロードし直してください。</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
-<translation id="3044696659294460858">拡張機能を使用できる最新バージョンの Google Chrome をぜひお試しください。</translation>
 <translation id="4281844954008187215">利用規約</translation>
 <translation id="3555616473548901994">アンインストールが完了しました。</translation>
+<translation id="8556340503434111824">さらに高速になった Google Chrome の最新バージョンをぜひお試しください。</translation>
 <translation id="1826297811907343327">キャンセルすると一部のアイテムはインポートされません。Google Chrome のメニューから後で再度インポートすることができます。</translation>
 <translation id="4728575227883772061">原因不明のエラーによりインストールが失敗しました。実行中の Google Chrome を終了してからやり直してください。</translation>
 <translation id="4149882025268051530">インストーラー アーカイブを解凍できませんでした。Google Chrome をダウンロードし直してください。</translation>
+<translation id="6989339256997917931">Google Chrome が更新されましたが、30 日間以上使用されていません。</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Google Chrome のインストール先ディレクトリが現在使用中です。パソコンを再起動して、もう一度やり直してください。</translation>
 <translation id="6817660909204164466">使用統計データや障害レポートを Google に自動送信して Google Chrome の機能向上に役立てる</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google Chrome の動作がおかしい</translation>
 <translation id="3889417619312448367">Google Chrome をアンインストール</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">安全性がさらに向上した Google Chrome の最新バージョンをぜひお試しください。</translation>
 <translation id="8810218179782551669">Google Chrome の言語:</translation>
 <translation id="7001386529596391893">Google Chrome のショートカットを作成する場所:</translation>
 <translation id="7461436095086637522">Chrome Profile Importer</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">バージョンが新しい Google Chrome のプロフィールは使用できません。\n\n一部の機能が使用できない可能性があります。別の場所のプロフィールを指定するか、新しいバージョンの Chrome をご使用ください</translation>
 <translation id="7214670531148488183">Google Chrome は、より快適なブラウジングを提供する目的でウェブサービスを使用することがあります。これらは無効にすることもできます。</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">オプション: 使用状況データと障害レポートを Google に自動送信して Google Chrome の機能向上に\n役立てる。</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">閲覧データも削除しますか？</translation>
 <translation id="2044287590254833138">Google Chrome ツールバー</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">Google Chrome は <ph name="OS_NAME"/> に対応していません。</translation>
 <translation id="473183893665420670">Google Chrome オプションをリセットすると、これまでの変更がすべて消去され既定の設定に戻ります。Chrome オプションをリセットしますか？</translation>
 <translation id="3636771339108070045">より新しいバージョンの Google Chrome が既にインストールされています。Google Chrome が動作しない場合は、それをアンインストールしてから新しくダウンロードし直してください。</translation>
-<translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">インストーラー アーカイブが壊れているか無効です。Google Chrome をダウンロードし直してください。</translation>
 <translation id="6626317981028933585">Mozilla Firefox の設定を Google Chrome にインポートするには、まず Firefox のウィンドウをすべて閉じてください。その後 [続行] をクリックしてください。</translation>

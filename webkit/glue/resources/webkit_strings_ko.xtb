@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
 <translation id="4519964825805946997"><ph name="URL"/>의 플러그인 설치 실패</translation>
+<translation id="9186171386827445984">문서 로드 중: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/>페이지</translation>
 <translation id="1235745349614807883">최근 검색 삭제</translation>
 <translation id="5048533449481078685">목록 표시기</translation>
 <translation id="372362261556059955">추가 플러그인 필요</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">플러그인 설치 실패</translation>
 <translation id="8141602879876242471">이것은 검색 색인합니다. 검색 키워드 입력:</translation>
 <translation id="5650795167354946011">플러그인 설치 후 여기를 클릭하여 새로고침</translation>
+<translation id="370665806235115550">로드 중...</translation>
 <translation id="6845533974506654842">누르기</translation>
 <translation id="8244226242650769279">이미지 지도</translation>
 <translation id="2548326553472216322">최근 수행된 검색 없음</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419"><ph name="PLUGIN"/> 플러그인을 설치할지 여부를 확인하시기 바랍니다. 신뢰할 수 있는 플러그인만 설치해야 합니다.</translation>
 <translation id="6663448176199120256">최근 수행된 검색</translation>
 <translation id="2597378329261239068">문서가 비밀번호로 보호되고 있습니다. 비밀번호를 입력하세요.</translation>
-<translation id="6807599807928161586">웹 영역</translation>
+<translation id="7740050170769002709">HTML 콘텐츠</translation>
 <translation id="5939518447894949180">재설정</translation>
 <translation id="1842960171412779397">선택</translation>
 <translation id="7638452146404718955">여기를 클릭하여 플러그인 다운로드</translation>

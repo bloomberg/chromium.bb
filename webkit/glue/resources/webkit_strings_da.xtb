@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
 <translation id="4519964825805946997">Installation af plugin fra <ph name="URL"/> mislykkedes</translation>
+<translation id="9186171386827445984">Indlæser dokument: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> sider...</translation>
 <translation id="1235745349614807883">Slet nylige søgninger</translation>
 <translation id="5048533449481078685">listemarkering</translation>
 <translation id="372362261556059955">Ekstra plugin påkrævet</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">Installation af plugin mislykkedes</translation>
 <translation id="8141602879876242471">Der kan søges i dette indeks. Indtast søge-nøgleord:</translation>
 <translation id="5650795167354946011">Når du har installeret plugin'et, skal du klikke her for at opdatere</translation>
+<translation id="370665806235115550">Indlæser ...</translation>
 <translation id="6845533974506654842">tryk</translation>
 <translation id="8244226242650769279">billedekort</translation>
 <translation id="2548326553472216322">Ingen nylige søgninger</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">Bekræft, at du vil installere dette <ph name="PLUGIN"/>-plugin. Du skal kun installere plugins, som du har tillid til.</translation>
 <translation id="6663448176199120256">Nylige søgninger</translation>
 <translation id="2597378329261239068">Dette dokument er adgangskodebeskyttet. Indtast en adgangskode.</translation>
-<translation id="6807599807928161586">webområde</translation>
+<translation id="7740050170769002709">HTML-indhold</translation>
 <translation id="5939518447894949180">Nulstil</translation>
 <translation id="1842960171412779397">vælg</translation>
 <translation id="7638452146404718955">Klik her for at downloade plugin</translation>

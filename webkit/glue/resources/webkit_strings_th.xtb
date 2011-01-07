@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
 <translation id="4519964825805946997">การติดตั้งปลั๊กอินจาก <ph name="URL"/> ล้มเหลว</translation>
+<translation id="9186171386827445984">กำลังโหลดเอกสาร: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> หน้า...</translation>
 <translation id="1235745349614807883">ลบการค้นหาล่าสุด</translation>
 <translation id="5048533449481078685">ผู้สร้างรายการ</translation>
 <translation id="372362261556059955">ต้องการปลั๊กอินเพิ่มเติม</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">การติดตั้งปลั๊กอินล้มเหลว</translation>
 <translation id="8141602879876242471">นี่คือดัชนีที่สามารถค้นหาได้ ป้อนคำหลักในการค้นหา:</translation>
 <translation id="5650795167354946011">หลังจากติดตั้งปลั๊กอิน ให้คลิกที่นี่เพื่อรีเฟรช</translation>
+<translation id="370665806235115550">กำลังโหลด...</translation>
 <translation id="6845533974506654842">กด</translation>
 <translation id="8244226242650769279">แผนที่รูปภาพ</translation>
 <translation id="2548326553472216322">ไม่พบการค้นหาล่าสุด</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">โปรดยืนยันว่าคุณต้องการติดตั้งปลั๊กอิน <ph name="PLUGIN"/> คุณควรติดตั้งเฉพาะปลั๊กอินที่คุณไว้ใจเท่านั้น</translation>
 <translation id="6663448176199120256">การค้นหาล่าสุด</translation>
 <translation id="2597378329261239068">เอกสารนี้ได้รับการป้องกันด้วยรหัสผ่าน โปรดป้อนรหัสผ่าน</translation>
-<translation id="6807599807928161586">พื้นที่เว็บ</translation>
+<translation id="7740050170769002709">เนื้อหา HTML</translation>
 <translation id="5939518447894949180">ตั้งค่าใหม่</translation>
 <translation id="1842960171412779397">เลือก</translation>
 <translation id="7638452146404718955">คลิกที่นี่เพื่อดาวน์โหลดปลั๊กอิน</translation>

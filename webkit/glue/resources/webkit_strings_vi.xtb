@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
 <translation id="4519964825805946997">Cài đặt trình cắm từ <ph name="URL"/> không thành công</translation>
+<translation id="9186171386827445984">Đang tải tài liệu: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> trang...</translation>
 <translation id="1235745349614807883">Xoá Tìm kiếm Gần đây</translation>
 <translation id="5048533449481078685">đánh dấu danh sách</translation>
 <translation id="372362261556059955">Cần trình cắm bổ sung</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">Cài đặt trình cắm không thành công</translation>
 <translation id="8141602879876242471">Đây là chỉ mục có thể tìm kiếm. Nhập từ khoá tìm kiếm vào:</translation>
 <translation id="5650795167354946011">Sau khi cài đặt trình cắm, hãy nhấp vào đây để làm mới</translation>
+<translation id="370665806235115550">Đang tải...</translation>
 <translation id="6845533974506654842">nhấn</translation>
 <translation id="8244226242650769279">bản đồ hình ảnh</translation>
 <translation id="2548326553472216322">Không có tìm kiếm nào gần đây</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">Vui lòng xác nhận rằng bạn muốn cài đặt trình cắm <ph name="PLUGIN"/>. Bạn chỉ nên cài đặt những trình cắm mà bạn tin tưởng.</translation>
 <translation id="6663448176199120256">Tìm kiếm Gần đây</translation>
 <translation id="2597378329261239068">Tài liệu này được bảo vệ bằng mật khẩu. Vui lòng nhập mật khẩu.</translation>
-<translation id="6807599807928161586">khu vực web</translation>
+<translation id="7740050170769002709">Nội dung HTML</translation>
 <translation id="5939518447894949180">Đặt lại</translation>
 <translation id="1842960171412779397">chọn</translation>
 <translation id="7638452146404718955">Nhấp vào đây để tải xuống trình cắm</translation>

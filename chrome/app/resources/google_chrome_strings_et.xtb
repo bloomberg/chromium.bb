@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">Google Chrome impordib nüüd lemmikud/järjehoidjad.</translation>
 <translation id="8970027151245482499">Google Chrome ei ole installitud või installikataloogi ei leitud. Palun laadige Google Chrome uuesti alla.</translation>
 <translation id="2040709530900803995">Google Chrome'i renderdaja</translation>
-<translation id="3044696659294460858">Saadaval on Google Chrome'i uus versioon, mis sisaldab laiendusi.</translation>
 <translation id="4281844954008187215">Kasutustingimused</translation>
 <translation id="3555616473548901994">Desinstallimine on lõpetatud.</translation>
+<translation id="8556340503434111824">Saadaval on uus Google Chrome'i versioon ja see on senistest kiireim.</translation>
 <translation id="1826297811907343327">Kui tühistate praegu importimise, siis ei impordita kõiki üksuseid. Võite hiljem Google Chrome'i menüü kaudu uuesti importida.</translation>
 <translation id="4728575227883772061">Install ebaõnnestus määramata vea tõttu. Kui Google Chrome parasjagu töötab, siis palun sulgege see ja proovige uuesti.</translation>
 <translation id="4149882025268051530">Installijal ei õnnestunud arhiivi lahti pakkida. Palun laadige Google Chrome uuesti alla.</translation>
+<translation id="6989339256997917931">Google Chrome'i on värskendatud, aga te pole seda kasutanud vähemalt 30 päeva.</translation>
 <translation id="5744005218040929396">Google Chrome'i utiliit</translation>
 <translation id="4343226815564935778">Google Chrome'i installikataloog paistab olevat kasutusel. Taaskäivitage arvuti ja proovige uuesti.</translation>
 <translation id="6817660909204164466">Aidake muuta Google Chrome'i paremaks, saates Google'ile automaatselt kasutusstatistikat ja veaaruandeid</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google Chrome'i ei toimi korralikult</translation>
 <translation id="3889417619312448367">Google Chrome'i desinstallimine</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">Saadaval on uus ja turvalisem Google Chrome'i versioon.</translation>
 <translation id="8810218179782551669">Google Chrome'i keel:</translation>
 <translation id="7001386529596391893">Loo Chrome'i otseteed järgmistesse kohtadesse:</translation>
 <translation id="7461436095086637522">Chrome'i Profile Importer</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">Teie profiili ei saa kasutada, kuna see pärineb uuemast Google Chrome'i versioonist.\n\nMõned funktsioonid ei pruugi olla kättesaadavad. Palun täpsustage mõni teine profiilikaust või kasutage Chrome'i uuemat versiooni.</translation>
 <translation id="7214670531148488183">Google Chrome võib sirvimise parandamiseks kasutada veebiteenuseid — võite neid teenuseid valikuliselt keelata.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">Valikuline: aidake muuta Google Chrome'i paremaks, saates Google'ile automaatselt\nkasutusstatistikat ja krahhiaruandeid</translation>
 <translation id="5008136264574452501">Google Chrome Canary järk</translation>
 <translation id="911206726377975832">Kas kustutada ka teie sirvimisandmed?</translation>
 <translation id="2044287590254833138">Google Chrome'i tööriistariba</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">Google Chrome ei toeta <ph name="OS_NAME"/>.</translation>
 <translation id="473183893665420670">Google Chrome'i valikute lähtestamisega taastatakse teie tehtud muudatused vaikeseadetele. Kas soovite Chrome'i valikud lähtestada?</translation>
 <translation id="3636771339108070045">Selles arvutis on juba Google Chrome'i viimane versioon. Kui tarkvara ei tööta, desinstallige palun Google Chrome ja laadige see uuesti alla.</translation>
-<translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3360895254066713204">Chrome'i abistaja</translation>
 <translation id="1001534784610492198">Installija arhiiv on rikutud või kehtetu. Palun laadige Google Chrome uuesti alla.</translation>
 <translation id="6626317981028933585">Kahjuks pole teie Mozilla Firefoxi seaded saadaval samal ajal kui brauser töötab. Nende seadete Google Chrome'i importimiseks salvestage oma töö ja sulgege kõik Firefoxi aknad. Siis klõpsake Jätka.</translation>

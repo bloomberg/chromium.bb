@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">「Google 瀏覽器」現正匯入 [我的最愛/書籤]。</translation>
 <translation id="8970027151245482499">「Google 瀏覽器」並未安裝或找不到安裝目錄，請再次下載「Google 瀏覽器」。</translation>
 <translation id="2040709530900803995">Google 瀏覽器成像器</translation>
-<translation id="3044696659294460858">我們推出了包含擴充功能的新版本「Google 瀏覽器」。</translation>
 <translation id="4281844954008187215">服務條款</translation>
 <translation id="3555616473548901994">解除安裝已完成。</translation>
+<translation id="8556340503434111824">Google 瀏覽器推出全新版本，速度更勝以往。</translation>
 <translation id="1826297811907343327">如果您現在取消，即不會匯入所有項目。您之後可在「Google 瀏覽器」功能表中再次匯入。</translation>
 <translation id="4728575227883772061">安裝因不明錯誤而失敗。如果「Google 瀏覽器」目前正在執行中，請將其關閉然後再試一次。</translation>
 <translation id="4149882025268051530">安裝程式無法解壓縮封存檔案，請再次下載「Google 瀏覽器」。</translation>
+<translation id="6989339256997917931">「Google 瀏覽器」已更新，但您至少已有 30 天未使用該瀏覽器。</translation>
 <translation id="5744005218040929396">Google 瀏覽器公用程式</translation>
 <translation id="4343226815564935778">「Google 瀏覽器」安裝目錄使用中。請重新啟動電腦，然後再試一次。</translation>
 <translation id="6817660909204164466">只要自動傳送使用統計資料及當機報告給 Google，就能助我們一臂之力，讓 Google 瀏覽器更臻完美。</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google 瀏覽器反應異常</translation>
 <translation id="3889417619312448367">解除安裝 Google 瀏覽器</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google 瀏覽器</translation>
+<translation id="3089968997497233615">Google 瀏覽器推出全新版本，安全性更勝以往。</translation>
 <translation id="8810218179782551669">Google 瀏覽器語言：</translation>
 <translation id="7001386529596391893">在下列位置建立 Google 瀏覽器捷徑：</translation>
 <translation id="7461436095086637522">瀏覽器設定檔匯入工具</translation>
@@ -50,8 +52,7 @@
 <translation id="8899050679030089927">為使這項變更生效，請關閉所有「Google 瀏覽器」視窗並重新啟動瀏覽器。</translation>
 <translation id="3324235665723428530">您的設定檔由於來自較新版本的 Google 瀏覽器，所以無法使用。\n\n某些功能可能無法提供。請指定另一個設定檔目錄，或使用較新版本的 Google 瀏覽器。</translation>
 <translation id="7214670531148488183">「Google 瀏覽器」會使用網頁服務來改善瀏覽功能，當然您也可以選擇停用這些服務。</translation>
-<translation id="1759842336958782510">Google 瀏覽器</translation>
-<translation id="5840402478666768335">選用：只要設定將使用統計資料及當機報告自動傳送給 Google，\n就能助我們一臂之力，讓「Google 瀏覽器」更臻完美。</translation>
+<translation id="1759842336958782510">瀏覽器</translation>
 <translation id="5008136264574452501">Google Chrome Canary 版本</translation>
 <translation id="911206726377975832">您要一併刪除瀏覽資料嗎？</translation>
 <translation id="2044287590254833138">Google 瀏覽器工具列</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">Google 瀏覽器不支援 <ph name="OS_NAME"/>。</translation>
 <translation id="473183893665420670">重設「Google 瀏覽器」選項時，先前的變更將返回預設設定。確定要重設「Google 瀏覽器」選項嗎？</translation>
 <translation id="3636771339108070045">此電腦已有更新的「Google 瀏覽器」版本可供使用，如果軟體無法順利運作，請移除「Google 瀏覽器」，然後重新下載一次。</translation>
-<translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3360895254066713204">瀏覽器小幫手</translation>
 <translation id="1001534784610492198">安裝程式封存檔案已經損壞或無效，請再次下載「Google 瀏覽器」。</translation>
 <translation id="6626317981028933585">抱歉，我們無法在 Mozilla Firefox 執行時取得其設定。如果要匯入這些設定至 Google 瀏覽器，請儲存您的工作，並關閉所有 Firefox 視窗。然後按一下 [繼續]。</translation>

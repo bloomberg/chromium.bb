@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">Kini Google Chrome mengimpor Favorites/Bookmark.</translation>
 <translation id="8970027151245482499">Google Chrome tidak terinstal atau gagal menemukan direktori penginstalan. Unduh kembali Google Chrome.</translation>
 <translation id="2040709530900803995">Pengaju Google Chrome</translation>
-<translation id="3044696659294460858">Tersedia Google Chrome versi baru yang disertai ekstensi.</translation>
 <translation id="4281844954008187215">Persyaratan Layanan</translation>
 <translation id="3555616473548901994">Pencopotan pemasangan selesai.</translation>
+<translation id="8556340503434111824">Tersedia versi Google Chrome yang baru, dan versi ini lebih cepat dari sebelumnya.</translation>
 <translation id="1826297811907343327">Jika Anda membatalkan sekarang, tidak semua item akan diimpor. Anda dapat mengimpor lagi nanti dari menu Google Chrome.</translation>
 <translation id="4728575227883772061">Penginstalan gagal karena galat yang tidak diketahui. Jika Google Chrome sedang berjalan; tutup, lalu ulang kembali.</translation>
 <translation id="4149882025268051530">Instalatur gagal mendekompresi arsip. Unduh kembali Google Chrome.</translation>
+<translation id="6989339256997917931">Google Chrome telah diperbarui, tetapi Anda belum menggunakannya selama setidaknya 30 hari.</translation>
 <translation id="5744005218040929396">Utilitas Google Chrome</translation>
 <translation id="4343226815564935778">Direktori instalasi Google Chrome kelihatannya sedang digunakan. Nyalakan ulang komputer dan coba lagi.</translation>
 <translation id="6817660909204164466">Bantu Google Chrome menjadi lebih baik dengan mengirim statistik penggunaan dan laporan kerusakan secara otomatis ke Google</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google Chrome mengalami kesalahan</translation>
 <translation id="3889417619312448367">Hapus Penginstalan Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">Tersedia versi Google Chrome yang baru dan lebih aman.</translation>
 <translation id="8810218179782551669">Bahasa Google Chrome:</translation>
 <translation id="7001386529596391893">Buat cara pintas Google Chrome di lokasi ini:</translation>
 <translation id="7461436095086637522">Pengimpor Profil Chrome</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">Profil Anda tidak dapat digunakan karena berasal dari versi Google Chrome yang lebih baru.\n\nBeberapa fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda atau gunakan versi Chrome terbaru.</translation>
 <translation id="7214670531148488183">Google Chrome mungkin akan menggunakan layanan web untuk meningkatkan pengalaman perambanan. Anda dapat menonaktifkan layanan ini.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">Opsional: Bantu Google Chrome menjadi lebih baik dengan mengirim statistik penggunaan dan\nlaporan kerusakan ke Google secara otomatis</translation>
 <translation id="5008136264574452501">Build Google Chrome Canary</translation>
 <translation id="911206726377975832">Hapus juga data rambanan Anda?</translation>
 <translation id="2044287590254833138">Toolbar Google Chrome</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">Google Chrome tidak mendukung <ph name="OS_NAME"/>.</translation>
 <translation id="473183893665420670">Saat Anda menyetel ulang Opsi Google Chrome, perubahan apa pun yang Anda lakukan akan dikembalikan ke setelan bawaan. Apakah Anda ingin menyetel ulang opsi Chrome?</translation>
 <translation id="3636771339108070045">Komputer ini telah menginstal versi Google Chrome yang lebih baru. Jika perangkat lunak tidak berfungsi, hapus penginstalan Google Chrome, kemudian unduh kembali.</translation>
-<translation id="4407807842708586359">OS Google Chrome</translation>
 <translation id="3360895254066713204">Pembantu Chrome</translation>
 <translation id="1001534784610492198">Arsip instalatur rusak atau tidak valid. Unduh kembali Google Chrome.</translation>
 <translation id="6626317981028933585">Sayangnya, pengaturan Mozilla Firefox tidak tersedia sewaktu browser berjalan. Untuk mengimpor pengaturan ke Google Chrome, simpan pekerjaan dan tutup semua jendela Firefox. Kemudian klik Lanjutkan.</translation>

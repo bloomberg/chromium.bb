@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="kn">
 <translation id="4519964825805946997"><ph name="URL"/> ನಿಂದ ಪ್ಲಗ್-ಇನ್ ಅನ್ನು ಸ್ಥಾಪಿಸುವಲ್ಲಿ ವಿಫಲವಾಗಿದೆ</translation>
+<translation id="9186171386827445984">ಲೋಡಿಂಗ್ ಡಾಕ್ಯುಮೆಂಟ್: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> ಪುಟಗಳು...</translation>
 <translation id="1235745349614807883">ಇತ್ತೀಚಿನ ಹುಡುಕಾಟವನ್ನು ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="5048533449481078685">ಪಟ್ಟಿ ಗುರುತು</translation>
 <translation id="372362261556059955">ಹೆಚ್ಚುವರಿ ಪ್ಲಗ್-ಇನ್ ಅಗತ್ಯವಿದೆ</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">ಪ್ಲಗ್-ಇನ್ ಅಳವಡಿಸುವಿಕೆಯು ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="8141602879876242471">ಇದು ಹುಡುಕಾಡಬಹುದಾದ ಸೂಚಿಕೆ ಹುಡುಕಾಟ ಕೀವರ್ಡ್‌ಗಳನ್ನು ನಮೂದಿಸಿ:</translation>
 <translation id="5650795167354946011">ಪ್ಲಗ್-ಇನ್ ಸ್ಥಾಪನೆ ಮಾಡಿದ ನಂತರ, ರಿಫ್ರೆಶ್‌‌ ಮಾಡಲು ಇಲ್ಲಿ ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
+<translation id="370665806235115550">ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="6845533974506654842">ಒತ್ತಿ</translation>
 <translation id="8244226242650769279">ಇಮೇಜ್ ನಕ್ಷೆ</translation>
 <translation id="2548326553472216322">ಇತ್ತೀಚಿನ ಹುಡುಕಾಟಗಳು ಇಲ್ಲ</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">ನೀವು <ph name="PLUGIN"/> ಪ್ಲಗ್-ಇನ್ ಅನ್ನು ಅಳವಡಿಸಲು ಬಯಸುವುದಾದಲ್ಲಿ ದಯವಿಟ್ಟು ಖಚಿತಪಡಿಸಿ. ನೀವು ನಂಬುವಂತಹ ಫ್ಲಗ್-ಇನ್‌ಗಳನ್ನು ಮಾತ್ರ ನೀವು ಅಳವಡಿಸಬೇಕು.</translation>
 <translation id="6663448176199120256">ಇತ್ತೀಚಿನ ಹುಡುಕಾಟಗಳು</translation>
 <translation id="2597378329261239068">ಈ ಡಾಕ್ಯುಮೆಂಟ್‌ ಅನ್ನು ಪಾಸ್‌ವರ್ಡ್‌ನಿಂದ ರಕ್ಷಿಸಲಾಗಿದೆ. ದಯವಿಟ್ಟು ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ನಮೂದಿಸಿ.</translation>
-<translation id="6807599807928161586">ವೆಬ್ ಪ್ರದೇಶ</translation>
+<translation id="7740050170769002709">HTML ವಿಷಯ</translation>
 <translation id="5939518447894949180">ಮರುಹೊಂದಿಸು</translation>
 <translation id="1842960171412779397">ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="7638452146404718955">ಪ್ಲಗ್-ಇನ್ ಅನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು ಇಲ್ಲಿ ಕ್ಲಿಕ್ ಮಾಡಿ</translation>

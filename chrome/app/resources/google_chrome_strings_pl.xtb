@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">Google Chrome rozpoczął importowanie Ulubionych/Zakładek.</translation>
 <translation id="8970027151245482499">Przeglądarka Google Chrome nie jest zainstalowana lub znalezienie katalogu instalacyjnego nie powiodło się. Pobierz Google Chrome ponownie.</translation>
 <translation id="2040709530900803995">Moduł renderowania Google Chrome</translation>
-<translation id="3044696659294460858">Dostępna jest nowa wersja przeglądarki Google Chrome, która obejmuje rozszerzenia.</translation>
 <translation id="4281844954008187215">Warunki korzystania z usługi</translation>
 <translation id="3555616473548901994">Zakończono odinstalowywanie.</translation>
+<translation id="8556340503434111824">Dostępna jest nowa, szybsza niż kiedykolwiek wersja przeglądarki Google Chrome.</translation>
 <translation id="1826297811907343327">Jeśli anulujesz teraz operację, nie wszystkie elementy zostaną zaimportowane. Elementy możesz później zaimportować ponownie za pomocą menu przeglądarki Google Chrome.</translation>
 <translation id="4728575227883772061">Instalacja nie powiodła się z powodu nieokreślonego błędu. Jeśli Google Chrome jest aktualnie uruchomiony, zamknij aplikację i spróbuj ponownie.</translation>
 <translation id="4149882025268051530">Instalator nie może prawidłowo rozpakować archiwum. Pobierz Google Chrome ponownie.</translation>
+<translation id="6989339256997917931">Przeglądarka Google Chrome została zaktualizowana, ale nie była przez Ciebie używana przez co najmniej 30 dni.</translation>
 <translation id="5744005218040929396">Program Google Chrome</translation>
 <translation id="4343226815564935778">Katalog instalacyjny przeglądarki Google Chrome jest prawdopodobnie używany. Uruchom ponownie komputer i ponów próbę.</translation>
 <translation id="6817660909204164466">Pomóż ulepszyć aplikację Google Chrome, automatycznie przesyłając statystyki użytkowania i raporty o awariach do Google</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google Chrome zachowuje się niegrzecznie</translation>
 <translation id="3889417619312448367">Odinstaluj Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">Dostępna jest nowa, bezpieczniejsza wersja przeglądarki Google Chrome.</translation>
 <translation id="8810218179782551669">Język przeglądarki Google Chrome:</translation>
 <translation id="7001386529596391893">Utwórz skróty przeglądarki Chrome w tych miejscach:</translation>
 <translation id="7461436095086637522">Moduł importowania profili Chrome</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">Twój profil nie może zostać użyty ponieważ został utworzony w nowszej wersji przeglądarki Chrome.\n\nNiektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub użyj nowszej wersji przeglądarki Chrome.</translation>
 <translation id="7214670531148488183">Przeglądarka Google Chrome może korzystać z usług sieciowych w celu poprawy wygody użytkowania. Usługi te można opcjonalnie wyłączyć.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">Opcjonalnie: pomóż udoskonalić przeglądarkę Google Chrome, automatycznie wysyłając do Google\nstatystyki użytkowania i raporty o awariach</translation>
 <translation id="5008136264574452501">Kompilacja Google Chrome Canary</translation>
 <translation id="911206726377975832">Czy usunąć także dane przeglądarki?</translation>
 <translation id="2044287590254833138">Pasek narzędzi Google Chrome</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">Google Chrome nie obsługuje systemu <ph name="OS_NAME"/>.</translation>
 <translation id="473183893665420670">Po zresetowaniu opcji Google Chrome wszelkie wprowadzone zmiany zostaną cofnięte do ustawień domyślnych. Czy chcesz zresetować opcje przeglądarki Chrome?</translation>
 <translation id="3636771339108070045">Na tym komputerze jest już zainstalowana nowsza wersja Google Chrome. Jeśli oprogramowanie nie działa, odinstaluj Google Chrome i pobierz go ponownie.</translation>
-<translation id="4407807842708586359">System operacyjny Google Chrome</translation>
 <translation id="3360895254066713204">Pomoc Chrome</translation>
 <translation id="1001534784610492198">Archiwum instalatora jest uszkodzone lub nieprawidłowe. Pobierz Google Chrome ponownie.</translation>
 <translation id="6626317981028933585">Niestety ustawienia przeglądarki Firefox są niedostępne, gdy aplikacja jest uruchomiona. Aby importować ustawienia do Google Chrome, zapisz bieżącą pracę i zamknij wszystkie okna Firefoxa. Następnie kliknij przycisk Kontynuj.</translation>

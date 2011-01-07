@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
 <translation id="4519964825805946997">Laajennuksen asennus osoitteesta <ph name="URL"/> epäonnistui</translation>
+<translation id="9186171386827445984">Ladataan asiakirjaa: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> sivua...</translation>
 <translation id="1235745349614807883">Poista viimeisimmät haut</translation>
 <translation id="5048533449481078685">luettelon merkitsijä</translation>
 <translation id="372362261556059955">Toinen laajennus vaaditaan</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">Laajennuksen asennus epäonnistui</translation>
 <translation id="8141602879876242471">Tämä on haettavissa oleva hakemisto. Anna hakusanat:</translation>
 <translation id="5650795167354946011">Päivitä laajennuksen asennuksen jälkeen napsauttamalla tästä</translation>
+<translation id="370665806235115550">Ladataan...</translation>
 <translation id="6845533974506654842">paina</translation>
 <translation id="8244226242650769279">kuvakartta</translation>
 <translation id="2548326553472216322">Ei viimeisimpiä hakuja</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">Vahvista, että haluat asentaa laajennuksen <ph name="PLUGIN"/>. Suosittelemme asentamaan vain laajennuksia, joihin luotat.</translation>
 <translation id="6663448176199120256">Viimeisimmät haut</translation>
 <translation id="2597378329261239068">Tämä asiakirja on suojattu salasanalla. Anna salasana.</translation>
-<translation id="6807599807928161586">verkkoalue</translation>
+<translation id="7740050170769002709">HTML-sisältö</translation>
 <translation id="5939518447894949180">Tyhjennä</translation>
 <translation id="1842960171412779397">Valitse</translation>
 <translation id="7638452146404718955">Lataa laajennus napsauttamalla tätä</translation>

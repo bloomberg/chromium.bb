@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">В момента Google Chrome импортира „Любими/Отметки“.</translation>
 <translation id="8970027151245482499">Google Chrome не е инсталиран или не е успял да намери инсталационната директория. Моля, изтеглете Google Chrome отново.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
-<translation id="3044696659294460858">Налице е нова версия на Google Chrome, която включва разширения.</translation>
 <translation id="4281844954008187215">Условия за ползване</translation>
 <translation id="3555616473548901994">Деинсталирането завърши.</translation>
+<translation id="8556340503434111824">Налице е нова версия на Google Chrome, която е по-бърза от всякога.</translation>
 <translation id="1826297811907343327">Ако анулирате сега, няма да бъдат импортирани всички елементи. Можете да импортирате отново по-късно от менюто на Google Chrome.</translation>
 <translation id="4728575227883772061">Инсталирането не бе успешно поради неизвестна грешка. Ако Google Chrome понастоящем работи, моля, затворете го и опитайте отново.</translation>
 <translation id="4149882025268051530">Инсталационната програма не успя да декомпресира архива. Моля, изтеглете Google Chrome отново.</translation>
+<translation id="6989339256997917931">Google Chrome е актуализиран, но не сте го използвали от поне 30 дни.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Изглежда, че директорията за инсталиране на Google Chrome се използва. Моля, рестартирайте компютъра си и опитайте отново.</translation>
 <translation id="6817660909204164466">Помогнете за усъвършенстването на Google Chrome чрез автоматично изпращане до Google на статистически данни за употребата и сигнали за сривове.</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google Chrome не работи нормално</translation>
 <translation id="3889417619312448367">Деинсталиране на Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">Налице е нова, по-сигурна версия на Google Chrome.</translation>
 <translation id="8810218179782551669">Език на Google Chrome:</translation>
 <translation id="7001386529596391893">Създаване на преки пътища до Google Chrome на следните места:</translation>
 <translation id="7461436095086637522">Chrome Profile Importer</translation>
@@ -52,7 +54,6 @@
 <translation id="3324235665723428530">Не можете да използвате профила си, тъй като той е от по-нова версия на Google Chrome.\n\nВъзможно е някои функции да са недостъпни. Моля посочете директория на друг профил или използвайте по-нова версия на Chrome.</translation>
 <translation id="7214670531148488183">Google Chrome може да използва уеб услуги, за да подобри сърфирането ви. Ако искате, можете да ги деактивирате.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">По избор: Помогнете за усъвършенстването на Google Chrome чрез автоматично изпращане до Google на статистически данни за употребата и\nсигнали за сривове</translation>
 <translation id="5008136264574452501">Ранна версия на Google Chrome</translation>
 <translation id="911206726377975832">Да се изтрият ли и данните от сърфирането?</translation>
 <translation id="2044287590254833138">Лента с инструменти на Google Chrome</translation>
@@ -89,7 +90,6 @@
 <translation id="3335672657969596251">Google Chrome не поддържа <ph name="OS_NAME"/>.</translation>
 <translation id="473183893665420670">Когато възстановите опциите на Google Chrome, всички направени от вас промени ще бъдат заменени с настройките по подразбиране. Искате ли да възстановите опциите на Google Chrome?</translation>
 <translation id="3636771339108070045">На този компютър вече има по-нова версия на Google Chrome. Ако софтуерът не работи, моля, деинсталирайте Google Chrome и го изтеглете отново.</translation>
-<translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">Архивът на инсталационната програма е повреден или невалиден. Моля, изтеглете Google Chrome отново.</translation>
 <translation id="6626317981028933585">За съжаление настройките на Mozilla Firefox са недостъпни, докато този браузър работи. За да импортирате тези настройки в Google Chrome, запазете работата си и затворете всички прозорци на Firefox. След това кликнете върху „Напред”.</translation>

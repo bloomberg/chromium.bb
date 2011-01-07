@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">اکنون Google Chrome درحال واردکردن نشانک ها/موارد دلخواه است.</translation>
 <translation id="8970027151245482499">Google Chrome نصب نشده است یا دایرکتوری نصب پیدا نشده است. لطفاً دوباره Google Chrome را دانلود کنید.</translation>
 <translation id="2040709530900803995">رندرساز Google Chrome</translation>
-<translation id="3044696659294460858">نسخه جدیدی از Google Chrome موجود است که دارای برنامه افزودنی می باشد.</translation>
 <translation id="4281844954008187215">شرایط استفاده از سرویس</translation>
 <translation id="3555616473548901994">حذف نصب انجام شد.</translation>
+<translation id="8556340503434111824">نسخه جدیدی از Google Chrome وجود دارد که سریعتر از همیشه است.</translation>
 <translation id="1826297811907343327">اگر اکنون لغو کنید، همه آیتم ها وارد نمی شوند. می توانید بعداً از منوی Google Chrome دوباره آن ها را وارد کنید.</translation>
 <translation id="4728575227883772061">به دلیل خطای نامشخص نصب ناموفق بود. اگر Google Chrome در حال اجرا است، لطفاً آن را ببندید و دوباره سعی کنید.</translation>
 <translation id="4149882025268051530">نصب کننده در خارج کردن آرشیو از حالت فشرده ناموفق بود. لطفاً دوباره Google Chrome را دانلود کنید.</translation>
+<translation id="6989339256997917931">Google Chrome به روز شده است اما حداقل 30 روز از آن استفاده نکرده اید.</translation>
 <translation id="5744005218040929396">برنامه کمکی Google Chrome</translation>
 <translation id="4343226815564935778">دایرکتوری نصب Google Chrome در حال استفاده است. لطفاً رایانه خود را مجدداً راه اندازی کنید و دوباره سعی کنید.</translation>
 <translation id="6817660909204164466">با ارسال خودکار آمار استفاده و گزارشهای خرابی به Google، به بهتر شدن Google Chrome کمک کنید.</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google Chrome درست عمل نمی کند</translation>
 <translation id="3889417619312448367">حذف نصب Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">نسخه جدید و امن تری از Google Chrome موجود است.</translation>
 <translation id="8810218179782551669">زبان Google Chrome:</translation>
 <translation id="7001386529596391893">ایجاد میانبرهای Google Chrome در این مکانها:</translation>
 <translation id="7461436095086637522">واردکننده نمایه Chrome</translation>
@@ -43,6 +45,7 @@
 <translation id="2499193704281978000">Google Chrome جواب نمی دهد. دوباره راه اندازی شود؟</translation>
 <translation id="2580411288591421699">نمی توان همان نسخه Google Chrome را که اکنون در حال اجراست نصب کرد. لطفاً Google Chrome را ببندید و دوباره سعی کنید.</translation>
 <translation id="7747138024166251722">نصب کننده نتوانست دایرکتوری موقت ایجاد کند. لطفاً فضای خالی دیسک و اجازه نصب نرم افزار را بررسی کنید.</translation>
+<translation id="6008953001134414503">لطفاً برای اعمال این تغییر، از سیستم عامل Google Chrome خارج شده و دوباره به سیستم وارد شوید.</translation>
 <translation id="6009537148180854585">سعی داشتید به &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; برسید، اما گواهی ارائه شده از سوی سرور دارای خطا است. Google Chrome نمی تواند از گواهی دارای خطا استفاده کند و نمی تواند هویت سایتی را تعیین کند که می خواهید به آن وصل شوید. اتصال شما ایمن نیست و نباید ادامه دهید.</translation>
 <translation id="8738921060445980047">نسخه ناشناخته.</translation>
 <translation id="2485422356828889247">حذف نصب</translation>
@@ -50,7 +53,6 @@
 <translation id="3324235665723428530">استفاده از نمایه شما ممکن نیست چون از نسخه جدیدتر Google Chrome است. ممکن است برخی از ویژگیها در دسترس نباشند. لطفاً دایرکتوری نمایه دیگری را تعیین کنید یا نسخه جدیدتر Chrome را استفاده کنید.</translation>
 <translation id="7214670531148488183">Google Chrome می تواند برای بهبود تجربه مرور، از خدمات وب استفاده کند. اگر بخواهید می توانید این خدمات را غیر فعال کنید.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">اختیاری: با ارسال خودکار آمار کاربرد و گزارشهای خرابی به Google، به پیشرفت Google Chrome\nکمک کنید.</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">داده های مرور شما نیز حذف شود؟</translation>
 <translation id="2044287590254833138">نوارابزار Google Chrome</translation>
@@ -86,7 +88,6 @@
 <translation id="3335672657969596251">Google Chrome از <ph name="OS_NAME"/> پشتیبانی نمی کند.</translation>
 <translation id="473183893665420670">وقتی گزینه های Google Chrome را بازنشانی می کنید کلیه تغییراتی که انجام شده است به تنظیمات پیش فرض برمی گردد. آیا می خواهید گزینه های Chrome بازنشانی شوند؟</translation>
 <translation id="3636771339108070045">این رایانه دارای نسخه جدیدتر Google Chrome است. اگر نرم افزار کار نمی کند، لطفاً Google Chrome را غیر فعال کنید و دوباره آن را دانلود کنید.</translation>
-<translation id="4407807842708586359">سیستم عامل Google Chrome</translation>
 <translation id="3360895254066713204">راهنمای Chrome</translation>
 <translation id="1001534784610492198">آرشیو نصب کننده خراب یا نامعتبر است. لطفا دوباره Google Chrome را دانلود کنید.</translation>
 <translation id="6626317981028933585">متأسفانه تنظیمات Mozilla Firefox شما هنگام باز بودن مرورگر در دسترس نیست. برای واردکردن آن تنظیمات در Google Chrome، کارهای خود را ذخیره کنید و همه پنجره های Firefox را ببندید. سپس ادامه را کلیک کنید.</translation>

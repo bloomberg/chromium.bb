@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">A kedvencek és könyvjelzők importálása folyamatban van.</translation>
 <translation id="8970027151245482499">A Google Chrome nincs telepítve, vagy nem sikerült megtalálnia a telepítés könyvtárát. Kérjük, töltse le újra a Google Chrome böngészőt.</translation>
 <translation id="2040709530900803995">Google Chrome renderelő</translation>
-<translation id="3044696659294460858">Megjelent a Google Chrome egy újabb verziója, amelyik tartalmazza a bővítményeket</translation>
 <translation id="4281844954008187215">Általános Szerződési Feltételek</translation>
 <translation id="3555616473548901994">Az eltávolítás befejeződött.</translation>
+<translation id="8556340503434111824">Elérhető a Google Chrome új verziója, amely gyorsabb, mint ezelőtt bármikor.</translation>
 <translation id="1826297811907343327">Ha most kilép, akkor nem importálja az összes elemet. Később újra elvégezheti az importálást a Google Chrome menüjéből.</translation>
 <translation id="4728575227883772061">A telepítés váratlan hiba miatt nem sikerült. Ha a Google Chrome jelenleg fut, zárja be, majd próbálkozzon újra.</translation>
 <translation id="4149882025268051530">Nem sikerült a telepítőnek kibontani a tömörített állományt. Kérjük, töltse le újra a Google Chrome böngészőt.</translation>
+<translation id="6989339256997917931">A Google Chrome frissítése megtörtént, de nem használta a böngészőt legalább 30 napja.</translation>
 <translation id="5744005218040929396">Google Chrome segédprogram</translation>
 <translation id="4343226815564935778">A Google Chrome telepítési mappa használatban van. Kérjük, indítsa újra a számítógépet és próbálja újra.</translation>
 <translation id="6817660909204164466">Segítsen a Chrome fejlesztésében: engedélyezze, hogy a program automatikusan elküldje a használati statisztikákat és a hibajelentéseket a Google részére</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">A Google Chrome nem működik megfelelően</translation>
 <translation id="3889417619312448367">A Google Chrome eltávolítása</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">Elérhető a Google Chrome új, biztonságosabb verziója.</translation>
 <translation id="8810218179782551669">A Google Chrome nyelve:</translation>
 <translation id="7001386529596391893">Google Chrome parancsikonok létrehozása ezekhez a webhelyekhez:</translation>
 <translation id="7461436095086637522">Chrome profilimportáló</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">A profilja nem működik, mert az a Google Chrome egy újabb verziójából származik.\n\nLehetséges, hogy néhány funkció nem lesz elérhető. Kérjük, adjon meg egy másik profilmappát vagy használja a Google Chrome újabb verzióját.</translation>
 <translation id="7214670531148488183">A Google Chrome internetes szolgáltatásokat is használ a böngészés javításának érdekében - ezek a szolgáltatások letilthatók.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">Nem kötelező: Segítsen a Google Chrome fejlesztésében azáltal, hogy automatikusan elküldi a használati statisztikákat és hibabejelentéseket a Google részére</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">Törli a böngészési adatait is?</translation>
 <translation id="2044287590254833138">Google Chrome Eszköztár</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">A Google Chrome nem támogatja ezt az operációs rendszert: <ph name="OS_NAME"/>.</translation>
 <translation id="473183893665420670">Amikor alaphelyzetbe állítja a Google Chrome opcióit, a rendszer visszaállítja az eredeti beállításokat. Vissza szeretné állítani a Chrome beállításait?</translation>
 <translation id="3636771339108070045">A számítógépen már megtalálható a Google Chrome újabb verziója. Ha a szoftver nem működik, kérjük, távolítsa el, majd töltse le újra a Google Chrome alkalmazást.</translation>
-<translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3360895254066713204">Chrome segéd</translation>
 <translation id="1001534784610492198">A telepítő tömörített állománya megsérült vagy érvénytelen. Kérjük, töltse le újra a Google Chrome böngészőt.</translation>
 <translation id="6626317981028933585">Sajnos a Mozilla Firefox beállításai nem érhetők el, amikor a böngésző fut. Ahhoz, hogy importálhassa ezeket a beállításokat a Google Chrome-ba, mentse el, amin dolgozik, majd zárja be az összes Firefox ablakot. Ezután kattintson a &quot;Folytatás&quot; gombra.</translation>

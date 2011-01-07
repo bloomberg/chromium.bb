@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">Google Chrome is now importing Favourites/Bookmarks.</translation>
 <translation id="8970027151245482499">Google Chrome is not installed or it failed to find installation directory. Please download Google Chrome again.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
-<translation id="3044696659294460858">There's a new version of Google Chrome available that includes extensions.</translation>
 <translation id="4281844954008187215">Terms of Service</translation>
 <translation id="3555616473548901994">Uninstallation complete.</translation>
+<translation id="8556340503434111824">There's a new version of Google Chrome available and it's faster than ever.</translation>
 <translation id="1826297811907343327">If you cancel now, not all items will be imported. You can import again later from the Google Chrome menu.</translation>
 <translation id="4728575227883772061">Installation failed due to unspecified error. If Google Chrome is currently running, please close it and try again.</translation>
 <translation id="4149882025268051530">The installer failed to uncompress archive. Please download Google Chrome again.</translation>
+<translation id="6989339256997917931">Google Chrome has been updated, but you haven't used it for at least 30 days.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Google Chrome installation directory seems to be in use. Please reboot your computer and try again.</translation>
 <translation id="6817660909204164466">Help to make Google Chrome better by sending usage statistics and crash reports to Google automatically</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google Chrome is misbehaving</translation>
 <translation id="3889417619312448367">Uninstall Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">There's a new, safer version of Google Chrome available.</translation>
 <translation id="8810218179782551669">Google Chrome language:</translation>
 <translation id="7001386529596391893">Create Google Chrome shortcuts in these locations:</translation>
 <translation id="7461436095086637522">Chrome Profile Importer</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">Your profile cannot be used because it is from a newer version of Google Chrome.\n\nSome features may be unavailable. Please specify a different profile directory or use a newer version of Chrome.</translation>
 <translation id="7214670531148488183">Google Chrome may use web services to improve your browsing experience. You have the option to disable these services.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">Optional: Help make Google Chrome better by sending usage statistics and crash\nreports automatically to Google</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">Also delete your browsing data?</translation>
 <translation id="2044287590254833138">Google Chrome Toolbar</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">Google Chrome does not support <ph name="OS_NAME"/>.</translation>
 <translation id="473183893665420670">When you reset Google Chrome options, any changes that you've made will revert to the default settings. Do you want to reset Chrome options?</translation>
 <translation id="3636771339108070045">This computer already has a more recent version of Google Chrome. If the software is not working, please uninstall Google Chrome and download it again.</translation>
-<translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">The installer archive is corrupted or invalid. Please download Google Chrome again.</translation>
 <translation id="6626317981028933585">Sadly, your Mozilla Firefox settings are not available while that browser is running. To import those settings to Google Chrome, save your work and close all Firefox windows. Then click Continue.</translation>

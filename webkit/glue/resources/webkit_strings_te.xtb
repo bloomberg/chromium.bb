@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
 <translation id="4519964825805946997"><ph name="URL"/> నుండి ప్లగ్-ఇన్‌ను వ్యవస్థాపించడానికి విఫలమైంది</translation>
+<translation id="9186171386827445984">పత్రాన్ని లోడ్ చేస్తోంది: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> పేజీలు...</translation>
 <translation id="1235745349614807883">ఇటీవల శోధనలను క్లియర్ చెయ్యి</translation>
 <translation id="5048533449481078685">జాబితా మార్కర్</translation>
 <translation id="372362261556059955">అదనపు ప్లగ్-ఇన్ అవసరం</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">ప్లగ్-ఇన్ వ్యవస్థాపన విఫలమైంది</translation>
 <translation id="8141602879876242471">ఇది ఒక శోధించగల సూచిక. శోధన కీవర్డ్‌లను ఎంటర్ చెయ్యండి:</translation>
 <translation id="5650795167354946011">ప్లగ్-ఇన్‌ను వ్యవస్థాపించిన తర్వాత, రిఫ్రెష్ చెయ్యడానికి ఇక్కడ క్లిక్ చెయ్యండి.</translation>
+<translation id="370665806235115550">లోడ్ అవుతోంది...</translation>
 <translation id="6845533974506654842">నొక్కండి</translation>
 <translation id="8244226242650769279">చిత్రం మాప్</translation>
 <translation id="2548326553472216322">ఇటీవల శోధనలు లేవు</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">దయచేసి మీరు <ph name="PLUGIN"/> ప్లగ్-ఇన్‌ను వ్యవస్థాపించాలనుకుంటున్నారని నిర్థారించండి. మీరు విశ్వసించే ప్లగ్-ఇన్‌లను మాత్రమే వ్యవస్థాపించాలి.</translation>
 <translation id="6663448176199120256">ఇటీవల శోధనలు</translation>
 <translation id="2597378329261239068">ఈ పత్రం అనుమతి పదంచే రక్షించబడింది. దయచేసి అనుమతి పదాన్ని నమోదు చేయండి.</translation>
-<translation id="6807599807928161586">వెబ్ ప్రాంతం</translation>
+<translation id="7740050170769002709">HTML కంటెంట్</translation>
 <translation id="5939518447894949180">తిరిగి అమర్చండి</translation>
 <translation id="1842960171412779397">ఎంచుకోండి</translation>
 <translation id="7638452146404718955">ప్లగ్-ఇన్‌ను డౌన్‌లోడ్ చేయడానికి ఇక్కడ క్లిక్ చేయండి</translation>

@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">Google Chrome importe actuellement vos signets/favoris.</translation>
 <translation id="8970027151245482499">Google Chrome n'est pas installé ou le répertoire d'installation est introuvable. Veuillez télécharger de nouveau Google Chrome.</translation>
 <translation id="2040709530900803995">Moteur de rendu de Google Chrome</translation>
-<translation id="3044696659294460858">Une nouvelle version de Google Chrome prenant en charge les extensions est disponible.</translation>
 <translation id="4281844954008187215">Conditions d'utilisation</translation>
 <translation id="3555616473548901994">Désinstallation terminée</translation>
+<translation id="8556340503434111824">Une nouvelle version de Google Chrome encore plus rapide est disponible.</translation>
 <translation id="1826297811907343327">Si vous annulez maintenant, les éléments ne seront pas tous importés. Vous pourrez les importer ultérieurement via le menu Google Chrome.</translation>
 <translation id="4728575227883772061">Échec de l'installation suite à une erreur non spécifiée. Si Google Chrome est en cours d'exécution, fermez-le puis réessayez.</translation>
 <translation id="4149882025268051530">Échec de la décompression de l'archive par le programme d'installation. Veuillez télécharger de nouveau Google Chrome.</translation>
+<translation id="6989339256997917931">Google Chrome a été mis à jour, mais vous ne l'avez pas utilisé depuis plus de 30 jours.</translation>
 <translation id="5744005218040929396">Utilitaire Google Chrome</translation>
 <translation id="4343226815564935778">Le répertoire d'installation de Google Chrome semble être en cours d'utilisation. Veuillez redémarrer votre ordinateur, puis réessayer.</translation>
 <translation id="6817660909204164466">Nous aider à améliorer Google Chrome en envoyant automatiquement les statistiques d'utilisation et les rapports d'erreur à Google</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google Chrome se comporte de façon inattendue</translation>
 <translation id="3889417619312448367">Désinstaller Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">Une nouvelle version de Google Chrome encore plus sûre est disponible.</translation>
 <translation id="8810218179782551669">Langue de Google Chrome :</translation>
 <translation id="7001386529596391893">Créer des raccourcis Google Chrome à ces emplacements :</translation>
 <translation id="7461436095086637522">Module d'importation de profils Chrome</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">Votre profil ne peut être utilisé, car il provient d'une version plus récente de Chrome.\n\nIl est possible que certaines fonctionnalités ne soient pas disponibles. Veuillez indiquer un autre répertoire de profil ou utiliser une version plus récente de Chrome.</translation>
 <translation id="7214670531148488183">Google Chrome utilise parfois des services Web pour optimiser votre navigation. Vous avez la possibilité de désactiver ces services.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">Facultatif : Aidez-nous à améliorer Google Chrome en envoyant automatiquement des statistiques d'utilisation et des rapports\nd'incident à Google.</translation>
 <translation id="5008136264574452501">Version Google Chrome Canary</translation>
 <translation id="911206726377975832">Supprimer également vos données de navigation ?</translation>
 <translation id="2044287590254833138">Barre d'outils de Google Chrome</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">Google Chrome ne prend pas <ph name="OS_NAME"/> en charge.</translation>
 <translation id="473183893665420670">Lorsque vous réinitialisez les options de Google Chrome, toutes les modifications apportées sont effacées et remplacées par les paramètres par défaut. Souhaitez-vous réinitialiser les options de Chrome ?</translation>
 <translation id="3636771339108070045">Une version plus récente de Google Chrome est déjà installée sur cet ordinateur. Si Google Chrome ne fonctionne pas, désinstallez le logiciel et téléchargez-le de nouveau.</translation>
-<translation id="4407807842708586359">Système d'exploitation Google Chrome</translation>
 <translation id="3360895254066713204">Aide de Chrome</translation>
 <translation id="1001534784610492198">L'archive du programme d'installation est corrompue ou incorrecte. Veuillez télécharger de nouveau Google Chrome.</translation>
 <translation id="6626317981028933585">Vos paramètres Mozilla Firefox ne sont pas disponibles pendant l'utilisation de ce navigateur. Pour importer ces paramètres vers Google Chrome, enregistrez votre travail et fermez toutes les fenêtres Firefox. Ensuite, cliquez pour continuer.</translation>

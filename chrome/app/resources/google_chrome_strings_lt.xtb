@@ -14,13 +14,13 @@
 <translation id="2370289711218562573">„Google Chrome“ dabar importuoja mėgstamiausius / žymas.</translation>
 <translation id="8970027151245482499">„Google Chrome“ neįdiegta arba nepavyko rasti diegimo katalogo. Atsisiųskite „Google Chrome“ dar kartą.</translation>
 <translation id="2040709530900803995">„Google Chrome“ atvaizdavimo priemonė</translation>
-<translation id="3044696659294460858">Yra nauja „Google Chrome“
-versija su plėtiniais.</translation>
 <translation id="4281844954008187215">Paslaugų teikimo sąlygos</translation>
 <translation id="3555616473548901994">Pašalinimas baigtas.</translation>
+<translation id="8556340503434111824">Galima nauja „Google Chrome“ versija, kuri greitesnė nei bet kada.</translation>
 <translation id="1826297811907343327">Jei dabar atšauksite, ne visi elementai bus importuoti. Galite importuoti vėliau, naudodami „Google Chrome“ meniu.</translation>
 <translation id="4728575227883772061">Diegimas nepavyko dėl nežinomos klaidos. Jei šiuo metu veikia „Google Chrome“, uždarykite ir pabandykite iš naujo.</translation>
 <translation id="4149882025268051530">Diegimo programai nepavyko išpakuoti archyvo. Atsisiųskite „Google Chrome“ dar kartą.</translation>
+<translation id="6989339256997917931">„Google Chrome“ atnaujinta, tačiau jos nenaudojote mažiausiai 30 dienų.</translation>
 <translation id="5744005218040929396">„Google Chrome“ paslaugų programa</translation>
 <translation id="4343226815564935778">Panašu, kad „Google Chrome“ diegimo katalogas yra naudojamas. Paleiskite kompiuterį iš naujo ir mėginkite dar kartą.</translation>
 <translation id="6817660909204164466">Padėkite tobulinti „Google Chrome&quot; automatiškai siųsdami „Google“ naudojimo statistiką ir trikčių ataskaitas</translation>
@@ -35,6 +35,7 @@ versija su plėtiniais.</translation>
 <translation id="8446794773162156990">„Google Chrome“ veikia netinkamai:</translation>
 <translation id="3889417619312448367">Išdiegti „Google Chrome“</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/>– „Google Chrome“</translation>
+<translation id="3089968997497233615">Galima nauja, saugesnė „Google Chrome“ versija.</translation>
 <translation id="8810218179782551669">„Google Chrome“ kalba:</translation>
 <translation id="7001386529596391893">Sukurkite „Google Chrome“ integruotas nuorodas šiose vietose:</translation>
 <translation id="7461436095086637522">„Chrome“ profilio importavimo priemonė</translation>
@@ -52,7 +53,6 @@ versija su plėtiniais.</translation>
 <translation id="3324235665723428530">Negalima naudoti profilio, nes jis yra naujesnės „Google Chrome“ versijos. \n\nGali nebūti kai kurių funkcijų. Nurodykite kito profilio katalogą arba naudokite naujesnę „Chrome“ versiją.</translation>
 <translation id="7214670531148488183">„Google Chrome“ gali naudoti žiniatinklio paslaugas, kad būtų pagerintas naršymas. Pasirinktinai galite neleisti teikti šių paslaugų.</translation>
 <translation id="1759842336958782510">„Chrome“</translation>
-<translation id="5840402478666768335">Pasirenkama: padėkite tobulinti „Google Chrome“ automatiškai siųsdami „Google“ naudojimo statistiką ir gedimų\nataskaitas</translation>
 <translation id="5008136264574452501">„Google Chrome Canary“ versija</translation>
 <translation id="911206726377975832">Ar ištrinti naršymo duomenis?</translation>
 <translation id="2044287590254833138">„Google Chrome“ įrankių juosta</translation>
@@ -88,7 +88,6 @@ versija su plėtiniais.</translation>
 <translation id="3335672657969596251">„Google Chrome“ nepalaiko <ph name="OS_NAME"/>.</translation>
 <translation id="473183893665420670">Kai iš naujo nustatote „Google Chrome“ parinktis, visi atlikti pakeitimai bus grąžinti į numatytuosius nustatymus. Ar norite iš naujo nustatyti „Chrome“ parinktis?</translation>
 <translation id="3636771339108070045">Kompiuteryje įdiegta naujesnė „Google Chrome“ versija. Jei programinė įranga neveikia, išdiekite „Google Chrome“ ir atsisiųskite programą iš naujo.</translation>
-<translation id="4407807842708586359">„Google Chrome OS“</translation>
 <translation id="3360895254066713204">„Chrome“ pagalbos priemonė</translation>
 <translation id="1001534784610492198">Diegimo programos archyvas sugadintas arba negalioja. Atsisiųskite „Google Chrome“ dar kartą.</translation>
 <translation id="6626317981028933585">Deja, „Mozilla Firefox“ nustatymai negalimi tol, kol ši naršyklė nebus paleista. Norėdami importuoti šiuos nustatymus į „Google Chrome“, išsaugokite savo darbą ir uždarykite visus „Firefox“ langus. Spustelėkite Tęsti.</translation>

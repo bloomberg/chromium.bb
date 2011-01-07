@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ta">
 <translation id="4519964825805946997"><ph name="URL"/> இலிருந்து செருகுநிரலை நிறுவுதல் தோல்வியடைந்தது</translation>
+<translation id="9186171386827445984">ஆவணத்தை ஏற்றுகிறது: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> பக்கங்கள்...</translation>
 <translation id="1235745349614807883">சமீபத்திய தேடல்களை சுத்தமாக்கு</translation>
 <translation id="5048533449481078685">பட்டியல் குறிப்பான்</translation>
 <translation id="372362261556059955">கூடுதல் செருகுநிரல் தேவைப்படுகிறது</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">செருகுநிரலை நிறுவுதல் தோல்வியடைந்தது</translation>
 <translation id="8141602879876242471">இது தேடக்கூடிய பொருளடக்கம். தேடல் சொற்களை உள்ளிடுக:</translation>
 <translation id="5650795167354946011">செருகுநிரலை நிறுவிய பின்பு புதுப்பிக்க இங்கு கிளிக்செய்க</translation>
+<translation id="370665806235115550">நினைவேறுகிறது...</translation>
 <translation id="6845533974506654842">அழுத்துக</translation>
 <translation id="8244226242650769279">பட மேப்</translation>
 <translation id="2548326553472216322">சமீபத்திய தேடல்கள் எதுவுமில்லை</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419"><ph name="PLUGIN"/> செருகுநிரலை நிறுவ நீங்கள் விரும்புகிறீர்கள் என்பதை தயவுசெய்து உறுதிசெய்க. நீங்கள் நம்பும் செருகுநிரல்களை மட்டும் நிறுவ வேண்டும்.</translation>
 <translation id="6663448176199120256">சமீபத்திய தேடல்கள்</translation>
 <translation id="2597378329261239068">இந்த ஆவணம் கடவுச்சொல் பாதுகாக்கப்பட்ட ஒன்று. தயவுசெய்து ஒரு கடவுச்சொல்லை உள்ளிடுக.</translation>
-<translation id="6807599807928161586">வலைப் பகுதி</translation>
+<translation id="7740050170769002709">HTML உள்ளடக்கம்</translation>
 <translation id="5939518447894949180">மீட்டமை</translation>
 <translation id="1842960171412779397">தேர்ந்தெடு</translation>
 <translation id="7638452146404718955">செருகுநிரலைப் பதிவிறக்க இங்கே கிளிக் செய்க</translation>

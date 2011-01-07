@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
 <translation id="4519964825805946997">Pistikprogrammi installimine asukohast <ph name="URL"/> ebaõnnestus.</translation>
+<translation id="9186171386827445984">Dokumendi laadimine: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> lehte ...</translation>
 <translation id="1235745349614807883">Kustuta viimased otsingud</translation>
 <translation id="5048533449481078685">loendilooja</translation>
 <translation id="372362261556059955">Vaja on täiendavat pistikprogrammi</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">Pistikprogrammi installimine nurjus</translation>
 <translation id="8141602879876242471">See on otsitav indeks. Sisestage otsingu jaoks märksõnad:</translation>
 <translation id="5650795167354946011">Pärast lisandmooduli installimist klõpsake värskendamiseks siin</translation>
+<translation id="370665806235115550">Laadimine...</translation>
 <translation id="6845533974506654842">vajuta</translation>
 <translation id="8244226242650769279">hüperpilt</translation>
 <translation id="2548326553472216322">Pole viimaseid otsingud</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">Palun kinnitage, et soovite pistikprogrammi <ph name="PLUGIN"/> installida. Peaksite installima vaid usaldusväärseid pistikprogramme.</translation>
 <translation id="6663448176199120256">Viimased otsingud</translation>
 <translation id="2597378329261239068">Dokument on parooliga kaitstud. Sisestage parool.</translation>
-<translation id="6807599807928161586">veebiala</translation>
+<translation id="7740050170769002709">HTML-sisu</translation>
 <translation id="5939518447894949180">Lähtesta</translation>
 <translation id="1842960171412779397">vali</translation>
 <translation id="7638452146404718955">Pistikprogrammi allalaadimiseks klõpsake siin</translation>

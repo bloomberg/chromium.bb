@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
 <translation id="4519964825805946997">A plug-in telepítése nem sikerült a következő helyről: <ph name="URL"/></translation>
+<translation id="9186171386827445984">Dokumentum betöltése: <ph name="NUMBER_OF_PAGES"/>/<ph name="PAGE_NUMBER"/>. oldal...</translation>
 <translation id="1235745349614807883">Friss keresések törlése</translation>
 <translation id="5048533449481078685">listajelölő</translation>
 <translation id="372362261556059955">További plug-in szükséges</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">A plug-in telepítése sikertelen</translation>
 <translation id="8141602879876242471">Ez egy kereshető index. Írjon be keresési kulcsszavakat:</translation>
 <translation id="5650795167354946011">A plug-in telepítését követően kattintson ide a frissítéshez</translation>
+<translation id="370665806235115550">Betöltés…</translation>
 <translation id="6845533974506654842">Gomb lenyomása</translation>
 <translation id="8244226242650769279">képtérkép</translation>
 <translation id="2548326553472216322">Nincsenek friss keresések</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">Kérjük, erősítse meg, hogy valóban telepíteni szeretné a következő plug-int: <ph name="PLUGIN"/>. Csak azokat a plug-ineket telepítse, amelyekben megbízik.</translation>
 <translation id="6663448176199120256">Friss keresések</translation>
 <translation id="2597378329261239068">Ez a dokumentum jelszóval védett. Kérjük, adja meg a jelszót.</translation>
-<translation id="6807599807928161586">internetes terület</translation>
+<translation id="7740050170769002709">HTML-tartalom</translation>
 <translation id="5939518447894949180">Visszaállítás</translation>
 <translation id="1842960171412779397">Kiválasztás</translation>
 <translation id="7638452146404718955">Ide kattintva letöltheti a plug-int</translation>

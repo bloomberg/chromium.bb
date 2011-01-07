@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
 <translation id="4519964825805946997">Instalace pluginu z adresy URL <ph name="URL"/> se nezdařila</translation>
+<translation id="9186171386827445984">Načítání dokumentu: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> stran...</translation>
 <translation id="1235745349614807883">Smazat nedávná vyhledávání</translation>
 <translation id="5048533449481078685">značka seznamu</translation>
 <translation id="372362261556059955">Je zapotřebí další plugin</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">Instalace pluginu selhala</translation>
 <translation id="8141602879876242471">Toto je prohledávatelný index. Zadejte hledaná klíčová slova:</translation>
 <translation id="5650795167354946011">Po instalaci pluginu obnovte okno kliknutím sem</translation>
+<translation id="370665806235115550">Načítání...</translation>
 <translation id="6845533974506654842">zmáčknout</translation>
 <translation id="8244226242650769279">obrázková mapa</translation>
 <translation id="2548326553472216322">Žádná nedávná vyhledávání</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">Potvrďte prosím, zda chcete nainstalovat plugin <ph name="PLUGIN"/>. Instalujte pouze pluginy, kterým důvěřujete.</translation>
 <translation id="6663448176199120256">Nedávná vyhledávání</translation>
 <translation id="2597378329261239068">Tento dokument je chráněn heslem. Zadejte prosím heslo.</translation>
-<translation id="6807599807928161586">oblast webu</translation>
+<translation id="7740050170769002709">Obsah ve formátu HTML</translation>
 <translation id="5939518447894949180">Resetovat</translation>
 <translation id="1842960171412779397">zvolit</translation>
 <translation id="7638452146404718955">Plugin můžete stáhnout kliknutím sem</translation>

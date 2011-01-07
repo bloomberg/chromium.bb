@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">Google Chrome sta importando i Preferiti/Segnalibri.</translation>
 <translation id="8970027151245482499">Google Chrome non è stato installato oppure non è stata rilevata la directory di installazione. Scarica nuovamente Google Chrome.</translation>
 <translation id="2040709530900803995">Programma di rendering di Google Chrome</translation>
-<translation id="3044696659294460858">È disponibile una nuova versione di Google Chrome che comprende estensioni.</translation>
 <translation id="4281844954008187215">Termini di servizio</translation>
 <translation id="3555616473548901994">Disinstallazione completa.</translation>
+<translation id="8556340503434111824">È disponibile una nuova versione di Google Chrome con una velocità senza precedenti.</translation>
 <translation id="1826297811907343327">Se annulli l'operazione adesso, non verranno importati tutti gli elementi. È possibile ripetere l'importazione in seguito dal menu di Google Chrome.</translation>
 <translation id="4728575227883772061">Installazione non riuscita a causa di un errore non specificato. Se Google Chrome è attivo, chiudilo e riprova.</translation>
 <translation id="4149882025268051530">Il programma di installazione non è riuscito a decomprimere il file. Scarica nuovamente Google Chrome.</translation>
+<translation id="6989339256997917931">Google Chrome è stato aggiornato ma non lo utilizzi da almeno 30 giorni.</translation>
 <translation id="5744005218040929396">Utilità Google Chrome</translation>
 <translation id="4343226815564935778">Sembra che sia in uso la directory di installazione di Google Chrome. Riavvia il computer e riprova.</translation>
 <translation id="6817660909204164466">Aiutaci a migliorare Google Chrome inviando automaticamente a Google le statistiche sull'utilizzo e segnalazioni sugli arresti anomali</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google Chrome funziona in modo anomalo</translation>
 <translation id="3889417619312448367">Disinstalla Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">È disponibile una nuova versione più sicura di Google Chrome.</translation>
 <translation id="8810218179782551669">Lingua di Google Chrome:</translation>
 <translation id="7001386529596391893">Crea scorciatoie di Google Chrome nei seguenti percorsi:</translation>
 <translation id="7461436095086637522">Utilità di importazione profili di Chrome</translation>
@@ -48,10 +50,9 @@
 <translation id="8738921060445980047">Versione sconosciuta.</translation>
 <translation id="2485422356828889247">Disinstalla</translation>
 <translation id="8899050679030089927">Chiudi tutte le finestre di Google Chrome e riavvialo per rendere effettiva la modifica.</translation>
-<translation id="3324235665723428530">Non è possibile utilizzare il tuo profilo, poiché è associato a una versione di Google Chrome più recente.\n\Alcune funzioni potrebbero non essere disponibili. Specifica una directory di profilo diversa o utilizza una versione di Chrome più recente.</translation>
+<translation id="3324235665723428530">Non è possibile utilizzare il tuo profilo, poiché è associato a una versione di Google Chrome più recente.\n\nAlcune funzioni potrebbero non essere disponibili. Specifica una directory di profilo diversa o utilizza una versione di Chrome più recente.</translation>
 <translation id="7214670531148488183">Google Chrome potrebbe utilizzare servizi web per migliorare la navigazione. Se lo desideri, puoi disattivarli.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">Facoltativo: aiutaci a migliorare Google Chrome inviando automaticamente a Google le statistiche\nsull'utilizzo e le segnalazioni sugli arresti anomali</translation>
 <translation id="5008136264574452501">Build Google Chrome Canary</translation>
 <translation id="911206726377975832">Eliminare anche i tuoi dati di navigazione?</translation>
 <translation id="2044287590254833138">Barra degli strumenti di Google Chrome</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251"><ph name="OS_NAME"/> non è supportato da Google Chrome.</translation>
 <translation id="473183893665420670">Quando reimposti le opzioni di Google Chrome, tutte le modifiche apportate verranno ignorate e verranno ripristinate le impostazioni predefinite. Reimpostare le opzioni di Chrome?</translation>
 <translation id="3636771339108070045">In questo computer è già installata una versione più recente di Google Chrome. Se il software non funziona, disinstalla Google Chrome e scaricalo nuovamente.</translation>
-<translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3360895254066713204">Supporto Chrome</translation>
 <translation id="1001534784610492198">Il file del programma di installazione è danneggiato oppure non è valido. Scarica nuovamente Google Chrome.</translation>
 <translation id="6626317981028933585">Le impostazioni di Mozilla Firefox non sono disponibili finché il browser è in esecuzione. Per importare queste impostazioni in Google Chrome, salva i tuoi file e chiudi tutte le finestre di Firefox, quindi fai clic su Continua.</translation>

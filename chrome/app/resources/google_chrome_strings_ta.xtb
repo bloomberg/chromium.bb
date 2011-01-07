@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">விருப்பங்கள்/புக்மார்க்ஸ் ஐ Google Chrome இப்போது இறக்குமதி செய்கிறது.</translation>
 <translation id="8970027151245482499">Google Chrome நிறுவப்படவில்லை அல்லது நிறுவல் டைரக்டரியைக் கண்டறிவதில் தோல்வியடைந்தது. Google Chrome ஐ மீண்டும் பதிவிறக்குக.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
-<translation id="3044696659294460858">நீட்டிப்புகள் அடங்கிய Google Chrome இன் புதிய பதிப்பு கிடைக்கிறது. </translation>
 <translation id="4281844954008187215">சேவை விதிமுறைகள்</translation>
 <translation id="3555616473548901994">நிறுவல் நீக்கம் முடிந்தது.</translation>
+<translation id="8556340503434111824">Google Chrome இன் புதிய பதிப்பு கிடைக்கிறது, அது முன்னெப்போதையும் விட விரைவானது.</translation>
 <translation id="1826297811907343327">இப்போது நீங்கள் ரத்துசெய்தால், எல்லா உருப்படிகளும் இறக்குமதி செய்யப்படாது.  Google Chrome மெனுவிலிருந்து நீங்கள் பின்னர் மீண்டும் இறக்குமதி செய்யலாம்.</translation>
 <translation id="4728575227883772061">குறிப்பிடப்படாத பிழையின் காரணமாக, நிறுவல் தோல்வியடைந்தது. தற்போது  Google Chrome இயக்கத்தில் இருந்தால், அதை மூடிவிட்டு மீண்டும் முயற்சி செய்க.</translation>
 <translation id="4149882025268051530">காப்பகத்தை விரிவுபடுத்துவதில் இன்ஸ்டாலர் தோல்வியுற்றது. Google Chrome ஐ மீண்டும் பதிவிறக்குக.</translation>
+<translation id="6989339256997917931">Google Chrome புதுப்பிக்கப்பட்டது, ஆனால் இதை நீங்கள் குறைந்தபட்சம் 30 நாட்களாகப் பயன்படுத்தவில்லை.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Google Chrome இன் நிறுவல் கோப்பகமானது பயன்பாட்டில் உள்ளது. உங்கள் கணினியை மறுதொடக்கம் செய்து மீண்டும் முயற்சி செய்க.</translation>
 <translation id="6817660909204164466">தானாகவே பயன்பாட்டு புள்ளிவிவரங்களையும் செயலிழப்பு அறிக்கைகளையும் Google க்கு அனுப்புவதன் மூலம், Google Chrome ஐ மேலும் சிறப்பானதாக்க உதவுங்கள்</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google Chrome தவறாக நடக்கிறது</translation>
 <translation id="3889417619312448367">Google Chrome ஐ நிறுவல் நீக்குக</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">புதிய, இன்னும் பாதுகாப்பான Google Chrome பதிப்பு தற்போது கிடைக்கிறது.</translation>
 <translation id="8810218179782551669">Google Chrome மொழி:</translation>
 <translation id="7001386529596391893">இந்த இடங்களில் Google Chrome குறுக்குவழிகளை உருவாக்கு:</translation>
 <translation id="7461436095086637522">Chrome Profile Importer</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">உங்கள் சுயவிவரத்தைப் பயன்படுத்த முடியவில்லை, ஏனெனில் அது Google Chrome இன் புதிய பதிப்பிற்குரியது.\n\nசில அம்சங்கள் கிடைக்காமல் போகலாம். வேறு சுயவிவர கோப்பகத்தைக் குறிப்பிடுக அல்லது Chrome இன் புதிய பதிப்பைப் பயன்படுத்துக.</translation>
 <translation id="7214670531148488183">உங்களின் உலாவல் அனுபவத்தை மேம்படுத்துவதற்கு, வலைச் சேவைகளை Google Chrome பயன்படுத்தக்கூடும். இந்த சேவைகளை நீங்கள் விரும்பினால் முடக்கிக்கொள்ளலாம்.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">விருப்பம்: பயன்பாட்டுப் புள்ளிவிவரங்கள் மற்றும் செயலிழப்பு\nஅறிக்கைகளைத் தானாக அனுப்புவதன் மூலம் Google Chrome ஐ சிறப்பானதாக மேம்படுத்த உதவுக</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">உங்கள் உலாவுதல் தரவையும் நீக்க வேண்டுமா?</translation>
 <translation id="2044287590254833138">Google Chrome கருவிப்பட்டி</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">Google Chrome <ph name="OS_NAME"/> ஐ ஆதரிப்பதில்லை.</translation>
 <translation id="473183893665420670">நீங்கள் Google Chrome விருப்பத்தேர்வுகளை மீட்டமைக்கும்போது, நீங்கள் செய்த மாற்றங்கள் இயல்புநிலை அமைப்புகளுக்கு மாற்றப்படும். Chrome விருப்பத்தேர்வுகளை மீட்டமைக்க விரும்புகிறீர்களா?</translation>
 <translation id="3636771339108070045">இந்த கணினி, Google Chrome இன் மிகச் சமீபத்திய பதிப்பை ஏற்கனவே கொண்டுள்ளது. மென்பொருள் சரியாக இயங்கவில்லை எனில், Google Chrome ஐ நிறுவல் நீக்கம் செய்துவிட்டு மீண்டும் பதிவிறக்கி முயற்சி செய்க.</translation>
-<translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3360895254066713204">Chrome உதவி</translation>
 <translation id="1001534784610492198">நிறுவி காப்பகம் சிதைந்துள்ளது அல்லது செல்லுபடியாகாதது. Google Chrome ஐ மீண்டும் பதிவிறக்குக.</translation>
 <translation id="6626317981028933585">துரதிருஷ்டவசமாக, உங்கள் Mozilla Firefox அமைப்புகள், உலாவி இயக்கத்தில் உள்ளபோது கிடைக்காது. அந்த அமைப்புகளை Google Chrome க்கு இறக்குமதி செய்ய, உங்கள் பணியைச் சேமித்து அனைத்து Firefox சாளரங்களையும் மூடுக. பின்னர், Continue என்பதைக் கிளிக் செய்க.</translation>

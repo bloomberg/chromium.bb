@@ -14,12 +14,13 @@
 <translation id="2370289711218562573">Google Chrome právě importuje Oblíbené položky nebo záložky:</translation>
 <translation id="8970027151245482499">Google Chrome není nainstalován nebo se nepodařilo nalézt instalační adresář. Stáhněte prosím Google Chrome ještě jednou.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
-<translation id="3044696659294460858">Je k dispozici nová verze Google Chrome, která zahrnuje rozšíření.</translation>
 <translation id="4281844954008187215">Smluvní podmínky</translation>
 <translation id="3555616473548901994">Odinstalace byla dokončena.</translation>
+<translation id="8556340503434111824">Je k dispozici nová verze prohlížeče Google Chrome, ještě rychlejší než ty předchozí.</translation>
 <translation id="1826297811907343327">Pokud akci nyní zrušíte, nebudou importovány všechny položky. Import můžete provést znovu později v nabídce Google Chrome.</translation>
 <translation id="4728575227883772061">Došlo k nespecifikované chybě, instalace se nezdařila. Pokud je Google Chrome právě spuštěný, zavřete jej prosím a zkuste to znovu.</translation>
 <translation id="4149882025268051530">Instalačnímu programu se nepodařilo rozbalit archiv. Stáhněte prosím Google Chrome ještě jednou.</translation>
+<translation id="6989339256997917931">Prohlížeč Google Chrome byl aktualizován, ale minimálně po 30 dnů jste jej nepoužili.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Instalační adresář aplikace Google Chrome je zřejmě používán. Restartujte počítač a zkuste to znovu.</translation>
 <translation id="6817660909204164466">Pomozte aplikaci Google Chrome zlepšovat tím, že budete společnosti Google automaticky zasílat statistiky využití a zprávy o selhání aplikace.</translation>
@@ -34,6 +35,7 @@
 <translation id="8446794773162156990">Google Chrome se chová nějak podivně</translation>
 <translation id="3889417619312448367">Odinstalovat Google Chrome</translation>
 <translation id="6169866489629082767"><ph name="PAGE_TITLE"/> - Google Chrome</translation>
+<translation id="3089968997497233615">K dispozici je nová, bezpečnější verze prohlížeče Google Chrome.</translation>
 <translation id="8810218179782551669">Jazyk aplikace Google Chrome:</translation>
 <translation id="7001386529596391893">Vytvořit zástupce Chrome v těchto umístěních:</translation>
 <translation id="7461436095086637522">Chrome Profile Importer</translation>
@@ -51,7 +53,6 @@
 <translation id="3324235665723428530">Váš profil nelze použít, protože je vytvořen v novější verzi aplikace Google Chrome.\n\nNěkteré funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu nebo použijte novější verzi aplikace Chrome.</translation>
 <translation id="7214670531148488183">Prohlížeč Google Chrome může používat webové služby, aby zvýšil váš komfort při prohlížení. Tyto služby můžete deaktivovat.</translation>
 <translation id="1759842336958782510">Chrome</translation>
-<translation id="5840402478666768335">Volitelné: Pomozte Google Chrome zlepšit – posílejte společnosti Google automaticky statistiky\nvyužití a zprávy o selhání aplikace</translation>
 <translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">Vymazat také všechna data procházení?</translation>
 <translation id="2044287590254833138">Lišta nástrojů aplikace Google Chrome</translation>
@@ -87,7 +88,6 @@
 <translation id="3335672657969596251">Aplikace Chrome nepodporuje systém <ph name="OS_NAME"/>.</translation>
 <translation id="473183893665420670">Pokud možnosti Google Chrome resetujete, všechny provedené změny budou zrušeny a obnoví se výchozí nastavení. Chcete možnosti Chrome resetovat?</translation>
 <translation id="3636771339108070045">Na tomto počítači je již nainstalována novější verze prohlížeče Google Chrome. Jestliže software nefunguje, odinstalujte prosím Google Chrome a znovu jej stáhněte.</translation>
-<translation id="4407807842708586359">Google Chrome</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">Archiv instalačního programu je poškozený nebo neplatný. Stáhněte prosím Google Chrome ještě jednou.</translation>
 <translation id="6626317981028933585">Vaše nastavení prohlížeče Mozilla Firefox je bohužel nedostupné, je-li tento prohlížeč spuštěný. Chcete-li toto nastavení importovat do Google Chrome, uložte si práci a zavřete všechna okna prohlížeče Firefox. Poté klikněte na tlačítko Pokračovat.</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
 <translation id="4519964825805946997">Не удалось установить подключаемый модуль с адреса <ph name="URL"/></translation>
+<translation id="9186171386827445984">Загрузка документа: <ph name="PAGE_NUMBER"/>/<ph name="NUMBER_OF_PAGES"/> стр.</translation>
 <translation id="1235745349614807883">Очистить недавние поиски</translation>
 <translation id="5048533449481078685">маркер списка</translation>
 <translation id="372362261556059955">Необходим дополнительный подключаемый модуль</translation>
@@ -12,6 +13,7 @@
 <translation id="1416462845279468967">Не удалось установить подключаемый модуль</translation>
 <translation id="8141602879876242471">Это индекс с возможностью поиска. Введите ключевые слова для поиска:</translation>
 <translation id="5650795167354946011">После установки подключаемого модуля нажмите здесь, чтобы обновить страницу</translation>
+<translation id="370665806235115550">Загрузка...</translation>
 <translation id="6845533974506654842">нажать</translation>
 <translation id="8244226242650769279">графическая карта</translation>
 <translation id="2548326553472216322">Нет недавних поисков</translation>
@@ -30,7 +32,7 @@
 <translation id="5253117816378681419">Подтвердите, что вы хотите установить подключаемый модуль <ph name="PLUGIN"/>. Вы доверяете ему?</translation>
 <translation id="6663448176199120256">Недавние поиски</translation>
 <translation id="2597378329261239068">Документ защищен паролем. Введите пароль.</translation>
-<translation id="6807599807928161586">область Интернетеа</translation>
+<translation id="7740050170769002709">HTML-содержание</translation>
 <translation id="5939518447894949180">Изменить</translation>
 <translation id="1842960171412779397">выбрать</translation>
 <translation id="7638452146404718955">Нажмите здесь, чтобы загрузить подключаемый модуль</translation>
