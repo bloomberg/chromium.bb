@@ -63,11 +63,6 @@ class BrowserNavigatorTest : public InProcessBrowserTest,
     EXPECT_EQ(old_url, browser()->GetSelectedTabContents()->GetURL());
   }
 
-  // TODO(jhawkins): Remove once tabbed options are enabled by default.
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    command_line->AppendSwitch(switches::kEnableTabbedOptions);
-  }
-
   void Observe(NotificationType type, const NotificationSource& source,
                const NotificationDetails& details) {
     switch (type.value) {
@@ -509,8 +504,8 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, NullBrowser_NewWindow) {
 }
 
 // This test verifies that constructing params with disposition = SINGLETON_TAB
-// and |ignore_paths| = true opens a new tab navigated to the specified URL if no
-// previous tab with that URL (minus the path) exists.
+// and |ignore_paths| = true opens a new tab navigated to the specified URL if
+// no previous tab with that URL (minus the path) exists.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_SingletonTabNew_IgnorePath) {
   GURL url("http://www.google.com/");

@@ -350,6 +350,9 @@ const char kDisableSyncThemes[]             = "disable-sync-themes";
 const char kEnableSyncNewAutofill[]     =
     "enable-sync-new-autofill-data-type";
 
+// Disable tabbed options, i.e., DOMUI version of options window.
+const char kDisableTabbedOptions[]           = "disable-tabbed-options";
+
 // TabCloseableStateWatcher disallows closing of tabs and browsers under certain
 // situations on ChromeOS.  Some tests expect tabs or browsers to close, so we
 // need a switch to disable the watcher.
@@ -565,9 +568,6 @@ const char kEnableSyncSessions[]            = "enable-sync-sessions";
 
 // Enable syncing browser typed urls.
 const char kEnableSyncTypedUrls[]           = "enable-sync-typed-urls";
-
-// Enable tabbed options, ie: dom-ui version of options window.
-const char kEnableTabbedOptions[]           = "enable-tabbed-options";
 
 // Enable use of experimental TCP sockets API for sending data in the
 // SYN packet.

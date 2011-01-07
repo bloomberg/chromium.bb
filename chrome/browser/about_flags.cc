@@ -122,13 +122,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableVerticalTabs)
   },
   {
-    "tabbed-options",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_TABBED_OPTIONS_NAME,
-    IDS_FLAGS_TABBED_OPTIONS_DESCRIPTION,
-    kOsWin | kOsLinux | kOsMac,  // Enabled by default on CrOS.
-    SINGLE_VALUE_TYPE(switches::kEnableTabbedOptions)
-  },
-  {
     "remoting",  // FLAGS:RECORD_UMA
     IDS_FLAGS_REMOTING_NAME,
 #if defined(OS_WIN)

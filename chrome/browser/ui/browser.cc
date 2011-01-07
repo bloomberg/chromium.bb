@@ -1790,8 +1790,8 @@ void Browser::ShowOptionsTab(const std::string& sub_page) {
 void Browser::OpenClearBrowsingDataDialog() {
   UserMetrics::RecordAction(UserMetricsAction("ClearBrowsingData_ShowDlg"),
                             profile_);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableTabbedOptions)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableTabbedOptions)) {
     ShowOptionsTab(
         chrome::kAdvancedOptionsSubPage + std::string(kHashMark) +
         chrome::kClearBrowserDataSubPage);
@@ -1802,8 +1802,8 @@ void Browser::OpenClearBrowsingDataDialog() {
 
 void Browser::OpenOptionsDialog() {
   UserMetrics::RecordAction(UserMetricsAction("ShowOptions"), profile_);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableTabbedOptions)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableTabbedOptions)) {
     ShowOptionsTab(chrome::kDefaultOptionsSubPage);
   } else {
     ShowOptionsWindow(OPTIONS_PAGE_DEFAULT, OPTIONS_GROUP_NONE, profile_);
@@ -1812,8 +1812,8 @@ void Browser::OpenOptionsDialog() {
 
 void Browser::OpenKeywordEditor() {
   UserMetrics::RecordAction(UserMetricsAction("EditSearchEngines"), profile_);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableTabbedOptions)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableTabbedOptions)) {
     ShowOptionsTab(chrome::kSearchEnginesSubPage);
   } else {
     window_->ShowSearchEnginesDialog();
@@ -1826,8 +1826,8 @@ void Browser::OpenPasswordManager() {
 
 void Browser::OpenImportSettingsDialog() {
   UserMetrics::RecordAction(UserMetricsAction("Import_ShowDlg"), profile_);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableTabbedOptions)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableTabbedOptions)) {
     ShowOptionsTab(
         chrome::kPersonalOptionsSubPage + std::string(kHashMark) +
         chrome::kImportDataSubPage);
@@ -1883,8 +1883,8 @@ void Browser::OpenAutoFillHelpTabAndActivate() {
 }
 
 void Browser::OpenSearchEngineOptionsDialog() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableTabbedOptions)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableTabbedOptions)) {
     OpenKeywordEditor();
   } else {
     ShowOptionsWindow(OPTIONS_PAGE_GENERAL, OPTIONS_GROUP_DEFAULT_SEARCH,
@@ -1896,8 +1896,8 @@ void Browser::OpenSearchEngineOptionsDialog() {
 void Browser::OpenSystemOptionsDialog() {
   UserMetrics::RecordAction(UserMetricsAction("OpenSystemOptionsDialog"),
                             profile_);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableTabbedOptions)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableTabbedOptions)) {
     ShowOptionsTab(chrome::kSystemOptionsSubPage);
   } else {
     ShowOptionsWindow(OPTIONS_PAGE_SYSTEM, OPTIONS_GROUP_NONE,
@@ -1908,8 +1908,8 @@ void Browser::OpenSystemOptionsDialog() {
 void Browser::OpenInternetOptionsDialog() {
   UserMetrics::RecordAction(UserMetricsAction("OpenInternetOptionsDialog"),
                             profile_);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableTabbedOptions)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableTabbedOptions)) {
     ShowOptionsTab(chrome::kInternetOptionsSubPage);
   } else {
     ShowOptionsWindow(OPTIONS_PAGE_INTERNET, OPTIONS_GROUP_DEFAULT_SEARCH,
@@ -1920,8 +1920,8 @@ void Browser::OpenInternetOptionsDialog() {
 void Browser::OpenLanguageOptionsDialog() {
   UserMetrics::RecordAction(UserMetricsAction("OpenLanguageOptionsDialog"),
                             profile_);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableTabbedOptions)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableTabbedOptions)) {
     ShowOptionsTab(chrome::kLanguageOptionsSubPage);
   } else {
     chromeos::LanguageConfigView::Show(profile_, NULL);
@@ -3112,8 +3112,8 @@ void Browser::ShowRepostFormWarningDialog(TabContents *tab_contents) {
 }
 
 void Browser::ShowContentSettingsWindow(ContentSettingsType content_type) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableTabbedOptions)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableTabbedOptions)) {
     ShowOptionsTab(
         chrome::kContentSettingsSubPage + std::string(kHashMark) +
         ContentSettingsHandler::ContentSettingsTypeToGroupName(content_type));

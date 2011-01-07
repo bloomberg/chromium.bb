@@ -23,8 +23,6 @@ class OptionsUITest : public UITest {
  public:
   OptionsUITest() {
     dom_automation_enabled_ = true;
-    // TODO(csilv): Remove when dom-ui options is enabled by default.
-    launch_arguments_.AppendSwitch(switches::kEnableTabbedOptions);
   }
 
   void AssertIsOptionsPage(TabProxy* tab) {

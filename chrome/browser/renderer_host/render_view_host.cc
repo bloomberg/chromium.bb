@@ -1640,8 +1640,8 @@ void RenderViewHost::OnRemoveAutocompleteEntry(const string16& field_name,
 }
 
 void RenderViewHost::OnShowAutoFillDialog() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableTabbedOptions)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableTabbedOptions)) {
     Browser* browser = BrowserList::GetLastActive();
     if (!browser)
       return;

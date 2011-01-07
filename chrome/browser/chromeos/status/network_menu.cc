@@ -82,8 +82,8 @@ const int NetworkMenu::kBarsImagesVLowData[kNumBarsImages] = {
 
 NetworkMenu::NetworkMenu()
     : min_width_(-1) {
-  use_settings_ui_ = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableTabbedOptions);
+  use_settings_ui_ = !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableTabbedOptions);
   network_menu_.reset(NetworkMenuUI::CreateMenu2(this));
 }
 

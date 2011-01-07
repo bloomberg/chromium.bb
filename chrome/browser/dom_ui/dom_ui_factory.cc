@@ -200,8 +200,8 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(Profile* profile,
     return &NewDOMUI<chromeos::NetworkMenuUI>;
 #else
   if (url.host() == chrome::kChromeUISettingsHost) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableTabbedOptions)) {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kDisableTabbedOptions)) {
       return &NewDOMUI<OptionsUI>;
     }
   }

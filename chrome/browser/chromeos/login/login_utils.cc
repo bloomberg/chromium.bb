@@ -366,7 +366,6 @@ void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
         switches::kEnableGView,
         switches::kNoFirstRun,
         switches::kLoginProfile,
-        switches::kEnableTabbedOptions,
         switches::kCompressSystemFeedback,
         switches::kDisableSeccompSandbox,
 #if defined(HAVE_XINPUT2)

@@ -1120,7 +1120,7 @@ void RecordLastRunAppBundlePath() {
 // visible.
 - (IBAction)showPreferences:(id)sender {
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-  if (parsed_command_line.HasSwitch(switches::kEnableTabbedOptions)) {
+  if (!parsed_command_line.HasSwitch(switches::kDisableTabbedOptions)) {
     if (Browser* browser = ActivateBrowser([self defaultProfile])) {
       // Show options tab in the active browser window.
       browser->ShowOptionsTab(chrome::kDefaultOptionsSubPage);
