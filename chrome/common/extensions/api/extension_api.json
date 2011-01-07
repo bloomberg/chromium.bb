@@ -1318,7 +1318,7 @@
       {
         "name": "onCreated",
         "type": "function",
-        "description": "Fires when a tab is created.",
+        "description": "Fires when a tab is created. Note that the tab's URL may not be set at the time this event fires, but you can listen to onUpdated events to be notified when a URL is set.",
         "parameters": [
           {
             "$ref": "Tab",
