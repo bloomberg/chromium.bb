@@ -166,6 +166,69 @@ utf8_next_char(struct utf8_state_machine *machine, char c)
 	return machine->state;
 }
 
+struct char_sub {
+	union utf8_char match;
+	union utf8_char replace;
+};
+/* Set last char_sub match to NULL char */
+typedef struct char_sub *character_set;
+
+struct char_sub CS_US[] = {
+	{{{0, }}, {{0, }}}
+};
+static struct char_sub CS_UK[] = {
+	{{{'#', 0, }}, {{0xC2, 0xA3, 0, }}},
+	{{{0, }}, {{0, }}}
+};
+static struct char_sub CS_SPECIAL[] = {
+	{{{'`', 0, }}, {{0xE2, 0x99, 0xA6, 0}}}, /* diamond */
+	{{{'a', 0, }}, {{0xE2, 0x96, 0x92, 0}}}, /* 50% cell */
+	{{{'b', 0, }}, {{0xE2, 0x90, 0x89, 0}}}, /* HT */
+	{{{'c', 0, }}, {{0xE2, 0x90, 0x8C, 0}}}, /* FF */
+	{{{'d', 0, }}, {{0xE2, 0x90, 0x8D, 0}}}, /* CR */
+	{{{'e', 0, }}, {{0xE2, 0x90, 0x8A, 0}}}, /* LF */
+	{{{'f', 0, }}, {{0xC2, 0xB0, 0, }}}, /* Degree */
+	{{{'g', 0, }}, {{0xC2, 0xB1, 0, }}}, /* Plus/Minus */
+	{{{'h', 0, }}, {{0xE2, 0x90, 0xA4, 0}}}, /* NL */
+	{{{'i', 0, }}, {{0xE2, 0x90, 0x8B, 0}}}, /* VT */
+	{{{'j', 0, }}, {{0xE2, 0x94, 0x98, 0}}}, /* CN_RB */
+	{{{'k', 0, }}, {{0xE2, 0x94, 0x90, 0}}}, /* CN_RT */
+	{{{'l', 0, }}, {{0xE2, 0x94, 0x8C, 0}}}, /* CN_LT */
+	{{{'m', 0, }}, {{0xE2, 0x94, 0x94, 0}}}, /* CN_RB */
+	{{{'n', 0, }}, {{0xE2, 0x94, 0xBC, 0}}}, /* CROSS */
+	{{{'o', 0, }}, {{0xE2, 0x94, 0x80, 0}}}, /* H */
+	{{{'p', 0, }}, {{0xE2, 0x94, 0x80, 0}}}, /* H */
+	{{{'q', 0, }}, {{0xE2, 0x94, 0x80, 0}}}, /* H */
+	{{{'r', 0, }}, {{0xE2, 0x94, 0x80, 0}}}, /* H */
+	{{{'s', 0, }}, {{0xE2, 0x94, 0x80, 0}}}, /* H */
+	{{{'t', 0, }}, {{0xE2, 0x94, 0x9C, 0}}}, /* TR */
+	{{{'u', 0, }}, {{0xE2, 0x94, 0xA4, 0}}}, /* TL */
+	{{{'v', 0, }}, {{0xE2, 0x94, 0xB4, 0}}}, /* TU */
+	{{{'w', 0, }}, {{0xE2, 0x94, 0xAC, 0}}}, /* TD */
+	{{{'x', 0, }}, {{0xE2, 0x94, 0x82, 0}}}, /* V */
+	{{{'y', 0, }}, {{0xE2, 0x89, 0xA4, 0}}}, /* LE */
+	{{{'z', 0, }}, {{0xE2, 0x89, 0xA5, 0}}}, /* GE */
+	{{{'{', 0, }}, {{0xCF, 0x80, 0, }}}, /* PI */
+	{{{'|', 0, }}, {{0xE2, 0x89, 0xA0, 0}}}, /* NEQ */
+	{{{'}', 0, }}, {{0xC2, 0xA3, 0, }}}, /* POUND */
+	{{{'~', 0, }}, {{0xE2, 0x8B, 0x85, 0}}}, /* DOT */
+	{{{0, }}, {{0, }}}
+};
+
+static void
+apply_char_set(character_set cs, union utf8_char *utf8)
+{
+	int i = 0;
+	
+	while (cs[i].match.byte[0]) {
+		if ((*utf8).ch == cs[i].match.ch) {
+			*utf8 = cs[i].replace;
+			break;
+		}
+		i++;
+	}
+}
+
 struct terminal_color { double r, g, b, a; };
 struct attr {
 	unsigned char fg, bg;
@@ -202,6 +265,8 @@ struct terminal {
 	struct attr saved_attr;
 	union utf8_char last_char;
 	int margin_top, margin_bottom;
+	character_set cs, g0, g1;
+	character_set saved_cs, saved_g0, saved_g1;
 	int data_pitch, attr_pitch;  /* The width in bytes of a line */
 	int width, height, start, row, column;
 	int saved_row, saved_column;
@@ -248,6 +313,14 @@ terminal_init(struct terminal *terminal)
 
 	terminal->row = 0;
 	terminal->column = 0;
+
+	terminal->g0 = CS_US;
+	terminal->g1 = CS_US;
+	terminal->cs = terminal->g0;
+
+	terminal->saved_g0 = terminal->g0;
+	terminal->saved_g1 = terminal->g1;
+	terminal->saved_cs = terminal->cs;
 
 	terminal->saved_attr = terminal->curr_attr;
 	terminal->saved_origin_mode = terminal->origin_mode;
@@ -714,6 +787,12 @@ handle_term_parameter(struct terminal *terminal, int code, int sr)
 
 	if (terminal->qmark_flag) {
 		switch(code) {
+		case 2:  /* DECANM */
+			/* No VT52 support yet */
+			terminal->g0 = CS_US;
+			terminal->g1 = CS_US;
+			terminal->cs = terminal->g0;
+			break;
 		case 3:  /* DECCOLM */
 			if (sr)
 				terminal_resize(terminal, 132, 24);
@@ -1147,12 +1226,18 @@ handle_non_csi_escape(struct terminal *terminal, char code)
 		terminal->saved_column = terminal->column;
 		terminal->saved_attr = terminal->curr_attr;
 		terminal->saved_origin_mode = terminal->origin_mode;
+		terminal->saved_cs = terminal->cs;
+		terminal->saved_g0 = terminal->g0;
+		terminal->saved_g1 = terminal->g1;
 		break;
 	case '8':    /* DECRC */
 		terminal->row = terminal->saved_row;
 		terminal->column = terminal->saved_column;
 		terminal->curr_attr = terminal->saved_attr;
 		terminal->origin_mode = terminal->saved_origin_mode;
+		terminal->cs = terminal->saved_cs;
+		terminal->g0 = terminal->saved_g0;
+		terminal->g1 = terminal->saved_g1;
 		break;
 	default:
 		fprintf(stderr, "Unknown escape code: %c\n", code);
@@ -1177,6 +1262,30 @@ handle_special_escape(struct terminal *terminal, char special, char code)
 			break;
 		default:
 			fprintf(stderr, "Unknown HASH escape #%c\n", code);
+			break;
+		}
+	} else if (special == '(' || special == ')') {
+		switch(code) {
+		case '0':
+			if (special == '(')
+				terminal->g0 = CS_SPECIAL;
+			else
+				terminal->g1 = CS_SPECIAL;
+			break;
+		case 'A':
+			if (special == '(')
+				terminal->g0 = CS_UK;
+			else
+				terminal->g1 = CS_UK;
+			break;
+		case 'B':
+			if (special == '(')
+				terminal->g0 = CS_US;
+			else
+				terminal->g1 = CS_US;
+			break;
+		default:
+			fprintf(stderr, "Unknown character set %c\n", code);
 			break;
 		}
 	} else {
@@ -1307,6 +1416,12 @@ handle_special_char(struct terminal *terminal, char c)
 	case '\a':
 		/* Bell */
 		break;
+	case '\x0E': /* SO */
+		terminal->cs = terminal->g1;
+		break;
+	case '\x0F': /* SI */
+		terminal->cs = terminal->g0;
+		break;
 	default:
 		return 0;
 	}
@@ -1321,6 +1436,8 @@ handle_char(struct terminal *terminal, union utf8_char utf8)
 	struct attr *attr_row;
 	
 	if (handle_special_char(terminal, utf8.byte[0])) return;
+
+	apply_char_set(terminal->cs, &utf8);
 	
 	/* There are a whole lot of non-characters, control codes,
 	 * and formatting codes that should probably be ignored,
