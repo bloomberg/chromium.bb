@@ -665,7 +665,7 @@
 
       <!-- The height of the AutoFill edit Credit Card dialog in lines. -->
       <message name="IDS_AUTOFILL_DIALOG_EDIT_CCARD_HEIGHT_LINES" use_name_for_id="true">
-        9
+        10
       </message>
 
       <!-- The width and height of the Content Settings Exceptions dialog box in -->
