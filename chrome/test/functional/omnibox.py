@@ -280,11 +280,9 @@ class OmniboxTest(pyauto.PyUITest):
 
   def _GotNewMatches(self, old_matches_len, search_text):
     """Determines if omnibox has any new matches"""
-    # On Windows, omnibox doesn't change results if searching the same text
-    # repeatedly. So setting '' in omnibox before any search for non-Mac
-    # platforms.
-    if not self.IsMac():
-      self.SetOmniboxText('')
+    # Omnibox doesn't change results if searching the same text repeatedly.
+    # So setting '' in omnibox before the next repeated search.
+    self.SetOmniboxText('')
     new_matches = self._GetOmniboxMatchesFor(search_text)
     if len(new_matches) > old_matches_len:
       return True
@@ -310,6 +308,9 @@ class OmniboxTest(pyauto.PyUITest):
   def _GotHistoryPageOption(self, search_text):
     """Determines if omnibox returns an 'open history page' option for given
        search text"""
+    # Omnibox doesn't change results if searching the same text repeatedly.
+    # So setting '' in omnibox before the next repeated search.
+    self.SetOmniboxText('')
     matches = self._GetOmniboxMatchesFor(search_text)
     matches_description = [x for x in matches if x['type'] ==
                            'open-history-page']
