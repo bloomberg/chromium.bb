@@ -150,7 +150,7 @@ class PpbAudioConfigDevRpcServer {
   static void PPB_AudioConfig_Dev_CreateStereo16Bit(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
-      PP_Module module,
+      PP_Instance instance,
       int32_t sample_rate,
       int32_t sample_frame_count,
       PP_Resource* resource);
@@ -212,7 +212,7 @@ class PpbGraphics2DRpcServer {
   static void PPB_Graphics2D_Create(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
-      PP_Module module,
+      PP_Instance instance,
       nacl_abi_size_t size_bytes, char* size,
       int32_t is_always_opaque,
       PP_Resource* resource);
@@ -267,7 +267,7 @@ class PpbImageDataRpcServer {
   static void PPB_ImageData_Create(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
-      PP_Module module,
+      PP_Instance instance,
       int32_t format,
       nacl_abi_size_t size_bytes, char* size,
       int32_t init_to_zero,

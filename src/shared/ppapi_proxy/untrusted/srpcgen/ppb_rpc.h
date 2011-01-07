@@ -134,7 +134,7 @@ class PpbAudioConfigDevRpcClient {
  public:
   static NaClSrpcError PPB_AudioConfig_Dev_CreateStereo16Bit(
       NaClSrpcChannel* channel,
-      PP_Module module,
+      PP_Instance instance,
       int32_t sample_rate,
       int32_t sample_frame_count,
       PP_Resource* resource);
@@ -187,7 +187,7 @@ class PpbGraphics2DRpcClient {
  public:
   static NaClSrpcError PPB_Graphics2D_Create(
       NaClSrpcChannel* channel,
-      PP_Module module,
+      PP_Instance instance,
       nacl_abi_size_t size_bytes, char* size,
       int32_t is_always_opaque,
       PP_Resource* resource);
@@ -234,7 +234,7 @@ class PpbImageDataRpcClient {
       int32_t* success);
   static NaClSrpcError PPB_ImageData_Create(
       NaClSrpcChannel* channel,
-      PP_Module module,
+      PP_Instance instance,
       int32_t format,
       nacl_abi_size_t size_bytes, char* size,
       int32_t init_to_zero,
