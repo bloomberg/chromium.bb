@@ -47,10 +47,114 @@ static int option_fullscreen;
 #define MOD_ALT		0x02
 #define MOD_CTRL	0x04
 
+union utf8_char {
+	unsigned char byte[4];
+	uint32_t ch;
+};
+
+enum utf8_state {
+	utf8state_start,
+	utf8state_accept,
+	utf8state_reject,
+	utf8state_expect3,
+	utf8state_expect2,
+	utf8state_expect1
+};
+
+struct utf8_state_machine {
+	enum utf8_state state;
+	int len;
+	union utf8_char s;
+};
+
+static void
+init_state_machine(struct utf8_state_machine *machine)
+{
+	machine->state = utf8state_start;
+	machine->len = 0;
+	machine->s.ch = 0;
+}
+
+static enum utf8_state
+utf8_next_char(struct utf8_state_machine *machine, char c)
+{
+	switch(machine->state) {
+	case utf8state_start:
+	case utf8state_accept:
+	case utf8state_reject:
+		machine->s.ch = 0;
+		machine->len = 0;
+		if(c == 0xC0 || c == 0xC1) {
+			/* overlong encoding, reject */
+			machine->state = utf8state_reject;
+		} else if((c & 0x80) == 0) {
+			/* single byte, accept */
+			machine->s.byte[machine->len++] = c;
+			machine->state = utf8state_accept;
+		} else if((c & 0xC0) == 0x80) {
+			/* parser out of sync, ignore byte */
+			machine->state = utf8state_start;
+		} else if((c & 0xE0) == 0xC0) {
+			/* start of two byte sequence */
+			machine->s.byte[machine->len++] = c;
+			machine->state = utf8state_expect1;
+		} else if((c & 0xF0) == 0xE0) {
+			/* start of three byte sequence */
+			machine->s.byte[machine->len++] = c;
+			machine->state = utf8state_expect2;
+		} else if((c & 0xF8) == 0xF0) {
+			/* start of four byte sequence */
+			machine->s.byte[machine->len++] = c;
+			machine->state = utf8state_expect3;
+		} else {
+			/* overlong encoding, reject */
+			machine->state = utf8state_reject;
+		}
+		break;
+	case utf8state_expect3:
+		machine->s.byte[machine->len++] = c;
+		if((c & 0xC0) == 0x80) {
+			/* all good, continue */
+			machine->state = utf8state_expect2;
+		} else {
+			/* missing extra byte, reject */
+			machine->state = utf8state_reject;
+		}
+		break;
+	case utf8state_expect2:
+		machine->s.byte[machine->len++] = c;
+		if((c & 0xC0) == 0x80) {
+			/* all good, continue */
+			machine->state = utf8state_expect1;
+		} else {
+			/* missing extra byte, reject */
+			machine->state = utf8state_reject;
+		}
+		break;
+	case utf8state_expect1:
+		machine->s.byte[machine->len++] = c;
+		if((c & 0xC0) == 0x80) {
+			/* all good, accept */
+			machine->state = utf8state_accept;
+		} else {
+			/* missing extra byte, reject */
+			machine->state = utf8state_reject;
+		}
+		break;
+	default:
+		machine->state = utf8state_reject;
+		break;
+	}
+	
+	return machine->state;
+}
+
 struct terminal {
 	struct window *window;
 	struct display *display;
-	char *data;
+	union utf8_char *data;
+	union utf8_char last_char;
+	int data_pitch;              /* The width in bytes of a line */
 	int width, height, start, row, column;
 	int fd, master;
 	GIOChannel *channel;
@@ -58,6 +162,7 @@ struct terminal {
 	char escape[64];
 	int escape_length;
 	int state;
+	struct utf8_state_machine state_machine;
 	int margin;
 	int fullscreen;
 	int focused;
@@ -65,27 +170,29 @@ struct terminal {
 	cairo_font_extents_t extents;
 };
 
-static char *
+static union utf8_char *
 terminal_get_row(struct terminal *terminal, int row)
 {
 	int index;
 
 	index = (row + terminal->start) % terminal->height;
 
-	return &terminal->data[index * (terminal->width + 1)];
+	return &terminal->data[index * terminal->width];
 }
 
 static void
 terminal_resize(struct terminal *terminal, int width, int height)
 {
 	size_t size;
-	char *data;
+	union utf8_char *data;
+	int data_pitch;
 	int i, l, total_rows, start;
 
 	if (terminal->width == width && terminal->height == height)
 		return;
 
-	size = (width + 1) * height;
+	data_pitch = width * sizeof(union utf8_char);
+	size = data_pitch * height;
 	data = malloc(size);
 	memset(data, 0, size);
 	if (terminal->data) {
@@ -102,13 +209,16 @@ terminal_resize(struct terminal *terminal, int width, int height)
 			start = 0;
 		}
 
-		for (i = 0; i < total_rows; i++)
-			memcpy(data + (width + 1) * i,
-			       terminal_get_row(terminal, i), l);
+		for (i = 0; i < total_rows; i++) {
+			memcpy(&data[width * i],
+			       terminal_get_row(terminal, i),
+			       l * sizeof(union utf8_char));
+		}
 
 		free(terminal->data);
 	}
 
+	terminal->data_pitch = data_pitch;
 	terminal->width = width;
 	terminal->height = height;
 	terminal->data = data;
@@ -130,9 +240,18 @@ terminal_draw_contents(struct terminal *terminal)
 	struct rectangle rectangle;
 	cairo_t *cr;
 	cairo_font_extents_t extents;
-	int i, top_margin, side_margin;
+	int top_margin, side_margin;
+	int row, col;
+	union utf8_char *p_row;
+	struct utf8_chars {
+		union utf8_char c;
+		char null;
+	} toShow;
+	int text_x, text_y;
 	cairo_surface_t *surface;
 	double d;
+
+	toShow.null = 0;
 
 	window_get_child_rectangle(terminal->window, &rectangle);
 
@@ -161,10 +280,17 @@ terminal_draw_contents(struct terminal *terminal)
 	side_margin = (rectangle.width - terminal->width * extents.max_x_advance) / 2;
 	top_margin = (rectangle.height - terminal->height * extents.height) / 2;
 
-	for (i = 0; i < terminal->height; i++) {
-		cairo_move_to(cr, side_margin,
-			      top_margin + extents.ascent + extents.height * i);
-		cairo_show_text(cr, terminal_get_row(terminal, i));
+	for (row = 0; row < terminal->height; row++) {
+		p_row = terminal_get_row(terminal, row);
+		for (col = 0; col < terminal->width; col++) {
+			/* paint the foreground */
+			text_x = side_margin + col * extents.max_x_advance;
+			text_y = top_margin + extents.ascent + row * extents.height;
+			cairo_move_to(cr, text_x, text_y);
+			
+			toShow.c = p_row[col];
+			cairo_show_text(cr, (char *) toShow.c.byte);
+		}
 	}
 
 	d = terminal->focused ? 0 : 0.5;
@@ -235,7 +361,8 @@ terminal_data(struct terminal *terminal, const char *data, size_t length);
 static void
 handle_escape(struct terminal *terminal)
 {
-	char *row, *p;
+	union utf8_char *row;
+	char *p;
 	int i, count;
 	int args[10], set[10] = { 0, };
 
@@ -283,9 +410,9 @@ handle_escape(struct terminal *terminal)
 		break;
 	case 'J':
 		row = terminal_get_row(terminal, terminal->row);
-		memset(&row[terminal->column], 0, terminal->width - terminal->column);
+		memset(&row[terminal->column], 0, (terminal->width - terminal->column) * sizeof(union utf8_char));
 		for (i = terminal->row + 1; i < terminal->height; i++)
-			memset(terminal_get_row(terminal, i), 0, terminal->width);
+			memset(terminal_get_row(terminal, i), 0, terminal->width * sizeof(union utf8_char));
 		break;
 	case 'G':
 		if (set[0])
@@ -298,7 +425,7 @@ handle_escape(struct terminal *terminal)
 		break;
 	case 'K':
 		row = terminal_get_row(terminal, terminal->row);
-		memset(&row[terminal->column], 0, terminal->width - terminal->column);
+		memset(&row[terminal->column], 0, (terminal->width - terminal->column) * sizeof(union utf8_char));
 		break;
 	case 'm':
 		/* color, blink, bold etc*/
@@ -322,20 +449,39 @@ static void
 terminal_data(struct terminal *terminal, const char *data, size_t length)
 {
 	int i;
-	char *row;
+	union utf8_char utf8;
+	enum utf8_state parser_state;
+	union utf8_char *row;
 
 	for (i = 0; i < length; i++) {
+		parser_state =
+			utf8_next_char(&terminal->state_machine, data[i]);
+		switch(parser_state) {
+		case utf8state_accept:
+			utf8.ch = terminal->state_machine.s.ch;
+			break;
+		case utf8state_reject:
+			/* the unicode replacement character */
+			utf8.byte[0] = 0xEF;
+			utf8.byte[1] = 0xBF;
+			utf8.byte[2] = 0xBD;
+			utf8.byte[3] = 0x00;
+			break;
+		default:
+			continue;
+		}
+
 		row = terminal_get_row(terminal, terminal->row);
 
 		if (terminal->state == STATE_ESCAPE) {
-			terminal->escape[terminal->escape_length++] = data[i];
-			if (terminal->escape_length == 2 && data[i] != '[') {
+			terminal->escape[terminal->escape_length++] = utf8.byte[0];
+			if (terminal->escape_length == 2 && utf8.byte[0] != '[') {
 				/* Bad escape sequence. */
 				terminal->state = STATE_NORMAL;
 				goto cancel_escape;
 			}
 
-			if (isalpha(data[i])) {
+			if (isalpha(utf8.byte[0])) {
 				terminal->state = STATE_NORMAL;
 				handle_escape(terminal);
 			} 
@@ -343,7 +489,7 @@ terminal_data(struct terminal *terminal, const char *data, size_t length)
 		}
 
 	cancel_escape:
-		switch (data[i]) {
+		switch (utf8.byte[0]) {
 		case '\r':
 			terminal->column = 0;
 			break;
@@ -356,12 +502,12 @@ terminal_data(struct terminal *terminal, const char *data, size_t length)
 				if (terminal->start == terminal->height)
 					terminal->start = 0;
 				memset(terminal_get_row(terminal, terminal->row),
-							0, terminal->width);
+				       0, terminal->width * sizeof(union utf8_char));
 			}
 
 			break;
 		case '\t':
-			memset(&row[terminal->column], ' ', -terminal->column & 7);
+			memset(&row[terminal->column], ' ', (-terminal->column & 7) * sizeof(union utf8_char));
 			terminal->column = (terminal->column + 7) & ~7;
 			break;
 		case '\e':
@@ -378,7 +524,8 @@ terminal_data(struct terminal *terminal, const char *data, size_t length)
 			break;
 		default:
 			if (terminal->column < terminal->width)
-				row[terminal->column++] = data[i] < 32 ? data[i] + 64 : data[i];
+				if (utf8.byte[0] < 32) utf8.byte[0] += 64;
+			row[terminal->column++] = utf8;
 			break;
 		}
 	}
@@ -465,6 +612,9 @@ terminal_create(struct display *display, int fullscreen)
 	terminal->color_scheme = &jbarnes_colors;
 	terminal->window = window_create(display, "Wayland Terminal",
 					 500, 400);
+
+	init_state_machine(&terminal->state_machine);
+
 	terminal->display = display;
 	terminal->margin = 5;
 
