@@ -56,7 +56,7 @@ PP_Var Instance_GetInstanceObject(PP_Instance pp_instance) {
     const PPB_Var_Deprecated* ppb_var_interface = module->ppb_var_interface();
     if (NULL != ppb_var_interface) {
       ScriptableObject* obj = new ScriptableObject(pp_instance);
-      return ppb_var_interface->CreateObject(module->module_id(),
+      return ppb_var_interface->CreateObject(pp_instance,
                                              obj->ppp_class(),
                                              obj);
     }

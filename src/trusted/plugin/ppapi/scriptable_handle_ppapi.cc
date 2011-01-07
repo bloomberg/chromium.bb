@@ -172,7 +172,8 @@ pp::Var ScriptableHandlePpapi::Invoke(CallType call_type,
           array->SetProperty(pp::Var(i), v, exception);
         }
       }
-      retvar = pp::Var(array);
+
+      retvar = pp::Var(plugin_ppapi, array);
     }
     if (!exception->is_undefined()) {
       return Error(call_name, caller, "srpc output marshalling failed",
@@ -260,7 +261,8 @@ ScriptableHandle* ScriptableHandlePpapi::AddRef() {
   // and we need to make sure we have an internal plugin reference, so this
   // object doesn't get deallocated when the browser discards its references.
   if (var_ == NULL) {
-    var_ = new(std::nothrow) pp::Var(this);
+    PluginPpapi* plugin_ppapi = static_cast<PluginPpapi*>(handle()->plugin());
+    var_ = new(std::nothrow) pp::Var(plugin_ppapi, this);
     CHECK(var_ != NULL);
   }
   PLUGIN_PRINTF(("ScriptableHandlePpapi::AddRef (this=%p, var=%p)\n",

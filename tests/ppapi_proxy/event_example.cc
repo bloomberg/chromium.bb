@@ -200,7 +200,7 @@ class EventInstance : public pp::Instance {
     std::printf("EventInstance::GetInstanceObject\n");
     event_handler_ = new EventHandler(this->pp_instance());
     // pp::Var takes ownership of the new EventHandler object.
-    return pp::Var(event_handler_);
+    return pp::Var(this, event_handler_);
   }
 
   // Handle an incoming input event by switching on type, converting the event

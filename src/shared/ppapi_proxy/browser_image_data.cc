@@ -49,7 +49,7 @@ void PpbImageDataRpcServer::PPB_ImageData_IsImageDataFormatSupported(
 void PpbImageDataRpcServer::PPB_ImageData_Create(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
-    PP_Module module,
+    PP_Instance instance,
     int32_t format,
     nacl_abi_size_t size_bytes, char* size,
     int32_t init_to_zero,
@@ -60,7 +60,7 @@ void PpbImageDataRpcServer::PPB_ImageData_Create(
     return;
   }
   *resource = ppapi_proxy::PPBImageDataInterface()->Create(
-      module,
+      instance,
       static_cast<PP_ImageDataFormat>(format),
       static_cast<const struct PP_Size*>(
           reinterpret_cast<struct PP_Size*>(size)),

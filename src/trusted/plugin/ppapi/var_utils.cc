@@ -327,7 +327,7 @@ template<typename T> pp::Var ArrayToPPVar(T* array_data,
                        ArrayElementToPPVar(array_data[i]),
                        exception);
   }
-  return pp::Var(array);
+  return pp::Var(plugin, array);
 }
 
 
@@ -350,7 +350,7 @@ pp::Var NaClDescToPPVar(NaClDesc* desc, PluginPpapi* plugin,
     *exception = "incompatible argument: failed to create handle var";
     return pp::Var();
   }
-  return pp::Var(object);
+  return pp::Var(plugin, object);
 }
 
 
@@ -370,8 +370,10 @@ pp::Var ObjectToPPVar(void* obj) {
       static_cast<ScriptableHandlePpapi*>(handle);
   if (handle_ppapi->var() != NULL)
     return *handle_ppapi->var();  // make a copy
-  else
-    return pp::Var(handle_ppapi);
+
+  PluginPpapi* plugin_ppapi =
+      static_cast<PluginPpapi*>(handle_ppapi->handle()->plugin());
+  return pp::Var(plugin_ppapi, handle_ppapi);
 }
 
 }  // namespace

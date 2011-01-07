@@ -198,8 +198,11 @@ void Object::Deallocate() {
 }
 
 Object::Object(PP_Module module,
+               PP_Instance instance,
                const PropertyMap& properties,
-               const MethodMap& methods) : module_(module) {
+               const MethodMap& methods)
+    : module_(module),
+      instance_(instance) {
   PropertyMap::const_iterator prop;
   for (prop = properties.begin(); prop != properties.end(); ++prop) {
     properties_[prop->first] = prop->second;
@@ -211,6 +214,7 @@ Object::Object(PP_Module module,
 }
 
 PP_Var Object::New(PP_Module module,
+                   PP_Instance instance,
                    const PropertyMap& properties,
                    const MethodMap& methods) {
   // Save the PPB_Var_Deprecated interface to be used in constructing objects.
@@ -221,11 +225,12 @@ PP_Var Object::New(PP_Module module,
       return PP_MakeUndefined();
     }
   }
-  Object* obj = new Object(module, properties, methods);
+  Object* obj = new Object(module, instance, properties, methods);
   if (obj == NULL) {
     return PP_MakeUndefined();
   }
-  return ppb_var->CreateObject(module, &ppapi_proxy::Object::object_class, obj);
+  return ppb_var->CreateObject(instance, &ppapi_proxy::Object::object_class,
+                               obj);
 }
 
 }  // namespace fake_browser_ppapi

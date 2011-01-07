@@ -40,7 +40,9 @@ PP_Var* NewStringVar(PP_Module browser_module, const char* str) {
 }
 
 // Returns a PP_Var that mocks the window.location object.
-PP_Var* LocationObject(PP_Module browser_module, const char* page_url) {
+PP_Var* LocationObject(PP_Module browser_module,
+                       PP_Instance browser_instance,
+                       const char* page_url) {
   // Populate the properties map.
   PP_Var* href = NewStringVar(browser_module, page_url);
   Object::PropertyMap properties;
@@ -51,7 +53,8 @@ PP_Var* LocationObject(PP_Module browser_module, const char* page_url) {
 
   // Create and return a PP_Var for location.
   PP_Var* location = reinterpret_cast<PP_Var*>(malloc(sizeof(*location)));
-  *location = Object::New(browser_module, properties, methods);
+  *location = Object::New(browser_module, browser_instance,
+                          properties, methods);
   return location;
 }
 
@@ -76,7 +79,7 @@ PP_Var ConsoleLog(Object* object,
 }
 
 // Returns a PP_Var that mocks the window.console object.
-PP_Var* ConsoleObject(PP_Module browser_module) {
+PP_Var* ConsoleObject(PP_Module browser_module, PP_Instance browser_instance) {
   // Populate the properties map.
   Object::PropertyMap properties;
 
@@ -85,7 +88,7 @@ PP_Var* ConsoleObject(PP_Module browser_module) {
   methods["log"] = ConsoleLog;
 
   PP_Var* console = reinterpret_cast<PP_Var*>(malloc(sizeof(*console)));
-  *console = Object::New(browser_module, properties, methods);
+  *console = Object::New(browser_module, browser_instance, properties, methods);
   return console;
 }
 
@@ -111,18 +114,21 @@ PP_Var Alert(Object* object,
 namespace fake_browser_ppapi {
 
 FakeWindow::FakeWindow(PP_Module browser_module,
+                       PP_Instance browser_instance,
                        Host* host,
                        const char* page_url) : host_(host) {
   // Populate the properties map.
   Object::PropertyMap properties;
-  properties["console"] = ConsoleObject(browser_module);
-  properties["location"] = LocationObject(browser_module, page_url);
+  properties["console"] = ConsoleObject(browser_module, browser_instance);
+  properties["location"] = LocationObject(browser_module, browser_instance,
+                                          page_url);
   // Populate the methods map.
   Object::MethodMap methods;
   methods["alert"] = Alert;
-  Object* window_object = new Object(browser_module, properties, methods);
+  Object* window_object = new Object(browser_module, browser_instance,
+                                     properties, methods);
   window_var_ =
-      host_->var_interface()->CreateObject(browser_module,
+      host_->var_interface()->CreateObject(browser_instance,
                                            &ppapi_proxy::Object::object_class,
                                            window_object);
 }

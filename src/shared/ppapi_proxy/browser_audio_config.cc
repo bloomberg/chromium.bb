@@ -18,7 +18,7 @@ static const PPB_AudioConfig_Dev* GetAudioConfigInterface() {
 void PpbAudioConfigDevRpcServer::PPB_AudioConfig_Dev_CreateStereo16Bit(
     NaClSrpcRpc* rpc,
     NaClSrpcClosure* done,
-    PP_Module module,
+    PP_Instance instance,
     int32_t sample_rate,
     int32_t sample_frame_count,
     PP_Resource* resource) {
@@ -32,7 +32,7 @@ void PpbAudioConfigDevRpcServer::PPB_AudioConfig_Dev_CreateStereo16Bit(
     return;
   }
   *resource = audio->CreateStereo16Bit(
-      module, static_cast<PP_AudioSampleRate_Dev>(sample_rate),
+      instance, static_cast<PP_AudioSampleRate_Dev>(sample_rate),
       sample_frame_count);
   rpc->result = NACL_SRPC_RESULT_OK;
 }

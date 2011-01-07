@@ -32,7 +32,7 @@ const nacl_abi_size_t kPpPointBytes =
 const nacl_abi_size_t kPpRectBytes =
     static_cast<nacl_abi_size_t>(sizeof(struct PP_Rect));
 
-PP_Resource Create(PP_Module module,
+PP_Resource Create(PP_Instance instance,
                    const struct PP_Size* size,
                    PP_Bool is_always_opaque) {
   char* size_as_char_ptr =
@@ -42,7 +42,7 @@ PP_Resource Create(PP_Module module,
   NaClSrpcError retval =
       PpbGraphics2DRpcClient::PPB_Graphics2D_Create(
           GetMainSrpcChannel(),
-          module,
+          instance,
           kPpSizeBytes,
           size_as_char_ptr,
           is_always_opaque_as_int,

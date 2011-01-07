@@ -18,8 +18,12 @@ class Host;
 // Implements the PPB_Instance interface.
 class Instance {
  public:
-  explicit Instance(FakeWindow* window) : window_(window) {}
+  // You must call set_window to complete initialization.
+  explicit Instance() : window_(NULL) {}
   virtual ~Instance() {}
+
+  void set_window(FakeWindow* window) { window_ = window; }
+
   // The bindings for the methods invoked by the PPAPI interface.
   virtual PP_Var GetWindowObject();
   virtual PP_Var GetOwnerElementObject();

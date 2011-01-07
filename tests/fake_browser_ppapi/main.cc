@@ -127,11 +127,14 @@ void TestInstance(PP_Module browser_module_id,
                   const char** argn,
                   const char** argv) {
   printf("TestInstance(): page url %s\n", page_url);
-  // Create a fake window object.
-  FakeWindow window(browser_module_id, host, page_url);
   // Create an instance and the corresponding id.
-  fake_browser_ppapi::Instance browser_instance(&window);
+  fake_browser_ppapi::Instance browser_instance;
   PP_Instance instance_id = reinterpret_cast<PP_Instance>(&browser_instance);
+
+  // Create a fake window object.
+  FakeWindow window(browser_module_id, instance_id, host, page_url);
+  browser_instance.set_window(&window);
+
   // Create and initialize plugin instance.
   CHECK(instance_interface->DidCreate(instance_id, argc, argn, argv));
   // Test the scriptable object for the instance.

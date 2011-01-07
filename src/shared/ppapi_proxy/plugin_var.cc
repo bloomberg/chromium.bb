@@ -307,9 +307,21 @@ uint64_t GetVarId(PP_Var var) {
   return GetObjectId(VarToObjImpl(var));
 }
 
-PP_Var CreateObject(PP_Module module_id,
+PP_Var CreateObject(PP_Instance instance_id,
                     const PPP_Class_Deprecated* object_class,
                     void* object_data) {
+  UNREFERENCED_PARAMETER(instance_id);
+  PP_Var result;
+  result.type = PP_VARTYPE_OBJECT;
+  result.value.as_id =
+      reinterpret_cast<uint64_t>(new ObjImpl(object_class, object_data));
+  return result;
+}
+
+PP_Var CreateObjectWithModuleDeprecated(
+    PP_Module module_id,
+    const PPP_Class_Deprecated* object_class,
+    void* object_data) {
   UNREFERENCED_PARAMETER(module_id);
   PP_Var result;
   result.type = PP_VARTYPE_OBJECT;
@@ -335,7 +347,8 @@ const PPB_Var_Deprecated* PluginVar::GetInterface() {
     Call,
     Construct,
     IsInstanceOf,
-    CreateObject
+    CreateObject,
+    CreateObjectWithModuleDeprecated
   };
   return &intf;
 }

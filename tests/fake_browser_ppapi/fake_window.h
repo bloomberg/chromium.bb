@@ -11,6 +11,7 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/tests/fake_browser_ppapi/fake_host.h"
 #include "native_client/tests/fake_browser_ppapi/fake_object.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_var.h"
 
@@ -19,7 +20,8 @@ namespace fake_browser_ppapi {
 // Implements a fake window DOM object.
 class FakeWindow {
  public:
-  FakeWindow(PP_Module browser_module, Host* host, const char* page_url);
+  FakeWindow(PP_Module browser_module, PP_Instance browser_instance,
+             Host* host, const char* page_url);
   ~FakeWindow();
   PP_Var FakeWindowObject();
 

@@ -47,7 +47,7 @@ PP_Bool IsImageDataFormatSupported(PP_ImageDataFormat format) {
   }
 }
 
-PP_Resource Create(PP_Module module,
+PP_Resource Create(PP_Instance instance,
                    PP_ImageDataFormat format,
                    const struct PP_Size* size,
                    PP_Bool init_to_zero) {
@@ -55,7 +55,7 @@ PP_Resource Create(PP_Module module,
   NaClSrpcError retval =
       PpbImageDataRpcClient::PPB_ImageData_Create(
           GetMainSrpcChannel(),
-          module,
+          instance,
           static_cast<int32_t>(format),
           static_cast<nacl_abi_size_t>(sizeof(struct PP_Size)),
           reinterpret_cast<char*>(const_cast<struct PP_Size*>(size)),

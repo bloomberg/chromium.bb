@@ -19,7 +19,7 @@
                       ]
           },
           {'name': 'PPB_ImageData_Create',
-           'inputs': [['module', 'PP_Module'],
+           'inputs': [['instance', 'PP_Instance'],
                       ['format', 'int32_t'],
                       ['size', 'char[]'],           # PP_Size
                       ['init_to_zero', 'int32_t'],

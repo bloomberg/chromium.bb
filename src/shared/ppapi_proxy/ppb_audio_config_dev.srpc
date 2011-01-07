@@ -10,7 +10,7 @@
  'rpcs': [
           # Implements a call to create an audio configuration for stereo output.
           {'name': 'PPB_AudioConfig_Dev_CreateStereo16Bit',
-           'inputs': [['module', 'PP_Module'],
+           'inputs': [['instance', 'PP_Instance'],
                       ['sample_rate', 'int32_t'],
                       ['sample_frame_count', 'int32_t'],
                      ],

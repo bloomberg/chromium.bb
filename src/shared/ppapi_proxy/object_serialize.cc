@@ -298,10 +298,12 @@ bool DeserializePpVar(NaClSrpcChannel* channel,
         }
         break;
       case PP_VARTYPE_OBJECT: {
+      DebugPrintf("Deserializing object.\n");
         SerializedObject* so = reinterpret_cast<SerializedObject*>(p);
         ObjectCapability capability = so->capability;
         vars[i] = ObjectProxy::New(capability, channel);
         element_size = sizeof(SerializedObject);
+      DebugPrintf("DONE deserializing object.\n");
         break;
       }
       default:

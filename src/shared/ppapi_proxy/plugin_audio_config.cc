@@ -72,7 +72,7 @@ PP_Bool IsAudioConfig(PP_Resource resource) {
   return PP_FALSE;
 }
 
-PP_Resource CreateStereo16Bit(PP_Module module,
+PP_Resource CreateStereo16Bit(PP_Instance instance,
                               PP_AudioSampleRate_Dev sample_rate,
                               uint32_t sample_frame_count) {
   NaClSrpcChannel* channel = ppapi_proxy::GetMainSrpcChannel();
@@ -80,7 +80,7 @@ PP_Resource CreateStereo16Bit(PP_Module module,
   NaClSrpcError retval =
       PpbAudioConfigDevRpcClient::PPB_AudioConfig_Dev_CreateStereo16Bit(
           channel,
-          module,
+          instance,
           static_cast<int32_t>(sample_rate),
           static_cast<int32_t>(sample_frame_count),
           &resource);

@@ -10,6 +10,7 @@
 #include <map>
 #include <string>
 #include "ppapi/c/dev/ppp_class_deprecated.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_var.h"
 
@@ -55,17 +56,20 @@ class Object : public ppapi_proxy::Object {
 
   // Create a PP_Var object with a set of initial properties.
   static PP_Var New(PP_Module module,
+                    PP_Instance instance,
                     const PropertyMap& properties,
                     const MethodMap& methods);
 
   // Construct using a map of initial properties.
   Object(PP_Module module,
+         PP_Instance instance,
          const PropertyMap& properties,
          const MethodMap& methods);
 
   PropertyMap* properties() { return &properties_; }
   MethodMap* methods() { return &methods_; }
   PP_Module module() const { return module_; }
+  PP_Instance instance() { return instance_; }
 
  private:
   // Maintains the list of properties for Set/Get/Remove.
@@ -74,6 +78,8 @@ class Object : public ppapi_proxy::Object {
   MethodMap methods_;
   // Keep track of the PP_Module that created us.
   PP_Module module_;
+  // Keep track of the PP_Instance that created us.
+  PP_Instance instance_;
 
   NACL_DISALLOW_COPY_AND_ASSIGN(Object);
 };

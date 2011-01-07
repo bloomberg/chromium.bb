@@ -8,7 +8,7 @@
  'name': 'PpbGraphics2DRpc',
  'rpcs': [
           {'name': 'PPB_Graphics2D_Create',
-           'inputs': [['module', 'PP_Module'],            # PP_Module
+           'inputs': [['instance', 'PP_Instance'],
                       ['size', 'char[]'],                 # PP_Size
                       ['is_always_opaque', 'int32_t'],
                      ],

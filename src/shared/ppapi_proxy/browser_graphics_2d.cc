@@ -18,7 +18,7 @@
 
 void PpbGraphics2DRpcServer::PPB_Graphics2D_Create(NaClSrpcRpc* rpc,
                                                    NaClSrpcClosure* done,
-                                                   PP_Module module,
+                                                   PP_Instance instance,
                                                    nacl_abi_size_t size_bytes,
                                                    char* size,
                                                    int32_t is_always_opaque,
@@ -30,7 +30,7 @@ void PpbGraphics2DRpcServer::PPB_Graphics2D_Create(NaClSrpcRpc* rpc,
     return;
   }
   *resource = ppapi_proxy::PPBGraphics2DInterface()->Create(
-      module,
+      instance,
       const_cast<const struct PP_Size*>(
           reinterpret_cast<struct PP_Size*>(size)),
       (is_always_opaque ? PP_TRUE : PP_FALSE));

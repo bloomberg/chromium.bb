@@ -270,7 +270,9 @@ bool TestObject::HasProperty(PP_Var name) {
   const char* str = g_var_interface->VarToUtf8(name, &len);
   if (str == NULL) return false;
   std::string name_str(str, len);
-  return property_map.find(name_str) != property_map.end();
+  bool retval = property_map.find(name_str) != property_map.end();
+  printf("  HasProperty done\n");
+  return retval;
 }
 
 PP_Var TestObject::GetProperty(PP_Var name) {
@@ -284,7 +286,9 @@ PP_Var TestObject::GetProperty(PP_Var name) {
   if (property_map.find(name_str) == property_map.end()) {
     return kGetFailed;
   }
-  return (this->*property_map[name_str].first)();
+  PP_Var retval = (this->*property_map[name_str].first)();
+  printf("  GetProperty done\n");
+  return retval;
 }
 
 bool TestObject::SetProperty(PP_Var name, PP_Var value) {
@@ -589,6 +593,7 @@ PP_Var TestObject::hello_world(uint32_t argc, PP_Var* argv, PP_Var* exception) {
 bool HasProperty(void* object,
                  PP_Var name,
                  PP_Var* exception) {
+  printf("Global HasProperty\n");
   TestObject* test_object = static_cast<TestObject*>(object);
   return test_object->HasProperty(name);
 }
@@ -603,6 +608,7 @@ bool HasMethod(void* object,
 PP_Var GetProperty(void* object,
                    PP_Var name,
                    PP_Var* exception) {
+  printf("Global GetProperty\n");
   TestObject* test_object = static_cast<TestObject*>(object);
   return test_object->GetProperty(name);
 }
@@ -611,6 +617,7 @@ void SetProperty(void* object,
                  PP_Var name,
                  PP_Var value,
                  PP_Var* exception) {
+  printf("Global SetProperty\n");
   TestObject* test_object = static_cast<TestObject*>(object);
   if (!test_object->SetProperty(name, value)) {
     *exception = kSetFailed;
