@@ -291,6 +291,8 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
         command_line.HasSwitch(switches::kEnableAccelerated2dCanvas);
     web_prefs.accelerated_layers_enabled =
         command_line.HasSwitch(switches::kEnableAcceleratedLayers);
+    web_prefs.accelerated_video_enabled =
+        !command_line.HasSwitch(switches::kDisableAcceleratedVideo);
     web_prefs.memory_info_enabled =
         command_line.HasSwitch(switches::kEnableMemoryInfo);
     web_prefs.hyperlink_auditing_enabled =

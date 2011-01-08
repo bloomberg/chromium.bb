@@ -70,6 +70,7 @@ struct WebPreferences {
   bool show_composited_layer_borders;
   bool accelerated_compositing_enabled;
   bool accelerated_layers_enabled;
+  bool accelerated_video_enabled;
   bool accelerated_2d_canvas_enabled;
   bool memory_info_enabled;
 

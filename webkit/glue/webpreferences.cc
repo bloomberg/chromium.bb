@@ -64,6 +64,7 @@ WebPreferences::WebPreferences()
       show_composited_layer_borders(false),
       accelerated_compositing_enabled(false),
       accelerated_layers_enabled(false),
+      accelerated_video_enabled(false),
       accelerated_2d_canvas_enabled(false),
       memory_info_enabled(false) {
 }
@@ -160,7 +161,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setAcceleratedCompositingFor3DTransformsEnabled(
       accelerated_layers_enabled);
   settings->setAcceleratedCompositingForVideoEnabled(
-      accelerated_layers_enabled);
+      accelerated_video_enabled);
   settings->setAcceleratedCompositingForPluginsEnabled(
       accelerated_layers_enabled);
   settings->setAcceleratedCompositingForAnimationEnabled(

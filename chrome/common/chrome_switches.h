@@ -53,6 +53,7 @@ extern const char kDeviceManagementUrl[];
 extern const char kDiagnostics[];
 extern const char kDisable3DAPIs[];
 extern const char kDisableAcceleratedCompositing[];
+extern const char kDisableAcceleratedVideo[];
 extern const char kDisableAltWinstation[];
 extern const char kDisableApplicationCache[];
 extern const char kDisableAudio[];

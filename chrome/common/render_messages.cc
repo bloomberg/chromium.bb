@@ -729,6 +729,7 @@ void ParamTraits<WebPreferences>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.accelerated_compositing_enabled);
   WriteParam(m, p.accelerated_2d_canvas_enabled);
   WriteParam(m, p.accelerated_layers_enabled);
+  WriteParam(m, p.accelerated_video_enabled);
   WriteParam(m, p.memory_info_enabled);
 }
 
@@ -780,6 +781,7 @@ bool ParamTraits<WebPreferences>::Read(const Message* m, void** iter,
       ReadParam(m, iter, &p->accelerated_compositing_enabled) &&
       ReadParam(m, iter, &p->accelerated_2d_canvas_enabled) &&
       ReadParam(m, iter, &p->accelerated_layers_enabled) &&
+      ReadParam(m, iter, &p->accelerated_video_enabled) &&
       ReadParam(m, iter, &p->memory_info_enabled);
 }
 
