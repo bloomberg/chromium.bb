@@ -68,6 +68,8 @@ typedef NPError      (* NP_LOADDS NPP_SetValueProcPtr)(NPP instance, NPNVariable
 typedef NPBool       (* NP_LOADDS NPP_GotFocusPtr)(NPP instance, NPFocusDirection direction);
 typedef void         (* NP_LOADDS NPP_LostFocusPtr)(NPP instance);
 typedef void         (* NP_LOADDS NPP_URLRedirectNotifyPtr)(NPP instance, const char* url, int32_t status, void* notifyData);
+typedef NPError      (* NP_LOADDS NPP_ClearSiteDataPtr)(const char* site, uint64_t flags, uint64_t maxAge);
+typedef char**       (* NP_LOADDS NPP_GetSitesWithDataPtr)(void);
 
 typedef NPError      (*NPN_GetValueProcPtr)(NPP instance, NPNVariable variable, void *ret_value);
 typedef NPError      (*NPN_SetValueProcPtr)(NPP instance, NPPVariable variable, void *value);
@@ -147,6 +149,8 @@ typedef struct _NPPluginFuncs {
   NPP_GotFocusPtr gotfocus;
   NPP_LostFocusPtr lostfocus;
   NPP_URLRedirectNotifyPtr urlredirectnotify;
+  NPP_ClearSiteDataPtr clearsitedata;
+  NPP_GetSitesWithDataPtr getsiteswithdata;
 } NPPluginFuncs;
 
 typedef struct _NPNetscapeFuncs {

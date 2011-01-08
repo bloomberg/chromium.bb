@@ -90,7 +90,9 @@
 #endif
 
 #if defined(__APPLE_CC__) && !defined(XP_UNIX)
-#define XP_MACOSX
+#ifndef XP_MACOSX
+#define XP_MACOSX 1
+#endif
 #endif
 
 #if defined(XP_MACOSX) && defined(__LP64__)
@@ -130,7 +132,7 @@
 /*----------------------------------------------------------------------*/
 
 #define NP_VERSION_MAJOR 0
-#define NP_VERSION_MINOR 26
+#define NP_VERSION_MINOR 27
 
 
 /* The OS/2 version of Netscape uses RC_DATA to define the
@@ -719,6 +721,12 @@ enum NPEventType {
 
 #define NP_MAXREADY (((unsigned)(~0)<<1)>>1)
 
+/*
+ * Flags for NPP_ClearSiteData.
+ */
+#define NP_CLEAR_ALL   0
+#define NP_CLEAR_CACHE (1 << 0)
+
 #if !defined(__LP64__)
 #if defined(XP_MACOSX)
 #pragma options align=reset
@@ -747,6 +755,8 @@ enum NPEventType {
 #define NPERR_FILE_NOT_FOUND              (NPERR_BASE + 11)
 #define NPERR_NO_DATA                     (NPERR_BASE + 12)
 #define NPERR_STREAM_NOT_SEEKABLE         (NPERR_BASE + 13)
+#define NPERR_TIME_RANGE_NOT_SUPPORTED    (NPERR_BASE + 14)
+#define NPERR_MALFORMED_SITE              (NPERR_BASE + 15)
 
 /*
  * Values of type NPReason:
@@ -784,6 +794,7 @@ enum NPEventType {
 #define NPVERS_MACOSX_HAS_COCOA_EVENTS      23
 #define NPVERS_HAS_ADVANCED_KEY_HANDLING    25
 #define NPVERS_HAS_URL_REDIRECT_HANDLING    26
+#define NPVERS_HAS_CLEAR_SITE_DATA          27
 
 /*----------------------------------------------------------------------*/
 /*                        Function Prototypes                           */
@@ -831,6 +842,8 @@ NPError NP_LOADDS NPP_SetValue(NPP instance, NPNVariable variable, void *value);
 NPBool  NP_LOADDS NPP_GotFocus(NPP instance, NPFocusDirection direction);
 void    NP_LOADDS NPP_LostFocus(NPP instance);
 void    NP_LOADDS NPP_URLRedirectNotify(NPP instance, const char* url, int32_t status, void* notifyData);
+NPError NP_LOADDS NPP_ClearSiteData(const char* site, uint64_t flags, uint64_t maxAge);
+char**  NP_LOADDS NPP_GetSitesWithData(void);
 
 /* NPN_* functions are provided by the navigator and called by the plugin. */
 void        NP_LOADDS NPN_Version(int* plugin_major, int* plugin_minor,
