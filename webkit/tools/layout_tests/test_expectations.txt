@@ -402,3 +402,7 @@ BUGTHAKIS WIN : svg/text/selection-background-color.xhtml = IMAGE
 BUGTHAKIS WIN : svg/text/selection-styles.xhtml = IMAGE
 BUGTHAKIS WIN : svg/zoom/page/zoom-mask-with-percentages.svg = IMAGE
 
+
+// This test found a real bug in the new skia version. I will file a bug for this on reed
+// and submit an upstream suppression.
+BUGTHAKIS WIN LINUX DEBUG : svg/batik/paints/gradientLimit.svg = FAIL
