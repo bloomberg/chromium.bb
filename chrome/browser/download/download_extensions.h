@@ -28,9 +28,6 @@ DownloadDangerLevel GetFileExtensionDangerLevel(
 // True if the download danger level of the file is NotDangerous.
 bool IsFileSafe(const FilePath& path);
 
-// True if the download danger level of the extension is NotDangerous.
-bool IsFileExtensionSafe(const FilePath::StringType& extension);
-
 // Tests if we think the server means for this mime_type to be executable.
 bool IsExecutableMimeType(const std::string& mime_type);
 

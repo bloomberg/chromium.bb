@@ -854,8 +854,6 @@ bool DownloadManager::ShouldOpenFileBasedOnExtension(
   FilePath::StringType extension = path.Extension();
   if (extension.empty())
     return false;
-  if (!download_util::IsFileExtensionSafe(extension))
-    return false;
   if (Extension::IsExtension(path))
     return false;
   DCHECK(extension[0] == FilePath::kExtensionSeparator);

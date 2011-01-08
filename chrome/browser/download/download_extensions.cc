@@ -213,10 +213,6 @@ DownloadDangerLevel GetFileExtensionDangerLevel(
   return NotDangerous;
 }
 
-bool IsFileExtensionSafe(const FilePath::StringType& extension) {
-  return GetFileExtensionDangerLevel(extension) == NotDangerous;
-}
-
 bool IsFileSafe(const FilePath& path) {
   return GetFileDangerLevel(path) == NotDangerous;
 }

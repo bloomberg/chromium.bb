@@ -89,8 +89,6 @@ bool DownloadPrefs::EnableAutoOpenBasedOnExtension(const FilePath& file_name) {
     return false;
   DCHECK(extension[0] == FilePath::kExtensionSeparator);
   extension.erase(0, 1);
-  if (!download_util::IsFileExtensionSafe(extension))
-    return false;
 
   auto_open_.insert(extension);
   SaveAutoOpenState();

@@ -197,8 +197,7 @@ void DownloadItem::NotifyObserversDownloadFileCompleted() {
 }
 
 bool DownloadItem::CanOpenDownload() {
-  return !Extension::IsExtension(target_name_) &&
-      download_util::IsFileSafe(target_name_);
+  return !Extension::IsExtension(target_name_);
 }
 
 bool DownloadItem::ShouldOpenFileBasedOnExtension() {
