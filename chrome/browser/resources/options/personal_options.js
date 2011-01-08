@@ -59,7 +59,6 @@ cr.define('options', function() {
       };
 
       // Initialize sync select control.
-      $('sync-select').initializeValues(templateData.syncSelectList);
       $('sync-select').onchange = function(event) {
         self.updateSyncSelection_();
       }

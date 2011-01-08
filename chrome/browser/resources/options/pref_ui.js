@@ -293,11 +293,6 @@ cr.define('options', function() {
     decorate: function() {
       var self = this;
 
-      var values = self.getAttribute('data-values');
-      if (values) {
-        self.initializeValues(templateData[values]);
-      }
-
       // Listen to pref changes.
       Preferences.getInstance().addEventListener(this.pref,
           function(event) {
@@ -353,24 +348,6 @@ cr.define('options', function() {
             }
           });
     },
-
-    /**
-     * Sets up options in select element.
-     * @param {Array} options List of option and their display text.
-     *     Each element in the array is an array of length 2 which contains
-     *     options value in the first element and display text in the second
-     *     element. May be undefined.
-     *
-     * TODO(zelidrag): move this to that i18n template classes.
-     */
-    initializeValues: function(options) {
-      options.forEach(function (values) {
-        if (this.dataType == undefined)
-          this.dataType = typeof values[0];
-
-        this.appendChild(new Option(values[1], values[0]));
-      }, this);
-    }
   };
 
   /**

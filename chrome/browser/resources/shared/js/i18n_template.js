@@ -39,6 +39,18 @@ var i18nTemplate = (function() {
     },
 
     /**
+     * This handler adds options to a select element.
+     */
+    'i18n-options': function(element, attributeValue, obj) {
+      var options = obj[attributeValue];
+      options.forEach(function(values) {
+        var option = typeof values == 'string' ? new Option(values) :
+            new Option(values[1], values[0]);
+        element.appendChild(option);
+      });
+    },
+
+    /**
      * This is used to set HTML attributes and DOM properties,. The syntax is:
      *   attributename:key;
      *   .domProperty:key;

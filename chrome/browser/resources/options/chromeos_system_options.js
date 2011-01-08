@@ -31,8 +31,6 @@ cr.define('options', function() {
       OptionsPage.prototype.initializePage.call(this);
       var timezone = $('timezone-select');
       if (timezone) {
-        timezone.initializeValues(templateData.timezoneList);
-
         // Disable the timezone setting for non-owners, as this is a
         // system wide setting.
         if (!AccountsOptions.currentUserIsOwner())

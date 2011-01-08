@@ -12,15 +12,15 @@ cr.define('options', function() {
    * @class
    */
   function FontSettings() {
-    OptionsPage.call(this, 'fontSettings',
+    OptionsPage.call(this,
+                     'fontSettings',
                      templateData.fontSettingsTitle,
-                     'fontSettings');
+                     'font-settings');
   }
 
   cr.addSingletonGetter(FontSettings);
 
   FontSettings.prototype = {
-    // Inherit FontSettings from OptionsPage.
     __proto__: OptionsPage.prototype,
 
     /**
@@ -29,24 +29,6 @@ cr.define('options', function() {
     initializePage: function() {
       // Call base class implementation to starts preference initialization.
       OptionsPage.prototype.initializePage.call(this);
-
-      // Initialize values for selector controls.
-      $('fontSettingsSerifSelector').initializeValues(
-          templateData.fontSettingsFontList)
-      $('fontSettingsSerifSizeSelector').initializeValues(
-          templateData.fontSettingsFontSizeList)
-      $('fontSettingsSansSerifSelector').initializeValues(
-          templateData.fontSettingsFontList)
-      $('fontSettingsSansSerifSizeSelector').initializeValues(
-          templateData.fontSettingsFontSizeList)
-      $('fontSettingsFixedWidthSelector').initializeValues(
-          templateData.fontSettingsFontList)
-      $('fontSettingsFixedWidthSizeSelector').initializeValues(
-          templateData.fontSettingsFontSizeList)
-      $('fontSettingsMinimumSizeSelector').initializeValues(
-          templateData.fontSettingsMinimumFontSizeList)
-      $('fontSettingsEncodingSelector').initializeValues(
-          templateData.fontSettingsEncodingList)
     }
   };
 

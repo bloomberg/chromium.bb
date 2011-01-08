@@ -58,20 +58,6 @@ cr.define('options', function() {
             }
           });
     },
-
-    /**
-     * Sets up options in select element.
-     * @param {Array} options List of option and their display text.
-     * Each element in the array is an array of length 2 which contains options
-     * value in the first element and display text in the second element.
-     *
-     * TODO(zelidrag): move this to that i18n template classes.
-     */
-    initializeValues: function(options) {
-      options.forEach(function(values) {
-        this.appendChild(new Option(values[1], values[0]));
-      }, this);
-    }
   };
 
   // Export
