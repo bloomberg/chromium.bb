@@ -302,6 +302,8 @@
         '../third_party/skia/src/effects/Sk1DPathEffect.cpp',
         '../third_party/skia/src/effects/Sk2DPathEffect.cpp',
         '../third_party/skia/src/effects/SkAvoidXfermode.cpp',
+        '../third_party/skia/src/effects/SkBitmapCache.cpp',
+        '../third_party/skia/src/effects/SkBitmapCache.h',
         '../third_party/skia/src/effects/SkBlurDrawLooper.cpp',
         '../third_party/skia/src/effects/SkBlurMask.cpp',
         '../third_party/skia/src/effects/SkBlurMask.h',
