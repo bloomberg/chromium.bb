@@ -1424,7 +1424,7 @@ TEST(TestAsPerfTest, MetaTag_createproxy) {
     automation_provider_connect_monitor[i].set_start_event(
         "AutomationProvider::AutomationProvider");
     automation_provider_connect_monitor[i].set_end_event(
-        "AutomationProvider::ConnectToChannel");
+        "AutomationProvider::InitializeChannel");
 
     external_tab_navigate_monitor[i].set_interesting_event(
         "ExternalTabContainer::Navigate");
