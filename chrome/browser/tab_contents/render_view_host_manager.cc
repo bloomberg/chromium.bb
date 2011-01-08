@@ -298,6 +298,12 @@ bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
     // into the same process.
     if (new_entry->url().SchemeIs(chrome::kExtensionScheme))
       return true;
+    // When a tab is created, it starts as TYPE_NORMAL. If the new entry is a
+    // DOM UI page, it needs to be grouped with other DOM UI pages. This matches
+    // the logic when transitioning between DOM UI and normal pages.
+    Profile* profile = delegate_->GetControllerForRenderManager().profile();
+    if (DOMUIFactory::UseDOMUIForURL(profile, new_entry->url()))
+      return true;
     return false;
   }
 

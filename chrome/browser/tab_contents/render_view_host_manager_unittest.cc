@@ -253,8 +253,6 @@ TEST_F(RenderViewHostManagerTest, DOMUI) {
   EXPECT_TRUE(host);
   EXPECT_TRUE(host == manager.current_host());
   EXPECT_FALSE(manager.pending_render_view_host());
-  EXPECT_TRUE(manager.pending_dom_ui());
-  EXPECT_FALSE(manager.dom_ui());
 
   // It's important that the site instance get set on the DOM UI page as soon
   // as the navigation starts, rather than lazily after it commits, so we don't
@@ -263,11 +261,13 @@ TEST_F(RenderViewHostManagerTest, DOMUI) {
   EXPECT_TRUE(host->site_instance()->has_site());
   EXPECT_EQ(url, host->site_instance()->site());
 
-  // Commit.
-  manager.DidNavigateMainFrame(host);
-
+  // The DOM UI is committed immediately because the RenderViewHost has not been
+  // used yet. UpdateRendererStateForNavigate() took the short cut path.
   EXPECT_FALSE(manager.pending_dom_ui());
   EXPECT_TRUE(manager.dom_ui());
+
+  // Commit.
+  manager.DidNavigateMainFrame(host);
 }
 
 // Tests that chrome: URLs that are not DOM UI pages do not get grouped into

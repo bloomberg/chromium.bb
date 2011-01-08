@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "chrome/browser/dom_ui/dom_ui_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/common/chrome_switches.h"
@@ -28,27 +29,17 @@ bool BrowsingInstance::ShouldUseProcessPerSite(const GURL& url) {
   if (command_line.HasSwitch(switches::kProcessPerSite))
     return true;
 
-  if (url.SchemeIs(chrome::kExtensionScheme)) {
-    // Always consolidate extensions regardless of the command line, because
-    // they will break if split into multiple processes.
+  // We want to consolidate particular sites like extensions and DOMUI whether
+  // it is in process-per-tab or process-per-site-instance.
+  // Note that --single-process may have been specified, but that affects the
+  // process creation logic in RenderProcessHost, so we do not need to worry
+  // about it here.
+
+  if (url.SchemeIs(chrome::kExtensionScheme))
     return true;
-  }
 
-  if (!command_line.HasSwitch(switches::kProcessPerTab)) {
-    // We are not in process-per-site or process-per-tab, so we must be in the
-    // default (process-per-site-instance).  Only use the process-per-site
-    // logic for particular sites that we want to consolidate.
-    // Note that --single-process may have been specified, but that affects the
-    // process creation logic in RenderProcessHost, so we do not need to worry
-    // about it here.
-    if (url.SchemeIs(chrome::kChromeUIScheme))
-      // Always consolidate instances of the new tab page (and instances of any
-      // other internal resource urls.
-      return true;
-
-    // TODO(creis): List any other special cases that we want to limit to a
-    // single process for all instances.
-  }
+  if (DOMUIFactory::UseDOMUIForURL(profile_, url))
+    return true;
 
   // In all other cases, don't use process-per-site logic.
   return false;
