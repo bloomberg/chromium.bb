@@ -165,6 +165,7 @@ BUGTHAKIS LINUX : svg/W3C-SVG-1.1/styling-inherit-01-b.svg = IMAGE
 BUGTHAKIS LINUX : svg/W3C-SVG-1.1/text-path-01-b.svg = IMAGE
 BUGTHAKIS LINUX : svg/W3C-SVG-1.1/text-text-07-t.svg = IMAGE
 BUGTHAKIS LINUX : svg/batik/filters/feTile.svg = IMAGE
+BUGTHAKIS LINUX RELEASE : svg/batik/paints/gradientLimit.svg = IMAGE
 BUGTHAKIS LINUX : svg/batik/paints/patternRegions-positioned-objects.svg = IMAGE
 BUGTHAKIS LINUX : svg/batik/paints/patternRegions.svg = IMAGE
 BUGTHAKIS LINUX : svg/batik/text/textEffect.svg = IMAGE
@@ -345,6 +346,7 @@ BUGTHAKIS WIN : svg/W3C-SVG-1.1/pservers-grad-18-b.svg = IMAGE
 BUGTHAKIS WIN : svg/W3C-SVG-1.1/pservers-grad-19-b.svg = IMAGE
 BUGTHAKIS WIN : svg/W3C-SVG-1.1/styling-inherit-01-b.svg = IMAGE
 BUGTHAKIS WIN : svg/batik/filters/feTile.svg = IMAGE
+BUGTHAKIS WIN RELEASE : svg/batik/paints/gradientLimit.svg = IMAGE
 BUGTHAKIS WIN : svg/batik/paints/patternRegions-positioned-objects.svg = IMAGE
 BUGTHAKIS WIN : svg/batik/paints/patternRegions.svg = IMAGE
 BUGTHAKIS WIN : svg/batik/text/textEffect.svg = IMAGE
@@ -403,4 +405,4 @@ BUGTHAKIS WIN : svg/zoom/page/zoom-mask-with-percentages.svg = IMAGE
 
 // This test found a real bug in the new skia version. I will file a bug for this on reed
 // and submit an upstream suppression.
-BUGTHAKIS_CR68921 WIN LINUX : svg/batik/paints/gradientLimit.svg = FAIL
+BUGTHAKIS_CR68921 WIN LINUX DEBUG : svg/batik/paints/gradientLimit.svg = FAIL
