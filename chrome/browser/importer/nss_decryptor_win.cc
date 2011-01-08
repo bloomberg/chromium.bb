@@ -1,9 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/importer/nss_decryptor_win.h"
-#include "base/file_util.h"
+
+#include "base/file_path.h"
 #include "base/sys_string_conversions.h"
 
 namespace {
@@ -59,9 +60,8 @@ bool NSSDecryptor::Init(const std::wstring& dll_path,
     // Fall back on LoadLibraryEx if SetDllDirectory isn't available.  We
     // actually prefer this method because it doesn't change the DLL search
     // path, which is a process-wide property.
-    std::wstring path = dll_path;
-    file_util::AppendToPath(&path, kNSS3Library);
-    nss3_dll_ = LoadLibraryEx(path.c_str(), NULL,
+    FilePath path = FilePath(dll_path).Append(kNSS3Library);
+    nss3_dll_ = LoadLibraryEx(path.value().c_str(), NULL,
                               LOAD_WITH_ALTERED_SEARCH_PATH);
     if (nss3_dll_ == NULL)
       return false;
@@ -76,9 +76,8 @@ bool NSSDecryptor::Init(const std::wstring& dll_path,
     // LOAD_WITH_ALTERED_SEARCH_PATH flag.  This helps because LoadLibrary
     // doesn't load a DLL again if it's already loaded.  This workaround is
     // harmless for NSS 3.11.
-    path = dll_path;
-    file_util::AppendToPath(&path, kSoftokn3Library);
-    softokn3_dll_ = LoadLibraryEx(path.c_str(), NULL,
+    path = FilePath(dll_path).Append(kSoftokn3Library);
+    softokn3_dll_ = LoadLibraryEx(path.value().c_str(), NULL,
                                   LOAD_WITH_ALTERED_SEARCH_PATH);
     if (softokn3_dll_ == NULL) {
       Free();
