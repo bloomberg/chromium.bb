@@ -5,7 +5,8 @@
 {
   'variables': {
     'chromium_code': 1,
-    'grit_info_cmd': ['python', '../tools/grit/grit_info.py'],
+    'grit_info_cmd': ['python', '../tools/grit/grit_info.py',
+                      '<@(grit_defines)'],
     'grit_cmd': ['python', '../tools/grit/grit.py'],    
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/gfx',
   },

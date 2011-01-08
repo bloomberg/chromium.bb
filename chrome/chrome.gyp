@@ -64,7 +64,8 @@
       'browser/resources/net_internals_resources.grd',
       'browser/resources/shared_resources.grd'
     ],
-    'grit_info_cmd': ['python', '../tools/grit/grit_info.py'],
+    'grit_info_cmd': ['python', '../tools/grit/grit_info.py',
+                      '<@(grit_defines)'],
     'grit_cmd': ['python', '../tools/grit/grit.py'],
     'repack_locales_cmd': ['python', 'tools/build/repack_locales.py'],
     # TODO: remove this helper when we have loops in GYP

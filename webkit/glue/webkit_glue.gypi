@@ -12,7 +12,8 @@
       }],
     ],
 
-    'grit_info_cmd': ['python', '<(DEPTH)/tools/grit/grit_info.py'],
+    'grit_info_cmd': ['python', '<(DEPTH)/tools/grit/grit_info.py',
+                      '<@(grit_defines)'],
     'grit_cmd': ['python', '<(DEPTH)/tools/grit/grit.py'],
   },
   'targets': [
