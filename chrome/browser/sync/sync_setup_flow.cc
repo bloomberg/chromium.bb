@@ -44,6 +44,10 @@ void FlowHandler::RegisterMessages() {
       NewCallback(this, &FlowHandler::HandleConfigure));
   dom_ui_->RegisterMessageCallback("Passphrase",
       NewCallback(this, &FlowHandler::HandlePassphraseEntry));
+  dom_ui_->RegisterMessageCallback("FirstPassphrase",
+      NewCallback(this, &FlowHandler::HandleFirstPassphrase));
+  dom_ui_->RegisterMessageCallback("GoToDashboard",
+      NewCallback(this, &FlowHandler::HandleGoToDashboard));
 }
 
 static bool GetAuthData(const std::string& json,
@@ -74,6 +78,18 @@ bool GetPassphrase(const std::string& json, std::string* passphrase,
   DictionaryValue* result = static_cast<DictionaryValue*>(parsed_value.get());
   return result->GetString("passphrase", passphrase) &&
          result->GetString("mode", mode);
+}
+
+bool GetFirstPassphrase(const std::string& json,
+                        std::string* option,
+                        std::string* passphrase) {
+  scoped_ptr<Value> parsed_value(base::JSONReader::Read(json, false));
+  if (!parsed_value.get() || !parsed_value->IsType(Value::TYPE_DICTIONARY))
+    return false;
+
+  DictionaryValue* result = static_cast<DictionaryValue*>(parsed_value.get());
+  return result->GetString("option", option) &&
+         result->GetString("passphrase", passphrase);
 }
 
 static bool GetConfiguration(const std::string& json,
@@ -145,6 +161,9 @@ static bool GetConfiguration(const std::string& json,
   // Encyption settings.
   if (!result->GetBoolean("usePassphrase", &config->use_secondary_passphrase))
     return false;
+  if (config->use_secondary_passphrase &&
+      !result->GetString("passphrase", &config->secondary_passphrase))
+    return false;
 
   return true;
 }
@@ -204,6 +223,28 @@ void FlowHandler::HandlePassphraseEntry(const ListValue* args) {
   flow_->OnPassphraseEntry(passphrase, mode);
 }
 
+void FlowHandler::HandleFirstPassphrase(const ListValue* args) {
+  std::string json(dom_ui_util::GetJsonResponseFromFirstArgumentInList(args));
+
+  if (json.empty())
+    return;
+
+  std::string option;
+  std::string passphrase;
+  if (!GetFirstPassphrase(json, &option, &passphrase)) {
+    // Page sent result which couldn't be parsed.  Programming error.
+    NOTREACHED();
+    return;
+  }
+
+  DCHECK(flow_);
+  flow_->OnFirstPassphraseEntry(option, passphrase);
+}
+
+void FlowHandler::HandleGoToDashboard(const ListValue* args) {
+  flow_->OnGoToDashboard();
+}
+
 // Called by SyncSetupFlow::Advance.
 void FlowHandler::ShowGaiaLogin(const DictionaryValue& args) {
   // Whenever you start a wizard, you pass in an arg so it starts on the right
@@ -258,6 +299,17 @@ void FlowHandler::ShowPassphraseEntry(const DictionaryValue& args) {
   ExecuteJavascriptInIFrame(kPassphraseIFrameXPath, script);
 }
 
+void FlowHandler::ShowFirstPassphrase(const DictionaryValue& args) {
+  if (dom_ui_)
+    dom_ui_->CallJavascriptFunction(L"showFirstPassphrase");
+
+  std::string json;
+  base::JSONWriter::Write(&args, false, &json);
+  std::wstring script = std::wstring(L"setupDialog") +
+      L"(" + UTF8ToWide(json) + L");";
+  ExecuteJavascriptInIFrame(kPassphraseIFrameXPath, script);
+}
+
 void FlowHandler::ShowSettingUp() {
   if (dom_ui_)
     dom_ui_->CallJavascriptFunction(L"showSettingUp");
@@ -306,7 +358,6 @@ SyncSetupFlow::SyncSetupFlow(SyncSetupWizard::State start_state,
       login_start_time_(base::TimeTicks::Now()),
       flow_handler_(new FlowHandler()),
       owns_flow_handler_(true),
-      configuration_pending_(false),
       service_(service),
       html_dialog_window_(NULL) {
   flow_handler_->set_flow(this);
@@ -503,8 +554,6 @@ bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
       return current_state_ == SyncSetupWizard::GAIA_LOGIN;
     case SyncSetupWizard::CONFIGURE:
       return current_state_ == SyncSetupWizard::GAIA_SUCCESS;
-    case SyncSetupWizard::CREATE_PASSPHRASE:
-      return current_state_ == SyncSetupWizard::CONFIGURE;
     case SyncSetupWizard::ENTER_PASSPHRASE:
       return current_state_ == SyncSetupWizard::CONFIGURE ||
              current_state_ == SyncSetupWizard::SETTING_UP;
@@ -512,8 +561,8 @@ bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
       return current_state_ == SyncSetupWizard::CONFIGURE;
     case SyncSetupWizard::SETTING_UP:
       return current_state_ == SyncSetupWizard::CONFIGURE ||
-             current_state_ == SyncSetupWizard::CREATE_PASSPHRASE ||
-             current_state_ == SyncSetupWizard::ENTER_PASSPHRASE;
+             current_state_ == SyncSetupWizard::ENTER_PASSPHRASE ||
+             current_state_ == SyncSetupWizard::PASSPHRASE_MIGRATION;
     case SyncSetupWizard::FATAL_ERROR:
       return true;  // You can always hit the panic button.
     case SyncSetupWizard::DONE_FIRST_TIME:
@@ -554,16 +603,16 @@ void SyncSetupFlow::Advance(SyncSetupWizard::State advance_state) {
       flow_handler_->ShowConfigure(args);
       break;
     }
-    case SyncSetupWizard::CREATE_PASSPHRASE: {
-      DictionaryValue args;
-      args.SetString("mode", "new");
-      flow_handler_->ShowPassphraseEntry(args);
-      break;
-    }
     case SyncSetupWizard::ENTER_PASSPHRASE: {
       DictionaryValue args;
       SyncSetupFlow::GetArgsForEnterPassphrase(service_, &args);
       flow_handler_->ShowPassphraseEntry(args);
+      break;
+    }
+    case SyncSetupWizard::PASSPHRASE_MIGRATION: {
+      DictionaryValue args;
+      args.SetString("iframeToShow", "firstpassphrase");
+      flow_handler_->ShowFirstPassphrase(args);
       break;
     }
     case SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR: {
@@ -630,6 +679,9 @@ SyncSetupFlow* SyncSetupFlow::Run(ProfileSyncService* service,
     SyncSetupFlow::GetArgsForConfigure(service, &args);
   else if (start == SyncSetupWizard::ENTER_PASSPHRASE)
     SyncSetupFlow::GetArgsForEnterPassphrase(service, &args);
+  else if (start == SyncSetupWizard::PASSPHRASE_MIGRATION)
+    args.SetString("iframeToShow", "firstpassphrase");
+
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
 
@@ -664,56 +716,47 @@ void SyncSetupFlow::OnUserSubmittedAuth(const std::string& username,
 }
 
 void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
-  // Store the configuration in case we need more information.
-  configuration_ = configuration;
-  configuration_pending_ = true;
-
-  // If the user is activating secondary passphrase for the first time,
-  // we need to prompt them to enter one.
-  if (configuration.use_secondary_passphrase &&
-      !service_->IsUsingSecondaryPassphrase()) {
-    // TODO(tim): If we could download the Nigori node first before any other
-    // types, we could do that prior to showing the configure page so that we
-    // could pre-populate the 'Use an encryption passphrase' checkbox.
-    // http://crbug.com/60182
-    Advance(SyncSetupWizard::CREATE_PASSPHRASE);
-    return;
-  }
-
-  OnConfigurationComplete();
-}
-
-void SyncSetupFlow::OnConfigurationComplete() {
-  if (!configuration_pending_)
-    return;
-
   // Go to the "loading..." screen."
   Advance(SyncSetupWizard::SETTING_UP);
 
   // If we are activating the passphrase, we need to have one supplied.
   DCHECK(service_->IsUsingSecondaryPassphrase() ||
-         !configuration_.use_secondary_passphrase ||
-         configuration_.secondary_passphrase.length() > 0);
+         !configuration.use_secondary_passphrase ||
+         configuration.secondary_passphrase.length() > 0);
 
-  if (configuration_.use_secondary_passphrase &&
+  if (configuration.use_secondary_passphrase &&
       !service_->IsUsingSecondaryPassphrase()) {
-    service_->SetPassphrase(configuration_.secondary_passphrase, true);
+    service_->SetPassphrase(configuration.secondary_passphrase, true);
   }
 
-  service_->OnUserChoseDatatypes(configuration_.sync_everything,
-                                 configuration_.data_types);
-
-  configuration_pending_ = false;
+  service_->OnUserChoseDatatypes(configuration.sync_everything,
+                                 configuration.data_types);
 }
 
 void SyncSetupFlow::OnPassphraseEntry(const std::string& passphrase,
                                       const std::string& mode) {
-  if (current_state_ == SyncSetupWizard::ENTER_PASSPHRASE) {
-    service_->SetPassphrase(passphrase, mode == std::string("enter"));
-    Advance(SyncSetupWizard::SETTING_UP);
-  } else if (configuration_pending_) {
-    DCHECK_EQ(SyncSetupWizard::CREATE_PASSPHRASE, current_state_);
-    configuration_.secondary_passphrase = passphrase;
-    OnConfigurationComplete();
+  Advance(SyncSetupWizard::SETTING_UP);
+  service_->SetPassphrase(passphrase, true);
+}
+
+void SyncSetupFlow::OnFirstPassphraseEntry(const std::string& option,
+                                           const std::string& passphrase) {
+  Advance(SyncSetupWizard::SETTING_UP);
+  if (option == "explicit") {
+    service_->SetPassphrase(passphrase, true);
+  } else if (option == "nothanks") {
+    // User opted out of encrypted sync, need to turn off encrypted
+    // data types.
+    syncable::ModelTypeSet registered_types;
+    service_->GetRegisteredDataTypes(&registered_types);
+    registered_types.erase(syncable::PASSWORDS);
+    service_->OnUserChoseDatatypes(false, registered_types);
+  } else if (option == "google") {
+    // Implicit passphrase already set up.
+    Advance(SyncSetupWizard::DONE);
   }
+}
+
+void SyncSetupFlow::OnGoToDashboard() {
+  BrowserList::GetLastActive()->OpenPrivacyDashboardTabAndActivate();
 }

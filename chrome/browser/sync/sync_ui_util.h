@@ -24,10 +24,14 @@ enum MessageType {
   PRE_SYNCED,  // User has not set up sync.
   SYNCED,      // We are synced and authenticated to a gmail account.
   SYNC_ERROR,  // A sync error (such as invalid credentials) has occurred.
+  SYNC_PROMO,  // A situation has occurred which should be brought to the user's
+               // attention, but not as an error.
 };
 
 // TODO(akalin): audit the use of ProfileSyncService* service below,
 // and use const ProfileSyncService& service where possible.
+
+string16 GetLoginMessageForEncryption();
 
 // Create status and link labels for the current status labels and link text
 // by querying |service|.
@@ -60,4 +64,3 @@ void AddIntSyncDetail(ListValue* details,
                       int64 stat_value);
 }  // namespace sync_ui_util
 #endif  // CHROME_BROWSER_SYNC_SYNC_UI_UTIL_H_
-

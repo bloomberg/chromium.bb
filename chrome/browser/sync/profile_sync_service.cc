@@ -19,6 +19,7 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_signin.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -31,6 +32,7 @@
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/signin_manager.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/sync/token_migrator.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -39,6 +41,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "jingle/notifier/communicator/const_communicator.h"
 #include "net/base/cookie_monster.h"
@@ -716,11 +719,7 @@ void ProfileSyncService::ShowLoginDialog(gfx::NativeWindow parent_window) {
   }
 
   wizard_.SetParent(parent_window);
-  // This method will also be called if a passphrase is needed.
-  if (observed_passphrase_required_)
-    wizard_.Step(SyncSetupWizard::ENTER_PASSPHRASE);
-  else
-    wizard_.Step(SyncSetupWizard::GAIA_LOGIN);
+  wizard_.Step(SyncSetupWizard::GAIA_LOGIN);
 
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 }
@@ -732,6 +731,31 @@ void ProfileSyncService::ShowConfigure(gfx::NativeWindow parent_window) {
   }
   wizard_.SetParent(parent_window);
   wizard_.Step(SyncSetupWizard::CONFIGURE);
+}
+
+void ProfileSyncService::PromptForExistingPassphrase(
+    gfx::NativeWindow parent_window) {
+  if (WizardIsVisible()) {
+    wizard_.Focus();
+    return;
+  }
+  wizard_.SetParent(parent_window);
+  wizard_.Step(SyncSetupWizard::ENTER_PASSPHRASE);
+}
+
+void ProfileSyncService::ShowPassphraseMigration(
+    gfx::NativeWindow parent_window) {
+  wizard_.SetParent(parent_window);
+  wizard_.Step(SyncSetupWizard::PASSPHRASE_MIGRATION);
+}
+
+void ProfileSyncService::SigninForPassphrase(TabContents* container) {
+  string16 prefilled_username = GetAuthenticatedUsername();
+  string16 login_message = sync_ui_util::GetLoginMessageForEncryption();
+  profile_->GetBrowserSignin()->RequestSignin(container,
+                                              prefilled_username,
+                                              login_message,
+                                              this);
 }
 
 SyncBackendHost::StatusSummary ProfileSyncService::QuerySyncStatusSummary() {
@@ -1136,6 +1160,27 @@ void ProfileSyncService::Observe(NotificationType type,
       NOTREACHED();
     }
   }
+}
+
+// This is the delegate callback from BrowserSigin.
+void ProfileSyncService::OnLoginSuccess() {
+  // The reason for the browser signin was a non-explicit passphrase
+  // required signal.  If this is the first time through the passphrase
+  // process, we want to show the migration UI and offer an explicit
+  // passphrase.  Otherwise, we're done because the implicit is enough.
+
+  if (passphrase_required_for_decryption_) {
+    // NOT first time (decrypting something encrypted elsewhere).
+    // Do nothing.
+  } else {
+    ShowPassphraseMigration(NULL);
+  }
+}
+
+// This is the delegate callback from BrowserSigin.
+void ProfileSyncService::OnLoginFailure(const GoogleServiceAuthError& error) {
+  // Do nothing.  The UI will already reflect the fact that the
+  // user is not signed in.
 }
 
 void ProfileSyncService::AddObserver(Observer* observer) {

@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 
 #include "app/l10n_util.h"
+#include "app/resource_bundle.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/time_formatting.h"
 #include "base/string_util.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/options/options_window.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
+#include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
@@ -102,8 +104,28 @@ MessageType GetStatusInfo(ProfileSyncService* service,
           l10n_util::GetStringUTF16(IDS_SYNC_AUTHENTICATING_LABEL));
       }
       result_type = PRE_SYNCED;
-    } else if (auth_error.state() != AuthError::NONE ||
-               service->observed_passphrase_required()) {
+    } else if (service->observed_passphrase_required()) {
+      if (service->passphrase_required_for_decryption()) {
+        // NOT first machine.
+        // Show a link and present as an error ("needs attention").
+        if (status_label && link_label) {
+          status_label->assign(string16());
+          link_label->assign(
+              l10n_util::GetStringUTF16(IDS_SYNC_CONFIGURE_ENCRYPTION));
+        }
+        result_type = SYNC_ERROR;
+      } else {
+        // First machine.  Show as a promotion.
+        if (status_label && link_label) {
+          status_label->assign(
+              l10n_util::GetStringFUTF16(IDS_SYNC_NTP_PASSWORD_PROMO,
+                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+          link_label->assign(
+              l10n_util::GetStringUTF16(IDS_SYNC_NTP_PASSWORD_ENABLE));
+        }
+        result_type = SYNC_PROMO;
+      }
+    } else if (auth_error.state() != AuthError::NONE) {
       if (status_label && link_label) {
         GetStatusLabelsForAuthError(auth_error, service,
                                     status_label, link_label);
@@ -155,6 +177,20 @@ MessageType GetStatusInfo(ProfileSyncService* service,
 }
 
 }  // namespace
+
+// Returns an HTML chunk for a login prompt related to encryption.
+string16 GetLoginMessageForEncryption() {
+  std::vector<std::string> subst;
+  const base::StringPiece html(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_SYNC_ENCRYPTION_LOGIN_HTML));
+  subst.push_back(l10n_util::GetStringUTF8(IDS_SYNC_PLEASE_SIGN_IN));
+  subst.push_back(
+      l10n_util::GetStringFUTF8(IDS_SYNC_LOGIN_FOR_ENCRYPTION,
+                                l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+
+  return UTF8ToUTF16(ReplaceStringPlaceholders(html, subst, NULL));
+}
 
 MessageType GetStatusLabels(ProfileSyncService* service,
                             string16* status_label,

@@ -83,13 +83,11 @@ form {
 }
 
 #sync-encryption-instructions {
-  margin-bottom: 10px;
-  line-height: 1.8em;
+  margin-bottom: 5px;
 }
 
 #sync-passphrase-warning {
-  font-style: italic;
-  line-height: 1.8em;
+  margin-bottom: 5px;
 }
 
 #encryption-tab-contents > .sync_item_show {
@@ -145,6 +143,26 @@ form {
   margin-right: 10px;
   margin-bottom: 10px;
 }
+.sync-section {
+  background: #EEE;
+  margin: 5px 0px;
+  padding: 6px;
+}
+
+#explicit-message {
+  margin-bottom: 5px;
+}
+
+#change-passphrase {
+  margin: 10px 0;
+  background: #EEE;
+  padding: 8px;
+}
+
+#clear-data-button {
+  margin-top: 10px;
+}
+
 html[dir='rtl'] .sync-footer {
   text-align: left;
   left: 0px;
@@ -267,13 +285,18 @@ html[os='mac'] input[type='submit'] {
   }
 
   function setEncryptionCheckboxes(args) {
-    document.getElementById("usePassphraseCheckbox").checked =
-        args["usePassphrase"];
-
-    // The passphrase, once set, cannot be unset.
     if (args["usePassphrase"]) {
-      document.getElementById("usePassphraseCheckbox").disabled = true;
+      document.getElementById("explicit-option").checked = true;
+
+      // The passphrase, once set, cannot be unset, but we show a reset link.
+      document.getElementById("explicit-option").disabled = true;
+      document.getElementById("google-option").disabled = true;
+      document.getElementById("change-passphrase").style.display = "block";
+    } else {
+      document.getElementById("google-option").checked = true;
+      document.getElementById("change-passphrase").style.display = "none";
     }
+    switchToMode("");
   }
 
   function setErrorState(args) {
@@ -297,6 +320,8 @@ html[os='mac'] input[type='submit'] {
       }
     }
   }
+
+
 
   // Returns true if at least one data type is enabled and no data types are
   // checked.  (If all data type checkboxes are disabled, it's because "keep
@@ -328,6 +353,10 @@ html[os='mac'] input[type='submit'] {
     }
 
     var f = document.getElementById("chooseDataTypesForm");
+    if (!checkPassphraseMatch()) {
+      return false;
+    }
+
     var syncAll = f.keepEverythingSyncedRadio.checked;
     // These values need to be kept in sync with where they are read in
     // SyncSetupFlow::GetDataTypeChoiceData().
@@ -342,7 +371,8 @@ html[os='mac'] input[type='submit'] {
         "syncTypedUrls": syncAll || f.typedUrlsCheckbox.checked,
         "syncApps": syncAll || f.appsCheckbox.checked,
         "syncSessions": syncAll || f.sessionsCheckbox.checked,
-        "usePassphrase": document.getElementById("usePassphraseCheckbox").checked
+        "usePassphrase": (getRadioCheckedValue() == 'explicit'),
+        "passphrase": f.passphrase.value
     });
     chrome.send("Configure", [result]);
   }
@@ -354,13 +384,71 @@ html[os='mac'] input[type='submit'] {
       document.getElementById(currentTab + "-tab-contents").className =
           "sync-config-tab-contents-inactive";
     }
-    
+
     document.getElementById(newTab + "-tab").className =
         "sync-config-tab-active";
     document.getElementById(newTab + "-tab-contents").className =
         "sync-config-tab-contents-active";
-    
+
     currentTab = newTab;
+  }
+
+  function switchToMode(mode) {
+    document.getElementById("section-explicit").style.display = "none";
+    document.getElementById("section-google").style.display = "none";
+
+    if (mode == "google") {
+      document.getElementById("section-google").style.display = "block";
+    } else if (mode =="explicit") {
+      document.getElementById("section-explicit").style.display = "block";
+    }
+  }
+
+  function getRadioCheckedValue() {
+    var f = document.getElementById("chooseDataTypesForm");
+    for (var i = 0; i < f.option.length; ++i) {
+      if (f.option[i].checked) {
+        return f.option[i].value;
+      }
+    }
+    return undefined;
+  }
+
+  function onRadioChange() {
+    switchToMode(getRadioCheckedValue());
+  }
+
+  function checkPassphraseMatch() {
+    var emptyError = document.getElementById("emptyerror");
+    var mismatchError = document.getElementById("mismatcherror");
+    emptyError.style.display = "none";
+    mismatchError.style.display = "none";
+
+    if (getRadioCheckedValue() != "explicit") {
+      return true;
+    }
+    var f = document.getElementById("chooseDataTypesForm");
+    if (f.passphrase.value.length == 0) {
+      emptyError.style.display = "block";
+      return false;
+    }
+    if (f.confirmpassphrase.value.length > 0 &&
+        f.confirmpassphrase.value != f.passphrase.value) {
+      mismatchError.style.display = "block";
+      return false;
+    }
+    return true;
+  }
+
+  function sendValuesAndClose() {
+    var result = JSON.stringify({"option": getRadioCheckedValue(),
+                                 "passphrase": f.passphrase.value});
+    chrome.send("FirstPassphrase", [result]);
+  }
+
+  function goToDashboard() {
+    chrome.send("GoToDashboard", [""]);
+    chrome.send("DialogClose", [""]);
   }
 
 </script>
@@ -381,9 +469,9 @@ html[os='mac'] input[type='submit'] {
   </div>
   <div id="data-type-tab-contents" class="sync-config-tab-contents-inactive">
 
-    <div class="sync-header" 
+    <div class="sync-header"
          i18n-content="choosedatatypesheader"></div>
-    <div class="sync-choose_data_types_instructions" 
+    <div class="sync-choose_data_types_instructions"
          i18n-content="choosedatatypesinstructions"></div>
     <div class="sync-select-customization">
       <div class="sync-choice_radio">
@@ -395,7 +483,7 @@ html[os='mac'] input[type='submit'] {
         </label>
       </div>
       <div id="chooseDataTypes" class="sync-choice_radio">
-        <input id="chooseDataTypesRadio" type="radio" name="syncChooseDataTypes" 
+        <input id="chooseDataTypesRadio" type="radio" name="syncChooseDataTypes"
                onclick="setCheckboxesToKeepEverythingSynced(false)">
         <label for="chooseDataTypesRadio" i18n-content="choosedatatypes" ></label>
         <div id="chooseDataTypesBody">
@@ -403,49 +491,49 @@ html[os='mac'] input[type='submit'] {
             <!-- Apps -->
             <div class="sync-item-show" id="appsItem">
               <input id="appsCheckbox" name="dataTypeCheckbox" type="checkbox">
-              <label id="appsCheckboxLabel" name="dataTypeLabel" 
+              <label id="appsCheckboxLabel" name="dataTypeLabel"
                      for="appsCheckbox" i18n-content="apps"
                      i18n-values="title:apps"></label>
             </div>
             <!-- Autofill -->
             <div class="sync-item-show" id="autofillItem">
               <input id="autofillCheckbox" name="dataTypeCheckbox" type="checkbox">
-              <label id="autofillCheckboxLabel" name="dataTypeLabel" 
+              <label id="autofillCheckboxLabel" name="dataTypeLabel"
                      for="autofillCheckbox" i18n-content="autofill"
                      i18n-values="title:autofill"></label>
             </div>
             <!-- Bookmarks -->
             <div class="sync-item-show" id="bookmarksItem">
               <input id="bookmarksCheckbox" name="dataTypeCheckbox" type="checkbox">
-              <label id="bookmarksCheckboxLabel" name="dataTypeLabel" 
+              <label id="bookmarksCheckboxLabel" name="dataTypeLabel"
                      for="bookmarksCheckbox" i18n-content="bookmarks"
                      i18n-values="title:bookmarks"></label>
             </div>
             <!-- Extensions -->
             <div class="sync-item-show" id="extensionsItem">
               <input id="extensionsCheckbox" name="dataTypeCheckbox" type="checkbox">
-              <label id="extensionsCheckboxLabel" name="dataTypeLabel" 
+              <label id="extensionsCheckboxLabel" name="dataTypeLabel"
                      for="extensionsCheckbox" i18n-content="extensions"
                      i18n-values="title:extensions"></label>
             </div>
             <!-- Omnibox -->
             <div class="sync-item-show" id="omniboxItem">
               <input id="typedUrlsCheckbox" name="dataTypeCheckbox" type="checkbox">
-              <label id="typedUrlsCheckboxLabel" name="dataTypeLabel" 
+              <label id="typedUrlsCheckboxLabel" name="dataTypeLabel"
                      for="typedUrlsCheckbox" i18n-content="typedurls"
                      i18n-values="title:typedurls"></label>
             </div>
             <!-- Passwords -->
             <div class="sync-item-show" id="passwordsItem">
               <input id="passwordsCheckbox" name="dataTypeCheckbox" type="checkbox">
-              <label id="passwordsCheckboxLabel" name="dataTypeLabel" 
+              <label id="passwordsCheckboxLabel" name="dataTypeLabel"
                      for="passwordsCheckbox" i18n-content="passwords"
                      i18n-values="title:passwords"></label>
             </div>
             <!-- Preferences -->
             <div class="sync-item-show" id="preferencesItem">
               <input id="preferencesCheckbox" name="dataTypeCheckbox" type="checkbox">
-              <label id="preferencesCheckboxLabel" name="dataTypeLabel" 
+              <label id="preferencesCheckboxLabel" name="dataTypeLabel"
                      for="preferencesCheckbox" i18n-content="preferences"
                      i18n-values="title:preferences"></label>
             </div>
@@ -458,7 +546,7 @@ html[os='mac'] input[type='submit'] {
             <!-- Sessions -->
             <div class="sync-item-show" id="sessionsItem">
               <input id="sessionsCheckbox" name="dataTypeCheckbox" type="checkbox">
-              <label id="sessionsCheckboxLabel" name="dataTypeLabel" 
+              <label id="sessionsCheckboxLabel" name="dataTypeLabel"
                      for="sessionsCheckbox" i18n-content="foreignsessions"
                      il8n-values="title:sessions"></label>
             </div>
@@ -475,21 +563,58 @@ html[os='mac'] input[type='submit'] {
 
   </div>
   <div id="encryption-tab-contents" class="sync-config-tab-contents-inactive">
-    <div id="sync-encryption-instructions" 
+    <div id="sync-encryption-instructions"
          i18n-content="encryptionInstructions"></div>
-    
-    <div class="sync-item-show" id="usePassphrase">
-      <input id="usePassphraseCheckbox" name="usePassphraseCheckbox"
-             type="checkbox" />
-      <label id="usePassphraseLabel" name="usePassphraseLabel"
-             for="usePassphraseCheckbox" i18n-content="usePassphraseLabel">
-      </label>
+
+    <div>
+      <input id="google-option" name="option" type="radio"
+             value="google" onchange="onRadioChange();">
+      <span i18n-content="googleOption"></span>
+    </input>
     </div>
-    
-    <div id="sync-passphrase-warning" i18n-content="passphraseWarning">
+    <div>
+      <input id="explicit-option" name="option" type="radio"
+             value="explicit" onchange="onRadioChange();">
+      <span i18n-content="explicitOption"></span>
+    </input>
+    </div>
+
+    <div class="sync-section" id="section-google">
+      <div i18n-content="sectionGoogleMessage"></div>
+    </div>
+    <div class="sync-section" id="section-explicit">
+      <div i18n-content="sectionExplicitMessage" id="explicit-message"></div>
+      <div>
+        <div i18n-content="passphraseLabel" id="passphraseLabel"></div>
+        <input id="passphrase" name="passphrase" label="passphraseLabel"
+               type="password" onkeyup="checkPassphraseMatch();"
+               onchange="checkPassphraseMatch();"/>
+      </div>
+      <div>
+        <div i18n-content="confirmLabel" id="confirmPassphraseLabel">
+        </div>
+        <input id="confirmpassphrase" name="confirmpassphrase" type="password"
+               label="confirmPassphraseLabel"
+               onkeyup="checkPassphraseMatch();"
+               onchange="checkPassphraseMatch();" />
+      </div>
+      <div class="error" style="display:none"
+           id="emptyerror" i18n-content="emptyErrorMessage"></div>
+      <div class="error" style="display:none"
+           id="mismatcherror" i18n-content="mismatchErrorMessage"></div>
+    </div>
+
+    <div id="change-passphrase">
+      <div id="sync-passphrase-warning" i18n-content="passphraseWarning">
+      </div>
+      <div id="sync-reset-confirmation" i18n-content="cleardataconfirmation"
+           style="display: none;">
+      </div>
+      <a id="clear-data-link" i18n-content="cleardatalink" href="#"
+             onclick='goToDashboard(); return false;'></a>
     </div>
   </div>
-  
+
   <div class="sync-footer">
     <input id="okButton" type="submit" i18n-values="value:ok" />
     <input id="cancelButton" type="button" i18n-values="value:cancel"

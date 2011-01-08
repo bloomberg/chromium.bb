@@ -90,6 +90,8 @@ NewTabPageSyncHandler::MessageType
   switch (type) {
     case sync_ui_util::SYNC_ERROR:
       return SYNC_ERROR;
+    case sync_ui_util::SYNC_PROMO:
+      return SYNC_PROMO;
     case sync_ui_util::PRE_SYNCED:
     case sync_ui_util::SYNCED:
     default:
@@ -155,6 +157,13 @@ void NewTabPageSyncHandler::HandleSyncLinkClicked(const ListValue* args) {
   if (!sync_service_->IsSyncEnabled())
     return;
   if (sync_service_->HasSyncSetupCompleted()) {
+    if (sync_service_->observed_passphrase_required()) {
+      if (sync_service_->IsUsingSecondaryPassphrase())
+        sync_service_->PromptForExistingPassphrase(NULL);
+      else
+        sync_service_->SigninForPassphrase(dom_ui_->tab_contents());
+      return;
+    }
     if (sync_service_->GetAuthError().state() ==
         GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS ||
         sync_service_->GetAuthError().state() ==
@@ -164,8 +173,7 @@ void NewTabPageSyncHandler::HandleSyncLinkClicked(const ListValue* args) {
         sync_service_->GetAuthError().state() ==
         GoogleServiceAuthError::ACCOUNT_DISABLED ||
         sync_service_->GetAuthError().state() ==
-        GoogleServiceAuthError::SERVICE_UNAVAILABLE ||
-        sync_service_->observed_passphrase_required()) {
+        GoogleServiceAuthError::SERVICE_UNAVAILABLE) {
       sync_service_->ShowLoginDialog(NULL);
       return;
     }
@@ -196,12 +204,16 @@ void NewTabPageSyncHandler::SendSyncMessageToPage(
   std::string title;
   std::string linkurl;
 
-  // If there is no message to show, we should hide the sync section
-  // altogether.
-  if (type == HIDE || msg.empty()) {
+  // If there is nothing to show, we should hide the sync section altogether.
+  if (type == HIDE || (msg.empty() && linktext.empty())) {
     value.SetBoolean("syncsectionisvisible", false);
-  } else {  // type == SYNC_ERROR
-    title = l10n_util::GetStringUTF8(IDS_SYNC_NTP_SYNC_SECTION_ERROR_TITLE);
+  } else {
+    if (type == SYNC_ERROR)
+      title = l10n_util::GetStringUTF8(IDS_SYNC_NTP_SYNC_SECTION_ERROR_TITLE);
+    else if (type == SYNC_PROMO)
+      title = l10n_util::GetStringUTF8(IDS_SYNC_NTP_SYNC_SECTION_PROMO_TITLE);
+    else
+      NOTREACHED();
 
     value.SetBoolean("syncsectionisvisible", true);
     value.SetString("msg", msg);

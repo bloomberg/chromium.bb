@@ -110,7 +110,10 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
   void OnPassphraseEntry(const std::string& passphrase,
                          const std::string& mode);
 
-  void OnConfigurationComplete();
+  void OnFirstPassphraseEntry(const std::string& option,
+                              const std::string& passphrase);
+
+  void OnGoToDashboard();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, InitialStepLogin);
@@ -124,6 +127,7 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest,
                            DiscreteRunChooseDataTypesAbortedByPendingClear);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, EnterPassphraseRequired);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupWizardTest, PassphraseMigration);
 
   // Use static Run method to get an instance.
   SyncSetupFlow(SyncSetupWizard::State start_state,
@@ -148,11 +152,6 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
   // The handler needed for the entire flow.
   FlowHandler* flow_handler_;
   mutable bool owns_flow_handler_;
-
-  // The current configuration, held pending until all the information has
-  // been populated (possibly using multiple dialog states).
-  SyncConfiguration configuration_;
-  bool configuration_pending_;
 
   // We need this to write the sentinel "setup completed" pref.
   ProfileSyncService* service_;
@@ -198,6 +197,8 @@ class FlowHandler : public DOMMessageHandler {
   void HandleSubmitAuth(const ListValue* args);
   void HandleConfigure(const ListValue* args);
   void HandlePassphraseEntry(const ListValue* args);
+  void HandleFirstPassphrase(const ListValue* args);
+  void HandleGoToDashboard(const ListValue* args);
 
   // These functions control which part of the HTML is visible.
   void ShowGaiaLogin(const DictionaryValue& args);
@@ -205,6 +206,7 @@ class FlowHandler : public DOMMessageHandler {
   void ShowGaiaSuccessAndSettingUp();
   void ShowConfigure(const DictionaryValue& args);
   void ShowPassphraseEntry(const DictionaryValue& args);
+  void ShowFirstPassphrase(const DictionaryValue& args);
   void ShowSettingUp();
   void ShowSetupDone(const std::wstring& user);
   void ShowFirstTimeDone(const std::wstring& user);

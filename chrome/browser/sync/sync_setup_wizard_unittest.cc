@@ -312,6 +312,7 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
 TEST_F(SyncSetupWizardTest, ChooseDataTypesSetsPrefs) {
   SKIP_TEST_ON_MACOSX();
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+  wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
   wizard_->Step(SyncSetupWizard::CONFIGURE);
 
   ListValue data_type_choices_value;
@@ -357,6 +358,22 @@ TEST_F(SyncSetupWizardTest, EnterPassphraseRequired) {
                                 "\"mode\":\"gaia\"}"));
   test_window_->flow()->flow_handler_->HandlePassphraseEntry(&value);
   EXPECT_EQ("myPassphrase", service_->passphrase_);
+}
+
+TEST_F(SyncSetupWizardTest, PassphraseMigration) {
+  SKIP_TEST_ON_MACOSX();
+  wizard_->Step(SyncSetupWizard::PASSPHRASE_MIGRATION);
+  ListValue value;
+  value.Append(new StringValue("{\"option\":\"explicit\","
+                               "\"passphrase\":\"myPassphrase\"}"));
+  test_window_->flow()->flow_handler_->HandleFirstPassphrase(&value);
+  EXPECT_EQ("myPassphrase", service_->passphrase_);
+
+  ListValue value2;
+  value2.Append(new StringValue("{\"option\":\"nothanks\","
+                                "\"passphrase\":\"myPassphrase\"}"));
+  test_window_->flow()->flow_handler_->HandleFirstPassphrase(&value2);
+  EXPECT_EQ(service_->chosen_data_types_.count(syncable::PASSWORDS), 0U);
 }
 
 TEST_F(SyncSetupWizardTest, DialogCancelled) {

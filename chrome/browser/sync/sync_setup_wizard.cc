@@ -79,6 +79,7 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
   const char kSyncGaiaLoginPath[] = "gaialogin";
   const char kSyncConfigurePath[] = "configure";
   const char kSyncPassphrasePath[] = "passphrase";
+  const char kSyncFirstPassphrasePath[] = "firstpassphrase";
   const char kSyncSettingUpPath[] = "settingup";
   const char kSyncSetupDonePath[] = "setupdone";
 
@@ -149,21 +150,46 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
         GetStringFUTF16(IDS_SYNC_ENCRYPTION_INSTRUCTIONS,
                         GetStringUTF16(IDS_PRODUCT_NAME)));
     AddString(dict, "encryptAllLabel", IDS_SYNC_ENCRYPT_ALL_LABEL);
-    AddString(dict, "usePassphraseLabel", IDS_SYNC_PASSPHRASE_CHECKBOX_LABEL);
+
+    AddString(dict, "googleOption", IDS_SYNC_PASSPHRASE_OPT_GOOGLE);
+    AddString(dict, "explicitOption", IDS_SYNC_PASSPHRASE_OPT_EXPLICIT);
+    AddString(dict, "sectionGoogleMessage", IDS_SYNC_PASSPHRASE_MSG_GOOGLE);
+    AddString(dict, "sectionExplicitMessage", IDS_SYNC_PASSPHRASE_MSG_EXPLICIT);
+    AddString(dict, "passphraseLabel", IDS_SYNC_PASSPHRASE_LABEL);
+    AddString(dict, "confirmLabel", IDS_SYNC_CONFIRM_PASSPHRASE_LABEL);
+    AddString(dict, "emptyErrorMessage", IDS_SYNC_EMPTY_PASSPHRASE_ERROR);
+    AddString(dict, "mismatchErrorMessage", IDS_SYNC_PASSPHRASE_MISMATCH_ERROR);
+
     AddString(dict, "passphraseWarning", IDS_SYNC_PASSPHRASE_WARNING);
+    AddString(dict, "cleardata", IDS_SYNC_CLEAR_DATA_FOR_PASSPHRASE);
+    AddString(dict, "cleardatalink", IDS_SYNC_CLEAR_DATA_LINK);
 
     // Stuff for the footer.
     AddString(dict, "ok", IDS_OK);
     AddString(dict, "cancel", IDS_CANCEL);
   } else if (path_raw == kSyncPassphrasePath) {
     html_resource_id = IDR_SYNC_PASSPHRASE_HTML;
-    AddString(dict, "newPassphraseTitle", IDS_SYNC_NEW_PASSPHRASE_TITLE);
-    AddString(dict, "newPassphraseBody", IDS_SYNC_NEW_PASSPHRASE_BODY);
     AddString(dict, "enterPassphraseTitle", IDS_SYNC_ENTER_PASSPHRASE_TITLE);
     AddString(dict, "enterPassphraseBody", IDS_SYNC_ENTER_PASSPHRASE_BODY);
-    AddString(dict, "gaiaPassphraseTitle", IDS_SYNC_GAIA_PASSPHRASE_TITLE);
-    AddString(dict, "gaiaPassphraseBody", IDS_SYNC_GAIA_PASSPHRASE_BODY);
     AddString(dict, "passphraseLabel", IDS_SYNC_PASSPHRASE_LABEL);
+    AddString(dict, "ok", IDS_OK);
+    AddString(dict, "cancel", IDS_CANCEL);
+  } else if (path_raw == kSyncFirstPassphrasePath) {
+    html_resource_id = IDR_SYNC_FIRST_PASSPHRASE_HTML;
+    AddString(dict, "title", IDS_SYNC_FIRST_PASSPHRASE_TITLE);
+    dict->SetString("instructions",
+                    GetStringFUTF16(IDS_SYNC_FIRST_PASSPHRASE_MESSAGE,
+                                    GetStringUTF16(IDS_PRODUCT_NAME)));
+    AddString(dict, "googleOption", IDS_SYNC_PASSPHRASE_OPT_GOOGLE);
+    AddString(dict, "explicitOption", IDS_SYNC_PASSPHRASE_OPT_EXPLICIT);
+    AddString(dict, "nothanksOption", IDS_SYNC_PASSPHRASE_OPT_CANCEL);
+    AddString(dict, "sectionGoogleMessage", IDS_SYNC_PASSPHRASE_MSG_GOOGLE);
+    AddString(dict, "sectionExplicitMessage", IDS_SYNC_PASSPHRASE_MSG_EXPLICIT);
+    AddString(dict, "sectionNothanksMessage", IDS_SYNC_PASSPHRASE_MSG_CANCEL);
+    AddString(dict, "passphraseLabel", IDS_SYNC_PASSPHRASE_LABEL);
+    AddString(dict, "confirmLabel", IDS_SYNC_CONFIRM_PASSPHRASE_LABEL);
+    AddString(dict, "emptyErrorMessage", IDS_SYNC_EMPTY_PASSPHRASE_ERROR);
+    AddString(dict, "mismatchErrorMessage", IDS_SYNC_PASSPHRASE_MISMATCH_ERROR);
     AddString(dict, "ok", IDS_OK);
     AddString(dict, "cancel", IDS_CANCEL);
   } else if (path_raw == kSyncSettingUpPath) {
@@ -279,9 +305,9 @@ SyncSetupWizard::State SyncSetupWizard::GetEndStateForDiscreteRun(
   State result = FATAL_ERROR;
   if (start_state == GAIA_LOGIN) {
     result = GAIA_SUCCESS;
-  } else if (start_state == ENTER_PASSPHRASE) {
-    result = DONE;
-  } else if (start_state == CONFIGURE) {
+  } else if (start_state == ENTER_PASSPHRASE ||
+             start_state == CONFIGURE ||
+             start_state == PASSPHRASE_MIGRATION) {
     result = DONE;
   }
   DCHECK_NE(FATAL_ERROR, result) <<
