@@ -17,7 +17,7 @@ class GoogleTest : public UITest {
   GoogleTest() : UITest() {
     FilePath test_file =
         test_data_directory_.AppendASCII("google").AppendASCII("google.html");
-    homepage_ = GURL(net::FilePathToFileURL(test_file)).spec();
+    set_homepage(GURL(net::FilePathToFileURL(test_file)).spec());
   }
 };
 
@@ -34,7 +34,7 @@ class ColumnLayout : public UITest {
  protected:
   ColumnLayout() : UITest() {
     FilePath test_file = test_data_directory_.AppendASCII("columns.html");
-    homepage_ = GURL(net::FilePathToFileURL(test_file)).spec();
+    set_homepage(GURL(net::FilePathToFileURL(test_file)).spec());
   }
 };
 

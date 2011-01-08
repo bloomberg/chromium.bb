@@ -73,7 +73,7 @@ TEST_F(MetricsServiceTest, CloseRenderersNormally) {
 
 TEST_F(MetricsServiceTest, CrashRenderers) {
   // This doesn't make sense to test in single process mode.
-  if (in_process_renderer_)
+  if (ProxyLauncher::in_process_renderer())
     return;
 
   OpenTabs();

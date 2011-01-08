@@ -202,7 +202,7 @@ TEST_F(ResourceDispatcherTest, CrossSiteOnunloadCookie) {
 // strip the app on the build bots, this is bad times.
 TEST_F(ResourceDispatcherTest, CrossSiteAfterCrash) {
   // This test only works in multi-process mode
-  if (in_process_renderer())
+  if (ProxyLauncher::in_process_renderer())
     return;
 
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));

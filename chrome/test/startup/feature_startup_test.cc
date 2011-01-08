@@ -39,7 +39,7 @@ class NewTabUIStartupTest : public UIPerfTest {
     PrintResultList("new_tab", "", label, times, "ms", important);
   }
 
-  void InitProfile(UITest::ProfileType profile_type) {
+  void InitProfile(ProxyLauncher::ProfileType profile_type) {
     profile_type_ = profile_type;
 
     // Install the location of the test profile file.
@@ -55,7 +55,7 @@ class NewTabUIStartupTest : public UIPerfTest {
   // |want_warm| is true if we should output warm-disk timings, false if
   // we should report cold timings.
   void RunStartupTest(const char* label, bool want_warm, bool important,
-                      UITest::ProfileType profile_type) {
+                      ProxyLauncher::ProfileType profile_type) {
     InitProfile(profile_type);
 
     TimeDelta timings[kNumCycles];
@@ -103,7 +103,7 @@ class NewTabUIStartupTest : public UIPerfTest {
   }
 
   void RunNewTabTimingTest() {
-    InitProfile(UITest::DEFAULT_THEME);
+    InitProfile(ProxyLauncher::DEFAULT_THEME);
 
     TimeDelta scriptstart_times[kNumCycles];
     TimeDelta domcontentloaded_times[kNumCycles];
@@ -163,29 +163,29 @@ class NewTabUIStartupTest : public UIPerfTest {
 TEST_F(NewTabUIStartupTest, PerfRefCold) {
   UseReferenceBuild();
   RunStartupTest("tab_cold_ref", false /* cold */, true /* important */,
-                 UITest::DEFAULT_THEME);
+                 ProxyLauncher::DEFAULT_THEME);
 }
 
 TEST_F(NewTabUIStartupTest, PerfCold) {
   RunStartupTest("tab_cold", false /* cold */, true /* important */,
-                 UITest::DEFAULT_THEME);
+                 ProxyLauncher::DEFAULT_THEME);
 }
 
 TEST_F(NewTabUIStartupTest, PerfRefWarm) {
   UseReferenceBuild();
   RunStartupTest("tab_warm_ref", true /* warm */, true /* not important */,
-                 UITest::DEFAULT_THEME);
+                 ProxyLauncher::DEFAULT_THEME);
 }
 
 TEST_F(NewTabUIStartupTest, PerfWarm) {
   RunStartupTest("tab_warm", true /* warm */, true /* not important */,
-                 UITest::DEFAULT_THEME);
+                 ProxyLauncher::DEFAULT_THEME);
 }
 
 TEST_F(NewTabUIStartupTest, ComplexThemeCold) {
   RunStartupTest("tab_complex_theme_cold", false /* cold */,
                  false /* not important */,
-                 UITest::COMPLEX_THEME);
+                 ProxyLauncher::COMPLEX_THEME);
 }
 
 TEST_F(NewTabUIStartupTest, NewTabTimingTestsCold) {
@@ -196,19 +196,19 @@ TEST_F(NewTabUIStartupTest, NewTabTimingTestsCold) {
 TEST_F(NewTabUIStartupTest, GtkThemeCold) {
   RunStartupTest("tab_gtk_theme_cold", false /* cold */,
                  false /* not important */,
-                 UITest::NATIVE_THEME);
+                 ProxyLauncher::NATIVE_THEME);
 }
 
 TEST_F(NewTabUIStartupTest, NativeFrameCold) {
   RunStartupTest("tab_custom_frame_cold", false /* cold */,
                  false /* not important */,
-                 UITest::CUSTOM_FRAME);
+                 ProxyLauncher::CUSTOM_FRAME);
 }
 
 TEST_F(NewTabUIStartupTest, NativeFrameGtkThemeCold) {
   RunStartupTest("tab_custom_frame_gtk_theme_cold", false /* cold */,
                  false /* not important */,
-                 UITest::CUSTOM_FRAME_NATIVE_THEME);
+                 ProxyLauncher::CUSTOM_FRAME_NATIVE_THEME);
 }
 #endif
 

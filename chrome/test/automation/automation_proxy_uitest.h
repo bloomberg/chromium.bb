@@ -109,7 +109,7 @@ class ExternalTabUITestMockClient : public AutomationProxy {
 // Base your external tab UI tests on this.
 class ExternalTabUITest : public UITest {
  public:
-  ExternalTabUITest() : UITest(MessageLoop::TYPE_UI) {}
+  ExternalTabUITest();
   // Override UITest's CreateProxyLauncher to provide the unit test
   // with our special implementation of AutomationProxy.
   // This function is called from within UITest::SetUp().

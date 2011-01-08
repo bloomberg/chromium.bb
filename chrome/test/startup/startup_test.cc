@@ -90,14 +90,14 @@ class StartupTest : public UIPerfTest {
 
   void RunStartupTest(const char* graph, const char* trace,
                       TestColdness test_cold, TestImportance test_importance,
-                      UITest::ProfileType profile_type,
+                      ProxyLauncher::ProfileType profile_type,
                       int num_tabs, int nth_timed_tab) {
     bool important = (test_importance == IMPORTANT);
     profile_type_ = profile_type;
 
     // Sets the profile data for the run.  For now, this is only used for
     // the non-default themes test.
-    if (profile_type != UITest::DEFAULT_THEME) {
+    if (profile_type != ProxyLauncher::DEFAULT_THEME) {
       set_template_user_data(UITest::ComputeTypicalUserDataSource(
           profile_type));
     }
@@ -187,7 +187,7 @@ class StartupTest : public UIPerfTest {
           num_tabs = 0;
         }
       }
-      timings[i].end_to_end = end_time - browser_launch_time_;
+      timings[i].end_to_end = end_time - browser_launch_time();
       UITest::TearDown();
 
       if (i == 0) {
@@ -246,18 +246,21 @@ class StartupTest : public UIPerfTest {
 };
 
 TEST_F(StartupTest, PerfWarm) {
-  RunStartupTest("warm", "t", WARM, IMPORTANT, UITest::DEFAULT_THEME, 0, 0);
+  RunStartupTest("warm", "t", WARM, IMPORTANT,
+                 ProxyLauncher::DEFAULT_THEME, 0, 0);
 }
 
 TEST_F(StartupTest, PerfReferenceWarm) {
   UseReferenceBuild();
-  RunStartupTest("warm", "t_ref", WARM, IMPORTANT, UITest::DEFAULT_THEME, 0, 0);
+  RunStartupTest("warm", "t_ref", WARM, IMPORTANT,
+                 ProxyLauncher::DEFAULT_THEME, 0, 0);
 }
 
 // TODO(mpcomplete): Should we have reference timings for all these?
 
 TEST_F(StartupTest, PerfCold) {
-  RunStartupTest("cold", "t", COLD, NOT_IMPORTANT, UITest::DEFAULT_THEME, 0, 0);
+  RunStartupTest("cold", "t", COLD, NOT_IMPORTANT,
+                 ProxyLauncher::DEFAULT_THEME, 0, 0);
 }
 
 void StartupTest::RunPerfTestWithManyTabs(const char* graph, const char* trace,
@@ -272,7 +275,7 @@ void StartupTest::RunPerfTestWithManyTabs(const char* graph, const char* trace,
     UITest::SetUp();
     // Set flags to ensure profile is saved and can be restored.
 #if defined(OS_MACOSX)
-    shutdown_type_ = UITestBase::USER_QUIT;
+    shutdown_type_ = ProxyLauncher::USER_QUIT;
 #endif
     clear_profile_ = false;
     // Quit and set flags to restore session.
@@ -286,8 +289,8 @@ void StartupTest::RunPerfTestWithManyTabs(const char* graph, const char* trace,
     launch_arguments_.AppendSwitchASCII(switches::kRestoreLastSession,
                                         base::IntToString(tab_count));
   }
-  RunStartupTest(graph, trace, WARM, NOT_IMPORTANT, UITest::DEFAULT_THEME,
-                 tab_count, nth_timed_tab);
+  RunStartupTest(graph, trace, WARM, NOT_IMPORTANT,
+                 ProxyLauncher::DEFAULT_THEME, tab_count, nth_timed_tab);
 }
 
 TEST_F(StartupTest, PerfFewTabs) {
@@ -350,21 +353,21 @@ TEST_F(StartupTest, PerfExtensionEmpty) {
   SetUpWithFileURL();
   SetUpWithExtensionsProfile("empty");
   RunStartupTest("warm", "extension_empty", WARM, NOT_IMPORTANT,
-                 UITest::DEFAULT_THEME, 1, 0);
+                 ProxyLauncher::DEFAULT_THEME, 1, 0);
 }
 
 TEST_F(StartupTest, PerfExtensionContentScript1) {
   SetUpWithFileURL();
   SetUpWithExtensionsProfile("content_scripts1");
   RunStartupTest("warm", "extension_content_scripts1", WARM, NOT_IMPORTANT,
-                 UITest::DEFAULT_THEME, 1, 0);
+                 ProxyLauncher::DEFAULT_THEME, 1, 0);
 }
 
 TEST_F(StartupTest, MAYBE_PerfExtensionContentScript50) {
   SetUpWithFileURL();
   SetUpWithExtensionsProfile("content_scripts50");
   RunStartupTest("warm", "extension_content_scripts50", WARM, NOT_IMPORTANT,
-                 UITest::DEFAULT_THEME, 1, 0);
+                 ProxyLauncher::DEFAULT_THEME, 1, 0);
 }
 
 #if defined(OS_WIN)
@@ -372,35 +375,35 @@ TEST_F(StartupTest, MAYBE_PerfExtensionContentScript50) {
 TEST_F(StartupTest, PerfGears) {
   SetUpWithFileURL();
   RunStartupTest("warm", "gears", WARM, NOT_IMPORTANT,
-                 UITest::DEFAULT_THEME, 1, 0);
+                 ProxyLauncher::DEFAULT_THEME, 1, 0);
 }
 
 TEST_F(StartupTest, PerfColdGears) {
   SetUpWithFileURL();
   RunStartupTest("cold", "gears", COLD, NOT_IMPORTANT,
-                 UITest::DEFAULT_THEME, 1, 0);
+                 ProxyLauncher::DEFAULT_THEME, 1, 0);
 }
 #endif
 
 TEST_F(StartupTest, PerfComplexTheme) {
   RunStartupTest("warm", "t-theme", WARM, NOT_IMPORTANT,
-                 UITest::COMPLEX_THEME, 0, 0);
+                 ProxyLauncher::COMPLEX_THEME, 0, 0);
 }
 
 #if defined(OS_LINUX)
 TEST_F(StartupTest, PerfGtkTheme) {
   RunStartupTest("warm", "gtk-theme", WARM, NOT_IMPORTANT,
-                 UITest::NATIVE_THEME, 0, 0);
+                 ProxyLauncher::NATIVE_THEME, 0, 0);
 }
 
 TEST_F(StartupTest, PrefNativeFrame) {
   RunStartupTest("warm", "custom-frame", WARM, NOT_IMPORTANT,
-                 UITest::CUSTOM_FRAME, 0, 0);
+                 ProxyLauncher::CUSTOM_FRAME, 0, 0);
 }
 
 TEST_F(StartupTest, PerfNativeFrameGtkTheme) {
   RunStartupTest("warm", "custom-frame-gtk-theme", WARM, NOT_IMPORTANT,
-                 UITest::CUSTOM_FRAME_NATIVE_THEME, 0, 0);
+                 ProxyLauncher::CUSTOM_FRAME_NATIVE_THEME, 0, 0);
 }
 #endif
 

@@ -331,7 +331,7 @@ class PageLoadTest : public UITest {
       // Also don't run if running as a standalone program which is for
       // distributed testing, to avoid mistakenly hitting web sites with many
       // instances.
-      if (in_process_renderer() || g_stand_alone)
+      if (ProxyLauncher::in_process_renderer() || g_stand_alone)
         return;
       // For usage 1
       NavigationMetrics metrics;

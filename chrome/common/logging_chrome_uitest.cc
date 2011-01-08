@@ -98,7 +98,7 @@ class AssertionTest : public UITest {
 #define Assertion DISABLED_Assertion
 #endif
 TEST_F(AssertionTest, Assertion) {
-  if (UITest::in_process_renderer()) {
+  if (ProxyLauncher::in_process_renderer()) {
     // in process mode doesn't do the crashing.
     expected_errors_ = 0;
     expected_crashes_ = 0;
@@ -133,7 +133,7 @@ class CheckFalseTest : public UITest {
 #endif
 // Launch the app in assertion test mode, then close the app.
 TEST_F(CheckFalseTest, CheckFails) {
-  if (UITest::in_process_renderer()) {
+  if (ProxyLauncher::in_process_renderer()) {
     // in process mode doesn't do the crashing.
     expected_errors_ = 0;
     expected_crashes_ = 0;
@@ -171,7 +171,7 @@ class RendererCrashTest : public UITest {
 #endif
 // Launch the app in renderer crash test mode, then close the app.
 TEST_F(RendererCrashTest, Crash) {
-  if (UITest::in_process_renderer()) {
+  if (ProxyLauncher::in_process_renderer()) {
     // in process mode doesn't do the crashing.
     expected_crashes_ = 0;
   } else {

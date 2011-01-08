@@ -32,7 +32,7 @@ class SessionRestoreUITest : public UITest {
 
   virtual void QuitBrowserAndRestore(int expected_tab_count) {
 #if defined(OS_MACOSX)
-    shutdown_type_ = UITestBase::USER_QUIT;
+    shutdown_type_ = ProxyLauncher::USER_QUIT;
 #endif
     UITest::TearDown();
 
@@ -444,7 +444,7 @@ TEST_F(SessionRestoreUITest, TwoWindowsCloseOneRestoreOnlyOne) {
 // process.)
 // Flaky as per http://crbug.com/52022
 TEST_F(SessionRestoreUITest, FLAKY_ShareProcessesOnRestore) {
-  if (in_process_renderer()) {
+  if (ProxyLauncher::in_process_renderer()) {
     // No point in running this test in single process mode.
     return;
   }

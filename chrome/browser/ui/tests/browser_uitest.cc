@@ -83,7 +83,7 @@ TEST_F(BrowserTest, PosixSessionEnd) {
 #ifdef CHROME_V8
 TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   // This test only works in multi-process mode
-  if (in_process_renderer())
+  if (ProxyLauncher::in_process_renderer())
     return;
 
   net::TestServer test_server(net::TestServer::TYPE_HTTP,
@@ -134,7 +134,7 @@ TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
 // a same-page-redirect) will not fork a new process.
 TEST_F(BrowserTest, MAYBE_OtherRedirectsDontForkProcess) {
   // This test only works in multi-process mode
-  if (in_process_renderer())
+  if (ProxyLauncher::in_process_renderer())
     return;
 
   net::TestServer test_server(net::TestServer::TYPE_HTTP,

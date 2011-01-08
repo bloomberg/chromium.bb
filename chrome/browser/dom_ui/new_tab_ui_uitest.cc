@@ -22,11 +22,11 @@ class NewTabUITest : public UITest {
     dom_automation_enabled_ = true;
     // Set home page to the empty string so that we can set the home page using
     // preferences.
-    homepage_ = "";
+    set_homepage("");
 
     // Setup the DEFAULT_THEME profile (has fake history entries).
     set_template_user_data(UITest::ComputeTypicalUserDataSource(
-        UITest::DEFAULT_THEME));
+        ProxyLauncher::DEFAULT_THEME));
   }
 };
 

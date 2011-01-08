@@ -113,7 +113,7 @@ TEST_F(NPAPITesterBase, NPObjectProxy) {
 // http://crbug.com/44960
 TEST_F(NPAPIVisiblePluginTester,
        FLAKY_SelfDeletePluginInvokeInSynchronousPaint) {
-  if (UITest::in_process_renderer())
+  if (ProxyLauncher::in_process_renderer())
     return;
 
   show_window_ = true;
@@ -128,7 +128,7 @@ TEST_F(NPAPIVisiblePluginTester,
 #endif
 
 TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInNewStream) {
-  if (UITest::in_process_renderer())
+  if (ProxyLauncher::in_process_renderer())
     return;
 
   show_window_ = true;
@@ -190,7 +190,7 @@ TEST_F(NPAPIVisiblePluginTester, AlertInWindowMessage) {
 }
 
 TEST_F(NPAPIVisiblePluginTester, VerifyNPObjectLifetimeTest) {
-  if (UITest::in_process_renderer())
+  if (ProxyLauncher::in_process_renderer())
     return;
 
   show_window_ = true;
@@ -212,7 +212,7 @@ TEST_F(NPAPIVisiblePluginTester, NewFails) {
 }
 
 TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInNPNEvaluate) {
-  if (UITest::in_process_renderer())
+  if (ProxyLauncher::in_process_renderer())
     return;
 
   const FilePath test_case(
@@ -225,7 +225,7 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInNPNEvaluate) {
 }
 
 TEST_F(NPAPIVisiblePluginTester, SelfDeleteCreatePluginInNPNEvaluate) {
-  if (UITest::in_process_renderer())
+  if (ProxyLauncher::in_process_renderer())
     return;
 
   const FilePath test_case(
@@ -243,7 +243,7 @@ TEST_F(NPAPIVisiblePluginTester, SelfDeleteCreatePluginInNPNEvaluate) {
 // test is crashy. I could not repro the crash on my local setup. Leaving this
 // marked as FLAKY for now while we watch this on the builders.
 TEST_F(NPAPIVisiblePluginTester, FLAKY_OpenPopupWindowWithPlugin) {
-  if (UITest::in_process_renderer())
+  if (ProxyLauncher::in_process_renderer())
     return;
 
   const FilePath test_case(
@@ -257,7 +257,7 @@ TEST_F(NPAPIVisiblePluginTester, FLAKY_OpenPopupWindowWithPlugin) {
 
 // Test checking the privacy mode is off.
 TEST_F(NPAPITesterBase, PrivateDisabled) {
-  if (UITest::in_process_renderer())
+  if (ProxyLauncher::in_process_renderer())
     return;
 
   const FilePath test_case(FILE_PATH_LITERAL("private.html"));
@@ -285,7 +285,7 @@ TEST_F(NPAPITesterBase, PluginThreadAsyncCall) {
 
 // Test checking the privacy mode is on.
 TEST_F(NPAPIIncognitoTester, PrivateEnabled) {
-  if (UITest::in_process_renderer())
+  if (ProxyLauncher::in_process_renderer())
     return;
 
   const FilePath test_case(FILE_PATH_LITERAL("private.html?private"));
@@ -299,7 +299,7 @@ TEST_F(NPAPIIncognitoTester, PrivateEnabled) {
 // Test a browser hang due to special case of multiple
 // plugin instances indulged in sync calls across renderer.
 TEST_F(NPAPIVisiblePluginTester, MultipleInstancesSyncCalls) {
-  if (UITest::in_process_renderer())
+  if (ProxyLauncher::in_process_renderer())
     return;
 
   const FilePath test_case(
@@ -312,7 +312,7 @@ TEST_F(NPAPIVisiblePluginTester, MultipleInstancesSyncCalls) {
 #endif
 
 TEST_F(NPAPIVisiblePluginTester, GetURLRequestFailWrite) {
-  if (UITest::in_process_renderer())
+  if (ProxyLauncher::in_process_renderer())
     return;
 
   GURL url(URLRequestMockHTTPJob::GetMockUrl(
@@ -327,7 +327,7 @@ TEST_F(NPAPIVisiblePluginTester, GetURLRequestFailWrite) {
 
 #if defined(OS_WIN)
 TEST_F(NPAPITesterBase, EnsureScriptingWorksInDestroy) {
-  if (UITest::in_process_renderer())
+  if (ProxyLauncher::in_process_renderer())
     return;
 
   const FilePath test_case(
@@ -342,7 +342,7 @@ TEST_F(NPAPITesterBase, EnsureScriptingWorksInDestroy) {
 // This test uses a Windows Event to signal to the plugin that it should crash
 // on NP_Initialize.
 TEST_F(NPAPITesterBase, NoHangIfInitCrashes) {
-  if (UITest::in_process_renderer())
+  if (ProxyLauncher::in_process_renderer())
     return;
 
   // Only Windows implements the crash service for now.
@@ -364,7 +364,7 @@ TEST_F(NPAPITesterBase, NoHangIfInitCrashes) {
 #endif
 
 TEST_F(NPAPIVisiblePluginTester, PluginReferrerTest) {
-  if (UITest::in_process_renderer())
+  if (ProxyLauncher::in_process_renderer())
     return;
 
   GURL url(URLRequestMockHTTPJob::GetMockUrl(
@@ -379,7 +379,7 @@ TEST_F(NPAPIVisiblePluginTester, PluginReferrerTest) {
 
 #if defined(OS_MACOSX)
 TEST_F(NPAPIVisiblePluginTester, PluginConvertPointTest) {
-  if (UITest::in_process_renderer())
+  if (ProxyLauncher::in_process_renderer())
     return;
 
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));

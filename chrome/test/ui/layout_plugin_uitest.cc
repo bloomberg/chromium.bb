@@ -68,7 +68,7 @@ TEST_F(LayoutPluginTester, FLAKY_SelfDeletePluginInvoke) {
 }
 
 TEST_F(LayoutPluginTester, NPObjectReleasedOnDestruction) {
-  if (UITest::in_process_renderer())
+  if (ProxyLauncher::in_process_renderer())
     return;
 
   const FilePath test_case(

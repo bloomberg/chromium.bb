@@ -67,7 +67,8 @@ void UIPerfTest::PrintResultsImpl(const std::string& measurement,
 }
 
 void UIPerfTest::PrintIOPerfInfo(const char* test_name) {
-  ChromeProcessList chrome_processes(GetRunningChromeProcesses(process_id_));
+  ChromeProcessList chrome_processes(
+      GetRunningChromeProcesses(browser_process_id()));
 
   size_t read_op_b = 0;
   size_t read_op_r = 0;
@@ -173,7 +174,8 @@ void UIPerfTest::PrintIOPerfInfo(const char* test_name) {
 }
 
 void UIPerfTest::PrintMemoryUsageInfo(const char* test_name) {
-  ChromeProcessList chrome_processes(GetRunningChromeProcesses(process_id_));
+  ChromeProcessList chrome_processes(
+      GetRunningChromeProcesses(browser_process_id()));
 
   size_t browser_virtual_size = 0;
   size_t browser_working_set_size = 0;

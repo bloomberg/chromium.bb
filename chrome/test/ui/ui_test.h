@@ -31,6 +31,7 @@
 // AutomationProxy here, but many files that #include this one don't
 // themselves #include automation_proxy.h.
 #include "chrome/test/automation/automation_proxy.h"
+#include "chrome/test/automation/proxy_launcher.h"
 #include "testing/platform_test.h"
 
 class AutomationProxy;
@@ -38,7 +39,6 @@ class BrowserProxy;
 class DictionaryValue;
 class FilePath;
 class GURL;
-class ProxyLauncher;
 class ScopedTempDir;
 class TabProxy;
 
@@ -162,9 +162,9 @@ class UITestBase {
   // window or if the browser process died by itself.
   bool IsBrowserRunning();
 
-  // Returns true when time_out_ms milliseconds have elapsed.
+  // Returns true when timeout_ms milliseconds have elapsed.
   // Returns false if the browser process died while waiting.
-  bool CrashAwareSleep(int time_out_ms);
+  bool CrashAwareSleep(int timeout_ms);
 
   // Returns the number of tabs in the first window.  If no windows exist,
   // causes a test failure and returns 0.
@@ -179,7 +179,7 @@ class UITestBase {
 
   // Wait for the browser process to shut down on its own (i.e. as a result of
   // some action that your test has taken).
-  bool WaitForBrowserProcessToQuit();
+  bool WaitForBrowserProcessToQuit(int timeout);
 
   // Waits until the Bookmark bar has stopped animating and become fully visible
   // (if |wait_for_open| is true) or fully hidden (if |wait_for_open| is false).
@@ -202,90 +202,16 @@ class UITestBase {
   // Gets the directory for the currently active profile in the browser.
   FilePath GetDownloadDirectory();
 
-  // Get the handle of browser process connected to the automation. This
-  // function only retruns a reference to the handle so the caller does not
-  // own the handle returned.
-  base::ProcessHandle process() { return process_; }
-
-  // Get/Set a flag to run the renderer in process when running the
-  // tests.
-  static bool in_process_renderer() { return in_process_renderer_; }
-  static void set_in_process_renderer(bool value) {
-    in_process_renderer_ = value;
-  }
-
-  // Get/Set a flag to run the renderer outside the sandbox when running the
-  // tests
-  static bool no_sandbox() { return no_sandbox_; }
-  static void set_no_sandbox(bool value) {
-    no_sandbox_ = value;
-  }
-
-  // Get/Set a flag to run with DCHECKs enabled in release.
-  static bool enable_dcheck() { return enable_dcheck_; }
-  static void set_enable_dcheck(bool value) {
-    enable_dcheck_ = value;
-  }
-
-  // Get/Set a flag to dump the process memory without crashing on DCHECKs.
-  static bool silent_dump_on_dcheck() { return silent_dump_on_dcheck_; }
-  static void set_silent_dump_on_dcheck(bool value) {
-    silent_dump_on_dcheck_ = value;
-  }
-
-  // Get/Set a flag to disable breakpad handling.
-  static bool disable_breakpad() { return disable_breakpad_; }
-  static void set_disable_breakpad(bool value) {
-    disable_breakpad_ = value;
-  }
-
-  // Get/Set a flag to run the plugin processes inside the sandbox when running
-  // the tests
-  static bool safe_plugins() { return safe_plugins_; }
-  static void set_safe_plugins(bool value) {
-    safe_plugins_ = value;
-  }
-
-  static bool show_error_dialogs() { return show_error_dialogs_; }
-  static void set_show_error_dialogs(bool value) {
-    show_error_dialogs_ = value;
-  }
-
-  static bool full_memory_dump() { return full_memory_dump_; }
-  static void set_full_memory_dump(bool value) {
-    full_memory_dump_ = value;
-  }
-
-  static bool dump_histograms_on_exit() { return dump_histograms_on_exit_; }
-  static void set_dump_histograms_on_exit(bool value) {
-    dump_histograms_on_exit_ = value;
-  }
-
-  static const std::string& js_flags() { return js_flags_; }
-  static void set_js_flags(const std::string& value) {
-    js_flags_ = value;
-  }
-
-  static const std::string& log_level() { return log_level_; }
-  static void set_log_level(const std::string& value) {
-    log_level_ = value;
-  }
-
-  // Profile theme type choices.
-  typedef enum {
-    DEFAULT_THEME = 0,
-    COMPLEX_THEME = 1,
-    NATIVE_THEME = 2,
-    CUSTOM_FRAME = 3,
-    CUSTOM_FRAME_NATIVE_THEME = 4,
-  } ProfileType;
-
   // Returns the directory name where the "typical" user data is that we use
   // for testing.
-  static FilePath ComputeTypicalUserDataSource(ProfileType profile_type);
+  static FilePath ComputeTypicalUserDataSource(
+      ProxyLauncher::ProfileType profile_type);
 
-  // Rewrite the preferences file to point to the proper image directory.
-  static void RewritePreferencesFile(const FilePath& user_data_dir);
+  // Return the user data directory being used by the browser instance in
+  // UITest::SetUp().
+  FilePath user_data_dir() const {
+    return launcher_->user_data_dir();
+  }
 
   // Called by some tests that wish to have a base profile to start from. This
   // "user data directory" (containing one or more profiles) will be recursively
@@ -297,12 +223,23 @@ class UITestBase {
     template_user_data_ = template_user_data;
   }
 
-  // Return the user data directory being used by the browser instance in
-  // UITest::SetUp().
-  FilePath user_data_dir() const;
+  // Get the handle of browser process connected to the automation. This
+  // function only returns a reference to the handle so the caller does not
+  // own the handle returned.
+  base::ProcessHandle process() const { return launcher_->process(); }
 
   // Return the process id of the browser process (-1 on error).
-  base::ProcessId browser_process_id() const { return process_id_; }
+  base::ProcessId browser_process_id() const { return launcher_->process_id(); }
+
+  // Return the time when the browser was run.
+  base::TimeTicks browser_launch_time() const {
+    return launcher_->browser_launch_time();
+  }
+
+  // Return how long the shutdown took.
+  base::TimeDelta browser_quit_time() const {
+    return launcher_->browser_quit_time();
+  }
 
   // Compatibility timeout accessors.
   // TODO(phajdan.jr): update callers and remove these.
@@ -323,10 +260,6 @@ class UITestBase {
     return TestTimeouts::huge_test_timeout_ms();
   }
 
-  void set_ui_test_name(const std::string& name) {
-    ui_test_name_ = name;
-  }
-
   // Fetch the state which determines whether the profile will be cleared on
   // next startup.
   bool get_clear_profile() const {
@@ -338,21 +271,23 @@ class UITestBase {
     clear_profile_ = clear_profile;
   }
 
+  // homepage_ accessor.
+  std::string homepage() {
+    return homepage_;
+  }
+
   // Sets homepage_. Should be called before launching browser to have
   // any effect.
   void set_homepage(const std::string& homepage) {
     homepage_ = homepage;
   }
 
-  // Different ways to quit the browser.
-  typedef enum {
-    WINDOW_CLOSE,
-    USER_QUIT,
-    SESSION_ENDING,
-  } ShutdownType;
+  void set_test_name(const std::string& name) {
+    test_name_ = name;
+  }
 
   // Sets the shutdown type, which defaults to WINDOW_CLOSE.
-  void set_shutdown_type(ShutdownType value) {
+  void set_shutdown_type(ProxyLauncher::ShutdownType value) {
     shutdown_type_ = value;
   }
 
@@ -362,20 +297,26 @@ class UITestBase {
   // Use Chromium binaries from the given directory.
   void SetBrowserDirectory(const FilePath& dir);
 
- private:
-  // Check that no processes related to Chrome exist, displaying
-  // the given message if any do.
-  void AssertAppNotRunning(const std::wstring& error_message);
-
  protected:
-  AutomationProxy* automation() {
-    EXPECT_TRUE(automation_proxy_.get());
-    return automation_proxy_.get();
+  AutomationProxy* automation() const {
+    return launcher_->automation();
+  }
+
+  ProxyLauncher::LaunchState DefaultLaunchState() {
+    ProxyLauncher::LaunchState state =
+        { clear_profile_, template_user_data_, profile_type_,
+          browser_directory_, launch_arguments_,
+          include_testing_id_, show_window_ };
+    return state;
   }
 
   virtual bool ShouldFilterInet() {
     return true;
   }
+
+  // Extra command-line switches that need to be passed to the browser are
+  // added in this function. Add new command-line switches here.
+  void SetLaunchSwitches();
 
   // Wait a certain amount of time for all the app processes to exit,
   // forcibly killing them if they haven't exited by then.
@@ -394,80 +335,64 @@ class UITestBase {
 
   // ********* Member variables *********
 
-  FilePath browser_directory_;          // Path to the browser executable.
-  FilePath test_data_directory_;        // Path to the unit test data.
-  CommandLine launch_arguments_;        // Command to launch the browser
-  size_t expected_errors_;              // The number of errors expected during
-                                        // the run (generally 0).
-  int expected_crashes_;                // The number of crashes expected during
-                                        // the run (generally 0).
-  std::string homepage_;                // Homepage used for testing.
-  bool wait_for_initial_loads_;         // Wait for initial loads to complete
-                                        // in SetUp() before running test body.
-  base::TimeTicks browser_launch_time_; // Time when the browser was run.
-  base::TimeDelta browser_quit_time_;   // How long the shutdown took.
-  bool dom_automation_enabled_;         // This can be set to true to have the
-                                        // test run the dom automation case.
-  FilePath template_user_data_;         // See set_template_user_data().
-  base::ProcessHandle process_;         // Handle to the first Chrome process.
-  base::ProcessId process_id_;          // PID of |process_| (for debugging).
-  static bool in_process_renderer_;     // true if we're in single process mode
-  bool show_window_;                    // Determines if the window is shown or
-                                        // hidden. Defaults to hidden.
-  bool clear_profile_;                  // If true the profile is cleared before
-                                        // launching. Default is true.
-  bool include_testing_id_;             // Should we supply the testing channel
-                                        // id on the command line? Default is
-                                        // true.
-  bool enable_file_cookies_;            // Enable file cookies, default is true.
-  scoped_ptr<ProxyLauncher> launcher_;  // Launches browser and AutomationProxy.
-  ProfileType profile_type_;            // Are we using a profile with a
-                                        // complex theme?
-  FilePath websocket_pid_file_;         // PID file for websocket server.
-  ShutdownType shutdown_type_;          // The method for shutting down
-                                        // the browser. Used in ShutdownTest.
+  // Path to the browser executable.
+  FilePath browser_directory_;
+
+  // Path to the unit test data.
+  FilePath test_data_directory_;
+
+  // Command to launch the browser
+  CommandLine launch_arguments_;
+
+  // The number of errors expected during the run (generally 0).
+  size_t expected_errors_;
+
+  // The number of crashes expected during the run (generally 0).
+  int expected_crashes_;
+
+  // Homepage used for testing.
+  std::string homepage_;
+
+  // Name of currently running automated test passed to Chrome process.
+  std::string test_name_;
+
+  // Wait for initial loads to complete in SetUp() before running test body.
+  bool wait_for_initial_loads_;
+
+  // This can be set to true to have the test run the dom automation case.
+  bool dom_automation_enabled_;
+
+  // See set_template_user_data().
+  FilePath template_user_data_;
+
+  // Determines if the window is shown or hidden. Defaults to hidden.
+  bool show_window_;
+
+  // If true the profile is cleared before launching. Default is true.
+  bool clear_profile_;
+
+  // Should we supply the testing channel id
+  // on the command line? Default is true.
+  bool include_testing_id_;
+
+  // Enable file cookies, default is true.
+  bool enable_file_cookies_;
+
+  // Launches browser and AutomationProxy.
+  scoped_ptr<ProxyLauncher> launcher_;
+
+  // Are we using a profile with a complex theme?
+  ProxyLauncher::ProfileType profile_type_;
+
+  // PID file for websocket server.
+  FilePath websocket_pid_file_;
+
+  // The method for shutting down the browser. Used in ShutdownTest.
+  ProxyLauncher::ShutdownType shutdown_type_;
 
  private:
-  void WaitForBrowserLaunch();
-
-  bool LaunchBrowserHelper(const CommandLine& arguments,
-                           bool wait,
-                           base::ProcessHandle* process);
-
-  // Prepare command line that will be used to launch the child browser process
-  // with an UI test.
-  void PrepareTestCommandline(CommandLine* arguments);
-
-  // We want to have a current history database when we start the browser so
-  // things like the NTP will have thumbnails.  This method updates the dates
-  // in the history to be more recent.
-  void UpdateHistoryDates();
-
-  base::Time test_start_time_;          // Time the test was started
-                                        // (so we can check for new crash dumps)
-  static bool no_sandbox_;
-  static bool safe_plugins_;
-  static bool full_memory_dump_;        // If true, write full memory dump
-                                        // during crash.
-  static bool show_error_dialogs_;      // If true, a user is paying attention
-                                        // to the test, so show error dialogs.
-  static bool dump_histograms_on_exit_;  // Include histograms in log on exit.
-  static bool enable_dcheck_;           // Enable dchecks in release mode.
-  static bool silent_dump_on_dcheck_;   // Dump process memory on dcheck without
-                                        // crashing.
-  static bool disable_breakpad_;        // Disable breakpad on the browser.
-  static int timeout_ms_;               // Timeout in milliseconds to wait
-                                        // for an test to finish.
-  static std::string js_flags_;         // Flags passed to the JS engine.
-  static std::string log_level_;        // Logging level.
-
-  scoped_ptr<AutomationProxy> automation_proxy_;
-
-  std::string ui_test_name_;
-
-  // We use a temporary directory for profile to avoid issues with being
-  // unable to delete some files because they're in use, etc.
-  scoped_ptr<ScopedTempDir> temp_profile_dir_;
+  // Time the test was started (so we can check for new crash dumps)
+  base::Time test_start_time_;
 };
 
 class UITest : public UITestBase, public PlatformTest {
@@ -532,34 +457,34 @@ class UITest : public UITestBase, public PlatformTest {
   // following conditions hold true:
   // - The JavaScript condition evaluates to true (return true).
   // - The browser process died (return false).
-  // - The time_out value has been exceeded (return false).
+  // - The timeout value has been exceeded (return false).
   //
   // The JavaScript expression is executed in the context of the frame that
   // matches the provided xpath.
   bool WaitUntilJavaScriptCondition(TabProxy* tab,
                                     const std::wstring& frame_xpath,
                                     const std::wstring& jscript,
-                                    int time_out_ms);
+                                    int timeout_ms);
 
   // Polls the tab for the cookie_name cookie and returns once one of the
   // following conditions hold true:
   // - The cookie is of expected_value.
   // - The browser process died.
-  // - The time_out value has been exceeded.
+  // - The timeout value has been exceeded.
   bool WaitUntilCookieValue(TabProxy* tab, const GURL& url,
                             const char* cookie_name,
-                            int time_out_ms,
+                            int timeout_ms,
                             const char* expected_value);
 
   // Polls the tab for the cookie_name cookie and returns once one of the
   // following conditions hold true:
   // - The cookie is set to any value.
   // - The browser process died.
-  // - The time_out value has been exceeded.
+  // - The timeout value has been exceeded.
   std::string WaitUntilCookieNonEmpty(TabProxy* tab,
                                       const GURL& url,
                                       const char* cookie_name,
-                                      int time_out_ms);
+                                      int timeout_ms);
 
   // Checks whether the download shelf is visible in the current browser, giving
   // it a chance to appear (we don't know the exact timing) while finishing as

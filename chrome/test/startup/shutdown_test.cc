@@ -66,7 +66,7 @@ class ShutdownTest : public UIPerfTest {
 
   void RunShutdownTest(const char* graph, const char* trace,
                        bool important, TestSize test_size,
-                       UITest::ShutdownType shutdown_type) {
+                       ProxyLauncher::ShutdownType shutdown_type) {
     const int kNumCyclesMax = 20;
     int numCycles = kNumCyclesMax;
     scoped_ptr<base::Environment> env(base::Environment::Create());
@@ -92,7 +92,7 @@ class ShutdownTest : public UIPerfTest {
       }
       set_shutdown_type(shutdown_type);
       UITest::TearDown();
-      timings[i] = browser_quit_time_;
+      timings[i] = browser_quit_time();
 
       if (i == 0) {
         // Re-use the profile data after first run so that the noise from
@@ -113,27 +113,28 @@ class ShutdownTest : public UIPerfTest {
 
 TEST_F(ShutdownTest, SimpleWindowClose) {
   RunShutdownTest("shutdown", "simple-window-close",
-                  true, /* important */ SIMPLE, UITest::WINDOW_CLOSE);
+                  true, /* important */ SIMPLE, ProxyLauncher::WINDOW_CLOSE);
 }
 
 TEST_F(ShutdownTest, SimpleUserQuit) {
   RunShutdownTest("shutdown", "simple-user-quit",
-                  true, /* important */ SIMPLE, UITest::USER_QUIT);
+                  true, /* important */ SIMPLE, ProxyLauncher::USER_QUIT);
 }
 
 TEST_F(ShutdownTest, SimpleSessionEnding) {
   RunShutdownTest("shutdown", "simple-session-ending",
-                  true, /* important */ SIMPLE, UITest::SESSION_ENDING);
+                  true, /* important */ SIMPLE, ProxyLauncher::SESSION_ENDING);
 }
 
 TEST_F(ShutdownTest, TwentyTabsWindowClose) {
   RunShutdownTest("shutdown", "twentytabs-window-close",
-                  true, /* important */ TWENTY_TABS, UITest::WINDOW_CLOSE);
+                  true, /* important */ TWENTY_TABS,
+                  ProxyLauncher::WINDOW_CLOSE);
 }
 
 TEST_F(ShutdownTest, TwentyTabsUserQuit) {
   RunShutdownTest("shutdown", "twentytabs-user-quit",
-                  true, /* important */ TWENTY_TABS, UITest::USER_QUIT);
+                  true, /* important */ TWENTY_TABS, ProxyLauncher::USER_QUIT);
 }
 
 // http://crbug.com/40671
@@ -145,7 +146,8 @@ TEST_F(ShutdownTest, TwentyTabsUserQuit) {
 
 TEST_F(ShutdownTest, MAYBE_TwentyTabsSessionEnding) {
   RunShutdownTest("shutdown", "twentytabs-session-ending",
-                  true, /* important */ TWENTY_TABS, UITest::SESSION_ENDING);
+                  true, /* important */ TWENTY_TABS,
+                  ProxyLauncher::SESSION_ENDING);
 }
 
 }  // namespace

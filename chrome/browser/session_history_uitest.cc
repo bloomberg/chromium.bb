@@ -156,7 +156,7 @@ TEST_F(SessionHistoryTest, MAYBE_FrameBackForward) {
   ASSERT_TRUE(test_server_.Start());
 
   // about:blank should be loaded first.
-  GURL home(homepage_);
+  GURL home(homepage());
   ASSERT_FALSE(tab_->GoBack());
   EXPECT_EQ(L"", GetTabTitle());
   EXPECT_EQ(home, GetTabURL());

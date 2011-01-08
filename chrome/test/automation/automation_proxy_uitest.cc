@@ -63,8 +63,9 @@ class ExternalTabUITestMockLauncher : public ProxyLauncher {
     return *mock_;
   }
 
-  void InitializeConnection(UITestBase* ui_test_base) const {
-    ui_test_base->LaunchBrowserAndServer();
+  void InitializeConnection(const LaunchState& state,
+                            bool wait_for_initial_loads) {
+    LaunchBrowserAndServer(state, wait_for_initial_loads);
   }
 
   std::string PrefixedChannelID() const {
@@ -883,6 +884,10 @@ template <typename T> T** ReceivePointer(scoped_ptr<T>& p) {  // NOLINT
 
 template <typename T> T** ReceivePointer(scoped_refptr<T>& p) {  // NOLINT
   return reinterpret_cast<T**>(&p);
+}
+
+ExternalTabUITest::ExternalTabUITest() : UITest(MessageLoop::TYPE_UI) {
+  launcher_.reset(CreateProxyLauncher());
 }
 
 // Replace the default automation proxy with our mock client.

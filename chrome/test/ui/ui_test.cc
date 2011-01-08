@@ -61,9 +61,6 @@ using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
 
-// Passed as value of kTestType.
-static const char kUITestType[] = "ui";
-
 const wchar_t UITestBase::kFailedNoCrashService[] =
 #if defined(OS_WIN)
     L"NOTE: This test is expected to fail if crash_service.exe is not "
@@ -75,17 +72,6 @@ const wchar_t UITestBase::kFailedNoCrashService[] =
 #else
     L"NOTE: Crash service not ported to this platform!";
 #endif
-bool UITestBase::in_process_renderer_ = false;
-bool UITestBase::no_sandbox_ = false;
-bool UITestBase::full_memory_dump_ = false;
-bool UITestBase::safe_plugins_ = false;
-bool UITestBase::show_error_dialogs_ = true;
-bool UITestBase::dump_histograms_on_exit_ = false;
-bool UITestBase::enable_dcheck_ = false;
-bool UITestBase::silent_dump_on_dcheck_ = false;
-bool UITestBase::disable_breakpad_ = false;
-std::string UITestBase::js_flags_ = "";
-std::string UITestBase::log_level_ = "";
 
 // Uncomment this line to have the spawned process wait for the debugger to
 // attach.  This only works on Windows.  On posix systems, you can set the
@@ -99,51 +85,47 @@ UITestBase::UITestBase()
       homepage_(chrome::kAboutBlankURL),
       wait_for_initial_loads_(true),
       dom_automation_enabled_(false),
-      process_(base::kNullProcessHandle),
-      process_id_(-1),
       show_window_(false),
       clear_profile_(true),
       include_testing_id_(true),
       enable_file_cookies_(true),
-      profile_type_(UITestBase::DEFAULT_THEME),
-      shutdown_type_(UITestBase::WINDOW_CLOSE),
-      temp_profile_dir_(new ScopedTempDir()) {
+      profile_type_(ProxyLauncher::DEFAULT_THEME),
+      shutdown_type_(ProxyLauncher::WINDOW_CLOSE) {
   PathService::Get(chrome::DIR_APP, &browser_directory_);
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_);
+  launcher_.reset(CreateProxyLauncher());
 }
 
 UITestBase::UITestBase(MessageLoop::Type msg_loop_type)
     : launch_arguments_(CommandLine::NO_PROGRAM),
       expected_errors_(0),
       expected_crashes_(0),
-      homepage_(chrome::kAboutBlankURL),
       wait_for_initial_loads_(true),
       dom_automation_enabled_(false),
-      process_(base::kNullProcessHandle),
-      process_id_(-1),
       show_window_(false),
       clear_profile_(true),
       include_testing_id_(true),
       enable_file_cookies_(true),
-      profile_type_(UITestBase::DEFAULT_THEME),
-      shutdown_type_(UITestBase::WINDOW_CLOSE) {
+      profile_type_(ProxyLauncher::DEFAULT_THEME),
+      shutdown_type_(ProxyLauncher::WINDOW_CLOSE) {
   PathService::Get(chrome::DIR_APP, &browser_directory_);
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_);
+  launcher_.reset(CreateProxyLauncher());
 }
 
-UITestBase::~UITestBase() {
-}
+UITestBase::~UITestBase() {}
 
 void UITestBase::SetUp() {
-  AssertAppNotRunning(L"Please close any other instances "
-                      L"of the app before testing.");
+  launcher_->AssertAppNotRunning(L"Please close any other instances "
+                                 L"of the app before testing.");
 
   JavaScriptExecutionController::set_timeout(
       TestTimeouts::action_max_timeout_ms());
   test_start_time_ = Time::NowFromSystemTime();
 
-  launcher_.reset(CreateProxyLauncher());
-  launcher_->InitializeConnection(this);
+  SetLaunchSwitches();
+  launcher_->InitializeConnection(DefaultLaunchState(),
+                                  wait_for_initial_loads_);
 }
 
 void UITestBase::TearDown() {
@@ -178,7 +160,7 @@ void UITestBase::TearDown() {
 
 // TODO(phajdan.jr): get rid of set_command_execution_timeout_ms.
 void UITestBase::set_command_execution_timeout_ms(int timeout) {
-  automation_proxy_->set_command_execution_timeout_ms(timeout);
+  automation()->set_command_execution_timeout_ms(timeout);
   VLOG(1) << "Automation command execution timeout set to " << timeout << " ms";
 }
 
@@ -186,210 +168,61 @@ ProxyLauncher* UITestBase::CreateProxyLauncher() {
   return new AnonymousProxyLauncher(false);
 }
 
+void UITestBase::SetLaunchSwitches() {
+  // We need cookies on file:// for things like the page cycler.
+  if (enable_file_cookies_)
+    launch_arguments_.AppendSwitch(switches::kEnableFileCookies);
+  if (dom_automation_enabled_)
+    launch_arguments_.AppendSwitch(switches::kDomAutomationController);
+  if (!homepage_.empty())
+    launch_arguments_.AppendSwitchASCII(switches::kHomePage, homepage_);
+  if (!test_name_.empty())
+    launch_arguments_.AppendSwitchASCII(switches::kTestName, test_name_);
+}
+
 void UITestBase::LaunchBrowser() {
   LaunchBrowser(launch_arguments_, clear_profile_);
 }
 
 void UITestBase::LaunchBrowserAndServer() {
-  // Set up IPC testing interface as a server.
-  automation_proxy_.reset(launcher_->CreateAutomationProxy(
-                              TestTimeouts::command_execution_timeout_ms()));
-
-  LaunchBrowser(launch_arguments_, clear_profile_);
-  WaitForBrowserLaunch();
+  launcher_->LaunchBrowserAndServer(DefaultLaunchState(),
+                                    wait_for_initial_loads_);
 }
 
 void UITestBase::ConnectToRunningBrowser() {
-  // Set up IPC testing interface as a client.
-  automation_proxy_.reset(launcher_->CreateAutomationProxy(
-                              TestTimeouts::command_execution_timeout_ms()));
-  WaitForBrowserLaunch();
-}
-
-void UITestBase::WaitForBrowserLaunch() {
-  ASSERT_EQ(AUTOMATION_SUCCESS, automation_proxy_->WaitForAppLaunch())
-      << "Error while awaiting automation ping from browser process";
-  if (wait_for_initial_loads_)
-    ASSERT_TRUE(automation_proxy_->WaitForInitialLoads());
-  else
-    base::PlatformThread::Sleep(sleep_timeout_ms());
-
-  EXPECT_TRUE(automation()->SetFilteredInet(ShouldFilterInet()));
+  launcher_->ConnectToRunningBrowser(wait_for_initial_loads_);
 }
 
 void UITestBase::CloseBrowserAndServer() {
-  QuitBrowser();
-  CleanupAppProcesses();
-
-  // Suppress spammy failures that seem to be occurring when running
-  // the UI tests in single-process mode.
-  // TODO(jhughes): figure out why this is necessary at all, and fix it
-  if (!in_process_renderer_)
-    AssertAppNotRunning(StringPrintf(
-        L"Unable to quit all browser processes. Original PID %d", process_id_));
-
-  automation_proxy_.reset();  // Shut down IPC testing interface.
+  launcher_->CloseBrowserAndServer(shutdown_type_);
 }
 
 void UITestBase::LaunchBrowser(const CommandLine& arguments,
                                bool clear_profile) {
-  if (clear_profile || !temp_profile_dir_->IsValid()) {
-    temp_profile_dir_.reset(new ScopedTempDir());
-    ASSERT_TRUE(temp_profile_dir_->CreateUniqueTempDir());
-
-    ASSERT_TRUE(
-        test_launcher_utils::OverrideUserDataDir(temp_profile_dir_->path()));
-  }
-
-  if (!template_user_data_.empty()) {
-    // Recursively copy the template directory to the user_data_dir.
-    ASSERT_TRUE(file_util::CopyRecursiveDirNoCache(
-        template_user_data_,
-        user_data_dir()));
-    // If we're using the complex theme data, we need to write the
-    // user_data_dir_ to our preferences file.
-    if (profile_type_ == UITestBase::COMPLEX_THEME) {
-      RewritePreferencesFile(user_data_dir());
-    }
-
-    // Update the history file to include recent dates.
-    UpdateHistoryDates();
-  }
-
-  ASSERT_TRUE(LaunchBrowserHelper(arguments, false, &process_));
-  process_id_ = base::GetProcId(process_);
+  ProxyLauncher::LaunchState state = DefaultLaunchState();
+  state.clear_profile = clear_profile;
+  launcher_->LaunchBrowser(state);
 }
 
 #if !defined(OS_MACOSX)
 bool UITestBase::LaunchAnotherBrowserBlockUntilClosed(
     const CommandLine& cmdline) {
-  return LaunchBrowserHelper(cmdline, true, NULL);
+  ProxyLauncher::LaunchState state = DefaultLaunchState();
+  state.arguments = cmdline;
+  return launcher_->LaunchAnotherBrowserBlockUntilClosed(state);
 }
 #endif
 
 void UITestBase::QuitBrowser() {
-  if (SESSION_ENDING == shutdown_type_) {
-    TerminateBrowser();
-    return;
-  }
-
-  // There's nothing to do here if the browser is not running.
-  // WARNING: There is a race condition here where the browser may shut down
-  // after this check but before some later automation call. Your test should
-  // use WaitForBrowserProcessToQuit() if it intentionally
-  // causes the browser to shut down.
-  if (IsBrowserRunning()) {
-    TimeTicks quit_start = TimeTicks::Now();
-    EXPECT_TRUE(automation()->SetFilteredInet(false));
-
-    if (WINDOW_CLOSE == shutdown_type_) {
-      int window_count = 0;
-      EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
-
-      // Synchronously close all but the last browser window. Closing them
-      // one-by-one may help with stability.
-      while (window_count > 1) {
-        scoped_refptr<BrowserProxy> browser_proxy =
-            automation()->GetBrowserWindow(0);
-        EXPECT_TRUE(browser_proxy.get());
-        if (browser_proxy.get()) {
-          EXPECT_TRUE(browser_proxy->RunCommand(IDC_CLOSE_WINDOW));
-          EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
-        } else {
-          break;
-        }
-      }
-
-      // Close the last window asynchronously, because the browser may
-      // shutdown faster than it will be able to send a synchronous response
-      // to our message.
-      scoped_refptr<BrowserProxy> browser_proxy =
-          automation()->GetBrowserWindow(0);
-      EXPECT_TRUE(browser_proxy.get());
-      if (browser_proxy.get()) {
-        EXPECT_TRUE(browser_proxy->ApplyAccelerator(IDC_CLOSE_WINDOW));
-        browser_proxy = NULL;
-      }
-    } else if (USER_QUIT == shutdown_type_) {
-      scoped_refptr<BrowserProxy> browser_proxy =
-          automation()->GetBrowserWindow(0);
-      EXPECT_TRUE(browser_proxy.get());
-      if (browser_proxy.get()) {
-        EXPECT_TRUE(browser_proxy->RunCommandAsync(IDC_EXIT));
-      }
-    } else {
-      NOTREACHED() << "Invalid shutdown type " << shutdown_type_;
-    }
-
-    // Now, drop the automation IPC channel so that the automation provider in
-    // the browser notices and drops its reference to the browser process.
-    automation()->Disconnect();
-
-    // Wait for the browser process to quit. It should quit once all tabs have
-    // been closed.
-    if (!WaitForBrowserProcessToQuit()) {
-      // We need to force the browser to quit because it didn't quit fast
-      // enough. Take no chance and kill every chrome processes.
-      CleanupAppProcesses();
-    }
-    browser_quit_time_ = TimeTicks::Now() - quit_start;
-  }
-
-  // Don't forget to close the handle
-  base::CloseProcessHandle(process_);
-  process_ = base::kNullProcessHandle;
-  process_id_ = -1;
+  launcher_->QuitBrowser(shutdown_type_);
 }
 
 void UITestBase::TerminateBrowser() {
-  if (IsBrowserRunning()) {
-    TimeTicks quit_start = TimeTicks::Now();
-    EXPECT_TRUE(automation()->SetFilteredInet(false));
-#if defined(OS_WIN)
-    scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-    ASSERT_TRUE(browser.get());
-    ASSERT_TRUE(browser->TerminateSession());
-#endif  // defined(OS_WIN)
-
-    // Now, drop the automation IPC channel so that the automation provider in
-    // the browser notices and drops its reference to the browser process.
-    automation()->Disconnect();
-
-#if defined(OS_POSIX)
-    EXPECT_EQ(kill(process_, SIGTERM), 0);
-#endif  // OS_POSIX
-
-    if (!WaitForBrowserProcessToQuit()) {
-      // We need to force the browser to quit because it didn't quit fast
-      // enough. Take no chance and kill every chrome processes.
-      CleanupAppProcesses();
-    }
-    browser_quit_time_ = TimeTicks::Now() - quit_start;
-  }
-
-  // Don't forget to close the handle
-  base::CloseProcessHandle(process_);
-  process_ = base::kNullProcessHandle;
-  process_id_ = -1;
-}
-
-void UITestBase::AssertAppNotRunning(const std::wstring& error_message) {
-  std::wstring final_error_message(error_message);
-
-  ChromeProcessList processes = GetRunningChromeProcesses(process_id_);
-  if (!processes.empty()) {
-    final_error_message += L" Leftover PIDs: [";
-    for (ChromeProcessList::const_iterator it = processes.begin();
-         it != processes.end(); ++it) {
-      final_error_message += StringPrintf(L" %d", *it);
-    }
-    final_error_message += L" ]";
-  }
-  ASSERT_TRUE(processes.empty()) << final_error_message;
+  launcher_->TerminateBrowser();
 }
 
 void UITestBase::CleanupAppProcesses() {
-  TerminateAllChromeProcesses(process_id_);
+  TerminateAllChromeProcesses(browser_process_id());
 }
 
 scoped_refptr<TabProxy> UITestBase::GetActiveTab(int window_index) {
@@ -464,13 +297,8 @@ void UITestBase::NavigateToURLBlockUntilNavigationsComplete(
                 url, number_of_navigations)) << url.spec();
 }
 
-bool UITestBase::WaitForBrowserProcessToQuit() {
-  // Wait for the browser process to quit.
-  int timeout = TestTimeouts::wait_for_terminate_timeout_ms();
-#ifdef WAIT_FOR_DEBUGGER_ON_OPEN
-  timeout = 500000;
-#endif
-  return base::WaitForSingleProcess(process_, timeout);
+bool UITestBase::WaitForBrowserProcessToQuit(int timeout) {
+  return launcher_->WaitForBrowserProcessToQuit(timeout);
 }
 
 bool UITestBase::WaitForBookmarkBarVisibilityChange(BrowserProxy* browser,
@@ -533,11 +361,11 @@ int UITestBase::GetActiveTabIndex(int window_index) {
 }
 
 bool UITestBase::IsBrowserRunning() {
-  return CrashAwareSleep(0);
+  return launcher_->IsBrowserRunning();
 }
 
-bool UITestBase::CrashAwareSleep(int time_out_ms) {
-  return base::CrashAwareSleep(process_, time_out_ms);
+bool UITestBase::CrashAwareSleep(int timeout_ms) {
+  return launcher_->CrashAwareSleep(timeout_ms);
 }
 
 int UITestBase::GetTabCount() {
@@ -585,7 +413,7 @@ FilePath UITestBase::GetDownloadDirectory() {
 }
 
 void UITestBase::CloseBrowserAsync(BrowserProxy* browser) const {
-  ASSERT_TRUE(automation_proxy_->Send(
+  ASSERT_TRUE(automation()->Send(
       new AutomationMsg_CloseBrowserRequestAsync(browser->handle())));
 }
 
@@ -597,7 +425,7 @@ bool UITestBase::CloseBrowser(BrowserProxy* browser,
 
   bool result = true;
 
-  bool succeeded = automation_proxy_->Send(new AutomationMsg_CloseBrowser(
+  bool succeeded = automation()->Send(new AutomationMsg_CloseBrowser(
       browser->handle(), &result, application_closed));
 
   if (!succeeded)
@@ -605,7 +433,7 @@ bool UITestBase::CloseBrowser(BrowserProxy* browser,
 
   if (*application_closed) {
     // Let's wait until the process dies (if it is not gone already).
-    bool success = base::WaitForSingleProcess(process_, base::kNoTimeout);
+    bool success = base::WaitForSingleProcess(process(), base::kNoTimeout);
     EXPECT_TRUE(success);
   }
 
@@ -613,63 +441,26 @@ bool UITestBase::CloseBrowser(BrowserProxy* browser,
 }
 
 // static
-void UITestBase::RewritePreferencesFile(const FilePath& user_data_dir) {
-  const FilePath pref_template_path(
-      user_data_dir.AppendASCII("Default").AppendASCII("PreferencesTemplate"));
-  const FilePath pref_path(
-      user_data_dir.AppendASCII("Default").AppendASCII("Preferences"));
-
-  // Read in preferences template.
-  std::string pref_string;
-  EXPECT_TRUE(file_util::ReadFileToString(pref_template_path, &pref_string));
-  string16 format_string = ASCIIToUTF16(pref_string);
-
-  // Make sure temp directory has the proper format for writing to prefs file.
-#if defined(OS_POSIX)
-  std::wstring user_data_dir_w(ASCIIToWide(user_data_dir.value()));
-#elif defined(OS_WIN)
-  std::wstring user_data_dir_w(user_data_dir.value());
-  // In Windows, the FilePath will write '\' for the path separators; change
-  // these to a separator that won't trigger escapes.
-  std::replace(user_data_dir_w.begin(),
-               user_data_dir_w.end(), '\\', '/');
-#endif
-
-  // Rewrite prefs file.
-  std::vector<string16> subst;
-  subst.push_back(WideToUTF16(user_data_dir_w));
-  const std::string prefs_string =
-      UTF16ToASCII(ReplaceStringPlaceholders(format_string, subst, NULL));
-  EXPECT_TRUE(file_util::WriteFile(pref_path, prefs_string.c_str(),
-                                   prefs_string.size()));
-  file_util::EvictFileFromSystemCache(pref_path);
-}
-
-FilePath UITestBase::user_data_dir() const {
-  EXPECT_TRUE(temp_profile_dir_->IsValid());
-  return temp_profile_dir_->path();
-}
-
-// static
-FilePath UITestBase::ComputeTypicalUserDataSource(ProfileType profile_type) {
+FilePath UITestBase::ComputeTypicalUserDataSource(
+    ProxyLauncher::ProfileType profile_type) {
   FilePath source_history_file;
   EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA,
                                &source_history_file));
   source_history_file = source_history_file.AppendASCII("profiles");
   switch (profile_type) {
-    case UITestBase::DEFAULT_THEME:
+    case ProxyLauncher::DEFAULT_THEME:
       source_history_file = source_history_file.AppendASCII("typical_history");
       break;
-    case UITestBase::COMPLEX_THEME:
+    case ProxyLauncher::COMPLEX_THEME:
       source_history_file = source_history_file.AppendASCII("complex_theme");
       break;
-    case UITestBase::NATIVE_THEME:
+    case ProxyLauncher::NATIVE_THEME:
       source_history_file = source_history_file.AppendASCII("gtk_theme");
       break;
-    case UITestBase::CUSTOM_FRAME:
+    case ProxyLauncher::CUSTOM_FRAME:
       source_history_file = source_history_file.AppendASCII("custom_frame");
       break;
-    case UITestBase::CUSTOM_FRAME_NATIVE_THEME:
+    case ProxyLauncher::CUSTOM_FRAME_NATIVE_THEME:
       source_history_file =
           source_history_file.AppendASCII("custom_frame_gtk_theme");
       break;
@@ -677,163 +468,6 @@ FilePath UITestBase::ComputeTypicalUserDataSource(ProfileType profile_type) {
       NOTREACHED();
   }
   return source_history_file;
-}
-
-void UITestBase::PrepareTestCommandline(CommandLine* command_line) {
-  // Propagate commandline settings from test_launcher_utils.
-  test_launcher_utils::PrepareBrowserCommandLineForTests(command_line);
-
-  // Add any explicit command line flags passed to the process.
-  CommandLine::StringType extra_chrome_flags =
-      CommandLine::ForCurrentProcess()->GetSwitchValueNative(
-          switches::kExtraChromeFlags);
-  if (!extra_chrome_flags.empty()) {
-    // Split by spaces and append to command line
-    std::vector<CommandLine::StringType> flags;
-    base::SplitString(extra_chrome_flags, ' ', &flags);
-    for (size_t i = 0; i < flags.size(); ++i)
-      command_line->AppendArgNative(flags[i]);
-  }
-
-  // No default browser check, it would create an info-bar (if we are not the
-  // default browser) that could conflicts with some tests expectations.
-  command_line->AppendSwitch(switches::kNoDefaultBrowserCheck);
-
-  // This is a UI test.
-  command_line->AppendSwitchASCII(switches::kTestType, kUITestType);
-
-  // Tell the browser to use a temporary directory just for this test.
-  command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir());
-
-  // We need cookies on file:// for things like the page cycler.
-  if (enable_file_cookies_)
-    command_line->AppendSwitch(switches::kEnableFileCookies);
-
-  if (dom_automation_enabled_)
-    command_line->AppendSwitch(switches::kDomAutomationController);
-
-  if (include_testing_id_)
-    command_line->AppendSwitchASCII(switches::kTestingChannelID,
-                                    launcher_->PrefixedChannelID());
-
-  if (!show_error_dialogs_ &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableErrorDialogs)) {
-    command_line->AppendSwitch(switches::kNoErrorDialogs);
-  }
-  if (in_process_renderer_)
-    command_line->AppendSwitch(switches::kSingleProcess);
-  if (no_sandbox_)
-    command_line->AppendSwitch(switches::kNoSandbox);
-  if (full_memory_dump_)
-    command_line->AppendSwitch(switches::kFullMemoryCrashReport);
-  if (safe_plugins_)
-    command_line->AppendSwitch(switches::kSafePlugins);
-  if (enable_dcheck_)
-    command_line->AppendSwitch(switches::kEnableDCHECK);
-  if (silent_dump_on_dcheck_)
-    command_line->AppendSwitch(switches::kSilentDumpOnDCHECK);
-  if (disable_breakpad_)
-    command_line->AppendSwitch(switches::kDisableBreakpad);
-  if (!homepage_.empty())
-    command_line->AppendSwitchASCII(switches::kHomePage, homepage_);
-
-  if (!js_flags_.empty())
-    command_line->AppendSwitchASCII(switches::kJavaScriptFlags, js_flags_);
-  if (!log_level_.empty())
-    command_line->AppendSwitchASCII(switches::kLoggingLevel, log_level_);
-
-  command_line->AppendSwitch(switches::kMetricsRecordingOnly);
-
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableErrorDialogs))
-    command_line->AppendSwitch(switches::kEnableLogging);
-
-  if (dump_histograms_on_exit_)
-    command_line->AppendSwitch(switches::kDumpHistogramsOnExit);
-
-#ifdef WAIT_FOR_DEBUGGER_ON_OPEN
-  command_line->AppendSwitch(switches::kDebugOnStart);
-#endif
-
-  if (!ui_test_name_.empty())
-    command_line->AppendSwitchASCII(switches::kTestName, ui_test_name_);
-
-  // The tests assume that file:// URIs can freely access other file:// URIs.
-  command_line->AppendSwitch(switches::kAllowFileAccessFromFiles);
-
-  // Disable TabCloseableStateWatcher for tests.
-  command_line->AppendSwitch(switches::kDisableTabCloseableStateWatcher);
-
-  // Allow file:// access on ChromeOS.
-  command_line->AppendSwitch(switches::kAllowFileAccess);
-}
-
-bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
-                                     bool wait,
-                                     base::ProcessHandle* process) {
-  FilePath command = browser_directory_.Append(
-      chrome::kBrowserProcessExecutablePath);
-
-  CommandLine command_line(command);
-
-  // Add command line arguments that should be applied to all UI tests.
-  PrepareTestCommandline(&command_line);
-  DebugFlags::ProcessDebugFlags(
-      &command_line, ChildProcessInfo::UNKNOWN_PROCESS, false);
-  command_line.AppendArguments(arguments, false);
-
-  // TODO(phajdan.jr): Only run it for "main" browser launch.
-  browser_launch_time_ = TimeTicks::Now();
-
-#if defined(OS_WIN)
-  bool started = base::LaunchApp(command_line,
-                                 wait,
-                                 !show_window_,
-                                 process);
-#elif defined(OS_POSIX)
-  // Sometimes one needs to run the browser under a special environment
-  // (e.g. valgrind) without also running the test harness (e.g. python)
-  // under the special environment.  Provide a way to wrap the browser
-  // commandline with a special prefix to invoke the special environment.
-  const char* browser_wrapper = getenv("BROWSER_WRAPPER");
-  if (browser_wrapper) {
-    command_line.PrependWrapper(browser_wrapper);
-    VLOG(1) << "BROWSER_WRAPPER was set, prefixing command_line with "
-            << browser_wrapper;
-  }
-
-  base::file_handle_mapping_vector fds;
-  if (automation_proxy_.get())
-    fds = automation_proxy_->fds_to_map();
-
-  bool started = base::LaunchApp(command_line.argv(), fds, wait, process);
-#endif
-
-  return started;
-}
-
-void UITestBase::UpdateHistoryDates() {
-  // Migrate the times in the segment_usage table to yesterday so we get
-  // actual thumbnails on the NTP.
-  sql::Connection db;
-  FilePath history =
-      user_data_dir().AppendASCII("Default").AppendASCII("History");
-  // Not all test profiles have a history file.
-  if (!file_util::PathExists(history))
-    return;
-
-  ASSERT_TRUE(db.Open(history));
-  Time yesterday = Time::Now() - TimeDelta::FromDays(1);
-  std::string yesterday_str = base::Int64ToString(yesterday.ToInternalValue());
-  std::string query = StringPrintf(
-      "UPDATE segment_usage "
-      "SET time_slot = %s "
-      "WHERE id IN (SELECT id FROM segment_usage WHERE time_slot > 0);",
-      yesterday_str.c_str());
-  ASSERT_TRUE(db.Execute(query.c_str()));
-  db.Close();
-  file_util::EvictFileFromSystemCache(history);
 }
 
 int UITestBase::GetCrashCount() {
@@ -862,8 +496,8 @@ void UITest::SetUp() {
   const testing::TestInfo* const test_info =
       testing::UnitTest::GetInstance()->current_test_info();
   if (test_info) {
-    set_ui_test_name(test_info->test_case_name() + std::string(".") +
-                     test_info->name());
+    set_test_name(test_info->test_case_name() + std::string(".") +
+                  test_info->name());
   }
 
   // Force tests to use OSMesa if they launch the GPU process. This is in
@@ -964,7 +598,7 @@ void UITest::StopHttpServer() {
 }
 
 int UITest::GetBrowserProcessCount() {
-  return GetRunningChromeProcesses(process_id_).size();
+  return GetRunningChromeProcesses(browser_process_id()).size();
 }
 
 static DictionaryValue* LoadDictionaryValueFromPath(const FilePath& path) {
@@ -1073,9 +707,9 @@ void UITest::WaitForGeneratedFileAndCheck(
 bool UITest::WaitUntilJavaScriptCondition(TabProxy* tab,
                                           const std::wstring& frame_xpath,
                                           const std::wstring& jscript,
-                                          int time_out_ms) {
+                                          int timeout_ms) {
   const int kIntervalMs = 250;
-  const int kMaxIntervals = time_out_ms / kIntervalMs;
+  const int kMaxIntervals = timeout_ms / kIntervalMs;
 
   // Wait until the test signals it has completed.
   for (int i = 0; i < kMaxIntervals; ++i) {
@@ -1101,10 +735,10 @@ bool UITest::WaitUntilJavaScriptCondition(TabProxy* tab,
 bool UITest::WaitUntilCookieValue(TabProxy* tab,
                                   const GURL& url,
                                   const char* cookie_name,
-                                  int time_out_ms,
+                                  int timeout_ms,
                                   const char* expected_value) {
   const int kIntervalMs = 250;
-  const int kMaxIntervals = time_out_ms / kIntervalMs;
+  const int kMaxIntervals = timeout_ms / kIntervalMs;
 
   std::string cookie_value;
   for (int i = 0; i < kMaxIntervals; ++i) {
@@ -1125,9 +759,9 @@ bool UITest::WaitUntilCookieValue(TabProxy* tab,
 std::string UITest::WaitUntilCookieNonEmpty(TabProxy* tab,
                                             const GURL& url,
                                             const char* cookie_name,
-                                            int time_out_ms) {
+                                            int timeout_ms) {
   const int kIntervalMs = 250;
-  const int kMaxIntervals = time_out_ms / kIntervalMs;
+  const int kMaxIntervals = timeout_ms / kIntervalMs;
 
   for (int i = 0; i < kMaxIntervals; ++i) {
     bool browser_survived = CrashAwareSleep(kIntervalMs);

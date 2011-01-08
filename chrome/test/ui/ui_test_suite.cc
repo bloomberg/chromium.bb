@@ -31,21 +31,21 @@ void UITestSuite::Initialize() {
   ChromeTestSuite::Initialize();
 
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-  UITest::set_in_process_renderer(
+  ProxyLauncher::set_in_process_renderer(
       parsed_command_line.HasSwitch(switches::kSingleProcess));
-  UITest::set_no_sandbox(
+  ProxyLauncher::set_no_sandbox(
       parsed_command_line.HasSwitch(switches::kNoSandbox));
-  UITest::set_full_memory_dump(
+  ProxyLauncher::set_full_memory_dump(
       parsed_command_line.HasSwitch(switches::kFullMemoryCrashReport));
-  UITest::set_safe_plugins(
+  ProxyLauncher::set_safe_plugins(
       parsed_command_line.HasSwitch(switches::kSafePlugins));
-  UITest::set_dump_histograms_on_exit(
+  ProxyLauncher::set_dump_histograms_on_exit(
       parsed_command_line.HasSwitch(switches::kDumpHistogramsOnExit));
-  UITest::set_enable_dcheck(
+  ProxyLauncher::set_enable_dcheck(
       parsed_command_line.HasSwitch(switches::kEnableDCHECK));
-  UITest::set_silent_dump_on_dcheck(
+  ProxyLauncher::set_silent_dump_on_dcheck(
       parsed_command_line.HasSwitch(switches::kSilentDumpOnDCHECK));
-  UITest::set_disable_breakpad(
+  ProxyLauncher::set_disable_breakpad(
       parsed_command_line.HasSwitch(switches::kDisableBreakpad));
 
 #if defined(OS_WIN)
@@ -78,11 +78,11 @@ void UITestSuite::Initialize() {
   std::string js_flags =
     parsed_command_line.GetSwitchValueASCII(switches::kJavaScriptFlags);
   if (!js_flags.empty())
-    UITest::set_js_flags(js_flags);
+    ProxyLauncher::set_js_flags(js_flags);
   std::string log_level =
     parsed_command_line.GetSwitchValueASCII(switches::kLoggingLevel);
   if (!log_level.empty())
-    UITest::set_log_level(log_level);
+    ProxyLauncher::set_log_level(log_level);
 
 #if defined(OS_WIN)
   LoadCrashService();
@@ -100,7 +100,7 @@ void UITestSuite::Shutdown() {
 
 void UITestSuite::SuppressErrorDialogs() {
   TestSuite::SuppressErrorDialogs();
-  UITest::set_show_error_dialogs(false);
+  ProxyLauncher::set_show_error_dialogs(false);
 }
 
 #if defined(OS_WIN)
