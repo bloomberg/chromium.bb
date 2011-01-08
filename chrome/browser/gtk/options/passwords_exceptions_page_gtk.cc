@@ -38,12 +38,12 @@ PasswordsExceptionsPageGtk::PasswordsExceptionsPageGtk(Profile* profile)
     : populater(this), profile_(profile) {
 
   remove_button_ = gtk_button_new_with_label(
-      l10n_util::GetStringUTF8(IDS_EXCEPTIONS_PAGE_VIEW_REMOVE_BUTTON).c_str());
+      l10n_util::GetStringUTF8(IDS_PASSWORDS_PAGE_VIEW_REMOVE_BUTTON).c_str());
   gtk_widget_set_sensitive(remove_button_, FALSE);
   g_signal_connect(remove_button_, "clicked",
                    G_CALLBACK(OnRemoveButtonClickedThunk), this);
   remove_all_button_ = gtk_button_new_with_label(l10n_util::GetStringUTF8(
-          IDS_EXCEPTIONS_PAGE_VIEW_REMOVE_ALL_BUTTON).c_str());
+          IDS_PASSWORDS_PAGE_VIEW_REMOVE_ALL_BUTTON).c_str());
   gtk_widget_set_sensitive(remove_all_button_, FALSE);
   g_signal_connect(remove_all_button_, "clicked",
                    G_CALLBACK(OnRemoveAllButtonClickedThunk), this);

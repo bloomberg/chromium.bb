@@ -76,11 +76,11 @@ ExceptionsPageView::ExceptionsPageView(Profile* profile)
       ALLOW_THIS_IN_INITIALIZER_LIST(remove_button_(
           this,
           UTF16ToWide(l10n_util::GetStringUTF16(
-              IDS_EXCEPTIONS_PAGE_VIEW_REMOVE_BUTTON)))),
+              IDS_PASSWORDS_PAGE_VIEW_REMOVE_BUTTON)))),
       ALLOW_THIS_IN_INITIALIZER_LIST(remove_all_button_(
           this,
           UTF16ToWide(l10n_util::GetStringUTF16(
-              IDS_EXCEPTIONS_PAGE_VIEW_REMOVE_ALL_BUTTON)))),
+              IDS_PASSWORDS_PAGE_VIEW_REMOVE_ALL_BUTTON)))),
       table_model_(profile),
       table_view_(NULL) {
 }
