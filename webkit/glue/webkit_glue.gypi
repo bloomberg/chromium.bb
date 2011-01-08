@@ -121,7 +121,7 @@
           'action_name': 'webkit_version',
           'inputs': [
             '../build/webkit_version.py',
-            '<(webkit_src_dir)/WebCore/Configurations/Version.xcconfig',
+            '<(webkit_src_dir)/Source/WebCore/Configurations/Version.xcconfig',
           ],
           'outputs': [
             '<(INTERMEDIATE_DIR)/webkit_version.h',

@@ -586,7 +586,7 @@
           # See the comment in this section of the unit_tests target for an
           # explanation (crbug.com/43791 - libwebcore.a is too large to mmap).
           'dependencies+++': [
-            '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
+            '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
           ],
           'sources!': [
             # ProcessSingletonMac doesn't do anything.
@@ -1860,7 +1860,7 @@
           # Enough pluses to make get this target prepended to the target's
           # list of dependencies.
           'dependencies+++': [
-            '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
+            '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
           ],
         }, { # OS != "mac"
           'dependencies': [
@@ -2300,7 +2300,7 @@
           # See the comment in this section of the unit_tests target for an
           # explanation (crbug.com/43791 - libwebcore.a is too large to mmap).
           'dependencies+++': [
-            '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
+            '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
           ],
           'sources': [
             'renderer/external_popup_menu_unittest.cc',
@@ -2396,7 +2396,7 @@
         ['OS=="mac"', {
           # See crbug.com/43791 - libwebcore.a is too large to mmap on Mac.
           'dependencies+++': [
-            '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
+            '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
           ],
           # These flags are needed to run the test on Mac.
           # Search for comments about "xcode_settings" elsewhere in this file.
@@ -2447,7 +2447,7 @@
           # See the comment in this section of the unit_tests target for an
           # explanation (crbug.com/43791 - libwebcore.a is too large to mmap).
           'dependencies+++': [
-            '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
+            '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
           ],
         }],
         ['OS=="win"', {
@@ -2808,7 +2808,7 @@
           # See the comment in this section of the unit_tests target for an
           # explanation (crbug.com/43791 - libwebcore.a is too large to mmap).
           'dependencies+++': [
-            '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
+            '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
           ],
           'dependencies': [
             'helper_app'
@@ -2933,7 +2933,7 @@
           # See the comment in this section of the unit_tests target for an
           # explanation (crbug.com/43791 - libwebcore.a is too large to mmap).
           'dependencies+++': [
-            '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
+            '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
           ],
           # The sync_integration_tests do not run on mac without this flag.
           # Search for comments about "xcode_settings" elsewhere in this file.
@@ -3065,7 +3065,7 @@
           # See the comment in this section of the unit_tests target for an
           # explanation (crbug.com/43791 - libwebcore.a is too large to mmap).
           'dependencies+++': [
-            '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
+            '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
           ],
           # See comments about "xcode_settings" elsewhere in this file.
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
@@ -3407,7 +3407,7 @@
               # explanation (crbug.com/43791 - libwebcore.a is too large to
               # mmap).
               'dependencies+++': [
-                '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
+                '../third_party/WebKit/Source/WebCore/WebCore.gyp/WebCore.gyp:webcore',
               ],
               'include_dirs': [
                 '..',
