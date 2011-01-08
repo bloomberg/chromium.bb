@@ -27,11 +27,11 @@ class InstantTest(pyauto.PyUITest):
     self.assertTrue('google.com' in location,
                     msg='No google.com in %s' % location)
 
-    self.SetOmniboxText('search.yahoo.com')
+    self.SetOmniboxText('google.es')
     self.assertTrue(self.WaitUntil(self._DoneLoading))
     location = self.GetInstantInfo()['location']
-    self.assertTrue('search.yahoo.com' in location,
-                    msg='No search.yahoo.com in %s' % location)
+    self.assertTrue('google.es' in location,
+                    msg='No google.es in %s' % location)
 
     # Initiate instant search (at default google.com).
     self.SetOmniboxText('chrome instant')
