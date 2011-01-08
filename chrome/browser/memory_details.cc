@@ -12,7 +12,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/browser_thread.h"
-#include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/backing_store_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -134,6 +135,9 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
         continue;
       }
       process.type = ChildProcessInfo::RENDER_PROCESS;
+      Profile* profile = render_process_host->profile();
+      ExtensionService* extension_service = profile->GetExtensionService();
+
       // The RenderProcessHost may host multiple TabContents.  Any
       // of them which contain diagnostics information make the whole
       // process be considered a diagnostics process.
@@ -169,11 +173,12 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
           contents = host_delegate->GetAsTabContents();
         if (!contents) {
           if (host->is_extension_process()) {
-            // TODO(erikkay) should we just add GetAsExtensionHost to
-            // TabContents?
-            ExtensionHost* eh = static_cast<ExtensionHost*>(host_delegate);
-            string16 title = UTF8ToUTF16(eh->extension()->name());
-            process.titles.push_back(title);
+            const Extension* extension =
+                extension_service->GetExtensionByURL(url);
+            if (extension) {
+              string16 title = UTF8ToUTF16(extension->name());
+              process.titles.push_back(title);
+            }
           } else if (process.renderer_type ==
                      ChildProcessInfo::RENDERER_UNKNOWN) {
             process.titles.push_back(UTF8ToUTF16(url.spec()));
