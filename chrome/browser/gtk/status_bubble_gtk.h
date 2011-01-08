@@ -108,6 +108,9 @@ class StatusBubbleGtk : public StatusBubble,
   CHROMEGTK_CALLBACK_1(StatusBubbleGtk, gboolean, HandleMotionNotify,
                        GdkEventMotion*);
 
+  CHROMEGTK_CALLBACK_1(StatusBubbleGtk, gboolean, HandleEnterNotify,
+                       GdkEventCrossing*);
+
   NotificationRegistrar registrar_;
 
   // Provides colors.
@@ -164,6 +167,10 @@ class StatusBubbleGtk : public StatusBubble,
   // when its text changes, triggering a size change.
   gfx::Point last_mouse_location_;
   bool last_mouse_left_content_;
+
+  // Shortly after the cursor enters the status bubble, we'll get a message
+  // that the cursor left the content area. This lets us ignore that.
+  bool ignore_next_left_content_;
 };
 
 #endif  // CHROME_BROWSER_GTK_STATUS_BUBBLE_GTK_H_

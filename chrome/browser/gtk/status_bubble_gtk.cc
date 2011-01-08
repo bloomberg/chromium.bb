@@ -45,7 +45,8 @@ StatusBubbleGtk::StatusBubbleGtk(Profile* profile)
       y_offset_(0),
       download_shelf_is_visible_(false),
       last_mouse_location_(0, 0),
-      last_mouse_left_content_(false) {
+      last_mouse_left_content_(false),
+      ignore_next_left_content_(false) {
   InitWidgets();
 
   theme_provider_->InitThemesFor(this);
@@ -63,13 +64,12 @@ void StatusBubbleGtk::SetStatus(const string16& status_text_wide) {
     return;
 
   status_text_ = status_text;
-  if (!status_text_.empty()) {
+  if (!status_text_.empty())
     SetStatusTextTo(status_text_);
-  } else if (!url_text_.empty()) {
+  else if (!url_text_.empty())
     SetStatusTextTo(url_text_);
-  } else {
+  else
     SetStatusTextTo(std::string());
-  }
 }
 
 void StatusBubbleGtk::SetURL(const GURL& url, const string16& languages) {
@@ -155,6 +155,11 @@ void StatusBubbleGtk::SetStatusTextTo(const std::string& status_utf8) {
 
 void StatusBubbleGtk::MouseMoved(
     const gfx::Point& location, bool left_content) {
+  if (left_content && ignore_next_left_content_) {
+    ignore_next_left_content_ = false;
+    return;
+  }
+
   last_mouse_location_ = location;
   last_mouse_left_content_ = left_content;
 
@@ -189,9 +194,9 @@ void StatusBubbleGtk::MouseMoved(
         gtk_util::GetWidgetRectRelativeToToplevel(parent);
     gfx::Rect bubble_rect(
         toplevel_x + parent_rect.x() +
-          (ltr ? 0 : parent->allocation.width - requisition.width),
+            (ltr ? 0 : parent->allocation.width - requisition.width),
         toplevel_y + parent_rect.y() +
-          parent->allocation.height - requisition.height,
+            parent->allocation.height - requisition.height,
         requisition.width,
         requisition.height);
 
@@ -210,8 +215,8 @@ void StatusBubbleGtk::MouseMoved(
       } else {
         SetFlipHorizontally(false);
         int distance = std::max(ltr ?
-                                  location.x() - right_threshold :
-                                  left_threshold - location.x(),
+                                    location.x() - right_threshold :
+                                    left_threshold - location.x(),
                                 top_threshold - location.y());
         y_offset_ = std::min(-1 * distance, requisition.height);
       }
@@ -260,9 +265,12 @@ void StatusBubbleGtk::InitWidgets() {
   // We need to listen for mouse motion events, since a fast-moving pointer may
   // enter our window without us getting any motion events on the browser near
   // enough for us to run away.
-  gtk_widget_add_events(container_.get(), GDK_POINTER_MOTION_MASK);
+  gtk_widget_add_events(container_.get(), GDK_POINTER_MOTION_MASK |
+                                          GDK_ENTER_NOTIFY_MASK);
   g_signal_connect(container_.get(), "motion-notify-event",
                    G_CALLBACK(HandleMotionNotifyThunk), this);
+  g_signal_connect(container_.get(), "enter-notify-event",
+                   G_CALLBACK(HandleEnterNotifyThunk), this);
 
   UserChangedTheme();
 }
@@ -306,10 +314,10 @@ void StatusBubbleGtk::SetFlipHorizontally(bool flip_horizontally) {
       container_.get(),
       kCornerSize,
       flip_horizontally ?
-        gtk_util::ROUNDED_TOP_LEFT :
-        gtk_util::ROUNDED_TOP_RIGHT,
+          gtk_util::ROUNDED_TOP_LEFT :
+          gtk_util::ROUNDED_TOP_RIGHT,
       gtk_util::BORDER_TOP |
-        (flip_horizontally ? gtk_util::BORDER_LEFT : gtk_util::BORDER_RIGHT));
+          (flip_horizontally ? gtk_util::BORDER_LEFT : gtk_util::BORDER_RIGHT));
   gtk_widget_queue_draw(container_.get());
 }
 
@@ -331,6 +339,14 @@ void StatusBubbleGtk::UpdateLabelSizeRequest() {
   int new_width = start_width_ +
       (desired_width_ - start_width_) * expand_animation_->GetCurrentValue();
   gtk_widget_set_size_request(label_, new_width, -1);
+}
+
+// See http://crbug.com/68897 for why we have to handle this event.
+gboolean StatusBubbleGtk::HandleEnterNotify(GtkWidget* sender,
+                                            GdkEventCrossing* event) {
+  ignore_next_left_content_ = true;
+  MouseMoved(gfx::Point(event->x_root, event->y_root), false);
+  return FALSE;
 }
 
 gboolean StatusBubbleGtk::HandleMotionNotify(GtkWidget* sender,
