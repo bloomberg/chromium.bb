@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -358,8 +358,7 @@ void WritePStore(IPStore* pstore, const GUID* type, const GUID* subtype) {
 TEST_F(ImporterTest, IEImporter) {
   // Sets up a favorites folder.
   app::win::ScopedCOMInitializer com_init;
-  std::wstring path = test_path_.ToWStringHack();
-  file_util::AppendToPath(&path, L"Favorites");
+  std::wstring path = test_path_.AppendASCII("Favorites").value();
   CreateDirectory(path.c_str(), NULL);
   CreateDirectory((path + L"\\SubFolder").c_str(), NULL);
   CreateDirectory((path + L"\\Links").c_str(), NULL);
