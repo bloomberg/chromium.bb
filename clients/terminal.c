@@ -51,6 +51,7 @@ static int option_fullscreen;
 #define ATTRMASK_UNDERLINE	0x02
 #define ATTRMASK_BLINK		0x04
 #define ATTRMASK_INVERSE	0x08
+#define ATTRMASK_CONCEALED	0x10
 
 /* Buffer sizes */
 #define MAX_RESPONSE		11
@@ -317,7 +318,7 @@ struct attr {
 	unsigned char fg, bg;
 	char a;        /* attributes format:
 	                * 76543210
-			*     ilub */
+			*    cilub */
 	char r;        /* reserved */
 };
 struct color_scheme {
@@ -703,7 +704,7 @@ terminal_draw_contents(struct terminal *terminal)
 		union utf8_char c;
 		char null;
 	} toShow;
-	int foreground, background, bold, underline, tmp;
+	int foreground, background, bold, underline, concealed, tmp;
 	int text_x, text_y;
 	cairo_surface_t *surface;
 	double d;
@@ -763,6 +764,7 @@ terminal_draw_contents(struct terminal *terminal)
 			}
 			bold = attr.a & (ATTRMASK_BOLD | ATTRMASK_BLINK);
 			underline = attr.a & ATTRMASK_UNDERLINE;
+			concealed = attr.a & ATTRMASK_CONCEALED;
 
 			/* paint the background */
 			cairo_set_source_rgba(cr,
@@ -779,6 +781,7 @@ terminal_draw_contents(struct terminal *terminal)
 			cairo_fill(cr);
 
 			/* paint the foreground */
+			if (concealed) continue;
 			if (bold)
 				cairo_set_font_face(cr, terminal->font_bold);
 			else
@@ -1218,16 +1221,18 @@ handle_escape(struct terminal *terminal)
 		}
 		break;
 	case 'm':    /* SGR */
-		if (set[0] && set[1] && set[2] && args[1] == 5) {
-			if (args[0] == 38) {
-				handle_sgr(terminal, args[2] + 256);
-				break;
-			} else if (args[0] == 48) {
-				handle_sgr(terminal, args[2] + 512);
-				break;
-			}
-		}
 		for(i = 0; i < 10; i++) {
+			if (i <= 7 && set[i] && set[i + 1] &&
+				set[i + 2] && args[i + 1] == 5)
+			{
+				if (args[i] == 38) {
+					handle_sgr(terminal, args[i + 2] + 256);
+					break;
+				} else if (args[i] == 48) {
+					handle_sgr(terminal, args[i + 2] + 512);
+					break;
+				}
+			}
 			if(set[i]) {
 				handle_sgr(terminal, args[i]);
 			} else if(i == 0) {
@@ -1414,6 +1419,9 @@ handle_sgr(struct terminal *terminal, int code)
 	case 5:
 		terminal->curr_attr.a |= ATTRMASK_BLINK;
 		break;
+	case 8:
+		terminal->curr_attr.a |= ATTRMASK_CONCEALED;
+		break;
 	case 2:
 	case 21:
 	case 22:
@@ -1434,6 +1442,9 @@ handle_sgr(struct terminal *terminal, int code)
 	case 27:
 		terminal->curr_attr.a &= ~ATTRMASK_INVERSE;
 		break;
+	case 28:
+		terminal->curr_attr.a &= ~ATTRMASK_CONCEALED;
+		break;
 	case 39:
 		terminal->curr_attr.fg = terminal->color_scheme->default_attr.fg;
 		break;
@@ -1447,6 +1458,10 @@ handle_sgr(struct terminal *terminal, int code)
 				terminal->curr_attr.fg += 8;
 		} else if(code >= 40 && code <= 47) {
 			terminal->curr_attr.bg = code - 40;
+		} else if (code >= 90 && code <= 97) {
+			terminal->curr_attr.fg = code - 90 + 8;
+		} else if (code >= 100 && code <= 107) {
+			terminal->curr_attr.bg = code - 100 + 8;
 		} else if(code >= 256 && code < 512) {
 			terminal->curr_attr.fg = code - 256;
 		} else if(code >= 512 && code < 768) {
