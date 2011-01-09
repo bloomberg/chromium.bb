@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,8 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/scoped_handle.h"
 #include "base/scoped_ptr.h"
+#include "base/win/scoped_handle.h"
 #include "gfx/size.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -197,7 +197,7 @@ bool IconUtil::CreateIconFileFromSkBitmap(const SkBitmap& bitmap,
     return false;
 
   // We start by creating the file.
-  ScopedHandle icon_file(::CreateFile(icon_path.value().c_str(),
+  base::win::ScopedHandle icon_file(::CreateFile(icon_path.value().c_str(),
        GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL));
 
   if (icon_file.Get() == INVALID_HANDLE_VALUE)

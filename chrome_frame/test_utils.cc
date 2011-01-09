@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,8 +13,8 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/scoped_handle.h"
 #include "base/string_util.h"
+#include "base/win/scoped_handle.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -177,10 +177,10 @@ bool GetCommandLineForProcess(uint32 process_id, std::wstring* cmd_line) {
   DCHECK(cmd_line);
 
   // Open the process
-  ScopedHandle process_handle(::OpenProcess(
-                              PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
-                              false,
-                              process_id));
+  base::win::ScopedHandle process_handle(::OpenProcess(
+      PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
+      false,
+      process_id));
   if (!process_handle) {
     DLOG(ERROR) << "Failed to open process " << process_id << ", last error = "
                 << GetLastError();

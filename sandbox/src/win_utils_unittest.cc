@@ -1,10 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <windows.h>
 
-#include "base/scoped_handle_win.h"
+#include "base/win/scoped_handle.h"
 #include "sandbox/src/win_utils.h"
 #include "sandbox/tests/common/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,8 +67,9 @@ TEST(WinUtils, SameObject) {
   std::wstring folder(my_folder);
   std::wstring file_name = folder + L"\\foo.txt";
   const ULONG kSharing = FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE;
-  ScopedHandle file(CreateFile(file_name.c_str(), GENERIC_WRITE, kSharing, NULL,
-                               CREATE_ALWAYS, FILE_FLAG_DELETE_ON_CLOSE, NULL));
+  base::win::ScopedHandle file(CreateFile(
+      file_name.c_str(), GENERIC_WRITE, kSharing, NULL, CREATE_ALWAYS,
+      FILE_FLAG_DELETE_ON_CLOSE, NULL));
 
   EXPECT_TRUE(file.IsValid());
   std::wstring file_name_nt1 = std::wstring(L"\\??\\") + file_name;

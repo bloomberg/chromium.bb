@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -12,7 +12,7 @@
 #include <list>
 
 #include "base/basictypes.h"
-#include "base/scoped_handle.h"
+#include "base/win/scoped_handle.h"
 #include "ceee/common/initializing_coclass.h"
 #include "chrome_tab.h"  // NOLINT
 
@@ -212,7 +212,7 @@ class ATL_NO_VTABLE ChromeFrameHost
 #ifndef NDEBUG
   // We use a cross process event to make sure there is only one chrome frame
   // host that returns ExtensionApisToAutomate... But only needed for a DCHECK.
-  ScopedHandle automating_extension_api_;
+  base::win::ScopedHandle automating_extension_api_;
 #endif
 
   // A cached BSTR for the posted messages origin (which is kAutomationOrigin).

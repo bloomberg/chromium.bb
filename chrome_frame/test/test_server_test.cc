@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/path_service.h"
-#include "base/scoped_handle_win.h"
+#include "base/win/scoped_handle.h"
 #include "chrome_frame/test/test_server.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/host_resolver_proc.h"
@@ -192,7 +192,8 @@ TEST_F(TestServerTest, TestServer) {
   UrlTaskChain goog_task("http://localhost:1337/goog", &file_task);
 
   DWORD tid = 0;
-  ScopedHandle worker(::CreateThread(NULL, 0, FetchUrl, &goog_task, 0, &tid));
+  base::win::ScopedHandle worker(::CreateThread(
+      NULL, 0, FetchUrl, &goog_task, 0, &tid));
   loop.MessageLoop::Run();
 
   EXPECT_FALSE(quit_msg.hit_);

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/threading/platform_thread.h"
+#include "base/win/scoped_handle.h"
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -279,7 +280,7 @@ void CFUrlRequestUnittestRunner::StartChromeFrameInHostBrowser() {
                                       kTestServerPort).c_str());
 
   // Launch IE.  This launches IE correctly on Vista too.
-  ScopedHandle ie_process(chrome_frame_test::LaunchIE(url));
+  base::win::ScopedHandle ie_process(chrome_frame_test::LaunchIE(url));
   EXPECT_TRUE(ie_process.IsValid());
 
   // NOTE: If you're running IE8 and CF is not being loaded, you need to

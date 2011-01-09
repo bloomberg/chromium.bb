@@ -1,11 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/installer/util/product_unittest.h"
 
 #include "base/logging.h"
-#include "base/scoped_handle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -16,7 +15,6 @@
 #include "chrome/installer/util/product.h"
 
 using base::win::RegKey;
-using base::win::ScopedHandle;
 using installer::ChromePackageProperties;
 using installer::ChromiumPackageProperties;
 using installer::Package;

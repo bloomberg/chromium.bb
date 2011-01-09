@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,8 +11,8 @@
 #include "base/file_path.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/scoped_handle.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extensions_startup.h"
 #include "chrome/browser/platform_util.h"
@@ -53,7 +53,8 @@ ProcessSingleton::ProcessSingleton(const FilePath& user_data_dir)
     // since it isn't guaranteed we will get it. It is better to create it
     // without ownership and explicitly get the ownership afterward.
     std::wstring mutex_name(L"Local\\ChromeProcessSingletonStartup!");
-    ScopedHandle only_me(CreateMutex(NULL, FALSE, mutex_name.c_str()));
+    base::win::ScopedHandle only_me(
+        CreateMutex(NULL, FALSE, mutex_name.c_str()));
     DCHECK(only_me.Get() != NULL) << "GetLastError = " << GetLastError();
 
     // This is how we acquire the mutex (as opposed to the initial ownership).

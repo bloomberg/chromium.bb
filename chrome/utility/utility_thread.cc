@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,6 +29,7 @@
 
 #if defined(OS_WIN)
 #include "app/win/iat_patch_function.h"
+#include "base/win/scoped_handle.h"
 #endif
 
 namespace {
@@ -204,7 +205,7 @@ bool UtilityThread::RenderPDFToWinMetafile(
     printing::NativeMetafile* metafile,
     int* highest_rendered_page_number) {
   *highest_rendered_page_number = -1;
-  ScopedHandle file(pdf_file);
+  base::win::ScopedHandle file(pdf_file);
   FilePath pdf_module_path;
   PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_module_path);
   HMODULE pdf_module = GetModuleHandle(pdf_module_path.value().c_str());

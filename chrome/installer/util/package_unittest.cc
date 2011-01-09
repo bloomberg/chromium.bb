@@ -1,11 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/scoped_handle.h"
 #include "base/utf_string_conversions.h"
+#include "base/win/scoped_handle.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/master_preferences.h"
@@ -16,7 +16,6 @@
 #include "chrome/installer/util/util_constants.h"
 
 using base::win::RegKey;
-using base::win::ScopedHandle;
 using installer::ChromePackageProperties;
 using installer::ChromiumPackageProperties;
 using installer::Package;
@@ -72,8 +71,9 @@ TEST_F(PackageTest, Basic) {
 
   // Hold on to the file exclusively to prevent the directory from
   // being deleted.
-  ScopedHandle file(::CreateFile(old_chrome_dll.value().c_str(), GENERIC_READ,
-                                 0, NULL, OPEN_ALWAYS, 0, NULL));
+  base::win::ScopedHandle file(
+    ::CreateFile(old_chrome_dll.value().c_str(), GENERIC_READ,
+                 0, NULL, OPEN_ALWAYS, 0, NULL));
   EXPECT_TRUE(file.IsValid());
   EXPECT_TRUE(file_util::PathExists(old_chrome_dll));
 
