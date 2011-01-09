@@ -345,23 +345,25 @@ void ModuleEnumerator::ScanImpl() {
   // Make sure the path mapping vector is setup so we can collapse paths.
   PreparePathMappings();
 
-  base::TimeTicks checkpoint = base::TimeTicks::Now();
-
   // Enumerating loaded modules must happen first since the other types of
   // modules check for duplication against the loaded modules.
+  base::TimeTicks checkpoint = base::TimeTicks::Now();
   EnumerateLoadedModules();
-  HISTOGRAM_TIMES("Conflicts.EnumerateLoadedModules",
-                  base::TimeTicks::Now() - checkpoint);
+  base::TimeTicks checkpoint2 = base::TimeTicks::Now();
+  UMA_HISTOGRAM_TIMES("Conflicts.EnumerateLoadedModules",
+                      checkpoint2 - checkpoint);
 
-  checkpoint = base::TimeTicks::Now();
+  checkpoint = checkpoint2;
   EnumerateShellExtensions();
-  HISTOGRAM_TIMES("Conflicts.EnumerateShellExtensions",
-                  base::TimeTicks::Now() - checkpoint);
+  checkpoint2 = base::TimeTicks::Now();
+  UMA_HISTOGRAM_TIMES("Conflicts.EnumerateShellExtensions",
+                      checkpoint2 - checkpoint);
 
-  checkpoint = base::TimeTicks::Now();
+  checkpoint = checkpoint2;
   EnumerateWinsockModules();
-  HISTOGRAM_TIMES("Conflicts.EnumerateWinsockModules",
-                  base::TimeTicks::Now() - checkpoint);
+  checkpoint2 = base::TimeTicks::Now();
+  UMA_HISTOGRAM_TIMES("Conflicts.EnumerateWinsockModules",
+                      checkpoint2 - checkpoint);
 
   MatchAgainstBlacklist();
 
@@ -378,8 +380,8 @@ void ModuleEnumerator::ScanImpl() {
     ReportBack();
   }
 
-  HISTOGRAM_TIMES("Conflicts.EnumerationTotalTime",
-                  base::TimeTicks::Now() - start_time);
+  UMA_HISTOGRAM_TIMES("Conflicts.EnumerationTotalTime",
+                      base::TimeTicks::Now() - start_time);
 }
 
 void ModuleEnumerator::EnumerateLoadedModules() {
@@ -837,10 +839,10 @@ void EnumerateModulesModel::DoneScanning() {
   scanning_ = false;
   lock->Release();
 
-  HISTOGRAM_COUNTS_100("Conflicts.SuspectedBadModules",
-                       suspected_bad_modules_detected_);
-  HISTOGRAM_COUNTS_100("Conflicts.ConfirmedBadModules",
-                       confirmed_bad_modules_detected_);
+  UMA_HISTOGRAM_COUNTS_100("Conflicts.SuspectedBadModules",
+                           suspected_bad_modules_detected_);
+  UMA_HISTOGRAM_COUNTS_100("Conflicts.ConfirmedBadModules",
+                           confirmed_bad_modules_detected_);
 
   // Notifications are not available in limited mode.
   if (limited_mode_)
