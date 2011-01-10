@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,11 @@ void TestingAutomationProvider::IsWindowMaximized(int handle,
                                                   bool* is_maximized,
                                                   bool* success) {
   *success = false;
-  NOTIMPLEMENTED();
+  NSWindow* window = window_tracker_->GetResource(handle);
+  if (!window)
+    return;
+  *is_maximized = [window isZoomed];
+  *success = true;
 }
 
 void TestingAutomationProvider::TerminateSession(int handle, bool* success) {
@@ -66,9 +70,10 @@ void TestingAutomationProvider::WindowGetViewBounds(int handle,
   // not bottom left, to match other platforms.
   rect.origin.y += rect.size.height;
   CGFloat coord_sys_height;
-  if (screen_coordinates) {
+  if (screen_coordinates && [[NSScreen screens] count] > 0) {
     rect.origin = [window convertBaseToScreen:rect.origin];
-    coord_sys_height = [[window screen] frame].size.height;
+    coord_sys_height =
+        [[[NSScreen screens] objectAtIndex:0] frame].size.height;
   } else {
     coord_sys_height = [window frame].size.height;
   }
@@ -80,9 +85,20 @@ void TestingAutomationProvider::WindowGetViewBounds(int handle,
 
 void TestingAutomationProvider::GetWindowBounds(int handle,
                                                 gfx::Rect* bounds,
-                                                bool* result) {
-  *result = false;
-  NOTIMPLEMENTED();
+                                                bool* success) {
+  *success = false;
+  NSWindow* window = window_tracker_->GetResource(handle);
+  if (window) {
+    // Move rect to reflect flipped coordinate system.
+    if ([[NSScreen screens] count] > 0) {
+      NSRect rect = [window frame];
+      rect.origin.y =
+          [[[NSScreen screens] objectAtIndex:0] frame].size.height -
+              rect.origin.y - rect.size.height;
+      *bounds = gfx::Rect(NSRectToCGRect(rect));
+      *success = true;
+    }
+  }
 }
 
 void TestingAutomationProvider::SetWindowBounds(int handle,
