@@ -1028,7 +1028,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/chrome_frame_resources.rc',
           ],
           'dependencies': [
-            '../breakpad/breakpad.gyp:breakpad_handler',
+            '../breakpad/breakpad.gyp:breakpad_handler_dll',
             '../chrome/chrome.gyp:automation',
             # Make the archive build happy.
             '../chrome/chrome.gyp:syncapi',
