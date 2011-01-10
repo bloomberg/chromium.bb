@@ -36,6 +36,7 @@ ALL_TYPES = (
     TOP_LEVEL,  # The type of the 'Google Chrome' folder.
     APPS,
     AUTOFILL,
+    AUTOFILL_PROFILE,
     BOOKMARK,
     EXTENSIONS,
     NIGORI,
@@ -43,7 +44,7 @@ ALL_TYPES = (
     PREFERENCE,
     SESSION,
     THEME,
-    TYPED_URL) = range(11)
+    TYPED_URL) = range(12)
 
 # Well-known server tag of the top level "Google Chrome" folder.
 TOP_LEVEL_FOLDER_TAG = 'google_chrome'
@@ -53,6 +54,7 @@ TOP_LEVEL_FOLDER_TAG = 'google_chrome'
 SYNC_TYPE_TO_EXTENSION = {
     APPS: app_specifics_pb2.app,
     AUTOFILL: autofill_specifics_pb2.autofill,
+    AUTOFILL_PROFILE: autofill_specifics_pb2.autofill_profile,
     BOOKMARK: bookmark_specifics_pb2.bookmark,
     EXTENSIONS: extension_specifics_pb2.extension,
     NIGORI: nigori_specifics_pb2.nigori,
@@ -248,6 +250,8 @@ class SyncDataModel(object):
                     parent_tag='google_chrome', sync_type=PREFERENCE),
       PermanentItem('google_chrome_autofill', name='Autofill',
                     parent_tag='google_chrome', sync_type=AUTOFILL),
+      PermanentItem('google_chrome_autofill_profiles', name='Autofill Profiles',
+                    parent_tag='google_chrome', sync_type=AUTOFILL_PROFILE),
       PermanentItem('google_chrome_extensions', name='Extensions',
                     parent_tag='google_chrome', sync_type=EXTENSIONS),
       PermanentItem('google_chrome_passwords', name='Passwords',
@@ -489,7 +493,7 @@ class SyncDataModel(object):
 
   def _CopyOverImmutableFields(self, entry):
     """Preserve immutable fields by copying pre-commit state.
-    
+
     Args:
       entry: A sync entity from the client.
     """
@@ -611,7 +615,7 @@ class SyncDataModel(object):
     if not self._CheckParentIdForCommit(entry):
       return None
 
-    self._CopyOverImmutableFields(entry);  
+    self._CopyOverImmutableFields(entry);
 
     # At this point, the commit is definitely going to happen.
 
