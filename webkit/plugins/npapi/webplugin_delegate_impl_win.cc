@@ -191,8 +191,9 @@ bool WebPluginDelegateImpl::IsPluginDelegateWindow(HWND window) {
   return wcscmp(class_name, kNativeWindowClassName) == 0;
 }
 
+// static
 bool WebPluginDelegateImpl::GetPluginNameFromWindow(
-    HWND window, std::wstring *plugin_name) {
+    HWND window, string16* plugin_name) {
   if (NULL == plugin_name) {
     return false;
   }

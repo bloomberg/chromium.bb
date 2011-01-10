@@ -85,7 +85,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
 
   static bool IsPluginDelegateWindow(gfx::NativeWindow window);
   static bool GetPluginNameFromWindow(gfx::NativeWindow window,
-                                      std::wstring *plugin_name);
+                                      string16* plugin_name);
 
   // Returns true if the window handle passed in is that of the dummy
   // activation window for windowless plugins.
