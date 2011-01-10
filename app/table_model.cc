@@ -116,6 +116,11 @@ int TableModel::CompareValues(int row1, int row2, int column_id) {
   return 0;
 }
 
+void TableModel::ClearCollator() {
+  delete collator;
+  collator = NULL;
+}
+
 icu::Collator* TableModel::GetCollator() {
   if (!collator) {
     UErrorCode create_status = U_ZERO_ERROR;
@@ -126,9 +131,4 @@ icu::Collator* TableModel::GetCollator() {
     }
   }
   return collator;
-}
-
-void TableModel::ClearCollator() {
-  delete collator;
-  collator = NULL;
 }

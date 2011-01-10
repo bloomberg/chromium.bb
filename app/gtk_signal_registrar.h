@@ -48,6 +48,9 @@ class GtkSignalRegistrar {
                      GCallback signal_handler, gpointer data);
 
  private:
+  typedef std::vector<glong> HandlerList;
+  typedef std::map<GObject*, HandlerList> HandlerMap;
+
   static void WeakNotifyThunk(gpointer data, GObject* where_the_object_was) {
     reinterpret_cast<GtkSignalRegistrar*>(data)->WeakNotify(
         where_the_object_was);
@@ -57,8 +60,6 @@ class GtkSignalRegistrar {
   glong ConnectInternal(gpointer instance, const gchar* detailed_signal,
                         GCallback signal_handler, gpointer data, bool after);
 
-  typedef std::vector<glong> HandlerList;
-  typedef std::map<GObject*, HandlerList> HandlerMap;
   HandlerMap handler_lists_;
 
   DISALLOW_COPY_AND_ASSIGN(GtkSignalRegistrar);

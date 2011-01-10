@@ -17,11 +17,11 @@ class Statement;
 
 class MetaTable {
  public:
-  // Returns true if the 'meta' table exists.
-  static bool DoesTableExist(Connection* db);
-
   MetaTable();
   ~MetaTable();
+
+  // Returns true if the 'meta' table exists.
+  static bool DoesTableExist(Connection* db);
 
   // Initializes the MetaTableHelper, creating the meta table if necessary. For
   // new tables, it will initialize the version number to |version| and the

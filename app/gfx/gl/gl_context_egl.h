@@ -22,15 +22,15 @@ class BaseEGLContext : public GLContext {
   BaseEGLContext() {}
   virtual ~BaseEGLContext() {}
 
-  // Implement GLContext.
-  virtual std::string GetExtensions();
+  static bool InitializeOneOff();
+
+  static EGLDisplay GetDisplay();
 
   // Get the associated EGL surface.
   virtual EGLSurface GetSurface() = 0;
 
-  static bool InitializeOneOff();
-
-  static EGLDisplay GetDisplay();
+  // Implement GLContext.
+  virtual std::string GetExtensions();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BaseEGLContext);

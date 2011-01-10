@@ -128,12 +128,13 @@ class SimpleMenuModel : public MenuModel {
 
  private:
   struct Item;
-  std::vector<Item> items_;
 
   // Functions for inserting items into |items_|.
   void AppendItem(const Item& item);
   void InsertItemAtIndex(const Item& item, int index);
   void ValidateItem(const Item& item);
+
+  std::vector<Item> items_;
 
   Delegate* delegate_;
 

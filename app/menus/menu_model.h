@@ -26,8 +26,6 @@ class ButtonMenuItemModel;
 // An interface implemented by an object that provides the content of a menu.
 class MenuModel {
  public:
-  virtual ~MenuModel() {}
-
   // The type of item.
   enum ItemType {
     TYPE_COMMAND,
@@ -37,6 +35,8 @@ class MenuModel {
     TYPE_BUTTON_ITEM,
     TYPE_SUBMENU
   };
+
+  virtual ~MenuModel() {}
 
   // Returns true if any of the items within the model have icons. Not all
   // platforms support icons in menus natively and so this is a hint for

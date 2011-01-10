@@ -15,16 +15,16 @@ namespace sql {
 static const char kVersionKey[] = "version";
 static const char kCompatibleVersionKey[] = "last_compatible_version";
 
-// static
-bool MetaTable::DoesTableExist(sql::Connection* db) {
-  DCHECK(db);
-  return db->DoesTableExist("meta");
-}
-
 MetaTable::MetaTable() : db_(NULL) {
 }
 
 MetaTable::~MetaTable() {
+}
+
+// static
+bool MetaTable::DoesTableExist(sql::Connection* db) {
+  DCHECK(db);
+  return db->DoesTableExist("meta");
 }
 
 bool MetaTable::Init(Connection* db, int version, int compatible_version) {

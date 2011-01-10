@@ -34,6 +34,13 @@ class SystemMonitorBridge;
 // TODO(mbelshe):  Add support beyond just power management.
 class SystemMonitor {
  public:
+  // Normalized list of power events.
+  enum PowerEvent {
+    POWER_STATE_EVENT,  // The Power status of the system has changed.
+    SUSPEND_EVENT,      // The system is being suspended.
+    RESUME_EVENT        // The system is being resumed.
+  };
+
   // Create SystemMonitor. Only one SystemMonitor instance per application
   // is allowed.
   SystemMonitor();
@@ -52,13 +59,6 @@ class SystemMonitor {
     // Using a lock here is not necessary for just a bool.
     return battery_in_use_;
   }
-
-  // Normalized list of power events.
-  enum PowerEvent {
-    POWER_STATE_EVENT,  // The Power status of the system has changed.
-    SUSPEND_EVENT,      // The system is being suspended.
-    RESUME_EVENT        // The system is being resumed.
-  };
 
   // Callbacks will be called on the thread which creates the SystemMonitor.
   // During the callback, Add/RemoveObserver will block until the callbacks

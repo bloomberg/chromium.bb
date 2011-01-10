@@ -17,6 +17,8 @@ class StubGLContext : public gfx::GLContext {
  public:
   virtual ~StubGLContext();
 
+  void SetSize(const gfx::Size& size) { size_ = size; }
+
   // Implement GLContext.
   virtual void Destroy() {}
   virtual bool MakeCurrent();
@@ -27,8 +29,6 @@ class StubGLContext : public gfx::GLContext {
   virtual void* GetHandle();
   virtual void SetSwapInterval(int interval) {}
   virtual std::string GetExtensions();
-
-  void SetSize(const gfx::Size& size) { size_ = size; }
 
  private:
   gfx::Size size_;

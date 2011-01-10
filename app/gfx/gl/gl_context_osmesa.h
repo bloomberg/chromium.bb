@@ -23,6 +23,14 @@ class OSMesaGLContext : public GLContext {
   // Initialize an OSMesa GL context with the default 1 x 1 initial size.
   bool Initialize(GLuint format, GLContext* shared_context);
 
+  // Resize the back buffer, preserving the old content. Does nothing if the
+  // size is unchanged.
+  void Resize(const gfx::Size& new_size);
+
+  const void* buffer() const {
+    return buffer_.get();
+  }
+
   // Implement GLContext.
   virtual void Destroy();
   virtual bool MakeCurrent();
@@ -32,14 +40,6 @@ class OSMesaGLContext : public GLContext {
   virtual gfx::Size GetSize();
   virtual void* GetHandle();
   virtual void SetSwapInterval(int interval);
-
-  // Resize the back buffer, preserving the old content. Does nothing if the
-  // size is unchanged.
-  void Resize(const gfx::Size& new_size);
-
-  const void* buffer() const {
-    return buffer_.get();
-  }
 
  private:
   gfx::Size size_;
