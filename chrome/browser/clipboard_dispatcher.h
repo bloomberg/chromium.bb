@@ -8,9 +8,9 @@
 
 #include <vector>
 
-#include "app/clipboard/clipboard.h"
 #include "base/basictypes.h"
 #include "base/string16.h"
+#include "ui/base/clipboard/clipboard.h"
 
 // This class backs IPC requests from the renderer for clipboard data. In this
 // context, clipboard does not only refer to the usual concept of a clipboard
@@ -23,12 +23,12 @@
 //   selection.
 class ClipboardDispatcher {
  public:
-  static bool ReadAvailableTypes(Clipboard::Buffer buffer,
+  static bool ReadAvailableTypes(ui::Clipboard::Buffer buffer,
                                  std::vector<string16>* types,
                                  bool* contains_filenames);
-  static bool ReadData(Clipboard::Buffer buffer, const string16& type,
+  static bool ReadData(ui::Clipboard::Buffer buffer, const string16& type,
                        string16* data, string16* metadata);
-  static bool ReadFilenames(Clipboard::Buffer buffer,
+  static bool ReadFilenames(ui::Clipboard::Buffer buffer,
                             std::vector<string16>* filenames);
 
  private:

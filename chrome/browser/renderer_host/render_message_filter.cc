@@ -131,7 +131,7 @@ class ContextMenuMessageDispatcher : public Task {
 // contents.
 class WriteClipboardTask : public Task {
  public:
-  explicit WriteClipboardTask(Clipboard::ObjectMap* objects)
+  explicit WriteClipboardTask(ui::Clipboard::ObjectMap* objects)
       : objects_(objects) {}
   ~WriteClipboardTask() {}
 
@@ -140,7 +140,7 @@ class WriteClipboardTask : public Task {
   }
 
  private:
-  scoped_ptr<Clipboard::ObjectMap> objects_;
+  scoped_ptr<ui::Clipboard::ObjectMap> objects_;
 };
 
 void RenderParamsFromPrintSettings(const printing::PrintSettings& settings,
@@ -741,7 +741,7 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
 }
 
 void RenderMessageFilter::OnClipboardWriteObjectsSync(
-    const Clipboard::ObjectMap& objects,
+    const ui::Clipboard::ObjectMap& objects,
     base::SharedMemoryHandle bitmap_handle) {
   DCHECK(base::SharedMemory::IsHandleValid(bitmap_handle))
       << "Bad bitmap handle";
@@ -749,11 +749,12 @@ void RenderMessageFilter::OnClipboardWriteObjectsSync(
   // on the UI thread. We'll copy the relevant data and get a handle to any
   // shared memory so it doesn't go away when we resume the renderer, and post
   // a task to perform the write on the UI thread.
-  Clipboard::ObjectMap* long_living_objects = new Clipboard::ObjectMap(objects);
+  ui::Clipboard::ObjectMap* long_living_objects =
+      new ui::Clipboard::ObjectMap(objects);
 
   // Splice the shared memory handle into the clipboard data.
-  Clipboard::ReplaceSharedMemHandle(long_living_objects, bitmap_handle,
-                                    peer_handle());
+  ui::Clipboard::ReplaceSharedMemHandle(long_living_objects, bitmap_handle,
+                                        peer_handle());
 
   BrowserThread::PostTask(
       BrowserThread::UI,
@@ -762,15 +763,16 @@ void RenderMessageFilter::OnClipboardWriteObjectsSync(
 }
 
 void RenderMessageFilter::OnClipboardWriteObjectsAsync(
-    const Clipboard::ObjectMap& objects) {
+    const ui::Clipboard::ObjectMap& objects) {
   // We cannot write directly from the IO thread, and cannot service the IPC
   // on the UI thread. We'll copy the relevant data and post a task to preform
   // the write on the UI thread.
-  Clipboard::ObjectMap* long_living_objects = new Clipboard::ObjectMap(objects);
+  ui::Clipboard::ObjectMap* long_living_objects =
+      new ui::Clipboard::ObjectMap(objects);
 
   // This async message doesn't support shared-memory based bitmaps; they must
   // be removed otherwise we might dereference a rubbish pointer.
-  long_living_objects->erase(Clipboard::CBF_SMBITMAP);
+  long_living_objects->erase(ui::Clipboard::CBF_SMBITMAP);
 
   BrowserThread::PostTask(
       BrowserThread::UI,
@@ -791,14 +793,14 @@ void RenderMessageFilter::OnClipboardWriteObjectsAsync(
 // functions.
 
 void RenderMessageFilter::OnClipboardIsFormatAvailable(
-    Clipboard::FormatType format, Clipboard::Buffer buffer,
+    ui::Clipboard::FormatType format, ui::Clipboard::Buffer buffer,
     IPC::Message* reply) {
   const bool result = GetClipboard()->IsFormatAvailable(format, buffer);
   ViewHostMsg_ClipboardIsFormatAvailable::WriteReplyParams(reply, result);
   Send(reply);
 }
 
-void RenderMessageFilter::OnClipboardReadText(Clipboard::Buffer buffer,
+void RenderMessageFilter::OnClipboardReadText(ui::Clipboard::Buffer buffer,
                                               IPC::Message* reply) {
   string16 result;
   GetClipboard()->ReadText(buffer, &result);
@@ -806,7 +808,7 @@ void RenderMessageFilter::OnClipboardReadText(Clipboard::Buffer buffer,
   Send(reply);
 }
 
-void RenderMessageFilter::OnClipboardReadAsciiText(Clipboard::Buffer buffer,
+void RenderMessageFilter::OnClipboardReadAsciiText(ui::Clipboard::Buffer buffer,
                                                    IPC::Message* reply) {
   std::string result;
   GetClipboard()->ReadAsciiText(buffer, &result);
@@ -814,7 +816,7 @@ void RenderMessageFilter::OnClipboardReadAsciiText(Clipboard::Buffer buffer,
   Send(reply);
 }
 
-void RenderMessageFilter::OnClipboardReadHTML(Clipboard::Buffer buffer,
+void RenderMessageFilter::OnClipboardReadHTML(ui::Clipboard::Buffer buffer,
                                               IPC::Message* reply) {
   std::string src_url_str;
   string16 markup;
@@ -826,7 +828,7 @@ void RenderMessageFilter::OnClipboardReadHTML(Clipboard::Buffer buffer,
 }
 
 void RenderMessageFilter::OnClipboardReadAvailableTypes(
-    Clipboard::Buffer buffer, IPC::Message* reply) {
+    ui::Clipboard::Buffer buffer, IPC::Message* reply) {
   std::vector<string16> types;
   bool contains_filenames = false;
   bool result = ClipboardDispatcher::ReadAvailableTypes(
@@ -837,7 +839,7 @@ void RenderMessageFilter::OnClipboardReadAvailableTypes(
 }
 
 void RenderMessageFilter::OnClipboardReadData(
-    Clipboard::Buffer buffer, const string16& type, IPC::Message* reply) {
+    ui::Clipboard::Buffer buffer, const string16& type, IPC::Message* reply) {
   string16 data;
   string16 metadata;
   bool result = ClipboardDispatcher::ReadData(buffer, type, &data, &metadata);
@@ -847,7 +849,7 @@ void RenderMessageFilter::OnClipboardReadData(
 }
 
 void RenderMessageFilter::OnClipboardReadFilenames(
-    Clipboard::Buffer buffer, IPC::Message* reply) {
+    ui::Clipboard::Buffer buffer, IPC::Message* reply) {
   std::vector<string16> filenames;
   bool result = ClipboardDispatcher::ReadFilenames(buffer, &filenames);
   ViewHostMsg_ClipboardReadFilenames::WriteReplyParams(
@@ -1109,10 +1111,10 @@ void RenderMessageFilter::OnScriptedPrintReply(
 }
 
 // static
-Clipboard* RenderMessageFilter::GetClipboard() {
+ui::Clipboard* RenderMessageFilter::GetClipboard() {
   // We have a static instance of the clipboard service for use by all message
   // filters.  This instance lives for the life of the browser processes.
-  static Clipboard* clipboard = new Clipboard;
+  static ui::Clipboard* clipboard = new ui::Clipboard;
 
   return clipboard;
 }

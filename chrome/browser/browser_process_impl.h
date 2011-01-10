@@ -59,7 +59,7 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual PrefService* local_state();
   virtual DevToolsManager* devtools_manager();
   virtual SidebarManager* sidebar_manager();
-  virtual Clipboard* clipboard();
+  virtual ui::Clipboard* clipboard();
   virtual NotificationUIManager* notification_ui_manager();
   virtual policy::ConfigurationPolicyProviderKeeper*
       configuration_policy_provider_keeper();
@@ -188,7 +188,7 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_refptr<printing::PrintPreviewTabController>
       print_preview_tab_controller_;
 
-  scoped_ptr<Clipboard> clipboard_;
+  scoped_ptr<ui::Clipboard> clipboard_;
 
   // Manager for desktop notification UI.
   bool created_notification_ui_manager_;

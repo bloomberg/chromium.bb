@@ -7,7 +7,6 @@
 #include <windows.h>
 #include <shlobj.h>
 
-#include "app/clipboard/clipboard_util_win.h"
 #include "app/os_exchange_data.h"
 #include "app/os_exchange_data_provider_win.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
@@ -17,6 +16,7 @@
 #include "gfx/point.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
+#include "ui/base/clipboard/clipboard_util_win.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -51,23 +51,23 @@ class InterstitialDropTarget {
       : tab_contents_(tab_contents) {}
 
   DWORD OnDragEnter(IDataObject* data_object, DWORD effect) {
-    return ClipboardUtil::HasUrl(data_object) ? GetPreferredDropEffect(effect)
-                                              : DROPEFFECT_NONE;
+    return ui::ClipboardUtil::HasUrl(data_object) ?
+        GetPreferredDropEffect(effect) : DROPEFFECT_NONE;
   }
 
   DWORD OnDragOver(IDataObject* data_object, DWORD effect) {
-    return ClipboardUtil::HasUrl(data_object) ? GetPreferredDropEffect(effect)
-                                              : DROPEFFECT_NONE;
+    return ui::ClipboardUtil::HasUrl(data_object) ?
+        GetPreferredDropEffect(effect) : DROPEFFECT_NONE;
   }
 
   void OnDragLeave(IDataObject* data_object) {
   }
 
   DWORD OnDrop(IDataObject* data_object, DWORD effect) {
-    if (ClipboardUtil::HasUrl(data_object)) {
+    if (ui::ClipboardUtil::HasUrl(data_object)) {
       std::wstring url;
       std::wstring title;
-      ClipboardUtil::GetUrl(data_object, &url, &title, true);
+      ui::ClipboardUtil::GetUrl(data_object, &url, &title, true);
       tab_contents_->OpenURL(GURL(url), GURL(), CURRENT_TAB,
                              PageTransition::AUTO_BOOKMARK);
       return GetPreferredDropEffect(effect);

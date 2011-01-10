@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/clipboard/clipboard_util_win.h"
 #include "app/os_exchange_data.h"
 #include "app/os_exchange_data_provider_win.h"
 #include "base/pickle.h"
@@ -13,6 +12,7 @@
 #include "base/win/scoped_hglobal.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/clipboard/clipboard_util_win.h"
 
 typedef testing::Test OSExchangeDataTest;
 
@@ -347,7 +347,7 @@ TEST(OSExchangeDataTest, Html) {
   STGMEDIUM medium;
   IDataObject* data_object = OSExchangeDataProviderWin::GetIDataObject(data);
   EXPECT_EQ(S_OK,
-            data_object->GetData(ClipboardUtil::GetHtmlFormat(), &medium));
+      data_object->GetData(ui::ClipboardUtil::GetHtmlFormat(), &medium));
   base::win::ScopedHGlobal<char> glob(medium.hGlobal);
   std::string output(glob.get(), glob.Size());
   EXPECT_EQ(expected_cf_html, output);

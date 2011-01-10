@@ -6,7 +6,6 @@
 
 #include <map>
 
-#include "app/clipboard/clipboard.h"
 #include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -62,6 +61,7 @@
 #include "chrome/common/switch_utils.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "ipc/ipc_logging.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "webkit/database/database_tracker.h"
 
 #if defined(OS_WIN)
@@ -109,7 +109,7 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
       using_new_frames_(false),
       have_inspector_files_(true) {
   g_browser_process = this;
-  clipboard_.reset(new Clipboard);
+  clipboard_.reset(new ui::Clipboard);
   main_notification_service_.reset(new NotificationService);
 
   notification_registrar_.Add(this,
@@ -407,7 +407,7 @@ SidebarManager* BrowserProcessImpl::sidebar_manager() {
   return sidebar_manager_.get();
 }
 
-Clipboard* BrowserProcessImpl::clipboard() {
+ui::Clipboard* BrowserProcessImpl::clipboard() {
   DCHECK(CalledOnValidThread());
   return clipboard_.get();
 }

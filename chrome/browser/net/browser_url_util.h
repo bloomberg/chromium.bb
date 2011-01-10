@@ -8,15 +8,18 @@
 
 #include <string>
 
-class Clipboard;
 class GURL;
+
+namespace ui {
+class Clipboard;
+}
 
 namespace chrome_browser_net {
 
 // Writes a string representation of |url| to the system clipboard.
 void WriteURLToClipboard(const GURL& url,
                          const std::string& languages,
-                         Clipboard *clipboard);
+                         ui::Clipboard *clipboard);
 
 }  // namespace chrome_browser_net
 

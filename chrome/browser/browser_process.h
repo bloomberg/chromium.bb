@@ -23,7 +23,6 @@ namespace safe_browsing {
 class ClientSideDetectionService;
 }
 
-class Clipboard;
 class DevToolsManager;
 class DownloadRequestLimiter;
 class DownloadStatusUpdater;
@@ -54,6 +53,10 @@ namespace policy {
 class ConfigurationPolicyProviderKeeper;
 }
 
+namespace ui {
+class Clipboard;
+}
+
 // NOT THREAD SAFE, call only from the main thread.
 // These functions shouldn't return NULL unless otherwise noted.
 class BrowserProcess {
@@ -75,7 +78,7 @@ class BrowserProcess {
   virtual PrefService* local_state() = 0;
   virtual DevToolsManager* devtools_manager() = 0;
   virtual SidebarManager* sidebar_manager() = 0;
-  virtual Clipboard* clipboard() = 0;
+  virtual ui::Clipboard* clipboard() = 0;
 
   // Returns the manager for desktop notifications.
   virtual NotificationUIManager* notification_ui_manager() = 0;

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,11 +6,13 @@
 // purpose can be found in our header. Documentation on the format of the
 // parameters for each clipboard target can be found in clipboard.h.
 
-#include "app/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 
 #include "base/pickle.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/size.h"
+
+namespace ui {
 
 ScopedClipboardWriter::ScopedClipboardWriter(Clipboard* clipboard)
     : clipboard_(clipboard) {
@@ -134,3 +136,5 @@ void ScopedClipboardWriter::WriteTextOrURL(const string16& text, bool is_url) {
     url_text_.clear();
   }
 }
+
+}  // namespace ui

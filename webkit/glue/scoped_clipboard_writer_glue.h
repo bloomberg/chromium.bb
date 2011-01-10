@@ -5,7 +5,7 @@
 #ifndef SCOPED_CLIPBOARD_WRITER_GLUE_H_
 #define SCOPED_CLIPBOARD_WRITER_GLUE_H_
 
-#include "app/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 
 class SkBitmap;
 
@@ -13,10 +13,10 @@ namespace base {
 class SharedMemory;
 }
 
-class ScopedClipboardWriterGlue : public ScopedClipboardWriter {
+class ScopedClipboardWriterGlue : public ui::ScopedClipboardWriter {
  public:
-  ScopedClipboardWriterGlue(Clipboard* clipboard)
-      : ScopedClipboardWriter(clipboard),
+   ScopedClipboardWriterGlue(ui::Clipboard* clipboard)
+      : ui::ScopedClipboardWriter(clipboard),
         shared_buf_(NULL) {
   }
 

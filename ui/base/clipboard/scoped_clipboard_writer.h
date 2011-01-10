@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,16 +8,18 @@
 // avoiding any potential race condition with other processes that are also
 // writing to the system clipboard.
 
-#ifndef APP_CLIPBOARD_SCOPED_CLIPBOARD_WRITER_H_
-#define APP_CLIPBOARD_SCOPED_CLIPBOARD_WRITER_H_
+#ifndef UI_BASE_CLIPBOARD_SCOPED_CLIPBOARD_WRITER_H_
+#define UI_BASE_CLIPBOARD_SCOPED_CLIPBOARD_WRITER_H_
 #pragma once
 
 #include <string>
 
-#include "app/clipboard/clipboard.h"
 #include "base/string16.h"
+#include "ui/base/clipboard/clipboard.h"
 
 class Pickle;
+
+namespace ui {
 
 // This class is a wrapper for |Clipboard| that handles packing data
 // into a Clipboard::ObjectMap.
@@ -77,4 +79,7 @@ class ScopedClipboardWriter {
   DISALLOW_COPY_AND_ASSIGN(ScopedClipboardWriter);
 };
 
-#endif  // APP_CLIPBOARD_SCOPED_CLIPBOARD_WRITER_H_
+}  // namespace ui
+
+#endif  // UI_BASE_CLIPBOARD_SCOPED_CLIPBOARD_WRITER_H_
+

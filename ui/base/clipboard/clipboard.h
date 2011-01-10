@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_CLIPBOARD_CLIPBOARD_H_
-#define APP_CLIPBOARD_CLIPBOARD_H_
+#ifndef UI_BASE_CLIPBOARD_CLIPBOARD_H_
+#define UI_BASE_CLIPBOARD_CLIPBOARD_H_
 #pragma once
 
 #include <map>
@@ -20,6 +20,12 @@ class Size;
 }
 
 class FilePath;
+
+#if defined(TOOLKIT_USES_GTK)
+typedef struct _GtkClipboard GtkClipboard;
+#endif
+
+namespace ui {
 
 class Clipboard {
  public:
@@ -249,8 +255,6 @@ class Clipboard {
   typedef std::map<FormatType, std::pair<char*, size_t> > TargetMap;
 
  private:
-  typedef struct _GtkClipboard GtkClipboard;
-
   // Write changes to gtk clipboard.
   void SetGtkClipboard();
   // Insert a mapping into clipboard_data_.
@@ -267,4 +271,6 @@ class Clipboard {
   DISALLOW_COPY_AND_ASSIGN(Clipboard);
 };
 
-#endif  // APP_CLIPBOARD_CLIPBOARD_H_
+}  // namespace ui
+
+#endif  // UI_BASE_CLIPBOARD_CLIPBOARD_H_

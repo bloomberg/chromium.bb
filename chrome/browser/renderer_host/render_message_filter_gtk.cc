@@ -7,7 +7,6 @@
 #include <fcntl.h>
 #include <map>
 
-#include "app/clipboard/clipboard.h"
 #include "app/x11_util.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
@@ -22,9 +21,9 @@
 #include "chrome/common/render_messages.h"
 #include "gfx/gtk_native_view_id_manager.h"
 #include "grit/generated_resources.h"
-
 #include "third_party/WebKit/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/x11/WebScreenInfoFactory.h"
+#include "ui/base/clipboard/clipboard.h"
 
 using WebKit::WebScreenInfo;
 using WebKit::WebScreenInfoFactory;
@@ -118,7 +117,7 @@ void RenderMessageFilter::DoOnGetRootWindowRect(gfx::NativeViewId view,
 
 // Called on the UI thread.
 void RenderMessageFilter::DoOnClipboardIsFormatAvailable(
-    Clipboard::FormatType format, Clipboard::Buffer buffer,
+    ui::Clipboard::FormatType format, ui::Clipboard::Buffer buffer,
     IPC::Message* reply_msg) {
   const bool result = GetClipboard()->IsFormatAvailable(format, buffer);
 
@@ -127,7 +126,7 @@ void RenderMessageFilter::DoOnClipboardIsFormatAvailable(
 }
 
 // Called on the UI thread.
-void RenderMessageFilter::DoOnClipboardReadText(Clipboard::Buffer buffer,
+void RenderMessageFilter::DoOnClipboardReadText(ui::Clipboard::Buffer buffer,
                                                 IPC::Message* reply_msg) {
   string16 result;
   GetClipboard()->ReadText(buffer, &result);
@@ -138,7 +137,7 @@ void RenderMessageFilter::DoOnClipboardReadText(Clipboard::Buffer buffer,
 
 // Called on the UI thread.
 void RenderMessageFilter::DoOnClipboardReadAsciiText(
-    Clipboard::Buffer buffer, IPC::Message* reply_msg) {
+    ui::Clipboard::Buffer buffer, IPC::Message* reply_msg) {
   std::string result;
   GetClipboard()->ReadAsciiText(buffer, &result);
 
@@ -147,7 +146,7 @@ void RenderMessageFilter::DoOnClipboardReadAsciiText(
 }
 
 // Called on the UI thread.
-void RenderMessageFilter::DoOnClipboardReadHTML(Clipboard::Buffer buffer,
+void RenderMessageFilter::DoOnClipboardReadHTML(ui::Clipboard::Buffer buffer,
                                                 IPC::Message* reply_msg) {
   std::string src_url_str;
   string16 markup;
@@ -160,19 +159,19 @@ void RenderMessageFilter::DoOnClipboardReadHTML(Clipboard::Buffer buffer,
 
 // Called on the UI thread.
 void RenderMessageFilter::DoOnClipboardReadAvailableTypes(
-    Clipboard::Buffer buffer, IPC::Message* reply_msg) {
+    ui::Clipboard::Buffer buffer, IPC::Message* reply_msg) {
   Send(reply_msg);
 }
 
 // Called on the UI thread.
-void RenderMessageFilter::DoOnClipboardReadData(Clipboard::Buffer buffer,
+void RenderMessageFilter::DoOnClipboardReadData(ui::Clipboard::Buffer buffer,
                                                 const string16& type,
                                                 IPC::Message* reply_msg) {
   Send(reply_msg);
 }
 // Called on the UI thread.
 void RenderMessageFilter::DoOnClipboardReadFilenames(
-    Clipboard::Buffer buffer, IPC::Message* reply_msg) {
+    ui::Clipboard::Buffer buffer, IPC::Message* reply_msg) {
   Send(reply_msg);
 }
 
@@ -241,7 +240,7 @@ void RenderMessageFilter::OnGetRootWindowRect(gfx::NativeViewId view,
 
 // Called on the IO thread.
 void RenderMessageFilter::OnClipboardIsFormatAvailable(
-    Clipboard::FormatType format, Clipboard::Buffer buffer,
+    ui::Clipboard::FormatType format, ui::Clipboard::Buffer buffer,
     IPC::Message* reply_msg) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -251,7 +250,7 @@ void RenderMessageFilter::OnClipboardIsFormatAvailable(
 }
 
 // Called on the IO thread.
-void RenderMessageFilter::OnClipboardReadText(Clipboard::Buffer buffer,
+void RenderMessageFilter::OnClipboardReadText(ui::Clipboard::Buffer buffer,
                                               IPC::Message* reply_msg) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -261,7 +260,7 @@ void RenderMessageFilter::OnClipboardReadText(Clipboard::Buffer buffer,
 }
 
 // Called on the IO thread.
-void RenderMessageFilter::OnClipboardReadAsciiText(Clipboard::Buffer buffer,
+void RenderMessageFilter::OnClipboardReadAsciiText(ui::Clipboard::Buffer buffer,
                                                    IPC::Message* reply_msg) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -271,7 +270,7 @@ void RenderMessageFilter::OnClipboardReadAsciiText(Clipboard::Buffer buffer,
 }
 
 // Called on the IO thread.
-void RenderMessageFilter::OnClipboardReadHTML(Clipboard::Buffer buffer,
+void RenderMessageFilter::OnClipboardReadHTML(ui::Clipboard::Buffer buffer,
                                               IPC::Message* reply_msg) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -282,7 +281,7 @@ void RenderMessageFilter::OnClipboardReadHTML(Clipboard::Buffer buffer,
 
 // Called on the IO thread.
 void RenderMessageFilter::OnClipboardReadAvailableTypes(
-    Clipboard::Buffer buffer, IPC::Message* reply_msg) {
+    ui::Clipboard::Buffer buffer, IPC::Message* reply_msg) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
@@ -291,8 +290,9 @@ void RenderMessageFilter::OnClipboardReadAvailableTypes(
 }
 
 // Called on the IO thread.
-void RenderMessageFilter::OnClipboardReadData(
-    Clipboard::Buffer buffer, const string16& type, IPC::Message* reply_msg) {
+void RenderMessageFilter::OnClipboardReadData(ui::Clipboard::Buffer buffer,
+                                              const string16& type,
+                                              IPC::Message* reply_msg) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(
@@ -302,7 +302,7 @@ void RenderMessageFilter::OnClipboardReadData(
 
 // Called on the IO thread.
 void RenderMessageFilter::OnClipboardReadFilenames(
-    Clipboard::Buffer buffer, IPC::Message* reply_msg) {
+    ui::Clipboard::Buffer buffer, IPC::Message* reply_msg) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       NewRunnableMethod(

@@ -115,6 +115,7 @@
       'dependencies': [
         '<(DEPTH)/app/app.gyp:app_base',
         '<(DEPTH)/base/base.gyp:base_i18n',
+        '<(DEPTH)/ui/ui.gyp:ui_base',
       ],
       'actions': [
         {
@@ -157,6 +158,7 @@
         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
         '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
+        '<(DEPTH)/ui/ui.gyp:ui_base',
         '<(DEPTH)/ppapi/ppapi.gyp:ppapi_c',
         'webkit_resources',
         'webkit_strings',

@@ -4,18 +4,18 @@
 
 #include "chrome/browser/net/browser_url_util.h"
 
-#include "app/clipboard/scoped_clipboard_writer.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 
 namespace chrome_browser_net {
 
 void WriteURLToClipboard(const GURL& url,
                          const std::string& languages,
-                         Clipboard *clipboard) {
+                         ui::Clipboard *clipboard) {
   if (url.is_empty() || !url.is_valid() || !clipboard)
     return;
 
@@ -26,7 +26,7 @@ void WriteURLToClipboard(const GURL& url,
       net::FormatUrl(url, languages, net::kFormatUrlOmitNothing,
                      UnescapeRule::NONE, NULL, NULL, NULL);
 
-  ScopedClipboardWriter scw(clipboard);
+  ui::ScopedClipboardWriter scw(clipboard);
   scw.WriteURL(text);
 }
 

@@ -15,7 +15,6 @@
 
 #include <string>
 
-#include "app/clipboard/clipboard.h"
 #include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/browser_process.h"
@@ -26,6 +25,7 @@
 #include "chrome/browser/policy/dummy_configuration_policy_provider.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/notification_service.h"
+#include "ui/base/clipboard/clipboard.h"
 
 class IOThread;
 
@@ -125,10 +125,10 @@ class TestingBrowserProcess : public BrowserProcess {
     return NULL;
   }
 
-  virtual Clipboard* clipboard() {
+  virtual ui::Clipboard* clipboard() {
     if (!clipboard_.get()) {
       // Note that we need a MessageLoop for the next call to work.
-      clipboard_.reset(new Clipboard);
+      clipboard_.reset(new ui::Clipboard);
     }
     return clipboard_.get();
   }
@@ -210,7 +210,7 @@ class TestingBrowserProcess : public BrowserProcess {
   NotificationService notification_service_;
   scoped_ptr<base::WaitableEvent> shutdown_event_;
   unsigned int module_ref_count_;
-  scoped_ptr<Clipboard> clipboard_;
+  scoped_ptr<ui::Clipboard> clipboard_;
   std::string app_locale_;
 
   PrefService* pref_service_;

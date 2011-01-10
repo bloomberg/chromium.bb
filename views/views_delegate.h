@@ -13,10 +13,12 @@
 
 #include "views/accessibility/accessibility_types.h"
 
-class Clipboard;
-
 namespace gfx {
 class Rect;
+}
+
+namespace ui {
+class Clipboard;
 }
 
 namespace views {
@@ -34,7 +36,7 @@ class ViewsDelegate {
   virtual ~ViewsDelegate() {}
 
   // Gets the clipboard.
-  virtual Clipboard* GetClipboard() const = 0;
+  virtual ui::Clipboard* GetClipboard() const = 0;
 
   // Saves the position, size and maximized state for the window with the
   // specified name.

@@ -19,6 +19,7 @@
 #include "chrome/test/interactive_ui/view_event_test_base.h"
 #include "chrome/test/ui_test_utils.h"
 #include "grit/generated_resources.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/menu/menu_controller.h"
@@ -66,7 +67,7 @@ namespace {
 class ViewsDelegateImpl : public views::ViewsDelegate {
  public:
   ViewsDelegateImpl() {}
-  virtual Clipboard* GetClipboard() const { return NULL; }
+  virtual ui::Clipboard* GetClipboard() const { return NULL; }
   virtual void SaveWindowPlacement(const std::wstring& window_name,
                                    const gfx::Rect& bounds,
                                    bool maximized) {}

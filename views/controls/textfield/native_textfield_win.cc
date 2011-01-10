@@ -6,8 +6,6 @@
 
 #include <algorithm>
 
-#include "app/clipboard/clipboard.h"
-#include "app/clipboard/scoped_clipboard_writer.h"
 #include "app/keyboard_codes.h"
 #include "app/keyboard_code_conversion_win.h"
 #include "app/l10n_util.h"
@@ -20,6 +18,8 @@
 #include "gfx/native_theme_win.h"
 #include "grit/app_strings.h"
 #include "skia/ext/skia_utils_win.h"
+#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "views/controls/label.h"
 #include "views/controls/menu/menu_win.h"
 #include "views/controls/menu/menu_2.h"
@@ -464,7 +464,8 @@ void NativeTextfieldWin::OnCopy() {
   const std::wstring text(GetSelectedText());
 
   if (!text.empty() && ViewsDelegate::views_delegate) {
-    ScopedClipboardWriter scw(ViewsDelegate::views_delegate->GetClipboard());
+    ui::ScopedClipboardWriter scw(
+        ViewsDelegate::views_delegate->GetClipboard());
     scw.WriteText(text);
   }
 }
@@ -845,13 +846,13 @@ void NativeTextfieldWin::OnPaste() {
   if (textfield_->read_only() || !ViewsDelegate::views_delegate)
     return;
 
-  Clipboard* clipboard = ViewsDelegate::views_delegate->GetClipboard();
-  if (!clipboard->IsFormatAvailable(Clipboard::GetPlainTextWFormatType(),
-                                    Clipboard::BUFFER_STANDARD))
+  ui::Clipboard* clipboard = ViewsDelegate::views_delegate->GetClipboard();
+  if (!clipboard->IsFormatAvailable(ui::Clipboard::GetPlainTextWFormatType(),
+                                    ui::Clipboard::BUFFER_STANDARD))
     return;
 
   std::wstring clipboard_str;
-  clipboard->ReadText(Clipboard::BUFFER_STANDARD, &clipboard_str);
+  clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &clipboard_str);
   if (!clipboard_str.empty()) {
     std::wstring collapsed(CollapseWhitespace(clipboard_str, false));
     if (textfield_->style() & Textfield::STYLE_LOWERCASE)

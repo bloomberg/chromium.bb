@@ -9,8 +9,6 @@
 #include <iepmapi.h>
 #include <sddl.h>
 
-#include "app/clipboard/clipboard.h"
-#include "app/clipboard/scoped_clipboard_writer.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_version_info.h"
@@ -29,6 +27,8 @@
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome_frame/utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 
 namespace chrome_frame_test {
 
@@ -489,16 +489,16 @@ std::wstring GetPathAndQueryFromUrl(const std::wstring& url) {
 }
 
 std::wstring GetClipboardText() {
-  Clipboard clipboard;
+  ui::Clipboard clipboard;
   string16 text16;
-  clipboard.ReadText(Clipboard::BUFFER_STANDARD, &text16);
+  clipboard.ReadText(ui::Clipboard::BUFFER_STANDARD, &text16);
   return UTF16ToWide(text16);
 }
 
 void SetClipboardText(const std::wstring& text) {
-  Clipboard clipboard;
+  ui::Clipboard clipboard;
   {
-    ScopedClipboardWriter clipboard_writer(&clipboard);
+    ui::ScopedClipboardWriter clipboard_writer(&clipboard);
     clipboard_writer.WriteText(WideToUTF16(text));
   }
 }

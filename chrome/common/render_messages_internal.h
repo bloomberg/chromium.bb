@@ -1590,41 +1590,41 @@ IPC_SYNC_MESSAGE_ROUTED1_0(ViewHostMsg_DestroyPluginContainer,
 
 // This message is used when the object list does not contain a bitmap.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_ClipboardWriteObjectsAsync,
-    Clipboard::ObjectMap /* objects */)
+    ui::Clipboard::ObjectMap /* objects */)
 // This message is used when the object list contains a bitmap.
 // It is synchronized so that the renderer knows when it is safe to
 // free the shared memory used to transfer the bitmap.
 IPC_SYNC_MESSAGE_CONTROL2_0(ViewHostMsg_ClipboardWriteObjectsSync,
-    Clipboard::ObjectMap /* objects */,
+    ui::Clipboard::ObjectMap /* objects */,
     base::SharedMemoryHandle /* bitmap handle */)
 IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_ClipboardIsFormatAvailable,
                             std::string /* format */,
-                            Clipboard::Buffer /* buffer */,
+                            ui::Clipboard::Buffer /* buffer */,
                             bool /* result */)
 IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_ClipboardReadText,
-                            Clipboard::Buffer /* buffer */,
+                            ui::Clipboard::Buffer /* buffer */,
                             string16 /* result */)
 IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_ClipboardReadAsciiText,
-                            Clipboard::Buffer  /* buffer */,
+                            ui::Clipboard::Buffer  /* buffer */,
                             std::string /* result */)
 IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_ClipboardReadHTML,
-                            Clipboard::Buffer  /* buffer */,
+                            ui::Clipboard::Buffer  /* buffer */,
                             string16 /* markup */,
                             GURL /* url */)
 
 IPC_SYNC_MESSAGE_CONTROL1_3(ViewHostMsg_ClipboardReadAvailableTypes,
-                            Clipboard::Buffer /* buffer */,
+                            ui::Clipboard::Buffer /* buffer */,
                             bool /* result */,
                             std::vector<string16> /* types */,
                             bool /* contains filenames */)
 IPC_SYNC_MESSAGE_CONTROL2_3(ViewHostMsg_ClipboardReadData,
-                            Clipboard::Buffer /* buffer */,
+                            ui::Clipboard::Buffer /* buffer */,
                             string16 /* type */,
                             bool /* succeeded */,
                             string16 /* data */,
                             string16 /* metadata */)
 IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_ClipboardReadFilenames,
-                            Clipboard::Buffer /* buffer */,
+                            ui::Clipboard::Buffer /* buffer */,
                             bool /* result */,
                             std::vector<string16> /* filenames */)
 

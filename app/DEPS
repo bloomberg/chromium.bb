@@ -5,6 +5,7 @@ include_rules = [
   "+net",
   "+skia",
   "+third_party/mozilla",
+  "+ui",
 
   "-chrome",
   "-third_party/WebKit",

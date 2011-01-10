@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/clipboard/clipboard_util_win.h"
+#include "ui/base/clipboard/clipboard_util_win.h"
 
 #include <shellapi.h>
 #include <shlwapi.h>
@@ -14,6 +14,8 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_hglobal.h"
+
+namespace ui {
 
 namespace {
 
@@ -538,3 +540,5 @@ void ClipboardUtil::CFHtmlToHtml(const std::string& cf_html,
     }
   }
 }
+
+}  // namespace ui

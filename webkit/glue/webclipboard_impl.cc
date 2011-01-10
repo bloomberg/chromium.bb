@@ -1,10 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "webkit/glue/webclipboard_impl.h"
 
-#include "app/clipboard/clipboard.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -16,6 +15,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "webkit/glue/scoped_clipboard_writer_glue.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -62,19 +62,19 @@ WebClipboardImpl::~WebClipboardImpl() {
 }
 
 bool WebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
-  Clipboard::FormatType format_type;
-  Clipboard::Buffer buffer_type;
+  ui::Clipboard::FormatType format_type;
+  ui::Clipboard::Buffer buffer_type;
 
   switch (format) {
     case FormatHTML:
-      format_type = Clipboard::GetHtmlFormatType();
+      format_type = ui::Clipboard::GetHtmlFormatType();
       break;
     case FormatSmartPaste:
-      format_type = Clipboard::GetWebKitSmartPasteFormatType();
+      format_type = ui::Clipboard::GetWebKitSmartPasteFormatType();
       break;
     case FormatBookmark:
 #if defined(OS_WIN) || defined(OS_MACOSX)
-      format_type = Clipboard::GetUrlWFormatType();
+      format_type = ui::Clipboard::GetUrlWFormatType();
       break;
 #endif
     default:
@@ -89,11 +89,11 @@ bool WebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
 }
 
 WebString WebClipboardImpl::readPlainText(Buffer buffer) {
-  Clipboard::Buffer buffer_type;
+  ui::Clipboard::Buffer buffer_type;
   if (!ConvertBufferType(buffer, &buffer_type))
     return WebString();
 
-  if (ClipboardIsFormatAvailable(Clipboard::GetPlainTextWFormatType(),
+  if (ClipboardIsFormatAvailable(ui::Clipboard::GetPlainTextWFormatType(),
                                  buffer_type)) {
     string16 text;
     ClipboardReadText(buffer_type, &text);
@@ -101,7 +101,7 @@ WebString WebClipboardImpl::readPlainText(Buffer buffer) {
       return text;
   }
 
-  if (ClipboardIsFormatAvailable(Clipboard::GetPlainTextFormatType(),
+  if (ClipboardIsFormatAvailable(ui::Clipboard::GetPlainTextFormatType(),
                                  buffer_type)) {
     std::string text;
     ClipboardReadAsciiText(buffer_type, &text);
@@ -113,7 +113,7 @@ WebString WebClipboardImpl::readPlainText(Buffer buffer) {
 }
 
 WebString WebClipboardImpl::readHTML(Buffer buffer, WebURL* source_url) {
-  Clipboard::Buffer buffer_type;
+  ui::Clipboard::Buffer buffer_type;
   if (!ConvertBufferType(buffer, &buffer_type))
     return WebString();
 
@@ -178,7 +178,7 @@ void WebClipboardImpl::writeData(const WebKit::WebDragData& data) {
 
 WebVector<WebString> WebClipboardImpl::readAvailableTypes(
     Buffer buffer, bool* contains_filenames) {
-  Clipboard::Buffer buffer_type;
+  ui::Clipboard::Buffer buffer_type;
   std::vector<string16> types;
   if (ConvertBufferType(buffer, &buffer_type)) {
     ClipboardReadAvailableTypes(buffer_type, &types, contains_filenames);
@@ -188,7 +188,7 @@ WebVector<WebString> WebClipboardImpl::readAvailableTypes(
 
 bool WebClipboardImpl::readData(Buffer buffer, const WebString& type,
                                 WebString* data, WebString* metadata) {
-  Clipboard::Buffer buffer_type;
+  ui::Clipboard::Buffer buffer_type;
   if (!ConvertBufferType(buffer, &buffer_type))
     return false;
 
@@ -203,7 +203,7 @@ bool WebClipboardImpl::readData(Buffer buffer, const WebString& type,
 }
 
 WebVector<WebString> WebClipboardImpl::readFilenames(Buffer buffer) {
-  Clipboard::Buffer buffer_type;
+  ui::Clipboard::Buffer buffer_type;
   std::vector<string16> filenames;
   if (ConvertBufferType(buffer, &buffer_type)) {
     ClipboardReadFilenames(buffer_type, &filenames);
@@ -212,16 +212,16 @@ WebVector<WebString> WebClipboardImpl::readFilenames(Buffer buffer) {
 }
 
 bool WebClipboardImpl::ConvertBufferType(Buffer buffer,
-                                         Clipboard::Buffer* result) {
+                                         ui::Clipboard::Buffer* result) {
   switch (buffer) {
     case BufferStandard:
-      *result = Clipboard::BUFFER_STANDARD;
+      *result = ui::Clipboard::BUFFER_STANDARD;
       break;
     case BufferDrag:
-      *result = Clipboard::BUFFER_DRAG;
+      *result = ui::Clipboard::BUFFER_DRAG;
     case BufferSelection:
 #if defined(USE_X11)
-      *result = Clipboard::BUFFER_SELECTION;
+      *result = ui::Clipboard::BUFFER_SELECTION;
       break;
 #endif
     default:

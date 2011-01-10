@@ -5,7 +5,7 @@
 #include "chrome/browser/clipboard_dispatcher.h"
 #include "base/logging.h"
 
-bool ClipboardDispatcher::ReadAvailableTypes(Clipboard::Buffer buffer,
+bool ClipboardDispatcher::ReadAvailableTypes(ui::Clipboard::Buffer buffer,
                                              std::vector<string16>* types,
                                              bool* contains_filenames) {
   DCHECK(types);
@@ -15,7 +15,7 @@ bool ClipboardDispatcher::ReadAvailableTypes(Clipboard::Buffer buffer,
   return false;
 }
 
-bool ClipboardDispatcher::ReadData(Clipboard::Buffer buffer,
+bool ClipboardDispatcher::ReadData(ui::Clipboard::Buffer buffer,
                                    const string16& type,
                                    string16* data,
                                    string16* metadata) {
@@ -24,7 +24,7 @@ bool ClipboardDispatcher::ReadData(Clipboard::Buffer buffer,
   return false;
 }
 
-bool ClipboardDispatcher::ReadFilenames(Clipboard::Buffer buffer,
+bool ClipboardDispatcher::ReadFilenames(ui::Clipboard::Buffer buffer,
                                         std::vector<string16>* filenames) {
   DCHECK(filenames);
   filenames->clear();

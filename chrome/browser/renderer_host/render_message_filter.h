@@ -13,7 +13,6 @@
 #include <string>
 #include <vector>
 
-#include "app/clipboard/clipboard.h"
 #include "app/surface/transport_dib.h"
 #include "base/file_path.h"
 #include "base/linked_ptr.h"
@@ -28,6 +27,7 @@
 #include "gfx/native_widget_types.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
+#include "ui/base/clipboard/clipboard.h"
 
 class ChromeURLRequestContext;
 struct FontDescriptor;
@@ -182,24 +182,26 @@ class RenderMessageFilter : public BrowserMessageFilter,
 #endif
   void OnReceiveContextMenuMsg(const IPC::Message& msg);
   // Clipboard messages
-  void OnClipboardWriteObjectsAsync(const Clipboard::ObjectMap& objects);
-  void OnClipboardWriteObjectsSync(const Clipboard::ObjectMap& objects,
+  void OnClipboardWriteObjectsAsync(const ui::Clipboard::ObjectMap& objects);
+  void OnClipboardWriteObjectsSync(const ui::Clipboard::ObjectMap& objects,
                                    base::SharedMemoryHandle bitmap_handle);
 
-  void OnClipboardIsFormatAvailable(Clipboard::FormatType format,
-                                    Clipboard::Buffer buffer,
+  void OnClipboardIsFormatAvailable(ui::Clipboard::FormatType format,
+                                    ui::Clipboard::Buffer buffer,
                                     IPC::Message* reply);
-  void OnClipboardReadText(Clipboard::Buffer buffer, IPC::Message* reply);
-  void OnClipboardReadAsciiText(Clipboard::Buffer buffer, IPC::Message* reply);
-  void OnClipboardReadHTML(Clipboard::Buffer buffer, IPC::Message* reply);
+  void OnClipboardReadText(ui::Clipboard::Buffer buffer, IPC::Message* reply);
+  void OnClipboardReadAsciiText(ui::Clipboard::Buffer buffer,
+                                IPC::Message* reply);
+  void OnClipboardReadHTML(ui::Clipboard::Buffer buffer, IPC::Message* reply);
 #if defined(OS_MACOSX)
   void OnClipboardFindPboardWriteString(const string16& text);
 #endif
-  void OnClipboardReadAvailableTypes(Clipboard::Buffer buffer,
+  void OnClipboardReadAvailableTypes(ui::Clipboard::Buffer buffer,
                                      IPC::Message* reply);
-  void OnClipboardReadData(Clipboard::Buffer buffer, const string16& type,
+  void OnClipboardReadData(ui::Clipboard::Buffer buffer, const string16& type,
                            IPC::Message* reply);
-  void OnClipboardReadFilenames(Clipboard::Buffer buffer, IPC::Message* reply);
+  void OnClipboardReadFilenames(ui::Clipboard::Buffer buffer,
+                                IPC::Message* reply);
 
   void OnCheckNotificationPermission(const GURL& source_url,
                                      int* permission_level);
@@ -340,18 +342,20 @@ class RenderMessageFilter : public BrowserMessageFilter,
   void DoOnGetScreenInfo(gfx::NativeViewId view, IPC::Message* reply_msg);
   void DoOnGetWindowRect(gfx::NativeViewId view, IPC::Message* reply_msg);
   void DoOnGetRootWindowRect(gfx::NativeViewId view, IPC::Message* reply_msg);
-  void DoOnClipboardIsFormatAvailable(Clipboard::FormatType format,
-                                      Clipboard::Buffer buffer,
+  void DoOnClipboardIsFormatAvailable(ui::Clipboard::FormatType format,
+                                      ui::Clipboard::Buffer buffer,
                                       IPC::Message* reply_msg);
-  void DoOnClipboardReadText(Clipboard::Buffer buffer, IPC::Message* reply_msg);
-  void DoOnClipboardReadAsciiText(Clipboard::Buffer buffer,
-                                  IPC::Message* reply_msg);
-  void DoOnClipboardReadHTML(Clipboard::Buffer buffer, IPC::Message* reply_msg);
-  void DoOnClipboardReadAvailableTypes(Clipboard::Buffer buffer,
-                                       IPC::Message* reply_msg);
-  void DoOnClipboardReadData(Clipboard::Buffer buffer, const string16& type,
+  void DoOnClipboardReadText(ui::Clipboard::Buffer buffer,
                              IPC::Message* reply_msg);
-  void DoOnClipboardReadFilenames(Clipboard::Buffer buffer,
+  void DoOnClipboardReadAsciiText(ui::Clipboard::Buffer buffer,
+                                  IPC::Message* reply_msg);
+  void DoOnClipboardReadHTML(ui::Clipboard::Buffer buffer,
+                             IPC::Message* reply_msg);
+  void DoOnClipboardReadAvailableTypes(ui::Clipboard::Buffer buffer,
+                                       IPC::Message* reply_msg);
+  void DoOnClipboardReadData(ui::Clipboard::Buffer buffer, const string16& type,
+                             IPC::Message* reply_msg);
+  void DoOnClipboardReadFilenames(ui::Clipboard::Buffer buffer,
                                   IPC::Message* reply_msg);
   void DoOnAllocateTempFileForPrinting(IPC::Message* reply_msg);
 #endif
@@ -363,7 +367,7 @@ class RenderMessageFilter : public BrowserMessageFilter,
   // IO thread instead of forwarding (possibly synchronous) messages to the UI
   // thread. This instance of the clipboard should be accessed only on the IO
   // thread.
-  static Clipboard* GetClipboard();
+  static ui::Clipboard* GetClipboard();
 
   // Cached resource request dispatcher host and plugin service, guaranteed to
   // be non-null if Init succeeds. We do not own the objects, they are managed

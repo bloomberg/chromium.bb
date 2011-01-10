@@ -1,12 +1,12 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef WEBCLIPBOARD_IMPL_H_
 #define WEBCLIPBOARD_IMPL_H_
 
-#include "app/clipboard/clipboard.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebClipboard.h"
+#include "ui/base/clipboard/clipboard.h"
 
 #include <string>
 
@@ -47,7 +47,7 @@ class WebClipboardImpl : public WebKit::WebClipboard {
   virtual WebKit::WebVector<WebKit::WebString> readFilenames(Buffer);
 
  private:
-  bool ConvertBufferType(Buffer, Clipboard::Buffer*);
+  bool ConvertBufferType(Buffer, ui::Clipboard::Buffer*);
 };
 
 }  // namespace webkit_glue

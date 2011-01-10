@@ -14,12 +14,12 @@
 #include <string>
 #include <vector>
 
-#include "app/clipboard/clipboard.h"
 #include "base/file_path.h"
 #include "base/platform_file.h"
 #include "base/string16.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCanvas.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileError.h"
+#include "ui/base/clipboard/clipboard.h"
 
 class GURL;
 class SkBitmap;
@@ -189,32 +189,33 @@ HCURSOR LoadCursor(int cursor_id);
 // Glue to access the clipboard.
 
 // Get a clipboard that can be used to construct a ScopedClipboardWriterGlue.
-Clipboard* ClipboardGetClipboard();
+ui::Clipboard* ClipboardGetClipboard();
 
 // Tests whether the clipboard contains a certain format
-bool ClipboardIsFormatAvailable(const Clipboard::FormatType& format,
-                                Clipboard::Buffer buffer);
+bool ClipboardIsFormatAvailable(const ui::Clipboard::FormatType& format,
+                                ui::Clipboard::Buffer buffer);
 
 // Reads UNICODE text from the clipboard, if available.
-void ClipboardReadText(Clipboard::Buffer buffer, string16* result);
+void ClipboardReadText(ui::Clipboard::Buffer buffer, string16* result);
 
 // Reads ASCII text from the clipboard, if available.
-void ClipboardReadAsciiText(Clipboard::Buffer buffer, std::string* result);
+void ClipboardReadAsciiText(ui::Clipboard::Buffer buffer, std::string* result);
 
 // Reads HTML from the clipboard, if available.
-void ClipboardReadHTML(Clipboard::Buffer buffer, string16* markup, GURL* url);
+void ClipboardReadHTML(ui::Clipboard::Buffer buffer, string16* markup,
+                       GURL* url);
 
 // Reads the available types from the clipboard, if available.
-bool ClipboardReadAvailableTypes(Clipboard::Buffer buffer,
+bool ClipboardReadAvailableTypes(ui::Clipboard::Buffer buffer,
                                  std::vector<string16>* types,
                                  bool* contains_filenames);
 
 // Reads one type of data from the clipboard, if available.
-bool ClipboardReadData(Clipboard::Buffer buffer, const string16& type,
+bool ClipboardReadData(ui::Clipboard::Buffer buffer, const string16& type,
                        string16* data, string16* metadata);
 
 // Reads filenames from the clipboard, if available.
-bool ClipboardReadFilenames(Clipboard::Buffer buffer,
+bool ClipboardReadFilenames(ui::Clipboard::Buffer buffer,
                             std::vector<string16>* filenames);
 
 // Gets the directory where the application data and libraries exist.  This

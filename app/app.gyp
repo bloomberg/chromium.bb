@@ -36,10 +36,10 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libpng/libpng.gyp:libpng',
         '../third_party/zlib/zlib.gyp:zlib',
+        '../ui/ui.gyp:ui_base',
         '<(libjpeg_gyp_path):libjpeg',
       ],
       'sources': [
-        'clipboard/clipboard_unittest.cc',
         'data_pack_unittest.cc',
         'l10n_util_mac_unittest.mm',
         'l10n_util_unittest.cc',

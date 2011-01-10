@@ -4,12 +4,12 @@
 
 #include "views/controls/message_box_view.h"
 
-#include "app/clipboard/clipboard.h"
-#include "app/clipboard/scoped_clipboard_writer.h"
 #include "app/message_box_flags.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "views/controls/button/checkbox.h"
 #include "views/standard_layout.h"
 #include "views/views_delegate.h"
@@ -101,11 +101,12 @@ bool MessageBoxView::AcceleratorPressed(
   if (!views::ViewsDelegate::views_delegate)
     return false;
 
-  Clipboard* clipboard = views::ViewsDelegate::views_delegate->GetClipboard();
+  ui::Clipboard* clipboard =
+      views::ViewsDelegate::views_delegate->GetClipboard();
   if (!clipboard)
     return false;
 
-  ScopedClipboardWriter scw(clipboard);
+  ui::ScopedClipboardWriter scw(clipboard);
   scw.WriteText(WideToUTF16Hack(message_label_->GetText()));
   return true;
 }

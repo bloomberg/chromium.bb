@@ -15,9 +15,12 @@
 
 class AutocompleteEditController;
 class AutocompletePopupViewMac;
-class Clipboard;
 class Profile;
 class ToolbarModel;
+
+namespace ui {
+class Clipboard;
+}
 
 // Implements AutocompleteEditView on an AutocompleteTextField.
 
@@ -107,7 +110,7 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
 
   // Helper to get appropriate contents from |clipboard|.  Returns
   // empty string if no appropriate data is found on |clipboard|.
-  static std::wstring GetClipboardText(Clipboard* clipboard);
+  static std::wstring GetClipboardText(ui::Clipboard* clipboard);
 
   // Helper to get the font to use in the field, exposed for the
   // popup.

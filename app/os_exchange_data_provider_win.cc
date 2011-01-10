@@ -4,7 +4,6 @@
 
 #include "app/os_exchange_data_provider_win.h"
 
-#include "app/clipboard/clipboard_util_win.h"
 #include "app/l10n_util.h"
 #include "base/file_path.h"
 #include "base/i18n/file_util_icu.h"
@@ -17,6 +16,9 @@
 #include "googleurl/src/gurl.h"
 #include "grit/app_strings.h"
 #include "net/base/net_util.h"
+#include "ui/base/clipboard/clipboard_util_win.h"
+
+using ui::ClipboardUtil;
 
 // Creates a new STGMEDIUM object to hold the specified text. The caller
 // owns the resulting object. The "Bytes" version does not NULL terminate, the

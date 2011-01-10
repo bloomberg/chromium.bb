@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/clipboard/scoped_clipboard_writer.h"
 #include "base/basictypes.h"
 #include "base/pickle.h"
 #include "base/string_util.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/escape.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
@@ -140,7 +140,7 @@ bool BookmarkNodeData::ReadFromTuple(const GURL& url, const string16& title) {
 
 #if !defined(OS_MACOSX)
 void BookmarkNodeData::WriteToClipboard(Profile* profile) const {
-  ScopedClipboardWriter scw(g_browser_process->clipboard());
+  ui::ScopedClipboardWriter scw(g_browser_process->clipboard());
 
   // If there is only one element and it is a URL, write the URL to the
   // clipboard.
@@ -166,7 +166,7 @@ void BookmarkNodeData::WriteToClipboard(Profile* profile) const {
 
 bool BookmarkNodeData::ReadFromClipboard() {
   std::string data;
-  Clipboard* clipboard = g_browser_process->clipboard();
+  ui::Clipboard* clipboard = g_browser_process->clipboard();
   clipboard->ReadData(kClipboardFormatString, &data);
 
   if (!data.empty()) {
@@ -194,7 +194,7 @@ bool BookmarkNodeData::ReadFromClipboard() {
 
 bool BookmarkNodeData::ClipboardContainsBookmarks() {
   return g_browser_process->clipboard()->IsFormatAvailableByString(
-      BookmarkNodeData::kClipboardFormatString, Clipboard::BUFFER_STANDARD);
+      BookmarkNodeData::kClipboardFormatString, ui::Clipboard::BUFFER_STANDARD);
 }
 #else
 void BookmarkNodeData::WriteToClipboard(Profile* profile) const {

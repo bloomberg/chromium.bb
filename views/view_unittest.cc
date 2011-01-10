@@ -4,7 +4,6 @@
 
 #include <map>
 
-#include "app/clipboard/clipboard.h"
 #include "app/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -12,6 +11,7 @@
 #include "gfx/canvas_skia.h"
 #include "gfx/path.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "views/background.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/native/native_view_host.h"
@@ -783,7 +783,7 @@ TEST_F(ViewTest, Textfield) {
   const string16 kExtraText = ASCIIToUTF16("Pretty deep, Philip!");
   const string16 kEmptyString;
 
-  Clipboard clipboard;
+  ui::Clipboard clipboard;
 
   Widget* window = CreateWidget();
   window->Init(NULL, gfx::Rect(0, 0, 100, 100));
@@ -816,10 +816,10 @@ class TestViewsDelegate : public views::ViewsDelegate {
   virtual ~TestViewsDelegate() {}
 
   // Overridden from views::ViewsDelegate:
-  virtual Clipboard* GetClipboard() const {
+  virtual ui::Clipboard* GetClipboard() const {
     if (!clipboard_.get()) {
       // Note that we need a MessageLoop for the next call to work.
-      clipboard_.reset(new Clipboard);
+      clipboard_.reset(new ui::Clipboard);
     }
     return clipboard_.get();
   }
@@ -844,7 +844,7 @@ class TestViewsDelegate : public views::ViewsDelegate {
   virtual void ReleaseRef() {}
 
  private:
-  mutable scoped_ptr<Clipboard> clipboard_;
+  mutable scoped_ptr<ui::Clipboard> clipboard_;
 
   DISALLOW_COPY_AND_ASSIGN(TestViewsDelegate);
 };
@@ -857,7 +857,7 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   const std::wstring kReadOnlyText = L"Read only";
   const std::wstring kPasswordText = L"Password! ** Secret stuff **";
 
-  Clipboard clipboard;
+  ui::Clipboard clipboard;
 
   Widget* window = CreateWidget();
 #if defined(OS_WIN)
@@ -886,7 +886,7 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   ::SendMessage(normal->GetTestingHandle(), WM_CUT, 0, 0);
 
   string16 result;
-  clipboard.ReadText(Clipboard::BUFFER_STANDARD, &result);
+  clipboard.ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
   EXPECT_EQ(kNormalText, result);
   normal->SetText(kNormalText);  // Let's revert to the original content.
 
@@ -894,7 +894,7 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   read_only->SelectAll();
   ::SendMessage(read_only->GetTestingHandle(), WM_CUT, 0, 0);
   result.clear();
-  clipboard.ReadText(Clipboard::BUFFER_STANDARD, &result);
+  clipboard.ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
   // Cut should have failed, so the clipboard content should not have changed.
   EXPECT_EQ(kNormalText, result);
 
@@ -902,7 +902,7 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   password->SelectAll();
   ::SendMessage(password->GetTestingHandle(), WM_CUT, 0, 0);
   result.clear();
-  clipboard.ReadText(Clipboard::BUFFER_STANDARD, &result);
+  clipboard.ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
   // Cut should have failed, so the clipboard content should not have changed.
   EXPECT_EQ(kNormalText, result);
 
@@ -915,19 +915,19 @@ TEST_F(ViewTest, TextfieldCutCopyPaste) {
   read_only->SelectAll();
   ::SendMessage(read_only->GetTestingHandle(), WM_COPY, 0, 0);
   result.clear();
-  clipboard.ReadText(Clipboard::BUFFER_STANDARD, &result);
+  clipboard.ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
   EXPECT_EQ(kReadOnlyText, result);
 
   normal->SelectAll();
   ::SendMessage(normal->GetTestingHandle(), WM_COPY, 0, 0);
   result.clear();
-  clipboard.ReadText(Clipboard::BUFFER_STANDARD, &result);
+  clipboard.ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
   EXPECT_EQ(kNormalText, result);
 
   password->SelectAll();
   ::SendMessage(password->GetTestingHandle(), WM_COPY, 0, 0);
   result.clear();
-  clipboard.ReadText(Clipboard::BUFFER_STANDARD, &result);
+  clipboard.ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
   // We don't let you copy from a password field, clipboard should not have
   // changed.
   EXPECT_EQ(kNormalText, result);

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,6 @@
 
 #include <string>
 
-#include "app/clipboard/clipboard.h"
-#include "app/clipboard/scoped_clipboard_writer.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
@@ -15,15 +13,19 @@
 #include "gfx/size.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 
 #if defined(OS_WIN)
-#include "app/clipboard/clipboard_util_win.h"
 #include "base/message_loop.h"
+#include "ui/base/clipboard/clipboard_util_win.h"
 #endif
 
 #if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_MACOSX))
 #include "base/pickle.h"
 #endif
+
+namespace ui {
 
 #if defined(OS_WIN)
 class ClipboardTest : public PlatformTest {
@@ -426,3 +428,5 @@ TEST_F(ClipboardTest, WriteEverything) {
 
   // Passes if we don't crash.
 }
+
+}  // namespace ui
