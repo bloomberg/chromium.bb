@@ -70,10 +70,6 @@ class AutoFillHelper : public PageClickListener {
   // frame and sends them to the browser for parsing.
   void FrameContentsAvailable(WebKit::WebFrame* frame);
 
-  // Called before a frame is closed. Gives us an opportunity to clean up.
-  // DEPRECATED.
-  void FrameWillClose(WebKit::WebFrame* frame);
-
   // Called when |frame| is detached from the view. Gives us an opportunity to
   // clean up.
   void FrameDetached(WebKit::WebFrame* frame);

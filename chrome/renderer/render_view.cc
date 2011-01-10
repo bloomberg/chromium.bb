@@ -908,7 +908,12 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
 
   devtools_agent_.reset(new DevToolsAgent(routing_id, this));
 
+  // TODO(jam): remove this once WebKit is rolled
+#if defined(WEBKIT_HAS_WEB_AUTO_FILL_CLIENT)
+  webwidget_ = WebView::create(this, devtools_agent_.get(), this);
+#else
   webwidget_ = WebView::create(this, devtools_agent_.get());
+#endif
   g_view_map.Get().insert(std::make_pair(webview(), this));
   webkit_preferences_.Apply(webview());
   webview()->initializeMainFrame(this);
@@ -2632,11 +2637,6 @@ void RenderView::didUpdateInspectorSetting(const WebString& key,
                                               value.utf8()));
 }
 
-void RenderView::removeAutofillSuggestions(const WebString& name,
-                                           const WebString& value) {
-  autofill_helper_->RemoveAutocompleteSuggestion(name, value);
-}
-
 void RenderView::didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
                                              const WebKit::WebString& value,
                                              const WebKit::WebString& label,
@@ -2662,6 +2662,16 @@ void RenderView::didAcceptAutocompleteSuggestion(
   // Since this user name was selected from a suggestion list, we should always
   // have password for it.
   DCHECK(result);
+}
+
+void RenderView::removeAutocompleteSuggestion(const WebKit::WebString& name,
+                                              const WebKit::WebString& value) {
+  autofill_helper_->RemoveAutocompleteSuggestion(name, value);
+}
+
+void RenderView::removeAutofillSuggestions(const WebString& name,
+                                           const WebString& value) {
+  removeAutocompleteSuggestion(name, value);
 }
 
 // WebKit::WebWidgetClient ----------------------------------------------------
@@ -2929,9 +2939,6 @@ void RenderView::willClose(WebFrame* frame) {
 
   page_load_histograms_.Dump(frame);
   navigation_state->user_script_idle_scheduler()->Cancel();
-
-  // TODO(jhawkins): Remove once frameDetached is called by WebKit.
-  autofill_helper_->FrameWillClose(frame);
 }
 
 bool RenderView::allowImages(WebFrame* frame, bool enabled_per_settings) {

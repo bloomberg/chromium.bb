@@ -35,6 +35,7 @@
 #include "chrome/renderer/renderer_webcookiejar_impl.h"
 #include "chrome/renderer/searchbox.h"
 #include "chrome/renderer/translate_helper.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebAutoFillClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrameClient.h"
@@ -172,6 +173,7 @@ typedef base::RefCountedData<int> SharedRenderViewCounter;
 // communication interface with an embedding application process
 //
 class RenderView : public RenderWidget,
+                   public WebKit::WebAutoFillClient,
                    public WebKit::WebViewClient,
                    public WebKit::WebFrameClient,
                    public WebKit::WebPageSerializerClient,
@@ -391,6 +393,30 @@ class RenderView : public RenderWidget,
 
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
+  // WebKit::WebAutoFillClient implementation ----------------------------------
+  virtual void didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
+                                           const WebKit::WebString& value,
+                                           const WebKit::WebString& label,
+                                           int unique_id,
+                                           unsigned index);
+  virtual void didSelectAutoFillSuggestion(const WebKit::WebNode& node,
+                                           const WebKit::WebString& value,
+                                           const WebKit::WebString& label,
+                                           int unique_id);
+  virtual void didClearAutoFillSelection(const WebKit::WebNode& node);
+  virtual void didAcceptAutocompleteSuggestion(
+      const WebKit::WebInputElement& element);
+  virtual void removeAutocompleteSuggestion(const WebKit::WebString& name,
+                                           const WebKit::WebString& value);
+  // TODO(jam): remove this function after WebKit roll
+  virtual void removeAutofillSuggestions(const WebKit::WebString& name,
+                                         const WebKit::WebString& value);
+  virtual void textFieldDidEndEditing(const WebKit::WebInputElement& element);
+  virtual void textFieldDidChange(const WebKit::WebInputElement& element);
+  virtual void textFieldDidReceiveKeyDown(
+      const WebKit::WebInputElement& element,
+      const WebKit::WebKeyboardEvent& event);
+
   // WebKit::WebWidgetClient implementation ------------------------------------
 
   // Most methods are handled by RenderWidget.
@@ -430,11 +456,6 @@ class RenderView : public RenderWidget,
   virtual bool isSelectTrailingWhitespaceEnabled();
   virtual void didChangeSelection(bool is_selection_empty);
   virtual void didExecuteCommand(const WebKit::WebString& command_name);
-  virtual void textFieldDidEndEditing(const WebKit::WebInputElement& element);
-  virtual void textFieldDidChange(const WebKit::WebInputElement& element);
-  virtual void textFieldDidReceiveKeyDown(
-      const WebKit::WebInputElement& element,
-      const WebKit::WebKeyboardEvent& event);
   virtual bool handleCurrentKeyboardEvent();
   virtual void spellCheck(const WebKit::WebString& text,
                           int& offset,
@@ -484,20 +505,6 @@ class RenderView : public RenderWidget,
       WebKit::WebAccessibilityNotification notification);
   virtual void didUpdateInspectorSetting(const WebKit::WebString& key,
                                          const WebKit::WebString& value);
-  virtual void removeAutofillSuggestions(const WebKit::WebString& name,
-                                         const WebKit::WebString& value);
-  virtual void didAcceptAutoFillSuggestion(const WebKit::WebNode& node,
-                                           const WebKit::WebString& value,
-                                           const WebKit::WebString& label,
-                                           int unique_id,
-                                           unsigned index);
-  virtual void didSelectAutoFillSuggestion(const WebKit::WebNode& node,
-                                           const WebKit::WebString& value,
-                                           const WebKit::WebString& label,
-                                           int unique_id);
-  virtual void didClearAutoFillSelection(const WebKit::WebNode& node);
-  virtual void didAcceptAutocompleteSuggestion(
-      const WebKit::WebInputElement& element);
   virtual WebKit::WebGeolocationClient* geolocationClient();
   virtual WebKit::WebSpeechInputController* speechInputController(
       WebKit::WebSpeechInputListener* listener);

@@ -202,7 +202,11 @@ bool PrintWebViewHelper::CopyAndPrint(WebFrame* web_frame) {
   prefs.javascript_enabled = false;
   prefs.java_enabled = false;
 
-  print_web_view_ = WebView::create(this, 0);
+#if defined(WEBKIT_HAS_WEB_AUTO_FILL_CLIENT)
+  print_web_view_ = WebView::create(this, NULL, NULL);
+#else
+  print_web_view_ = WebView::create(this, NULL);
+#endif
   prefs.Apply(print_web_view_);
   print_web_view_->initializeMainFrame(this);
 
