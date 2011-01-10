@@ -176,7 +176,7 @@ GLenum ConvertStencilOp(State::StencilOperation stencil_func) {
 // to the context.
 bool InstallFramebufferObjects(const RenderSurface* surface,
                                const RenderDepthStencilSurface* surface_depth) {
-#ifdef _DEBUG
+#ifndef NDEBUG
   GLint bound_framebuffer;
   ::glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &bound_framebuffer);
   DCHECK(bound_framebuffer != 0);

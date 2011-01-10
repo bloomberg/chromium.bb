@@ -184,7 +184,7 @@ GLenum ConvertStencilOp(State::StencilOperation stencil_func) {
 // to the context.
 bool InstallFramebufferObjects(const RenderSurface* surface,
                                const RenderDepthStencilSurface* surface_depth) {
-#ifdef _DEBUG
+#ifndef NDEBUG
   GLint bound_framebuffer;
   ::glGetIntegerv(GL_FRAMEBUFFER_BINDING, &bound_framebuffer);
   DCHECK(bound_framebuffer != 0);
@@ -847,9 +847,9 @@ LRESULT CALLBACK IntermediateWindowProc(HWND window,
 Renderer::InitStatus GetWindowsPixelFormat(HWND window,
                                            Features* features,
                                            int* pixel_format) {
-  // We must initialize a GLES2 context before we can determine the multi-sampling
-  // supported on the current hardware, so we create an intermediate window
-  // and context here.
+  // We must initialize a GLES2 context before we can determine the
+  // multi-sampling supported on the current hardware, so we create an
+  // intermediate window and context here.
   HINSTANCE module_handle;
   if (!::GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT |
                            GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,

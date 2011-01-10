@@ -54,7 +54,7 @@
 #include "core/cross/float_n.h"
 
 // Defines ---------------------------------
-#ifdef _DEBUG
+#ifndef NDEBUG
 #define O3D_ASSERT(x)     assert((x))
 #else
 #define O3D_ASSERT(x)

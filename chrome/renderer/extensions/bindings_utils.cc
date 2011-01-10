@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,7 +62,7 @@ v8::Handle<v8::Value> ExtensionBase::GetChromeHidden(
     hidden = v8::Object::New();
     global->SetHiddenValue(v8::String::New(kChromeHidden), hidden);
 
-#ifdef _DEBUG
+#ifndef NDEBUG
     // Tell extension_process_bindings.js to validate callbacks and events
     // against their schema definitions in api/extension_api.json.
     v8::Local<v8::Object>::Cast(hidden)

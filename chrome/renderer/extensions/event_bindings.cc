@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -370,7 +370,7 @@ void EventBindings::CallFunction(const std::string& extension_id,
     // string if a validation error has occured.
     // TODO(rafaelw): Consider only doing this check if function_name ==
     // "Event.dispatchJSON".
-#ifdef _DEBUG
+#ifndef NDEBUG
     if (!retval.IsEmpty() && !retval->IsUndefined()) {
       std::string error = *v8::String::AsciiValue(retval);
       DCHECK(false) << error;

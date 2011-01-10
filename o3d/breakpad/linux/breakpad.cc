@@ -48,7 +48,7 @@ static const std::string kBreakpadProduct = "Google_O3D_Plugin_Linux";
 static const std::string kBreakpadVersion = "unknown";
 static const std::string kBreakpadGUID = "unknown";
 static const std::string kBreakpadEmail = "unknown";
-#ifdef _DEBUG
+#ifndef NDEBUG
 static const std::string kBreakpadServer =
   "http://clients2.google.com/cr/staging_report";
 #else

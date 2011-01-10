@@ -89,7 +89,7 @@ class ArchiveProcessor: public StreamProcessor {
   DISALLOW_COPY_AND_ASSIGN(ArchiveProcessor);
 };
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 // For debugging, report a zlib or i/o error
 extern void zerr(int result);
 #endif
