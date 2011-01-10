@@ -102,6 +102,7 @@
       '-codesign',
       '-content.ContentTest.testThreeWindows',  # crbug.com/47457
       '-find_in_page.FindMatchTests.testSearchInPDF',  # crbug.com/68645
+      '-instant.InstantTest.testInstantNavigation',  # crbug.com/69090
     ],
 
     'linux': [  # linux != chromeos
