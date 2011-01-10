@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -575,7 +575,8 @@ ChromeAppCacheService* ProfileImpl::GetAppCacheService() {
         NewRunnableMethod(appcache_service_.get(),
                           &ChromeAppCacheService::InitializeOnIOThread,
                           GetPath(), IsOffTheRecord(),
-                          make_scoped_refptr(GetHostContentSettingsMap())));
+                          make_scoped_refptr(GetHostContentSettingsMap()),
+                          clear_local_state_on_exit_));
   }
   return appcache_service_;
 }
@@ -1214,9 +1215,14 @@ void ProfileImpl::Observe(NotificationType type,
     } else if (*pref_name_in == prefs::kClearSiteDataOnExit) {
       clear_local_state_on_exit_ =
           prefs->GetBoolean(prefs::kClearSiteDataOnExit);
-      if (webkit_context_)
+      if (webkit_context_) {
         webkit_context_->set_clear_local_state_on_exit(
             clear_local_state_on_exit_);
+      }
+      if (appcache_service_) {
+        appcache_service_->SetClearLocalStateOnExit(
+            clear_local_state_on_exit_);
+      }
     }
   } else if (NotificationType::THEME_INSTALLED == type) {
     DCHECK_EQ(Source<Profile>(source).ptr(), GetOriginalProfile());

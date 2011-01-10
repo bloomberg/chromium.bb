@@ -1025,6 +1025,7 @@
         'browser/about_flags_unittest.cc',
         'browser/accessibility/browser_accessibility_mac_unittest.mm',
         'browser/accessibility/browser_accessibility_win_unittest.cc',
+        'browser/appcache/chrome_appcache_service_unittest.cc',
         'browser/app_controller_mac_unittest.mm',
         'browser/autocomplete_history_manager_unittest.cc',
         'browser/autocomplete/autocomplete_edit_unittest.cc',

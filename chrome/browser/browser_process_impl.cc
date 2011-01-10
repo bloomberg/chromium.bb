@@ -15,7 +15,6 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/appcache/chrome_appcache_service.h"
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/browser_child_process_host.h"
 #include "chrome/browser/browser_list.h"
@@ -576,7 +575,6 @@ bool BrowserProcessImpl::have_inspector_files() const {
 
 void BrowserProcessImpl::ClearLocalState(const FilePath& profile_path) {
   webkit_database::DatabaseTracker::ClearLocalState(profile_path);
-  ChromeAppCacheService::ClearLocalState(profile_path);
 }
 
 bool BrowserProcessImpl::ShouldClearLocalState(FilePath* profile_path) {

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,20 @@
 
 static bool has_initialized_thread_ids;
 
+namespace {
+
+// Used to defer deleting of local storage until the destructor has finished.
+void DeleteLocalStateOnIOThread(FilePath cache_path) {
+  // Post the actual deletion to the DB thread to ensure it happens after the
+  // database file has been closed.
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      NewRunnableFunction<bool(*)(const FilePath&, bool), FilePath, bool>(
+          &file_util::Delete, cache_path, true));
+}
+
+}  // namespace
+
 // ----------------------------------------------------------------------------
 
 ChromeAppCacheService::ChromeAppCacheService() {
@@ -22,7 +36,8 @@ ChromeAppCacheService::ChromeAppCacheService() {
 
 void ChromeAppCacheService::InitializeOnIOThread(
     const FilePath& profile_path, bool is_incognito,
-    scoped_refptr<HostContentSettingsMap> content_settings_map) {
+    scoped_refptr<HostContentSettingsMap> content_settings_map,
+    bool clear_local_state_on_exit) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (!has_initialized_thread_ids) {
@@ -33,16 +48,24 @@ void ChromeAppCacheService::InitializeOnIOThread(
   host_contents_settings_map_ = content_settings_map;
   registrar_.Add(
       this, NotificationType::PURGE_MEMORY, NotificationService::AllSources());
+  SetClearLocalStateOnExit(clear_local_state_on_exit);
+  if (!is_incognito)
+    cache_path_ = profile_path.Append(chrome::kAppCacheDirname);
 
   // Init our base class.
-  Initialize(
-      is_incognito ? FilePath() : profile_path.Append(chrome::kAppCacheDirname),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
+  Initialize(cache_path_,
+             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
   set_appcache_policy(this);
 }
 
 ChromeAppCacheService::~ChromeAppCacheService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if (clear_local_state_on_exit_ && !cache_path_.empty()) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableFunction(DeleteLocalStateOnIOThread, cache_path_));
+  }
 }
 
 void ChromeAppCacheService::SetOriginQuotaInMemory(
@@ -58,9 +81,16 @@ void ChromeAppCacheService::ResetOriginQuotaInMemory(const GURL& origin) {
     storage()->ResetOriginQuotaInMemory(origin);
 }
 
-// static
-void ChromeAppCacheService::ClearLocalState(const FilePath& profile_path) {
-  file_util::Delete(profile_path.Append(chrome::kAppCacheDirname), true);
+void ChromeAppCacheService::SetClearLocalStateOnExit(bool clear_local_state) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        NewRunnableMethod(this,
+                          &ChromeAppCacheService::SetClearLocalStateOnExit,
+                          clear_local_state));
+    return;
+  }
+  clear_local_state_on_exit_ = clear_local_state;
 }
 
 bool ChromeAppCacheService::CanLoadAppCache(const GURL& manifest_url) {

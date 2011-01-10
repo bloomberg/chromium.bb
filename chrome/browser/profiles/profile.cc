@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -196,7 +196,8 @@ class OffTheRecordProfileImpl : public Profile,
           NewRunnableMethod(appcache_service_.get(),
                             &ChromeAppCacheService::InitializeOnIOThread,
                             GetPath(), IsOffTheRecord(),
-                            make_scoped_refptr(GetHostContentSettingsMap())));
+                            make_scoped_refptr(GetHostContentSettingsMap()),
+                            false));
     }
     return appcache_service_;
   }

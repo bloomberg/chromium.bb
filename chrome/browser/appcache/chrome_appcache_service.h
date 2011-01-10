@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,14 +35,15 @@ class ChromeAppCacheService
 
   void InitializeOnIOThread(
       const FilePath& profile_path, bool is_incognito,
-      scoped_refptr<HostContentSettingsMap> content_settings_map);
+      scoped_refptr<HostContentSettingsMap> content_settings_map,
+      bool clear_local_state_on_exit);
 
   // Helpers used by the extension service to grant and revoke
   // unlimited storage to app extensions.
   void SetOriginQuotaInMemory(const GURL& origin, int64 quota);
   void ResetOriginQuotaInMemory(const GURL& origin);
 
-  static void ClearLocalState(const FilePath& profile_path);
+  void SetClearLocalStateOnExit(bool clear_local_state);
 
  private:
   friend class BrowserThread;
@@ -62,6 +63,10 @@ class ChromeAppCacheService
 
   scoped_refptr<HostContentSettingsMap> host_contents_settings_map_;
   NotificationRegistrar registrar_;
+  bool clear_local_state_on_exit_;
+  FilePath cache_path_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeAppCacheService);
 };
 
 #endif  // CHROME_BROWSER_APPCACHE_CHROME_APPCACHE_SERVICE_H_

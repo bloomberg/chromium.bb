@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -151,6 +151,9 @@ class AppCacheStorageImpl : public AppCacheStorage {
   std::set<GURL> origins_with_groups_;
   std::deque<Task*> pending_simple_tasks_;
   ScopedRunnableMethodFactory<AppCacheStorageImpl> method_factory_;
+
+  FRIEND_TEST_ALL_PREFIXES(ChromeAppCacheServiceTest, KeepOnDestruction);
+  FRIEND_TEST_ALL_PREFIXES(ChromeAppCacheServiceTest, RemoveOnDestruction);
 };
 
 }  // namespace appcache
