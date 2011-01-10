@@ -33,6 +33,7 @@ TabContentsDragSource::TabContentsDragSource(
       drag_pixbuf_(NULL),
       drag_failed_(false),
       drag_widget_(gtk_invisible_new()),
+      drag_context_(NULL),
       drag_icon_(gtk_window_new(GTK_WINDOW_POPUP)) {
   signals_.Connect(drag_widget_, "drag-failed",
                    G_CALLBACK(OnDragFailedThunk), this);
@@ -70,6 +71,14 @@ void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
                                           GdkEventButton* last_mouse_down,
                                           const SkBitmap& image,
                                           const gfx::Point& image_offset) {
+  // Guard against re-starting before previous drag completed.
+  if (drag_context_) {
+    NOTREACHED();
+    if (tab_contents()->render_view_host())
+      tab_contents()->render_view_host()->DragSourceSystemDragEnded();
+    return;
+  }
+
   int targets_mask = 0;
 
   if (!drop_data.plain_text.empty())
@@ -91,10 +100,11 @@ void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
     targets_mask |= gtk_dnd_util::DIRECT_SAVE_FILE;
   }
 
+  // Short-circuit execution if no targets present.
   if (targets_mask == 0) {
-    NOTIMPLEMENTED();
     if (tab_contents()->render_view_host())
       tab_contents()->render_view_host()->DragSourceSystemDragEnded();
+    return;
   }
 
   drop_data_.reset(new WebDropData(drop_data));
@@ -122,8 +132,7 @@ void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
   // and holds and doesn't start dragging for a long time. I doubt it matters
   // much, but we should probably look into the possibility of getting the
   // initiating event from webkit.
-  GdkDragContext* context = gtk_drag_begin(
-      drag_widget_, list,
+  drag_context_ = gtk_drag_begin(drag_widget_, list,
       gtk_util::WebDragOpToGdkDragAction(allowed_ops),
       1,  // Drags are always initiated by the left button.
       reinterpret_cast<GdkEvent*>(last_mouse_down));
@@ -132,7 +141,8 @@ void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
 
   // Sometimes the drag fails to start; |context| will be NULL and we won't
   // get a drag-end signal.
-  if (!context) {
+  if (!drag_context_) {
+    drag_failed_ = true;
     drop_data_.reset();
     if (tab_contents()->render_view_host())
       tab_contents()->render_view_host()->DragSourceSystemDragEnded();
@@ -362,6 +372,7 @@ void TabContentsDragSource::OnDragEnd(GtkWidget* sender,
     tab_contents()->render_view_host()->DragSourceSystemDragEnded();
 
   drop_data_.reset();
+  drag_context_ = NULL;
 }
 
 gfx::NativeView TabContentsDragSource::GetContentNativeView() const {

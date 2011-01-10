@@ -84,6 +84,10 @@ class TabContentsDragSource : public MessageLoopForUI::Observer {
   // initialization code sinks the reference.
   GtkWidget* drag_widget_;
 
+  // Context created once drag starts.  A NULL value indicates that there is
+  // no drag currently in progress.
+  GdkDragContext* drag_context_;
+
   // The file mime type for a drag-out download.
   string16 wide_download_mime_type_;
 
