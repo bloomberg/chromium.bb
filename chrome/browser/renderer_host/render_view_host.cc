@@ -121,7 +121,6 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
       sudden_termination_allowed_(false),
       session_storage_namespace_(session_storage),
       is_extension_process_(false),
-      autofill_query_id_(0),
       save_accessibility_tree_for_testing_(false),
       render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING) {
   if (!session_storage_namespace_) {
@@ -795,11 +794,9 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                                     OnMsgRunBeforeUnloadConfirm)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ShowModalHTMLDialog,
                                     OnMsgShowModalHTMLDialog)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FormsSeen, OnMsgFormsSeen)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PasswordFormsFound, OnMsgPasswordFormsFound)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PasswordFormsVisible,
                         OnMsgPasswordFormsVisible)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FormSubmitted, OnMsgFormSubmitted)
     IPC_MESSAGE_HANDLER(ViewHostMsg_StartDragging, OnMsgStartDragging)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateDragCursor, OnUpdateDragCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
@@ -837,18 +834,6 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_FORWARD(ViewHostMsg_JSOutOfMemory, delegate_,
                         RenderViewHostDelegate::OnJSOutOfMemory)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShouldClose_ACK, OnMsgShouldCloseACK)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_QueryFormFieldAutoFill,
-                        OnQueryFormFieldAutoFill)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidShowAutoFillSuggestions,
-                        OnDidShowAutoFillSuggestions)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RemoveAutocompleteEntry,
-                        OnRemoveAutocompleteEntry)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowAutoFillDialog,
-                        OnShowAutoFillDialog)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FillAutoFillFormData,
-                        OnFillAutoFillFormData)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidFillAutoFillFormData,
-                        OnDidFillAutoFillFormData)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowDesktopNotification,
                         OnShowDesktopNotification)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CancelDesktopNotification,
@@ -1378,13 +1363,6 @@ void RenderViewHost::MediaPlayerActionAt(const gfx::Point& location,
   Send(new ViewMsg_MediaPlayerActionAt(routing_id(), location, action));
 }
 
-void RenderViewHost::OnMsgFormsSeen(const std::vector<FormData>& forms) {
-  RenderViewHostDelegate::AutoFill* autofill_delegate =
-      delegate_->GetAutoFillDelegate();
-  if (autofill_delegate)
-    autofill_delegate->FormsSeen(forms);
-}
-
 void RenderViewHost::OnMsgPasswordFormsFound(
     const std::vector<PasswordForm>& forms) {
   delegate_->PasswordFormsFound(forms);
@@ -1393,18 +1371,6 @@ void RenderViewHost::OnMsgPasswordFormsFound(
 void RenderViewHost::OnMsgPasswordFormsVisible(
     const std::vector<PasswordForm>& visible_forms) {
   delegate_->PasswordFormsVisible(visible_forms);
-}
-
-void RenderViewHost::OnMsgFormSubmitted(const FormData& form) {
-  RenderViewHostDelegate::Autocomplete* autocomplete_delegate =
-      delegate_->GetAutocompleteDelegate();
-  if (autocomplete_delegate)
-    autocomplete_delegate->FormSubmitted(form);
-
-  RenderViewHostDelegate::AutoFill* autofill_delegate =
-      delegate_->GetAutoFillDelegate();
-  if (autofill_delegate)
-    autofill_delegate->FormSubmitted(form);
 }
 
 void RenderViewHost::OnMsgStartDragging(
@@ -1599,136 +1565,6 @@ void RenderViewHost::OnMsgShouldCloseACK(bool proceed) {
   }
 }
 
-void RenderViewHost::OnQueryFormFieldAutoFill(int query_id,
-                                              const FormData& form,
-                                              const FormField& field) {
-  ResetAutoFillState(query_id);
-
-  // We first query the autofill delegate for suggestions. We keep track of the
-  // results it gives us, which we will later combine with the autocomplete
-  // suggestions.
-  RenderViewHostDelegate::AutoFill* autofill_delegate =
-      delegate_->GetAutoFillDelegate();
-  if (autofill_delegate)
-    autofill_delegate->GetAutoFillSuggestions(form, field);
-
-  // Now query the Autocomplete delegate for suggestions. These will be combined
-  // with the saved autofill suggestions in |AutocompleteSuggestionsReturned()|.
-  RenderViewHostDelegate::Autocomplete* autocomplete_delegate =
-      delegate_->GetAutocompleteDelegate();
-  if (autocomplete_delegate) {
-      autocomplete_delegate->GetAutocompleteSuggestions(field.name(),
-                                                        field.value());
-  } else {
-    AutocompleteSuggestionsReturned(std::vector<string16>());
-  }
-}
-
-void RenderViewHost::OnDidShowAutoFillSuggestions() {
-  NotificationService::current()->Notify(
-      NotificationType::AUTOFILL_DID_SHOW_SUGGESTIONS,
-      Source<RenderViewHost>(this),
-      NotificationService::NoDetails());
-}
-
-void RenderViewHost::OnRemoveAutocompleteEntry(const string16& field_name,
-                                               const string16& value) {
-  RenderViewHostDelegate::Autocomplete* autocomplete_delegate =
-      delegate_->GetAutocompleteDelegate();
-  if (autocomplete_delegate)
-    autocomplete_delegate->RemoveAutocompleteEntry(field_name, value);
-}
-
-void RenderViewHost::OnShowAutoFillDialog() {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableTabbedOptions)) {
-    Browser* browser = BrowserList::GetLastActive();
-    if (!browser)
-      return;
-    browser->ShowOptionsTab(chrome::kAutoFillSubPage);
-  } else {
-    RenderViewHostDelegate::AutoFill* autofill_delegate =
-      delegate_->GetAutoFillDelegate();
-    if (!autofill_delegate)
-      return;
-
-    autofill_delegate->ShowAutoFillDialog();
-  }
-}
-
-void RenderViewHost::OnFillAutoFillFormData(int query_id,
-                                            const FormData& form,
-                                            const FormField& field,
-                                            int unique_id) {
-  RenderViewHostDelegate::AutoFill* autofill_delegate =
-      delegate_->GetAutoFillDelegate();
-  if (!autofill_delegate)
-    return;
-
-  autofill_delegate->FillAutoFillFormData(query_id, form, field, unique_id);
-}
-
-void RenderViewHost::OnDidFillAutoFillFormData() {
-  NotificationService::current()->Notify(
-      NotificationType::AUTOFILL_DID_FILL_FORM_DATA,
-      Source<RenderViewHost>(this),
-      NotificationService::NoDetails());
-}
-
-void RenderViewHost::ResetAutoFillState(int query_id) {
-  autofill_query_id_ = query_id;
-
-  autofill_values_.clear();
-  autofill_labels_.clear();
-  autofill_icons_.clear();
-  autofill_unique_ids_.clear();
-}
-
-void RenderViewHost::AutoFillSuggestionsReturned(
-    const std::vector<string16>& values,
-    const std::vector<string16>& labels,
-    const std::vector<string16>& icons,
-    const std::vector<int>& unique_ids) {
-  autofill_values_.assign(values.begin(), values.end());
-  autofill_labels_.assign(labels.begin(), labels.end());
-  autofill_icons_.assign(icons.begin(), icons.end());
-  autofill_unique_ids_.assign(unique_ids.begin(), unique_ids.end());
-}
-
-void RenderViewHost::AutocompleteSuggestionsReturned(
-    const std::vector<string16>& suggestions) {
-  // Combine AutoFill and Autocomplete values into values and labels.
-  for (size_t i = 0; i < suggestions.size(); ++i) {
-    bool unique = true;
-    for (size_t j = 0; j < autofill_values_.size(); ++j) {
-      // Don't add duplicate values.
-      if (autofill_values_[j] == suggestions[i]) {
-        unique = false;
-        break;
-      }
-    }
-
-    if (unique) {
-      autofill_values_.push_back(suggestions[i]);
-      autofill_labels_.push_back(string16());
-      autofill_icons_.push_back(string16());
-      autofill_unique_ids_.push_back(0);  // 0 means no profile.
-    }
-  }
-
-  Send(new ViewMsg_AutoFillSuggestionsReturned(routing_id(),
-                                               autofill_query_id_,
-                                               autofill_values_,
-                                               autofill_labels_,
-                                               autofill_icons_,
-                                               autofill_unique_ids_));
-}
-
-void RenderViewHost::AutoFillFormDataFilled(int query_id,
-                                            const FormData& form) {
-  Send(new ViewMsg_AutoFillFormDataFilled(routing_id(), query_id, form));
-}
-
 void RenderViewHost::WindowMoveOrResizeStarted() {
   Send(new ViewMsg_MoveOrResizeStarted(routing_id()));
 }
@@ -1899,15 +1735,6 @@ void RenderViewHost::TranslatePage(int page_id,
                                    const std::string& translate_script,
                                    const std::string& source_lang,
                                    const std::string& target_lang) {
-  // Ideally we'd have a better way to uniquely identify form control elements,
-  // but we don't have that yet.  So before start translation, we clear the
-  // current form and re-parse it in AutoFillManager first to get the new
-  // labels.
-  RenderViewHostDelegate::AutoFill* autofill_delegate =
-      delegate_->GetAutoFillDelegate();
-  if (autofill_delegate)
-    autofill_delegate->Reset();
-
   Send(new ViewMsg_TranslatePage(routing_id(), page_id, translate_script,
                                  source_lang, target_lang));
 }

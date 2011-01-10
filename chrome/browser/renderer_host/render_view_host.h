@@ -423,23 +423,6 @@ class RenderViewHost : public RenderWidgetHost {
   // set to false when creating a renderer-initiated window via window.open.
   void AllowScriptToClose(bool visible);
 
-  // Resets the stored AutoFill state.
-  void ResetAutoFillState(int query_id);
-
-  // Called by the AutoFillManager when the list of suggestions is ready.
-  void AutoFillSuggestionsReturned(const std::vector<string16>& values,
-                                   const std::vector<string16>& labels,
-                                   const std::vector<string16>& icons,
-                                   const std::vector<int>& unique_ids);
-
-  // Called by the AutocompleteHistoryManager when the list of suggestions is
-  // ready.
-  void AutocompleteSuggestionsReturned(
-      const std::vector<string16>& suggestions);
-
-  // Called by the AutoFillManager when the FormData has been filled out.
-  void AutoFillFormDataFilled(int query_id, const webkit_glue::FormData& form);
-
   // Notifies the Renderer that a move or resize of its containing window has
   // started (this is used to hide the autocomplete popups if any).
   void WindowMoveOrResizeStarted();
@@ -630,13 +613,10 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgShowModalHTMLDialog(const GURL& url, int width, int height,
                                 const std::string& json_arguments,
                                 IPC::Message* reply_msg);
-  void OnMsgFormsSeen(
-      const std::vector<webkit_glue::FormData>& forms);
   void OnMsgPasswordFormsFound(
       const std::vector<webkit_glue::PasswordForm>& forms);
   void OnMsgPasswordFormsVisible(
       const std::vector<webkit_glue::PasswordForm>& visible_forms);
-  void OnMsgFormSubmitted(const webkit_glue::FormData& forms);
   void OnMsgStartDragging(const WebDropData& drop_data,
                           WebKit::WebDragOperationsMask operations_allowed,
                           const SkBitmap& image,
@@ -677,19 +657,6 @@ class RenderViewHost : public RenderWidgetHost {
   void OnDidGetApplicationInfo(int32 page_id, const WebApplicationInfo& info);
   void OnInstallApplication(const WebApplicationInfo& info);
   void OnMsgShouldCloseACK(bool proceed);
-  void OnQueryFormFieldAutoFill(int request_id,
-                                const webkit_glue::FormData& form,
-                                const webkit_glue::FormField& field);
-  void OnDidShowAutoFillSuggestions();
-  void OnRemoveAutocompleteEntry(const string16& field_name,
-                                 const string16& value);
-  void OnShowAutoFillDialog();
-  void OnFillAutoFillFormData(int query_id,
-                              const webkit_glue::FormData& form,
-                              const webkit_glue::FormField& field,
-                              int unique_id);
-  void OnDidFillAutoFillFormData();
-
   void OnShowDesktopNotification(
       const ViewHostMsg_ShowNotification_Params& params);
   void OnCancelDesktopNotification(int notification_id);
@@ -808,15 +775,6 @@ class RenderViewHost : public RenderWidgetHost {
   // Whether this render view will get extension api bindings. This controls
   // what process type we use.
   bool is_extension_process_;
-
-  // TODO(isherman): Consider splitting these off into a helper class.
-  // AutoFill and Autocomplete suggestions.  We accumulate these separately and
-  // send them back to the renderer together.
-  std::vector<string16> autofill_values_;
-  std::vector<string16> autofill_labels_;
-  std::vector<string16> autofill_icons_;
-  std::vector<int> autofill_unique_ids_;
-  int autofill_query_id_;
 
   // Whether the accessibility tree should be saved, for unit testing.
   bool save_accessibility_tree_for_testing_;

@@ -15,6 +15,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/render_messages.h"
 #include "webkit/glue/form_data.h"
 
 using webkit_glue::FormData;
@@ -72,16 +73,13 @@ bool IsSSN(const string16& text) {
 }  // namespace
 
 AutocompleteHistoryManager::AutocompleteHistoryManager(
-    TabContents* tab_contents) : tab_contents_(tab_contents),
-                                 pending_query_handle_(0) {
-  DCHECK(tab_contents);
-
+    TabContents* tab_contents)
+    : tab_contents_(tab_contents),
+      pending_query_handle_(0),
+      query_id_(0) {
   profile_ = tab_contents_->profile();
-  DCHECK(profile_);
-
+  // May be NULL in unit tests.
   web_data_service_ = profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
-  DCHECK(web_data_service_);
-
   autofill_enabled_.Init(prefs::kAutoFillEnabled, profile_->GetPrefs(), NULL);
 }
 
@@ -89,61 +87,18 @@ AutocompleteHistoryManager::~AutocompleteHistoryManager() {
   CancelPendingQuery();
 }
 
-void AutocompleteHistoryManager::FormSubmitted(const FormData& form) {
-  StoreFormEntriesInWebDatabase(form);
+bool AutocompleteHistoryManager::OnMessageReceived(
+    const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(AutocompleteHistoryManager, message)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RemoveAutocompleteEntry,
+                        OnRemoveAutocompleteEntry)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
-void AutocompleteHistoryManager::GetAutocompleteSuggestions(
-    const string16& name, const string16& prefix) {
-  if (!*autofill_enabled_) {
-    SendSuggestions(NULL);
-    return;
-  }
-
-  CancelPendingQuery();
-
-  pending_query_handle_ = web_data_service_->GetFormValuesForElementName(
-      name, prefix, kMaxAutocompleteMenuItems, this);
-}
-
-void AutocompleteHistoryManager::RemoveAutocompleteEntry(
-    const string16& name, const string16& value) {
-  web_data_service_->RemoveFormValueForElementName(name, value);
-}
-
-void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
-    WebDataService::Handle h,
-    const WDTypedResult* result) {
-  DCHECK(pending_query_handle_);
-  pending_query_handle_ = 0;
-
-  if (*autofill_enabled_) {
-    DCHECK(result);
-    SendSuggestions(result);
-  } else {
-    SendSuggestions(NULL);
-  }
-}
-
-AutocompleteHistoryManager::AutocompleteHistoryManager(
-    Profile* profile, WebDataService* wds) : tab_contents_(NULL),
-                                             profile_(profile),
-                                             web_data_service_(wds),
-                                             pending_query_handle_(0) {
-  autofill_enabled_.Init(
-      prefs::kAutoFillEnabled, profile_->GetPrefs(), NULL);
-}
-
-void AutocompleteHistoryManager::CancelPendingQuery() {
-  if (pending_query_handle_) {
-    SendSuggestions(NULL);
-    web_data_service_->CancelRequest(pending_query_handle_);
-  }
-  pending_query_handle_ = 0;
-}
-
-void AutocompleteHistoryManager::StoreFormEntriesInWebDatabase(
-    const FormData& form) {
+void AutocompleteHistoryManager::OnFormSubmitted(const FormData& form) {
   if (!*autofill_enabled_)
     return;
 
@@ -172,21 +127,112 @@ void AutocompleteHistoryManager::StoreFormEntriesInWebDatabase(
       values.push_back(*iter);
   }
 
-  if (!values.empty())
+  if (!values.empty() && web_data_service_)
     web_data_service_->AddFormFields(values);
 }
 
-void AutocompleteHistoryManager::SendSuggestions(const WDTypedResult* result) {
-  RenderViewHost* host = tab_contents_->render_view_host();
-  if (!host)
-    return;
+void AutocompleteHistoryManager::OnRemoveAutocompleteEntry(
+    const string16& name, const string16& value) {
+  web_data_service_->RemoveFormValueForElementName(name, value);
+}
 
-  if (result) {
-    DCHECK(result->GetType() == AUTOFILL_VALUE_RESULT);
-    const WDResult<std::vector<string16> >* autofill_result =
-        static_cast<const WDResult<std::vector<string16> >*>(result);
-    host->AutocompleteSuggestionsReturned(autofill_result->GetValue());
-  } else {
-    host->AutocompleteSuggestionsReturned(std::vector<string16>());
+void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
+    int query_id,
+    const string16& name,
+    const string16& prefix,
+    const std::vector<string16>& autofill_values,
+    const std::vector<string16>& autofill_labels,
+    const std::vector<string16>& autofill_icons,
+    const std::vector<int>& autofill_unique_ids) {
+  CancelPendingQuery();
+
+  query_id_ = query_id;
+  autofill_values_ = autofill_values;
+  autofill_labels_ = autofill_labels;
+  autofill_icons_ = autofill_icons;
+  autofill_unique_ids_ = autofill_unique_ids;
+  if (!*autofill_enabled_) {
+    SendSuggestions(NULL);
+    return;
   }
+
+  pending_query_handle_ = web_data_service_->GetFormValuesForElementName(
+      name, prefix, kMaxAutocompleteMenuItems, this);
+}
+
+void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
+    WebDataService::Handle h,
+    const WDTypedResult* result) {
+  DCHECK(pending_query_handle_);
+  pending_query_handle_ = 0;
+
+  if (!*autofill_enabled_) {
+    SendSuggestions(NULL);
+    return;
+  }
+
+  DCHECK(result);
+  DCHECK(result->GetType() == AUTOFILL_VALUE_RESULT);
+  const WDResult<std::vector<string16> >* autofill_result =
+      static_cast<const WDResult<std::vector<string16> >*>(result);
+  std::vector<string16> suggestions = autofill_result->GetValue();
+  SendSuggestions(&suggestions);
+}
+
+AutocompleteHistoryManager::AutocompleteHistoryManager(
+    Profile* profile, WebDataService* wds) : tab_contents_(NULL),
+                                             profile_(profile),
+                                             web_data_service_(wds),
+                                             pending_query_handle_(0),
+                                             query_id_(0) {
+  autofill_enabled_.Init(
+      prefs::kAutoFillEnabled, profile_->GetPrefs(), NULL);
+}
+
+void AutocompleteHistoryManager::CancelPendingQuery() {
+  if (pending_query_handle_) {
+    SendSuggestions(NULL);
+    web_data_service_->CancelRequest(pending_query_handle_);
+    pending_query_handle_ = 0;
+  }
+}
+
+void AutocompleteHistoryManager::SendSuggestions(
+    const std::vector<string16>* suggestions) {
+  if (suggestions) {
+    // Combine AutoFill and Autocomplete values into values and labels.
+    for (size_t i = 0; i < suggestions->size(); ++i) {
+      bool unique = true;
+      for (size_t j = 0; j < autofill_values_.size(); ++j) {
+        // Don't add duplicate values.
+        if (autofill_values_[j] == (*suggestions)[i]) {
+          unique = false;
+          break;
+        }
+      }
+
+      if (unique) {
+        autofill_values_.push_back((*suggestions)[i]);
+        autofill_labels_.push_back(string16());
+        autofill_icons_.push_back(string16());
+        autofill_unique_ids_.push_back(0);  // 0 means no profile.
+      }
+    }
+  }
+
+  RenderViewHost* host = tab_contents_->render_view_host();
+  if (host) {
+    host->Send(new ViewMsg_AutoFillSuggestionsReturned(host->routing_id(),
+                                                       query_id_,
+                                                       autofill_values_,
+                                                       autofill_labels_,
+                                                       autofill_icons_,
+                                                       autofill_unique_ids_));
+  }
+
+  query_id_ = 0;
+  autofill_values_.clear();
+  autofill_labels_.clear();
+  autofill_icons_.clear();
+  autofill_unique_ids_.clear();
 }

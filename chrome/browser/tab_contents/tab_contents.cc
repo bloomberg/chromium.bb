@@ -433,6 +433,11 @@ TabContents::TabContents(Profile* profile,
   // Set-up the showing of the omnibox search infobar if applicable.
   if (OmniboxSearchHint::IsEnabled(profile))
     omnibox_search_hint_.reset(new OmniboxSearchHint(this));
+
+  autofill_manager_.reset(new AutoFillManager(this));
+  message_filters_.push_back(autofill_manager_.get());
+  autocomplete_history_manager_.reset(new AutocompleteHistoryManager(this));
+  message_filters_.push_back(autocomplete_history_manager_.get());
 }
 
 TabContents::~TabContents() {
@@ -552,6 +557,11 @@ void TabContents::RegisterUserPrefs(PrefService* prefs) {
 }
 
 bool TabContents::OnMessageReceived(const IPC::Message& message) {
+  for (size_t i = 0; i < message_filters_.size(); ++i) {
+    if (message_filters_[i]->OnMessageReceived(message))
+      return true;
+  }
+
   bool handled = true;
   bool message_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(TabContents, message, message_is_ok)
@@ -584,12 +594,6 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
 // Returns true if contains content rendered by an extension.
 bool TabContents::HostsExtension() const {
   return GetURL().SchemeIs(chrome::kExtensionScheme);
-}
-
-AutoFillManager* TabContents::GetAutoFillManager() {
-  if (autofill_manager_.get() == NULL)
-    autofill_manager_.reset(new AutoFillManager(this));
-  return autofill_manager_.get();
 }
 
 PluginInstaller* TabContents::GetPluginInstaller() {
@@ -1959,8 +1963,7 @@ void TabContents::DidNavigateMainFramePostCommit(
                     DidNavigateMainFramePostCommit(details, params));
 
   // Clear the cache of forms in AutoFill.
-  if (autofill_manager_.get())
-    autofill_manager_->Reset();
+  autofill_manager_->Reset();
 }
 
 void TabContents::DidNavigateAnyFramePostCommit(
@@ -2413,16 +2416,6 @@ RenderViewHostDelegate::Printing* TabContents::GetPrintingDelegate() {
 
 RenderViewHostDelegate::FavIcon* TabContents::GetFavIconDelegate() {
   return &fav_icon_helper_;
-}
-
-RenderViewHostDelegate::Autocomplete* TabContents::GetAutocompleteDelegate() {
-  if (autocomplete_history_manager_.get() == NULL)
-    autocomplete_history_manager_.reset(new AutocompleteHistoryManager(this));
-  return autocomplete_history_manager_.get();
-}
-
-RenderViewHostDelegate::AutoFill* TabContents::GetAutoFillDelegate() {
-  return GetAutoFillManager();
 }
 
 RenderViewHostDelegate::SSL* TabContents::GetSSLDelegate() {

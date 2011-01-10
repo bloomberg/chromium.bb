@@ -465,73 +465,6 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
     virtual ~FavIcon() {}
   };
 
-  // Autocomplete --------------------------------------------------------------
-  // Interface for Autocomplete-related functions.
-
-  class Autocomplete {
-   public:
-    // Forms fillable by Autocomplete have been detected in the page.
-    virtual void FormSubmitted(const webkit_glue::FormData& form) = 0;
-
-    // Called to retrieve a list of suggestions from the web database given
-    // the name of the field |field_name| and what the user has already typed
-    // in the field |user_text|.  Appeals to the database thread to perform the
-    // query. When the database thread is finished, the AutocompleteHistory
-    // manager retrieves the calling RenderViewHost and then passes the vector
-    // of suggestions to RenderViewHost::AutocompleteSuggestionsReturned.
-    virtual void GetAutocompleteSuggestions(const string16& field_name,
-                                            const string16& user_text) = 0;
-
-    // Called when the user has indicated that she wants to remove the specified
-    // Autocomplete suggestion from the database.
-    virtual void RemoveAutocompleteEntry(const string16& field_name,
-                                         const string16& value) = 0;
-
-   protected:
-    virtual ~Autocomplete() {}
-  };
-
-  // AutoFill ------------------------------------------------------------------
-  // Interface for AutoFill-related functions.
-
-  class AutoFill {
-   public:
-    // Called when the user submits a form.
-    virtual void FormSubmitted(const webkit_glue::FormData& form) = 0;
-
-    // Called when the frame has finished loading and there are forms in the
-    // frame.
-    virtual void FormsSeen(const std::vector<webkit_glue::FormData>& forms) = 0;
-
-    // Called to retrieve a list of AutoFill suggestions for the portion of the
-    // |form| containing |field|, given the current state of the |form|.
-    // Returns true to indicate that RenderViewHost::AutoFillSuggestionsReturned
-    // has been called.
-    virtual bool GetAutoFillSuggestions(
-        const webkit_glue::FormData& form,
-        const webkit_glue::FormField& field) = 0;
-
-    // Called to fill the |form| with AutoFill profile information that matches
-    // the |unique_id| key. If the portion of the form containing |field| has
-    // been autofilled already, only fills |field|.
-    // Returns true to indicate that RenderViewHost::AutoFillFormDataFilled
-    // has been called.
-    virtual bool FillAutoFillFormData(int query_id,
-                                      const webkit_glue::FormData& form,
-                                      const webkit_glue::FormField& field,
-                                      int unique_id) = 0;
-
-    // Called when the user selects the 'AutoFill Options...' suggestions in the
-    // AutoFill popup.
-    virtual void ShowAutoFillDialog() = 0;
-
-    // Reset cache in AutoFillManager.
-    virtual void Reset() = 0;
-
-   protected:
-    virtual ~AutoFill() {}
-  };
-
   // BookmarkDrag --------------------------------------------------------------
   // Interface for forwarding bookmark drag and drop to extenstions.
 
@@ -612,8 +545,7 @@ class RenderViewHostDelegate : public IPC::Channel::Listener {
   virtual Save* GetSaveDelegate();
   virtual Printing* GetPrintingDelegate();
   virtual FavIcon* GetFavIconDelegate();
-  virtual Autocomplete* GetAutocompleteDelegate();
-  virtual AutoFill* GetAutoFillDelegate();
+
   virtual BookmarkDrag* GetBookmarkDragDelegate();
   virtual SSL* GetSSLDelegate();
   virtual FileSelect* GetFileSelectDelegate();

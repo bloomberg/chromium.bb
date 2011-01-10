@@ -189,7 +189,7 @@ TEST_F(AutoFillMetricsTest, QualityMetrics) {
               Log(AutoFillMetrics::FIELD_SUBMITTED));
 
   // Simulate form submission.
-  EXPECT_NO_FATAL_FAILURE(autofill_manager_->FormSubmitted(form));
+  EXPECT_NO_FATAL_FAILURE(autofill_manager_->OnFormSubmitted(form));
 }
 
 // Test that we don't log quality metrics for non-autofillable forms.
@@ -214,7 +214,7 @@ TEST_F(AutoFillMetricsTest, NoQualityMetricsForNonAutoFillableForms) {
   // Simulate form submission.
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutoFillMetrics::FIELD_SUBMITTED)).Times(0);
-  EXPECT_NO_FATAL_FAILURE(autofill_manager_->FormSubmitted(form));
+  EXPECT_NO_FATAL_FAILURE(autofill_manager_->OnFormSubmitted(form));
 
   // Search forms are not auto-fillable.
   form.action = GURL("http://example.com/search?q=Elvis%20Presley");
@@ -225,5 +225,5 @@ TEST_F(AutoFillMetricsTest, NoQualityMetricsForNonAutoFillableForms) {
   // Simulate form submission.
   EXPECT_CALL(*autofill_manager_->metric_logger(),
               Log(AutoFillMetrics::FIELD_SUBMITTED)).Times(0);
-  EXPECT_NO_FATAL_FAILURE(autofill_manager_->FormSubmitted(form));
+  EXPECT_NO_FATAL_FAILURE(autofill_manager_->OnFormSubmitted(form));
 }

@@ -11,6 +11,7 @@
 #include "base/singleton.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -510,6 +511,12 @@ void TranslateManager::DoTranslatePage(TabContents* tab,
   tab->language_state().set_translation_pending(true);
   tab->render_view_host()->TranslatePage(entry->page_id(), translate_script,
                                          source_lang, target_lang);
+
+  // Ideally we'd have a better way to uniquely identify form control elements,
+  // but we don't have that yet.  So before start translation, we clear the
+  // current form and re-parse it in AutoFillManager first to get the new
+  // labels.
+  tab->autofill_manager()->Reset();
 }
 
 void TranslateManager::PageTranslated(TabContents* tab,

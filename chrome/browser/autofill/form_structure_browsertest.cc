@@ -236,7 +236,7 @@ IN_PROC_BROWSER_TEST_F(FormStructureBrowserTest, HTMLFiles) {
         VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
 
     AutoFillManager* autofill_manager =
-        browser()->GetSelectedTabContents()->GetAutoFillManager();
+        browser()->GetSelectedTabContents()->autofill_manager();
     ASSERT_NE(static_cast<AutoFillManager*>(NULL), autofill_manager);
     std::vector<FormStructure*> forms = GetFormStructures(*autofill_manager);
 

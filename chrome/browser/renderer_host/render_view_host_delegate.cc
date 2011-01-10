@@ -50,16 +50,6 @@ RenderViewHostDelegate::GetFavIconDelegate() {
   return NULL;
 }
 
-RenderViewHostDelegate::Autocomplete*
-RenderViewHostDelegate::GetAutocompleteDelegate() {
-  return NULL;
-}
-
-RenderViewHostDelegate::AutoFill*
-RenderViewHostDelegate::GetAutoFillDelegate() {
-  return NULL;
-}
-
 RenderViewHostDelegate::BookmarkDrag*
 RenderViewHostDelegate::GetBookmarkDragDelegate() {
   return NULL;

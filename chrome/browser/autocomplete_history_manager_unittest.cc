@@ -63,7 +63,7 @@ TEST_F(AutocompleteHistoryManagerTest, CreditCardNumberValue) {
   form.fields.push_back(valid_cc);
 
   EXPECT_CALL(*web_data_service_, AddFormFields(_)).Times(0);
-  autocomplete_manager_->FormSubmitted(form);
+  autocomplete_manager_->OnFormSubmitted(form);
 }
 
 // Contrary test to AutocompleteHistoryManagerTest.CreditCardNumberValue.  The
@@ -87,7 +87,7 @@ TEST_F(AutocompleteHistoryManagerTest, NonCreditCardNumberValue) {
   form.fields.push_back(invalid_cc);
 
   EXPECT_CALL(*(web_data_service_.get()), AddFormFields(_)).Times(1);
-  autocomplete_manager_->FormSubmitted(form);
+  autocomplete_manager_->OnFormSubmitted(form);
 }
 
 // Tests that SSNs are not sent to the WebDatabase to be saved.
@@ -108,5 +108,5 @@ TEST_F(AutocompleteHistoryManagerTest, SSNValue) {
   form.fields.push_back(ssn);
 
   EXPECT_CALL(*web_data_service_, AddFormFields(_)).Times(0);
-  autocomplete_manager_->FormSubmitted(form);
+  autocomplete_manager_->OnFormSubmitted(form);
 }

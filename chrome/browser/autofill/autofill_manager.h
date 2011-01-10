@@ -16,7 +16,7 @@
 #include "chrome/browser/autofill/autofill_dialog.h"
 #include "chrome/browser/autofill/autofill_download.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
-#include "chrome/browser/renderer_host/render_view_host_delegate.h"
+#include "ipc/ipc_channel.h"
 
 class AutoFillCCInfoBarDelegate;
 class AutoFillProfile;
@@ -24,6 +24,7 @@ class AutoFillMetrics;
 class CreditCard;
 class FormStructure;
 class PrefService;
+class RenderViewHost;
 class TabContents;
 
 namespace webkit_glue {
@@ -33,7 +34,7 @@ class FormField;
 
 // Manages saving and restoring the user's personal information entered into web
 // forms.
-class AutoFillManager : public RenderViewHostDelegate::AutoFill,
+class AutoFillManager : public IPC::Channel::Listener,
                         public AutoFillDownloadManager::Observer {
  public:
   explicit AutoFillManager(TabContents* tab_contents);
@@ -48,17 +49,8 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   // Returns the TabContents hosting this AutoFillManager.
   TabContents* tab_contents() const { return tab_contents_; }
 
-  // RenderViewHostDelegate::AutoFill implementation:
-  virtual void FormSubmitted(const webkit_glue::FormData& form);
-  virtual void FormsSeen(const std::vector<webkit_glue::FormData>& forms);
-  virtual bool GetAutoFillSuggestions(const webkit_glue::FormData& form,
-                                      const webkit_glue::FormField& field);
-  virtual bool FillAutoFillFormData(int query_id,
-                                    const webkit_glue::FormData& form,
-                                    const webkit_glue::FormField& field,
-                                    int unique_id);
-  virtual void ShowAutoFillDialog();
-  virtual void Reset();
+  // IPC::Channel::Listener implementation.
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
   // Called by the AutoFillCCInfoBarDelegate when the user interacts with the
   // infobar.
@@ -80,6 +72,9 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
 
   // Uploads the form data to the AutoFill server.
   void UploadFormData();
+
+  // Reset cache.
+  void Reset();
 
  protected:
   // For tests.
@@ -107,6 +102,19 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   void UnpackGUIDs(int id, std::string* cc_guid, std::string* profile_guid);
 
  private:
+  void OnFormSubmitted(const webkit_glue::FormData& form);
+  void OnFormsSeen(const std::vector<webkit_glue::FormData>& forms);
+  void OnQueryFormFieldAutoFill(int query_id,
+                                const webkit_glue::FormData& form,
+                                const webkit_glue::FormField& field);
+  void OnFillAutoFillFormData(int query_id,
+                              const webkit_glue::FormData& form,
+                              const webkit_glue::FormField& field,
+                              int unique_id);
+  void OnShowAutoFillDialog();
+  void OnDidFillAutoFillFormData();
+  void OnDidShowAutoFillSuggestions();
+
   // Fills |host| with the RenderViewHost for this tab.
   // Returns false if AutoFill is disabled or if the host is unavailable.
   bool GetHost(const std::vector<AutoFillProfile*>& profiles,
@@ -204,6 +212,7 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   std::map<std::string, int> guid_id_map_;
   std::map<int, std::string> id_guid_map_;
 
+  friend class AutoFillManagerTest;
   friend class FormStructureBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillCreditCardForm);
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillAddressForm);
@@ -212,6 +221,9 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillPhoneNumber);
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FormChangesRemoveField);
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FormChangesAddField);
+  FRIEND_TEST_ALL_PREFIXES(AutoFillMetricsTest, QualityMetrics);
+  FRIEND_TEST_ALL_PREFIXES(AutoFillMetricsTest,
+                           NoQualityMetricsForNonAutoFillableForms);
 
   DISALLOW_COPY_AND_ASSIGN(AutoFillManager);
 };

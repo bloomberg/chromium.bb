@@ -150,9 +150,6 @@ class TabContents : public PageNavigator,
   // Returns true if contains content rendered by an extension.
   bool HostsExtension() const;
 
-  // Returns the AutoFillManager, creating it if necessary.
-  AutoFillManager* GetAutoFillManager();
-
   // Returns the PluginInstaller, creating it if necessary.
   PluginInstaller* GetPluginInstaller();
 
@@ -752,6 +749,11 @@ class TabContents : public PageNavigator,
 
   int content_restrictions() const { return content_restrictions_; }
 
+  AutocompleteHistoryManager* autocomplete_history_manager() {
+    return autocomplete_history_manager_.get();
+  }
+  AutoFillManager* autofill_manager() { return autofill_manager_.get(); }
+
  private:
   friend class NavigationController;
   // Used to access the child_windows_ (ConstrainedWindowList) for testing
@@ -950,8 +952,6 @@ class TabContents : public PageNavigator,
   virtual RenderViewHostDelegate::Save* GetSaveDelegate();
   virtual RenderViewHostDelegate::Printing* GetPrintingDelegate();
   virtual RenderViewHostDelegate::FavIcon* GetFavIconDelegate();
-  virtual RenderViewHostDelegate::Autocomplete* GetAutocompleteDelegate();
-  virtual RenderViewHostDelegate::AutoFill* GetAutoFillDelegate();
   virtual RenderViewHostDelegate::SSL* GetSSLDelegate();
   virtual RenderViewHostDelegate::FileSelect* GetFileSelectDelegate();
   virtual AutomationResourceRoutingDelegate*
@@ -1117,10 +1117,10 @@ class TabContents : public PageNavigator,
   // SavePackage, lazily created.
   scoped_refptr<SavePackage> save_package_;
 
-  // AutocompleteHistoryManager, lazily created.
+  // AutocompleteHistoryManager.
   scoped_ptr<AutocompleteHistoryManager> autocomplete_history_manager_;
 
-  // AutoFillManager, lazily created.
+  // AutoFillManager.
   scoped_ptr<AutoFillManager> autofill_manager_;
 
   // PluginInstaller, lazily created.
@@ -1340,7 +1340,8 @@ class TabContents : public PageNavigator,
   // (full-page plugins for now only) permissions.
   int content_restrictions_;
 
-  // ---------------------------------------------------------------------------
+  // All the IPC message filters for this render view.
+  std::vector<IPC::Channel::Listener*> message_filters_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContents);
 };
