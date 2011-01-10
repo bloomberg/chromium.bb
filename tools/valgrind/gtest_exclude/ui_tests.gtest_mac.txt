@@ -36,6 +36,8 @@ ErrorPageTest.DNSError_GoBack2Forward2
 # See http://crbug.com/30367.
 NewTabUITest.NTPHasThumbnails
 NewTabUITest.UpdateUserPrefsVersion
+# http://crbug.com/69040
+ErrorPageTest.Page404
 
 # Appears to time out on valgrind.
 # http://crbug.com/32818
