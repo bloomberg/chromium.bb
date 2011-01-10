@@ -29,6 +29,18 @@
 //   // status has been updated.
 //   attribute Function connectionInfoUpdate;
 //
+//   // This function is called with a callback function as argument. The
+//   // signature of this function is:
+//   // function login(username, password);
+//   //
+//   // The provided callback function should be called when username and
+//   // password is available, e.g. collected by a login prompt.
+//   //
+//   // This function will be called multiple times until login was successful
+//   // or the maximum number of login attempts has been reached. In the
+//   // later case |connection_status| is changed to STATUS_FAILED.
+//   attribute Function loginChallenge;
+//
 //   // Methods on the object.
 //   void connect(string username, string host_jid, string auth_token);
 //   void disconnect();
@@ -121,8 +133,15 @@ class ChromotingScriptableObject : public pp::deprecated::ScriptableObject {
   // changed.
   void SignalConnectionInfoChange();
 
+  // This should be called to signal JS code to provide login information.
+  void SignalLoginChallenge();
+
   pp::Var DoConnect(const std::vector<pp::Var>& args, pp::Var* exception);
   pp::Var DoDisconnect(const std::vector<pp::Var>& args, pp::Var* exception);
+
+  // This method is called by JS to provide login information. Note that this
+  // method is provided as a callback.
+  pp::Var DoLogin(const std::vector<pp::Var>& args, pp::Var* exception);
 
   PropertyNameMap property_names_;
   std::vector<PropertyDescriptor> properties_;

@@ -4,6 +4,7 @@
 
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
 
+#include "base/logging.h"
 #include "ppapi/cpp/var.h"
 #include "remoting/client/client_config.h"
 #include "remoting/client/plugin/chromoting_instance.h"
@@ -14,6 +15,8 @@ namespace remoting {
 
 const char kStatusAttribute[] = "status";
 const char kQualityAttribute[] = "quality";
+const char kConnectionInfoUpdate[] = "connectionInfoUpdate";
+const char kLoginChallenge[] = "loginChallenge";
 
 ChromotingScriptableObject::ChromotingScriptableObject(
     ChromotingInstance* instance)
@@ -46,7 +49,8 @@ void ChromotingScriptableObject::Init() {
   AddAttribute("QUALITY_GOOD", Var(QUALITY_GOOD));
   AddAttribute("QUALITY_BAD", Var(QUALITY_BAD));
 
-  AddAttribute("connectionInfoUpdate", Var());
+  AddAttribute(kConnectionInfoUpdate, Var());
+  AddAttribute(kLoginChallenge, Var());
 
   AddMethod("connect", &ChromotingScriptableObject::DoConnect);
   AddMethod("disconnect", &ChromotingScriptableObject::DoDisconnect);
@@ -123,10 +127,11 @@ void ChromotingScriptableObject::SetProperty(const Var& name,
     return;
   }
 
-  // Only allow writing to onreadystatechange.  See top of
+  // Allow writing to connectionInfoUpdate or loginChallenge.  See top of
   // chromoting_scriptable_object.h for the object interface definition.
   std::string property_name = name.AsString();
-  if (property_name != "connectionInfoUpdate") {
+  if (property_name != kConnectionInfoUpdate &&
+      property_name != kLoginChallenge) {
     *exception =
         Var("Cannot set property " + property_name + " on this object.");
     return;
@@ -181,8 +186,8 @@ void ChromotingScriptableObject::SignalConnectionInfoChange() {
   pp::Var exception;
 
   // The JavaScript callback function is the 'callback' property on the
-  // 'connectionInfoUpdate' object.
-  Var cb = GetProperty(Var("connectionInfoUpdate"), &exception);
+  // 'kConnectionInfoUpdate' object.
+  Var cb = GetProperty(Var(kConnectionInfoUpdate), &exception);
 
   // Var() means call the object directly as a function rather than calling
   // a method in the object.
@@ -190,6 +195,21 @@ void ChromotingScriptableObject::SignalConnectionInfoChange() {
 
   if (!exception.is_undefined()) {
     LOG(WARNING) << "Exception when invoking JS callback"
+                 << exception.AsString();
+  }
+}
+
+void ChromotingScriptableObject::SignalLoginChallenge() {
+  pp::Var exception;
+
+  Var fun = GetProperty(Var(kLoginChallenge), &exception);
+
+  // Calls the loginChallenge() function with a callback.
+  fun.Call(Var(), MethodHandler(&ChromotingScriptableObject::DoLogin),
+           &exception);
+
+  if (!exception.is_undefined()) {
+    LOG(WARNING) << "Exception when calling JS callback"
                  << exception.AsString();
   }
 }
@@ -229,6 +249,12 @@ pp::Var ChromotingScriptableObject::DoConnect(const std::vector<Var>& args,
 pp::Var ChromotingScriptableObject::DoDisconnect(const std::vector<Var>& args,
                                                  Var* exception) {
   instance_->Disconnect();
+  return Var();
+}
+
+pp::Var ChromotingScriptableObject::DoLogin(const std::vector<pp::Var>& args,
+                                            pp::Var* exception) {
+  NOTIMPLEMENTED();
   return Var();
 }
 
