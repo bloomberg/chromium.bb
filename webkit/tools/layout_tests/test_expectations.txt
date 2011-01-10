@@ -406,3 +406,7 @@ BUGTHAKIS WIN : svg/zoom/page/zoom-mask-with-percentages.svg = IMAGE
 // This test found a real bug in the new skia version. I will file a bug for this on reed
 // and submit an upstream suppression.
 BUGTHAKIS_CR68921 WIN LINUX DEBUG : svg/batik/paints/gradientLimit.svg = TIMEOUT FAIL
+
+// This test needs to be rebaselined upstream due to a change in V8
+// regexp parsing.
+BUGRICOW : fast/regex/malformed-escapes.html = FAIL
