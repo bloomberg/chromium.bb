@@ -11,7 +11,7 @@
 //
 
 // defines
-// TODO: fix/cleanup when various parts of system come online
+// TODO(nfullagar): fix/cleanup when various parts of system come online
 #define HAVE_THREADS            // enable if pthreads & semaphores available
 // #define HAVE_SYSCONF         // enable if sysconf() is available
 
@@ -29,8 +29,7 @@
 #if !defined(STANDALONE)
 #include <nacl/nacl_av.h>
 #include <nacl/nacl_srpc.h>
-#endif
-#if defined(STANDALONE)
+#else
 #include "native_client/common/standalone.h"
 #endif
 #include "native_client/common/worker.h"
@@ -54,7 +53,7 @@ int g_num_threads = 4;           // possibly overridden
 int g_num_regions = 4;           // possibly overridden
 bool g_multi_threading = false;  // can be overridden on cmd line
 bool g_render_dots = true;       // can be overridden on cmd line
-bool g_checksum = false;         // can be overridden on cmd line
+bool g_use_av = true;            // can be overridden on cmd line
 
 // random number helper
 inline unsigned char rand255() {
@@ -102,6 +101,7 @@ struct Surface {
   }
 };
 
+Surface *g_surface;
 
 // Voronoi class holds information and functionality needed to render
 // voronoi structures into an SDL surface.
@@ -471,7 +471,7 @@ void Voronoi::Render() {
 
 // Copies sw rendered voronoi image to screen
 void Voronoi::Draw() {
-  if (!g_checksum) {
+  if (g_use_av) {
     int r;
     r = nacl_video_update(surf_->pixels);
     if (-1 == r) {
@@ -484,7 +484,7 @@ void Voronoi::Draw() {
 // Polls event queue
 // returns false if the user tries to quit application early
 bool Voronoi::PollEvents() {
-  if (false == g_checksum) {
+  if (g_use_av) {
     NaClMultimediaEvent event;
     // bare minimum event servicing
     while (0 == nacl_video_poll_event(&event)) {
@@ -553,7 +553,7 @@ void RunDemo(Surface *surface) {
       voronoi.UpdateSim();
       voronoi.Render();
       voronoi.Draw();
-      if (!g_checksum) {
+      if (g_use_av) {
         printf("Frame: %04d\b\b\b\b\b\b\b\b\b\b\b", i);
         fflush(stdout);
       }
@@ -566,7 +566,7 @@ void RunDemo(Surface *surface) {
 
 // Initializes a window buffer.
 Surface* Initialize() {
-  if (!g_checksum) {
+  if (g_use_av) {
     int r;
     int width;
     int height;
@@ -592,28 +592,28 @@ Surface* Initialize() {
 }
 
 
-void Checksum(Surface *surface) {
-  int size = surface->width * surface->height;
+int Checksum() {
+  int size = g_surface->width * g_surface->height;
   uint32_t checksum = 0;
   for (int i = 0; i < size; ++i) {
-    checksum = checksum ^ (surface->pixels[i] ^ lrand48());
+    checksum = checksum ^ (g_surface->pixels[i] ^ lrand48());
     srand48(checksum);
   }
-  printf("Checksum: 0x%08X\n", static_cast<unsigned int>(checksum));
+
+  return static_cast<unsigned int>(checksum);
 }
 
 
 // Frees a window buffer.
-void Shutdown(Surface *surface) {
-  // if checksum option, printf the checksum of the last framebuffer
-  if (g_checksum) {
-    Checksum(surface);
-  } else {
+void Shutdown() {
+  if (g_use_av) {
     nacl_video_shutdown();
     nacl_multimedia_shutdown();
   }
-  delete surface;
+  delete g_surface;
 }
+
+
 
 
 // Clamps input to the max we can realistically support.
@@ -642,7 +642,7 @@ void ParseCmdLineArgs(int argc, char **argv) {
           int numcpu = atoi(&argv[i][2]);
           g_ask_sysconf = false;
           g_num_threads = g_num_regions = numcpu;
-          printf("User requested %d threads.\n", numcpu);
+          fprintf(stderr, "User requested %d threads.\n", numcpu);
         }
 #else
         fprintf(stderr, "This demo wasn't built with thread support!\n");
@@ -692,7 +692,7 @@ void ParseCmdLineArgs(int argc, char **argv) {
   if ((g_ask_sysconf) && (g_multi_threading)) {
     int ncpu = sysconf(_SC_NPROCESSORS_ONLN);
     if (ncpu > 1) {
-      printf("System reports having %d processors.\n", ncpu);
+      fprintf(stderr, "System reports having %d processors.\n", ncpu);
       g_num_threads = g_num_regions = ncpu;
     }
   }
@@ -705,7 +705,7 @@ void ParseCmdLineArgs(int argc, char **argv) {
     g_num_points = 256;
     g_num_frames = 16;
     g_render_dots = false;
-    g_checksum = true;
+    g_use_av = false;
 #if defined(HAVE_THREADS)
     g_multi_threading = true;
     g_num_threads = g_num_regions = 8;
@@ -721,20 +721,59 @@ void ParseCmdLineArgs(int argc, char **argv) {
         exit(-1);
   }
 
-  printf("Multi-threading %s.\n", g_multi_threading ? "enabled" : "disabled");
+  fprintf(stderr,
+          "Multi-threading %s.\n",
+          g_multi_threading ? "enabled" : "disabled");
 
   // clamp threads and regions
   g_num_threads = ClampThreads(g_num_threads);
   g_num_regions = ClampThreads(g_num_regions);
 }
 
+
+static void StartDemo() {
+  // Initialise with an arbitrary seed in order to get consistent
+  // results between newlib and glibc.
+  srand48(0xC0DE533D);
+  g_surface = Initialize();
+  RunDemo(g_surface);
+}
+
+void StartDemoSrpc(NaClSrpcRpc *rpc,
+                   NaClSrpcArg **in_args,
+                   NaClSrpcArg **out_args,
+                   NaClSrpcClosure *done) {
+  StartDemo();
+  done->Run(done);
+}
+
+void StopDemoSrpc(NaClSrpcRpc *rpc,
+                   NaClSrpcArg **in_args,
+                   NaClSrpcArg **out_args,
+                   NaClSrpcClosure *done) {
+  Shutdown();
+  done->Run(done);
+}
+
+void ChecksumSrpc(NaClSrpcRpc *rpc,
+                  NaClSrpcArg **in_args,
+                  NaClSrpcArg **out_args,
+                  NaClSrpcClosure *done) {
+  out_args[0]->u.ival = Checksum();
+  done->Run(done);
+}
+
 const struct NaClSrpcHandlerDesc srpc_methods[] = {
   NACL_AV_DECLARE_METHODS
+  { "start_demo::", StartDemoSrpc },
+  { "checksum::i", ChecksumSrpc },
+  { "stop_demo::", StopDemoSrpc },
   { NULL, NULL },
 };
 
 // Parses cmd line options, initializes surface, runs the demo & shuts down.
 int main(int argc, char **argv) {
+  ParseCmdLineArgs(argc, argv);
 #if !defined(STANDALONE)
   if (!NaClSrpcModuleInit()) {
     return 1;
@@ -742,18 +781,10 @@ int main(int argc, char **argv) {
   if (!NaClSrpcAcceptClientOnThread(srpc_methods)) {
     return 1;
   }
-#endif  // STANDALONE
-  // Initialise with an arbitrary seed in order to get consistent
-  // results between newlib and glibc.
-  srand48(0xC0DE533D);
-
-  ParseCmdLineArgs(argc, argv);
-  Surface *surface = Initialize();
-  RunDemo(surface);
-  Shutdown(surface);
-
-#if !defined(STANDALONE)
   NaClSrpcModuleFini();
+#else
+  StartDemo();
 #endif  // STANDALONE
+
   return 0;
 }

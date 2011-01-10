@@ -139,7 +139,7 @@ inline bool WorkerThreadManager::CreateThreadPool(int num,
   // create worker threads
   threads_ = new pthread_t[num];
   num_threads_ = num;
-  printf("Starting up %d worker threads.\n", num);
+  fprintf(stderr, "Starting up %d worker threads.\n", num);
   for (int i = 0; i < num; ++i) {
     int status = pthread_create(&threads_[i], NULL, entry, data);
     if (0 != status) {

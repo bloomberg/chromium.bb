@@ -1,55 +1,51 @@
-<HTML>
-<HEAD>
-<TITLE>Voronoi Demo</TITLE>
-<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
-<META HTTP-EQUIV="Expires" CONTENT="-1">
+<html>
+<head>
+<title>Voronoi Demo</title>
+<meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<meta HTTP-EQUIV="Expires" CONTENT="-1">
 
 <script type="text/javascript">
 
-var nacl_elt;
-
-// Before scripting the loaded module, ensure the Native Client module is loaded.
 var startupTimeout;
 
-var PostLoadInit = function() {
-  if (nacl_elt.__moduleReady == 1) {
+var StartDemo = function() {
+  clearTimeout(startupTimeout);
+  var nacl_module = document.getElementById('nacl_module');
+  nacl_module.start_demo();
+}
+
+// Wait for the Native Client module to load, then start demo.
+var InitializeModule = function() {
+  var nacl_module = document.getElementById('nacl_module');
+  if (nacl_module.__moduleReady == 1) {
     clearTimeout(startupTimeout);
-    nacl_elt.focus();
+    // Explain why this extra timeout is necessary instead of a direct call.
+    // Probably some timing issues.
+    startupTimeout = setTimeout(StartDemo, 100);
   } else {
-    if (nacl_elt.__moduleReady == undefined) {
+    if (nacl_module.__moduleReady == undefined) {
       alert('The Native Client plugin was unable to load');
       return;
     }
-    startupTimeout = setTimeout(PostLoadInit, 100);
+    // wait and try again
+    startupTimeout = setTimeout(InitializeModule, 100);
   }
 }
-
-// Init is called when the document has completed loading.  It downloads the
-// NativeClient modules.
-var Init = function() {
-  // service_url contains the location of the NativeClient module to be
-  // loaded as a service.
-  nacl_elt = document.getElementById('embed1');
-  PostLoadInit();
-}
-
-
 </script>
 
-</HEAD>
-<BODY id="bodyId" onload="Init();" >
+</head>
+<body onload="InitializeModule();" >
 
 <h1>Voronoi Demo</h1>
 <p>
-  A brute force algorithm is used to render the Voronoi diagram for a set of moving points.
- </p>
-<embed id="embed1" src="voronoi.nexe" type="application/x-nacl-srpc" width=512 height=512>
+  A brute force algorithm is used to render the Voronoi diagram
+  for a set of moving points.
+</p>
+<embed id="nacl_module"
+       src="voronoi.nexe"
+       type="application/x-nacl-srpc"
+       width=512 height=512>
 <br>
 
-<script>
-var embed1 = document.getElementById('embed1');
-</script>
-
-
-</BODY>
-</HTML>
+</body>
+</html>

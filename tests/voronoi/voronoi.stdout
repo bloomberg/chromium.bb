@@ -1,3 +1,9 @@
-Multi-threading enabled.
-Starting up 8 worker threads.
-Checksum: 0x205064E7
+RPC Name                 Input args Output args
+  0 service_discovery               C         
+  1 nacl_multimedia_bridge hh                   
+  2 start_demo                                
+  3 checksum                        i         
+  4 stop_demo                                 
+start_demo RESULTS: 
+checksum RESULTS:   i(542139623)
+stop_demo RESULTS: 
