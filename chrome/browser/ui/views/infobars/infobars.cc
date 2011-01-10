@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/views/event_utils.h"
 #include "chrome/browser/views/infobars/infobar_container.h"
+#include "chrome/browser/views/infobars/infobar_text_button.h"
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -469,18 +470,12 @@ ConfirmInfoBar::ConfirmInfoBar(ConfirmInfoBarDelegate* delegate)
       cancel_button_(NULL),
       link_(NULL),
       initialized_(false) {
-  ok_button_ = new views::NativeButton(this,
-      UTF16ToWideHack(delegate->GetButtonLabel(
-                          ConfirmInfoBarDelegate::BUTTON_OK)));
-  ok_button_->SetAccessibleName(ok_button_->label());
-  if (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_OK_DEFAULT)
-    ok_button_->SetAppearsAsDefault(true);
-  if (delegate->NeedElevation(ConfirmInfoBarDelegate::BUTTON_OK))
-    ok_button_->SetNeedElevation(true);
-  cancel_button_ = new views::NativeButton(
-      this, UTF16ToWideHack(
-          delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL)));
-  cancel_button_->SetAccessibleName(cancel_button_->label());
+  ok_button_ = InfoBarTextButton::Create(this,
+      delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
+  ok_button_->SetAccessibleName(ok_button_->text());
+  cancel_button_ = InfoBarTextButton::Create(this,
+      delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL));
+  cancel_button_->SetAccessibleName(cancel_button_->text());
 
   // Set up the link.
   link_ = new views::Link;

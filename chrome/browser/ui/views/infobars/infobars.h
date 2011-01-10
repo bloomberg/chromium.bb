@@ -14,6 +14,7 @@
 #include "views/focus/focus_manager.h"
 
 class InfoBarContainer;
+class InfoBarTextButton;
 
 namespace ui {
 class SlideAnimation;
@@ -24,7 +25,6 @@ class ExternalFocusTracker;
 class ImageButton;
 class ImageView;
 class Label;
-class NativeButton;
 }
 
 // This file contains implementations for some general purpose InfoBars. See
@@ -242,8 +242,8 @@ class ConfirmInfoBar : public AlertInfoBar,
 
   ConfirmInfoBarDelegate* GetDelegate();
 
-  views::NativeButton* ok_button_;
-  views::NativeButton* cancel_button_;
+  InfoBarTextButton* ok_button_;
+  InfoBarTextButton* cancel_button_;
   views::Link* link_;
 
   bool initialized_;
