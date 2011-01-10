@@ -242,7 +242,9 @@ class TrailingWhiteSpaceChecker(GenericRegexChecker):
     return
 
   def FileFilter(self, props):
-    return ('.patch' not in props and '.table' not in props)
+    return ('.patch' not in props and
+            '.stdout' not in props and
+            '.table' not in props)
 
 
 class UntrustedIfDefChecker(GenericRegexChecker):
