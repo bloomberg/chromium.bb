@@ -126,6 +126,18 @@ enum ViewHostMsg_EnablePreferredSizeChangedMode_Flags {
   kPreferredSizeHeightThisIsSlow = 1 << 1,
 };
 
+// Command values for the cmd parameter of the
+// ViewHost_JavaScriptStressTestControl message. For each command the parameter
+// passed has a different meaning:
+// For the command kJavaScriptStressTestSetStressRunType the parameter it the
+// type taken from the enumeration v8::Testing::StressType.
+// For the command kJavaScriptStressTestPrepareStressRun the parameter it the
+// number of the stress run about to take place.
+enum ViewHostMsg_JavaScriptStressTestControl_Commands {
+  kJavaScriptStressTestSetStressRunType = 0,
+  kJavaScriptStressTestPrepareStressRun = 1,
+};
+
 namespace IPC {
 
 // Traits for FormField_Params structure to pack/unpack.

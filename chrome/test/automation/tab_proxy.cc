@@ -780,6 +780,14 @@ void TabProxy::SaveAsAsync() {
   sender_->Send(new AutomationMsg_SaveAsAsync(handle_));
 }
 
+void TabProxy::JavaScriptStressTestControl(int cmd, int param) {
+  if (!is_valid())
+    return;
+
+  sender_->Send(new AutomationMsg_JavaScriptStressTestControl(
+      0, handle_, cmd, param));
+}
+
 void TabProxy::AddObserver(TabProxyDelegate* observer) {
   AutoLock lock(list_lock_);
   observers_list_.AddObserver(observer);

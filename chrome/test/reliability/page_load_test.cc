@@ -35,6 +35,7 @@
 // --savedebuglog: save Chrome, V8, and test debug log for each page loaded.
 
 #include <fstream>
+#include <vector>
 
 #include "app/keyboard_codes.h"
 #include "base/command_line.h"
@@ -59,6 +60,7 @@
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
@@ -67,6 +69,7 @@
 #include "chrome/test/reliability/page_load_test.h"
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/net_util.h"
+#include "v8/include/v8-testing.h"
 
 namespace {
 
@@ -86,6 +89,8 @@ const char kTimeoutSwitch[] = "timeout";
 const char kNoPageDownSwitch[] = "nopagedown";
 const char kNoClearProfileSwitch[] = "noclearprofile";
 const char kSaveDebugLogSwitch[] = "savedebuglog";
+const char kStressOptSwitch[] = "stress-opt";
+const char kStressDeoptSwitch[] = "stress-deopt";
 
 const char kDefaultServerUrl[] = "http://urllist.com";
 std::string g_server_url;
@@ -119,6 +124,8 @@ FilePath g_chrome_log_path;
 FilePath g_v8_log_path;
 FilePath g_test_log_path;
 bool g_stand_alone = false;
+bool g_stress_opt = false;
+bool g_stress_deopt = false;
 
 class PageLoadTest : public UITest {
  public:
@@ -146,11 +153,23 @@ class PageLoadTest : public UITest {
     show_window_ = true;
   }
 
-  // Accept URL as std::string here because the url may also act as a test id
-  // and needs to be logged in its original format even if invalid.
-  void NavigateToURLLogResult(const std::string& url_string,
+  // Load a URL in a browser tab and perform a couple of page down events.
+  //   url_string:      The URL to navigate to. Accept URL as std::string here
+  //                    because the url may also act as a test id and needs to
+  //                    be logged in its original format even if invalid.
+  //   log_file:        Log file for test results and possible crash dump
+  //                    files. This file does not need to be opened in which
+  //                    case nothing is logged.
+  //   metrics_output:  Return metrics for the page load.
+  //   keep_browser:    Set to true if the browser should be kept open after
+  //                    loading the page.
+  //   log_only_errors: Set to true if only errors should be logged otherwise
+  //                    successful navigations will also be logged.
+  bool NavigateToURLLogResult(const std::string& url_string,
                               std::ofstream& log_file,
-                              NavigationMetrics* metrics_output) {
+                              NavigationMetrics* metrics_output,
+                              bool keep_browser,
+                              bool log_only_error) {
     GURL url(url_string);
     NavigationMetrics metrics = {NAVIGATION_ERROR};
     std::ofstream test_log;
@@ -183,7 +202,7 @@ class PageLoadTest : public UITest {
     test_log << "Test Start: ";
     test_log << base::TimeFormatFriendlyDateAndTime(time_now) << std::endl;
 
-    if (!g_continuous_load && !g_browser_existing) {
+    if (!g_browser_existing) {
       LaunchBrowserAndServer();
       g_browser_existing = true;
     }
@@ -230,7 +249,7 @@ class PageLoadTest : public UITest {
     test_log << "navigate_complete_seconds=";
     test_log << (time_now.ToDoubleT() - time_start) << std::endl;
 
-    if (!g_continuous_load) {
+    if (!keep_browser) {
       CloseBrowserAndServer();
       g_browser_existing = false;
     }
@@ -260,7 +279,15 @@ class PageLoadTest : public UITest {
         break;
     }
 
-    if (log_file.is_open()) {
+    // Get crash dumps - don't delete them if logging.
+    std::vector<FilePath> new_crash_dumps;
+    CollectNewCrashDumps(new_crash_dumps, &metrics, !log_file.is_open());
+
+    bool do_log = log_file.is_open() &&
+                  (!log_only_error ||
+                   metrics.result != NAVIGATION_SUCCESS ||
+                   new_crash_dumps.size() > 0);
+    if (do_log) {
       log_file << url_string;
       switch (metrics.result) {
         case NAVIGATION_ERROR:
@@ -285,7 +312,7 @@ class PageLoadTest : public UITest {
     GetStabilityMetrics(&metrics);
 #endif
 
-    if (log_file.is_open()) {
+    if (do_log) {
       log_file << " " << metrics.browser_crash_count \
                // The renderer crash count is flaky due to 1183283.
                // Ignore the count since we also catch crash by
@@ -298,22 +325,25 @@ class PageLoadTest : public UITest {
     // Close test log.
     test_log.close();
 
-    if (log_file.is_open() && g_save_debug_log && !g_continuous_load)
+    if (do_log && g_save_debug_log && !g_continuous_load)
       SaveDebugLogs(log_file);
 
     // Log revision information for Chrome build under test.
-    log_file << " " << "revision=" << last_change;
+    if (do_log)
+      log_file << " " << "revision=" << last_change;
 
-    // Get crash dumps.
-    LogOrDeleteNewCrashDumps(log_file, &metrics);
+    if (do_log) {
+      for (size_t i = 0; i < new_crash_dumps.size(); i++)
+        log_file << " crash_dump=" << new_crash_dumps[i].value().c_str();
+    }
 
-    if (log_file.is_open()) {
+    if (do_log)
       log_file << std::endl;
-    }
 
-    if (metrics_output) {
+    if (metrics_output)
       *metrics_output = metrics;
-    }
+
+    return do_log;
   }
 
   void NavigateThroughPageID(std::ofstream& log_file) {
@@ -324,7 +354,8 @@ class PageLoadTest : public UITest {
             g_server_url.c_str();
         std::string test_page_url(
             StringPrintf("%s/page?id=%d", server, i));
-        NavigateToURLLogResult(test_page_url, log_file, NULL);
+        NavigateToURLLogResult(
+            test_page_url, log_file, NULL, g_continuous_load, false);
       }
     } else {
       // Don't run if single process mode.
@@ -356,7 +387,8 @@ class PageLoadTest : public UITest {
       const std::string test_url_1_string = test_url_1.spec();
       const std::string test_url_2_string = test_url_2.spec();
 
-      NavigateToURLLogResult(test_url_1_string, log_file, &metrics);
+      NavigateToURLLogResult(
+          test_url_1_string, log_file, &metrics, g_continuous_load, false);
       // Verify everything is fine
       EXPECT_EQ(NAVIGATION_SUCCESS, metrics.result);
       EXPECT_EQ(0, metrics.crash_dump_count);
@@ -369,7 +401,11 @@ class PageLoadTest : public UITest {
       EXPECT_EQ(0, metrics.plugin_crash_count);
 
       // Go to "about:crash"
-      NavigateToURLLogResult(chrome::kAboutCrashURL, log_file, &metrics);
+      NavigateToURLLogResult(chrome::kAboutCrashURL,
+                             log_file,
+                             &metrics,
+                             g_continuous_load,
+                             false);
       // Found a crash dump
       EXPECT_EQ(1, metrics.crash_dump_count) << kFailedNoCrashService;
       // Browser did not crash, and exited cleanly.
@@ -380,7 +416,8 @@ class PageLoadTest : public UITest {
       EXPECT_EQ(1, metrics.renderer_crash_count);
       EXPECT_EQ(0, metrics.plugin_crash_count);
 
-      NavigateToURLLogResult(test_url_2_string, log_file, &metrics);
+      NavigateToURLLogResult(
+          test_url_2_string, log_file, &metrics, g_continuous_load, false);
       // The data on previous crash should be cleared and we should get
       // metrics for a successful page load.
       EXPECT_EQ(NAVIGATION_SUCCESS, metrics.result);
@@ -432,7 +469,46 @@ class PageLoadTest : public UITest {
         break;
 
       if (g_start_index <= line_index) {
-        NavigateToURLLogResult(url_str, log_file, NULL);
+        if (g_stress_opt || g_stress_deopt) {
+          v8::Testing::StressType stress_type =
+              g_stress_opt
+                  ? v8::Testing::kStressTypeOpt
+                  : v8::Testing::kStressTypeDeopt;
+          scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
+          if (tab_proxy.get()) {
+            tab_proxy->JavaScriptStressTestControl(
+                kJavaScriptStressTestSetStressRunType, stress_type);
+          }
+
+          bool success = true;
+          // Load each page a number of times and keep the same browser open
+          // for these loads. This loop will end if an error is encountered
+          // during one of the loads and the error logged.
+          for (int i = 0;
+               i < v8::Testing::GetStressRuns() && success;
+               i++) {
+            bool last_load = (i == (v8::Testing::GetStressRuns() - 1));
+            bool keep_browser = !last_load || g_continuous_load;
+            bool log_only_error = !last_load;
+            NavigationMetrics metrics;
+
+            scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
+            if (tab_proxy.get()) {
+              tab_proxy->JavaScriptStressTestControl(
+                  kJavaScriptStressTestPrepareStressRun, i);
+            }
+            bool did_log_error;
+            did_log_error = NavigateToURLLogResult(url_str,
+                                                   log_file,
+                                                   &metrics,
+                                                   keep_browser,
+                                                   log_only_error);
+            success = metrics.result == NAVIGATION_SUCCESS && !did_log_error;
+          }
+        } else {
+          NavigateToURLLogResult(
+              url_str, log_file, NULL, g_continuous_load, false);
+        }
       }
     }
 
@@ -488,31 +564,37 @@ class PageLoadTest : public UITest {
     url_count++;
   }
 
-  // If a log_file is provided, log the crash dump with the given path;
-  // otherwise, delete the crash dump file.
-  void LogOrDeleteCrashDump(std::ofstream& log_file,
-                            FilePath crash_dump_file_name) {
+  // Delete a crash dump file.
+  void DeleteCrashDump(FilePath crash_dump_file_name) {
     FilePath crash_dump_file_path(crash_dumps_dir_path_);
     crash_dump_file_path = crash_dump_file_path.Append(crash_dump_file_name);
     FilePath crash_text_file_path =
         crash_dump_file_path.ReplaceExtension(FILE_PATH_LITERAL("txt"));
 
-    if (log_file.is_open()) {
-      crash_dumps_[crash_dump_file_name] = true;
-      log_file << " crash_dump=" << crash_dump_file_path.value().c_str();
-    } else {
-      ASSERT_TRUE(file_util::DieFileDie(
-          crash_dump_file_path, false));
-      ASSERT_TRUE(file_util::DieFileDie(
-          crash_text_file_path, false));
-    }
+    ASSERT_TRUE(file_util::DieFileDie(crash_dump_file_path, false));
+    ASSERT_TRUE(file_util::DieFileDie(crash_text_file_path, false));
   }
 
-  // Check whether there are new .dmp files. Additionally, write
-  //     " crash_dump=<full path name of the .dmp file>"
-  // to log_file.
-  void LogOrDeleteNewCrashDumps(std::ofstream& log_file,
-                                NavigationMetrics* metrics) {
+  bool HasNewCrashDumps() {
+    file_util::FileEnumerator enumerator(crash_dumps_dir_path_,
+                                         false,  // not recursive
+                                         file_util::FileEnumerator::FILES);
+    for (FilePath path = enumerator.Next(); !path.value().empty();
+         path = enumerator.Next()) {
+      if (path.MatchesExtension(FILE_PATH_LITERAL(".dmp")) &&
+          !crash_dumps_[path.BaseName()]) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  // Check whether there are new .dmp files. Return the list and optionally
+  // delete them afterwards.
+  void CollectNewCrashDumps(std::vector<FilePath>& new_crash_dumps,
+                            NavigationMetrics* metrics,
+                            bool delete_dumps) {
     int num_dumps = 0;
 
     file_util::FileEnumerator enumerator(crash_dumps_dir_path_,
@@ -522,7 +604,12 @@ class PageLoadTest : public UITest {
          path = enumerator.Next()) {
       if (path.MatchesExtension(FILE_PATH_LITERAL(".dmp")) &&
           !crash_dumps_[path.BaseName()]) {
-        LogOrDeleteCrashDump(log_file, path.BaseName());
+        crash_dumps_[path.BaseName()] = true;
+        FilePath crash_dump_file_path(crash_dumps_dir_path_);
+        crash_dump_file_path = crash_dump_file_path.Append(path.BaseName());
+        new_crash_dumps.push_back(crash_dump_file_path);
+        if (delete_dumps)
+          DeleteCrashDump(path.BaseName());
         num_dumps++;
       }
     }
@@ -606,7 +693,8 @@ TEST_F(PageLoadTest, Reliability) {
   }
 
   if (!g_end_url.empty()) {
-    NavigateToURLLogResult(g_end_url, log_file, NULL);
+    NavigateToURLLogResult(
+        g_end_url, log_file, NULL, g_continuous_load, false);
   }
 
   log_file.close();
@@ -693,7 +781,7 @@ void SetPageRange(const CommandLine& parsed_command_line) {
   if (parsed_command_line.HasSwitch(kTimeoutSwitch)) {
     ASSERT_TRUE(
         base::StringToInt(parsed_command_line.GetSwitchValueASCII(
-                              kTimeoutSwitch),
+                          kTimeoutSwitch),
                           &g_timeout_ms));
     ASSERT_GT(g_timeout_ms, 0);
   }
@@ -722,5 +810,12 @@ void SetPageRange(const CommandLine& parsed_command_line) {
         }
       }
     }
+  }
+
+  if (parsed_command_line.HasSwitch(kStressOptSwitch)) {
+    g_stress_opt = true;
+  }
+  if (parsed_command_line.HasSwitch(kStressDeoptSwitch)) {
+    g_stress_deopt = true;
   }
 }

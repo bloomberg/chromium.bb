@@ -158,6 +158,7 @@
 #include "third_party/cld/encodings/compact_lang_det/win/cld_unicodetext.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "v8/include/v8.h"
+#include "v8/include/v8-testing.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/glue/alt_error_page_resource_fetcher.h"
 #include "webkit/glue/context_menu.h"
@@ -1101,6 +1102,8 @@ bool RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SelectPopupMenuItem, OnSelectPopupMenuItem)
 #endif
     IPC_MESSAGE_HANDLER(ViewMsg_PrintPreview, OnPrintPreview)
+    IPC_MESSAGE_HANDLER(ViewMsg_JavaScriptStressTestControl,
+                        OnJavaScriptStressTestControl)
 
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(handled = RenderWidget::OnMessageReceived(message))
@@ -5770,3 +5773,11 @@ void RenderView::OnConnectTcpACK(
       remote_addr);
 }
 #endif
+
+void RenderView::OnJavaScriptStressTestControl(int cmd, int param) {
+  if (cmd == kJavaScriptStressTestSetStressRunType) {
+    v8::Testing::SetStressRunType(static_cast<v8::Testing::StressType>(param));
+  } else if (cmd == kJavaScriptStressTestPrepareStressRun) {
+    v8::Testing::PrepareStressRun(param);
+  }
+}

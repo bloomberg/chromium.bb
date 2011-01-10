@@ -525,6 +525,12 @@ class RenderViewHost : public RenderWidgetHost {
   void DetermineIfPageSupportsInstant(const string16& value,
                                       bool verbatim);
 
+  // Send a notification to the V8 JavaScript engine to change its parameters
+  // while performing stress testing. |cmd| is one of the values defined by
+  // |ViewHostMsg_JavaScriptStressTestControl_Commands|, which is defined
+  // in render_messages.h.
+  void JavaScriptStressTestControl(int cmd, int param);
+
 #if defined(UNIT_TEST)
   // These functions shouldn't be necessary outside of testing.
 

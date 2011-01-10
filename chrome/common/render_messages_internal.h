@@ -2622,3 +2622,11 @@ IPC_MESSAGE_CONTROL3(ViewHostMsg_PepperConnectTcpAddress,
                      int /* routing_id */,
                      int /* request_id */,
                      PP_Flash_NetAddress /* addr */)
+
+// JavaScript related messages -----------------------------------------------
+
+// Notify the JavaScript engine in the render to change its parameters
+// while performing stress testing.
+IPC_MESSAGE_ROUTED2(ViewMsg_JavaScriptStressTestControl,
+                    int /* cmd */,
+                    int /* param */)

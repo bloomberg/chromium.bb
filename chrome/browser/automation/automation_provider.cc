@@ -403,6 +403,8 @@ bool AutomationProvider::OnMessageReceived(const IPC::Message& message) {
                         GetExtensionProperty)
     IPC_MESSAGE_HANDLER(AutomationMsg_SaveAsAsync, SaveAsAsync)
     IPC_MESSAGE_HANDLER(AutomationMsg_RemoveBrowsingData, RemoveBrowsingData)
+    IPC_MESSAGE_HANDLER(AutomationMsg_JavaScriptStressTestControl,
+                        JavaScriptStressTestControl)
 #if defined(OS_WIN)
     // These are for use with external tabs.
     IPC_MESSAGE_HANDLER(AutomationMsg_CreateExternalTab, CreateExternalTab)
@@ -762,6 +764,18 @@ void AutomationProvider::RemoveBrowsingData(int remove_mask) {
       base::Time());
   remover->Remove(remove_mask);
   // BrowsingDataRemover deletes itself.
+}
+
+void AutomationProvider::JavaScriptStressTestControl(int tab_handle,
+                                                     int cmd,
+                                                     int param) {
+  RenderViewHost* view = GetViewForTab(tab_handle);
+  if (!view) {
+    NOTREACHED();
+    return;
+  }
+
+  view->JavaScriptStressTestControl(cmd, param);
 }
 
 RenderViewHost* AutomationProvider::GetViewForTab(int tab_handle) {

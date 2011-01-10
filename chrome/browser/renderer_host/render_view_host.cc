@@ -1983,6 +1983,10 @@ void RenderViewHost::FilterURL(ChildProcessSecurityPolicy* policy,
   }
 }
 
+void RenderViewHost::JavaScriptStressTestControl(int cmd, int param) {
+  Send(new ViewMsg_JavaScriptStressTestControl(routing_id(), cmd, param));
+}
+
 void RenderViewHost::OnExtensionPostMessage(
     int port_id, const std::string& message) {
   if (process()->profile()->GetExtensionMessageService()) {

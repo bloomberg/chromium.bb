@@ -1438,3 +1438,10 @@ IPC_SYNC_MESSAGE_CONTROL2_1(AutomationMsg_CaptureEntirePageAsPNG,
                             int,
                             FilePath,
                             bool)
+
+// Notify the JavaScript engine in the render to change its parameters
+// while performing stress testing.
+IPC_MESSAGE_ROUTED3(AutomationMsg_JavaScriptStressTestControl,
+                    int /* tab handle */,
+                    int /* command */,
+                    int /* type or run */)

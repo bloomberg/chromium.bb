@@ -254,6 +254,12 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // See browsing_data_remover.h for explanation of bitmap fields.
   void RemoveBrowsingData(int remove_mask);
 
+  // Notify the JavaScript engine in the render to change its parameters
+  // while performing stress testing. See
+  // |ViewHostMsg_JavaScriptStressTestControl_Commands| in render_messages.h
+  // for information on the arguments.
+  void JavaScriptStressTestControl(int handle, int cmd, int param);
+
   void InstallExtension(const FilePath& crx_path,
                         IPC::Message* reply_message);
 
