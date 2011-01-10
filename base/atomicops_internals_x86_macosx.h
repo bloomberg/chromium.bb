@@ -110,7 +110,7 @@ inline Atomic64 NoBarrier_CompareAndSwap(volatile Atomic64 *ptr,
   Atomic64 prev_value;
   do {
     if (OSAtomicCompareAndSwap64(old_value, new_value,
-                                 const_cast<Atomic64*>(ptr))) {
+                                 reinterpret_cast<volatile int64_t*>(ptr))) {
       return old_value;
     }
     prev_value = *ptr;
@@ -124,18 +124,19 @@ inline Atomic64 NoBarrier_AtomicExchange(volatile Atomic64 *ptr,
   do {
     old_value = *ptr;
   } while (!OSAtomicCompareAndSwap64(old_value, new_value,
-                                     const_cast<Atomic64*>(ptr)));
+                                     reinterpret_cast<volatile int64_t*>(ptr)));
   return old_value;
 }
 
 inline Atomic64 NoBarrier_AtomicIncrement(volatile Atomic64 *ptr,
                                           Atomic64 increment) {
-  return OSAtomicAdd64(increment, const_cast<Atomic64*>(ptr));
+  return OSAtomicAdd64(increment, reinterpret_cast<volatile int64_t*>(ptr));
 }
 
 inline Atomic64 Barrier_AtomicIncrement(volatile Atomic64 *ptr,
                                         Atomic64 increment) {
-  return OSAtomicAdd64Barrier(increment, const_cast<Atomic64*>(ptr));
+  return OSAtomicAdd64Barrier(increment,
+                              reinterpret_cast<volatile int64_t*>(ptr));
 }
 
 inline Atomic64 Acquire_CompareAndSwap(volatile Atomic64 *ptr,
@@ -143,8 +144,8 @@ inline Atomic64 Acquire_CompareAndSwap(volatile Atomic64 *ptr,
                                        Atomic64 new_value) {
   Atomic64 prev_value;
   do {
-    if (OSAtomicCompareAndSwap64Barrier(old_value, new_value,
-                                        const_cast<Atomic64*>(ptr))) {
+    if (OSAtomicCompareAndSwap64Barrier(
+        old_value, new_value, reinterpret_cast<volatile int64_t*>(ptr))) {
       return old_value;
     }
     prev_value = *ptr;
@@ -193,12 +194,11 @@ inline Atomic64 Release_Load(volatile const Atomic64 *ptr) {
 
 // MacOS uses long for intptr_t, AtomicWord and Atomic32 are always different
 // on the Mac, even when they are the same size.  We need to explicitly cast
-// from AtomicWord to Atomic32/64 to implement the AtomicWord interface.
-#ifdef __LP64__
-#define AtomicWordCastType Atomic64
-#else
+// from AtomicWord to Atomic32 to implement the AtomicWord interface.
+// When in 64-bit mode, AtomicWord is the same as Atomic64, so we need not
+// add duplicate definitions.
+#ifndef __LP64__
 #define AtomicWordCastType Atomic32
-#endif
 
 inline AtomicWord NoBarrier_CompareAndSwap(volatile AtomicWord* ptr,
                                            AtomicWord old_value,
@@ -273,6 +273,7 @@ inline AtomicWord Release_Load(volatile const AtomicWord* ptr) {
 }
 
 #undef AtomicWordCastType
+#endif
 
 }   // namespace base::subtle
 }   // namespace base
