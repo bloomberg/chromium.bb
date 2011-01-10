@@ -859,6 +859,8 @@ def SendUpstream(parser, args, cmd):
 
   base_branch = args[0]
 
+  # Make sure index is up-to-date before running diff-index.
+  RunGit(['update-index', '--refresh', '-q'], error_ok=True)
   if RunGit(['diff-index', 'HEAD']):
     print 'Cannot %s with a dirty tree.  You must commit locally first.' % cmd
     return 1
