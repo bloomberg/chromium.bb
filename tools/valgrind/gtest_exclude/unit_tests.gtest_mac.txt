@@ -7,6 +7,8 @@ WebDropTargetTest.URL
 WebDropTargetTest.Data
 # http://crbug.com/69037
 FirefoxImporterTest.Firefox3NSS3Decryptor
+# http://crbug.com/69039
+ProcessInfoSnapshotMacTest.EffectiveVsRealUserIDTest
 
 
 # Following tests do not pass memcheck test.
