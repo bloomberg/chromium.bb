@@ -4,6 +4,8 @@
 
 #include "webkit/plugins/npapi/plugin_host.h"
 
+#include "app/gfx/gl/gl_context.h"
+#include "app/gfx/gl/gl_implementation.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
@@ -51,7 +53,21 @@ static PluginInstance* FindInstance(NPP id) {
 static bool SupportsSharingAcceleratedSurfaces() {
   int32 major, minor, bugfix;
   base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
-  return major > 10 || (major == 10 && minor > 5);
+  bool isSnowLeopardOrLater = major > 10 || (major == 10 && minor > 5);
+  if (!isSnowLeopardOrLater)
+    return false;
+  // We also need to be running with desktop GL and not the software
+  // OSMesa renderer in order to share accelerated surfaces between
+  // processes.
+  gfx::GLImplementation implementation = gfx::GetGLImplementation();
+  if (implementation == gfx::kGLImplementationNone) {
+    // Not initialized yet.
+    if (!gfx::GLContext::InitializeOneOff()) {
+      return false;
+    }
+    implementation = gfx::GetGLImplementation();
+  }
+  return (implementation == gfx::kGLImplementationDesktopGL);
 }
 #endif
 

@@ -27,6 +27,11 @@ bool AcceleratedSurface::Initialize(gfx::GLContext* share_context,
   if (!gfx::GLContext::InitializeOneOff())
     return false;
 
+  // Drawing to IOSurfaces via OpenGL only works with desktop GL and
+  // not with the OSMesa software renderer.
+  if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGL)
+    return false;
+
   gl_context_.reset(gfx::GLContext::CreateOffscreenGLContext(share_context));
   if (!gl_context_.get())
     return false;
