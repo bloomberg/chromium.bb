@@ -131,7 +131,8 @@ bool PluginPpapi::Init(uint32_t argc, const char* argn[], const char* argv[]) {
 
 PluginPpapi::PluginPpapi(PP_Instance pp_instance)
     : pp::Instance(pp_instance),
-      ppapi_proxy_(NULL) {
+      ppapi_proxy_(NULL),
+      replayDidChangeView(false) {
   PLUGIN_PRINTF(("PluginPpapi::PluginPpapi (this=%p, pp_instance=%"
                  NACL_PRId64")\n", static_cast<void*>(this), pp_instance));
   NaClSrpcModuleInit();
@@ -161,6 +162,10 @@ void PluginPpapi::DidChangeView(const pp::Rect& position,
   PLUGIN_PRINTF(("PluginPpapi::DidChangeView (this=%p)\n",
                  static_cast<void*>(this)));
   if (ppapi_proxy_ == NULL) {
+    // Store this event and replay it whhen the proxy becomes available.
+    replayDidChangeView         = true;
+    replayDidChangeViewPosition = position;
+    replayDidChangeViewClip     = clip;
     return;
   } else {
     // TODO(polina): cache the instance_interface on the plugin.
@@ -345,6 +350,12 @@ void PluginPpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {
                                      const_cast<const char**>(argv()))) {
     PLUGIN_PRINTF(("PluginPpapi::StartProxiedExecution failed\n"));
     return;
+  }
+
+  // Replay missed events.
+  if (replayDidChangeView) {
+    replayDidChangeView = false;
+    DidChangeView(replayDidChangeViewPosition, replayDidChangeViewClip);
   }
 }
 

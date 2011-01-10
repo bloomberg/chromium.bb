@@ -16,6 +16,7 @@
 #include "native_client/src/trusted/plugin/ppapi/file_downloader.h"
 
 #include "ppapi/cpp/instance.h"
+#include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/var.h"
 
 
@@ -25,7 +26,6 @@ class BrowserPpp;
 }
 
 namespace pp {
-class Rect;
 class URLLoader;
 }
 
@@ -136,6 +136,13 @@ class PluginPpapi : public pp::Instance, public Plugin {
   // GetInterface).
   // TODO(sehr): this should be a scoped_ptr for shutdown.
   ppapi_proxy::BrowserPpp* ppapi_proxy_;
+
+  // If we get a DidChangeView event before the nexe is loaded, we store it and
+  // replay it to nexe after it's loaded.
+  bool replayDidChangeView;
+  pp::Rect replayDidChangeViewPosition;
+  pp::Rect replayDidChangeViewClip;
+
 };
 
 }  // namespace plugin
