@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/autocomplete/autocomplete_popup_contents_view.h"
+#include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
 
 #include "app/bidi_line_iterator.h"
 #include "app/l10n_util.h"
@@ -18,8 +18,8 @@
 #include "chrome/browser/instant/instant_confirm_dialog.h"
 #include "chrome/browser/instant/promo_counter.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/views/bubble_border.h"
-#include "chrome/browser/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/bubble_border.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/color_utils.h"
 #include "gfx/insets.h"

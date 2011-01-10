@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/location_bar/ev_bubble_view.h"
+#include "chrome/browser/ui/views/location_bar/ev_bubble_view.h"
 
 EVBubbleView::EVBubbleView(const int background_images[],
                            int contained_image,

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -645,7 +645,7 @@ static BOOL recentShownUserActionFailedStatus = NO;
   // it the best we can to get all the information in (they actually do it
   // but created Labels and Links that they carefully place to make it appear
   // to be a paragraph of text).
-  // src/chrome/browser/views/about_chrome_view.cc AboutChromeView::Init()
+  // src/chrome/browser/ui/views/about_chrome_view.cc AboutChromeView::Init()
 
   NSMutableAttributedString* legal_block =
       [[[NSMutableAttributedString alloc] init] autorelease];

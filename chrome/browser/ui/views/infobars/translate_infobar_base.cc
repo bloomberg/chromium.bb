@@ -1,16 +1,16 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/infobars/translate_infobar_base.h"
+#include "chrome/browser/ui/views/infobars/translate_infobar_base.h"
 
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
-#include "chrome/browser/views/infobars/after_translate_infobar.h"
-#include "chrome/browser/views/infobars/before_translate_infobar.h"
-#include "chrome/browser/views/infobars/translate_message_infobar.h"
-#include "chrome/browser/views/infobars/infobar_button_border.h"
+#include "chrome/browser/ui/views/infobars/after_translate_infobar.h"
+#include "chrome/browser/ui/views/infobars/before_translate_infobar.h"
+#include "chrome/browser/ui/views/infobars/translate_message_infobar.h"
+#include "chrome/browser/ui/views/infobars/infobar_button_border.h"
 #include "gfx/canvas_skia.h"
 #include "grit/theme_resources.h"
 #include "ui/base/animation/slide_animation.h"

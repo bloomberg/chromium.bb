@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,8 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/views/options/options_page_view.h"
-#include "chrome/browser/views/confirm_message_box_dialog.h"
+#include "chrome/browser/ui/views/options/options_page_view.h"
+#include "chrome/browser/ui/views/confirm_message_box_dialog.h"
 #include "views/controls/button/button.h"
 #include "views/controls/link.h"
 #include "views/view.h"

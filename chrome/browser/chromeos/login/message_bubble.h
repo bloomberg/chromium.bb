@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_MESSAGE_BUBBLE_H_
 #pragma once
 
-#include "chrome/browser/views/info_bubble.h"
+#include "chrome/browser/ui/views/info_bubble.h"
 #include "views/controls/button/button.h"
 #include "views/controls/link.h"
 #include "views/view.h"

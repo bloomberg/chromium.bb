@@ -1,11 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/tabs/dock_info.h"
 
 #if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/views/tabs/tab.h"
+#include "chrome/browser/ui/views/tabs/tab.h"
 #else
 #include "chrome/browser/gtk/tabs/tab_gtk.h"
 #endif

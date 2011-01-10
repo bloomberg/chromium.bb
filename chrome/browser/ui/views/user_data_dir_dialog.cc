@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #include "app/message_box_flags.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/views/user_data_dir_dialog.h"
+#include "chrome/browser/ui/views/user_data_dir_dialog.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "views/controls/message_box_view.h"

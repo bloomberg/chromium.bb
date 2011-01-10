@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,8 +19,8 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/views/restart_message_box.h"
-#include "chrome/browser/views/window.h"
+#include "chrome/browser/ui/views/restart_message_box.h"
+#include "chrome/browser/ui/views/window.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/font.h"

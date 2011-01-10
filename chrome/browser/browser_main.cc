@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -134,7 +134,7 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/rlz/rlz.h"
-#include "chrome/browser/views/user_data_dir_dialog.h"
+#include "chrome/browser/ui/views/user_data_dir_dialog.h"
 #include "chrome/common/sandbox_policy.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
@@ -152,7 +152,7 @@
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/views/chrome_views_delegate.h"
+#include "chrome/browser/ui/views/chrome_views_delegate.h"
 #include "views/focus/accelerator_handler.h"
 #endif
 
@@ -166,7 +166,7 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/metrics_cros_settings_provider.h"
-#include "chrome/browser/views/browser_dialogs.h"
+#include "chrome/browser/ui/views/browser_dialogs.h"
 #endif
 
 #if defined(TOOLKIT_USES_GTK)

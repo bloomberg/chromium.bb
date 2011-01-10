@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/options/cookies_view.h"
+#include "chrome/browser/ui/views/options/cookies_view.h"
 
 #include <algorithm>
 
@@ -10,11 +10,11 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/views/appcache_info_view.h"
-#include "chrome/browser/views/cookie_info_view.h"
-#include "chrome/browser/views/database_info_view.h"
-#include "chrome/browser/views/indexed_db_info_view.h"
-#include "chrome/browser/views/local_storage_info_view.h"
+#include "chrome/browser/ui/views/appcache_info_view.h"
+#include "chrome/browser/ui/views/cookie_info_view.h"
+#include "chrome/browser/ui/views/database_info_view.h"
+#include "chrome/browser/ui/views/indexed_db_info_view.h"
+#include "chrome/browser/ui/views/local_storage_info_view.h"
 #include "gfx/canvas.h"
 #include "gfx/color_utils.h"
 #include "grit/generated_resources.h"

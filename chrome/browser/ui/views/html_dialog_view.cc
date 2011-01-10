@@ -1,13 +1,13 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/html_dialog_view.h"
+#include "chrome/browser/ui/views/html_dialog_view.h"
 
 #include "app/keyboard_codes.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/views/window.h"
+#include "chrome/browser/ui/views/window.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"

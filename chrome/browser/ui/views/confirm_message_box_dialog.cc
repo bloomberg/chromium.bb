@@ -1,8 +1,8 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/confirm_message_box_dialog.h"
+#include "chrome/browser/ui/views/confirm_message_box_dialog.h"
 
 #include "app/l10n_util.h"
 #include "app/message_box_flags.h"

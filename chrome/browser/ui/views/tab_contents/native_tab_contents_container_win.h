@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_NATIVE_TAB_CONTENTS_CONTAINER_WIN_H_
 #pragma once
 
-#include "chrome/browser/views/tab_contents/native_tab_contents_container.h"
+#include "chrome/browser/ui/views/tab_contents/native_tab_contents_container.h"
 #include "views/controls/native/native_view_host.h"
 
 class NativeTabContentsContainerWin : public NativeTabContentsContainer,

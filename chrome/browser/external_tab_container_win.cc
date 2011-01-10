@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,10 +30,10 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/browser/tab_contents/provisional_load_details.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/views/browser_dialogs.h"
-#include "chrome/browser/views/page_info_bubble_view.h"
-#include "chrome/browser/views/tab_contents/render_view_context_menu_views.h"
-#include "chrome/browser/views/tab_contents/tab_contents_container.h"
+#include "chrome/browser/ui/views/browser_dialogs.h"
+#include "chrome/browser/ui/views/page_info_bubble_view.h"
+#include "chrome/browser/ui/views/tab_contents/render_view_context_menu_views.h"
+#include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/chrome_constants.h"

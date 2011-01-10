@@ -1,8 +1,8 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/tabs/native_view_photobooth_gtk.h"
+#include "chrome/browser/ui/views/tabs/native_view_photobooth_gtk.h"
 
 #include "base/logging.h"
 #include "gfx/canvas.h"

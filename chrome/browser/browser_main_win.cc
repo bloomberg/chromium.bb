@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/metrics/metrics_service.h"
-#include "chrome/browser/views/uninstall_view.h"
+#include "chrome/browser/ui/views/uninstall_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/main_function_params.h"

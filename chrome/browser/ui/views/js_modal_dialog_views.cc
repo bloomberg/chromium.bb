@@ -1,15 +1,15 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/js_modal_dialog_views.h"
+#include "chrome/browser/ui/views/js_modal_dialog_views.h"
 
 #include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "app/message_box_flags.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
-#include "chrome/browser/views/window.h"
+#include "chrome/browser/ui/views/window.h"
 #include "grit/generated_resources.h"
 #include "views/controls/message_box_view.h"
 #include "views/window/window.h"

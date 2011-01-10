@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,7 @@
 #include "gfx/rect.h"
 #include "chrome/browser/chromeos/frame/bubble_window.h"
 #include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/views/bubble_border.h"
+#include "chrome/browser/ui/views/bubble_border.h"
 #include "grit/theme_resources.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/label.h"

@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/options/content_page_view.h"
+#include "chrome/browser/ui/views/options/content_page_view.h"
 
 #include <windows.h>
 #include <shlobj.h>
@@ -21,10 +21,10 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/views/importer_view.h"
-#include "chrome/browser/views/options/managed_prefs_banner_view.h"
-#include "chrome/browser/views/options/options_group_view.h"
-#include "chrome/browser/views/options/passwords_exceptions_window_view.h"
+#include "chrome/browser/ui/views/importer_view.h"
+#include "chrome/browser/ui/views/options/managed_prefs_banner_view.h"
+#include "chrome/browser/ui/views/options/options_group_view.h"
+#include "chrome/browser/ui/views/options/passwords_exceptions_window_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/canvas.h"

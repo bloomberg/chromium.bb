@@ -1,13 +1,13 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/dropdown_bar_host.h"
+#include "chrome/browser/ui/views/dropdown_bar_host.h"
 
 #include <gdk/gdkkeysyms.h>
 
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "views/widget/widget_gtk.h"
 #include "views/controls/textfield/textfield.h"
 

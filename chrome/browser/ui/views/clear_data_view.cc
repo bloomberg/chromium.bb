@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/clear_data_view.h"
+#include "chrome/browser/ui/views/clear_data_view.h"
 
 #include "app/l10n_util.h"
 #include "base/string16.h"
@@ -12,8 +12,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/views/clear_browsing_data.h"
-#include "chrome/browser/views/clear_server_data.h"
+#include "chrome/browser/ui/views/clear_browsing_data.h"
+#include "chrome/browser/ui/views/clear_server_data.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/insets.h"
 #include "grit/generated_resources.h"

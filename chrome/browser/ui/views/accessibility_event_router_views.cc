@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/accessibility_event_router_views.h"
+#include "chrome/browser/ui/views/accessibility_event_router_views.h"
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -11,7 +11,7 @@
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/common/notification_type.h"
 #include "views/accessibility/accessibility_types.h"
 #include "views/controls/button/custom_button.h"

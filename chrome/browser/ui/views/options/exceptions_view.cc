@@ -1,15 +1,15 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/options/exceptions_view.h"
+#include "chrome/browser/ui/views/options/exceptions_view.h"
 
 #include <algorithm>
 #include <vector>
 
 #include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/views/options/content_exceptions_table_view.h"
+#include "chrome/browser/ui/views/options/content_exceptions_table_view.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "gfx/rect.h"

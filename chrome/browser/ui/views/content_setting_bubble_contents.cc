@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/content_setting_bubble_contents.h"
+#include "chrome/browser/ui/views/content_setting_bubble_contents.h"
 
 #if defined(OS_LINUX)
 #include <gdk/gdk.h>
@@ -16,8 +16,8 @@
 #include "chrome/browser/plugin_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/views/browser_dialogs.h"
-#include "chrome/browser/views/info_bubble.h"
+#include "chrome/browser/ui/views/browser_dialogs.h"
+#include "chrome/browser/ui/views/info_bubble.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "grit/generated_resources.h"

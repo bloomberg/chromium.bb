@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/keyword_editor_view.h"
+#include "chrome/browser/ui/views/keyword_editor_view.h"
 
 #include <vector>
 
@@ -15,8 +15,8 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/template_url_table_model.h"
-#include "chrome/browser/views/browser_dialogs.h"
-#include "chrome/browser/views/first_run_search_engine_view.h"
+#include "chrome/browser/ui/views/browser_dialogs.h"
+#include "chrome/browser/ui/views/first_run_search_engine_view.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/point.h"
 #include "googleurl/src/gurl.h"

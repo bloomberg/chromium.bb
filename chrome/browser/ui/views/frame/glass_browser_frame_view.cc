@@ -1,18 +1,18 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/frame/glass_browser_frame_view.h"
+#include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"
 
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
-#include "chrome/browser/views/frame/browser_view.h"
-#include "chrome/browser/views/tabs/side_tab_strip.h"
-#include "chrome/browser/views/tabs/tab.h"
-#include "chrome/browser/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/tabs/side_tab_strip.h"
+#include "chrome/browser/ui/views/tabs/tab.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/icon_util.h"
 #include "grit/app_resources.h"

@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/tabs/dragged_tab_controller.h"
+#include "chrome/browser/ui/views/tabs/dragged_tab_controller.h"
 
 #include <math.h>
 #include <set>
@@ -15,16 +15,16 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/views/frame/browser_view.h"
-#include "chrome/browser/views/tabs/base_tab.h"
-#include "chrome/browser/views/tabs/base_tab_strip.h"
-#include "chrome/browser/views/tabs/browser_tab_strip_controller.h"
-#include "chrome/browser/views/tabs/dragged_tab_view.h"
-#include "chrome/browser/views/tabs/native_view_photobooth.h"
-#include "chrome/browser/views/tabs/side_tab.h"
-#include "chrome/browser/views/tabs/side_tab_strip.h"
-#include "chrome/browser/views/tabs/tab.h"
-#include "chrome/browser/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/tabs/base_tab.h"
+#include "chrome/browser/ui/views/tabs/base_tab_strip.h"
+#include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
+#include "chrome/browser/ui/views/tabs/dragged_tab_view.h"
+#include "chrome/browser/ui/views/tabs/native_view_photobooth.h"
+#include "chrome/browser/ui/views/tabs/side_tab.h"
+#include "chrome/browser/ui/views/tabs/side_tab_strip.h"
+#include "chrome/browser/ui/views/tabs/tab.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
 #include "gfx/canvas_skia.h"

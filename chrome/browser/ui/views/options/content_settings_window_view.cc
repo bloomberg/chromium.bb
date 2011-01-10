@@ -1,19 +1,19 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/options/content_settings_window_view.h"
+#include "chrome/browser/ui/views/options/content_settings_window_view.h"
 
 #include "app/l10n_util.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/views/options/advanced_page_view.h"
-#include "chrome/browser/views/options/content_filter_page_view.h"
-#include "chrome/browser/views/options/cookie_filter_page_view.h"
-#include "chrome/browser/views/options/general_page_view.h"
-#include "chrome/browser/views/options/plugin_filter_page_view.h"
+#include "chrome/browser/ui/views/options/advanced_page_view.h"
+#include "chrome/browser/ui/views/options/content_filter_page_view.h"
+#include "chrome/browser/ui/views/options/cookie_filter_page_view.h"
+#include "chrome/browser/ui/views/options/general_page_view.h"
+#include "chrome/browser/ui/views/options/plugin_filter_page_view.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"

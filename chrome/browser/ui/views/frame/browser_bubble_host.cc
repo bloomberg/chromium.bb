@@ -1,11 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/frame/browser_bubble_host.h"
+#include "chrome/browser/ui/views/frame/browser_bubble_host.h"
 
 #include "base/logging.h"
-#include "chrome/browser/views/browser_bubble.h"
+#include "chrome/browser/ui/views/browser_bubble.h"
 
 void BrowserBubbleHost::WindowMoved() {
   // Do safe iteration in case the bubble winds up closing as a result of this

@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 
 #if defined(OS_LINUX)
 #include <gtk/gtk.h>
@@ -49,7 +49,7 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/location_bar/suggested_text_view.h"
-#include "chrome/browser/views/first_run_bubble.h"
+#include "chrome/browser/ui/views/first_run_bubble.h"
 #endif
 
 using views::View;
@@ -69,7 +69,7 @@ const int LocationBarView::kExtensionItemPadding = 5;
 const int LocationBarView::kEdgeItemPadding = kItemPadding;
 const int LocationBarView::kBubblePadding = 1;
 const char LocationBarView::kViewClassName[] =
-    "browser/views/location_bar/LocationBarView";
+    "browser/ui/views/location_bar/LocationBarView";
 
 static const int kEVBubbleBackgroundImages[] = {
   IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L,

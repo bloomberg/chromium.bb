@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include "chrome/browser/translate/languages_menu_model.h"
 #include "chrome/browser/translate/options_menu_model.h"
 #include "chrome/browser/translate/translate_infobar_view.h"
-#include "chrome/browser/views/infobars/translate_infobar_base.h"
+#include "chrome/browser/ui/views/infobars/translate_infobar_base.h"
 #include "views/controls/button/button.h"
 #include "views/controls/link.h"
 #include "views/controls/menu/view_menu_delegate.h"

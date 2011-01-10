@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/views/tab_contents/tab_contents_container.h"
+#include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "gfx/rect.h"
 #include "ipc/ipc_message.h"
 #include "views/view.h"
@@ -62,7 +62,7 @@ class ConstrainedHtmlDelegateWin : public TabContentsContainer,
     window_ = window;
   }
 
-private:
+ private:
   TabContents html_tab_contents_;
 
   HtmlDialogUIDelegate* html_delegate_;

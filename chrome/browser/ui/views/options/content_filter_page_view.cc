@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/options/content_filter_page_view.h"
+#include "chrome/browser/ui/views/options/content_filter_page_view.h"
 
 #include "app/l10n_util.h"
 #include "base/command_line.h"
@@ -14,8 +14,8 @@
 #include "chrome/browser/notifications/notification_exceptions_table_model.h"
 #include "chrome/browser/plugin_exceptions_table_model.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/views/options/exceptions_view.h"
-#include "chrome/browser/views/options/simple_content_exceptions_view.h"
+#include "chrome/browser/ui/views/options/exceptions_view.h"
+#include "chrome/browser/ui/views/options/simple_content_exceptions_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"

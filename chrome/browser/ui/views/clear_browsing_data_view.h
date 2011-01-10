@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 
 #include "app/combobox_model.h"
 #include "chrome/browser/browsing_data_remover.h"
-#include "chrome/browser/views/clear_data_view.h"
+#include "chrome/browser/ui/views/clear_data_view.h"
 #include "views/controls/button/button.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"

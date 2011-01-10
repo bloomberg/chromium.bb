@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 
 #include "base/string16.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
-#include "chrome/browser/views/dropdown_bar_view.h"
+#include "chrome/browser/ui/views/dropdown_bar_view.h"
 #include "gfx/size.h"
 #include "views/controls/button/button.h"
 #include "views/controls/textfield/textfield.h"

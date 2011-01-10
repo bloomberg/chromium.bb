@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,7 @@ void UpdateSyncItemForStatus(id syncItem, BOOL syncEnabled,
   }
 
   // TODO(akalin): consolidate this code with the equivalent Windows code in
-  // chrome/browser/views/toolbar_view.cc.
+  // chrome/browser/ui/views/toolbar_view.cc.
   int titleId;
   switch (status) {
     case sync_ui_util::SYNCED:

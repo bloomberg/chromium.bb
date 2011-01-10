@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,9 @@
 #pragma once
 
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/views/browser_bubble.h"
-#include "chrome/browser/views/extensions/extension_view.h"
-#include "chrome/browser/views/bubble_border.h"
+#include "chrome/browser/ui/views/browser_bubble.h"
+#include "chrome/browser/ui/views/extensions/extension_view.h"
+#include "chrome/browser/ui/views/bubble_border.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "gfx/native_widget_types.h"

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,8 @@
 #include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_window_tracker.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/views/frame/browser_view.h"
-#include "chrome/browser/views/toolbar_view.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/common/automation_messages.h"
 #include "gfx/point.h"
 #include "views/controls/menu/menu_wrapper.h"

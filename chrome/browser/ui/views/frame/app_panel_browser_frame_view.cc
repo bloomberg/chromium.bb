@@ -1,16 +1,16 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/frame/app_panel_browser_frame_view.h"
+#include "chrome/browser/ui/views/frame/app_panel_browser_frame_view.h"
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/compiler_specific.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/views/frame/browser_frame.h"
-#include "chrome/browser/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/browser_frame.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "gfx/canvas.h"
 #include "gfx/font.h"
 #include "gfx/path.h"

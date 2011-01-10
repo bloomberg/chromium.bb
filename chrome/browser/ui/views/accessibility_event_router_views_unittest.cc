@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,8 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
-#include "chrome/browser/views/accessibility_event_router_views.h"
-#include "chrome/browser/views/accessible_view_helper.h"
+#include "chrome/browser/ui/views/accessibility_event_router_views.h"
+#include "chrome/browser/ui/views/accessible_view_helper.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/test/testing_profile.h"

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,7 @@
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/ui/app_modal_dialogs/js_modal_dialog.h"
 #if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/views/extensions/extension_view.h"
+#include "chrome/browser/ui/views/extensions/extension_view.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/extension_view_mac.h"
 #elif defined(TOOLKIT_GTK)

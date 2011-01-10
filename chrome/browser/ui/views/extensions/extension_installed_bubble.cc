@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/extensions/extension_installed_bubble.h"
+#include "chrome/browser/ui/views/extensions/extension_installed_bubble.h"
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -12,10 +12,10 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/views/browser_actions_container.h"
-#include "chrome/browser/views/frame/browser_view.h"
-#include "chrome/browser/views/location_bar/location_bar_view.h"
-#include "chrome/browser/views/toolbar_view.h"
+#include "chrome/browser/ui/views/browser_actions_container.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/notification_details.h"

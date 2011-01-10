@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 
 #if defined(OS_LINUX)
 #include <gtk/gtk.h>
@@ -88,7 +88,7 @@
 #include "chrome/browser/aeropeek_manager.h"
 #include "chrome/browser/jumplist_win.h"
 #elif defined(OS_LINUX)
-#include "chrome/browser/views/accelerator_table_gtk.h"
+#include "chrome/browser/ui/views/accelerator_table_gtk.h"
 #include "views/window/hit_test.h"
 #include "views/window/window_gtk.h"
 #endif
@@ -123,7 +123,7 @@ static const int kNewtabBarRoundness = 5;
 // ------------
 
 // Returned from BrowserView::GetClassName.
-const char BrowserView::kViewClassName[] = "browser/views/BrowserView";
+const char BrowserView::kViewClassName[] = "browser/ui/views/BrowserView";
 
 #if defined(OS_CHROMEOS)
 // Get a normal browser window of given |profile| to use as dialog parent

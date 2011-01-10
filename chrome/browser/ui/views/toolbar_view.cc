@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/toolbar_view.h"
+#include "chrome/browser/ui/views/toolbar_view.h"
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -43,7 +43,7 @@
 #include "chrome/browser/chromeos/dom_ui/wrench_menu_ui.h"
 #include "views/controls/menu/menu_2.h"
 #endif
-#include "chrome/browser/views/wrench_menu.h"
+#include "chrome/browser/ui/views/wrench_menu.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/enumerate_modules_model_win.h"
@@ -358,7 +358,7 @@ void ToolbarView::RunMenu(views::View* source, const gfx::Point& /* pt */) {
   wrench_menu_->RunMenu(app_menu_);
 
 #if defined(OS_CHROMEOS)
-cleanup:
+ cleanup:
 #endif
   if (destroyed_flag)
     return;

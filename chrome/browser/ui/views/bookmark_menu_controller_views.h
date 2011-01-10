@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "chrome/browser/views/bookmark_context_menu.h"
+#include "chrome/browser/ui/views/bookmark_context_menu.h"
 #include "gfx/native_widget_types.h"
 #include "views/controls/menu/menu_delegate.h"
 #include "views/controls/menu/menu_item_view.h"

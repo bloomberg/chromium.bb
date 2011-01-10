@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@
 // TODO(port): Port these files.
 #if defined(OS_WIN)
 #include "app/win/win_util.h"
-#include "chrome/browser/views/importer_lock_view.h"
+#include "chrome/browser/ui/views/importer_lock_view.h"
 #include "views/window/window.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/importer_lock_dialog.h"

@@ -1,15 +1,15 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/extensions/browser_action_overflow_menu_controller.h"
+#include "chrome/browser/ui/views/extensions/browser_action_overflow_menu_controller.h"
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/views/browser_actions_container.h"
-#include "chrome/browser/views/extensions/browser_action_drag_data.h"
+#include "chrome/browser/ui/views/browser_actions_container.h"
+#include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "gfx/canvas_skia.h"

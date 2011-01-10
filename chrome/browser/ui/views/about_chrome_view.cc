@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/about_chrome_view.h"
+#include "chrome/browser/ui/views/about_chrome_view.h"
 
 #if defined(OS_WIN)
 #include <commdlg.h>
@@ -24,8 +24,8 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/views/accessible_view_helper.h"
-#include "chrome/browser/views/window.h"
+#include "chrome/browser/ui/views/accessible_view_helper.h"
+#include "chrome/browser/ui/views/window.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
@@ -46,7 +46,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
-#include "chrome/browser/views/restart_message_box.h"
+#include "chrome/browser/ui/views/restart_message_box.h"
 #include "chrome/installer/util/install_util.h"
 #endif  // defined(OS_WIN)
 

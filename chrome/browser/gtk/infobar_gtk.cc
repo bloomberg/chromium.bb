@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -239,7 +239,7 @@ void InfoBar::AddLabelAndLink(const string16& display_text,
 void InfoBar::GetTopColor(InfoBarDelegate::Type type,
                           double* r, double* g, double *b) {
   // These constants are copied from corresponding skia constants from
-  // browser/views/infobars/infobars.cc, and then changed into 0-1 ranged
+  // browser/ui/views/infobars/infobars.cc, and then changed into 0-1 ranged
   // values for cairo.
   switch (type) {
     case InfoBarDelegate::WARNING_TYPE:

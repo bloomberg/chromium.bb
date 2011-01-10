@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
-#include "chrome/browser/views/dropdown_bar_host.h"
+#include "chrome/browser/ui/views/dropdown_bar_host.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
 #include "views/controls/textfield/textfield.h"

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_UI_VIEWS_INFOBARS_EXTENSION_INFOBAR_H_
 #pragma once
 
-#include "chrome/browser/views/infobars/infobars.h"
+#include "chrome/browser/ui/views/infobars/infobars.h"
 
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
-#include "chrome/browser/views/extensions/extension_view.h"
+#include "chrome/browser/ui/views/extensions/extension_view.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
 class ExtensionContextMenuModel;
