@@ -23,6 +23,9 @@ GestureManager* GestureManager::GetInstance() {
 bool GestureManager::ProcessTouchEventForGesture(const TouchEvent& event,
                                                  View* source,
                                                  bool previouslyHandled) {
+  if (previouslyHandled)
+    return false;
+
   // TODO(rjkroege): A realistic version of the GestureManager will
   // appear in a subsequent CL. This interim version permits verifying that the
   // event distribution code works by turning all touch inputs into

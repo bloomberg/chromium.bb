@@ -214,16 +214,18 @@ class MockGestureManager : public GestureManager {
     last_touch_event_ = 0;
     last_view_ = NULL;
     previously_handled_flag_ = false;
+    dispatched_synthetic_event_ = false;
   }
 
-  bool previously_handled_flag_;
   bool ProcessTouchEventForGesture(const TouchEvent& event,
                                    View* source,
                                    bool previouslyHandled);
   MockGestureManager();
 
+  bool previously_handled_flag_;
   int last_touch_event_;
   View *last_view_;
+  bool dispatched_synthetic_event_;
 
   DISALLOW_COPY_AND_ASSIGN(MockGestureManager);
 };
@@ -431,9 +433,14 @@ bool MockGestureManager::ProcessTouchEventForGesture(
     const TouchEvent& event,
     View* source,
     bool previouslyHandled) {
+  if (previouslyHandled) {
+    dispatched_synthetic_event_ = false;
+    return false;
+  }
   last_touch_event_ =  event.GetType();
   last_view_ = source;
   previously_handled_flag_ = previouslyHandled;
+  dispatched_synthetic_event_ = true;
   return true;
 }
 
@@ -470,6 +477,28 @@ TEST_F(ViewTest, TouchEvent) {
   root->SetGestureManager(gm);
   v1->AddChildView(v2);
 
+  // Make sure if none of the views handle the touch event, the gesture manager
+  // does.
+  v1->Reset();
+  v2->Reset();
+  gm->Reset();
+
+  TouchEvent unhandled(Event::ET_TOUCH_MOVED,
+                       400,
+                       400,
+                       0, /* no flags */
+                       0  /* first finger touch */);
+  root->OnTouchEvent(unhandled);
+
+  EXPECT_EQ(v1->last_touch_event_type_, 0);
+  EXPECT_EQ(v2->last_touch_event_type_, 0);
+
+  EXPECT_EQ(gm->previously_handled_flag_, false);
+  EXPECT_EQ(gm->last_touch_event_, Event::ET_TOUCH_MOVED);
+  EXPECT_EQ(gm->last_view_, root);
+  EXPECT_EQ(gm->dispatched_synthetic_event_, true);
+
+  // Test press, drag, release touch sequence.
   v1->Reset();
   v2->Reset();
   gm->Reset();
@@ -488,9 +517,10 @@ TEST_F(ViewTest, TouchEvent) {
   // Make sure v1 did not receive the event
   EXPECT_EQ(v1->last_touch_event_type_, 0);
 
-  EXPECT_EQ(gm->last_touch_event_, Event::ET_TOUCH_PRESSED);
-  EXPECT_EQ(gm->last_view_, root);
-  EXPECT_EQ(gm->previously_handled_flag_, true);
+  // Since v2 handled the touch-event, the gesture manager should not handle it.
+  EXPECT_EQ(gm->last_touch_event_, 0);
+  EXPECT_EQ(NULL, gm->last_view_);
+  EXPECT_EQ(gm->previously_handled_flag_, false);
 
   // Drag event out of bounds. Should still go to v2
   v1->Reset();
@@ -507,11 +537,11 @@ TEST_F(ViewTest, TouchEvent) {
   // Make sure v1 did not receive the event
   EXPECT_EQ(v1->last_touch_event_type_, 0);
 
-  EXPECT_EQ(gm->last_touch_event_, Event::ET_TOUCH_MOVED);
-  EXPECT_EQ(gm->last_view_, root);
-  EXPECT_EQ(gm->previously_handled_flag_, true);
+  EXPECT_EQ(gm->last_touch_event_, 0);
+  EXPECT_EQ(NULL, gm->last_view_);
+  EXPECT_EQ(gm->previously_handled_flag_, false);
 
-  // Releasted event out of bounds. Should still go to v2
+  // Released event out of bounds. Should still go to v2
   v1->Reset();
   v2->Reset();
   TouchEvent released(Event::ET_TOUCH_RELEASED, 0, 0, 0, 0 /* first finger */);
@@ -523,9 +553,9 @@ TEST_F(ViewTest, TouchEvent) {
   // Make sure v1 did not receive the event
   EXPECT_EQ(v1->last_touch_event_type_, 0);
 
-  EXPECT_EQ(gm->last_touch_event_, Event::ET_TOUCH_RELEASED);
-  EXPECT_EQ(gm->last_view_, root);
-  EXPECT_EQ(gm->previously_handled_flag_, true);
+  EXPECT_EQ(gm->last_touch_event_, 0);
+  EXPECT_EQ(NULL, gm->last_view_);
+  EXPECT_EQ(gm->previously_handled_flag_, false);
 
   window->CloseNow();
 }
