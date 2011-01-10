@@ -131,26 +131,46 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message,
 }
 
 int32 IndexedDBDispatcherHost::Add(WebIDBCursor* idb_cursor) {
+  if (!cursor_dispatcher_host_.get()) {
+    delete idb_cursor;
+    return 0;
+  }
   return cursor_dispatcher_host_->map_.Add(idb_cursor);
 }
 
 int32 IndexedDBDispatcherHost::Add(WebIDBDatabase* idb_database) {
+  if (!database_dispatcher_host_.get()) {
+    delete idb_database;
+    return 0;
+  }
   return database_dispatcher_host_->map_.Add(idb_database);
 }
 
 int32 IndexedDBDispatcherHost::Add(WebIDBIndex* idb_index) {
+  if (!index_dispatcher_host_.get())  {
+    delete idb_index;
+    return 0;
+  }
   if (!idb_index)
     return 0;
   return index_dispatcher_host_->map_.Add(idb_index);
 }
 
 int32 IndexedDBDispatcherHost::Add(WebIDBObjectStore* idb_object_store) {
+  if (!object_store_dispatcher_host_.get()) {
+    delete idb_object_store;
+    return 0;
+  }
   if (!idb_object_store)
     return 0;
   return object_store_dispatcher_host_->map_.Add(idb_object_store);
 }
 
 int32 IndexedDBDispatcherHost::Add(WebIDBTransaction* idb_transaction) {
+  if (!transaction_dispatcher_host_.get()) {
+    delete idb_transaction;
+    return 0;
+  }
   int32 id = transaction_dispatcher_host_->map_.Add(idb_transaction);
   idb_transaction->setCallbacks(new IndexedDBTransactionCallbacks(this, id));
   return id;
