@@ -16,8 +16,7 @@ const char kCreateAccountFormName[] = "createaccount";
 const char kEmailFieldName[] = "Email";
 const char kDomainFieldName[] = "edk";
 
-class AccountCreationTabContents : public WizardWebPageViewTabContents,
-                                   public IPC::Channel::Listener {
+class AccountCreationTabContents : public WizardWebPageViewTabContents {
  public:
   AccountCreationTabContents(Profile* profile,
                              SiteInstance* site_instance,
@@ -25,22 +24,29 @@ class AccountCreationTabContents : public WizardWebPageViewTabContents,
                              WebPageDelegate* page_delegate)
       : WizardWebPageViewTabContents(profile, site_instance, page_delegate),
         delegate_(delegate) {
-    AddMessageFilter(this);
   }
 
-  // IPC::Channel::Listener implementation.
+  // Overriden from TabContents.
   virtual bool OnMessageReceived(const IPC::Message& message) {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(AccountCreationTabContents, message)
       IPC_MESSAGE_HANDLER(ViewHostMsg_FormSubmitted, OnFormSubmitted)
+      IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_FormsSeen, )
+      IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_QueryFormFieldAutoFill, )
+      IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_ShowAutoFillDialog, )
+      IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_FillAutoFillFormData, )
+      IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_DidFillAutoFillFormData, )
+      IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_DidShowAutoFillSuggestions, )
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
 
-    return handled;
+    if (handled)
+      return true;
+    return TabContents::OnMessageReceived(message);
   }
 
  private:
-  virtual void OnFormSubmitted(const FormData& form) {
+  void OnFormSubmitted(const FormData& form) {
     if (UTF16ToASCII(form.name) == kCreateAccountFormName) {
       std::string user_name;
       std::string domain;

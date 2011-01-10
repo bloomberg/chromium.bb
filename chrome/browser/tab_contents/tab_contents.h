@@ -743,9 +743,6 @@ class TabContents : public PageNavigator,
   // Opens view-source tab for this contents.
   void ViewSource();
 
-  // Add an IPC message filter to the beginning of the list.
-  void AddMessageFilter(IPC::Channel::Listener* message_filter);
-
   // Gets the minimum/maximum zoom percent.
   int minimum_zoom_percent() const { return minimum_zoom_percent_; }
   int maximum_zoom_percent() const { return maximum_zoom_percent_; }
@@ -756,6 +753,10 @@ class TabContents : public PageNavigator,
     return autocomplete_history_manager_.get();
   }
   AutoFillManager* autofill_manager() { return autofill_manager_.get(); }
+
+ protected:
+  // from RenderViewHostDelegate.
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
  private:
   friend class NavigationController;
@@ -960,7 +961,6 @@ class TabContents : public PageNavigator,
   virtual AutomationResourceRoutingDelegate*
       GetAutomationResourceRoutingDelegate();
   virtual TabContents* GetAsTabContents();
-  virtual bool OnMessageReceived(const IPC::Message& message);
   virtual ViewType::Type GetRenderViewType() const;
   virtual int GetBrowserWindowID() const;
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
