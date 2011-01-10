@@ -1320,6 +1320,16 @@
    fun:_ZN11WebDatabase*
 }
 {
+   bug_60556f
+   Memcheck:Addr4
+   ...
+   fun:sqlite3_close
+   fun:_ZN3sql10Connection5CloseEv
+   fun:_ZN3sql10ConnectionD2Ev
+   fun:_ZN3sql10ConnectionD1Ev
+   fun:_ZN11WebDatabase*
+}
+{
    bug_20581
    Memcheck:Leak
    ...
