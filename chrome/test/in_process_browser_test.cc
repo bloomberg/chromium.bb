@@ -274,6 +274,14 @@ Browser* InProcessBrowserTest::CreateBrowser(Profile* profile) {
   return browser;
 }
 
+Browser* InProcessBrowserTest::CreateIncognitoBrowser() {
+  // Create a new browser with using the incognito profile.
+  Browser* incognito =
+      Browser::Create(browser()->profile()->GetOffTheRecordProfile());
+  InitializeBrowser(incognito);
+  return incognito;
+}
+
 Browser* InProcessBrowserTest::CreateBrowserForPopup(Profile* profile) {
   Browser* browser = Browser::CreateForType(Browser::TYPE_POPUP, profile);
   InitializeBrowser(browser);

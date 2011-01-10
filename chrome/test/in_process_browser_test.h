@@ -145,6 +145,9 @@ class InProcessBrowserTest : public testing::Test {
   // This is invoked from Setup.
   virtual Browser* CreateBrowser(Profile* profile);
 
+  // Similar to |CreateBrowser|, but creates an incognito browser.
+  virtual Browser* CreateIncognitoBrowser();
+
   // Creates a browser for a popup window with a single tab (about:blank), waits
   // for the tab to finish loading, and shows the browser.
   Browser* CreateBrowserForPopup(Profile* profile);

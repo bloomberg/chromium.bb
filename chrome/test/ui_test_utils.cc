@@ -432,6 +432,17 @@ Browser* WaitForNewBrowser() {
   return Source<Browser>(observer.source()).ptr();
 }
 
+Browser* WaitForBrowserNotInSet(std::set<Browser*> excluded_browsers) {
+  TestNotificationObserver observer;
+  Browser* new_browser = GetBrowserNotInSet(excluded_browsers);
+  if (new_browser == NULL) {
+    new_browser = WaitForNewBrowser();
+    // The new browser should never be in |excluded_browsers|.
+    DCHECK(!ContainsKey(excluded_browsers, new_browser));
+  }
+  return new_browser;
+}
+
 void OpenURLOffTheRecord(Profile* profile, const GURL& url) {
   Browser::OpenURLOffTheRecord(profile, url);
   Browser* browser = BrowserList::FindBrowserWithType(
@@ -440,16 +451,80 @@ void OpenURLOffTheRecord(Profile* profile, const GURL& url) {
 }
 
 void NavigateToURL(Browser* browser, const GURL& url) {
-  NavigateToURLBlockUntilNavigationsComplete(browser, url, 1);
+  NavigateToURLWithDisposition(browser, url, CURRENT_TAB,
+                               BROWSER_TEST_WAIT_FOR_NAVIGATION);
+}
+
+// Navigates the specified tab (via |disposition|) of |browser| to |url|,
+// blocking until the |number_of_navigations| specified complete.
+// |disposition| indicates what tab the download occurs in, and
+// |browser_test_flags| controls what to wait for before continuing.
+static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
+    Browser* browser,
+    const GURL& url,
+    int number_of_navigations,
+    WindowOpenDisposition disposition,
+    int browser_test_flags) {
+  std::set<Browser*> initial_browsers;
+  for (std::vector<Browser*>::const_iterator iter = BrowserList::begin();
+       iter != BrowserList::end();
+       ++iter) {
+    initial_browsers.insert(*iter);
+  }
+  browser->OpenURL(url, GURL(), disposition, PageTransition::TYPED);
+  if (browser_test_flags & BROWSER_TEST_WAIT_FOR_BROWSER)
+    browser = WaitForBrowserNotInSet(initial_browsers);
+  if (browser_test_flags & BROWSER_TEST_WAIT_FOR_TAB)
+    WaitForNotification(NotificationType::TAB_ADDED);
+  if (!(browser_test_flags & BROWSER_TEST_WAIT_FOR_NAVIGATION)) {
+    // Some other flag caused the wait prior to this.
+    return;
+  }
+  TabContents* tab_contents = NULL;
+  if (disposition == NEW_BACKGROUND_TAB) {
+    // We've opened up a new tab, but not selected it.
+    tab_contents = browser->GetTabContentsAt(browser->selected_index() + 1);
+    EXPECT_TRUE(tab_contents != NULL)
+        << " Unable to wait for navigation to \"" << url.spec()
+        << "\" because the new tab is not available yet";
+    return;
+  } else if ((disposition == CURRENT_TAB) ||
+      (disposition == NEW_FOREGROUND_TAB) ||
+      (disposition == SINGLETON_TAB)) {
+    // The currently selected tab is the right one.
+    tab_contents = browser->GetSelectedTabContents();
+  }
+  if (tab_contents) {
+    NavigationController* controller = &tab_contents->controller();
+    WaitForNavigations(controller, number_of_navigations);
+    return;
+  }
+  EXPECT_TRUE(NULL != tab_contents) << " Unable to wait for navigation to \""
+                                    << url.spec() << "\""
+                                    << " because we can't get the tab contents";
+}
+
+void NavigateToURLWithDisposition(Browser* browser,
+                                  const GURL& url,
+                                  WindowOpenDisposition disposition,
+                                  int browser_test_flags) {
+  NavigateToURLWithDispositionBlockUntilNavigationsComplete(
+      browser,
+      url,
+      1,
+      disposition,
+      browser_test_flags);
 }
 
 void NavigateToURLBlockUntilNavigationsComplete(Browser* browser,
                                                 const GURL& url,
                                                 int number_of_navigations) {
-  NavigationController* controller =
-      &browser->GetSelectedTabContents()->controller();
-  browser->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
-  WaitForNavigations(controller, number_of_navigations);
+  NavigateToURLWithDispositionBlockUntilNavigationsComplete(
+      browser,
+      url,
+      number_of_navigations,
+      CURRENT_TAB,
+      BROWSER_TEST_WAIT_FOR_NAVIGATION);
 }
 
 DOMElementProxyRef GetActiveDOMDocument(Browser* browser) {
@@ -563,6 +638,12 @@ void WaitForNotification(NotificationType type) {
   RegisterAndWait(&observer, type, NotificationService::AllSources());
 }
 
+void WaitForNotificationFrom(NotificationType type,
+                             const NotificationSource& source) {
+  TestNotificationObserver observer;
+  RegisterAndWait(&observer, type, source);
+}
+
 void RegisterAndWait(NotificationObserver* observer,
                      NotificationType type,
                      const NotificationSource& source) {
@@ -604,6 +685,17 @@ bool BringBrowserWindowToFront(const Browser* browser) {
 
   ui_test_utils::ShowAndFocusNativeWindow(window);
   return true;
+}
+
+Browser* GetBrowserNotInSet(std::set<Browser*> excluded_browsers) {
+  for (BrowserList::const_iterator iter = BrowserList::begin();
+       iter != BrowserList::end();
+       ++iter) {
+    if (excluded_browsers.find(*iter) == excluded_browsers.end())
+      return *iter;
+  }
+
+  return NULL;
 }
 
 bool SendKeyPressSync(const Browser* browser,
