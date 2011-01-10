@@ -56,9 +56,6 @@ int NaClMainForChromium(int handle_count, const NaClHandle *handles,
 
   NaClAllModulesInit();
 
-  /* Add a handler to catch untrusted errors only */
-  NaClSignalHandlerAdd(NaClSignalHandleUntrusted);
-
   /* to be passed to NaClMain, eventually... */
   av[0] = "NaClMain";
 

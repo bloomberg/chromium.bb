@@ -219,7 +219,17 @@ void NaClSignalHandlerInit() {
   }
 
   NaClSignalHandlerInitPlatform();
+#ifdef NACL_STANDALONE
+  /* In stand-alone mode (sel_ldr) we handle all signals. */
   NaClSignalHandlerAdd(NaClSignalHandleAll);
+#else
+  /*
+   * When run in Chrome we handle only signals in untrusted code.
+   * Signals in trusted code are allowed to pass back to Chrome so
+   * that Breakpad can create a minidump when applicable.
+   */
+  NaClSignalHandlerAdd(NaClSignalHandleUntrusted);
+#endif
   if (getenv("NACL_CRASH_TEST") != NULL) {
     NaClSignalErrorMessage("[CRASH_TEST] Causing crash in NaCl "
                            "trusted code...\n");
