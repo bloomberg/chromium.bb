@@ -271,7 +271,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_FindAndCopy) {
   ui::Clipboard::ObjectMap objects;
   ui::Clipboard::ObjectMapParams params;
   params.push_back(std::vector<char>());
-  objects[Clipboard::CBF_TEXT] = params;
+  objects[ui::Clipboard::CBF_TEXT] = params;
   clipboard.WriteObjects(objects);
 
   browser()->GetSelectedTabContents()->render_view_host()->Copy();
