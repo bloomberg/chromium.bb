@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -14,6 +15,13 @@
 #include <sys/nacl_syscalls.h>
 
 #include "native_client/tests/dynamic_code_loading/templates.h"
+#include "native_client/tests/inbrowser_test_runner/test_runner.h"
+
+#if defined(__x86_64__)
+#define BUF_SIZE 64
+#else
+#define BUF_SIZE 32
+#endif
 
 #define NACL_BUNDLE_SIZE  32
 /*
@@ -31,13 +39,36 @@
    nacl.scons, passed via --section-start. */
 #define DYNAMIC_CODE_SEGMENT_END 0x1000000
 
+struct code_section {
+  char *name;
+  char *start;
+  char *end;
+};
 
-char *next_addr = (char *) DYNAMIC_CODE_SEGMENT_START;
+struct code_section illegal_code_sections[] = {
+  { "misaligned_replacement",
+    &template_func_misaligned_replacement,
+    &template_func_misaligned_replacement_end },
+  { "illegal_register_replacement",
+    &template_func_illegal_register_replacement,
+    &template_func_illegal_register_replacement_end },
+  { "illegal_guard_replacement",
+    &template_func_illegal_guard_replacement,
+    &template_func_illegal_guard_replacement_end },
+  { "illegal_call_target",
+    &template_func_illegal_call_target,
+    &template_func_illegal_call_target_end },
+  { "illegal_constant_replacement",
+    &template_func_illegal_constant_replacement,
+    &template_func_illegal_constant_replacement_end },
+};
 
-char *allocate_code_space(int pages) {
-  char *addr = next_addr;
+uint8_t *next_addr = (uint8_t *) DYNAMIC_CODE_SEGMENT_START;
+
+uint8_t *allocate_code_space(int pages) {
+  uint8_t *addr = next_addr;
   next_addr += 0x10000 * pages;
-  assert(next_addr < (char *) DYNAMIC_CODE_SEGMENT_END);
+  assert(next_addr < (uint8_t *) DYNAMIC_CODE_SEGMENT_END);
   return addr;
 }
 
@@ -72,7 +103,7 @@ void copy_and_pad_fragment(void *dest,
                            const char *fragment_end) {
   int fragment_size = fragment_end - fragment_start;
   assert(dest_size % 32 == 0);
-  assert(fragment_size < dest_size);
+  assert(fragment_size <= dest_size);
   fill_nops(dest, dest_size);
   memcpy(dest, fragment_start, fragment_size);
 }
@@ -80,7 +111,7 @@ void copy_and_pad_fragment(void *dest,
 /* Check that we can't dynamically rewrite code. */
 void test_replacing_code() {
   uint8_t *load_area = allocate_code_space(1);
-  uint8_t buf[32];
+  uint8_t buf[BUF_SIZE];
   int rc;
   int (*func)();
 
@@ -105,7 +136,7 @@ void test_replacing_code() {
 /* Check that we can dynamically rewrite code. */
 void test_replacing_code_unaligned() {
   uint8_t *load_area = allocate_code_space(1);
-  uint8_t buf[32];
+  uint8_t buf[BUF_SIZE];
   int first_diff = 0;
   int rc;
   int (*func)();
@@ -117,14 +148,13 @@ void test_replacing_code_unaligned() {
   rc = func();
   assert(rc == 1234);
 
-
   /* write replacement to the same location, unaligned */
   copy_and_pad_fragment(buf, sizeof(buf), &template_func_replacement,
                                           &template_func_replacement_end);
   while (buf[first_diff] == load_area[first_diff] && first_diff < sizeof buf) {
     first_diff++;
   }
-  assert(first_diff>0);
+  assert(first_diff > 0 && first_diff <= sizeof(buf));
   rc = nacl_dyncode_modify(load_area+first_diff, buf+first_diff,
                            sizeof(buf)-first_diff);
   assert(rc == 0);
@@ -136,8 +166,7 @@ void test_replacing_code_unaligned() {
 /* Check that we can dynamically delete code. */
 void test_deleting_code() {
   uint8_t *load_area = allocate_code_space(1);
-  uint8_t buf[32];
-  int first_diff = 0;
+  uint8_t buf[BUF_SIZE];
   int rc;
   int (*func)();
 
@@ -153,11 +182,41 @@ void test_deleting_code() {
   assert(load_area[0] != buf[0]);
 }
 
+/* Check code replacement constraints */
+void test_illegal_code_replacment() {
+  uint8_t *load_area = allocate_code_space(1);
+  uint8_t buf[BUF_SIZE];
+  int rc;
+  int i;
+  int (*func)();
+
+  copy_and_pad_fragment(buf, sizeof(buf), &template_func, &template_func_end);
+  rc = nacl_dyncode_create(load_area, buf, sizeof(buf));
+  assert(rc == 0);
+  func = (int (*)()) (uintptr_t) load_area;
+  rc = func();
+  assert(rc == 1234);
+
+  for (i = 0;
+       i < (sizeof(illegal_code_sections) / sizeof(struct code_section));
+       i++) {
+    printf("\t%s\n", illegal_code_sections[i].name);
+
+    /* write illegal replacement to the same location */
+    copy_and_pad_fragment(buf, sizeof(buf), illegal_code_sections[i].start,
+                                            illegal_code_sections[i].end);
+    rc = nacl_dyncode_modify(load_area, buf, sizeof(buf));
+    assert(rc != 0);
+    func = (int (*)()) (uintptr_t) load_area;
+    rc = func();
+    assert(rc == 1234);
+  }
+}
 
 /* Check that we can't dynamically rewrite code. */
 void test_replacing_code_disabled() {
   uint8_t *load_area = allocate_code_space(1);
-  uint8_t buf[32];
+  uint8_t buf[BUF_SIZE];
   int rc;
   int (*func)();
 
@@ -181,7 +240,7 @@ void test_replacing_code_disabled() {
 /* Check that we can dynamically rewrite code. */
 void test_replacing_code_unaligned_disabled() {
   uint8_t *load_area = allocate_code_space(1);
-  uint8_t buf[32];
+  uint8_t buf[BUF_SIZE];
   int first_diff = 0;
   int rc;
   int (*func)();
@@ -211,8 +270,7 @@ void test_replacing_code_unaligned_disabled() {
 /* Check that we can't delete code */
 void test_deleting_code_disabled() {
   uint8_t *load_area = allocate_code_space(1);
-  uint8_t buf[32];
-  int first_diff = 0;
+  uint8_t buf[BUF_SIZE];
   int rc;
   int (*func)();
 
@@ -240,7 +298,7 @@ int is_replacement_enabled() {
 
 #define RUN_TEST(test_func) (run_test(#test_func, test_func))
 
-int main() {
+int TestMain() {
   /* Turn off stdout buffering to aid debugging in case of a crash. */
   setvbuf(stdout, NULL, _IONBF, 0);
 
@@ -249,6 +307,7 @@ int main() {
     RUN_TEST(test_replacing_code);
     RUN_TEST(test_replacing_code_unaligned);
     RUN_TEST(test_deleting_code);
+    RUN_TEST(test_illegal_code_replacment);
   } else {
     printf("Code replacement DISABLED\n");
     RUN_TEST(test_replacing_code_disabled);
@@ -257,5 +316,9 @@ int main() {
   }
 
   return 0;
+}
+
+int main() {
+  return RunTests(TestMain);
 }
 

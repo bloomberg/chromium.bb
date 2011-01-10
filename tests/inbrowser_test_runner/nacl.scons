@@ -17,6 +17,7 @@ if env.Bit('bitcode'):
 dest_copy = env.Replicate('$STAGING_DIR', 'test_runner.html')
 test_executables = [
     env.File('$STAGING_DIR/dynamic_load_test.nexe'),
+    env.File('$STAGING_DIR/dynamic_modify_test.nexe'),
     env.File('$STAGING_DIR/imc_shm_mmap_test.nexe'),
     ]
 # These are not true dependencies: They are not needed for

@@ -4,6 +4,30 @@
  * be found in the LICENSE file.
  */
 
+
+        .global template_func_misaligned_replacement
+        .global template_func_misaligned_replacement_end
+        .global template_func_illegal_call_target
+        .global template_func_illegal_call_target_end
+        .global template_func_illegal_register_replacement
+        .global template_func_illegal_register_replacement_end
+        .global template_func_illegal_guard_replacement
+        .global template_func_illegal_guard_replacement_end
+        .global template_func_illegal_constant_replacement
+        .global template_func_illegal_constant_replacement_end
+template_func_misaligned_replacement:
+template_func_illegal_call_target:
+template_func_illegal_register_replacement:
+template_func_illegal_guard_replacement:
+template_func_illegal_constant_replacement:
+        /* Not implemented */
+        bkpt 0x7777   /* hlt */
+template_func_misaligned_replacement_end:
+template_func_illegal_call_target_end:
+template_func_illegal_register_replacement_end:
+template_func_illegal_guard_replacement_end:
+template_func_illegal_constant_replacement_end:
+
         .global template_func
         .global template_func_end
 template_func:

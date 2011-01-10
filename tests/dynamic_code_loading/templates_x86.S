@@ -10,50 +10,95 @@ template_func:
 #if defined(__i386__)
         movl $1234, %eax
         popl %ecx
-        nacljmp %ecx
+        and  $0xffffffe0,%ecx
+        jmp  *%ecx
+        call template_func
 #elif defined(__x86_64__)
+        disp = template_func_end - 4
+        xorl %r11d, %r11d
+        movq disp(%r15,%r11,1), %rax
+        popq %r14
+        andl $0xffffffe0,%r14d
+        addq %r15,%r14
+        jmpq *%r14
+        call template_func
+        test $0xffffffff,%r11d
         movq $1234, %rax
-        popq %r11
-        nacljmp %r11d, %r15
 #else
 # error "Unsupported architecture"
 #endif
 template_func_end:
+
 
         .global template_func_replacement
         .global template_func_replacement_end
         .p2align 5
 template_func_replacement:
 #if defined(__i386__)
-        movl $4321, %eax
+        movl $4321, %eax                       /* replaces constant */
         popl %ecx
-        nacljmp %ecx
+        and  $0xffffffe0,%ecx
+        jmp  *%ecx
+        call (template_func_replacement - 32)  /* replaces a call target, the
+                                                * new target is bundle aligned
+                                                * and target address outside
+                                                * modified section */
 #elif defined(__x86_64__)
-        movq $4321, %rax
-        popq %r11
-        nacljmp %r11d, %r15
+        /* tests all modifications that are
+         * currently allowed by service runtime */
+        new_disp = template_func_replacement_end - 4
+        xorl %r11d, %r11d
+        movq new_disp(%r15,%r11,1), %rax       /* replaces displacement */
+        popq %r14
+        andl $0xffffffe0,%r14d
+        addq %r15,%r14
+        jmpq *%r14
+        call (template_func_replacement - 32)  /* replaces a call target, the
+                                                * new target is bundle aligned
+                                                * and target address outside
+                                                * modified section  */
+        test $0xffffffff,%r11d
+        movq $4321, %rax                       /* replaces constant */
 #else
 # error "Unsupported architecture"
 #endif
 template_func_replacement_end:
 
+
         .global template_func_nonreplacement
         .global template_func_nonreplacement_end
+        .global template_func_misaligned_replacement
+        .global template_func_misaligned_replacement_end
         .p2align 5
 template_func_nonreplacement:
+template_func_misaligned_replacement:
 #if defined(__i386__)
-        movl $4132, %eax
-        popl %edx
-        nacljmp %edx
+        nop                                    /* nop creates misalignment in
+                                                * replacing section which makes
+                                                * it illegal */
+        movl $1234, %eax
+        popl %ecx
+        and  $0xffffffe0,%ecx
+        jmp  *%ecx
+        call template_func_misaligned_replacement
 #elif defined(__x86_64__)
-        movq $4132, %rax
-        popq %r12
-        nacljmp %r12d, %r15
+        nop                                    /* nop creates misalignment in
+                                                * replacing section which makes
+                                                * it illegal */
+        xorl %r11d, %r11d
+        movq disp(%r15,%r11,1), %rax
+        popq %r14
+        andl $0xffffffe0,%r14d
+        addq %r15,%r14
+        jmpq *%r14
+        call template_func_misaligned_replacement
+        test $0xffffffff,%r11d
+        movq $1234, %rax
 #else
 # error "Unsupported architecture"
 #endif
+template_func_misaligned_replacement_end:
 template_func_nonreplacement_end:
-
 
 
         .global hlts
@@ -83,8 +128,8 @@ branch_backwards:
 branch_backwards_end:
 
 
-       /* We include disallowed code below, so this must go into the
-          data segment. */
+        /* We include disallowed code below, so this must go into the
+           data segment. */
         .data
 
 
@@ -95,3 +140,111 @@ invalid_code:
         int $0x80
         ret
 invalid_code_end:
+
+
+        .global template_func_illegal_register_replacement
+        .global template_func_illegal_register_replacement_end
+        .p2align 5
+template_func_illegal_register_replacement:
+#if defined(__i386__)
+        movl $1234, %eax
+        popl %ecx
+        and  $0xffffffe0,%ecx
+        jmp  *%edx                             /* replaces register here, jmp
+                                                * becomes illegal */
+        call template_func_illegal_register_replacement
+#elif defined(__x86_64__)
+        xorl %r11d, %r11d
+        movq disp(%r15,%r11,1), %rax
+        popq %r14
+        andl $0xffffffe0,%r14d
+        addq %r15,%r14
+        jmpq *%r14
+        call template_func_illegal_register_replacement
+        test $0xffffffff,%r11d
+        movq $1234, %rbx                       /* replaces register
+                                                * which is not allowed */
+#else
+# error "Unsupported architecture"
+#endif
+template_func_illegal_register_replacement_end:
+
+
+        .global template_func_illegal_guard_replacement
+        .global template_func_illegal_guard_replacement_end
+        .p2align 5
+template_func_illegal_guard_replacement:
+#if defined(__i386__)
+        movl $1234, %eax
+        popl %ecx
+        and  $0xffffffff,%ecx                  /* modifies mask */
+        jmp  *%ecx
+        call template_func_illegal_guard_replacement
+#elif defined(__x86_64__)
+        xorl %r14d, %r14d                      /* modifies memory guard */
+        movq disp(%r15,%r11,1), %rax
+        popq %r14
+        andl $0xffffffe0,%r14d
+        addq %r15,%r14
+        jmpq *%r14
+        call template_func_illegal_guard_replacement
+        test $0xffffffff,%r11d
+        movq $1234, %rax
+#else
+# error "Unsupported architecture"
+#endif
+template_func_illegal_guard_replacement_end:
+
+
+        .global template_func_illegal_call_target
+        .global template_func_illegal_call_target_end
+        .p2align 5
+template_func_illegal_call_target:
+#if defined(__i386__)
+        movl $1234, %eax
+        popl %ecx
+        and  $0xffffffe0,%ecx
+        jmp  *%ecx
+        call (template_func_illegal_call_target - 31)  /* target of a call
+                                                * instruction is beyond
+                                                * replaced section, and it is
+                                                * not bundle_aligned */
+#elif defined(__x86_64__)
+        xorl %r11d, %r11d
+        movq disp(%r15,%r11,1), %rax
+        popq %r14
+        andl $0xffffffe0,%r14d
+        addq %r15,%r14
+        jmpq *%r14
+        call (template_func_illegal_call_target - 31)  /* target of a call
+                                                * instruction is beyond
+                                                * replaced section, and it is
+                                                * not bundle_aligned */
+        test $0xffffffff,%r11d
+        movq $1234, %rax
+#else
+# error "Unsupported architecture"
+#endif
+template_func_illegal_call_target_end:
+
+
+        .global template_func_illegal_constant_replacement
+        .global template_func_illegal_constant_replacement_end
+        .p2align 5
+template_func_illegal_constant_replacement:
+#if defined(__i386__)
+        hlt  /* not applicable */
+#elif defined(__x86_64__)
+        xorl %r11d, %r11d
+        movq disp(%r15,%r11,1), %rax
+        popq %r14
+        andl $0xffffffe0,%r14d
+        addq %r15,%r14
+        jmpq *%r14
+        call (template_func_illegal_constant_replacement)
+        test $0xf0f0f0f0,%r11d             /* can't change constant in test */
+        movq $1234, %rax
+#else
+# error "Unsupported architecture"
+#endif
+template_func_illegal_constant_replacement_end:

@@ -10,10 +10,11 @@
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 
+# include "native_client/src/trusted/validator_x86/nccopycode.h"
+
 # if NACL_TARGET_SUBARCH == 32
 
 #  include "native_client/src/trusted/validator_x86/ncvalidate.h"
-#  include "native_client/src/trusted/validator_x86/nccopycode.h"
 
 int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
                      uint8_t *data, size_t size) {
@@ -59,6 +60,13 @@ int NaClValidateCodeReplacement(struct NaClApp *nap, uintptr_t guest_addr,
     return LOAD_BAD_FILE;
   }
 
+  if ((guest_addr % nap->bundle_size) != 0 ||
+            (size % nap->bundle_size) != 0) {
+    NaClLog(1, "NaClValidateCodeReplacement:  "
+               "code replacement is not properly bundle-aligned\n");
+    return LOAD_BAD_FILE;
+  }
+
   vstate = NCValidateInit(guest_addr, guest_addr + size, nap->bundle_size);
   if (vstate == NULL) {
     return LOAD_BAD_FILE;
@@ -77,7 +85,7 @@ int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
                  size_t size) {
   int result;
   result = NCCopyCode(data_old, data_new, guest_addr, size, nap->bundle_size);
-  if (result != 0) {
+  if (0 == result) {
     return LOAD_UNLOADABLE;
   }
   return LOAD_OK;
@@ -97,6 +105,7 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
   if (vstate == NULL) {
     return LOAD_BAD_FILE;
   }
+
   NaClValidatorStateSetLogVerbosity(vstate, LOG_ERROR);
 
   if (nap->validator_stub_out_mode) {
@@ -124,28 +133,49 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
 int NaClValidateCodeReplacement(struct NaClApp *nap, uintptr_t guest_addr,
                                 uint8_t *data_old, uint8_t *data_new,
                                 size_t size) {
-  UNREFERENCED_PARAMETER(nap);
-  UNREFERENCED_PARAMETER(guest_addr);
-  UNREFERENCED_PARAMETER(data_old);
-  UNREFERENCED_PARAMETER(data_new);
-  UNREFERENCED_PARAMETER(size);
-  NaClLog(1, "NaClValidateCodeReplacement: "
-             "code replacement not yet supported on x86_64\n");
-  return LOAD_UNIMPLEMENTED;
-}
+  struct NaClValidatorState *vstate;
+  int is_ok;
 
+  if (nap->validator_stub_out_mode) {
+    NaClLog(1, "NaClValidateCodeReplacement:  "
+               "stub_out_mode not supported for code replacement\n");
+    return LOAD_BAD_FILE;
+  }
+
+  if ((guest_addr % nap->bundle_size) != 0 ||
+            (size % nap->bundle_size) != 0) {
+    NaClLog(1, "NaClValidateCodeReplacement:  "
+               "code replacement is not properly bundle-aligned\n");
+    return LOAD_BAD_FILE;
+  }
+
+  vstate = NaClValidatorStateCreate(guest_addr, size, nap->bundle_size,
+                                    RegR15);
+  if (NULL == vstate) {
+    return LOAD_BAD_FILE;
+  }
+  NaClValidatorStateSetLogVerbosity(vstate, LOG_ERROR);
+
+  NaClValidateSegmentPair(data_old, data_new, guest_addr, size, vstate);
+  is_ok = NaClValidatesOk(vstate);
+  NaClValidatorStateDestroy(vstate);
+  if (!is_ok) {
+    return LOAD_VALIDATION_FAILED;
+  }
+  return LOAD_OK;
+}
 
 int NaClCopyCode(struct NaClApp *nap, uintptr_t guest_addr,
                  uint8_t *data_old, uint8_t *data_new,
                  size_t size) {
+  int result;
   UNREFERENCED_PARAMETER(nap);
-  UNREFERENCED_PARAMETER(guest_addr);
-  UNREFERENCED_PARAMETER(data_old);
-  UNREFERENCED_PARAMETER(data_new);
-  UNREFERENCED_PARAMETER(size);
-  NaClLog(1, "NaClCopyCode: "
-             "code replacement not yet supported on x86_64\n");
-  return LOAD_UNIMPLEMENTED;
+
+  result = NaClCopyCodeIter(data_old, data_new, guest_addr, size);
+  if (0 == result) {
+    return LOAD_UNLOADABLE;
+  }
+  return LOAD_OK;
 }
 
 # endif

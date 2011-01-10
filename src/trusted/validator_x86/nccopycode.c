@@ -23,9 +23,17 @@
 #include <errno.h>
 #include <string.h>
 #include <assert.h>
+#include "native_client/src/shared/platform/nacl_check.h"
+#if NACL_TARGET_SUBARCH == 32
 #include "native_client/src/trusted/validator_x86/ncdecode.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate.h"
-#include "native_client/src/shared/platform/nacl_check.h"
+#elif NACL_TARGET_SUBARCH == 64
+#include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
+#include "native_client/src/trusted/validator_x86/nc_segment.h"
+#include "native_client/src/trusted/validator_x86/nc_inst_state_internal.h"
+#else
+#error "Unknown Platform"
+#endif
 
 /* x86 HALT opcode */
 static const uint8_t kNaClFullStop = 0xf4;
@@ -158,13 +166,11 @@ static void SerializeAllProcessors() {
  * Copy a single instruction, avoiding the possibility of other threads
  * executing a partially changed instruction.
  */
-void CopyInstruction(const struct NCDecoderState *mstate_old,
-                     const struct NCDecoderState *mstate_new) {
-  uint8_t* dst = mstate_old->inst.maddr;
-  uint8_t* src = mstate_new->inst.maddr;
-  int sz = mstate_old->inst.length;
+void CopyInstructionInternal(uint8_t *dst,
+                             uint8_t *src,
+                             uint8_t sz) {
   intptr_t offset = 0;
-  CHECK(mstate_new->inst.length == mstate_old->inst.length);
+  uint8_t *firstbyte_p = dst;
 
   while (sz > 0 && dst[0] == src[0]) {
     /* scroll to first changed byte */
@@ -182,7 +188,7 @@ void CopyInstruction(const struct NCDecoderState *mstate_old,
   }
 
   if (sz == 1) {
-    /* we assume a 1-byte change it atomic */
+    /* we assume a 1-byte change is atomic */
     *dst = *src;
   } else if (IsTrustedWrite(dst, sz, 4, &offset)) {
     uint8_t tmp[4];
@@ -196,13 +202,13 @@ void CopyInstruction(const struct NCDecoderState *mstate_old,
     onestore_memmove8(dst-offset, tmp);
   } else {
     /* the slow path, first flip first byte to halt*/
-    uint8_t firstbyte = mstate_old->inst.maddr[0];
-    mstate_old->inst.maddr[0] = kNaClFullStop;
+    uint8_t firstbyte = firstbyte_p[0];
+    firstbyte_p[0] = kNaClFullStop;
 
     SerializeAllProcessors();
 
     /* copy the rest of instruction */
-    if (dst == mstate_old->inst.maddr) {
+    if (dst == firstbyte_p) {
       /* but not the first byte! */
       firstbyte = *src;
       dst++, src++, sz--;
@@ -212,8 +218,23 @@ void CopyInstruction(const struct NCDecoderState *mstate_old,
     SerializeAllProcessors();
 
     /* flip first byte back */
-    mstate_old->inst.maddr[0] = firstbyte;
+    firstbyte_p[0] = firstbyte;
   }
+}
+
+#if NACL_TARGET_SUBARCH == 32
+
+/*
+ * Copy a single instruction, avoiding the possibility of other threads
+ * executing a partially changed instruction.
+ */
+void CopyInstruction(const struct NCDecoderState *mstate_old,
+                     const struct NCDecoderState *mstate_new) {
+  CHECK(mstate_new->inst.length == mstate_old->inst.length);
+
+  CopyInstructionInternal(mstate_old->inst.maddr,
+                          mstate_new->inst.maddr,
+                          mstate_old->inst.length);
 }
 
 int NCCopyCode(uint8_t *dst, uint8_t *src, NaClPcAddress vbase,
@@ -223,6 +244,59 @@ int NCCopyCode(uint8_t *dst, uint8_t *src, NaClPcAddress vbase,
   CHECK(NULL != vstate);
   NCDecodeSegmentPair(dst, src, vbase, sz, vstate, CopyInstruction);
   NCValidateFreeState(&vstate);
-  return 0;
+  return 1;
 }
+
+#elif NACL_TARGET_SUBARCH == 64
+
+int NaClCopyCodeIter(uint8_t *dst, uint8_t *src,
+                     NaClPcAddress vbase, size_t size) {
+  NaClSegment segment_old, segment_new;
+  NaClInstIter *iter_old, *iter_new;
+  NaClInstState *istate_old, *istate_new;
+
+  NaClSegmentInitialize(dst, vbase, size, &segment_old);
+  NaClSegmentInitialize(src, vbase, size, &segment_new);
+
+  iter_old = NaClInstIterCreate(&segment_old);
+  iter_new = NaClInstIterCreate(&segment_new);
+  while (NaClInstIterHasNext(iter_old) &&
+         NaClInstIterHasNext(iter_new)) {
+    /* March over every instruction, which means NaCl pseudo-instructions are
+     * treated as multiple instructions.  Checks in NaClValidateCodeReplacement
+     * guarantee that only valid replacements will happen, and no pseudo-
+     * instructions should be touched.
+     */
+    istate_old = NaClInstIterGetState(iter_old);
+    istate_new = NaClInstIterGetState(iter_new);
+    if (istate_old->length != istate_new->length ||
+        istate_new->vpc != istate_old->vpc) {
+      /* Sanity check: this should never happen based on checks in
+       * NaClValidateInstReplacement.
+       */
+      NaClLog(LOG_FATAL,
+              "Segment replacement: copied instructions misaligned\n");
+      return 0;
+    }
+    /* Replacing all modified instructions at once could yield a speedup here
+     * as every time we modify instructions we must serialize all processors
+     * twice.  Re-evaluate if code modification performance is an issue.
+     */
+    CopyInstructionInternal(istate_old->mpc,
+                            istate_new->mpc,
+                            istate_old->length);
+    NaClInstIterAdvance(iter_old);
+    NaClInstIterAdvance(iter_new);
+  }
+
+  CHECK(!NaClInstIterHasNext(iter_old) && !NaClInstIterHasNext(iter_new));
+
+  NaClInstIterDestroy(iter_old);
+  NaClInstIterDestroy(iter_new);
+  return 1;
+}
+
+#else
+#error "Unknown Platform"
+#endif
 

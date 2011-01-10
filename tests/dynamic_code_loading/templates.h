@@ -19,6 +19,16 @@ extern char branch_forwards;
 extern char branch_forwards_end;
 extern char branch_backwards;
 extern char branch_backwards_end;
+extern char template_func_misaligned_replacement;
+extern char template_func_misaligned_replacement_end;
+extern char template_func_illegal_call_target;
+extern char template_func_illegal_call_target_end;
+extern char template_func_illegal_register_replacement;
+extern char template_func_illegal_register_replacement_end;
+extern char template_func_illegal_guard_replacement;
+extern char template_func_illegal_guard_replacement_end;
+extern char template_func_illegal_constant_replacement;
+extern char template_func_illegal_constant_replacement_end;
 
 /*
  * The end of the text segment, the dynamic code resion starts at the

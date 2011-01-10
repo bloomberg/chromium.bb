@@ -17,7 +17,23 @@
 #include "native_client/tests/dynamic_code_loading/templates.h"
 #include "native_client/tests/inbrowser_test_runner/test_runner.h"
 
+#if defined(__x86_64__)
+/* On x86-64, template functions do not fit in 32-byte buffers */
+#define BUF_SIZE 64
+#elif defined(__i386__) || defined(__arm__)
+#define BUF_SIZE 32
+#else
+#error "Unknown Platform"
+#endif
+
+#if defined(__i386__) || defined(__x86_64__)
 #define NACL_BUNDLE_SIZE  32
+#elif defined(__arm__)
+#define NACL_BUNDLE_SIZE  16
+#else
+#error "Unknown Platform"
+#endif
+
 /*
  * TODO(bsy): get this value from the toolchain.  Get the toolchain
  * team to provide this value.
@@ -93,8 +109,8 @@ void copy_and_pad_fragment(void *dest,
                            const char *fragment_start,
                            const char *fragment_end) {
   int fragment_size = fragment_end - fragment_start;
-  assert(dest_size % 32 == 0);
-  assert(fragment_size < dest_size);
+  assert(dest_size % NACL_BUNDLE_SIZE == 0);
+  assert(fragment_size <= dest_size);
   fill_nops(dest, dest_size);
   memcpy(dest, fragment_start, fragment_size);
 }
@@ -102,7 +118,7 @@ void copy_and_pad_fragment(void *dest,
 /* Check that we can load and run code. */
 void test_loading_code() {
   void *load_area = allocate_code_space(1);
-  uint8_t buf[32];
+  uint8_t buf[BUF_SIZE];
   int rc;
   int (*func)();
 
@@ -124,7 +140,7 @@ void test_loading_code() {
    Check that we can load to non-page-aligned addresses. */
 void test_loading_code_non_page_aligned() {
   char *load_area = allocate_code_space(1);
-  uint8_t buf[32];
+  uint8_t buf[BUF_SIZE];
   int rc;
 
   copy_and_pad_fragment(buf, sizeof(buf), &template_func, &template_func_end);
@@ -133,7 +149,7 @@ void test_loading_code_non_page_aligned() {
   assert(rc == 0);
   assert(memcmp(load_area, buf, sizeof(buf)) == 0);
 
-  load_area += 32;
+  load_area += sizeof(buf);
   rc = nacl_load_code(load_area, buf, sizeof(buf));
   assert(rc == 0);
   assert(memcmp(load_area, buf, sizeof(buf)) == 0);
@@ -163,7 +179,7 @@ void test_loading_zero_size() {
 void test_loading_code_on_first_dynamic_page() {
   const unsigned int kPageMask = 0xFFFF;
   void *load_area = (void*)((uintptr_t)(etext + kPageMask) & ~kPageMask);
-  uint8_t buf[32];
+  uint8_t buf[BUF_SIZE];
   int rc;
   int (*func)();
 
@@ -186,7 +202,7 @@ void test_loading_code_on_first_dynamic_page() {
 
 void test_fail_on_validation_error() {
   void *load_area = allocate_code_space(1);
-  uint8_t buf[32];
+  uint8_t buf[BUF_SIZE];
   int rc;
 
   copy_and_pad_fragment(buf, sizeof(buf), &invalid_code, &invalid_code_end);
@@ -198,24 +214,24 @@ void test_fail_on_validation_error() {
 void test_fail_on_non_bundle_aligned_dest_addresses() {
   char *load_area = allocate_code_space(1);
   int rc;
-  uint8_t nops[32];
+  uint8_t nops[BUF_SIZE];
 
   fill_nops(nops, sizeof(nops));
 
   /* Test unaligned destination. */
-  rc = nacl_load_code(load_area + 1, nops, 32);
+  rc = nacl_load_code(load_area + 1, nops, NACL_BUNDLE_SIZE);
   assert(rc == -EINVAL);
-  rc = nacl_load_code(load_area + 4, nops, 32);
+  rc = nacl_load_code(load_area + 4, nops, NACL_BUNDLE_SIZE);
   assert(rc == -EINVAL);
 
   /* Test unaligned size. */
-  rc = nacl_load_code(load_area, nops + 1, 31);
+  rc = nacl_load_code(load_area, nops + 1, NACL_BUNDLE_SIZE - 1);
   assert(rc == -EINVAL);
-  rc = nacl_load_code(load_area, nops + 4, 28);
+  rc = nacl_load_code(load_area, nops + 4, NACL_BUNDLE_SIZE - 4);
   assert(rc == -EINVAL);
 
   /* Check that the code we're trying works otherwise. */
-  rc = nacl_load_code(load_area, nops, 32);
+  rc = nacl_load_code(load_area, nops, NACL_BUNDLE_SIZE);
   assert(rc == 0);
 }
 
@@ -235,18 +251,18 @@ void test_fail_on_load_to_data_area() {
 
   fill_hlts(block_in_data_segment, sizeof(block_in_data_segment));
 
-  /* Align to 32 byte boundary so that we don't fail for a reason
+  /* Align to bundle size so that we don't fail for a reason
      we're not testing for. */
   data = block_in_data_segment;
-  while (((int) data) % 32 != 0)
+  while (((int) data) % NACL_BUNDLE_SIZE != 0)
     data++;
-  rc = nacl_load_code(data, data, 32);
+  rc = nacl_load_code(data, data, NACL_BUNDLE_SIZE);
   assert(rc == -EFAULT);
 }
 
 void test_fail_on_overwrite() {
   void *load_area = allocate_code_space(1);
-  uint8_t buf[32];
+  uint8_t buf[BUF_SIZE];
   int rc;
 
   copy_and_pad_fragment(buf, sizeof(buf), &template_func, &template_func_end);
@@ -298,7 +314,7 @@ void test_branches_outside_chunk() {
 void test_end_of_code_region() {
   int rc;
   void *dest;
-  uint8_t data[32];
+  uint8_t data[BUF_SIZE];
   fill_nops(data, sizeof(data));
 
   /* This tries to load into the data segment, which is definitely not

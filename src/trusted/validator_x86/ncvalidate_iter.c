@@ -14,7 +14,7 @@
 #include <string.h>
 
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
-
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state_internal.h"
@@ -259,6 +259,40 @@ void NaClValidatorInstMessage(int level,
   }
 }
 
+void NaClValidatorTwoInstMessage(int level,
+                                 NaClValidatorState* state,
+                                 NaClInstState* inst1,
+                                 NaClInstState* inst2,
+                                 const char* format,
+                                 ...) {
+  level = NaClRecordIfValidatorError(state, level);
+  if (NaClPrintValidatorMessages(state, level)) {
+    va_list ap;
+    struct Gio* g = NaClLogGetGio();
+
+    NaClLogLock();
+    /* TODO(karl) - Make printing of instruction state possible via format. */
+    va_start(ap, format);
+    NaClLog_mu(level, "VALIDATOR: %s", NaClLogLevelLabel(level));
+    NaClLogV_mu(level, format, ap);
+    va_end(ap);
+
+    /* TODO(karl): empty fmt strings not allowed */
+    NaClLog_mu(level, "\n%45s ", "VALIDATOR:");
+    NaClInstStateInstPrint(g, inst1);
+    /* TODO(karl): empty fmt strings not allowed */
+    NaClLog_mu(level, "%45s ", "VALIDATOR:");
+    NaClInstStateInstPrint(g, inst2);
+
+    NaClLogUnlock();
+    NaClRecordErrorReported(state, level);
+  }
+  if (state->do_stub_out && (level <= LOG_ERROR)) {
+    memset(inst1->mpc, kNaClFullStop, inst1->length);
+    memset(inst2->mpc, kNaClFullStop, inst2->length);
+  }
+}
+
 Bool NaClValidatorQuit(NaClValidatorState* state) {
   return !state->validates_ok && (state->quit_after_error_count == 0);
 }
@@ -450,3 +484,173 @@ void* NaClGetValidatorLocalMemory(NaClValidator validator,
   }
   return NULL;
 }
+
+/*
+ * Check that iter_new is a valid replacement for iter_old.
+ * If a validation error occurs, state->validates_ok will be set to false by
+ * NaClValidatorInstMessage when it is given LOG_ERROR, see the end of this
+ * function.
+ */
+static void NaClValidateInstReplacement(NaClInstIter* iter_old,
+                                        NaClInstIter* iter_new,
+                                        struct NaClValidatorState* state) {
+  NaClInstState *istate_old, *istate_new;
+  NaClExpVector *exp_old, *exp_new;
+  uint32_t i;
+
+  istate_old = NaClInstIterGetState(iter_old);
+  istate_new = NaClInstIterGetState(iter_new);
+
+  /* Location/length must match */
+  if (istate_new->vpc != istate_old->vpc ||
+      istate_new->length != istate_old->length) {
+    NaClValidatorTwoInstMessage(LOG_ERROR, state, istate_old, istate_new,
+          "Code modification: instructions length/addresses do not match");
+    return;
+  }
+
+
+  do {
+    /* fast check if the replacement is identical */
+    if (!memcmp(istate_old->mpc, istate_new->mpc, istate_old->length))
+      return;
+
+    if (istate_old->num_prefix_bytes != istate_new->num_prefix_bytes)
+      break;
+    if (istate_old->num_rex_prefixes != istate_new->num_rex_prefixes)
+      break;
+    if (istate_old->rexprefix != istate_new->rexprefix)
+      break;
+    if (istate_old->modrm != istate_new->modrm)
+      break;
+    if (istate_old->has_sib != istate_new->has_sib)
+      break;
+    if (istate_old->has_sib && istate_old->sib != istate_new->sib)
+      break;
+    if (istate_old->operand_size != istate_new->operand_size)
+      break;
+    if (istate_old->address_size != istate_new->address_size)
+      break;
+    if (istate_old->prefix_mask != istate_new->prefix_mask)
+      break;
+
+    /*
+     * these are pointers, but they reference entries in a static table,
+     * so if the two instructions are the same, then these pointers must
+     * reference the same entry
+     */
+    if (istate_old->inst != istate_new->inst)
+      break;
+
+    exp_old = NaClInstStateExpVector(istate_old);
+    exp_new = NaClInstStateExpVector(istate_new);
+
+    /* check if the instruction operands are identical */
+    if (exp_old->number_expr_nodes != exp_new->number_expr_nodes)
+      break;
+
+    for (i = 0; i < exp_old->number_expr_nodes; i++) {
+      if (exp_old->node[i].kind  != exp_new->node[i].kind) {
+        goto error_exit;
+      }
+      if (exp_old->node[i].flags != exp_new->node[i].flags) {
+        goto error_exit;
+      }
+
+      /*
+       * allow some constants to be different; however it is important not to
+       * allow modification of sandboxing instructions. Note neither of the
+       * instructions allowed for modification is used for sandboxing
+       */
+      if (exp_old->node[i].value != exp_new->node[i].value) {
+        if (exp_old->node[i].kind == ExprConstant) {
+
+          /* allow different constants in direct calls */
+          if (istate_old->inst->name == InstCall)
+            if (exp_old->node[i].flags & NACL_EFLAG(ExprJumpTarget))
+              if (exp_old->node[NaClGetExpParentIndex(exp_old, i)].kind
+                    == OperandReference)
+                continue;
+
+          /*
+           * allow different constants in operand of mov
+           * e.g. mov $rax, 0xdeadbeef
+           */
+          if (istate_old->inst->name == InstMov)
+            if (exp_old->node[i].flags & NACL_EFLAG(ExprUsed))
+              if (exp_old->node[NaClGetExpParentIndex(exp_old, i)].kind
+                    == OperandReference)
+                continue;
+          /*
+           * allow different displacements in memory reference of mov
+           * instructions e.g. mov $rax, [$r15+$rbx*2+0x7fff]
+           */
+          if (istate_old->inst->name == InstMov)
+            if (exp_old->node[NaClGetExpParentIndex(exp_old, i)].kind
+                    == ExprMemOffset)
+              /* displacement is the fourth node after ExprMemOffset node */
+              if (i - NaClGetExpParentIndex(exp_old, i) == 4)
+                continue;
+        }
+
+        goto error_exit;
+      }
+    }
+
+    /* This return signifies there is no error in validation. */
+    return;
+  } while (0);
+
+error_exit:
+  /* This logging function is the mechanism that sets the validator state
+   * to indicate an error.
+   */
+  NaClValidatorTwoInstMessage(LOG_ERROR, state, istate_old, istate_new,
+                      "Code modification: failed to modify instruction");
+}
+
+/*
+ * Validate a new code block as a replacement for an existing block.
+ * Note: The code location (vbase) must be bundle aligned and the segment size
+ * must also be a multiple of bundle size (checked in
+ * NaClValidateCodeReplacement).This is to ensure all NaCl psuedo-instructions
+ * and guard sequences are properly inspected and maintained.
+ */
+void NaClValidateSegmentPair(uint8_t* mbase_old, uint8_t* mbase_new,
+                           NaClPcAddress vbase, size_t size,
+                           struct NaClValidatorState* state) {
+  NaClSegment segment_old, segment_new;
+  NaClInstIter *iter_old, *iter_new;
+
+  NaClValidatorStateInitializeValidators(state);
+  NaClSegmentInitialize(mbase_old, vbase, size, &segment_old);
+  NaClSegmentInitialize(mbase_new, vbase, size, &segment_new);
+  iter_old = NaClInstIterCreateWithLookback(&segment_old, kLookbackSize);
+  iter_new = NaClInstIterCreateWithLookback(&segment_new, kLookbackSize);
+  while (NaClInstIterHasNext(iter_old) &&
+         NaClInstIterHasNext(iter_new)) {
+    state->cur_inst_state = NaClInstIterGetState(iter_new);
+    state->cur_inst = NaClInstStateInst(state->cur_inst_state);
+    state->cur_inst_vector = NaClInstStateExpVector(state->cur_inst_state);
+    NaClApplyValidators(state, iter_new);
+    NaClValidateInstReplacement(iter_old, iter_new, state);
+    if (state->quit) break;
+    NaClInstIterAdvance(iter_old);
+    NaClInstIterAdvance(iter_new);
+  }
+
+  if (NaClInstIterHasNext(iter_old) ||
+      NaClInstIterHasNext(iter_new)) {
+    NaClValidatorMessage(LOG_ERROR, state,
+    "Code modification: code segments have different number of instructions\n");
+  }
+
+  state->cur_inst_state = NULL;
+  state->cur_inst = NULL;
+  state->cur_inst_vector = NULL;
+  NaClApplyPostValidators(state, iter_new);
+  NaClInstIterDestroy(iter_old);
+  NaClInstIterDestroy(iter_new);
+  NaClValidatorStatePrintStats(state);
+}
+

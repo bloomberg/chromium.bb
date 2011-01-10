@@ -195,6 +195,27 @@ void NaClValidateSegment(uint8_t* mbase,
                          NaClMemorySize sz,
                          NaClValidatorState* state);
 
+/*
+ * Validate a segment for dynamic code replacement
+ * Checks if code at mbase_old can be replaced with code at mbase_new
+ * Note that mbase_old was validated when it was inserted originally.
+ * If validation fails, state->validates_ok will be set to false.
+ * Parameters:
+ *    mbase_old - The address of the beginning of the code segment to be
+ *                replaced
+ *    mbase_new - The address of the code segment that replaces the old
+ *                segment
+ *    vbase     - Virtual address that is associated with both segments
+ *    size      - Length of the code segments (the segments must be of the same
+ *                size)
+ *    state     - The validator state to use while validating *new* segment
+ */
+void NaClValidateSegmentPair(uint8_t *mbase_old,
+                             uint8_t *mbase_new,
+                             NaClPcAddress vbase,
+                             size_t size,
+                             struct NaClValidatorState *state);
+
 /* Returns true if the validator hasn't found any problems with the validated
  * code segments.
  * Parameters:
@@ -345,6 +366,22 @@ void NaClValidatorInstMessage(int level,
                               NaClInstState* inst,
                               const char* format,
                               ...) ATTRIBUTE_FORMAT_PRINTF(4, 5);
+
+/* Prints out a validator message and two given instructions.
+ * Parameters:
+ *   level - The level of the message, as defined in nacl_log.h
+ *   state - The validator state that detected the error.
+ *   inst1 - The first instruction to be printed.
+ *   inst2 - The second instruction to be printed.
+ *   format - The format string of the message to print.
+ *   ... - arguments to the format string.
+ */
+void NaClValidatorTwoInstMessage(int level,
+                                 NaClValidatorState* state,
+                                 NaClInstState* inst1,
+                                 NaClInstState* inst2,
+                                 const char* format,
+                                 ...) ATTRIBUTE_FORMAT_PRINTF(5, 6);
 
 /* Returns true if the validator should quit due to previous errors. */
 Bool NaClValidatorQuit(NaClValidatorState* state);
