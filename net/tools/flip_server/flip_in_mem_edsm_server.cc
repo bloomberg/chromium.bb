@@ -3057,8 +3057,7 @@ int main (int argc, char**argv)
   InitLogging(g_proxy_config.log_filename_.c_str(),
               g_proxy_config.log_destination_,
               logging::DONT_LOCK_LOG_FILE,
-              logging::APPEND_TO_OLD_LOG_FILE,
-              logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+              logging::APPEND_TO_OLD_LOG_FILE);
 
   LOG(INFO) << "Flip SPDY proxy started with configuration:";
   LOG(INFO) << "Logging destination     : " << g_proxy_config.log_destination_;

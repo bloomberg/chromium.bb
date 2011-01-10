@@ -417,12 +417,10 @@ void TestShell::InitLogging(bool suppress_error_dialogs,
     FilePath log_filename;
     PathService::Get(base::DIR_EXE, &log_filename);
     log_filename = log_filename.AppendASCII("test_shell.log");
-    logging::InitLogging(
-        log_filename.value().c_str(),
-        destination,
-        logging::LOCK_LOG_FILE,
-        logging::DELETE_OLD_LOG_FILE,
-        logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+    logging::InitLogging(log_filename.value().c_str(),
+                         destination,
+                         logging::LOCK_LOG_FILE,
+                         logging::DELETE_OLD_LOG_FILE);
 
     // we want process and thread IDs because we may have multiple processes
     logging::SetLogItems(true, true, false, true);

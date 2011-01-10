@@ -262,16 +262,10 @@ void InitChromeLogging(const CommandLine& command_line,
   delete_old_log_file = logging::APPEND_TO_OLD_LOG_FILE;
 #endif
 
-  logging::DcheckState dcheck_state =
-      command_line.HasSwitch(switches::kEnableDCHECK) ?
-      logging::ENABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS :
-      logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS;
-
   bool success = InitLogging(log_path.value().c_str(),
                              DetermineLogMode(command_line),
                              logging::LOCK_LOG_FILE,
-                             delete_old_log_file,
-                             dcheck_state);
+                             delete_old_log_file);
 
 #if defined(OS_CHROMEOS)
   if (!success) {

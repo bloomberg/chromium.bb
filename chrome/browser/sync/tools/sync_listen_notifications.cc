@@ -222,12 +222,8 @@ class ServerNotifierDelegate
 int main(int argc, char* argv[]) {
   base::AtExitManager exit_manager;
   CommandLine::Init(argc, argv);
-  logging::InitLogging(
-      NULL,
-      logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
-      logging::LOCK_LOG_FILE,
-      logging::DELETE_OLD_LOG_FILE,
-      logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+  logging::InitLogging(NULL, logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
+                       logging::LOCK_LOG_FILE, logging::DELETE_OLD_LOG_FILE);
   logging::SetMinLogLevel(logging::LOG_INFO);
   // TODO(akalin): Make sure that all log messages are printed to the
   // console, even on Windows (SetMinLogLevel isn't enough).
