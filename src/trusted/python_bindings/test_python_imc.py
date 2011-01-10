@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 import os
+import subprocess
+import sys
 import threading
 import unittest
 
@@ -68,6 +70,45 @@ class ImcTest(unittest.TestCase):
       new_sock1, new_sock2 = ConnectAndAccept(boundsock, sockaddr2)
       self._CheckDataMessages(new_sock1, new_sock2)
       self._CheckDataMessages(new_sock2, new_sock1)
+
+  def test_raw_socketpair(self):
+    fd1, fd2 = naclimc.os_socketpair()
+    sock1 = naclimc.from_os_socket(fd1)
+    sock2 = naclimc.from_os_socket(fd2)
+    self._CheckDataMessages(sock1, sock2)
+    self._CheckDataMessages(sock2, sock1)
+
+  def test_granting_to_subprocess(self):
+    parent_socket, child_socket = naclimc.os_socketpair()
+    if sys.platform == "win32":
+      import win32api
+      import win32con
+      close = win32api.CloseHandle
+      win32api.SetHandleInformation(child_socket, win32con.HANDLE_FLAG_INHERIT,
+                                    win32con.HANDLE_FLAG_INHERIT)
+      kwargs = {}
+    else:
+      close = os.close
+      def pre_exec():
+        close(parent_socket)
+      kwargs = {"preexec_fn": pre_exec}
+    if 'PYTHON_ARCH' in os.environ:
+      # This is a workaround for Mac OS 10.6 where we have to request
+      # an architecture for the interpreter that matches the extension
+      # we built.
+      python_prefix = ['arch', '-arch', os.environ['PYTHON_ARCH']]
+    else:
+      python_prefix = []
+    proc = subprocess.Popen(
+        python_prefix
+        + [sys.executable,
+           os.path.join(os.path.dirname(__file__), "test_prog.py"),
+           "%i" % child_socket],
+        **kwargs)
+    close(child_socket)
+    socket = naclimc.from_os_socket(parent_socket)
+    received = socket.imc_recvmsg(100)
+    self.assertEquals(received, ("message from test_prog", ()))
 
   def test_send_error(self):
     # Note that this assumes prompt garbage collection.

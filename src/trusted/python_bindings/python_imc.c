@@ -58,6 +58,52 @@ static PyObject *PyDescImcMakeBoundSock(PyObject *self, PyObject *args) {
                              NaClToPyDesc(pair[1]));
 }
 
+/* Python's libraries are not consistent in how or whether they wrap
+   Windows handles.
+
+   The modules _subprocess and win32api each have their own wrappers
+   which automagically convert to integers, but the constructors are
+   not exposed.  (_subprocess is a private, Windows-only module for
+   use by subprocess.py.)
+
+   msvcrt.get_osfhandle() just returns an integer.  This seems like
+   the simplest approach, and it fits with how Python handles Unix
+   file descriptors, so we just use integers below.  Windows handles
+   are really just integer IDs, even if HANDLE is a typedef for
+   void*. */
+
+static PyObject *PyDescOsSocketpair(PyObject *self, PyObject *args) {
+  NaClHandle pair[2];
+  UNREFERENCED_PARAMETER(self);
+  UNREFERENCED_PARAMETER(args);
+  if (NaClSocketPair(pair) != 0) {
+    PyErr_SetString(PyExc_Exception, "NaClSocketPair() failed");
+    return NULL;
+  }
+  return Py_BuildValue("kk", (unsigned long) pair[0],
+                             (unsigned long) pair[1]);
+}
+
+static PyObject *PyDescFromOsSocket(PyObject *self, PyObject *args) {
+  unsigned long socket;
+  struct NaClDescImcDesc *nacldesc;
+  UNREFERENCED_PARAMETER(self);
+
+  if (!PyArg_ParseTuple(args, "k", &socket))
+    return NULL;
+  nacldesc = malloc(sizeof(*nacldesc));
+  if (nacldesc == NULL) {
+    PyErr_SetString(PyExc_MemoryError, "Failed to allocate NaClDesc");
+    return NULL;
+  }
+  if (!NaClDescImcDescCtor(nacldesc, (NaClHandle) socket)) {
+    free(nacldesc);
+    PyErr_SetString(PyExc_MemoryError, "Failed to allocate NaClDesc");
+    return NULL;
+  }
+  return NaClToPyDesc(&nacldesc->base.base);
+}
+
 
 /* Methods */
 
@@ -290,6 +336,19 @@ static PyMethodDef module_methods[] = {
     "imc_makeboundsock() -> (boundsock, sockaddr)\n\n"
     "Creates a new socket pair.  boundsock can be used with imc_accept(), "
     "while sockaddr can be used with imc_connect()."
+  },
+  { "os_socketpair", PyDescOsSocketpair, METH_NOARGS,
+    "os_socketpair() -> (fd1, fd2)\n\n"
+    "Returns a pair of host-OS sockets.  "
+    "On Unix, these are file descriptors.  On Windows, these are handles.  "
+    "This is for setting up a connection to a newly-spawned subprocess."
+  },
+  { "from_os_socket", PyDescFromOsSocket, METH_VARARGS,
+    "from_os_socket(fd) -> socket\n\n"
+    "Takes a host-OS socket and returns a connected socket NaClDesc.  "
+    "This takes ownership of the host-OS socket.  "
+    "This is for setting up a connection inside or to a "
+    "newly-spawned subprocess."
   },
   { NULL, NULL, 0, NULL }
 };

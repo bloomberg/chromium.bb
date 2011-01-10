@@ -87,17 +87,6 @@ def MakePythonExtension(env, module_name, sources):
   return module
 
 
-if env.Bit('mac') and env.Bit('build_x86_32'):
-  # On Mac OS X 10.6, the system Python is a multi-architecture
-  # executable, and since x86-64 is the default it will fail to load
-  # our extension.  So we override the default.
-  # TODO(mseaborn): A better solution would be to build the Python
-  # extension as multi-arch too.
-  python_prefix = ['arch', '-arch', 'i386']
-else:
-  python_prefix = []
-
-
 libraries = [
     'nrd_xfer',
     'nacl_base',
@@ -111,9 +100,21 @@ env.Append(EXTRA_LIBS=libraries)
 
 module = MakePythonExtension(env, 'naclimc', ['python_imc.c'])
 
+env_vars = ['PYTHONPATH=%s' % os.path.dirname(module.abspath)]
+if env.Bit('mac') and env.Bit('build_x86_32'):
+  # On Mac OS X 10.6, the system Python is a multi-architecture
+  # executable, and since x86-64 is the default it will fail to load
+  # our extension.  So we override the default.
+  # TODO(mseaborn): A better solution would be to build the Python
+  # extension as multi-arch too.
+  python_prefix = ['arch', '-arch', 'i386']
+  env_vars.append('PYTHON_ARCH=i386')
+else:
+  python_prefix = []
+
 node = env.CommandTest(
     'python_imc_test.out',
     command=python_prefix + ['${PYTHON}', env.File('test_python_imc.py')],
-    osenv='PYTHONPATH=%s' % os.path.dirname(module.abspath))
+    osenv=','.join(env_vars))
 env.Depends(node, module)
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_python_imc_test')
