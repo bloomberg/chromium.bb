@@ -79,6 +79,15 @@
         'clipboard/scoped_clipboard_writer.cc',
         'clipboard/scoped_clipboard_writer.h',
       ],
+      'conditions': [
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+          'dependencies': [
+            '../build/linux/system.gyp:gtk',
+            '../build/linux/system.gyp:x11',
+            '../build/linux/system.gyp:xext',
+          ],
+        }],
+      ],
     },
     {
       'target_name': 'ui_base_unittests',
