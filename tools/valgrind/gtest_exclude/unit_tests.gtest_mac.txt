@@ -5,6 +5,9 @@ IPCSyncChannelTest.*
 # http://crbug.com/21890
 WebDropTargetTest.URL
 WebDropTargetTest.Data
+# http://crbug.com/69037
+FirefoxImporterTest.Firefox3NSS3Decryptor
+
 
 # Following tests do not pass memcheck test.
 # See http://crbug.com/30393.
