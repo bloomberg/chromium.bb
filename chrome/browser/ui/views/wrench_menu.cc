@@ -244,11 +244,10 @@ class ScheduleAllView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(ScheduleAllView);
 };
 
-std::wstring GetAccessibleNameForWrenchMenuItem(
+string16 GetAccessibleNameForWrenchMenuItem(
       MenuModel* model, int item_index, int accessible_string_id) {
-  std::wstring accessible_name =
-      UTF16ToWide(l10n_util::GetStringUTF16(accessible_string_id));
-  std::wstring accelerator_text;
+  string16 accessible_name = l10n_util::GetStringUTF16(accessible_string_id);
+  string16 accelerator_text;
 
   menus::Accelerator menu_accelerator;
   if (model->GetAcceleratorAt(item_index, &menu_accelerator)) {
@@ -282,8 +281,8 @@ class WrenchMenuView : public ScheduleAllView, public views::ButtonListener {
                                       int acc_string_id) {
     TextButton* button =
         new TextButton(this, UTF16ToWide(l10n_util::GetStringUTF16(string_id)));
-    button->SetAccessibleName(
-        GetAccessibleNameForWrenchMenuItem(menu_model_, index, acc_string_id));
+    button->SetAccessibleName(UTF16ToWide(
+        GetAccessibleNameForWrenchMenuItem(menu_model_, index, acc_string_id)));
     button->SetFocusable(true);
     button->set_request_focus_on_press(false);
     button->set_tag(index);
@@ -430,9 +429,9 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
         0, kHorizontalPadding, 0, kHorizontalPadding));
     fullscreen_button_->set_background(
         new MenuButtonBackground(MenuButtonBackground::SINGLE_BUTTON));
-    fullscreen_button_->SetAccessibleName(
+    fullscreen_button_->SetAccessibleName(UTF16ToWide(
         GetAccessibleNameForWrenchMenuItem(
-            menu_model, fullscreen_index, IDS_ACCNAME_FULLSCREEN));
+            menu_model, fullscreen_index, IDS_ACCNAME_FULLSCREEN)));
     AddChildView(fullscreen_button_);
 
     UpdateZoomControls();

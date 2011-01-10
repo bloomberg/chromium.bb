@@ -19,7 +19,7 @@
 
 namespace views {
 
-std::wstring Accelerator::GetShortcutText() const {
+string16 Accelerator::GetShortcutText() const {
   int string_id = 0;
   switch(key_code_) {
     case app::VKEY_TAB:
@@ -157,7 +157,7 @@ std::wstring Accelerator::GetShortcutText() const {
     shortcut.swap(shortcut_rtl);
   }
 
-  return UTF16ToWide(shortcut);
+  return shortcut;
 }
 
 }  // namespace views

@@ -106,8 +106,8 @@ class MenuItemView : public View {
 
   // Returns the accessible name to be used with screen readers. Mnemonics are
   // removed and the menu item accelerator text is appended.
-  static std::wstring GetAccessibleNameForMenuItem(
-      const std::wstring& item_text, const std::wstring& accelerator_text);
+  static string16 GetAccessibleNameForMenuItem(
+      const string16& item_text, const string16& accelerator_text);
 
   // Run methods. See description above class for details. Both Run methods take
   // a rectangle, which is used to position the menu. |has_mnemonics| indicates
@@ -348,7 +348,7 @@ class MenuItemView : public View {
   void DestroyAllMenuHosts();
 
   // Returns the accelerator text.
-  std::wstring GetAcceleratorText();
+  string16 GetAcceleratorText();
 
   // Returns the various margins.
   int GetTopMargin();

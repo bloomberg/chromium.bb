@@ -126,13 +126,14 @@ AccessibilityTypes::State MenuItemView::GetAccessibleState() {
 }
 
 // static
-std::wstring MenuItemView::GetAccessibleNameForMenuItem(
-      const std::wstring& item_text, const std::wstring& accelerator_text) {
-  std::wstring accessible_name = item_text;
+string16 MenuItemView::GetAccessibleNameForMenuItem(
+      const string16& item_text, const string16& accelerator_text) {
+  string16 accessible_name = item_text;
 
   // Filter out the "&" for accessibility clients.
   size_t index = 0;
-  while ((index = accessible_name.find(L"&", index)) != std::wstring::npos &&
+  const char16 amp = '&';
+  while ((index = accessible_name.find(amp, index)) != string16::npos &&
          index + 1 < accessible_name.length()) {
     accessible_name.replace(index, accessible_name.length() - index,
                             accessible_name.substr(index + 1));
@@ -143,9 +144,8 @@ std::wstring MenuItemView::GetAccessibleNameForMenuItem(
   }
 
   // Append accelerator text.
-  menus::Accelerator menu_accelerator;
   if (!accelerator_text.empty()) {
-    accessible_name.append(L" ");
+    accessible_name.push_back(' ');
     accessible_name.append(accelerator_text);
   }
 
@@ -306,7 +306,8 @@ SubmenuView* MenuItemView::CreateSubmenu() {
 
 void MenuItemView::SetTitle(const std::wstring& title) {
   title_ = WideToUTF16Hack(title);
-  SetAccessibleName(GetAccessibleNameForMenuItem(title, GetAcceleratorText()));
+  SetAccessibleName(UTF16ToWideHack(
+      GetAccessibleNameForMenuItem(title_, GetAcceleratorText())));
 }
 
 void MenuItemView::SetSelected(bool selected) {
@@ -429,7 +430,7 @@ void MenuItemView::Layout() {
 }
 
 int MenuItemView::GetAcceleratorTextWidth() {
-  string16 text = WideToUTF16Hack(GetAcceleratorText());
+  string16 text = GetAcceleratorText();
   return text.empty() ? 0 : MenuConfig::instance().font.GetStringWidth(text);
 }
 
@@ -593,7 +594,7 @@ void MenuItemView::AdjustBoundsForRTLUI(gfx::Rect* rect) const {
 }
 
 void MenuItemView::PaintAccelerator(gfx::Canvas* canvas) {
-  std::wstring accel_text = GetAcceleratorText();
+  string16 accel_text = GetAcceleratorText();
   if (accel_text.empty())
     return;
 
@@ -612,9 +613,9 @@ void MenuItemView::PaintAccelerator(gfx::Canvas* canvas) {
   else
     flags |= gfx::Canvas::TEXT_ALIGN_RIGHT;
   canvas->DrawStringInt(
-      accel_text, font, TextButton::kDisabledColor, accel_bounds.x(),
-      accel_bounds.y(), accel_bounds.width(), accel_bounds.height(),
-      flags);
+      UTF16ToWideHack(accel_text), font, TextButton::kDisabledColor,
+      accel_bounds.x(), accel_bounds.y(), accel_bounds.width(),
+      accel_bounds.height(), flags);
 }
 
 void MenuItemView::DestroyAllMenuHosts() {
@@ -656,11 +657,11 @@ int MenuItemView::GetChildPreferredWidth() {
   return width;
 }
 
-std::wstring MenuItemView::GetAcceleratorText() {
+string16 MenuItemView::GetAcceleratorText() {
   Accelerator accelerator;
   return (GetDelegate() &&
           GetDelegate()->GetAccelerator(GetCommand(), &accelerator)) ?
-      accelerator.GetShortcutText() : std::wstring();
+      accelerator.GetShortcutText() : string16();
 }
 
 }  // namespace views

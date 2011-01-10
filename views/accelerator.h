@@ -15,6 +15,7 @@
 #include <string>
 
 #include "app/menus/accelerator.h"
+#include "base/string16.h"
 #include "views/event.h"
 
 namespace views {
@@ -53,7 +54,7 @@ class Accelerator : public menus::Accelerator {
   }
 
   // Returns a string with the localized shortcut if any.
-  std::wstring GetShortcutText() const;
+  string16 GetShortcutText() const;
 };
 
 // An interface that classes that want to register for keyboard accelerators

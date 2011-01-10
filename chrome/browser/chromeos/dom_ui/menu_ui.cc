@@ -627,7 +627,7 @@ DictionaryValue* MenuUI::CreateMenuItem(const menus::MenuModel* model,
   }
   views::Accelerator menu_accelerator;
   if (model->GetAcceleratorAt(index, &menu_accelerator)) {
-    item->SetString("accel", WideToUTF16(menu_accelerator.GetShortcutText()));
+    item->SetString("accel", menu_accelerator.GetShortcutText());
     *has_accel = true;
   }
   return item;

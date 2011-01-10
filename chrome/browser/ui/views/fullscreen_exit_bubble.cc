@@ -150,7 +150,8 @@ FullscreenExitBubble::FullscreenExitBubble(
   views::Accelerator accelerator(app::VKEY_UNKNOWN, false, false, false);
   bool got_accelerator = frame->GetAccelerator(IDC_FULLSCREEN, &accelerator);
   DCHECK(got_accelerator);
-  view_ = new FullscreenExitView(this, accelerator.GetShortcutText());
+  view_ = new FullscreenExitView(
+      this, UTF16ToWideHack(accelerator.GetShortcutText()));
 
   // Initialize the popup.
 #if defined(OS_WIN)
