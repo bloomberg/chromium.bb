@@ -216,9 +216,8 @@ void AdvancedOptionsHandler::Initialize() {
     RemoveCloudPrintProxySection();
   }
 #endif
-#if defined(ENABLE_REMOTING)
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableRemoting)) {
+#if defined(ENABLE_REMOTING) && !defined(OS_CHROMEOS)
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableRemoting)) {
     RemoveRemotingSection();
   }
 #endif
@@ -295,7 +294,7 @@ void AdvancedOptionsHandler::RegisterMessages() {
       NewCallback(this,
                   &AdvancedOptionsHandler::ShowNetworkProxySettings));
 #endif
-#if defined(ENABLE_REMOTING)
+#if defined(ENABLE_REMOTING) && !defined(OS_CHROMEOS)
   dom_ui_->RegisterMessageCallback("showRemotingSetupDialog",
       NewCallback(this,
                   &AdvancedOptionsHandler::ShowRemotingSetupDialog));
@@ -522,7 +521,7 @@ void AdvancedOptionsHandler::RemoveCloudPrintProxySection() {
 
 #endif
 
-#if defined(ENABLE_REMOTING)
+#if defined(ENABLE_REMOTING) && !defined(OS_CHROMEOS)
 void AdvancedOptionsHandler::RemoveRemotingSection() {
   dom_ui_->CallJavascriptFunction(
       L"options.AdvancedOptions.RemoveRemotingSection");

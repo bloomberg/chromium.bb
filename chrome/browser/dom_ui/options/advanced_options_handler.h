@@ -120,7 +120,7 @@ class AdvancedOptionsHandler
 
 #endif
 
-#if defined(ENABLE_REMOTING)
+#if defined(ENABLE_REMOTING) && !defined(OS_CHROMEOS)
   // Removes remoting section. Called if remoting is not enabled.
   void RemoveRemotingSection();
 
