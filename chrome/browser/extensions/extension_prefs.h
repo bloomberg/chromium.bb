@@ -357,6 +357,8 @@ class ExtensionPrefs {
   void SetLastPingDayImpl(const base::Time& time, DictionaryValue* dictionary);
 
   // Helper method to acquire the installation time of an extension.
+  // Returns base::Time() if the installation time could not be parsed or
+  // found.
   base::Time GetInstallTime(const std::string& extension_id) const;
 
   // Fix missing preference entries in the extensions that are were introduced

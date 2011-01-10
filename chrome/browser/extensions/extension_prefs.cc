@@ -1135,12 +1135,12 @@ base::Time ExtensionPrefs::GetInstallTime(
     NOTREACHED();
     return base::Time();
   }
-  std::string install_time_str("0");
-  extension->GetString(kPrefInstallTime, &install_time_str);
+  std::string install_time_str;
+  if (!extension->GetString(kPrefInstallTime, &install_time_str))
+    return base::Time();
   int64 install_time_i64 = 0;
-  base::StringToInt64(install_time_str, &install_time_i64);
-  LOG_IF(ERROR, install_time_i64 == 0)
-      << "Error parsing installation time of an extension.";
+  if (!base::StringToInt64(install_time_str, &install_time_i64))
+    return base::Time();
   return base::Time::FromInternalValue(install_time_i64);
 }
 
@@ -1167,6 +1167,10 @@ void ExtensionPrefs::FixMissingPrefs(const ExtensionIdSet& extension_ids) {
     CHECK(extension);
 
     if (GetInstallTime(*ext_id) == base::Time()) {
+      LOG(INFO) << "Could not parse installation time of extension "
+                << *ext_id << ". It was probably installed before setting "
+                << kPrefInstallTime << " was introduced. Updating "
+                << kPrefInstallTime << " to the current time.";
       const base::Time install_time = GetCurrentTime();
       extension->Set(kPrefInstallTime,
                      Value::CreateStringValue(
