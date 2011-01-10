@@ -35,10 +35,6 @@ int NaClSrpcAcceptClientOnThread(const struct NaClSrpcHandlerDesc* methods) {
   struct WorkerData *worker_data = NULL;
   pthread_t worker_tid;
 
-  if (NaClSrpcIsStandalone()) {
-    return NaClSrpcCommandLoopMain(methods);
-  }
-
   sock_fd = imc_accept(BOUND_SOCKET);
   if (sock_fd == -1) {
     goto done;

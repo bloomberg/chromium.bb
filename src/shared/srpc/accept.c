@@ -16,10 +16,6 @@ int NaClSrpcAcceptClientConnection(const struct NaClSrpcHandlerDesc *methods) {
   int sock_fd = -1;
   int result = 1;
 
-  if (NaClSrpcIsStandalone()) {
-    return NaClSrpcCommandLoopMain(methods);
-  }
-
   sock_fd = imc_accept(BOUND_SOCKET);
   if (sock_fd == -1) {
     return 0;
