@@ -66,7 +66,6 @@
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
 #include "chrome/browser/speech/speech_input_dispatcher_host.h"
-#include "chrome/browser/speech/speech_input_manager.h"
 #include "chrome/browser/spellcheck_host.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/visitedlink/visitedlink_master.h"
@@ -790,11 +789,6 @@ void BrowserRenderProcessHost::InitExtensions() {
   Send(new ViewMsg_Extension_SetFunctionNames(function_names));
 }
 
-void BrowserRenderProcessHost::InitSpeechInput() {
-  Send(new ViewMsg_SpeechInput_SetFeatureEnabled(
-      speech_input::SpeechInputManager::IsFeatureEnabled()));
-}
-
 void BrowserRenderProcessHost::SendUserScriptsUpdate(
     base::SharedMemory *shared_memory) {
   // Process is being started asynchronously.  We'll end up calling
@@ -1169,7 +1163,6 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
 
   Send(new ViewMsg_SetIsIncognitoProcess(profile()->IsOffTheRecord()));
 
-  InitSpeechInput();
   InitVisitedLinks();
   InitUserScripts();
   InitExtensions();
