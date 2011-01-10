@@ -173,6 +173,21 @@ TEST(SafeBrowsingProtocolParsingTest, TestAddBigChunk) {
   EXPECT_EQ(host.entry->prefix_count(), 260);
 }
 
+// Test to make sure we could deal with truncated chunk.
+TEST(SafeBrowsingProtocolParsingTest, TestTruncatedChunk) {
+  // This chunk delares there are 4 prefixes but actually only contains 2.
+  const char add_chunk[] = "a:1:4:21\naaaa\00411112222";
+  SafeBrowsingProtocolParser parser;
+  bool re_key = false;
+  SBChunkList chunks;
+  bool result = parser.ParseChunk(add_chunk,
+                                  static_cast<int>(sizeof(add_chunk)),
+                                  "", "", &re_key, &chunks);
+  EXPECT_FALSE(result);
+  EXPECT_FALSE(re_key);
+  EXPECT_EQ(chunks.size(), 0U);
+}
+
 // Test parsing one sub chunk.
 TEST(SafeBrowsingProtocolParsingTest, TestSubChunk) {
   std::string sub_chunk("s:9:4:59\naaaaxkkkk1111\003"

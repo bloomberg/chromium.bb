@@ -265,6 +265,8 @@ bool SafeBrowsingProtocolParser::ParseChunk(const char* data,
       return false;  // Error: bad chunk format!
 
     const int line_len = static_cast<int>(cmd_line.length()) + 1;
+    chunk_data += line_len;
+    remaining -= line_len;
     std::vector<std::string> cmd_parts;
     base::SplitString(cmd_line, ':', &cmd_parts);
 
@@ -274,8 +276,6 @@ bool SafeBrowsingProtocolParser::ParseChunk(const char* data,
           cmd_parts[0] == "e" &&
           cmd_parts[1] == "pleaserekey") {
         *re_key = true;
-        chunk_data += line_len;
-        remaining -= line_len;
         continue;
       }
       return false;
@@ -290,8 +290,9 @@ bool SafeBrowsingProtocolParser::ParseChunk(const char* data,
     }
 
     const int chunk_len = atoi(cmd_parts[3].c_str());
-    chunk_data += line_len;
-    remaining -= line_len;
+
+    if (remaining < chunk_len)
+      return false;  // parse error.
 
     chunks->push_back(SBChunk());
     chunks->back().chunk_number = chunk_number;
@@ -313,8 +314,7 @@ bool SafeBrowsingProtocolParser::ParseChunk(const char* data,
 
     chunk_data += chunk_len;
     remaining -= chunk_len;
-    if (remaining < 0)
-      return false;  // Parse error.
+    DCHECK_LE(0, remaining);
   }
 
   DCHECK(remaining == 0);
