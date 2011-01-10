@@ -110,7 +110,6 @@ common_libs = [
     'platform',
     'platform_qual_lib',
     'gio',
-    'expiration',
     'sel',
     'env_cleanser',
 ]

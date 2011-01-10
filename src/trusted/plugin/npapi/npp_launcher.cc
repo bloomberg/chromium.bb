@@ -35,7 +35,6 @@
 #if NACL_OSX
 #include "native_client/src/trusted/plugin/osx/open_mac_file.h"
 #endif  // NACL_OSX
-#include "native_client/src/trusted/expiration/expiration.h"
 #include "native_client/src/trusted/plugin/npapi/browser_impl_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/plugin_npapi.h"
 
@@ -65,9 +64,6 @@ char* NPP_GetMIMEDescription() {
 // Invoked from NP_Initialize()
 NPError NPP_Initialize() {
   DebugPrintf("NPP_Initialize\n");
-  if (NaClHasExpired()) {
-    return NPERR_INCOMPATIBLE_VERSION_ERROR;
-  }
   NaClNrdAllModulesInit();
   return NPERR_NO_ERROR;
 }
@@ -93,9 +89,6 @@ NPError NPP_New(NPMIMEType plugin_type,
     DebugPrintf("args %u: '%s' '%s'\n", i, argn[i], argv[i]);
   }
 
-  if (NaClHasExpired()) {
-    return NPERR_INCOMPATIBLE_VERSION_ERROR;
-  }
   if (npp == NULL) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }

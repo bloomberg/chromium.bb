@@ -5,7 +5,6 @@
  */
 
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
-#include "native_client/src/trusted/expiration/expiration.h"
 #include "native_client/src/trusted/handle_pass/browser_handle.h"
 #include "native_client/src/trusted/plugin/ppapi/plugin_ppapi.h"
 #include "native_client/src/trusted/plugin/nacl_entry_points.h"
@@ -24,9 +23,6 @@ class ModulePpapi : public pp::Module {
   ModulePpapi() : pp::Module() {
     PLUGIN_PRINTF(("ModulePpapi::ModulePpapi (this=%p)\n",
                    static_cast<void*>(this)));
-    if (NaClHasExpired()) {
-      return;
-    }
   }
 
   virtual ~ModulePpapi() {

@@ -30,7 +30,6 @@ TESTS = [
     ['service_runtime_tests', [], [], 'small'],
     ['format_string_test', [], [], 'small'],
     ['nacl_sync_cond_test', [], [], 'small'],
-    ['expiration_test', [], [], 'medium'],
     ['env_cleanser_test', [], [], 'small'],
 ]
 
