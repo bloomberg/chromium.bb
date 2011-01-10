@@ -838,6 +838,10 @@ terminal_draw(struct terminal *terminal)
 		(int32_t) terminal->extents.max_x_advance;
 	height = (rectangle.height - 2 * terminal->margin) /
 		(int32_t) terminal->extents.height;
+
+	if (width < 0 || height < 0)
+		return;
+
 	terminal_resize(terminal, width, height);
 
 	window_draw(terminal->window);
