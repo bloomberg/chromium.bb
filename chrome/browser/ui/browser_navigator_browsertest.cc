@@ -597,4 +597,35 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
             browser()->GetSelectedTabContents()->GetURL());
 }
 
+// This test verifies that constructing params with disposition = SINGLETON_TAB
+// and |ignore_paths| = true will update the current tab's URL if the currently
+// selected tab is a match but has a different path.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       Disposition_SingletonTabFocused_IgnorePath) {
+  GURL singleton_url_current("chrome://settings/advanced");
+  GURL url("http://www.google.com/");
+  browser()->AddSelectedTabWithURL(singleton_url_current, PageTransition::LINK);
+
+  // We should have one browser with 2 tabs, the 2nd selected.
+  EXPECT_EQ(1u, BrowserList::size());
+  EXPECT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(1, browser()->selected_index());
+
+  // Navigate to a different settings path.
+  GURL singleton_url_target("chrome://settings/personal");
+  browser::NavigateParams p(MakeNavigateParams());
+  p.disposition = SINGLETON_TAB;
+  p.url = singleton_url_target;
+  p.show_window = true;
+  p.ignore_path = true;
+  browser::Navigate(&p);
+
+  // The second tab should still be selected, but navigated to the new path.
+  EXPECT_EQ(browser(), p.browser);
+  EXPECT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(1, browser()->selected_index());
+  EXPECT_EQ(singleton_url_target,
+            browser()->GetSelectedTabContents()->GetURL());
+}
+
 }  // namespace
