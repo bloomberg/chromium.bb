@@ -324,12 +324,15 @@ bool RenderWidgetHostViewViews::IsPopup() {
 
 BackingStore* RenderWidgetHostViewViews::AllocBackingStore(
     const gfx::Size& size) {
+  gfx::NativeView nview = GetInnerNativeView();
+  if (!nview)
+    return NULL;
   return new BackingStoreX(host_, size,
-                           x11_util::GetVisualFromGtkWidget(native_view()),
-                           gtk_widget_get_visual(native_view())->depth);
+                           x11_util::GetVisualFromGtkWidget(nview),
+                           gtk_widget_get_visual(nview)->depth);
 }
 
-gfx::NativeView RenderWidgetHostViewViews::native_view() const {
+gfx::NativeView RenderWidgetHostViewViews::GetInnerNativeView() const {
   // TODO(sad): Ideally this function should be equivalent to GetNativeView, and
   // WidgetGtk-specific function call should not be necessary.
   views::WidgetGtk* widget = static_cast<views::WidgetGtk*>(GetWidget());
@@ -365,7 +368,7 @@ void RenderWidgetHostViewViews::Paint(gfx::Canvas* canvas) {
     return;
   }
 
-  GdkWindow* window = native_view()->window;
+  GdkWindow* window = GetInnerNativeView()->window;
   DCHECK(!about_to_validate_and_paint_);
 
   // TODO(anicolao): get the damage somehow
@@ -593,7 +596,7 @@ void RenderWidgetHostViewViews::WillLoseFocus() {
 void RenderWidgetHostViewViews::ShowCurrentCursor() {
   // The widget may not have a window. If that's the case, abort mission. This
   // is the same issue as that explained above in Paint().
-  if (!native_view() || !native_view()->window)
+  if (!GetInnerNativeView() || !GetInnerNativeView()->window)
     return;
 
   native_cursor_ = current_cursor_.GetNativeCursor();

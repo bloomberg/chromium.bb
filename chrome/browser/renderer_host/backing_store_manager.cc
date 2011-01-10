@@ -148,7 +148,8 @@ BackingStore* CreateBackingStore(RenderWidgetHost* host,
     cache = small_cache;
   }
   BackingStore* backing_store = host->AllocBackingStore(backing_store_size);
-  cache->Put(host, backing_store);
+  if (backing_store)
+    cache->Put(host, backing_store);
   return backing_store;
 }
 
@@ -203,14 +204,14 @@ void BackingStoreManager::PrepareBackingStore(
     // don't have a previous snapshot.
     if (bitmap_rect.size() != backing_store_size ||
         bitmap_rect.x() != 0 || bitmap_rect.y() != 0 ||
-        ComputeTotalArea(copy_rects) != backing_store_size.GetArea()) {
+        ComputeTotalArea(copy_rects) != backing_store_size.GetArea() ||
+        !(backing_store = CreateBackingStore(host, backing_store_size))) {
       DCHECK(needs_full_paint != NULL);
       *needs_full_paint = true;
       // Makes no sense to paint the transport dib if we are going
       // to request a full paint.
       return;
     }
-    backing_store = CreateBackingStore(host, backing_store_size);
   }
 
   backing_store->PaintToBackingStore(host->process(), bitmap,
