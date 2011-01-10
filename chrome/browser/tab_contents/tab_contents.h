@@ -743,6 +743,9 @@ class TabContents : public PageNavigator,
   // Opens view-source tab for this contents.
   void ViewSource();
 
+  // Add an IPC message filter to the beginning of the list.
+  void AddMessageFilter(IPC::Channel::Listener* message_filter);
+
   // Gets the minimum/maximum zoom percent.
   int minimum_zoom_percent() const { return minimum_zoom_percent_; }
   int maximum_zoom_percent() const { return maximum_zoom_percent_; }

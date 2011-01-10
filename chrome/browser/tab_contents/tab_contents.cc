@@ -1596,6 +1596,10 @@ void TabContents::ViewSource() {
   delegate_->ViewSourceForTab(this, active_entry->url());
 }
 
+void TabContents::AddMessageFilter(IPC::Channel::Listener* message_filter) {
+  message_filters_.insert(message_filters_.begin(), message_filter);
+}
+
 void TabContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
                                                     bool is_main_frame,
                                                     const GURL& url) {
