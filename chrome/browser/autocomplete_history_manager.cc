@@ -127,13 +127,14 @@ void AutocompleteHistoryManager::OnFormSubmitted(const FormData& form) {
       values.push_back(*iter);
   }
 
-  if (!values.empty() && web_data_service_)
+  if (!values.empty() && web_data_service_.get())
     web_data_service_->AddFormFields(values);
 }
 
 void AutocompleteHistoryManager::OnRemoveAutocompleteEntry(
     const string16& name, const string16& value) {
-  web_data_service_->RemoveFormValueForElementName(name, value);
+  if (web_data_service_.get())
+    web_data_service_->RemoveFormValueForElementName(name, value);
 }
 
 void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
@@ -156,8 +157,10 @@ void AutocompleteHistoryManager::OnGetAutocompleteSuggestions(
     return;
   }
 
-  pending_query_handle_ = web_data_service_->GetFormValuesForElementName(
-      name, prefix, kMaxAutocompleteMenuItems, this);
+  if (web_data_service_.get()) {
+    pending_query_handle_ = web_data_service_->GetFormValuesForElementName(
+        name, prefix, kMaxAutocompleteMenuItems, this);
+  }
 }
 
 void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
@@ -192,7 +195,8 @@ AutocompleteHistoryManager::AutocompleteHistoryManager(
 void AutocompleteHistoryManager::CancelPendingQuery() {
   if (pending_query_handle_) {
     SendSuggestions(NULL);
-    web_data_service_->CancelRequest(pending_query_handle_);
+    if (web_data_service_.get())
+      web_data_service_->CancelRequest(pending_query_handle_);
     pending_query_handle_ = 0;
   }
 }

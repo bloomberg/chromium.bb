@@ -434,9 +434,6 @@ class AutoFillManagerTest : public RenderViewHostTestHarness {
   }
 
   virtual void SetUp() {
-    profile_.reset(new TestingProfile());
-    profile_->CreateWebDataService(false);
-
     RenderViewHostTestHarness::SetUp();
     test_personal_data_ = new TestPersonalDataManager();
     autofill_manager_.reset(new TestAutoFillManager(contents(),
