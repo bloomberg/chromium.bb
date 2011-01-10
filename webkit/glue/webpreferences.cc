@@ -66,6 +66,7 @@ WebPreferences::WebPreferences()
       accelerated_layers_enabled(false),
       accelerated_video_enabled(false),
       accelerated_2d_canvas_enabled(false),
+      accelerated_plugins_enabled(false),
       memory_info_enabled(false) {
 }
 
@@ -157,15 +158,17 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setAccelerated2dCanvasEnabled(accelerated_2d_canvas_enabled);
 
   // Enabling accelerated layers from the command line enabled accelerated
-  // 3D CSS, Video, Plugins, and Animations.
+  // 3D CSS, Video, and Animations.
   settings->setAcceleratedCompositingFor3DTransformsEnabled(
       accelerated_layers_enabled);
   settings->setAcceleratedCompositingForVideoEnabled(
       accelerated_video_enabled);
-  settings->setAcceleratedCompositingForPluginsEnabled(
-      accelerated_layers_enabled);
   settings->setAcceleratedCompositingForAnimationEnabled(
       accelerated_layers_enabled);
+
+  // Enabling accelerated plugins if specified from the command line.
+  settings->setAcceleratedCompositingForPluginsEnabled(
+      accelerated_plugins_enabled);
 
   // WebGL and accelerated 2D canvas are always gpu composited.
   settings->setAcceleratedCompositingForCanvasEnabled(
