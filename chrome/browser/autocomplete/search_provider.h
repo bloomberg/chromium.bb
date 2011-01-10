@@ -317,6 +317,9 @@ class SearchProvider : public AutocompleteProvider,
   // Has FinalizeInstantQuery been invoked since the last |Start|?
   bool instant_finalized_;
 
+  // The |suggest_text| parameter passed to FinalizeInstantQuery.
+  std::wstring default_provider_suggest_text_;
+
   DISALLOW_COPY_AND_ASSIGN(SearchProvider);
 };
 

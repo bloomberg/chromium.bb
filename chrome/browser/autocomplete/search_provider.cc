@@ -78,6 +78,8 @@ void SearchProvider::FinalizeInstantQuery(const std::wstring& input_text,
     return;
   }
 
+  default_provider_suggest_text_ = suggest_text;
+
   std::wstring adjusted_input_text(input_text);
   AutocompleteInput::RemoveForcedQueryStringIfNecessary(input_.type(),
                                                         &adjusted_input_text);
@@ -162,9 +164,12 @@ void SearchProvider::Start(const AutocompleteInput& input,
 
   // If we're still running an old query but have since changed the query text
   // or the providers, abort the query.
-  if (!done_ && (!minimal_changes ||
-                 !providers_.equals(default_provider, keyword_provider))) {
-    Stop();
+  if (!minimal_changes ||
+      !providers_.equals(default_provider, keyword_provider)) {
+    if (done_)
+      default_provider_suggest_text_.clear();
+    else
+      Stop();
   }
 
   providers_.Set(default_provider, keyword_provider);
@@ -218,6 +223,7 @@ void SearchProvider::Run() {
 void SearchProvider::Stop() {
   StopSuggest();
   done_ = true;
+  default_provider_suggest_text_.clear();
 }
 
 void SearchProvider::OnURLFetchComplete(const URLFetcher* source,
@@ -531,6 +537,13 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
                   AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
                   did_not_accept_default_suggestion, false,
                   input_.initial_prevent_inline_autocomplete(), &map);
+    if (!default_provider_suggest_text_.empty()) {
+      AddMatchToMap(input_.text() + default_provider_suggest_text_,
+                    input_.text(), CalculateRelevanceForWhatYouTyped() + 1,
+                    AutocompleteMatch::SEARCH_SUGGEST,
+                    did_not_accept_default_suggestion, false,
+                    input_.initial_prevent_inline_autocomplete(), &map);
+    }
   }
 
   AddHistoryResultsToMap(keyword_history_results_, true,

@@ -388,3 +388,39 @@ TEST_F(SearchProviderTest, FinalizeInstantQuery) {
   // The instant search should be more relevant.
   EXPECT_GT(instant_match.relevance, what_you_typed_match.relevance);
 }
+
+// Make sure that if FinalizeInstantQuery is invoked before suggest results
+// return, the suggest text from FinalizeInstantQuery is remembered.
+TEST_F(SearchProviderTest, RememberInstantQuery) {
+  PrefService* service = profile_.GetPrefs();
+  service->SetBoolean(prefs::kInstantEnabled, true);
+
+  QueryForInput(ASCIIToUTF16("foo"), false);
+
+  // Finalize the instant query immediately.
+  provider_->FinalizeInstantQuery(L"foo", L"bar");
+
+  // There should be two matches, one for what you typed, the other for
+  // 'foobar'.
+  EXPECT_EQ(2u, provider_->matches().size());
+  GURL instant_url = GURL(default_t_url_->url()->ReplaceSearchTerms(
+      *default_t_url_, L"foobar", 0, std::wstring()));
+  AutocompleteMatch instant_match = FindMatchWithDestination(instant_url);
+  EXPECT_FALSE(instant_match.destination_url.is_empty());
+
+  // Wait until history and the suggest query complete.
+  profile_.BlockUntilHistoryProcessesPendingRequests();
+  ASSERT_NO_FATAL_FAILURE(FinishDefaultSuggestQuery());
+
+  // Provider should be done.
+  EXPECT_TRUE(provider_->done());
+
+  // There should be two matches, one for what you typed, the other for
+  // 'foobar'.
+  EXPECT_EQ(2u, provider_->matches().size());
+  instant_match = FindMatchWithDestination(instant_url);
+  EXPECT_FALSE(instant_match.destination_url.is_empty());
+
+  // And the 'foobar' match should have a description.
+  EXPECT_FALSE(instant_match.description.empty());
+}

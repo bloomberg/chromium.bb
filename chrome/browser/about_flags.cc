@@ -266,6 +266,13 @@ const Experiment kExperiments[] = {
     kOsWin,
     MULTI_VALUE_TYPE(kInstantChoices)
   },
+  {
+    "instant-autocomplete-immediately",  // FLAGS:RECORD_UMA
+    IDS_FLAGS_INSTANT_AUTOCOMPLETE_IMMEDIATELY_NAME,
+    IDS_FLAGS_INSTANT_AUTOCOMPLETE_IMMEDIATELY_DESCRIPTION,
+    kOsWin | kOsLinux,
+    SINGLE_VALUE_TYPE(switches::kInstantAutocompleteImmediately)
+  },
 };
 
 const Experiment* experiments = kExperiments;

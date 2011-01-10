@@ -4074,6 +4074,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_TABBED_OPTIONS_DESCRIPTION" desc="Description of the 'Tabbed Settings' lab.">
         Uses an in-tab UI for the Settings (Options/Preferences) dialog instead of a stand-alone window.
       </message>
+      <message name="IDS_FLAGS_INSTANT_AUTOCOMPLETE_IMMEDIATELY_NAME" desc="Name of the 'Instant Autocomplete Immediately' lab.">
+        Instant Autocomplete Immediately
+      </message>
+      <message name="IDS_FLAGS_INSTANT_AUTOCOMPLETE_IMMEDIATELY_DESCRIPTION" desc="Description of the 'Instant Autocomplete Immediately' lab.">
+        Whether the search provider suggestion should be autocompleted immediately when instant is enabled.
+      </message>
       <message name="IDS_FLAGS_PREDICTIVE_INSTANT_NAME" desc="Description of the predictive 'Instant' lab.">
         Instant
       </message>

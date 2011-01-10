@@ -10,6 +10,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/string_util.h"
@@ -45,6 +46,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -624,7 +626,20 @@ void LocationBarViewGtk::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
 }
 
 void LocationBarViewGtk::SetSuggestedText(const string16& text) {
-  location_entry_->SetInstantSuggestion(UTF16ToUTF8(text));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kInstantAutocompleteImmediately)) {
+    // This method is internally invoked to reset suggest text, so we only do
+    // anything if the text isn't empty.
+    // TODO: if we keep autocomplete, make it so this isn't invoked with empty
+    // text.
+    if (!text.empty()) {
+      location_entry_->model()->FinalizeInstantQuery(
+          location_entry_->GetText(),
+          UTF16ToWide(text));
+    }
+  } else {
+    location_entry_->SetInstantSuggestion(UTF16ToUTF8(text));
+  }
 }
 
 std::wstring LocationBarViewGtk::GetInputString() const {

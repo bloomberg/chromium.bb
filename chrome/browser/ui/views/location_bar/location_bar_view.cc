@@ -12,6 +12,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
+#include "base/command_line.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -36,6 +37,7 @@
 #include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/color_utils.h"
@@ -1124,6 +1126,18 @@ void LocationBarView::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
 }
 
 void LocationBarView::SetSuggestedText(const string16& input) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kInstantAutocompleteImmediately)) {
+    // This method is internally invoked to reset suggest text, so we only do
+    // anything if the text isn't empty.
+    // TODO: if we keep autocomplete, make it so this isn't invoked with empty
+    // text.
+    if (!input.empty()) {
+      location_entry_->model()->FinalizeInstantQuery(location_entry_->GetText(),
+                                                     UTF16ToWide(input));
+    }
+    return;
+  }
 #if defined(OS_WIN)
   // Don't show the suggested text if inline autocomplete is prevented.
   string16 text = location_entry_->model()->UseVerbatimInstant() ?
