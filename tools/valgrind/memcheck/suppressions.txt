@@ -3219,6 +3219,20 @@
    fun:CERT_FindCertIssuer
 }
 {
+   bug_69073
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:sqlite3*
+   ...
+   fun:find_objects
+   fun:find_objects_by_template
+   fun:nssToken_FindCertificatesBySubject
+   fun:nssTrustDomain_FindCertificatesBySubject
+   fun:nssCertificate_BuildChain
+   fun:NSSCertificate_BuildChain
+}
+{
    bug_61424
    Memcheck:Leak
    fun:_Znw*
