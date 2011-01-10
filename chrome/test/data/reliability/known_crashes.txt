@@ -128,6 +128,7 @@ PREFIX : resourcemessagefilter::ongotplugininfo
 
 # 63647
 PREFIX : `anonymous namespace'::invalidparameter____purecall___notificationservice::notify___tabcontents::updatetitleforentry___tabcontents::updatetitle___renderviewhost::onmsgupdatetitle
+PREFIX : `anonymous namespace'::purecall____purecall___notificationservice::notify___tabcontents::updatetitleforentry___tabcontents::updatetitle___renderviewhost::onmsgupdatetitle
 
 # 63659
 PREFIX : hungwindowdetector::checkchildwindow___hungwindowdetector::childwndenumproc___hungwindowdetector::ontick___workerthreadticker::timertask::run
