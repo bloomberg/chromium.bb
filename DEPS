@@ -7,7 +7,7 @@ vars = {
   "arm_toolchain_version": "4089",
 
   "breakpad_rev": "452",
-  "chrome_rev": "70721",
+  "chrome_rev": "70909",
   "nacl_breakpad_gyp_rev": "1806",
   "gyp_rev": "856",
   "gtest_rev": "364",
