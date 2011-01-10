@@ -8392,6 +8392,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_REMOTING_SETUP_DIALOG_TITLE" desc="Title of the remoting setup dialog.">
         Set up remoting
       </message>
+      <message name="IDS_REMOTING_SETTING_UP_MESSAGE" desc="Message shown while remoting host is being started">
+        Setting up remote access to this computer.
+      </message>
       <message name="IDS_REMOTING_SUCCESS_TITLE" desc="Header of the page that is shown when remoting configuration is finished.">
         Success!
       </message>

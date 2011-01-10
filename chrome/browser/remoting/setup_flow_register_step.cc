@@ -20,11 +20,13 @@ void SetupFlowRegisterStep::HandleMessage(const std::string& message,
 }
 
 void SetupFlowRegisterStep::Cancel() {
-  // Don't need to do anything here. Ther request will canceled when
+  // Don't need to do anything here. The request will be canceled when
   // |request_| is destroyed.
 }
 
 void SetupFlowRegisterStep::DoStart() {
+  flow()->dom_ui()->CallJavascriptFunction(L"showSettingUp");
+
   request_.reset(new DirectoryAddRequest(
       flow()->profile()->GetRequestContext()));
   request_->AddHost(flow()->context()->host_info,

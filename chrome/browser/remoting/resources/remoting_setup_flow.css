@@ -29,10 +29,12 @@ html[dir='rtl'] .remoting-footer {
   bottom: 0px;
   margin-left: 20px;
 }
+input[type='button'],
 input[type='submit'] {
   min-width: 87px;
   min-height: 26px;
 }
+html[os='mac'] input[type='button'],
 html[os='mac'] input[type='submit'] {
   font-size: 12pt;
 }

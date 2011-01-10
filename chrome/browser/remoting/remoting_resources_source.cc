@@ -39,6 +39,7 @@ void RemotingResourcesSource::StartDataRequest(const std::string& path_raw,
   const char kRemotingGaiaLoginPath[] = "gaialogin";
   const char kRemotingSetupFlowPath[] = "setup";
   const char kRemotingSetupDonePath[] = "setupdone";
+  const char kRemotingSettingUpPath[] = "settingup";
   const char kRemotingSetupErrorPath[] = "setuperror";
 
   std::string response;
@@ -88,6 +89,17 @@ void RemotingResourcesSource::StartDataRequest(const std::string& path_raw,
         l10n_util::GetStringUTF16(IDS_SYNC_GAIA_CAPTCHA_INSTRUCTIONS));
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_GAIA_LOGIN_HTML));
+    SetFontAndTextDirection(&localized_strings);
+    response = jstemplate_builder::GetI18nTemplateHtml(
+        html, &localized_strings);
+  } else if (path_raw == kRemotingSettingUpPath) {
+    DictionaryValue localized_strings;
+    localized_strings.SetString("settingup",
+        l10n_util::GetStringUTF16(IDS_REMOTING_SETTING_UP_MESSAGE));
+    localized_strings.SetString("cancel",
+        l10n_util::GetStringUTF16(IDS_CANCEL));
+    static const base::StringPiece html(ResourceBundle::GetSharedInstance()
+        .GetRawDataResource(IDR_REMOTING_SETTING_UP_HTML));
     SetFontAndTextDirection(&localized_strings);
     response = jstemplate_builder::GetI18nTemplateHtml(
         html, &localized_strings);
