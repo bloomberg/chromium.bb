@@ -187,6 +187,8 @@ class Browser : public TabHandlerDelegate,
   }
 #endif
 
+  // |window()| will return NULL if called before |CreateBrowserWindow()|
+  // is done.
   BrowserWindow* window() const { return window_; }
   ToolbarModel* toolbar_model() { return &toolbar_model_; }
   const SessionID& session_id() const { return session_id_; }

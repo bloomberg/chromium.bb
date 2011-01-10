@@ -130,6 +130,8 @@ class BrowserList {
   // closes.
   static bool WillKeepAlive();
 
+  // Browsers are added to |browsers_| before they have constructed windows,
+  // so the |window()| member function may return NULL.
   static const_iterator begin() { return browsers_.begin(); }
   static const_iterator end() { return browsers_.end(); }
 

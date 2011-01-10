@@ -637,7 +637,11 @@ void UpdateAppIconDownloadProgress(int download_count,
   // Iterate through all the browser windows, and draw the progress bar.
   for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
       browser_iterator != BrowserList::end(); browser_iterator++) {
-    HWND frame = (*browser_iterator)->window()->GetNativeHandle();
+    Browser* browser = *browser_iterator;
+    BrowserWindow* window = browser->window();
+    if (!window)
+      continue;
+    HWND frame = window->GetNativeHandle();
     if (download_count == 0 || progress == 1.0f)
       taskbar->SetProgressState(frame, TBPF_NOPROGRESS);
     else if (!progress_known)
