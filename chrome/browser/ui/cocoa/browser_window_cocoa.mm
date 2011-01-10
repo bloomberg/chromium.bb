@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -328,13 +329,6 @@ DownloadShelf* BrowserWindowCocoa::GetDownloadShelf() {
   return [shelfController bridge];
 }
 
-void BrowserWindowCocoa::ShowReportBugDialog() {
-  TabContents* current_tab = browser_->GetSelectedTabContents();
-  if (current_tab && current_tab->controller().GetActiveEntry()) {
-    browser_->ShowBrokenPageTab(current_tab);
-  }
-}
-
 void BrowserWindowCocoa::ShowClearBrowsingDataDialog() {
   [ClearBrowsingDataController
       showClearBrowsingDialogForProfile:browser_->profile()];
@@ -605,6 +599,13 @@ gfx::Rect BrowserWindowCocoa::GetInstantBounds() {
   gfx::Rect bounds(NSRectToCGRect(frame));
   bounds.set_y(NSHeight(monitorFrame) - bounds.y() - bounds.height());
   return bounds;
+}
+
+gfx::Rect BrowserWindowCocoa::GrabWindowSnapshot(std::vector<unsigned char>*
+                                                 png_representation) {
+  int width = 0, height = 0;
+  base::mac::GrabWindowSnapshot(window(), png_representation, &width, &height);
+  return gfx::Rect(width, height);
 }
 
 void BrowserWindowCocoa::Observe(NotificationType type,

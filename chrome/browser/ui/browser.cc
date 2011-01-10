@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,6 +36,7 @@
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "chrome/browser/debugger/devtools_window.h"
+#include "chrome/browser/dom_ui/bug_report_ui.h"
 #include "chrome/browser/dom_ui/filebrowse_ui.h"
 #include "chrome/browser/dom_ui/options/content_settings_handler.h"
 #include "chrome/browser/download/download_item.h"
@@ -1724,7 +1725,7 @@ void Browser::OpenTaskManager() {
 
 void Browser::OpenBugReportDialog() {
   UserMetrics::RecordAction(UserMetricsAction("ReportBug"), profile_);
-  window_->ShowReportBugDialog();
+  browser::ShowHtmlBugReportView(this);
 }
 
 void Browser::ToggleBookmarkBar() {

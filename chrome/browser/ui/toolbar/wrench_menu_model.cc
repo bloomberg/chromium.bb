@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -171,10 +171,10 @@ void ToolsMenuModel::Build(Browser* browser) {
   AddItemWithStringId(IDC_CLEAR_BROWSING_DATA, IDS_CLEAR_BROWSING_DATA);
 
   AddSeparator();
-#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_LINUX)
+
   AddItemWithStringId(IDC_FEEDBACK, IDS_FEEDBACK);
+
   AddSeparator();
-#endif
 
   encoding_menu_model_.reset(new EncodingMenuModel(browser));
   AddSubMenuWithStringId(IDC_ENCODING_MENU, IDS_ENCODING_MENU,

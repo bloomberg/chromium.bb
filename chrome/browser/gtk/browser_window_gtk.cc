@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -901,10 +901,6 @@ DownloadShelf* BrowserWindowGtk::GetDownloadShelf() {
   return download_shelf_.get();
 }
 
-void BrowserWindowGtk::ShowReportBugDialog() {
-  browser::ShowHtmlBugReportView(window_, bounds_, browser_.get());
-}
-
 void BrowserWindowGtk::ShowClearBrowsingDataDialog() {
   ClearBrowsingDataDialogGtk::Show(window_, browser_->profile());
 }
@@ -1121,6 +1117,12 @@ void BrowserWindowGtk::HideInstant(bool instant_is_active) {
 
 gfx::Rect BrowserWindowGtk::GetInstantBounds() {
   return gtk_util::GetWidgetScreenBounds(contents_container_->widget());
+}
+
+gfx::Rect BrowserWindowGtk::GrabWindowSnapshot(std::vector<unsigned char>*
+                                               png_representation) {
+  x11_util::GrabWindowSnapshot(window_, png_representation);
+  return bounds_;
 }
 
 void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads() {

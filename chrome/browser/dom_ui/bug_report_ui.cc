@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
@@ -142,55 +143,16 @@ namespace browser {
 std::vector<unsigned char>* last_screenshot_png = 0;
 gfx::Rect screen_size;
 
-// Get bounds in different ways for different OS's;
-#if defined(TOOLKIT_VIEWS)
-// Windows/ChromeOS support Views - so we get dimensions from the
-// views::Window object
-void RefreshLastScreenshot(views::Window* parent) {
-  gfx::NativeWindow window = parent->GetNativeWindow();
-  int width = parent->GetBounds().width();
-  int height = parent->GetBounds().height();
-#elif defined(OS_LINUX)
-// Linux provides its bounds and a native window handle to the screen
-void RefreshLastScreenshot(gfx::NativeWindow window,
-                           const gfx::Rect& bounds) {
-  int width = bounds.width();
-  int height = bounds.height();
-#elif defined(OS_MACOSX)
-// Mac gets its bounds from the GrabWindowSnapshot function
-void RefreshLastScreenshot(NSWindow* window) {
-  int width = 0;
-  int height = 0;
-#endif
-
-  // Grab an exact snapshot of the window that the user is seeing (i.e. as
-  // rendered--do not re-render, and include windowed plugins).
+void RefreshLastScreenshot(Browser* browser) {
   if (last_screenshot_png)
     last_screenshot_png->clear();
   else
     last_screenshot_png = new std::vector<unsigned char>;
 
-#if defined(USE_X11)
-  x11_util::GrabWindowSnapshot(window, last_screenshot_png);
-#elif defined(OS_MACOSX)
-  base::mac::GrabWindowSnapshot(window, last_screenshot_png, &width, &height);
-#elif defined(OS_WIN)
-  app::win::GrabWindowSnapshot(window, last_screenshot_png);
-#endif
-
-  screen_size.set_width(width);
-  screen_size.set_height(height);
+  screen_size = browser->window()->GrabWindowSnapshot(last_screenshot_png);
 }
 
-#if defined(TOOLKIT_VIEWS)
-void ShowHtmlBugReportView(views::Window* parent, Browser* browser) {
-#elif defined(OS_LINUX)
-void ShowHtmlBugReportView(gfx::NativeWindow window, const gfx::Rect& bounds,
-                           Browser* browser) {
-#elif defined(OS_MACOSX)
-void ShowHtmlBugReportView(NSWindow* window, Browser* browser) {
-#endif
-
+void ShowHtmlBugReportView(Browser* browser) {
   // First check if we're already open (we cannot depend on ShowSingletonTab
   // for this functionality since we need to make *sure* we never get
   // instantiated again while we are open - with singleton tabs, that can
@@ -199,17 +161,10 @@ void ShowHtmlBugReportView(NSWindow* window, Browser* browser) {
   if (feedback_tab_index >=0) {
     // Do not refresh screenshot, do not create a new tab
     browser->SelectTabContentsAt(feedback_tab_index, true);
+    return;
   }
 
-  // now for refreshing the last screenshot
-#if defined(TOOLKIT_VIEWS)
-  RefreshLastScreenshot(parent);
-#elif defined(OS_LINUX)
-  RefreshLastScreenshot(window, bounds);
-#elif defined(OS_MACOSX)
-  RefreshLastScreenshot(window);
-#endif
-
+  RefreshLastScreenshot(browser);
   std::string bug_report_url = std::string(chrome::kChromeUIBugReportURL) +
       "#" + base::IntToString(browser->selected_index());
   browser->ShowSingletonTab(GURL(bug_report_url), false);

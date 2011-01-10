@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -109,6 +109,12 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void ShowInstant(TabContents* preview_contents) {}
   virtual void HideInstant(bool instant_is_active) {}
   virtual gfx::Rect GetInstantBounds() { return gfx::Rect(); }
+
+  virtual gfx::Rect GrabWindowSnapshot(std::vector<unsigned char>*
+                                       png_representation) {
+    return gfx::Rect();
+  }
+
 #if defined(OS_CHROMEOS)
   virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window) {}
 #endif

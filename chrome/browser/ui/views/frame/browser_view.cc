@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "app/win/win_util.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/string_number_conversions.h"
@@ -1094,10 +1095,6 @@ DownloadShelf* BrowserView::GetDownloadShelf() {
   return download_shelf_.get();
 }
 
-void BrowserView::ShowReportBugDialog() {
-  browser::ShowHtmlBugReportView(GetWindow(), browser_.get());
-}
-
 void BrowserView::ShowClearBrowsingDataDialog() {
   browser::ShowClearBrowsingDataView(GetWindow()->GetNativeWindow(),
                                      browser_->profile());
@@ -1391,6 +1388,19 @@ void BrowserView::HideInstant(bool instant_is_active) {
 
 gfx::Rect BrowserView::GetInstantBounds() {
   return contents_->GetPreviewBounds();
+}
+
+gfx::Rect BrowserView::GrabWindowSnapshot(std::vector<unsigned char>*
+                                          png_representation) {
+  views::Window* window = GetWindow();
+
+#if defined(USE_X11)
+  x11_util::GrabWindowSnapshot(window->GetNativeWindow(), png_representation);
+#elif defined(OS_WIN)
+  app::win::GrabWindowSnapshot(window->GetNativeWindow(), png_representation);
+#endif
+
+  return window->GetBounds();
 }
 
 #if defined(OS_CHROMEOS)

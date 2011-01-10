@@ -1,10 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_UI_BROWSER_WINDOW_H_
 #define CHROME_BROWSER_UI_BROWSER_WINDOW_H_
 #pragma once
+
+#include <vector>
 
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/common/content_settings_types.h"
@@ -216,9 +218,6 @@ class BrowserWindow {
   // Returns the DownloadShelf.
   virtual DownloadShelf* GetDownloadShelf() = 0;
 
-  // Shows the Report a Bug dialog box.
-  virtual void ShowReportBugDialog() = 0;
-
   // Shows the Clear Browsing Data dialog box.
   virtual void ShowClearBrowsingDataDialog() = 0;
 
@@ -344,6 +343,10 @@ class BrowserWindow {
 
   // Construct a FindBar implementation for the specified |browser|.
   static FindBar* CreateFindBar(Browser* browser_window);
+
+  // Grabs a snapshot of the current browser window and returns the bounds.
+  virtual gfx::Rect GrabWindowSnapshot(std::vector<unsigned char>*
+                                       png_representation) = 0;
 
  protected:
   friend class BrowserList;

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -292,7 +292,6 @@ class BrowserView : public BrowserBubbleHost,
   virtual void SetDownloadShelfVisible(bool visible);
   virtual bool IsDownloadShelfVisible() const;
   virtual DownloadShelf* GetDownloadShelf();
-  virtual void ShowReportBugDialog();
   virtual void ShowClearBrowsingDataDialog();
   virtual void ShowImportDialog();
   virtual void ShowSearchEnginesDialog();
@@ -328,6 +327,9 @@ class BrowserView : public BrowserBubbleHost,
   virtual void ShowInstant(TabContents* preview_contents);
   virtual void HideInstant(bool instant_is_active);
   virtual gfx::Rect GetInstantBounds();
+  virtual gfx::Rect GrabWindowSnapshot(std::vector<unsigned char>*
+                                       png_representation);
+
 #if defined(OS_CHROMEOS)
   virtual void ShowKeyboardOverlay(gfx::NativeWindow owning_window);
 #endif
