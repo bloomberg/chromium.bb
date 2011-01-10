@@ -44,22 +44,9 @@ void BalloonCollectionImpl::DidProcessMessage(const MSG& msg) {
 }
 
 bool BalloonCollectionImpl::IsCursorInBalloonCollection() const {
-  const Balloons& balloons = base_.balloons();
-  if (balloons.empty())
-    return false;
-
-  gfx::Point upper_left = balloons[balloons.size() - 1]->GetPosition();
-  gfx::Point lower_right = layout_.GetLayoutOrigin();
-
-  gfx::Rect bounds = gfx::Rect(upper_left.x(),
-                               upper_left.y(),
-                               lower_right.x() - upper_left.x(),
-                               lower_right.y() - upper_left.y());
-
   DWORD pos = GetMessagePos();
   gfx::Point cursor(pos);
-
-  return bounds.Contains(cursor);
+  return GetBalloonsBoundingBox().Contains(cursor);
 }
 
 void BalloonCollectionImpl::SetPositionPreference(

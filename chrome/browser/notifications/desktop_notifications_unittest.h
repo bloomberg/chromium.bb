@@ -59,6 +59,11 @@ class MockBalloonCollection : public BalloonCollectionImpl {
   int MinHeight() { return Layout::min_balloon_height(); }
   int MaxHeight() { return Layout::max_balloon_height(); }
 
+  // Returns the bounding box.
+  gfx::Rect GetBalloonsBoundingBox() {
+    return BalloonCollectionImpl::GetBalloonsBoundingBox();
+  }
+
  private:
   std::deque<Balloon*> balloons_;
 };

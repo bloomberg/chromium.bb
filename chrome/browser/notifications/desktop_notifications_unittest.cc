@@ -324,6 +324,39 @@ TEST_F(DesktopNotificationsTest, TestUserInputEscaping) {
   EXPECT_EQ(std::string::npos, data_url.spec().find("%3ci%3e"));
 }
 
+TEST_F(DesktopNotificationsTest, TestBoundingBox) {
+  // Create some notifications.
+  ViewHostMsg_ShowNotification_Params params = StandardTestNotification();
+  for (int id = 0; id <= 3; ++id) {
+    params.notification_id = id;
+    EXPECT_TRUE(service_->ShowDesktopNotification(
+        params, 0, 0, DesktopNotificationService::PageNotification));
+  }
+
+  gfx::Rect box = balloon_collection_->GetBalloonsBoundingBox();
+
+  // Try this for all positions.
+  BalloonCollection::PositionPreference pref;
+  for (pref = BalloonCollection::UPPER_RIGHT;
+       pref <= BalloonCollection::LOWER_LEFT;
+       pref = static_cast<BalloonCollection::PositionPreference>(pref + 1)) {
+    // Make sure each balloon's 4 corners are inside the box.
+    std::deque<Balloon*>& balloons = balloon_collection_->balloons();
+    std::deque<Balloon*>::iterator iter;
+    for (iter = balloons.begin(); iter != balloons.end(); ++iter) {
+      int min_x = (*iter)->GetPosition().x();
+      int max_x = min_x + (*iter)->GetViewSize().width() - 1;
+      int min_y = (*iter)->GetPosition().y();
+      int max_y = min_y + (*iter)->GetViewSize().height() - 1;
+
+      EXPECT_TRUE(box.Contains(gfx::Point(min_x, min_y)));
+      EXPECT_TRUE(box.Contains(gfx::Point(min_x, max_y)));
+      EXPECT_TRUE(box.Contains(gfx::Point(max_x, min_y)));
+      EXPECT_TRUE(box.Contains(gfx::Point(max_x, max_y)));
+    }
+  }
+}
+
 TEST_F(DesktopNotificationsTest, TestPositionPreference) {
   // Set position preference to lower right.
   profile_->GetPrefs()->SetInteger(prefs::kDesktopNotificationPosition,

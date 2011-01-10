@@ -142,6 +142,9 @@ class BalloonCollectionImpl : public BalloonCollection
   virtual Balloon* MakeBalloon(const Notification& notification,
                                Profile* profile);
 
+  // Gets a bounding box for all the current balloons in screen coordinates.
+  gfx::Rect GetBalloonsBoundingBox() const;
+
  private:
   // Adjusts the positions of the balloons (e.g., when one is closed).
   // Implemented by each platform for specific UI requirements.

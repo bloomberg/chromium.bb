@@ -159,6 +159,23 @@ void BalloonCollectionImpl::PositionBalloonsInternal(bool reposition) {
   }
 }
 
+gfx::Rect BalloonCollectionImpl::GetBalloonsBoundingBox() const {
+  // Start from the layout origin.
+  gfx::Rect bounds = gfx::Rect(layout_.GetLayoutOrigin(), gfx::Size(0, 0));
+
+  // For each balloon, extend the rectangle.  This approach is indifferent to
+  // the orientation of the balloons.
+  const Balloons& balloons = base_.balloons();
+  Balloons::const_iterator iter;
+  for (iter = balloons.begin(); iter != balloons.end(); ++iter) {
+    gfx::Rect balloon_box = gfx::Rect((*iter)->GetPosition(),
+                                      (*iter)->GetViewSize());
+    bounds = bounds.Union(balloon_box);
+  }
+
+  return bounds;
+}
+
 #if USE_OFFSETS
 void BalloonCollectionImpl::AddMessageLoopObserver() {
   if (!added_as_message_loop_observer_) {
