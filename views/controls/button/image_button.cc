@@ -4,6 +4,7 @@
 
 #include "views/controls/button/image_button.h"
 
+#include "base/utf_string_conversions.h"
 #include "gfx/canvas.h"
 #include "gfx/skbitmap_operations.h"
 #include "ui/base/animation/throb_animation.h"
@@ -141,7 +142,7 @@ void ToggleImageButton::SetToggledImage(ButtonState state,
 }
 
 void ToggleImageButton::SetToggledTooltipText(const std::wstring& tooltip) {
-  toggled_tooltip_text_.assign(tooltip);
+  toggled_tooltip_text_ = WideToUTF16Hack(tooltip);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -166,7 +167,7 @@ bool ToggleImageButton::GetTooltipText(const gfx::Point& p,
   if (!toggled_ || toggled_tooltip_text_.empty())
     return Button::GetTooltipText(p, tooltip);
 
-  *tooltip = toggled_tooltip_text_;
+  *tooltip = UTF16ToWideHack(toggled_tooltip_text_);
   return true;
 }
 

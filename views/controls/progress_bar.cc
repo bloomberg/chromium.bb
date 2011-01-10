@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/color_utils.h"
 #include "gfx/font.h"
@@ -291,14 +292,14 @@ void ProgressBar::AddProgress(int tick) {
 }
 
 void ProgressBar::SetTooltipText(const std::wstring& tooltip_text) {
-  tooltip_text_ = tooltip_text;
+  tooltip_text_ = WideToUTF16Hack(tooltip_text);
 }
 
 bool ProgressBar::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   DCHECK(tooltip);
   if (tooltip == NULL)
     return false;
-  tooltip->assign(tooltip_text_);
+  tooltip->assign(UTF16ToWideHack(tooltip_text_));
   return !tooltip_text_.empty();
 }
 

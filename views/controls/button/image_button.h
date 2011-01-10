@@ -112,7 +112,7 @@ class ToggleImageButton : public ImageButton {
 
   // The parent class's tooltip_text_ is displayed when not toggled, and
   // this one is shown when toggled.
-  std::wstring toggled_tooltip_text_;
+  string16 toggled_tooltip_text_;
 
   DISALLOW_COPY_AND_ASSIGN(ToggleImageButton);
 };

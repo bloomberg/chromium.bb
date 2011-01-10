@@ -12,6 +12,8 @@
 #include <windows.h>
 #endif
 
+// TODO(avi): remove when not needed
+#include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/view.h"
 
@@ -209,7 +211,8 @@ class MenuItemView : public View {
   void SetTitle(const std::wstring& title);
 
   // Returns the title.
-  const std::wstring& GetTitle() const { return title_; }
+  // TODO(avi): switch back to returning a const reference.
+  const std::wstring GetTitle() const { return UTF16ToWideHack(title_); }
 
   // Returns the type of this menu.
   const Type& GetType() { return type_; }
@@ -383,7 +386,7 @@ class MenuItemView : public View {
   SubmenuView* submenu_;
 
   // Title.
-  std::wstring title_;
+  string16 title_;
 
   // Icon.
   SkBitmap icon_;
@@ -398,7 +401,7 @@ class MenuItemView : public View {
   bool has_icons_;
 
   // The tooltip to show on hover for this menu item.
-  std::wstring tooltip_;
+  string16 tooltip_;
 
   // X-coordinate of where the label starts.
   static int label_start_;

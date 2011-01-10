@@ -8,6 +8,8 @@
 
 #include <string>
 
+// TODO(avi): remove when not needed
+#include "base/utf_string_conversions.h"
 #include "gfx/font.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -97,7 +99,7 @@ class TextButton : public CustomButton {
   // creation time, so that it can contain the largest of them and avoid
   // resizing the button when the text changes.
   virtual void SetText(const std::wstring& text);
-  std::wstring text() const { return text_; }
+  std::wstring text() const { return UTF16ToWideHack(text_); }
 
   enum TextAlignment {
     ALIGN_LEFT,
@@ -184,7 +186,7 @@ class TextButton : public CustomButton {
   void UpdateTextSize();
 
   // The text string that is displayed in the button.
-  std::wstring text_;
+  string16 text_;
 
   // The size of the text string.
   gfx::Size text_size_;

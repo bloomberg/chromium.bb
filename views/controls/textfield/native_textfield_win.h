@@ -226,7 +226,7 @@ class NativeTextfieldWin
   bool can_discard_mousemove_;
 
   // The text of this control before a possible change.
-  std::wstring text_before_change_;
+  string16 text_before_change_;
 
   // If true, the mouse is over the edit.
   bool contains_mouse_;

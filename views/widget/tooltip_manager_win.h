@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/string16.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/point.h"
 #include "base/task.h"
@@ -125,10 +126,10 @@ class TooltipManagerWin : public TooltipManager {
   bool last_view_out_of_sync_;
 
   // Text for tooltip from the view.
-  std::wstring tooltip_text_;
+  string16 tooltip_text_;
 
   // The clipped tooltip.
-  std::wstring clipped_text_;
+  string16 clipped_text_;
 
   // Number of lines in the tooltip.
   int line_count_;

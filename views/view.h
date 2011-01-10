@@ -1292,7 +1292,7 @@ class View : public AcceleratorTarget {
   scoped_ptr<ViewList> descendants_to_notify_;
 
   // Name for this view, which can be retrieved by accessibility APIs.
-  std::wstring accessible_name_;
+  string16 accessible_name_;
 
   // Next view to be focused when the Tab key is pressed.
   View* next_focusable_view_;

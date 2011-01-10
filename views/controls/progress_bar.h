@@ -69,7 +69,7 @@ class ProgressBar : public View {
   int progress_;
 
   // Tooltip text.
-  std::wstring tooltip_text_;
+  string16 tooltip_text_;
 
   // The view class name.
   static const char kViewClassName[];

@@ -62,7 +62,7 @@ NativeButton::~NativeButton() {
 }
 
 void NativeButton::SetLabel(const std::wstring& label) {
-  label_ = label;
+  label_ = WideToUTF16Hack(label);
 
   // Even though we create a flipped HWND for a native button when the locale
   // is right-to-left, Windows does not render text for the button using a

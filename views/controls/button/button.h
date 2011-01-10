@@ -57,10 +57,10 @@ class Button : public View {
 
  private:
   // The text shown in a tooltip.
-  std::wstring tooltip_text_;
+  string16 tooltip_text_;
 
   // Accessibility data.
-  std::wstring accessible_shortcut_;
+  string16 accessible_shortcut_;
 
   // The id tag associated with this button. Used to disambiguate buttons in
   // the ButtonListener implementation.

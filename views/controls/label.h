@@ -245,7 +245,7 @@ class Label : public View {
   // The colors to use for enabled and disabled labels.
   static SkColor kEnabledColor, kDisabledColor;
 
-  std::wstring text_;
+  string16 text_;
   GURL url_;
   gfx::Font font_;
   SkColor color_;
@@ -256,7 +256,7 @@ class Label : public View {
   bool elide_in_middle_;
   bool url_set_;
   Alignment horiz_alignment_;
-  std::wstring tooltip_text_;
+  string16 tooltip_text_;
   // Whether the mouse is over this label.
   bool contains_mouse_;
   scoped_ptr<Background> mouse_over_background_;

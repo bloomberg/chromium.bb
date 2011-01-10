@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "views/controls/button/button.h"
+#include "base/utf_string_conversions.h"
 
 namespace views {
 
@@ -13,12 +14,12 @@ Button::~Button() {
 }
 
 void Button::SetTooltipText(const std::wstring& tooltip_text) {
-  tooltip_text_ = tooltip_text;
+  tooltip_text_ = WideToUTF16Hack(tooltip_text);
   TooltipTextChanged();
 }
 
 void Button::SetAccessibleKeyboardShortcut(const std::wstring& shortcut) {
-  accessible_shortcut_.assign(shortcut);
+  accessible_shortcut_ = WideToUTF16Hack(shortcut);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -28,12 +29,12 @@ bool Button::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
   if (tooltip_text_.empty())
     return false;
 
-  *tooltip = tooltip_text_;
+  *tooltip = UTF16ToWideHack(tooltip_text_);
   return true;
 }
 
 std::wstring Button::GetAccessibleKeyboardShortcut() {
-  return accessible_shortcut_;
+  return UTF16ToWideHack(accessible_shortcut_);
 }
 
 AccessibilityTypes::Role Button::GetAccessibleRole() {

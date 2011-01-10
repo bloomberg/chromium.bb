@@ -31,7 +31,7 @@ gfx::Size MenuItemView::GetPreferredSize() {
   // kFavIconSize if we're showing icons.
   int content_height = std::max(kFavIconSize, font.GetHeight());
   return gfx::Size(
-      font.GetStringWidth(WideToUTF16Hack(title_)) + label_start_ +
+      font.GetStringWidth(title_) + label_start_ +
           item_right_margin_ + GetChildPreferredWidth(),
       content_height + GetBottomMargin() + GetTopMargin());
 }

@@ -5,6 +5,7 @@
 #include "views/controls/image_view.h"
 
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "gfx/canvas.h"
 #include "gfx/insets.h"
 
@@ -152,12 +153,12 @@ ImageView::Alignment ImageView::GetVerticalAlignment() {
 }
 
 void ImageView::SetTooltipText(const std::wstring& tooltip) {
-  tooltip_text_ = tooltip;
+  tooltip_text_ = WideToUTF16Hack(tooltip);
   SetAccessibleName(tooltip);
 }
 
 std::wstring ImageView::GetTooltipText() {
-  return tooltip_text_;
+  return UTF16ToWideHack(tooltip_text_);
 }
 
 bool ImageView::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {

@@ -160,7 +160,7 @@ LRESULT TooltipManagerWin::OnNotify(int w_param,
         clipped_text_.clear();
         if (last_tooltip_view_ != NULL) {
           tooltip_text_.clear();
-          // Mouse is over a View, ask the View for it's tooltip.
+          // Mouse is over a View, ask the View for its tooltip.
           gfx::Point view_loc = last_mouse_pos_;
           View::ConvertPointToView(widget_->GetRootView(),
                                    last_tooltip_view_, &view_loc);

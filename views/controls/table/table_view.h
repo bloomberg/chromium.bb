@@ -490,7 +490,7 @@ class TableView : public NativeControl,
   scoped_array<int> view_to_model_;
   scoped_array<int> model_to_view_;
 
-  std::wstring alt_text_;
+  string16 alt_text_;
 
   DISALLOW_COPY_AND_ASSIGN(TableView);
 };

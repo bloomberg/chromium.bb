@@ -1165,7 +1165,7 @@ bool View::GetAccessibleName(std::wstring* name) {
 
   if (accessible_name_.empty())
     return false;
-  *name = accessible_name_;
+  *name = UTF16ToWideHack(accessible_name_);
   return true;
 }
 
@@ -1174,7 +1174,7 @@ AccessibilityTypes::Role View::GetAccessibleRole() {
 }
 
 void View::SetAccessibleName(const std::wstring& name) {
-  accessible_name_ = name;
+  accessible_name_ = WideToUTF16Hack(name);
 }
 
 // static

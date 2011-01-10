@@ -101,7 +101,7 @@ class ImageView : public View {
   Alignment vert_alignment_;
 
   // The current tooltip text.
-  std::wstring tooltip_text_;
+  string16 tooltip_text_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageView);
 };

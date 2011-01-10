@@ -98,7 +98,7 @@ MenuItemView::~MenuItemView() {
 }
 
 bool MenuItemView::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
-  *tooltip = tooltip_;
+  *tooltip = UTF16ToWideHack(tooltip_);
   return !tooltip_.empty();
 }
 
@@ -305,7 +305,7 @@ SubmenuView* MenuItemView::CreateSubmenu() {
 }
 
 void MenuItemView::SetTitle(const std::wstring& title) {
-  title_ = title;
+  title_ = WideToUTF16Hack(title);
   SetAccessibleName(GetAccessibleNameForMenuItem(title, GetAcceleratorText()));
 }
 
@@ -317,7 +317,7 @@ void MenuItemView::SetSelected(bool selected) {
 void MenuItemView::SetTooltip(const std::wstring& tooltip, int item_id) {
   MenuItemView* item = GetMenuItemByID(item_id);
   DCHECK(item);
-  item->tooltip_ = tooltip;
+  item->tooltip_ = WideToUTF16Hack(tooltip);
 }
 
 void MenuItemView::SetIcon(const SkBitmap& icon, int item_id) {
