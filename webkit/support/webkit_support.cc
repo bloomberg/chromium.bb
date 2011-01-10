@@ -93,7 +93,8 @@ void InitLogging(bool enable_gp_fault_error_box) {
       logging::LOG_ONLY_TO_FILE,
       // We might have multiple DumpRenderTree processes going at once.
       logging::LOCK_LOG_FILE,
-      logging::DELETE_OLD_LOG_FILE);
+      logging::DELETE_OLD_LOG_FILE,
+      logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
 
   // We want process and thread IDs because we may have multiple processes.
   const bool kProcessId = true;

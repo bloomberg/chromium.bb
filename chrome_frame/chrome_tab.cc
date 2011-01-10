@@ -209,8 +209,12 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance,
     g_exit_manager = new base::AtExitManager();
     CommandLine::Init(0, NULL);
     InitializeCrashReporting();
-    logging::InitLogging(NULL, logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
-                        logging::LOCK_LOG_FILE, logging::DELETE_OLD_LOG_FILE);
+    logging::InitLogging(
+        NULL,
+        logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
+        logging::LOCK_LOG_FILE,
+        logging::DELETE_OLD_LOG_FILE,
+        logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
 
     DllRedirector* dll_redirector = DllRedirector::GetInstance();
     DCHECK(dll_redirector);

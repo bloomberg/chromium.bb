@@ -38,10 +38,12 @@ void InitInstallerLogging(const installer::MasterPreferences& prefs) {
     return;
   }
 
-  logging::InitLogging(GetLogFilePath(prefs).value().c_str(),
-                       logging::LOG_ONLY_TO_FILE,
-                       logging::LOCK_LOG_FILE,
-                       logging::DELETE_OLD_LOG_FILE);
+  logging::InitLogging(
+      GetLogFilePath(prefs).value().c_str(),
+      logging::LOG_ONLY_TO_FILE,
+      logging::LOCK_LOG_FILE,
+      logging::DELETE_OLD_LOG_FILE,
+      logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
 
   if (prefs.GetBool(installer::master_preferences::kVerboseLogging,
                     &value) && value) {
