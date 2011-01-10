@@ -291,9 +291,8 @@ bool MultipartResponseDelegate::ReadMultipartBoundary(
       response.httpHeaderField(WebString::fromUTF8("Content-Type")).utf8();
 
   size_t boundary_start_offset = content_type.find("boundary=");
-  if (boundary_start_offset == std::wstring::npos) {
+  if (boundary_start_offset == std::string::npos)
     return false;
-  }
 
   boundary_start_offset += strlen("boundary=");
 
