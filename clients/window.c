@@ -1042,15 +1042,23 @@ handle_configure(void *data, struct wl_shell *shell,
 		 struct wl_surface *surface, int32_t width, int32_t height)
 {
 	struct window *window = wl_surface_get_user_data(surface);
+	int32_t child_width, child_height;
 
-	window->resize_edges = edges;
-	window->allocation.width = width;
-	window->allocation.height = height;
+	if (window->resize_handler) {
+		child_width = width - 20 - window->margin * 2;
+		child_height = height - 60 - window->margin * 2;
 
-	if (window->resize_handler)
-		(*window->resize_handler)(window, window->user_data);
-	if (window->redraw_handler)
-		window_schedule_redraw(window);
+		(*window->resize_handler)(window,
+					  child_width, child_height,
+					  window->user_data);
+	} else {
+		window->resize_edges = edges;
+		window->allocation.width = width;
+		window->allocation.height = height;
+
+		if (window->redraw_handler)
+			window_schedule_redraw(window);
+	}
 }
 
 static const struct wl_shell_listener shell_listener = {
@@ -1058,28 +1066,27 @@ static const struct wl_shell_listener shell_listener = {
 };
 
 void
-window_get_child_rectangle(struct window *window,
-			   struct rectangle *rectangle)
+window_get_child_allocation(struct window *window,
+			    struct rectangle *allocation)
 {
 	if (window->fullscreen && !window->decoration) {
-		*rectangle = window->allocation;
+		*allocation = window->allocation;
 	} else {
-		rectangle->x = window->margin + 10;
-		rectangle->y = window->margin + 50;
-		rectangle->width = window->allocation.width - 20 - window->margin * 2;
-		rectangle->height = window->allocation.height - 60 - window->margin * 2;
+		allocation->x = window->margin + 10;
+		allocation->y = window->margin + 50;
+		allocation->width =
+			window->allocation.width - 20 - window->margin * 2;
+		allocation->height =
+			window->allocation.height - 60 - window->margin * 2;
 	}
 }
 
 void
-window_set_child_size(struct window *window,
-		      struct rectangle *rectangle)
+window_set_child_size(struct window *window, int32_t width, int32_t height)
 {
 	if (!window->fullscreen) {
-		window->allocation.width =
-			rectangle->width + 20 + window->margin * 2;
-		window->allocation.height =
-			rectangle->height + 60 + window->margin * 2;
+		window->allocation.width = width + 20 + window->margin * 2;
+		window->allocation.height = height + 60 + window->margin * 2;
 	}
 }
 

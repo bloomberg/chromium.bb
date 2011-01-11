@@ -589,11 +589,27 @@ terminal_resize(struct terminal *terminal, int width, int height)
 	char *tab_ruler;
 	int data_pitch, attr_pitch;
 	int i, l, total_rows, start;
-	struct rectangle rectangle;
+	struct rectangle allocation;
 	struct winsize ws;
+	int32_t pixel_width, pixel_height;
 
+	if (width < 1)
+		width = 1;
+	if (height < 1)
+		height = 1;
 	if (terminal->width == width && terminal->height == height)
 		return;
+
+	if (!terminal->fullscreen) {
+		pixel_width = width *
+			terminal->extents.max_x_advance + 2 * terminal->margin;
+		pixel_height = height *
+			terminal->extents.height + 2 * terminal->margin;
+		window_set_child_size(terminal->window,
+				      pixel_width, pixel_height);
+	}
+
+	window_schedule_redraw (terminal->window);
 
 	data_pitch = width * sizeof(union utf8_char);
 	size = data_pitch * height;
@@ -643,26 +659,12 @@ terminal_resize(struct terminal *terminal, int width, int height)
 	terminal->tab_ruler = tab_ruler;
 	terminal_init_tabs(terminal);
 
-	if (terminal->row >= terminal->height)
-		terminal->row = terminal->height - 1;
-	if (terminal->column >= terminal->width)
-		terminal->column = terminal->width - 1;
-	terminal->start = 0;
-	
-	if (!terminal->fullscreen) {
-		rectangle.width = terminal->width *
-			terminal->extents.max_x_advance + 2 * terminal->margin;
-		rectangle.height = terminal->height *
-			terminal->extents.height + 2 * terminal->margin;
-		window_set_child_size(terminal->window, &rectangle);
-	}
-
 	/* Update the window size */
 	ws.ws_row = terminal->height;
 	ws.ws_col = terminal->width;
-	window_get_child_rectangle(terminal->window, &rectangle);
-	ws.ws_xpixel = rectangle.width;
-	ws.ws_ypixel = rectangle.height;
+	window_get_child_allocation(terminal->window, &allocation);
+	ws.ws_xpixel = allocation.width;
+	ws.ws_ypixel = allocation.height;
 	ioctl(terminal->master, TIOCSWINSZ, &ws);
 }
 
@@ -692,7 +694,7 @@ struct color_scheme DEFAULT_COLORS = {
 static void
 terminal_draw_contents(struct terminal *terminal)
 {
-	struct rectangle rectangle;
+	struct rectangle allocation;
 	cairo_t *cr;
 	cairo_font_extents_t extents;
 	int top_margin, side_margin;
@@ -710,9 +712,9 @@ terminal_draw_contents(struct terminal *terminal)
 
 	toShow.null = 0;
 
-	window_get_child_rectangle(terminal->window, &rectangle);
+	window_get_child_allocation(terminal->window, &allocation);
 
-	surface = display_create_surface(terminal->display, &rectangle);
+	surface = display_create_surface(terminal->display, &allocation);
 	cr = cairo_create(surface);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr,
@@ -727,8 +729,8 @@ terminal_draw_contents(struct terminal *terminal)
 	cairo_set_font_size(cr, 14);
 
 	cairo_font_extents(cr, &extents);
-	side_margin = (rectangle.width - terminal->width * extents.max_x_advance) / 2;
-	top_margin = (rectangle.height - terminal->height * extents.height) / 2;
+	side_margin = (allocation.width - terminal->width * extents.max_x_advance) / 2;
+	top_margin = (allocation.height - terminal->height * extents.height) / 2;
 
 	cairo_set_line_width(cr, 1.0);
 
@@ -819,31 +821,29 @@ terminal_draw_contents(struct terminal *terminal)
 
 	cairo_destroy(cr);
 
-	window_copy_surface(terminal->window,
-			    &rectangle,
-			    surface);
+	window_copy_surface(terminal->window, &allocation, surface);
 
 	cairo_surface_destroy(surface);
 }
 
 static void
-terminal_draw(struct terminal *terminal)
+resize_handler(struct window *window,
+	       int32_t pixel_width, int32_t pixel_height, void *data)
 {
-	struct rectangle rectangle;
+	struct terminal *terminal = data;
 	int32_t width, height;
 
-	window_get_child_rectangle(terminal->window, &rectangle);
-
-	width = (rectangle.width - 2 * terminal->margin) /
+	width = (pixel_width - 2 * terminal->margin) /
 		(int32_t) terminal->extents.max_x_advance;
-	height = (rectangle.height - 2 * terminal->margin) /
+	height = (pixel_height - 2 * terminal->margin) /
 		(int32_t) terminal->extents.height;
 
-	if (width < 0 || height < 0)
-		return;
-
 	terminal_resize(terminal, width, height);
+}
 
+static void
+terminal_draw(struct terminal *terminal)
+{
 	window_draw(terminal->window);
 	terminal_draw_contents(terminal);
 	window_flush(terminal->window);
@@ -1838,6 +1838,7 @@ terminal_create(struct display *display, int fullscreen)
 	window_set_fullscreen(terminal->window, terminal->fullscreen);
 	window_set_user_data(terminal->window, terminal);
 	window_set_redraw_handler(terminal->window, redraw_handler);
+	window_set_resize_handler(terminal->window, resize_handler);
 
 	window_set_key_handler(terminal->window, key_handler);
 	window_set_keyboard_focus_handler(terminal->window,

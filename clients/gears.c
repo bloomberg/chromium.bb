@@ -49,7 +49,6 @@ struct gears {
 	struct window *window;
 
 	struct display *d;
-	struct rectangle rectangle;
 
 	EGLDisplay display;
 	EGLContext context;
@@ -208,19 +207,8 @@ static void
 allocate_buffer(struct gears *gears)
 {
 	EGLImageKHR image;
+	struct rectangle allocation;
 
-	/* Constrain child size to be square and at least 300x300 */
-	window_get_child_rectangle(gears->window, &gears->rectangle);
-	if (gears->rectangle.width > gears->rectangle.height)
-		gears->rectangle.height = gears->rectangle.width;
-	else
-		gears->rectangle.width = gears->rectangle.height;
-	if (gears->rectangle.width < 300) {
-		gears->rectangle.width = 300;
-		gears->rectangle.height = 300;
-	}
-
-	window_set_child_size(gears->window, &gears->rectangle);
 	window_draw(gears->window);
 
 	gears->surface[gears->current] = window_get_surface(gears->window);
@@ -239,16 +227,18 @@ allocate_buffer(struct gears *gears)
 	glEGLImageTargetRenderbufferStorageOES(GL_RENDERBUFFER, image);
 
 	glBindRenderbuffer(GL_RENDERBUFFER_EXT, gears->depth_rbo);
+	window_get_child_allocation(gears->window, &allocation);
 	glRenderbufferStorage(GL_RENDERBUFFER_EXT,
 			      GL_DEPTH_COMPONENT,
-			      gears->rectangle.width + 20 + 32,
-			      gears->rectangle.height + 60 + 32);
+			      allocation.width + 20 + 32,
+			      allocation.height + 60 + 32);
 }
 
 static void
 draw_gears(struct gears *gears)
 {
 	GLfloat view_rotx = 20.0, view_roty = 30.0, view_rotz = 0.0;
+	struct rectangle allocation;
 
 	if (gears->surface[gears->current] == NULL)
 		allocate_buffer(gears);
@@ -258,10 +248,11 @@ draw_gears(struct gears *gears)
 				  GL_RENDERBUFFER_EXT,
 				  gears->color_rbo[gears->current]);
 
-	glViewport(gears->rectangle.x, gears->rectangle.y,
-		   gears->rectangle.width, gears->rectangle.height);
-	glScissor(gears->rectangle.x, gears->rectangle.y,
-		   gears->rectangle.width, gears->rectangle.height);
+	window_get_child_allocation(gears->window, &allocation);
+	glViewport(allocation.x, allocation.y,
+		   allocation.width, allocation.height);
+	glScissor(allocation.x, allocation.y,
+		   allocation.width, allocation.height);
 
 	glEnable(GL_SCISSOR_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -301,7 +292,8 @@ draw_gears(struct gears *gears)
 }
 
 static void
-resize_handler(struct window *window, void *data)
+resize_handler(struct window *window,
+	       int32_t width, int32_t height, void *data)
 {
 	struct gears *gears = data;
 
@@ -309,6 +301,18 @@ resize_handler(struct window *window, void *data)
 	gears->surface[0] = NULL;
 	cairo_surface_destroy(gears->surface[1]);
 	gears->surface[1] = NULL;
+
+	/* Constrain child size to be square and at least 300x300 */
+	if (width > height)
+		height = width;
+	else
+		width = height;
+	if (width < 300) {
+		width = 300;
+		height = 300;
+	}
+
+	window_set_child_size(gears->window, width, height);
 }
 
 static void
@@ -316,8 +320,10 @@ keyboard_focus_handler(struct window *window,
 		       struct input *device, void *data)
 {
 	struct gears *gears = data;
+	struct rectangle allocation;
 
-	resize_handler(window, gears);
+	window_get_child_allocation(gears->window, &allocation);
+	resize_handler(window, allocation.width, allocation.height, gears);
 }
 
 static void

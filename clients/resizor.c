@@ -38,7 +38,7 @@
 struct resizor {
 	struct display *display;
 	struct window *window;
-	struct rectangle child_allocation;
+	int32_t width;
 
 	struct {
 		double current;
@@ -71,9 +71,7 @@ frame_callback(void *data, uint32_t time)
 		resizor->height.previous = 200;
 	}
 
-	resizor->child_allocation.height = height + 0.5;
-	window_set_child_size(resizor->window,
-			      &resizor->child_allocation);
+	window_set_child_size(resizor->window, resizor->width, height + 0.5);
 
 	window_schedule_redraw(resizor->window);
 }
@@ -83,21 +81,21 @@ resizor_draw(struct resizor *resizor)
 {
 	cairo_surface_t *surface;
 	cairo_t *cr;
+	struct rectangle allocation;
 
 	window_draw(resizor->window);
 
-	window_get_child_rectangle(resizor->window,
-				   &resizor->child_allocation);
+	window_get_child_allocation(resizor->window, &allocation);
 
 	surface = window_get_surface(resizor->window);
 
 	cr = cairo_create(surface);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_rectangle(cr,
-			resizor->child_allocation.x,
-			resizor->child_allocation.y,
-			resizor->child_allocation.width,
-			resizor->child_allocation.height);
+			allocation.x,
+			allocation.y,
+			allocation.width,
+			allocation.height);
 	cairo_set_source_rgba(cr, 0, 0, 0, 0.8);
 	cairo_fill(cr);
 	cairo_destroy(cr);
@@ -141,12 +139,10 @@ key_handler(struct window *window, uint32_t key, uint32_t sym,
 	switch (sym) {
 	case XK_Down:
 		resizor->height.target = 400;
-		resizor->height.current = resizor->child_allocation.height;
 		frame_callback(resizor, 0);
 		break;
 	case XK_Up:
 		resizor->height.target = 200;
-		resizor->height.current = resizor->child_allocation.height;
 		frame_callback(resizor, 0);
 		break;
 	}
@@ -156,6 +152,7 @@ static struct resizor *
 resizor_create(struct display *display)
 {
 	struct resizor *resizor;
+	int32_t height;
 
 	resizor = malloc(sizeof *resizor);
 	if (resizor == NULL)
@@ -171,15 +168,13 @@ resizor_create(struct display *display)
 	window_set_keyboard_focus_handler(resizor->window,
 					  keyboard_focus_handler);
 
-	resizor->child_allocation.x = 0;
-	resizor->child_allocation.y = 0;
-	resizor->child_allocation.width = 300;
-	resizor->child_allocation.height = 400;
+	resizor->width = 300;
 	resizor->height.current = 400;
-	resizor->height.previous = 400;
-	resizor->height.target = 400;
+	resizor->height.previous = resizor->height.current;
+	resizor->height.target = resizor->height.current;
+	height = resizor->height.current + 0.5;
 
-	window_set_child_size(resizor->window, &resizor->child_allocation);
+	window_set_child_size(resizor->window, resizor->width, height);
 
 	resizor_draw(resizor);
 

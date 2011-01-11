@@ -105,7 +105,9 @@ enum pointer_type {
 	POINTER_HAND1,
 };
 
-typedef void (*window_resize_handler_t)(struct window *window, void *data);
+typedef void (*window_resize_handler_t)(struct window *window,
+					int32_t width, int32_t height,
+					void *data);
 typedef void (*window_redraw_handler_t)(struct window *window, void *data);
 typedef void (*window_frame_handler_t)(struct window *window, uint32_t frame, uint32_t timestamp, void *data);
 typedef void (*window_key_handler_t)(struct window *window, uint32_t key, uint32_t unicode,
@@ -135,11 +137,10 @@ window_move(struct window *window, struct input *input, uint32_t time);
 void
 window_draw(struct window *window);
 void
-window_get_child_rectangle(struct window *window,
-			   struct rectangle *rectangle);
+window_get_child_allocation(struct window *window,
+			    struct rectangle *allocation);
 void
-window_set_child_size(struct window *window,
-		      struct rectangle *rectangle);
+window_set_child_size(struct window *window, int32_t width, int32_t height);
 void
 window_copy_image(struct window *window,
 		  struct rectangle *rectangle,
