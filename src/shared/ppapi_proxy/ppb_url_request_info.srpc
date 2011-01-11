@@ -9,40 +9,40 @@
  'name': 'PpbURLRequestInfoRpc',
  'rpcs': [
           {'name': 'PPB_URLRequestInfo_Create',
-           'inputs': [['module', 'PP_Module'],  # PP_Module
+           'inputs': [['module', 'PP_Module'],         # PP_Module
                      ],
-           'outputs': [['resource', 'PP_Resource'],  # PP_Resource
+           'outputs': [['resource', 'PP_Resource'],    # PP_Resource
                       ]
           },
           {'name': 'PPB_URLRequestInfo_IsURLRequestInfo',
-           'inputs': [['resource', 'PP_Resource'],  # PP_Resource
+           'inputs': [['resource', 'PP_Resource'],     # PP_Resource
                      ],
-           'outputs': [['is_url_request_info', 'int32_t'],  # PP_Bool
+           'outputs': [['success', 'int32_t'],         # PP_Bool
                       ]
           },
           {'name': 'PPB_URLRequestInfo_SetProperty',
-           'inputs': [['request', 'PP_Resource'],  # PP_Resource
-                      ['property', 'int32_t'],  # PP_URLRequestProperty
-                      ['value', 'char[]'],  # PP_Var
+           'inputs': [['request', 'PP_Resource'],      # PP_Resource
+                      ['property', 'int32_t'],         # PP_URLRequestProperty
+                      ['value', 'char[]'],             # PP_Var
                      ],
-           'outputs': [['success', 'int32_t'],  # PP_Bool
+           'outputs': [['success', 'int32_t'],         # PP_Bool
                       ]
           },
           {'name': 'PPB_URLRequestInfo_AppendDataToBody',
-           'inputs': [['request', 'PP_Resource'],  # PP_Resource
-                      ['data', 'char[]'],  # char* + uint32_t
+           'inputs': [['request', 'PP_Resource'],      # PP_Resource
+                      ['data', 'char[]'],              # char* + uint32_t
                      ],
-           'outputs': [['success', 'int32_t'],  # PP_Bool
+           'outputs': [['success', 'int32_t'],         # PP_Bool
                       ]
           },
           {'name': 'PPB_URLRequestInfo_AppendFileToBody',
-           'inputs': [['request', 'PP_Resource'],  # PP_Resource
-                      ['file_ref', 'PP_Resource'],   # PP_Resource
-                      ['start_offset', 'int64_t'],  # int64_t
+           'inputs': [['request', 'PP_Resource'],      # PP_Resource
+                      ['file_ref', 'PP_Resource'],     # PP_Resource
+                      ['start_offset', 'int64_t'],     # int64_t
                       ['number_of_bytes', 'int64_t'],  # int64_t
                       ['expected_last_modified_time', 'double'],  # PP_Time
                      ],
-           'outputs': [['success', 'int32_t'],  # PP_Bool
+           'outputs': [['success', 'int32_t'],         # PP_Bool
                       ]
           },
          ]

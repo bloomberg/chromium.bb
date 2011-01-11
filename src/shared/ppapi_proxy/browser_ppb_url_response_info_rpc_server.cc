@@ -5,10 +5,16 @@
 // SRPC-abstraction wrappers around PPB_URLResponseInfo functions.
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/portability.h"
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
 #include "native_client/src/shared/ppapi_proxy/object_serialize.h"
+#include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "ppapi/c/ppb_url_response_info.h"
 #include "srpcgen/ppb_rpc.h"
+
+using ppapi_proxy::PPBURLResponseInfoInterface;
+using ppapi_proxy::SerializeTo;
+using ppapi_proxy::DebugPrintf;
 
 void PpbURLResponseInfoRpcServer::PPB_URLResponseInfo_IsURLResponseInfo(
     NaClSrpcRpc* rpc,
@@ -16,12 +22,16 @@ void PpbURLResponseInfoRpcServer::PPB_URLResponseInfo_IsURLResponseInfo(
     // inputs
     PP_Resource resource,
     // outputs
-    int32_t* is_url_response_info) {
+    int32_t* success) {
   NACL_UNTESTED();
   NaClSrpcClosureRunner runner(done);
-  PP_Bool pp_is_url_response_info =
-      ppapi_proxy::PPBURLResponseInfoInterface()->IsURLResponseInfo(resource);
-  *is_url_response_info = (pp_is_url_response_info == PP_TRUE);
+
+  PP_Bool pp_success =
+      PPBURLResponseInfoInterface()->IsURLResponseInfo(resource);
+  DebugPrintf("PPB_URLResponseInfo::IsURLResponseInfo: pp_success=%d\n",
+              pp_success);
+
+  *success = (pp_success == PP_TRUE);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -36,11 +46,14 @@ void PpbURLResponseInfoRpcServer::PPB_URLResponseInfo_GetProperty(
   NACL_UNTESTED();
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
-  PP_Var value =
-      ppapi_proxy::PPBURLResponseInfoInterface()->GetProperty(
-          response,
-          static_cast<PP_URLResponseProperty>(property));
-  if (!ppapi_proxy::SerializeTo(&value, value_bytes, value_size))
+
+  PP_Var value = PPBURLResponseInfoInterface()->GetProperty(
+      response,
+      static_cast<PP_URLResponseProperty>(property));
+  DebugPrintf("PPB_URLResponseInfo::GetProperty: type=%d\n",
+            value.type);
+
+  if (!SerializeTo(&value, value_bytes, value_size))
     return;
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -54,7 +67,11 @@ void PpbURLResponseInfoRpcServer::PPB_URLResponseInfo_GetBodyAsFileRef(
       PP_Resource* file_ref) {
   NACL_UNTESTED();
   NaClSrpcClosureRunner runner(done);
-  *file_ref =
-      ppapi_proxy::PPBURLResponseInfoInterface()->GetBodyAsFileRef(response);
+  rpc->result = NACL_SRPC_RESULT_APP_ERROR;
+
+  *file_ref = PPBURLResponseInfoInterface()->GetBodyAsFileRef(response);
+  DebugPrintf("PPB_URLResponseInfo::GetBodyAsFileRef: file_ref="NACL_PRIx64"\n",
+            *file_ref);
+
   rpc->result = NACL_SRPC_RESULT_OK;
 }

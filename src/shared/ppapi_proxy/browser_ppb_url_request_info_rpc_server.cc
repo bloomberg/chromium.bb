@@ -5,10 +5,16 @@
 // SRPC-abstraction wrappers around PPB_URLRequestInfo functions.
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/portability.h"
 #include "native_client/src/shared/ppapi_proxy/browser_globals.h"
 #include "native_client/src/shared/ppapi_proxy/object_serialize.h"
+#include "native_client/src/shared/ppapi_proxy/utility.h"
 #include "ppapi/c/ppb_url_request_info.h"
 #include "srpcgen/ppb_rpc.h"
+
+using ppapi_proxy::PPBURLRequestInfoInterface;
+using ppapi_proxy::DeserializeTo;
+using ppapi_proxy::DebugPrintf;
 
 void PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_Create(
     NaClSrpcRpc* rpc,
@@ -21,8 +27,9 @@ void PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_Create(
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
-  *resource =
-      ppapi_proxy::PPBURLRequestInfoInterface()->Create(module);
+  *resource = PPBURLRequestInfoInterface()->Create(module);
+  DebugPrintf("PPB_URLRequestInfo::Create: resource=%"NACL_PRIx64"\n",
+              *resource);
 
   rpc->result = NACL_SRPC_RESULT_OK;
 }
@@ -33,15 +40,15 @@ void PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_IsURLRequestInfo(
     // inputs
     PP_Resource resource,
     // outputs
-    int32_t* is_url_request_info) {
+    int32_t* success) {
   NACL_UNTESTED();
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
-  PP_Bool pp_is_url_request_info =
-      ppapi_proxy::PPBURLRequestInfoInterface()->IsURLRequestInfo(resource);
+  PP_Bool pp_success = PPBURLRequestInfoInterface()->IsURLRequestInfo(resource);
+  DebugPrintf("PPB_URLRequestInfo::IsURLRequestInfo: success=%d\n", pp_success);
 
-  *is_url_request_info = (pp_is_url_request_info == PP_TRUE);
+  *success = (pp_success == PP_TRUE);
   rpc->result = NACL_SRPC_RESULT_OK;
 }
 
@@ -59,15 +66,12 @@ void PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_SetProperty(
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   PP_Var value;
-  if (!ppapi_proxy::DeserializeTo(
-          rpc->channel, value_bytes, value_size, 1, &value))
+  if (!DeserializeTo(rpc->channel, value_bytes, value_size, 1, &value))
     return;
 
-  PP_Bool pp_success =
-      ppapi_proxy::PPBURLRequestInfoInterface()->SetProperty(
-          request,
-          static_cast<PP_URLRequestProperty>(property),
-          value);
+  PP_Bool pp_success = PPBURLRequestInfoInterface()->SetProperty(
+      request, static_cast<PP_URLRequestProperty>(property), value);
+  DebugPrintf("PPB_URLRequestInfo::SetProperty: pp_success=%d\n", pp_success);
 
   *success = (pp_success == PP_TRUE);
   rpc->result = NACL_SRPC_RESULT_OK;
@@ -85,11 +89,12 @@ void PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_AppendDataToBody(
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
-  PP_Bool pp_success =
-      ppapi_proxy::PPBURLRequestInfoInterface()->AppendDataToBody(
-          request,
-          static_cast<const char*>(data_bytes),
-          static_cast<uint32_t>(data_size));
+  PP_Bool pp_success = PPBURLRequestInfoInterface()->AppendDataToBody(
+      request,
+      static_cast<const char*>(data_bytes),
+      static_cast<uint32_t>(data_size));
+  DebugPrintf("PPB_URLRequestInfo::AppendDataToBody: pp_success=%d\n",
+              pp_success);
 
   *success = (pp_success == PP_TRUE);
   rpc->result = NACL_SRPC_RESULT_OK;
@@ -110,13 +115,14 @@ void PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_AppendFileToBody(
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
-  PP_Bool pp_success =
-      ppapi_proxy::PPBURLRequestInfoInterface()->AppendFileToBody(
-          request,
-          file_ref,
-          start_offset,
-          number_of_bytes,
-          static_cast<PP_Time>(expected_last_modified_time));
+  PP_Bool pp_success = PPBURLRequestInfoInterface()->AppendFileToBody(
+      request,
+      file_ref,
+      start_offset,
+      number_of_bytes,
+      static_cast<PP_Time>(expected_last_modified_time));
+  DebugPrintf("PPB_URLRequestInfo::AppendFileToBody: pp_success=%d\n",
+              pp_success);
 
   *success = (pp_success == PP_TRUE);
   rpc->result = NACL_SRPC_RESULT_OK;

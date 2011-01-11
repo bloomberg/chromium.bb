@@ -347,7 +347,7 @@ class PpbURLRequestInfoRpcServer {
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       PP_Resource resource,
-      int32_t* is_url_request_info);
+      int32_t* success);
   static void PPB_URLRequestInfo_SetProperty(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
@@ -383,7 +383,7 @@ class PpbURLResponseInfoRpcServer {
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       PP_Resource resource,
-      int32_t* is_url_response_info);
+      int32_t* success);
   static void PPB_URLResponseInfo_GetProperty(
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,

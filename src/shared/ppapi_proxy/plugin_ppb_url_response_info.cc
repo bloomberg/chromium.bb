@@ -25,19 +25,21 @@ PP_Bool IsURLResponseInfo(PP_Resource resource) {
               NACL_PRIx64"\n", resource);
   NACL_UNTESTED();
 
-  int32_t is_url_response_info;
+  int32_t success;
   NaClSrpcError srpc_result =
       PpbURLResponseInfoRpcClient::PPB_URLResponseInfo_IsURLResponseInfo(
-          GetMainSrpcChannel(), resource, &is_url_response_info);
+          GetMainSrpcChannel(), resource, &success);
+  DebugPrintf("PPB_URLResponseInfo::IsURLResponseInfo: %s\n",
+              NaClSrpcErrorString(srpc_result));
 
-  if (srpc_result == NACL_SRPC_RESULT_OK && is_url_response_info)
+  if (srpc_result == NACL_SRPC_RESULT_OK && success)
     return PP_TRUE;
   return PP_FALSE;
 }
 
 PP_Var GetProperty(PP_Resource response, PP_URLResponseProperty property) {
-  DebugPrintf("PPB_URLResponseInfo::GetProperty: response=%"
-              NACL_PRIx64"\n", response);
+  DebugPrintf("PPB_URLResponseInfo::GetProperty: response=%"NACL_PRIx64"\n",
+              response);
   NACL_UNTESTED();
   NaClSrpcChannel* channel = GetMainSrpcChannel();
 
@@ -52,13 +54,16 @@ PP_Var GetProperty(PP_Resource response, PP_URLResponseProperty property) {
           static_cast<int32_t>(property),
           &value_size,
           value_bytes.get());
+  DebugPrintf("PPB_URLResponseInfo::GetProperty: %s\n",
+              NaClSrpcErrorString(srpc_result));
+
   if (srpc_result == NACL_SRPC_RESULT_OK)
     (void) DeserializeTo(channel, value_bytes.get(), value_size, 1, &value);
   return value;
 }
 
 PP_Resource GetBodyAsFileRef(PP_Resource response) {
-  DebugPrintf("PPB_URLResponseInfo::IsURLResponseInfo: response=%"
+  DebugPrintf("PPB_URLResponseInfo::GetBodyAsFileRef: response=%"
               NACL_PRIx64"\n", response);
   NACL_UNTESTED();
 
@@ -66,6 +71,8 @@ PP_Resource GetBodyAsFileRef(PP_Resource response) {
   NaClSrpcError srpc_result =
       PpbURLResponseInfoRpcClient::PPB_URLResponseInfo_GetBodyAsFileRef(
           GetMainSrpcChannel(), response, &file_ref);
+  DebugPrintf("PPB_URLResponseInfo::GetBodyAsFileRef: %s\n",
+              NaClSrpcErrorString(srpc_result));
 
   if (srpc_result == NACL_SRPC_RESULT_OK)
     return file_ref;

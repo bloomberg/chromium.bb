@@ -66,11 +66,13 @@ const InterfaceMapElement interface_map[] = {
 const void* GetBrowserInterface(const char* interface_name) {
   DebugPrintf("PPB_GetInterface('%s')\n", interface_name);
   int32_t exports_interface_name;
-  NaClSrpcError retval =
+  NaClSrpcError srpc_result =
       PpbRpcClient::PPB_GetInterface(GetMainSrpcChannel(),
-                                    const_cast<char*>(interface_name),
+                                     const_cast<char*>(interface_name),
                                      &exports_interface_name);
-  if (retval != NACL_SRPC_RESULT_OK || !exports_interface_name)
+  DebugPrintf("PPB_GetInterface('%s'): %s\n",
+              interface_name, NaClSrpcErrorString(srpc_result));
+  if (srpc_result != NACL_SRPC_RESULT_OK || !exports_interface_name)
     return NULL;
   // The key strings are macros that may not sort in an obvious order relative
   // to the name.  Hence, although we would like to use bsearch, we search

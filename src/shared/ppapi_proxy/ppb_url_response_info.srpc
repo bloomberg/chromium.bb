@@ -9,20 +9,20 @@
  'name': 'PpbURLResponseInfoRpc',
  'rpcs': [
           {'name': 'PPB_URLResponseInfo_IsURLResponseInfo',
-           'inputs': [['resource', 'PP_Resource'],  # PP_Resource
+           'inputs': [['resource', 'PP_Resource'],   # PP_Resource
                      ],
-           'outputs': [['is_url_response_info', 'int32_t'],  # PP_Bool
+           'outputs': [['success', 'int32_t'],       # PP_Bool
                       ]
           },
           {'name': 'PPB_URLResponseInfo_GetProperty',
-           'inputs': [['response', 'PP_Resource'],  # PP_Resource
-                      ['property', 'int32_t'],  # PP_URLResponseProperty
+           'inputs': [['response', 'PP_Resource'],   # PP_Resource
+                      ['property', 'int32_t'],       # PP_URLResponseProperty
                      ],
-           'outputs': [['value', 'char[]'],  # PP_Var
+           'outputs': [['value', 'char[]'],          # PP_Var
                       ]
           },
           {'name': 'PPB_URLResponseInfo_GetBodyAsFileRef',
-           'inputs': [['response', 'PP_Resource'],  # PP_Resource
+           'inputs': [['response', 'PP_Resource'],   # PP_Resource
                      ],
            'outputs': [['file_ref', 'PP_Resource'],  # PP_Resource
                       ]
