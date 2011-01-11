@@ -19,7 +19,9 @@ class PrefService;
 // - Whether to show the apps promo in the launcher
 class DefaultApps {
  public:
-  // The maximum number of times to show the apps promo.
+  // The maximum number of times to show the apps promo. The promo counter
+  // actually goes up to this number + 1 because we need to differentiate
+  // between the first time we overflow and subsequent times.
   static const int kAppsPromoCounterMax;
 
   // Register our preferences.
@@ -42,14 +44,11 @@ class DefaultApps {
   //
   // NOTE: If the default apps have been installed, but |installed_ids| is
   // different than GetDefaultApps(), this will permanently expire the promo.
-  bool ShouldShowPromo(const ExtensionIdSet& installed_ids);
+  bool ShouldShowPromo(const ExtensionIdSet& installed_ids, bool* just_expired);
 
   // Should be called after each app is installed. Once installed_ids contains
   // all the default apps, GetAppsToInstall() will start returning NULL.
   void DidInstallApp(const ExtensionIdSet& installed_ids);
-
-  // Should be called after each time the promo is installed.
-  void DidShowPromo();
 
   // Force the promo to be hidden.
   void SetPromoHidden();

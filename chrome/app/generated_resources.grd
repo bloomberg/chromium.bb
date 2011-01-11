@@ -3945,13 +3945,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         New! Discover a world of apps &amp; games
       </message>
       <message name="IDS_APPS_PROMO_TEXT_1" desc="First paragraph of text on the apps promo">
-        Visit the &lt;a&gt; Chrome Web Store&lt;/a&gt; to add great apps and games to your new tab page in Chrome.
+        Visit the &lt;a&gt; Chrome Web Store&lt;/a&gt; to add great apps and games to this area of the New Tab page.
       </message>
       <message name="IDS_APPS_PROMO_TEXT_2" desc="Second paragraph of text on the apps promo">
         What's an app? Try one of these:
       </message>
       <message name="IDS_APPS_PROMO_HIDE" desc="Text on the button that hides the apps promo">
-        Hide this message
+        No thanks, hide this
       </message>
 
       <!-- Plugins -->

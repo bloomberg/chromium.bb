@@ -87,7 +87,10 @@ bool DefaultApps::ShouldShowAppLauncher(const ExtensionIdSet& installed_ids) {
 #endif
 }
 
-bool DefaultApps::ShouldShowPromo(const ExtensionIdSet& installed_ids) {
+bool DefaultApps::ShouldShowPromo(const ExtensionIdSet& installed_ids,
+                                  bool* just_expired) {
+  *just_expired = false;
+
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForceAppsPromoVisible)) {
     return true;
@@ -96,16 +99,35 @@ bool DefaultApps::ShouldShowPromo(const ExtensionIdSet& installed_ids) {
   if (!DefaultAppSupported())
     return false;
 
-  if (GetDefaultAppsInstalled() && GetPromoCounter() < kAppsPromoCounterMax) {
+  if (!GetDefaultAppsInstalled())
+    return false;
+
+  int promo_counter = GetPromoCounter();
+  if (promo_counter <= kAppsPromoCounterMax) {
     // If we have the exact set of default apps, show the promo. If we don't
     // have the exact set of default apps, this means that the user manually
     // installed or uninstalled one. The promo doesn't make sense if it shows
     // apps the user manually installed, so expire it immediately in that
     // situation.
-    if (installed_ids == ids_)
-      return true;
-    else
+    if (ids_ != installed_ids) {
       SetPromoHidden();
+      return false;
+    }
+
+    if (promo_counter == kAppsPromoCounterMax) {
+      *just_expired = true;
+      UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppsPromoHistogram,
+                                extension_misc::PROMO_EXPIRE,
+                                extension_misc::PROMO_BUCKET_BOUNDARY);
+      SetPromoCounter(++promo_counter);
+      return false;
+    } else {
+      UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppsPromoHistogram,
+                                extension_misc::PROMO_SEEN,
+                                extension_misc::PROMO_BUCKET_BOUNDARY);
+      SetPromoCounter(++promo_counter);
+      return true;
+    }
   }
 
   return false;
@@ -123,29 +145,6 @@ void DefaultApps::DidInstallApp(const ExtensionIdSet& installed_ids) {
   }
 }
 
-void DefaultApps::DidShowPromo() {
-  if (!GetDefaultAppsInstalled()) {
-    NOTREACHED() << "Should not show promo until default apps are installed.";
-    return;
-  }
-
-  int promo_counter = GetPromoCounter();
-  if (promo_counter == kAppsPromoCounterMax) {
-    NOTREACHED() << "Promo has already been shown the maximum number of times.";
-    return;
-  }
-
-  if (promo_counter < kAppsPromoCounterMax) {
-    if (promo_counter + 1 == kAppsPromoCounterMax)
-      UMA_HISTOGRAM_ENUMERATION(extension_misc::kAppsPromoHistogram,
-                                extension_misc::PROMO_EXPIRE,
-                                extension_misc::PROMO_BUCKET_BOUNDARY);
-    SetPromoCounter(++promo_counter);
-  } else {
-    SetPromoHidden();
-  }
-}
-
 bool DefaultApps::NonDefaultAppIsInstalled(
     const ExtensionIdSet& installed_ids) const {
   for (ExtensionIdSet::const_iterator iter = installed_ids.begin();
@@ -158,7 +157,7 @@ bool DefaultApps::NonDefaultAppIsInstalled(
 }
 
 void DefaultApps::SetPromoHidden() {
-  SetPromoCounter(kAppsPromoCounterMax);
+  SetPromoCounter(kAppsPromoCounterMax + 1);
 }
 
 int DefaultApps::GetPromoCounter() const {

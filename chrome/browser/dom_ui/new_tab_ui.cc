@@ -605,7 +605,7 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,
                                                   int request_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (AppLauncherHandler::HandlePing(path)) {
+  if (AppLauncherHandler::HandlePing(profile_, path)) {
     return;
   } else if (!path.empty() && path[0] != '#') {
     // A path under new-tab was requested; it's likely a bad relative

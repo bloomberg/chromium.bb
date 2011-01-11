@@ -256,7 +256,8 @@ namespace extension_misc {
     PROMO_LAUNCH_WEB_STORE,
     PROMO_CLOSE,
     PROMO_EXPIRE,
-    PROMO_BUCKET_BOUNDARY = PROMO_EXPIRE + 1
+    PROMO_SEEN,
+    PROMO_BUCKET_BOUNDARY
   };
 }  // extension_misc
 

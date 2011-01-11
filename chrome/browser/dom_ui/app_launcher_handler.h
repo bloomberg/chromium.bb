@@ -18,6 +18,7 @@ class ExtensionPrefs;
 class ExtensionService;
 class NotificationRegistrar;
 class PrefChangeRegistrar;
+class Profile;
 
 namespace gfx {
   class Rect;
@@ -38,7 +39,7 @@ class AppLauncherHandler
                             DictionaryValue* value);
 
   // Callback for pings related to launching apps on the NTP.
-  static bool HandlePing(const std::string& path);
+  static bool HandlePing(Profile* profile, const std::string& path);
 
   // DOMMessageHandler implementation.
   virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
@@ -91,6 +92,9 @@ class AppLauncherHandler
   // Starts the animation of the app icon.
   void AnimateAppIcon(const Extension* extension, const gfx::Rect& rect);
 
+  // Helper that uninstalls all the default apps.
+  void UninstallDefaultApps();
+
   // The apps are represented in the extensions model.
   scoped_refptr<ExtensionService> extensions_service_;
 
@@ -110,6 +114,10 @@ class AppLauncherHandler
 
   // Whether the promo is currently being shown.
   bool promo_active_;
+
+  // When true, we ignore changes to the underlying data rather than immediately
+  // refreshing. This is useful when making many batch updates to avoid flicker.
+  bool ignore_changes_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLauncherHandler);
 };

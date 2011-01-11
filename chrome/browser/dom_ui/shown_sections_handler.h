@@ -43,6 +43,10 @@ class ShownSectionsHandler : public DOMMessageHandler,
   // Helper to get the current shown sections.
   static int GetShownSections(PrefService* pref_service);
 
+  // Expands |section|, collapsing any previously expanded section. This is the
+  // same thing that happens if a user clicks on |section|.
+  static void SetShownSection(PrefService* prefs, Section section);
+
   // DOMMessageHandler implementation.
   virtual void RegisterMessages();
 

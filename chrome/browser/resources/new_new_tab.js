@@ -1379,10 +1379,7 @@ function isDoneLoading() {
 
 // Initialize the apps promo.
 document.addEventListener('DOMContentLoaded', function() {
-  var promoText1 = $('apps-promo-text1');
-  promoText1.innerHTML = promoText1.textContent;
-
-  var promoLink = promoText1.querySelector('a');
+  var promoLink = document.querySelector('#apps-promo-text1 a');
   promoLink.id = 'apps-promo-link';
   promoLink.href = localStrings.getString('web_store_url');
 

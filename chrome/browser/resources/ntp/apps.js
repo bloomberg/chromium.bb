@@ -78,7 +78,10 @@ function getAppsCallback(data) {
     document.documentElement.classList.add('apps-promo-visible');
   else
     document.documentElement.classList.remove('apps-promo-visible');
-  $('apps-promo-link').setAttribute('ping', appsPromoPing);
+
+  var appsPromoLink = $('apps-promo-link');
+  if (appsPromoLink)
+    appsPromoLink.setAttribute('ping', appsPromoPing);
   maybeDoneLoading();
 
   if (isDoneLoading()) {

@@ -14,6 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/app_launched_animation.h"
+#include "chrome/browser/dom_ui/shown_sections_handler.h"
 #include "chrome/browser/extensions/default_apps.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -77,7 +78,8 @@ bool IsPromoActive(const std::string& path) {
 
 AppLauncherHandler::AppLauncherHandler(ExtensionService* extension_service)
     : extensions_service_(extension_service),
-      promo_active_(false) {
+      promo_active_(false),
+      ignore_changes_(false) {
 }
 
 AppLauncherHandler::~AppLauncherHandler() {}
@@ -113,16 +115,28 @@ void AppLauncherHandler::CreateAppInfo(const Extension* extension,
 }
 
 // static
-bool AppLauncherHandler::HandlePing(const std::string& path) {
-  if (path.find(kLaunchWebStorePingURL) != std::string::npos) {
-    RecordWebStoreLaunch(IsPromoActive(path));
-    return true;
-  } else if (path.find(kLaunchAppPingURL) != std::string::npos) {
-    RecordAppLaunch(IsPromoActive(path));
-    return true;
-  }
+bool AppLauncherHandler::HandlePing(Profile* profile, const std::string& path) {
+  bool is_web_store_ping =
+      path.find(kLaunchWebStorePingURL) != std::string::npos;
+  bool is_app_launch_ping =
+      path.find(kLaunchAppPingURL) != std::string::npos;
 
-  return false;
+  // We get called for every URL in chrome://newtab/. Return false if it isn't
+  // one we handle.
+  if (!is_web_store_ping && !is_app_launch_ping)
+    return false;
+
+  bool is_promo_active = IsPromoActive(path);
+
+  if (is_web_store_ping)
+    RecordWebStoreLaunch(is_promo_active);
+  else
+    RecordAppLaunch(is_promo_active);
+
+  if (is_promo_active)
+    profile->GetExtensionService()->default_apps()->SetPromoHidden();
+
+  return true;
 }
 
 DOMMessageHandler* AppLauncherHandler::Attach(DOMUI* dom_ui) {
@@ -148,6 +162,9 @@ void AppLauncherHandler::RegisterMessages() {
 void AppLauncherHandler::Observe(NotificationType type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
+  if (ignore_changes_)
+    return;
+
   switch (type.value) {
     case NotificationType::EXTENSION_LOADED:
     case NotificationType::EXTENSION_UNLOADED:
@@ -203,7 +220,6 @@ void AppLauncherHandler::FillAppDictionary(DictionaryValue* dictionary) {
 
 void AppLauncherHandler::HandleGetApps(const ListValue* args) {
   DictionaryValue dictionary;
-  FillAppDictionary(&dictionary);
 
   // Tell the client whether to show the promo for this view. We don't do this
   // in the case of PREF_CHANGED because:
@@ -214,15 +230,24 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
   // b) Conceptually, it doesn't really make sense to count a
   //    prefchange-triggered refresh as a promo 'view'.
   DefaultApps* default_apps = extensions_service_->default_apps();
-  if (default_apps->ShouldShowPromo(extensions_service_->GetAppIds())) {
+  bool promo_just_expired = false;
+  if (default_apps->ShouldShowPromo(extensions_service_->GetAppIds(),
+                                    &promo_just_expired)) {
     dictionary.SetBoolean("showPromo", true);
-    default_apps->DidShowPromo();
     promo_active_ = true;
   } else {
+    if (promo_just_expired) {
+      ignore_changes_ = true;
+      UninstallDefaultApps();
+      ignore_changes_ = false;
+      ShownSectionsHandler::SetShownSection(dom_ui_->GetProfile()->GetPrefs(),
+                                            THUMB);
+    }
     dictionary.SetBoolean("showPromo", false);
     promo_active_ = false;
   }
 
+  FillAppDictionary(&dictionary);
   dom_ui_->CallJavascriptFunction(L"getAppsCallback", dictionary);
 
   // First time we get here we set up the observer so that we can tell update
@@ -289,8 +314,10 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
   if (new_contents != old_contents && browser->tab_count() > 1)
     browser->CloseTabContents(old_contents);
 
-  if (extension_id != extension_misc::kWebStoreAppId)
+  if (extension_id != extension_misc::kWebStoreAppId) {
     RecordAppLaunch(promo_active_);
+    extensions_service_->default_apps()->SetPromoHidden();
+  }
 }
 
 void AppLauncherHandler::HandleSetLaunchType(const ListValue* args) {
@@ -333,15 +360,13 @@ void AppLauncherHandler::HandleHideAppsPromo(const ListValue* args) {
                             extension_misc::PROMO_CLOSE,
                             extension_misc::PROMO_BUCKET_BOUNDARY);
 
-  DefaultApps* default_apps = extensions_service_->default_apps();
-  const ExtensionIdSet& app_ids = default_apps->default_apps();
-  for (ExtensionIdSet::const_iterator iter = app_ids.begin();
-       iter != app_ids.end(); ++iter) {
-    if (extensions_service_->GetExtensionById(*iter, true))
-      extensions_service_->UninstallExtension(*iter, false);
-  }
-
+  ShownSectionsHandler::SetShownSection(dom_ui_->GetProfile()->GetPrefs(),
+                                        THUMB);
+  ignore_changes_ = true;
+  UninstallDefaultApps();
   extensions_service_->default_apps()->SetPromoHidden();
+  ignore_changes_ = false;
+  HandleGetApps(NULL);
 }
 
 void AppLauncherHandler::HandleCreateAppShortcut(const ListValue* args) {
@@ -418,5 +443,15 @@ void AppLauncherHandler::AnimateAppIcon(const Extension* extension,
 #else
     NOTIMPLEMENTED();
 #endif
+  }
+}
+
+void AppLauncherHandler::UninstallDefaultApps() {
+  DefaultApps* default_apps = extensions_service_->default_apps();
+  const ExtensionIdSet& app_ids = default_apps->default_apps();
+  for (ExtensionIdSet::const_iterator iter = app_ids.begin();
+       iter != app_ids.end(); ++iter) {
+    if (extensions_service_->GetExtensionById(*iter, true))
+      extensions_service_->UninstallExtension(*iter, false);
   }
 }

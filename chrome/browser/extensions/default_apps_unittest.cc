@@ -30,7 +30,10 @@ TEST(ExtensionDefaultApps, HappyPath) {
   EXPECT_FALSE(default_apps.ShouldShowAppLauncher(installed_app_ids));
 
   // The promo should not be shown until the default apps have been installed.
-  EXPECT_FALSE(default_apps.ShouldShowPromo(installed_app_ids));
+  bool promo_just_expired = false;
+  EXPECT_FALSE(default_apps.ShouldShowPromo(installed_app_ids,
+                                            &promo_just_expired));
+  EXPECT_FALSE(promo_just_expired);
 
   // Simulate installing the apps one by one and notifying default_apps after
   // each intallation. Nothing should change until we have installed all the
@@ -44,7 +47,9 @@ TEST(ExtensionDefaultApps, HappyPath) {
     EXPECT_FALSE(default_apps.GetDefaultAppsInstalled());
     EXPECT_TRUE(default_apps.ShouldInstallDefaultApps(installed_app_ids));
     EXPECT_FALSE(default_apps.ShouldShowAppLauncher(installed_app_ids));
-    EXPECT_FALSE(default_apps.ShouldShowPromo(installed_app_ids));
+    EXPECT_FALSE(default_apps.ShouldShowPromo(installed_app_ids,
+                                              &promo_just_expired));
+    EXPECT_FALSE(promo_just_expired);
   }
 
   // Simulate all the default apps being installed. Now we should stop getting
@@ -56,23 +61,36 @@ TEST(ExtensionDefaultApps, HappyPath) {
 
   // And the promo and launcher should become available.
   EXPECT_TRUE(default_apps.ShouldShowAppLauncher(installed_app_ids));
-  EXPECT_TRUE(default_apps.ShouldShowPromo(installed_app_ids));
+  EXPECT_TRUE(default_apps.ShouldShowPromo(installed_app_ids,
+                                           &promo_just_expired));
+  EXPECT_FALSE(promo_just_expired);
 
   // The promo should be available up to the max allowed times, then stop.
-  for (int i = 0; i < DefaultApps::kAppsPromoCounterMax; ++i) {
-    EXPECT_TRUE(default_apps.ShouldShowPromo(installed_app_ids));
-    default_apps.DidShowPromo();
+  // We start counting at 1 because of the call to ShouldShowPromo() above.
+  for (int i = 1; i < DefaultApps::kAppsPromoCounterMax; ++i) {
+    EXPECT_TRUE(default_apps.ShouldShowPromo(installed_app_ids,
+                                             &promo_just_expired));
+    EXPECT_FALSE(promo_just_expired);
     EXPECT_EQ(i + 1, default_apps.GetPromoCounter());
   }
-  EXPECT_FALSE(default_apps.ShouldShowPromo(installed_app_ids));
-  EXPECT_EQ(DefaultApps::kAppsPromoCounterMax, default_apps.GetPromoCounter());
+
+  // The first time, should_show_promo should flip to true, then back to false.
+  EXPECT_FALSE(default_apps.ShouldShowPromo(installed_app_ids,
+                                            &promo_just_expired));
+  EXPECT_TRUE(promo_just_expired);
+  EXPECT_EQ(DefaultApps::kAppsPromoCounterMax + 1,
+            default_apps.GetPromoCounter());
 
   // Even if all the apps are subsequently removed, the apps section should
   // remain.
   installed_app_ids.clear();
   EXPECT_FALSE(default_apps.ShouldInstallDefaultApps(installed_app_ids));
   EXPECT_TRUE(default_apps.ShouldShowAppLauncher(installed_app_ids));
-  EXPECT_FALSE(default_apps.ShouldShowPromo(installed_app_ids));
+  EXPECT_FALSE(default_apps.ShouldShowPromo(installed_app_ids,
+                                            &promo_just_expired));
+  EXPECT_FALSE(promo_just_expired);
+  EXPECT_EQ(DefaultApps::kAppsPromoCounterMax + 1,
+            default_apps.GetPromoCounter());
 }
 
 TEST(ExtensionDefaultApps, UnsupportedLocale) {
@@ -88,28 +106,38 @@ TEST(ExtensionDefaultApps, UnsupportedLocale) {
   ExtensionIdSet installed_ids;
   EXPECT_FALSE(default_apps.ShouldInstallDefaultApps(installed_ids));
   EXPECT_FALSE(default_apps.ShouldShowAppLauncher(installed_ids));
-  EXPECT_FALSE(default_apps.ShouldShowPromo(installed_ids));
+
+  bool promo_just_expired = false;
+  EXPECT_FALSE(default_apps.ShouldShowPromo(installed_ids,
+                                            &promo_just_expired));
+  EXPECT_FALSE(promo_just_expired);
 
   // If the user installs an app manually, then we show the apps section, but
   // no promotion or default apps.
   installed_ids.insert(*(default_app_ids.begin()));
   EXPECT_FALSE(default_apps.ShouldInstallDefaultApps(installed_ids));
   EXPECT_TRUE(default_apps.ShouldShowAppLauncher(installed_ids));
-  EXPECT_FALSE(default_apps.ShouldShowPromo(installed_ids));
+  EXPECT_FALSE(default_apps.ShouldShowPromo(installed_ids,
+                                            &promo_just_expired));
+  EXPECT_FALSE(promo_just_expired);
 
   // Even if the user installs the exact set of default apps, we don't show the
   // promo.
   installed_ids = default_app_ids;
   EXPECT_FALSE(default_apps.ShouldInstallDefaultApps(installed_ids));
   EXPECT_TRUE(default_apps.ShouldShowAppLauncher(installed_ids));
-  EXPECT_FALSE(default_apps.ShouldShowPromo(installed_ids));
+  EXPECT_FALSE(default_apps.ShouldShowPromo(installed_ids,
+                                            &promo_just_expired));
+  EXPECT_FALSE(promo_just_expired);
 
   // If the user uninstalls the apps again, we go back to not showing the
   // apps section.
   installed_ids.clear();
   EXPECT_FALSE(default_apps.ShouldInstallDefaultApps(installed_ids));
   EXPECT_FALSE(default_apps.ShouldShowAppLauncher(installed_ids));
-  EXPECT_FALSE(default_apps.ShouldShowPromo(installed_ids));
+  EXPECT_FALSE(default_apps.ShouldShowPromo(installed_ids,
+                                            &promo_just_expired));
+  EXPECT_FALSE(promo_just_expired);
 }
 
 TEST(ExtensionDefaultApps, HidePromo) {
@@ -120,13 +148,18 @@ TEST(ExtensionDefaultApps, HidePromo) {
   const ExtensionIdSet& default_app_ids = default_apps.default_apps();
   default_apps.DidInstallApp(default_app_ids);
 
-  EXPECT_TRUE(default_apps.ShouldShowPromo(default_app_ids));
-  default_apps.DidShowPromo();
+  bool promo_just_expired = false;
+  EXPECT_TRUE(default_apps.ShouldShowPromo(default_app_ids,
+                                           &promo_just_expired));
+  EXPECT_FALSE(promo_just_expired);
   EXPECT_EQ(1, default_apps.GetPromoCounter());
 
   default_apps.SetPromoHidden();
-  EXPECT_FALSE(default_apps.ShouldShowPromo(default_app_ids));
-  EXPECT_EQ(DefaultApps::kAppsPromoCounterMax, default_apps.GetPromoCounter());
+  EXPECT_FALSE(default_apps.ShouldShowPromo(default_app_ids,
+                                            &promo_just_expired));
+  EXPECT_FALSE(promo_just_expired);
+  EXPECT_EQ(DefaultApps::kAppsPromoCounterMax + 1,
+            default_apps.GetPromoCounter());
 }
 
 TEST(ExtensionDefaultApps, InstallingAnAppHidesPromo) {
@@ -138,15 +171,20 @@ TEST(ExtensionDefaultApps, InstallingAnAppHidesPromo) {
   ExtensionIdSet installed_app_ids = default_app_ids;
   default_apps.DidInstallApp(installed_app_ids);
 
-  EXPECT_TRUE(default_apps.ShouldShowPromo(installed_app_ids));
-  default_apps.DidShowPromo();
+  bool promo_just_expired = false;
+  EXPECT_TRUE(default_apps.ShouldShowPromo(installed_app_ids,
+                                           &promo_just_expired));
+  EXPECT_FALSE(promo_just_expired);
   EXPECT_EQ(1, default_apps.GetPromoCounter());
 
   // Now simulate a new extension being installed. This should cause the promo
   // to be hidden.
   installed_app_ids.insert("foo");
-  EXPECT_FALSE(default_apps.ShouldShowPromo(installed_app_ids));
-  EXPECT_EQ(DefaultApps::kAppsPromoCounterMax, default_apps.GetPromoCounter());
+  EXPECT_FALSE(default_apps.ShouldShowPromo(installed_app_ids,
+                                            &promo_just_expired));
+  EXPECT_FALSE(promo_just_expired);
+  EXPECT_EQ(DefaultApps::kAppsPromoCounterMax + 1,
+            default_apps.GetPromoCounter());
 }
 
 TEST(ExtensionDefaultApps, ManualAppInstalledWhileInstallingDefaultApps) {
@@ -173,8 +211,12 @@ TEST(ExtensionDefaultApps, ManualAppInstalledWhileInstallingDefaultApps) {
 
   // The promo shouldn't turn on though, because it would look weird with the
   // user's extra, manually installed extensions.
-  EXPECT_FALSE(default_apps.ShouldShowPromo(installed_ids));
-  EXPECT_EQ(DefaultApps::kAppsPromoCounterMax, default_apps.GetPromoCounter());
+  bool promo_just_expired = false;
+  EXPECT_FALSE(default_apps.ShouldShowPromo(installed_ids,
+                                            &promo_just_expired));
+  EXPECT_FALSE(promo_just_expired);
+  EXPECT_EQ(DefaultApps::kAppsPromoCounterMax + 1,
+            default_apps.GetPromoCounter());
 
   // Going back to a subset of the default apps shouldn't allow the default app
   // install to continue.
@@ -182,9 +224,13 @@ TEST(ExtensionDefaultApps, ManualAppInstalledWhileInstallingDefaultApps) {
   EXPECT_FALSE(default_apps.ShouldInstallDefaultApps(installed_ids));
   EXPECT_TRUE(default_apps.GetDefaultAppsInstalled());
   EXPECT_TRUE(default_apps.ShouldShowAppLauncher(installed_ids));
-  EXPECT_FALSE(default_apps.ShouldShowPromo(installed_ids));
+  EXPECT_FALSE(default_apps.ShouldShowPromo(installed_ids,
+                                            &promo_just_expired));
+  EXPECT_FALSE(promo_just_expired);
 
   // Going to the exact set of default apps shouldn't show the promo.
-  EXPECT_FALSE(default_apps.ShouldShowPromo(default_apps.default_apps()));
+  EXPECT_FALSE(default_apps.ShouldShowPromo(default_apps.default_apps(),
+                                            &promo_just_expired));
+  EXPECT_FALSE(promo_just_expired);
 }
 #endif  // OS_CHROMEOS
