@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -21,6 +21,9 @@ class JsonWriter(template_writer.TemplateWriter):
   set for them. This class is used by PolicyTemplateGenerator to write .json
   files.
   '''
+
+  def PreprocessPolicies(self, policy_list):
+    return self.FlattenGroupsAndSortPolicies(policy_list)
 
   def WritePolicy(self, policy):
     example_value = policy['annotations']['example_value']

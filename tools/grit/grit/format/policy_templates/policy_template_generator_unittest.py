@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -257,7 +257,7 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
           'supported_on': ['chrome.ddd:8-']
         },
       ]
-    },{
+    }, {
       'name': 'Group2',
       'type': 'group',
       'policies': [
@@ -267,7 +267,7 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
           'supported_on': ['chrome.eee:8-']
         },
       ]
-    },{
+    }, {
       'name': 'SinglePolicy',
       'type': 'int',
       'supported_on': ['chrome.eee:8-']
@@ -305,52 +305,6 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
     self.assertEquals(
         local_mock_writer.result_list,
         ['begin_Group1', 'Group1Policy1', 'Group1Policy2', 'end_group'])
-
-  def testSorting(self):
-    # Tests that policies are sorted correctly.
-    policy_defs = [
-      {'name': 'zp', 'type': 'string', 'caption': 'a1', 'supported_on': []},
-      {
-        'type': 'group',
-        'caption': 'z_group1_caption',
-        'name': 'group1',
-        'policies': [
-          {'name': 'z0', 'type': 'string', 'supported_on': []},
-          {'name': 'a0', 'type': 'string', 'supported_on': []}
-        ]
-      },
-      {
-        'type': 'group',
-        'caption': 'b_group2_caption',
-        'name': 'group2',
-        'policies': [{'name': 'q', 'type': 'string', 'supported_on': []}],
-      },
-      {'name': 'ap', 'type': 'string', 'caption': 'a2', 'supported_on': []}
-    ]
-    sorted_policy_defs = [
-      {
-        'type': 'group',
-        'caption': 'b_group2_caption',
-        'name': 'group2',
-        'policies': [{'name': 'q', 'type': 'string', 'supported_on': []}],
-      },
-      {
-        'type': 'group',
-        'caption': 'z_group1_caption',
-        'name': 'group1',
-        'policies': [
-          {'name': 'z0', 'type': 'string', 'supported_on': []},
-          {'name': 'a0', 'type': 'string', 'supported_on': []}
-        ]
-      },
-      {'name': 'ap', 'type': 'string', 'caption': 'a2', 'supported_on': []},
-      {'name': 'zp', 'type': 'string', 'caption': 'a1', 'supported_on': []},
-    ]
-    ptg = policy_template_generator.PolicyTemplateGenerator([], [])
-    ptg._SortPolicies(policy_defs)
-    self.assertEquals(
-        policy_defs,
-        sorted_policy_defs)
 
   def testSortingInvoked(self):
     # Tests that policy-sorting happens before passing policies to the writer.

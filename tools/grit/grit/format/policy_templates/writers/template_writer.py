@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -89,6 +89,7 @@ class TemplateWriter(object):
       Generated output for the passed template definition.
     '''
     self.Init()
+    template = self.PreprocessPolicies(template)
     self.BeginTemplate()
     for policy in template:
       if policy['type'] == 'group':
@@ -104,6 +105,22 @@ class TemplateWriter(object):
         self.WritePolicy(policy)
     self.EndTemplate()
     return self.GetTemplateText()
+
+  def PreprocessPolicies(self, policy_list):
+    '''Preprocesses a list of policies according to a given writer's needs.
+    Preprocessing steps include sorting policies and stripping unneeded
+    information such as groups (for writers that ignore them).
+    Subclasses are encouraged to override this method, overriding
+    implementations may call one of the provided specialized implementations.
+    The default behaviour is to use SortPoliciesGroupsFirst().
+
+    Args:
+      policy_list: A list containing the policies to sort.
+
+    Returns:
+      The sorted policy list.
+    '''
+    return self.SortPoliciesGroupsFirst(policy_list)
 
   def WritePolicy(self, policy):
     '''Appends the template text corresponding to a policy into the
@@ -148,3 +165,55 @@ class TemplateWriter(object):
       The generated template from the the internal buffer as a string.
     '''
     raise NotImplementedError()
+
+  def SortPoliciesGroupsFirst(self, policy_list):
+    '''Sorts a list of policies alphabetically. The order is the
+    following: first groups alphabetically by caption, then other policies
+    alphabetically by name. The order of policies inside groups is unchanged.
+
+    Args:
+      policy_list: The list of policies to sort. Sub-lists in groups will not
+        be sorted.
+    '''
+    policy_list.sort(key=self.GetPolicySortingKeyGroupsFirst)
+    return policy_list
+
+  def FlattenGroupsAndSortPolicies(self, policy_list, sorting_key=None):
+    '''Sorts a list of policies according to |sorting_key|, defaulting
+    to alphabetical sorting if no key is given. If |policy_list| contains
+    policies with type="group", it is flattened first, i.e. any groups' contents
+    are inserted into the list as first-class elements and the groups are then
+    removed.
+    '''
+    new_list = []
+    for policy in policy_list:
+      if policy['type'] == 'group':
+        for grouped_policy in policy['policies']:
+          new_list.append(grouped_policy)
+      else:
+        new_list.append(policy)
+    if sorting_key == None:
+      sorting_key = self.GetPolicySortingKeyName
+    new_list.sort(key=sorting_key)
+    return new_list
+
+  def GetPolicySortingKeyName(self, policy):
+    return policy['name']
+
+  def GetPolicySortingKeyGroupsFirst(self, policy):
+    '''Extracts a sorting key from a policy. These keys can be used for
+    list.sort() methods to sort policies.
+    See TemplateWriter.SortPolicies for usage.
+    '''
+    is_group = policy['type'] == 'group'
+    if is_group:
+      # Groups are sorted by caption.
+      str_key = policy['caption']
+    else:
+      # Regular policies are sorted by name.
+      str_key = policy['name']
+    # Groups come before regular policies.
+    return (not is_group, str_key)
+
+
+

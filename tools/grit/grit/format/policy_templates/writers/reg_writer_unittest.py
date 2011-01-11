@@ -1,5 +1,5 @@
-#!/usr/bin/python2.4
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+#!/usr/bin/python2.6
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -20,7 +20,7 @@ from grit.format.policy_templates.writers import writer_unittest_common
 class RegWriterUnittest(writer_unittest_common.WriterUnittestCommon):
   '''Unit tests for RegWriter.'''
 
-  NEWLINE='\r\n'
+  NEWLINE = '\r\n'
 
   def CompareOutputs(self, output, expected_output):
     '''Compares the output of the reg_writer with its expected output.
@@ -43,7 +43,7 @@ class RegWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '  "policy_definitions": [],'
         '  "placeholders": [],'
         '}', '<messages></messages>')
-    output = self.GetOutput(grd, 'fr', {'_chromium': '1',}, 'reg', 'en')
+    output = self.GetOutput(grd, 'fr', {'_chromium': '1', }, 'reg', 'en')
     expected_output = 'Windows Registry Editor Version 5.00'
     self.CompareOutputs(output, expected_output)
 
@@ -233,12 +233,12 @@ class RegWriterUnittest(writer_unittest_common.WriterUnittestCommon):
     expected_output = self.NEWLINE.join([
         'Windows Registry Editor Version 5.00',
         '',
+        '[HKEY_LOCAL_MACHINE\\Software\\Policies\\Chromium]',
+        '"Policy2"="c"',
+        '',
         '[HKEY_LOCAL_MACHINE\\Software\\Policies\\Chromium\\Policy1]',
         '"1"="a"',
-        '"2"="b"',
-        '',
-        '[HKEY_LOCAL_MACHINE\\Software\\Policies\\Chromium]',
-        '"Policy2"="c"'])
+        '"2"="b"'])
     self.CompareOutputs(output, expected_output)
 
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -11,7 +11,8 @@ UNIT_TESTS = [
   'writers.json_writer_unittest',
   'writers.plist_strings_writer_unittest',
   'writers.plist_writer_unittest',
-  'writers.reg_writer_unittest'
+  'writers.reg_writer_unittest',
+  'writers.template_writer_unittest'
 ]
 
 def CheckChangeOnUpload(input_api, output_api):

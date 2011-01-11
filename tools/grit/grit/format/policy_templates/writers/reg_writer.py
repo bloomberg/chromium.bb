@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -35,6 +35,19 @@ class RegWriter(template_writer.TemplateWriter):
       self._out.append('')
       self._out.append('[%s]' % key)
       self._last_key = key
+
+  def PreprocessPolicies(self, policy_list):
+    return self.FlattenGroupsAndSortPolicies(policy_list,
+                                             self.GetPolicySortingKey)
+
+  def GetPolicySortingKey(self, policy):
+    '''Extracts a sorting key from a policy. These keys can be used for
+    list.sort() methods to sort policies.
+    See TemplateWriter.SortPoliciesGroupsFirst for usage.
+    '''
+    is_list = policy['type'] == 'list'
+    # Lists come after regular policies.
+    return (is_list, policy['name'])
 
   def WritePolicy(self, policy):
     example_value = policy['annotations']['example_value']

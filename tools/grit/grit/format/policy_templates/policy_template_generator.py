@@ -1,25 +1,9 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 
 import copy
-
-
-def GetPolicySortingKey(policy):
-  '''Extracts a sorting key from a policy. These keys can be used for
-  list.sort() methods to sort policies.
-  See PolicyTemplateGenerator._SortPolicies for usage.
-  '''
-  is_group = policy['type'] == 'group'
-  if is_group:
-    # Groups are sorted by caption.
-    str_key = policy['caption']
-  else:
-    # Regular policies are sorted by name.
-    str_key = policy['name']
-  # Groups come before regular policies.
-  return (not is_group, str_key)
 
 
 class PolicyTemplateGenerator:
@@ -49,18 +33,6 @@ class PolicyTemplateGenerator:
     # Localized messages to be inserted to the policy_definitions structure:
     self._messages = messages
     self._ProcessPolicyList(self._policy_definitions)
-    self._SortPolicies(self._policy_definitions)
-
-  def _SortPolicies(self, policy_list):
-    '''Sorts a list of policies in-place alphabetically. The order is the
-    following: first groups alphabetically by caption, then other policies
-    alphabetically by name. The order of policies inside groups is unchanged.
-
-    Args:
-      policy_list: The list of policies to sort. Sub-lists in groups will not
-        be sorted.
-    '''
-    policy_list.sort(key=GetPolicySortingKey)
 
   def _ProcessSupportedOn(self, supported_on):
     '''Parses and converts the string items of the list of supported platforms
