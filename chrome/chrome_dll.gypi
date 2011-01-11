@@ -608,6 +608,13 @@
             'Common_Base': {
               'msvs_target_platform': 'x64',
             },
+            'Debug_Base': {
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'LinkIncremental': '<(msvs_debug_link_nonincremental)',
+                },
+              },
+            },
           },
         },  # target chrome_dll
       ],

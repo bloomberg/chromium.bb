@@ -457,7 +457,7 @@
             'Debug_Base': {
               'msvs_settings': {
                 'VCLinkerTool': {
-                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                  'LinkIncremental': '<(msvs_debug_link_nonincremental)',
                 },
               },
             },
@@ -888,7 +888,7 @@
             'Debug_Base': {
               'msvs_settings': {
                 'VCLinkerTool': {
-                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                  'LinkIncremental': '<(msvs_debug_link_nonincremental)',
                 },
               },
             },
@@ -954,7 +954,7 @@
             'Debug_Base': {
               'msvs_settings': {
                 'VCLinkerTool': {
-                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                  'LinkIncremental': '<(msvs_debug_link_nonincremental)',
                 },
               },
             },
@@ -2254,7 +2254,7 @@
             'Debug_Base': {
               'msvs_settings': {
                 'VCLinkerTool': {
-                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                  'LinkIncremental': '<(msvs_debug_link_nonincremental)',
                 },
               },
             },
@@ -2968,7 +2968,7 @@
             'Debug': {
               'msvs_settings': {
                 'VCLinkerTool': {
-                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                  'LinkIncremental': '<(msvs_debug_link_nonincremental)',
                 },
               },
             },
