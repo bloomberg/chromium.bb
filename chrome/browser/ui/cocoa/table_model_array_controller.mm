@@ -9,7 +9,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/remove_rows_table_model.h"
 
-@interface TableModelArrayController (PrivateMethods)
+@interface TableModelArrayController ()
 
 - (NSUInteger)offsetForGroupID:(int)groupID;
 - (NSUInteger)offsetForGroupID:(int)groupID startingOffset:(NSUInteger)offset;
@@ -150,14 +150,18 @@ static NSString* const kGroupID = @"_group_id";
 }
 
 - (void)modelDidAddItemsInRange:(NSRange)range {
+  if (range.length == 0)
+    return;
   NSMutableArray* rows = [NSMutableArray arrayWithCapacity:range.length];
-  for (NSUInteger i=range.location; i<NSMaxRange(range); ++i)
+  for (NSUInteger i = range.location; i < NSMaxRange(range); ++i)
     [rows addObject:[self columnValuesForRow:i]];
-  [self insertObjects:rows
-      atArrangedObjectIndexes:[self controllerRowsForModelRowsInRange:range]];
+  NSArray* indexes = [self controllerRowsForModelRowsInRange:range];
+  [self insertObjects:rows atArrangedObjectIndexes:indexes];
 }
 
 - (void)modelDidRemoveItemsInRange:(NSRange)range {
+  if (range.length == 0)
+    return;
   NSMutableIndexSet* indexes =
       [NSMutableIndexSet indexSetWithIndexesInRange:range];
   if (model_->HasGroups()) {
@@ -197,7 +201,7 @@ static NSString* const kGroupID = @"_group_id";
   return dict;
 }
 
-// Overridden from NSArrayController -----------------------------------------
+#pragma mark Overridden from NSArrayController
 
 - (BOOL)canRemove {
   if (!model_)
@@ -213,9 +217,9 @@ static NSString* const kGroupID = @"_group_id";
   model_->RemoveRows(rows);
 }
 
-// Table View Delegate --------------------------------------------------------
+#pragma mark NSTableView delegate methods
 
-- (BOOL)tableView:(NSTableView*)tv isGroupRow:(NSInteger)row {
+- (BOOL)tableView:(NSTableView*)tableView isGroupRow:(NSInteger)row {
   NSDictionary* values = [[self arrangedObjects] objectAtIndex:row];
   return [[values objectForKey:kIsGroupRow] boolValue];
 }
@@ -237,10 +241,11 @@ static NSString* const kGroupID = @"_group_id";
   return indexes;
 }
 
-// Actions --------------------------------------------------------------------
+#pragma mark Actions
 
 - (IBAction)removeAll:(id)sender {
   model_->RemoveAll();
 }
 
 @end
+

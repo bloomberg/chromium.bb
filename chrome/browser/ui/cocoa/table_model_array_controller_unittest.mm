@@ -169,3 +169,4 @@ TEST_F(TableModelArrayControllerTest, AddException) {
               @")",
               [titles description]);
 }
+

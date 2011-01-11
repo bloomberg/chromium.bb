@@ -17,8 +17,7 @@ class RemoveRowsObserverBridge;
 class RemoveRowsTableModel;
 @class TableModelArrayController;
 
-// This class functions as an adapter from a RemoveRowsTableModel to a Cocoa
-// NSArrayController, to be used with bindings.
+// This class allows you to use a RemoveRowsTableModel with Cocoa bindings.
 // It maps the CanRemoveRows method to its canRemove property, and exposes
 // RemoveRows and RemoveAll as actions (remove: and removeAll:).
 // If the table model has groups, these are inserted into the list of arranged
@@ -52,3 +51,4 @@ class RemoveRowsTableModel;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_TABLE_MODEL_ARRAY_CONTROLLER_H_
+
