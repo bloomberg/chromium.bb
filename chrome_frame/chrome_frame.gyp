@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -302,8 +302,6 @@
         'test/chrome_frame_automation_mock.h',
         'test/delete_chrome_history_test.cc',
         'test/header_test.cc',
-        'test/http_server.cc',
-        'test/http_server.h',
         'test/ie_event_sink.cc',
         'test/ie_event_sink.h',
         'test/mock_ie_event_sink_actions.h',
@@ -631,8 +629,6 @@
         'test/chrome_frame_ui_test_utils.cc',
         'test/chrome_frame_ui_test_utils.h',
         'test/external_sites_test.cc',
-        'test/http_server.cc',
-        'test/http_server.h',
         'test/ie_event_sink.cc',
         'test/ie_event_sink.h',
         'test/mock_ie_event_sink_actions.h',

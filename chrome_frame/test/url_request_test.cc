@@ -1,20 +1,19 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include <atlbase.h>
 #include <atlcom.h>
 
 #include "app/win/scoped_com_initializer.h"
+#include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/test_server.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gmock_mutant.h"
-
+#include "chrome_frame/test/test_with_web_server.h"
 #include "chrome_frame/urlmon_url_request.h"
 #include "chrome_frame/urlmon_url_request_private.h"
-#include "chrome_frame/test/chrome_frame_test_utils.h"
-#include "chrome_frame/test/http_server.h"
-#include "chrome_frame/test/test_with_web_server.h"
+#include "testing/gmock_mutant.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using testing::CreateFunctor;
 

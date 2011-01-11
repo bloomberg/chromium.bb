@@ -1,6 +1,7 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #ifndef CHROME_FRAME_TEST_CHROME_FRAME_AUTOMATION_MOCK_H_
 #define CHROME_FRAME_TEST_CHROME_FRAME_AUTOMATION_MOCK_H_
 
@@ -12,7 +13,6 @@
 #include "chrome_frame/chrome_frame_automation.h"
 #include "chrome_frame/chrome_frame_plugin.h"
 #include "chrome_frame/navigation_constraints.h"
-#include "chrome_frame/test/http_server.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/test_with_web_server.h"
 #include "chrome_frame/utils.h"
@@ -231,6 +231,4 @@ class AutomationMockHostNetworkRequestStart
   bool request_start_result_;
 };
 
-
 #endif  // CHROME_FRAME_TEST_CHROME_FRAME_AUTOMATION_MOCK_H_
-
