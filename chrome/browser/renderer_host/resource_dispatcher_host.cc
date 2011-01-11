@@ -1618,11 +1618,11 @@ void ResourceDispatcherHost::NotifyOnUI(NotificationType type,
                                         T* detail) {
   RenderViewHost* rvh =
       RenderViewHost::FromID(render_process_id, render_view_id);
-  if (!rvh)
-    return;
-  RenderViewHostDelegate* rvhd = rvh->delegate();
-  NotificationService::current()->Notify(
-      type, Source<RenderViewHostDelegate>(rvhd), Details<T>(detail));
+  if (rvh) {
+    RenderViewHostDelegate* rvhd = rvh->delegate();
+    NotificationService::current()->Notify(
+        type, Source<RenderViewHostDelegate>(rvhd), Details<T>(detail));
+  }
   delete detail;
 }
 

@@ -1174,22 +1174,6 @@
    fun:_ZN3net22HttpNetworkTransaction5StartEPKNS_15HttpRequestInfoEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
    fun:_ZN3net9HttpCache11Transaction13DoSendRequestEv
 }
-# URLRequest*Job stands for {URLRequestJob,URLRequestChromeJob,URLRequestHttpJob}
-{
-   bug_68290
-   Heapcheck:Leak
-   fun:ResourceDispatcherHost::NotifyResponseStarted
-   fun:ResourceDispatcherHost::CompleteResponseStarted
-   fun:ResourceDispatcherHost::OnResponseStarted
-   fun:net::URLRequest::ResponseStarted
-   fun:net::URLRequest*Job::NotifyHeadersComplete
-   fun:net::URLRequestTestJob::StartAsync
-   fun:void DispatchToMethod
-   fun:RunnableMethod::Run
-   fun:MessageLoop::RunTask
-   fun:MessageLoop::DeferOrRunPendingTask
-   fun:MessageLoop::DoWork
-}
 {
    bug_68304
    Heapcheck:Leak
