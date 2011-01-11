@@ -23,7 +23,7 @@ const char* PepperPluginRegistry::kPDFPluginDescription =
 
 const char* PepperPluginRegistry::kNaClPluginName = "Chrome NaCl";
 const char* PepperPluginRegistry::kNaClPluginMimeType =
-    "application/x-ppapi-nacl-srpc";
+    "application/x-nacl";
 const char* PepperPluginRegistry::kNaClPluginExtension = "nexe";
 const char* PepperPluginRegistry::kNaClPluginDescription =
     "Native Client Executable";
@@ -162,6 +162,12 @@ void PepperPluginRegistry::GetExtraPlugins(
       nacl.path = path;
       nacl.name = kNaClPluginName;
       nacl.mime_types.push_back(kNaClPluginMimeType);
+
+      // TODO(bbudge) Remove this mime type after NaCl tree has been updated.
+      const char* kNaClPluginOldMimeType =
+          "application/x-ppapi-nacl-srpc";
+      nacl.mime_types.push_back(kNaClPluginOldMimeType);
+
       nacl.file_extensions = kNaClPluginExtension;
       nacl.type_descriptions = kNaClPluginDescription;
       plugins->push_back(nacl);
