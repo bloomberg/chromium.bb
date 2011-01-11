@@ -2,7 +2,7 @@
 
 ## repo default configuration
 ##
-REPO_URL='http://android.git.kernel.org/tools/repo.git'
+REPO_URL='git://android.git.kernel.org/tools/repo.git'
 REPO_REV='stable'
 
 # Copyright (C) 2008 Google Inc.
@@ -28,7 +28,7 @@ if __name__ == '__main__':
 del magic
 
 # increment this whenever we make important changes to this script
-VERSION = (1, 9)
+VERSION = (1, 10)
 
 # increment this if the MAINTAINER_KEYS block is modified
 KEYRING_VERSION = (1,0)
@@ -123,6 +123,9 @@ group.add_option('-m', '--manifest-name',
 group.add_option('--mirror',
                  dest='mirror', action='store_true',
                  help='mirror the forrest')
+group.add_option('--reference',
+                 dest='reference',
+                 help='location of mirror directory', metavar='DIR')
 
 # Tool
 group = init_optparse.add_option_group('repo Version options')
@@ -261,8 +264,8 @@ def _SetupGnuPG(quiet):
             gpg_dir, e.strerror)
       sys.exit(1)
 
-  env = dict(os.environ)
-  env['GNUPGHOME'] = gpg_dir
+  env = os.environ.copy()
+  env['GNUPGHOME'] = gpg_dir.encode()
 
   cmd = ['gpg', '--import']
   try:
@@ -380,8 +383,8 @@ def _Verify(cwd, branch, quiet):
         % (branch, cur)
       print >>sys.stderr
 
-  env = dict(os.environ)
-  env['GNUPGHOME'] = gpg_dir
+  env = os.environ.copy()
+  env['GNUPGHOME'] = gpg_dir.encode()
 
   cmd = [GIT, 'tag', '-v', cur]
   proc = subprocess.Popen(cmd,
@@ -432,10 +435,14 @@ def _FindRepo():
   dir = os.getcwd()
   repo = None
 
-  while dir != '/' and not repo:
+  olddir = None
+  while dir != '/' \
+    and dir != olddir \
+    and not repo:
     repo = os.path.join(dir, repodir, REPO_MAIN)
     if not os.path.isfile(repo):
       repo = None
+      olddir = dir
       dir = os.path.dirname(dir)
   return (repo, os.path.join(dir, repodir))
 
@@ -481,6 +488,7 @@ def _Help(args):
   if args:
     if args[0] == 'init':
       init_optparse.print_help()
+      sys.exit(0)
     else:
       print >>sys.stderr,\
       "error: '%s' is not a bootstrap command.\n"\
