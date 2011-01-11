@@ -1170,9 +1170,13 @@
         }],
         ['remoting==1', {
           'dependencies': [
-            '../remoting/remoting.gyp:chromoting_base',
             '../remoting/remoting.gyp:chromoting_host',
-            '../remoting/remoting.gyp:chromoting_jingle_glue',
+          ],
+        }],
+        ['remoting==0', {
+          'sources!': [
+            'service/remoting/chromoting_host_manager.cc',
+            'service/remoting/chromoting_host_manager.h',
           ],
         }],
       ],
