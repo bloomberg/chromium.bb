@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/stl_util-inl.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -19,11 +20,6 @@
 #include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/plugin_lib.h"
 #include "webkit/plugins/plugin_switches.h"
-
-#if defined(OS_POSIX)
-#include "base/stl_util-inl.h"
-#include "base/third_party/valgrind/valgrind.h"
-#endif  // defined(OS_POSIX)
 
 namespace webkit {
 namespace npapi {
@@ -793,18 +789,8 @@ PluginList::~PluginList() {
 }
 
 void PluginList::Shutdown() {
-  // TODO
-  // Note: plugin_groups_ contains simple pointers of type PluginGroup*, but
-  // since this singleton lives until the process is destroyed, no explicit
-  // cleanup is necessary.
-  // However, when running on Valgrind, we need to do the cleanup to keep the
-  // memory tree green.
-#if defined(OS_POSIX)
-  if (RUNNING_ON_VALGRIND) {
-    STLDeleteContainerPairSecondPointers(plugin_groups_.begin(),
-                                         plugin_groups_.end());
-  }
-#endif
+  STLDeleteContainerPairSecondPointers(plugin_groups_.begin(),
+                                       plugin_groups_.end());
 }
 
 }  // namespace npapi
