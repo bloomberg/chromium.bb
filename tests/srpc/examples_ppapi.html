@@ -15,16 +15,25 @@
 // Each test descriptor is a two element array containing a description and a
 // link.
 var test_table_descriptor = [
-  [ 'SRPC Tests',
-    [ [ 'SRPC hello world', 'srpc_hw_ppapi.html' ],
-      [ 'SRPC parameter passing', 'srpc_basic_ppapi.html' ],
-      [ 'SRPC plugin properties', 'srpc_plugin_ppapi.html' ],
-      [ 'SRPC socket address API', 'srpc_sockaddr_ppapi.html' ],
-      [ 'SRPC shared memory API', 'srpc_shm_ppapi.html' ],
-      [ 'SRPC resource descriptor transfer', 'srpc_nrd_xfer_ppapi.html' ],
-      [ 'SRPC performance', 'srpc_perf_ppapi.html' ],
-      [ 'SRPC URL content as NaCl resource descriptor [not supported]',
-        'srpc_url_as_nacl_desc_ppapi.html' ],
+  [ 'SRPC Nexe Tests',
+    [ [ 'hello world', 'srpc_hw_ppapi.html' ],
+      [ 'parameter passing', 'srpc_basic_ppapi.html' ],
+      [ 'plugin properties', 'srpc_plugin_ppapi.html' ],
+      [ 'socket address API', 'srpc_sockaddr_ppapi.html' ],
+      [ 'shared memory API', 'srpc_shm_ppapi.html' ],
+      [ 'resource descriptor transfer', 'srpc_nrd_xfer_ppapi.html' ],
+      [ 'performance', 'srpc_perf_ppapi.html' ],
+// TODO(polina): enable when we support UrlAsNaClDesc.
+//      [ 'url content as NaCl resource descriptor [not supported]',
+//        'srpc_url_as_nacl_desc_ppapi.html' ],
+    ]
+  ],
+  [ 'PPAPI Nexe Tests',
+    [ [ 'scripting', 'basic_object.html' ],
+      [ 'events', 'event_example.html' ],
+      [ '2D', 'ppapi_example_2d.html' ],
+// TODO(polina): enable when PPB_URL* proxy support is in.
+//      [ 'url loading [not supported]', 'ppapi_geturl.html' ],
     ]
   ]
 ];
