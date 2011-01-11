@@ -42,11 +42,11 @@
 #include "processor/logging.h"
 #include "processor/pathname_stripper.h"
 
-namespace google_breakpad {
-
 #ifdef _WIN32
 #define snprintf _snprintf
 #endif
+
+namespace google_breakpad {
 
 LogStream::LogStream(std::ostream &stream, Severity severity,
                      const char *file, int line)
