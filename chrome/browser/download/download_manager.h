@@ -143,6 +143,9 @@ class DownloadManager
   // deleted is returned back to the caller.
   int RemoveAllDownloads();
 
+  // Remove the download with id |download_id| from |active_downloads_|.
+  void RemoveFromActiveList(int32 download_id);
+
   // Called when a Save Page As download is started. Transfers ownership
   // of |download_item| to the DownloadManager.
   void SavePageAsDownloadStarted(DownloadItem* download_item);
@@ -310,6 +313,10 @@ class DownloadManager
   // is the handle returned by the history system, which is unique
   // across sessions.
   //
+  // |active_downloads_| is a map of all downloads that are currently being
+  // processed. The key is the ID assigned by the ResourceDispatcherHost,
+  // which is unique for the current session.
+  //
   // |in_progress_| is a map of all downloads that are in progress and that have
   // not yet received a valid history handle. The key is the ID assigned by the
   // ResourceDispatcherHost, which is unique for the current session.
@@ -319,11 +326,12 @@ class DownloadManager
   // until we are destroyed.  It is only used for debugging.
   //
   // When a download is created through a user action, the corresponding
-  // DownloadItem* is placed in |in_progress_| and remains there until it has
-  // received a valid handle from the history system. Once it has a valid
-  // handle, the DownloadItem* is placed in the |history_downloads_|
-  // map.  When the download is complete, it is removed from
-  // |in_progress_|.  Downloads from past sessions read from a
+  // DownloadItem* is placed in |active_downloads_| and remains there until the
+  // download has finished.  It is also placed in |in_progress_| and remains
+  // there until it has received a valid handle from the history system. Once
+  // it has a valid handle, the DownloadItem* is placed in the
+  // |history_downloads_| map.  When the download is complete, it is removed
+  // from |in_progress_|.  Downloads from past sessions read from a
   // persisted state from the history system are placed directly into
   // |history_downloads_| since they have valid handles in the history system.
   typedef std::set<DownloadItem*> DownloadSet;
@@ -332,6 +340,7 @@ class DownloadManager
   DownloadSet downloads_;
   DownloadMap history_downloads_;
   DownloadMap in_progress_;
+  DownloadMap active_downloads_;
 #if !defined(NDEBUG)
   DownloadSet save_page_as_downloads_;
 #endif

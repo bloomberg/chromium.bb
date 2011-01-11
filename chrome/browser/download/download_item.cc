@@ -329,8 +329,10 @@ void DownloadItem::Finished() {
   // finalized and the file data is downloaded. The ordering of these two
   // actions is indeterministic. Thus, if the filename is not finalized yet,
   // delay the notification.
-  if (name_finalized())
+  if (name_finalized()) {
     NotifyObserversDownloadFileCompleted();
+    download_manager_->RemoveFromActiveList(id());
+  }
 }
 
 void DownloadItem::Remove(bool delete_on_disk) {
@@ -395,8 +397,10 @@ void DownloadItem::OnNameFinalized() {
   // finalized and the file data is downloaded. The ordering of these two
   // actions is indeterministic. Thus, if we are still in downloading the
   // file, delay the notification.
-  if (state() == DownloadItem::COMPLETE)
+  if (state() == DownloadItem::COMPLETE) {
     NotifyObserversDownloadFileCompleted();
+    download_manager_->RemoveFromActiveList(id());
+  }
 }
 
 void DownloadItem::OnSafeDownloadFinished(DownloadFileManager* file_manager) {

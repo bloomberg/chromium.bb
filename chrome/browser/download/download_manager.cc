@@ -116,6 +116,7 @@ void DownloadManager::Shutdown() {
 
   // And clear all non-owning containers.
   in_progress_.clear();
+  active_downloads_.clear();
 #if !defined(NDEBUG)
   save_page_as_downloads_.clear();
 #endif
@@ -423,7 +424,9 @@ void DownloadManager::CreateDownloadItem(DownloadCreateInfo* info) {
   DownloadItem* download = new DownloadItem(this, *info,
                                             profile_->IsOffTheRecord());
   DCHECK(!ContainsKey(in_progress_, info->download_id));
+  DCHECK(!ContainsKey(active_downloads_, info->download_id));
   downloads_.insert(download);
+  active_downloads_[info->download_id] = download;
 }
 
 void DownloadManager::AttachDownloadItem(DownloadCreateInfo* info,
@@ -433,22 +436,14 @@ void DownloadManager::AttachDownloadItem(DownloadCreateInfo* info,
   scoped_ptr<DownloadCreateInfo> infop(info);
   info->path = target_path;
 
-  // NOTE(ahendrickson) We will be adding a new map |active_downloads_|, into
-  // which we will be adding the download as soon as it's created.  This will
-  // make this loop unnecessary.
-  // Eventually |active_downloads_| will replace |in_progress_|, but we don't
-  // want to change the semantics yet.
+  // NOTE(ahendrickson) Eventually |active_downloads_| will replace
+  // |in_progress_|, but we don't want to change the semantics yet.
   DCHECK(!ContainsKey(in_progress_, info->download_id));
-  DownloadItem* download = NULL;
-  for (std::set<DownloadItem*>::iterator i = downloads_.begin();
-       i != downloads_.end(); ++i) {
-    DownloadItem* item = (*i);
-    if (item && (item->id() == info->download_id)) {
-      download = item;
-      break;
-    }
-  }
+  DCHECK(ContainsKey(active_downloads_, info->download_id));
+  DownloadItem* download = active_downloads_[info->download_id];
   DCHECK(download != NULL);
+  DCHECK(ContainsKey(downloads_, download));
+
   download->SetFileCheckResults(info->path,
                                 info->is_dangerous,
                                 info->path_uniquifier,
@@ -502,11 +497,14 @@ void DownloadManager::AttachDownloadItem(DownloadCreateInfo* info,
 }
 
 void DownloadManager::UpdateDownload(int32 download_id, int64 size) {
-  DownloadMap::iterator it = in_progress_.find(download_id);
-  if (it != in_progress_.end()) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DownloadMap::iterator it = active_downloads_.find(download_id);
+  if (it != active_downloads_.end()) {
     DownloadItem* download = it->second;
-    download->Update(size);
-    download_history_->UpdateEntry(download);
+    if (download->state() == DownloadItem::IN_PROGRESS) {
+      download->Update(size);
+      download_history_->UpdateEntry(download);
+    }
   }
   UpdateAppIcon();
 }
@@ -520,9 +518,7 @@ void DownloadManager::OnAllDataSaved(int32 download_id, int64 size) {
     // it yet (the Save As dialog box is probably still showing), so just keep
     // track of the fact that this download id is complete, when the
     // DownloadItem is constructed later we'll notify its completion then.
-    PendingFinishedMap::iterator erase_it =
-        pending_finished_downloads_.find(download_id);
-    DCHECK(erase_it == pending_finished_downloads_.end());
+    DCHECK(!ContainsKey(pending_finished_downloads_, download_id));
     pending_finished_downloads_[download_id] = size;
     VLOG(20) << __FUNCTION__ << "()" << " Added download_id = " << download_id
              << " to pending_finished_downloads_";
@@ -574,6 +570,11 @@ void DownloadManager::OnAllDataSaved(int32 download_id, int64 size) {
   }
 
   download->OnSafeDownloadFinished(file_manager_);
+}
+
+void DownloadManager::RemoveFromActiveList(int32 download_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  active_downloads_.erase(download_id);
 }
 
 void DownloadManager::DownloadRenamedToFinalName(int download_id,
@@ -645,6 +646,7 @@ void DownloadManager::DangerousDownloadRenamed(int64 download_handle,
 }
 
 void DownloadManager::DownloadCancelled(int32 download_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DownloadMap::iterator it = in_progress_.find(download_id);
   if (it == in_progress_.end())
     return;
@@ -657,6 +659,7 @@ void DownloadManager::DownloadCancelled(int32 download_id) {
   // don't have a valid db_handle yet.
   if (download->db_handle() != DownloadHistory::kUninitializedHandle) {
     in_progress_.erase(it);
+    active_downloads_.erase(download_id);
     download_history_->UpdateEntry(download);
   }
 
@@ -953,6 +956,7 @@ void DownloadManager::OnQueryDownloadEntriesComplete(
 void DownloadManager::OnCreateDownloadEntryComplete(
     DownloadCreateInfo info,
     int64 db_handle) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DownloadMap::iterator it = in_progress_.find(info.download_id);
   DCHECK(it != in_progress_.end());
 
@@ -973,11 +977,10 @@ void DownloadManager::OnCreateDownloadEntryComplete(
   download->set_db_handle(db_handle);
 
   // Insert into our full map.
-  DCHECK(history_downloads_.find(download->db_handle()) ==
-         history_downloads_.end());
+  DCHECK(!ContainsKey(history_downloads_, download->db_handle()));
   history_downloads_[download->db_handle()] = download;
 
-  // Show in the appropropriate browser UI.
+  // Show in the appropriate browser UI.
   ShowDownloadInBrowser(info, download);
 
   // Inform interested objects about the new download.
@@ -989,6 +992,12 @@ void DownloadManager::OnCreateDownloadEntryComplete(
   // observers so that they get more than just the start notification.
   if (download->state() != DownloadItem::IN_PROGRESS) {
     in_progress_.erase(it);
+    // TODO(ahendrickson) -- We don't actually know whether or not we can
+    // remove the download item from the |active_downloads_| map, as there
+    // is no state in |DownloadItem::DownloadState| to indicate that the
+    // downloads system is done with an item.  Fix this when we have a
+    // proper final state to check for.
+    active_downloads_.erase(info.download_id);
     download_history_->UpdateEntry(download);
     download->UpdateObservers();
   }
@@ -1042,7 +1051,7 @@ void DownloadManager::AssertContainersConsistent() const {
 #if !defined(NDEBUG)
   // Turn everything into sets.
   DownloadSet in_progress_set, history_set;
-  const DownloadMap* input_maps[] = {&in_progress_, &history_downloads_};
+  const DownloadMap* input_maps[] = {&active_downloads_, &history_downloads_};
   DownloadSet* local_sets[] = {&in_progress_set, &history_set};
   DCHECK_EQ(ARRAYSIZE_UNSAFE(input_maps), ARRAYSIZE_UNSAFE(local_sets));
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_maps); i++) {

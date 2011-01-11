@@ -34,6 +34,8 @@ struct DownloadCreateInfo;
 // One DownloadItem per download. This is the model class that stores all the
 // state for a download. Multiple views, such as a tab's download shelf and the
 // Destination tab's download view, may refer to a given DownloadItem.
+//
+// This is intended to be used only on the UI thread.
 class DownloadItem {
  public:
   enum DownloadState {
