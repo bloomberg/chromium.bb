@@ -74,8 +74,9 @@ void NativeTableGtk::RemoveColumn(int index) {
 }
 
 int NativeTableGtk::GetColumnWidth(int column_index) const {
-  NOTIMPLEMENTED();
-  return -1;
+  GtkTreeViewColumn* column = gtk_tree_view_get_column(tree_view_,
+                                                       column_index);
+  return gtk_tree_view_column_get_width(column);
 }
 
 void NativeTableGtk::SetColumnWidth(int column_index, int width) {
