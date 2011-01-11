@@ -91,7 +91,9 @@ TEST_F(ViewSourceTest, ViewSourceInMenuEnabledOnANormalPage) {
 
 // Make sure that when looking at the page source, we can't select "View Source"
 // from the menu.
-TEST_F(ViewSourceTest, ViewSourceInMenuDisabledWhileViewingSource) {
+//
+// Occasionally crashes on all platforms, see http://crbug.com/69249
+TEST_F(ViewSourceTest, FLAKY_ViewSourceInMenuDisabledWhileViewingSource) {
   ASSERT_TRUE(test_server_.Start());
 
   GURL url_viewsource(chrome::kViewSourceScheme + std::string(":") +
