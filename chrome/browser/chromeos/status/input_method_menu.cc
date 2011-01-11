@@ -130,7 +130,6 @@ InputMethodMenu::InputMethodMenu(PrefService* pref_service,
       ALLOW_THIS_IN_INITIALIZER_LIST(input_method_menu_(this)),
       minimum_input_method_menu_width_(0),
       pref_service_(pref_service),
-      logged_in_(false),
       is_browser_mode_(is_browser_mode),
       is_screen_locker_mode_(is_screen_locker_mode),
       is_out_of_box_experience_mode_(is_out_of_box_experience_mode) {
@@ -162,10 +161,8 @@ InputMethodMenu::InputMethodMenu(PrefService* pref_service,
   }
   library->AddObserver(this);
 
-  if (is_browser_mode_ || is_screen_locker_mode_) {
-    logged_in_ = true;
-  }
-  if (!logged_in_) {
+  if (!is_browser_mode_ && !is_screen_locker_mode_) {
+    // This button is for the login screen.
     registrar_.Add(this,
                    NotificationType::LOGIN_USER_CHANGED,
                    NotificationService::AllSources());
@@ -173,6 +170,8 @@ InputMethodMenu::InputMethodMenu(PrefService* pref_service,
 }
 
 InputMethodMenu::~InputMethodMenu() {
+  // RemoveObserver() is no-op if |this| object is already removed from the
+  // observer list.
   CrosLibrary::Get()->GetInputMethodLibrary()->RemoveObserver(this);
 }
 
@@ -402,13 +401,11 @@ void InputMethodMenu::PreferenceUpdateNeeded(
     }
   } else {
     // We're in the login screen (i.e. not in the normal browser mode nor screen
-    // locker mode). If a user has already logged in, we should not update the
-    // local state since a profile for the user might be loaded before the
-    // buttun for the login screen is destroyed.
-    if (!logged_in_ && g_browser_process && g_browser_process->local_state()) {
-        g_browser_process->local_state()->SetString(
-            language_prefs::kPreferredKeyboardLayout, current_input_method.id);
-        g_browser_process->local_state()->SavePersistentPrefs();
+    // locker mode).
+    if (g_browser_process && g_browser_process->local_state()) {
+      g_browser_process->local_state()->SetString(
+          language_prefs::kPreferredKeyboardLayout, current_input_method.id);
+      g_browser_process->local_state()->SavePersistentPrefs();
     }
   }
 }
@@ -610,7 +607,10 @@ void InputMethodMenu::Observe(NotificationType type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
   if (type == NotificationType::LOGIN_USER_CHANGED) {
-    logged_in_ = true;
+    // When a user logs in, we should remove |this| object from the observer
+    // list so that PreferenceUpdateNeeded() does not update the local state
+    // anymore.
+    CrosLibrary::Get()->GetInputMethodLibrary()->RemoveObserver(this);
   }
 }
 

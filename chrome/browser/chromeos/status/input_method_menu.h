@@ -163,7 +163,6 @@ class InputMethodMenu : public views::ViewMenuDelegate,
 
   PrefService* pref_service_;
   NotificationRegistrar registrar_;
-  bool logged_in_;
   const bool is_browser_mode_;
   const bool is_screen_locker_mode_;
   const bool is_out_of_box_experience_mode_;
