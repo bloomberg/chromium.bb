@@ -52,11 +52,6 @@ IPC_MESSAGE_CONTROL1(DevToolsClientMsg_DispatchOnInspectorFrontend,
 IPC_MESSAGE_CONTROL1(DevToolsClientMsg_DebuggerOutput,
                      std::string /* message */)
 
-// Legacy APU dispatch message.
-IPC_MESSAGE_CONTROL1(DevToolsClientMsg_DispatchToAPU,
-                     std::string /* message */)
-
-
 //-----------------------------------------------------------------------------
 // These are messages sent from DevToolsClient to DevToolsAgent through the
 // browser.
@@ -85,6 +80,3 @@ IPC_MESSAGE_CONTROL1(DevToolsAgentMsg_DebuggerCommand,
 IPC_MESSAGE_CONTROL2(DevToolsAgentMsg_InspectElement,
                      int /* x */,
                      int /* y */)
-
-// Enables/disables the apu agent.
-IPC_MESSAGE_CONTROL1(DevToolsAgentMsg_SetApuAgentEnabled, bool /* enabled */)
