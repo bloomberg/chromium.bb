@@ -64,22 +64,22 @@
         e.?mail<!-- ja-JP -->|メールアドレス<!-- ru -->|Электронной.?Почты<!-- zh-CN -->|邮件|邮箱<!-- zh-TW -->|電郵地址
       </message>
       <message name="IDS_AUTOFILL_NAME_ON_CARD_RE">
-        card.?holder|name.?on.?card|ccname|owner<!-- de-DE -->|name.?des.?karteninhabers<!-- zh-CN -->|信用卡开户名|开户名
+        card.?holder|name.?on.?card|ccname|owner<!-- de-DE -->|karteninhaber<!-- es -->|nombre.*tarjeta<!-- fr-FR -->|nom.*carte<!-- it-IT -->|nome.*cart<!-- ja-JP -->|名前<!-- ru -->|Имя.*карты<!-- zh-CN -->|信用卡开户名|开户名|持卡人姓名<!-- zh-TW -->|持卡人姓名
       </message>
       <message name="IDS_AUTOFILL_NAME_ON_CARD_CONTEXTUAL_RE">
         name
       </message>
       <message name="IDS_AUTOFILL_CARD_NUMBER_RE">
-        number|card.?#|card.?no|ccnum<!-- de-DE -->|kartennummer<!-- es -->|credito<!-- fr-FR -->|n.*de.*carte<!-- zh-CN -->|信用卡号
+        number|card.?#|card.?no|ccnum<!-- de-DE -->|nummer<!-- es -->|credito|numero|número<!-- fr-FR -->|numéro<!-- ja-JP -->|カード番号<!-- ru -->|Номер.*карты<!-- zh-CN -->|信用卡号|信用卡号码<!-- zh-TW -->|信用卡卡號
       </message>
       <message name="IDS_AUTOFILL_CARD_CVC_RE">
         verification|card identification|cvn|security code|cvv code|cvc
       </message>
       <message name="IDS_AUTOFILL_EXPIRATION_MONTH_RE">
-        expir|exp.*month|exp.*date|ccmonth
+        expir|exp.*month|exp.*date|ccmonth<!-- de-DE -->|gueltig|gültig|monat<!-- es -->|fecha<!-- fr-FR -->|date.*exp<!-- it-IT -->|scadenza<!-- ja-JP -->|有効期限<!-- pt-BR, pt-PT -->|validade<!-- ru -->|Срок действия карты<!-- zh-CN -->|月
       </message>
       <message name="IDS_AUTOFILL_EXPIRATION_DATE_RE">
-        exp|^/|year<!-- de-DE -->|ablaufdatum<!-- es -->|fecha.*de.*vencimiento
+        exp|^/|year<!-- de-DE -->|ablaufdatum|gueltig|gültig|yahr<!-- es -->|fecha<!-- it-IT -->|scadenza<!-- ja-JP -->|有効期限<!-- pt-BR, pt-PT -->|validade<!-- ru -->|Срок действия карты<!-- zh-CN -->|年|有效期
       </message>
       <message name="IDS_AUTOFILL_CARD_IGNORED_RE">
         ^card
