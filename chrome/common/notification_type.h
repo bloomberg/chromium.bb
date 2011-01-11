@@ -569,10 +569,6 @@ class NotificationType {
     // interception.  No details are expected.
     CHROME_PLUGIN_UNLOADED,
 
-    // This is sent in the RenderView when previously blocked plugins on a page
-    // should be loaded. The source is the RenderView. No details are expected.
-    SHOULD_LOAD_PLUGINS,
-
     // Sent by the PluginUpdater when there is a change of plugin
     // enable/disable status.
     PLUGIN_ENABLE_STATUS_CHANGED,

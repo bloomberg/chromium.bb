@@ -9,11 +9,8 @@
 #include "base/string_piece.h"
 #include "base/values.h"
 #include "chrome/common/jstemplate_builder.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_view.h"
 #include "grit/generated_resources.h"
-#include "grit/renderer_resources.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
@@ -70,13 +67,12 @@ BlockedPlugin::BlockedPlugin(RenderView* render_view,
                                                  html_data,
                                                  GURL(kBlockedPluginDataURL));
 
-  registrar_.Add(this,
-                 NotificationType::SHOULD_LOAD_PLUGINS,
-                 NotificationService::AllSources());
+  render_view_->RegisterBlockedPlugin(this);
 }
 
 BlockedPlugin::~BlockedPlugin() {
   render_view_->CustomMenuListenerDestroyed(this);
+  render_view_->UnregisterBlockedPlugin(this);
 }
 
 void BlockedPlugin::BindWebFrame(WebFrame* frame) {
@@ -130,20 +126,6 @@ void BlockedPlugin::MenuItemSelected(unsigned id) {
   }
 }
 
-void BlockedPlugin::Observe(NotificationType type,
-                            const NotificationSource& source,
-                            const NotificationDetails& details) {
-  if (type == NotificationType::SHOULD_LOAD_PLUGINS) {
-    LoadPlugin();
-  } else {
-    NOTREACHED();
-  }
-}
-
-void BlockedPlugin::Load(const CppArgumentList& args, CppVariant* result) {
-  LoadPlugin();
-}
-
 void BlockedPlugin::LoadPlugin() {
   CHECK(plugin_);
   WebPluginContainer* container = plugin_->container();
@@ -157,6 +139,10 @@ void BlockedPlugin::LoadPlugin() {
     plugin_->ReplayReceivedData(new_plugin);
     plugin_->destroy();
   }
+}
+
+void BlockedPlugin::Load(const CppArgumentList& args, CppVariant* result) {
+  LoadPlugin();
 }
 
 void BlockedPlugin::HidePlugin() {

@@ -6,8 +6,6 @@
 #define CHROME_RENDERER_BLOCKED_PLUGIN_H_
 #pragma once
 
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 #include "chrome/renderer/custom_menu_listener.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
 #include "webkit/glue/cpp_bound_class.h"
@@ -25,7 +23,6 @@ class PluginGroup;
 
 class BlockedPlugin : public CppBoundClass,
                       public webkit::npapi::WebViewPlugin::Delegate,
-                      public NotificationObserver,
                       public CustomMenuListener {
  public:
   BlockedPlugin(RenderView* render_view,
@@ -43,13 +40,11 @@ class BlockedPlugin : public CppBoundClass,
   virtual void WillDestroyPlugin();
   virtual void ShowContextMenu(const WebKit::WebMouseEvent&);
 
-  // NotificationObserver methods:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
   // CustomMenuListener methods:
   virtual void MenuItemSelected(unsigned id);
+
+  // Load the blocked plugin.
+  void LoadPlugin();
 
  private:
   virtual ~BlockedPlugin();
@@ -58,9 +53,6 @@ class BlockedPlugin : public CppBoundClass,
   // Load the blocked plugin by calling LoadPlugin() below.
   // Takes no arguments, and returns nothing.
   void Load(const CppArgumentList& args, CppVariant* result);
-
-  // Load the blocked plugin.
-  void LoadPlugin();
 
   // Hide the blocked plugin.
   void HidePlugin();
@@ -71,8 +63,6 @@ class BlockedPlugin : public CppBoundClass,
   webkit::npapi::WebViewPlugin* plugin_;
   // The name of the plugin that was blocked.
   string16 name_;
-
-  NotificationRegistrar registrar_;
 };
 
 #endif  // CHROME_RENDERER_BLOCKED_PLUGIN_H_

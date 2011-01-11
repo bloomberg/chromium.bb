@@ -886,6 +886,14 @@ void RenderView::UnregisterPluginDelegate(WebPluginDelegateProxy* delegate) {
   plugin_delegates_.erase(delegate);
 }
 
+void RenderView::RegisterBlockedPlugin(BlockedPlugin* blocked_plugin) {
+  blocked_plugins_.insert(blocked_plugin);
+}
+
+void RenderView::UnregisterBlockedPlugin(BlockedPlugin* blocked_plugin) {
+  blocked_plugins_.erase(blocked_plugin);
+}
+
 void RenderView::Init(gfx::NativeViewId parent_hwnd,
                       int32 opener_id,
                       const RendererPreferences& renderer_prefs,
@@ -4783,11 +4791,8 @@ void RenderView::OnInstallMissingPlugin() {
 }
 
 void RenderView::OnLoadBlockedPlugins() {
-  current_content_settings_.settings[CONTENT_SETTINGS_TYPE_PLUGINS] =
-      CONTENT_SETTING_ALLOW;
-  NotificationService::current()->Notify(NotificationType::SHOULD_LOAD_PLUGINS,
-                                         Source<RenderView>(this),
-                                         NotificationService::NoDetails());
+  while (!blocked_plugins_.empty())
+    (*blocked_plugins_.begin())->LoadPlugin();
 }
 
 void RenderView::OnFileChooserResponse(const std::vector<FilePath>& paths) {

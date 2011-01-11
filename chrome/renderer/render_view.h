@@ -56,6 +56,7 @@
 
 class AudioMessageFilter;
 class AutoFillHelper;
+class BlockedPlugin;
 class CustomMenuListener;
 class DictionaryValue;
 class DeviceOrientationDispatcher;
@@ -388,6 +389,9 @@ class RenderView : public RenderWidget,
 
   void RegisterPluginDelegate(WebPluginDelegateProxy* delegate);
   void UnregisterPluginDelegate(WebPluginDelegateProxy* delegate);
+
+  void RegisterBlockedPlugin(BlockedPlugin* blocked_plugin);
+  void UnregisterBlockedPlugin(BlockedPlugin* blocked_plugin);
 
   // IPC::Channel::Listener implementation -------------------------------------
 
@@ -1365,6 +1369,9 @@ class RenderView : public RenderWidget,
   // A list of all Pepper v1 plugins that we've created that haven't been
   // destroyed yet. Pepper v2 plugins are tracked by the pepper_delegate_.
   std::set<WebPluginDelegatePepper*> current_oldstyle_pepper_plugins_;
+
+  // A list of all BlockedPlugins so they can all be loaded if needed.
+  std::set<BlockedPlugin*> blocked_plugins_;
 
   // Helper objects ------------------------------------------------------------
 
