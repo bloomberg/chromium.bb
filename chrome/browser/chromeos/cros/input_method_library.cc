@@ -578,11 +578,19 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
       // actually changes the XKB layout will not be called.
       CrosLibrary::Get()->GetKeyboardLibrary()->SetCurrentKeyboardLayoutByName(
           chromeos::input_method::GetKeyboardLayoutName(xkb_engine_name));
-      kill(ibus_daemon_process_id_, SIGTERM);
+      if (!chromeos::StopInputMethodProcess(input_method_status_connection_)) {
+        LOG(ERROR) << "StopInputMethodProcess IPC failed. Sending SIGTERM to "
+                   << "PID " << ibus_daemon_process_id_;
+        kill(ibus_daemon_process_id_, SIGTERM);
+      }
+      VLOG(1) << "ibus-daemon (PID=" << ibus_daemon_process_id_ << ") is "
+              << "terminated";
       ibus_daemon_process_id_ = 0;
     }
     if (candidate_window_process_id_) {
       kill(candidate_window_process_id_, SIGTERM);
+      VLOG(1) << "candidate_window (PID=" << candidate_window_process_id_
+              << ") is terminated";
       candidate_window_process_id_ = 0;
     }
   }
