@@ -109,9 +109,11 @@ As l.google.com contains only a single DNSKEY, it is included without a signatur
 A CERT record is presented for www.l.google.com. The verification is complete.
 */
 
+namespace {
+
 // This is the 2048-bit DNS root key: http://www.iana.org/dnssec
 // 19036 8 2 49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5
-static const unsigned char kRootKey[] = {
+const unsigned char kRootKey[] = {
  0x01, 0x01, 0x03, 0x08, 0x03, 0x01, 0x00, 0x01, 0xa8, 0x00, 0x20, 0xa9, 0x55,
  0x66, 0xba, 0x42, 0xe8, 0x86, 0xbb, 0x80, 0x4c, 0xda, 0x84, 0xe4, 0x7e, 0xf5,
  0x6d, 0xbd, 0x7a, 0xec, 0x61, 0x26, 0x15, 0x55, 0x2c, 0xec, 0x90, 0x6d, 0x21,
@@ -136,7 +138,32 @@ static const unsigned char kRootKey[] = {
 };
 
 // kRootKeyID is the key id for kRootKey
-static const uint16 kRootKeyID = 19036;
+const uint16 kRootKeyID = 19036;
+
+// CountLabels returns the number of DNS labels in |a|, which must be in DNS,
+// length-prefixed form.
+unsigned CountLabels(base::StringPiece a) {
+  for (unsigned c = 0;; c++) {
+    if (!a.size())
+      return c;
+    uint8 label_len = a.data()[0];
+    a.remove_prefix(1);
+    DCHECK_GE(a.size(), label_len);
+    a.remove_prefix(label_len);
+  }
+}
+
+// RemoveLeadingLabel removes the first label from |a|, which must be in DNS,
+// length-prefixed form.
+void RemoveLeadingLabel(base::StringPiece* a) {
+  if (!a->size())
+    return;
+  uint8 label_len = a->data()[0];
+  a->remove_prefix(1);
+  a->remove_prefix(label_len);
+}
+
+}  // namespace
 
 namespace net {
 
@@ -215,6 +242,142 @@ uint16 DNSSECChainVerifier::rrtype() const {
 const std::vector<base::StringPiece>& DNSSECChainVerifier::rrdatas() const {
   DCHECK(valid_);
   return rrdatas_;
+}
+
+// static
+std::map<std::string, std::string>
+DNSSECChainVerifier::ParseTLSTXTRecord(base::StringPiece rrdata) {
+  std::map<std::string, std::string> ret;
+
+  if (rrdata.empty())
+    return ret;
+
+  std::string txt;
+  txt.reserve(rrdata.size());
+
+  // TXT records are a series of 8-bit length prefixed substrings that we
+  // concatenate into |txt|
+  while (!rrdata.empty()) {
+    unsigned len = rrdata[0];
+    if (len == 0 || len + 1 > rrdata.size())
+      return ret;
+    txt.append(rrdata.data() + 1, len);
+    rrdata.remove_prefix(len + 1);
+  }
+
+  // We append a space to |txt| to make the parsing code, below, cleaner.
+  txt.append(" ");
+
+  // RECORD = KV (' '+ KV)*
+  // KV = KEY '=' VALUE
+  // KEY = [a-zA-Z0-9]+
+  // VALUE = [^ \0]*
+
+  enum State {
+    STATE_KEY,
+    STATE_VALUE,
+    STATE_SPACE,
+  };
+
+  State state = STATE_KEY;
+
+  std::map<std::string, std::string> m;
+
+  unsigned start = 0;
+  std::string key;
+
+  for (unsigned i = 0; i < txt.size(); i++) {
+    char c = txt[i];
+    if (c == 0)
+      return ret;  // NUL values are never allowed.
+
+    switch (state) {
+      case STATE_KEY:
+        if (c == '=') {
+          if (i == start)
+            return ret;  // zero length keys are not allowed.
+          key = txt.substr(start, i - start);
+          start = i + 1;
+          state = STATE_VALUE;
+          continue;
+        }
+        if (!IsAsciiAlpha(c) && !IsAsciiDigit(c))
+          return ret;  // invalid key value
+        break;
+      case STATE_VALUE:
+        if (c == ' ') {
+          if (m.find(key) == m.end())
+            m.insert(make_pair(key, txt.substr(start, i - start)));
+          state = STATE_SPACE;
+          continue;
+        }
+        break;
+      case STATE_SPACE:
+        if (c != ' ') {
+          start = i;
+          i--;
+          state = STATE_KEY;
+          continue;
+        }
+        break;
+      default:
+        NOTREACHED();
+        return ret;
+    }
+  }
+
+  if (state != STATE_SPACE)
+    return ret;
+
+  ret.swap(m);
+  return ret;
+}
+
+// MatchingLabels returns the number of labels which |a| and |b| share,
+// counting right-to-left from the root. |a| and |b| must be DNS,
+// length-prefixed names. All names match at the root label, so this always
+// returns a value >= 1.
+
+// static
+unsigned DNSSECChainVerifier::MatchingLabels(base::StringPiece a,
+                                             base::StringPiece b) {
+  unsigned c = 0;
+  unsigned a_labels = CountLabels(a);
+  unsigned b_labels = CountLabels(b);
+
+  while (a_labels > b_labels) {
+    RemoveLeadingLabel(&a);
+    a_labels--;
+  }
+  while (b_labels > a_labels) {
+    RemoveLeadingLabel(&b);
+    b_labels--;
+  }
+
+  for (;;) {
+    if (!a.size()) {
+      if (!b.size())
+        return c;
+      return 0;
+    }
+    if (!b.size())
+      return 0;
+    uint8 a_length = a.data()[0];
+    a.remove_prefix(1);
+    uint8 b_length = b.data()[0];
+    b.remove_prefix(1);
+    DCHECK_GE(a.size(), a_length);
+    DCHECK_GE(b.size(), b_length);
+
+    if (a_length == b_length && memcmp(a.data(), b.data(), a_length) == 0) {
+      c++;
+    } else {
+      c = 0;
+    }
+
+    a.remove_prefix(a_length);
+    b.remove_prefix(b_length);
+  }
 }
 
 // U8 reads, and removes, a single byte from |chain_|
@@ -468,19 +631,6 @@ DNSSECChainVerifier::Error DNSSECChainVerifier::EnterZone(
   return OK;
 }
 
-// CountLabels returns the number of DNS labels in |a|, which must be in DNS,
-// length-prefixed form.
-static unsigned CountLabels(base::StringPiece a) {
-  for (unsigned c = 0;; c++) {
-    if (!a.size())
-      return c;
-    uint8 label_len = a.data()[0];
-    a.remove_prefix(1);
-    DCHECK_GE(a.size(), label_len);
-    a.remove_prefix(label_len);
-  }
-}
-
 // LeaveZone transitions out of the current zone, either by following DS
 // records to validate the entry key of the next zone, or because the final
 // resource records are given.
@@ -658,152 +808,6 @@ DNSSECChainVerifier::Error DNSSECChainVerifier::ReadCNAME(
   rrdatas->resize(1);
   (*rrdatas)[0] = name;
   return OK;
-}
-
-// static
-std::map<std::string, std::string>
-DNSSECChainVerifier::ParseTLSTXTRecord(base::StringPiece rrdata) {
-  std::map<std::string, std::string> ret;
-
-  if (rrdata.empty())
-    return ret;
-
-  std::string txt;
-  txt.reserve(rrdata.size());
-
-  // TXT records are a series of 8-bit length prefixed substrings that we
-  // concatenate into |txt|
-  while (!rrdata.empty()) {
-    unsigned len = rrdata[0];
-    if (len == 0 || len + 1 > rrdata.size())
-      return ret;
-    txt.append(rrdata.data() + 1, len);
-    rrdata.remove_prefix(len + 1);
-  }
-
-  // We append a space to |txt| to make the parsing code, below, cleaner.
-  txt.append(" ");
-
-  // RECORD = KV (' '+ KV)*
-  // KV = KEY '=' VALUE
-  // KEY = [a-zA-Z0-9]+
-  // VALUE = [^ \0]*
-
-  enum State {
-    STATE_KEY,
-    STATE_VALUE,
-    STATE_SPACE,
-  };
-
-  State state = STATE_KEY;
-
-  std::map<std::string, std::string> m;
-
-  unsigned start = 0;
-  std::string key;
-
-  for (unsigned i = 0; i < txt.size(); i++) {
-    char c = txt[i];
-    if (c == 0)
-      return ret;  // NUL values are never allowed.
-
-    switch (state) {
-      case STATE_KEY:
-        if (c == '=') {
-          if (i == start)
-            return ret;  // zero length keys are not allowed.
-          key = txt.substr(start, i - start);
-          start = i + 1;
-          state = STATE_VALUE;
-          continue;
-        }
-        if (!IsAsciiAlpha(c) && !IsAsciiDigit(c))
-          return ret;  // invalid key value
-        break;
-      case STATE_VALUE:
-        if (c == ' ') {
-          if (m.find(key) == m.end())
-            m.insert(make_pair(key, txt.substr(start, i - start)));
-          state = STATE_SPACE;
-          continue;
-        }
-        break;
-      case STATE_SPACE:
-        if (c != ' ') {
-          start = i;
-          i--;
-          state = STATE_KEY;
-          continue;
-        }
-        break;
-      default:
-        NOTREACHED();
-        return ret;
-    }
-  }
-
-  if (state != STATE_SPACE)
-    return ret;
-
-  ret.swap(m);
-  return ret;
-}
-
-// RemoveLeadingLabel removes the first label from |a|, which must be in DNS,
-// length-prefixed form.
-static void RemoveLeadingLabel(base::StringPiece* a) {
-  if (!a->size())
-    return;
-  uint8 label_len = a->data()[0];
-  a->remove_prefix(1);
-  a->remove_prefix(label_len);
-}
-
-// MatchingLabels returns the number of labels which |a| and |b| share,
-// counting right-to-left from the root. |a| and |b| must be DNS,
-// length-prefixed names. All names match at the root label, so this always
-// returns a value >= 1.
-
-// static
-unsigned DNSSECChainVerifier::MatchingLabels(base::StringPiece a,
-                                             base::StringPiece b) {
-  unsigned c = 0;
-  unsigned a_labels = CountLabels(a);
-  unsigned b_labels = CountLabels(b);
-
-  while (a_labels > b_labels) {
-    RemoveLeadingLabel(&a);
-    a_labels--;
-  }
-  while (b_labels > a_labels) {
-    RemoveLeadingLabel(&b);
-    b_labels--;
-  }
-
-  for (;;) {
-    if (!a.size()) {
-      if (!b.size())
-        return c;
-      return 0;
-    }
-    if (!b.size())
-      return 0;
-    uint8 a_length = a.data()[0];
-    a.remove_prefix(1);
-    uint8 b_length = b.data()[0];
-    b.remove_prefix(1);
-    DCHECK_GE(a.size(), a_length);
-    DCHECK_GE(b.size(), b_length);
-
-    if (a_length == b_length && memcmp(a.data(), b.data(), a_length) == 0) {
-      c++;
-    } else {
-      c = 0;
-    }
-
-    a.remove_prefix(a_length);
-    b.remove_prefix(b_length);
-  }
 }
 
 }  // namespace net

@@ -130,25 +130,6 @@ class CookieMonster : public CookieStore {
   // i.e. it doesn't begin with a leading '.' character.
   static bool DomainIsHostOnly(const std::string& domain_string);
 
-  // CookieStore implementation.
-
-  // Sets the cookies specified by |cookie_list| returned from |url|
-  // with options |options| in effect.
-  virtual bool SetCookieWithOptions(const GURL& url,
-                                    const std::string& cookie_line,
-                                    const CookieOptions& options);
-
-  // Gets all cookies that apply to |url| given |options|.
-  // The returned cookies are ordered by longest path, then earliest
-  // creation date.
-  virtual std::string GetCookiesWithOptions(const GURL& url,
-                                            const CookieOptions& options);
-
-  // Deletes all cookies with that might apply to |url| that has |cookie_name|.
-  virtual void DeleteCookie(const GURL& url, const std::string& cookie_name);
-
-  virtual CookieMonster* GetCookieMonster();
-
   // Sets a cookie given explicit user-provided cookie attributes. The cookie
   // name, value, domain, etc. are each provided as separate strings. This
   // function expects each attribute to be well-formed. It will check for
@@ -222,7 +203,6 @@ class CookieMonster : public CookieStore {
   // to enable support, but it should only be used for testing. Bug 1157243.
   // Must be called before creating a CookieMonster instance.
   static void EnableFileScheme();
-  static bool enable_file_scheme_;
 
   // Flush the backing store (if any) to disk and post the given task when done.
   // WARNING: THE CALLBACK WILL RUN ON A RANDOM THREAD. IT MUST BE THREAD SAFE.
@@ -231,9 +211,26 @@ class CookieMonster : public CookieStore {
   // to the thread you actually want to be notified on.
   void FlushStore(Task* completion_task);
 
- private:
-  ~CookieMonster();
+  // CookieStore implementation.
 
+  // Sets the cookies specified by |cookie_list| returned from |url|
+  // with options |options| in effect.
+  virtual bool SetCookieWithOptions(const GURL& url,
+                                    const std::string& cookie_line,
+                                    const CookieOptions& options);
+
+  // Gets all cookies that apply to |url| given |options|.
+  // The returned cookies are ordered by longest path, then earliest
+  // creation date.
+  virtual std::string GetCookiesWithOptions(const GURL& url,
+                                            const CookieOptions& options);
+
+  // Deletes all cookies with that might apply to |url| that has |cookie_name|.
+  virtual void DeleteCookie(const GURL& url, const std::string& cookie_name);
+
+  virtual CookieMonster* GetCookieMonster();
+
+ private:
   // Testing support.
   // For SetCookieWithCreationTime.
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest,
@@ -252,6 +249,28 @@ class CookieMonster : public CookieStore {
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, TestImport);
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, GetKey);
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, TestGetKey);
+
+  enum DeletionCause {
+    DELETE_COOKIE_EXPLICIT,
+    DELETE_COOKIE_OVERWRITE,
+    DELETE_COOKIE_EXPIRED,
+    DELETE_COOKIE_EVICTED,
+    DELETE_COOKIE_DUPLICATE_IN_BACKING_STORE,
+    DELETE_COOKIE_DONT_RECORD,  // e.g. For final cleanup after flush to store.
+    DELETE_COOKIE_EVICTED_DOMAIN,
+    DELETE_COOKIE_EVICTED_GLOBAL,
+
+    // Cookies evicted during domain level garbage collection that
+    // were accessed longer ago than kSafeFromGlobalPurgeDays
+    DELETE_COOKIE_EVICTED_DOMAIN_PRE_SAFE,
+
+    // Cookies evicted during domain level garbage collection that
+    // were accessed more rencelyt than kSafeFromGlobalPurgeDays
+    // (and thus would have been preserved by global garbage collection).
+    DELETE_COOKIE_EVICTED_DOMAIN_POST_SAFE,
+
+    DELETE_COOKIE_LAST_ENTRY
+  };
 
   // Cookie garbage collection thresholds.  Based off of the Mozilla defaults.
   // When the number of cookies gets to k{Domain,}MaxCookies
@@ -284,6 +303,11 @@ class CookieMonster : public CookieStore {
   // Default value for key and expiry scheme scheme.
   static const ExpiryAndKeyScheme expiry_and_key_default_ =
       EKS_KEEP_RECENT_AND_PURGE_ETLDP1;
+
+  // Record statistics every kRecordStatisticsIntervalSeconds of uptime.
+  static const int kRecordStatisticsIntervalSeconds = 10 * 60;
+
+  ~CookieMonster();
 
   bool SetCookieWithCreationTime(const GURL& url,
                                  const std::string& cookie_line,
@@ -363,28 +387,6 @@ class CookieMonster : public CookieStore {
   void InternalUpdateCookieAccessTime(CanonicalCookie* cc,
                                       const base::Time& current_time);
 
-  enum DeletionCause {
-    DELETE_COOKIE_EXPLICIT,
-    DELETE_COOKIE_OVERWRITE,
-    DELETE_COOKIE_EXPIRED,
-    DELETE_COOKIE_EVICTED,
-    DELETE_COOKIE_DUPLICATE_IN_BACKING_STORE,
-    DELETE_COOKIE_DONT_RECORD,  // e.g. For final cleanup after flush to store.
-    DELETE_COOKIE_EVICTED_DOMAIN,
-    DELETE_COOKIE_EVICTED_GLOBAL,
-
-    // Cookies evicted during domain level garbage collection that
-    // were accessed longer ago than kSafeFromGlobalPurgeDays
-    DELETE_COOKIE_EVICTED_DOMAIN_PRE_SAFE,
-
-    // Cookies evicted during domain level garbage collection that
-    // were accessed more rencelyt than kSafeFromGlobalPurgeDays
-    // (and thus would have been preserved by global garbage collection).
-    DELETE_COOKIE_EVICTED_DOMAIN_POST_SAFE,
-
-    DELETE_COOKIE_LAST_ENTRY
-  };
-
   // |deletion_cause| argument is for collecting statistics.
   void InternalDeleteCookie(CookieMap::iterator it, bool sync_to_store,
                             DeletionCause deletion_cause);
@@ -422,12 +424,18 @@ class CookieMonster : public CookieStore {
   bool HasCookieableScheme(const GURL& url);
 
   // Statistics support
-  // Record statistics every kRecordStatisticsIntervalSeconds of uptime.
-  static const int kRecordStatisticsIntervalSeconds = 10 * 60;
 
   // This function should be called repeatedly, and will record
   // statistics if a sufficient time period has passed.
   void RecordPeriodicStats(const base::Time& current_time);
+
+  // Initialize the above variables; should only be called from
+  // the constructor.
+  void InitializeHistograms();
+
+  // The resolution of our time isn't enough, so we do something
+  // ugly and increment when we've seen the same time twice.
+  base::Time CurrentTime();
 
   // Histogram variables; see CookieMonster::InitializeHistograms() in
   // cookie_monster.cc for details.
@@ -443,10 +451,6 @@ class CookieMonster : public CookieStore {
   scoped_refptr<base::Histogram> histogram_time_get_;
   scoped_refptr<base::Histogram> histogram_time_load_;
 
-  // Initialize the above variables; should only be called from
-  // the constructor.
-  void InitializeHistograms();
-
   CookieMap cookies_;
 
   // Indicates whether the cookie store has been initialized. This happens
@@ -459,9 +463,6 @@ class CookieMonster : public CookieStore {
 
   scoped_refptr<PersistentCookieStore> store_;
 
-  // The resolution of our time isn't enough, so we do something
-  // ugly and increment when we've seen the same time twice.
-  base::Time CurrentTime();
   base::Time last_time_seen_;
 
   // Minimum delay after updating a cookie's LastAccessDate before we will
@@ -487,6 +488,8 @@ class CookieMonster : public CookieStore {
   Lock lock_;
 
   base::Time last_statistic_record_time_;
+
+  static bool enable_file_scheme_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieMonster);
 };
