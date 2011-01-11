@@ -36,6 +36,9 @@ HMAC::HMAC(HashAlgorithm hash_alg)
   }
 }
 
+HMAC::~HMAC() {
+}
+
 bool HMAC::Init(const unsigned char *key, int key_length) {
   base::EnsureNSSInit();
 
@@ -68,9 +71,6 @@ bool HMAC::Init(const unsigned char *key, int key_length) {
   }
 
   return true;
-}
-
-HMAC::~HMAC() {
 }
 
 bool HMAC::Sign(const std::string& data,

@@ -51,6 +51,11 @@ bool RefCountedBase::Release() const {
   return false;
 }
 
+bool RefCountedThreadSafeBase::HasOneRef() const {
+  return AtomicRefCountIsOne(
+      &const_cast<RefCountedThreadSafeBase*>(this)->ref_count_);
+}
+
 RefCountedThreadSafeBase::RefCountedThreadSafeBase() : ref_count_(0) {
 #ifndef NDEBUG
   in_dtor_ = false;
@@ -83,11 +88,6 @@ bool RefCountedThreadSafeBase::Release() const {
     return true;
   }
   return false;
-}
-
-bool RefCountedThreadSafeBase::HasOneRef() const {
-  return AtomicRefCountIsOne(
-      &const_cast<RefCountedThreadSafeBase*>(this)->ref_count_);
 }
 
 }  // namespace subtle

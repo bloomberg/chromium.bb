@@ -55,9 +55,7 @@ class GlobalDescriptors {
   // Set the descriptor for the given key.
   void Set(Key key, int fd);
 
-  void Reset(const Mapping& mapping) {
-    descriptors_ = mapping;
-  }
+  void Reset(const Mapping& mapping);
 
  private:
   friend struct DefaultSingletonTraits<GlobalDescriptors>;

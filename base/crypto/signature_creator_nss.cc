@@ -14,6 +14,13 @@
 
 namespace base {
 
+SignatureCreator::~SignatureCreator() {
+  if (sign_context_) {
+    SGN_DestroyContext(sign_context_, PR_TRUE);
+    sign_context_ = NULL;
+  }
+}
+
 // static
 SignatureCreator* SignatureCreator::Create(RSAPrivateKey* key) {
   scoped_ptr<SignatureCreator> result(new SignatureCreator);
@@ -33,17 +40,6 @@ SignatureCreator* SignatureCreator::Create(RSAPrivateKey* key) {
   }
 
   return result.release();
-}
-
-SignatureCreator::SignatureCreator() : sign_context_(NULL) {
-  EnsureNSSInit();
-}
-
-SignatureCreator::~SignatureCreator() {
-  if (sign_context_) {
-    SGN_DestroyContext(sign_context_, PR_TRUE);
-    sign_context_ = NULL;
-  }
 }
 
 bool SignatureCreator::Update(const uint8* data_part, int data_part_len) {
@@ -71,6 +67,10 @@ bool SignatureCreator::Final(std::vector<uint8>* signature) {
                     signature_item.data + signature_item.len);
   SECITEM_FreeItem(&signature_item, PR_FALSE);
   return true;
+}
+
+SignatureCreator::SignatureCreator() : sign_context_(NULL) {
+  EnsureNSSInit();
 }
 
 }  // namespace base

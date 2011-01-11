@@ -41,28 +41,11 @@ static bool ReadAttribute(SECKEYPrivateKey* key,
 
 namespace base {
 
-// static
-RSAPrivateKey* RSAPrivateKey::CreateWithParams(uint16 num_bits,
-                                               bool permanent,
-                                               bool sensitive) {
-  base::EnsureNSSInit();
-
-  scoped_ptr<RSAPrivateKey> result(new RSAPrivateKey);
-
-  PK11SlotInfo *slot = GetDefaultNSSKeySlot();
-  if (!slot)
-    return NULL;
-
-  PK11RSAGenParams param;
-  param.keySizeInBits = num_bits;
-  param.pe = 65537L;
-  result->key_ = PK11_GenerateKeyPair(slot, CKM_RSA_PKCS_KEY_PAIR_GEN, &param,
-      &result->public_key_, permanent, sensitive, NULL);
-  PK11_FreeSlot(slot);
-  if (!result->key_)
-    return NULL;
-
-  return result.release();
+RSAPrivateKey::~RSAPrivateKey() {
+  if (key_)
+    SECKEY_DestroyPrivateKey(key_);
+  if (public_key_)
+    SECKEY_DestroyPublicKey(public_key_);
 }
 
 // static
@@ -77,41 +60,6 @@ RSAPrivateKey* RSAPrivateKey::CreateSensitive(uint16 num_bits) {
   return CreateWithParams(num_bits,
                           PR_TRUE /* permanent */,
                           PR_TRUE /* sensitive */);
-}
-
-// static
-RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfoWithParams(
-    const std::vector<uint8>& input, bool permanent, bool sensitive) {
-  // This method currently leaks some memory.
-  // See http://crbug.com/34742.
-  ANNOTATE_SCOPED_MEMORY_LEAK;
-  base::EnsureNSSInit();
-
-  scoped_ptr<RSAPrivateKey> result(new RSAPrivateKey);
-
-  PK11SlotInfo *slot = GetDefaultNSSKeySlot();
-  if (!slot)
-    return NULL;
-
-  SECItem der_private_key_info;
-  der_private_key_info.data = const_cast<unsigned char*>(&input.front());
-  der_private_key_info.len = input.size();
-  SECStatus rv =  PK11_ImportDERPrivateKeyInfoAndReturnKey(slot,
-      &der_private_key_info, NULL, NULL, permanent, sensitive,
-      KU_DIGITAL_SIGNATURE, &result->key_, NULL);
-  PK11_FreeSlot(slot);
-  if (rv != SECSuccess) {
-    NOTREACHED();
-    return NULL;
-  }
-
-  result->public_key_ = SECKEY_ConvertToPublicKey(result->key_);
-  if (!result->public_key_) {
-    NOTREACHED();
-    return NULL;
-  }
-
-  return result.release();
 }
 
 // static
@@ -193,16 +141,6 @@ RSAPrivateKey* RSAPrivateKey::FindFromPublicKeyInfo(
   return result.release();
 }
 
-RSAPrivateKey::RSAPrivateKey() : key_(NULL), public_key_(NULL) {
-  EnsureNSSInit();
-}
-
-RSAPrivateKey::~RSAPrivateKey() {
-  if (key_)
-    SECKEY_DestroyPrivateKey(key_);
-  if (public_key_)
-    SECKEY_DestroyPublicKey(public_key_);
-}
 
 bool RSAPrivateKey::ExportPrivateKey(std::vector<uint8>* output) {
   PrivateKeyInfoCodec private_key_info(true);
@@ -238,6 +176,69 @@ bool RSAPrivateKey::ExportPublicKey(std::vector<uint8>* output) {
 
   SECITEM_FreeItem(der_pubkey, PR_TRUE);
   return true;
+}
+
+RSAPrivateKey::RSAPrivateKey() : key_(NULL), public_key_(NULL) {
+  EnsureNSSInit();
+}
+
+// static
+RSAPrivateKey* RSAPrivateKey::CreateWithParams(uint16 num_bits,
+                                               bool permanent,
+                                               bool sensitive) {
+  base::EnsureNSSInit();
+
+  scoped_ptr<RSAPrivateKey> result(new RSAPrivateKey);
+
+  PK11SlotInfo *slot = GetDefaultNSSKeySlot();
+  if (!slot)
+    return NULL;
+
+  PK11RSAGenParams param;
+  param.keySizeInBits = num_bits;
+  param.pe = 65537L;
+  result->key_ = PK11_GenerateKeyPair(slot, CKM_RSA_PKCS_KEY_PAIR_GEN, &param,
+      &result->public_key_, permanent, sensitive, NULL);
+  PK11_FreeSlot(slot);
+  if (!result->key_)
+    return NULL;
+
+  return result.release();
+}
+
+// static
+RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfoWithParams(
+    const std::vector<uint8>& input, bool permanent, bool sensitive) {
+  // This method currently leaks some memory.
+  // See http://crbug.com/34742.
+  ANNOTATE_SCOPED_MEMORY_LEAK;
+  base::EnsureNSSInit();
+
+  scoped_ptr<RSAPrivateKey> result(new RSAPrivateKey);
+
+  PK11SlotInfo *slot = GetDefaultNSSKeySlot();
+  if (!slot)
+    return NULL;
+
+  SECItem der_private_key_info;
+  der_private_key_info.data = const_cast<unsigned char*>(&input.front());
+  der_private_key_info.len = input.size();
+  SECStatus rv =  PK11_ImportDERPrivateKeyInfoAndReturnKey(slot,
+      &der_private_key_info, NULL, NULL, permanent, sensitive,
+      KU_DIGITAL_SIGNATURE, &result->key_, NULL);
+  PK11_FreeSlot(slot);
+  if (rv != SECSuccess) {
+    NOTREACHED();
+    return NULL;
+  }
+
+  result->public_key_ = SECKEY_ConvertToPublicKey(result->key_);
+  if (!result->public_key_) {
+    NOTREACHED();
+    return NULL;
+  }
+
+  return result.release();
 }
 
 }  // namespace base

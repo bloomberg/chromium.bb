@@ -12,10 +12,6 @@
 
 namespace base {
 
-SymmetricKey::SymmetricKey(PK11SymKey* key) : key_(key) {
-  DCHECK(key);
-}
-
 SymmetricKey::~SymmetricKey() {}
 
 // static
@@ -122,6 +118,10 @@ bool SymmetricKey::GetRawKey(std::string* raw_key) {
 
   raw_key->assign(reinterpret_cast<char*>(key_item->data), key_item->len);
   return true;
+}
+
+SymmetricKey::SymmetricKey(PK11SymKey* key) : key_(key) {
+  DCHECK(key);
 }
 
 }  // namespace base

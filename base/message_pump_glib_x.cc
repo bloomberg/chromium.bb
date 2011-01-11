@@ -82,6 +82,41 @@ MessagePumpGlibX::MessagePumpGlibX() : base::MessagePumpForUI(),
 MessagePumpGlibX::~MessagePumpGlibX() {
 }
 
+#if defined(HAVE_XINPUT2)
+void MessagePumpGlibX::SetupXInput2ForXWindow(Window xwindow) {
+  Display* xdisplay = GDK_DISPLAY_XDISPLAY(gdk_display_get_default());
+
+  // Setup mask for mouse events.
+  unsigned char mask[(XI_LASTEVENT + 7)/8];
+  memset(mask, 0, sizeof(mask));
+
+  XISetMask(mask, XI_ButtonPress);
+  XISetMask(mask, XI_ButtonRelease);
+  XISetMask(mask, XI_Motion);
+
+  // It is necessary to select only for the master devices. XInput2 provides
+  // enough information to the event callback to decide which slave device
+  // triggered the event, thus decide whether the 'pointer event' is a 'mouse
+  // event' or a 'touch event'. So it is not necessary to select for the slave
+  // devices here.
+  XIEventMask evmasks[masters_.size()];
+  int count = 0;
+  for (std::set<int>::const_iterator iter = masters_.begin();
+       iter != masters_.end();
+       ++iter, ++count) {
+    evmasks[count].deviceid = *iter;
+    evmasks[count].mask_len = sizeof(mask);
+    evmasks[count].mask = mask;
+  }
+
+  XISelectEvents(xdisplay, xwindow, evmasks, masters_.size());
+
+  // TODO(sad): Setup masks for keyboard events.
+
+  XFlush(xdisplay);
+}
+#endif  // HAVE_XINPUT2
+
 bool MessagePumpGlibX::RunOnce(GMainContext* context, bool block) {
   GdkDisplay* gdisp = gdk_display_get_default();
   if (!gdisp)
@@ -166,6 +201,25 @@ bool MessagePumpGlibX::RunOnce(GMainContext* context, bool block) {
   return retvalue;
 }
 
+void MessagePumpGlibX::EventDispatcherX(GdkEvent* event, gpointer data) {
+  MessagePumpGlibX* pump_x = reinterpret_cast<MessagePumpGlibX*>(data);
+
+  if (!pump_x->gdksource_) {
+    pump_x->gdksource_ = g_main_current_source();
+    pump_x->gdkdispatcher_ = pump_x->gdksource_->source_funcs->dispatch;
+  } else if (!pump_x->IsDispatchingEvent()) {
+    if (event->type != GDK_NOTHING &&
+        pump_x->capture_gdk_events_[event->type]) {
+      // TODO(sad): An X event is caught by the GDK handler. Put it back in the
+      // X queue so that we catch it in the next iteration. When done, the
+      // following DLOG statement will be removed.
+      DLOG(WARNING) << "GDK received an event it shouldn't have";
+    }
+  }
+
+  pump_x->DispatchEvents(event);
+}
+
 void MessagePumpGlibX::InitializeEventsToCapture(void) {
   // TODO(sad): Decide which events we want to capture and update the tables
   // accordingly.
@@ -237,59 +291,6 @@ void MessagePumpGlibX::InitializeXInput2(void) {
   // put it off for a later time.
   // Note: It is not necessary to listen for XI_DeviceChanged events.
 }
-
-void MessagePumpGlibX::SetupXInput2ForXWindow(Window xwindow) {
-  Display* xdisplay = GDK_DISPLAY_XDISPLAY(gdk_display_get_default());
-
-  // Setup mask for mouse events.
-  unsigned char mask[(XI_LASTEVENT + 7)/8];
-  memset(mask, 0, sizeof(mask));
-
-  XISetMask(mask, XI_ButtonPress);
-  XISetMask(mask, XI_ButtonRelease);
-  XISetMask(mask, XI_Motion);
-
-  // It is necessary to select only for the master devices. XInput2 provides
-  // enough information to the event callback to decide which slave device
-  // triggered the event, thus decide whether the 'pointer event' is a 'mouse
-  // event' or a 'touch event'. So it is not necessary to select for the slave
-  // devices here.
-  XIEventMask evmasks[masters_.size()];
-  int count = 0;
-  for (std::set<int>::const_iterator iter = masters_.begin();
-       iter != masters_.end();
-       ++iter, ++count) {
-    evmasks[count].deviceid = *iter;
-    evmasks[count].mask_len = sizeof(mask);
-    evmasks[count].mask = mask;
-  }
-
-  XISelectEvents(xdisplay, xwindow, evmasks, masters_.size());
-
-  // TODO(sad): Setup masks for keyboard events.
-
-  XFlush(xdisplay);
-}
-
 #endif  // HAVE_XINPUT2
-
-void MessagePumpGlibX::EventDispatcherX(GdkEvent* event, gpointer data) {
-  MessagePumpGlibX* pump_x = reinterpret_cast<MessagePumpGlibX*>(data);
-
-  if (!pump_x->gdksource_) {
-    pump_x->gdksource_ = g_main_current_source();
-    pump_x->gdkdispatcher_ = pump_x->gdksource_->source_funcs->dispatch;
-  } else if (!pump_x->IsDispatchingEvent()) {
-    if (event->type != GDK_NOTHING &&
-        pump_x->capture_gdk_events_[event->type]) {
-      // TODO(sad): An X event is caught by the GDK handler. Put it back in the
-      // X queue so that we catch it in the next iteration. When done, the
-      // following DLOG statement will be removed.
-      DLOG(WARNING) << "GDK received an event it shouldn't have";
-    }
-  }
-
-  pump_x->DispatchEvents(event);
-}
 
 }  // namespace base
