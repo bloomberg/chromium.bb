@@ -135,8 +135,9 @@ node = env.CommandSelLdrTestNacl(
     )
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_bad_service_test')
 
-# Run the example tests under Selenium.
-BROWSER_TESTS = ['browser_tests']
+######################################################################
+## NPAPI Browser Tests
+######################################################################
 node = env.BrowserTester(
     'srpc_basic_browser_test.out',
      url='srpc_basic.html',
@@ -145,7 +146,7 @@ node = env.BrowserTester(
             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
             ],
      )
-env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_srpc_basic_browser_test')
+env.AddNodeToTestSuite(node, ['browser_tests'], 'run_srpc_basic_browser_test')
 
 node = env.BrowserTester(
     'srpc_plugin_browser_test.out',
@@ -156,7 +157,7 @@ node = env.BrowserTester(
             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
             ],
      )
-env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_srpc_plugin_browser_test')
+env.AddNodeToTestSuite(node, ['browser_tests'], 'run_srpc_plugin_browser_test')
 
 node = env.BrowserTester(
     'srpc_sockaddr_browser_test.out',
@@ -166,7 +167,9 @@ node = env.BrowserTester(
             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
             ],
      )
-env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_srpc_sockaddr_browser_test')
+env.AddNodeToTestSuite(node,
+                       ['browser_tests'],
+                       'run_srpc_sockaddr_browser_test')
 
 node = env.BrowserTester(
     'srpc_shm_browser_test.out',
@@ -176,7 +179,7 @@ node = env.BrowserTester(
             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
             ],
      )
-env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_srpc_shm_browser_test')
+env.AddNodeToTestSuite(node, ['browser_tests'], 'run_srpc_shm_browser_test')
 
 # TODO: This test currently fails on lucid + firefox 3.6 for x86-32.
 #     Disabling in that case. Renable when fixed.
@@ -193,7 +196,9 @@ if 0:
               env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
               ],
        )
-  env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_srpc_nrd_xfer_browser_test')
+  env.AddNodeToTestSuite(node,
+                         ['browser_tests'],
+                         'run_srpc_nrd_xfer_browser_test')
 
 node = env.BrowserTester(
     'srpc_url_as_nacl_desc_test.out',
@@ -204,5 +209,56 @@ node = env.BrowserTester(
             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
             ],
      )
-env.AddNodeToTestSuite(node, BROWSER_TESTS,
+env.AddNodeToTestSuite(node, ['browser_tests'],
                        'run_srpc_url_as_nacl_desc_browser_test')
+######################################################################
+## PPAPI Browser Tests
+######################################################################
+node = env.BrowserTester(
+    'srpc_basic_ppapi_browser_test.out',
+     url='srpc_basic_ppapi.html',
+     files=[srpc_test_nexe,
+            env.File('srpc_basic_ppapi.html'),
+            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
+            ],
+     )
+env.AddNodeToTestSuite(node,
+                       ['pepper_browser_tests'],
+                       'run_srpc_basic_ppapi_browser_test')
+
+node = env.BrowserTester(
+    'srpc_plugin_ppapi_browser_test.out',
+     url='srpc_plugin_ppapi.html',
+     files=[srpc_test_nexe,
+            srpc_nrd_client_nexe,
+            env.File('srpc_plugin_ppapi.html'),
+            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
+            ],
+     )
+env.AddNodeToTestSuite(node,
+                       ['pepper_browser_tests'],
+                       'run_srpc_plugin_ppapi_browser_test')
+
+node = env.BrowserTester(
+    'srpc_sockaddr_ppapi_browser_test.out',
+     url='srpc_sockaddr_ppapi.html',
+     files=[srpc_nrd_server_nexe,
+            env.File('srpc_sockaddr_ppapi.html'),
+            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
+            ],
+     )
+env.AddNodeToTestSuite(node,
+                       ['pepper_browser_tests'],
+                       'run_srpc_sockaddr_ppapi_browser_test')
+
+node = env.BrowserTester(
+    'srpc_shm_browser_ppapi_test.out',
+     url='srpc_shm_ppapi.html',
+     files=[srpc_shm_nexe,
+            env.File('srpc_shm_ppapi.html'),
+            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
+            ],
+     )
+env.AddNodeToTestSuite(node,
+                       ['pepper_browser_tests'],
+                       'run_srpc_shm_ppapi_browser_test')
