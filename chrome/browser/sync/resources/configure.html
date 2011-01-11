@@ -432,18 +432,11 @@ html[os='mac'] input[type='submit'] {
       emptyError.style.display = "block";
       return false;
     }
-    if (f.confirmpassphrase.value.length > 0 &&
-        f.confirmpassphrase.value != f.passphrase.value) {
+    if (f.confirmpassphrase.value != f.passphrase.value) {
       mismatchError.style.display = "block";
       return false;
     }
     return true;
-  }
-
-  function sendValuesAndClose() {
-    var result = JSON.stringify({"option": getRadioCheckedValue(),
-                                 "passphrase": f.passphrase.value});
-    chrome.send("FirstPassphrase", [result]);
   }
 
   function goToDashboard() {
@@ -587,16 +580,13 @@ html[os='mac'] input[type='submit'] {
       <div>
         <div i18n-content="passphraseLabel" id="passphraseLabel"></div>
         <input id="passphrase" name="passphrase" label="passphraseLabel"
-               type="password" onkeyup="checkPassphraseMatch();"
-               onchange="checkPassphraseMatch();"/>
+               type="password" />
       </div>
       <div>
         <div i18n-content="confirmLabel" id="confirmPassphraseLabel">
         </div>
         <input id="confirmpassphrase" name="confirmpassphrase" type="password"
-               label="confirmPassphraseLabel"
-               onkeyup="checkPassphraseMatch();"
-               onchange="checkPassphraseMatch();" />
+               label="confirmPassphraseLabel" />
       </div>
       <div class="error" style="display:none"
            id="emptyerror" i18n-content="emptyErrorMessage"></div>
