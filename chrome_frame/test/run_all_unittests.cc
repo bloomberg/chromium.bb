@@ -31,7 +31,6 @@ void PureCall() {
   __debugbreak();
 }
 
-#pragma warning(disable:4509)
 int main(int argc, char **argv) {
   base::EnableTerminationOnHeapCorruption();
   base::PlatformThread::SetName("ChromeFrame tests");
@@ -45,36 +44,27 @@ int main(int argc, char **argv) {
 
   base::ProcessHandle crash_service = chrome_frame_test::StartCrashService();
   int ret = -1;
+  // If mini_installer is used to register CF, we use the switch
+  // --no-registration to avoid repetitive registration.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(kNoRegistrationSwitch)) {
+    ret = test_suite.Run();
+  } else {
+    // Register paths needed by the ScopedChromeFrameRegistrar.
+    chrome::RegisterPathProvider();
 
-  __try {
-    // If mini_installer is used to register CF, we use the switch
-    // --no-registration to avoid repetitive registration.
-    if (CommandLine::ForCurrentProcess()->HasSwitch(kNoRegistrationSwitch)) {
-      ret = test_suite.Run();
-    } else {
-      // Register paths needed by the ScopedChromeFrameRegistrar.
-      chrome::RegisterPathProvider();
+    // This will register the chrome frame in the build directory. It currently
+    // leaves that chrome frame registered once the tests are done. It must be
+    // constructed AFTER the TestSuite is created since TestSuites create THE
+    // AtExitManager.
+    // TODO(robertshield): Make these tests restore the original registration
+    // once done.
+    ScopedChromeFrameRegistrar registrar;
 
-      // This will register the chrome frame in the build directory. It
-      // currently leaves that chrome frame registered once the tests are done.
-      // It must be constructed AFTER the TestSuite is created since TestSuites
-      // create THE AtExitManager.
-      // TODO(robertshield): Make these tests restore the original registration
-      // once done.
-      ScopedChromeFrameRegistrar registrar;
+    // Register IAccessible2 proxy stub DLL, needed for some tests.
+    ScopedChromeFrameRegistrar ia2_registrar(
+        chrome_frame_test::GetIAccessible2ProxyStubPath().value());
 
-      // Register IAccessible2 proxy stub DLL, needed for some tests.
-      ScopedChromeFrameRegistrar ia2_registrar(
-          chrome_frame_test::GetIAccessible2ProxyStubPath().value());
-
-      ret = test_suite.Run();
-    }
-  }
-
-  _except(EXCEPTION_EXECUTE_HANDLER) {
-    LOG(ERROR) << "ChromeFrame tests crashed";
-    chrome_frame_test::KillProcesses(L"iexplore.exe", 0, false);
-    chrome_frame_test::KillProcesses(L"firefox.exe", 0, false);
+    ret = test_suite.Run();
   }
 
   DeleteConfigValue(kChromeFrameHeadlessMode);
@@ -83,4 +73,3 @@ int main(int argc, char **argv) {
   if (crash_service)
     base::KillProcess(crash_service, 0, false);
 }
-#pragma warning(default:4509)
