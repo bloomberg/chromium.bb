@@ -42,6 +42,7 @@
 #include "webkit/glue/webclipboard_impl.h"
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 
 #if defined(OS_WIN)
 #include "third_party/WebKit/WebKit/chromium/public/win/WebSandboxSupport.h"
@@ -504,11 +505,11 @@ RendererWebKitClientImpl::sharedWorkerRepository() {
 
 WebKit::WebGraphicsContext3D*
 RendererWebKitClientImpl::createGraphicsContext3D() {
-  // The WebGraphicsContext3D::createDefault code path is used for
+  // The WebGraphicsContext3DInProcessImpl code path is used for
   // layout tests (though not through this code) as well as for
   // debugging and bringing up new ports.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessWebGL)) {
-    return WebKit::WebGraphicsContext3D::createDefault();
+    return new webkit_gpu::WebGraphicsContext3DInProcessImpl();
   } else {
 #if defined(ENABLE_GPU)
     return new WebGraphicsContext3DCommandBufferImpl();

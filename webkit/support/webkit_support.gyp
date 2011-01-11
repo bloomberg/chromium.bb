@@ -9,6 +9,7 @@
     '../fileapi/webkit_fileapi.gypi',
     '../database/webkit_database.gypi',
     '../glue/webkit_glue.gypi',
+    '../gpu/webkit_gpu.gypi',
     'webkit_support.gypi',
   ],
 }
