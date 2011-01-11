@@ -194,6 +194,24 @@ std::vector<int> GetAllNetErrorCodes() {
   return all_error_codes;
 }
 
+#if defined(OS_WIN)
+#pragma warning (disable: 4748)
+#pragma optimize( "", off )
+#endif
+
+// Temporary experiment to help track down http://crbug.com/68766.
+// This should crash if called with an invalid ChromeURLRequestContext.
+// TODO(eroman): Delete this when experiment is complete.
+void CheckContextForBug68766(URLRequestContext* context) {
+  if (context)
+    static_cast<ChromeURLRequestContext*>(context)->IsExternal();
+}
+
+#if defined(OS_WIN)
+#pragma optimize( "", on )
+#pragma warning (default: 4748)
+#endif
+
 }  // namespace
 
 ResourceDispatcherHost::ResourceDispatcherHost()
@@ -348,6 +366,8 @@ void ResourceDispatcherHost::BeginRequest(
 
   ChromeURLRequestContext* context = filter_->GetURLRequestContext(
       request_id, request_data.resource_type);
+
+  CheckContextForBug68766(context);
 
   // Might need to resolve the blob references in the upload data.
   if (request_data.upload_data && context) {
@@ -1301,8 +1321,10 @@ void ResourceDispatcherHost::BeginRequestInternal(net::URLRequest* request) {
     return;
   }
 
-  if (!defer_start)
+  if (!defer_start) {
+    CheckContextForBug68766(request->context());
     InsertIntoResourceQueue(request, *info);
+  }
 }
 
 void ResourceDispatcherHost::InsertIntoResourceQueue(
