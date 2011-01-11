@@ -772,6 +772,9 @@ terminal_draw_contents(struct terminal *terminal)
 				}
 			}
 
+			if (background == terminal->color_scheme->border)
+				continue;
+
 			terminal_set_color(terminal, cr, background);
 			cairo_move_to(cr, side_margin + (col * extents.max_x_advance),
 			      top_margin + (row * extents.height));
