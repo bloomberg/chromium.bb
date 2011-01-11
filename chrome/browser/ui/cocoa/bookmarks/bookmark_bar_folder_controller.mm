@@ -842,8 +842,8 @@ struct LayoutMetrics {
 }
 
 - (CGFloat)determineFinalScrollDelta:(CGFloat)delta {
-  if (delta > 0.0 && ![scrollUpArrowView_ isHidden] ||
-      delta < 0.0 && ![scrollDownArrowView_ isHidden]) {
+  if ((delta > 0.0 && ![scrollUpArrowView_ isHidden]) ||
+      (delta < 0.0 && ![scrollDownArrowView_ isHidden])) {
     NSWindow* window = [self window];
     NSRect windowFrame = [window frame];
     NSScreen* screen = [window screen];
