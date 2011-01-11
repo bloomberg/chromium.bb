@@ -13,17 +13,16 @@
 
 // Window for a bookmark folder "menu".  This menu pops up when you
 // click on a bookmark button that represents a folder of bookmarks.
-// This window is borderless.
+// This window is borderless but has a shadow, at least initially.
+// Once the down scroll arrow is shown, the shadow is turned off and
+// a secondary window is added which is sized to match the visible
+// area of the menu and which provides the shadow.
 @interface BookmarkBarFolderWindow : NSWindow
 @end
 
 // Content view for the above window.  "Stock" other than the drawing
 // of rounded corners.  Only used in the nib.
-@interface BookmarkBarFolderWindowContentView : NSView {
-  // Arrows to show ability to scroll up and down as needed.
-  scoped_nsobject<NSImage> arrowUpImage_;
-  scoped_nsobject<NSImage> arrowDownImage_;
-}
+@interface BookmarkBarFolderWindowContentView : NSView
 @end
 
 // Scroll view that contains the main view (where the buttons go).

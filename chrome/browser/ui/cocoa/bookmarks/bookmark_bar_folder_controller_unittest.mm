@@ -64,28 +64,7 @@
 }
 @end
 
-// No window level and the ability to fake the "top left" point of the window.
-// For testing.
-@interface BookmarkBarFolderControllerLow : BookmarkBarFolderControllerNoLevel {
-  BOOL realTopLeft_;  // Use the real windowTopLeft call?
-}
-@property (nonatomic) BOOL realTopLeft;
-@end
-
-
-@implementation BookmarkBarFolderControllerLow
-
-@synthesize realTopLeft = realTopLeft_;
-
-- (NSPoint)windowTopLeftForWidth:(int)width {
-  return realTopLeft_ ? [super windowTopLeftForWidth:width] :
-      NSMakePoint(200,200);
-}
-
-@end
-
-
-@interface BookmarkBarFolderControllerPong : BookmarkBarFolderControllerLow {
+@interface BookmarkBarFolderControllerPong : BookmarkBarFolderController {
   BOOL childFolderWillShow_;
   BOOL childFolderWillClose_;
 }
@@ -181,7 +160,9 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
     [bar_ loaded:model];
     // Make parent frame for bookmark bar then open it.
     NSRect frame = [[test_window() contentView] frame];
-    frame = NSInsetRect(frame, 100, 200);
+    frame = NSMakeRect(frame.origin.x,
+                       frame.size.height - bookmarks::kNTPBookmarkBarHeight,
+                       frame.size.width, bookmarks::kNTPBookmarkBarHeight);
     NSView* fakeToolbarView = [[[NSView alloc] initWithFrame:frame]
                                 autorelease];
     [[test_window() contentView] addSubview:fakeToolbarView];
@@ -235,9 +216,9 @@ TEST_F(BookmarkBarFolderControllerTest, InitCreateAndDelete) {
   }
   Class cellClass = [BookmarkBarFolderButtonCell class];
   for (BookmarkButton* button in buttons) {
-    NSRect r = [[bbfc mainView] convertRect:[button frame] fromView:button];
+    NSRect r = [[bbfc folderView] convertRect:[button frame] fromView:button];
     // TODO(jrg): remove this adjustment.
-    NSRect bigger = NSInsetRect([[bbfc mainView] frame], -2, 0);
+    NSRect bigger = NSInsetRect([[bbfc folderView] frame], -2, 0);
     EXPECT_TRUE(NSContainsRect(bigger, r));
     EXPECT_TRUE([[button cell] isKindOfClass:cellClass]);
   }
@@ -269,13 +250,12 @@ TEST_F(BookmarkBarFolderControllerTest, BasicPosition) {
   EXPECT_TRUE(parentButton);
 
   // If parent is a BookmarkBarController, grow down.
-  scoped_nsobject<BookmarkBarFolderControllerLow> bbfc;
-  bbfc.reset([[BookmarkBarFolderControllerLow alloc]
+  scoped_nsobject<BookmarkBarFolderController> bbfc;
+  bbfc.reset([[BookmarkBarFolderController alloc]
                initWithParentButton:parentButton
                    parentController:nil
                       barController:bar_]);
   [bbfc window];
-  [bbfc setRealTopLeft:YES];
   NSPoint pt = [bbfc windowTopLeftForWidth:0];  // screen coords
   NSPoint buttonOriginInScreen =
       [[parentButton window]
@@ -293,13 +273,12 @@ TEST_F(BookmarkBarFolderControllerTest, BasicPosition) {
   EXPECT_LT(shifted.x, pt.x);
 
   // If parent is a BookmarkBarFolderController, grow right.
-  scoped_nsobject<BookmarkBarFolderControllerLow> bbfc2;
-  bbfc2.reset([[BookmarkBarFolderControllerLow alloc]
+  scoped_nsobject<BookmarkBarFolderController> bbfc2;
+  bbfc2.reset([[BookmarkBarFolderController alloc]
                 initWithParentButton:[[bbfc buttons] objectAtIndex:0]
                     parentController:bbfc.get()
                        barController:bar_]);
   [bbfc2 window];
-  [bbfc2 setRealTopLeft:YES];
   pt = [bbfc2 windowTopLeftForWidth:0];
   // We're now overlapping the window a bit.
   EXPECT_EQ(pt.x, NSMaxX([[bbfc.get() window] frame]) -
@@ -376,10 +355,10 @@ TEST_F(BookmarkBarFolderControllerTest, DropDestination) {
   EXPECT_TRUE(bbfc.get());
 
   // Confirm "off the top" and "off the bottom" match no buttons.
-  NSPoint p = NSMakePoint(NSMidX([[bbfc mainView] frame]), 10000);
+  NSPoint p = NSMakePoint(NSMidX([[bbfc folderView] frame]), 10000);
   EXPECT_FALSE([bbfc buttonForDroppingOnAtPoint:p]);
   EXPECT_TRUE([bbfc shouldShowIndicatorShownForPoint:p]);
-  p = NSMakePoint(NSMidX([[bbfc mainView] frame]), -1);
+  p = NSMakePoint(NSMidX([[bbfc folderView] frame]), -1);
   EXPECT_FALSE([bbfc buttonForDroppingOnAtPoint:p]);
   EXPECT_TRUE([bbfc shouldShowIndicatorShownForPoint:p]);
 
@@ -470,29 +449,51 @@ TEST_F(BookmarkBarFolderControllerTest, ChildFolderWidth) {
 // Simple scrolling tests.
 TEST_F(BookmarkBarFolderControllerTest, SimpleScroll) {
   scoped_nsobject<BookmarkBarFolderController> bbfc;
-
+  NSRect screenFrame = [[NSScreen mainScreen] frame];
+  CGFloat screenHeight = NSHeight(screenFrame);
   int nodecount = AddLotsOfNodes();
   bbfc.reset(SimpleBookmarkBarFolderController());
   EXPECT_TRUE(bbfc.get());
   [bbfc showWindow:bbfc.get()];
+  NSWindow* window = [bbfc window];
 
-  // Make sure the window fits on the screen.
-  EXPECT_LT(NSHeight([[bbfc window] frame]),
-            NSHeight([[NSScreen mainScreen] frame]));
+  // The window should be shorter than the screen but reach exactly to the
+  // bottom of the screen since it's scrollable.
+  EXPECT_LT(NSHeight([window frame]), screenHeight);
+  EXPECT_CGFLOAT_EQ(0.0, [window frame].origin.y);
 
-  // Verify the logic used by the scroll arrow code.
+  // Initially, should show scroll-up but not scroll-down.
   EXPECT_TRUE([bbfc canScrollUp]);
   EXPECT_FALSE([bbfc canScrollDown]);
 
-  // Scroll it up.  Make sure the window has gotten bigger each time.
+  // Scroll up a bit.  Make sure the window has gotten bigger each time.
   // Also, for each scroll, make sure our hit test finds a new button
   // (to confirm the content area changed).
   NSView* savedHit = nil;
-  for (int i=0; i<3; i++) {
-    CGFloat height = NSHeight([[bbfc window] frame]);
+  NSView* scrollView = [bbfc scrollView];
+
+  // Find the next-to-last button showing at the bottom of the window and
+  // us its center for hit testing.
+  BookmarkButton* targetButton = nil;
+  NSPoint scrollPoint = [[bbfc scrollView] documentVisibleRect].origin;
+  for (BookmarkButton* button in [bbfc buttons]) {
+    NSRect buttonFrame = [button frame];
+    buttonFrame.origin.y -= scrollPoint.y;
+    if (buttonFrame.origin.y < 0.0)
+      break;
+    targetButton = button;
+  }
+  NSPoint hitPoint = [targetButton frame].origin;
+  hitPoint.x += 50.0;
+  hitPoint.y += (bookmarks::kBookmarkButtonHeight / 2.0) - scrollPoint.y;
+
+  for (int i = 0; i < 3; i++) {
+    CGFloat height = NSHeight([window frame]);
     [bbfc performOneScroll:60];
-    EXPECT_GT(NSHeight([[bbfc window] frame]), height);
-    NSView* hit = [[[bbfc window] contentView] hitTest:NSMakePoint(22, 22)];
+    EXPECT_GT(NSHeight([window frame]), height);
+    NSView* hit = [scrollView hitTest:hitPoint];
+    // We should hit a bookmark button.
+    EXPECT_TRUE([[hit className] isEqualToString:@"BookmarkButton"]);
     EXPECT_NE(hit, savedHit);
     savedHit = hit;
   }
@@ -500,11 +501,9 @@ TEST_F(BookmarkBarFolderControllerTest, SimpleScroll) {
   // Keep scrolling up; make sure we never get bigger than the screen.
   // Also confirm we never scroll the window off the screen.
   bool bothAtOnce = false;
-  NSRect screenFrame = [[NSScreen mainScreen] frame];
-  for (int i = 0; i < nodecount; i++) {
+  while ([bbfc canScrollUp]) {
     [bbfc performOneScroll:60];
-    EXPECT_TRUE(NSContainsRect(screenFrame,
-                               [[bbfc window] frame]));
+    EXPECT_TRUE(NSContainsRect(screenFrame, [window frame]));
     // Make sure, sometime during our scroll, we have the ability to
     // scroll in either direction.
     if ([bbfc canScrollUp] &&
@@ -520,16 +519,23 @@ TEST_F(BookmarkBarFolderControllerTest, SimpleScroll) {
   // Now scroll down and make sure the window size does not change.
   // Also confirm we never scroll the window off the screen the other
   // way.
-  for (int i=0; i<nodecount+50; i++) {
-    CGFloat height = NSHeight([[bbfc window] frame]);
+  for (int i = 0; i < nodecount+50; ++i) {
     [bbfc performOneScroll:-60];
-    EXPECT_EQ(height, NSHeight([[bbfc window] frame]));
-    EXPECT_TRUE(NSContainsRect(screenFrame,
-                               [[bbfc window] frame]));
+    // Once we can no longer scroll down the window height changes.
+    if (![bbfc canScrollDown])
+      break;
+    EXPECT_EQ(screenHeight, NSHeight([window frame]));
+    EXPECT_TRUE(NSContainsRect(screenFrame, [window frame]));
   }
+  // The final height should be offset from the top of the screen and still
+  // within the screen.
+  CGFloat height = screenHeight - bookmarks::kScrollWindowVerticalMargin;
+  EXPECT_CGFLOAT_EQ(height, NSHeight([window frame]));
+  EXPECT_TRUE(NSContainsRect(screenFrame, [window frame]));
 }
 
-// Folder menu sizing and placementwhile deleting bookmarks and scrolling tests.
+// Folder menu sizing and placement while deleting bookmarks
+// and scrolling tests.
 TEST_F(BookmarkBarFolderControllerTest, MenuPlacementWhileScrollingDeleting) {
   scoped_nsobject<BookmarkBarFolderController> bbfc;
   AddLotsOfNodes();
@@ -579,7 +585,7 @@ TEST_F(BookmarkBarFolderControllerTest, MenuPlacementWhileScrollingDeleting) {
   button = [buttons objectAtIndex:buttonCounter + 3];
   [folder deleteBookmark:button];
   newTop = [menuWindow frame].origin.y + NSHeight([menuWindow frame]);
-  EXPECT_CGFLOAT_EQ(oldTop, newTop);
+  EXPECT_CGFLOAT_EQ(oldTop - bookmarks::kScrollWindowVerticalMargin, newTop);
 }
 
 @interface FakedDragInfo : NSObject {
@@ -656,7 +662,7 @@ class BookmarkBarFolderControllerMenuTest : public CocoaTest {
     // Awkwardness to look like we've been installed.
     [parent_view_ addSubview:[bar view]];
     NSRect frame = [[[bar view] superview] frame];
-    frame.origin.y = 100;
+    frame.origin.y = 400;
     [[[bar view] superview] setFrame:frame];
 
     // Make sure it's on in a window so viewDidMoveToWindow is called
@@ -870,9 +876,9 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveBarBookmarkToSubfolder) {
   NSRect newToSubwindowFrame = [toSubwindow frame];
   NSRect expectedToSubwindowFrame = oldToSubwindowFrame;
   expectedToSubwindowFrame.origin.y -=
-      bookmarks::kBookmarkBarHeight + bookmarks::kVisualHeightOffset;
+      (bookmarks::kBookmarkButtonHeight + bookmarks::kVisualHeightOffset);
   expectedToSubwindowFrame.size.height +=
-      bookmarks::kBookmarkBarHeight + bookmarks::kVisualHeightOffset;
+      (bookmarks::kBookmarkButtonHeight + bookmarks::kVisualHeightOffset);
   EXPECT_NSRECT_EQ(expectedToSubwindowFrame, newToSubwindowFrame);
 }
 
@@ -1173,69 +1179,73 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
                         withObject:button];
   BookmarkBarFolderController* folderController = [bar_ folderController];
   EXPECT_TRUE(folderController);
-  NSWindow* folderMenu = [folderController window];
-  EXPECT_TRUE(folderMenu);
+  NSWindow* folderWindow = [folderController window];
+  EXPECT_TRUE(folderWindow);
   CGFloat expectedHeight = (CGFloat)bookmarks::kBookmarkButtonHeight +
       (2*bookmarks::kBookmarkVerticalPadding);
-  NSRect menuFrame = [folderMenu frame];
-  CGFloat menuHeight = NSHeight(menuFrame);
-  EXPECT_CGFLOAT_EQ(expectedHeight, menuHeight);
-  EXPECT_FALSE([folderController scrollable]);
+  NSRect windowFrame = [folderWindow frame];
+  CGFloat windowHeight = NSHeight(windowFrame);
+  EXPECT_CGFLOAT_EQ(expectedHeight, windowHeight);
+  EXPECT_FALSE([folderController canScrollUp]);
+  EXPECT_FALSE([folderController canScrollDown]);
 
   // Now add a real bookmark and reopen.
   model.AddURL(folder, folder->GetChildCount(), ASCIIToUTF16("a"),
                GURL("http://a.com/"));
   folderController = [bar_ folderController];
   EXPECT_TRUE(folderController);
-  folderMenu = [folderController window];
-  EXPECT_TRUE(folderMenu);
-  menuFrame = [folderMenu frame];
-  menuHeight = NSHeight(menuFrame);
+  NSView* folderView = [folderController folderView];
+  EXPECT_TRUE(folderView);
+  NSRect menuFrame = [folderView frame];
+  NSView* visibleView = [folderController visibleView];
+  NSRect visibleFrame = [visibleView frame];
+  NSView* scrollView = [folderController scrollView];
+  NSRect scrollFrame = [scrollView frame];
+
+  // Determine the margins between the scroll frame and the visible frame.
+  CGFloat widthDelta = NSWidth(visibleFrame) - NSWidth(scrollFrame);
+
+  CGFloat menuHeight = NSHeight(menuFrame);
   EXPECT_CGFLOAT_EQ(expectedHeight, menuHeight);
-  CGFloat menuWidth = NSWidth(menuFrame);
+  CGFloat scrollerWidth = NSWidth(scrollFrame);
   button = [folderController buttonWithTitleEqualTo:@"a"];
   CGFloat buttonWidth = NSWidth([button frame]);
-  CGFloat expectedWidth =
-      buttonWidth + (2 * bookmarks::kBookmarkSubMenuHorizontalPadding);
-  EXPECT_CGFLOAT_EQ(expectedWidth, menuWidth);
+  EXPECT_CGFLOAT_EQ(scrollerWidth, buttonWidth);
+  CGFloat visibleWidth = NSWidth(visibleFrame);
+  EXPECT_CGFLOAT_EQ(visibleWidth - widthDelta, buttonWidth);
+  EXPECT_LT(scrollerWidth, NSWidth([folderView frame]));
 
   // Add a wider bookmark and make sure the button widths match.
-  model.AddURL(folder, folder->GetChildCount(),
-               ASCIIToUTF16("A really, really long name"),
+  int reallyWideButtonNumber = folder->GetChildCount();
+  model.AddURL(folder, reallyWideButtonNumber,
+               ASCIIToUTF16("A really, really, really, really, really, "
+                            "really long name"),
                GURL("http://www.google.com/a"));
-  EXPECT_LT(menuWidth, NSWidth([folderMenu frame]));
-  EXPECT_LT(buttonWidth, NSWidth([button frame]));
-  buttonWidth = NSWidth([button frame]);
-  BookmarkButton* buttonB =
-      [folderController buttonWithTitleEqualTo:@"A really, really long name"];
-  EXPECT_TRUE(buttonB);
-  CGFloat buttonWidthB = NSWidth([buttonB frame]);
-  EXPECT_CGFLOAT_EQ(buttonWidth, buttonWidthB);
-  // Add a bunch of bookmarks until the window grows no more, then check for
-  // a scroll down arrow.
-  CGFloat oldMenuHeight = 0.0;  // It just has to be different for first run.
-  menuHeight = NSHeight([folderMenu frame]);
+  BookmarkButton* bigButton =
+      [folderController buttonWithTitleEqualTo:
+       @"A really, really, really, really, really, really long name"];
+  EXPECT_TRUE(bigButton);
+  CGFloat buttonWidthB = NSWidth([bigButton frame]);
+  EXPECT_LT(buttonWidth, buttonWidthB);
+  // Add a bunch of bookmarks until the window becomes scrollable, then check
+  // for a scroll up arrow.
   NSUInteger tripWire = 0;  // Prevent a runaway.
-  while (![folderController scrollable] && ++tripWire < 100) {
+  while (![folderController canScrollUp] && ++tripWire < 1000) {
     model.AddURL(folder, folder->GetChildCount(), ASCIIToUTF16("B"),
                  GURL("http://b.com/"));
-    oldMenuHeight = menuHeight;
-    menuHeight = NSHeight([folderMenu frame]);
   }
-  EXPECT_TRUE([folderController scrollable]);
   EXPECT_TRUE([folderController canScrollUp]);
 
   // Remove one bookmark and make sure the scroll down arrow has been removed.
   // We'll remove the really long node so we can see if the buttons get resized.
-  menuWidth = NSWidth([folderMenu frame]);
+  scrollerWidth = NSWidth([folderView frame]);
   buttonWidth = NSWidth([button frame]);
-  model.Remove(folder, 1);
-  EXPECT_FALSE([folderController scrollable]);
+  model.Remove(folder, reallyWideButtonNumber);
   EXPECT_FALSE([folderController canScrollUp]);
   EXPECT_FALSE([folderController canScrollDown]);
 
   // Check the size. It should have reduced.
-  EXPECT_GT(menuWidth, NSWidth([folderMenu frame]));
+  EXPECT_GT(scrollerWidth, NSWidth([folderView frame]));
   EXPECT_GT(buttonWidth, NSWidth([button frame]));
 
   // Check button spacing.
@@ -1362,7 +1372,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragBookmarkData) {
   // Verify the model.
   const std::string expectedA("1b 2f:[ O3f:[ O3f1b O3f2f ] 2f1b 2f2f:[ "
                               "2f2f1b 2f2f2b 2f2f3b O4f:[ O4f1b O4f2f ] ] "
-                               "2f3b ] 3b 4b ");
+                              "2f3b ] 3b 4b ");
   actual = model_test_utils::ModelStringFromNode(root);
   EXPECT_EQ(expectedA, actual);
 

@@ -54,9 +54,6 @@ const CGFloat kBookmarkVerticalPadding = 2.0;
 const CGFloat kBookmarkMenuButtonMinimumWidth = 100.0;
 const CGFloat kBookmarkMenuButtonMaximumWidth = 485.0;
 
-// Horizontal separation between a menu button and both edges of its menu.
-const CGFloat kBookmarkSubMenuHorizontalPadding = 5.0;
-
 // TODO(mrossetti): Add constant (kBookmarkVerticalSeparation) for the gap
 // between buttons in a folder menu. Right now we're using
 // kBookmarkVerticalPadding, which is dual purpose and wrong.
@@ -82,7 +79,17 @@ const CGFloat kScrollViewContentWidthMargin = 2;
 
 // Make subfolder menus overlap their parent menu a bit to give a better
 // perception of a menuing system.
-const CGFloat kBookmarkMenuOverlap = 5.0;
+const CGFloat kBookmarkMenuOverlap = 2.0;
+
+// When constraining a scrolling bookmark bar folder window to the
+// screen, shrink the "constrain" by this much vertically.  Currently
+// this is 0.0 to avoid a problem with tracking areas leaving the
+// window, but should probably be 8.0 or something.
+const CGFloat kScrollWindowVerticalMargin = 6.0;
+
+// How far to offset a folder menu from the top of the bookmark bar. This
+// is set just above the bar so that it become distinctive when drawn.
+const CGFloat kBookmarkBarMenuOffset = 2.0;
 
 // Delay before opening a subfolder (and closing the previous one)
 // when hovering over a folder button.

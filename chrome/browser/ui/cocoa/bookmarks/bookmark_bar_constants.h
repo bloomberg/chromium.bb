@@ -33,6 +33,10 @@ const int kNTPBookmarkBarPadding =
 // The height of buttons in the bookmark bar.
 const int kBookmarkButtonHeight = kBookmarkBarHeight + kVisualHeightOffset;
 
+// The radius of the corner curves on the menu. Also used for sizing the shadow
+// window behind the menu window at times when the menu can be scrolled.
+const CGFloat kBookmarkBarMenuCornerRadius = 4.0;
+
 }  // namespace bookmarks
 
 #endif  // CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_CONSTANTS_H_

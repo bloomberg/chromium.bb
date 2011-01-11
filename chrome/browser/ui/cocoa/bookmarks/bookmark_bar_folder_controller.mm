@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_controller.h"
 
-#include "app/mac/nsimage_cache.h"
 #include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -15,9 +14,12 @@
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_button_cell.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_hover_state.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_view.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_window.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_folder_target.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/event_utils.h"
+
+using bookmarks::kBookmarkBarMenuCornerRadius;
 
 namespace {
 
@@ -29,16 +31,75 @@ const NSTimeInterval kBookmarkBarFolderScrollInterval = 0.1;
 const CGFloat kBookmarkBarFolderScrollAmount =
     3 * bookmarks::kBookmarkButtonVerticalSpan;
 
-// Amount to scroll for each scroll wheel delta.
+// Amount to scroll for each scroll wheel roll.
 const CGFloat kBookmarkBarFolderScrollWheelAmount =
     1 * bookmarks::kBookmarkButtonVerticalSpan;
 
-// When constraining a scrolling bookmark bar folder window to the
-// screen, shrink the "constrain" by this much vertically.  Currently
-// this is 0.0 to avoid a problem with tracking areas leaving the
-// window, but should probably be 8.0 or something.
-// TODO(jrg): http://crbug.com/36225
-const CGFloat kScrollWindowVerticalMargin = 0.0;
+// Determining adjustments to the layout of the folder menu window in response
+// to resizing and scrolling relies on many visual factors. The following
+// struct is used to pass around these factors to the several support
+// functions involved in the adjustment calculations and application.
+struct LayoutMetrics {
+  // Metrics applied during the final layout adjustments to the window,
+  // the main visible content view, and the menu content view (i.e. the
+  // scroll view).
+  CGFloat windowLeft;
+  NSSize windowSize;
+  // The proposed and then final scrolling adjustment made to the scrollable
+  // area of the folder menu. This may be modified during the window layout
+  // primarily as a result of hiding or showing the scroll arrows.
+  CGFloat scrollDelta;
+  NSRect windowFrame;
+  NSRect visibleFrame;
+  NSRect scrollerFrame;
+  NSPoint scrollPoint;
+  // The difference between 'could' and 'can' in these next four data members
+  // is this: 'could' represents the previous condition for scrollability
+  // while 'can' represents what the new condition will be for scrollability.
+  BOOL couldScrollUp;
+  BOOL canScrollUp;
+  BOOL couldScrollDown;
+  BOOL canScrollDown;
+  // Determines the optimal time during folder menu layout when the contents
+  // of the button scroll area should be scrolled in order to prevent
+  // flickering.
+  BOOL preScroll;
+
+  // Intermediate metrics used in determining window vertical layout changes.
+  CGFloat deltaWindowHeight;
+  CGFloat deltaWindowY;
+  CGFloat deltaVisibleHeight;
+  CGFloat deltaVisibleY;
+  CGFloat deltaScrollerHeight;
+  CGFloat deltaScrollerY;
+
+  // Convenience metrics used in multiple functions (carried along here in
+  // order to eliminate the need to calculate in multiple places and
+  // reduce the possibility of bugs).
+  CGFloat minimumY;
+  CGFloat oldWindowY;
+  CGFloat folderY;
+  CGFloat folderTop;
+
+  LayoutMetrics(CGFloat windowLeft, NSSize windowSize, CGFloat scrollDelta) :
+    windowLeft(windowLeft),
+    windowSize(windowSize),
+    scrollDelta(scrollDelta),
+    couldScrollUp(NO),
+    canScrollUp(NO),
+    couldScrollDown(NO),
+    canScrollDown(NO),
+    preScroll(NO),
+    deltaWindowHeight(0.0),
+    deltaWindowY(0.0),
+    deltaVisibleHeight(0.0),
+    deltaVisibleY(0.0),
+    deltaScrollerHeight(0.0),
+    deltaScrollerY(0.0),
+    oldWindowY(0.0),
+    folderY(0.0),
+    folderTop(0.0) {}
+};
 
 }  // namespace
 
@@ -49,22 +110,82 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
 - (void)endScroll;
 - (void)addScrollTimerWithDelta:(CGFloat)delta;
 
+// Helper function to configureWindow which performs a basic layout of
+// the window subviews, in particular the menu buttons and the window width.
+- (void)layOutWindowWithHeight:(CGFloat)height;
+
 // Determine the best button width (which will be the widest button or the
 // maximum allowable button width, whichever is less) and resize all buttons.
-// Return the new width (so that the window can be adjusted, if necessary).
+// Return the new width so that the window can be adjusted.
 - (CGFloat)adjustButtonWidths;
 
 // Returns the total menu height needed to display |buttonCount| buttons.
 // Does not do any fancy tricks like trimming the height to fit on the screen.
-- (int)windowHeightForButtonCount:(int)buttonCount;
+- (int)menuHeightForButtonCount:(int)buttonCount;
 
-// Adjust the height and horizontal position of the window such that the
-// scroll arrows are shown as needed and the window appears completely
-// on screen.
-- (void)adjustWindowForHeight:(int)windowHeight;
+// Adjust layout of the folder menu window components, showing/hiding the
+// scroll up/down arrows, and resizing as necessary for a proper disaplay.
+// In order to reduce window flicker, all layout changes are deferred until
+// the final step of the adjustment. To accommodate this deferral, window
+// height and width changes needed by callers to this function pass their
+// desired window changes in |size|. When scrolling is to be performed
+// any scrolling change is given by |scrollDelta|. The ultimate amount of
+// scrolling may be different from |scrollDelta| in order to accommodate
+// changes in the scroller view layout. These proposed window adjustments
+// are passed to helper functions using a LayoutMetrics structure.
+//
+// This function should be called when: 1) initially setting up a folder menu
+// window, 2) responding to scrolling of the contents (which may affect the
+// height of the window), 3) addition or removal of bookmark items (such as
+// during cut/paste/delete/drag/drop operations).
+- (void)adjustWindowLeft:(CGFloat)windowLeft
+                    size:(NSSize)windowSize
+             scrollingBy:(CGFloat)scrollDelta;
 
-// Show or hide the scroll arrows at the top/bottom of the window.
-- (void)showOrHideScrollArrows;
+// Support function for adjustWindowLeft:size:scrollingBy: which initializes
+// the layout adjustments by gathering current folder menu window and subviews
+// positions and sizes. This information is set in the |layoutMetrics|
+// structure.
+- (void)gatherMetrics:(LayoutMetrics*)layoutMetrics;
+
+// Support function for adjustWindowLeft:size:scrollingBy: which calculates
+// the changes which must be applied to the folder menu window and subviews
+// positions and sizes. |layoutMetrics| contains the proposed window size
+// and scrolling along with the other current window and subview layout
+// information. The values in |layoutMetrics| are then adjusted to
+// accommodate scroll arrow presentation and window growth.
+- (void)adjustMetrics:(LayoutMetrics*)layoutMetrics;
+
+// Support function for adjustMetrics: which calculates the layout changes
+// required to accommodate changes in the position and scrollability
+// of the top of the folder menu window.
+- (void)adjustMetricsForMenuTopChanges:(LayoutMetrics*)layoutMetrics;
+
+// Support function for adjustMetrics: which calculates the layout changes
+// required to accommodate changes in the position and scrollability
+// of the bottom of the folder menu window.
+- (void)adjustMetricsForMenuBottomChanges:(LayoutMetrics*)layoutMetrics;
+
+// Support function for adjustWindowLeft:size:scrollingBy: which applies
+// the layout adjustments to the folder menu window and subviews.
+- (void)applyMetrics:(LayoutMetrics*)layoutMetrics;
+
+// This function is called when buttons are added or removed from the folder
+// menu, and which may require a change in the layout of the folder menu
+// window. Such layout changes may include horizontal placement, width,
+// height, and scroller visibility changes. (This function calls through
+// to -[adjustWindowLeft:size:scrollingBy:].)
+// |buttonCount| should contain the updated count of menu buttons.
+- (void)adjustWindowForButtonCount:(NSUInteger)buttonCount;
+
+// A helper function which takes the desired amount to scroll, given by
+// |scrollDelta|, and calculates the actual scrolling change to be applied
+// taking into account the layout of the folder menu window and any
+// changes in it's scrollability. (For example, when scrolling down and the
+// top-most menu item is coming into view we will only scroll enough for
+// that item to be completely presented, which may be less than the
+// scroll amount requested.)
+- (CGFloat)determineFinalScrollDelta:(CGFloat)scrollDelta;
 
 // |point| is in the base coordinate system of the destination window;
 // it comes from an id<NSDraggingInfo>. |copy| is YES if a copy is to be
@@ -131,9 +252,6 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
     barController_ = barController;  // WEAK
     buttons_.reset([[NSMutableArray alloc] init]);
     folderTarget_.reset([[BookmarkFolderTarget alloc] initWithController:self]);
-    NSImage* image = app::mac::GetCachedImageWithName(@"menu_overflow_up.pdf");
-    DCHECK(image);
-    verticalScrollArrowHeight_ = [image size].height;
     [self configureWindow];
     hoverState_.reset([[BookmarkBarFolderHoverState alloc] init]);
   }
@@ -161,6 +279,13 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   // Because all of our performSelector: calls use withDelay: which
   // retains us.
   [super dealloc];
+}
+
+- (void)awakeFromNib {
+  NSRect windowFrame = [[self window] frame];
+  NSRect scrollViewFrame = [scrollView_ frame];
+  padding_ = NSWidth(windowFrame) - NSWidth(scrollViewFrame);
+  verticalScrollArrowHeight_ = NSHeight([scrollUpArrowView_ frame]);
 }
 
 // Overriden from NSWindowController to call childFolderWillShow: before showing
@@ -276,11 +401,6 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   return button;
 }
 
-// Exposed for testing.
-- (NSView*)mainView {
-  return mainView_;
-}
-
 - (id)folderTarget {
   return folderTarget_.get();
 }
@@ -354,7 +474,8 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
             convertBaseToScreen:[[parentButton_ superview]
                                     convertPoint:NSZeroPoint toView:nil]];
     newWindowTopLeft = NSMakePoint(buttonBottomLeftInScreen.x,
-                                   bookmarkBarBottomLeftInScreen.y);
+                                   bookmarkBarBottomLeftInScreen.y +
+                                      bookmarks::kBookmarkBarMenuOffset);
     // Make sure the window is on-screen; if not, push left.  It is
     // intentional that top level folders "push left" slightly
     // different than subfolders.
@@ -367,12 +488,12 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   } else {
     // Parent is a folder; grow right/left.
     newWindowTopLeft.x = [self childFolderWindowLeftForWidth:windowWidth];
-    NSPoint top = NSMakePoint(0, (NSMaxY([parentButton_ frame]) +
-                                  bookmarks::kBookmarkVerticalPadding));
-    NSPoint topOfWindow =
-        [[parentButton_ window]
-            convertBaseToScreen:[[parentButton_ superview]
-                                    convertPoint:top toView:nil]];
+    NSPoint topOfWindow = NSMakePoint(0,
+                                      (NSMaxY([parentButton_ frame]) +
+                                          bookmarks::kBookmarkVerticalPadding));
+    topOfWindow = [[parentButton_ window]
+                   convertBaseToScreen:[[parentButton_ superview]
+                                        convertPoint:topOfWindow toView:nil]];
     newWindowTopLeft.y = topOfWindow.y;
   }
   return newWindowTopLeft;
@@ -384,72 +505,212 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   [[self window] setLevel:NSPopUpMenuWindowLevel];
 }
 
-- (int)windowHeightForButtonCount:(int)buttonCount {
+- (int)menuHeightForButtonCount:(int)buttonCount {
+  // This does not take into account any padding which may be required at the
+  // top and/or bottom of the window.
   return (buttonCount * bookmarks::kBookmarkButtonVerticalSpan) +
       bookmarks::kBookmarkVerticalPadding;
 }
 
-- (void)adjustWindowForHeight:(int)windowHeight {
-  // Adjust all button widths to be consistent, determine the best size for
-  // the window, and set the window frame.
-  CGFloat windowWidth =
-      [self adjustButtonWidths] +
-      (2 * bookmarks::kBookmarkSubMenuHorizontalPadding);
-  NSPoint newWindowTopLeft = [self windowTopLeftForWidth:windowWidth];
-  NSSize windowSize = NSMakeSize(windowWidth, windowHeight);
-  windowSize = [scrollView_ convertSize:windowSize toView:nil];
+- (void)adjustWindowLeft:(CGFloat)windowLeft
+                    size:(NSSize)windowSize
+             scrollingBy:(CGFloat)scrollDelta {
+  // Callers of this function should make adjustments to the vertical
+  // attributes of the folder view only (height, scroll position).
+  // This function will then make appropriate layout adjustments in order
+  // to accommodate screen/dock margins, scroll-up and scroll-down arrow
+  // presentation, etc.
+  // The 4 views whose vertical height and origins may be adjusted
+  // by this function are:
+  //  1) window, 2) visible content view, 3) scroller view, 4) folder view.
+
+  LayoutMetrics layoutMetrics(windowLeft, windowSize, scrollDelta);
+  [self gatherMetrics:&layoutMetrics];
+  [self adjustMetrics:&layoutMetrics];
+  [self applyMetrics:&layoutMetrics];
+}
+
+- (void)gatherMetrics:(LayoutMetrics*)layoutMetrics {
+  LayoutMetrics& metrics(*layoutMetrics);
   NSWindow* window = [self window];
-  // If the window is already visible then make sure its top remains stable.
-  BOOL windowAlreadyShowing = [window isVisible];
-  CGFloat deltaY = windowHeight - NSHeight([mainView_ frame]);
-  if (windowAlreadyShowing) {
-    NSRect oldFrame = [window frame];
-    newWindowTopLeft.y = oldFrame.origin.y + NSHeight(oldFrame);
-  }
-  NSRect windowFrame = NSMakeRect(newWindowTopLeft.x,
-      newWindowTopLeft.y - windowHeight, windowSize.width, windowHeight);
-  // Make the scrolled content be the right size (full size).
-  NSRect mainViewFrame = NSMakeRect(0, 0, NSWidth(windowFrame) -
-      bookmarks::kScrollViewContentWidthMargin, NSHeight(windowFrame));
-  [mainView_ setFrame:mainViewFrame];
-  // Make sure the window fits on the screen.  If not, constrain.
-  // We'll scroll to allow the user to see all the content.
-  NSRect screenFrame = [[[self window] screen] frame];
-  screenFrame = NSInsetRect(screenFrame, 0, kScrollWindowVerticalMargin);
-  BOOL wasScrollable = scrollable_;
-  if (!NSContainsRect(screenFrame, windowFrame)) {
-    scrollable_ = YES;
-    windowFrame = NSIntersectionRect(screenFrame, windowFrame);
+  metrics.windowFrame = [window frame];
+  metrics.visibleFrame = [visibleView_ frame];
+  metrics.scrollerFrame = [scrollView_ frame];
+  metrics.scrollPoint = [scrollView_ documentVisibleRect].origin;
+  metrics.scrollPoint.y -= metrics.scrollDelta;
+  metrics.couldScrollUp = ![scrollUpArrowView_ isHidden];
+  metrics.couldScrollDown = ![scrollDownArrowView_ isHidden];
+
+  metrics.deltaWindowHeight = 0.0;
+  metrics.deltaWindowY = 0.0;
+  metrics.deltaVisibleHeight = 0.0;
+  metrics.deltaVisibleY = 0.0;
+  metrics.deltaScrollerHeight = 0.0;
+  metrics.deltaScrollerY = 0.0;
+
+  metrics.minimumY = NSMinY([[window screen] visibleFrame]) +
+                     bookmarks::kScrollWindowVerticalMargin;
+  metrics.oldWindowY = NSMinY(metrics.windowFrame);
+  metrics.folderY =
+      metrics.scrollerFrame.origin.y + metrics.visibleFrame.origin.y +
+      metrics.oldWindowY - metrics.scrollPoint.y;
+  metrics.folderTop = metrics.folderY + NSHeight([folderView_ frame]);
+}
+
+- (void)adjustMetrics:(LayoutMetrics*)layoutMetrics {
+  LayoutMetrics& metrics(*layoutMetrics);
+  NSScreen* screen = [[self window] screen];
+  CGFloat effectiveFolderY = metrics.folderY;
+  if (!metrics.couldScrollUp && !metrics.couldScrollDown)
+    effectiveFolderY -= metrics.windowSize.height;
+  metrics.canScrollUp = effectiveFolderY < metrics.minimumY;
+  CGFloat maximumY =
+      NSMaxY([screen frame]) - bookmarks::kScrollWindowVerticalMargin;
+  metrics.canScrollDown = metrics.folderTop > maximumY;
+
+  // Accommodate changes in the bottom of the menu.
+  [self adjustMetricsForMenuTopChanges:layoutMetrics];
+
+  // Accommodate changes in the top of the menu.
+  [self adjustMetricsForMenuBottomChanges:layoutMetrics];
+
+  metrics.scrollerFrame.origin.y += metrics.deltaScrollerY;
+  metrics.scrollerFrame.size.height += metrics.deltaScrollerHeight;
+  metrics.visibleFrame.origin.y += metrics.deltaVisibleY;
+  metrics.visibleFrame.size.height += metrics.deltaVisibleHeight;
+  metrics.preScroll = metrics.canScrollUp && !metrics.couldScrollUp &&
+      metrics.scrollDelta == 0.0 && metrics.deltaWindowHeight >= 0.0;
+  metrics.windowFrame.origin.y += metrics.deltaWindowY;
+  metrics.windowFrame.origin.x = metrics.windowLeft;
+  metrics.windowFrame.size.height += metrics.deltaWindowHeight;
+  metrics.windowFrame.size.width = metrics.windowSize.width;
+}
+
+- (void)adjustMetricsForMenuTopChanges:(LayoutMetrics*)layoutMetrics {
+  LayoutMetrics& metrics(*layoutMetrics);
+  if (metrics.canScrollUp) {
+    if (!metrics.couldScrollUp) {
+      // Couldn't -> Can
+      metrics.deltaWindowY = -metrics.oldWindowY;
+      metrics.deltaWindowHeight = -metrics.deltaWindowY;
+      metrics.deltaVisibleY = metrics.minimumY;
+      metrics.deltaVisibleHeight = -metrics.deltaVisibleY;
+      metrics.deltaScrollerY = verticalScrollArrowHeight_;
+      metrics.deltaScrollerHeight = -metrics.deltaScrollerY;
+      // Adjust the scroll delta if we've grown the window and it is
+      // now scroll-up-able, but don't adjust it factor if we've
+      // scrolled down and it wasn't scroll-up-able but now is.
+      if (metrics.canScrollDown == metrics.couldScrollDown) {
+        CGFloat deltaScroll = metrics.deltaWindowY + metrics.deltaScrollerY +
+                              metrics.deltaVisibleY;
+        metrics.scrollPoint.y += deltaScroll + metrics.windowSize.height;
+      }
+    } else if (!metrics.canScrollDown && metrics.windowSize.height > 0.0) {
+      metrics.scrollPoint.y += metrics.windowSize.height;
+    }
   } else {
-    scrollable_ = NO;
+    if (metrics.couldScrollUp) {
+      // Could -> Can't
+      metrics.deltaWindowY = metrics.folderY - metrics.oldWindowY;
+      metrics.deltaWindowHeight = -metrics.deltaWindowY;
+      metrics.deltaVisibleY = -bookmarks::kScrollWindowVerticalMargin;
+      metrics.deltaVisibleHeight = -metrics.deltaVisibleY;
+      metrics.deltaScrollerY = -verticalScrollArrowHeight_;
+      metrics.deltaScrollerHeight = -metrics.deltaScrollerY;
+      // Adjust the scroll delta if we are no longer scroll-up-able
+      // and the scroll-down-able-ness hasn't changed.
+      if (metrics.canScrollDown == metrics.couldScrollDown) {
+        CGFloat deltaScroll = metrics.deltaWindowY + metrics.deltaScrollerY +
+                              metrics.deltaVisibleY;
+        metrics.scrollPoint.y += deltaScroll;
+      }
+    } else {
+      // Couldn't -> Can't
+      // Check for menu height change by looking at the relative tops of the
+      // menu folder and the window folder, which previously would have been
+      // the same.
+      metrics.deltaWindowY = NSMaxY(metrics.windowFrame) - metrics.folderTop;
+      metrics.deltaWindowHeight = -metrics.deltaWindowY;
+    }
   }
-  [window setFrame:windowFrame display:NO];
-  if (wasScrollable != scrollable_) {
-    // If scrollability changed then rework visibility of the scroll arrows
-    // and the scroll offset of the menu view.
-    NSSize windowLocalSize =
-        [scrollView_ convertSize:windowFrame.size fromView:nil];
-    CGFloat scrollPointY = NSHeight(mainViewFrame) - windowLocalSize.height +
-        bookmarks::kBookmarkVerticalPadding;
-    [mainView_ scrollPoint:NSMakePoint(0, scrollPointY)];
-    [self showOrHideScrollArrows];
-    [self addOrUpdateScrollTracking];
-  } else if (scrollable_ && windowAlreadyShowing) {
-    // If the window was already showing and is still scrollable then make
-    // sure the main view moves upward, not downward so that the content
-    // at the bottom of the menu, not the top, appears to move.
-    // The edge case is when the menu is scrolled all the way to top (hence
-    // the test of scrollDownArrowShown_) - don't scroll then.
-    NSView* superView = [mainView_ superview];
-    DCHECK([superView isKindOfClass:[NSClipView class]]);
-    NSClipView* clipView = static_cast<NSClipView*>(superView);
-    CGFloat scrollPointY = [clipView bounds].origin.y +
-        bookmarks::kBookmarkVerticalPadding;
-    if (scrollDownArrowShown_ || deltaY > 0.0)
-      scrollPointY += deltaY;
-    [mainView_ scrollPoint:NSMakePoint(0, scrollPointY)];
+}
+
+- (void)adjustMetricsForMenuBottomChanges:(LayoutMetrics*)layoutMetrics {
+  LayoutMetrics& metrics(*layoutMetrics);
+  if (metrics.canScrollDown == metrics.couldScrollDown) {
+    if (!metrics.canScrollDown) {
+      // Not scroll-down-able but the menu top has changed.
+      metrics.deltaWindowHeight += metrics.scrollDelta;
+    }
+  } else {
+    if (metrics.canScrollDown) {
+      // Couldn't -> Can
+      metrics.deltaWindowHeight += (NSMaxY([[[self window] screen] frame]) -
+                                    NSMaxY(metrics.windowFrame));
+      metrics.deltaVisibleHeight -= bookmarks::kScrollWindowVerticalMargin;
+      metrics.deltaScrollerHeight -= verticalScrollArrowHeight_;
+    } else {
+      // Could -> Can't
+      metrics.deltaWindowHeight -= bookmarks::kScrollWindowVerticalMargin;
+      metrics.deltaVisibleHeight += bookmarks::kScrollWindowVerticalMargin;
+      metrics.deltaScrollerHeight += verticalScrollArrowHeight_;
+    }
   }
-  [window display];
+}
+
+- (void)applyMetrics:(LayoutMetrics*)layoutMetrics {
+  LayoutMetrics& metrics(*layoutMetrics);
+  // Hide or show the scroll arrows.
+  if (metrics.canScrollUp != metrics.couldScrollUp)
+    [scrollUpArrowView_ setHidden:metrics.couldScrollUp];
+  if (metrics.canScrollDown != metrics.couldScrollDown)
+    [scrollDownArrowView_ setHidden:metrics.couldScrollDown];
+
+  // Adjust the geometry. The order is important because of sizer dependencies.
+  [scrollView_ setFrame:metrics.scrollerFrame];
+  [visibleView_ setFrame:metrics.visibleFrame];
+  // This little bit of trickery handles the one special case where
+  // the window is now scroll-up-able _and_ going to be resized -- scroll
+  // first in order to prevent flashing.
+  if (metrics.preScroll)
+    [[scrollView_ documentView] scrollPoint:metrics.scrollPoint];
+
+  [[self window] setFrame:metrics.windowFrame display:YES];
+
+  // In all other cases we defer scrolling until the window has been resized
+  // in order to prevent flashing.
+  if (!metrics.preScroll)
+    [[scrollView_ documentView] scrollPoint:metrics.scrollPoint];
+
+  if (metrics.canScrollUp != metrics.couldScrollUp ||
+      metrics.canScrollDown != metrics.couldScrollDown ||
+      metrics.scrollDelta != 0.0) {
+    if (metrics.canScrollUp || metrics.canScrollDown)
+      [self addOrUpdateScrollTracking];
+    else
+      [self removeScrollTracking];
+  }
+}
+
+- (void)adjustWindowForButtonCount:(NSUInteger)buttonCount {
+  NSRect folderFrame = [folderView_ frame];
+  CGFloat newMenuHeight =
+      (CGFloat)[self menuHeightForButtonCount:[buttons_ count]];
+  CGFloat deltaMenuHeight = newMenuHeight - NSHeight(folderFrame);
+  // If the height has changed then also change the origin, and adjust the
+  // scroll (if scrolling).
+  if ([self canScrollUp]) {
+    NSPoint scrollPoint = [scrollView_ documentVisibleRect].origin;
+    scrollPoint.y += deltaMenuHeight;
+    [[scrollView_ documentView] scrollPoint:scrollPoint];
+  }
+  folderFrame.size.height += deltaMenuHeight;
+  [folderView_ setFrameSize:folderFrame.size];
+  CGFloat windowWidth = [self adjustButtonWidths] + padding_;
+  NSPoint newWindowTopLeft = [self windowTopLeftForWidth:windowWidth];
+  CGFloat left = newWindowTopLeft.x;
+  NSSize newSize = NSMakeSize(windowWidth, deltaMenuHeight);
+  [self adjustWindowLeft:left size:newSize scrollingBy:0.0];
 }
 
 // Determine window size and position.
@@ -464,17 +725,17 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   int buttons = std::max(node->GetChildCount() - startingIndex, 1);
 
   // Prelim height of the window.  We'll trim later as needed.
-  int height = [self windowHeightForButtonCount:buttons];
+  int height = [self menuHeightForButtonCount:buttons];
   // We'll need this soon...
   [self window];
 
   // TODO(jrg): combine with frame code in bookmark_bar_controller.mm
   // http://crbug.com/35966
   NSRect buttonsOuterFrame = NSMakeRect(
-    bookmarks::kBookmarkSubMenuHorizontalPadding,
-    (height - bookmarks::kBookmarkButtonVerticalSpan),
-    bookmarks::kDefaultBookmarkWidth,
-    bookmarks::kBookmarkButtonHeight);
+      0,
+      (height - bookmarks::kBookmarkButtonVerticalSpan),
+      bookmarks::kDefaultBookmarkWidth,
+      bookmarks::kBookmarkButtonHeight);
 
   // TODO(jrg): combine with addNodesToButtonList: code from
   // bookmark_bar_controller.mm (but use y offset)
@@ -484,7 +745,7 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
     BookmarkButton* button = [self makeButtonForNode:nil
                                                frame:buttonsOuterFrame];
     [buttons_ addObject:button];
-    [mainView_ addSubview:button];
+    [folderView_ addSubview:button];
   } else {
     for (int i = startingIndex;
          i < node->GetChildCount();
@@ -493,13 +754,35 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
       BookmarkButton* button = [self makeButtonForNode:child
                                                  frame:buttonsOuterFrame];
       [buttons_ addObject:button];
-      [mainView_ addSubview:button];
+      [folderView_ addSubview:button];
       buttonsOuterFrame.origin.y -= bookmarks::kBookmarkButtonVerticalSpan;
     }
   }
+  [self layOutWindowWithHeight:height];
+}
 
-  [self adjustWindowForHeight:height];
-  // Finally pop me up.
+- (void)layOutWindowWithHeight:(CGFloat)height {
+  // Lay out the window by adjusting all button widths to be consistent, then
+  // base the window width on this ideal button width.
+  CGFloat buttonWidth = [self adjustButtonWidths];
+  CGFloat windowWidth = buttonWidth + padding_;
+  NSPoint newWindowTopLeft = [self windowTopLeftForWidth:windowWidth];
+  // Make sure as much of a submenu is exposed (which otherwise would be a
+  // problem if the parent button is close to the bottom of the screen).
+  if ([parentController_ isKindOfClass:[self class]]) {
+    newWindowTopLeft.y = MAX(newWindowTopLeft.y,
+                             height + bookmarks::kScrollWindowVerticalMargin);
+  }
+  NSWindow* window = [self window];
+  NSRect windowFrame = NSMakeRect(newWindowTopLeft.x,
+                                  newWindowTopLeft.y - height,
+                                  windowWidth, height);
+  [window setFrame:windowFrame display:NO];
+  NSRect folderFrame = NSMakeRect(0, 0, windowWidth, height);
+  [folderView_ setFrame:folderFrame];
+  NSSize newSize = NSMakeSize(windowWidth, 0.0);
+  [self adjustWindowLeft:newWindowTopLeft.x size:newSize scrollingBy:0.0];
+  [window display];
   [self configureWindowLevel];
 }
 
@@ -525,85 +808,6 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   return width;
 }
 
-- (BOOL)canScrollUp {
-  // If removal of an arrow would make things "finished", state as
-  // such.
-  CGFloat scrollY = [scrollView_ documentVisibleRect].origin.y;
-  if (scrollUpArrowShown_)
-    scrollY -= verticalScrollArrowHeight_;
-
-  if (scrollY <= 0)
-    return NO;
-  return YES;
-}
-
-- (BOOL)canScrollDown {
-  CGFloat arrowAdjustment = 0.0;
-
-  // We do NOT adjust based on the scrollDOWN arrow.  This keeps
-  // things from "jumping"; if removal of the down arrow (at the top
-  // of the window) would cause a scroll to end, we'll end.
-  if (scrollUpArrowShown_)
-    arrowAdjustment += verticalScrollArrowHeight_;
-
-  NSPoint scrollPosition = [scrollView_ documentVisibleRect].origin;
-  NSRect documentRect = [[scrollView_ documentView] frame];
-
-  // If we are exactly the right height, return no.  We need this
-  // extra conditional in the case where we've just scrolled/grown
-  // into position.
-  if (NSHeight([[self window] frame]) == NSHeight(documentRect))
-    return NO;
-
-  if ((scrollPosition.y + NSHeight([[self window] frame])) >=
-      (NSHeight(documentRect) + arrowAdjustment)) {
-    return NO;
-  }
-  return YES;
-}
-
-- (void)showOrHideScrollArrows {
-  NSRect frame = [scrollView_ frame];
-  CGFloat scrollDelta = 0.0;
-  BOOL canScrollDown = [self canScrollDown];
-  BOOL canScrollUp = [self canScrollUp];
-
-  if (canScrollUp != scrollUpArrowShown_) {
-    if (scrollUpArrowShown_) {
-      frame.origin.y -= verticalScrollArrowHeight_;
-      frame.size.height += verticalScrollArrowHeight_;
-      scrollDelta = verticalScrollArrowHeight_;
-    } else {
-      frame.origin.y += verticalScrollArrowHeight_;
-      frame.size.height -= verticalScrollArrowHeight_;
-      scrollDelta = -verticalScrollArrowHeight_;
-    }
-  }
-  if (canScrollDown != scrollDownArrowShown_) {
-    if (scrollDownArrowShown_) {
-      frame.size.height += verticalScrollArrowHeight_;
-    } else {
-      frame.size.height -= verticalScrollArrowHeight_;
-    }
-  }
-  scrollUpArrowShown_ = canScrollUp;
-  scrollDownArrowShown_ = canScrollDown;
-  [scrollView_ setFrame:frame];
-
-  // Adjust scroll based on new frame.  For example, if we make room
-  // for an arrow at the bottom, adjust the scroll so the topmost item
-  // is still fully visible.
-  if (scrollDelta) {
-    NSPoint scrollPosition = [scrollView_ documentVisibleRect].origin;
-    scrollPosition.y -= scrollDelta;
-    [[scrollView_ documentView] scrollPoint:scrollPosition];
-  }
-}
-
-- (BOOL)scrollable {
-  return scrollable_;
-}
-
 // Start a "scroll up" timer.
 - (void)beginScrollWindowUp {
   [self addScrollTimerWithDelta:kBookmarkBarFolderScrollAmount];
@@ -624,67 +828,55 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
 }
 
 // Perform a single scroll of the specified amount.
-// Scroll up:
-// Scroll the documentView by the growth amount.
-// If we cannot grow the window, simply scroll the documentView.
-// If we can grow the window up without falling off the screen, do it.
-// Scroll down:
-// Never change the window size; only scroll the documentView.
 - (void)performOneScroll:(CGFloat)delta {
-  NSRect windowFrame = [[self window] frame];
-  NSRect screenFrame = [[[self window] screen] frame];
-
-  // First scroll the "document" area.
-  NSPoint scrollPosition = [scrollView_ documentVisibleRect].origin;
-  scrollPosition.y -= delta;
-  [[scrollView_ documentView] scrollPoint:scrollPosition];
-
-  if (buttonThatMouseIsIn_)
-    [buttonThatMouseIsIn_ toggleButtonBorderingWhileMouseInside];
-
-  // We update the window size after shifting the scroll to avoid a race.
-  CGFloat screenHeightMinusMargin = (NSHeight(screenFrame) -
-                                     (2 * kScrollWindowVerticalMargin));
-  if (delta) {
-    // If we can, grow the window (up).
-    if (NSHeight(windowFrame) < screenHeightMinusMargin) {
-      CGFloat growAmount = delta;
-      // Don't scroll more than enough to "finish".
-      if (scrollPosition.y < 0)
-        growAmount += scrollPosition.y;
-      windowFrame.size.height += growAmount;
-      windowFrame.size.height = std::min(NSHeight(windowFrame),
-                                         screenHeightMinusMargin);
-      // Watch out for a finish that isn't the full height of the screen.
-      // We get here if using the scroll wheel to scroll by small amounts.
-      windowFrame.size.height = std::min(NSHeight(windowFrame),
-                                         NSHeight([mainView_ frame]));
-      // Don't allow scrolling to make the window smaller, ever.  This
-      // conditional is important when processing scrollWheel events.
-      if (windowFrame.size.height > [[self window] frame].size.height) {
-        [[self window] setFrame:windowFrame display:YES];
-        [self addOrUpdateScrollTracking];
-      }
-    }
+  CGFloat finalDelta = [self determineFinalScrollDelta:delta];
+  if (finalDelta > 0.0 || finalDelta < 0.0) {
+    if (buttonThatMouseIsIn_)
+      [buttonThatMouseIsIn_ toggleButtonBorderingWhileMouseInside];
+    NSRect windowFrame = [[self window] frame];
+    NSSize newSize = NSMakeSize(NSWidth(windowFrame), 0.0);
+    [self adjustWindowLeft:windowFrame.origin.x
+                      size:newSize
+               scrollingBy:finalDelta];
   }
+}
 
-  // If we're at either end, happiness.
-  if ((scrollPosition.y <= 0) ||
-      ((scrollPosition.y + NSHeight(windowFrame) >=
-        NSHeight([mainView_ frame])) &&
-       (windowFrame.size.height == screenHeightMinusMargin))) {
-    [self endScroll];
+- (CGFloat)determineFinalScrollDelta:(CGFloat)delta {
+  if (delta > 0.0 && ![scrollUpArrowView_ isHidden] ||
+      delta < 0.0 && ![scrollDownArrowView_ isHidden]) {
+    NSWindow* window = [self window];
+    NSRect windowFrame = [window frame];
+    NSScreen* screen = [window screen];
+    NSPoint scrollPosition = [scrollView_ documentVisibleRect].origin;
+    CGFloat scrollY = scrollPosition.y;
+    NSRect scrollerFrame = [scrollView_ frame];
+    CGFloat scrollerY = NSMinY(scrollerFrame);
+    NSRect visibleFrame = [visibleView_ frame];
+    CGFloat visibleY = NSMinY(visibleFrame);
+    CGFloat windowY = NSMinY(windowFrame);
+    CGFloat offset = scrollerY + visibleY + windowY;
 
-    // If we can't scroll either up or down we are completely done.
-    // For example, perhaps we've scrolled a little and grown the
-    // window on-screen until there is now room for everything.
-    if (![self canScrollUp] && ![self canScrollDown]) {
-      scrollable_ = NO;
-      [self removeScrollTracking];
+    if (delta > 0.0) {
+      // Scrolling up.
+      CGFloat minimumY = NSMinY([screen visibleFrame]) +
+                         bookmarks::kScrollWindowVerticalMargin;
+      CGFloat maxUpDelta = scrollY - offset + minimumY;
+      delta = MIN(delta, maxUpDelta);
+    } else {
+      // Scrolling down.
+      NSRect screenFrame =  [screen frame];
+      CGFloat topOfScreen = NSMaxY(screenFrame);
+      NSRect folderFrame = [folderView_ frame];
+      CGFloat folderHeight = NSHeight(folderFrame);
+      CGFloat folderTop = folderHeight - scrollY + offset;
+      CGFloat maxDownDelta =
+          topOfScreen - folderTop - bookmarks::kScrollWindowVerticalMargin;
+      delta = MAX(delta, maxDownDelta);
     }
+  } else {
+    delta = 0.0;
   }
-
-  [self showOrHideScrollArrows];
+  return delta;
 }
 
 // Perform a scroll of the window on the screen.
@@ -716,22 +908,28 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
 // menubar (to be fixed by setting the proper window level; see
 // initializer).
 - (void)mouseMoved:(NSEvent*)theEvent {
-  DCHECK([theEvent window] == [self window]);
+  NSWindow* window = [theEvent window];
+  DCHECK(window == [self window]);
 
   NSPoint eventScreenLocation =
-      [[theEvent window] convertBaseToScreen:[theEvent locationInWindow]];
+      [window convertBaseToScreen:[theEvent locationInWindow]];
 
-  // We use frame (not visibleFrame) since our bookmark folder is on
-  // TOP of the menubar.
-  NSRect visibleRect = [[[self window] screen] frame];
-  CGFloat closeToTopOfScreen = NSMaxY(visibleRect) -
-      verticalScrollArrowHeight_;
-  CGFloat closeToBottomOfScreen = NSMinY(visibleRect) +
-      verticalScrollArrowHeight_;
+  // Base hot spot calculations on the positions of the scroll arrow views.
+  NSRect testRect = [scrollDownArrowView_ frame];
+  NSPoint testPoint = [visibleView_ convertPoint:testRect.origin
+                                                  toView:nil];
+  testPoint = [window convertBaseToScreen:testPoint];
+  CGFloat closeToTopOfScreen = testPoint.y;
 
-  if (eventScreenLocation.y <= closeToBottomOfScreen) {
+  testRect = [scrollUpArrowView_ frame];
+  testPoint = [visibleView_ convertPoint:testRect.origin toView:nil];
+  testPoint = [window convertBaseToScreen:testPoint];
+  CGFloat closeToBottomOfScreen = testPoint.y + testRect.size.height;
+  if (eventScreenLocation.y <= closeToBottomOfScreen &&
+      ![scrollUpArrowView_ isHidden]) {
     [self beginScrollWindowUp];
-  } else if (eventScreenLocation.y > closeToTopOfScreen) {
+  } else if (eventScreenLocation.y > closeToTopOfScreen &&
+      ![scrollDownArrowView_ isHidden]) {
     [self beginScrollWindowDown];
   } else {
     [self endScroll];
@@ -766,17 +964,6 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
   scrollTrackingArea_.reset();
 }
 
-// Delegate callback.
-- (void)windowWillClose:(NSNotification*)notification {
-  // If a "hover open" is pending when the bookmark bar folder is
-  // closed, be sure it gets cancelled.
-  [NSObject cancelPreviousPerformRequestsWithTarget:self];
-
-  [barController_ childFolderWillClose:self];
-  [self closeBookmarkFolder:self];
-  [self autorelease];
-}
-
 // Close the old hover-open bookmark folder, and open a new one.  We
 // do both in one step to allow for a delay in closing the old one.
 // See comments above kDragHoverCloseDelay (bookmark_bar_controller.h)
@@ -800,7 +987,7 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
 }
 
 - (void)scrollWheel:(NSEvent *)theEvent {
-  if (scrollable_) {
+  if (![scrollUpArrowView_ isHidden] || ![scrollDownArrowView_ isHidden]) {
     // We go negative since an NSScrollView has a flipped coordinate frame.
     CGFloat amt = kBookmarkBarFolderScrollWheelAmount * -[theEvent deltaY];
     [self performOneScroll:amt];
@@ -926,7 +1113,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   // dropLocation is in bar local coordinates.
   // http://crbug.com/36276
   NSPoint dropLocation =
-      [mainView_ convertPoint:point
+      [folderView_ convertPoint:point
                      fromView:[[self window] contentView]];
   BookmarkButton* buttonToTheTopOfDraggedButton = nil;
   // Buttons are laid out in this array from top to bottom (screen
@@ -998,6 +1185,19 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   }
 
   return wasCopiedOrMoved;
+}
+
+#pragma mark NSWindowDelegate Functions
+
+- (void)windowWillClose:(NSNotification*)notification {
+  // If a "hover open" is pending when the bookmark bar folder is
+  // closed, be sure it gets cancelled.
+  [NSObject cancelPreviousPerformRequestsWithTarget:self];
+
+  [self endScroll];  // Just in case we were scrolling.
+  [barController_ childFolderWillClose:self];
+  [self closeBookmarkFolder:self];
+  [self autorelease];
 }
 
 #pragma mark BookmarkButtonDelegate Protocol
@@ -1280,14 +1480,12 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   BookmarkButton* newButton = [self makeButtonForNode:node
                                                 frame:newButtonFrame];
   [buttons_ insertObject:newButton atIndex:buttonIndex];
-  [mainView_ addSubview:newButton];
+  [folderView_ addSubview:newButton];
 
   // Close any child folder(s) which may still be open.
   [self closeBookmarkFolder:self];
 
-  // Prelim height of the window.  We'll trim later as needed.
-  int height = [self windowHeightForButtonCount:[buttons_ count]];
-  [self adjustWindowForHeight:height];
+  [self adjustWindowForButtonCount:[buttons_ count]];
 }
 
 // More code which essentially duplicates that of BookmarkBarController.
@@ -1394,9 +1592,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
   [oldButton setDelegate:nil];
   [oldButton removeFromSuperview];
-  if (animate && !ignoreAnimations_)
-    NSShowAnimationEffect(NSAnimationEffectDisappearingItemDefault, poofPoint,
-                          NSZeroSize, nil, nil, nil);
   [buttons_ removeObjectAtIndex:buttonIndex];
   for (NSInteger i = 0; i < buttonIndex; ++i) {
     BookmarkButton* button = [buttons_ objectAtIndex:i];
@@ -1419,22 +1614,25 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     // If all nodes have been removed from this folder then add in the
     // 'empty' placeholder button.
     NSRect buttonFrame =
-        NSMakeRect(bookmarks::kBookmarkSubMenuHorizontalPadding,
+        NSMakeRect(0,
                    bookmarks::kBookmarkButtonHeight -
-                   (bookmarks::kBookmarkBarHeight -
-                    bookmarks::kBookmarkVerticalPadding),
+                       (bookmarks::kBookmarkBarHeight -
+                        bookmarks::kBookmarkVerticalPadding),
                    bookmarks::kDefaultBookmarkWidth,
                    (bookmarks::kBookmarkBarHeight -
-                    2 * bookmarks::kBookmarkVerticalPadding));
+                       2 * bookmarks::kBookmarkVerticalPadding));
     BookmarkButton* button = [self makeButtonForNode:nil
                                                frame:buttonFrame];
     [buttons_ addObject:button];
-    [mainView_ addSubview:button];
+    [folderView_ addSubview:button];
     buttonCount = 1;
   }
 
-  // Propose a height for the window.  We'll trim later as needed.
-  [self adjustWindowForHeight:[self windowHeightForButtonCount:buttonCount]];
+  [self adjustWindowForButtonCount:buttonCount];
+
+  if (animate && !ignoreAnimations_)
+    NSShowAnimationEffect(NSAnimationEffectDisappearingItemDefault, poofPoint,
+                          NSZeroSize, nil, nil, nil);
 }
 
 - (id<BookmarkButtonControllerProtocol>)controllerForNode:
@@ -1447,6 +1645,30 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 }
 
 #pragma mark TestingAPI Only
+
+- (BOOL)canScrollUp {
+  return ![scrollUpArrowView_ isHidden];
+}
+
+- (BOOL)canScrollDown {
+  return ![scrollDownArrowView_ isHidden];
+}
+
+- (CGFloat)verticalScrollArrowHeight {
+  return verticalScrollArrowHeight_;
+}
+
+- (NSView*)visibleView {
+  return visibleView_;
+}
+
+- (NSView*)scrollView {
+  return scrollView_;
+}
+
+- (NSView*)folderView {
+  return folderView_;
+}
 
 - (void)setIgnoreAnimations:(BOOL)ignore {
   ignoreAnimations_ = ignore;

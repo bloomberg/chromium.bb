@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_FOLDER_CONTROLLER_H_
+#define CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_FOLDER_CONTROLLER_H_
+#pragma once
+
 #import <Cocoa/Cocoa.h>
 
 #include "base/scoped_nsobject.h"
@@ -11,6 +15,8 @@
 @class BookmarkBarFolderView;
 @class BookmarkFolderTarget;
 @class BookmarkBarFolderHoverState;
+@class BookmarkBarFolderWindow;
+@class BookmarkBarFolderWindowContentView;
 
 // A controller for the pop-up windows from bookmark folder buttons
 // which look sort of like menus.
@@ -60,19 +66,32 @@
   // The scroll view that contains our main button view (below).
   IBOutlet NSScrollView* scrollView_;
 
-  // Are we scrollable?  If no, the full contents of the folder are
-  // always visible.
-  BOOL scrollable_;
+  // The view defining the visible area in which we draw our content.
+  IBOutlet BookmarkBarFolderWindowContentView* visibleView_;
 
-  BOOL scrollUpArrowShown_;
-  BOOL scrollDownArrowShown_;
+  // The main view of this window (where the buttons go) within the scroller.
+  IBOutlet BookmarkBarFolderView* folderView_;
+
+  // A window used to show the shadow behind the main window when it is
+  // scrollable. (A 'shadow' window is needed because the main window, when
+  // scrollable in either or both directions, will reach completely to the
+  // top and/or bottom edge of the screen in order to support mouse tracking
+  // during scrolling operations. In that case, though, the 'visible'
+  // window must be inset a bit from the edge of the screen for aesthetics;
+  // it will also be inset much more from the bottom of the screen when the
+  // Dock is showing. When scrollable, the main window would show a shadow
+  // incorrectly positioned, hence the 'shadow' window.)
+  IBOutlet BookmarkBarFolderWindow* shadowWindow_;
+
+  // The up and down scroll arrow views. These arrows are hidden and shown
+  // as necessary (when scrolling is possible) and are contained in the nib
+  // as siblings to the scroll view.
+  IBOutlet NSView* scrollDownArrowView_;  // Positioned at the top.
+  IBOutlet NSView* scrollUpArrowView_;  // Positioned at the bottom.
 
   // YES if subfolders should grow to the right (the default).
   // Direction switches if we'd grow off the screen.
   BOOL subFolderGrowthToRight_;
-
-  // The main view of this window (where the buttons go).
-  IBOutlet BookmarkBarFolderView* mainView_;
 
   // Weak; we keep track to work around a
   // setShowsBorderOnlyWhileMouseInside bug.
@@ -104,6 +123,11 @@
   // Timer to continue scrolling as needed.  We own the timer but
   // don't release it when done (we invalidate it).
   NSTimer* scrollTimer_;
+
+  // Precalculated sum of left and right edge padding of buttons in a
+  // folder menu window. This is calculated from the widths of the main
+  // folder menu window and the scroll view within.
+  CGFloat padding_;
 
   // Amount to scroll by on each timer fire.  Can be + or -.
   CGFloat verticalScrollDelta_;
@@ -161,7 +185,6 @@
 @end
 
 @interface BookmarkBarFolderController(TestingAPI)
-- (NSView*)mainView;
 - (NSPoint)windowTopLeftForWidth:(int)windowWidth;
 - (NSArray*)buttons;
 - (BookmarkBarFolderController*)folderController;
@@ -172,11 +195,15 @@
 // Set to YES in order to prevent animations.
 - (void)setIgnoreAnimations:(BOOL)ignore;
 
-// Return YES if we can scroll up or down.
+// Return YES if the scroll-up or scroll-down arrows are showing.
 - (BOOL)canScrollUp;
 - (BOOL)canScrollDown;
-// Return YES if the scrollable_ flag has been set.
-- (BOOL)scrollable;
+- (CGFloat)verticalScrollArrowHeight;
+- (NSView*)visibleView;
+- (NSView*)scrollView;
+- (NSView*)folderView;
 
 - (BookmarkButton*)buttonForDroppingOnAtPoint:(NSPoint)point;
 @end
+
+#endif  // CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_FOLDER_CONTROLLER_H_
