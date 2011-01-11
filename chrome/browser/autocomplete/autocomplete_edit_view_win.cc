@@ -909,6 +909,15 @@ CommandUpdater* AutocompleteEditViewWin::GetCommandUpdater() {
   return command_updater_;
 }
 
+void AutocompleteEditViewWin::SetInstantSuggestion(const string16& suggestion) {
+  // On Windows, we shows the suggestion in LocationBarView.
+  NOTREACHED();
+}
+
+int AutocompleteEditViewWin::TextWidth() const {
+  return WidthNeededToDisplay(GetText());
+}
+
 views::View* AutocompleteEditViewWin::AddToView(views::View* parent) {
   views::NativeViewHost* host = new views::NativeViewHost;
   parent->AddChildView(host);
@@ -922,15 +931,6 @@ bool AutocompleteEditViewWin::CommitInstantSuggestion(
     const std::wstring& suggested_text) {
   model_->FinalizeInstantQuery(typed_text, suggested_text);
   return true;
-}
-
-void AutocompleteEditViewWin::SetInstantSuggestion(const string16& suggestion) {
-  // Win shows the suggestion in LocationBarView.
-  NOTREACHED();
-}
-
-int AutocompleteEditViewWin::TextWidth() const {
-  return WidthNeededToDisplay(GetText());
 }
 
 void AutocompleteEditViewWin::PasteAndGo(const std::wstring& text) {

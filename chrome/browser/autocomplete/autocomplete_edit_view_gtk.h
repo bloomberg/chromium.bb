@@ -143,11 +143,12 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   virtual bool OnAfterPossibleChange();
   virtual gfx::NativeView GetNativeView() const;
   virtual CommandUpdater* GetCommandUpdater();
+  virtual void SetInstantSuggestion(const string16& suggestion);
+  virtual int TextWidth() const;
 #if defined(TOOLKIT_VIEWS)
   virtual views::View* AddToView(views::View* parent);
   virtual bool CommitInstantSuggestion(const std::wstring& typed_text,
                                        const std::wstring& suggested_text);
-  virtual void SetInstantSuggestion(const string16& suggestion);
 
   // Enables accessibility on AutocompleteEditView.
   void EnableAccessibility();
@@ -163,7 +164,6 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
                                       bool popup_window_mode,
                                       const views::View* location_bar);
 #endif
-  virtual int TextWidth() const;
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
@@ -181,7 +181,6 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // the animation state.
   void UpdateInstantViewColors();
 
-  void SetInstantSuggestion(const std::string& suggestion);
   bool CommitInstantSuggestion();
 
   // Used by LocationBarViewGtk to inform AutocompleteEditViewGtk if the tab to

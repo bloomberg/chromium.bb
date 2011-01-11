@@ -450,28 +450,6 @@ void AutocompleteEditViewMac::ClosePopup() {
 void AutocompleteEditViewMac::SetFocus() {
 }
 
-void AutocompleteEditViewMac::SetSuggestText(const string16& suggest_text) {
-  NSString* text = GetNonSuggestTextSubstring();
-  bool needs_update = (suggest_text_length_ > 0);
-
-  // Append the new suggest text.
-  suggest_text_length_ = suggest_text.length();
-  if (suggest_text_length_ > 0) {
-    text = [text stringByAppendingString:base::SysUTF16ToNSString(
-               suggest_text)];
-    needs_update = true;
-  }
-
-  if (needs_update) {
-    NSRange current_range = GetSelectedRange();
-    SetTextInternal(base::SysNSStringToWide(text));
-    if (NSMaxRange(current_range) <= [text length] - suggest_text_length_)
-      SetSelectedRange(current_range);
-    else
-      SetSelectedRange(NSMakeRange([text length] - suggest_text_length_, 0));
-  }
-}
-
 bool AutocompleteEditViewMac::CommitSuggestText() {
   if (suggest_text_length_ == 0)
     return false;
@@ -722,6 +700,35 @@ CommandUpdater* AutocompleteEditViewMac::GetCommandUpdater() {
   return command_updater_;
 }
 
+void AutocompleteEditViewMac::SetInstantSuggestion(
+    const string16& suggest_text) {
+  NSString* text = GetNonSuggestTextSubstring();
+  bool needs_update = (suggest_text_length_ > 0);
+
+  // Append the new suggest text.
+  suggest_text_length_ = suggest_text.length();
+  if (suggest_text_length_ > 0) {
+    text = [text stringByAppendingString:base::SysUTF16ToNSString(
+               suggest_text)];
+    needs_update = true;
+  }
+
+  if (needs_update) {
+    NSRange current_range = GetSelectedRange();
+    SetTextInternal(base::SysNSStringToWide(text));
+    if (NSMaxRange(current_range) <= [text length] - suggest_text_length_)
+      SetSelectedRange(current_range);
+    else
+      SetSelectedRange(NSMakeRange([text length] - suggest_text_length_, 0));
+  }
+}
+
+int AutocompleteEditViewMac::TextWidth() const {
+  // Not used on mac.
+  NOTREACHED();
+  return 0;
+}
+
 void AutocompleteEditViewMac::OnDidBeginEditing() {
   // We should only arrive here when the field is focussed.
   DCHECK([field_ currentEditor]);
@@ -752,7 +759,7 @@ bool AutocompleteEditViewMac::OnDoCommandBySelector(SEL cmd) {
     // Reset the suggest text for any change other than key right or tab.
     // TODO(rohitrao): This is here to prevent complications when editing text.
     // See if this can be removed.
-    SetSuggestText(string16());
+    SetInstantSuggestion(string16());
   }
 
   if (cmd == @selector(deleteForward:))

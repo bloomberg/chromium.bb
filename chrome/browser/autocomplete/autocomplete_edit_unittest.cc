@@ -54,14 +54,14 @@ class TestingAutocompleteEditView : public AutocompleteEditView {
   virtual bool OnAfterPossibleChange() { return false; }
   virtual gfx::NativeView GetNativeView() const { return 0; }
   virtual CommandUpdater* GetCommandUpdater() { return NULL; }
+  virtual void SetInstantSuggestion(const string16& input) {}
+  virtual int TextWidth() const { return 0; }
 
 #if defined(TOOLKIT_VIEWS)
   virtual views::View* AddToView(views::View* parent) { return NULL; }
-  virtual int TextWidth() const { return 0; }
   virtual bool CommitInstantSuggestion(
       const std::wstring& typed_text,
       const std::wstring& suggested_text) { return false;}
-  virtual void SetInstantSuggestion(const string16& input) {}
 #endif
 
  private:

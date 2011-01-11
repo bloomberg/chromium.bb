@@ -158,6 +158,13 @@ class AutocompleteEditView {
   // Returns the command updater for this view.
   virtual CommandUpdater* GetCommandUpdater() = 0;
 
+  // Shows the instant suggestion text.
+  virtual void SetInstantSuggestion(const string16& input) = 0;
+
+  // Returns the width in pixels needed to display the current text. The
+  // returned value includes margins.
+  virtual int TextWidth() const = 0;
+
 #if defined(TOOLKIT_VIEWS)
   // Adds the autocomplete edit view to view hierarchy and
   // returns the views::View of the edit view.
@@ -166,13 +173,6 @@ class AutocompleteEditView {
   // Commits the suggested text.
   virtual bool CommitInstantSuggestion(const std::wstring& typed_text,
                                        const std::wstring& suggested_text) = 0;
-
-  // Shows the instant suggestion text.
-  virtual void SetInstantSuggestion(const string16& input) = 0;
-
-  // Returns the width in pixels needed to display the current text. The
-  // returned value includes margins.
-  virtual int TextWidth() const = 0;
 #endif
 
   virtual ~AutocompleteEditView() {}

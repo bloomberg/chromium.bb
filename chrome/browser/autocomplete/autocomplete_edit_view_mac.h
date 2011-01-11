@@ -83,6 +83,8 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   virtual bool OnAfterPossibleChange();
   virtual gfx::NativeView GetNativeView() const;
   virtual CommandUpdater* GetCommandUpdater();
+  virtual void SetInstantSuggestion(const string16& input);
+  virtual int TextWidth() const;
 
   // Implement the AutocompleteTextFieldObserver interface.
   virtual NSRange SelectionRangeForProposedRange(NSRange proposed_range);
@@ -101,8 +103,6 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   virtual void OnSetFocus(bool control_down);
   virtual void OnKillFocus();
 
-  // Suggest text should be in the model, but for now, it's here.
-  void SetSuggestText(const string16& suggest_text);
   bool CommitSuggestText();
 
   // Helper for LocationBarViewMac.  Optionally selects all in |field_|.

@@ -754,32 +754,31 @@ CommandUpdater* AutocompleteEditViewGtk::GetCommandUpdater() {
   return command_updater_;
 }
 
-#if defined(TOOLKIT_VIEWS)
-views::View* AutocompleteEditViewGtk::AddToView(views::View* parent) {
-  views::NativeViewHost* host = new views::NativeViewHost;
-  parent->AddChildView(host);
-  host->set_focus_view(parent);
-  host->Attach(GetNativeView());
-  return host;
-}
-
-bool AutocompleteEditViewGtk::CommitInstantSuggestion(
-    const std::wstring& typed_text,
-    const std::wstring& suggestion) {
-  return CommitInstantSuggestion();
-}
-
-void AutocompleteEditViewGtk::EnableAccessibility() {
-  accessible_widget_helper_.reset(
-      new AccessibleWidgetHelper(text_view(), model_->profile()));
-  accessible_widget_helper_->SetWidgetName(
-      text_view(), l10n_util::GetStringUTF8(IDS_ACCNAME_LOCATION));
-}
-
 void AutocompleteEditViewGtk::SetInstantSuggestion(const string16& suggestion) {
-  SetInstantSuggestion(UTF16ToUTF8(suggestion));
-}
+  std::string suggestion_utf8 = UTF16ToUTF8(suggestion);
+
+  gtk_label_set_text(GTK_LABEL(instant_view_), suggestion_utf8.c_str());
+
+  StopAnimation();
+
+  if (suggestion.empty()) {
+    gtk_widget_hide(instant_view_);
+    return;
+  }
+  if (InstantController::IsEnabled(model_->profile(),
+                                   InstantController::PREDICTIVE_TYPE)
+#if GTK_CHECK_VERSION(2, 20, 0)
+      && preedit_.empty()
 #endif
+      ) {
+    instant_animation_->set_delegate(this);
+    instant_animation_->Start();
+  }
+
+  gtk_widget_show(instant_view_);
+  AdjustVerticalAlignmentOfInstantView();
+  UpdateInstantViewColors();
+}
 
 int AutocompleteEditViewGtk::TextWidth() const {
   int horizontal_border_size =
@@ -820,6 +819,27 @@ int AutocompleteEditViewGtk::TextWidth() const {
 }
 
 #if defined(TOOLKIT_VIEWS)
+views::View* AutocompleteEditViewGtk::AddToView(views::View* parent) {
+  views::NativeViewHost* host = new views::NativeViewHost;
+  parent->AddChildView(host);
+  host->set_focus_view(parent);
+  host->Attach(GetNativeView());
+  return host;
+}
+
+bool AutocompleteEditViewGtk::CommitInstantSuggestion(
+    const std::wstring& typed_text,
+    const std::wstring& suggestion) {
+  return CommitInstantSuggestion();
+}
+
+void AutocompleteEditViewGtk::EnableAccessibility() {
+  accessible_widget_helper_.reset(
+      new AccessibleWidgetHelper(text_view(), model_->profile()));
+  accessible_widget_helper_->SetWidgetName(
+      text_view(), l10n_util::GetStringUTF8(IDS_ACCNAME_LOCATION));
+}
+
 // static
 AutocompleteEditView* AutocompleteEditViewGtk::Create(
     AutocompleteEditController* controller,
@@ -1905,31 +1925,6 @@ void AutocompleteEditViewGtk::EmphasizeURLComponents() {
     } else {
       gtk_text_buffer_apply_tag(text_buffer_, secure_scheme_tag_, &start, &end);
     }
-  }
-}
-
-void AutocompleteEditViewGtk::SetInstantSuggestion(
-    const std::string& suggestion) {
-  gtk_label_set_text(GTK_LABEL(instant_view_), suggestion.c_str());
-
-  StopAnimation();
-
-  if (suggestion.empty()) {
-    gtk_widget_hide(instant_view_);
-  } else {
-    if (InstantController::IsEnabled(model_->profile(),
-                                     InstantController::PREDICTIVE_TYPE)
-#if GTK_CHECK_VERSION(2, 20, 0)
-        && preedit_.empty()
-#endif
-        ) {
-      instant_animation_->set_delegate(this);
-      instant_animation_->Start();
-    }
-
-    gtk_widget_show(instant_view_);
-    AdjustVerticalAlignmentOfInstantView();
-    UpdateInstantViewColors();
   }
 }
 

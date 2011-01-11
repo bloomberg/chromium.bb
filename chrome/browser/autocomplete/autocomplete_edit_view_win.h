@@ -133,11 +133,11 @@ class AutocompleteEditViewWin
   virtual bool OnAfterPossibleChange();
   virtual gfx::NativeView GetNativeView() const;
   virtual CommandUpdater* GetCommandUpdater();
+  virtual void SetInstantSuggestion(const string16& suggestion);
+  virtual int TextWidth() const;
   virtual views::View* AddToView(views::View* parent);
   virtual bool CommitInstantSuggestion(const std::wstring& typed_text,
                                        const std::wstring& suggested_text);
-  virtual void SetInstantSuggestion(const string16& suggestion);
-  virtual int TextWidth() const;
 
   int GetPopupMaxYCoordinate();
 

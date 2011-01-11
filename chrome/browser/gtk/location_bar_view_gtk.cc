@@ -458,11 +458,7 @@ void LocationBarViewGtk::OnAutocompleteWillAccept() {
 
 bool LocationBarViewGtk::OnCommitSuggestedText(
     const std::wstring& typed_text) {
-  InstantController* instant = browser_->instant();
-  if (!instant)
-    return false;
-
-  return location_entry_->CommitInstantSuggestion();
+  return browser_->instant() && location_entry_->CommitInstantSuggestion();
 }
 
 bool LocationBarViewGtk::AcceptCurrentInstantPreview() {
@@ -638,7 +634,7 @@ void LocationBarViewGtk::SetSuggestedText(const string16& text) {
           UTF16ToWide(text));
     }
   } else {
-    location_entry_->SetInstantSuggestion(UTF16ToUTF8(text));
+    location_entry_->SetInstantSuggestion(text);
   }
 }
 
