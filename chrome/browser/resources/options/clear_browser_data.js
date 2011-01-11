@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,18 +11,18 @@ cr.define('options', function() {
    * Encapsulated handling of the 'Clear Browser Data' overlay page.
    * @class
    */
-  function ClearBrowserDataOverlay() {
-    OptionsPage.call(this, 'clearBrowserDataOverlay',
+  function ClearBrowserDataPage() {
+    OptionsPage.call(this, 'clearBrowserDataPage',
                      templateData.clearBrowserDataTitle,
-                     'clearBrowserDataOverlay');
+                     'clearBrowserDataPage');
   }
 
-  ClearBrowserDataOverlay.throbIntervalId = 0;
+  ClearBrowserDataPage.throbIntervalId = 0;
 
-  cr.addSingletonGetter(ClearBrowserDataOverlay);
+  cr.addSingletonGetter(ClearBrowserDataPage);
 
-  ClearBrowserDataOverlay.prototype = {
-    // Inherit ClearBrowserDataOverlay from OptionsPage.
+  ClearBrowserDataPage.prototype = {
+    // Inherit ClearBrowserDataPage from OptionsPage.
     __proto__: OptionsPage.prototype,
 
     /**
@@ -31,6 +31,9 @@ cr.define('options', function() {
     initializePage: function() {
       // Call base class implementation to starts preference initialization.
       OptionsPage.prototype.initializePage.call(this);
+
+      // The time period is stored as a number.
+      $('clearBrowsingDataTimePeriod').dataType = 'number';
 
       var f = this.updateCommitButtonState_.bind(this);
       var types = ['browser.clear_data.browsing_history',
@@ -74,7 +77,7 @@ cr.define('options', function() {
   //
   // Chrome callbacks
   //
-  ClearBrowserDataOverlay.setClearingState = function(state) {
+  ClearBrowserDataPage.setClearingState = function(state) {
     $('deleteBrowsingHistoryCheckbox').disabled = state;
     $('deleteDownloadHistoryCheckbox').disabled = state;
     $('deleteCacheCheckbox').disabled = state;
@@ -82,13 +85,12 @@ cr.define('options', function() {
     $('deletePasswordsCheckbox').disabled = state;
     $('deleteFormDataCheckbox').disabled = state;
     $('clearBrowsingDataTimePeriod').disabled = state;
-    $('clearBrowsingDataDismiss').disabled = state;
     $('cbdThrobber').style.visibility = state ? 'visible' : 'hidden';
 
     if (state)
       $('clearBrowsingDataCommit').disabled = true;
     else
-      ClearBrowserDataOverlay.getInstance().updateCommitButtonState_();
+      ClearBrowserDataPage.getInstance().updateCommitButtonState_();
 
     function advanceThrobber() {
       var throbber = $('cbdThrobber');
@@ -98,21 +100,21 @@ cr.define('options', function() {
           576) + 'px';
     }
     if (state) {
-      ClearBrowserDataOverlay.throbIntervalId =
+      ClearBrowserDataPage.throbIntervalId =
           setInterval(advanceThrobber, 30);
     } else {
-      clearInterval(ClearBrowserDataOverlay.throbIntervalId);
+      clearInterval(ClearBrowserDataPage.throbIntervalId);
     }
   }
 
-  ClearBrowserDataOverlay.dismiss = function() {
+  ClearBrowserDataPage.dismiss = function() {
     OptionsPage.clearOverlays();
     this.setClearingState(false);
   }
 
   // Export
   return {
-    ClearBrowserDataOverlay: ClearBrowserDataOverlay
+    ClearBrowserDataPage: ClearBrowserDataPage
   };
 
 });

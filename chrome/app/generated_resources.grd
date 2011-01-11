@@ -5066,11 +5066,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CLEAR_BROWSING_DATA_TITLE" desc="Dialog title">
         Clear Browsing Data
       </message>
-      <message name="IDS_CLEAR_BROWSING_DATA_LABEL" desc="Label at the top of the client area of the dialog">
-        Obliterate the following items:
+      <message name="IDS_CLEAR_BROWSING_DATA_SECTION_HEADER" desc="The section title for the clear browsing data dialog">
+        Browsing Data
       </message>
       <message name="IDS_CLEAR_BROWSING_DATA_TIME_LABEL" desc="Label before time period combo box">
         Clear data from this period:
+      </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_LABEL" desc="Label at the top of the client area of the dialog, preceding the period combo box">
+        Obliterate the following items from:
       </message>
       <message name="IDS_DEL_BROWSING_HISTORY_CHKBOX" desc="Checkbox for deleting Browsing History">
         Clear browsing history
@@ -5110,19 +5113,19 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Adobe Flash Player storage settings...
       </message>
       <message name="IDS_CLEAR_DATA_HOUR" desc="deletion period combo box: hour">
-        Last hour
+        the past hour
       </message>
       <message name="IDS_CLEAR_DATA_DAY" desc="deletion period combo box: day">
-        Last day
+        the past day
       </message>
       <message name="IDS_CLEAR_DATA_WEEK" desc="deletion period combo box: week">
-        Last week
+        the past week
       </message>
       <message name="IDS_CLEAR_DATA_4WEEKS" desc="deletion period combo box: 4 weeks">
-        Last 4 weeks
+        the last 4 weeks
       </message>
       <message name="IDS_CLEAR_DATA_EVERYTHING" desc="deletion period combo box: everything">
-        Everything
+        the beginning of time
       </message>
       <message name="IDS_CLEAR_DATA_DELETING" desc="The progress message">
         Clearing...

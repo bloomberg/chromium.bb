@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -280,7 +280,7 @@ cr.define('options', function() {
   /////////////////////////////////////////////////////////////////////////////
   // PrefSelect class:
 
-  // Define a constructor that uses an select element as its underlying element.
+  // Define a constructor that uses a select element as its underlying element.
   var PrefSelect = cr.ui.define('select');
 
   PrefSelect.prototype = {
@@ -331,6 +331,9 @@ cr.define('options', function() {
       // Listen to user events.
       this.addEventListener('change',
           function(e) {
+            if (!self.dataType)
+              console.error('unknown data type for <select> pref');
+
             switch(self.dataType) {
               case 'number':
                 Preferences.setIntegerPref(self.pref,

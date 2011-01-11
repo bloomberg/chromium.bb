@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@ var AutoFillEditAddressOverlay = options.AutoFillEditAddressOverlay;
 var AutoFillEditCreditCardOverlay = options.AutoFillEditCreditCardOverlay;
 var AutoFillOptions = options.AutoFillOptions;
 var BrowserOptions = options.BrowserOptions;
-var ClearBrowserDataOverlay = options.ClearBrowserDataOverlay;
+var ClearBrowserDataPage = options.ClearBrowserDataPage;
 var ContentSettings = options.ContentSettings;
 var ContentSettingsExceptionsArea =
     options.contentSettings.ContentSettingsExceptionsArea;
@@ -108,6 +108,9 @@ function load() {
   OptionsPage.registerSubPage(FontSettings.getInstance(),
                               AdvancedOptions.getInstance(),
                               [$('fontSettingsCustomizeFontsButton')]);
+  OptionsPage.registerSubPage(ClearBrowserDataPage.getInstance(),
+                              AdvancedOptions.getInstance(),
+                              [$('privacyClearDataButton')]);
   if (!cr.isWindows && !cr.isMac) {
     OptionsPage.registerSubPage(CertificateManager.getInstance(),
                                 AdvancedOptions.getInstance(),
@@ -121,8 +124,6 @@ function load() {
   OptionsPage.registerOverlay(AlertOverlay.getInstance());
   OptionsPage.registerOverlay(AutoFillEditAddressOverlay.getInstance());
   OptionsPage.registerOverlay(AutoFillEditCreditCardOverlay.getInstance());
-  OptionsPage.registerOverlay(ClearBrowserDataOverlay.getInstance(),
-                              [$('privacyClearDataButton')]);
   OptionsPage.registerOverlay(EditSearchEngineOverlay.getInstance());
   OptionsPage.registerOverlay(ImportDataOverlay.getInstance());
   OptionsPage.registerOverlay(InstantConfirmOverlay.getInstance());

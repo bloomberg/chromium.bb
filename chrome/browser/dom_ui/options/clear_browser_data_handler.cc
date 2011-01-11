@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,10 +29,10 @@ void ClearBrowserDataHandler::GetLocalizedValues(
   DCHECK(localized_strings);
   localized_strings->SetString("clearBrowsingDataTitle",
       l10n_util::GetStringUTF16(IDS_CLEAR_BROWSING_DATA_TITLE));
+  localized_strings->SetString("clearBrowsingDataSectionHeader",
+      l10n_util::GetStringUTF16(IDS_CLEAR_BROWSING_DATA_SECTION_HEADER));
   localized_strings->SetString("clearBrowsingDataLabel",
       l10n_util::GetStringUTF16(IDS_CLEAR_BROWSING_DATA_LABEL));
-  localized_strings->SetString("clearBrowsingDataTimeLabel",
-      l10n_util::GetStringUTF16(IDS_CLEAR_BROWSING_DATA_TIME_LABEL));
   localized_strings->SetString("deleteBrowsingHistoryCheckbox",
       l10n_util::GetStringUTF16(IDS_DEL_BROWSING_HISTORY_CHKBOX));
   localized_strings->SetString("deleteDownloadHistoryCheckbox",
@@ -90,8 +90,8 @@ void ClearBrowserDataHandler::RegisterMessages() {
 }
 
 void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
-  Profile *profile = dom_ui_->GetProfile();
-  PrefService *prefs = profile->GetPrefs();
+  Profile* profile = dom_ui_->GetProfile();
+  PrefService* prefs = profile->GetPrefs();
 
   int remove_mask = 0;
   if (prefs->GetBoolean(prefs::kDeleteBrowsingHistory))
