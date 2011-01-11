@@ -39,11 +39,6 @@ class PluginLib : public base::RefCounted<PluginLib> {
   // This API is only used on Unixes, and is exposed here for testing.
   static void ParseMIMEDescription(const std::string& description,
                                    std::vector<WebPluginMimeType>* mime_types);
-
-  // Extract a version number from a description string.
-  // This API is only used on Unixes, and is exposed here for testing.
-  static void ExtractVersionString(const std::string& version,
-                                   WebPluginInfo* info);
 #endif
 
   // Unloads all the loaded plugin libraries and cleans up the plugin map.

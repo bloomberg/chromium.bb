@@ -185,25 +185,18 @@ bool PluginLib::ReadWebPluginInfo(const FilePath& filename,
   if (NP_GetValue) {
     const char* name = NULL;
     NP_GetValue(NULL, nsPluginVariable_NameString, &name);
-    if (name) {
+    if (name)
       info->name = UTF8ToUTF16(name);
-      ExtractVersionString(name, info);
-    }
 
     const char* description = NULL;
     NP_GetValue(NULL, nsPluginVariable_DescriptionString, &description);
-    if (description) {
+    if (description)
       info->desc = UTF8ToUTF16(description);
-      if (info->version.empty())
-        ExtractVersionString(description, info);
-    }
 
     LOG_IF(ERROR, PluginList::DebugPluginLoading())
         << "Got info for plugin " << filename.value()
         << " Name = \"" << UTF16ToUTF8(info->name)
-        << "\", Description = \"" << UTF16ToUTF8(info->desc)
-        << "\", Version = \"" << UTF16ToUTF8(info->version)
-        << "\".";
+        << "\", Description = \"" << UTF16ToUTF8(info->desc) << "\".";
   } else {
     LOG_IF(ERROR, PluginList::DebugPluginLoading())
         << "Plugin " << filename.value()
@@ -259,38 +252,6 @@ void PluginLib::ParseMIMEDescription(
   }
 }
 
-// static
-void PluginLib::ExtractVersionString(const std::string& desc,
-                                     WebPluginInfo* info) {
-  // This matching works by extracting a version substring, along the lines of:
-  // No postfix: second match in .*<prefix>.*$
-  // With postfix: second match .*<prefix>.*<postfix>
-  static const struct {
-    const char* kPrefix;
-    const char* kPostfix;
-  } kPrePostFixes[] = {
-    { "Shockwave Flash ", 0 },
-    { "Java(TM) Plug-in ", 0 },
-    { "(using IcedTea6 ", " " },
-    { 0, 0 }
-  };
-  std::string version;
-  for (size_t i = 0; kPrePostFixes[i].kPrefix; ++i) {
-    size_t pos;
-    if ((pos = desc.find(kPrePostFixes[i].kPrefix)) != std::string::npos) {
-      version = desc.substr(pos + strlen(kPrePostFixes[i].kPrefix));
-      pos = std::string::npos;
-      if (kPrePostFixes[i].kPostfix)
-        pos = version.find(kPrePostFixes[i].kPostfix);
-      if (pos != std::string::npos)
-        version = version.substr(0, pos);
-      break;
-    }
-  }
-  if (!version.empty()) {
-    info->version = UTF8ToUTF16(version);
-  }
-}
 
 }  // namespace npapi
 }  // namespace webkit
