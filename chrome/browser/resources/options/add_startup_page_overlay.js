@@ -65,6 +65,7 @@ cr.define('options', function() {
      */
     dismissOverlay_: function() {
       $('addStartupPageURL').value = '';
+      $('addStartupRecentPageList').selectionModel.unselectAll();
       this.updateAddButtonState_();
       OptionsPage.clearOverlays();
     },
