@@ -378,6 +378,22 @@ list > [selected]:hover {
   background-image: none;
 }
 
+list:focus > [lead],
+list:focus > [lead][selected] {
+  border-top: 1px solid #b2b2b2;
+  border-bottom: 1px solid #b2b2b2;
+}
+
+list:focus > [lead]:nth-child(2),
+list:focus > [lead][selected]:nth-child(2) {
+  border-top: 1px solid #f2f2f2;
+}
+
+list:focus > [lead]:nth-last-child(2),
+list:focus > [lead][selected]:nth-last-child(2) {
+  border-bottom: 1px solid #f2f2f2;
+}
+
 list[disabled] > [lead][selected],
 list[disabled]:focus > [lead][selected] {
   border: none;
