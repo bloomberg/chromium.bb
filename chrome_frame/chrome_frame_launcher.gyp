@@ -123,7 +123,7 @@
           # Set /SUBSYSTEM:WINDOWS since this is not a command-line program.
           'SubSystem': '2',
         },
-      },      
+      },
     },
     {
       'target_name': 'chrome_frame_helper_dll',
@@ -158,7 +158,7 @@
       'msvs_settings': {
         'VCLinkerTool': {
           'OutputFile': '$(OutDir)\\chrome_frame_helper.dll',
-          'ProgramDataBaseFile': '$(OutDir)\\chrome_frame_helper_dll.pdb',
+          'ProgramDatabaseFile': '$(OutDir)\\chrome_frame_helper_dll.pdb',
           # Set /SUBSYSTEM:WINDOWS since this is not a command-line program.
           'SubSystem': '2',
           'AdditionalDependencies': [

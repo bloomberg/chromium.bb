@@ -48,7 +48,7 @@
         # entry point for the DLL.
         'VCLinkerTool': {
           'EntryPointSymbol': 'DllMain',
-          'IgnoreAllDefaultLibraries': 1,
+          'IgnoreAllDefaultLibraries': 'true',
         },
         # Turn off buffer security checks, since we don't have CRT
         # support for them, given that we don't link the CRT.
