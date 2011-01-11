@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,14 +10,19 @@
 #include "net/url_request/url_request_test_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// This is a specialized version of URLRequestTestJob that lets us specify
+// This is a specialized version of net::URLRequestTestJob that lets us specify
 // response data and make sure the response code is 200, which the autoupdate
 // code relies on.
-class AutoUpdateTestRequestJob : public URLRequestTestJob {
+class AutoUpdateTestRequestJob : public net::URLRequestTestJob {
  public:
   AutoUpdateTestRequestJob(net::URLRequest* request,
-    const std::string& response_data) : URLRequestTestJob(
-    request, URLRequestTestJob::test_headers(), response_data, true) {}
+                           const std::string& response_data)
+      : net::URLRequestTestJob(request,
+                               net::URLRequestTestJob::test_headers(),
+                               response_data,
+                               true) {
+  }
+
   virtual int GetResponseCode() const { return 200; }
 
  private:

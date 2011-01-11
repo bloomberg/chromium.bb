@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,10 +60,10 @@ class CannedResponseInterceptor : public net::URLRequest::Interceptor {
   virtual net::URLRequestJob* MaybeIntercept(net::URLRequest* request) {
     if (request->url().GetOrigin() == service_url_.GetOrigin() &&
         request->url().path() == service_url_.path()) {
-      return new URLRequestTestJob(request,
-                                   URLRequestTestJob::test_headers(),
-                                   response_data_,
-                                   true);
+      return new net::URLRequestTestJob(request,
+                                        net::URLRequestTestJob::test_headers(),
+                                        response_data_,
+                                        true);
     }
 
     return NULL;

@@ -48,7 +48,7 @@ class MockHttpServer {
 
     std::string headers, body;
     GetMockResponse(request->url().path(), &headers, &body);
-    return new URLRequestTestJob(request, headers, body, true);
+    return new net::URLRequestTestJob(request, headers, body, true);
   }
 
  private:
@@ -289,14 +289,15 @@ class MockFrontend : public AppCacheFrontend {
 // Helper factories to simulate redirected URL responses for tests.
 static net::URLRequestJob* RedirectFactory(net::URLRequest* request,
                                            const std::string& scheme) {
-  return new URLRequestTestJob(request,
-                               URLRequestTestJob::test_redirect_headers(),
-                               URLRequestTestJob::test_data_1(),
-                               true);
+  return new net::URLRequestTestJob(
+      request,
+      net::URLRequestTestJob::test_redirect_headers(),
+      net::URLRequestTestJob::test_data_1(),
+      true);
 }
 
 // Helper class to simulate a URL that returns retry or success.
-class RetryRequestTestJob : public URLRequestTestJob {
+class RetryRequestTestJob : public net::URLRequestTestJob {
  public:
   enum RetryHeader {
     NO_RETRY_AFTER,
@@ -380,7 +381,7 @@ class RetryRequestTestJob : public URLRequestTestJob {
   explicit RetryRequestTestJob(net::URLRequest* request,
                                const std::string& headers,
                                int response_code)
-      : URLRequestTestJob(request, headers, data(), true),
+      : net::URLRequestTestJob(request, headers, data(), true),
         response_code_(response_code) {
   }
 
@@ -400,7 +401,7 @@ RetryRequestTestJob::RetryHeader RetryRequestTestJob::retry_after_;
 int RetryRequestTestJob::expected_requests_ = 0;
 
 // Helper class to check for certain HTTP headers.
-class HttpHeadersRequestTestJob : public URLRequestTestJob {
+class HttpHeadersRequestTestJob : public net::URLRequestTestJob {
  public:
   // Call this at the start of each HTTP header-related test.
   static void Initialize(const std::string& expect_if_modified_since,

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,14 +59,14 @@ class TestData {
 
 // A simple test net::URLRequestJob. We don't care what it does, only that
 // whether it starts and finishes.
-class SimpleTestJob : public URLRequestTestJob {
+class SimpleTestJob : public net::URLRequestTestJob {
  public:
   explicit SimpleTestJob(net::URLRequest* request)
-      : URLRequestTestJob(request, test_headers(),
-                          TestData::GetInstance()->GetTestData(), true) {}
+      : net::URLRequestTestJob(request, test_headers(),
+                               TestData::GetInstance()->GetTestData(), true) {}
 
   virtual void GetResponseInfo(net::HttpResponseInfo* info) {
-    URLRequestTestJob::GetResponseInfo(info);
+    net::URLRequestTestJob::GetResponseInfo(info);
     if (request_->url().SchemeIsSecure()) {
       // Make up a fake certificate for this response since we don't have
       // access to the real SSL info.

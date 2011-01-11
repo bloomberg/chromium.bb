@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 // Tests exercising the Chrome Plugin API.
@@ -74,7 +74,7 @@ class ChromePluginTest : public testing::Test,
   virtual void SetUp() {
     LoadPlugin();
     net::URLRequest::RegisterProtocolFactory("test",
-                                             &URLRequestTestJob::Factory);
+                                             &net::URLRequestTestJob::Factory);
 
     // We need to setup a default request context in order to issue HTTP
     // requests.
@@ -126,10 +126,10 @@ static void STDCALL CPT_Complete(CPRequest* request, bool success,
   EXPECT_TRUE(success);
   EXPECT_EQ(200, headers->response_code());
 
-  if (url == URLRequestTestJob::test_url_1()) {
-    EXPECT_EQ(URLRequestTestJob::test_data_1(), body);
-  } else if (url == URLRequestTestJob::test_url_2()) {
-    EXPECT_EQ(URLRequestTestJob::test_data_2(), body);
+  if (url == net::URLRequestTestJob::test_url_1()) {
+    EXPECT_EQ(net::URLRequestTestJob::test_data_1(), body);
+  } else if (url == net::URLRequestTestJob::test_url_2()) {
+    EXPECT_EQ(net::URLRequestTestJob::test_data_2(), body);
   } else if (url.spec().find("echo") != std::string::npos) {
     EXPECT_EQ(kChromeTestPluginPostData, body);
   }
@@ -249,7 +249,7 @@ TEST_F(ChromePluginTest, UnregisterIntercept) {
 }
 
 static void ProcessAllPendingMessages() {
-  while (URLRequestTestJob::ProcessOnePendingMessage());
+  while (net::URLRequestTestJob::ProcessOnePendingMessage());
 }
 
 // Tests that the plugin can issue a GET request and receives the data when
@@ -257,10 +257,10 @@ static void ProcessAllPendingMessages() {
 TEST_F(ChromePluginTest, CanMakeGETRequestSync) {
   // test_url_1 has a synchronous response
   EXPECT_EQ(CPERR_SUCCESS, test_funcs_.test_make_request(
-      "GET", URLRequestTestJob::test_url_1()));
+      "GET", net::URLRequestTestJob::test_url_1()));
 
   // Note: we must add this task after we make the request, so that
-  // URLRequestTestJob's StartAsync task is added and run first.
+  // net::URLRequestTestJob's StartAsync task is added and run first.
   MessageLoop::current()->PostTask(FROM_HERE,
       NewRunnableFunction(&ProcessAllPendingMessages));
   MessageLoop::current()->Run();
@@ -271,10 +271,10 @@ TEST_F(ChromePluginTest, CanMakeGETRequestSync) {
 TEST_F(ChromePluginTest, CanMakeGETRequestAsync) {
   // test_url_2 has an asynchronous response
   EXPECT_EQ(CPERR_SUCCESS, test_funcs_.test_make_request(
-        "GET", URLRequestTestJob::test_url_2()));
+        "GET", net::URLRequestTestJob::test_url_2()));
 
   // Note: we must add this task after we make the request, so that
-  // URLRequestTestJob's StartAsync task is added and run first.
+  // net::URLRequestTestJob's StartAsync task is added and run first.
   MessageLoop::current()->PostTask(FROM_HERE,
       NewRunnableFunction(&ProcessAllPendingMessages));
   MessageLoop::current()->Run();
@@ -290,7 +290,7 @@ TEST_F(ChromePluginTest, CanMakePOSTRequest) {
   EXPECT_EQ(CPERR_SUCCESS, test_funcs_.test_make_request("POST", url));
 
   // Note: we must add this task after we make the request, so that
-  // URLRequestTestJob's StartAsync task is added and run first.
+  // net::URLRequestTestJob's StartAsync task is added and run first.
   MessageLoop::current()->PostTask(FROM_HERE,
       NewRunnableFunction(&ProcessAllPendingMessages));
   MessageLoop::current()->Run();
