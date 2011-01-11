@@ -304,10 +304,9 @@ PluginInstance::PluginInstance(PluginDelegate* delegate,
       plugin_pdf_interface_(NULL),
       plugin_selection_interface_(NULL),
       plugin_zoom_interface_(NULL),
-#if defined (OS_LINUX)
-      num_pages_(0),
-      pdf_output_done_(false),
-#endif  // defined (OS_LINUX)
+#if defined(OS_LINUX)
+      canvas_(NULL),
+#endif  // defined(OS_LINUX)
       plugin_print_interface_(NULL),
       plugin_graphics_3d_interface_(NULL),
       always_on_top_(false),
@@ -327,6 +326,9 @@ PluginInstance::~PluginInstance() {
   module_->InstanceDeleted(this);
 
   ResourceTracker::Get()->InstanceDeleted(pp_instance_);
+#if defined(OS_LINUX)
+  ranges_.clear();
+#endif  // defined(OS_LINUX)
 }
 
 // static
@@ -837,34 +839,31 @@ int PluginInstance::PrintBegin(const gfx::Rect& printable_area,
   if (!num_pages)
     return 0;
   current_print_settings_ = print_settings;
-#if defined (OS_LINUX)
-  num_pages_ = num_pages;
-  pdf_output_done_ = false;
-#endif  // (OS_LINUX)
+#if defined(OS_LINUX)
+  canvas_ = NULL;
+  ranges_.clear();
+#endif  // defined(OS_LINUX)
   return num_pages;
 }
 
 bool PluginInstance::PrintPage(int page_number, WebKit::WebCanvas* canvas) {
   DCHECK(plugin_print_interface_);
   PP_PrintPageNumberRange_Dev page_range;
-#if defined(OS_LINUX)
-  if (current_print_settings_.format == PP_PRINTOUTPUTFORMAT_PDF) {
-    // On Linux we will try and output all pages as PDF in the first call to
-    // PrintPage. This is a temporary hack.
-    // TODO(sanjeevr): Remove this hack and fix this by changing the print
-    // interfaces for WebFrame and WebPlugin.
-    if (page_number != 0)
-      return pdf_output_done_;
-    page_range.first_page_number = 0;
-    page_range.last_page_number = num_pages_ - 1;
-  }
-#else  // defined(OS_LINUX)
   page_range.first_page_number = page_range.last_page_number = page_number;
+#if defined(OS_LINUX)
+  ranges_.push_back(page_range);
+  canvas_ = canvas;
+  return true;
+#else
+  return PrintPageHelper(&page_range, 1, canvas);
 #endif  // defined(OS_LINUX)
+}
 
-  PP_Resource print_output =
-      plugin_print_interface_->PrintPages(pp_instance(), &page_range, 1);
-
+bool PluginInstance::PrintPageHelper(PP_PrintPageNumberRange_Dev* page_ranges,
+                                     int num_ranges,
+                                     WebKit::WebCanvas* canvas) {
+  PP_Resource print_output = plugin_print_interface_->PrintPages(
+      pp_instance(), page_ranges, num_ranges);
   if (!print_output)
     return false;
 
@@ -882,16 +881,22 @@ bool PluginInstance::PrintPage(int page_number, WebKit::WebCanvas* canvas) {
 }
 
 void PluginInstance::PrintEnd() {
+#if defined(OS_LINUX)
+  // This hack is here because all pages need to be written to PDF at once.
+  if (!ranges_.empty())
+    PrintPageHelper(&(ranges_.front()), ranges_.size(), canvas_);
+  canvas_ = NULL;
+  ranges_.clear();
+#endif  // defined(OS_LINUX)
+
   DCHECK(plugin_print_interface_);
   if (plugin_print_interface_)
     plugin_print_interface_->End(pp_instance());
+
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));
 #if defined(OS_MACOSX)
   last_printed_page_ = NULL;
-#elif defined(OS_LINUX)
-  num_pages_ = 0;
-  pdf_output_done_ = false;
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_MACOSX)
 }
 
 bool PluginInstance::IsFullscreen() {
@@ -974,11 +979,8 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
   printing::NativeMetafile* metafile =
       printing::NativeMetafile::FromCairoContext(context);
   DCHECK(metafile);
-  if (metafile) {
+  if (metafile)
     ret = metafile->SetRawData(buffer->mapped_buffer(), buffer->size());
-    if (ret)
-      pdf_output_done_ = true;
-  }
   canvas->endPlatformPaint();
 #elif defined(OS_MACOSX)
   printing::NativeMetafile metafile;
@@ -1189,4 +1191,3 @@ PPB_Surface3D_Impl* PluginInstance::bound_graphics_3d() const {
 
 }  // namespace ppapi
 }  // namespace webkit
-

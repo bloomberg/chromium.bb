@@ -232,6 +232,11 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // Returns NULL if bound graphics is not a 3D surface.
   PPB_Surface3D_Impl* bound_graphics_3d() const;
 
+  // Internal helper function for PrintPage().
+  bool PrintPageHelper(PP_PrintPageNumberRange_Dev* page_ranges,
+                       int num_ranges,
+                       WebKit::WebCanvas* canvas);
+
   PluginDelegate* delegate_;
   scoped_refptr<PluginModule> module_;
   const PPP_Instance* instance_interface_;
@@ -283,16 +288,18 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   // variable to hold on to the pixels.
   scoped_refptr<PPB_ImageData_Impl> last_printed_page_;
 #elif defined(OS_LINUX)
-  // On Linux, we always send all pages from the renderer to the browser.
-  // So, if the plugin supports printPagesAsPDF we print the entire output
-  // in one shot in the first call to PrintPage.
-  // (This is a temporary hack until we change the WebFrame and WebPlugin print
-  // interfaces).
-  // Specifies the total number of pages to be printed. It it set in PrintBegin.
-  int32 num_pages_;
-  // Specifies whether we have already output all pages. This is used to ignore
-  // subsequent PrintPage requests.
-  bool pdf_output_done_;
+  // On Linux, all pages need to be written to a PDF file in one shot. However,
+  // when users print only a subset of all the pages, it is impossible to know
+  // if a call to PrintPage() is the last call. Thus in PrintPage(), just store
+  // the page number in |ranges_|.
+  // The hack is in PrintEnd(), where a valid |canvas_| is preserved in
+  // PrintWebViewHelper::PrintPages. This makes it possible to generate the
+  // entire PDF given the variables below:
+  //
+  // The most recently used WebCanvas, guaranteed to be valid.
+  WebKit::WebCanvas* canvas_;
+  // An array of page ranges.
+  std::vector<PP_PrintPageNumberRange_Dev> ranges_;
 #endif  // defined(OS_LINUX)
 
   // The plugin print interface.

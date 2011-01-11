@@ -27,6 +27,12 @@ namespace IPC {
 class Message;
 }
 
+#if defined(USE_X11)
+namespace skia {
+class VectorCanvas;
+}
+#endif
+
 class RenderView;
 struct ViewMsg_Print_Params;
 struct ViewMsg_PrintPage_Params;
@@ -95,7 +101,8 @@ class PrintWebViewHelper : public WebKit::WebViewClient,
   void PrintPage(const ViewMsg_PrintPage_Params& params,
                  const gfx::Size& canvas_size,
                  WebKit::WebFrame* frame,
-                 printing::NativeMetafile* metafile);
+                 printing::NativeMetafile* metafile,
+                 skia::VectorCanvas** canvas);
 #else
   void PrintPage(const ViewMsg_PrintPage_Params& params,
                  const gfx::Size& canvas_size,
