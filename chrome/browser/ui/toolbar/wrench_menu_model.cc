@@ -334,7 +334,8 @@ void WrenchMenuModel::TabSelectedAt(TabContentsWrapper* old_contents,
   UpdateZoomControls();
 }
 
-void WrenchMenuModel::TabReplacedAt(TabContentsWrapper* old_contents,
+void WrenchMenuModel::TabReplacedAt(TabStripModel* tab_strip_model,
+                                    TabContentsWrapper* old_contents,
                                     TabContentsWrapper* new_contents,
                                     int index) {
   UpdateZoomControls();

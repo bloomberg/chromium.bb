@@ -38,7 +38,8 @@ void TabStripModelObserver::TabChangedAt(TabContentsWrapper* contents,
                                          TabChangeType change_type) {
 }
 
-void TabStripModelObserver::TabReplacedAt(TabContentsWrapper* old_contents,
+void TabStripModelObserver::TabReplacedAt(TabStripModel* tab_strip_model,
+                                          TabContentsWrapper* old_contents,
                                           TabContentsWrapper* new_contents,
                                           int index) {
 }

@@ -2673,7 +2673,8 @@ void Browser::TabMoved(TabContentsWrapper* contents,
   SyncHistoryWithTabs(std::min(from_index, to_index));
 }
 
-void Browser::TabReplacedAt(TabContentsWrapper* old_contents,
+void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
+                            TabContentsWrapper* old_contents,
                             TabContentsWrapper* new_contents,
                             int index) {
   TabDetachedAtImpl(old_contents, index, DETACH_TYPE_REPLACE);

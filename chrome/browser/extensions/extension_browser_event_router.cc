@@ -466,11 +466,13 @@ void ExtensionBrowserEventRouter::TabChangedAt(TabContentsWrapper* contents,
 }
 
 void ExtensionBrowserEventRouter::TabReplacedAt(
+    TabStripModel* tab_strip_model,
     TabContentsWrapper* old_contents,
     TabContentsWrapper* new_contents,
     int index) {
-  UnregisterForTabNotifications(old_contents->tab_contents());
-  RegisterForTabNotifications(new_contents->tab_contents());
+  TabClosingAt(tab_strip_model, old_contents, index);
+  TabInsertedAt(new_contents, index,
+                tab_strip_model->selected_index() == index);
 }
 
 void ExtensionBrowserEventRouter::TabPinnedStateChanged(

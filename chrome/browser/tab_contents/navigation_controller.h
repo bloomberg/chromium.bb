@@ -364,10 +364,8 @@ class NavigationController {
 
   // A variant of CopyStateFrom. Removes all entries from this except the last
   // entry, inserts all entries from |source| before and including the active
-  // entry and resets the |session_id_| of this to match |source|.  This is
-  // intended for use when you're going to throw away |source| and replace it
-  // with this. This method is intended for use when the last entry of |this|
-  // is the active entry. For example:
+  // entry. This method is intended for use when the last entry of |this| is the
+  // active entry. For example:
   // source: A B *C* D
   // this:   E F *G*   (last must be active or pending)
   // result: A B *G*

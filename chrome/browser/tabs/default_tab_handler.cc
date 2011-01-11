@@ -171,10 +171,12 @@ void DefaultTabHandler::TabMoved(TabContentsWrapper* contents,
   delegate_->AsBrowser()->TabMoved(contents, from_index, to_index);
 }
 
-void DefaultTabHandler::TabReplacedAt(TabContentsWrapper* old_contents,
+void DefaultTabHandler::TabReplacedAt(TabStripModel* tab_strip_model,
+                                      TabContentsWrapper* old_contents,
                                       TabContentsWrapper* new_contents,
                                       int index) {
-  delegate_->AsBrowser()->TabReplacedAt(old_contents, new_contents, index);
+  delegate_->AsBrowser()->TabReplacedAt(tab_strip_model, old_contents,
+                                        new_contents, index);
 }
 
 void DefaultTabHandler::TabPinnedStateChanged(TabContentsWrapper* contents,

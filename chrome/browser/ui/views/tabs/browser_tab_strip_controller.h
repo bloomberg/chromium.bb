@@ -71,7 +71,8 @@ class BrowserTabStripController : public TabStripController,
   virtual void TabChangedAt(TabContentsWrapper* contents,
                             int model_index,
                             TabChangeType change_type);
-  virtual void TabReplacedAt(TabContentsWrapper* old_contents,
+  virtual void TabReplacedAt(TabStripModel* tab_strip_model,
+                             TabContentsWrapper* old_contents,
                              TabContentsWrapper* new_contents,
                              int model_index);
   virtual void TabPinnedStateChanged(TabContentsWrapper* contents,

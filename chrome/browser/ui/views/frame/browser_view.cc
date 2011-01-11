@@ -1491,7 +1491,8 @@ void BrowserView::TabSelectedAt(TabContentsWrapper* old_contents,
   ProcessTabSelected(new_contents, true);
 }
 
-void BrowserView::TabReplacedAt(TabContentsWrapper* old_contents,
+void BrowserView::TabReplacedAt(TabStripModel* tab_strip_model,
+                                TabContentsWrapper* old_contents,
                                 TabContentsWrapper* new_contents,
                                 int index) {
   if (index != browser_->tabstrip_model()->selected_index())

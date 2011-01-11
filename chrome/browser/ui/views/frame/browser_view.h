@@ -353,7 +353,8 @@ class BrowserView : public BrowserBubbleHost,
                              TabContentsWrapper* new_contents,
                              int index,
                              bool user_gesture);
-  virtual void TabReplacedAt(TabContentsWrapper* old_contents,
+  virtual void TabReplacedAt(TabStripModel* tab_strip_model,
+                             TabContentsWrapper* old_contents,
                              TabContentsWrapper* new_contents,
                              int index);
   virtual void TabStripEmpty();

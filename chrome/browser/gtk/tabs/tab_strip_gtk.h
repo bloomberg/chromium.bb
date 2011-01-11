@@ -115,7 +115,8 @@ class TabStripGtk : public TabStripModelObserver,
                         int to_index);
   virtual void TabChangedAt(TabContentsWrapper* contents, int index,
                             TabChangeType change_type);
-  virtual void TabReplacedAt(TabContentsWrapper* old_contents,
+  virtual void TabReplacedAt(TabStripModel* tab_strip_model,
+                             TabContentsWrapper* old_contents,
                              TabContentsWrapper* new_contents,
                              int index);
   virtual void TabMiniStateChanged(TabContentsWrapper* contents, int index);

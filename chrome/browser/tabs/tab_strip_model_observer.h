@@ -85,9 +85,9 @@ class TabStripModelObserver {
                             TabChangeType change_type);
 
   // The tab contents was replaced at the specified index. This is invoked when
-  // a tab becomes phantom. See description of phantom tabs in class description
-  // of TabStripModel for details.
-  virtual void TabReplacedAt(TabContentsWrapper* old_contents,
+  // instant is enabled and the user navigates by way of instant.
+  virtual void TabReplacedAt(TabStripModel* tab_strip_model,
+                             TabContentsWrapper* old_contents,
                              TabContentsWrapper* new_contents,
                              int index);
 

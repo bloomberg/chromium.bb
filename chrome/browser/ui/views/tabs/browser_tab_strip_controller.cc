@@ -335,7 +335,8 @@ void BrowserTabStripController::TabChangedAt(TabContentsWrapper* contents,
   SetTabDataAt(contents, model_index);
 }
 
-void BrowserTabStripController::TabReplacedAt(TabContentsWrapper* old_contents,
+void BrowserTabStripController::TabReplacedAt(TabStripModel* tab_strip_model,
+                                              TabContentsWrapper* old_contents,
                                               TabContentsWrapper* new_contents,
                                               int model_index) {
   SetTabDataAt(new_contents, model_index);
