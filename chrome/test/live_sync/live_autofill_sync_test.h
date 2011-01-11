@@ -10,40 +10,20 @@
 #include <set>
 #include <vector>
 
-#include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/autofill/autofill_common_test.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/autofill_type.h"
-#include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
-#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/webdata/autofill_entry.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/live_sync/live_sync_test.h"
 #include "chrome/test/thread_observer_helper.h"
 
 using base::WaitableEvent;
 using testing::_;
-
-// Define these << operators so we can use EXPECT_EQ with the
-// AutofillKeys type.
-template<class T1, class T2, class T3>
-static std::ostream& operator<<(
-    std::ostream& os, const std::set<T1, T2, T3>& seq) {
-  typedef typename std::set<T1, T2, T3>::const_iterator SetConstIterator;
-  for (SetConstIterator i = seq.begin(); i != seq.end(); ++i) {
-    os << *i << ", ";
-  }
-  return os;
-}
-
-static std::ostream& operator<<(std::ostream& os, const AutofillKey& key) {
-  return os << UTF16ToUTF8(key.name()) << ", " << UTF16ToUTF8(key.value());
-}
 
 namespace {
 class GetAllAutofillEntries
@@ -103,30 +83,39 @@ enum ProfileType {
   PROFILE_NULL
 };
 
-void FillProfile(ProfileType type, AutoFillProfile* profile) {
+AutoFillProfile CreateAutofillProfile(ProfileType type) {
+  AutoFillProfile profile;
   switch (type) {
     case PROFILE_MARION:
-      autofill_test::SetProfileInfo(profile,
-        "Billing", "Marion", "Mitchell", "Morrison",
-        "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
-        "91601", "US", "12345678910", "01987654321");
+      autofill_test::SetProfileInfoWithGuid(&profile,
+          "C837507A-6C3B-4872-AC14-5113F157D668",
+          "Marion", "Mitchell", "Morrison",
+          "johnwayne@me.xyz", "Fox",
+          "123 Zoo St.", "unit 5", "Hollywood", "CA",
+          "91601", "US", "12345678910", "01987654321");
       break;
     case PROFILE_HOMER:
-      autofill_test::SetProfileInfo(profile,
-        "Shipping", "Homer", "J.", "Simpson",
-        "homer@snpp.com", "SNPP", "1 Main St", "PO Box 1", "Springfield", "MA",
-        "94101", "US", "14155551212", "14155551313");
+      autofill_test::SetProfileInfoWithGuid(&profile,
+          "137DE1C3-6A30-4571-AC86-109B1ECFBE7F",
+          "Homer", "J.", "Simpson",
+          "homer@abc.com", "SNPP",
+          "1 Main St", "PO Box 1", "Springfield", "MA",
+          "94101", "US", "14155551212", "14155551313");
       break;
     case PROFILE_FRASIER:
-      autofill_test::SetProfileInfo(profile,
-        "Business", "Frasier", "Winslow", "Crane",
-        "", "randomness", "", "Apt. 4", "Seattle", "WA",
-        "99121", "US", "0000000000", "ABCDEFGHIJK");
+      autofill_test::SetProfileInfoWithGuid(&profile,
+          "9A5E6872-6198-4688-BF75-0016E781BB0A",
+          "Frasier", "Winslow", "Crane",
+          "", "randomness", "", "Apt. 4", "Seattle", "WA",
+          "99121", "US", "0000000000", "ABCDEFGHIJK");
+      break;
     case PROFILE_NULL:
-      autofill_test::SetProfileInfo(profile,
-        "", "key", "", "", "", "", "", "", "", "", "", "", "", "");
+      autofill_test::SetProfileInfoWithGuid(&profile,
+          "FE461507-7E13-4198-8E66-74C7DB6D8322",
+          "", "", "", "", "", "", "", "", "", "", "", "", "");
       break;
   }
+  return profile;
 }
 
 class MockPersonalDataManagerObserver : public PersonalDataManager::Observer {
@@ -138,38 +127,32 @@ class MockPersonalDataManagerObserver : public PersonalDataManager::Observer {
 
 class LiveAutofillSyncTest : public LiveSyncTest {
  public:
-  typedef std::set<AutofillKey> AutofillKeys;
-  typedef std::vector<AutoFillProfile*> AutoFillProfiles;
-
-  explicit LiveAutofillSyncTest(TestType test_type)
-      : LiveSyncTest(test_type) {}
+  explicit LiveAutofillSyncTest(TestType test_type) : LiveSyncTest(test_type) {}
   virtual ~LiveAutofillSyncTest() {}
 
   // Used to access the web data service within a particular sync profile.
-  WebDataService* GetWebDataService(int index) {
+  WebDataService* GetWebDataService(int index) WARN_UNUSED_RESULT {
     return GetProfile(index)->GetWebDataService(Profile::EXPLICIT_ACCESS);
   }
 
   // Used to access the personal data manager within a particular sync profile.
-  PersonalDataManager* GetPersonalDataManager(int index) {
+  PersonalDataManager* GetPersonalDataManager(int index) WARN_UNUSED_RESULT {
     return GetProfile(index)->GetPersonalDataManager();
   }
 
- protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    command_line->AppendSwitch(switches::kEnableSyncAutofill);
-  }
-
-  void AddFormFieldsToWebData(WebDataService* wds, const AutofillKeys& keys) {
+  // Adds the form fields in |keys| to the WebDataService of sync profile
+  // |profile|.
+  void AddKeys(int profile, const std::set<AutofillKey>& keys) {
     std::vector<webkit_glue::FormField> form_fields;
-    for (AutofillKeys::const_iterator i = keys.begin(); i != keys.end(); ++i) {
-      form_fields.push_back(
-          webkit_glue::FormField(string16(),
-                                 (*i).name(),
-                                 (*i).value(),
-                                 string16(),
-                                 0,
-                                 false));
+    for (std::set<AutofillKey>::const_iterator i = keys.begin();
+         i != keys.end();
+         ++i) {
+      form_fields.push_back(webkit_glue::FormField(string16(),
+                            (*i).name(),
+                            (*i).value(),
+                            string16(),
+                            0,
+                            false));
     }
 
     WaitableEvent done_event(false, false);
@@ -179,11 +162,14 @@ class LiveAutofillSyncTest : public LiveSyncTest {
 
     EXPECT_CALL(*observer_helper->observer(), Observe(_, _, _)).
         WillOnce(SignalEvent(&done_event));
+    WebDataService* wds = GetWebDataService(profile);
     wds->AddFormFields(form_fields);
     done_event.Wait();
   }
 
-  void RemoveKeyFromWebData(WebDataService* wds, const AutofillKey& key) {
+  // Removes the form field in |key| from the WebDataService of sync profile
+  // |profile|.
+  void RemoveKey(int profile, const AutofillKey& key) {
     WaitableEvent done_event(false, false);
     scoped_refptr<AutofillDBThreadObserverHelper> observer_helper(
         new AutofillDBThreadObserverHelper());
@@ -191,69 +177,92 @@ class LiveAutofillSyncTest : public LiveSyncTest {
 
     EXPECT_CALL(*observer_helper->observer(), Observe(_, _, _)).
         WillOnce(SignalEvent(&done_event));
+    WebDataService* wds = GetWebDataService(profile);
     wds->RemoveFormValueForElementName(key.name(), key.value());
     done_event.Wait();
   }
 
-  void SetProfiles(PersonalDataManager* pdm,
-                   std::vector<AutoFillProfile>* profiles) {
+  // Gets all the form fields in the WebDataService of sync profile |profile|.
+  std::set<AutofillEntry> GetAllKeys(int profile) WARN_UNUSED_RESULT {
+    WebDataService* wds = GetWebDataService(profile);
+    scoped_refptr<GetAllAutofillEntries> get_all_entries =
+        new GetAllAutofillEntries(wds);
+    get_all_entries->Init();
+    const std::vector<AutofillEntry>& all_entries = get_all_entries->entries();
+    std::set<AutofillEntry> all_keys;
+    for (std::vector<AutofillEntry>::const_iterator it = all_entries.begin();
+         it != all_entries.end(); ++it) {
+      all_keys.insert(*it);
+    }
+    return all_keys;
+  }
+
+  // Compares the form fields in the WebDataServices of sync profiles
+  // |profile_a| and |profile_b|. Returns true if they match.
+  bool KeysMatch(int profile_a, int profile_b) WARN_UNUSED_RESULT {
+    return GetAllKeys(profile_a) == GetAllKeys(profile_b);
+  }
+
+  // Replaces the Autofill profiles in sync profile |profile| with
+  // |autofill_profiles|.
+  void SetProfiles(
+      int profile, std::vector<AutoFillProfile>* autofill_profiles) {
     MockPersonalDataManagerObserver observer;
     EXPECT_CALL(observer, OnPersonalDataLoaded()).
         WillOnce(QuitUIMessageLoop());
+    PersonalDataManager* pdm = GetPersonalDataManager(profile);
     pdm->SetObserver(&observer);
-    pdm->SetProfiles(profiles);
+    pdm->SetProfiles(autofill_profiles);
     MessageLoop::current()->Run();
     pdm->RemoveObserver(&observer);
   }
 
-  void AddProfile(PersonalDataManager* pdm, const AutoFillProfile& profile) {
-    const AutoFillProfiles& all_profiles = GetAllAutoFillProfiles(pdm);
-    std::vector<AutoFillProfile> profiles;
+  // Adds the autofill profile |autofill_profile| to sync profile |profile|.
+  void AddProfile(int profile, const AutoFillProfile& autofill_profile) {
+    const std::vector<AutoFillProfile*>& all_profiles = GetAllProfiles(profile);
+    std::vector<AutoFillProfile> autofill_profiles;
     for (size_t i = 0; i < all_profiles.size(); ++i)
-      profiles.push_back(*all_profiles[i]);
-    profiles.push_back(profile);
-    SetProfiles(pdm, &profiles);
+      autofill_profiles.push_back(*all_profiles[i]);
+    autofill_profiles.push_back(autofill_profile);
+    SetProfiles(profile, &autofill_profiles);
   }
 
-  void RemoveProfile(PersonalDataManager* pdm, const string16& label) {
-    const AutoFillProfiles& all_profiles = GetAllAutoFillProfiles(pdm);
-    std::vector<AutoFillProfile> profiles;
+  // Removes the autofill profile with guid |guid| from sync profile
+  // |profile|.
+  void RemoveProfile(int profile, const std::string& guid) {
+    const std::vector<AutoFillProfile*>& all_profiles = GetAllProfiles(profile);
+    std::vector<AutoFillProfile> autofill_profiles;
     for (size_t i = 0; i < all_profiles.size(); ++i) {
-      if (all_profiles[i]->Label() != label)
-        profiles.push_back(*all_profiles[i]);
+      if (all_profiles[i]->guid() != guid)
+        autofill_profiles.push_back(*all_profiles[i]);
     }
-    SetProfiles(pdm, &profiles);
+    SetProfiles(profile, &autofill_profiles);
   }
 
-  void UpdateProfile(PersonalDataManager* pdm,
-                     const string16& label,
+  // Updates the autofill profile with guid |guid| in sync profile |profile|
+  // to |type| and |value|.
+  void UpdateProfile(int profile,
+                     const std::string& guid,
                      const AutoFillType& type,
                      const string16& value) {
-    const AutoFillProfiles& all_profiles = GetAllAutoFillProfiles(pdm);
+    const std::vector<AutoFillProfile*>& all_profiles = GetAllProfiles(profile);
     std::vector<AutoFillProfile> profiles;
     for (size_t i = 0; i < all_profiles.size(); ++i) {
       profiles.push_back(*all_profiles[i]);
-      if (all_profiles[i]->Label() == label)
+      if (all_profiles[i]->guid() == guid)
         profiles.back().SetInfo(type, value);
     }
-    SetProfiles(pdm, &profiles);
+    SetProfiles(profile, &profiles);
   }
 
-  void GetAllAutofillKeys(WebDataService* wds, AutofillKeys* keys) {
-    scoped_refptr<GetAllAutofillEntries> get_all_entries =
-        new GetAllAutofillEntries(wds);
-    get_all_entries->Init();
-    const std::vector<AutofillEntry>& entries = get_all_entries->entries();
-
-    for (size_t i = 0; i < entries.size(); ++i) {
-      keys->insert(entries[i].key());
-    }
-  }
-
-  const AutoFillProfiles& GetAllAutoFillProfiles(PersonalDataManager* pdm) {
+  // Gets all the Autofill profiles in the PersonalDataManager of sync profile
+  // |profile|.
+  const std::vector<AutoFillProfile*>& GetAllProfiles(int profile)
+      WARN_UNUSED_RESULT {
     MockPersonalDataManagerObserver observer;
     EXPECT_CALL(observer, OnPersonalDataLoaded()).
         WillOnce(QuitUIMessageLoop());
+    PersonalDataManager* pdm = GetPersonalDataManager(profile);
     pdm->SetObserver(&observer);
     pdm->Refresh();
     MessageLoop::current()->Run();
@@ -261,34 +270,40 @@ class LiveAutofillSyncTest : public LiveSyncTest {
     return pdm->web_profiles();
   }
 
-  bool CompareAutoFillProfiles(const AutoFillProfiles& expected_profiles,
-                               const AutoFillProfiles& profiles) {
-    std::map<string16, AutoFillProfile> expected_profiles_map;
-    for (size_t i = 0; i < expected_profiles.size(); ++i) {
-      const AutoFillProfile* p = expected_profiles[i];
-      expected_profiles_map[p->Label()] = *p;
+  // Compares the Autofill profiles in the PersonalDataManagers of sync profiles
+  // |profile_a| and |profile_b|. Returns true if they match.
+  bool ProfilesMatch(int profile_a, int profile_b) WARN_UNUSED_RESULT {
+    const std::vector<AutoFillProfile*>& autofill_profiles_a =
+        GetAllProfiles(profile_a);
+    std::map<std::string, AutoFillProfile> autofill_profiles_a_map;
+    for (size_t i = 0; i < autofill_profiles_a.size(); ++i) {
+      const AutoFillProfile* p = autofill_profiles_a[i];
+      autofill_profiles_a_map[p->guid()] = *p;
     }
 
-    for (size_t i = 0; i < profiles.size(); ++i) {
-      const AutoFillProfile* p = profiles[i];
-      if (!expected_profiles_map.count(p->Label())) {
-        VLOG(1) << "Label " << p->Label() << " not in expected";
+    const std::vector<AutoFillProfile*>& autofill_profiles_b =
+        GetAllProfiles(profile_b);
+    for (size_t i = 0; i < autofill_profiles_b.size(); ++i) {
+      const AutoFillProfile* p = autofill_profiles_b[i];
+      if (!autofill_profiles_a_map.count(p->guid())) {
+        VLOG(1) << "GUID " << p->guid() << " not found in profile "
+                << profile_b << ".";
         return false;
       }
-      AutoFillProfile* expected_profile = &expected_profiles_map[p->Label()];
+      AutoFillProfile* expected_profile = &autofill_profiles_a_map[p->guid()];
       expected_profile->set_guid(p->guid());
       if (*expected_profile != *p) {
-        VLOG(1) << "Profile mismatch";
+        VLOG(1) << "Mismatch in profile with GUID " << p->guid() << ".";
         return false;
       }
-      expected_profiles_map.erase(p->Label());
+      autofill_profiles_a_map.erase(p->guid());
     }
 
-    if (expected_profiles_map.size()) {
-      VLOG(1) << "Labels in expected but not supplied";
+    if (autofill_profiles_a_map.size()) {
+      VLOG(1) << "Entries present in Profile " << profile_a
+              << " but not in " << profile_b << ".";
       return false;
     }
-
     return true;
   }
 
