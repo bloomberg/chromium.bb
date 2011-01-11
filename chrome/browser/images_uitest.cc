@@ -1,9 +1,10 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "net/base/net_util.h"
 #include "chrome/test/ui/ui_test.h"
@@ -16,7 +17,7 @@ TEST_F(ImagesTest, AnimatedGIFs) {
   NavigateToURL(net::FilePathToFileURL(test_file));
 
   // Let the GIFs fully animate.
-  base::PlatformThread::Sleep(sleep_timeout_ms());
+  base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms());
 
   std::wstring page_title = L"animated gif test";
   EXPECT_EQ(page_title, GetActiveTabTitle());

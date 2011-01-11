@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/string16.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -210,7 +211,7 @@ TEST_F(RedirectTest, ClientServerServer) {
   NavigateToURL(first_url);
 
   for (int i = 0; i < 10; ++i) {
-    base::PlatformThread::Sleep(sleep_timeout_ms());
+    base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms());
     scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
     ASSERT_TRUE(tab_proxy.get());
     ASSERT_TRUE(tab_proxy->GetRedirectsFrom(first_url, &redirects));
@@ -316,7 +317,7 @@ TEST_F(RedirectTest,
   std::wstring final_url_title = UTF8ToWide("Title Of Awesomeness");
   // Wait till the final page has been loaded.
   for (int i = 0; i < 10; ++i) {
-    base::PlatformThread::Sleep(sleep_timeout_ms());
+    base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms());
     scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
     ASSERT_TRUE(tab_proxy.get());
     ASSERT_TRUE(tab_proxy->GetTabTitle(&tab_title));

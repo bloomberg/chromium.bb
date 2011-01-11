@@ -1,9 +1,10 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/file_path.h"
 #include "base/string_util.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/worker_host/worker_service.h"
@@ -95,7 +96,7 @@ class WorkerTest : public UILayoutTest {
       if (cur_process_count == number_of_processes)
         return true;
 
-      base::PlatformThread::Sleep(sleep_timeout_ms() / 10);
+      base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms() / 10);
     }
 
     EXPECT_EQ(number_of_processes, cur_process_count);

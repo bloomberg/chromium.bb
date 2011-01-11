@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -313,7 +313,8 @@ bool UITestBase::WaitForBookmarkBarVisibilityChange(BrowserProxy* browser,
       return true;  // Bookmark bar visibility change complete.
 
     // Give it a chance to catch up.
-    bool browser_survived = CrashAwareSleep(sleep_timeout_ms() / kCycles);
+    bool browser_survived = CrashAwareSleep(
+        TestTimeouts::action_timeout_ms() / kCycles);
     EXPECT_TRUE(browser_survived);
     if (!browser_survived)
       return false;
@@ -387,7 +388,7 @@ int UITestBase::GetTabCount(int window_index) {
 
 void UITestBase::WaitUntilTabCount(int tab_count) {
   const int kMaxIntervals = 10;
-  const int kIntervalMs = sleep_timeout_ms() / kMaxIntervals;
+  const int kIntervalMs = TestTimeouts::action_timeout_ms() / kMaxIntervals;
 
   for (int i = 0; i < kMaxIntervals; ++i) {
     bool browser_survived = CrashAwareSleep(kIntervalMs);
@@ -655,7 +656,7 @@ bool UITest::EvictFileFromSystemCacheWrapper(const FilePath& path) {
   for (int i = 0; i < 10; i++) {
     if (file_util::EvictFileFromSystemCache(path))
       return true;
-    base::PlatformThread::Sleep(sleep_timeout_ms() / 10);
+    base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms() / 10);
   }
   return false;
 }
@@ -680,7 +681,7 @@ void UITest::WaitForGeneratedFileAndCheck(
       file_util::GetFileInfo(generated_file, &previous);
       exist = true;
     }
-    base::PlatformThread::Sleep(sleep_timeout_ms() / kCycles);
+    base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms() / kCycles);
   }
   EXPECT_TRUE(exist);
 
@@ -798,7 +799,8 @@ bool UITest::WaitForFindWindowVisibilityChange(BrowserProxy* browser,
       return true;  // Find window visibility change complete.
 
     // Give it a chance to catch up.
-    bool browser_survived = CrashAwareSleep(sleep_timeout_ms() / kCycles);
+    bool browser_survived = CrashAwareSleep(
+        TestTimeouts::action_timeout_ms() / kCycles);
     EXPECT_TRUE(browser_survived);
     if (!browser_survived)
       return false;
@@ -816,7 +818,8 @@ bool UITest::WaitForDownloadShelfVisibilityChange(BrowserProxy* browser,
   base::Time start = base::Time::Now();
   for (int i = 0; i < kCycles; i++) {
     // Give it a chance to catch up.
-    bool browser_survived = CrashAwareSleep(sleep_timeout_ms() / kCycles);
+    bool browser_survived = CrashAwareSleep(
+        TestTimeouts::action_timeout_ms() / kCycles);
     EXPECT_TRUE(browser_survived);
     if (!browser_survived) {
       LOG(INFO) << "Elapsed time: " << (base::Time::Now() - start).InSecondsF()

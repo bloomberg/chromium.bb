@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/test/test_file_util.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -153,7 +154,7 @@ TEST_F(DownloadTest, FLAKY_NoDownload) {
   WaitUntilTabCount(1);
 
   // Wait to see if the file will be downloaded.
-  base::PlatformThread::Sleep(sleep_timeout_ms());
+  base::PlatformThread::Sleep(TestTimeouts::action_timeout_ms());
 
   EXPECT_FALSE(file_util::PathExists(file_path));
   if (file_util::PathExists(file_path))
