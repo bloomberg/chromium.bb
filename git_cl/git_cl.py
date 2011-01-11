@@ -29,6 +29,7 @@ except ImportError:
 
 DEFAULT_SERVER = 'http://codereview.appspot.com'
 PREDCOMMIT_HOOK = '.git/hooks/pre-cl-dcommit'
+POSTUPSTREAM_HOOK_PATTERN = '.git/hooks/post-cl-%s'
 PREUPLOAD_HOOK = '.git/hooks/pre-cl-upload'
 DESCRIPTION_BACKUP_FILE = '~/.git_cl_description_backup'
 
@@ -973,6 +974,7 @@ def SendUpstream(parser, args, cmd):
   # Stuff our change into the merge branch.
   # We wrap in a try...finally block so if anything goes wrong,
   # we clean up the branches.
+  retcode = -1
   try:
     RunGit(['checkout', '-q', '-b', MERGE_BRANCH, base_branch])
     RunGit(['merge', '--squash', cl.GetBranchRef()])
@@ -988,7 +990,7 @@ def SendUpstream(parser, args, cmd):
       logging.debug(output)
     else:
       # dcommit the merge branch.
-      output = RunGit(['svn', 'dcommit', '--no-rebase'])
+      retcode, output = RunGitWithCode(['svn', 'dcommit', '--no-rebase'])
   finally:
     # And then swap back to the original branch and clean up.
     RunGit(['checkout', '-q', cl.GetBranch()])
@@ -1008,6 +1010,12 @@ def SendUpstream(parser, args, cmd):
            '(you may be prompted for your codereview password)...')
     cl.CloseIssue()
     cl.SetIssue(0)
+
+  if retcode == 0:
+    hook = POSTUPSTREAM_HOOK_PATTERN % cmd
+    if os.path.isfile(hook):
+      RunHook(hook, upstream_branch=base_branch, error_ok=True)
+
   return 0
 
 
