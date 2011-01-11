@@ -56,9 +56,6 @@ class PepperWidget : public WebWidget {
     widget_->Invalidate();
   }
 
-  virtual void clearCurrentAnimationTime() {
-  }
-
   virtual void layout() {
   }
 
