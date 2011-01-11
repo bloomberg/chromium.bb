@@ -26,6 +26,8 @@ class PepperDeviceTest;
 
 namespace {
 
+const FilePath::CharType kTestPluginFileName[] =
+    FILE_PATH_LITERAL("pepper-device-tester");
 const char kTestPluginMimeType[] = "chrome-test/pepper-device-test";
 
 // This maps the NPP instances to the test object so our C callbacks can easily
@@ -102,11 +104,6 @@ NPError API_CALL NP_Shutdown() {
 
 class PepperDeviceTest : public RenderViewTest {
  public:
-  PepperDeviceTest();
-  ~PepperDeviceTest();
-
-  const FilePath& plugin_path() const { return version_info_.path; }
-
   WebPluginDelegatePepper* pepper_plugin() const { return pepper_plugin_; }
 
   NPP npp() const { return pepper_plugin_->instance()->npp(); }
@@ -135,35 +132,26 @@ class PepperDeviceTest : public RenderViewTest {
   virtual void SetUp();
   virtual void TearDown();
 
-  webkit::npapi::PluginVersionInfo version_info_;
-
   scoped_ptr<webkit::npapi::WebPluginImpl> plugin_;
   WebPluginDelegatePepper* pepper_plugin_;  // FIXME(brettw): check lifetime.
 };
 
-PepperDeviceTest::PepperDeviceTest() {
-  version_info_.path = FilePath(FILE_PATH_LITERAL("pepper-device-tester"));
-  version_info_.product_name = ASCIIToWide("Pepper device test plugin");
-  version_info_.file_description = ASCIIToWide("Pepper device test plugin");
-  version_info_.file_version = ASCIIToWide("1");
-  version_info_.mime_types = ASCIIToWide(kTestPluginMimeType);
-  webkit::npapi::PluginEntryPoints entry_points = {
-#if !defined(OS_POSIX) || defined(OS_MACOSX)
-      NP_GetEntryPoints,
-#endif
-      NP_Initialize,
-      NP_Shutdown
-  };
-  version_info_.entry_points = entry_points;
-}
-
-PepperDeviceTest::~PepperDeviceTest() {
-}
-
 void PepperDeviceTest::SetUp() {
   RenderViewTest::SetUp();
 
-  webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(version_info_);
+  webkit::npapi::PluginEntryPoints entry_points = {
+#if !defined(OS_POSIX) || defined(OS_MACOSX)
+    NP_GetEntryPoints,
+#endif
+    NP_Initialize,
+    NP_Shutdown
+  };
+  webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(
+      FilePath(kTestPluginFileName),
+      "Pepper device test plugin",
+      "Pepper device test plugin",
+      kTestPluginMimeType,
+      entry_points);
 
   // Create the WebKit plugin with no delegates (this seems to work
   // sufficiently for the test).
@@ -174,7 +162,7 @@ void PepperDeviceTest::SetUp() {
 
   // Create a pepper plugin for the RenderView.
   pepper_plugin_ = WebPluginDelegatePepper::Create(
-      plugin_path(), kTestPluginMimeType, view_->AsWeakPtr());
+      FilePath(kTestPluginFileName), kTestPluginMimeType, view_->AsWeakPtr());
   ASSERT_TRUE(pepper_plugin_);
   ASSERT_TRUE(pepper_plugin_->Initialize(GURL(), std::vector<std::string>(),
                                          std::vector<std::string>(),
@@ -202,7 +190,7 @@ void PepperDeviceTest::TearDown() {
     pepper_plugin_->PluginDestroyed();
 
   webkit::npapi::PluginList::Singleton()->UnregisterInternalPlugin(
-      version_info_.path);
+      FilePath(kTestPluginFileName));
 
   RenderViewTest::TearDown();
 }

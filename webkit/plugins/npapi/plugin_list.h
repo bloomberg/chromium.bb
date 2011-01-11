@@ -47,6 +47,7 @@ struct PluginEntryPoints {
 // the version info of the dll; For internal plugins, it's predefined and
 // includes addresses of entry functions. (Yes, it's Win32 NPAPI-centric, but
 // it'll do for holding descriptions of internal plugins cross-platform.)
+// TODO(evan): remove when NaCl is fixed.
 struct PluginVersionInfo {
   FilePath path;
   // Info about the plugin itself.
@@ -99,6 +100,15 @@ class PluginList {
   // Register an internal plugin with the specified plugin information and
   // function pointers.  An internal plugin must be registered before it can
   // be loaded using PluginList::LoadPlugin().
+  void RegisterInternalPlugin(const FilePath& path);
+  void RegisterInternalPlugin(const FilePath& filename,
+                              const std::string& name,
+                              const std::string& description,
+                              const std::string& mime_type,
+                              const PluginEntryPoints& entry_points);
+
+  // Deprecated version of the above.
+  // TODO(evan): remove when NaCl is fixed.
   void RegisterInternalPlugin(const PluginVersionInfo& info);
 
   // Removes a specified internal plugin from the list. The search will match

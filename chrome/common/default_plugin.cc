@@ -10,25 +10,20 @@
 namespace chrome {
 
 void RegisterInternalDefaultPlugin() {
-  const webkit::npapi::PluginVersionInfo default_plugin = {
-    FilePath(webkit::npapi::kDefaultPluginLibraryName),
-    L"Default Plug-in",
-    L"Provides functionality for installing third-party plug-ins",
-    L"1",
-    L"*",
-    L"",
-    L"",
-    {
+  const webkit::npapi::PluginEntryPoints entry_points = {
 #if !defined(OS_POSIX) || defined(OS_MACOSX)
-      default_plugin::NP_GetEntryPoints,
+    default_plugin::NP_GetEntryPoints,
 #endif
-      default_plugin::NP_Initialize,
-      default_plugin::NP_Shutdown
-    }
+    default_plugin::NP_Initialize,
+    default_plugin::NP_Shutdown
   };
 
   webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(
-      default_plugin);
+      FilePath(webkit::npapi::kDefaultPluginLibraryName),
+      "Default Plug-in",
+      "Provides functionality for installing third-party plug-ins",
+      "*",
+      entry_points);
 }
 
 }  // namespace chrome

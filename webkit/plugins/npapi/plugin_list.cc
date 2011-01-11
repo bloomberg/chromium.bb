@@ -225,6 +225,31 @@ void PluginList::RegisterInternalPlugin(const PluginVersionInfo& info) {
   internal_plugins_.push_back(info);
 }
 
+void PluginList::RegisterInternalPlugin(const FilePath& path) {
+  webkit::npapi::PluginVersionInfo info;
+  info.path = path;
+  memset(&info.entry_points, 0, sizeof(info.entry_points));
+  RegisterInternalPlugin(info);
+}
+
+void PluginList::RegisterInternalPlugin(const FilePath& filename,
+                                        const std::string& name,
+                                        const std::string& description,
+                                        const std::string& mime_type,
+                                        const PluginEntryPoints& entry_points) {
+  webkit::npapi::PluginVersionInfo info = {
+    filename,
+    ASCIIToWide(name),
+    ASCIIToWide(description),
+    L"1",
+    ASCIIToWide(mime_type),
+    L"",
+    L"",
+    entry_points
+  };
+  RegisterInternalPlugin(info);
+}
+
 void PluginList::UnregisterInternalPlugin(const FilePath& path) {
   AutoLock lock(lock_);
   for (size_t i = 0; i < internal_plugins_.size(); i++) {

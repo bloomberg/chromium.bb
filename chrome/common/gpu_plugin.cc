@@ -15,28 +15,21 @@ namespace chrome {
 
 void RegisterInternalGPUPlugin() {
 #if defined(ENABLE_GPU)
-  static const std::wstring kWideMimeType = ASCIIToWide(
-      "application/vnd.google.chrome.gpu-plugin");
-  static const webkit::npapi::PluginVersionInfo kGPUPluginInfo = {
-    FilePath(FILE_PATH_LITERAL("gpu-plugin")),
-    L"GPU Plug-in",
-    L"GPU Rendering Plug-in",
-    L"1",
-    kWideMimeType.c_str(),
-    L"",
-    L"",
-    {
+  const webkit::npapi::PluginEntryPoints entry_points = {
 #if !defined(OS_POSIX) || defined(OS_MACOSX)
-      gpu_plugin::NP_GetEntryPoints,
+    gpu_plugin::NP_GetEntryPoints,
 #endif
-      gpu_plugin::NP_Initialize,
-      gpu_plugin::NP_Shutdown
-    }
+    gpu_plugin::NP_Initialize,
+    gpu_plugin::NP_Shutdown
   };
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableGPUPlugin))
     webkit::npapi::PluginList::Singleton()->RegisterInternalPlugin(
-        kGPUPluginInfo);
+        FilePath(FILE_PATH_LITERAL("gpu-plugin")),
+        "GPU Plug-in",
+        "GPU Rendering Plug-in",
+        "application/vnd.google.chrome.gpu-plugin",
+        entry_points);
 #endif  // ENABLE_GPU
 }
 
