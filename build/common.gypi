@@ -319,7 +319,7 @@
           },
           'VCLinkerTool': {
             'LinkIncremental': '1',
-            'OptimizationReferences': '2',
+            'OptimizeReferences': '2',
             'EnableCOMDATFolding': '2',
             'OptimizeForWindows98': '1',
           },
