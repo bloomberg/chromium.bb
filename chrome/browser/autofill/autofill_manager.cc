@@ -142,6 +142,9 @@ AutoFillManager::AutoFillManager(TabContents* tab_contents)
       cc_infobar_(NULL) {
   DCHECK(tab_contents);
 
+  // |personal_data_| is NULL when using TestTabContents.
+  personal_data_ =
+      tab_contents_->profile()->GetOriginalProfile()->GetPersonalDataManager();
   download_manager_.SetObserver(this);
 }
 
@@ -238,9 +241,8 @@ void AutoFillManager::OnQueryFormFieldAutoFill(
   RenderViewHost* host = NULL;
   FormStructure* form_structure = NULL;
   AutoFillField* autofill_field = NULL;
-  if (GetHost(GetPersonalDataManager()->profiles(),
-              GetPersonalDataManager()->credit_cards(),
-              &host) &&
+  if (GetHost(
+          personal_data_->profiles(), personal_data_->credit_cards(), &host) &&
       FindCachedFormAndField(form, field, &form_structure, &autofill_field) &&
       // Don't send suggestions for forms that aren't auto-fillable.
       form_structure->IsAutoFillable(false)) {
@@ -298,10 +300,8 @@ void AutoFillManager::OnFillAutoFillFormData(int query_id,
                                              const FormData& form,
                                              const FormField& field,
                                              int unique_id) {
-  const std::vector<AutoFillProfile*>& profiles =
-      GetPersonalDataManager()->profiles();
-  const std::vector<CreditCard*>& credit_cards =
-      GetPersonalDataManager()->credit_cards();
+  const std::vector<AutoFillProfile*>& profiles = personal_data_->profiles();
+  const std::vector<CreditCard*>& credit_cards = personal_data_->credit_cards();
   RenderViewHost* host = NULL;
   FormStructure* form_structure = NULL;
   AutoFillField* autofill_field = NULL;
@@ -425,7 +425,7 @@ void AutoFillManager::OnShowAutoFillDialog() {
   }
 
   ShowAutoFillDialog(tab_contents_->GetContentNativeView(),
-                     GetPersonalDataManager(),
+                     personal_data_,
                      tab_contents_->profile()->GetOriginalProfile());
 }
 
@@ -441,15 +441,6 @@ void AutoFillManager::OnDidShowAutoFillSuggestions() {
       NotificationType::AUTOFILL_DID_SHOW_SUGGESTIONS,
       Source<RenderViewHost>(tab_contents_->render_view_host()),
       NotificationService::NoDetails());
-}
-
-PersonalDataManager* AutoFillManager::GetPersonalDataManager() {
-  if (!personal_data_ && tab_contents_) {
-    // |personal_data_| is NULL when using TestTabContents.
-    personal_data_ = tab_contents_->profile()->GetOriginalProfile()->
-        GetPersonalDataManager();
-  }
-  return personal_data_;
 }
 
 void AutoFillManager::OnLoadedAutoFillHeuristics(
@@ -490,8 +481,7 @@ void AutoFillManager::DeterminePossibleFieldTypesForUpload() {
   for (size_t i = 0; i < upload_form_structure_->field_count(); i++) {
     const AutoFillField* field = upload_form_structure_->field(i);
     FieldTypeSet field_types;
-    GetPersonalDataManager()->GetPossibleFieldTypes(
-        field->value(), &field_types);
+    personal_data_->GetPossibleFieldTypes(field->value(), &field_types);
     DCHECK(!field_types.empty());
     upload_form_structure_->set_possible_types(i, field_types);
 
@@ -529,13 +519,13 @@ void AutoFillManager::HandleSubmit() {
   // require querying the FormManager for updated field values.
   std::vector<FormStructure*> import;
   import.push_back(upload_form_structure_.get());
-  if (!GetPersonalDataManager()->ImportFormData(import))
+  if (!personal_data_->ImportFormData(import))
     return;
 
   // Did we get credit card info?
   AutoFillProfile* profile;
   CreditCard* credit_card;
-  GetPersonalDataManager()->GetImportedFormData(&profile, &credit_card);
+  personal_data_->GetImportedFormData(&profile, &credit_card);
 
   if (!credit_card) {
     UploadFormData();
@@ -579,8 +569,17 @@ void AutoFillManager::Reset() {
 
 void AutoFillManager::OnInfoBarClosed(bool should_save) {
   if (should_save)
-    GetPersonalDataManager()->SaveImportedCreditCard();
+    personal_data_->SaveImportedCreditCard();
   UploadFormData();
+}
+
+AutoFillManager::AutoFillManager()
+    : tab_contents_(NULL),
+      personal_data_(NULL),
+      download_manager_(NULL),
+      disable_download_manager_requests_(true),
+      metric_logger_(new AutoFillMetrics),
+      cc_infobar_(NULL) {
 }
 
 AutoFillManager::AutoFillManager(TabContents* tab_contents,

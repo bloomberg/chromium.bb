@@ -78,8 +78,13 @@ class AutoFillManager : public IPC::Channel::Listener,
 
  protected:
   // For tests.
+  AutoFillManager();
   AutoFillManager(TabContents* tab_contents,
                   PersonalDataManager* personal_data);
+
+  void set_personal_data_manager(PersonalDataManager* personal_data) {
+    personal_data_ = personal_data;
+  }
 
   const AutoFillMetrics* metric_logger() const {
     return metric_logger_.get();
@@ -109,8 +114,6 @@ class AutoFillManager : public IPC::Channel::Listener,
   void OnShowAutoFillDialog();
   void OnDidFillAutoFillFormData();
   void OnDidShowAutoFillSuggestions();
-
-  PersonalDataManager* GetPersonalDataManager();
 
   // Fills |host| with the RenderViewHost for this tab.
   // Returns false if AutoFill is disabled or if the host is unavailable.
@@ -177,9 +180,9 @@ class AutoFillManager : public IPC::Channel::Listener,
   TabContents* tab_contents_;
 
   // The personal data manager, used to save and load personal data to/from the
-  // web database.  Lazily created (in non-test case) since it uses a lot of
-  // memory.
+  // web database.  This is overridden by the AutoFillManagerTest.
   // Weak reference.
+  // May be NULL.  NULL indicates OTR.
   PersonalDataManager* personal_data_;
 
   std::list<std::string> autofilled_forms_signatures_;
