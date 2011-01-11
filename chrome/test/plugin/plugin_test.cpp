@@ -124,7 +124,7 @@ class PluginTest : public UITest {
 };
 
 // http://crbug.com/68303
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_LINUX)
 TEST_F(PluginTest, DISABLED_Flash) {
 #else
 TEST_F(PluginTest, Flash) {

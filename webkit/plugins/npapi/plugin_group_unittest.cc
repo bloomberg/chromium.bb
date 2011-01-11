@@ -49,6 +49,9 @@ static const PluginGroupDefinition kPluginDefNotVulnerable = {
     "myplugin-latest", "MyPlugin", "MyPlugin", NULL, 0, "http://latest" };
 
 // name, path, version, desc.
+static WebPluginInfo kPluginNoVersion = WebPluginInfo(
+    ASCIIToUTF16("MyPlugin"), FilePath(FILE_PATH_LITERAL("myplugin.so.2.0.43")),
+    ASCIIToUTF16(""), ASCIIToUTF16("MyPlugin version 2.0.43"));
 static WebPluginInfo kPlugin2043 = WebPluginInfo(
     ASCIIToUTF16("MyPlugin"), FilePath(FILE_PATH_LITERAL("myplugin.so.2.0.43")),
     ASCIIToUTF16("2.0.43"), ASCIIToUTF16("MyPlugin version 2.0.43"));
@@ -61,6 +64,9 @@ static WebPluginInfo kPlugin3044 = WebPluginInfo(
 static WebPluginInfo kPlugin3045 = WebPluginInfo(
     ASCIIToUTF16("MyPlugin"), FilePath(FILE_PATH_LITERAL("myplugin.so.3.0.45")),
      ASCIIToUTF16("3.0.45"), ASCIIToUTF16("MyPlugin version 3.0.45"));
+static WebPluginInfo kPlugin3045r = WebPluginInfo(
+    ASCIIToUTF16("MyPlugin"), FilePath(FILE_PATH_LITERAL("myplugin.so.3.0.45")),
+     ASCIIToUTF16("3.0r45"), ASCIIToUTF16("MyPlugin version 3.0r45"));
 static WebPluginInfo kPlugin4043 = WebPluginInfo(
     ASCIIToUTF16("MyPlugin"), FilePath(FILE_PATH_LITERAL("myplugin.so.4.0.43")),
      ASCIIToUTF16("4.0.43"), ASCIIToUTF16("MyPlugin version 4.0.43"));
@@ -84,8 +90,13 @@ TEST(PluginGroupTest, PluginGroupMatch) {
   scoped_ptr<PluginGroup> group(PluginGroupTest::CreatePluginGroup(
       kPluginDef3));
   EXPECT_TRUE(group->Match(kPlugin3045));
+  EXPECT_TRUE(group->Match(kPlugin3045r));
+  EXPECT_FALSE(group->Match(kPluginNoVersion));
   group->AddPlugin(kPlugin3045, 0);
   EXPECT_FALSE(group->IsVulnerable());
+
+  group.reset(PluginGroupTest::CreatePluginGroup(kPluginDef));
+  EXPECT_FALSE(group->Match(kPluginNoVersion));
 }
 
 TEST(PluginGroupTest, PluginGroupMatchCorrectVersion) {
@@ -196,7 +207,9 @@ TEST(PluginGroupTest, VersionExtraction) {
     { "3, 0, 0, 0", "3.0.0.0" },       // Picasa
     { "1, 0, 0, 1", "1.0.0.1" },       // Earth
     { "10,0,45,2", "10.0.45.2" },      // Flash
-    { "11.5.7r609", "11.5.7.609"}     // Shockwave
+    { "11.5.7r609", "11.5.7.609"},     // Shockwave
+    { "10.1 r102", "10.1.102"},        // Flash
+    { "1.6.0_22", "1.6.0.22"},         // Java
   };
 
   for (size_t i = 0; i < arraysize(versions); i++) {

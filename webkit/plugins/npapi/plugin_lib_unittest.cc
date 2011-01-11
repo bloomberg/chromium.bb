@@ -152,6 +152,28 @@ TEST(MIMEDescriptionParse, ComplicatedJava) {
   EXPECT_TRUE(types[4].mime_type.find(';') != std::string::npos);
 }
 
+// Make sure we understand how to get the version numbers for common Linux
+// plug-ins.
+TEST(PluginDescriptionParse, ExtractVersion) {
+  WebPluginInfo info;
+  PluginLib::ExtractVersionString("Shockwave Flash 10.1 r102", &info);
+  EXPECT_EQ(ASCIIToUTF16("10.1 r102"), info.version);
+  PluginLib::ExtractVersionString("Java(TM) Plug-in 1.6.0_22", &info);
+  EXPECT_EQ(ASCIIToUTF16("1.6.0_22"), info.version);
+  // It's actually much more likely for a modern Linux distribution to have
+  // IcedTea.
+  PluginLib::ExtractVersionString(
+      "IcedTea NPR Web Browser Plugin "
+      "(using IcedTea6 1.9.2 (6b20-1.9.2-0ubuntu1~10.04.1))",
+      &info);
+  EXPECT_EQ(ASCIIToUTF16("1.9.2"), info.version);
+  PluginLib::ExtractVersionString(
+      "IcedTea NPR Web Browser Plugin "
+      "(using IcedTea6 1.9.3 (fedora-49.1.9.3.fc14-i386))`",
+      &info);
+  EXPECT_EQ(ASCIIToUTF16("1.9.3"), info.version);
+}
+
 #endif  // defined(OS_LINUX)
 
 }  // namespace npapi
