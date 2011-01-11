@@ -349,10 +349,6 @@ const char kDisableSyncPreferences[]        = "disable-sync-preferences";
 // Disable syncing of themes.
 const char kDisableSyncThemes[]             = "disable-sync-themes";
 
-// Enable the new autofill type.
-const char kEnableSyncNewAutofill[]     =
-    "enable-sync-new-autofill-data-type";
-
 // Disable tabbed options, i.e., DOMUI version of options window.
 const char kDisableTabbedOptions[]           = "disable-tabbed-options";
 

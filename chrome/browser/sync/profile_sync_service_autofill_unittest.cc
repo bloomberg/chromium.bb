@@ -24,10 +24,8 @@
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/glue/autofill_change_processor.h"
-#include "chrome/browser/sync/glue/autofill_change_processor2.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
-#include "chrome/browser/sync/glue/autofill_model_associator2.h"
 #include "chrome/browser/sync/glue/autofill_profile_change_processor.h"
 #include "chrome/browser/sync/glue/autofill_profile_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_profile_model_associator.h"
@@ -53,10 +51,8 @@
 using base::Time;
 using base::WaitableEvent;
 using browser_sync::AutofillChangeProcessor;
-using browser_sync::AutofillChangeProcessor2;
 using browser_sync::AutofillDataTypeController;
 using browser_sync::AutofillModelAssociator;
-using browser_sync::AutofillModelAssociator2;
 using browser_sync::AutofillProfileChangeProcessor;
 using browser_sync::AutofillProfileDataTypeController;
 using browser_sync::AutofillProfileModelAssociator;

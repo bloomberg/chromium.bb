@@ -16,7 +16,6 @@
 #include "base/ref_counted.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/sync/engine/syncapi.h"
-#include "chrome/browser/sync/glue/autofill_model_associator2.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/webdata/autofill_entry.h"

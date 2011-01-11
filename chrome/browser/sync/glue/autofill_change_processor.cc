@@ -12,7 +12,6 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/glue/autofill_change_processor2.h"
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
 #include "chrome/browser/sync/glue/autofill_profile_model_associator.h"
 #include "chrome/browser/sync/glue/do_optimistic_refresh_task.h"
