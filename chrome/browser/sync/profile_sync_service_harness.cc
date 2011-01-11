@@ -24,7 +24,7 @@
 static const int kMinTimestampNeededNone = -1;
 
 // The amount of time for which we wait for a live sync operation to complete.
-static const int kLiveSyncOperationTimeoutMs = 30000;
+static const int kLiveSyncOperationTimeoutMs = 45000;
 
 // Simple class to implement a timeout using PostDelayedTask.  If it is not
 // aborted before picked up by a message queue, then it asserts with the message
