@@ -97,7 +97,8 @@ class ConflictingDllsTest : public DiagnosticTest {
     string16 failures = ASCIIToUTF16("Possibly conflicting modules:");
     DictionaryValue* dictionary;
     for (size_t i = 0; i < list->GetSize(); ++i) {
-      list->GetDictionary(i, &dictionary);
+      if (!list->GetDictionary(i, &dictionary))
+        RecordFailure(ASCIIToUTF16("Dictionary lookup failed"));
       int status;
       string16 location;
       string16 name;
