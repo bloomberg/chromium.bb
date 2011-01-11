@@ -326,9 +326,6 @@ pre_base_env = Environment(
     **kwargs
 )
 
-# Don't use hammer's "magic" link on install.
-pre_base_env['INSTALL'] = SCons.Tool.install.copyFunc
-
 DeclareBit('nacl_glibc', 'Use nacl-glibc for building untrusted code')
 pre_base_env.SetBitFromOption('nacl_glibc', False)
 
