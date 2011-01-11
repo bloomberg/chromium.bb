@@ -39,6 +39,7 @@ class DevToolsAgent : public WebKit::WebDevToolsAgentClient,
   // WebDevToolsAgentClient implementation
   virtual void sendMessageToInspectorFrontend(const WebKit::WebString& data);
   virtual void sendDebuggerOutput(const WebKit::WebString& data);
+  virtual void sendDispatchToAPU(const WebKit::WebString& data);
 
   virtual int hostIdentifier();
   virtual void runtimeFeatureStateChanged(const WebKit::WebString& feature,
@@ -65,6 +66,7 @@ class DevToolsAgent : public WebKit::WebDevToolsAgentClient,
   void OnFrontendLoaded();
   void OnDispatchOnInspectorBackend(const std::string& message);
   void OnInspectElement(int x, int y);
+  void OnSetApuAgentEnabled(bool enabled);
 
   static std::map<int, DevToolsAgent*> agent_for_routing_id_;
 
