@@ -2589,10 +2589,9 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_InstantSupportDetermined,
 // Client-Side Phishing Detector ---------------------------------------------
 // Inform the browser that the current URL is phishing according to the
 // client-side phishing detector.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_DetectedPhishingSite,
+IPC_MESSAGE_ROUTED2(ViewHostMsg_DetectedPhishingSite,
                     GURL /* phishing_url */,
-                    double /* phishing_score */,
-                    SkBitmap /* thumbnail */)
+                    double /* phishing_score */)
 
 // Response from ViewMsg_ScriptEvalRequest. The ID is the parameter supplied
 // to ViewMsg_ScriptEvalRequest. The result has the value returned by the

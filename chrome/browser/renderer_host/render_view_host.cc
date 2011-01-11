@@ -1935,8 +1935,7 @@ void RenderViewHost::OnInstantSupportDetermined(int32 page_id, bool result) {
 }
 
 void RenderViewHost::OnDetectedPhishingSite(const GURL& phishing_url,
-                                            double phishing_score,
-                                            const SkBitmap& thumbnail) {
+                                            double phishing_score) {
   // TODO(noelutz): send an HTTP request to the client-side detection frontends
   // to confirm that the URL is really phishing.
 }

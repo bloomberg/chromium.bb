@@ -17,7 +17,6 @@
 #include "chrome/renderer/safe_browsing/scorer.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
@@ -70,13 +69,10 @@ class PhishingClassifierDelegateTest : public RenderViewFakeResourcesTest {
     return handled;
   }
 
-  void OnDetectedPhishingSite(GURL phishing_url,
-                              double phishing_score,
-                              SkBitmap thumbnail) {
+  void OnDetectedPhishingSite(GURL phishing_url, double phishing_score) {
     detected_phishing_site_ = true;
     detected_url_ = phishing_url;
     detected_score_ = phishing_score;
-    detected_thumbnail_ = thumbnail;
     message_loop_.Quit();
   }
 
@@ -88,7 +84,6 @@ class PhishingClassifierDelegateTest : public RenderViewFakeResourcesTest {
     detected_phishing_site_ = false;
     detected_url_ = GURL();
     detected_score_ = -1.0;
-    detected_thumbnail_ = SkBitmap();
 
     delegate->ClassificationDone(is_phishy, phishy_score);
     message_loop_.Run();
@@ -97,7 +92,6 @@ class PhishingClassifierDelegateTest : public RenderViewFakeResourcesTest {
   bool detected_phishing_site_;
   GURL detected_url_;
   double detected_score_;
-  SkBitmap detected_thumbnail_;
 };
 
 TEST_F(PhishingClassifierDelegateTest, Navigation) {
@@ -254,7 +248,6 @@ TEST_F(PhishingClassifierDelegateTest, DetectedPhishingSite) {
   EXPECT_TRUE(detected_phishing_site_);
   EXPECT_EQ(GURL("http://host.com/"), detected_url_);
   EXPECT_EQ(0.8, detected_score_);
-  EXPECT_FALSE(detected_thumbnail_.isNull());
 
   // The delegate will cancel pending classification on destruction.
   EXPECT_CALL(*classifier, CancelPendingClassification());

@@ -11,26 +11,11 @@
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier.h"
-#include "chrome/renderer/safe_browsing/phishing_thumbnailer.h"
-#include "gfx/size.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 
 namespace safe_browsing {
-
-// The view and thumbnail sizes need to match what the server is expecting.
-namespace {
-// The dimensions that the view will be resized to prior to capturing the
-// thumbnail.
-const int kThumbnailViewWidth = 1024;
-const int kThumbnailViewHeight = 768;
-
-// The dimensions that the image will be resized to after it is captured.
-const int kThumbnailWidth = 212;
-const int kThumbnailHeight = 159;
-}  // namespace
 
 PhishingClassifierDelegate::PhishingClassifierDelegate(
     RenderView* render_view,
@@ -129,20 +114,10 @@ void PhishingClassifierDelegate::ClassificationDone(bool is_phishy,
     return;
   }
 
-  SkBitmap thumbnail = GrabPhishingThumbnail(
-      render_view_,
-      gfx::Size(kThumbnailViewWidth, kThumbnailViewHeight),
-      gfx::Size(kThumbnailWidth, kThumbnailHeight));
-  if (thumbnail.isNull()) {
-    LOG(ERROR) << "Unable to capture thumbnail.";
-    return;
-  }
-
   render_view_->Send(new ViewHostMsg_DetectedPhishingSite(
       render_view_->routing_id(),
       last_url_sent_to_classifier_,
-      phishy_score,
-      thumbnail));
+      phishy_score));
 }
 
 GURL PhishingClassifierDelegate::StripToplevelUrl() {
