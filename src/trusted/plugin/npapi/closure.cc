@@ -102,7 +102,9 @@ void LoadNaClAppNotify::RunFromFile(NPStream* stream,
   PLUGIN_PRINTF(("LoadNaClAppNotify::RunFromFile(%p, %s)\n",
                  static_cast<void*>(stream),
                  fname.c_str()));
-  plugin()->LoadNaClModule(stream->url, fname.c_str());
+  if (NULL != stream) {
+    plugin()->LoadNaClModule(stream->url, fname.c_str());
+  }
 }
 
 void LoadNaClAppNotify::RunFromBuffer(const nacl::string& url,
