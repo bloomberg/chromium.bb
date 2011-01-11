@@ -117,8 +117,8 @@ class CompositeFilter : public Filter {
 
   // Helper function used by NewThreadSafeCallback() to make sure the
   // method gets called on the right thread.
-  void OnCallback(MessageLoop* message_loop,
-                  void (CompositeFilter::*method)());
+  static void OnCallback(MessageLoop* message_loop,
+                         CancelableTask* task);
 
   // Helper function that indicates whether SetError() calls can be forwarded
   // to the host of this filter.
@@ -156,6 +156,8 @@ class CompositeFilter : public Filter {
 
   // Error passed in the last SetError() call.
   PipelineError error_;
+
+  scoped_ptr<ScopedRunnableMethodFactory<CompositeFilter> > runnable_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositeFilter);
 };

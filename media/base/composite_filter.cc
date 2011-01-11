@@ -55,6 +55,8 @@ void CompositeFilter::Init(MessageLoop* message_loop,
   DCHECK(message_loop);
   message_loop_ = message_loop;
   thread_factory_ = thread_factory;
+  runnable_factory_.reset(
+      new ScopedRunnableMethodFactory<CompositeFilter>(this));
 
   if (!thread_factory_) {
     thread_factory_ = &CompositeFilter::DefaultThreadFactory;
@@ -76,9 +78,6 @@ CompositeFilter::~CompositeFilter() {
     (*iter)->Stop();
   }
 
-  // Reset the pipeline, which will decrement a reference to this object.
-  // We will get destroyed as soon as the remaining tasks finish executing.
-  // To be safe, we'll set our pipeline reference to NULL.
   filters_.clear();
   STLDeleteElements(&filter_threads_);
 }
@@ -470,21 +469,28 @@ void CompositeFilter::HandleError(PipelineError error) {
 FilterCallback* CompositeFilter::NewThreadSafeCallback(
     void (CompositeFilter::*method)()) {
   return TaskToCallbackAdapter::NewCallback(
-      NewRunnableMethod(this,
-                        &CompositeFilter::OnCallback,
-                        message_loop_,
-                        method));
+      NewRunnableFunction(&CompositeFilter::OnCallback,
+                          message_loop_,
+                          runnable_factory_->NewRunnableMethod(method)));
 }
 
+// This method is intentionally static so that no reference to the composite
+// is needed to call it. This method may be called by other threads and we
+// don't want those threads to gain ownership of this composite by having a
+// reference to it. |task| will contain a weak reference to the composite
+// so that the reference can be cleared if the composite is destroyed before
+// the callback is called.
+// static
 void CompositeFilter::OnCallback(MessageLoop* message_loop,
-                                 void (CompositeFilter::*method)()) {
+                                 CancelableTask* task) {
   if (MessageLoop::current() != message_loop) {
     // Posting callback to the proper thread.
-    message_loop->PostTask(FROM_HERE, NewRunnableMethod(this, method));
+    message_loop->PostTask(FROM_HERE, task);
     return;
   }
 
-  (this->*method)();
+  task->Run();
+  delete task;
 }
 
 bool CompositeFilter::CanForwardError() {
