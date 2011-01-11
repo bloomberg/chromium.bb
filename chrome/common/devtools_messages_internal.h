@@ -56,7 +56,6 @@ IPC_MESSAGE_CONTROL1(DevToolsClientMsg_DebuggerOutput,
 IPC_MESSAGE_CONTROL1(DevToolsClientMsg_DispatchToAPU,
                      std::string /* message */)
 
-
 //-----------------------------------------------------------------------------
 // These are messages sent from DevToolsClient to DevToolsAgent through the
 // browser.
