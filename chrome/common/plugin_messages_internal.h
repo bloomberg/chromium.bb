@@ -305,8 +305,8 @@ IPC_MESSAGE_ROUTED1(PluginMsg_SetFakeAcceleratedSurfaceWindowHandle,
 #endif
 
 IPC_MESSAGE_CONTROL3(PluginMsg_ClearSiteData,
+                     std::string, /* site */
                      uint64, /* flags */
-                     std::string, /* domain */
                      base::Time /* begin_time */)
 
 

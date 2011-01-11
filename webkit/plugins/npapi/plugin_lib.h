@@ -78,6 +78,13 @@ class PluginLib : public base::RefCounted<PluginLib> {
   // NPAPI method to shutdown a Plugin.
   void NP_Shutdown(void);
 
+  // NPAPI method to clear locally stored data (LSO's or "Flash cookies").
+  NPError NP_ClearSiteData(const char* site, uint64 flags, uint64 max_age);
+
+  // NPAPI method to get a NULL-terminated list of all sites under which data
+  // is stored.
+  char** NP_GetSitesWithData();
+
   int instance_count() const { return instance_count_; }
 
   // Prevents the library code from being unload when Unload() is called (since

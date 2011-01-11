@@ -197,7 +197,6 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   short NPP_HandleEvent(void*);
   void NPP_Destroy();
   bool NPP_Print(NPPrint* platform_print);
-  NPError NPP_ClearSiteData(uint64, const char*, uint64);
   void NPP_URLRedirectNotify(const char* url, int32_t status,
                              void* notify_data);
 

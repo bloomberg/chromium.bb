@@ -137,6 +137,22 @@ void PluginLib::NP_Shutdown(void) {
   entry_points_.np_shutdown();
 }
 
+NPError PluginLib::NP_ClearSiteData(const char* site,
+                                    uint64 flags,
+                                    uint64 max_age) {
+  DCHECK(initialized_);
+  if (plugin_funcs_.clearsitedata)
+    return plugin_funcs_.clearsitedata(site, flags, max_age);
+  return NPERR_INVALID_FUNCTABLE_ERROR;
+}
+
+char** PluginLib::NP_GetSitesWithData() {
+  DCHECK(initialized_);
+  if (plugin_funcs_.getsiteswithdata)
+    return plugin_funcs_.getsiteswithdata();
+  return NULL;
+}
+
 void PluginLib::PreventLibraryUnload() {
   skip_unload_ = true;
 }
