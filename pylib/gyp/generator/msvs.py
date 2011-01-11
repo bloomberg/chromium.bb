@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Copyright (c) 2009 Google Inc. All rights reserved.
+# Copyright (c) 2011 Google Inc. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -16,6 +16,7 @@ import gyp.MSVSProject as MSVSProject
 import gyp.MSVSToolFile as MSVSToolFile
 import gyp.MSVSUserFile as MSVSUserFile
 import gyp.MSVSVersion as MSVSVersion
+import gyp.MSVSSettings as MSVSSettings
 import gyp.common
 
 
@@ -802,7 +803,9 @@ def _AddConfigurationToMsvsProject(p, spec, config_type, config_name, config):
   # Prepare the list of tools as a dictionary.
   tools = dict()
   # Add in user specified msvs_settings.
-  for tool in config.get('msvs_settings', {}):
+  msvs_settings = config.get('msvs_settings', {})
+  MSVSSettings.ValidateMSVSSettings(msvs_settings)
+  for tool in msvs_settings:
     settings = config['msvs_settings'][tool]
     for setting in settings:
       _ToolAppend(tools, tool, setting, settings[setting])
