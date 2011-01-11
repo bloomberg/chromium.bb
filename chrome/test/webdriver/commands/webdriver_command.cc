@@ -14,7 +14,6 @@
 #include "base/json/json_writer.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
@@ -75,4 +74,3 @@ bool WebDriverCommand::VerifyTabIsValid(Response* response) {
 }
 
 }  // namespace webdriver
-

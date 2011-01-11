@@ -14,13 +14,13 @@
 #include "chrome/common/child_process.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/utility/utility_thread.h"
 
 #if defined(OS_WIN)
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/sandbox_init_wrapper.h"
 #include "sandbox/src/sandbox.h"
 #endif  // defined(OS_WIN)

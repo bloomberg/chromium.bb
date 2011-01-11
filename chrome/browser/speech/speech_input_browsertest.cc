@@ -11,7 +11,6 @@
 #include "chrome/browser/speech/speech_input_manager.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
@@ -192,4 +191,4 @@ IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, MAYBE_GrammarAttribute) {
             fake_speech_input_manager_.grammar());
 }
 
-} //  namespace speech_input
+}  // namespace speech_input

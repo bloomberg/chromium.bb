@@ -11,7 +11,6 @@
 #include "base/time.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/test/ui/ui_perf_test.h"
 #include "chrome/test/ui_test_utils.h"

@@ -53,7 +53,6 @@
 #include "chrome/browser/ui/options/options_util.h"
 #include "chrome/browser/ui/options/options_window.h"
 #include "chrome/browser/ui/options/show_options_url.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_type.h"

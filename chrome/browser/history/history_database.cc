@@ -14,7 +14,6 @@
 #include "base/rand_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
-#include "chrome/common/chrome_switches.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"

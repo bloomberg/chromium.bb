@@ -33,7 +33,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_plugin_util.h"
-#include "chrome/common/chrome_switches.h"
 #include "gfx/codec/png_codec.h"
 #include "googleurl/src/gurl.h"
 

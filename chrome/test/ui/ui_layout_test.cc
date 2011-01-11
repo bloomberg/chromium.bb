@@ -10,7 +10,6 @@
 #include "base/test/test_file_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"

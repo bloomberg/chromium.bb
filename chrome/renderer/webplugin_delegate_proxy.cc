@@ -21,7 +21,6 @@
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/child_process_logging.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/plugin/npobject_proxy.h"
@@ -1567,4 +1566,3 @@ void WebPluginDelegateProxy::OnURLRedirectResponse(bool allow,
 
   plugin_->URLRedirectResponse(allow, resource_id);
 }
-

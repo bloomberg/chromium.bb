@@ -5,7 +5,6 @@
 #include "chrome/browser/nacl_host/nacl_broker_service_win.h"
 
 #include "chrome/browser/nacl_host/nacl_process_host.h"
-#include "chrome/common/chrome_switches.h"
 
 NaClBrokerService* NaClBrokerService::GetInstance() {
   return Singleton<NaClBrokerService>::get();

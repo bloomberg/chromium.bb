@@ -12,11 +12,10 @@
 #include "chrome/browser/renderer_host/render_widget_host_view_win.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
-#include "ia2_api_all.h"  // Generated
+#include "ia2_api_all.h"  // Generated    NOLINT
 
 using std::auto_ptr;
 using std::vector;

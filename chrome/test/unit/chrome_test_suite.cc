@@ -14,7 +14,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_browser_process.h"
 #include "net/base/net_errors.h"

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -16,7 +16,6 @@
 #include "base/lock.h"
 #include "base/logging.h"
 #include "base/win/registry.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome/installer/util/google_chrome_distribution.h"

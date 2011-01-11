@@ -5,7 +5,9 @@
 #include "chrome/browser/autofill/autofill_manager.h"
 
 #include <limits>
+#include <map>
 #include <set>
+#include <utility>
 
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
@@ -46,8 +48,8 @@ namespace {
 const double kAutoFillPositiveUploadRateDefaultValue = 0.01;
 const double kAutoFillNegativeUploadRateDefaultValue = 0.01;
 
-const string16::value_type kCreditCardPrefix[] = {'*',0};
-const string16::value_type kLabelSeparator[] = {';',' ','*',0};
+const string16::value_type kCreditCardPrefix[] = {'*', 0};
+const string16::value_type kLabelSeparator[] = {';', ' ', '*', 0};
 
 // Removes duplicate suggestions whilst preserving their original order.
 void RemoveDuplicateSuggestions(std::vector<string16>* values,

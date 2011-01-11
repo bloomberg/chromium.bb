@@ -18,7 +18,6 @@
 #include "chrome/browser/ssl/ssl_request_info.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"

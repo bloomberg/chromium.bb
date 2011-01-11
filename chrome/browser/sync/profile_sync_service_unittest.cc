@@ -31,7 +31,6 @@
 #include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
@@ -647,11 +646,11 @@ TEST_F(ProfileSyncServiceTest, ServerChangeRequiringFosterParent) {
   int64 f0 = other_bookmarks_id();                 // + other_node
   int64 f1 = adds.AddFolder(L"f1",      f0, 0);    //   + f1
   int64 f2 = adds.AddFolder(L"f2",      f1, 0);    //     + f2
-  int64 u3 = adds.AddURL(   L"u3", url, f2, 0);    //       + u3
-  int64 u4 = adds.AddURL(   L"u4", url, f2, u3);   //       + u4
-  int64 u5 = adds.AddURL(   L"u5", url, f1, f2);   //     + u5
+  int64 u3 = adds.AddURL(   L"u3", url, f2, 0);    //       + u3    NOLINT
+  int64 u4 = adds.AddURL(   L"u4", url, f2, u3);   //       + u4    NOLINT
+  int64 u5 = adds.AddURL(   L"u5", url, f1, f2);   //     + u5      NOLINT
   int64 f6 = adds.AddFolder(L"f6",      f1, u5);   //     + f6
-  int64 u7 = adds.AddURL(   L"u7", url, f0, f1);   //   + u7
+  int64 u7 = adds.AddURL(   L"u7", url, f0, f1);   //   + u7        NOLINT
 
   vector<sync_api::SyncManager::ChangeRecord>::const_iterator it;
   // The bookmark model shouldn't yet have seen any of the nodes of |adds|.
@@ -1385,8 +1384,8 @@ TEST_F(ProfileSyncServiceTestWithData, TestStartupWithOldSyncData) {
                                                      profile_.get(),
                                                      service_.get()));
 
-    service_->Initialize(); // will call disableForUser because sync setup
-                            // hasn't been completed.
+    service_->Initialize();  // will call disableForUser because sync setup
+                             // hasn't been completed.
   }
 
   ASSERT_FALSE(service_->backend());

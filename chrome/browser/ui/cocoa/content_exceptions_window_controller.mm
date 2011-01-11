@@ -13,7 +13,6 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/content_exceptions_table_model.h"
 #include "chrome/browser/content_setting_combo_model.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"

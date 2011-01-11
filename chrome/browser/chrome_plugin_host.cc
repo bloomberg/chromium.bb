@@ -5,6 +5,8 @@
 #include "chrome/browser/chrome_plugin_host.h"
 
 #include <set>
+#include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -31,7 +33,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/chrome_plugin_util.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/gears_api.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/net/url_request_intercept_job.h"

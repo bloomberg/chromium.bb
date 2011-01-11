@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -11,7 +12,6 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/tab_contents/background_contents.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/testing_profile.h"
@@ -138,7 +138,6 @@ TEST_F(BackgroundContentsServiceTest, BackgroundContentsUrlAdded) {
     contents->Navigate(url2);
     EXPECT_EQ(1U, GetPrefs(&profile)->size());
     EXPECT_EQ(url.spec(), GetPrefURLForApp(&profile, contents->appid()));
-
   }
   // Contents are deleted, url should persist.
   EXPECT_EQ(1U, GetPrefs(&profile)->size());

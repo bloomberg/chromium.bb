@@ -4,7 +4,10 @@
 
 #include "chrome/browser/history/history_backend.h"
 
+#include <list>
+#include <map>
 #include <set>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -24,7 +27,6 @@
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"

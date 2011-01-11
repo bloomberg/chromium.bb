@@ -8,7 +8,6 @@
 #include "base/threading/platform_thread.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/profile_import/profile_import_thread.h"

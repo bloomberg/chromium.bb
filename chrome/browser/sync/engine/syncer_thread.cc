@@ -1,15 +1,8 @@
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chrome/browser/sync/engine/syncer_thread.h"
-
-#include "build/build_config.h"
-
-#if defined(OS_MACOSX)
-#include <CoreFoundation/CFNumber.h>
-#include <IOKit/IOTypes.h>
-#include <IOKit/IOKitLib.h>
-#endif
 
 #include <algorithm>
 #include <map>
@@ -17,12 +10,18 @@
 
 #include "base/rand_util.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
+#include "build/build_config.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
-#include "chrome/common/chrome_switches.h"
 #include "jingle/notifier/listener/notification_constants.h"
+
+#if defined(OS_MACOSX)
+#include <CoreFoundation/CFNumber.h>
+#include <IOKit/IOTypes.h>
+#include <IOKit/IOKitLib.h>
+#endif
 
 using std::priority_queue;
 using std::min;

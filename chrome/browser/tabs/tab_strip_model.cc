@@ -5,6 +5,7 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 
 #include <algorithm>
+#include <map>
 
 #include "base/command_line.h"
 #include "base/stl_util-inl.h"
@@ -26,7 +27,6 @@
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"

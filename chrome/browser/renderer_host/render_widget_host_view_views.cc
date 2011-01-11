@@ -19,7 +19,6 @@
 #include "base/time.h"
 #include "chrome/browser/renderer_host/backing_store_x.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/result_codes.h"
@@ -125,8 +124,7 @@ RenderWidgetHostViewViews::RenderWidgetHostViewViews(RenderWidgetHost* host)
       native_cursor_(NULL),
       is_showing_context_menu_(false),
       visually_deemphasized_(false),
-      touch_event_()
-    {
+      touch_event_() {
   SetFocusable(true);
   host_->set_view(this);
 }

@@ -5,7 +5,6 @@
 #include "chrome/common/switch_utils.h"
 
 #include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(SwitchUtilsTest, RemoveSwitches) {

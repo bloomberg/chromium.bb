@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/views/tabs/base_tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "views/controls/menu/menu_2.h"

@@ -4,19 +4,6 @@
 
 #include "chrome/test/webdriver/session_manager.h"
 
-#ifdef OS_POSIX
-  #include <netdb.h>
-  #include <unistd.h>
-  #include <arpa/inet.h>
-  #include <net/if.h>
-  #include <sys/ioctl.h>
-  #include <sys/socket.h>
-  #include <sys/types.h>
-#elif OS_WIN
-  #include <Shellapi.h>
-  #include <Winsock2.h>
-#endif
-
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/process.h"
@@ -24,9 +11,20 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/test/test_timeouts.h"
-
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
+
+#if defined(OS_POSIX)
+#include <arpa/inet.h>
+#include <net/if.h>
+#include <netdb.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+#elif defined(OS_WIN)
+#include <Shellapi.h>
+#include <Winsock2.h>
+#endif
 
 namespace webdriver {
 

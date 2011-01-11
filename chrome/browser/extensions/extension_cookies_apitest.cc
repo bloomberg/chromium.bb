@@ -4,7 +4,6 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/common/chrome_switches.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Cookies) {
   ASSERT_TRUE(RunExtensionTest("cookies/api")) << message_;

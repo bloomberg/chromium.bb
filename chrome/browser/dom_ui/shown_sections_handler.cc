@@ -4,6 +4,8 @@
 
 #include "chrome/browser/dom_ui/shown_sections_handler.h"
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
@@ -11,7 +13,6 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_type.h"

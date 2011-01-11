@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_AUTOMATION_UI_CONTROLS_INTERNAL_H_
 #define CHROME_BROWSER_AUTOMATION_UI_CONTROLS_INTERNAL_H_
 
-#include "base/message_loop.h"
+#include "base/task.h"
 #include "chrome/browser/automation/ui_controls.h"
 
 namespace ui_controls {
@@ -26,6 +26,6 @@ class ClickTask : public Task {
   Task* followup_;
 };
 
-}  // ui_controls
+}  // namespace ui_controls
 
 #endif  // CHROME_BROWSER_AUTOMATION_UI_CONTROLS_INTERNAL_H_

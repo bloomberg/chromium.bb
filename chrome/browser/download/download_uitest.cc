@@ -1,14 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <sstream>
 #include <string>
-
-#include "build/build_config.h"
-#if defined(OS_WIN)
-#include <shlwapi.h>
-#endif
 
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -16,18 +11,22 @@
 #include "base/string_util.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/platform_thread.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/browser/net/url_request_slow_download_job.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/test/ui/ui_test.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_unittest.h"
+
+#if defined(OS_WIN)
+#include <shlwapi.h>
+#endif
 
 namespace {
 

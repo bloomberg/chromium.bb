@@ -5,7 +5,6 @@
 #include "chrome/nacl/nacl_main_platform_delegate.h"
 
 #include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
 #include "seccompsandbox/sandbox.h"
 
 NaClMainPlatformDelegate::NaClMainPlatformDelegate(

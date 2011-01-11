@@ -4,6 +4,8 @@
 
 #include "chrome/browser/profiles/profile.h"
 
+#include <string>
+
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -29,7 +31,6 @@
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
@@ -38,6 +39,7 @@
 #include "grit/locale_settings.h"
 #include "net/base/transport_security_state.h"
 #include "webkit/database/database_tracker.h"
+
 #if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #endif
@@ -68,7 +70,7 @@ void CleanupRequestContext(ChromeURLRequestContextGetter* context) {
     context->CleanupOnUIThread();
 }
 
-} // namespace
+}  // namespace
 
 Profile::Profile()
     : restored_last_session_(false),

@@ -28,7 +28,6 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/pref_names.h"

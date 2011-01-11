@@ -46,7 +46,6 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/crypto_helpers.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/deprecated/event_sys.h"
 #include "chrome/common/net/gaia/gaia_authenticator.h"
 #include "jingle/notifier/listener/mediator_thread_impl.h"

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/history/thumbnail_database.h"
 
+#include <algorithm>
+#include <string>
+
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
 #include "base/command_line.h"
@@ -16,7 +19,6 @@
 #include "chrome/browser/history/history_publisher.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/history/url_database.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/thumbnail_score.h"
 #include "gfx/codec/jpeg_codec.h"
 #include "third_party/skia/include/core/SkBitmap.h"

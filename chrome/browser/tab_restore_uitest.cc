@@ -7,7 +7,6 @@
 #include "base/file_path.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/automation/tab_proxy.h"

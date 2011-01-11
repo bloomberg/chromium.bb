@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/user_script_slave.h"
 
+#include <map>
+
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -12,7 +14,6 @@
 #include "base/shared_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/extension_groups.h"

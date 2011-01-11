@@ -12,7 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/common/child_process_host.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pepper_file_messages.h"
 #include "ipc/ipc_platform_file.h"
 

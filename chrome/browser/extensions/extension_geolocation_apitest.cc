@@ -5,10 +5,9 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/geolocation/location_arbitrator.h"
 #include "chrome/browser/geolocation/mock_location_provider.h"
-#include "chrome/common/chrome_switches.h"
 
 class GeolocationApiTest : public ExtensionApiTest {
-public:
+ public:
   // InProcessBrowserTest
   void SetUpInProcessBrowserTestFixture() {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
@@ -17,7 +16,8 @@ public:
   }
 };
 
-IN_PROC_BROWSER_TEST_F(GeolocationApiTest, FLAKY_ExtensionGeolocationAccessFail) {
+IN_PROC_BROWSER_TEST_F(GeolocationApiTest,
+                       FLAKY_ExtensionGeolocationAccessFail) {
   // Test that geolocation cannot be accessed from extension without permission.
   ASSERT_TRUE(RunExtensionTest("geolocation/no_permission")) << message_;
 }

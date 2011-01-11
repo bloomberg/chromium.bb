@@ -6,7 +6,6 @@
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/background_page_tracker.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/test/testing_pref_service.h"

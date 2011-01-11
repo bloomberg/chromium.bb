@@ -17,7 +17,6 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"

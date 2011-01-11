@@ -41,7 +41,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "chrome/browser/upgrade_detector.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"

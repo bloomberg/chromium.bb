@@ -14,7 +14,6 @@
 #include "base/lazy_instance.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/url_pattern.h"
@@ -677,4 +676,3 @@ v8::Handle<v8::Value>
   return v8::ThrowException(v8::Exception::Error(
       v8::String::New(error_msg.c_str())));
 }
-

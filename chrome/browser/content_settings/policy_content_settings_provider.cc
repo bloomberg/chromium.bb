@@ -4,6 +4,8 @@
 
 #include "chrome/browser/content_settings/policy_content_settings_provider.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
@@ -11,7 +13,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"

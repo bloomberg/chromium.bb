@@ -10,7 +10,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/javascript_test_util.h"

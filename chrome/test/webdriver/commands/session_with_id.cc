@@ -10,7 +10,6 @@
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
 
 namespace webdriver {
 
@@ -46,4 +45,3 @@ void SessionWithID::ExecuteDelete(Response* const response) {
 }
 
 }  // namespace webdriver
-

@@ -14,7 +14,6 @@
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/history/thumbnail_database.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"

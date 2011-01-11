@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 

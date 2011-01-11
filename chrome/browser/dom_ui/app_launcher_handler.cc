@@ -4,6 +4,9 @@
 
 #include "chrome/browser/dom_ui/app_launcher_handler.h"
 
+#include <string>
+#include <vector>
+
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -20,7 +23,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"

@@ -17,7 +17,6 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
 #include "third_party/skia/include/core/SkPaint.h"

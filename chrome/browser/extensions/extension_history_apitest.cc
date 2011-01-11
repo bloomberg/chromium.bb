@@ -4,7 +4,6 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/common/chrome_switches.h"
 #include "net/base/mock_host_resolver.h"
 
 // Disabled, http://crbug.com/26296.

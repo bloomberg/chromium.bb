@@ -5,7 +5,6 @@
 #include "chrome/common/sandbox_init_wrapper.h"
 
 #include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
 
 bool SandboxInitWrapper::InitializeSandbox(const CommandLine& command_line,
                                            const std::string& process_type) {
