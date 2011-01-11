@@ -3195,7 +3195,7 @@ each locale. -->
         Expires On
       </message>
       <message name="IDS_CERT_MANAGER_VIEW_CERT_BUTTON" desc="Label for the button in the certificate manager which launches the certificate viewer for the selected certificate">
-        View
+        View...
       </message>
       <message name="IDS_CERT_MANAGER_IMPORT_BUTTON" desc="Label for the button in the certificate manager which allows you to import certificates">
         Import...
@@ -5096,12 +5096,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CLEAR_OTHER_DATA_TAB_LABEL" desc="Tab label for controls for clearing other data (including server data)">
         Other data
       </message>
-       <message name="IDS_CLEAR_BROWSING_DATA_BUTTON" desc="Button for initiating clearing of browsing data">
-        Clear browsing data
-      </message>
-       <message name="IDS_CLEAR_BROWSING_DATA_COMMIT" desc="Text for OK button on dialog">
-        Clear browsing data
-      </message>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_CLEAR_BROWSING_DATA_COMMIT" desc="In Title Case: Text for OK button on dialog">
+          Clear Browsing Data
+        </message>
+      </if>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_CLEAR_BROWSING_DATA_COMMIT" desc="In sentence case: Text for OK button on dialog">
+          Clear browsing data
+        </message>
+      </if>
       <message name="IDS_FLASH_STORAGE_SETTINGS" desc="Link for opening Adobe Flash Player storage settings">
         Adobe Flash Player storage settings...
       </message>
@@ -6909,9 +6913,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_DEFAULTBROWSER_SXS" desc="The text displayed when Chrome is installed in side-by-side mode, which does not support setting as the default browser.">
         This is a secondary installation of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, and cannot be made your default browser.
       </message>
-      <message name="IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT" desc="The label of the 'Use Chrome as default' browser button">
-        Make <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> my default browser
-      </message>
+
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT" desc="In Title Case: The label of the 'Use Chrome as default' browser button">
+          Make <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> My Default Browser
+        </message>
+      </if>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT" desc="In sentence case: The label of the 'Use Chrome as default' browser button">
+          Make <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> my default browser
+        </message>
+      </if>
 
       <message name="IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME" desc="The title of the download location group">
         Downloads
@@ -6940,10 +6952,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_AUTOOPENFILETYPES_INFO" desc="The information label for the 'Reset always open files' button">
         You have chosen to open certain file types automatically after downloading. You can clear these settings so that downloaded files don't open automatically.
       </message>
-      <message name="IDS_OPTIONS_AUTOOPENFILETYPES_RESETTODEFAULT" desc="The label of the 'Reset always open files' button">
-        Clear auto-opening settings
-      </message>
 
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_OPTIONS_AUTOOPENFILETYPES_RESETTODEFAULT" desc="In Title Case: The label of the 'Reset always open files' button">
+          Clear Auto-opening Settings
+        </message>
+      </if>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_OPTIONS_AUTOOPENFILETYPES_RESETTODEFAULT" desc="In sentence case: The label of the 'Reset always open files' button">
+          Clear auto-opening settings
+        </message>
+      </if>
 
       <message name="IDS_OPTIONS_GEARSSETTINGS_GROUP_NAME" desc="The label of the 'Gears Settings' group">
         Gears:
@@ -6960,46 +6979,42 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Select trusted SSL certificates.
       </message>
 
-      <if expr="not pp_ifdef('use_titlecase') or os != 'linux2'">
-        <message name="IDS_OPTIONS_PASSWORDS_GROUP_NAME" desc="The title of the 'Passwords' group">
-          Passwords:
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase') and os == 'linux2'">
-        <message name="IDS_OPTIONS_PASSWORDS_GROUP_NAME" desc="In Title Case and without trailing colon: The title of the 'Passwords' group">
-          Passwords
-        </message>
-      </if>
-
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_PASSWORDS_SHOWPASSWORDS" desc="In Title Case: The label of the 'Show passwords' button">
-          Show Saved Passwords...
-        </message>
-      </if>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_OPTIONS_PASSWORDS_SHOWPASSWORDS" desc="In sentence case: The label of the 'Show passwords' button">
-          Show saved passwords...
-        </message>
-      </if>
-
       <message name="IDS_OPTIONS_PASSWORDS_ASKTOSAVE" desc="The label of the 'Ask me to save passwords' radio button">
         Offer to save passwords
       </message>
       <message name="IDS_OPTIONS_PASSWORDS_NEVERSAVE" desc="The label of the 'Never save passwords' radio button">
         Never save passwords
       </message>
-      <message name="IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS" desc="The label of the 'Manage saved passwords' button">
-        Manage saved passwords
-      </message>
-
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_OPTIONS_PASSWORDS_SHOWPASSWORDS" desc="In Title Case: The label of the 'Show passwords' button">
+          Show Saved Passwords...
+        </message>
+        <message name="IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS" desc="In Title Case: The label of the 'Manage saved passwords' button">
+          Manage Saved Passwords...
+        </message>
+      </if>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_OPTIONS_PASSWORDS_SHOWPASSWORDS" desc="In sentence case: The label of the 'Show passwords' button">
+          Show saved passwords...
+        </message>
+        <message name="IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS" desc="In sentence case: The label of the 'Manage saved passwords' button">
+          Manage saved passwords...
+        </message>
+      </if>
       <if expr="not pp_ifdef('use_titlecase') or os != 'linux2'">
         <message name="IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME" desc="The title of the form Autofill group">
           Form autofill:
+        </message>
+        <message name="IDS_OPTIONS_PASSWORDS_GROUP_NAME" desc="The title of the 'Passwords' group">
+          Passwords:
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase') and os == 'linux2'">
         <message name="IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME" desc="In Title Case and without trailing colon: The title of the form Autofill group">
           Form Autofill
+        </message>
+        <message name="IDS_OPTIONS_PASSWORDS_GROUP_NAME" desc="In Title Case and without trailing colon: The title of the 'Passwords' group">
+          Passwords
         </message>
       </if>
       <message name="IDS_AUTOFILL_CC_INFOBAR_TEXT" desc="Text to show in the Autofill credit card request infobar.">
@@ -8112,18 +8127,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
 
       <message name="IDS_OPTIONS_DISABLE_WEB_SERVICES" desc="The text in the options panel describes that we can disable web services.">
-        You may optionally disable these services.
+        You may optionally disable these services
       </message>
       <message name="IDS_OPTIONS_LINKDOCTOR_PREF" desc="The documentation string of the 'Use Link Doctor' preference">
-        Show suggestions for navigation errors.
+        Show suggestions for navigation errors
       </message>
 
       <message name="IDS_OPTIONS_SUGGEST_PREF" desc="The documentation string of the 'Use Suggest' preference">
-        Show suggestions to help complete searches and URLs.
+        Show suggestions to help complete searches and URLs
       </message>
 
       <message name="IDS_OPTIONS_ENABLE_LOGGING" desc="The label of the checkbox to enable/disable crash and user metrics logging">
-        Automatically send usage statistics and crash reports to Google.
+        Automatically send usage statistics and crash reports to Google
       </message>
 
       <message name="IDS_OPTIONS_TABS_TO_LINKS_PREF" desc="The documentation string of the 'Tabs to Links' preference">
@@ -8976,9 +8991,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <!-- App menu -->
         <message name="IDS_ABOUT_MAC" desc="The Mac menu item to open the about box.">
           About <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
-        </message>
-        <message name="IDS_CLEAR_BROWSING_DATA_MAC" desc="The Mac menu item for clearing of browsing data in the app menu.">
-          Clear Browsing Data...
         </message>
         <message name="IDS_SERVICES_MAC" desc="The Mac menu item for the OS X services submenu (OS fills it in) in the app menu.">
           Services

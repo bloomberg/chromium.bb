@@ -113,7 +113,7 @@
 								</object>
 								<object class="NSMenuItem" id="52470633">
 									<reference key="NSMenu" ref="110575045"/>
-									<string key="NSTitle">^IDS_CLEAR_BROWSING_DATA_MAC</string>
+									<string key="NSTitle">^IDS_CLEAR_BROWSING_DATA</string>
 									<string type="base64-UTF8" key="NSKeyEquiv">CA</string>
 									<int key="NSKeyEquivModMask">1179648</int>
 									<int key="NSMnemonicLoc">2147483647</int>

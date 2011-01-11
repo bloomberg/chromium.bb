@@ -117,7 +117,7 @@ void ClearBrowsingDataView2::Init() {
 
   clear_browsing_data_button_ = new views::NativeButton(
       this,
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_CLEAR_BROWSING_DATA_BUTTON)));
+      UTF16ToWide(l10n_util::GetStringUTF16(IDS_CLEAR_BROWSING_DATA_COMMIT)));
 
   // Add a label which appears before the combo box for the time period.
   time_period_label_ = new views::Label(UTF16ToWide(
