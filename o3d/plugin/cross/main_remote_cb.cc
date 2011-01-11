@@ -74,8 +74,7 @@ NPError EXPORT_SYMBOL OSCALL NP_Initialize(NPNetscapeFuncs *browserFuncs) {
   InitLogging(kLogFile,
               logging::LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG,
               logging::DONT_LOCK_LOG_FILE,
-              logging::APPEND_TO_OLD_LOG_FILE,
-              logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+              logging::APPEND_TO_OLD_LOG_FILE);
 
   NPError retval = InitializeNPNApi(browserFuncs);
   if (retval != NPERR_NO_ERROR) return retval;
