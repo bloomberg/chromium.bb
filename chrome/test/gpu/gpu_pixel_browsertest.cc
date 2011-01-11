@@ -39,6 +39,10 @@ namespace {
 // Command line flag for forcing the machine's GPU to be used instead of OSMesa.
 const char kUseGpuInTests[] = "use-gpu-in-tests";
 
+// Command line flag for overriding the default location for putting generated
+// test images that do not match references.
+const char kGeneratedDir[] = "generated-dir";
+
 // Reads and decodes a PNG image to a bitmap. Returns true on success. The PNG
 // should have been encoded using |gfx::PNGCodec::Encode|.
 bool ReadPNGFile(const FilePath& file_path, SkBitmap* bitmap) {
@@ -161,7 +165,13 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
   virtual void SetUpInProcessBrowserTestFixture() {
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));
     test_data_dir_ = test_data_dir_.AppendASCII("gpu");
-    generated_img_dir_ = test_data_dir_.AppendASCII("generated");
+
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(kGeneratedDir))
+      generated_img_dir_ = command_line->GetSwitchValuePath(kGeneratedDir);
+    else
+      generated_img_dir_ = test_data_dir_.AppendASCII("generated");
+
     if (using_gpu_)
       reference_img_dir_ = test_data_dir_.AppendASCII("gpu_reference");
     else
@@ -292,17 +302,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(GpuPixelBrowserTest);
 };
 
-// This test does not run on Linux because the information about the gfx card is
-// not available yet.
-#if !defined(OS_LINUX)
-// Mark this as failing because we don't have the reference images yet. Once the
-// images are generated on the bots, they will be uploaded and this status will
-// be changed.
-#define MAYBE_WebGLTeapot FAILS_WebGLTeapot
-#else
-#define MAYBE_WebGLTeapot DISABLED_WebGLTeapot
-#endif
-IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, MAYBE_WebGLTeapot) {
+IN_PROC_BROWSER_TEST_F(GpuPixelBrowserTest, WebGLTeapot) {
   ui_test_utils::DOMMessageQueue message_queue;
   ui_test_utils::NavigateToURL(
       browser(),
