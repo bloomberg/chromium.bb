@@ -155,7 +155,7 @@ static NSString* const kGroupID = @"_group_id";
   NSMutableArray* rows = [NSMutableArray arrayWithCapacity:range.length];
   for (NSUInteger i = range.location; i < NSMaxRange(range); ++i)
     [rows addObject:[self columnValuesForRow:i]];
-  NSArray* indexes = [self controllerRowsForModelRowsInRange:range];
+  NSIndexSet* indexes = [self controllerRowsForModelRowsInRange:range];
   [self insertObjects:rows atArrangedObjectIndexes:indexes];
 }
 
