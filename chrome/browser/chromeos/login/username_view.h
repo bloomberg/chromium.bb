@@ -35,9 +35,17 @@ class UsernameView : public views::Label {
  protected:
   // Constructs username view for the given |username|. Consider using
   // |CreateShapedUsernameView| to match the login page style.
-  explicit UsernameView(const std::wstring& username);
+  UsernameView(const std::wstring& username, bool use_small_shape);
+
+  // True indicates that this UsernameView is used for a user pod not
+  // currently selected.
+  bool use_small_shape() const { return use_small_shape_; }
 
  private:
+  // Overriden from View.
+  gfx::NativeCursor GetCursorForPoint(
+      views::Event::EventType event_type,
+      const gfx::Point& p);
 
   // Paints username to the bitmap with the bounds given.
   void PaintUsername(const gfx::Rect& bounds);
@@ -47,6 +55,9 @@ class UsernameView : public views::Label {
 
   // Holds margins width (depends on the height).
   int margin_width_;
+
+  // Whether the shape for the smaller view should be used.
+  bool use_small_shape_;
 
   DISALLOW_COPY_AND_ASSIGN(UsernameView);
 };

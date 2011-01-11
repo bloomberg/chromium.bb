@@ -73,7 +73,6 @@ class UserController : public views::WidgetDelegate,
   void UpdateUserCount(int index, int total_user_count);
 
   int user_index() const { return user_index_; }
-  bool is_user_selected() const { return is_user_selected_; }
   bool is_new_user() const { return is_new_user_; }
   bool is_guest() const { return is_guest_; }
 
@@ -125,6 +124,7 @@ class UserController : public views::WidgetDelegate,
 
   // UserView::Delegate implementation:
   virtual void OnRemoveUser();
+  virtual bool IsUserSelected() const { return is_user_selected_; }
 
   // Selects user relative to the current user.
   void SelectUserRelative(int shift);

@@ -38,6 +38,9 @@ class UserView : public views::View,
 
     // Notifies that user would like to remove this user from login screen.
     virtual void OnRemoveUser() {}
+
+    // Returns true if current user is selected.
+    virtual bool IsUserSelected() const = 0;
   };
 
   // Creates UserView for login screen (|is_login| == true) or screen locker.

@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/login/rounded_view.h"
 #include "gfx/canvas.h"
 #include "gfx/canvas_skia.h"
+#include "gfx/gtk_util.h"
 #include "gfx/rect.h"
 #include "third_party/skia/include/core/SkColorShader.h"
 #include "third_party/skia/include/core/SkComposeShader.h"
@@ -31,13 +32,13 @@ template<typename C>
 class HalfRoundedView : public RoundedView<C> {
  public:
   HalfRoundedView(const std::wstring &text, bool use_small_shape)
-      : RoundedView<C>(text), use_small_shape_(use_small_shape) {
+      : RoundedView<C>(text, use_small_shape) {
   }
 
  protected:
   // Overrides ViewFilter.
   virtual SkPath GetClipPath() const {
-    if (!use_small_shape_) {
+    if (!C::use_small_shape()) {
       return RoundedView<C>::GetClipPath();
     } else {
       SkPath path;
@@ -66,15 +67,12 @@ class HalfRoundedView : public RoundedView<C> {
                    this->y() + this->height());
     return view_rect;
   }
-
- private:
-  // Whether the shape for the smaller view should be used.
-  bool use_small_shape_;
 };
 
 }  // namespace
-UsernameView::UsernameView(const std::wstring& username)
-    : views::Label(username) {
+UsernameView::UsernameView(const std::wstring& username, bool use_small_shape)
+    : views::Label(username),
+      use_small_shape_(use_small_shape) {
 }
 
 void UsernameView::Paint(gfx::Canvas* canvas) {
@@ -92,6 +90,13 @@ UsernameView* UsernameView::CreateShapedUsernameView(
     const std::wstring& username,
     bool use_small_shape) {
   return new HalfRoundedView<UsernameView>(username, use_small_shape);
+}
+
+gfx::NativeCursor UsernameView::GetCursorForPoint(
+    views::Event::EventType event_type,
+    const gfx::Point& p) {
+
+  return use_small_shape_ ? gfx::GetCursor(GDK_HAND2) : NULL;
 }
 
 void UsernameView::PaintUsername(const gfx::Rect& bounds) {

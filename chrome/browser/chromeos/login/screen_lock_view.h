@@ -65,6 +65,7 @@ class ScreenLockView : public ThrobberHostView,
 
   // UserView::Delegate implementation:
   virtual void OnSignout();
+  virtual bool IsUserSelected() const { return true; }
 
  protected:
   // views::View implementation:

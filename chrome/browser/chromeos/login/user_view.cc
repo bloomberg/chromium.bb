@@ -215,7 +215,8 @@ class RemoveButton : public views::TextButton {
 
 class PodImageView : public views::ImageView {
  public:
-  PodImageView() { }
+  explicit PodImageView(const UserView::Delegate* delegate)
+      : delegate_(delegate) { }
 
   void SetImage(const SkBitmap& image, const SkBitmap& image_hot) {
     image_ = image;
@@ -236,10 +237,12 @@ class PodImageView : public views::ImageView {
   gfx::NativeCursor GetCursorForPoint(
       views::Event::EventType event_type,
       const gfx::Point& p) {
-    return gfx::GetCursor(GDK_HAND2);
+    return (delegate_->IsUserSelected()) ? NULL : gfx::GetCursor(GDK_HAND2);
   }
 
  private:
+  const UserView::Delegate* delegate_;
+
   SkBitmap image_;
   SkBitmap image_hot_;
 
@@ -256,9 +259,9 @@ UserView::UserView(Delegate* delegate, bool is_login, bool need_background)
     signout_view_ = new SignoutView(this);
 
   if (need_background)
-    image_view_ = new RoundedView<PodImageView>;
+    image_view_ = new RoundedView<PodImageView>(delegate);
   else
-    image_view_ = new PodImageView;
+    image_view_ = new PodImageView(delegate);
 
   Init(need_background);
 }

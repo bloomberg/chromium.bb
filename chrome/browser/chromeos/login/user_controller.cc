@@ -69,7 +69,7 @@ class ClickNotifyingWidget : public views::WidgetGtk {
 
  private:
   gboolean OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
-    if (!controller_->is_user_selected())
+    if (!controller_->IsUserSelected())
       controller_->SelectUserRelative(0);
 
     return views::WidgetGtk::OnButtonPress(widget, event);
