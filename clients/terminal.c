@@ -461,10 +461,51 @@ terminal_get_attr_row(struct terminal *terminal, int row)
 	return &terminal->data_attr[index * terminal->width];
 }
 
-static struct attr
-terminal_get_attr(struct terminal *terminal, int row, int col)
+struct decoded_attr {
+	int foreground;
+	int background;
+	int bold;
+	int underline;
+};
+
+static void
+terminal_decode_attr(struct terminal *terminal, int row, int col,
+		     struct decoded_attr *decoded)
 {
-	return terminal_get_attr_row(terminal, row)[col];
+	struct attr attr;
+	int foreground, background, tmp;
+
+	/* get the attributes for this character cell */
+	attr = terminal_get_attr_row(terminal, row)[col];
+	if ((attr.a & ATTRMASK_INVERSE) ||
+	    ((terminal->mode & MODE_SHOW_CURSOR) &&
+	     terminal->focused && terminal->row == row &&
+	     terminal->column == col)) {
+		foreground = attr.bg;
+		background = attr.fg;
+		if (attr.a & ATTRMASK_BOLD) {
+			if (foreground <= 16) foreground |= 0x08;
+			if (background <= 16) background &= 0x07;
+		}
+	} else {
+		foreground = attr.fg;
+		background = attr.bg;
+	}
+
+	if (terminal->mode & MODE_INVERSE) {
+		tmp = foreground;
+		foreground = background;
+		background = tmp;
+		if (attr.a & ATTRMASK_BOLD) {
+			if (foreground <= 16) foreground |= 0x08;
+			if (background <= 16) background &= 0x07;
+		}
+	}
+
+	decoded->foreground = foreground;
+	decoded->background = background;
+	decoded->bold = attr.a & (ATTRMASK_BOLD | ATTRMASK_BLINK);
+	decoded->underline = attr.a & ATTRMASK_UNDERLINE;
 }
 
 static void
@@ -711,13 +752,12 @@ terminal_draw_contents(struct terminal *terminal)
 	cairo_font_extents_t extents;
 	int top_margin, side_margin;
 	int row, col;
-	struct attr attr;
 	union utf8_char *p_row;
 	struct utf8_chars {
 		union utf8_char c;
 		char null;
 	} toShow;
-	int foreground, background, bold, underline, tmp;
+	struct decoded_attr attr;
 	int text_x, text_y;
 	cairo_surface_t *surface;
 	double d;
@@ -746,36 +786,12 @@ terminal_draw_contents(struct terminal *terminal)
 		p_row = terminal_get_row(terminal, row);
 		for (col = 0; col < terminal->width; col++) {
 			/* get the attributes for this character cell */
-			attr = terminal_get_attr(terminal, row, col);
-			if ((attr.a & ATTRMASK_INVERSE) ||
-				((terminal->mode & MODE_SHOW_CURSOR) &&
-				terminal->focused && terminal->row == row &&
-				terminal->column == col))
-			{
-				foreground = attr.bg;
-				background = attr.fg;
-				if (attr.a & ATTRMASK_BOLD) {
-					if (foreground <= 16) foreground |= 0x08;
-					if (background <= 16) background &= 0x07;
-				}
-			} else {
-				foreground = attr.fg;
-				background = attr.bg;
-			}
-			if (terminal->mode & MODE_INVERSE) {
-				tmp = foreground;
-				foreground = background;
-				background = tmp;
-				if (attr.a & ATTRMASK_BOLD) {
-					if (foreground <= 16) foreground |= 0x08;
-					if (background <= 16) background &= 0x07;
-				}
-			}
+			terminal_decode_attr(terminal, row, col, &attr);
 
-			if (background == terminal->color_scheme->border)
+			if (attr.background == terminal->color_scheme->border)
 				continue;
 
-			terminal_set_color(terminal, cr, background);
+			terminal_set_color(terminal, cr, attr.background);
 			cairo_move_to(cr, side_margin + (col * extents.max_x_advance),
 			      top_margin + (row * extents.height));
 			cairo_rel_line_to(cr, extents.max_x_advance, 0);
@@ -793,42 +809,16 @@ terminal_draw_contents(struct terminal *terminal)
 		p_row = terminal_get_row(terminal, row);
 		for (col = 0; col < terminal->width; col++) {
 			/* get the attributes for this character cell */
-			attr = terminal_get_attr(terminal, row, col);
-			if ((attr.a & ATTRMASK_INVERSE) ||
-				((terminal->mode & MODE_SHOW_CURSOR) &&
-				terminal->focused && terminal->row == row &&
-				terminal->column == col))
-			{
-				foreground = attr.bg;
-				background = attr.fg;
-				if (attr.a & ATTRMASK_BOLD) {
-					if (foreground <= 16) foreground |= 0x08;
-					if (background <= 16) background &= 0x07;
-				}
-			} else {
-				foreground = attr.fg;
-				background = attr.bg;
-			}
-			if (terminal->mode & MODE_INVERSE) {
-				tmp = foreground;
-				foreground = background;
-				background = tmp;
-				if (attr.a & ATTRMASK_BOLD) {
-					if (foreground <= 16) foreground |= 0x08;
-					if (background <= 16) background &= 0x07;
-				}
-			}
-			bold = attr.a & (ATTRMASK_BOLD | ATTRMASK_BLINK);
-			underline = attr.a & ATTRMASK_UNDERLINE;
+			terminal_decode_attr(terminal, row, col, &attr);
 
-			if (bold)
+			if (attr.bold)
 				cairo_set_font_face(cr, terminal->font_bold);
 			else
 				cairo_set_font_face(cr, terminal->font_normal);
-			terminal_set_color(terminal, cr, foreground);
+			terminal_set_color(terminal, cr, attr.foreground);
 			text_x = side_margin + col * extents.max_x_advance;
 			text_y = top_margin + extents.ascent + row * extents.height;
-			if (underline) {
+			if (attr.underline) {
 				cairo_move_to(cr, text_x, (double)text_y + 1.5);
 				cairo_line_to(cr, text_x + extents.max_x_advance, (double) text_y + 1.5);
 				cairo_stroke(cr);
