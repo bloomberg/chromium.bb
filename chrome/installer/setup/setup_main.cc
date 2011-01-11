@@ -736,7 +736,8 @@ class AutoCom {
   bool initialized_;
 };
 
-bool PopulateInstallations(const MasterPreferences& prefs,
+bool PopulateInstallations(bool for_uninstall,
+                           const MasterPreferences& prefs,
                            ProductPackageMapping* installations) {
   DCHECK(installations);
   bool success = true;
@@ -744,10 +745,11 @@ bool PopulateInstallations(const MasterPreferences& prefs,
   bool implicit_chrome_install = false;
   bool implicit_gcf_install = false;
 
-  if (prefs.is_multi_install()) {
-    // See what products are already installed in multi mode.
-    // When we do multi installs, we must upgrade all installations
-    // in sync since they share the binaries.
+  // See what products are already installed in multi mode.
+  // When we do multi installs, we must upgrade all installations in sync since
+  // they share the binaries.  Be careful to not do this when we're uninstalling
+  // a product.
+  if (prefs.is_multi_install() && !for_uninstall) {
     struct CheckInstall {
       bool* installed;
       BrowserDistribution::Type type;
@@ -768,13 +770,15 @@ bool PopulateInstallations(const MasterPreferences& prefs,
   }
 
   if (prefs.install_chrome() || implicit_chrome_install) {
-    VLOG(1) << "Install distribution: Chrome";
+    VLOG(1) << (for_uninstall ? "Uninstall" : "Install")
+            << " distribution: Chrome";
     success = installations->AddDistribution(
         BrowserDistribution::CHROME_BROWSER, prefs);
   }
 
   if (success && (prefs.install_chrome_frame() || implicit_gcf_install)) {
-    VLOG(1) << "Install distribution: Chrome Frame";
+    VLOG(1) << (for_uninstall ? "Uninstall" : "Install")
+            << " distribution: Chrome Frame";
     success = installations->AddDistribution(
         BrowserDistribution::CHROME_FRAME, prefs);
   }
@@ -876,9 +880,10 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
 
   InstallerState installer_state;
   installer_state.Initialize(prefs, original_state);
+  const bool is_uninstall = cmd_line.HasSwitch(installer::switches::kUninstall);
 
   ProductPackageMapping installations(prefs.is_multi_install(), system_install);
-  if (!PopulateInstallations(prefs, &installations)) {
+  if (!PopulateInstallations(is_uninstall, prefs, &installations)) {
     // Currently this can only fail if one of the installations is a multi and
     // a pre-existing single installation exists or vice versa.
     installer::InstallStatus status = installer::NON_MULTI_INSTALLATION_EXISTS;
@@ -951,8 +956,6 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
       return installer::INSUFFICIENT_RIGHTS;
     }
   }
-
-  bool is_uninstall = cmd_line.HasSwitch(installer::switches::kUninstall);
 
   installer::InstallStatus install_status = installer::UNKNOWN_STATUS;
   // If --uninstall option is given, uninstall chrome
