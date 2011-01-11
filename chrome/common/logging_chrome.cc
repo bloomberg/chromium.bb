@@ -216,12 +216,18 @@ void RedirectChromeLogging(const CommandLine& command_line) {
   // Always force a new symlink when redirecting.
   FilePath target_path = SetUpSymlinkIfNeeded(log_path, true);
 
+  logging::DcheckState dcheck_state =
+      command_line.HasSwitch(switches::kEnableDCHECK) ?
+      logging::ENABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS :
+      logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS;
+
   // ChromeOS always logs through the symlink, so it shouldn't be
   // deleted if it already exists.
   if (!InitLogging(log_path.value().c_str(),
                    DetermineLogMode(command_line),
                    logging::LOCK_LOG_FILE,
-                   logging::APPEND_TO_OLD_LOG_FILE)) {
+                   logging::APPEND_TO_OLD_LOG_FILE,
+                   dcheck_state)) {
     LOG(ERROR) << "Unable to initialize logging to " << log_path.value();
     RemoveSymlinkAndLog(log_path, target_path);
   } else {
@@ -262,10 +268,16 @@ void InitChromeLogging(const CommandLine& command_line,
   delete_old_log_file = logging::APPEND_TO_OLD_LOG_FILE;
 #endif
 
+  logging::DcheckState dcheck_state =
+      command_line.HasSwitch(switches::kEnableDCHECK) ?
+      logging::ENABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS :
+      logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS;
+
   bool success = InitLogging(log_path.value().c_str(),
                              DetermineLogMode(command_line),
                              logging::LOCK_LOG_FILE,
-                             delete_old_log_file);
+                             delete_old_log_file,
+                             dcheck_state);
 
 #if defined(OS_CHROMEOS)
   if (!success) {
