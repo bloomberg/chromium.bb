@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/background_page_tracker.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #import "chrome/browser/ui/cocoa/menu_tracked_root_view.h"
 #import "chrome/browser/ui/cocoa/toolbar_controller.h"
 #include "chrome/browser/ui/browser.h"
@@ -115,6 +116,7 @@ class ZoomLevelObserver : public NotificationObserver {
   NSString* title = base::SysUTF16ToNSString(
       [self wrenchMenuModel]->GetLabelForCommandId(IDC_ZOOM_PERCENT_DISPLAY));
   [[zoomItem_ viewWithTag:IDC_ZOOM_PERCENT_DISPLAY] setTitle:title];
+  UserMetrics::RecordAction(UserMetricsAction("ShowAppMenu"));
 
   NSImage* icon = [self wrenchMenuModel]->browser()->window()->IsFullscreen() ?
       [NSImage imageNamed:NSImageNameExitFullScreenTemplate] :

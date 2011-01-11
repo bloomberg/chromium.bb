@@ -1739,7 +1739,7 @@ void Browser::OpenBookmarkManager() {
 }
 
 void Browser::ShowAppMenu() {
-  UserMetrics::RecordAction(UserMetricsAction("ShowAppMenu"), profile_);
+  // We record the user metric for this event in WrenchMenu::RunMenu.
   window_->ShowAppMenu();
 }
 
