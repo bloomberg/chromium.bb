@@ -68,9 +68,15 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
 
   web_view->resize(print_layout_size);
 
+#if defined(WEBFRAME_PRINTBEGIN_TAKES_NODE)
+  expected_pages_count_ = frame->printBegin(
+      print_canvas_size_, NULL, static_cast<int>(print_params.dpi),
+      &use_browser_overlays_);
+#else
   expected_pages_count_ = frame->printBegin(
       print_canvas_size_, static_cast<int>(print_params.dpi),
       &use_browser_overlays_);
+#endif
 }
 
 PrepareFrameAndViewForPrint::~PrepareFrameAndViewForPrint() {
