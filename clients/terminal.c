@@ -322,7 +322,7 @@ struct attr {
 };
 struct color_scheme {
 	struct terminal_color palette[16];
-	struct terminal_color border;
+	char border;
 	struct attr default_attr;
 };
 
@@ -689,7 +689,7 @@ struct color_scheme DEFAULT_COLORS = {
 		{0.33, 1,    1,    1}, /* high cyan */
 		{1,    1,    1,    1}  /* white */
 	},
-	{0, 0, 0, 1},                  /* black border */
+	0,                             /* black border */
 	{7, 0, 0, }                    /* bg:black (0), fg:light gray (7)  */
 };
 
@@ -729,11 +729,7 @@ terminal_draw_contents(struct terminal *terminal)
 	surface = display_create_surface(terminal->display, &allocation);
 	cr = cairo_create(surface);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-	cairo_set_source_rgba(cr,
-			      terminal->color_scheme->border.r,
-			      terminal->color_scheme->border.g,
-			      terminal->color_scheme->border.b,
-			      terminal->color_scheme->border.a);
+	terminal_set_color(terminal, cr, terminal->color_scheme->border);
 	cairo_paint(cr);
 
 	cairo_set_font_face(cr, terminal->font_normal);
