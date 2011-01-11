@@ -92,6 +92,13 @@ void BookmarkBubbleView::Show(views::Window* parent,
   InfoBubble* info_bubble = InfoBubble::Show(
       parent->GetClientView()->GetWidget(), bounds, BubbleBorder::TOP_RIGHT,
       bubble_, bubble_);
+  // |bubble_| can be set to NULL in InfoBubbleClosing when we close the bubble
+  // asynchronously. However, that can happen during the Show call above if the
+  // window loses activation while we are getting to ready to show the bubble,
+  // so we must check to make sure we still have a valid bubble before
+  // proceeding.
+  if (!bubble_)
+    return;
   bubble_->set_info_bubble(info_bubble);
   info_bubble->SizeToContents();
   GURL url_ptr(url);
