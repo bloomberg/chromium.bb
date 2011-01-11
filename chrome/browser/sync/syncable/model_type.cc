@@ -154,7 +154,7 @@ std::string ModelTypeToString(ModelType model_type) {
     case APPS:
       return "Apps";
     case AUTOFILL_PROFILE:
-      return "Autofill Profiles";
+      return "Autofill Profile";
       break;
     default:
       NOTREACHED() << "No known extension for model type.";
@@ -171,8 +171,6 @@ ModelType ModelTypeFromString(const std::string& model_type_string) {
     return PASSWORDS;
   else if (model_type_string == "Autofill")
     return AUTOFILL;
-  else if (model_type_string == "Autofill Profiles")
-    return AUTOFILL_PROFILE;
   else if (model_type_string == "Themes")
     return THEMES;
   else if (model_type_string == "Typed URLs")
@@ -226,10 +224,6 @@ void PostTimeToTypeHistogram(ModelType model_type, base::TimeDelta time) {
     }
     case AUTOFILL: {
         SYNC_FREQ_HISTOGRAM("Sync.FreqAutofill", time);
-        return;
-    }
-    case AUTOFILL_PROFILE: {
-        SYNC_FREQ_HISTOGRAM("Sync.FreqAutofillProfiles", time);
         return;
     }
     case THEMES: {
