@@ -464,10 +464,38 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
         cursor_changed = true;
         break;
       case app::VKEY_BACK:
+        if (!model_->HasSelection()) {
+          if (selection && control) {
+            // If both shift and control are pressed, then erase upto the
+            // beginning of the buffer in ChromeOS. In windows, do nothing.
+#if defined(OS_WIN)
+            break;
+#else
+            model_->MoveCursorToStart(true);
+#endif
+          } else if (control) {
+            // If only control is pressed, then erase the previous word.
+            model_->MoveCursorToPreviousWord(true);
+          }
+        }
         text_changed = model_->Backspace();
         cursor_changed = true;
         break;
       case app::VKEY_DELETE:
+        if (!model_->HasSelection()) {
+          if (selection && control) {
+            // If both shift and control are pressed, then erase upto the
+            // end of the buffer in ChromeOS. In windows, do nothing.
+#if defined(OS_WIN)
+            break;
+#else
+            model_->MoveCursorToEnd(true);
+#endif
+          } else if (control) {
+            // If only control is pressed, then erase the next word.
+            model_->MoveCursorToNextWord(true);
+          }
+        }
         text_changed = model_->Delete();
         break;
       case app::VKEY_INSERT:

@@ -250,6 +250,38 @@ TEST_F(NativeTextfieldViewsTest, InsertionDeletionTest) {
   textfield_->SelectAll();
   SendKeyEventToTextfieldViews(app::VKEY_K);
   EXPECT_STR_EQ("k", textfield_->text());
+
+  // Delete the previous word from cursor.
+  textfield_->SetText(ASCIIToUTF16("one two three four"));
+  SendKeyEventToTextfieldViews(app::VKEY_END);
+  SendKeyEventToTextfieldViews(app::VKEY_BACK, false, true, false);
+  EXPECT_STR_EQ("one two three ", textfield_->text());
+
+  // Delete upto the beginning of the buffer from cursor in chromeos, do nothing
+  // in windows.
+  SendKeyEventToTextfieldViews(app::VKEY_LEFT, false, true, false);
+  SendKeyEventToTextfieldViews(app::VKEY_BACK, true, true, false);
+#if defined(OS_WIN)
+  EXPECT_STR_EQ("one two three ", textfield_->text());
+#else
+  EXPECT_STR_EQ("three ", textfield_->text());
+#endif
+
+  // Delete the next word from cursor.
+  textfield_->SetText(ASCIIToUTF16("one two three four"));
+  SendKeyEventToTextfieldViews(app::VKEY_HOME);
+  SendKeyEventToTextfieldViews(app::VKEY_DELETE, false, true, false);
+  EXPECT_STR_EQ(" two three four", textfield_->text());
+
+  // Delete upto the end of the buffer from cursor in chromeos, do nothing
+  // in windows.
+  SendKeyEventToTextfieldViews(app::VKEY_RIGHT, false, true, false);
+  SendKeyEventToTextfieldViews(app::VKEY_DELETE, true, true, false);
+#if defined(OS_WIN)
+  EXPECT_STR_EQ(" two three four", textfield_->text());
+#else
+  EXPECT_STR_EQ(" two", textfield_->text());
+#endif
 }
 
 TEST_F(NativeTextfieldViewsTest, PasswordTest) {

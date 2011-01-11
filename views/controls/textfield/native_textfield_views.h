@@ -33,6 +33,7 @@ class TextfieldViewsModel;
 // * STYLE_MULTILINE, STYLE_LOWERCASE text. (These are not used in
 //   chromeos, so we may not need them)
 // * Double click to select word, and triple click to select all.
+// * Undo/Redo
 class NativeTextfieldViews : public views::View,
                              public NativeTextfieldWrapper {
  public:
