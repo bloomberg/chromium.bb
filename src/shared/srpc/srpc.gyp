@@ -22,7 +22,6 @@
           'rpc_serialize.c',
           'rpc_service.c',
           'rpc_server_loop.c',
-          'rpc_universal.c',
           'utility.c',
         ],
         'cflags': [

@@ -25,8 +25,7 @@ trusted_untrusted_shared = [
 # NOTE: these files maybe candidates for a separate library
 untrusted_only = [
     'accept.c',
-    'accept_threaded.c',
-    'rpc_universal.c']
+    'accept_threaded.c']
 
 env.ComponentLibrary('libsrpc',
                      trusted_untrusted_shared + untrusted_only)

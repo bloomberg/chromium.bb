@@ -22,6 +22,7 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
+#include "native_client/src/trusted/sel_universal/rpc_universal.h"
 
 using std::vector;
 using std::string;

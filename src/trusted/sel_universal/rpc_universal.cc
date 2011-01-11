@@ -25,33 +25,27 @@
 #define NACL_ISNAN(d) isnan(d)
 #endif  /* NACL_WINDOWS */
 #include "native_client/src/include/nacl_base.h"
-#ifdef __native_client__
-# include <fcntl.h>
-# include <nacl/nacl_inttypes.h>
-#else
-# include "native_client/src/shared/platform/nacl_host_desc.h"
-# include "native_client/src/trusted/desc/nacl_desc_base.h"
-# include "native_client/src/trusted/desc/nacl_desc_invalid.h"
-# include "native_client/src/trusted/desc/nacl_desc_io.h"
-# include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
-#endif  /* __native_client__ */
+#include "native_client/src/shared/platform/nacl_host_desc.h"
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
+#include "native_client/src/trusted/desc/nacl_desc_invalid.h"
+#include "native_client/src/trusted/desc/nacl_desc_io.h"
+#include "native_client/src/trusted/sel_universal/rpc_universal.h"
+#include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/srpc/nacl_srpc_internal.h"
 
-#ifndef __native_client__
-/* TODO(robertm): for ARM both __native_client__ and NACL_LINUX are true
-   this needs to be fixed */
+
 #if NACL_LINUX
 # include <sys/ipc.h>
 # include <sys/mman.h>
 # include <sys/shm.h>
 # include <sys/stat.h>
-# include "native_client/src/trusted/desc/nacl_desc_base.h"
-# include "native_client/src/trusted/desc/nacl_desc_io.h"
 # include "native_client/src/trusted/desc/linux/nacl_desc_sysv_shm.h"
-# include "native_client/src/trusted/service_runtime/include/sys/mman.h"
+// TODO(bsy): including src/trusted/service_runtime/include/sys/mman.h
+//     causes C++ compiler errors:
+//     "declaration of 'int munmap(void*, size_t)' throws different exceptions"
+# include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 #endif  /* NACL_LINUX */
-#endif  /* __native_client__ */
 
 #define kMaxCommandLineLength 4096
 
@@ -98,17 +92,10 @@ static int AddDescToList(NaClSrpcImcDescType new_desc, const char* print_name) {
 }
 
 static NaClSrpcImcDescType DescFromPlatformDesc(int fd, int mode) {
-#ifdef __native_client__
-  return fd;
-#else
   return
       (NaClSrpcImcDescType) NaClDescIoDescMake(NaClHostDescPosixMake(fd, mode));
-#endif  /* __native_client__ */
 }
 
-/* TODO(robertm): for ARM both __native_client__ and NACL_LINUX are true
-   this needs to be fixed */
-#ifndef __native_client__
 #if NACL_LINUX
 static void* kSysvShmAddr = (void*) (intptr_t) -1;
 static struct NaClDescSysvShm* shm_desc = NULL;
@@ -128,7 +115,7 @@ static NaClSrpcImcDescType SysvShmDesc() {
   void* aligned_mapaddr = MAP_FAILED;
 
   /* Allocate a descriptor node. */
-  shm_desc = malloc(sizeof *shm_desc);
+  shm_desc = static_cast<NaClDescSysvShm*>(malloc(sizeof *shm_desc));
   if (NULL == shm_desc) {
     goto cleanup;
   }
@@ -183,7 +170,7 @@ static NaClSrpcImcDescType SysvShmDesc() {
     goto cleanup;
   }
   /* Initialize the region with a string for comparisons. */
-  strcpy(kSysvShmAddr, kInitString);
+  strcpy(static_cast<char*>(kSysvShmAddr), kInitString);
   /* Return successfully created descriptor. */
   return (NaClSrpcImcDescType) shm_desc;
 
@@ -198,19 +185,11 @@ cleanup:
   return kNaClSrpcInvalidImcDesc;
 }
 #endif  /* NACL_LINUX */
-#endif  /* __native_client__ */
 
 static void BuildDefaultDescList() {
-#ifdef __native_client__
-  const int kRdOnly = O_RDONLY;
-  const int kWrOnly = O_WRONLY;
-#else
   const int kRdOnly = NACL_ABI_O_RDONLY;
   const int kWrOnly = NACL_ABI_O_WRONLY;
-#endif  /* __native_client__ */
-#ifndef __native_client__
   AddDescToList((struct NaClDesc*) NaClDescInvalidMake(), "invalid");
-#endif  /* __native_client__ */
   AddDescToList(DescFromPlatformDesc(0, kRdOnly), "stdin");
   AddDescToList(DescFromPlatformDesc(1, kWrOnly), "stdout");
   AddDescToList(DescFromPlatformDesc(2, kWrOnly), "stderr");
@@ -528,7 +507,7 @@ static int ParseArg(NaClSrpcArg* arg, const char* token) {
      * This is a conservative estimate of the length, as it includes the
      * quotes and possibly some escape characters.
      */
-    arg->arrays.str = malloc(strlen(token));
+    arg->arrays.str = static_cast<char*>(malloc(strlen(token)));
     if (NULL == arg->arrays.str) {
       return 0;
     }
@@ -686,7 +665,7 @@ static void DumpArg(const NaClSrpcArg* arg) {
 
 static void DumpArgs(const NaClSrpcArg* arg, int n) {
   int i;
-  for (i=0; i<n; ++i) {
+  for (i = 0; i < n; ++i) {
     printf("  ");
     DumpArg(&arg[i]);
   }
@@ -705,7 +684,7 @@ void BuildArgVec(NaClSrpcArg* argv[], NaClSrpcArg arg[], int count) {
 void FreeArrayArgs(NaClSrpcArg arg[], int count) {
   int i;
   for (i = 0; i < count; ++i) {
-    switch(arg[i].tag) {
+    switch (arg[i].tag) {
      case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
       free(arg[i].arrays.carr);
       break;
@@ -866,14 +845,11 @@ void NaClSrpcCommandLoop(NaClSrpcService* service,
     } else if (0 == strcmp("descs", command)) {
       PrintDescList();
     } else if (0 == strcmp("sysv", command)) {
-
-#ifndef __native_client__
 /* TODO(robertm): for ARM both __native_client__ and NACL_LINUX are true
    this needs to be fixed */
 #if NACL_LINUX
       AddDescToList(SysvShmDesc(), "SysV shared memory");
 #endif  /* NACL_LINUX */
-#endif /* __native_client__ */
     } else if (0 == strcmp("quit", command)) {
       break;
     } else if (0 == strcmp("rpc", command)) {

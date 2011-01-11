@@ -38,6 +38,7 @@
       'type': 'executable',
       'sources': [
         'sel_universal_new.cc',
+        'rpc_universal.cc',
       ],
       'dependencies': [
         '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c',
@@ -69,6 +70,7 @@
           },
           'sources': [
             'sel_universal_new.cc',
+            'rpc_universal.cc',
           ],
           'dependencies': [
             '<(DEPTH)/native_client/src/shared/imc/imc.gyp:google_nacl_imc_c64',
