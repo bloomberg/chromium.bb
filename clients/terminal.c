@@ -694,6 +694,16 @@ struct color_scheme DEFAULT_COLORS = {
 };
 
 static void
+terminal_set_color(struct terminal *terminal, cairo_t *cr, int index)
+{
+	cairo_set_source_rgba(cr,
+			      terminal->color_table[index].r,
+			      terminal->color_table[index].g,
+			      terminal->color_table[index].b,
+			      terminal->color_table[index].a);
+}
+
+static void
 terminal_draw_contents(struct terminal *terminal)
 {
 	struct rectangle allocation;
@@ -766,11 +776,7 @@ terminal_draw_contents(struct terminal *terminal)
 				}
 			}
 
-			cairo_set_source_rgba(cr,
-					      terminal->color_table[background].r,
-					      terminal->color_table[background].g,
-					      terminal->color_table[background].b,
-					      terminal->color_table[background].a);
+			terminal_set_color(terminal, cr, background);
 			cairo_move_to(cr, side_margin + (col * extents.max_x_advance),
 			      top_margin + (row * extents.height));
 			cairo_rel_line_to(cr, extents.max_x_advance, 0);
@@ -820,12 +826,7 @@ terminal_draw_contents(struct terminal *terminal)
 				cairo_set_font_face(cr, terminal->font_bold);
 			else
 				cairo_set_font_face(cr, terminal->font_normal);
-			cairo_set_source_rgba(cr,
-					      terminal->color_table[foreground].r,
-					      terminal->color_table[foreground].g,
-					      terminal->color_table[foreground].b,
-					      terminal->color_table[foreground].a);
-
+			terminal_set_color(terminal, cr, foreground);
 			text_x = side_margin + col * extents.max_x_advance;
 			text_y = top_margin + extents.ascent + row * extents.height;
 			if (underline) {
