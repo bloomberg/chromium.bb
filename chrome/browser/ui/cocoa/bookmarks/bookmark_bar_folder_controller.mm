@@ -1662,7 +1662,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   return visibleView_;
 }
 
-- (NSView*)scrollView {
+- (NSScrollView*)scrollView {
   return scrollView_;
 }
 

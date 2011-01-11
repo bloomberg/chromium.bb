@@ -200,7 +200,7 @@
 - (BOOL)canScrollDown;
 - (CGFloat)verticalScrollArrowHeight;
 - (NSView*)visibleView;
-- (NSView*)scrollView;
+- (NSScrollView*)scrollView;
 - (NSView*)folderView;
 
 - (BookmarkButton*)buttonForDroppingOnAtPoint:(NSPoint)point;

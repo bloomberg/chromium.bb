@@ -470,12 +470,12 @@ TEST_F(BookmarkBarFolderControllerTest, SimpleScroll) {
   // Also, for each scroll, make sure our hit test finds a new button
   // (to confirm the content area changed).
   NSView* savedHit = nil;
-  NSView* scrollView = [bbfc scrollView];
+  NSScrollView* scrollView = [bbfc scrollView];
 
   // Find the next-to-last button showing at the bottom of the window and
   // us its center for hit testing.
   BookmarkButton* targetButton = nil;
-  NSPoint scrollPoint = [[bbfc scrollView] documentVisibleRect].origin;
+  NSPoint scrollPoint = [scrollView documentVisibleRect].origin;
   for (BookmarkButton* button in [bbfc buttons]) {
     NSRect buttonFrame = [button frame];
     buttonFrame.origin.y -= scrollPoint.y;
@@ -1199,7 +1199,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
   NSRect menuFrame = [folderView frame];
   NSView* visibleView = [folderController visibleView];
   NSRect visibleFrame = [visibleView frame];
-  NSView* scrollView = [folderController scrollView];
+  NSScrollView* scrollView = [folderController scrollView];
   NSRect scrollFrame = [scrollView frame];
 
   // Determine the margins between the scroll frame and the visible frame.
