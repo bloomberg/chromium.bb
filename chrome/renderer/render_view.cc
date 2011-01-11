@@ -2939,6 +2939,12 @@ void RenderView::willClose(WebFrame* frame) {
 
   page_load_histograms_.Dump(frame);
   navigation_state->user_script_idle_scheduler()->Cancel();
+
+  // TODO(jhawkins): Remove once frameDetached is called by WebKit.
+  // NOTE: taking this out results in lots of increased memory usage!  This is
+  // because frameDetached is NOT like wilLClose.  The latter happens between
+  // navigations, but the former only happens when the RenderView is going away.
+  autofill_helper_->FrameWillClose(frame);
 }
 
 bool RenderView::allowImages(WebFrame* frame, bool enabled_per_settings) {

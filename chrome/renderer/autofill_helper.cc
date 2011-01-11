@@ -205,6 +205,10 @@ void AutoFillHelper::FrameContentsAvailable(WebFrame* frame) {
   SendForms(frame);
 }
 
+void AutoFillHelper::FrameWillClose(WebFrame* frame) {
+  form_manager_.ResetFrame(frame);
+}
+
 void AutoFillHelper::FrameDetached(WebFrame* frame) {
   form_manager_.ResetFrame(frame);
 }
