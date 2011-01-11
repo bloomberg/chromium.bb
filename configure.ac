@@ -25,7 +25,10 @@ PKG_CHECK_MODULES(FFI, [libffi])
 PKG_CHECK_MODULES(COMPOSITOR,
 		  [egl glesv2 gdk-pixbuf-2.0 libudev >= 136 libdrm >= 2.4.17] xcb-dri2 xcb-xfixes)
 PKG_CHECK_MODULES(CLIENT, [egl gl cairo gdk-pixbuf-2.0 glib-2.0 gobject-2.0 xkbcommon libdrm])
-PKG_CHECK_MODULES(POPPLER, [poppler-glib gdk-2.0])
+PKG_CHECK_MODULES(POPPLER, [poppler-glib gdk-2.0],
+			   [have_poppler=yes], [have_poppler=no])
+AM_CONDITIONAL(HAVE_POPPLER, test "x$have_poppler" = "xyes")
+
 PKG_CHECK_MODULES(CAIRO_GL, [cairo-gl],
 		  [have_cairo_gl=yes], [have_cairo_gl=no])
 AS_IF([test "x$have_cairo_gl" = "xyes"],

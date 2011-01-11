@@ -1,10 +1,20 @@
-noinst_PROGRAMS = gears flower screenshot terminal image view dnd smoke resizor
+noinst_PROGRAMS =				\
+	gears					\
+	flower					\
+	screenshot				\
+	terminal				\
+	image					\
+	$(poppler_programs)			\
+	dnd					\
+	smoke					\
+	resizor
+
 noinst_LTLIBRARIES = libtoytoolkit.la
 
 INCLUDES =					\
 	-I$(top_srcdir)/wayland			\
 	-I$(top_builddir)/wayland			\
-	$(CLIENT_CFLAGS) $(POPPLER_CFLAGS)
+	$(CLIENT_CFLAGS)
 
 LDADD = libtoytoolkit.la				\
 	$(top_builddir)/wayland/libwayland-client.la	\
@@ -27,7 +37,6 @@ gears_SOURCES = gears.c
 screenshot_SOURCES = screenshot.c screenshooter-protocol.c
 terminal_SOURCES = terminal.c
 image_SOURCES = image.c
-view_SOURCES = view.c
 dnd_SOURCES = dnd.c
 resizor_SOURCES = resizor.c
 
@@ -40,4 +49,10 @@ CLEANFILES = $(BUILT_SOURCES)
 include $(top_srcdir)/wayland/scanner.mk
 
 terminal_LDADD = $(LDADD) -lutil
+
+if HAVE_POPPLER
+poppler_programs = view
+view_SOURCES = view.c
 view_LDADD = $(LDADD) $(POPPLER_LIBS)
+view_CPPFLAGS = $(POPPLER_CFLAGS)
+endif
