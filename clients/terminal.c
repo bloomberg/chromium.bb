@@ -461,16 +461,19 @@ terminal_get_attr_row(struct terminal *terminal, int row)
 	return &terminal->data_attr[index * terminal->width];
 }
 
-struct decoded_attr {
-	int foreground;
-	int background;
-	int bold;
-	int underline;
+union decoded_attr {
+	struct {
+		unsigned char foreground;
+		unsigned char background;
+		unsigned char bold;
+		unsigned char underline;
+	};
+	uint32_t key;
 };
 
 static void
 terminal_decode_attr(struct terminal *terminal, int row, int col,
-		     struct decoded_attr *decoded)
+		     union decoded_attr *decoded)
 {
 	struct attr attr;
 	int foreground, background, tmp;
@@ -744,6 +747,69 @@ terminal_set_color(struct terminal *terminal, cairo_t *cr, int index)
 			      terminal->color_table[index].a);
 }
 
+struct glyph_run {
+	struct terminal *terminal;
+	cairo_t *cr;
+	int count;
+	union decoded_attr attr;
+	cairo_glyph_t glyphs[256], *g;
+};
+
+static void
+glyph_run_init(struct glyph_run *run, struct terminal *terminal, cairo_t *cr)
+{
+	run->terminal = terminal;
+	run->cr = cr;
+	run->g = run->glyphs;
+	run->count = 0;
+	run->attr.key = 0;
+}
+
+static void
+glyph_run_flush(struct glyph_run *run, union decoded_attr attr)
+{
+	cairo_scaled_font_t *font;
+
+	if (run->count == 0)
+		run->attr = attr;
+	if (run->count > ARRAY_LENGTH(run->glyphs) - 10 ||
+	    (attr.key != run->attr.key)) {
+		if (run->attr.bold)
+			font = run->terminal->font_bold;
+		else
+			font = run->terminal->font_normal;
+		cairo_set_scaled_font(run->cr, font);
+		terminal_set_color(run->terminal, run->cr,
+				   run->attr.foreground);
+
+		cairo_show_glyphs (run->cr, run->glyphs, run->count);
+		run->g = run->glyphs;
+		run->count = 0;
+	}
+}
+
+static void
+glyph_run_add(struct glyph_run *run, int x, int y, union utf8_char *c)
+{
+	int num_glyphs;
+	cairo_scaled_font_t *font;
+
+	num_glyphs = ARRAY_LENGTH(run->glyphs) - run->count;
+
+	if (run->attr.bold)
+		font = run->terminal->font_bold;
+	else
+		font = run->terminal->font_normal;
+
+	cairo_move_to(run->cr, x, y);
+	cairo_scaled_font_text_to_glyphs (font, x, y,
+					  (char *) c->byte, 4,
+					  &run->g, &num_glyphs,
+					  NULL, NULL, NULL);
+	run->g += num_glyphs;
+	run->count += num_glyphs;
+}
+
 static void
 terminal_draw_contents(struct terminal *terminal)
 {
@@ -753,13 +819,11 @@ terminal_draw_contents(struct terminal *terminal)
 	int top_margin, side_margin;
 	int row, col;
 	union utf8_char *p_row;
-	struct decoded_attr attr;
+	union decoded_attr attr;
 	int text_x, text_y;
 	cairo_surface_t *surface;
 	double d;
-	int num_glyphs;
-	cairo_scaled_font_t *font;
-	cairo_glyph_t glyphs[256], *g;
+	struct glyph_run run;
 
 	window_get_child_allocation(terminal->window, &allocation);
 
@@ -801,18 +865,15 @@ terminal_draw_contents(struct terminal *terminal)
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 
 	/* paint the foreground */
+	glyph_run_init(&run, terminal, cr);
 	for (row = 0; row < terminal->height; row++) {
 		p_row = terminal_get_row(terminal, row);
 		for (col = 0; col < terminal->width; col++) {
 			/* get the attributes for this character cell */
 			terminal_decode_attr(terminal, row, col, &attr);
 
-			if (attr.bold)
-				font = terminal->font_bold;
-			else
-				font = terminal->font_normal;
-			cairo_set_scaled_font(cr, font);
-			terminal_set_color(terminal, cr, attr.foreground);
+			glyph_run_flush(&run, attr);
+
 			text_x = side_margin + col * extents.max_x_advance;
 			text_y = top_margin + extents.ascent + row * extents.height;
 			if (attr.underline) {
@@ -820,17 +881,13 @@ terminal_draw_contents(struct terminal *terminal)
 				cairo_line_to(cr, text_x + extents.max_x_advance, (double) text_y + 1.5);
 				cairo_stroke(cr);
 			}
-			cairo_move_to(cr, text_x, text_y);
 
-			g = glyphs;
-			num_glyphs = ARRAY_LENGTH(glyphs);
-			cairo_scaled_font_text_to_glyphs (font, text_x, text_y,
-							  (char *) p_row[col].byte, 4,
-							  &g, &num_glyphs,
-							  NULL, NULL, NULL);
-			cairo_show_glyphs (cr, g, num_glyphs);
+			glyph_run_add(&run, text_x, text_y, &p_row[col]);
 		}
 	}
+
+	attr.key = ~0;
+	glyph_run_flush(&run, attr);
 
 	if ((terminal->mode & MODE_SHOW_CURSOR) && !terminal->focused) {
 		d = 0.5;
