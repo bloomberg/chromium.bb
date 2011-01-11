@@ -174,6 +174,9 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
     AddString(dict, "passphraseLabel", IDS_SYNC_PASSPHRASE_LABEL);
     AddString(dict, "ok", IDS_OK);
     AddString(dict, "cancel", IDS_CANCEL);
+
+    AddString(dict, "passphraseWarning", IDS_SYNC_PASSPHRASE_WARNING);
+    AddString(dict, "cleardatalink", IDS_SYNC_CLEAR_DATA_LINK);
   } else if (path_raw == kSyncFirstPassphrasePath) {
     html_resource_id = IDR_SYNC_FIRST_PASSPHRASE_HTML;
     AddString(dict, "title", IDS_SYNC_FIRST_PASSPHRASE_TITLE);

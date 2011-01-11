@@ -3,7 +3,7 @@
 <title></title>
 <style type="text/css">
 body {
-   line-height: 1.5em;
+   line-height: 1.4em;
    background: #FFFFFF;
    font-size: 11pt;
 }
@@ -45,11 +45,10 @@ html[os='mac'] input[type='submit'] {
   font-size: 12pt;
 }
 
-#new-passphrase,
-#enter-passphrase {
-  display: none;
+#passphrase-input {
+  margin-top: 5px;
+  margin-bottom: 50px;
 }
-
 </style>
 <script src="chrome://resources/js/cr.js"></script>
 <script>
@@ -63,27 +62,6 @@ html[os='mac'] input[type='submit'] {
     } else if (!cr.isWindows) {
       document.documentElement.setAttribute('os', 'linux');
     }
-
-    if (args) {
-      currentMode = args['mode'];
-      switchToMode(currentMode);
-    }
-  }
-
-  function switchToMode(mode) {
-    if (mode == "new") {
-      document.getElementById("enter-passphrase").style.display = "none";
-      document.getElementById("gaia-passphrase").style.display = "none";
-      document.getElementById("new-passphrase").style.display = "block";
-    } else if (mode =="enter") {
-      document.getElementById("enter-passphrase").style.display = "block";
-      document.getElementById("gaia-passphrase").style.display = "none";
-      document.getElementById("new-passphrase").style.display = "none";
-    } else if (mode == "gaia") {
-      document.getElementById("enter-passphrase").style.display = "none";
-      document.getElementById("gaia-passphrase").style.display = "block";
-      document.getElementById("new-passphrase").style.display = "none";
-    }
   }
 
   function sendPassphraseAndClose() {
@@ -92,19 +70,17 @@ html[os='mac'] input[type='submit'] {
                                  "mode": currentMode});
     chrome.send("Passphrase", [result]);
   }
+
+  function goToDashboard() {
+    chrome.send("GoToDashboard", [""]);
+    chrome.send("DialogClose", [""]);
+  }
 </script>
 </head>
 <body i18n-values=".style.fontFamily:fontfamily"
       onload="setupPassphraseDialog();">
-<form id="passphraseForm" 
+<form id="passphraseForm"
       onSubmit="sendPassphraseAndClose(); return false;">
-  <div id="new-passphrase">
-    <div class="sync-header" id="newTitle"
-         i18n-content="newPassphraseTitle"></div>
-    <div class="sync-instructions" id="newInstructions"
-         i18n-content="newPassphraseBody"></div>
-  </div>
-
   <div id="enter-passphrase">
     <div class="sync-header" id="enterTitle"
          i18n-content="enterPassphraseTitle"></div>
@@ -112,19 +88,17 @@ html[os='mac'] input[type='submit'] {
          i18n-content="enterPassphraseBody"></div>
   </div>
 
-  <div id="gaia-passphrase">
-    <div class="sync-header" id="gaiaTitle"
-         i18n-content="gaiaPassphraseTitle"></div>
-    <div class="sync-instructions" id="gaiaInstructions"
-         i18n-content="gaiaPassphraseBody"></div>
-  </div>
-
   <div id="passphrase-input">
     <label id="passphraseLabel" name="passphraseLabel"
            for="passphrase" i18n-content="passphraseLabel">
     </label>
     <input id="passphrase" name="passphrase" type="password" />
-  </div> 
+  </div>
+
+  <div id="sync-passphrase-warning" i18n-content="passphraseWarning">
+  </div>
+  <a id="clear-data-link" i18n-content="cleardatalink" href="#"
+     onclick='goToDashboard(); return false;'></a>
 
   <div class="sync-footer">
     <input id="okButton" type="submit" i18n-values="value:ok" />

@@ -8492,7 +8492,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 	Set up encrypted sync
       </message>
       <message name="IDS_SYNC_FIRST_PASSPHRASE_MESSAGE" desc="Message for setting up first passphrase.">
-	To sync passwords, <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> requires you to encrypt your data using either your Google password or your own passphrase.
+	To sync passwords, <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> requires you to encrypt certain data using either your Google password or your own passphrase.
       </message>
       <message name="IDS_SYNC_PASSPHRASE_OPT_GOOGLE" desc="Radio button label for using Google password.">
 	Use my Google password.
@@ -8507,7 +8507,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 	You have chosen to encrypt data using your Google password; you can always change your mind later by changing your sync settings.
       </message>
       <message name="IDS_SYNC_PASSPHRASE_MSG_EXPLICIT" desc="Message when explicit passphrase is selected.">
-        Only someone with your passphrase can read your data. Google does not store your passphrase. If you lose or forget your passphrase, you will have to reset sync.
+        Only someone with your passphrase can read your data. Google does not store your passphrase. If you forget your passphrase, you will need to reset sync.
       </message>
       <message name="IDS_SYNC_PASSPHRASE_MSG_CANCEL" desc="Message when not syncing passwords is selected.">
 	You have chosen not to sync passwords; you can always change your mind later by changing your sync settings.
@@ -8659,7 +8659,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 	Use a sync passphrase to encrypt my data
       </message>
       <message name="IDS_SYNC_PASSPHRASE_WARNING" desc="Warning message about using a passphrase for sync.">
-	You are currently using a passphrase.  If you've lost or forgotten your passphrase, you can reset sync to clear your synced data from Google's servers using the Google Privacy Dashboard.
+	You are currently using a passphrase.  If you have forgotten your passphrase, you can reset sync to clear your synced data from Google's servers using the Google Privacy Dashboard.
       </message>
       <message name="IDS_SYNC_CLEAR_DATA_LINK" desc="Link to the Google Dashboard.">
 	Go to Google Privacy Dashboard
