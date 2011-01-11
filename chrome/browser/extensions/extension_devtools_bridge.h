@@ -32,7 +32,7 @@ class ExtensionDevToolsBridge : public DevToolsClientHost {
   virtual void SendMessageToClient(const IPC::Message& msg);
 
  private:
-  void OnDispatchOnInspectorFrontend(const std::string& data);
+  void OnDispatchToAPU(const std::string& data);
 
   // ID of the tab we are monitoring.
   int tab_id_;

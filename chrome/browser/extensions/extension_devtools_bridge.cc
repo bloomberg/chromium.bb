@@ -4,11 +4,9 @@
 
 #include "chrome/browser/extensions/extension_devtools_bridge.h"
 
-#include "base/json/json_writer.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/values.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/extensions/extension_devtools_events.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
@@ -34,22 +32,6 @@ ExtensionDevToolsBridge::ExtensionDevToolsBridge(int tab_id,
 ExtensionDevToolsBridge::~ExtensionDevToolsBridge() {
 }
 
-static std::string FormatDevToolsMessage(int seq,
-                                         const std::string& domain,
-                                         const std::string& command,
-                                         DictionaryValue* arguments) {
-
-  DictionaryValue message;
-  message.SetInteger("seq", seq);
-  message.SetString("domain", domain);
-  message.SetString("command", command);
-  message.Set("arguments", arguments);
-
-  std::string json;
-  base::JSONWriter::Write(&message, false, &json);
-  return json;
-}
-
 bool ExtensionDevToolsBridge::RegisterAsDevToolsClientHost() {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
 
@@ -61,51 +43,11 @@ bool ExtensionDevToolsBridge::RegisterAsDevToolsClientHost() {
                                    &browser, &tab_strip,
                                    &contents, &tab_index)) {
     DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
-    if (devtools_manager->GetDevToolsClientHostFor(contents->
-            render_view_host()) != NULL)
-      return false;
-
     devtools_manager->RegisterDevToolsClientHostFor(
         contents->render_view_host(), this);
-
-    // Following messages depend on inspector protocol that is not yet
-    // finalized.
-
-    // 1. Set injected script content.
-    DictionaryValue* arguments = new DictionaryValue();
-    arguments->SetString("scriptSource", "'{}'");
     devtools_manager->ForwardToDevToolsAgent(
         this,
-        DevToolsAgentMsg_DispatchOnInspectorBackend(
-            FormatDevToolsMessage(0,
-                                  "Inspector",
-                                  "setInjectedScriptSource",
-                                  arguments)));
-
-    // 2. Report front-end is loaded.
-    devtools_manager->ForwardToDevToolsAgent(
-        this,
-        DevToolsAgentMsg_FrontendLoaded());
-
-    // 3. Do not break on exceptions.
-    arguments = new DictionaryValue();
-    arguments->SetInteger("pauseOnExceptionsState", 0);
-    devtools_manager->ForwardToDevToolsAgent(
-        this,
-        DevToolsAgentMsg_DispatchOnInspectorBackend(
-            FormatDevToolsMessage(1,
-                                  "Debugger",
-                                  "setPauseOnExceptionsState",
-                                  arguments)));
-
-    // 4. Start timeline profiler.
-    devtools_manager->ForwardToDevToolsAgent(
-        this,
-        DevToolsAgentMsg_DispatchOnInspectorBackend(
-            FormatDevToolsMessage(2,
-                                  "Inspector",
-                                  "startTimelineProfiler",
-                                  new DictionaryValue())));
+        DevToolsAgentMsg_SetApuAgentEnabled(true));
     return true;
   }
   return false;
@@ -134,17 +76,16 @@ void ExtensionDevToolsBridge::InspectedTabClosing() {
 
 void ExtensionDevToolsBridge::SendMessageToClient(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(ExtensionDevToolsBridge, msg)
-    IPC_MESSAGE_HANDLER(DevToolsClientMsg_DispatchOnInspectorFrontend,
-                        OnDispatchOnInspectorFrontend);
+    IPC_MESSAGE_HANDLER(DevToolsClientMsg_DispatchToAPU, OnDispatchToAPU);
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 }
 
-void ExtensionDevToolsBridge::OnDispatchOnInspectorFrontend(
-    const std::string& data) {
+void ExtensionDevToolsBridge::OnDispatchToAPU(const std::string& data) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
 
   std::string json = base::StringPrintf("[%s]", data.c_str());
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
       on_page_event_name_, json, profile_, GURL());
 }
+
