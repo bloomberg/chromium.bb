@@ -1198,10 +1198,6 @@ void BrowserView::ShowPageInfo(Profile* profile,
                                bool show_history) {
   gfx::NativeWindow parent = GetWindow()->GetNativeWindow();
 
-#if defined(OS_CHROMEOS)
-  parent = GetNormalBrowserWindowForBrowser(browser(), profile);
-#endif  // defined(OS_CHROMEOS)
-
   browser::ShowPageInfoBubble(parent, profile, url, ssl, show_history);
 }
 
