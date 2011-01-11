@@ -49,11 +49,6 @@ class SelfRegWorkItem : public WorkItem {
   // Whether to use alternate export names on the DLL that will perform
   // user level registration.
   bool user_level_registration_;
-
-  // Specifies whether this work item my fail to complete and yet still
-  // return true from Do(). Use this when making a best effort at unregistering
-  // old Dlls.
-  bool ignore_failure_;
 };
 
 #endif  // CHROME_INSTALLER_UTIL_SELF_REG_WORK_ITEM_H__

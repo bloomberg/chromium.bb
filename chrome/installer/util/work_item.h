@@ -163,7 +163,10 @@ class WorkItem {
  protected:
   WorkItem();
 
+  // Specifies whether this work item my fail to complete and yet still
+  // return true from Do().
   bool ignore_failure_;
+
   std::string log_message_;
 };
 
