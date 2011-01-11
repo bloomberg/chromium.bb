@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ppapi/tests/test_file_io.h"
 
 #include <stdio.h>
+#include <string.h>
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/dev/ppb_file_io_dev.h"
@@ -83,6 +84,10 @@ void TestFileIO::RunTest() {
   RUN_TEST(Open);
   RUN_TEST(ReadWriteSetLength);
   RUN_TEST(TouchQuery);
+  RUN_TEST(AbortCalls);
+  // TODO(viettrungluu): add tests:
+  //  - that PP_ERROR_PENDING is correctly returned
+  //  - that operations respect the file open modes (flags)
 }
 
 std::string TestFileIO::TestOpen() {
@@ -280,6 +285,204 @@ std::string TestFileIO::TestTouchQuery() {
       (info.last_access_time != last_access_time) ||
       (info.last_modified_time != last_modified_time))
     return "FileSystem::Query() has returned bad data.";
+
+  // Call |Query()| again, to make sure it works a second time.
+  rv = file_io.Query(&info, callback);
+  if (rv == PP_ERROR_WOULDBLOCK)
+    rv = callback.WaitForResult();
+  if (rv != PP_OK)
+    return ReportError("FileSystem::Query", rv);
+
+  PASS();
+}
+
+std::string TestFileIO::TestAbortCalls() {
+  TestCompletionCallback callback;
+
+  pp::FileSystem_Dev file_system(instance_, PP_FILESYSTEMTYPE_LOCALTEMPORARY);
+  pp::FileRef_Dev file_ref(file_system, "/file_abort_calls");
+  int32_t rv = file_system.Open(1024, callback);
+  if (rv == PP_ERROR_WOULDBLOCK)
+    rv = callback.WaitForResult();
+  if (rv != PP_OK)
+    return ReportError("FileSystem::Open", rv);
+
+  // First, create a file which to do ops on.
+  {
+    pp::FileIO_Dev file_io;
+    rv = file_io.Open(file_ref,
+                      PP_FILEOPENFLAG_CREATE | PP_FILEOPENFLAG_WRITE,
+                      callback);
+    if (rv == PP_ERROR_WOULDBLOCK)
+      rv = callback.WaitForResult();
+    if (rv != PP_OK)
+      return ReportError("FileIO::Open", rv);
+
+    // N.B.: Should write at least 3 bytes.
+    rv = WriteEntireBuffer(&file_io, 0, "foobarbazquux");
+    if (rv != PP_OK)
+      return ReportError("FileIO::Write", rv);
+  }
+
+  // Abort |Open()|.
+  {
+    callback.reset_run_count();
+    rv = pp::FileIO_Dev().Open(file_ref, PP_FILEOPENFLAG_READ, callback);
+    if (callback.run_count() > 0)
+      return "FileIO::Open ran callback synchronously.";
+    if (rv == PP_ERROR_WOULDBLOCK) {
+      rv = callback.WaitForResult();
+      if (rv != PP_ERROR_ABORTED)
+        return "FileIO::Open not aborted.";
+    } else if (rv != PP_OK) {
+      return ReportError("FileIO::Open", rv);
+    }
+  }
+
+  // Abort |Query()|.
+  {
+    PP_FileInfo_Dev info = { 0 };
+    {
+      pp::FileIO_Dev file_io;
+      rv = file_io.Open(file_ref, PP_FILEOPENFLAG_READ, callback);
+      if (rv == PP_ERROR_WOULDBLOCK)
+        rv = callback.WaitForResult();
+      if (rv != PP_OK)
+        return ReportError("FileIO::Open", rv);
+
+      callback.reset_run_count();
+      rv = file_io.Query(&info, callback);
+    }  // Destroy |file_io|.
+    if (rv == PP_ERROR_WOULDBLOCK) {
+      // Save a copy and make sure |info| doesn't get written to.
+      PP_FileInfo_Dev info_copy;
+      memcpy(&info_copy, &info, sizeof(info));
+      rv = callback.WaitForResult();
+      if (rv != PP_ERROR_ABORTED)
+        return "FileIO::Query not aborted.";
+      if (memcmp(&info_copy, &info, sizeof(info)) != 0)
+        return "FileIO::Query wrote data after resource destruction.";
+    } else if (rv != PP_OK) {
+      return ReportError("FileIO::Query", rv);
+    }
+  }
+
+  // Abort |Touch()|.
+  {
+    {
+      pp::FileIO_Dev file_io;
+      rv = file_io.Open(file_ref, PP_FILEOPENFLAG_WRITE, callback);
+      if (rv == PP_ERROR_WOULDBLOCK)
+        rv = callback.WaitForResult();
+      if (rv != PP_OK)
+        return ReportError("FileIO::Open", rv);
+
+      callback.reset_run_count();
+      rv = file_io.Touch(0, 0, callback);
+    }  // Destroy |file_io|.
+    if (rv == PP_ERROR_WOULDBLOCK) {
+      rv = callback.WaitForResult();
+      if (rv != PP_ERROR_ABORTED)
+        return "FileIO::Touch not aborted.";
+    } else if (rv != PP_OK) {
+      return ReportError("FileIO::Touch", rv);
+    }
+  }
+
+  // Abort |Read()|.
+  {
+    char buf[3] = { 0 };
+    {
+      pp::FileIO_Dev file_io;
+      rv = file_io.Open(file_ref, PP_FILEOPENFLAG_READ, callback);
+      if (rv == PP_ERROR_WOULDBLOCK)
+        rv = callback.WaitForResult();
+      if (rv != PP_OK)
+        return ReportError("FileIO::Open", rv);
+
+      callback.reset_run_count();
+      rv = file_io.Read(0, buf, sizeof(buf), callback);
+    }  // Destroy |file_io|.
+    if (rv == PP_ERROR_WOULDBLOCK) {
+      // Save a copy and make sure |buf| doesn't get written to.
+      char buf_copy[3];
+      memcpy(&buf_copy, &buf, sizeof(buf));
+      rv = callback.WaitForResult();
+      if (rv != PP_ERROR_ABORTED)
+        return "FileIO::Read not aborted.";
+      if (memcmp(&buf_copy, &buf, sizeof(buf)) != 0)
+        return "FileIO::Read wrote data after resource destruction.";
+    } else if (rv != PP_OK) {
+      return ReportError("FileIO::Read", rv);
+    }
+  }
+
+  // Abort |Write()|.
+  {
+    char buf[3] = { 0 };
+    {
+      pp::FileIO_Dev file_io;
+      rv = file_io.Open(file_ref, PP_FILEOPENFLAG_READ, callback);
+      if (rv == PP_ERROR_WOULDBLOCK)
+        rv = callback.WaitForResult();
+      if (rv != PP_OK)
+        return ReportError("FileIO::Open", rv);
+
+      callback.reset_run_count();
+      rv = file_io.Write(0, buf, sizeof(buf), callback);
+    }  // Destroy |file_io|.
+    if (rv == PP_ERROR_WOULDBLOCK) {
+      rv = callback.WaitForResult();
+      if (rv != PP_ERROR_ABORTED)
+        return "FileIO::Write not aborted.";
+    } else if (rv != PP_OK) {
+      return ReportError("FileIO::Write", rv);
+    }
+  }
+
+  // Abort |SetLength()|.
+  {
+    {
+      pp::FileIO_Dev file_io;
+      rv = file_io.Open(file_ref, PP_FILEOPENFLAG_READ, callback);
+      if (rv == PP_ERROR_WOULDBLOCK)
+        rv = callback.WaitForResult();
+      if (rv != PP_OK)
+        return ReportError("FileIO::Open", rv);
+
+      callback.reset_run_count();
+      rv = file_io.SetLength(3, callback);
+    }  // Destroy |file_io|.
+    if (rv == PP_ERROR_WOULDBLOCK) {
+      rv = callback.WaitForResult();
+      if (rv != PP_ERROR_ABORTED)
+        return "FileIO::SetLength not aborted.";
+    } else if (rv != PP_OK) {
+      return ReportError("FileIO::SetLength", rv);
+    }
+  }
+
+  // Abort |Flush()|.
+  {
+    {
+      pp::FileIO_Dev file_io;
+      rv = file_io.Open(file_ref, PP_FILEOPENFLAG_READ, callback);
+      if (rv == PP_ERROR_WOULDBLOCK)
+        rv = callback.WaitForResult();
+      if (rv != PP_OK)
+        return ReportError("FileIO::Open", rv);
+
+      callback.reset_run_count();
+      rv = file_io.Flush(callback);
+    }  // Destroy |file_io|.
+    if (rv == PP_ERROR_WOULDBLOCK) {
+      rv = callback.WaitForResult();
+      if (rv != PP_ERROR_ABORTED)
+        return "FileIO::Flush not aborted.";
+    } else if (rv != PP_OK) {
+      return ReportError("FileIO::Flush", rv);
+    }
+  }
 
   PASS();
 }

@@ -422,13 +422,16 @@ void PPB_Flash_NetConnector_Impl::CompleteConnectTcp(
     }
   }
 
-  callback_->Run(rv);  // Will complete abortively if necessary.
-
-  // Wipe everything out for safety.
-  callback_ = NULL;
+  // Theoretically, the plugin should be allowed to try another |ConnectTcp()|
+  // from the callback.
+  scoped_refptr<TrackedCompletionCallback> callback;
+  callback.swap(callback_);
+  // Wipe everything else out for safety.
   socket_out_ = NULL;
   local_addr_out_ = NULL;
   remote_addr_out_ = NULL;
+
+  callback->Run(rv);  // Will complete abortively if necessary.
 }
 
 }  // namespace ppapi

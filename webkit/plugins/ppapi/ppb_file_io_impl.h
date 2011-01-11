@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,11 +8,13 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/platform_file.h"
+#include "base/ref_counted.h"
 #include "base/scoped_callback_factory.h"
 #include "base/scoped_ptr.h"
 #include "ppapi/c/dev/pp_file_info_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_time.h"
+#include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/resource.h"
 
@@ -72,7 +74,21 @@ class PPB_FileIO_Impl : public Resource {
   int32_t WillSetLength(int64_t length,
                         PP_CompletionCallback callback);
 
+ private:
+  // Verifies:
+  //  - that |callback| is valid (only nonblocking operation supported);
+  //  - that the file is already opened or not (depending on |is_opened|); and
+  //  - that no callback is already pending.
+  // Returns |PP_OK| to indicate that everything is valid or |PP_ERROR_...| if
+  // the call should be aborted and that code returned to the plugin.
+  int32_t CommonCallValidation(bool is_opened, PP_CompletionCallback callback);
+
+  // Sets up |callback| as the pending callback. This should only be called once
+  // it is certain that |PP_ERROR_WOULDBLOCK| will be returned.
+  void RegisterCallback(PP_CompletionCallback callback);
+
   void RunPendingCallback(int result);
+
   void StatusCallback(base::PlatformFileError error_code);
   void AsyncOpenFileCallback(base::PlatformFileError error_code,
                              base::PlatformFile file);
@@ -81,14 +97,17 @@ class PPB_FileIO_Impl : public Resource {
   void ReadWriteCallback(base::PlatformFileError error_code,
                          int bytes_read_or_written);
 
- private:
   PluginDelegate* delegate_;
   base::ScopedCallbackFactory<PPB_FileIO_Impl> callback_factory_;
 
   base::PlatformFile file_;
   PP_FileSystemType_Dev file_system_type_;
 
-  PP_CompletionCallback callback_;
+  // Any pending callback for any PPB_FileIO(Trusted) call taking a callback.
+  scoped_refptr<TrackedCompletionCallback> callback_;
+
+  // Output buffer pointer for |Query()|; only non-null when a callback is
+  // pending for it.
   PP_FileInfo_Dev* info_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_FileIO_Impl);
