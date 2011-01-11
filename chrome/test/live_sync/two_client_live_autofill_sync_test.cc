@@ -95,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest,
   ASSERT_EQ(5U, GetAllKeys(0).size());
 }
 
-// TODO(lipalani): Enable this test after new autofill sync is enabled.
+// TODO(lipalani): Enable after http://crbug.com/69173 is fixed.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest,
                        DISABLED_PersonalDataManagerSanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -138,9 +138,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest,
   ASSERT_EQ(0U, GetAllProfiles(0).size());
 }
 
-// TODO(lipalani): Enable this test after new autofill sync is enabled.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest,
-                       DISABLED_AddDuplicateProfiles) {
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, AddDuplicateProfiles) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
@@ -152,9 +150,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest,
 }
 
 // TestScribe ID - 426761.
-// TODO(lipalani): Enable this test after new autofill sync is enabled.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest,
-                       DISABLED_SameProfileWithConflict) {
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, SameProfileWithConflict) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   AutoFillProfile profile0 = CreateAutofillProfile(PROFILE_HOMER);
@@ -171,46 +167,39 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest,
 }
 
 // TestScribe ID - 426757.
-// TODO(lipalani): Enable this test after new autofill sync is enabled.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest,
-                       DISABLED_AddEmptyProfile) {
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, AddEmptyProfile) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddProfile(0, CreateAutofillProfile(PROFILE_NULL));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(ProfilesMatch(0,1));
-  ASSERT_EQ(1U, GetAllProfiles(0).size());
+  ASSERT_EQ(0U, GetAllProfiles(0).size());
 }
 
 // TestScribe ID - 422839.
-// TODO(lipalani): Enable this test after new autofill sync is enabled.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, DISABLED_AddProfile) {
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, AddProfile) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  AddProfile(0, CreateAutofillProfile(PROFILE_NULL));
+  AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(ProfilesMatch(0,1));
   ASSERT_EQ(1U, GetAllProfiles(0).size());
 }
 
 // TestScribe ID - 425335.
-// TODO(lipalani): Enable this test after new autofill sync is enabled.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest,
-                       DISABLED_AddMultipleProfiles) {
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, AddMultipleProfiles) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  AddProfile(0, CreateAutofillProfile(PROFILE_NULL));
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
   AddProfile(0, CreateAutofillProfile(PROFILE_MARION));
   AddProfile(0, CreateAutofillProfile(PROFILE_FRASIER));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(ProfilesMatch(0,1));
-  ASSERT_EQ(4U, GetAllProfiles(0).size());
+  ASSERT_EQ(3U, GetAllProfiles(0).size());
 }
 
 // TestScribe ID - 425337.
-// TODO(lipalani): Enable this test after new autofill sync is enabled.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, DISABLED_DeleteProfile) {
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, DeleteProfile) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
@@ -225,22 +214,20 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, DISABLED_DeleteProfile) {
 }
 
 // TestScribe ID - 426760.
-// TODO(lipalani): Enable this test after new autofill sync is enabled.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, DISABLED_MergeProfiles) {
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, MergeProfiles) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
-  AddProfile(0, CreateAutofillProfile(PROFILE_NULL));
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
   AddProfile(1, CreateAutofillProfile(PROFILE_MARION));
   AddProfile(1, CreateAutofillProfile(PROFILE_FRASIER));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(ProfilesMatch(0,1));
-  ASSERT_EQ(4U, GetAllProfiles(0).size());
+  ASSERT_EQ(3U, GetAllProfiles(0).size());
 }
 
 // TestScribe ID - 426756.
-// TODO(lipalani): Enable this test after new autofill sync is enabled.
+// TODO(lipalani): Enable after http://crbug.com/69173 is fixed.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, DISABLED_UpdateFields) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -259,9 +246,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, DISABLED_UpdateFields) {
 }
 
 // TestScribe ID - 432634.
-// TODO(lipalani): Enable this test after new autofill sync is enabled.
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest,
-                       DISABLED_ConflictingFields) {
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, ConflictingFields) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
@@ -274,5 +259,5 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest,
       ASCIIToUTF16("Bart"));
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(ProfilesMatch(0,1));
-  ASSERT_EQ(2U, GetAllProfiles(0).size());
+  ASSERT_EQ(1U, GetAllProfiles(0).size());
 }
