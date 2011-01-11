@@ -65,7 +65,8 @@ IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, Basic) {
   ASSERT_TRUE(RunExtensionTest("app_background_page/basic")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, LacksPermission) {
+// Crashy, http://crbug.com/49215.
+IN_PROC_BROWSER_TEST_F(AppBackgroundPageApiTest, DISABLED_LacksPermission) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   ASSERT_TRUE(StartTestServer());
 
