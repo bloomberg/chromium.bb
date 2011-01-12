@@ -608,6 +608,14 @@ cr.define('cr.ui', function() {
         this.redraw();
       }
     },
+
+    /**
+     * Called when a list item is activated, currently only by a double click
+     * event.
+     * @param {number} index The index of the activated item.
+     */
+    activateItemAtIndex: function(index) {
+    },
   };
 
   cr.defineProperty(List, 'disabled', cr.PropertyKind.BOOL_ATTR);
