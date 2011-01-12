@@ -11,7 +11,6 @@
 BUGTHAKIS LINUX : media/video-display-toggle.html = IMAGE
 BUGTHAKIS LINUX : svg/W3C-SVG-1.1-SE/pservers-grad-17-b.svg = IMAGE
 BUGTHAKIS LINUX RELEASE : svg/batik/paints/gradientLimit.svg = IMAGE
-BUGTHAKIS LINUX : svg/custom/focus-ring.svg = IMAGE
 
 BUGTHAKIS WIN : fast/gradients/radial-centered.html = IMAGE
 BUGTHAKIS WIN : media/video-display-toggle.html = IMAGE
