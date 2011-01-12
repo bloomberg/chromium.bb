@@ -8,7 +8,7 @@ vars = {
   "skia_revision": "673",
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "69281",
-  "nacl_revision": "4085",
+  "nacl_revision": "4113",
   "libjingle_revision": "50",
   "libvpx_revision": "65287",
   "ffmpeg_revision": "70984",
@@ -16,7 +16,7 @@ vars = {
 
 deps = {
   "src/breakpad/src":
-    (Var("googlecode_url") % "google-breakpad") + "/trunk/src@734",
+    (Var("googlecode_url") % "google-breakpad") + "/trunk/src@753",
 
   "src/build/util/support":
     "/trunk/deps/support@20411",
@@ -55,7 +55,7 @@ deps = {
     (Var("googlecode_url") % "google-cache-invalidation-api") + "/trunk@67",
 
   "src/tools/gyp":
-    (Var("googlecode_url") % "gyp") + "/trunk@857",
+    (Var("googlecode_url") % "gyp") + "/trunk@874",
 
   "src/v8":
     (Var("googlecode_url") % "v8") + "/trunk@6238",
