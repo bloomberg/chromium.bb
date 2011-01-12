@@ -123,7 +123,8 @@ class HeapcheckWrapper(object):
             # Generate the suppression iff the stack contains more than one
             # frame (otherwise it's likely to be broken)
             if len(cur_stack) > 1:
-              print '\nSuppression:\n{'
+              print '\nSuppression (error hash=#%016X#):\n{' \
+                  % (hash("".join(cur_stack)) & 0xffffffffffffffff)
               print '   <insert_a_suppression_name_here>'
               print '   Heapcheck:Leak'
               for frame in cur_stack:
