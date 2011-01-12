@@ -2069,6 +2069,8 @@
         'browser/prerender/prerender_interceptor.h',
         'browser/prerender/prerender_manager.cc',
         'browser/prerender/prerender_manager.h',
+        'browser/prerender/prerender_resource_handler.h',
+        'browser/prerender/prerender_resource_handler.cc',
         'browser/printing/print_dialog_gtk.cc',
         'browser/printing/print_dialog_gtk.h',
         'browser/printing/print_dialog_cloud.cc',

@@ -19,6 +19,7 @@
 #include "chrome/browser/net/chrome_cookie_policy.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/notification_registrar.h"
@@ -94,6 +95,10 @@ class ChromeURLRequestContext : public net::URLRequestContext {
     return extension_info_map_;
   }
 
+  PrerenderManager* prerender_manager() {
+    return prerender_manager_.get();
+  }
+
   // Returns true if this context is an external request context, like
   // ChromeFrame.
   virtual bool IsExternal() const;
@@ -165,6 +170,9 @@ class ChromeURLRequestContext : public net::URLRequestContext {
       net::HttpNetworkDelegate* network_delegate) {
     network_delegate_ = network_delegate;
   }
+  void set_prerender_manager(PrerenderManager* prerender_manager) {
+    prerender_manager_ = prerender_manager;
+  }
 
   // Callback for when the accept language changes.
   void OnAcceptLanguageChange(const std::string& accept_language);
@@ -176,6 +184,7 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   // Path to the directory user scripts are stored in.
   FilePath user_script_dir_path_;
 
+  // TODO(willchan): Make these non-refcounted.
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;
   scoped_refptr<ChromeCookiePolicy> chrome_cookie_policy_;
@@ -184,6 +193,7 @@ class ChromeURLRequestContext : public net::URLRequestContext {
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
   scoped_refptr<fileapi::SandboxedFileSystemContext> file_system_context_;
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
+  scoped_refptr<PrerenderManager> prerender_manager_;
 
   bool is_media_;
   bool is_off_the_record_;
@@ -342,6 +352,7 @@ class ChromeURLRequestContextFactory {
 
   // TODO(aa): I think this can go away now as we no longer support standalone
   // user scripts.
+  // TODO(willchan): Make these non-refcounted.
   FilePath user_script_dir_path_;
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<ChromeAppCacheService> appcache_service_;
@@ -353,6 +364,7 @@ class ChromeURLRequestContextFactory {
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
   scoped_refptr<fileapi::SandboxedFileSystemContext> file_system_context_;
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
+  scoped_refptr<PrerenderManager> prerender_manager_;
 
   FilePath profile_dir_path_;
 

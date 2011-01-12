@@ -885,6 +885,7 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
   blob_storage_context_ = profile->GetBlobStorageContext();
   file_system_context_ = profile->GetFileSystemContext();
   extension_info_map_ = profile->GetExtensionInfoMap();
+  prerender_manager_ = profile->GetPrerenderManager();
 }
 
 ChromeURLRequestContextFactory::~ChromeURLRequestContextFactory() {
@@ -911,4 +912,5 @@ void ChromeURLRequestContextFactory::ApplyProfileParametersToContext(
   context->set_blob_storage_context(blob_storage_context_);
   context->set_file_system_context(file_system_context_);
   context->set_extension_info_map(extension_info_map_);
+  context->set_prerender_manager(prerender_manager_);
 }

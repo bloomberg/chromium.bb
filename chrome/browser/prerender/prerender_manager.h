@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include <list>
 
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
@@ -19,11 +20,11 @@ class TabContents;
 
 // PrerenderManager is responsible for initiating and keeping prerendered
 // views of webpages.
-class PrerenderManager : base::NonThreadSafe {
+class PrerenderManager : public base::RefCounted<PrerenderManager>,
+                         private base::NonThreadSafe {
  public:
   // Owned by a Profile object for the lifetime of the profile.
   explicit PrerenderManager(Profile* profile);
-  virtual ~PrerenderManager();
 
   // Preloads the URL supplied.
   void AddPreload(const GURL& url);
@@ -50,16 +51,16 @@ class PrerenderManager : base::NonThreadSafe {
   void set_max_elements(unsigned int num) { max_elements_ = num; }
 
  protected:
-  // The following methods exist explicitly rather than just inlined to
-  // facilitate testing.
-  virtual base::Time GetCurrentTime() const;
-  virtual PrerenderContents* CreatePrerenderContents(const GURL& url);
+  virtual ~PrerenderManager();
 
  private:
+  friend class base::RefCounted<PrerenderManager>;
   struct PrerenderContentsData;
 
   bool IsPrerenderElementFresh(const base::Time start) const;
   void DeleteOldEntries();
+  virtual base::Time GetCurrentTime() const;
+  virtual PrerenderContents* CreatePrerenderContents(const GURL& url);
 
   Profile* profile_;
 

@@ -31,6 +31,7 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/url_request_tracking.h"
 #include "chrome/browser/plugin_service.h"
+#include "chrome/browser/prerender/prerender_resource_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/async_resource_handler.h"
 #include "chrome/browser/renderer_host/buffered_resource_handler.h"
@@ -463,6 +464,15 @@ void ResourceDispatcherHost::BeginRequest(
     request->set_upload(request_data.upload_data);
     upload_size = request_data.upload_data->GetContentLength();
   }
+
+  // Install a PrerenderResourceHandler if the requested URL could
+  // be prerendered. This should be in front of the [a]syncResourceHandler,
+  // but after the BufferedResourceHandler since it depends on the MIME
+  // sniffing capabilities in the BufferedResourceHandler.
+  PrerenderResourceHandler* pre_handler = PrerenderResourceHandler::MaybeCreate(
+      *request, context, handler);
+  if (pre_handler)
+    handler = pre_handler;
 
   // Install a CrossSiteResourceHandler if this request is coming from a
   // RenderViewHost with a pending cross-site request.  We only check this for

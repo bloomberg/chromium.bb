@@ -1367,7 +1367,7 @@ PrerenderManager* ProfileImpl::GetPrerenderManager() {
   CommandLine* cl = CommandLine::ForCurrentProcess();
   if (!cl->HasSwitch(switches::kEnablePagePrerender))
     return NULL;
-  if (!prerender_manager_.get())
-    prerender_manager_.reset(new PrerenderManager(this));
-  return prerender_manager_.get();
+  if (!prerender_manager_)
+    prerender_manager_ = new PrerenderManager(this);
+  return prerender_manager_;
 }

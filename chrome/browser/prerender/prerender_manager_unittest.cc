@@ -46,6 +46,10 @@ class TestPrerenderManager : public PrerenderManager {
   PrerenderContents* next_pc() { return next_pc_.get(); }
 
  protected:
+  virtual ~TestPrerenderManager() {
+  }
+
+ private:
   virtual base::Time GetCurrentTime() const {
     return time_;
   }
@@ -54,7 +58,6 @@ class TestPrerenderManager : public PrerenderManager {
     return next_pc_.release();
   }
 
- private:
   base::Time time_;
   scoped_ptr<PrerenderContents> next_pc_;
 };
@@ -67,7 +70,7 @@ class PrerenderManagerTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<TestPrerenderManager> prerender_manager_;
+  scoped_refptr<TestPrerenderManager> prerender_manager_;
 };
 
 TEST_F(PrerenderManagerTest, EmptyTest) {
