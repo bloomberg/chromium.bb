@@ -173,6 +173,21 @@
    fun:__setenv
    fun:setenv$UNIX2003
 }
+{
+   # Reported to Apple as rdar://6915429
+   bug_12525
+   Memcheck:Leak
+   ...
+   fun:-[CIContextImpl render:toBitmap:rowBytes:bounds:format:colorSpace:]
+}
+{
+   bug_69436
+   Memcheck:Leak
+   ...
+   fun:-[CIKernel initWithCString:noCopy:]
+   ...
+   fun:-[NSPopUpButtonCell _drawIndicatorWithFrame:inView:]
+}
 
 # 2. Intentional unit test errors, stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing.
