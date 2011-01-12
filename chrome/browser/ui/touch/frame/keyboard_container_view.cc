@@ -41,10 +41,6 @@ KeyboardContainerView::~KeyboardContainerView() {
 void KeyboardContainerView::Layout() {
   // TODO(bryeung): include a border between the keyboard and the client view
   dom_view_->SetBounds(0, 0, width(), height());
-
-  // TODO(anicolao): This shouldn't be necessary: the DOMView should be laid
-  // out by the call to SetBounds above.
-  dom_view_->Layout();
 }
 
 void KeyboardContainerView::ViewHierarchyChanged(bool is_add,

@@ -46,9 +46,8 @@ void TouchBrowserFrameView::Layout() {
   if (!keyboard_)
     return;
 
-  keyboard_->SetBounds(GetBoundsForReservedArea());
   keyboard_->SetVisible(keyboard_showing_);
-  keyboard_->Layout();
+  keyboard_->SetBounds(GetBoundsForReservedArea());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
