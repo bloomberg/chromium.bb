@@ -424,7 +424,7 @@ cr.define('options.contentSettings', function() {
         window.setTimeout(function() {
           var activeElement = doc.activeElement;
           if (!exceptionList.contains(activeElement))
-            exceptionList.selectionModel.clear();
+            exceptionList.selectionModel.unselectAll();
         }, 50);
       }
 
@@ -458,16 +458,21 @@ cr.define('options.contentSettings', function() {
     },
 
     /**
-     * Adds an exception to the js model.
-     * @param {Object} entry A dictionary of values for the exception.
+     * Sets the exceptions in the js model.
+     * @param {Object} entries A list of dictionaries of values, each dictionary
+     *     represents an exception.
      */
-    addException: function(entry) {
+    setExceptions: function(entries) {
+      var deleteCount = this.dataModel.length;
+
       if (this.isEditable()) {
-        // We have to add it before the Add New Exception row.
-        this.dataModel.splice(this.dataModel.length - 1, 0, entry);
-      } else {
-        this.dataModel.push(entry);
+        // We don't want to remove the Add New Exception row.
+        deleteCount = deleteCount - 1;
       }
+
+      var args = [0, deleteCount];
+      args.push.apply(args, entries);
+      this.dataModel.splice.apply(this.dataModel, args);
     },
 
     /**

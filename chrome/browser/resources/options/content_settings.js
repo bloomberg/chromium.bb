@@ -98,11 +98,7 @@ cr.define('options', function() {
         document.querySelector('div[contentType=' + type + ']' +
                                ' list[mode=normal]');
 
-    exceptionsList.reset();
-    for (var i = 0; i < list.length; i++) {
-      exceptionsList.addException(list[i]);
-    }
-    exceptionsList.redraw();
+    exceptionsList.setExceptions(list);
   };
 
   ContentSettings.setOTRExceptions = function(type, list) {
@@ -111,12 +107,7 @@ cr.define('options', function() {
                                ' list[mode=otr]');
 
     exceptionsList.parentNode.classList.remove('hidden');
-
-    exceptionsList.reset();
-    for (var i = 0; i < list.length; i++) {
-      exceptionsList.addException(list[i]);
-    }
-    exceptionsList.redraw();
+    exceptionsList.setExceptions(list);
   };
 
   /**
