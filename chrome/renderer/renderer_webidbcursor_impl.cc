@@ -18,6 +18,10 @@ RendererWebIDBCursorImpl::RendererWebIDBCursorImpl(int32 idb_cursor_id)
 }
 
 RendererWebIDBCursorImpl::~RendererWebIDBCursorImpl() {
+  // It's not possible for there to be pending callbacks that address this
+  // object since inside WebKit, they hold a reference to the object wich owns
+  // this object. But, if that ever changed, then we'd need to invalidate
+  // any such pointers.
   RenderThread::current()->Send(new IndexedDBHostMsg_CursorDestroyed(
       idb_cursor_id_));
 }

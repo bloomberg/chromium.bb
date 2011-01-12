@@ -34,6 +34,10 @@ RendererWebIDBObjectStoreImpl::RendererWebIDBObjectStoreImpl(
 }
 
 RendererWebIDBObjectStoreImpl::~RendererWebIDBObjectStoreImpl() {
+  // It's not possible for there to be pending callbacks that address this
+  // object since inside WebKit, they hold a reference to the object wich owns
+  // this object. But, if that ever changed, then we'd need to invalidate
+  // any such pointers.
   RenderThread::current()->Send(
       new IndexedDBHostMsg_ObjectStoreDestroyed(idb_object_store_id_));
 }

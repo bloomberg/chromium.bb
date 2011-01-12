@@ -22,6 +22,10 @@ RendererWebIDBTransactionImpl::RendererWebIDBTransactionImpl(
 }
 
 RendererWebIDBTransactionImpl::~RendererWebIDBTransactionImpl() {
+  // It's not possible for there to be pending callbacks that address this
+  // object since inside WebKit, they hold a reference to the object wich owns
+  // this object. But, if that ever changed, then we'd need to invalidate
+  // any such pointers.
   RenderThread::current()->Send(new IndexedDBHostMsg_TransactionDestroyed(
       idb_transaction_id_));
 }

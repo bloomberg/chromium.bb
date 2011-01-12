@@ -49,20 +49,6 @@ const FilePath::CharType DOMStorageContext::kLocalStorageDirectory[] =
 const FilePath::CharType DOMStorageContext::kLocalStorageExtension[] =
     FILE_PATH_LITERAL(".localstorage");
 
-static const FilePath::CharType kLocalStorageOldPath[] =
-    FILE_PATH_LITERAL("localStorage");
-
-// TODO(jorlow): Remove after Chrome 4 ships.
-static void MigrateLocalStorageDirectory(const FilePath& data_path) {
-  FilePath new_path = data_path.Append(
-      DOMStorageContext::kLocalStorageDirectory);
-  FilePath old_path = data_path.Append(kLocalStorageOldPath);
-  if (!file_util::DirectoryExists(new_path) &&
-      file_util::DirectoryExists(old_path)) {
-    file_util::Move(old_path, new_path);
-  }
-}
-
 DOMStorageContext::DOMStorageContext(WebKitContext* webkit_context)
     : last_storage_area_id_(0),
       last_session_storage_namespace_id_on_ui_thread_(kLocalStorageNamespaceId),
@@ -258,10 +244,8 @@ void DOMStorageContext::DeleteAllLocalStorageFiles() {
 
 DOMStorageNamespace* DOMStorageContext::CreateLocalStorage() {
   FilePath dir_path;
-  if (!data_path_.empty()) {
-    MigrateLocalStorageDirectory(data_path_);
+  if (!data_path_.empty())
     dir_path = data_path_.Append(kLocalStorageDirectory);
-  }
   DOMStorageNamespace* new_namespace =
       DOMStorageNamespace::CreateLocalStorageNamespace(this, dir_path);
   RegisterStorageNamespace(new_namespace);
