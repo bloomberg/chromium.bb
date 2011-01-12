@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/os_exchange_data_provider_gtk.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_gtk.h"
 
 #include <algorithm>
 
@@ -10,6 +10,8 @@
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
 #include "net/base/net_util.h"
+
+namespace ui {
 
 OSExchangeDataProviderGtk::OSExchangeDataProviderGtk(
     int known_formats,
@@ -242,3 +244,5 @@ OSExchangeData::Provider* OSExchangeData::CreateProvider() {
 GdkAtom OSExchangeData::RegisterCustomFormat(const std::string& type) {
   return gdk_atom_intern(type.c_str(), false);
 }
+
+}  // namespace ui

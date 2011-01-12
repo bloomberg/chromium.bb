@@ -6,7 +6,6 @@
 
 #include "app/drag_drop_types.h"
 #include "app/l10n_util.h"
-#include "app/os_exchange_data.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "grit/chromium_strings.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 
 BrowserRootView::BrowserRootView(BrowserView* browser_view,
                                  views::Widget* widget)
@@ -28,9 +28,9 @@ BrowserRootView::BrowserRootView(BrowserView* browser_view,
 
 bool BrowserRootView::GetDropFormats(
       int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats) {
+      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) {
   if (tabstrip() && tabstrip()->IsVisible() && !tabstrip()->IsAnimating()) {
-    *formats = OSExchangeData::URL | OSExchangeData::STRING;
+    *formats = ui::OSExchangeData::URL | ui::OSExchangeData::STRING;
     return true;
   }
   return false;
@@ -40,7 +40,7 @@ bool BrowserRootView::AreDropTypesRequired() {
   return true;
 }
 
-bool BrowserRootView::CanDrop(const OSExchangeData& data) {
+bool BrowserRootView::CanDrop(const ui::OSExchangeData& data) {
   if (!tabstrip() || !tabstrip()->IsVisible() || tabstrip()->IsAnimating())
     return false;
 
@@ -88,19 +88,19 @@ int BrowserRootView::OnPerformDrop(const views::DropTargetEvent& event) {
   if (!forwarding_to_tab_strip_)
     return DragDropTypes::DRAG_NONE;
 
-  // Extract the URL and create a new OSExchangeData containing the URL. We do
-  // this as the TabStrip doesn't know about the autocomplete edit and neeeds
+  // Extract the URL and create a new ui::OSExchangeData containing the URL. We
+  // do this as the TabStrip doesn't know about the autocomplete edit and needs
   // to know about it to handle 'paste and go'.
   GURL url;
   std::wstring title;
-  OSExchangeData mapped_data;
+  ui::OSExchangeData mapped_data;
   if (!event.GetData().GetURLAndTitle(&url, &title) || !url.is_valid()) {
     // The url isn't valid. Use the paste and go url.
     if (GetPasteAndGoURL(event.GetData(), &url))
       mapped_data.SetURL(url, std::wstring());
     // else case: couldn't extract a url or 'paste and go' url. This ends up
-    // passing through an OSExchangeData with nothing in it. We need to do this
-    // so that the tab strip cleans up properly.
+    // passing through an ui::OSExchangeData with nothing in it. We need to do
+    // this so that the tab strip cleans up properly.
   } else {
     mapped_data.SetURL(url, std::wstring());
   }
@@ -124,7 +124,7 @@ bool BrowserRootView::ShouldForwardToTabStrip(
 
 views::DropTargetEvent* BrowserRootView::MapEventToTabStrip(
     const views::DropTargetEvent& event,
-    const OSExchangeData& data) {
+    const ui::OSExchangeData& data) {
   gfx::Point tab_strip_loc(event.location());
   ConvertPointToView(this, tabstrip(), &tab_strip_loc);
   return new views::DropTargetEvent(data, tab_strip_loc.x(),
@@ -136,7 +136,8 @@ BaseTabStrip* BrowserRootView::tabstrip() const {
   return browser_view_->tabstrip();
 }
 
-bool BrowserRootView::GetPasteAndGoURL(const OSExchangeData& data, GURL* url) {
+bool BrowserRootView::GetPasteAndGoURL(const ui::OSExchangeData& data,
+                                       GURL* url) {
   if (!data.HasString())
     return false;
 

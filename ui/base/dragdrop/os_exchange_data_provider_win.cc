@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/os_exchange_data_provider_win.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 
 #include "app/l10n_util.h"
 #include "base/file_path.h"
@@ -18,7 +18,7 @@
 #include "net/base/net_util.h"
 #include "ui/base/clipboard/clipboard_util_win.h"
 
-using ui::ClipboardUtil;
+namespace ui {
 
 // Creates a new STGMEDIUM object to hold the specified text. The caller
 // owns the resulting object. The "Bytes" version does not NULL terminate, the
@@ -921,3 +921,5 @@ OSExchangeData::CustomFormat OSExchangeData::RegisterCustomFormat(
     const std::string& type) {
   return RegisterClipboardFormat(ASCIIToWide(type).c_str());
 }
+
+}  // namespace ui

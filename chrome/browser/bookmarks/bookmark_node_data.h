@@ -13,7 +13,7 @@
 #include "googleurl/src/gurl.h"
 
 #if defined(TOOLKIT_VIEWS)
-#include "app/os_exchange_data.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #endif
 
 class BookmarkNode;
@@ -74,7 +74,7 @@ struct BookmarkNodeData {
   BookmarkNodeData();
 
 #if defined(TOOLKIT_VIEWS)
-  static OSExchangeData::CustomFormat GetBookmarkCustomFormat();
+  static ui::OSExchangeData::CustomFormat GetBookmarkCustomFormat();
 #endif
 
   // Created a BookmarkNodeData populated from the arguments.
@@ -108,10 +108,10 @@ struct BookmarkNodeData {
   // use.
   // |profile| is used to identify which profile the data came from. Use a
   // value of null to indicate the data is not associated with any profile.
-  void Write(Profile* profile, OSExchangeData* data) const;
+  void Write(Profile* profile, ui::OSExchangeData* data) const;
 
   // Restores this data from the clipboard, returning true on success.
-  bool Read(const OSExchangeData& data);
+  bool Read(const ui::OSExchangeData& data);
 #endif
 
   // Writes the data for a drag to |pickle|.

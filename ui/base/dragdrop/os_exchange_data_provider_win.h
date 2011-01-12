@@ -1,17 +1,19 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_OS_EXCHANGE_DATA_PROVIDER_WIN_H_
-#define APP_OS_EXCHANGE_DATA_PROVIDER_WIN_H_
+#ifndef UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_WIN_H_
+#define UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_WIN_H_
 #pragma once
 
 #include <objidl.h>
 #include <shlobj.h>
 #include <string>
 
-#include "app/os_exchange_data.h"
 #include "base/scoped_comptr_win.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
+
+namespace ui {
 
 class DataObjectImpl : public DownloadFileObserver,
                        public IDataObject,
@@ -173,4 +175,6 @@ class OSExchangeDataProviderWin : public OSExchangeData::Provider {
   DISALLOW_COPY_AND_ASSIGN(OSExchangeDataProviderWin);
 };
 
-#endif  // APP_OS_EXCHANGE_DATA_PROVIDER_WIN_H_
+}  // namespace ui
+
+#endif  // UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_WIN_H_

@@ -127,9 +127,9 @@ class BookmarkBarView : public DetachableToolbarView,
   virtual void PaintChildren(gfx::Canvas* canvas);
   virtual bool GetDropFormats(
       int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats);
+      std::set<ui::OSExchangeData::CustomFormat>* custom_formats);
   virtual bool AreDropTypesRequired();
-  virtual bool CanDrop(const OSExchangeData& data);
+  virtual bool CanDrop(const ui::OSExchangeData& data);
   virtual void OnDragEntered(const views::DropTargetEvent& event);
   virtual int OnDragUpdated(const views::DropTargetEvent& event);
   virtual void OnDragExited();
@@ -347,7 +347,7 @@ class BookmarkBarView : public DetachableToolbarView,
   // WriteDragData to write the actual data.
   virtual void WriteDragData(views::View* sender,
                              const gfx::Point& press_pt,
-                             OSExchangeData* data);
+                             ui::OSExchangeData* data);
 
   virtual int GetDragOperations(views::View* sender, const gfx::Point& p);
 
@@ -356,7 +356,7 @@ class BookmarkBarView : public DetachableToolbarView,
                             const gfx::Point& p);
 
   // Writes a BookmarkNodeData for node to data.
-  void WriteDragData(const BookmarkNode* node, OSExchangeData* data);
+  void WriteDragData(const BookmarkNode* node, ui::OSExchangeData* data);
 
   // ViewMenuDelegate method. Ends up creating a BookmarkMenuController to
   // show the menu.

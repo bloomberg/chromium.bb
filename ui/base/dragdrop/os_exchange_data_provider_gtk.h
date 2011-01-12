@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef APP_OS_EXCHANGE_DATA_PROVIDER_GTK_H_
-#define APP_OS_EXCHANGE_DATA_PROVIDER_GTK_H_
+#ifndef UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_GTK_H_
+#define UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_GTK_H_
 #pragma once
 
 #include <gtk/gtk.h>
@@ -11,11 +11,13 @@
 #include <set>
 #include <string>
 
-#include "app/os_exchange_data.h"
 #include "base/pickle.h"
 #include "base/string16.h"
 #include "gfx/point.h"
 #include "googleurl/src/gurl.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
+
+namespace ui {
 
 // OSExchangeData::Provider implementation for Gtk. OSExchangeDataProviderGtk
 // is created with a set of known data types. In addition specific data
@@ -113,4 +115,6 @@ class OSExchangeDataProviderGtk : public OSExchangeData::Provider {
   DISALLOW_COPY_AND_ASSIGN(OSExchangeDataProviderGtk);
 };
 
-#endif  // APP_OS_EXCHANGE_DATA_PROVIDER_GTK_H_
+}  // namespace ui
+
+#endif  // UI_BASE_DRAGDROP_OS_EXCHANGE_DATA_PROVIDER_GTK_H_

@@ -10,11 +10,13 @@
 #include <string>
 
 #include "app/drag_drop_types.h"
-#include "app/os_exchange_data.h"
 #include "base/logging.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #include "views/controls/menu/controller.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/event.h"
+
+using ui::OSExchangeData;
 
 namespace views {
 

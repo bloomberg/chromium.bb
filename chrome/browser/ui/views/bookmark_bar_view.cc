@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "app/os_exchange_data.h"
 #include "app/resource_bundle.h"
 #include "app/text_elider.h"
 #include "base/i18n/rtl.h"
@@ -43,6 +42,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/label.h"
 #include "views/controls/menu/menu_item_view.h"
@@ -563,10 +563,10 @@ void BookmarkBarView::PaintChildren(gfx::Canvas* canvas) {
 
 bool BookmarkBarView::GetDropFormats(
       int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats) {
+      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) {
   if (!model_ || !model_->IsLoaded())
     return false;
-  *formats = OSExchangeData::URL;
+  *formats = ui::OSExchangeData::URL;
   custom_formats->insert(BookmarkNodeData::GetBookmarkCustomFormat());
   return true;
 }
@@ -575,7 +575,7 @@ bool BookmarkBarView::AreDropTypesRequired() {
   return true;
 }
 
-bool BookmarkBarView::CanDrop(const OSExchangeData& data) {
+bool BookmarkBarView::CanDrop(const ui::OSExchangeData& data) {
   if (!model_ || !model_->IsLoaded())
     return false;
 
@@ -1109,7 +1109,7 @@ void BookmarkBarView::BookmarkNodeFavIconLoaded(BookmarkModel* model,
 
 void BookmarkBarView::WriteDragData(View* sender,
                                     const gfx::Point& press_pt,
-                                    OSExchangeData* data) {
+                                    ui::OSExchangeData* data) {
   UserMetrics::RecordAction(UserMetricsAction("BookmarkBar_DragButton"),
                             profile_);
 
@@ -1172,7 +1172,7 @@ bool BookmarkBarView::CanStartDrag(views::View* sender,
 }
 
 void BookmarkBarView::WriteDragData(const BookmarkNode* node,
-                                    OSExchangeData* data) {
+                                    ui::OSExchangeData* data) {
   DCHECK(node && data);
   BookmarkNodeData drag_data(node);
   drag_data.Write(profile_, data);

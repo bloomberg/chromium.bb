@@ -35,7 +35,6 @@ class GURL;
 class ListValue;
 struct NativeWebKeyboardEvent;
 class NavigationEntry;
-class OSExchangeData;
 class Profile;
 struct RendererPreferences;
 class RenderProcessHost;

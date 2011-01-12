@@ -1624,7 +1624,6 @@
             '../third_party/qcms/qcms.gyp:*',
             '../third_party/sqlite/sqlite.gyp:*',
             '../third_party/zlib/zlib.gyp:*',
-            '../ui/ui.gyp:*',
             '../webkit/support/webkit_support.gyp:*',
             '../webkit/webkit.gyp:*',
 

@@ -1,9 +1,7 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/os_exchange_data.h"
-#include "app/os_exchange_data_provider_win.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
@@ -14,6 +12,8 @@
 #include "chrome/test/testing_profile.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 
 class BookmarkNodeDataTest : public testing::Test {
  public:
@@ -29,9 +29,9 @@ class BookmarkNodeDataTest : public testing::Test {
 
 namespace {
 
-OSExchangeData::Provider* CloneProvider(const OSExchangeData& data) {
-  return new OSExchangeDataProviderWin(
-      OSExchangeDataProviderWin::GetIDataObject(data));
+ui::OSExchangeData::Provider* CloneProvider(const ui::OSExchangeData& data) {
+  return new ui::OSExchangeDataProviderWin(
+      ui::OSExchangeDataProviderWin::GetIDataObject(data));
 }
 
 }  // namespace
@@ -44,9 +44,9 @@ TEST_F(BookmarkNodeDataTest, InitialState) {
 
 // Makes sure reading bogus data leaves the BookmarkNodeData invalid.
 TEST_F(BookmarkNodeDataTest, BogusRead) {
-  OSExchangeData data;
+  ui::OSExchangeData data;
   BookmarkNodeData drag_data;
-  EXPECT_FALSE(drag_data.Read(OSExchangeData(CloneProvider(data))));
+  EXPECT_FALSE(drag_data.Read(ui::OSExchangeData(CloneProvider(data))));
   EXPECT_FALSE(drag_data.is_valid());
 }
 
@@ -56,11 +56,11 @@ TEST_F(BookmarkNodeDataTest, JustURL) {
   const GURL url("http://google.com");
   const std::wstring title(L"title");
 
-  OSExchangeData data;
+  ui::OSExchangeData data;
   data.SetURL(url, title);
 
   BookmarkNodeData drag_data;
-  EXPECT_TRUE(drag_data.Read(OSExchangeData(CloneProvider(data))));
+  EXPECT_TRUE(drag_data.Read(ui::OSExchangeData(CloneProvider(data))));
   EXPECT_TRUE(drag_data.is_valid());
   ASSERT_EQ(1, drag_data.elements.size());
   EXPECT_TRUE(drag_data.elements[0].is_url);
@@ -86,11 +86,11 @@ TEST_F(BookmarkNodeDataTest, URL) {
   EXPECT_TRUE(drag_data.elements[0].is_url);
   EXPECT_EQ(url, drag_data.elements[0].url);
   EXPECT_EQ(title, WideToUTF16Hack(drag_data.elements[0].title));
-  OSExchangeData data;
+  ui::OSExchangeData data;
   drag_data.Write(&profile, &data);
 
   // Now read the data back in.
-  OSExchangeData data2(CloneProvider(data));
+  ui::OSExchangeData data2(CloneProvider(data));
   BookmarkNodeData read_data;
   EXPECT_TRUE(read_data.Read(data2));
   EXPECT_TRUE(read_data.is_valid());
@@ -130,11 +130,11 @@ TEST_F(BookmarkNodeDataTest, Group) {
   EXPECT_EQ(g12->GetTitle(), WideToUTF16Hack(drag_data.elements[0].title));
   EXPECT_FALSE(drag_data.elements[0].is_url);
 
-  OSExchangeData data;
+  ui::OSExchangeData data;
   drag_data.Write(&profile, &data);
 
   // Now read the data back in.
-  OSExchangeData data2(CloneProvider(data));
+  ui::OSExchangeData data2(CloneProvider(data));
   BookmarkNodeData read_data;
   EXPECT_TRUE(read_data.Read(data2));
   EXPECT_TRUE(read_data.is_valid());
@@ -168,11 +168,11 @@ TEST_F(BookmarkNodeDataTest, GroupWithChild) {
 
   BookmarkNodeData drag_data(group);
 
-  OSExchangeData data;
+  ui::OSExchangeData data;
   drag_data.Write(&profile, &data);
 
   // Now read the data back in.
-  OSExchangeData data2(CloneProvider(data));
+  ui::OSExchangeData data2(CloneProvider(data));
   BookmarkNodeData read_data;
   EXPECT_TRUE(read_data.Read(data2));
   ASSERT_EQ(1, read_data.elements.size());
@@ -210,11 +210,11 @@ TEST_F(BookmarkNodeDataTest, MultipleNodes) {
   nodes.push_back(group);
   nodes.push_back(url_node);
   BookmarkNodeData drag_data(nodes);
-  OSExchangeData data;
+  ui::OSExchangeData data;
   drag_data.Write(&profile, &data);
 
   // Read the data back in.
-  OSExchangeData data2(CloneProvider(data));
+  ui::OSExchangeData data2(CloneProvider(data));
   BookmarkNodeData read_data;
   EXPECT_TRUE(read_data.Read(data2));
   EXPECT_TRUE(read_data.is_valid());

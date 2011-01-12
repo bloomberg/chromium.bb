@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/os_exchange_data.h"
-#include "app/os_exchange_data_provider_win.h"
 #include "base/pickle.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/test/testing_profile.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 
 namespace {
 
-OSExchangeData::Provider* CloneProvider(const OSExchangeData& data) {
-  return new OSExchangeDataProviderWin(
-      OSExchangeDataProviderWin::GetIDataObject(data));
+ui::OSExchangeData::Provider* CloneProvider(const ui::OSExchangeData& data) {
+  return new ui::OSExchangeDataProviderWin(
+      ui::OSExchangeDataProviderWin::GetIDataObject(data));
 }
 
 }  // namespace
@@ -25,12 +25,12 @@ TEST_F(BrowserActionDragDataTest, ArbitraryFormat) {
   TestingProfile profile;
   profile.SetID(L"id");
 
-  OSExchangeData data;
+  ui::OSExchangeData data;
   data.SetURL(GURL("http://www.google.com"), L"Title");
 
   // We only support our format, so this should not succeed.
   BrowserActionDragData drag_data;
-  EXPECT_FALSE(drag_data.Read(OSExchangeData(CloneProvider(data))));
+  EXPECT_FALSE(drag_data.Read(ui::OSExchangeData(CloneProvider(data))));
 }
 
 TEST_F(BrowserActionDragDataTest, BrowserActionDragDataFormat) {
@@ -44,12 +44,12 @@ TEST_F(BrowserActionDragDataTest, BrowserActionDragDataFormat) {
   pickle.WriteString(extension_id);
   pickle.WriteInt(42);
 
-  OSExchangeData data;
+  ui::OSExchangeData data;
   data.SetPickledData(BrowserActionDragData::GetBrowserActionCustomFormat(),
                       pickle);
 
   BrowserActionDragData drag_data;
-  EXPECT_TRUE(drag_data.Read(OSExchangeData(CloneProvider(data))));
+  EXPECT_TRUE(drag_data.Read(ui::OSExchangeData(CloneProvider(data))));
   ASSERT_TRUE(drag_data.IsFromProfile(profile.GetOriginalProfile()));
   ASSERT_STREQ(extension_id.c_str(), drag_data.id().c_str());
   ASSERT_EQ(42, drag_data.index());

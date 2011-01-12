@@ -15,12 +15,16 @@
 #include "views/focus/focus_manager.h"
 #include "views/widget/widget.h"
 
-class OSExchangeData;
-class OSExchangeDataProviderGtk;
-
 namespace gfx {
 class Rect;
 }
+
+namespace ui {
+class OSExchangeData;
+class OSExchangeDataProviderGtk;
+}
+using ui::OSExchangeData;
+using ui::OSExchangeDataProviderGtk;
 
 namespace views {
 

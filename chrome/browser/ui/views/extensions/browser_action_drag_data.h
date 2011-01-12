@@ -12,7 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 
 #if defined(TOOLKIT_VIEWS)
-#include "app/os_exchange_data.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #endif
 
 class BrowserActionButton;
@@ -32,13 +32,13 @@ class BrowserActionDragData {
   bool IsFromProfile(Profile* profile) const;
 
 #if defined(TOOLKIT_VIEWS)
-  void Write(Profile* profile, OSExchangeData* data) const;
+  void Write(Profile* profile, ui::OSExchangeData* data) const;
 
   // Restores this data from the clipboard, returning true on success.
-  bool Read(const OSExchangeData& data);
+  bool Read(const ui::OSExchangeData& data);
 
   // Returns the Custom Format this class supports (for Browser Actions).
-  static OSExchangeData::CustomFormat GetBrowserActionCustomFormat();
+  static ui::OSExchangeData::CustomFormat GetBrowserActionCustomFormat();
 #endif
 
  private:

@@ -4,7 +4,6 @@
 
 #include "views/drag_utils.h"
 
-#include "app/os_exchange_data.h"
 #include "app/resource_bundle.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -13,7 +12,10 @@
 #include "gfx/font.h"
 #include "googleurl/src/gurl.h"
 #include "grit/app_resources.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #include "views/controls/button/text_button.h"
+
+using ui::OSExchangeData;
 
 namespace drag_utils {
 

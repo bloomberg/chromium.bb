@@ -6,11 +6,11 @@
 
 #include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
-#include "app/os_exchange_data.h"
 #include "base/i18n/rtl.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/canvas_skia.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_scroll_view_container.h"
 #include "views/controls/menu/submenu_view.h"
@@ -31,6 +31,7 @@
 
 using base::Time;
 using base::TimeDelta;
+using ui::OSExchangeData;
 
 // Period of the scroll timer (in milliseconds).
 static const int kScrollTimerMS = 30;

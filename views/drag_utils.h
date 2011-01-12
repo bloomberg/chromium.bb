@@ -10,14 +10,19 @@
 
 #include "base/file_path.h"
 
+class GURL;
+class SkBitmap;
+
 namespace gfx {
 class Canvas;
 class Point;
 class Size;
 }
-class GURL;
+
+namespace ui {
 class OSExchangeData;
-class SkBitmap;
+}
+using ui::OSExchangeData;
 
 namespace drag_utils {
 

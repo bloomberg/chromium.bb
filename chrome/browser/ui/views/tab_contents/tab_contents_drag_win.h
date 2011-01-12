@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_TAB_CONTENTS_DRAG_WIN_H_
 #pragma once
 
-#include "app/os_exchange_data_provider_win.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/threading/platform_thread.h"
 #include "gfx/point.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 
 class DragDropThread;
 class TabContentsViewWin;
@@ -25,7 +25,7 @@ struct WebDropData;
 // message loop in the UI thread. For all other cases, the drag-and-drop happens
 // in the UI thread.
 class TabContentsDragWin
-    : public DataObjectImpl::Observer,
+    : public ui::DataObjectImpl::Observer,
       public base::RefCountedThreadSafe<TabContentsDragWin> {
  public:
   explicit TabContentsDragWin(TabContentsViewWin* view);
@@ -46,12 +46,13 @@ class TabContentsDragWin
  private:
   // Called on either UI thread or drag-and-drop thread.
   void PrepareDragForDownload(const WebDropData& drop_data,
-                              OSExchangeData* data,
+                              ui::OSExchangeData* data,
                               const GURL& page_url,
                               const std::string& page_encoding);
   void PrepareDragForFileContents(const WebDropData& drop_data,
-                                  OSExchangeData* data);
-  void PrepareDragForUrl(const WebDropData& drop_data, OSExchangeData* data);
+                                  ui::OSExchangeData* data);
+  void PrepareDragForUrl(const WebDropData& drop_data,
+                         ui::OSExchangeData* data);
   void DoDragging(const WebDropData& drop_data,
                   WebKit::WebDragOperationsMask ops,
                   const GURL& page_url,

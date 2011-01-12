@@ -12,13 +12,13 @@
 #include <vector>
 
 #include "app/drag_drop_types.h"
-#include "app/os_exchange_data.h"
-#include "app/os_exchange_data_provider_gtk.h"
 #include "base/auto_reset.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/path.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_gtk.h"
 #include "views/widget/default_theme_provider.h"
 #include "views/widget/drop_target_gtk.h"
 #include "views/widget/gtk_views_fixed.h"
@@ -28,6 +28,9 @@
 #include "views/widget/widget_delegate.h"
 #include "views/widget/widget_utils.h"
 #include "views/window/window_gtk.h"
+
+using ui::OSExchangeData;
+using ui::OSExchangeDataProviderGtk;
 
 namespace {
 

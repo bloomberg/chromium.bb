@@ -18,7 +18,10 @@
 #include "views/controls/menu/menu_delegate.h"
 #include "views/controls/menu/menu_item_view.h"
 
+namespace ui {
 class OSExchangeData;
+}
+using ui::OSExchangeData;
 
 namespace views {
 

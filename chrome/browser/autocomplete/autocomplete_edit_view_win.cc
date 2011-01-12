@@ -14,8 +14,6 @@
 #include "app/keyboard_codes.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
-#include "app/os_exchange_data.h"
-#include "app/os_exchange_data_provider_win.h"
 #include "app/win/drag_source.h"
 #include "app/win/drop_target.h"
 #include "app/win/iat_patch_function.h"
@@ -50,6 +48,8 @@
 #include "skia/ext/skia_utils_win.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "views/drag_utils.h"
 #include "views/focus/focus_util_win.h"
 #include "views/widget/widget.h"
@@ -129,7 +129,7 @@ DWORD EditDropTarget::OnDragEnter(IDataObject* data_object,
                                   DWORD key_state,
                                   POINT cursor_position,
                                   DWORD effect) {
-  OSExchangeData os_data(new OSExchangeDataProviderWin(data_object));
+  ui::OSExchangeData os_data(new ui::OSExchangeDataProviderWin(data_object));
   drag_has_url_ = os_data.HasURL();
   drag_has_string_ = !drag_has_url_ && os_data.HasString();
   if (drag_has_url_) {
@@ -179,7 +179,7 @@ DWORD EditDropTarget::OnDrop(IDataObject* data_object,
                              DWORD key_state,
                              POINT cursor_position,
                              DWORD effect) {
-  OSExchangeData os_data(new OSExchangeDataProviderWin(data_object));
+  ui::OSExchangeData os_data(new ui::OSExchangeDataProviderWin(data_object));
 
   if (drag_has_url_) {
     GURL url;
@@ -2418,7 +2418,7 @@ void AutocompleteEditViewWin::StartDragIfNecessary(const CPoint& point) {
   if (initiated_drag_ || !app::win::IsDrag(click_point_[kLeft], point))
     return;
 
-  OSExchangeData data;
+  ui::OSExchangeData data;
 
   DWORD supported_modes = DROPEFFECT_COPY;
 
@@ -2470,8 +2470,9 @@ void AutocompleteEditViewWin::StartDragIfNecessary(const CPoint& point) {
   scoped_refptr<app::win::DragSource> drag_source(new app::win::DragSource);
   DWORD dropped_mode;
   AutoReset<bool> auto_reset_in_drag(&in_drag_, true);
-  if (DoDragDrop(OSExchangeDataProviderWin::GetIDataObject(data), drag_source,
-                 supported_modes, &dropped_mode) == DRAGDROP_S_DROP) {
+  if (DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data),
+                 drag_source, supported_modes, &dropped_mode) ==
+          DRAGDROP_S_DROP) {
     if ((dropped_mode == DROPEFFECT_MOVE) && (start_text == GetText())) {
       ScopedFreeze freeze(this, GetTextObjectModel());
       OnBeforePossibleChange();

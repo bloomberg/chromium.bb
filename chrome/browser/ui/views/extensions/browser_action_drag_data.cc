@@ -27,14 +27,14 @@ bool BrowserActionDragData::IsFromProfile(Profile* profile) const {
 
 #if defined(TOOLKIT_VIEWS)
 void BrowserActionDragData::Write(
-    Profile* profile, OSExchangeData* data) const {
+    Profile* profile, ui::OSExchangeData* data) const {
   DCHECK(data);
   Pickle data_pickle;
   WriteToPickle(profile, &data_pickle);
   data->SetPickledData(GetBrowserActionCustomFormat(), data_pickle);
 }
 
-bool BrowserActionDragData::Read(const OSExchangeData& data) {
+bool BrowserActionDragData::Read(const ui::OSExchangeData& data) {
   if (!data.HasCustomFormat(GetBrowserActionCustomFormat()))
     return false;
 
@@ -49,14 +49,14 @@ bool BrowserActionDragData::Read(const OSExchangeData& data) {
 }
 
 // static
-OSExchangeData::CustomFormat
+ui::OSExchangeData::CustomFormat
     BrowserActionDragData::GetBrowserActionCustomFormat() {
-  static OSExchangeData::CustomFormat format;
+  static ui::OSExchangeData::CustomFormat format;
   static bool format_valid = false;
 
   if (!format_valid) {
     format_valid = true;
-    format = OSExchangeData::RegisterCustomFormat(
+    format = ui::OSExchangeData::RegisterCustomFormat(
         BrowserActionDragData::kClipboardFormatString);
   }
   return format;

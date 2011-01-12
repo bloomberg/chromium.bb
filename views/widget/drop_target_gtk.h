@@ -9,11 +9,15 @@
 #include <gtk/gtk.h>
 #include <set>
 
-#include "app/os_exchange_data.h"
 #include "base/scoped_ptr.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #include "views/widget/drop_helper.h"
 
+namespace ui {
 class OSExchangeDataProviderGtk;
+}
+using ui::OSExchangeData;
+using ui::OSExchangeDataProviderGtk;
 
 namespace views {
 

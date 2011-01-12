@@ -11,13 +11,15 @@
 
 #include "app/drag_drop_types.h"
 #include "app/gtk_dnd_util.h"
-#include "app/os_exchange_data_provider_gtk.h"
 #include "base/file_path.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/point.h"
 #include "net/base/net_util.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_gtk.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_gtk.h"
+
+using ui::OSExchangeData;
 
 namespace {
 

@@ -58,9 +58,9 @@ class BrowserActionOverflowMenuController : public views::MenuDelegate {
   virtual bool GetDropFormats(
       views::MenuItemView* menu,
       int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats);
+      std::set<ui::OSExchangeData::CustomFormat>* custom_formats);
   virtual bool AreDropTypesRequired(views::MenuItemView* menu);
-  virtual bool CanDrop(views::MenuItemView* menu, const OSExchangeData& data);
+  virtual bool CanDrop(views::MenuItemView* menu, const ui::OSExchangeData& data);
   virtual int GetDropOperation(views::MenuItemView* item,
                                const views::DropTargetEvent& event,
                                DropPosition* position);
@@ -70,7 +70,7 @@ class BrowserActionOverflowMenuController : public views::MenuDelegate {
   // These three drag functions offer support for dragging icons out of the
   // overflow menu.
   virtual bool CanDrag(views::MenuItemView* menu);
-  virtual void WriteDragData(views::MenuItemView* sender, OSExchangeData* data);
+  virtual void WriteDragData(views::MenuItemView* sender, ui::OSExchangeData* data);
   virtual int GetDragOperations(views::MenuItemView* sender);
 
  private:

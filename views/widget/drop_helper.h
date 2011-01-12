@@ -8,11 +8,14 @@
 
 #include "base/basictypes.h"
 
-class OSExchangeData;
-
 namespace gfx {
 class Point;
 }  // namespace gfx
+
+namespace ui {
+class OSExchangeData;
+}  // namespace ui
+using ui::OSExchangeData;
 
 namespace views {
 

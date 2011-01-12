@@ -5,10 +5,13 @@
 #include "views/widget/root_view.h"
 
 #include "app/drag_drop_types.h"
-#include "app/os_exchange_data.h"
-#include "app/os_exchange_data_provider_win.h"
 #include "app/win/drag_source.h"
 #include "gfx/canvas_skia.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_win.h"
+
+using ui::OSExchangeData;
+using ui::OSExchangeDataProviderWin;
 
 namespace views {
 

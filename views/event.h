@@ -18,7 +18,10 @@ typedef struct _GdkEventKey GdkEventKey;
 typedef union _XEvent XEvent;
 #endif
 
+namespace ui {
 class OSExchangeData;
+}
+using ui::OSExchangeData;
 
 namespace views {
 

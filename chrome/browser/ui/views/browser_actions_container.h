@@ -323,9 +323,9 @@ class BrowserActionsContainer
                                     views::View* parent,
                                     views::View* child);
   virtual bool GetDropFormats(
-      int* formats, std::set<OSExchangeData::CustomFormat>* custom_formats);
+      int* formats, std::set<ui::OSExchangeData::CustomFormat>* custom_formats);
   virtual bool AreDropTypesRequired();
-  virtual bool CanDrop(const OSExchangeData& data);
+  virtual bool CanDrop(const ui::OSExchangeData& data);
   virtual void OnDragEntered(const views::DropTargetEvent& event);
   virtual int OnDragUpdated(const views::DropTargetEvent& event);
   virtual void OnDragExited();
@@ -339,7 +339,7 @@ class BrowserActionsContainer
   // Overridden from views::DragController:
   virtual void WriteDragData(View* sender,
                              const gfx::Point& press_pt,
-                             OSExchangeData* data);
+                             ui::OSExchangeData* data);
   virtual int GetDragOperations(View* sender, const gfx::Point& p);
   virtual bool CanStartDrag(View* sender,
                             const gfx::Point& press_pt,

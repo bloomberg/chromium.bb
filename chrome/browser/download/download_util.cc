@@ -56,7 +56,7 @@
 #include "third_party/skia/include/core/SkShader.h"
 
 #if defined(TOOLKIT_VIEWS)
-#include "app/os_exchange_data.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #include "views/drag_utils.h"
 #endif
 
@@ -70,12 +70,12 @@
 #endif  // defined(TOOLKIT_USES_GTK)
 
 #if defined(OS_WIN)
-#include "app/os_exchange_data_provider_win.h"
 #include "app/win/drag_source.h"
 #include "app/win/win_util.h"
 #include "base/win/scoped_comptr.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #endif
 
 namespace download_util {
@@ -469,7 +469,7 @@ void DragDownload(const DownloadItem* download,
   DCHECK(download);
 
   // Set up our OLE machinery
-  OSExchangeData data;
+  ui::OSExchangeData data;
 
   if (icon) {
     drag_utils::CreateDragImageForFile(
@@ -494,8 +494,8 @@ void DragDownload(const DownloadItem* download,
 
   // Run the drag and drop loop
   DWORD effects;
-  DoDragDrop(OSExchangeDataProviderWin::GetIDataObject(data), drag_source.get(),
-             DROPEFFECT_COPY | DROPEFFECT_LINK, &effects);
+  DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data),
+             drag_source.get(), DROPEFFECT_COPY | DROPEFFECT_LINK, &effects);
 #elif defined(TOOLKIT_USES_GTK)
   GtkWidget* root = gtk_widget_get_toplevel(view);
   if (!root)

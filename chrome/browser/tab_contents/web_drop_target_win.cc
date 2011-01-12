@@ -7,8 +7,6 @@
 #include <windows.h>
 #include <shlobj.h>
 
-#include "app/os_exchange_data.h"
-#include "app/os_exchange_data_provider_win.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -17,6 +15,8 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "ui/base/clipboard/clipboard_util_win.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -110,7 +110,7 @@ DWORD WebDropTarget::OnDragEnter(IDataObject* data_object,
   WebDropData::PopulateWebDropData(data_object, &drop_data);
 
   if (drop_data.url.is_empty())
-    OSExchangeDataProviderWin::GetPlainTextURL(data_object, &drop_data.url);
+    ui::OSExchangeDataProviderWin::GetPlainTextURL(data_object, &drop_data.url);
 
   drag_cursor_ = WebDragOperationNone;
 
@@ -124,7 +124,8 @@ DWORD WebDropTarget::OnDragEnter(IDataObject* data_object,
   // This is non-null if tab_contents_ is showing an ExtensionDOMUI with
   // support for (at the moment experimental) drag and drop extensions.
   if (tab_contents_->GetBookmarkDragDelegate()) {
-    OSExchangeData os_exchange_data(new OSExchangeDataProviderWin(data_object));
+    ui::OSExchangeData os_exchange_data(
+        new ui::OSExchangeDataProviderWin(data_object));
     BookmarkNodeData bookmark_drag_data;
     if (bookmark_drag_data.Read(os_exchange_data))
       tab_contents_->GetBookmarkDragDelegate()->OnDragEnter(bookmark_drag_data);
@@ -154,7 +155,8 @@ DWORD WebDropTarget::OnDragOver(IDataObject* data_object,
       web_drag_utils_win::WinDragOpMaskToWebDragOpMask(effects));
 
   if (tab_contents_->GetBookmarkDragDelegate()) {
-    OSExchangeData os_exchange_data(new OSExchangeDataProviderWin(data_object));
+    ui::OSExchangeData os_exchange_data(
+        new ui::OSExchangeDataProviderWin(data_object));
     BookmarkNodeData bookmark_drag_data;
     if (bookmark_drag_data.Read(os_exchange_data))
       tab_contents_->GetBookmarkDragDelegate()->OnDragOver(bookmark_drag_data);
@@ -175,7 +177,8 @@ void WebDropTarget::OnDragLeave(IDataObject* data_object) {
   }
 
   if (tab_contents_->GetBookmarkDragDelegate()) {
-    OSExchangeData os_exchange_data(new OSExchangeDataProviderWin(data_object));
+    ui::OSExchangeData os_exchange_data(
+        new ui::OSExchangeDataProviderWin(data_object));
     BookmarkNodeData bookmark_drag_data;
     if (bookmark_drag_data.Read(os_exchange_data))
       tab_contents_->GetBookmarkDragDelegate()->OnDragLeave(bookmark_drag_data);
@@ -203,7 +206,8 @@ DWORD WebDropTarget::OnDrop(IDataObject* data_object,
       gfx::Point(cursor_position.x, cursor_position.y));
 
   if (tab_contents_->GetBookmarkDragDelegate()) {
-    OSExchangeData os_exchange_data(new OSExchangeDataProviderWin(data_object));
+    ui::OSExchangeData os_exchange_data(
+        new ui::OSExchangeDataProviderWin(data_object));
     BookmarkNodeData bookmark_drag_data;
     if (bookmark_drag_data.Read(os_exchange_data))
       tab_contents_->GetBookmarkDragDelegate()->OnDrop(bookmark_drag_data);

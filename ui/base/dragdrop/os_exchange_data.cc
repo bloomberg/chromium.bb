@@ -1,11 +1,13 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "app/os_exchange_data.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 
 #include "base/pickle.h"
 #include "googleurl/src/gurl.h"
+
+namespace ui {
 
 OSExchangeData::DownloadFileInfo::DownloadFileInfo(
     const FilePath& filename,
@@ -142,3 +144,5 @@ void OSExchangeData::SetDownloadFileInfo(const DownloadFileInfo& download) {
   return provider_->SetDownloadFileInfo(download);
 }
 #endif
+
+}  // namespace ui

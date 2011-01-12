@@ -38,7 +38,7 @@
 #include "views/event.h"
 
 #if defined(TOOLKIT_VIEWS)
-#include "app/os_exchange_data.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #include "views/drag_utils.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
@@ -325,7 +325,7 @@ void DragBookmarks(Profile* profile,
 
 #if defined(TOOLKIT_VIEWS)
   // Set up our OLE machinery
-  OSExchangeData data;
+  ui::OSExchangeData data;
   BookmarkNodeData drag_data(nodes);
   drag_data.Write(profile, &data);
 

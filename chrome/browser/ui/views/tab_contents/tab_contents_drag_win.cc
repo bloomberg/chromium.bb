@@ -182,7 +182,7 @@ void TabContentsDragWin::StartBackgroundDragging(
 
 void TabContentsDragWin::PrepareDragForDownload(
     const WebDropData& drop_data,
-    OSExchangeData* data,
+    ui::OSExchangeData* data,
     const GURL& page_url,
     const std::string& page_encoding) {
   // Parse the download metadata.
@@ -215,16 +215,16 @@ void TabContentsDragWin::PrepareDragForDownload(
                            page_url,
                            page_encoding,
                            view_->tab_contents());
-  OSExchangeData::DownloadFileInfo file_download(FilePath(),
-                                                 download_file.get());
+  ui::OSExchangeData::DownloadFileInfo file_download(FilePath(),
+                                                     download_file.get());
   data->SetDownloadFileInfo(file_download);
 
   // Enable asynchronous operation.
-  OSExchangeDataProviderWin::GetIAsyncOperation(*data)->SetAsyncMode(TRUE);
+  ui::OSExchangeDataProviderWin::GetIAsyncOperation(*data)->SetAsyncMode(TRUE);
 }
 
 void TabContentsDragWin::PrepareDragForFileContents(
-    const WebDropData& drop_data, OSExchangeData* data) {
+    const WebDropData& drop_data, ui::OSExchangeData* data) {
   // Images without ALT text will only have a file extension so we need to
   // synthesize one from the provided extension and URL.
   FilePath file_name(drop_data.file_description_filename);
@@ -243,7 +243,7 @@ void TabContentsDragWin::PrepareDragForFileContents(
 }
 
 void TabContentsDragWin::PrepareDragForUrl(const WebDropData& drop_data,
-                                           OSExchangeData* data) {
+                                           ui::OSExchangeData* data) {
   if (drop_data.url.SchemeIs(chrome::kJavaScriptScheme)) {
     // We don't want to allow javascript URLs to be dragged to the desktop,
     // but we do want to allow them to be added to the bookmarks bar
@@ -271,13 +271,13 @@ void TabContentsDragWin::DoDragging(const WebDropData& drop_data,
                                     const std::string& page_encoding,
                                     const SkBitmap& image,
                                     const gfx::Point& image_offset) {
-  OSExchangeData data;
+  ui::OSExchangeData data;
 
   if (!drop_data.download_metadata.empty()) {
     PrepareDragForDownload(drop_data, &data, page_url, page_encoding);
 
     // Set the observer.
-    OSExchangeDataProviderWin::GetDataObjectImpl(data)->set_observer(this);
+    ui::OSExchangeDataProviderWin::GetDataObjectImpl(data)->set_observer(this);
   } else {
     // We set the file contents before the URL because the URL also sets file
     // contents (to a .URL shortcut).  We want to prefer file content data over
@@ -305,7 +305,7 @@ void TabContentsDragWin::DoDragging(const WebDropData& drop_data,
   bool old_state = MessageLoop::current()->NestableTasksAllowed();
   MessageLoop::current()->SetNestableTasksAllowed(true);
   DWORD effect;
-  DoDragDrop(OSExchangeDataProviderWin::GetIDataObject(data), drag_source_,
+  DoDragDrop(ui::OSExchangeDataProviderWin::GetIDataObject(data), drag_source_,
              web_drag_utils_win::WebDragOpMaskToWinDragOpMask(ops), &effect);
   MessageLoop::current()->SetNestableTasksAllowed(old_state);
 
