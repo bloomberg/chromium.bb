@@ -83,8 +83,6 @@ bool DevToolsAgent::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_DispatchOnInspectorBackend,
                         OnDispatchOnInspectorBackend)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_InspectElement, OnInspectElement)
-    IPC_MESSAGE_HANDLER(DevToolsAgentMsg_SetApuAgentEnabled,
-                        OnSetApuAgentEnabled)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -102,13 +100,6 @@ void DevToolsAgent::sendDebuggerOutput(const WebKit::WebString& data) {
   IPC::Message* m = new ViewHostMsg_ForwardToDevToolsClient(
       routing_id_,
       DevToolsClientMsg_DebuggerOutput(data.utf8()));
-  render_view_->Send(m);
-}
-
-void DevToolsAgent::sendDispatchToAPU(const WebKit::WebString& data) {
-  IPC::Message* m = new ViewHostMsg_ForwardToDevToolsClient(
-      routing_id_,
-      DevToolsClientMsg_DispatchToAPU(data.utf8()));
   render_view_->Send(m);
 }
 
@@ -198,13 +189,6 @@ void DevToolsAgent::OnInspectElement(int x, int y) {
     web_agent->attach();
     web_agent->inspectElementAt(WebPoint(x, y));
   }
-}
-
-void DevToolsAgent::OnSetApuAgentEnabled(bool enabled) {
-  WebDevToolsAgent* web_agent = GetWebAgent();
-  if (web_agent)
-    web_agent->setRuntimeProperty("apu-agent", enabled ?
-        WebString::fromUTF8("true") : WebString::fromUTF8("false"));
 }
 
 WebDevToolsAgent* DevToolsAgent::GetWebAgent() {
