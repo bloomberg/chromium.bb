@@ -336,6 +336,25 @@ attr_init(struct attr *data_attr, struct attr attr, int n)
 	}
 }
 
+enum escape_state {
+	escape_state_normal = 0,
+	escape_state_escape,
+	escape_state_dcs,
+	escape_state_csi,
+	escape_state_osc,
+	escape_state_inner_escape,
+	escape_state_ignore,
+	escape_state_special
+};
+
+#define ESC_FLAG_WHAT	0x01
+#define ESC_FLAG_GT	0x02
+#define ESC_FLAG_BANG	0x04
+#define ESC_FLAG_CASH	0x08
+#define ESC_FLAG_SQUOTE 0x10
+#define ESC_FLAG_DQUOTE	0x20
+#define ESC_FLAG_SPACE	0x40
+
 struct terminal {
 	struct window *window;
 	struct display *display;
@@ -360,8 +379,9 @@ struct terminal {
 	uint32_t modifiers;
 	char escape[MAX_ESCAPE];
 	int escape_length;
-	int state;
-	int qmark_flag;
+	enum escape_state state;
+	enum escape_state outer_state;
+	int escape_flags;
 	struct utf8_state_machine state_machine;
 	int margin;
 	int fullscreen;
@@ -860,11 +880,6 @@ redraw_handler(struct window *window, void *data)
 	terminal_draw(terminal);
 }
 
-#define STATE_NORMAL 0
-#define STATE_ESCAPE 1
-#define STATE_ESCAPE_SPECIAL 2
-#define STATE_ESCAPE_CSI  3
-
 static void
 terminal_data(struct terminal *terminal, const char *data, size_t length);
 
@@ -879,7 +894,7 @@ handle_term_parameter(struct terminal *terminal, int code, int sr)
 {
 	int i;
 
-	if (terminal->qmark_flag) {
+	if (terminal->escape_flags & ESC_FLAG_WHAT) {
 		switch(code) {
 		case 1:  /* DECCKM */
 			if (sr)	terminal->key_mode = KM_APPLICATION;
@@ -957,6 +972,16 @@ handle_term_parameter(struct terminal *terminal, int code, int sr)
 			break;
 		}
 	}
+}
+
+static void
+handle_dcs(struct terminal *terminal)
+{
+}
+
+static void
+handle_osc(struct terminal *terminal)
+{
 }
 
 static void
@@ -1601,6 +1626,26 @@ handle_char(struct terminal *terminal, union utf8_char utf8)
 }
 
 static void
+escape_append_utf8(struct terminal *terminal, union utf8_char utf8)
+{
+	int len, i;
+
+	if ((utf8.byte[0] & 0x80) == 0x00)       len = 1;
+	else if ((utf8.byte[0] & 0xE0) == 0xC0)  len = 2;
+	else if ((utf8.byte[0] & 0xF0) == 0xE0)  len = 3;
+	else if ((utf8.byte[0] & 0xF8) == 0xF0)  len = 4;
+	else                                     len = 1;  /* Invalid, cannot happen */
+
+	if (terminal->escape_length + len <= MAX_ESCAPE) {
+		for (i = 0; i < len; i++)
+			terminal->escape[terminal->escape_length + i] = utf8.byte[i];
+		terminal->escape_length += len;
+	} else if (terminal->escape_length < MAX_ESCAPE) {
+		terminal->escape[terminal->escape_length++] = 0;
+	}
+}
+
+static void
 terminal_data(struct terminal *terminal, const char *data, size_t length)
 {
 	int i;
@@ -1626,60 +1671,122 @@ terminal_data(struct terminal *terminal, const char *data, size_t length)
 		}
 
 		/* assume escape codes never use non-ASCII characters */
-		if (terminal->state == STATE_ESCAPE) {
-			terminal->escape[terminal->escape_length++] = utf8.byte[0];
-			if (utf8.byte[0] == '[') {
-				terminal->state = STATE_ESCAPE_CSI;
-				continue;
-			} else if (utf8.byte[0] == '#' || utf8.byte[0] == '(' ||
-				utf8.byte[0] == ')')
-			{
-				terminal->state = STATE_ESCAPE_SPECIAL;
-				continue;
-			} else {
-				terminal->state = STATE_NORMAL;
+		switch (terminal->state) {
+		case escape_state_escape:
+			escape_append_utf8(terminal, utf8);
+			switch (utf8.byte[0]) {
+			case 'P':  /* DCS */
+				terminal->state = escape_state_dcs;
+				break;
+			case '[':  /* CSI */
+				terminal->state = escape_state_csi;
+				break;
+			case ']':  /* OSC */
+				terminal->state = escape_state_osc;
+				break;
+			case '#':
+			case '(':
+			case ')':  /* special */
+				terminal->state = escape_state_special;
+				break;
+			case '^':  /* PM (not implemented) */
+			case '_':  /* APC (not implemented) */
+				terminal->state = escape_state_ignore;
+				break;
+			default:
+				terminal->state = escape_state_normal;
 				handle_non_csi_escape(terminal, utf8.byte[0]);
-				continue;
+				break;
 			}
-		} else if (terminal->state == STATE_ESCAPE_SPECIAL) {
-			terminal->escape[terminal->escape_length++] = utf8.byte[0];
-			terminal->state = STATE_NORMAL;
-			if (isdigit(utf8.byte[0]) || isalpha(utf8.byte[0])) {
-				handle_special_escape(terminal, terminal->escape[1],
-				                      utf8.byte[0]);
-				continue;
-			}
-		} else if (terminal->state == STATE_ESCAPE_CSI) {
+			continue;
+		case escape_state_csi:
 			if (handle_special_char(terminal, utf8.byte[0]) != 0) {
 				/* do nothing */
 			} else if (utf8.byte[0] == '?') {
-				terminal->qmark_flag = 1;
+				terminal->escape_flags |= ESC_FLAG_WHAT;
+			} else if (utf8.byte[0] == '>') {
+				terminal->escape_flags |= ESC_FLAG_GT;
+			} else if (utf8.byte[0] == '!') {
+				terminal->escape_flags |= ESC_FLAG_BANG;
+			} else if (utf8.byte[0] == '$') {
+				terminal->escape_flags |= ESC_FLAG_CASH;
+			} else if (utf8.byte[0] == '\'') {
+				terminal->escape_flags |= ESC_FLAG_SQUOTE;
+			} else if (utf8.byte[0] == '"') {
+				terminal->escape_flags |= ESC_FLAG_DQUOTE;
+			} else if (utf8.byte[0] == ' ') {
+				terminal->escape_flags |= ESC_FLAG_SPACE;
 			} else {
-				/* Don't overflow the buffer */
-				if (terminal->escape_length < MAX_ESCAPE)
-					terminal->escape[terminal->escape_length++] = utf8.byte[0];
+				escape_append_utf8(terminal, utf8);
 				if (terminal->escape_length >= MAX_ESCAPE)
-					terminal->state = STATE_NORMAL;
+					terminal->state = escape_state_normal;
 			}
 			
 			if (isalpha(utf8.byte[0]) || utf8.byte[0] == '@' ||
 				utf8.byte[0] == '`')
 			{
-				terminal->state = STATE_NORMAL;
+				terminal->state = escape_state_normal;
 				handle_escape(terminal);
-				continue;
 			} else {
-				continue;
 			}
+			continue;
+		case escape_state_inner_escape:
+			if (utf8.byte[0] == '\\') {
+				terminal->state = escape_state_normal;
+				if (terminal->outer_state == escape_state_dcs) {
+					handle_dcs(terminal);
+				} else if (terminal->outer_state == escape_state_osc) {
+					handle_osc(terminal);
+				}
+			} else if (utf8.byte[0] == '\e') {
+				terminal->state = terminal->outer_state;
+				escape_append_utf8(terminal, utf8);
+				if (terminal->escape_length >= MAX_ESCAPE)
+					terminal->state = escape_state_normal;
+			} else {
+				terminal->state = terminal->outer_state;
+				if (terminal->escape_length < MAX_ESCAPE)
+					terminal->escape[terminal->escape_length++] = '\e';
+				escape_append_utf8(terminal, utf8);
+				if (terminal->escape_length >= MAX_ESCAPE)
+					terminal->state = escape_state_normal;
+			}
+			continue;
+		case escape_state_dcs:
+		case escape_state_osc:
+		case escape_state_ignore:
+			if (utf8.byte[0] == '\e') {
+				terminal->outer_state = terminal->state;
+				terminal->state = escape_state_inner_escape;
+			} else if (utf8.byte[0] == '\a' && terminal->state == escape_state_osc) {
+				terminal->state = escape_state_normal;
+				handle_osc(terminal);
+			} else {
+				escape_append_utf8(terminal, utf8);
+				if (terminal->escape_length >= MAX_ESCAPE)
+					terminal->state = escape_state_normal;
+			}
+			continue;
+		case escape_state_special:
+			escape_append_utf8(terminal, utf8);
+			terminal->state = escape_state_normal;
+			if (isdigit(utf8.byte[0]) || isalpha(utf8.byte[0])) {
+				handle_special_escape(terminal, terminal->escape[1],
+				                      utf8.byte[0]);
+			}
+			continue;
+		default:
+			break;
 		}
 
 		/* this is valid, because ASCII characters are never used to
 		 * introduce a multibyte sequence in UTF-8 */
 		if (utf8.byte[0] == '\e') {
-			terminal->state = STATE_ESCAPE;
+			terminal->state = escape_state_escape;
+			terminal->outer_state = escape_state_normal;
 			terminal->escape[0] = '\e';
 			terminal->escape_length = 1;
-			terminal->qmark_flag = 0;
+			terminal->escape_flags = 0;
 		} else {
 			handle_char(terminal, utf8);
 		} /* if */
