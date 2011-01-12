@@ -402,6 +402,11 @@ void ResourceDispatcher::OnReceivedRedirect(
   if (request_info->peer->OnReceivedRedirect(new_url, info,
                                             &has_new_first_party_for_cookies,
                                             &new_first_party_for_cookies)) {
+    // Double-check if the request is still around. The call above could
+    // potentially remove it.
+    request_info = GetPendingRequestInfo(request_id);
+    if (!request_info)
+      return;
     request_info->pending_redirect_message.reset(
         new ViewHostMsg_FollowRedirect(routing_id, request_id,
                                        has_new_first_party_for_cookies,
