@@ -287,7 +287,12 @@ TEST(TextfieldViewsModelTest, SetText) {
   EXPECT_EQ(0U, model.cursor_pos());
 }
 
-TEST(TextfieldViewsModelTest, Clipboard) {
+#if defined(OS_WIN)
+#define MAYBE_Clipboard DISABLED_Clipboard
+#else
+#define MAYBE_Clipboard Clipboard
+#endif
+TEST(TextfieldViewsModelTest, MAYBE_Clipboard) {
   views::ViewsDelegate::views_delegate = new TestViewsDelegate();
   ui::Clipboard* clipboard
       = views::ViewsDelegate::views_delegate->GetClipboard();

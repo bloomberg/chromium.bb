@@ -356,7 +356,7 @@ TEST_F(NativeTextfieldViewsTest, CursorMovement) {
 #else
 #define MAYBE_FocusTraversalTest FocusTraversalTest
 #endif
-TEST_F(NativeTextfieldViewsTest, FocusTraversalTest) {
+TEST_F(NativeTextfieldViewsTest, MAYBE_FocusTraversalTest) {
   InitTextfields(Textfield::STYLE_DEFAULT, 3);
   textfield_->RequestFocus();
 
