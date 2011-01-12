@@ -1189,5 +1189,5 @@
    bug_69414
    Heapcheck:Leak
    ...
-   fun:PrerenderResourceHandlerTest
+   fun:*PrerenderResourceHandlerTest*
 }
