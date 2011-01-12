@@ -449,7 +449,7 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
   // The popup's font is a slightly smaller version of the field's.
   NSFont* fieldFont = AutocompleteEditViewMac::GetFieldFont();
   const CGFloat resultFontSize = [fieldFont pointSize] + kEditFontAdjust;
-  gfx::Font resultFont(base::SysNSStringToWide([fieldFont fontName]),
+  gfx::Font resultFont(base::SysNSStringToUTF16([fieldFont fontName]),
                        static_cast<int>(resultFontSize));
 
   AutocompleteMatrix* matrix = GetAutocompleteMatrix();

@@ -80,7 +80,7 @@ void CreateDragImageForFile(const FilePath& file_name,
                             width - 2, font.GetHeight(),
                             gfx::Canvas::TEXT_ALIGN_CENTER);
 #else
-  canvas.DrawStringInt(name, font, kFileDragImageTextColor,
+  canvas.DrawStringInt(WideToUTF16Hack(name), font, kFileDragImageTextColor,
                        0, icon->height() + kLinkDragImageVPadding,
                        width, font.GetHeight(), gfx::Canvas::TEXT_ALIGN_CENTER);
 #endif

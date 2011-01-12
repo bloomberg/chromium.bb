@@ -406,7 +406,7 @@ void BaseTab::PaintTitle(gfx::Canvas* canvas, SkColor title_color) {
     Browser::FormatTitleForDisplay(&title);
   }
 
-  canvas->DrawStringInt(UTF16ToWideHack(title), *font_, title_color,
+  canvas->DrawStringInt(title, *font_, title_color,
                         title_bounds().x(), title_bounds().y(),
                         title_bounds().width(), title_bounds().height());
 }

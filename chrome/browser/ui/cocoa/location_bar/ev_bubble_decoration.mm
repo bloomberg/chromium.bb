@@ -89,7 +89,7 @@ CGFloat EVBubbleDecoration::GetWidthForSpace(CGFloat width) {
 
   // Middle-elide the label to fit |width_left|.  This leaves the
   // prefix and the trailing country code in place.
-  gfx::Font font(base::SysNSStringToWide([font_ fontName]),
+  gfx::Font font(base::SysNSStringToUTF16([font_ fontName]),
                  [font_ pointSize]);
   NSString* elided_label = base::SysUTF16ToNSString(
       ElideText(base::SysNSStringToUTF16(full_label_), font, width_left, true));

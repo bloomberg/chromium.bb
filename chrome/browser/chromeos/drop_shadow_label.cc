@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/drop_shadow_label.h"
 
+#include "base/utf_string_conversions.h"
 #include "gfx/canvas.h"
 #include "gfx/color_utils.h"
 
@@ -44,19 +45,19 @@ void DropShadowLabel::PaintText(gfx::Canvas* canvas,
                                    SkColorGetG(kDefaultColor),
                                    SkColorGetB(kDefaultColor));
     for (int i = 0; i < drop_shadow_size_; i++) {
-      canvas->DrawStringInt(text, font(), color,
+      canvas->DrawStringInt(WideToUTF16Hack(text), font(), color,
                             text_bounds.x() + i, text_bounds.y(),
                             text_bounds.width(), text_bounds.height(), flags);
-      canvas->DrawStringInt(text, font(), color,
+      canvas->DrawStringInt(WideToUTF16Hack(text), font(), color,
                             text_bounds.x() + i, text_bounds.y() + i,
                             text_bounds.width(), text_bounds.height(), flags);
-      canvas->DrawStringInt(text, font(), color,
+      canvas->DrawStringInt(WideToUTF16Hack(text), font(), color,
                             text_bounds.x(), text_bounds.y() + i,
                             text_bounds.width(), text_bounds.height(), flags);
     }
   }
 
-  canvas->DrawStringInt(text, font(), GetColor(),
+  canvas->DrawStringInt(WideToUTF16Hack(text), font(), GetColor(),
                         text_bounds.x(), text_bounds.y(),
                         text_bounds.width(), text_bounds.height(), flags);
 

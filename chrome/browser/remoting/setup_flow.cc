@@ -165,7 +165,7 @@ void SetupFlow::GetDOMMessageHandlers(
 void SetupFlow::GetDialogSize(gfx::Size* size) const {
   PrefService* prefs = profile_->GetPrefs();
   gfx::Font approximate_web_font(
-      UTF8ToWide(prefs->GetString(prefs::kWebKitSansSerifFontFamily)),
+      UTF8ToUTF16(prefs->GetString(prefs::kWebKitSansSerifFontFamily)),
       prefs->GetInteger(prefs::kWebKitDefaultFontSize));
 
   // TODO(pranavk) Replace the following SYNC resources with REMOTING Resources.

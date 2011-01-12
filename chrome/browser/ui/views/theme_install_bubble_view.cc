@@ -135,7 +135,7 @@ void ThemeInstallBubbleView::Paint(gfx::Canvas* canvas) {
   body_bounds.set_x(MirroredLeftPointForRect(body_bounds));
 
   SkColor text_color = SK_ColorWHITE;
-  canvas->DrawStringInt(UTF16ToWideHack(text_),
+  canvas->DrawStringInt(text_,
                         views::Label::font(),
                         text_color,
                         body_bounds.x(),

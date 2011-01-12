@@ -57,15 +57,15 @@ class CanvasDirect2D : public Canvas {
                              int dest_x, int dest_y, int dest_w, int dest_h,
                              bool filter,
                              const SkPaint& paint);
-  virtual void DrawStringInt(const std::wstring& text,
+  virtual void DrawStringInt(const string16& text,
                              const gfx::Font& font,
                              const SkColor& color,
                              int x, int y, int w, int h);
-  virtual void DrawStringInt(const std::wstring& text,
+  virtual void DrawStringInt(const string16& text,
                              const gfx::Font& font,
                              const SkColor& color,
                              const gfx::Rect& display_rect);
-  virtual void DrawStringInt(const std::wstring& text,
+  virtual void DrawStringInt(const string16& text,
                              const gfx::Font& font,
                              const SkColor& color,
                              int x, int y, int w, int h,

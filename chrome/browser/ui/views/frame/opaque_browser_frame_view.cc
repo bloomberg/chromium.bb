@@ -712,7 +712,7 @@ void OpaqueBrowserFrameView::PaintTitleBar(gfx::Canvas* canvas) {
     return;
   }
   if (delegate->ShouldShowWindowTitle()) {
-    canvas->DrawStringInt(delegate->GetWindowTitle(),
+    canvas->DrawStringInt(WideToUTF16Hack(delegate->GetWindowTitle()),
                           BrowserFrame::GetTitleFont(),
         SK_ColorWHITE, MirroredLeftPointForRect(title_bounds_),
         title_bounds_.y(), title_bounds_.width(), title_bounds_.height());

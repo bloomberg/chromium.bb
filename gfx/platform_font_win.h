@@ -16,7 +16,7 @@ class PlatformFontWin : public PlatformFont {
   PlatformFontWin();
   explicit PlatformFontWin(const Font& other);
   explicit PlatformFontWin(NativeFont native_font);
-  PlatformFontWin(const std::wstring& font_name,
+  PlatformFontWin(const string16& font_name,
                   int font_size);
 
   // Dialog units to pixels conversion.
@@ -48,7 +48,7 @@ class PlatformFontWin : public PlatformFont {
   virtual int GetStringWidth(const string16& text) const;
   virtual int GetExpectedTextWidth(int length) const;
   virtual int GetStyle() const;
-  virtual const std::wstring& GetFontName() const;
+  virtual string16 GetFontName() const;
   virtual int GetFontSize() const;
   virtual NativeFont GetNativeFont() const;
 
@@ -81,7 +81,7 @@ class PlatformFontWin : public PlatformFont {
     int ave_char_width() const { return ave_char_width_; }
     int style() const { return style_; }
     int dlu_base_x() const { return dlu_base_x_; }
-    const std::wstring& font_name() const { return font_name_; }
+    const string16& font_name() const { return font_name_; }
 
    private:
     friend class  base::RefCounted<HFontRef>;
@@ -95,7 +95,7 @@ class PlatformFontWin : public PlatformFont {
     const int style_;
     // Constants used in converting dialog units to pixels.
     const int dlu_base_x_;
-    std::wstring font_name_;
+    string16 font_name_;
 
     DISALLOW_COPY_AND_ASSIGN(HFontRef);
   };
@@ -104,7 +104,7 @@ class PlatformFontWin : public PlatformFont {
   void InitWithCopyOfHFONT(HFONT hfont);
 
   // Initializes this object with the specified font name and size.
-  void InitWithFontNameAndSize(const std::wstring& font_name,
+  void InitWithFontNameAndSize(const string16& font_name,
                                int font_size);
 
   // Returns the base font ref. This should ONLY be invoked on the

@@ -76,13 +76,13 @@ void SadTabView::Paint(gfx::Canvas* canvas) {
 
   canvas->DrawBitmapInt(*sad_tab_bitmap_, icon_bounds_.x(), icon_bounds_.y());
 
-  canvas->DrawStringInt(title_, *title_font_, kTitleColor, title_bounds_.x(),
-                        title_bounds_.y(), title_bounds_.width(),
-                        title_bounds_.height(),
+  canvas->DrawStringInt(WideToUTF16Hack(title_), *title_font_, kTitleColor,
+                        title_bounds_.x(), title_bounds_.y(),
+                        title_bounds_.width(), title_bounds_.height(),
                         gfx::Canvas::TEXT_ALIGN_CENTER);
 
-  canvas->DrawStringInt(message_, *message_font_, kMessageColor,
-                        message_bounds_.x(), message_bounds_.y(),
+  canvas->DrawStringInt(WideToUTF16Hack(message_), *message_font_,
+                        kMessageColor, message_bounds_.x(), message_bounds_.y(),
                         message_bounds_.width(), message_bounds_.height(),
                         gfx::Canvas::MULTI_LINE);
 

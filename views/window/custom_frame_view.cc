@@ -413,9 +413,10 @@ void CustomFrameView::PaintTitleBar(gfx::Canvas* canvas) {
   if (!d)
     return;
 
-  canvas->DrawStringInt(d->GetWindowTitle(), *title_font_, SK_ColorWHITE,
-      MirroredLeftPointForRect(title_bounds_), title_bounds_.y(),
-      title_bounds_.width(), title_bounds_.height());
+  canvas->DrawStringInt(WideToUTF16Hack(d->GetWindowTitle()), *title_font_,
+                        SK_ColorWHITE, MirroredLeftPointForRect(title_bounds_),
+                        title_bounds_.y(), title_bounds_.width(),
+                        title_bounds_.height());
 }
 
 void CustomFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {

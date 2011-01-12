@@ -46,35 +46,35 @@ int ScopedMinimumFontSizeCallback::minimum_size_ = 0;
 
 
 TEST_F(FontTest, LoadArial) {
-  Font cf(L"Arial", 16);
+  Font cf(ASCIIToUTF16("Arial"), 16);
   ASSERT_TRUE(cf.GetNativeFont());
   ASSERT_EQ(cf.GetStyle(), Font::NORMAL);
   ASSERT_EQ(cf.GetFontSize(), 16);
-  ASSERT_EQ(cf.GetFontName(), L"Arial");
+  ASSERT_EQ(cf.GetFontName(), ASCIIToUTF16("Arial"));
 }
 
 TEST_F(FontTest, LoadArialBold) {
-  Font cf(L"Arial", 16);
+  Font cf(ASCIIToUTF16("Arial"), 16);
   Font bold(cf.DeriveFont(0, Font::BOLD));
   ASSERT_TRUE(bold.GetNativeFont());
   ASSERT_EQ(bold.GetStyle(), Font::BOLD);
 }
 
 TEST_F(FontTest, Ascent) {
-  Font cf(L"Arial", 16);
+  Font cf(ASCIIToUTF16("Arial"), 16);
   ASSERT_GT(cf.GetBaseline(), 2);
   ASSERT_LE(cf.GetBaseline(), 22);
 }
 
 TEST_F(FontTest, Height) {
-  Font cf(L"Arial", 16);
+  Font cf(ASCIIToUTF16("Arial"), 16);
   ASSERT_GE(cf.GetHeight(), 16);
   // TODO(akalin): Figure out why height is so large on Linux.
   ASSERT_LE(cf.GetHeight(), 26);
 }
 
 TEST_F(FontTest, AvgWidths) {
-  Font cf(L"Arial", 16);
+  Font cf(ASCIIToUTF16("Arial"), 16);
   ASSERT_EQ(cf.GetExpectedTextWidth(0), 0);
   ASSERT_GT(cf.GetExpectedTextWidth(1), cf.GetExpectedTextWidth(0));
   ASSERT_GT(cf.GetExpectedTextWidth(2), cf.GetExpectedTextWidth(1));
@@ -82,7 +82,7 @@ TEST_F(FontTest, AvgWidths) {
 }
 
 TEST_F(FontTest, Widths) {
-  Font cf(L"Arial", 16);
+  Font cf(ASCIIToUTF16("Arial"), 16);
   ASSERT_EQ(cf.GetStringWidth(ASCIIToUTF16("")), 0);
   ASSERT_GT(cf.GetStringWidth(ASCIIToUTF16("a")),
             cf.GetStringWidth(ASCIIToUTF16("")));

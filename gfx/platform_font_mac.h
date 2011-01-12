@@ -15,7 +15,7 @@ class PlatformFontMac : public PlatformFont {
   PlatformFontMac();
   explicit PlatformFontMac(const Font& other);
   explicit PlatformFontMac(NativeFont native_font);
-  PlatformFontMac(const std::wstring& font_name,
+  PlatformFontMac(const string16& font_name,
                   int font_size);
 
   // Overridden from PlatformFont:
@@ -26,23 +26,23 @@ class PlatformFontMac : public PlatformFont {
   virtual int GetStringWidth(const string16& text) const;
   virtual int GetExpectedTextWidth(int length) const;
   virtual int GetStyle() const;
-  virtual const std::wstring& GetFontName() const;
+  virtual string16 GetFontName() const;
   virtual int GetFontSize() const;
   virtual NativeFont GetNativeFont() const;
 
  private:
-  PlatformFontMac(const std::wstring& font_name, int font_size, int style);
+  PlatformFontMac(const string16& font_name, int font_size, int style);
   virtual ~PlatformFontMac() {}
 
   // Initialize the object with the specified parameters.
-  void InitWithNameSizeAndStyle(const std::wstring& font_name,
+  void InitWithNameSizeAndStyle(const string16& font_name,
                                 int font_size,
                                 int style);
 
   // Calculate and cache the font metrics.
   void CalculateMetrics();
 
-  std::wstring font_name_;
+  string16 font_name_;
   int font_size_;
   int style_;
 

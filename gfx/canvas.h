@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/string16.h"
 #include "gfx/native_widget_types.h"
 // TODO(beng): remove this include when we no longer depend on SkTypes.
 #include "skia/ext/platform_canvas.h"
@@ -171,11 +172,11 @@ class Canvas {
   // Draws text with the specified color, font and location. The text is
   // aligned to the left, vertically centered, clipped to the region. If the
   // text is too big, it is truncated and '...' is added to the end.
-  virtual void DrawStringInt(const std::wstring& text, const
+  virtual void DrawStringInt(const string16& text, const
                              gfx::Font& font,
                              const SkColor& color,
                              int x, int y, int w, int h) = 0;
-  virtual void DrawStringInt(const std::wstring& text,
+  virtual void DrawStringInt(const string16& text,
                              const gfx::Font& font,
                              const SkColor& color,
                              const gfx::Rect& display_rect) = 0;
@@ -183,7 +184,7 @@ class Canvas {
   // Draws text with the specified color, font and location. The last argument
   // specifies flags for how the text should be rendered. It can be one of
   // TEXT_ALIGN_CENTER, TEXT_ALIGN_RIGHT or TEXT_ALIGN_LEFT.
-  virtual void DrawStringInt(const std::wstring& text,
+  virtual void DrawStringInt(const string16& text,
                              const gfx::Font& font,
                              const SkColor& color,
                              int x, int y, int w, int h,
