@@ -417,7 +417,9 @@ list .deletable-item {
 }
 
 list .deletable-item > :first-child {
+  -webkit-box-align: center;
   -webkit-box-flex: 1;
+  -webkit-padding-end: 3px;
   display: -webkit-box;
 }
 

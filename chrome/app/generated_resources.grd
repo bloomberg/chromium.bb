@@ -1133,6 +1133,10 @@ each locale. -->
                desc="Title of the description column in the search engines editor">
         Name
       </message>
+      <message name="IDS_SEARCH_ENGINES_EDITOR_URL_COLUMN"
+               desc="Title of the URL column in the search engines editor">
+        URL
+      </message>
       <message name="IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_LABEL"
                desc="Prefix before the search engine description text field">
         Name:
@@ -6892,6 +6896,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES_LINK"
                desc="The label of a link that brings up the keyword editor (aka search engine editor)">
         Manage
+      </message>
+      <message name="IDS_SEARCH_ENGINE_ADD_NEW_NAME_PLACEHOLDER" desc="Placeholder text for name before the user adds a new search engine" >
+        Add a new search engine
+      </message>
+      <message name="IDS_SEARCH_ENGINE_ADD_NEW_KEYWORD_PLACEHOLDER" desc="Placeholder text for keyword before the user adds a new search engine" >
+        Keyword
+      </message>
+      <message name="IDS_SEARCH_ENGINE_ADD_NEW_URL_PLACEHOLDER" desc="Placeholder text for URL before the user adds a new search engine" >
+        URL with %s in place of query
       </message>
 
       <if expr="not pp_ifdef('use_titlecase') or os != 'linux2'">

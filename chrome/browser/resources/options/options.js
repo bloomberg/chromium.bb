@@ -14,7 +14,6 @@ var ContentSettings = options.ContentSettings;
 var ContentSettingsExceptionsArea =
     options.contentSettings.ContentSettingsExceptionsArea;
 var CookiesView = options.CookiesView;
-var EditSearchEngineOverlay = options.EditSearchEngineOverlay;
 var FontSettings = options.FontSettings;
 var ImportDataOverlay = options.ImportDataOverlay;
 var InstantConfirmOverlay = options.InstantConfirmOverlay;
@@ -124,7 +123,6 @@ function load() {
   OptionsPage.registerOverlay(AlertOverlay.getInstance());
   OptionsPage.registerOverlay(AutoFillEditAddressOverlay.getInstance());
   OptionsPage.registerOverlay(AutoFillEditCreditCardOverlay.getInstance());
-  OptionsPage.registerOverlay(EditSearchEngineOverlay.getInstance());
   OptionsPage.registerOverlay(ImportDataOverlay.getInstance());
   OptionsPage.registerOverlay(InstantConfirmOverlay.getInstance());
 

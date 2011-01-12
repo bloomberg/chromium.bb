@@ -37,23 +37,19 @@ cr.define('options', function() {
           this.selectionChanged_.bind(this));
 
       var self = this;
-      $('addSearchEngineButton').onclick = function(event) {
-        chrome.send('editSearchEngine', ["-1"]);
-        OptionsPage.showOverlay('editSearchEngineOverlay');
-      };
-      $('editSearchEngineButton').onclick = function(event) {
-        chrome.send('editSearchEngine', [self.selectedModelIndex_]);
-        OptionsPage.showOverlay('editSearchEngineOverlay');
+      // This is a temporary hack to allow the "Make Default" button to
+      // continue working despite the new list behavior of removing selection
+      // on focus loss.
+      // Once drag-and-drop is supported, so items can be moved into the default
+      // section, this button will go away entirely.
+      $('makeDefaultSearchEngineButton').onmousedown = function(event) {
+        self.pendingDefaultEngine_ = self.list_.selectedItem;
       };
       $('makeDefaultSearchEngineButton').onclick = function(event) {
         chrome.send('managerSetDefaultSearchEngine',
-                    [self.selectedModelIndex_]);
+                    [self.pendingDefaultEngine_['modelIndex']]);
+        self.pendingDefaultEngine_ = null;
       };
-
-      // Remove Windows-style accelerators from button labels.
-      // TODO(stuartmorgan): Remove this once the strings are updated.
-      $('addSearchEngineButton').textContent =
-          localStrings.getStringWithoutAccelerator('addSearchEngineButton');
     },
 
     /**
@@ -62,16 +58,11 @@ cr.define('options', function() {
      * @param {Array} engineList List of available search engines.
      */
     updateSearchEngineList_: function(engineList) {
-      this.list_.dataModel = new ArrayDataModel(engineList);
-    },
-
-    /**
-     * Returns the currently selected list item's underlying model index.
-     * @private
-     */
-    get selectedModelIndex_() {
-      var listIndex = this.list_.selectionModel.selectedIndex;
-      return this.list_.dataModel.item(listIndex)['modelIndex'];
+      var model = new ArrayDataModel(engineList);
+      model.push({
+        'modelIndex': '-1'
+      });
+      this.list_.dataModel = model;
     },
 
     /**
@@ -80,11 +71,7 @@ cr.define('options', function() {
      * @param {!cr.Event} e Event with change info.
      */
     selectionChanged_: function(e) {
-      var selectedIndex = this.list_.selectionModel.selectedIndex;
-      var engine = selectedIndex != -1 ?
-          this.list_.dataModel.item(selectedIndex) : null;
-
-      $('editSearchEngineButton').disabled = engine == null;
+      var engine = this.list_.selectedItem || this.pendingDefaultEngine_;
       $('makeDefaultSearchEngineButton').disabled =
           !(engine && engine['canBeDefault']);
     },
@@ -92,6 +79,11 @@ cr.define('options', function() {
 
   SearchEngineManager.updateSearchEngineList = function(engineList) {
     SearchEngineManager.getInstance().updateSearchEngineList_(engineList);
+  };
+
+  SearchEngineManager.validityCheckCallback = function(validity, modelIndex) {
+    SearchEngineManager.getInstance().list_.validationComplete(validity,
+                                                               modelIndex);
   };
 
   // Export

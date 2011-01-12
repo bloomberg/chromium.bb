@@ -18,7 +18,7 @@
   border-top: 1px solid #d9d9d9;
 }
 
-#searchEngineList .heading .name {
+#searchEngineList .heading .name-column {
   font-weight: bold;
 }
 
@@ -31,24 +31,72 @@
   display: -webkit-box;
 }
 
-#searchEngineList .name {
+#searchEngineList .favicon {
+  padding: 1px 7px 0px 7px;
+  height: 16px;
+}
+
+#searchEngineList .name-column {
   box-sizing: border-box;
-  width: 50%;
+  width: 37%;
 }
 
-#searchEngineList .keyword {
-  -webkit-box-flex: 1;
+#searchEngineList .keyword-column {
+  width: 26%;
 }
 
-#searchEngineList > div:not(.heading) .keyword {
+#searchEngineList .url-column {
+  width: 37%;
+}
+
+#searchEngineList > div:not(.heading) .keyword-column,
+#searchEngineList > div:not(.heading) .url-column {
   color: #666666;
+}
+
+#searchEngineList .name-column,
+#searchEngineList .keyword-column,
+#searchEngineList .url-column {
+  -webkit-padding-end: 1ex;
 }
 
 #searchEngineList .default {
   font-weight: bold;
 }
 
-#searchEngineList .name, #searchEngineList .keyword {
+#searchEngineList .default .url-column {
+  font-weight: normal;
+}
+
+#searchEngineList .name-column {
+  display: -webkit-box;
+}
+
+#searchEngineList .name-column :last-child {
+  -webkit-box-flex: 1;
+}
+
+#searchEngineList input {
+  box-sizing: border-box;
+  margin: 0;
+  width: 100%;
+}
+
+#searchEngineList .static-text {
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#searchEngineList > :not([editing]) [editmode=true] {
+  display: none;
+}
+
+#searchEngineList > [editing] [editmode=false] {
+  display: none;
+}
+
+#searchEngineList input.invalid {
+  /* TODO(stuartmorgan): Replace with actual badging */
+  background-color: pink;
 }

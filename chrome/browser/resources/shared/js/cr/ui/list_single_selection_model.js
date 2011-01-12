@@ -140,7 +140,6 @@ cr.define('cr.ui', function() {
         if (this.selectedIndexBefore_ != this.selectedIndex_) {
           var e = new Event('change');
           var indexes = [this.selectedIndexBefore_, this.selectedIndex_];
-          indexes.sort();
           e.changes = indexes.filter(function(index) {
             return index != -1;
           }).map(function(index) {
