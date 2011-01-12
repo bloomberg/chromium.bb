@@ -209,7 +209,12 @@ TabContentsWrapper* TabStripModel::DetachTabContentsAt(int index) {
   DCHECK(ContainsIndex(index));
 
   TabContentsWrapper* removed_contents = GetContentsAt(index);
-  int next_selected_index = order_controller_->DetermineNewSelectedIndex(index);
+  // TODO(sky): nuke reason and old_data when we figure out what is causing
+  // 34135.
+  volatile int reason = 0;
+  int next_selected_index =
+      order_controller_->DetermineNewSelectedIndex(index, &reason);
+  volatile TabContentsData old_data = *contents_data_.at(index);
   delete contents_data_.at(index);
   contents_data_.erase(contents_data_.begin() + index);
   if (empty())

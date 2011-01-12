@@ -40,7 +40,8 @@ class TabStripModelOrderController : public TabStripModelObserver {
   int DetermineInsertionIndexForAppending();
 
   // Determine where to shift selection after a tab is closed.
-  int DetermineNewSelectedIndex(int removed_index) const;
+  // TODO(sky): nuke reason when we figure out what is causing 34135.
+  int DetermineNewSelectedIndex(int removed_index, volatile int* reason) const;
 
   // Overridden from TabStripModelObserver:
   virtual void TabSelectedAt(TabContentsWrapper* old_contents,
