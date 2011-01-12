@@ -5,9 +5,6 @@
 
 # This is a pepper 2d example from examples/2d.
 
-# Warning! This is work in progress, 2d is not implemented yet!
-# TODO(neb): Make this example work and add it's scons file to SConstruct.
-
 Import('env')
 
 env.Prepend(CPPDEFINES=['XP_UNIX'])
