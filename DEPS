@@ -5,13 +5,13 @@ vars = {
   "webkit_trunk": "http://svn.webkit.org/repository/webkit/trunk",
   "nacl_trunk": "http://src.chromium.org/native_client/trunk",
   "webkit_revision": "75618",
-  "skia_revision": "673",
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "69281",
   "nacl_revision": "4085",
   "libjingle_revision": "50",
   "libvpx_revision": "65287",
   "ffmpeg_revision": "70984",
+  "skia_revision": "673",
 }
 
 deps = {
