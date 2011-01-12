@@ -89,6 +89,7 @@ class HeapcheckWrapper(object):
     cur_leak_signature = None
     cur_stack = []
     cur_report = []
+    reported_hashes = {}
     # Statistics grouped by suppression description:
     # [hit count, bytes, objects].
     used_suppressions = {}
@@ -115,24 +116,26 @@ class HeapcheckWrapper(object):
                 print '   ' + frame
               print 'Aborting...'
               return 3
-           # Print the report and set the return code to 1.
-            print ('Leak of %d bytes in %d objects allocated from:'
-                   % tuple(cur_leak_signature))
-            print '\n'.join(cur_report)
-            return_code = 1
-            # Generate the suppression iff the stack contains more than one
-            # frame (otherwise it's likely to be broken)
-            if len(cur_stack) > 1:
-              print '\nSuppression (error hash=#%016X#):\n{' \
-                  % (hash("".join(cur_stack)) & 0xffffffffffffffff)
-              print '   <insert_a_suppression_name_here>'
-              print '   Heapcheck:Leak'
-              for frame in cur_stack:
-                print '   fun:' + frame
-              print '}\n\n\n'
-            else:
-              print ('This stack may be broken due to omitted frame pointers. '
-                     'It is not recommended to suppress it.')
+            error_hash = hash("".join(cur_stack)) & 0xffffffffffffffff
+            if error_hash not in reported_hashes:
+              reported_hashes[error_hash] = 1
+              # Print the report and set the return code to 1.
+              print ('Leak of %d bytes in %d objects allocated from:'
+                     % tuple(cur_leak_signature))
+              print '\n'.join(cur_report)
+              return_code = 1
+              # Generate the suppression iff the stack contains more than one
+              # frame (otherwise it's likely to be broken)
+              if len(cur_stack) > 1:
+                print '\nSuppression (error hash=#%016X#):\n{'  % (error_hash)
+                print '   <insert_a_suppression_name_here>'
+                print '   Heapcheck:Leak'
+                for frame in cur_stack:
+                  print '   fun:' + frame
+                print '}\n\n\n'
+              else:
+                print ('This stack may be broken due to omitted frame pointers.'
+                       ' It is not recommended to suppress it.')
           else:
             # Update the suppressions histogram.
             if description in used_suppressions:
