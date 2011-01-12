@@ -399,10 +399,6 @@
             'controls/slider/slider.cc',
             'controls/slider/slider.h',
             'controls/slider/native_slider_wrapper.h',
-            'controls/textfield/native_textfield_views.cc',
-            'controls/textfield/native_textfield_views.h',
-            'controls/textfield/textfield_views_model.cc',
-            'controls/textfield/textfield_views_model.h',
           ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
@@ -440,6 +436,7 @@
         'focus/accelerator_handler_gtk_unittest.cc',
         'focus/focus_manager_unittest.cc',
         'grid_layout_unittest.cc',
+        'test/views_test_base.h',
         'run_all_unittests.cc',
         'test/test_views_delegate.h',
         'view_unittest.cc',
@@ -467,10 +464,6 @@
             #                 factored out. (for some reason it pulls in a bunch
             #                 unrelated things like v8, sqlite nss...).
             '../chrome/app/locales/locales.gyp:en-US',
-          ],
-          'sources!': [
-            'controls/textfield/native_textfield_views_unittest.cc',
-            'controls/textfield/textfield_views_model_unittest.cc',
           ],
           'link_settings': {
             'libraries': [

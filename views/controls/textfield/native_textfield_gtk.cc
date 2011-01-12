@@ -14,6 +14,7 @@
 #include "gfx/skia_utils_gtk.h"
 #include "views/controls/textfield/gtk_views_entry.h"
 #include "views/controls/textfield/gtk_views_textview.h"
+#include "views/controls/textfield/native_textfield_views.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/widget/widget_gtk.h"
 
@@ -460,6 +461,18 @@ void NativeTextfieldGtk::NativeControlCreated(GtkWidget* widget) {
 
 bool NativeTextfieldGtk::IsPassword() {
   return textfield_->IsPassword();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// NativeTextfieldWrapper:
+
+// static
+NativeTextfieldWrapper* NativeTextfieldWrapper::CreateWrapper(
+    Textfield* field) {
+  if (NativeTextfieldViews::IsTextfieldViewsEnabled()) {
+    return new NativeTextfieldViews(field);
+  }
+  return new NativeTextfieldGtk(field);
 }
 
 }  // namespace views

@@ -215,7 +215,6 @@ TEST(TextfieldViewsModelTest, TextFragment) {
   // Empty string
   model.GetFragments(&fragments);
   EXPECT_EQ(1U, fragments.size());
-  fragments.clear();
   EXPECT_EQ(0U, fragments[0].begin);
   EXPECT_EQ(0U, fragments[0].end);
   EXPECT_FALSE(fragments[0].selected);

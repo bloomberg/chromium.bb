@@ -1731,6 +1731,7 @@
         '../views/focus/accelerator_handler_gtk_unittest.cc',
         '../views/focus/focus_manager_unittest.cc',
         '../views/grid_layout_unittest.cc',
+        '../views/test/views_test_base.h',
         '../views/view_unittest.cc',
       ],
       'conditions': [
@@ -1805,8 +1806,6 @@
             'browser/gtk/tabs/tab_renderer_gtk_unittest.cc',
             'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
             '../views/focus/accelerator_handler_gtk_unittest.cc',
-            '../views/controls/textfield/textfield_views_model_unittest.cc',
-            '../views/controls/textfield/native_textfield_views_unittest.cc',
           ],
         }],
         ['OS=="linux" or OS=="freebsd"', {

@@ -26,6 +26,7 @@
 // TODO(beng): this should be removed when the OS_WIN hack from
 // ViewHierarchyChanged is removed.
 #include "views/controls/textfield/native_textfield_win.h"
+#include "views/controls/textfield/native_textfield_views.h"
 #endif
 
 namespace views {
@@ -361,13 +362,15 @@ void Textfield::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
     UpdateAllProperties();
 
 #if defined(OS_WIN)
-    // TODO(beng): remove this once NativeTextfieldWin subclasses
-    // NativeControlWin. This is currently called to perform post-AddChildView
-    // initialization for the wrapper. The GTK version subclasses things
-    // correctly and doesn't need this.
-    //
-    // Remove the include for native_textfield_win.h above when you fix this.
-    static_cast<NativeTextfieldWin*>(native_wrapper_)->AttachHack();
+    if (!NativeTextfieldViews::IsTextfieldViewsEnabled()) {
+      // TODO(beng): remove this once NativeTextfieldWin subclasses
+      // NativeControlWin. This is currently called to perform post-AddChildView
+      // initialization for the wrapper. The GTK version subclasses things
+      // correctly and doesn't need this.
+      //
+      // Remove the include for native_textfield_win.h above when you fix this.
+      static_cast<NativeTextfieldWin*>(native_wrapper_)->AttachHack();
+    }
 #endif
   }
 }

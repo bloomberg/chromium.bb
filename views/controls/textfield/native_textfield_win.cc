@@ -24,6 +24,7 @@
 #include "views/controls/menu/menu_win.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/native/native_view_host.h"
+#include "views/controls/textfield/native_textfield_views.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/focus/focus_manager.h"
 #include "views/focus/focus_util_win.h"
@@ -1114,7 +1115,11 @@ void NativeTextfieldWin::BuildContextMenu() {
 // static
 NativeTextfieldWrapper* NativeTextfieldWrapper::CreateWrapper(
     Textfield* field) {
-  return new NativeTextfieldWin(field);
+  if (NativeTextfieldViews::IsTextfieldViewsEnabled()) {
+    return new NativeTextfieldViews(field);
+  } else {
+    return new NativeTextfieldWin(field);
+  }
 }
 
 }  // namespace views

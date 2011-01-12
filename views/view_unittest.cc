@@ -5,12 +5,10 @@
 #include <map>
 
 #include "app/keyboard_codes.h"
-#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/path.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "views/background.h"
 #include "views/controls/button/checkbox.h"
@@ -20,6 +18,7 @@
 #include "views/event.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/focus/view_storage.h"
+#include "views/test/views_test_base.h"
 #include "views/view.h"
 #include "views/views_delegate.h"
 #include "views/widget/root_view.h"
@@ -42,24 +41,12 @@ using namespace views;
 
 namespace {
 
-class ViewTest : public testing::Test {
+class ViewTest : public ViewsTestBase {
  public:
   ViewTest() {
-#if defined(OS_WIN)
-    OleInitialize(NULL);
-#endif
   }
 
-  ~ViewTest() {
-#if defined(OS_WIN)
-    OleUninitialize();
-#endif
-  }
-
-  virtual void TearDown() {
-    // Flush the message loop because we have pending release tasks
-    // and these tasks if un-executed would upset Valgrind.
-    RunPendingMessages();
+  virtual ~ViewTest() {
   }
 
   Widget* CreateWidget() {
@@ -69,12 +56,6 @@ class ViewTest : public testing::Test {
     return new WidgetGtk(WidgetGtk::TYPE_WINDOW);
 #endif
   }
-
-  void RunPendingMessages() {
-    message_loop_.RunAllPending();
-  }
- private:
-  MessageLoopForUI message_loop_;
 };
 
 // Paints the RootView.

@@ -15,7 +15,6 @@
 #include "gfx/insets.h"
 #include "views/background.h"
 #include "views/border.h"
-#include "views/controls/textfield/native_textfield_gtk.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_views_model.h"
 #include "views/event.h"
@@ -41,7 +40,7 @@ const int kCursorVisibleTimeMs = 800;
 const int kCursorInvisibleTimeMs = 500;
 
 // A switch to enable NativeTextfieldViews;
-const char kEnableViewsBasedTextfieldSwitch[] = "enable-textfield-view";
+const char kEnableViewsBasedTextfieldSwitch[] = "enable-textfield-views";
 }  // namespace
 
 namespace views {
@@ -692,19 +691,6 @@ size_t NativeTextfieldViews::FindCursorPosition(const gfx::Point& point) const {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// NativeTextfieldWrapper:
-
-// static
-NativeTextfieldWrapper* NativeTextfieldWrapper::CreateWrapper(
-    Textfield* field) {
-  if (NativeTextfieldViews::IsTextfieldViewsEnabled()) {
-    return new NativeTextfieldViews(field);
-  } else {
-    return new NativeTextfieldGtk(field);
-  }
-}
-
-///////////////////////////////////////////////////////////////////////////////
 //
 // TextifieldBorder
 //
@@ -722,17 +708,17 @@ void NativeTextfieldViews::TextfieldBorder::Paint(
            SkIntToScalar(view.width()), SkIntToScalar(view.height()));
   SkScalar corners[8] = {
     // top-left
-    insets_.left(),
-    insets_.top(),
+    SkIntToScalar(insets_.left()),
+    SkIntToScalar(insets_.top()),
     // top-right
-    insets_.right(),
-    insets_.top(),
+    SkIntToScalar(insets_.right()),
+    SkIntToScalar(insets_.top()),
     // bottom-right
-    insets_.right(),
-    insets_.bottom(),
+    SkIntToScalar(insets_.right()),
+    SkIntToScalar(insets_.bottom()),
     // bottom-left
-    insets_.left(),
-    insets_.bottom(),
+    SkIntToScalar(insets_.left()),
+    SkIntToScalar(insets_.bottom()),
   };
   SkPath path;
   path.addRoundRect(rect, corners);
@@ -741,7 +727,7 @@ void NativeTextfieldViews::TextfieldBorder::Paint(
   paint.setFlags(SkPaint::kAntiAlias_Flag);
   // TODO(oshima): Copy what WebKit does for focused border.
   paint.setColor(has_focus_ ? kFocusedBorderColor : kDefaultBorderColor);
-  paint.setStrokeWidth(has_focus_ ? 2 : 1);
+  paint.setStrokeWidth(SkIntToScalar(has_focus_ ? 2 : 1));
 
   canvas->AsCanvasSkia()->drawPath(path, paint);
 }
