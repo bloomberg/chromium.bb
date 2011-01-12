@@ -9,10 +9,8 @@
 // few hours, and after the next roll all these can be removed again.
 // TODO(thakis): Remove these after the next webkit roll.
 BUGTHAKIS LINUX : media/video-display-toggle.html = IMAGE
-BUGTHAKIS LINUX : svg/W3C-SVG-1.1-SE/pservers-grad-17-b.svg = IMAGE
 BUGTHAKIS LINUX RELEASE : svg/batik/paints/gradientLimit.svg = IMAGE
 
-BUGTHAKIS WIN : fast/gradients/radial-centered.html = IMAGE
 BUGTHAKIS WIN : media/video-display-toggle.html = IMAGE
 BUGTHAKIS WIN RELEASE : svg/batik/paints/gradientLimit.svg = IMAGE
 BUGTHAKIS WIN : svg/custom/js-late-gradient-and-object-creation.svg = IMAGE
