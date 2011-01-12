@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -124,7 +124,6 @@ cr.define('options.proxyexceptions', function() {
     /** @inheritDoc */
     decorate: function() {
       ListItem.prototype.decorate.call(this);
-      console.log('in exceptions decorate');
       this.className = 'exception-list-item';
 
       var labelException = this.ownerDocument.createElement('span');

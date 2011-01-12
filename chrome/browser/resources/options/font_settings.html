@@ -1,75 +1,68 @@
 <div id="font-settings" class="page hidden">
   <h1 i18n-content="fontSettingsTitle"></h1>
   <section>
-    <h3 i18n-content="fontSettingsFontTitle"></h3>
-    <div>
+    <h3 i18n-content="fontSettingsStandard"></h3>
+    <div class="font-input-div">
       <div>
-        <label style="display:inline;">
-          <span i18n-content="fontSettingsSerifLabel"></span>
-          <select id="fontSettingsSerifSelector"
-              i18n-options="fontSettingsFontList"
-              pref="webkit.webprefs.serif_font_family"
-              metric="Options_ChangeSerifFont"></select>
-        </label>
-        <label style="display:inline;">
-          <span i18n-content="fontSettingsSizeLabel"></span>
-          <select id="fontSettingsSerifSizeSelector"
-              i18n-options="fontSettingsFontSizeList"
-              pref="webkit.webprefs.default_font_size"
-              metric="Options_ChangeSerifFontSize"></select>
-        </label>
-        <div id="fontSettingsSerifPreview"></div>
+        <select class="font-input" i18n-options="fontSettingsFontList"
+            pref="webkit.webprefs.serif_font_family"
+            metric="Options_ChangeSerifFont"></select>
       </div>
       <div>
-        <label style="display:inline;">
-          <span i18n-content="fontSettingsSansSerifLabel"></span>
-          <select id="fontSettingsSansSerifSelector"
-              i18n-options="fontSettingsFontList"
-              pref="webkit.webprefs.sansserif_font_family"
-              metric="Options_ChangeSansSerifFont"></select>
-        </label>
-        <label style="display:inline;">
-          <span i18n-content="fontSettingsSizeLabel"></span>
-          <select id="fontSettingsSansSerifSizeSelector"
-              18n-options="fontSettingsFontSizeList"
-              pref="webkit.webprefs.default_font_size"
-              metric="Options_ChangeSansSerifFontSize"></select>
-        </label>
-        <div id="fontSettingsSansSerifPreview"></div>
-      </div>
-      <div>
-        <label style="display:inline;">
-          <span i18n-content="fontSettingsFixedWidthLabel"></span>
-          <select id="fontSettingsFixedWidthSelector"
-              i18n-options="fontSettingsFontList"
-              pref="webkit.webprefs.fixed_font_family"
-              metric="Options_ChangeFixedFont"></select>
-        </label>
-        <label style="display:inline;">
-          <span i18n-content="fontSettingsSizeLabel"></span>
-          <select id="fontSettingsFixedWidthSizeSelector"
-              i18n-options="fontSettingsFontSizeList"
-              pref="webkit.webprefs.default_fixed_font_size"
-              metric="Options_ChangeFixedFontSize"></select>
-        </label>
-        <div id="fontSettingsFixedWidthPreview"></div>
+        <input id="serif-font-size" type="range" min="0" max="24"
+            pref="webkit.webprefs.default_font_size" class="font-input">
+        <div>
+          <span i18n-content="fontSettingsSizeTiny"></span>
+          <span i18n-content="fontSettingsSizeHuge" class="font-settings-huge">
+              </span>
+        </div>
       </div>
     </div>
+    <div id="serif-font-sample" class="font-sample-div"></div>
   </section>
   <section>
-    <h3 i18n-content="fontSettingsMinimumSizeTitle"></h3>
-    <div>
-      <select id="fontSettingsMinimumSizeSelector"
-          i18n-options="fontSettingsMinimumFontSizeList"></select>
+    <h3 i18n-content="fontSettingsFixedWidth"></h3>
+    <div class="font-input-div">
+      <div>
+        <select class="font-input" i18n-options="fontSettingsFontList"
+            pref="webkit.webprefs.fixed_font_family"
+            metric="Options_ChangeFixedFont"></select>
+      </div>
+      <div>
+        <input id="fixed-font-size" type="range" min="0" max="24"
+            pref="webkit.webprefs.default_fixed_font_size" class="font-input">
+        <div>
+          <span i18n-content="fontSettingsSizeTiny"></span>
+          <span i18n-content="fontSettingsSizeHuge" class="font-settings-huge">
+              </span>
+        </div>
+      </div>
     </div>
+    <div id="fixed-font-sample" class="font-sample-div"></div>
   </section>
   <section>
-    <h3 i18n-content="fontSettingsEncodingTitle"></h3>
-    <div>
-      <select id="fontSettingsEncodingSelector"
-          i18n-options="fontSettingsEncodingList"
-          pref="intl.charset_default"
-          metric="Options_ChangeFontEncoding"></select>
+    <h3 i18n-content="fontSettingsMinimumSize"></h3>
+    <div class="font-input-div">
+      <div>
+        <input id="minimum-font-size" type="range" min="0" max="12"
+            pref="webkit.webprefs.minimum_font_size" class="font-input">
+        <div>
+          <span i18n-content="fontSettingsSizeTiny"></span>
+          <span i18n-content="fontSettingsSizeHuge" class="font-settings-huge">
+              </span>
+        </div>
+      </div>
+    </div>
+    <div id="minimum-font-sample" class="font-sample-div"></div>
+  </section>
+  <section>
+    <h3 i18n-content="fontSettingsEncoding"></h3>
+    <div class="font-input-div">
+      <div>
+        <select class="font-input" i18n-options="fontSettingsEncodingList"
+            pref="intl.charset_default" metric="Options_ChangeFontEncoding">
+        </select>
+      </div>
     </div>
   </section>
 </div>

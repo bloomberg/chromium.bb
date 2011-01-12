@@ -6505,14 +6505,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_FONT_TITLE" desc="Title that appears in the sub-dialogue for Font within Fonts and Encoding tab">
         Font
       </message>
+      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_STANDARD_LABEL" desc="Label of the standard fonts section of the Fonts and Encoding tab">
+        Standard font
+      </message>
       <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SERIF_LABEL" desc="Dialog label for Serif font selection">
         Serif Font:
       </message>
       <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SANS_SERIF_LABEL" desc="Dialog label for Sans Serif font selection">
         Sans-Serif Font:
       </message>
-      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_FIXED_WIDTH_LABEL" desc="Dialog label for Fixed-Width font selection">
-        Fixed-width Font:
+      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_FIXED_WIDTH_LABEL" desc="Label of the fixed-width fonts section of the Fonts and Encoding tab">
+        Fixed-width font:
       </message>
       <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_BUTTON_LABEL" desc="Button label for font selection">
         Change...
@@ -6551,10 +6554,19 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Size:
       </message>
       <message name="IDS_FONT_LANGUAGE_SETTING_MINIMUM_FONT_SIZE_TITLE" desc="Section title for minimum font size selection">
-        Minimum Font Size
+        Minimum font size
       </message>
       <message name="IDS_FONT_LANGUAGE_SETTING_NO_MINIMUM_FONT_SIZE_LABEL" desc="Label for the 'None' minimum font size selection">
         None
+      </message>
+      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SIZE_TINY" desc="Label for the 'Tiny' side of the font size range selector">
+        Tiny
+      </message>
+      <message name="IDS_FONT_LANGUAGE_SETTING_FONT_SIZE_HUGE" desc="Label for the 'Huge' side of the font size range selector">
+        Huge
+      </message>
+      <message name="IDS_FONT_LANGUAGE_SETTING_LOREM_IPSUM" desc="Sample text of 'Lorem ipsum' used to show the selected font/size">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
       </message>
 
       <!-- HTTP POST Warning -->

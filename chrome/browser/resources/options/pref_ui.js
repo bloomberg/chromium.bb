@@ -247,35 +247,112 @@ cr.define('options', function() {
 
   PrefRange.prototype = {
     // Set up the prototype chain
-    __proto__: PrefNumeric.prototype,
+    __proto__: HTMLInputElement.prototype,
+
+    /**
+     * The map from input range value to the corresponding preference value.
+     */
+    valueMap: undefined,
+
+    /**
+     * If true, the associated pref will be modified on each onchange event;
+     * otherwise, the pref will only be modified on the onmouseup event after
+     * the drag.
+     */
+    continuous: true,
 
     /**
      * Initialization function for the cr.ui framework.
      */
     decorate: function() {
       this.type = 'range';
-      PrefNumeric.prototype.decorate.call(this);
-      var self = this;
 
-      // Additionally change the indicator as well.
-      Preferences.getInstance().addEventListener(this.pref,
-          function(event) {
-            self.updateIndicator();
-          });
+      // Update the UI when the pref changes.
+      Preferences.getInstance().addEventListener(
+          this.pref, this.onPrefChange_.bind(this));
 
       // Listen to user events.
-      this.addEventListener('input',
-          function(e) {
-            this.updateIndicator();
-          });
+      // TODO(jhawkins): Add onmousewheel handling once the associated WK bug is
+      // fixed.
+      // https://bugs.webkit.org/show_bug.cgi?id=52256
+      this.onchange = this.onChange_.bind(this);
+      this.onkeyup = this.onmouseup = this.onInputUp_.bind(this);
     },
 
-    updateIndicator: function() {
-      if ($(this.id + '-value')) {
-        $(this.id + '-value').textContent = this.value;
-      }
-    }
+    /**
+     * Event listener that updates the UI when the underlying pref changes.
+     * @param {Event} event The event that details the pref change.
+     * @private
+     */
+    onPrefChange_: function(event) {
+      var value = event.value && event.value['value'] != undefined ?
+          event.value['value'] : event.value;
+      if (value != undefined)
+        this.value = this.valueMap ? this.valueMap.indexOf(value) : value;
+    },
+
+    /**
+     * onchange handler that sets the pref when the user changes the value of
+     * the input element.
+     * @private
+     */
+    onChange_: function(event) {
+      if (this.continuous)
+        this.setRangePref_();
+
+      this.notifyChange(this, this.mapValueToRange_(this.value));
+    },
+
+    /**
+     * Sets the integer value of |pref| to the value of this element.
+     * @private
+     */
+    setRangePref_: function() {
+      Preferences.setIntegerPref(
+          this.pref, this.mapValueToRange_(this.value), this.metric);
+    },
+
+    /**
+     * onkeyup/onmouseup handler that modifies the pref if |continuous| is
+     * false.
+     * @private
+     */
+    onInputUp_: function(event) {
+      if (!this.continuous)
+        this.setRangePref_();
+    },
+
+    /**
+     * Maps the value of this element into the range provided by the client,
+     * represented by |valueMap|.
+     * @param {number} value The value to map.
+     * @private
+     */
+    mapValueToRange_: function(value) {
+      return this.valueMap ? this.valueMap[value] : value;
+    },
+
+    /**
+     * Called when the client has specified non-continuous mode and the value of
+     * the range control changes.
+     * @param {Element} el This element.
+     * @param {number} value The value of this element.
+     */
+    notifyChange: function(el, value) {
+    },
   };
+
+  /**
+   * The preference name.
+   * @type {string}
+   */
+  cr.defineProperty(PrefRange, 'pref', cr.PropertyKind.ATTR);
+
+  /**
+   * The user metric string.
+   * @type {string}
+   */
+  cr.defineProperty(PrefRange, 'metric', cr.PropertyKind.ATTR);
 
   /////////////////////////////////////////////////////////////////////////////
   // PrefSelect class:
@@ -345,6 +422,7 @@ cr.define('options', function() {
                 Preferences.setBooleanPref(self.pref, value, self.metric);
                 break;
               case 'string':
+              case undefined:  // Assume the pref is a string.
                 Preferences.setStringPref(self.pref,
                     self.options[self.selectedIndex].value, self.metric);
                 break;

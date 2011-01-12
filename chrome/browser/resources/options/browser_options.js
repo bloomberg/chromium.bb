@@ -133,7 +133,7 @@ cr.define('options', function() {
     /**
      * Updates the search engine popup with the given entries.
      * @param {Array} engines List of available search engines.
-     * @param {Integer} defaultValue The value of the current default engine.
+     * @param {number} defaultValue The value of the current default engine.
      */
     updateSearchEngines_: function(engines, defaultValue) {
       this.clearSearchEngines_();

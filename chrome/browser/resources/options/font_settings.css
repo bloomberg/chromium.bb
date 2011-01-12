@@ -1,0 +1,19 @@
+#font-settings > section > .font-input-div {
+  -webkit-margin-end: 5em;
+}
+
+.font-input-div > div > select {
+  margin-bottom: 10px;
+}
+
+.font-input-div > div > .font-input {
+  width: 12em;
+}
+
+#font-settings > section > .font-sample-div {
+  position: absolute;
+}
+
+.font-settings-huge {
+  float: right;
+}

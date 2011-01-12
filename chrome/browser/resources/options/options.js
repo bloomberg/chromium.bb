@@ -40,8 +40,6 @@ function load() {
   cr.ui.decorate('input[pref][type=url]', options.PrefTextField);
   cr.ui.decorate('#content-settings-page input[type=radio]',
       options.ContentSettingsRadio);
-  cr.ui.decorate('#fontSettingsMinimumSizeSelector',
-      options.MinimumFontSizeSelect);
 
   var menuOffPattern = /(^\?|&)menu=off($|&)/;
   var menuDisabled = menuOffPattern.test(window.location.search);

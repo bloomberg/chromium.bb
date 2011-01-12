@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,8 +40,6 @@ cr.define('options', function() {
           var data = tree.selectedItem.data;
           CertificateEditCaTrustOverlay.show(data.id, data.name);
         }
-      } else {
-        console.log('unknown edit button for: ' + id);
       }
     }
 
@@ -74,8 +72,6 @@ cr.define('options', function() {
         this.importButton.onclick = function(e) {
           chrome.send('importCaCertificate', []);
         }
-      } else {
-        console.log('unknown import button for: ' + id);
       }
     }
 
