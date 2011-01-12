@@ -17,11 +17,10 @@ void GetPlugins(bool refresh,
                 std::vector<webkit::npapi::WebPluginInfo>* plugins) {
   webkit::npapi::PluginList::Singleton()->GetPlugins(refresh, plugins);
   // Don't load the forked npapi_layout_test_plugin in DRT, we only want to
-  // use the upstream version TestNetscapePlugIn (on Mac, the upstream version
-  // is named WebKitTestNetscapePlugIn).
+  // use the upstream version TestNetscapePlugIn.
   const FilePath::StringType kPluginBlackList[] = {
     FILE_PATH_LITERAL("npapi_layout_test_plugin.dll"),
-    FILE_PATH_LITERAL("TestNetscapePlugIn.plugin"),
+    FILE_PATH_LITERAL("WebKitTestNetscapePlugIn.plugin"),
     FILE_PATH_LITERAL("libnpapi_layout_test_plugin.so"),
   };
   for (int i = plugins->size() - 1; i >= 0; --i) {
