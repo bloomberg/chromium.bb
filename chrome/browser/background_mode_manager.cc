@@ -316,6 +316,7 @@ void BackgroundModeManager::RemoveStatusTrayIcon() {
   if (status_icon_)
     status_tray_->RemoveStatusIcon(status_icon_);
   status_icon_ = NULL;
+  context_menu_ = NULL;  // Do not delete, points within status_icon_
 }
 
 void BackgroundModeManager::ExecuteApplication(int item) {
