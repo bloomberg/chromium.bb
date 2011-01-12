@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -282,9 +282,9 @@ bool GoogleChromeDistribution::BuildUninstallMetricsString(
 }
 
 bool GoogleChromeDistribution::ExtractUninstallMetricsFromFile(
-    const std::wstring& file_path, std::wstring* uninstall_metrics_string) {
-
-  JSONFileValueSerializer json_serializer(FilePath::FromWStringHack(file_path));
+    const FilePath& file_path,
+    std::wstring* uninstall_metrics_string) {
+  JSONFileValueSerializer json_serializer(file_path);
 
   std::string json_error_string;
   scoped_ptr<Value> root(json_serializer.Deserialize(NULL, NULL));
@@ -327,7 +327,8 @@ bool GoogleChromeDistribution::ExtractUninstallMetrics(
 #endif
 
 void GoogleChromeDistribution::DoPostUninstallOperations(
-    const Version& version, const FilePath& local_data_path,
+    const Version& version,
+    const FilePath& local_data_path,
     const std::wstring& distribution_data) {
   // Send the Chrome version and OS version as params to the form.
   // It would be nice to send the locale, too, but I don't see an
@@ -359,8 +360,7 @@ void GoogleChromeDistribution::DoPostUninstallOperations(
       kOSParam + L"=" + os_version;
 
   std::wstring uninstall_metrics;
-  if (ExtractUninstallMetricsFromFile(local_data_path.value(),
-                                      &uninstall_metrics)) {
+  if (ExtractUninstallMetricsFromFile(local_data_path, &uninstall_metrics)) {
     // The user has opted into anonymous usage data collection, so append
     // metrics and distribution data.
     command += uninstall_metrics;
