@@ -248,7 +248,9 @@ void ResourceBundle::LoadedDataPack::Load() {
   DCHECK(!data_pack_.get());
   data_pack_.reset(new app::DataPack);
   bool success = data_pack_->Load(path_);
-  CHECK(success) << "Failed to load " << path_.value();
+  LOG_IF(ERROR, !success) << "Failed to load " << path_.value()
+      << "\nYou will not be able to use the Bookmarks Manager or "
+      << "about:net-internals.";
 }
 
 bool ResourceBundle::LoadedDataPack::GetStringPiece(
