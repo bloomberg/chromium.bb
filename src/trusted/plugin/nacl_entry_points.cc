@@ -77,28 +77,22 @@ NPError API_CALL NaCl_NP_Shutdown() {
 static void RegisterCommon() {
   NPAPI::PluginEntryPoints entry_points = {
 #if !defined(OS_LINUX)
-      NaCl_NP_GetEntryPoints,
+    NaCl_NP_GetEntryPoints,
 #endif
-      NaCl_NP_Initialize,
-      NaCl_NP_Shutdown
-  };
-
-  const NPAPI::PluginVersionInfo nacl_plugin_info = {
-      FilePath(FILE_PATH_LITERAL("internal_nacl")),
-      L"Google Native Client",
-      L"Google Native Client",
-      L"1",
-      L"application/x-nacl-srpc",
-      L"",
-      L"",
-      entry_points
+    NaCl_NP_Initialize,
+    NaCl_NP_Shutdown
   };
 
 #if NACL_WINDOWS
   NaClHandlePassBrowserInit();
 #endif
 
-  NPAPI::PluginList::Singleton()->RegisterInternalPlugin(nacl_plugin_info);
+  NPAPI::PluginList::Singleton()->RegisterInternalPlugin(
+      FilePath(FILE_PATH_LITERAL("internal_nacl")),
+      "Google Native Client",
+      "Google Native Client",
+      "application/x-nacl-srpc",
+      entry_points);
 }
 
 // This gets called in the browser process.
