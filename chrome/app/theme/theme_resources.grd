@@ -47,6 +47,7 @@
       </if>
       <if expr="os == 'darwin'">
         <include name="IDR_BOOKMARK_BAR_FOLDER" file="bookmark_bar_folder_mac.png" type="BINDATA" />
+        <include name="IDR_TABPOSE_CLOSE" file="tabpose_close.png" type="BINDATA" />
       </if>
       <include name="IDR_BROWSER_ACTION" file="browser_action.png" type="BINDATA" />
       <include name="IDR_BROWSER_ACTION_H" file="browser_action_h.png" type="BINDATA" />

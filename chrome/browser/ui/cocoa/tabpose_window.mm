@@ -6,6 +6,8 @@
 
 #import <QuartzCore/QuartzCore.h>
 
+#include <algorithm>
+
 #include "app/resource_bundle.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -29,6 +31,7 @@
 #include "chrome/common/pref_names.h"
 #include "gfx/scoped_cg_context_state_mac.h"
 #include "grit/app_resources.h"
+#include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
 
@@ -40,7 +43,8 @@ NSString* const kAnimationIdFadeOut = @"FadeOut";
 
 const CGFloat kDefaultAnimationDuration = 0.25;  // In seconds.
 const CGFloat kSlomoFactor = 4;
-const CGFloat kObserverChangeAnimationDuration = 0.75;  // In seconds.
+const CGFloat kObserverChangeAnimationDuration = 0.25;  // In seconds.
+const CGFloat kSelectionInset = 5;
 
 // CAGradientLayer is 10.6-only -- roll our own.
 @interface DarkGradientLayer : CALayer
@@ -703,22 +707,6 @@ void TileSet::Layout(NSRect containing_rect) {
       tiles_[i]->start_thumb_rect_.origin = NSMakePoint(big_x, -big_y);
     }
   }
-
-  // Go through last row and center it:
-  // X X X X
-  // X X X X
-  //   X X
-  int last_row_empty_tiles_x = count_x() - last_row_count_x();
-  CGFloat small_last_row_shift_x =
-      last_row_empty_tiles_x * (small_width + kSmallPaddingX) / 2;
-  CGFloat big_last_row_shift_x =
-      last_row_empty_tiles_x * (NSWidth(containing_rect) + big_padding_x) / 2;
-  for (int i = tile_count - last_row_count_x(); i < tile_count; ++i) {
-    tiles_[i]->thumb_rect_.origin.x += small_last_row_shift_x;
-    tiles_[i]->start_thumb_rect_.origin.x += big_last_row_shift_x;
-    tiles_[i]->favicon_rect_.origin.x += small_last_row_shift_x;
-    tiles_[i]->title_rect_.origin.x += small_last_row_shift_x;
-  }
 }
 
 void TileSet::set_selected_index(int index) {
@@ -915,9 +903,21 @@ void AnimateCALayerOpacityFromTo(
                rect:(NSRect)rect
               slomo:(BOOL)slomo
       tabStripModel:(TabStripModel*)tabStripModel;
+
+// Creates and initializes the CALayer in the background and all the CALayers
+// for the thumbnails, favicons, and titles.
 - (void)setUpLayersInSlomo:(BOOL)slomo;
-- (void)fadeAway:(BOOL)slomo;
-- (void)selectTileAtIndex:(int)newIndex;
+
+// Tells the browser to make the tab corresponding to currently selected
+// thumbnail the current tab and starts the tabpose exit animmation.
+- (void)fadeAwayInSlomo:(BOOL)slomo;
+
+// Returns the CALayer for the close button belonging to the thumbnail at
+// index |index|.
+- (CALayer*)closebuttonLayerAtIndex:(NSUInteger)index;
+
+// Updates the visibility of all closebutton layers.
+- (void)updateClosebuttonLayersVisibility;
 @end
 
 @implementation TabposeWindow
@@ -946,6 +946,10 @@ void AnimateCALayerOpacityFromTo(
     tileSet_.reset(new tabpose::TileSet);
     tabStripModelObserverBridge_.reset(
         new TabStripModelObserverBridge(tabStripModel_, self));
+    NSImage* nsCloseIcon =
+        ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+            IDR_TABPOSE_CLOSE);
+    closeIcon_.reset(base::mac::CopyNSImageToCGImage(nsCloseIcon));
     [self setReleasedWhenClosed:YES];
     [self setOpaque:NO];
     [self setBackgroundColor:[NSColor clearColor]];
@@ -961,16 +965,15 @@ void AnimateCALayerOpacityFromTo(
   return [allThumbnailLayers_ objectAtIndex:tileSet_->selected_index()];
 }
 
-- (void)selectTileAtIndex:(int)newIndex {
-  const tabpose::Tile& tile = tileSet_->tile_at(newIndex);
-  selectionHighlight_.frame =
-      NSRectToCGRect(NSInsetRect(tile.thumb_rect(), -5, -5));
-  tileSet_->set_selected_index(newIndex);
-}
-
 - (void)selectTileAtIndexWithoutAnimation:(int)newIndex {
   ScopedCAActionDisabler disabler;
-  [self selectTileAtIndex:newIndex];
+  const tabpose::Tile& tile = tileSet_->tile_at(newIndex);
+  selectionHighlight_.frame =
+      NSRectToCGRect(NSInsetRect(tile.thumb_rect(),
+                     -kSelectionInset, -kSelectionInset));
+  tileSet_->set_selected_index(newIndex);
+
+  [self updateClosebuttonLayersVisibility];
 }
 
 - (void)addLayersForTile:(tabpose::Tile&)tile
@@ -1003,6 +1006,27 @@ void AnimateCALayerOpacityFromTo(
   layer.get().shadowOffset = CGSizeMake(0, -10);
   if (state_ == tabpose::kFadedIn)
     layer.get().shadowOpacity = 0.5;
+
+  // Add a close button to the thumb layer.
+  CALayer* closeLayer = [CALayer layer];
+  closeLayer.contents = reinterpret_cast<id>(closeIcon_.get());
+  CGRect closeBounds = {};
+  closeBounds.size.width = CGImageGetWidth(closeIcon_);
+  closeBounds.size.height = CGImageGetHeight(closeIcon_);
+  closeLayer.bounds = closeBounds;
+  closeLayer.hidden = YES;
+
+  [closeLayer addConstraint:
+      [CAConstraint constraintWithAttribute:kCAConstraintMidX
+                                 relativeTo:@"superlayer"
+                                  attribute:kCAConstraintMinX]];
+  [closeLayer addConstraint:
+      [CAConstraint constraintWithAttribute:kCAConstraintMidY
+                                 relativeTo:@"superlayer"
+                                  attribute:kCAConstraintMaxY]];
+
+  layer.get().layoutManager = [CAConstraintLayoutManager layoutManager];
+  [layer.get() addSublayer:closeLayer];
 
   [bgLayer_ addSublayer:layer];
   [allThumbnailLayers_ addObject:layer];
@@ -1200,11 +1224,11 @@ void AnimateCALayerOpacityFromTo(
     case NSNewlineCharacter:
     case NSCarriageReturnCharacter:
     case ' ':
-      [self fadeAway:([event modifierFlags] & NSShiftKeyMask) != 0];
+      [self fadeAwayInSlomo:([event modifierFlags] & NSShiftKeyMask) != 0];
       break;
     case '\e':  // Escape
       tileSet_->set_selected_index(tabStripModel_->selected_index());
-      [self fadeAway:([event modifierFlags] & NSShiftKeyMask) != 0];
+      [self fadeAwayInSlomo:([event modifierFlags] & NSShiftKeyMask) != 0];
       break;
   }
 }
@@ -1223,7 +1247,7 @@ void AnimateCALayerOpacityFromTo(
           character == '9' ? tabStripModel_->count() - 1 : character - '1';
       if (index < tabStripModel_->count()) {
         tileSet_->set_selected_index(index);
-        [self fadeAway:([event modifierFlags] & NSShiftKeyMask) != 0];
+        [self fadeAwayInSlomo:([event modifierFlags] & NSShiftKeyMask) != 0];
         return YES;
       }
     }
@@ -1231,7 +1255,12 @@ void AnimateCALayerOpacityFromTo(
   return NO;
 }
 
--(void)selectTileFromMouseEvent:(NSEvent*)event {
+- (void)flagsChanged:(NSEvent*)event {
+  showAllCloseLayers_ = ([event modifierFlags] & NSAlternateKeyMask) != 0;
+  [self updateClosebuttonLayersVisibility];
+}
+
+- (void)selectTileFromMouseEvent:(NSEvent*)event {
   int newIndex = -1;
   CGPoint p = NSPointToCGPoint([event locationInWindow]);
   for (NSUInteger i = 0; i < [allThumbnailLayers_ count]; ++i) {
@@ -1248,16 +1277,46 @@ void AnimateCALayerOpacityFromTo(
   [self selectTileFromMouseEvent:event];
 }
 
+- (CALayer*)closebuttonLayerAtIndex:(NSUInteger)index {
+  CALayer* layer = [allThumbnailLayers_ objectAtIndex:index];
+  return [[layer sublayers] objectAtIndex:0];
+}
+
+- (void)updateClosebuttonLayersVisibility {
+  for (NSUInteger i = 0; i < [allThumbnailLayers_ count]; ++i) {
+    CALayer* layer = [self closebuttonLayerAtIndex:i];
+    BOOL isSelectedTile = static_cast<int>(i) == tileSet_->selected_index();
+    BOOL isVisible = state_ == tabpose::kFadedIn &&
+                     (isSelectedTile || showAllCloseLayers_);
+    layer.hidden = !isVisible;
+  }
+}
+
 - (void)mouseDown:(NSEvent*)event {
   // Just in case the user clicked without ever moving the mouse.
   [self selectTileFromMouseEvent:event];
 
-  [self fadeAway:([event modifierFlags] & NSShiftKeyMask) != 0];
+  // If the click occurred in a close box, close that tab and don't do anything
+  // else.
+  CGPoint p = NSPointToCGPoint([event locationInWindow]);
+  for (NSUInteger i = 0; i < [allThumbnailLayers_ count]; ++i) {
+    CALayer* layer = [self closebuttonLayerAtIndex:i];
+    CGPoint lp = [layer convertPoint:p fromLayer:rootLayer_];
+    if ([static_cast<CALayer*>([layer presentationLayer]) containsPoint:lp] &&
+        !layer.hidden) {
+      tabStripModel_->CloseTabContentsAt(i,
+          TabStripModel::CLOSE_USER_GESTURE |
+          TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
+      return;
+    }
+  }
+
+  [self fadeAwayInSlomo:([event modifierFlags] & NSShiftKeyMask) != 0];
 }
 
 - (void)swipeWithEvent:(NSEvent*)event {
   if (abs([event deltaY]) > 0.5)  // Swipe up or down.
-    [self fadeAway:([event modifierFlags] & NSShiftKeyMask) != 0];
+    [self fadeAwayInSlomo:([event modifierFlags] & NSShiftKeyMask) != 0];
 }
 
 - (void)close {
@@ -1273,7 +1332,7 @@ void AnimateCALayerOpacityFromTo(
 
 - (void)commandDispatch:(id)sender {
   if ([sender tag] == IDC_TABPOSE)
-    [self fadeAway:NO];
+    [self fadeAwayInSlomo:NO];
 }
 
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
@@ -1329,7 +1388,7 @@ void AnimateCALayerOpacityFromTo(
   titleLayer.opacity = 0;
 }
 
-- (void)fadeAway:(BOOL)slomo {
+- (void)fadeAwayInSlomo:(BOOL)slomo {
   if (state_ == tabpose::kFadingOut)
     return;
 
@@ -1355,6 +1414,8 @@ void AnimateCALayerOpacityFromTo(
     // running the exit animation.
     for (CALayer* layer in allThumbnailLayers_.get())
       layer.shadowOpacity = 0.0;
+
+    [self updateClosebuttonLayersVisibility];
   }
 
   // Animate layers out, all in one transaction.
@@ -1380,6 +1441,8 @@ void AnimateCALayerOpacityFromTo(
       ScopedCAActionDisabler disableCAActions;
       for (CALayer* layer in allThumbnailLayers_.get())
         layer.shadowOpacity = 0.5;
+
+      [self updateClosebuttonLayersVisibility];
     }
   } else if ([animationId isEqualToString:kAnimationIdFadeOut]) {
     DCHECK_EQ(tabpose::kFadingOut, state_);
@@ -1400,12 +1463,50 @@ void AnimateCALayerOpacityFromTo(
 - (void)refreshLayerFramesAtIndex:(int)i {
   const tabpose::Tile& tile = tileSet_->tile_at(i);
 
-  CALayer* faviconLayer = [allFaviconLayers_ objectAtIndex:i];
-  faviconLayer.frame = NSRectToCGRect(tile.favicon_rect());
-  CALayer* titleLayer = [allTitleLayers_ objectAtIndex:i];
-  titleLayer.frame = NSRectToCGRect(tile.title_rect());
   CALayer* thumbLayer = [allThumbnailLayers_ objectAtIndex:i];
-  thumbLayer.frame = NSRectToCGRect(tile.thumb_rect());
+
+  if (i == tileSet_->selected_index()) {
+    AnimateCALayerFrameFromTo(
+        selectionHighlight_,
+        NSInsetRect(NSRectFromCGRect(thumbLayer.frame),
+                    -kSelectionInset, -kSelectionInset),
+        NSInsetRect(tile.thumb_rect(),
+                    -kSelectionInset, -kSelectionInset),
+        kObserverChangeAnimationDuration,
+        nil);
+  }
+
+  // Repaint layer if necessary.
+  if (!NSEqualSizes(NSRectFromCGRect(thumbLayer.frame).size,
+                    tile.thumb_rect().size)) {
+    [thumbLayer setNeedsDisplay];
+  }
+
+  // Use AnimateCALayerFrameFromTo() instead of just setting |frame| to let
+  // the animation match the selection animation --
+  // |kCAMediaTimingFunctionDefault| is 10.6-only.
+  AnimateCALayerFrameFromTo(
+      thumbLayer,
+      NSRectFromCGRect(thumbLayer.frame),
+      tile.thumb_rect(),
+      kObserverChangeAnimationDuration,
+      nil);
+
+  CALayer* faviconLayer = [allFaviconLayers_ objectAtIndex:i];
+  AnimateCALayerFrameFromTo(
+      faviconLayer,
+      NSRectFromCGRect(faviconLayer.frame),
+      tile.favicon_rect(),
+      kObserverChangeAnimationDuration,
+      nil);
+
+  CALayer* titleLayer = [allTitleLayers_ objectAtIndex:i];
+  AnimateCALayerFrameFromTo(
+      titleLayer,
+      NSRectFromCGRect(titleLayer.frame),
+      tile.title_rect(),
+      kObserverChangeAnimationDuration,
+      nil);
 }
 
 - (void)insertTabWithContents:(TabContentsWrapper*)contents
@@ -1431,17 +1532,18 @@ void AnimateCALayerOpacityFromTo(
   DCHECK_EQ(tabStripModel_->count(),
             static_cast<int>([allFaviconLayers_ count]));
 
+  // Update selection.
+  int selectedIndex = tileSet_->selected_index();
+  if (selectedIndex >= index)
+    selectedIndex++;
+  [self selectTileAtIndexWithoutAnimation:selectedIndex];
+
+  // Animate everything into its new place.
   for (int i = 0; i < tabStripModel_->count(); ++i) {
     if (i == index)  // The new layer.
       continue;
     [self refreshLayerFramesAtIndex:i];
   }
-
-  // Update selection.
-  int selectedIndex = tileSet_->selected_index();
-  if (selectedIndex >= index)
-    selectedIndex++;
-  [self selectTileAtIndex:selectedIndex];
 }
 
 - (void)tabClosingWithContents:(TabContentsWrapper*)contents
@@ -1458,12 +1560,15 @@ void AnimateCALayerOpacityFromTo(
   tileSet_->RemoveTileAt(index);
   tileSet_->Layout(containingRect_);
 
-  [[allThumbnailLayers_ objectAtIndex:index] removeFromSuperlayer];
-  [allThumbnailLayers_ removeObjectAtIndex:index];
-  [[allTitleLayers_ objectAtIndex:index] removeFromSuperlayer];
-  [allTitleLayers_ removeObjectAtIndex:index];
-  [[allFaviconLayers_ objectAtIndex:index] removeFromSuperlayer];
-  [allFaviconLayers_ removeObjectAtIndex:index];
+  {
+    ScopedCAActionDisabler disabler;
+    [[allThumbnailLayers_ objectAtIndex:index] removeFromSuperlayer];
+    [allThumbnailLayers_ removeObjectAtIndex:index];
+    [[allTitleLayers_ objectAtIndex:index] removeFromSuperlayer];
+    [allTitleLayers_ removeObjectAtIndex:index];
+    [[allFaviconLayers_ objectAtIndex:index] removeFromSuperlayer];
+    [allFaviconLayers_ removeObjectAtIndex:index];
+  }
 
   // Update old layers.
   DCHECK_EQ(tabStripModel_->count(),
@@ -1476,15 +1581,16 @@ void AnimateCALayerOpacityFromTo(
   if (tabStripModel_->count() == 0)
     [self close];
 
-  for (int i = 0; i < tabStripModel_->count(); ++i)
-    [self refreshLayerFramesAtIndex:i];
-
   // Update selection.
   int selectedIndex = tileSet_->selected_index();
-  if (selectedIndex >= index)
+  if (selectedIndex > index || selectedIndex >= tabStripModel_->count())
     selectedIndex--;
   if (selectedIndex >= 0)
-    [self selectTileAtIndex:selectedIndex];
+    [self selectTileAtIndexWithoutAnimation:selectedIndex];
+
+  // Animate everything into its new place.
+  for (int i = 0; i < tabStripModel_->count(); ++i)
+    [self refreshLayerFramesAtIndex:i];
 }
 
 - (void)tabMovedWithContents:(TabContentsWrapper*)contents
@@ -1509,10 +1615,6 @@ void AnimateCALayerOpacityFromTo(
   [allTitleLayers_ removeObjectAtIndex:from];
   [allTitleLayers_ insertObject:titleLayer.get() atIndex:to];
 
-  // Update frames of the layers.
-  for (int i = std::min(from, to); i <= std::max(from, to); ++i)
-    [self refreshLayerFramesAtIndex:i];
-
   // Update selection.
   int selectedIndex = tileSet_->selected_index();
   if (from == selectedIndex)
@@ -1521,7 +1623,11 @@ void AnimateCALayerOpacityFromTo(
     selectedIndex--;
   else if (to <= selectedIndex && selectedIndex < from)
     selectedIndex++;
-  [self selectTileAtIndex:selectedIndex];
+  [self selectTileAtIndexWithoutAnimation:selectedIndex];
+
+  // Update frames of the layers.
+  for (int i = std::min(from, to); i <= std::max(from, to); ++i)
+    [self refreshLayerFramesAtIndex:i];
 }
 
 - (void)tabChangedWithContents:(TabContentsWrapper*)contents

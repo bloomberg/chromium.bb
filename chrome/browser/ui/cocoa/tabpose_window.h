@@ -73,6 +73,13 @@ class TabStripModelObserverBridge;
 
   // Informs us of added/removed/updated tabs.
   scoped_ptr<TabStripModelObserverBridge> tabStripModelObserverBridge_;
+
+  // The icon used for the closebutton layers.
+  base::mac::ScopedCFTypeRef<CGImageRef> closeIcon_;
+
+  // True if all close layers should be shown (as opposed to just the close
+  // layer of the currently selected thumbnail).
+  BOOL showAllCloseLayers_;
 }
 
 // Shows a TabposeWindow on top of |parent|, with |rect| being the active area.
