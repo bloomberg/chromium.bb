@@ -1000,7 +1000,13 @@ def SendUpstream(parser, args, cmd):
     if cmd == 'dcommit' and 'Committed r' in output:
       revision = re.match('.*?\nCommitted r(\\d+)', output, re.DOTALL).group(1)
     elif cmd == 'push' and retcode == 0:
-      revision = output.splitlines()[1].split('\t')[2].split('..')[1]
+      match = (re.match(r'.*?([a-f0-9]{7})\.\.([a-f0-9]{7})$', l)
+               for l in output.splitlines(False))
+      match = filter(None, match)
+      if len(match) != 1:
+        DieWithError("Couldn't parse ouput to extract the committed hash:\n%s" %
+            output)
+      revision = match[0].group(2)
     else:
       return 1
     viewvc_url = settings.GetViewVCUrl()
