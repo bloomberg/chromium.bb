@@ -64,6 +64,7 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"radhslib.dll",                // Radiant Naomi Internet Filter.
   L"radprlib.dll",                // Radiant Naomi Internet Filter.
   L"rlhook.dll",                  // Trustware Bufferzone.
+  L"rpchromebrowserrecordhelper.dll",  // RealPlayer.
   L"r3hook.dll",                  // Kaspersky Internet Security.
   L"sahook.dll",                  // McAfee Site Advisor.
   L"sbrige.dll",                  // Unknown.
@@ -325,8 +326,13 @@ bool LoadFlashBroker(const FilePath& plugin_path, CommandLine* cmd_line) {
   if (0 == ::GetShortPathNameW(plugin_path.value().c_str(),
                                short_path, arraysize(short_path)))
     return false;
+  // Here is the kicker, if the user has disabled 8.3 (short path) support
+  // on the volume GetShortPathNameW does not fail but simply returns the
+  // input path. In this case if the path had any spaces then rundll32 will
+  // incorrectly interpret its parameters. So we quote the path, even though
+  // the kb/164787 says you should not.
   std::wstring cmd_final =
-      base::StringPrintf(L"%ls %ls,BrokerMain browser=chrome",
+      base::StringPrintf(L"%ls \"%ls\",BrokerMain browser=chrome",
                          rundll.value().c_str(),
                          short_path);
   base::ProcessHandle process;
@@ -358,31 +364,35 @@ bool LoadFlashBroker(const FilePath& plugin_path, CommandLine* cmd_line) {
 }
 
 // Creates a sandbox for the built-in flash plugin running in a restricted
-// environment. This is a work in progress and for the time being do not
-// pay attention to the duplication between this function and the above
-// function. For more information see bug 50796.
+// environment. This policy is in continual flux as flash changes
+// capabilities. For more information see bug 50796.
 bool ApplyPolicyForBuiltInFlashPlugin(sandbox::TargetPolicy* policy) {
-  // TODO(cpu): Lock down the job level more.
   policy->SetJobLevel(sandbox::JOB_UNPROTECTED, 0);
+  // Vista and Win7 get a weaker token but have low integrity.
+  if (base::win::GetVersion() > base::win::VERSION_XP) {
+    policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
+                          sandbox::USER_INTERACTIVE);
+    policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
+  } else {
+    policy->SetTokenLevel(sandbox::USER_UNPROTECTED,
+                          sandbox::USER_LIMITED);
 
-  sandbox::TokenLevel initial_token = sandbox::USER_UNPROTECTED;
+    if (!AddKeyAndSubkeys(L"HKEY_LOCAL_MACHINE\\SOFTWARE",
+                          sandbox::TargetPolicy::REG_ALLOW_READONLY,
+                          policy))
+      return false;
+    if (!AddKeyAndSubkeys(L"HKEY_LOCAL_MACHINE\\SYSTEM",
+                          sandbox::TargetPolicy::REG_ALLOW_READONLY,
+                          policy))
+      return false;
 
-  if (base::win::GetVersion() > base::win::VERSION_XP)
-    initial_token = sandbox::USER_RESTRICTED_SAME_ACCESS;
+    if (!AddKeyAndSubkeys(L"HKEY_CURRENT_USER\\SOFTWARE",
+                          sandbox::TargetPolicy::REG_ALLOW_READONLY,
+                          policy))
+      return false;
+  }
 
-  policy->SetTokenLevel(initial_token, sandbox::USER_LIMITED);
-  policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
-
-  // TODO(cpu): Proxy registry access and remove these policies.
-  if (!AddKeyAndSubkeys(L"HKEY_CURRENT_USER\\SOFTWARE\\ADOBE",
-                        sandbox::TargetPolicy::REG_ALLOW_ANY,
-                        policy))
-    return false;
-
-  if (!AddKeyAndSubkeys(L"HKEY_CURRENT_USER\\SOFTWARE\\MACROMEDIA",
-                        sandbox::TargetPolicy::REG_ALLOW_ANY,
-                        policy))
-    return false;
+  AddDllEvictionPolicy(policy);
   return true;
 }
 
