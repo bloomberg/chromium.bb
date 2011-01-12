@@ -346,5 +346,5 @@ WebKit::WebSharedWorkerRepository* TestWebKitClient::sharedWorkerRepository() {
 }
 
 WebKit::WebGraphicsContext3D* TestWebKitClient::createGraphicsContext3D() {
-  return new webkit_gpu::WebGraphicsContext3DInProcessImpl();
+  return new webkit::gpu::WebGraphicsContext3DInProcessImpl();
 }

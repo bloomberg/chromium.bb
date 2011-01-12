@@ -21,7 +21,8 @@ using WebKit::WebGraphicsContext3D;
 using WebKit::WebString;
 using WebKit::WebView;
 
-namespace webkit_gpu {
+namespace webkit {
+namespace gpu {
 
 enum {
   MAX_VERTEX_UNIFORM_VECTORS = 0x8DFB,
@@ -1650,5 +1651,6 @@ bool WebGraphicsContext3DInProcessImpl::AngleValidateShaderSource(
   return true;
 }
 
-}  // namespace webkit_gpu
+}  // namespace gpu
+}  // namespace webkit
 

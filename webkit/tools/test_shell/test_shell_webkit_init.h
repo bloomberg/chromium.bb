@@ -161,7 +161,7 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
   }
 
   virtual WebKit::WebGraphicsContext3D* createGraphicsContext3D() {
-    return new webkit_gpu::WebGraphicsContext3DInProcessImpl();
+    return new webkit::gpu::WebGraphicsContext3DInProcessImpl();
   }
 
  private:

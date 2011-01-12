@@ -21,7 +21,8 @@ namespace gfx {
 class GLContext;
 }
 
-namespace webkit_gpu {
+namespace webkit {
+namespace gpu {
 
 // The default implementation of WebGL. In Chromium, using this class
 // requires the sandbox to be disabled, which is strongly discouraged.
@@ -465,7 +466,8 @@ class WebGraphicsContext3DInProcessImpl : public WebKit::WebGraphicsContext3D {
   ShHandle vertex_compiler_;
 };
 
-}  // namespace webkit_gpu
+}  // namespace gpu
+}  // namespace webkit
 
 #endif  // WEBKIT_GPU_WEBGRAPHICSCONTEXT3D_IN_PROCESS_IMPL_H_
 
