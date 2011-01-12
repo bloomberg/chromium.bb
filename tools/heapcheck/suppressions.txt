@@ -1185,3 +1185,9 @@
    fun:ResourceDispatcherHost::OnMessageReceived
    fun:ResourceDispatcherHostTest::MakeTestRequest
 }
+{
+   bug_69414
+   Heapcheck:Leak
+   ...
+   fun:PrerenderResourceHandlerTest
+}

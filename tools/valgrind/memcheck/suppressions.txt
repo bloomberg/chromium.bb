@@ -3567,3 +3567,9 @@
    fun:_ZN3net22HttpNetworkTransaction5StartEPKNS_15HttpRequestInfoEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
    fun:_ZN3net9HttpCache11Transaction13DoSendRequestEv
 }
+{
+   bug_69414
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN28PrerenderResourceHandlerTestC2Ev
+}
