@@ -137,18 +137,18 @@ set_source_pixbuf(cairo_t         *cr,
 static void
 image_draw(struct image *image)
 {
-	struct rectangle rectangle;
+	struct rectangle allocation;
 	GdkPixbuf *pb;
 	cairo_t *cr;
 	cairo_surface_t *wsurface, *surface;
 
 	window_draw(image->window);
 
-	window_get_child_rectangle(image->window, &rectangle);
+	window_get_child_allocation(image->window, &allocation);
 
 	pb = gdk_pixbuf_new_from_file_at_size(image->filename,
-					      rectangle.width,
-					      rectangle.height,
+					      allocation.width,
+					      allocation.height,
 					      NULL);
 	if (pb == NULL)
 		return;
@@ -156,8 +156,8 @@ image_draw(struct image *image)
 	wsurface = window_get_surface(image->window);
 	surface = cairo_surface_create_similar(wsurface,
 					       CAIRO_CONTENT_COLOR_ALPHA,
-					       rectangle.width,
-					       rectangle.height);
+					       allocation.width,
+					       allocation.height);
 
 	cairo_surface_destroy(wsurface);
 	cr = cairo_create(surface);
@@ -166,14 +166,14 @@ image_draw(struct image *image)
 	cairo_paint(cr);
 	set_source_pixbuf(cr, pb,
 			  0, 0,
-			  rectangle.width, rectangle.height);
+			  allocation.width, allocation.height);
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	cairo_paint(cr);
 	cairo_destroy(cr);
 
 	g_object_unref(pb);
 
-	window_copy_surface(image->window, &rectangle, surface);
+	window_copy_surface(image->window, &allocation, surface);
 	window_flush(image->window);
 	cairo_surface_destroy(surface);
 }

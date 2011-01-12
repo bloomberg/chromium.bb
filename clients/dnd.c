@@ -169,20 +169,20 @@ item_create(struct display *display, int x, int y, int seed)
 static void
 dnd_draw(struct dnd *dnd)
 {
-	struct rectangle rectangle;
+	struct rectangle allocation;
 	cairo_t *cr;
 	cairo_surface_t *wsurface, *surface;
 	int i;
 
 	window_draw(dnd->window);
 
-	window_get_child_rectangle(dnd->window, &rectangle);
+	window_get_child_allocation(dnd->window, &allocation);
 
 	wsurface = window_get_surface(dnd->window);
 	surface = cairo_surface_create_similar(wsurface,
 					       CAIRO_CONTENT_COLOR_ALPHA,
-					       rectangle.width,
-					       rectangle.height);
+					       allocation.width,
+					       allocation.height);
 	cairo_surface_destroy(wsurface);
 
 	cr = cairo_create(surface);
@@ -201,7 +201,7 @@ dnd_draw(struct dnd *dnd)
 
 	cairo_destroy(cr);
 
-	window_copy_surface(dnd->window, &rectangle, surface);
+	window_copy_surface(dnd->window, &allocation, surface);
 	cairo_surface_destroy(surface);
 	window_flush(dnd->window);
 }
@@ -251,13 +251,13 @@ static struct item *
 dnd_get_item(struct dnd *dnd, int32_t x, int32_t y)
 {
 	struct item *item;
-	struct rectangle rectangle;
+	struct rectangle allocation;
 	int i;
 
-	window_get_child_rectangle(dnd->window, &rectangle);
+	window_get_child_allocation(dnd->window, &allocation);
 
-	x -= rectangle.x;
-	y -= rectangle.y;
+	x -= allocation.x;
+	y -= allocation.y;
 
 	for (i = 0; i < ARRAY_LENGTH(dnd->items); i++) {
 		item = dnd->items[i];
@@ -559,16 +559,16 @@ dnd_button_handler(struct window *window,
 	struct dnd *dnd = data;
 	int32_t x, y;
 	struct item *item;
-	struct rectangle rectangle;
+	struct rectangle allocation;
 	struct dnd_drag *dnd_drag;
 	struct wl_drag *drag;
 	int i;
 
-	window_get_child_rectangle(dnd->window, &rectangle);
+	window_get_child_allocation(dnd->window, &allocation);
 	input_get_position(input, &x, &y);
 	item = dnd_get_item(dnd, x, y);
-	x -= rectangle.x;
-	y -= rectangle.y;
+	x -= allocation.x;
+	y -= allocation.y;
 
 	if (item && state == 1) {
 		fprintf(stderr, "start drag, item %p\n", item);
@@ -624,7 +624,7 @@ dnd_create(struct display *display)
 	struct dnd *dnd;
 	gchar *title;
 	int i, x, y;
-	struct rectangle rectangle;
+	int32_t width, height;
 
 	dnd = malloc(sizeof *dnd);
 	if (dnd == NULL)
@@ -656,9 +656,9 @@ dnd_create(struct display *display)
 	window_set_motion_handler(dnd->window,
 				  dnd_motion_handler);
 
-	rectangle.width = 4 * (item_width + item_padding) + item_padding;
-	rectangle.height = 4 * (item_height + item_padding) + item_padding;
-	window_set_child_size(dnd->window, &rectangle);
+	width = 4 * (item_width + item_padding) + item_padding;
+	height = 4 * (item_height + item_padding) + item_padding;
+	window_set_child_size(dnd->window, width, height);
 
 	dnd_draw(dnd);
 

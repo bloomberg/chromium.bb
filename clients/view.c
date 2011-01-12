@@ -57,7 +57,7 @@ struct view {
 static void
 view_draw(struct view *view)
 {
-	struct rectangle rectangle;
+	struct rectangle allocation;
 	cairo_surface_t *surface;
 	cairo_t *cr;
 	PopplerPage *page;
@@ -65,15 +65,15 @@ view_draw(struct view *view)
 
 	window_draw(view->window);
 
-	window_get_child_rectangle(view->window, &rectangle);
+	window_get_child_allocation(view->window, &allocation);
 
 	page = poppler_document_get_page(view->document, view->page);
 
 	surface = window_get_surface(view->window);
 
 	cr = cairo_create(surface);
-	cairo_rectangle(cr, rectangle.x, rectangle.y,
-			 rectangle.width, rectangle.height);
+	cairo_rectangle(cr, allocation.x, allocation.y,
+			 allocation.width, allocation.height);
 	cairo_clip(cr);
 
 	cairo_set_source_rgba(cr, 0, 0, 0, 0.8); 
@@ -81,16 +81,16 @@ view_draw(struct view *view)
 	cairo_paint(cr);
 	poppler_page_get_size(page, &width, &height);
 	doc_aspect = width / height;
-	window_aspect = (double) rectangle.width / rectangle.height;
+	window_aspect = (double) allocation.width / allocation.height;
 	if (doc_aspect < window_aspect)
-		scale = rectangle.height / height;
+		scale = allocation.height / height;
 	else
-		scale = rectangle.width / width;
-	cairo_translate(cr, rectangle.x, rectangle.y);
+		scale = allocation.width / width;
+	cairo_translate(cr, allocation.x, allocation.y);
 	cairo_scale(cr, scale, scale);
 	cairo_translate(cr,
-			(rectangle.width - width * scale) / 2 / scale,
-			(rectangle.height - height * scale) / 2 / scale);
+			(allocation.width - width * scale) / 2 / scale,
+			(allocation.height - height * scale) / 2 / scale);
 	cairo_rectangle(cr, 0, 0, width, height);
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	cairo_set_source_rgb(cr, 1, 1, 1);
