@@ -138,8 +138,10 @@ var OptionsPage = options.OptionsPage;
         };
       }
 
-      $('remotingSetupButton').onclick = function(event) {
-        chrome.send('showRemotingSetupDialog');
+      if ($('remotingSetupButton')) {
+        $('remotingSetupButton').onclick = function(event) {
+          chrome.send('showRemotingSetupDialog');
+        }
       }
     }
   };
