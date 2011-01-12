@@ -16,12 +16,13 @@ class VisualStudioVersion:
   """Information regarding a version of Visual Studio."""
 
   def __init__(self, short_name, description,
-               solution_version, project_version, flat_sln):
+               solution_version, project_version, flat_sln, uses_vcxproj):
     self.short_name = short_name
     self.description = description
     self.solution_version = solution_version
     self.project_version = project_version
     self.flat_sln = flat_sln
+    self.uses_vcxproj = uses_vcxproj
 
   def ShortName(self):
     return self.short_name
@@ -35,12 +36,19 @@ class VisualStudioVersion:
     return self.solution_version
 
   def ProjectVersion(self):
-    """Get the version number of the vcproj files."""
+    """Get the version number of the vcproj or vcxproj files."""
     return self.project_version
 
   def FlatSolution(self):
     return self.flat_sln
 
+  def UsesVcxproj(self):
+    """Returns true if this version uses a vcxproj file."""
+    return self.uses_vcxproj
+
+  def ProjectExtension(self):
+    """Returns the file extension for the project."""
+    return self.uses_vcxproj and '.vcxproj' or '.vcproj'
 
 def _RegistryGetValue(key, value):
   """Use reg.exe to read a paricular key.
@@ -72,28 +80,56 @@ def _RegistryGetValue(key, value):
   return match.group(1)
 
 
+def _RegistryKeyExists(key):
+  """Use reg.exe to see if a key exists.
+
+  Args:
+    key: The registry key to check.
+  Return:
+    True if the key exists
+  """
+  # Skip if not on Windows.
+  if sys.platform not in ('win32', 'cygwin'):
+    return None
+  # Run reg.exe.
+  cmd = [os.path.join(os.environ.get('WINDIR', ''), 'System32', 'reg.exe'),
+         'query', key]
+  p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  return p.returncode == 0
+
+
 def _CreateVersion(name):
   versions = {
+      '2010': VisualStudioVersion('2010',
+                                  'Visual Studio 2010',
+                                  solution_version='11.00',
+                                  project_version='4.0',
+                                  flat_sln=False,
+                                  uses_vcxproj=True),
       '2008': VisualStudioVersion('2008',
                                   'Visual Studio 2008',
                                   solution_version='10.00',
                                   project_version='9.00',
-                                  flat_sln=False),
+                                  flat_sln=False,
+                                  uses_vcxproj=False),
       '2008e': VisualStudioVersion('2008e',
                                    'Visual Studio 2008',
                                    solution_version='10.00',
                                    project_version='9.00',
-                                   flat_sln=True),
+                                   flat_sln=True,
+                                   uses_vcxproj=False),
       '2005': VisualStudioVersion('2005',
                                   'Visual Studio 2005',
                                   solution_version='9.00',
                                   project_version='8.00',
-                                  flat_sln=False),
+                                  flat_sln=False,
+                                  uses_vcxproj=False),
       '2005e': VisualStudioVersion('2005e',
                                    'Visual Studio 2005',
                                    solution_version='9.00',
                                    project_version='8.00',
-                                   flat_sln=True),
+                                   flat_sln=True,
+                                   uses_vcxproj=False),
   }
   return versions[str(name)]
 
@@ -105,14 +141,27 @@ def _DetectVisualStudioVersions():
     A list of visual studio versions installed in descending order of
     usage preference.
     Base this on the registry and a quick check if devenv.exe exists.
-    Only versions 8-9 are considered.
+    Only versions 8-10 are considered.
     Possibilities are:
       2005 - Visual Studio 2005 (8)
       2008 - Visual Studio 2008 (9)
+      2010 - Visual Studio 2010 (10)
   """
-  version_to_year = {'8.0': '2005', '9.0': '2008'}
+  version_to_year = {'8.0': '2005', '9.0': '2008', '10.0': '2010'}
   versions = []
-  for version in ('9.0', '8.0'):
+  # For now, prefer versions before VS2010
+  for version in ('9.0', '8.0', '10.0'):
+    # Check if VS2010 and later is installed as specified by
+    # http://msdn.microsoft.com/en-us/library/bb164659.aspx
+    key32 = r'HKLM\SOFTWARE\Microsoft\DevDiv\VS\Servicing\%s' % version
+    key64 = r'HKLM\SOFTWARE\Wow6432Node\Microsoft\DevDiv\VS\Servicing\%sD' % (
+         version)
+    if _RegistryKeyExists(key32) or _RegistryKeyExists(key64):
+      # Add this one.
+      # TODO(jeanluc) This does not check for an express version.
+      # TODO(jeanluc) Uncomment this line when ready to support VS2010:
+      # versions.append(_CreateVersion(version_to_year[version]))
+      continue
     # Get the install dir for this version.
     key = r'HKLM\Software\Microsoft\VisualStudio\%s' % version
     path = _RegistryGetValue(key, 'InstallDir')
