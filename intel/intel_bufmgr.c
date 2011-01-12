@@ -143,6 +143,10 @@ drm_intel_bo_mrb_exec(drm_intel_bo *bo, int used,
 					cliprects, num_cliprects, DR4,
 					rings);
 
+	if (ring_flag == 0)
+		return bo->bufmgr->bo_exec(bo, used,
+					   cliprects, num_cliprects, DR4);
+
 	return -ENODEV;
 }
 
