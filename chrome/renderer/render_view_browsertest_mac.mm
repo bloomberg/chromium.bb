@@ -39,7 +39,7 @@ NSEvent* CmdDeadKeyEvent(NSEventType type, unsigned short code) {
 
 // Test that cmd-up/down scrolls the page exactly if it is not intercepted by
 // javascript.
-TEST_F(RenderViewTest, DISABLED_MacTestCmdUp) {
+TEST_F(RenderViewTest, MacTestCmdUp) {
   // Some preprocessor trickery so that we can have literal html in our source,
   // makes it easier to copy html to and from an html file for testing (the
   // preprocessor will remove the newlines at the line ends, turning this into
@@ -98,6 +98,7 @@ TEST_F(RenderViewTest, DISABLED_MacTestCmdUp) {
   view_->OnSetEditCommandsForNextKeyEvent(
       EditCommands(1, EditCommand("moveToEndOfDocument", "")));
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowDownKeyDown));
+  ProcessPendingMessages();
   output = GetMainFrame()->contentAsText(kMaxOutputCharacters);
   EXPECT_EQ(kArrowDownScrollDown, UTF16ToASCII(output));
 
@@ -106,6 +107,7 @@ TEST_F(RenderViewTest, DISABLED_MacTestCmdUp) {
   view_->OnSetEditCommandsForNextKeyEvent(
       EditCommands(1, EditCommand("moveToBeginningOfDocument", "")));
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowUpKeyDown));
+  ProcessPendingMessages();
   output = GetMainFrame()->contentAsText(kMaxOutputCharacters);
   EXPECT_EQ(kArrowUpScrollUp, UTF16ToASCII(output));
 
@@ -121,6 +123,7 @@ TEST_F(RenderViewTest, DISABLED_MacTestCmdUp) {
   view_->OnSetEditCommandsForNextKeyEvent(
       EditCommands(1, EditCommand("moveToEndOfDocument", "")));
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowDownKeyDown));
+  ProcessPendingMessages();
   output = GetMainFrame()->contentAsText(kMaxOutputCharacters);
   EXPECT_EQ(kArrowDownNoScroll, UTF16ToASCII(output));
 
@@ -129,6 +132,7 @@ TEST_F(RenderViewTest, DISABLED_MacTestCmdUp) {
   view_->OnSetEditCommandsForNextKeyEvent(
       EditCommands(1, EditCommand("moveToBeginningOfDocument", "")));
   SendNativeKeyEvent(NativeWebKeyboardEvent(arrowUpKeyDown));
+  ProcessPendingMessages();
   output = GetMainFrame()->contentAsText(kMaxOutputCharacters);
   EXPECT_EQ(kArrowUpNoScroll, UTF16ToASCII(output));
 }
