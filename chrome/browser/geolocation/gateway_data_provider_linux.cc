@@ -40,9 +40,10 @@ std::string HexToIpv4Format(std::string& hex_address) {
   if (hex_address.size() != 8)
     return "";
   std::vector<uint8> bytes;
-  base::HexStringToBytes(hex_address, &bytes);
-  if (bytes.size() != 4)
+  if (!base::HexStringToBytes(hex_address, &bytes) ||
+      bytes.size() != 4) {
     return "";
+  }
   struct in_addr in;
   uint32 ip_native_endian;
   memcpy(&ip_native_endian, &bytes[0], 4);

@@ -3729,12 +3729,15 @@ void TestingAutomationProvider::GetAutoFillProfile(
     Browser* browser,
     DictionaryValue* args,
     IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
   // Get the AutoFillProfiles currently in the database.
   int tab_index = 0;
-  args->GetInteger("tab_index", &tab_index);
-  TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
-  AutomationJSONReply reply(this, reply_message);
+  if (!args->GetInteger("tab_index", &tab_index)) {
+    reply.SendError("Invalid or missing tab_index integer value.");
+    return;
+  }
 
+  TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
   if (tab_contents) {
     PersonalDataManager* pdm = tab_contents->profile()->GetOriginalProfile()
         ->GetPersonalDataManager();
@@ -3770,8 +3773,17 @@ void TestingAutomationProvider::FillAutoFillProfile(
   AutomationJSONReply reply(this, reply_message);
   ListValue* profiles = NULL;
   ListValue* cards = NULL;
-  args->GetList("profiles", &profiles);
-  args->GetList("credit_cards", &cards);
+
+  if (!args->GetList("profiles", &profiles)) {
+    reply.SendError("Invalid or missing profiles list");
+    return;
+  }
+
+  if (!args->GetList("credit_cards", &cards)) {
+    reply.SendError("Invalid or missing credit_cards list");
+    return;
+  }
+
   std::string error_mesg;
 
   std::vector<AutoFillProfile> autofill_profiles;
@@ -3791,7 +3803,11 @@ void TestingAutomationProvider::FillAutoFillProfile(
 
   // Save the AutoFillProfiles.
   int tab_index = 0;
-  args->GetInteger("tab_index", &tab_index);
+  if (!args->GetInteger("tab_index", &tab_index)) {
+    reply.SendError("Invalid or missing tab_index integer");
+    return;
+  }
+
   TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
 
   if (tab_contents) {
@@ -3984,7 +4000,10 @@ void TestingAutomationProvider::DisableSyncForDatatypes(
     return;
   }
   std::string first_datatype;
-  datatypes->GetString(0, &first_datatype);
+  if (!datatypes->GetString(0, &first_datatype)) {
+    reply.SendError("Invalid or missing string");
+    return;
+  }
   if (first_datatype == "All") {
     sync_waiter_->DisableSyncForAllDatatypes();
     ProfileSyncService::Status status = sync_waiter_->GetStatus();

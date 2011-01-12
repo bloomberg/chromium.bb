@@ -328,7 +328,11 @@ class JSONTest : public DiagnosticTest {
       return true;
     }
     int64 file_size;
-    file_util::GetFileSize(path_, &file_size);
+    if (!file_util::GetFileSize(path_, &file_size)) {
+      RecordFailure(ASCIIToUTF16("Cannot obtain file size"));
+      return true;
+    }
+
     if (file_size > max_file_size_) {
       RecordFailure(ASCIIToUTF16("File too big"));
       return true;

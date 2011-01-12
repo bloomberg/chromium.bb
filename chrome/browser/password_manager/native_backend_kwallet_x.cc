@@ -534,7 +534,11 @@ void NativeBackendKWallet::DeserializeValue(const string& signon_realm,
 void NativeBackendKWallet::ReadGURL(const Pickle& pickle, void** iter,
                                     GURL* url) {
   string url_string;
-  pickle.ReadString(iter, &url_string);
+  if (!pickle.ReadString(iter, &url_string)) {
+    LOG(ERROR) << "Failed to read url string";
+    *url = GURL();
+    return;
+  }
   *url = GURL(url_string);
 }
 

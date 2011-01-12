@@ -84,7 +84,8 @@ bool Nigori::InitByDerivation(const std::string& hostname,
   DCHECK(user_salt.get());
 
   std::string raw_user_salt;
-  user_salt->GetRawKey(&raw_user_salt);
+  if (!user_salt->GetRawKey(&raw_user_salt))
+    return false;
 
   // Kuser = PBKDF2(P, Suser, Nuser, 16)
   user_key_.reset(SymmetricKey::DeriveKeyFromPassword(SymmetricKey::AES,

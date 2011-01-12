@@ -950,7 +950,8 @@ bool VisitedLinkMaster::ReadFromFile(FILE* file,
   DCHECK(!posted_asynchronous_operation_);
 #endif
 
-  fseek(file, offset, SEEK_SET);
+  if (fseek(file, offset, SEEK_SET) != 0)
+    return false;
 
   size_t num_read = fread(data, 1, data_size, file);
   return num_read == data_size;

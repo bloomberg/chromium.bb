@@ -723,9 +723,11 @@ void AutoFillCreditCardEditor::SetWidgetValues(CreditCard* card) {
   }
 
   int year;
-  base::StringToInt(
-      card->GetFieldText(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR)),
-      &year);
+  if (!base::StringToInt(
+          card->GetFieldText(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR)),
+          &year)) {
+    NOTREACHED();
+  }
   if (year >= base_year_ && year < base_year_ + kNumYears)
     gtk_combo_box_set_active(GTK_COMBO_BOX(year_), year - base_year_);
   else

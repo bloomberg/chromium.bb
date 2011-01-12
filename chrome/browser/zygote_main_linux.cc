@@ -322,8 +322,10 @@ class Zygote {
     }
 
    error:
-    if (pid > 0)
-      waitpid(pid, NULL, WNOHANG);
+    if (pid > 0) {
+      if (waitpid(pid, NULL, WNOHANG) == -1)
+        LOG(ERROR) << "Failed to wait for process";
+    }
     if (dummy_fd >= 0)
       close(dummy_fd);
     if (pipe_fds[0] >= 0)

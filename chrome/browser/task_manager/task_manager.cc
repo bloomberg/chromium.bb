@@ -888,9 +888,12 @@ void TaskManagerModel::OnJobRedirect(net::URLRequestJob* job,
 void TaskManagerModel::OnBytesRead(net::URLRequestJob* job, const char* buf,
                                    int byte_count) {
   int render_process_host_child_id = -1, routing_id = -1;
-  ResourceDispatcherHost::RenderViewForRequest(job->request(),
+  if (!ResourceDispatcherHost::RenderViewForRequest(job->request(),
                                                &render_process_host_child_id,
-                                               &routing_id);
+                                               &routing_id)) {
+    NOTREACHED();
+  }
+
   // This happens in the IO thread, post it to the UI thread.
   int origin_child_id =
       chrome_browser_net::GetOriginProcessUniqueIDForRequest(job->request());
