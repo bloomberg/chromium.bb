@@ -338,6 +338,7 @@ void LoginPerformer::ResolveInitialNetworkAuthFailure() {
       // Request screen lock & show error message there.
     case GoogleServiceAuthError::CAPTCHA_REQUIRED:
       // User is requested to enter CAPTCHA challenge.
+      captcha_token_ = last_login_failure_.error().captcha().token;
       RequestScreenLock();
       return;
     default:
@@ -405,6 +406,7 @@ void LoginPerformer::ResolveLockNetworkAuthFailure() {
       break;
     case GoogleServiceAuthError::CAPTCHA_REQUIRED:
       // User is requested to enter CAPTCHA challenge.
+      captcha_token_ = last_login_failure_.error().captcha().token;
       msg = l10n_util::GetStringUTF16(IDS_LOGIN_ERROR_PASSWORD_CHANGED);
       ScreenLocker::default_screen_locker()->ShowCaptchaAndErrorMessage(
           last_login_failure_.error().captcha().image_url,

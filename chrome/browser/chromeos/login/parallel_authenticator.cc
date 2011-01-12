@@ -352,7 +352,9 @@ void ParallelAuthenticator::Resolve() {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           NewRunnableMethod(this, &ParallelAuthenticator::OnLoginFailure,
-                            current_state_->online_outcome()));
+                            (reauth_state_.get() ?
+                             reauth_state_->online_outcome() :
+                             current_state_->online_outcome())));
       break;
     case HAVE_NEW_PW:
       key_migrator_ =

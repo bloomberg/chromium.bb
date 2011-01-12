@@ -115,7 +115,7 @@ void OnlineAttempt::OnClientLoginFailure(
 
     return;
   }
-
+  VLOG(2) << "ClientLogin attempt failed with " << error.state();
   TriggerResolve(GaiaAuthConsumer::ClientLoginResult(),
                  LoginFailure::FromNetworkAuthFailure(error));
 }

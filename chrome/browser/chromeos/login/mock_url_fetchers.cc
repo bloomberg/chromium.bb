@@ -7,6 +7,7 @@
 #include <errno.h>
 
 #include "base/message_loop.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/common/net/http_return.h"
 #include "chrome/common/net/url_fetcher.h"
@@ -107,11 +108,65 @@ void FailFetcher::Start() {
                                  std::string());
 }
 
-HostedFetcher::HostedFetcher(bool success,
+// static
+const char CaptchaFetcher::kCaptchaToken[] = "token";
+// static
+const char CaptchaFetcher::kCaptchaUrlBase[] = "http://www.google.com/accounts/";
+// static
+const char CaptchaFetcher::kCaptchaUrlFragment[] = "fragment";
+// static
+const char CaptchaFetcher::kUnlockUrl[] = "http://what.ever";
+
+
+CaptchaFetcher::CaptchaFetcher(bool success,
                                const GURL& url,
                                const std::string& results,
                                URLFetcher::RequestType request_type,
                                URLFetcher::Delegate* d)
+    : URLFetcher(url, request_type, d),
+      url_(url) {
+}
+
+CaptchaFetcher::~CaptchaFetcher() {}
+
+// static
+std::string CaptchaFetcher::GetCaptchaToken() {
+  return kCaptchaToken;
+}
+
+// static
+std::string CaptchaFetcher::GetCaptchaUrl() {
+  return std::string(kCaptchaUrlBase).append(kCaptchaUrlFragment);
+}
+
+// static
+std::string CaptchaFetcher::GetUnlockUrl() {
+  return kUnlockUrl;
+}
+
+void CaptchaFetcher::Start() {
+  URLRequestStatus success(URLRequestStatus::SUCCESS, 0);
+  std::string body = base::StringPrintf("Error=%s\n"
+                                        "Url=%s\n"
+                                        "CaptchaUrl=%s\n"
+                                        "CaptchaToken=%s\n",
+                                        "CaptchaRequired",
+                                        kUnlockUrl,
+                                        kCaptchaUrlFragment,
+                                        kCaptchaToken);
+  delegate()->OnURLFetchComplete(this,
+                                 url_,
+                                 success,
+                                 RC_FORBIDDEN,
+                                 ResponseCookies(),
+                                 body);
+}
+
+HostedFetcher::HostedFetcher(bool success,
+                             const GURL& url,
+                             const std::string& results,
+                             URLFetcher::RequestType request_type,
+                             URLFetcher::Delegate* d)
     : URLFetcher(url, request_type, d),
       url_(url) {
 }

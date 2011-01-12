@@ -87,6 +87,31 @@ class FailFetcher : public URLFetcher {
   DISALLOW_COPY_AND_ASSIGN(FailFetcher);
 };
 
+class CaptchaFetcher : public URLFetcher {
+ public:
+  CaptchaFetcher(bool success,
+                 const GURL& url,
+                 const std::string& results,
+                 URLFetcher::RequestType request_type,
+                 URLFetcher::Delegate* d);
+  virtual ~CaptchaFetcher();
+
+  static std::string GetCaptchaToken();
+  static std::string GetCaptchaUrl();
+  static std::string GetUnlockUrl();
+
+  void Start();
+
+ private:
+  static const char kCaptchaToken[];
+  static const char kCaptchaUrlBase[];
+  static const char kCaptchaUrlFragment[];
+  static const char kUnlockUrl[];
+  GURL url_;
+
+  DISALLOW_COPY_AND_ASSIGN(CaptchaFetcher);
+};
+
 class HostedFetcher : public URLFetcher {
  public:
   HostedFetcher(bool success,

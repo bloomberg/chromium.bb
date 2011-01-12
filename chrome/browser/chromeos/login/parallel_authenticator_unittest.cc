@@ -576,6 +576,49 @@ TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetNewPassword) {
   message_loop_.Run();
 }
 
+TEST_F(ParallelAuthenticatorTest, DriveOfflineLoginGetCaptchad) {
+  ExpectLoginSuccess(username_, password_, result_, true);
+  FailOnLoginFailure();
+  EXPECT_CALL(*mock_library_, GetSystemSalt())
+      .WillOnce(Return(CryptohomeBlob(2, 0)))
+      .RetiresOnSaturation();
+
+  // Set up state as though a cryptohome mount attempt has occurred and
+  // succeeded; also, an online request that never made it.
+  state_->PresetCryptohomeStatus(true, 0);
+  // state_ is released further down.
+  SetAttemptState(auth_, state_.get());
+  RunResolve(auth_.get(), &message_loop_);
+
+  // Offline login has completed, so now we "complete" the online request.
+  GoogleServiceAuthError error(
+      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+  LoginFailure failure = LoginFailure::FromNetworkAuthFailure(error);
+  state_.release()->PresetOnlineLoginStatus(result_, failure);
+  ExpectLoginFailure(failure);
+
+  RunResolve(auth_.get(), &message_loop_);
+
+  // After the request below completes, OnLoginSuccess gets called again.
+  failure = LoginFailure::FromNetworkAuthFailure(
+      GoogleServiceAuthError::FromCaptchaChallenge(
+          CaptchaFetcher::GetCaptchaToken(),
+          GURL(CaptchaFetcher::GetCaptchaUrl()),
+          GURL(CaptchaFetcher::GetUnlockUrl())));
+  ExpectLoginFailure(failure);
+
+  MockFactory<CaptchaFetcher> factory;
+  URLFetcher::set_factory(&factory);
+  TestingProfile profile;
+
+  auth_->RetryAuth(&profile,
+                   username_,
+                   std::string(),
+                   std::string(),
+                   std::string());
+  message_loop_.Run();
+}
+
 TEST_F(ParallelAuthenticatorTest, DriveOnlineLogin) {
   GaiaAuthConsumer::ClientLoginResult success("sid", "lsid", "", "");
   ExpectLoginSuccess(username_, password_, success, false);
