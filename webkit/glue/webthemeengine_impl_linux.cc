@@ -34,7 +34,7 @@ static gfx::NativeThemeLinux::Part NativeThemePart(
       return gfx::NativeThemeLinux::kScrollbarHorizontalThumb;
     case WebKit::WebThemeEngine::PartScrollbarVerticalThumb:
       return gfx::NativeThemeLinux::kScrollbarVerticalThumb;
-    case WebKit::WebThemeEngine::PartScrollbarHoriztonalTrack:
+    case WebKit::WebThemeEngine::PartScrollbarHorizontalTrack:
       return gfx::NativeThemeLinux::kScrollbarHorizontalTrack;
     case WebKit::WebThemeEngine::PartScrollbarVerticalTrack:
       return gfx::NativeThemeLinux::kScrollbarVerticalTrack;
@@ -64,7 +64,7 @@ static void GetNativeThemeExtraParams(
     WebKit::WebThemeEngine::State state,
     const WebKit::WebThemeEngine::ExtraParams* extra_params,
     gfx::NativeThemeLinux::ExtraParams* native_theme_extra_params) {
-  if (part == WebKit::WebThemeEngine::PartScrollbarHoriztonalTrack ||
+  if (part == WebKit::WebThemeEngine::PartScrollbarHorizontalTrack ||
       part == WebKit::WebThemeEngine::PartScrollbarVerticalTrack) {
     native_theme_extra_params->scrollbar_track.track_x =
         extra_params->scrollbarTrack.trackX;
