@@ -22,12 +22,12 @@ div.otherbrowsers {
   font-family: Helvetica, sans-serif;
 }
 table.list#browserComparison tr:not([class*='firstRow']) > *:nth-child(1),
-table.list#browserComparison tr:not([class*='firstRow']) > *:nth-child(4),
+table.list#browserComparison tr:not([class*='firstRow']) > *:nth-child(6),
 table.list#browserComparison tr.firstRow th:nth-child(1) {
   border-right: 1px solid #b5c6de;
 }
 table.list#memoryDetails tr:not([class*='firstRow']) > *:nth-child(2),
-table.list#memoryDetails tr:not([class*='firstRow']) > *:nth-child(5),
+table.list#memoryDetails tr:not([class*='firstRow']) > *:nth-child(7),
 table.list#memoryDetails tr.firstRow th:nth-child(2) {
   border-right: 1px solid #b5c6de;
 }
@@ -135,11 +135,13 @@ function enableHelpTooltips() {
           <col class='name' />
           <col class='number' />
           <col class='number' />
+          <col class='number' />
+          <col class='number' />
         </colgroup>
         <tr class='firstRow doNotFilter'>
           <th>
           </th>
-          <th colspan='2'>
+          <th colspan='4'>
             Memory
             <div class='help'>
               <div>
@@ -150,6 +152,16 @@ function enableHelpTooltips() {
                   <strong>Resident:</strong>
                   Amount of memory that is present in physical RAM.
                   This is the best indicator of browser memory resource usage.
+                </p>
+                <p>
+                  <strong>Shared:</strong>
+                  Amount of memory that is present in physical RAM and can
+                  be shared with another process.
+                </p>
+                <p>
+                  <strong>Private:</strong>
+                  Amount of memory that is present in physical RAM and can not
+                  be shared with another process.
                 </p>
                 <p>
                   <strong>Virtual:</strong>
@@ -167,8 +179,14 @@ function enableHelpTooltips() {
           <th class='name'>
             Browser
           </th>
-          <th class='name'>
+          <th class='number'>
             Resident
+          </th>
+          <th class='number'>
+            Shared
+          </th>
+          <th class='number'>
+            Private
           </th>
           <th class='number'>
             Virtual
@@ -182,6 +200,12 @@ function enableHelpTooltips() {
           </td>
           <td class='number'>
             <span class='th' jscontent="formatNumber(ws_shareable)"></span><span class='k'>k</span>
+          </td>
+          <td class='number'>
+            <span class='th' jscontent="formatNumber(ws_shared)"></span><span class='k'>k</span>
+          </td>
+          <td class='number'>
+            <span class='th' jscontent="formatNumber(ws_priv)"></span><span class='k'>k</span>
           </td>
           <td class='number'>
             <span class='th' jscontent="formatNumber(comm_priv)"></span><span class='k'>k</span>
@@ -214,13 +238,15 @@ function enableHelpTooltips() {
           <col class='name' />
           <col class='number' />
           <col class='number' />
+          <col class='number' />
+          <col class='number' />
         </colgroup>
         <tr class='firstRow doNotFilter'>
           <th>
           </th>
           <th>
           </th>
-          <th colspan='2'>
+          <th colspan='4'>
             Memory
           </th>
         </tr>
@@ -233,6 +259,12 @@ function enableHelpTooltips() {
           </th>
           <th class='number'>
             Resident
+          </th>
+          <th class='number'>
+            Shared
+          </th>
+          <th class='number'>
+            Private
           </th>
           <th class='number'>
             Virtual
@@ -252,6 +284,12 @@ function enableHelpTooltips() {
             <span class='th' jscontent="formatNumber(ws_shareable)"></span><span class='k'>k</span>
           </td>
           <td class='number'>
+            <span class='th' jscontent="formatNumber(ws_shared)"></span><span class='k'>k</span>
+          </td>
+          <td class='number'>
+            <span class='th' jscontent="formatNumber(ws_priv)"></span><span class='k'>k</span>
+          </td>
+          <td class='number'>
             <span class='th' jscontent="formatNumber(comm_priv)"></span><span class='k'>k</span>
           </td>
         </tr>
@@ -267,6 +305,12 @@ function enableHelpTooltips() {
           </td>
           <td class='number'>
             <span class='th' jscontent="formatNumber(ws_shareable)"></span><span class='k'>k</span>
+          </td>
+          <td class='number'>
+            <span class='th' jscontent="formatNumber(ws_shared)"></span><span class='k'>k</span>
+          </td>
+          <td class='number'>
+            <span class='th' jscontent="formatNumber(ws_priv)"></span><span class='k'>k</span>
           </td>
           <td class='number'>
             <span class='th' jscontent="formatNumber(comm_priv)"></span><span class='k'>k</span>

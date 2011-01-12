@@ -10,7 +10,9 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/eintr_wrapper.h"
 #include "base/file_path.h"
+#include "base/logging.h"
 #include "base/process_util.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -77,6 +79,8 @@ TEST_F(ProcessInfoSnapshotMacTest, FindPidSelfTest) {
                                       // should occupy at least 100 kilobytes.
   EXPECT_GE(proc_info.vsize, 1024u);  // Sanity check: our |vsize| is presumably
                                       // at least a megabyte.
+  EXPECT_GE(proc_info.rshrd, 1024u);  // Shared memory should also > 1 MB.
+  EXPECT_GE(proc_info.rprvt, 1024u);  // Same with private memory.
 
   // Find our parent.
   ASSERT_TRUE(snapshot.GetProcInfo(ppid, &proc_info));
@@ -88,11 +92,32 @@ TEST_F(ProcessInfoSnapshotMacTest, FindPidSelfTest) {
   EXPECT_GT(proc_info.vsize, 0u);   // Its |vsize| should be nonzero though.
 }
 
+// To verify that ProcessInfoSnapshot is getting the actual uid and effective
+// uid, this test runs top. top should have a uid of the caller and effective
+// uid of 0 (root).
 TEST_F(ProcessInfoSnapshotMacTest, EffectiveVsRealUserIDTest) {
-  // Run top which has a uid of the caller and effective uid of 0.
+  // Create a pipe to be able to read top's output.
+  int fds[2];
+  PCHECK(pipe(fds) == 0);
+  base::file_handle_mapping_vector fds_to_remap;
+  fds_to_remap.push_back(std::make_pair(fds[1], 1));
+
+  // Hook up top's stderr to the test process' stderr.
+  fds_to_remap.push_back(std::make_pair(fileno(stderr), 2));
+
+  std::vector<std::string> argv;
+  argv.push_back("/usr/bin/top");
+  argv.push_back("-l");
+  argv.push_back("0");
+
   base::ProcessHandle process_handle;
-  ASSERT_TRUE(base::LaunchApp(CommandLine(FilePath("/usr/bin/top")),
-                              false, false, &process_handle));
+  ASSERT_TRUE(base::LaunchApp(argv, fds_to_remap, false, &process_handle));
+  PCHECK(HANDLE_EINTR(close(fds[1])) == 0);
+
+  // Wait until there's some output form top. This is an easy way to tell that
+  // the exec() call is done and top is actually running.
+  char buf[1];
+  PCHECK(HANDLE_EINTR(read(fds[0], buf, 1)) == 1);
 
   std::vector<base::ProcessId> pid_list;
   pid_list.push_back(process_handle);
@@ -107,4 +132,5 @@ TEST_F(ProcessInfoSnapshotMacTest, EffectiveVsRealUserIDTest) {
   EXPECT_EQ(proc_info.uid, geteuid());
 
   ASSERT_TRUE(base::KillProcess(process_handle, 0, true));
+  PCHECK(HANDLE_EINTR(close(fds[0])) == 0);
 }

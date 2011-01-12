@@ -4,16 +4,16 @@
 
 #include "chrome/browser/process_info_snapshot.h"
 
+#include <sys/sysctl.h>
+
 #include <sstream>
 
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/sys_info.h"
 #include "base/threading/thread.h"
-
-// Implementation for the Mac; calls '/bin/ps' for information when
-// |Sample()| is called.
 
 // Default constructor.
 ProcessInfoSnapshot::ProcessInfoSnapshot() { }
@@ -25,30 +25,117 @@ ProcessInfoSnapshot::~ProcessInfoSnapshot() {
 
 const size_t ProcessInfoSnapshot::kMaxPidListSize = 1000;
 
-// Capture the information by calling '/bin/ps'.
-// Note: we ignore the "tsiz" (text size) display option of ps because it's
-// always zero (tested on 10.5 and 10.6).
-bool ProcessInfoSnapshot::Sample(std::vector<base::ProcessId> pid_list) {
-  const char* kPsPathName = "/bin/ps";
-  Reset();
+static bool GetKInfoForProcessID(pid_t pid, kinfo_proc* kinfo) {
+  int mib[] = {CTL_KERN, KERN_PROC, KERN_PROC_PID, pid};
+  size_t len = sizeof(*kinfo);
+  if (sysctl(mib, arraysize(mib), kinfo, &len, NULL, 0) != 0) {
+    PLOG(ERROR) << "sysctl() for KERN_PROC";
+    return false;
+  }
 
-  // Nothing to do if no PIDs given.
-  if (pid_list.size() == 0)
-    return true;
-  if (pid_list.size() > kMaxPidListSize) {
-    // The spec says |pid_list| *must* not have more than this many entries.
+  if (len == 0) {
+    // If the process isn't found then sysctl returns a length of 0.
+    return false;
+  }
+
+  return true;
+}
+
+static bool GetExecutableNameForProcessID(
+    pid_t pid,
+    std::string* executable_name) {
+  if (!executable_name) {
     NOTREACHED();
     return false;
   }
 
+  static int s_arg_max = 0;
+  if (s_arg_max == 0) {
+    int mib[] = {CTL_KERN, KERN_ARGMAX};
+    size_t size = sizeof(s_arg_max);
+    if (sysctl(mib, arraysize(mib), &s_arg_max, &size, NULL, 0) != 0)
+      PLOG(ERROR) << "sysctl() for KERN_ARGMAX";
+  }
+
+  if (s_arg_max == 0)
+    return false;
+
+  int mib[] = {CTL_KERN, KERN_PROCARGS, pid};
+  size_t size = s_arg_max;
+  executable_name->resize(s_arg_max + 1);
+  if (sysctl(mib, arraysize(mib), &(*executable_name)[0],
+             &size, NULL, 0) != 0) {
+    // Don't log the error since it's normal for this to fail.
+    return false;
+  }
+
+  // KERN_PROCARGS returns multiple NULL terminated strings. Truncate
+  // executable_name to just the first string.
+  size_t end_pos = executable_name->find('\0');
+  if (end_pos == std::string::npos) {
+    return false;
+  }
+
+  executable_name->resize(end_pos);
+  return true;
+}
+
+// Converts a byte unit such as 'K' or 'M' into the scale for the unit.
+// The scale can then be used to calculate the number of bytes in a value.
+// The units are based on humanize_number(). See:
+// http://www.opensource.apple.com/source/libutil/libutil-21/humanize_number.c
+static bool ConvertByteUnitToScale(char unit, uint64_t* out_scale) {
+  int shift = 0;
+  switch (unit) {
+    case 'B':
+      shift = 0;
+      break;
+    case 'K':
+    case 'k':
+      shift = 1;
+      break;
+    case 'M':
+      shift = 2;
+      break;
+    case 'G':
+      shift = 3;
+      break;
+    case 'T':
+      shift = 4;
+      break;
+    case 'P':
+      shift = 5;
+      break;
+    case 'E':
+      shift = 6;
+      break;
+    default:
+      return false;
+  }
+
+  uint64_t scale = 1;
+  for (int i = 0; i < shift; i++)
+    scale *= 1024;
+  *out_scale = scale;
+
+  return true;
+}
+
+// Capture the information by calling '/bin/ps'.
+// Note: we ignore the "tsiz" (text size) display option of ps because it's
+// always zero (tested on 10.5 and 10.6).
+static bool GetProcessMemoryInfoUsingPS(
+    const std::vector<base::ProcessId>& pid_list,
+    std::map<int,ProcessInfoSnapshot::ProcInfoEntry>& proc_info_entries) {
+  const char kPsPathName[] = "/bin/ps";
   std::vector<std::string> argv;
   argv.push_back(kPsPathName);
-  // Get PID, PPID, (real) UID, effective UID, resident set size, virtual memory
-  // size, and command.
+
+  // Get resident set size, virtual memory size.
   argv.push_back("-o");
-  argv.push_back("pid=,ppid=,ruid=,uid=,rss=,vsz=,comm=");
+  argv.push_back("pid=,rss=,vsz=");
   // Only display the specified PIDs.
-  for (std::vector<base::ProcessId>::iterator it = pid_list.begin();
+  for (std::vector<base::ProcessId>::const_iterator it = pid_list.begin();
       it != pid_list.end(); ++it) {
     argv.push_back("-p");
     argv.push_back(base::Int64ToString(static_cast<int64>(*it)));
@@ -67,30 +154,25 @@ bool ProcessInfoSnapshot::Sample(std::vector<base::ProcessId> pid_list) {
 
   // Process lines until done.
   while (true) {
-    ProcInfoEntry proc_info;
-
     // The format is as specified above to ps (see ps(1)):
-    //   "-o pid=,ppid=,ruid=,uid=,rss=,vsz=,comm=".
+    //   "-o pid=,rss=,vsz=".
     // Try to read the PID; if we get it, we should be able to get the rest of
     // the line.
-    in >> proc_info.pid;
+    pid_t pid;
+    in >> pid;
     if (in.eof())
       break;
-    in >> proc_info.ppid;
-    in >> proc_info.uid;
-    in >> proc_info.euid;
+
+    ProcessInfoSnapshot::ProcInfoEntry proc_info = proc_info_entries[pid];
+    proc_info.pid = pid;
     in >> proc_info.rss;
     in >> proc_info.vsize;
+    proc_info.rss *= 1024;                // Convert from kilobytes to bytes.
+    proc_info.vsize *= 1024;
     in.ignore(1, ' ');                    // Eat the space.
     std::getline(in, proc_info.command);  // Get the rest of the line.
     if (!in.good()) {
       LOG(ERROR) << "Error parsing output from " << kPsPathName << ".";
-      return false;
-    }
-
-    // Make sure the new PID isn't already in our list.
-    if (proc_info_entries_.find(proc_info.pid) != proc_info_entries_.end()) {
-      LOG(ERROR) << "Duplicate PID in output from " << kPsPathName << ".";
       return false;
     }
 
@@ -100,10 +182,223 @@ bool ProcessInfoSnapshot::Sample(std::vector<base::ProcessId> pid_list) {
     }
 
     // Record the process information.
-    proc_info_entries_[proc_info.pid] = proc_info;
+    proc_info_entries[proc_info.pid] = proc_info;
   }
 
   return true;
+}
+
+static bool GetProcessMemoryInfoUsingTop(
+    std::map<int,ProcessInfoSnapshot::ProcInfoEntry>& proc_info_entries) {
+  const char kTopPathName[] = "/usr/bin/top";
+  std::vector<std::string> argv;
+  argv.push_back(kTopPathName);
+
+  // -stats tells top to print just the given fields as ordered.
+  argv.push_back("-stats");
+  argv.push_back("pid,"    // Process ID
+                 "rsize,"  // Resident memory
+                 "rshrd,"  // Resident shared memory
+                 "rprvt,"  // Resident private memory
+                 "vsize"); // Total virtual memory
+  // Run top in logging (non-interactive) mode.
+  argv.push_back("-l");
+  argv.push_back("1");
+  // Set the delay between updates to 0.
+  argv.push_back("-s");
+  argv.push_back("0");
+
+  std::string output;
+  CommandLine command_line(argv);
+  // Limit output read to a megabyte for safety.
+  if (!base::GetAppOutputRestricted(command_line, &output, 1024 * 1024)) {
+    LOG(ERROR) << "Failure running " << kTopPathName << " to acquire data.";
+    return false;
+  }
+
+  // Process lines until done. Lines should look something like this:
+  // PID    RSIZE  RSHRD  RPRVT  VSIZE
+  // 58539  1276K+ 336K+  740K+  2378M+
+  // 58485  1888K+ 592K+  1332K+ 2383M+
+  std::istringstream top_in(output, std::istringstream::in);
+  std::string line;
+  while (std::getline(top_in, line)) {
+    std::istringstream in(line, std::istringstream::in);
+
+    // Try to read the PID.
+    pid_t pid;
+    in >> pid;
+    if (in.fail())
+      continue;
+
+    // Make sure that caller is interested in this process.
+    if (proc_info_entries.find(pid) == proc_info_entries.end())
+      continue;
+
+    // Skip the - or + sign that top puts after the pid.
+    in.get();
+
+    uint64_t values[4];
+    size_t i;
+    for (i = 0; i < arraysize(values); i++) {
+      in >> values[i];
+      if (in.fail())
+        break;
+      std::string unit;
+      in >> unit;
+      if (in.fail())
+        break;
+
+      if (unit.size() == 0)
+        break;
+
+      uint64_t scale;
+      if (!ConvertByteUnitToScale(unit[0], &scale))
+        break;
+      values[i] *= scale;
+    }
+    if (i != arraysize(values))
+      continue;
+
+    ProcessInfoSnapshot::ProcInfoEntry proc_info = proc_info_entries[pid];
+    proc_info.rss = values[0];
+    proc_info.rshrd = values[1];
+    proc_info.rprvt = values[2];
+    proc_info.vsize = values[3];
+    // Record the process information.
+    proc_info_entries[proc_info.pid] = proc_info;
+  }
+
+  return true;
+}
+
+static bool GetProcessMemoryInfoUsingTop_10_5(
+    std::map<int,ProcessInfoSnapshot::ProcInfoEntry>& proc_info_entries) {
+  const char kTopPathName[] = "/usr/bin/top";
+  std::vector<std::string> argv;
+  argv.push_back(kTopPathName);
+
+  // -p tells top to print just the given fields as ordered.
+  argv.push_back("-p");
+  argv.push_back("^aaaaaaaaaaaaaaaaaaaa "  // Process ID (PID)
+                 "^jjjjjjjjjjjjjjjjjjjj "  // Resident memory (RSIZE)
+                 "^iiiiiiiiiiiiiiiiiiii "  // Resident shared memory (RSHRD)
+                 "^hhhhhhhhhhhhhhhhhhhh "  // Resident private memory (RPRVT)
+                 "^llllllllllllllllllll"); // Total virtual memory (VSIZE)
+  // Run top in logging (non-interactive) mode.
+  argv.push_back("-l");
+  argv.push_back("1");
+  // Set the delay between updates to 0.
+  argv.push_back("-s");
+  argv.push_back("0");
+
+  std::string output;
+  CommandLine command_line(argv);
+  // Limit output read to a megabyte for safety.
+  if (!base::GetAppOutputRestricted(command_line, &output, 1024 * 1024)) {
+    LOG(ERROR) << "Failure running " << kTopPathName << " to acquire data.";
+    return false;
+  }
+
+  // Process lines until done. Lines should look something like this:
+  // PID      RSIZE     RSHRD     RPRVT     VSIZE
+  // 16943    815104    262144    290816    18489344
+  // 16922    954368    720896    278528    18976768
+  std::istringstream top_in(output, std::istringstream::in);
+  std::string line;
+  while (std::getline(top_in, line)) {
+    std::istringstream in(line, std::istringstream::in);
+
+    // Try to read the PID.
+    pid_t pid;
+    in >> pid;
+    if (in.fail())
+      continue;
+
+    // Make sure that caller is interested in this process.
+    if (proc_info_entries.find(pid) == proc_info_entries.end())
+      continue;
+
+    uint64_t values[4];
+    size_t i;
+    for (i = 0; i < arraysize(values); i++) {
+      in >> values[i];
+      if (in.fail())
+        break;
+    }
+    if (i != arraysize(values))
+      continue;
+
+    ProcessInfoSnapshot::ProcInfoEntry proc_info = proc_info_entries[pid];
+    proc_info.rss = values[0];
+    proc_info.rshrd = values[1];
+    proc_info.rprvt = values[2];
+    proc_info.vsize = values[3];
+    // Record the process information.
+    proc_info_entries[proc_info.pid] = proc_info;
+  }
+
+  return true;
+}
+
+
+bool ProcessInfoSnapshot::Sample(std::vector<base::ProcessId> pid_list) {
+  Reset();
+
+  // Nothing to do if no PIDs given.
+  if (pid_list.size() == 0)
+    return true;
+  if (pid_list.size() > kMaxPidListSize) {
+    // The spec says |pid_list| *must* not have more than this many entries.
+    NOTREACHED();
+    return false;
+  }
+
+  // Get basic process info from KERN_PROC.
+  for (std::vector<base::ProcessId>::iterator it = pid_list.begin();
+       it != pid_list.end(); ++it) {
+    ProcInfoEntry proc_info;
+    proc_info.pid = *it;
+
+    kinfo_proc kinfo;
+    if (!GetKInfoForProcessID(*it, &kinfo))
+      return false;
+
+    proc_info.ppid = kinfo.kp_eproc.e_ppid;
+    proc_info.uid = kinfo.kp_eproc.e_pcred.p_ruid;
+    proc_info.euid = kinfo.kp_eproc.e_ucred.cr_uid;
+    // Note, p_comm is truncated to 16 characters.
+    proc_info.command = kinfo.kp_proc.p_comm;
+    proc_info_entries_[*it] = proc_info;
+  }
+
+  // Use KERN_PROCARGS to get the full executable name. This may fail if this
+  // process doesn't have privileges to inspect the target process.
+  for (std::vector<base::ProcessId>::iterator it = pid_list.begin();
+       it != pid_list.end(); ++it) {
+    std::string exectuable_name;
+    if (GetExecutableNameForProcessID(*it, &exectuable_name)) {
+      ProcInfoEntry proc_info = proc_info_entries_[*it];
+      proc_info.command = exectuable_name;
+    }
+  }
+
+  // Get memory information using top.
+  bool memory_info_success = false;
+  int32 major, minor, bugfix;
+  base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
+  if (major == 10 && minor == 5)
+    memory_info_success = GetProcessMemoryInfoUsingTop_10_5(proc_info_entries_);
+  else if ((major == 10 && minor >= 6) || major > 10)
+    memory_info_success = GetProcessMemoryInfoUsingTop(proc_info_entries_);
+
+  // If top didn't work then fall back to ps.
+  if (!memory_info_success) {
+    memory_info_success = GetProcessMemoryInfoUsingPS(pid_list,
+                                                      proc_info_entries_);
+  }
+
+  return memory_info_success;
 }
 
 // Clear all the stored information.
@@ -139,7 +434,7 @@ bool ProcessInfoSnapshot::GetCommittedKBytesOfPID(
     return false;
   }
 
-  usage->priv = proc_info.vsize;
+  usage->priv = proc_info.vsize / 1024;
   usage->mapped = 0;
   usage->image = 0;
   return true;
@@ -163,8 +458,8 @@ bool ProcessInfoSnapshot::GetWorkingSetKBytesOfPID(
     return false;
   }
 
-  ws_usage->priv = 0;
-  ws_usage->shareable = proc_info.rss;
-  ws_usage->shared = 0;
+  ws_usage->priv = proc_info.rprvt / 1024;
+  ws_usage->shareable = proc_info.rss / 1024;
+  ws_usage->shared = proc_info.rshrd / 1024;
   return true;
 }

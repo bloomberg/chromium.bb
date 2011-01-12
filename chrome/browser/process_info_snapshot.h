@@ -17,12 +17,7 @@
 // A class which captures process information at a given point in time when its
 // |Sample()| method is called. This information can then be probed by PID.
 // |Sample()| may take a while to complete, so if calling from the browser
-// process, only do so from the file thread. The current implementation, only on
-// Mac, pulls information from /bin/ps. /usr/bin/top provides much more
-// information about memory, but it has changed greatly from Mac OS 10.5.x to
-// 10.6.x, thereby raising future compatibility concerns. Moreover, the 10.6.x
-// version is less capable in terms of configuring output and its output is
-// harder to parse.
+// process, only do so from the file thread.
 // TODO(viettrungluu): This is currently only implemented and used on Mac, so
 // things are very Mac-specific. If this is ever implemented for other
 // platforms, we should subclass and add opaqueness (probably |ProcInfoEntry|
@@ -36,7 +31,7 @@ class ProcessInfoSnapshot {
   // |Sample()| below.
   static const size_t kMaxPidListSize;
 
-  // Capture a snapshot of process memory information (by running ps) for the
+  // Capture a snapshot of process memory information for the
   // given list of PIDs. Call only from the file thread.
   //   |pid_list| - list of |ProcessId|s on which to capture information; must
   //     have no more than |kMaxPidListSize| (above) entries,
@@ -55,9 +50,24 @@ class ProcessInfoSnapshot {
     base::ProcessId ppid;
     uid_t uid;
     uid_t euid;
-    size_t rss;
-    size_t vsize;
+    // Explicitly use uint64_t instead of size_t in case this code is running
+    // in a 32 bit process and the target process is 64 bit.
+    uint64_t rss;
+    uint64_t rshrd;
+    uint64_t rprvt;
+    uint64_t vsize;
     std::string command;
+
+    ProcInfoEntry()
+        : pid(0),
+          ppid(0),
+          uid(0),
+          euid(0),
+          rss(0),
+          rshrd(0),
+          rprvt(0),
+          vsize(0) {
+    }
   };
 
   // Get process information for a given PID.
@@ -85,9 +95,9 @@ class ProcessInfoSnapshot {
   // Fills a |WorkingSetKBytes| containing resident private and shared memory,
   // as per its definition (or as close as we can manage). In the current (Mac)
   // implementation, we map:
-  //                              0 --> ws_priv,
+  //                          rprvt --> ws_priv,
   //                            rss --> ws_shareable,
-  //                              0 --> ws_shared;
+  //                          rshrd --> ws_shared;
   //   in about:memory: res:private  =  ws_priv + ws_shareable - ws_shared,
   //                     res:shared  =  ws_shared / num_procs,
   //                      res:total  =  res:private + res:shared.
