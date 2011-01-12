@@ -191,13 +191,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary,
     return current_ime_properties_;
   }
 
-  virtual std::string GetKeyboardOverlayId(const std::string& input_method_id) {
-    if (EnsureLoadedAndStarted()) {
-      return chromeos::GetKeyboardOverlayId(input_method_id);
-    }
-    return "";
-  }
-
  private:
   // Starts input method processes based on the |defer_ime_startup_| flag and
   // input method configuration being updated. |section| is a section name of
@@ -685,9 +678,7 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
  public:
   InputMethodLibraryStubImpl()
       : previous_input_method_("", "", "", ""),
-        current_input_method_("", "", "", ""),
-        keyboard_overlay_map_(
-            CreateRealisticKeyboardOverlayMap()) {
+        current_input_method_("", "", "", "") {
   }
 
   ~InputMethodLibraryStubImpl() {}
@@ -745,16 +736,7 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
   virtual void SetDeferImeStartup(bool defer) {}
   virtual void SetEnableAutoImeShutdown(bool enable) {}
 
-  virtual std::string GetKeyboardOverlayId(const std::string& input_method_id) {
-    KeyboardOverlayMap::const_iterator iter =
-        keyboard_overlay_map_->find(input_method_id);
-    return (iter != keyboard_overlay_map_->end()) ?
-        iter->second : "";
-  }
-
  private:
-  typedef std::map<std::string, std::string> KeyboardOverlayMap;
-
   // Creates realistic input method descriptors that can be used for
   // testing Chrome OS version of chrome on regular Linux desktops.
   InputMethodDescriptors* CreateRealisticInputMethodDescriptors() {
@@ -883,83 +865,9 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
     return descriptions;
   }
 
-  std::map<std::string, std::string>* CreateRealisticKeyboardOverlayMap() {
-    KeyboardOverlayMap* keyboard_overlay_map =
-        new KeyboardOverlayMap;
-    (*keyboard_overlay_map)["xkb:nl::nld"] = "nl";
-    (*keyboard_overlay_map)["xkb:be::nld"] = "nl";
-    (*keyboard_overlay_map)["xkb:fr::fra"] = "fr";
-    (*keyboard_overlay_map)["xkb:be::fra"] = "fr";
-    (*keyboard_overlay_map)["xkb:ca::fra"] = "fr_CA";
-    (*keyboard_overlay_map)["xkb:ch:fr:fra"] = "fr";
-    (*keyboard_overlay_map)["xkb:de::ger"] = "de";
-    (*keyboard_overlay_map)["xkb:be::ger"] = "de";
-    (*keyboard_overlay_map)["xkb:ch::ger"] = "de";
-    (*keyboard_overlay_map)["mozc"] = "en_US";
-    (*keyboard_overlay_map)["mozc-jp"] = "ja";
-    (*keyboard_overlay_map)["mozc-dv"] = "en_US_dvorak";
-    (*keyboard_overlay_map)["xkb:jp::jpn"] = "ja";
-    (*keyboard_overlay_map)["xkb:ru::rus"] = "ru";
-    (*keyboard_overlay_map)["xkb:ru:phonetic:rus"] = "ru";
-    (*keyboard_overlay_map)["m17n:th:kesmanee"] = "th";
-    (*keyboard_overlay_map)["m17n:th:pattachote"] = "th";
-    (*keyboard_overlay_map)["m17n:th:tis820"] = "th";
-    (*keyboard_overlay_map)["chewing"] = "zh_TW";
-    (*keyboard_overlay_map)["m17n:zh:cangjie"] = "zh_TW";
-    (*keyboard_overlay_map)["m17n:zh:quick"] = "zh_TW";
-    (*keyboard_overlay_map)["m17n:vi:tcvn"] = "vi";
-    (*keyboard_overlay_map)["m17n:vi:telex"] = "vi";
-    (*keyboard_overlay_map)["m17n:vi:viqr"] = "vi";
-    (*keyboard_overlay_map)["m17n:vi:vni"] = "vi";
-    (*keyboard_overlay_map)["xkb:us::eng"] = "en_US";
-    (*keyboard_overlay_map)["xkb:us:intl:eng"] = "en_US";
-    (*keyboard_overlay_map)["xkb:us:altgr-intl:eng"] = "en_US";
-    (*keyboard_overlay_map)["xkb:us:dvorak:eng"] =
-        "en_US_dvorak";
-    (*keyboard_overlay_map)["xkb:us:colemak:eng"] =
-        "en_US";
-    (*keyboard_overlay_map)["hangul"] = "ko";
-    (*keyboard_overlay_map)["pinyin"] = "zh_CN";
-    (*keyboard_overlay_map)["m17n:ar:kbd"] = "ar";
-    (*keyboard_overlay_map)["m17n:hi:itrans"] = "hi";
-    (*keyboard_overlay_map)["m17n:fa:isiri"] = "ar";
-    (*keyboard_overlay_map)["xkb:br::por"] = "pt_BR";
-    (*keyboard_overlay_map)["xkb:bg::bul"] = "bg";
-    (*keyboard_overlay_map)["xkb:bg:phonetic:bul"] = "bg";
-    (*keyboard_overlay_map)["xkb:ca:eng:eng"] = "ca";
-    (*keyboard_overlay_map)["xkb:cz::cze"] = "cs";
-    (*keyboard_overlay_map)["xkb:ee::est"] = "et";
-    (*keyboard_overlay_map)["xkb:es::spa"] = "es";
-    (*keyboard_overlay_map)["xkb:es:cat:cat"] = "ca";
-    (*keyboard_overlay_map)["xkb:dk::dan"] = "da";
-    (*keyboard_overlay_map)["xkb:gr::gre"] = "el";
-    (*keyboard_overlay_map)["xkb:il::heb"] = "iw";
-    (*keyboard_overlay_map)["xkb:kr:kr104:kor"] = "ko";
-    (*keyboard_overlay_map)["xkb:latam::spa"] = "es_419";
-    (*keyboard_overlay_map)["xkb:lt::lit"] = "lt";
-    (*keyboard_overlay_map)["xkb:lv:apostrophe:lav"] = "lv";
-    (*keyboard_overlay_map)["xkb:hr::scr"] = "hr";
-    (*keyboard_overlay_map)["xkb:gb:extd:eng"] = "en_GB";
-    (*keyboard_overlay_map)["xkb:fi::fin"] = "fi";
-    (*keyboard_overlay_map)["xkb:hu::hun"] = "hu";
-    (*keyboard_overlay_map)["xkb:it::ita"] = "it";
-    (*keyboard_overlay_map)["xkb:no::nob"] = "no";
-    (*keyboard_overlay_map)["xkb:pl::pol"] = "pl";
-    (*keyboard_overlay_map)["xkb:pt::por"] = "pt_PT";
-    (*keyboard_overlay_map)["xkb:ro::rum"] = "ro";
-    (*keyboard_overlay_map)["xkb:se::swe"] = "sv";
-    (*keyboard_overlay_map)["xkb:sk::slo"] = "sk";
-    (*keyboard_overlay_map)["xkb:si::slv"] = "sl";
-    (*keyboard_overlay_map)["xkb:rs::srp"] = "sr";
-    (*keyboard_overlay_map)["xkb:tr::tur"] = "tr";
-    (*keyboard_overlay_map)["xkb:ua::ukr"] = "uk";
-    return keyboard_overlay_map;
-  }
-
   InputMethodDescriptor previous_input_method_;
   InputMethodDescriptor current_input_method_;
   ImePropertyList current_ime_properties_;
-  scoped_ptr<KeyboardOverlayMap> keyboard_overlay_map_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodLibraryStubImpl);
 };

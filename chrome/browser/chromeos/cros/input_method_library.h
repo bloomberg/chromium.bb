@@ -101,11 +101,6 @@ class InputMethodLibrary {
                             const std::string& config_name,
                             const ImeConfigValue& value) = 0;
 
-  // Returns the keyboard overlay ID corresponding to |input_method_id|.
-  // Returns an empty string if there is no corresponding keyboard overlay ID.
-  virtual std::string GetKeyboardOverlayId(
-      const std::string& input_method_id) = 0;
-
   // Sets the IME state to enabled, and launches its processes if needed.
   virtual void StartInputMethodProcesses() = 0;
 

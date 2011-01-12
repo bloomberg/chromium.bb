@@ -269,12 +269,12 @@ void KeyboardOverlayHandler::RegisterMessages() {
 }
 
 void KeyboardOverlayHandler::GetKeyboardOverlayId(const ListValue* args) {
-  chromeos::InputMethodLibrary* library =
+  const chromeos::InputMethodLibrary* library =
       chromeos::CrosLibrary::Get()->GetInputMethodLibrary();
   const chromeos::InputMethodDescriptor& descriptor =
       library->current_input_method();
   const std::string keyboard_overlay_id =
-      library->GetKeyboardOverlayId(descriptor.id);
+      chromeos::input_method::GetKeyboardOverlayId(descriptor.id);
   StringValue param(keyboard_overlay_id);
   dom_ui_->CallJavascriptFunction(L"initKeyboardOverlayId", param);
 }
