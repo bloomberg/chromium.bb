@@ -237,6 +237,8 @@ HTTPTestServer::HTTPTestServer(int port, const std::wstring& address,
 }
 
 HTTPTestServer::~HTTPTestServer() {
+  LOG(INFO) << __FUNCTION__;
+  server_ = NULL;
 }
 
 std::list<scoped_refptr<ConfigurableConnection>>::iterator
