@@ -431,7 +431,6 @@ TEST_F(SafeBrowsingDatabaseTest, ListNameForBrowseAndDownload) {
   InsertAddChunkHostPrefixUrl(&chunk, 1, "www.evil.com/",
                               "www.evil.com/malware.html");
   chunks.push_back(chunk);
-
   std::vector<SBListChunkRanges> lists;
   EXPECT_TRUE(database_->UpdateStarted(&lists));
   database_->InsertChunks(safe_browsing_util::kMalwareList, chunks);
@@ -1288,5 +1287,137 @@ TEST_F(SafeBrowsingDatabaseTest, ContainsDownloadUrl) {
   EXPECT_FALSE(database_->ContainsDownloadUrl(GURL("http://www.randomevil.com"),
                                               &prefix_hits));
   EXPECT_EQ(prefix_hits.size(), 0U);
+  database_.reset();
+}
+
+// Test to make sure we could insert chunk list that
+// contains entries for the same host.
+TEST_F(SafeBrowsingDatabaseTest, SameHostEntriesOkay) {
+  SBChunk chunk;
+
+  // Add a malware add chunk with two entries of the same host.
+  InsertAddChunkHostPrefixUrl(&chunk, 1, "www.evil.com/",
+                              "www.evil.com/malware1.html");
+  InsertAddChunkHostPrefixUrl(&chunk, 1, "www.evil.com/",
+                              "www.evil.com/malware2.html");
+  SBChunkList chunks;
+  chunks.push_back(chunk);
+
+  // Insert the testing chunks into database.
+  std::vector<SBListChunkRanges> lists;
+  EXPECT_TRUE(database_->UpdateStarted(&lists));
+  database_->InsertChunks(safe_browsing_util::kMalwareList, chunks);
+  database_->UpdateFinished(true);
+
+  GetListsInfo(&lists);
+  EXPECT_EQ(std::string(safe_browsing_util::kMalwareList), lists[0].name);
+  EXPECT_EQ("1", lists[0].adds);
+  EXPECT_TRUE(lists[0].subs.empty());
+
+  // Add a phishing add chunk with two entries of the same host.
+  chunk.hosts.clear();
+  InsertAddChunkHostPrefixUrl(&chunk, 47, "www.evil.com/",
+                              "www.evil.com/phishing1.html");
+  InsertAddChunkHostPrefixUrl(&chunk, 47, "www.evil.com/",
+                              "www.evil.com/phishing2.html");
+  chunks.clear();
+  chunks.push_back(chunk);
+
+  EXPECT_TRUE(database_->UpdateStarted(&lists));
+  database_->InsertChunks(safe_browsing_util::kPhishingList, chunks);
+  database_->UpdateFinished(true);
+
+  GetListsInfo(&lists);
+  EXPECT_EQ(std::string(safe_browsing_util::kMalwareList), lists[0].name);
+  EXPECT_EQ("1", lists[0].adds);
+  EXPECT_EQ(std::string(safe_browsing_util::kPhishingList), lists[1].name);
+  EXPECT_EQ("47", lists[1].adds);
+
+  const Time now = Time::Now();
+  std::vector<SBPrefix> prefixes;
+  std::vector<SBFullHashResult> full_hashes;
+  std::vector<SBPrefix> prefix_hits;
+  std::string matching_list;
+  std::string listname;
+
+  EXPECT_TRUE(database_->ContainsBrowseUrl(
+      GURL("http://www.evil.com/malware1.html"),
+      &listname, &prefixes, &full_hashes, now));
+  EXPECT_TRUE(database_->ContainsBrowseUrl(
+      GURL("http://www.evil.com/malware2.html"),
+      &listname, &prefixes, &full_hashes, now));
+  EXPECT_TRUE(database_->ContainsBrowseUrl(
+      GURL("http://www.evil.com/phishing1.html"),
+      &listname, &prefixes, &full_hashes, now));
+  EXPECT_TRUE(database_->ContainsBrowseUrl(
+      GURL("http://www.evil.com/phishing2.html"),
+      &listname, &prefixes, &full_hashes, now));
+
+  // Test removing a single prefix from the add chunk.
+  // Remove the prefix that added first.
+  chunk.hosts.clear();
+  InsertSubChunkHostPrefixUrl(&chunk, 4, 1, "www.evil.com/",
+                              "www.evil.com/malware1.html");
+  chunks.clear();
+  chunks.push_back(chunk);
+  EXPECT_TRUE(database_->UpdateStarted(&lists));
+  database_->InsertChunks(safe_browsing_util::kMalwareList, chunks);
+  database_->UpdateFinished(true);
+
+  // Remove the prefix that added last.
+  chunk.hosts.clear();
+  InsertSubChunkHostPrefixUrl(&chunk, 5, 47, "www.evil.com/",
+                              "www.evil.com/phishing2.html");
+  chunks.clear();
+  chunks.push_back(chunk);
+  EXPECT_TRUE(database_->UpdateStarted(&lists));
+  database_->InsertChunks(safe_browsing_util::kPhishingList, chunks);
+  database_->UpdateFinished(true);
+
+  // Verify that the database contains urls expected.
+  EXPECT_FALSE(database_->ContainsBrowseUrl(
+      GURL("http://www.evil.com/malware1.html"),
+      &listname, &prefixes, &full_hashes, now));
+  EXPECT_TRUE(database_->ContainsBrowseUrl(
+      GURL("http://www.evil.com/malware2.html"),
+      &listname, &prefixes, &full_hashes, now));
+  EXPECT_TRUE(database_->ContainsBrowseUrl(
+      GURL("http://www.evil.com/phishing1.html"),
+      &listname, &prefixes, &full_hashes, now));
+  EXPECT_FALSE(database_->ContainsBrowseUrl(
+      GURL("http://www.evil.com/phishing2.html"),
+      &listname, &prefixes, &full_hashes, now));
+}
+
+TEST_F(SafeBrowsingDatabaseTest, BinHashEntries) {
+  database_.reset();
+  MessageLoop loop(MessageLoop::TYPE_DEFAULT);
+  SafeBrowsingStoreFile* browse_store = new SafeBrowsingStoreFile();
+  SafeBrowsingStoreFile* download_store = new SafeBrowsingStoreFile();
+  database_.reset(new SafeBrowsingDatabaseNew(browse_store, download_store));
+  database_->Init(database_filename_);
+
+  SBChunkList chunks;
+  SBChunk chunk;
+  // Insert one host.
+  InsertAddChunkHostPrefixValue(&chunk, 1, 0, 0x31313131);
+  // Insert a second host, which has the same host prefix as the first one.
+  InsertAddChunkHostPrefixValue(&chunk, 1, 0, 0x32323232);
+  chunks.push_back(chunk);
+
+  // Insert the testing chunks into database.
+  std::vector<SBListChunkRanges> lists;
+  EXPECT_TRUE(database_->UpdateStarted(&lists));
+  database_->InsertChunks(safe_browsing_util::kBinHashList, chunks);
+  database_->UpdateFinished(true);
+
+  GetListsInfo(&lists);
+  ASSERT_EQ(4U, lists.size());
+  EXPECT_EQ(std::string(safe_browsing_util::kBinHashList), lists[3].name);
+  EXPECT_EQ("1", lists[3].adds);
+  EXPECT_TRUE(lists[3].subs.empty());
+
+  // TODO(lzheng): Query database and verifies the prefixes once that API
+  // database is available in database.
   database_.reset();
 }

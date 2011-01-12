@@ -75,7 +75,8 @@ class SafeBrowsingProtocolParser {
   // Parse the response from a chunk URL request and returns the hosts/prefixes
   // for adds and subs in "chunks".  Returns 'true' on successful parsing,
   // 'false' otherwise. Any result should be ignored when a parse has failed.
-  bool ParseChunk(const char* chunk_data,
+  bool ParseChunk(const std::string& list_name,
+                  const char* chunk_data,
                   int chunk_len,
                   const std::string& key,
                   const std::string& mac,
@@ -102,22 +103,25 @@ class SafeBrowsingProtocolParser {
                    std::string* wrapped_key);
 
  private:
-  bool ParseAddChunk(const char* data,
+  bool ParseAddChunk(const std::string& list_name,
+                     const char* data,
                      int data_len,
                      int hash_len,
                      std::deque<SBChunkHost>* hosts);
-  bool ParseSubChunk(const char* data,
+  bool ParseSubChunk(const std::string& list_name,
+                     const char* data,
                      int data_len,
                      int hash_len,
                      std::deque<SBChunkHost>* hosts);
 
   // Helper functions used by ParseAddChunk and ParseSubChunk.
-  static void ReadHostAndPrefixCount(
-      const char** data, int* remaining, SBPrefix* host, int* count);
+  static void ReadHostAndPrefixCount(const char** data,
+                                     int* remaining,
+                                     SBPrefix* host,
+                                     int* count);
   static int ReadChunkId(const char** data, int* remaining);
   static bool ReadPrefixes(
-      const char** data, int* remaining, SBEntry* entry, int count,
-      int index_start);
+      const char** data, int* remaining, SBEntry* entry, int count);
 
   // The name of the current list
   std::string list_name_;

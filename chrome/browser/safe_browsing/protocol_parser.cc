@@ -5,6 +5,7 @@
 // Parse the data returned from the SafeBrowsing v2.1 protocol response.
 
 #include "chrome/browser/safe_browsing/protocol_parser.h"
+#include "chrome/browser/safe_browsing/safe_browsing_util.h"
 
 #include "build/build_config.h"
 
@@ -245,7 +246,8 @@ bool SafeBrowsingProtocolParser::ParseUpdate(
   return true;
 }
 
-bool SafeBrowsingProtocolParser::ParseChunk(const char* data,
+bool SafeBrowsingProtocolParser::ParseChunk(const std::string& list_name,
+                                            const char* data,
                                             int length,
                                             const std::string& key,
                                             const std::string& mac,
@@ -299,12 +301,12 @@ bool SafeBrowsingProtocolParser::ParseChunk(const char* data,
 
     if (cmd_parts[0] == "a") {
       chunks->back().is_add = true;
-      if (!ParseAddChunk(chunk_data, chunk_len, hash_len,
+      if (!ParseAddChunk(list_name, chunk_data, chunk_len, hash_len,
                          &chunks->back().hosts))
         return false;  // Parse error.
     } else if (cmd_parts[0] == "s") {
       chunks->back().is_add = false;
-      if (!ParseSubChunk(chunk_data, chunk_len, hash_len,
+      if (!ParseSubChunk(list_name, chunk_data, chunk_len, hash_len,
                          &chunks->back().hosts))
         return false;  // Parse error.
     } else {
@@ -322,84 +324,87 @@ bool SafeBrowsingProtocolParser::ParseChunk(const char* data,
   return true;
 }
 
-bool SafeBrowsingProtocolParser::ParseAddChunk(
-    const char* data, int data_len, int hash_len,
-    std::deque<SBChunkHost>* hosts) {
-
-  int remaining = data_len;
+bool SafeBrowsingProtocolParser::ParseAddChunk(const std::string& list_name,
+                                               const char* data,
+                                               int data_len,
+                                               int hash_len,
+                                               std::deque<SBChunkHost>* hosts) {
   const char* chunk_data = data;
-  const int min_size = sizeof(SBPrefix) + 1;
+  int remaining = data_len;
+  int prefix_count;
+  SBEntry::Type type = hash_len == sizeof(SBPrefix) ?
+      SBEntry::ADD_PREFIX : SBEntry::ADD_FULL_HASH;
 
-  while (remaining >= min_size) {
+  if (list_name == safe_browsing_util::kBinHashList) {
+    // kBinHashList only contains prefixes, no HOSTKEY and COUNT.
+    DCHECK_EQ(0, remaining % hash_len);
+    prefix_count = remaining / hash_len;
+    SBChunkHost chunk_host;
+    chunk_host.host = 0;
+    chunk_host.entry = SBEntry::Create(type, prefix_count);
+    hosts->push_back(chunk_host);
+    if (!ReadPrefixes(&chunk_data, &remaining, chunk_host.entry, prefix_count))
+      return false;
+  } else {
     SBPrefix host;
-    int prefix_count;
-    ReadHostAndPrefixCount(&chunk_data, &remaining, &host, &prefix_count);
-    SBEntry::Type type = hash_len == sizeof(SBPrefix) ?
-        SBEntry::ADD_PREFIX : SBEntry::ADD_FULL_HASH;
-    SBEntry* entry;
-    int index_start = 0;
-
-    // If a host has more than 255 prefixes, then subsequent entries are used.
-    // Check if this is the case, and if so put them in one SBEntry since the
-    // database code assumes that all prefixes from the same host and chunk are
-    // in one SBEntry.
-    if (!hosts->empty() && hosts->back().host == host &&
-        hosts->back().entry->HashLen() == hash_len) {
-      // Reuse the SBChunkHost, but need to create a new SBEntry since we have
-      // more prefixes.
-      index_start = hosts->back().entry->prefix_count();
-      entry = hosts->back().entry->Enlarge(prefix_count);
-      hosts->back().entry = entry;
-    } else {
-      entry = SBEntry::Create(type, prefix_count);
+    const int min_size = sizeof(SBPrefix) + 1;
+    while (remaining >= min_size) {
+      ReadHostAndPrefixCount(&chunk_data, &remaining, &host, &prefix_count);
       SBChunkHost chunk_host;
       chunk_host.host = host;
-      chunk_host.entry = entry;
+      chunk_host.entry = SBEntry::Create(type, prefix_count);
       hosts->push_back(chunk_host);
+      if (!ReadPrefixes(&chunk_data, &remaining, chunk_host.entry,
+                        prefix_count))
+        return false;
     }
-
-    if (!ReadPrefixes(&chunk_data, &remaining, entry, prefix_count,
-                      index_start))
-      return false;
   }
-
   return remaining == 0;
 }
 
-bool SafeBrowsingProtocolParser::ParseSubChunk(
-    const char* data, int data_len, int hash_len,
-    std::deque<SBChunkHost>* hosts) {
-
+bool SafeBrowsingProtocolParser::ParseSubChunk(const std::string& list_name,
+                                               const char* data,
+                                               int data_len,
+                                               int hash_len,
+                                               std::deque<SBChunkHost>* hosts) {
   int remaining = data_len;
   const char* chunk_data = data;
-  const int min_size = 2 * sizeof(SBPrefix) + 1;
+  int prefix_count;
+  SBEntry::Type type = hash_len == sizeof(SBPrefix) ?
+      SBEntry::SUB_PREFIX : SBEntry::SUB_FULL_HASH;
 
-  while (remaining >= min_size) {
-    SBPrefix host;
-    int prefix_count;
-    ReadHostAndPrefixCount(&chunk_data, &remaining, &host, &prefix_count);
-    SBEntry::Type type = hash_len == sizeof(SBPrefix) ?
-        SBEntry::SUB_PREFIX : SBEntry::SUB_FULL_HASH;
-    SBEntry* entry = SBEntry::Create(type, prefix_count);
-
+  if (list_name == safe_browsing_util::kBinHashList) {
     SBChunkHost chunk_host;
-    chunk_host.host = host;
-    chunk_host.entry = entry;
-    hosts->push_back(chunk_host);
-
-    if (prefix_count == 0) {
-      // There is only an add chunk number (no prefixes).
-      entry->set_chunk_id(ReadChunkId(&chunk_data, &remaining));
-      continue;
-    }
-
-    if (!ReadPrefixes(&chunk_data, &remaining, entry, prefix_count, 0))
+    // Set host to 0 and it won't be used for kBinHashList.
+    chunk_host.host = 0;
+    // kBinHashList only contains (add_chunk_number, prefix) pairs, no HOSTKEY
+    // and COUNT. |add_chunk_number| is int32.
+    prefix_count = remaining / (sizeof(int32) + hash_len);
+    chunk_host.entry = SBEntry::Create(type, prefix_count);
+    if (!ReadPrefixes(&chunk_data, &remaining, chunk_host.entry, prefix_count))
       return false;
+    hosts->push_back(chunk_host);
+  } else {
+    SBPrefix host;
+    const int min_size = 2 * sizeof(SBPrefix) + 1;
+    while (remaining >= min_size) {
+      ReadHostAndPrefixCount(&chunk_data, &remaining, &host, &prefix_count);
+      SBChunkHost chunk_host;
+      chunk_host.host = host;
+      chunk_host.entry = SBEntry::Create(type, prefix_count);
+      hosts->push_back(chunk_host);
+      if (prefix_count == 0) {
+        // There is only an add chunk number (no prefixes).
+        chunk_host.entry->set_chunk_id(ReadChunkId(&chunk_data, &remaining));
+        continue;
+      }
+      if (!ReadPrefixes(&chunk_data, &remaining, chunk_host.entry,
+                        prefix_count))
+        return false;
+    }
   }
-
   return remaining == 0;
 }
-
 
 void SafeBrowsingProtocolParser::ReadHostAndPrefixCount(
     const char** data, int* remaining, SBPrefix* host, int* count) {
@@ -424,22 +429,19 @@ int SafeBrowsingProtocolParser::ReadChunkId(
 }
 
 bool SafeBrowsingProtocolParser::ReadPrefixes(
-    const char** data, int* remaining, SBEntry* entry, int count,
-    int index_start) {
+    const char** data, int* remaining, SBEntry* entry, int count) {
   int hash_len = entry->HashLen();
   for (int i = 0; i < count; ++i) {
     if (entry->IsSub()) {
-      entry->SetChunkIdAtPrefix(index_start + i, ReadChunkId(data, remaining));
+      entry->SetChunkIdAtPrefix(i, ReadChunkId(data, remaining));
       if (*remaining <= 0)
         return false;
     }
 
     if (entry->IsPrefix()) {
-      entry->SetPrefixAt(index_start + i,
-                         *reinterpret_cast<const SBPrefix*>(*data));
+      entry->SetPrefixAt(i, *reinterpret_cast<const SBPrefix*>(*data));
     } else {
-      entry->SetFullHashAt(index_start + i,
-                           *reinterpret_cast<const SBFullHash*>(*data));
+      entry->SetFullHashAt(i, *reinterpret_cast<const SBFullHash*>(*data));
     }
     *data += hash_len;
     *remaining -= hash_len;

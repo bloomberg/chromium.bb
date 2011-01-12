@@ -6,8 +6,8 @@
 
 #include "base/string_util.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
+#include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
 
 // Test parsing one add chunk.
 TEST(SafeBrowsingProtocolParsingTest, TestAddChunk) {
@@ -18,14 +18,16 @@ TEST(SafeBrowsingProtocolParsingTest, TestAddChunk) {
   SafeBrowsingProtocolParser parser;
   bool re_key = false;
   SBChunkList chunks;
-  bool result = parser.ParseChunk(add_chunk.data(),
-                                  static_cast<int>(add_chunk.length()),
-                                  "", "",  &re_key, &chunks);
+  bool result = parser.ParseChunk(
+      safe_browsing_util::kMalwareList,
+      add_chunk.data(),
+      static_cast<int>(add_chunk.length()),
+      "", "",  &re_key, &chunks);
   EXPECT_TRUE(result);
   EXPECT_FALSE(re_key);
-  EXPECT_EQ(chunks.size(), static_cast<size_t>(1));
+  EXPECT_EQ(chunks.size(), 1U);
   EXPECT_EQ(chunks[0].chunk_number, 1);
-  EXPECT_EQ(chunks[0].hosts.size(), static_cast<size_t>(3));
+  EXPECT_EQ(chunks[0].hosts.size(), 3U);
 
   EXPECT_EQ(chunks[0].hosts[0].host, 0x61616161);
   SBEntry* entry = chunks[0].hosts[0].entry;
@@ -69,14 +71,16 @@ TEST(SafeBrowsingProtocolParsingTest, TestAddFullChunk) {
   SafeBrowsingProtocolParser parser;
   bool re_key = false;
   SBChunkList chunks;
-  bool result = parser.ParseChunk(add_chunk.data(),
-                                  static_cast<int>(add_chunk.length()),
-                                  "", "", &re_key, &chunks);
+  bool result = parser.ParseChunk(
+      safe_browsing_util::kMalwareList,
+      add_chunk.data(),
+      static_cast<int>(add_chunk.length()),
+      "", "", &re_key, &chunks);
   EXPECT_TRUE(result);
   EXPECT_FALSE(re_key);
-  EXPECT_EQ(chunks.size(), static_cast<size_t>(1));
+  EXPECT_EQ(chunks.size(), 1U);
   EXPECT_EQ(chunks[0].chunk_number, 1);
-  EXPECT_EQ(chunks[0].hosts.size(), static_cast<size_t>(1));
+  EXPECT_EQ(chunks[0].hosts.size(), 1U);
 
   EXPECT_EQ(chunks[0].hosts[0].host, 0x61616161);
   SBEntry* entry = chunks[0].hosts[0].entry;
@@ -98,14 +102,16 @@ TEST(SafeBrowsingProtocolParsingTest, TestAddChunks) {
   SafeBrowsingProtocolParser parser;
   bool re_key = false;
   SBChunkList chunks;
-  bool result = parser.ParseChunk(add_chunk.data(),
-                                  static_cast<int>(add_chunk.length()),
-                                  "", "", &re_key, &chunks);
+  bool result = parser.ParseChunk(
+      safe_browsing_util::kMalwareList,
+      add_chunk.data(),
+      static_cast<int>(add_chunk.length()),
+      "", "", &re_key, &chunks);
   EXPECT_TRUE(result);
   EXPECT_FALSE(re_key);
-  EXPECT_EQ(chunks.size(), static_cast<size_t>(2));
+  EXPECT_EQ(chunks.size(), 2U);
   EXPECT_EQ(chunks[0].chunk_number, 1);
-  EXPECT_EQ(chunks[0].hosts.size(), static_cast<size_t>(3));
+  EXPECT_EQ(chunks[0].hosts.size(), 3U);
 
   EXPECT_EQ(chunks[0].hosts[0].host, 0x61616161);
   SBEntry* entry = chunks[0].hosts[0].entry;
@@ -132,7 +138,7 @@ TEST(SafeBrowsingProtocolParsingTest, TestAddChunks) {
 
 
   EXPECT_EQ(chunks[1].chunk_number, 2);
-  EXPECT_EQ(chunks[1].hosts.size(), static_cast<size_t>(1));
+  EXPECT_EQ(chunks[1].hosts.size(), 1U);
 
   EXPECT_EQ(chunks[1].hosts[0].host, 0x35353535);
   entry = chunks[1].hosts[0].entry;
@@ -158,31 +164,74 @@ TEST(SafeBrowsingProtocolParsingTest, TestAddBigChunk) {
   SafeBrowsingProtocolParser parser;
   bool re_key = false;
   SBChunkList chunks;
-  bool result = parser.ParseChunk(add_chunk.data(),
-                                  static_cast<int>(add_chunk.length()),
-                                  "", "", &re_key, &chunks);
+  bool result = parser.ParseChunk(
+      safe_browsing_util::kMalwareList,
+      add_chunk.data(),
+      static_cast<int>(add_chunk.length()),
+      "", "", &re_key, &chunks);
   EXPECT_TRUE(result);
   EXPECT_FALSE(re_key);
-  EXPECT_EQ(chunks.size(), static_cast<size_t>(1));
+  EXPECT_EQ(chunks.size(), 1U);
   EXPECT_EQ(chunks[0].chunk_number, 1);
 
-  EXPECT_EQ(chunks[0].hosts.size(), static_cast<size_t>(1));
+  EXPECT_EQ(chunks[0].hosts.size(), 2U);
 
-  const SBChunkHost& host = chunks[0].hosts[0];
-  EXPECT_EQ(host.host, 0x61616161);
-  EXPECT_EQ(host.entry->prefix_count(), 260);
+  const SBChunkHost& host0 = chunks[0].hosts[0];
+  EXPECT_EQ(host0.host, 0x61616161);
+  EXPECT_EQ(host0.entry->prefix_count(), 255);
+
+  const SBChunkHost& host1 = chunks[0].hosts[1];
+  EXPECT_EQ(host1.host, 0x61616161);
+  EXPECT_EQ(host1.entry->prefix_count(), 5);
 }
 
-// Test to make sure we could deal with truncated chunk.
-TEST(SafeBrowsingProtocolParsingTest, TestTruncatedChunk) {
+// Test to make sure we could deal with truncated bin hash chunk.
+TEST(SafeBrowsingProtocolParsingTest, TestTruncatedBinHashChunk) {
+  // This chunk delares there are 4 prefixes but actually only contains 2.
+  const char add_chunk[] = "a:1:4:16\n11112222";
+  SafeBrowsingProtocolParser parser;
+  bool re_key = false;
+  SBChunkList chunks;
+  bool result = parser.ParseChunk(add_chunk,
+                                  safe_browsing_util::kBinHashList,
+                                  static_cast<int>(sizeof(add_chunk)),
+                                  "", "", &re_key, &chunks);
+  EXPECT_FALSE(result);
+  EXPECT_FALSE(re_key);
+  EXPECT_EQ(chunks.size(), 0U);
+}
+
+// Test to make sure we could deal with truncated malwarelist chunk.
+TEST(SafeBrowsingProtocolParsingTest, TestTruncatedUrlHashChunk) {
   // This chunk delares there are 4 prefixes but actually only contains 2.
   const char add_chunk[] = "a:1:4:21\naaaa\00411112222";
   SafeBrowsingProtocolParser parser;
   bool re_key = false;
   SBChunkList chunks;
+
+  // For safe_browsing_util::kMalwareList.
   bool result = parser.ParseChunk(add_chunk,
+                                  safe_browsing_util::kMalwareList,
                                   static_cast<int>(sizeof(add_chunk)),
                                   "", "", &re_key, &chunks);
+  EXPECT_FALSE(result);
+  EXPECT_FALSE(re_key);
+  EXPECT_EQ(chunks.size(), 0U);
+
+  // For safe_browsing_util::kPhishingList.
+  result = parser.ParseChunk(add_chunk,
+                             safe_browsing_util::kPhishingList,
+                             static_cast<int>(sizeof(add_chunk)),
+                             "", "", &re_key, &chunks);
+  EXPECT_FALSE(result);
+  EXPECT_FALSE(re_key);
+  EXPECT_EQ(chunks.size(), 0U);
+
+  // For safe_browsing_util::kBinUrlList.
+  result = parser.ParseChunk(add_chunk,
+                             safe_browsing_util::kBinUrlList,
+                             static_cast<int>(sizeof(add_chunk)),
+                             "", "", &re_key, &chunks);
   EXPECT_FALSE(result);
   EXPECT_FALSE(re_key);
   EXPECT_EQ(chunks.size(), 0U);
@@ -199,14 +248,16 @@ TEST(SafeBrowsingProtocolParsingTest, TestSubChunk) {
   SafeBrowsingProtocolParser parser;
   bool re_key = false;
   SBChunkList chunks;
-  bool result = parser.ParseChunk(sub_chunk.data(),
-                                  static_cast<int>(sub_chunk.length()),
-                                  "", "", &re_key, &chunks);
+  bool result = parser.ParseChunk(
+      safe_browsing_util::kMalwareList,
+      sub_chunk.data(),
+      static_cast<int>(sub_chunk.length()),
+      "", "", &re_key, &chunks);
   EXPECT_TRUE(result);
   EXPECT_FALSE(re_key);
-  EXPECT_EQ(chunks.size(), static_cast<size_t>(1));
+  EXPECT_EQ(chunks.size(), 1U);
   EXPECT_EQ(chunks[0].chunk_number, 9);
-  EXPECT_EQ(chunks[0].hosts.size(), static_cast<size_t>(3));
+  EXPECT_EQ(chunks[0].hosts.size(), 3U);
 
   EXPECT_EQ(chunks[0].hosts[0].host, 0x61616161);
   SBEntry* entry = chunks[0].hosts[0].entry;
@@ -258,14 +309,16 @@ TEST(SafeBrowsingProtocolParsingTest, TestSubFullChunk) {
   SafeBrowsingProtocolParser parser;
   bool re_key = false;
   SBChunkList chunks;
-  bool result = parser.ParseChunk(sub_chunk.data(),
-                                  static_cast<int>(sub_chunk.length()),
-                                  "", "", &re_key, &chunks);
+  bool result = parser.ParseChunk(
+      safe_browsing_util::kMalwareList,
+      sub_chunk.data(),
+      static_cast<int>(sub_chunk.length()),
+      "", "", &re_key, &chunks);
   EXPECT_TRUE(result);
   EXPECT_FALSE(re_key);
-  EXPECT_EQ(chunks.size(), static_cast<size_t>(1));
+  EXPECT_EQ(chunks.size(), 1U);
   EXPECT_EQ(chunks[0].chunk_number, 1);
-  EXPECT_EQ(chunks[0].hosts.size(), static_cast<size_t>(1));
+  EXPECT_EQ(chunks[0].hosts.size(), 1U);
 
   EXPECT_EQ(chunks[0].hosts[0].host, 0x61616161);
   SBEntry* entry = chunks[0].hosts[0].entry;
@@ -298,15 +351,15 @@ TEST(SafeBrowsingProtocolParsingTest, TestChunkDelete) {
   EXPECT_FALSE(re_key);
   EXPECT_FALSE(reset);
   EXPECT_EQ(next_query_sec, 1700);
-  EXPECT_EQ(deletes.size(), static_cast<size_t>(2));
+  EXPECT_EQ(deletes.size(), 2U);
 
-  EXPECT_EQ(deletes[0].chunk_del.size(), static_cast<size_t>(4));
+  EXPECT_EQ(deletes[0].chunk_del.size(), 4U);
   EXPECT_TRUE(deletes[0].chunk_del[0] == ChunkRange(1, 7));
   EXPECT_TRUE(deletes[0].chunk_del[1] == ChunkRange(43, 597));
   EXPECT_TRUE(deletes[0].chunk_del[2] == ChunkRange(44444));
   EXPECT_TRUE(deletes[0].chunk_del[3] == ChunkRange(99999));
 
-  EXPECT_EQ(deletes[1].chunk_del.size(), static_cast<size_t>(3));
+  EXPECT_EQ(deletes[1].chunk_del.size(), 3U);
   EXPECT_TRUE(deletes[1].chunk_del[0] == ChunkRange(21, 27));
   EXPECT_TRUE(deletes[1].chunk_del[1] == ChunkRange(42));
   EXPECT_TRUE(deletes[1].chunk_del[2] == ChunkRange(171717));
@@ -345,7 +398,7 @@ TEST(SafeBrowsingProtocolParsingTest, TestRedirects) {
 
   EXPECT_FALSE(re_key);
   EXPECT_FALSE(reset);
-  EXPECT_EQ(urls.size(), static_cast<size_t>(4));
+  EXPECT_EQ(urls.size(), 4U);
   EXPECT_EQ(urls[0].url,
       "cache.googlevideo.com/safebrowsing/rd/goog-malware-shavar_s_1");
   EXPECT_EQ(urls[1].url,
@@ -381,7 +434,7 @@ TEST(SafeBrowsingProtocolParsingTest, TestRedirectsWithMac) {
 
   EXPECT_FALSE(re_key);
   EXPECT_FALSE(reset);
-  EXPECT_EQ(urls.size(), static_cast<size_t>(2));
+  EXPECT_EQ(urls.size(), 2U);
   EXPECT_EQ(urls[0].url,
       "s.ytimg.com/safebrowsing/rd/goog-phish-shavar_s_6501-6505:6501-6505");
   EXPECT_EQ(urls[0].mac, "pcY6iVeT9-CBQ3fdAF0rpnKjR1Y=");
@@ -427,7 +480,7 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHash) {
                                   &full_hashes));
 
   EXPECT_FALSE(re_key);
-  EXPECT_EQ(full_hashes.size(), static_cast<size_t>(3));
+  EXPECT_EQ(full_hashes.size(), 3U);
   EXPECT_EQ(memcmp(&full_hashes[0].hash,
                    "00112233445566778899aabbccddeeff",
                    sizeof(SBFullHash)), 0);
@@ -453,7 +506,7 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHash) {
                                   &full_hashes));
 
   EXPECT_FALSE(re_key);
-  EXPECT_EQ(full_hashes.size(), static_cast<size_t>(3));
+  EXPECT_EQ(full_hashes.size(), 3U);
   EXPECT_EQ(memcmp(&full_hashes[0].hash,
                    "00112233445566778899aabbccddeeff",
                    sizeof(SBFullHash)), 0);
@@ -500,7 +553,7 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHashWithMac) {
                                   &re_key,
                                   &full_hashes));
   EXPECT_FALSE(re_key);
-  EXPECT_EQ(full_hashes.size(), static_cast<size_t>(1));
+  EXPECT_EQ(full_hashes.size(), 1U);
   EXPECT_EQ(memcmp(hash_result, &full_hashes[0].hash, sizeof(SBFullHash)), 0);
 }
 
@@ -519,7 +572,7 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHashWithUnknownList) {
                                   &re_key,
                                   &full_hashes));
 
-  EXPECT_EQ(full_hashes.size(), static_cast<size_t>(1));
+  EXPECT_EQ(full_hashes.size(), 1U);
   EXPECT_EQ(memcmp("12345678901234567890123456789012",
                    &full_hashes[0].hash, sizeof(SBFullHash)), 0);
   EXPECT_EQ(full_hashes[0].list_name, "goog-phish-shavar");
@@ -534,7 +587,7 @@ TEST(SafeBrowsingProtocolParsingTest, TestGetHashWithUnknownList) {
                                   &re_key,
                                   &full_hashes));
 
-  EXPECT_EQ(full_hashes.size(), static_cast<size_t>(2));
+  EXPECT_EQ(full_hashes.size(), 2U);
   EXPECT_EQ(memcmp("12345678901234567890123456789012",
                    &full_hashes[0].hash, sizeof(SBFullHash)), 0);
   EXPECT_EQ(full_hashes[0].list_name, "goog-phish-shavar");
@@ -614,38 +667,42 @@ TEST(SafeBrowsingProtocolParsingTest, TestZeroSizeAddChunk) {
   bool re_key = false;
   SBChunkList chunks;
 
-  bool result = parser.ParseChunk(add_chunk.data(),
-                                  static_cast<int>(add_chunk.length()),
-                                  "", "", &re_key, &chunks);
+  bool result = parser.ParseChunk(
+      safe_browsing_util::kMalwareList,
+      add_chunk.data(),
+      static_cast<int>(add_chunk.length()),
+      "", "", &re_key, &chunks);
   EXPECT_TRUE(result);
-  EXPECT_EQ(chunks.size(), static_cast<size_t>(1));
+  EXPECT_EQ(chunks.size(), 1U);
   EXPECT_EQ(chunks[0].chunk_number, 1);
-  EXPECT_EQ(chunks[0].hosts.size(), static_cast<size_t>(0));
+  EXPECT_EQ(chunks[0].hosts.size(), 0U);
 
   // Now test a zero size chunk in between normal chunks.
   chunks.clear();
   std::string add_chunks("a:1:4:18\n1234\001abcd5678\001wxyz"
                          "a:2:4:0\n"
                          "a:3:4:9\ncafe\001beef");
-  result = parser.ParseChunk(add_chunks.data(),
-                             static_cast<int>(add_chunks.length()),
-                             "", "", &re_key, &chunks);
+  result = parser.ParseChunk(
+      safe_browsing_util::kMalwareList,
+      add_chunks.data(),
+      static_cast<int>(add_chunks.length()),
+      "", "", &re_key, &chunks);
   EXPECT_TRUE(result);
-  EXPECT_EQ(chunks.size(), static_cast<size_t>(3));
+  EXPECT_EQ(chunks.size(), 3U);
 
   // See that each chunk has the right content.
   EXPECT_EQ(chunks[0].chunk_number, 1);
-  EXPECT_EQ(chunks[0].hosts.size(), static_cast<size_t>(2));
+  EXPECT_EQ(chunks[0].hosts.size(), 2U);
   EXPECT_EQ(chunks[0].hosts[0].host, 0x34333231);
   EXPECT_EQ(chunks[0].hosts[0].entry->PrefixAt(0), 0x64636261);
   EXPECT_EQ(chunks[0].hosts[1].host, 0x38373635);
   EXPECT_EQ(chunks[0].hosts[1].entry->PrefixAt(0), 0x7a797877);
 
   EXPECT_EQ(chunks[1].chunk_number, 2);
-  EXPECT_EQ(chunks[1].hosts.size(), static_cast<size_t>(0));
+  EXPECT_EQ(chunks[1].hosts.size(), 0U);
 
   EXPECT_EQ(chunks[2].chunk_number, 3);
-  EXPECT_EQ(chunks[2].hosts.size(), static_cast<size_t>(1));
+  EXPECT_EQ(chunks[2].hosts.size(), 1U);
   EXPECT_EQ(chunks[2].hosts[0].host, 0x65666163);
   EXPECT_EQ(chunks[2].hosts[0].entry->PrefixAt(0), 0x66656562);
 }
@@ -657,13 +714,15 @@ TEST(SafeBrowsingProtocolParsingTest, TestZeroSizeSubChunk) {
   bool re_key = false;
   SBChunkList chunks;
 
-  bool result = parser.ParseChunk(sub_chunk.data(),
-                                  static_cast<int>(sub_chunk.length()),
-                                  "", "", &re_key, &chunks);
+  bool result = parser.ParseChunk(
+      safe_browsing_util::kMalwareList,
+      sub_chunk.data(),
+      static_cast<int>(sub_chunk.length()),
+      "", "", &re_key, &chunks);
   EXPECT_TRUE(result);
-  EXPECT_EQ(chunks.size(), static_cast<size_t>(1));
+  EXPECT_EQ(chunks.size(), 1U);
   EXPECT_EQ(chunks[0].chunk_number, 9);
-  EXPECT_EQ(chunks[0].hosts.size(), static_cast<size_t>(0));
+  EXPECT_EQ(chunks[0].hosts.size(), 0U);
   chunks.clear();
 
   // Test parsing a zero sized sub chunk mixed in with content carrying chunks.
@@ -672,21 +731,23 @@ TEST(SafeBrowsingProtocolParsingTest, TestZeroSizeSubChunk) {
                          "s:3:4:26\nefgh\0011234pqrscafe\0015678lmno");
   sub_chunks[12] = '\0';
 
-  result = parser.ParseChunk(sub_chunks.data(),
-                             static_cast<int>(sub_chunks.length()),
-                             "", "", &re_key, &chunks);
+  result = parser.ParseChunk(
+      safe_browsing_util::kMalwareList,
+      sub_chunks.data(),
+      static_cast<int>(sub_chunks.length()),
+      "", "", &re_key, &chunks);
   EXPECT_TRUE(result);
 
   EXPECT_EQ(chunks[0].chunk_number, 1);
-  EXPECT_EQ(chunks[0].hosts.size(), static_cast<size_t>(1));
+  EXPECT_EQ(chunks[0].hosts.size(), 1U);
   EXPECT_EQ(chunks[0].hosts[0].host, 0x64636261);
   EXPECT_EQ(chunks[0].hosts[0].entry->prefix_count(), 0);
 
   EXPECT_EQ(chunks[1].chunk_number, 2);
-  EXPECT_EQ(chunks[1].hosts.size(), static_cast<size_t>(0));
+  EXPECT_EQ(chunks[1].hosts.size(), 0U);
 
   EXPECT_EQ(chunks[2].chunk_number, 3);
-  EXPECT_EQ(chunks[2].hosts.size(), static_cast<size_t>(2));
+  EXPECT_EQ(chunks[2].hosts.size(), 2U);
   EXPECT_EQ(chunks[2].hosts[0].host, 0x68676665);
   EXPECT_EQ(chunks[2].hosts[0].entry->prefix_count(), 1);
   EXPECT_EQ(chunks[2].hosts[0].entry->PrefixAt(0), 0x73727170);
@@ -764,8 +825,102 @@ TEST(SafeBrowsingProtocolParsingTest, TestVerifyChunkMac) {
   const std::string key("v_aDSz6jI92WeHCOoZ07QA==");
   const std::string mac("W9Xp2fUcQ9V66If6Cvsrstpa4Kk=");
 
-  EXPECT_TRUE(parser.ParseChunk(reinterpret_cast<const char*>(chunk),
-                                sizeof(chunk), key, mac,
-                                &re_key, &chunks));
+  EXPECT_TRUE(parser.ParseChunk(
+      safe_browsing_util::kMalwareList,
+      reinterpret_cast<const char*>(chunk),
+      sizeof(chunk), key, mac,
+      &re_key, &chunks));
   EXPECT_FALSE(re_key);
+}
+
+TEST(SafeBrowsingProtocolParsingTest, TestAddBinHashChunks) {
+  std::string add_chunk("a:1:4:16\naaaabbbbccccdddd"
+                        "a:2:4:8\n11112222");
+  // Run the parse.
+  SafeBrowsingProtocolParser parser;
+  bool re_key = false;
+  SBChunkList chunks;
+  bool result = parser.ParseChunk(
+      safe_browsing_util::kBinHashList,
+      add_chunk.data(),
+      static_cast<int>(add_chunk.length()),
+      "", "", &re_key, &chunks);
+  EXPECT_TRUE(result);
+  EXPECT_FALSE(re_key);
+  EXPECT_EQ(chunks.size(), 2U);
+  EXPECT_EQ(chunks[0].chunk_number, 1);
+  EXPECT_EQ(chunks[0].hosts.size(), 1U);
+
+  EXPECT_EQ(chunks[0].hosts[0].host, 0);
+  SBEntry* entry = chunks[0].hosts[0].entry;
+  EXPECT_TRUE(entry->IsAdd());
+  EXPECT_TRUE(entry->IsPrefix());
+  EXPECT_EQ(entry->prefix_count(), 4);
+
+  EXPECT_EQ(chunks[1].chunk_number, 2);
+  EXPECT_EQ(chunks[1].hosts.size(), 1U);
+
+  EXPECT_EQ(chunks[1].hosts[0].host, 0);
+  entry = chunks[1].hosts[0].entry;
+  EXPECT_TRUE(entry->IsAdd());
+  EXPECT_TRUE(entry->IsPrefix());
+  EXPECT_EQ(entry->prefix_count(), 2);
+  EXPECT_EQ(entry->PrefixAt(0), 0x31313131);
+  EXPECT_EQ(entry->PrefixAt(1), 0x32323232);
+}
+
+// Test parsing one add chunk where a hostkey spans several entries.
+TEST(SafeBrowsingProtocolParsingTest, TestAddBigBinHashChunk) {
+  std::string add_chunk("a:1:4:1028\n");
+  for (int i = 0; i < 257; ++i)
+    add_chunk.append(StringPrintf("%04d", i));
+
+  SafeBrowsingProtocolParser parser;
+  bool re_key = false;
+  SBChunkList chunks;
+  bool result = parser.ParseChunk(
+      safe_browsing_util::kBinHashList,
+      add_chunk.data(),
+      static_cast<int>(add_chunk.length()),
+      "", "", &re_key, &chunks);
+  EXPECT_TRUE(result);
+  EXPECT_FALSE(re_key);
+  EXPECT_EQ(chunks.size(), 1U);
+  EXPECT_EQ(chunks[0].chunk_number, 1);
+
+  EXPECT_EQ(chunks[0].hosts.size(), 1U);
+
+  const SBChunkHost& host0 = chunks[0].hosts[0];
+  EXPECT_EQ(host0.host, 0);
+  EXPECT_EQ(host0.entry->prefix_count(), 257);
+}
+
+// Test parsing one sub chunk.
+TEST(SafeBrowsingProtocolParsingTest, TestSubBinHashChunk) {
+  std::string sub_chunk("s:9:4:16\n1111mmmm2222nnnn");
+
+  // Run the parser.
+  SafeBrowsingProtocolParser parser;
+  bool re_key = false;
+  SBChunkList chunks;
+  bool result = parser.ParseChunk(
+      safe_browsing_util::kBinHashList,
+      sub_chunk.data(),
+      static_cast<int>(sub_chunk.length()),
+      "", "", &re_key, &chunks);
+  EXPECT_TRUE(result);
+  EXPECT_FALSE(re_key);
+  EXPECT_EQ(chunks.size(), 1U);
+  EXPECT_EQ(chunks[0].chunk_number, 9);
+  EXPECT_EQ(chunks[0].hosts.size(), 1U);
+
+  EXPECT_EQ(chunks[0].hosts[0].host, 0);
+  SBEntry* entry = chunks[0].hosts[0].entry;
+  EXPECT_TRUE(entry->IsSub());
+  EXPECT_TRUE(entry->IsPrefix());
+  EXPECT_EQ(entry->prefix_count(), 2);
+  EXPECT_EQ(entry->ChunkIdAtPrefix(0), 0x31313131);
+  EXPECT_EQ(entry->PrefixAt(0), 0x6d6d6d6d);
+  EXPECT_EQ(entry->ChunkIdAtPrefix(1), 0x32323232);
+  EXPECT_EQ(entry->PrefixAt(1), 0x6e6e6e6e);
 }

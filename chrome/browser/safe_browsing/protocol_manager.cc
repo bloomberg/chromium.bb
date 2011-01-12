@@ -417,7 +417,7 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
       scoped_ptr<SBChunkList> chunks(new SBChunkList);
       UMA_HISTOGRAM_COUNTS("SB2.ChunkSize", length);
       update_size_ += length;
-      if (!parser.ParseChunk(data, length,
+      if (!parser.ParseChunk(chunk_url.list_name, data, length,
                              client_key_, chunk_url.mac,
                              &re_key, chunks.get())) {
 #ifndef NDEBUG
