@@ -9,6 +9,7 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/scoped_ptr.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/geoposition.h"
 
@@ -26,13 +27,18 @@ HINSTANCE LoadWin7Library(const string16& lib_name) {
 }
 }
 
-Win7LocationApi::Win7LocationApi(
-    HINSTANCE prop_library,
+Win7LocationApi::Win7LocationApi()
+    : prop_lib_(0),
+      PropVariantToDouble_function_(0),
+      locator_(0) {
+}
+
+void Win7LocationApi::Init(HINSTANCE prop_library,
     PropVariantToDoubleFunction PropVariantToDouble_function,
-    ILocation* locator)
-    : prop_lib_(prop_library),
-      PropVariantToDouble_function_(PropVariantToDouble_function),
-      locator_(locator) {
+    ILocation* locator) {
+  prop_lib_ = prop_library;
+  PropVariantToDouble_function_ = PropVariantToDouble_function;
+  locator_ = locator;
 }
 
 Win7LocationApi::~Win7LocationApi() {
@@ -44,6 +50,8 @@ Win7LocationApi* Win7LocationApi::Create() {
   if (!CommandLine::ForCurrentProcess()
       ->HasSwitch(switches::kExperimentalLocationFeatures))
     return NULL;
+
+  scoped_ptr<Win7LocationApi> result(new Win7LocationApi);
   // Load probsys.dll
   string16 lib_needed = L"propsys.dll";
   HINSTANCE prop_lib = LoadWin7Library(lib_needed);
@@ -69,9 +77,16 @@ Win7LocationApi* Win7LocationApi::Create() {
   }
   IID reports_needed[] = { IID_ILatLongReport };
   result_type = locator->RequestPermissions(NULL, reports_needed, 1, TRUE);
-  return new Win7LocationApi(prop_lib,
-                             PropVariantToDouble_function,
-                             locator);
+  result->Init(prop_lib, PropVariantToDouble_function, locator);
+  return result.release();
+}
+
+Win7LocationApi* Win7LocationApi::CreateForTesting(
+    PropVariantToDoubleFunction PropVariantToDouble_function,
+    ILocation* locator) {
+  Win7LocationApi* result = new Win7LocationApi;
+  result->Init(NULL, PropVariantToDouble_function, locator);
+  return result;
 }
 
 void Win7LocationApi::GetPosition(Geoposition* position) {
@@ -101,19 +116,19 @@ bool Win7LocationApi::GetPositionIfFixed(Geoposition* position) {
   CComPtr<ILatLongReport> lat_long_report;
   result_type = locator_->GetReport(IID_ILatLongReport, &location_report);
   // Checks to see if location access is allowed.
-  if (result_type == E_ACCESSDENIED) 
+  if (result_type == E_ACCESSDENIED)
     position->error_code = Geoposition::ERROR_CODE_PERMISSION_DENIED;
   // Checks for any other errors while requesting a location report.
-  if(!SUCCEEDED(result_type))
+  if (!SUCCEEDED(result_type))
     return false;
   result_type = location_report->QueryInterface(&lat_long_report);
-  if(!SUCCEEDED(result_type))
+  if (!SUCCEEDED(result_type))
     return false;
   result_type = lat_long_report->GetLatitude(&position->latitude);
-  if(!SUCCEEDED(result_type))
+  if (!SUCCEEDED(result_type))
     return false;
   result_type = lat_long_report->GetLongitude(&position->longitude);
-  if(!SUCCEEDED(result_type))
+  if (!SUCCEEDED(result_type))
     return false;
   result_type = lat_long_report->GetErrorRadius(&position->accuracy);
   if (!SUCCEEDED(result_type) || position->accuracy <= 0)
@@ -124,7 +139,7 @@ bool Win7LocationApi::GetPositionIfFixed(Geoposition* position) {
     position->altitude = temp_dbl;
   result_type = lat_long_report->GetAltitudeError(&temp_dbl);
   if (SUCCEEDED(result_type))
-    position->altitude_accuracy = temp_dbl; 
+    position->altitude_accuracy = temp_dbl;
   PROPVARIANT heading;
   PropVariantInit(&heading);
   result_type = lat_long_report->GetValue(

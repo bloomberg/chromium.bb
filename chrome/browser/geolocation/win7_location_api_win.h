@@ -11,6 +11,7 @@
 #include <sensors.h>
 #include <Windows.h>
 
+#include "app/win/scoped_com_initializer.h"
 #include "base/time.h"
 
 struct Geoposition;
@@ -21,28 +22,35 @@ typedef HRESULT (WINAPI* PropVariantToDoubleFunction)
 
 class Win7LocationApi {
  public:
-  // Public for testing. See Create() below for normal usage.
-  Win7LocationApi(HINSTANCE prop_library,
-                  PropVariantToDoubleFunction PropVariantToDouble_function,
-                  ILocation* locator);
   virtual ~Win7LocationApi();
-
   // Attempts to load propsys.dll, initialise |location_| and requests the user
   // for access to location information. Creates and returns ownership of an
   // instance of Win7LocationApi if all succeed.
   static Win7LocationApi* Create();
+  static Win7LocationApi* CreateForTesting(
+            PropVariantToDoubleFunction PropVariantToDouble_function,
+            ILocation* locator);
   // Gives the best available position.
   // Returns false if no valid position is available.
   virtual void GetPosition(Geoposition* position);
   // Changes the "accuracy" needed. Affects power levels of devices.
   virtual bool SetHighAccuracy(bool acc);
 
+ protected:
+  Win7LocationApi();
+
  private:
+  void Init(HINSTANCE prop_library,
+            PropVariantToDoubleFunction PropVariantToDouble_function,
+            ILocation* locator);
+
   // Provides the best position fix if one is available.
   // Does this by requesting a location report and querying it to obtain
   // location information.
   virtual bool GetPositionIfFixed(Geoposition* position);
 
+  // Ensure that COM has been initialized for this thread.
+  app::win::ScopedCOMInitializer com_initializer_;
   // ILocation object that lets us communicate with the Location and
   // Sensors platform.
   CComPtr<ILocation> locator_;

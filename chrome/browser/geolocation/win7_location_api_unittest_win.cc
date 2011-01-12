@@ -293,9 +293,8 @@ class GeolocationApiWin7Tests : public testing::Test {
   Win7LocationApi* CreateMock() {
     MockLocation* locator = new MockLocation();
     locator_ = locator;
-    return new Win7LocationApi(NULL,
-                               &MockPropVariantToDoubleFunction,
-                               locator);
+    return Win7LocationApi::CreateForTesting(&MockPropVariantToDoubleFunction,
+                                             locator);
   }
 
   scoped_ptr<Win7LocationApi> api_;

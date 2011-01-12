@@ -49,7 +49,7 @@ class MockWin7LocationApi : public Win7LocationApi {
   }
 
  private:
-  MockWin7LocationApi() : Win7LocationApi(NULL, NULL, NULL) {
+  MockWin7LocationApi() {
     ON_CALL(*this, GetPosition(_))
         .WillByDefault(Invoke(this,
                               &MockWin7LocationApi::GetPositionValid));
