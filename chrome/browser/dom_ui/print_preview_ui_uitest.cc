@@ -47,7 +47,8 @@ TEST_F(PrintPreviewUITest, LoadPrintPreviewByURL) {
   AssertIsPrintPage(tab);
 }
 
-TEST_F(PrintPreviewUITest, PrintCommandDisabled) {
+// Flaky on interactive tests builder. See http://crbug.com/69389
+TEST_F(PrintPreviewUITest, FLAKY_PrintCommandDisabled) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 

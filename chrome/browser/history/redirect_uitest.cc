@@ -244,7 +244,9 @@ TEST_F(RedirectTest, ServerReference) {
 // Test that redirect from http:// to file:// :
 // A) does not crash the browser or confuse the redirect chain, see bug 1080873
 // B) does not take place.
-TEST_F(RedirectTest, NoHttpToFile) {
+//
+// Flaky on XP and Vista, http://crbug.com/69390.
+TEST_F(RedirectTest, FLAKY_NoHttpToFile) {
   ASSERT_TRUE(test_server_.Start());
   FilePath test_file(test_data_directory_);
   test_file = test_file.AppendASCII("http_to_file.html");
