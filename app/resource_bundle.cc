@@ -7,6 +7,7 @@
 #include "app/data_pack.h"
 #include "base/lock.h"
 #include "base/logging.h"
+#include "base/stl_util-inl.h"
 #include "base/string_piece.h"
 #include "build/build_config.h"
 #include "gfx/codec/png_codec.h"
@@ -90,51 +91,6 @@ ResourceBundle& ResourceBundle::GetSharedInstance() {
   return *g_shared_instance_;
 }
 
-ResourceBundle::ResourceBundle()
-    : lock_(new Lock),
-      resources_data_(NULL),
-      locale_resources_data_(NULL) {
-}
-
-void ResourceBundle::FreeImages() {
-  for (SkImageMap::iterator i = skia_images_.begin();
-       i != skia_images_.end(); i++) {
-    delete i->second;
-  }
-  skia_images_.clear();
-}
-
-/* static */
-SkBitmap* ResourceBundle::LoadBitmap(DataHandle data_handle, int resource_id) {
-  scoped_refptr<RefCountedMemory> memory(
-      LoadResourceBytes(data_handle, resource_id));
-  if (!memory)
-    return NULL;
-
-  SkBitmap bitmap;
-  if (!gfx::PNGCodec::Decode(memory->front(), memory->size(), &bitmap)) {
-    NOTREACHED() << "Unable to decode theme image resource " << resource_id;
-    return NULL;
-  }
-
-  return new SkBitmap(bitmap);
-}
-
-RefCountedStaticMemory* ResourceBundle::LoadDataResourceBytes(
-    int resource_id) const {
-  RefCountedStaticMemory* bytes =
-      LoadResourceBytes(resources_data_, resource_id);
-
-  // Check all our additional data packs for the resources if it wasn't loaded
-  // from our main source.
-  for (std::vector<LoadedDataPack*>::const_iterator it = data_packs_.begin();
-       !bytes && it != data_packs_.end(); ++it) {
-    bytes = (*it)->GetStaticMemory(resource_id);
-  }
-
-  return bytes;
-}
-
 SkBitmap* ResourceBundle::GetBitmapNamed(int resource_id) {
   // Check to see if we already have the Skia image in the cache.
   {
@@ -180,29 +136,19 @@ SkBitmap* ResourceBundle::GetBitmapNamed(int resource_id) {
   }
 }
 
-void ResourceBundle::LoadFontsIfNecessary() {
-  AutoLock lock_scope(*lock_);
-  if (!base_font_.get()) {
-    base_font_.reset(new gfx::Font());
+RefCountedStaticMemory* ResourceBundle::LoadDataResourceBytes(
+    int resource_id) const {
+  RefCountedStaticMemory* bytes =
+      LoadResourceBytes(resources_data_, resource_id);
 
-    bold_font_.reset(new gfx::Font());
-    *bold_font_ =
-        base_font_->DeriveFont(0, base_font_->GetStyle() | gfx::Font::BOLD);
-
-    small_font_.reset(new gfx::Font());
-    *small_font_ = base_font_->DeriveFont(kSmallFontSizeDelta);
-
-    medium_font_.reset(new gfx::Font());
-    *medium_font_ = base_font_->DeriveFont(kMediumFontSizeDelta);
-
-    medium_bold_font_.reset(new gfx::Font());
-    *medium_bold_font_ =
-        base_font_->DeriveFont(kMediumFontSizeDelta,
-                               base_font_->GetStyle() | gfx::Font::BOLD);
-
-    large_font_.reset(new gfx::Font());
-    *large_font_ = base_font_->DeriveFont(kLargeFontSizeDelta);
+  // Check all our additional data packs for the resources if it wasn't loaded
+  // from our main source.
+  for (std::vector<LoadedDataPack*>::const_iterator it = data_packs_.begin();
+       !bytes && it != data_packs_.end(); ++it) {
+    bytes = (*it)->GetStaticMemory(resource_id);
   }
+
+  return bytes;
 }
 
 const gfx::Font& ResourceBundle::GetFont(FontStyle style) {
@@ -234,7 +180,62 @@ gfx::NativeImage ResourceBundle::GetNativeImageNamed(int resource_id) {
 #endif
 }
 
-// LoadedDataPack implementation
+ResourceBundle::ResourceBundle()
+    : lock_(new Lock),
+      resources_data_(NULL),
+      locale_resources_data_(NULL) {
+}
+
+void ResourceBundle::FreeImages() {
+  STLDeleteContainerPairSecondPointers(skia_images_.begin(),
+                                       skia_images_.end());
+  skia_images_.clear();
+}
+
+void ResourceBundle::LoadFontsIfNecessary() {
+  AutoLock lock_scope(*lock_);
+  if (!base_font_.get()) {
+    base_font_.reset(new gfx::Font());
+
+    bold_font_.reset(new gfx::Font());
+    *bold_font_ =
+        base_font_->DeriveFont(0, base_font_->GetStyle() | gfx::Font::BOLD);
+
+    small_font_.reset(new gfx::Font());
+    *small_font_ = base_font_->DeriveFont(kSmallFontSizeDelta);
+
+    medium_font_.reset(new gfx::Font());
+    *medium_font_ = base_font_->DeriveFont(kMediumFontSizeDelta);
+
+    medium_bold_font_.reset(new gfx::Font());
+    *medium_bold_font_ =
+        base_font_->DeriveFont(kMediumFontSizeDelta,
+                               base_font_->GetStyle() | gfx::Font::BOLD);
+
+    large_font_.reset(new gfx::Font());
+    *large_font_ = base_font_->DeriveFont(kLargeFontSizeDelta);
+  }
+}
+
+/* static */
+SkBitmap* ResourceBundle::LoadBitmap(DataHandle data_handle, int resource_id) {
+  scoped_refptr<RefCountedMemory> memory(
+      LoadResourceBytes(data_handle, resource_id));
+  if (!memory)
+    return NULL;
+
+  SkBitmap bitmap;
+  if (!gfx::PNGCodec::Decode(memory->front(), memory->size(), &bitmap)) {
+    NOTREACHED() << "Unable to decode theme image resource " << resource_id;
+    return NULL;
+  }
+
+  return new SkBitmap(bitmap);
+}
+
+
+// LoadedDataPack -------------------------------------------------------------
+
 ResourceBundle::LoadedDataPack::LoadedDataPack(const FilePath& path)
     : path_(path) {
   // Always preload the data packs so we can maintain constness.

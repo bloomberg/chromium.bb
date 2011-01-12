@@ -41,14 +41,6 @@ ResourceBundle::~ResourceBundle() {
   resources_data_ = NULL;
 }
 
-void ResourceBundle::UnloadLocaleResources() {
-  if (locale_resources_data_) {
-    BOOL rv = FreeLibrary(locale_resources_data_);
-    DCHECK(rv);
-    locale_resources_data_ = NULL;
-  }
-}
-
 void ResourceBundle::LoadCommonResources() {
   // As a convenience, set resources_data_ to the current resource module.
   DCHECK(NULL == resources_data_) << "common resources already loaded";
@@ -73,6 +65,14 @@ std::string ResourceBundle::LoadLocaleResources(
   DCHECK(locale_resources_data_ != NULL) <<
       "unable to load generated resources";
   return app_locale;
+}
+
+void ResourceBundle::UnloadLocaleResources() {
+  if (locale_resources_data_) {
+    BOOL rv = FreeLibrary(locale_resources_data_);
+    DCHECK(rv);
+    locale_resources_data_ = NULL;
+  }
 }
 
 // static

@@ -29,9 +29,6 @@ class DataPack;
 namespace base {
 class Lock;
 }
-#if defined(USE_X11)
-typedef struct _GdkPixbuf GdkPixbuf;
-#endif
 namespace gfx {
 class Font;
 }
@@ -48,6 +45,10 @@ class StringPiece;
 class NSImage;
 #endif  // __OBJC__
 #endif  // defined(OS_MACOSX)
+
+#if defined(USE_X11)
+typedef struct _GdkPixbuf GdkPixbuf;
+#endif
 
 // ResourceBundle is a central facility to load images and other resources,
 // such as theme graphics.
@@ -96,11 +97,6 @@ class ResourceBundle {
   // Gets the bitmap with the specified resource_id from the current module
   // data. Returns a pointer to a shared instance of the SkBitmap. This shared
   // bitmap is owned by the resource bundle and should not be freed.
-  //
-  // The bitmap is assumed to exist. This function will log in release, and
-  // assert in debug mode if it does not. On failure, this will return a
-  // pointer to a shared empty placeholder bitmap so it will be visible what
-  // is missing.
   SkBitmap* GetBitmapNamed(int resource_id);
 
   // Loads the raw bytes of a data resource into |bytes|,
