@@ -77,11 +77,12 @@ class PPB_FileIO_Impl : public Resource {
  private:
   // Verifies:
   //  - that |callback| is valid (only nonblocking operation supported);
-  //  - that the file is already opened or not (depending on |is_opened|); and
+  //  - that the file is already open or not, depending on |should_be_open|; and
   //  - that no callback is already pending.
   // Returns |PP_OK| to indicate that everything is valid or |PP_ERROR_...| if
   // the call should be aborted and that code returned to the plugin.
-  int32_t CommonCallValidation(bool is_opened, PP_CompletionCallback callback);
+  int32_t CommonCallValidation(bool should_be_open,
+                               PP_CompletionCallback callback);
 
   // Sets up |callback| as the pending callback. This should only be called once
   // it is certain that |PP_ERROR_WOULDBLOCK| will be returned.

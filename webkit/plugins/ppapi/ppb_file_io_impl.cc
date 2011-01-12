@@ -401,7 +401,7 @@ int32_t PPB_FileIO_Impl::WillSetLength(int64_t length,
   return PP_OK;
 }
 
-int32_t PPB_FileIO_Impl::CommonCallValidation(bool is_opened,
+int32_t PPB_FileIO_Impl::CommonCallValidation(bool should_be_open,
                                               PP_CompletionCallback callback) {
   // Only asynchronous operation is supported.
   if (!callback.func) {
@@ -409,7 +409,7 @@ int32_t PPB_FileIO_Impl::CommonCallValidation(bool is_opened,
     return PP_ERROR_BADARGUMENT;
   }
 
-  if (is_opened) {
+  if (should_be_open) {
     if (file_ == base::kInvalidPlatformFileValue)
       return PP_ERROR_FAILED;
   } else {
