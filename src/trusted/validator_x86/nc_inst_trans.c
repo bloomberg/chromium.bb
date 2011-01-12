@@ -1978,24 +1978,20 @@ static NaClExp* NaClAddOpSetUse(NaClExp* node, const NaClOp* operand) {
 }
 
 void NaClBuildExpVector(struct NaClInstState* state) {
+  int i;
   DEBUG(NaClLog(LOG_INFO,
                 "building expression vector for pc = %"NACL_PRIxNaClPcAddress
                 ":\n",
                 NaClInstStateVpc(state)));
-  if (InstInvalid == state->inst->insttype) {
-    NaClFatal("instruction", state);
-  } else {
-    int i;
-    for (i = 0; i < state->inst->num_operands; i++) {
-      NaClExp* n;
-      const NaClOp* op = &state->inst->operands[i];
-      DEBUG(NaClLog(LOG_INFO, "translating operand %d:\n", i));
-      n = NaClAppendExp(OperandReference, i, 0, &state->nodes);
-      if (op->flags & NACL_OPFLAG(OpImplicit)) {
-        n->flags |= NACL_EFLAG(ExprImplicit);
-      }
-      NaClAddOpSetUse(NaClAppendOperand(state, op), op);
-      DEBUG(NaClExpVectorPrint(NaClLogGetGio(), &state->nodes));
+  for (i = 0; i < state->inst->num_operands; i++) {
+    NaClExp* n;
+    const NaClOp* op = &state->inst->operands[i];
+    DEBUG(NaClLog(LOG_INFO, "translating operand %d:\n", i));
+    n = NaClAppendExp(OperandReference, i, 0, &state->nodes);
+    if (op->flags & NACL_OPFLAG(OpImplicit)) {
+      n->flags |= NACL_EFLAG(ExprImplicit);
     }
+    NaClAddOpSetUse(NaClAppendOperand(state, op), op);
+    DEBUG(NaClExpVectorPrint(NaClLogGetGio(), &state->nodes));
   }
 }
