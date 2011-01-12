@@ -19,7 +19,6 @@
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_instance.h"
 
-PP_Module g_module_id;
 PPB_GetInterface g_get_browser_interface = NULL;
 
 const struct PPB_Core* g_core_interface;
@@ -44,7 +43,7 @@ PP_Resource MakeAndBindDeviceContext(PP_Instance instance,
                                      const struct PP_Size* size) {
   PP_Resource device_context;
 
-  device_context = g_graphics_2d_interface->Create(g_module_id, size, PP_FALSE);
+  device_context = g_graphics_2d_interface->Create(instance, size, PP_FALSE);
   if (!device_context)
     return 0;
 
@@ -67,7 +66,7 @@ void Repaint(struct InstanceInfo* instance, const struct PP_Size* size) {
 
   /* Create image data to paint into. */
   image = g_image_data_interface->Create(
-      g_module_id, PP_IMAGEDATAFORMAT_BGRA_PREMUL, size, PP_TRUE);
+      instance->pp_instance, PP_IMAGEDATAFORMAT_BGRA_PREMUL, size, PP_TRUE);
   if (!image)
     return;
   g_image_data_interface->Describe(image, &image_desc);
@@ -188,8 +187,6 @@ static struct PPP_Instance instance_interface = {
 
 PP_EXPORT int32_t PPP_InitializeModule(PP_Module module,
                                        PPB_GetInterface get_browser_interface) {
-  /* Save the global module information for later. */
-  g_module_id = module;
   g_get_browser_interface = get_browser_interface;
 
   g_core_interface = (const struct PPB_Core*)
