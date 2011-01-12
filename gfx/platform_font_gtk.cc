@@ -13,6 +13,7 @@
 
 #include "base/logging.h"
 #include "base/string_piece.h"
+#include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/font.h"
@@ -66,7 +67,7 @@ PangoFontMetrics* GetPangoFontMetrics(PangoFontDescription* desc) {
 // PGothic".  In this case, SkTypeface for "Sans" returns NULL even if
 // the system has a font for "Sans" font family.  See FontMatch() in
 // skia/ports/SkFontHost_fontconfig.cpp for more detail.
-string16 FindBestMatchFontFamilyName(const char* family_name) {
+std::wstring FindBestMatchFontFamilyName(const char* family_name) {
   FcPattern* pattern = FcPatternCreate();
   FcValue fcvalue;
   fcvalue.type = FcTypeString;
@@ -81,7 +82,7 @@ string16 FindBestMatchFontFamilyName(const char* family_name) {
   FcChar8* match_family;
   FcPatternGetString(match, FC_FAMILY, 0, &match_family);
 
-  string16 font_family = UTF8ToUTF16(reinterpret_cast<char*>(match_family));
+  std::wstring font_family = UTF8ToWide(reinterpret_cast<char*>(match_family));
   FcPatternDestroy(match);
   FcPatternDestroy(pattern);
   free(family_name_copy);
@@ -140,7 +141,7 @@ PlatformFontGtk::PlatformFontGtk(NativeFont native_font) {
   // Find best match font for |family_name| to make sure we can get
   // a SkTypeface for the default font.
   // TODO(agl): remove this.
-  string16 font_family = FindBestMatchFontFamilyName(family_name);
+  std::wstring font_family = FindBestMatchFontFamilyName(family_name);
 
   InitWithNameAndSize(font_family, size / PANGO_SCALE);
   int style = 0;
@@ -157,7 +158,7 @@ PlatformFontGtk::PlatformFontGtk(NativeFont native_font) {
     style_ = style;
 }
 
-PlatformFontGtk::PlatformFontGtk(const string16& font_name,
+PlatformFontGtk::PlatformFontGtk(const std::wstring& font_name,
                                  int font_size) {
   InitWithNameAndSize(font_name, font_size);
 }
@@ -196,7 +197,7 @@ Font PlatformFontGtk::DeriveFont(int size_delta, int style) const {
     skstyle |= SkTypeface::kItalic;
 
   SkTypeface* typeface = SkTypeface::CreateFromName(
-      UTF16ToUTF8(font_family_).c_str(),
+      base::SysWideToUTF8(font_family_).c_str(),
       static_cast<SkTypeface::Style>(skstyle));
   SkAutoUnref tf_helper(typeface);
 
@@ -234,7 +235,7 @@ int PlatformFontGtk::GetStyle() const {
   return style_;
 }
 
-string16 PlatformFontGtk::GetFontName() const {
+const std::wstring& PlatformFontGtk::GetFontName() const {
   return font_family_;
 }
 
@@ -244,7 +245,7 @@ int PlatformFontGtk::GetFontSize() const {
 
 NativeFont PlatformFontGtk::GetNativeFont() const {
   PangoFontDescription* pfd = pango_font_description_new();
-  pango_font_description_set_family(pfd, UTF16ToUTF8(GetFontName()).c_str());
+  pango_font_description_set_family(pfd, WideToUTF8(GetFontName()).c_str());
   // Set the absolute size to avoid overflowing UI elements.
   pango_font_description_set_absolute_size(pfd,
       GetFontSize() * PANGO_SCALE * GetPangoScaleFactor());
@@ -272,7 +273,7 @@ NativeFont PlatformFontGtk::GetNativeFont() const {
 // PlatformFontGtk, private:
 
 PlatformFontGtk::PlatformFontGtk(SkTypeface* typeface,
-                                 const string16& name,
+                                 const std::wstring& name,
                                  int size,
                                  int style) {
   InitWithTypefaceNameSizeAndStyle(typeface, name, size, style);
@@ -280,22 +281,22 @@ PlatformFontGtk::PlatformFontGtk(SkTypeface* typeface,
 
 PlatformFontGtk::~PlatformFontGtk() {}
 
-void PlatformFontGtk::InitWithNameAndSize(const string16& font_name,
+void PlatformFontGtk::InitWithNameAndSize(const std::wstring& font_name,
                                           int font_size) {
   DCHECK_GT(font_size, 0);
-  string16 fallback;
+  std::wstring fallback;
 
   SkTypeface* typeface = SkTypeface::CreateFromName(
-      UTF16ToUTF8(font_name).c_str(), SkTypeface::kNormal);
+      base::SysWideToUTF8(font_name).c_str(), SkTypeface::kNormal);
   if (!typeface) {
     // A non-scalable font such as .pcf is specified. Falls back to a default
     // scalable font.
     typeface = SkTypeface::CreateFromName(
         kFallbackFontFamilyName, SkTypeface::kNormal);
     CHECK(typeface) << "Could not find any font: "
-                    << UTF16ToUTF8(font_name)
+                    << base::SysWideToUTF8(font_name)
                     << ", " << kFallbackFontFamilyName;
-    fallback = UTF8ToUTF16(kFallbackFontFamilyName);
+    fallback = base::SysUTF8ToWide(kFallbackFontFamilyName);
   }
   SkAutoUnref typeface_helper(typeface);
 
@@ -307,7 +308,7 @@ void PlatformFontGtk::InitWithNameAndSize(const string16& font_name,
 
 void PlatformFontGtk::InitWithTypefaceNameSizeAndStyle(
     SkTypeface* typeface,
-    const string16& font_family,
+    const std::wstring& font_family,
     int font_size,
     int style) {
   typeface_helper_.reset(new SkAutoUnref(typeface));
@@ -434,7 +435,7 @@ PlatformFont* PlatformFont::CreateFromNativeFont(NativeFont native_font) {
 }
 
 // static
-PlatformFont* PlatformFont::CreateFromNameAndSize(const string16& font_name,
+PlatformFont* PlatformFont::CreateFromNameAndSize(const std::wstring& font_name,
                                                   int font_size) {
   return new PlatformFontGtk(font_name, font_size);
 }

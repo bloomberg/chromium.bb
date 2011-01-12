@@ -16,7 +16,7 @@ namespace {
 // We make sure that LTR text we draw in an RTL context is modified
 // appropriately to make sure it maintains it LTR orientation.
 void DoDrawText(HDC hdc,
-                const string16& text,
+                const std::wstring& text,
                 RECT* text_bounds,
                 int flags) {
   // Only adjust string directionality if both of the following are true:
@@ -25,7 +25,7 @@ void DoDrawText(HDC hdc,
   const wchar_t* string_ptr = text.c_str();
   int string_size = static_cast<int>(text.length());
 
-  string16 localized_text;
+  std::wstring localized_text;
   if (flags & DT_RTLREADING) {
     localized_text = text;
     base::i18n::AdjustStringForLocaleDirection(&localized_text);
@@ -38,7 +38,7 @@ void DoDrawText(HDC hdc,
 
 // Compute the windows flags necessary to implement the provided text Canvas
 // flags.
-int ComputeFormatFlags(int flags, const string16& text) {
+int ComputeFormatFlags(int flags, const std::wstring& text) {
   // Setting the text alignment explicitly in case it hasn't already been set.
   // This will make sure that we don't align text to the left on RTL locales
   // just because no alignment flag was passed to DrawStringInt().
@@ -139,7 +139,7 @@ CanvasSkia::~CanvasSkia() {
 }
 
 // static
-void CanvasSkia::SizeStringInt(const string16& text,
+void CanvasSkia::SizeStringInt(const std::wstring& text,
                                const gfx::Font& font,
                                int* width, int* height,
                                int flags) {
@@ -147,7 +147,7 @@ void CanvasSkia::SizeStringInt(const string16& text,
   // actually drawn, it will be clipped to whatever size box is provided, and
   // the time to do that doesn't depend on the length being clipped off.
   const int kMaxStringLength = 2048 - 1;  // So the trailing \0 fits in 2K.
-  string16 clamped_string(text.substr(0, kMaxStringLength));
+  std::wstring clamped_string(text.substr(0, kMaxStringLength));
 
   if (*width == 0) {
     // If multi-line + character break are on, the computed width will be one
@@ -177,7 +177,7 @@ void CanvasSkia::SizeStringInt(const string16& text,
   *height = r.bottom;
 }
 
-void CanvasSkia::DrawStringInt(const string16& text,
+void CanvasSkia::DrawStringInt(const std::wstring& text,
                                HFONT font,
                                const SkColor& color,
                                int x, int y, int w, int h,
@@ -190,7 +190,7 @@ void CanvasSkia::DrawStringInt(const string16& text,
   // length > 43680 (for which it draws nothing), and since we clamped to 2K in
   // SizeStringInt() we're unlikely to be able to display this much anyway.
   const int kMaxStringLength = 32768 - 1;  // So the trailing \0 fits in 32K.
-  string16 clamped_string(text.substr(0, kMaxStringLength));
+  std::wstring clamped_string(text.substr(0, kMaxStringLength));
 
   RECT text_bounds = { x, y, x + w, y + h };
   HDC dc = beginPlatformPaint();
@@ -214,7 +214,7 @@ void CanvasSkia::DrawStringInt(const string16& text,
   getTopPlatformDevice().makeOpaque(x, y, w, h);
 }
 
-void CanvasSkia::DrawStringInt(const string16& text,
+void CanvasSkia::DrawStringInt(const std::wstring& text,
                                const gfx::Font& font,
                                const SkColor& color,
                                int x, int y, int w, int h,
@@ -250,7 +250,7 @@ static bool pixelShouldGetHalo(const SkBitmap& bitmap,
   return false;
 }
 
-void CanvasSkia::DrawStringWithHalo(const string16& text,
+void CanvasSkia::DrawStringWithHalo(const std::wstring& text,
                                     const gfx::Font& font,
                                     const SkColor& text_color,
                                     const SkColor& halo_color_in,

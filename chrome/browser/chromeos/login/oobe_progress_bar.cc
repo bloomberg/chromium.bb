@@ -111,7 +111,7 @@ void OobeProgressBar::Paint(gfx::Canvas* canvas) {
                            next_x - ix, line_->height());
     }
 
-    string16 str = l10n_util::GetStringUTF16(steps_[i]);
+    std::wstring str = UTF16ToWide(l10n_util::GetStringUTF16(steps_[i]));
     canvas->DrawStringInt(str, font_, color,
         x + kTextPadding, y + dot->height() + kTextPadding,
         (next_x - x - 2 * kTextPadding),

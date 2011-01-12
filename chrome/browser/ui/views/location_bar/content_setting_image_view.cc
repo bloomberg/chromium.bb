@@ -183,7 +183,7 @@ void ContentSettingImageView::Paint(gfx::Canvas* canvas) {
   if (animation_in_progress_) {
     // Paint text to the right of the icon.
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    canvas->DrawStringInt(animated_text_,
+    canvas->DrawStringInt(UTF16ToWideHack(animated_text_),
         rb.GetFont(ResourceBundle::MediumFont), SK_ColorBLACK,
         GetImageBounds().right() + kTextMarginPixels, y(),
         width() - GetImageBounds().width(), height(),

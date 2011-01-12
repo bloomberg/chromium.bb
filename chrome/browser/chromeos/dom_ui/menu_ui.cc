@@ -43,30 +43,30 @@ namespace {
 const int kNoExtraResource = -1;
 
 // A utility function that generates css font property from gfx::Font.
-// NOTE: Returns UTF-8.
-std::string GetFontShorthand(const gfx::Font* font) {
-  std::string out;
+std::wstring GetFontShorthand(const gfx::Font* font) {
+  std::wstring out;
   if (font == NULL) {
     font = &(views::MenuConfig::instance().font);
   }
   if (font->GetStyle() & gfx::Font::BOLD) {
-    out.append("bold ");
+    out.append(L"bold ");
   }
   if (font->GetStyle() & gfx::Font::ITALIC) {
-    out.append("italic ");
+    out.append(L"italic ");
   }
   if (font->GetStyle() & gfx::Font::UNDERLINED) {
-    out.append("underline ");
+    out.append(L"underline ");
   }
 
   // TODO(oshima): The font size from gfx::Font is too small when
   // used in webkit. Figure out the reason.
-  out.append(base::IntToString(font->GetFontSize() + 4));
-  out.append("px/");
-  out.append(base::IntToString(std::max(kFavIconSize, font->GetHeight())));
-  out.append("px \"");
-  out.append(UTF16ToUTF8(font->GetFontName()));
-  out.append("\",sans-serif");
+  out.append(ASCIIToWide(base::IntToString(font->GetFontSize() + 4)));
+  out.append(L"px/");
+  out.append(ASCIIToWide(base::IntToString(
+      std::max(kFavIconSize, font->GetHeight()))));
+  out.append(L"px \"");
+  out.append(font->GetFontName());
+  out.append(L"\",sans-serif");
   return out;
 }
 
@@ -619,7 +619,7 @@ DictionaryValue* MenuUI::CreateMenuItem(const menus::MenuModel* model,
   item->SetBoolean("checked", model->IsItemCheckedAt(index));
   item->SetInteger("command_id", model->GetCommandIdAt(index));
   item->SetString(
-      "font", GetFontShorthand(model->GetLabelFontAt(index)));
+      "font", WideToUTF16(GetFontShorthand(model->GetLabelFontAt(index))));
   SkBitmap icon;
   if (model->GetIconAt(index, &icon) && !icon.isNull() && !icon.empty()) {
     item->SetString("icon", dom_ui_util::GetImageDataUrl(icon));

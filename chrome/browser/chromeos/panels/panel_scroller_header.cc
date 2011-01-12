@@ -1,6 +1,6 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
+// source code is governed by a BSD-style license that can be found in the
+// LICENSE file.
 
 #include "chrome/browser/chromeos/panels/panel_scroller_header.h"
 
@@ -45,6 +45,6 @@ void PanelScrollerHeader::Paint(gfx::Canvas* canvas) {
   gfx::Font font =
       rb.GetFont(ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
   int font_top = 1;
-  canvas->DrawStringInt(title_, font, 0xFF000000, 3, font_top,
+  canvas->DrawStringInt(UTF16ToWideHack(title_), font, 0xFF000000, 3, font_top,
                         size().width(), size().height() - font_top);
 }

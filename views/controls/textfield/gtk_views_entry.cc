@@ -45,7 +45,7 @@ static gint gtk_views_entry_expose_event(GtkWidget *widget,
       gfx::Font font = host->textfield()->font();
       const string16 text = host->textfield()->text_to_display_when_empty();
       canvas.DrawStringInt(
-          text, font,
+          UTF16ToWide(text), font,
           gfx::GdkColorToSkColor(widget->style->text[GTK_STATE_INSENSITIVE]),
           insets.left(), insets.top(),
           widget->allocation.width - insets.width(), font.GetHeight());

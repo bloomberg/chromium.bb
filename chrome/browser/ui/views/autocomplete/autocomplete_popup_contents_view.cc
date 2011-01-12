@@ -671,8 +671,8 @@ int AutocompleteResultView::DrawString(
     for (Classifications::const_iterator j(i->classifications.begin());
          j != i->classifications.end(); ++j) {
       int left = mirroring_context_->mirrored_left_coord(x, x + j->pixel_width);
-      canvas->DrawStringInt(WideToUTF16Hack(j->text), *j->font, j->color, left,
-                            y, j->pixel_width, j->font->GetHeight(), flags);
+      canvas->DrawStringInt(j->text, *j->font, j->color, left, y,
+                            j->pixel_width, j->font->GetHeight(), flags);
       x += j->pixel_width;
     }
   }

@@ -139,7 +139,8 @@ gboolean OnDragIconExpose(GtkWidget* sender,
   int text_width = sender->allocation.width - text_x;
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   const gfx::Font& base_font = rb.GetFont(ResourceBundle::BaseFont);
-  canvas.DrawStringInt(data->text, base_font, data->text_color,
+  canvas.DrawStringInt(UTF16ToWide(data->text),
+                       base_font, data->text_color,
                        text_x, 0, text_width, sender->allocation.height);
 
   return TRUE;

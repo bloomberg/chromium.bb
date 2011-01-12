@@ -15,22 +15,22 @@ namespace views {
 // All text sizing measurements (width and height) should be greater than this.
 const int kMinTextDimension = 4;
 
-#if defined(OS_WIN)
+#if defined(WIN_OS)
 // Courier is failing on linux because it's non scalable.
 TEST(LabelTest, FontPropertyCourier) {
   Label label;
-  string16 font_name(ASCIIToUTF16("courier"));
-  gfx::Font font(font_name, 30);
+  std::wstring font_name(L"courier");
+  gfx::Font font = gfx::Font::CreateFont(font_name, 30);
   label.SetFont(font);
   gfx::Font font_used = label.font();
-  EXPECT_EQ(font_name, font_used.GetFontName());
-  EXPECT_EQ(30, font_used.GetFontSize());
+  EXPECT_EQ(font_name, font_used.FontName());
+  EXPECT_EQ(30, font_used.FontSize());
 }
 #endif
 
 TEST(LabelTest, FontPropertyArial) {
   Label label;
-  string16 font_name(ASCIIToUTF16("arial"));
+  std::wstring font_name(L"arial");
   gfx::Font font(font_name, 30);
   label.SetFont(font);
   gfx::Font font_used = label.font();
@@ -214,7 +214,7 @@ TEST(LabelTest, MultiLineSizing) {
   // SizeToFit with limited width.
   label.SizeToFit(required_width - 1);
   int constrained_width = label.GetLocalBounds(true).width();
-#if defined(OS_WIN)
+#if defined(WIN_OS)
   // Canvas::SizeStringInt (in app/gfx/canvas_linux.cc)
   // has to be fixed to return the size that fits to given width/height.
   EXPECT_LT(constrained_width, required_width);
@@ -229,7 +229,7 @@ TEST(LabelTest, MultiLineSizing) {
   int required_height = label.GetHeightForWidth(required_width);
   EXPECT_GT(required_height, kMinTextDimension);
   int height_for_constrained_width = label.GetHeightForWidth(constrained_width);
-#if defined(OS_WIN)
+#if defined(WIN_OS)
   // Canvas::SizeStringInt (in app/gfx/canvas_linux.cc)
   // has to be fixed to return the size that fits to given width/height.
   EXPECT_GT(height_for_constrained_width, required_height);
@@ -261,7 +261,7 @@ TEST(LabelTest, MultiLineSizing) {
   // calculation.  If it is, then the height will grow when width
   // is shrunk.
   int height1 = label.GetHeightForWidth(required_width_with_border - 1);
-#if defined(OS_WIN)
+#if defined(WIN_OS)
   // Canvas::SizeStringInt (in app/gfx/canvas_linux.cc)
   // has to be fixed to return the size that fits to given width/height.
   EXPECT_GT(height1, required_height_with_border);

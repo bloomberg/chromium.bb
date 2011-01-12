@@ -133,7 +133,7 @@ void CloudPrintSetupFlow::GetDOMMessageHandlers(
 void CloudPrintSetupFlow::GetDialogSize(gfx::Size* size) const {
   PrefService* prefs = profile_->GetPrefs();
   gfx::Font approximate_web_font(
-      UTF8ToUTF16(prefs->GetString(prefs::kWebKitSansSerifFontFamily)),
+      UTF8ToWide(prefs->GetString(prefs::kWebKitSansSerifFontFamily)),
       prefs->GetInteger(prefs::kWebKitDefaultFontSize));
 
   if (setup_done_) {
@@ -282,7 +282,7 @@ void CloudPrintSetupFlow::ShowSetupDone() {
   if (dom_ui_) {
     PrefService* prefs = profile_->GetPrefs();
     gfx::Font approximate_web_font(
-        UTF8ToUTF16(prefs->GetString(prefs::kWebKitSansSerifFontFamily)),
+        UTF8ToWide(prefs->GetString(prefs::kWebKitSansSerifFontFamily)),
         prefs->GetInteger(prefs::kWebKitDefaultFontSize));
     gfx::Size done_size = gfx::GetLocalizedContentsSizeForFont(
         IDS_CLOUD_PRINT_SETUP_WIZARD_DONE_WIDTH_CHARS,

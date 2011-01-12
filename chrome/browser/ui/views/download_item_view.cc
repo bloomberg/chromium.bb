@@ -515,9 +515,8 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
                                SkColorGetG(file_name_color)),
               static_cast<int>(kDownloadItemLuminanceMod *
                                SkColorGetB(file_name_color)));
-      canvas->DrawStringInt(WideToUTF16Hack(status_text_), font_,
-                            file_name_color, mirrored_x, y, kTextWidth,
-                            font_.GetHeight());
+      canvas->DrawStringInt(status_text_, font_, file_name_color,
+                            mirrored_x, y, kTextWidth, font_.GetHeight());
     }
   }
 
@@ -634,7 +633,7 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
                                       (box_height_ - font_.GetHeight()) / 2);
 
     // Draw the file's name.
-    canvas->DrawStringInt(filename, font_,
+    canvas->DrawStringInt(UTF16ToWide(filename), font_,
                           IsEnabled() ? file_name_color :
                                         kFileNameDisabledColor,
                           mirrored_x, y, kTextWidth, font_.GetHeight());

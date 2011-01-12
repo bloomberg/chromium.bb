@@ -24,14 +24,14 @@ std::string MakeFontName(std::string family_name, int pixel_size) {
   // The given font might not be available (the default fonts we use are not
   // installed by default on some distros).  So figure out which font we are
   // actually falling back to and display that.  (See crbug.com/31381.)
-  string16 actual_family_name = gfx::Font(
-      UTF8ToUTF16(family_name), pixel_size).GetFontName();
+  std::wstring actual_family_name = gfx::Font(
+      UTF8ToWide(family_name), pixel_size).GetFontName();
   std::string fontname;
   // TODO(mattm): We can pass in the size in pixels (px), and the font button
   // actually honors it, but when you open the selector it interprets it as
   // points.  See crbug.com/17857
   base::SStringPrintf(&fontname, "%s, %dpx",
-                      UTF16ToUTF8(actual_family_name).c_str(), pixel_size);
+                      WideToUTF8(actual_family_name).c_str(), pixel_size);
   return fontname;
 }
 

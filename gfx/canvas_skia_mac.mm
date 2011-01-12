@@ -39,7 +39,7 @@ void CanvasSkia::SizeStringInt(const string16& text,
   *height = font.GetHeight();
 }
 
-void CanvasSkia::DrawStringInt(const string16& text,
+void CanvasSkia::DrawStringInt(const std::wstring& text,
                                const gfx::Font& font,
                                const SkColor& color,
                                int x, int y, int w, int h,
@@ -68,8 +68,8 @@ void CanvasSkia::DrawStringInt(const string16& text,
           nil];
 
   NSAttributedString* ns_string =
-      [[[NSAttributedString alloc] initWithString:base::SysUTF16ToNSString(text)
-                                       attributes:attributes] autorelease];
+      [[[NSAttributedString alloc] initWithString:base::SysWideToNSString(text)
+                                        attributes:attributes] autorelease];
   base::mac::ScopedCFTypeRef<CTFramesetterRef> framesetter(
       CTFramesetterCreateWithAttributedString(
       reinterpret_cast<CFAttributedStringRef>(ns_string)));

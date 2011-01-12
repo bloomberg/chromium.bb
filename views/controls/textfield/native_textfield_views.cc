@@ -404,11 +404,13 @@ void NativeTextfieldViews::PaintTextAndCursor(gfx::Canvas* canvas) {
 
     if ((*iter).selected) {
       canvas->FillRectInt(selection_color, x_offset, y, width, text_height);
-      canvas->DrawStringInt(text, GetFont(), kSelectedTextColor,
-                            x_offset, y, width, text_height);
+      canvas->DrawStringInt(
+          UTF16ToWide(text), GetFont(), kSelectedTextColor,
+          x_offset, y, width, text_height);
     } else {
-      canvas->DrawStringInt(text, GetFont(), text_color,
-                            x_offset, y, width, text_height);
+      canvas->DrawStringInt(
+          UTF16ToWide(text), GetFont(), text_color,
+          x_offset, y, width, text_height);
     }
     x_offset += width;
   }

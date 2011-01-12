@@ -75,7 +75,7 @@ class CanvasSkia : public skia::PlatformCanvas,
   //   we don't do any fancy blurring.
   // On Linux, text with halo is created by stroking it with 2px |halo_color|
   //   then filling it with |text_color|.
-  void DrawStringWithHalo(const string16& text,
+  void DrawStringWithHalo(const std::wstring& text,
                           const gfx::Font& font,
                           const SkColor& text_color,
                           const SkColor& halo_color,
@@ -119,15 +119,15 @@ class CanvasSkia : public skia::PlatformCanvas,
                              int dest_x, int dest_y, int dest_w, int dest_h,
                              bool filter,
                              const SkPaint& paint);
-  virtual void DrawStringInt(const string16& text,
+  virtual void DrawStringInt(const std::wstring& text,
                              const gfx::Font& font,
                              const SkColor& color,
                              int x, int y, int w, int h);
-  virtual void DrawStringInt(const string16& text,
+  virtual void DrawStringInt(const std::wstring& text,
                              const gfx::Font& font,
                              const SkColor& color,
                              const gfx::Rect& display_rect);
-  virtual void DrawStringInt(const string16& text,
+  virtual void DrawStringInt(const std::wstring& text,
                              const gfx::Font& font,
                              const SkColor& color,
                              int x, int y, int w, int h,
@@ -150,7 +150,7 @@ class CanvasSkia : public skia::PlatformCanvas,
   // Draws text with the specified color, font and location. The text is
   // aligned to the left, vertically centered, clipped to the region. If the
   // text is too big, it is truncated and '...' is added to the end.
-  void DrawStringInt(const string16& text,
+  void DrawStringInt(const std::wstring& text,
                      HFONT font,
                      const SkColor& color,
                      int x, int y, int w, int h,

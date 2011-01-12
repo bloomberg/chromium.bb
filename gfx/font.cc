@@ -30,7 +30,7 @@ Font::Font(NativeFont native_font)
 Font::Font(PlatformFont* platform_font) : platform_font_(platform_font) {
 }
 
-Font::Font(const string16& font_name, int font_size)
+Font::Font(const std::wstring& font_name, int font_size)
     : platform_font_(PlatformFont::CreateFromNameAndSize(font_name,
                                                          font_size)) {
 }
@@ -70,7 +70,7 @@ int Font::GetStyle() const {
   return platform_font_->GetStyle();
 }
 
-string16 Font::GetFontName() const {
+const std::wstring& Font::GetFontName() const {
   return platform_font_->GetFontName();
 }
 

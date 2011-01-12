@@ -110,14 +110,14 @@ void DrawTextStartingFrom(gfx::Canvas* canvas,
   // iterate to the next line breaking opportunity.
   while (iter.Advance()) {
     // Get the word and figure out the dimensions.
-    string16 word;
+    std::wstring word;
     if (!ltr_within_rtl)
-      word = iter.GetString();  // Get the next word.
+      word = UTF16ToWide(iter.GetString());  // Get the next word.
     else
-      word = text16;  // Draw the whole text at once.
+      word = text;  // Draw the whole text at once.
 
-    int w = font.GetStringWidth(word), h = font.GetHeight();
-    gfx::CanvasSkia::SizeStringInt(word, font, &w, &h, flags);
+    int w = font.GetStringWidth(WideToUTF16Hack(word)), h = font.GetHeight();
+    gfx::CanvasSkia::SizeStringInt(WideToUTF16Hack(word), font, &w, &h, flags);
 
     // If we exceed the boundaries, we need to wrap.
     WrapIfWordDoesntFit(w, font.GetHeight(), position, bounds);
@@ -129,7 +129,7 @@ void DrawTextStartingFrom(gfx::Canvas* canvas,
       // When drawing LTR strings inside RTL text we need to make sure we
       // draw the trailing space (if one exists after the LTR text) to the
       // left of the LTR string.
-      if (ltr_within_rtl && word[word.size() - 1] == ' ') {
+      if (ltr_within_rtl && word[word.size() - 1] == L' ') {
         int space_w = font.GetStringWidth(ASCIIToUTF16(" "));
         int space_h = font.GetHeight();
         gfx::CanvasSkia::SizeStringInt(ASCIIToUTF16(" "), font, &space_w,
@@ -143,7 +143,7 @@ void DrawTextStartingFrom(gfx::Canvas* canvas,
     canvas->DrawStringInt(word, font, text_color, x, y, w, font.GetHeight(),
                           flags);
 
-    if (word.size() > 0 && word[word.size() - 1] == '\x0a') {
+    if (word.size() > 0 && word[word.size() - 1] == L'\x0a') {
       // When we come across '\n', we move to the beginning of the next line.
       position->set_width(0);
       position->Enlarge(0, font.GetHeight());

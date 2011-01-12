@@ -447,7 +447,7 @@ void StatusBubbleViews::StatusView::Paint(gfx::Canvas* canvas) {
       (SkColorGetR(text_color) + SkColorGetR(toolbar_color)) / 2,
       (SkColorGetG(text_color) + SkColorGetR(toolbar_color)) / 2,
       (SkColorGetB(text_color) + SkColorGetR(toolbar_color)) / 2);
-  canvas->DrawStringInt(text_,
+  canvas->DrawStringInt(UTF16ToWide(text_),
                         views::Label::font(),
                         text_color,
                         body_bounds.x(),
