@@ -483,12 +483,7 @@ terminal_get_attr_row(struct terminal *terminal, int row)
 }
 
 union decoded_attr {
-	struct {
-		unsigned char foreground;
-		unsigned char background;
-		unsigned char bold;
-		unsigned char underline;
-	};
+	struct attr attr;
 	uint32_t key;
 };
 
@@ -526,10 +521,9 @@ terminal_decode_attr(struct terminal *terminal, int row, int col,
 		}
 	}
 
-	decoded->foreground = foreground;
-	decoded->background = background;
-	decoded->bold = attr.a & (ATTRMASK_BOLD | ATTRMASK_BLINK);
-	decoded->underline = attr.a & ATTRMASK_UNDERLINE;
+	decoded->attr.fg = foreground;
+	decoded->attr.bg = background;
+	decoded->attr.a = attr.a;
 }
 
 static void
@@ -791,22 +785,22 @@ glyph_run_flush(struct glyph_run *run, union decoded_attr attr)
 {
 	cairo_scaled_font_t *font;
 
-	if (run->count == 0)
-		run->attr = attr;
 	if (run->count > ARRAY_LENGTH(run->glyphs) - 10 ||
 	    (attr.key != run->attr.key)) {
-		if (run->attr.bold)
+		if (run->attr.attr.a & (ATTRMASK_BOLD | ATTRMASK_BLINK))
 			font = run->terminal->font_bold;
 		else
 			font = run->terminal->font_normal;
 		cairo_set_scaled_font(run->cr, font);
 		terminal_set_color(run->terminal, run->cr,
-				   run->attr.foreground);
+				   run->attr.attr.fg);
 
-		cairo_show_glyphs (run->cr, run->glyphs, run->count);
+		if (!(run->attr.attr.a & ATTRMASK_CONCEALED))
+			cairo_show_glyphs (run->cr, run->glyphs, run->count);
 		run->g = run->glyphs;
 		run->count = 0;
 	}
+	run->attr = attr;
 }
 
 static void
@@ -817,7 +811,7 @@ glyph_run_add(struct glyph_run *run, int x, int y, union utf8_char *c)
 
 	num_glyphs = ARRAY_LENGTH(run->glyphs) - run->count;
 
-	if (run->attr.bold)
+	if (run->attr.attr.a & (ATTRMASK_BOLD | ATTRMASK_BLINK))
 		font = run->terminal->font_bold;
 	else
 		font = run->terminal->font_normal;
@@ -864,15 +858,14 @@ terminal_draw_contents(struct terminal *terminal)
 
 	/* paint the background */
 	for (row = 0; row < terminal->height; row++) {
-		p_row = terminal_get_row(terminal, row);
 		for (col = 0; col < terminal->width; col++) {
 			/* get the attributes for this character cell */
 			terminal_decode_attr(terminal, row, col, &attr);
 
-			if (attr.background == terminal->color_scheme->border)
+			if (attr.attr.bg == terminal->color_scheme->border)
 				continue;
 
-			terminal_set_color(terminal, cr, attr.background);
+			terminal_set_color(terminal, cr, attr.attr.bg);
 			cairo_move_to(cr, side_margin + (col * extents.max_x_advance),
 			      top_margin + (row * extents.height));
 			cairo_rel_line_to(cr, extents.max_x_advance, 0);
@@ -897,7 +890,8 @@ terminal_draw_contents(struct terminal *terminal)
 
 			text_x = side_margin + col * extents.max_x_advance;
 			text_y = top_margin + extents.ascent + row * extents.height;
-			if (attr.underline) {
+			if (attr.attr.a & ATTRMASK_UNDERLINE) {
+				terminal_set_color(terminal, cr, attr.attr.fg);
 				cairo_move_to(cr, text_x, (double)text_y + 1.5);
 				cairo_line_to(cr, text_x + extents.max_x_advance, (double) text_y + 1.5);
 				cairo_stroke(cr);
