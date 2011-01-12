@@ -273,6 +273,13 @@ const Experiment kExperiments[] = {
     kOsWin | kOsLinux,
     SINGLE_VALUE_TYPE(switches::kInstantAutocompleteImmediately)
   },
+  {
+    "block-reading-third-party-cookies",
+    IDS_FLAGS_BLOCK_ALL_THIRD_PARTY_COOKIES_NAME,
+    IDS_FLAGS_BLOCK_ALL_THIRD_PARTY_COOKIES_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kBlockReadingThirdPartyCookies)
+  },
 };
 
 const Experiment* experiments = kExperiments;

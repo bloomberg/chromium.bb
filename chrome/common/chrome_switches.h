@@ -38,6 +38,7 @@ extern const char kAuthNegotiateDelegateWhitelist[];
 extern const char kAuthSchemes[];
 extern const char kAuthServerWhitelist[];
 extern const char kAutomationClientChannelID[];
+extern const char kBlockReadingThirdPartyCookies[];
 extern const char kBrowserAssertTest[];
 extern const char kBrowserCrashTest[];
 extern const char kBrowserSubprocessPath[];

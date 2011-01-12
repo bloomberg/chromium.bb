@@ -166,7 +166,7 @@ class IOThread : public base::Thread {
   void SetAcceptAllCookies(bool accept_all_cookies) {
     StaticCookiePolicy::Type policy_type = accept_all_cookies ?
         StaticCookiePolicy::ALLOW_ALL_COOKIES :
-        StaticCookiePolicy::BLOCK_THIRD_PARTY_COOKIES;
+        StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES;
     static_cast<StaticCookiePolicy*>(g_request_context->cookie_policy())->
         set_type(policy_type);
   }

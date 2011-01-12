@@ -4222,6 +4222,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_EXPERIMENTAL_LOCATION_FEATURES_DESCRIPTION" desc="Description of the 'Enable experimental location features' lab.">
         Enables experimental extensions to the geolocation feature. Includes using operating system location APIs (where available), and sending additional local network configuration data to the Google location service to provide higher accuracy positioning.
       </message>
+      <message name="IDS_FLAGS_BLOCK_ALL_THIRD_PARTY_COOKIES_NAME" desc="Name of the 'Block all third-party cookies' lab.">
+        Block all third-party cookies
+      </message>
+      <message name="IDS_FLAGS_BLOCK_ALL_THIRD_PARTY_COOKIES_DESCRIPTION" desc="Description of the 'Block all third-party cookies' lab.">
+        When the option to block third-party cookies from being set is enabled, also block third-party cookies from being read.
+      </message>
 
       <!-- Instant -->
       <message name="IDS_INSTANT_OPT_IN_ENABLE" desc="Button shown in the omnibox dropdown for enabling instant">
@@ -5195,7 +5201,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Exceptions...
       </message>
       <message name="IDS_COOKIES_BLOCK_3RDPARTY_CHKBOX" desc="A checkbox in the Content Settings dialog for blocking all 3rd party cookies.">
-        Block all third-party cookies without exception
+        Ignore exceptions and block third-party cookies from being set
       </message>
 
       <!-- Mac users do not close their browser; they quit it. -->

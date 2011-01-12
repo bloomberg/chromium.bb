@@ -28,7 +28,7 @@ class ChromeCookiePolicy
       public net::CookiePolicy {
  public:
   explicit ChromeCookiePolicy(HostContentSettingsMap* map);
-  ~ChromeCookiePolicy();
+  virtual ~ChromeCookiePolicy();
 
   // CookiePolicy methods:
   virtual int CanGetCookies(const GURL& url, const GURL& first_party,
@@ -70,6 +70,11 @@ class ChromeCookiePolicy
   HostCompletionsMap host_completions_map_;
 
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
+
+  // True if blocking third-party cookies also applies to reading them.
+  bool strict_third_party_blocking_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeCookiePolicy);
 };
 
 #endif  // CHROME_BROWSER_NET_CHROME_COOKIE_POLICY_H_

@@ -87,6 +87,11 @@ const char kAuthServerWhitelist[] = "auth-server-whitelist";
 // automation-related messages on IPC channel with the given ID.
 const char kAutomationClientChannelID[]     = "automation-channel";
 
+// When the option to block third-party cookies from being set is enabled,
+// also block third-party cookies from being read.
+const char kBlockReadingThirdPartyCookies[] =
+    "block-reading-third-party-cookies";
+
 // Causes the browser process to throw an assertion on startup.
 const char kBrowserAssertTest[]             = "assert-test";
 

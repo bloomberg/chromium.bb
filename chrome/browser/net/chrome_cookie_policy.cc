@@ -4,10 +4,12 @@
 
 #include "chrome/browser/net/chrome_cookie_policy.h"
 
+#include "base/command_line.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/common/chrome_switches.h"
 #include "net/base/net_errors.h"
 #include "net/base/static_cookie_policy.h"
 
@@ -20,6 +22,8 @@ static const size_t kMaxCompletionsPerHost = 10000;
 
 ChromeCookiePolicy::ChromeCookiePolicy(HostContentSettingsMap* map)
     : host_content_settings_map_(map) {
+  strict_third_party_blocking_ = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kBlockReadingThirdPartyCookies);
 }
 
 ChromeCookiePolicy::~ChromeCookiePolicy() {
@@ -32,8 +36,9 @@ int ChromeCookiePolicy::CanGetCookies(const GURL& url,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (host_content_settings_map_->BlockThirdPartyCookies()) {
-    net::StaticCookiePolicy policy(
-        net::StaticCookiePolicy::BLOCK_THIRD_PARTY_COOKIES);
+    net::StaticCookiePolicy policy(strict_third_party_blocking_ ?
+        net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES :
+        net::StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES);
     int rv = policy.CanGetCookies(url, first_party, NULL);
     if (rv != net::OK)
       return rv;
@@ -69,8 +74,9 @@ int ChromeCookiePolicy::CanSetCookie(const GURL& url,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (host_content_settings_map_->BlockThirdPartyCookies()) {
-    net::StaticCookiePolicy policy(
-        net::StaticCookiePolicy::BLOCK_THIRD_PARTY_COOKIES);
+    net::StaticCookiePolicy policy(strict_third_party_blocking_ ?
+        net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES :
+        net::StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES);
     int rv = policy.CanSetCookie(url, first_party, cookie_line, NULL);
     if (rv != net::OK)
       return rv;

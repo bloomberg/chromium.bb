@@ -884,7 +884,7 @@ void HostContentSettingsMap::MigrateObsoleteCookiePref(PrefService* prefs) {
     }
     if (!prefs->HasPrefPath(prefs::kBlockThirdPartyCookies)) {
       SetBlockThirdPartyCookies(cookie_behavior ==
-          net::StaticCookiePolicy::BLOCK_THIRD_PARTY_COOKIES);
+          net::StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES);
     }
   }
 }
