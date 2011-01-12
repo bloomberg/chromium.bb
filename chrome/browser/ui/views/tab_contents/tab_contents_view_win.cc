@@ -182,9 +182,6 @@ void TabContentsViewWin::SizeContents(const gfx::Size& size) {
 }
 
 void TabContentsViewWin::Focus() {
-  views::FocusManager* focus_manager =
-      views::FocusManager::GetFocusManagerForNativeView(GetNativeView());
-
   if (tab_contents()->interstitial_page()) {
     tab_contents()->interstitial_page()->Focus();
     return;
