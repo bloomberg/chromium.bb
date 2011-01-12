@@ -11,6 +11,54 @@
 
 namespace chromeos {
 
+class BurnLibraryImpl : public BurnLibrary,
+                        public base::SupportsWeakPtr<BurnLibraryImpl> {
+ public:
+
+  BurnLibraryImpl();
+  virtual ~BurnLibraryImpl();
+
+  // BurnLibrary implementation.
+  virtual void AddObserver(Observer* observer);
+  virtual void RemoveObserver(Observer* observer);
+  virtual bool DoBurn(const FilePath& from_path, const FilePath& to_path);
+
+  bool BurnImage(const FilePath& from_path, const FilePath& to_path);
+  void UpdateBurnStatus(const ImageBurnStatus& status, BurnEventType evt);
+
+ private:
+  void Init();
+  static void BurnStatusChangedHandler(void* object,
+                                       const BurnStatus& status,
+                                       BurnEventType evt);
+
+ private:
+  ObserverList<BurnLibrary::Observer> observers_;
+  BurnStatusConnection burn_status_connection_;
+
+  // Holds a path that is currently being burnt to.
+  std::string target_path_;
+
+  DISALLOW_COPY_AND_ASSIGN(BurnLibraryImpl);
+};
+
+class BurnLibraryTaskProxy
+    : public base::RefCountedThreadSafe<BurnLibraryTaskProxy> {
+ public:
+  explicit BurnLibraryTaskProxy(const base::WeakPtr<BurnLibraryImpl>& library);
+
+  void BurnImage(const FilePath& from_path, const FilePath& to_path);
+
+  void UpdateBurnStatus(ImageBurnStatus* status, BurnEventType evt);
+
+ private:
+  base::WeakPtr<BurnLibraryImpl> library_;
+
+  friend class base::RefCountedThreadSafe<BurnLibraryTaskProxy>;
+
+  DISALLOW_COPY_AND_ASSIGN(BurnLibraryTaskProxy);
+};
+
 BurnLibraryImpl::BurnLibraryImpl() {
   if (CrosLibrary::Get()->EnsureLoaded()) {
       Init();
