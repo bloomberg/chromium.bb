@@ -502,7 +502,7 @@ int NaClDescMapDescriptor(struct NaClDesc         *desc,
    * When probing by VirtualAlloc/mmap, use the same granularity
    * as the Map virtual function (64KB).
    */
-  rounded_size = NaClRoundAllocPage(st.nacl_abi_st_size);
+  rounded_size = NaClRoundAllocPage((size_t) st.nacl_abi_st_size);
 
   /* Find an address range to map the object into. */
   do {

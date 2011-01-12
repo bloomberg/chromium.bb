@@ -257,7 +257,8 @@ int NaClNanosleep(struct nacl_abi_timespec const *req,
   UNREFERENCED_PARAMETER(rem);
 
   /* round up from ns resolution to ms resolution */
-  sleep_ms = (req->tv_sec * NACL_MILLIS_PER_UNIT +
+  /* TODO(bsy): report an error or loop if req->tv_sec does not fit in DWORD */
+  sleep_ms = ((DWORD) req->tv_sec * NACL_MILLIS_PER_UNIT +
               NACL_UNIT_CONVERT_ROUND(req->tv_nsec, NACL_NANOS_PER_MILLI));
 
   /* round up to minimum timer resolution */
