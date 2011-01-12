@@ -372,6 +372,9 @@ class WebGraphicsContext3DCommandBufferImpl
   ggl::Context* context() { return context_; }
 
  private:
+  // SwapBuffers callback;
+  void OnSwapBuffers();
+
   // The GGL context we use for OpenGL rendering.
   ggl::Context* context_;
   // If rendering directly to WebView, weak pointer to it.

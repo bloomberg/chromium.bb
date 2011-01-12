@@ -119,7 +119,8 @@ bool WebGraphicsContext3DCommandBufferImpl::initialize(
     if (context_) {
       ggl::SetSwapBuffersCallback(
           context_,
-          NewCallback(renderview, &RenderView::DidFlushPaint));
+          NewCallback(this,
+                      &WebGraphicsContext3DCommandBufferImpl::OnSwapBuffers));
     }
   } else {
     bool compositing_enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
@@ -1031,6 +1032,14 @@ void WebGraphicsContext3DCommandBufferImpl::copyTextureToCompositor(
   makeContextCurrent();
   glCopyTextureToParentTextureCHROMIUM(texture, parentTexture);
   glFlush();
+}
+
+void WebGraphicsContext3DCommandBufferImpl::OnSwapBuffers() {
+  // This may be called after tear-down of the RenderView.
+  RenderView* renderview =
+      web_view_ ? RenderView::FromWebView(web_view_) : NULL;
+  if (renderview)
+    renderview->DidFlushPaint();
 }
 
 #endif  // defined(ENABLE_GPU)
