@@ -304,7 +304,9 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
 
 // Test if ctrl-* accelerators are workable in omnibox.
 // See http://crbug.com/19193: omnibox blocks ctrl-* commands
-IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, BrowserAccelerators) {
+//
+// Flaky on interactive tests (dbg), http://crbug.com/69433
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, FLAKY_BrowserAccelerators) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
   browser()->FocusLocationBar();
