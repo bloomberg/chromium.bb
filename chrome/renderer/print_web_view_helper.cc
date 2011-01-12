@@ -373,25 +373,31 @@ void PrintWebViewHelper::UpdatePrintableSizeInPrintParameters(
       &content_width_in_points, &content_height_in_points,
       &margin_top_in_points, &margin_right_in_points,
       &margin_bottom_in_points, &margin_left_in_points);
-
 #if defined(OS_MACOSX)
-  params->page_size = gfx::Size(
-      static_cast<int>(content_width_in_points +
-          margin_left_in_points + margin_right_in_points),
-      static_cast<int>(content_height_in_points +
-          margin_top_in_points + margin_bottom_in_points));
-
-  params->printable_size = gfx::Size(static_cast<int>(content_width_in_points),
-      static_cast<int>(content_height_in_points));
+  // On the Mac, the printable area is in points, don't do any scaling based
+  // on dpi.
+  int dpi = printing::kPointsPerInch;
 #else
+  int dpi = static_cast<int>(params->dpi);
+#endif  // defined(OS_MACOSX)
   params->printable_size = gfx::Size(
-      static_cast<int>(ConvertUnitDouble(
-          content_width_in_points, printing::kPointsPerInch, params->dpi)),
-      static_cast<int>(ConvertUnitDouble(
-          content_height_in_points, printing::kPointsPerInch, params->dpi)));
-#endif
-  params->margin_top = static_cast<int>(margin_top_in_points);
-  params->margin_left = static_cast<int>(margin_left_in_points);
+      static_cast<int>(ConvertUnitDouble(content_width_in_points,
+          printing::kPointsPerInch, dpi)),
+      static_cast<int>(ConvertUnitDouble(content_height_in_points,
+          printing::kPointsPerInch, dpi)));
+
+  params->page_size = gfx::Size(
+      static_cast<int>(ConvertUnitDouble(content_width_in_points +
+          margin_left_in_points + margin_right_in_points,
+          printing::kPointsPerInch, dpi)),
+      static_cast<int>(ConvertUnitDouble(content_height_in_points +
+          margin_top_in_points + margin_bottom_in_points,
+          printing::kPointsPerInch, dpi)));
+
+  params->margin_top = static_cast<int>(ConvertUnitDouble(
+      margin_top_in_points, printing::kPointsPerInch, dpi));
+  params->margin_left = static_cast<int>(ConvertUnitDouble(
+      margin_left_in_points, printing::kPointsPerInch, dpi));
 }
 
 bool PrintWebViewHelper::InitPrintSettings(WebFrame* frame) {
