@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -251,9 +251,6 @@ class UITestBase {
   }
   static int action_max_timeout_ms() {
     return TestTimeouts::action_max_timeout_ms();
-  }
-  static int test_timeout_ms() {
-    return TestTimeouts::huge_test_timeout_ms();
   }
 
   // Fetch the state which determines whether the profile will be cleared on

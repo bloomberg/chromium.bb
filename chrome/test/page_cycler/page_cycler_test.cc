@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
 #include "base/sys_string_conversions.h"
+#include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/common/chrome_constants.h"
@@ -239,8 +240,9 @@ class PageCyclerTest : public UIPerfTest {
     ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(test_url));
 
     // Wait for the test to finish.
-    ASSERT_TRUE(WaitUntilCookieValue(tab.get(), test_url, "__pc_done",
-                                     UITest::test_timeout_ms(), "1"));
+    ASSERT_TRUE(WaitUntilCookieValue(
+        tab.get(), test_url, "__pc_done",
+        TestTimeouts::huge_test_timeout_ms(), "1"));
 
     std::string cookie;
     ASSERT_TRUE(tab->GetCookieByName(test_url, "__pc_pages", &cookie));

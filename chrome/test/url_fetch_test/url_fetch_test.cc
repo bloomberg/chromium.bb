@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/automation/tab_proxy.h"
@@ -53,13 +54,15 @@ class UrlFetchTest : public UITest {
 
     if (wait_cookie_name) {
       if (wait_cookie_value) {
-        bool completed = WaitUntilCookieValue(tab.get(), url, wait_cookie_name,
-                                              UITest::test_timeout_ms(),
-                                              wait_cookie_value);
+        bool completed = WaitUntilCookieValue(
+            tab.get(), url, wait_cookie_name,
+            TestTimeouts::huge_test_timeout_ms(),
+            wait_cookie_value);
         ASSERT_TRUE(completed);
       } else {
         result->cookie_value = WaitUntilCookieNonEmpty(
-            tab.get(), url, wait_cookie_name, UITest::test_timeout_ms());
+            tab.get(), url, wait_cookie_name,
+            TestTimeouts::huge_test_timeout_ms());
         ASSERT_TRUE(result->cookie_value.length());
       }
     }

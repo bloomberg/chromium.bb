@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,7 @@
 #include "base/path_service.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
+#include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/automation/tab_proxy.h"
@@ -111,8 +112,9 @@ class SeleniumTest : public UITest {
     tab->NavigateToURL(test_url);
 
     // Wait for the test to finish.
-    ASSERT_TRUE(WaitUntilCookieValue(tab.get(), test_url, "__tests_finished",
-                                     UITest::test_timeout_ms(), "1"));
+    ASSERT_TRUE(WaitUntilCookieValue(
+        tab.get(), test_url, "__tests_finished",
+        TestTimeouts::huge_test_timeout_ms(), "1"));
 
     std::string cookie;
     ASSERT_TRUE(tab->GetCookieByName(test_url, "__num_tests_total", &cookie));

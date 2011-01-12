@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
@@ -62,7 +63,7 @@ class V8BenchmarkTest : public UIPerfTest {
 
   bool WaitUntilTestCompletes(TabProxy* tab, const GURL& test_url) {
     return WaitUntilCookieValue(tab, test_url, "__done",
-                                UITest::test_timeout_ms(), "1");
+                                TestTimeouts::huge_test_timeout_ms(), "1");
   }
 
   bool GetScore(TabProxy* tab, std::string* score) {
