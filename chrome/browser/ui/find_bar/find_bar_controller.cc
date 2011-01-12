@@ -92,6 +92,7 @@ void FindBarController::ChangeTabContents(TabContents* contents) {
     // we don't surprise the user by popping up to the left for no apparent
     // reason.
     find_bar_->Show(false);
+    find_bar_->SetFocusAndSelection();
   }
 
   UpdateFindBarForCurrentResult();
