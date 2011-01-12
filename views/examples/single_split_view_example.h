@@ -29,8 +29,7 @@ class SingleSplitViewExample : public ExampleBase {
 
     single_split_view_ = new views::SingleSplitView(
         splitted_view_1, splitted_view_2,
-        views::SingleSplitView::HORIZONTAL_SPLIT,
-        NULL);
+        views::SingleSplitView::HORIZONTAL_SPLIT);
 
     splitted_view_1->SetColor(SK_ColorYELLOW, SK_ColorCYAN);
 

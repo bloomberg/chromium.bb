@@ -14,12 +14,7 @@ class Browser;
 class BrowserView;
 class ContentsContainer;
 class DownloadShelfView;
-class TabContentsContainer;
 class ToolbarView;
-
-namespace views {
-class SingleSplitView;
-}
 
 // The layout manager used in chrome browser.
 class BrowserViewLayout : public views::LayoutManager {
@@ -66,15 +61,6 @@ class BrowserViewLayout : public views::LayoutManager {
   int LayoutBookmarkBar(int top);
   int LayoutInfoBar(int top);
 
-  // Updates |source|'s reserved contents rect by mapping BrowserView's
-  // |browser_reserved_rect| into |future_source_bounds| taking into
-  // account |source|'s |future_parent_offset| (offset is relative to
-  // browser_view_).
-  void UpdateReservedContentsRect(const gfx::Rect& browser_reserved_rect,
-                                  TabContentsContainer* source,
-                                  const gfx::Rect& future_source_bounds,
-                                  const gfx::Point& future_parent_offset);
-
   // Layout the TabContents container, between the coordinates |top| and
   // |bottom|.
   void LayoutTabContents(int top, int bottom);
@@ -102,7 +88,7 @@ class BrowserViewLayout : public views::LayoutManager {
   // Child views that the layout manager manages.
   BaseTabStrip* tabstrip_;
   ToolbarView* toolbar_;
-  views::SingleSplitView* contents_split_;
+  views::View* contents_split_;
   ContentsContainer* contents_container_;
   views::View* infobar_container_;
   DownloadShelfView* download_shelf_;

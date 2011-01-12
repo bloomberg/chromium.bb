@@ -19,6 +19,19 @@ class TabContents;
 class TabContentsContainer : public views::View,
                              public NotificationObserver {
  public:
+  // Interface to request the reserved contents area updates.
+  class ReservedAreaDelegate {
+   public:
+    // Notifies that |source|'s reserved contents area should be updated.
+    // Reserved contents area is a rect in tab contents view coordinates where
+    // contents should not be rendered (to display the resize corner, sidebar
+    // mini tabs or any other UI elements overlaying this container).
+    virtual void UpdateReservedContentsRect(
+        const TabContentsContainer* source) = 0;
+   protected:
+    virtual ~ReservedAreaDelegate() {}
+  };
+
   TabContentsContainer();
   virtual ~TabContentsContainer();
 
@@ -37,9 +50,9 @@ class TabContentsContainer : public views::View,
   // so performance is better.
   void SetFastResize(bool fast_resize);
 
-  // Updates the current reserved rect in view coordinates where contents
-  // should not be rendered to draw the resize corner, sidebar mini tabs etc.
-  void SetReservedContentsRect(const gfx::Rect& reserved_rect);
+  void set_reserved_area_delegate(ReservedAreaDelegate* delegate) {
+    reserved_area_delegate_ = delegate;
+  }
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
@@ -71,7 +84,8 @@ class TabContentsContainer : public views::View,
   void TabContentsDestroyed(TabContents* contents);
 
   // Called when the RenderWidgetHostView of the hosted TabContents has changed.
-  void RenderWidgetHostViewChanged(RenderWidgetHostView* new_view);
+  void RenderWidgetHostViewChanged(RenderWidgetHostView* old_view,
+                                   RenderWidgetHostView* new_view);
 
   // An instance of a NativeTabContentsContainer object that holds the native
   // view handle associated with the attached TabContents.
@@ -83,10 +97,8 @@ class TabContentsContainer : public views::View,
   // Handles registering for our notifications.
   NotificationRegistrar registrar_;
 
-  // The current reserved rect in view coordinates where contents should not be
-  // rendered to draw the resize corner, sidebar mini tabs etc.
-  // Cached here to update ever changing renderers.
-  gfx::Rect cached_reserved_rect_;
+  // Delegate for enquiring reserved contents area. Not owned by us.
+  ReservedAreaDelegate* reserved_area_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsContainer);
 };
