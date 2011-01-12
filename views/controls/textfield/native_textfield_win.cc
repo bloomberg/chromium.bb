@@ -900,10 +900,13 @@ void NativeTextfieldWin::HandleKeystroke(UINT message,
     Event::EventType type;
     switch (message) {
       case WM_KEYDOWN:
+      case WM_SYSKEYDOWN:
       case WM_CHAR:
+      case WM_SYSCHAR:
         type = Event::ET_KEY_PRESSED;
         break;
       case WM_KEYUP:
+      case WM_SYSKEYUP:
         type = Event::ET_KEY_RELEASED;
         break;
       default:
