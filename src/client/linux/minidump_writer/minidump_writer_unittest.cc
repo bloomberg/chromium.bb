@@ -1,4 +1,4 @@
-// Copyright (c) 2010 Google Inc.
+// Copyright (c) 2011 Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,10 +27,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <unistd.h>
+#include <fcntl.h>
 #include <sys/poll.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#include <string>
 
 #include "breakpad_googletest_includes.h"
 #include "client/linux/handler/exception_handler.h"
@@ -113,7 +117,7 @@ TEST(MinidumpWriterTest, MappingInfo) {
   // And append a zero, because module IDs include an "age" field
   // which is always zero on Linux.
   module_identifier += "0";
-  
+
   // Get some memory.
   char* memory =
     reinterpret_cast<char*>(mmap(NULL,
@@ -148,7 +152,7 @@ TEST(MinidumpWriterTest, MappingInfo) {
   info.size = kMemorySize;
   info.offset = 0;
   strcpy(info.name, kMemoryName);
-  
+
   MappingList mappings;
   MappingEntry mapping;
   mapping.first = info;
@@ -205,7 +209,7 @@ TEST(MinidumpWriterTest, MappingInfoContained) {
   // And append a zero, because module IDs include an "age" field
   // which is always zero on Linux.
   module_identifier += "0";
-  
+
   // mmap a file
   char tempfile[] = TEMPDIR "/minidump-writer-unittest-temp-XXXXXX";
   mktemp(tempfile);
@@ -259,7 +263,8 @@ TEST(MinidumpWriterTest, MappingInfoContained) {
   mapping.first = info;
   memcpy(mapping.second, kModuleGUID, sizeof(MDGUID));
   mappings.push_back(mapping);
-  ASSERT_TRUE(WriteMinidump(dumpfile, child, &context, sizeof(context), mappings));
+  ASSERT_TRUE(
+      WriteMinidump(dumpfile, child, &context, sizeof(context), mappings));
 
   // Read the minidump. Load the module list, and ensure that
   // the mmap'ed |memory| is listed with the given module name
