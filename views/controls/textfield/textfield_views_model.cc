@@ -10,6 +10,9 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/font.h"
+#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "views/views_delegate.h"
 
 namespace views {
 
@@ -223,6 +226,38 @@ void TextfieldViewsModel::SelectAll() {
 
 void TextfieldViewsModel::ClearSelection() {
   selection_begin_ = cursor_pos_;
+}
+
+bool TextfieldViewsModel::Cut() {
+  if (HasSelection()) {
+    ui::ScopedClipboardWriter(views::ViewsDelegate::views_delegate
+        ->GetClipboard()).WriteText(GetSelectedText());
+    DeleteSelection();
+    return true;
+  }
+  return false;
+}
+
+void TextfieldViewsModel::Copy() {
+  if (HasSelection()) {
+    ui::ScopedClipboardWriter(views::ViewsDelegate::views_delegate
+        ->GetClipboard()).WriteText(GetSelectedText());
+  }
+}
+
+bool TextfieldViewsModel::Paste() {
+  string16 result;
+  views::ViewsDelegate::views_delegate->GetClipboard()
+      ->ReadText(ui::Clipboard::BUFFER_STANDARD, &result);
+  if (!result.empty()) {
+    if (HasSelection())
+      DeleteSelection();
+    text_.insert(cursor_pos_, result);
+    cursor_pos_ += result.length();
+    ClearSelection();
+    return true;
+  }
+  return false;
 }
 
 bool TextfieldViewsModel::HasSelection() const {

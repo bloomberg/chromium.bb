@@ -126,6 +126,17 @@ class TextfieldViewsModel {
     return GetVisibleText(0U, text_.length());
   }
 
+  // Cuts the currently selected text and puts it to clipboard. Returns true
+  // if text has changed after cutting.
+  bool Cut();
+
+  // Copies the currently selected text and puts it to clipboard.
+  void Copy();
+
+  // Pastes text from the clipboard at current cursor position. Returns true
+  // if text has changed after pasting.
+  bool Paste();
+
  private:
   friend class NativeTextfieldViews;
 

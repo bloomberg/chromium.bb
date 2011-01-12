@@ -441,6 +441,7 @@
         'focus/focus_manager_unittest.cc',
         'grid_layout_unittest.cc',
         'run_all_unittests.cc',
+        'test/test_views_delegate.h',
         'view_unittest.cc',
 
         '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',

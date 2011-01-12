@@ -445,6 +445,18 @@ bool NativeTextfieldViews::HandleKeyEvent(const KeyEvent& key_event) {
           cursor_changed = true;
         }
         break;
+      case app::VKEY_X:
+        if (control)
+          text_changed = model_->Cut();
+        break;
+      case app::VKEY_C:
+        if (control)
+          model_->Copy();
+        break;
+      case app::VKEY_V:
+        if (control)
+          text_changed = model_->Paste();
+        break;
       case app::VKEY_RIGHT:
         control ? model_->MoveCursorToNextWord(selection)
             : model_->MoveCursorRight(selection);

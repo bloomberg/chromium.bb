@@ -29,6 +29,7 @@
 #if defined(OS_WIN)
 #include "views/widget/widget_win.h"
 #include "views/controls/button/native_button_win.h"
+#include "views/test/test_views_delegate.h"
 #elif defined(OS_LINUX)
 #include "views/widget/widget_gtk.h"
 #include "views/window/window_gtk.h"
@@ -840,44 +841,6 @@ TEST_F(ViewTest, Textfield) {
 }
 
 #if defined(OS_WIN)
-class TestViewsDelegate : public views::ViewsDelegate {
- public:
-  TestViewsDelegate() {}
-  virtual ~TestViewsDelegate() {}
-
-  // Overridden from views::ViewsDelegate:
-  virtual ui::Clipboard* GetClipboard() const {
-    if (!clipboard_.get()) {
-      // Note that we need a MessageLoop for the next call to work.
-      clipboard_.reset(new ui::Clipboard);
-    }
-    return clipboard_.get();
-  }
-  virtual void SaveWindowPlacement(const std::wstring& window_name,
-                                   const gfx::Rect& bounds,
-                                   bool maximized) {
-  }
-  virtual bool GetSavedWindowBounds(const std::wstring& window_name,
-                                    gfx::Rect* bounds) const {
-    return false;
-  }
-  virtual bool GetSavedMaximizedState(const std::wstring& window_name,
-                                      bool* maximized) const {
-    return false;
-  }
-  virtual void NotifyAccessibilityEvent(
-      views::View* view, AccessibilityTypes::Event event_type) {}
-  virtual HICON GetDefaultWindowIcon() const {
-    return NULL;
-  }
-  virtual void AddRef() {}
-  virtual void ReleaseRef() {}
-
- private:
-  mutable scoped_ptr<ui::Clipboard> clipboard_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestViewsDelegate);
-};
 
 // Tests that the Textfield view respond appropiately to cut/copy/paste.
 TEST_F(ViewTest, TextfieldCutCopyPaste) {

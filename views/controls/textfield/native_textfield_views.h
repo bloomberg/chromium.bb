@@ -26,7 +26,6 @@ class TextfieldViewsModel;
 // No platform specific code is used.
 // Following features are not yet supported.
 // * BIDI
-// * Clipboard  (Cut & Paste).
 // * Context Menu.
 // * IME/i18n support.
 // * X selection (only if we want to support).
