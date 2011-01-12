@@ -11,6 +11,18 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/extensions/extension_function.h"
 
+class MetricsSetEnabledFunction : public SyncExtensionFunction {
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.metrics.setEnabled")
+ protected:
+  virtual bool RunImpl();
+};
+
+class MetricsGetEnabledFunction : public SyncExtensionFunction {
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.metrics.getEnabled")
+ protected:
+  virtual bool RunImpl();
+};
+
 class MetricsRecordUserActionFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.metrics.recordUserAction")

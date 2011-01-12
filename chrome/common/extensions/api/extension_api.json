@@ -3065,6 +3065,39 @@
     ],
     "functions": [
       {
+        "name": "getEnabled",
+        "type": "function",
+        "description": "Get the user preference to send UMA and crash reports to Google.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {"name": "enabled", "type": "boolean"}
+            ]
+          }
+        ]
+      },
+      {
+        "name": "setEnabled",
+        "type": "function",
+        "description": "Set the user preference to send UMA and crash reports to Google.",
+        "parameters": [
+          {"name": "enabled", "type": "boolean", "description": "True for setting Chrome to actively send UMA and crash reports, false for disabling this."},
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {
+                "name": "enabled", 
+                "type": "boolean",
+                "description": "The actual value set. If it is not the one passed in parameter, the value couldn't be changed (e.g. because of security)."
+              }
+            ]
+          }          
+        ]
+      },
+      {
         "name": "recordUserAction",
         "type": "function",
         "description": "Records an action performed by the user.",

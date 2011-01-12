@@ -8,6 +8,8 @@
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/ui/options/options_util.h"
+#include "chrome/installer/util/google_update_settings.h"
 
 using base::Histogram;
 using base::LinearHistogram;
@@ -30,6 +32,25 @@ std::string BuildMetricName(const std::string& name,
 // These extension function classes are enabled only if the
 // enable-metrics-extension-api command line switch is used.  Refer to
 // extension_function_dispatcher.cc to see how they are enabled.
+
+bool MetricsSetEnabledFunction::RunImpl() {
+  bool enabled = false;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &enabled));
+
+  // Using OptionsUtil is better because it actually ensures we reset all the
+  // necessary threads. This is the main way for starting / stopping UMA and
+  // crash reporting.
+  // This method will return the resulting enabled, which we send to JS.
+  bool result = OptionsUtil::ResolveMetricsReportingEnabled(enabled);
+  result_.reset(Value::CreateBooleanValue(result));
+  return true;
+}
+
+bool MetricsGetEnabledFunction::RunImpl() {
+  bool enabled = GoogleUpdateSettings::GetCollectStatsConsent();
+  result_.reset(Value::CreateBooleanValue(enabled));
+  return true;
+}
 
 bool MetricsRecordUserActionFunction::RunImpl() {
   std::string name;

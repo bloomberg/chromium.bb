@@ -9,6 +9,27 @@
 // with the checks done in IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Metrics).
 // See extension_metrics_apitest.cc.
 chrome.test.runTests([
+  function getSetEnabled() {
+    var pass = chrome.test.callbackPass;
+    var metrics = chrome.experimental.metrics;
+    // Try to change the setting and put it back. We use callbacks to ensure
+    // all functions are called in order.
+    metrics.getEnabled(pass(function(old_enabled) {
+      // Verify that it is, indeed, a boolean.
+      chrome.test.assertEq(old_enabled, !!old_enabled);
+      metrics.setEnabled(!old_enabled, pass(function(new_enabled) {
+        chrome.test.assertEq(old_enabled, !new_enabled);
+        metrics.getEnabled(pass(function(n) {
+          chrome.test.assertEq(n, new_enabled);
+
+          metrics.setEnabled(old_enabled, pass(function(o) {
+            chrome.test.assertEq(o, old_enabled);
+          }));
+        }));
+      }));
+    }));
+  },
+
   function recordUserAction() {
     // Log a metric once.
     chrome.experimental.metrics.recordUserAction('test.ua.1');
