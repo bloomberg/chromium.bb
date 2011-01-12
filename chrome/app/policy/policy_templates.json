@@ -483,6 +483,15 @@
           }
         },
         {
+          'name': 'DefaultSearchProviderInstantURL',
+          'type': 'string',
+          'supported_on': ['chrome.*:10-'],
+          'annotations': {
+            'features': {'dynamic_refresh': 1},
+            'example_value': 'http://search.my.company/suggest?q={searchTerms}',
+          }
+        },
+        {
           'name': 'DefaultSearchProviderIconURL',
           'type': 'string',
           'supported_on': ['chrome.*:8-'],

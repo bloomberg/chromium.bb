@@ -385,6 +385,9 @@ INSTANTIATE_TEST_CASE_P(
             kPolicyDefaultSearchProviderSuggestURL,
             key::kDefaultSearchProviderSuggestURL),
         PolicyTestParams::ForStringPolicy(
+            kPolicyDefaultSearchProviderInstantURL,
+            key::kDefaultSearchProviderInstantURL),
+        PolicyTestParams::ForStringPolicy(
             kPolicyDefaultSearchProviderIconURL,
             key::kDefaultSearchProviderIconURL),
         PolicyTestParams::ForStringPolicy(

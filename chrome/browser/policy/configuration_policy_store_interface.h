@@ -23,6 +23,7 @@ enum ConfigurationPolicyType {
   kPolicyDefaultSearchProviderSearchURL,
   kPolicyDefaultSearchProviderSuggestURL,
   kPolicyDefaultSearchProviderIconURL,
+  kPolicyDefaultSearchProviderInstantURL,
   kPolicyDefaultSearchProviderEncodings,
   kPolicyDisableSpdy,
   kPolicyProxyMode,

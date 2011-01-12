@@ -714,6 +714,12 @@ templates and will be translated for each locale. -->
     <message name="IDS_POLICY_DEFAULTSEARCHPROVIDERSUGGESTURL_DESC" desc="Caption of the 'Suggest URL' text field in the 'Default Search Provider' policy settings page.">
       Specifies the URL of the search engine used to provide search suggestions. The URL should contain the string '<ph name="SEARCH_TERM_MARKER">{searchTerms}</ph>', which will be replaced at query time by the text the user has entered so far. Optional.
     </message>
+    <message name="IDS_POLICY_DEFAULTSEARCHPROVIDERINSTANTURL_CAPTION" desc="The label of the 'Instant URL' text field in the 'Default Search Provider' policy settings page.">
+      Default search provider instant URL
+    </message>
+    <message name="IDS_POLICY_DEFAULTSEARCHPROVIDERINSTANTURL_DESC" desc="Caption of the 'Instant URL' text field in the 'Default Search Provider' policy settings page.">
+      Specifies the URL of the search engine used to provide instant results. The URL should contain the string '<ph name="SEARCH_TERM_MARKER">{searchTerms}</ph>', which will be replaced at query time by the text the user has entered so far. Optional.
+    </message>
     <message name="IDS_POLICY_DEFAULTSEARCHPROVIDERICONURL_CAPTION" desc="The label of the 'Icon URL' text field in the 'Default Search Provider' policy settings page.">
       Default search provider icon
     </message>

@@ -27,6 +27,8 @@ const char kDefaultSearchProviderSearchURL[] =
     "DefaultSearchProviderSearchURL";
 const char kDefaultSearchProviderSuggestURL[] =
     "DefaultSearchProviderSuggestURL";
+const char kDefaultSearchProviderInstantURL[] =
+    "DefaultSearchProviderInstantURL";
 const char kDefaultSearchProviderIconURL[] =
     "DefaultSearchProviderIconURL";
 const char kDefaultSearchProviderEncodings[] =

@@ -393,6 +393,10 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, MinimallyDefined) {
   EXPECT_EQ(PrefStore::READ_OK,
             store.GetValue(prefs::kDefaultSearchProviderEncodings, &value));
   EXPECT_TRUE(StringValue(std::string()).Equals(value));
+
+  EXPECT_EQ(PrefStore::READ_OK,
+            store.GetValue(prefs::kDefaultSearchProviderInstantURL, &value));
+  EXPECT_TRUE(StringValue(std::string()).Equals(value));
 }
 
 // Checks that for a fully defined search policy, all elements have been

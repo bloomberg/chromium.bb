@@ -443,6 +443,7 @@ void ConfigurationPolicyPrefKeeper::FinalizeDefaultSearchPolicySettings() {
     prefs_.SetString(prefs::kDefaultSearchProviderIconURL, std::string());
     prefs_.SetString(prefs::kDefaultSearchProviderEncodings, std::string());
     prefs_.SetString(prefs::kDefaultSearchProviderKeyword, std::string());
+    prefs_.SetString(prefs::kDefaultSearchProviderInstantURL, std::string());
     return;
   }
   std::string search_url;
@@ -459,6 +460,7 @@ void ConfigurationPolicyPrefKeeper::FinalizeDefaultSearchPolicySettings() {
       EnsureStringPrefExists(prefs::kDefaultSearchProviderIconURL);
       EnsureStringPrefExists(prefs::kDefaultSearchProviderEncodings);
       EnsureStringPrefExists(prefs::kDefaultSearchProviderKeyword);
+      EnsureStringPrefExists(prefs::kDefaultSearchProviderInstantURL);
 
       // For the name, default to the host if not specified.
       std::string name;
@@ -702,6 +704,8 @@ ConfigurationPolicyPrefStore::GetChromePolicyDefinitionList() {
       key::kDefaultSearchProviderSearchURL },
     { kPolicyDefaultSearchProviderSuggestURL, Value::TYPE_STRING,
       key::kDefaultSearchProviderSuggestURL },
+    { kPolicyDefaultSearchProviderInstantURL, Value::TYPE_STRING,
+      key::kDefaultSearchProviderInstantURL },
     { kPolicyDefaultSearchProviderIconURL, Value::TYPE_STRING,
       key::kDefaultSearchProviderIconURL },
     { kPolicyDefaultSearchProviderEncodings, Value::TYPE_STRING,

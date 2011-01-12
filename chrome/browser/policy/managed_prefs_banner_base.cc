@@ -62,6 +62,7 @@ void ManagedPrefsBannerBase::Init(PrefService* local_state,
       AddUserPref(prefs::kDefaultSearchProviderEnabled);
       AddUserPref(prefs::kDefaultSearchProviderName);
       AddUserPref(prefs::kDefaultSearchProviderKeyword);
+      AddUserPref(prefs::kDefaultSearchProviderInstantURL);
       AddUserPref(prefs::kDefaultSearchProviderSearchURL);
       AddUserPref(prefs::kDefaultSearchProviderSuggestURL);
       AddUserPref(prefs::kDefaultSearchProviderIconURL);
