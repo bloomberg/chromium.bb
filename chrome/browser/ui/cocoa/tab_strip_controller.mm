@@ -12,6 +12,7 @@
 #include "app/l10n_util.h"
 #include "app/mac/nsimage_cache.h"
 #include "app/resource_bundle.h"
+#include "base/mac/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
@@ -1209,12 +1210,16 @@ private:
 - (NSImageView*)iconImageViewForContents:(TabContents*)contents {
   BOOL isApp = contents->is_app();
   NSImage* image = nil;
+  // Favicons come from the renderer, and the renderer draws everything in the
+  // system color space.
+  CGColorSpaceRef colorSpace = base::mac::GetSystemColorSpace();
   if (isApp) {
     SkBitmap* icon = contents->GetExtensionAppIcon();
     if (icon)
-      image = gfx::SkBitmapToNSImage(*icon);
+      image = gfx::SkBitmapToNSImageWithColorSpace(*icon, colorSpace);
   } else {
-    image = gfx::SkBitmapToNSImage(contents->GetFavIcon());
+    image = gfx::SkBitmapToNSImageWithColorSpace(contents->GetFavIcon(),
+                                                 colorSpace);
   }
 
   // Either we don't have a valid favicon or there was some issue converting it
