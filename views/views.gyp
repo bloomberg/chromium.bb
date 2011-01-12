@@ -428,6 +428,7 @@
         'box_layout_unittest.cc',
         'controls/label_unittest.cc',
         'controls/progress_bar_unittest.cc',
+        'controls/single_split_view_unittest.cc',
         'controls/tabbed_pane/tabbed_pane_unittest.cc',
         'controls/table/table_view_unittest.cc',
         'controls/textfield/native_textfield_views_unittest.cc',
