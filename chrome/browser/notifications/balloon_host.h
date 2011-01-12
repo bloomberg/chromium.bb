@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
+#include "chrome/common/notification_registrar.h"
 
 class Balloon;
 class Browser;
@@ -22,7 +23,8 @@ struct WebPreferences;
 
 class BalloonHost : public RenderViewHostDelegate,
                     public RenderViewHostDelegate::View,
-                    public ExtensionFunctionDispatcher::Delegate {
+                    public ExtensionFunctionDispatcher::Delegate,
+                    public NotificationObserver {
  public:
   explicit BalloonHost(Balloon* balloon);
 
@@ -58,6 +60,12 @@ class BalloonHost : public RenderViewHostDelegate,
   virtual ViewType::Type GetRenderViewType() const;
   virtual RenderViewHostDelegate::View* GetViewDelegate();
   virtual void ProcessDOMUIMessage(const ViewHostMsg_DomMessage_Params& params);
+
+  // NotificationObserver override.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
 
   // RenderViewHostDelegate::View methods. Only the ones for opening new
   // windows are currently implemented.
@@ -112,9 +120,6 @@ class BalloonHost : public RenderViewHostDelegate,
                                       const std::string& value);
   virtual void ClearInspectorSettings();
 
-  // Called when the render view has painted.
-  void RenderWidgetHostDidPaint();
-
  protected:
   virtual ~BalloonHost();
   // Must override in platform specific implementations.
@@ -152,6 +157,8 @@ class BalloonHost : public RenderViewHostDelegate,
 
   // A flag to enable DOM UI.
   bool enable_dom_ui_;
+
+  NotificationRegistrar registrar_;
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_BALLOON_HOST_H_

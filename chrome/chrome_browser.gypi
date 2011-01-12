@@ -2197,7 +2197,6 @@
         'browser/renderer_host/render_widget_helper.h',
         'browser/renderer_host/render_widget_host.cc',
         'browser/renderer_host/render_widget_host.h',
-        'browser/renderer_host/render_widget_host_painting_observer.h',
         'browser/renderer_host/render_widget_host_view.cc',
         'browser/renderer_host/render_widget_host_view.h',
         'browser/renderer_host/render_widget_host_view_gtk.cc',

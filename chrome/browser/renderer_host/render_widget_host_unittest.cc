@@ -9,8 +9,9 @@
 #include "base/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/renderer_host/backing_store.h"
-#include "chrome/browser/renderer_host/render_widget_host_painting_observer.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
+#include "chrome/common/notification_details.h"
+#include "chrome/common/notification_source.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "chrome/test/testing_profile.h"
@@ -200,17 +201,28 @@ class MockRenderWidgetHost : public RenderWidgetHost {
 
 // MockPaintingObserver --------------------------------------------------------
 
-class MockPaintingObserver : public RenderWidgetHostPaintingObserver {
+class MockPaintingObserver : public NotificationObserver {
  public:
-  void WidgetWillDestroyBackingStore(RenderWidgetHost* widget,
-                                     BackingStore* backing_store) {}
-  void WidgetDidUpdateBackingStore(RenderWidgetHost* widget) {}
   void WidgetDidReceivePaintAtSizeAck(RenderWidgetHost* host,
                                       int tag,
                                       const gfx::Size& size) {
     host_ = reinterpret_cast<MockRenderWidgetHost*>(host);
     tag_ = tag;
     size_ = size;
+  }
+
+  void Observe(NotificationType type,
+               const NotificationSource& source,
+               const NotificationDetails& details) {
+    if (type ==
+        NotificationType::RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK) {
+      RenderWidgetHost::PaintAtSizeAckDetails* size_ack_details =
+          Details<RenderWidgetHost::PaintAtSizeAckDetails>(details).ptr();
+      WidgetDidReceivePaintAtSizeAck(
+          Source<RenderWidgetHost>(source).ptr(),
+          size_ack_details->tag,
+          size_ack_details->size);
+    }
   }
 
   MockRenderWidgetHost* host() const { return host_; }
@@ -549,15 +561,18 @@ TEST_F(RenderWidgetHostTest, PaintAtSize) {
   EXPECT_TRUE(
       process_->sink().GetUniqueMessageMatching(ViewMsg_PaintAtSize::ID));
 
+  NotificationRegistrar registrar;
   MockPaintingObserver observer;
-  host_->set_painting_observer(&observer);
+  registrar.Add(
+      &observer,
+      NotificationType::RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
+      Source<RenderWidgetHost>(host_.get()));
 
   host_->OnMsgPaintAtSizeAck(kPaintAtSizeTag, gfx::Size(20, 30));
   EXPECT_EQ(host_.get(), observer.host());
   EXPECT_EQ(kPaintAtSizeTag, observer.tag());
   EXPECT_EQ(20, observer.size().width());
   EXPECT_EQ(30, observer.size().height());
-  host_->set_painting_observer(NULL);
 }
 
 TEST_F(RenderWidgetHostTest, HandleKeyEventsWeSent) {

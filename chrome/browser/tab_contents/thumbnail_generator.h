@@ -15,7 +15,7 @@
 #include "base/linked_ptr.h"
 #include "base/lock.h"
 #include "base/timer.h"
-#include "chrome/browser/renderer_host/render_widget_host_painting_observer.h"
+#include "chrome/browser/renderer_host/backing_store.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -23,10 +23,7 @@ class RenderWidgetHost;
 class SkBitmap;
 class TabContents;
 
-// This class MUST be destroyed after the RenderWidgetHosts, since it installs
-// a painting observer that is not removed.
-class ThumbnailGenerator : public RenderWidgetHostPaintingObserver,
-                           public NotificationObserver {
+class ThumbnailGenerator : NotificationObserver {
  public:
   typedef Callback1<const SkBitmap&>::Type ThumbnailReadyCallback;
   // This class will do nothing until you call StartThumbnailing.
@@ -63,6 +60,10 @@ class ThumbnailGenerator : public RenderWidgetHostPaintingObserver,
   // This returns a thumbnail of a fixed, small size for the given
   // renderer.
   SkBitmap GetThumbnailForRenderer(RenderWidgetHost* renderer) const;
+
+  // Start or stop monitoring notifications for |renderer| based on the value
+  // of |monitor|.
+  void MonitorRenderer(RenderWidgetHost* renderer, bool monitor);
 
 #ifdef UNIT_TEST
   // When true, the class will not use a timeout to do the expiration. This

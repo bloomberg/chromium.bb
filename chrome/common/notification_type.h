@@ -444,6 +444,28 @@ class NotificationType {
     // the RenderWidgetHost, the details are not used.
     RENDER_WIDGET_HOST_DESTROYED,
 
+    // Sent when the widget is about to paint. The source is the
+    // RenderWidgetHost, the details are not used.
+    RENDER_WIDGET_HOST_WILL_PAINT,
+
+    // Sent after the widget has painted. The source is the RenderWidgetHost,
+    // the details are not used.
+    RENDER_WIDGET_HOST_DID_PAINT,
+
+    // Indicates the RenderWidgetHost is about to destroy the backing store. The
+    // backing store will still be valid when this call is made. The source is
+    // the RenderWidgetHost, the details is the BackingStore.
+    RENDER_WIDGET_HOST_WILL_DESTROY_BACKING_STORE,
+
+    // Indicates that the RenderWidgetHost just updated the backing store. The
+    // source is the RenderWidgetHost, the details are not used.
+    RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
+
+    // This notifies the observer that a PaintAtSizeACK was received. The source
+    // is the RenderWidgetHost, the details are an instance of
+    // RenderWidgetHost::PaintAtSizeAckDetails.
+    RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
+
     // Sent from ~RenderViewHost. The source is the TabContents.
     RENDER_VIEW_HOST_DELETED,
 

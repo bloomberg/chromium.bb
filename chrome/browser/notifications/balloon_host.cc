@@ -14,35 +14,12 @@
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/url_constants.h"
 #include "webkit/glue/webpreferences.h"
-
-namespace {
-class BalloonPaintObserver : public RenderWidgetHost::PaintObserver {
- public:
-  explicit BalloonPaintObserver(BalloonHost* balloon_host)
-      : balloon_host_(balloon_host) {
-  }
-
-  virtual void RenderWidgetHostWillPaint(RenderWidgetHost* rhw) {}
-  virtual void RenderWidgetHostDidPaint(RenderWidgetHost* rwh);
-
- private:
-  BalloonHost* balloon_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(BalloonPaintObserver);
-};
-
-void BalloonPaintObserver::RenderWidgetHostDidPaint(RenderWidgetHost* rwh) {
-  balloon_host_->RenderWidgetHostDidPaint();
-  // WARNING: we may have been deleted (if the balloon host cleared the paint
-  // observer).
-}
-
-}  // namespace
 
 BalloonHost::BalloonHost(Balloon* balloon)
     : render_view_host_(NULL),
@@ -236,7 +213,8 @@ void BalloonHost::Init() {
   rvh->set_view(render_widget_host_view());
   rvh->CreateRenderView(string16());
 #if defined(OS_MACOSX)
-  rvh->set_paint_observer(new BalloonPaintObserver(this));
+  registrar_.Add(this, NotificationType::RENDER_WIDGET_HOST_DID_PAINT,
+      Source<RenderWidgetHost>(render_view_host_));
 #endif
   rvh->NavigateToURL(balloon_->notification().content_url());
 
@@ -259,10 +237,14 @@ void BalloonHost::ClearInspectorSettings() {
   RenderViewHostDelegateHelper::ClearInspectorSettings(GetProfile());
 }
 
-void BalloonHost::RenderWidgetHostDidPaint() {
-  render_view_host_->set_paint_observer(NULL);
-  render_view_host_->EnablePreferredSizeChangedMode(
-      kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow);
+void BalloonHost::Observe(NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  if (type == NotificationType::RENDER_WIDGET_HOST_DID_PAINT) {
+    registrar_.RemoveAll();
+    render_view_host_->EnablePreferredSizeChangedMode(
+        kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow);
+  }
 }
 
 BalloonHost::~BalloonHost() {

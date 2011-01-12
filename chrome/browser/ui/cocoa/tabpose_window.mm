@@ -120,11 +120,7 @@ class ThumbnailLoader : public base::RefCountedThreadSafe<ThumbnailLoader> {
   }
 
   void ResetPaintingObserver() {
-    if (rwh_->painting_observer() != NULL) {
-      DCHECK(rwh_->painting_observer() ==
-             g_browser_process->GetThumbnailGenerator());
-      rwh_->set_painting_observer(NULL);
-    }
+    g_browser_process->GetThumbnailGenerator()->MonitorRenderer(rwh_, false);
   }
 
   gfx::Size size_;
@@ -149,9 +145,7 @@ void ThumbnailLoader::LoadThumbnail() {
   gfx::Size page_size(size_);  // Logical size the renderer renders at.
   gfx::Size pixel_size(size_);  // Physical pixel size the image is rendered at.
 
-  DCHECK(rwh_->painting_observer() == NULL ||
-         rwh_->painting_observer() == generator);
-  rwh_->set_painting_observer(generator);
+  generator->MonitorRenderer(rwh_, true);
 
   // Will send an IPC to the renderer on the IO thread.
   generator->AskForSnapshot(

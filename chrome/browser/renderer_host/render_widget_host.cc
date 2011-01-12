@@ -15,7 +15,6 @@
 #include "chrome/browser/renderer_host/backing_store_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_widget_helper.h"
-#include "chrome/browser/renderer_host/render_widget_host_painting_observer.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/result_codes.h"
@@ -74,7 +73,6 @@ RenderWidgetHost::RenderWidgetHost(RenderProcessHost* process,
       renderer_accessible_(false),
       view_(NULL),
       process_(process),
-      painting_observer_(NULL),
       routing_id_(routing_id),
       is_loading_(false),
       is_hidden_(false),
@@ -798,17 +796,22 @@ void RenderWidgetHost::OnMsgRequestMove(const gfx::Rect& pos) {
 }
 
 void RenderWidgetHost::OnMsgPaintAtSizeAck(int tag, const gfx::Size& size) {
-  if (painting_observer_) {
-    painting_observer_->WidgetDidReceivePaintAtSizeAck(this, tag, size);
-  }
+  PaintAtSizeAckDetails details = {tag, size};
+  gfx::Size size_details = size;
+  NotificationService::current()->Notify(
+      NotificationType::RENDER_WIDGET_HOST_DID_RECEIVE_PAINT_AT_SIZE_ACK,
+      Source<RenderWidgetHost>(this),
+      Details<PaintAtSizeAckDetails>(&details));
 }
 
 void RenderWidgetHost::OnMsgUpdateRect(
     const ViewHostMsg_UpdateRect_Params& params) {
   TimeTicks paint_start = TimeTicks::Now();
 
-  if (paint_observer_.get())
-    paint_observer_->RenderWidgetHostWillPaint(this);
+  NotificationService::current()->Notify(
+      NotificationType::RENDER_WIDGET_HOST_WILL_PAINT,
+      Source<RenderWidgetHost>(this),
+      NotificationService::NoDetails());
 
   // Update our knowledge of the RenderWidget's size.
   current_size_ = params.view_size;
@@ -900,8 +903,10 @@ void RenderWidgetHost::OnMsgUpdateRect(
     }
   }
 
-  if (paint_observer_.get())
-    paint_observer_->RenderWidgetHostDidPaint(this);
+  NotificationService::current()->Notify(
+      NotificationType::RENDER_WIDGET_HOST_DID_PAINT,
+      Source<RenderWidgetHost>(this),
+      NotificationService::NoDetails());
 
   // If we got a resize ack, then perhaps we have another resize to send?
   if (is_resize_ack && view_) {
@@ -910,8 +915,10 @@ void RenderWidgetHost::OnMsgUpdateRect(
     WasResized();
   }
 
-  if (painting_observer_)
-    painting_observer_->WidgetDidUpdateBackingStore(this);
+  NotificationService::current()->Notify(
+      NotificationType::RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
+      Source<RenderWidgetHost>(this),
+      NotificationService::NoDetails());
 
   // Log the time delta for processing a paint message.
   TimeDelta delta = TimeTicks::Now() - paint_start;

@@ -943,7 +943,7 @@ class SnapshotTaker {
                                 SkBitmap* bitmap) WARN_UNUSED_RESULT {
     bitmap_ = bitmap;
     ThumbnailGenerator* generator = g_browser_process->GetThumbnailGenerator();
-    rwh->set_painting_observer(generator);
+    generator->MonitorRenderer(rwh, true);
     snapshot_taken_ = false;
     generator->AskForSnapshot(
         rwh,

@@ -33,6 +33,7 @@
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/page_transition_types.h"
@@ -126,46 +127,13 @@ class InstantLoader::FrameLoadObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(FrameLoadObserver);
 };
 
-// PaintObserver implementation. When the RenderWidgetHost paints itself this
-// notifies the TabContentsDelegateImpl which ultimately notifies InstantLoader
-// and shows the preview.
-// The ownership of this class is tricky. It's created and
-// tracked by TabContentsDelegateImpl, but owned by RenderWidgetHost. When
-// deleted this notifies the TabContentsDelegateImpl so that it can clean
-// up appropriately.
-class InstantLoader::PaintObserverImpl
-    : public RenderWidgetHost::PaintObserver {
- public:
-  PaintObserverImpl(TabContentsDelegateImpl* delegate,
-                    RenderWidgetHost* rwh)
-      : delegate_(delegate),
-        rwh_(rwh) {
-    rwh_->set_paint_observer(this);
-  }
-
-  ~PaintObserverImpl();
-
-  // Deletes this object by resetting the PaintObserver on the RenderWidgetHost.
-  void Destroy() {
-    rwh_->set_paint_observer(NULL);
-  }
-
-  virtual void RenderWidgetHostWillPaint(RenderWidgetHost* rwh) {}
-
-  virtual void RenderWidgetHostDidPaint(RenderWidgetHost* rwh);
-
- private:
-  TabContentsDelegateImpl* delegate_;
-  RenderWidgetHost* rwh_;
-
-  DISALLOW_COPY_AND_ASSIGN(PaintObserverImpl);
-};
-
-class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
+class InstantLoader::TabContentsDelegateImpl
+    : public TabContentsDelegate,
+      public NotificationObserver {
  public:
   explicit TabContentsDelegateImpl(InstantLoader* loader)
       : loader_(loader),
-        paint_observer_(NULL),
+        registered_render_widget_host_(NULL),
         waiting_for_new_page_(true),
         is_mouse_down_from_activate_(false),
         user_typed_before_load_(false) {
@@ -176,25 +144,19 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
     user_typed_before_load_ = false;
     waiting_for_new_page_ = true;
     add_page_vector_.clear();
-    DestroyPaintObserver();
+    UnregisterForPaintNotifications();
   }
 
   // Invoked when removed as the delegate. Gives a chance to do any necessary
   // cleanup.
   void Reset() {
     is_mouse_down_from_activate_ = false;
-    DestroyPaintObserver();
+    UnregisterForPaintNotifications();
   }
 
   // Invoked when the preview paints. Invokes PreviewPainted on the loader.
   void PreviewPainted() {
     loader_->PreviewPainted();
-  }
-
-  // Invoked when the PaintObserverImpl is deleted.
-  void PaintObserverDestroyed(PaintObserverImpl* observer) {
-    if (observer == paint_observer_)
-      paint_observer_ = NULL;
   }
 
   bool is_mouse_down_from_activate() const {
@@ -262,20 +224,56 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
     }
   }
 
+  void RegisterForPaintNotifications(RenderWidgetHost* render_widget_host) {
+    DCHECK(registered_render_widget_host_ == NULL);
+    registered_render_widget_host_ = render_widget_host;
+    Source<RenderWidgetHost> source =
+        Source<RenderWidgetHost>(registered_render_widget_host_);
+    registrar_.Add(this, NotificationType::RENDER_WIDGET_HOST_DID_PAINT,
+        source);
+    registrar_.Add(this, NotificationType::RENDER_WIDGET_HOST_DESTROYED,
+        source);
+  }
+
+  void UnregisterForPaintNotifications() {
+    if (registered_render_widget_host_) {
+      Source<RenderWidgetHost> source =
+          Source<RenderWidgetHost>(registered_render_widget_host_);
+      registrar_.Remove(this, NotificationType::RENDER_WIDGET_HOST_DID_PAINT,
+          source);
+      registrar_.Remove(this, NotificationType::RENDER_WIDGET_HOST_DESTROYED,
+          source);
+      registered_render_widget_host_ = NULL;
+    }
+  }
+
+  virtual void Observe(NotificationType type,
+               const NotificationSource& source,
+               const NotificationDetails& details) {
+    if (type == NotificationType::RENDER_WIDGET_HOST_DID_PAINT) {
+      UnregisterForPaintNotifications();
+      PreviewPainted();
+    } else if (type == NotificationType::RENDER_WIDGET_HOST_DESTROYED) {
+      UnregisterForPaintNotifications();
+    } else {
+      NOTREACHED() << "Got a notification we didn't register for.";
+    }
+  }
+
   virtual void OpenURLFromTab(TabContents* source,
                               const GURL& url, const GURL& referrer,
                               WindowOpenDisposition disposition,
                               PageTransition::Type transition) {}
   virtual void NavigationStateChanged(const TabContents* source,
                                       unsigned changed_flags) {
-    if (!loader_->ready() && !paint_observer_ &&
+    if (!loader_->ready() && !registered_render_widget_host_ &&
         source->controller().entry_count()) {
       // The load has been committed. Install an observer that waits for the
       // first paint then makes the preview active. We wait for the load to be
       // committed before waiting on paint as there is always an initial paint
       // when a new renderer is created from the resize so that if we showed the
       // preview after the first paint we would end up with a white rect.
-      paint_observer_ = new PaintObserverImpl(this,
+      RegisterForPaintNotifications(
           source->GetRenderWidgetHostView()->GetRenderWidgetHost());
     }
   }
@@ -306,7 +304,7 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
     if (!loader_->ready()) {
       // A constrained window shown for an auth may not paint. Show the preview
       // contents.
-      DestroyPaintObserver();
+      UnregisterForPaintNotifications();
       loader_->ShowPreview();
     }
   }
@@ -384,22 +382,13 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
       loader_->CommitInstantLoader();
   }
 
-  // If the PaintObserver is non-null Destroy is invoked on it.
-  void DestroyPaintObserver() {
-    if (paint_observer_) {
-      paint_observer_->Destroy();
-      // Destroy should result in invoking PaintObserverDestroyed and NULLing
-      // out paint_observer_.
-      DCHECK(!paint_observer_);
-    }
-  }
-
   InstantLoader* loader_;
 
-  // Used to listen for paint so that we know when to show the preview. See
-  // comment in NavigationStateChanged for details on this.
-  // Ownership of this is tricky, see comment above PaintObserverImpl class.
-  PaintObserverImpl* paint_observer_;
+  NotificationRegistrar registrar_;
+
+  // If we are registered for paint notifications on a RenderWidgetHost this
+  // will contain a pointer to it.
+  RenderWidgetHost* registered_render_widget_host_;
 
   // Used to cache data that needs to be added to history. Normally entries are
   // added to history as the user types, but for instant we only want to add the
@@ -419,22 +408,6 @@ class InstantLoader::TabContentsDelegateImpl : public TabContentsDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsDelegateImpl);
 };
-
-InstantLoader::PaintObserverImpl::~PaintObserverImpl() {
-  delegate_->PaintObserverDestroyed(this);
-}
-
-void InstantLoader::PaintObserverImpl::RenderWidgetHostDidPaint(
-    RenderWidgetHost* rwh) {
-  TabContentsDelegateImpl* delegate = delegate_;
-  // Set the paint observer to NULL, which deletes us. Showing the preview may
-  // reset the paint observer, and delete us. By resetting the delegate first we
-  // know we've been deleted and can deal correctly.
-  rwh->set_paint_observer(NULL);
-  // WARNING: we've been deleted.
-  if (delegate)
-    delegate->PreviewPainted();
-}
 
 InstantLoader::InstantLoader(InstantLoaderDelegate* delegate, TemplateURLID id)
     : delegate_(delegate),
@@ -611,11 +584,7 @@ TabContentsWrapper* InstantLoader::ReleasePreviewContents(
       }
       preview_tab_contents_delegate_->CommitHistory(template_url_id_ != 0);
     }
-    // Destroy the paint observer.
-    // RenderWidgetHostView may be null during shutdown.
     if (preview_contents_->tab_contents()->GetRenderWidgetHostView()) {
-      preview_contents_->tab_contents()->GetRenderWidgetHostView()->
-          GetRenderWidgetHost()->set_paint_observer(NULL);
 #if defined(OS_MACOSX)
       preview_contents_->tab_contents()->GetRenderWidgetHostView()->
           SetTakesFocusOnlyOnMouseDown(false);

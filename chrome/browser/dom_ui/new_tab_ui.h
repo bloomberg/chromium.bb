@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "base/timer.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
@@ -96,12 +97,21 @@ class NewTabUI : public DOMUI,
   // Reset the CSS caches.
   void InitializeCSSCaches();
 
+  void StartTimingPaint(RenderViewHost* render_view_host);
+  void PaintTimeout();
+
   // Updates the user prefs version and calls |MigrateUserPrefs| if needed.
   // Returns true if the version was updated.
   static bool UpdateUserPrefsVersion(PrefService* prefs);
 
   NotificationRegistrar registrar_;
 
+  // The time when we started benchmarking.
+  base::TimeTicks start_;
+  // The last time we got a paint notification.
+  base::TimeTicks last_paint_;
+  // Scoping so we can be sure our timeouts don't outlive us.
+  base::OneShotTimer<NewTabUI> timer_;
   // The preference version. This used for migrating prefs of the NTP.
   static const int current_pref_version_ = 3;
 

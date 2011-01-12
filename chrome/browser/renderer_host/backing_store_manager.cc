@@ -9,9 +9,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/browser/renderer_host/backing_store.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
-#include "chrome/browser/renderer_host/render_widget_host_painting_observer.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/mru_cache.h"
+#include "chrome/common/notification_service.h"
 
 namespace {
 
@@ -69,12 +69,10 @@ static size_t MaxBackingStoreMemory() {
 // Expires the given |backing_store| from |cache|.
 void ExpireBackingStoreAt(BackingStoreCache* cache,
                           BackingStoreCache::iterator backing_store) {
-  RenderWidgetHost* rwh = backing_store->second->render_widget_host();
-  if (rwh->painting_observer()) {
-    rwh->painting_observer()->WidgetWillDestroyBackingStore(
-        backing_store->first,
-        backing_store->second);
-  }
+  NotificationService::current()->Notify(
+      NotificationType::RENDER_WIDGET_HOST_WILL_DESTROY_BACKING_STORE,
+      Source<RenderWidgetHost>(backing_store->first),
+      Details<BackingStore>(backing_store->second));
   cache->Erase(backing_store);
 }
 

@@ -1390,7 +1390,8 @@ void PageSnapshotTaker::OnDomOperationCompleted(const std::string& json) {
     // Don't actually start the thumbnail generator, this leads to crashes on
     // Mac, crbug.com/62986. Instead, just hook the generator to the
     // RenderViewHost manually.
-    render_view_->set_painting_observer(generator);
+
+    generator->MonitorRenderer(render_view_, true);
     generator->AskForSnapshot(render_view_, false, callback,
                               entire_page_size_, entire_page_size_);
   }
