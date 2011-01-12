@@ -289,8 +289,7 @@ TEST(TextfieldViewsModelTest, SetText) {
 }
 
 TEST(TextfieldViewsModelTest, Clipboard) {
-  scoped_ptr<TestViewsDelegate> test_views_delegate(new TestViewsDelegate());
-  views::ViewsDelegate::views_delegate = test_views_delegate.get();
+  views::ViewsDelegate::views_delegate = new TestViewsDelegate();
   ui::Clipboard* clipboard
       = views::ViewsDelegate::views_delegate->GetClipboard();
   string16 initial_clipboard_text;
