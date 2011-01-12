@@ -22,7 +22,7 @@ class PlatformFont : public base::RefCounted<PlatformFont> {
   static PlatformFont* CreateDefault();
   static PlatformFont* CreateFromFont(const Font& other);
   static PlatformFont* CreateFromNativeFont(NativeFont native_font);
-  static PlatformFont* CreateFromNameAndSize(const std::wstring& font_name,
+  static PlatformFont* CreateFromNameAndSize(const string16& font_name,
                                              int font_size);
 
   // Returns a new Font derived from the existing font.
@@ -58,7 +58,7 @@ class PlatformFont : public base::RefCounted<PlatformFont> {
   virtual int GetStyle() const = 0;
 
   // Returns the font name.
-  virtual const std::wstring& GetFontName() const = 0;
+  virtual string16 GetFontName() const = 0;
 
   // Returns the font size in pixels.
   virtual int GetFontSize() const = 0;

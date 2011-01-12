@@ -40,7 +40,7 @@ SkPaint* GetBadgeTextPaintSingleton() {
       ResourceBundle& rb = ResourceBundle::GetSharedInstance();
       const gfx::Font& base_font = rb.GetFont(ResourceBundle::BaseFont);
       typeface = SkTypeface::CreateFromName(
-          WideToUTF8(base_font.GetFontName()).c_str(), SkTypeface::kNormal);
+          UTF16ToUTF8(base_font.GetFontName()).c_str(), SkTypeface::kNormal);
     }
 
     text_paint->setTypeface(typeface);

@@ -286,21 +286,21 @@ void CanvasDirect2D::DrawBitmapInt(const SkBitmap& bitmap,
   NOTIMPLEMENTED();
 }
 
-void CanvasDirect2D::DrawStringInt(const std::wstring& text,
+void CanvasDirect2D::DrawStringInt(const string16& text,
                                    const gfx::Font& font,
                                    const SkColor& color,
                                    int x, int y, int w, int h) {
   NOTIMPLEMENTED();
 }
 
-void CanvasDirect2D::DrawStringInt(const std::wstring& text,
+void CanvasDirect2D::DrawStringInt(const string16& text,
                                    const gfx::Font& font,
                                    const SkColor& color,
                                    const gfx::Rect& display_rect) {
   NOTIMPLEMENTED();
 }
 
-void CanvasDirect2D::DrawStringInt(const std::wstring& text,
+void CanvasDirect2D::DrawStringInt(const string16& text,
                                    const gfx::Font& font,
                                    const SkColor& color,
                                    int x, int y, int w, int h,

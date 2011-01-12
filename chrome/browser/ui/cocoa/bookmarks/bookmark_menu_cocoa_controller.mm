@@ -27,7 +27,7 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
 
 + (NSString*)menuTitleForNode:(const BookmarkNode*)node {
   NSFont* nsfont = [NSFont menuBarFontOfSize:0];  // 0 means "default"
-  gfx::Font font(base::SysNSStringToWide([nsfont fontName]),
+  gfx::Font font(base::SysNSStringToUTF16([nsfont fontName]),
                  static_cast<int>([nsfont pointSize]));
   string16 title = gfx::ElideText(node->GetTitle(),
                                   font,

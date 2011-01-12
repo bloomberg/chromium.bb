@@ -277,7 +277,7 @@ void CanvasSkia::DrawBitmapInt(const SkBitmap& bitmap,
   drawRect(dest_rect, p);
 }
 
-void CanvasSkia::DrawStringInt(const std::wstring& text,
+void CanvasSkia::DrawStringInt(const string16& text,
                                const gfx::Font& font,
                                const SkColor& color,
                                int x, int y, int w, int h) {
@@ -285,7 +285,7 @@ void CanvasSkia::DrawStringInt(const std::wstring& text,
                 gfx::CanvasSkia::DefaultCanvasTextAlignment());
 }
 
-void CanvasSkia::DrawStringInt(const std::wstring& text,
+void CanvasSkia::DrawStringInt(const string16& text,
                                const gfx::Font& font,
                                const SkColor& color,
                                const gfx::Rect& display_rect) {

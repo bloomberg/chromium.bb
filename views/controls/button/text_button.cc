@@ -360,7 +360,7 @@ void TextButton::Paint(gfx::Canvas* canvas, bool for_drag) {
           text_bounds.y(), text_bounds.width(), text_bounds.height(),
           draw_string_flags);
 #else
-      canvas->DrawStringInt(UTF16ToWideHack(text_),
+      canvas->DrawStringInt(text_,
                             font_,
                             text_color,
                             text_bounds.x(),
@@ -371,11 +371,11 @@ void TextButton::Paint(gfx::Canvas* canvas, bool for_drag) {
 #endif
     } else if (has_text_halo_) {
       canvas->AsCanvasSkia()->DrawStringWithHalo(
-          UTF16ToWideHack(text_), font_, text_color, text_halo_color_,
+          text_, font_, text_color, text_halo_color_,
           text_bounds.x(), text_bounds.y(), text_bounds.width(),
           text_bounds.height(), draw_string_flags);
     } else {
-      canvas->DrawStringInt(UTF16ToWideHack(text_),
+      canvas->DrawStringInt(text_,
                             font_,
                             text_color,
                             text_bounds.x(),

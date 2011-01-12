@@ -813,7 +813,7 @@ void TabRendererGtk::PaintTitle(gfx::Canvas* canvas) {
 
   SkColor title_color = IsSelected() ? selected_title_color_
                                      : unselected_title_color_;
-  canvas->DrawStringInt(UTF16ToWideHack(title), *title_font_, title_color,
+  canvas->DrawStringInt(title, *title_font_, title_color,
                         title_bounds_.x(), title_bounds_.y(),
                         title_bounds_.width(), title_bounds_.height());
 }

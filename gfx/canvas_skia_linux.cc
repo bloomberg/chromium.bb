@@ -162,7 +162,7 @@ static void SetupPangoLayout(PangoLayout* layout,
 class DrawStringContext {
  public:
   DrawStringContext(gfx::CanvasSkia* canvas,
-                    const std::wstring& text,
+                    const string16& text,
                     const gfx::Font& font,
                     const gfx::Rect& bounds,
                     const gfx::Rect& clip,
@@ -191,7 +191,7 @@ class DrawStringContext {
 };
 
 DrawStringContext::DrawStringContext(gfx::CanvasSkia* canvas,
-                                     const std::wstring& text,
+                                     const string16& text,
                                      const gfx::Font& font,
                                      const gfx::Rect& bounds,
                                      const gfx::Rect& clip,
@@ -211,8 +211,7 @@ DrawStringContext::DrawStringContext(gfx::CanvasSkia* canvas,
   cr_ = canvas_->beginPlatformPaint();
   layout_ = pango_cairo_create_layout(cr_);
 
-  SetupPangoLayout(layout_, WideToUTF16Hack(text), font, bounds_.width(),
-                   flags_);
+  SetupPangoLayout(layout_, text, font, bounds_.width(), flags_);
 
   pango_layout_set_height(layout_, bounds_.height() * PANGO_SCALE);
 
@@ -346,7 +345,7 @@ void CanvasSkia::SizeStringInt(const string16& text,
   cairo_surface_destroy(surface);
 }
 
-void CanvasSkia::DrawStringWithHalo(const std::wstring& text,
+void CanvasSkia::DrawStringWithHalo(const string16& text,
                                     const gfx::Font& font,
                                     const SkColor& text_color,
                                     const SkColor& halo_color,
@@ -361,7 +360,7 @@ void CanvasSkia::DrawStringWithHalo(const std::wstring& text,
   context.DrawWithHalo(text_color, halo_color);
 }
 
-void CanvasSkia::DrawStringInt(const std::wstring& text,
+void CanvasSkia::DrawStringInt(const string16& text,
                                const gfx::Font& font,
                                const SkColor& color,
                                int x, int y, int w, int h,

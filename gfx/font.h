@@ -43,7 +43,7 @@ class Font {
   explicit Font(PlatformFont* platform_font);
 
   // Creates a font with the specified name and size.
-  Font(const std::wstring& font_name, int font_size);
+  Font(const string16& font_name, int font_size);
 
   ~Font();
 
@@ -85,7 +85,7 @@ class Font {
   int GetStyle() const;
 
   // Returns the font name.
-  const std::wstring& GetFontName() const;
+  string16 GetFontName() const;
 
   // Returns the font size in pixels.
   int GetFontSize() const;
