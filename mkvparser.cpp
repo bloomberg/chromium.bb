@@ -1293,7 +1293,10 @@ long Segment::LoadCluster(
             return static_cast<long>(result);
 
         if (result > 0)
+        {
+            len = 1;
             return E_BUFFER_NOT_FULL;
+        }
 
         if ((pos + len) > stop)
             return E_FILE_FORMAT_INVALID;
@@ -1314,7 +1317,10 @@ long Segment::LoadCluster(
             return static_cast<long>(result);
 
         if (result > 0)
+        {
+            len = 1;
             return E_BUFFER_NOT_FULL;
+        }
 
         if ((pos + len) > stop)
             return E_FILE_FORMAT_INVALID;
@@ -1339,18 +1345,17 @@ long Segment::LoadCluster(
         if ((pos + size) > stop)
             return E_FILE_FORMAT_INVALID;
 
+        len = static_cast<long>(size);
+
         long long total, avail;
 
         const int status = m_pReader->Length(&total, &avail);
-        assert(status == 0);
+        assert(status == 0);  //TODO
         assert(total >= 0);
         assert(avail <= total);
 
         if ((pos + size) > avail)
-        {
-            len = static_cast<long>(size);
             return E_BUFFER_NOT_FULL;
-        }
 
         if (id == 0x0C53BB6B)  //Cues ID
         {
@@ -1396,11 +1401,13 @@ long Segment::LoadCluster(
                 pCluster->m_index = idx;
                 ++m_clusterCount;
                 --m_clusterPreloadCount;
+                
+                pCluster->Load();  //establish invariant
 
                 m_pos = pos + size;  //consume payload
                 assert(m_pos <= stop);
 
-                return 0;
+                return 0;  //we have a new cluster
             }
         }
 
@@ -1420,13 +1427,15 @@ long Segment::LoadCluster(
             assert(m_clusters);
             assert(idx < m_clusterSize);
             assert(m_clusters[idx] == pCluster);
+            
+            pCluster->Load();  //establish invariant
 
-            return 0;
+            return 0;  //we have a new cluster
         }
     }
 
     assert(m_pos <= stop);
-    return 0;
+    return 1;  //no error, but no new cluster either
 }
 
 
@@ -2775,6 +2784,340 @@ const Cluster* Segment::GetNext(const Cluster* pCurr)
     assert(m_clusters[idx_next] == pNext);
 
     return pNext;
+}
+
+
+long Segment::ParseNext(
+    const Cluster* pCurr,
+    const Cluster*& pResult,
+    long long& pos,
+    long& len)
+{
+    assert(pCurr);
+    assert(!pCurr->EOS());
+    assert(m_clusters);
+    
+    pResult = 0;
+
+    if (pCurr->m_index >= 0)  //loaded (not merely preloaded)
+    {
+        assert(m_clusters[pCurr->m_index] == pCurr);
+
+        const long next_idx = pCurr->m_index + 1;
+        
+        if (next_idx < m_clusterCount)
+        {
+            pResult = m_clusters[next_idx];
+            return 0;  //success
+        }
+        
+        //curr cluster is last among loaded
+
+        const long result = LoadCluster(pos, len);
+        
+        if (result < 0)  //error or underflow
+            return result;
+            
+        if (result > 0)  //no more clusters
+            return 1;
+            
+        pResult = GetLast();
+        return 0;  //success
+    }
+        
+    long long total, avail;
+
+    const int status = m_pReader->Length(&total, &avail);
+
+    if (status < 0)  //error
+        return status;
+        
+    assert(total >= 0);
+    assert(avail <= total);
+
+    const long long off_curr_ = pCurr->m_pos;
+    const long long off_curr = off_curr_ * ((off_curr_ < 0) ? -1 : 1);
+
+    pos = m_start + off_curr;
+    const long long stop = m_start + m_size;  //end of segment
+
+    {
+        if ((pos + 1) > avail)
+        {
+            len = 1;
+            return E_BUFFER_NOT_FULL;
+        }
+        
+        long long result = GetUIntLength(m_pReader, pos, len);
+
+        if (result < 0)  //error
+            return static_cast<long>(result);
+            
+        if (result > 0)  //weird
+        {
+            len = 1;
+            return E_BUFFER_NOT_FULL;
+        }
+
+        if ((pos + len) > stop)
+            return E_FILE_FORMAT_INVALID;
+            
+        if ((pos + len) > avail)
+            return E_BUFFER_NOT_FULL;
+
+        const long long id = ReadUInt(m_pReader, pos, len);
+
+        if (id != 0x0F43B675)  //weird: not Cluster ID
+            return -1;
+
+        pos += len;  //consume ID
+
+        //Read Size
+        
+        if ((pos + 1) > avail)
+        {
+            len = 1;
+            return E_BUFFER_NOT_FULL;
+        }
+
+        result = GetUIntLength(m_pReader, pos, len);
+
+        if (result < 0)  //error
+            return static_cast<long>(result);
+
+        if (result > 0)  //weird
+        {
+            len = 1;
+            return E_BUFFER_NOT_FULL;
+        }
+
+        if ((pos + len) > stop)
+            return E_FILE_FORMAT_INVALID;
+            
+        if ((pos + len) > avail)
+            return E_BUFFER_NOT_FULL;
+
+        const long long size = ReadUInt(m_pReader, pos, len);
+
+        if (size < 0) //error
+            return static_cast<long>(size);
+
+        assert((pCurr->m_size <= 0) || (pCurr->m_size == size));
+
+        pos += len;  //consume length of size of element
+
+        if ((pos + size) > stop)
+            return E_FILE_FORMAT_INVALID;
+
+        //Pos now points to start of payload
+        
+        pos += size;  //consume payload (that is, the current cluster)
+        assert(pos <= stop);
+
+        //By consuming the payload, we are assuming that the curr
+        //cluster isn't interesting.  That is, we don't bother checking
+        //whether the payload of the curr cluster is less than what
+        //happens to be available (obtained via IMkvReader::Length).
+        //Presumably the caller has already dispensed with the current
+        //cluster, and really does want the next cluster.
+    }
+    
+    //pos now points to just beyond the last fully-loaded cluster
+    
+    long long off_next = 0;
+    long long element_start = -1;
+    long long element_size = -1;
+
+    while (pos < stop)
+    {
+        if ((pos + 1) > avail)
+        {
+            len = 1;
+            return E_BUFFER_NOT_FULL;
+        }
+        
+        long long result = GetUIntLength(m_pReader, pos, len);
+
+        if (result < 0)  //error
+            return static_cast<long>(result);
+            
+        if (result > 0)  //weird
+        {
+            len = 1;
+            return E_BUFFER_NOT_FULL;
+        }
+
+        if ((pos + len) > stop)
+            return E_FILE_FORMAT_INVALID;
+            
+        if ((pos + len) > avail)
+            return E_BUFFER_NOT_FULL;
+
+        const long long idpos = pos;             //absolute
+        const long long idoff = pos - m_start;   //relative
+
+        const long long id = ReadUInt(m_pReader, idpos, len);  //absolute
+
+        if (id < 0)  //error
+            return static_cast<long>(id);
+            
+        if (id == 0)  //weird
+            return -1;  //generic error
+
+        pos += len;  //consume ID
+
+        //Read Size
+        
+        if ((pos + 1) > avail)
+        {
+            len = 1;
+            return E_BUFFER_NOT_FULL;
+        }
+
+        result = GetUIntLength(m_pReader, pos, len);
+
+        if (result < 0)  //error
+            return static_cast<long>(result);
+
+        if (result > 0)  //weird
+        {
+            len = 1;
+            return E_BUFFER_NOT_FULL;
+        }
+
+        if ((pos + len) > stop)
+            return E_FILE_FORMAT_INVALID;
+            
+        if ((pos + len) > avail)
+            return E_BUFFER_NOT_FULL;
+
+        const long long size = ReadUInt(m_pReader, pos, len);
+
+        if (size < 0)  //error
+            return static_cast<long>(size);
+
+        pos += len;  //consume length of size of element
+
+        //Pos now points to start of payload
+
+        if (size == 0)  //weird
+            continue;
+
+        element_start = idpos;
+        const long long element_stop = pos + size;
+            
+        if (element_stop > stop)
+            return E_FILE_FORMAT_INVALID;
+            
+        element_size = element_stop - element_start;
+            
+        if (id == 0x0C53BB6B)  //Cues ID
+        {
+            if (m_pCues == NULL)
+            {
+                m_pCues = new Cues(this, 
+                                    pos, 
+                                    size, 
+                                    element_start, 
+                                    element_size);
+                assert(m_pCues);  //TODO
+            }
+
+            pos += size;  //consume payload
+            assert(pos <= stop);
+
+            continue;
+        }
+
+        if (id != 0x0F43B675)  //Cluster ID
+        {
+            pos += size;  //consume payload
+            assert(pos <= stop);
+            
+            continue;
+        }
+        
+        len = static_cast<long>(size);
+
+#if 1  //TODO: get rid of this
+        if (element_stop > avail)
+            return E_BUFFER_NOT_FULL;
+#endif
+
+        if (Cluster::HasBlockEntries(this, idoff))  //relative
+        {
+            off_next = idoff;
+            break;
+        }
+
+        pos += size;  //consume payload
+        assert(pos <= stop);
+    }
+    
+    if (off_next <= 0)  //no next cluster found
+        return 1;
+        
+    //We have parsed the next cluster, and can even guarantee
+    //that its payload is all available (IMkvReader::Length).
+    //All we need to do now is determine whether it has already
+    //be preloaded.
+
+    Cluster** const ii = m_clusters + m_clusterCount;
+    Cluster** i = ii;
+
+    Cluster** const jj = ii + m_clusterPreloadCount;
+    Cluster** j = jj;
+
+    while (i < j)
+    {
+        //INVARIANT:
+        //[0, i) < pos_next
+        //[i, j) ?
+        //[j, jj)  > pos_next
+
+        Cluster** const k = i + (j - i) / 2;
+        assert(k < jj);
+
+        const Cluster* const pNext = *k;
+        assert(pNext);
+        assert(pNext->m_index < 0);
+
+        const long long pos_ = pNext->m_pos;
+        assert(pos_);
+
+        pos = pos_ * ((pos_ < 0) ? -1 : 1);
+
+        if (pos < off_next)
+            i = k + 1;
+        else if (pos > off_next)
+            j = k;
+        else
+        {
+            pResult = pNext;
+            return 0;  //success
+        }
+    }
+
+    assert(i == j);
+
+    Cluster* const pNext = Cluster::Parse(this, 
+                                            -1,   //preloaded
+                                            off_next, 
+                                            element_start, 
+                                            element_size);
+    assert(pNext);
+
+    const ptrdiff_t idx_next = i - m_clusters;  //insertion position
+
+    PreloadCluster(pNext, idx_next);
+    assert(m_clusters);
+    assert(idx_next < m_clusterSize);
+    assert(m_clusters[idx_next] == pNext);
+    
+    pNext->Load();  //because we need this now
+
+    pResult = pNext;
+    return 0;  //success
 }
 
 

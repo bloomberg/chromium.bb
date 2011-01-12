@@ -522,6 +522,7 @@ public:
     const BlockEntry* GetMaxKey(const VideoTrack*) const;
 
     static bool HasBlockEntries(const Segment*, long long);
+    void Load() const;
 
 protected:
     Cluster(
@@ -544,7 +545,6 @@ private:
     mutable BlockEntry** m_entries;
     mutable long m_entries_count;
 
-    void Load() const;
     void LoadBlockEntries() const;
     void ParseBlockGroup(long long, long long, size_t) const;
     void ParseSimpleBlock(long long, long long, size_t) const;
@@ -581,6 +581,12 @@ public:
     //long FindNextCluster(long long& pos, long& size) const;
     long LoadCluster(long long& pos, long& size);  //load one cluster
     long LoadCluster();
+
+    long ParseNext(
+            const Cluster* pCurr,
+            const Cluster*& pNext,
+            long long& pos, 
+            long& size);
 
     //This pair parses one cluster, but only changes the state of the
     //segment object when the cluster is actually added to the index.
