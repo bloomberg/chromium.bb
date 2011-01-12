@@ -102,6 +102,18 @@ def _GetDomainAndUserName():
 fixpath_prefix = None
 
 
+def _NormalizedSource(source):
+  """ Normalize the path.
+
+  But not if that gets rid of a variable, as this may expand to something
+  larger than one directory.
+  """
+  normalized = os.path.normpath(source)
+  if source.count('$') == normalized.count('$'):
+    source = normalized
+  return source
+
+
 def _FixPath(path):
   """Convert paths to a form that will make sense in a vcproj file.
 
@@ -113,12 +125,13 @@ def _FixPath(path):
   if fixpath_prefix and path and not os.path.isabs(path) and not path[0] == '$':
     path = os.path.join(fixpath_prefix, path)
   path = path.replace('/', '\\')
+  path = _NormalizedSource(path)
   if len(path) > 0 and path[-1] == '\\':
     path = path[:-1]
   return path
 
 
-def _SourceInFolders(sources, prefix=None, excluded=None):
+def _ConvertSourcesToFilterHierarchy(sources, prefix=None, excluded=None):
   """Converts a list split source file paths into a vcproj folder hierarchy.
 
   Arguments:
@@ -128,7 +141,8 @@ def _SourceInFolders(sources, prefix=None, excluded=None):
     A hierarchy of filenames and MSVSProject.Filter objects that matches the
     layout of the source tree.
     For example:
-    _SourceInFolders([['a', 'bob1.c'], ['b', 'bob2.c']], prefix=['joe'])
+    _ConvertSourcesToFilterHierarchy([['a', 'bob1.c'], ['b', 'bob2.c']],
+                                     prefix=['joe'])
     -->
     [MSVSProject.Filter('a', contents=['joe\\a\\bob1.c']),
      MSVSProject.Filter('b', contents=['joe\\b\\bob2.c'])]
@@ -140,7 +154,7 @@ def _SourceInFolders(sources, prefix=None, excluded=None):
   # Gather files into the final result, excluded, or folders.
   for s in sources:
     if len(s) == 1:
-      filename = '\\'.join(prefix + s)
+      filename = _NormalizedSource('\\'.join(prefix + s))
       if filename in excluded:
         excluded_result.append(filename)
       else:
@@ -156,7 +170,7 @@ def _SourceInFolders(sources, prefix=None, excluded=None):
     result.append(excluded_folder)
   # Populate all the folders.
   for f in folders:
-    contents = _SourceInFolders(folders[f], prefix=prefix + [f],
+    contents = _ConvertSourcesToFilterHierarchy(folders[f], prefix=prefix + [f],
                                 excluded=excluded)
     contents = MSVSProject.Filter(f, contents=contents)
     result.append(contents)
@@ -284,23 +298,7 @@ def _PickPrimaryInput(inputs):
     return inputs[0]
 
 
-def _SetRunAs(user_file, config_name, c_data, command,
-              environment={}, working_directory=""):
-  """Add a run_as rule to the user file.
-
-  Arguments:
-    user_file: The MSVSUserFile to add the command to.
-    config_name: The name of the configuration to add it to
-    c_data: The dict of the configuration to add it to
-    command: The path to the command to execute.
-    args: An array of arguments to the command. (optional)
-    working_directory: Directory to run the command in. (optional)
-  """
-  user_file.AddDebugSettings(_ConfigFullName(config_name, c_data),
-                             command, environment, working_directory)
-
-
-def _AddCustomBuildTool(p, spec, inputs, outputs, description, cmd):
+def _AddCustomBuildToolForMSVS(p, spec, inputs, outputs, description, cmd):
   """Add a custom build tool to execute something.
 
   Arguments:
@@ -379,7 +377,7 @@ def _RuleInputsAndOutputs(rule, trigger_file):
   return (inputs, outputs)
 
 
-def _GenerateNativeRules(p, rules, output_dir, spec, options):
+def _GenerateNativeRulesForMSVS(p, rules, output_dir, spec, options):
   """Generate a native rules file.
 
   Arguments:
@@ -419,12 +417,11 @@ def _Cygwinify(path):
   return path
 
 
-def _GenerateExternalRules(p, rules, output_dir, spec,
+def _GenerateExternalRules(rules, output_dir, spec,
                            sources, options, actions_to_add):
   """Generate an external makefile to do a set of rules.
 
   Arguments:
-    p: the target project
     rules: the list of rules to include
     output_dir: path containing project and gyp files
     spec: project specification data
@@ -565,7 +562,7 @@ def _EscapeVCProjCommandLineArgListItem(s):
   return s
 
 
-def _EscapeCppDefine(s):
+def _EscapeCppDefineForMSVS(s):
   """Escapes a CPP define so that it will reach the compiler unaltered."""
   s = _EscapeEnvironmentVariableExpansion(s)
   s = _EscapeCommandLineArgument(s)
@@ -573,9 +570,9 @@ def _EscapeCppDefine(s):
   return s
 
 
-def _GenerateRules(p, output_dir, options, spec,
-                   sources, excluded_sources,
-                   actions_to_add):
+def _GenerateRulesForMSVS(p, output_dir, options, spec,
+                          sources, excluded_sources,
+                          actions_to_add):
   """Generate all the rules for a particular project.
 
   Arguments:
@@ -592,13 +589,16 @@ def _GenerateRules(p, output_dir, options, spec,
 
   # Handle rules that use a native rules file.
   if rules_native:
-   _GenerateNativeRules(p, rules_native, output_dir, spec, options)
+   _GenerateNativeRulesForMSVS(p, rules_native, output_dir, spec, options)
 
   # Handle external rules (non-native rules).
   if rules_external:
-    _GenerateExternalRules(p, rules_external, output_dir, spec,
+    _GenerateExternalRules(rules_external, output_dir, spec,
                            sources, options, actions_to_add)
-
+  _AdjustSourcesForRules(rules, sources, excluded_sources)
+  
+  
+def _AdjustSourcesForRules(rules, sources, excluded_sources):
   # Add outputs generated by each rule (if applicable).
   for rule in rules:
     # Done if not processing outputs as sources.
@@ -651,10 +651,10 @@ def _GenerateProject(project, options, version):
   if default_config.get('msvs_existing_vcproj'):
     return
 
-  _GenerateMsvsProject(project, options, version)
+  _GenerateMSVSProject(project, options, version)
 
 
-def _GenerateMsvsProject(project, options, version):
+def _GenerateMSVSProject(project, options, version):
   """Generates a .vcproj file.  It may create .rules and .user files too.
 
   Arguments:
@@ -668,27 +668,25 @@ def _GenerateMsvsProject(project, options, version):
     os.makedirs(vcproj_dir)
 
   platforms = _GetUniquePlatforms(spec)
-
   p = MSVSProject.Writer(project.path, version=version)
   p.Create(spec['target_name'], guid=project.guid, platforms=platforms)
-  user_file = _CreateMsvsUserFile(project.path, version, spec)
 
   # Get directory project file is in.
   gyp_dir = os.path.split(project.path)[0]
 
-  config_type = _GetMsvsConfigurationType(spec, project.build_file)
+  config_type = _GetMSVSConfigurationType(spec, project.build_file)
   for config_name, config in spec['configurations'].iteritems():
-    _AddConfigurationToMsvsProject(p, spec, config_type, config_name, config)
+    _AddConfigurationToMSVSProject(p, spec, config_type, config_name, config)
 
   # Prepare list of sources and excluded sources.
   sources, excluded_sources = _PrepareListOfSources(spec, project.build_file)
 
   # Add rules.
   actions_to_add = []
-  _GenerateRules(p, gyp_dir, options, spec,
-                 sources, excluded_sources,
-                 actions_to_add)
-  sources, excluded_sources, excluded_idl = _AdjustSources(spec, options,
+  _GenerateRulesForMSVS(p, gyp_dir, options, spec,
+                        sources, excluded_sources,
+                        actions_to_add)
+  sources, excluded_sources, excluded_idl = _AdjustSourcesAndConverToFilterHierarchy(spec, options,
       gyp_dir, sources, excluded_sources)
 
   # Add in files.
@@ -696,25 +694,21 @@ def _GenerateMsvsProject(project, options, version):
 
   # Add deferred actions to add.
   for a in actions_to_add:
-    _AddCustomBuildTool(p, spec,
-                        inputs=a['inputs'],
-                        outputs=a['outputs'],
-                        description=a['description'],
-                        cmd=a['cmd'])
+    _AddCustomBuildToolForMSVS(p, spec,
+                               inputs=a['inputs'],
+                               outputs=a['outputs'],
+                               description=a['description'],
+                               cmd=a['cmd'])
 
   _ExcludeFilesFromBeingBuilt(p, spec, excluded_sources, excluded_idl)
-  _AddToolFiles(p, spec)
+  _AddToolFilesToMSVS(p, spec)
   _HandlePreCompileHeaderStubs(p, spec)
-  _AddActions(p, spec)
-  has_run_as = _AddRunAs(p, spec, user_file)
-  _AddCopies(p, spec)
+  _AddActionsToMSVS(p, spec)
+  _WriteMSVSUserFile(project.path, version, spec)
+  _AddCopiesForMSVS(p, spec)
 
   # Write it out.
   p.Write()
-
-  # Write out the user file, but only if we need to.
-  if has_run_as:
-    user_file.Write()
 
 
 def _GetUniquePlatforms(spec):
@@ -733,7 +727,7 @@ def _GetUniquePlatforms(spec):
   return platforms
 
 
-def _CreateMsvsUserFile(proj_path, version, spec):
+def _CreateMSVSUserFile(proj_path, version, spec):
   """Generates a .user file for the user running this Gyp program.
 
   Arguments:
@@ -751,7 +745,7 @@ def _CreateMsvsUserFile(proj_path, version, spec):
   return user_file
 
 
-def _GetMsvsConfigurationType(spec, build_file):
+def _GetMSVSConfigurationType(spec, build_file):
   """Returns the configuration type for this project.  It's a number defined
      by Microsoft.  May raise an exception.
   Returns:
@@ -777,7 +771,7 @@ def _GetMsvsConfigurationType(spec, build_file):
   return config_type
 
 
-def _AddConfigurationToMsvsProject(p, spec, config_type, config_name, config):
+def _AddConfigurationToMSVSProject(p, spec, config_type, config_name, config):
   """Many settings in a vcproj file are specific to a configuration.  This
     function the main part of the vcproj file that's configuration specific.
 
@@ -794,6 +788,7 @@ def _AddConfigurationToMsvsProject(p, spec, config_type, config_name, config):
   libraries = _GetLibraries(config, spec)
   out_file, vc_tool = _GetOutputFilePathAndTool(spec)
   defines = _GetDefines(config)
+  defines = [_EscapeCppDefineForMSVS(d) for d in defines]
   disabled_warnings = _GetDisabledWarnings(config)
   prebuild = config.get('msvs_prebuild')
   postbuild = config.get('msvs_postbuild')
@@ -848,7 +843,7 @@ def _AddConfigurationToMsvsProject(p, spec, config_type, config_name, config):
   if def_file:
       _ToolAppend(tools, 'VCLinkerTool', 'ModuleDefinitionFile', def_file)
 
-  _AddConfiguration(p, tools, config, config_type, config_name)
+  _AddConfigurationToMSVS(p, spec, tools, config, config_type, config_name)
 
 
 def _GetIncludeDirs(config):
@@ -897,8 +892,8 @@ def _GetOutputFilePathAndTool(spec):
     A pair of (file path, name of the tool)
   """
   # Select a name for the output file.
-  out_file = ""
-  vc_tool = ""
+  out_file = ''
+  vc_tool = ''
   output_file_map = {
       'executable': ('VCLinkerTool', '$(OutDir)\\', '.exe'),
       'shared_library': ('VCLinkerTool', '$(OutDir)\\', '.dll'),
@@ -934,7 +929,6 @@ def _GetDefines(config):
       fd = '='.join([str(dpart) for dpart in d])
     else:
       fd = str(d)
-    fd = _EscapeCppDefine(fd)
     defines.append(fd)
   return defines
 
@@ -984,17 +978,25 @@ def _ConvertToolsToExpectedForm(tools):
   return tool_list
 
 
-def _AddConfiguration(p, tools, config, config_type, config_name):
+def _AddConfigurationToMSVS(p, spec, tools, config, config_type, config_name):
   """Add to the project file the configuration specified by config.
 
   Arguments:
     p: The target project being generated.
+    spec: the target project dict.
     tools: A dictionnary of settings; the tool name is the key.
     config: The dictionnary that defines the special processing to be done
             for this configuration.
     config_type: The configuration type, a number as defined by Microsoft.
     config_name: The name of the configuration.
   """
+  attributes = _GetMSVSAttributes(spec, config, config_type)
+  # Add in this configuration.
+  tool_list = _ConvertToolsToExpectedForm(tools)
+  p.AddConfig(_ConfigFullName(config_name, config),
+              attrs=attributes, tools=tool_list)
+  
+def _GetMSVSAttributes(spec, config, config_type):
   # Prepare configuration attributes.
   prepared_attrs = {}
   source_attrs = config.get('msvs_configuration_attributes', {})
@@ -1012,12 +1014,11 @@ def _AddConfiguration(p, tools, config, config_type, config_name):
   if not prepared_attrs.has_key('IntermediateDirectory'):
     intermediate = '$(ConfigurationName)\\obj\\$(ProjectName)'
     prepared_attrs['IntermediateDirectory'] = intermediate
+  return prepared_attrs
 
-  # Add in this configuration.
-  tool_list = _ConvertToolsToExpectedForm(tools)
-  p.AddConfig(_ConfigFullName(config_name, config),
-              attrs=prepared_attrs, tools=tool_list)
-
+def _AddNormalizedSources(sources_set, sources_array):
+  sources = [_NormalizedSource(s) for s in sources_array]
+  sources_set.update(set(sources))
 
 def _PrepareListOfSources(spec, build_file):
   """Prepare list of sources and excluded sources. Besides the sources
@@ -1031,11 +1032,12 @@ def _PrepareListOfSources(spec, build_file):
   Returns:
     A pair of (list of sources, list of excluded sources)
   """
-  sources = set(spec.get('sources', []))
+  sources = set()
+  _AddNormalizedSources(sources, spec.get('sources', []))
   excluded_sources = set()
   # Add in the gyp file.
   gyp_file = os.path.split(build_file)[1]
-  sources.add(gyp_file)
+  sources.add(_NormalizedSource(gyp_file))
   # Add in 'action' inputs and outputs.
   for a in spec.get('actions', []):
     inputs = a.get('inputs')
@@ -1045,22 +1047,21 @@ def _PrepareListOfSources(spec, build_file):
       # hang the custom build rule.
       inputs = [gyp_file]
       a['inputs'] = inputs
+    inputs = [_NormalizedSource(i) for i in inputs]
     primary_input = _PickPrimaryInput(inputs)
     inputs = set(inputs)
     sources.update(inputs)
     inputs.remove(primary_input)
     excluded_sources.update(inputs)
     if int(a.get('process_outputs_as_sources', False)):
-      outputs = set(a.get('outputs', []))
-      sources.update(outputs)
+      _AddNormalizedSources(sources, a.get('outputs', []))
   # Add in 'copies' inputs and outputs.
   for cpy in spec.get('copies', []):
-    files = set(cpy.get('files', []))
-    sources.update(files)
+    _AddNormalizedSources(sources, cpy.get('files', []))
   return (sources, excluded_sources)
 
 
-def _AdjustSources(spec, options, gyp_dir, sources, excluded_sources):
+def _AdjustSourcesAndConverToFilterHierarchy(spec, options, gyp_dir, sources, excluded_sources):
   """Adjusts the list of sources and excluded sources.
      Also converts the sets to lists.
 
@@ -1093,7 +1094,7 @@ def _AdjustSources(spec, options, gyp_dir, sources, excluded_sources):
 
   # Convert to folders and the right slashes.
   sources = [i.split('\\') for i in sources]
-  sources = _SourceInFolders(sources, excluded=fully_excluded)
+  sources = _ConvertSourcesToFilterHierarchy(sources, excluded=fully_excluded)
   # Add in dummy file for type none.
   if spec['type'] == 'dummy_executable':
     # Pull in a dummy main so it can link successfully.
@@ -1131,24 +1132,34 @@ def _GetPrecompileRelatedFiles(spec):
 
 
 def _ExcludeFilesFromBeingBuilt(p, spec, excluded_sources, excluded_idl):
+  exclusions = _GetExcludedFilesFromBuild(spec, excluded_sources, excluded_idl)
+  for file_name, excluded_configs in exclusions.iteritems():
+    for config_name, config in excluded_configs:
+      p.AddFileConfig(file_name, _ConfigFullName(config_name, config),
+                      {'ExcludedFromBuild': 'true'})
+
+
+def _GetExcludedFilesFromBuild(spec, excluded_sources, excluded_idl):
+  exclusions = {}
   # Exclude excluded sources from being built.
   for f in excluded_sources:
+    excluded_configs = []
     for config_name, config in spec['configurations'].iteritems():
       precomped = [_FixPath(config.get(i, '')) for i in precomp_keys]
       # Don't do this for ones that are precompiled header related.
       if f not in precomped:
-        p.AddFileConfig(f, _ConfigFullName(config_name, config),
-                        {'ExcludedFromBuild': 'true'})
-
+        excluded_configs.append((config_name, config))
+    exclusions[f] = excluded_configs
   # If any non-native rules use 'idl' as an extension exclude idl files.
   # Exclude them now.
-  for config_name, config in spec['configurations'].iteritems():
-    for f in excluded_idl:
-      p.AddFileConfig(f, _ConfigFullName(config_name, config),
-                      {'ExcludedFromBuild': 'true'})
+  for f in excluded_idl:
+    excluded_configs = []
+    for config_name, config in spec['configurations'].iteritems():
+      excluded_configs.append((config_name, config))
+    exclusions[f] = excluded_configs
+  return exclusions
 
-
-def _AddToolFiles(p, spec):
+def _AddToolFilesToMSVS(p, spec):
   # Add in tool files (rules).
   tool_files = set()
   for config_name, config in spec['configurations'].iteritems():
@@ -1171,39 +1182,53 @@ def _HandlePreCompileHeaderStubs(p, spec):
                       {}, tools=[tool])
 
 
-def _AddActions(p, spec):
+def _AddActionsToMSVS(p, spec):
   # Add actions.
   actions = spec.get('actions', [])
   for a in actions:
     cmd = _PrepareAction(spec, a, has_input_path=False)
-    _AddCustomBuildTool(p, spec,
-                        inputs=a.get('inputs', []),
-                        outputs=a.get('outputs', []),
-                        description=a.get('message', a['action_name']),
-                        cmd=cmd)
+    _AddCustomBuildToolForMSVS(p, spec,
+                               inputs=a.get('inputs', []),
+                               outputs=a.get('outputs', []),
+                               description=a.get('message', a['action_name']),
+                               cmd=cmd)
 
 
-def _AddRunAs(p, spec, user_file):
+def _WriteMSVSUserFile(project_path, version, spec):
   # Add run_as and test targets.
-  has_run_as = False
-  run_as = spec.get('run_as')
-  if run_as:
-    has_run_as = True
-    working_directory = run_as.get('working_directory', '.')
+  if 'run_as' in spec:
+    run_as = spec['run_as']
     action = run_as.get('action', [])
     environment = run_as.get('environment', [])
-    for config_name, c_data in spec['configurations'].iteritems():
-      _SetRunAs(user_file, config_name, c_data,
-                action, environment, working_directory)
-  return has_run_as
+    working_directory = run_as.get('working_directory', '.')
+  elif int(spec.get('test', 0)):
+    action = ['$(TargetPath)', '--gtest_print_time']
+    environment = []
+    working_directory = '.'
+  else:
+    return  # Nothing to add
+  # Write out the user file.
+  user_file = _CreateMSVSUserFile(project_path, version, spec)
+  for config_name, c_data in spec['configurations'].iteritems():
+    user_file.AddDebugSettings(_ConfigFullName(config_name, c_data),
+                               action, environment, working_directory)
+  user_file.Write()
 
 
-def _AddCopies(p, spec):
+def _AddCopiesForMSVS(p, spec):
+  copies = _GetCopies(spec)
+  for inputs, outputs, cmd, description in copies:
+    _AddCustomBuildToolForMSVS(p, spec, inputs=inputs, outputs=outputs,
+                               description=description, cmd=cmd)
+
+
+def _GetCopies(spec):
+  copies = []
   # Add copies.
   for cpy in spec.get('copies', []):
     for src in cpy.get('files', []):
       dst = os.path.join(cpy['destination'], os.path.basename(src))
-      # _AddCustomBuildTool() will call _FixPath() on the inputs and
+      # _AddCustomBuildToolForMSVS() will call _FixPath() on the inputs and
       # outputs, so do the same for our generated command line.
       if src.endswith('/'):
         src_bare = src[:-1]
@@ -1211,18 +1236,13 @@ def _AddCopies(p, spec):
         outer_dir = posixpath.split(src_bare)[1]
         cmd = 'cd "%s" && xcopy /e /f /y "%s" "%s\\%s\\"' % (
             _FixPath(base_dir), outer_dir, _FixPath(dst), outer_dir)
-        _AddCustomBuildTool(p, spec,
-                            inputs=[src],
-                            outputs=['dummy_copies', dst],
-                            description='Copying %s to %s' % (src, dst),
-                            cmd=cmd)
+        copies.append(([src], ['dummy_copies', dst], cmd,
+                       'Copying %s to %s' % (src, dst)))
       else:
         cmd = 'mkdir "%s" 2>nul & set ERRORLEVEL=0 & copy /Y "%s" "%s"' % (
             _FixPath(cpy['destination']), _FixPath(src), _FixPath(dst))
-        _AddCustomBuildTool(p, spec,
-                            inputs=[src], outputs=[dst],
-                            description='Copying %s to %s' % (src, dst),
-                            cmd=cmd)
+        copies.append(([src], [dst], cmd, 'Copying %s to %s' % (src, dst)))
+  return copies
 
 
 def _GetPathDict(root, path):
