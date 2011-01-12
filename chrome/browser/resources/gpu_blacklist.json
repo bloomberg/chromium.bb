@@ -1,13 +1,33 @@
 {
   "name": "gpu blacklist",
-  "version": "0.1",
+  "version": "0.2",
   "entries": [
-    { // ATI Radeon X1900 on Mac
+    { // ATI Radeon X1900 on Mac, BUGWEBKIT=47028
       "os": {
         "type": "macosx"
       },
       "vendor_id": "0x1002",
       "device_id": "0x7249",
+      "blacklist": [
+        "webgl"
+      ]
+    },
+    { // Intel Corporation Mobile 4 Series Chipset Integrated Graphics Controller, BUG=67345,67939
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x8086",
+      "device_id": "0x2a42",
+      "blacklist": [
+        "webgl"
+      ]
+    },
+    { // Intel Corporation Core Processor Integrated Graphics Controller, BUG=66718
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x8086",
+      "device_id": "0x0046",
       "blacklist": [
         "webgl"
       ]
