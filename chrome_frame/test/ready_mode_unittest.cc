@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,12 +14,10 @@
 #include "base/scoped_ptr.h"
 #include "base/win/registry.h"
 #include "chrome_frame/infobars/infobar_content.h"
-#include "chrome_frame/ready_mode/internal/installation_state.h"
 #include "chrome_frame/ready_mode/internal/ready_mode_state.h"
 #include "chrome_frame/ready_mode/internal/ready_prompt_content.h"
 #include "chrome_frame/ready_mode/internal/ready_prompt_window.h"
 #include "chrome_frame/ready_mode/internal/registry_ready_mode_state.h"
-#include "chrome_frame/ready_mode/ready_mode_manager.h"
 #include "chrome_frame/simple_resource_loader.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 
@@ -99,35 +97,11 @@ class MockReadyModeState : public ReadyModeState {
   MOCK_METHOD0(AcceptChromeFrame, void(void));
 };  // class MockReadyModeState
 
-ACTION_P(ReturnPointee, pointer) {
-  return *pointer;
-}
-
-ACTION_P2(SetPointeeTo, pointer, value) {
-  *pointer = value;
-}
-
-class MockInstallationState : public InstallationState {
- public:
-  // InstallationState implementation
-  MOCK_METHOD0(IsProductInstalled, bool(void));
-  MOCK_METHOD0(IsProductRegistered, bool(void));
-  MOCK_METHOD0(InstallProduct, bool(void));
-  MOCK_METHOD0(UnregisterProduct, bool(void));
-};  // class MockInstallationState
-
-class MockRegistryReadyModeStateObserver
-    : public RegistryReadyModeState::Observer {
- public:
-  // RegistryReadyModeState::Observer implementation
-  MOCK_METHOD0(OnStateChange, void(void));
-};  // class MockRegistryReadyModeStateObserver
-
 }  // namespace
 
 class ReadyPromptTest : public testing::Test {
  public:
-  ReadyPromptTest() : hwnd_(NULL) {};
+  ReadyPromptTest() : hwnd_(NULL) {}
 
   void SetUp() {
     hwnd_ = window_.Create(NULL);
@@ -299,175 +273,6 @@ TEST_F(ReadyPromptWindowButtonTest, ClickNo) {
   RunUntilCloseInfobar();
 }
 
-class ReadyModeRegistryTest : public testing::Test {
- public:
-  class TimeControlledRegistryReadyModeState : public RegistryReadyModeState {
-   public:
-    TimeControlledRegistryReadyModeState(
-        const std::wstring& key_name,
-        base::TimeDelta temporary_decline_duration,
-        InstallationState* installation_state,
-        Observer* observer)
-        : RegistryReadyModeState(key_name, temporary_decline_duration,
-                                 installation_state, observer),
-          now_(base::Time::Now()) {
-    }
-
-    base::Time now_;
-
-   protected:
-    virtual base::Time GetNow() {
-      return now_;
-    }
-  };  // class TimeControlledRegistryReadyModeState
-
-  ReadyModeRegistryTest()
-      : is_product_registered_(true),
-        is_product_installed_(false),
-        observer_(NULL),
-        installation_state_(NULL) {
-  }
-
-  virtual void SetUp() {
-    base::win::RegKey key;
-    ASSERT_TRUE(key.Create(HKEY_CURRENT_USER, kRootKey, KEY_ALL_ACCESS));
-    observer_ = new MockRegistryReadyModeStateObserver();
-    installation_state_ = new MockInstallationState();
-
-    EXPECT_CALL(*installation_state_, IsProductRegistered())
-        .Times(testing::AnyNumber())
-        .WillRepeatedly(ReturnPointee(&is_product_registered_));
-    EXPECT_CALL(*installation_state_, IsProductInstalled())
-        .Times(testing::AnyNumber())
-        .WillRepeatedly(ReturnPointee(&is_product_installed_));
-
-    ready_mode_state_.reset(new TimeControlledRegistryReadyModeState(
-      kRootKey,
-      base::TimeDelta::FromSeconds(kTemporaryDeclineDurationInSeconds),
-      installation_state_,
-      observer_));
-  }
-
-  virtual void TearDown() {
-    base::win::RegKey key;
-    EXPECT_TRUE(key.Open(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS));
-    EXPECT_TRUE(key.DeleteKey(kRootKey));
-  }
-
- protected:
-  void AdjustClockBySeconds(int seconds) {
-    ready_mode_state_->now_ += base::TimeDelta::FromSeconds(seconds);
-  }
-
-  void ExpectUnregisterProductAndReturn(bool success) {
-    EXPECT_CALL(*installation_state_, UnregisterProduct())
-        .WillOnce(testing::DoAll(
-            SetPointeeTo(&is_product_registered_, !success),
-            testing::Return(success)));
-  }
-
-  void ExpectInstallProductAndReturn(bool success) {
-    EXPECT_CALL(*installation_state_, InstallProduct())
-        .WillOnce(testing::DoAll(SetPointeeTo(&is_product_installed_, success),
-                                 testing::Return(success)));
-  }
-
-  bool is_product_registered_;
-  bool is_product_installed_;
-  MockInstallationState* installation_state_;
-  MockRegistryReadyModeStateObserver* observer_;
-
-  scoped_ptr<TimeControlledRegistryReadyModeState> ready_mode_state_;
-  base::win::RegKey config_key;
-  static const wchar_t kRootKey[];
-  static const int kTemporaryDeclineDurationInSeconds;
-};  // class ReadyModeRegistryTest
-
-const int ReadyModeRegistryTest::kTemporaryDeclineDurationInSeconds = 2;
-const wchar_t ReadyModeRegistryTest::kRootKey[]  = L"chrome_frame_unittests";
-
-TEST_F(ReadyModeRegistryTest, CallNothing) {
-  // expect it to delete the two mocks... Google Mock fails if they are leaked.
-}
-
-TEST_F(ReadyModeRegistryTest, NotInstalledStatus) {
-  ASSERT_EQ(READY_MODE_ACTIVE, ready_mode_state_->GetStatus());
-}
-
-TEST_F(ReadyModeRegistryTest, NotRegisteredStatus) {
-  is_product_registered_ = false;
-  ASSERT_EQ(READY_MODE_PERMANENTLY_DECLINED, ready_mode_state_->GetStatus());
-}
-
-TEST_F(ReadyModeRegistryTest, InstalledStatus) {
-  is_product_installed_ = true;
-  ASSERT_EQ(READY_MODE_ACCEPTED, ready_mode_state_->GetStatus());
-}
-
-TEST_F(ReadyModeRegistryTest, TemporarilyDeclineChromeFrame) {
-  ASSERT_EQ(READY_MODE_ACTIVE, ready_mode_state_->GetStatus());
-
-  EXPECT_CALL(*observer_, OnStateChange());
-  ready_mode_state_->TemporarilyDeclineChromeFrame();
-
-  ASSERT_EQ(READY_MODE_TEMPORARILY_DECLINED, ready_mode_state_->GetStatus());
-
-  AdjustClockBySeconds(kTemporaryDeclineDurationInSeconds + 1);
-  ASSERT_EQ(READY_MODE_ACTIVE, ready_mode_state_->GetStatus());
-}
-
-TEST_F(ReadyModeRegistryTest, TemporarilyDeclineChromeFrameSetClockBack) {
-  ASSERT_EQ(READY_MODE_ACTIVE, ready_mode_state_->GetStatus());
-
-  EXPECT_CALL(*observer_, OnStateChange());
-  ready_mode_state_->TemporarilyDeclineChromeFrame();
-
-  ASSERT_EQ(READY_MODE_TEMPORARILY_DECLINED, ready_mode_state_->GetStatus());
-
-  AdjustClockBySeconds(kTemporaryDeclineDurationInSeconds + 1);
-  ASSERT_EQ(READY_MODE_ACTIVE, ready_mode_state_->GetStatus());
-}
-
-TEST_F(ReadyModeRegistryTest, PermanentlyDeclineChromeFrame) {
-  ASSERT_EQ(READY_MODE_ACTIVE, ready_mode_state_->GetStatus());
-
-  EXPECT_CALL(*observer_, OnStateChange());
-  ExpectUnregisterProductAndReturn(true);
-  ready_mode_state_->PermanentlyDeclineChromeFrame();
-
-  ASSERT_EQ(READY_MODE_PERMANENTLY_DECLINED, ready_mode_state_->GetStatus());
-}
-
-TEST_F(ReadyModeRegistryTest, PermanentlyDeclineChromeFrameFailUnregister) {
-  ASSERT_EQ(READY_MODE_ACTIVE, ready_mode_state_->GetStatus());
-
-  EXPECT_CALL(*observer_, OnStateChange());
-  ExpectUnregisterProductAndReturn(false);
-  ready_mode_state_->PermanentlyDeclineChromeFrame();
-
-  ASSERT_EQ(READY_MODE_PERMANENTLY_DECLINED, ready_mode_state_->GetStatus());
-}
-
-TEST_F(ReadyModeRegistryTest, AcceptChromeFrame) {
-  ASSERT_EQ(READY_MODE_ACTIVE, ready_mode_state_->GetStatus());
-
-  EXPECT_CALL(*observer_, OnStateChange());
-  ExpectInstallProductAndReturn(true);
-  ready_mode_state_->AcceptChromeFrame();
-
-  ASSERT_EQ(READY_MODE_ACCEPTED, ready_mode_state_->GetStatus());
-}
-
-// TODO(erikwright): What do we actually want to happen if the install fails?
-// Stay in Ready Mode? Attempt to unregister (deactivate ready mode)?
-//
-// Which component is responsible for messaging the user? The installer? The
-// InstallationState implementation? The ReadyModeState implementation?
-TEST_F(ReadyModeRegistryTest, AcceptChromeFrameInstallFails) {
-  ASSERT_EQ(READY_MODE_ACTIVE, ready_mode_state_->GetStatus());
-
-  ExpectInstallProductAndReturn(false);
-  ready_mode_state_->AcceptChromeFrame();
-
-  ASSERT_EQ(READY_MODE_ACTIVE, ready_mode_state_->GetStatus());
-}
+// TODO(erikwright): test WebBrowserAdapter
+// TODO(erikwright): an integration test of ReadyMode::Configure with a mock
+//                   IWebBrowser2?

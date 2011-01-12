@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -50,16 +50,11 @@ ChromeFrameDistribution::ChromeFrameDistribution(
 
     // If the user has already opted in to CF, we shouldn't set the ready-mode
     // flag.  If we don't do this, we might have two entries in the Add/Remove
-    // Programs list that can uninstall GCF.  Also, we can only enable
-    // ready-mode if Chrome is also being installed.  Without it, there's no way
-    // to uninstall Chrome Frame.
+    // Programs list that can uninstall GCF.
     if (ready_mode_) {
       if (!uninstall.HasSwitch(installer::switches::kChromeFrameReadyMode)) {
         LOG(INFO) << "Ready mode was specified on the command line but GCF "
                      "is already fully installed.  Ignoring command line.";
-        ready_mode_ = false;
-      } else if (!prefs.install_chrome()) {
-        LOG(WARNING) << "Cannot enable ready mode without installing Chrome.";
         ready_mode_ = false;
       }
     }

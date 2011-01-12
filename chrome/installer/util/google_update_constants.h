@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,6 +42,10 @@ extern const wchar_t kRegUsageStatsField[];
 extern const wchar_t kRegVersionField[];
 extern const wchar_t kRegReferralField[];
 extern const wchar_t kRegEULAAceptedField[];
+extern const wchar_t kRegCFTempOptOutCmdField[];
+extern const wchar_t kRegCFEndTempOptOutCmdField[];
+extern const wchar_t kRegCFOptOutCmdField[];
+extern const wchar_t kRegCFOptInCmdField[];
 
 // last time that chrome ran in the Time internal format.
 extern const wchar_t kRegLastRunTimeField[];

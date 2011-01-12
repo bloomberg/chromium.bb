@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -14,6 +14,8 @@
 
 #include <string>
 #include <vector>
+
+#include "base/basictypes.h"
 
 class CopyTreeWorkItem;
 class CreateDirWorkItem;
@@ -81,7 +83,7 @@ class WorkItem {
       HKEY predefined_root,
       const std::wstring& key_path,
       const std::wstring& value_name,
-      bool is_str_type);
+      DWORD type);
 
   // Create a DeleteTreeWorkItem that recursively deletes a file system
   // hierarchy at the given root path. A key file can be optionally specified
@@ -112,6 +114,14 @@ class WorkItem {
       const std::wstring& key_path,
       const std::wstring& value_name,
       DWORD value_data, bool overwrite);
+
+  // Create a SetRegValueWorkItem that sets a registry value with REG_QWORD type
+  // at the key with specified path.
+  static SetRegValueWorkItem* CreateSetRegValueWorkItem(
+      HKEY predefined_root,
+      const std::wstring& key_path,
+      const std::wstring& value_name,
+      int64 value_data, bool overwrite);
 
   // Add a SelfRegWorkItem that registers or unregisters a DLL at the
   // specified path.

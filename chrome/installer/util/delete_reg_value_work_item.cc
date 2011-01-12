@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,13 +13,15 @@ using base::win::RegKey;
 DeleteRegValueWorkItem::DeleteRegValueWorkItem(HKEY predefined_root,
                                                const std::wstring& key_path,
                                                const std::wstring& value_name,
-                                               bool is_str_type)
+                                               DWORD type)
     : predefined_root_(predefined_root),
       key_path_(key_path),
       value_name_(value_name),
-      is_str_type_(is_str_type),
+      type_(type),
       status_(DELETE_VALUE),
-      old_dw_(0) {
+      old_dw_(0),
+      old_qword_(0) {
+  DCHECK(type_ == REG_QWORD || type_ == REG_DWORD || type == REG_SZ);
 }
 
 DeleteRegValueWorkItem::~DeleteRegValueWorkItem() {
@@ -52,16 +54,25 @@ bool DeleteRegValueWorkItem::Do() {
 
   RegKey key;
   bool result = false;
+
+  // Used in REG_QWORD case only
+  DWORD value_size = sizeof(old_qword_);
+  DWORD type = 0;
+
   if (!key.Open(predefined_root_, key_path_.c_str(), KEY_READ | KEY_WRITE)) {
     LOG(ERROR) << "can not open " << key_path_;
   } else if (!key.ValueExists(value_name_.c_str())) {
     status_ = VALUE_NOT_FOUND;
     result = true;
   // Read previous value for rollback and delete
-  } else if (((is_str_type_ && key.ReadValue(value_name_.c_str(),
-                                             &old_str_)) ||
-              (!is_str_type_ && key.ReadValueDW(value_name_.c_str(),
-                                                &old_dw_))) &&
+  } else if (((type_ == REG_SZ && key.ReadValue(value_name_.c_str(),
+                                                &old_str_)) ||
+              (type_ == REG_DWORD && key.ReadValueDW(value_name_.c_str(),
+                                                     &old_dw_)) ||
+              (type_ == REG_QWORD && key.ReadValue(value_name_.c_str(),
+                                                   &old_qword_,
+                                                   &value_size, &type) &&
+                  type == REG_QWORD && value_size == sizeof(old_qword_))) &&
              (key.DeleteValue(value_name_.c_str()))) {
     status_ = VALUE_DELETED;
     result = true;
@@ -86,10 +97,14 @@ void DeleteRegValueWorkItem::Rollback() {
   if (!key.Open(predefined_root_, key_path_.c_str(), KEY_READ | KEY_WRITE)) {
     LOG(ERROR) << "rollback: can not open " << key_path_;
   // try to restore the previous value
-  } else if ((is_str_type_ && key.WriteValue(value_name_.c_str(),
-                                             old_str_.c_str())) ||
-             (!is_str_type_ && key.WriteValue(value_name_.c_str(),
-                                              old_dw_))) {
+  } else if ((type_ == REG_SZ && key.WriteValue(value_name_.c_str(),
+                                                old_str_.c_str())) ||
+             (type_ == REG_DWORD && key.WriteValue(value_name_.c_str(),
+                                                   old_dw_)) ||
+             (type_ == REG_QWORD && key.WriteValue(value_name_.c_str(),
+                                                   &old_qword_,
+                                                   sizeof(old_qword_),
+                                                   REG_QWORD))) {
     status_ = VALUE_ROLLED_BACK;
     VLOG(1) << "rollback: restored " << value_name_;
   } else {

@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -204,6 +204,8 @@
           },
           'sources': [
             'installer/mini_installer/chrome.release',
+            'installer/setup/chrome_frame_ready_mode.cc',
+            'installer/setup/chrome_frame_ready_mode.h',
             'installer/setup/install.cc',
             'installer/setup/install.h',
             'installer/setup/setup_main.cc',

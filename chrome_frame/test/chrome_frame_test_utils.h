@@ -1,19 +1,14 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_FRAME_TEST_CHROME_FRAME_TEST_UTILS_H_
 #define CHROME_FRAME_TEST_CHROME_FRAME_TEST_UTILS_H_
 
-#include <atlbase.h>
-#include <atlcom.h>
-#include <atlwin.h>
-#include <exdisp.h>
-#include <exdispid.h>
-#include <mshtml.h>
-#include <shlguid.h>
-#include <shobjidl.h>
 #include <windows.h>
+
+#include <atlbase.h>
+#include <atlwin.h>
 
 #include <string>
 
@@ -37,6 +32,8 @@
 // Needed for CreateFunctor.
 #define GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 #include "testing/gmock_mutant.h"
+
+interface IWebBrowser2;
 
 namespace chrome_frame_test {
 

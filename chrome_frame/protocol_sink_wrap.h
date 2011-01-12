@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,6 +68,11 @@ END_COM_MAP()
   static base::win::ScopedComPtr<IInternetProtocolSink> CreateNewSink(
       IInternetProtocolSink* sink, ProtData* prot_data);
 
+  // Enables or disables activation of Chrome Frame via the X-UA-Compatible
+  // header or meta tag. The tag/header is respected by default.
+  static void set_ignore_xua(bool ignore_xua) { ignore_xua_ = ignore_xua; }
+  static bool ignore_xua() { return ignore_xua_; }
+
   // Apparently this has to be public, to satisfy COM_INTERFACE_BLIND_DELEGATE
   IInternetProtocolSink* delegate() {
     return delegate_;
@@ -78,6 +83,8 @@ END_COM_MAP()
   ~ProtocolSinkWrap();
 
  private:
+  static bool ignore_xua_;
+
   // IInternetProtocolSink methods
   STDMETHOD(Switch)(PROTOCOLDATA* protocol_data);
   STDMETHOD(ReportProgress)(ULONG status_code, LPCWSTR status_text);
@@ -170,4 +177,3 @@ struct TransactionHooks {
 DECLSPEC_SELECTANY struct TransactionHooks g_trans_hooks;
 
 #endif  // CHROME_FRAME_PROTOCOL_SINK_WRAP_H_
-

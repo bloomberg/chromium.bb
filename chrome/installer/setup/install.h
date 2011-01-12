@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -71,18 +71,20 @@ void AddSetMsiMarkerWorkItem(const Product& product,
                              bool set,
                              WorkItemList* work_item_list);
 
+// This method adds work items to create (or update) Chrome uninstall entry in
+// either the Control Panel->Add/Remove Programs list or in the Omaha client
+// state key if running under an MSI installer.
+void AddUninstallShortcutWorkItems(const FilePath& setup_path,
+                                   const Version& new_version,
+                                   WorkItemList* install_list,
+                                   const Product& product);
+
 // Called for either installation or uninstallation. This method updates the
 // registry according to Chrome Frame specific options for the current
 // installation.  This includes handling of the ready-mode option.
 void AddChromeFrameWorkItems(bool install, const FilePath& setup_path,
                              const Version& new_version, const Product& product,
                              WorkItemList* list);
-
-// Removes the ChromeFrameReadyMode flag from the registry, updates Chrome's
-// uninstallation commands to only uninstall Chrome, and adds an entry to the
-// Add/Remove Programs list for GCF.
-InstallStatus ChromeFrameReadyModeOptIn(const InstallerState& installer_state,
-                                        const CommandLine& cmd_line);
 
 }  // namespace installer
 

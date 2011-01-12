@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,5 +32,9 @@ const wchar_t kRegVersionField[] = L"pv";
 const wchar_t kRegReferralField[] = L"referral";
 const wchar_t kRegEULAAceptedField[] = L"eulaaccepted";
 const wchar_t kRegLastRunTimeField[] = L"lastrun";
+const wchar_t kRegCFTempOptOutCmdField[] = L"CFTempOptOutCmd";
+const wchar_t kRegCFEndTempOptOutCmdField[] = L"CFEndTempOptOutCmd";
+const wchar_t kRegCFOptOutCmdField[] = L"CFOptOutCmd";
+const wchar_t kRegCFOptInCmdField[] = L"CFOptInCmd";
 
 }  // namespace google_update

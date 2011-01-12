@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -208,7 +208,6 @@ template <typename WINDOW, typename DELEGATE> void ExpectNcCalcSizeSequence(
               OnSize(0, CSize(modified_rect->right - modified_rect->left,
                               modified_rect->bottom - modified_rect->top)))
     .Times(testing::Between(0, 1));
-
 }
 
 template <typename WINDOW, typename DELEGATE, typename MANAGER>
@@ -432,7 +431,9 @@ ACTION_P2(AsynchronousHideOnManager, loop, manager) {
 // If the test turns out to be flaky (i.e., because timers are not firing
 // frequently enough to hit all the ranges), increasing the infobar_height
 // should increase the margin (by increasing the time spent in each range).
-TEST(InfobarsInfobarWindowTest, SlidingTest) {
+//
+// TODO(erikwright): re-enable when sliding is fixed (currently crashes in IE6).
+TEST(InfobarsInfobarWindowTest, DISABLED_SlidingTest) {
   int infobar_height = 40;
 
   chrome_frame_test::TimedMsgLoop message_loop;
@@ -441,7 +442,7 @@ TEST(InfobarsInfobarWindowTest, SlidingTest) {
 
   // Used to verify that the last RECT given to SetDimensions is the same RECT
   // reserved by ReserveSpace.
-  RECT current_infobar_dimensions = {0, 0, 0, 0};  // Used to verify that the
+  RECT current_infobar_dimensions = {0, 0, 0, 0};
 
   // Used to make sure that each SetDimensions is matched by a return from
   // ReserveSpace.

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,8 @@
 #ifndef BINDSTATUS_SERVER_MIMETYPEAVAILABLE
 #define BINDSTATUS_SERVER_MIMETYPEAVAILABLE 54
 #endif
+
+bool ProtocolSinkWrap::ignore_xua_ = false;
 
 static const char kTextHtmlMimeType[] = "text/html";
 const wchar_t kUrlMonDllName[] = L"urlmon.dll";
@@ -166,6 +168,10 @@ bool ShouldWrapSink(IInternetProtocolSink* sink, const wchar_t* url) {
   // |url| is already normalized (i.e. no leading spaces, capital letters in
   // protocol etc) and non-null (we check in Hook_Start).
   DCHECK(url != NULL);
+
+  if (ProtocolSinkWrap::ignore_xua())
+    return false;  // No need to intercept, we're ignoring X-UA-Compatible tags
+
   if ((url != StrStrW(url, L"http://")) && (url != StrStrW(url, L"https://")))
     return false;
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,6 +23,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 
+bool HttpNegotiatePatch::modify_user_agent_ = true;
 const char kUACompatibleHttpHeader[] = "x-ua-compatible";
 const char kLowerCaseUserAgent[] = "user-agent";
 
@@ -229,10 +230,11 @@ HRESULT HttpNegotiatePatch::BeginningTransaction(
     DLOG(WARNING) << __FUNCTION__ << " Delegate returned an error";
     return hr;
   }
-  std::string updated(AppendCFUserAgentString(headers, *additional_headers));
-  *additional_headers = reinterpret_cast<wchar_t*>(::CoTaskMemRealloc(
-      *additional_headers, (updated.length() + 1) * sizeof(wchar_t)));
-  lstrcpyW(*additional_headers, ASCIIToWide(updated).c_str());
+  if (modify_user_agent_) {
+    std::string updated(AppendCFUserAgentString(headers, *additional_headers));
+    *additional_headers = reinterpret_cast<wchar_t*>(::CoTaskMemRealloc(
+        *additional_headers, (updated.length() + 1) * sizeof(wchar_t)));
+    lstrcpyW(*additional_headers, ASCIIToWide(updated).c_str());
+  }
   return S_OK;
 }
-

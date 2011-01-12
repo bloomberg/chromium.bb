@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,9 +15,11 @@
 #include "chrome_tab.h" // NOLINT
 #include "chrome_frame/crash_reporting/crash_metrics.h"
 #include "chrome_frame/extra_system_apis.h"
+#include "chrome_frame/html_utils.h"
 #include "chrome_frame/http_negotiate.h"
 #include "chrome_frame/metrics_service.h"
 #include "chrome_frame/protocol_sink_wrap.h"
+#include "chrome_frame/ready_mode/ready_mode.h"
 #include "chrome_frame/urlmon_moniker.h"
 #include "chrome_frame/utils.h"
 #include "chrome_frame/vtable_patch_manager.h"
@@ -66,6 +68,38 @@ HRESULT Bho::FinalConstruct() {
 void Bho::FinalRelease() {
 }
 
+namespace {
+
+// Allows Ready Mode to disable Chrome Frame by deactivating User Agent
+// modification and X-UA-Compatible header/tag detection.
+class ReadyModeDelegateImpl : public ready_mode::Delegate {
+ public:
+  ReadyModeDelegateImpl() {}
+
+  // ready_mode::Delegate implementation
+  virtual void DisableChromeFrame();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ReadyModeDelegateImpl);
+};  // class ReadyModeDelegateImpl
+
+void SynchronizeEnablementState() {
+  std::string user_agent(http_utils::GetDefaultUserAgent());
+  bool enabled = user_agent.find("chromeframe") != std::string::npos;
+  ProtocolSinkWrap::set_ignore_xua(!enabled);
+}
+
+void ReadyModeDelegateImpl::DisableChromeFrame() {
+  if (GetIEVersion() != IE_9) {
+    SynchronizeEnablementState();
+  } else {
+    HttpNegotiatePatch::set_modify_user_agent(false);
+    ProtocolSinkWrap::set_ignore_xua(true);
+  }
+}
+
+}  // namespace
+
 STDMETHODIMP Bho::SetSite(IUnknown* site) {
   HRESULT hr = S_OK;
   if (site) {
@@ -74,6 +108,15 @@ STDMETHODIMP Bho::SetSite(IUnknown* site) {
     if (web_browser2) {
       hr = DispEventAdvise(web_browser2, &DIID_DWebBrowserEvents2);
       DCHECK(SUCCEEDED(hr)) << "DispEventAdvise failed. Error: " << hr;
+
+      ready_mode::Configure(new ReadyModeDelegateImpl(), web_browser2);
+
+      // At this time, the user agent has been updated to reflect the Ready Mode
+      // state. We should make sure to modify our recognition of meta tags
+      // accordingly. On IE 9, another method is used to manage meta tags.
+      if (GetIEVersion() != IE_9) {
+        SynchronizeEnablementState();
+      }
     }
 
     if (g_patch_helper.state() == PatchHelper::PATCH_IBROWSER) {

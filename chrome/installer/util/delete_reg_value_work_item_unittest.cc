@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,10 +54,10 @@ TEST_F(DeleteRegValueWorkItemTest, DeleteExistingValue) {
 
   scoped_ptr<DeleteRegValueWorkItem> work_item1(
       WorkItem::CreateDeleteRegValueWorkItem(HKEY_CURRENT_USER, parent_key,
-                                             name_str, true));
+                                             name_str, REG_SZ));
   scoped_ptr<DeleteRegValueWorkItem> work_item2(
       WorkItem::CreateDeleteRegValueWorkItem(HKEY_CURRENT_USER, parent_key,
-                                             name_dword, false));
+                                             name_dword, REG_DWORD));
 
   EXPECT_TRUE(work_item1->Do());
   EXPECT_TRUE(work_item2->Do());
@@ -90,10 +90,10 @@ TEST_F(DeleteRegValueWorkItemTest, DeleteNonExistentValue) {
 
   scoped_ptr<DeleteRegValueWorkItem> work_item1(
       WorkItem::CreateDeleteRegValueWorkItem(HKEY_CURRENT_USER, parent_key,
-                                             name_str, true));
+                                             name_str, REG_SZ));
   scoped_ptr<DeleteRegValueWorkItem> work_item2(
       WorkItem::CreateDeleteRegValueWorkItem(HKEY_CURRENT_USER, parent_key,
-                                             name_dword, false));
+                                             name_dword, REG_DWORD));
 
   EXPECT_TRUE(work_item1->Do());
   EXPECT_TRUE(work_item2->Do());

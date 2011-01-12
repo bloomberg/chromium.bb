@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,14 @@ const char kChromeFrameReadyMode[] = "ready-mode";
 
 // GCF ready mode opt-in.  This enables a full installation of GCF.
 const char kChromeFrameReadyModeOptIn[] = "ready-mode-opt-in";
+
+// GCF ready mode temp opt-out.  This disables the GCF user agent modification
+// and detection of headers/meta tags.
+const char kChromeFrameReadyModeTempOptOut[] = "ready-mode-temp-opt-out";
+
+// End GCF ready mode temp opt-out.  This re-enables the GCF user agent
+// modification and detection of headers/meta tags.
+const char kChromeFrameReadyModeEndTempOptOut[] = "ready-mode-end-temp-opt-out";
 
 // Run the installer for Chrome SxS.
 const char kChromeSxS[] = "chrome-sxs";

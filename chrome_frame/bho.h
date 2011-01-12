@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,11 +48,11 @@ class PatchHelper {
 extern PatchHelper g_patch_helper;
 
 class ATL_NO_VTABLE Bho
-  : public CComObjectRootEx<CComSingleThreadModel>,
-    public CComCoClass<Bho, &CLSID_ChromeFrameBHO>,
-    public IObjectWithSiteImpl<Bho>,
-    public IDispEventSimpleImpl<0, Bho, &DIID_DWebBrowserEvents2>,
-    public NavigationManager {
+    : public CComObjectRootEx<CComSingleThreadModel>,
+      public CComCoClass<Bho, &CLSID_ChromeFrameBHO>,
+      public IObjectWithSiteImpl<Bho>,
+      public IDispEventSimpleImpl<0, Bho, &DIID_DWebBrowserEvents2>,
+      public NavigationManager {
  public:
   typedef HRESULT (STDMETHODCALLTYPE* IBrowserService_OnHttpEquiv_Fn)(
       IBrowserService* browser, IShellView* shell_view, BOOL done,

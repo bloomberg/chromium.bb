@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -62,6 +62,10 @@ enum InstallStatus {
                               // multi-install installation of the same product
                               // on the system.
   READY_MODE_OPT_IN_FAILED,   // 36. Failed to opt-into Chrome Frame.
+  READY_MODE_TEMP_OPT_OUT_FAILED,   // 37. Failed to temporarily opt-out of
+                                    // Chrome Frame.
+  READY_MODE_END_TEMP_OPT_OUT_FAILED,   // 38. Failed to end temporary opt-out
+                                        // of Chrome Frame.
 };
 
 namespace switches {
@@ -70,6 +74,8 @@ extern const char kChrome[];
 extern const char kChromeFrame[];
 extern const char kChromeFrameReadyMode[];
 extern const char kChromeFrameReadyModeOptIn[];
+extern const char kChromeFrameReadyModeTempOptOut[];
+extern const char kChromeFrameReadyModeEndTempOptOut[];
 extern const char kChromeSxS[];
 extern const char kCreateAllShortcuts[];
 extern const char kDeleteProfile[];

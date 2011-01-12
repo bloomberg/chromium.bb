@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -116,15 +116,15 @@ void InstallUtil::WriteInstallerResult(bool system_install,
                                        int string_resource_id,
                                        const std::wstring* const launch_cmd) {
   const HKEY root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  int installer_result = (GetInstallReturnCode(status) == 0) ? 0 : 1;
+  DWORD installer_result = (GetInstallReturnCode(status) == 0) ? 0 : 1;
   scoped_ptr<WorkItemList> install_list(WorkItem::CreateWorkItemList());
   install_list->AddCreateRegKeyWorkItem(root, state_key);
   install_list->AddSetRegValueWorkItem(root, state_key,
                                        installer::kInstallerResult,
                                        installer_result, true);
   install_list->AddSetRegValueWorkItem(root, state_key,
-                                       installer::kInstallerError, status,
-                                       true);
+                                       installer::kInstallerError,
+                                       static_cast<DWORD>(status), true);
   if (string_resource_id != 0) {
     std::wstring msg = installer::GetLocalizedString(string_resource_id);
     install_list->AddSetRegValueWorkItem(root, state_key,

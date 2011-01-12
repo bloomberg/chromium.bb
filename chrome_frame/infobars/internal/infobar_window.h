@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,7 +82,7 @@ class InfobarWindow {
 
   // Manage a timer that repeatedly calls Host::UpdateLayout
   bool StartTimer();
-  void StopTimer();
+  bool StopTimer();
 
   scoped_ptr<InfobarContent> content_;
   Host* host_;

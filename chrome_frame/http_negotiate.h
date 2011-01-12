@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,8 +6,9 @@
 #define CHROME_FRAME_HTTP_NEGOTIATE_H_
 
 #include <shdeprecated.h>
-#include <string>
 #include <urlmon.h>
+
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/scoped_comptr_win.h"
@@ -47,6 +48,10 @@ class HttpNegotiatePatch {
   static bool Initialize();
   static void Uninitialize();
 
+  // Enables and disables the User Agent header modification. It is enabled
+  // by default when the patch is installed.
+  static void set_modify_user_agent(bool value) { modify_user_agent_ = value; }
+
   // IHttpNegotiate patch methods
   static STDMETHODIMP BeginningTransaction(
       IHttpNegotiate_BeginningTransaction_Fn original, IHttpNegotiate* me,
@@ -56,6 +61,8 @@ class HttpNegotiatePatch {
   static HRESULT PatchHttpNegotiate(IUnknown* to_patch);
 
  private:
+  static bool modify_user_agent_;
+
   DISALLOW_COPY_AND_ASSIGN(HttpNegotiatePatch);
 };
 

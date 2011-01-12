@@ -25,6 +25,7 @@
 #include "base/win/windows_version.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/installer/setup/chrome_frame_ready_mode.h"
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
@@ -167,11 +168,11 @@ installer::InstallStatus RenameChromeExecutables(
     install_list->AddDeleteRegValueWorkItem(reg_root,
                                             version_key,
                                             google_update::kRegOldVersionField,
-                                            true);
+                                            REG_SZ);
     install_list->AddDeleteRegValueWorkItem(reg_root,
                                             version_key,
                                             google_update::kRegRenameCmdField,
-                                            true);
+                                            REG_SZ);
   }
   installer::InstallStatus ret = installer::RENAME_SUCCESSFUL;
   if (!install_list->Do()) {
@@ -675,6 +676,14 @@ bool HandleNonInstallCmdLineOptions(const InstallerState& installer_state,
                  installer::switches::kChromeFrameReadyModeOptIn)) {
     *exit_code = InstallUtil::GetInstallReturnCode(
         installer::ChromeFrameReadyModeOptIn(installer_state, cmd_line));
+  } else if (cmd_line.HasSwitch(
+                 installer::switches::kChromeFrameReadyModeTempOptOut)) {
+    *exit_code = InstallUtil::GetInstallReturnCode(
+        installer::ChromeFrameReadyModeTempOptOut(cmd_line));
+  } else if (cmd_line.HasSwitch(
+                 installer::switches::kChromeFrameReadyModeEndTempOptOut)) {
+    *exit_code = InstallUtil::GetInstallReturnCode(
+        installer::ChromeFrameReadyModeEndTempOptOut(cmd_line));
   } else {
     handled = false;
   }

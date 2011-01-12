@@ -4,8 +4,8 @@
 
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 
-#include <atlbase.h>
-#include <atlwin.h>
+#include <atlapp.h>
+#include <atlmisc.h>
 #include <iepmapi.h>
 #include <sddl.h>
 
@@ -565,8 +565,8 @@ bool DetectRunningCrashService(int timeout_ms) {
         // Wait a bit longer
         break;
       default:
-        DLOG(WARNING) << "Unexpected error while checking crash_service.exe's "
-                      << ::GetLastError();
+        DPLOG(WARNING) << "Unexpected error while checking crash_service.exe's "
+                       << "pipe.";
         // Go ahead and wait in case it clears up.
         break;
     }

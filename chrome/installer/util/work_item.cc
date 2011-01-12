@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,9 +50,9 @@ DeleteRegValueWorkItem* WorkItem::CreateDeleteRegValueWorkItem(
     HKEY predefined_root,
     const std::wstring& key_path,
     const std::wstring& value_name,
-    bool is_str_type) {
+    DWORD type) {
   return new DeleteRegValueWorkItem(predefined_root, key_path,
-                                    value_name, is_str_type);
+                                    value_name, type);
 }
 
 DeleteTreeWorkItem* WorkItem::CreateDeleteTreeWorkItem(
@@ -81,7 +81,18 @@ SetRegValueWorkItem* WorkItem::CreateSetRegValueWorkItem(
     HKEY predefined_root,
     const std::wstring& key_path,
     const std::wstring& value_name,
-    DWORD value_data, bool overwrite) {
+    DWORD value_data,
+    bool overwrite) {
+  return new SetRegValueWorkItem(predefined_root, key_path,
+                                 value_name, value_data, overwrite);
+}
+
+SetRegValueWorkItem* WorkItem::CreateSetRegValueWorkItem(
+    HKEY predefined_root,
+    const std::wstring& key_path,
+    const std::wstring& value_name,
+    int64 value_data,
+    bool overwrite) {
   return new SetRegValueWorkItem(predefined_root, key_path,
                                  value_name, value_data, overwrite);
 }

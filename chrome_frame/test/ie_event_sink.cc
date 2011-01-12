@@ -4,6 +4,9 @@
 
 #include "chrome_frame/test/ie_event_sink.h"
 
+#include <shlguid.h>
+#include <shobjidl.h>
+
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"

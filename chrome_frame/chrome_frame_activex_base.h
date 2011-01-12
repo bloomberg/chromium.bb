@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -179,8 +179,7 @@ class ATL_NO_VTABLE ChromeFrameActivexBase :  // NOLINT
       : ready_state_(READYSTATE_UNINITIALIZED),
       url_fetcher_(new UrlmonUrlRequestManager()),
       failed_to_fetch_in_place_frame_(false),
-      draw_sad_tab_(false),
-      prev_resource_instance_(NULL) {
+      draw_sad_tab_(false) {
     m_bWindowOnly = TRUE;
     url_fetcher_->set_container(static_cast<IDispatch*>(this));
   }
@@ -248,7 +247,6 @@ END_MSG_MAP()
   DECLARE_PROTECT_FINAL_CONSTRUCT()
 
   void SetResourceModule() {
-    DCHECK(NULL == prev_resource_instance_);
     SimpleResourceLoader* loader_instance = SimpleResourceLoader::GetInstance();
     DCHECK(loader_instance);
     HMODULE res_dll = loader_instance->GetResourceModuleHandle();
@@ -1283,8 +1281,6 @@ END_MSG_MAP()
   // Handle network requests when host network stack is used. Passed to the
   // automation client on initialization.
   scoped_ptr<UrlmonUrlRequestManager> url_fetcher_;
-
-  HINSTANCE prev_resource_instance_;
 };
 
 #endif  // CHROME_FRAME_CHROME_FRAME_ACTIVEX_BASE_H_
