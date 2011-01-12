@@ -124,6 +124,8 @@ class GpuProcessHost : public BrowserChildProcessHost,
   bool initialized_;
   bool initialized_successfully_;
 
+  bool blacklist_result_recorded_;
+
   scoped_ptr<GpuBlacklist> gpu_blacklist_;
 
   // These are the channel requests that we have already sent to

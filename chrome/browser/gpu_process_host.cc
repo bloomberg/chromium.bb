@@ -38,10 +38,16 @@
 
 namespace {
 
+enum GPUBlacklistTestResult {
+  BLOCKED,
+  ALLOWED,
+  BLACKLIST_TEST_RESULT_MAX
+};
+
 enum GPUProcessLifetimeEvent {
-  kLaunched,
-  kCrashed,
-  kGPUProcessLifetimeEvent_Max
+  LAUNCED,
+  CRASHED,
+  GPU_PROCESS_LIFETIME_EVENT_MAX
   };
 
 // Tasks used by this file
@@ -80,7 +86,8 @@ void RouteOnUIThread(const IPC::Message& message) {
 GpuProcessHost::GpuProcessHost()
     : BrowserChildProcessHost(GPU_PROCESS, NULL),
       initialized_(false),
-      initialized_successfully_(false) {
+      initialized_successfully_(false),
+      blacklist_result_recorded_(false) {
   DCHECK_EQ(sole_instance_, static_cast<GpuProcessHost*>(NULL));
 }
 
@@ -221,11 +228,19 @@ void GpuProcessHost::OnChannelEstablished(
   const ChannelRequest& request = sent_requests_.front();
   // Currently if any of the GPU features are blacklised, we don't establish a
   // GPU channel.
+  GPUBlacklistTestResult test_result;
   if (gpu_feature_flags.flags() != 0) {
     Send(new GpuMsg_CloseChannel(channel_handle));
     SendEstablishChannelReply(IPC::ChannelHandle(), gpu_info, request.filter);
+    test_result = BLOCKED;
   } else {
     SendEstablishChannelReply(channel_handle, gpu_info, request.filter);
+    test_result = ALLOWED;
+  }
+  if (!blacklist_result_recorded_) {
+    UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResults",
+                              test_result, BLACKLIST_TEST_RESULT_MAX);
+    blacklist_result_recorded_ = true;
   }
   sent_requests_.pop();
 }
@@ -509,7 +524,7 @@ void GpuProcessHost::OnChildDied() {
   // Located in OnChildDied because OnProcessCrashed suffers from a race
   // condition on Linux. The GPU process will only die if it crashes.
   UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLifetimeEvents",
-                            kCrashed, kGPUProcessLifetimeEvent_Max);
+                            CRASHED, GPU_PROCESS_LIFETIME_EVENT_MAX);
   BrowserChildProcessHost::OnChildDied();
 }
 
@@ -572,7 +587,7 @@ bool GpuProcessHost::LaunchGpuProcess() {
       cmd_line);
 
   UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLifetimeEvents",
-                            kLaunched, kGPUProcessLifetimeEvent_Max);
+                            LAUNCED, GPU_PROCESS_LIFETIME_EVENT_MAX);
   return true;
 }
 
