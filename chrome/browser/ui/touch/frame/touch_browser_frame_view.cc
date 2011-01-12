@@ -4,19 +4,15 @@
 
 #include "chrome/browser/ui/touch/frame/touch_browser_frame_view.h"
 
-#include <algorithm>
-
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/views/dom_view.h"
+#include "chrome/browser/ui/touch/frame/keyboard_container_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
-#include "chrome/common/url_constants.h"
 #include "gfx/rect.h"
 
 namespace {
@@ -71,16 +67,10 @@ void TouchBrowserFrameView::InitVirtualKeyboard() {
   if (keyboard_)
     return;
 
-  keyboard_ = new DOMView;
-
   Profile* keyboard_profile = browser_view()->browser()->profile();
   DCHECK(keyboard_profile) << "Profile required for virtual keyboard.";
 
-  GURL keyboard_url(chrome::kChromeUIKeyboardURL);
-  keyboard_->Init(keyboard_profile,
-      SiteInstance::CreateSiteInstanceForURL(keyboard_profile, keyboard_url));
-  keyboard_->LoadURL(keyboard_url);
-
+  keyboard_ = new KeyboardContainerView(keyboard_profile);
   keyboard_->SetVisible(false);
   AddChildView(keyboard_);
 }

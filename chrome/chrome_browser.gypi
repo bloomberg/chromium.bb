@@ -3116,6 +3116,8 @@
         'browser/ui/toolbar/wrench_menu_model.cc',
         'browser/ui/toolbar/wrench_menu_model.h',
         'browser/ui/touch/frame/browser_non_client_frame_view_factory_touch.cc',
+        'browser/ui/touch/frame/keyboard_container_view.cc',
+        'browser/ui/touch/frame/keyboard_container_view.h',
         'browser/ui/touch/frame/touch_browser_frame_view.cc',
         'browser/ui/touch/frame/touch_browser_frame_view.h',
         'browser/ui/view_ids.h',

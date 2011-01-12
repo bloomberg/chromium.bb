@@ -12,7 +12,7 @@
 
 class BrowserFrame;
 class BrowserView;
-class DOMView;
+class KeyboardContainerView;
 class NotificationDetails;
 class NotificationSource;
 
@@ -40,7 +40,7 @@ class TouchBrowserFrameView : public OpaqueBrowserFrameView,
                        const NotificationDetails& details);
 
   bool keyboard_showing_;
-  DOMView* keyboard_;
+  KeyboardContainerView* keyboard_;
   NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchBrowserFrameView);
