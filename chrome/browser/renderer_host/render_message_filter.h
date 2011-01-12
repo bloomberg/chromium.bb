@@ -225,7 +225,7 @@ class RenderMessageFilter : public BrowserMessageFilter,
   // Used to ask the browser allocate a temporary file for the renderer
   // to fill in resulting PDF in renderer.
   void OnAllocateTempFileForPrinting(IPC::Message* reply_msg);
-  void OnTempFileForPrintingWritten(int fd_in_browser);
+  void OnTempFileForPrintingWritten(int sequence_number);
 #endif
 
 #if defined(OS_POSIX)
@@ -358,6 +358,7 @@ class RenderMessageFilter : public BrowserMessageFilter,
   void DoOnClipboardReadFilenames(ui::Clipboard::Buffer buffer,
                                   IPC::Message* reply_msg);
   void DoOnAllocateTempFileForPrinting(IPC::Message* reply_msg);
+  void DoOnTempFileForPrintingWritten(int sequence_number);
 #endif
 
   bool CheckBenchmarkingEnabled() const;

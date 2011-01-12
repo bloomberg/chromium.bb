@@ -88,8 +88,13 @@ void PrintDialogGtk::CreateDialogImpl(const FilePath& path) {
   //
   //   while(true){print();}
   AutoLock lock(DialogLock());
-  if (g_print_dialog)
+  if (g_print_dialog) {
+    // Clean up the temporary file.
+    base::FileUtilProxy::Delete(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+        path, false, NULL);
     return;
+  }
 
   g_print_dialog = new PrintDialogGtk(path);
 }

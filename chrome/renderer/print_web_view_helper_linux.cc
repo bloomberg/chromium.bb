@@ -64,7 +64,7 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
   delete canvas;
   metafile.Close();
 
-  int fd_in_browser = -1;
+  int sequence_number = -1;
   // Get the size of the resulting metafile.
   uint32 buf_size = metafile.GetDataSize();
   DCHECK_GT(buf_size, 0u);
@@ -73,7 +73,7 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
 
   // Ask the browser to open a file for us.
   if (!Send(new ViewHostMsg_AllocateTempFileForPrinting(&fd,
-                                                        &fd_in_browser))) {
+                                                        &sequence_number))) {
     return;
   }
 
@@ -81,7 +81,7 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
     return;
 
   // Tell the browser we've finished writing the file.
-  Send(new ViewHostMsg_TempFileForPrintingWritten(fd_in_browser));
+  Send(new ViewHostMsg_TempFileForPrintingWritten(sequence_number));
 }
 
 void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,

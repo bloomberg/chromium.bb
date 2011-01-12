@@ -44,7 +44,7 @@
 // PrintDialogCloud::CreatePrintDialogForPdf is called from
 // resource_message_filter_gtk.cc once the renderer has informed the
 // renderer host that PDF generation into the renderer host provided
-// temp file has been completed.  That call is on the IO thread.
+// temp file has been completed.  That call is on the FILE thread.
 // That, in turn, hops over to the UI thread to create an instance of
 // PrintDialogCloud.
 
@@ -487,7 +487,7 @@ bool CloudPrintHtmlDialogDelegate::ShouldShowDialogTitle() const {
 // workflow through the printing code changes to allow for dynamically
 // changing page setup parameters while the dialog is active.
 void PrintDialogCloud::CreatePrintDialogForPdf(const FilePath& path_to_pdf) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

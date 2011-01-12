@@ -30,13 +30,15 @@ using WebKit::WebScreenInfoFactory;
 
 namespace {
 
-typedef std::map<int, FilePath> FdMap;
+typedef std::map<int, FilePath> SequenceToPathMap;
 
-struct PrintingFileDescriptorMap {
-  FdMap map;
+struct PrintingSequencePathMap {
+  SequenceToPathMap map;
+  int sequence;
 };
 
-static base::LazyInstance<PrintingFileDescriptorMap>
+// No locking, only access on the FILE thread.
+static base::LazyInstance<PrintingSequencePathMap>
     g_printing_file_descriptor_map(base::LINKER_INITIALIZED);
 
 }  // namespace
@@ -175,14 +177,10 @@ void RenderMessageFilter::DoOnClipboardReadFilenames(
   Send(reply_msg);
 }
 
-// Called on the FILE thread.
 void RenderMessageFilter::DoOnAllocateTempFileForPrinting(
     IPC::Message* reply_msg) {
-  base::FileDescriptor temp_file_fd;
-  int fd_in_browser;
-  temp_file_fd.fd = fd_in_browser = -1;
-  temp_file_fd.auto_close = false;
-
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  base::FileDescriptor temp_file_fd(-1, false);
   bool allow_print =
 #if defined(TOOLKIT_GTK)
     !PrintDialogGtk::DialogShowing();
@@ -190,25 +188,51 @@ void RenderMessageFilter::DoOnAllocateTempFileForPrinting(
     true;
 #endif
   FilePath path;
+  SequenceToPathMap* map = &g_printing_file_descriptor_map.Get().map;
+  const int sequence_number = g_printing_file_descriptor_map.Get().sequence++;
+
   if (allow_print &&
       file_util::CreateTemporaryFile(&path)) {
     int fd = open(path.value().c_str(), O_WRONLY);
     if (fd >= 0) {
-      FdMap* map = &g_printing_file_descriptor_map.Get().map;
-      FdMap::iterator it = map->find(fd);
+      SequenceToPathMap::iterator it = map->find(sequence_number);
       if (it != map->end()) {
-        NOTREACHED() << "The file descriptor is in use. fd=" << fd;
+        NOTREACHED() << "Sequence number already in use. seq=" <<
+            sequence_number;
       } else {
-        (*map)[fd] = path;
-        temp_file_fd.fd = fd_in_browser = fd;
+        (*map)[sequence_number] = path;
+        temp_file_fd.fd = fd;
         temp_file_fd.auto_close = true;
       }
     }
   }
 
   ViewHostMsg_AllocateTempFileForPrinting::WriteReplyParams(
-      reply_msg, temp_file_fd, fd_in_browser);
+      reply_msg, temp_file_fd, sequence_number);
   Send(reply_msg);
+}
+
+void RenderMessageFilter::DoOnTempFileForPrintingWritten(int sequence_number) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  SequenceToPathMap* map = &g_printing_file_descriptor_map.Get().map;
+  SequenceToPathMap::iterator it = map->find(sequence_number);
+  if (it == map->end()) {
+    NOTREACHED() << "Got a sequence that we didn't pass to the "
+                    "renderer: " << sequence_number;
+    return;
+  }
+
+#if defined(TOOLKIT_GTK)
+  PrintDialogGtk::CreatePrintDialogForPdf(it->second);
+#else
+  if (cloud_print_enabled_)
+    PrintDialogCloud::CreatePrintDialogForPdf(it->second);
+  else
+    NOTIMPLEMENTED();
+#endif
+
+  // Erase the entry in the map.
+  map->erase(it);
 }
 
 // Called on the IO thread.
@@ -310,35 +334,21 @@ void RenderMessageFilter::OnClipboardReadFilenames(
           reply_msg));
 }
 
-// Called on the IO thread.
 void RenderMessageFilter::OnAllocateTempFileForPrinting(
     IPC::Message* reply_msg) {
-   BrowserThread::PostTask(
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       NewRunnableMethod(
           this, &RenderMessageFilter::DoOnAllocateTempFileForPrinting,
           reply_msg));
 }
 
-// Called on the IO thread.
-void RenderMessageFilter::OnTempFileForPrintingWritten(int fd_in_browser) {
-  FdMap* map = &g_printing_file_descriptor_map.Get().map;
-  FdMap::iterator it = map->find(fd_in_browser);
-  if (it == map->end()) {
-    NOTREACHED() << "Got a file descriptor that we didn't pass to the "
-                    "renderer: " << fd_in_browser;
-    return;
-  }
-
-#if defined(TOOLKIT_GTK)
-  PrintDialogGtk::CreatePrintDialogForPdf(it->second);
-#else
-  if (cloud_print_enabled_)
-    PrintDialogCloud::CreatePrintDialogForPdf(it->second);
-  else
-    NOTIMPLEMENTED();
-#endif
-
-  // Erase the entry in the map.
-  map->erase(it);
+void RenderMessageFilter::OnTempFileForPrintingWritten(int sequence_number) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          this, &RenderMessageFilter::DoOnTempFileForPrintingWritten,
+          sequence_number));
 }
