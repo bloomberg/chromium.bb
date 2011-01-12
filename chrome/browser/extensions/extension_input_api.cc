@@ -7,6 +7,7 @@
 #include <string>
 
 #include "app/keyboard_code_conversion.h"
+#include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
@@ -83,6 +84,8 @@ bool SendKeyboardEventInputFunction::RunImpl() {
 
   std::string identifier;
   EXTENSION_FUNCTION_VALIDATE(args->GetString(kKeyIdentifier, &identifier));
+  TrimWhitespaceASCII(identifier, TRIM_ALL, &identifier);
+
   app::KeyboardCode code = app::KeyCodeFromKeyIdentifier(identifier);
   if (code == app::VKEY_UNKNOWN) {
     error_ = kUnknownOrUnsupportedKeyIdentiferError;
