@@ -63,18 +63,18 @@ typedef nacl_abi___dev_t nacl_abi_dev_t;
 
 #ifndef nacl_abi___ino_t_defined
 #define nacl_abi___ino_t_defined
-typedef uint32_t nacl_abi___ino_t;
+typedef uint64_t nacl_abi___ino_t;
 #ifndef __native_client__
 typedef nacl_abi___ino_t nacl_abi_ino_t;
 #endif
 #endif
 
-#define NACL_PRIdNACL_INO NACL_PRI_(d, NACL_ABI_WORDSIZE)
-#define NACL_PRIiNACL_INO NACL_PRI_(i, NACL_ABI_WORDSIZE)
-#define NACL_PRIoNACL_INO NACL_PRI_(o, NACL_ABI_WORDSIZE)
-#define NACL_PRIuNACL_INO NACL_PRI_(u, NACL_ABI_WORDSIZE)
-#define NACL_PRIxNACL_INO NACL_PRI_(x, NACL_ABI_WORDSIZE)
-#define NACL_PRIXNACL_INO NACL_PRI_(X, NACL_ABI_WORDSIZE)
+#define NACL_PRIdNACL_INO NACL_PRI_(d, 64)
+#define NACL_PRIiNACL_INO NACL_PRI_(i, 64)
+#define NACL_PRIoNACL_INO NACL_PRI_(o, 64)
+#define NACL_PRIuNACL_INO NACL_PRI_(u, 64)
+#define NACL_PRIxNACL_INO NACL_PRI_(x, 64)
+#define NACL_PRIXNACL_INO NACL_PRI_(X, 64)
 
 #define NACL_ABI_INO_T_MIN ((nacl_abi_ino_t) 0)
 #define NACL_ABI_INO_T_MAX ((nacl_abi_ino_t) -1)
@@ -153,21 +153,21 @@ typedef nacl_abi___gid_t nacl_abi_gid_t;
 
 #ifndef nacl_abi___off_t_defined
 #define nacl_abi___off_t_defined
-typedef int32_t nacl_abi__off_t;
+typedef int64_t nacl_abi__off_t;
 #ifndef __native_client__
 typedef nacl_abi__off_t nacl_abi_off_t;
 #endif
 #endif
 
-#define NACL_PRIdNACL_OFF NACL_PRI_(d, NACL_ABI_WORDSIZE)
-#define NACL_PRIiNACL_OFF NACL_PRI_(i, NACL_ABI_WORDSIZE)
-#define NACL_PRIoNACL_OFF NACL_PRI_(o, NACL_ABI_WORDSIZE)
-#define NACL_PRIuNACL_OFF NACL_PRI_(u, NACL_ABI_WORDSIZE)
-#define NACL_PRIxNACL_OFF NACL_PRI_(x, NACL_ABI_WORDSIZE)
-#define NACL_PRIXNACL_OFF NACL_PRI_(X, NACL_ABI_WORDSIZE)
+#define NACL_PRIdNACL_OFF NACL_PRI_(d, 64)
+#define NACL_PRIiNACL_OFF NACL_PRI_(i, 64)
+#define NACL_PRIoNACL_OFF NACL_PRI_(o, 64)
+#define NACL_PRIuNACL_OFF NACL_PRI_(u, 64)
+#define NACL_PRIxNACL_OFF NACL_PRI_(x, 64)
+#define NACL_PRIXNACL_OFF NACL_PRI_(X, 64)
 
-#define NACL_ABI_OFF_T_MIN ((nacl_abi_off_t) 1 << (NACL_ABI_WORDSIZE - 1))
-#define NACL_ABI_OFF_T_MAX (~((nacl_abi_off_t) 1 << (NACL_ABI_WORDSIZE - 1)))
+#define NACL_ABI_OFF_T_MIN ((nacl_abi_off_t) 1 << 63)
+#define NACL_ABI_OFF_T_MAX (~((nacl_abi_off_t) 1 << 63))
 
 #ifndef nacl_abi___off64_t_defined
 #define nacl_abi___off64_t_defined
@@ -231,19 +231,19 @@ typedef nacl_abi___blkcnt_t nacl_abi_blkcnt_t;
 
 #ifndef nacl_abi___time_t_defined
 #define nacl_abi___time_t_defined
-typedef int32_t       nacl_abi___time_t;
+typedef int64_t       nacl_abi___time_t;
 typedef nacl_abi___time_t nacl_abi_time_t;
 #endif
 
-#define NACL_PRIdNACL_TIME NACL_PRI_(d, NACL_ABI_WORDSIZE)
-#define NACL_PRIiNACL_TIME NACL_PRI_(i, NACL_ABI_WORDSIZE)
-#define NACL_PRIoNACL_TIME NACL_PRI_(o, NACL_ABI_WORDSIZE)
-#define NACL_PRIuNACL_TIME NACL_PRI_(u, NACL_ABI_WORDSIZE)
-#define NACL_PRIxNACL_TIME NACL_PRI_(x, NACL_ABI_WORDSIZE)
-#define NACL_PRIXNACL_TIME NACL_PRI_(X, NACL_ABI_WORDSIZE)
+#define NACL_PRIdNACL_TIME NACL_PRI_(d, 64)
+#define NACL_PRIiNACL_TIME NACL_PRI_(i, 64)
+#define NACL_PRIoNACL_TIME NACL_PRI_(o, 64)
+#define NACL_PRIuNACL_TIME NACL_PRI_(u, 64)
+#define NACL_PRIxNACL_TIME NACL_PRI_(x, 64)
+#define NACL_PRIXNACL_TIME NACL_PRI_(X, 64)
 
-#define NACL_ABI_TIME_T_MIN ((nacl_abi_time_t) 1 << (NACL_ABI_WORDSIZE - 1))
-#define NACL_ABI_TIME_T_MAX (~((nacl_abi_time_t) 1 << (NACL_ABI_WORDSIZE - 1)))
+#define NACL_ABI_TIME_T_MIN ((nacl_abi_time_t) 1 << 63)
+#define NACL_ABI_TIME_T_MAX (~((nacl_abi_time_t) 1 << 63))
 
 /*
  * stddef.h defines size_t, and we cannot export another definition.

@@ -15,10 +15,12 @@
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 off_t lseek(int desc, off_t offset, int whence) {
-  off_t retval = NACL_SYSCALL(lseek)(desc, offset, whence);
+  int retval = NACL_SYSCALL(lseek)(desc,
+                                   &offset,
+                                   whence);
   if ((int) retval < 0) {
     errno = -(int) retval;
     return (off_t) -1;
   }
-  return retval;
+  return offset;
 }

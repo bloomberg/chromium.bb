@@ -9,6 +9,7 @@
 #include <time.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#include <nacl/nacl_inttypes.h>
 
 /*
  * Newlib's time.h not working right: getting the nanosleep
@@ -42,7 +43,7 @@ int TestNanoSleep(struct timespec *t_suspend) {
   struct timeval  t_end;
   struct timeval  t_elapsed;
 
-  printf("%40s: %ld.%09ld seconds\n",
+  printf("%40s: %"NACL_PRIdNACL_TIME".%09ld seconds\n",
          "Requesting nanosleep duration",
          t_suspend->tv_sec,
          t_suspend->tv_nsec);
@@ -78,7 +79,7 @@ int TestNanoSleep(struct timespec *t_suspend) {
     fprintf(stderr, "Microsecond field too large: %ld\n", t_elapsed.tv_usec);
   }
 
-  printf("%40s: %ld.%06ld seconds\n",
+  printf("%40s: %"NACL_PRIdNACL_TIME".%06ld seconds\n",
          "Actual nanosleep duration",
          t_elapsed.tv_sec,
          t_elapsed.tv_usec);

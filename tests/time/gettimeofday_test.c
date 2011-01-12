@@ -12,6 +12,8 @@
 #include <time.h>
 #include <sys/nacl_syscalls.h>
 
+#include <nacl/nacl_inttypes.h>
+
 /*
  * The mocking of gettimeofday is only useful for testing the libc
  * code, i.e., it's not very useful from the point of view of testing
@@ -58,7 +60,8 @@ int main(int ac,
     t_now.tv_sec = mock_time;
     t_now.tv_usec = 0;
   }
-  printf("At the tone, the system time is %ld.%06ld seconds.  BEEP!\n",
+  printf("At the tone, the system time is"
+         " %"NACL_PRIdNACL_TIME".%06ld seconds.  BEEP!\n",
          t_now.tv_sec, t_now.tv_usec);
   localtime_r(&t_now.tv_sec, &t_broken_out);
   timestr = asctime_r(&t_broken_out, ctime_buf);

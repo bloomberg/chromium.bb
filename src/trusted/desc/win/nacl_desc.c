@@ -85,6 +85,15 @@ int32_t NaClAbiStatHostDescStatXlateCtor(struct nacl_abi_stat   *dst,
   dst->nacl_abi_st_mtime = (nacl_abi_time_t) src->st_mtime;
   dst->nacl_abi_st_ctime = (nacl_abi_time_t) src->st_ctime;
 
+  /*
+   * For now, zero these fields.  We may want to expose the
+   * corresponding values if the underlying host OS supports
+   * nanosecond resolution timestamps later.
+   */
+  dst->nacl_abi_st_atimensec = 0;
+  dst->nacl_abi_st_mtimensec = 0;
+  dst->nacl_abi_st_ctimensec = 0;
+
   return 0;
 }
 

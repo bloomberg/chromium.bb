@@ -5,8 +5,8 @@
  */
 
 /*
-   It can't get much simpler than this (uh, except for noop.c).
-*/
+ * It can't get much simpler than this (uh, except for noop.c).
+ */
 
 #include <stdio.h>
 

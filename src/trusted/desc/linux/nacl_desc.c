@@ -41,12 +41,6 @@ int32_t NaClAbiStatHostDescStatXlateCtor(struct nacl_abi_stat    *dst,
                                          nacl_host_stat_t const  *src) {
   nacl_abi_mode_t m;
 
-  /*
-   * should the caller be using nacl_abi_stat64 if/when that's available?
-   */
-  if (src->st_size > INT32_MAX) {
-    return -NACL_ABI_EOVERFLOW;
-  }
   memset(dst, 0, sizeof *dst);
 
   dst->nacl_abi_st_dev = 0;
@@ -92,6 +86,15 @@ int32_t NaClAbiStatHostDescStatXlateCtor(struct nacl_abi_stat    *dst,
   dst->nacl_abi_st_atime = src->st_atime;
   dst->nacl_abi_st_mtime = src->st_mtime;
   dst->nacl_abi_st_ctime = src->st_ctime;
+
+  /*
+   * For now, zero these fields.  We may want to expose the
+   * corresponding values if the underlying host OS supports
+   * nanosecond resolution timestamps later.
+   */
+  dst->nacl_abi_st_atimensec = 0;
+  dst->nacl_abi_st_mtimensec = 0;
+  dst->nacl_abi_st_ctimensec = 0;
 
   return 0;
 }

@@ -19,6 +19,8 @@
 #include <unistd.h>
 #include <errno.h>
 
+#include <nacl/nacl_inttypes.h>
+
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 // #include "native_client/tests/syscalls/test.h"
@@ -138,7 +140,7 @@ int TestNanoSleep(struct timespec *t_suspend) {
   struct timeval  t_end;
   struct timeval  t_elapsed;
 
-  printf("%40s: %ld.%09ld seconds\n",
+  printf("%40s: %"NACL_PRIdNACL_TIME".%09ld seconds\n",
          "Requesting nanosleep duration",
          t_suspend->tv_sec,
          t_suspend->tv_nsec);
@@ -167,7 +169,7 @@ int TestNanoSleep(struct timespec *t_suspend) {
     printf("Microsecond field too large: %ld\n", t_elapsed.tv_usec);
   }
 
-  printf("%40s: %ld.%06ld seconds\n",
+  printf("%40s: %"NACL_PRIdNACL_TIME".%06ld seconds\n",
          "Actual nanosleep duration",
          t_elapsed.tv_sec,
          t_elapsed.tv_usec);
@@ -248,4 +250,3 @@ int main(const int argc, const char *argv[]) {
 
   exit(fail_count);
 }
-

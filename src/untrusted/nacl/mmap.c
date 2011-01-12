@@ -17,7 +17,7 @@
 
 void *mmap(void *start, size_t length, int prot, int flags,
            int desc, off_t offset) {
-  void *retval = NACL_SYSCALL(mmap)(start, length, prot, flags, desc, offset);
+  void *retval = NACL_SYSCALL(mmap)(start, length, prot, flags, desc, &offset);
   if ((uint32_t) retval > 0xffff0000u) {
     /*
      * __nacl_mmap returns an address as its value if it succeeds and

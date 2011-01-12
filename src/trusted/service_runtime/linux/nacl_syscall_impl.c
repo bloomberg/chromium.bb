@@ -20,6 +20,7 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_platform.h"
 
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/nacl_time.h"
@@ -107,9 +108,9 @@ int32_t NaClSysWrite(struct NaClAppThread *natp,
 /* Warning: sizeof(nacl_abi_off_t)!=sizeof(off_t) on OSX */
 int32_t NaClSysLseek(struct NaClAppThread *natp,
                      int                  d,
-                     nacl_abi_off_t       offset,
+                     nacl_abi_off_t       *offp,
                      int                  whence) {
-  return NaClCommonSysLseek(natp, d, (nacl_off64_t) offset, whence);
+  return NaClCommonSysLseek(natp, d, offp, whence);
 }
 
 int32_t NaClSysIoctl(struct NaClAppThread *natp,
@@ -149,8 +150,8 @@ int32_t NaClSysMmap(struct NaClAppThread  *natp,
                     int                   prot,
                     int                   flags,
                     int                   d,
-                    nacl_abi_off_t        offset) {
-  return NaClCommonSysMmap(natp, start, length, prot, flags, d, offset);
+                    nacl_abi_off_t        *offp) {
+  return NaClCommonSysMmap(natp, start, length, prot, flags, d, offp);
 }
 
 int32_t NaClSysMunmap(struct NaClAppThread  *natp,

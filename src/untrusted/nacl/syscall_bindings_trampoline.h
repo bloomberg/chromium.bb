@@ -59,7 +59,9 @@ typedef int (*TYPE_nacl_write) (int desc, void const *buf, size_t count);
 
 typedef int (*TYPE_nacl_open) (char const *pathname, int flags, mode_t mode);
 
-typedef off_t (*TYPE_nacl_lseek) (int desc, off_t offset, int whence);
+typedef int (*TYPE_nacl_lseek) (int desc,
+                                off_t *offset, /* 64 bit value */
+                                int whence);
 
 typedef int (*TYPE_nacl_stat) (const char *file, struct stat *st);
 
@@ -92,7 +94,7 @@ typedef void *(*TYPE_nacl_mmap) (void *start,
                                   int prot,
                                   int flags,
                                   int desc,
-                                  off_t offset);
+                                  off_t *offset);
 
 typedef int (*TYPE_nacl_munmap) (void *start, size_t length);
 

@@ -1847,12 +1847,18 @@ nacl_env = pre_base_env.Clone(
                '-fomit-frame-pointer',
                '-Wall',
                '-fdiagnostics-show-option',
-               '-pedantic'] +
+               '-pedantic',
+               ] +
               werror_flags +
               ['${EXTRA_CCFLAGS}'] ,
     CPPPATH = ['$SOURCE_ROOT'],
-    CFLAGS = ['${EXTRA_CFLAGS}'],
-    CXXFLAGS = ['${EXTRA_CXXFLAGS}'],
+    CFLAGS = ['-std=gnu99',
+              ] +
+             ['${EXTRA_CFLAGS}'],
+    CXXFLAGS = ['-std=gnu++98',
+                '-Wno-long-long',
+                ] +
+               ['${EXTRA_CXXFLAGS}'],
     LIBS = ['${EXTRA_LIBS}'],
     LINKFLAGS = ['${EXTRA_LINKFLAGS}'],
     CPPDEFINES = [
@@ -1860,6 +1866,10 @@ nacl_env = pre_base_env.Clone(
       ['_GNU_SOURCE', 1],
       # This ensures that PRId64 etc. get defined.
       ['__STDC_FORMAT_MACROS', '1'],
+      # strdup, and other common stuff
+      ['_BSD_SOURCE', '1'],
+      ['_POSIX_C_SOURCE', '199506'],
+      ['_XOPEN_SOURCE', '600'],
       ],
 )
 

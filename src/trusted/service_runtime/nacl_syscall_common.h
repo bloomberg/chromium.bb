@@ -92,7 +92,7 @@ int32_t NaClCommonSysWrite(struct NaClAppThread *natp,
 
 int32_t NaClCommonSysLseek(struct NaClAppThread *natp,
                            int                  d,
-                           nacl_off64_t         offset,
+                           nacl_abi_off_t       *offp,
                            int                  whence);
 
 int32_t NaClCommonSysIoctl(struct NaClAppThread *natp,
@@ -128,7 +128,15 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
                           int                   prot,
                           int                   flags,
                           int                   d,
-                          nacl_abi_off_t        offset);
+                          nacl_abi_off_t        *offp);
+
+int32_t NaClCommonSysMmapIntern(struct NaClAppThread  *natp,
+                                void                  *start,
+                                size_t                length,
+                                int                   prot,
+                                int                   flags,
+                                int                   d,
+                                nacl_abi_off_t        offset);
 
 int32_t NaClSysMmap(struct NaClAppThread  *natp,
                     void                  *start,
@@ -136,7 +144,7 @@ int32_t NaClSysMmap(struct NaClAppThread  *natp,
                     int                   prot,
                     int                   flags,
                     int                   d,
-                    nacl_abi_off_t        offset);
+                    nacl_abi_off_t        *offp);
 
 int32_t NaClSysMunmap(struct NaClAppThread  *natp,
                       void                  *start,

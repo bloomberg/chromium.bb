@@ -62,27 +62,27 @@ int CheckSizes() {
 
   CHECK_SIZEOF(dev_t, 8);
 
-  CHECK_SIZEOF(ino_t, 4);
+  CHECK_SIZEOF(ino_t, 8);
   CHECK_SIZEOF(mode_t, 4);
   CHECK_SIZEOF(nlink_t, 4);
   CHECK_SIZEOF(uid_t, 4);
   CHECK_SIZEOF(gid_t, 4);
-  CHECK_SIZEOF(off_t, 4);
+  CHECK_SIZEOF(off_t, 8);
   CHECK_SIZEOF(blksize_t, 4);
   CHECK_SIZEOF(blkcnt_t, 4);
 
 
-  CHECK_SIZEOF(off_t, 4);
+  CHECK_SIZEOF(off_t, 8);
   CHECK_SIZEOF(size_t, 4);
   CHECK_SIZEOF(fpos_t, 4);
 
-  CHECK_SIZEOF(time_t, 4);
+  CHECK_SIZEOF(time_t, 8);
   CHECK_SIZEOF(struct timezone, 8);
   CHECK_SIZEOF(suseconds_t, 4);
   CHECK_SIZEOF(clock_t, 4);
-  CHECK_SIZEOF(struct timespec, 8);
+  CHECK_SIZEOF(struct timespec, 16);
 
-  CHECK_SIZEOF(struct stat, 64);
+  CHECK_SIZEOF(struct stat, 104);
 
   CHECK_SIZEOF(struct NaClImcMsgHdr, 20);
 #ifdef PNACL_ABI_TEST

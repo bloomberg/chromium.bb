@@ -145,9 +145,9 @@ int32_t NaClSysWrite(struct NaClAppThread *natp,
 
 int32_t NaClSysLseek(struct NaClAppThread *natp,
                      int                  d,
-                     nacl_abi_off_t       offset,
+                     nacl_abi_off_t       *offp,
                      int                  whence) {
-  return NaClCommonSysLseek(natp, d, (nacl_off64_t) offset, whence);
+  return NaClCommonSysLseek(natp, d, offp, whence);
 }
 
 int32_t NaClSysIoctl(struct NaClAppThread *natp,
@@ -187,8 +187,8 @@ int32_t NaClSysMmap(struct NaClAppThread  *natp,
                     int                   prot,
                     int                   flags,
                     int                   d,
-                    nacl_abi_off_t        offset) {
-  return NaClCommonSysMmap(natp, start, length, prot, flags, d, offset);
+                    nacl_abi_off_t        *offp) {
+  return NaClCommonSysMmap(natp, start, length, prot, flags, d, offp);
 }
 
 int32_t NaClSysMunmap(struct NaClAppThread  *natp,

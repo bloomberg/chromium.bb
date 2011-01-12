@@ -756,19 +756,28 @@ cleanup:
  */
 int32_t NaClCommonSysLseek(struct NaClAppThread *natp,
                            int                  d,
-                           nacl_off64_t         offset,
+                           nacl_abi_off_t       *offp,
                            int                  whence) {
+  uintptr_t       sysaddr;
+  nacl_abi_off_t  offset;
   nacl_off64_t    retval64;
   int32_t         retval = -NACL_ABI_EINVAL;
   struct NaClDesc *ndp;
 
   NaClLog(4,
           ("Entered NaClCommonSysLseek(0x%08"NACL_PRIxPTR", %d,"
-           " 0x%08"NACL_PRIx64", %d)\n"),
-          (uintptr_t) natp, d, (int64_t) offset, whence);
+           " 0x%08"NACL_PRIxPTR", %d)\n"),
+          (uintptr_t) natp, d, (uintptr_t) offp, whence);
 
   NaClSysCommonThreadSyscallEnter(natp);
 
+  sysaddr = NaClUserToSysAddrRange(natp->nap, (uintptr_t) offp, sizeof offset);
+  if (kNaClBadAddress == sysaddr) {
+    retval = -NACL_ABI_EFAULT;
+    goto cleanup;
+  }
+  offset = *(nacl_abi_off_t *) sysaddr;
+  NaClLog(4, "offset 0x%08"NACL_PRIxNACL_OFF"\n", offset);
   ndp = NaClGetDesc(natp->nap, d);
   if (NULL == ndp) {
     retval = -NACL_ABI_EBADF;
@@ -776,11 +785,12 @@ int32_t NaClCommonSysLseek(struct NaClAppThread *natp,
   }
 
   retval64 = (*((struct NaClDescVtbl const *) ndp->base.vtbl)->
-              Seek)(ndp, offset, whence);
-  if (INT32_MAX < retval64) {
-    retval = -NACL_ABI_EOVERFLOW;
-  } else {
+              Seek)(ndp, (nacl_off64_t) offset, whence);
+  if (NaClOff64IsNegErrno(&retval64)) {
     retval = (int32_t) retval64;
+  } else {
+    *(nacl_abi_off_t *) sysaddr = retval64;
+    retval = 0;
   }
   NaClDescUnref(ndp);
 cleanup:
@@ -849,6 +859,10 @@ int32_t NaClCommonSysFstat(struct NaClAppThread *natp,
           ")\n", d, (uintptr_t) nasp);
 
   NaClSysCommonThreadSyscallEnter(natp);
+
+  NaClLog(4,
+          " sizeof(struct nacl_abi_stat) = %"NACL_PRIdS" (0x%"NACL_PRIxS")\n",
+          sizeof *nasp, sizeof *nasp);
 
   sysaddr = NaClUserToSysAddrRange(natp->nap, (uintptr_t) nasp, sizeof *nasp);
   if (kNaClBadAddress == sysaddr) {
@@ -1015,13 +1029,13 @@ int NaClSysCommonAddrRangeContainsExecutablePages_mu(struct NaClApp *nap,
 
 
 /* Warning: sizeof(nacl_abi_off_t)!=sizeof(off_t) on OSX */
-int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
-                          void                  *start,
-                          size_t                length,
-                          int                   prot,
-                          int                   flags,
-                          int                   d,
-                          nacl_abi_off_t        offset) {
+int32_t NaClCommonSysMmapIntern(struct NaClAppThread  *natp,
+                                void                  *start,
+                                size_t                length,
+                                int                   prot,
+                                int                   flags,
+                                int                   d,
+                                nacl_abi_off_t        offset) {
   int                         allowed_flags;
   struct NaClDesc             *ndp;
   uintptr_t                   usraddr;
@@ -1041,18 +1055,12 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
 
   holding_app_lock = 0;
   nmop = NULL;
+  ndp = NULL;
 
   allowed_flags = (NACL_ABI_MAP_FIXED | NACL_ABI_MAP_SHARED
                    | NACL_ABI_MAP_PRIVATE | NACL_ABI_MAP_ANONYMOUS);
 
   usraddr = (uintptr_t) start;
-
-  NaClLog(4,
-          "NaClSysMmap(0x%08"NACL_PRIxPTR",0x%"NACL_PRIxS","
-          "0x%x,0x%x,%d,0x%08"NACL_PRIx32")\n",
-          usraddr, length, prot, flags, d, (int32_t) offset);
-
-  NaClSysCommonThreadSyscallEnter(natp);
 
   if (0 != (flags & ~allowed_flags)) {
     NaClLog(LOG_WARNING, "invalid mmap flags 0%o, ignoring extraneous bits\n",
@@ -1468,8 +1476,6 @@ cleanup:
     free(nmop);
   }
 
-  NaClSysCommonThreadSyscallLeave(natp);
-
   /*
    * Check to ensure that map_result will fit into a 32-bit value. This is
    * a bit tricky because there are two valid ranges: one is the range from
@@ -1485,6 +1491,60 @@ cleanup:
   NaClLog(3, "NaClSysMmap: returning 0x%08"NACL_PRIxPTR"\n", map_result);
 
   return (int32_t) map_result;
+}
+
+int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
+                          void                  *start,
+                          size_t                length,
+                          int                   prot,
+                          int                   flags,
+                          int                   d,
+                          nacl_abi_off_t        *offp) {
+  int32_t         retval;
+  uintptr_t       sysaddr;
+  nacl_abi_off_t  offset;
+
+  NaClLog(4,
+          "NaClSysMmap(0x%08"NACL_PRIxPTR",0x%"NACL_PRIxS","
+          "0x%x,0x%x,%d,0x%08"NACL_PRIxPTR")\n",
+          (uintptr_t) start, length, prot, flags, d, (uintptr_t) offp);
+
+  if ((nacl_abi_off_t *) 0 == offp) {
+    /*
+     * This warning is really targetted towards trusted code,
+     * especially tests that didn't notice the argument type change.
+     * Unfortunatey, zero is a common and legitimate offset value, and
+     * the compiler will not complain since an automatic type
+     * conversion works.
+     */
+    NaClLog(LOG_WARNING,
+            "NaClCommonSysMmap: NULL pointer used"
+            " for offset in/out argument\n");
+    return -NACL_ABI_EINVAL;
+  }
+
+  NaClSysCommonThreadSyscallEnter(natp);
+
+  sysaddr = NaClUserToSysAddrRange(natp->nap, (uintptr_t) offp, sizeof offset);
+  if (kNaClBadAddress == sysaddr) {
+    NaClLog(3,
+            "NaClCommonSysMmap: offset in a bad untrusted memory location\n");
+    retval = -NACL_ABI_EFAULT;
+    goto cleanup;
+  }
+  offset = *(nacl_abi_off_t *) sysaddr;
+
+  NaClLog(4, " offset = 0x%08"NACL_PRIxNACL_OFF"\n", offset);
+
+  retval = NaClCommonSysMmapIntern(natp,
+                                   start, length,
+                                   prot,
+                                   flags,
+                                   d, offset);
+cleanup:
+  NaClSysCommonThreadSyscallLeave(natp);
+
+  return retval;
 }
 
 int32_t NaClCommonSysImc_MakeBoundSock(struct NaClAppThread *natp,

@@ -94,6 +94,10 @@ static INLINE int NaClSSizeIsNegErrno(const ssize_t *val) {
   return (*val & ~((ssize_t) 0xffff)) == ~((ssize_t) 0xffff);
 }
 
+static INLINE int NaClOff64IsNegErrno(const nacl_off64_t *val) {
+  return (*val & ~((nacl_off64_t) 0xffff)) == ~((nacl_off64_t) 0xffff);
+}
+
 extern int NaClXlateErrno(int errnum);
 
 extern int NaClXlateNaClSyncStatus(NaClSyncStatus status);
