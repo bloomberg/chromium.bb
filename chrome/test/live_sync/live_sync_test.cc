@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,10 +38,20 @@
 #include "net/url_request/url_request_status.h"
 
 namespace switches {
-const std::string kPasswordFileForTest = "password-file-for-test";
-const std::string kSyncUserForTest = "sync-user-for-test";
-const std::string kSyncPasswordForTest = "sync-password-for-test";
-const std::string kSyncServerCommandLine = "sync-server-command-line";
+const char kPasswordFileForTest[] = "password-file-for-test";
+const char kSyncUserForTest[] = "sync-user-for-test";
+const char kSyncPasswordForTest[] = "sync-password-for-test";
+const char kSyncServerCommandLine[] = "sync-server-command-line";
+}
+
+namespace {
+// The URLs for different calls in the Google Accounts programmatic login API.
+const char kClientLoginUrl[] = "https://www.google.com/accounts/ClientLogin";
+const char kGetUserInfoUrl[] = "https://www.google.com/accounts/GetUserInfo";
+const char kIssueAuthTokenUrl[] =
+    "https://www.google.com/accounts/IssueAuthToken";
+const char kSearchDomainCheckUrl[] =
+    "https://www.google.com/searchdomaincheck?format=domain&type=chrome";
 }
 
 // Helper class that checks whether a sync test server is running or not.
@@ -127,11 +137,14 @@ void LiveSyncTest::SetUp() {
   CommandLine* cl = CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(switches::kPasswordFileForTest)) {
     ReadPasswordFile();
-  } else {
+  } else if (cl->HasSwitch(switches::kSyncUserForTest) &&
+             cl->HasSwitch(switches::kSyncPasswordForTest)) {
     // Read GAIA credentials from the "--sync-XXX-for-test" command line
     // parameters.
     username_ = cl->GetSwitchValueASCII(switches::kSyncUserForTest);
     password_ = cl->GetSwitchValueASCII(switches::kSyncPasswordForTest);
+  } else {
+    SetupMockGaiaResponses();
   }
   if (username_.empty() || password_.empty())
     LOG(FATAL) << "Cannot run sync tests without GAIA credentials.";
@@ -169,6 +182,10 @@ void LiveSyncTest::TearDown() {
 
   // Stop the local sync test server. This is a no-op if one wasn't started.
   TearDownLocalTestServer();
+
+  // Switch back to using the default URLFetcher factory. This is a no-op if
+  // a fake factory wasn't used.
+  URLFetcher::set_factory(NULL);
 }
 
 // static
@@ -284,6 +301,17 @@ void LiveSyncTest::ReadPasswordFile() {
       << "\" must contain exactly two lines of text.";
   username_ = tokens[0];
   password_ = tokens[1];
+}
+
+void LiveSyncTest::SetupMockGaiaResponses() {
+  username_ = "user@gmail.com";
+  password_ = "password";
+  factory_.reset(new FakeURLFetcherFactory());
+  factory_->SetFakeResponse(kClientLoginUrl, "SID=sid\nLSID=lsid", true);
+  factory_->SetFakeResponse(kGetUserInfoUrl, "email=user@gmail.com", true);
+  factory_->SetFakeResponse(kIssueAuthTokenUrl, "auth", true);
+  factory_->SetFakeResponse(kSearchDomainCheckUrl, ".google.com", true);
+  URLFetcher::set_factory(factory_.get());
 }
 
 // Start up a local sync server if required.

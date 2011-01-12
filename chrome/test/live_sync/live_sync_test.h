@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"
+#include "chrome/common/net/test_url_fetcher_factory.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/test/test_server.h"
 
@@ -171,6 +172,11 @@ class LiveSyncTest : public InProcessBrowserTest {
   void SetProxyConfig(URLRequestContextGetter* context,
                       const net::ProxyConfig& proxy_config);
 
+  // Helper method used to set up fake responses for kClientLoginUrl,
+  // kIssueAuthTokenUrl, kGetUserInfoUrl and kSearchDomainCheckUrl in order to
+  // mock out calls to GAIA servers.
+  void SetupMockGaiaResponses();
+
   // Test server of type sync, started on demand.
   net::TestServer sync_server_;
 
@@ -206,6 +212,9 @@ class LiveSyncTest : public InProcessBrowserTest {
 
   // Used to start and stop the local test server.
   base::ProcessHandle test_server_handle_;
+
+  // Fake URLFetcher factory used to mock out GAIA signin.
+  scoped_ptr<FakeURLFetcherFactory> factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LiveSyncTest);
 };
