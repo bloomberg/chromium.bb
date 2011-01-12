@@ -81,6 +81,7 @@ class VectorPlatformDevice : public PlatformDevice {
   virtual bool IsVectorial() { return true; }
 
   void LoadClipRegion();
+  bool alpha_blend_used() const { return alpha_blend_used_; }
 
  private:
   // Applies the SkPaint's painting properties in the current GDI context, if
@@ -128,6 +129,9 @@ class VectorPlatformDevice : public PlatformDevice {
 
   // Previously selected pen before the current drawing.
   HGDIOBJ previous_pen_;
+
+  // True if AlphaBlend() was called during this print.
+  bool alpha_blend_used_;
 
   // Copy & assign are not supported.
   VectorPlatformDevice(const VectorPlatformDevice&);

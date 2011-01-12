@@ -42,6 +42,10 @@ class PrintSettings {
   const std::wstring& device_name() const { return device_name_; }
   void set_dpi(int dpi) { dpi_ = dpi; }
   int dpi() const { return dpi_; }
+  void set_supports_alpha_blend(bool supports_alpha_blend) {
+    supports_alpha_blend_ = supports_alpha_blend;
+  }
+  bool supports_alpha_blend() const { return supports_alpha_blend_; }
   const PageSetup& page_setup_device_units() const {
     return page_setup_device_units_;
   }
@@ -108,6 +112,9 @@ class PrintSettings {
 
   // Is the orientation landscape or portrait.
   bool landscape_;
+
+  // True if this printer supports AlphaBlend.
+  bool supports_alpha_blend_;
 };
 
 }  // namespace printing

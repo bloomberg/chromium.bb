@@ -520,6 +520,9 @@ struct ViewMsg_Print_Params {
   // Should only print currently selected text.
   bool selection_only;
 
+  // Does the printer support alpha blending?
+  bool supports_alpha_blend;
+
   // Warning: do not compare document_cookie.
   bool Equals(const ViewMsg_Print_Params& rhs) const;
 
@@ -552,7 +555,7 @@ struct ViewMsg_PrintPages_Params {
   std::vector<int> pages;
 };
 
-//Parameters to describe a rendered document.
+// Parameters to describe a rendered document.
 struct ViewHostMsg_DidPreviewDocument_Params {
   ViewHostMsg_DidPreviewDocument_Params();
   ~ViewHostMsg_DidPreviewDocument_Params();

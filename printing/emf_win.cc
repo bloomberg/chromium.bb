@@ -396,6 +396,8 @@ bool Emf::Record::SafePlayback(const XFORM* base_matrix) const {
         } else {
           res = Play();
         }
+      } else {
+        res = true;
       }
       break;
     }

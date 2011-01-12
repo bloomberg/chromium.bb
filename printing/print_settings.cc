@@ -19,7 +19,8 @@ PrintSettings::PrintSettings()
       selection_only(false),
       use_overlays(true),
       dpi_(0),
-      landscape_(false) {
+      landscape_(false),
+      supports_alpha_blend_(true) {
 }
 
 PrintSettings::~PrintSettings() {
@@ -36,6 +37,7 @@ void PrintSettings::Clear() {
   page_setup_device_units_.Clear();
   dpi_ = 0;
   landscape_ = false;
+  supports_alpha_blend_ = true;
 }
 
 void PrintSettings::SetPrinterPrintableArea(

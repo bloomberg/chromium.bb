@@ -81,7 +81,8 @@ ViewMsg_Print_Params::ViewMsg_Print_Params()
       max_shrink(0),
       desired_dpi(0),
       document_cookie(0),
-      selection_only(false) {
+      selection_only(false),
+      supports_alpha_blend(true) {
 }
 
 ViewMsg_Print_Params::~ViewMsg_Print_Params() {
@@ -96,13 +97,15 @@ bool ViewMsg_Print_Params::Equals(const ViewMsg_Print_Params& rhs) const {
          min_shrink == rhs.min_shrink &&
          max_shrink == rhs.max_shrink &&
          desired_dpi == rhs.desired_dpi &&
-         selection_only == rhs.selection_only;
+         selection_only == rhs.selection_only &&
+         supports_alpha_blend == rhs.supports_alpha_blend;
 }
 
 bool ViewMsg_Print_Params::IsEmpty() const {
   return !document_cookie && !desired_dpi && !max_shrink && !min_shrink &&
          !dpi && printable_size.IsEmpty() && !selection_only &&
-         page_size.IsEmpty() && !margin_top && !margin_left;
+         page_size.IsEmpty() && !margin_top && !margin_left &&
+         !supports_alpha_blend;
 }
 
 ViewMsg_PrintPage_Params::ViewMsg_PrintPage_Params()
@@ -952,6 +955,7 @@ void ParamTraits<ViewMsg_Print_Params>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.desired_dpi);
   WriteParam(m, p.document_cookie);
   WriteParam(m, p.selection_only);
+  WriteParam(m, p.supports_alpha_blend);
 }
 
 bool ParamTraits<ViewMsg_Print_Params>::Read(const Message* m,
@@ -966,7 +970,8 @@ bool ParamTraits<ViewMsg_Print_Params>::Read(const Message* m,
       ReadParam(m, iter, &p->max_shrink) &&
       ReadParam(m, iter, &p->desired_dpi) &&
       ReadParam(m, iter, &p->document_cookie) &&
-      ReadParam(m, iter, &p->selection_only);
+      ReadParam(m, iter, &p->selection_only) &&
+      ReadParam(m, iter, &p->supports_alpha_blend);
 }
 
 void ParamTraits<ViewMsg_Print_Params>::Log(const param_type& p,

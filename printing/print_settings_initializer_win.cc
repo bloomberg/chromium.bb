@@ -29,6 +29,9 @@ void PrintSettingsInitializerWin::InitPrintSettings(
 
   int dpi = GetDeviceCaps(hdc, LOGPIXELSX);
   print_settings->set_dpi(dpi);
+  const int kAlphaCaps = SB_CONST_ALPHA | SB_PIXEL_ALPHA;
+  print_settings->set_supports_alpha_blend(
+    (GetDeviceCaps(hdc, SHADEBLENDCAPS) & kAlphaCaps) == kAlphaCaps);
   // No printer device is known to advertise different dpi in X and Y axis; even
   // the fax device using the 200x100 dpi setting. It's ought to break so many
   // applications that it's not even needed to care about. WebKit doesn't

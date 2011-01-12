@@ -162,6 +162,7 @@ void RenderParamsFromPrintSettings(const printing::PrintSettings& settings,
   // Always use an invalid cookie.
   params->document_cookie = 0;
   params->selection_only = settings.selection_only;
+  params->supports_alpha_blend = settings.supports_alpha_blend();
 }
 
 class ClearCacheCompletion : public net::CompletionCallback {
