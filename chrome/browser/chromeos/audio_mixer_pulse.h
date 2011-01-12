@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_PULSE_AUDIO_MIXER_H_
-#define CHROME_BROWSER_CHROMEOS_PULSE_AUDIO_MIXER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_AUDIO_MIXER_PULSE_H_
+#define CHROME_BROWSER_CHROMEOS_AUDIO_MIXER_PULSE_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -11,6 +11,7 @@
 #include "base/lock.h"
 #include "base/scoped_ptr.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/chromeos/audio_mixer.h"
 
 struct pa_context;
 struct pa_cvolume;
@@ -20,56 +21,27 @@ struct pa_sink_info;
 
 namespace chromeos {
 
-class PulseAudioMixer {
+class AudioMixerPulse : public AudioMixer {
  public:
-  enum State {
-    UNINITIALIZED = 0,
-    INITIALIZING,
-    READY,
-    SHUTTING_DOWN,
-    IN_ERROR
-  };
 
-  PulseAudioMixer();
-  ~PulseAudioMixer();
+  AudioMixerPulse();
+  virtual ~AudioMixerPulse();
 
-  // Non-blocking, connect to PulseAudio and find a default device, and call
-  // callback when complete with success code.
-  typedef Callback1<bool>::Type InitDoneCallback;
-  bool Init(InitDoneCallback* callback);
-
-  // Blocking init call guarantees PulseAudio is started before returning.
-  bool InitSync();
-
-  // Blocking call. Returns a default of -inf on error.
-  double GetVolumeDb() const;
-
-  // Non-blocking, volume sent in as first param to callback.  The callback is
-  // only called if the function returns true.
-  typedef Callback2<double, void*>::Type GetVolumeCallback;
-  bool GetVolumeDbAsync(GetVolumeCallback* callback, void* user);
-
-  // Non-blocking call.
-  void SetVolumeDb(double vol_db);
-
-  // Gets the mute state of the default device (true == mute). Blocking call.
-  // Returns a default of false on error.
-  bool IsMute() const;
-
-  // Non-Blocking call.
-  void SetMute(bool mute);
-
-  // Returns READY if we have a valid working connection to PulseAudio.
-  // This can return IN_ERROR if we lose the connection, even after an original
-  // successful init.  Non-blocking call.
-  State CheckState() const;
+  // Implementation of AudioMixer
+  virtual void Init(InitDoneCallback* callback);
+  virtual bool InitSync();
+  virtual double GetVolumeDb() const;
+  virtual bool GetVolumeLimits(double* vol_min, double* vol_max);
+  virtual void SetVolumeDb(double vol_db);
+  virtual bool IsMute() const;
+  virtual void SetMute(bool mute);
+  virtual State GetState() const;
 
  private:
   struct AudioInfo;
 
-  // These are the tasks to be run in the background on the worker thread.
+  // The initialization task is run in the background on the worker thread.
   void DoInit(InitDoneCallback* callback);
-  void DoGetVolume(GetVolumeCallback* callback, void* user);
 
   static void ConnectToPulseCallbackThunk(pa_context* c, void* userdata);
   void OnConnectToPulseCallback(pa_context* c, bool* connect_done);
@@ -137,12 +109,12 @@ class PulseAudioMixer {
 
   scoped_ptr<base::Thread> thread_;
 
-  DISALLOW_COPY_AND_ASSIGN(PulseAudioMixer);
+  DISALLOW_COPY_AND_ASSIGN(AudioMixerPulse);
 };
 
 }  // namespace chromeos
 
-DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::PulseAudioMixer);
+DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::AudioMixerPulse);
 
-#endif  // CHROME_BROWSER_CHROMEOS_PULSE_AUDIO_MIXER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_AUDIO_MIXER_PULSE_H_
 

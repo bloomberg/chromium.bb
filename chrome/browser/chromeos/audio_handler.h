@@ -8,12 +8,13 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "base/threading/thread.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
 namespace chromeos {
 
-class PulseAudioMixer;
+class AudioMixer;
 
 class AudioHandler {
  public:
@@ -30,7 +31,7 @@ class AudioHandler {
   // as the percentage gets lower, and then switches to silence at 0%.
   void SetVolumePercent(double volume_percent);
 
-  // Adust volume up (positive percentage) or down (negative percentage),
+  // Adjust volume up (positive percentage) or down (negative percentage),
   // capping at 100%.  GetVolumePercent() will be accurate after this
   // blocking call.
   void AdjustVolumeByPercent(double adjust_by_percent);
@@ -43,9 +44,19 @@ class AudioHandler {
   void SetMute(bool do_mute);
 
  private:
+  enum MixerType {
+    MIXER_TYPE_PULSEAUDIO = 0,
+    MIXER_TYPE_ALSA,
+    MIXER_TYPE_NONE,
+  };
+
   // Defines the delete on exit Singleton traits we like.  Best to have this
   // and constructor/destructor private as recommended for Singletons.
   friend struct DefaultSingletonTraits<AudioHandler>;
+
+  // Connect to the current mixer_type_.
+  bool TryToConnect(bool async);
+  void UseNextMixer();
 
   void OnMixerInitialized(bool success);
 
@@ -54,17 +65,28 @@ class AudioHandler {
   bool VerifyMixerConnection();
 
   // Conversion between our internal scaling (0-100%) and decibels.
-  static double VolumeDbToPercent(double volume_db);
-  static double PercentToVolumeDb(double volume_percent);
+  double VolumeDbToPercent(double volume_db) const;
+  double PercentToVolumeDb(double volume_percent) const;
 
-  scoped_ptr<PulseAudioMixer> mixer_;
+  scoped_ptr<AudioMixer> mixer_;
+
   bool connected_;
   int reconnect_tries_;
+
+  // The min and max volume in decibels, limited to the maximum range of the
+  // audio system being used.
+  double max_volume_db_;
+  double min_volume_db_;
+
+  // Which mixer is being used, PulseAudio, ALSA or none.
+  MixerType mixer_type_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioHandler);
 };
 
 }  // namespace chromeos
+
+DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::AudioHandler);
 
 #endif  // CHROME_BROWSER_CHROMEOS_AUDIO_HANDLER_H_
 
