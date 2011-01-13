@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/wm_message_listener.h"
 #include "gfx/size.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 namespace chromeos {
 
@@ -50,6 +51,11 @@ class ExistingUserController : public WmMessageListener::Observer,
   ExistingUserController(const std::vector<UserManager::User>& users,
                          const gfx::Rect& background_bounds);
 
+  // Returns the current existing user controller if it has been created.
+  static ExistingUserController* current_controller() {
+    return current_controller_;
+  }
+
   // Creates and shows the appropriate set of windows.
   void Init();
 
@@ -66,6 +72,7 @@ class ExistingUserController : public WmMessageListener::Observer,
 
  private:
   friend class DeleteTask<ExistingUserController>;
+  friend class MockLoginPerformerDelegate;
 
   ~ExistingUserController();
 
@@ -129,6 +136,10 @@ class ExistingUserController : public WmMessageListener::Observer,
   // Send message to window manager to enable/disable click on other windows.
   void SendSetLoginState(bool is_login);
 
+  void set_login_performer_delegate(LoginPerformer::Delegate* d) {
+    login_performer_delegate_.reset(d);
+  }
+
   // Bounds of the background window.
   const gfx::Rect background_bounds_;
 
@@ -145,6 +156,10 @@ class ExistingUserController : public WmMessageListener::Observer,
   // Used to execute login operations.
   scoped_ptr<LoginPerformer> login_performer_;
 
+  // Delegate for login performer to be overridden by tests.
+  // |this| is used if |login_performer_delegate_| is NULL.
+  scoped_ptr<LoginPerformer::Delegate> login_performer_delegate_;
+
   // Index of selected view (user).
   size_t selected_view_index_;
 
@@ -155,9 +170,9 @@ class ExistingUserController : public WmMessageListener::Observer,
   // See comment in ProcessWmMessage.
   base::OneShotTimer<ExistingUserController> delete_timer_;
 
-  // Pointer to the instance that was scheduled to be deleted soon or NULL
-  // if there is no such instance.
-  static ExistingUserController* delete_scheduled_instance_;
+  // Pointer to the current instance of the controller to be used by
+  // automation tests.
+  static ExistingUserController* current_controller_;
 
   // Pointer to shown message bubble. We don't need to delete it because
   // it will be deleted on bubble closing.
@@ -174,6 +189,8 @@ class ExistingUserController : public WmMessageListener::Observer,
 
   // Factory of callbacks.
   ScopedRunnableMethodFactory<ExistingUserController> method_factory_;
+
+  FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, NewUserLogin);
 
   DISALLOW_COPY_AND_ASSIGN(ExistingUserController);
 };
