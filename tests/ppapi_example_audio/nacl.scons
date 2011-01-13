@@ -1,0 +1,25 @@
+# -*- python -*-
+# Copyright 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+# This is a pepper audio example from examples/audio.
+
+Import('env')
+
+env.Prepend(CPPDEFINES=['XP_UNIX'])
+
+ppapi_example_2d_nexe = env.ComponentProgram('ppapi_example_audio.nexe',
+    [ '$SOURCE_ROOT/ppapi/examples/audio/audio.cc' ],
+    EXTRA_LIBS=['ppruntime',
+                'ppapi_cpp',
+                'google_nacl_imc',
+                'google_nacl_platform',
+                'gio',
+                'pthread',
+                'm',
+                'srpc'])
+
+# Note that the html is required to run this program.
+env.Publish('ppapi_example_audio.nexe', 'run',
+            ['ppapi_example_audio.html' ])
