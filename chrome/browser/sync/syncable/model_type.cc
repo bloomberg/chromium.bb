@@ -155,11 +155,11 @@ std::string ModelTypeToString(ModelType model_type) {
       return "Apps";
     case AUTOFILL_PROFILE:
       return "Autofill Profiles";
-      break;
     default:
-      NOTREACHED() << "No known extension for model type.";
-      return "INVALID";
+      break;
   }
+  NOTREACHED() << "No known extension for model type.";
+  return "INVALID";
 }
 
 ModelType ModelTypeFromString(const std::string& model_type_string) {

@@ -573,28 +573,22 @@ int CookiesTreeModel::GetIconIndex(TreeModelNode* node) {
   switch (ct_node->GetDetailedInfo().node_type) {
     case CookieTreeNode::DetailedInfo::TYPE_ORIGIN:
       return ORIGIN;
-      break;
     case CookieTreeNode::DetailedInfo::TYPE_COOKIE:
       return COOKIE;
-      break;
     case CookieTreeNode::DetailedInfo::TYPE_DATABASE:
       return DATABASE;
-      break;
     case CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE:
       return DATABASE;  // close enough
-      break;
     case CookieTreeNode::DetailedInfo::TYPE_SESSION_STORAGE:
       return DATABASE;  // ditto
-      break;
     case CookieTreeNode::DetailedInfo::TYPE_APPCACHE:
       return DATABASE;  // ditto
-      break;
     case CookieTreeNode::DetailedInfo::TYPE_INDEXED_DB:
       return DATABASE;  // ditto
-      break;
     default:
-      return -1;
+      break;
   }
+  return -1;
 }
 
 void CookiesTreeModel::LoadCookies() {

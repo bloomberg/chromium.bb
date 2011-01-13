@@ -359,15 +359,14 @@ VideoFrame::Format FFmpegVideoDecodeEngine::GetSurfaceFormat() const {
     case PIX_FMT_YUV420P:
     case PIX_FMT_YUVJ420P:
       return VideoFrame::YV12;
-      break;
     case PIX_FMT_YUV422P:
     case PIX_FMT_YUVJ422P:
       return VideoFrame::YV16;
-      break;
     default:
       // TODO(scherkus): More formats here?
-      return VideoFrame::INVALID;
+      break;
   }
+  return VideoFrame::INVALID;
 }
 
 }  // namespace media

@@ -361,6 +361,7 @@ GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
   }
 
   NOTREACHED();
+  return GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE);
 }
 
 void GaiaAuthFetcher::OnClientLoginFetched(const std::string& data,

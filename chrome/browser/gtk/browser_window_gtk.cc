@@ -2185,7 +2185,9 @@ bool BrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {
     }
     return true;
   }
+
   NOTREACHED();
+  return false;
 }
 
 bool BrowserWindowGtk::UseCustomFrame() {

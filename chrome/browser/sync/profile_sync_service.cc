@@ -557,7 +557,6 @@ const char* ProfileSyncService::GetPrefNameForDataType(
       return prefs::kSyncAutofill;
     case syncable::AUTOFILL_PROFILE:
       return prefs::kSyncAutofillProfile;
-      break;
     case syncable::THEMES:
       return prefs::kSyncThemes;
     case syncable::TYPED_URLS:
@@ -569,9 +568,10 @@ const char* ProfileSyncService::GetPrefNameForDataType(
     case syncable::SESSIONS:
       return prefs::kSyncSessions;
     default:
-      NOTREACHED();
-      return NULL;
+      break;
   }
+  NOTREACHED();
+  return NULL;
 }
 
 // An invariant has been violated.  Transition to an error state where we try
