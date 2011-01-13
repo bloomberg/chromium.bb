@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -55,7 +55,7 @@ class AdmlWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
     }
     writer.BeginPolicyGroup(policy_group)
 
-    string_elements =\
+    string_elements = \
         self.writer._string_table_elem.getElementsByTagName('string')
     for elem in string_elements:
       self.writer._string_table_elem.removeChild(elem)
@@ -155,6 +155,38 @@ class AdmlWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
         '      String policy label\n'
         '    </label>\n'
         '  </textBox>\n'
+        '</presentation>')
+    self.AssertXMLEquals(output, expected_output)
+
+  def testIntPolicy(self):
+    int_policy = {
+      'name': 'IntPolicyStub',
+      'type': 'int',
+      'caption': 'Int policy caption',
+      'label': 'Int policy label',
+      'desc': 'This is a test description.',
+    }
+    self. _InitWriterForAddingPolicies(self.writer, int_policy)
+    self.writer.WritePolicy(int_policy)
+    # Assert generated string elements.
+    output = self.GetXMLOfChildren(self.writer._string_table_elem)
+    expected_output = (
+        '<string id="IntPolicyStub">\n'
+        '  Int policy caption\n'
+        '</string>\n'
+        '<string id="IntPolicyStub_Explain">\n'
+        '  This is a test description.\n'
+        '</string>')
+    self.AssertXMLEquals(output, expected_output)
+    # Assert generated presentation elements.
+    output = self.GetXMLOfChildren(self.writer._presentation_table_elem)
+    expected_output = (
+        '<presentation id="IntPolicyStub">\n'
+        '  <decimalTextBox refId="IntPolicyStub">\n'
+        '    <label>\n'
+        '      Int policy label\n'
+        '    </label>\n'
+        '  </decimalTextBox>\n'
         '</presentation>')
     self.AssertXMLEquals(output, expected_output)
 

@@ -24,6 +24,7 @@ class PListWriter(xml_formatted_writer.XMLFormattedWriter):
   STRING_TABLE = 'Localizable.strings'
   TYPE_TO_INPUT = {
     'string': 'string',
+    'int': 'integer',
     'int-enum': 'integer',
     'string-enum': 'string',
     'main': 'boolean',

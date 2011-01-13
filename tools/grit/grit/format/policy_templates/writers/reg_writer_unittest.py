@@ -72,7 +72,7 @@ class RegWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         'Windows Registry Editor Version 5.00',
         '',
         '[HKEY_LOCAL_MACHINE\\Software\\Policies\\Google\\Chrome]',
-        '"MainPolicy"=dword:1'])
+        '"MainPolicy"=dword:00000001'])
     self.CompareOutputs(output, expected_output)
 
   def testStringPolicy(self):
@@ -101,6 +101,34 @@ class RegWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '',
         '[HKEY_LOCAL_MACHINE\\Software\\Policies\\Chromium]',
         '"StringPolicy"="hello, world! \\\" \\\\"'])
+    self.CompareOutputs(output, expected_output)
+
+  def testIntPolicy(self):
+    # Tests a policy group with a single policy of type 'int'.
+    grd = self.PrepareTest(
+        '{'
+        '  "policy_definitions": ['
+        '    {'
+        '      "name": "IntPolicy",'
+        '      "type": "int",'
+        '      "supported_on": ["chrome.win:8-"],'
+        '      "annotations": {'
+        '        "example_value": 26'
+        '      }'
+        '    },'
+        '  ],'
+        '  "placeholders": [],'
+        '}',
+        '<messages>'
+        '  <message name="IDS_POLICY_INTPOLICY_CAPTION"></message>'
+        '  <message name="IDS_POLICY_INTPOLICY_DESC"></message>'
+        '</messages>')
+    output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'reg', 'en')
+    expected_output = self.NEWLINE.join([
+        'Windows Registry Editor Version 5.00',
+        '',
+        '[HKEY_LOCAL_MACHINE\\Software\\Policies\\Chromium]',
+        '"IntPolicy"=dword:0000001a'])
     self.CompareOutputs(output, expected_output)
 
   def testIntEnumPolicy(self):
@@ -136,7 +164,7 @@ class RegWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         'Windows Registry Editor Version 5.00',
         '',
         '[HKEY_LOCAL_MACHINE\\Software\\Policies\\Google\\Chrome]',
-        '"EnumPolicy"=dword:1'])
+        '"EnumPolicy"=dword:00000001'])
     self.CompareOutputs(output, expected_output)
 
   def testStringEnumPolicy(self):

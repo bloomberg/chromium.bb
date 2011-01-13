@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -21,6 +21,7 @@ class AdmWriter(template_writer.TemplateWriter):
 
   TYPE_TO_INPUT = {
     'string': 'EDITTEXT',
+    'int': 'NUMERIC',
     'string-enum': 'DROPDOWNLIST',
     'int-enum': 'DROPDOWNLIST',
     'list': 'LISTBOX'}
@@ -28,7 +29,7 @@ class AdmWriter(template_writer.TemplateWriter):
 
   def _AddGuiString(self, name, value):
     # Escape newlines in the value.
-    value = value.replace('\n','\\n')
+    value = value.replace('\n', '\\n')
     line = '%s="%s"' % (name, value)
     self.str_list.append(line)
 

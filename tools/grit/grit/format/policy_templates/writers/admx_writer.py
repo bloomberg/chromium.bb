@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -157,6 +157,17 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
       'valueName': name,
     }
     self.AddElement(parent, 'text', attributes)
+
+  def _AddIntPolicy(self, parent, name):
+    '''Generates ADMX elements for an Int-Policy and adds them to the passed
+    parent node.
+    '''
+    attributes = {
+      'id': name,
+      'valueName': name,
+    }
+    self.AddElement(parent, 'decimal', attributes)
+
   def _AddEnumPolicy(self, parent, policy):
     '''Generates ADMX elements for an Enum-Policy and adds them to the
     passed parent element.
@@ -254,6 +265,9 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
     elif policy_type == 'string':
       parent = self._GetElements(policy_elem)
       self._AddStringPolicy(parent, policy_name)
+    elif policy_type == 'int':
+      parent = self._GetElements(policy_elem)
+      self._AddIntPolicy(parent, policy_name)
     elif policy_type in ('int-enum', 'string-enum'):
       parent = self._GetElements(policy_elem)
       self._AddEnumPolicy(parent, policy)

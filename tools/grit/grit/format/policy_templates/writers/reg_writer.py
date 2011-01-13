@@ -66,11 +66,11 @@ class RegWriter(template_writer.TemplateWriter):
         example_value_str = '"' + escaped_str + '"'
       elif policy['type'] == 'main':
         if example_value == True:
-          example_value_str = 'dword:1'
+          example_value_str = 'dword:00000001'
         else:
-          example_value_str = 'dword:0'
-      elif policy['type'] == 'int-enum':
-        example_value_str = 'dword:%d' % example_value
+          example_value_str = 'dword:00000000'
+      elif policy['type'] in ('int', 'int-enum'):
+        example_value_str = 'dword:%08x' % example_value
       elif policy['type'] == 'string-enum':
         example_value_str = '"%s"' % example_value
       else:

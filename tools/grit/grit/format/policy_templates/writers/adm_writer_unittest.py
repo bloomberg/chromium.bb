@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -48,8 +48,8 @@ class AdmWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         <messages>
           <message name="IDS_POLICY_WIN_SUPPORTED_WINXPSP2">At least "Windows 3.11</message>
         </messages>
-      ''' )
-    output = self.GetOutput(grd, 'fr', {'_chromium': '1',}, 'adm', 'en')
+      ''')
+    output = self.GetOutput(grd, 'fr', {'_chromium': '1', }, 'adm', 'en')
     expected_output = '''CLASS MACHINE
   CATEGORY !!chromium
     KEYNAME "Software\\Policies\\Chromium"
@@ -79,7 +79,7 @@ chromium="Chromium"'''
           <message name="IDS_POLICY_MAINPOLICY_DESC">Description of main.</message>
           <message name="IDS_POLICY_WIN_SUPPORTED_WINXPSP2">At least Windows 3.12</message>
         </messages>
-      ''' )
+      ''')
     output = self.GetOutput(grd, 'fr', {'_google_chrome' : '1'}, 'adm', 'en')
     expected_output = '''CLASS MACHINE
   CATEGORY !!google
@@ -126,7 +126,7 @@ MainPolicy_Explain="Description of main."'''
 With a newline.</message>
           <message name="IDS_POLICY_WIN_SUPPORTED_WINXPSP2">At least Windows 3.13</message>
         </messages>
-      ''' )
+      ''')
     output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'adm', 'en')
     expected_output = '''CLASS MACHINE
   CATEGORY !!chromium
@@ -154,6 +154,53 @@ StringPolicy_Part="Caption of policy."
 '''
     self.CompareOutputs(output, expected_output)
 
+  def testIntPolicy(self):
+    # Tests a policy group with a single policy of type 'string'.
+    grd = self.PrepareTest('''
+      {
+        'policy_definitions': [
+          {
+            'name': 'IntPolicy',
+            'type': 'int',
+            'supported_on': ['chrome.win:8-']
+          },
+        ],
+        'placeholders': [],
+      }''', '''
+        <messages>
+          <message name="IDS_POLICY_INTPOLICY_CAPTION">Caption of policy.</message>
+          <message name="IDS_POLICY_INTPOLICY_DESC">Description of group.
+With a newline.</message>
+          <message name="IDS_POLICY_WIN_SUPPORTED_WINXPSP2">At least Windows 3.13</message>
+        </messages>
+      ''')
+    output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'adm', 'en')
+    expected_output = '''CLASS MACHINE
+  CATEGORY !!chromium
+    KEYNAME "Software\\Policies\\Chromium"
+
+    POLICY !!IntPolicy_Policy
+      #if version >= 4
+        SUPPORTED !!SUPPORTED_WINXPSP2
+      #endif
+      EXPLAIN !!IntPolicy_Explain
+
+      PART !!IntPolicy_Part  NUMERIC
+        VALUENAME "IntPolicy"
+      END PART
+    END POLICY
+
+  END CATEGORY
+
+[Strings]
+SUPPORTED_WINXPSP2="At least Windows 3.13"
+chromium="Chromium"
+IntPolicy_Policy="Caption of policy."
+IntPolicy_Explain="Description of group.\\nWith a newline."
+IntPolicy_Part="Caption of policy."
+'''
+    self.CompareOutputs(output, expected_output)
+
   def testIntEnumPolicy(self):
     # Tests a policy group with a single policy of type 'int-enum'.
     grd = self.PrepareTest('''
@@ -178,7 +225,7 @@ StringPolicy_Part="Caption of policy."
           <message name="IDS_POLICY_ENUM_PROXYSERVERAUTODETECT_CAPTION">Option2</message>
           <message name="IDS_POLICY_WIN_SUPPORTED_WINXPSP2">At least Windows 3.14</message>
         </messages>
-      ''' )
+      ''')
     output = self.GetOutput(grd, 'fr', {'_google_chrome': '1'}, 'adm', 'en')
     expected_output = '''CLASS MACHINE
   CATEGORY !!google
@@ -239,7 +286,7 @@ ProxyServerAutoDetect_DropDown="Option2"
           <message name="IDS_POLICY_ENUM_PROXYSERVERAUTODETECT_CAPTION">Option2</message>
           <message name="IDS_POLICY_WIN_SUPPORTED_WINXPSP2">At least Windows 3.14</message>
         </messages>
-      ''' )
+      ''')
     output = self.GetOutput(grd, 'fr', {'_google_chrome': '1'}, 'adm', 'en')
     expected_output = '''CLASS MACHINE
   CATEGORY !!google

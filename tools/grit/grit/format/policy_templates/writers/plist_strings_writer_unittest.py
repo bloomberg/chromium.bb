@@ -34,7 +34,7 @@ class PListStringsWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         <messages>
           <message name="IDS_POLICY_MAC_CHROME_PREFERENCES">$1 preferen"ces</message>
         </messages>
-      ''' )
+      ''')
     output = self.GetOutput(
         grd,
         'fr',
@@ -70,7 +70,7 @@ class PListStringsWriterUnittest(writer_unittest_common.WriterUnittestCommon):
           <message name="IDS_POLICY_MAINPOLICY_DESC">Title of main policy.</message>
           <message name="IDS_POLICY_MAC_CHROME_PREFERENCES">Preferences of $1</message>
         </messages>
-      ''' )
+      ''')
     output = self.GetOutput(
         grd,
         'fr',
@@ -111,7 +111,7 @@ With a newline.</message>
 With a newline.</message>
           <message name="IDS_POLICY_MAC_CHROME_PREFERENCES">Preferences Of $1</message>
         </messages>
-      ''' )
+      ''')
     output = self.GetOutput(
         grd,
         'fr',
@@ -156,7 +156,7 @@ With a newline.</message>
           <message name="IDS_POLICY_ENUM_PROXYSERVERAUTODETECT_CAPTION">Option2</message>
           <message name="IDS_POLICY_MAC_CHROME_PREFERENCES">$1 preferences</message>
         </messages>
-      ''' )
+      ''')
     output = self.GetOutput(
         grd,
         'fr',
@@ -202,7 +202,7 @@ With a newline.</message>
           <message name="IDS_POLICY_ENUM_PROXYSERVERAUTODETECT_CAPTION">Option2</message>
           <message name="IDS_POLICY_MAC_CHROME_PREFERENCES">$1 preferences</message>
         </messages>
-      ''' )
+      ''')
     output = self.GetOutput(
         grd,
         'fr',
@@ -243,7 +243,7 @@ With a newline.</message>
           <message name="IDS_POLICY_NONMACPOLICY_DESC">Description of policy.</message>
           <message name="IDS_POLICY_MAC_CHROME_PREFERENCES">$1 preferences</message>
         </messages>
-      ''' )
+      ''')
     output = self.GetOutput(
         grd,
         'fr',

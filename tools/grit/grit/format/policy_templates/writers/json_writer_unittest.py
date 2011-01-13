@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -40,7 +40,7 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '  "policy_definitions": [],'
         '  "placeholders": [],'
         '}', '<messages></messages>')
-    output = self.GetOutput(grd, 'fr', {'_chromium': '1',}, 'json', 'en')
+    output = self.GetOutput(grd, 'fr', {'_chromium': '1', }, 'json', 'en')
     expected_output = '{\n}'
     self.CompareOutputs(output, expected_output)
 
@@ -95,6 +95,33 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
     expected_output = (
         '{\n'
         '  "StringPolicy": "hello, world!"\n'
+        '}')
+    self.CompareOutputs(output, expected_output)
+
+  def testIntPolicy(self):
+    # Tests a policy group with a single policy of type 'string'.
+    grd = self.PrepareTest(
+        '{'
+        '  "policy_definitions": ['
+        '    {'
+        '      "name": "IntPolicy",'
+        '      "type": "int",'
+        '      "supported_on": ["chrome.linux:8-"],'
+        '      "annotations": {'
+        '        "example_value": 15'
+        '      }'
+        '    },'
+        '  ],'
+        '  "placeholders": [],'
+        '}',
+        '<messages>'
+        '  <message name="IDS_POLICY_INTPOLICY_CAPTION"></message>'
+        '  <message name="IDS_POLICY_INTPOLICY_DESC"></message>'
+        '</messages>')
+    output = self.GetOutput(grd, 'fr', {'_chromium' : '1'}, 'json', 'en')
+    expected_output = (
+        '{\n'
+        '  "IntPolicy": 15\n'
         '}')
     self.CompareOutputs(output, expected_output)
 

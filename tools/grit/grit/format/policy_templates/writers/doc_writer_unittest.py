@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -314,6 +314,20 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
     self.assertEquals(
         self.doc_root.toxml(),
         '<root>&quot;awesome-example&quot;</root>')
+
+  def testIntExample(self):
+    # Test representation of 'int' example values.
+    policy = {
+      'name': 'PolicyName',
+      'type': 'int',
+      'annotations': {
+        'example_value': 26
+      }
+    }
+    self.writer._AddExample(self.doc_root, policy)
+    self.assertEquals(
+        self.doc_root.toxml(),
+        '<root>0x0000001a (Windows), 26 (Linux/Mac)</root>')
 
   def testAddPolicyAttribute(self):
     # Test creating a policy attribute term-definition pair.

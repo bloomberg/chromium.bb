@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -65,7 +65,7 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
       {
         'policy_definitions': [],
         'placeholders': [],
-      }''', '''<messages />''' )
+      }''', '''<messages />''')
 
     output = self.GetOutput(
         grd,
@@ -100,7 +100,7 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
           <message name="IDS_POLICY_MAINPOLICY_CAPTION">This is not tested here.</message>
           <message name="IDS_POLICY_MAINPOLICY_DESC">This is not tested here.</message>
         </messages>
-      ''' )
+      ''')
     output = self.GetOutput(
         grd,
         'fr',
@@ -149,7 +149,7 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
           <message name="IDS_POLICY_STRINGPOLICY_CAPTION">This is not tested here.</message>
           <message name="IDS_POLICY_STRINGPOLICY_DESC">This is not tested here.</message>
         </messages>
-      ''' )
+      ''')
     output = self.GetOutput(
         grd,
         'fr',
@@ -171,6 +171,55 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         </array>
         <key>pfm_type</key>
         <string>string</string>
+      </dict>
+    </array>''')
+    self.assertEquals(output.strip(), expected_output.strip())
+
+  def testIntPolicy(self):
+    # Tests a policy group with a single policy of type 'int'.
+    grd = self.PrepareTest('''
+      {
+        'policy_definitions': [
+          {
+            'name': 'IntGroup',
+            'type': 'group',
+            'policies': [{
+              'name': 'IntPolicy',
+              'type': 'int',
+              'supported_on': ['chrome.mac:8-'],
+            }],
+          },
+        ],
+        'placeholders': [],
+      }''', '''
+        <messages>
+          <message name="IDS_POLICY_INTGROUP_CAPTION">This is not tested here.</message>
+          <message name="IDS_POLICY_INTGROUP_DESC">This is not tested here.</message>
+          <message name="IDS_POLICY_INTPOLICY_CAPTION">This is not tested here.</message>
+          <message name="IDS_POLICY_INTPOLICY_DESC">This is not tested here.</message>
+        </messages>
+      ''')
+    output = self.GetOutput(
+        grd,
+        'fr',
+        {'_chromium' : '1', 'mac_bundle_id': 'com.example.Test'},
+        'plist',
+        'en')
+    expected_output = self._GetExpectedOutputs(
+        'Chromium', 'com.example.Test', '''<array>
+      <dict>
+        <key>pfm_name</key>
+        <string>IntPolicy</string>
+        <key>pfm_description</key>
+        <string/>
+        <key>pfm_title</key>
+        <string/>
+        <key>pfm_targets</key>
+        <array>
+          <string>user-managed</string>
+        </array>
+        <key>pfm_type</key>
+        <string>integer</string>
       </dict>
     </array>''')
     self.assertEquals(output.strip(), expected_output.strip())
@@ -204,7 +253,7 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
           <message name="IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION">This is not tested here.</message>
           <message name="IDS_POLICY_ENUM_PROXYSERVERAUTODETECT_CAPTION">This is not tested here.</message>
         </messages>
-      ''' )
+      ''')
     output = self.GetOutput(
         grd,
         'fr',
@@ -264,7 +313,7 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
           <message name="IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION">This is not tested here.</message>
           <message name="IDS_POLICY_ENUM_PROXYSERVERAUTODETECT_CAPTION">This is not tested here.</message>
         </messages>
-      ''' )
+      ''')
     output = self.GetOutput(
         grd,
         'fr',
@@ -319,7 +368,7 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
           <message name="IDS_POLICY_NONMACPOLICY_CAPTION">This is not tested here. (3)</message>
           <message name="IDS_POLICY_NONMACPOLICY_DESC">This is not tested here. (4)</message>
         </messages>
-      ''' )
+      ''')
     output = self.GetOutput(
         grd,
         'fr',

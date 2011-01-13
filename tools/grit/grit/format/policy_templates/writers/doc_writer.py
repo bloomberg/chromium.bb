@@ -1,4 +1,4 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -257,7 +257,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
         raise Exception('Expected boolean value.')
     elif policy_type == 'string':
       self.AddText(parent, '"%s"' % example_value)
-    elif policy_type == 'int-enum':
+    elif policy_type in ('int', 'int-enum'):
       self.AddText(
           parent,
           '0x%08x (Windows), %d (Linux/Mac)' % (example_value, example_value))
@@ -502,6 +502,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     # Human-readable names of types.
     self._TYPE_MAP = {
       'string': 'String (REG_SZ)',
+      'int': 'Integer (REG_DWORD)',
       'main': 'Boolean (REG_DWORD)',
       'int-enum': 'Integer (REG_DWORD)',
       'string-enum': 'String (REG_SZ)',

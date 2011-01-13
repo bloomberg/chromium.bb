@@ -29,6 +29,8 @@ class JsonWriter(template_writer.TemplateWriter):
     example_value = policy['annotations']['example_value']
     if policy['type'] == 'string':
       example_value_str = '"' + example_value + '"'
+    elif policy['type'] == 'int':
+      example_value_str = str(example_value)
     elif policy['type'] == 'list':
       if example_value == []:
         example_value_str = '[]'

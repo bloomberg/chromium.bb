@@ -1,5 +1,5 @@
 #!/usr/bin/python2.4
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -29,7 +29,7 @@ class AdmxWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
   def setUp(self):
     # Writer configuration. This dictionary contains parameter used by the ADMX
     # Writer
-    config =  {
+    config = {
       'win_group_policy_class': 'TestClass',
       'win_supported_os': 'SUPPORTED_TESTOS',
       'win_supported_os_msg': 'IDS_POLICY_WIN_SUPPORTED_WINXPSP2',
@@ -197,6 +197,28 @@ class AdmxWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
         '  <supportedOn ref="SUPPORTED_TESTOS"/>\n'
         '  <elements>\n'
         '    <text id="SampleStringPolicy" valueName="SampleStringPolicy"/>\n'
+        '  </elements>\n'
+        '</policy>')
+    self.AssertXMLEquals(output, expected_output)
+
+  def testIntPolicy(self):
+    int_policy = {
+      'name': 'SampleIntPolicy',
+      'type': 'int',
+    }
+    self._initWriterForPolicy(self.writer, int_policy)
+
+    self.writer.WritePolicy(int_policy)
+    output = self.GetXMLOfChildren(self._GetPoliciesElement(self.writer._doc))
+    expected_output = (
+        '<policy class="TestClass" displayName="$(string.SampleIntPolicy)"'
+        ' explainText="$(string.SampleIntPolicy_Explain)"'
+        ' key="Software\\Policies\\Test" name="SampleIntPolicy"'
+        ' presentation="$(presentation.SampleIntPolicy)">\n'
+        '  <parentCategory ref="PolicyGroup"/>\n'
+        '  <supportedOn ref="SUPPORTED_TESTOS"/>\n'
+        '  <elements>\n'
+        '    <decimal id="SampleIntPolicy" valueName="SampleIntPolicy"/>\n'
         '  </elements>\n'
         '</policy>')
     self.AssertXMLEquals(output, expected_output)

@@ -21,6 +21,7 @@
 #   'group': - not a real policy, contains a list of policies
 #     NOTE: Currently nesting groups inside other groups is not supported.
 #   'string' - a string value
+#   'int' - an integer value
 #   'int-enum' - the user can select an integer value from a collection of 
 #     items
 #   'string-enum' - the user can select a string value from a collection of 
