@@ -1,4 +1,4 @@
-# $Id: Makefile.inc 2084 2008-05-09 07:08:17Z peter $
+# $Id: Makefile.inc 2234 2009-10-31 21:52:42Z peter $
 
 # These utility programs have to be built for BUILD host in cross-build.
 # This makes things rather non-standard automake
@@ -11,5 +11,6 @@ genmacro_LDADD = genmacro.$(OBJEXT)
 genmacro_LINK = $(CCLD_FOR_BUILD) -o $@
 
 genmacro.$(OBJEXT): tools/genmacro/genmacro.c
-	$(CC_FOR_BUILD) $(DEFAULT_INCLUDES) $(INCLUDES) -c -o $@ `test -f tools/genmacro/genmacro.c || echo '$(srcdir)/'`tools/genmacro/genmacro.c
+	$(CC_FOR_BUILD) $(CFLAGS_FOR_BUILD) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	  -c -o $@ `test -f tools/genmacro/genmacro.c || echo '$(srcdir)/'`tools/genmacro/genmacro.c
 

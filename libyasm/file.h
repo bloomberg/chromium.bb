@@ -3,7 +3,7 @@
  * \brief YASM file helpers.
  *
  * \rcs
- * $Id: file.h 2157 2008-10-19 07:29:15Z peter $
+ * $Id: file.h 2287 2010-02-13 08:42:27Z peter $
  * \endrcs
  *
  * \license
@@ -176,6 +176,30 @@ char *yasm__combpath_win(const char *from, const char *to);
 #  define yasm__combpath(from, to)      yasm__combpath_win(from, to)
 # else
 #  define yasm__combpath(from, to)      yasm__combpath_unix(from, to)
+# endif
+#endif
+
+/** Recursively create tree of directories needed for pathname.
+ * \internal
+ * \param path  pathname
+ * \param win   handle windows paths
+ * \return Length of directory portion of pathname.
+ */
+YASM_LIB_DECL
+size_t yasm__createpath_common(const char *path, int win);
+
+/** Recursively create tree of directories needed for pathname.
+ * Unless otherwise defined, defaults to yasm__createpath_unix().
+ * \internal
+ * \param path  pathname
+ * \return Length of directory portion of pathname.
+ */
+#ifndef yasm__createpath
+# if defined (_WIN32) || defined (WIN32) || defined (__MSDOS__) || \
+ defined (__DJGPP__) || defined (__OS2__)
+#  define yasm__createpath(path)    yasm__createpath_common(path, 1)
+# else
+#  define yasm__createpath(path)    yasm__createpath_common(path, 0)
 # endif
 #endif
 

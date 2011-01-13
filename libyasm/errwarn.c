@@ -25,7 +25,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include "util.h"
-/*@unused@*/ RCSID("$Id: errwarn.c 2130 2008-10-07 05:38:11Z peter $");
+/*@unused@*/ RCSID("$Id: errwarn.c 2258 2010-01-03 01:04:18Z peter $");
 
 #include <ctype.h>
 #include <stdarg.h>
@@ -69,7 +69,7 @@ typedef struct warn {
     yasm_warn_class wclass;
     /*@owned@*/ /*@null@*/ char *wstr;
 } warn;
-static STAILQ_HEAD(, warn) yasm_warns;
+static STAILQ_HEAD(warn_head, warn) yasm_warns;
 
 /* Enabled warnings.  See errwarn.h for a list. */
 static unsigned long warn_class_enabled;
@@ -86,7 +86,7 @@ typedef struct errwarn_data {
 } errwarn_data;
 
 struct yasm_errwarns {
-    /*@reldef@*/ SLIST_HEAD(, errwarn_data) errwarns;
+    /*@reldef@*/ SLIST_HEAD(errwarn_head, errwarn_data) errwarns;
 
     /* Total error count */
     unsigned int ecount;

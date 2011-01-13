@@ -1,4 +1,4 @@
-/* $Id: util.h 2101 2008-05-23 06:46:51Z peter $
+/* $Id: util.h 2273 2010-01-13 04:44:28Z peter $
  * YASM utility functions.
  *
  * Includes standard headers and defines prototypes for replacement functions

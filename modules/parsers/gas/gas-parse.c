@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <util.h>
-RCSID("$Id: gas-parse.c 2169 2009-01-02 20:46:57Z peter $");
+RCSID("$Id: gas-parse.c 2279 2010-01-19 07:57:43Z peter $");
 
 #include <libyasm.h>
 
@@ -321,7 +321,7 @@ cpp_line_marker(yasm_parser_gas *parser_gas)
     get_next_token();
 
     /* Set linemap. */
-    yasm_linemap_set(parser_gas->linemap, filename, line, 1);
+    yasm_linemap_set(parser_gas->linemap, filename, 0, line, 1);
 
     /*
         The first line marker in the file (which should be on the first line
@@ -429,7 +429,7 @@ nasm_line_marker(yasm_parser_gas *parser_gas)
     filename = STRING_val.contents;
 
     /* Set linemap. */
-    yasm_linemap_set(parser_gas->linemap, filename, line, incr);
+    yasm_linemap_set(parser_gas->linemap, filename, 0, line, incr);
 
     /*
         The first line marker in the file (which should be on the first line
@@ -472,64 +472,17 @@ dir_line(yasm_parser_gas *parser_gas, unsigned int param)
 
     if (parser_gas->dir_fileline == 3) {
         /* Have both file and line */
-        yasm_linemap_set(parser_gas->linemap, NULL,
+        yasm_linemap_set(parser_gas->linemap, NULL, 0,
                          parser_gas->dir_line, 1);
     } else if (parser_gas->dir_fileline == 1) {
         /* Had previous file directive only */
         parser_gas->dir_fileline = 3;
-        yasm_linemap_set(parser_gas->linemap, parser_gas->dir_file,
+        yasm_linemap_set(parser_gas->linemap, parser_gas->dir_file, 0,
                          parser_gas->dir_line, 1);
     } else {
         /* Didn't see file yet */
         parser_gas->dir_fileline = 2;
     }
-    return NULL;
-}
-
-/* Macro directives */
-
-static yasm_bytecode *
-dir_rept(yasm_parser_gas *parser_gas, unsigned int param)
-{
-    yasm_intnum *intn;
-    yasm_expr *e = parse_expr(parser_gas);
-
-    if (!e) {
-        yasm_error_set(YASM_ERROR_SYNTAX,
-                       N_("expression expected after `%s'"),
-                       ".rept");
-        return NULL;
-    }
-    intn = yasm_expr_get_intnum(&e, 0);
-
-    if (!intn) {
-        yasm_error_set(YASM_ERROR_NOT_ABSOLUTE,
-                       N_("rept expression not absolute"));
-    } else if (yasm_intnum_sign(intn) < 0) {
-        yasm_error_set(YASM_ERROR_VALUE,
-                       N_("rept expression is negative"));
-    } else {
-        gas_rept *rept = yasm_xmalloc(sizeof(gas_rept));
-        STAILQ_INIT(&rept->lines);
-        rept->startline = cur_line;
-        rept->numrept = yasm_intnum_get_uint(intn);
-        rept->numdone = 0;
-        rept->line = NULL;
-        rept->linepos = 0;
-        rept->ended = 0;
-        rept->oldbuf = NULL;
-        rept->oldbuflen = 0;
-        rept->oldbufpos = 0;
-        parser_gas->rept = rept;
-    }
-    return NULL;
-}
-
-static yasm_bytecode *
-dir_endr(yasm_parser_gas *parser_gas, unsigned int param)
-{
-    /* Shouldn't ever get here unless we didn't get a DIR_REPT first */
-    yasm_error_set(YASM_ERROR_SYNTAX, N_("endr without matching rept"));
     return NULL;
 }
 
@@ -877,12 +830,12 @@ dir_file(yasm_parser_gas *parser_gas, unsigned int param)
 
             yasm_linemap_lookup(parser_gas->linemap, cur_line, &old_fn,
                                 &old_line);
-            yasm_linemap_set(parser_gas->linemap, filename, old_line,
+            yasm_linemap_set(parser_gas->linemap, filename, 0, old_line,
                              1);
         } else if (parser_gas->dir_fileline == 2) {
             /* Had previous line directive only */
             parser_gas->dir_fileline = 3;
-            yasm_linemap_set(parser_gas->linemap, filename,
+            yasm_linemap_set(parser_gas->linemap, filename, 0,
                              parser_gas->dir_line, 1);
         } else {
             /* Didn't see line yet, save file */
@@ -928,6 +881,26 @@ dir_file(yasm_parser_gas *parser_gas, unsigned int param)
     return NULL;
 }
 
+
+static yasm_bytecode *
+dir_intel_syntax(yasm_parser_gas *parser_gas, unsigned int param)
+{
+    parser_gas->intel_syntax = 1;
+
+    do {
+        destroy_curtok();
+        get_next_token();
+    } while (!is_eol());
+    return NULL;
+}
+
+static yasm_bytecode *
+dir_att_syntax(yasm_parser_gas *parser_gas, unsigned int param)
+{
+    parser_gas->intel_syntax = 0;
+    return NULL;
+}
+
 static yasm_bytecode *
 parse_instr(yasm_parser_gas *parser_gas)
 {
@@ -935,6 +908,19 @@ parse_instr(yasm_parser_gas *parser_gas)
     char *id;
     size_t id_len;
     uintptr_t prefix;
+
+    if (parser_gas->intel_syntax) {
+        bc = parse_instr_intel(parser_gas);
+        if (bc) {
+            yasm_warn_disable(YASM_WARN_UNREC_CHAR);
+             do {
+                destroy_curtok();
+                get_next_token();
+            } while (!is_eol());
+            yasm_warn_enable(YASM_WARN_UNREC_CHAR);
+        }
+        return bc;
+    }
 
     if (curtok != ID)
         return NULL;
@@ -1715,14 +1701,14 @@ static dir_lookup dirs_static[] = {
     {".data",       dir_data_section,   0,  INITIAL},
     {".text",       dir_text_section,   0,  INITIAL},
     {".section",    dir_section,        0, SECTION_DIRECTIVE},
-    /* macro directives */
-    {".rept",       dir_rept,   0,  INITIAL},
-    {".endr",       dir_endr,   0,  INITIAL},
     /* empty space/fill directives */
     {".skip",       dir_skip,   0,  INITIAL},
     {".space",      dir_skip,   0,  INITIAL},
     {".fill",       dir_fill,   0,  INITIAL},
     {".zero",       dir_zero,   0,  INITIAL},
+    /* syntax directives */
+    {".intel_syntax", dir_intel_syntax, 0, INITIAL},
+    {".att_syntax",   dir_att_syntax,   0, INITIAL},    
     /* other directives */
     {".equ",        dir_equ,    0,  INITIAL},
     {".file",       dir_file,   0,  INITIAL},

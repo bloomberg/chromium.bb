@@ -1,5 +1,5 @@
 #! /bin/sh
-# $Id: out_test.sh 1825 2007-04-22 03:32:46Z peter $
+# $Id: out_test.sh 2226 2009-07-30 02:19:38Z peter $
 
 YASM_TEST_SUITE=1
 export YASM_TEST_SUITE
@@ -29,7 +29,7 @@ do
     og=`echo ${asm} | sed 's,.asm$,.hex,'`
     e=${a}.ew
     eg=`echo ${asm} | sed 's,.asm$,.errwarn,'`
-    if test \! -e ${eg}; then
+    if test \! -f ${eg}; then
         eg=/dev/null
     fi
 
@@ -70,7 +70,7 @@ do
             failedct=`expr $failedct + 1`
         else
             ./test_hd results/${o} > results/${oh}
-            if diff ${og} results/${oh} >/dev/null; then
+            if diff -w ${og} results/${oh} >/dev/null; then
                 if diff -w ${eg} results/${e} >/dev/null; then
                     # Both object file and error/warnings match, it passes!
                     echo $ECHO_N ".$ECHO_C"

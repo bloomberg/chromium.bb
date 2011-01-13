@@ -1,5 +1,5 @@
 #! /bin/sh
-# $Id: bin_multi_test.sh 2010 2007-11-14 08:33:32Z peter $
+# $Id: bin_multi_test.sh 2226 2009-07-30 02:19:38Z peter $
 
 YASM_TEST_SUITE=1
 export YASM_TEST_SUITE
@@ -31,7 +31,7 @@ do
     eg=`echo ${asm} | sed 's,.asm$,.errwarn,'`
     m=${a}.map
     mg=`echo ${asm} | sed 's,.asm$,.map,'`
-    if test \! -e ${eg}; then
+    if test \! -f ${eg}; then
         eg=/dev/null
     fi
 
@@ -72,7 +72,7 @@ do
             failedct=`expr $failedct + 1`
         else
             ./test_hd results/${o} > results/${oh}
-            if diff ${og} results/${oh} >/dev/null; then
+            if diff -w ${og} results/${oh} >/dev/null; then
                 if diff -w ${eg} results/${e} >/dev/null; then
                     if diff -w ${mg} results/${m} >/dev/null; then
                         # All match, it passes!

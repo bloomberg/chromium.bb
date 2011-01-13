@@ -28,7 +28,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <util.h>
-/*@unused@*/ RCSID("$Id: yasm-options.c 1825 2007-04-22 03:32:46Z peter $");
+#include <ctype.h>
+/*@unused@*/ RCSID("$Id: yasm-options.c 2248 2009-12-26 04:41:21Z peter $");
 
 #include "yasm-options.h"
 
@@ -69,10 +70,15 @@ parse_cmdline(int argc, char **argv, opt_option *options, size_t nopts,
                 }
 
                 for (i = 0; i < nopts; i++) {
+                    size_t optlen;
                     if (options[i].lopt &&
                         strncmp(&argv[0][2], options[i].lopt,
-                                strlen(options[i].lopt)) == 0) {
+                                (optlen = strlen(options[i].lopt))) == 0) {
                         char *param;
+                        char c = argv[0][2 + optlen];
+
+                        if (c != '\0' && c != '=' && !isspace(c))
+                            continue;
 
                         if (options[i].takes_param) {
                             param = strchr(&argv[0][2], '=');

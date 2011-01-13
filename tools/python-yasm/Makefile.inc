@@ -1,4 +1,4 @@
-# $Id: Makefile.inc 1948 2007-09-13 02:53:30Z peter $
+# $Id: Makefile.inc 2256 2010-01-01 20:55:07Z peter $
 
 PYBINDING_DEPS  = tools/python-yasm/bytecode.pxi
 PYBINDING_DEPS += tools/python-yasm/errwarn.pxi
@@ -40,9 +40,9 @@ yasm.pyx: $(srcdir)/tools/python-yasm/yasm.pyx
 
 CLEANFILES += yasm.pyx
 
-# Actually run Pyrex
+# Actually run Cython
 yasm_python.c: yasm.pyx _yasm.pxi $(PYBINDING_DEPS)
-	$(PYTHON) -c "from Pyrex.Compiler.Main import main; main(command_line=1)" \
+	$(PYTHON) -c "from Cython.Compiler.Main import main; main(command_line=1)" \
 		-o $@ yasm.pyx
 
 CLEANFILES += yasm_python.c
@@ -50,13 +50,13 @@ CLEANFILES += yasm_python.c
 # Now the Python build magic...
 python-setup.txt: Makefile
 	echo "includes=${DEFS} ${DEFAULT_INCLUDES} ${INCLUDES} ${AM_CPPFLAGS} ${CPPFLAGS}" > python-setup.txt
-	echo "sources=${libyasm_a_SOURCES}" >> python-setup.txt
+	echo "sources=${libyasm_a_SOURCES} ${nodist_libyasm_a_SOURCES}" >> python-setup.txt
 	echo "srcdir=${srcdir}" >> python-setup.txt
 	echo "gcc=${GCC}" >> python-setup.txt
 
 CLEANFILES += python-setup.txt
 
-.python-build: python-setup.txt yasm_python.c ${libyasm_a_SOURCES}
+.python-build: python-setup.txt yasm_python.c ${libyasm_a_SOURCES} ${nodist_libyasm_a_SOURCES}
 	$(PYTHON) `test -f tools/python-yasm/setup.py || echo '$(srcdir)/'`tools/python-yasm/setup.py build
 	touch .python-build
 python-build: .python-build

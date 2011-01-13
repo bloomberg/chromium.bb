@@ -25,7 +25,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <util.h>
-/*@unused@*/ RCSID("$Id: bin-objfmt.c 2166 2009-01-02 08:33:21Z peter $");
+/*@unused@*/ RCSID("$Id: bin-objfmt.c 2310 2010-03-28 19:28:54Z peter $");
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -113,7 +113,7 @@ bin_objfmt_create(yasm_object *object)
     return (yasm_objfmt *)objfmt_bin;
 }
 
-typedef TAILQ_HEAD(, bin_group) bin_groups;
+typedef TAILQ_HEAD(bin_group_head, bin_group) bin_groups;
 
 typedef struct bin_group {
     TAILQ_ENTRY(bin_group) link;
@@ -158,6 +158,8 @@ find_group_by_section(bin_groups *groups, yasm_section *section)
     return NULL;
 }
 
+#if 0
+/* Debugging function */
 static void
 print_groups(const bin_groups *groups, int indent_level)
 {
@@ -172,6 +174,7 @@ print_groups(const bin_groups *groups, int indent_level)
         }
     }
 }
+#endif
 
 static void
 bin_group_destroy(/*@only@*/ bin_group *group)
@@ -1385,10 +1388,11 @@ define_section_symbol(yasm_symtab *symtab, yasm_section *sect,
     yasm_symrec_add_data(sym, &bin_symrec_data_cb, bsymd);
 }
 
-static bin_section_data *
-bin_objfmt_init_new_section(yasm_object *object, yasm_section *sect,
-                            const char *sectname, unsigned long line)
+static void
+bin_objfmt_init_new_section(yasm_section *sect, unsigned long line)
 {
+    yasm_object *object = yasm_section_get_object(sect);
+    const char *sectname = yasm_section_get_name(sect);
     /*yasm_objfmt_bin *objfmt_bin = (yasm_objfmt_bin *)object->objfmt;*/
     bin_section_data *data;
 
@@ -1411,8 +1415,6 @@ bin_objfmt_init_new_section(yasm_object *object, yasm_section *sect,
                           SSYM_VSTART, line);
     define_section_symbol(object->symtab, sect, sectname, ".length",
                           SSYM_LENGTH, line);
-
-    return data;
 }
 
 static yasm_section *
@@ -1422,11 +1424,18 @@ bin_objfmt_add_default_section(yasm_object *object)
     int isnew;
 
     retval = yasm_object_get_general(object, ".text", 0, 1, 0, &isnew, 0);
-    if (isnew) {
-        bin_objfmt_init_new_section(object, retval, ".text", 0);
+    if (isnew)
         yasm_section_set_default(retval, 1);
-    }
     return retval;
+}
+
+/* GAS-style flags */
+static int
+bin_helper_gasflags(void *obj, yasm_valparam *vp, unsigned long line, void *d,
+                    /*@unused@*/ uintptr_t arg)
+{
+    /* TODO */
+    return 0;
 }
 
 static /*@observer@*/ /*@null@*/ yasm_section *
@@ -1477,7 +1486,8 @@ bin_objfmt_section_switch(yasm_object *object, yasm_valparamhead *valparams,
         { "execute", 0, yasm_dir_helper_flag_set,
           offsetof(struct bin_section_switch_data, code), 1 },
         { "noexecute", 0, yasm_dir_helper_flag_set,
-          offsetof(struct bin_section_switch_data, code), 0 }
+          offsetof(struct bin_section_switch_data, code), 0 },
+        { "gasflags", 1, bin_helper_gasflags, 0, 0 }
     };
 
     vp = yasm_vps_first(valparams);
@@ -1555,10 +1565,7 @@ bin_objfmt_section_switch(yasm_object *object, yasm_valparamhead *valparams,
     retval = yasm_object_get_general(object, sectname, 0, (int)data.code,
                                      (int)data.bss, &isnew, line);
 
-    if (isnew)
-        bsd = bin_objfmt_init_new_section(object, retval, sectname, line);
-    else
-        bsd = yasm_section_get_data(retval, &bin_section_data_cb);
+    bsd = yasm_section_get_data(retval, &bin_section_data_cb);
 
     if (isnew || yasm_section_is_default(retval)) {
         yasm_section_set_default(retval, 0);
@@ -1807,6 +1814,7 @@ yasm_objfmt_module yasm_bin_LTX_objfmt = {
     bin_objfmt_output,
     bin_objfmt_destroy,
     bin_objfmt_add_default_section,
+    bin_objfmt_init_new_section,
     bin_objfmt_section_switch,
     bin_objfmt_get_special_sym
 };
@@ -1959,6 +1967,7 @@ yasm_objfmt_module yasm_dosexe_LTX_objfmt = {
     dosexe_objfmt_output,
     bin_objfmt_destroy,
     bin_objfmt_add_default_section,
+    bin_objfmt_init_new_section,
     bin_objfmt_section_switch,
     bin_objfmt_get_special_sym
 };

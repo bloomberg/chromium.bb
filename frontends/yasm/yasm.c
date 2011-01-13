@@ -25,7 +25,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <util.h>
-/*@unused@*/ RCSID("$Id: yasm.c 2109 2008-06-08 09:06:05Z peter $");
+/*@unused@*/ RCSID("$Id: yasm.c 2317 2010-04-08 06:10:16Z peter $");
 
 #include <ctype.h>
 #include <libyasm/compat-queue.h>
@@ -215,7 +215,7 @@ static opt_option options[] =
 /*@observer@*/ static const char *version_msg[] = {
     PACKAGE_NAME " " PACKAGE_INTVER "." PACKAGE_BUILD,
     "Compiled on " __DATE__ ".",
-    "Copyright (c) 2001-2008 Peter Johnson and other Yasm developers.",
+    "Copyright (c) 2001-2010 Peter Johnson and other Yasm developers.",
     "Run yasm --license for licensing overview and summary."
 };
 
@@ -255,7 +255,7 @@ do_preproc_only(void)
 
     /* Initialize line map */
     linemap = yasm_linemap_create();
-    yasm_linemap_set(linemap, in_filename, 1, 1);
+    yasm_linemap_set(linemap, in_filename, 0, 1, 1);
 
     /* Default output to stdout if not specified or generating dependency
        makefiles */
@@ -359,7 +359,7 @@ do_assemble(void)
 
     /* Initialize line map */
     linemap = yasm_linemap_create();
-    yasm_linemap_set(linemap, in_filename, 1, 1);
+    yasm_linemap_set(linemap, in_filename, 0, 1, 1);
 
     /* determine the object filename if not specified */
     if (!obj_filename) {

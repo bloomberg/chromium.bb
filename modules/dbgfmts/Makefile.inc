@@ -1,4 +1,4 @@
-# $Id: Makefile.inc 1662 2006-10-21 18:52:29Z peter $
+# $Id: Makefile.inc 2269 2010-01-07 07:00:05Z peter $
 
 EXTRA_DIST += modules/dbgfmts/codeview/Makefile.inc
 EXTRA_DIST += modules/dbgfmts/dwarf2/Makefile.inc
@@ -10,7 +10,7 @@ include modules/dbgfmts/dwarf2/Makefile.inc
 include modules/dbgfmts/null/Makefile.inc
 include modules/dbgfmts/stabs/Makefile.inc
 
-dist_man_MANS += yasm_dbgfmts.7
+notrans_dist_man_MANS += yasm_dbgfmts.7
 
 if BUILD_MAN
 yasm_dbgfmts.7: modules/dbgfmts/yasm_dbgfmts.xml

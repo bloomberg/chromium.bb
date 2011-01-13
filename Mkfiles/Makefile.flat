@@ -1,4 +1,4 @@
-# $Id: Makefile.flat 2183 2009-03-24 04:58:46Z peter $
+# $Id: Makefile.flat 2284 2010-02-06 09:27:32Z peter $
 #
 # Ultra-flat Makefile "prototype" for non-Unix platforms.
 # Does NOT depend on or use configure.
@@ -16,7 +16,7 @@ CFLAGS=-DHAVE_CONFIG_H -IMkfiles -I.
 CC?=gcc
 BUILDCC?=$(CC)
 
-all: yasm ytasm
+all: yasm ytasm vsyasm
 
 LIBYASM_OBJS= \
  libyasm/assocdat.o \
@@ -112,6 +112,7 @@ MODULES_PARSERS_OBJS= \
  modules/parsers/nasm/nasm-parse.o \
  nasm-token.o \
  modules/parsers/gas/gas-parser.o \
+ modules/parsers/gas/gas-parse-intel.o \
  modules/parsers/gas/gas-parse.o \
  gas-token.o
 YASM_MODULES+=parser_nasm parser_tasm
@@ -132,10 +133,16 @@ MODULES_PREPROCS_CPP_OBJS = \
  modules/preprocs/cpp/cpp-preproc.o
 YASM_MODULES+=preproc_cpp
 
+MODULES_PREPROCS_GAS_OBJS = \
+ modules/preprocs/gas/gas-eval.o \
+ modules/preprocs/gas/gas-preproc.o
+YASM_MODULES+=preproc_gas
+
 MODULES_PREPROCS_OBJS = \
  $(MODULES_PREPROCS_NASM_OBJS) \
  $(MODULES_PREPROCS_RAW_OBJS) \
- $(MODULES_PREPROCS_CPP_OBJS)
+ $(MODULES_PREPROCS_CPP_OBJS) \
+ $(MODULES_PREPROCS_GAS_OBJS)
 
 MODULES_OBJS = \
  $(MODULES_ARCH_OBJS) \
@@ -155,6 +162,12 @@ YASM_OBJS= \
 YTASM_OBJS= \
  frontends/tasm/tasm.o \
  frontends/tasm/tasm-options.o \
+ $(LIBYASM_OBJS) \
+ $(MODULES_OBJS)
+
+VSYASM_OBJS= \
+ frontends/vsyasm/vsyasm.o \
+ frontends/yasm/yasm-options.o \
  $(LIBYASM_OBJS) \
  $(MODULES_OBJS)
 
@@ -254,6 +267,9 @@ yasm: $(YASM_OBJS)
 
 ytasm: $(YTASM_OBJS)
 	$(CC) -o ytasm $(YTASM_OBJS)
+
+vsyasm: $(VSYASM_OBJS)
+	$(CC) -o vsyasm $(VSYASM_OBJS)
 
 .c.o:
 	$(CC) -c $(CFLAGS) -o $@ $<

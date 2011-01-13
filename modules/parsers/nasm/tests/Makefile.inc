@@ -1,4 +1,4 @@
-# $Id: Makefile.inc 2191 2009-03-25 03:42:05Z peter $
+# $Id: Makefile.inc 2323 2010-05-16 03:37:00Z peter $
 
 TESTS += modules/parsers/nasm/tests/nasm_test.sh
 
@@ -9,6 +9,9 @@ EXTRA_DIST += modules/parsers/nasm/tests/alignnop32.asm
 EXTRA_DIST += modules/parsers/nasm/tests/alignnop32.hex
 EXTRA_DIST += modules/parsers/nasm/tests/charconstmath.asm
 EXTRA_DIST += modules/parsers/nasm/tests/charconstmath.hex
+EXTRA_DIST += modules/parsers/nasm/tests/dirwarning.asm
+EXTRA_DIST += modules/parsers/nasm/tests/dirwarning.errwarn
+EXTRA_DIST += modules/parsers/nasm/tests/dirwarning.hex
 EXTRA_DIST += modules/parsers/nasm/tests/dy.asm
 EXTRA_DIST += modules/parsers/nasm/tests/dy.hex
 EXTRA_DIST += modules/parsers/nasm/tests/endcomma.asm

@@ -25,7 +25,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <util.h>
-RCSID("$Id: nasm-parse.c 2191 2009-03-25 03:42:05Z peter $");
+RCSID("$Id: nasm-parse.c 2323 2010-05-16 03:37:00Z peter $");
 
 #include <libyasm.h>
 
@@ -178,6 +178,7 @@ describe_token(int token)
         case INSN:              str = "instruction"; break;
         case PREFIX:            str = "instruction prefix"; break;
         case REG:               str = "register"; break;
+        case REGGROUP:          str = "register group"; break;
         case SEGREG:            str = "segment register"; break;
         case TARGETMOD:         str = "target modifier"; break;
         case LEFT_OP:           str = "<<"; break;
@@ -316,7 +317,7 @@ parse_line(yasm_parser_nasm *parser_nasm)
             /* %line indicates the line number of the *next* line, so subtract
              * out the increment when setting the line number.
              */
-            yasm_linemap_set(parser_nasm->linemap, filename,
+            yasm_linemap_set(parser_nasm->linemap, filename, 0,
                 yasm_intnum_get_uint(line) - yasm_intnum_get_uint(incr),
                 yasm_intnum_get_uint(incr));
             yasm_intnum_destroy(line);
@@ -337,6 +338,22 @@ parse_line(yasm_parser_nasm *parser_nasm)
                 return NULL;
             dirname = DIRECTIVE_NAME_val;
             get_next_token();
+
+            /* ignore [warning].  TODO: actually implement */
+            if (yasm__strcasecmp(dirname, "warning") == 0) {
+                yasm_warn_set(YASM_WARN_GENERAL,
+                    N_("[warning] directive not supported; ignored"));
+
+                /* throw away the rest of the directive tokens */
+                while (!is_eol() && curtok != ']')
+                {
+                    destroy_curtok();
+                    get_next_token();
+                }
+                expect(']');
+                get_next_token();
+                return NULL;
+            }
 
             if (curtok == ']' || curtok == ':')
                 have_vps = 0;
@@ -843,6 +860,12 @@ parse_operand(yasm_parser_nasm *parser_nasm)
         {
             yasm_insn_operand *op2;
             get_next_token();
+            if (parser_nasm->masm && curtok == ID && !yasm__strcasecmp(ID_val, "flat")) {
+                get_next_token();
+                if (curtok == ':') {
+                    get_next_token();
+                }
+            }
             op = parse_operand(parser_nasm);
             if (!op) {
                 yasm_error_set(YASM_ERROR_SYNTAX,
@@ -904,6 +927,35 @@ parse_operand(yasm_parser_nasm *parser_nasm)
             op = yasm_operand_create_reg(REG_val);
             get_next_token();
             return op;
+        case REGGROUP:
+        {
+            unsigned long regindex;
+            uintptr_t reg = REGGROUP_val;
+            get_next_token(); /* REGGROUP */
+            if (curtok != '(')
+                return yasm_operand_create_reg(reg);
+            get_next_token(); /* '(' */
+            if (!expect(INTNUM)) {
+                yasm_error_set(YASM_ERROR_SYNTAX,
+                               N_("integer register index expected"));
+                return NULL;
+            }
+            regindex = yasm_intnum_get_uint(INTNUM_val);
+            get_next_token(); /* INTNUM */
+            if (!expect(')')) {
+                yasm_error_set(YASM_ERROR_SYNTAX,
+                    N_("missing closing parenthesis for register index"));
+                return NULL;
+            }
+            get_next_token(); /* ')' */
+            reg = yasm_arch_reggroup_get_reg(p_object->arch, reg, regindex);
+            if (reg == 0) {
+                yasm_error_set(YASM_ERROR_SYNTAX, N_("bad register index `%u'"),
+                               regindex);
+                return NULL;
+            }
+            return yasm_operand_create_reg(reg);
+        }
         case STRICT:
             get_next_token();
             op = parse_operand(parser_nasm);
@@ -914,6 +966,9 @@ parse_operand(yasm_parser_nasm *parser_nasm)
         {
             unsigned int size = SIZE_OVERRIDE_val;
             get_next_token();
+            if (parser_nasm->masm && curtok == ID && !yasm__strcasecmp(ID_val, "ptr")) {
+                get_next_token();
+            }
             op = parse_operand(parser_nasm);
             if (!op)
                 return NULL;
@@ -988,15 +1043,34 @@ parse_operand(yasm_parser_nasm *parser_nasm)
             yasm_expr *e = parse_bexpr(parser_nasm, NORM_EXPR);
             if (!e)
                 return NULL;
-            if (curtok != ':')
+            if (curtok != ':') {
                 if (parser_nasm->tasm && yasm_expr_size(e)) {
                     yasm_effaddr *ea = yasm_arch_ea_create(p_object->arch, e);
                     yasm_ea_set_implicit_size_segment(parser_nasm, ea, e);
                     op = yasm_operand_create_mem(ea);
                     return op;
-                } else
+                } else if (curtok == '[') {
+                    yasm_expr *f;
+                    yasm_effaddr *ea;
+                    yasm_insn_operand *op2;
+
+                    op = parse_operand(parser_nasm);
+                    if (!op)
+                        return NULL;
+    
+                    f = op->data.ea->disp.abs;
+                    e = p_expr_new_tree(e, YASM_EXPR_ADD, f);
+                    ea = yasm_arch_ea_create(p_object->arch, e);
+                    yasm_ea_set_implicit_size_segment(parser_nasm, ea, e);
+                    op2 = yasm_operand_create_mem(ea);
+
+                    yasm_xfree(op);
+
+                    return op2;
+                } else {
                     return yasm_operand_create_imm(e);
-            else {
+                }
+            } else {
                 yasm_expr *off;
                 get_next_token();
                 off = parse_bexpr(parser_nasm, NORM_EXPR);
@@ -1263,47 +1337,7 @@ parse_expr6(yasm_parser_nasm *parser_nasm, expr_type type)
     yasm_expr *e;
     yasm_symrec *sym;
 
-    /* directives allow very little and handle IDs specially */
-    if (type == DIR_EXPR) {
-        switch (curtok) {
-        case '~':
-            get_next_token();
-            e = parse_expr6(parser_nasm, type);
-            if (!e) {
-                yasm_error_set(YASM_ERROR_SYNTAX,
-                               N_("expected expression after %s"), "`~'");
-                return NULL;
-            }
-            return p_expr_new_branch(YASM_EXPR_NOT, e);
-        case '(':
-            get_next_token();
-            e = parse_expr(parser_nasm, type);
-            if (!e) {
-                yasm_error_set(YASM_ERROR_SYNTAX,
-                               N_("expected expression after %s"), "`('");
-                return NULL;
-            }
-            if (!expect(')')) {
-                yasm_error_set(YASM_ERROR_SYNTAX, N_("missing parenthesis"));
-                return NULL;
-            }
-            get_next_token();
-            return e;
-        case INTNUM:
-            e = p_expr_new_ident(yasm_expr_int(INTNUM_val));
-            break;
-        case REG:
-            e = p_expr_new_ident(yasm_expr_reg(REG_val));
-            break;
-        case ID:
-            sym = yasm_symtab_use(p_symtab, ID_val, cur_line);
-            e = p_expr_new_ident(yasm_expr_sym(sym));
-            yasm_xfree(ID_val);
-            break;
-        default:
-            return NULL;
-        }
-    } else switch (curtok) {
+    switch (curtok) {
         case '+':
             get_next_token();
             e = parse_expr6(parser_nasm, type);
@@ -1379,10 +1413,8 @@ parse_expr6(yasm_parser_nasm *parser_nasm, expr_type type)
             return e;
         case INTNUM:
             e = p_expr_new_ident(yasm_expr_int(INTNUM_val));
-            break;
-        case FLTNUM:
-            e = p_expr_new_ident(yasm_expr_float(FLTNUM_val));
-            break;
+            get_next_token();
+            return e;
         case REG:
             if (type == DV_EXPR) {
                 yasm_error_set(YASM_ERROR_SYNTAX,
@@ -1390,6 +1422,24 @@ parse_expr6(yasm_parser_nasm *parser_nasm, expr_type type)
                 return NULL;
             }
             e = p_expr_new_ident(yasm_expr_reg(REG_val));
+            get_next_token();
+            return e;
+    }
+
+    /* directives allow very little and handle IDs specially */
+    if (type == DIR_EXPR) {
+        switch (curtok) {
+        case ID:
+            sym = yasm_symtab_use(p_symtab, ID_val, cur_line);
+            e = p_expr_new_ident(yasm_expr_sym(sym));
+            yasm_xfree(ID_val);
+            break;
+        default:
+            return NULL;
+        }
+    } else switch (curtok) {
+        case FLTNUM:
+            e = p_expr_new_ident(yasm_expr_float(FLTNUM_val));
             break;
         case STRING:
         {
@@ -1440,6 +1490,7 @@ parse_expr6(yasm_parser_nasm *parser_nasm, expr_type type)
         default:
             return NULL;
     }
+
     get_next_token();
     return e;
 }
@@ -1605,4 +1656,26 @@ nasm_parser_directive(yasm_parser_nasm *parser_nasm, const char *name,
         yasm_vps_delete(valparams);
     if (objext_valparams)
         yasm_vps_delete(objext_valparams);
+}
+
+yasm_bytecode *
+gas_intel_syntax_parse_instr(yasm_parser_nasm *parser_nasm, unsigned char *instr)
+{
+    yasm_bytecode *bc = NULL;
+    char *sinstr = (char *) instr;
+
+    parser_nasm->s.bot = instr;
+    parser_nasm->s.tok = instr;
+    parser_nasm->s.ptr = instr;
+    parser_nasm->s.cur = instr;
+    parser_nasm->s.lim = instr + strlen(sinstr) + 1;
+    parser_nasm->s.top = parser_nasm->s.lim;
+    parser_nasm->peek_token = NONE;
+
+    get_next_token();
+    if (!is_eol()) {
+        bc = parse_instr(parser_nasm);
+    }
+
+    return bc;
 }

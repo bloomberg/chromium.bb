@@ -26,7 +26,7 @@
  */
 
 #include <util.h>
-/*@unused@*/ RCSID("$Id: elf-x86-amd64.c 2126 2008-10-03 08:13:00Z peter $");
+/*@unused@*/ RCSID("$Id: elf-x86-amd64.c 2210 2009-07-22 05:51:35Z peter $");
 
 #include <libyasm.h>
 #define YASM_OBJFMT_ELF_INTERNAL
@@ -34,7 +34,10 @@
 #include "elf-machine.h"
 
 static elf_machine_ssym elf_x86_amd64_ssyms[] = {
+    {"pltoff",      ELF_SSYM_SYM_RELATIVE,  R_X86_64_PLTOFF64,  64},
     {"plt",         ELF_SSYM_SYM_RELATIVE,  R_X86_64_PLT32,     32},
+    {"gotplt",      ELF_SSYM_SYM_RELATIVE,  R_X86_64_GOTPLT64,  64},
+    {"gotoff",      ELF_SSYM_SYM_RELATIVE,  R_X86_64_GOTOFF64,  64},
     {"gotpcrel",    ELF_SSYM_SYM_RELATIVE,  R_X86_64_GOTPCREL,  32},
     {"tlsgd",       ELF_SSYM_SYM_RELATIVE|ELF_SSYM_THREAD_LOCAL,
                     R_X86_64_TLSGD,     32},
@@ -46,19 +49,22 @@ static elf_machine_ssym elf_x86_amd64_ssyms[] = {
                     R_X86_64_TPOFF32,   32},
     {"dtpoff",      ELF_SSYM_SYM_RELATIVE|ELF_SSYM_THREAD_LOCAL,
                     R_X86_64_DTPOFF32,  32},
-    {"got",         ELF_SSYM_SYM_RELATIVE,  R_X86_64_GOT32,     32}
+    {"got",         ELF_SSYM_SYM_RELATIVE,  R_X86_64_GOT32,     32},
+    {"tlsdesc",     ELF_SSYM_SYM_RELATIVE|ELF_SSYM_THREAD_LOCAL,
+                    R_X86_64_GOTPC32_TLSDESC,   32},
+    {"tlscall",     ELF_SSYM_SYM_RELATIVE|ELF_SSYM_THREAD_LOCAL,
+                    R_X86_64_TLSDESC_CALL,      32}
 };
 
 static int
-elf_x86_amd64_accepts_reloc(size_t val, yasm_symrec *wrt, yasm_symrec **ssyms)
+elf_x86_amd64_accepts_reloc(size_t val, yasm_symrec *wrt)
 {
     if (wrt) {
-        size_t i;
-        for (i=0; i<NELEMS(elf_x86_amd64_ssyms); i++) {
-            if (wrt == ssyms[i] && val == elf_x86_amd64_ssyms[i].size)
-                return 1;
-        }
-        return 0;
+        const elf_machine_ssym *ssym = (elf_machine_ssym *)
+            yasm_symrec_get_data(wrt, &elf_ssym_symrec_data);
+        if (!ssym || val != ssym->size)
+            return 0;
+        return 1;
     }
     return (val&(val-1)) ? 0 : ((val & (8|16|32|64)) != 0);
 }
@@ -131,7 +137,9 @@ elf_x86_amd64_write_secthead_rel(unsigned char *bufp,
 }
 
 static void
-elf_x86_amd64_handle_reloc_addend(yasm_intnum *intn, elf_reloc_entry *reloc)
+elf_x86_amd64_handle_reloc_addend(yasm_intnum *intn,
+                                  elf_reloc_entry *reloc,
+                                  unsigned long offset)
 {
     /* .rela: copy value out as addend, replace original with 0 */
     reloc->addend = yasm_intnum_copy(intn);
@@ -139,36 +147,36 @@ elf_x86_amd64_handle_reloc_addend(yasm_intnum *intn, elf_reloc_entry *reloc)
 }
 
 static unsigned int
-elf_x86_amd64_map_reloc_info_to_type(elf_reloc_entry *reloc,
-                                     yasm_symrec **ssyms)
+elf_x86_amd64_map_reloc_info_to_type(elf_reloc_entry *reloc)
 {
     if (reloc->wrt) {
-        size_t i;
-        for (i=0; i<NELEMS(elf_x86_amd64_ssyms); i++) {
-            if (reloc->wrt == ssyms[i] &&
-                reloc->valsize == elf_x86_amd64_ssyms[i].size) {
-                /* Force TLS type; this is required by the linker. */
-                if (elf_x86_amd64_ssyms[i].sym_rel & ELF_SSYM_THREAD_LOCAL) {
-                    elf_symtab_entry *esym;
+        const elf_machine_ssym *ssym = (elf_machine_ssym *)
+            yasm_symrec_get_data(reloc->wrt, &elf_ssym_symrec_data);
+        if (!ssym || reloc->valsize != ssym->size)
+            yasm_internal_error(N_("Unsupported WRT"));
 
-                    esym = yasm_symrec_get_data(reloc->reloc.sym,
-                                                &elf_symrec_data);
-                    if (esym)
-                        esym->type = STT_TLS;
-                }
-                /* Map PC-relative GOT to appropriate relocation */
-                if (reloc->rtype_rel &&
-                    elf_x86_amd64_ssyms[i].reloc == R_X86_64_GOT32)
-                    return (unsigned char) R_X86_64_GOTPCREL;
-                return (unsigned char) elf_x86_amd64_ssyms[i].reloc;
-            }
+        /* Force TLS type; this is required by the linker. */
+        if (ssym->sym_rel & ELF_SSYM_THREAD_LOCAL) {
+            elf_symtab_entry *esym;
+
+            esym = yasm_symrec_get_data(reloc->reloc.sym, &elf_symrec_data);
+            if (esym)
+                esym->type = STT_TLS;
         }
-        yasm_internal_error(N_("Unsupported WRT"));
+        /* Map PC-relative GOT to appropriate relocation */
+        if (reloc->rtype_rel && ssym->reloc == R_X86_64_GOT32)
+            return (unsigned char) R_X86_64_GOTPCREL;
+        return (unsigned char) ssym->reloc;
+    } else if (reloc->is_GOT_sym && reloc->valsize == 32) {
+        return (unsigned char) R_X86_64_GOTPC32;
+    } else if (reloc->is_GOT_sym && reloc->valsize == 64) {
+        return (unsigned char) R_X86_64_GOTPC64;
     } else if (reloc->rtype_rel) {
         switch (reloc->valsize) {
             case 8: return (unsigned char) R_X86_64_PC8;
             case 16: return (unsigned char) R_X86_64_PC16;
             case 32: return (unsigned char) R_X86_64_PC32;
+            case 64: return (unsigned char) R_X86_64_PC64;
             default: yasm_internal_error(N_("Unsupported relocation size"));
         }
     } else {

@@ -1,4 +1,4 @@
-# $Id: Makefile.inc 1776 2007-02-19 02:36:10Z peter $
+# $Id: Makefile.inc 2238 2009-11-30 03:43:10Z peter $
 
 TESTS += modules/arch/x86/tests/gas64/x86_gas64_test.sh
 
@@ -11,6 +11,8 @@ EXTRA_DIST += modules/arch/x86/tests/gas64/gas-fp.asm
 EXTRA_DIST += modules/arch/x86/tests/gas64/gas-fp.hex
 EXTRA_DIST += modules/arch/x86/tests/gas64/gas-inout.asm
 EXTRA_DIST += modules/arch/x86/tests/gas64/gas-inout.hex
+EXTRA_DIST += modules/arch/x86/tests/gas64/gas-loop64.asm
+EXTRA_DIST += modules/arch/x86/tests/gas64/gas-loop64.hex
 EXTRA_DIST += modules/arch/x86/tests/gas64/gas-moreinsn.asm
 EXTRA_DIST += modules/arch/x86/tests/gas64/gas-moreinsn.hex
 EXTRA_DIST += modules/arch/x86/tests/gas64/gas-movabs.asm

@@ -1,15 +1,16 @@
-Yasm is Copyright (c) 2001-2009 Peter Johnson and other Yasm developers.
+Yasm is Copyright (c) 2001-2010 Peter Johnson and other Yasm developers.
 
 Yasm developers and/or contributors include:
   Peter Johnson
   Michael Urman
-  Brian Gladman (VC8 build files, other fixes)
+  Brian Gladman (Visual Studio build files, other fixes)
   Stanislav Karchebny (options parser)
-  Mathieu Monnier (SSE4 instruction patches)
+  Mathieu Monnier (SSE4 instruction patches, NASM preprocessor additions)
   Anonymous "NASM64" developer (NASM preprocessor fixes)
   Stephen Polkowski (x86 instruction patches)
   Henryk Richter (Mach-O object format)
   Ben Skeggs (patches, bug reports)
+  Alexei Svitkine (GAS preprocessor)
   Samuel Thibault (TASM parser and frontend)
 
 -----------------------------------
@@ -39,8 +40,7 @@ bitvect) are fulfilled.
 -------
 Modules
 -------
-The modules are 2-clause or 3-clause BSD licensed, with the exception of:
- preprocs/nasm - LGPL licensed
+The modules are 2-clause or 3-clause BSD licensed.
 
 ---------
 Frontends

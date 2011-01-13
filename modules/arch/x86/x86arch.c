@@ -25,7 +25,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <util.h>
-/*@unused@*/ RCSID("$Id: x86arch.c 2181 2009-03-20 07:36:49Z peter $");
+/*@unused@*/ RCSID("$Id: x86arch.c 2279 2010-01-19 07:57:43Z peter $");
 
 #include <libyasm.h>
 
@@ -68,6 +68,7 @@ x86_create(const char *machine, const char *parser,
     arch_x86->mode_bits = 0;
     arch_x86->force_strict = 0;
     arch_x86->default_rel = 0;
+    arch_x86->gas_intel_mode = 0;
     arch_x86->nop = X86_NOP_BASIC;
 
     if (yasm__strcasecmp(parser, "nasm") == 0)
@@ -133,6 +134,8 @@ x86_set_var(yasm_arch *arch, const char *var, unsigned long val)
                           N_("ignoring default rel in non-64-bit mode"));
         else
             arch_x86->default_rel = (unsigned int)val;
+    } else if (yasm__strcasecmp(var, "gas_intel_mode") == 0) {
+        arch_x86->gas_intel_mode = (unsigned int)val;
     } else
         return 1;
     return 0;

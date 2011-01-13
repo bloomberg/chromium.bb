@@ -168,6 +168,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="run.bat"
 			/>
 		</Configuration>
 		<Configuration
@@ -317,6 +318,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				CommandLine="run.bat"
 			/>
 		</Configuration>
 	</Configurations>
@@ -487,6 +489,10 @@
 				Name="parsers"
 				>
 				<File
+					RelativePath="..\..\..\modules\parsers\gas\gas-parse-intel.c"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\modules\parsers\gas\gas-parse.c"
 					>
 				</File>
@@ -571,6 +577,22 @@
 					>
 					<File
 						RelativePath="..\..\..\modules\preprocs\cpp\cpp-preproc.c"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="gas"
+					>
+					<File
+						RelativePath="..\..\..\modules\preprocs\gas\gas-eval.c"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\modules\preprocs\gas\gas-eval.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\modules\preprocs\gas\gas-preproc.c"
 						>
 					</File>
 				</Filter>

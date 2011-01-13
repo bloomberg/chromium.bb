@@ -1,21 +1,21 @@
 # Process this file with autoconf to produce a configure script.
-# $Id: configure.ac 2195 2009-04-10 05:34:14Z peter $
+# $Id: configure.ac 2353 2010-08-07 16:37:52Z peter $
 
 #
 # autoconf setup
 #
 AC_PREREQ(2.53)
-AC_INIT([yasm], [0.8.0], [bug-yasm@tortall.net])
+AC_INIT([yasm], [1.1.0], [bug-yasm@tortall.net])
 #AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_AUX_DIR(config)
-AM_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADER([config.h])
 
-AM_INIT_AUTOMAKE(yasm, [0.8.0])
+AM_INIT_AUTOMAKE([1.9.6 foreign])
 AM_MAINTAINER_MODE
 
-AC_DEFINE(PACKAGE_INTVER, ["0.8.0"],
+AC_DEFINE(PACKAGE_INTVER, ["1.1.0"],
 	  [Define to internal version of this package.])
-AC_DEFINE(PACKAGE_BUILD, ["2194"], [Define to build version of this package.])
+AC_DEFINE(PACKAGE_BUILD, ["2352"], [Define to build version of this package.])
 
 #
 # autoconf command-line options
@@ -73,10 +73,11 @@ esac], enable_python_bindings="no")
 # Checks for programs.
 #
 AC_PROG_CPP
-AC_DEFINE_UNQUOTED([CPP_PROG], "${CPP}", [Command name to run C preprocessor])
 AC_PROG_CC_STDC
 AC_PROG_INSTALL
 AC_PROG_LN_S
+#automake default ARFLAGS to "cru"
+AC_CHECK_TOOLS(AR,[$AR ar],[ar])
 AC_PROG_RANLIB
 
 # REQUIRE a standard (ANSI/ISO) C compiler
@@ -104,7 +105,7 @@ AM_WITH_DMALLOC
 # Checks for header files.
 #
 AC_HEADER_STDC
-AC_CHECK_HEADERS([strings.h libgen.h unistd.h direct.h])
+AC_CHECK_HEADERS([strings.h libgen.h unistd.h direct.h sys/stat.h])
 
 # REQUIRE standard C headers
 if test "$ac_cv_header_stdc" != yes; then
@@ -233,28 +234,25 @@ if test "$USE_MAINTAINER_MODE" = "yes"; then
 fi
 AC_SUBST(MORE_CFLAGS)
 
-#
-# Cross-building
-#
-if test "$cross_compiling" = "yes"; then
-    AC_MSG_CHECKING([cc for build])
-    CC_FOR_BUILD="${CC_FOR_BUILD-PATH=/usr/bin:$PATH cc}"
-    AC_MSG_RESULT($CC_FOR_BUILD)
-    CCLD_FOR_BUILD="$CC_FOR_BUILD"
-else
-    CC_FOR_BUILD="${CC_FOR_BUILD-$CC}"
-    CCLD_FOR_BUILD="${CCLD_FOR_BUILD-$CC}"
-fi
-
 AC_ARG_VAR(CC_FOR_BUILD,[build system C compiler])
 AC_ARG_VAR(CCLD_FOR_BUILD,[build system C linker frontend])
+if test "${build}" != "${host}" ; then
+  CC_FOR_BUILD=${CC_FOR_BUILD-cc}
+  CCLD_FOR_BUILD=${CCLD_FOR_BUILD-cc}
+else
+  CC_FOR_BUILD="\$(CC)"
+  CCLD_FOR_BUILD="\$(CC)"
+fi
 AC_SUBST(CC_FOR_BUILD)
 AC_SUBST(CCLD_FOR_BUILD)
 
-# libtool erroneously calls CC_FOR_BUILD HOST_CC;
-# --host is the platform that the package is compiled for.
-HOST_CC="$CC_FOR_BUILD"
-AC_SUBST(HOST_CC)
+AC_ARG_VAR(CPP_FOR_HOST,[host system C preprocessor])
+if test "$build" != "$target" || test "$build" != "$host"; then
+  CPP_PROG="${CPP_FOR_HOST-cc -E}"
+else
+  CPP_PROG="${CPP}"
+fi
+AC_DEFINE_UNQUOTED([CPP_PROG], "${CPP_PROG}", [Command name to run C preprocessor])
 
 # Detect if we have Python
 if test x$enable_python = xno; then
@@ -280,31 +278,31 @@ else
 fi
 
 # Detect if we can build Python bindings
-# (needs Python, Python headers, and Pyrex)
+# (needs Python, Python headers, and Cython)
 if test x$enable_python_bindings = xno; then
     have_python_bindings=no
 else
     AC_MSG_NOTICE([Checking to see if we can build Python bindings])
     have_python_bindings=no
     if test x$have_python = xyes; then
-        AC_MSG_CHECKING([for Pyrex >= 0.9.5.1])
-        PYREX_CHECK_VERSION(0.9.5.1, [AC_MSG_RESULT(yes)
-                                      have_pyrex=yes],
+        AC_MSG_CHECKING([for Cython >= 0.11.3])
+        CYTHON_CHECK_VERSION(0.11.3, [AC_MSG_RESULT(yes)
+                                      have_cython=yes],
                                      [AC_MSG_RESULT(no)
-                                      have_pyrex=no])
+                                      have_cython=no])
 
         AM_CHECK_PYTHON_HEADERS(have_python_headers=yes,have_python_headers=no)
 
-        if test x$have_pyrex = xyes -a x$have_python_headers = xyes ; then
+        if test x$have_cython = xyes -a x$have_python_headers = xyes ; then
             have_python_bindings=yes
         fi
     fi
 
     if test x$have_python_bindings = xno ; then
         if test x$enable_python_bindings = xyes ; then
-            AC_MSG_ERROR([Building Python bindings explicitly requested, but can't build Python bindings because either Pyrex, Python headers or a suitable Python version was not found])
+            AC_MSG_ERROR([Building Python bindings explicitly requested, but can't build Python bindings because either Cython, Python headers or a suitable Python version was not found])
         else
-            AC_MSG_WARN([Couldn't find either Pyrex, the Python headers or a suitable version of Python, not building Python bindings])
+            AC_MSG_WARN([Couldn't find either Cython, the Python headers or a suitable version of Python, not building Python bindings])
         fi
     fi
 fi

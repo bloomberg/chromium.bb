@@ -1,4 +1,4 @@
-# $Id: Makefile.inc 1732 2007-01-13 19:34:04Z peter $
+# $Id: Makefile.inc 2269 2010-01-07 07:00:05Z peter $
 
 EXTRA_DIST += modules/objfmts/dbg/Makefile.inc
 EXTRA_DIST += modules/objfmts/bin/Makefile.inc
@@ -22,7 +22,7 @@ include modules/objfmts/win32/Makefile.inc
 include modules/objfmts/win64/Makefile.inc
 include modules/objfmts/xdf/Makefile.inc
 
-dist_man_MANS += yasm_objfmts.7
+notrans_dist_man_MANS += yasm_objfmts.7
 
 if BUILD_MAN
 yasm_objfmts.7: modules/objfmts/yasm_objfmts.xml

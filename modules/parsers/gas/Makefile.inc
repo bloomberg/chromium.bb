@@ -1,8 +1,9 @@
-# $Id: Makefile.inc 1783 2007-02-22 03:40:31Z peter $
+# $Id: Makefile.inc 2279 2010-01-19 07:57:43Z peter $
 
 libyasm_a_SOURCES += modules/parsers/gas/gas-parser.c
 libyasm_a_SOURCES += modules/parsers/gas/gas-parser.h
 libyasm_a_SOURCES += modules/parsers/gas/gas-parse.c
+libyasm_a_SOURCES += modules/parsers/gas/gas-parse-intel.c
 nodist_libyasm_a_SOURCES += gas-token.c
 
 YASM_MODULES += parser_gas parser_gnu

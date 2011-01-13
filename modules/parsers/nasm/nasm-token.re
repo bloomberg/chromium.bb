@@ -27,7 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <util.h>
-RCSID("$Id: nasm-token.re 2139 2008-10-08 05:19:47Z peter $");
+RCSID("$Id: nasm-token.re 2277 2010-01-19 07:03:15Z peter $");
 
 #include <libyasm.h>
 
@@ -82,6 +82,10 @@ handle_dot_label(YYSTYPE *lvalp, char *tok, size_t toklen, size_t zeropos,
         /* check for special non-local ..@label */
         if (lvalp->str_val[zeropos+2] == '@')
             return NONLOCAL_ID;
+        return SPECIAL_ID;
+    }
+    if (parser_nasm->masm && tok[zeropos] == '.') {
+        lvalp->str_val = yasm__xstrndup(tok + zeropos, toklen - zeropos);
         return SPECIAL_ID;
     }
     if (parser_nasm->tasm && (!tasm_locals || 
@@ -416,10 +420,20 @@ scan:
                 case YASM_ARCH_TARGETMOD:
                     s->tok[TOKLEN] = savech;
                     RETURN(TARGETMOD);
+                case YASM_ARCH_REGGROUP:
+                    if (parser_nasm->masm) {
+                        s->tok[TOKLEN] = savech;
+                        RETURN(REGGROUP);
+                    }
                 default:
                     break;
             }
-            if (parser_nasm->tasm) {
+            if (parser_nasm->masm) {
+               if (!yasm__strcasecmp(TOK, "offset")) {
+                    s->tok[TOKLEN] = savech;
+                    RETURN(OFFSET);
+                }
+            } else if (parser_nasm->tasm) {
                 if (!yasm__strcasecmp(TOK, "shl")) {
                     s->tok[TOKLEN] = savech;
                     RETURN(LEFT_OP);
@@ -435,6 +449,10 @@ scan:
                 if (!yasm__strcasecmp(TOK, "or")) {
                     s->tok[TOKLEN] = savech;
                     RETURN('|');
+                }
+                if (!yasm__strcasecmp(TOK, "not")) {
+                    s->tok[TOKLEN] = savech;
+                    RETURN('~');
                 }
                 if (!yasm__strcasecmp(TOK, "low")) {
                     s->tok[TOKLEN] = savech;

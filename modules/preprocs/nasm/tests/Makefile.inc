@@ -1,4 +1,4 @@
-# $Id: Makefile.inc 2185 2009-03-24 06:33:32Z peter $
+# $Id: Makefile.inc 2311 2010-04-08 03:32:04Z peter $
 
 TESTS += modules/preprocs/nasm/tests/nasmpp_test.sh
 
@@ -22,3 +22,5 @@ EXTRA_DIST += modules/preprocs/nasm/tests/nasmpp-nested.errwarn
 EXTRA_DIST += modules/preprocs/nasm/tests/nasmpp-nested.hex
 EXTRA_DIST += modules/preprocs/nasm/tests/orgsect.asm
 EXTRA_DIST += modules/preprocs/nasm/tests/orgsect.hex
+EXTRA_DIST += modules/preprocs/nasm/tests/scope-err.asm
+EXTRA_DIST += modules/preprocs/nasm/tests/scope-err.errwarn

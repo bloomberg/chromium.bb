@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <util.h>
-/*@unused@*/ RCSID("$Id: gas-parser.c 2167 2009-01-02 08:36:09Z peter $");
+/*@unused@*/ RCSID("$Id: gas-parser.c 2279 2010-01-19 07:57:43Z peter $");
 
 #include <libyasm.h>
 
@@ -71,10 +71,10 @@ gas_parser_do_parse(yasm_object *object, yasm_preproc *pp,
 
     parser_gas.state = INITIAL;
 
-    parser_gas.rept = NULL;
-
     for (i=0; i<10; i++)
         parser_gas.local[i] = 0;
+
+    parser_gas.intel_syntax = 0;
 
     parser_gas.is_cpp_preproc =
         yasm__strcasecmp(((yasm_preproc_base*)pp)->module->keyword, "cpp") == 0;
@@ -82,12 +82,6 @@ gas_parser_do_parse(yasm_object *object, yasm_preproc *pp,
         yasm__strcasecmp(((yasm_preproc_base*)pp)->module->keyword, "nasm") == 0;
 
     gas_parser_parse(&parser_gas);
-
-    /* Check for ending inside a rept */
-    if (parser_gas.rept) {
-        yasm_error_set(YASM_ERROR_SYNTAX, N_("rept without matching endr"));
-        yasm_errwarn_propagate(errwarns, parser_gas.rept->startline);
-    }
 
     /* Check for ending inside a comment */
     if (parser_gas.state == COMMENT) {
@@ -114,6 +108,7 @@ gas_parser_do_parse(yasm_object *object, yasm_preproc *pp,
 
 /* Define valid preprocessors to use with this parser */
 static const char *gas_parser_preproc_keywords[] = {
+    "gas",
     "raw",
     "cpp",
     "nasm",
@@ -125,7 +120,7 @@ yasm_parser_module yasm_gas_LTX_parser = {
     "GNU AS (GAS)-compatible parser",
     "gas",
     gas_parser_preproc_keywords,
-    "raw",
+    "gas",
     NULL,   /* No standard macros */
     gas_parser_do_parse
 };
@@ -133,7 +128,7 @@ yasm_parser_module yasm_gnu_LTX_parser = {
     "GNU AS (GAS)-compatible parser",
     "gnu",
     gas_parser_preproc_keywords,
-    "raw",
+    "gas",
     NULL,   /* No standard macros */
     gas_parser_do_parse
 };

@@ -2,7 +2,7 @@
 # To update, try "find . -name \*.c | xargs grep -c _\( | grep -v :0 | sort"
 # Copyright (c) 2001  Peter Johnson
 #
-# $Id: POTFILES.in 1972 2007-09-21 06:56:02Z peter $
+# $Id: POTFILES.in 2243 2009-12-23 06:45:17Z peter $
 
 frontends/yasm/yasm-options.c
 frontends/yasm/yasm.c
@@ -55,6 +55,8 @@ modules/parsers/gas/gas-token.re
 modules/parsers/nasm/nasm-parse.c
 modules/parsers/nasm/nasm-token.re
 modules/preprocs/cpp/cpp-preproc.c
+modules/preprocs/gas/gas-preproc.c
+modules/preprocs/gas/gas-eval.c
 modules/preprocs/nasm/nasm-preproc.c
 modules/preprocs/nasm/nasm-pp.c
 modules/preprocs/raw/raw-preproc.c

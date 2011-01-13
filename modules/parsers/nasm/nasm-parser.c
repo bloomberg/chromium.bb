@@ -25,7 +25,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <util.h>
-/*@unused@*/ RCSID("$Id: nasm-parser.c 2167 2009-01-02 08:36:09Z peter $");
+/*@unused@*/ RCSID("$Id: nasm-parser.c 2277 2010-01-19 07:03:15Z peter $");
 
 #include <libyasm.h>
 
@@ -39,6 +39,7 @@ nasm_do_parse(yasm_object *object, yasm_preproc *pp, int save_input,
     yasm_parser_nasm parser_nasm;
 
     parser_nasm.tasm = tasm;
+    parser_nasm.masm = 0;
 
     parser_nasm.object = object;
     parser_nasm.linemap = linemap;

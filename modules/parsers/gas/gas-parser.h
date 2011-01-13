@@ -1,4 +1,4 @@
-/* $Id: gas-parser.h 2167 2009-01-02 08:36:09Z peter $
+/* $Id: gas-parser.h 2279 2010-01-19 07:57:43Z peter $
  * GAS-compatible parser header file
  *
  *  Copyright (C) 2005-2007  Peter Johnson
@@ -64,26 +64,6 @@ typedef union {
 } yystype;
 #define YYSTYPE yystype
 
-typedef struct gas_rept_line {
-    STAILQ_ENTRY(gas_rept_line) link;
-    YYCTYPE *data;              /* line characters */
-    size_t len;                 /* length of data */
-} gas_rept_line;
-
-typedef struct gas_rept {
-    STAILQ_HEAD(reptlinelist, gas_rept_line) lines;     /* repeated lines */
-    unsigned long startline;    /* line number of rept directive */
-    unsigned long numrept;      /* number of repititions to generate */
-    unsigned long numdone;      /* number of repititions executed so far */
-    /*@null@*/ gas_rept_line *line;     /* next line to repeat */
-    size_t linepos;             /* position to start pulling chars from line */
-    int ended;                  /* seen endr directive yet? */
-
-    YYCTYPE *oldbuf;            /* saved previous fill buffer */
-    size_t oldbuflen;           /* previous fill buffer length */
-    size_t oldbufpos;           /* position in previous fill buffer */
-} gas_rept;
-
 enum gas_parser_state {
     INITIAL,
     COMMENT,
@@ -134,8 +114,6 @@ typedef struct yasm_parser_gas {
     yystype peek_tokval;
     char peek_tokch;
 
-    /*@null@*/ gas_rept *rept;
-
     /* Index of local labels; what's stored here is the /next/ index,
      * so these are all 0 at start.
      */
@@ -143,6 +121,8 @@ typedef struct yasm_parser_gas {
 
     /* Parser-handled directives HAMT lookup */
     HAMT *dirs;
+
+    int intel_syntax;
 
     int is_nasm_preproc;
     int is_cpp_preproc;
@@ -173,6 +153,8 @@ typedef struct yasm_parser_gas {
 #define p_expr_new_tree(l,o,r)  yasm_expr_create_tree(l,o,r,cur_line)
 #define p_expr_new_branch(o,r)  yasm_expr_create_branch(o,r,cur_line)
 #define p_expr_new_ident(r)     yasm_expr_create_ident(r,cur_line)
+
+yasm_bytecode *parse_instr_intel(yasm_parser_gas *parser_gas);
 
 void gas_parser_parse(yasm_parser_gas *parser_gas);
 void gas_parser_cleanup(yasm_parser_gas *parser_gas);

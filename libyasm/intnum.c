@@ -25,7 +25,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include "util.h"
-/*@unused@*/ RCSID("$Id: intnum.c 2133 2008-10-07 05:59:29Z peter $");
+/*@unused@*/ RCSID("$Id: intnum.c 2253 2010-01-01 20:47:58Z peter $");
 
 #include <ctype.h>
 #include <limits.h>
@@ -385,7 +385,7 @@ yasm_intnum_create_sized(unsigned char *ptr, int sign, size_t srcsize,
     }
 
     /* Sign extend if needed */
-    if (srcsize*8 < BITVECT_NATIVE_SIZE && sign && (ptr[i] & 0x80) == 0x80)
+    if (srcsize*8 < BITVECT_NATIVE_SIZE && sign && (ptr[i-1] & 0x80) == 0x80)
         BitVector_Interval_Fill(conv_bv, i*8, BITVECT_NATIVE_SIZE-1);
 
     intnum_frombv(intn, conv_bv);

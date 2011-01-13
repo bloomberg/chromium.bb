@@ -25,13 +25,21 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <util.h>
-/*@unused@*/ RCSID("$Id: file.c 2116 2008-07-15 05:49:29Z peter $");
+/*@unused@*/ RCSID("$Id: file.c 2287 2010-02-13 08:42:27Z peter $");
 
 /* Need either unistd.h or direct.h (on Windows) to prototype getcwd() */
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #elif defined(HAVE_DIRECT_H)
 #include <direct.h>
+#endif
+
+#ifdef _WIN32
+#include <io.h>
+#endif
+
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
 #endif
 
 #include <ctype.h>
@@ -235,7 +243,7 @@ yasm__getcwd(void)
 
     size = 1024;
     buf = yasm_xmalloc(size);
-    while (getcwd(buf, size) == NULL) {
+    while (getcwd(buf, size-1) == NULL) {
         if (errno != ERANGE) {
             yasm__fatal(N_("could not determine current working directory"));
             yasm_xfree(buf);
@@ -243,6 +251,13 @@ yasm__getcwd(void)
         }
         size *= 2;
         buf = yasm_xrealloc(buf, size);
+    }
+
+    /* append a '/' if not already present */
+    size = strlen(buf);
+    if (buf[size-1] != '\\' && buf[size-1] != '/') {
+        buf[size] = '/';
+        buf[size+1] = '\0';
     }
     return buf;
 }
@@ -443,12 +458,74 @@ yasm__combpath_win(const char *from, const char *to)
     return out;
 }
 
+size_t
+yasm__createpath_common(const char *path, int win)
+{
+    const char *pp = path, *pe;
+    char *ts, *tp;
+    size_t len, lth;
+
+    lth = len = strlen(path);
+    ts = tp = (char *) malloc(len + 1);
+    pe = pp + len;
+    while (pe > pp) {
+        if ((win && *pe == '\\') || *pe == '/')
+            break;
+        --pe;
+        --lth;
+    }
+
+    while (pp <= pe) {
+        if (pp == pe || (win && *pp == '\\') || *pp == '/') {
+#ifdef _WIN32
+            struct _finddata_t fi; 
+            intptr_t h;
+#elif defined(HAVE_SYS_STAT_H) 
+            struct stat fi;
+#endif
+            *tp = '\0';
+
+#ifdef _WIN32
+            h = _findfirst(ts, &fi);
+            if (h != -1) {
+                if (fi.attrib != _A_SUBDIR) {
+                    _findclose(h);
+                    break;
+                }
+            } else if (errno == ENOENT) {
+                if (_mkdir(ts) == -1) {
+                    _findclose(h);
+                    lth = -1;
+                    break;
+                }
+            }
+            _findclose(h);
+#elif defined(HAVE_SYS_STAT_H)
+            if (stat(ts, &fi) != -1) {
+                if (!S_ISDIR(fi.st_mode))
+                    break;
+            } else if (errno == ENOENT) {
+                if (mkdir(ts, 0755) == -1) {
+                    lth = 0;
+                    break;
+                }
+            }
+#else
+            break;
+#endif
+        }
+        *tp++ = *pp++;
+    }
+    free(ts);
+    return lth;
+}
+
 typedef struct incpath {
     STAILQ_ENTRY(incpath) link;
     /*@owned@*/ char *path;
 } incpath;
 
-STAILQ_HEAD(, incpath) incpaths = STAILQ_HEAD_INITIALIZER(incpaths);
+STAILQ_HEAD(incpath_head, incpath) incpaths = STAILQ_HEAD_INITIALIZER(incpaths);
 
 FILE *
 yasm_fopen_include(const char *iname, const char *from, const char *mode,
