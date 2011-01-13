@@ -25,7 +25,12 @@ test_dir = env.CommandSelLdrTestNacl(
     'test_dir.out',
     command=[test_dir_nexe, test_dir_nexe.path.rstrip('test_dir.nexe')])
 
-env.AddNodeToTestSuite(test_dir, ['small_tests'], 'run_dir_test')
+# TODO(bsy): This is broken because sel_ldr's getdents() syscall
+# expects "struct nacl_abi_dirent" to match up with the kernel's
+# "struct dirent" on Linux, and this no longer the case.
+# See http://code.google.com/p/nativeclient/issues/detail?id=1253
+env.AddNodeToTestSuite(test_dir, ['small_tests'], 'run_dir_test',
+                       is_broken=True)
 
 env.ComponentProgram('test_time.nexe', 'test_time.c')
 

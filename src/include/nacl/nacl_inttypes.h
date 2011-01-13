@@ -33,6 +33,8 @@
 #ifndef NATIVE_CLIENT_SRC_INCLUDE_NACL_NACL_INTTYPES_H_
 #define NATIVE_CLIENT_SRC_INCLUDE_NACL_NACL_INTTYPES_H_
 
+#include <machine/_types.h>
+
 /*
  * printf macros for size_t, in the style of inttypes.h.  This is
  * needed since the gcc and newlib header files don't have definitions
