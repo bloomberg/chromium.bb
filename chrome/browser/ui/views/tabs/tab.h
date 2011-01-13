@@ -38,13 +38,9 @@ class Tab : public BaseTab {
 
   // Set the background offset used to match the image in the inactive tab
   // to the frame image.
-  void SetBackgroundOffset(const gfx::Point& offset) {
+  void set_background_offset(const gfx::Point& offset) {
     background_offset_ = offset;
   }
-
-  // Paints the icon. Most of the time you'll want to invoke Paint directly, but
-  // in certain situations this invoked outside of Paint.
-  void PaintIcon(gfx::Canvas* canvas);
 
   // Returns the minimum possible size of a single unselected Tab.
   static gfx::Size GetMinimumUnselectedSize();
@@ -58,9 +54,6 @@ class Tab : public BaseTab {
 
   // Returns the width for mini-tabs. Mini-tabs always have this width.
   static int GetMiniWidth();
-
-  // Loads the images to be used for the tab background.
-  static void LoadTabImages();
 
  protected:
   virtual const gfx::Rect& title_bounds() const { return title_bounds_; }
@@ -84,6 +77,7 @@ class Tab : public BaseTab {
   void PaintInactiveTabBackgroundWithTitleChange(gfx::Canvas* canvas);
   void PaintInactiveTabBackground(gfx::Canvas* canvas);
   void PaintActiveTabBackground(gfx::Canvas* canvas);
+  void PaintIcon(gfx::Canvas* canvas);
   SkBitmap DrawHoverGlowBitmap(int width, int height);
 
   // Returns the number of favicon-size elements that can fit in the tab's
@@ -100,6 +94,12 @@ class Tab : public BaseTab {
   // active background is drawn at |GetThrobValue()|%. This is used for hover,
   // mini tab title change and pulsing.
   double GetThrobValue();
+
+  // Performs a one-time initialization of static resources such as tab images.
+  static void InitTabResources();
+
+  // Loads the images to be used for the tab background.
+  static void LoadTabImages();
 
   // The bounds of various sections of the display.
   gfx::Rect favicon_bounds_;
@@ -122,9 +122,9 @@ class Tab : public BaseTab {
     int r_width;
     int y_offset;
   };
-  static TabImage tab_active;
-  static TabImage tab_inactive;
-  static TabImage tab_alpha;
+  static TabImage tab_active_;
+  static TabImage tab_inactive_;
+  static TabImage tab_alpha_;
 
   // Whether we're showing the icon. It is cached so that we can detect when it
   // changes and layout appropriately.
