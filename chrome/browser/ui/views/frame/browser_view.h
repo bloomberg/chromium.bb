@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "chrome/common/notification_registrar.h"
 #include "gfx/native_widget_types.h"
+#include "views/controls/single_split_view.h"
 #include "views/window/client_view.h"
 #include "views/window/window_delegate.h"
 
@@ -53,6 +54,7 @@ class InfoBarContainer;
 class LocationBarView;
 class SideTabStrip;
 class StatusBubbleViews;
+class TabContentsContainer;
 class TabStripModel;
 class ToolbarView;
 class ZoomMenuModel;
@@ -66,7 +68,6 @@ class JumpList;
 namespace views {
 class ExternalFocusTracker;
 class Menu;
-class SingleSplitView;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -84,7 +85,7 @@ class BrowserView : public BrowserBubbleHost,
                     public views::WindowDelegate,
                     public views::ClientView,
                     public InfoBarContainer::Delegate,
-                    public TabContentsContainer::ReservedAreaDelegate {
+                    public views::SingleSplitView::Observer {
  public:
   // The browser view's class name.
   static const char kViewClassName[];
@@ -396,8 +397,8 @@ class BrowserView : public BrowserBubbleHost,
   // InfoBarContainer::Delegate overrides
   virtual void InfoBarSizeChanged(bool is_animating);
 
-  // TabContentsContainer::ReservedAreaDelegate overrides.
-  virtual void UpdateReservedContentsRect(const TabContentsContainer* source);
+  // views::SingleSplitView::Observer overrides:
+  virtual bool SplitHandleMoved(views::SingleSplitView* view);
 
  protected:
   // Appends to |toolbars| a pointer to each AccessiblePaneView that
@@ -521,6 +522,9 @@ class BrowserView : public BrowserBubbleHost,
   // has already been added to the view hierarchy.
   void ProcessTabSelected(TabContentsWrapper* new_contents,
                           bool change_tab_contents);
+
+  // Exposes resize corner size to BrowserViewLayout.
+  gfx::Size GetResizeCornerSize() const;
 
   // Last focused view that issued a tab traversal.
   int last_focused_view_storage_id_;

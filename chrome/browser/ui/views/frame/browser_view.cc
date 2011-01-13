@@ -1348,10 +1348,8 @@ void BrowserView::PrepareForInstant() {
 }
 
 void BrowserView::ShowInstant(TabContents* preview_contents) {
-  if (!preview_container_) {
+  if (!preview_container_)
     preview_container_ = new TabContentsContainer();
-    preview_container_->set_reserved_area_delegate(this);
-  }
   contents_->SetPreview(preview_container_, preview_contents);
   preview_container_->ChangeTabContents(preview_contents);
 
@@ -1825,41 +1823,12 @@ void BrowserView::InfoBarSizeChanged(bool is_animating) {
   SelectedTabToolbarSizeChanged(is_animating);
 }
 
-void BrowserView::UpdateReservedContentsRect(
-    const TabContentsContainer* source) {
-  RenderWidgetHostView* render_widget_host_view =
-      source->tab_contents() ? source->tab_contents()->GetRenderWidgetHostView()
-                             : NULL;
-  if (!render_widget_host_view)
-    return;
-
-  gfx::Rect reserved_rect;
-
-  if (!frame_->GetWindow()->IsMaximized() &&
-      !frame_->GetWindow()->IsFullscreen()) {
-    gfx::Size resize_corner_size = ResizeCorner::GetSize();
-    if (!resize_corner_size.IsEmpty()) {
-      gfx::Point resize_corner_origin;
-      gfx::Rect bounds = GetLocalBounds(false);
-      resize_corner_origin.set_x(bounds.right() - resize_corner_size.width());
-      resize_corner_origin.set_y(bounds.bottom() - resize_corner_size.height());
-
-      View::ConvertPointToView(this, source, &resize_corner_origin);
-
-      gfx::Size container_size = source->size();
-
-      if (resize_corner_origin.x() < container_size.width() &&
-          resize_corner_origin.y() < container_size.height()) {
-        reserved_rect = gfx::Rect(resize_corner_origin, resize_corner_size);
-      }
-    }
-  }
-
-  // TODO(alekseys): for source == contents_container_, consult SidebarTabView
-  // for the current size to reserve. Something like this:
-  // reserved_rect = reserved_rect.Union(SidebarTabView::GetCurrentBounds());
-
-  render_widget_host_view->set_reserved_contents_rect(reserved_rect);
+bool BrowserView::SplitHandleMoved(views::SingleSplitView* view) {
+  for (int i = 0; i < view->GetChildViewCount(); ++i)
+    view->GetChildViewAt(i)->InvalidateLayout();
+  SchedulePaint();
+  Layout();
+  return false;
 }
 
 views::LayoutManager* BrowserView::CreateLayoutManager() const {
@@ -1922,7 +1891,6 @@ void BrowserView::Init() {
   AddChildView(infobar_container_);
 
   contents_container_ = new TabContentsContainer;
-  contents_container_->set_reserved_area_delegate(this);
   contents_ = new ContentsContainer(contents_container_);
 
   SkColor bg_color = GetWidget()->GetThemeProvider()->
@@ -1931,14 +1899,14 @@ void BrowserView::Init() {
   bool sidebar_allowed = SidebarManager::IsSidebarAllowed();
   if (sidebar_allowed) {
     sidebar_container_ = new TabContentsContainer;
-    sidebar_container_->set_reserved_area_delegate(this);
     sidebar_container_->SetID(VIEW_ID_SIDE_BAR_CONTAINER);
     sidebar_container_->SetVisible(false);
 
     sidebar_split_ = new views::SingleSplitView(
         contents_,
         sidebar_container_,
-        views::SingleSplitView::HORIZONTAL_SPLIT);
+        views::SingleSplitView::HORIZONTAL_SPLIT,
+        this);
     sidebar_split_->SetID(VIEW_ID_SIDE_BAR_SPLIT);
     sidebar_split_->SetAccessibleName(
         UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_SIDE_BAR)));
@@ -1947,7 +1915,6 @@ void BrowserView::Init() {
   }
 
   devtools_container_ = new TabContentsContainer;
-  devtools_container_->set_reserved_area_delegate(this);
   devtools_container_->SetID(VIEW_ID_DEV_TOOLS_DOCKED);
   devtools_container_->SetVisible(false);
 
@@ -1958,7 +1925,8 @@ void BrowserView::Init() {
   contents_split_ = new views::SingleSplitView(
       contents_view,
       devtools_container_,
-      views::SingleSplitView::VERTICAL_SPLIT);
+      views::SingleSplitView::VERTICAL_SPLIT,
+      this);
   contents_split_->SetID(VIEW_ID_CONTENTS_SPLIT);
   contents_split_->SetAccessibleName(
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_WEB_CONTENTS)));
@@ -2102,7 +2070,8 @@ void BrowserView::UpdateSidebarForContents(TabContentsWrapper* tab_contents) {
         sidebar_split_->width() - sidebar_width);
 
     sidebar_container_->SetVisible(true);
-    sidebar_split_->Layout();
+    sidebar_split_->InvalidateLayout();
+    Layout();
   } else if (should_hide) {
     // Store split offset when hiding sidebar only.
     g_browser_process->local_state()->SetInteger(
@@ -2110,7 +2079,8 @@ void BrowserView::UpdateSidebarForContents(TabContentsWrapper* tab_contents) {
         sidebar_split_->width() - sidebar_split_->divider_offset());
 
     sidebar_container_->SetVisible(false);
-    sidebar_split_->Layout();
+    sidebar_split_->InvalidateLayout();
+    Layout();
   }
 }
 
@@ -2147,7 +2117,8 @@ void BrowserView::UpdateDevToolsForContents(TabContentsWrapper* wrapper) {
     contents_split_->set_divider_offset(split_offset);
 
     devtools_container_->SetVisible(true);
-    contents_split_->Layout();
+    contents_split_->InvalidateLayout();
+    Layout();
   } else if (should_hide) {
     // Store split offset when hiding devtools window only.
     g_browser_process->local_state()->SetInteger(
@@ -2157,7 +2128,8 @@ void BrowserView::UpdateDevToolsForContents(TabContentsWrapper* wrapper) {
     devtools_focus_tracker_->FocusLastFocusedExternalView();
 
     devtools_container_->SetVisible(false);
-    contents_split_->Layout();
+    contents_split_->InvalidateLayout();
+    Layout();
   }
 }
 
@@ -2565,6 +2537,10 @@ void BrowserView::ProcessTabSelected(TabContentsWrapper* new_contents,
   UpdateTitleBar();
   UpdateToolbar(new_contents, true);
   UpdateUIForContents(new_contents);
+}
+
+gfx::Size BrowserView::GetResizeCornerSize() const {
+  return ResizeCorner::GetSize();
 }
 
 #if !defined(OS_CHROMEOS)

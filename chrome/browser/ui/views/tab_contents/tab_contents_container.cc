@@ -25,8 +25,7 @@
 
 TabContentsContainer::TabContentsContainer()
     : native_container_(NULL),
-      tab_contents_(NULL),
-      reserved_area_delegate_(NULL) {
+      tab_contents_(NULL) {
   SetID(VIEW_ID_TAB_CONTAINER);
 }
 
@@ -46,9 +45,6 @@ void TabContentsContainer::ChangeTabContents(TabContents* contents) {
     tab_contents_->WasHidden();
     RemoveObservers();
   }
-#if !defined(TOUCH_UI)
-  TabContents* old_contents = tab_contents_;
-#endif
   tab_contents_ = contents;
   // When detaching the last tab of the browser ChangeTabContents is invoked
   // with NULL. Don't attempt to do anything in that case.
@@ -63,9 +59,7 @@ void TabContentsContainer::ChangeTabContents(TabContents* contents) {
       Layout();
     }
 #else
-    RenderWidgetHostViewChanged(
-        old_contents ? old_contents->GetRenderWidgetHostView() : NULL,
-        tab_contents_->GetRenderWidgetHostView());
+    RenderWidgetHostViewChanged(tab_contents_->GetRenderWidgetHostView());
     native_container_->AttachContents(tab_contents_);
 #endif
     AddObservers();
@@ -80,6 +74,17 @@ void TabContentsContainer::TabContentsFocused(TabContents* tab_contents) {
 void TabContentsContainer::SetFastResize(bool fast_resize) {
   if (native_container_)
     native_container_->SetFastResize(fast_resize);
+}
+
+void TabContentsContainer::SetReservedContentsRect(
+    const gfx::Rect& reserved_rect) {
+  cached_reserved_rect_ = reserved_rect;
+#if !defined(TOUCH_UI)
+  if (tab_contents_ && tab_contents_->GetRenderWidgetHostView()) {
+    tab_contents_->GetRenderWidgetHostView()->set_reserved_contents_rect(
+        reserved_rect);
+  }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -108,8 +113,6 @@ void TabContentsContainer::Layout() {
   views::View::Layout();
 #else
   if (native_container_) {
-    if (reserved_area_delegate_)
-      reserved_area_delegate_->UpdateReservedContentsRect(this);
     native_container_->GetView()->SetBounds(0, 0, width(), height());
     native_container_->GetView()->Layout();
   }
@@ -158,10 +161,8 @@ void TabContentsContainer::RenderViewHostChanged(RenderViewHost* old_host,
 #if defined(TOUCH_UI)
   NOTIMPLEMENTED();  // TODO(anicolao)
 #else
-  if (new_host) {
-    RenderWidgetHostViewChanged(
-        old_host ? old_host->view() : NULL, new_host->view());
-  }
+  if (new_host)
+    RenderWidgetHostViewChanged(new_host->view());
   native_container_->RenderViewHostChanged(old_host, new_host);
 #endif
 }
@@ -174,12 +175,7 @@ void TabContentsContainer::TabContentsDestroyed(TabContents* contents) {
 }
 
 void TabContentsContainer::RenderWidgetHostViewChanged(
-    RenderWidgetHostView* old_view, RenderWidgetHostView* new_view) {
-  // Carry over the reserved rect, if possible.
-  if (old_view && new_view) {
-    new_view->set_reserved_contents_rect(old_view->reserved_contents_rect());
-  } else {
-    if (reserved_area_delegate_)
-      reserved_area_delegate_->UpdateReservedContentsRect(this);
-  }
+    RenderWidgetHostView* new_view) {
+  if (new_view)
+    new_view->set_reserved_contents_rect(cached_reserved_rect_);
 }
