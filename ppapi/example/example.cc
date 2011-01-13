@@ -203,7 +203,7 @@ class MyInstance : public pp::Instance, public MyFetcherClient {
     pp::ImageData image(this, PP_IMAGEDATAFORMAT_BGRA_PREMUL,
                         pp::Size(width, height), false);
     if (image.is_null()) {
-      printf("Couldn't allocate the image data\n");
+      printf("Couldn't allocate the image data: %d, %d\n", width, height);
       return image;
     }
 
@@ -218,6 +218,7 @@ class MyInstance : public pp::Instance, public MyFetcherClient {
       }
     }
 
+    // Draw the orbiting box.
     float radians = static_cast<float>(animation_counter_) / kStepsPerCircle *
         2 * 3.14159265358979F;
 
@@ -225,7 +226,8 @@ class MyInstance : public pp::Instance, public MyFetcherClient {
     int x = static_cast<int>(cos(radians) * radius + radius + 2);
     int y = static_cast<int>(sin(radians) * radius + radius + 2);
 
-    FillRect(&image, x - 3, y - 3, 7, 7, 0x80000000);
+    const uint32_t box_bgra = 0x80000000;  // Alpha 50%.
+    FillRect(&image, x - 3, y - 3, 7, 7, box_bgra);
     return image;
   }
 
@@ -234,6 +236,8 @@ class MyInstance : public pp::Instance, public MyFetcherClient {
     if (!image.is_null()) {
       device_context_.ReplaceContents(&image);
       device_context_.Flush(pp::CompletionCallback(&FlushCallback, this));
+    } else {
+      printf("NullImage: %d, %d\n", width_, height_);
     }
   }
 
@@ -244,6 +248,8 @@ class MyInstance : public pp::Instance, public MyFetcherClient {
 
     width_ = position.size().width();
     height_ = position.size().height();
+    printf("DidChangeView relevant change: width=%d height:%d\n",
+           width_, height_);
 
     device_context_ = pp::Graphics2D(this, pp::Size(width_, height_), false);
     if (!BindGraphics(device_context_)) {
