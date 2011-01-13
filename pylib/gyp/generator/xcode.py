@@ -572,6 +572,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
   serialize_all_tests = \
       generator_flags.get('xcode_serialize_all_test_runs', True)
   project_version = generator_flags.get('xcode_project_version', None)
+  skip_excluded_files = \
+      not generator_flags.get('xcode_list_excluded_files', True)
   xcode_projects = {}
   for build_file, build_file_dict in data.iteritems():
     (build_file_root, build_file_ext) = os.path.splitext(build_file)
@@ -1022,7 +1024,10 @@ exit 1
 
       # Extra rule inputs also go into the project file.  Concrete outputs were
       # already added when they were computed.
-      for group in ['inputs', 'inputs_excluded']:
+      groups = ['inputs', 'inputs_excluded']
+      if skip_excluded_files:
+        groups = [x for x in groups if not x.endswith('_excluded')]
+      for group in groups:
         for item in rule.get(group, []):
           pbxp.AddOrGetFileInRootGroup(item)
 
@@ -1065,14 +1070,17 @@ exit 1
         pbxcp.AddFile(file)
 
     # Excluded files can also go into the project file.
-    for key in ['sources', 'mac_bundle_resources']:
-      excluded_key = key + '_excluded'
-      for item in spec.get(excluded_key, []):
-        pbxp.AddOrGetFileInRootGroup(item)
+    if not skip_excluded_files:
+      for key in ['sources', 'mac_bundle_resources']:
+        excluded_key = key + '_excluded'
+        for item in spec.get(excluded_key, []):
+          pbxp.AddOrGetFileInRootGroup(item)
 
     # So can "inputs" and "outputs" sections of "actions" groups.
+    groups = ['inputs', 'inputs_excluded', 'outputs', 'outputs_excluded']
+    if skip_excluded_files:
+      groups = [x for x in groups if not x.endswith('_excluded')]
     for action in spec.get('actions', []):
-      groups = ['inputs', 'inputs_excluded', 'outputs', 'outputs_excluded']
       for group in groups:
         for item in action.get(group, []):
           # Exclude anything in BUILT_PRODUCTS_DIR.  They're products, not
