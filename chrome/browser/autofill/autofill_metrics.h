@@ -45,6 +45,13 @@ class AutoFillMetrics {
     // |is_autofilled()| but as a value that is present in the personal data
     // manager.
     FIELD_AUTOFILL_FAILED,
+    // The below are only logged when |FIELD_AUTOFILL_FAILED| is also logged.
+    FIELD_HEURISTIC_TYPE_UNKNOWN,
+    FIELD_HEURISTIC_TYPE_MATCH,
+    FIELD_HEURISTIC_TYPE_MISMATCH,
+    FIELD_SERVER_TYPE_UNKNOWN,
+    FIELD_SERVER_TYPE_MATCH,
+    FIELD_SERVER_TYPE_MISMATCH,
     NUM_QUALITY_METRICS
   };
 

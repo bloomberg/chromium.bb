@@ -38,7 +38,7 @@ class AutoFillMetrics;
 class FormStructure {
  public:
   explicit FormStructure(const webkit_glue::FormData& form);
-  ~FormStructure();
+  virtual ~FormStructure();
 
   // Encodes the XML upload request from this FormStructure.
   bool EncodeUploadRequest(bool auto_fill_used,
@@ -105,6 +105,10 @@ class FormStructure {
 
   bool operator==(const webkit_glue::FormData& form) const;
   bool operator!=(const webkit_glue::FormData& form) const;
+
+ protected:
+  // For tests.
+  ScopedVector<AutoFillField>* fields() { return &fields_; }
 
  private:
   enum EncodeRequestType {

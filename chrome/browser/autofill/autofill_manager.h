@@ -91,6 +91,8 @@ class AutoFillManager : public IPC::Channel::Listener,
   }
   void set_metric_logger(const AutoFillMetrics* metric_logger);
 
+  ScopedVector<FormStructure>* form_structures() { return &form_structures_; }
+
   // Maps GUIDs to and from IDs that are used to identify profiles and credit
   // cards sent to and from the renderer process.
   virtual int GUIDToID(const std::string& guid);
@@ -172,7 +174,8 @@ class AutoFillManager : public IPC::Channel::Listener,
 
   // Uses existing personal data to determine possible field types for the
   // |upload_form_structure_|.
-  void DeterminePossibleFieldTypesForUpload();
+  void DeterminePossibleFieldTypesForUpload(
+      const FormStructure* cached_upload_form_structure);
 
   // The TabContents hosting this AutoFillManager.
   // Weak reference.
@@ -224,6 +227,7 @@ class AutoFillManager : public IPC::Channel::Listener,
   FRIEND_TEST_ALL_PREFIXES(AutoFillMetricsTest, QualityMetrics);
   FRIEND_TEST_ALL_PREFIXES(AutoFillMetricsTest,
                            NoQualityMetricsForNonAutoFillableForms);
+  FRIEND_TEST_ALL_PREFIXES(AutoFillMetricsTest, QualityMetricsForFailure);
 
   DISALLOW_COPY_AND_ASSIGN(AutoFillManager);
 };

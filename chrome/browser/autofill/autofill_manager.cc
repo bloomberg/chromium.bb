@@ -212,7 +212,14 @@ void AutoFillManager::OnFormSubmitted(const FormData& form) {
   if (!upload_form_structure_->ShouldBeParsed(true))
     return;
 
-  DeterminePossibleFieldTypesForUpload();
+  FormStructure* cached_upload_form_structure = NULL;
+  AutoFillField* ignored;
+  if (!FindCachedFormAndField(form, form.fields.front(),
+                              &cached_upload_form_structure, &ignored)) {
+    cached_upload_form_structure = NULL;
+  }
+
+  DeterminePossibleFieldTypesForUpload(cached_upload_form_structure);
   // TODO(isherman): Consider uploading to server here rather than in
   // HandleSubmit().
 
@@ -477,7 +484,8 @@ bool AutoFillManager::IsAutoFillEnabled() const {
   return prefs->GetBoolean(prefs::kAutoFillEnabled);
 }
 
-void AutoFillManager::DeterminePossibleFieldTypesForUpload() {
+void AutoFillManager::DeterminePossibleFieldTypesForUpload(
+    const FormStructure* cached_upload_form_structure) {
   for (size_t i = 0; i < upload_form_structure_->field_count(); i++) {
     const AutoFillField* field = upload_form_structure_->field(i);
     FieldTypeSet field_types;
@@ -496,13 +504,34 @@ void AutoFillManager::DeterminePossibleFieldTypesForUpload() {
     metric_logger_->Log(AutoFillMetrics::FIELD_SUBMITTED);
     if (field_types.find(EMPTY_TYPE) == field_types.end() &&
         field_types.find(UNKNOWN_TYPE) == field_types.end()) {
-      if (field->is_autofilled())
-         metric_logger_->Log(AutoFillMetrics::FIELD_AUTOFILLED);
-      else
-         metric_logger_->Log(AutoFillMetrics::FIELD_AUTOFILL_FAILED);
+      if (field->is_autofilled()) {
+        metric_logger_->Log(AutoFillMetrics::FIELD_AUTOFILLED);
+      } else {
+        metric_logger_->Log(AutoFillMetrics::FIELD_AUTOFILL_FAILED);
+
+        AutoFillFieldType heuristic_type = cached_upload_form_structure?
+            cached_upload_form_structure->field(i)->heuristic_type() :
+            UNKNOWN_TYPE;
+        if (heuristic_type == UNKNOWN_TYPE)
+          metric_logger_->Log(AutoFillMetrics::FIELD_HEURISTIC_TYPE_UNKNOWN);
+        else if (field_types.count(heuristic_type))
+          metric_logger_->Log(AutoFillMetrics::FIELD_HEURISTIC_TYPE_MATCH);
+        else
+          metric_logger_->Log(AutoFillMetrics::FIELD_HEURISTIC_TYPE_MISMATCH);
+
+        AutoFillFieldType server_type = cached_upload_form_structure?
+            cached_upload_form_structure->field(i)->server_type() :
+            NO_SERVER_DATA;
+        if (server_type == NO_SERVER_DATA)
+          metric_logger_->Log(AutoFillMetrics::FIELD_SERVER_TYPE_UNKNOWN);
+        else if (field_types.count(server_type))
+          metric_logger_->Log(AutoFillMetrics::FIELD_SERVER_TYPE_MATCH);
+        else
+          metric_logger_->Log(AutoFillMetrics::FIELD_SERVER_TYPE_MISMATCH);
+      }
+
 
       // TODO(isherman): Other things we might want to log here:
-      // * Did the field's heuristic type match the PDM type?
       // * Per Vadim's email, a combination of (1) whether heuristics fired,
       //   (2) whether the server returned something interesting, (3) whether
       //   the user filled the field
@@ -622,7 +651,7 @@ bool AutoFillManager::FindCachedFormAndField(const FormData& form,
   // Find the FormStructure that corresponds to |form|.
   *form_structure = NULL;
   for (std::vector<FormStructure*>::const_iterator iter =
-       form_structures_.begin();
+           form_structures_.begin();
        iter != form_structures_.end(); ++iter) {
     if (**iter == form) {
       *form_structure = *iter;
@@ -782,7 +811,7 @@ void AutoFillManager::FillPhoneNumberField(const AutoFillProfile* profile,
 }
 
 void AutoFillManager::ParseForms(const std::vector<FormData>& forms) {
-  std::vector<FormStructure *> non_queryable_forms;
+  std::vector<FormStructure*> non_queryable_forms;
   for (std::vector<FormData>::const_iterator iter = forms.begin();
        iter != forms.end(); ++iter) {
     scoped_ptr<FormStructure> form_structure(new FormStructure(*iter));
@@ -798,12 +827,10 @@ void AutoFillManager::ParseForms(const std::vector<FormData>& forms) {
   }
 
   // If none of the forms were parsed, no use querying the server.
-  if (!form_structures_.empty() && !disable_download_manager_requests_) {
-    download_manager_.StartQueryRequest(form_structures_,
-                                        *metric_logger_);
-  }
+  if (!form_structures_.empty() && !disable_download_manager_requests_)
+    download_manager_.StartQueryRequest(form_structures_, *metric_logger_);
 
-  for (std::vector<FormStructure *>::const_iterator iter =
+  for (std::vector<FormStructure*>::const_iterator iter =
            non_queryable_forms.begin();
        iter != non_queryable_forms.end(); ++iter) {
     form_structures_.push_back(*iter);
