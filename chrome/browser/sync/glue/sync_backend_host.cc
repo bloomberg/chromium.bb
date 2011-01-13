@@ -97,11 +97,17 @@ void SyncBackendHost::Initialize(
   // when a new type is synced as the worker may already exist and you just
   // need to update routing_info_.
   registrar_.workers[GROUP_DB] = new DatabaseModelWorker();
-  registrar_.workers[GROUP_HISTORY] =
-      new HistoryModelWorker(
-          profile_->GetHistoryService(Profile::IMPLICIT_ACCESS));
   registrar_.workers[GROUP_UI] = new UIModelWorker(frontend_loop_);
   registrar_.workers[GROUP_PASSIVE] = new ModelSafeWorker();
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableSyncTypedUrls) || types.count(syncable::TYPED_URLS)) {
+    // TODO(tim): Bug 53916.  HistoryModelWorker crashes, so avoid adding it
+    // unless specifically requested until bug is fixed.
+    registrar_.workers[GROUP_HISTORY] =
+        new HistoryModelWorker(
+            profile_->GetHistoryService(Profile::IMPLICIT_ACCESS));
+  }
 
   PasswordStore* password_store =
       profile_->GetPasswordStore(Profile::IMPLICIT_ACCESS);

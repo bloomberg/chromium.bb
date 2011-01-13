@@ -173,6 +173,9 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
   static void SetDefaultExpectationsForWorkerCreation(ProfileMock* profile) {
     EXPECT_CALL(*profile, GetPasswordStore(testing::_)).
         WillOnce(testing::Return((PasswordStore*)NULL));
+  }
+
+  static void SetHistoryServiceExpectations(ProfileMock* profile) {
     EXPECT_CALL(*profile, GetHistoryService(testing::_)).
         WillOnce(testing::Return((HistoryService*)NULL));
   }
