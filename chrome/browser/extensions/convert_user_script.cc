@@ -29,8 +29,7 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
     std::string* error) {
   std::string content;
   if (!file_util::ReadFileToString(user_script_path, &content)) {
-    *error = "Could not read source file: " +
-        WideToASCII(user_script_path.ToWStringHack());
+    *error = "Could not read source file.";
     return NULL;
   }
 
