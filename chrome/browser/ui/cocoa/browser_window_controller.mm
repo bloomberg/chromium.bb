@@ -44,7 +44,6 @@
 #import "chrome/browser/ui/cocoa/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 #import "chrome/browser/ui/cocoa/previewable_contents_controller.h"
-#import "chrome/browser/ui/cocoa/nswindow_additions.h"
 #import "chrome/browser/ui/cocoa/sad_tab_controller.h"
 #import "chrome/browser/ui/cocoa/sidebar_controller.h"
 #import "chrome/browser/ui/cocoa/status_bubble_mac.h"
@@ -1902,11 +1901,6 @@ willAnimateFromState:(bookmarks::VisualState)oldState
     DCHECK(savedRegularWindow_);
     destWindow = [savedRegularWindow_ autorelease];
     savedRegularWindow_ = nil;
-
-    CGSWorkspaceID workspace;
-    if ([window cr_workspace:&workspace]) {
-      [destWindow cr_moveToWorkspace:workspace];
-    }
   }
   DCHECK(destWindow);
 
@@ -1957,7 +1951,15 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   [destWindow setTitle:[window title]];
 
   // The window needs to be onscreen before we can set its first responder.
+  // Ordering the window to the front can change the active Space (either to
+  // the window's old Space or to the application's assigned Space). To prevent
+  // this by temporarily change the collectionBehavior.
+  NSWindowCollectionBehavior behavior = [window collectionBehavior];
+  [destWindow setCollectionBehavior:
+      NSWindowCollectionBehaviorMoveToActiveSpace];
   [destWindow makeKeyAndOrderFront:self];
+  [destWindow setCollectionBehavior:behavior];
+
   [focusTracker restoreFocusInWindow:destWindow];
   [window orderOut:self];
 
