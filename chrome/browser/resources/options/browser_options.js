@@ -62,6 +62,7 @@ cr.define('options', function() {
           OptionsPage.showOverlay('instantConfirmOverlay');
         }
       };
+      $('defaultSearchEngine').onchange = this.setDefaultSearchEngine;
 
       var homepageField = $('homepageURL');
       $('homepageUseNTPButton').onchange =

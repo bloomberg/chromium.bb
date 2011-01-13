@@ -140,15 +140,12 @@ cr.define('options', function() {
     },
 
     /**
-     * Getter for preference name attribute.
+     * The name of the preference.
+     * @type {string}
      */
     get pref() {
       return this.getAttribute('pref');
     },
-
-    /**
-     * Setter for preference name attribute.
-     */
     set pref(name) {
       this.setAttribute('pref', name);
     }
@@ -408,12 +405,18 @@ cr.define('options', function() {
       // Listen to user events.
       this.addEventListener('change',
           function(e) {
-            if (!self.dataType)
-              console.error('unknown data type for <select> pref');
+            if (!self.dataType) {
+              console.error('undefined data type for <select> pref');
+              return;
+            }
 
             switch(self.dataType) {
               case 'number':
                 Preferences.setIntegerPref(self.pref,
+                    self.options[self.selectedIndex].value, self.metric);
+                break;
+              case 'real':
+                Preferences.setRealPref(self.pref,
                     self.options[self.selectedIndex].value, self.metric);
                 break;
               case 'boolean':
@@ -422,13 +425,26 @@ cr.define('options', function() {
                 Preferences.setBooleanPref(self.pref, value, self.metric);
                 break;
               case 'string':
-              case undefined:  // Assume the pref is a string.
                 Preferences.setStringPref(self.pref,
                     self.options[self.selectedIndex].value, self.metric);
                 break;
+              default:
+                console.error('unknown data type for <select> pref: ' +
+                              self.dataType);
             }
           });
     },
+
+    /**
+     * The data type for the preference options.
+     * @type {string}
+     */
+    get dataType() {
+      return this.getAttribute('dataType');
+    },
+    set dataType(name) {
+      this.setAttribute('dataType', name);
+    }
   };
 
   /**

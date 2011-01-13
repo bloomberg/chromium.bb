@@ -55,11 +55,6 @@ class AdvancedOptionsHandler
   // if the user toggles the metrics reporting checkbox.
   void HandleMetricsReportingCheckbox(const ListValue* args);
 
-  // Callback for the "defaultZoomLevelAction" message.  This is called if the
-  // user changes the default zoom level.  |args| is an array that contains
-  // one item, the zoom level as a numeric value.
-  void HandleDefaultZoomLevel(const ListValue* args);
-
   // Callback for the "defaultFontSizeAction" message.  This is called if the
   // user changes the default font size.  |args| is an array that contains
   // one item, the font size as a numeric value.
@@ -134,7 +129,6 @@ class AdvancedOptionsHandler
   // Setup the visibility for the metrics reporting setting.
   void SetupMetricsReportingSettingVisibility();
 
-  void SetupDefaultZoomLevel();
   void SetupFontSizeLabel();
 
   // Setup the download path based on user preferences.
@@ -161,7 +155,6 @@ class AdvancedOptionsHandler
 
   FilePathPrefMember default_download_location_;
   StringPrefMember auto_open_files_;
-  RealPrefMember default_zoom_level_;
   IntegerPrefMember default_font_size_;
   IntegerPrefMember default_fixed_font_size_;
   scoped_ptr<PrefSetObserver> proxy_prefs_;

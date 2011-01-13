@@ -200,7 +200,6 @@ void AdvancedOptionsHandler::Initialize() {
   DCHECK(dom_ui_);
   SetupMetricsReportingCheckbox();
   SetupMetricsReportingSettingVisibility();
-  SetupDefaultZoomLevel();
   SetupFontSizeLabel();
   SetupDownloadLocationPath();
   SetupAutoOpenFileTypesDisabledAttribute();
@@ -244,7 +243,6 @@ DOMMessageHandler* AdvancedOptionsHandler::Attach(DOMUI* dom_ui) {
   default_download_location_.Init(prefs::kDownloadDefaultDirectory,
                                   prefs, this);
   auto_open_files_.Init(prefs::kDownloadExtensionsToOpen, prefs, this);
-  default_zoom_level_.Init(prefs::kDefaultZoomLevel, prefs, this);
   default_font_size_.Init(prefs::kWebKitDefaultFontSize, prefs, this);
   default_fixed_font_size_.Init(prefs::kWebKitDefaultFixedFontSize, prefs,
                                 this);
@@ -264,8 +262,6 @@ void AdvancedOptionsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("autoOpenFileTypesAction",
       NewCallback(this,
                   &AdvancedOptionsHandler::HandleAutoOpenButton));
-  dom_ui_->RegisterMessageCallback("defaultZoomLevelAction",
-      NewCallback(this, &AdvancedOptionsHandler::HandleDefaultZoomLevel));
   dom_ui_->RegisterMessageCallback("defaultFontSizeAction",
       NewCallback(this, &AdvancedOptionsHandler::HandleDefaultFontSize));
 #if !defined(OS_CHROMEOS)
@@ -385,14 +381,6 @@ void AdvancedOptionsHandler::HandleMetricsReportingCheckbox(
   enable_metrics_recording_.SetValue(is_enabled);
   SetupMetricsReportingCheckbox();
 #endif
-}
-
-void AdvancedOptionsHandler::HandleDefaultZoomLevel(const ListValue* args) {
-  UserMetricsRecordAction(UserMetricsAction("Options_ChangeDefaultZoomLevel"));
-  int zoom_level;
-  if (ExtractIntegerValue(args, &zoom_level)) {
-    default_zoom_level_.SetValue(static_cast<double>(zoom_level));
-  }
 }
 
 void AdvancedOptionsHandler::HandleDefaultFontSize(const ListValue* args) {
@@ -552,13 +540,6 @@ void AdvancedOptionsHandler::SetupMetricsReportingSettingVisibility() {
         visible);
   }
 #endif
-}
-
-void AdvancedOptionsHandler::SetupDefaultZoomLevel() {
-  // We're only interested in integer values, so convert to int.
-  FundamentalValue value(static_cast<int>(default_zoom_level_.GetValue()));
-  dom_ui_->CallJavascriptFunction(
-      L"options.AdvancedOptions.SetDefaultZoomLevel", value);
 }
 
 void AdvancedOptionsHandler::SetupFontSizeLabel() {

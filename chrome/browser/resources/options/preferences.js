@@ -63,6 +63,19 @@ cr.define('options', function() {
   };
 
   /**
+   * Sets value of a real-valued preference.
+   * and signals its changed value.
+   * @param {string} name Preference name.
+   * @param {number} value New preference value.
+   * @param {string} metric User metrics identifier.
+   */
+  Preferences.setRealPref = function(name, value, metric) {
+    var arguments = [name, String(value)];
+    if (metric != undefined) arguments.push(metric);
+    chrome.send('setRealPref', arguments);
+  };
+
+  /**
    * Sets value of a string preference.
    * and signals its changed value.
    * @param {string} name Preference name.

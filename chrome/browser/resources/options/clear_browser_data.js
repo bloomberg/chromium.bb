@@ -32,9 +32,6 @@ cr.define('options', function() {
       // Call base class implementation to starts preference initialization.
       OptionsPage.prototype.initializePage.call(this);
 
-      // The time period is stored as a number.
-      $('clearBrowsingDataTimePeriod').dataType = 'number';
-
       var f = this.updateCommitButtonState_.bind(this);
       var types = ['browser.clear_data.browsing_history',
                    'browser.clear_data.download_history',

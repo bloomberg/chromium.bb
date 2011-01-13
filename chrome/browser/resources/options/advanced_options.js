@@ -56,10 +56,6 @@ var OptionsPage = options.OptionsPage;
         OptionsPage.showPageByName('fontSettings');
         chrome.send('coreOptionsUserMetricsAction', ['Options_FontSettings']);
       };
-      $('defaultZoomLevel').onchange = function(event) {
-        chrome.send('defaultZoomLevelAction',
-            [String(event.target.options[event.target.selectedIndex].value)]);
-      };
       $('defaultFontSize').onchange = function(event) {
         chrome.send('defaultFontSizeAction',
             [String(event.target.options[event.target.selectedIndex].value)]);
@@ -166,18 +162,6 @@ var OptionsPage = options.OptionsPage;
       $('metricsReportingSetting').style.display = 'none';
     }
   }
-
-  // Set the default zoom level selected item.
-  AdvancedOptions.SetDefaultZoomLevel = function(value) {
-    var selectCtl = $('defaultZoomLevel');
-    for (var i = 0; i < selectCtl.options.length; i++) {
-      if (selectCtl.options[i].value == value) {
-        selectCtl.selectedIndex = i;
-        return;
-      }
-    }
-    selectCtl.selectedIndex = 4;  // 100%
-  };
 
   // Set the font size selected item.
   AdvancedOptions.SetFontSize = function(fixed_font_size_value,

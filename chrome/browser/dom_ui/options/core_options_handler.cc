@@ -135,6 +135,8 @@ void CoreOptionsHandler::RegisterMessages() {
       NewCallback(this, &CoreOptionsHandler::HandleSetBooleanPref));
   dom_ui_->RegisterMessageCallback("setIntegerPref",
       NewCallback(this, &CoreOptionsHandler::HandleSetIntegerPref));
+  dom_ui_->RegisterMessageCallback("setRealPref",
+      NewCallback(this, &CoreOptionsHandler::HandleSetRealPref));
   dom_ui_->RegisterMessageCallback("setStringPref",
       NewCallback(this, &CoreOptionsHandler::HandleSetStringPref));
   dom_ui_->RegisterMessageCallback("setObjectPref",
@@ -181,14 +183,25 @@ void CoreOptionsHandler::SetPref(const std::string& pref_name,
     case Value::TYPE_BOOLEAN:
       pref_service->SetBoolean(pref_name.c_str(), value_string == "true");
       break;
+
     case Value::TYPE_INTEGER:
       int int_value;
-      if (base::StringToInt(value_string, &int_value))
-        pref_service->SetInteger(pref_name.c_str(), int_value);
+      CHECK(base::StringToInt(value_string, &int_value));
+      pref_service->SetInteger(pref_name.c_str(), int_value);
+
       break;
+
+    case Value::TYPE_REAL:
+      double double_value;
+      CHECK(base::StringToDouble(value_string, &double_value));
+      pref_service->SetReal(pref_name.c_str(), double_value);
+
+      break;
+
     case Value::TYPE_STRING:
       pref_service->SetString(pref_name.c_str(), value_string);
       break;
+
     default:
       NOTREACHED();
       return;
@@ -297,6 +310,10 @@ void CoreOptionsHandler::HandleSetBooleanPref(const ListValue* args) {
 
 void CoreOptionsHandler::HandleSetIntegerPref(const ListValue* args) {
   HandleSetPref(args, Value::TYPE_INTEGER);
+}
+
+void CoreOptionsHandler::HandleSetRealPref(const ListValue* args) {
+  HandleSetPref(args, Value::TYPE_REAL);
 }
 
 void CoreOptionsHandler::HandleSetStringPref(const ListValue* args) {
