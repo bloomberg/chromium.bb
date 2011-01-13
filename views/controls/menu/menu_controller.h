@@ -77,18 +77,6 @@ class MenuController : public MessageLoopForUI::Dispatcher {
   // Whether or not drag operation is in progress.
   bool drag_in_progress() const { return drag_in_progress_; }
 
-  // Sets the selection to menu_item, a value of NULL unselects everything.
-  // If open_submenu is true and menu_item has a submenu, the submenu is shown.
-  // If update_immediately is true, submenus are opened immediately, otherwise
-  // submenus are only opened after a timer fires.
-  //
-  // Internally this updates pending_state_ immediatley, and if
-  // update_immediately is true, CommitPendingSelection is invoked to
-  // show/hide submenus and update state_.
-  void SetSelection(MenuItemView* menu_item,
-                    bool open_submenu,
-                    bool update_immediately);
-
   // Cancels the current Run. See ExitType for a description of what happens
   // with the various parameters.
   void Cancel(ExitType type);
@@ -124,6 +112,22 @@ class MenuController : public MessageLoopForUI::Dispatcher {
   class MenuScrollTask;
 
   struct SelectByCharDetails;
+
+  // Values supplied to SetSelection.
+  enum SetSelectionTypes {
+    SELECTION_DEFAULT               = 0,
+
+    // If set submenus are opened immediately, otherwise submenus are only
+    // openned after a timer fires.
+    SELECTION_UPDATE_IMMEDIATELY    = 1 << 0,
+
+    // If set and the menu_item has a submenu, the submenu is shown.
+    SELECTION_OPEN_SUBMENU          = 1 << 1,
+
+    // SetSelection is being invoked as the result exiting or cancelling the
+    // menu. This is used for debugging.
+    SELECTION_EXIT                  = 1 << 2,
+  };
 
   // Tracks selection information.
   struct State {
@@ -182,6 +186,15 @@ class MenuController : public MessageLoopForUI::Dispatcher {
     // If type is SCROLL_*, this is the submenu the mouse is over.
     SubmenuView* submenu;
   };
+
+  // Sets the selection to menu_item a value of NULL unselects
+  // everything. |types| is a bitmask of |SetSelectionTypes|.
+  //
+  // Internally this updates pending_state_ immediatley. state_ is only updated
+  // immediately if SELECTION_UPDATE_IMMEDIATELY is set. If
+  // SELECTION_UPDATE_IMMEDIATELY is not set CommitPendingSelection is invoked
+  // to show/hide submenus and update state_.
+  void SetSelection(MenuItemView* menu_item, int types);
 
   // Sets the active MenuController.
   static void SetActiveInstance(MenuController* controller);

@@ -287,7 +287,7 @@ MenuItemView* MenuController::Run(gfx::NativeWindow parent,
   owner_ = parent;
 
   // Set the selection, which opens the initial menu.
-  SetSelection(root, true, true);
+  SetSelection(root, SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
 
   if (!blocking_run_) {
     // Start the timer to hide the menu. This is needed as we get no
@@ -316,7 +316,7 @@ MenuItemView* MenuController::Run(gfx::NativeWindow parent,
     ViewsDelegate::views_delegate->ReleaseRef();
 
   // Close any open menus.
-  SetSelection(NULL, false, true);
+  SetSelection(NULL, SELECTION_UPDATE_IMMEDIATELY | SELECTION_EXIT);
 
   if (nested_menu) {
     DCHECK(!menu_stack_.empty());
@@ -362,54 +362,6 @@ MenuItemView* MenuController::Run(gfx::NativeWindow parent,
   return result;
 }
 
-void MenuController::SetSelection(MenuItemView* menu_item,
-                                  bool open_submenu,
-                                  bool update_immediately) {
-  size_t paths_differ_at = 0;
-  std::vector<MenuItemView*> current_path;
-  std::vector<MenuItemView*> new_path;
-  BuildPathsAndCalculateDiff(pending_state_.item, menu_item, &current_path,
-                             &new_path, &paths_differ_at);
-
-  size_t current_size = current_path.size();
-  size_t new_size = new_path.size();
-
-  if (pending_state_.item != menu_item && pending_state_.item) {
-    View* current_hot_view = GetFirstHotTrackedView(pending_state_.item);
-    if (current_hot_view)
-      current_hot_view->SetHotTracked(false);
-  }
-
-  // Notify the old path it isn't selected.
-  for (size_t i = paths_differ_at; i < current_size; ++i)
-    current_path[i]->SetSelected(false);
-
-  // Notify the new path it is selected.
-  for (size_t i = paths_differ_at; i < new_size; ++i)
-    new_path[i]->SetSelected(true);
-
-  if (menu_item && menu_item->GetDelegate())
-    menu_item->GetDelegate()->SelectionChanged(menu_item);
-
-  pending_state_.item = menu_item;
-  pending_state_.submenu_open = open_submenu;
-
-  // Stop timers.
-  StopShowTimer();
-  StopCancelAllTimer();
-
-  if (update_immediately)
-    CommitPendingSelection();
-  else
-    StartShowTimer();
-
-  // Notify an accessibility focus event on all menu items except for the root.
-  if (menu_item &&
-      (MenuDepth(menu_item) != 1 ||
-          menu_item->GetType() != MenuItemView::SUBMENU))
-    menu_item->NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS);
-}
-
 void MenuController::Cancel(ExitType type) {
   if (!showing_) {
     // This occurs if we're in the process of notifying the delegate for a drop
@@ -423,7 +375,7 @@ void MenuController::Cancel(ExitType type) {
   SendMouseReleaseToActiveView();
 
   // Hide windows immediately.
-  SetSelection(NULL, false, true);
+  SetSelection(NULL, SELECTION_UPDATE_IMMEDIATELY | SELECTION_EXIT);
 
   if (!blocking_run_) {
     // If we didn't block the caller we need to notify the menu, which
@@ -465,21 +417,21 @@ void MenuController::OnMousePressed(SubmenuView* source,
     return;
   }
 
-  bool open_submenu = false;
+  // On a press we immediately commit the selection, that way a submenu
+  // pops up immediately rather than after a delay.
+  int selection_types = SELECTION_UPDATE_IMMEDIATELY;
   if (!part.menu) {
     part.menu = part.parent;
-    open_submenu = true;
+    selection_types |= SELECTION_OPEN_SUBMENU;
   } else {
     if (part.menu->GetDelegate()->CanDrag(part.menu)) {
       possible_drag_ = true;
       press_pt_ = event.location();
     }
     if (part.menu->HasSubmenu())
-      open_submenu = true;
+      selection_types |= SELECTION_OPEN_SUBMENU;
   }
-  // On a press we immediately commit the selection, that way a submenu
-  // pops up immediately rather than after a delay.
-  SetSelection(part.menu, open_submenu, true);
+  SetSelection(part.menu, selection_types);
 }
 
 void MenuController::OnMouseDragged(SubmenuView* source,
@@ -532,7 +484,7 @@ void MenuController::OnMouseDragged(SubmenuView* source,
       part.menu = source->GetMenuItem();
     else
       mouse_menu = part.menu;
-    SetSelection(part.menu ? part.menu : state_.item, true, false);
+    SetSelection(part.menu ? part.menu : state_.item, SELECTION_OPEN_SUBMENU);
   } else if (part.type == MenuPart::NONE) {
     ShowSiblingMenu(source, event);
   }
@@ -552,9 +504,10 @@ void MenuController::OnMouseReleased(SubmenuView* source,
                                      part.menu)) {
     // Set the selection immediately, making sure the submenu is only open
     // if it already was.
-    bool open_submenu = (state_.item == pending_state_.item &&
-                         state_.submenu_open);
-    SetSelection(pending_state_.item, open_submenu, true);
+    int selection_types = SELECTION_UPDATE_IMMEDIATELY;
+    if (state_.item == pending_state_.item && state_.submenu_open)
+      selection_types |= SELECTION_OPEN_SUBMENU;
+    SetSelection(pending_state_.item, selection_types);
     gfx::Point loc(event.location());
     View::ConvertPointToScreen(source->GetScrollViewContainer(), &loc);
 
@@ -582,7 +535,8 @@ void MenuController::OnMouseReleased(SubmenuView* source,
     }
   } else if (part.type == MenuPart::MENU_ITEM) {
     // User either clicked on empty space, or a menu that has children.
-    SetSelection(part.menu ? part.menu : state_.item, true, true);
+    SetSelection(part.menu ? part.menu : state_.item,
+                 SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
   }
   SendMouseReleaseToActiveView(source, event, true);
 }
@@ -603,13 +557,14 @@ void MenuController::OnMouseMoved(SubmenuView* source,
     return;
 
   if (part.type == MenuPart::MENU_ITEM && part.menu) {
-    SetSelection(part.menu, true, false);
+    SetSelection(part.menu, SELECTION_OPEN_SUBMENU);
   } else if (!part.is_scroll() && pending_state_.item &&
              (!pending_state_.item->HasSubmenu() ||
               !pending_state_.item->GetSubmenu()->IsShowing())) {
     // On exit if the user hasn't selected an item with a submenu, move the
     // selection back to the parent menu item.
-    SetSelection(pending_state_.item->GetParentMenuItem(), true, false);
+    SetSelection(pending_state_.item->GetParentMenuItem(),
+                 SELECTION_OPEN_SUBMENU);
   }
 }
 
@@ -686,13 +641,14 @@ int MenuController::OnDragUpdated(SubmenuView* source,
         query_menu_item, event, &drop_position);
 
     // If the menu has a submenu, schedule the submenu to open.
-    SetSelection(menu_item, menu_item->HasSubmenu(), false);
+    SetSelection(menu_item, menu_item->HasSubmenu() ? SELECTION_OPEN_SUBMENU :
+                 SELECTION_DEFAULT);
 
     if (drop_position == MenuDelegate::DROP_NONE ||
         drop_operation == DragDropTypes::DRAG_NONE)
       menu_item = NULL;
   } else {
-    SetSelection(source->GetMenuItem(), true, false);
+    SetSelection(source->GetMenuItem(), SELECTION_OPEN_SUBMENU);
   }
   SetDropMenuItem(menu_item, drop_position);
   last_drop_operation_ = drop_operation;
@@ -721,7 +677,7 @@ int MenuController::OnPerformDrop(SubmenuView* source,
   MenuDelegate::DropPosition drop_position = drop_position_;
 
   // Close all menus, including any nested menus.
-  SetSelection(NULL, false, true);
+  SetSelection(NULL, SELECTION_UPDATE_IMMEDIATELY | SELECTION_EXIT);
   CloseAllNestedMenus();
 
   // Set state such that we exit.
@@ -758,6 +714,55 @@ void MenuController::OnDragExitedScrollButton(SubmenuView* source) {
   StartCancelAllTimer();
   SetDropMenuItem(NULL, MenuDelegate::DROP_NONE);
   StopScrolling();
+}
+
+void MenuController::SetSelection(MenuItemView* menu_item,
+                                  int selection_types) {
+  size_t paths_differ_at = 0;
+  std::vector<MenuItemView*> current_path;
+  std::vector<MenuItemView*> new_path;
+  BuildPathsAndCalculateDiff(pending_state_.item, menu_item, &current_path,
+                             &new_path, &paths_differ_at);
+
+  size_t current_size = current_path.size();
+  size_t new_size = new_path.size();
+
+  if (pending_state_.item != menu_item && pending_state_.item) {
+    View* current_hot_view = GetFirstHotTrackedView(pending_state_.item);
+    if (current_hot_view)
+      current_hot_view->SetHotTracked(false);
+  }
+
+  // Notify the old path it isn't selected.
+  for (size_t i = paths_differ_at; i < current_size; ++i)
+    current_path[i]->SetSelected(false);
+
+  // Notify the new path it is selected.
+  for (size_t i = paths_differ_at; i < new_size; ++i)
+    new_path[i]->SetSelected(true);
+
+  if (menu_item && menu_item->GetDelegate())
+    menu_item->GetDelegate()->SelectionChanged(menu_item);
+
+  CHECK(menu_item || (selection_types & SELECTION_EXIT) != 0);
+
+  pending_state_.item = menu_item;
+  pending_state_.submenu_open = (selection_types & SELECTION_OPEN_SUBMENU) != 0;
+
+  // Stop timers.
+  StopShowTimer();
+  StopCancelAllTimer();
+
+  if (selection_types & SELECTION_UPDATE_IMMEDIATELY)
+    CommitPendingSelection();
+  else
+    StartShowTimer();
+
+  // Notify an accessibility focus event on all menu items except for the root.
+  if (menu_item &&
+      (MenuDepth(menu_item) != 1 ||
+          menu_item->GetType() != MenuItemView::SUBMENU))
+    menu_item->NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS);
 }
 
 // static
@@ -1068,7 +1073,7 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source, const MouseEvent& e) {
       has_mnemonics,
       source->GetMenuItem()->GetRootMenuItem()->show_mnemonics_);
   alt_menu->controller_ = this;
-  SetSelection(alt_menu, true, true);
+  SetSelection(alt_menu, SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
   return true;
 }
 
@@ -1315,7 +1320,8 @@ void MenuController::MenuChildrenChanged(MenuItemView* item) {
   // Make sure the submenu isn't showing for the current item (the position may
   // have changed or the menu removed). This also moves the selection back to
   // the parent, which handles the case where the selected item was removed.
-  SetSelection(state_.item->GetParentMenuItem(), true, true);
+  SetSelection(state_.item->GetParentMenuItem(),
+               SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
 
   OpenMenuImpl(item, false);
 }
@@ -1480,7 +1486,7 @@ void MenuController::IncrementSelection(int delta) {
     // A menu is selected and open, but none of its children are selected,
     // select the first menu item.
     if (item->GetSubmenu()->GetMenuItemCount()) {
-      SetSelection(item->GetSubmenu()->GetMenuItemAt(0), false, false);
+      SetSelection(item->GetSubmenu()->GetMenuItemAt(0), SELECTION_DEFAULT);
       ScrollToVisible(item->GetSubmenu()->GetMenuItemAt(0));
       return;
     }
@@ -1515,7 +1521,7 @@ void MenuController::IncrementSelection(int delta) {
           if (!to_select)
             break;
           ScrollToVisible(to_select);
-          SetSelection(to_select, false, false);
+          SetSelection(to_select, SELECTION_DEFAULT);
           View* to_make_hot = GetInitialFocusableView(to_select, delta == 1);
           if (to_make_hot)
             to_make_hot->SetHotTracked(true);
@@ -1548,10 +1554,11 @@ void MenuController::OpenSubmenuChangeSelectionIfCan() {
   MenuItemView* item = pending_state_.item;
   if (item->HasSubmenu()) {
     if (item->GetSubmenu()->GetMenuItemCount() > 0) {
-      SetSelection(item->GetSubmenu()->GetMenuItemAt(0), false, true);
+      SetSelection(item->GetSubmenu()->GetMenuItemAt(0),
+                   SELECTION_UPDATE_IMMEDIATELY);
     } else {
       // No menu items, just show the sub-menu.
-      SetSelection(item, true, true);
+      SetSelection(item, SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
     }
   }
 }
@@ -1562,9 +1569,9 @@ void MenuController::CloseSubmenu() {
   if (!item->GetParentMenuItem())
     return;
   if (item->HasSubmenu() && item->GetSubmenu()->IsShowing()) {
-    SetSelection(item, false, true);
+    SetSelection(item, SELECTION_UPDATE_IMMEDIATELY);
   } else if (item->GetParentMenuItem()->GetParentMenuItem()) {
-    SetSelection(item->GetParentMenuItem(), false, true);
+    SetSelection(item->GetParentMenuItem(), SELECTION_UPDATE_IMMEDIATELY);
   }
 }
 
@@ -1606,15 +1613,18 @@ bool MenuController::AcceptOrSelect(MenuItemView* parent,
   if (!details.has_multiple) {
     // There's only one match, activate it (or open if it has a submenu).
     if (submenu->GetMenuItemAt(details.first_match)->HasSubmenu()) {
-      SetSelection(submenu->GetMenuItemAt(details.first_match), true, false);
+      SetSelection(submenu->GetMenuItemAt(details.first_match),
+                   SELECTION_OPEN_SUBMENU);
     } else {
       Accept(submenu->GetMenuItemAt(details.first_match), 0);
       return true;
     }
   } else if (details.index_of_item == -1 || details.next_match == -1) {
-    SetSelection(submenu->GetMenuItemAt(details.first_match), false, false);
+    SetSelection(submenu->GetMenuItemAt(details.first_match),
+                 SELECTION_DEFAULT);
   } else {
-    SetSelection(submenu->GetMenuItemAt(details.next_match), false, false);
+    SetSelection(submenu->GetMenuItemAt(details.next_match),
+                 SELECTION_DEFAULT);
   }
   return false;
 }
@@ -1653,6 +1663,14 @@ bool MenuController::SelectByChar(wchar_t character) {
 #if defined(OS_WIN)
 void MenuController::RepostEvent(SubmenuView* source,
                                  const MouseEvent& event) {
+  if (!state_.item) {
+    // We some times get an event after closing all the menus. Ignore it.
+    // Make sure the menu is in fact not visible. If the menu is visible, then
+    // we're in a bad state where we think the menu isn't visibile but it is.
+    CHECK(!source->GetWidget()->IsVisible());
+    return;
+  }
+
   gfx::Point screen_loc(event.location());
   View::ConvertPointToScreen(source->GetScrollViewContainer(), &screen_loc);
   HWND window = WindowFromPoint(screen_loc.ToPOINT());
