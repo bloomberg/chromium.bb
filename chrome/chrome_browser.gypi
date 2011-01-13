@@ -2063,8 +2063,6 @@
         'browser/prefs/value_map_pref_store.h',
         'browser/prerender/prerender_contents.cc',
         'browser/prerender/prerender_contents.h',
-        'browser/prerender/prerender_interceptor.cc',
-        'browser/prerender/prerender_interceptor.h',
         'browser/prerender/prerender_manager.cc',
         'browser/prerender/prerender_manager.h',
         'browser/prerender/prerender_resource_handler.h',

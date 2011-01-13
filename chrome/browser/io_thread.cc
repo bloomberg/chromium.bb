@@ -23,7 +23,6 @@
 #include "chrome/browser/net/passive_log_collector.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/prerender/prerender_interceptor.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/raw_host_resolver_proc.h"
 #include "chrome/common/net/url_fetcher.h"
@@ -351,11 +350,6 @@ void IOThread::Init() {
   scoped_refptr<URLRequestContext> proxy_script_fetcher_context =
       ConstructProxyScriptFetcherContext(globals_, net_log_);
   globals_->proxy_script_fetcher_context = proxy_script_fetcher_context;
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePagePrerender)) {
-    prerender_interceptor_.reset(new PrerenderInterceptor());
-  }
 }
 
 void IOThread::CleanUp() {
@@ -408,8 +402,6 @@ void IOThread::CleanUp() {
   // Deletion will unregister this interceptor.
   delete speculative_interceptor_;
   speculative_interceptor_ = NULL;
-
-  prerender_interceptor_.reset();
 
   // TODO(eroman): hack for http://crbug.com/15513
   if (globals_->host_resolver->GetAsHostResolverImpl()) {

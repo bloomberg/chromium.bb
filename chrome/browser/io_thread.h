@@ -20,7 +20,6 @@ class ChromeNetLog;
 class ChromeURLRequestContextGetter;
 class ListValue;
 class PrefService;
-class PrerenderInterceptor;
 
 namespace chrome_browser_net {
 class ConnectInterceptor;
@@ -157,7 +156,6 @@ class IOThread : public BrowserProcessSubThread {
   // down.
   chrome_browser_net::ConnectInterceptor* speculative_interceptor_;
   chrome_browser_net::Predictor* predictor_;
-  scoped_ptr<PrerenderInterceptor> prerender_interceptor_;
 
   // Keeps track of all live ChromeURLRequestContextGetters, so the
   // ChromeURLRequestContexts can be released during
