@@ -615,8 +615,9 @@ class RenderView : public RenderWidget,
       const WebKit::WebURLRequest& request,
       const WebKit::WebURLResponse&);
   virtual void didDisplayInsecureContent(WebKit::WebFrame* frame);
-  virtual void didRunInsecureContent(WebKit::WebFrame* frame,
-                                     const WebKit::WebSecurityOrigin& origin);
+  virtual void didRunInsecureContent(
+      WebKit::WebFrame* frame,
+      const WebKit::WebSecurityOrigin& origin) OVERRIDE;
   virtual bool allowScript(WebKit::WebFrame* frame, bool enabled_per_settings);
   virtual bool allowDatabase(WebKit::WebFrame* frame,
                              const WebKit::WebString& name,

@@ -225,7 +225,8 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
       WebKit::WebFrame*, unsigned identifier, const WebKit::WebURLError&);
   virtual void didDisplayInsecureContent(WebKit::WebFrame* frame);
   virtual void didRunInsecureContent(
-      WebKit::WebFrame* frame, const WebKit::WebSecurityOrigin& origin);
+      WebKit::WebFrame* frame,
+      const WebKit::WebSecurityOrigin& origin) OVERRIDE;
   virtual bool allowScript(WebKit::WebFrame* frame, bool enabled_per_settings);
   virtual void openFileSystem(
       WebKit::WebFrame* frame,
