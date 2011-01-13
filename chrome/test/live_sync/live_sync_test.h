@@ -67,8 +67,8 @@ class LiveSyncTest : public InProcessBrowserTest {
   // Brings down local python test server if one was created.
   virtual void TearDown();
 
-  // Appends command line flag to enable sync.
-  virtual void SetUpCommandLine(CommandLine* command_line) {}
+  // Sets up command line flags required for sync tests.
+  virtual void SetUpCommandLine(CommandLine* cl);
 
   // Used to get the number of sync clients used by a test.
   int num_clients() WARN_UNUSED_RESULT { return num_clients_; }

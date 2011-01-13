@@ -108,9 +108,9 @@ void LiveExtensionsSyncTestBase::InstallExtension(
 
 void LiveExtensionsSyncTestBase::InstallAllPendingExtensions(
     Profile* profile) {
-  // TODO(akalin): Mock out the servers that the extensions
-  // auto-update mechanism talk to so as to more closely match what
-  // actually happens.
+  // TODO(akalin): Mock out the servers that the extensions auto-update
+  // mechanism talk to so as to more closely match what actually happens.
+  // Background networking will need to be re-enabled for extensions tests.
 
   // We make a copy here since InstallExtension() removes the
   // extension from the extensions service's copy.

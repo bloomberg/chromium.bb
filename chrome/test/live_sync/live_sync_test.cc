@@ -131,16 +131,11 @@ LiveSyncTest::LiveSyncTest(TestType test_type)
 }
 
 void LiveSyncTest::SetUp() {
-  // At this point, the browser hasn't been launched, and no services are
-  // available.  But we can verify our command line parameters and fail
-  // early.
   CommandLine* cl = CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(switches::kPasswordFileForTest)) {
     ReadPasswordFile();
   } else if (cl->HasSwitch(switches::kSyncUserForTest) &&
              cl->HasSwitch(switches::kSyncPasswordForTest)) {
-    // Read GAIA credentials from the "--sync-XXX-for-test" command line
-    // parameters.
     username_ = cl->GetSwitchValueASCII(switches::kSyncUserForTest);
     password_ = cl->GetSwitchValueASCII(switches::kSyncPasswordForTest);
   } else {
@@ -148,21 +143,6 @@ void LiveSyncTest::SetUp() {
   }
   if (username_.empty() || password_.empty())
     LOG(FATAL) << "Cannot run sync tests without GAIA credentials.";
-
-  // TODO(rsimha): Until we implement a fake Tango server against which tests
-  // can run, we need to set the --sync-notification-method to "p2p".
-  if (!cl->HasSwitch(switches::kSyncNotificationMethod))
-    cl->AppendSwitchASCII(switches::kSyncNotificationMethod, "p2p");
-
-  // TODO(sync): Remove this once sessions sync is enabled by default.
-  if (!cl->HasSwitch(switches::kEnableSyncSessions)) {
-    cl->AppendSwitch(switches::kEnableSyncSessions);
-  }
-
-  // TODO(sync): Remove this once passwords sync is enabled by default.
-  if (!cl->HasSwitch(switches::kEnableSyncPasswords)) {
-    cl->AppendSwitch(switches::kEnableSyncPasswords);
-  }
 
   // Mock the Mac Keychain service.  The real Keychain can block on user input.
 #if defined(OS_MACOSX)
@@ -186,6 +166,25 @@ void LiveSyncTest::TearDown() {
   // Switch back to using the default URLFetcher factory. This is a no-op if
   // a fake factory wasn't used.
   URLFetcher::set_factory(NULL);
+}
+
+void LiveSyncTest::SetUpCommandLine(CommandLine* cl) {
+  // TODO(rsimha): Until we implement a fake Tango server against which tests
+  // can run, we need to set the --sync-notification-method to "p2p".
+  if (!cl->HasSwitch(switches::kSyncNotificationMethod))
+    cl->AppendSwitchASCII(switches::kSyncNotificationMethod, "p2p");
+
+  // TODO(sync): Remove this once sessions sync is enabled by default.
+  if (!cl->HasSwitch(switches::kEnableSyncSessions))
+    cl->AppendSwitch(switches::kEnableSyncSessions);
+
+  // TODO(sync): Remove this once passwords sync is enabled by default.
+  if (!cl->HasSwitch(switches::kEnableSyncPasswords))
+    cl->AppendSwitch(switches::kEnableSyncPasswords);
+
+  // Disable non-essential access of external network resources.
+  if (!cl->HasSwitch(switches::kDisableBackgroundNetworking))
+    cl->AppendSwitch(switches::kDisableBackgroundNetworking);
 }
 
 // static
