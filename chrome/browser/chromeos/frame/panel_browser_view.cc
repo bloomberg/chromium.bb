@@ -117,6 +117,10 @@ SkBitmap PanelBrowserView::GetPanelIcon() {
   return browser()->GetCurrentPageIcon();
 }
 
+bool PanelBrowserView::CanClosePanel() {
+  return ::BrowserView::CanClose();
+}
+
 void PanelBrowserView::ClosePanel() {
   Close();
 }

@@ -610,6 +610,10 @@ SkBitmap NotificationPanel::GetPanelIcon() {
   return SkBitmap();
 }
 
+bool NotificationPanel::CanClosePanel() {
+  return true;
+}
+
 void NotificationPanel::ClosePanel() {
   SET_STATE(CLOSED);
   UpdatePanel(false);

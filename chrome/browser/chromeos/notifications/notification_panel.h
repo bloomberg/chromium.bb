@@ -97,9 +97,10 @@ class NotificationPanel : public PanelController::Delegate,
                                   const gfx::Size& size);
   virtual void SetActiveView(BalloonViewImpl* view);
 
-  // PanelController overrides.
+  // PanelController::Delegate overrides.
   virtual string16 GetPanelTitle();
   virtual SkBitmap GetPanelIcon();
+  virtual bool CanClosePanel();
   virtual void ClosePanel();
 
   // NotificationObserver overrides:

@@ -306,8 +306,11 @@ void PanelController::Close() {
 void PanelController::OnCloseButtonPressed() {
   DCHECK(title_content_);
   if (title_window_) {
-    if (delegate_)
+    if (delegate_) {
+      if (!delegate_->CanClosePanel())
+        return;
       delegate_->ClosePanel();
+    }
     Close();
   }
 }

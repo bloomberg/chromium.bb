@@ -37,6 +37,7 @@ class PanelBrowserView : public ::BrowserView,
   // PanelController::Delegate overrides
   virtual string16 GetPanelTitle();
   virtual SkBitmap GetPanelIcon();
+  virtual bool CanClosePanel();
   virtual void ClosePanel();
   virtual void OnPanelStateChanged(PanelController::State state) {}
 
