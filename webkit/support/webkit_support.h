@@ -75,6 +75,12 @@ WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(
 // Returns the root directory of the WebKit code.
 WebKit::WebString GetWebKitRootDir();
 
+enum GLBindingPreferences {
+  GL_BINDING_DEFAULT,
+  GL_BINDING_SOFTWARE_RENDERER
+};
+void SetUpGLBindings(GLBindingPreferences);
+
 // ------- URL load mocking.
 // Registers the file at |file_path| to be served when |url| is requested.
 // |response| is the response provided with the contents.

@@ -4,6 +4,7 @@
 
 #include "webkit/support/webkit_support.h"
 
+#include "app/gfx/gl/gl_context.h"
 #include "app/gfx/gl/gl_implementation.h"
 #include "base/at_exit.h"
 #include "base/base64.h"
@@ -288,6 +289,19 @@ WebKit::WebApplicationCacheHost* CreateApplicationCacheHost(
 WebKit::WebString GetWebKitRootDir() {
   FilePath path = GetWebKitRootDirFilePath();
   return WebKit::WebString::fromUTF8(WideToUTF8(path.ToWStringHack()).c_str());
+}
+
+void SetUpGLBindings(GLBindingPreferences bindingPref) {
+  switch(bindingPref) {
+    case GL_BINDING_DEFAULT:
+      gfx::GLContext::InitializeOneOff();
+      break;
+    case GL_BINDING_SOFTWARE_RENDERER:
+      gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL);
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 void RegisterMockedURL(const WebKit::WebURL& url,
