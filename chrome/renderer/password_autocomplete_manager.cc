@@ -241,7 +241,10 @@ bool PasswordAutocompleteManager::TextFieldDidEndEditing(
     return false;
 
   WebKit::WebInputElement username = element;  // We need a non-const.
-  FillUserNameAndPassword(&username, &password, fill_data, true);
+
+  // Do not set selection when ending an editing session, otherwise it can
+  // mess with focus.
+  FillUserNameAndPassword(&username, &password, fill_data, true, false);
   return true;
 }
 
@@ -317,7 +320,7 @@ bool PasswordAutocompleteManager::FillPassword(
   WebKit::WebInputElement password = iter->second.password_field;
   WebKit::WebInputElement non_const_user_input(user_input);
   return FillUserNameAndPassword(&non_const_user_input, &password,
-                                 fill_data, true);
+                                 fill_data, true, true);
 }
 
 void PasswordAutocompleteManager::PerformInlineAutocomplete(
@@ -341,7 +344,7 @@ void PasswordAutocompleteManager::PerformInlineAutocomplete(
   ShowSuggestionPopup(fill_data, username);
 
   // Fill the user and password field with the most relevant match.
-  FillUserNameAndPassword(&username, &password, fill_data, false);
+  FillUserNameAndPassword(&username, &password, fill_data, false, true);
 }
 
 void PasswordAutocompleteManager::SendPasswordForms(WebKit::WebFrame* frame,
@@ -436,7 +439,8 @@ bool PasswordAutocompleteManager::FillUserNameAndPassword(
     WebKit::WebInputElement* username_element,
     WebKit::WebInputElement* password_element,
     const webkit_glue::PasswordFormFillData& fill_data,
-    bool exact_username_match) {
+    bool exact_username_match,
+    bool set_selection) {
   string16 current_username = username_element->value();
   // username and password will contain the match found if any.
   string16 username;
@@ -465,8 +469,12 @@ bool PasswordAutocompleteManager::FillUserNameAndPassword(
 
   // Input matches the username, fill in required values.
   username_element->setValue(username);
-  username_element->setSelectionRange(current_username.length(),
-                                      username.length());
+
+  if (set_selection) {
+    username_element->setSelectionRange(current_username.length(),
+                                        username.length());
+  }
+
   SetElementAutofilled(username_element, true);
   if (IsElementEditable(*password_element))
     password_element->setValue(password);

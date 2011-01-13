@@ -89,7 +89,8 @@ class PasswordAutocompleteManager : public PageClickListener {
       WebKit::WebInputElement* username_element,
       WebKit::WebInputElement* password_element,
       const webkit_glue::PasswordFormFillData& fill_data,
-      bool exact_username_match);
+      bool exact_username_match,
+      bool set_selection);
 
   // Convenience method that returns the routing ID of the render view we are
   // associated with.
