@@ -992,6 +992,9 @@ const char kRecordMode[]                    = "record-mode";
 // Register pepper plugins that should be loaded into the renderer.
 const char kRegisterPepperPlugins[]         = "register-pepper-plugins";
 
+// Reload pages that have been killed when they are next focused by the user.
+const char kReloadKilledTabs[]              = "reload-killed-tabs";
+
 // Enable remote debug over HTTP on the specified port.
 const char kRemoteDebuggingPort[]           = "remote-debugging-port";
 

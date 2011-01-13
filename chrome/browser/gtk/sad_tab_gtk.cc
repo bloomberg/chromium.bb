@@ -19,8 +19,13 @@
 
 namespace {
 
-// Background color of the content (a grayish blue).
-const GdkColor kBackgroundColor = GDK_COLOR_RGB(35, 48, 64);
+// Background color of the content (a grayish blue) for a crashed tab.
+const GdkColor kCrashedBackgroundColor = GDK_COLOR_RGB(35, 48, 64);
+
+// Background color of the content (a grayish purple) for a killed
+// tab.  TODO(gspencer): update this for the "real" color when the UI
+// team provides one.  See http://crosbug.com/10711
+const GdkColor kKilledBackgroundColor = GDK_COLOR_RGB(57, 48, 88);
 
 // Construct a centered GtkLabel with a white foreground.
 // |format| is a printf-style format containing a %s;
@@ -44,13 +49,17 @@ GtkWidget* MakeWhiteMarkupLabel(const char* format, const std::string& str) {
 
 }  // namespace
 
-SadTabGtk::SadTabGtk(TabContents* tab_contents)
-  : tab_contents_(tab_contents) {
+SadTabGtk::SadTabGtk(TabContents* tab_contents, Kind kind)
+    : tab_contents_(tab_contents),
+      kind_(kind) {
   DCHECK(tab_contents_);
 
   // Use an event box to get the background painting correctly.
   event_box_.Own(gtk_event_box_new());
-  gtk_widget_modify_bg(event_box_.get(), GTK_STATE_NORMAL, &kBackgroundColor);
+  gtk_widget_modify_bg(event_box_.get(), GTK_STATE_NORMAL,
+                       kind == CRASHED ?
+                       &kCrashedBackgroundColor :
+                       &kKilledBackgroundColor);
   // Allow ourselves to be resized arbitrarily small.
   gtk_widget_set_size_request(event_box_.get(), 0, 0);
 
@@ -63,7 +72,9 @@ SadTabGtk::SadTabGtk(TabContents* tab_contents)
 
   // Add center-aligned image.
   GtkWidget* image = gtk_image_new_from_pixbuf(
-      ResourceBundle::GetSharedInstance().GetPixbufNamed(IDR_SAD_TAB));
+      ResourceBundle::GetSharedInstance().GetPixbufNamed(kind == CRASHED ?
+                                                         IDR_SAD_TAB :
+                                                         IDR_KILLED_TAB));
   gtk_misc_set_alignment(GTK_MISC(image), 0.5, 0.5);
   gtk_box_pack_start(GTK_BOX(vbox), image, FALSE, FALSE, 0);
 
@@ -75,7 +86,9 @@ SadTabGtk::SadTabGtk(TabContents* tab_contents)
   // Add center-aligned title.
   GtkWidget* title = MakeWhiteMarkupLabel(
       "<span size=\"larger\" style=\"normal\"><b>%s</b></span>",
-      l10n_util::GetStringUTF8(IDS_SAD_TAB_TITLE));
+      l10n_util::GetStringUTF8(kind == CRASHED ?
+                               IDS_SAD_TAB_TITLE :
+                               IDS_KILLED_TAB_TITLE));
   gtk_box_pack_start(GTK_BOX(vbox), title, FALSE, FALSE, 0);
 
   // Add spacer between title and message.
@@ -83,9 +96,11 @@ SadTabGtk::SadTabGtk(TabContents* tab_contents)
   gtk_box_pack_start(GTK_BOX(vbox), spacer, FALSE, FALSE, 0);
 
   // Add center-aligned message.
-  GtkWidget* message =
-      MakeWhiteMarkupLabel("<span style=\"normal\">%s</span>",
-                           l10n_util::GetStringUTF8(IDS_SAD_TAB_MESSAGE));
+  GtkWidget* message = MakeWhiteMarkupLabel(
+      "<span style=\"normal\">%s</span>",
+      l10n_util::GetStringUTF8(kind == CRASHED ?
+                               IDS_SAD_TAB_MESSAGE :
+                               IDS_KILLED_TAB_MESSAGE));
   gtk_label_set_line_wrap(GTK_LABEL(message), TRUE);
   gtk_box_pack_start(GTK_BOX(vbox), message, FALSE, FALSE, 0);
 
@@ -115,7 +130,10 @@ SadTabGtk::~SadTabGtk() {
 void SadTabGtk::OnLinkButtonClick(GtkWidget* sender) {
   if (tab_contents_ != NULL) {
     GURL help_url =
-        google_util::AppendGoogleLocaleParam(GURL(chrome::kCrashReasonURL));
+        google_util::AppendGoogleLocaleParam(GURL(
+            kind_ == CRASHED ?
+            chrome::kCrashReasonURL :
+            chrome::kKillReasonURL));
     tab_contents_->OpenURL(help_url, GURL(), CURRENT_TAB, PageTransition::LINK);
   }
 }

@@ -289,7 +289,8 @@ std::string AboutAbout() {
     html.append(kAllAboutPaths[i]);
     html.append("</a>\n");
   }
-  const char *debug[] = { "crash", "hang", "shorthang", "gpucrash", "gpuhang" };
+  const char *debug[] = { "crash", "kill", "hang", "shorthang",
+                          "gpucrash", "gpuhang" };
   html.append("</ul><h2>For Debug</h2>");
   html.append("</ul><p>The following pages are for debugging purposes only. "
               "Because they crash or hang the renderer, they're not linked "

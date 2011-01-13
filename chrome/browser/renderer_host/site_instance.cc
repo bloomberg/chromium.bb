@@ -19,6 +19,7 @@ static bool IsURLSameAsAnySiteInstance(const GURL& url) {
     return false;
   return url.SchemeIs(chrome::kJavaScriptScheme) ||
          url.spec() == chrome::kAboutCrashURL ||
+         url.spec() == chrome::kAboutKillURL ||
          url.spec() == chrome::kAboutHangURL ||
          url.spec() == chrome::kAboutShorthangURL;
 }

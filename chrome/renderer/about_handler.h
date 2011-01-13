@@ -24,6 +24,9 @@ class AboutHandler {
   // Induces a renderer crash.
   static void AboutCrash();
 
+  // Induces a renderer kill.
+  static void AboutKill();
+
   // Induces a renderer hang.
   static void AboutHang();
 

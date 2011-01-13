@@ -60,7 +60,8 @@ class TabContentsViewMac : public TabContentsView,
   virtual void GetContainerBounds(gfx::Rect* out) const;
   virtual void RenderViewCreated(RenderViewHost* host);
   virtual void SetPageTitle(const std::wstring& title);
-  virtual void OnTabCrashed();
+  virtual void OnTabCrashed(base::TerminationStatus status,
+                            int error_code);
   virtual void SizeContents(const gfx::Size& size);
   virtual void Focus();
   virtual void SetInitialFocus();

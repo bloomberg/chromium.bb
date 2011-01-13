@@ -239,7 +239,8 @@ void TabContentsViewGtk::SetPageTitle(const std::wstring& title) {
     gdk_window_set_title(content_view->window, WideToUTF8(title).c_str());
 }
 
-void TabContentsViewGtk::OnTabCrashed() {
+void TabContentsViewGtk::OnTabCrashed(base::TerminationStatus /* status */,
+                                      int /* error_code */) {
 }
 
 void TabContentsViewGtk::SizeContents(const gfx::Size& size) {
@@ -394,7 +395,12 @@ gboolean TabContentsViewGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
   if (tab_contents()->render_view_host() &&
       !tab_contents()->render_view_host()->IsRenderViewLive()) {
     if (sad_tab_ == NULL) {
-      sad_tab_ = new SadTabView(tab_contents());
+      base::TerminationStatus status =
+          tab_contents()->render_view_host()->render_view_termination_status();
+      SadTabView::Kind kind =
+          status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ?
+          SadTabView::KILLED : SadTabView::CRASHED;
+      sad_tab_ = new SadTabView(tab_contents(), kind);
       SetContentsView(sad_tab_);
     }
     gfx::Rect bounds;

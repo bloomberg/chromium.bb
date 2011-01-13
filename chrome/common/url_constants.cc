@@ -51,6 +51,7 @@ const char kAboutBlankURL[] = "about:blank";
 const char kAboutCacheURL[] = "about:cache";
 const char kAboutConflicts[] = "about:conflicts";
 const char kAboutCrashURL[] = "about:crash";
+const char kAboutKillURL[] = "about:kill";
 const char kAboutCreditsURL[] = "about:credits";
 const char kAboutDNSURL[] = "about:dns";
 const char kAboutFlagsURL[] = "about:flags";
@@ -198,6 +199,15 @@ const char kChromeHelpURL[] =
 #endif
 
 const char kCrashReasonURL[] =
+#if defined(OS_CHROMEOS)
+    "http://www.google.com/support/chromeos/bin/answer.py?answer=1047340";
+#else
+    "http://www.google.com/support/chrome/bin/answer.py?answer=95669";
+#endif
+
+// TODO: These are currently placeholders that point to the crash
+// docs.  See bug http://crosbug.com/10711
+const char kKillReasonURL[] =
 #if defined(OS_CHROMEOS)
     "http://www.google.com/support/chromeos/bin/answer.py?answer=1047340";
 #else

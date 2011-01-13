@@ -66,6 +66,12 @@ TEST(BrowserAboutHandlerTest, WillHandleBrowserAboutURL) {
         false
       },
       {
+        GURL(chrome::kAboutKillURL),
+        GURL(chrome::kAboutKillURL),
+        true,
+        false
+      },
+      {
         GURL(chrome::kAboutHangURL),
         GURL(chrome::kAboutHangURL),
         true,

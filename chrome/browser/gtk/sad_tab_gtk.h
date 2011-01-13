@@ -15,7 +15,12 @@ class TabContents;
 
 class SadTabGtk {
  public:
-  explicit SadTabGtk(TabContents* tab_contents);
+  enum Kind {
+    CRASHED,  // The tab crashed.  Display the "Aw, Snap!" page.
+    KILLED    // The tab was killed.  Display the killed tab page.
+  };
+
+  explicit SadTabGtk(TabContents* tab_contents, Kind kind);
   virtual ~SadTabGtk();
 
   GtkWidget* widget() const { return event_box_.get(); }
@@ -27,6 +32,7 @@ class SadTabGtk {
 
   TabContents* tab_contents_;
   OwnedWidgetGtk event_box_;
+  Kind kind_;
 
   DISALLOW_COPY_AND_ASSIGN(SadTabGtk);
 };

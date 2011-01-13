@@ -175,7 +175,8 @@ void TabContentsViewMac::SetPageTitle(const std::wstring& title) {
   // Meaningless on the Mac; widgets don't have a "title" attribute
 }
 
-void TabContentsViewMac::OnTabCrashed() {
+void TabContentsViewMac::OnTabCrashed(base::TerminationStatus /* status */,
+                                      int /* error_code */) {
   if (!sad_tab_.get()) {
     TabContents* contents = tab_contents();
     DCHECK(contents);

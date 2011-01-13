@@ -12,6 +12,7 @@ namespace chrome_about_handler {
 // chrome/renderer/about_handler.cc.
 const char* const about_urls[] = {
   chrome::kAboutCrashURL,
+  chrome::kAboutKillURL,
   chrome::kAboutHangURL,
   chrome::kAboutShorthangURL,
   NULL,

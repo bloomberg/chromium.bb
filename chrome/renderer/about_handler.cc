@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/about_handler.h"
 
+#include "base/process_util.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/common/about_handler.h"
 #include "googleurl/src/gurl.h"
@@ -14,6 +15,7 @@ typedef void (*AboutHandlerFuncPtr)();
 // chrome/common/about_handler.cc.
 static const AboutHandlerFuncPtr about_urls_handlers[] = {
     AboutHandler::AboutCrash,
+    AboutHandler::AboutKill,
     AboutHandler::AboutHang,
     AboutHandler::AboutShortHang,
     NULL,
@@ -41,6 +43,11 @@ bool AboutHandler::MaybeHandle(const GURL& url) {
 void AboutHandler::AboutCrash() {
   int *zero = NULL;
   *zero = 0;  // Null pointer dereference: kaboom!
+}
+
+// static
+void AboutHandler::AboutKill() {
+  base::KillProcess(base::GetCurrentProcessHandle(), 1, false);
 }
 
 // static

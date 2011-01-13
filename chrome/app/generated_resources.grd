@@ -6746,6 +6746,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Something went wrong while displaying this webpage. To continue, press Reload or go to another page.
       </message>
 
+      <!-- Killed Tab Strings -->
+      <!-- TODO(gspencer): These are temporary values until real
+           values are supplied by UI team. See http://crosbug.com/10711 -->
+      <message name="IDS_KILLED_TAB_TITLE" desc="The title of the killed tab page that is shown when a tab is killed by the OS. This is intended to be a humorous exclamation of dismay.">
+        He's Dead, Jim!
+      </message>
+      <message name="IDS_KILLED_TAB_MESSAGE" desc="The message displayed on the killed tab page.">
+        Something caused this webpage to be killed, either because the operating system ran out of memory, or for some other reason. To continue, press Reload or go to another page.
+      </message>
+
       <!-- Incognito -->
       <message name="IDS_OFF_THE_RECORD_TOOLTIP" desc="The tooltip for the incognito icon.">
         You have opened an incognito window. Pages that you open in this window won't appear in your history.

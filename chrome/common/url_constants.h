@@ -44,6 +44,7 @@ extern const char kAboutBrowserCrash[];
 extern const char kAboutConflicts[];
 extern const char kAboutCacheURL[];
 extern const char kAboutCrashURL[];
+extern const char kAboutKillURL[];
 extern const char kAboutCreditsURL[];
 extern const char kAboutDNSURL[];
 extern const char kAboutFlagsURL[];
@@ -187,6 +188,9 @@ extern const char kPageInfoHelpCenterURL[];
 
 // "Learn more" URL for "Aw snap" page.
 extern const char kCrashReasonURL[];
+
+// "Learn more" URL for killed tab page.
+extern const char kKillReasonURL[];
 
 // "Learn more" URL for the Privacy section under Options.
 extern const char kPrivacyLearnMoreURL[];

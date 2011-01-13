@@ -2626,6 +2626,16 @@ void Browser::TabSelectedAt(TabContentsWrapper* old_contents,
                             bool user_gesture) {
   DCHECK(old_contents != new_contents);
 
+  // On some platforms we want to automatically reload tabs that are
+  // killed when the user selects them.
+  if (user_gesture && new_contents->tab_contents()->crashed_status() ==
+        base::TERMINATION_STATUS_PROCESS_WAS_KILLED) {
+    const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+    if (parsed_command_line.HasSwitch(switches::kReloadKilledTabs))
+      Reload(CURRENT_TAB);
+    return;
+  }
+
   // If we have any update pending, do it now.
   if (!chrome_updater_factory_.empty() && old_contents)
     ProcessPendingUIUpdates();

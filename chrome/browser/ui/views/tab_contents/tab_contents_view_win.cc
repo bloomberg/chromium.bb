@@ -155,7 +155,8 @@ void TabContentsViewWin::SetPageTitle(const std::wstring& title) {
   }
 }
 
-void TabContentsViewWin::OnTabCrashed() {
+void TabContentsViewWin::OnTabCrashed(base::TerminationStatus /* status */,
+                                      int /* error_code */) {
   // Force an invalidation to render sad tab. We will notice we crashed when we
   // paint.
   // Note that it's possible to get this message after the window was destroyed.
@@ -398,7 +399,12 @@ void TabContentsViewWin::OnPaint(HDC junk_dc) {
   if (tab_contents()->render_view_host() &&
       !tab_contents()->render_view_host()->IsRenderViewLive()) {
     if (sad_tab_ == NULL) {
-      sad_tab_ = new SadTabView(tab_contents());
+      base::TerminationStatus status =
+          tab_contents()->render_view_host()->render_view_termination_status();
+      SadTabView::Kind kind =
+          status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ?
+          SadTabView::KILLED : SadTabView::CRASHED;
+      sad_tab_ = new SadTabView(tab_contents(), kind);
       SetContentsView(sad_tab_);
     }
     CRect cr;

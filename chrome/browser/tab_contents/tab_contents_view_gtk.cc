@@ -203,9 +203,13 @@ void TabContentsViewGtk::SetPageTitle(const std::wstring& title) {
     gdk_window_set_title(content_view->window, WideToUTF8(title).c_str());
 }
 
-void TabContentsViewGtk::OnTabCrashed() {
+void TabContentsViewGtk::OnTabCrashed(base::TerminationStatus status,
+                                      int error_code) {
   if (tab_contents() != NULL && !sad_tab_.get()) {
-    sad_tab_.reset(new SadTabGtk(tab_contents()));
+    sad_tab_.reset(new SadTabGtk(
+        tab_contents(),
+        status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED ?
+        SadTabGtk::KILLED : SadTabGtk::CRASHED));
     InsertIntoContentArea(sad_tab_->widget());
     gtk_widget_show(sad_tab_->widget());
   }

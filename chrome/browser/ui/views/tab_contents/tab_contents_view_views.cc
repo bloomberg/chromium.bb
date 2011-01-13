@@ -130,11 +130,15 @@ void TabContentsViewViews::SetPageTitle(const std::wstring& title) {
   // TODO(anicolao): figure out if there's anything useful to do here
 }
 
-void TabContentsViewViews::OnTabCrashed() {
+void TabContentsViewViews::OnTabCrashed(base::TerminationStatus status,
+                                        int /* error_code */) {
   if (sad_tab_ != NULL)
     return;
 
-  sad_tab_.reset(new SadTabView(tab_contents()));
+  sad_tab_.reset(new SadTabView(
+      tab_contents(),
+      status == TERMINATION_STATUS_PROCESS_WAS_KILLED ?
+          SadTabView::KILLED : SadTabView::CRASHED));
   RemoveAllChildViews(true);
   AddChildView(sad_tab_.get());
   Layout();

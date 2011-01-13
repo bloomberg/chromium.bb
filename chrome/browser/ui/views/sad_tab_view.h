@@ -25,7 +25,12 @@ class TabContents;
 class SadTabView : public views::View,
                    public views::LinkController {
  public:
-  explicit SadTabView(TabContents* tab_contents);
+  enum Kind {
+    CRASHED,  // The tab crashed.  Display the "Aw, Snap!" page.
+    KILLED    // The tab was killed.  Display the killed tab page.
+  };
+
+  explicit SadTabView(TabContents* tab_contents, Kind kind);
   virtual ~SadTabView() {}
 
   // Overridden from views::View:
@@ -36,7 +41,7 @@ class SadTabView : public views::View,
   virtual void LinkActivated(views::Link* source, int event_flags);
 
  private:
-  static void InitClass();
+  static void InitClass(Kind kind);
 
   // Assorted resources for display.
   static SkBitmap* sad_tab_bitmap_;
@@ -55,6 +60,8 @@ class SadTabView : public views::View,
   gfx::Rect title_bounds_;
   gfx::Rect message_bounds_;
   gfx::Rect link_bounds_;
+
+  Kind kind_;
 
   DISALLOW_COPY_AND_ASSIGN(SadTabView);
 };

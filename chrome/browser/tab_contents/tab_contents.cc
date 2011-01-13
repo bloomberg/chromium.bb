@@ -2544,7 +2544,7 @@ void TabContents::RenderViewGone(RenderViewHost* rvh,
   // objects that are not in a browser (e.g., HTML dialogs) and thus are
   // visible do not flash a sad tab page.
   if (browser_shutdown::GetShutdownType() == browser_shutdown::NOT_VALID)
-    view_->OnTabCrashed();
+    view_->OnTabCrashed(status, error_code);
 
   // Hide any visible hung renderer warning for this web contents' process.
   hung_renderer_dialog::HideForTabContents(this);

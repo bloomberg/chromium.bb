@@ -80,7 +80,8 @@ class TabContentsView : public RenderViewHostDelegate::View {
 
   // Used to notify the view that a tab has crashed so each platform can
   // prepare the sad tab.
-  virtual void OnTabCrashed() = 0;
+  virtual void OnTabCrashed(base::TerminationStatus status,
+                            int error_code) = 0;
 
   // TODO(brettw) this is a hack. It's used in two places at the time of this
   // writing: (1) when render view hosts switch, we need to size the replaced

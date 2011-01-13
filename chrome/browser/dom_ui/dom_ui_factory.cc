@@ -251,8 +251,9 @@ bool DOMUIFactory::IsURLAcceptableForDOMUI(Profile* profile, const GURL& url) {
       // It's possible to load about:blank in a DOM UI renderer.
       // See http://crbug.com/42547
       url.spec() == chrome::kAboutBlankURL ||
-      // about:crash, about:hang, and about:shorthang are allowed.
+      // about:crash, about:kill, about:hang, and about:shorthang are allowed.
       url.spec() == chrome::kAboutCrashURL ||
+      url.spec() == chrome::kAboutKillURL ||
       url.spec() == chrome::kAboutHangURL ||
       url.spec() == chrome::kAboutShorthangURL;
 }
