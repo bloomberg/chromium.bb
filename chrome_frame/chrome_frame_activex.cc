@@ -691,5 +691,12 @@ HRESULT ChromeFrameActivex::registerBhoIfNeeded() {
 
   web_browser2->PutProperty(base::win::ScopedBstr(bho_class_id_as_string),
                             base::win::ScopedVariant(bho));
-  return S_OK;
+
+  hr = UrlMkSetSessionOption(URLMON_OPTION_USERAGENT_REFRESH, NULL, 0, 0);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Failed to refresh user agent string from registry. "
+                << "UrlMkSetSessionOption returned "
+                << base::StringPrintf("0x%08x", hr);
+  }
+  return hr;
 }
