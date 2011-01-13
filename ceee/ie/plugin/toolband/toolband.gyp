@@ -56,6 +56,18 @@
         '<(DEPTH)/chrome/chrome.gyp:chrome_version_header',
         '<(DEPTH)/chrome_frame/chrome_frame.gyp:chrome_tab_idl',
       ],
+      'conditions': [
+        [ 'branding == "Chrome"', {
+          'variables': {
+             'brand_specific_resources':
+                 '../../../internal/toolband/brand_specific_resources.rc',
+          },
+        }, { # else branding != "Chrome"
+          'variables': {
+             'brand_specific_resources': 'brand_specific_resources.rc',
+          },
+        }],
+      ],
       'sources': [
         'resource.h',
         'tool_band.rgs',
@@ -65,6 +77,7 @@
         '../bho/browser_helper_object.rgs',
         '../executor.rgs',
         '../scripting/content_script_manager.rc',
+        '<(brand_specific_resources)',
       ],
       'libraries': [
         'iepmapi.lib',
