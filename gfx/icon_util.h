@@ -51,7 +51,7 @@ class SkBitmap;
 class IconUtil {
  public:
   // Given an SkBitmap object, the function converts the bitmap to a Windows
-  // icon and returns the corresponding HICON handle. If the function can not
+  // icon and returns the corresponding HICON handle. If the function cannot
   // convert the bitmap, NULL is returned.
   //
   // The client is responsible for destroying the icon when it is no longer
@@ -61,7 +61,7 @@ class IconUtil {
   // Given a valid HICON handle representing an icon, this function converts
   // the icon into an SkBitmap object containing an ARGB bitmap using the
   // dimensions specified in |s|. |s| must specify valid dimensions (both
-  // width() an height() must be greater than zero). If the function can
+  // width() an height() must be greater than zero). If the function cannot
   // convert the icon to a bitmap (most probably due to an invalid parameter),
   // the return value is NULL.
   //
