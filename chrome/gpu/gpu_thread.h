@@ -6,6 +6,8 @@
 #define CHROME_GPU_GPU_THREAD_H_
 #pragma once
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/scoped_ptr.h"
@@ -26,7 +28,11 @@ class GpuWatchdogThread;
 
 class GpuThread : public ChildThread {
  public:
-  explicit GpuThread(const CommandLine& command_line);
+  GpuThread();
+
+  // For single-process mode.
+  explicit GpuThread(const std::string& channel_id);
+
   ~GpuThread();
 
   void Init(const base::Time& process_start_time);
@@ -58,7 +64,6 @@ class GpuThread : public ChildThread {
   static void SetDxDiagnostics(GpuThread* thread, const DxDiagNode& node);
 #endif
 
-  CommandLine command_line_;
   base::Time process_start_time_;
   scoped_refptr<GpuWatchdogThread> watchdog_thread_;
 

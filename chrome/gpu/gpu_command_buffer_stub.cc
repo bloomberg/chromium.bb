@@ -11,6 +11,7 @@
 #include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_channel.h"
 #include "chrome/gpu/gpu_command_buffer_stub.h"
+#include "chrome/gpu/gpu_thread.h"
 
 using gpu::Buffer;
 
@@ -81,7 +82,7 @@ bool GpuCommandBufferStub::CreateCompositorWindow() {
   DCHECK(handle_ != gfx::kNullPluginWindow);
 
   // Ask the browser to create the the host window.
-  ChildThread* gpu_thread = ChildThread::current();
+  GpuThread* gpu_thread = channel_->gpu_thread();
   gfx::PluginWindowHandle host_window_id = gfx::kNullPluginWindow;
   gpu_thread->Send(new GpuHostMsg_GetCompositorHostWindow(
       renderer_id_,
@@ -146,7 +147,7 @@ bool GpuCommandBufferStub::CreateCompositorWindow() {
 }
 
 void GpuCommandBufferStub::OnCompositorWindowPainted() {
-  ChildThread* gpu_thread = ChildThread::current();
+  GpuThread* gpu_thread = channel_->gpu_thread();
   gpu_thread->Send(new GpuHostMsg_ScheduleComposite(
       renderer_id_, render_view_id_));
 }
@@ -163,7 +164,7 @@ GpuCommandBufferStub::~GpuCommandBufferStub() {
     compositor_window_ = NULL;
   }
 #elif defined(OS_LINUX)
-  ChildThread* gpu_thread = ChildThread::current();
+  GpuThread* gpu_thread = channel_->gpu_thread();
   gpu_thread->Send(
       new GpuHostMsg_ReleaseXID(handle_));
 #endif  // defined(OS_WIN)
@@ -332,7 +333,7 @@ void GpuCommandBufferStub::OnSwapBuffers() {
 
 #if defined(OS_MACOSX)
 void GpuCommandBufferStub::OnSetWindowSize(const gfx::Size& size) {
-  ChildThread* gpu_thread = ChildThread::current();
+  GpuThread* gpu_thread = channel_->gpu_thread();
   // Try using the IOSurface version first.
   uint64 new_backing_store = processor_->SetWindowSizeForIOSurface(size);
   if (new_backing_store) {
@@ -354,7 +355,7 @@ void GpuCommandBufferStub::OnSetWindowSize(const gfx::Size& size) {
 
 void GpuCommandBufferStub::SwapBuffersCallback() {
   OnSwapBuffers();
-  ChildThread* gpu_thread = ChildThread::current();
+  GpuThread* gpu_thread = channel_->gpu_thread();
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
   params.renderer_id = renderer_id_;
   params.render_view_id = render_view_id_;
@@ -378,7 +379,7 @@ void GpuCommandBufferStub::ResizeCallback(gfx::Size size) {
     return;
 
 #if defined(OS_LINUX)
-  ChildThread* gpu_thread = ChildThread::current();
+  GpuThread* gpu_thread = channel_->gpu_thread();
   bool result = false;
   gpu_thread->Send(
       new GpuHostMsg_ResizeXID(handle_, size, &result));

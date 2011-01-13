@@ -22,6 +22,7 @@
 #include "chrome/common/gpu_info.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/gpu/gpu_thread.h"
 #include "grit/browser_resources.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_switches.h"
@@ -82,6 +83,35 @@ void RouteOnUIThread(const IPC::Message& message) {
                           new RouteOnUIThreadTask(message));
 }
 }  // anonymous namespace
+
+class GpuMainThread : public base::Thread {
+ public:
+  explicit GpuMainThread(const std::string& channel_id)
+      : base::Thread("CrGpuMain"),
+        channel_id_(channel_id) {
+  }
+
+  ~GpuMainThread() {
+    Stop();
+  }
+
+ protected:
+  virtual void Init() {
+    // Must be created on GPU thread.
+    gpu_thread_.reset(new GpuThread(channel_id_));
+    gpu_thread_->Init(base::Time::Now());
+  }
+
+  virtual void CleanUp() {
+    // Must be destroyed on GPU thread.
+    gpu_thread_.reset();
+  }
+
+ private:
+  scoped_ptr<GpuThread> gpu_thread_;
+  std::string channel_id_;
+  DISALLOW_COPY_AND_ASSIGN(GpuMainThread);
+};
 
 GpuProcessHost::GpuProcessHost()
     : BrowserChildProcessHost(GPU_PROCESS, NULL),
@@ -543,48 +573,61 @@ bool GpuProcessHost::CanLaunchGpuProcess() const {
 
 bool GpuProcessHost::LaunchGpuProcess() {
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  CommandLine::StringType gpu_launcher =
-      browser_command_line.GetSwitchValueNative(switches::kGpuLauncher);
 
-  FilePath exe_path = ChildProcessHost::GetChildPath(gpu_launcher.empty());
-  if (exe_path.empty())
-    return false;
+  // If the single-process switch is present, just launch the GPU service in a
+  // new thread in the browser process.
+  if (browser_command_line.HasSwitch(switches::kSingleProcess)) {
+    GpuMainThread* thread = new GpuMainThread(channel_id());
 
-  CommandLine* cmd_line = new CommandLine(exe_path);
-  cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kGpuProcess);
-  cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
+    base::Thread::Options options;
+    options.message_loop_type = MessageLoop::TYPE_UI;
 
-  // Propagate relevant command line switches.
-  static const char* const kSwitchNames[] = {
-    switches::kUseGL,
-    switches::kDisableGpuVsync,
-    switches::kDisableGpuWatchdog,
-    switches::kDisableLogging,
-    switches::kEnableAcceleratedDecoding,
-    switches::kEnableLogging,
-#if defined(OS_MACOSX)
-    switches::kEnableSandboxLogging,
-#endif
-    switches::kGpuStartupDialog,
-    switches::kLoggingLevel,
-    switches::kNoGpuSandbox,
-    switches::kNoSandbox,
-  };
-  cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
-                             arraysize(kSwitchNames));
+    if (!thread->StartWithOptions(options))
+      return false;
+  } else {
+    CommandLine::StringType gpu_launcher =
+        browser_command_line.GetSwitchValueNative(switches::kGpuLauncher);
 
-  // If specified, prepend a launcher program to the command line.
-  if (!gpu_launcher.empty())
-    cmd_line->PrependWrapper(gpu_launcher);
+    FilePath exe_path = ChildProcessHost::GetChildPath(gpu_launcher.empty());
+    if (exe_path.empty())
+      return false;
 
-  Launch(
+    CommandLine* cmd_line = new CommandLine(exe_path);
+    cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kGpuProcess);
+    cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
+
+    // Propagate relevant command line switches.
+    static const char* const kSwitchNames[] = {
+      switches::kUseGL,
+      switches::kDisableGpuVsync,
+      switches::kDisableGpuWatchdog,
+      switches::kDisableLogging,
+      switches::kEnableAcceleratedDecoding,
+      switches::kEnableLogging,
+  #if defined(OS_MACOSX)
+      switches::kEnableSandboxLogging,
+  #endif
+      switches::kGpuStartupDialog,
+      switches::kLoggingLevel,
+      switches::kNoGpuSandbox,
+      switches::kNoSandbox,
+    };
+    cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
+                               arraysize(kSwitchNames));
+
+    // If specified, prepend a launcher program to the command line.
+    if (!gpu_launcher.empty())
+      cmd_line->PrependWrapper(gpu_launcher);
+
+    Launch(
 #if defined(OS_WIN)
-      FilePath(),
+        FilePath(),
 #elif defined(OS_POSIX)
-      false,  // Never use the zygote (GPU plugin can't be sandboxed).
-      base::environment_vector(),
+        false,  // Never use the zygote (GPU plugin can't be sandboxed).
+        base::environment_vector(),
 #endif
-      cmd_line);
+        cmd_line);
+  }
 
   UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLifetimeEvents",
                             LAUNCED, GPU_PROCESS_LIFETIME_EVENT_MAX);

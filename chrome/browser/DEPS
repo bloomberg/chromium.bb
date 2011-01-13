@@ -37,7 +37,8 @@ include_rules = [
   "+third_party/undoview",
   "+v8/include",  # Browser uses V8 to get the version and run the debugger.
 
-  # FIXME: this should probably not be here, we need to find a better
+  # FIXME: these should probably not be here, we need to find a better
   # structure for these includes.
   "+chrome/renderer",
+  "+chrome/gpu",
 ]

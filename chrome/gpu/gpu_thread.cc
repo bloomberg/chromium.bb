@@ -44,8 +44,12 @@ bool InitializeGpuSandbox() {
 
 }  // namespace
 
-GpuThread::GpuThread(const CommandLine& command_line)
-    : command_line_(command_line) {}
+GpuThread::GpuThread() {
+}
+
+GpuThread::GpuThread(const std::string& channel_id)
+    : ChildThread(channel_id) {
+}
 
 GpuThread::~GpuThread() {
 }
@@ -108,7 +112,8 @@ void GpuThread::OnInitialize() {
   gpu_info_.SetInitializationTime(base::Time::Now() - process_start_time_);
 
   // Note that kNoSandbox will also disable the GPU sandbox.
-  bool no_gpu_sandbox = command_line_.HasSwitch(switches::kNoGpuSandbox);
+  bool no_gpu_sandbox = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kNoGpuSandbox);
   if (!no_gpu_sandbox) {
     if (!InitializeGpuSandbox()) {
       LOG(ERROR) << "Failed to initialize the GPU sandbox";
@@ -124,7 +129,8 @@ void GpuThread::OnInitialize() {
   // slowly.  Also disable the watchdog on valgrind because the code is expected
   // to run slowly in that case.
   bool enable_watchdog =
-      !command_line_.HasSwitch(switches::kDisableGpuWatchdog) &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGpuWatchdog) &&
       gfx::GetGLImplementation() != gfx::kGLImplementationOSMesaGL &&
       !RunningOnValgrind();
 
@@ -164,7 +170,7 @@ void GpuThread::OnEstablishChannel(int renderer_id) {
 
   GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
   if (iter == gpu_channels_.end())
-    channel = new GpuChannel(renderer_id);
+    channel = new GpuChannel(this, renderer_id);
   else
     channel = iter->second;
 

@@ -23,8 +23,10 @@
 #include "ipc/ipc_channel_posix.h"
 #endif
 
-GpuChannel::GpuChannel(int renderer_id)
-    : renderer_id_(renderer_id) {
+GpuChannel::GpuChannel(GpuThread* gpu_thread, int renderer_id)
+    : gpu_thread_(gpu_thread),
+      renderer_id_(renderer_id) {
+  DCHECK(gpu_thread);
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   log_messages_ = command_line->HasSwitch(switches::kLogPluginMessages);
 }
@@ -254,7 +256,7 @@ bool GpuChannel::Init() {
 }
 
 std::string GpuChannel::GetChannelName() {
-  return StringPrintf("%d.r%d", base::GetCurrentProcId(), renderer_id_);
+  return StringPrintf("%d.r%d.gpu", base::GetCurrentProcId(), renderer_id_);
 }
 
 #if defined(OS_POSIX)
