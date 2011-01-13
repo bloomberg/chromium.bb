@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,7 +90,6 @@ class ResultsPrinter {
   void OnTestCaseStart(const char* name, int test_count) const;
   void OnTestCaseEnd() const;
 
-  // TODO(phajdan.jr): Convert bool failed, bool failure_ignored to an enum.
   void OnTestEnd(const char* name, const char* case_name, bool run,
                  bool failed, bool failure_ignored, double elapsed_time) const;
  private:
