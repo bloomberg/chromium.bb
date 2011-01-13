@@ -268,7 +268,9 @@ void LoginUtilsImpl::CompleteLogin(
 
   // Set the CrOS user by getting this constructor run with the
   // user's email on first retrieval.
-  profile->GetProfileSyncService(username)->SetPassphrase(password, false);
+  profile->GetProfileSyncService(username)->SetPassphrase(password,
+                                                          false,
+                                                          true);
   btl->AddLoginTimeMarker("SyncStarted", false);
 
   // Attempt to take ownership; this will fail if device is already owned.

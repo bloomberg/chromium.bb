@@ -792,7 +792,7 @@ void ScreenLocker::OnLoginSuccess(
     ProfileSyncService* service = profile->GetProfileSyncService(username);
     if (service && !service->HasSyncSetupCompleted()) {
       // If sync has failed somehow, try setting the sync passphrase here.
-      service->SetPassphrase(password, false);
+      service->SetPassphrase(password, false, true);
     }
   }
 
