@@ -50,11 +50,7 @@ WebViewPlugin::WebViewPlugin(WebViewPlugin::Delegate* delegate)
     : delegate_(delegate),
       container_(NULL),
       finished_loading_(false) {
-#if defined(WEBKIT_HAS_WEB_AUTO_FILL_CLIENT)
   web_view_ = WebView::create(this, NULL, NULL);
-#else
-  web_view_ = WebView::create(this, NULL);
-#endif
   web_view_->initializeMainFrame(this);
 }
 

@@ -916,12 +916,7 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
 
   devtools_agent_.reset(new DevToolsAgent(routing_id, this));
 
-  // TODO(jam): remove this once WebKit is rolled
-#if defined(WEBKIT_HAS_WEB_AUTO_FILL_CLIENT)
   webwidget_ = WebView::create(this, devtools_agent_.get(), this);
-#else
-  webwidget_ = WebView::create(this, devtools_agent_.get());
-#endif
   g_view_map.Get().insert(std::make_pair(webview(), this));
   webkit_preferences_.Apply(webview());
   webview()->initializeMainFrame(this);

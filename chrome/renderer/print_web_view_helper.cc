@@ -28,6 +28,7 @@ using printing::ConvertUnit;
 using printing::ConvertUnitDouble;
 using WebKit::WebConsoleMessage;
 using WebKit::WebFrame;
+using WebKit::WebNode;
 using WebKit::WebRect;
 using WebKit::WebSize;
 using WebKit::WebScreenInfo;
@@ -70,7 +71,7 @@ PrepareFrameAndViewForPrint::PrepareFrameAndViewForPrint(
 
 #if defined(WEBFRAME_PRINTBEGIN_TAKES_NODE)
   expected_pages_count_ = frame->printBegin(
-      print_canvas_size_, NULL, static_cast<int>(print_params.dpi),
+      print_canvas_size_, WebNode(), static_cast<int>(print_params.dpi),
       &use_browser_overlays_);
 #else
   expected_pages_count_ = frame->printBegin(
@@ -208,11 +209,7 @@ bool PrintWebViewHelper::CopyAndPrint(WebFrame* web_frame) {
   prefs.javascript_enabled = false;
   prefs.java_enabled = false;
 
-#if defined(WEBKIT_HAS_WEB_AUTO_FILL_CLIENT)
   print_web_view_ = WebView::create(this, NULL, NULL);
-#else
-  print_web_view_ = WebView::create(this, NULL);
-#endif
   prefs.Apply(print_web_view_);
   print_web_view_->initializeMainFrame(this);
 
