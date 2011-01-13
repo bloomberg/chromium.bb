@@ -8465,6 +8465,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_REMOTING_REGISTRATION_FAILED_MESSAGE" desc="Message shown during remoting host setup if there was an error registering the host.">
         Failed to register this computer for remote access.
       </message>
+      <message name="IDS_REMOTING_REGISTRATION_ACCESS_DENIED" desc="Error message during remoting host setup if access to the remoting directory was denied.">
+        Access to the remoting host directory was denied. Please try with another account.
+      </message>
       <message name="IDS_REMOTING_RETRY_BUTTON_TEXT" desc="Text for retry button">
         Retry
       </message>

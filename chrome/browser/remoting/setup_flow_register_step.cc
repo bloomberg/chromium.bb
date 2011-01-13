@@ -41,12 +41,13 @@ void SetupFlowRegisterStep::OnRequestDone(DirectoryAddRequest::Result result,
       FinishStep(new SetupFlowStartHostStep());
       break;
     case DirectoryAddRequest::ERROR_EXISTS:
-      LOG(INFO) << "Chromoting host is already reagistered.";
+      LOG(INFO) << "Chromoting host is already registered.";
       FinishStep(new SetupFlowStartHostStep());
       break;
     case DirectoryAddRequest::ERROR_AUTH:
-      LOG(ERROR) << "Chromoting Directory didn't accept auth token.";
-      FinishStep(new SetupFlowLoginStep());
+      LOG(ERROR) << "Access denied by Chromoting Directory.";
+      FinishStep(new SetupFlowLoginStep(l10n_util::GetStringUTF16(
+          IDS_REMOTING_REGISTRATION_ACCESS_DENIED)));
       break;
     default:
       LOG(ERROR) << "Chromoting Host registration failed: "

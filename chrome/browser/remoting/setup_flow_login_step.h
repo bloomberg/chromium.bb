@@ -15,6 +15,7 @@ namespace remoting {
 class SetupFlowLoginStep : public SetupFlowStepBase, public GaiaAuthConsumer {
  public:
   SetupFlowLoginStep();
+  SetupFlowLoginStep(const string16& error_message);
   virtual ~SetupFlowLoginStep();
 
   // SetupFlowStep implementation.
@@ -36,11 +37,14 @@ class SetupFlowLoginStep : public SetupFlowStepBase, public GaiaAuthConsumer {
  private:
   void OnUserSubmittedAuth(const std::string& user,
                            const std::string& password,
-                           const std::string& captcha);
+                           const std::string& captcha,
+                           const std::string& access_code);
 
   void ShowGaiaLogin(const DictionaryValue& args);
   void ShowGaiaSuccessAndSettingUp();
   void ShowGaiaFailed(const GoogleServiceAuthError& error);
+
+  string16 error_message_;
 
   // Fetcher to obtain the Chromoting Directory token.
   scoped_ptr<GaiaAuthFetcher> authenticator_;

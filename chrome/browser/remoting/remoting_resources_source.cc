@@ -20,6 +20,7 @@
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 
 // Define the values of standard URLs.
 const char RemotingResourcesSource::kInvalidPasswordHelpUrl[] =
@@ -87,6 +88,15 @@ void RemotingResourcesSource::StartDataRequest(const std::string& path_raw,
         l10n_util::GetStringUTF16(IDS_SYNC_ERROR_SIGNING_IN));
     localized_strings.SetString("captchainstructions",
         l10n_util::GetStringUTF16(IDS_SYNC_GAIA_CAPTCHA_INSTRUCTIONS));
+    localized_strings.SetString("invalidaccesscode",
+        l10n_util::GetStringUTF16(IDS_SYNC_INVALID_ACCESS_CODE_LABEL));
+    localized_strings.SetString("enteraccesscode",
+        l10n_util::GetStringUTF16(IDS_SYNC_ENTER_ACCESS_CODE_LABEL));
+    localized_strings.SetString("getaccesscodehelp",
+        l10n_util::GetStringUTF16(IDS_SYNC_ACCESS_CODE_HELP_LABEL));
+    localized_strings.SetString("getaccesscodeurl",
+        l10n_util::GetStringUTF16(IDS_SYNC_GET_ACCESS_CODE_URL));
+
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_GAIA_LOGIN_HTML));
     SetFontAndTextDirection(&localized_strings);

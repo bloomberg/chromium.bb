@@ -176,11 +176,18 @@
     }
 
     function showGaiaLogin(args) {
-      var throbber = document.getElementById('throbber_container');
-      throbber.style.display = "none";
+      document.getElementById('throbber_container').style.display = "none";
+      document.getElementById('Email').disabled = false;
+      document.getElementById('Passwd').disabled = false;
+
       var f = document.getElementById("gaia_loginform");
       if (f) {
-        f.Email.value = args.user;
+        if (args.user != undefined) {
+          if (f.Email.value != args.user)
+            f.Passwd.value = ""; // Reset the password field
+          f.Email.value = args.user;
+        }
+
         if (!args.editable_user) {
           f.Email.style.display = 'none';
           var span = document.getElementById('email_readonly');
@@ -191,6 +198,7 @@
 
         f.AccessCode.disabled = true;
       }
+
       if (1 == args.error) {
         var access_code = document.getElementById('AccessCode');
         if (access_code.value && access_code.value != "") {
@@ -199,18 +207,18 @@
         } else {
           setElementDisplay("errormsg_1_Password", 'table-row');
         }
-        setBlurbError();
-      }
-      if (3 == args.error) {
+        setBlurbError(args.error_message);
+      } else if (3 == args.error) {
         setElementDisplay("errormsg_0_Connection", 'table-row');
-        setBlurbError();
-      }
-      if (4 == args.error) {
+        setBlurbError(args.error_message);
+      } else if (4 == args.error) {
         showCaptcha(args);
-      }
-      if (8 == args.error) {
+      } else if (8 == args.error) {
         showAccessCodeRequired();
+      } else if (args.error_message) {
+        setBlurbError(args.error_message);
       }
+
       document.getElementById("signIn").disabled = false;
       document.getElementById("signIn").value = templateData['signin'];
       gaia_setFocus();
@@ -311,14 +319,22 @@
       if (d)
         d.style.display = display;
     }
-    
+
     function hideBlurb() {
       setElementDisplay('top_blurb', 'none');
     }
 
-    function setBlurbError() {
+    function setBlurbError(error_message) {
       if (g_is_captcha_challenge_active)
         return;  // No blurb in captcha challenge mode.
+      if (error_message) {
+        document.getElementById('error_signing_in').style.display = 'none';
+        document.getElementById('error_custom').style.display = 'inline';
+        document.getElementById('error_custom').textContent = error_message;
+      } else {
+        document.getElementById('error_signing_in').style.display = 'inline';
+        document.getElementById('error_custom').style.display = 'none';
+      }
       document.getElementById("top_blurb_error").style.visibility = "visible";
       document.getElementById('Email').disabled = false;
       document.getElementById('Passwd').disabled = false;
@@ -372,7 +388,8 @@
     <span i18n-content="introduction"></span>
   </div>
   <div id="top_blurb_error" style="visibility:hidden">
-      <span i18n-content="errorsigningin"></span>
+      <span id="error_signing_in" i18n-content="errorsigningin"></span>
+      <span id="error_custom" style="display:none;"></span>
   </div>
 <form id="gaia_loginform" onsubmit="sendCredentialsAndClose(); return false;">
 <div id="gaia_loginbox">
