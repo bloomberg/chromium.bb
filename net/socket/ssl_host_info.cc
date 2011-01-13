@@ -76,6 +76,20 @@ SSLHostInfo::State* SSLHostInfo::mutable_state() {
   return &state_;
 }
 
+void SSLHostInfo::set_cert_verification_finished_time() {
+#if defined(OS_LINUX)
+  if (dnsrr_resolver_ && dns_handle_ == DnsRRResolver::kInvalidHandle) {
+    // We have completed the DNS lookup already. Therefore, waiting for the DNS
+    // lookup would cause no delay.
+    UMA_HISTOGRAM_TIMES("Net.SSLHostInfoDNSLookupDelayMs", base::TimeDelta());
+  } else {
+    // The actual delay will be calculated when the DNS lookup finishes, in
+    // DnsComplete.
+    cert_verification_finished_time_ = base::TimeTicks::Now();
+  }
+#endif
+}
+
 bool SSLHostInfo::Parse(const std::string& data) {
   State* state = mutable_state();
 
@@ -224,9 +238,15 @@ void SSLHostInfo::DnsComplete(int rv) {
   dns_callback_ = NULL;
 
   const base::TimeTicks now = base::TimeTicks::Now();
-  const base::TimeDelta elapsed = now - dns_lookup_start_time_;
+  base::TimeDelta elapsed = now - dns_lookup_start_time_;
   UMA_HISTOGRAM_TIMES("Net.SSLHostInfoDNSLookup", elapsed);
+
+  if (!cert_verification_finished_time_.is_null()) {
+    elapsed = now - cert_verification_finished_time_;
+    UMA_HISTOGRAM_TIMES("Net.SSLHostInfoDNSLookupDelayMs", elapsed);
+  }
 }
+
 
 SSLHostInfoFactory::~SSLHostInfoFactory() {}
 
