@@ -3160,7 +3160,6 @@
               'sources!': [
                 # TODO(port):
                 'browser/safe_browsing/filter_false_positive_perftest.cc',
-                'browser/visitedlink/visitedlink_perftest.cc',
               ],
             }],
             ['OS=="win"', {

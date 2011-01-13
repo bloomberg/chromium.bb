@@ -45,14 +45,6 @@ class DummyVisitedLinkEventListener : public VisitedLinkMaster::Listener {
 };
 
 
-// Call at the beginning of the test to retrieve the database name.
-void InitDBName(std::wstring* db_name) {
-  FilePath db_path;
-  ASSERT_TRUE(file_util::GetCurrentDirectory(&db_path));
-  db_path = db_path.AppendASCII("TempVisitedLinks");
-  *db_name = db_path.ToWStringHack();
-}
-
 // this checks IsVisited for the URLs starting with the given prefix and
 // within the given range
 void CheckVisited(VisitedLinkMaster& master, const char* prefix,
@@ -71,13 +63,12 @@ void FillTable(VisitedLinkMaster& master, const char* prefix,
 
 class VisitedLink : public testing::Test {
  protected:
-  std::wstring db_name_;
+  FilePath db_path_;
   virtual void SetUp() {
-    InitDBName(&db_name_);
-    file_util::Delete(db_name_, false);
+    ASSERT_TRUE(file_util::CreateTemporaryFile(&db_path_));
   }
   virtual void TearDown() {
-    file_util::Delete(db_name_, false);
+    file_util::Delete(db_path_, false);
   }
 };
 
@@ -91,7 +82,7 @@ class VisitedLink : public testing::Test {
 TEST_F(VisitedLink, TestAddAndQuery) {
   // init
   VisitedLinkMaster master(DummyVisitedLinkEventListener::GetInstance(),
-                           NULL, true, FilePath(db_name_), 0);
+                           NULL, true, db_path_, 0);
   ASSERT_TRUE(master.Init());
 
   PerfTimeLogger timer("Visited_link_add_and_query");
@@ -122,7 +113,7 @@ TEST_F(VisitedLink, TestLoad) {
     PerfTimeLogger table_initialization_timer("Table_initialization");
 
     VisitedLinkMaster master(DummyVisitedLinkEventListener::GetInstance(),
-                             NULL, true, FilePath(db_name_), 0);
+                             NULL, true, db_path_, 0);
 
     // time init with empty table
     PerfTimeLogger initTimer("Empty_visited_link_init");
@@ -153,8 +144,7 @@ TEST_F(VisitedLink, TestLoad) {
   std::vector<double> hot_load_times;
   for (int i = 0; i < load_count; i++) {
     // make sure the file has to be re-loaded
-    file_util::EvictFileFromSystemCache(
-        FilePath::FromWStringHack(std::wstring(db_name_)));
+    file_util::EvictFileFromSystemCache(db_path_);
 
     // cold load (no OS cache, hopefully)
     {
@@ -163,7 +153,7 @@ TEST_F(VisitedLink, TestLoad) {
       VisitedLinkMaster master(DummyVisitedLinkEventListener::GetInstance(),
                                NULL,
                                true,
-                               FilePath(db_name_),
+                               db_path_,
                                0);
       bool success = master.Init();
       TimeDelta elapsed = cold_timer.Elapsed();
@@ -179,7 +169,7 @@ TEST_F(VisitedLink, TestLoad) {
       VisitedLinkMaster master(DummyVisitedLinkEventListener::GetInstance(),
                                NULL,
                                true,
-                               FilePath(db_name_),
+                               db_path_,
                                0);
       bool success = master.Init();
       TimeDelta elapsed = hot_timer.Elapsed();
