@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/views/options/general_page_view.h"
 
+#include <string>
+#include <vector>
+
 #include "app/combobox_model.h"
 #include "app/l10n_util.h"
 #include "base/callback.h"
@@ -23,7 +26,6 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/template_url_model_observer.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/options/show_options_url.h"
 #include "chrome/browser/ui/views/keyword_editor_view.h"
 #include "chrome/browser/ui/views/options/managed_prefs_banner_view.h"

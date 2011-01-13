@@ -11,7 +11,6 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/info_bubble.h"
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"

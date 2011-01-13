@@ -12,7 +12,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/history_menu_bridge.h"

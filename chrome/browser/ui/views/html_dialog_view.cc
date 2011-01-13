@@ -4,8 +4,9 @@
 
 #include "chrome/browser/ui/views/html_dialog_view.h"
 
+#include <vector>
+
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "ui/base/keycodes/keyboard_codes.h"

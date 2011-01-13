@@ -12,6 +12,8 @@
 #include <vsstyle.h>
 #include <vssym32.h>
 
+#include <string>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
@@ -38,7 +40,6 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/shell_dialogs.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/options/options_util.h"
 #include "chrome/browser/ui/options/show_options_url.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"

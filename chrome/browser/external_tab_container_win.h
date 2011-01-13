@@ -15,7 +15,6 @@
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_bubble_host.h"
 #include "chrome/browser/ui/views/infobars/infobar_container.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
@@ -26,6 +25,7 @@
 #include "views/widget/widget_win.h"
 
 class AutomationProvider;
+class Browser;
 class Profile;
 class TabContentsContainer;
 class RenderViewContextMenuViews;

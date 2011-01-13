@@ -4,7 +4,8 @@
 
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
 
-#include "chrome/browser/ui/browser.h"
+#include <algorithm>
+
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/dropdown_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"

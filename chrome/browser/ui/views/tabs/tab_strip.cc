@@ -14,7 +14,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"

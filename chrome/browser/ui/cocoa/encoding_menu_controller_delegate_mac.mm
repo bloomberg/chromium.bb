@@ -10,7 +10,6 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 
 namespace {

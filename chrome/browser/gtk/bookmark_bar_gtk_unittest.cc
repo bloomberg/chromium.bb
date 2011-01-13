@@ -9,7 +9,6 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/gtk/tabstrip_origin_provider.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

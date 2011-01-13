@@ -16,7 +16,6 @@
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"

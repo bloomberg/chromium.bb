@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/test/browser_with_test_window_test.h"
 #include "chrome/test/menu_model_test.h"
 #include "chrome/test/testing_profile.h"

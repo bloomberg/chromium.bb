@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/tabs/dock_info.h"
 
 #include "base/win/scoped_gdi_object.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"

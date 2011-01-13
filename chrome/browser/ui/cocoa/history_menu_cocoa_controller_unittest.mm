@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/history_menu_bridge.h"
 #include "chrome/browser/ui/cocoa/history_menu_cocoa_controller.h"
-#include "chrome/browser/ui/browser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 @interface FakeHistoryMenuController : HistoryMenuCocoaController {

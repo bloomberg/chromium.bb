@@ -4,8 +4,6 @@
 
 #include "chrome/browser/bug_report_data.h"
 
-#include "chrome/browser/ui/browser.h"
-
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/notifications/system_notification.h"
 #endif

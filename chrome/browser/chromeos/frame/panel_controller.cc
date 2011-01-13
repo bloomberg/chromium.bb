@@ -13,7 +13,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/canvas_skia.h"
 #include "grit/app_resources.h"
@@ -71,7 +70,7 @@ class TitleBackgroundPainter : public views::Painter {
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
     paint.setFlags(SkPaint::kAntiAlias_Flag);
-    SkPoint p[2] = {{0, 0}, {0, h}};
+    SkPoint p[2] = { {0, 0}, {0, h} };
     SkColor colors[2] = {kTitleActiveGradientStart, kTitleActiveGradientEnd};
     SkShader* s = SkGradientShader::CreateLinear(
         p, colors, NULL, 2, SkShader::kClamp_TileMode, NULL);

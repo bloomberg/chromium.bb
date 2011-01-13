@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_page_actions_module.h"
 
+#include <string>
+
 #include "base/string_number_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_page_actions_module_constants.h"
@@ -12,7 +14,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"

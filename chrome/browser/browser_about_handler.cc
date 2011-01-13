@@ -42,7 +42,6 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/common/about_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"

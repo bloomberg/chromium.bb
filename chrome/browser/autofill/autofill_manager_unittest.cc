@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/browser/tab_contents/test_tab_contents.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/ipc_test_sink.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -117,13 +118,13 @@ class TestPersonalDataManager : public PersonalDataManager {
   void CreateTestCreditCards(ScopedVector<CreditCard>* credit_cards) {
     CreditCard* credit_card = new CreditCard;
     autofill_test::SetCreditCardInfo(credit_card, "First", "Elvis Presley",
-                                     "4234567890123456", // Visa
+                                     "4234567890123456",  // Visa
                                      "04", "2012");
     credit_card->set_guid("00000000-0000-0000-0000-000000000004");
     credit_cards->push_back(credit_card);
     credit_card = new CreditCard;
     autofill_test::SetCreditCardInfo(credit_card, "Second", "Buddy Holly",
-                                     "5187654321098765", // Mastercard
+                                     "5187654321098765",  // Mastercard
                                      "10", "2014");
     credit_card->set_guid("00000000-0000-0000-0000-000000000005");
     credit_cards->push_back(credit_card);
@@ -1386,7 +1387,7 @@ TEST_F(AutoFillManagerTest, FillAutoFilledForm) {
   // fill the credit card data
   for (std::vector<FormField>::iterator iter = form.fields.begin();
        iter != form.fields.end();
-       ++iter){
+       ++iter) {
     iter->set_autofilled(true);
   }
 
@@ -1585,4 +1586,3 @@ TEST_F(AutoFillManagerTest, AuxiliaryProfilesReset) {
       prefs::kAutoFillAuxiliaryProfilesEnabled));
 #endif
 }
-

@@ -5,7 +5,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/utility_process_host.h"
 #include "chrome/common/indexed_db_key.h"
 #include "chrome/common/serialized_script_value.h"

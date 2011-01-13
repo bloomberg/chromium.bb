@@ -11,7 +11,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/clear_browsing_data.h"
 #include "chrome/browser/ui/views/clear_server_data.h"
 #include "gfx/insets.h"

@@ -30,7 +30,6 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"

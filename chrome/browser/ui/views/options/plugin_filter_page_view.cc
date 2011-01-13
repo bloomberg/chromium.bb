@@ -6,7 +6,6 @@
 
 #include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/options/show_options_url.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/debugger/devtools_http_protocol_handler.h"
 
+#include <utility>
+
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
@@ -17,7 +19,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/devtools_messages.h"
 #include "chrome/common/net/url_request_context_getter.h"
@@ -67,7 +68,7 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
   HttpListenSocket* socket_;
 };
 
-}
+}  // namespace
 
 DevToolsHttpProtocolHandler::~DevToolsHttpProtocolHandler() {
   // Stop() must be called prior to this being called

@@ -9,6 +9,8 @@
 #include <vsstyle.h>
 #include <vssym32.h>
 
+#include <string>
+
 #include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/string_util.h"
@@ -20,7 +22,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/importer_view.h"
 #include "chrome/browser/ui/views/options/managed_prefs_banner_view.h"
 #include "chrome/browser/ui/views/options/options_group_view.h"

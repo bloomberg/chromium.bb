@@ -21,7 +21,6 @@
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/notification_service.h"
 #include "grit/browser_resources.h"

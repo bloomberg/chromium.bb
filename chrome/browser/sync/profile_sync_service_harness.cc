@@ -13,7 +13,6 @@
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/sessions/session_state.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/notification_source.h"

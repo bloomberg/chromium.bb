@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/extensions/extension_installed_bubble.h"
 
+#include <algorithm>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
@@ -11,7 +13,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/browser_actions_container.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"

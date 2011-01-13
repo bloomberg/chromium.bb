@@ -12,7 +12,6 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/ui/cocoa/bookmarks/bookmark_menu_bridge.h"
 #include "chrome/browser/ui/cocoa/browser_test_helper.h"
-#include "chrome/browser/ui/browser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"

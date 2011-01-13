@@ -20,7 +20,6 @@
 #include "chrome/browser/gtk/options/simple_content_exceptions_window.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification_exceptions_table_model.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/options/show_options_url.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_details.h"

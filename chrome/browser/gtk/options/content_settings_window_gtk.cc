@@ -15,7 +15,6 @@
 #include "chrome/browser/gtk/gtk_tree.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/pref_names.h"

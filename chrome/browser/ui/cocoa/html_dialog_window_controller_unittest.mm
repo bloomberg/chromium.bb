@@ -13,6 +13,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/test/browser_with_test_window_test.h"
 #include "chrome/test/testing_profile.h"

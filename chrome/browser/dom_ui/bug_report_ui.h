@@ -6,15 +6,15 @@
 #define CHROME_BROWSER_DOM_UI_BUG_REPORT_UI_H_
 
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/window.h"
 
 namespace gfx {
 class Rect;
 }  // namespace gfx
 
-class TabContents;
+class Browser;
 class NSWindow;
+class TabContents;
 
 namespace browser {
 void ShowHtmlBugReportView(Browser* browser);

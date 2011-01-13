@@ -12,7 +12,6 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/themes/browser_theme_provider.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/fast_resize_view.h"
 #import "chrome/browser/ui/cocoa/find_bar_cocoa_controller.h"
