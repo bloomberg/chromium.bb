@@ -5100,6 +5100,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_DEL_COOKIES_CHKBOX" desc="Checkbox for deleting Cookies and other site data">
         Delete cookies and other site data
       </message>
+      <message name="IDS_DEL_COOKIES_FLASH_CHKBOX" desc="Checkbox for deleting Cookies and other site data">
+        Delete cookies and other site and plug-in data
+      </message>
       <message name="IDS_DEL_PASSWORDS_CHKBOX" desc="Checkbox for deleting Passwords">
         Clear saved passwords
       </message>
@@ -5123,7 +5126,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <message name="IDS_FLASH_STORAGE_SETTINGS" desc="Link for opening Adobe Flash Player storage settings">
-        Adobe Flash Player storage settings...
+        Manage Adobe Flash Player local storage and settings...
       </message>
       <message name="IDS_CLEAR_DATA_HOUR" desc="deletion period combo box: hour">
         the past hour

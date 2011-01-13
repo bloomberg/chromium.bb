@@ -8,8 +8,10 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/notification_details.h"
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -22,6 +24,13 @@ ClearBrowserDataHandler::~ClearBrowserDataHandler() {
   if (remover_) {
     remover_->RemoveObserver(this);
   }
+}
+
+void ClearBrowserDataHandler::Initialize() {
+  clear_plugin_lso_data_enabled_.Init(prefs::kClearPluginLSODataEnabled,
+                                      g_browser_process->local_state(),
+                                      this);
+  UpdateClearPluginLSOData();
 }
 
 void ClearBrowserDataHandler::GetLocalizedValues(
@@ -89,6 +98,24 @@ void ClearBrowserDataHandler::RegisterMessages() {
       NewCallback(this, &ClearBrowserDataHandler::HandleClearBrowserData));
 }
 
+void ClearBrowserDataHandler::Observe(NotificationType type,
+                                      const NotificationSource& source,
+                                      const NotificationDetails& details) {
+  switch (type.value) {
+    case NotificationType::PREF_CHANGED: {
+      const std::string& pref_name = *Details<std::string>(details).ptr();
+      if (pref_name == prefs::kClearPluginLSODataEnabled)
+        UpdateClearPluginLSOData();
+      else
+        OptionsPageUIHandler::Observe(type, source, details);
+      break;
+    }
+
+    default:
+      OptionsPageUIHandler::Observe(type, source, details);
+  }
+}
+
 void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
   Profile* profile = dom_ui_->GetProfile();
   PrefService* prefs = profile->GetPrefs();
@@ -100,8 +127,11 @@ void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
     remove_mask |= BrowsingDataRemover::REMOVE_DOWNLOADS;
   if (prefs->GetBoolean(prefs::kDeleteCache))
     remove_mask |= BrowsingDataRemover::REMOVE_CACHE;
-  if (prefs->GetBoolean(prefs::kDeleteCookies))
+  if (prefs->GetBoolean(prefs::kDeleteCookies)) {
     remove_mask |= BrowsingDataRemover::REMOVE_COOKIES;
+    if (clear_plugin_lso_data_enabled_.GetValue())
+      remove_mask |= BrowsingDataRemover::REMOVE_LSO_DATA;
+  }
   if (prefs->GetBoolean(prefs::kDeletePasswords))
     remove_mask |= BrowsingDataRemover::REMOVE_PASSWORDS;
   if (prefs->GetBoolean(prefs::kDeleteFormData))
@@ -110,7 +140,7 @@ void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
   int period_selected = prefs->GetInteger(prefs::kDeleteTimePeriod);
 
   FundamentalValue state(true);
-  dom_ui_->CallJavascriptFunction(L"ClearBrowserDataOverlay.setClearingState",
+  dom_ui_->CallJavascriptFunction(L"ClearBrowserDataPage.setClearingState",
                                   state);
 
   // BrowsingDataRemover deletes itself when done.
@@ -121,11 +151,21 @@ void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
   remover_->Remove(remove_mask);
 }
 
+void ClearBrowserDataHandler::UpdateClearPluginLSOData() {
+  int label_id = clear_plugin_lso_data_enabled_.GetValue() ?
+      IDS_DEL_COOKIES_FLASH_CHKBOX :
+      IDS_DEL_COOKIES_CHKBOX;
+  scoped_ptr<Value> label(
+      Value::CreateStringValue(l10n_util::GetStringUTF16(label_id)));
+  dom_ui_->CallJavascriptFunction(
+      L"ClearBrowserDataPage.setClearLocalDataLabel", *label);
+}
+
 void ClearBrowserDataHandler::OnBrowsingDataRemoverDone() {
   // No need to remove ourselves as an observer as BrowsingDataRemover deletes
   // itself after we return.
   remover_ = NULL;
   DCHECK(dom_ui_);
-  dom_ui_->CallJavascriptFunction(L"ClearBrowserDataOverlay.dismiss");
+  dom_ui_->CallJavascriptFunction(L"ClearBrowserDataPage.dismiss");
 }
 

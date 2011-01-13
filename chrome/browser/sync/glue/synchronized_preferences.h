@@ -56,7 +56,6 @@ static const char* kSynchronizedPreferences[] = {
   prefs::kDeleteCache,
   prefs::kDeleteCookies,
   prefs::kDeletePasswords,
-  prefs::kDeleteLSOData,
   prefs::kDeleteFormData,
   prefs::kDeleteTimePeriod,
 

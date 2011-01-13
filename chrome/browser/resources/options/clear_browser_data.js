@@ -104,6 +104,10 @@ cr.define('options', function() {
     }
   }
 
+  ClearBrowserDataPage.setClearLocalDataLabel = function(label) {
+    $('deleteCookiesLabel').innerText = label;
+  };
+
   ClearBrowserDataPage.dismiss = function() {
     OptionsPage.clearOverlays();
     this.setClearingState(false);
