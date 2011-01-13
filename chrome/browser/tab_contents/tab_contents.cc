@@ -251,6 +251,7 @@ class OutdatedPluginInfoBar : public ConfirmInfoBarDelegate {
         tab_contents_(tab_contents),
         name_(name),
         update_url_(update_url) {
+    UserMetrics::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Shown"));
     tab_contents->AddInfoBar(this);
   }
 
@@ -280,23 +281,31 @@ class OutdatedPluginInfoBar : public ConfirmInfoBarDelegate {
   }
 
   virtual bool Accept() {
+    UserMetrics::RecordAction(
+        UserMetricsAction("OutdatedPluginInfobar.Update"));
     tab_contents_->OpenURL(update_url_, GURL(),
                            NEW_FOREGROUND_TAB, PageTransition::LINK);
     return false;
   }
 
   virtual bool Cancel() {
+    UserMetrics::RecordAction(
+        UserMetricsAction("OutdatedPluginInfobar.AllowThisTime"));
     tab_contents_->render_view_host()->LoadBlockedPlugins();
     return true;
   }
 
   virtual bool LinkClicked(WindowOpenDisposition disposition) {
+    UserMetrics::RecordAction(
+        UserMetricsAction("OutdatedPluginInfobar.LearnMore"));
     // TODO(bauerb): Navigate to a help page explaining why we disabled
     // the plugin, once we have one.
     return false;
   }
 
   virtual void InfoBarClosed() {
+    UserMetrics::RecordAction(
+        UserMetricsAction("OutdatedPluginInfobar.Closed"));
     delete this;
   }
 
