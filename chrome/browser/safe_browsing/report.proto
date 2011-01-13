@@ -23,61 +23,60 @@ package safe_browsing;
 message ClientMalwareReportRequest {
 
   message HTTPHeader {
-    required string name = 1;
-    optional string value = 2;
+    required bytes name = 1;
+    optional bytes value = 2;
   }
 
   message HTTPRequest {
     message FirstLine {
-      optional string verb = 1;  // Also known as method, eg "GET"
-      optional string uri = 2;
-      optional string version = 3;
+      optional bytes verb = 1;  // Also known as method, eg "GET"
+      optional bytes uri = 2;
+      optional bytes version = 3;
     }
     
     optional FirstLine firstline = 1;
     repeated HTTPHeader headers = 2;
-    optional string body = 3;
+    optional bytes body = 3;
 
     // bodydigest and bodylength can be useful if the report does not
     // contain the body itself.
-    optional string bodydigest = 4;  
+    optional bytes bodydigest = 4;  
     optional int32 bodylength = 5;
   }
 
   message HTTPResponse {
     message FirstLine {
       optional int32 code = 1;
-      optional string reason = 2;
-      optional string version = 3;
+      optional bytes reason = 2;
+      optional bytes version = 3;
     }
 
     optional FirstLine firstline = 1;
     repeated HTTPHeader headers = 2;
-    optional string body = 3;
+    optional bytes body = 3;
 
     // bodydigest and bodylength can be useful if the report does not
     // contain the body itself.
-    optional string bodydigest = 4;
+    optional bytes bodydigest = 4;
     optional int32 bodylength = 5;
-    optional string remote_ip = 6;
+    optional bytes remote_ip = 6;
   }
 
   message Resource {
-    optional string url = 1;
+    required int32 id = 1;
+    optional string url = 2;
+    optional HTTPRequest request = 3;
+    optional HTTPResponse response = 4;
 
-    // URL of the parent frame.
-    optional string parent = 2;
-
-    // Tag that was used to include this resource, eg "iframe"
-    optional string tag_name = 3;
-
-    optional HTTPRequest request = 4;
-    optional HTTPResponse response = 5;
+    optional int32 parent_id = 5;  // Id of the parent, if known.
 
     // A list of children. The order of the children in this list is
-    // significant. The |parent| field for child nodes can be derived
+    // significant. The |parent_id| field for child nodes can be derived
     // from this, but this allows us to be more flexible.
-    repeated string children = 6;
+    repeated int32 child_ids = 6;
+
+    // Tag that was used to include this resource, eg "iframe"
+    optional string tag_name = 7;
   }
 
   // URL of the resource that matches the safe browsing list.
@@ -87,5 +86,5 @@ message ClientMalwareReportRequest {
   optional string page_url = 2;
 
   optional string referrer_url = 3;
-  repeated Resource nodes = 4;
+  repeated Resource resources = 4;
 }
