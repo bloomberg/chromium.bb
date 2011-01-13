@@ -92,19 +92,16 @@ void* PluginAudio::AudioThread(void* self) {
   PluginAudio* audio = static_cast<PluginAudio*>(self);
   while (true) {
     int32_t sync_value;
-    ssize_t r;
-    // invoke user callback, get next buffer of audio data
-    audio->user_callback_(
-        audio->shm_buffer_,
-        audio->shm_size_,
-        audio->user_data_);
     // block on socket read
-    r = syscall_read(
-        audio->socket_,
-        &sync_value, sizeof(sync_value));
+    ssize_t r = syscall_read(audio->socket_,
+                             &sync_value, sizeof(sync_value));
     // StopPlayback() will send a value of -1 over the sync_socket
     if ((sizeof(sync_value) != r) || (-1 == sync_value))
       break;
+    // invoke user callback, get next buffer of audio data
+    audio->user_callback_(audio->shm_buffer_,
+                          audio->shm_size_,
+                          audio->user_data_);
   }
   return NULL;
 }
@@ -132,6 +129,8 @@ void PluginAudio::StreamCreated(NaClSrpcImcDescType socket,
 }
 
 bool PluginAudio::StartAudioThread() {
+  // clear contents of shm buffer before spinning up audio thread
+  memset(shm_buffer_, 0, shm_size_);
   int ret = pthread_create(&thread_id_, NULL, AudioThread, this);
   if (0 == ret) {
     set_state(AUDIO_PLAYING);
