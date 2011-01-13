@@ -1576,11 +1576,6 @@ def GenerateOptimizationLevels(env):
 
   return (debug_env, opt_env)
 
-if base_env.Bit('build_x86_64'):
-  base_env['WINASM'] = 'x86_64-w64-mingw32-as.exe'
-else:
-  base_env['WINASM'] = 'as'
-
 
 # ----------------------------------------------------------
 windows_env = base_env.Clone(
@@ -1617,10 +1612,19 @@ if windows_env.Bit('build_x86_32'):
 windows_env['ENV']['PATH'] = os.environ.get('PATH', '[]')
 windows_env['ENV']['INCLUDE'] = os.environ.get('INCLUDE', '[]')
 windows_env['ENV']['LIB'] = os.environ.get('LIB', '[]')
-windows_env.AppendENVPath('PATH',
-    '$SOURCE_ROOT/third_party/gnu_binutils/files')
-windows_env.AppendENVPath('PATH',
-    '$SOURCE_ROOT/third_party/mingw-w64/mingw/bin')
+
+# We use the GNU assembler (gas) on Windows so that we can use the
+# same .S assembly files on all platforms.  Microsoft's assembler uses
+# a completely different syntax for x86 code.
+if windows_env.Bit('build_x86_64'):
+  # This assembler only works for x86-64 code.
+  windows_env['WINASM'] = \
+      windows_env.File('$SOURCE_ROOT/third_party/mingw-w64/mingw/bin/'
+                       'x86_64-w64-mingw32-as.exe').abspath
+else:
+  # This assembler only works for x86-32 code.
+  windows_env['WINASM'] = \
+      windows_env.File('src/third_party/gnu_binutils/files/as').abspath
 
 (windows_debug_env,
  windows_optimized_env) = GenerateOptimizationLevels(windows_env)
