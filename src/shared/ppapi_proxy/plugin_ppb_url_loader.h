@@ -12,7 +12,7 @@
 
 namespace ppapi_proxy {
 
-// Implements the plugin (i.e., .nexe) side of the PPB_URLLoader interface.
+// Implements the untrusted side of the PPB_URLLoader interface.
 class PluginURLLoader {
  public:
   static const PPB_URLLoader* GetInterface();

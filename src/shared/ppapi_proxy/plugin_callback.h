@@ -23,15 +23,23 @@ class CompletionCallbackTable {
     return &table;
   }
 
-  // Adds the given |callback|, generating and returning an identifier for it.
+  // Adds the given |callback| and optionally the associated |read_buffer|,
+  // generating and returning an identifier for it.
   // If |callback| is NULL, then returns 0.
   int32_t AddCallback(const PP_CompletionCallback& callback);
-  // Removes and returns the callback corresponding to the given |callback_id|.
+  int32_t AddCallback(const PP_CompletionCallback& callback, char* read_buffer);
+  // Removes and returns the callback and optionally the associated
+  // |read_buffer| corresponding to the given |callback_id|.
   // If no callback is found, returns a NULL callback.
-  PP_CompletionCallback RemoveCallback(int32_t callback_id);
+  PP_CompletionCallback RemoveCallback(int32_t callback_id, char** read_buffer);
 
  private:
-  typedef std::map<int32_t, PP_CompletionCallback> CallbackTable;
+  struct CallbackInfo {
+    PP_CompletionCallback callback;
+    char* read_buffer;  // To be used with callbacks invoked on byte reads.
+  };
+
+  typedef std::map<int32_t, CallbackInfo> CallbackTable;
   CallbackTable table_;
   int32_t next_id_;
 };

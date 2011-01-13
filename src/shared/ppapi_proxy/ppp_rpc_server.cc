@@ -186,7 +186,8 @@ static void RunCompletionCallbackDispatcher(
       rpc,
       done,
       inputs[0]->u.ival,
-      inputs[1]->u.ival
+      inputs[1]->u.ival,
+      inputs[2]->u.count, inputs[2]->arrays.carr
   );
 }
 
@@ -371,7 +372,7 @@ NaClSrpcHandlerDesc PppRpcs::srpc_methods[] = {
   { "Call:CCiCC:CC", CallDispatcher },
   { "Construct:CiCC:CC", ConstructDispatcher },
   { "Deallocate:C:", DeallocateDispatcher },
-  { "RunCompletionCallback:ii:", RunCompletionCallbackDispatcher },
+  { "RunCompletionCallback:iiC:", RunCompletionCallbackDispatcher },
   { "PPP_InitializeModule:ilhs:ii", PPP_InitializeModuleDispatcher },
   { "PPP_ShutdownModule::", PPP_ShutdownModuleDispatcher },
   { "PPP_GetInterface:s:i", PPP_GetInterfaceDispatcher },

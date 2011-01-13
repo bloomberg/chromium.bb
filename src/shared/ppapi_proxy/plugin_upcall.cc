@@ -107,7 +107,8 @@ void RunCompletionCallback(
   {
     CallbackTableMutexLock ml(&upcall_mutex);
     if (callback_table != NULL) {
-      callback = callback_table->RemoveCallback(callback_id);
+      char* dummy_buffer;
+      callback = callback_table->RemoveCallback(callback_id, &dummy_buffer);
     }
   }
   if (callback.func == NULL)

@@ -336,6 +336,75 @@ class PpbInstanceRpcServer {
   void operator=(const PpbInstanceRpcServer);
 };  // class PpbInstanceRpcServer
 
+class PpbURLLoaderRpcServer {
+ public:
+  static void PPB_URLLoader_Create(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      PP_Resource* resource);
+  static void PPB_URLLoader_IsURLLoader(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource resource,
+      int32_t* is_url_loader);
+  static void PPB_URLLoader_Open(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource loader,
+      PP_Resource request,
+      int32_t callback_id,
+      int32_t* pp_error);
+  static void PPB_URLLoader_FollowRedirect(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource loader,
+      int32_t callback_id,
+      int32_t* pp_error);
+  static void PPB_URLLoader_GetUploadProgress(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource loader,
+      int64_t* bytes_sent,
+      int64_t* total_bytes_to_be_sent,
+      int32_t* success);
+  static void PPB_URLLoader_GetDownloadProgress(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource loader,
+      int64_t* bytes_received,
+      int64_t* total_bytes_to_be_received,
+      int32_t* success);
+  static void PPB_URLLoader_GetResponseInfo(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource loader,
+      PP_Resource* response);
+  static void PPB_URLLoader_ReadResponseBody(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource loader,
+      int32_t bytes_to_read,
+      int32_t callback_id,
+      nacl_abi_size_t* buffer_bytes, char* buffer,
+      int32_t* pp_error_or_bytes);
+  static void PPB_URLLoader_FinishStreamingToFile(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      int64_t loader,
+      int32_t callback_id,
+      int32_t* pp_error);
+  static void PPB_URLLoader_Close(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource loader);
+
+ private:
+  PpbURLLoaderRpcServer();
+  PpbURLLoaderRpcServer(const PpbURLLoaderRpcServer&);
+  void operator=(const PpbURLLoaderRpcServer);
+};  // class PpbURLLoaderRpcServer
+
 class PpbURLRequestInfoRpcServer {
  public:
   static void PPB_URLRequestInfo_Create(

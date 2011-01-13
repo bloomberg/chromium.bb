@@ -16,7 +16,6 @@ void PpbInstanceRpcServer::PPB_Instance_GetWindowObject(
     PP_Instance instance,
     // outputs
     nacl_abi_size_t* window_size, char* window_bytes) {
-  NACL_UNTESTED();
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 

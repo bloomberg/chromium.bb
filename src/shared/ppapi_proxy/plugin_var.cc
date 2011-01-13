@@ -106,7 +106,11 @@ void Release(PP_Var var) {
       } else {
         obj_impl->object_class()->Deallocate(obj_impl->object_data());
       }
-      delete obj_impl;
+      // TODO(polina): under test/ppapi_geturl this deletes a window object
+      // prematurely. Most likely we are missing an AddRef somewhere. For now
+      // just comment out the delete and leak.
+      // http://code.google.com/p/nativeclient/issues/detail?id=1308
+      //delete obj_impl;
     }
   }
   StrImpl* str_impl = VarToStrImpl(var);

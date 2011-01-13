@@ -200,13 +200,15 @@ NaClSrpcError ObjectStubRpcClient::Deallocate(
 NaClSrpcError CompletionCallbackRpcClient::RunCompletionCallback(
     NaClSrpcChannel* channel,
     int32_t callback_id,
-    int32_t result)  {
+    int32_t result,
+    nacl_abi_size_t read_buffer_bytes, char* read_buffer)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
-      "RunCompletionCallback:ii:",
+      "RunCompletionCallback:iiC:",
       callback_id,
-      result
+      result,
+      read_buffer_bytes, read_buffer
   );
   return retval;
 }

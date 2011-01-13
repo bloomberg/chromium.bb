@@ -648,6 +648,157 @@ static void PPB_Instance_ExecuteScriptDispatcher(
   );
 }
 
+static void PPB_URLLoader_CreateDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbURLLoaderRpcServer::PPB_URLLoader_Create(
+      rpc,
+      done,
+      inputs[0]->u.lval,
+      &(outputs[0]->u.lval)
+  );
+}
+
+static void PPB_URLLoader_IsURLLoaderDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbURLLoaderRpcServer::PPB_URLLoader_IsURLLoader(
+      rpc,
+      done,
+      inputs[0]->u.lval,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_URLLoader_OpenDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbURLLoaderRpcServer::PPB_URLLoader_Open(
+      rpc,
+      done,
+      inputs[0]->u.lval,
+      inputs[1]->u.lval,
+      inputs[2]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_URLLoader_FollowRedirectDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbURLLoaderRpcServer::PPB_URLLoader_FollowRedirect(
+      rpc,
+      done,
+      inputs[0]->u.lval,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_URLLoader_GetUploadProgressDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbURLLoaderRpcServer::PPB_URLLoader_GetUploadProgress(
+      rpc,
+      done,
+      inputs[0]->u.lval,
+      &(outputs[0]->u.lval),
+      &(outputs[1]->u.lval),
+      &(outputs[2]->u.ival)
+  );
+}
+
+static void PPB_URLLoader_GetDownloadProgressDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbURLLoaderRpcServer::PPB_URLLoader_GetDownloadProgress(
+      rpc,
+      done,
+      inputs[0]->u.lval,
+      &(outputs[0]->u.lval),
+      &(outputs[1]->u.lval),
+      &(outputs[2]->u.ival)
+  );
+}
+
+static void PPB_URLLoader_GetResponseInfoDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbURLLoaderRpcServer::PPB_URLLoader_GetResponseInfo(
+      rpc,
+      done,
+      inputs[0]->u.lval,
+      &(outputs[0]->u.lval)
+  );
+}
+
+static void PPB_URLLoader_ReadResponseBodyDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbURLLoaderRpcServer::PPB_URLLoader_ReadResponseBody(
+      rpc,
+      done,
+      inputs[0]->u.lval,
+      inputs[1]->u.ival,
+      inputs[2]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr,
+      &(outputs[1]->u.ival)
+  );
+}
+
+static void PPB_URLLoader_FinishStreamingToFileDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbURLLoaderRpcServer::PPB_URLLoader_FinishStreamingToFile(
+      rpc,
+      done,
+      inputs[0]->u.lval,
+      inputs[1]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_URLLoader_CloseDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbURLLoaderRpcServer::PPB_URLLoader_Close(
+      rpc,
+      done,
+      inputs[0]->u.lval
+  );
+}
+
 static void PPB_URLRequestInfo_CreateDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -812,6 +963,16 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_Instance_BindGraphics:ll:i", PPB_Instance_BindGraphicsDispatcher },
   { "PPB_Instance_IsFullFrame:l:i", PPB_Instance_IsFullFrameDispatcher },
   { "PPB_Instance_ExecuteScript:lCC:CC", PPB_Instance_ExecuteScriptDispatcher },
+  { "PPB_URLLoader_Create:l:l", PPB_URLLoader_CreateDispatcher },
+  { "PPB_URLLoader_IsURLLoader:l:i", PPB_URLLoader_IsURLLoaderDispatcher },
+  { "PPB_URLLoader_Open:lli:i", PPB_URLLoader_OpenDispatcher },
+  { "PPB_URLLoader_FollowRedirect:li:i", PPB_URLLoader_FollowRedirectDispatcher },
+  { "PPB_URLLoader_GetUploadProgress:l:lli", PPB_URLLoader_GetUploadProgressDispatcher },
+  { "PPB_URLLoader_GetDownloadProgress:l:lli", PPB_URLLoader_GetDownloadProgressDispatcher },
+  { "PPB_URLLoader_GetResponseInfo:l:l", PPB_URLLoader_GetResponseInfoDispatcher },
+  { "PPB_URLLoader_ReadResponseBody:lii:Ci", PPB_URLLoader_ReadResponseBodyDispatcher },
+  { "PPB_URLLoader_FinishStreamingToFile:li:i", PPB_URLLoader_FinishStreamingToFileDispatcher },
+  { "PPB_URLLoader_Close:l:", PPB_URLLoader_CloseDispatcher },
   { "PPB_URLRequestInfo_Create:l:l", PPB_URLRequestInfo_CreateDispatcher },
   { "PPB_URLRequestInfo_IsURLRequestInfo:l:i", PPB_URLRequestInfo_IsURLRequestInfoDispatcher },
   { "PPB_URLRequestInfo_SetProperty:liC:i", PPB_URLRequestInfo_SetPropertyDispatcher },

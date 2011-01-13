@@ -295,6 +295,65 @@ class PpbInstanceRpcClient {
   void operator=(const PpbInstanceRpcClient);
 };  // class PpbInstanceRpcClient
 
+class PpbURLLoaderRpcClient {
+ public:
+  static NaClSrpcError PPB_URLLoader_Create(
+      NaClSrpcChannel* channel,
+      PP_Instance instance,
+      PP_Resource* resource);
+  static NaClSrpcError PPB_URLLoader_IsURLLoader(
+      NaClSrpcChannel* channel,
+      PP_Resource resource,
+      int32_t* is_url_loader);
+  static NaClSrpcError PPB_URLLoader_Open(
+      NaClSrpcChannel* channel,
+      PP_Resource loader,
+      PP_Resource request,
+      int32_t callback_id,
+      int32_t* pp_error);
+  static NaClSrpcError PPB_URLLoader_FollowRedirect(
+      NaClSrpcChannel* channel,
+      PP_Resource loader,
+      int32_t callback_id,
+      int32_t* pp_error);
+  static NaClSrpcError PPB_URLLoader_GetUploadProgress(
+      NaClSrpcChannel* channel,
+      PP_Resource loader,
+      int64_t* bytes_sent,
+      int64_t* total_bytes_to_be_sent,
+      int32_t* success);
+  static NaClSrpcError PPB_URLLoader_GetDownloadProgress(
+      NaClSrpcChannel* channel,
+      PP_Resource loader,
+      int64_t* bytes_received,
+      int64_t* total_bytes_to_be_received,
+      int32_t* success);
+  static NaClSrpcError PPB_URLLoader_GetResponseInfo(
+      NaClSrpcChannel* channel,
+      PP_Resource loader,
+      PP_Resource* response);
+  static NaClSrpcError PPB_URLLoader_ReadResponseBody(
+      NaClSrpcChannel* channel,
+      PP_Resource loader,
+      int32_t bytes_to_read,
+      int32_t callback_id,
+      nacl_abi_size_t* buffer_bytes, char* buffer,
+      int32_t* pp_error_or_bytes);
+  static NaClSrpcError PPB_URLLoader_FinishStreamingToFile(
+      NaClSrpcChannel* channel,
+      int64_t loader,
+      int32_t callback_id,
+      int32_t* pp_error);
+  static NaClSrpcError PPB_URLLoader_Close(
+      NaClSrpcChannel* channel,
+      PP_Resource loader);
+
+ private:
+  PpbURLLoaderRpcClient();
+  PpbURLLoaderRpcClient(const PpbURLLoaderRpcClient&);
+  void operator=(const PpbURLLoaderRpcClient);
+};  // class PpbURLLoaderRpcClient
+
 class PpbURLRequestInfoRpcClient {
  public:
   static NaClSrpcError PPB_URLRequestInfo_Create(
@@ -304,7 +363,7 @@ class PpbURLRequestInfoRpcClient {
   static NaClSrpcError PPB_URLRequestInfo_IsURLRequestInfo(
       NaClSrpcChannel* channel,
       PP_Resource resource,
-      int32_t* is_url_request_info);
+      int32_t* success);
   static NaClSrpcError PPB_URLRequestInfo_SetProperty(
       NaClSrpcChannel* channel,
       PP_Resource request,
@@ -336,7 +395,7 @@ class PpbURLResponseInfoRpcClient {
   static NaClSrpcError PPB_URLResponseInfo_IsURLResponseInfo(
       NaClSrpcChannel* channel,
       PP_Resource resource,
-      int32_t* is_url_response_info);
+      int32_t* success);
   static NaClSrpcError PPB_URLResponseInfo_GetProperty(
       NaClSrpcChannel* channel,
       PP_Resource response,

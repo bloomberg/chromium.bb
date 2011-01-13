@@ -23,7 +23,6 @@ void PpbURLResponseInfoRpcServer::PPB_URLResponseInfo_IsURLResponseInfo(
     PP_Resource resource,
     // outputs
     int32_t* success) {
-  NACL_UNTESTED();
   NaClSrpcClosureRunner runner(done);
 
   PP_Bool pp_success =
@@ -43,15 +42,13 @@ void PpbURLResponseInfoRpcServer::PPB_URLResponseInfo_GetProperty(
       int32_t property,
       // outputs
       nacl_abi_size_t* value_size, char* value_bytes) {
-  NACL_UNTESTED();
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   PP_Var value = PPBURLResponseInfoInterface()->GetProperty(
-      response,
-      static_cast<PP_URLResponseProperty>(property));
+      response, static_cast<PP_URLResponseProperty>(property));
   DebugPrintf("PPB_URLResponseInfo::GetProperty: type=%d\n",
-            value.type);
+              value.type);
 
   if (!SerializeTo(&value, value_bytes, value_size))
     return;
@@ -65,13 +62,12 @@ void PpbURLResponseInfoRpcServer::PPB_URLResponseInfo_GetBodyAsFileRef(
       PP_Resource response,
       // outputs
       PP_Resource* file_ref) {
-  NACL_UNTESTED();
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
   *file_ref = PPBURLResponseInfoInterface()->GetBodyAsFileRef(response);
   DebugPrintf("PPB_URLResponseInfo::GetBodyAsFileRef: file_ref="NACL_PRIx64"\n",
-            *file_ref);
+              *file_ref);
 
   rpc->result = NACL_SRPC_RESULT_OK;
 }

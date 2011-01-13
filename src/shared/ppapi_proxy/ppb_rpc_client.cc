@@ -679,6 +679,166 @@ NaClSrpcError PpbInstanceRpcClient::PPB_Instance_ExecuteScript(
   return retval;
 }
 
+NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_Create(
+    NaClSrpcChannel* channel,
+    PP_Instance instance,
+    PP_Resource* resource)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_URLLoader_Create:l:l",
+      instance,
+      resource
+  );
+  return retval;
+}
+
+NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_IsURLLoader(
+    NaClSrpcChannel* channel,
+    PP_Resource resource,
+    int32_t* is_url_loader)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_URLLoader_IsURLLoader:l:i",
+      resource,
+      is_url_loader
+  );
+  return retval;
+}
+
+NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_Open(
+    NaClSrpcChannel* channel,
+    PP_Resource loader,
+    PP_Resource request,
+    int32_t callback_id,
+    int32_t* pp_error)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_URLLoader_Open:lli:i",
+      loader,
+      request,
+      callback_id,
+      pp_error
+  );
+  return retval;
+}
+
+NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_FollowRedirect(
+    NaClSrpcChannel* channel,
+    PP_Resource loader,
+    int32_t callback_id,
+    int32_t* pp_error)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_URLLoader_FollowRedirect:li:i",
+      loader,
+      callback_id,
+      pp_error
+  );
+  return retval;
+}
+
+NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_GetUploadProgress(
+    NaClSrpcChannel* channel,
+    PP_Resource loader,
+    int64_t* bytes_sent,
+    int64_t* total_bytes_to_be_sent,
+    int32_t* success)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_URLLoader_GetUploadProgress:l:lli",
+      loader,
+      bytes_sent,
+      total_bytes_to_be_sent,
+      success
+  );
+  return retval;
+}
+
+NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_GetDownloadProgress(
+    NaClSrpcChannel* channel,
+    PP_Resource loader,
+    int64_t* bytes_received,
+    int64_t* total_bytes_to_be_received,
+    int32_t* success)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_URLLoader_GetDownloadProgress:l:lli",
+      loader,
+      bytes_received,
+      total_bytes_to_be_received,
+      success
+  );
+  return retval;
+}
+
+NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_GetResponseInfo(
+    NaClSrpcChannel* channel,
+    PP_Resource loader,
+    PP_Resource* response)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_URLLoader_GetResponseInfo:l:l",
+      loader,
+      response
+  );
+  return retval;
+}
+
+NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_ReadResponseBody(
+    NaClSrpcChannel* channel,
+    PP_Resource loader,
+    int32_t bytes_to_read,
+    int32_t callback_id,
+    nacl_abi_size_t* buffer_bytes, char* buffer,
+    int32_t* pp_error_or_bytes)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_URLLoader_ReadResponseBody:lii:Ci",
+      loader,
+      bytes_to_read,
+      callback_id,
+      buffer_bytes, buffer,
+      pp_error_or_bytes
+  );
+  return retval;
+}
+
+NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_FinishStreamingToFile(
+    NaClSrpcChannel* channel,
+    int64_t loader,
+    int32_t callback_id,
+    int32_t* pp_error)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_URLLoader_FinishStreamingToFile:li:i",
+      loader,
+      callback_id,
+      pp_error
+  );
+  return retval;
+}
+
+NaClSrpcError PpbURLLoaderRpcClient::PPB_URLLoader_Close(
+    NaClSrpcChannel* channel,
+    PP_Resource loader)  {
+  NaClSrpcError retval;
+  retval = NaClSrpcInvokeBySignature(
+      channel,
+      "PPB_URLLoader_Close:l:",
+      loader
+  );
+  return retval;
+}
+
 NaClSrpcError PpbURLRequestInfoRpcClient::PPB_URLRequestInfo_Create(
     NaClSrpcChannel* channel,
     PP_Module module,
@@ -696,13 +856,13 @@ NaClSrpcError PpbURLRequestInfoRpcClient::PPB_URLRequestInfo_Create(
 NaClSrpcError PpbURLRequestInfoRpcClient::PPB_URLRequestInfo_IsURLRequestInfo(
     NaClSrpcChannel* channel,
     PP_Resource resource,
-    int32_t* is_url_request_info)  {
+    int32_t* success)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_URLRequestInfo_IsURLRequestInfo:l:i",
       resource,
-      is_url_request_info
+      success
   );
   return retval;
 }
@@ -766,13 +926,13 @@ NaClSrpcError PpbURLRequestInfoRpcClient::PPB_URLRequestInfo_AppendFileToBody(
 NaClSrpcError PpbURLResponseInfoRpcClient::PPB_URLResponseInfo_IsURLResponseInfo(
     NaClSrpcChannel* channel,
     PP_Resource resource,
-    int32_t* is_url_response_info)  {
+    int32_t* success)  {
   NaClSrpcError retval;
   retval = NaClSrpcInvokeBySignature(
       channel,
       "PPB_URLResponseInfo_IsURLResponseInfo:l:i",
       resource,
-      is_url_response_info
+      success
   );
   return retval;
 }

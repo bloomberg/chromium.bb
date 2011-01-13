@@ -23,9 +23,7 @@ namespace ppapi_proxy {
 namespace {
 
 PP_Resource Create(PP_Module module) {
-  DebugPrintf("PPB_URLRequestInfo::Create: module=%"
-              NACL_PRIx64"\n", module);
-  NACL_UNTESTED();
+  DebugPrintf("PPB_URLRequestInfo::Create: module=%"NACL_PRIx64"\n", module);
 
   PP_Resource resource;
   NaClSrpcError srpc_result =
@@ -35,14 +33,13 @@ PP_Resource Create(PP_Module module) {
               NaClSrpcErrorString(srpc_result));
 
   if (srpc_result == NACL_SRPC_RESULT_OK)
-    return static_cast<PP_Resource>(resource);
+    return resource;
   return kInvalidResourceId;
 }
 
 PP_Bool IsURLRequestInfo(PP_Resource resource) {
   DebugPrintf("PPB_URLRequestInfo::IsURLRequestInfo: resource=%"NACL_PRIx64"\n",
               resource);
-  NACL_UNTESTED();
 
   int32_t success;
   NaClSrpcError srpc_result =
@@ -61,7 +58,6 @@ PP_Bool SetProperty(PP_Resource request,
                     struct PP_Var value) {
   DebugPrintf("PPB_URLRequestInfo::SetProperty: request=%"NACL_PRIx64"\n",
               request);
-  NACL_UNTESTED();
 
   nacl_abi_size_t value_size = kMaxVarSize;
   nacl::scoped_array<char> value_bytes(Serialize(&value, 1, &value_size));

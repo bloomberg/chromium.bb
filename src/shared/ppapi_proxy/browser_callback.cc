@@ -22,13 +22,15 @@ namespace {
 // Data structure used on the browser side to invoke a completion callback
 // on the plugin side.
 //
-// A plugin-side callback is proxied over to the browser side using an id.
-// This id is then paired with a channel listened to by the nexe that supplied
-// the callback.
+// A plugin-side callback is proxied over to the browser side using
+// a |callback_id|. This id is then paired with an |srpc_channel| listened to
+// by the nexe that supplied the callback.
+//
+// |read_buffer| is used with callbacks that are invoked on byte reads.
 struct RemoteCallbackInfo {
- public:
   NaClSrpcChannel* srpc_channel;
   int32_t callback_id;
+  char* read_buffer;
 };
 
 // Calls the remote implementation of a callback on the plugin side.
@@ -37,7 +39,8 @@ struct RemoteCallbackInfo {
 // PP_CompletionCallback to browser functions.
 //
 // |remote_callback| is a pointer to a RemoteCallbackInfo,
-// deleted after rpc via scoped_ptr.
+// deleted after rpc via scoped_ptr. The associated |read_buffer| is also
+// deleted.
 // |result| is passed by the callback invoker to indicate success or error.
 // It is passed as-is to the plugin side callback.
 void RunRemoteCallback(void* user_data, int32_t result) {
@@ -45,10 +48,20 @@ void RunRemoteCallback(void* user_data, int32_t result) {
   DebugPrintf("RunRemotecallback: result=%"NACL_PRId32"\n", result);
   nacl::scoped_ptr<RemoteCallbackInfo> remote_callback(
       reinterpret_cast<RemoteCallbackInfo*>(user_data));
+
+  nacl::scoped_array<char> read_buffer(remote_callback->read_buffer);
+  nacl_abi_size_t read_buffer_size = 0;
+  if (result > 0)  {  // Positive number indicates bytes read.
+    CHECK(remote_callback->read_buffer != NULL);
+    read_buffer_size = static_cast<nacl_abi_size_t>(result);
+  }
+
   CompletionCallbackRpcClient::RunCompletionCallback(
       remote_callback->srpc_channel,
       remote_callback->callback_id,
-      result);
+      result,
+      read_buffer_size,
+      read_buffer.get());
 }
 
 }  // namespace
@@ -57,18 +70,36 @@ void RunRemoteCallback(void* user_data, int32_t result) {
 // to RunRemoteCallback or NULL on failure.
 struct PP_CompletionCallback MakeRemoteCompletionCallback(
     NaClSrpcChannel* srpc_channel,
-    int32_t callback_id) {
+    int32_t callback_id,
+    int32_t bytes_to_read,
+    char** buffer) {
   RemoteCallbackInfo* remote_callback = new(std::nothrow) RemoteCallbackInfo;
-  if (remote_callback == NULL)
+  if (remote_callback == NULL)  // new failed.
     return PP_BlockUntilComplete();
   remote_callback->srpc_channel = srpc_channel;
   remote_callback->callback_id = callback_id;
+  remote_callback->read_buffer = NULL;
+
+  if (bytes_to_read > 0 && buffer != NULL) {
+    *buffer = new(std::nothrow) char[bytes_to_read];
+    if (*buffer == NULL)  // new failed.
+      return PP_BlockUntilComplete();
+    remote_callback->read_buffer = *buffer;
+  }
+
   return PP_MakeCompletionCallback(RunRemoteCallback, remote_callback);
+}
+
+struct PP_CompletionCallback MakeRemoteCompletionCallback(
+    NaClSrpcChannel* srpc_channel,
+    int32_t callback_id) {
+  return MakeRemoteCompletionCallback(srpc_channel, callback_id, 0, NULL);
 }
 
 void DeleteRemoteCallbackInfo(struct PP_CompletionCallback callback) {
   nacl::scoped_ptr<RemoteCallbackInfo> remote_callback(
       reinterpret_cast<RemoteCallbackInfo*>(callback.user_data));
+  nacl::scoped_array<char> read_buffer(remote_callback->read_buffer);
 }
 
 }  // namespace ppapi_proxy

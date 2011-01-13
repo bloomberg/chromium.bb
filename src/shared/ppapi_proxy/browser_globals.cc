@@ -152,6 +152,13 @@ const PPB_Instance* PPBInstanceInterface() {
   return ppb;
 }
 
+const PPB_URLLoader* PPBURLLoaderInterface() {
+  static const PPB_URLLoader* ppb =
+      reinterpret_cast<const PPB_URLLoader*>(
+          GetBrowserInterfaceSafe(PPB_URLLOADER_INTERFACE));
+  return ppb;
+}
+
 const PPB_URLRequestInfo* PPBURLRequestInfoInterface() {
   static const PPB_URLRequestInfo* ppb =
       reinterpret_cast<const PPB_URLRequestInfo*>(

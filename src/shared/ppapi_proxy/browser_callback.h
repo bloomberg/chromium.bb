@@ -19,6 +19,12 @@ namespace ppapi_proxy {
 struct PP_CompletionCallback MakeRemoteCompletionCallback(
     NaClSrpcChannel* srpc_channel,
     int32_t callback_id);
+struct PP_CompletionCallback MakeRemoteCompletionCallback(
+    NaClSrpcChannel* srpc_channel,
+    int32_t callback_id,
+     // For callbacks invoked on a byte read.
+    int32_t bytes_to_read,
+    char** buffer);
 
 // If the callback won't be called, use this to clean up the data from
 // the function above.

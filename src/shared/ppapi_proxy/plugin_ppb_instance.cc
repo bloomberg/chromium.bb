@@ -24,7 +24,6 @@ namespace {
 PP_Var GetWindowObject(PP_Instance instance) {
   DebugPrintf("PPB_Instance::GetWindowObject: instance=%"
               NACL_PRIx64"\n", instance);
-  NACL_UNTESTED();
   NaClSrpcChannel* channel = GetMainSrpcChannel();
 
   PP_Var window = PP_MakeUndefined();

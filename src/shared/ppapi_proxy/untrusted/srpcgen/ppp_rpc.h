@@ -102,7 +102,8 @@ class CompletionCallbackRpcServer {
       NaClSrpcRpc* rpc,
       NaClSrpcClosure* done,
       int32_t callback_id,
-      int32_t result);
+      int32_t result,
+      nacl_abi_size_t read_buffer_bytes, char* read_buffer);
 
  private:
   CompletionCallbackRpcServer();

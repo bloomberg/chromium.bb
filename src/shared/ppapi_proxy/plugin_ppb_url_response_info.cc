@@ -23,7 +23,6 @@ namespace {
 PP_Bool IsURLResponseInfo(PP_Resource resource) {
   DebugPrintf("PPB_URLResponseInfo::IsURLResponseInfo: resource=%"
               NACL_PRIx64"\n", resource);
-  NACL_UNTESTED();
 
   int32_t success;
   NaClSrpcError srpc_result =
@@ -40,7 +39,6 @@ PP_Bool IsURLResponseInfo(PP_Resource resource) {
 PP_Var GetProperty(PP_Resource response, PP_URLResponseProperty property) {
   DebugPrintf("PPB_URLResponseInfo::GetProperty: response=%"NACL_PRIx64"\n",
               response);
-  NACL_UNTESTED();
   NaClSrpcChannel* channel = GetMainSrpcChannel();
 
   PP_Var value = PP_MakeUndefined();
@@ -65,7 +63,6 @@ PP_Var GetProperty(PP_Resource response, PP_URLResponseProperty property) {
 PP_Resource GetBodyAsFileRef(PP_Resource response) {
   DebugPrintf("PPB_URLResponseInfo::GetBodyAsFileRef: response=%"
               NACL_PRIx64"\n", response);
-  NACL_UNTESTED();
 
   PP_Resource file_ref;
   NaClSrpcError srpc_result =

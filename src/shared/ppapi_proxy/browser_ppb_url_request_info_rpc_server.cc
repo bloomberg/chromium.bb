@@ -23,7 +23,6 @@ void PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_Create(
     PP_Module module,
     // outputs
     PP_Resource* resource) {
-  NACL_UNTESTED();
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
@@ -41,7 +40,6 @@ void PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_IsURLRequestInfo(
     PP_Resource resource,
     // outputs
     int32_t* success) {
-  NACL_UNTESTED();
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
@@ -61,7 +59,6 @@ void PpbURLRequestInfoRpcServer::PPB_URLRequestInfo_SetProperty(
       nacl_abi_size_t value_size, char* value_bytes,
       // outputs
       int32_t* success) {
-  NACL_UNTESTED();
   NaClSrpcClosureRunner runner(done);
   rpc->result = NACL_SRPC_RESULT_APP_ERROR;
 
