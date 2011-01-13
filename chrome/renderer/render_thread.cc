@@ -870,12 +870,18 @@ void RenderThread::EnsureWebKitInitialized() {
 
   WebScriptController::enableV8SingleThreadMode();
 
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
   // chrome: pages should not be accessible by normal content, and should
   // also be unable to script anything but themselves (to help limit the damage
   // that a corrupt chrome: page could cause).
   WebString chrome_ui_scheme(ASCIIToUTF16(chrome::kChromeUIScheme));
-  WebSecurityPolicy::registerURLSchemeAsLocal(chrome_ui_scheme);
-  WebSecurityPolicy::registerURLSchemeAsNoAccess(chrome_ui_scheme);
+  if (command_line.HasSwitch(switches::kNewChromeUISecurityModel)) {
+    WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(chrome_ui_scheme);
+  } else {
+    WebSecurityPolicy::registerURLSchemeAsLocal(chrome_ui_scheme);
+    WebSecurityPolicy::registerURLSchemeAsNoAccess(chrome_ui_scheme);
+  }
 
   // chrome-extension: resources shouldn't trigger insecure content warnings.
   WebString extension_scheme(ASCIIToUTF16(chrome::kExtensionScheme));
@@ -893,8 +899,6 @@ void RenderThread::EnsureWebKitInitialized() {
   // search_extension is null if not enabled.
   if (search_extension)
     RegisterExtension(search_extension, false);
-
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   if (command_line.HasSwitch(switches::kEnableBenchmarking))
     RegisterExtension(extensions_v8::BenchmarkingExtension::Get(), false);
