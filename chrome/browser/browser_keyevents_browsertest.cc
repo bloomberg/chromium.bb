@@ -636,8 +636,8 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
 #endif
 }
 
-// Flaky, http://crbug.com/65847.
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, FLAKY_ReservedAccelerators) {
+// Disabled, http://crbug.com/69475.
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, DISABLED_ReservedAccelerators) {
   ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
