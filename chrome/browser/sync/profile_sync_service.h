@@ -256,6 +256,14 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     return is_auth_in_progress_;
   }
 
+  bool tried_creating_explicit_passphrase() const {
+    return tried_creating_explicit_passphrase_;
+  }
+
+  bool tried_setting_explicit_passphrase() const {
+    return tried_setting_explicit_passphrase_;
+  }
+
   bool observed_passphrase_required() const {
     return observed_passphrase_required_;
   }
@@ -364,7 +372,12 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // setting a passphrase as opposed to implicitly (from the users' perspective)
   // using their Google Account password.  An implicit SetPassphrase will *not*
   // *not* override an explicit passphrase set previously.
-  virtual void SetPassphrase(const std::string& passphrase, bool is_explicit);
+  // |is_creation| is true if the call is in response to the user setting
+  // up a new passphrase, and false if it's being set in response to a prompt
+  // for an existing passphrase.
+  virtual void SetPassphrase(const std::string& passphrase,
+                             bool is_explicit,
+                             bool is_creation);
 
   // Returns whether processing changes is allowed.  Check this before doing
   // any model-modifying operations.
@@ -416,6 +429,14 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Cache of the last name the client attempted to authenticate.
   std::string last_attempted_user_email_;
+
+  // Whether the user has tried creating an explicit passphrase on this
+  // machine.
+  bool tried_creating_explicit_passphrase_;
+
+  // Whether the user has tried setting an explicit passphrase on this
+  // machine.
+  bool tried_setting_explicit_passphrase_;
 
   // Whether we have seen a SYNC_PASSPHRASE_REQUIRED since initializing the
   // backend, telling us that it is safe to send a passphrase down ASAP.
@@ -527,7 +548,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   struct CachedPassphrase {
     std::string value;
     bool is_explicit;
-    CachedPassphrase() : is_explicit(false) {}
+    bool is_creation;
+    CachedPassphrase() : is_explicit(false), is_creation(false) {}
   };
   CachedPassphrase cached_passphrase_;
 

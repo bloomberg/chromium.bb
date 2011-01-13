@@ -107,9 +107,12 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
 
   void OnUserConfigured(const SyncConfiguration& configuration);
 
-  void OnPassphraseEntry(const std::string& passphrase,
-                         const std::string& mode);
+  // The 'passphrase' screen is used when the user is prompted to enter
+  // an existing passphrase.
+  void OnPassphraseEntry(const std::string& passphrase);
 
+  // The 'first passphrase' screen is for users migrating from a build
+  // without passwords, who are prompted to make a passphrase choice.
   void OnFirstPassphraseEntry(const std::string& option,
                               const std::string& passphrase);
 

@@ -19,8 +19,9 @@ form {
   font-weight: bold;
   margin-bottom: 10px;
 }
-.sync-instructions {
+.sync-instructions-start-hidden {
   margin-top: 10px;
+  display: none;
 }
 .sync-footer {
   position: fixed;
@@ -44,16 +45,19 @@ html[os='mac'] input[type='button'],
 html[os='mac'] input[type='submit'] {
   font-size: 12pt;
 }
-
 #passphrase-input {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+#incorrectPassphrase {
   margin-top: 5px;
-  margin-bottom: 50px;
+}
+.error {
+  color: red;
 }
 </style>
 <script src="chrome://resources/js/cr.js"></script>
 <script>
-  var currentMode;
-
   // Called once, when this html/js is loaded.
   function setupPassphraseDialog(args) {
     // Allow platform specific rules
@@ -62,12 +66,25 @@ html[os='mac'] input[type='submit'] {
     } else if (!cr.isWindows) {
       document.documentElement.setAttribute('os', 'linux');
     }
+
+    document.getElementById("passphraseRejectedBody").style.display = "none";
+    document.getElementById("normalBody").style.display = "none";
+    document.getElementById("incorrectPassphrase").style.display = "none";
+
+    if (args["passphrase_creation_rejected"]) {
+      document.getElementById("passphraseRejectedBody").style.display = "block";
+    } else {
+      document.getElementById("normalBody").style.display = "block";
+    }
+
+    if (args["passphrase_setting_rejected"]) {
+      document.getElementById("incorrectPassphrase").style.display = "block";
+    }
   }
 
   function sendPassphraseAndClose() {
     var f = document.getElementById("passphraseForm");
-    var result = JSON.stringify({"passphrase": f.passphrase.value,
-                                 "mode": currentMode});
+    var result = JSON.stringify({"passphrase": f.passphrase.value});
     chrome.send("Passphrase", [result]);
   }
 
@@ -78,14 +95,16 @@ html[os='mac'] input[type='submit'] {
 </script>
 </head>
 <body i18n-values=".style.fontFamily:fontfamily"
-      onload="setupPassphraseDialog();">
+      onload="setupPassphraseDialog(JSON.parse(chrome.dialogArguments));">
 <form id="passphraseForm"
       onSubmit="sendPassphraseAndClose(); return false;">
   <div id="enter-passphrase">
     <div class="sync-header" id="enterTitle"
          i18n-content="enterPassphraseTitle"></div>
-    <div class="sync-instructions" id="enterInstructions"
+    <div class="sync-instructions-start-hidden" id="normalBody"
          i18n-content="enterPassphraseBody"></div>
+    <div class="sync-instructions-start-hidden" id="passphraseRejectedBody"
+         i18n-content="enterOtherPassphraseBody"></div>
   </div>
 
   <div id="passphrase-input">
@@ -93,11 +112,13 @@ html[os='mac'] input[type='submit'] {
            for="passphrase" i18n-content="passphraseLabel">
     </label>
     <input id="passphrase" name="passphrase" type="password" />
+    <div class="error" id="incorrectPassphrase"
+         i18n-content="incorrectPassphrase">
+    </div>
   </div>
 
-  <div id="sync-passphrase-warning" i18n-content="passphraseWarning">
-  </div>
-  <a id="clear-data-link" i18n-content="cleardatalink" href="#"
+  <span id="sync-passphrase-warning" i18n-content="passphraseRecover">
+  </span> <a id="clear-data-link" i18n-content="cleardatalink" href="#"
      onclick='goToDashboard(); return false;'></a>
 
   <div class="sync-footer">

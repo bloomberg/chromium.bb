@@ -424,10 +424,10 @@ html[os='mac'] input[type='submit'] {
     emptyError.style.display = "none";
     mismatchError.style.display = "none";
 
-    if (getRadioCheckedValue() != "explicit") {
+    var f = document.getElementById("chooseDataTypesForm");
+    if (getRadioCheckedValue() != "explicit" || f.option[0].disabled) {
       return true;
     }
-    var f = document.getElementById("chooseDataTypesForm");
     if (f.passphrase.value.length == 0) {
       emptyError.style.display = "block";
       return false;

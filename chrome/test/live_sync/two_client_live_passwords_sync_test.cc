@@ -84,11 +84,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, FAILS_SetPassphrase) {
 IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest, SetPassphrase) {
 #endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  GetClient(0)->service()->SetPassphrase(kValidPassphrase, true);
+  GetClient(0)->service()->SetPassphrase(kValidPassphrase, true, true);
   GetClient(0)->AwaitPassphraseAccepted();
   GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1));
   ASSERT_TRUE(GetClient(1)->service()->observed_passphrase_required());
-  GetClient(1)->service()->SetPassphrase(kValidPassphrase, true);
+  GetClient(1)->service()->SetPassphrase(kValidPassphrase, true, true);
   GetClient(1)->AwaitPassphraseAccepted();
   ASSERT_FALSE(GetClient(1)->service()->observed_passphrase_required());
 }
@@ -102,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
                        SetPassphraseAndAddPassword) {
 #endif
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  GetClient(0)->service()->SetPassphrase(kValidPassphrase, true);
+  GetClient(0)->service()->SetPassphrase(kValidPassphrase, true, true);
   GetClient(0)->AwaitPassphraseAccepted();
 
   PasswordForm form;
@@ -117,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
   ASSERT_EQ(1, GetClient(1)->GetLastSessionSnapshot()->
       num_conflicting_updates);
 
-  GetClient(1)->service()->SetPassphrase(kValidPassphrase, true);
+  GetClient(1)->service()->SetPassphrase(kValidPassphrase, true, true);
   GetClient(1)->AwaitPassphraseAccepted();
   ASSERT_FALSE(GetClient(1)->service()->observed_passphrase_required());
   GetClient(1)->AwaitSyncCycleCompletion("Accept passphrase and decrypt.");
@@ -131,14 +131,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
                        DISABLED_SetPassphraseAndThenSetupSync) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   ASSERT_TRUE(GetClient(0)->SetupSync());
-  GetClient(0)->service()->SetPassphrase(kValidPassphrase, true);
+  GetClient(0)->service()->SetPassphrase(kValidPassphrase, true, true);
   GetClient(0)->AwaitPassphraseAccepted();
   GetClient(0)->AwaitSyncCycleCompletion("Initial sync.");
 
   ASSERT_TRUE(GetClient(1)->SetupSync());
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(GetClient(1)->service()->observed_passphrase_required());
-  GetClient(1)->service()->SetPassphrase(kValidPassphrase, true);
+  GetClient(1)->service()->SetPassphrase(kValidPassphrase, true, true);
   GetClient(1)->AwaitPassphraseAccepted();
   ASSERT_FALSE(GetClient(1)->service()->observed_passphrase_required());
 }
@@ -149,16 +149,16 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePasswordsSyncTest,
                        DISABLED_SetPassphraseTwice) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  GetClient(0)->service()->SetPassphrase(kValidPassphrase, true);
+  GetClient(0)->service()->SetPassphrase(kValidPassphrase, true, true);
   GetClient(0)->AwaitPassphraseAccepted();
   GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1));
   ASSERT_TRUE(GetClient(1)->service()->observed_passphrase_required());
 
-  GetClient(1)->service()->SetPassphrase(kValidPassphrase, true);
+  GetClient(1)->service()->SetPassphrase(kValidPassphrase, true, true);
   GetClient(1)->AwaitPassphraseAccepted();
   ASSERT_FALSE(GetClient(1)->service()->observed_passphrase_required());
 
-  GetClient(1)->service()->SetPassphrase(kValidPassphrase, true);
+  GetClient(1)->service()->SetPassphrase(kValidPassphrase, true, true);
   GetClient(1)->AwaitPassphraseAccepted();
   ASSERT_FALSE(GetClient(1)->service()->observed_passphrase_required());
 }

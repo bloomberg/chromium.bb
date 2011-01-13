@@ -69,15 +69,13 @@ static bool GetAuthData(const std::string& json,
   return true;
 }
 
-bool GetPassphrase(const std::string& json, std::string* passphrase,
-                   std::string* mode) {
+bool GetPassphrase(const std::string& json, std::string* passphrase) {
   scoped_ptr<Value> parsed_value(base::JSONReader::Read(json, false));
   if (!parsed_value.get() || !parsed_value->IsType(Value::TYPE_DICTIONARY))
     return false;
 
   DictionaryValue* result = static_cast<DictionaryValue*>(parsed_value.get());
-  return result->GetString("passphrase", passphrase) &&
-         result->GetString("mode", mode);
+  return result->GetString("passphrase", passphrase);
 }
 
 bool GetFirstPassphrase(const std::string& json,
@@ -212,15 +210,14 @@ void FlowHandler::HandlePassphraseEntry(const ListValue* args) {
     return;
 
   std::string passphrase;
-  std::string mode;
-  if (!GetPassphrase(json, &passphrase, &mode)) {
+  if (!GetPassphrase(json, &passphrase)) {
     // Couldn't understand what the page sent.  Indicates a programming error.
     NOTREACHED();
     return;
   }
 
   DCHECK(flow_);
-  flow_->OnPassphraseEntry(passphrase, mode);
+  flow_->OnPassphraseEntry(passphrase);
 }
 
 void FlowHandler::HandleFirstPassphrase(const ListValue* args) {
@@ -480,10 +477,10 @@ void SyncSetupFlow::GetArgsForGaiaLogin(const ProfileSyncService* service,
 void SyncSetupFlow::GetArgsForEnterPassphrase(
     const ProfileSyncService* service, DictionaryValue* args) {
   args->SetString("iframeToShow", "passphrase");
-  if (service->IsUsingSecondaryPassphrase())
-    args->SetString("mode", "enter");
-  else
-    args->SetString("mode", "gaia");
+  args->SetBoolean("passphrase_creation_rejected",
+                   service->tried_creating_explicit_passphrase());
+  args->SetBoolean("passphrase_setting_rejected",
+                   service->tried_setting_explicit_passphrase());
 }
 
 // static
@@ -726,24 +723,23 @@ void SyncSetupFlow::OnUserConfigured(const SyncConfiguration& configuration) {
 
   if (configuration.use_secondary_passphrase &&
       !service_->IsUsingSecondaryPassphrase()) {
-    service_->SetPassphrase(configuration.secondary_passphrase, true);
+    service_->SetPassphrase(configuration.secondary_passphrase, true, true);
   }
 
   service_->OnUserChoseDatatypes(configuration.sync_everything,
                                  configuration.data_types);
 }
 
-void SyncSetupFlow::OnPassphraseEntry(const std::string& passphrase,
-                                      const std::string& mode) {
+void SyncSetupFlow::OnPassphraseEntry(const std::string& passphrase) {
   Advance(SyncSetupWizard::SETTING_UP);
-  service_->SetPassphrase(passphrase, true);
+  service_->SetPassphrase(passphrase, true, false);
 }
 
 void SyncSetupFlow::OnFirstPassphraseEntry(const std::string& option,
                                            const std::string& passphrase) {
   Advance(SyncSetupWizard::SETTING_UP);
   if (option == "explicit") {
-    service_->SetPassphrase(passphrase, true);
+    service_->SetPassphrase(passphrase, true, true);
   } else if (option == "nothanks") {
     // User opted out of encrypted sync, need to turn off encrypted
     // data types.

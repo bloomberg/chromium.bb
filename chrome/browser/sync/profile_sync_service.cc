@@ -66,6 +66,8 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
                                        Profile* profile,
                                        const std::string& cros_user)
     : last_auth_error_(AuthError::None()),
+      tried_creating_explicit_passphrase_(false),
+      tried_setting_explicit_passphrase_(false),
       observed_passphrase_required_(false),
       passphrase_required_for_decryption_(false),
       factory_(factory),
@@ -1013,13 +1015,20 @@ void ProfileSyncService::DeactivateDataType(
 }
 
 void ProfileSyncService::SetPassphrase(const std::string& passphrase,
-                                       bool is_explicit) {
+                                       bool is_explicit,
+                                       bool is_creation) {
   if (ShouldPushChanges() || observed_passphrase_required_) {
     backend_->SetPassphrase(passphrase, is_explicit);
   } else {
     cached_passphrase_.value = passphrase;
     cached_passphrase_.is_explicit = is_explicit;
+    cached_passphrase_.is_creation = is_creation;
   }
+
+  if (is_explicit && is_creation)
+    tried_creating_explicit_passphrase_ = true;
+  else if (is_explicit)
+    tried_setting_explicit_passphrase_ = true;
 }
 
 void ProfileSyncService::Observe(NotificationType type,
@@ -1047,7 +1056,8 @@ void ProfileSyncService::Observe(NotificationType type,
       if (!cached_passphrase_.value.empty()) {
         // Don't hold on to the passphrase in raw form longer than needed.
         SetPassphrase(cached_passphrase_.value,
-                      cached_passphrase_.is_explicit);
+                      cached_passphrase_.is_explicit,
+                      cached_passphrase_.is_creation);
         cached_passphrase_ = CachedPassphrase();
       }
 
@@ -1066,7 +1076,8 @@ void ProfileSyncService::Observe(NotificationType type,
 
       if (!cached_passphrase_.value.empty()) {
         SetPassphrase(cached_passphrase_.value,
-                      cached_passphrase_.is_explicit);
+                      cached_passphrase_.is_explicit,
+                      cached_passphrase_.is_creation);
         cached_passphrase_ = CachedPassphrase();
         break;
       }
@@ -1095,6 +1106,8 @@ void ProfileSyncService::Observe(NotificationType type,
 
       FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
       observed_passphrase_required_ = false;
+      tried_setting_explicit_passphrase_ = false;
+      tried_creating_explicit_passphrase_ = false;
 
       wizard_.Step(SyncSetupWizard::DONE);
       break;
@@ -1120,7 +1133,7 @@ void ProfileSyncService::Observe(NotificationType type,
       // actually change), or the user has an explicit passphrase set so this
       // becomes a no-op.
       tried_implicit_gaia_remove_when_bug_62103_fixed_ = true;
-      SetPassphrase(successful->password, false);
+      SetPassphrase(successful->password, false, true);
       break;
     }
     case NotificationType::GOOGLE_SIGNIN_FAILED: {
