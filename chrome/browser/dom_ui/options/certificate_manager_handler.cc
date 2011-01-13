@@ -8,6 +8,7 @@
 #include "app/l10n_util_collator.h"
 #include "base/file_util.h"  // for FileAccessProvider
 #include "base/safe_strerror_posix.h"
+#include "base/scoped_vector.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -893,14 +894,14 @@ void CertificateManagerHandler::PopulateTree(const std::string& tab_name,
 
 void CertificateManagerHandler::ShowError(const std::string& title,
                                           const std::string& error) const {
-  std::vector<const Value*> args;
+  ScopedVector<const Value> args;
   args.push_back(Value::CreateStringValue(title));
   args.push_back(Value::CreateStringValue(error));
-  args.push_back(Value::CreateNullValue());  // okTitle
-  args.push_back(Value::CreateStringValue(""));  // cancelTitle
+  args.push_back(Value::CreateStringValue(l10n_util::GetStringUTF8(IDS_OK)));
+  args.push_back(Value::CreateNullValue());  // cancelTitle
   args.push_back(Value::CreateNullValue());  // okCallback
   args.push_back(Value::CreateNullValue());  // cancelCallback
-  dom_ui_->CallJavascriptFunction(L"AlertOverlay.show", args);
+  dom_ui_->CallJavascriptFunction(L"AlertOverlay.show", args.get());
 }
 
 void CertificateManagerHandler::ShowImportErrors(
