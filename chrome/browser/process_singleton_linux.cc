@@ -951,7 +951,8 @@ bool ProcessSingleton::Create() {
     // We've already locked things, so we can't have lost the startup race,
     // but something doesn't like us.
     LOG(ERROR) << "Failed to create symlinks.";
-    socket_dir_.Delete();
+    if (!socket_dir_.Delete())
+      LOG(ERROR) << "Encountered a problem when deleting socket directory.";
     return false;
   }
 

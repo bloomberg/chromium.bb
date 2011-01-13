@@ -100,16 +100,18 @@ class SandboxedExtensionUnpackerTest : public testing::Test {
     // Hack since SandboxedExtensionUnpacker gets its background thread id from
     // the Start call, but we don't call it here.
     sandboxed_unpacker_->thread_identifier_ = BrowserThread::FILE;
-    PrepareUnpackerEnv();
+    EXPECT_TRUE(PrepareUnpackerEnv());
   }
 
-  void PrepareUnpackerEnv() {
+  bool PrepareUnpackerEnv() {
     sandboxed_unpacker_->extension_root_ =
       install_dir_.AppendASCII(extension_filenames::kTempExtensionName);
 
-    sandboxed_unpacker_->temp_dir_.Set(install_dir_);
+    if (!sandboxed_unpacker_->temp_dir_.Set(install_dir_))
+      return false;
     sandboxed_unpacker_->public_key_ =
       "ocnapchkplbmjmpfehjocmjnipfmogkh";
+    return true;
   }
 
   void OnUnpackSucceeded() {

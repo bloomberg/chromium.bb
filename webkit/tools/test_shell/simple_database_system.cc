@@ -28,7 +28,7 @@ SimpleDatabaseSystem* SimpleDatabaseSystem::GetInstance() {
 
 SimpleDatabaseSystem::SimpleDatabaseSystem()
     : waiting_for_dbs_to_close_(false) {
-  temp_dir_.CreateUniqueTempDir();
+  CHECK(temp_dir_.CreateUniqueTempDir());
   db_tracker_ = new DatabaseTracker(temp_dir_.path(), false);
   db_tracker_->AddObserver(this);
   DCHECK(!instance_);

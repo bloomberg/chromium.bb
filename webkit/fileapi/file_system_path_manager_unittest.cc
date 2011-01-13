@@ -165,8 +165,7 @@ class FileSystemPathManagerTest : public testing::Test {
 
   void SetUp() {
     data_dir_.reset(new ScopedTempDir);
-    data_dir_->CreateUniqueTempDir();
-    ASSERT_TRUE(data_dir_->IsValid());
+    ASSERT_TRUE(data_dir_->CreateUniqueTempDir());
     root_path_callback_status_ = false;
     root_path_.clear();
     file_system_name_.clear();

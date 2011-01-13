@@ -198,7 +198,8 @@ void ServiceUtilityProcessHost::Client::MetafileAvailable(
   // The metafile was created in a temp folder which needs to get deleted after
   // we have processed it.
   ScopedTempDir scratch_metafile_dir;
-  scratch_metafile_dir.Set(metafile_path.DirName());
+  if (!scratch_metafile_dir.Set(metafile_path.DirName()))
+    LOG(WARNING) << "Unable to set scratch metafile directory";
 #if defined(OS_WIN)
   printing::NativeMetafile metafile;
   if (!metafile.CreateFromFile(metafile_path)) {

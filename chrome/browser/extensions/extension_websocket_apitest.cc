@@ -20,6 +20,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_WebSocket) {
   PathService::Get(chrome::DIR_TEST_DATA, &websocket_root_dir);
   websocket_root_dir = websocket_root_dir.AppendASCII("layout_tests")
       .AppendASCII("LayoutTests");
-  ui_test_utils::TestWebSocketServer server(websocket_root_dir);
+  ui_test_utils::TestWebSocketServer server;
+  ASSERT_TRUE(server.Start(websocket_root_dir));
   ASSERT_TRUE(RunExtensionTest("websocket")) << message_;
 }

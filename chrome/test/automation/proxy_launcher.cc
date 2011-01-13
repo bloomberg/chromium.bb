@@ -161,7 +161,8 @@ void ProxyLauncher::CloseBrowserAndServer(ShutdownType shutdown_type) {
 
 void ProxyLauncher::LaunchBrowser(const LaunchState& state) {
   if (state.clear_profile || !temp_profile_dir_.IsValid()) {
-    temp_profile_dir_.Delete();
+    if (temp_profile_dir_.IsValid())
+      ASSERT_TRUE(temp_profile_dir_.Delete());
     ASSERT_TRUE(temp_profile_dir_.CreateUniqueTempDir());
 
     ASSERT_TRUE(test_launcher_utils::OverrideUserDataDir(user_data_dir()));

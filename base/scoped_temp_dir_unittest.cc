@@ -23,7 +23,7 @@ TEST(ScopedTempDir, FullPath) {
 
   {
     ScopedTempDir dir;
-    dir.Set(test_path);
+    EXPECT_TRUE(dir.Set(test_path));
     // Now the dir doesn't exist, so ensure that it gets created.
     EXPECT_TRUE(file_util::DirectoryExists(test_path));
     // When we call Release(), it shouldn't get destroyed when leaving scope.
@@ -36,7 +36,7 @@ TEST(ScopedTempDir, FullPath) {
   // Clean up.
   {
     ScopedTempDir dir;
-    dir.Set(test_path);
+    EXPECT_TRUE(dir.Set(test_path));
   }
   EXPECT_FALSE(file_util::DirectoryExists(test_path));
 }
@@ -83,7 +83,7 @@ TEST(ScopedTempDir, MultipleInvocations) {
   EXPECT_TRUE(dir.CreateUniqueTempDir());
   EXPECT_FALSE(dir.CreateUniqueTempDir());
   ScopedTempDir other_dir;
-  other_dir.Set(dir.Take());
+  EXPECT_TRUE(other_dir.Set(dir.Take()));
   EXPECT_TRUE(dir.CreateUniqueTempDir());
   EXPECT_FALSE(dir.CreateUniqueTempDir());
   EXPECT_FALSE(other_dir.CreateUniqueTempDir());

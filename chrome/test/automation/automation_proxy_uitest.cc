@@ -1575,8 +1575,10 @@ class AutomationProxySnapshotTest : public UITest {
  protected:
   AutomationProxySnapshotTest() {
     dom_automation_enabled_ = true;
-    snapshot_dir_.CreateUniqueTempDir();
-    snapshot_path_ = snapshot_dir_.path().AppendASCII("snapshot.png");
+    if (!snapshot_dir_.CreateUniqueTempDir())
+      ADD_FAILURE() << "Unable to create temporary directory";
+    else
+      snapshot_path_ = snapshot_dir_.path().AppendASCII("snapshot.png");
   }
 
   // Asserts that the given png file can be read and decoded into the given

@@ -27,8 +27,7 @@ class FileSystemOperationTest : public testing::Test {
  public:
   FileSystemOperationTest()
       : status_(kFileOperationStatusNotSet) {
-    base_.CreateUniqueTempDir();
-    EXPECT_TRUE(base_.IsValid());
+    EXPECT_TRUE(base_.CreateUniqueTempDir());
   }
 
   FileSystemOperation* operation();

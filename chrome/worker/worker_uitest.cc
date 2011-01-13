@@ -468,7 +468,8 @@ TEST_F(WorkerTest, WorkerWebSocketLayoutTests) {
 
   FilePath websocket_root_dir(temp_test_dir_);
   websocket_root_dir = websocket_root_dir.AppendASCII("LayoutTests");
-  ui_test_utils::TestWebSocketServer websocket_server(websocket_root_dir);
+  ui_test_utils::TestWebSocketServer websocket_server;
+  ASSERT_TRUE(websocket_server.Start(websocket_root_dir));
 
   StartHttpServer(new_http_root_dir_);
   for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i)

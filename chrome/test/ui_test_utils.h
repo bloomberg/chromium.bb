@@ -321,11 +321,14 @@ class TimedMessageLoopRunner {
 // server.
 class TestWebSocketServer {
  public:
-  // Creates and starts a python websocket server with |root_directory|.
-  explicit TestWebSocketServer(const FilePath& root_directory);
+  TestWebSocketServer();
 
-  // Destroys and stops the server.
+  // Stops the python websocket server if it was already started.
   ~TestWebSocketServer();
+
+  // Starts the python websocket server using |root_directory|. Returns whether
+  // the server was successfully started.
+  bool Start(const FilePath& root_directory);
 
  private:
   // Sets up PYTHONPATH to run websocket_server.py.
@@ -336,6 +339,9 @@ class TestWebSocketServer {
 
   // Creates a CommandLine for invoking the python websocker server.
   CommandLine* CreateWebSocketServerCommandLine();
+
+  // Has the server been started?
+  bool started_;
 
   // A Scoped temporary directory for holding the python pid file.
   ScopedTempDir temp_dir_;

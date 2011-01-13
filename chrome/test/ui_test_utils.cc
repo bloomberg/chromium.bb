@@ -799,17 +799,30 @@ void AppendToPythonPath(const FilePath& dir) {
 
 }  // anonymous namespace
 
-TestWebSocketServer::TestWebSocketServer(const FilePath& root_directory) {
+TestWebSocketServer::TestWebSocketServer() : started_(false) {
+}
+
+bool TestWebSocketServer::Start(const FilePath& root_directory) {
+  if (started_)
+    return true;
   scoped_ptr<CommandLine> cmd_line(CreateWebSocketServerCommandLine());
   cmd_line->AppendSwitchASCII("server", "start");
   cmd_line->AppendSwitch("chromium");
   cmd_line->AppendSwitch("register_cygwin");
   cmd_line->AppendSwitchPath("root", root_directory);
-  temp_dir_.CreateUniqueTempDir();
+  if (!temp_dir_.CreateUniqueTempDir()) {
+    LOG(ERROR) << "Unable to create a temporary directory.";
+    return false;
+  }
   websocket_pid_file_ = temp_dir_.path().AppendASCII("websocket.pid");
   cmd_line->AppendSwitchPath("pidfile", websocket_pid_file_);
   SetPythonPath();
-  base::LaunchApp(*cmd_line.get(), true, false, NULL);
+  if (!base::LaunchApp(*cmd_line.get(), true, false, NULL)) {
+    LOG(ERROR) << "Unable to launch websocket server.";
+    return false;
+  }
+  started_ = true;
+  return true;
 }
 
 CommandLine* TestWebSocketServer::CreatePythonCommandLine() {
@@ -846,6 +859,8 @@ CommandLine* TestWebSocketServer::CreateWebSocketServerCommandLine() {
 }
 
 TestWebSocketServer::~TestWebSocketServer() {
+  if (!started_)
+    return;
   scoped_ptr<CommandLine> cmd_line(CreateWebSocketServerCommandLine());
   cmd_line->AppendSwitchASCII("server", "stop");
   cmd_line->AppendSwitch("chromium");

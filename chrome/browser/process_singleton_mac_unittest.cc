@@ -25,8 +25,7 @@ class ProcessSingletonMacTest : public PlatformTest {
 
     // Put the lock in a temporary directory.  Doesn't need to be a
     // full profile to test this code.
-    temp_dir_.CreateUniqueTempDir();
-    ASSERT_TRUE(temp_dir_.IsValid());
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     lock_path_ = temp_dir_.path().Append(chrome::kSingletonLockFilename);
   }
 

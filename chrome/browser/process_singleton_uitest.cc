@@ -136,7 +136,7 @@ class ProcessSingletonTest : public UITest {
       // We use a manual reset so that all threads wake up at once when signaled
       // and thus we must manually reset it for each attempt.
       : threads_waker_(true /* manual */, false /* signaled */) {
-    temp_profile_dir_.CreateUniqueTempDir();
+    EXPECT_TRUE(temp_profile_dir_.CreateUniqueTempDir());
   }
 
   void SetUp() {

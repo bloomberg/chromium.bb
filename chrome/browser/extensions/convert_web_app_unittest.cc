@@ -110,7 +110,7 @@ TEST(ExtensionFromWebApp, Basic) {
   ASSERT_TRUE(extension.get());
 
   ScopedTempDir extension_dir;
-  extension_dir.Set(extension->path());
+  EXPECT_TRUE(extension_dir.Set(extension->path()));
 
   EXPECT_TRUE(extension->is_app());
   EXPECT_TRUE(extension->is_hosted_app());
@@ -153,7 +153,7 @@ TEST(ExtensionFromWebApp, Minimal) {
   ASSERT_TRUE(extension.get());
 
   ScopedTempDir extension_dir;
-  extension_dir.Set(extension->path());
+  EXPECT_TRUE(extension_dir.Set(extension->path()));
 
   EXPECT_TRUE(extension->is_app());
   EXPECT_TRUE(extension->is_hosted_app());
