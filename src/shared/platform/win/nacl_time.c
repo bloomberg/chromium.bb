@@ -167,7 +167,7 @@ void NaClTimeInit(void) {
 }
 
 void NaClTimeFini(void) {
-  NaClTimeInternalInit(&gNaClTimeState);
+  NaClTimeInternalFini(&gNaClTimeState);
 }
 
 uint64_t NaClTimerResolutionNanoseconds(void) {
