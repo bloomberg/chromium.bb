@@ -515,6 +515,11 @@ PepperPluginDelegateImpl::CreateImage2D(int width, int height) {
 webkit::ppapi::PluginDelegate::PlatformContext3D*
     PepperPluginDelegateImpl::CreateContext3D() {
 #ifdef ENABLE_GPU
+  // If accelerated compositing of plugins is disabled, fail to create a 3D
+  // context, because it won't be visible. This allows graceful fallback in the
+  // modules.
+  if (!render_view_->webkit_preferences().accelerated_plugins_enabled)
+    return NULL;
   WebGraphicsContext3DCommandBufferImpl* context =
       static_cast<WebGraphicsContext3DCommandBufferImpl*>(
           render_view_->webview()->graphicsContext3D());
