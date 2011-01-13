@@ -129,7 +129,7 @@ class PolicyTemplateGenerator:
           policy['supported_on'])
     if policy['type'] == 'group':
       self._ProcessPolicyList(policy['policies'])
-    elif policy['type'] == 'enum':
+    elif policy['type'] in ('string-enum', 'int-enum'):
       # Iterate through all the items of an enum-type policy, and add captions.
       for item in policy['items']:
         self._AddMessageToItem('ENUM_' + item['name'], item, 'caption')

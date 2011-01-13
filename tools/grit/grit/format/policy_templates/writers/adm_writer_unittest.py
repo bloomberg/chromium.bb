@@ -154,17 +154,17 @@ StringPolicy_Part="Caption of policy."
 '''
     self.CompareOutputs(output, expected_output)
 
-  def testEnumPolicy(self):
-    # Tests a policy group with a single policy of type 'enum'.
+  def testIntEnumPolicy(self):
+    # Tests a policy group with a single policy of type 'int-enum'.
     grd = self.PrepareTest('''
       {
         'policy_definitions': [
           {
             'name': 'EnumPolicy',
-            'type': 'enum',
+            'type': 'int-enum',
             'items': [
-              {'name': 'ProxyServerDisabled', 'value': '0'},
-              {'name': 'ProxyServerAutoDetect', 'value': '1'},
+              {'name': 'ProxyServerDisabled', 'value': 0},
+              {'name': 'ProxyServerAutoDetect', 'value': 1},
             ],
             'supported_on': ['chrome.win:8-']
           },
@@ -196,6 +196,67 @@ StringPolicy_Part="Caption of policy."
           ITEMLIST
             NAME !!ProxyServerDisabled_DropDown VALUE NUMERIC 0
             NAME !!ProxyServerAutoDetect_DropDown VALUE NUMERIC 1
+          END ITEMLIST
+        END PART
+      END POLICY
+
+    END CATEGORY
+  END CATEGORY
+
+[Strings]
+SUPPORTED_WINXPSP2="At least Windows 3.14"
+google="Google"
+googlechrome="Google Chrome"
+EnumPolicy_Policy="Caption of policy."
+EnumPolicy_Explain="Description of policy."
+EnumPolicy_Part="Caption of policy."
+ProxyServerDisabled_DropDown="Option1"
+ProxyServerAutoDetect_DropDown="Option2"
+'''
+    self.CompareOutputs(output, expected_output)
+
+  def testStringEnumPolicy(self):
+    # Tests a policy group with a single policy of type 'int-enum'.
+    grd = self.PrepareTest('''
+      {
+        'policy_definitions': [
+          {
+            'name': 'EnumPolicy',
+            'type': 'string-enum',
+            'items': [
+              {'name': 'ProxyServerDisabled', 'value': 'one'},
+              {'name': 'ProxyServerAutoDetect', 'value': 'two'},
+            ],
+            'supported_on': ['chrome.win:8-']
+          },
+        ],
+        'placeholders': [],
+      }''', '''
+        <messages>
+          <message name="IDS_POLICY_ENUMPOLICY_CAPTION">Caption of policy.</message>
+          <message name="IDS_POLICY_ENUMPOLICY_DESC">Description of policy.</message>
+          <message name="IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION">Option1</message>
+          <message name="IDS_POLICY_ENUM_PROXYSERVERAUTODETECT_CAPTION">Option2</message>
+          <message name="IDS_POLICY_WIN_SUPPORTED_WINXPSP2">At least Windows 3.14</message>
+        </messages>
+      ''' )
+    output = self.GetOutput(grd, 'fr', {'_google_chrome': '1'}, 'adm', 'en')
+    expected_output = '''CLASS MACHINE
+  CATEGORY !!google
+    CATEGORY !!googlechrome
+      KEYNAME "Software\\Policies\\Google\\Chrome"
+
+      POLICY !!EnumPolicy_Policy
+        #if version >= 4
+          SUPPORTED !!SUPPORTED_WINXPSP2
+        #endif
+        EXPLAIN !!EnumPolicy_Explain
+
+        PART !!EnumPolicy_Part  DROPDOWNLIST
+          VALUENAME "EnumPolicy"
+          ITEMLIST
+            NAME !!ProxyServerDisabled_DropDown VALUE "one"
+            NAME !!ProxyServerAutoDetect_DropDown VALUE "two"
           END ITEMLIST
         END PART
       END POLICY

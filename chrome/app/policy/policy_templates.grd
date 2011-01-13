@@ -285,6 +285,24 @@ templates and will be translated for each locale. -->
 
       If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> ignores all proxy-related options specified from the command line.
     </message>
+    <message name="IDS_POLICY_PROXYMODE_CAPTION" desc="Text describing the dropdown menu for selecting proxy server mode in the 'proxy' policy settings page.">
+      Choose how to specify proxy server settings
+    </message>
+    <message name="IDS_POLICY_ENUM_PROXYDISABLED_CAPTION" desc="Label in the 'proxy server mode' dropdown menu for selecting no proxy server.">
+      Never use a proxy
+    </message>
+    <message name="IDS_POLICY_ENUM_PROXYAUTODETECT_CAPTION" desc="Label in the 'proxy server mode' dropdown menu for selecting to auto-detect proxy settings.">
+      Auto detect proxy settings
+    </message>
+    <message name="IDS_POLICY_ENUM_PROXYPACSCRIPT_CAPTION" desc="Label in the 'proxy server mode' dropdown menu for selecting pac script proxy settings.">
+      Use a .pac proxy script
+    </message>
+    <message name="IDS_POLICY_ENUM_PROXYFIXEDSERVERS_CAPTION" desc="Label in the 'proxy server mode' dropdown menu for selecting fixed server proxy settings.">
+      Use fixed proxy servers
+    </message>
+    <message name="IDS_POLICY_ENUM_PROXYUSESYSTEM_CAPTION" desc="Label in the 'proxy server mode' dropdown menu for selecting to use system proxy settings.">
+      Use system proxy settings
+    </message>
     <message name="IDS_POLICY_PROXYSERVERMODE_CAPTION" desc="Text describing the dropdown menu for selecting proxy server mode in the 'proxy' policy settings page.">
       Choose how to specify proxy server settings
     </message>
@@ -312,7 +330,25 @@ templates and will be translated for each locale. -->
     <message name="IDS_POLICY_PROXYPACURL_CAPTION" desc="The label of the 'proxy pac URL' text field in the 'proxy' policy settings page.">
       URL to a proxy .pac file
     </message>
-    <message name="IDS_POLICY_PROXYSERVERMODE_DESC" desc="The description of the 'proxy bypass rules' policy when displayed in OSX Workgroup Manager.">
+    <message name="IDS_POLICY_PROXYMODE_DESC" desc="The description of the 'proxy mode' policy when displayed in OSX Workgroup Manager.">
+      Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings.
+
+      If you choose to never use a proxy server and always connect directly, all other options are ignored.
+
+      If you choose to use system proxy settings or auto detect the proxy server, all other options are ignored.
+
+      If you choose fixed server proxy mode, you can specify further options in 'Address or URL of proxy server' and 'Comma-separated list of proxy bypass rules'.
+
+      If you choose to use a .pac proxy script, you must specify the URL to the script in 'URL to a proxy .pac file'.
+
+      For detailed examples, visit:
+      <ph name="PROXY_HELP_URL">$2<ex>http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett</ex></ph>
+
+      If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> ignores all proxy-related options specified from the command line.
+    </message>
+    <message name="IDS_POLICY_PROXYSERVERMODE_DESC" desc="The description of the 'proxy server mode'">
+      This policy is deprecated, use ProxyMode instead.
+
       Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings.
 
       If you choose to never use a proxy server and always connect directly, all other options are ignored.
@@ -866,6 +902,10 @@ templates and will be translated for each locale. -->
     <message name="IDS_POLICY_DOC_BACK_TO_TOP"
              desc="Text of a link in the generated policy documentation, that takes the user to the top of the page">
       Back to top
+    </message>
+    <message name="IDS_POLICY_DOC_DEPRECATED"
+             desc="Text appended in parentheses to the policy name to indicate that it has been deprecated">
+      deprecated
     </message>
     <message name="IDS_POLICY_DOC_SUPPORTED"
              desc="Appears next to the name of each supported feature in the 'list of supported policy features' in the generated policy documentation">

@@ -24,7 +24,8 @@ class PListWriter(xml_formatted_writer.XMLFormattedWriter):
   STRING_TABLE = 'Localizable.strings'
   TYPE_TO_INPUT = {
     'string': 'string',
-    'enum': 'integer',
+    'int-enum': 'integer',
+    'string-enum': 'string',
     'main': 'boolean',
     'list': 'array',
   }
@@ -88,10 +89,14 @@ class PListWriter(xml_formatted_writer.XMLFormattedWriter):
     self._AddTargets(dict)
     self._AddStringKeyValuePair(dict, 'pfm_type',
                                 self.TYPE_TO_INPUT[policy_type])
-    if (policy_type == 'enum'):
+    if policy_type in ('int-enum', 'string-enum'):
       range_list = self._AddKeyValuePair(dict, 'pfm_range_list', 'array')
       for item in policy['items']:
-        self.AddElement(range_list, 'integer', {}, item['value'])
+        if policy_type == 'int-enum':
+          element_type = 'integer'
+        else:
+          element_type = 'string'
+        self.AddElement(range_list, element_type, {}, str(item['value']))
 
   def BeginTemplate(self):
     self._plist.attributes['version'] = '1'

@@ -269,9 +269,9 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, ManualOptions) {
                      Value::CreateStringValue("http://chromium.org/override"));
   provider.AddPolicy(kPolicyProxyServer,
                      Value::CreateStringValue("chromium.org"));
-  provider.AddPolicy(kPolicyProxyMode,
+  provider.AddPolicy(kPolicyProxyServerMode,
                      Value::CreateIntegerValue(
-                         kPolicyManuallyConfiguredProxyMode));
+                         kPolicyManuallyConfiguredProxyServerMode));
 
   ConfigurationPolicyPrefStore store(&provider);
   VerifyProxyPrefs(
@@ -281,9 +281,9 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, ManualOptions) {
 
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, ManualOptionsReversedApplyOrder) {
   MockConfigurationPolicyProvider provider;
-  provider.AddPolicy(kPolicyProxyMode,
+  provider.AddPolicy(kPolicyProxyServerMode,
                      Value::CreateIntegerValue(
-                         kPolicyManuallyConfiguredProxyMode));
+                         kPolicyManuallyConfiguredProxyServerMode));
   provider.AddPolicy(kPolicyProxyBypassList,
                      Value::CreateStringValue("http://chromium.org/override"));
   provider.AddPolicy(kPolicyProxyServer,
@@ -295,50 +295,95 @@ TEST_F(ConfigurationPolicyPrefStoreProxyTest, ManualOptionsReversedApplyOrder) {
       ProxyPrefs::MODE_FIXED_SERVERS);
 }
 
-TEST_F(ConfigurationPolicyPrefStoreProxyTest, NoProxy) {
+TEST_F(ConfigurationPolicyPrefStoreProxyTest, NoProxyServerMode) {
   MockConfigurationPolicyProvider provider;
-  provider.AddPolicy(kPolicyProxyMode,
+  provider.AddPolicy(kPolicyProxyServerMode,
                      Value::CreateIntegerValue(kPolicyNoProxyServerMode));
 
   ConfigurationPolicyPrefStore store(&provider);
   VerifyProxyPrefs(store, "", "", "", ProxyPrefs::MODE_DIRECT);
 }
 
-TEST_F(ConfigurationPolicyPrefStoreProxyTest, AutoDetect) {
+TEST_F(ConfigurationPolicyPrefStoreProxyTest, NoProxyModeName) {
   MockConfigurationPolicyProvider provider;
-  provider.AddPolicy(kPolicyProxyMode,
-                     Value::CreateIntegerValue(kPolicyAutoDetectProxyMode));
+  provider.AddPolicy(
+      kPolicyProxyMode,
+      Value::CreateStringValue(ProxyPrefs::kDirectProxyModeName));
+
+  ConfigurationPolicyPrefStore store(&provider);
+  VerifyProxyPrefs(store, "", "", "", ProxyPrefs::MODE_DIRECT);
+}
+
+TEST_F(ConfigurationPolicyPrefStoreProxyTest, AutoDetectProxyServerMode) {
+  MockConfigurationPolicyProvider provider;
+  provider.AddPolicy(
+      kPolicyProxyServerMode,
+      Value::CreateIntegerValue(kPolicyAutoDetectProxyServerMode));
 
   ConfigurationPolicyPrefStore store(&provider);
   VerifyProxyPrefs(store, "", "", "", ProxyPrefs::MODE_AUTO_DETECT);
 }
 
-TEST_F(ConfigurationPolicyPrefStoreProxyTest, AutoDetectPac) {
+TEST_F(ConfigurationPolicyPrefStoreProxyTest, AutoDetectProxyModeName) {
+  MockConfigurationPolicyProvider provider;
+  provider.AddPolicy(
+      kPolicyProxyMode,
+      Value::CreateStringValue(ProxyPrefs::kAutoDetectProxyModeName));
+
+  ConfigurationPolicyPrefStore store(&provider);
+  VerifyProxyPrefs(store, "", "", "", ProxyPrefs::MODE_AUTO_DETECT);
+}
+
+TEST_F(ConfigurationPolicyPrefStoreProxyTest, PacScriptProxyMode) {
   MockConfigurationPolicyProvider provider;
   provider.AddPolicy(kPolicyProxyPacUrl,
                      Value::CreateStringValue("http://short.org/proxy.pac"));
   provider.AddPolicy(
       kPolicyProxyMode,
-      Value::CreateIntegerValue(kPolicyManuallyConfiguredProxyMode));
+      Value::CreateStringValue(ProxyPrefs::kPacScriptProxyModeName));
 
   ConfigurationPolicyPrefStore store(&provider);
   VerifyProxyPrefs(
       store, "", "http://short.org/proxy.pac", "", ProxyPrefs::MODE_PAC_SCRIPT);
 }
 
-TEST_F(ConfigurationPolicyPrefStoreProxyTest, UseSystem) {
+TEST_F(ConfigurationPolicyPrefStoreProxyTest, UseSystemProxyServerMode) {
   MockConfigurationPolicyProvider provider;
-  provider.AddPolicy(kPolicyProxyMode,
-                     Value::CreateIntegerValue(kPolicyUseSystemProxyMode));
+  provider.AddPolicy(
+      kPolicyProxyServerMode,
+      Value::CreateIntegerValue(kPolicyUseSystemProxyServerMode));
 
   ConfigurationPolicyPrefStore store(&provider);
   VerifyProxyPrefs(store, "", "", "", ProxyPrefs::MODE_SYSTEM);
 }
 
+TEST_F(ConfigurationPolicyPrefStoreProxyTest, UseSystemProxyMode) {
+  MockConfigurationPolicyProvider provider;
+  provider.AddPolicy(
+      kPolicyProxyMode,
+      Value::CreateStringValue(ProxyPrefs::kSystemProxyModeName));
+
+  ConfigurationPolicyPrefStore store(&provider);
+  VerifyProxyPrefs(store, "", "", "", ProxyPrefs::MODE_SYSTEM);
+}
+
+TEST_F(ConfigurationPolicyPrefStoreProxyTest,
+       ProxyModeOverridesProxyServerMode) {
+  MockConfigurationPolicyProvider provider;
+  provider.AddPolicy(kPolicyProxyServerMode,
+                     Value::CreateIntegerValue(kPolicyNoProxyServerMode));
+  provider.AddPolicy(
+      kPolicyProxyMode,
+      Value::CreateStringValue(ProxyPrefs::kAutoDetectProxyModeName));
+
+  ConfigurationPolicyPrefStore store(&provider);
+  VerifyProxyPrefs(store, "", "", "", ProxyPrefs::MODE_AUTO_DETECT);
+}
+
 TEST_F(ConfigurationPolicyPrefStoreProxyTest, ProxyInvalid) {
   for (int i = 0; i < MODE_COUNT; ++i) {
     MockConfigurationPolicyProvider provider;
-    provider.AddPolicy(kPolicyProxyMode, Value::CreateIntegerValue(i));
+    provider.AddPolicy(kPolicyProxyServerMode, Value::CreateIntegerValue(i));
     // No mode expects all three parameters being set.
     provider.AddPolicy(kPolicyProxyPacUrl,
                        Value::CreateStringValue("http://short.org/proxy.pac"));

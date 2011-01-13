@@ -33,6 +33,18 @@ class TemplateWriter(object):
     self.config = config
     self.messages = messages
 
+  def IsDeprecatedPolicySupported(self, policy):
+    '''Checks if the given deprecated policy is supported by the writer.
+
+    Args:
+      policy: The dictionary of the policy.
+
+    Returns:
+      True if the writer chooses to include the deprecated 'policy' in its
+      output.
+    '''
+    return False
+
   def IsPolicySupported(self, policy):
     '''Checks if the given policy is supported by the writer.
     In other words, the set of platforms supported by the writer
@@ -45,6 +57,10 @@ class TemplateWriter(object):
     Returns:
       True if the writer chooses to include 'policy' in its output.
     '''
+    if ('deprecated' in policy and policy['deprecated'] is True and
+        not self.IsDeprecatedPolicySupported(policy)):
+      return False
+
     if '*' in self.platforms:
       # Currently chrome_os is only catched here.
       return True

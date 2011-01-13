@@ -211,7 +211,7 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
           self.tester.fail()
     self.do_test(messages_mock, policy_defs_mock, LocalMockWriter())
 
-  def testEnumTexts(self):
+  def testIntEnumTexts(self):
     # Test that GUI messages are assigned correctly to enums
     # (aka dropdown menus).
     messages_mock = {
@@ -224,12 +224,41 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
     }
     policy_defs_mock = [{
       'name': 'Policy1',
-      'type': 'enum',
+      'type': 'int-enum',
       'supported_on': [],
       'items': [
-        {'name': 'item1', 'value': '0'},
-        {'name': 'item2', 'value': '1'},
-        {'name': 'item3', 'value': '3'},
+        {'name': 'item1', 'value': 0},
+        {'name': 'item2', 'value': 1},
+        {'name': 'item3', 'value': 3},
+      ]
+    }]
+
+    class LocalMockWriter(mock_writer.MockWriter):
+      def WritePolicy(self, policy):
+        self.tester.assertEquals(policy['items'][0]['caption'], 'string1')
+        self.tester.assertEquals(policy['items'][1]['caption'], 'string2')
+        self.tester.assertEquals(policy['items'][2]['caption'], 'string3')
+    self.do_test(messages_mock, policy_defs_mock, LocalMockWriter())
+
+  def testStringEnumTexts(self):
+    # Test that GUI messages are assigned correctly to enums
+    # (aka dropdown menus).
+    messages_mock = {
+      'IDS_POLICY_ENUM_ITEM1_CAPTION': 'string1',
+      'IDS_POLICY_ENUM_ITEM2_CAPTION': 'string2',
+      'IDS_POLICY_ENUM_ITEM3_CAPTION': 'string3',
+      'IDS_POLICY_POLICY1_CAPTION': '',
+      'IDS_POLICY_POLICY1_DESC': '',
+
+    }
+    policy_defs_mock = [{
+      'name': 'Policy1',
+      'type': 'string-enum',
+      'supported_on': [],
+      'items': [
+        {'name': 'item1', 'value': 'one'},
+        {'name': 'item2', 'value': 'two'},
+        {'name': 'item3', 'value': 'three'},
       ]
     }]
 

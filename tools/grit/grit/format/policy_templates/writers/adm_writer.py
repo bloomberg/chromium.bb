@@ -21,7 +21,8 @@ class AdmWriter(template_writer.TemplateWriter):
 
   TYPE_TO_INPUT = {
     'string': 'EDITTEXT',
-    'enum': 'DROPDOWNLIST',
+    'string-enum': 'DROPDOWNLIST',
+    'int-enum': 'DROPDOWNLIST',
     'list': 'LISTBOX'}
   NEWLINE = '\r\n'
 
@@ -76,11 +77,15 @@ class AdmWriter(template_writer.TemplateWriter):
       self._PrintLine('VALUEPREFIX ""')
     else:
       self._PrintLine('VALUENAME "%s"' % policy['name'])
-    if policy['type'] == 'enum':
+    if policy['type'] in ('int-enum', 'string-enum'):
       self._PrintLine('ITEMLIST', 1)
       for item in policy['items']:
-        self._PrintLine('NAME !!%s_DropDown VALUE NUMERIC %s' %
-                        (item['name'],  item['value']))
+        if policy['type'] == 'int-enum':
+          value_text = 'NUMERIC ' + str(item['value'])
+        else:
+          value_text = '"' + item['value'] + '"'
+        self._PrintLine('NAME !!%s_DropDown VALUE %s' %
+            (item['name'], value_text))
         self._AddGuiString(item['name'] + '_DropDown', item['caption'])
       self._PrintLine('END ITEMLIST', -1)
     self._PrintLine('END PART', -1)

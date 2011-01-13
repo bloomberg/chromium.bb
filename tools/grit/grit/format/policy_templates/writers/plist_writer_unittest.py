@@ -175,8 +175,8 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
     </array>''')
     self.assertEquals(output.strip(), expected_output.strip())
 
-  def testEnumPolicy(self):
-    # Tests a policy group with a single policy of type 'enum'.
+  def testIntEnumPolicy(self):
+    # Tests a policy group with a single policy of type 'int-enum'.
     grd = self.PrepareTest('''
       {
         'policy_definitions': [
@@ -185,10 +185,10 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
             'type': 'group',
             'policies': [{
               'name': 'EnumPolicy',
-              'type': 'enum',
+              'type': 'int-enum',
               'items': [
-                {'name': 'ProxyServerDisabled', 'value': '0'},
-                {'name': 'ProxyServerAutoDetect', 'value': '1'},
+                {'name': 'ProxyServerDisabled', 'value': 0},
+                {'name': 'ProxyServerAutoDetect', 'value': 1},
               ],
               'supported_on': ['chrome.mac:8-'],
             }],
@@ -230,6 +230,66 @@ class PListWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         <array>
           <integer>0</integer>
           <integer>1</integer>
+        </array>
+      </dict>
+    </array>''')
+    self.assertEquals(output.strip(), expected_output.strip())
+
+  def testStringEnumPolicy(self):
+    # Tests a policy group with a single policy of type 'string-enum'.
+    grd = self.PrepareTest('''
+      {
+        'policy_definitions': [
+          {
+            'name': 'EnumGroup',
+            'type': 'group',
+            'policies': [{
+              'name': 'EnumPolicy',
+              'type': 'string-enum',
+              'items': [
+                {'name': 'ProxyServerDisabled', 'value': 'one'},
+                {'name': 'ProxyServerAutoDetect', 'value': 'two'},
+              ],
+              'supported_on': ['chrome.mac:8-'],
+            }],
+          },
+        ],
+        'placeholders': [],
+      }''', '''
+        <messages>
+          <message name="IDS_POLICY_ENUMGROUP_CAPTION">This is not tested here.</message>
+          <message name="IDS_POLICY_ENUMGROUP_DESC">This is not tested here.</message>
+          <message name="IDS_POLICY_ENUMPOLICY_CAPTION">This is not tested here.</message>
+          <message name="IDS_POLICY_ENUMPOLICY_DESC">This is not tested here.</message>
+          <message name="IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION">This is not tested here.</message>
+          <message name="IDS_POLICY_ENUM_PROXYSERVERAUTODETECT_CAPTION">This is not tested here.</message>
+        </messages>
+      ''' )
+    output = self.GetOutput(
+        grd,
+        'fr',
+        {'_google_chrome': '1', 'mac_bundle_id': 'com.example.Test2'},
+        'plist',
+        'en')
+    expected_output = self._GetExpectedOutputs(
+        'Google_Chrome', 'com.example.Test2', '''<array>
+      <dict>
+        <key>pfm_name</key>
+        <string>EnumPolicy</string>
+        <key>pfm_description</key>
+        <string/>
+        <key>pfm_title</key>
+        <string/>
+        <key>pfm_targets</key>
+        <array>
+          <string>user-managed</string>
+        </array>
+        <key>pfm_type</key>
+        <string>string</string>
+        <key>pfm_range_list</key>
+        <array>
+          <string>one</string>
+          <string>two</string>
         </array>
       </dict>
     </array>''')

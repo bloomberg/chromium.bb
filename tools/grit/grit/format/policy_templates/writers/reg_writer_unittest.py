@@ -103,14 +103,14 @@ class RegWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '"StringPolicy"="hello, world! \\\" \\\\"'])
     self.CompareOutputs(output, expected_output)
 
-  def testEnumPolicy(self):
-    # Tests a policy group with a single policy of type 'enum'.
+  def testIntEnumPolicy(self):
+    # Tests a policy group with a single policy of type 'int-enum'.
     grd = self.PrepareTest(
         '{'
         '  "policy_definitions": ['
         '    {'
         '      "name": "EnumPolicy",'
-        '      "type": "enum",'
+        '      "type": "int-enum",'
         '      "items": ['
         '        {"name": "ProxyServerDisabled", "value": 0},'
         '        {"name": "ProxyServerAutoDetect", "value": 1},'
@@ -137,6 +137,42 @@ class RegWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '',
         '[HKEY_LOCAL_MACHINE\\Software\\Policies\\Google\\Chrome]',
         '"EnumPolicy"=dword:1'])
+    self.CompareOutputs(output, expected_output)
+
+  def testStringEnumPolicy(self):
+    # Tests a policy group with a single policy of type 'string-enum'.
+    grd = self.PrepareTest(
+        '{'
+        '  "policy_definitions": ['
+        '    {'
+        '      "name": "EnumPolicy",'
+        '      "type": "string-enum",'
+        '      "items": ['
+        '        {"name": "ProxyServerDisabled", "value": "one"},'
+        '        {"name": "ProxyServerAutoDetect", "value": "two"},'
+        '      ],'
+        '      "supported_on": ["chrome.win:8-"],'
+        '      "annotations": {'
+        '        "example_value": "two"'
+        '      }'
+        '    },'
+        '  ],'
+        '  "placeholders": [],'
+        '}',
+        '<messages>'
+        '  <message name="IDS_POLICY_ENUMPOLICY_CAPTION"></message>'
+        '  <message name="IDS_POLICY_ENUMPOLICY_DESC"></message>'
+        '  <message name="IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION">'
+        '  </message>'
+        '  <message name="IDS_POLICY_ENUM_PROXYSERVERAUTODETECT_CAPTION">'
+        '  </message>'
+        '</messages>')
+    output = self.GetOutput(grd, 'fr', {'_google_chrome': '1'}, 'reg', 'en')
+    expected_output = self.NEWLINE.join([
+        'Windows Registry Editor Version 5.00',
+        '',
+        '[HKEY_LOCAL_MACHINE\\Software\\Policies\\Google\\Chrome]',
+        '"EnumPolicy"="two"'])
     self.CompareOutputs(output, expected_output)
 
   def testListPolicy(self):

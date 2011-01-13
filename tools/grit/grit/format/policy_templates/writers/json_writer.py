@@ -39,8 +39,10 @@ class JsonWriter(template_writer.TemplateWriter):
         example_value_str = 'true'
       else:
         example_value_str = 'false'
-    elif policy['type'] == 'enum':
-      example_value_str = example_value
+    elif policy['type'] == 'string-enum':
+      example_value_str = '"%s"' % example_value;
+    elif policy['type'] == 'int-enum':
+      example_value_str = str(example_value)
     else:
       raise Exception('unknown policy type %s:' % policy['type'])
 

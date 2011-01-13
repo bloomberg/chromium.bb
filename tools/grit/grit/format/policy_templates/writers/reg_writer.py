@@ -69,8 +69,10 @@ class RegWriter(template_writer.TemplateWriter):
           example_value_str = 'dword:1'
         else:
           example_value_str = 'dword:0'
-      elif policy['type'] == 'enum':
+      elif policy['type'] == 'int-enum':
         example_value_str = 'dword:%d' % example_value
+      elif policy['type'] == 'string-enum':
+        example_value_str = '"%s"' % example_value
       else:
         raise Exception('unknown policy type %s:' % policy['type'])
 

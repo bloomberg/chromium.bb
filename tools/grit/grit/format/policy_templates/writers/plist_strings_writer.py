@@ -48,11 +48,11 @@ class PListStringsWriter(template_writer.TemplateWriter):
         string table.
     '''
     desc = policy['desc']
-    if (policy['type'] == 'enum'):
+    if policy['type'] in ('int-enum','string-enum'):
       # Append the captions of enum items to the description string.
       item_descs = []
       for item in policy['items']:
-        item_descs.append(item['value'] + ' - ' + item['caption'])
+        item_descs.append(str(item['value']) + ' - ' + item['caption'])
       desc = '\n'.join(item_descs) + '\n' + desc
 
     self._AddToStringTable(policy['name'], policy['label'], desc)

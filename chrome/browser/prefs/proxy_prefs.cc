@@ -7,15 +7,25 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 
+namespace ProxyPrefs {
+
+const char kDirectProxyModeName[] = "direct";
+const char kAutoDetectProxyModeName[] = "auto_detect";
+const char kPacScriptProxyModeName[] = "pac_script";
+const char kFixedServersProxyModeName[] = "fixed_servers";
+const char kSystemProxyModeName[] = "system";
+
+}
+
 namespace {
 
 // These names are exposed to the proxy extension API. They must be in sync
 // with the constants of ProxyPrefs.
-const char* kProxyModeNames[] = { "direct",
-                                  "auto_detect",
-                                  "pac_script",
-                                  "fixed_servers",
-                                  "system" };
+const char* kProxyModeNames[] = { ProxyPrefs::kDirectProxyModeName,
+                                  ProxyPrefs::kAutoDetectProxyModeName,
+                                  ProxyPrefs::kPacScriptProxyModeName,
+                                  ProxyPrefs::kFixedServersProxyModeName,
+                                  ProxyPrefs::kSystemProxyModeName };
 
 }  // namespace
 

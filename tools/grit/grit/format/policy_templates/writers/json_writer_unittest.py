@@ -98,14 +98,14 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         '}')
     self.CompareOutputs(output, expected_output)
 
-  def testEnumPolicy(self):
-    # Tests a policy group with a single policy of type 'enum'.
+  def testIntEnumPolicy(self):
+    # Tests a policy group with a single policy of type 'int-enum'.
     grd = self.PrepareTest(
         '{'
         '  "policy_definitions": ['
         '    {'
         '      "name": "EnumPolicy",'
-        '      "type": "enum",'
+        '      "type": "int-enum",'
         '      "items": ['
         '        {"name": "ProxyServerDisabled", "value": 0},'
         '        {"name": "ProxyServerAutoDetect", "value": 1},'
@@ -130,6 +130,41 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
     expected_output = (
         '{\n'
         '  "EnumPolicy": 1\n'
+        '}')
+    self.CompareOutputs(output, expected_output)
+
+  def testStringEnumPolicy(self):
+    # Tests a policy group with a single policy of type 'string-enum'.
+    grd = self.PrepareTest(
+        '{'
+        '  "policy_definitions": ['
+        '    {'
+        '      "name": "EnumPolicy",'
+        '      "type": "string-enum",'
+        '      "items": ['
+        '        {"name": "ProxyServerDisabled", "value": "one"},'
+        '        {"name": "ProxyServerAutoDetect", "value": "two"},'
+        '      ],'
+        '      "supported_on": ["chrome.linux:8-"],'
+        '      "annotations": {'
+        '        "example_value": "one"'
+        '      }'
+        '    },'
+        '  ],'
+        '  "placeholders": [],'
+        '}',
+        '<messages>'
+        '  <message name="IDS_POLICY_ENUMPOLICY_CAPTION"></message>'
+        '  <message name="IDS_POLICY_ENUMPOLICY_DESC"></message>'
+        '  <message name="IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION">'
+        '  </message>'
+        '  <message name="IDS_POLICY_ENUM_PROXYSERVERAUTODETECT_CAPTION">'
+        '  </message>'
+        '</messages>')
+    output = self.GetOutput(grd, 'fr', {'_google_chrome': '1'}, 'json', 'en')
+    expected_output = (
+        '{\n'
+        '  "EnumPolicy": "one"\n'
         '}')
     self.CompareOutputs(output, expected_output)
 

@@ -126,8 +126,8 @@ With a newline.</message>
             '"Description of policy.\\nWith a newline.";')
     self.assertEquals(output.strip(), expected_output.strip())
 
-  def testEnumPolicy(self):
-    # Tests a policy group with a single policy of type 'enum'.
+  def testIntEnumPolicy(self):
+    # Tests a policy group with a single policy of type 'int-enum'.
     grd = self.PrepareTest('''
       {
         'policy_definitions': [
@@ -136,10 +136,10 @@ With a newline.</message>
             'type': 'group',
             'policies': [{
               'name': 'EnumPolicy',
-              'type': 'enum',
+              'type': 'int-enum',
               'items': [
-                {'name': 'ProxyServerDisabled', 'value': '0'},
-                {'name': 'ProxyServerAutoDetect', 'value': '1'},
+                {'name': 'ProxyServerDisabled', 'value': 0},
+                {'name': 'ProxyServerAutoDetect', 'value': 1},
               ],
               'supported_on': ['chrome.mac:8-'],
             }],
@@ -169,6 +169,52 @@ With a newline.</message>
         'EnumPolicy.pfm_title = "Caption of policy.";\n'
         'EnumPolicy.pfm_description = '
             '"0 - Option1\\n1 - Option2\\nDescription of policy.";\n')
+
+    self.assertEquals(output.strip(), expected_output.strip())
+
+  def testStringEnumPolicy(self):
+    # Tests a policy group with a single policy of type 'string-enum'.
+    grd = self.PrepareTest('''
+      {
+        'policy_definitions': [
+          {
+            'name': 'EnumGroup',
+            'type': 'group',
+            'policies': [{
+              'name': 'EnumPolicy',
+              'type': 'string-enum',
+              'items': [
+                {'name': 'ProxyServerDisabled', 'value': "one"},
+                {'name': 'ProxyServerAutoDetect', 'value': "two"},
+              ],
+              'supported_on': ['chrome.mac:8-'],
+            }],
+          },
+        ],
+        'placeholders': [],
+      }''', '''
+        <messages>
+          <message name="IDS_POLICY_ENUMGROUP_CAPTION">Caption of group.</message>
+          <message name="IDS_POLICY_ENUMGROUP_DESC">Description of group.</message>
+          <message name="IDS_POLICY_ENUMPOLICY_CAPTION">Caption of policy.</message>
+          <message name="IDS_POLICY_ENUMPOLICY_DESC">Description of policy.</message>
+          <message name="IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION">Option1</message>
+          <message name="IDS_POLICY_ENUM_PROXYSERVERAUTODETECT_CAPTION">Option2</message>
+          <message name="IDS_POLICY_MAC_CHROME_PREFERENCES">$1 preferences</message>
+        </messages>
+      ''' )
+    output = self.GetOutput(
+        grd,
+        'fr',
+        {'_google_chrome': '1', 'mac_bundle_id': 'com.example.Test2'},
+        'plist_strings',
+        'en')
+    expected_output = (
+        'Google_Chrome.pfm_title = "Google Chrome";\n'
+        'Google_Chrome.pfm_description = "Google Chrome preferences";\n'
+        'EnumPolicy.pfm_title = "Caption of policy.";\n'
+        'EnumPolicy.pfm_description = '
+            '"one - Option1\\ntwo - Option2\\nDescription of policy.";\n')
 
     self.assertEquals(output.strip(), expected_output.strip())
 

@@ -21,7 +21,10 @@
 #   'group': - not a real policy, contains a list of policies
 #     NOTE: Currently nesting groups inside other groups is not supported.
 #   'string' - a string value
-#   'enum' - the user can select its value from a collection of items
+#   'int-enum' - the user can select an integer value from a collection of 
+#     items
+#   'string-enum' - the user can select a string value from a collection of 
+#     items
 #   'main' - a boolean value
 #   'list' - a list of string values
 #
@@ -72,8 +75,8 @@
 # Currently supported product names:
 #     'chrome_frame', 'chrome_os'
 #     'chrome.win', 'chrome.linux', 'chrome.mac', 'chrome.*'
-#     For example if 'chrome.*:5-10' is specified for a policy, then it should
-#     be read as:
+#   For example if 'chrome.*:5-10' is specified for a policy, then it should
+#   be read as:
 #     'chrome.linux:5-10,chrome.mac:5-10,chrome.win:5-10'
 #   The product name also affects in which templates will the policy be included.
 #     chrome.*, chrome.win, chrome_frame -> ADM,ADMX,ADML,doc
@@ -250,15 +253,32 @@
       'type': 'group',
       'policies': [
         {
-          'name': 'ProxyServerMode',
-          'type': 'enum',
+          'name': 'ProxyMode',
+          'type': 'string-enum',
           'items': [
-            {'name': 'ProxyServerDisabled', 'value': '0'},
-            {'name': 'ProxyServerAutoDetect', 'value': '1'},
-            {'name': 'ProxyServerManual', 'value': '2'},
-            {'name': 'ProxyServerUseSystem', 'value': '3'},
+            {'name': 'ProxyDisabled', 'value': 'direct'},
+            {'name': 'ProxyAutoDetect', 'value': 'auto_detect'},
+            {'name': 'ProxyPacScript', 'value': 'pac_script'},
+            {'name': 'ProxyFixedServers', 'value': 'fixed_servers'},
+            {'name': 'ProxyUseSystem', 'value': 'system'},
+          ],
+          'supported_on': ['chrome.*:10-'],
+          'annotations': {
+            'features': {'dynamic_refresh': 1},
+            'example_value': 'direct'
+          }
+        },
+        {
+          'name': 'ProxyServerMode',
+          'type': 'int-enum',
+          'items': [
+            {'name': 'ProxyServerDisabled', 'value': 0},
+            {'name': 'ProxyServerAutoDetect', 'value': 1},
+            {'name': 'ProxyServerManual', 'value': 2},
+            {'name': 'ProxyServerUseSystem', 'value': 3},
           ],
           'supported_on': ['chrome.*:8-'],
+          'deprecated' : True,
           'annotations': {
             'features': {'dynamic_refresh': 1},
             'example_value': 2,
@@ -412,11 +432,11 @@
       'type': 'group',
       'policies': [{
         'name': 'RestoreOnStartup',
-        'type': 'enum',
+        'type': 'int-enum',
         'items': [
-          {'name': 'RestoreOnStartupIsNone', 'value': '0'},
-          {'name': 'RestoreOnStartupIsLastSession', 'value': '1'},
-          {'name': 'RestoreOnStartupIsURLs', 'value': '4'},
+          {'name': 'RestoreOnStartupIsNone', 'value': 0},
+          {'name': 'RestoreOnStartupIsLastSession', 'value': 1},
+          {'name': 'RestoreOnStartupIsURLs', 'value': 4},
         ],
         'supported_on': ['chrome.*:8-'],
         'annotations': {
@@ -517,10 +537,10 @@
       'policies': [
         {
           'name': 'DefaultCookiesSetting',
-          'type': 'enum',
+          'type': 'int-enum',
           'items': [
-            {'name': 'AllowCookies', 'value': '0'},
-            {'name': 'BlockCookies', 'value': '1'},
+            {'name': 'AllowCookies', 'value': 0},
+            {'name': 'BlockCookies', 'value': 1},
           ],
           'supported_on': ['chrome.*:10-'],
           'annotations': {
@@ -530,10 +550,10 @@
         },
         {
           'name': 'DefaultImagesSetting',
-          'type': 'enum',
+          'type': 'int-enum',
           'items': [
-            {'name': 'AllowImages', 'value': '0'},
-            {'name': 'BlockImages', 'value': '1'},
+            {'name': 'AllowImages', 'value': 0},
+            {'name': 'BlockImages', 'value': 1},
           ],
           'supported_on': ['chrome.*:10-'],
           'annotations': {
@@ -543,10 +563,10 @@
         },
 	{
           'name': 'DefaultJavaScriptSetting',
-          'type': 'enum',
+          'type': 'int-enum',
           'items': [
-            {'name': 'AllowJavaScript', 'value': '0'},
-            {'name': 'BlockJavaScript', 'value': '1'},
+            {'name': 'AllowJavaScript', 'value': 0},
+            {'name': 'BlockJavaScript', 'value': 1},
           ],
           'supported_on': ['chrome.*:10-'],
           'annotations': {
@@ -556,10 +576,10 @@
         },
 	{
           'name': 'DefaultPluginsSetting',
-          'type': 'enum',
+          'type': 'int-enum',
           'items': [
-            {'name': 'AllowPlugins', 'value': '0'},
-            {'name': 'BlockPlugins', 'value': '1'},
+            {'name': 'AllowPlugins', 'value': 0},
+            {'name': 'BlockPlugins', 'value': 1},
           ],
           'supported_on': ['chrome.*:10-'],
           'annotations': {
@@ -569,10 +589,10 @@
         },
 	{
           'name': 'DefaultPopupsSetting',
-          'type': 'enum',
+          'type': 'int-enum',
           'items': [
-            {'name': 'AllowPopups', 'value': '0'},
-            {'name': 'BlockPopups', 'value': '1'},
+            {'name': 'AllowPopups', 'value': 0},
+            {'name': 'BlockPopups', 'value': 1},
           ],
           'supported_on': ['chrome.*:10-'],
           'annotations': {
@@ -582,11 +602,11 @@
         },
         {
           'name': 'DefaultNotificationSetting',
-          'type': 'enum',
+          'type': 'int-enum',
           'items': [
-            {'name': 'AllowNotifications', 'value': '0'},
-            {'name': 'BlockNotifications', 'value': '1'},
-            {'name': 'AskNotifications', 'value': '2'},
+            {'name': 'AllowNotifications', 'value': 0},
+            {'name': 'BlockNotifications', 'value': 1},
+            {'name': 'AskNotifications', 'value': 2},
           ],
           'supported_on': ['chrome.*:10-'],
           'annotations': {
@@ -596,11 +616,11 @@
         },
         {
           'name': 'DefaultGeolocationSetting',
-          'type': 'enum',
+          'type': 'int-enum',
           'items': [
-            {'name': 'AllowGeolocation', 'value': '0'},
-            {'name': 'BlockGeolocation', 'value': '1'},
-            {'name': 'AskGeolocation', 'value': '2'},
+            {'name': 'AllowGeolocation', 'value': 0},
+            {'name': 'BlockGeolocation', 'value': 1},
+            {'name': 'AskGeolocation', 'value': 2},
           ],
           'supported_on': ['chrome.*:10-'],
           'annotations': {
@@ -625,10 +645,10 @@
       'type': 'group',
       'policies': [{
         'name': 'ChromeFrameRendererSettings',
-        'type': 'enum',
+        'type': 'int-enum',
         'items': [
-            {'name': 'RenderInHost', 'value': '0'},
-            {'name': 'RenderInChromeFrame', 'value': '1'},
+            {'name': 'RenderInHost', 'value': 0},
+            {'name': 'RenderInChromeFrame', 'value': 1},
         ],
         'supported_on': ['chrome_frame:8-'],
         'annotations': {

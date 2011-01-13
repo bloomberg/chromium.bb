@@ -153,11 +153,11 @@ class DocWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         e3.toxml(),
         '<z a="b" style="style1;style2;">text</z>')
 
-  def testAddDescription(self):
-    # Test if URLs are replaced and choices of 'enum' policies are listed
+  def testAddDescriptionIntEnum(self):
+    # Test if URLs are replaced and choices of 'int-enum' policies are listed
     # correctly.
     policy = {
-      'type': 'enum',
+      'type': 'int-enum',
       'items': [
         {'value': 0, 'caption': 'Disable foo'},
         {'value': 2, 'caption': 'Solve your problem'},
@@ -173,6 +173,27 @@ See http://policy-explanation.example.com for more details.
         '''<root>This policy disables foo, except in case of bar.
 See <a href="http://policy-explanation.example.com">http://policy-explanation.example.com</a> for more details.
 <ul><li>0 = Disable foo</li><li>2 = Solve your problem</li><li>5 = Enable bar</li></ul></root>''')
+
+  def testAddDescriptionStringEnum(self):
+    # Test if URLs are replaced and choices of 'int-enum' policies are listed
+    # correctly.
+    policy = {
+      'type': 'string-enum',
+      'items': [
+        {'value': "one", 'caption': 'Disable foo'},
+        {'value': "two", 'caption': 'Solve your problem'},
+        {'value': "three", 'caption': 'Enable bar'},
+      ],
+      'desc': '''This policy disables foo, except in case of bar.
+See http://policy-explanation.example.com for more details.
+'''
+    }
+    self.writer._AddDescription(self.doc_root, policy)
+    self.assertEquals(
+        self.doc_root.toxml(),
+        '''<root>This policy disables foo, except in case of bar.
+See <a href="http://policy-explanation.example.com">http://policy-explanation.example.com</a> for more details.
+<ul><li>&quot;one&quot; = Disable foo</li><li>&quot;two&quot; = Solve your problem</li><li>&quot;three&quot; = Enable bar</li></ul></root>''')
 
   def testAddFeatures(self):
     # Test if the list of features of a policy is handled correctly.
@@ -252,11 +273,11 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
         e2.toxml(),
         '<e2>0x00000000 (Windows), false (Linux), &lt;false /&gt; (Mac)</e2>')
 
-  def testEnumExample(self):
-    # Test representation of 'enum' example values.
+  def testIntEnumExample(self):
+    # Test representation of 'int-enum' example values.
     policy = {
       'name': 'PolicyName',
-      'type': 'enum',
+      'type': 'int-enum',
       'annotations': {
         'example_value': 16
       }
@@ -265,6 +286,20 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
     self.assertEquals(
         self.doc_root.toxml(),
         '<root>0x00000010 (Windows), 16 (Linux/Mac)</root>')
+
+  def testStringEnumExample(self):
+    # Test representation of 'int-enum' example values.
+    policy = {
+      'name': 'PolicyName',
+      'type': 'string-enum',
+      'annotations': {
+        'example_value': "wacky"
+      }
+    }
+    self.writer._AddExample(self.doc_root, policy)
+    self.assertEquals(
+        self.doc_root.toxml(),
+        '<root>&quot;wacky&quot;</root>')
 
   def testStringExample(self):
     # Test representation of 'string' example values.

@@ -154,9 +154,9 @@ TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineOptions) {
   command_line.AppendSwitchASCII(switches::kProxyServer, "789");
   scoped_ptr<policy::MockConfigurationPolicyProvider> provider(
       new policy::MockConfigurationPolicyProvider());
-  Value* mode_value = Value::CreateIntegerValue(
-      policy::kPolicyManuallyConfiguredProxyMode);
-  provider->AddPolicy(policy::kPolicyProxyMode, mode_value);
+  Value* mode_name = Value::CreateStringValue(
+      ProxyPrefs::kFixedServersProxyModeName);
+  provider->AddPolicy(policy::kPolicyProxyMode, mode_name);
   provider->AddPolicy(policy::kPolicyProxyBypassList,
                       Value::CreateStringValue("abc"));
   provider->AddPolicy(policy::kPolicyProxyServer,
@@ -194,9 +194,9 @@ TEST(PrefServiceTest, ProxyPolicyOverridesUnrelatedCommandLineOptions) {
   command_line.AppendSwitchASCII(switches::kProxyServer, "789");
   scoped_ptr<policy::MockConfigurationPolicyProvider> provider(
       new policy::MockConfigurationPolicyProvider());
-  Value* mode_value = Value::CreateIntegerValue(
-      policy::kPolicyAutoDetectProxyMode);
-  provider->AddPolicy(policy::kPolicyProxyMode, mode_value);
+  Value* mode_name = Value::CreateStringValue(
+      ProxyPrefs::kAutoDetectProxyModeName);
+  provider->AddPolicy(policy::kPolicyProxyMode, mode_name);
 
   // First verify that command-line options are set correctly when
   // there is no policy in effect.
@@ -229,9 +229,9 @@ TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineNoProxy) {
   command_line.AppendSwitch(switches::kNoProxyServer);
   scoped_ptr<policy::MockConfigurationPolicyProvider> provider(
       new policy::MockConfigurationPolicyProvider());
-  Value* mode_value = Value::CreateIntegerValue(
-      policy::kPolicyAutoDetectProxyMode);
-  provider->AddPolicy(policy::kPolicyProxyMode, mode_value);
+  Value* mode_name = Value::CreateStringValue(
+      ProxyPrefs::kAutoDetectProxyModeName);
+  provider->AddPolicy(policy::kPolicyProxyMode, mode_name);
 
   // First verify that command-line options are set correctly when
   // there is no policy in effect.
@@ -263,9 +263,9 @@ TEST(PrefServiceTest, ProxyPolicyOverridesCommandLineAutoDetect) {
   command_line.AppendSwitch(switches::kProxyAutoDetect);
   scoped_ptr<policy::MockConfigurationPolicyProvider> provider(
       new policy::MockConfigurationPolicyProvider());
-  Value* mode_value = Value::CreateIntegerValue(
-      policy::kPolicyNoProxyServerMode);
-  provider->AddPolicy(policy::kPolicyProxyMode, mode_value);
+  Value* mode_name = Value::CreateStringValue(
+      ProxyPrefs::kDirectProxyModeName);
+  provider->AddPolicy(policy::kPolicyProxyMode, mode_name);
 
   // First verify that the auto-detect is set if there is no managed
   // PrefStore.

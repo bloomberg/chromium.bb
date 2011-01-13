@@ -158,10 +158,58 @@ class AdmlWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
         '</presentation>')
     self.AssertXMLEquals(output, expected_output)
 
-  def testEnumPolicy(self):
+  def testIntEnumPolicy(self):
     enum_policy = {
       'name': 'EnumPolicyStub',
-      'type': 'enum',
+      'type': 'int-enum',
+      'caption': 'Enum policy caption',
+      'label': 'Enum policy label',
+      'desc': 'This is a test description.',
+      'items': [
+          {
+           'name': 'item 1',
+           'value': 1,
+           'caption': 'Caption Item 1',
+          },
+          {
+           'name': 'item 2',
+           'value': 2,
+           'caption': 'Caption Item 2',
+          },
+      ],
+    }
+    self. _InitWriterForAddingPolicies(self.writer, enum_policy)
+    self.writer.WritePolicy(enum_policy)
+    # Assert generated string elements.
+    output = self.GetXMLOfChildren(self.writer._string_table_elem)
+    expected_output = (
+        '<string id="EnumPolicyStub">\n'
+        '  Enum policy caption\n'
+        '</string>\n'
+        '<string id="EnumPolicyStub_Explain">\n'
+        '  This is a test description.\n'
+        '</string>\n'
+        '<string id="item 1">\n'
+        '  Caption Item 1\n'
+        '</string>\n'
+        '<string id="item 2">\n'
+        '  Caption Item 2\n'
+        '</string>')
+    self.AssertXMLEquals(output, expected_output)
+    # Assert generated presentation elements.
+    output = self.GetXMLOfChildren(self.writer._presentation_table_elem)
+    expected_output = (
+        '<presentation id="EnumPolicyStub">\n'
+        '  <dropdownList refId="EnumPolicyStub">\n'
+        '    Enum policy label\n'
+        '  </dropdownList>\n'
+        '</presentation>')
+    self.AssertXMLEquals(output, expected_output)
+
+  def testStringEnumPolicy(self):
+    enum_policy = {
+      'name': 'EnumPolicyStub',
+      'type': 'string-enum',
       'caption': 'Enum policy caption',
       'label': 'Enum policy label',
       'desc': 'This is a test description.',

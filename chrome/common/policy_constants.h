@@ -32,6 +32,7 @@ extern const char kDefaultSearchProviderIconURL[];
 extern const char kDefaultSearchProviderEncodings[];
 extern const char kDisableSpdy[];
 extern const char kProxyMode[];
+extern const char kProxyServerMode[];
 extern const char kProxyServer[];
 extern const char kProxyPacUrl[];
 extern const char kProxyBypassList[];

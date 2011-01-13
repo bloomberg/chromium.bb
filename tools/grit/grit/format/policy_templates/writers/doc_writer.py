@@ -107,7 +107,7 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
   def _AddDescription(self, parent, policy):
     '''Adds a string containing the description of the policy. URLs are
     replaced with links and the possible choices are enumerated in case
-    of 'enum' type policies.
+    of 'string-enum' and 'int-enum' type policies.
 
     Args:
       parent: The DOM node for which the feature list will be added.
@@ -116,11 +116,15 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     # Replace URLs with links in the description.
     self._AddTextWithLinks(parent, policy['desc'])
     # Add list of enum items.
-    if policy['type'] == 'enum':
+    if policy['type'] in ('string-enum', 'int-enum'):
       ul = self.AddElement(parent, 'ul')
       for item in policy['items']:
+        if policy['type'] == 'int-enum':
+          value_string = str(item['value'])
+        else:
+          value_string = '"%s"' % item['value']
         self.AddElement(
-            ul, 'li', {}, '%s = %s' % (item['value'], item['caption']))
+            ul, 'li', {}, '%s = %s' % (value_string, item['caption']))
 
   def _AddFeatures(self, parent, policy):
     '''Adds a string containing the list of supported features of a policy
@@ -253,10 +257,12 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
         raise Exception('Expected boolean value.')
     elif policy_type == 'string':
       self.AddText(parent, '"%s"' % example_value)
-    elif policy_type == 'enum':
+    elif policy_type == 'int-enum':
       self.AddText(
           parent,
           '0x%08x (Windows), %d (Linux/Mac)' % (example_value, example_value))
+    elif policy_type == 'string-enum':
+      self.AddText(parent, '"%s"' % (example_value))
     elif policy_type == 'list':
       self._AddListExample(parent, policy)
     else:
@@ -407,7 +413,11 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     self.AddElement(h2, 'a', {'name': policy['name']})
     if policy['type'] != 'group':
       # Normal policies get a full description.
-      self.AddText(h2, policy['name'])
+      policy_name_text = policy['name']
+      if 'deprecated' in policy and policy['deprecated'] == True:
+        policy_name_text += " ("
+        policy_name_text += self._GetLocalizedMessage('deprecated') + ")"
+      self.AddText(h2, policy_name_text)
       self.AddElement(parent2, 'span', {}, policy['caption'])
       self._AddPolicyNote(parent2, policy)
       self._AddPolicyDetails(parent2, policy)
@@ -423,6 +433,9 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
   #
   # Implementation of abstract methods of TemplateWriter:
   #
+
+  def IsDeprecatedPolicySupported(self, policy):
+    return True
 
   def WritePolicy(self, policy):
     self._AddPolicyRow(self._summary_tbody, policy)
@@ -490,7 +503,8 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     self._TYPE_MAP = {
       'string': 'String (REG_SZ)',
       'main': 'Boolean (REG_DWORD)',
-      'enum': 'Integer (REG_DWORD)',
+      'int-enum': 'Integer (REG_DWORD)',
+      'string-enum': 'String (REG_SZ)',
       'list': 'List of strings',
     }
     # The CSS style-sheet used for the document. It will be used in Google

@@ -201,13 +201,13 @@ class AdmxWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
         '</policy>')
     self.AssertXMLEquals(output, expected_output)
 
-  def testEnumPolicy(self):
+  def testIntEnumPolicy(self):
     enum_policy = {
       'name': 'SampleEnumPolicy',
-      'type': 'enum',
+      'type': 'int-enum',
         'items': [
-          {'name': 'item 1', 'value': '0'},
-          {'name': 'item 2', 'value': '1'},
+          {'name': 'item_1', 'value': 0},
+          {'name': 'item_2', 'value': 1},
         ]
     }
 
@@ -223,14 +223,51 @@ class AdmxWriterTest(xml_writer_base_unittest.XmlWriterBaseTest):
         '  <supportedOn ref="SUPPORTED_TESTOS"/>\n'
         '  <elements>\n'
         '    <enum id="SampleEnumPolicy" valueName="SampleEnumPolicy">\n'
-        '      <item displayName="$(string.item 1)">\n'
+        '      <item displayName="$(string.item_1)">\n'
         '        <value>\n'
         '          <decimal value="0"/>\n'
         '        </value>\n'
         '      </item>\n'
-        '      <item displayName="$(string.item 2)">\n'
+        '      <item displayName="$(string.item_2)">\n'
         '        <value>\n'
         '          <decimal value="1"/>\n'
+        '        </value>\n'
+        '      </item>\n'
+        '    </enum>\n'
+        '  </elements>\n'
+        '</policy>')
+    self.AssertXMLEquals(output, expected_output)
+
+  def testStringEnumPolicy(self):
+    enum_policy = {
+      'name': 'SampleEnumPolicy',
+      'type': 'string-enum',
+        'items': [
+          {'name': 'item_1', 'value': 'one'},
+          {'name': 'item_2', 'value': 'two'},
+        ]
+    }
+
+    self._initWriterForPolicy(self.writer, enum_policy)
+    self.writer.WritePolicy(enum_policy)
+    output = self.GetXMLOfChildren(self._GetPoliciesElement(self.writer._doc))
+    expected_output = (
+        '<policy class="TestClass" displayName="$(string.SampleEnumPolicy)"'
+        ' explainText="$(string.SampleEnumPolicy_Explain)"'
+        ' key="Software\\Policies\\Test" name="SampleEnumPolicy"'
+        ' presentation="$(presentation.SampleEnumPolicy)">\n'
+        '  <parentCategory ref="PolicyGroup"/>\n'
+        '  <supportedOn ref="SUPPORTED_TESTOS"/>\n'
+        '  <elements>\n'
+        '    <enum id="SampleEnumPolicy" valueName="SampleEnumPolicy">\n'
+        '      <item displayName="$(string.item_1)">\n'
+        '        <value>\n'
+        '          <string value="one"/>\n'
+        '        </value>\n'
+        '      </item>\n'
+        '      <item displayName="$(string.item_2)">\n'
+        '        <value>\n'
+        '          <string value="two"/>\n'
         '        </value>\n'
         '      </item>\n'
         '    </enum>\n'
