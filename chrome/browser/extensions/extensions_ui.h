@@ -114,7 +114,8 @@ class ExtensionsDOMHandler
       ExtensionService* service,
       const Extension* extension,
       const std::vector<ExtensionPage>& pages,
-      bool enabled);
+      bool enabled,
+      bool terminated);
 
   // ContentScript JSON Struct for page. (static for ease of testing).
   static DictionaryValue* CreateContentScriptDetailValue(

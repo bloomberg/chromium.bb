@@ -156,6 +156,7 @@ class ExtensionService
   // Gets the list of currently installed extensions.
   virtual const ExtensionList* extensions() const;
   virtual const ExtensionList* disabled_extensions() const;
+  virtual const ExtensionList* terminated_extensions() const;
 
   // Gets the set of pending extensions.
   virtual const PendingExtensionMap& pending_extensions() const;
@@ -468,6 +469,11 @@ class ExtensionService
                                             bool include_enabled,
                                             bool include_disabled);
 
+
+  // Keep track of terminated extensions.
+  void TrackTerminatedExtension(const Extension* extension);
+  void UntrackTerminatedExtension(const std::string& id);
+
   // Like AddPendingExtension*() functions above, but assumes an
   // extension with the same id is not already installed.
   void AddPendingExtensionInternal(
@@ -507,6 +513,12 @@ class ExtensionService
 
   // The list of installed extensions that have been disabled.
   ExtensionList disabled_extensions_;
+
+  // The list of installed extensions that have been terminated.
+  ExtensionList terminated_extensions_;
+
+  // Used to quickly check if an extension was terminated.
+  std::set<std::string> terminated_extension_ids_;
 
   // The set of pending extensions.
   PendingExtensionMap pending_extensions_;

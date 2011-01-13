@@ -111,25 +111,38 @@ class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, Basic) {
   const size_t size_before = GetExtensionService()->extensions()->size();
+  const size_t crash_size_before =
+      GetExtensionService()->terminated_extensions()->size();
   LoadTestExtension();
   CrashExtension(size_before);
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(crash_size_before + 1,
+            GetExtensionService()->terminated_extensions()->size());
   AcceptCrashedExtensionInfobar(0);
 
   SCOPED_TRACE("after clicking the infobar");
   CheckExtensionConsistency(size_before);
+  ASSERT_EQ(crash_size_before,
+            GetExtensionService()->terminated_extensions()->size());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, CloseAndReload) {
   const size_t size_before = GetExtensionService()->extensions()->size();
+  const size_t crash_size_before =
+      GetExtensionService()->terminated_extensions()->size();
   LoadTestExtension();
   CrashExtension(size_before);
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(crash_size_before + 1,
+            GetExtensionService()->terminated_extensions()->size());
+
   CancelCrashedExtensionInfobar(0);
   ReloadExtension(first_extension_id_);
 
   SCOPED_TRACE("after reloading");
   CheckExtensionConsistency(size_before);
+  ASSERT_EQ(crash_size_before,
+            GetExtensionService()->terminated_extensions()->size());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, ReloadIndependently) {
@@ -316,12 +329,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, TwoExtensionsCrashSecond) {
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
                        TwoExtensionsCrashBothAtOnce) {
   const size_t size_before = GetExtensionService()->extensions()->size();
+  const size_t crash_size_before =
+      GetExtensionService()->terminated_extensions()->size();
   LoadTestExtension();
   LoadSecondExtension();
   CrashExtension(size_before);
   ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(crash_size_before + 1,
+            GetExtensionService()->terminated_extensions()->size());
   CrashExtension(size_before);
   ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(crash_size_before + 2,
+            GetExtensionService()->terminated_extensions()->size());
 
   {
     SCOPED_TRACE("first infobar");
@@ -420,4 +439,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
     CheckExtensionConsistency(size_before);
     CheckExtensionConsistency(size_before + 1);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, CrashAndUnloadAll) {
+  const size_t size_before = GetExtensionService()->extensions()->size();
+  const size_t crash_size_before =
+      GetExtensionService()->terminated_extensions()->size();
+  LoadTestExtension();
+  LoadSecondExtension();
+  CrashExtension(size_before);
+  ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(crash_size_before + 1,
+            GetExtensionService()->terminated_extensions()->size());
+
+  GetExtensionService()->UnloadAllExtensions();
+  ASSERT_EQ(crash_size_before,
+            GetExtensionService()->terminated_extensions()->size());
 }

@@ -3,6 +3,7 @@
   "version": "1.0",
   "name": "My extension 3",
   "enabled": true,
+  "terminated": false,
   "description": "",
   "permissions": [],
   "allow_reload": false,

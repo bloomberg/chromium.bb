@@ -603,6 +603,10 @@ const ExtensionList* ExtensionService::disabled_extensions() const {
   return &disabled_extensions_;
 }
 
+const ExtensionList* ExtensionService::terminated_extensions() const {
+  return &terminated_extensions_;
+}
+
 const PendingExtensionMap& ExtensionService::pending_extensions() const {
   return pending_extensions_;
 }
@@ -1534,6 +1538,8 @@ void ExtensionService::UnloadExtension(
 void ExtensionService::UnloadAllExtensions() {
   extensions_.clear();
   disabled_extensions_.clear();
+  terminated_extension_ids_.clear();
+  terminated_extensions_.clear();
   extension_runtime_data_.clear();
 
   // TODO(erikkay) should there be a notification for this?  We can't use
@@ -1589,6 +1595,9 @@ void ExtensionService::OnExtensionLoaded(const Extension* extension) {
 
   // The extension is now loaded, remove its data from unloaded extension map.
   unloaded_extension_paths_.erase(extension->id());
+
+  // If a terminated extension is loaded, remove it from the terminated list.
+  UntrackTerminatedExtension(extension->id());
 
   // If the extension was disabled for a reload, then enable it.
   if (disabled_extension_paths_.erase(extension->id()) > 0)
@@ -1844,6 +1853,25 @@ const Extension* ExtensionService::GetExtensionByIdInternal(
   return NULL;
 }
 
+void ExtensionService::TrackTerminatedExtension(const Extension* extension) {
+  if (terminated_extension_ids_.insert(extension->id()).second)
+    terminated_extensions_.push_back(make_scoped_refptr(extension));
+}
+
+void ExtensionService::UntrackTerminatedExtension(const std::string& id) {
+  if (terminated_extension_ids_.erase(id) <= 0)
+    return;
+
+  std::string lowercase_id = StringToLowerASCII(id);
+  for (ExtensionList::iterator iter = terminated_extensions_.begin();
+       iter != terminated_extensions_.end(); ++iter) {
+    if ((*iter)->id() == lowercase_id) {
+      terminated_extensions_.erase(iter);
+      return;
+    }
+  }
+}
+
 const Extension* ExtensionService::GetWebStoreApp() {
   return GetExtensionById(extension_misc::kWebStoreAppId, false);
 }
@@ -1997,6 +2025,7 @@ void ExtensionService::Observe(NotificationType type,
         break;
 
       ExtensionHost* host = Details<ExtensionHost>(details).ptr();
+      TrackTerminatedExtension(host->extension());
 
       // Unload the entire extension. We want it to be in a consistent state:
       // either fully working or not loaded at all, but never half-crashed.

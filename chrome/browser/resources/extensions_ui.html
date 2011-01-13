@@ -332,6 +332,7 @@ var extensionDataFormat = {
       'description': 'Extension long format description',
       'version': '1.0.231',
       'enabled': 'true',
+      'terminated': 'false',
       'enabledIncognito': 'false',
       'wantsFileAccess': 'false',
       'allowFileAccess': 'false',
@@ -378,6 +379,7 @@ var extensionDataFormat = {
       'description': 'Extension long format description',
       'version': '1.0.231',
       'enabled': 'true',
+      'terminated': 'false',
       'enabledIncognito': 'false',
       'wantsFileAccess': 'false',
       'allowFileAccess': 'false',
@@ -832,8 +834,10 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
                     jscontent="name">EXTENSION NAME</span>
               - <span i18n-content="extensionVersion">VERSION</span>
               <span jscontent="version">x.x.x.x</span>
-              <span jsdisplay="!enabled"
+              <span jsdisplay="!enabled && !terminated"
                     i18n-content="extensionDisabled">(DISABLED)</span>
+              <span jsdisplay="terminated"
+                    i18n-content="extensionCrashed">(CRASHED)</span>
               <span jsdisplay="order == 1"
                     i18n-content="inDevelopment">(IN DEVELOPMENT)</span>
             </div>
@@ -869,7 +873,7 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
               <span class="extension-actions">
                 <a
                   jsvalues=".extensionId:id"
-                  jsdisplay="enabled && allow_reload"
+                  jsdisplay="(enabled && allow_reload) || terminated"
                   onclick="handleReloadExtension(this)"
                   href="javascript:void 0;"
                   i18n-content="reload"
@@ -884,13 +888,15 @@ document.addEventListener('DOMContentLoaded', requestExtensionsData);
                   >DISABLE</a>
                 <a
                   jsvalues=".extensionId:id"
-                  jsdisplay="!enabled"
+                  jsdisplay="!enabled && !terminated"
                   onclick="handleEnableExtension(this, true)"
                   href="javascript:void 0;"
                   i18n-content="enable"
-                  >ENABLE</a> -
+                  >ENABLE</a>
+                <span jsdisplay="!terminated">-</span>
                 <a
                   jsvalues=".extensionId:id"
+                  jsdisplay="!terminated"
                   onclick="handleUninstallExtension(this)"
                   href="javascript:void 0;"
                   i18n-content="uninstall"

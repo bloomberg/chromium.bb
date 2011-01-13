@@ -3,6 +3,7 @@
   "version": "1.0.0.0",
   "name": "__MSG_chrome_extension_name__",
   "enabled": true,
+  "terminated": false,
   "description": "__MSG_chrome_extension_description__",
   "permissions": ["http://*.google.com/*", "https://*.google.com/*"],
   "allow_reload": false,
