@@ -113,7 +113,11 @@ void GeolocationDispatcher::OnGeolocationPermissionSet(
 // We have an updated geolocation position or error code.
 void GeolocationDispatcher::OnGeolocationPositionUpdated(
     const Geoposition& geoposition) {
-  DCHECK(updating_);
+  // It is possible for the browser process to have queued an update message
+  // before receiving the stop updating message.
+  if (!updating_)
+    return;
+
   DCHECK(geoposition.IsInitialized());
   if (geoposition.IsValidFix()) {
     controller_->positionChanged(
