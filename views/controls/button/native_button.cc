@@ -87,24 +87,20 @@ void NativeButton::SetLabel(const std::wstring& label) {
 void NativeButton::SetIsDefault(bool is_default) {
   if (is_default == is_default_)
     return;
-  if (is_default)
+  is_default_ = is_default;
+  if (is_default_)
     AddAccelerator(Accelerator(ui::VKEY_RETURN, false, false, false));
   else
     RemoveAccelerator(Accelerator(ui::VKEY_RETURN, false, false, false));
-  SetAppearsAsDefault(is_default);
+  if (native_wrapper_)
+    native_wrapper_->UpdateDefault();
+  PreferredSizeChanged();
 }
 
 void NativeButton::SetNeedElevation(bool need_elevation) {
   need_elevation_ = need_elevation;
   if (native_wrapper_)
     native_wrapper_->UpdateLabel();
-  PreferredSizeChanged();
-}
-
-void NativeButton::SetAppearsAsDefault(bool appears_as_default) {
-  is_default_ = appears_as_default;
-  if (native_wrapper_)
-    native_wrapper_->UpdateDefault();
   PreferredSizeChanged();
 }
 

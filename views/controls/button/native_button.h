@@ -44,11 +44,6 @@ class NativeButton : public Button {
   void SetNeedElevation(bool need_elevation);
   bool need_elevation() const { return need_elevation_; }
 
-  // Sets whether or not the button appears as the default button. This does
-  // not make it behave as the default (i.e. no enter key accelerator is
-  // registered, use SetIsDefault for that).
-  void SetAppearsAsDefault(bool default_button);
-
   void set_ignore_minimum_size(bool ignore_minimum_size) {
     ignore_minimum_size_ = ignore_minimum_size;
   }
