@@ -526,7 +526,7 @@ bool RenderWidgetHostViewViews::OnKeyPressed(const views::KeyEvent &e) {
 
   wke.text[0] = wke.unmodifiedText[0] =
     static_cast<unsigned short>(gdk_keyval_to_unicode(
-          app::GdkKeyCodeForWindowsKeyCode(e.GetKeyCode(),
+          ui::GdkKeyCodeForWindowsKeyCode(e.GetKeyCode(),
               e.IsShiftDown() ^ e.IsCapsLockDown())));
 
   wke.modifiers = WebInputEventFlagsFromViewsEvent(e);

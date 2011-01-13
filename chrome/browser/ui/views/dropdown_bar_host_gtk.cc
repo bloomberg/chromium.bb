@@ -42,7 +42,7 @@ NativeWebKeyboardEvent DropdownBarHost::GetKeyboardEvent(
 
   wke.text[0] = wke.unmodifiedText[0] =
     static_cast<unsigned short>(gdk_keyval_to_unicode(
-          app::GdkKeyCodeForWindowsKeyCode(key_event.GetKeyCode(),
+          ui::GdkKeyCodeForWindowsKeyCode(key_event.GetKeyCode(),
               key_event.IsShiftDown() ^ key_event.IsCapsLockDown())));
   return wke;
 #else
