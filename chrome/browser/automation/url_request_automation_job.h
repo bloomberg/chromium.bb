@@ -120,7 +120,7 @@ class URLRequestAutomationJob : public net::URLRequestJob {
 
   // Contains the request status code, which is eventually passed  to the http
   // stack when we receive a Read request for a completed job.
-  URLRequestStatus request_status_;
+  net::URLRequestStatus request_status_;
 
   ScopedRunnableMethodFactory<URLRequestAutomationJob> method_factory_;
 

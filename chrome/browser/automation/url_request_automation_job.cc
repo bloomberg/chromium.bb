@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -149,7 +149,8 @@ void URLRequestAutomationJob::Kill() {
   if (message_filter_.get()) {
     if (!is_pending()) {
       message_filter_->Send(new AutomationMsg_RequestEnd(tab_, id_,
-          URLRequestStatus(URLRequestStatus::CANCELED, net::ERR_ABORTED)));
+          net::URLRequestStatus(net::URLRequestStatus::CANCELED,
+                                net::ERR_ABORTED)));
     }
   }
   DisconnectFromMessageFilter();
@@ -169,7 +170,7 @@ bool URLRequestAutomationJob::ReadRawData(
 
   if (message_filter_) {
     message_filter_->Send(new AutomationMsg_RequestRead(tab_, id_, buf_size));
-    SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
+    SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
   } else {
     MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -292,7 +293,7 @@ void URLRequestAutomationJob::OnDataAvailable(
 
   // The request completed, and we have all the data.
   // Clear any IO pending status.
-  SetStatus(URLRequestStatus());
+  SetStatus(net::URLRequestStatus());
 
   if (pending_buf_ && pending_buf_->data()) {
     DCHECK_GE(pending_buf_size_, bytes.size());
@@ -309,7 +310,7 @@ void URLRequestAutomationJob::OnDataAvailable(
 }
 
 void URLRequestAutomationJob::OnRequestEnd(
-    int id, const URLRequestStatus& status) {
+    int id, const net::URLRequestStatus& status) {
 #ifndef NDEBUG
   std::string url;
   if (request_)
@@ -322,7 +323,7 @@ void URLRequestAutomationJob::OnRequestEnd(
   // OnSSLCertificateError().  Right now we don't have the certificate
   // so we don't.  We could possibly call OnSSLCertificateError with a NULL
   // certificate, but I'm not sure if all implementations expect it.
-  // if (status.status() == URLRequestStatus::FAILED &&
+  // if (status.status() == net::URLRequestStatus::FAILED &&
   //    net::IsCertificateError(status.os_error()) && request_->delegate()) {
   //  request_->delegate()->OnSSLCertificateError(request_, status.os_error());
   // }
@@ -381,8 +382,8 @@ void URLRequestAutomationJob::StartAsync() {
   DCHECK(!is_pending());
 
   if (!request_) {
-    NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED,
-        net::ERR_FAILED));
+    NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                           net::ERR_FAILED));
     return;
   }
 

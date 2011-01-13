@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -210,7 +210,7 @@ bool DownloadResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
 
 bool DownloadResourceHandler::OnResponseCompleted(
     int request_id,
-    const URLRequestStatus& status,
+    const net::URLRequestStatus& status,
     const std::string& security_info) {
   VLOG(20) << __FUNCTION__ << "()" << DebugString()
            << " request_id = " << request_id

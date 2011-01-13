@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -116,12 +116,13 @@ bool NetworkLocationRequest::MakeRequest(const std::string& host_name,
   return true;
 }
 
-void NetworkLocationRequest::OnURLFetchComplete(const URLFetcher* source,
-                                                const GURL& url,
-                                                const URLRequestStatus& status,
-                                                int response_code,
-                                                const ResponseCookies& cookies,
-                                                const std::string& data) {
+void NetworkLocationRequest::OnURLFetchComplete(
+    const URLFetcher* source,
+    const GURL& url,
+    const net::URLRequestStatus& status,
+    int response_code,
+    const ResponseCookies& cookies,
+    const std::string& data) {
   DCHECK_EQ(url_fetcher_.get(), source);
   DCHECK(url_.possibly_invalid_spec() == url.possibly_invalid_spec());
 

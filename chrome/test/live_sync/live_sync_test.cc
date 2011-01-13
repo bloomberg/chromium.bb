@@ -61,11 +61,11 @@ class SyncServerStatusChecker : public URLFetcher::Delegate {
 
   virtual void OnURLFetchComplete(const URLFetcher* source,
                                   const GURL& url,
-                                  const URLRequestStatus& status,
+                                  const net::URLRequestStatus& status,
                                   int response_code,
                                   const ResponseCookies& cookies,
                                   const std::string& data) {
-    running_ = (status.status() == URLRequestStatus::SUCCESS &&
+    running_ = (status.status() == net::URLRequestStatus::SUCCESS &&
                 response_code == 200 && data.find("ok") == 0);
     MessageLoop::current()->Quit();
   }

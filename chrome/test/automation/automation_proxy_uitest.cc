@@ -686,10 +686,10 @@ void ExternalTabUITestMockClient::ReplyData(
 }
 
 void ExternalTabUITestMockClient::ReplyEOF(int tab_handle, int request_id) {
-  ReplyEnd(URLRequestStatus(), tab_handle, request_id);
+  ReplyEnd(net::URLRequestStatus(), tab_handle, request_id);
 }
 
-void ExternalTabUITestMockClient::ReplyEnd(const URLRequestStatus& status,
+void ExternalTabUITestMockClient::ReplyEnd(const net::URLRequestStatus& status,
                                            int tab_handle, int request_id) {
   AutomationProxy::Send(new AutomationMsg_RequestEnd(tab_handle,
                                                      request_id, status));
@@ -729,7 +729,7 @@ void ExternalTabUITestMockClient::IgnoreFavIconNetworkRequest() {
       .Times(testing::AnyNumber())
       .WillRepeatedly(testing::WithArgs<0, 0>(testing::Invoke(
           CreateFunctor(this, &ExternalTabUITestMockClient::ReplyEnd,
-                URLRequestStatus(URLRequestStatus::FAILED, 0)))));
+                net::URLRequestStatus(net::URLRequestStatus::FAILED, 0)))));
 }
 
 void ExternalTabUITestMockClient::InvalidateHandle(

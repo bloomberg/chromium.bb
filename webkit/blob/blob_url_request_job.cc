@@ -1,4 +1,4 @@
-// Copyright (c) 20010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -337,7 +337,7 @@ bool BlobURLRequestJob::ReadFile(const BlobData::Item& item,
 
   // If I/O pending error is returned, we just need to wait.
   if (rv == net::ERR_IO_PENDING) {
-    SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
+    SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
     return false;
   }
 
@@ -357,7 +357,7 @@ void BlobURLRequestJob::DidRead(int result) {
     NotifyFailure(net::ERR_FAILED);
     return;
   }
-  SetStatus(URLRequestStatus());  // Clear the IO_PENDING status
+  SetStatus(net::URLRequestStatus());  // Clear the IO_PENDING status
 
   AdvanceBytesRead(result);
 
@@ -466,7 +466,8 @@ void BlobURLRequestJob::NotifyFailure(int error_code) {
   // If we already return the headers on success, we can't change the headers
   // now. Instead, we just error out.
   if (headers_set_) {
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, error_code));
+    NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                     error_code));
     return;
   }
 

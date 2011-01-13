@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,7 +90,7 @@ class BugReportUtil::PostCleanup : public URLFetcher::Delegate {
   // Overridden from URLFetcher::Delegate.
   virtual void OnURLFetchComplete(const URLFetcher* source,
                                   const GURL& url,
-                                  const URLRequestStatus& status,
+                                  const net::URLRequestStatus& status,
                                   int response_code,
                                   const ResponseCookies& cookies,
                                   const std::string& data);
@@ -112,7 +112,7 @@ class BugReportUtil::PostCleanup : public URLFetcher::Delegate {
 void BugReportUtil::PostCleanup::OnURLFetchComplete(
     const URLFetcher* source,
     const GURL& url,
-    const URLRequestStatus& status,
+    const net::URLRequestStatus& status,
     int response_code,
     const ResponseCookies& cookies,
     const std::string& data) {

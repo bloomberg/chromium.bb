@@ -54,7 +54,7 @@ class MockJobObserver : public net::URLRequestJobTracker::JobObserver {
   MOCK_METHOD1(OnJobAdded, void(net::URLRequestJob* job));
   MOCK_METHOD1(OnJobRemoved, void(net::URLRequestJob* job));
   MOCK_METHOD2(OnJobDone, void(net::URLRequestJob* job,
-                               const URLRequestStatus& status));
+                               const net::URLRequestStatus& status));
   MOCK_METHOD3(OnJobRedirect, void(net::URLRequestJob* job,
                                    const GURL& location,
                                    int status_code));
@@ -94,12 +94,12 @@ class URLRequestJobTrackerTestJob : public net::URLRequestJob {
     response_data_.erase(0, bytes_to_read);
 
     if (async_reads_) {
-      SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
+      SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
       MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
           this, &URLRequestJobTrackerTestJob::OnReadCompleted,
           bytes_to_read));
     } else {
-      SetStatus(URLRequestStatus());
+      SetStatus(net::URLRequestStatus());
       *bytes_read = bytes_to_read;
     }
     return !async_reads_;
@@ -107,9 +107,9 @@ class URLRequestJobTrackerTestJob : public net::URLRequestJob {
 
   void OnReadCompleted(int status) {
     if (status == 0) {
-      NotifyDone(URLRequestStatus());
+      NotifyDone(net::URLRequestStatus());
     } else if (status > 0) {
-      SetStatus(URLRequestStatus());
+      SetStatus(net::URLRequestStatus());
     } else {
       ASSERT_FALSE(true) << "Unexpected OnReadCompleted callback.";
     }
@@ -136,7 +136,7 @@ class URLRequestJobTrackerTestJob : public net::URLRequestJob {
   const bool async_reads_;
 };
 
-// Google Mock Matcher to check two URLRequestStatus instances for
+// Google Mock Matcher to check two net::URLRequestStatus instances for
 // equality.
 MATCHER_P(StatusEq, other, "") {
   return (arg.status() == other.status() &&
@@ -172,7 +172,8 @@ class URLRequestJobTrackerTest : public PlatformTest {
     EXPECT_CALL(observer, OnBytesRead(NotNull(),
                                       MemEq(body.data(), body.size()),
                                       Eq(static_cast<int>(body.size()))));
-    EXPECT_CALL(observer, OnJobDone(NotNull(), StatusEq(URLRequestStatus())));
+    EXPECT_CALL(observer, OnJobDone(NotNull(),
+                StatusEq(net::URLRequestStatus())));
     EXPECT_CALL(observer, OnJobRemoved(NotNull()));
 
     // Attach our observer and perform the resource fetch.

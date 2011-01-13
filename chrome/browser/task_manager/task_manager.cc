@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -877,7 +877,7 @@ void TaskManagerModel::OnJobRemoved(net::URLRequestJob* job) {
 }
 
 void TaskManagerModel::OnJobDone(net::URLRequestJob* job,
-                                 const URLRequestStatus& status) {
+                                 const net::URLRequestStatus& status) {
 }
 
 void TaskManagerModel::OnJobRedirect(net::URLRequestJob* job,

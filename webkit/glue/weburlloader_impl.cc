@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -146,11 +146,12 @@ ResourceType::Type FromTargetType(WebURLRequest::TargetType type) {
 // Extracts the information from a data: url.
 bool GetInfoFromDataURL(const GURL& url,
                         ResourceResponseInfo* info,
-                        std::string* data, URLRequestStatus* status) {
+                        std::string* data,
+                        net::URLRequestStatus* status) {
   std::string mime_type;
   std::string charset;
   if (net::DataURL::Parse(url, &mime_type, &charset, data)) {
-    *status = URLRequestStatus(URLRequestStatus::SUCCESS, 0);
+    *status = net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0);
     info->request_time = Time::Now();
     info->response_time = Time::Now();
     info->headers = NULL;
@@ -162,7 +163,8 @@ bool GetInfoFromDataURL(const GURL& url,
     return true;
   }
 
-  *status = URLRequestStatus(URLRequestStatus::FAILED, net::ERR_INVALID_URL);
+  *status = net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                  net::ERR_INVALID_URL);
   return false;
 }
 
@@ -294,10 +296,9 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   virtual void OnDownloadedData(int len);
   virtual void OnReceivedData(const char* data, int len);
   virtual void OnReceivedCachedMetadata(const char* data, int len);
-  virtual void OnCompletedRequest(
-      const URLRequestStatus& status,
-      const std::string& security_info,
-      const base::Time& completion_time);
+  virtual void OnCompletedRequest(const net::URLRequestStatus& status,
+                                  const std::string& security_info,
+                                  const base::Time& completion_time);
 
  private:
   friend class base::RefCounted<Context>;
@@ -621,7 +622,7 @@ void WebURLLoaderImpl::Context::OnReceivedCachedMetadata(
 }
 
 void WebURLLoaderImpl::Context::OnCompletedRequest(
-    const URLRequestStatus& status,
+    const net::URLRequestStatus& status,
     const std::string& security_info,
     const base::Time& completion_time) {
   if (ftp_listing_delegate_.get()) {
@@ -638,9 +639,9 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
   completed_bridge_.swap(bridge_);
 
   if (client_) {
-    if (status.status() != URLRequestStatus::SUCCESS) {
+    if (status.status() != net::URLRequestStatus::SUCCESS) {
       int error_code;
-      if (status.status() == URLRequestStatus::HANDLED_EXTERNALLY) {
+      if (status.status() == net::URLRequestStatus::HANDLED_EXTERNALLY) {
         // By marking this request as aborted we insure that we don't navigate
         // to an error page.
         error_code = net::ERR_ABORTED;
@@ -691,7 +692,7 @@ bool WebURLLoaderImpl::Context::CanHandleDataURL(const GURL& url) const {
 
 void WebURLLoaderImpl::Context::HandleDataURL() {
   ResourceResponseInfo info;
-  URLRequestStatus status;
+  net::URLRequestStatus status;
   std::string data;
 
   if (GetInfoFromDataURL(request_.url(), &info, &data, &status)) {
@@ -724,9 +725,10 @@ void WebURLLoaderImpl::loadSynchronously(const WebURLRequest& request,
 
   // TODO(tc): For file loads, we may want to include a more descriptive
   // status code or status text.
-  const URLRequestStatus::Status& status = sync_load_response.status.status();
-  if (status != URLRequestStatus::SUCCESS &&
-      status != URLRequestStatus::HANDLED_EXTERNALLY) {
+  const net::URLRequestStatus::Status& status =
+      sync_load_response.status.status();
+  if (status != net::URLRequestStatus::SUCCESS &&
+      status != net::URLRequestStatus::HANDLED_EXTERNALLY) {
     response.setURL(final_url);
     error.domain = WebString::fromUTF8(net::kErrorDomain);
     error.reason = sync_load_response.status.os_error();

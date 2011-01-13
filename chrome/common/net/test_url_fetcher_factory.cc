@@ -1,8 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/common/net/test_url_fetcher_factory.h"
+
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -67,9 +68,9 @@ class FakeURLFetcher : public URLFetcher {
   // This is the method which actually calls the delegate that is passed in the
   // constructor.
   void RunDelegate() {
-    URLRequestStatus status;
-    status.set_status(success_ ? URLRequestStatus::SUCCESS :
-                                 URLRequestStatus::FAILED);
+    net::URLRequestStatus status;
+    status.set_status(success_ ? net::URLRequestStatus::SUCCESS :
+                                 net::URLRequestStatus::FAILED);
     delegate()->OnURLFetchComplete(this, url_, status, success_ ? 200 : 500,
                                    ResponseCookies(), response_data_);
   }

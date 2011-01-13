@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,7 +82,7 @@ class DeviceManagementServiceTestBase : public TESTBASE {
 
 struct FailedRequestParams {
   FailedRequestParams(DeviceManagementBackend::ErrorCode expected_error,
-                      URLRequestStatus::Status request_status,
+                      net::URLRequestStatus::Status request_status,
                       int http_status,
                       const std::string& response)
       : expected_error_(expected_error),
@@ -91,7 +91,7 @@ struct FailedRequestParams {
         response_(response) {}
 
   DeviceManagementBackend::ErrorCode expected_error_;
-  URLRequestStatus request_status_;
+  net::URLRequestStatus request_status_;
   int http_status_;
   std::string response_;
 };
@@ -161,37 +161,37 @@ INSTANTIATE_TEST_CASE_P(
     testing::Values(
         FailedRequestParams(
             DeviceManagementBackend::kErrorRequestFailed,
-            URLRequestStatus::FAILED,
+            net::URLRequestStatus::FAILED,
             200,
             PROTO_STRING(kResponseEmpty)),
         FailedRequestParams(
             DeviceManagementBackend::kErrorHttpStatus,
-            URLRequestStatus::SUCCESS,
+            net::URLRequestStatus::SUCCESS,
             500,
             PROTO_STRING(kResponseEmpty)),
         FailedRequestParams(
             DeviceManagementBackend::kErrorResponseDecoding,
-            URLRequestStatus::SUCCESS,
+            net::URLRequestStatus::SUCCESS,
             200,
             PROTO_STRING("Not a protobuf.")),
         FailedRequestParams(
             DeviceManagementBackend::kErrorServiceManagementNotSupported,
-            URLRequestStatus::SUCCESS,
+            net::URLRequestStatus::SUCCESS,
             200,
             PROTO_STRING(kResponseErrorManagementNotSupported)),
         FailedRequestParams(
             DeviceManagementBackend::kErrorServiceDeviceNotFound,
-            URLRequestStatus::SUCCESS,
+            net::URLRequestStatus::SUCCESS,
             200,
             PROTO_STRING(kResponseErrorDeviceNotFound)),
         FailedRequestParams(
             DeviceManagementBackend::kErrorServiceManagementTokenInvalid,
-            URLRequestStatus::SUCCESS,
+            net::URLRequestStatus::SUCCESS,
             200,
             PROTO_STRING(kResponseErrorManagementTokenInvalid)),
         FailedRequestParams(
             DeviceManagementBackend::kErrorServiceActivationPending,
-            URLRequestStatus::SUCCESS,
+            net::URLRequestStatus::SUCCESS,
             200,
             PROTO_STRING(kResponseErrorActivationPending))));
 
@@ -299,7 +299,7 @@ TEST_F(DeviceManagementServiceTest, RegisterRequest) {
   response_wrapper.set_error(em::DeviceManagementResponse::SUCCESS);
   response_wrapper.mutable_register_response()->CopyFrom(expected_response);
   ASSERT_TRUE(response_wrapper.SerializeToString(&response_data));
-  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
+  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   fetcher->delegate()->OnURLFetchComplete(fetcher,
                                           GURL(kServiceUrl),
                                           status,
@@ -342,7 +342,7 @@ TEST_F(DeviceManagementServiceTest, UnregisterRequest) {
   response_wrapper.set_error(em::DeviceManagementResponse::SUCCESS);
   response_wrapper.mutable_unregister_response()->CopyFrom(expected_response);
   ASSERT_TRUE(response_wrapper.SerializeToString(&response_data));
-  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
+  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   fetcher->delegate()->OnURLFetchComplete(fetcher,
                                           GURL(kServiceUrl),
                                           status,
@@ -397,7 +397,7 @@ TEST_F(DeviceManagementServiceTest, PolicyRequest) {
   response_wrapper.set_error(em::DeviceManagementResponse::SUCCESS);
   response_wrapper.mutable_policy_response()->CopyFrom(expected_response);
   ASSERT_TRUE(response_wrapper.SerializeToString(&response_data));
-  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
+  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   fetcher->delegate()->OnURLFetchComplete(fetcher,
                                           GURL(kServiceUrl),
                                           status,
@@ -473,7 +473,7 @@ TEST_F(DeviceManagementServiceTest, JobQueueing) {
   response_wrapper.set_error(em::DeviceManagementResponse::SUCCESS);
   response_wrapper.mutable_register_response()->CopyFrom(expected_response);
   ASSERT_TRUE(response_wrapper.SerializeToString(&response_data));
-  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
+  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   fetcher->delegate()->OnURLFetchComplete(fetcher,
                                           GURL(kServiceUrl),
                                           status,

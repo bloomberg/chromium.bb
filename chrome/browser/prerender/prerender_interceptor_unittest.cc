@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -74,7 +74,7 @@ TEST_F(PrerenderInterceptorTest, Interception) {
   req_->Start();
 
   MessageLoop::current()->Run();
-  EXPECT_EQ(URLRequestStatus::SUCCESS, req_->status().status());
+  EXPECT_EQ(net::URLRequestStatus::SUCCESS, req_->status().status());
   EXPECT_EQ(gurl_, last_intercepted_gurl_);
 }
 
@@ -84,7 +84,7 @@ TEST_F(PrerenderInterceptorTest, NotAPrefetch) {
   req_->Start();
 
   MessageLoop::current()->Run();
-  EXPECT_EQ(URLRequestStatus::SUCCESS, req_->status().status());
+  EXPECT_EQ(net::URLRequestStatus::SUCCESS, req_->status().status());
   EXPECT_NE(gurl_, last_intercepted_gurl_);
 }
 
@@ -94,7 +94,7 @@ TEST_F(PrerenderInterceptorTest, WrongMimeType) {
   req_->Start();
 
   MessageLoop::current()->Run();
-  EXPECT_EQ(URLRequestStatus::SUCCESS, req_->status().status());
+  EXPECT_EQ(net::URLRequestStatus::SUCCESS, req_->status().status());
   EXPECT_NE(gurl_, last_intercepted_gurl_);
 }
 

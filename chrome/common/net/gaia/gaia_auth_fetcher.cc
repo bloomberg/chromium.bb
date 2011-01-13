@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -314,10 +314,10 @@ void GaiaAuthFetcher::StartGetUserInfo(const std::string& lsid,
 // static
 GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
     const std::string& data,
-    const URLRequestStatus& status) {
+    const net::URLRequestStatus& status) {
 
   if (!status.is_success()) {
-    if (status.status() == URLRequestStatus::CANCELED) {
+    if (status.status() == net::URLRequestStatus::CANCELED) {
       return GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED);
     } else {
       LOG(WARNING) << "Could not reach Google Accounts servers: errno "
@@ -365,7 +365,7 @@ GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
 }
 
 void GaiaAuthFetcher::OnClientLoginFetched(const std::string& data,
-                                           const URLRequestStatus& status,
+                                           const net::URLRequestStatus& status,
                                            int response_code) {
 
   if (status.is_success() && response_code == RC_REQUEST_OK) {
@@ -383,7 +383,7 @@ void GaiaAuthFetcher::OnClientLoginFetched(const std::string& data,
 
 void GaiaAuthFetcher::OnIssueAuthTokenFetched(
     const std::string& data,
-    const URLRequestStatus& status,
+    const net::URLRequestStatus& status,
     int response_code) {
   if (status.is_success() && response_code == RC_REQUEST_OK) {
     // Only the bare token is returned in the body of this Gaia call
@@ -397,7 +397,7 @@ void GaiaAuthFetcher::OnIssueAuthTokenFetched(
 
 void GaiaAuthFetcher::OnGetUserInfoFetched(
     const std::string& data,
-    const URLRequestStatus& status,
+    const net::URLRequestStatus& status,
     int response_code) {
   using std::vector;
   using std::string;
@@ -421,7 +421,7 @@ void GaiaAuthFetcher::OnGetUserInfoFetched(
 
 void GaiaAuthFetcher::OnURLFetchComplete(const URLFetcher* source,
                                          const GURL& url,
-                                         const URLRequestStatus& status,
+                                         const net::URLRequestStatus& status,
                                          int response_code,
                                          const ResponseCookies& cookies,
                                          const std::string& data) {

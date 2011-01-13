@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,7 +137,8 @@ class ShuntedHttpBridge : public HttpBridge {
 
     std::string response_content = "success!";
     DummyURLFetcher fetcher;
-    OnURLFetchComplete(&fetcher, GURL("www.google.com"), URLRequestStatus(),
+    OnURLFetchComplete(&fetcher, GURL("www.google.com"),
+                       net::URLRequestStatus(),
                        200, cookies, response_content);
   }
   HttpBridgeTest* test_;

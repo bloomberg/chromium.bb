@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,17 +66,18 @@ void ExtensionLocalizationPeer::OnReceivedData(const char* data, int len) {
 }
 
 void ExtensionLocalizationPeer::OnCompletedRequest(
-    const URLRequestStatus& status,
+    const net::URLRequestStatus& status,
     const std::string& security_info,
     const base::Time& completion_time) {
   // Make sure we delete ourselves at the end of this call.
   scoped_ptr<ExtensionLocalizationPeer> this_deleter(this);
 
   // Give sub-classes a chance at altering the data.
-  if (status.status() != URLRequestStatus::SUCCESS) {
+  if (status.status() != net::URLRequestStatus::SUCCESS) {
     // We failed to load the resource.
     original_peer_->OnReceivedResponse(response_info_, true);
-    URLRequestStatus status(URLRequestStatus::CANCELED, net::ERR_ABORTED);
+    net::URLRequestStatus status(net::URLRequestStatus::CANCELED,
+                                 net::ERR_ABORTED);
     original_peer_->OnCompletedRequest(status, security_info, completion_time);
     return;
   }

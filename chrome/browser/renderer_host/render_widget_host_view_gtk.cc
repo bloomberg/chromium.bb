@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 
 // If this gets included after the gtk headers, then a bunch of compiler
 // errors happen because of a "#define Status int" in Xlib.h, which interacts
-// badly with URLRequestStatus::Status.
+// badly with net::URLRequestStatus::Status.
 #include "chrome/common/render_messages.h"
 
 #include <cairo/cairo.h>

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -208,7 +208,7 @@ void SearchProviderTest::FinishDefaultSuggestQuery() {
 
   // Tell the SearchProvider the default suggest query is done.
   default_fetcher->delegate()->OnURLFetchComplete(
-      default_fetcher, GURL(), URLRequestStatus(), 200, ResponseCookies(),
+      default_fetcher, GURL(), net::URLRequestStatus(), 200, ResponseCookies(),
       std::string());
 }
 
@@ -233,7 +233,7 @@ TEST_F(SearchProviderTest, QueryDefaultProvider) {
 
   // Tell the SearchProvider the suggest query is done.
   fetcher->delegate()->OnURLFetchComplete(
-      fetcher, GURL(), URLRequestStatus(), 200, ResponseCookies(),
+      fetcher, GURL(), net::URLRequestStatus(), 200, ResponseCookies(),
       std::string());
   fetcher = NULL;
 
@@ -281,7 +281,7 @@ TEST_F(SearchProviderTest, QueryKeywordProvider) {
 
   // Tell the SearchProvider the default suggest query is done.
   default_fetcher->delegate()->OnURLFetchComplete(
-      default_fetcher, GURL(), URLRequestStatus(), 200, ResponseCookies(),
+      default_fetcher, GURL(), net::URLRequestStatus(), 200, ResponseCookies(),
       std::string());
   default_fetcher = NULL;
 
@@ -298,7 +298,7 @@ TEST_F(SearchProviderTest, QueryKeywordProvider) {
 
   // Tell the SearchProvider the keyword suggest query is done.
   keyword_fetcher->delegate()->OnURLFetchComplete(
-      keyword_fetcher, GURL(), URLRequestStatus(), 200, ResponseCookies(),
+      keyword_fetcher, GURL(), net::URLRequestStatus(), 200, ResponseCookies(),
       std::string());
   keyword_fetcher = NULL;
 

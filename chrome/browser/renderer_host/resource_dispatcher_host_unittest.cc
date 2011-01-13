@@ -396,13 +396,13 @@ TEST_F(ResourceDispatcherHostTest, Cancel) {
   ASSERT_EQ(ViewMsg_Resource_RequestComplete::ID, msgs[1][1].type());
 
   int request_id;
-  URLRequestStatus status;
+  net::URLRequestStatus status;
 
   void* iter = NULL;
   ASSERT_TRUE(IPC::ReadParam(&msgs[1][1], &iter, &request_id));
   ASSERT_TRUE(IPC::ReadParam(&msgs[1][1], &iter, &status));
 
-  EXPECT_EQ(URLRequestStatus::CANCELED, status.status());
+  EXPECT_EQ(net::URLRequestStatus::CANCELED, status.status());
 }
 
 // The host delegate acts as a second one so we can have some requests
@@ -766,14 +766,14 @@ TEST_F(ResourceDispatcherHostTest, TooManyOutstandingRequests) {
     // The RequestComplete message should have had status
     // (CANCELLED, ERR_INSUFFICIENT_RESOURCES).
     int request_id;
-    URLRequestStatus status;
+    net::URLRequestStatus status;
 
     void* iter = NULL;
     EXPECT_TRUE(IPC::ReadParam(&msgs[index][0], &iter, &request_id));
     EXPECT_TRUE(IPC::ReadParam(&msgs[index][0], &iter, &status));
 
     EXPECT_EQ(index + 1, request_id);
-    EXPECT_EQ(URLRequestStatus::CANCELED, status.status());
+    EXPECT_EQ(net::URLRequestStatus::CANCELED, status.status());
     EXPECT_EQ(net::ERR_INSUFFICIENT_RESOURCES, status.os_error());
   }
 
@@ -930,14 +930,14 @@ TEST_F(ResourceDispatcherHostTest, ForbiddenDownload) {
   // The RequestComplete message should have had status
   // (CANCELED, ERR_FILE_NOT_FOUND).
   int request_id;
-  URLRequestStatus status;
+  net::URLRequestStatus status;
 
   void* iter = NULL;
   EXPECT_TRUE(IPC::ReadParam(&msgs[0][0], &iter, &request_id));
   EXPECT_TRUE(IPC::ReadParam(&msgs[0][0], &iter, &status));
 
   EXPECT_EQ(1, request_id);
-  EXPECT_EQ(URLRequestStatus::CANCELED, status.status());
+  EXPECT_EQ(net::URLRequestStatus::CANCELED, status.status());
   EXPECT_EQ(net::ERR_FILE_NOT_FOUND, status.os_error());
 }
 
@@ -971,7 +971,9 @@ class DummyResourceHandler : public ResourceHandler {
   bool OnReadCompleted(int request_id, int* bytes_read) { return true; }
 
   bool OnResponseCompleted(
-    int request_id, const URLRequestStatus& status, const std::string& info) {
+    int request_id,
+    const net::URLRequestStatus& status,
+    const std::string& info) {
     return true;
   }
 

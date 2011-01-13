@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,8 +94,8 @@ void AppCacheURLRequestJob::BeginDelivery() {
     case ERROR_DELIVERY:
       request()->net_log().AddEvent(
           net::NetLog::TYPE_APPCACHE_DELIVERING_ERROR_RESPONSE, NULL);
-      NotifyStartError(
-          URLRequestStatus(URLRequestStatus::FAILED, net::ERR_FAILED));
+      NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                             net::ERR_FAILED));
       break;
 
     case APPCACHED_DELIVERY:
@@ -188,11 +188,11 @@ void AppCacheURLRequestJob::SetupRangeResponse() {
 void AppCacheURLRequestJob::OnReadComplete(int result) {
   DCHECK(is_delivering_appcache_response());
   if (result == 0)
-    NotifyDone(URLRequestStatus());
+    NotifyDone(net::URLRequestStatus());
   else if (result < 0)
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, result));
+    NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED, result));
   else
-    SetStatus(URLRequestStatus());  // Clear the IO_PENDING status
+    SetStatus(net::URLRequestStatus());  // Clear the IO_PENDING status
 
   NotifyReadComplete(result);
 }
@@ -267,7 +267,7 @@ bool AppCacheURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size,
   DCHECK(bytes_read);
   DCHECK(!reader_->IsReadPending());
   reader_->ReadData(buf, buf_size, &read_callback_);
-  SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
+  SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
   return false;
 }
 

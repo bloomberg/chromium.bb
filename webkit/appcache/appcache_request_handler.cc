@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -121,8 +121,8 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadFallbackForResponse(
   if (!found_fallback_entry_.has_response_id())
     return NULL;
 
-  if (request->status().status() == URLRequestStatus::CANCELED ||
-      request->status().status() == URLRequestStatus::HANDLED_EXTERNALLY) {
+  if (request->status().status() == net::URLRequestStatus::CANCELED ||
+      request->status().status() == net::URLRequestStatus::HANDLED_EXTERNALLY) {
     // 6.9.6, step 4: But not if the user canceled the download.
     return NULL;
   }

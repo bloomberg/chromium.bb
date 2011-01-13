@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -353,7 +353,7 @@ void ExternalTabProxy::OnNetwork_Read(int request_id, int bytes_to_read) {
 }
 
 void ExternalTabProxy::OnNetwork_End(int request_id,
-                                     const URLRequestStatus& s) {
+                                     const net::URLRequestStatus& s) {
   // TODO(stoyan):
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,7 +64,7 @@ class TestRequestCallback : public ResourceLoaderBridge::Peer {
     data_.append(data, len);
   }
 
-  virtual void OnCompletedRequest(const URLRequestStatus& status,
+  virtual void OnCompletedRequest(const net::URLRequestStatus& status,
                                   const std::string& security_info,
                                   const base::Time& completion_time) {
     EXPECT_FALSE(complete_);
@@ -231,7 +231,7 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
     set_defer_loading(true);
 
     ResourceResponseHead response_head;
-    response_head.status.set_status(URLRequestStatus::SUCCESS);
+    response_head.status.set_status(net::URLRequestStatus::SUCCESS);
 
     IPC::Message* response_message =
         new ViewMsg_Resource_ReceivedResponse(0, 0, response_head);
@@ -284,7 +284,7 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
     set_defer_loading(false);
   }
 
-  virtual void OnCompletedRequest(const URLRequestStatus& status,
+  virtual void OnCompletedRequest(const net::URLRequestStatus& status,
                                   const std::string& security_info,
                                   const base::Time& completion_time) {
   }

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -62,7 +62,7 @@ class URLFetcherTest : public testing::Test, public URLFetcher::Delegate {
   // URLFetcher::Delegate
   virtual void OnURLFetchComplete(const URLFetcher* source,
                                   const GURL& url,
-                                  const URLRequestStatus& status,
+                                  const net::URLRequestStatus& status,
                                   int response_code,
                                   const ResponseCookies& cookies,
                                   const std::string& data);
@@ -108,7 +108,7 @@ class URLFetcherPostTest : public URLFetcherTest {
   // URLFetcher::Delegate
   virtual void OnURLFetchComplete(const URLFetcher* source,
                                   const GURL& url,
-                                  const URLRequestStatus& status,
+                                  const net::URLRequestStatus& status,
                                   int response_code,
                                   const ResponseCookies& cookies,
                                   const std::string& data);
@@ -120,7 +120,7 @@ class URLFetcherHeadersTest : public URLFetcherTest {
   // URLFetcher::Delegate
   virtual void OnURLFetchComplete(const URLFetcher* source,
                                   const GURL& url,
-                                  const URLRequestStatus& status,
+                                  const net::URLRequestStatus& status,
                                   int response_code,
                                   const ResponseCookies& cookies,
                                   const std::string& data);
@@ -133,7 +133,7 @@ class URLFetcherProtectTest : public URLFetcherTest {
   // URLFetcher::Delegate
   virtual void OnURLFetchComplete(const URLFetcher* source,
                                   const GURL& url,
-                                  const URLRequestStatus& status,
+                                  const net::URLRequestStatus& status,
                                   int response_code,
                                   const ResponseCookies& cookies,
                                   const std::string& data);
@@ -149,7 +149,7 @@ class URLFetcherProtectTestPassedThrough : public URLFetcherTest {
   // URLFetcher::Delegate
   virtual void OnURLFetchComplete(const URLFetcher* source,
                                   const GURL& url,
-                                  const URLRequestStatus& status,
+                                  const net::URLRequestStatus& status,
                                   int response_code,
                                   const ResponseCookies& cookies,
                                   const std::string& data);
@@ -165,7 +165,7 @@ class URLFetcherBadHTTPSTest : public URLFetcherTest {
   // URLFetcher::Delegate
   virtual void OnURLFetchComplete(const URLFetcher* source,
                                   const GURL& url,
-                                  const URLRequestStatus& status,
+                                  const net::URLRequestStatus& status,
                                   int response_code,
                                   const ResponseCookies& cookies,
                                   const std::string& data);
@@ -181,7 +181,7 @@ class URLFetcherCancelTest : public URLFetcherTest {
   // URLFetcher::Delegate
   virtual void OnURLFetchComplete(const URLFetcher* source,
                                   const GURL& url,
-                                  const URLRequestStatus& status,
+                                  const net::URLRequestStatus& status,
                                   int response_code,
                                   const ResponseCookies& cookies,
                                   const std::string& data);
@@ -234,7 +234,7 @@ class URLFetcherMultipleAttemptTest : public URLFetcherTest {
   // URLFetcher::Delegate
   virtual void OnURLFetchComplete(const URLFetcher* source,
                                   const GURL& url,
-                                  const URLRequestStatus& status,
+                                  const net::URLRequestStatus& status,
                                   int response_code,
                                   const ResponseCookies& cookies,
                                   const std::string& data);
@@ -269,7 +269,7 @@ void URLFetcherTest::CreateFetcher(const GURL& url) {
 
 void URLFetcherTest::OnURLFetchComplete(const URLFetcher* source,
                                         const GURL& url,
-                                        const URLRequestStatus& status,
+                                        const net::URLRequestStatus& status,
                                         int response_code,
                                         const ResponseCookies& cookies,
                                         const std::string& data) {
@@ -297,7 +297,7 @@ void URLFetcherPostTest::CreateFetcher(const GURL& url) {
 
 void URLFetcherPostTest::OnURLFetchComplete(const URLFetcher* source,
                                             const GURL& url,
-                                            const URLRequestStatus& status,
+                                            const net::URLRequestStatus& status,
                                             int response_code,
                                             const ResponseCookies& cookies,
                                             const std::string& data) {
@@ -309,7 +309,7 @@ void URLFetcherPostTest::OnURLFetchComplete(const URLFetcher* source,
 void URLFetcherHeadersTest::OnURLFetchComplete(
     const URLFetcher* source,
     const GURL& url,
-    const URLRequestStatus& status,
+    const net::URLRequestStatus& status,
     int response_code,
     const ResponseCookies& cookies,
     const std::string& data) {
@@ -330,12 +330,13 @@ void URLFetcherProtectTest::CreateFetcher(const GURL& url) {
   fetcher_->Start();
 }
 
-void URLFetcherProtectTest::OnURLFetchComplete(const URLFetcher* source,
-                                               const GURL& url,
-                                               const URLRequestStatus& status,
-                                               int response_code,
-                                               const ResponseCookies& cookies,
-                                               const std::string& data) {
+void URLFetcherProtectTest::OnURLFetchComplete(
+    const URLFetcher* source,
+    const GURL& url,
+    const net::URLRequestStatus& status,
+    int response_code,
+    const ResponseCookies& cookies,
+    const std::string& data) {
   const TimeDelta one_second = TimeDelta::FromMilliseconds(1000);
   if (response_code >= 500) {
     // Now running ServerUnavailable test.
@@ -374,7 +375,7 @@ void URLFetcherProtectTestPassedThrough::CreateFetcher(const GURL& url) {
 void URLFetcherProtectTestPassedThrough::OnURLFetchComplete(
     const URLFetcher* source,
     const GURL& url,
-    const URLRequestStatus& status,
+    const net::URLRequestStatus& status,
     int response_code,
     const ResponseCookies& cookies,
     const std::string& data) {
@@ -413,13 +414,13 @@ URLFetcherBadHTTPSTest::URLFetcherBadHTTPSTest() {
 void URLFetcherBadHTTPSTest::OnURLFetchComplete(
     const URLFetcher* source,
     const GURL& url,
-    const URLRequestStatus& status,
+    const net::URLRequestStatus& status,
     int response_code,
     const ResponseCookies& cookies,
     const std::string& data) {
   // This part is different from URLFetcherTest::OnURLFetchComplete
   // because this test expects the request to be cancelled.
-  EXPECT_EQ(URLRequestStatus::CANCELED, status.status());
+  EXPECT_EQ(net::URLRequestStatus::CANCELED, status.status());
   EXPECT_EQ(net::ERR_ABORTED, status.os_error());
   EXPECT_EQ(-1, response_code);
   EXPECT_TRUE(cookies.empty());
@@ -443,12 +444,13 @@ void URLFetcherCancelTest::CreateFetcher(const GURL& url) {
   CancelRequest();
 }
 
-void URLFetcherCancelTest::OnURLFetchComplete(const URLFetcher* source,
-                                              const GURL& url,
-                                              const URLRequestStatus& status,
-                                              int response_code,
-                                              const ResponseCookies& cookies,
-                                              const std::string& data) {
+void URLFetcherCancelTest::OnURLFetchComplete(
+    const URLFetcher* source,
+    const GURL& url,
+    const net::URLRequestStatus& status,
+    int response_code,
+    const ResponseCookies& cookies,
+    const std::string& data) {
   // We should have cancelled the request before completion.
   ADD_FAILURE();
   delete fetcher_;
@@ -465,7 +467,7 @@ void URLFetcherCancelTest::CancelRequest() {
 void URLFetcherMultipleAttemptTest::OnURLFetchComplete(
     const URLFetcher* source,
     const GURL& url,
-    const URLRequestStatus& status,
+    const net::URLRequestStatus& status,
     int response_code,
     const ResponseCookies& cookies,
     const std::string& data) {

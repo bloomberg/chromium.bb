@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -32,17 +32,17 @@ class MockFetcher : public URLFetcher {
   ~MockFetcher() {}
 
   void Start() {
-    URLRequestStatus::Status code;
+    net::URLRequestStatus::Status code;
     int http_code;
     if (success_) {
       http_code = RC_REQUEST_OK;
-      code = URLRequestStatus::SUCCESS;
+      code = net::URLRequestStatus::SUCCESS;
     } else {
       http_code = RC_FORBIDDEN;
-      code = URLRequestStatus::FAILED;
+      code = net::URLRequestStatus::FAILED;
     }
 
-    URLRequestStatus status(code, 0);
+    net::URLRequestStatus status(code, 0);
     delegate()->OnURLFetchComplete(NULL,
                                    url_,
                                    status,

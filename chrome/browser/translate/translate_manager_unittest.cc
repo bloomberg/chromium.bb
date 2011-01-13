@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -181,9 +181,9 @@ class TranslateManagerTest : public RenderViewHostTestHarness,
   void SimulateURLFetch(bool success) {
     TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
     ASSERT_TRUE(fetcher);
-    URLRequestStatus status;
-    status.set_status(success ? URLRequestStatus::SUCCESS :
-                                URLRequestStatus::FAILED);
+    net::URLRequestStatus status;
+    status.set_status(success ? net::URLRequestStatus::SUCCESS :
+                                net::URLRequestStatus::FAILED);
     fetcher->delegate()->OnURLFetchComplete(fetcher, fetcher->original_url(),
                                             status, success ? 200 : 500,
                                             ResponseCookies(),

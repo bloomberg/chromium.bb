@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1332,21 +1332,21 @@ void MetricsService::PrepareFetchWithPendingLog() {
   current_fetch_->set_upload_data(kMetricsType, compressed_log_);
 }
 
-static const char* StatusToString(const URLRequestStatus& status) {
+static const char* StatusToString(const net::URLRequestStatus& status) {
   switch (status.status()) {
-    case URLRequestStatus::SUCCESS:
+    case net::URLRequestStatus::SUCCESS:
       return "SUCCESS";
 
-    case URLRequestStatus::IO_PENDING:
+    case net::URLRequestStatus::IO_PENDING:
       return "IO_PENDING";
 
-    case URLRequestStatus::HANDLED_EXTERNALLY:
+    case net::URLRequestStatus::HANDLED_EXTERNALLY:
       return "HANDLED_EXTERNALLY";
 
-    case URLRequestStatus::CANCELED:
+    case net::URLRequestStatus::CANCELED:
       return "CANCELED";
 
-    case URLRequestStatus::FAILED:
+    case net::URLRequestStatus::FAILED:
       return "FAILED";
 
     default:
@@ -1357,7 +1357,7 @@ static const char* StatusToString(const URLRequestStatus& status) {
 
 void MetricsService::OnURLFetchComplete(const URLFetcher* source,
                                         const GURL& url,
-                                        const URLRequestStatus& status,
+                                        const net::URLRequestStatus& status,
                                         int response_code,
                                         const ResponseCookies& cookies,
                                         const std::string& data) {

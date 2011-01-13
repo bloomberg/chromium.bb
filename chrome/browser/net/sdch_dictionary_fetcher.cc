@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,13 +64,15 @@ void SdchDictionaryFetcher::StartFetching() {
   current_fetch_->Start();
 }
 
-void SdchDictionaryFetcher::OnURLFetchComplete(const URLFetcher* source,
-                                               const GURL& url,
-                                               const URLRequestStatus& status,
-                                               int response_code,
-                                               const ResponseCookies& cookies,
-                                               const std::string& data) {
-  if ((200 == response_code) && (status.status() == URLRequestStatus::SUCCESS))
+void SdchDictionaryFetcher::OnURLFetchComplete(
+    const URLFetcher* source,
+    const GURL& url,
+    const net::URLRequestStatus& status,
+    int response_code,
+    const ResponseCookies& cookies,
+    const std::string& data) {
+  if ((200 == response_code) &&
+      (status.status() == net::URLRequestStatus::SUCCESS))
     SdchManager::Global()->AddSdchDictionary(data, url);
   current_fetch_.reset(NULL);
   ScheduleDelayedRun();

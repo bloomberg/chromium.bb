@@ -41,7 +41,7 @@ class MockUrlDelegate : public PluginUrlRequestDelegate {
       const std::string& redirect_url, int redirect_status));
   MOCK_METHOD2(OnReadComplete, void(int request_id, const std::string& data));
   MOCK_METHOD2(OnResponseEnd, void(int request_id,
-                                   const URLRequestStatus& status));
+                                   const net::URLRequestStatus& status));
   MOCK_METHOD4(OnCookiesRetrieved, void(bool success, const GURL& url,
       const std::string& cookie, int cookie_id));
 
@@ -185,7 +185,8 @@ TEST(UrlmonUrlRequestTest, UnreachableUrl) {
     .WillOnce(QUIT_LOOP_SOON(loop, 2));
 
   EXPECT_CALL(mock, OnResponseEnd(1, testing::Property(
-              &URLRequestStatus::os_error, net::ERR_TUNNEL_CONNECTION_FAILED)))
+              &net::URLRequestStatus::os_error,
+              net::ERR_TUNNEL_CONNECTION_FAILED)))
     .Times(testing::AtMost(1));
 
   request.Start();
@@ -231,8 +232,7 @@ TEST(UrlmonUrlRequestTest, ZeroLengthResponse) {
   // Invoke read. Only now the response end ("server closed the connection")
   // is supposed to be delivered.
   EXPECT_CALL(mock, OnResponseEnd(1, testing::Property(
-                                     &URLRequestStatus::is_success, true)))
-      .Times(1);
+      &net::URLRequestStatus::is_success, true))).Times(1);
   request.Read(512);
   request.Release();
 }
@@ -245,7 +245,7 @@ ACTION_P4(ManagerRead, loop, mgr, request_id, bytes_to_read) {
 ACTION_P3(ManagerEndRequest, loop, mgr, request_id) {
   loop->PostDelayedTask(FROM_HERE, NewRunnableMethod(mgr,
       &UrlmonUrlRequestManager::EndUrlRequest, request_id,
-      URLRequestStatus()), 0);
+      net::URLRequestStatus()), 0);
 }
 
 // Simplest test - retrieve file from local web server.

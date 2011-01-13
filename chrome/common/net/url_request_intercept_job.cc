@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -91,10 +91,11 @@ bool URLRequestInterceptJob::ReadRawData(net::IOBuffer* dest, int dest_size,
   if (rv == CPERR_IO_PENDING) {
     read_buffer_ = dest;
     read_buffer_size_ = dest_size;
-    SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
+    SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
   } else {
     // TODO(mpcomplete): better error code
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, net::ERR_FAILED));
+    NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                     net::ERR_FAILED));
   }
 
   return false;
@@ -208,8 +209,8 @@ void URLRequestInterceptJob::StartAsync() {
 
 void URLRequestInterceptJob::OnStartCompleted(int result) {
   if (result != CPERR_SUCCESS) {
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED,
-                                net::ERR_CONNECTION_FAILED));
+    NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                     net::ERR_CONNECTION_FAILED));
     return;
   }
 
@@ -218,11 +219,12 @@ void URLRequestInterceptJob::OnStartCompleted(int result) {
 
 void URLRequestInterceptJob::OnReadCompleted(int bytes_read) {
   if (bytes_read < 0) {
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, net::ERR_FAILED));
+    NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                     net::ERR_FAILED));
     return;
   }
 
-  SetStatus(URLRequestStatus());  // clear the async flag
+  SetStatus(net::URLRequestStatus());  // clear the async flag
   NotifyReadComplete(bytes_read);
 }
 

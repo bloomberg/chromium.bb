@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -290,50 +290,52 @@ void ParamTraits<WebApplicationInfo>::Log(const WebApplicationInfo& p,
   l->append("<WebApplicationInfo>");
 }
 
-void ParamTraits<URLRequestStatus>::Write(Message* m, const param_type& p) {
+void ParamTraits<net::URLRequestStatus>::Write(Message* m,
+                                               const param_type& p) {
   WriteParam(m, static_cast<int>(p.status()));
   WriteParam(m, p.os_error());
 }
 
-bool ParamTraits<URLRequestStatus>::Read(const Message* m, void** iter,
-                                         param_type* r) {
+bool ParamTraits<net::URLRequestStatus>::Read(const Message* m, void** iter,
+                                              param_type* r) {
   int status, os_error;
   if (!ReadParam(m, iter, &status) ||
       !ReadParam(m, iter, &os_error))
     return false;
-  r->set_status(static_cast<URLRequestStatus::Status>(status));
+  r->set_status(static_cast<net::URLRequestStatus::Status>(status));
   r->set_os_error(os_error);
   return true;
 }
 
-void ParamTraits<URLRequestStatus>::Log(const param_type& p, std::string* l) {
+void ParamTraits<net::URLRequestStatus>::Log(const param_type& p,
+                                             std::string* l) {
   std::string status;
   switch (p.status()) {
-    case URLRequestStatus::SUCCESS:
+    case net::URLRequestStatus::SUCCESS:
       status = "SUCCESS";
       break;
-    case URLRequestStatus::IO_PENDING:
+    case net::URLRequestStatus::IO_PENDING:
       status = "IO_PENDING ";
       break;
-    case URLRequestStatus::HANDLED_EXTERNALLY:
+    case net::URLRequestStatus::HANDLED_EXTERNALLY:
       status = "HANDLED_EXTERNALLY";
       break;
-    case URLRequestStatus::CANCELED:
+    case net::URLRequestStatus::CANCELED:
       status = "CANCELED";
       break;
-    case URLRequestStatus::FAILED:
+    case net::URLRequestStatus::FAILED:
       status = "FAILED";
       break;
     default:
       status = "UNKNOWN";
       break;
   }
-  if (p.status() == URLRequestStatus::FAILED)
+  if (p.status() == net::URLRequestStatus::FAILED)
     l->append("(");
 
   LogParam(status, l);
 
-  if (p.status() == URLRequestStatus::FAILED) {
+  if (p.status() == net::URLRequestStatus::FAILED) {
     l->append(", ");
     LogParam(p.os_error(), l);
     l->append(")");

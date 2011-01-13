@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -219,7 +219,8 @@ TEST(AutoFillDownloadTest, QueryAndUploadTest) {
   // Return them out of sequence.
   TestURLFetcher* fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(fetcher);
-  fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(), URLRequestStatus(),
+  fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
+                                          net::URLRequestStatus(),
                                           200, ResponseCookies(),
                                           std::string(responses[1]));
   // After that upload rates would be adjusted to 0.5/0.3
@@ -228,12 +229,14 @@ TEST(AutoFillDownloadTest, QueryAndUploadTest) {
 
   fetcher = factory.GetFetcherByID(2);
   ASSERT_TRUE(fetcher);
-  fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(), URLRequestStatus(),
+  fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
+                                          net::URLRequestStatus(),
                                           404, ResponseCookies(),
                                           std::string(responses[2]));
   fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
-  fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(), URLRequestStatus(),
+  fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
+                                          net::URLRequestStatus(),
                                           200, ResponseCookies(),
                                           std::string(responses[0]));
   EXPECT_EQ(static_cast<size_t>(3), helper.responses_.size());
@@ -281,7 +284,8 @@ TEST(AutoFillDownloadTest, QueryAndUploadTest) {
   ASSERT_TRUE(fetcher);
   fetcher->set_backoff_delay(
       base::TimeDelta::FromMilliseconds(TestTimeouts::action_max_timeout_ms()));
-  fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(), URLRequestStatus(),
+  fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
+                                          net::URLRequestStatus(),
                                           500, ResponseCookies(),
                                           std::string(responses[0]));
   EXPECT_EQ(AutoFillDownloadTestHelper::REQUEST_QUERY_FAILED,
@@ -307,7 +311,8 @@ TEST(AutoFillDownloadTest, QueryAndUploadTest) {
   ASSERT_TRUE(fetcher);
   fetcher->set_backoff_delay(
       base::TimeDelta::FromMilliseconds(TestTimeouts::action_max_timeout_ms()));
-  fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(), URLRequestStatus(),
+  fetcher->delegate()->OnURLFetchComplete(fetcher, GURL(),
+                                          net::URLRequestStatus(),
                                           503, ResponseCookies(),
                                           std::string(responses[2]));
   EXPECT_EQ(AutoFillDownloadTestHelper::REQUEST_UPLOAD_FAILED,

@@ -1,6 +1,7 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chrome_frame/test/automation_client_mock.h"
 
 #include "base/callback.h"
@@ -205,8 +206,8 @@ TEST(CFACWithChrome, NavigateFailed) {
   const FilePath profile_path(
       chrome_frame_test::GetProfilePath(L"Adam.N.Epilinter"));
   const std::string url = "http://127.0.0.3:65412/";
-  const URLRequestStatus connection_failed(URLRequestStatus::FAILED,
-                                           net::ERR_INVALID_URL);
+  const net::URLRequestStatus connection_failed(net::URLRequestStatus::FAILED,
+                                                net::ERR_INVALID_URL);
 
   scoped_refptr<ChromeFrameAutomationClient> client;
   client = new ChromeFrameAutomationClient;

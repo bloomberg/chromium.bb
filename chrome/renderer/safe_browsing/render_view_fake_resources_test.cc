@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -163,7 +163,7 @@ void RenderViewFakeResourcesTest::OnRequestResource(
   ASSERT_TRUE(channel_->Send(new ViewMsg_Resource_RequestComplete(
       message.routing_id(),
       request_id,
-      URLRequestStatus(),
+      net::URLRequestStatus(),
       std::string(),
       base::Time())));
 }

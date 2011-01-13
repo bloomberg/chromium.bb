@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -115,7 +115,7 @@ bool URLRequestSlowDownloadJob::ReadRawData(net::IOBuffer* buf, int buf_size,
 
   // If we make it here, the first chunk has been sent and we need to wait
   // until a request is made for kFinishDownloadUrl.
-  SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
+  SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
   MessageLoop::current()->PostDelayedTask(FROM_HERE, NewRunnableMethod(
       this, &URLRequestSlowDownloadJob::CheckDoneStatus), 100);
   AddRef();
@@ -127,7 +127,7 @@ bool URLRequestSlowDownloadJob::ReadRawData(net::IOBuffer* buf, int buf_size,
 void URLRequestSlowDownloadJob::CheckDoneStatus() {
   if (should_finish_download_) {
     should_send_second_chunk_ = true;
-    SetStatus(URLRequestStatus());
+    SetStatus(net::URLRequestStatus());
     NotifyReadComplete(kSecondDownloadSize);
     Release();
   } else {

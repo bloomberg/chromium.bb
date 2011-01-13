@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -463,8 +463,11 @@ void ExtensionUpdater::Stop() {
 }
 
 void ExtensionUpdater::OnURLFetchComplete(
-    const URLFetcher* source, const GURL& url, const URLRequestStatus& status,
-    int response_code, const ResponseCookies& cookies,
+    const URLFetcher* source,
+    const GURL& url,
+    const net::URLRequestStatus& status,
+    int response_code,
+    const ResponseCookies& cookies,
     const std::string& data) {
   // Stop() destroys all our URLFetchers, which means we shouldn't be
   // called after Stop() is called.
@@ -553,13 +556,15 @@ class SafeManifestParser : public UtilityProcessHost::Client {
 };
 
 
-void ExtensionUpdater::OnManifestFetchComplete(const GURL& url,
-                                               const URLRequestStatus& status,
-                                               int response_code,
-                                               const std::string& data) {
+void ExtensionUpdater::OnManifestFetchComplete(
+    const GURL& url,
+    const net::URLRequestStatus& status,
+    int response_code,
+    const std::string& data) {
   // We want to try parsing the manifest, and if it indicates updates are
   // available, we want to fire off requests to fetch those updates.
-  if (status.status() == URLRequestStatus::SUCCESS && response_code == 200) {
+  if ((status.status() == net::URLRequestStatus::SUCCESS) &&
+      (response_code == 200)) {
     scoped_refptr<SafeManifestParser> safe_parser(
         new SafeManifestParser(data, current_manifest_fetch_.release(), this));
     safe_parser->Start();
@@ -643,10 +648,10 @@ void ExtensionUpdater::ProcessBlacklist(const std::string& data) {
 }
 
 void ExtensionUpdater::OnCRXFetchComplete(const GURL& url,
-                                          const URLRequestStatus& status,
+                                          const net::URLRequestStatus& status,
                                           int response_code,
                                           const std::string& data) {
-  if (status.status() == URLRequestStatus::SUCCESS &&
+  if (status.status() == net::URLRequestStatus::SUCCESS &&
       response_code == 200) {
     if (current_extension_fetch_.id == kBlacklistAppID) {
       ProcessBlacklist(data);

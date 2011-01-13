@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -229,7 +229,7 @@ void AsyncResourceHandler::OnDataDownloaded(
 
 bool AsyncResourceHandler::OnResponseCompleted(
     int request_id,
-    const URLRequestStatus& status,
+    const net::URLRequestStatus& status,
     const std::string& security_info) {
   Time completion_time = Time::Now();
   filter_->Send(new ViewMsg_Resource_RequestComplete(routing_id_,
@@ -241,7 +241,8 @@ bool AsyncResourceHandler::OnResponseCompleted(
   // If we still have a read buffer, then see about caching it for later...
   // Note that we have to make sure the buffer is not still being used, so we
   // have to perform an explicit check on the status code.
-  if (g_spare_read_buffer || URLRequestStatus::SUCCESS != status.status()) {
+  if (g_spare_read_buffer ||
+      net::URLRequestStatus::SUCCESS != status.status()) {
     read_buffer_ = NULL;
   } else if (read_buffer_.get()) {
     DCHECK(read_buffer_->data());

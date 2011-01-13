@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -375,7 +375,7 @@ void URLRequestChromeJob::DataAvailable(RefCountedMemory* bytes) {
   if (bytes) {
     // The request completed, and we have all the data.
     // Clear any IO pending status.
-    SetStatus(URLRequestStatus());
+    SetStatus(net::URLRequestStatus());
 
     data_ = bytes;
     int bytes_read;
@@ -387,14 +387,15 @@ void URLRequestChromeJob::DataAvailable(RefCountedMemory* bytes) {
     }
   } else {
     // The request failed.
-    NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, net::ERR_FAILED));
+    NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                     net::ERR_FAILED));
   }
 }
 
 bool URLRequestChromeJob::ReadRawData(net::IOBuffer* buf, int buf_size,
                                       int* bytes_read) {
   if (!data_.get()) {
-    SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
+    SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
     DCHECK(!pending_buf_.get());
     CHECK(buf->data());
     pending_buf_ = buf;
@@ -427,8 +428,8 @@ void URLRequestChromeJob::StartAsync() {
                                                         this)) {
     NotifyHeadersComplete();
   } else {
-    NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED,
-                                      net::ERR_INVALID_URL));
+    NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                           net::ERR_INVALID_URL));
   }
 }
 

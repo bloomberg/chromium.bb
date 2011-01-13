@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -591,7 +591,7 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
     fetcher->delegate()->OnURLFetchComplete(
-        fetcher, url1, URLRequestStatus(), 200, ResponseCookies(),
+        fetcher, url1, net::URLRequestStatus(), 200, ResponseCookies(),
         invalid_xml);
 
     // Now that the first request is complete, make sure the second one has
@@ -609,7 +609,7 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
     fetcher->delegate()->OnURLFetchComplete(
-        fetcher, url2, URLRequestStatus(), 200, ResponseCookies(),
+        fetcher, url2, net::URLRequestStatus(), 200, ResponseCookies(),
         kValidXml);
 
     // This should run the manifest parsing, then we want to make sure that our
@@ -666,7 +666,7 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
     fetcher->delegate()->OnURLFetchComplete(
-        fetcher, test_url, URLRequestStatus(), 200, ResponseCookies(),
+        fetcher, test_url, net::URLRequestStatus(), 200, ResponseCookies(),
         extension_data);
 
     file_thread.Stop();
@@ -716,7 +716,7 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
     fetcher->delegate()->OnURLFetchComplete(
-        fetcher, test_url, URLRequestStatus(), 200, ResponseCookies(),
+        fetcher, test_url, net::URLRequestStatus(), 200, ResponseCookies(),
         extension_data);
 
     message_loop.RunAllPending();
@@ -768,7 +768,7 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
     fetcher->delegate()->OnURLFetchComplete(
-        fetcher, url1, URLRequestStatus(), 200, ResponseCookies(),
+        fetcher, url1, net::URLRequestStatus(), 200, ResponseCookies(),
         extension_data1);
     message_loop.RunAllPending();
 
@@ -787,7 +787,7 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     EXPECT_TRUE(fetcher->load_flags() == expected_load_flags);
     fetcher->delegate()->OnURLFetchComplete(
-        fetcher, url2, URLRequestStatus(), 200, ResponseCookies(),
+        fetcher, url2, net::URLRequestStatus(), 200, ResponseCookies(),
         extension_data2);
     message_loop.RunAllPending();
     EXPECT_EQ(id2, service.extension_id());
@@ -845,7 +845,8 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
     fetched_urls.push_back(fetcher->original_url());
     fetcher->delegate()->OnURLFetchComplete(
-      fetcher, fetched_urls[0], URLRequestStatus(), 500, ResponseCookies(), "");
+      fetcher, fetched_urls[0], net::URLRequestStatus(), 500,
+      ResponseCookies(), "");
     fetcher =
       factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
     fetched_urls.push_back(fetcher->original_url());

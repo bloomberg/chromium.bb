@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -79,7 +79,7 @@ class ChromeDnsCertProvenanceChecker :
 
     // Delegate implementation
     void OnResponseStarted(net::URLRequest* request) {
-      const URLRequestStatus& status(request->status());
+      const net::URLRequestStatus& status(request->status());
       if (!status.is_success()) {
         LOG(WARNING) << "Certificate upload failed"
                      << " status:" << status.status()

@@ -1,5 +1,4 @@
-
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +51,8 @@ struct MockChromeProxyDelegate : public ChromeProxyDelegate {
   MOCK_METHOD2(Network_Start, void(int request_id,
       const AutomationURLRequest& request_info));
   MOCK_METHOD2(Network_Read, void(int request_id, int bytes_to_read));
-  MOCK_METHOD2(Network_End, void(int request_id, const URLRequestStatus& s));
+  MOCK_METHOD2(Network_End, void(int request_id,
+                                 const net::URLRequestStatus& s));
   MOCK_METHOD1(Network_DownloadInHost, void(int request_id));
   MOCK_METHOD2(GetCookies, void(const GURL& url, int cookie_id));
   MOCK_METHOD2(SetCookie, void(const GURL& url, const std::string& cookie));

@@ -265,8 +265,8 @@ struct ParamTraits<TransportDIB::Id> {
 
 // Traits for URLRequestStatus
 template <>
-struct ParamTraits<URLRequestStatus> {
-  typedef URLRequestStatus param_type;
+struct ParamTraits<net::URLRequestStatus> {
+  typedef net::URLRequestStatus param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

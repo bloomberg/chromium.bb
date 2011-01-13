@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,12 +86,13 @@ void AlternateNavURLFetcher::Observe(NotificationType type,
   }
 }
 
-void AlternateNavURLFetcher::OnURLFetchComplete(const URLFetcher* source,
-                                                const GURL& url,
-                                                const URLRequestStatus& status,
-                                                int response_code,
-                                                const ResponseCookies& cookies,
-                                                const std::string& data) {
+void AlternateNavURLFetcher::OnURLFetchComplete(
+    const URLFetcher* source,
+    const GURL& url,
+    const net::URLRequestStatus& status,
+    int response_code,
+    const ResponseCookies& cookies,
+    const std::string& data) {
   DCHECK(fetcher_.get() == source);
   SetStatusFromURLFetch(url, status, response_code);
   ShowInfobarIfPossible();
@@ -133,7 +134,7 @@ void AlternateNavURLFetcher::InfoBarClosed() {
 
 void AlternateNavURLFetcher::SetStatusFromURLFetch(
     const GURL& url,
-    const URLRequestStatus& status,
+    const net::URLRequestStatus& status,
     int response_code) {
   if (!status.is_success() ||
       // HTTP 2xx, 401, and 407 all indicate that the target address exists.

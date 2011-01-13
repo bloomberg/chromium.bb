@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,8 +35,9 @@ class SigninManagerTest : public TokenServiceTestHarness {
     DCHECK(fetcher);
     DCHECK(fetcher->delegate());
     fetcher->delegate()->OnURLFetchComplete(
-        fetcher, GURL(GaiaAuthFetcher::kClientLoginUrl), URLRequestStatus(),
-        200, ResponseCookies(), "SID=sid\nLSID=lsid\nAuth=auth");
+        fetcher, GURL(GaiaAuthFetcher::kClientLoginUrl),
+        net::URLRequestStatus(), 200, ResponseCookies(),
+        "SID=sid\nLSID=lsid\nAuth=auth");
 
     // Then simulate the correct GetUserInfo response for the canonical email.
     // A new URL fetcher is used for each call.
@@ -44,8 +45,9 @@ class SigninManagerTest : public TokenServiceTestHarness {
     DCHECK(fetcher);
     DCHECK(fetcher->delegate());
     fetcher->delegate()->OnURLFetchComplete(
-        fetcher, GURL(GaiaAuthFetcher::kGetUserInfoUrl), URLRequestStatus(),
-        200, ResponseCookies(), "email=user@gmail.com");
+        fetcher, GURL(GaiaAuthFetcher::kGetUserInfoUrl),
+        net::URLRequestStatus(), 200, ResponseCookies(),
+        "email=user@gmail.com");
   }
 
 

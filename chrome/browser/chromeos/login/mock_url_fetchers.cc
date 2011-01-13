@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,8 +56,8 @@ GotCanceledFetcher::GotCanceledFetcher(bool success,
 GotCanceledFetcher::~GotCanceledFetcher() {}
 
 void GotCanceledFetcher::Start() {
-  URLRequestStatus status;
-  status.set_status(URLRequestStatus::CANCELED);
+  net::URLRequestStatus status;
+  status.set_status(net::URLRequestStatus::CANCELED);
   delegate()->OnURLFetchComplete(this,
                                  url_,
                                  status,
@@ -78,7 +78,7 @@ SuccessFetcher::SuccessFetcher(bool success,
 SuccessFetcher::~SuccessFetcher() {}
 
 void SuccessFetcher::Start() {
-  URLRequestStatus success(URLRequestStatus::SUCCESS, 0);
+  net::URLRequestStatus success(net::URLRequestStatus::SUCCESS, 0);
   delegate()->OnURLFetchComplete(this,
                                  url_,
                                  success,
@@ -99,7 +99,7 @@ FailFetcher::FailFetcher(bool success,
 FailFetcher::~FailFetcher() {}
 
 void FailFetcher::Start() {
-  URLRequestStatus failed(URLRequestStatus::FAILED, ECONNRESET);
+  net::URLRequestStatus failed(net::URLRequestStatus::FAILED, ECONNRESET);
   delegate()->OnURLFetchComplete(this,
                                  url_,
                                  failed,
@@ -145,7 +145,7 @@ std::string CaptchaFetcher::GetUnlockUrl() {
 }
 
 void CaptchaFetcher::Start() {
-  URLRequestStatus success(URLRequestStatus::SUCCESS, 0);
+  net::URLRequestStatus success(net::URLRequestStatus::SUCCESS, 0);
   std::string body = base::StringPrintf("Error=%s\n"
                                         "Url=%s\n"
                                         "CaptchaUrl=%s\n"
@@ -174,7 +174,7 @@ HostedFetcher::HostedFetcher(bool success,
 HostedFetcher::~HostedFetcher() {}
 
 void HostedFetcher::Start() {
-  URLRequestStatus success(URLRequestStatus::SUCCESS, 0);
+  net::URLRequestStatus success(net::URLRequestStatus::SUCCESS, 0);
   int response_code = RC_REQUEST_OK;
   std::string data;
   VLOG(1) << upload_data();

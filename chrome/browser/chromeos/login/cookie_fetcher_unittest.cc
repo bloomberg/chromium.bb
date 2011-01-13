@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,7 +46,7 @@ class CookieFetcherTest : public ::testing::Test {
 // Check that successful HTTP responses from both end points results in
 // the browser window getting put up.
 TEST_F(CookieFetcherTest, SuccessfulFetchTest) {
-  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
+  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
 
   MockAuthResponseHandler* cl_handler =
       new MockAuthResponseHandler(iat_url_, status, kHttpSuccess, token_);
@@ -72,7 +72,7 @@ TEST_F(CookieFetcherTest, SuccessfulFetchTest) {
 // Check that a network failure when trying IssueAuthToken results in us bailing
 // and putting up the browser window.
 TEST_F(CookieFetcherTest, IssueAuthTokenNetworkFailureTest) {
-  URLRequestStatus failed(URLRequestStatus::FAILED, ECONNRESET);
+  net::URLRequestStatus failed(net::URLRequestStatus::FAILED, ECONNRESET);
 
   MockAuthResponseHandler* cl_handler =
       new MockAuthResponseHandler(iat_url_, failed, kHttpSuccess, token_);
@@ -94,8 +94,8 @@ TEST_F(CookieFetcherTest, IssueAuthTokenNetworkFailureTest) {
 // Check that a network failure when trying TokenAuth results in us bailing
 // and putting up the browser window.
 TEST_F(CookieFetcherTest, TokenAuthNetworkFailureTest) {
-  URLRequestStatus success;
-  URLRequestStatus failed(URLRequestStatus::FAILED, ECONNRESET);
+  net::URLRequestStatus success;
+  net::URLRequestStatus failed(net::URLRequestStatus::FAILED, ECONNRESET);
 
   MockAuthResponseHandler* cl_handler =
       new MockAuthResponseHandler(iat_url_, success, kHttpSuccess, token_);
@@ -121,7 +121,7 @@ TEST_F(CookieFetcherTest, TokenAuthNetworkFailureTest) {
 // Check that an unsuccessful HTTP response when trying IssueAuthToken results
 // in us bailing and putting up the browser window.
 TEST_F(CookieFetcherTest, IssueAuthTokenDeniedTest) {
-  URLRequestStatus success;
+  net::URLRequestStatus success;
 
   MockAuthResponseHandler* cl_handler =
       new MockAuthResponseHandler(iat_url_, success, 403, std::string());
@@ -143,7 +143,7 @@ TEST_F(CookieFetcherTest, IssueAuthTokenDeniedTest) {
 // Check that an unsuccessful HTTP response when trying TokenAuth results
 // in us bailing and putting up the browser window.
 TEST_F(CookieFetcherTest, TokenAuthDeniedTest) {
-  URLRequestStatus success;
+  net::URLRequestStatus success;
 
   MockAuthResponseHandler* cl_handler =
       new MockAuthResponseHandler(iat_url_,

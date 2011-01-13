@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -90,7 +90,7 @@ class DeviceManagementJobBase
   }
 
   // DeviceManagementJob overrides:
-  virtual void HandleResponse(const URLRequestStatus& status,
+  virtual void HandleResponse(const net::URLRequestStatus& status,
                               int response_code,
                               const ResponseCookies& cookies,
                               const std::string& data);
@@ -156,14 +156,15 @@ class DeviceManagementJobBase
   DISALLOW_COPY_AND_ASSIGN(DeviceManagementJobBase);
 };
 
-void DeviceManagementJobBase::HandleResponse(const URLRequestStatus& status,
-                                             int response_code,
-                                             const ResponseCookies& cookies,
-                                             const std::string& data) {
+void DeviceManagementJobBase::HandleResponse(
+    const net::URLRequestStatus& status,
+    int response_code,
+    const ResponseCookies& cookies,
+    const std::string& data) {
   // Delete ourselves when this is done.
   scoped_ptr<DeviceManagementJob> scoped_killer(this);
 
-  if (status.status() != URLRequestStatus::SUCCESS) {
+  if (status.status() != net::URLRequestStatus::SUCCESS) {
     OnError(DeviceManagementBackend::kErrorRequestFailed);
     return;
   }

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,7 @@ class NPAPIUrlRequest : public PluginUrlRequest {
   virtual unsigned long API_CALL AddRef();
   virtual unsigned long API_CALL Release();
 
-  const URLRequestStatus& status() const {
+  const net::URLRequestStatus& status() const {
     return status_;
   }
 
@@ -43,7 +43,7 @@ class NPAPIUrlRequest : public PluginUrlRequest {
   NPP instance_;
   NPStream* stream_;
   size_t pending_read_size_;
-  URLRequestStatus status_;
+  net::URLRequestStatus status_;
 
   base::PlatformThreadId thread_;
   static int instance_count_;
@@ -55,7 +55,7 @@ int NPAPIUrlRequest::instance_count_ = 0;
 NPAPIUrlRequest::NPAPIUrlRequest(NPP instance)
     : ref_count_(0), instance_(instance), stream_(NULL),
       pending_read_size_(0),
-      status_(URLRequestStatus::FAILED, net::ERR_FAILED),
+      status_(net::URLRequestStatus::FAILED, net::ERR_FAILED),
       thread_(base::PlatformThread::CurrentId()) {
   DVLOG(1) << "Created request. Count: " << ++instance_count_;
 }
@@ -112,7 +112,7 @@ bool NPAPIUrlRequest::Start() {
     }
 
     delegate_->OnResponseEnd(id(),
-        URLRequestStatus(URLRequestStatus::FAILED, os_error));
+        net::URLRequestStatus(net::URLRequestStatus::FAILED, os_error));
     return false;
   }
 
@@ -123,7 +123,7 @@ void NPAPIUrlRequest::Stop() {
   DVLOG(1) << "Finished request: Url - " << url()
            << " result: " << static_cast<int>(status_.status());
 
-  status_.set_status(URLRequestStatus::CANCELED);
+  status_.set_status(net::URLRequestStatus::CANCELED);
   if (stream_) {
     npapi::DestroyStream(instance_, stream_, NPRES_USER_BREAK);
     stream_ = NULL;
@@ -138,7 +138,7 @@ bool NPAPIUrlRequest::Read(int bytes_to_read) {
 NPError NPAPIUrlRequest::OnStreamCreated(const char* mime_type,
                                          NPStream* stream) {
   stream_ = stream;
-  status_.set_status(URLRequestStatus::IO_PENDING);
+  status_.set_status(net::URLRequestStatus::IO_PENDING);
   // TODO(iyengar)
   // Add support for passing persistent cookies and information about any URL
   // redirects to Chrome.
@@ -154,19 +154,19 @@ NPError NPAPIUrlRequest::OnStreamDestroyed(NPReason reason) {
   // instead.  To prevent Chrome from receiving a notification of a failed
   // network connection, when Chrome actually canceled the request, we ignore
   // the status here.
-  if (URLRequestStatus::CANCELED != status_.status()) {
+  if (net::URLRequestStatus::CANCELED != status_.status()) {
     switch (reason) {
       case NPRES_DONE:
-        status_.set_status(URLRequestStatus::SUCCESS);
+        status_.set_status(net::URLRequestStatus::SUCCESS);
         status_.set_os_error(0);
         break;
       case NPRES_USER_BREAK:
-        status_.set_status(URLRequestStatus::CANCELED);
+        status_.set_status(net::URLRequestStatus::CANCELED);
         status_.set_os_error(net::ERR_ABORTED);
         break;
       case NPRES_NETWORK_ERR:
       default:
-        status_.set_status(URLRequestStatus::FAILED);
+        status_.set_status(net::URLRequestStatus::FAILED);
         status_.set_os_error(net::ERR_CONNECTION_CLOSED);
         break;
     }
@@ -334,8 +334,9 @@ void NPAPIUrlRequestManager::OnReadComplete(int request_id,
   delegate_->OnReadComplete(request_id, data);
 }
 
-void NPAPIUrlRequestManager::OnResponseEnd(int request_id,
-                                           const URLRequestStatus& status) {
+void NPAPIUrlRequestManager::OnResponseEnd(
+    int request_id,
+    const net::URLRequestStatus& status) {
   // Delete from map.
   RequestMap::iterator it = request_map_.find(request_id);
   DCHECK(request_map_.end() != it);
@@ -343,7 +344,7 @@ void NPAPIUrlRequestManager::OnResponseEnd(int request_id,
   request_map_.erase(it);
 
   // Inform delegate unless canceled.
-  if (status.status() != URLRequestStatus::CANCELED)
+  if (status.status() != net::URLRequestStatus::CANCELED)
     delegate_->OnResponseEnd(request_id, status);
 }
 
@@ -363,7 +364,7 @@ NPError NPAPIUrlRequestManager::NewStream(NPMIMEType type,
 
   // This stream is being constructed for a request that has already been
   // canceled.  Signal its immediate termination.
-  if (URLRequestStatus::CANCELED == request->status().status()) {
+  if (net::URLRequestStatus::CANCELED == request->status().status()) {
     return npapi::DestroyStream(request->instance(),
                                 stream, NPRES_USER_BREAK);
   }

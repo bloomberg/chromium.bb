@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -115,7 +115,7 @@ TEST_F(GaiaAuthFetcherTest, ErrorComparator) {
 
 TEST_F(GaiaAuthFetcherTest, LoginNetFailure) {
   int error_no = net::ERR_CONNECTION_RESET;
-  URLRequestStatus status(URLRequestStatus::FAILED, error_no);
+  net::URLRequestStatus status(net::URLRequestStatus::FAILED, error_no);
 
   GoogleServiceAuthError expected_error =
       GoogleServiceAuthError::FromConnectionError(error_no);
@@ -137,7 +137,7 @@ TEST_F(GaiaAuthFetcherTest, LoginNetFailure) {
 
 TEST_F(GaiaAuthFetcherTest, TokenNetFailure) {
   int error_no = net::ERR_CONNECTION_RESET;
-  URLRequestStatus status(URLRequestStatus::FAILED, error_no);
+  net::URLRequestStatus status(net::URLRequestStatus::FAILED, error_no);
 
   GoogleServiceAuthError expected_error =
       GoogleServiceAuthError::FromConnectionError(error_no);
@@ -160,7 +160,7 @@ TEST_F(GaiaAuthFetcherTest, TokenNetFailure) {
 
 TEST_F(GaiaAuthFetcherTest, LoginDenied) {
   std::string data("Error=BadAuthentication");
-  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
+  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
 
   GoogleServiceAuthError expected_error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
@@ -220,7 +220,7 @@ TEST_F(GaiaAuthFetcherTest, OnlineLogin) {
 
   GaiaAuthFetcher auth(&consumer, std::string(),
       profile_.GetRequestContext());
-  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
+  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   auth.OnURLFetchComplete(NULL,
                           client_login_source_,
                           status,
@@ -236,7 +236,7 @@ TEST_F(GaiaAuthFetcherTest, WorkingIssueAuthToken) {
 
   GaiaAuthFetcher auth(&consumer, std::string(),
       profile_.GetRequestContext());
-  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
+  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   auth.OnURLFetchComplete(NULL,
                           issue_auth_token_source_,
                           status,
@@ -270,7 +270,7 @@ TEST_F(GaiaAuthFetcherTest, TwoFactorLogin) {
 
   GaiaAuthFetcher auth(&consumer, std::string(),
       profile_.GetRequestContext());
-  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
+  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   auth.OnURLFetchComplete(NULL,
                           client_login_source_,
                           status,
@@ -280,7 +280,7 @@ TEST_F(GaiaAuthFetcherTest, TwoFactorLogin) {
 }
 
 TEST_F(GaiaAuthFetcherTest, CaptchaParse) {
-  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
+  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   std::string data = "Url=http://www.google.com/login/captcha\n"
                      "Error=CaptchaRequired\n"
                      "CaptchaToken=CCTOKEN\n"
@@ -299,7 +299,7 @@ TEST_F(GaiaAuthFetcherTest, CaptchaParse) {
 }
 
 TEST_F(GaiaAuthFetcherTest, AccountDeletedError) {
-  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
+  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   std::string data = "Error=AccountDeleted\n";
   GoogleServiceAuthError error =
       GaiaAuthFetcher::GenerateAuthError(data, status);
@@ -307,7 +307,7 @@ TEST_F(GaiaAuthFetcherTest, AccountDeletedError) {
 }
 
 TEST_F(GaiaAuthFetcherTest, AccountDisabledError) {
-  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
+  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   std::string data = "Error=AccountDisabled\n";
   GoogleServiceAuthError error =
       GaiaAuthFetcher::GenerateAuthError(data, status);
@@ -315,7 +315,7 @@ TEST_F(GaiaAuthFetcherTest, AccountDisabledError) {
 }
 
 TEST_F(GaiaAuthFetcherTest,BadAuthenticationError) {
-  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
+  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   std::string data = "Error=BadAuthentication\n";
   GoogleServiceAuthError error =
       GaiaAuthFetcher::GenerateAuthError(data, status);
@@ -323,7 +323,7 @@ TEST_F(GaiaAuthFetcherTest,BadAuthenticationError) {
 }
 
 TEST_F(GaiaAuthFetcherTest,IncomprehensibleError) {
-  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
+  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   std::string data = "Error=Gobbledygook\n";
   GoogleServiceAuthError error =
       GaiaAuthFetcher::GenerateAuthError(data, status);
@@ -331,7 +331,7 @@ TEST_F(GaiaAuthFetcherTest,IncomprehensibleError) {
 }
 
 TEST_F(GaiaAuthFetcherTest,ServiceUnavailableError) {
-  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
+  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   std::string data = "Error=ServiceUnavailable\n";
   GoogleServiceAuthError error =
       GaiaAuthFetcher::GenerateAuthError(data, status);
@@ -403,12 +403,13 @@ TEST_F(GaiaAuthFetcherTest, ClientFetchPending) {
 
   URLFetcher::set_factory(NULL);
   EXPECT_TRUE(auth.HasPendingFetch());
-  auth.OnURLFetchComplete(NULL,
-                          client_login_source_,
-                          URLRequestStatus(URLRequestStatus::SUCCESS, 0),
-                          RC_REQUEST_OK,
-                          cookies_,
-                          "SID=sid\nLSID=lsid\nAuth=auth\n");
+  auth.OnURLFetchComplete(
+      NULL,
+      client_login_source_,
+      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0),
+      RC_REQUEST_OK,
+      cookies_,
+      "SID=sid\nLSID=lsid\nAuth=auth\n");
   EXPECT_FALSE(auth.HasPendingFetch());
 }
 
@@ -427,12 +428,13 @@ TEST_F(GaiaAuthFetcherTest, FullTokenSuccess) {
 
   URLFetcher::set_factory(NULL);
   EXPECT_TRUE(auth.HasPendingFetch());
-  auth.OnURLFetchComplete(NULL,
-                          issue_auth_token_source_,
-                          URLRequestStatus(URLRequestStatus::SUCCESS, 0),
-                          RC_REQUEST_OK,
-                          cookies_,
-                          "token");
+  auth.OnURLFetchComplete(
+      NULL,
+      issue_auth_token_source_,
+      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0),
+      RC_REQUEST_OK,
+      cookies_,
+      "token");
   EXPECT_FALSE(auth.HasPendingFetch());
 }
 
@@ -451,11 +453,12 @@ TEST_F(GaiaAuthFetcherTest, FullTokenFailure) {
 
   URLFetcher::set_factory(NULL);
   EXPECT_TRUE(auth.HasPendingFetch());
-  auth.OnURLFetchComplete(NULL,
-                          issue_auth_token_source_,
-                          URLRequestStatus(URLRequestStatus::SUCCESS, 0),
-                          RC_FORBIDDEN,
-                          cookies_,
-                          "");
+  auth.OnURLFetchComplete(
+      NULL,
+      issue_auth_token_source_,
+      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0),
+      RC_FORBIDDEN,
+      cookies_,
+      "");
   EXPECT_FALSE(auth.HasPendingFetch());
 }

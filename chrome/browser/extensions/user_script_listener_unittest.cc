@@ -73,7 +73,7 @@ class DummyResourceHandler : public ResourceHandler {
   }
 
   virtual bool OnResponseCompleted(int request_id,
-                                   const URLRequestStatus& status,
+                                   const net::URLRequestStatus& status,
                                    const std::string& security_info) {
     NOTREACHED();
     return true;

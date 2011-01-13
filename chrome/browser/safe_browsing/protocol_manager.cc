@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -201,7 +201,7 @@ void SafeBrowsingProtocolManager::GetNextUpdate() {
 void SafeBrowsingProtocolManager::OnURLFetchComplete(
     const URLFetcher* source,
     const GURL& url,
-    const URLRequestStatus& status,
+    const net::URLRequestStatus& status,
     int response_code,
     const ResponseCookies& cookies,
     const std::string& data) {
@@ -255,7 +255,7 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
       }
     } else {
       HandleGetHashError(Time::Now());
-      if (status.status() == URLRequestStatus::FAILED) {
+      if (status.status() == net::URLRequestStatus::FAILED) {
         VLOG(1) << "SafeBrowsing GetHash request for: " << source->url()
                 << " failed with os error: " << status.os_error();
       } else {
@@ -329,7 +329,7 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
       if (request_type_ == CHUNK_REQUEST)
         chunk_request_urls_.clear();
       UpdateFinished(false);
-      if (status.status() == URLRequestStatus::FAILED) {
+      if (status.status() == net::URLRequestStatus::FAILED) {
         VLOG(1) << "SafeBrowsing request for: " << source->url()
                 << " failed with os error: " << status.os_error();
       } else {

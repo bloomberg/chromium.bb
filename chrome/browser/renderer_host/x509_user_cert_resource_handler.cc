@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,9 +93,9 @@ bool X509UserCertResourceHandler::OnReadCompleted(int request_id,
 
 bool X509UserCertResourceHandler::OnResponseCompleted(
     int request_id,
-    const URLRequestStatus& urs,
+    const net::URLRequestStatus& urs,
     const std::string& sec_info) {
-  if (urs.status() != URLRequestStatus::SUCCESS)
+  if (urs.status() != net::URLRequestStatus::SUCCESS)
     return false;
 
   // TODO(gauravsh): Verify that 'request_id' was actually a keygen form post

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ struct ResourceResponseHead : webkit_glue::ResourceResponseInfo {
   ~ResourceResponseHead();
 
   // The response status.
-  URLRequestStatus status;
+  net::URLRequestStatus status;
 
   // Whether we should apply a filter to this resource that replaces
   // localization templates with the appropriate localized strings.  This is set

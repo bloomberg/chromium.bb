@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -341,7 +341,7 @@ class SafeBrowsingServiceTestHelper
   explicit SafeBrowsingServiceTestHelper(
       SafeBrowsingServiceTest* safe_browsing_test)
       : safe_browsing_test_(safe_browsing_test),
-        response_status_(URLRequestStatus::FAILED) {
+        response_status_(net::URLRequestStatus::FAILED) {
   }
 
   // Callbacks for SafeBrowsingService::Client.
@@ -441,13 +441,13 @@ class SafeBrowsingServiceTestHelper
   }
 
   void WaitTillServerReady(const char* host, int port) {
-    response_status_ = URLRequestStatus::FAILED;
+    response_status_ = net::URLRequestStatus::FAILED;
     GURL url(StringPrintf("http://%s:%d%s?test_step=0",
                           host, port, kDBResetPath));
     // TODO(lzheng): We should have a way to reliably tell when a server is
     // ready so we could get rid of the Sleep and retry loop.
     while (true) {
-      if (FetchUrl(url) == URLRequestStatus::SUCCESS)
+      if (FetchUrl(url) == net::URLRequestStatus::SUCCESS)
         break;
       // Wait and try again if last fetch was failed. The loop will hit the
       // timeout in OutOfProcTestRunner if the fetch can not get success
@@ -457,8 +457,8 @@ class SafeBrowsingServiceTestHelper
   }
 
   // Calls test server to fetch database for verification.
-  URLRequestStatus::Status FetchDBToVerify(const char* host, int port,
-                                           int test_step) {
+  net::URLRequestStatus::Status FetchDBToVerify(const char* host, int port,
+                                                int test_step) {
     // TODO(lzheng): Remove chunk_type=add once it is not needed by the server.
     GURL url(StringPrintf("http://%s:%d%s?"
                           "client=chromium&appver=1.0&pver=2.2&test_step=%d&"
@@ -468,8 +468,8 @@ class SafeBrowsingServiceTestHelper
   }
 
   // Calls test server to fetch URLs for verification.
-  URLRequestStatus::Status FetchUrlsToVerify(const char* host, int port,
-                                             int test_step) {
+  net::URLRequestStatus::Status FetchUrlsToVerify(const char* host, int port,
+                                                  int test_step) {
     GURL url(StringPrintf("http://%s:%d%s?"
                           "client=chromium&appver=1.0&pver=2.2&test_step=%d",
                           host, port, kUrlVerifyPath, test_step));
@@ -479,8 +479,8 @@ class SafeBrowsingServiceTestHelper
   // Calls test server to check if test data is done. E.g.: if there is a
   // bad URL that server expects test to fetch full hash but the test didn't,
   // this verification will fail.
-  URLRequestStatus::Status VerifyTestComplete(const char* host, int port,
-                                              int test_step) {
+  net::URLRequestStatus::Status VerifyTestComplete(const char* host, int port,
+                                                   int test_step) {
     GURL url(StringPrintf("http://%s:%d%s?test_step=%d",
                           host, port, kTestCompletePath, test_step));
     return FetchUrl(url);
@@ -489,7 +489,7 @@ class SafeBrowsingServiceTestHelper
   // Callback for URLFetcher.
   virtual void OnURLFetchComplete(const URLFetcher* source,
                                   const GURL& url,
-                                  const URLRequestStatus& status,
+                                  const net::URLRequestStatus& status,
                                   int response_code,
                                   const ResponseCookies& cookies,
                                   const std::string& data) {
@@ -511,7 +511,7 @@ class SafeBrowsingServiceTestHelper
 
   // Fetch a URL. If message_loop_started is true, starts the message loop
   // so the caller could wait till OnURLFetchComplete is called.
-  URLRequestStatus::Status FetchUrl(const GURL& url) {
+  net::URLRequestStatus::Status FetchUrl(const GURL& url) {
     url_fetcher_.reset(new URLFetcher(url, URLFetcher::GET, this));
     url_fetcher_->set_load_flags(net::LOAD_DISABLE_CACHE);
     url_fetcher_->set_request_context(Profile::GetDefaultRequestContext());
@@ -524,7 +524,7 @@ class SafeBrowsingServiceTestHelper
   SafeBrowsingServiceTest* safe_browsing_test_;
   scoped_ptr<URLFetcher> url_fetcher_;
   std::string response_data_;
-  URLRequestStatus::Status response_status_;
+  net::URLRequestStatus::Status response_status_;
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingServiceTestHelper);
 };
 
@@ -584,7 +584,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, SafeBrowsingSystemTest) {
     }
 
     // Fetches URLs to verify and waits till server responses with data.
-    EXPECT_EQ(URLRequestStatus::SUCCESS,
+    EXPECT_EQ(net::URLRequestStatus::SUCCESS,
               safe_browsing_helper->FetchUrlsToVerify(server_host,
                                                       server_port,
                                                       step));
@@ -615,7 +615,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, SafeBrowsingSystemTest) {
     }
     // TODO(lzheng): We should verify the fetched database with local
     // database to make sure they match.
-    EXPECT_EQ(URLRequestStatus::SUCCESS,
+    EXPECT_EQ(net::URLRequestStatus::SUCCESS,
               safe_browsing_helper->FetchDBToVerify(server_host,
                                                     server_port,
                                                     step));
@@ -624,7 +624,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, SafeBrowsingSystemTest) {
   }
 
   // Verifies with server if test is done and waits till server responses.
-  EXPECT_EQ(URLRequestStatus::SUCCESS,
+  EXPECT_EQ(net::URLRequestStatus::SUCCESS,
             safe_browsing_helper->VerifyTestComplete(server_host,
                                                      server_port,
                                                      last_step));

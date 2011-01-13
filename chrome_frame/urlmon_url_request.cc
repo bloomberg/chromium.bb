@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,7 +58,7 @@ bool UrlmonUrlRequest::Start() {
   HRESULT hr = StartAsyncDownload();
   if (FAILED(hr) && status_.get_state() != UrlmonUrlRequest::Status::DONE) {
     status_.Done();
-    status_.set_result(URLRequestStatus::FAILED, HresultToNetError(hr));
+    status_.set_result(net::URLRequestStatus::FAILED, HresultToNetError(hr));
     NotifyDelegateAndDie();
   }
   return true;
@@ -373,8 +373,8 @@ STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
     if (result == E_ACCESSDENIED) {
       int http_code = GetHttpResponseStatusFromBinding(binding_);
       if (300 <= http_code && http_code < 400) {
-        status_.set_result(URLRequestStatus::FAILED,
-                          net::ERR_UNSAFE_REDIRECT);
+        status_.set_result(net::URLRequestStatus::FAILED,
+                           net::ERR_UNSAFE_REDIRECT);
       }
     }
 
@@ -838,7 +838,7 @@ void UrlmonUrlRequest::NotifyDelegateAndDie() {
   ReleaseBindings();
   TerminateTransaction();
   if (delegate) {
-    URLRequestStatus result = status_.get_result();
+    net::URLRequestStatus result = status_.get_result();
     delegate->OnResponseEnd(id(), result);
   } else {
     DLOG(WARNING) << __FUNCTION__ << me() << "no delegate";
@@ -987,8 +987,8 @@ void UrlmonUrlRequestManager::StartRequest(int request_id,
                     << ".Pending url request for url:"
                     << pending_request_->url()
                     << " was expected.";
-      URLRequestStatus result;
-      result.set_status(URLRequestStatus::FAILED);
+      net::URLRequestStatus result;
+      result.set_status(net::URLRequestStatus::FAILED);
       OnResponseEnd(request_id, result);
       return;
     }
@@ -1175,11 +1175,12 @@ void UrlmonUrlRequestManager::OnReadComplete(int request_id,
   DVLOG(1) << __FUNCTION__ << " done id: " << request_id;
 }
 
-void UrlmonUrlRequestManager::OnResponseEnd(int request_id,
-                                            const URLRequestStatus& status) {
+void UrlmonUrlRequestManager::OnResponseEnd(
+    int request_id,
+    const net::URLRequestStatus& status) {
   DCHECK_NE(request_id, -1);
   DVLOG(1) << __FUNCTION__;
-  DCHECK(status.status() != URLRequestStatus::CANCELED);
+  DCHECK(status.status() != net::URLRequestStatus::CANCELED);
   RequestMap::size_type n = request_map_.erase(request_id);
   if (n != 1u) {
     DLOG(WARNING) << __FUNCTION__
