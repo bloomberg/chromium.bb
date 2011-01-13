@@ -794,6 +794,76 @@ class MinidumpBreakpadInfo : public MinidumpStream {
   MDRawBreakpadInfo breakpad_info_;
 };
 
+// MinidumpMemoryInfo wraps MDRawMemoryInfo, which provides information
+// about mapped memory regions in a process, including their ranges
+// and protection.
+class MinidumpMemoryInfo : public MinidumpObject {
+ public:
+  const MDRawMemoryInfo* info() const { return valid_ ? &memory_info_ : NULL; }
+
+  // The address of the base of the memory region.
+  u_int64_t GetBase() const { return valid_ ? memory_info_.base_address : 0; }
+
+  // The size, in bytes, of the memory region.
+  u_int32_t GetSize() const { return valid_ ? memory_info_.region_size : 0; }
+
+  // Return true if the memory protection allows execution.
+  bool IsExecutable() const;
+
+  // Return true if the memory protection allows writing.
+  bool IsWritable() const;
+
+  // Print a human-readable representation of the object to stdout.
+  void Print();
+
+ private:
+  // These objects are managed by MinidumpMemoryInfoList.
+  friend class MinidumpMemoryInfoList;
+
+  explicit MinidumpMemoryInfo(Minidump* minidump);
+
+  // This works like MinidumpStream::Read, but is driven by
+  // MinidumpMemoryInfoList.  No size checking is done, because
+  // MinidumpMemoryInfoList handles that directly.
+  bool Read();
+
+  MDRawMemoryInfo memory_info_;
+};
+
+// MinidumpMemoryInfoList contains a list of information about
+// mapped memory regions for a process in the form of MDRawMemoryInfo.
+// It maintains a map of these structures so that it may easily provide
+// info corresponding to a specific address.
+class MinidumpMemoryInfoList : public MinidumpStream {
+ public:
+  virtual ~MinidumpMemoryInfoList();
+
+  unsigned int info_count() const { return valid_ ? info_count_ : 0; }
+
+  const MinidumpMemoryInfo* GetMemoryInfoForAddress(u_int64_t address) const;
+  const MinidumpMemoryInfo* GetMemoryInfoAtIndex(unsigned int index) const;
+
+  // Print a human-readable representation of the object to stdout.
+  void Print();
+
+ private:
+  friend class Minidump;
+
+  typedef vector<MinidumpMemoryInfo> MinidumpMemoryInfos;
+
+  static const u_int32_t kStreamType = MD_MEMORY_INFO_LIST_STREAM;
+
+  explicit MinidumpMemoryInfoList(Minidump* minidump);
+
+  bool Read(u_int32_t expected_size);
+
+  // Access to memory info using addresses as the key.
+  RangeMap<u_int64_t, unsigned int> *range_map_;
+
+  MinidumpMemoryInfos* infos_;
+  u_int32_t info_count_;
+};
+
 
 // Minidump is the user's interface to a minidump file.  It wraps MDRawHeader
 // and provides access to the minidump's top-level stream directory.
@@ -842,6 +912,7 @@ class Minidump {
   MinidumpSystemInfo* GetSystemInfo();
   MinidumpMiscInfo* GetMiscInfo();
   MinidumpBreakpadInfo* GetBreakpadInfo();
+  MinidumpMemoryInfoList* GetMemoryInfoList();
 
   // The next set of methods are provided for users who wish to access
   // data in minidump files directly, while leveraging the rest of

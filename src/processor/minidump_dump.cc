@@ -45,6 +45,7 @@ namespace {
 using google_breakpad::Minidump;
 using google_breakpad::MinidumpThreadList;
 using google_breakpad::MinidumpModuleList;
+using google_breakpad::MinidumpMemoryInfoList;
 using google_breakpad::MinidumpMemoryList;
 using google_breakpad::MinidumpException;
 using google_breakpad::MinidumpAssertion;
@@ -158,6 +159,14 @@ static bool PrintMinidumpDump(const char *minidump_file) {
     BPLOG(INFO) << "minidump.GetBreakpadInfo() failed";
   } else {
     breakpad_info->Print();
+  }
+
+  MinidumpMemoryInfoList *memory_info_list = minidump.GetMemoryInfoList();
+  if (!memory_info_list) {
+    ++errors;
+    BPLOG(ERROR) << "minidump.GetMemoryInfoList() failed";
+  } else {
+    memory_info_list->Print();
   }
 
   DumpRawStream(&minidump,

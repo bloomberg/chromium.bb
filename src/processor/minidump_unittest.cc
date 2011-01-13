@@ -46,6 +46,8 @@ namespace {
 
 using google_breakpad::Minidump;
 using google_breakpad::MinidumpContext;
+using google_breakpad::MinidumpMemoryInfo;
+using google_breakpad::MinidumpMemoryInfoList;
 using google_breakpad::MinidumpMemoryList;
 using google_breakpad::MinidumpMemoryRegion;
 using google_breakpad::MinidumpModule;
@@ -529,6 +531,61 @@ TEST(Dump, BigDump) {
             md_module_list->GetModuleAtIndex(1)->base_address());
   EXPECT_EQ(0x95fc1544da321b6cULL,
             md_module_list->GetModuleAtIndex(2)->base_address());
+}
+
+TEST(Dump, OneMemoryInfo) {
+  Dump dump(0, kBigEndian);
+  Stream stream(dump, MD_MEMORY_INFO_LIST_STREAM);
+
+  // Add the MDRawMemoryInfoList header.
+  const u_int64_t kNumberOfEntries = 1;
+  stream.D32(sizeof(MDRawMemoryInfoList))  // size_of_header
+        .D32(sizeof(MDRawMemoryInfo))      // size_of_entry
+        .D64(kNumberOfEntries);            // number_of_entries
+
+  
+  // Now add a MDRawMemoryInfo entry.
+  const u_int64_t kBaseAddress = 0x1000;
+  const u_int64_t kRegionSize = 0x2000;
+  stream.D64(kBaseAddress)                         // base_address
+        .D64(kBaseAddress)                         // allocation_base
+        .D32(MD_MEMORY_PROTECT_EXECUTE_READWRITE)  // allocation_protection
+        .D32(0)                                    // __alignment1
+        .D64(kRegionSize)                          // region_size
+        .D32(MD_MEMORY_STATE_COMMIT)               // state
+        .D32(MD_MEMORY_PROTECT_EXECUTE_READWRITE)  // protection
+        .D32(MD_MEMORY_TYPE_PRIVATE)               // type
+        .D32(0);                                   // __alignment2
+
+  dump.Add(&stream);
+  dump.Finish();
+
+  string contents;
+  ASSERT_TRUE(dump.GetContents(&contents));
+  istringstream minidump_stream(contents);
+  Minidump minidump(minidump_stream);
+  ASSERT_TRUE(minidump.Read());
+  ASSERT_EQ(1U, minidump.GetDirectoryEntryCount());
+
+  const MDRawDirectory *dir = minidump.GetDirectoryEntryAtIndex(0);
+  ASSERT_TRUE(dir != NULL);
+  EXPECT_EQ((u_int32_t) MD_MEMORY_INFO_LIST_STREAM, dir->stream_type);
+
+  MinidumpMemoryInfoList *info_list = minidump.GetMemoryInfoList();
+  ASSERT_TRUE(info_list != NULL);
+  ASSERT_EQ(1U, info_list->info_count());
+
+  const MinidumpMemoryInfo *info1 = info_list->GetMemoryInfoAtIndex(0);
+  ASSERT_EQ(kBaseAddress, info1->GetBase());
+  ASSERT_EQ(kRegionSize, info1->GetSize());
+  ASSERT_TRUE(info1->IsExecutable());
+  ASSERT_TRUE(info1->IsWritable());
+
+  // Should get back the same memory region here.
+  const MinidumpMemoryInfo *info2 =
+      info_list->GetMemoryInfoForAddress(kBaseAddress + kRegionSize / 2);
+  ASSERT_EQ(kBaseAddress, info2->GetBase());
+  ASSERT_EQ(kRegionSize, info2->GetSize());
 }
 
 }  // namespace
