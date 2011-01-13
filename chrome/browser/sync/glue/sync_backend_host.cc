@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/task.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_thread.h"
 #include "chrome/browser/net/gaia/token_service.h"
@@ -240,10 +241,14 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
   // thread (ui loop) can exit before DoShutdown finishes, at which point
   // virtually anything the sync backend does (or the post-back to
   // frontend_loop_ by our Core) will epically fail because the CRT won't be
-  // initialized. For now this only ever happens at sync-enabled-Chrome exit,
-  // meaning bug 1482548 applies to prolonged "waiting" that may occur in
-  // DoShutdown.
-  core_thread_.Stop();
+  // initialized.
+  // Since we are blocking the UI thread here, we need to turn ourselves in
+  // with the ThreadRestriction police.  For sentencing and how we plan to fix
+  // this, see bug 19757.
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    core_thread_.Stop();
+  }
 
   registrar_.routing_info.clear();
   registrar_.workers[GROUP_DB] = NULL;
